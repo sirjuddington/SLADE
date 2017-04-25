@@ -51,17 +51,41 @@
 
 using MapEditor::Mode;
 using MapEditor::SectorMode;
-using namespace MapEditor;
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536 };
-CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE)
-CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
-CVAR(Bool, map_merge_lines_on_delete_vertex, false, CVAR_SAVE)
-CVAR(Bool, selection_clear_move, true, CVAR_SAVE)
+namespace
+{
+	double grid_sizes[] =
+	{
+		0.05,
+		0.1,
+		0.25,
+		0.5,
+		1,
+		2,
+		4,
+		8,
+		16,
+		32,
+		64,
+		128,
+		256,
+		512,
+		1024,
+		2048,
+		4096,
+		8192,
+		16384,
+		32768,
+		65536
+	};
+}
+
+EXTERN_CVAR(Bool, map_remove_invalid_lines)
+EXTERN_CVAR(Bool, map_merge_lines_on_delete_vertex)
 CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
 CVAR(Int, map_bg_ms, 15, CVAR_SAVE)
 CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
@@ -74,32 +98,9 @@ CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
 /* MapEditContext::MapEditContext
  * MapEditContext class constructor
  *******************************************************************/
-MapEditContext::MapEditContext() :
-	canvas_{nullptr},
-	next_frame_length_{0},
-	undo_manager_{new UndoManager{&map_}},
-	us_create_delete_{nullptr},
-	edit_mode_{Mode::Lines},
-	selection_{this},
-	grid_size_{9},
-	sector_mode_{SectorMode::Both},
-	grid_snap_{true},
-	current_tag_{0},
-	undo_modified_{false},
-	undo_created_{false},
-	undo_deleted_{false},
-	move_item_closest_{0},
-	line_draw_{*this},
-	edit_3d_{*this},
-	object_edit_{*this},
-	copy_thing_{nullptr},
-	copy_sector_{nullptr},
-	copy_line_{nullptr},
-	player_start_dir_{0},
-	renderer_{*this},
-	input_{*this},
-	overlay_current_{nullptr}
+MapEditContext::MapEditContext()
 {
+	undo_manager_ = std::make_unique<UndoManager>(&map_);
 }
 
 /* MapEditContext::~MapEditContext
@@ -107,25 +108,6 @@ MapEditContext::MapEditContext() :
  *******************************************************************/
 MapEditContext::~MapEditContext()
 {
-	if (copy_thing_) delete copy_thing_;
-	if (copy_sector_) delete copy_sector_;
-	if (copy_line_)
-	{
-		if(copy_line_->s1())
-		{
-			delete copy_line_->s1();
-		}
-
-		if(copy_line_->s2())
-		{
-			delete copy_line_->s2();
-		}
-
-		delete copy_line_;
-	}
-	delete undo_manager_;
-	if (overlay_current_)
-		delete overlay_current_;
 }
 
 /* MapEditContext::setEditMode
@@ -155,7 +137,7 @@ void MapEditContext::setEditMode(Mode mode)
 	if (mode == Mode::Visual && edit_mode_ != Mode::Visual)
 		MapEditor::setUndoManager(edit_3d_.undoManager());
 	else if (edit_mode_ == Mode::Visual && mode != Mode::Visual)
-		MapEditor::setUndoManager(undo_manager_);
+		MapEditor::setUndoManager(undo_manager_.get());
 
 	edit_mode_prev_ = edit_mode_;
 
@@ -263,6 +245,9 @@ void MapEditContext::cycleSectorEditMode()
 	}
 }
 
+/* MapEditContext::update
+ * Updates the current map editor state (hilight, animations, etc.)
+ *******************************************************************/
 bool MapEditContext::update(long frametime)
 {
 	// Ignore if we aren't ready to update
@@ -315,7 +300,7 @@ bool MapEditContext::update(long frametime)
 	{
 		// Update hilight if needed
 		auto prev_hl = selection_.hilight();
-		if (input_.mouseState() == Input::MouseState::Normal/* && !mouse_movebegin*/)
+		if (input_.mouseState() == MapEditor::Input::MouseState::Normal/* && !mouse_movebegin*/)
 		{
 			auto old_hl = selection_.hilightedObject();
 			if (selection_.updateHilight(input_.mousePosMap(), renderer_.view().scale()) && hilight_smooth)
@@ -323,8 +308,8 @@ bool MapEditContext::update(long frametime)
 		}
 
 		// Do item moving if needed
-		if (input_.mouseState() == Input::MouseState::Move)
-			doMove(input_.mousePosMap());
+		if (input_.mouseState() == MapEditor::Input::MouseState::Move)
+			move_objects_.update(input_.mousePosMap());
 
 		// Check if we have to update the info overlay
 		if (selection_.hilight() != prev_hl)
@@ -469,6 +454,9 @@ void MapEditContext::updateThingLists()
 	map_.setThingsUpdated();
 }
 
+/* MapEditContext::setCursor
+ * Sets the cursor on the canvas to [cursor]
+ *******************************************************************/
 void MapEditContext::setCursor(UI::MouseCursor cursor) const
 {
 	UI::setCursor(canvas_, cursor);
@@ -741,9 +729,9 @@ double MapEditContext::snapToGrid(double position, bool force)
 }
 
 /* MapEditContext::relativeSnapToGrid
- * Used for pasting.  Given an [origin] point and the current [mouse_pos],
- * snaps in such a way that the mouse is a number of grid units away from the
- * origin.
+ * Used for pasting. Given an [origin] point and the current
+ * [mouse_pos], snaps in such a way that the mouse is a number of
+ * grid units away from the origin.
  *******************************************************************/
 fpoint2_t MapEditContext::relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos)
 {
@@ -751,780 +739,6 @@ fpoint2_t MapEditContext::relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_p
 	delta.x = snapToGrid(delta.x, false);
 	delta.y = snapToGrid(delta.y, false);
 	return origin + delta;
-}
-
-/* MapEditContext::beginMode
- * Begins a move operation, starting from [mouse_pos]
- *******************************************************************/
-bool MapEditContext::beginMove(fpoint2_t mouse_pos)
-{
-	// Check if we have any selection or hilight
-	if (!selection_.hasHilightOrSelection())
-		return false;
-
-	// Begin move operation
-	move_origin_ = mouse_pos;
-	move_items_ = selection_.selectionOrHilight();
-
-	// Get list of vertices being moved (if any)
-	vector<MapVertex*> move_verts;
-	if (edit_mode_ != Mode::Things)
-	{
-		// Vertices mode
-		if (edit_mode_ == Mode::Vertices)
-		{
-			for (auto& item : move_items_)
-				move_verts.push_back(map_.getVertex(item.index));
-		}
-
-		// Lines mode
-		else if (edit_mode_ == Mode::Lines)
-		{
-			for (auto& item : move_items_)
-			{
-				// Duplicate vertices shouldn't matter here
-				move_verts.push_back(map_.getLine(item.index)->v1());
-				move_verts.push_back(map_.getLine(item.index)->v2());
-			}
-		}
-
-		// Sectors mode
-		else if (edit_mode_ == Mode::Sectors)
-		{
-			for (auto& item : move_items_)
-				map_.getSector(item.index)->getVertices(move_verts);
-		}
-	}
-
-	// Filter out map objects being moved
-	if (edit_mode_ == Mode::Things)
-	{
-		// Filter moving things
-		for (auto& item : move_items_)
-			map_.getThing(item.index)->filter(true);
-	}
-	else
-	{
-		// Filter moving lines
-		for (auto vertex : move_verts)
-		{
-			for (unsigned l = 0; l < vertex->nConnectedLines(); l++)
-				vertex->connectedLine(l)->filter(true);
-		}
-	}
-
-	return true;
-}
-
-/* MapEditContext::doMove
- * Updates the current move operation (moving from start to [move_pos])
- *******************************************************************/
-void MapEditContext::doMove(fpoint2_t mouse_pos)
-{
-	// Special case: single vertex or thing
-	if (move_items_.size() == 1 && (edit_mode_ == Mode::Vertices || edit_mode_ == Mode::Things))
-	{
-		// Get new position
-		double nx = mouse_pos.x;
-		double ny = mouse_pos.y;
-		if (grid_snap_)
-		{
-			nx = snapToGrid(nx);
-			ny = snapToGrid(ny);
-		}
-
-		// Update move vector
-		if (edit_mode_ == Mode::Vertices)
-			move_vec_.set(
-				nx - map_.getVertex(move_items_[0].index)->xPos(),
-				ny - map_.getVertex(move_items_[0].index)->yPos()
-			);
-		else if (edit_mode_ == Mode::Things)
-			move_vec_.set(
-				nx - map_.getThing(move_items_[0].index)->xPos(),
-				ny - map_.getThing(move_items_[0].index)->yPos()
-			);
-
-		return;
-	}
-
-	// Get amount moved
-	double dx = mouse_pos.x - move_origin_.x;
-	double dy = mouse_pos.y - move_origin_.y;
-
-	// Update move vector
-	if (grid_snap_)
-		move_vec_.set(snapToGrid(dx), snapToGrid(dy));
-	else
-		move_vec_.set(dx, dy);
-}
-
-/* MapEditContext::endMove
- * Ends a move operation and applies change if [accept] is true
- *******************************************************************/
-void MapEditContext::endMove(bool accept)
-{
-	long move_time = App::runTimer();
-
-	// Un-filter objects
-	for (unsigned a = 0; a < map_.nLines(); a++)
-		map_.getLine(a)->filter(false);
-	for (unsigned a = 0; a < map_.nThings(); a++)
-		map_.getThing(a)->filter(false);
-
-	// Move depending on edit mode
-	if (edit_mode_ == Mode::Things && accept)
-	{
-		// Move things
-		beginUndoRecord("Move Things", true, false, false);
-		for (auto& item : move_items_)
-		{
-			MapThing* t = map_.getThing(item.index);
-			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(t));
-			map_.moveThing(item.index, t->xPos() + move_vec_.x, t->yPos() + move_vec_.y);
-		}
-		endUndoRecord(true);
-	}
-	else if (accept)
-	{
-		// Any other edit mode we're technically moving vertices
-		beginUndoRecord(S_FMT("Move %s", modeString()));
-
-		// Get list of vertices being moved
-		vector<uint8_t> move_verts(map_.nVertices());
-		memset(&move_verts[0], 0, map_.nVertices());
-
-		if (edit_mode_ == Mode::Vertices)
-		{
-			for (auto& item : move_items_)
-				move_verts[item.index] = 1;
-		}
-		else if (edit_mode_ == Mode::Lines)
-		{
-			for (auto& item : move_items_)
-			{
-				MapLine* line = map_.getLine(item.index);
-				if (line->v1()) move_verts[line->v1()->getIndex()] = 1;
-				if (line->v2()) move_verts[line->v2()->getIndex()] = 1;
-			}
-		}
-		else if (edit_mode_ == Mode::Sectors)
-		{
-			vector<MapVertex*> sv;
-			for (auto& item : move_items_)
-				map_.getSector(item.index)->getVertices(sv);
-
-			for (auto vertex : sv)
-				move_verts[vertex->getIndex()] = 1;
-		}
-
-		// Move vertices
-		vector<MapVertex*> moved_verts;
-		for (unsigned a = 0; a < map_.nVertices(); a++)
-		{
-			if (!move_verts[a])
-				continue;
-			fpoint2_t np(map_.getVertex(a)->xPos() + move_vec_.x, map_.getVertex(a)->yPos() + move_vec_.y);
-			map_.moveVertex(a, np.x, np.y);
-			moved_verts.push_back(map_.getVertex(a));
-		}
-
-		// Begin extra 'Merge' undo step if wanted
-		if (map_merge_undo_step)
-		{
-			endUndoRecord(true);
-			beginUndoRecord("Merge");
-		}
-
-		// Do merge
-		bool merge = map_.mergeArch(moved_verts);
-
-		endUndoRecord(merge || !map_merge_undo_step);
-	}
-
-	// Clear selection
-	if (accept && selection_clear_move)
-		selection_.clear();
-
-	// Clear moving items
-	move_items_.clear();
-
-	// Update map item indices
-	map_.refreshIndices();
-}
-
-#if 0
-/* MapEditContext::mergeLines
- * Currently unused
- *******************************************************************/
-void MapEditContext::mergeLines(long move_time, vector<fpoint2_t>& merge_points)
-{
-	// Merge vertices and split lines
-	for (unsigned a = 0; a < merge_points.size(); a++)
-	{
-		MapVertex* v = map_.mergeVerticesPoint(merge_points[a].x, merge_points[a].y);
-		if (v) map_.splitLinesAt(v, 1);
-	}
-
-	// Split lines overlapping vertices
-	for (unsigned a = 0; a < map_.nLines(); a++)
-	{
-		MapLine* line = map_.getLine(a);
-		if (line->modifiedTime() >= move_time)
-		{
-			MapVertex* split = map_.lineCrossVertex(line->x1(), line->y1(), line->x2(), line->y2());
-			if (split)
-			{
-				map_.splitLine(line, split);
-				a = 0;
-			}
-		}
-	}
-
-	// Merge lines
-	for (unsigned a = 0; a < map_.nLines(); a++)
-	{
-		if (map_.getLine(a)->modifiedTime() >= move_time)
-		{
-			if (map_.mergeLine(a) > 0 && a < map_.nLines())
-			{
-				map_.getLine(a)->clearUnneededTextures();
-				a = 0;
-			}
-		}
-	}
-
-	// Remove any resulting zero-length lines
-	map_.removeZeroLengthLines();
-
-}
-#endif
-
-/* MapEditContext::splitLine
- * Splits the line closest to [x,y] at the closest point on the line
- *******************************************************************/
-void MapEditContext::splitLine(double x, double y, double min_dist)
-{
-	fpoint2_t point(x, y);
-
-	// Get the closest line
-	int lindex = map_.nearestLine(point, min_dist);
-	MapLine* line = map_.getLine(lindex);
-
-	// Do nothing if no line is close enough
-	if (!line)
-		return;
-
-	// Begin recording undo level
-	beginUndoRecord("Split Line", true, true, false);
-
-	// Get closest point on the line
-	fpoint2_t closest = MathStuff::closestPointOnLine(point, line->seg());
-
-	// Create vertex there
-	MapVertex* vertex = map_.createVertex(closest.x, closest.y);
-
-	// Do line split
-	map_.splitLine(line, vertex);
-
-	// Finish recording undo level
-	endUndoRecord();
-}
-
-/* MapEditContext::flipLines
- * Flips all selected lines, and sides if [sides] is true
- *******************************************************************/
-void MapEditContext::flipLines(bool sides)
-{
-	// Get selected/hilighted line(s)
-	auto lines = selection_.selectedLines();
-	if (lines.empty())
-		return;
-
-	// Go through list
-	undo_manager_->beginRecord("Flip Line");
-	for (unsigned a = 0; a < lines.size(); a++)
-	{
-		undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(lines[a]));
-		lines[a]->flip(sides);
-	}
-	undo_manager_->endRecord(true);
-
-	// Update display
-	updateDisplay();
-}
-
-/* MapEditContext::correctLineSectors
- * Attempts to correct sector references on all selected lines
- *******************************************************************/
-void MapEditContext::correctLineSectors()
-{
-	// Get selected/hilighted line(s)
-	auto lines = selection_.selectedLines();
-	if (lines.empty())
-		return;
-
-	beginUndoRecord("Correct Line Sectors");
-
-	bool changed = false;
-	for (unsigned a = 0; a < lines.size(); a++)
-	{
-		if (map_.correctLineSectors(lines[a]))
-			changed = true;
-	}
-
-	endUndoRecord(changed);
-
-	// Update display
-	if (changed)
-	{
-		addEditorMessage("Corrected Sector references");
-		updateDisplay();
-	}
-}
-
-/* MapEditContext::changeSectorHeight
- * Changes floor and/or ceiling heights on all selected sectors by
- * [amount]
- *******************************************************************/
-void MapEditContext::changeSectorHeight(int amount, bool floor, bool ceiling)
-{
-	// Do nothing if not in sectors mode
-	if (edit_mode_ != Mode::Sectors)
-		return;
-
-	// Get selected sectors (if any)
-	auto selection = selection_.selectedSectors();
-	if (selection.empty())
-		return;
-
-	// If we're modifying both heights, take sector_mode into account
-	if (floor && ceiling)
-	{
-		if (sector_mode_ == SectorMode::Floor)
-			ceiling = false;
-		if (sector_mode_ == SectorMode::Ceiling)
-			floor = false;
-	}
-
-	// Begin record undo level
-	beginUndoRecordLocked("Change Sector Height", true, false, false);
-
-	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++)
-	{
-		// Change floor height
-		if (floor)
-		{
-			int height = selection[a]->intProperty("heightfloor");
-			selection[a]->setIntProperty("heightfloor", height + amount);
-		}
-
-		// Change ceiling height
-		if (ceiling)
-		{
-			int height = selection[a]->intProperty("heightceiling");
-			selection[a]->setIntProperty("heightceiling", height + amount);
-		}
-	}
-
-	// End record undo level
-	endUndoRecord();
-
-	// Add editor message
-	string what = "";
-	if (floor && !ceiling)
-		what = "Floor";
-	else if (!floor && ceiling)
-		what = "Ceiling";
-	else
-		what = "Floor and ceiling";
-	string inc = "increased";
-	if (amount < 0)
-	{
-		inc = "decreased";
-		amount = -amount;
-	}
-	addEditorMessage(S_FMT("%s height %s by %d", what, inc, amount));
-
-	// Update display
-	updateDisplay();
-}
-
-/* MapEditContext::changeSectorLight
- * Changes the light level for all selected sectors, increments if
- * [up] is true, decrements otherwise
- *******************************************************************/
-void MapEditContext::changeSectorLight(bool up, bool fine)
-{
-	// Do nothing if not in sectors mode
-	if (edit_mode_ != Mode::Sectors)
-		return;
-
-	// Get selected sectors (if any)
-	auto selection = selection_.selectedSectors();
-	if (selection.empty())
-		return;
-
-	// Begin record undo level
-	beginUndoRecordLocked("Change Sector Light", true, false, false);
-
-	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++)
-	{
-		// Get current light
-		int light = selection[a]->intProperty("lightlevel");
-
-		// Increment/decrement
-		if (up)
-			light = fine ? light+1 : theGameConfiguration->upLightLevel(light);
-		else
-			light = fine ? light-1 : theGameConfiguration->downLightLevel(light);
-
-		// Change light level
-		selection[a]->setIntProperty("lightlevel", light);
-	}
-
-	// End record undo level
-	endUndoRecord();
-
-	// Add editor message
-	string dir = up ? "increased" : "decreased";
-	int amount = fine ? 1 : theGameConfiguration->lightLevelInterval();
-	addEditorMessage(S_FMT("Light level %s by %d", dir, amount));
-
-	// Update display
-	updateDisplay();
-}
-
-/* MapEditContext::changeSectorTexture
- * Depending on the current sector edit mode, either opens the
- * sector texture overlay (normal) or browses for the ceiling or
- * floor texture (ceiling/floor edit mode)
- *******************************************************************/
-void MapEditContext::changeSectorTexture()
-{
-	// Determine the initial texture
-	string texture = "";
-	string browser_title;
-	string undo_name;
-
-	// Get selected sectors
-	auto selection = selection_.selectedSectors();
-	if (selection.empty())
-		return;
-
-	// Check edit mode
-	if (sector_mode_ == SectorMode::Floor)
-	{
-		texture = selection[0]->stringProperty("texturefloor");
-		browser_title = "Browse Floor Texture";
-		undo_name = "Change Floor Texture";
-	}
-	else if (sector_mode_ == SectorMode::Ceiling)
-	{
-		texture = selection[0]->stringProperty("textureceiling");
-		browser_title = "Browse Ceiling Texture";
-		undo_name = "Change Ceiling Texture";
-	}
-	else
-	{
-		openSectorTextureOverlay(selection);
-		return;
-	}
-
-	// Lock hilight
-	bool hl_lock = selection_.hilightLocked();
-	selection_.lockHilight();
-
-	// Open texture browser
-	string selected_tex = MapEditor::browseTexture(texture, 1, map_, browser_title);
-	if (!selected_tex.empty())
-	{
-		// Set texture depending on edit mode
-		beginUndoRecord(undo_name, true, false, false);
-		for (unsigned a = 0; a < selection.size(); a++)
-		{
-			if (sector_mode_ == SectorMode::Floor)
-				selection[a]->setStringProperty("texturefloor", selected_tex);
-			else if (sector_mode_ == SectorMode::Ceiling)
-				selection[a]->setStringProperty("textureceiling", selected_tex);
-		}
-		endUndoRecord();
-	}
-
-	// Unlock hilight if needed
-	selection_.lockHilight(hl_lock);
-	renderer_.renderer2D().clearTextureCache();
-}
-
-/* MapEditContext::joinSectors
- * Joins all selected sectors. If [remove_lines] is true, all
- * resulting lines with both sides set to the joined sector are
- * removed
- *******************************************************************/
-void MapEditContext::joinSectors(bool remove_lines)
-{
-	// Check edit mode
-	if (edit_mode_ != Mode::Sectors)
-		return;
-
-	// Get sectors to merge
-	auto sectors = selection_.selectedSectors(false);
-	if (sectors.size() < 2) // Need at least 2 sectors to join
-		return;
-
-	// Get 'target' sector
-	auto target = sectors[0];
-
-	// Clear selection
-	selection_.clear();
-
-	// Init list of lines
-	vector<MapLine*> lines;
-
-	// Begin recording undo level
-	beginUndoRecord("Join/Merge Sectors", true, false, true);
-
-	// Go through merge sectors
-	for (unsigned a = 1; a < sectors.size(); a++)
-	{
-		// Go through sector sides
-		auto sector = sectors[a];
-		while (sector->connectedSides().size() > 0)
-		{
-			// Set sector
-			auto side = sector->connectedSides()[0];
-			side->setSector(target);
-
-			// Add line to list if not already there
-			bool exists = false;
-			for (unsigned l = 0; l < lines.size(); l++)
-			{
-				if (side->getParentLine() == lines[l])
-				{
-					exists = true;
-					break;
-				}
-			}
-			if (!exists)
-				lines.push_back(side->getParentLine());
-		}
-
-		// Delete sector
-		map_.removeSector(sector);
-	}
-
-	// Remove any changed lines that now have the target sector on both sides (if needed)
-	int nlines = 0;
-	vector<MapVertex*> verts;
-	if (remove_lines)
-	{
-		for (unsigned a = 0; a < lines.size(); a++)
-		{
-			if (lines[a]->frontSector() == target && lines[a]->backSector() == target)
-			{
-				VECTOR_ADD_UNIQUE(verts, lines[a]->v1());
-				VECTOR_ADD_UNIQUE(verts, lines[a]->v2());
-				map_.removeLine(lines[a]);
-				nlines++;
-			}
-		}
-	}
-
-	// Remove any resulting detached vertices
-	for (unsigned a = 0; a < verts.size(); a++)
-	{
-		if (verts[a]->nConnectedLines() == 0)
-			map_.removeVertex(verts[a]);
-	}
-
-	// Finish recording undo level
-	endUndoRecord();
-
-	// Editor message
-	if (nlines == 0)
-		addEditorMessage(S_FMT("Joined %lu Sectors", sectors.size()));
-	else
-		addEditorMessage(S_FMT("Joined %lu Sectors (removed %d Lines)", sectors.size(), nlines));
-}
-
-/* MapEditContext::changeThingType
- * Opens the thing type browser for the currently selected thing(s)
- *******************************************************************/
-void MapEditContext::changeThingType()
-{
-	// Get selected things (if any)
-	auto selection = selection_.selectedThings();
-
-	// Do nothing if no selection or hilight
-	if (selection.size() == 0)
-		return;
-
-	// Browse thing type
-	int newtype = MapEditor::browseThingType(selection[0]->getType(), map_);
-	if (newtype >= 0)
-	{
-		// Go through selection
-		beginUndoRecord("Thing Type Change", true, false, false);
-		for (unsigned a = 0; a < selection.size(); a++)
-			selection[a]->setIntProperty("type", newtype);
-		endUndoRecord(true);
-
-		// Add editor message
-		string type_name = theGameConfiguration->thingType(newtype)->getName();
-		if (selection.size() == 1)
-			addEditorMessage(S_FMT("Changed type to \"%s\"", type_name));
-		else
-			addEditorMessage(S_FMT("Changed %lu things to type \"%s\"", selection.size(), type_name));
-
-		// Update display
-		updateDisplay();
-	}
-}
-
-/* MapEditContext::thingQuickAngle
- * Sets the angle of all selected things to face toward [mouse_pos]
- *******************************************************************/
-void MapEditContext::thingQuickAngle(fpoint2_t mouse_pos)
-{
-	// Do nothing if not in things mode
-	if (edit_mode_ != Mode::Things)
-		return;
-
-	beginUndoRecord("Thing Quick Angle Change", true, false, false);
-	for (auto thing : selection_.selectedThings())
-		thing->setAnglePoint(mouse_pos);
-	endUndoRecord(true);
-}
-
-/* MapEditContext::mirror
- * Mirror selected objects horizontally or vertically depending on
- * [x_axis]
- *******************************************************************/
-void MapEditContext::mirror(bool x_axis)
-{
-	// Mirror things
-	if (edit_mode_ == Mode::Things)
-	{
-		// Begin undo level
-		beginUndoRecord("Mirror Things", true, false, false);
-
-		// Get things to mirror
-		auto things = selection_.selectedThings();
-
-		// Get midpoint
-		bbox_t bbox;
-		for (unsigned a = 0; a < things.size(); a++)
-			bbox.extend(things[a]->xPos(), things[a]->yPos());
-
-		// Mirror
-		for (unsigned a = 0; a < things.size(); a++)
-		{
-			// Position
-			if (x_axis)
-				map_.moveThing(things[a]->getIndex(), bbox.mid_x() - (things[a]->xPos() - bbox.mid_x()), things[a]->yPos());
-			else
-				map_.moveThing(things[a]->getIndex(), things[a]->xPos(), bbox.mid_y() - (things[a]->yPos() - bbox.mid_y()));
-
-			// Direction
-			int angle = things[a]->getAngle();
-			if (x_axis)
-			{
-				angle += 90;
-				angle = 360 - angle;
-				angle -= 90;
-			}
-			else
-				angle = 360 - angle;
-			while (angle < 0)
-				angle += 360;
-			things[a]->setIntProperty("angle", angle);
-		}
-		endUndoRecord(true);
-	}
-
-	// Mirror map architecture
-	else if (edit_mode_ != Mode::Visual)
-	{
-		// Begin undo level
-		beginUndoRecord("Mirror Map Architecture", true, false, false);
-
-		// Get vertices to mirror
-		vector<MapVertex*> vertices;
-		vector<MapLine*> lines;
-		if (edit_mode_ == Mode::Vertices)
-			vertices = selection_.selectedVertices();
-		else if (edit_mode_ == Mode::Lines)
-		{
-			auto sel = selection_.selectedLines();
-			for (auto line : sel)
-			{
-				VECTOR_ADD_UNIQUE(vertices, line->v1());
-				VECTOR_ADD_UNIQUE(vertices, line->v2());
-				lines.push_back(line);
-			}
-		}
-		else if (edit_mode_ == Mode::Sectors)
-		{
-			auto sectors = selection_.selectedSectors();
-			for (auto sector : sectors)
-			{
-				sector->getVertices(vertices);
-				sector->getLines(lines);
-			}
-		}
-
-		// Get midpoint
-		bbox_t bbox;
-		for (unsigned a = 0; a < vertices.size(); a++)
-			bbox.extend(vertices[a]->xPos(), vertices[a]->yPos());
-
-		// Mirror vertices
-		for (unsigned a = 0; a < vertices.size(); a++)
-		{
-			// Position
-			if (x_axis)
-				map_.moveVertex(vertices[a]->getIndex(), bbox.mid_x() - (vertices[a]->xPos() - bbox.mid_x()), vertices[a]->yPos());
-			else
-				map_.moveVertex(vertices[a]->getIndex(), vertices[a]->xPos(), bbox.mid_y() - (vertices[a]->yPos() - bbox.mid_y()));
-		}
-
-		// Flip lines (just swap vertices)
-		for (unsigned a = 0; a < lines.size(); a++)
-			lines[a]->flip(false);
-
-		endUndoRecord(true);
-	}
-}
-
-/* MapEditContext::editObjectProperties
- * Opens a dialog containing a MapObjectPropsPanel to edit properties
- * for all selected (or hilighted) objects
- *******************************************************************/
-void MapEditContext::editObjectProperties()
-{
-	auto selection = selection_.selectedObjects();
-	if (selection.empty())
-		return;
-
-	// Begin recording undo level
-	beginUndoRecord(S_FMT("Property Edit (%s)", modeString(false)));
-	for (auto item : selection)
-		recordPropertyChangeUndoStep(item);
-
-	bool done = MapEditor::editObjectProperties(selection);
-	if (done)
-	{
-		renderer_.forceUpdate();
-		updateDisplay();
-
-		if (edit_mode_ == Mode::Things)
-			copyProperties(selection[0]);
-	}
-
-	// End undo level
-	endUndoRecord(done);
 }
 
 /* MapEditContext::beginTagEdit
@@ -1641,572 +855,6 @@ void MapEditContext::endTagEdit(bool accept)
 	setFeatureHelp({});
 }
 
-/* MapEditContext::createObject
- * Creates an object (depending on edit mode) at [x,y]
- *******************************************************************/
-void MapEditContext::createObject(double x, double y)
-{
-	// Vertices mode
-	if (edit_mode_ == Mode::Vertices)
-	{
-		// If there are less than 2 vertices currently selected, just create a vertex at x,y
-		if (selection_.size() < 2)
-			createVertex(x, y);
-		else
-		{
-			// Otherwise, create lines between selected vertices
-			beginUndoRecord("Create Lines", false, true, false);
-			auto vertices = selection_.selectedVertices(false);
-			for (unsigned a = 0; a < vertices.size() - 1; a++)
-				map_.createLine(vertices[a], vertices[a+1]);
-			endUndoRecord(true);
-
-			// Editor message
-			addEditorMessage(S_FMT("Created %lu line(s)", selection_.size() - 1));
-
-			// Clear selection
-			selection_.clear();
-		}
-
-		return;
-	}
-
-	// Sectors mode
-	if (edit_mode_ == Mode::Sectors)
-	{
-		// Sector
-		if (map_.nLines() > 0)
-		{
-			createSector(x, y);
-		}
-		else
-		{
-			// Just create a vertex
-			createVertex(x, y);
-			setEditMode(Mode::Lines);
-		}
-		return;
-	}
-
-	// Things mode
-	if (edit_mode_ == Mode::Things)
-	{
-		createThing(x, y);
-		return;
-	}
-}
-
-/* MapEditContext::createVertex
- * Creates a new vertex at [x,y]
- *******************************************************************/
-void MapEditContext::createVertex(double x, double y)
-{
-	// Snap coordinates to grid if necessary
-	if (grid_snap_)
-	{
-		x = snapToGrid(x);
-		y = snapToGrid(y);
-	}
-
-	// Create vertex
-	beginUndoRecord("Create Vertex", true, true, false);
-	MapVertex* vertex = map_.createVertex(x, y, 2);
-	endUndoRecord(true);
-
-	// Editor message
-	if (vertex)
-		addEditorMessage(S_FMT("Created vertex at (%d, %d)", (int)vertex->xPos(), (int)vertex->yPos()));
-}
-
-/* MapEditContext::createThing
- * Creates a new thing at [x,y]
- *******************************************************************/
-void MapEditContext::createThing(double x, double y)
-{
-	// Snap coordinates to grid if necessary
-	if (grid_snap_)
-	{
-		x = snapToGrid(x);
-		y = snapToGrid(y);
-	}
-
-	// Begin undo step
-	beginUndoRecord("Create Thing", false, true, false);
-
-	// Create thing
-	MapThing* thing = map_.createThing(x, y);
-
-	// Setup properties
-	theGameConfiguration->applyDefaults(thing, map_.currentFormat() == MAP_UDMF);
-	if (copy_thing_ && thing)
-	{
-		// Copy type and angle from the last copied thing
-		thing->setIntProperty("type", copy_thing_->getType());
-		thing->setIntProperty("angle", copy_thing_->getAngle());
-	}
-
-	// End undo step
-	endUndoRecord(true);
-
-	// Editor message
-	if (thing)
-		addEditorMessage(S_FMT("Created thing at (%d, %d)", (int)thing->xPos(), (int)thing->yPos()));
-}
-
-/* MapEditContext::createSector
- * Creates a new sector at [x,y]
- *******************************************************************/
-void MapEditContext::createSector(double x, double y)
-{
-	fpoint2_t point(x, y);
-
-	// Find nearest line
-	int nearest = map_.nearestLine(point, 99999999);
-	MapLine* line = map_.getLine(nearest);
-	if (!line)
-		return;
-
-	// Determine side
-	double side = MathStuff::lineSide(point, line->seg());
-
-	// Get sector to copy if we're in sectors mode
-	MapSector* sector_copy = nullptr;
-	if (edit_mode_ == Mode::Sectors && selection_.size() > 0)
-		sector_copy = map_.getSector(selection_.begin()->index);
-
-	// Run sector builder
-	SectorBuilder builder;
-	bool ok;
-	if (side >= 0)
-		ok = builder.traceSector(&map_, line, true);
-	else
-		ok = builder.traceSector(&map_, line, false);
-
-	// Do nothing if sector was already valid
-	if (builder.isValidSector())
-		return;
-
-	// Create sector from builder result if needed
-	if (ok)
-	{
-		beginUndoRecord("Create Sector", true, true, false);
-		builder.createSector(nullptr, sector_copy);
-
-		// Flash
-		renderer_.animateSelectionChange({ (int)map_.nSectors() - 1, MapEditor::ItemType::Sector });
-	}
-
-	// Set some sector defaults from game configuration if needed
-	if (!sector_copy && ok)
-	{
-		MapSector* n_sector = map_.getSector(map_.nSectors()-1);
-		if (n_sector->getCeilingTex().IsEmpty())
-			theGameConfiguration->applyDefaults(n_sector, map_.currentFormat() == MAP_UDMF);
-	}
-
-	// Editor message
-	if (ok)
-	{
-		addEditorMessage(S_FMT("Created sector #%lu", map_.nSectors() - 1));
-		endUndoRecord(true);
-	}
-	else
-		addEditorMessage("Sector creation failed: " + builder.getError());
-}
-
-/* MapEditContext::deleteObject
- * Deletes all selected objects, depending on edit mode
- *******************************************************************/
-void MapEditContext::deleteObject()
-{
-	vector<MapObject*> objects_prop_change;
-
-	// Vertices mode
-	if (edit_mode_ == Mode::Vertices)
-	{
-		// Get selected vertices
-		auto verts = selection_.selectedVertices();
-		int index = -1;
-		if (verts.size() == 1)
-			index = verts[0]->getIndex();
-
-		// Begin undo step
-		beginUndoRecord("Delete Vertices", map_merge_lines_on_delete_vertex, false, true);
-
-		// Delete them (if any)
-		for (unsigned a = 0; a < verts.size(); a++)
-			map_.removeVertex(verts[a], map_merge_lines_on_delete_vertex);
-
-		// Remove detached vertices
-		map_.removeDetachedVertices();
-
-		// Editor message
-		if (verts.size() == 1)
-			addEditorMessage(S_FMT("Deleted vertex #%d", index));
-		else if (verts.size() > 1)
-			addEditorMessage(S_FMT("Deleted %lu vertices", verts.size()));
-	}
-
-	// Lines mode
-	else if (edit_mode_ == Mode::Lines)
-	{
-		// Get selected lines
-		auto lines = selection_.selectedLines();
-		int index = -1;
-		if (lines.size() == 1)
-			index = lines[0]->getIndex();
-
-		// Begin undo step
-		beginUndoRecord("Delete Lines", false, false, true);
-
-		// Delete them (if any)
-		for (unsigned a = 0; a < lines.size(); a++)
-			map_.removeLine(lines[a]);
-
-		// Remove detached vertices
-		map_.removeDetachedVertices();
-
-		// Editor message
-		if (lines.size() == 1)
-			addEditorMessage(S_FMT("Deleted line #%d", index));
-		else if (lines.size() > 1)
-			addEditorMessage(S_FMT("Deleted %lu lines", lines.size()));
-	}
-
-	// Sectors mode
-	else if (edit_mode_ == Mode::Sectors)
-	{
-		// Get selected sectors
-		auto sectors = selection_.selectedSectors();
-		int index = -1;
-		if (sectors.size() == 1)
-			index = sectors[0]->getIndex();
-
-		// Begin undo step
-		beginUndoRecord("Delete Sectors", true, false, true);
-
-		// Delete them (if any), and keep lists of connected lines and sides
-		vector<MapSide*> connected_sides;
-		vector<MapLine*> connected_lines;
-		for (unsigned a = 0; a < sectors.size(); a++)
-		{
-			for (unsigned s = 0; s < sectors[a]->connectedSides().size(); s++)
-				connected_sides.push_back(sectors[a]->connectedSides()[s]);
-			sectors[a]->getLines(connected_lines);
-
-			map_.removeSector(sectors[a]);
-		}
-
-		// Remove all connected sides
-		for (unsigned a = 0; a < connected_sides.size(); a++)
-		{
-			// Before removing the side, check if we should flip the line
-			MapLine* line = connected_sides[a]->getParentLine();
-			if (connected_sides[a] == line->s1() && line->s2())
-				line->flip();
-
-			map_.removeSide(connected_sides[a]);
-		}
-
-		// Remove resulting invalid lines
-		if (map_remove_invalid_lines)
-		{
-			for (unsigned a = 0; a < connected_lines.size(); a++)
-			{
-				if (!connected_lines[a]->s1() && !connected_lines[a]->s2())
-					map_.removeLine(connected_lines[a]);
-			}
-		}
-
-		// Try to fill in textures on any lines that just became one-sided
-		for (unsigned a = 0; a < connected_lines.size(); a++)
-		{
-			MapLine* line = connected_lines[a];
-			MapSide* side;
-			if (line->s1() && !line->s2())
-				side = line->s1();
-			else if (!line->s1() && line->s2())
-				side = line->s2();
-			else
-				continue;
-
-			if (side->getTexMiddle() != "-")
-				continue;
-
-			// Inherit textures from upper or lower
-			if (side->getTexUpper() != "-")
-				side->setStringProperty("texturemiddle", side->getTexUpper());
-			else if (side->getTexLower() != "-")
-				side->setStringProperty("texturemiddle", side->getTexLower());
-
-			// Clear any existing textures, which are no longer visible
-			side->setStringProperty("texturetop", "-");
-			side->setStringProperty("texturebottom", "-");
-		}
-
-		// Editor message
-		if (sectors.size() == 1)
-			addEditorMessage(S_FMT("Deleted sector #%d", index));
-		else if (sectors.size() > 1)
-			addEditorMessage(S_FMT("Deleted %lu sector", sectors.size()));
-
-		// Remove detached vertices
-		map_.removeDetachedVertices();
-	}
-
-	// Things mode
-	else if (edit_mode_ == Mode::Things)
-	{
-		// Get selected things
-		auto things = selection_.selectedThings();
-		int index = -1;
-		if (things.size() == 1)
-			index = things[0]->getIndex();
-
-		// Begin undo step
-		beginUndoRecord("Delete Things", false, false, true);
-
-		// Delete them (if any)
-		for (unsigned a = 0; a < things.size(); a++)
-			map_.removeThing(things[a]);
-
-		// Editor message
-		if (things.size() == 1)
-			addEditorMessage(S_FMT("Deleted thing #%d", index));
-		else if (things.size() > 1)
-			addEditorMessage(S_FMT("Deleted %lu things", things.size()));
-	}
-
-	// Record undo step
-	endUndoRecord(true);
-
-	// Clear hilight and selection
-	selection_.clear();
-	selection_.clearHilight();
-}
-
-/* MapEditContext::copyProperties
- * Copies the properties from [object] to be used for paste/create
- *******************************************************************/
-void MapEditContext::copyProperties(MapObject* object)
-{
-	// Do nothing if no selection or hilight
-	if (!selection_.hasHilightOrSelection())
-		return;
-
-	// Sectors mode
-	if (edit_mode_ == Mode::Sectors)
-	{
-		// Create copy sector if needed
-		if (!copy_sector_)
-			copy_sector_ = new MapSector(nullptr);
-
-		// Copy selection/hilight properties
-		if (selection_.size() > 0)
-			copy_sector_->copy(map_.getSector(selection_[0].index));
-		else if (selection_.hasHilight())
-			copy_sector_->copy(selection_.hilightedSector());
-
-		// Editor message
-		if (!object)
-			addEditorMessage("Copied sector properties");
-	}
-
-	// Things mode
-	else if (edit_mode_ == Mode::Things)
-	{
-		// Create copy thing if needed
-		if (!copy_thing_)
-			copy_thing_ = new MapThing(nullptr);
-
-		// Copy given object properties (if any)
-		if (object && object->getObjType() == MOBJ_THING)
-			copy_thing_->copy(object);
-		else
-		{
-			// Otherwise copy selection/hilight properties
-			if (selection_.size() > 0)
-				copy_thing_->copy(map_.getThing(selection_[0].index));
-			else if (selection_.hasHilight())
-				copy_thing_->copy(selection_.hilightedThing());
-			else
-				return;
-		}
-
-		// Editor message
-		if (!object)
-			addEditorMessage("Copied thing properties");
-	}
-
-	else if (edit_mode_ == Mode::Lines)
-	{
-		if (!copy_line_)
-			copy_line_ = new MapLine(nullptr, nullptr, new MapSide(nullptr, nullptr), new MapSide(nullptr, nullptr), nullptr);
-
-		if (selection_.size() > 0)
-			copy_line_->copy(map_.getLine(selection_[0].index));
-		else if (selection_.hasHilight())
-			copy_line_->copy(selection_.hilightedLine());
-
-		if(!object)
-			addEditorMessage("Copied line properties");
-	}
-}
-
-/* MapEditContext::pasteProperties
- * Pastes previously copied properties to all selected objects
- *******************************************************************/
-void MapEditContext::pasteProperties()
-{
-	// Do nothing if no selection or hilight
-	if (!selection_.hasHilightOrSelection())
-		return;
-
-	// Sectors mode
-	if (edit_mode_ == Mode::Sectors)
-	{
-		// Do nothing if no properties have been copied
-		if (!copy_sector_)
-			return;
-
-		// Paste properties to selection/hilight
-		beginUndoRecord("Paste Sector Properties", true, false, false);
-		for (auto sector : selection_.selectedSectors())
-			sector->copy(copy_sector_);
-		endUndoRecord();
-
-		// Editor message
-		addEditorMessage("Pasted sector properties");
-	}
-
-	// Things mode
-	if (edit_mode_ == Mode::Things)
-	{
-		// Do nothing if no properties have been copied
-		if (!copy_thing_)
-			return;
-
-		// Paste properties to selection/hilight
-		beginUndoRecord("Paste Thing Properties", true, false, false);
-		for (auto thing : selection_.selectedThings())
-		{
-			// Paste properties (but keep position)
-			double x = thing->xPos();
-			double y = thing->yPos();
-			thing->copy(copy_thing_);
-			thing->setFloatProperty("x", x);
-			thing->setFloatProperty("y", y);
-		}
-		endUndoRecord();
-
-		// Editor message
-		addEditorMessage("Pasted thing properties");
-	}
-
-	// Lines mode
-	else if (edit_mode_ == Mode::Lines)
-	{
-		// Do nothing if no properties have been copied
-		if (!copy_line_)
-			return;
-
-		// Paste properties to selection/hilight
-		beginUndoRecord("Paste Line Properties", true, false, false);
-		for (auto line : selection_.selectedLines())
-			line->copy(copy_line_);
-		endUndoRecord();
-
-		// Editor message
-		addEditorMessage("Pasted line properties");
-	}
-
-	// Update display
-	updateDisplay();
-}
-
-/* MapEditContext::copy
- * Copies all selected objects
- *******************************************************************/
-void MapEditContext::copy()
-{
-	// Can't copy/paste vertices (no point)
-	if (edit_mode_ == Mode::Vertices)
-	{
-		//addEditorMessage("Copy/Paste not supported for vertices");
-		return;
-	}
-
-	// Clear current clipboard contents
-	theClipboard->clear();
-
-	// Copy lines
-	if (edit_mode_ == Mode::Lines || edit_mode_ == Mode::Sectors)
-	{
-		// Get selected lines
-		auto lines = selection_.selectedLines();
-
-		// Add to clipboard
-		auto c = new MapArchClipboardItem();
-		c->addLines(lines);
-		theClipboard->addItem(c);
-
-		// Editor message
-		addEditorMessage(S_FMT("Copied %s", c->getInfo()));
-	}
-
-	// Copy things
-	else if (edit_mode_ == Mode::Things)
-	{
-		// Get selected things
-		auto things = selection_.selectedThings();
-
-		// Add to clipboard
-		auto c = new MapThingsClipboardItem();
-		c->addThings(things);
-		theClipboard->addItem(c);
-
-		// Editor message
-		addEditorMessage(S_FMT("Copied %s", c->getInfo()));
-	}
-}
-
-/* MapEditContext::paste
- * Pastes previously copied objects at [mouse_pos]
- *******************************************************************/
-void MapEditContext::paste(fpoint2_t mouse_pos)
-{
-	// Go through clipboard items
-	for (unsigned a = 0; a < theClipboard->nItems(); a++)
-	{
-		// Map architecture
-		if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_ARCH)
-		{
-			beginUndoRecord("Paste Map Architecture");
-			auto p = (MapArchClipboardItem*)theClipboard->getItem(a);
-			// Snap the geometry in such a way that it stays in the same
-			// position relative to the grid
-			fpoint2_t pos = relativeSnapToGrid(p->getMidpoint(), mouse_pos);
-			auto new_verts = p->pasteToMap(&map_, pos);
-			map_.mergeArch(new_verts);
-			addEditorMessage(S_FMT("Pasted %s", p->getInfo()));
-			endUndoRecord(true);
-		}
-
-		// Things
-		else if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_THINGS)
-		{
-			beginUndoRecord("Paste Things", false, true, false);
-			auto p = (MapThingsClipboardItem*)theClipboard->getItem(a);
-			// Snap the geometry in such a way that it stays in the same
-			// position relative to the grid
-			fpoint2_t pos = relativeSnapToGrid(p->getMidpoint(), mouse_pos);
-			p->pasteToMap(&map_, pos);
-			addEditorMessage(S_FMT("Pasted %s", p->getInfo()));
-			endUndoRecord(true);
-		}
-	}
-}
-
 /* MapEditContext::getEditorMessage
  * Returns the current editor message at [index]
  *******************************************************************/
@@ -2313,7 +961,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 
 		// Copy
 		else if (key == "copy")
-			copy();
+			edit_2d_.copy();
 
 		else
 			handled = false;
@@ -2326,28 +974,28 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 	if (key.StartsWith("me2d_sector") && edit_mode_ == Mode::Sectors)
 	{
 		// Height changes
-		if		(key == "me2d_sector_floor_up8")	changeSectorHeight(8, true, false);
-		else if (key == "me2d_sector_floor_up")		changeSectorHeight(1, true, false);
-		else if (key == "me2d_sector_floor_down8")	changeSectorHeight(-8, true, false);
-		else if (key == "me2d_sector_floor_down")	changeSectorHeight(-1, true, false);
-		else if (key == "me2d_sector_ceil_up8")		changeSectorHeight(8, false, true);
-		else if (key == "me2d_sector_ceil_up")		changeSectorHeight(1, false, true);
-		else if (key == "me2d_sector_ceil_down8")	changeSectorHeight(-8, false, true);
-		else if (key == "me2d_sector_ceil_down")	changeSectorHeight(-1, false, true);
-		else if (key == "me2d_sector_height_up8")	changeSectorHeight(8, true, true);
-		else if (key == "me2d_sector_height_up")	changeSectorHeight(1, true, true);
-		else if (key == "me2d_sector_height_down8")	changeSectorHeight(-8, true, true);
-		else if (key == "me2d_sector_height_down")	changeSectorHeight(-1, true, true);
+		if		(key == "me2d_sector_floor_up8")	edit_2d_.changeSectorHeight(8, true, false);
+		else if (key == "me2d_sector_floor_up")		edit_2d_.changeSectorHeight(1, true, false);
+		else if (key == "me2d_sector_floor_down8")	edit_2d_.changeSectorHeight(-8, true, false);
+		else if (key == "me2d_sector_floor_down")	edit_2d_.changeSectorHeight(-1, true, false);
+		else if (key == "me2d_sector_ceil_up8")		edit_2d_.changeSectorHeight(8, false, true);
+		else if (key == "me2d_sector_ceil_up")		edit_2d_.changeSectorHeight(1, false, true);
+		else if (key == "me2d_sector_ceil_down8")	edit_2d_.changeSectorHeight(-8, false, true);
+		else if (key == "me2d_sector_ceil_down")	edit_2d_.changeSectorHeight(-1, false, true);
+		else if (key == "me2d_sector_height_up8")	edit_2d_.changeSectorHeight(8, true, true);
+		else if (key == "me2d_sector_height_up")	edit_2d_.changeSectorHeight(1, true, true);
+		else if (key == "me2d_sector_height_down8")	edit_2d_.changeSectorHeight(-8, true, true);
+		else if (key == "me2d_sector_height_down")	edit_2d_.changeSectorHeight(-1, true, true);
 
 		// Light changes
-		else if (key == "me2d_sector_light_up16")	changeSectorLight(true, false);
-		else if (key == "me2d_sector_light_up")		changeSectorLight(true, true);
-		else if (key == "me2d_sector_light_down16")	changeSectorLight(false, false);
-		else if (key == "me2d_sector_light_down")	changeSectorLight(false, true);
+		else if (key == "me2d_sector_light_up16")	edit_2d_.changeSectorLight(true, false);
+		else if (key == "me2d_sector_light_up")		edit_2d_.changeSectorLight(true, true);
+		else if (key == "me2d_sector_light_down16")	edit_2d_.changeSectorLight(false, false);
+		else if (key == "me2d_sector_light_down")	edit_2d_.changeSectorLight(false, true);
 
 		// Join
-		else if (key == "me2d_sector_join")			joinSectors(true);
-		else if (key == "me2d_sector_join_keep")	joinSectors(false);
+		else if (key == "me2d_sector_join")			edit_2d_.joinSectors(true);
+		else if (key == "me2d_sector_join_keep")	edit_2d_.joinSectors(false);
 
 		else
 			return false;
@@ -2546,7 +1194,7 @@ void MapEditContext::updateStatusText()
 void MapEditContext::beginUndoRecord(string name, bool mod, bool create, bool del)
 {
 	// Setup
-	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_;
+	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
 	if (manager->currentlyRecording())
 		return;
 	undo_modified_ = mod;
@@ -2588,7 +1236,7 @@ void MapEditContext::beginUndoRecordLocked(string name, bool mod, bool create, b
  *******************************************************************/
 void MapEditContext::endUndoRecord(bool success)
 {
-	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_;
+	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
 
 	if (manager->currentlyRecording())
 	{
@@ -2617,7 +1265,7 @@ void MapEditContext::endUndoRecord(bool success)
  *******************************************************************/
 void MapEditContext::recordPropertyChangeUndoStep(MapObject* object)
 {
-	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_;
+	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
 	manager->recordUndoStep(new MapEditor::PropertyChangeUS(object));
 }
 
@@ -2631,7 +1279,7 @@ void MapEditContext::doUndo()
 
 	// Undo
 	int time = App::runTimer() - 1;
-	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_;
+	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
 	string undo_name = manager->undo();
 
 	// Editor message
@@ -2661,7 +1309,7 @@ void MapEditContext::doRedo()
 
 	// Redo
 	int time = App::runTimer() - 1;
-	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_;
+	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
 	string undo_name = manager->redo();
 
 	// Editor message
@@ -2688,18 +1336,6 @@ bool MapEditContext::overlayActive()
 	else
 		return overlay_current_->isActive();
 }
-
-/* MapEditContext::openSectorTextureOverlay
- * Opens the sector texture selection overlay
- *******************************************************************/
-void MapEditContext::openSectorTextureOverlay(vector<MapSector*>& sectors)
-{
-	if (overlay_current_) delete overlay_current_;
-	auto sto = new SectorTextureOverlay();
-	sto->openSectors(sectors);
-	overlay_current_ = sto;
-}
-
 
 /* MapEditContext::swapPlayerStart3d
  * Moves the player 1 start thing to the current position and
@@ -2770,13 +1406,20 @@ void MapEditContext::resetPlayerStart()
 	pstart->setIntProperty("angle", player_start_dir_);
 }
 
+/* MapEditContext::openSectorTextureOverlay
+ * Opens the sector texture selection overlay
+ *******************************************************************/
+void MapEditContext::openSectorTextureOverlay(vector<MapSector*>& sectors)
+{
+	overlay_current_ = std::make_unique<SectorTextureOverlay>();
+	((SectorTextureOverlay*)overlay_current_.get())->openSectors(sectors);
+}
+
 void MapEditContext::openQuickTextureOverlay()
 {
 	if (QuickTextureOverlay3d::ok(selection_))
 	{
-		if (overlay_current_) delete overlay_current_;
-		QuickTextureOverlay3d* qto = new QuickTextureOverlay3d(this);
-		overlay_current_ = qto;
+		overlay_current_ = std::make_unique<QuickTextureOverlay3d>(this);
 
 		renderer_.renderer3D().enableHilight(false);
 		renderer_.renderer3D().enableSelection(false);
@@ -2792,10 +1435,8 @@ void MapEditContext::openLineTextureOverlay()
 	// Open line texture overlay if anything is selected
 	if (lines.size() > 0)
 	{
-		if (overlay_current_) delete overlay_current_;
-		auto lto = new LineTextureOverlay();
-		lto->openLines(lines);
-		overlay_current_ = lto;
+		overlay_current_ = std::make_unique<LineTextureOverlay>();
+		((LineTextureOverlay*)overlay_current_.get())->openLines(lines);
 	}
 }
 

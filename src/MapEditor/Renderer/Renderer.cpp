@@ -1171,16 +1171,18 @@ void Renderer::drawMap2d()
 	// Draw moving stuff if needed
 	if (mouse_state == Input::MouseState::Move)
 	{
+		auto& items = context_.moveObjects().items();
+		auto offset = context_.moveObjects().offset();
 		switch (context_.editMode())
 		{
 		case Mode::Vertices:
-			renderer_2d_.renderMovingVertices(context_.movingItems(), context_.moveVector()); break;
+			renderer_2d_.renderMovingVertices(items, offset); break;
 		case Mode::Lines:
-			renderer_2d_.renderMovingLines(context_.movingItems(), context_.moveVector()); break;
+			renderer_2d_.renderMovingLines(items, offset); break;
 		case Mode::Sectors:
-			renderer_2d_.renderMovingSectors(context_.movingItems(), context_.moveVector()); break;
+			renderer_2d_.renderMovingSectors(items, offset); break;
 		case Mode::Things:
-			renderer_2d_.renderMovingThings(context_.movingItems(), context_.moveVector()); break;
+			renderer_2d_.renderMovingThings(items, offset); break;
 		default: break;
 		};
 	}

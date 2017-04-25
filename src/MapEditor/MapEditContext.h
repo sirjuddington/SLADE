@@ -1,11 +1,11 @@
-
-#ifndef __MAP_EDITOR_H__
-#define __MAP_EDITOR_H__
+#pragma once
 
 #include "Archive/Archive.h"
+#include "Edit/Edit2D.h"
 #include "Edit/Edit3D.h"
 #include "Edit/Input.h"
 #include "Edit/LineDraw.h"
+#include "Edit/MoveObjects.h"
 #include "Edit/ObjectEdit.h"
 #include "General/UI.h"
 #include "ItemSelection.h"
@@ -15,16 +15,14 @@
 #include "Renderer/Overlays/SectorInfoOverlay.h"
 #include "Renderer/Overlays/ThingInfoOverlay.h"
 #include "Renderer/Overlays/VertexInfoOverlay.h"
+#include "Renderer/Overlays/MCOverlay.h"
 #include "Renderer/Renderer.h"
 #include "SLADEMap/SLADEMap.h"
-
+#include "General/UndoRedo.h"
 
 namespace UI { enum class MouseCursor; }
 
 class MapCanvas;
-class UndoManager;
-class UndoStep;
-class MCOverlay;
 
 class MapEditContext
 {
@@ -51,7 +49,7 @@ public:
 	vector<MapThing*>&		taggingThings() { return tagging_things_; }
 	vector<MapThing*>&		pathedThings() { return pathed_things_; }
 	bool					gridSnap() const { return grid_snap_; }
-	UndoManager*			undoManager() const { return undo_manager_; }
+	UndoManager*			undoManager() const { return undo_manager_.get(); }
 	Archive::mapdesc_t&		mapDesc() { return map_desc_; }
 	MapCanvas*				canvas() const { return canvas_; }
 	MapEditor::Renderer&	renderer() { return renderer_; }
@@ -81,48 +79,17 @@ public:
 	double		snapToGrid(double position, bool force = true);
 	fpoint2_t	relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos);
 
-	// Item moving
-	const vector<MapEditor::Item>&	movingItems() const { return move_items_; }
-	fpoint2_t						moveVector() { return move_vec_; }
-	bool							beginMove(fpoint2_t mouse_pos);
-	void							doMove(fpoint2_t mouse_pos);
-	void							endMove(bool accept = true);
-
-	// Editing
-	void	copyProperties(MapObject* object = nullptr);
-	void	pasteProperties();
-	void	splitLine(double x, double y, double min_dist = 64);
-	void	flipLines(bool sides = true);
-	void	correctLineSectors();
-	void	changeSectorHeight(int amount, bool floor = true, bool ceiling = true);
-	void	changeSectorLight(bool up, bool fine);
-	void 	changeSectorTexture();
-	void	joinSectors(bool remove_lines);
-	void	changeThingType();
-	void	thingQuickAngle(fpoint2_t mouse_pos);
-	void	mirror(bool x_axis);
-	void 	editObjectProperties();
-
 	// Tag edit
 	int		beginTagEdit();
 	void	tagSectorAt(double x, double y);
 	void	endTagEdit(bool accept = true);
 
-	// Object creation/deletion
-	void	createObject(double x, double y);
-	void	createVertex(double x, double y);
-	void	createThing(double x, double y);
-	void	createSector(double x, double y);
-	void	deleteObject();
-
 	// Editing handlers
-	LineDraw&	lineDraw() { return line_draw_; }
-	ObjectEdit&	objectEdit() { return object_edit_; }
-	Edit3D&		edit3d() { return edit_3d_; }
-
-	// Copy/paste
-	void	copy();
-	void	paste(fpoint2_t mouse_pos);
+	MoveObjects&	moveObjects() { return move_objects_; }
+	LineDraw&		lineDraw() { return line_draw_; }
+	ObjectEdit&		objectEdit() { return object_edit_; }
+	Edit3D&			edit3D() { return edit_3d_; }
+	Edit2D&			edit2D() { return edit_2d_; }
 
 	// Editor messages
 	unsigned	numEditorMessages() const { return editor_messages_.size(); }
@@ -144,7 +111,7 @@ public:
 	void	resetLastUndoLevel() { last_undo_level_ = ""; }
 
 	// Overlays
-	MCOverlay*	currentOverlay() const { return overlay_current_; }
+	MCOverlay*	currentOverlay() const { return overlay_current_.get(); }
 	bool		overlayActive();
 	void 		closeCurrentOverlay(bool cancel = false) const;
 	void		openSectorTextureOverlay(vector<MapSector*>& sectors);
@@ -170,27 +137,27 @@ public:
 
 private:
 	SLADEMap			map_;
-	MapCanvas*			canvas_;
+	MapCanvas*			canvas_				= nullptr;
 	Archive::mapdesc_t	map_desc_;
-	long				next_frame_length_;
+	long				next_frame_length_	= 0;
 
 	// Undo/Redo stuff
-	UndoManager*	undo_manager_;
-	UndoStep*		us_create_delete_;
+	std::unique_ptr<UndoManager>	undo_manager_		= nullptr;
+	UndoStep*						us_create_delete_	= nullptr;
 
 	// Editor state
-	MapEditor::Mode			edit_mode_;
-	MapEditor::Mode			edit_mode_prev_;
-	ItemSelection			selection_;
-	int						grid_size_;
-	MapEditor::SectorMode	sector_mode_;
-	bool					grid_snap_;
-	int						current_tag_;
+	MapEditor::Mode			edit_mode_		= MapEditor::Mode::Lines;
+	MapEditor::Mode			edit_mode_prev_	= MapEditor::Mode::Lines;
+	ItemSelection			selection_		= ItemSelection(this);
+	int						grid_size_		= 9;
+	MapEditor::SectorMode	sector_mode_	= MapEditor::SectorMode::Both;
+	bool					grid_snap_		= true;
+	int						current_tag_	= 0;
 
 	// Undo/Redo
-	bool	undo_modified_;
-	bool	undo_created_;
-	bool	undo_deleted_;
+	bool	undo_modified_		= false;
+	bool	undo_created_		= false;
+	bool	undo_deleted_		= false;
 	string	last_undo_level_;
 
 	// Tagged items
@@ -205,48 +172,44 @@ private:
 	// Pathed things
 	vector<MapThing*>	pathed_things_;
 
-	// Moving
-	fpoint2_t				move_origin_;
-	fpoint2_t				move_vec_;
-	vector<MapEditor::Item>	move_items_;
-	MapEditor::Item			move_item_closest_;
-
 	// Editing
-	LineDraw	line_draw_;
-	Edit3D		edit_3d_;
-	ObjectEdit	object_edit_;
+	MoveObjects	move_objects_	= MoveObjects(*this);
+	LineDraw	line_draw_		= LineDraw(*this);
+	Edit2D		edit_2d_		= Edit2D(*this);
+	Edit3D		edit_3d_		= Edit3D(*this);
+	ObjectEdit	object_edit_	= ObjectEdit(*this);
 
 	// Object properties and copy/paste
-	MapThing*	copy_thing_;
-	MapSector*	copy_sector_;
-	MapLine*	copy_line_;
+	std::unique_ptr<MapThing>	copy_thing_			= nullptr;
+	std::unique_ptr<MapSector>	copy_sector_		= nullptr;
+	std::unique_ptr<MapSide>	copy_side_front_	= nullptr;
+	std::unique_ptr<MapSide>	copy_side_back_		= nullptr;
+	std::unique_ptr<MapLine>	copy_line_			= nullptr;
 
 	// Editor messages
-	vector<EditorMessage>	editor_messages_;
+	vector<EditorMessage> editor_messages_;
 
 	// Feature help text
-	vector<string>	feature_help_lines_;
+	vector<string> feature_help_lines_;
 
 	// Player start swap
 	fpoint2_t	player_start_pos_;
-	int			player_start_dir_;
+	int			player_start_dir_ = 0;
 
 	// Renderer
-	MapEditor::Renderer	renderer_;
+	MapEditor::Renderer renderer_ = MapEditor::Renderer(*this);
 
 	// Input
-	MapEditor::Input	input_;
+	MapEditor::Input input_ = MapEditor::Input(*this);
 
 	// Full-Screen Overlay
-	MCOverlay*  overlay_current_;
+	std::unique_ptr<MCOverlay> overlay_current_ = nullptr;
 
 	// Info overlays
-	bool				info_showing_;
+	bool				info_showing_	= false;
 	VertexInfoOverlay	info_vertex_;
 	LineInfoOverlay		info_line_;
 	SectorInfoOverlay	info_sector_;
 	ThingInfoOverlay	info_thing_;
 	InfoOverlay3D		info_3d_;
 };
-
-#endif//__MAP_EDITOR_H__

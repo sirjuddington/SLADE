@@ -1719,7 +1719,7 @@ public:
 			else if (fix_type == 1)
 			{
 				fpoint2_t pos = line->dirTabPoint(0.1);
-				editor->createSector(pos.x, pos.y);
+				editor->edit2D().createSector(pos.x, pos.y);
 				doCheck();
 				return true;
 			}
@@ -1738,7 +1738,7 @@ public:
 			else if (fix_type == 1)
 			{
 				fpoint2_t pos = line->dirTabPoint(0.1);
-				editor->createSector(pos.x, pos.y);
+				editor->edit2D().createSector(pos.x, pos.y);
 				doCheck();
 				return true;
 			}

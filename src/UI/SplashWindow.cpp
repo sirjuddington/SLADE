@@ -161,7 +161,7 @@ void SplashWindow::show(string message, bool progress, wxWindow* parent)
 	SetInitialSize(wxSize(width + 6, rheight + 6));
 #endif
 	setMessage(message);
-	Show();
+	//Show();
 	CentreOnParent();
 	forceRedraw();
 }

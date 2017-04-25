@@ -465,14 +465,14 @@ bool MapCanvas::handleAction(string id)
 	// Mirror Y
 	else if (id == "mapw_mirror_y")
 	{
-		editor->mirror(false);
+		editor->edit2D().mirror(false);
 		return true;
 	}
 
 	// Mirror X
 	else if (id == "mapw_mirror_x")
 	{
-		editor->mirror(true);
+		editor->edit2D().mirror(true);
 		return true;
 	}
 
@@ -493,14 +493,14 @@ bool MapCanvas::handleAction(string id)
 
 	// Edit item properties
 	else if (id == "mapw_item_properties")
-		editor->editObjectProperties();
+		editor->edit2D().editObjectProperties();
 
 	// --- Vertex context menu ---
 
 	// Create vertex
 	else if (id == "mapw_vertex_create")
 	{
-		editor->createVertex(mouse_downpos_m.x, mouse_downpos_m.y);
+		editor->edit2D().createVertex(mouse_downpos_m.x, mouse_downpos_m.y);
 		return true;
 	}
 
@@ -562,14 +562,14 @@ bool MapCanvas::handleAction(string id)
 	// Correct sectors
 	else if (id == "mapw_line_correctsectors")
 	{
-		editor->correctLineSectors();
+		editor->edit2D().correctLineSectors();
 		return true;
 	}
 
 	// Flip
 	else if (id == "mapw_line_flip")
 	{
-		editor->flipLines();
+		editor->edit2D().flipLines();
 		return true;
 	}
 
@@ -578,14 +578,14 @@ bool MapCanvas::handleAction(string id)
 	// Change thing type
 	else if (id == "mapw_thing_changetype")
 	{
-		editor->changeThingType();
+		editor->edit2D().changeThingType();
 		return true;
 	}
 
 	// Create thing
 	else if (id == "mapw_thing_create")
 	{
-		editor->createThing(mouse_downpos_m.x, mouse_downpos_m.y);
+		editor->edit2D().createThing(mouse_downpos_m.x, mouse_downpos_m.y);
 		return true;
 	}
 
@@ -594,7 +594,7 @@ bool MapCanvas::handleAction(string id)
 	// Change sector texture
 	else if (id == "mapw_sector_changetexture")
 	{
-		editor->changeSectorTexture();
+		editor->edit2D().changeSectorTexture();
 		return true;
 	}
 
@@ -624,21 +624,21 @@ bool MapCanvas::handleAction(string id)
 	// Create sector
 	else if (id == "mapw_sector_create")
 	{
-		editor->createSector(mouse_downpos_m.x, mouse_downpos_m.y);
+		editor->edit2D().createSector(mouse_downpos_m.x, mouse_downpos_m.y);
 		return true;
 	}
 
 	// Merge sectors
 	else if (id == "mapw_sector_join")
 	{
-		editor->joinSectors(false);
+		editor->edit2D().joinSectors(false);
 		return true;
 	}
 
 	// Join sectors
 	else if (id == "mapw_sector_join_keep")
 	{
-		editor->joinSectors(true);
+		editor->edit2D().joinSectors(true);
 		return true;
 	}
 
@@ -812,7 +812,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 			else
 			{
 				if (e.ShiftDown())	// Shift down, select all matching adjacent structures
-					editor->edit3d().selectAdjacent(editor->hilightItem());
+					editor->edit3D().selectAdjacent(editor->hilightItem());
 				else	// Toggle selection
 					editor->selection().toggleCurrent();
 			}
@@ -860,7 +860,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		// Paste state, accept paste
 		else if (mouse_state == Input::MouseState::Paste)
 		{
-			editor->paste(editor->input().mousePosMap());
+			editor->edit2D().paste(editor->input().mousePosMap());
 			if (!e.ShiftDown())
 				editor->input().setMouseState(Input::MouseState::Normal);
 		}
@@ -876,7 +876,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 			// Double click to edit the current selection
 			if (e.LeftDClick() && property_edit_dclick)
 			{
-				editor->editObjectProperties();
+				editor->edit2D().editObjectProperties();
 				if (editor->selection().size() == 1)
 					editor->selection().clear();
 			}
@@ -900,9 +900,9 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 			{
 				// Check type
 				if (sel[0].type == MapEditor::ItemType::Thing)
-					editor->changeThingType();
+					editor->edit2D().changeThingType();
 				else
-					editor->edit3d().changeTexture();
+					editor->edit3D().changeTexture();
 			}
 		}
 
@@ -1001,7 +1001,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 
 		if (mouse_state == Input::MouseState::Move)
 		{
-			editor->endMove();
+			editor->moveObjects().end();
 			editor->input().setMouseState(Input::MouseState::Normal);
 			editor->renderer().renderer2D().forceUpdate();
 		}
@@ -1201,14 +1201,14 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 	if (mouse_movebegin && fpoint2_t(mouse_pos.x - mouse_downpos.x, mouse_pos.y - mouse_downpos.y).magnitude() > 4)
 	{
 		mouse_movebegin = false;
-		editor->beginMove(mouse_downpos_m);
+		editor->moveObjects().begin(mouse_downpos_m);
 		editor->input().setMouseState(Input::MouseState::Move);
 		editor->renderer().renderer2D().forceUpdate();
 	}
 
 	// Check if we are in thing quick angle state
 	if (editor->input().mouseState() == Input::MouseState::ThingAngle)
-		editor->thingQuickAngle(editor->input().mousePosMap());
+		editor->edit2D().thingQuickAngle(editor->input().mousePosMap());
 
 	// Update shape drawing if needed
 	if (editor->input().mouseState() == Input::MouseState::LineDraw && editor->lineDraw().state() == LineDraw::State::ShapeEdge)

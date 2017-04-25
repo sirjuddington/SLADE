@@ -283,7 +283,7 @@ void Input::handleKeyBind2d(const string& name)
 		if (name == "map_edit_accept")
 		{
 			mouse_state_ = MouseState::Normal;
-			context_.paste(context_.input().mousePosMap());
+			context_.edit2D().paste(context_.input().mousePosMap());
 		}
 
 		// Cancel paste
@@ -331,7 +331,7 @@ void Input::handleKeyBind2d(const string& name)
 		// Move toggle
 		if (name == "me2d_move")
 		{
-			context_.endMove();
+			context_.moveObjects().end();
 			mouse_state_ = MouseState::Normal;
 			context_.renderer().renderer2D().forceUpdate();
 		}
@@ -339,7 +339,7 @@ void Input::handleKeyBind2d(const string& name)
 		// Accept move
 		else if (name == "map_edit_accept")
 		{
-			context_.endMove();
+			context_.moveObjects().end();
 			mouse_state_ = MouseState::Normal;
 			context_.renderer().renderer2D().forceUpdate();
 		}
@@ -347,7 +347,7 @@ void Input::handleKeyBind2d(const string& name)
 		// Cancel move
 		else if (name == "map_edit_cancel")
 		{
-			context_.endMove(false);
+			context_.moveObjects().end(false);
 			mouse_state_ = MouseState::Normal;
 			context_.renderer().renderer2D().forceUpdate();
 		}
@@ -431,7 +431,7 @@ void Input::handleKeyBind2d(const string& name)
 		// Move items (toggle)
 		else if (name == "me2d_move")
 		{
-			if (context_.beginMove(context_.input().mousePosMap()))
+			if (context_.moveObjects().begin(context_.input().mousePosMap()))
 			{
 				mouse_state_ = MouseState::Move;
 				context_.renderer().renderer2D().forceUpdate();
@@ -444,7 +444,11 @@ void Input::handleKeyBind2d(const string& name)
 
 		// Split line
 		else if (name == "me2d_split_line")
-			context_.splitLine(context_.input().mousePosMap().x, context_.input().mousePosMap().y, 16 / context_.renderer().view().scale());
+			context_.edit2D().splitLine(
+				context_.input().mousePosMap().x,
+				context_.input().mousePosMap().y,
+				16 / context_.renderer().view().scale()
+			);
 
 		// Begin line drawing
 		else if (name == "me2d_begin_linedraw")
@@ -464,20 +468,20 @@ void Input::handleKeyBind2d(const string& name)
 				mouse_state_ = MouseState::LineDraw;
 			}
 			else
-				context_.createObject(context_.input().mousePosMap().x, context_.input().mousePosMap().y);
+				context_.edit2D().createObject(context_.input().mousePosMap().x, context_.input().mousePosMap().y);
 		}
 
 		// Delete object
 		else if (name == "me2d_delete_object")
-			context_.deleteObject();
+			context_.edit2D().deleteObject();
 
 		// Copy properties
 		else if (name == "me2d_copy_properties")
-			context_.copyProperties();
+			context_.edit2D().copyProperties();
 
 		// Paste properties
 		else if (name == "me2d_paste_properties")
-			context_.pasteProperties();
+			context_.edit2D().pasteProperties();
 
 		// Paste object(s)
 		else if (name == "paste")
@@ -512,13 +516,13 @@ void Input::handleKeyBind2d(const string& name)
 
 		// Mirror
 		else if (name == "me2d_mirror_x")
-			context_.mirror(true);
+			context_.edit2D().mirror(true);
 		else if (name == "me2d_mirror_y")
-			context_.mirror(false);
+			context_.edit2D().mirror(false);
 
 		// Object Properties
 		else if (name == "me2d_object_properties")
-			context_.editObjectProperties();
+			context_.edit2D().editObjectProperties();
 
 
 		// --- Lines edit mode ---
@@ -530,11 +534,11 @@ void Input::handleKeyBind2d(const string& name)
 
 			// Flip line
 			else if (name == "me2d_line_flip")
-				context_.flipLines();
+				context_.edit2D().flipLines();
 
 			// Flip line (no sides)
 			else if (name == "me2d_line_flip_nosides")
-				context_.flipLines(false);
+				context_.edit2D().flipLines(false);
 
 			// Edit line tags
 			else if (name == "me2d_line_tag_edit")
@@ -562,7 +566,7 @@ void Input::handleKeyBind2d(const string& name)
 		{
 			// Change type
 			if (name == "me2d_thing_change_type")
-				context_.changeThingType();
+				context_.edit2D().changeThingType();
 
 			// Quick angle
 			else if (name == "me2d_thing_quick_angle")
@@ -583,7 +587,7 @@ void Input::handleKeyBind2d(const string& name)
 		{
 			// Change sector texture
 			if (name == "me2d_sector_change_texture")
-				context_.changeSectorTexture();
+				context_.edit2D().changeSectorTexture();
 		}
 	}
 }
