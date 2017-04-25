@@ -4,11 +4,10 @@
 
 #include "common.h"
 #include "General/KeyBind.h"
-#include "General/SAction.h"
 #include "UI/Canvas/OGLCanvas.h"
 #include "MapEditor/MapEditContext.h"
 
-class MapCanvas : public OGLCanvas, public KeyBindHandler, public SActionHandler
+class MapCanvas : public OGLCanvas, public KeyBindHandler
 {
 public:
 	MapCanvas(wxWindow* parent, int id, MapEditContext* editor);
@@ -24,9 +23,6 @@ public:
 
 	// Keybind handling
 	void	onKeyBindPress(string name) override;
-
-	// SAction handler
-	bool	handleAction(string id) override;
 
 private:
 	MapEditContext*	editor;

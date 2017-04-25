@@ -43,11 +43,12 @@
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
 #include "UndoSteps.h"
-#include "Utility/MathStuff.h"
-#include "General/UI.h"
 #include "MapEditor/Renderer/Overlays/SectorTextureOverlay.h"
 #include "MapEditor/Renderer/Overlays/QuickTextureOverlay3d.h"
 #include "MapEditor/Renderer/Overlays/LineTextureOverlay.h"
+#include "MapEditor/UI/Dialogs/ShowItemDialog.h"
+#include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
+#include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 
 using MapEditor::Mode;
 using MapEditor::SectorMode;
@@ -83,12 +84,15 @@ namespace
 		65536
 	};
 }
-
-EXTERN_CVAR(Bool, map_remove_invalid_lines)
-EXTERN_CVAR(Bool, map_merge_lines_on_delete_vertex)
 CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
 CVAR(Int, map_bg_ms, 15, CVAR_SAVE)
 CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
+
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Int, flat_drawtype)
 
 
 /*******************************************************************
@@ -1462,6 +1466,9 @@ void MapEditContext::updateInfoOverlay()
 	}
 }
 
+/* MapEditContext::drawInfoOverlay
+ * Draws the current info overlay
+ *******************************************************************/
 void MapEditContext::drawInfoOverlay(const point2_t& size, float alpha)
 {
 	switch (edit_mode_)
@@ -1477,6 +1484,376 @@ void MapEditContext::drawInfoOverlay(const point2_t& size, float alpha)
 	case Mode::Visual:
 		info_3d_.draw(size.y, size.x, size.x * 0.5, alpha); return;
 	}
+}
+
+/* MapEditContext::handleAction
+ * Handles an SAction [id]. Returns true if the action was handled
+ * here
+ *******************************************************************/
+bool MapEditContext::handleAction(string id)
+{
+	using namespace MapEditor;
+
+	auto mouse_state = input_.mouseState();
+
+	// Skip if canvas not shown
+	if (!canvas_->IsShown())
+		return false;
+
+	// Skip if overlay is active
+	if (overlayActive())
+		return false;
+
+	// Vertices mode
+	if (id == "mapw_mode_vertices")
+	{
+		setEditMode(Mode::Vertices);
+		return true;
+	}
+
+	// Lines mode
+	else if (id == "mapw_mode_lines")
+	{
+		setEditMode(Mode::Lines);
+		return true;
+	}
+
+	// Sectors mode
+	else if (id == "mapw_mode_sectors")
+	{
+		setEditMode(Mode::Sectors);
+		return true;
+	}
+
+	// Things mode
+	else if (id == "mapw_mode_things")
+	{
+		setEditMode(Mode::Things);
+		return true;
+	}
+
+	// 3d mode
+	else if (id == "mapw_mode_3d")
+	{
+		canvas_->SetFocusFromKbd();
+		canvas_->SetFocus();
+		setEditMode(Mode::Visual);
+		return true;
+	}
+
+	// 'None' (wireframe) flat type
+	else if (id == "mapw_flat_none")
+	{
+		flat_drawtype = 0;
+		return true;
+	}
+
+	// 'Untextured' flat type
+	else if (id == "mapw_flat_untextured")
+	{
+		flat_drawtype = 1;
+		return true;
+	}
+
+	// 'Textured' flat type
+	else if (id == "mapw_flat_textured")
+	{
+		flat_drawtype = 2;
+		return true;
+	}
+
+	// Normal sector edit mode
+	else if (id == "mapw_sectormode_normal")
+	{
+		setSectorEditMode(SectorMode::Both);
+		return true;
+	}
+
+	// Floors sector edit mode
+	else if (id == "mapw_sectormode_floor")
+	{
+		setSectorEditMode(SectorMode::Floor);
+		return true;
+	}
+
+	// Ceilings sector edit mode
+	else if (id == "mapw_sectormode_ceiling")
+	{
+		setSectorEditMode(SectorMode::Ceiling);
+		return true;
+	}
+
+	// Begin line drawing
+	else if (id == "mapw_draw_lines" && mouse_state == Input::MouseState::Normal)
+	{
+		line_draw_.begin();
+		return true;
+	}
+
+	// Begin shape drawing
+	else if (id == "mapw_draw_shape" && mouse_state == Input::MouseState::Normal)
+	{
+		line_draw_.begin(true);
+		return true;
+	}
+
+	// Begin object edit
+	else if (id == "mapw_edit_objects" && mouse_state == Input::MouseState::Normal)
+	{
+		object_edit_.begin();
+		return true;
+	}
+
+	// Show full map
+	else if (id == "mapw_show_fullmap")
+	{
+		renderer_.viewFitToMap();
+		return true;
+	}
+
+	// Show item
+	else if (id == "mapw_show_item")
+	{
+		// Setup dialog
+		ShowItemDialog dlg(MapEditor::windowWx());
+		switch (editMode())
+		{
+		case Mode::Vertices:
+			dlg.setType(MOBJ_VERTEX); break;
+		case Mode::Lines:
+			dlg.setType(MOBJ_LINE); break;
+		case Mode::Sectors:
+			dlg.setType(MOBJ_SECTOR); break;
+		case Mode::Things:
+			dlg.setType(MOBJ_THING); break;
+		default:
+			return true;
+		}
+
+		// Show dialog
+		if (dlg.ShowModal() == wxID_OK)
+		{
+			// Get entered index
+			int index = dlg.getIndex();
+			if (index < 0)
+				return true;
+
+			// Set appropriate edit mode
+			bool side = false;
+			switch (dlg.getType())
+			{
+			case MOBJ_VERTEX:
+				setEditMode(Mode::Vertices); break;
+			case MOBJ_LINE:
+				setEditMode(Mode::Lines); break;
+			case MOBJ_SIDE:
+				setEditMode(Mode::Lines); side = true; break;
+			case MOBJ_SECTOR:
+				setEditMode(Mode::Sectors); break;
+			case MOBJ_THING:
+				setEditMode(Mode::Things); break;
+			default:
+				break;
+			}
+
+			// If side, get its parent line
+			if (side)
+			{
+				MapSide* s = map_.getSide(index);
+				if (s && s->getParentLine())
+					index = s->getParentLine()->getIndex();
+				else
+					index = -1;
+			}
+
+			// Show the item
+			if (index > -1)
+				showItem(index);
+		}
+
+		return true;
+	}
+
+	// Mirror Y
+	else if (id == "mapw_mirror_y")
+	{
+		edit_2d_.mirror(false);
+		return true;
+	}
+
+	// Mirror X
+	else if (id == "mapw_mirror_x")
+	{
+		edit_2d_.mirror(true);
+		return true;
+	}
+
+
+	// --- Context menu ---
+
+	// Move 3d mode camera
+	else if (id == "mapw_camera_set")
+	{
+		fpoint3_t pos(input().mousePosMap());
+		MapSector* sector = map_.getSector(map_.sectorAt(input_.mousePosMap()));
+		if (sector)
+			pos.z = sector->getFloorHeight() + 40;
+		renderer_.renderer3D().cameraSetPosition(pos);
+		return true;
+	}
+
+	// Edit item properties
+	else if (id == "mapw_item_properties")
+		edit_2d_.editObjectProperties();
+
+	// --- Vertex context menu ---
+
+	// Create vertex
+	else if (id == "mapw_vertex_create")
+	{
+		edit_2d_.createVertex(input_.mousePosMap().x, input_.mousePosMap().y);
+		return true;
+	}
+
+	// --- Line context menu ---
+
+	// Change line texture
+	else if (id == "mapw_line_changetexture")
+	{
+		openLineTextureOverlay();
+		return true;
+	}
+
+	// Change line special
+	else if (id == "mapw_line_changespecial")
+	{
+		// Get selection
+		auto selection = selection_.selectedObjects();
+
+		// Open action special selection dialog
+		if (selection.size() > 0)
+		{
+			int as = -1;
+			ActionSpecialDialog dlg(MapEditor::windowWx(), true);
+			dlg.openLines(selection);
+			if (dlg.ShowModal() == wxID_OK)
+			{
+				beginUndoRecord("Change Line Special", true, false, false);
+				dlg.applyTo(selection, true);
+				endUndoRecord();
+				renderer_.renderer2D().forceUpdate();
+			}
+		}
+
+		return true;
+	}
+
+	// Tag to
+	else if (id == "mapw_line_tagedit")
+	{
+		if (beginTagEdit() > 0)
+		{
+			input_.setMouseState(Input::MouseState::TagSectors);
+
+			// Setup help text
+			string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+			string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+			setFeatureHelp({
+				"Tag Edit",
+				S_FMT("%s = Accept", key_accept),
+				S_FMT("%s = Cancel", key_cancel),
+				"Left Click = Toggle tagged sector"
+			});
+		}
+
+		return true;
+	}
+
+	// Correct sectors
+	else if (id == "mapw_line_correctsectors")
+	{
+		edit_2d_.correctLineSectors();
+		return true;
+	}
+
+	// Flip
+	else if (id == "mapw_line_flip")
+	{
+		edit_2d_.flipLines();
+		return true;
+	}
+
+	// --- Thing context menu ---
+
+	// Change thing type
+	else if (id == "mapw_thing_changetype")
+	{
+		edit_2d_.changeThingType();
+		return true;
+	}
+
+	// Create thing
+	else if (id == "mapw_thing_create")
+	{
+		edit_2d_.createThing(input_.mouseDownPosMap().x, input_.mouseDownPosMap().y);
+		return true;
+	}
+
+	// --- Sector context menu ---
+
+	// Change sector texture
+	else if (id == "mapw_sector_changetexture")
+	{
+		edit_2d_.changeSectorTexture();
+		return true;
+	}
+
+	// Change sector special
+	else if (id == "mapw_sector_changespecial")
+	{
+		// Get selection
+		auto selection = selection_.selectedSectors();
+
+		// Open sector special selection dialog
+		if (selection.size() > 0)
+		{
+			SectorSpecialDialog dlg(MapEditor::windowWx());
+			dlg.setup(selection[0]->intProperty("special"));
+			if (dlg.ShowModal() == wxID_OK)
+			{
+				// Set specials of selected sectors
+				int special = dlg.getSelectedSpecial();
+				beginUndoRecord("Change Sector Special", true, false, false);
+				for (auto sector : selection)
+					sector->setIntProperty("special", special);
+				endUndoRecord();
+			}
+		}
+	}
+
+	// Create sector
+	else if (id == "mapw_sector_create")
+	{
+		edit_2d_.createSector(input_.mouseDownPosMap().x, input_.mouseDownPosMap().y);
+		return true;
+	}
+
+	// Merge sectors
+	else if (id == "mapw_sector_join")
+	{
+		edit_2d_.joinSectors(false);
+		return true;
+	}
+
+	// Join sectors
+	else if (id == "mapw_sector_join_keep")
+	{
+		edit_2d_.joinSectors(true);
+		return true;
+	}
+
+	// Not handled here
+	return false;
 }
 
 

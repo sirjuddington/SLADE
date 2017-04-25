@@ -63,6 +63,7 @@ CVAR(Bool, map_show_help, true, CVAR_SAVE)
 CVAR(Int, map_crosshair, 0, CVAR_SAVE)
 CVAR(Bool, map_show_selection_numbers, true, CVAR_SAVE)
 CVAR(Int, map_max_selection_numbers, 1000, CVAR_SAVE)
+CVAR(Int, flat_drawtype, 2, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -70,7 +71,6 @@ CVAR(Int, map_max_selection_numbers, 1000, CVAR_SAVE)
  *******************************************************************/
 EXTERN_CVAR(Bool, vertex_round)
 EXTERN_CVAR(Int, vertex_size)
-EXTERN_CVAR(Int, flat_drawtype)
 
 
 /*******************************************************************

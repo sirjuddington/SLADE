@@ -7,24 +7,25 @@
 #include "Edit/LineDraw.h"
 #include "Edit/MoveObjects.h"
 #include "Edit/ObjectEdit.h"
+#include "General/SAction.h"
 #include "General/UI.h"
+#include "General/UndoRedo.h"
 #include "ItemSelection.h"
 #include "MapEditor.h"
 #include "Renderer/Overlays/InfoOverlay3d.h"
 #include "Renderer/Overlays/LineInfoOverlay.h"
+#include "Renderer/Overlays/MCOverlay.h"
 #include "Renderer/Overlays/SectorInfoOverlay.h"
 #include "Renderer/Overlays/ThingInfoOverlay.h"
 #include "Renderer/Overlays/VertexInfoOverlay.h"
-#include "Renderer/Overlays/MCOverlay.h"
 #include "Renderer/Renderer.h"
 #include "SLADEMap/SLADEMap.h"
-#include "General/UndoRedo.h"
 
 namespace UI { enum class MouseCursor; }
 
 class MapCanvas;
 
-class MapEditContext
+class MapEditContext : public SActionHandler
 {
 public:
 	struct EditorMessage
@@ -134,6 +135,9 @@ public:
 	void	updateThingLists();
 	void	setCursor(UI::MouseCursor cursor) const;
 	void	forceRefreshRenderer();
+
+	// SAction handler
+	bool	handleAction(string id) override;
 
 private:
 	SLADEMap			map_;
