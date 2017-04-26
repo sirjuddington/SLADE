@@ -365,8 +365,6 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 bool Input::mouseUp(MouseButton button)
 {
 	// Update mouse variables
-	mouse_down_pos_ = { -1, -1 };
-	mouse_down_pos_map_ = { -1, -1 };
 	mouse_button_down_[button] = false;
 
 	// Check if a full screen overlay is active

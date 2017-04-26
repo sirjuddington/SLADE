@@ -174,7 +174,7 @@ void MapEditContext::setEditMode(Mode mode)
 	updateStatusText();
 
 	// Unlock mouse
-	canvas_->lockMouse(false);
+	lockMouse(false);
 
 	// Update toolbar
 	if (mode != edit_mode_prev_) MapEditor::window()->removeAllCustomToolBars();
@@ -210,7 +210,7 @@ void MapEditContext::setEditMode(Mode mode)
 	{
 		SAction::fromId("mapw_mode_3d")->setChecked();
 		KeyBind::releaseAll();
-		canvas_->lockMouse(true);
+		lockMouse(true);
 		renderer_.renderer3D().refresh();
 	}
 	MapEditor::window()->refreshToolBar();
@@ -254,6 +254,7 @@ void MapEditContext::cycleSectorEditMode()
  *******************************************************************/
 void MapEditContext::lockMouse(bool lock)
 {
+	mouse_locked_ = lock;
 	canvas_->lockMouse(lock);
 }
 
