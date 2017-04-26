@@ -26,18 +26,11 @@ public:
 
 private:
 	MapEditContext*	editor;
-	int				frametime_last;
 	vector<int>		fps_avg;
-	int				fr_idle;
 	sf::Clock		sfclock;
-	double			mwheel_rotation;
 
 	// Mouse stuff
-	bool	mouse_selbegin;
-	bool	mouse_movebegin;
-	bool	mouse_locked;
 	bool	mouse_warp;
-
 
 	// Events
 	void	onSize(wxSizeEvent& e);

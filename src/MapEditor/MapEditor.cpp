@@ -11,6 +11,7 @@
 #include "UI/MapEditorWindow.h"
 #include "UI/PropsPanel/MapObjectPropsPanel.h"
 #include "UI/SDialog.h"
+#include "UI/MapCanvas.h"
 
 namespace MapEditor
 {
@@ -80,9 +81,85 @@ void MapEditor::setUndoManager(UndoManager* manager)
 	map_window->setUndoManager(manager);
 }
 
-void ::MapEditor::setStatusText(const string &text)
+void ::MapEditor::setStatusText(const string &text, int column)
 {
-	map_window->CallAfter(&MapEditorWindow::SetStatusText, text, 3);
+	map_window->CallAfter(&MapEditorWindow::SetStatusText, text, column);
+}
+
+void MapEditor::lockMouse(bool lock)
+{
+	edit_context->canvas()->lockMouse(lock);
+}
+
+void MapEditor::openContextMenu()
+{
+	// Context menu
+	wxMenu menu_context;
+
+	// Set 3d camera
+	SAction::fromId("mapw_camera_set")->addToMenu(&menu_context, true);
+
+	// Run from here
+	SAction::fromId("mapw_run_map_here")->addToMenu(&menu_context, true);
+
+	// Mode-specific
+	bool object_selected = edit_context->selection().hasHilightOrSelection();
+	if (edit_context->editMode() == Mode::Vertices)
+	{
+		menu_context.AppendSeparator();
+		SAction::fromId("mapw_vertex_create")->addToMenu(&menu_context, true);
+	}
+	else if (edit_context->editMode() == Mode::Lines)
+	{
+		if (object_selected)
+		{
+			menu_context.AppendSeparator();
+			SAction::fromId("mapw_line_changetexture")->addToMenu(&menu_context, true);
+			SAction::fromId("mapw_line_changespecial")->addToMenu(&menu_context, true);
+			SAction::fromId("mapw_line_tagedit")->addToMenu(&menu_context, true);
+			SAction::fromId("mapw_line_flip")->addToMenu(&menu_context, true);
+			SAction::fromId("mapw_line_correctsectors")->addToMenu(&menu_context, true);
+		}
+	}
+	else if (edit_context->editMode() == Mode::Things)
+	{
+		menu_context.AppendSeparator();
+
+		if (object_selected)
+			SAction::fromId("mapw_thing_changetype")->addToMenu(&menu_context, true);
+
+		SAction::fromId("mapw_thing_create")->addToMenu(&menu_context, true);
+	}
+	else if (edit_context->editMode() == Mode::Sectors)
+	{
+		if (object_selected)
+		{
+			SAction::fromId("mapw_sector_changetexture")->addToMenu(&menu_context, true);
+			SAction::fromId("mapw_sector_changespecial")->addToMenu(&menu_context, true);
+			if (edit_context->selection().size() > 1)
+			{
+				SAction::fromId("mapw_sector_join")->addToMenu(&menu_context, true);
+				SAction::fromId("mapw_sector_join_keep")->addToMenu(&menu_context, true);
+			}
+		}
+
+		SAction::fromId("mapw_sector_create")->addToMenu(&menu_context, true);
+	}
+
+	if (object_selected)
+	{
+		// General edit
+		menu_context.AppendSeparator();
+		SAction::fromId("mapw_edit_objects")->addToMenu(&menu_context, true);
+		SAction::fromId("mapw_mirror_x")->addToMenu(&menu_context, true);
+		SAction::fromId("mapw_mirror_y")->addToMenu(&menu_context, true);
+
+		// Properties
+		menu_context.AppendSeparator();
+		SAction::fromId("mapw_item_properties")->addToMenu(&menu_context, true);
+	}
+
+	map_window->PopupMenu(&menu_context);
 }
 
 void MapEditor::openObjectProperties(MapObject* object)

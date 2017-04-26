@@ -3,6 +3,7 @@
 #include "General/KeyBind.h"
 
 class MapEditContext;
+class wxMouseEvent;
 
 #undef None
 
@@ -31,6 +32,15 @@ namespace MapEditor
 			Move
 		};
 
+		enum MouseButton
+		{
+			Left = 0,
+			Middle,
+			Right,
+			Mouse4,
+			Mouse5
+		};
+
 		Input(MapEditContext& context);
 
 		bool		panning() const { return panning_; }
@@ -43,40 +53,42 @@ namespace MapEditor
 		bool		ctrlDown() const { return ctrl_down_; }
 		bool		altDown() const { return alt_down_; }
 
-		void	setPanning(bool pan) { panning_ = pan; } // TODO: Remove
-
+		// Mouse handling
 		void	setMouseState(MouseState state) { mouse_state_ = state; }
-		void	mouseMove(int new_x, int new_y);
-		void	mouseDown();
-		void	mouseUp();
+		bool	mouseMove(int new_x, int new_y);
+		bool	mouseDown(MouseButton button, bool double_click = false);
+		bool	mouseUp(MouseButton button);
 		void 	mouseWheel(bool up, double amount);
-
-		void	updateKeyModifiersWx(int modifiers);
+		void	mouseLeave();
 
 		// Keybind handling
+		void	updateKeyModifiersWx(int modifiers);
 		void	onKeyBindPress(string name) override;
 		void	onKeyBindRelease(string name) override;
 		void	handleKeyBind2dView(const string& name);
 		void 	handleKeyBind2d(const string& name);
-		void 	handleKeyBind3d(const string& name);
-		bool	updateCamera3d(double mult);
+		void 	handleKeyBind3d(const string& name) const;
+		bool	updateCamera3d(double mult) const;
+
+		static string mouseButtonKBName(MouseButton button);
 
 	private:
 		MapEditContext&	context_;
-		bool			panning_;
 
 		// Mouse
-		MouseState	mouse_state_;
-		point2_t	mouse_pos_;
-		fpoint2_t	mouse_pos_map_;
-		point2_t	mouse_down_pos_;
-		fpoint2_t	mouse_down_pos_map_;
-		DragType	mouse_drag_;
-		double 		mouse_wheel_speed_;
+		MouseState	mouse_state_			= MouseState::Normal;
+		bool		mouse_button_down_[5]	= { false, false, false, false, false };
+		point2_t	mouse_pos_				= { 0, 0 };
+		fpoint2_t	mouse_pos_map_			= { 0, 0 };
+		point2_t	mouse_down_pos_			= { -1, -1 };
+		fpoint2_t	mouse_down_pos_map_		= { -1, -1 };
+		DragType	mouse_drag_				= DragType::None;
+		double 		mouse_wheel_speed_		= 0;
+		bool		panning_				= false;
 
 		// Keyboard
-		bool	shift_down_;
-		bool	ctrl_down_;
-		bool	alt_down_;
+		bool	shift_down_	= false;
+		bool	ctrl_down_	= false;
+		bool	alt_down_	= false;
 	};
 }

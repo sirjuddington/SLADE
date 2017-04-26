@@ -54,7 +54,7 @@ CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
  *******************************************************************/
 Edit2D::Edit2D(MapEditContext& context) :
 	context_{ context },
-	copy_line_{nullptr, nullptr, &copy_side_front_, &copy_side_back_, nullptr}
+	copy_line_{ nullptr, nullptr, &copy_side_front_, &copy_side_back_, nullptr }
 {
 }
 
@@ -85,9 +85,17 @@ void Edit2D::mirror(bool x_axis) const
 		{
 			// Position
 			if (x_axis)
-				context_.map().moveThing(things[a]->getIndex(), bbox.mid_x() - (things[a]->xPos() - bbox.mid_x()), things[a]->yPos());
+				context_.map().moveThing(
+					things[a]->getIndex(),
+					bbox.mid_x() - (things[a]->xPos() - bbox.mid_x()),
+					things[a]->yPos()
+				);
 			else
-				context_.map().moveThing(things[a]->getIndex(), things[a]->xPos(), bbox.mid_y() - (things[a]->yPos() - bbox.mid_y()));
+				context_.map().moveThing(
+					things[a]->getIndex(),
+					things[a]->xPos(),
+					bbox.mid_y() - (things[a]->yPos() - bbox.mid_y())
+				);
 
 			// Direction
 			int angle = things[a]->getAngle();

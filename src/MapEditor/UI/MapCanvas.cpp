@@ -30,32 +30,19 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "General/Clipboard.h"
 #include "MapCanvas.h"
-#include "MapEditor/Renderer/MapRenderer2D.h"
-#include "MapEditor/Renderer/MCAnimations.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/SectorBuilder.h"
-#include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
-#include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
-#include "MapEditor/UI/Dialogs/ShowItemDialog.h"
-#include "MapEditor/UI/MapEditorWindow.h"
-#include "ObjectEditPanel.h"
 #include "OpenGL/Drawing.h"
 #include "Utility/MathStuff.h"
 
-#undef None
-
 using MapEditor::Mode;
 using MapEditor::SectorMode;
-using namespace MapEditor;
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-CVAR(Bool, selection_clear_click, false, CVAR_SAVE)
-CVAR(Bool, property_edit_dclick, true, CVAR_SAVE)
 CVAR(Bool, mlook_invert_y, false, CVAR_SAVE)
 CVAR(Float, camera_3d_sensitivity_x, 1.0f, CVAR_SAVE)
 CVAR(Float, camera_3d_sensitivity_y, 1.0f, CVAR_SAVE)
@@ -87,11 +74,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* editor)
 	// Init variables
 	this->editor = editor;
 	editor->setCanvas(this);
-	fr_idle = 0;
 	last_time = 0;
-	mouse_selbegin = false;
-	mouse_movebegin = false;
-	mouse_locked = false;
 	mouse_warp = false;
 
 #ifdef USE_SFML_RENDERWINDOW
@@ -165,7 +148,6 @@ void MapCanvas::mouseToCenter()
  *******************************************************************/
 void MapCanvas::lockMouse(bool lock)
 {
-	mouse_locked = lock;
 	if (lock)
 	{
 		// Center mouse
@@ -196,7 +178,7 @@ void MapCanvas::lockMouse(bool lock)
 void MapCanvas::mouseLook3d()
 {
 	// Check for 3d mode
-	if (editor->editMode() == Mode::Visual && mouse_locked)
+	if (editor->editMode() == Mode::Visual && editor->mouseLocked())
 	{
 		auto overlay_current = editor->currentOverlay();
 		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
@@ -216,7 +198,6 @@ void MapCanvas::mouseLook3d()
 					editor->renderer().renderer3D().cameraPitch(-yrel*0.003*camera_3d_sensitivity_y);
 
 				mouseToCenter();
-				fr_idle = 0;
 			}
 		}
 	}
@@ -264,14 +245,6 @@ void MapCanvas::onKeyBindPress(string name)
 
 	}
 #endif
-
-	// Handle keybinds depending on mode
-	if (editor->editMode() == Mode::Visual)
-	{
-		// Release mouse cursor
-		if (name == "me3d_release_mouse")
-			lockMouse(false);
-	}
 }
 
 
@@ -400,174 +373,38 @@ void MapCanvas::onKeyUp(wxKeyEvent& e)
  *******************************************************************/
 void MapCanvas::onMouseDown(wxMouseEvent& e)
 {
-	auto mouse_state = editor->input().mouseState();
+	using namespace MapEditor;
 
-	// Update hilight
-	if (mouse_state == Input::MouseState::Normal)
-		editor->selection().updateHilight(editor->input().mousePosMap(), editor->renderer().view().scale());
-
-	// Update mouse variables
-	editor->input().mouseDown();
-	//mouse_downpos.set(e.GetX(), e.GetY());
-	//mouse_downpos_m.set(editor->renderer().translateX(e.GetX()), editor->renderer().translateY(e.GetY()));
-
-	// Check if a full screen overlay is active
-	if (editor->overlayActive())
-	{
-		// Left click
-		if (e.LeftDown())
-			editor->currentOverlay()->mouseLeftClick();
-
-		// Right click
-		else if (e.RightDown())
-			editor->currentOverlay()->mouseRightClick();
-
-		return;
-	}
-
-	// Left button
-	if (e.LeftDown() || e.LeftDClick())
-	{
-		// 3d mode
-		if (editor->editMode() == Mode::Visual)
-		{
-			// If the mouse is unlocked, lock the mouse
-			if (!mouse_locked)
-			{
-				mouseToCenter();
-				lockMouse(true);
-			}
-			else
-			{
-				if (e.ShiftDown())	// Shift down, select all matching adjacent structures
-					editor->edit3D().selectAdjacent(editor->hilightItem());
-				else	// Toggle selection
-					editor->selection().toggleCurrent();
-			}
-
-			return;
-		}
-
-		// Line drawing state, add line draw point
-		if (mouse_state == Input::MouseState::LineDraw)
-		{
-			// Snap point to nearest vertex if shift is held down
-			bool nearest_vertex = false;
-			if (e.GetModifiers() & wxMOD_SHIFT)
-				nearest_vertex = true;
-
-			// Line drawing
-			if (editor->lineDraw().state() == LineDraw::State::Line)
-			{
-				if (editor->lineDraw().addPoint(editor->input().mouseDownPosMap(), nearest_vertex))
-				{
-					// If line drawing finished, revert to normal state
-					editor->input().setMouseState(Input::MouseState::Normal);
-				}
-			}
-
-			// Shape drawing
-			else
-			{
-				if (editor->lineDraw().state() == LineDraw::State::ShapeOrigin)
-				{
-					// Set shape origin
-					editor->lineDraw().setShapeOrigin(editor->input().mouseDownPosMap(), nearest_vertex);
-					editor->lineDraw().setState(LineDraw::State::ShapeEdge);
-				}
-				else
-				{
-					// Finish shape draw
-					editor->lineDraw().end(true);
-					MapEditor::window()->showShapeDrawPanel(false);
-					editor->input().setMouseState(Input::MouseState::Normal);
-				}
-			}
-		}
-
-		// Paste state, accept paste
-		else if (mouse_state == Input::MouseState::Paste)
-		{
-			editor->edit2D().paste(editor->input().mousePosMap());
-			if (!e.ShiftDown())
-				editor->input().setMouseState(Input::MouseState::Normal);
-		}
-
-		// Sector tagging state
-		else if (mouse_state == Input::MouseState::TagSectors)
-		{
-			editor->tagSectorAt(editor->input().mousePosMap().x, editor->input().mousePosMap().y);
-		}
-
-		else if (mouse_state == Input::MouseState::Normal)
-		{
-			// Double click to edit the current selection
-			if (e.LeftDClick() && property_edit_dclick)
-			{
-				editor->edit2D().editObjectProperties();
-				if (editor->selection().size() == 1)
-					editor->selection().clear();
-			}
-			// Begin box selection if shift is held down, otherwise toggle selection on hilighted object
-			else if (e.ShiftDown())
-				editor->input().setMouseState(Input::MouseState::Selection);
-			else
-				mouse_selbegin = !editor->selection().toggleCurrent(selection_clear_click);
-		}
-	}
-
-	// Right button
+	// Send to editor context
+	bool skip = true;
+	if (e.LeftDown())
+		skip = editor->input().mouseDown(Input::MouseButton::Left);
+	else if (e.LeftDClick())
+		skip = editor->input().mouseDown(Input::MouseButton::Left, true);
 	else if (e.RightDown())
+		skip = editor->input().mouseDown(Input::MouseButton::Right);
+	else if (e.RightDClick())
+		skip = editor->input().mouseDown(Input::MouseButton::Right, true);
+	else if (e.MiddleDown())
+		skip = editor->input().mouseDown(Input::MouseButton::Middle);
+	else if (e.MiddleDClick())
+		skip = editor->input().mouseDown(Input::MouseButton::Middle, true);
+	else if (e.Aux1Down())
+		skip = editor->input().mouseDown(Input::MouseButton::Mouse4);
+	else if (e.Aux1DClick())
+		skip = editor->input().mouseDown(Input::MouseButton::Mouse4, true);
+	else if (e.Aux2Down())
+		skip = editor->input().mouseDown(Input::MouseButton::Mouse5);
+	else if (e.Aux2DClick())
+		skip = editor->input().mouseDown(Input::MouseButton::Mouse5, true);
+
+	if (skip)
 	{
-		// 3d mode
-		if (editor->editMode() == Mode::Visual)
-		{
-			// Get selection or hilight
-			auto sel = editor->selection().selectionOrHilight();
-			if (!sel.empty())
-			{
-				// Check type
-				if (sel[0].type == MapEditor::ItemType::Thing)
-					editor->edit2D().changeThingType();
-				else
-					editor->edit3D().changeTexture();
-			}
-		}
+		// Set focus
+		SetFocus();
 
-		// Remove line draw point if in line drawing state
-		if (mouse_state == Input::MouseState::LineDraw)
-		{
-			// Line drawing
-			if (editor->lineDraw().state() == LineDraw::State::Line)
-				editor->lineDraw().removePoint();
-
-			// Shape drawing
-			else if (editor->lineDraw().state() == LineDraw::State::ShapeEdge)
-			{
-				editor->lineDraw().end(false);
-				editor->lineDraw().setState(LineDraw::State::ShapeOrigin);
-			}
-		}
-
-		// Normal state
-		else if (mouse_state == Input::MouseState::Normal)
-		{
-			// Begin move if something is selected/hilighted
-			if (editor->selection().hasHilightOrSelection())
-				mouse_movebegin = true;
-			//else if (editor->editMode() == Mode::Vertices)
-			//	editor->splitLine(editor->input().mousePosMap().x, editor->input().mousePosMap().y, 16/editor->renderer().viewScale());
-		}
+		e.Skip();
 	}
-
-	// Any other mouse button (let keybind system handle it)
-	else// if (mouse_state == Input::MouseState::Normal)
-		KeyBind::keyPressed(keypress_t(KeyBind::mbName(e.GetButton()), e.AltDown(), e.CmdDown(), e.ShiftDown()));
-
-	// Set focus
-	SetFocus();
-
-	e.Skip();
 }
 
 /* MapCanvas::onMouseUp
@@ -575,148 +412,23 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
  *******************************************************************/
 void MapCanvas::onMouseUp(wxMouseEvent& e)
 {
-	auto mouse_state = editor->input().mouseState();
-	auto mouse_downpos_m = editor->input().mouseDownPosMap();
+	using namespace MapEditor;
 
-	// Clear mouse down position
-	editor->input().mouseUp();
-
-	// Check if a full screen overlay is active
-	if (editor->overlayActive())
-	{
-		return;
-	}
-
-	// Left button
+	// Send to editor context
+	bool skip = true;
 	if (e.LeftUp())
-	{
-		mouse_selbegin = false;
-
-		// If we're ending a box selection
-		if (mouse_state == Input::MouseState::Selection)
-		{
-			// Reset mouse state
-			editor->input().setMouseState(Input::MouseState::Normal);
-
-			// Select
-			editor->selection().selectWithin(
-				frect_t(
-					min(mouse_downpos_m.x, editor->input().mousePosMap().x),
-					min(mouse_downpos_m.y, editor->input().mousePosMap().y),
-					max(mouse_downpos_m.x, editor->input().mousePosMap().x),
-					max(mouse_downpos_m.y, editor->input().mousePosMap().y)),
-				e.ShiftDown()
-			);
-
-			// Begin selection box fade animation
-			editor->renderer().addAnimation(
-				std::make_unique<MCASelboxFader>(
-					App::runTimer(),
-					mouse_downpos_m,
-					editor->input().mousePosMap()
-			));
-		}
-
-		// If we're in object edit mode
-		if (mouse_state == Input::MouseState::ObjectEdit)
-			editor->objectEdit().group().resetPositions();
-	}
-
-	// Right button
+		skip = editor->input().mouseUp(Input::MouseButton::Left);
 	else if (e.RightUp())
-	{
-		mouse_movebegin = false;
+		skip = editor->input().mouseUp(Input::MouseButton::Right);
+	else if (e.MiddleUp())
+		skip = editor->input().mouseUp(Input::MouseButton::Middle);
+	else if (e.Aux1Up())
+		skip = editor->input().mouseUp(Input::MouseButton::Mouse4);
+	else if (e.Aux2Up())
+		skip = editor->input().mouseUp(Input::MouseButton::Mouse5);
 
-		if (mouse_state == Input::MouseState::Move)
-		{
-			editor->moveObjects().end();
-			editor->input().setMouseState(Input::MouseState::Normal);
-			editor->renderer().renderer2D().forceUpdate();
-		}
-
-		// Paste state, cancel paste
-		else if (mouse_state == Input::MouseState::Paste)
-		{
-			editor->input().setMouseState(Input::MouseState::Normal);
-		}
-
-		else if (mouse_state == Input::MouseState::Normal)
-		{
-			// Context menu
-			wxMenu menu_context;
-
-			// Set 3d camera
-			SAction::fromId("mapw_camera_set")->addToMenu(&menu_context, true);
-
-			// Run from here
-			SAction::fromId("mapw_run_map_here")->addToMenu(&menu_context, true);
-
-			// Mode-specific
-			bool object_selected = editor->selection().hasHilightOrSelection();
-			if (editor->editMode() == Mode::Vertices)
-			{
-				menu_context.AppendSeparator();
-				SAction::fromId("mapw_vertex_create")->addToMenu(&menu_context, true);
-			}
-			else if (editor->editMode() == Mode::Lines)
-			{
-				if (object_selected)
-				{
-					menu_context.AppendSeparator();
-					SAction::fromId("mapw_line_changetexture")->addToMenu(&menu_context, true);
-					SAction::fromId("mapw_line_changespecial")->addToMenu(&menu_context, true);
-					SAction::fromId("mapw_line_tagedit")->addToMenu(&menu_context, true);
-					SAction::fromId("mapw_line_flip")->addToMenu(&menu_context, true);
-					SAction::fromId("mapw_line_correctsectors")->addToMenu(&menu_context, true);
-				}
-			}
-			else if (editor->editMode() == Mode::Things)
-			{
-				menu_context.AppendSeparator();
-
-				if (object_selected)
-					SAction::fromId("mapw_thing_changetype")->addToMenu(&menu_context, true);
-
-				SAction::fromId("mapw_thing_create")->addToMenu(&menu_context, true);
-			}
-			else if (editor->editMode() == Mode::Sectors)
-			{
-				if (object_selected)
-				{
-					SAction::fromId("mapw_sector_changetexture")->addToMenu(&menu_context, true);
-					SAction::fromId("mapw_sector_changespecial")->addToMenu(&menu_context, true);
-					if (editor->selection().size() > 1)
-					{
-						SAction::fromId("mapw_sector_join")->addToMenu(&menu_context, true);
-						SAction::fromId("mapw_sector_join_keep")->addToMenu(&menu_context, true);
-					}
-				}
-
-				SAction::fromId("mapw_sector_create")->addToMenu(&menu_context, true);
-			}
-
-			if (object_selected)
-			{
-				// General edit
-				menu_context.AppendSeparator();
-				SAction::fromId("mapw_edit_objects")->addToMenu(&menu_context, true);
-				SAction::fromId("mapw_mirror_x")->addToMenu(&menu_context, true);
-				SAction::fromId("mapw_mirror_y")->addToMenu(&menu_context, true);
-
-				// Properties
-				menu_context.AppendSeparator();
-				SAction::fromId("mapw_item_properties")->addToMenu(&menu_context, true);
-			}
-
-			PopupMenu(&menu_context);
-		}
-	}
-
-	// Any other mouse button (let keybind system handle it)
-	else if (mouse_state != Input::MouseState::Selection)
-		KeyBind::keyReleased(KeyBind::mbName(e.GetButton()));
-
-	e.Skip();
+	if (skip)
+		e.Skip();
 }
 
 /* MapCanvas::onMouseMotion
@@ -724,10 +436,6 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
  *******************************************************************/
 void MapCanvas::onMouseMotion(wxMouseEvent& e)
 {
-	auto mouse_pos = editor->input().mousePos();
-	auto mouse_downpos = editor->input().mouseDownPos();
-	auto mouse_downpos_m = editor->input().mouseDownPosMap();
-
 	// Ignore if it was generated by a mouse pointer warp
 	if (mouse_warp)
 	{
@@ -736,111 +444,9 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 		return;
 	}
 
-	// Check if a full screen overlay is active
-	if (editor->overlayActive())
-	{
-		editor->currentOverlay()->mouseMotion(e.GetX(), e.GetY());
-		return;
-	}
-
-	// panning
-	if (editor->input().panning())
-		editor->renderer().pan(mouse_pos.x - e.GetX(), -(mouse_pos.y - e.GetY()), true);
-
 	// Update mouse variables
-	editor->input().mouseMove(e.GetX(), e.GetY());
-	mouse_pos = editor->input().mousePos();
-	//mouse_pos.set(e.GetX(), e.GetY());
-	//editor->input().mousePosMap().set(editor->renderer().translateX(e.GetX()), editor->renderer().translateY(e.GetY()));
-
-	// Update coordinates on status bar
-	double mx = editor->input().mousePosMap().x;
-	double my = editor->input().mousePosMap().y;
-	if (editor->gridSnap())
-	{
-		mx = editor->snapToGrid(mx);
-		my = editor->snapToGrid(my);
-	}
-	string status_text;
-	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
-		status_text = S_FMT("Position: (%1.3f, %1.3f)", mx, my);
-	else
-		status_text = S_FMT("Position: (%d, %d)", (int)mx, (int)my);
-	MapEditor::window()->CallAfter(&MapEditorWindow::SetStatusText, status_text, 3);
-
-	// Object edit
-	auto edit_state = editor->objectEdit().state();
-	if (editor->input().mouseState() == Input::MouseState::ObjectEdit)
-	{
-		// Do dragging if left mouse is down
-		if (e.LeftIsDown() && edit_state != ObjectEdit::State::None)
-		{
-			if (editor->objectEdit().rotating())
-			{
-				// Rotate
-				editor->objectEdit().group().doRotate(mouse_downpos_m, editor->input().mousePosMap(), !e.ShiftDown());
-				MapEditor::window()->objectEditPanel()->update(&editor->objectEdit().group(), true);
-			}
-			else
-			{
-				// Get dragged offsets
-				double xoff = editor->input().mousePosMap().x - mouse_downpos_m.x;
-				double yoff = editor->input().mousePosMap().y - mouse_downpos_m.y;
-
-				// Snap to grid if shift not held down
-				if (!e.ShiftDown())
-				{
-					xoff = editor->snapToGrid(xoff);
-					yoff = editor->snapToGrid(yoff);
-				}
-
-				if (edit_state == ObjectEdit::State::Move)
-				{
-					// Move objects
-					editor->objectEdit().group().doMove(xoff, yoff);
-					MapEditor::window()->objectEditPanel()->update(&editor->objectEdit().group());
-				}
-				else
-				{
-					// Scale objects
-					editor->objectEdit().group().doScale(
-						xoff,
-						yoff,
-						editor->objectEdit().stateLeft(false),
-						editor->objectEdit().stateTop(false),
-						editor->objectEdit().stateRight(false),
-						editor->objectEdit().stateBottom(false)
-					);
-					MapEditor::window()->objectEditPanel()->update(&editor->objectEdit().group());
-				}
-			}
-		}
-		else
-			editor->objectEdit().determineState();
-
+	if (!editor->input().mouseMove(e.GetX(), e.GetY()))
 		return;
-	}
-
-	// Check if we want to start a selection box
-	if (mouse_selbegin && fpoint2_t(mouse_pos.x - mouse_downpos.x, mouse_pos.y - mouse_downpos.y).magnitude() > 16)
-		editor->input().setMouseState(Input::MouseState::Selection);
-
-	// Check if we want to start moving
-	if (mouse_movebegin && fpoint2_t(mouse_pos.x - mouse_downpos.x, mouse_pos.y - mouse_downpos.y).magnitude() > 4)
-	{
-		mouse_movebegin = false;
-		editor->moveObjects().begin(mouse_downpos_m);
-		editor->input().setMouseState(Input::MouseState::Move);
-		editor->renderer().renderer2D().forceUpdate();
-	}
-
-	// Check if we are in thing quick angle state
-	if (editor->input().mouseState() == Input::MouseState::ThingAngle)
-		editor->edit2D().thingQuickAngle(editor->input().mousePosMap());
-
-	// Update shape drawing if needed
-	if (editor->input().mouseState() == Input::MouseState::LineDraw && editor->lineDraw().state() == LineDraw::State::ShapeEdge)
-		editor->lineDraw().updateShape(editor->input().mousePosMap());
 
 	e.Skip();
 }
@@ -851,11 +457,11 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 void MapCanvas::onMouseWheel(wxMouseEvent& e)
 {
 #ifdef __WXOSX__
-	mwheel_rotation = (double)e.GetWheelRotation() / (double)e.GetWheelDelta();
+	double mwheel_rotation = (double)e.GetWheelRotation() / (double)e.GetWheelDelta();
 	if (mwheel_rotation < 0)
 		mwheel_rotation = 0 - mwheel_rotation;
 #else
-	mwheel_rotation = 1;
+	double mwheel_rotation = 1;
 #endif
 
 	if (mwheel_rotation < 0.001)
@@ -869,12 +475,7 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
  *******************************************************************/
 void MapCanvas::onMouseLeave(wxMouseEvent& e)
 {
-	// Stop panning
-	if (editor->input().panning())
-	{
-		editor->input().setPanning(false);
-		SetCursor(wxNullCursor);
-	}
+	editor->input().mouseLeave();
 
 	e.Skip();
 }

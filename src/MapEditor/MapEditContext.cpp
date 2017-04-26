@@ -39,7 +39,6 @@
 #include "MapChecks.h"
 #include "MapEditContext.h"
 #include "MapTextureManager.h"
-#include "SectorBuilder.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
 #include "UndoSteps.h"
@@ -249,6 +248,15 @@ void MapEditContext::cycleSectorEditMode()
 	}
 }
 
+/* MapEditContext::lockMouse
+ * Locks/unlocks the mouse cursor. A locked cursor is invisible and
+ * will be moved to the center of the canvas every frame
+ *******************************************************************/
+void MapEditContext::lockMouse(bool lock)
+{
+	canvas_->lockMouse(lock);
+}
+
 /* MapEditContext::update
  * Updates the current map editor state (hilight, animations, etc.)
  *******************************************************************/
@@ -274,7 +282,7 @@ bool MapEditContext::update(long frametime)
 
 		// Update status bar
 		auto pos = renderer_.renderer3D().camPosition();
-		MapEditor::setStatusText(S_FMT("Position: (%d, %d, %d)", (int)pos.x, (int)pos.y, (int)pos.z));
+		MapEditor::setStatusText(S_FMT("Position: (%d, %d, %d)", (int)pos.x, (int)pos.y, (int)pos.z), 3);
 		
 		// Update hilight
 		MapEditor::Item hl{ -1, MapEditor::ItemType::Any };
@@ -1173,7 +1181,7 @@ void MapEditContext::updateStatusText()
 		mode += S_FMT(" (%lu selected)", selection_.size());
 	}
 
-	MapEditor::windowWx()->CallAfter(&MapEditorWindow::SetStatusText, mode, 1);
+	MapEditor::setStatusText(mode, 1);
 
 	// Grid
 	string grid;
@@ -1187,7 +1195,7 @@ void MapEditContext::updateStatusText()
 	else
 		grid += " (Snapping OFF)";
 
-	MapEditor::windowWx()->CallAfter(&MapEditorWindow::SetStatusText, grid, 2);
+	MapEditor::setStatusText(grid, 2);
 }
 
 /* MapEditContext::beginUndoRecord
@@ -1733,7 +1741,6 @@ bool MapEditContext::handleAction(string id)
 		// Open action special selection dialog
 		if (selection.size() > 0)
 		{
-			int as = -1;
 			ActionSpecialDialog dlg(MapEditor::windowWx(), true);
 			dlg.openLines(selection);
 			if (dlg.ShowModal() == wxID_OK)

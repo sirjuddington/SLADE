@@ -55,12 +55,14 @@ public:
 	MapCanvas*				canvas() const { return canvas_; }
 	MapEditor::Renderer&	renderer() { return renderer_; }
 	MapEditor::Input&		input() { return input_; }
+	bool					mouseLocked() const { return mouse_locked_; }
 
 	void	setEditMode(MapEditor::Mode mode);
 	void 	setPrevEditMode() { setEditMode(edit_mode_prev_); }
 	void	setSectorEditMode(MapEditor::SectorMode mode);
 	void 	cycleSectorEditMode();
 	void	setCanvas(MapCanvas* canvas) { this->canvas_ = canvas; }
+	void	lockMouse(bool lock);
 
 	// General
 	bool	update(long frametime);
@@ -135,6 +137,7 @@ public:
 	void	updateThingLists();
 	void	setCursor(UI::MouseCursor cursor) const;
 	void	forceRefreshRenderer();
+	
 
 	// SAction handler
 	bool	handleAction(string id) override;
@@ -157,6 +160,7 @@ private:
 	MapEditor::SectorMode	sector_mode_	= MapEditor::SectorMode::Both;
 	bool					grid_snap_		= true;
 	int						current_tag_	= 0;
+	bool					mouse_locked_	= false;
 
 	// Undo/Redo
 	bool	undo_modified_		= false;

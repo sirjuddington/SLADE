@@ -28,22 +28,29 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
+#include "General/Clipboard.h"
+#include "General/KeyBind.h"
+#include "General/UI.h"
 #include "Input.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/UI/ObjectEditPanel.h"
-#include "General/UI.h"
-#include "General/KeyBind.h"
-#include "General/Clipboard.h"
-#include "MapEditor/Renderer/Overlays/MCOverlay.h"
 
 using namespace MapEditor;
 
 
 /*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+CVAR(Bool, property_edit_dclick, true, CVAR_SAVE)
+CVAR(Bool, selection_clear_click, false, CVAR_SAVE)
+
+
+/*******************************************************************
  * EXTERNAL VARIABLES
  *******************************************************************/
-EXTERN_CVAR(Bool, selection_clear_click)
 EXTERN_CVAR(Int, flat_drawtype)
 EXTERN_CVAR(Bool, map_show_selection_numbers)
 EXTERN_CVAR(Float, render_3d_brightness)
@@ -58,38 +65,380 @@ EXTERN_CVAR(Bool, info_overlay_3d)
  * INPUT CLASS FUNCTIONS
  *******************************************************************/
 
-Input::Input(MapEditContext& context) :
-	context_{context},
-	panning_{false},
-	mouse_state_{MouseState::Normal},
-	mouse_pos_{0, 0},
-	mouse_down_pos_{-1, -1},
-	mouse_drag_{DragType::None},
-	mouse_wheel_speed_{0},
-	shift_down_{false},
-	ctrl_down_{false},
-	alt_down_{false}
+/* Input::Input
+ * Input class constructor
+ *******************************************************************/
+Input::Input(MapEditContext& context) : context_{ context }
 {
 }
 
-void Input::mouseMove(int new_x, int new_y)
+/* Input::mouseMove
+ * Handles mouse movement to [new_x],[new_y] on the map editor view
+ *******************************************************************/
+bool Input::mouseMove(int new_x, int new_y)
 {
+	// Check if a full screen overlay is active
+	if (context_.overlayActive())
+	{
+		context_.currentOverlay()->mouseMotion(new_x, new_y);
+		return false;
+	}
+
+	// Panning
+	if (panning_)
+		context_.renderer().pan(mouse_pos_.x - new_x, -(mouse_pos_.y - new_y), true);
+
+	// Update mouse variables
 	mouse_pos_ = { new_x, new_y };
 	mouse_pos_map_ = context_.renderer().view().mapPos(mouse_pos_);
+
+	// Update coordinates on status bar
+	double mx = context_.snapToGrid(mouse_pos_map_.x, false);
+	double my = context_.snapToGrid(mouse_pos_map_.y, false);
+	string status_text;
+	if (context_.mapDesc().format == MAP_UDMF)
+		status_text = S_FMT("Position: (%1.3f, %1.3f)", mx, my);
+	else
+		status_text = S_FMT("Position: (%d, %d)", (int)mx, (int)my);
+	MapEditor::setStatusText(status_text, 3);
+
+	// Object edit
+	auto edit_state = context_.objectEdit().state();
+	if (mouse_state_ == MouseState::ObjectEdit)
+	{
+		// Do dragging if left mouse is down
+		if (mouse_button_down_[Left] && edit_state != ObjectEdit::State::None)
+		{
+			auto& group = context_.objectEdit().group();
+
+			if (context_.objectEdit().rotating())
+			{
+				// Rotate
+				group.doRotate(mouse_down_pos_map_, mouse_pos_map_, !shift_down_);
+				MapEditor::window()->objectEditPanel()->update(&group, true);
+			}
+			else
+			{
+				// Get dragged offsets
+				double xoff = mouse_pos_map_.x - mouse_down_pos_map_.x;
+				double yoff = mouse_pos_map_.y - mouse_down_pos_map_.y;
+
+				// Snap to grid if shift not held down
+				if (!shift_down_)
+				{
+					xoff = context_.snapToGrid(xoff);
+					yoff = context_.snapToGrid(yoff);
+				}
+
+				if (edit_state == ObjectEdit::State::Move)
+				{
+					// Move objects
+					group.doMove(xoff, yoff);
+					MapEditor::window()->objectEditPanel()->update(&group);
+				}
+				else
+				{
+					// Scale objects
+					group.doScale(
+						xoff,
+						yoff,
+						context_.objectEdit().stateLeft(false),
+						context_.objectEdit().stateTop(false),
+						context_.objectEdit().stateRight(false),
+						context_.objectEdit().stateBottom(false)
+					);
+					MapEditor::window()->objectEditPanel()->update(&group);
+				}
+			}
+		}
+		else
+			context_.objectEdit().determineState();
+
+		return false;
+	}
+
+	// Check if we want to start a selection box
+	if (mouse_drag_ == DragType::Selection &&
+		fpoint2_t(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 16)
+	{
+		mouse_state_ = MouseState::Selection;
+		mouse_drag_ = DragType::None;
+	}
+
+	// Check if we want to start moving
+	if (mouse_drag_ == DragType::Move &&
+		fpoint2_t(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 4)
+	{
+		mouse_state_ = MouseState::Move;
+		mouse_drag_ = DragType::None;
+		context_.moveObjects().begin(mouse_down_pos_map_);
+		context_.renderer().renderer2D().forceUpdate();
+	}
+
+	// Check if we are in thing quick angle state
+	if (mouse_state_ == MouseState::ThingAngle)
+		context_.edit2D().thingQuickAngle(mouse_pos_map_);
+
+	// Update shape drawing if needed
+	if (mouse_state_ == MouseState::LineDraw && context_.lineDraw().state() == LineDraw::State::ShapeEdge)
+		context_.lineDraw().updateShape(mouse_pos_map_);
+
+	return true;
 }
 
-void Input::mouseDown()
+/* Input::mouseDown
+ * Handles mouse [button] press on the map editor view. If
+ * [double_click] is true, this is a double-click event
+ *******************************************************************/
+bool Input::mouseDown(MouseButton button, bool double_click)
 {
+	// Update hilight
+	if (mouse_state_ == MouseState::Normal)
+		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
+
+	// Update mouse variables
 	mouse_down_pos_ = mouse_pos_;
 	mouse_down_pos_map_ = mouse_pos_map_;
+	mouse_button_down_[button] = true;
+	mouse_drag_ = DragType::None;
+
+	// Check if a full screen overlay is active
+	if (context_.overlayActive())
+	{
+		// Left click
+		if (button == Left)
+			context_.currentOverlay()->mouseLeftClick();
+
+		// Right click
+		else if (button == Right)
+			context_.currentOverlay()->mouseRightClick();
+
+		return false;
+	}
+
+	// Left button
+	if (button == Left)
+	{
+		// 3d mode
+		if (context_.editMode() == Mode::Visual)
+		{
+			// If the mouse is unlocked, lock the mouse
+			if (!context_.mouseLocked())
+				context_.lockMouse(true);
+			else
+			{
+				// Shift down, select all matching adjacent structures
+				if (shift_down_)
+					context_.edit3D().selectAdjacent(context_.hilightItem());
+
+				// Otherwise toggle selection
+				else
+					context_.selection().toggleCurrent();
+			}
+
+			return false;
+		}
+
+		// Line drawing state, add line draw point
+		if (mouse_state_ == MouseState::LineDraw)
+		{
+			// Snap point to nearest vertex if shift is held down
+			bool nearest_vertex = false;
+			if (shift_down_)
+				nearest_vertex = true;
+
+			// Line drawing
+			if (context_.lineDraw().state() == LineDraw::State::Line)
+			{
+				if (context_.lineDraw().addPoint(mouse_down_pos_map_, nearest_vertex))
+				{
+					// If line drawing finished, revert to normal state
+					mouse_state_ = MouseState::Normal;
+				}
+			}
+
+			// Shape drawing
+			else
+			{
+				if (context_.lineDraw().state() == LineDraw::State::ShapeOrigin)
+				{
+					// Set shape origin
+					context_.lineDraw().setShapeOrigin(mouse_down_pos_map_, nearest_vertex);
+					context_.lineDraw().setState(LineDraw::State::ShapeEdge);
+				}
+				else
+				{
+					// Finish shape draw
+					context_.lineDraw().end(true);
+					MapEditor::window()->showShapeDrawPanel(false);
+					mouse_state_ = MouseState::Normal;
+				}
+			}
+		}
+
+		// Paste state, accept paste
+		else if (mouse_state_ == MouseState::Paste)
+		{
+			context_.edit2D().paste(mouse_pos_map_);
+			if (!shift_down_)
+				mouse_state_ = MouseState::Normal;
+		}
+
+		// Sector tagging state
+		else if (mouse_state_ == MouseState::TagSectors)
+		{
+			context_.tagSectorAt(mouse_pos_map_.x, mouse_pos_map_.y);
+		}
+
+		else if (mouse_state_ == MouseState::Normal)
+		{
+			// Double click to edit the current selection
+			if (double_click && property_edit_dclick)
+			{
+				context_.edit2D().editObjectProperties();
+				if (context_.selection().size() == 1)
+					context_.selection().clear();
+			}
+			// Begin box selection if shift is held down, otherwise toggle selection on hilighted object
+			else if (shift_down_)
+				mouse_state_ = MouseState::Selection;
+			else
+			{
+				if (!context_.selection().toggleCurrent(selection_clear_click))
+					mouse_drag_ = DragType::Selection;
+			}
+		}
+	}
+
+	// Right button
+	else if (button == Right)
+	{
+		// 3d mode
+		if (context_.editMode() == Mode::Visual)
+		{
+			// Get selection or hilight
+			auto sel = context_.selection().selectionOrHilight();
+			if (!sel.empty())
+			{
+				// Check type
+				if (sel[0].type == MapEditor::ItemType::Thing)
+					context_.edit2D().changeThingType();
+				else
+					context_.edit3D().changeTexture();
+			}
+		}
+
+		// Remove line draw point if in line drawing state
+		if (mouse_state_ == MouseState::LineDraw)
+		{
+			// Line drawing
+			if (context_.lineDraw().state() == LineDraw::State::Line)
+				context_.lineDraw().removePoint();
+
+			// Shape drawing
+			else if (context_.lineDraw().state() == LineDraw::State::ShapeEdge)
+			{
+				context_.lineDraw().end(false);
+				context_.lineDraw().setState(LineDraw::State::ShapeOrigin);
+			}
+		}
+
+		// Normal state
+		else if (mouse_state_ == MouseState::Normal)
+		{
+			// Begin move if something is selected/hilighted
+			if (context_.selection().hasHilightOrSelection())
+				mouse_drag_ = DragType::Move;
+		}
+	}
+
+	// Any other mouse button (let keybind system handle it)
+	else
+		KeyBind::keyPressed(keypress_t(mouseButtonKBName(button), alt_down_, ctrl_down_, shift_down_));
+
+	return true;
 }
 
-void Input::mouseUp()
+/* Input::mouseUp
+ * Handles mouse [button] release on the map editor view
+ *******************************************************************/
+bool Input::mouseUp(MouseButton button)
 {
+	// Update mouse variables
 	mouse_down_pos_ = { -1, -1 };
 	mouse_down_pos_map_ = { -1, -1 };
+	mouse_button_down_[button] = false;
+
+	// Check if a full screen overlay is active
+	if (context_.overlayActive())
+		return false;
+
+	// Left button
+	if (button == Left)
+	{
+		mouse_drag_ = DragType::None;
+
+		// If we're ending a box selection
+		if (mouse_state_ == MouseState::Selection)
+		{
+			// Reset mouse state
+			mouse_state_ = MouseState::Normal;
+
+			// Select
+			context_.selection().selectWithin(
+				{
+					min(mouse_down_pos_map_.x, mouse_pos_map_.x),
+					min(mouse_down_pos_map_.y, mouse_pos_map_.y),
+					max(mouse_down_pos_map_.x, mouse_pos_map_.x),
+					max(mouse_down_pos_map_.y, mouse_pos_map_.y)
+				},
+				shift_down_
+			);
+
+			// Begin selection box fade animation
+			context_.renderer().addAnimation(
+				std::make_unique<MCASelboxFader>(
+					App::runTimer(),
+					mouse_down_pos_map_,
+					mouse_pos_map_
+					));
+		}
+
+		// If we're in object edit mode
+		if (mouse_state_ == MouseState::ObjectEdit)
+			context_.objectEdit().group().resetPositions();
+	}
+	
+	// Right button
+	else if (button == Right)
+	{
+		mouse_drag_ = DragType::None;
+
+		if (mouse_state_ == MouseState::Move)
+		{
+			context_.moveObjects().end();
+			mouse_state_ = MouseState::Normal;
+			context_.renderer().renderer2D().forceUpdate();
+		}
+
+		// Paste state, cancel paste
+		else if (mouse_state_ == MouseState::Paste)
+			mouse_state_ = MouseState::Normal;
+
+		else if (mouse_state_ == MouseState::Normal)
+			MapEditor::openContextMenu();
+	}
+
+	// Any other mouse button (let keybind system handle it)
+	else if (mouse_state_ != MouseState::Selection)
+		KeyBind::keyReleased(mouseButtonKBName(button));
+
+	return true;
 }
 
+/* Input::mouseWheel
+ * Handles mouse wheel movement depending on [up]
+ *******************************************************************/
 void Input::mouseWheel(bool up, double amount)
 {
 	mouse_wheel_speed_ = amount;
@@ -116,6 +465,23 @@ void Input::mouseWheel(bool up, double amount)
 	}
 }
 
+/* Input::mouseLeave
+ * Handles the mouse pointer leaving the map editor view
+ *******************************************************************/
+void Input::mouseLeave()
+{
+	// Stop panning
+	if (panning_)
+	{
+		panning_ = false;
+		context_.setCursor(UI::MouseCursor::Normal);
+	}
+}
+
+/* Input::updateKeyModifiersWx
+ * Updates key modifier variables based on a wxWidgets key modifier
+ * bit field
+ *******************************************************************/
 void Input::updateKeyModifiersWx(int modifiers)
 {
 	shift_down_ = (modifiers & wxMOD_SHIFT) > 0;
@@ -123,6 +489,9 @@ void Input::updateKeyModifiersWx(int modifiers)
 	alt_down_ = (modifiers & wxMOD_ALT) > 0;
 }
 
+/* Input::onKeyBindPress
+ * Called when the key bind [name] is pressed
+ *******************************************************************/
 void Input::onKeyBindPress(string name)
 {
 	// Check if an overlay is active
@@ -174,9 +543,12 @@ void Input::onKeyBindPress(string name)
 	}
 }
 
+/* Input::onKeyBindRelease
+ * Called when the key bind [name] is released
+ *******************************************************************/
 void Input::onKeyBindRelease(string name)
 {
-	if (name == "me2d_pan_view" && context_.input().panning())
+	if (name == "me2d_pan_view" && panning_)
 	{
 		panning_ = false;
 		if (mouse_state_ == MouseState::Normal)
@@ -192,6 +564,10 @@ void Input::onKeyBindRelease(string name)
 	}
 }
 
+/* Input::handleKeyBind2dView
+ * Handles 2d mode view-related keybinds (can generally be used no
+ * matter the current editor state)
+ *******************************************************************/
 void Input::handleKeyBind2dView(const string& name)
 {
 	// Pan left
@@ -254,6 +630,9 @@ void Input::handleKeyBind2dView(const string& name)
 		context_.decrementGrid();
 }
 
+/* Input::handleKeyBind2d
+ * Handles 2d mode key binds
+ *******************************************************************/
 void Input::handleKeyBind2d(const string& name)
 {
 	// --- Line Drawing ---
@@ -283,7 +662,7 @@ void Input::handleKeyBind2d(const string& name)
 		if (name == "map_edit_accept")
 		{
 			mouse_state_ = MouseState::Normal;
-			context_.edit2D().paste(context_.input().mousePosMap());
+			context_.edit2D().paste(mouse_pos_map_);
 		}
 
 		// Cancel paste
@@ -431,7 +810,7 @@ void Input::handleKeyBind2d(const string& name)
 		// Move items (toggle)
 		else if (name == "me2d_move")
 		{
-			if (context_.moveObjects().begin(context_.input().mousePosMap()))
+			if (context_.moveObjects().begin(mouse_pos_map_))
 			{
 				mouse_state_ = MouseState::Move;
 				context_.renderer().renderer2D().forceUpdate();
@@ -445,8 +824,8 @@ void Input::handleKeyBind2d(const string& name)
 		// Split line
 		else if (name == "me2d_split_line")
 			context_.edit2D().splitLine(
-				context_.input().mousePosMap().x,
-				context_.input().mousePosMap().y,
+				mouse_pos_map_.x,
+				mouse_pos_map_.y,
 				16 / context_.renderer().view().scale()
 			);
 
@@ -468,7 +847,7 @@ void Input::handleKeyBind2d(const string& name)
 				mouse_state_ = MouseState::LineDraw;
 			}
 			else
-				context_.edit2D().createObject(context_.input().mousePosMap().x, context_.input().mousePosMap().y);
+				context_.edit2D().createObject(mouse_pos_map_.x, mouse_pos_map_.y);
 		}
 
 		// Delete object
@@ -592,7 +971,10 @@ void Input::handleKeyBind2d(const string& name)
 	}
 }
 
-void Input::handleKeyBind3d(const string& name)
+/* Input::handleKeyBind3d
+ * Handles 3d mode key binds
+ *******************************************************************/
+void Input::handleKeyBind3d(const string& name) const
 {
 	// Escape from 3D mode
 	if (name == "map_edit_cancel")
@@ -641,9 +1023,9 @@ void Input::handleKeyBind3d(const string& name)
 			context_.addEditorMessage("Gravity enabled");
 	}
 
-//		// Release mouse cursor
-//	else if (name == "me3d_release_mouse")
-//		lockMouse(false);
+	// Release mouse cursor
+	else if (name == "me3d_release_mouse")
+		context_.lockMouse(false);
 
 	// Toggle things
 	else if (name == "me3d_toggle_things")
@@ -709,7 +1091,11 @@ void Input::handleKeyBind3d(const string& name)
 		context_.handleKeyBind(name, mouse_pos_map_);
 }
 
-bool Input::updateCamera3d(double mult)
+/* Input::updateCamera3d
+ * Updates the 3d mode camera depending on what keybinds are
+ * currently pressed
+ *******************************************************************/
+bool Input::updateCamera3d(double mult) const
 {
 	// --- Check for held-down keys ---
 	bool moving = false;
@@ -777,4 +1163,20 @@ bool Input::updateCamera3d(double mult)
 		r3d.cameraApplyGravity(mult);
 
 	return moving;
+}
+
+/* Input::mouseButtonKBName
+ * Returns the KeyBind name for the given mouse [button]
+ *******************************************************************/
+string Input::mouseButtonKBName(MouseButton button)
+{
+	switch (button)
+	{
+	case Left:		return "mouse1";
+	case Right:		return "mouse2";
+	case Middle:	return "mouse3";
+	case Mouse4:	return "mouse4";
+	case Mouse5:	return "mouse5";
+	default:		return S_FMT("mouse%d", button);
+	}
 }
