@@ -63,6 +63,9 @@ CVAR(Float, render_3d_brightness, 1, CVAR_SAVE)
 CVAR(Float, render_fog_distance, 1500, CVAR_SAVE)
 CVAR(Bool, render_fog_new_formula, true, CVAR_SAVE)
 CVAR(Bool, render_shade_orthogonal_lines, true, CVAR_SAVE)
+CVAR(Bool, mlook_invert_y, false, CVAR_SAVE)
+CVAR(Float, camera_3d_sensitivity_x, 1.0f, CVAR_SAVE)
+CVAR(Float, camera_3d_sensitivity_y, 1.0f, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -421,6 +424,18 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 		if (cam_position.z > fheight)
 			cam_position.z = fheight;
 	}
+}
+
+/* MapRenderer3D::cameraLook
+ * Moves the camera direction/pitch based on [xrel],[yrel]
+ *******************************************************************/
+void MapRenderer3D::cameraLook(double xrel, double yrel)
+{
+	cameraTurn(-xrel*0.1*camera_3d_sensitivity_x);
+	if (mlook_invert_y)
+		cameraPitch(yrel*0.003*camera_3d_sensitivity_y);
+	else
+		cameraPitch(-yrel*0.003*camera_3d_sensitivity_y);
 }
 
 /* MapRenderer3D::setupView

@@ -482,9 +482,33 @@ void Input::mouseLeave()
  *******************************************************************/
 void Input::updateKeyModifiersWx(int modifiers)
 {
-	shift_down_ = (modifiers & wxMOD_SHIFT) > 0;
-	ctrl_down_ = (modifiers & wxMOD_CONTROL) > 0;
-	alt_down_ = (modifiers & wxMOD_ALT) > 0;
+	updateKeyModifiers(
+		(modifiers & wxMOD_SHIFT) > 0,
+		(modifiers & wxMOD_CONTROL) > 0,
+		(modifiers & wxMOD_ALT) > 0
+	);
+}
+
+/* Input::keyDown
+ * Handles [key] being pressed in the map editor
+ *******************************************************************/
+bool Input::keyDown(const string& key) const
+{
+	// Send to overlay if active
+	if (context_.overlayActive())
+		context_.currentOverlay()->keyDown(key);
+
+	// Let keybind system handle it
+	return KeyBind::keyPressed({ key, alt_down_, ctrl_down_, shift_down_ });
+}
+
+/* Input::keyUp
+ * Handles [key] being released in the map editor
+ *******************************************************************/
+bool Input::keyUp(const string& key) const
+{
+	// Let keybind system handle it
+	return KeyBind::keyReleased(key);
 }
 
 /* Input::onKeyBindPress

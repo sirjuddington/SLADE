@@ -37,45 +37,22 @@
 #include "Utility/MathStuff.h"
 
 using MapEditor::Mode;
-using MapEditor::SectorMode;
 
 
 /*******************************************************************
- * VARIABLES
+ * MAPCANVAS CLASS FUNCTIONS
  *******************************************************************/
-CVAR(Bool, mlook_invert_y, false, CVAR_SAVE)
-CVAR(Float, camera_3d_sensitivity_x, 1.0f, CVAR_SAVE)
-CVAR(Float, camera_3d_sensitivity_y, 1.0f, CVAR_SAVE)
-
-// for testing
-PolygonSplitter splitter;
-SectorBuilder sbuilder;
-
-
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
-EXTERN_CVAR(Int, vertex_size)
-EXTERN_CVAR(Bool, vertex_round)
-EXTERN_CVAR(Float, render_max_dist)
-EXTERN_CVAR(Int, render_3d_things)
-EXTERN_CVAR(Int, render_3d_things_style)
-EXTERN_CVAR(Int, render_3d_hilight)
-EXTERN_CVAR(Bool, map_animate_hilight)
-EXTERN_CVAR(Float, render_3d_brightness)
-
 
 /* MapCanvas::MapCanvas
  * MapCanvas class constructor
  *******************************************************************/
-MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* editor)
-	: OGLCanvas(parent, id, false)
+MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
+	OGLCanvas{ parent, id, false },
+	context_{ context }
 {
 	// Init variables
-	this->editor = editor;
-	editor->setCanvas(this);
+	context_->setCanvas(this);
 	last_time = 0;
-	mouse_warp = false;
 
 #ifdef USE_SFML_RENDERWINDOW
 	setVerticalSyncEnabled(false);
@@ -125,7 +102,7 @@ void MapCanvas::draw()
 	if (!IsEnabled())
 		return;
 
-	editor->renderer().draw();
+	context_->renderer().draw();
 
 	SwapBuffers();
 
@@ -138,7 +115,7 @@ void MapCanvas::draw()
 void MapCanvas::mouseToCenter()
 {
 	wxRect rect = GetScreenRect();
-	mouse_warp = true;
+	mouse_warp_ = true;
 	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width*0.5), rect.y + int(rect.height*0.5)));
 }
 
@@ -178,9 +155,9 @@ void MapCanvas::lockMouse(bool lock)
 void MapCanvas::mouseLook3d()
 {
 	// Check for 3d mode
-	if (editor->editMode() == Mode::Visual && editor->mouseLocked())
+	if (context_->editMode() == Mode::Visual && context_->mouseLocked())
 	{
-		auto overlay_current = editor->currentOverlay();
+		auto overlay_current = context_->currentOverlay();
 		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
 		{
 			// Get relative mouse movement
@@ -191,12 +168,7 @@ void MapCanvas::mouseLook3d()
 
 			if (xrel != 0 || yrel != 0)
 			{
-				editor->renderer().renderer3D().cameraTurn(-xrel*0.1*camera_3d_sensitivity_x);
-				if (mlook_invert_y)
-					editor->renderer().renderer3D().cameraPitch(yrel*0.003*camera_3d_sensitivity_y);
-				else
-					editor->renderer().renderer3D().cameraPitch(-yrel*0.003*camera_3d_sensitivity_y);
-
+				context_->renderer().renderer3D().cameraLook(xrel, yrel);
 				mouseToCenter();
 			}
 		}
@@ -235,12 +207,12 @@ void MapCanvas::onKeyBindPress(string name)
 		if (shot.saveToFile(UTF8(filename)))
 		{
 			// Editor message if the file is actually written, with full path
-			editor->addEditorMessage(S_FMT("Screenshot taken (%s)", filename));
+			context_->addEditorMessage(S_FMT("Screenshot taken (%s)", filename));
 		}
 		else
 		{
 			// Editor message also if the file couldn't be written
-			editor->addEditorMessage(S_FMT("Screenshot failed (%s)", filename));
+			context_->addEditorMessage(S_FMT("Screenshot failed (%s)", filename));
 		}
 
 	}
@@ -258,7 +230,7 @@ void MapCanvas::onKeyBindPress(string name)
 void MapCanvas::onSize(wxSizeEvent& e)
 {
 	// Update screen limits
-	editor->renderer().setViewSize(GetSize().x, GetSize().y);
+	context_->renderer().setViewSize(GetSize().x, GetSize().y);
 
 	e.Skip();
 }
@@ -268,15 +240,9 @@ void MapCanvas::onSize(wxSizeEvent& e)
  *******************************************************************/
 void MapCanvas::onKeyDown(wxKeyEvent& e)
 {
-	// Set current modifiers
-	editor->input().updateKeyModifiersWx(e.GetModifiers());
-
-	// Send to overlay if active
-	if (editor->overlayActive())
-		editor->currentOverlay()->keyDown(KeyBind::keyName(e.GetKeyCode()));
-
-	// Let keybind system handle it
-	KeyBind::keyPressed(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
+	// Send to editor
+	context_->input().updateKeyModifiersWx(e.GetModifiers());
+	context_->input().keyDown(KeyBind::keyName(e.GetKeyCode()));
 
 	// Testing
 	if (Global::debug)
@@ -286,9 +252,9 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 			Polygon2D poly;
 			sf::Clock clock;
 			LOG_MESSAGE(1, "Generating polygons...");
-			for (unsigned a = 0; a < editor->map().nSectors(); a++)
+			for (unsigned a = 0; a < context_->map().nSectors(); a++)
 			{
-				if (!poly.openSector(editor->map().getSector(a)))
+				if (!poly.openSector(context_->map().getSector(a)))
 					LOG_MESSAGE(1, "Splitting failed for sector %d", a);
 			}
 			//int ms = clock.GetElapsedTime() * 1000;
@@ -297,39 +263,41 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F7)
 		{
 			// Get nearest line
-			int nearest = editor->map().nearestLine(editor->input().mousePosMap(), 999999);
-			MapLine* line = editor->map().getLine(nearest);
+			int nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
+			MapLine* line = context_->map().getLine(nearest);
 			if (line)
 			{
+				SectorBuilder sbuilder;
+
 				// Determine line side
-				double side = MathStuff::lineSide(editor->input().mousePosMap(), line->seg());
+				double side = MathStuff::lineSide(context_->input().mousePosMap(), line->seg());
 				if (side >= 0)
-					sbuilder.traceSector(&(editor->map()), line, true);
+					sbuilder.traceSector(&(context_->map()), line, true);
 				else
-					sbuilder.traceSector(&(editor->map()), line, false);
+					sbuilder.traceSector(&(context_->map()), line, false);
 			}
 		}
 		if (e.GetKeyCode() == WXK_F5)
 		{
 			// Get nearest line
-			int nearest = editor->map().nearestLine(editor->input().mousePosMap(), 999999);
-			MapLine* line = editor->map().getLine(nearest);
+			int nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
+			MapLine* line = context_->map().getLine(nearest);
 
 			// Get sectors
-			MapSector* sec1 = editor->map().getLineSideSector(line, true);
-			MapSector* sec2 = editor->map().getLineSideSector(line, false);
+			MapSector* sec1 = context_->map().getLineSideSector(line, true);
+			MapSector* sec2 = context_->map().getLineSideSector(line, false);
 			int i1 = -1;
 			int i2 = -1;
 			if (sec1) i1 = sec1->getIndex();
 			if (sec2) i2 = sec2->getIndex();
 
-			editor->addEditorMessage(S_FMT("Front %d Back %d", i1, i2));
+			context_->addEditorMessage(S_FMT("Front %d Back %d", i1, i2));
 		}
-		if (e.GetKeyCode() == WXK_F5 && editor->editMode() == Mode::Sectors)
+		if (e.GetKeyCode() == WXK_F5 && context_->editMode() == Mode::Sectors)
 		{
+			PolygonSplitter splitter;
 			splitter.setVerbose(true);
-			splitter.clear();
-			splitter.openSector(editor->selection().hilightedSector());
+			splitter.openSector(context_->selection().hilightedSector());
 			Polygon2D temp;
 			splitter.doSplitting(&temp);
 		}
@@ -359,11 +327,9 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
  *******************************************************************/
 void MapCanvas::onKeyUp(wxKeyEvent& e)
 {
-	// Set current modifiers
-	editor->input().updateKeyModifiersWx(e.GetModifiers());
-
-	// Let keybind system handle it
-	KeyBind::keyReleased(KeyBind::keyName(e.GetKeyCode()));
+	// Send to editor
+	context_->input().updateKeyModifiersWx(e.GetModifiers());
+	context_->input().keyUp(KeyBind::keyName(e.GetKeyCode()));
 
 	e.Skip();
 }
@@ -378,25 +344,25 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	// Send to editor context
 	bool skip = true;
 	if (e.LeftDown())
-		skip = editor->input().mouseDown(Input::MouseButton::Left);
+		skip = context_->input().mouseDown(Input::MouseButton::Left);
 	else if (e.LeftDClick())
-		skip = editor->input().mouseDown(Input::MouseButton::Left, true);
+		skip = context_->input().mouseDown(Input::MouseButton::Left, true);
 	else if (e.RightDown())
-		skip = editor->input().mouseDown(Input::MouseButton::Right);
+		skip = context_->input().mouseDown(Input::MouseButton::Right);
 	else if (e.RightDClick())
-		skip = editor->input().mouseDown(Input::MouseButton::Right, true);
+		skip = context_->input().mouseDown(Input::MouseButton::Right, true);
 	else if (e.MiddleDown())
-		skip = editor->input().mouseDown(Input::MouseButton::Middle);
+		skip = context_->input().mouseDown(Input::MouseButton::Middle);
 	else if (e.MiddleDClick())
-		skip = editor->input().mouseDown(Input::MouseButton::Middle, true);
+		skip = context_->input().mouseDown(Input::MouseButton::Middle, true);
 	else if (e.Aux1Down())
-		skip = editor->input().mouseDown(Input::MouseButton::Mouse4);
+		skip = context_->input().mouseDown(Input::MouseButton::Mouse4);
 	else if (e.Aux1DClick())
-		skip = editor->input().mouseDown(Input::MouseButton::Mouse4, true);
+		skip = context_->input().mouseDown(Input::MouseButton::Mouse4, true);
 	else if (e.Aux2Down())
-		skip = editor->input().mouseDown(Input::MouseButton::Mouse5);
+		skip = context_->input().mouseDown(Input::MouseButton::Mouse5);
 	else if (e.Aux2DClick())
-		skip = editor->input().mouseDown(Input::MouseButton::Mouse5, true);
+		skip = context_->input().mouseDown(Input::MouseButton::Mouse5, true);
 
 	if (skip)
 	{
@@ -417,15 +383,15 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 	// Send to editor context
 	bool skip = true;
 	if (e.LeftUp())
-		skip = editor->input().mouseUp(Input::MouseButton::Left);
+		skip = context_->input().mouseUp(Input::MouseButton::Left);
 	else if (e.RightUp())
-		skip = editor->input().mouseUp(Input::MouseButton::Right);
+		skip = context_->input().mouseUp(Input::MouseButton::Right);
 	else if (e.MiddleUp())
-		skip = editor->input().mouseUp(Input::MouseButton::Middle);
+		skip = context_->input().mouseUp(Input::MouseButton::Middle);
 	else if (e.Aux1Up())
-		skip = editor->input().mouseUp(Input::MouseButton::Mouse4);
+		skip = context_->input().mouseUp(Input::MouseButton::Mouse4);
 	else if (e.Aux2Up())
-		skip = editor->input().mouseUp(Input::MouseButton::Mouse5);
+		skip = context_->input().mouseUp(Input::MouseButton::Mouse5);
 
 	if (skip)
 		e.Skip();
@@ -437,15 +403,15 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 void MapCanvas::onMouseMotion(wxMouseEvent& e)
 {
 	// Ignore if it was generated by a mouse pointer warp
-	if (mouse_warp)
+	if (mouse_warp_)
 	{
-		mouse_warp = false;
+		mouse_warp_ = false;
 		e.Skip();
 		return;
 	}
 
 	// Update mouse variables
-	if (!editor->input().mouseMove(e.GetX(), e.GetY()))
+	if (!context_->input().mouseMove(e.GetX(), e.GetY()))
 		return;
 
 	e.Skip();
@@ -467,7 +433,7 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 	if (mwheel_rotation < 0.001)
 		return;
 
-	editor->input().mouseWheel(e.GetWheelRotation() > 0, mwheel_rotation);
+	context_->input().mouseWheel(e.GetWheelRotation() > 0, mwheel_rotation);
 }
 
 /* MapCanvas::onMouseLeave
@@ -475,7 +441,7 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
  *******************************************************************/
 void MapCanvas::onMouseLeave(wxMouseEvent& e)
 {
-	editor->input().mouseLeave();
+	context_->input().mouseLeave();
 
 	e.Skip();
 }
@@ -500,11 +466,11 @@ void MapCanvas::onIdle(wxIdleEvent& e)
 	mouseLook3d();
 
 	// Get time since last redraw
-	long frametime = (sfclock.getElapsedTime().asMilliseconds()) - last_time;
+	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time;
 
-	if (editor->update(frametime))
+	if (context_->update(frametime))
 	{
-		last_time = (sfclock.getElapsedTime().asMilliseconds());
+		last_time = (sf_clock_.getElapsedTime().asMilliseconds());
 		Refresh();
 	}
 }
@@ -518,11 +484,11 @@ void MapCanvas::onRTimer(wxTimerEvent& e)
 	mouseLook3d();
 
 	// Get time since last redraw
-	long frametime = (sfclock.getElapsedTime().asMilliseconds()) - last_time;
+	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time;
 
-	if (editor->update(frametime))
+	if (context_->update(frametime))
 	{
-		last_time = (sfclock.getElapsedTime().asMilliseconds());
+		last_time = (sf_clock_.getElapsedTime().asMilliseconds());
 		Refresh();
 	}
 
@@ -536,7 +502,7 @@ void MapCanvas::onFocus(wxFocusEvent& e)
 {
 	if (e.GetEventType() == wxEVT_SET_FOCUS)
 	{
-		if (editor->editMode() == Mode::Visual)
+		if (context_->editMode() == Mode::Visual)
 			lockMouse(true);
 	}
 	else if (e.GetEventType() == wxEVT_KILL_FOCUS)
