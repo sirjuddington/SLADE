@@ -46,7 +46,13 @@ struct point2_t
 	{
 		return (x == rhs.x && y == rhs.y);
 	}
+
+	bool operator!=(point2_t rhs)
+	{
+		return (x != rhs.x || y != rhs.y);
+	}
 };
+#define POINT_OUTSIDE point2_t(-1, -1)
 
 // fpoint2_t: A 2d coordinate (or vector) with floating-point precision
 struct fpoint2_t
@@ -253,28 +259,31 @@ struct fpoint3_t
 struct rgba_t
 {
 	uint8_t r, g, b, a;
+	int16_t index; // -1=not indexed
 	char blend; // 0=normal, 1=additive
 
 	// Constructors
-	rgba_t() { r = 0; g = 0; b = 0; a = 0; blend = -1; }
+	rgba_t() { r = 0; g = 0; b = 0; a = 0; blend = -1; index = -1; }
 
-	rgba_t(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1)
+	rgba_t(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1, int16_t INDEX = -1)
 	{
 		r = R;
 		g = G;
 		b = B;
 		a = A;
 		blend = BLEND;
+		index = INDEX;
 	}
 
 	// Functions
-	void set(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1)
+	void set(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1, int16_t INDEX = -1)
 	{
 		r = R;
 		g = G;
 		b = B;
 		a = A;
 		blend = BLEND;
+		index = INDEX;
 	}
 
 	void set(rgba_t colour)
@@ -284,6 +293,7 @@ struct rgba_t
 		b = colour.b;
 		a = colour.a;
 		blend = colour.blend;
+		index = colour.index;
 	}
 
 	float fr() { return (float)r / 255.0f; }
@@ -296,10 +306,12 @@ struct rgba_t
 	double db() { return (double)b / 255.0; }
 	double da() { return (double)a / 255.0; }
 
-	bool equals(rgba_t rhs, bool alpha = false)
+	bool equals(rgba_t rhs, bool alpha = false, bool index = false)
 	{
 		bool col_equal = (r == rhs.r && g == rhs.g && b == rhs.b);
 
+		if (index)
+			col_equal &= (this->index == rhs.index);
 		if (alpha)
 			return col_equal && (a == rhs.a);
 		else
@@ -323,7 +335,7 @@ struct rgba_t
 		if (na > 255) na = 255;
 		if (na < 0) na = 0;
 
-		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend);
+		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1);
 	}
 
 	// Amplify/fade colour components by factors
@@ -343,7 +355,7 @@ struct rgba_t
 		if (na > 255) na = 255;
 		if (na < 0) na = 0;
 
-		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend);
+		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1);
 	}
 
 	void write(uint8_t* ptr)
@@ -601,23 +613,23 @@ struct frect_t
 		br.set(rect.br);
 	}
 
-	double x1() { return tl.x; }
-	double y1() { return tl.y; }
-	double x2() { return br.x; }
-	double y2() { return br.y; }
-	fpoint2_t p1() { return tl; }
-	fpoint2_t p2() { return br; }
+	double x1() const { return tl.x; }
+	double y1() const { return tl.y; }
+	double x2() const { return br.x; }
+	double y2() const { return br.y; }
+	fpoint2_t p1() const { return tl; }
+	fpoint2_t p2() const { return br; }
 
-	double left()	{ return min(tl.x, br.x); }
-	double top()	{ return min(tl.y, br.y); }
-	double right()	{ return max(br.x, tl.x); }
-	double bottom()	{ return max(br.y, tl.y); }
+	double left()	const { return min(tl.x, br.x); }
+	double top()	const { return min(tl.y, br.y); }
+	double right()	const { return max(br.x, tl.x); }
+	double bottom()	const { return max(br.y, tl.y); }
 
-	double width() { return br.x - tl.x; }
-	double height() { return br.y - tl.y; }
+	double width() const { return br.x - tl.x; }
+	double height() const { return br.y - tl.y; }
 
-	double awidth() { return max(br.x, tl.x) - min(tl.x, br.x); }
-	double aheight() { return max(br.y, tl.y) - min(tl.y, br.y); }
+	double awidth() const { return max(br.x, tl.x) - min(tl.x, br.x); }
+	double aheight() const { return max(br.y, tl.y) - min(tl.y, br.y); }
 
 	fpoint2_t middle() { return fpoint2_t(left() + (awidth() / 2), top() + (aheight() / 2)); }
 
@@ -654,7 +666,7 @@ struct frect_t
 		return sqrt(dist_x * dist_x + dist_y * dist_y);
 	}
 
-	bool contains(fpoint2_t point)
+	bool contains(fpoint2_t point) const
 	{
 		return (point.x >= left() && point.x <= right() &&
 				point.y >= top() && point.y <= bottom());

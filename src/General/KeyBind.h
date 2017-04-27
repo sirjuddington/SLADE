@@ -123,7 +123,7 @@ class KeyBindHandler
 {
 public:
 	KeyBindHandler();
-	~KeyBindHandler();
+	virtual ~KeyBindHandler();
 
 	virtual void onKeyBindPress(string name) {}
 	virtual void onKeyBindRelease(string name) {}

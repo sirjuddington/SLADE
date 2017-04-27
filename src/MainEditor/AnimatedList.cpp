@@ -140,7 +140,7 @@ bool AnimatedList::readANIMATEDData(ArchiveEntry* animated)
 		// reads an entry
 		if (cursor + sizeof(animated_t) > eodata)
 		{
-			wxLogMessage("Error: ANIMATED entry is corrupt");
+			LOG_MESSAGE(1, "Error: ANIMATED entry is corrupt");
 			delete[] data;
 			return false;
 		}
@@ -231,7 +231,7 @@ bool AnimatedList::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, bool
 		// reads an entry
 		if (cursor + sizeof(animated_t) > eodata)
 		{
-			wxLogMessage("Error: ANIMATED entry is corrupt");
+			LOG_MESSAGE(1, "Error: ANIMATED entry is corrupt");
 			return false;
 		}
 		animation = (animated_t*) cursor;
@@ -293,13 +293,13 @@ bool AnimatedList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 				string first= tz.getToken();
 				if (last.length() > 8)
 				{
-					wxLogMessage("Error: string %s is too long for an animated %s name!",
+					LOG_MESSAGE(1, "Error: string %s is too long for an animated %s name!",
 									last, (texture ? "texture" : "flat"));
 					return false;
 				}
 				if (first.length() > 8)
 				{
-					wxLogMessage("Error: string %s is too long for an animated %s name!",
+					LOG_MESSAGE(1, "Error: string %s is too long for an animated %s name!",
 									first, (texture ? "texture" : "flat"));
 					return false;
 				}

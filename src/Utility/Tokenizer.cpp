@@ -52,7 +52,7 @@ Tokenizer::Tokenizer(CommentTypes comments_style)
 	size = 0;
 	comments = comments_style;
 	debug = false;
-	special = DEFAULT_SPECIAL_CHARS;
+	setSpecialCharacters(DEFAULT_SPECIAL_CHARS);
 	name = "nothing";
 	line = 1;
 	t_start = 0;
@@ -69,6 +69,19 @@ Tokenizer::~Tokenizer()
 	if (start) free(start);
 }
 
+/* Tokenizer::setSpecialCharacters
+* sets special to a value
+*******************************************************************/
+void Tokenizer::setSpecialCharacters(string special_new)
+{
+	this->special.clear();
+	this->special_length = special_new.size();
+	for (unsigned a = 0; a < special_length; a++)
+	{
+		this->special.push_back(special_new[a]);
+	}
+}
+
 /* Tokenizer::openFile
  * Reads a portion of a file to the Tokenizer
  *******************************************************************/
@@ -82,7 +95,7 @@ bool Tokenizer::openFile(string filename, uint32_t offset, uint32_t length)
 	// Check file opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("Tokenizer::openFile: Unable to open file %s", filename);
+		LOG_MESSAGE(1, "Tokenizer::openFile: Unable to open file %s", filename);
 		return false;
 	}
 
@@ -141,7 +154,7 @@ bool Tokenizer::openMem(const char* mem, uint32_t length, string source)
 	// Length must be specified
 	if (length == 0)
 	{
-		wxLogMessage("Tokenizer::openMem: length not specified");
+		LOG_MESSAGE(1, "Tokenizer::openMem: length not specified");
 		return false;
 	}
 
@@ -170,7 +183,7 @@ bool Tokenizer::openMem(const uint8_t* mem, uint32_t length, string source)
 	// Length must be specified
 	if (length == 0)
 	{
-		wxLogMessage("Tokenizer::openMem: length not specified");
+		LOG_MESSAGE(1, "Tokenizer::openMem: length not specified");
 		return false;
 	}
 
@@ -199,7 +212,7 @@ bool Tokenizer::openMem(MemChunk* mem, string source)
 	// Needs to be valid
 	if (mem == NULL)
 	{
-		wxLogMessage("Tokenizer::openMem: invalid MemChunk");
+		LOG_MESSAGE(1, "Tokenizer::openMem: invalid MemChunk");
 		return false;
 	}
 
@@ -239,7 +252,7 @@ bool Tokenizer::isWhitespace(char p)
 bool Tokenizer::isSpecialCharacter(char p)
 {
 	// Check through special tokens string
-	for (unsigned a = 0; a < special.size(); a++)
+	for (unsigned a = 0; a < special_length; a++)
 	{
 		if (special[a] == p)
 			return true;
@@ -440,6 +453,11 @@ void Tokenizer::readToken(bool toeol)
 			if (!toeol && isSpecialCharacter(current[0]))
 				return;
 
+			// Return if a comment starts without whitespace
+			if (comments & CCOMMENTS && token_current.size() && current + 1 < end &&
+				current[0] == '/' && (current[1] == '/' || current[1] == '*'))
+				return;
+
 			// Add current character to the token
 			token_current += current[0];
 
@@ -451,7 +469,7 @@ void Tokenizer::readToken(bool toeol)
 
 	// Write token to log if debug mode enabled
 	if (debug)
-		wxLogMessage(token_current);
+		LOG_MESSAGE(1, "%s", token_current);
 
 	// Return the token
 	return;

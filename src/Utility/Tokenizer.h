@@ -24,8 +24,11 @@ private:
 	uint32_t	position;		// Current position
 	uint8_t		comments;		// See CommentTypes enum
 	bool		debug;			// If true every getToken() is printed to the console
-	string		special;		// A string defining the 'special characters',
+	//string		special;		// A string defining the 'special characters',
 								// these will always be parsed as separate tokens
+	vector<char> special; // using a vector because wxstring does some horrible slow things
+							// so does vector but hey lesser of 2 evils
+	size_t		special_length;
 	string		name;			// What file/entry/chunk is being tokenized
 	bool		qstring;		// True if the last read token was a quoted string
 	uint32_t	line;			// The current line number
@@ -41,7 +44,7 @@ public:
 	Tokenizer(CommentTypes comments_style = COMMENTS_DEFAULT);
 	~Tokenizer();
 
-	void	setSpecialCharacters(string special) { this->special = special; }
+	void	setSpecialCharacters(string special);
 	void	enableDebug(bool debug = true) { this->debug = debug; }
 	void	enableDecorate(bool enable) { decorate = enable; }
 

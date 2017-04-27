@@ -364,7 +364,7 @@ z_sbarinfo {
 		ammo2tag, weapontag, inventorytag, time, logtext, linebreaks, normal, pain, ouch, rampage, god, godanimated, grin, death,
 		xdeath, custom, health2, healthspecial, directional, left, right, dontcap, itemflash, alticonfirst, alternateonfail,
 		forcescale, skipalticon, skipicon, skipready, skipspawn, auto, cooperative, singleplayer, teamgame, deathmatch, weaponslot,
-		equal,
+		equal, intcvar,
 
 		//Some default fonts
 		BIGFONT, INDEXFONT, SMALLFONT, HUDFONT_DOOM, INDEXFONT_DOOM, HUDFONT_RAVEN, INDEXFONT_RAVEN,

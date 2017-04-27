@@ -39,6 +39,7 @@
 #include "Archive/Formats/ZipArchive.h"
 #include "General/Console/Console.h"
 #include "Graphics/SImage/SIFormat.h"
+#include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include "External/zlib/zlib.h"
 
@@ -323,8 +324,8 @@ string Misc::lumpNameToFileName(string lump)
 	else
 	{
 		// ZDoom
-		lump.Replace("\\", "^");
-		lump.Replace("/", "^");
+		lump.Replace(StringUtils::SLASH_BACK, StringUtils::CARET);
+		lump.Replace(StringUtils::SLASH_FORWARD, StringUtils::CARET);
 	}
 	return lump;
 }
@@ -354,7 +355,7 @@ string Misc::fileNameToLumpName(string file)
 	else
 	{
 		// ZDoom
-		file.Replace("^", "\\");
+		file.Replace(StringUtils::CARET, StringUtils::SLASH_BACK);
 	}
 	return file;
 }

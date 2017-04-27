@@ -29,14 +29,15 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainEditor/MainWindow.h"
+#include "App.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "TextureXEditor.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Console/Console.h"
-#include "UI/SplashWindow.h"
 #include "Dialogs/ExtMessageDialog.h"
 #include "General/ResourceManager.h"
 #include "General/UndoRedo.h"
+#include "UI/PaletteChooser.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/UndoManagerHistoryPanel.h"
 
@@ -164,32 +165,32 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Create texture menu
 	menu_texture = new wxMenu();
-	theApp->getAction("txed_new")->addToMenu(menu_texture);
-	theApp->getAction("txed_new_patch")->addToMenu(menu_texture);
-	theApp->getAction("txed_new_file")->addToMenu(menu_texture);
-	theApp->getAction("txed_delete")->addToMenu(menu_texture);
+	SAction::fromId("txed_new")->addToMenu(menu_texture);
+	SAction::fromId("txed_new_patch")->addToMenu(menu_texture);
+	SAction::fromId("txed_new_file")->addToMenu(menu_texture);
+	SAction::fromId("txed_delete")->addToMenu(menu_texture);
 	menu_texture->AppendSeparator();
-	theApp->getAction("txed_rename")->addToMenu(menu_texture);
-	theApp->getAction("txed_rename_each")->addToMenu(menu_texture);
+	SAction::fromId("txed_rename")->addToMenu(menu_texture);
+	SAction::fromId("txed_rename_each")->addToMenu(menu_texture);
 	wxMenu* menu_export = new wxMenu();
-	theApp->getAction("txed_export")->addToMenu(menu_export, "Archive (as image)");
-	theApp->getAction("txed_extract")->addToMenu(menu_export, "File");
+	SAction::fromId("txed_export")->addToMenu(menu_export, "Archive (as image)");
+	SAction::fromId("txed_extract")->addToMenu(menu_export, "File");
 	menu_texture->AppendSubMenu(menu_export, "&Export To");
 	menu_texture->AppendSeparator();
-	theApp->getAction("txed_copy")->addToMenu(menu_texture);
-	theApp->getAction("txed_cut")->addToMenu(menu_texture);
-	theApp->getAction("txed_paste")->addToMenu(menu_texture);
+	SAction::fromId("txed_copy")->addToMenu(menu_texture);
+	SAction::fromId("txed_cut")->addToMenu(menu_texture);
+	SAction::fromId("txed_paste")->addToMenu(menu_texture);
 	menu_texture->AppendSeparator();
-	theApp->getAction("txed_up")->addToMenu(menu_texture);
-	theApp->getAction("txed_down")->addToMenu(menu_texture);
-	theApp->getAction("txed_sort")->addToMenu(menu_texture);
+	SAction::fromId("txed_up")->addToMenu(menu_texture);
+	SAction::fromId("txed_down")->addToMenu(menu_texture);
+	SAction::fromId("txed_sort")->addToMenu(menu_texture);
 	wxMenu* menu_patch = new wxMenu();
-	theApp->getAction("txed_patch_add")->addToMenu(menu_patch);
-	theApp->getAction("txed_patch_remove")->addToMenu(menu_patch);
-	theApp->getAction("txed_patch_replace")->addToMenu(menu_patch);
-	theApp->getAction("txed_patch_back")->addToMenu(menu_patch);
-	theApp->getAction("txed_patch_forward")->addToMenu(menu_patch);
-	theApp->getAction("txed_patch_duplicate")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_add")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_remove")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_replace")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_back")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_forward")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_duplicate")->addToMenu(menu_patch);
 	menu_texture->AppendSubMenu(menu_patch, "&Patch");
 
 	// Create patch browser

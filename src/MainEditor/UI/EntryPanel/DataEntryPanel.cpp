@@ -31,8 +31,9 @@
 #include "Main.h"
 #include "DataEntryPanel.h"
 #include "General/ColourConfiguration.h"
+#include "App.h"
 #include "MainEditor/BinaryControlLump.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 
 
 /*******************************************************************
@@ -675,8 +676,8 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// SWITCHES
 	else if (type == "switches")
 	{
-		columns.push_back(dep_column_t("On Texture", COL_STRING, 8, 0));
-		columns.push_back(dep_column_t("Off Texture", COL_STRING, 8, 9));
+		columns.push_back(dep_column_t("Off Texture", COL_STRING, 8, 0));
+		columns.push_back(dep_column_t("On Texture", COL_STRING, 8, 9));
 
 		dep_column_t col_type("Type", COL_CUSTOM_VALUE, 2, 18);
 		col_type.addCustomValue(SWCH_DEMO, "Shareware");
@@ -697,8 +698,8 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		col_type.addCustomValue(3, "Texture (Decals)");
 
 		columns.push_back(col_type);
-		columns.push_back(dep_column_t("First Texture", COL_STRING, 8, 1));
-		columns.push_back(dep_column_t("Last Texture", COL_STRING, 8, 10));
+		columns.push_back(dep_column_t("Last Texture", COL_STRING, 8, 1));
+		columns.push_back(dep_column_t("First Texture", COL_STRING, 8, 10));
 		columns.push_back(dep_column_t("Speed (Tics)", COL_INT_UNSIGNED, 4, 19));
 		row_stride = 23;
 	}
@@ -714,6 +715,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// DIALOGUE
 	else if (type == "map_dialog")
 	{
+		// Full version:
 		columns.push_back(dep_column_t("Speaker ID", COL_INT_UNSIGNED, 4, 0));
 		columns.push_back(dep_column_t("Drop Type", COL_INT_SIGNED, 4, 4));
 		columns.push_back(dep_column_t("Item Check 1", COL_INT_SIGNED, 4, 8));
@@ -724,9 +726,19 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns.push_back(dep_column_t("Sound", COL_STRING, 8, 40));
 		columns.push_back(dep_column_t("Backdrop", COL_STRING, 8, 48));
 		columns.push_back(dep_column_t("Dialogue Text", COL_STRING, 320, 56));
+		unsigned offset = 320 + 56;
+		row_stride = 1516;
+
+		/*//Teaser version:
+		columns.push_back(dep_column_t("Speaker ID", COL_INT_UNSIGNED, 4, 0));
+		columns.push_back(dep_column_t("Drop Type", COL_INT_SIGNED, 4, 4));
+		columns.push_back(dep_column_t("Voice Number", COL_INT_UNSIGNED, 4, 8));
+		columns.push_back(dep_column_t("Speaker Name", COL_STRING, 16, 12));
+		columns.push_back(dep_column_t("Dialogue Text", COL_STRING, 320, 28));
+		unsigned offset = 320 + 28;
+		row_stride = 1488;*/
 
 		// Responses
-		unsigned offset = 320 + 56;
 		for (unsigned a = 1; a <= 5; a++)
 		{
 			columns.push_back(dep_column_t(S_FMT("Response %d: Give Type", a), COL_INT_SIGNED, 4, offset));
@@ -744,7 +756,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			offset += 228;
 		}
 
-		row_stride = 1516;
 	}
 
 	// GENMIDI
@@ -1061,7 +1072,7 @@ void DataEntryPanel::changeValue()
 	}
 
 	// Create dialog
-	wxDialog dlg(theMainWindow, -1, "Change Value");
+	wxDialog dlg(MainEditor::windowWx(), -1, "Change Value");
 
 	dep_column_t ci = table_data->getColumnInfo(selection[0].y);
 	wxArrayString choices;
@@ -1205,16 +1216,16 @@ void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 	LOG_MESSAGE(2, "Column %d", col);
 
 	wxMenu menu;
-	theApp->getAction("data_add_row")->addToMenu(&menu);
-	theApp->getAction("data_delete_row")->addToMenu(&menu);
+	SAction::fromId("data_add_row")->addToMenu(&menu);
+	SAction::fromId("data_delete_row")->addToMenu(&menu);
 	menu.AppendSeparator();
-	theApp->getAction("data_cut_row")->addToMenu(&menu);
-	theApp->getAction("data_copy_row")->addToMenu(&menu);
-	theApp->getAction("data_paste_row")->addToMenu(&menu);
+	SAction::fromId("data_cut_row")->addToMenu(&menu);
+	SAction::fromId("data_copy_row")->addToMenu(&menu);
+	SAction::fromId("data_paste_row")->addToMenu(&menu);
 	if (col >= 0)
 	{
 		menu.AppendSeparator();
-		theApp->getAction("data_change_value")->addToMenu(&menu);
+		SAction::fromId("data_change_value")->addToMenu(&menu);
 	}
 	PopupMenu(&menu);
 }

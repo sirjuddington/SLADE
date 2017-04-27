@@ -8,7 +8,6 @@ protected:
 		SImage::info_t info = getInfo(data, 0);
 
 		// Setup variables
-		uint16_t* col_offsets = NULL;
 		size_t hdr_size = sizeof(rottpatch_header_t);
 		short translevel = 255;
 		if (mask) 
@@ -18,7 +17,7 @@ protected:
 		}
 
 		// Read column offsets
-		col_offsets = new uint16_t[info.width];
+		vector<uint16_t> col_offsets(info.width);
 		const uint16_t* c_ofs = (const uint16_t*)(data.getData() + hdr_size);
 		for (int a = 0; a < info.width; a++)
 			col_offsets[a] = wxUINT16_SWAP_ON_BE(c_ofs[a]);

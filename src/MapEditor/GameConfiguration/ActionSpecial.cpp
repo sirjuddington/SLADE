@@ -237,7 +237,7 @@ void ActionSpecial::parseArg(ParseTreeNode* node, SpecialArgMap* shared_args, ar
  * Returns a string representation of the action special's args
  * given the values in [args]
  *******************************************************************/
-string ActionSpecial::getArgsString(int args[5])
+string ActionSpecial::getArgsString(int args[5], string argstr[2])
 {
 	string ret;
 
@@ -250,7 +250,10 @@ string ActionSpecial::getArgsString(int args[5])
 
 		ret += this->args[a].name;
 		ret += ": ";
-		ret += this->args[a].valueString(args[a]);
+		if (a < 2 && args[a] == 0 && !argstr[a].IsEmpty())
+			ret += argstr[a];
+		else
+			ret += this->args[a].valueString(args[a]);
 		ret += ", ";
 	}
 

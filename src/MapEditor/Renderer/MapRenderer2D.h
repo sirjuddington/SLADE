@@ -2,14 +2,17 @@
 #ifndef __MAP_RENDERER_2D__
 #define __MAP_RENDERER_2D__
 
+#include "MapEditor/MapEditor.h"
+
 // Forward declarations
-class ThingType;
 class GLTexture;
-class ObjectEditGroup;
-class SLADEMap;
+class ItemSelection;
 class MapLine;
 class MapSector;
 class MapThing;
+class ObjectEditGroup;
+class SLADEMap;
+class ThingType;
 
 class MapRenderer2D
 {
@@ -98,7 +101,7 @@ public:
 	void	renderVerticesVBO();
 	void	renderVerticesImmediate();
 	void	renderVertexHilight(int index, float fade);
-	void	renderVertexSelection(vector<int>& selection, float fade = 1.0f);
+	void	renderVertexSelection(const ItemSelection& selection, float fade = 1.0f);
 
 	// Lines
 	rgba_t	lineColour(MapLine* line, bool ignore_filter = false);
@@ -106,7 +109,7 @@ public:
 	void	renderLinesVBO(bool show_direction, float alpha);
 	void	renderLinesImmediate(bool show_direction, float alpha);
 	void	renderLineHilight(int index, float fade);
-	void	renderLineSelection(vector<int>& selection, float fade = 1.0f);
+	void	renderLineSelection(const ItemSelection& selection, float fade = 1.0f);
 	void	renderTaggedLines(vector<MapLine*>& lines, float fade);
 	void	renderTaggingLines(vector<MapLine*>& lines, float fade);
 
@@ -120,7 +123,7 @@ public:
 	void	renderThings(float alpha = 1.0f, bool force_dir = false);
 	void	renderThingsImmediate(float alpha);
 	void	renderThingHilight(int index, float fade);
-	void	renderThingSelection(vector<int>& selection, float fade = 1.0f);
+	void	renderThingSelection(const ItemSelection& selection, float fade = 1.0f);
 	void	renderTaggedThings(vector<MapThing*>& things, float fade);
 	void	renderTaggingThings(vector<MapThing*>& things, float fade);
 	void	renderPathedThings(vector<MapThing*>& things);
@@ -130,14 +133,14 @@ public:
 	void	renderFlatsImmediate(int type, bool texture, float alpha);
 	void	renderFlatsVBO(int type, bool texture, float alpha);
 	void	renderFlatHilight(int index, float fade);
-	void	renderFlatSelection(vector<int>& selection, float fade = 1.0f);
+	void	renderFlatSelection(const ItemSelection& selection, float fade = 1.0f);
 	void	renderTaggedFlats(vector<MapSector*>& sectors, float fade);
 
 	// Moving
-	void	renderMovingVertices(vector<int>& vertices, fpoint2_t move_vec);
-	void	renderMovingLines(vector<int>& lines, fpoint2_t move_vec);
-	void	renderMovingSectors(vector<int>& sectors, fpoint2_t move_vec);
-	void	renderMovingThings(vector<int>& things, fpoint2_t move_vec);
+	void	renderMovingVertices(const vector<MapEditor::Item>& vertices, fpoint2_t move_vec);
+	void	renderMovingLines(const vector<MapEditor::Item>& lines, fpoint2_t move_vec);
+	void	renderMovingSectors(const vector<MapEditor::Item>& sectors, fpoint2_t move_vec);
+	void	renderMovingThings(const vector<MapEditor::Item>& things, fpoint2_t move_vec);
 
 	// Paste
 	void	renderPasteThings(vector<MapThing*>& things, fpoint2_t pos);
@@ -158,6 +161,15 @@ public:
 	double	scaledRadius(int radius);
 	bool	visOK();
 	void	clearTextureCache() { tex_flats.clear(); }
+};
+
+enum ThingDrawTypes
+{
+	TDT_SQUARE,
+	TDT_ROUND,
+	TDT_SPRITE,
+	TDT_SQUARESPRITE,
+	TDT_FRAMEDSPRITE,
 };
 
 #endif//__MAP_RENDERER_2D__

@@ -29,15 +29,21 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "UI/WxStuff.h"
 #include "MapRenderer3D.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "General/ColourConfiguration.h"
 #include "General/ResourceManager.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "OpenGL/OpenGL.h"
+#include "UI/PaletteChooser.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
@@ -57,6 +63,9 @@ CVAR(Float, render_3d_brightness, 1, CVAR_SAVE)
 CVAR(Float, render_fog_distance, 1500, CVAR_SAVE)
 CVAR(Bool, render_fog_new_formula, true, CVAR_SAVE)
 CVAR(Bool, render_shade_orthogonal_lines, true, CVAR_SAVE)
+CVAR(Bool, mlook_invert_y, false, CVAR_SAVE)
+CVAR(Float, camera_3d_sensitivity_x, 1.0f, CVAR_SAVE)
+CVAR(Float, camera_3d_sensitivity_y, 1.0f, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -84,9 +93,9 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map)
 	this->vbo_floors = 0;
 	this->vbo_walls = 0;
 	this->skytex1 = "SKY1";
-	this->quads = NULL;
-	this->flats = NULL;
-	this->tex_last = NULL;
+	this->quads = nullptr;
+	this->flats = nullptr;
+	this->tex_last = nullptr;
 	this->n_quads = 0;
 	this->n_flats = 0;
 	this->flat_last = 0;
@@ -100,7 +109,7 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map)
 	init();
 
 	// Listen to stuff
-	listenTo(thePaletteChooser);
+	listenTo(theMainWindow->getPaletteChooser());
 	listenTo(theResourceManager);
 }
 
@@ -121,10 +130,6 @@ MapRenderer3D::~MapRenderer3D()
  *******************************************************************/
 bool MapRenderer3D::init()
 {
-	// Check to enable zdoom udmf extensions
-	if (S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom") && map->currentFormat() == MAP_UDMF)
-		udmf_zdoom = true;
-
 	// Init camera
 	bbox_t bbox = map->getMapBBox();
 	cam_position.set(bbox.min.x + ((bbox.max.x - bbox.min.x)*0.5), bbox.min.y + ((bbox.max.y - bbox.min.y)*0.5), 64);
@@ -147,12 +152,12 @@ void MapRenderer3D::refresh()
 	if (quads)
 	{
 		delete quads;
-		quads = NULL;
+		quads = nullptr;
 	}
 	if (flats)
 	{
 		delete flats;
-		flats = NULL;
+		flats = nullptr;
 	}
 
 	// Clear VBOs
@@ -167,11 +172,11 @@ void MapRenderer3D::refresh()
 	ceilings.clear();
 
 	// Set sky texture
-	gc_mapinfo_t minf = theGameConfiguration->mapInfo(map->mapName());
+	auto minf = theGameConfiguration->mapInfo(map->mapName());
 	skytex1 = minf.sky1;
 	skytex2 = minf.sky2;
 	skycol_top.a = 0;
-	//wxLogMessage("sky1: %s, sky2: %s", skytex1, skytex2);
+	//LOG_MESSAGE(1, "sky1: %s, sky2: %s", skytex1, skytex2);
 }
 
 /* MapRenderer3D::clearData
@@ -205,18 +210,18 @@ void MapRenderer3D::buildSkyCircle()
 /* MapRenderer3D::getQuad
  * Returns the wall quad for wall selection [item]
  *******************************************************************/
-MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(selection_3d_t item)
+MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(MapEditor::Item item)
 {
 	// Check item type
-	if (item.type != MapEditor::SEL_SIDE_BOTTOM &&
-	        item.type != MapEditor::SEL_SIDE_MIDDLE &&
-	        item.type != MapEditor::SEL_SIDE_TOP)
-		return NULL;
+	if (item.type != MapEditor::ItemType::WallBottom &&
+		item.type != MapEditor::ItemType::WallMiddle &&
+		item.type != MapEditor::ItemType::WallTop)
+		return nullptr;
 
 	// Get side
 	MapSide* side = map->getSide(item.index);
 	if (!side)
-		return NULL;
+		return nullptr;
 
 	// Find matching quad
 	int lindex = side->getParentLine()->getIndex();
@@ -231,17 +236,17 @@ MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(selection_3d_t item)
 			continue;
 
 		// Check part
-		if (item.type == MapEditor::SEL_SIDE_BOTTOM)
+		if (item.type == MapEditor::ItemType::WallBottom)
 		{
 			if (quad->flags & LOWER)
 				return quad;
 		}
-		if (item.type == MapEditor::SEL_SIDE_TOP)
+		if (item.type == MapEditor::ItemType::WallTop)
 		{
 			if (quad->flags & UPPER)
 				return quad;
 		}
-		if (item.type == MapEditor::SEL_SIDE_MIDDLE)
+		if (item.type == MapEditor::ItemType::WallMiddle)
 		{
 			if ((quad->flags & UPPER) == 0 && (quad->flags & LOWER) == 0)
 				return quad;
@@ -249,29 +254,29 @@ MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(selection_3d_t item)
 	}
 
 	// Not found
-	return NULL;
+	return nullptr;
 }
 
 /* MapRenderer3D::getFlat
  * Returns the flat for sector flat selection [item]
  *******************************************************************/
-MapRenderer3D::flat_3d_t* MapRenderer3D::getFlat(selection_3d_t item)
+MapRenderer3D::flat_3d_t* MapRenderer3D::getFlat(MapEditor::Item item)
 {
 	// Check index
 	if ((unsigned)item.index >= floors.size())
-		return NULL;
+		return nullptr;
 
 	// Floor
-	if (item.type == MapEditor::SEL_FLOOR)
+	if (item.type == MapEditor::ItemType::Floor)
 		return &floors[item.index];
 
 	// Ceiling
-	else if (item.type == MapEditor::SEL_CEILING)
+	else if (item.type == MapEditor::ItemType::Ceiling)
 		return &ceilings[item.index];
 
 	// Wrong type
 	else
-		return NULL;
+		return nullptr;
 }
 
 /* MapRenderer3D::cameraMove
@@ -421,6 +426,18 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 	}
 }
 
+/* MapRenderer3D::cameraLook
+ * Moves the camera direction/pitch based on [xrel],[yrel]
+ *******************************************************************/
+void MapRenderer3D::cameraLook(double xrel, double yrel)
+{
+	cameraTurn(-xrel*0.1*camera_3d_sensitivity_x);
+	if (mlook_invert_y)
+		cameraPitch(yrel*0.003*camera_3d_sensitivity_y);
+	else
+		cameraPitch(-yrel*0.003*camera_3d_sensitivity_y);
+}
+
 /* MapRenderer3D::setupView
  * Sets up the OpenGL view/projection for rendering
  *******************************************************************/
@@ -521,7 +538,7 @@ void MapRenderer3D::renderMap()
 	glAlphaFunc(GL_GREATER, 0.0f);
 
 	// Init
-	tex_last = NULL;
+	tex_last = nullptr;
 
 	// Init VBO stuff
 	if (OpenGL::vboSupport())
@@ -680,7 +697,7 @@ void MapRenderer3D::renderSky()
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
 	glEnable(GL_TEXTURE_2D);
-	GLTexture* sky = NULL;
+	GLTexture* sky = nullptr;
 
 	// Center skybox a bit below the camera view
 	glPushMatrix();
@@ -688,9 +705,9 @@ void MapRenderer3D::renderSky()
 
 	// Get sky texture
 	if (!skytex2.IsEmpty())
-		sky = theMapEditor->textureManager().getTexture(skytex2, false);
+		sky = MapEditor::textureManager().getTexture(skytex2, false);
 	else
-		sky = theMapEditor->textureManager().getTexture(skytex1, false);
+		sky = MapEditor::textureManager().getTexture(skytex1, false);
 	if (sky)
 	{
 		// Bind texture
@@ -799,24 +816,38 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 	double sy = floor ? floors[index].texture->getScaleY() : ceilings[index].texture->getScaleY();
 	double rot = 0;
 
-	// Check for UDMF + ZDoom extensions
-	if (theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"))
+	// Check for UDMF + panning/scaling/rotation
+	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 	{
 		if (floor)
 		{
-			ox = sector->floatProperty("xpanningfloor");
-			oy = sector->floatProperty("ypanningfloor");
-			sx *= (1.0 / sector->floatProperty("xscalefloor"));
-			sy *= (1.0 / sector->floatProperty("yscalefloor"));
-			rot = sector->floatProperty("rotationfloor");
+			if (theGameConfiguration->udmfFlatPanning())
+			{
+				ox = sector->floatProperty("xpanningfloor");
+				oy = sector->floatProperty("ypanningfloor");
+			}
+			if (theGameConfiguration->udmfFlatScaling())
+			{
+				sx *= (1.0 / sector->floatProperty("xscalefloor"));
+				sy *= (1.0 / sector->floatProperty("yscalefloor"));
+			}
+			if (theGameConfiguration->udmfFlatRotation())
+				rot = sector->floatProperty("rotationfloor");
 		}
 		else
 		{
-			ox = sector->floatProperty("xpanningceiling");
-			oy = sector->floatProperty("ypanningceiling");
-			sx *= (1.0 / sector->floatProperty("xscaleceiling"));
-			sy *= (1.0 / sector->floatProperty("yscaleceiling"));
-			rot = sector->floatProperty("rotationceiling");
+			if (theGameConfiguration->udmfFlatPanning())
+			{
+				ox = sector->floatProperty("xpanningceiling");
+				oy = sector->floatProperty("ypanningceiling");
+			}
+			if (theGameConfiguration->udmfFlatScaling())
+			{
+				sx *= (1.0 / sector->floatProperty("xscaleceiling"));
+				sy *= (1.0 / sector->floatProperty("yscaleceiling"));
+			}
+			if (theGameConfiguration->udmfFlatRotation())
+				rot = sector->floatProperty("rotationceiling");
 		}
 	}
 
@@ -845,7 +876,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	// Update floor
 	MapSector* sector = map->getSector(index);
 	floors[index].sector = sector;
-	floors[index].texture = theMapEditor->textureManager().getFlat(sector->getFloorTex(), theGameConfiguration->mixTexFlats());
+	floors[index].texture = MapEditor::textureManager().getFlat(sector->getFloorTex(), theGameConfiguration->mixTexFlats());
 	floors[index].colour = sector->getColour(1, true);
 	floors[index].fogcolour = sector->getFogColour();
 	floors[index].light = sector->getLight(1);
@@ -866,7 +897,7 @@ void MapRenderer3D::updateSector(unsigned index)
 
 	// Update ceiling
 	ceilings[index].sector = sector;
-	ceilings[index].texture = theMapEditor->textureManager().getFlat(sector->getCeilingTex(), theGameConfiguration->mixTexFlats());
+	ceilings[index].texture = MapEditor::textureManager().getFlat(sector->getCeilingTex(), theGameConfiguration->mixTexFlats());
 	ceilings[index].colour = sector->getColour(2, true);
 	ceilings[index].fogcolour = sector->getFogColour();
 	ceilings[index].light = sector->getLight(2);
@@ -886,8 +917,8 @@ void MapRenderer3D::updateSector(unsigned index)
 	}
 
 	// Finish up
-	floors[index].updated_time = theApp->runTimer();
-	ceilings[index].updated_time = theApp->runTimer();
+	floors[index].updated_time = App::runTimer();
+	ceilings[index].updated_time = App::runTimer();
 	if (OpenGL::vboSupport())
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -990,7 +1021,7 @@ void MapRenderer3D::renderFlats()
 	flat_last = 0;
 	while (n_flats > 0)
 	{
-		tex_last = NULL;
+		tex_last = nullptr;
 		a = 0;
 		while (a < n_flats)
 		{
@@ -1026,7 +1057,7 @@ void MapRenderer3D::renderFlats()
 /* MapRenderer3D::renderFlatSelection
  * Renders selection overlay for all selected flats
  *******************************************************************/
-void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float alpha)
+void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float alpha)
 {
 	if (!render_selection)
 		return;
@@ -1050,7 +1081,7 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Ignore if not a sector hilight
-		if (selection[a].type != MapEditor::SEL_CEILING && selection[a].type != MapEditor::SEL_FLOOR)
+		if (selection[a].type != MapEditor::ItemType::Ceiling && selection[a].type != MapEditor::ItemType::Floor)
 			continue;
 
 		// Get sector
@@ -1060,7 +1091,7 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 
 		// Get plane
 		plane_t plane;
-		if (selection[a].type == MapEditor::SEL_FLOOR)
+		if (selection[a].type == MapEditor::ItemType::Floor)
 			plane = sector->getFloorPlane();
 		else
 			plane = sector->getCeilingPlane();
@@ -1185,7 +1216,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	map->mapSpecials()->processLineSpecial(line);
 
 	// Get relevant line info
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 	bool upeg = theGameConfiguration->lineBasicFlagSet("dontpegtop", line, map_format);
 	bool lpeg = theGameConfiguration->lineBasicFlagSet("dontpegbottom", line, map_format);
 	double xoff, yoff, sx, sy;
@@ -1236,7 +1267,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			if (line->s1()->hasProp("offsetx_mid"))
 				xoff += line->s1()->floatProperty("offsetx_mid");
@@ -1246,7 +1277,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s1()->hasProp("scalex_mid"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_mid");
@@ -1261,12 +1292,12 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour1;
 		quad.fogcolour = fogcolour1;
 		quad.light = light1;
-		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexMiddle(), mixed);
+		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexMiddle(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, floor1, lpeg, sx, sy);
 
 		// Add middle quad and finish
 		lines[index].quads.push_back(quad);
-		lines[index].updated_time = theApp->runTimer();
+		lines[index].updated_time = App::runTimer();
 		return;
 	}
 
@@ -1326,9 +1357,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
-			// ZDoom UDMF extra offsets
+			// UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_bottom"))
 				xoff += line->s1()->floatProperty("offsetx_bottom");
 			if (line->s1()->hasProp("offsety_bottom"))
@@ -1337,7 +1368,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s1()->hasProp("scalex_bottom"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_bottom");
@@ -1355,7 +1386,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour1;
 		quad.fogcolour = fogcolour1;
 		quad.light = light1;
-		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexLower(), mixed);
+		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexLower(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, floor2, floor1, false, sx, sy);
 		// No, the sky hack is only for ceilings!
 		// if (S_CMPNOCASE(sky_flat, line->backSector()->getFloorTex())) quad.flags |= SKY;
@@ -1372,13 +1403,13 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad_3d_t quad;
 
 		// Get texture
-		quad.texture = theMapEditor->textureManager().getTexture(midtex1, mixed);
+		quad.texture = MapEditor::textureManager().getTexture(midtex1, mixed);
 
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
 		double ytex = 0;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			if (line->s1()->hasProp("offsetx_mid"))
 				xoff += line->s1()->floatProperty("offsetx_mid");
@@ -1388,7 +1419,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s1()->hasProp("scalex_mid"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_mid");
@@ -1400,7 +1431,8 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Setup quad coordinates
 		double top, bottom;
-		if ((map->currentFormat() == MAP_DOOM64) || (udmf_zdoom && line->boolProperty("wrapmidtex")))
+		if ((map->currentFormat() == MAP_DOOM64) || ((map->currentFormat() == MAP_UDMF &&
+			theGameConfiguration->udmfSideMidtexWrapping() && line->boolProperty("wrapmidtex"))))
 		{
 			top = lowceil;
 			bottom = highfloor;
@@ -1451,9 +1483,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
-			// ZDoom UDMF extra offsets
+			// UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_top"))
 				xoff += line->s1()->floatProperty("offsetx_top");
 			if (line->s1()->hasProp("offsety_top"))
@@ -1462,7 +1494,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s1()->hasProp("scalex_top"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_top");
@@ -1477,7 +1509,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour1;
 		quad.fogcolour = fogcolour1;
 		quad.light = light1;
-		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexUpper(), mixed);
+		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexUpper(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, ceiling2, !upeg, sx, sy);
 		// Sky hack only applies if both sectors have a sky ceiling
 		if (S_CMPNOCASE(sky_flat, line->frontSector()->getCeilingTex()) && S_CMPNOCASE(sky_flat, line->backSector()->getCeilingTex())) quad.flags |= SKY;
@@ -1495,9 +1527,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
-			// ZDoom UDMF extra offsets
+			// UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_bottom"))
 				xoff += line->s2()->floatProperty("offsetx_bottom");
 			if (line->s2()->hasProp("offsety_bottom"))
@@ -1506,7 +1538,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s2()->hasProp("scalex_bottom"))
 				sx = 1.0 / line->s2()->floatProperty("scalex_bottom");
@@ -1524,7 +1556,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour2;
 		quad.fogcolour = fogcolour2;
 		quad.light = light2;
-		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexLower(), mixed);
+		quad.texture = MapEditor::textureManager().getTexture(line->s2()->getTexLower(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, floor1, floor2, false, sx, sy);
 		if (S_CMPNOCASE(sky_flat, line->frontSector()->getFloorTex())) quad.flags |= SKY;
 		quad.flags |= BACK;
@@ -1541,13 +1573,13 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad_3d_t quad;
 
 		// Get texture
-		quad.texture = theMapEditor->textureManager().getTexture(midtex2, mixed);
+		quad.texture = MapEditor::textureManager().getTexture(midtex2, mixed);
 
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
 		double ytex = 0;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			if (line->s2()->hasProp("offsetx_mid"))
 				xoff += line->s2()->floatProperty("offsetx_mid");
@@ -1557,7 +1589,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s2()->hasProp("scalex_mid"))
 				sx = 1.0 / line->s2()->floatProperty("scalex_mid");
@@ -1569,7 +1601,8 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Setup quad coordinates
 		double top, bottom;
-		if ((map->currentFormat() == MAP_DOOM64) || (udmf_zdoom && line->boolProperty("wrapmidtex")))
+		if ((map->currentFormat() == MAP_DOOM64) || (map->currentFormat() == MAP_UDMF &&
+			theGameConfiguration->udmfSideMidtexWrapping() && line->boolProperty("wrapmidtex")))
 		{
 			top = lowceil;
 			bottom = highfloor;
@@ -1621,9 +1654,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
-			// ZDoom UDMF extra offsets
+			// UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_top"))
 				xoff += line->s2()->floatProperty("offsetx_top");
 			if (line->s2()->hasProp("offsety_top"))
@@ -1632,7 +1665,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s2()->hasProp("scalex_top"))
 				sx = 1.0 / line->s2()->floatProperty("scalex_top");
@@ -1647,7 +1680,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour2;
 		quad.fogcolour = fogcolour2;
 		quad.light = light2;
-		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexUpper(), mixed);
+		quad.texture = MapEditor::textureManager().getTexture(line->s2()->getTexUpper(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling2, ceiling1, !upeg, sx, sy);
 		if (S_CMPNOCASE(sky_flat, line->frontSector()->getCeilingTex())) quad.flags |= SKY;
 		quad.flags |= BACK;
@@ -1659,7 +1692,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 
 	// Finished
-	lines[index].updated_time = theApp->runTimer();
+	lines[index].updated_time = App::runTimer();
 }
 
 /* MapRenderer3D::renderQuad
@@ -1723,7 +1756,7 @@ void MapRenderer3D::renderWalls()
 	unsigned a = 0;
 	while (n_quads > 0)
 	{
-		tex_last = NULL;
+		tex_last = nullptr;
 		a = 0;
 		while (a < n_quads)
 		{
@@ -1770,7 +1803,7 @@ void MapRenderer3D::renderTransparentWalls()
 	glCullFace(GL_BACK);
 
 	// Render all transparent quads
-	tex_last = NULL;
+	tex_last = nullptr;
 	for (unsigned a = 0; a < quads_transparent.size(); a++)
 	{
 		// Check texture
@@ -1792,7 +1825,7 @@ void MapRenderer3D::renderTransparentWalls()
 /* MapRenderer3D::renderWallSelection
  * Renders selection overlay for all selected wall quads
  *******************************************************************/
-void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float alpha)
+void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float alpha)
 {
 	if (!render_selection)
 		return;
@@ -1817,9 +1850,9 @@ void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Ignore if not a wall selection
-		if (selection[a].type != MapEditor::SEL_SIDE_BOTTOM &&
-		        selection[a].type != MapEditor::SEL_SIDE_MIDDLE &&
-		        selection[a].type != MapEditor::SEL_SIDE_TOP)
+		if (selection[a].type != MapEditor::ItemType::WallBottom &&
+		        selection[a].type != MapEditor::ItemType::WallMiddle &&
+		        selection[a].type != MapEditor::ItemType::WallTop)
 			continue;
 
 		// Get side
@@ -1831,7 +1864,7 @@ void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float
 		int line = map->getSide(selection[a].index)->getParentLine()->getIndex();
 
 		// Get appropriate quad
-		quad_3d_t* quad = NULL;
+		quad_3d_t* quad = nullptr;
 		for (unsigned q = 0; q < lines[line].quads.size(); q++)
 		{
 			// Check quad is correct side
@@ -1843,7 +1876,7 @@ void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float
 			// Check quad is correct part
 			if (lines[line].quads[q].flags & UPPER)
 			{
-				if (selection[a].type == MapEditor::SEL_SIDE_TOP)
+				if (selection[a].type == MapEditor::ItemType::WallTop)
 				{
 					quad = &lines[line].quads[q];
 					break;
@@ -1851,13 +1884,13 @@ void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float
 			}
 			else if (lines[line].quads[q].flags & LOWER)
 			{
-				if (selection[a].type == MapEditor::SEL_SIDE_BOTTOM)
+				if (selection[a].type == MapEditor::ItemType::WallBottom)
 				{
 					quad = &lines[line].quads[q];
 					break;
 				}
 			}
-			else if (selection[a].type == MapEditor::SEL_SIDE_MIDDLE)
+			else if (selection[a].type == MapEditor::ItemType::WallMiddle)
 			{
 				quad = &lines[line].quads[q];
 				break;
@@ -1898,24 +1931,24 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 
 	// Get sprite texture
 	uint32_t theight = render_thing_icon_size;
-	things[index].sprite = theMapEditor->textureManager().getSprite(things[index].type->getSprite(), things[index].type->getTranslation(), things[index].type->getPalette());
+	things[index].sprite = MapEditor::textureManager().getSprite(things[index].type->getSprite(), things[index].type->getTranslation(), things[index].type->getPalette());
 	if (!things[index].sprite)
 	{
 		// Sprite not found, try an icon
 		if (use_zeth_icons && things[index].type->getZeth() >= 0)
 		{
-			things[index].sprite = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", things[index].type->getZeth()));
+			things[index].sprite = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", things[index].type->getZeth()));
 			things[index].flags |= ZETH;
 		}
 		if (!things[index].sprite)
-			things[index].sprite = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", things[index].type->getIcon()));
+			things[index].sprite = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", things[index].type->getIcon()));
 		things[index].flags |= ICON;
 	}
 	else theight = things[index].type->getScaleY() * things[index].sprite->getHeight();
 	if (!things[index].sprite)
 	{
 		// Icon not found either, use unknown icon
-		things[index].sprite = theMapEditor->textureManager().getEditorImage("thing/unknown");
+		things[index].sprite = MapEditor::textureManager().getEditorImage("thing/unknown");
 	}
 
 	// Determine z position
@@ -1945,9 +1978,9 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	}
 
 	// Adjust height by sprite Y offset if needed
-	things[index].z += theMapEditor->textureManager().getVerticalOffset(things[index].type->getSprite());
+	things[index].z += MapEditor::textureManager().getVerticalOffset(things[index].type->getSprite());
 
-	things[index].updated_time = theApp->runTimer();
+	things[index].updated_time = App::runTimer();
 }
 
 /* MapRenderer3D::renderThings
@@ -1958,7 +1991,7 @@ void MapRenderer3D::renderThings()
 	// Init
 	glEnable(GL_TEXTURE_2D);
 	glCullFace(GL_BACK);
-	GLTexture* tex = NULL;
+	GLTexture* tex = nullptr;
 
 	// Go through things
 	double dist, halfwidth, theight;
@@ -2194,7 +2227,7 @@ void MapRenderer3D::renderThings()
 /* MapRenderer3D::renderThingSelection
  * Renders selection overlay for all selected things
  *******************************************************************/
-void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, float alpha)
+void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float alpha)
 {
 	// Do nothing if no things visible
 	if (render_3d_things == 0 || !render_selection)
@@ -2219,7 +2252,7 @@ void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, floa
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Ignore if not a thing selection
-		if (selection[a].type != MapEditor::SEL_THING)
+		if (selection[a].type != MapEditor::ItemType::Thing)
 			continue;
 
 		// Get thing
@@ -2229,7 +2262,7 @@ void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, floa
 			return;
 
 		// Update if required
-		if (things[selection[a].index].type == NULL)
+		if (things[selection[a].index].type == nullptr)
 			updateThing(selection[a].index, thing);
 
 		// Skip if not shown
@@ -2298,7 +2331,7 @@ void MapRenderer3D::updateFlatsVBO()
 	// Allocate buffer data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_floors);
 	Polygon2D::setupVBOPointers();
-	glBufferData(GL_ARRAY_BUFFER, totalsize, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, totalsize, nullptr, GL_STATIC_DRAW);
 
 	// Write polygon data to VBO
 	unsigned offset = 0;
@@ -2321,7 +2354,7 @@ void MapRenderer3D::updateFlatsVBO()
 	// Allocate buffer data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings);
 	Polygon2D::setupVBOPointers();
-	glBufferData(GL_ARRAY_BUFFER, totalsize, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, totalsize, nullptr, GL_STATIC_DRAW);
 
 	// Write polygon data to VBO
 	offset = 0;
@@ -2588,11 +2621,11 @@ void MapRenderer3D::checkVisibleFlats()
  * Finds the closest wall/flat/thing to the camera along the view
  * vector
  *******************************************************************/
-selection_3d_t MapRenderer3D::determineHilight()
+MapEditor::Item MapRenderer3D::determineHilight()
 {
 	// Init
 	double min_dist = 9999999;
-	selection_3d_t current;
+	MapEditor::Item current;
 	fseg2_t strafe(cam_position.get2d(), (cam_position + cam_strafe).get2d());
 
 	// Check for required map structures
@@ -2653,11 +2686,11 @@ selection_3d_t MapRenderer3D::determineHilight()
 
 				// Side part
 				if (quad->flags & UPPER)
-					current.type = MapEditor::SEL_SIDE_TOP;
+					current.type = MapEditor::ItemType::WallTop;
 				else if (quad->flags & LOWER)
-					current.type = MapEditor::SEL_SIDE_BOTTOM;
+					current.type = MapEditor::ItemType::WallBottom;
 				else
-					current.type = MapEditor::SEL_SIDE_MIDDLE;
+					current.type = MapEditor::ItemType::WallMiddle;
 
 				min_dist = dist;
 			}
@@ -2682,7 +2715,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 				if (map->getSector(a)->isWithin((cam_position + cam_dir3d * dist).get2d()))
 				{
 					current.index = a;
-					current.type = MapEditor::SEL_FLOOR;
+					current.type = MapEditor::ItemType::Floor;
 					min_dist = dist;
 				}
 			}
@@ -2699,7 +2732,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 				if (map->getSector(a)->isWithin((cam_position + cam_dir3d * dist).get2d()))
 				{
 					current.index = a;
-					current.type = MapEditor::SEL_CEILING;
+					current.type = MapEditor::ItemType::Ceiling;
 					min_dist = dist;
 				}
 			}
@@ -2751,7 +2784,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 		if (height >= things[a].z && height <= things[a].z + theight)
 		{
 			current.index = a;
-			current.type = MapEditor::SEL_THING;
+			current.type = MapEditor::ItemType::Thing;
 			min_dist = dist;
 		}
 	}
@@ -2768,7 +2801,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 /* MapRenderer3D::renderHilight
  * Renders the hilight overlay for the currently hilighted object
  *******************************************************************/
-void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
+void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 {
 	// Do nothing if no item hilighted
 	if (hilight.index < 0 || render_3d_hilight == 0 || !render_hilight)
@@ -2785,7 +2818,9 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 	OpenGL::setColour(col_hilight);
 
 	// Quad hilight
-	if (hilight.type == MapEditor::SEL_SIDE_BOTTOM || hilight.type == MapEditor::SEL_SIDE_MIDDLE || hilight.type == MapEditor::SEL_SIDE_TOP)
+	if (hilight.type == MapEditor::ItemType::WallBottom ||
+		hilight.type == MapEditor::ItemType::WallMiddle ||
+		hilight.type == MapEditor::ItemType::WallTop)
 	{
 		// Get side
 		MapSide* side = map->getSide(hilight.index);
@@ -2796,7 +2831,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 		int line = map->getSide(hilight.index)->getParentLine()->getIndex();
 
 		// Get appropriate quad
-		quad_3d_t* quad = NULL;
+		quad_3d_t* quad = nullptr;
 		for (unsigned a = 0; a < lines[line].quads.size(); a++)
 		{
 			// Check quad is correct side
@@ -2806,7 +2841,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 			// Check quad is correct part
 			if (lines[line].quads[a].flags & UPPER)
 			{
-				if (hilight.type == MapEditor::SEL_SIDE_TOP)
+				if (hilight.type == MapEditor::ItemType::WallTop)
 				{
 					quad = &lines[line].quads[a];
 					break;
@@ -2814,13 +2849,13 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 			}
 			else if (lines[line].quads[a].flags & LOWER)
 			{
-				if (hilight.type == MapEditor::SEL_SIDE_BOTTOM)
+				if (hilight.type == MapEditor::ItemType::WallBottom)
 				{
 					quad = &lines[line].quads[a];
 					break;
 				}
 			}
-			else if (hilight.type == MapEditor::SEL_SIDE_MIDDLE)
+			else if (hilight.type == MapEditor::ItemType::WallMiddle)
 			{
 				quad = &lines[line].quads[a];
 				break;
@@ -2850,7 +2885,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 	}
 
 	// Sector hilight
-	if (hilight.type == MapEditor::SEL_FLOOR || hilight.type == MapEditor::SEL_CEILING)
+	if (hilight.type == MapEditor::ItemType::Floor || hilight.type == MapEditor::ItemType::Ceiling)
 	{
 		// Get sector
 		MapSector* sector = map->getSector(hilight.index);
@@ -2859,7 +2894,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 
 		// Get plane
 		plane_t plane;
-		if (hilight.type == MapEditor::SEL_FLOOR)
+		if (hilight.type == MapEditor::ItemType::Floor)
 			plane = sector->getFloorPlane();
 		else
 			plane = sector->getCeilingPlane();
@@ -2890,7 +2925,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 
 	// Thing hilight
 	double x1, y1, x2, y2;
-	if (hilight.type == MapEditor::SEL_THING)
+	if (hilight.type == MapEditor::ItemType::Thing)
 	{
 		// Get thing
 		fpoint2_t strafe(cam_position.x+cam_strafe.x, cam_position.y+cam_strafe.y);
@@ -2944,7 +2979,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
  *******************************************************************/
 void MapRenderer3D::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
-	if (announcer != thePaletteChooser && announcer != theResourceManager)
+	if (announcer != theMainWindow->getPaletteChooser() && announcer != theResourceManager)
 		return;
 
 	if (event_name == "resources_updated" || event_name == "main_palette_changed")
@@ -2953,7 +2988,7 @@ void MapRenderer3D::onAnnouncement(Announcer* announcer, string event_name, MemC
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
 			for (unsigned q = 0; q < lines[a].quads.size(); q++)
-				lines[a].quads[q].texture = NULL;
+				lines[a].quads[q].texture = nullptr;
 
 			lines[a].updated_time = 0;
 		}
@@ -2961,19 +2996,19 @@ void MapRenderer3D::onAnnouncement(Announcer* announcer, string event_name, MemC
 		// Refresh flats
 		for (unsigned a = 0; a < floors.size(); a++)
 		{
-			floors[a].texture = NULL;
+			floors[a].texture = nullptr;
 			floors[a].updated_time = 0;
 		}
 		for (unsigned a = 0; a < ceilings.size(); a++)
 		{
-			ceilings[a].texture = NULL;
+			ceilings[a].texture = nullptr;
 			ceilings[a].updated_time = 0;
 		}
 
 		// Refresh things
 		for (unsigned a = 0; a < things.size(); a++)
 		{
-			things[a].sprite = NULL;
+			things[a].sprite = nullptr;
 			things[a].updated_time = 0;
 		}
 	}

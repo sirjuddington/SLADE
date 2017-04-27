@@ -33,7 +33,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "UI/WxStuff.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "QuickTextureOverlay3d.h"
 #include "OpenGL/Drawing.h"
 #include "General/ResourceManager.h"
@@ -41,6 +41,8 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "OpenGL/OpenGL.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
@@ -50,7 +52,7 @@
 /* QuickTextureOverlay3d::QuickTextureOverlay3d
  * QuickTextureOverlay3d class constructor
  *******************************************************************/
-QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor)
+QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 {
 	// Init variables
 	allow_3d_mlook = true;
@@ -60,8 +62,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor)
 
 	if (editor)
 	{
-		vector<selection_3d_t> sel;
-		editor->get3dSelectionOrHilight(sel);
+		auto& sel = editor->selection();
 
 		if (!ok(sel))
 		{
@@ -77,7 +78,9 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor)
 			sel_type = 0;
 			for (unsigned a = 0; a < sel.size(); a++)
 			{
-				if (sel[a].type != MapEditor::SEL_THING && sel[a].type != MapEditor::SEL_CEILING && sel[a].type != MapEditor::SEL_FLOOR)
+				if (sel[a].type != MapEditor::ItemType::Thing &&
+					sel[a].type != MapEditor::ItemType::Ceiling &&
+					sel[a].type != MapEditor::ItemType::Floor)
 				{
 					sel_type = 1;
 					initial = a;
@@ -88,28 +91,28 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor)
 
 		// Get initial texture
 		string tex_init;
-		if (sel[initial].type == MapEditor::SEL_CEILING)
-			tex_init = editor->getMap().getSector(sel[initial].index)->stringProperty("textureceiling");
-		else if (sel[initial].type == MapEditor::SEL_FLOOR)
-			tex_init = editor->getMap().getSector(sel[initial].index)->stringProperty("texturefloor");
-		else if (sel[initial].type == MapEditor::SEL_SIDE_TOP)
-			tex_init = editor->getMap().getSide(sel[initial].index)->stringProperty("texturetop");
-		else if (sel[initial].type == MapEditor::SEL_SIDE_MIDDLE)
-			tex_init = editor->getMap().getSide(sel[initial].index)->stringProperty("texturemiddle");
-		else if (sel[initial].type == MapEditor::SEL_SIDE_BOTTOM)
-			tex_init = editor->getMap().getSide(sel[initial].index)->stringProperty("texturebottom");
+		if (sel[initial].type == MapEditor::ItemType::Ceiling)
+			tex_init = editor->map().getSector(sel[initial].index)->stringProperty("textureceiling");
+		else if (sel[initial].type == MapEditor::ItemType::Floor)
+			tex_init = editor->map().getSector(sel[initial].index)->stringProperty("texturefloor");
+		else if (sel[initial].type == MapEditor::ItemType::WallTop)
+			tex_init = editor->map().getSide(sel[initial].index)->stringProperty("texturetop");
+		else if (sel[initial].type == MapEditor::ItemType::WallMiddle)
+			tex_init = editor->map().getSide(sel[initial].index)->stringProperty("texturemiddle");
+		else if (sel[initial].type == MapEditor::ItemType::WallBottom)
+			tex_init = editor->map().getSide(sel[initial].index)->stringProperty("texturebottom");
 
 		// Get all available texture names (sorted alphabetically)
 		vector<string> tex_names;
 		if (sel_type > 0)
 		{
-			vector<map_texinfo_t>& ti = theMapEditor->textureManager().getAllTexturesInfo();
+			vector<map_texinfo_t>& ti = MapEditor::textureManager().getAllTexturesInfo();
 			for (unsigned a = 0; a < ti.size(); a++)
 				tex_names.push_back(ti[a].name);
 		}
 		if (sel_type == 0 || sel_type == 2)
 		{
-			vector<map_texinfo_t>& ti = theMapEditor->textureManager().getAllFlatsInfo();
+			vector<map_texinfo_t>& ti = MapEditor::textureManager().getAllFlatsInfo();
 			for (unsigned a = 0; a < ti.size(); a++)
 				tex_names.push_back(ti[a].name);
 		}
@@ -160,8 +163,7 @@ void QuickTextureOverlay3d::applyTexture()
 		return;
 
 	// Get selection/hilight
-	vector<selection_3d_t> selection;
-	editor->get3dSelectionOrHilight(selection);
+	auto& selection = editor->selection();
 
 	// Go through items
 	if (!selection.empty())
@@ -169,37 +171,37 @@ void QuickTextureOverlay3d::applyTexture()
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
 			// Thing (skip)
-			if (selection[a].type == MapEditor::SEL_THING)
+			if (selection[a].type == MapEditor::ItemType::Thing)
 				continue;
 
 			// Floor
-			else if (selection[a].type == MapEditor::SEL_FLOOR && (sel_type == 0 || sel_type == 2))
+			else if (selection[a].type == MapEditor::ItemType::Floor && (sel_type == 0 || sel_type == 2))
 			{
-				MapSector* sector = editor->getMap().getSector(selection[a].index);
+				MapSector* sector = editor->map().getSector(selection[a].index);
 				if (sector) sector->setStringProperty("texturefloor", textures[current_index].name);
 			}
 
 			// Ceiling
-			else if (selection[a].type == MapEditor::SEL_CEILING && (sel_type == 0 || sel_type == 2))
+			else if (selection[a].type == MapEditor::ItemType::Ceiling && (sel_type == 0 || sel_type == 2))
 			{
-				MapSector* sector = editor->getMap().getSector(selection[a].index);
+				MapSector* sector = editor->map().getSector(selection[a].index);
 				if (sector) sector->setStringProperty("textureceiling", textures[current_index].name);
 			}
 
 			// Wall
 			else if (sel_type > 0)
 			{
-				MapSide* side = editor->getMap().getSide(selection[a].index);
+				MapSide* side = editor->map().getSide(selection[a].index);
 				if (side)
 				{
 					// Upper
-					if (selection[a].type == MapEditor::SEL_SIDE_TOP)
+					if (selection[a].type == MapEditor::ItemType::WallTop)
 						side->setStringProperty("texturetop", textures[current_index].name);
 					// Middle
-					else if (selection[a].type == MapEditor::SEL_SIDE_MIDDLE)
+					else if (selection[a].type == MapEditor::ItemType::WallMiddle)
 						side->setStringProperty("texturemiddle", textures[current_index].name);
 					// Lower
-					else if (selection[a].type == MapEditor::SEL_SIDE_BOTTOM)
+					else if (selection[a].type == MapEditor::ItemType::WallBottom)
 						side->setStringProperty("texturebottom", textures[current_index].name);
 				}
 			}
@@ -270,11 +272,11 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 	if (!textures[index].texture)
 	{
 		if (sel_type == 1)
-			textures[index].texture = theMapEditor->textureManager().getTexture(textures[index].name, false);
+			textures[index].texture = MapEditor::textureManager().getTexture(textures[index].name, false);
 		else if (sel_type == 0)
-			textures[index].texture = theMapEditor->textureManager().getFlat(textures[index].name, false);
+			textures[index].texture = MapEditor::textureManager().getFlat(textures[index].name, false);
 		else
-			textures[index].texture = theMapEditor->textureManager().getTexture(textures[index].name, true);
+			textures[index].texture = MapEditor::textureManager().getTexture(textures[index].name, true);
 	}
 
 	// Draw name
@@ -318,7 +320,7 @@ void QuickTextureOverlay3d::close(bool cancel)
 	if (editor)
 	{
 		editor->endUndoRecord(true);
-		editor->lockHilight(false);
+		editor->selection().lockHilight(false);
 		if (cancel)
 			editor->doUndo();
 	}
@@ -398,7 +400,7 @@ void QuickTextureOverlay3d::keyDown(string key)
 /* QuickTextureOverlay3d::ok
  * Returns true if [sel] is valid for quick texture selection
  *******************************************************************/
-bool QuickTextureOverlay3d::ok(vector<selection_3d_t> &sel)
+bool QuickTextureOverlay3d::ok(const ItemSelection& sel)
 {
 	// Cancel if no selection
 	if (sel.empty())
@@ -408,7 +410,7 @@ bool QuickTextureOverlay3d::ok(vector<selection_3d_t> &sel)
 	bool ok = false;
 	for (unsigned a = 0; a < sel.size(); a++)
 	{
-		if (sel[a].type != MapEditor::SEL_THING)
+		if (sel[a].type != MapEditor::ItemType::Thing)
 		{
 			ok = true;
 			break;

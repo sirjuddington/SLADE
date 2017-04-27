@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "SectorPropsPanel.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/MapObject.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
@@ -37,6 +37,9 @@
 #include "OpenGL/Drawing.h"
 #include "UI/NumberTextCtrl.h"
 #include "UI/STabCtrl.h"
+#include "MapEditor/MapTextureManager.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************
@@ -52,7 +55,7 @@
 FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 {
 	// Init variables
-	texture = NULL;
+	texture = nullptr;
 	SetWindowStyleFlag(wxBORDER_SIMPLE);
 
 	SetInitialSize(wxSize(136, 136));
@@ -80,9 +83,9 @@ void FlatTexCanvas::setTexture(string tex)
 {
 	texname = tex;
 	if (tex == "-" || tex == "")
-		texture = NULL;
+		texture = nullptr;
 	else
-		texture = theMapEditor->textureManager().getFlat(tex, theGameConfiguration->mixTexFlats());
+		texture = MapEditor::textureManager().getFlat(tex, theGameConfiguration->mixTexFlats());
 
 	Refresh();
 }
@@ -123,7 +126,7 @@ void FlatTexCanvas::draw()
 	else if (texture == &(GLTexture::missingTex()))
 	{
 		// Draw unknown icon
-		GLTexture* tex = theMapEditor->textureManager().getEditorImage("thing/unknown");
+		GLTexture* tex = MapEditor::textureManager().getEditorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0);
 		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
@@ -156,7 +159,7 @@ FlatComboBox::FlatComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 
 	// Add all flats to dropdown on OSX, since the wxEVT_COMBOBOX_DROPDOWN event isn't supported there
 #ifdef __WXOSX__
-	vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllFlatsInfo();
+	vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllFlatsInfo();
 	for (unsigned a = 0; a < textures.size(); a++)
 		list.Add(textures[a].name);
 #else
@@ -183,7 +186,7 @@ void FlatComboBox::onDropDown(wxCommandEvent& e)
 	string text = GetValue().Upper();
 	
 	// Populate dropdown with matching flat names
-	vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllFlatsInfo();
+	vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllFlatsInfo();
 	wxArrayString list;
 	list.Add("-");
 	for (unsigned a = 0; a < textures.size(); a++)
@@ -245,7 +248,7 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 
 	// Other Properties tab
 	
-	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
+	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 	{
 		mopp_all_props = new MapObjectPropsPanel(stc_tabs, true);
 		mopp_all_props->hideProperty("texturefloor");
@@ -258,7 +261,7 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 		stc_tabs->AddPage(mopp_all_props, "Other Properties");
 	}
 	else
-		mopp_all_props = NULL;
+		mopp_all_props = nullptr;
 
 	// Bind events
 	btn_new_tag->Bind(wxEVT_BUTTON, &SectorPropsPanel::onBtnNewTag, this);
@@ -504,8 +507,8 @@ void SectorPropsPanel::onTextureChanged(wxCommandEvent& e)
 void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 {
 	// Get canvas
-	FlatTexCanvas* tc = NULL;
-	FlatComboBox* cb = NULL;
+	FlatTexCanvas* tc = nullptr;
+	FlatComboBox* cb = nullptr;
 	if (e.GetEventObject() == gfx_floor)
 	{
 		tc = gfx_floor;
@@ -524,7 +527,7 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 	}
 
 	// Browse
-	MapTextureBrowser browser(this, 1, tc->getTexName(), &(theMapEditor->mapEditor().getMap()));
+	MapTextureBrowser browser(this, 1, tc->getTexName(), &(MapEditor::editContext().map()));
 	if (browser.ShowModal() == wxID_OK)
 		cb->SetValue(browser.getSelectedItem()->getName());
 }
@@ -534,6 +537,6 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
  *******************************************************************/
 void SectorPropsPanel::onBtnNewTag(wxCommandEvent& e)
 {
-	int tag = theMapEditor->mapEditor().getMap().findUnusedSectorTag();
+	int tag = MapEditor::editContext().map().findUnusedSectorTag();
 	text_tag->SetValue(S_FMT("%d", tag));
 }

@@ -33,10 +33,11 @@
 #include "MapObjectPropsPanel.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MOPGProperty.h"
 #include "UI/STabCtrl.h"
+#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************
@@ -461,7 +462,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 		return;
 
 	// Get map format
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Clear property grid
 	clearGrid();
@@ -899,13 +900,13 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		pg_properties->EnableProperty(pg_properties->GetGrid()->GetRoot());
 
 	// Setup property grid for the object type
-	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
+	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 		setupTypeUDMF(objects[0]->getObjType());
 	else
 		setupType(objects[0]->getObjType());
 
 	// Find any custom properties (UDMF only)
-	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
+	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 	{
 		for (unsigned a = 0; a < objects.size(); a++)
 		{
@@ -1099,12 +1100,12 @@ void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 		type = "Thing";
 
 	// Apply changes
-	theMapEditor->mapEditor().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
+	MapEditor::editContext().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
 	applyChanges();
-	theMapEditor->mapEditor().endUndoRecord();
+	MapEditor::editContext().endUndoRecord();
 
 	// Refresh map view
-	theMapEditor->forceRefresh(true);
+	MapEditor::window()->forceRefresh(true);
 }
 
 /* MapObjectPropsPanel::onBtnReset
@@ -1246,9 +1247,9 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 			else if (last_type == MOBJ_THING)
 				type = "Thing";
 			
-			theMapEditor->mapEditor().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
+			MapEditor::editContext().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
 			properties[a]->applyValue();
-			theMapEditor->mapEditor().endUndoRecord();
+			MapEditor::editContext().endUndoRecord();
 			return;
 		}
 	}

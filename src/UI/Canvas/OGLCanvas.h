@@ -35,6 +35,7 @@ public:
 	void			drawCheckeredBackground();
 	wxWindow*		toPanel(wxWindow* parent);
 	bool			setActive();
+	void			setup2D();
 
 #ifdef USE_SFML_RENDERWINDOW
 	void	SwapBuffers() { display(); }

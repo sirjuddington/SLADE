@@ -31,10 +31,11 @@
 #include "Main.h"
 #include "ActionSpecialDialog.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
 #include "UI/NumberTextCtrl.h"
 #include "UI/STabCtrl.h"
+#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************
@@ -899,7 +900,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 	if (show_trigger)
 	{
 		// UDMF Triggers
-		if (theMapEditor->currentMapDesc().format == MAP_UDMF)
+		if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 		{
 			// Get all UDMF properties
 			vector<udmfp_t> props = theGameConfiguration->allUDMFProperties(MOBJ_LINE);
@@ -941,7 +942,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 		}
 
 		// Hexen trigger
-		else if (theMapEditor->currentMapDesc().format == MAP_HEXEN)
+		else if (MapEditor::editContext().mapDesc().format == MAP_HEXEN)
 		{
 			// Add triggers dropdown
 			wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -984,7 +985,7 @@ void ActionSpecialPanel::setSpecial(int special)
 	if (panel_args)
 	{
 		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
-		panel_args->setup(&args, (theMapEditor->currentMapDesc().format == MAP_UDMF));
+		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }
 
@@ -1200,7 +1201,7 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
 	if (panel_args)
 	{
 		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
-		panel_args->setup(&args, (theMapEditor->currentMapDesc().format == MAP_UDMF));
+		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }
 
@@ -1214,7 +1215,7 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
 	if (panel_args)
 	{
 		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
-		panel_args->setup(&args, (theMapEditor->currentMapDesc().format == MAP_UDMF));
+		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 		panel_args->SetFocus();
 	}
 }
@@ -1242,7 +1243,7 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args)
 	SetSizer(sizer);
 
 	// No args
-	if (theMapEditor->currentMapDesc().format == MAP_DOOM || !show_args)
+	if (MapEditor::editContext().mapDesc().format == MAP_DOOM || !show_args)
 	{
 		panel_special = new ActionSpecialPanel(this, false);
 		sizer->Add(panel_special, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
@@ -1289,7 +1290,7 @@ void ActionSpecialDialog::setSpecial(int special)
 	if (panel_args)
 	{
 		argspec_t args = theGameConfiguration->actionSpecial(special)->getArgspec();
-		panel_args->setup(&args, (theMapEditor->currentMapDesc().format == MAP_UDMF));
+		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }
 

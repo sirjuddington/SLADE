@@ -192,7 +192,9 @@ edf : cstyle {
 		// Counter action functions
 		A_HealthJump = "state, comparison, value_or_counter";
 		A_CounterJump = "state, comparison, value_or_counter, counter";
+		A_CounterJumpEx = "state, comparison, valcounter, counter";
 		A_CounterSwitch = "counter, first_frame, number_of_frames";
+		A_CounterSwitchEx = "counternum, state, state, ...";
 		A_SetCounter = "counter, value, operation";
 		A_CounterOp = "operand, operand, counter, operation";
 		A_CopyCounter = "source, destination";
@@ -311,7 +313,7 @@ edf : cstyle {
 		A_Spawn;
 		A_Turn;
 		A_Face;
-		A_Scratch = "keyword, value, sound";
+		A_Scratch = "keyword, value, sound, mod";
 		A_PlaySound;
 		A_RandomJump;
 		A_LineEffect;

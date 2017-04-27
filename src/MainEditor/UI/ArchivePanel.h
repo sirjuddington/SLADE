@@ -18,6 +18,7 @@ protected:
 	Archive*			archive;
 	ArchiveEntryList*	entry_list;
 	wxTextCtrl*			text_filter;
+	wxButton*			btn_clear_filter;
 	wxChoice*			choice_category;
 	wxStaticText*		label_path;
 	wxBitmapButton*		btn_updir;
@@ -160,6 +161,7 @@ public:
 	void			onChoiceCategoryChanged(wxCommandEvent& e);
 	void			onDirChanged(wxCommandEvent& e);
 	void			onBtnUpDir(wxCommandEvent& e);
+	void			onBtnClearFilter(wxCommandEvent& e);
 };
 
 class EntryDataUS : public UndoStep

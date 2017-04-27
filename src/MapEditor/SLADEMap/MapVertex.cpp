@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "MapVertex.h"
 #include "MapLine.h"
-#include "MainApp.h"
+#include "App.h"
 
 
 /*******************************************************************

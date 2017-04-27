@@ -73,6 +73,13 @@ entry_types
 		text_language = "decorate";
 	}
 
+	decorate_ns : text
+	{
+		name = "Decorate";
+		section = "actors", "decorate";
+		text_language = "decorate";
+	}
+
 	dehacked : text
 	{
 		name = "DeHackEd";
@@ -291,6 +298,12 @@ entry_types
 		icon = "e_texturex";
 		text_language = "z_textures";
 	}
+
+	trnslate : text
+	{
+		name = "Translation defs";
+		match_name = "trnslate";
+	}
 	
 	palvers : text
 	{
@@ -396,14 +409,8 @@ entry_types
 		match_name = "lua_*";
 		text_language = "srb2lua";
 	}
-        
-        soc : text
-	{
-		name = "Sonic Object Configuration";
-		match_name = "soc_*";
-	}
-	
-        // ZDaemon text lumps
+
+	// ZDaemon text lumps
 	patchinf : text
 	{
 		name = "Patchinfo";
@@ -549,6 +556,20 @@ entry_types
 	{
 		name = "Playlist";
 		match_ext = "m3u";
+	}
+
+	zscript : text
+	{
+		name = "ZScript";
+		match_name = "zscript";
+		text_language = "zscript";
+	}
+
+	zscript_ns : text
+	{
+		name = "ZScript";
+		section = "zscript";
+		text_language = "zscript";
 	}
 
 	txt : text

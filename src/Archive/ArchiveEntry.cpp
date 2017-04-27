@@ -34,6 +34,7 @@
 #include "ArchiveEntry.h"
 #include "Archive.h"
 #include "General/Misc.h"
+#include "Utility/StringUtils.h"
 
 
 /*******************************************************************
@@ -48,6 +49,7 @@ ArchiveEntry::ArchiveEntry(string name, uint32_t size)
 	// Initialise attributes
 	this->parent = NULL;
 	this->name = name;
+	this->upper_name = name.Upper();
 	this->size = size;
 	this->data_loaded = true;
 	this->state = 2;
@@ -58,6 +60,7 @@ ArchiveEntry::ArchiveEntry(string name, uint32_t size)
 	this->next = NULL;
 	this->prev = NULL;
 	this->encrypted = ENC_NONE;
+	this->index_guess = 0;
 }
 
 /* ArchiveEntry::ArchiveEntry
@@ -68,6 +71,7 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	// Initialise (copy) attributes
 	this->parent = NULL;
 	this->name = copy.name;
+	this->upper_name = copy.upper_name;
 	this->size = copy.size;
 	this->data_loaded = true;
 	this->state = 2;
@@ -78,6 +82,7 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	this->next = NULL;
 	this->prev = NULL;
 	this->encrypted = copy.encrypted;
+	this->index_guess = 0;
 
 	// Copy data
 	data.importMem(copy.getData(true), copy.getSize());
@@ -113,11 +118,37 @@ string ArchiveEntry::getName(bool cut_ext)
 	// Sanitize name if it contains the \ character (possible in WAD).
 	string saname = Misc::lumpNameToFileName(name);
 
+	if (saname.Contains(StringUtils::FULLSTOP))
+		return saname.BeforeLast('.');
+	else
+		return saname;
+	/*
 	// cut extension through wx function
 	wxFileName fn(saname);
 
 	// Perform reverse operation and return
 	return Misc::fileNameToLumpName(fn.GetName());
+	*/
+}
+
+
+/* ArchiveEntry::getUpperName
+ * Returns the entry name in uppercase
+ *******************************************************************/
+string ArchiveEntry::getUpperName()
+{
+	return upper_name;
+}
+
+/* ArchiveEntry::getUpperNameNoExt
+ * Returns the entry name in uppercase with no file extension
+ *******************************************************************/
+string ArchiveEntry::getUpperNameNoExt()
+{
+	if (upper_name.Contains(StringUtils::FULLSTOP))
+		return Misc::lumpNameToFileName(upper_name).BeforeLast('.');
+	else
+		return Misc::lumpNameToFileName(upper_name);
 }
 
 /* ArchiveEntry::getParent
@@ -190,6 +221,18 @@ MemChunk& ArchiveEntry::getMCData(bool allow_load)
 	}
 
 	return data;
+}
+
+/* ArchiveEntry::getShared
+ * Returns the parent ArchiveTreeNode's shared pointer to this entry,
+ * or nullptr if this entry has no parent
+ *******************************************************************/
+ArchiveEntry::SPtr ArchiveEntry::getShared()
+{
+	if (parent)
+		return parent->getEntryShared(this);
+	else
+		return nullptr;
 }
 
 /* ArchiveEntry::setState
@@ -271,6 +314,7 @@ bool ArchiveEntry::rename(string new_name)
 
 	// Update attributes
 	name = new_name;
+	upper_name = name.Upper();
 	setState(1);
 
 	return true;

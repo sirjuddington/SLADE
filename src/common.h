@@ -144,6 +144,7 @@
 #include <algorithm>
 #include <set>
 #include <cmath>
+#include <memory>
 
 // C
 #include <locale.h>

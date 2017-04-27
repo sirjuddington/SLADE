@@ -113,7 +113,7 @@ void ThingType::copy(ThingType* copy)
  * Returns a string representation of the thing type's args given
  * the values in [args]
  *******************************************************************/
-string ThingType::getArgsString(int args[5])
+string ThingType::getArgsString(int args[5], string argstr[2])
 {
 	string ret;
 
@@ -126,7 +126,10 @@ string ThingType::getArgsString(int args[5])
 
 		ret += this->args[a].name;
 		ret += ": ";
-		ret += this->args[a].valueString(args[a]);
+		if (a < 2 && args[a] == 0 && !argstr[a].IsEmpty())
+			ret += argstr[a];
+		else
+			ret += this->args[a].valueString(args[a]);
 		ret += ", ";
 	}
 
@@ -294,6 +297,14 @@ void ThingType::parse(ParseTreeNode* node)
 			this->nextargs = child->getIntValue();
 			this->flags |= THING_PATHED;
 		}
+
+		// Handle player starts
+		else if (S_CMPNOCASE(name, "player_coop"))
+			this->flags |= THING_COOPSTART;
+		else if (S_CMPNOCASE(name, "player_dm"))
+			this->flags |= THING_DMSTART;
+		else if (S_CMPNOCASE(name, "player_team"))
+			this->flags |= THING_TEAMSTART;
 
 		// Hexen's critters are weird
 		else if (S_CMPNOCASE(name, "dragon"))

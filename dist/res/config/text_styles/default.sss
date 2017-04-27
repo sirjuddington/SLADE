@@ -1,17 +1,16 @@
 
 styleset
 {
-	name = "SLADE Default";
+	name = "SLADE (Light)";
 
 	default
 	{
-		//font = "";					// Undefined means use system default (monospace)
-		size = 10;						// Default is 10
-		foreground = 0, 0, 0;			// Default is black (0,0,0)
-		background = 255, 255, 255;		// Default is white (255,255,255)
-		bold = false;					// Default is false
-		italic = false;					// Default is false
-		underlined = false;				// Default is false
+		size = 10;
+		foreground = 75, 75, 75;
+		background = 255, 255, 255;
+		bold = false;
+		italic = false;
+		underlined = false;
 	}
 
 	selection
@@ -21,74 +20,115 @@ styleset
 
 	preprocessor
 	{
-		// Any omitted properties will be inherited from 'default'
-		foreground = 0, 150, 200;
+		foreground = 117, 147, 164;
 	}
 
 	comment
 	{
-		foreground = 0, 150, 60;
+		foreground = 106, 147, 98;
+		italic = 1;
+	}
+
+	comment_doc
+	{
+		foreground = 108, 142, 157;
+		italic = 1;
 	}
 
 	string
 	{
-		foreground = 0, 120, 130;
+		foreground = 156, 32, 14;
 	}
 
 	character
 	{
-		foreground = 0, 120, 130;
+		foreground = 157, 20, 0;
 	}
 
 	keyword
 	{
-		foreground = 0, 30, 200;
+		foreground = 9, 78, 206;
 	}
 
 	constant
 	{
-		foreground = 180, 30, 200;
+		foreground = 169, 82, 182;
+	}
+
+	type
+	{
+		foreground = 89, 2, 208;
+	}
+
+	property
+	{
+		foreground = 22, 141, 120;
 	}
 
 	function
 	{
-		foreground = 200, 100, 30;
+		foreground = 143, 120, 24;
+	}
+
+	number
+	{
+		foreground = 83, 57, 159;
+	}
+
+	operator
+	{
+		foreground = 56, 88, 80;
 	}
 
 	bracematch
 	{
-		background = 170, 255, 170;
+		background = 217, 244, 231;
+		bold = 1;
 	}
 
 	bracebad
 	{
 		background = 255, 170, 170;
+		bold = 1;
 	}
 
 	linenum
 	{
-		background = 240, 240, 240;
+		foreground = 81, 115, 96;
+		background = 237, 239, 238;
 	}
 
 	calltip
 	{
-		background = 255, 255, 180;
-		foreground = 0, 0, 0;
+		foreground = 46, 46, 46;
+		background = 245, 248, 241;
 	}
 
 	calltip_hl
 	{
-		foreground = 0, 0, 200;
+		foreground = 0, 181, 108;
+		bold = 1;
 	}
 
 	foldmargin
 	{
-		background = 240, 240, 240;
-		foreground = 100, 170, 170;
+		foreground = 145, 172, 157;
+		background = 237, 239, 238;
 	}
 
 	guides
 	{
-		foreground = 180, 210, 210;
+		foreground = 158, 197, 197;
+	}
+
+	wordmatch
+	{
+		foreground = 9, 78, 206;
+	}
+
+	current_line
+	{
+		foreground = 218, 233, 225;
+		background = 247, 247, 247;
 	}
 }

@@ -33,13 +33,14 @@
 #include "Main.h"
 #include "MOPGProperty.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
+#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************
@@ -592,7 +593,7 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		int special = -1;
-		ActionSpecialDialog dlg(theMapEditor);
+		ActionSpecialDialog dlg(MapEditor::windowWx());
 		dlg.setSpecial(GetValue().GetInteger());
 		if (dlg.ShowModal() == wxID_OK)
 			special = dlg.selectedSpecial();
@@ -652,7 +653,7 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 			init_type = GetValue().GetInteger();
 
 		// Open thing browser
-		ThingTypeBrowser browser(theMapEditor, init_type);
+		ThingTypeBrowser browser(MapEditor::windowWx(), init_type);
 		if (browser.ShowModal() == wxID_OK)
 		{
 			// Set the value if a type was selected
@@ -1083,7 +1084,7 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 			tex_current = GetValueAsString();
 
 		// Open map texture browser
-		MapTextureBrowser browser(theMapEditor, textype, tex_current, &(theMapEditor->mapEditor().getMap()));
+		MapTextureBrowser browser(MapEditor::windowWx(), textype, tex_current, &(MapEditor::editContext().map()));
 		if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
 			GetGrid()->ChangePropertyValue(this, browser.getSelectedItem()->getName());
 
@@ -1129,7 +1130,7 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 	string first = theGameConfiguration->spacTriggerString((MapLine*)objects[0], map_format);
 
 	// Check whether all objects share the same value
@@ -1339,7 +1340,7 @@ bool MOPGSectorSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 	// '...' button clicked
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
-		SectorSpecialDialog dlg(theMapEditor);
+		SectorSpecialDialog dlg(MapEditor::windowWx());
 		dlg.setup(m_value.GetInteger());
 		if (dlg.ShowModal() == wxID_OK)
 			GetGrid()->ChangePropertyValue(this, dlg.getSelectedSpecial());

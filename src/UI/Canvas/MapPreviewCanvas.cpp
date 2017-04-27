@@ -186,7 +186,7 @@ bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
 						token = tz.getToken();
 						if (token.Cmp("="))
 						{
-							wxLogMessage("Bad syntax for vertex %i in UDMF map data", vertcounter);
+							LOG_MESSAGE(1, "Bad syntax for vertex %i in UDMF map data", vertcounter);
 							return false;
 						}
 						if (isx) x = tz.getDouble(), gotx = true;
@@ -201,7 +201,7 @@ bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
 					addVertex(x, y);
 				else
 				{
-					wxLogMessage("Wrong vertex %i in UDMF map data", vertcounter);
+					LOG_MESSAGE(1, "Wrong vertex %i in UDMF map data", vertcounter);
 					return false;
 				}
 				vertcounter++;
@@ -221,7 +221,7 @@ bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
 						token = tz.getToken();
 						if (token.Cmp("="))
 						{
-							wxLogMessage("Bad syntax for linedef %i in UDMF map data", linecounter);
+							LOG_MESSAGE(1, "Bad syntax for linedef %i in UDMF map data", linecounter);
 							return false;
 						}
 						if (isv1) v1 = tz.getInteger(), gotv1 = true;
@@ -250,7 +250,7 @@ bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
 					addLine(v1, v2, twosided, special);
 				else
 				{
-					wxLogMessage("Wrong line %i in UDMF map data", linecounter);
+					LOG_MESSAGE(1, "Wrong line %i in UDMF map data", linecounter);
 					return false;
 				}
 				linecounter++;
@@ -271,7 +271,7 @@ bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
 						token = tz.getToken();
 						if (token.Cmp("="))
 						{
-							wxLogMessage("Bad syntax for thing %i in UDMF map data", vertcounter);
+							LOG_MESSAGE(1, "Bad syntax for thing %i in UDMF map data", vertcounter);
 							return false;
 						}
 						if (isx) x = tz.getDouble(), gotx = true;
@@ -284,7 +284,7 @@ bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
 					addThing(x, y);
 				else
 				{
-					wxLogMessage("Wrong thing %i in UDMF map data", vertcounter);
+					LOG_MESSAGE(1, "Wrong thing %i in UDMF map data", vertcounter);
 					return false;
 				}
 				vertcounter++;

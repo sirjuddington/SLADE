@@ -958,10 +958,10 @@ public:
 				mc[8] == 'A' && mc[9] == 'I' && mc[10] == 'F' && (mc[11] == 'F' || mc[11] == 'C'))
 			{
 				size_t size = READ_B32(mc, 4) + 8;
-				if (debugaiff) DPrintf("size %d", size);
+				if (debugaiff) LOG_MESSAGE(1, "size %d", size);
 				if (size > mc.getSize())
 				{
-					if (debugaiff) DPrintf("%d <= %d fails", size, mc.getSize());
+					if (debugaiff) LOG_MESSAGE(1, "%d <= %d fails", size, mc.getSize());
 					return EDF_FALSE;
 				}
 				size_t s = 12;
@@ -969,18 +969,18 @@ public:
 				bool ssnd_found = false;
 				while (s < size && !(comm_found && ssnd_found))
 				{
-					if (debugaiff) DPrintf("%d/%d", s, size);
+					if (debugaiff) LOG_MESSAGE(1, "%d/%d", s, size);
 					if (mc[s+0] == 'C' && mc[s+1] == 'O' && mc[s+2] == 'M' && mc[s+3] == 'M')
 						comm_found = true;
 					else if (mc[s+0] == 'S' && mc[s+1] == 'S' && mc[s+2] == 'N' && mc[s+3] == 'D')
 						ssnd_found = true;
 					s += 8 + READ_B32(mc, s+4);
 					if (s%2) ++s;
-					if (debugaiff) DPrintf("looking now at offset %d", s);
+					if (debugaiff) LOG_MESSAGE(1, "looking now at offset %d", s);
 				}
 				if (comm_found && ssnd_found)
 					return EDF_TRUE;
-				if (debugaiff) DPrintf("COMM was %sfound and SSND was %sfound", comm_found ? "" : "not ", ssnd_found ? "" : "not ");
+				if (debugaiff) LOG_MESSAGE(1, "COMM was %sfound and SSND was %sfound", comm_found ? "" : "not ", ssnd_found ? "" : "not ");
 			}
 		}
 		return EDF_FALSE;

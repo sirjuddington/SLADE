@@ -6,7 +6,9 @@
 #include "Tokenizer.h"
 #include "PropertyList/Property.h"
 
+class ArchiveTreeNode;
 class Parser;
+
 class ParseTreeNode : public STreeNode
 {
 private:
@@ -15,9 +17,10 @@ private:
 	string				type;
 	vector<Property>	values;
 	Parser*				parser;
+	ArchiveTreeNode*	archive_dir;
 
 protected:
-	STreeNode*	createChild(string name)
+	STreeNode*	createChild(string name) override
 	{
 		ParseTreeNode* ret = new ParseTreeNode();
 		ret->setName(name);
@@ -26,11 +29,15 @@ protected:
 	}
 
 public:
-	ParseTreeNode(ParseTreeNode* parent = NULL, Parser* parser = NULL);
+	ParseTreeNode(
+		ParseTreeNode* parent = nullptr,
+		Parser* parser = nullptr,
+		ArchiveTreeNode* archive_dir = nullptr
+	);
 	~ParseTreeNode();
 
-	string		getName() { return name; }
-	void		setName(string name) { this->name = name; }
+	string		getName() override { return name; }
+	void		setName(string name) override { this->name = name; }
 	string		getInherit() { return inherit; }
 	string		getType() { return type; }
 	unsigned	nValues() { return values.size(); }
@@ -41,19 +48,22 @@ public:
 	double		getFloatValue(unsigned index = 0);
 
 	bool	parse(Tokenizer& tz);
+
+	typedef std::unique_ptr<ParseTreeNode> UPtr;
 };
 
 class Parser
 {
 private:
-	ParseTreeNode*	pt_root;
-	vector<string>	defines;
+	ParseTreeNode::UPtr	pt_root;
+	vector<string>		defines;
+	ArchiveTreeNode*	archive_dir_root;
 
 public:
-	Parser();
+	Parser(ArchiveTreeNode* dir_root = nullptr);
 	~Parser();
 
-	ParseTreeNode*	parseTreeRoot() { return pt_root; }
+	ParseTreeNode*	parseTreeRoot() { return pt_root.get(); }
 
 	bool	parseText(MemChunk& mc, string source = "memory chunk", bool debug = false);
 	bool	parseText(string& text, string source = "string", bool debug = false);
