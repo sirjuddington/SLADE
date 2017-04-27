@@ -23,23 +23,23 @@ public:
 	~IdGamesPanel();
 
 private:
-	vector<idGames::File>	files_latest;
-	vector<idGames::File>	files_search;
-	vector<idGames::File>	files_browse;
+	vector<idGames::File>	files_latest_;
+	vector<idGames::File>	files_search_;
+	vector<idGames::File>	files_browse_;
 
-	ListView*				lv_files;
-	wxButton*				btn_refresh;	// Temp
-	wxRadioButton*			rb_latest;
-	wxRadioButton*			rb_search;
-	wxRadioButton*			rb_browse;
-	IdGamesDetailsPanel*	panel_details;
+	ListView*				lv_files_		= nullptr;
+	wxButton*				btn_refresh_	= nullptr;	// Temp
+	wxRadioButton*			rb_latest_		= nullptr;
+	wxRadioButton*			rb_search_		= nullptr;
+	wxRadioButton*			rb_browse_		= nullptr;
+	IdGamesDetailsPanel*	panel_details_	= nullptr;
 
 	// Search
-	wxChoice*	choice_search_by;
-	wxTextCtrl*	text_search;
-	wxChoice*	choice_search_sort;
-	wxButton*	btn_search_sort_dir;
-	wxPanel*	panel_search;
+	wxChoice*	choice_search_by_		= nullptr;
+	wxTextCtrl*	text_search_			= nullptr;
+	wxChoice*	choice_search_sort_		= nullptr;
+	wxButton*	btn_search_sort_dir_	= nullptr;
+	wxPanel*	panel_search_			= nullptr;
 
 	wxPanel*	setupSearchControlPanel();
 

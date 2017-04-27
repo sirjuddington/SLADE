@@ -9,8 +9,8 @@ namespace Launcher
 		~Mod();
 
 	private:
-		string	path;
-		string	title;
+		string	path_;
+		string	title_;
 	};
 
 	class ModLibrary
@@ -20,6 +20,6 @@ namespace Launcher
 		~ModLibrary();
 
 	private:
-		vector<Mod>	mods;
+		vector<Mod>	mods_;
 	};
 }

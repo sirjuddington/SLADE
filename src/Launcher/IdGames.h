@@ -16,9 +16,9 @@ namespace idGames
 		ExitCode Entry();
 
 	private:
-		wxEvtHandler*		handler;
-		string				command;
-		vector<key_value_t>	params;
+		wxEvtHandler*		handler_	= nullptr;
+		string				command_;
+		vector<key_value_t>	params_;
 	};
 
 	struct Review
@@ -33,25 +33,25 @@ namespace idGames
 
 	struct File
 	{
-		int					id;
-		string				title;
-		string				dir;
-		string				filename;
-		int					size_bytes;
-		int					age;
-		string				date;
-		string				author;
-		string				email;
-		string				description;
-		string				credits;
-		string				base;
-		string				build_time;
-		string				editors;
-		string				bugs;
-		string				text_file;
-		double				rating;
-		int					votes;
-		string				url;
+		int				id;
+		string			title;
+		string			dir;
+		string			filename;
+		int				size_bytes;
+		int				age;
+		string			date;
+		string			author;
+		string			email;
+		string			description;
+		string			credits;
+		string			base;
+		string			build_time;
+		string			editors;
+		string			bugs;
+		string			text_file;
+		double			rating;
+		int				votes;
+		string			url;
 		vector<Review>	reviews;
 	};
 

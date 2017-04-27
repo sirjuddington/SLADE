@@ -355,6 +355,9 @@ bool App::init()
 	// Init game executables
 	Executables::init();
 
+	// Init game configuration
+	theGameConfiguration->init();
+
 	// Init main editor
 	MainEditor::init();
 
@@ -362,9 +365,6 @@ bool App::init()
 	Log::info("Loading base resource");
 	theArchiveManager->initBaseResource();
 	Log::info("Base resource loaded");
-
-	// Init game configuration
-	theGameConfiguration->init();
 
 	// Show the main window
 	MainEditor::windowWx()->Show(true);

@@ -4,8 +4,6 @@
 #include "UI/Lists/ListView.h"
 #include "Launcher/IdGames.h"
 #include "Utility/XmlHelpers.h"
-#include "UI/STabCtrl.h"
-#include "Graphics/Icons.h"
 #include <wx/xml/xml.h>
 #include <wx/sstream.h>
 #include <wx/gbsizer.h>
@@ -13,10 +11,17 @@
 
 IdGamesDetailsPanel::IdGamesDetailsPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	text_textfile = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_MULTILINE);
+	text_textfile = new wxTextCtrl(
+		this,
+		-1,
+		"",
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxTE_READONLY | wxTE_MULTILINE
+	);
 	sizer->Add(text_textfile, 1, wxEXPAND, 0);
 }
 
@@ -31,58 +36,57 @@ void IdGamesDetailsPanel::loadDetails(idGames::File file)
 
 
 
-IdGamesPanel::IdGamesPanel(wxWindow* parent)
-	: wxPanel(parent)
+IdGamesPanel::IdGamesPanel(wxWindow* parent) : wxPanel(parent)
 {
-	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
 
-	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(vbox, 1, wxEXPAND | wxALL, 8);
 
-	wxBoxSizer* rb_box = new wxBoxSizer(wxHORIZONTAL);
+	auto rb_box = new wxBoxSizer(wxHORIZONTAL);
 	vbox->Add(rb_box, 0, wxEXPAND | wxBOTTOM, 8);
 
-	rb_latest = new wxRadioButton(this, -1, "Latest Uploads");
-	rb_box->Add(rb_latest, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+	rb_latest_ = new wxRadioButton(this, -1, "Latest Uploads");
+	rb_box->Add(rb_latest_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
-	rb_search = new wxRadioButton(this, -1, "Search idGames");
-	rb_box->Add(rb_search, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+	rb_search_ = new wxRadioButton(this, -1, "Search idGames");
+	rb_box->Add(rb_search_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
-	rb_browse = new wxRadioButton(this, -1, "Browse idGames");
-	rb_box->Add(rb_browse, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+	rb_browse_ = new wxRadioButton(this, -1, "Browse idGames");
+	rb_box->Add(rb_browse_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
-	btn_refresh = new wxButton(this, -1, "Refresh");
+	btn_refresh_ = new wxButton(this, -1, "Refresh");
 	rb_box->AddStretchSpacer(1);
-	rb_box->Add(btn_refresh, 0);
+	rb_box->Add(btn_refresh_, 0);
 
 	// Search controls
-	panel_search = setupSearchControlPanel();
-	vbox->Add(panel_search, 0, wxEXPAND | wxBOTTOM, 8);
-	panel_search->Hide();
+	panel_search_ = setupSearchControlPanel();
+	vbox->Add(panel_search_, 0, wxEXPAND | wxBOTTOM, 8);
+	panel_search_->Hide();
 
-	lv_files = new ListView(this, -1);
-	lv_files->enableSizeUpdate(false);
-	vbox->Add(lv_files, 1, wxEXPAND);
+	lv_files_ = new ListView(this, -1);
+	lv_files_->enableSizeUpdate(false);
+	vbox->Add(lv_files_, 1, wxEXPAND);
 
-	lv_files->AppendColumn("Title");
-	lv_files->AppendColumn("Author");
-	lv_files->AppendColumn("Rating");
+	lv_files_->AppendColumn("Title");
+	lv_files_->AppendColumn("Author");
+	lv_files_->AppendColumn("Rating");
 
 
 
 	// File info
-	panel_details = new IdGamesDetailsPanel(this);
-	sizer->Add(panel_details, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, 8);
+	panel_details_ = new IdGamesDetailsPanel(this);
+	sizer->Add(panel_details_, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, 8);
 
 
 	// Bind events
 	Bind(wxEVT_COMMAND_IDGAMES_APICALL_COMPLETED, &IdGamesPanel::onApiCallCompleted, this);
-	btn_refresh->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &IdGamesPanel::onBtnRefreshClicked, this);
-	rb_search->Bind(wxEVT_RADIOBUTTON, &IdGamesPanel::onRBSearchClicked, this);
-	rb_browse->Bind(wxEVT_RADIOBUTTON, &IdGamesPanel::onRBBrowseClicked, this);
-	rb_latest->Bind(wxEVT_RADIOBUTTON, &IdGamesPanel::onRBLatestClicked, this);
-	lv_files->Bind(wxEVT_LIST_ITEM_SELECTED, &IdGamesPanel::onListItemSelected, this);
+	btn_refresh_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &IdGamesPanel::onBtnRefreshClicked, this);
+	rb_search_->Bind(wxEVT_RADIOBUTTON, &IdGamesPanel::onRBSearchClicked, this);
+	rb_browse_->Bind(wxEVT_RADIOBUTTON, &IdGamesPanel::onRBBrowseClicked, this);
+	rb_latest_->Bind(wxEVT_RADIOBUTTON, &IdGamesPanel::onRBLatestClicked, this);
+	lv_files_->Bind(wxEVT_LIST_ITEM_SELECTED, &IdGamesPanel::onListItemSelected, this);
 }
 
 IdGamesPanel::~IdGamesPanel()
@@ -91,16 +95,16 @@ IdGamesPanel::~IdGamesPanel()
 
 wxPanel* IdGamesPanel::setupSearchControlPanel()
 {
-	wxPanel* panel = new wxPanel(this, -1);
-	wxGridBagSizer* sizer = new wxGridBagSizer(8, 8);
+	auto panel = new wxPanel(this, -1);
+	auto sizer = new wxGridBagSizer(8, 8);
 	panel->SetSizer(sizer);
 
 	// Search query
 	sizer->Add(new wxStaticText(panel, -1, "Search for"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
-	text_search = new wxTextCtrl(panel, -1);
-	hbox->Add(text_search, 1, wxEXPAND | wxRIGHT, 8);
+	text_search_ = new wxTextCtrl(panel, -1);
+	hbox->Add(text_search_, 1, wxEXPAND | wxRIGHT, 8);
 
 	// Search type
 	string search_types[] = {
@@ -113,10 +117,10 @@ wxPanel* IdGamesPanel::setupSearchControlPanel()
 		"Editors Used",
 		"Text File"
 	};
-	choice_search_by = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 8, search_types);
-	choice_search_by->SetSelection(0);
+	choice_search_by_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 8, search_types);
+	choice_search_by_->SetSelection(0);
 	hbox->Add(new wxStaticText(panel, -1, "in"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
-	hbox->Add(choice_search_by, 1, wxEXPAND);
+	hbox->Add(choice_search_by_, 1, wxEXPAND);
 
 	// Search sort
 	string sort_types[] = {
@@ -128,14 +132,14 @@ wxPanel* IdGamesPanel::setupSearchControlPanel()
 	sizer->Add(new wxStaticText(panel, -1, "Sort by"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
-	choice_search_sort = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 4, sort_types);
-	choice_search_sort->SetSelection(0);
-	hbox->Add(choice_search_sort, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+	choice_search_sort_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 4, sort_types);
+	choice_search_sort_->SetSelection(0);
+	hbox->Add(choice_search_sort_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
 	// Sort dir
-	btn_search_sort_dir = new wxButton(panel, -1, "Ascending");
+	btn_search_sort_dir_ = new wxButton(panel, -1, "Ascending");
 	//btn_search_sort_dir->SetImageLabel(Icons::getIcon(Icons::GENERAL, "up"));
-	hbox->Add(btn_search_sort_dir, 0, wxEXPAND);
+	hbox->Add(btn_search_sort_dir_, 0, wxEXPAND);
 
 	sizer->AddGrowableCol(1);
 
@@ -144,24 +148,24 @@ wxPanel* IdGamesPanel::setupSearchControlPanel()
 
 void IdGamesPanel::loadList(vector<idGames::File>& list)
 {
-	lv_files->Show(false);
-	lv_files->DeleteAllItems();
-	for (unsigned a = 0; a < list.size(); a++)
+	lv_files_->Show(false);
+	lv_files_->DeleteAllItems();
+	for (auto& file : list)
 	{
 		wxArrayString item;
-		item.Add(list[a].title);
-		item.Add(list[a].author);
-		item.Add(S_FMT("%f", list[a].rating));
-		lv_files->addItem(lv_files->GetItemCount(), item);
+		item.Add(file.title);
+		item.Add(file.author);
+		item.Add(S_FMT("%f", file.rating));
+		lv_files_->addItem(lv_files_->GetItemCount(), item);
 	}
-	lv_files->Show();
+	lv_files_->Show();
 }
 
 void IdGamesPanel::getLatestFiles()
 {
 	vector<key_value_t> params;
 	params.push_back(key_value_t("limit", "200"));
-	idGames::ApiCall* call = new idGames::ApiCall(this, "latestfiles", params);
+	auto call = new idGames::ApiCall(this, "latestfiles", params);
 	call->Create();
 	call->Run();
 }
@@ -169,21 +173,22 @@ void IdGamesPanel::getLatestFiles()
 void IdGamesPanel::readLatestFiles(string& xml)
 {
 	wxXmlDocument doc;
-	doc.Load(wxStringInputStream(xml));
+	wxStringInputStream stream(xml);
+	doc.Load(stream);
 
 	// Check root node is <idgames-response>
 	if (!doc.GetRoot() || doc.GetRoot()->GetName() != "idgames-response")
 		return;
 
 	// Get content node
-	wxXmlNode* content = XmlHelpers::getFirstChild(doc.GetRoot(), "content");
+	auto content = XmlHelpers::getFirstChild(doc.GetRoot(), "content");
 	if (!content)
 		return;
 
-	files_latest.clear();
+	files_latest_.clear();
 
 	// Go through <file> nodes
-	wxXmlNode* file = content->GetChildren();
+	auto file = content->GetChildren();
 	while (file)
 	{
 		// Check it's a <file> node
@@ -205,20 +210,20 @@ void IdGamesPanel::readLatestFiles(string& xml)
 		//lv_files->addItem(lv_files->GetItemCount(), item);
 
 		// Add file to list
-		files_latest.push_back(idGames::File());
-		idGames::readFileXml(files_latest.back(), file);
+		files_latest_.push_back(idGames::File());
+		idGames::readFileXml(files_latest_.back(), file);
 
 		file = file->GetNext();
 	}
 
 	// Load latest files list
-	loadList(files_latest);
+	loadList(files_latest_);
 }
 
 void IdGamesPanel::searchFiles()
 {
 	// Check query
-	string query = text_search->GetValue();
+	string query = text_search_->GetValue();
 	if (query.Length() < 3)
 	{
 		wxMessageBox("Search query must contain at least 3 characters", "Search Query Too Short", wxOK | wxICON_EXCLAMATION);
@@ -227,10 +232,10 @@ void IdGamesPanel::searchFiles()
 
 	// Query parameter
 	vector<key_value_t> params;
-	params.push_back(key_value_t("query", text_search->GetValue()));
+	params.push_back(key_value_t("query", text_search_->GetValue()));
 
 	// Type parameter
-	switch (choice_search_by->GetSelection())
+	switch (choice_search_by_->GetSelection())
 	{
 	case 0:
 		params.push_back(key_value_t("type", "filename")); break;
@@ -253,7 +258,7 @@ void IdGamesPanel::searchFiles()
 	}
 	
 	// Sort parameter
-	switch (choice_search_sort->GetSelection())
+	switch (choice_search_sort_->GetSelection())
 	{
 	case 0:
 		params.push_back(key_value_t("sort", "date")); break;
@@ -268,13 +273,13 @@ void IdGamesPanel::searchFiles()
 	}
 
 	// Dir parameter
-	if (btn_search_sort_dir->GetLabelText().StartsWith("A"))
+	if (btn_search_sort_dir_->GetLabelText().StartsWith("A"))
 		params.push_back(key_value_t("dir", "asc"));
 	else
 		params.push_back(key_value_t("dir", "desc"));
 
 	// Call API
-	idGames::ApiCall* call = new idGames::ApiCall(this, "search", params);
+	auto call = new idGames::ApiCall(this, "search", params);
 	call->Create();
 	call->Run();
 }
@@ -282,21 +287,22 @@ void IdGamesPanel::searchFiles()
 void IdGamesPanel::readSearchResult(string& xml)
 {
 	wxXmlDocument doc;
-	doc.Load(wxStringInputStream(xml));
+	wxStringInputStream stream(xml);
+	doc.Load(stream);
 
 	// Check root node is <idgames-response>
 	if (!doc.GetRoot() || doc.GetRoot()->GetName() != "idgames-response")
 		return;
 
 	// Get content node
-	wxXmlNode* content = XmlHelpers::getFirstChild(doc.GetRoot(), "content");
+	auto content = XmlHelpers::getFirstChild(doc.GetRoot(), "content");
 	if (!content)
 		return;
 
-	files_search.clear();
+	files_search_.clear();
 
 	// Go through <file> nodes
-	wxXmlNode* file = content->GetChildren();
+	auto file = content->GetChildren();
 	while (file)
 	{
 		// Check it's a <file> node
@@ -318,23 +324,23 @@ void IdGamesPanel::readSearchResult(string& xml)
 		//lv_files->addItem(lv_files->GetItemCount(), item);
 
 		// Add file to list
-		files_search.push_back(idGames::File());
-		idGames::readFileXml(files_search.back(), file);
+		files_search_.push_back(idGames::File());
+		idGames::readFileXml(files_search_.back(), file);
 
 		file = file->GetNext();
 	}
 
 	// Load search result list
-	loadList(files_search);
+	loadList(files_search_);
 }
 
 void IdGamesPanel::onApiCallCompleted(wxThreadEvent& e)
 {
 	// Re-enable controls
-	rb_search->Enable(true);
-	rb_browse->Enable(true);
-	rb_latest->Enable(true);
-	btn_refresh->Enable(true);
+	rb_search_->Enable(true);
+	rb_browse_->Enable(true);
+	rb_latest_->Enable(true);
+	btn_refresh_->Enable(true);
 
 	// Check call completed successfully
 	if (e.GetString() == "connect_failed" || e.GetString().IsEmpty())
@@ -357,59 +363,59 @@ void IdGamesPanel::onApiCallCompleted(wxThreadEvent& e)
 void IdGamesPanel::onBtnRefreshClicked(wxCommandEvent& e)
 {
 	// Disable controls
-	rb_search->Enable(false);
-	rb_browse->Enable(false);
-	rb_latest->Enable(false);
-	btn_refresh->Enable(false);
+	rb_search_->Enable(false);
+	rb_browse_->Enable(false);
+	rb_latest_->Enable(false);
+	btn_refresh_->Enable(false);
 
 	// Latest files
-	if (rb_latest->GetValue())
+	if (rb_latest_->GetValue())
 		getLatestFiles();
 
 	// Search
-	else if (rb_search->GetValue())
+	else if (rb_search_->GetValue())
 		searchFiles();
 }
 
 void IdGamesPanel::onRBSearchClicked(wxCommandEvent& e)
 {
 	// Update UI
-	panel_search->Show(true);
-	btn_refresh->SetLabel("Search");
+	panel_search_->Show(true);
+	btn_refresh_->SetLabel("Search");
 	Layout();
 	Refresh();
 
 	// Load search result list
-	loadList(files_search);
+	loadList(files_search_);
 }
 
 void IdGamesPanel::onRBBrowseClicked(wxCommandEvent& e)
 {
 	// Update UI
-	panel_search->Show(false);
+	panel_search_->Show(false);
 	Layout();
 	Refresh();
 
 	// Load browse list
-	loadList(files_browse);
+	loadList(files_browse_);
 }
 
 void IdGamesPanel::onRBLatestClicked(wxCommandEvent& e)
 {
 	// Update UI
-	panel_search->Show(false);
-	btn_refresh->SetLabel("Refresh");
+	panel_search_->Show(false);
+	btn_refresh_->SetLabel("Refresh");
 	Layout();
 	Refresh();
 
 	// Load latest files list
-	loadList(files_latest);
+	loadList(files_latest_);
 }
 
 void IdGamesPanel::onListItemSelected(wxListEvent& e)
 {
-	int selection = lv_files->selectedItems()[0];
+	int selection = lv_files_->selectedItems()[0];
 
-	if (rb_latest->GetValue())
-		panel_details->loadDetails(files_latest[selection]);
+	if (rb_latest_->GetValue())
+		panel_details_->loadDetails(files_latest_[selection]);
 }

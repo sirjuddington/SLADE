@@ -21,14 +21,14 @@ public:
 	void	addFile(string path);
 
 private:
-	wxChoice*	choice_game;
-	wxChoice*	choice_port;
-	ListView*	lv_files;
-	wxButton*	btn_launch;
+	wxChoice*	choice_game_	= nullptr;
+	wxChoice*	choice_port_	= nullptr;
+	ListView*	lv_files_		= nullptr;
+	wxButton*	btn_launch_		= nullptr;
 
-	STabCtrl*		tabs_library;
-	ListView*		lv_recent_files;
-	LibraryPanel*	panel_library;
+	STabCtrl*		tabs_library_		= nullptr;
+	ListView*		lv_recent_files_	= nullptr;
+	LibraryPanel*	panel_library_		= nullptr;
 
 	wxPanel*	setupControlsPanel(wxWindow* parent);
 	wxPanel*	setupFileBrowserTab();

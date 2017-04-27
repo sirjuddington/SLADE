@@ -11,11 +11,10 @@ using namespace idGames;
 
 wxDEFINE_EVENT(wxEVT_COMMAND_IDGAMES_APICALL_COMPLETED, wxThreadEvent);
 
-ApiCall::ApiCall(wxEvtHandler* handler, string command, vector<key_value_t> params)
-	: wxThread(),
-	handler(handler),
-	command(command),
-	params(params)
+ApiCall::ApiCall(wxEvtHandler* handler, string command, vector<key_value_t> params) :
+	handler_(handler),
+	command_(command),
+	params_(params)
 {
 }
 
@@ -31,47 +30,47 @@ wxThread::ExitCode ApiCall::Entry()
 	http.SetTimeout(10);
 
 	// Wait for connection
-	LOG_MESSAGE(3, "ApiCall: Testing connection...");
+	Log::info(3, "ApiCall: Testing connection...");
 	int attempt_count = 0;
 	while (!http.Connect("www.doomworld.com"))
 	{
-		LOG_MESSAGE(3, "ApiCall: No connection, waiting 1 sec");
+		Log::info(3, "ApiCall: No connection, waiting 1 sec");
 		wxSleep(1);
 
 		// Max connection attempts
 		if (attempt_count++ > 5)
 		{
 			// Send (failed) event
-			if (handler)
+			if (handler_)
 			{
-				wxThreadEvent* event = new wxThreadEvent(wxEVT_COMMAND_IDGAMES_APICALL_COMPLETED);
+				auto event = new wxThreadEvent(wxEVT_COMMAND_IDGAMES_APICALL_COMPLETED);
 				event->SetString("connect_failed");
-				wxQueueEvent(handler, event);
+				wxQueueEvent(handler_, event);
 			}
 
-			return NULL;
+			return nullptr;
 		}
 	}
 
 	// Build API call string
-	string call = "/idgames/api/api.php?action=" + command;
-	for (unsigned a = 0; a < params.size(); a++)
-		call += "&" + params[a].key + "=" + params[a].value;
+	string call = "/idgames/api/api.php?action=" + command_;
+	for (auto& param : params_)
+		call += "&" + param.key + "=" + param.value;
 
 	// Get version info
-	LOG_MESSAGE(3, "ApiCall: " + call);
-	wxInputStream* stream = http.GetInputStream(call);
+	Log::info(3, "ApiCall: " + call);
+	auto stream = http.GetInputStream(call);
 	string result;
 	if (http.GetError() == wxPROTO_NOERR)
 	{
 		wxStringOutputStream out(&result);
 		stream->Read(out);
 
-		LOG_MESSAGE(3, "ApiCall: Got result:\n%s", result);
+		Log::info(3, S_FMT("ApiCall: Got result:\n%s", result));
 	}
 	else
 	{
-		LOG_MESSAGE(3, "ApiCall: Error connecting to www.doomworld.com");
+		Log::info(3, "ApiCall: Error connecting to www.doomworld.com");
 	}
 
 	// Clean up
@@ -79,21 +78,21 @@ wxThread::ExitCode ApiCall::Entry()
 	http.Close();
 
 	// Send event
-	if (handler)
+	if (handler_)
 	{
-		wxThreadEvent* event = new wxThreadEvent(wxEVT_COMMAND_IDGAMES_APICALL_COMPLETED);
-		event->SetString(command + ":" + result);
-		wxQueueEvent(handler, event);
+		auto event = new wxThreadEvent(wxEVT_COMMAND_IDGAMES_APICALL_COMPLETED);
+		event->SetString(command_ + ":" + result);
+		wxQueueEvent(handler_, event);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 
 
 void idGames::readFileXml(File& file, wxXmlNode* node)
 {
-	wxXmlNode* child = node->GetChildren();
+	auto child = node->GetChildren();
 	long l_val;
 	double d_val;
 	while (child)
@@ -208,10 +207,10 @@ void idGames::readFileReviews(File& file, wxXmlNode* reviews_node)
 	string r_rating;
 	long l_val;
 
-	wxXmlNode* review_node = reviews_node->GetChildren();
+	auto review_node = reviews_node->GetChildren();
 	while (review_node)
 	{
-		wxXmlNode* child = review_node->GetChildren();
+		auto child = review_node->GetChildren();
 
 		// Read review properties
 		while (child)
@@ -254,7 +253,7 @@ CONSOLE_COMMAND(idgames_test, 1, false)
 		params.push_back(key_value_t(param, value));
 	}
 
-	ApiCall* call = new ApiCall(NULL, command, params);
+	ApiCall* call = new ApiCall(nullptr, command, params);
 	call->Create();
 	call->Run();
 }

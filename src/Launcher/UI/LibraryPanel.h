@@ -9,5 +9,5 @@ public:
 	~LibraryPanel();
 
 private:
-	wxDataViewCtrl*	list_mods;
+	wxDataViewCtrl*	list_mods_ = nullptr;
 };
