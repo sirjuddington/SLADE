@@ -415,10 +415,18 @@ void MapEditContext::clearMap()
 
 /* MapEditContext::showItem
  * Moves and zooms the view to show the object at [index], depending
- * on the current edit mode
+ * on the current edit mode. If [index] is negative, show the
+ * current selection or hilight instead
  *******************************************************************/
 void MapEditContext::showItem(int index)
 {
+	// Show current selection/hilight if index is not specified
+	if (index < 0)
+	{
+		renderer_.viewFitToObjects(selection_.selectedObjects());
+		return;
+	}
+
 	selection_.clear();
 	int max;
 	MapEditor::ItemType type;
@@ -433,10 +441,8 @@ void MapEditContext::showItem(int index)
 
 	if (index < max)
 	{
-		//selection.push_back(index);
 		selection_.select({ index, type });
 		renderer_.viewFitToObjects(selection_.selectedObjects(false));
-		//if (canvas_) canvas_->viewShowObject();
 	}
 }
 

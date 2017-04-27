@@ -625,9 +625,8 @@ void Input::handleKeyBind2dView(const string& name)
 		context_.renderer().zoom(1.0 + (0.25 * mouse_wheel_speed_), true);
 
 	// Zoom in (show object)
-	// TODO: This
-	//else if (name == "me2d_show_object")
-	//	viewShowObject();
+	else if (name == "me2d_show_object")
+		context_.showItem(-1);
 
 	// Zoom out (full map)
 	else if (name == "me2d_show_all")
