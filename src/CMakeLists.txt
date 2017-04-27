@@ -78,6 +78,7 @@ file(GLOB_RECURSE SLADE_SOURCES
 	OpenGL/*.cpp
 	UI/*.cpp
 	Utility/*.cpp
+	Launcher/*.cpp
 	)
 set(SLADE_HEADERS
 )
