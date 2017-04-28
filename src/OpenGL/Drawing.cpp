@@ -42,7 +42,9 @@
 #include <FTGL/ftgl.h>
 #endif
 
-#ifdef __WXGTK20__
+#ifdef __WXGTK3__
+#include <gtk-3.0/gtk/gtk.h>
+#elif __WXGTK20__
 #define GSocket GlibGSocket
 #include <gtk-2.0/gtk/gtk.h>
 #undef GSocket

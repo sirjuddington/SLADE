@@ -41,7 +41,11 @@ if (APPLE)
 	# Although, GLib is required by FluidSynth
 	pkg_check_modules (GLib REQUIRED glib-2.0)
 else (APPLE)
+if (WX_GTK3)
+	pkg_check_modules (GTK3 REQUIRED gtk+-3.0)
+else (WX_GTK3)
 	pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
+endif (WX_GTK3)
 endif (APPLE)
 
 if(NOT NO_FLUIDSYNTH)
@@ -57,7 +61,23 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(CURL REQUIRED)
-include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} ${CURL_INCLUDE_DIR} . ./External/dumb ./Application)
+include_directories(
+	${FREEIMAGE_INCLUDE_DIR}
+	${SFML_INCLUDE_DIR}
+	${FTGL_INCLUDE_DIR}
+	${FREETYPE_INCLUDE_DIRS}
+	${GLEW_INCLUDE_PATH}
+	${CURL_INCLUDE_DIR}
+	.
+	./External/dumb
+	./Application
+	)
+
+if (WX_GTK3)
+	include_directories(${GTK3_INCLUDE_DIRS})
+else (WX_GTK3)
+	include_directories(${GTK2_INCLUDE_DIRS})
+endif (WX_GTK3)
 
 if (NOT NO_FLUIDSYNTH)
 	include_directories(${FLUIDSYNTH_INCLUDE_DIR})
@@ -122,9 +142,14 @@ target_link_libraries(slade
 	${OPENGL_LIBRARIES}
 	${FREETYPE_LIBRARIES}
 	${GLEW_LIBRARY}
-	${GTK2_LIBRARIES}
 	${CURL_LIBRARIES}
 )
+
+if (WX_GTK3)
+	target_link_libraries(slade ${GTK3_LIBRARIES})
+else(WX_GTK3)
+	target_link_libraries(slade ${GTK2_LIBRARIES})
+endif(WX_GTK3)
 
 if (NOT NO_FLUIDSYNTH)
 	target_link_libraries(slade ${FLUIDSYNTH_LIBRARIES})
