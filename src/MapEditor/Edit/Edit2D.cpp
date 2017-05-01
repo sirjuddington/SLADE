@@ -611,9 +611,10 @@ void Edit2D::thingQuickAngle(fpoint2_t mouse_pos) const
 void Edit2D::copy() const
 {
 	using MapEditor::Mode;
+	auto mode = context_.editMode();
 
 	// Can't copy/paste vertices (no point)
-	if (context_.editMode() == Mode::Vertices)
+	if (mode == Mode::Vertices)
 	{
 		//addEditorMessage("Copy/Paste not supported for vertices");
 		return;
@@ -623,10 +624,17 @@ void Edit2D::copy() const
 	theClipboard->clear();
 
 	// Copy lines
-	if (context_.editMode() == Mode::Lines || context_.editMode() == Mode::Sectors)
+	if (mode == Mode::Lines || mode == Mode::Sectors)
 	{
 		// Get selected lines
-		auto lines = context_.selection().selectedLines();
+		vector<MapLine*> lines;
+		if (mode == Mode::Lines)
+			lines = context_.selection().selectedLines();
+		else if (mode == Mode::Sectors)
+		{
+			for (auto sector : context_.selection().selectedSectors())
+				sector->getLines(lines);
+		}
 
 		// Add to clipboard
 		auto c = new MapArchClipboardItem();
@@ -638,7 +646,7 @@ void Edit2D::copy() const
 	}
 
 	// Copy things
-	else if (context_.editMode() == Mode::Things)
+	else if (mode == Mode::Things)
 	{
 		// Get selected things
 		auto things = context_.selection().selectedThings();

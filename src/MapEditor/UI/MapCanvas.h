@@ -10,7 +10,7 @@
 class MapCanvas : public OGLCanvas, public KeyBindHandler
 {
 public:
-	MapCanvas(wxWindow* parent, int id, MapEditContext* editor);
+	MapCanvas(wxWindow* parent, int id, MapEditContext* context);
 	~MapCanvas();
 
 	// Drawing
@@ -25,12 +25,10 @@ public:
 	void	onKeyBindPress(string name) override;
 
 private:
-	MapEditContext*	editor;
-	vector<int>		fps_avg;
-	sf::Clock		sfclock;
-
-	// Mouse stuff
-	bool	mouse_warp;
+	MapEditContext*	context_	= nullptr;
+	bool			mouse_warp_ = false;
+	vector<int>		fps_avg_;
+	sf::Clock		sf_clock_;
 
 	// Events
 	void	onSize(wxSizeEvent& e);

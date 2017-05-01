@@ -419,7 +419,7 @@ void MapEditorWindow::setupLayout()
 
 
 	// -- Undo History Panel --
-	panel_undo_history = new UndoManagerHistoryPanel(this, NULL);
+	panel_undo_history = new UndoManagerHistoryPanel(this, nullptr);
 	panel_undo_history->setManager(MapEditor::editContext().undoManager());
 
 	// Setup panel info & add panel
@@ -448,21 +448,19 @@ void MapEditorWindow::setupLayout()
  *******************************************************************/
 void MapEditorWindow::lockMapEntries(bool lock)
 {
-	// TODO: This
-	//// Don't bother if no map is open
-	//if (!mdesc_current.head)
-	//	return;
+	// Don't bother if no map is open
+	auto& map_desc = MapEditor::editContext().mapDesc();
+	if (!map_desc.head)
+		return;
 
-	//// Just lock/unlock the 'head' entry if it's a pk3 map
-	//if (mdesc_current.archive)
-	//{
-	//	if (lock)
-	//		mdesc_current.head->lock();
-	//	else
-	//		mdesc_current.head->unlock();
-
-	//	return;
-	//}
+	// Just lock/unlock the 'head' entry if it's a pk3 map
+	if (map_desc.archive)
+	{
+		if (lock)
+			map_desc.head->lock();
+		else
+			map_desc.head->unlock();
+	}
 }
 
 /* MapEditorWindow::chooseMap
@@ -533,7 +531,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 	map_data.clear();
 
 	// Get map parent archive
-	Archive* archive = NULL;
+	Archive* archive = nullptr;
 	if (map.head)
 	{
 		archive = map.head->getParent();
@@ -574,8 +572,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 	// Show window if opened ok
 	if (ok)
 	{
-		// TODO: This
-		//mdesc_current = map;
+		MapEditor::editContext().mapDesc() = map;
 
 		// Read DECORATE definitions if any
 		theGameConfiguration->clearDecorateDefs();
@@ -628,7 +625,7 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 	// Don't bother if new map
 	if (!map.head)
 	{
-		panel_script_editor->openScripts(NULL, NULL);
+		panel_script_editor->openScripts(nullptr, nullptr);
 		return;
 	}
 
@@ -650,8 +647,8 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 
 	// Go through map entries
 	ArchiveEntry* entry = map.head->nextEntry();
-	ArchiveEntry* scripts = NULL;
-	ArchiveEntry* compiled = NULL;
+	ArchiveEntry* scripts = nullptr;
+	ArchiveEntry* compiled = nullptr;
 	while (entry && entry != map.end->nextEntry())
 	{
 		// Check for SCRIPTS/BEHAVIOR
@@ -768,7 +765,7 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 		new_map_data.push_back(udmf);
 	}
 	else // TODO: doom64
-		return NULL;
+		return nullptr;
 
 	// Check script language
 	bool acs = false;
@@ -801,7 +798,7 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 	{
 		// Add extra UDMF entries
 		for (unsigned a = 0; a < map.udmfExtraEntries().size(); a++)
-			wad->addEntry(map.udmfExtraEntries()[a], -1, NULL, true);
+			wad->addEntry(map.udmfExtraEntries()[a], -1, nullptr, true);
 
 		wad->addNewEntry("ENDMAP");
 	}
@@ -840,7 +837,7 @@ bool MapEditorWindow::saveMap()
 		return false;
 
 	// Check for map archive
-	Archive* tempwad = NULL;
+	Archive* tempwad = nullptr;
 	Archive::mapdesc_t map = mdesc_current;
 	if (mdesc_current.archive && mdesc_current.head)
 	{
@@ -875,7 +872,7 @@ bool MapEditorWindow::saveMap()
 
 	// Add new map entries
 	for (unsigned a = 1; a < wad->numEntries(); a++)
-		entry = archive->addEntry(wad->getEntry(a), archive->entryIndex(map.head) + a, NULL, true);
+		entry = archive->addEntry(wad->getEntry(a), archive->entryIndex(map.head) + a, nullptr, true);
 
 	// Clean up
 	delete wad;
@@ -912,7 +909,7 @@ bool MapEditorWindow::saveMapAs()
 	// Create new, empty wad
 	WadArchive wad;
 	ArchiveEntry* head = wad.addNewEntry(mdesc_current.name);
-	ArchiveEntry* end = NULL;
+	ArchiveEntry* end = nullptr;
 	if (mdesc_current.format == MAP_UDMF)
 	{
 		wad.addNewEntry("TEXTMAP");
@@ -965,8 +962,7 @@ void MapEditorWindow::closeMap()
 	lockMapEntries(false);
 
 	// Clear map info
-	// TODO: This
-	//mdesc_current.head = NULL;
+	MapEditor::editContext().mapDesc().head = nullptr;
 }
 
 /* MapEditorWindow::forceRefresh
@@ -1277,7 +1273,7 @@ bool MapEditorWindow::handleAction(string id)
 	// Run Map
 	else if (id == "mapw_run_map" || id == "mapw_run_map_here")
 	{
-		Archive* archive = NULL;
+		Archive* archive = nullptr;
 		if (mdesc_current.head)
 			archive = mdesc_current.head->getParent();
 		RunDialog dlg(this, archive, id == "mapw_run_map");

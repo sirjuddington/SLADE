@@ -365,8 +365,6 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 bool Input::mouseUp(MouseButton button)
 {
 	// Update mouse variables
-	mouse_down_pos_ = { -1, -1 };
-	mouse_down_pos_map_ = { -1, -1 };
 	mouse_button_down_[button] = false;
 
 	// Check if a full screen overlay is active
@@ -484,9 +482,33 @@ void Input::mouseLeave()
  *******************************************************************/
 void Input::updateKeyModifiersWx(int modifiers)
 {
-	shift_down_ = (modifiers & wxMOD_SHIFT) > 0;
-	ctrl_down_ = (modifiers & wxMOD_CONTROL) > 0;
-	alt_down_ = (modifiers & wxMOD_ALT) > 0;
+	updateKeyModifiers(
+		(modifiers & wxMOD_SHIFT) > 0,
+		(modifiers & wxMOD_CONTROL) > 0,
+		(modifiers & wxMOD_ALT) > 0
+	);
+}
+
+/* Input::keyDown
+ * Handles [key] being pressed in the map editor
+ *******************************************************************/
+bool Input::keyDown(const string& key) const
+{
+	// Send to overlay if active
+	if (context_.overlayActive())
+		context_.currentOverlay()->keyDown(key);
+
+	// Let keybind system handle it
+	return KeyBind::keyPressed({ key, alt_down_, ctrl_down_, shift_down_ });
+}
+
+/* Input::keyUp
+ * Handles [key] being released in the map editor
+ *******************************************************************/
+bool Input::keyUp(const string& key) const
+{
+	// Let keybind system handle it
+	return KeyBind::keyReleased(key);
 }
 
 /* Input::onKeyBindPress
@@ -603,9 +625,8 @@ void Input::handleKeyBind2dView(const string& name)
 		context_.renderer().zoom(1.0 + (0.25 * mouse_wheel_speed_), true);
 
 	// Zoom in (show object)
-	// TODO: This
-	//else if (name == "me2d_show_object")
-	//	viewShowObject();
+	else if (name == "me2d_show_object")
+		context_.showItem(-1);
 
 	// Zoom out (full map)
 	else if (name == "me2d_show_all")

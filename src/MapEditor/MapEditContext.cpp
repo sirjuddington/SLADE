@@ -174,7 +174,7 @@ void MapEditContext::setEditMode(Mode mode)
 	updateStatusText();
 
 	// Unlock mouse
-	canvas_->lockMouse(false);
+	lockMouse(false);
 
 	// Update toolbar
 	if (mode != edit_mode_prev_) MapEditor::window()->removeAllCustomToolBars();
@@ -210,7 +210,7 @@ void MapEditContext::setEditMode(Mode mode)
 	{
 		SAction::fromId("mapw_mode_3d")->setChecked();
 		KeyBind::releaseAll();
-		canvas_->lockMouse(true);
+		lockMouse(true);
 		renderer_.renderer3D().refresh();
 	}
 	MapEditor::window()->refreshToolBar();
@@ -254,6 +254,7 @@ void MapEditContext::cycleSectorEditMode()
  *******************************************************************/
 void MapEditContext::lockMouse(bool lock)
 {
+	mouse_locked_ = lock;
 	canvas_->lockMouse(lock);
 }
 
@@ -414,10 +415,18 @@ void MapEditContext::clearMap()
 
 /* MapEditContext::showItem
  * Moves and zooms the view to show the object at [index], depending
- * on the current edit mode
+ * on the current edit mode. If [index] is negative, show the
+ * current selection or hilight instead
  *******************************************************************/
 void MapEditContext::showItem(int index)
 {
+	// Show current selection/hilight if index is not specified
+	if (index < 0)
+	{
+		renderer_.viewFitToObjects(selection_.selectedObjects());
+		return;
+	}
+
 	selection_.clear();
 	int max;
 	MapEditor::ItemType type;
@@ -432,10 +441,8 @@ void MapEditContext::showItem(int index)
 
 	if (index < max)
 	{
-		//selection.push_back(index);
 		selection_.select({ index, type });
 		renderer_.viewFitToObjects(selection_.selectedObjects(false));
-		//if (canvas_) canvas_->viewShowObject();
 	}
 }
 

@@ -61,8 +61,14 @@ namespace MapEditor
 		void 	mouseWheel(bool up, double amount);
 		void	mouseLeave();
 
-		// Keybind handling
+		// Keyboard handling
+		void	updateKeyModifiers(bool shift, bool ctrl, bool alt)
+					{ shift_down_ = shift; ctrl_down_ = ctrl; alt_down_ = alt; }
 		void	updateKeyModifiersWx(int modifiers);
+		bool	keyDown(const string& key) const;
+		bool	keyUp(const string& key) const;
+
+		// Keybind handling
 		void	onKeyBindPress(string name) override;
 		void	onKeyBindRelease(string name) override;
 		void	handleKeyBind2dView(const string& name);
