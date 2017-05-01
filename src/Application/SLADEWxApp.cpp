@@ -85,6 +85,28 @@ CVAR(Bool, update_check_beta, false, CVAR_SAVE)
  * CLASSES
  *******************************************************************/
 
+/* SLADELog class
+ * Extension of the wxLog class to send all wxWidgets log messages
+ * to the SLADE log implementation
+ *******************************************************************/
+class SLADELog : public wxLog
+{
+protected:
+	// wx2.9.x is no longer supported.
+#if (wxMAJOR_VERSION < 3)
+#error This will not compile with wxWidgets older than 3.0.0 !
+#endif
+	void DoLogText(const wxString& msg) override
+	{
+		Log::message(Log::MessageType::Info, msg);
+	}
+
+public:
+	SLADELog() {}
+	~SLADELog() {}
+};
+
+
 /* SLADEStackTrace class
  * Extension of the wxStackWalker class that formats stack trace
  * information to a multi-line string, that can be retrieved via
@@ -94,10 +116,6 @@ CVAR(Bool, update_check_beta, false, CVAR_SAVE)
 #if wxUSE_STACKWALKER
 class SLADEStackTrace : public wxStackWalker
 {
-private:
-	string	stack_trace;
-	string	top_level;
-
 public:
 	SLADEStackTrace()
 	{
@@ -106,17 +124,17 @@ public:
 
 	~SLADEStackTrace() {}
 
-	string getTraceString()
+	string getTraceString() const
 	{
 		return stack_trace;
 	}
 
-	string getTopLevel()
+	string getTopLevel() const
 	{
 		return top_level;
 	}
 
-	void OnStackFrame(const wxStackFrame& frame)
+	void OnStackFrame(const wxStackFrame& frame) override
 	{
 		string location = "[unknown location] ";
 		if (frame.HasSourceLocation())
@@ -133,6 +151,10 @@ public:
 		if (frame.GetLevel() == 0)
 			top_level = line;
 	}
+
+private:
+	string	stack_trace;
+	string	top_level;
 };
 
 
@@ -142,15 +164,6 @@ public:
  *******************************************************************/
 class SLADECrashDialog : public wxDialog, public wxThreadHelper
 {
-private:
-	wxTextCtrl*	text_stack;
-	wxTextCtrl*	text_description;
-	wxButton*	btn_copy_trace;
-	wxButton*	btn_exit;
-	wxButton*	btn_send;
-	string		trace;
-	string		top_level;
-
 public:
 	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE Application Crash")
 	{
@@ -363,6 +376,15 @@ public:
 
 		Destroy();
 	}
+
+private:
+	wxTextCtrl*	text_stack;
+	wxTextCtrl*	text_description;
+	wxButton*	btn_copy_trace;
+	wxButton*	btn_exit;
+	wxButton*	btn_send;
+	string		trace;
+	string		top_level;
 };
 #endif//wxUSE_STACKWALKER
 
@@ -378,12 +400,22 @@ public:
 	MainAppFLConnection() {}
 	~MainAppFLConnection() {}
 
-	bool OnAdvise(const wxString& topic, const wxString& item, const void* data, size_t size, wxIPCFormat format)
+	bool OnAdvise(
+		const wxString& topic,
+		const wxString& item,
+		const void* data,
+		size_t size,
+		wxIPCFormat format) override
 	{
 		return true;
 	}
 
-	virtual bool OnPoke(const wxString& topic, const wxString& item, const void *data, size_t size, wxIPCFormat format)
+	bool OnPoke(
+		const wxString& topic,
+		const wxString& item,
+		const void *data,
+		size_t size,
+		wxIPCFormat format) override
 	{
 		theArchiveManager->openArchive(item);
 		return true;
@@ -396,7 +428,7 @@ public:
 	MainAppFileListener() {}
 	~MainAppFileListener() {}
 
-	wxConnectionBase* OnAcceptConnection(const wxString& topic)
+	wxConnectionBase* OnAcceptConnection(const wxString& topic) override
 	{
 		return new MainAppFLConnection();
 	}
@@ -408,7 +440,7 @@ public:
 	MainAppFLClient() {}
 	~MainAppFLClient() {}
 
-	wxConnectionBase* OnMakeConnection()
+	wxConnectionBase* OnMakeConnection() override
 	{
 		return new MainAppFLConnection();
 	}
@@ -522,6 +554,9 @@ bool SLADEWxApp::OnInit()
 	// Init application
 	if (!App::init())
 		return false;
+
+	// Reroute wx log messages
+	wxLog::SetActiveTarget(new SLADELog());
 
 	// Check for updates
 #ifdef __WXMSW__
