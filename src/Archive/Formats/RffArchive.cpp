@@ -64,7 +64,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "RffArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -192,7 +192,7 @@ bool RffArchive::open(MemChunk& mc)
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
 	{
-		wxLogMessage("RffArchive::openFile: File %s has invalid header", filename);
+		LOG_MESSAGE(1, "RffArchive::openFile: File %s has invalid header", filename);
 		Global::error = "Invalid rff header";
 		return false;
 	}
@@ -203,13 +203,13 @@ bool RffArchive::open(MemChunk& mc)
 	// Read the directory
 	RFFLump* lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
-	theSplashWindow->setProgressMessage("Reading rff archive data");
+	UI::setSplashProgressMessage("Reading rff archive data");
 	mc.read (lumps, num_lumps * sizeof(RFFLump));
 	BloodCrypt (lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -230,7 +230,7 @@ bool RffArchive::open(MemChunk& mc)
 		// the rfffile is invalid
 		if (offset + size > mc.getSize())
 		{
-			wxLogMessage("RffArchive::open: rff archive is invalid or corrupt");
+			LOG_MESSAGE(1, "RffArchive::open: rff archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -253,11 +253,11 @@ bool RffArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -295,7 +295,7 @@ bool RffArchive::open(MemChunk& mc)
 	}
 
 	// Detect maps (will detect map entry types)
-	//theSplashWindow->setProgressMessage("Detecting maps");
+	//UI::setSplashProgressMessage("Detecting maps");
 	//detectMaps();
 
 	// Setup variables
@@ -303,7 +303,7 @@ bool RffArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -314,7 +314,7 @@ bool RffArchive::open(MemChunk& mc)
  *******************************************************************/
 bool RffArchive::write(MemChunk& mc, bool update)
 {
-	wxLogMessage("Saving RFF files is not implemented because the format is not entirely known.");
+	LOG_MESSAGE(1, "Saving RFF files is not implemented because the format is not entirely known.");
 	return false;
 }
 
@@ -342,7 +342,7 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("RffArchive::loadEntryData: Failed to open rfffile %s", filename);
+		LOG_MESSAGE(1, "RffArchive::loadEntryData: Failed to open rfffile %s", filename);
 		return false;
 	}
 
@@ -447,7 +447,7 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 	// Compute total size
 	RFFLump* lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
-	theSplashWindow->setProgressMessage("Reading rff archive data");
+	UI::setSplashProgressMessage("Reading rff archive data");
 	mc.read (lumps, num_lumps * sizeof(RFFLump));
 	BloodCrypt (lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);
@@ -504,7 +504,7 @@ bool RffArchive::isRffArchive(string filename)
 	// Compute total size
 	RFFLump* lumps = new RFFLump[num_lumps];
 	file.Seek(dir_offset, wxFromStart);
-	theSplashWindow->setProgressMessage("Reading rff archive data");
+	UI::setSplashProgressMessage("Reading rff archive data");
 	file.Read(lumps, num_lumps * sizeof(RFFLump));
 	BloodCrypt (lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);

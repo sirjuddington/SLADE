@@ -10,9 +10,9 @@ class ArchiveTreeNode : public STreeNode
 {
 	friend class Archive;
 private:
-	Archive*				archive;
-	ArchiveEntry*			dir_entry;
-	vector<ArchiveEntry*>	entries;
+	Archive*					archive;
+	ArchiveEntry::SPtr			dir_entry;
+	vector<ArchiveEntry::SPtr>	entries;
 
 protected:
 	STreeNode* createChild(string name)
@@ -29,18 +29,22 @@ public:
 
 	void 		addChild(STreeNode* child);
 
-	Archive*		getArchive();
-	string			getName();
-	ArchiveEntry*	getDirEntry() { return dir_entry; }
-	ArchiveEntry*	getEntry(unsigned index);
-	ArchiveEntry*	getEntry(string name, bool cut_ext = false);
-	unsigned		numEntries(bool inc_subdirs = false);
-	int				entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
+	Archive*			getArchive();
+	string				getName();
+	ArchiveEntry*		getDirEntry() { return dir_entry.get(); }
+	ArchiveEntry*		getEntry(unsigned index);
+	ArchiveEntry::SPtr	getEntryShared(unsigned index);
+	ArchiveEntry*		getEntry(string name, bool cut_ext = false);
+	ArchiveEntry::SPtr	getEntryShared(string name, bool cut_ext = false);
+	ArchiveEntry::SPtr	getEntryShared(ArchiveEntry* entry);
+	unsigned			numEntries(bool inc_subdirs = false);
+	int					entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
 
 	void	setName(string name) { dir_entry->name = name; }
 
 	void	linkEntries(ArchiveEntry* first, ArchiveEntry* second);
 	bool	addEntry(ArchiveEntry* entry, unsigned index = 0xFFFFFFFF);
+	bool	addEntry(ArchiveEntry::SPtr& entry, unsigned index = 0xFFFFFFFF);
 	bool	removeEntry(unsigned index);
 	bool	swapEntries(unsigned index1, unsigned index2);
 
@@ -155,6 +159,7 @@ public:
 	virtual ArchiveEntry*		getEntry(unsigned index, ArchiveTreeNode* dir = NULL);
 	virtual int					entryIndex(ArchiveEntry* entry, ArchiveTreeNode* dir = NULL);
 	virtual ArchiveEntry*		entryAtPath(string path);
+	virtual ArchiveEntry::SPtr	entryAtPathShared(string path);
 
 	// Archive type info
 	virtual string	getFileExtensionString() = 0;
@@ -177,6 +182,7 @@ public:
 	virtual void		close();
 	void				entryStateChanged(ArchiveEntry* entry);
 	void				getEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveTreeNode* start = NULL);
+	void				getEntryTreeAsList(vector<ArchiveEntry::SPtr>& list, ArchiveTreeNode* start = NULL);
 	bool				canSave() { return parent || on_disk; }
 	virtual bool		paste(ArchiveTreeNode* tree, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* base = NULL);
 	virtual bool		importDir(string directory);
@@ -193,7 +199,7 @@ public:
 	virtual ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) { return addEntry(entry, 0xFFFFFFFF, NULL, false); } // By default, add to the 'global' namespace (ie root dir)
 	virtual ArchiveEntry*	addNewEntry(string name = "", unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL);
 	virtual ArchiveEntry*	addNewEntry(string name, string add_namespace);
-	virtual bool			removeEntry(ArchiveEntry* entry, bool delete_entry = true);
+	virtual bool			removeEntry(ArchiveEntry* entry);
 
 	// Entry moving
 	virtual bool	swapEntries(unsigned index1, unsigned index2, ArchiveTreeNode* dir = NULL);

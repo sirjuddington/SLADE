@@ -5,6 +5,8 @@
 #define	TRANS_PALETTE	1
 #define TRANS_COLOUR	2
 #define TRANS_DESAT		3
+#define TRANS_COLOURISE	4
+#define TRANS_TINT		5
 
 class Translation;
 
@@ -131,6 +133,61 @@ public:
 	}
 };
 
+class TransRangeColourise : public TransRange
+{
+	friend class Translation;
+private:
+	rgba_t col;
+
+public:
+	TransRangeColourise() : TransRange(TRANS_COLOURISE) { col = COL_RED; }
+	TransRangeColourise(TransRangeColourise* copy) : TransRange(TRANS_COLOURISE)
+	{
+		o_start = copy->o_start;
+		o_end = copy->o_end;
+		col = copy->col;
+	}
+
+	rgba_t	getColour() { return col; }
+	void	setColour(rgba_t c) { col = c; }
+
+	string asText()
+	{
+		return S_FMT("%d:%d=#[%d,%d,%d]",
+			o_start, o_end, col.r, col.g, col.b);
+	}
+};
+
+class TransRangeTint : public TransRange
+{
+	friend class Translation;
+private:
+	rgba_t	col;
+	uint8_t	amount;
+
+public:
+	TransRangeTint() : TransRange(TRANS_TINT) { col = COL_RED; amount = 50; }
+	TransRangeTint(TransRangeTint* copy) : TransRange(TRANS_TINT)
+	{
+		o_start = copy->o_start;
+		o_end = copy->o_end;
+		col = copy->col;
+		amount = copy->amount;
+	}
+
+	rgba_t	getColour() { return col; }
+	uint8_t	getAmount() { return amount; }
+	void	setColour(rgba_t c) { col = c; }
+	void	setAmount(uint8_t a) { amount = a; }
+
+	string asText()
+	{
+		return S_FMT("%d:%d=@%d[%d,%d,%d]",
+			o_start, o_end, amount, col.r, col.g, col.b);
+	}
+};
+
+class Palette8bit;
 class Translation
 {
 private:
@@ -153,6 +210,8 @@ public:
 	TransRange*	getRange(unsigned index);
 	string		builtInName() { return built_in_name; }
 	void		setDesaturationAmount(uint8_t amount) { desat_amount = amount; }
+
+	rgba_t	translate(rgba_t col, Palette8bit* pal = NULL);
 
 	void	addRange(int type, int pos);
 	void	removeRange(int pos);

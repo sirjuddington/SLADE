@@ -160,8 +160,10 @@ public:
 	bool	applyTranslation(string tr, Palette8bit* pal = NULL);
 	bool	drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, Palette8bit* pal);
 	bool	drawImage(SImage& img, int x, int y, si_drawprops_t& properties, Palette8bit* pal_src = NULL, Palette8bit* pal_dest = NULL);
-	bool	colourise(rgba_t colour, Palette8bit* pal = NULL);
-	bool	tint(rgba_t colour, float amount, Palette8bit* pal = NULL);
+	bool	colourise(rgba_t colour, Palette8bit* pal = NULL, int start = -1, int stop = -1);
+	bool	tint(rgba_t colour, float amount, Palette8bit* pal = NULL, int start = -1, int stop = -1);
+	bool	adjust();
+	bool	mirrorpad();
 };
 
 #endif //__SIMAGE_H__

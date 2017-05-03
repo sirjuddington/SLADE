@@ -28,7 +28,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "GraphicsPrefsPanel.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 #include "OpenGL/GLTexture.h"
 
 
@@ -145,7 +145,7 @@ void GraphicsPrefsPanel::applyPreferences()
 	gfx_extraconv = cb_extra_gfxconv->GetValue();
 	browser_bg_type = choice_browser_bg->GetSelection();
 	gfx_hilight_mouseover = cb_hilight_mouseover->GetValue();
-	theMainWindow->Refresh();
+	MainEditor::windowWx()->Refresh();
 }
 
 /* GraphicsPrefsPanel::onChoiceSchemeSelected

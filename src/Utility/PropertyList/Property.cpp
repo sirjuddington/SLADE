@@ -158,7 +158,7 @@ bool Property::getBoolValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type != PROP_BOOL)
-		wxLogMessage("Warning: Requested Boolean value of a %s Property", typeString());
+		LOG_MESSAGE(1, "Warning: Requested Boolean value of a %s Property", typeString());
 
 	// Return value (convert if needed)
 	if (type == PROP_BOOL)
@@ -199,7 +199,7 @@ int Property::getIntValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type != PROP_INT)
-		wxLogMessage("Warning: Requested Integer value of a %s Property", typeString());
+		LOG_MESSAGE(1, "Warning: Requested Integer value of a %s Property", typeString());
 
 	// Return value (convert if needed)
 	if (type == PROP_INT)
@@ -234,7 +234,7 @@ double Property::getFloatValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type != PROP_FLOAT)
-		wxLogMessage("Warning: Requested Float value of a %s Property", typeString());
+		LOG_MESSAGE(1, "Warning: Requested Float value of a %s Property", typeString());
 
 	// Return value (convert if needed)
 	if (type == PROP_FLOAT)
@@ -269,7 +269,7 @@ string Property::getStringValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type != PROP_STRING)
-		wxLogMessage("Warning: Requested String value of a %s Property", typeString());
+		LOG_MESSAGE(1, "Warning: Requested String value of a %s Property", typeString());
 
 	// Return value (convert if needed)
 	if (type == PROP_STRING)
@@ -309,7 +309,7 @@ unsigned Property::getUnsignedValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type != PROP_INT)
-		wxLogMessage("Warning: Requested Integer value of a %s Property", typeString());
+		LOG_MESSAGE(1, "Warning: Requested Integer value of a %s Property", typeString());
 
 	// Return value (convert if needed)
 	if (type == PROP_INT)

@@ -1,20 +1,28 @@
 
-cstyle {
+cstyle
+{
 	name = "C/C++";
 	comment_begin = "/*";
 	comment_end = "*/";
 	comment_line = "//";
+	comment_doc = "///";
 	preprocessor = "#";
 	case_sensitive = true;
+	block_begin = "{";
+	block_end = "}";
+	pp_block_begin = "if", "ifdef", "ifndef", "region";
+	pp_block_end = "endif", "endregion";
 
-	keywords = {
+	keywords =
+	{
 		void, char, short, long, int, float, double, unsigned, bool,
 		if, else, do, while, for, true, false, return, const, new, delete,
 		until, switch, default, case, continue, break, define, goto,
 		include, enum, struct, region
 	}
 
-	constants = {
+	constants =
+	{
 		NULL
 	}
 }

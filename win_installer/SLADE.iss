@@ -2,8 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SLADE"
-#define MyAppVersion "3.1.1.3"
-#define VersionNum "3113"
+#define MyAppVersion "3.1.1.5"
+#define VersionNum "3115"
 #define MyAppURL "http://slade.mancubus.net"
 #define MyAppExeName "SLADE.exe"
 
@@ -24,7 +24,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-;InfoBeforeFile=..\dist\slade3.txt
+;InfoBeforeFile=..\dist\SLADE.html
 OutputBaseFilename=Setup_{#MyAppName}_{#VersionNum}
 SetupIconFile=..\build\msvc\slade.ico
 Compression=lzma
@@ -42,10 +42,8 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Source: "..\dist\SLADE.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\FreeImage.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\libfluidsynth.dll"; DestDir: "{app}"; Flags: ignoreversion
-; Source: "..\dist\libsndfile-1.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\openal32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\slade.pk3"; DestDir: "{app}"; Flags: ignoreversion
-; Source: "..\dist\slade3.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\SLADE.pdb"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 

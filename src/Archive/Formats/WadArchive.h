@@ -54,7 +54,7 @@ public:
 	// Entry addition/removal
 	ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false);
 	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
-	bool			removeEntry(ArchiveEntry* entry, bool delete_entry = true);
+	bool			removeEntry(ArchiveEntry* entry);
 
 	// Entry modification
 	string	processEntryName(string name);

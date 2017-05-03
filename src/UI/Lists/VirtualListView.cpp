@@ -188,7 +188,8 @@ void VirtualListView::selectItems(long start, long end, bool select)
  *******************************************************************/
 void VirtualListView::selectAll()
 {
-	for (int a = 0; a < GetItemCount(); a++)
+	int itemcount = GetItemCount();
+	for (int a = 0; a < itemcount; a++)
 		SetItemState(a, 0xFFFF, wxLIST_STATE_SELECTED);
 
 	sendSelectionChangedEvent();
@@ -199,14 +200,16 @@ void VirtualListView::selectAll()
  *******************************************************************/
 void VirtualListView::clearSelection()
 {
-	for (int a = 0; a < GetItemCount(); a++)
+	int itemcount = GetItemCount();
+	for (int a = 0; a < itemcount; a++)
 		SetItemState(a, 0x0000, wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
 }
 
 /* VirtualListView::getSelection
- * Returns a list of all selected item indices
+ * Returns a list of all selected item indices. If [item_indices] is
+ * true, the returned indices will have sorting and filtering applied
  *******************************************************************/
-vector<long> VirtualListView::getSelection()
+vector<long> VirtualListView::getSelection(bool item_indices)
 {
 	// Init return array
 	vector<long> ret;
@@ -223,7 +226,7 @@ vector<long> VirtualListView::getSelection()
 			break;
 
 		// Otherwise add the selected index to the vector
-		ret.push_back(item);
+		ret.push_back(item_indices ? getItemIndex(item) : item);
 	}
 
 	return ret;

@@ -59,8 +59,8 @@ public:
 	fpoint2_t	getPoint(uint8_t point);
 	fpoint2_t	point();
 
-	short	getType() { return type; }
-	short	getAngle() { return angle; }
+	short	getType() const { return type; }
+	short	getAngle() const { return angle; }
 
 	int		intProperty(string key);
 	double	floatProperty(string key);

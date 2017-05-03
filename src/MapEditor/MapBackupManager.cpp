@@ -28,10 +28,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "MapBackupManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "General/Misc.h"
-#include "MapEditorWindow.h"
+#include "MapEditor.h"
 #include "UI/MapBackupPanel.h"
 #include "UI/SDialog.h"
 
@@ -82,7 +83,7 @@ MapBackupManager::~MapBackupManager()
 bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archive_name, string map_name)
 {
 	// Create backup directory if needed
-	string backup_dir = appPath("backups", DIR_USER);
+	string backup_dir = App::path("backups", App::Dir::User);
 	if (!wxDirExists(backup_dir)) wxMkdir(backup_dir);
 
 	// Open or create backup zip
@@ -174,22 +175,27 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archi
  *******************************************************************/
 Archive* MapBackupManager::openBackup(string archive_name, string map_name)
 {
-	SDialog* dlg = new SDialog(theMapEditor, S_FMT("Restore %s backup", CHR(map_name)), "map_backup", 500, 400);
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	dlg->SetSizer(sizer);
-	MapBackupPanel* panel_backup = new MapBackupPanel(dlg);
+	SDialog dlg(MapEditor::windowWx(), S_FMT("Restore %s backup", CHR(map_name)), "map_backup", 500, 400);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	dlg.SetSizer(sizer);
+	auto panel_backup = new MapBackupPanel(&dlg);
 	sizer->Add(panel_backup, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 	sizer->AddSpacer(4);
-	sizer->Add(dlg->CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT, 6);
+	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT, 6);
 	sizer->AddSpacer(10);
 
 	if (panel_backup->loadBackups(archive_name, map_name))
 	{
-		if (dlg->ShowModal() == wxID_OK)
+		if (dlg.ShowModal() == wxID_OK)
 			return panel_backup->getSelectedMapData();
 	}
 	else
-		wxMessageBox(S_FMT("No backups exist for %s of %s", CHR(map_name), CHR(archive_name)), "Restore Backup", wxICON_INFORMATION, theMapEditor);
+		wxMessageBox(
+			S_FMT("No backups exist for %s of %s", CHR(map_name), CHR(archive_name)),
+			"Restore Backup",
+			wxICON_INFORMATION,
+			MapEditor::windowWx()
+		);
 
-	return NULL;
+	return nullptr;
 }

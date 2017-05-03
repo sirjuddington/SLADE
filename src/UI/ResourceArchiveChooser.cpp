@@ -32,7 +32,7 @@
 #include "ResourceArchiveChooser.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/SFileDialog.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -131,9 +131,9 @@ void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 	SFileDialog::fd_info_t info;
 	if (SFileDialog::openFile(info, "Open Resource Archive", theArchiveManager->getArchiveExtensionsString(), this))
 	{
-		theSplashWindow->show("Opening Resource Archive", true);
+		UI::showSplash("Opening Resource Archive", true);
 		Archive* na = theArchiveManager->openArchive(info.filenames[0], true, true);
-		theSplashWindow->hide();
+		UI::hideSplash();
 		if (na)
 		{
 			list_resources->Append(na->getFilename(false));

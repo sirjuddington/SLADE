@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "GobArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -143,11 +143,11 @@ bool GobArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Read the directory
-	theSplashWindow->setProgressMessage("Reading gob archive data");
+	UI::setSplashProgressMessage("Reading gob archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		uint32_t offset = 0;
@@ -166,7 +166,7 @@ bool GobArchive::open(MemChunk& mc)
 		// the gobfile is invalid
 		if (offset + size > mc.getSize())
 		{
-			wxLogMessage("GobArchive::open: gob archive is invalid or corrupt");
+			LOG_MESSAGE(1, "GobArchive::open: gob archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -184,11 +184,11 @@ bool GobArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -217,7 +217,7 @@ bool GobArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -307,7 +307,7 @@ bool GobArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("GobArchive::loadEntryData: Failed to open gobfile %s", filename);
+		LOG_MESSAGE(1, "GobArchive::loadEntryData: Failed to open gobfile %s", filename);
 		return false;
 	}
 

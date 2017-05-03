@@ -31,12 +31,13 @@
 #include "Main.h"
 #include "LinePropsPanel.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
 #include "MapObjectPropsPanel.h"
 #include "SidePropsPanel.h"
 #include "UI/NumberTextCtrl.h"
 #include "UI/STabCtrl.h"
+#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************
@@ -62,7 +63,7 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	stc_tabs->AddPage(setupSpecialTab(), "Special");
 
 	// Args tab
-	if (theMapEditor->currentMapDesc().format != MAP_DOOM)
+	if (MapEditor::editContext().mapDesc().format != MAP_DOOM)
 	{
 		panel_args = new ArgsPanel(stc_tabs);
 		stc_tabs->AddPage(panel_args, "Args");
@@ -113,7 +114,7 @@ LinePropsPanel::~LinePropsPanel()
 wxPanel* LinePropsPanel::setupGeneralTab()
 {
 	wxPanel* panel_flags = new wxPanel(stc_tabs, -1);
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -252,7 +253,7 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 	if (lines.empty())
 		return;
 
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Load flags
 	if (map_format == MAP_UDMF)
@@ -373,7 +374,7 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
  *******************************************************************/
 void LinePropsPanel::applyChanges()
 {
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Apply general properties
 	for (unsigned l = 0; l < objects.size(); l++)
@@ -461,7 +462,7 @@ void LinePropsPanel::onOverrideSpecialChecked(wxCommandEvent& e)
  *******************************************************************/
 void LinePropsPanel::onBtnNewTag(wxCommandEvent& e)
 {
-	text_tag->setNumber(theMapEditor->mapEditor().getMap().findUnusedSectorTag());
+	text_tag->setNumber(MapEditor::editContext().map().findUnusedSectorTag());
 }
 
 /* LinePropsPanel::onBtnNewId
@@ -469,5 +470,5 @@ void LinePropsPanel::onBtnNewTag(wxCommandEvent& e)
  *******************************************************************/
 void LinePropsPanel::onBtnNewId(wxCommandEvent& e)
 {
-	text_id->setNumber(theMapEditor->mapEditor().getMap().findUnusedLineId());
+	text_id->setNumber(MapEditor::editContext().map().findUnusedLineId());
 }

@@ -28,4 +28,11 @@
                     processorArchitecture="x86"
                     publicKeyToken="0000000000000000"
   />
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">  
+    <security>  
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">  
+        <requestedExecutionLevel level="asInvoker" uiAccess="false"/>  
+      </requestedPrivileges>  
+    </security>  
+  </trustInfo> 
 </assembly>

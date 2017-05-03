@@ -39,10 +39,10 @@
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "General/UndoRedo.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
-#include "MainApp.h"
+#include "App.h"
 #include "TextureXEditor.h"
-#include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
 #include "ZTextureEditorPanel.h"
 
@@ -159,9 +159,10 @@ void TextureXListView::updateList(bool clear)
 	if (texturex)
 	{
 		unsigned count = texturex->nTextures();
-		SetItemCount(count);
 		for (unsigned a = 0; a < count; a++)
 			items.push_back(a);
+		applyFilter();
+		SetItemCount(items.size());
 	}
 	else
 		SetItemCount(0);
@@ -197,6 +198,52 @@ void TextureXListView::sortItems()
 		std::sort(items.begin(), items.end(), &TextureXListView::sizeSort);
 	else
 		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
+}
+
+/* TextureXListView::applyFilter
+ * Filters items by the current filter text string
+ *******************************************************************/
+void TextureXListView::applyFilter()
+{
+	// Show all if no filter
+	if (filter_text.IsEmpty())
+		return;
+
+	// Split filter by ,
+	wxArrayString terms = wxSplit(filter_text, ',');
+
+	// Process filter strings
+	for (auto& term : terms)
+	{
+		// Remove spaces
+		term.Replace(" ", "");
+
+		// Set to lowercase and add * to the end
+		if (!term.IsEmpty()) term = term.Lower() + "*";
+	}
+
+	// Go through filtered list
+	for (unsigned a = 0; a < items.size(); a++)
+	{
+		auto tex = texturex->getTexture(items[a]);
+
+		// Check for name match with filter
+		bool match = false;
+		for (auto& term : terms)
+		{
+			if (tex->getName().Lower().Matches(term))
+			{
+				match = true;
+				break;
+			}
+		}
+		if (match)
+			continue;
+
+		// No match, remove from filtered list
+		items.erase(items.begin() + a);
+		a--;
+	}
 }
 
 
@@ -246,7 +293,7 @@ public:
 	TextureCreateDeleteUS(TextureXPanel* tx_panel, CTexture* texture, bool created)
 		: tx_panel(tx_panel), created(created)
 	{
-		tex_removed = NULL;
+		tex_removed = created ? NULL : texture;
 		index = tx_panel->txList().textureIndex(texture->getName());
 	}
 
@@ -372,6 +419,16 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor) : wxPa
 	framesizer->Add(list_textures, 1, wxEXPAND|wxALL, 4);
 	sizer->Add(framesizer, 0, wxEXPAND|wxALL, 4);
 
+	// Texture list filter
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	text_filter = new wxTextCtrl(this, -1);
+	hbox->Add(new wxStaticText(this, -1, "Filter:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
+	hbox->Add(text_filter, 1, wxEXPAND | wxRIGHT, 4);
+	btn_clear_filter = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "close"));
+	btn_clear_filter->SetToolTip("Clear Filter");
+	hbox->Add(btn_clear_filter, 0, wxEXPAND);
+	framesizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
+
 	// Add texture operations buttons
 	wxGridBagSizer* gbsizer = new wxGridBagSizer(4, 4);
 	framesizer->Add(gbsizer, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -406,6 +463,8 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor) : wxPa
 	btn_move_down->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnMoveDown, this);
 	btn_save->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnSave, this);
 	Bind(wxEVT_SHOW, &TextureXPanel::onShow, this);
+	text_filter->Bind(wxEVT_TEXT, &TextureXPanel::onTextFilterChanged, this);
+	btn_clear_filter->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnClearFitler, this);
 }
 
 /* TextureXPanel::~TextureXPanel
@@ -603,7 +662,7 @@ void TextureXPanel::newTexture()
 		tex->setScale(0, 0);
 
 	// Add it after the last selected item
-	int selected = list_textures->getLastSelected();
+	int selected = list_textures->getItemIndex(list_textures->getLastSelected());
 	if (selected == -1) selected = texturex.nTextures() - 1; // Add to end of the list if nothing selected
 	texturex.addTexture(tex, selected + 1);
 
@@ -652,7 +711,7 @@ void TextureXPanel::newTextureFromPatch()
 		CTexture* tex = newTextureFromPatch(name, patch);
 
 		// Add texture after the last selected item
-		int selected = list_textures->getLastSelected();
+		int selected = list_textures->getItemIndex(list_textures->getLastSelected());
 		if (selected == -1) selected = texturex.nTextures() - 1; // Add to end of the list if nothing selected
 		texturex.addTexture(tex, selected + 1);
 
@@ -722,7 +781,7 @@ void TextureXPanel::newTextureFromFile()
 			// If it's not a valid image type, ignore this file
 			if (!entry->getType()->extraProps().propertyExists("image"))
 			{
-				wxLogMessage("%s is not a valid image file", files[a]);
+				LOG_MESSAGE(1, "%s is not a valid image file", files[a]);
 				continue;
 			}
 
@@ -746,7 +805,7 @@ void TextureXPanel::newTextureFromFile()
 			CTexture* tex = newTextureFromPatch(name, name);
 
 			// Add texture after the last selected item
-			int selected = list_textures->getLastSelected();
+			int selected = list_textures->getItemIndex(list_textures->getLastSelected());
 			if (selected == -1) selected = texturex.nTextures() - 1; // Add to end of the list if nothing selected
 			texturex.addTexture(tex, selected + 1);
 
@@ -775,7 +834,7 @@ void TextureXPanel::newTextureFromFile()
 void TextureXPanel::removeTexture()
 {
 	// Get selected textures
-	vector<long> selection = list_textures->getSelection();
+	vector<long> selection = list_textures->getSelection(true);
 
 	// Begin recording undo level
 	undo_manager->beginRecord("Remove Texture(s)");
@@ -792,7 +851,7 @@ void TextureXPanel::removeTexture()
 		undo_manager->recordUndoStep(new TextureCreateDeleteUS(this, tex, false));
 
 		// Remove texture from list
-		texturex.removeTexture(selection[a]);
+		texturex.removeTexture(selection[a], false);
 	}
 
 	// End recording undo level
@@ -813,7 +872,7 @@ void TextureXPanel::removeTexture()
 void TextureXPanel::moveUp()
 {
 	// Get selected textures
-	vector<long> selection = list_textures->getSelection();
+	vector<long> selection = list_textures->getSelection(true);
 
 	// Do nothing if the first selected item is at the top of the list
 	if (selection.size() > 0 && selection[0] == 0)
@@ -853,7 +912,7 @@ void TextureXPanel::moveUp()
 void TextureXPanel::moveDown()
 {
 	// Get selected textures
-	vector<long> selection = list_textures->getSelection();
+	vector<long> selection = list_textures->getSelection(true);
 
 	// Do nothing if the last selected item is at the end of the list
 	if (selection.size() > 0 && selection.back() == list_textures->GetItemCount()-1)
@@ -893,7 +952,7 @@ void TextureXPanel::moveDown()
 void TextureXPanel::sort()
 {
 	// Get selected textures
-	vector<long> selection = list_textures->getSelection();
+	vector<long> selection = list_textures->getSelection(true);
 	// Without selection of multiple texture, sort everything instead
 	if (selection.size() < 2)
 	{
@@ -961,7 +1020,7 @@ void TextureXPanel::sort()
 void TextureXPanel::copy()
 {
 	// Get selected textures
-	vector<long> selection = list_textures->getSelection();
+	vector<long> selection = list_textures->getSelection(true);
 
 	// Do nothing if nothing selected
 	if (selection.size() == 0)
@@ -987,7 +1046,7 @@ void TextureXPanel::paste()
 		return;
 
 	// Get last selected index
-	int selected = list_textures->getLastSelected();
+	int selected = list_textures->getItemIndex(list_textures->getLastSelected());
 	if (selected == -1) selected = texturex.nTextures() - 1; // Add to end of the list if nothing selected
 
 	// Begin recording undo level
@@ -1062,7 +1121,7 @@ void TextureXPanel::paste()
 void TextureXPanel::renameTexture(bool each)
 {
 	// Get selected textures
-	vector<long> selec_num = list_textures->getSelection();
+	vector<long> selec_num = list_textures->getSelection(true);
 	vector<CTexture*> selection;
 
 	if (!tx_entry) return;
@@ -1131,7 +1190,7 @@ void TextureXPanel::renameTexture(bool each)
 void TextureXPanel::exportTexture()
 {
 	// Get selected textures
-	vector<long> selec_num = list_textures->getSelection();
+	vector<long> selec_num = list_textures->getSelection(true);
 	vector<CTexture*> selection;
 
 	if (!tx_entry) return;
@@ -1157,14 +1216,14 @@ void TextureXPanel::exportTexture()
 	gcd.ShowModal();
 
 	// Show splash window
-	theSplashWindow->show("Writing converted image data...", true);
+	UI::showSplash("Writing converted image data...", true);
 
 	// Write any changes
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Update splash window
-		theSplashWindow->setProgressMessage(selection[a]->getName());
-		theSplashWindow->setProgress((float)a / (float)selection.size());
+		UI::setSplashProgressMessage(selection[a]->getName());
+		UI::setSplashProgress((float)a / (float)selection.size());
 
 		// Skip if the image wasn't converted
 		if (!gcd.itemModified(a))
@@ -1186,7 +1245,7 @@ void TextureXPanel::exportTexture()
 	}
 
 	// Hide splash window
-	theSplashWindow->hide();
+	UI::hideSplash();
 }
 
 /* TextureXPanel::exportAsPNG
@@ -1203,7 +1262,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 	SImage image;
 	if (!texture->toImage(image, NULL, texture_editor->getPalette(), force_rgba))
 	{
-		wxLogMessage("Error converting %s: %s", texture->getName(), Global::error);
+		LOG_MESSAGE(1, "Error converting %s: %s", texture->getName(), Global::error);
 		return false;
 	}
 
@@ -1212,7 +1271,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 	SIFormat* fmt_png = SIFormat::getFormat("png");
 	if (!fmt_png->saveImage(image, png, texture_editor->getPalette()))
 	{
-		wxLogMessage("Error converting %s", texture->getName());
+		LOG_MESSAGE(1, "Error converting %s", texture->getName());
 		return false;
 	}
 
@@ -1226,7 +1285,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 void TextureXPanel::extractTexture()
 {
 	// Get selected textures
-	vector<long> selec_num = list_textures->getSelection();
+	vector<long> selec_num = list_textures->getSelection(true);
 	vector<CTexture*> selection;
 
 	if (!tx_entry) return;
@@ -1273,14 +1332,14 @@ void TextureXPanel::extractTexture()
 		if (SFileDialog::saveFiles(info, "Export Textures as PNG (Filename will be ignored)", "PNG Files (*.png)|*.png", this))
 		{
 			// Show splash window
-			theSplashWindow->show("Saving converted image data...", true);
+			UI::showSplash("Saving converted image data...", true);
 
 			// Go through the selection
 			for (size_t a = 0; a < selection.size(); a++)
 			{
 				// Update splash window
-				theSplashWindow->setProgressMessage(selection[a]->getName());
-				theSplashWindow->setProgress((float)a / (float)selection.size());
+				UI::setSplashProgressMessage(selection[a]->getName());
+				UI::setSplashProgress((float)a / (float)selection.size());
 
 				// Setup entry filename
 				wxFileName fn(selection[a]->getName());
@@ -1292,7 +1351,7 @@ void TextureXPanel::extractTexture()
 			}
 
 			// Hide splash window
-			theSplashWindow->hide();
+			UI::hideSplash();
 		}
 	}
 }
@@ -1315,7 +1374,7 @@ bool TextureXPanel::modifyOffsets()
 		return false;
 
 	// Go through selection
-	vector<long> selec_num = list_textures->getSelection();
+	vector<long> selec_num = list_textures->getSelection(true);
 	for (unsigned a = 0; a < selec_num.size(); ++a)
 	{
 		// Get texture
@@ -1453,24 +1512,24 @@ void TextureXPanel::onTextureListRightClick(wxListEvent& e)
 	// Create context menu
 	wxMenu context;
 	wxMenu* texport = new wxMenu();
-	theApp->getAction("txed_delete")->addToMenu(&context, true);
+	SAction::fromId("txed_delete")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("txed_rename")->addToMenu(&context, true);
-	if (list_textures->getSelection().size() > 1)
-		theApp->getAction("txed_rename_each")->addToMenu(&context, true);
+	SAction::fromId("txed_rename")->addToMenu(&context, true);
+	if (list_textures->GetSelectedItemCount() > 1)
+		SAction::fromId("txed_rename_each")->addToMenu(&context, true);
 	if (texturex.getFormat() == TXF_TEXTURES)
-		theApp->getAction("txed_offsets")->addToMenu(&context, true);
-	theApp->getAction("txed_export")->addToMenu(texport, "Archive (as image)");
-	theApp->getAction("txed_extract")->addToMenu(texport, "File");
+		SAction::fromId("txed_offsets")->addToMenu(&context, true);
+	SAction::fromId("txed_export")->addToMenu(texport, "Archive (as image)");
+	SAction::fromId("txed_extract")->addToMenu(texport, "File");
 	context.AppendSubMenu(texport, "&Export To");
 	context.AppendSeparator();
-	theApp->getAction("txed_copy")->addToMenu(&context, true);
-	theApp->getAction("txed_cut")->addToMenu(&context, true);
-	theApp->getAction("txed_paste")->addToMenu(&context, true);
+	SAction::fromId("txed_copy")->addToMenu(&context, true);
+	SAction::fromId("txed_cut")->addToMenu(&context, true);
+	SAction::fromId("txed_paste")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("txed_up")->addToMenu(&context, true);
-	theApp->getAction("txed_down")->addToMenu(&context, true);
-	theApp->getAction("txed_sort")->addToMenu(&context, true);
+	SAction::fromId("txed_up")->addToMenu(&context, true);
+	SAction::fromId("txed_down")->addToMenu(&context, true);
+	SAction::fromId("txed_sort")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);
@@ -1631,9 +1690,29 @@ void TextureXPanel::onShow(wxShowEvent& e)
 }
 
 /* TextureXPanel::onBtnSave
-* Called when the 'Save' button is clicked
-*******************************************************************/
+ * Called when the 'Save' button is clicked
+ *******************************************************************/
 void TextureXPanel::onBtnSave(wxCommandEvent& e)
 {
 	tx_editor->saveChanges();
+}
+
+/* TextureXPanel::onTextFilterChanged
+ * Called when the filter text is changed
+ *******************************************************************/
+void TextureXPanel::onTextFilterChanged(wxCommandEvent& e)
+{
+	// Filter the entry list
+	list_textures->setFilter(text_filter->GetValue());
+
+	e.Skip();
+}
+
+/* TextureXPanel::onBtnClearFitler
+ * Called when the 'Clear Filter' button is clicked
+ *******************************************************************/
+void TextureXPanel::onBtnClearFitler(wxCommandEvent& e)
+{
+	text_filter->SetValue(wxEmptyString);
+	list_textures->setFilter(wxEmptyString);
 }

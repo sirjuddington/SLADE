@@ -23,6 +23,8 @@ public:
 	SToolBarButton(wxWindow* parent, string action_id, string action_name, string icon, string help_text, bool show_name = false);
 	~SToolBarButton();
 
+	void setIcon(string icon);
+
 	enum
 	{
 	    STATE_NORMAL,

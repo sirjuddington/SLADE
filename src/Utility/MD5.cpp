@@ -365,54 +365,56 @@ std::string MD5::hexdigest() const
 
 
 // Testing
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 #include "General/Console/Console.h"
 #include "General/Misc.h"
+#include "Archive/Archive.h"
+#include "App.h"
 
 CONSOLE_COMMAND(calcmd5, 0, false)
 {
-	vector<ArchiveEntry*> selection = theMainWindow->getCurrentEntrySelection();
+	vector<ArchiveEntry*> selection = MainEditor::currentEntrySelection();
 	MD5 md5;
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		md5.init();
 		md5.update(selection[a]->getData(), selection[a]->getSize());
 		md5.finalize();
-		theConsole->logMessage(md5.hexdigest());
+		Log::console(md5.hexdigest().c_str());
 	}	
 }
 
 CONSOLE_COMMAND(test_md5, 0, false)
 {
-	auto archive = theMainWindow->getCurrentArchive();
+	auto archive = MainEditor::currentArchive();
 	if (archive)
 	{
 		vector<ArchiveEntry*> entries;
 		archive->getEntryTreeAsList(entries);
 		MD5 md5;
-		auto start = theApp->runTimer();
+		auto start = App::runTimer();
 		for (auto& entry : entries)
 		{
 			md5.init();
 			md5.update(entry->getData(), entry->getSize());
 			md5.finalize();
 		}
-		auto elapsed = theApp->runTimer() - start;
-		theConsole->logMessage(S_FMT("Took %dms", elapsed));
+		auto elapsed = App::runTimer() - start;
+		Log::console(S_FMT("Took %dms", elapsed));
 	}
 }
 
 CONSOLE_COMMAND(test_crc, 0, false)
 {
-	auto archive = theMainWindow->getCurrentArchive();
+	auto archive = MainEditor::currentArchive();
 	if (archive)
 	{
 		vector<ArchiveEntry*> entries;
 		archive->getEntryTreeAsList(entries);
-		auto start = theApp->runTimer();
+		auto start = App::runTimer();
 		for (auto& entry : entries)
 			Misc::crc(entry->getData(), entry->getSize());
-		auto elapsed = theApp->runTimer() - start;
-		theConsole->logMessage(S_FMT("Took %dms", elapsed));
+		auto elapsed = App::runTimer() - start;
+		Log::console(S_FMT("Took %dms", elapsed));
 	}
 }

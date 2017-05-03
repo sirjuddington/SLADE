@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "PreferencesDialog.h"
 #include "ACSPrefsPanel.h"
 #include "AdvancedPrefsPanel.h"
@@ -44,14 +45,15 @@
 #include "HudOffsetsPrefsPanel.h"
 #include "InputPrefsPanel.h"
 #include "InterfacePrefsPanel.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
+#include "MainEditor/UI/ArchiveManagerPanel.h"
 #include "Map3DPrefsPanel.h"
 #include "MapDisplayPrefsPanel.h"
 #include "MapEditorPrefsPanel.h"
 #include "NodesPrefsPanel.h"
 #include "OpenGLPrefsPanel.h"
 #include "PNGPrefsPanel.h"
-#include "TextEditorPrefsPanel.h"
 #include "TextEditorPrefsPanel.h"
 #include "TextStylePrefsPanel.h"
 
@@ -85,6 +87,9 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 
 	// Create preferences TreeBook
 	tree_prefs = new wxTreebook(this, -1, wxDefaultPosition, wxDefaultSize);
+#if wxMAJOR_VERSION > 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
+	tree_prefs->GetTreeCtrl()->EnableSystemTheme(true);
+#endif
 
 	// Setup preferences TreeBook
 	PrefsPanelBase* panel;
@@ -221,6 +226,9 @@ void PreferencesDialog::applyPreferences()
 	for (unsigned a = 0; a < prefs_pages.size(); a++)
 		prefs_pages[a]->applyPreferences();
 	prefs_advanced->applyPreferences();
+
+	// Write file so changes are not lost
+	App::saveConfigFile();
 }
 
 

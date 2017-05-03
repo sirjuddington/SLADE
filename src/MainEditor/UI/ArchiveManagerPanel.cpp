@@ -36,11 +36,13 @@
 #include "ArchivePanel.h"
 #include "Dialogs/DirArchiveUpdateDialog.h"
 #include "EntryPanel/EntryPanel.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
-#include "MainEditor/MainWindow.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "TextureXEditor/TextureXEditor.h"
-#include "UI/SplashWindow.h"
 #include "UI/STabCtrl.h"
 
 
@@ -407,7 +409,7 @@ void ArchiveManagerPanel::refreshRecentFileList()
 	list_recent->ClearAll();
 
 	// Get first recent file menu id
-	SAction* a_recent = theApp->getAction("aman_recent");
+	SAction* a_recent = SAction::fromId("aman_recent");
 	int id_recent_start = a_recent->getWxId();
 
 	// Clear menu; needs to do with a count down rather than up
@@ -449,6 +451,14 @@ void ArchiveManagerPanel::refreshRecentFileList()
 	// Update size
 	list_recent->enableSizeUpdate(true);
 	list_recent->updateSize();
+}
+
+/* ArchiveManagerPanel::disableArchiveListUpdate
+* disables updating the archive list 4 speed reasons
+*******************************************************************/
+void ArchiveManagerPanel::disableArchiveListUpdate()
+{
+	list_archives->enableSizeUpdate(false);
 }
 
 /* ArchiveManagerPanel::refreshArchiveList
@@ -506,6 +516,7 @@ void ArchiveManagerPanel::updateOpenListItem(int index)
 	wxFileName fn(archive->getFilename());
 
 	// Set item name
+	
 	list_archives->setItemText(index, 0, fn.GetFullName());
 	list_archives->setItemText(index, 1, fn.GetPath());
 
@@ -1030,7 +1041,7 @@ void ArchiveManagerPanel::closeEntryTabs(Archive* parent)
 void ArchiveManagerPanel::openFile(string filename)
 {
 	// Show splash screen
-	theSplashWindow->show("Opening Archive...", true);
+	UI::showSplash("Opening Archive...", true);
 
 	// test
 	wxStopWatch sw;
@@ -1040,10 +1051,10 @@ void ArchiveManagerPanel::openFile(string filename)
 	Archive* new_archive = theArchiveManager->openArchive(filename);
 
 	sw.Pause();
-	wxLogMessage("Opening took %d ms", (int)sw.Time());
+	LOG_MESSAGE(1, "Opening took %d ms", (int)sw.Time());
 
 	// Hide splash screen
-	theSplashWindow->hide();
+	UI::hideSplash();
 
 	// Check that the archive opened ok
 	if (!new_archive)
@@ -1072,7 +1083,7 @@ void ArchiveManagerPanel::openFiles(wxArrayString& files)
 void ArchiveManagerPanel::openDirAsArchive(string dir)
 {
 	// Show splash screen
-	theSplashWindow->show("Opening Directory...", true);
+	UI::showSplash("Opening Directory...", true);
 
 	// test
 	wxStopWatch sw;
@@ -1082,10 +1093,10 @@ void ArchiveManagerPanel::openDirAsArchive(string dir)
 	Archive* new_archive = theArchiveManager->openDirArchive(dir);
 
 	sw.Pause();
-	wxLogMessage("Opening took %d ms", (int)sw.Time());
+	LOG_MESSAGE(1, "Opening took %d ms", (int)sw.Time());
 
 	// Hide splash screen
-	theSplashWindow->hide();
+	UI::hideSplash();
 
 	// Check that the archive opened ok
 	if (!new_archive)
@@ -1358,9 +1369,9 @@ bool ArchiveManagerPanel::beforeCloseArchive(Archive* archive)
 		return false;
 
 	// Check if a map from the archive is currently open
-	if (theMapEditor->IsShown() && theMapEditor->hasMapOpen(archive))
+	if (MapEditor::window()->IsShown() && MapEditor::window()->hasMapOpen(archive))
 	{
-		if (!theMapEditor->Close())
+		if (!MapEditor::window()->Close())
 			return false;
 	}
 
@@ -1704,8 +1715,8 @@ bool ArchiveManagerPanel::handleAction(string id)
 	// File->New Map
 	else if (id == "aman_newmap")
 	{
-		if (!theMapEditor->createMap())
-			theMapEditor->Show(false);
+		if (!MapEditor::chooseMap())
+			MapEditor::window()->Show(false);
 	}
 
 	// File->Open
@@ -1762,7 +1773,7 @@ bool ArchiveManagerPanel::handleAction(string id)
 	else if (id == "aman_recent")
 	{
 		// Get recent file index
-		unsigned index = wx_id_offset;//theApp->getAction(id)->getWxId() - theApp->getAction("aman_recent1")->getWxId();
+		unsigned index = wx_id_offset;//SAction::fromId(id)->getWxId() - SAction::fromId("aman_recent1")->getWxId();
 
 		// Open it
 		openFile(theArchiveManager->recentFile(index));
@@ -1960,9 +1971,9 @@ void ArchiveManagerPanel::onListArchivesRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_save_a")->addToMenu(&context, true);
-	theApp->getAction("aman_saveas_a")->addToMenu(&context, true);
-	theApp->getAction("aman_close_a")->addToMenu(&context, true);
+	SAction::fromId("aman_save_a")->addToMenu(&context, true);
+	SAction::fromId("aman_saveas_a")->addToMenu(&context, true);
+	SAction::fromId("aman_close_a")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);
@@ -1988,8 +1999,8 @@ void ArchiveManagerPanel::onListRecentRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_recent_open")->addToMenu(&context, true);
-	theApp->getAction("aman_recent_remove")->addToMenu(&context, true);
+	SAction::fromId("aman_recent_open")->addToMenu(&context, true);
+	SAction::fromId("aman_recent_remove")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);
@@ -2014,8 +2025,8 @@ void ArchiveManagerPanel::onListBookmarksRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_bookmark_go")->addToMenu(&context, true);
-	theApp->getAction("aman_bookmark_remove")->addToMenu(&context, true);
+	SAction::fromId("aman_bookmark_go")->addToMenu(&context, true);
+	SAction::fromId("aman_bookmark_remove")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);

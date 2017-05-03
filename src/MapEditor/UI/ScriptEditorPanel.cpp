@@ -32,9 +32,9 @@
 #include "Archive/Archive.h"
 #include "MainEditor/EntryOperations.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "UI/SToolBar/SToolBar.h"
-
+#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************
@@ -153,9 +153,9 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 	string lang = theGameConfiguration->scriptLanguage();
 	if (entry_script->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
-		SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-		map->mapSpecials()->processACSScripts(entry_script);
-		map->mapSpecials()->updateTaggedSectors(map);
+		auto map = MapEditor::editContext().map();
+		map.mapSpecials()->processACSScripts(entry_script);
+		map.mapSpecials()->updateTaggedSectors(&map);
 	}
 
 	// Load script text
@@ -183,7 +183,7 @@ void ScriptEditorPanel::populateWordList()
 	// Get functions and constants
 	TextLanguage* tl = TextLanguage::getLanguage("acs_z");
 	wxArrayString functions = tl->getFunctionsSorted();
-	wxArrayString constants = tl->getConstantsSorted();
+	wxArrayString constants = tl->getWordListSorted(TextLanguage::WordType::Constant);
 
 	// Add functions to list
 	wxTreeListItem item = list_words->AppendItem(list_words->GetRootItem(), "Functions");
@@ -217,7 +217,7 @@ void ScriptEditorPanel::saveScripts()
 	string lang = theGameConfiguration->scriptLanguage();
 	if (entry_script->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
-		SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+		SLADEMap* map = &(MapEditor::editContext().map());
 		map->mapSpecials()->processACSScripts(entry_script);
 		map->mapSpecials()->updateTaggedSectors(map);
 	}
@@ -246,9 +246,9 @@ bool ScriptEditorPanel::handleAction(string name)
 		// Compile depending on language
 		string lang = theGameConfiguration->scriptLanguage();
 		if (lang == "acs_hexen")
-			EntryOperations::compileACS(entry_script, true, entry_compiled, theMapEditor);
+			EntryOperations::compileACS(entry_script, true, entry_compiled, (wxFrame*)MapEditor::windowWx());
 		else if (lang == "acs_zdoom")
-			EntryOperations::compileACS(entry_script, false, entry_compiled, theMapEditor);
+			EntryOperations::compileACS(entry_script, false, entry_compiled, (wxFrame*)MapEditor::windowWx());
 	}
 
 	// Save Script

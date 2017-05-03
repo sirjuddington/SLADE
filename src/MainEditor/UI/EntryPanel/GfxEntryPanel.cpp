@@ -29,17 +29,18 @@
  *******************************************************************/
 #include "Main.h"
 #include "GfxEntryPanel.h"
+#include "Archive/Archive.h"
 #include "Dialogs/GfxConvDialog.h"
+#include "Dialogs/GfxCropDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "Dialogs/TranslationEditorDialog.h"
 #include "General/Console/ConsoleHelpers.h"
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
-#include "Graphics/Palette/Palette.h"
-#include "Graphics/Palette/PaletteManager.h"
 #include "MainEditor/EntryOperations.h"
-#include "MainEditor/MainWindow.h"
-#include "UI/SToolBar/SToolBar.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
+#include "UI/PaletteChooser.h"
 
 
 /*******************************************************************
@@ -50,54 +51,36 @@ EXTERN_CVAR(String, last_colour)
 EXTERN_CVAR(String, last_tint_colour)
 EXTERN_CVAR(Int, last_tint_amount)
 
-class GfxCropDialog : public wxDialog
+string brushlist[Brush::NUM_BRUSHES] =
 {
-private:
-	class CropCanvas : public OGLCanvas
-	{
-	public:
-		CropCanvas(wxWindow* parent) : OGLCanvas(parent, -1) {}
-
-		void draw()
-		{
-			drawCheckeredBackground();
-			SwapBuffers();
-		}
-	};
-
-	CropCanvas*	canvas_preview;
-
-public:
-	GfxCropDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
-		: wxDialog(parent, -1, "Crop", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
-	{
-		// Set dialog icon
-		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "settings"));
-		SetIcon(icon);
-
-		// Setup main sizer
-		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(msizer);
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
-
-		// Add preview
-		canvas_preview = new CropCanvas(this);
-		sizer->Add(canvas_preview, 1, wxEXPAND|wxALL, 4);
-
-		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 4);
-
-		// Setup dialog size
-		SetInitialSize(wxSize(-1, -1));
-		SetMinSize(GetSize());
-		CenterOnParent();
-	}
-
-	~GfxCropDialog() {}
+	"brush_sq_1",
+	"brush_sq_3",
+	"brush_sq_5",
+	"brush_sq_7",
+	"brush_sq_9",
+	"brush_ci_5",
+	"brush_ci_7",
+	"brush_ci_9",
+	"brush_di_3",
+	"brush_di_5",
+	"brush_di_7",
+	"brush_di_9",
+	"brush_pa_a",
+	"brush_pa_b",
+	"brush_pa_c",
+	"brush_pa_d",
+	"brush_pa_e",
+	"brush_pa_f",
+	"brush_pa_g",
+	"brush_pa_h",
+	"brush_pa_i",
+	"brush_pa_j",
+	"brush_pa_k",
+	"brush_pa_l",
+	"brush_pa_m",
+	"brush_pa_n",
+	"brush_pa_o",
 };
-
 
 /*******************************************************************
  * GFXENTRYPANEL CLASS FUNCTIONS
@@ -111,6 +94,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 {
 	// Init variables
 	prev_translation.addRange(TRANS_PALETTE, 0);
+	edit_translation.addRange(TRANS_PALETTE, 0);
 	offset_changing = false;
 
 	// Add gfx canvas
@@ -119,6 +103,8 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	gfx_canvas->setViewType(GFXVIEW_DEFAULT);
 	gfx_canvas->allowDrag(true);
 	gfx_canvas->allowScroll(true);
+	gfx_canvas->setPalette(MainEditor::currentPalette());
+	gfx_canvas->setTranslation(&edit_translation);
 
 	// Offsets
 	spin_xoffset = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, SHRT_MIN, SHRT_MAX, 0);
@@ -169,12 +155,16 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	fillCustomMenu(menu_custom);
 	custom_menu_name = "Graphic";
 
+	// Brushes menu
+	menu_brushes = new wxMenu();
+	fillBrushMenu(menu_brushes);
+
 	// Custom toolbar
-	custom_toolbar_actions = "pgfx_mirror;pgfx_flip;pgfx_rotate;pgfx_translate;pgfx_colourise;pgfx_tint;pgfx_pngopt";
 	setupToolbar();
 
 	// Bind Events
 	slider_zoom->Bind(wxEVT_SLIDER, &GfxEntryPanel::onZoomChanged, this);
+	cb_colour->Bind(wxEVT_COLOURBOX_CHANGED, &GfxEntryPanel::onPaintColourChanged, this);
 	spin_xoffset->Bind(wxEVT_SPINCTRL, &GfxEntryPanel::onXOffsetChanged, this);
 	spin_yoffset->Bind(wxEVT_SPINCTRL, &GfxEntryPanel::onYOffsetChanged, this);
 	spin_xoffset->Bind(wxEVT_TEXT_ENTER, &GfxEntryPanel::onXOffsetChanged, this);
@@ -183,6 +173,8 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	cb_tile->Bind(wxEVT_CHECKBOX, &GfxEntryPanel::onTileChanged, this);
 	cb_arc->Bind(wxEVT_CHECKBOX, &GfxEntryPanel::onARCChanged, this);
 	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas->GetId());
+	Bind(wxEVT_GFXCANVAS_PIXELS_CHANGED, &GfxEntryPanel::onGfxPixelsChanged, this, gfx_canvas->GetId());
+	Bind(wxEVT_GFXCANVAS_COLOUR_PICKED, &GfxEntryPanel::onColourPicked, this, gfx_canvas->GetId());
 	btn_nextimg->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnNextImg, this);
 	btn_previmg->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnPrevImg, this);
 	btn_auto_offset->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnAutoOffset, this);
@@ -283,7 +275,7 @@ bool GfxEntryPanel::saveEntry()
 			if (writable == SIFormat::CONVERTIBLE)
 			{
 				format->convertWritable(*image, SIFormat::convert_options_t());
-				wxLogMessage("Image converted for writing");
+				LOG_MESSAGE(1, "Image converted for writing");
 			}
 
 			if (format->saveImage(*image, entry->getMCData(), gfx_canvas->getPalette()))
@@ -318,9 +310,9 @@ bool GfxEntryPanel::saveEntry()
 		bool alph = EntryOperations::getalPhChunk(entry);
 		bool trns = EntryOperations::gettRNSChunk(entry);
 
-		if (alph != menu_custom->IsChecked(theApp->getAction("pgfx_alph")->getWxId()))
+		if (alph != menu_custom->IsChecked(SAction::fromId("pgfx_alph")->getWxId()))
 			EntryOperations::modifyalPhChunk(entry, !alph);
-		if (trns != menu_custom->IsChecked(theApp->getAction("pgfx_trns")->getWxId()))
+		if (trns != menu_custom->IsChecked(SAction::fromId("pgfx_trns")->getWxId()))
 			EntryOperations::modifytRNSChunk(entry, !trns);
 	}
 
@@ -342,17 +334,32 @@ void GfxEntryPanel::setupToolbar()
 	g_zoom->addCustomControl(label_current_zoom);
 	toolbar->addGroup(g_zoom);
 
+	// Editing operations
+	SToolBarGroup* g_edit = new SToolBarGroup(toolbar, "Editing");
+	g_edit->addActionButton("pgfx_settrans", "");
+	cb_colour = new ColourBox(g_edit, -1, COL_BLACK, false, true);
+	cb_colour->setPalette(gfx_canvas->getPalette());
+	button_brush = g_edit->addActionButton("pgfx_setbrush", "");
+	g_edit->addCustomControl(cb_colour);
+	g_edit->addActionButton("pgfx_drag", "");
+	g_edit->addActionButton("pgfx_draw", "");
+	g_edit->addActionButton("pgfx_erase", "");
+	g_edit->addActionButton("pgfx_magic", "");
+	SAction::fromId("pgfx_drag")->setChecked(); // Drag offsets by default
+	toolbar->addGroup(g_edit);
+
 	// Image operations
 	SToolBarGroup* g_image = new SToolBarGroup(toolbar, "Image");
 	g_image->addActionButton("pgfx_mirror", "");
 	g_image->addActionButton("pgfx_flip", "");
 	g_image->addActionButton("pgfx_rotate", "");
+	g_image->addActionButton("pgfx_crop", "");
 	g_image->addActionButton("pgfx_convert", "");
 	toolbar->addGroup(g_image);
 
 	// Colour operations
 	SToolBarGroup* g_colour = new SToolBarGroup(toolbar, "Colour");
-	g_colour->addActionButton("pgfx_translate", "");
+	g_colour->addActionButton("pgfx_remap", "");
 	g_colour->addActionButton("pgfx_colourise", "");
 	g_colour->addActionButton("pgfx_tint", "");
 	toolbar->addGroup(g_colour);
@@ -362,6 +369,44 @@ void GfxEntryPanel::setupToolbar()
 	g_png->addActionButton("pgfx_pngopt", "");
 	toolbar->addGroup(g_png);
 	toolbar->enableGroup("PNG", false);
+}
+
+void GfxEntryPanel::fillBrushMenu(wxMenu* bm)
+{
+	SAction::fromId("pgfx_brush_sq_1")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_sq_3")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_sq_5")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_sq_7")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_sq_9")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_ci_5")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_ci_7")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_ci_9")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_di_3")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_di_5")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_di_7")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_di_9")->addToMenu(bm);
+	wxMenu* pa = new wxMenu;
+	SAction::fromId("pgfx_brush_pa_a")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_b")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_c")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_d")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_e")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_f")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_g")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_h")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_i")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_j")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_k")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_l")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_m")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_n")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_o")->addToMenu(pa);
+	bm->AppendSubMenu(pa, "Dither Patterns");
+}
+
+bool GfxEntryPanel::iconChanger(wxCommandEvent& e)
+{
+	return true;
 }
 
 /* GfxEntryPanel::extractAll
@@ -419,12 +464,12 @@ void GfxEntryPanel::refresh()
 	spin_yoffset->SetValue(getImage()->offset().y);
 
 	// Get some needed menu ids
-	int MENU_GFXEP_PNGOPT = theApp->getAction("pgfx_pngopt")->getWxId();
-	int MENU_GFXEP_ALPH = theApp->getAction("pgfx_alph")->getWxId();
-	int MENU_GFXEP_TRNS = theApp->getAction("pgfx_trns")->getWxId();
-	int MENU_GFXEP_EXTRACT = theApp->getAction("pgfx_extract")->getWxId();
-	int MENU_GFXEP_TRANSLATE = theApp->getAction("pgfx_translate")->getWxId();
-	int MENU_ARCHGFX_EXPORTPNG = theApp->getAction("arch_gfx_exportpng")->getWxId();
+	int MENU_GFXEP_PNGOPT = SAction::fromId("pgfx_pngopt")->getWxId();
+	int MENU_GFXEP_ALPH = SAction::fromId("pgfx_alph")->getWxId();
+	int MENU_GFXEP_TRNS = SAction::fromId("pgfx_trns")->getWxId();
+	int MENU_GFXEP_EXTRACT = SAction::fromId("pgfx_extract")->getWxId();
+	int MENU_GFXEP_TRANSLATE = SAction::fromId("pgfx_translate")->getWxId();
+	int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->getWxId();
 
 	// Set PNG check menus
 	if (this->entry->getType() != NULL && this->entry->getType()->getFormat() == "img_png")
@@ -532,7 +577,7 @@ void GfxEntryPanel::refreshPanel()
  *******************************************************************/
 void GfxEntryPanel::updateImagePalette()
 {
-	gfx_canvas->setPalette(theMainWindow->getPaletteChooser()->getSelectedPalette());
+	gfx_canvas->setPalette(MainEditor::currentPalette());
 	gfx_canvas->updateImageTexture();
 }
 
@@ -652,8 +697,82 @@ bool GfxEntryPanel::handleAction(string id)
 	if (!id.StartsWith("pgfx_"))
 		return false;
 
+	// For pgfx_brush actions, the string after pgfx is a brush name
+	if (id.StartsWith("pgfx_brush"))
+	{
+		string br = id.AfterFirst('_');
+
+		uint8_t i;
+		for (i = 0; i < Brush::NUM_BRUSHES; ++i)
+			if (S_CMP(br, brushlist[i]))
+				break;
+
+		if (i == Brush::NUM_BRUSHES)
+			return false;
+
+		gfx_canvas->setBrush(i);
+		button_brush->setIcon(br);
+	}
+
+	// Editing - drag mode
+	else if (id == "pgfx_drag")
+	{
+		editing = false;
+		gfx_canvas->setEditingMode(0);
+	}
+
+	// Editing - draw mode
+	else if (id == "pgfx_draw")
+	{
+		editing = true;
+		gfx_canvas->setEditingMode(1);
+		gfx_canvas->setPaintColour(cb_colour->getColour());
+	}
+
+	// Editing - erase mode
+	else if (id == "pgfx_erase")
+	{
+		editing = true;
+		gfx_canvas->setEditingMode(2);
+	}
+
+	// Editing - translate mode
+	else if (id == "pgfx_magic")
+	{
+		editing = true;
+		gfx_canvas->setEditingMode(3);
+	}
+
+	// Editing - set translation
+	else if (id == "pgfx_settrans")
+	{
+		// Create translation editor dialog
+		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+		TranslationEditorDialog ted(theMainWindow, pal, " Colour Remap", getImage());
+
+		// Create translation to edit
+		ted.openTranslation(edit_translation);
+
+		// Show the dialog
+		if (ted.ShowModal() == wxID_OK)
+		{
+			// Set the translation
+			edit_translation.copy(ted.getTranslation());
+			gfx_canvas->setTranslation(&edit_translation);
+		}
+
+	}
+
+	// Editing - set brush
+	else if (id == "pgfx_setbrush")
+	{
+		wxPoint p = button_brush->GetScreenPosition() -= GetScreenPosition();
+		p.y += button_brush->GetMaxHeight();
+		PopupMenu(menu_brushes, p);
+	}
+
 	// Mirror
-	if (id == "pgfx_mirror")
+	else if (id == "pgfx_mirror")
 	{
 		// Mirror X
 		getImage()->mirror(false);
@@ -714,10 +833,10 @@ bool GfxEntryPanel::handleAction(string id)
 	}
 
 	// Translate
-	else if (id == "pgfx_translate")
+	else if (id == "pgfx_remap")
 	{
 		// Create translation editor dialog
-		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+		Palette8bit* pal = MainEditor::currentPalette();
 		TranslationEditorDialog ted(theMainWindow, pal, " Colour Remap", gfx_canvas->getImage());
 
 		// Create translation to edit
@@ -744,7 +863,7 @@ bool GfxEntryPanel::handleAction(string id)
 	// Colourise
 	else if (id == "pgfx_colourise")
 	{
-		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+		Palette8bit* pal = MainEditor::currentPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry, pal);
 		gcd.setColour(last_colour);
 
@@ -770,7 +889,7 @@ bool GfxEntryPanel::handleAction(string id)
 	// Tint
 	else if (id == "pgfx_tint")
 	{
-		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+		Palette8bit* pal = MainEditor::currentPalette();
 		GfxTintDialog gtd(theMainWindow, entry, pal);
 		gtd.setValues(last_tint_colour, last_tint_amount);
 
@@ -797,13 +916,39 @@ bool GfxEntryPanel::handleAction(string id)
 	// Crop
 	else if (id == "pgfx_crop")
 	{
-		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
-		GfxCropDialog gcd(theMainWindow, entry, pal);
+		auto image = getImage();
+		auto pal = MainEditor::currentPalette();
+		GfxCropDialog gcd(theMainWindow, image, pal);
 
 		// Show crop dialog
 		if (gcd.ShowModal() == wxID_OK)
 		{
-			// stuff
+			// Prompt to adjust offsets
+			auto crop = gcd.getCropRect();
+			if (crop.tl.x > 0 || crop.tl.y > 0)
+			{
+				if (wxMessageBox(
+					"Do you want to adjust the offsets? This will keep the graphic in the same relative "
+					"position it was before cropping.",
+					"Adjust Offsets?",
+					wxYES_NO) == wxYES)
+				{
+					image->setXOffset(image->offset().x - crop.tl.x);
+					image->setYOffset(image->offset().y - crop.tl.y);
+				}
+			}
+
+			// Crop image
+			image->crop(crop.x1(), crop.y1(), crop.x2(), crop.y2());
+
+			// Update UI
+			gfx_canvas->updateImageTexture();
+			gfx_canvas->Refresh();
+
+			// Update variables
+			image_data_modified = true;
+			Refresh();
+			setModified();
 		}
 	}
 
@@ -858,10 +1003,10 @@ bool GfxEntryPanel::handleAction(string id)
 			setModified();
 
 			// Fix tRNS status if we converted to paletted PNG
-			int MENU_GFXEP_PNGOPT = theApp->getAction("pgfx_pngopt")->getWxId();
-			int MENU_GFXEP_ALPH = theApp->getAction("pgfx_alph")->getWxId();
-			int MENU_GFXEP_TRNS = theApp->getAction("pgfx_trns")->getWxId();
-			int MENU_ARCHGFX_EXPORTPNG = theApp->getAction("arch_gfx_exportpng")->getWxId();
+			int MENU_GFXEP_PNGOPT = SAction::fromId("pgfx_pngopt")->getWxId();
+			int MENU_GFXEP_ALPH = SAction::fromId("pgfx_alph")->getWxId();
+			int MENU_GFXEP_TRNS = SAction::fromId("pgfx_trns")->getWxId();
+			int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->getWxId();
 			if (format->getName() == "PNG")
 			{
 				ArchiveEntry temp;
@@ -905,25 +1050,25 @@ bool GfxEntryPanel::handleAction(string id)
  *******************************************************************/
 bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 {
-	theApp->getAction("pgfx_mirror")->addToMenu(custom);
-	theApp->getAction("pgfx_flip")->addToMenu(custom);
-	theApp->getAction("pgfx_rotate")->addToMenu(custom);
-	theApp->getAction("pgfx_convert")->addToMenu(custom);
+	SAction::fromId("pgfx_mirror")->addToMenu(custom);
+	SAction::fromId("pgfx_flip")->addToMenu(custom);
+	SAction::fromId("pgfx_rotate")->addToMenu(custom);
+	SAction::fromId("pgfx_convert")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("pgfx_translate")->addToMenu(custom);
-	theApp->getAction("pgfx_colourise")->addToMenu(custom);
-	theApp->getAction("pgfx_tint")->addToMenu(custom);
-	//theApp->getAction("pgfx_crop")->addToMenu(custom);
+	SAction::fromId("pgfx_translate")->addToMenu(custom);
+	SAction::fromId("pgfx_colourise")->addToMenu(custom);
+	SAction::fromId("pgfx_tint")->addToMenu(custom);
+	//SAction::fromId("pgfx_crop")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("pgfx_alph")->addToMenu(custom);
-	theApp->getAction("pgfx_trns")->addToMenu(custom);
-	theApp->getAction("pgfx_pngopt")->addToMenu(custom);
+	SAction::fromId("pgfx_alph")->addToMenu(custom);
+	SAction::fromId("pgfx_trns")->addToMenu(custom);
+	SAction::fromId("pgfx_pngopt")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("arch_gfx_exportpng")->addToMenu(custom);
-	theApp->getAction("pgfx_extract")->addToMenu(custom);
+	SAction::fromId("arch_gfx_exportpng")->addToMenu(custom);
+	SAction::fromId("pgfx_extract")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("arch_gfx_addptable")->addToMenu(custom);
-	theApp->getAction("arch_gfx_addtexturex")->addToMenu(custom);
+	SAction::fromId("arch_gfx_addptable")->addToMenu(custom);
+	SAction::fromId("arch_gfx_addtexturex")->addToMenu(custom);
 	// TODO: Should change the way gfx conversion and offset modification work so I can put them in this menu
 
 	return true;
@@ -952,6 +1097,15 @@ void GfxEntryPanel::onZoomChanged(wxCommandEvent& e)
 	gfx_canvas->setScale((double)zoom_percent * 0.01);
 	gfx_canvas->Refresh();
 }
+
+/* GfxEntryPanel::onPaintColourChanged
+ * Called when the colour box's value is changed
+ *******************************************************************/
+void GfxEntryPanel::onPaintColourChanged(wxEvent& e)
+{
+	gfx_canvas->setPaintColour(cb_colour->getColour());
+}
+
 
 /* GfxEntryPanel::onXOffsetChanged
  * Called when the X offset value is modified
@@ -1011,7 +1165,7 @@ void GfxEntryPanel::onARCChanged(wxCommandEvent& e)
 	gfx_canvas->Refresh();
 }
 
-/* GfxEntryPanel::gfxOffsetChanged
+/* GfxEntryPanel::onGfxOffsetChanged
  * Called when the gfx canvas image offsets are changed
  *******************************************************************/
 void GfxEntryPanel::onGfxOffsetChanged(wxEvent& e)
@@ -1021,6 +1175,16 @@ void GfxEntryPanel::onGfxOffsetChanged(wxEvent& e)
 	spin_yoffset->SetValue(getImage()->offset().y);
 
 	// Set changed
+	setModified();
+}
+
+/* GfxEntryPanel::onGfxPixelsChanged
+ * Called when pixels are changed in the canvas
+ *******************************************************************/
+void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
+{
+	// Set changed
+	image_data_modified = true;
 	setModified();
 }
 
@@ -1070,8 +1234,8 @@ void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
 }
 
 /* GfxEntryPanel::onBtnAutoOffset
-* Called when the 'modify offsets' button is clicked
-*******************************************************************/
+ * Called when the 'modify offsets' button is clicked
+ *******************************************************************/
 void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 {
 	ModifyOffsetsDialog dlg;
@@ -1095,6 +1259,14 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 	}
 }
 
+/* GfxEntryPanel::onColourPicked
+ * Called when a pixel's colour has been picked on the canvas
+ *******************************************************************/
+void GfxEntryPanel::onColourPicked(wxEvent & e)
+{
+	cb_colour->setColour(gfx_canvas->getPaintColour());
+}
+
 
 
 /*******************************************************************
@@ -1104,13 +1276,11 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 // I'd love to put them in their own file, but attempting to do so
 // results in a circular include nightmare and nothing works anymore.
 #include "General/Console/Console.h"
-#include "MainApp.h"
 #include "MainEditor/UI/ArchivePanel.h"
-#include "MainEditor/MainWindow.h"
 
 GfxEntryPanel* CH::getCurrentGfxPanel()
 {
-	EntryPanel* panel = theActivePanel;
+	EntryPanel* panel = MainEditor::currentEntryPanel();
 	if (panel)
 	{
 		if (!(panel->getName().CmpNoCase("gfx")))
@@ -1121,7 +1291,7 @@ GfxEntryPanel* CH::getCurrentGfxPanel()
 	return NULL;
 }
 
-CONSOLE_COMMAND(rotate, 1, true)
+CONSOLE_COMMAND (rotate, 1, true)
 {
 	double val;
 	string bluh = args[0];
@@ -1135,38 +1305,38 @@ CONSOLE_COMMAND(rotate, 1, true)
 			val = 270.;
 		else
 		{
-			wxLogMessage("Invalid parameter: %s is not a number.", bluh.mb_str());
+			LOG_MESSAGE(1, "Invalid parameter: %s is not a number.", bluh.mb_str());
 			return;
 		}
 	}
 	int angle = (int)val;
 	if (angle % 90)
 	{
-		wxLogMessage("Invalid parameter: %i is not a multiple of 90.", angle);
+		LOG_MESSAGE(1, "Invalid parameter: %i is not a multiple of 90.", angle);
 		return;
 	}
 
 	ArchivePanel* foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		wxLogMessage("No active panel.");
+		LOG_MESSAGE(1, "No active panel.");
 		return;
 	}
 	ArchiveEntry* bar = foo->currentEntry();
 	if (!bar)
 	{
-		wxLogMessage("No active entry.");
+		LOG_MESSAGE(1, "No active entry.");
 		return;
 	}
 	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		wxLogMessage("No image selected.");
+		LOG_MESSAGE(1, "No image selected.");
 		return;
 	}
 
 	// Get current entry
-	ArchiveEntry* entry = theMainWindow->getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::currentEntry();
 
 	if (meep->getImage())
 	{
@@ -1190,25 +1360,25 @@ CONSOLE_COMMAND (mirror, 1, true)
 		vertical = false;
 	else
 	{
-		wxLogMessage("Invalid parameter: %s is not a known value.", bluh.mb_str());
+		LOG_MESSAGE(1, "Invalid parameter: %s is not a known value.", bluh.mb_str());
 		return;
 	}
 	ArchivePanel* foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		wxLogMessage("No active panel.");
+		LOG_MESSAGE(1, "No active panel.");
 		return;
 	}
 	ArchiveEntry* bar = foo->currentEntry();
 	if (!bar)
 	{
-		wxLogMessage("No active entry.");
+		LOG_MESSAGE(1, "No active entry.");
 		return;
 	}
 	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		wxLogMessage("No image selected.");
+		LOG_MESSAGE(1, "No image selected.");
 		return;
 	}
 	if (meep->getImage())
@@ -1229,19 +1399,19 @@ CONSOLE_COMMAND (crop, 4, true)
 		ArchivePanel* foo = CH::getCurrentArchivePanel();
 		if (!foo)
 		{
-			wxLogMessage("No active panel.");
+			LOG_MESSAGE(1, "No active panel.");
 			return;
 		}
 		GfxEntryPanel* meep = CH::getCurrentGfxPanel();
 		if (!meep)
 		{
-			wxLogMessage("No image selected.");
+			LOG_MESSAGE(1, "No image selected.");
 			return;
 		}
 		ArchiveEntry* bar = foo->currentEntry();
 		if (!bar)
 		{
-			wxLogMessage("No active entry.");
+			LOG_MESSAGE(1, "No active entry.");
 			return;
 		}
 		if (meep->getImage())
@@ -1255,24 +1425,84 @@ CONSOLE_COMMAND (crop, 4, true)
 	}
 }
 
-CONSOLE_COMMAND(imgconv, 0, true)
+CONSOLE_COMMAND(adjust, 0, true)
 {
 	ArchivePanel* foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		wxLogMessage("No active panel.");
-		return;
-	}
-	ArchiveEntry* bar = foo->currentEntry();
-	if (!bar)
-	{
-		wxLogMessage("No active entry.");
+		LOG_MESSAGE(1, "No active panel.");
 		return;
 	}
 	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		wxLogMessage("No image selected.");
+		LOG_MESSAGE(1, "No image selected.");
+		return;
+	}
+	ArchiveEntry* bar = foo->currentEntry();
+	if (!bar)
+	{
+		LOG_MESSAGE(1, "No active entry.");
+		return;
+	}
+	if (meep->getImage())
+	{
+		meep->getImage()->adjust();
+		meep->refresh();
+		MemChunk mc;
+		if (meep->getImage()->getFormat()->saveImage(*meep->getImage(), mc))
+			bar->importMemChunk(mc);
+	}
+}
+
+CONSOLE_COMMAND(mirrorpad, 0, true)
+{
+	ArchivePanel* foo = CH::getCurrentArchivePanel();
+	if (!foo)
+	{
+		LOG_MESSAGE(1, "No active panel.");
+		return;
+	}
+	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
+	if (!meep)
+	{
+		LOG_MESSAGE(1, "No image selected.");
+		return;
+	}
+	ArchiveEntry* bar = foo->currentEntry();
+	if (!bar)
+	{
+		LOG_MESSAGE(1, "No active entry.");
+		return;
+	}
+	if (meep->getImage())
+	{
+		meep->getImage()->mirrorpad();
+		meep->refresh();
+		MemChunk mc;
+		if (meep->getImage()->getFormat()->saveImage(*meep->getImage(), mc))
+			bar->importMemChunk(mc);
+	}
+}
+
+CONSOLE_COMMAND(imgconv, 0, true)
+{
+	ArchivePanel* foo = CH::getCurrentArchivePanel();
+	if (!foo)
+	{
+		LOG_MESSAGE(1, "No active panel.");
+		return;
+	}
+	ArchiveEntry* bar = foo->currentEntry();
+	if (!bar)
+	{
+		LOG_MESSAGE(1, "No active entry.");
+		return;
+	}
+	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
+	if (!meep)
+	{
+		LOG_MESSAGE(1, "No image selected.");
 		return;
 	}
 	if (meep->getImage())

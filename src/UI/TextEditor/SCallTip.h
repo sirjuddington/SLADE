@@ -54,6 +54,7 @@ private:
 	void	updateSize();
 
 	int		drawText(wxDC& dc, string text, int left, int top, wxRect* bounds);
+	wxSize	drawCallTip(wxDC& dc, int xoff = 0, int yoff = 0);
 	void	updateBuffer();
 
 	// Events

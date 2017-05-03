@@ -2,7 +2,9 @@
 // wxEmail by Eran Ifrah (https://github.com/eranif/wxEmail)
 
 #include "wxMailer.h"
+#ifndef NOCURL
 #include <curl/curl.h>
+#endif
 #ifdef __WXMSW__
 #include "wx/msw/winundef.h"
 #endif
@@ -36,6 +38,7 @@ static size_t payload_source(void* ptr, size_t size, size_t nmemb, void* userp)
 
 bool wxMailer::Send(const wxEmailMessage& message)
 {
+#ifndef NOCURL
     CURL* curl;
     curl = curl_easy_init();
 
@@ -71,4 +74,7 @@ bool wxMailer::Send(const wxEmailMessage& message)
         curl_easy_cleanup(curl);
     }
     return true;
+#else
+    return false;
+#endif
 }

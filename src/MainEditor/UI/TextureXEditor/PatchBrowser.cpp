@@ -39,7 +39,9 @@
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/SImage/SImage.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
+#include "UI/PaletteChooser.h"
 
 
 /*******************************************************************
@@ -282,19 +284,19 @@ bool PatchBrowser::openArchive(Archive* archive)
 	}
 
 	// Get list of all available textures (that aren't in the given archive)
-	vector<TextureResource::tex_res_t> textures;
+	vector<TextureResource::Texture*> textures;
 	theResourceManager->getAllTextures(textures, NULL, archive);
 
 	// Go through the list
 	for (unsigned a = 0; a < textures.size(); a++)
 	{
-		TextureResource::tex_res_t& res = textures[a];
+		TextureResource::Texture* res = textures[a];
 
 		// Create browser item
-		PatchBrowserItem* item = new PatchBrowserItem(res.tex->getName(), res.parent, 1);
+		PatchBrowserItem* item = new PatchBrowserItem(res->tex.getName(), res->parent, 1);
 
 		// Add to textures node (under parent archive name)
-		addItem(item, "Textures/" + res.parent->getFilename(false));
+		addItem(item, "Textures/" + res->parent->getFilename(false));
 	}
 
 	// Open 'patches' node

@@ -33,12 +33,12 @@
 
 
 /*******************************************************************
- * VARIABLES
+ * EXTERNAL VARIABLES
  *******************************************************************/
-CVAR(Int, shapedraw_shape, 0, CVAR_SAVE)
-CVAR(Bool, shapedraw_centered, false, CVAR_SAVE)
-CVAR(Bool, shapedraw_lockratio, false, CVAR_SAVE)
-CVAR(Int, shapedraw_sides, 16, CVAR_SAVE)
+EXTERN_CVAR(Int, shapedraw_sides)
+EXTERN_CVAR(Int, shapedraw_shape)
+EXTERN_CVAR(Bool, shapedraw_centered)
+EXTERN_CVAR(Bool, shapedraw_lockratio)
 
 
 /*******************************************************************

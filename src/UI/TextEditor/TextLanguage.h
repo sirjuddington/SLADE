@@ -8,14 +8,16 @@ private:
 	string			name;
 	vector<string>	arg_sets;
 	string			description;
+	string			return_type;
 
 public:
-	TLFunction(string name = "");
+	TLFunction(string name = "", string return_type = "void");
 	~TLFunction();
 
 	string		getName() { return name; }
 	string		getArgSet(unsigned index);
 	string		getDescription() { return description; }
+	string		getReturnType() { return return_type; }
 	unsigned	nArgSets() { return arg_sets.size(); }
 
 	void	setName(string name) { this->name = name; }
@@ -35,23 +37,25 @@ private:
 	string				comment_begin;	// The beginning token for a block comment
 	string				comment_end;	// The ending token for a block comment
 	string				preprocessor;	// The beginning token for a preprocessor directive
+	string				doc_comment;	// The beginning token for a 'doc' comment (eg. /// in c/c++)
 	bool				case_sensitive;
 	vector<string>		jump_blocks;	// The keywords to search for when creating jump to list (eg. 'script')
 	vector<string>		jb_ignore;		// The keywords to ignore when creating jump to list (eg. 'optional')
+	string				block_begin;	// The beginning of a block (eg. '{' in c/c++)
+	string				block_end;		// The end of a block (eg. '}' in c/c++)
+	vector<string>		pp_block_begin;	// Preprocessor words to start a folding block (eg. 'ifdef')
+	vector<string>		pp_block_end;	// Preprocessor words to end a folding block (eg. 'endif')
 
-	// Keywords
-	vector<string>		keywords;
-	bool				k_upper;
-	bool				k_lower;
-	bool				k_caps;
-	string				k_lookup_url;
-
-	// Constants
-	vector<string>		constants;
-	bool				c_upper;
-	bool				c_lower;
-	bool				c_caps;
-	string				c_lookup_url;
+	// Word lists
+	struct WordList
+	{
+		vector<string>	list;
+		bool			upper;
+		bool			lower;
+		bool			caps;
+		string			lookup_url;
+	};
+	WordList	word_lists[4];
 
 	// Functions
 	vector<TLFunction*>	functions;
@@ -61,11 +65,24 @@ private:
 	string				f_lookup_url;
 
 public:
+	enum WordType
+	{
+		Keyword		= 0,
+		Constant	= 1,
+		Type		= 2,
+		Property	= 3,
+	};
+
 	TextLanguage(string id);
 	~TextLanguage();
 
 	string	getId() { return id; }
 	string	getName() { return name; }
+	string	getLineComment() { return line_comment; }
+	string	getCommentBegin() { return comment_begin; }
+	string	getCommentEnd() { return comment_end; }
+	string	getPreprocessor() { return preprocessor; }
+	string	getDocComment() { return doc_comment; }
 
 	void	copyTo(TextLanguage* copy);
 
@@ -74,26 +91,28 @@ public:
 	void	setCommentBegin(string token) { comment_begin = token; }
 	void	setCommentEnd(string token) { comment_end = token; }
 	void	setPreprocessor(string token) { preprocessor = token; }
+	void	setDocComment(string token) { doc_comment = token; }
 	void	setCaseSensitive(bool cs) { case_sensitive = cs; }
-	void	addKeyword(string keyword);
-	void	addConstant(string constant);
-	void	addFunction(string name, string args, string desc = "", bool replace = false);
+	void	addWord(WordType type, string word);
+	void	addFunction(
+		string name,
+		string args,
+		string desc = "",
+		bool replace = false,
+		string return_type = ""
+	);
 
-	string	getKeywordsList();
-	string	getConstantsList();
+	string	getWordList(WordType type);
 	string	getFunctionsList();
 	string	getAutocompletionList(string start = "");
 
-	wxArrayString	getKeywordsSorted();
-	wxArrayString	getConstantsSorted();
+	wxArrayString	getWordListSorted(WordType type);
 	wxArrayString	getFunctionsSorted();
 
-	string	getKeywordLink() { return k_lookup_url; }
-	string	getConstantLink() { return c_lookup_url; }
+	string	getWordLink(WordType type) { return word_lists[type].lookup_url; }
 	string	getFunctionLink() { return f_lookup_url; }
 
-	bool	isKeyword(string word);
-	bool	isConstant(string word);
+	bool	isWord(WordType type, string word);
 	bool	isFunction(string word);
 
 	TLFunction*	getFunction(string name);
@@ -103,9 +122,13 @@ public:
 	unsigned	nJBIgnore() { return jb_ignore.size(); }
 	string		jBIgnore(unsigned index) { return jb_ignore[index]; }
 
-	void	clearKeywords() { keywords.clear(); }
-	void	clearConstants() { constants.clear(); }
+	void	clearWordList(WordType type) { word_lists[type].list.clear(); }
 	void	clearFunctions() { functions.clear(); }
+
+	string			getBlockBegin() { return block_begin; }
+	string			getBlockEnd() { return block_end; }
+	vector<string>&	getPPBlockBegin() { return pp_block_begin; }
+	vector<string>&	getPPBlockEnd() { return pp_block_end; }
 
 	// Static functions
 	static bool				readLanguageDefinition(MemChunk& mc, string source);

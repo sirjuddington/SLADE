@@ -178,7 +178,7 @@ void UndoManager::beginRecord(string name)
 		endRecord(true);
 
 	// Begin new UndoLevel
-	//wxLogMessage("Recording undo level \"%s\"", name);
+	//LOG_MESSAGE(1, "Recording undo level \"%s\"", name);
 	current_level = new UndoLevel(name);
 }
 
@@ -194,7 +194,7 @@ void UndoManager::endRecord(bool success)
 	// If failed, delete current undo level
 	if (!success)
 	{
-		//wxLogMessage("Recording undo level \"%s\" failed", current_level->getName());
+		//LOG_MESSAGE(1, "Recording undo level \"%s\" failed", current_level->getName());
 		delete current_level;
 		current_level = NULL;
 		return;
@@ -203,13 +203,13 @@ void UndoManager::endRecord(bool success)
 	// Remove any undo levels after the current
 	while ((int)undo_levels.size() - 1 > current_level_index)
 	{
-		//wxLogMessage("Removing undo level \"%s\"", undo_levels.back()->getName());
+		//LOG_MESSAGE(1, "Removing undo level \"%s\"", undo_levels.back()->getName());
 		delete undo_levels.back();
 		undo_levels.pop_back();
 	}
 
 	// Add current level to levels
-	//wxLogMessage("Recording undo level \"%s\" succeeded", current_level->getName());
+	//LOG_MESSAGE(1, "Recording undo level \"%s\" succeeded", current_level->getName());
 	undo_levels.push_back(current_level);
 	current_level = NULL;
 	current_level_index = undo_levels.size() - 1;

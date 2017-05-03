@@ -32,7 +32,7 @@
 #include "MapObject.h"
 #include "SLADEMap.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MainApp.h"
+#include "App.h"
 
 
 /*******************************************************************
@@ -55,7 +55,7 @@ MapObject::MapObject(int type, SLADEMap* parent)
 	this->parent_map = parent;
 	this->index = 0;
 	this->filtered = false;
-	this->modified_time = theApp->runTimer();
+	this->modified_time = App::runTimer();
 	this->id = 0;
 	this->obj_backup = NULL;
 
@@ -118,7 +118,7 @@ void MapObject::setModified()
 		backup(obj_backup);
 	}
 
-	modified_time = theApp->runTimer();
+	modified_time = App::runTimer();
 }
 
 /* MapObject::copy
@@ -297,13 +297,13 @@ void MapObject::loadFromBackup(mobj_backup_t* backup)
 	// Check type match
 	if (backup->type != type)
 	{
-		wxLogMessage("loadFromBackup: Mobj type mismatch, %d != %d", type, backup->type);
+		LOG_MESSAGE(1, "loadFromBackup: Mobj type mismatch, %d != %d", type, backup->type);
 		return;
 	}
 	// Check id match
 	if (backup->id != id)
 	{
-		wxLogMessage("loadFromBackup: Mobj id mismatch, %d != %d", id, backup->id);
+		LOG_MESSAGE(1, "loadFromBackup: Mobj id mismatch, %d != %d", id, backup->id);
 		return;
 	}
 

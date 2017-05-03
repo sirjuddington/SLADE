@@ -14,6 +14,7 @@ private:
 	wxCheckBox*	cb_update_check;
 	wxCheckBox* cb_update_check_beta;
 	wxCheckBox*	cb_confirm_exit;
+	wxCheckBox*	cb_backup_archives;
 
 public:
 	GeneralPrefsPanel(wxWindow* parent);

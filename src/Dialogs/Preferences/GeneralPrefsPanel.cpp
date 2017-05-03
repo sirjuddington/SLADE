@@ -41,6 +41,7 @@ EXTERN_CVAR(Bool, auto_open_wads_root)
 EXTERN_CVAR(Bool, update_check)
 EXTERN_CVAR(Bool, update_check_beta)
 EXTERN_CVAR(Bool, confirm_exit)
+EXTERN_CVAR(Bool, backup_archives)
 
 
 /*******************************************************************
@@ -87,6 +88,10 @@ GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	// Confirm exit
 	cb_confirm_exit = new wxCheckBox(this, -1, "Show confirmation dialog on exit");
 	sizer->Add(cb_confirm_exit, 0, wxEXPAND|wxALL, 4);
+
+	// Back up archives
+	cb_backup_archives = new wxCheckBox(this, -1, "Back up archives");
+	sizer->Add(cb_backup_archives, 0, wxEXPAND|wxALL, 4);
 }
 
 /* GeneralPrefsPanel::~GeneralPrefsPanel
@@ -109,6 +114,7 @@ void GeneralPrefsPanel::init()
 	cb_update_check_beta->SetValue(update_check_beta);
 #endif
 	cb_confirm_exit->SetValue(confirm_exit);
+	cb_backup_archives->SetValue(backup_archives);
 }
 
 /* GeneralPrefsPanel::applyPreferences
@@ -124,4 +130,5 @@ void GeneralPrefsPanel::applyPreferences()
 	update_check_beta = cb_update_check_beta->GetValue();
 #endif
 	confirm_exit = cb_confirm_exit->GetValue();
+	backup_archives = cb_backup_archives->GetValue();
 }

@@ -132,7 +132,6 @@ bool SImage::loadFont1(const uint8_t* gfx_data, int size)
 	width = charwidth;
 	size_t charheight = gfx_data[6]+256*gfx_data[7];
 	height = charheight<<8;
-	offset_x = offset_y = 0;
 
 	// Setup variables
 	offset_x = offset_y = 0;
@@ -297,6 +296,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 					// Overflows shouldn't happen
 					if (length > numpixels)
 					{
+						delete[] chars;
 						return false;
 					}
 					memcpy(d, p, length);
@@ -310,6 +310,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 					// Overflows shouldn't happen
 					if (length > numpixels)
 					{
+						delete[] chars;
 						return false;
 					}
 					code = *p++;
@@ -457,7 +458,7 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 	ofs += mf.pal_size*3;
 	if (ofs >= eod)
 	{
-		wxLogMessage("BMF aborted: no data after palette");
+		LOG_MESSAGE(1, "BMF aborted: no data after palette");
 		return false;
 	}
 	mf.info_size = ofs[0];
@@ -474,7 +475,7 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 	ofs+=2;
 	if (ofs >= eod)
 	{
-		wxLogMessage("BMF aborted: no data after char size");
+		LOG_MESSAGE(1, "BMF aborted: no data after char size");
 		return false;
 	}
 	// Let's create each character's data and compute the total size
@@ -852,7 +853,7 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 		Global::error = S_FMT("Invalid Jaguar sprite: header too small (%d) for column offsets (%d)", hdr_size, (8 + (width * 6)));
 		return false;
 	}
-	uint16_t* col_offsets = new uint16_t[width];
+	vector<uint16_t> col_offsets(width);
 	for (int w = 0; w < width; ++w)
 	{
 		col_offsets[w] = READ_B16(header, 8+2*w);

@@ -28,16 +28,19 @@ private:
 								// string "image_format": An SIFormat type id 'hint', mostly used for Misc::loadImageFromEntry
 
 	// Type matching criteria
-	EntryDataFormat*	format;				// To be of this type, the entry data must match the specified format*
-	bool				matchextorname;		// If true, the type fits if it matches the name OR the extension,
-											// rather than having to match both. Many definition lumps need this.
+	EntryDataFormat*	format;				// To be of this type, the entry data must match the
+											// specified format
+	bool				matchextorname;		// If true, the type fits if it matches the name OR the
+											// extension, rather than having to match both.
+											// Many definition lumps need this.
 	vector<string>	match_extension;
 	vector<string>	match_name;
 	vector<int>		match_size;
 	int				size_limit[2];		// Minimum/maximum size
 	vector<int>		size_multiple;		// Entry size must be a multiple of this
-	string			section;			// The 'section' of the archive the entry is in, eg "sprites" for entries
-										// between SS_START/SS_END in a wad, or the 'sprites' folder in a zip
+	vector<string>	section;			// The 'section' of the archive the entry must be in, eg "sprites"
+										// for entries between SS_START/SS_END in a wad, or the 'sprites'
+										// folder in a zip
 	vector<string>	match_archive;		// The types of archive the entry can be found in (e.g., wad or zip)
 
 public:

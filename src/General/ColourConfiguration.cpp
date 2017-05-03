@@ -28,6 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "ColourConfiguration.h"
 #include "Utility/Parser.h"
 #include "Archive/ArchiveManager.h"
@@ -189,7 +190,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 				}
 
 				else
-					wxLogMessage("Warning: unknown colour definition property \"%s\"", prop->getName());
+					LOG_MESSAGE(1, "Warning: unknown colour definition property \"%s\"", prop->getName());
 			}
 		}
 	}
@@ -287,10 +288,10 @@ bool ColourConfiguration::init()
 	loadDefaults();
 
 	// Check for saved colour configuration
-	if (wxFileExists(appPath("colours.cfg", DIR_USER)))
+	if (wxFileExists(App::path("colours.cfg", App::Dir::User)))
 	{
 		MemChunk ccfg;
-		ccfg.importFile(appPath("colours.cfg", DIR_USER));
+		ccfg.importFile(App::path("colours.cfg", App::Dir::User));
 		readConfiguration(ccfg);
 	}
 
@@ -370,9 +371,9 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		sort(list.begin(), list.end());
 
 		// Dump list to console
-		theConsole->logMessage(S_FMT("%lu Colours:", list.size()));
+		Log::console(S_FMT("%lu Colours:", list.size()));
 		for (unsigned a = 0; a < list.size(); a++)
-			theConsole->logMessage(list[a]);
+			Log::console(list[a]);
 	}
 	else
 	{
@@ -401,7 +402,7 @@ CONSOLE_COMMAND(ccfg, 1, false)
 
 		// Print colour
 		rgba_t col = ColourConfiguration::getColour(args[0]);
-		theConsole->logMessage(S_FMT("Colour \"%s\" = %d %d %d %d %d", args[0], col.r, col.g, col.b, col.a, col.blend));
+		Log::console(S_FMT("Colour \"%s\" = %d %d %d %d %d", args[0], col.r, col.g, col.b, col.a, col.blend));
 	}
 }
 

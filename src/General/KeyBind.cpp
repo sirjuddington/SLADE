@@ -628,9 +628,14 @@ void KeyBind::initBinds()
 	addBind("me3d_copy_tex_type", keypress_t("C", KPM_CTRL), "Copy texture or thing type", group);
 	addBind("me3d_copy_tex_type", keypress_t("mouse3"));
 	addBind("me3d_paste_tex_type", keypress_t("V", KPM_CTRL), "Paste texture or thing type", group);
-	addBind("me3d_paste_tex_type", keypress_t("mouse3", KPM_SHIFT));
+	addBind("me3d_paste_tex_type", keypress_t("mouse3", KPM_CTRL));
+	addBind("me3d_paste_tex_adj", keypress_t("mouse3", KPM_SHIFT), "Flood-fill texture", group);
 	addBind("me3d_toggle_info", keypress_t("I"), "Toggle information overlay", group);
 	addBind("me3d_quick_texture", keypress_t("T", KPM_CTRL), "Quick Texture", group);
+	addBind("me3d_generic_up8", keypress_t("mwheelup", KPM_CTRL), "Raise target 8", group);
+	addBind("me3d_generic_up", keypress_t("mwheelup", KPM_CTRL|KPM_SHIFT), "Raise target 1", group);
+	addBind("me3d_generic_down8", keypress_t("mwheeldown", KPM_CTRL), "Lower target 8", group);
+	addBind("me3d_generic_down", keypress_t("mwheeldown", KPM_CTRL|KPM_SHIFT), "Lower target 1", group);
 
 	// Map Editor 3D Camera (me3d_camera*)
 	group = "Map Editor 3D Mode Camera";

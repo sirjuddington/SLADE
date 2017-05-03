@@ -1,0 +1,201 @@
+
+colours {
+	// Map editor colours
+	map_background
+	{
+		name = "Background";
+		group = "Map Editor";
+		rgb = 25, 25, 25;
+	}
+
+	map_overlay_background
+	{
+		name = "Info Overlay Background";
+		group = "Map Editor";
+		rgb = 40, 40, 40;
+		alpha = 180;
+	}
+
+	map_overlay_foreground
+	{
+		name = "Info Overlay Foreground";
+		group = "Map Editor";
+		rgb = 255, 200, 100;
+	}
+
+	map_3d_overlay_background
+	{
+		name = "3D Info Overlay Background";
+		group = "Map Editor";
+		rgb = 40, 40, 40;
+		alpha = 180;
+	}
+
+	map_3d_overlay_foreground
+	{
+		name = "3D Info Overlay Foreground";
+		group = "Map Editor";
+		rgb = 255, 200, 100;
+	}
+
+	map_grid
+	{
+		name = "Grid";
+		group = "Map Editor";
+		rgb = 70, 70, 70;
+		alpha = 60;
+	}
+
+	map_64grid
+	{
+		name = "64 Grid";
+		group = "Map Editor";
+		rgb = 255, 255, 255;
+		alpha = 10;
+	}
+
+	map_hilight
+	{
+		name = "Hilighted Item";
+		group = "Map Editor";
+		rgb = 0, 180, 255;
+		alpha = 180;
+	}
+
+	map_selection
+	{
+		name = "Selected Item";
+		group = "Map Editor";
+		rgb = 50, 200, 100;
+		alpha = 180;
+	}
+
+	map_tagged
+	{
+		name = "Tagged Item(s)";
+		group = "Map Editor";
+		rgb = 180, 255, 30;
+		alpha = 80;
+	}
+
+	map_tagging
+	{
+		name = "Tagging Item(s)";
+		group = "Map Editor";
+		rgb = 180, 255, 30;
+		alpha = 80;
+	}
+
+	map_moving
+	{
+		name = "Moving Item(s)";
+		group = "Map Editor";
+		rgb = 200, 50, 50;
+		alpha = 180;
+	}
+
+	map_selbox_outline
+	{
+		name = "Selection Box Outline";
+		group = "Map Editor";
+		rgb = 50, 200, 100;
+		alpha = 200;
+	}
+
+	map_selbox_fill
+	{
+		name = "Selection Box Fill";
+		group = "Map Editor";
+		rgb = 50, 200, 100;
+		alpha = 80;
+	}
+
+	map_vertex
+	{
+		name = "Vertex";
+		group = "Map Editor";
+		rgb = 220, 160, 80;
+	}
+
+	map_line_normal
+	{
+		name = "Line: Normal";
+		group = "Map Editor";
+		rgb = 255, 255, 255;
+	}
+
+	map_line_special
+	{
+		name = "Line: Special";
+		group = "Map Editor";
+		rgb = 180, 255, 30;
+	}
+
+	map_line_invalid
+	{
+		name = "Line: Invalid";
+		group = "Map Editor";
+		rgb = 255, 0, 0;
+	}
+
+	map_editor_message
+	{
+		name = "Editor Message";
+		group = "Map Editor";
+		rgb = 255, 200, 100;
+	}
+
+	map_editor_message_outline
+	{
+		name = "Editor Message Outline";
+		group = "Map Editor";
+		rgb = 0, 0, 0;
+	}
+	
+	map_linedraw
+	{
+		name = "Line Drawing";
+		group = "Map Editor";
+		rgb = 0, 150, 50;
+	}
+	
+	map_3d_crosshair
+	{
+		name = "3D Crosshair";
+		group = "Map Editor";
+		rgb = 180, 190, 255;
+		alpha = 255;
+		additive = true;
+	}
+	
+	map_3d_hilight
+	{
+		name = "3D Hilight";
+		group = "Map Editor";
+		rgb = 0, 180, 255;
+		alpha = 180;
+	}
+	
+	map_3d_selection
+	{
+		name = "3D Selection";
+		group = "Map Editor";
+		rgb = 50, 200, 100;
+		alpha = 180;
+	}
+
+	map_object_edit
+	{
+		name = "Object Edit";
+		group = "Map Editor";
+		rgb = 220, 140, 0;
+		alpha = 170;
+	}
+}
+
+theme
+{
+	line_hilight_width		= 3.0;
+	line_selection_width	= 3.0;
+	flat_alpha				= 1.0;
+}

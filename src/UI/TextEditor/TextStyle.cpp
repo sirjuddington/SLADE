@@ -33,8 +33,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "TextEditor.h"
 #include "TextStyle.h"
+#include "Lexer.h"
 #include "Archive/ArchiveManager.h"
 
 
@@ -299,16 +301,18 @@ StyleSet::StyleSet(string name) : ts_default("default", "Default", wxSTC_STYLE_D
 	this->name = name;
 
 	// Init styles
-	styles.push_back(new TextStyle("preprocessor",	"Preprocessor",		wxSTC_C_PREPROCESSOR));
-	styles.push_back(new TextStyle("comment",		"Comment",			wxSTC_C_COMMENT));
-	styles.back()->addWxStyleId(wxSTC_C_COMMENTLINE);
-	styles.push_back(new TextStyle("string",		"String",			wxSTC_C_STRING));
-	styles.push_back(new TextStyle("character",		"Character",		wxSTC_C_CHARACTER));
-	styles.push_back(new TextStyle("keyword",		"Keyword",			wxSTC_C_WORD));
-	styles.push_back(new TextStyle("constant",		"Constant",			wxSTC_C_GLOBALCLASS));
-	styles.push_back(new TextStyle("function",		"Function",			wxSTC_C_WORD2));
-	styles.push_back(new TextStyle("number",		"Number",			wxSTC_C_NUMBER));
-	styles.push_back(new TextStyle("operator",		"Operator",			wxSTC_C_OPERATOR));
+	styles.push_back(new TextStyle("preprocessor",	"Preprocessor",		Lexer::Style::Preprocessor));
+	styles.push_back(new TextStyle("comment",		"Comment",			Lexer::Style::Comment));
+	styles.push_back(new TextStyle("comment_doc",	"Comment (Doc)",	Lexer::Style::CommentDoc));
+	styles.push_back(new TextStyle("string",		"String",			Lexer::Style::String));
+	styles.push_back(new TextStyle("character",		"Character",		Lexer::Style::Char));
+	styles.push_back(new TextStyle("keyword",		"Keyword",			Lexer::Style::Keyword));
+	styles.push_back(new TextStyle("constant",		"Constant",			Lexer::Style::Constant));
+	styles.push_back(new TextStyle("type",			"Type",				Lexer::Style::Type));
+	styles.push_back(new TextStyle("property",		"Property",			Lexer::Style::Property));
+	styles.push_back(new TextStyle("function",		"Function",			Lexer::Style::Function));
+	styles.push_back(new TextStyle("number",		"Number",			Lexer::Style::Number));
+	styles.push_back(new TextStyle("operator",		"Operator",			Lexer::Style::Operator));
 	styles.push_back(new TextStyle("bracematch",	"Brace Match",		wxSTC_STYLE_BRACELIGHT));
 	styles.push_back(new TextStyle("bracebad",		"Brace Mismatch",	wxSTC_STYLE_BRACEBAD));
 	styles.push_back(new TextStyle("linenum",		"Line Numbers",		wxSTC_STYLE_LINENUMBER));
@@ -316,6 +320,8 @@ StyleSet::StyleSet(string name) : ts_default("default", "Default", wxSTC_STYLE_D
 	styles.push_back(new TextStyle("calltip_hl",	"Call Tip Highlight"));
 	styles.push_back(new TextStyle("foldmargin",	"Code Folding Margin"));
 	styles.push_back(new TextStyle("guides",		"Indent/Right Margin Guide"));
+	styles.push_back(new TextStyle("wordmatch",		"Word Match"));
+	styles.push_back(new TextStyle("current_line",	"Current Line"));
 }
 
 /* StyleSet::~StyleSet
@@ -363,6 +369,31 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 				styles[a]->foreground = ts_default.getForeground();
 				styles[a]->fg_defined = true;
 			}
+			else if (styles[a]->name == "type" || styles[a]->name == "property")
+			{
+				// No 'type' or 'property' style defined, copy it from keyword style
+				styles[a]->copyStyle(getStyle("keyword"));
+			}
+			else if (styles[a]->name == "comment_doc")
+			{
+				// No 'comment_doc' style defined, copy it from comment style
+				styles[a]->copyStyle(getStyle("comment"));
+			}
+			else if (styles[a]->name == "current_line")
+			{
+				// No 'currentline' style defined, use the default background and darken/lighten it a little
+				int fgm = -20;
+				int bgm = -10;
+				if (ts_default.background.greyscale().r < 100)
+				{
+					fgm = 30;
+					bgm = 15;
+				}
+				styles[a]->foreground = ts_default.getBackground().amp(fgm, fgm, fgm, 0);
+				styles[a]->fg_defined = true;
+				styles[a]->background = ts_default.getBackground().amp(bgm, bgm, bgm, 0);
+				styles[a]->bg_defined = true;
+			}
 		}
 	}
 
@@ -407,6 +438,24 @@ void StyleSet::applyTo(TextEditor* stc)
 	stc->SetEdgeColour(WXCOL(getStyle("guides")->getForeground()));
 	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyleBackground("guides")));
 	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyleForeground("guides")));
+
+	// Set word match indicator colour
+	stc->SetIndicatorCurrent(8);
+	stc->IndicatorSetForeground(8, WXCOL(getStyleForeground("wordmatch")));
+
+	// Set current line colour
+	stc->MarkerDefine(
+		1,
+		wxSTC_MARK_BACKGROUND,
+		WXCOL(getStyleBackground("current_line")),
+		WXCOL(getStyleBackground("current_line"))
+	);
+	stc->MarkerDefine(
+		2,
+		wxSTC_MARK_UNDERLINE,
+		WXCOL(getStyleForeground("current_line")),
+		WXCOL(getStyleForeground("current_line"))
+	);
 }
 
 /* StyleSet::copySet
@@ -570,7 +619,7 @@ void StyleSet::initCurrent()
 	ss_current->name = "<current styleset>";
 
 	// First up, check if "<userdir>/current.sss" exists
-	string path = appPath("current.sss", DIR_USER);
+	string path = App::path("current.sss", App::Dir::User);
 	if (wxFileExists(path))
 	{
 		// Read it in
@@ -605,7 +654,7 @@ void StyleSet::saveCurrent()
 	if (!ss_current)
 		return;
 
-	ss_current->writeFile(appPath("current.sss", DIR_USER));
+	ss_current->writeFile(App::path("current.sss", App::Dir::User));
 }
 
 /* StyleSet::currentSet
@@ -730,7 +779,7 @@ bool StyleSet::loadResourceStyles()
 	// Check it exists
 	if (!dir)
 	{
-		wxLogMessage("Warning: No 'config/text_styles' directory exists in slade.pk3");
+		LOG_MESSAGE(1, "Warning: No 'config/text_styles' directory exists in slade.pk3");
 		return false;
 	}
 
@@ -798,12 +847,12 @@ bool StyleSet::loadResourceStyles()
 bool StyleSet::loadCustomStyles()
 {
 	// If the custom stylesets directory doesn't exist, create it
-	if (!wxDirExists(appPath("text_styles", DIR_USER)))
-		wxMkdir(appPath("text_styles", DIR_USER));
+	if (!wxDirExists(App::path("text_styles", App::Dir::User)))
+		wxMkdir(App::path("text_styles", App::Dir::User));
 
 	// Open the custom stylesets directory
 	wxDir res_dir;
-	res_dir.Open(appPath("text_styles", DIR_USER));
+	res_dir.Open(App::path("text_styles", App::Dir::User));
 
 	// Go through each file in the directory
 	string filename = wxEmptyString;

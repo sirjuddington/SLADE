@@ -37,7 +37,15 @@
 #include "Main.h"
 #include "Translation.h"
 #include "Utility/Tokenizer.h"
+#include "Palette/Palette.h"
+#include "MainEditor/MainEditor.h"
 
+ /*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Float, col_greyscale_r)
+EXTERN_CVAR(Float, col_greyscale_g)
+EXTERN_CVAR(Float, col_greyscale_b)
 
 /*******************************************************************
  * TRANSLATION CLASS FUNCTIONS
@@ -67,10 +75,10 @@ void Translation::parse(string def)
 {
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
-	tz.setSpecialCharacters("[]:%,=");
+	tz.setSpecialCharacters("[]:%,=#@");
 	tz.openString(def);
 
-	//wxLogMessage("Parse translation \"%s\"", def);
+	//LOG_MESSAGE(1, "Parse translation \"%s\"", def);
 	
 	// Test for ZDoom built-in translation
 	string test = tz.peekToken().Lower();
@@ -167,8 +175,6 @@ void Translation::parse(string def)
 			tr->d_end.set(end);
 		}
 		translations.push_back(tr);
-
-		//wxLogMessage("Added colour translation");
 	}
 	else if (tz.peekToken() == "%")
 	{
@@ -223,8 +229,45 @@ void Translation::parse(string def)
 			tr->d_eb = eb;
 		}
 		translations.push_back(tr);
-
-		//wxLogMessage("Added desat translation");
+	}
+	else if (tz.peekToken() == "#")
+	{
+		// Colourise translation
+		rgba_t col;
+		tz.skipToken(); // skip #
+		if (!tz.checkToken("[")) return;
+		col.r = tz.getInteger();
+		if (!tz.checkToken(",")) return;
+		col.g = tz.getInteger();
+		if (!tz.checkToken(",")) return;
+		col.b = tz.getInteger();
+		if (!tz.checkToken("]")) return;
+		TransRangeColourise* tr = new TransRangeColourise();
+		tr->o_start = o_start;
+		tr->o_end = o_end;
+		tr->setColour(col);
+		translations.push_back(tr);
+	}
+	else if (tz.peekToken() == '@')
+	{
+		// Tint translation
+		rgba_t col;
+		uint8_t amount;
+		tz.skipToken(); // skip @
+		amount = tz.getInteger();
+		if (!tz.checkToken("[")) return;
+		col.r = tz.getInteger();
+		if (!tz.checkToken(",")) return;
+		col.g = tz.getInteger();
+		if (!tz.checkToken(",")) return;
+		col.b = tz.getInteger();
+		if (!tz.checkToken("]")) return;
+		TransRangeTint* tr = new TransRangeTint();
+		tr->o_start = o_start;
+		tr->o_end = o_end;
+		tr->setColour(col);
+		tr->setAmount(amount);
+		translations.push_back(tr);
 	}
 	else
 	{
@@ -253,15 +296,13 @@ void Translation::parse(string def)
 			tr->d_end = d_end;
 		}
 		translations.push_back(tr);
-
-		//wxLogMessage("Added range translation");
 	}
 }
 
 /* Translation::read
  * Read an entry as a translation table. We're only looking for 
  * translations where the original range and the target range have 
- * the same length, so theindex value is only ever increased by 1. 
+ * the same length, so the index value is only ever increased by 1. 
  * This should be enough to handle Hexen. Asymmetric translations
  * or reversed translations would need a lot more heuristics to be
  * handled appropriately. And of course, we're not handling any sort
@@ -355,6 +396,10 @@ void Translation::copy(Translation& copy)
 			translations.push_back(new TransRangeColour((TransRangeColour*)copy.translations[a]));
 		if (copy.translations[a]->type == TRANS_DESAT)
 			translations.push_back(new TransRangeDesat((TransRangeDesat*)copy.translations[a]));
+		if (copy.translations[a]->type == TRANS_COLOURISE)
+			translations.push_back(new TransRangeColourise((TransRangeColourise*)copy.translations[a]));
+		if (copy.translations[a]->type == TRANS_TINT)
+			translations.push_back(new TransRangeTint((TransRangeTint*)copy.translations[a]));
 	}
 
 	built_in_name = copy.built_in_name;
@@ -372,6 +417,122 @@ TransRange* Translation::getRange(unsigned index)
 		return translations[index];
 }
 
+/* Translation::translate
+ * Apply the translation to the given color
+ *******************************************************************/
+rgba_t Translation::translate(rgba_t col, Palette8bit * pal)
+{
+	rgba_t colour(col);
+	colour.blend = -1;
+	if (pal == NULL) pal = MainEditor::currentPalette();
+	uint8_t i = (col.index == -1) ? pal->nearestColour(col) : col.index;
+
+	// Go through each translation component
+	for (unsigned a = 0; a < nRanges(); a++)
+	{
+		TransRange* r = translations[a];
+
+		// Check pixel is within translation range
+		if (i < r->oStart() || i > r->oEnd())
+			continue;
+
+		// Palette range translation
+		if (r->getType() == TRANS_PALETTE)
+		{
+			TransRangePalette* tp = (TransRangePalette*) translations[a];
+
+			// Figure out how far along the range this colour is
+			double range_frac = 0;
+			if (tp->oStart() != tp->oEnd())
+				range_frac = double(i - tp->oStart()) / double(tp->oEnd() - tp->oStart());
+
+			// Determine destination palette index
+			uint8_t di = tp->dStart() + range_frac * (tp->dEnd() - tp->dStart());
+
+			// Apply new colour
+			rgba_t c = pal->colour(di);
+			colour.r = c.r;
+			colour.g = c.g;
+			colour.b = c.b;
+			colour.a = c.a;
+			colour.index = di;
+		}
+
+		// Colour range
+		else if (r->getType() == TRANS_COLOUR)
+		{
+			TransRangeColour* tc = (TransRangeColour*)r;
+
+			// Figure out how far along the range this colour is
+			double range_frac = 0;
+			if (tc->oStart() != tc->oEnd())
+				range_frac = double(i - tc->oStart()) / double(tc->oEnd() - tc->oStart());
+
+			// Apply new colour
+			colour.r = tc->dStart().r + range_frac * (tc->dEnd().r - tc->dStart().r);
+			colour.g = tc->dStart().g + range_frac * (tc->dEnd().g - tc->dStart().g);
+			colour.b = tc->dStart().b + range_frac * (tc->dEnd().b - tc->dStart().b);
+			colour.index = pal->nearestColour(colour);
+		}
+
+		// Desaturated colour range
+		else if (r->getType() == TRANS_DESAT)
+		{
+			TransRangeDesat* td = (TransRangeDesat*)r;
+
+			// Get greyscale colour
+			rgba_t gcol = pal->colour(i);
+			float grey = (gcol.r*0.3f + gcol.g*0.59f + gcol.b*0.11f) / 255.0f;
+
+			// Apply new colour
+			colour.r = MIN(255, int((td->dSr() + grey*(td->dEr() - td->dSr()))*255.0f));
+			colour.g = MIN(255, int((td->dSg() + grey*(td->dEg() - td->dSg()))*255.0f));
+			colour.b = MIN(255, int((td->dSb() + grey*(td->dEb() - td->dSb()))*255.0f));
+			colour.index = pal->nearestColour(colour);
+		}
+
+		// Colourised range
+		else if (r->getType() == TRANS_COLOURISE)
+		{
+			TransRangeColourise* tc = (TransRangeColourise*)r;
+
+			// Get colours
+			rgba_t blend = tc->getColour();
+
+			// Colourise
+			float grey = (col.r*col_greyscale_r + col.g*col_greyscale_g + col.b*col_greyscale_b) / 255.0f;
+			if (grey > 1.0) grey = 1.0;
+
+			// Apply new colour
+			colour.r = blend.r*grey;
+			colour.g = blend.g*grey;
+			colour.b = blend.b*grey;
+			colour.index = pal->nearestColour(colour);
+		}
+
+		// Colourised range
+		else if (r->getType() == TRANS_TINT)
+		{
+			TransRangeTint* tt = (TransRangeTint*)r;
+
+			// Get colours
+			rgba_t tint = tt->getColour();
+
+			// Colourise
+			float amount = tt->getAmount() * 0.01f;
+			float inv_amt = 1.0f - amount;
+
+			// Apply new colour
+			colour.r = col.r*inv_amt + tint.r*amount;;
+			colour.g = col.g*inv_amt + tint.g*amount;
+			colour.b = col.b*inv_amt + tint.b*amount;
+			colour.index = pal->nearestColour(colour);
+		}
+	}
+
+	return colour;
+}
+
 /* Translation::addRange
  * Adds a new translation range of [type] at [pos] in the list
  *******************************************************************/
@@ -387,6 +548,12 @@ void Translation::addRange(int type, int pos)
 		break;
 	case TRANS_DESAT:
 		tr = new TransRangeDesat();
+		break;
+	case TRANS_COLOURISE:
+		tr = new TransRangeColourise();
+		break;
+	case TRANS_TINT:
+		tr = new TransRangeTint();
 		break;
 	default:
 		tr = new TransRangePalette();

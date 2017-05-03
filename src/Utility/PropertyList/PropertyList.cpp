@@ -59,7 +59,7 @@ PropertyList::~PropertyList()
 bool PropertyList::propertyExists(string key)
 {
 	// Try to find specified key
-	if (properties.find(key) == properties.end())
+	if (properties.empty() || properties.find(key) == properties.end())
 		return false;
 	else
 		return true;
@@ -138,7 +138,7 @@ string PropertyList::toString(bool condensed)
 			ret += key + " = " + val + ";\n";
 		//}
 
-		//wxLogMessage("key %s type %s value %s", key, i->second.typeString(), val);
+		//LOG_MESSAGE(1, "key %s type %s value %s", key, i->second.typeString(), val);
 
 		// Next property
 		i++;

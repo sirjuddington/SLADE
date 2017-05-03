@@ -30,11 +30,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainApp.h"
 #include "SToolBarButton.h"
 #include "Graphics/Icons.h"
 #include "OpenGL/Drawing.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
 
 
 /*******************************************************************
@@ -61,7 +60,7 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, boo
 	: wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton")
 {
 	// Init variables
-	this->action = theApp->getAction(action);
+	this->action = SAction::fromId(action);
 	this->state = STATE_NORMAL;
 	this->show_name = show_name;
 	this->action_id = this->action->getId();
@@ -164,6 +163,15 @@ SToolBarButton::~SToolBarButton()
 {
 }
 
+/* SToolBarButton::setIcon
+ * Allows to dynamically change the button's icon
+ *******************************************************************/
+void SToolBarButton::setIcon(string icon)
+{
+	if (!icon.IsEmpty())
+		this->icon = Icons::getIcon(Icons::GENERAL, icon, toolbar_size > 16);
+}
+
 /* SToolBarButton::sendClickedEvent
  * Sends a button clicked event
  *******************************************************************/
@@ -209,7 +217,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	}
 
 	// Draw toggled border/background
-	if (action && action->isToggled())
+	if (action && action->isChecked())
 	{
 		// Use greyscale version of hilight colour
 		uint8_t r = col_hilight.Red();
@@ -334,7 +342,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 		{
 			if (action->isRadio())
 				GetParent()->Refresh();
-			theApp->doAction(action->getId());
+			SActionHandler::doAction(action->getId());
 		}
 		else
 			sendClickedEvent();

@@ -97,6 +97,7 @@ public:
 	void	layoutNormal();
 	void	layoutHorizontal();
 
+	void			disableArchiveListUpdate();
 	void			refreshArchiveList();
 	void			refreshRecentFileList();
 	void			refreshBookmarkList();

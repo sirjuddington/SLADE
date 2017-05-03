@@ -34,9 +34,11 @@
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "Graphics/SImage/SImage.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/GfxCanvas.h"
+#include "UI/PaletteChooser.h"
 
 
 /*******************************************************************
@@ -351,7 +353,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			// If it's not a valid image type, ignore this file
 			if (!entry->getType()->extraProps().propertyExists("image"))
 			{
-				wxLogMessage("%s is not a valid image file", files[a]);
+				LOG_MESSAGE(1, "%s is not a valid image file", files[a]);
 				continue;
 			}
 
@@ -382,7 +384,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 {
 	// Check anything is selected
-	vector<long> selection = list_patches->getSelection();
+	vector<long> selection = list_patches->getSelection(true);
 	if (selection.size() == 0)
 		return;
 
@@ -427,7 +429,7 @@ void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 {
 	// Check anything is selected
-	vector<long> selection = list_patches->getSelection();
+	vector<long> selection = list_patches->getSelection(true);
 	if (selection.size() == 0)
 		return;
 

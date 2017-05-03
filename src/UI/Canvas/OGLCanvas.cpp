@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "OGLCanvas.h"
-#include "MainApp.h"
+#include "App.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 
@@ -57,7 +57,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 {
 	init_done = false;
 	recreate = false;
-	last_time = theApp->runTimer();
+	last_time = App::runTimer();
 
 	if (handle_timer)
 		timer.Start(timer_interval);
@@ -83,7 +83,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 	: wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxWANTS_CHARS), timer(this)
 {
 	init_done = false;
-	last_time = theApp->runTimer();
+	last_time = App::runTimer();
 
 	//if (handle_timer)
 	//	timer.Start(timer_interval);
@@ -248,6 +248,51 @@ wxWindow* OGLCanvas::toPanel(wxWindow* parent)
 	return panel;
 }
 
+/* OGLCanvas::setActive
+ * Activates the GL context for this canvas. Returns false if setting
+ * the active context failed
+ *******************************************************************/
+bool OGLCanvas::setActive()
+{
+#ifdef USE_SFML_RENDERWINDOW
+	if (!sf::RenderWindow::setActive())
+		return false;
+
+	Drawing::setRenderTarget(this);
+	resetGLStates();
+	setView(sf::View(sf::FloatRect(0.0f, 0.0f, GetSize().x, GetSize().y)));
+
+	return true;
+#else
+	return setContext();
+#endif
+}
+
+/* OGLCanvas::setup2D
+ * Sets up the OpenGL matrices for generic 2d (ortho)
+ *******************************************************************/
+void OGLCanvas::setup2D()
+{
+	// Setup the viewport
+	glViewport(0, 0, GetSize().x, GetSize().y);
+
+	// Setup the screen projection
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// Clear
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
+	if (OpenGL::accuracyTweak())
+		glTranslatef(0.375f, 0.375f, 0);
+}
+
 
 /*******************************************************************
  * OGLCANVAS EVENTS
@@ -269,14 +314,8 @@ void OGLCanvas::onPaint(wxPaintEvent& e)
 	if (IsShown())
 	{
 		// Set context to this window
-#ifdef USE_SFML_RENDERWINDOW
-		sf::RenderWindow::setActive();
-		Drawing::setRenderTarget(this);
-		resetGLStates();
-		setView(sf::View(sf::FloatRect(0.0f, 0.0f, GetSize().x, GetSize().y)));
-#else
-		setContext();
-#endif
+		if (!setActive())
+			return;
 
 		// Init if needed
 		if (!init_done)
@@ -300,8 +339,8 @@ void OGLCanvas::onEraseBackground(wxEraseEvent& e)
 void OGLCanvas::onTimer(wxTimerEvent& e)
 {
 	// Get time since last redraw
-	long frametime = theApp->runTimer() - last_time;
-	last_time = theApp->runTimer();
+	long frametime = App::runTimer() - last_time;
+	last_time = App::runTimer();
 
 	// Update/refresh
 	update(frametime);

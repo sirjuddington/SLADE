@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "HogArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -184,19 +184,19 @@ bool HogArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Iterate through files to see if the size seems okay
-	theSplashWindow->setProgressMessage("Reading hog archive data");
+	UI::setSplashProgressMessage("Reading hog archive data");
 	size_t iter_offset = 3;
 	uint32_t num_lumps = 0;
 	while (iter_offset < archive_size)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)iter_offset / (float)archive_size));
+		UI::setSplashProgress(((float)iter_offset / (float)archive_size));
 
 		// If the lump data goes past the end of the file,
 		// the hogfile is invalid
 		if (iter_offset + 17 > archive_size)
 		{
-			wxLogMessage("HogArchive::open: hog archive is invalid or corrupt");
+			LOG_MESSAGE(1, "HogArchive::open: hog archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -232,11 +232,11 @@ bool HogArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -267,7 +267,7 @@ bool HogArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -352,7 +352,7 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("HogArchive::loadEntryData: Failed to open hogfile %s", filename);
+		LOG_MESSAGE(1, "HogArchive::loadEntryData: Failed to open hogfile %s", filename);
 		return false;
 	}
 

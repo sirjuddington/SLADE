@@ -43,7 +43,7 @@
 #endif
 
 #include "Main.h"
-#define I_FatalError wxLogMessage
+#define I_FatalError(...) Log::error(wxString::Format(__VA_ARGS__))
 
 namespace GC
 {

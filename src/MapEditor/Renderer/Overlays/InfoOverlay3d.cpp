@@ -30,14 +30,18 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "UI/WxStuff.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/MapEditor.h"
 #include "InfoOverlay3d.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "General/ColourConfiguration.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
@@ -54,7 +58,12 @@ EXTERN_CVAR(Int, gl_font_size)
 /* InfoOverlay3D::InfoOverlay3D
  * InfoOverlay3D class constructor
  *******************************************************************/
-InfoOverlay3D::InfoOverlay3D()
+InfoOverlay3D::InfoOverlay3D() :
+	current_type(MapEditor::ItemType::WallMiddle),
+	texture(nullptr),
+	thing_icon(false),
+	object(nullptr),
+	last_update(0)
 {
 }
 
@@ -69,7 +78,7 @@ InfoOverlay3D::~InfoOverlay3D()
  * Updates the info text for the object of [item_type] at [item_index]
  * in [map]
  *******************************************************************/
-void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
+void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEMap* map)
 {
 	// Clear current info
 	info.clear();
@@ -78,12 +87,14 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 	// Setup variables
 	current_type = item_type;
 	texname = "";
-	texture = NULL;
+	texture = nullptr;
 	thing_icon = false;
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Wall
-	if (item_type == MapEditor::SEL_SIDE_BOTTOM || item_type == MapEditor::SEL_SIDE_MIDDLE || item_type == MapEditor::SEL_SIDE_TOP)
+	if (item_type == MapEditor::ItemType::WallBottom ||
+		item_type == MapEditor::ItemType::WallMiddle ||
+		item_type == MapEditor::ItemType::WallTop)
 	{
 		// Get line and side
 		MapSide* side = map->getSide(item_index);
@@ -119,22 +130,22 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		// --- Wall part info ---
 
 		// Part
-		if (item_type == MapEditor::SEL_SIDE_BOTTOM)
+		if (item_type == MapEditor::ItemType::WallBottom)
 			info2.push_back("Lower Texture");
-		else if (item_type == MapEditor::SEL_SIDE_MIDDLE)
+		else if (item_type == MapEditor::ItemType::WallMiddle)
 			info2.push_back("Middle Texture");
 		else
 			info2.push_back("Upper Texture");
 
 		// Offsets
-		if (theGameConfiguration->udmfNamespace() == "zdoom")
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			// Get x offset info
 			int xoff = side->intProperty("offsetx");
 			double xoff_part = 0;
-			if (item_type == MapEditor::SEL_SIDE_BOTTOM)
+			if (item_type == MapEditor::ItemType::WallBottom)
 				xoff_part = side->floatProperty("offsetx_bottom");
-			else if (item_type == MapEditor::SEL_SIDE_MIDDLE)
+			else if (item_type == MapEditor::ItemType::WallMiddle)
 				xoff_part = side->floatProperty("offsetx_mid");
 			else
 				xoff_part = side->floatProperty("offsetx_top");
@@ -151,9 +162,9 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			// Get y offset info
 			int yoff = side->intProperty("offsety");
 			double yoff_part = 0;
-			if (item_type == MapEditor::SEL_SIDE_BOTTOM)
+			if (item_type == MapEditor::ItemType::WallBottom)
 				yoff_part = side->floatProperty("offsety_bottom");
-			else if (item_type == MapEditor::SEL_SIDE_MIDDLE)
+			else if (item_type == MapEditor::ItemType::WallMiddle)
 				yoff_part = side->floatProperty("offsety_mid");
 			else
 				yoff_part = side->floatProperty("offsety_top");
@@ -175,17 +186,17 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			info2.push_back(S_FMT("Offsets: %d, %d", side->intProperty("offsetx"), side->intProperty("offsety")));
 		}
 
-		// ZDoom UDMF extras
-		if (theGameConfiguration->udmfNamespace() == "zdoom")
+		// UDMF extras
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			// Scale
 			double xscale, yscale;
-			if (item_type == MapEditor::SEL_SIDE_BOTTOM)
+			if (item_type == MapEditor::ItemType::WallBottom)
 			{
 				xscale = side->floatProperty("scalex_bottom");
 				yscale = side->floatProperty("scaley_bottom");
 			}
-			else if (item_type == MapEditor::SEL_SIDE_MIDDLE)
+			else if (item_type == MapEditor::ItemType::WallMiddle)
 			{
 				xscale = side->floatProperty("scalex_mid");
 				yscale = side->floatProperty("scaley_mid");
@@ -221,12 +232,12 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		}
 
 		MapSector* this_sector = side->getSector();
-		MapSector* other_sector = NULL;
+		MapSector* other_sector = nullptr;
 		if (other_side)
 			other_sector = other_side->getSector();
 
 		double left_height, right_height;
-		if (item_type == MapEditor::SEL_SIDE_MIDDLE && other_sector)
+		if (item_type == MapEditor::ItemType::WallMiddle && other_sector)
 		{
 			// A two-sided line's middle area is the smallest distance between
 			// both sides' floors and ceilings, which is more complicated with
@@ -243,7 +254,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		else
 		{
 			plane_t top_plane, bottom_plane;
-			if (item_type == MapEditor::SEL_SIDE_MIDDLE)
+			if (item_type == MapEditor::ItemType::WallMiddle)
 			{
 				top_plane = this_sector->getCeilingPlane();
 				bottom_plane = this_sector->getFloorPlane();
@@ -251,7 +262,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			else
 			{
 				if (!other_sector) return;
-				if (item_type == MapEditor::SEL_SIDE_TOP)
+				if (item_type == MapEditor::ItemType::WallTop)
 				{
 					top_plane = this_sector->getCeilingPlane();
 					bottom_plane = other_sector->getCeilingPlane();
@@ -272,18 +283,18 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			info2.push_back(S_FMT("Height: %d ~ %d", (int)left_height, (int)right_height));
 
 		// Texture
-		if (item_type == MapEditor::SEL_SIDE_BOTTOM)
+		if (item_type == MapEditor::ItemType::WallBottom)
 			texname = side->getTexLower();
-		else if (item_type == MapEditor::SEL_SIDE_MIDDLE)
+		else if (item_type == MapEditor::ItemType::WallMiddle)
 			texname = side->getTexMiddle();
 		else
 			texname = side->getTexUpper();
-		texture = theMapEditor->textureManager().getTexture(texname, theGameConfiguration->mixTexFlats());
+		texture = MapEditor::textureManager().getTexture(texname, theGameConfiguration->mixTexFlats());
 	}
 
 
 	// Floor
-	else if (item_type == MapEditor::SEL_FLOOR || item_type == MapEditor::SEL_CEILING)
+	else if (item_type == MapEditor::ItemType::Floor || item_type == MapEditor::ItemType::Ceiling)
 	{
 		// Get sector
 		MapSector* sector = map->getSector(item_index);
@@ -315,19 +326,19 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		// --- Flat info ---
 
 		// Height
-		if (item_type == MapEditor::SEL_FLOOR)
+		if (item_type == MapEditor::ItemType::Floor)
 			info2.push_back(S_FMT("Floor Height: %d", fheight));
 		else
 			info2.push_back(S_FMT("Ceiling Height: %d", cheight));
 
 		// Light
 		int light = sector->intProperty("lightlevel");
-		if (theGameConfiguration->udmfNamespace() == "zdoom")
+		if (theGameConfiguration->udmfFlatLighting())
 		{
 			// Get extra light info
 			int fl = 0;
 			bool abs = false;
-			if (item_type == MapEditor::SEL_FLOOR)
+			if (item_type == MapEditor::ItemType::Floor)
 			{
 				fl = sector->intProperty("lightfloor");
 				abs = sector->boolProperty("lightfloorabsolute");
@@ -356,48 +367,56 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		else
 			info2.push_back(S_FMT("Light: %d", light));
 
-		// ZDoom UDMF extras
-		if (theGameConfiguration->udmfNamespace() == "zdoom")
+		// UDMF extras
+		if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 		{
 			// Offsets
 			double xoff, yoff;
-			if (item_type == MapEditor::SEL_FLOOR)
+			xoff = yoff = 0.0;
+			if (theGameConfiguration->udmfFlatPanning())
 			{
-				xoff = sector->floatProperty("xpanningfloor");
-				yoff = sector->floatProperty("ypanningfloor");
-			}
-			else
-			{
-				xoff = sector->floatProperty("xpanningceiling");
-				yoff = sector->floatProperty("ypanningceiling");
+				if (item_type == MapEditor::ItemType::Floor)
+				{
+					xoff = sector->floatProperty("xpanningfloor");
+					yoff = sector->floatProperty("ypanningfloor");
+				}
+				else
+				{
+					xoff = sector->floatProperty("xpanningceiling");
+					yoff = sector->floatProperty("ypanningceiling");
+				}
 			}
 			info2.push_back(S_FMT("Offsets: %1.2f, %1.2f", xoff, yoff));
 
 			// Scaling
 			double xscale, yscale;
-			if (item_type == MapEditor::SEL_FLOOR)
+			xscale = yscale = 1.0;
+			if (theGameConfiguration->udmfFlatScaling())
 			{
-				xscale = sector->floatProperty("xscalefloor");
-				yscale = sector->floatProperty("yscalefloor");
-			}
-			else
-			{
-				xscale = sector->floatProperty("xscaleceiling");
-				yscale = sector->floatProperty("yscaleceiling");
+				if (item_type == MapEditor::ItemType::Floor)
+				{
+					xscale = sector->floatProperty("xscalefloor");
+					yscale = sector->floatProperty("yscalefloor");
+				}
+				else
+				{
+					xscale = sector->floatProperty("xscaleceiling");
+					yscale = sector->floatProperty("yscaleceiling");
+				}
 			}
 			info2.push_back(S_FMT("Scale: %1.2fx, %1.2fx", xscale, yscale));
 		}
 
 		// Texture
-		if (item_type == MapEditor::SEL_FLOOR)
+		if (item_type == MapEditor::ItemType::Floor)
 			texname = sector->getFloorTex();
 		else
 			texname = sector->getCeilingTex();
-		texture = theMapEditor->textureManager().getFlat(texname, theGameConfiguration->mixTexFlats());
+		texture = MapEditor::textureManager().getFlat(texname, theGameConfiguration->mixTexFlats());
 	}
 
 	// Thing
-	else if (item_type == MapEditor::SEL_THING)
+	else if (item_type == MapEditor::ItemType::Thing)
 	{
 		// index, type, position, sector, zpos, height?, radius?
 
@@ -410,7 +429,8 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		info.push_back(S_FMT("Thing #%d", item_index));
 
 		// Position
-		if (theMapEditor->currentMapDesc().format == MAP_HEXEN || theMapEditor->currentMapDesc().format == MAP_UDMF)
+		if (MapEditor::editContext().mapDesc().format == MAP_HEXEN ||
+			MapEditor::editContext().mapDesc().format == MAP_UDMF)
 			info.push_back(S_FMT("Position: %d, %d, %d", (int)thing->xPos(), (int)thing->yPos(), (int)thing->floatProperty("height")));
 		else
 			info.push_back(S_FMT("Position: %d, %d", (int)thing->xPos(), (int)thing->yPos()));
@@ -424,8 +444,9 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			info2.push_back(S_FMT("Type: %s", tt->getName()));
 
 		// Args
-		if (theMapEditor->currentMapDesc().format == MAP_HEXEN ||
-		        (theMapEditor->currentMapDesc().format == MAP_UDMF && theGameConfiguration->getUDMFProperty("arg0", MOBJ_THING)))
+		if (MapEditor::editContext().mapDesc().format == MAP_HEXEN ||
+			(MapEditor::editContext().mapDesc().format == MAP_UDMF &&
+				theGameConfiguration->getUDMFProperty("arg0", MOBJ_THING)))
 		{
 			// Get thing args
 			int args[5];
@@ -434,7 +455,10 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			args[2] = thing->intProperty("arg2");
 			args[3] = thing->intProperty("arg3");
 			args[4] = thing->intProperty("arg4");
-			string argstr = tt->getArgsString(args);
+			string argxstr[2];
+			argxstr[0] = thing->stringProperty("arg0str");
+			argxstr[1] = thing->stringProperty("arg1str");
+			string argstr = tt->getArgsString(args, argxstr);
 
 			if (argstr.IsEmpty())
 				info2.push_back("No Args");
@@ -451,19 +475,19 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 
 
 		// Texture
-		texture = theMapEditor->textureManager().getSprite(tt->getSprite(), tt->getTranslation(), tt->getPalette());
+		texture = MapEditor::textureManager().getSprite(tt->getSprite(), tt->getTranslation(), tt->getPalette());
 		if (!texture)
 		{
 			if (use_zeth_icons && tt->getZeth() >= 0)
-				texture = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", tt->getZeth()));
+				texture = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", tt->getZeth()));
 			if (!texture)
-				texture = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", tt->getIcon()));
+				texture = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", tt->getIcon()));
 			thing_icon = true;
 		}
 		texname = "";
 	}
 
-	last_update = theApp->runTimer();
+	last_update = App::runTimer();
 }
 
 /* InfoOverlay3D::draw
@@ -570,7 +594,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		else if (texname == "-")
 		{
 			// Draw missing icon
-			GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/minus");
+			GLTexture* icon = MapEditor::textureManager().getEditorImage("thing/minus");
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(180, 0, 0, 255*alpha, 0);
 			Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.2);
@@ -578,7 +602,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		else if (texname != "-" && texture == &(GLTexture::missingTex()))
 		{
 			// Draw unknown icon
-			GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/unknown");
+			GLTexture* icon = MapEditor::textureManager().getEditorImage("thing/unknown");
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(180, 0, 0, 255*alpha, 0);
 			Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.2);

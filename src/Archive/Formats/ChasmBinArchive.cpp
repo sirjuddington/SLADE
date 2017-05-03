@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ChasmBinArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -114,7 +114,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		|| magic[2] != 'i'
 		|| magic[3] != 'd')
 	{
-		wxLogMessage("ChasmBinArchive::open: Opening failed, invalid header");
+		LOG_MESSAGE(1, "ChasmBinArchive::open: Opening failed, invalid header");
 		Global::error = "Invalid Chasm bin header";
 		return false;
 	}
@@ -127,12 +127,12 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	num_entries = wxUINT16_SWAP_ON_BE(num_entries);
 
 	// Read the directory
-	theSplashWindow->setProgressMessage("Reading Chasm bin archive data");
+	UI::setSplashProgressMessage("Reading Chasm bin archive data");
 
 	for (uint16_t i = 0; i < num_entries; ++i)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(static_cast<float>(i) / num_entries);
+		UI::setSplashProgress(static_cast<float>(i) / num_entries);
 
 		// Read entry info
 		char name[NAME_SIZE] = {};
@@ -149,7 +149,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		// Check offset+size
 		if (offset + size > mc.getSize())
 		{
-			wxLogMessage("ChasmBinArchive::open: Bin archive is invalid or corrupt (entry goes past end of file)");
+			LOG_MESSAGE(1, "ChasmBinArchive::open: Bin archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -169,7 +169,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
@@ -179,7 +179,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	for (size_t i = 0; i < all_entries.size(); ++i)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(static_cast<float>(i) / num_entries);
+		UI::setSplashProgress(static_cast<float>(i) / num_entries);
 
 		// Get entry
 		ArchiveEntry* const entry = all_entries[i];
@@ -211,7 +211,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -234,7 +234,7 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 
 	if (num_entries > MAX_ENTRY_COUNT)
 	{
-		wxLogMessage("ChasmBinArchive::write: Bin archive can contain no more than %u entries", MAX_ENTRY_COUNT);
+		LOG_MESSAGE(1, "ChasmBinArchive::write: Bin archive can contain no more than %u entries", MAX_ENTRY_COUNT);
 		Global::error = "Maximum number of entries exceeded for Chasm: The Rift bin archive";
 		return false;
 	}
@@ -270,7 +270,7 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 
 		if (name_length > NAME_SIZE - 1)
 		{
-			wxLogMessage("Warning: Entry %s name is too long, it will be truncated", name);
+			LOG_MESSAGE(1, "Warning: Entry %s name is too long, it will be truncated", name);
 			name.Truncate(NAME_SIZE - 1);
 			name_length = static_cast<uint8_t>(NAME_SIZE - 1);
 		}
@@ -331,7 +331,7 @@ bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("ChasmBinArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "ChasmBinArchive::loadEntryData: Unable to open archive file %s", filename);
 		return false;
 	}
 

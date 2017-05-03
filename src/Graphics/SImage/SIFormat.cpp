@@ -29,11 +29,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #undef BOOL
-#include "General/Misc.h"
-#include "Archive/EntryType/EntryType.h"
-#include "SIFormat.h"
 #include "Archive/Archive.h"
+#include "Archive/EntryType/EntryType.h"
+#include "General/Misc.h"
+#include "SIFormat.h"
 
 
 /*******************************************************************
@@ -400,12 +401,24 @@ public:
 	int canWrite(SImage& image)
 	{
 		// If it's the correct size and colour format, it's writable
+		int width = image.getWidth();
+		int height = image.getHeight();
+
+		// Shouldn't happen but...
+		if (width < 0 || height < 0)
+			return NOTWRITABLE;
+
 		if (image.getType() == PALMASK &&
 		        validSize(image.getWidth(), image.getHeight()))
 			return WRITABLE;
 
-		// Otherwise, it can be converted via palettising and cropping
-		return CONVERTIBLE;
+		// Otherwise, check if it can be cropped to a valid size
+		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
+			if (((unsigned)width >= valid_flat_size[a][0] && (unsigned)height >= valid_flat_size[a][1] &&
+				valid_flat_size[a][2] == 1) || gfx_extraconv)
+					return CONVERTIBLE;
+
+		return NOTWRITABLE;
 	}
 
 	bool convertWritable(SImage& image, convert_options_t opt)
@@ -431,28 +444,30 @@ public:
 
 		for (unsigned a = 1; a < n_valid_flat_sizes; a++)
 		{
-			// Ignore non-writable flat sizes
-			if (valid_flat_size[a][2] == 0)
-				continue;
+			bool writable = (valid_flat_size[a][2] == 1 || gfx_extraconv);
 
 			// Check for exact match (no need to crop)
 			if (image.getWidth() == valid_flat_size[a][0] &&
-			        image.getHeight() == valid_flat_size[a][1])
+			    image.getHeight() == valid_flat_size[a][1] &&
+				writable)
 				return true;
 
 			// If the flat will fit within this size, crop to the previous size
 			// (this works because flat sizes list is in size-order)
 			if (image.getWidth() <= (int)valid_flat_size[a][0] &&
-			        image.getHeight() <= (int)valid_flat_size[a][1] &&
-			        width > 0 && height > 0)
+			    image.getHeight() <= (int)valid_flat_size[a][1] &&
+			    width > 0 && height > 0)
 			{
 				image.crop(0, 0, width, height);
 				return true;
 			}
 
 			// Save 'previous' valid size
-			width = valid_flat_size[a][0];
-			height = valid_flat_size[a][1];
+			if (writable)
+			{
+				width = valid_flat_size[a][0];
+				height = valid_flat_size[a][1];
+			}
 		}
 
 		return false;
