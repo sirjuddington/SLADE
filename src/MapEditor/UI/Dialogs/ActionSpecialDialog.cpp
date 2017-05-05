@@ -1189,7 +1189,8 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
  *******************************************************************/
 void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
 {
-	if ((theGameConfiguration->isBoom() && rb_generalised->GetValue()))
+	if ((theGameConfiguration->isBoom() && rb_generalised->GetValue()) ||
+		selectedSpecial() < 0)
 	{
 		e.Skip();
 		return;
@@ -1211,6 +1212,13 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
  *******************************************************************/
 void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
 {
+	if (tree_specials->GetChildCount(e.GetItem()) > 0)
+	{
+		tree_specials->Expand(e.GetItem());
+		e.Skip();
+		return;
+	}
+
 	// Jump to args tab, if there is one
 	if (panel_args)
 	{
