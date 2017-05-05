@@ -1079,7 +1079,7 @@ bool SImage::rotate(int angle)
 		}
 		if (j >= numpixels)
 		{
-			wxLogMessage("Pixel %i remapped to %i, how did this even happen?", i, j);
+			LOG_MESSAGE(1, "Pixel %i remapped to %i, how did this even happen?", i, j);
 			delete [] nd; if (mask) delete[] nm;
 			return false;
 		}
@@ -1127,7 +1127,7 @@ bool SImage::mirror(bool vertical)
 			j = ((i/width) * width) + ((width - 1) - (i%width));
 		if (j >= numpixels)
 		{
-			wxLogMessage("Pixel %i remapped to %i, how did this even happen?", i, j);
+			LOG_MESSAGE(1, "Pixel %i remapped to %i, how did this even happen?", i, j);
 			delete [] nd; if (mask) delete[] nm;
 			return false;
 		}

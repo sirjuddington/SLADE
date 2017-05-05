@@ -28,6 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "MapEditorWindow.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
@@ -36,27 +37,30 @@
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/RunDialog.h"
 #include "General/Misc.h"
-#include "MainEditor/MainWindow.h"
-#include "MapBackupManager.h"
-#include "NodeBuilders.h"
+#include "General/UI.h"
+#include "MainEditor/MainEditor.h"
+#include "MapEditor/MapBackupManager.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/NodeBuilders.h"
 #include "UI/ConsolePanel.h"
-#include "UI/MapCanvas.h"
-#include "UI/MapChecksPanel.h"
-#include "UI/ObjectEditPanel.h"
-#include "UI/PropsPanel/MapObjectPropsPanel.h"
+#include "MapEditor/UI/MapCanvas.h"
+#include "MapEditor/UI/MapChecksPanel.h"
+#include "MapEditor/UI/ObjectEditPanel.h"
+#include "MapEditor/UI/PropsPanel/MapObjectPropsPanel.h"
 #include "UI/SAuiTabArt.h"
-#include "UI/ScriptEditorPanel.h"
-#include "UI/ShapeDrawPanel.h"
-#include "UI/SplashWindow.h"
+#include "MapEditor/UI/ScriptEditorPanel.h"
+#include "MapEditor/UI/ShapeDrawPanel.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UndoManagerHistoryPanel.h"
 #include "Utility/SFileDialog.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-MapEditorWindow* MapEditorWindow::instance = NULL;
 CVAR(Bool, mew_maximized, true, CVAR_SAVE);
 CVAR(String, nodebuilder_id, "zdbsp", CVAR_SAVE);
 CVAR(String, nodebuilder_options, "", CVAR_SAVE);
@@ -83,10 +87,9 @@ MapEditorWindow::MapEditorWindow()
 	setupLayout();
 	Show(false);
 	custom_menus_begin = 2;
-	backup_manager = new MapBackupManager();
 
 	// Set icon
-	string icon_filename = appPath("slade.ico", DIR_TEMP);
+	string icon_filename = App::path("slade.ico", App::Dir::Temp);
 	theArchiveManager->programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
@@ -102,7 +105,6 @@ MapEditorWindow::MapEditorWindow()
 MapEditorWindow::~MapEditorWindow()
 {
 	wxAuiManager::GetManager(this)->UnInit();
-	delete backup_manager;
 }
 
 /* MapEditorWindow::loadLayout
@@ -112,7 +114,7 @@ void MapEditorWindow::loadLayout()
 {
 	// Open layout file
 	Tokenizer tz;
-	if (!tz.openFile(appPath("mapwindow.layout", DIR_USER)))
+	if (!tz.openFile(App::path("mapwindow.layout", App::Dir::User)))
 		return;
 
 	// Parse layout
@@ -139,7 +141,7 @@ void MapEditorWindow::loadLayout()
 void MapEditorWindow::saveLayout()
 {
 	// Open layout file
-	wxFile file(appPath("mapwindow.layout", DIR_USER), wxFile::write);
+	wxFile file(App::path("mapwindow.layout", App::Dir::User), wxFile::write);
 
 	// Write component layout
 	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
@@ -195,39 +197,39 @@ void MapEditorWindow::setupMenu()
 
 	// Map menu
 	wxMenu* menu_map = new wxMenu("");
-	theApp->getAction("mapw_save")->addToMenu(menu_map);
-	theApp->getAction("mapw_saveas")->addToMenu(menu_map);
-	theApp->getAction("mapw_rename")->addToMenu(menu_map);
-	theApp->getAction("mapw_backup")->addToMenu(menu_map);
+	SAction::fromId("mapw_save")->addToMenu(menu_map);
+	SAction::fromId("mapw_saveas")->addToMenu(menu_map);
+	SAction::fromId("mapw_rename")->addToMenu(menu_map);
+	SAction::fromId("mapw_backup")->addToMenu(menu_map);
 	menu_map->AppendSeparator();
-	theApp->getAction("mapw_run_map")->addToMenu(menu_map);
+	SAction::fromId("mapw_run_map")->addToMenu(menu_map);
 	menu->Append(menu_map, "&Map");
 
 	// Edit menu
 	wxMenu* menu_editor = new wxMenu("");
-	theApp->getAction("mapw_undo")->addToMenu(menu_editor);
-	theApp->getAction("mapw_redo")->addToMenu(menu_editor);
+	SAction::fromId("mapw_undo")->addToMenu(menu_editor);
+	SAction::fromId("mapw_redo")->addToMenu(menu_editor);
 	menu_editor->AppendSeparator();
-	theApp->getAction("mapw_draw_lines")->addToMenu(menu_editor);
-	theApp->getAction("mapw_draw_shape")->addToMenu(menu_editor);
-	theApp->getAction("mapw_edit_objects")->addToMenu(menu_editor);
-	theApp->getAction("mapw_mirror_x")->addToMenu(menu_editor);
-	theApp->getAction("mapw_mirror_y")->addToMenu(menu_editor);
+	SAction::fromId("mapw_draw_lines")->addToMenu(menu_editor);
+	SAction::fromId("mapw_draw_shape")->addToMenu(menu_editor);
+	SAction::fromId("mapw_edit_objects")->addToMenu(menu_editor);
+	SAction::fromId("mapw_mirror_x")->addToMenu(menu_editor);
+	SAction::fromId("mapw_mirror_y")->addToMenu(menu_editor);
 	menu_editor->AppendSeparator();
-	theApp->getAction("mapw_preferences")->addToMenu(menu_editor);
-	theApp->getAction("mapw_setbra")->addToMenu(menu_editor);
+	SAction::fromId("mapw_preferences")->addToMenu(menu_editor);
+	SAction::fromId("mapw_setbra")->addToMenu(menu_editor);
 	menu->Append(menu_editor, "&Edit");
 
 	// View menu
 	wxMenu* menu_view = new wxMenu("");
-	theApp->getAction("mapw_showproperties")->addToMenu(menu_view);
-	theApp->getAction("mapw_showconsole")->addToMenu(menu_view);
-	theApp->getAction("mapw_showundohistory")->addToMenu(menu_view);
-	theApp->getAction("mapw_showchecks")->addToMenu(menu_view);
-	theApp->getAction("mapw_showscripteditor")->addToMenu(menu_view);
+	SAction::fromId("mapw_showproperties")->addToMenu(menu_view);
+	SAction::fromId("mapw_showconsole")->addToMenu(menu_view);
+	SAction::fromId("mapw_showundohistory")->addToMenu(menu_view);
+	SAction::fromId("mapw_showchecks")->addToMenu(menu_view);
+	SAction::fromId("mapw_showscripteditor")->addToMenu(menu_view);
 	menu_view->AppendSeparator();
-	theApp->getAction("mapw_show_fullmap")->addToMenu(menu_view);
-	theApp->getAction("mapw_show_item")->addToMenu(menu_view);
+	SAction::fromId("mapw_show_fullmap")->addToMenu(menu_view);
+	SAction::fromId("mapw_show_item")->addToMenu(menu_view);
 	menu->Append(menu_view, "View");
 
 	SetMenuBar(menu);
@@ -244,7 +246,7 @@ void MapEditorWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Map canvas
-	map_canvas = new MapCanvas(this, -1, &editor);
+	map_canvas = new MapCanvas(this, -1, &MapEditor::editContext());
 	p_inf.CenterPane();
 	m_mgr->AddPane(map_canvas, p_inf);
 
@@ -269,7 +271,7 @@ void MapEditorWindow::setupLayout()
 	tbg_mode->addActionButton("mapw_mode_sectors");
 	tbg_mode->addActionButton("mapw_mode_things");
 	tbg_mode->addActionButton("mapw_mode_3d");
-	theApp->toggleAction("mapw_mode_lines");	// Lines mode by default
+	SAction::fromId("mapw_mode_lines")->setChecked();	// Lines mode by default
 	toolbar->addGroup(tbg_mode);
 
 	// Flat type toolbar
@@ -280,9 +282,9 @@ void MapEditorWindow::setupLayout()
 	toolbar->addGroup(tbg_flats);
 
 	// Toggle current flat type
-	if (flat_drawtype == 0) theApp->toggleAction("mapw_flat_none");
-	else if (flat_drawtype == 1) theApp->toggleAction("mapw_flat_untextured");
-	else theApp->toggleAction("mapw_flat_textured");
+	if (flat_drawtype == 0) SAction::fromId("mapw_flat_none")->setChecked();
+	else if (flat_drawtype == 1) SAction::fromId("mapw_flat_untextured")->setChecked();
+	else SAction::fromId("mapw_flat_textured")->setChecked();
 
 	// Edit toolbar
 	SToolBarGroup* tbg_edit = new SToolBarGroup(toolbar, "_Edit");
@@ -399,7 +401,7 @@ void MapEditorWindow::setupLayout()
 
 
 	// --- Map Checks Panel ---
-	panel_checks = new MapChecksPanel(this, &(editor.getMap()));
+	panel_checks = new MapChecksPanel(this, &(MapEditor::editContext().map()));
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
@@ -417,8 +419,8 @@ void MapEditorWindow::setupLayout()
 
 
 	// -- Undo History Panel --
-	panel_undo_history = new UndoManagerHistoryPanel(this, NULL);
-	panel_undo_history->setManager(editor.undoManager());
+	panel_undo_history = new UndoManagerHistoryPanel(this, nullptr);
+	panel_undo_history->setManager(MapEditor::editContext().undoManager());
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
@@ -447,18 +449,17 @@ void MapEditorWindow::setupLayout()
 void MapEditorWindow::lockMapEntries(bool lock)
 {
 	// Don't bother if no map is open
-	if (!mdesc_current.head)
+	auto& map_desc = MapEditor::editContext().mapDesc();
+	if (!map_desc.head)
 		return;
 
 	// Just lock/unlock the 'head' entry if it's a pk3 map
-	if (mdesc_current.archive)
+	if (map_desc.archive)
 	{
 		if (lock)
-			mdesc_current.head->lock();
+			map_desc.head->lock();
 		else
-			mdesc_current.head->unlock();
-
-		return;
+			map_desc.head->unlock();
 	}
 }
 
@@ -467,7 +468,7 @@ void MapEditorWindow::lockMapEntries(bool lock)
  *******************************************************************/
 bool MapEditorWindow::chooseMap(Archive* archive)
 {
-	MapEditorConfigDialog dlg(theMainWindow, archive, (bool)archive, !(bool)archive);
+	MapEditorConfigDialog dlg(MainEditor::windowWx(), archive, (bool)archive, !(bool)archive);
 
 	if (dlg.ShowModal() == wxID_OK)
 	{
@@ -507,9 +508,9 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 {
 	// If a map is currently open and modified, prompt to save changes
-	if (editor.getMap().isModified())
+	if (MapEditor::editContext().map().isModified())
 	{
-		wxMessageDialog md(this, S_FMT("Save changes to map %s?", currentMapDesc().name), "Unsaved Changes", wxYES_NO | wxCANCEL);
+		wxMessageDialog md(this, S_FMT("Save changes to map %s?", MapEditor::editContext().mapDesc().name), "Unsaved Changes", wxYES_NO | wxCANCEL);
 		int answer = md.ShowModal();
 		if (answer == wxID_YES)
 			saveMap();
@@ -530,7 +531,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 	map_data.clear();
 
 	// Get map parent archive
-	Archive* archive = NULL;
+	Archive* archive = nullptr;
 	if (map.head)
 	{
 		archive = map.head->getParent();
@@ -558,20 +559,20 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 	}
 
 	// Set texture manager archive
-	tex_man.setArchive(archive);
+	MapEditor::textureManager().setArchive(archive);
 
 	// Clear current map
 	closeMap();
 
 	// Attempt to open map
-	theSplashWindow->show("Loading Map", true, this);
-	bool ok = editor.openMap(map);
-	theSplashWindow->hide();
+	UI::showSplash("Loading Map", true, this);
+	bool ok = MapEditor::editContext().openMap(map);
+	UI::hideSplash();
 
 	// Show window if opened ok
 	if (ok)
 	{
-		mdesc_current = map;
+		MapEditor::editContext().mapDesc() = map;
 
 		// Read DECORATE definitions if any
 		theGameConfiguration->clearDecorateDefs();
@@ -588,7 +589,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 		// Reset map checks panel
 		panel_checks->reset();
 
-		map_canvas->viewFitToMap(true);
+		MapEditor::editContext().renderer().viewFitToMap(true);
 		map_canvas->Refresh();
 
 		// Set window title
@@ -598,7 +599,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 			SetTitle(S_FMT("SLADE - %s (UNSAVED)", map.name));
 
 		// Create backup
-		if (map.head && !backup_manager->writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
+		if (map.head && !MapEditor::backupManager().writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
 			LOG_MESSAGE(1, "Warning: Failed to backup map data");
 	}
 
@@ -624,7 +625,7 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 	// Don't bother if new map
 	if (!map.head)
 	{
-		panel_script_editor->openScripts(NULL, NULL);
+		panel_script_editor->openScripts(nullptr, nullptr);
 		return;
 	}
 
@@ -646,8 +647,8 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 
 	// Go through map entries
 	ArchiveEntry* entry = map.head->nextEntry();
-	ArchiveEntry* scripts = NULL;
-	ArchiveEntry* compiled = NULL;
+	ArchiveEntry* scripts = nullptr;
+	ArchiveEntry* compiled = nullptr;
 	while (entry && entry != map.end->nextEntry())
 	{
 		// Check for SCRIPTS/BEHAVIOR
@@ -679,7 +680,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	string options;
 
 	// Save wad to disk
-	string filename = appPath("sladetemp.wad", DIR_TEMP);
+	string filename = App::path("sladetemp.wad", App::Dir::Temp);
 	wad->save(filename);
 
 	// Get current nodebuilder
@@ -692,7 +693,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		return;
 
 	// Switch to ZDBSP if UDMF
-	if (mdesc_current.format == MAP_UDMF && nodebuilder_id != "zdbsp")
+	if (MapEditor::editContext().mapDesc().format == MAP_UDMF && nodebuilder_id != "zdbsp")
 	{
 		wxMessageBox("Nodebuilder switched to ZDBSP for UDMF format", "Save Map", wxICON_INFORMATION);
 		builder = NodeBuilders::getBuilder("zdbsp");
@@ -725,22 +726,22 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	if (wxFileExists(builder.path))
 	{
 		wxArrayString out;
-		wxLogMessage("execute \"%s %s\"", builder.path, command);
-		theApp->SetTopWindow(this);
+		LOG_MESSAGE(1, "execute \"%s %s\"", builder.path, command);
+		wxTheApp->SetTopWindow(this);
 		wxWindow* focus = wxWindow::FindFocus();
 		wxExecute(S_FMT("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
-		theApp->SetTopWindow(theMainWindow);
+		wxTheApp->SetTopWindow(MainEditor::windowWx());
 		if (focus) focus->SetFocusFromKbd();
-		wxLogMessage("Nodebuilder output:");
+		LOG_MESSAGE(1, "Nodebuilder output:");
 		for (unsigned a = 0; a < out.size(); a++)
-			wxLogMessage(out[a]);
+			Log::info(out[a]);
 
 		// Re-load wad
 		wad->close();
 		wad->open(filename);
 	}
 	else if (nb_warned)
-		wxLogMessage("Nodebuilder path not set up, no nodes were built");
+		LOG_MESSAGE(1, "Nodebuilder path not set up, no nodes were built");
 }
 
 /* MapEditorWindow::writeMap
@@ -748,9 +749,11 @@ void MapEditorWindow::buildNodes(Archive* wad)
  *******************************************************************/
 WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 {
+	auto& mdesc_current = MapEditor::editContext().mapDesc();
+
 	// Get map data entries
 	vector<ArchiveEntry*> new_map_data;
-	SLADEMap& map = editor.getMap();
+	SLADEMap& map = MapEditor::editContext().map();
 	if (mdesc_current.format == MAP_DOOM)
 		map.writeDoomMap(new_map_data);
 	else if (mdesc_current.format == MAP_HEXEN)
@@ -762,7 +765,7 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 		new_map_data.push_back(udmf);
 	}
 	else // TODO: doom64
-		return NULL;
+		return nullptr;
 
 	// Check script language
 	bool acs = false;
@@ -795,7 +798,7 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 	{
 		// Add extra UDMF entries
 		for (unsigned a = 0; a < map.udmfExtraEntries().size(); a++)
-			wad->addEntry(map.udmfExtraEntries()[a], -1, NULL, true);
+			wad->addEntry(map.udmfExtraEntries()[a], -1, nullptr, true);
 
 		wad->addNewEntry("ENDMAP");
 	}
@@ -822,6 +825,8 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
  *******************************************************************/
 bool MapEditorWindow::saveMap()
 {
+	auto& mdesc_current = MapEditor::editContext().mapDesc();
+
 	// Check for newly created map
 	if (!mdesc_current.head)
 		return saveMapAs();
@@ -832,7 +837,7 @@ bool MapEditorWindow::saveMap()
 		return false;
 
 	// Check for map archive
-	Archive* tempwad = NULL;
+	Archive* tempwad = nullptr;
 	Archive::mapdesc_t map = mdesc_current;
 	if (mdesc_current.archive && mdesc_current.head)
 	{
@@ -862,12 +867,12 @@ bool MapEditorWindow::saveMap()
 	}
 
 	// Create backup
-	if (!backup_manager->writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
+	if (!MapEditor::backupManager().writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
 		LOG_MESSAGE(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
 	for (unsigned a = 1; a < wad->numEntries(); a++)
-		entry = archive->addEntry(wad->getEntry(a), archive->entryIndex(map.head) + a, NULL, true);
+		entry = archive->addEntry(wad->getEntry(a), archive->entryIndex(map.head) + a, nullptr, true);
 
 	// Clean up
 	delete wad;
@@ -884,7 +889,7 @@ bool MapEditorWindow::saveMap()
 
 	// Finish
 	lockMapEntries();
-	editor.getMap().setOpenedTime();
+	MapEditor::editContext().map().setOpenedTime();
 
 	return true;
 }
@@ -894,6 +899,8 @@ bool MapEditorWindow::saveMap()
  *******************************************************************/
 bool MapEditorWindow::saveMapAs()
 {
+	auto& mdesc_current = MapEditor::editContext().mapDesc();
+
 	// Show dialog
 	SFileDialog::fd_info_t info;
 	if (!SFileDialog::saveFile(info, "Save Map As", "Wad Archives (*.wad)|*.wad", this))
@@ -902,7 +909,7 @@ bool MapEditorWindow::saveMapAs()
 	// Create new, empty wad
 	WadArchive wad;
 	ArchiveEntry* head = wad.addNewEntry(mdesc_current.name);
-	ArchiveEntry* end = NULL;
+	ArchiveEntry* end = nullptr;
 	if (mdesc_current.format == MAP_UDMF)
 	{
 		wad.addNewEntry("TEXTMAP");
@@ -949,13 +956,13 @@ bool MapEditorWindow::saveMapAs()
 void MapEditorWindow::closeMap()
 {
 	// Close map in editor
-	editor.clearMap();
+	MapEditor::editContext().clearMap();
 
 	// Unlock current map entries
 	lockMapEntries(false);
 
 	// Clear map info
-	mdesc_current.head = NULL;
+	MapEditor::editContext().mapDesc().head = nullptr;
 }
 
 /* MapEditorWindow::forceRefresh
@@ -967,7 +974,7 @@ void MapEditorWindow::forceRefresh(bool renderer)
 	if (!IsShown())
 		return;
 
-	if (renderer) map_canvas->forceRefreshRenderer();
+	if (renderer) MapEditor::editContext().forceRefreshRenderer();
 	map_canvas->Refresh();
 }
 
@@ -986,9 +993,9 @@ void MapEditorWindow::refreshToolBar()
  *******************************************************************/
 bool MapEditorWindow::tryClose()
 {
-	if (editor.getMap().isModified())
+	if (MapEditor::editContext().map().isModified())
 	{
-		wxMessageDialog md(this, S_FMT("Save changes to map %s?", currentMapDesc().name), "Unsaved Changes", wxYES_NO | wxCANCEL);
+		wxMessageDialog md(this, S_FMT("Save changes to map %s?", MapEditor::editContext().mapDesc().name), "Unsaved Changes", wxYES_NO | wxCANCEL);
 		int answer = md.ShowModal();
 		if (answer == wxID_YES)
 			return saveMap();
@@ -1004,17 +1011,10 @@ bool MapEditorWindow::tryClose()
  *******************************************************************/
 bool MapEditorWindow::hasMapOpen(Archive* archive)
 {
-	if (!mdesc_current.head)
+	auto& mdesc = MapEditor::editContext().mapDesc();
+	if (!mdesc.head)
 		return false;
-	return (mdesc_current.head->getParent() == archive);
-}
-
-/* MapEditorWindow::editObjectProperties
- * Opens the property editor for [objects]
- *******************************************************************/
-void MapEditorWindow::editObjectProperties(vector<MapObject*>& objects)
-{
-	map_canvas->editObjectProperties(objects);
+	return (mdesc.head->getParent() == archive);
 }
 
 /* MapEditorWindow::setUndoManager
@@ -1035,7 +1035,7 @@ void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 	wxAuiPaneInfo& p_inf = m_mgr->GetPane("object_edit");
 
 	// Save current y offset
-	double top = map_canvas->translateY(0);
+	double top = MapEditor::editContext().renderer().view().mapY(0);
 
 	// Enable/disable panel
 	if (show) panel_obj_edit->init(group);
@@ -1046,7 +1046,7 @@ void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 	m_mgr->Update();
 
 	// Restore y offset
-	map_canvas->setTopY(top);
+	MapEditor::editContext().renderer().setTopY(top);
 	map_canvas->Enable(true);
 	map_canvas->SetFocus();
 }
@@ -1061,7 +1061,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 	wxAuiPaneInfo& p_inf = m_mgr->GetPane("shape_draw");
 
 	// Save current y offset
-	double top = map_canvas->translateY(0);
+	double top = MapEditor::editContext().renderer().view().mapY(0);
 
 	// Enable/disable panel
 	p_inf.Show(show);
@@ -1071,7 +1071,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 	m_mgr->Update();
 
 	// Restore y offset
-	map_canvas->setTopY(top);
+	MapEditor::editContext().renderer().setTopY(top);
 	map_canvas->Enable(true);
 	map_canvas->SetFocus();
 }
@@ -1082,6 +1082,8 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
  *******************************************************************/
 bool MapEditorWindow::handleAction(string id)
 {
+	auto& mdesc_current = MapEditor::editContext().mapDesc();
+
 	// Don't handle actions if hidden
 	if (!IsShown())
 		return false;
@@ -1093,7 +1095,7 @@ bool MapEditorWindow::handleAction(string id)
 		if (saveMap())
 		{
 			// Save archive
-			Archive* a = currentMapDesc().head->getParent();
+			Archive* a = mdesc_current.head->getParent();
 			if (a && save_archive_with_map) a->save();
 		}
 
@@ -1112,14 +1114,14 @@ bool MapEditorWindow::handleAction(string id)
 	{
 		if (mdesc_current.head)
 		{
-			Archive* data = backup_manager->openBackup(mdesc_current.head->getTopParent()->getFilename(false), mdesc_current.name);
+			Archive* data = MapEditor::backupManager().openBackup(mdesc_current.head->getTopParent()->getFilename(false), mdesc_current.name);
 			if (data)
 			{
 				vector<Archive::mapdesc_t> maps = data->detectMaps();
 				if (!maps.empty())
 				{
-					editor.clearMap();
-					editor.openMap(maps[0]);
+					MapEditor::editContext().clearMap();
+					MapEditor::editContext().openMap(maps[0]);
 					loadMapScripts(maps[0]);
 				}
 			}
@@ -1131,14 +1133,14 @@ bool MapEditorWindow::handleAction(string id)
 	// Edit->Undo
 	if (id == "mapw_undo")
 	{
-		editor.doUndo();
+		MapEditor::editContext().doUndo();
 		return true;
 	}
 
 	// Edit->Redo
 	if (id == "mapw_redo")
 	{
-		editor.doRedo();
+		MapEditor::editContext().doRedo();
 		return true;
 	}
 
@@ -1271,26 +1273,27 @@ bool MapEditorWindow::handleAction(string id)
 	// Run Map
 	else if (id == "mapw_run_map" || id == "mapw_run_map_here")
 	{
-		Archive* archive = NULL;
+		Archive* archive = nullptr;
 		if (mdesc_current.head)
 			archive = mdesc_current.head->getParent();
 		RunDialog dlg(this, archive, id == "mapw_run_map");
 		if (dlg.ShowModal() == wxID_OK)
 		{
+			auto& edit_context = MapEditor::editContext();
 			// Move player 1 start if needed
 			if (id == "mapw_run_map_here")
-				editor.swapPlayerStart2d(map_canvas->mouseDownPosM());
+				edit_context.swapPlayerStart2d(edit_context.input().mouseDownPosMap());
 			else if (dlg.start3dModeChecked())
-				editor.swapPlayerStart3d();
+				edit_context.swapPlayerStart3d();
 
 			// Write temp wad
 			WadArchive* wad = writeMap(mdesc_current.name);
 			if (wad)
-				wad->save(appPath("sladetemp_run.wad", DIR_TEMP));
+				wad->save(App::path("sladetemp_run.wad", App::Dir::Temp));
 
 			// Reset player 1 start if moved
 			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")
-				editor.resetPlayerStart();
+				MapEditor::editContext().resetPlayerStart();
 
 			string command = dlg.getSelectedCommandLine(archive, mdesc_current.name, wad->getFilename());
 			if (!command.IsEmpty())

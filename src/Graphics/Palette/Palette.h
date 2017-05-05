@@ -72,6 +72,8 @@ public:
 
 	// For automated palette generation
 	void	idtint(int r, int g, int b, int shift, int steps);
+
+	typedef std::unique_ptr<Palette8bit> UPtr;
 };
 
 #endif //__PALETTE_H__

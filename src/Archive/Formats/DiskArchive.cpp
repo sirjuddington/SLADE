@@ -34,7 +34,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "DiskArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 struct diskentry_t
 {
@@ -113,11 +113,11 @@ bool DiskArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Read the directory
-	theSplashWindow->setProgressMessage("Reading disk archive data");
+	UI::setSplashProgressMessage("Reading disk archive data");
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_entries));
+		UI::setSplashProgress(((float)d / (float)num_entries));
 
 		// Read entry info
 		diskentry_t dent;
@@ -133,7 +133,7 @@ bool DiskArchive::open(MemChunk& mc)
 		// Check offset+size
 		if (dent.offset + dent.length > mcsize)
 		{
-			wxLogMessage("DiskArchive::open: Disk archive is invalid or corrupt (entry goes past end of file)");
+			LOG_MESSAGE(1, "DiskArchive::open: Disk archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -162,11 +162,11 @@ bool DiskArchive::open(MemChunk& mc)
 	MemChunk edata;
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_entries)));
+		UI::setSplashProgress((((float)a / (float)num_entries)));
 
 		// Get entry
 		ArchiveEntry* entry = all_entries[a];
@@ -195,7 +195,7 @@ bool DiskArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -257,7 +257,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		// The leading "GAME:\" part of the name means there is only 58 usable characters for path
 		if (name.Len() > 58)
 		{
-			wxLogMessage("Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name);
+			LOG_MESSAGE(1, "Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name);
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 57)
@@ -332,7 +332,7 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("DiskArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "DiskArchive::loadEntryData: Unable to open archive file %s", filename);
 		return false;
 	}
 

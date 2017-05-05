@@ -345,7 +345,7 @@ void FileReaderBZ2::FillBuffer ()
 
 extern "C" void bz_internal_error (int errcode)
 {
-	wxLogMessage("libbzip2: internal error number %d\n", errcode);
+	LOG_MESSAGE(1, "libbzip2: internal error number %d\n", errcode);
 }
 
 //==========================================================================

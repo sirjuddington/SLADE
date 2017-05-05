@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "TranslationEditorDialog.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
@@ -1229,7 +1230,7 @@ void TranslationEditorDialog::onBtnDown(wxCommandEvent& e)
 void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 {
 	// Get user directory
-	string dir = appPath("translations", DIR_USER);
+	string dir = App::path("translations", App::Dir::User);
 
 	// Create open file dialog
 	wxFileDialog dialog_open(this, "Load Translation from File", dir, wxEmptyString,
@@ -1271,7 +1272,7 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 void TranslationEditorDialog::onBtnSave(wxCommandEvent& e)
 {
 	// If the directory doesn't exist create it
-	string dir = appPath("translations", DIR_USER);
+	string dir = App::path("translations", App::Dir::User);
 	if (!wxDirExists(dir))
 		wxMkdir(dir);
 

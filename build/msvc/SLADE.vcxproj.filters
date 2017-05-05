@@ -184,6 +184,9 @@
     <Filter Include="General\Colours">
       <UniqueIdentifier>{2396ead4-6f0e-4df8-9e57-2d51554e5f40}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Map Editor\Edit">
+      <UniqueIdentifier>{8c15c8af-a29b-46c5-b73c-699f04cea254}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
@@ -921,9 +924,6 @@
     <ClCompile Include="..\..\src\UI\WxStuff.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Application\MainApp.cpp">
-      <Filter>Application</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\General\SAction.cpp">
       <Filter>General</Filter>
     </ClCompile>
@@ -1146,9 +1146,6 @@
     <ClCompile Include="..\..\src\MainEditor\EntryOperations.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MainEditor\MainWindow.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.cpp">
       <Filter>Main Editor\UI</Filter>
     </ClCompile>
@@ -1224,9 +1221,6 @@
     <ClCompile Include="..\..\src\MapEditor\MapEditor.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\MapEditorWindow.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\MapSpecials.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
@@ -1234,9 +1228,6 @@
       <Filter>Map Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\NodeBuilders.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\ObjectEdit.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\SectorBuilder.cpp">
@@ -1406,6 +1397,60 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Audio\AudioTags.cpp">
       <Filter>Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\MainEditor.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\UI.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\MainWindow.cpp">
+      <Filter>Main Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Application\App.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Application\SLADEWxApp.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Log.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\MapEditContext.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\MapEditorWindow.cpp">
+      <Filter>Map Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\LineDraw.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\Edit3D.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\ItemSelection.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UndoSteps.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Renderer.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\Input.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\ObjectEdit.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\RenderView.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\Edit2D.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\MoveObjects.cpp">
+      <Filter>Map Editor\Edit</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1872,9 +1917,6 @@
     <ClInclude Include="..\..\src\Application\Main.h">
       <Filter>Application</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Application\MainApp.h">
-      <Filter>Application</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\General\SAction.h">
       <Filter>General</Filter>
     </ClInclude>
@@ -2139,9 +2181,6 @@
     <ClInclude Include="..\..\src\MainEditor\EntryOperations.h">
       <Filter>Main Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MainEditor\MainWindow.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h">
       <Filter>Main Editor\UI</Filter>
     </ClInclude>
@@ -2217,9 +2256,6 @@
     <ClInclude Include="..\..\src\MapEditor\MapEditor.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\MapEditorWindow.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\MapSpecials.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
@@ -2227,9 +2263,6 @@
       <Filter>Map Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\NodeBuilders.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\ObjectEdit.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\SectorBuilder.h">
@@ -2425,6 +2458,60 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Audio\AudioTags.h">
       <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\MainEditor.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\UI.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\MainWindow.h">
+      <Filter>Main Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Application\App.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Application\SLADEWxApp.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Log.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\MapEditContext.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\MapEditorWindow.h">
+      <Filter>Map Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\LineDraw.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\Edit3D.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\ItemSelection.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UndoSteps.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Renderer.h">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\Input.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\ObjectEdit.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\RenderView.h">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\Edit2D.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\MoveObjects.h">
+      <Filter>Map Editor\Edit</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

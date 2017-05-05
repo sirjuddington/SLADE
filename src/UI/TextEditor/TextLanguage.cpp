@@ -465,7 +465,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 	// Open the given text data
 	if (!tz.openMem(&mc, source))
 	{
-		wxLogMessage("Unable to open file");
+		LOG_MESSAGE(1, "Unable to open file");
 		return false;
 	}
 
@@ -489,7 +489,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			if (inherit)
 				inherit->copyTo(lang);
 			else
-				wxLogMessage("Warning: Language %s inherits from undefined language %s", node->getName(), node->getInherit());
+				LOG_MESSAGE(1, "Warning: Language %s inherits from undefined language %s", node->getName(), node->getInherit());
 		}
 
 		// Parse language info
@@ -729,7 +729,7 @@ bool TextLanguage::loadLanguages()
 				readLanguageDefinition(dir->getEntry(a)->getMCData(), dir->getEntry(a)->getName());
 		}
 		else
-			wxLogMessage("Warning: 'config/languages' not found in slade.pk3, no builtin text language definitions loaded");
+			LOG_MESSAGE(1, "Warning: 'config/languages' not found in slade.pk3, no builtin text language definitions loaded");
 	}
 
 	return true;

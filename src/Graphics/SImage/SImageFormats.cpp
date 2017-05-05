@@ -458,7 +458,7 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 	ofs += mf.pal_size*3;
 	if (ofs >= eod)
 	{
-		wxLogMessage("BMF aborted: no data after palette");
+		LOG_MESSAGE(1, "BMF aborted: no data after palette");
 		return false;
 	}
 	mf.info_size = ofs[0];
@@ -475,7 +475,7 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 	ofs+=2;
 	if (ofs >= eod)
 	{
-		wxLogMessage("BMF aborted: no data after char size");
+		LOG_MESSAGE(1, "BMF aborted: no data after char size");
 		return false;
 	}
 	// Let's create each character's data and compute the total size

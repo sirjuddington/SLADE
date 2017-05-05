@@ -120,7 +120,7 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 			case TYPE_INT:		default_value = prop->getIntValue(); break;
 			case TYPE_FLOAT:	default_value = prop->getFloatValue(); break;
 			case TYPE_STRING:	default_value = prop->getStringValue(); break;
-				//case TYPE_COLOUR:	default_value = prop->getIntValue(); wxLogMessage("Colour default value %d (%s)", prop->getIntValue(), prop->getStringValue()); break;
+				//case TYPE_COLOUR:	default_value = prop->getIntValue(); LOG_MESSAGE(1, "Colour default value %d (%s)", prop->getIntValue(), prop->getStringValue()); break;
 			case TYPE_ASPECIAL:	default_value = prop->getIntValue(); break;
 			case TYPE_SSPECIAL:	default_value = prop->getIntValue(); break;
 			case TYPE_TTYPE:	default_value = prop->getIntValue(); break;

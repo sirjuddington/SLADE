@@ -28,11 +28,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "Clipboard.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/SectorBuilder.h"
+
 
 /*******************************************************************
  * VARIABLES
@@ -83,14 +85,14 @@ EntryTreeClipboardItem::EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, v
 	{
 		wxTheClipboard->Clear();
 		wxFileDataObject* file = new wxFileDataObject();
-		string tmp_directory = appPath("", DIR_TEMP); // cache temp directory
+		string tmp_directory = App::path("", App::Dir::Temp); // cache temp directory
 		string file_dot = ".";
 		for (unsigned a = 0; a < entries.size(); a++)
 		{
 			// Export to file
 			string filename = tmp_directory + entries[a]->getName(true) + file_dot + entries[a]->getType()->getExtension();
 			//string filename = entries[a]->getName(true) + "." + entries[a]->getType()->getExtension();
-			//filename = appPath(filename, DIR_TEMP);
+			//filename = App::path(filename, App::Dir::Temp);
 			entries[a]->exportFile(filename);
 
 			// Add to clipboard
@@ -414,12 +416,12 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 
 		if (!v1)
 		{
-			wxLogMessage("no v1");
+			LOG_MESSAGE(1, "no v1");
 			continue;
 		}
 		if (!v2)
 		{
-			wxLogMessage("no v2");
+			LOG_MESSAGE(1, "no v2");
 		}
 
 		MapLine* newline = map->createLine(v1, v2, true);

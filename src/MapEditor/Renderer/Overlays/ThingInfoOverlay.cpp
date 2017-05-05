@@ -36,8 +36,10 @@
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "General/ColourConfiguration.h"
 #include "OpenGL/Drawing.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "OpenGL/OpenGL.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
@@ -81,7 +83,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 	translation = "";
 	palette = "";
 	icon = "";
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Index + type
 	ThingType* tt = theGameConfiguration->thingType(thing->getType());
@@ -209,13 +211,13 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 
 	// Draw sprite
 	bool isicon = false;
-	GLTexture* tex = theMapEditor->textureManager().getSprite(sprite, translation, palette);
+	GLTexture* tex = MapEditor::textureManager().getSprite(sprite, translation, palette);
 	if (!tex)
 	{
 		if (use_zeth_icons && zeth >= 0)
-			tex = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", zeth));
+			tex = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", zeth));
 		if (!tex)
-			tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", icon));
+			tex = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", icon));
 		isicon = true;
 	}
 	glEnable(GL_TEXTURE_2D);

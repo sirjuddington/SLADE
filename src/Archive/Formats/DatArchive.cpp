@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "DatArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -115,11 +115,11 @@ bool DatArchive::open(MemChunk& mc)
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	theSplashWindow->setProgressMessage("Reading dat archive data");
+	UI::setSplashProgressMessage("Reading dat archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		uint32_t offset = 0;
@@ -142,7 +142,7 @@ bool DatArchive::open(MemChunk& mc)
 		// the data file is invalid
 		if (offset + size > mc.getSize())
 		{
-			wxLogMessage("DatArchive::open: Dat archive is invalid or corrupt at entry %i", d);
+			LOG_MESSAGE(1, "DatArchive::open: Dat archive is invalid or corrupt at entry %i", d);
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -190,11 +190,11 @@ bool DatArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -215,7 +215,7 @@ bool DatArchive::open(MemChunk& mc)
 	}
 
 	// Detect maps (will detect map entry types)
-	//theSplashWindow->setProgressMessage("Detecting maps");
+	//UI::setSplashProgressMessage("Detecting maps");
 	//detectMaps();
 
 	// Setup variables
@@ -223,7 +223,7 @@ bool DatArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -585,7 +585,7 @@ bool DatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("DatArchive::loadEntryData: Failed to open datfile %s", filename);
+		LOG_MESSAGE(1, "DatArchive::loadEntryData: Failed to open datfile %s", filename);
 		return false;
 	}
 

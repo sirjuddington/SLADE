@@ -30,10 +30,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "GameConfiguration.h"
 #include "Utility/Tokenizer.h"
 #include "Utility/Parser.h"
-#include "General/Misc.h"
 #include "General/Console/Console.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
@@ -311,7 +311,7 @@ void GameConfiguration::init()
 {
 	// Add game configurations from user dir
 	wxArrayString allfiles;
-	wxDir::GetAllFiles(appPath("games", DIR_USER), &allfiles);
+	wxDir::GetAllFiles(App::path("games", App::Dir::User), &allfiles);
 	for (unsigned a = 0; a < allfiles.size(); a++)
 	{
 		// Read config info
@@ -330,7 +330,7 @@ void GameConfiguration::init()
 
 	// Add port configurations from user dir
 	allfiles.clear();
-	wxDir::GetAllFiles(appPath("ports", DIR_USER), &allfiles);
+	wxDir::GetAllFiles(App::path("ports", App::Dir::User), &allfiles);
 	for (unsigned a = 0; a < allfiles.size(); a++)
 	{
 		// Read config info
@@ -613,7 +613,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 		return;
 
 	// Write entry to temp file
-	string filename = appPath(entry->getName(), DIR_TEMP);
+	string filename = App::path(entry->getName(), App::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file
@@ -664,7 +664,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 
 			// Okay, we've exhausted all possibilities
 			if (!done)
-				wxLogMessage("Error: Attempting to #include nonexistant entry \"%s\" from entry %s", name, entry->getName());
+				LOG_MESSAGE(1, "Error: Attempting to #include nonexistant entry \"%s\" from entry %s", name, entry->getName());
 		}
 		else
 			out.Append(line + "\n");
@@ -927,7 +927,7 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 					map_formats[MAP_UDMF] = true;
 				}
 				else
-					wxLogMessage("Warning: Unknown/unsupported map format \"%s\"", node->getStringValue(v));
+					LOG_MESSAGE(1, "Warning: Unknown/unsupported map format \"%s\"", node->getStringValue(v));
 			}
 		}
 
@@ -1042,7 +1042,7 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 				}
 
 				else
-					wxLogMessage("Unknown defaults block \"%s\"", block->getName());
+					LOG_MESSAGE(1, "Unknown defaults block \"%s\"", block->getName());
 			}
 		}
 
@@ -1140,7 +1140,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, uint8_t fo
 		}
 		if (!node_game)
 		{
-			wxLogMessage("No game section found, something is pretty wrong.");
+			LOG_MESSAGE(1, "No game section found, something is pretty wrong.");
 			return false;
 		}
 		readGameSection(node_game, false);
@@ -1413,7 +1413,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, uint8_t fo
 
 		// Unknown/unexpected section
 		else
-			wxLogMessage("Warning: Unexpected game configuration section \"%s\", skipping", node->getName());
+			LOG_MESSAGE(1, "Warning: Unexpected game configuration section \"%s\", skipping", node->getName());
 	}
 
 	return true;
@@ -1435,12 +1435,12 @@ bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 			if (game_configs[a].user)
 			{
 				// Config is in user dir
-				string filename = appPath("games/", DIR_USER) + game_configs[a].filename + ".cfg";
+				string filename = App::path("games/", App::Dir::User) + game_configs[a].filename + ".cfg";
 				if (wxFileExists(filename))
 					buildConfig(filename, full_config);
 				else
 				{
-					wxLogMessage("Error: Game configuration file \"%s\" not found", filename);
+					LOG_MESSAGE(1, "Error: Game configuration file \"%s\" not found", filename);
 					return false;
 				}
 			}
@@ -1483,12 +1483,12 @@ bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 				if (conf.user)
 				{
 					// Config is in user dir
-					string filename = appPath("games/", DIR_USER) + conf.filename + ".cfg";
+					string filename = App::path("games/", App::Dir::User) + conf.filename + ".cfg";
 					if (wxFileExists(filename))
 						buildConfig(filename, full_config);
 					else
 					{
-						wxLogMessage("Error: Port configuration file \"%s\" not found", filename);
+						LOG_MESSAGE(1, "Error: Port configuration file \"%s\" not found", filename);
 						return false;
 					}
 				}
@@ -1520,11 +1520,11 @@ bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 		current_port = port;
 		game_configuration = game;
 		port_configuration = port;
-		wxLogMessage("Read game configuration \"%s\" + \"%s\"", current_game, current_port);
+		LOG_MESSAGE(1, "Read game configuration \"%s\" + \"%s\"", current_game, current_port);
 	}
 	else
 	{
-		wxLogMessage("Error reading game configuration, not loaded");
+		LOG_MESSAGE(1, "Error reading game configuration, not loaded");
 		ok = false;
 	}
 
@@ -1537,12 +1537,12 @@ bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 		// Log message
 		Archive* parent = cfg_entries[a]->getParent();
 		if (parent)
-			wxLogMessage("Reading SLADECFG in %s", parent->getFilename());
+			LOG_MESSAGE(1, "Reading SLADECFG in %s", parent->getFilename());
 
 		// Read embedded config
 		string config = wxString::FromAscii(cfg_entries[a]->getData(), cfg_entries[a]->getSize());
 		if (!readConfiguration(config, cfg_entries[a]->getName(), format, true, false))
-			wxLogMessage("Error reading embedded game configuration, not loaded");
+			LOG_MESSAGE(1, "Error reading embedded game configuration, not loaded");
 	}
 
 	return ok;
@@ -2548,7 +2548,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 		token = tz.getToken();
 	}
 
-	//wxFile tempfile(appPath("decorate_full.txt", DIR_APP), wxFile::write);
+	//wxFile tempfile(App::path("decorate_full.txt", App::Dir::Executable), wxFile::write);
 	//tempfile.Write(full_defs);
 	//tempfile.Close();
 
@@ -3500,7 +3500,7 @@ void GameConfiguration::dumpActionSpecials()
 
 	while (i != action_specials.end())
 	{
-		wxLogMessage("Action special %d = %s", i->first, i->second.special->stringDesc());
+		LOG_MESSAGE(1, "Action special %d = %s", i->first, i->second.special->stringDesc());
 		i++;
 	}
 }
@@ -3514,7 +3514,7 @@ void GameConfiguration::dumpThingTypes()
 
 	while (i != thing_types.end())
 	{
-		wxLogMessage("Thing type %d = %s", i->first, i->second.type->stringDesc());
+		LOG_MESSAGE(1, "Thing type %d = %s", i->first, i->second.type->stringDesc());
 		i++;
 	}
 }
@@ -3524,9 +3524,9 @@ void GameConfiguration::dumpThingTypes()
  *******************************************************************/
 void GameConfiguration::dumpValidMapNames()
 {
-	wxLogMessage("Valid Map Names:");
+	LOG_MESSAGE(1, "Valid Map Names:");
 	for (unsigned a = 0; a < maps.size(); a++)
-		wxLogMessage(maps[a].mapname);
+		Log::info(maps[a].mapname);
 }
 
 /* GameConfiguration::dumpUDMFProperties
@@ -3535,47 +3535,47 @@ void GameConfiguration::dumpValidMapNames()
 void GameConfiguration::dumpUDMFProperties()
 {
 	// Vertex
-	wxLogMessage("\nVertex properties:");
+	LOG_MESSAGE(1, "\nVertex properties:");
 	UDMFPropMap::iterator i = udmf_vertex_props.begin();
 	while (i != udmf_vertex_props.end())
 	{
-		wxLogMessage(i->second.property->getStringRep());
+		Log::info(i->second.property->getStringRep());
 		i++;
 	}
 
 	// Line
-	wxLogMessage("\nLine properties:");
+	LOG_MESSAGE(1, "\nLine properties:");
 	i = udmf_linedef_props.begin();
 	while (i != udmf_linedef_props.end())
 	{
-		wxLogMessage(i->second.property->getStringRep());
+		Log::info(i->second.property->getStringRep());
 		i++;
 	}
 
 	// Side
-	wxLogMessage("\nSide properties:");
+	LOG_MESSAGE(1, "\nSide properties:");
 	i = udmf_sidedef_props.begin();
 	while (i != udmf_sidedef_props.end())
 	{
-		wxLogMessage(i->second.property->getStringRep());
+		Log::info(i->second.property->getStringRep());
 		i++;
 	}
 
 	// Sector
-	wxLogMessage("\nSector properties:");
+	LOG_MESSAGE(1, "\nSector properties:");
 	i = udmf_sector_props.begin();
 	while (i != udmf_sector_props.end())
 	{
-		wxLogMessage(i->second.property->getStringRep());
+		Log::info(i->second.property->getStringRep());
 		i++;
 	}
 
 	// Thing
-	wxLogMessage("\nThing properties:");
+	LOG_MESSAGE(1, "\nThing properties:");
 	i = udmf_thing_props.begin();
 	while (i != udmf_thing_props.end())
 	{
-		wxLogMessage(i->second.property->getStringRep());
+		Log::info(i->second.property->getStringRep());
 		i++;
 	}
 }

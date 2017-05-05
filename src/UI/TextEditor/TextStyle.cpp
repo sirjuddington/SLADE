@@ -33,6 +33,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "TextEditor.h"
 #include "TextStyle.h"
 #include "Lexer.h"
@@ -618,7 +619,7 @@ void StyleSet::initCurrent()
 	ss_current->name = "<current styleset>";
 
 	// First up, check if "<userdir>/current.sss" exists
-	string path = appPath("current.sss", DIR_USER);
+	string path = App::path("current.sss", App::Dir::User);
 	if (wxFileExists(path))
 	{
 		// Read it in
@@ -653,7 +654,7 @@ void StyleSet::saveCurrent()
 	if (!ss_current)
 		return;
 
-	ss_current->writeFile(appPath("current.sss", DIR_USER));
+	ss_current->writeFile(App::path("current.sss", App::Dir::User));
 }
 
 /* StyleSet::currentSet
@@ -778,7 +779,7 @@ bool StyleSet::loadResourceStyles()
 	// Check it exists
 	if (!dir)
 	{
-		wxLogMessage("Warning: No 'config/text_styles' directory exists in slade.pk3");
+		LOG_MESSAGE(1, "Warning: No 'config/text_styles' directory exists in slade.pk3");
 		return false;
 	}
 
@@ -846,12 +847,12 @@ bool StyleSet::loadResourceStyles()
 bool StyleSet::loadCustomStyles()
 {
 	// If the custom stylesets directory doesn't exist, create it
-	if (!wxDirExists(appPath("text_styles", DIR_USER)))
-		wxMkdir(appPath("text_styles", DIR_USER));
+	if (!wxDirExists(App::path("text_styles", App::Dir::User)))
+		wxMkdir(App::path("text_styles", App::Dir::User));
 
 	// Open the custom stylesets directory
 	wxDir res_dir;
-	res_dir.Open(appPath("text_styles", DIR_USER));
+	res_dir.Open(App::path("text_styles", App::Dir::User));
 
 	// Go through each file in the directory
 	string filename = wxEmptyString;

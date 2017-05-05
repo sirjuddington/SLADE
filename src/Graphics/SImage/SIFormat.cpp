@@ -29,11 +29,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #undef BOOL
-#include "General/Misc.h"
-#include "Archive/EntryType/EntryType.h"
-#include "SIFormat.h"
 #include "Archive/Archive.h"
+#include "Archive/EntryType/EntryType.h"
+#include "General/Misc.h"
+#include "SIFormat.h"
 
 
 /*******************************************************************

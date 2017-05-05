@@ -2,11 +2,15 @@
 #ifndef __MAP_RENDERER_3D_H__
 #define __MAP_RENDERER_3D_H__
 
-#include "MapEditor/MapEditor.h"
+#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "General/ListenerAnnouncer.h"
+#include "MapEditor/Edit/Edit3D.h"
 
+class ItemSelection;
 class GLTexture;
 class Polygon2D;
+class ThingType;
+
 class MapRenderer3D : public Listener
 {
 public:
@@ -123,8 +127,8 @@ public:
 	void	clearData();
 	void	buildSkyCircle();
 
-	quad_3d_t*	getQuad(selection_3d_t item);
-	flat_3d_t*	getFlat(selection_3d_t item);
+	quad_3d_t*	getQuad(MapEditor::Item item);
+	flat_3d_t*	getFlat(MapEditor::Item item);
 
 	// Camera
 	void	cameraMove(double distance, bool z = true);
@@ -136,6 +140,7 @@ public:
 	void	cameraSet(fpoint3_t position, fpoint2_t direction);
 	void	cameraSetPosition(fpoint3_t position);
 	void	cameraApplyGravity(double mult);
+	void	cameraLook(double xrel, double yrel);
 
 	double		camPitch() { return cam_pitch; }
 	fpoint3_t	camPosition() { return cam_position; }
@@ -154,7 +159,7 @@ public:
 	void	updateSector(unsigned index);
 	void	renderFlat(flat_3d_t* flat);
 	void	renderFlats();
-	void	renderFlatSelection(vector<selection_3d_t>& selection, float alpha = 1.0f);
+	void	renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// Walls
 	void	setupQuad(quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom);
@@ -164,12 +169,12 @@ public:
 	void	renderQuad(quad_3d_t* quad, float alpha = 1.0f);
 	void	renderWalls();
 	void	renderTransparentWalls();
-	void	renderWallSelection(vector<selection_3d_t>& selection, float alpha = 1.0f);
+	void	renderWallSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// Things
 	void	updateThing(unsigned index, MapThing* thing);
 	void	renderThings();
-	void	renderThingSelection(vector<selection_3d_t>& selection, float alpha = 1.0f);
+	void	renderThingSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// VBO stuff
 	void	updateFlatsVBO();
@@ -182,8 +187,8 @@ public:
 	void	checkVisibleFlats();
 
 	// Hilight
-	selection_3d_t	determineHilight();
-	void			renderHilight(selection_3d_t hilight, float alpha = 1.0f);
+	MapEditor::Item	determineHilight();
+	void				renderHilight(MapEditor::Item hilight, float alpha = 1.0f);
 
 	// Listener stuff
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);

@@ -168,7 +168,7 @@ bool GZipArchive::open(MemChunk& mc)
 			++mds;
 		}
 		while (c != 0 && size > mds);
-		wxLogMessage("Archive %s says:\n %s", getFilename(true), comment);
+		LOG_MESSAGE(1, "Archive %s says:\n %s", getFilename(true), comment);
 	}
 
 	// Skip past CRC 16 check
@@ -184,7 +184,7 @@ bool GZipArchive::open(MemChunk& mc)
 		mds += 2;
 		if (hcrc  != (fullcrc & 0x0000FFFF))
 		{
-			wxLogMessage("CRC-16 mismatch for GZip header");
+			LOG_MESSAGE(1, "CRC-16 mismatch for GZip header");
 		}
 	}
 
@@ -337,7 +337,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("GZipArchive::loadEntryData: Failed to open gzip file %s", filename);
+		LOG_MESSAGE(1, "GZipArchive::loadEntryData: Failed to open gzip file %s", filename);
 		return false;
 	}
 

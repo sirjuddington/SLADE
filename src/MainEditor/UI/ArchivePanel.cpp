@@ -30,9 +30,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "ArchivePanel.h"
+#include "ArchiveManagerPanel.h"
 #include "Archive/ArchiveManager.h"
-#include "Archive/Formats/WadArchive.h"
 #include "Dialogs/GfxConvDialog.h"
 #include "Dialogs/MapEditorConfigDialog.h"
 #include "Dialogs/MapReplaceDialog.h"
@@ -55,17 +56,21 @@
 #include "General/Executables.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/Conversions.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/ExternalEditManager.h"
-#include "MainEditor/MainWindow.h"
-#include "MainEditor/MainWindow.h"
-#include "MapEditor/MapEditorWindow.h"
-#include "UI/SplashWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "Utility/SFileDialog.h"
+#include "UI/PaletteChooser.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
+
 
 /*******************************************************************
  * VARIABLES
@@ -459,59 +464,59 @@ void ArchivePanel::addMenus()
 	{
 		// Archive menu
 		wxMenu* menu_new = new wxMenu("");
-		theApp->getAction("arch_newentry")->addToMenu(menu_new, "&Entry");
-		theApp->getAction("arch_newdir")->addToMenu(menu_new, "&Directory");
-		theApp->getAction("arch_newpalette")->addToMenu(menu_new, "&PLAYPAL");
-		theApp->getAction("arch_newanimated")->addToMenu(menu_new, "&ANIMATED");
-		theApp->getAction("arch_newswitches")->addToMenu(menu_new, "&SWITCHES");
+		SAction::fromId("arch_newentry")->addToMenu(menu_new, "&Entry");
+		SAction::fromId("arch_newdir")->addToMenu(menu_new, "&Directory");
+		SAction::fromId("arch_newpalette")->addToMenu(menu_new, "&PLAYPAL");
+		SAction::fromId("arch_newanimated")->addToMenu(menu_new, "&ANIMATED");
+		SAction::fromId("arch_newswitches")->addToMenu(menu_new, "&SWITCHES");
 		menu_archive = new wxMenu();
 		menu_archive->AppendSubMenu(menu_new, "&New");
-		theApp->getAction("arch_importfiles")->addToMenu(menu_archive);
-		theApp->getAction("arch_buildarchive")->addToMenu(menu_archive);
+		SAction::fromId("arch_importfiles")->addToMenu(menu_archive);
+		SAction::fromId("arch_buildarchive")->addToMenu(menu_archive);
 		menu_archive->AppendSeparator();
-		theApp->getAction("arch_texeditor")->addToMenu(menu_archive);
-		theApp->getAction("arch_mapeditor")->addToMenu(menu_archive);
+		SAction::fromId("arch_texeditor")->addToMenu(menu_archive);
+		SAction::fromId("arch_mapeditor")->addToMenu(menu_archive);
 		wxMenu* menu_clean = new wxMenu("");
-		theApp->getAction("arch_clean_patches")->addToMenu(menu_clean);
-		theApp->getAction("arch_clean_textures")->addToMenu(menu_clean);
-		theApp->getAction("arch_clean_flats")->addToMenu(menu_clean);
-		theApp->getAction("arch_clean_iwaddupes")->addToMenu(menu_clean);
-		theApp->getAction("arch_check_duplicates")->addToMenu(menu_clean);
-		theApp->getAction("arch_check_duplicates2")->addToMenu(menu_clean);
-		theApp->getAction("arch_replace_maps")->addToMenu(menu_clean);
+		SAction::fromId("arch_clean_patches")->addToMenu(menu_clean);
+		SAction::fromId("arch_clean_textures")->addToMenu(menu_clean);
+		SAction::fromId("arch_clean_flats")->addToMenu(menu_clean);
+		SAction::fromId("arch_clean_iwaddupes")->addToMenu(menu_clean);
+		SAction::fromId("arch_check_duplicates")->addToMenu(menu_clean);
+		SAction::fromId("arch_check_duplicates2")->addToMenu(menu_clean);
+		SAction::fromId("arch_replace_maps")->addToMenu(menu_clean);
 		menu_archive->AppendSubMenu(menu_clean, "&Maintenance");
 	}
 	if (!menu_entry)
 	{
 		// Entry menu
 		menu_entry = new wxMenu();
-		theApp->getAction("arch_entry_rename")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_delete")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_revert")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_rename")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_delete")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_revert")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_cut")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_copy")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_paste")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_cut")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_copy")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_paste")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_moveup")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_movedown")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_sort")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_moveup")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_movedown")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_sort")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_import")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_export")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_import")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_export")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_bookmark")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_bookmark")->addToMenu(menu_entry);
 	}
 
 	// Add them to the main window menubar
-	theMainWindow->addCustomMenu(menu_archive, "&Archive");
-	theMainWindow->addCustomMenu(menu_entry, "&Entry");
+	MainEditor::window()->addCustomMenu(menu_archive, "&Archive");
+	MainEditor::window()->addCustomMenu(menu_entry, "&Entry");
 	cur_area->addCustomMenu();
 	cur_area->addCustomToolBar();
 
 	// Also enable the related toolbars
-	theMainWindow->enableToolBar("_archive");
-	theMainWindow->enableToolBar("_entry");
+	MainEditor::window()->enableToolBar("_archive");
+	MainEditor::window()->enableToolBar("_entry");
 }
 
 /* ArchivePanel::removeMenus
@@ -521,14 +526,14 @@ void ArchivePanel::addMenus()
 void ArchivePanel::removeMenus()
 {
 	// Remove ArchivePanel menus from the main window menubar
-	theMainWindow->removeCustomMenu(menu_archive);
-	theMainWindow->removeCustomMenu(menu_entry);
+	MainEditor::window()->removeCustomMenu(menu_archive);
+	MainEditor::window()->removeCustomMenu(menu_entry);
 	cur_area->removeCustomMenu();
 	cur_area->removeCustomToolBar();
 
 	// Also disable the related toolbars
-	theMainWindow->enableToolBar("_archive", false);
-	theMainWindow->enableToolBar("_entry", false);
+	MainEditor::window()->enableToolBar("_archive", false);
+	MainEditor::window()->enableToolBar("_entry", false);
 }
 
 /* ArchivePanel::undo
@@ -700,8 +705,8 @@ bool ArchivePanel::newEntry(int type)
 				Palette8bit* pal;
 				int choice = cp.getChoice();
 				if (choice)
-					pal = thePaletteManager->getPalette(choice - 1);
-				else pal = thePaletteManager->globalPalette();
+					pal = App::paletteManager()->getPalette(choice - 1);
+				else pal = App::paletteManager()->globalPalette();
 				pal->saveMem(mc);
 			}
 			else
@@ -790,7 +795,7 @@ bool ArchivePanel::importFiles()
 		// Go through the list of files
 		bool ok = false;
 		entry_list->Show(false);
-		theSplashWindow->show("Importing Files...", true);
+		UI::showSplash("Importing Files...", true);
 		entry_list->setEntriesAutoUpdate(false);
 		for (size_t a = 0; a < info.filenames.size(); a++)
 		{
@@ -801,8 +806,8 @@ bool ArchivePanel::importFiles()
 			string name = wxFileName(info.filenames[a]).GetFullName();
 
 			// Update splash window
-			theSplashWindow->setProgress(float(a) / float(info.filenames.size()));
-			theSplashWindow->setProgressMessage(name);
+			UI::setSplashProgress(float(a) / float(info.filenames.size()));
+			UI::setSplashProgressMessage(name);
 
 			// Add the entry to the archive
 			ArchiveEntry* new_entry = archive->addNewEntry(name, index, entry_list->getCurrentDir());
@@ -817,7 +822,7 @@ bool ArchivePanel::importFiles()
 
 			if (index > 0) index++;
 		}
-		theSplashWindow->hide();
+		UI::hideSplash();
 		entry_list->Show(true);
 
 		// End recording undo level
@@ -865,8 +870,8 @@ bool ArchivePanel::buildArchive()
 	SFileDialog::fd_info_t info;
 	if (SFileDialog::saveFile(info, "Build archive", "Any Zip Format File (*.zip;*.pk3;*.pke;*.jdf)", this))
 	{
-		theSplashWindow->show(string("Building ") + info.filenames[0], true);
-		theSplashWindow->setProgress(0.0f);
+		UI::showSplash(string("Building ") + info.filenames[0], true);
+		UI::setSplashProgress(0.0f);
 
 		// Create temporary archive
 		new_archive = theArchiveManager->createTemporaryArchive();
@@ -876,7 +881,7 @@ bool ArchivePanel::buildArchive()
 			wxRemoveFile(info.filenames[0]);
 
 		// Log
-		theSplashWindow->setMessage("Importing files... (Esc to cancel)");
+		UI::setSplashMessage("Importing files... (Esc to cancel)");
 
 		// import all files into new archive
 		// Get a list of all files in the directory
@@ -892,7 +897,7 @@ bool ArchivePanel::buildArchive()
 				if (new_archive)
 					delete new_archive;
 
-				theSplashWindow->hide();
+				UI::hideSplash();
 				return true;
 			}
 			
@@ -917,8 +922,8 @@ bool ArchivePanel::buildArchive()
 			ArchiveEntry* entry = new_archive->addNewEntry(ename, dir->numEntries()+1, dir);
 
 			// Log
-			theSplashWindow->setProgressMessage(ename);
-			theSplashWindow->setProgress((float)a/files.size());
+			UI::setSplashProgressMessage(ename);
+			UI::setSplashProgress((float)a/files.size());
 
 			// Load data
 			entry->importFile(files[a]);
@@ -928,15 +933,15 @@ bool ArchivePanel::buildArchive()
 			dir->getDirEntry()->setState(0);
 		}
 
-		theSplashWindow->setProgress(1.0f);
-		theSplashWindow->setMessage("Saving archive...");
-		theSplashWindow->setProgressMessage("");
+		UI::setSplashProgress(1.0f);
+		UI::setSplashMessage("Saving archive...");
+		UI::setSplashProgressMessage("");
 		
 		// Save the archive
 		if (!new_archive->save(info.filenames[0]))
 		{
 			delete new_archive;
-			theSplashWindow->hide();
+			UI::hideSplash();
 
 			// If there was an error pop up a message box
 			wxMessageBox(S_FMT("Error:\n%s", Global::error), "Error", wxICON_ERROR);
@@ -947,7 +952,7 @@ bool ArchivePanel::buildArchive()
 	if (new_archive)
 		delete new_archive;
 
-	theSplashWindow->hide();
+	UI::hideSplash();
 
 	// Refresh entry list
 	entry_list->updateList();
@@ -1186,8 +1191,10 @@ bool ArchivePanel::revertEntry()
 	undo_manager->endRecord(true);
 
 	// Reload entry if currently open
-	if (selected_entries.size() == 1 && theActivePanel && theActivePanel->getEntry() == selected_entries[0])
-		theActivePanel->openEntry(selected_entries[0]);
+	if (selected_entries.size() == 1 &&
+		MainEditor::currentEntryPanel() &&
+		MainEditor::currentEntryPanel()->getEntry() == selected_entries[0])
+		MainEditor::currentEntryPanel()->openEntry(selected_entries[0]);
 
 	// If the entries reverted were the only modified entries in the
 	// archive, the archive is no longer modified.
@@ -1490,7 +1497,7 @@ bool ArchivePanel::openTab()
 
 	// Open each in its own tab
 	for (unsigned a = 0; a < selection.size(); a++)
-		theMainWindow->openEntry(selection[a]);
+		MainEditor::openEntry(selection[a]);
 
 	return true;
 }
@@ -1510,7 +1517,7 @@ bool ArchivePanel::crc32()
 		uint32_t crc = selection[a]->getMCData().crc();
 		checksums += S_FMT("%s:\t%x\n", selection[a]->getName(), crc);
 	}
-	wxLogMessage(checksums);
+	LOG_MESSAGE(1, checksums);
 	wxMessageBox(checksums);
 
 	return true;
@@ -1589,7 +1596,7 @@ bool ArchivePanel::importEntry()
 				}
 				// Warn if the offsets couldn't be written
 				if (ok && si.getFormat() && !si.getFormat()->writeOffset(si, selection[a], offset))
-					wxLogMessage("Old offset information [%d, %d] couldn't be "
+					LOG_MESSAGE(1, "Old offset information [%d, %d] couldn't be "
 					             "preserved in the new image format for image %s.",
 					             offset.x, offset.y, selection[a]->getName());
 			}
@@ -1802,7 +1809,7 @@ bool ArchivePanel::gfxConvert()
 	gcd.ShowModal();
 
 	// Show splash window
-	theSplashWindow->show("Writing converted image data...", true);
+	UI::showSplash("Writing converted image data...", true);
 
 	// Begin recording undo level
 	undo_manager->beginRecord("Gfx Format Conversion");
@@ -1815,8 +1822,8 @@ bool ArchivePanel::gfxConvert()
 			entry_list->setEntriesAutoUpdate(true);
 
 		// Update splash window
-		theSplashWindow->setProgressMessage(selection[a]->getName());
-		theSplashWindow->setProgress((float)a / (float)selection.size());
+		UI::setSplashProgressMessage(selection[a]->getName());
+		UI::setSplashProgress((float)a / (float)selection.size());
 
 		// Skip if the image wasn't converted
 		if (!gcd.itemModified(a))
@@ -1839,8 +1846,8 @@ bool ArchivePanel::gfxConvert()
 	undo_manager->endRecord(true);
 
 	// Hide splash window
-	theSplashWindow->hide();
-	theActivePanel->callRefresh();
+	UI::hideSplash();
+	MainEditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -1890,7 +1897,7 @@ bool ArchivePanel::gfxRemap()
 
 				// Write modified image data
 				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
+					LOG_MESSAGE(1, "Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -1903,7 +1910,7 @@ bool ArchivePanel::gfxRemap()
 		// Finish recording undo level
 		undo_manager->endRecord(true);
 	}
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -1947,7 +1954,7 @@ bool ArchivePanel::gfxColourise()
 
 				// Write modified image data
 				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
+					LOG_MESSAGE(1, "Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -1958,7 +1965,7 @@ bool ArchivePanel::gfxColourise()
 	}
 	rgba_t gcdcol = gcd.getColour();
 	last_colour = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -2002,7 +2009,7 @@ bool ArchivePanel::gfxTint()
 
 				// Write modified image data
 				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
+					LOG_MESSAGE(1, "Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2015,7 +2022,7 @@ bool ArchivePanel::gfxTint()
 	rgba_t gtdcol = gtd.getColour();
 	last_tint_colour = S_FMT("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
 	last_tint_amount = (int)(gtd.getAmount() * 100.0f);
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -2044,7 +2051,7 @@ bool ArchivePanel::gfxModifyOffsets()
 		undo_manager->recordUndoStep(new EntryDataUS(selection[a]));
 		EntryOperations::modifyGfxOffsets(selection[a], &mod);
 	}
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 	entry_list->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
@@ -2305,7 +2312,7 @@ bool ArchivePanel::palConvert()
 		dest[i] = ((dest[i] << 2) | (dest[i] >> 4));
 	}
 	pal6bit->importMem(dest, pal6bit->getSize());
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 	delete[] dest;
 	return true;
 }
@@ -2336,7 +2343,7 @@ bool ArchivePanel::wavDSndConvert()
 			// Attempt conversion
 			if (!Conversions::wavToDoomSnd(selection[a]->getMCData(), dsnd))
 			{
-				wxLogMessage("Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
+				LOG_MESSAGE(1, "Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
 				errors = true;
 				continue;
 			}
@@ -2408,7 +2415,7 @@ bool ArchivePanel::dSndWavConvert()
 		}
 		else
 		{
-			wxLogMessage("Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
+			LOG_MESSAGE(1, "Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
 			errors = true;
 			continue;
 		}
@@ -2511,7 +2518,7 @@ bool ArchivePanel::optimizePNG()
 	// Get selected entries
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 
-	theSplashWindow->show("Running external programs, please wait...", true);
+	UI::showSplash("Running external programs, please wait...", true);
 
 	// Begin recording undo level
 	undo_manager->beginRecord("Optimize PNG");
@@ -2523,8 +2530,8 @@ bool ArchivePanel::optimizePNG()
 		if (a == selection.size()-1)
 			entry_list->setEntriesAutoUpdate(true);
 
-		theSplashWindow->setProgressMessage(selection[a]->getName(true));
-		theSplashWindow->setProgress(float(a) / float(selection.size()));
+		UI::setSplashProgressMessage(selection[a]->getName(true));
+		UI::setSplashProgress(float(a) / float(selection.size()));
 		if (selection[a]->getType()->getFormat() == "img_png")
 		{
 			undo_manager->recordUndoStep(new EntryDataUS(selection[a]));
@@ -2532,7 +2539,7 @@ bool ArchivePanel::optimizePNG()
 		}
 	}
 	entry_list->setEntriesAutoUpdate(true);
-	theSplashWindow->hide();
+	UI::hideSplash();
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -2627,7 +2634,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 	// Null entry, do nothing
 	if (!entry)
 	{
-		wxLogMessage("Warning: NULL entry focused in the list");
+		LOG_MESSAGE(1, "Warning: NULL entry focused in the list");
 		return false;
 	}
 
@@ -2663,7 +2670,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		// Check it exists (really should)
 		if (!dir)
 		{
-			wxLogMessage("Error: Trying to open nonexistant directory %s", name);
+			LOG_MESSAGE(1, "Error: Trying to open nonexistant directory %s", name);
 			return false;
 		}
 		entry_list->setDir(dir);
@@ -2699,7 +2706,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		else if (!entry->getType()->getEditor().Cmp("default"))
 			new_area = default_area;
 		else
-			wxLogMessage("Entry editor %s does not exist, using default editor", entry->getType()->getEditor());
+			LOG_MESSAGE(1, "Entry editor %s does not exist, using default editor", entry->getType()->getEditor());
 
 		// Load the entry into the panel
 		if (!new_area->openEntry(entry))
@@ -2885,12 +2892,12 @@ wxMenu* ArchivePanel::createEntryOpenMenu(string category)
 	wxMenu* menu_open = new wxMenu();
 
 	// New Tab
-	theApp->getAction("arch_entry_opentab")->addToMenu(menu_open, true);
+	SAction::fromId("arch_entry_opentab")->addToMenu(menu_open, true);
 	menu_open->AppendSeparator();
 
 	// External editors
 	vector<Executables::external_exe_t> external = Executables::getExternalExes(category);
-	SAction* a_open_ext = theApp->getAction("arch_entry_openext");
+	SAction* a_open_ext = SAction::fromId("arch_entry_openext");
 	unsigned num = MIN(external.size(), 20);
 	for (unsigned a = 0; a < num; a++)
 	{
@@ -2903,7 +2910,7 @@ wxMenu* ArchivePanel::createEntryOpenMenu(string category)
 		menu_open->AppendSeparator();
 
 	// Setup external editors
-	theApp->getAction("arch_entry_setup_external")->addToMenu(menu_open);
+	SAction::fromId("arch_entry_setup_external")->addToMenu(menu_open);
 
 	return menu_open;
 }
@@ -2950,10 +2957,10 @@ bool ArchivePanel::handleAction(string id)
 
 	// Archive->Texture Editor
 	else if (id == "arch_texeditor")
-		theMainWindow->openTextureEditor(archive);
+		MainEditor::openTextureEditor(archive);
 
 	else if (id == "arch_mapeditor")
-		theMainWindow->openMapEditor(archive);
+		MainEditor::openMapEditor(archive);
 
 	// Archive->Convert To...
 	else if (id == "arch_convert")
@@ -3428,25 +3435,25 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("arch_entry_rename")->addToMenu(&context, true);
-	if (selection.size() > 1) theApp->getAction("arch_entry_rename_each")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_delete")->addToMenu(&context, true);
-	if (modified_selected) theApp->getAction("arch_entry_revert")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_rename")->addToMenu(&context, true);
+	if (selection.size() > 1) SAction::fromId("arch_entry_rename_each")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_delete")->addToMenu(&context, true);
+	if (modified_selected) SAction::fromId("arch_entry_revert")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_cut")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_copy")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_paste")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_cut")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_copy")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_paste")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_import")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_export")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_import")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_export")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_moveup")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_movedown")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_sort")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_moveup")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_movedown")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_sort")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_bookmark")->addToMenu(&context, true);
-	//theApp->getAction("arch_entry_opentab")->addToMenu(&context, true);
-	//theApp->getAction("arch_entry_crc32")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
+	//SAction::fromId("arch_entry_opentab")->addToMenu(&context, true);
+	//SAction::fromId("arch_entry_crc32")->addToMenu(&context, true);
 
 	// Add 'Open In' menu
 	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(Icons::getIcon(Icons::GENERAL, "open"));
@@ -3468,19 +3475,19 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	// Add Boom Animations/Switches related menu items if they are selected
 	if (bas_selected)
 	{
-		theApp->getAction("arch_bas_convertb")->addToMenu(&context, true);
-		theApp->getAction("arch_bas_convertz")->addToMenu(&context, true);
+		SAction::fromId("arch_bas_convertb")->addToMenu(&context, true);
+		SAction::fromId("arch_bas_convertz")->addToMenu(&context, true);
 	}
 	if (swan_selected)
 	{
-		theApp->getAction("arch_swan_convert")->addToMenu(&context, true);
+		SAction::fromId("arch_swan_convert")->addToMenu(&context, true);
 	}
 
 	// Add texturex related menu items if needed
 	if (texturex_selected)
 	{
-		theApp->getAction("arch_texturex_convertzd")->addToMenu(&context, true);
-		theApp->getAction("arch_texturex_finderrors")->addToMenu(&context, true);
+		SAction::fromId("arch_texturex_convertzd")->addToMenu(&context, true);
+		SAction::fromId("arch_texturex_finderrors")->addToMenu(&context, true);
 	}
 
 	// 'View As' menu
@@ -3488,14 +3495,14 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	{
 		wxMenu* viewas = new wxMenu();
 		context.AppendSubMenu(viewas, "View As");
-		theApp->getAction("arch_view_text")->addToMenu(viewas, "Text");
-		theApp->getAction("arch_view_hex")->addToMenu(viewas, "Hex");
+		SAction::fromId("arch_view_text")->addToMenu(viewas, "Text");
+		SAction::fromId("arch_view_hex")->addToMenu(viewas, "Hex");
 	}
 	else
 	{
 		context.AppendSeparator();
-		theApp->getAction("arch_view_text")->addToMenu(&context, true);
-		theApp->getAction("arch_view_hex")->addToMenu(&context, true);
+		SAction::fromId("arch_view_text")->addToMenu(&context, true);
+		SAction::fromId("arch_view_hex")->addToMenu(&context, true);
 	}
 
 	// Add gfx-related menu items if gfx are selected (multi-select only)
@@ -3512,16 +3519,16 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 			context.AppendSeparator();
 			gfx = &context;
 		}
-		theApp->getAction("arch_gfx_convert")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_translate")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_colourise")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_tint")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_offsets")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_addptable")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_addtexturex")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_exportpng")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_convert")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_translate")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_colourise")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_tint")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_offsets")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_addptable")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_addtexturex")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_exportpng")->addToMenu(gfx, true);
 		if (png_selected)
-			theApp->getAction("arch_gfx_pngopt")->addToMenu(gfx, true);
+			SAction::fromId("arch_gfx_pngopt")->addToMenu(gfx, true);
 	}
 
 	// Add Audio related menu items if needed
@@ -3539,11 +3546,11 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 			audio = &context;
 		}
 		if (wav_selected)
-			theApp->getAction("arch_audio_convertwd")->addToMenu(audio, true);
+			SAction::fromId("arch_audio_convertwd")->addToMenu(audio, true);
 		if (dsnd_selected)
-			theApp->getAction("arch_audio_convertdw")->addToMenu(audio, true);
+			SAction::fromId("arch_audio_convertdw")->addToMenu(audio, true);
 		if (mus_selected)
-			theApp->getAction("arch_audio_convertmus")->addToMenu(audio, true);
+			SAction::fromId("arch_audio_convertmus")->addToMenu(audio, true);
 	}
 
 	// Add script related menu items if needed
@@ -3560,8 +3567,8 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 			context.AppendSeparator();
 			scripts = &context;
 		}
-		theApp->getAction("arch_scripts_compileacs")->addToMenu(scripts, true);
-		theApp->getAction("arch_scripts_compilehacs")->addToMenu(scripts, true);
+		SAction::fromId("arch_scripts_compileacs")->addToMenu(scripts, true);
+		SAction::fromId("arch_scripts_compilehacs")->addToMenu(scripts, true);
 	}
 
 	// Add map related menu items if needed
@@ -3569,7 +3576,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	{
 		// 'Open in Doom Builder 2' (windows-only)
 #ifdef __WXMSW__
-		theApp->getAction("arch_map_opendb2")->addToMenu(&context, true);
+		SAction::fromId("arch_map_opendb2")->addToMenu(&context, true);
 #endif
 	}
 
@@ -3710,7 +3717,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 	else if (entry->getType()->getFormat() == "texturex" ||
 		     entry->getType() == EntryType::getType("pnames") ||
 	         entry->getType() == EntryType::getType("zdtextures"))
-		theMainWindow->openTextureEditor(archive, entry);
+		MainEditor::openTextureEditor(archive, entry);
 
 	// Map
 	// TODO: Needs to filter the game/port lists in the dialog by the map format
@@ -3731,11 +3738,11 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 				theGameConfiguration->openConfig(dlg.selectedGame(), dlg.selectedPort(), info.format);
 
 				// Attempt to open map
-				if (theMapEditor->openMap(info))
-					theMapEditor->Show();
+				if (MapEditor::window()->openMap(info))
+					MapEditor::window()->Show();
 				else
 				{
-					theMapEditor->Hide();
+					MapEditor::window()->Hide();
 					wxMessageBox(S_FMT("Unable to open map %s: %s", entry->getName(), Global::error), "Invalid map error", wxICON_ERROR);
 				}
 			}
@@ -3744,7 +3751,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 
 	// Other entry
 	else if (entry->getType() != EntryType::folderType())
-		theMainWindow->openEntry(entry);
+		MainEditor::openEntry(entry);
 
 	e.Skip();
 }
@@ -3873,7 +3880,7 @@ void ArchivePanel::onBtnClearFilter(wxCommandEvent& e)
  *******************************************************************/
 bool EntryDataUS::swapData()
 {
-	//wxLogMessage("Entry data swap...");
+	//LOG_MESSAGE(1, "Entry data swap...");
 
 	// Get parent dir
 	ArchiveTreeNode* dir = archive->getDir(path);
@@ -3885,18 +3892,18 @@ bool EntryDataUS::swapData()
 		// Backup data
 		MemChunk temp_data;
 		temp_data.importMem(entry->getData(), entry->getSize());
-		//wxLogMessage("Backup current data, size %d", entry->getSize());
+		//LOG_MESSAGE(1, "Backup current data, size %d", entry->getSize());
 
 		// Restore entry data
 		if (data.getSize() == 0)
 		{
 			entry->clearData();
-			//wxLogMessage("Clear entry data");
+			//LOG_MESSAGE(1, "Clear entry data");
 		}
 		else
 		{
 			entry->importMemChunk(data);
-			//wxLogMessage("Restored entry data, size %d", data.getSize());
+			//LOG_MESSAGE(1, "Restored entry data, size %d", data.getSize());
 		}
 
 		// Store previous entry data
@@ -3920,14 +3927,14 @@ bool EntryDataUS::swapData()
 // results in a circular include nightmare and nothing works anymore.
 #include "General/Console/ConsoleHelpers.h"
 #include "General/Console/Console.h"
-#include "MainApp.h"
+#include "App.h"
 Archive* CH::getCurrentArchive()
 {
-	if (theMainWindow)
+	if (MainEditor::window())
 	{
-		if (theMainWindow->getArchiveManagerPanel())
+		if (MainEditor::window()->getArchiveManagerPanel())
 		{
-			return theMainWindow->getArchiveManagerPanel()->currentArchive();
+			return MainEditor::window()->getArchiveManagerPanel()->currentArchive();
 		}
 	}
 	return NULL;
@@ -3935,7 +3942,7 @@ Archive* CH::getCurrentArchive()
 
 ArchivePanel* CH::getCurrentArchivePanel()
 {
-	ArchiveManagerPanel* archie = theMainWindow->getArchiveManagerPanel();
+	ArchiveManagerPanel* archie = MainEditor::window()->getArchiveManagerPanel();
 	if (archie)
 	{
 		if (archie->isArchivePanel(archie->currentTabIndex()))
@@ -3975,7 +3982,7 @@ CONSOLE_COMMAND(palconv64, 0, false)
 			dest[(3*i)+2] = b;
 		}
 		pal->importMem(dest, (pal->getSize()/2)*3);
-		theActivePanel->callRefresh();
+		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
@@ -4006,7 +4013,7 @@ CONSOLE_COMMAND(palconvpsx, 0, false)
 			dest[(3*i)+2] = b;
 		}
 		pal->importMem(dest, (pal->getSize()/2)*3);
-		theActivePanel->callRefresh();
+		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
@@ -4026,7 +4033,7 @@ CONSOLE_COMMAND(vertex32x, 0, false)
 			dest[2*i+1] = source[4*i+0];
 		}
 		v32x->importMem(dest, v32x->getSize()/2);
-		theActivePanel->callRefresh();
+		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
@@ -4046,7 +4053,7 @@ CONSOLE_COMMAND(vertexpsx, 0, false)
 			dest[2*i+1] = source[4*i+3];
 		}
 		vpsx->importMem(dest, vpsx->getSize()/2);
-		theActivePanel->callRefresh();
+		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
@@ -4068,7 +4075,7 @@ CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 			dest[3*i+2] = source[4*i+2];
 		}
 		lights->importMem(dest, entries * 3);
-		theActivePanel->callRefresh();
+		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
@@ -4077,7 +4084,7 @@ CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 vector<ArchiveEntry*> Console_SearchEntries(string name)
 {
 	vector<ArchiveEntry*> entries;
-	Archive* archive = theMainWindow->getCurrentArchive();
+	Archive* archive = MainEditor::currentArchive();
 	ArchivePanel* panel = CH::getCurrentArchivePanel();
 
 	if (archive)
@@ -4107,12 +4114,12 @@ CONSOLE_COMMAND(find, 1, true)
 			message += entries[i]->getPath(true) + "\n";
 		}
 	}
-	wxLogMessage(S_FMT("Found %i entr%s", count, count==1?"y":"ies\n") + message);
+	Log::info(S_FMT("Found %i entr%s", count, count==1?"y":"ies\n") + message);
 }
 
 CONSOLE_COMMAND(ren, 2, true)
 {
-	Archive* archive = theMainWindow->getCurrentArchive();
+	Archive* archive = MainEditor::currentArchive();
 	vector<ArchiveEntry*> entries = Console_SearchEntries(args[0]);
 	if (entries.size() > 0)
 	{
@@ -4144,13 +4151,13 @@ CONSOLE_COMMAND(ren, 2, true)
 			if (archive->renameEntry(entries[i], newname))
 				++count;
 		}
-		wxLogMessage("Renamed %i entr%s", count, count==1?"y":"ies");
+		LOG_MESSAGE(1, "Renamed %i entr%s", count, count==1?"y":"ies");
 	}
 }
 
 CONSOLE_COMMAND(cd, 1, true)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::currentArchive();
 	ArchivePanel* panel = CH::getCurrentArchivePanel();
 
 	if (current && panel)
@@ -4171,7 +4178,7 @@ CONSOLE_COMMAND(cd, 1, true)
 		}
 		else
 		{
-			wxLogMessage("Error: Trying to open nonexistant directory %s", args[0]);
+			LOG_MESSAGE(1, "Error: Trying to open nonexistant directory %s", args[0]);
 		}
 
 	}
@@ -4210,7 +4217,7 @@ CONSOLE_COMMAND(run, 1, true)
 		s = t.getToken() + " ";
 		if (t.lineNo() != line || 1 + t.tokenEnd() >= mc.getSize())
 		{
-			theConsole->execute(cmdline);
+			App::console()->execute(cmdline);
 			cmdline.Empty();
 			line = t.lineNo();
 		};

@@ -31,8 +31,8 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "Archive/Archive.h"
 #include "Parser.h"
-#include "General/Console/Console.h"
 
 
 /*******************************************************************
@@ -51,10 +51,12 @@ wxRegEx re_float("^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT|wxRE_NO
 /* ParseTreeNode::ParseTreeNode
  * ParseTreeNode class constructor
  *******************************************************************/
-ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser) : STreeNode(parent)
+ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveTreeNode* archive_dir) :
+	STreeNode{ parent },
+	parser{ parser },
+	archive_dir{ archive_dir }
 {
 	allowDup(true);
-	this->parser = parser;
 }
 
 /* ParseTreeNode::~ParseTreeNode
@@ -167,38 +169,67 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 					token = tz.getToken();
 					continue;
 				}
-				else
+
+				// Skip section
+				int skip = 0;
+				while (true)
 				{
-					// Skip section
-					int skip = 0;
-					while (true)
+					token = tz.getToken();
+					if (S_CMPNOCASE(token, "#endif"))
+						skip--;
+					else if (S_CMPNOCASE(token, "#ifdef"))
+						skip++;
+					else if (S_CMPNOCASE(token, "#ifndef"))
+						skip++;
+
+					if (skip < 0)
+						break;
+					if (token.IsEmpty())
 					{
-						token = tz.getToken();
-						if (S_CMPNOCASE(token, "#endif"))
-							skip--;
-						else if (S_CMPNOCASE(token, "#ifdef"))
-							skip++;
-						else if (S_CMPNOCASE(token, "#ifndef"))
-							skip++;
-
-						if (skip < 0)
-							break;
-						if (token.IsEmpty())
-						{
-							wxLogMessage("Error: found end of file within #if(n)def block");
-							break;
-						}
+						LOG_MESSAGE(1, "Error: found end of file within #if(n)def block");
+						break;
 					}
-
-					continue;
 				}
+
+				continue;
 			}
 
-			// #include (ignore)
+			// #include
 			if (S_CMPNOCASE(token, "#include"))
 			{
-				tz.skipToken();	// Skip include path
-				token = tz.getToken();
+				// Include entry at the given path if we have an archive dir set
+				if (archive_dir)
+				{
+					// Get entry to include
+					auto inc_path = tz.getToken();
+					auto archive = archive_dir->getArchive();
+					auto inc_entry = archive->entryAtPath(archive_dir->getPath() + inc_path);
+					if (!inc_entry) // Try absolute path
+						inc_entry = archive->entryAtPath(inc_path);
+
+					if (inc_entry)
+					{
+						// Save the current dir and set it to the included entry's dir
+						auto orig_dir = archive_dir;
+						archive_dir = inc_entry->getParentDir();
+
+						// Parse text in the entry
+						Tokenizer inc_tz;
+						inc_tz.openMem(&inc_entry->getMCData(), inc_entry->getName());
+						bool ok = parse(inc_tz);
+
+						// Reset dir and abort if parsing failed
+						archive_dir = orig_dir;
+						if (!ok)
+							return false;
+					}
+					else
+						LOG_MESSAGE(2, "Parsing error: Include entry %s not found", inc_path);
+				}
+				else
+					tz.skipToken();	// Skip include path
+
+				tz.getToken(&token);
 				continue;
 			}
 
@@ -213,7 +244,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// If it's a special character (ie not a valid name), parsing fails
 		if (tz.isSpecialCharacter(token.at(0)))
 		{
-			wxLogMessage("Parsing error: Unexpected special character '%s' in %s (line %d)", token, tz.getName(), tz.lineNo());
+			LOG_MESSAGE(1, "Parsing error: Unexpected special character '%s' in %s (line %d)", token, tz.getName(), tz.lineNo());
 			return false;
 		}
 
@@ -221,7 +252,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		string name = token;
 		if (name.IsEmpty())
 		{
-			wxLogMessage("Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
+			LOG_MESSAGE(1, "Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
 			return false;
 		}
 
@@ -238,7 +269,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 
 			if (name.IsEmpty())
 			{
-				wxLogMessage("Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
+				LOG_MESSAGE(1, "Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
 				return false;
 			}
 		}
@@ -291,7 +322,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 					long val;
 					token.ToLong(&val, 0);
 					value = (int)val;
-					//wxLogMessage("%s: %s is hex %d", name, token, value.getIntValue());
+					//LOG_MESSAGE(1, "%s: %s is hex %d", name, token, value.getIntValue());
 				}
 				else if (re_float.Matches(token))  		// Floating point
 				{
@@ -313,7 +344,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 				{
 					string t = tz.getToken();
 					string n = tz.getName();
-					wxLogMessage("Parsing error: Expected \",\" or \"%s\", got \"%s\" in %s (line %d)", list_end, t, n, tz.lineNo());
+					LOG_MESSAGE(1, "Parsing error: Expected \",\" or \"%s\", got \"%s\" in %s (line %d)", list_end, t, n, tz.lineNo());
 					return false;
 				}
 
@@ -375,7 +406,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// Unexpected token
 		else
 		{
-			wxLogMessage("Parsing error: \"%s\" unexpected in %s (line %d)", next, tz.getName(), tz.lineNo());
+			LOG_MESSAGE(1, "Parsing error: \"%s\" unexpected in %s (line %d)", next, tz.getName(), tz.lineNo());
 			return false;
 		}
 
@@ -394,10 +425,11 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 /* Parser::Parser
  * Parser class constructor
  *******************************************************************/
-Parser::Parser()
+Parser::Parser(ArchiveTreeNode* dir_root) :
+	archive_dir_root { dir_root }
 {
 	// Create parse tree root node
-	pt_root = new ParseTreeNode(NULL, this);
+	pt_root = std::make_unique<ParseTreeNode>(nullptr, this, archive_dir_root);
 }
 
 /* Parser::~Parser
@@ -405,8 +437,6 @@ Parser::Parser()
  *******************************************************************/
 Parser::~Parser()
 {
-	// Clean up
-	delete pt_root;
 }
 
 /* Parser::parseText
@@ -447,7 +477,7 @@ bool Parser::parseText(MemChunk& mc, string source, bool debug)
 	// Open the given text data
 	if (!tz.openMem(&mc, source))
 	{
-		wxLogMessage("Unable to open text data for parsing");
+		LOG_MESSAGE(1, "Unable to open text data for parsing");
 		return false;
 	}
 
@@ -462,7 +492,7 @@ bool Parser::parseText(string& text, string source, bool debug)
 	// Open the given text data
 	if (!tz.openString(text, 0, 0, source))
 	{
-		wxLogMessage("Unable to open text data for parsing");
+		LOG_MESSAGE(1, "Unable to open text data for parsing");
 		return false;
 	}
 
@@ -493,22 +523,22 @@ bool Parser::defined(string def)
 }
 
 
-
-// Console test command
-/*
+#if 0
+// Console test commands
 CONSOLE_COMMAND (testparse, 0) {
 	string test = "root { item1 = value1; item2 = value1, value2; child1 { item1 = value1, value2, value3; item2 = value4; } child2 : child1 { item1 = value1; child3 { item1 = value1, value2; } } }";
 	Parser tp;
 	MemChunk mc((const uint8_t*)CHR(test), test.Length());
 	tp.parseText(mc);
 }
-*/
 
+#include "App.h"
 CONSOLE_COMMAND (testregex, 2, false)
 {
 	wxRegEx re(args[0]);
 	if (re.Matches(args[1]))
-		theConsole->logMessage("Matches");
+		Log::console("Matches");
 	else
-		theConsole->logMessage("Doesn't match");
+		Log::console("Doesn't match");
 }
+#endif

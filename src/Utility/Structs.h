@@ -613,23 +613,23 @@ struct frect_t
 		br.set(rect.br);
 	}
 
-	double x1() { return tl.x; }
-	double y1() { return tl.y; }
-	double x2() { return br.x; }
-	double y2() { return br.y; }
-	fpoint2_t p1() { return tl; }
-	fpoint2_t p2() { return br; }
+	double x1() const { return tl.x; }
+	double y1() const { return tl.y; }
+	double x2() const { return br.x; }
+	double y2() const { return br.y; }
+	fpoint2_t p1() const { return tl; }
+	fpoint2_t p2() const { return br; }
 
-	double left()	{ return min(tl.x, br.x); }
-	double top()	{ return min(tl.y, br.y); }
-	double right()	{ return max(br.x, tl.x); }
-	double bottom()	{ return max(br.y, tl.y); }
+	double left()	const { return min(tl.x, br.x); }
+	double top()	const { return min(tl.y, br.y); }
+	double right()	const { return max(br.x, tl.x); }
+	double bottom()	const { return max(br.y, tl.y); }
 
-	double width() { return br.x - tl.x; }
-	double height() { return br.y - tl.y; }
+	double width() const { return br.x - tl.x; }
+	double height() const { return br.y - tl.y; }
 
-	double awidth() { return max(br.x, tl.x) - min(tl.x, br.x); }
-	double aheight() { return max(br.y, tl.y) - min(tl.y, br.y); }
+	double awidth() const { return max(br.x, tl.x) - min(tl.x, br.x); }
+	double aheight() const { return max(br.y, tl.y) - min(tl.y, br.y); }
 
 	fpoint2_t middle() { return fpoint2_t(left() + (awidth() / 2), top() + (aheight() / 2)); }
 
@@ -666,7 +666,7 @@ struct frect_t
 		return sqrt(dist_x * dist_x + dist_y * dist_y);
 	}
 
-	bool contains(fpoint2_t point)
+	bool contains(fpoint2_t point) const
 	{
 		return (point.x >= left() && point.x <= right() &&
 				point.y >= top() && point.y <= bottom());

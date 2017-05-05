@@ -198,7 +198,7 @@ double CIE::CIEDE2000(lab_t& col1, lab_t& col2)
 
 #ifdef DEBUGCIEDE2000
 // This can be moved to before the "return" line in CIE::CIEDE2000() and de-commented to investigate incorrect results.
-/*	wxLogMessage(	// Fun fact: this call hits the parameter limit for wx's log system. One more and it breaks.
+/*	LOG_MESSAGE(	// Fun fact: this call hits the parameter limit for wx's log system. One more and it breaks.
 		"Lab1 (%f; %f; %f), Lab2 (%f; %f; %f), c1 %f, c2 %f, average c %f, a'1 %f, a'2 %f, C'1 %f, C'2 %f, "
 		"h'1 %f, h'2 %f, h' avg %f, G %f, T %f, DL' %f, DC' %f, DH' %f, dTheta %f, RT %f, RC %f, SL %f, SC %f, SH %f, "
 		"d1 %f, d2 %f, d3 %f\n",
@@ -275,6 +275,6 @@ CONSOLE_COMMAND(testciede, 0)
 	}
 	if (errors)	report += S_FMT("\nThere were %d error%s in the results.", errors, (errors>1?"s":""));
 	else		report += "\nAll results are accurate enough.";
-	wxLogMessage(report);
+	LOG_MESSAGE(report);
 }
 #endif // DEBUGCIEDE2000

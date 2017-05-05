@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ResArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -105,7 +105,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 {
 	if (!parent)
 	{
-		wxLogMessage("ReadDir: No parent node");
+		LOG_MESSAGE(1, "ReadDir: No parent node");
 		Global::error = "Archive is invalid and/or corrupt";
 		return false;
 	}
@@ -113,7 +113,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char magic[4] = "";
@@ -132,7 +132,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		// Check the identifier
 		if (magic[0] != 'R' || magic[1] != 'e' || magic[2] != 'S' || magic[3] != 0)
 		{
-			wxLogMessage("ResArchive::readDir: Entry %s (%i@0x%x) has invalid directory entry", name, size, offset);
+			LOG_MESSAGE(1, "ResArchive::readDir: Entry %s (%i@0x%x) has invalid directory entry", name, size, offset);
 			Global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
@@ -142,17 +142,17 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		size = wxINT32_SWAP_ON_BE(size);
 		name[14] = '\0';
 
-		mc.read(&dumze, 2); if (dumze) wxLogMessage("Flag guard not null for entry %s", name);
-		mc.read(&flags, 1); if (flags != 1 && flags != 17) wxLogMessage("Unknown flag value for entry %s", name);
-		mc.read(&dumzero1, 4); if (dumzero1) wxLogMessage("Near-end values not set to zero for entry %s", name);
-		mc.read(&dumff, 2); if (dumff != 0xFFFF) wxLogMessage("Dummy set to a non-FF value for entry %s", name);
-		mc.read(&dumzero2, 4); if (dumzero2) wxLogMessage("Trailing values not set to zero for entry %s", name);
+		mc.read(&dumze, 2); if (dumze) LOG_MESSAGE(1, "Flag guard not null for entry %s", name);
+		mc.read(&flags, 1); if (flags != 1 && flags != 17) LOG_MESSAGE(1, "Unknown flag value for entry %s", name);
+		mc.read(&dumzero1, 4); if (dumzero1) LOG_MESSAGE(1, "Near-end values not set to zero for entry %s", name);
+		mc.read(&dumff, 2); if (dumff != 0xFFFF) LOG_MESSAGE(1, "Dummy set to a non-FF value for entry %s", name);
+		mc.read(&dumzero2, 4); if (dumzero2) LOG_MESSAGE(1, "Trailing values not set to zero for entry %s", name);
 
 		// If the lump data goes past the end of the file,
 		// the resfile is invalid
 		if (offset + size > mc.getSize())
 		{
-			wxLogMessage("ResArchive::readDirectory: Res archive is invalid or corrupt, offset overflow");
+			LOG_MESSAGE(1, "ResArchive::readDirectory: Res archive is invalid or corrupt, offset overflow");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -180,7 +180,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 			ArchiveTreeNode* ndir = createDir(name, parent);
 			if (ndir)
 			{
-				theSplashWindow->setProgressMessage(S_FMT("Reading res archive data: %s directory", name));
+				UI::setSplashProgressMessage(S_FMT("Reading res archive data: %s directory", name));
 				// Save offset to restore it once the recursion is done
 				size_t myoffset = mc.currentPos();
 				readDirectory(mc, d_o, n_l, ndir);
@@ -237,14 +237,14 @@ bool ResArchive::open(MemChunk& mc)
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'e' || magic[2] != 's' || magic[3] != '!')
 	{
-		wxLogMessage("ResArchive::openFile: File %s has invalid header", filename);
+		LOG_MESSAGE(1, "ResArchive::openFile: File %s has invalid header", filename);
 		Global::error = "Invalid res header";
 		return false;
 	}
 
 	if (dir_size % RESDIRENTRYSIZE)
 	{
-		wxLogMessage("ResArchive::openFile: File %s has invalid directory size", filename);
+		LOG_MESSAGE(1, "ResArchive::openFile: File %s has invalid directory size", filename);
 		Global::error = "Invalid res directory size";
 		return false;
 	}
@@ -255,12 +255,12 @@ bool ResArchive::open(MemChunk& mc)
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	theSplashWindow->setProgressMessage("Reading res archive data");
+	UI::setSplashProgressMessage("Reading res archive data");
 	if (!readDirectory(mc, dir_offset, num_lumps, getRoot()))
 		return false;
 
 	// Detect maps (will detect map entry types)
-	theSplashWindow->setProgressMessage("Detecting maps");
+	UI::setSplashProgressMessage("Detecting maps");
 	detectMaps();
 
 	// Setup variables
@@ -268,7 +268,7 @@ bool ResArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -352,7 +352,7 @@ bool ResArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("ResArchive::loadEntryData: Failed to open resfile %s", filename);
+		LOG_MESSAGE(1, "ResArchive::loadEntryData: Failed to open resfile %s", filename);
 		return false;
 	}
 

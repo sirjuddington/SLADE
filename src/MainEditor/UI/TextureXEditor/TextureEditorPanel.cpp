@@ -32,7 +32,7 @@
 #include "General/KeyBind.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/Icons.h"
-#include "MainApp.h"
+#include "App.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
 
@@ -417,7 +417,7 @@ void TextureEditorPanel::updatePatchControls()
 			CTPatch* patch = tex_current->getPatch(selection[0]);
 			if (!patch)
 			{
-				wxLogMessage("Error: Selected patch does not exist in texture");
+				LOG_MESSAGE(1, "Error: Selected patch does not exist in texture");
 				return;
 			}
 
@@ -869,12 +869,12 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 	{
 		// Create context menu
 		wxMenu popup;
-		theApp->getAction("txed_patch_add")->addToMenu(&popup, true);
-		theApp->getAction("txed_patch_remove")->addToMenu(&popup, true);
-		theApp->getAction("txed_patch_replace")->addToMenu(&popup, true);
-		theApp->getAction("txed_patch_back")->addToMenu(&popup, true);
-		theApp->getAction("txed_patch_forward")->addToMenu(&popup, true);
-		theApp->getAction("txed_patch_duplicate")->addToMenu(&popup, true);
+		SAction::fromId("txed_patch_add")->addToMenu(&popup, true);
+		SAction::fromId("txed_patch_remove")->addToMenu(&popup, true);
+		SAction::fromId("txed_patch_replace")->addToMenu(&popup, true);
+		SAction::fromId("txed_patch_back")->addToMenu(&popup, true);
+		SAction::fromId("txed_patch_forward")->addToMenu(&popup, true);
+		SAction::fromId("txed_patch_duplicate")->addToMenu(&popup, true);
 
 		hack_nodrag = true;
 		PopupMenu(&popup);

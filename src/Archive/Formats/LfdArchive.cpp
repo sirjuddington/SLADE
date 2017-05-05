@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "LfdArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -135,13 +135,13 @@ bool LfdArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Read each entry
-	theSplashWindow->setProgressMessage("Reading lfd archive data");
+	UI::setSplashProgressMessage("Reading lfd archive data");
 	size_t offset = dir_len + 16;
 	size_t size = mc.getSize();
 	for (uint32_t d = 0; offset < size; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		uint32_t length = 0;
@@ -163,7 +163,7 @@ bool LfdArchive::open(MemChunk& mc)
 		// the gobfile is invalid
 		if (offset + length > size)
 		{
-			wxLogMessage("LfdArchive::open: lfd archive is invalid or corrupt");
+			LOG_MESSAGE(1, "LfdArchive::open: lfd archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -186,15 +186,15 @@ bool LfdArchive::open(MemChunk& mc)
 	}
 
 	if (num_lumps != numEntries())
-		wxLogMessage("Warning: computed %i lumps, but actually %i entries", num_lumps, numEntries());
+		LOG_MESSAGE(1, "Warning: computed %i lumps, but actually %i entries", num_lumps, numEntries());
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -223,7 +223,7 @@ bool LfdArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -331,7 +331,7 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("LfdArchive::loadEntryData: Failed to open lfdfile %s", filename);
+		LOG_MESSAGE(1, "LfdArchive::loadEntryData: Failed to open lfdfile %s", filename);
 		return false;
 	}
 

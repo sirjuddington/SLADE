@@ -34,9 +34,10 @@
 #include "MapChecksPanel.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapChecks.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "Utility/SFileDialog.h"
+#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************
@@ -205,22 +206,22 @@ void MapChecksPanel::showCheckItem(unsigned index)
 		switch (obj->getObjType())
 		{
 		case MOBJ_VERTEX:
-			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_VERTICES);
+			MapEditor::editContext().setEditMode(MapEditor::Mode::Vertices);
 			break;
 		case MOBJ_LINE:
-			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_LINES);
+			MapEditor::editContext().setEditMode(MapEditor::Mode::Lines);
 			break;
 		case MOBJ_SECTOR:
-			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_SECTORS);
+			MapEditor::editContext().setEditMode(MapEditor::Mode::Sectors);
 			break;
 		case MOBJ_THING:
-			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_THINGS);
+			MapEditor::editContext().setEditMode(MapEditor::Mode::Things);
 			break;
 		default: break;
 		}
 
 		// Scroll to object
-		theMapEditor->mapEditor().showItem(obj->getIndex());
+		MapEditor::editContext().showItem(obj->getIndex());
 
 		// Update UI
 		btn_edit_object->Enable(true);
@@ -323,8 +324,6 @@ void MapChecksPanel::reset()
  *******************************************************************/
 void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 {
-	MapTextureManager* texman = &(theMapEditor->textureManager());
-
 	// Clear interface
 	lb_errors->Show(false);
 	lb_errors->Clear();
@@ -349,9 +348,9 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 	if (cb_overlapping->GetValue())
 		active_checks.push_back(MapCheck::overlappingLineCheck(map));
 	if (cb_unknown_tex->GetValue())
-		active_checks.push_back(MapCheck::unknownTextureCheck(map, texman));
+		active_checks.push_back(MapCheck::unknownTextureCheck(map, &MapEditor::textureManager()));
 	if (cb_unknown_flats->GetValue())
-		active_checks.push_back(MapCheck::unknownFlatCheck(map, texman));
+		active_checks.push_back(MapCheck::unknownFlatCheck(map, &MapEditor::textureManager()));
 	if (cb_unknown_things->GetValue())
 		active_checks.push_back(MapCheck::unknownThingTypeCheck(map));
 	if (cb_overlapping_things->GetValue())
@@ -417,10 +416,10 @@ void MapChecksPanel::onBtnFix1(wxCommandEvent& e)
 	int selected = lb_errors->GetSelection();
 	if (selected >= 0 && selected < (int)check_items.size())
 	{
-		theMapEditor->mapEditor().beginUndoRecord(btn_fix1->GetLabel());
-		theMapEditor->mapEditor().clearSelection();
-		bool fixed = check_items[selected].check->fixProblem(check_items[selected].index, 0, &(theMapEditor->mapEditor()));
-		theMapEditor->mapEditor().endUndoRecord(fixed);
+		MapEditor::editContext().beginUndoRecord(btn_fix1->GetLabel());
+		MapEditor::editContext().selection().clear();
+		bool fixed = check_items[selected].check->fixProblem(check_items[selected].index, 0, &(MapEditor::editContext()));
+		MapEditor::editContext().endUndoRecord(fixed);
 		if (fixed)
 		{
 			refreshList();
@@ -437,10 +436,10 @@ void MapChecksPanel::onBtnFix2(wxCommandEvent& e)
 	int selected = lb_errors->GetSelection();
 	if (selected >= 0 && selected < (int)check_items.size())
 	{
-		theMapEditor->mapEditor().beginUndoRecord(btn_fix2->GetLabel());
-		theMapEditor->mapEditor().clearSelection();
-		bool fixed = check_items[selected].check->fixProblem(check_items[selected].index, 1, &(theMapEditor->mapEditor()));
-		theMapEditor->mapEditor().endUndoRecord(fixed);
+		MapEditor::editContext().beginUndoRecord(btn_fix2->GetLabel());
+		MapEditor::editContext().selection().clear();
+		bool fixed = check_items[selected].check->fixProblem(check_items[selected].index, 1, &(MapEditor::editContext()));
+		MapEditor::editContext().endUndoRecord(fixed);
 		if (fixed)
 		{
 			refreshList();
@@ -459,7 +458,7 @@ void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
 	{
 		vector<MapObject*> list;
 		list.push_back(check_items[selected].check->getObject(check_items[selected].index));
-		theMapEditor->editObjectProperties(list);
+		MapEditor::openMultiObjectProperties(list);
 	}
 }
 
@@ -468,13 +467,13 @@ void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
  *******************************************************************/
 void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 {
-	string map_name = theMapEditor->currentMapDesc().name;
+	string map_name = MapEditor::editContext().mapDesc().name;
 	SFileDialog::fd_info_t info;
 	if (SFileDialog::saveFile(
 		info,
 		"Export Map Check Results",
 		"Text Files (*.txt)|*.txt",
-		theMapEditor, map_name + "-Problems"))
+		MapEditor::windowWx(), map_name + "-Problems"))
 	{
 		string text = S_FMT("%d problems found in map %s:\n\n", check_items.size(), CHR(map_name));
 		for (unsigned a = 0; a < check_items.size(); a++)

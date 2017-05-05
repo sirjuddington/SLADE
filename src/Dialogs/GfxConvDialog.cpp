@@ -34,6 +34,7 @@
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "General/Console/Console.h"
 #include "General/Misc.h"
+#include "General/UI.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
@@ -41,7 +42,6 @@
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/ColourBox.h"
 #include "UI/PaletteChooser.h"
-#include "UI/SplashWindow.h"
 
 
 /*******************************************************************
@@ -206,8 +206,8 @@ bool GfxConvDialog::nextItem()
 
 	// Update UI
 	updatePreviewGfx();
-	theSplashWindow->setProgressMessage(S_FMT("%d of %lu", current_item, items.size()));
-	theSplashWindow->setProgress((float)current_item / (float)items.size());
+	UI::setSplashProgressMessage(S_FMT("%d of %lu", current_item, items.size()));
+	UI::setSplashProgress((float)current_item / (float)items.size());
 
 	return ok;
 }
@@ -442,7 +442,7 @@ void GfxConvDialog::updatePreviewGfx()
 	getConvertOptions(opt);
 
 	// Do conversion
-	//wxLogMessage("Converting to %s", current_format.format->getName());
+	//LOG_MESSAGE(1, "Converting to %s", current_format.format->getName());
 	current_format.format->convertWritable(*(gfx_target->getImage()), opt);
 
 
@@ -623,7 +623,7 @@ void GfxConvDialog::onBtnConvert(wxCommandEvent& e)
 void GfxConvDialog::onBtnConvertAll(wxCommandEvent& e)
 {
 	// Show splash window
-	theSplashWindow->show("Converting Gfx...", true);
+	UI::showSplash("Converting Gfx...", true);
 
 	// Convert all images
 	for (size_t a = current_item; a < items.size(); a++)
@@ -634,7 +634,7 @@ void GfxConvDialog::onBtnConvertAll(wxCommandEvent& e)
 	}
 
 	// Hide splash window
-	theSplashWindow->hide();
+	UI::hideSplash();
 }
 
 /* GfxConvDialog::btnSkipClicked

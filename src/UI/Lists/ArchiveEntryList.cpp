@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ArchiveEntryList.h"
-#include "MainApp.h"
+#include "App.h"
 #include "Graphics/Icons.h"
 #include "General/ColourConfiguration.h"
 #include "General/UndoRedo.h"
@@ -915,20 +915,20 @@ void ArchiveEntryList::onColumnHeaderRightClick(wxListEvent& e)
 {
 	// Create simple popup menu with options to toggle columns
 	wxMenu popup;
-	theApp->getAction("aelt_indexcol")->addToMenu(&popup, true);
-	theApp->getAction("aelt_sizecol")->addToMenu(&popup, true);
-	theApp->getAction("aelt_typecol")->addToMenu(&popup, true);
-	theApp->getAction("aelt_hrules")->addToMenu(&popup, true);
-	theApp->getAction("aelt_vrules")->addToMenu(&popup, true);
-	theApp->getAction("aelt_bgcolour")->addToMenu(&popup, true);
-	theApp->getAction("aelt_bgalt")->addToMenu(&popup, true);
-	popup.Check(theApp->getAction("aelt_indexcol")->getWxId(), elist_colindex_show);
-	popup.Check(theApp->getAction("aelt_sizecol")->getWxId(), elist_colsize_show);
-	popup.Check(theApp->getAction("aelt_typecol")->getWxId(), elist_coltype_show);
-	popup.Check(theApp->getAction("aelt_hrules")->getWxId(), elist_hrules);
-	popup.Check(theApp->getAction("aelt_vrules")->getWxId(), elist_vrules);
-	popup.Check(theApp->getAction("aelt_bgcolour")->getWxId(), elist_type_bgcol);
-	popup.Check(theApp->getAction("aelt_bgalt")->getWxId(), elist_alt_row_colour);
+	SAction::fromId("aelt_indexcol")->addToMenu(&popup, true);
+	SAction::fromId("aelt_sizecol")->addToMenu(&popup, true);
+	SAction::fromId("aelt_typecol")->addToMenu(&popup, true);
+	SAction::fromId("aelt_hrules")->addToMenu(&popup, true);
+	SAction::fromId("aelt_vrules")->addToMenu(&popup, true);
+	SAction::fromId("aelt_bgcolour")->addToMenu(&popup, true);
+	SAction::fromId("aelt_bgalt")->addToMenu(&popup, true);
+	popup.Check(SAction::fromId("aelt_indexcol")->getWxId(), elist_colindex_show);
+	popup.Check(SAction::fromId("aelt_sizecol")->getWxId(), elist_colsize_show);
+	popup.Check(SAction::fromId("aelt_typecol")->getWxId(), elist_coltype_show);
+	popup.Check(SAction::fromId("aelt_hrules")->getWxId(), elist_hrules);
+	popup.Check(SAction::fromId("aelt_vrules")->getWxId(), elist_vrules);
+	popup.Check(SAction::fromId("aelt_bgcolour")->getWxId(), elist_type_bgcol);
+	popup.Check(SAction::fromId("aelt_bgalt")->getWxId(), elist_alt_row_colour);
 
 	// Pop it up
 	PopupMenu(&popup);
@@ -975,7 +975,7 @@ void ArchiveEntryList::onListItemActivated(wxListEvent& e)
 		// Check it exists (really should)
 		if (!dir)
 		{
-			wxLogMessage("Error: Trying to open nonexistant directory");
+			LOG_MESSAGE(1, "Error: Trying to open nonexistant directory");
 			return;
 		}
 

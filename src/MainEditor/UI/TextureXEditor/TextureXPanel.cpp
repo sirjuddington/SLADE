@@ -39,10 +39,10 @@
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "General/UndoRedo.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
-#include "MainApp.h"
+#include "App.h"
 #include "TextureXEditor.h"
-#include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
 #include "ZTextureEditorPanel.h"
 
@@ -781,7 +781,7 @@ void TextureXPanel::newTextureFromFile()
 			// If it's not a valid image type, ignore this file
 			if (!entry->getType()->extraProps().propertyExists("image"))
 			{
-				wxLogMessage("%s is not a valid image file", files[a]);
+				LOG_MESSAGE(1, "%s is not a valid image file", files[a]);
 				continue;
 			}
 
@@ -1216,14 +1216,14 @@ void TextureXPanel::exportTexture()
 	gcd.ShowModal();
 
 	// Show splash window
-	theSplashWindow->show("Writing converted image data...", true);
+	UI::showSplash("Writing converted image data...", true);
 
 	// Write any changes
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Update splash window
-		theSplashWindow->setProgressMessage(selection[a]->getName());
-		theSplashWindow->setProgress((float)a / (float)selection.size());
+		UI::setSplashProgressMessage(selection[a]->getName());
+		UI::setSplashProgress((float)a / (float)selection.size());
 
 		// Skip if the image wasn't converted
 		if (!gcd.itemModified(a))
@@ -1245,7 +1245,7 @@ void TextureXPanel::exportTexture()
 	}
 
 	// Hide splash window
-	theSplashWindow->hide();
+	UI::hideSplash();
 }
 
 /* TextureXPanel::exportAsPNG
@@ -1262,7 +1262,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 	SImage image;
 	if (!texture->toImage(image, NULL, texture_editor->getPalette(), force_rgba))
 	{
-		wxLogMessage("Error converting %s: %s", texture->getName(), Global::error);
+		LOG_MESSAGE(1, "Error converting %s: %s", texture->getName(), Global::error);
 		return false;
 	}
 
@@ -1271,7 +1271,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 	SIFormat* fmt_png = SIFormat::getFormat("png");
 	if (!fmt_png->saveImage(image, png, texture_editor->getPalette()))
 	{
-		wxLogMessage("Error converting %s", texture->getName());
+		LOG_MESSAGE(1, "Error converting %s", texture->getName());
 		return false;
 	}
 
@@ -1332,14 +1332,14 @@ void TextureXPanel::extractTexture()
 		if (SFileDialog::saveFiles(info, "Export Textures as PNG (Filename will be ignored)", "PNG Files (*.png)|*.png", this))
 		{
 			// Show splash window
-			theSplashWindow->show("Saving converted image data...", true);
+			UI::showSplash("Saving converted image data...", true);
 
 			// Go through the selection
 			for (size_t a = 0; a < selection.size(); a++)
 			{
 				// Update splash window
-				theSplashWindow->setProgressMessage(selection[a]->getName());
-				theSplashWindow->setProgress((float)a / (float)selection.size());
+				UI::setSplashProgressMessage(selection[a]->getName());
+				UI::setSplashProgress((float)a / (float)selection.size());
 
 				// Setup entry filename
 				wxFileName fn(selection[a]->getName());
@@ -1351,7 +1351,7 @@ void TextureXPanel::extractTexture()
 			}
 
 			// Hide splash window
-			theSplashWindow->hide();
+			UI::hideSplash();
 		}
 	}
 }
@@ -1512,24 +1512,24 @@ void TextureXPanel::onTextureListRightClick(wxListEvent& e)
 	// Create context menu
 	wxMenu context;
 	wxMenu* texport = new wxMenu();
-	theApp->getAction("txed_delete")->addToMenu(&context, true);
+	SAction::fromId("txed_delete")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("txed_rename")->addToMenu(&context, true);
+	SAction::fromId("txed_rename")->addToMenu(&context, true);
 	if (list_textures->GetSelectedItemCount() > 1)
-		theApp->getAction("txed_rename_each")->addToMenu(&context, true);
+		SAction::fromId("txed_rename_each")->addToMenu(&context, true);
 	if (texturex.getFormat() == TXF_TEXTURES)
-		theApp->getAction("txed_offsets")->addToMenu(&context, true);
-	theApp->getAction("txed_export")->addToMenu(texport, "Archive (as image)");
-	theApp->getAction("txed_extract")->addToMenu(texport, "File");
+		SAction::fromId("txed_offsets")->addToMenu(&context, true);
+	SAction::fromId("txed_export")->addToMenu(texport, "Archive (as image)");
+	SAction::fromId("txed_extract")->addToMenu(texport, "File");
 	context.AppendSubMenu(texport, "&Export To");
 	context.AppendSeparator();
-	theApp->getAction("txed_copy")->addToMenu(&context, true);
-	theApp->getAction("txed_cut")->addToMenu(&context, true);
-	theApp->getAction("txed_paste")->addToMenu(&context, true);
+	SAction::fromId("txed_copy")->addToMenu(&context, true);
+	SAction::fromId("txed_cut")->addToMenu(&context, true);
+	SAction::fromId("txed_paste")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("txed_up")->addToMenu(&context, true);
-	theApp->getAction("txed_down")->addToMenu(&context, true);
-	theApp->getAction("txed_sort")->addToMenu(&context, true);
+	SAction::fromId("txed_up")->addToMenu(&context, true);
+	SAction::fromId("txed_down")->addToMenu(&context, true);
+	SAction::fromId("txed_sort")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);

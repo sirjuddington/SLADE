@@ -30,19 +30,19 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "SplashWindow.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Console/Console.h"
-#include "MainApp.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "SplashWindow.h"
+
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-SplashWindow*	SplashWindow::instance = NULL;
-wxBitmap		SplashWindow::bm_logo;
-int				SplashWindow::width = 300;
-int				SplashWindow::height = 204;
+wxBitmap	SplashWindow::bm_logo;
+int			SplashWindow::width = 300;
+int			SplashWindow::height = 204;
+bool		SplashWindow::init_done = false;
 
 
 /*******************************************************************
@@ -53,7 +53,7 @@ int				SplashWindow::height = 204;
  * SplashWindow class constructor
  *******************************************************************/
 SplashWindow::SplashWindow()
-	: wxMiniFrame(NULL, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
+	: wxMiniFrame(nullptr, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 {
 	// Init
 	show_progress = false;
@@ -114,8 +114,11 @@ void SplashWindow::setProgress(float progress)
  *******************************************************************/
 void SplashWindow::init()
 {
+	if (init_done)
+		return;
+
 	// Load logo image
-	string tempfile = appPath("temp.png", DIR_TEMP);
+	string tempfile = App::path("temp.png", App::Dir::Temp);
 	ArchiveEntry* logo = theArchiveManager->programResourceArchive()->getEntry("logo.png");
 	if (logo)
 	{
@@ -125,6 +128,7 @@ void SplashWindow::init()
 
 	// Clean up
 	wxRemoveFile(tempfile);
+	init_done = true;
 }
 
 /* SplashWindow::show
@@ -145,8 +149,8 @@ void SplashWindow::show(string message, bool progress, wxWindow* parent)
 		show_progress = false;
 
 	// Set parent
-	if (!parent && theApp->isInitialised())
-		SetParent(theMainWindow);
+	if (!parent && App::isInitialised())
+		SetParent(MainEditor::windowWx());
 	else
 		SetParent(parent);
 
@@ -163,16 +167,13 @@ void SplashWindow::show(string message, bool progress, wxWindow* parent)
 }
 
 /* SplashWindow::hide
- * Hides (destroys) the splash window
+ * Hides the splash window
  *******************************************************************/
 void SplashWindow::hide()
 {
 	// Close
 	Show(false);
 	Close(true);
-
-	// Destroy instance
-	deleteInstance();
 }
 
 /* SplashWindow::forceRedraw
@@ -278,25 +279,4 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	}
 
 	timer.Start();
-}
-
-
-
-/* Console Command - "splash"
- * Shows the splash screen with the given message, or hides it if
- * no message is given
- *******************************************************************/
-CONSOLE_COMMAND (splash, 0, false)
-{
-	if (args.size() == 0)
-		theSplashWindow->hide();
-	else if (args.size() == 1)
-		theSplashWindow->show(args[0]);
-	else
-	{
-		theSplashWindow->show(args[0], true);
-		float prog = atof(CHR(args[1]));
-		theSplashWindow->setProgress(prog);
-		theSplashWindow->setProgressMessage(S_FMT("Progress %s", args[1]));
-	}
 }

@@ -28,16 +28,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "Console.h"
 #include "Utility/Tokenizer.h"
 #include "General/CVar.h"
-#include "MainEditor/MainWindow.h"
-
-
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-Console* Console::instance = NULL;
+#include "MainEditor/MainEditor.h"
 
 
 /*******************************************************************
@@ -75,7 +70,7 @@ void Console::addCommand(ConsoleCommand& c)
  *******************************************************************/
 void Console::execute(string command)
 {
-	wxLogMessage("> %s", command);
+	LOG_MESSAGE(1, "> %s", command);
 
 	// Don't bother doing anything else with an empty command
 	if (command.size() == 0)
@@ -83,10 +78,6 @@ void Console::execute(string command)
 
 	// Add the command to the log
 	cmd_log.insert(cmd_log.begin(), command);
-
-	// Announce that a command has been executed
-	MemChunk mc;
-	announce("console_execute", mc);
 
 	// Tokenize the command string
 	Tokenizer tz;
@@ -153,10 +144,7 @@ void Console::execute(string command)
 		else
 			value = ((CStringCVar*)cvar)->value;
 
-		logMessage(S_FMT("\"%s\" = \"%s\"", cmd_name, value));
-
-		if (cmd_name == "log_verbosity")
-			Global::log_verbosity = cvar->GetValue().Int;
+		Log::console(S_FMT("\"%s\" = \"%s\"", cmd_name, value));
 
 		return;
 	}
@@ -166,64 +154,15 @@ void Console::execute(string command)
 	{
 		Global::debug = !Global::debug;
 		if (Global::debug)
-			logMessage("Debugging stuff enabled");
+			Log::console("Debugging stuff enabled");
 		else
-			logMessage("Debugging stuff disabled");
+			Log::console("Debugging stuff disabled");
 
 		return;
 	}
 
 	// Command not found
-	logMessage(S_FMT("Unknown command: \"%s\"", cmd_name));
-	return;
-}
-
-/* Console::logMessage
- * Prints a message to the console log
- *******************************************************************/
-void Console::logMessage(string message)
-{
-	// Add a newline to the end of the message if there isn't one
-	if (message.size() == 0 || message.Last() != '\n')
-		message.Append("\n");
-
-	// Log the message
-	log.push_back(message);
-
-	// Announce that a new message has been logged
-	MemChunk mc;
-	announce("console_logmessage", mc);
-}
-
-/* Console::lastLogLine
- * Returns the last line added to the console log
- *******************************************************************/
-string Console::lastLogLine()
-{
-	// Init blank string
-	string lastLine = "";
-
-	// Get last line if any exist
-	if (log.size() > 0)
-		lastLine = log.back();
-
-	return lastLine;
-}
-
-/* Console::lastLogLines
- * Returns the last [num] lines added to the console log
- *******************************************************************/
-vector<string> Console::lastLogLines(int num)
-{
-	vector<string> lines;
-
-	while (num >= 0 && num < (int)log.size())
-	{
-		lines.push_back(log[log.size() - num - 1]);
-		num--;
-	}
-
-	return lines;
+	Log::console(S_FMT("Unknown command: \"%s\"", cmd_name));
 }
 
 /* Console::lastCommand
@@ -239,20 +178,6 @@ string Console::lastCommand()
 		lastCmd = cmd_log.back();
 
 	return lastCmd;
-}
-
-/* Console::dumpLog
- * Returns the entire console log as one string, each message
- * separated by a newline
- *******************************************************************/
-string Console::dumpLog()
-{
-	string ret = "";
-
-	for (size_t a = 0; a < log.size(); a++)
-		ret += log.at(a);
-
-	return ret;
 }
 
 /* Console::prevCommand
@@ -291,7 +216,7 @@ ConsoleCommand::ConsoleCommand(string name, void(*commandFunc)(vector<string>), 
 	this->show_in_list = show_in_list;
 
 	// Add this command to the console
-	theConsole->addCommand(*this);
+	App::console()->addCommand(*this);
 }
 
 /* ConsoleCommand::execute
@@ -303,7 +228,7 @@ void ConsoleCommand::execute(vector<string> args)
 	if (args.size() >= min_args)
 		commandFunc(args);
 	else
-		theConsole->logMessage(S_FMT("Missing command arguments, type \"cmdhelp %s\" for more information", name));
+		Log::console(S_FMT("Missing command arguments, type \"cmdhelp %s\" for more information", name));
 }
 
 
@@ -317,7 +242,7 @@ void ConsoleCommand::execute(vector<string> args)
  *******************************************************************/
 CONSOLE_COMMAND (echo, 1, true)
 {
-	theConsole->logMessage(args[0]);
+	Log::console(args[0]);
 }
 
 /* Console Command - "cmdlist"
@@ -325,13 +250,13 @@ CONSOLE_COMMAND (echo, 1, true)
  *******************************************************************/
 CONSOLE_COMMAND (cmdlist, 0, true)
 {
-	theConsole->logMessage(S_FMT("%d Valid Commands:", theConsole->numCommands()));
+	Log::console(S_FMT("%d Valid Commands:", App::console()->numCommands()));
 
-	for (int a = 0; a < theConsole->numCommands(); a++)
+	for (int a = 0; a < App::console()->numCommands(); a++)
 	{
-		ConsoleCommand& cmd = theConsole->command(a);
+		ConsoleCommand& cmd = App::console()->command(a);
 		if (cmd.showInList() || Global::debug)
-			theConsole->logMessage(S_FMT("\"%s\" (%d args)", cmd.getName(), cmd.minArgs()));
+			Log::console(S_FMT("\"%s\" (%d args)", cmd.getName(), cmd.minArgs()));
 	}
 }
 
@@ -345,11 +270,11 @@ CONSOLE_COMMAND (cvarlist, 0, true)
 	get_cvar_list(list);
 	sort(list.begin(), list.end());
 
-	theConsole->logMessage(S_FMT("%lu CVars:", list.size()));
+	Log::console(S_FMT("%lu CVars:", list.size()));
 
 	// Write list to console
 	for (unsigned a = 0; a < list.size(); a++)
-		theConsole->logMessage(list[a]);
+		Log::console(list[a]);
 }
 
 /* Console Command - "cmdhelp"
@@ -358,12 +283,12 @@ CONSOLE_COMMAND (cvarlist, 0, true)
 CONSOLE_COMMAND(cmdhelp, 1, true)
 {
 	// Check command exists
-	for (int a = 0; a < theConsole->numCommands(); a++)
+	for (int a = 0; a < App::console()->numCommands(); a++)
 	{
-		if (theConsole->command(a).getName().Lower() == args[0].Lower())
+		if (App::console()->command(a).getName().Lower() == args[0].Lower())
 		{
 #ifdef USE_WEBVIEW_STARTPAGE
-			theMainWindow->openDocs(S_FMT("%s-Console-Command", args[0]));
+			MainEditor::openDocs(S_FMT("%s-Console-Command", args[0]));
 #else
 			string url = S_FMT("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
 			wxLaunchDefaultBrowser(url);
@@ -373,16 +298,16 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 	}
 
 	// No command found
-	theConsole->logMessage(S_FMT("No command \"%s\" exists", args[0]));
+	Log::console(S_FMT("No command \"%s\" exists", args[0]));
 }
 
 CONSOLE_COMMAND (testmatch, 0, false)
 {
 	bool match = args[0].Matches(args[1]);
 	if (match)
-		theConsole->logMessage("Match");
+		Log::console("Match");
 	else
-		theConsole->logMessage("No Match");
+		Log::console("No Match");
 }
 
 
@@ -442,7 +367,7 @@ CONSOLE_COMMAND (langfuncsplit, 1)
 			}
 		}
 		lmsg += ";";
-		theConsole->logMessage(lmsg);
+		Log::console(lmsg);
 	}
 }
 

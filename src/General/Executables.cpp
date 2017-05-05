@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "Executables.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
@@ -174,7 +175,7 @@ void Executables::init()
 	// Parse user executables config
 	Parser p2;
 	MemChunk mc;
-	if (mc.importFile(appPath("executables.cfg", DIR_USER)))
+	if (mc.importFile(App::path("executables.cfg", App::Dir::User)))
 	{
 		p2.parseText(mc, "user execuatbles.cfg");
 		parse(&p2, true);

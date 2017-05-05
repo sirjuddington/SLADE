@@ -29,12 +29,16 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
+#include "Archive/Archive.h"
 #include "PaletteEntryPanel.h"
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "UI/Canvas/PaletteCanvas.h"
+#include "UI/PaletteChooser.h"
 #include "Utility/SFileDialog.h"
 
 
@@ -886,14 +890,14 @@ bool PaletteEntryPanel::addCustomPalette()
 		return false;
 
 	// Write current palette to the user palettes directory
-	string path = appPath(S_FMT("palettes/%s.pal", name), DIR_USER);
+	string path = App::path(S_FMT("palettes/%s.pal", name), App::Dir::User);
 	palettes[cur_palette]->saveFile(path);
 
 	// Add to palette manager and main palette chooser
-	Palette8bit* pal = new Palette8bit();
+	auto pal = std::make_unique<Palette8bit>();
 	pal->copyPalette(palettes[cur_palette]);
-	thePaletteManager->addPalette(pal, name);
-	thePaletteChooser->addPalette(name);
+	App::paletteManager()->addPalette(std::move(pal), name);
+	theMainWindow->getPaletteChooser()->addPalette(name);
 
 	return true;
 }
@@ -909,11 +913,11 @@ bool PaletteEntryPanel::testPalette()
 	string name = "Test: " + wxGetTextFromUser("Enter name for Palette:", "Test Palettes");
 
 	// Add to palette manager and main palette chooser
-	Palette8bit* pal = new Palette8bit();
+	auto pal = std::make_unique<Palette8bit>();
 	pal->copyPalette(palettes[cur_palette]);
-	thePaletteManager->addPalette(pal, name);
-	thePaletteChooser->addPalette(name);
-	thePaletteChooser->selectPalette(name);
+	App::paletteManager()->addPalette(std::move(pal), name);
+	theMainWindow->getPaletteChooser()->addPalette(name);
+	theMainWindow->getPaletteChooser()->selectPalette(name);
 
 	return true;
 }
@@ -965,7 +969,7 @@ bool PaletteEntryPanel::clearOne()
 	// Always keep at least one palette
 	if (cur_palette == 0 && palettes.size() == 1)
 	{
-		wxLogMessage("Palette cannot be removed, no other palette in this entry.");
+		LOG_MESSAGE(1, "Palette cannot be removed, no other palette in this entry.");
 		return false;
 	}
 
@@ -1491,27 +1495,27 @@ bool PaletteEntryPanel::handleAction(string id)
  *******************************************************************/
 bool PaletteEntryPanel::fillCustomMenu(wxMenu* custom)
 {
-	theApp->getAction("ppal_addcustom")->addToMenu(custom);
-	theApp->getAction("ppal_exportas")->addToMenu(custom);
-	theApp->getAction("ppal_importfrom")->addToMenu(custom);
+	SAction::fromId("ppal_addcustom")->addToMenu(custom);
+	SAction::fromId("ppal_exportas")->addToMenu(custom);
+	SAction::fromId("ppal_importfrom")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("ppal_colourise")->addToMenu(custom);
-	theApp->getAction("ppal_tint")->addToMenu(custom);
-	theApp->getAction("ppal_tweak")->addToMenu(custom);
-	theApp->getAction("ppal_invert")->addToMenu(custom);
-	theApp->getAction("ppal_gradient")->addToMenu(custom);
-	theApp->getAction("ppal_test")->addToMenu(custom);
+	SAction::fromId("ppal_colourise")->addToMenu(custom);
+	SAction::fromId("ppal_tint")->addToMenu(custom);
+	SAction::fromId("ppal_tweak")->addToMenu(custom);
+	SAction::fromId("ppal_invert")->addToMenu(custom);
+	SAction::fromId("ppal_gradient")->addToMenu(custom);
+	SAction::fromId("ppal_test")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("ppal_generate")->addToMenu(custom);
-	theApp->getAction("ppal_duplicate")->addToMenu(custom);
-	theApp->getAction("ppal_remove")->addToMenu(custom);
-	theApp->getAction("ppal_removeothers")->addToMenu(custom);
-	theApp->getAction("ppal_colormap")->addToMenu(custom);
+	SAction::fromId("ppal_generate")->addToMenu(custom);
+	SAction::fromId("ppal_duplicate")->addToMenu(custom);
+	SAction::fromId("ppal_remove")->addToMenu(custom);
+	SAction::fromId("ppal_removeothers")->addToMenu(custom);
+	SAction::fromId("ppal_colormap")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("ppal_moveup")->addToMenu(custom);
-	theApp->getAction("ppal_movedown")->addToMenu(custom);
+	SAction::fromId("ppal_moveup")->addToMenu(custom);
+	SAction::fromId("ppal_movedown")->addToMenu(custom);
 //	custom->AppendSeparator();
-//	theApp->getAction("ppal_report")->addToMenu(custom);
+//	SAction::fromId("ppal_report")->addToMenu(custom);
 
 	return true;
 }
@@ -1614,7 +1618,7 @@ void PaletteEntryPanel::analysePalettes()
 #endif
 	}
 
-	wxLogMessage(report);
+	LOG_MESSAGE(1, report);
 
 }
 

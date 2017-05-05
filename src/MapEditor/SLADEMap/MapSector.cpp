@@ -32,7 +32,7 @@
 #include "MapLine.h"
 #include "MapSide.h"
 #include "MapVertex.h"
-#include "MainApp.h"
+#include "App.h"
 #include "SLADEMap.h"
 #include "Utility/MathStuff.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
@@ -128,7 +128,7 @@ void MapSector::copy(MapObject* s)
  *******************************************************************/
 void MapSector::setGeometryUpdated()
 {
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 }
 
 /* MapSector::stringProperty

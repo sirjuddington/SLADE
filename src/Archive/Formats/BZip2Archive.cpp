@@ -161,7 +161,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("BZip2Archive::loadEntryData: Failed to open gzip file %s", filename);
+		LOG_MESSAGE(1, "BZip2Archive::loadEntryData: Failed to open gzip file %s", filename);
 		return false;
 	}
 

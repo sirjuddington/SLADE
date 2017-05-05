@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "TextEntryPanel.h"
 #include "Archive/ArchiveManager.h"
-#include "MainApp.h"
+#include "App.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 
 
@@ -96,24 +96,24 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 
 	// --- Custom menu ---
 	menu_custom = new wxMenu();
-	theApp->getAction("ptxt_find_replace")->addToMenu(menu_custom);
-	theApp->getAction("ptxt_jump_to_line")->addToMenu(menu_custom);
+	SAction::fromId("ptxt_find_replace")->addToMenu(menu_custom);
+	SAction::fromId("ptxt_jump_to_line")->addToMenu(menu_custom);
 
 	// 'Code Folding' submenu
 	wxMenu* menu_fold = new wxMenu();
 	menu_custom->AppendSubMenu(menu_fold, "Code Folding");
-	theApp->getAction("ptxt_fold_foldall")->addToMenu(menu_fold);
-	theApp->getAction("ptxt_fold_unfoldall")->addToMenu(menu_fold);
+	SAction::fromId("ptxt_fold_foldall")->addToMenu(menu_fold);
+	SAction::fromId("ptxt_fold_unfoldall")->addToMenu(menu_fold);
 
 	// 'Compile' submenu
 	wxMenu* menu_scripts = new wxMenu();
 	menu_custom->AppendSubMenu(menu_scripts, "Compile");
-	theApp->getAction("arch_scripts_compileacs")->addToMenu(menu_scripts);
-	theApp->getAction("arch_scripts_compilehacs")->addToMenu(menu_scripts);
+	SAction::fromId("arch_scripts_compileacs")->addToMenu(menu_scripts);
+	SAction::fromId("arch_scripts_compilehacs")->addToMenu(menu_scripts);
 
 	menu_custom->AppendSeparator();
 
-	theApp->getAction("ptxt_wrap")->addToMenu(menu_custom);
+	SAction::fromId("ptxt_wrap")->addToMenu(menu_custom);
 	custom_menu_name = "Text";
 
 
@@ -319,9 +319,9 @@ bool TextEntryPanel::handleAction(string id)
 	// Word Wrapping toggle
 	else if (id == "ptxt_wrap")
 	{
-		SAction* action = theApp->getAction("ptxt_wrap");
+		SAction* action = SAction::fromId("ptxt_wrap");
 		bool m = isModified();
-		if (action->isToggled())
+		if (action->isChecked())
 			text_area->SetWrapMode(wxSTC_WRAP_WORD);
 		else
 			text_area->SetWrapMode(wxSTC_WRAP_NONE);

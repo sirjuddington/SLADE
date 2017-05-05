@@ -33,7 +33,7 @@
 #include "Dialogs/TranslationEditorDialog.h"
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
 
@@ -430,7 +430,7 @@ void ZTextureEditorPanel::updatePatchControls()
 			CTPatchEx* patch = (CTPatchEx*)tex_current->getPatch(selection[0]);
 			if (!patch)
 			{
-				wxLogMessage("Error: Selected patch does not exist in texture");
+				LOG_MESSAGE(1, "Error: Selected patch does not exist in texture");
 				return;
 			}
 
@@ -1033,7 +1033,7 @@ void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 	tex_canvas->getTexture()->loadPatchImage(selection[0], image, tx_editor->getArchive(), tex_canvas->getPalette());
 
 	// Open translation editor dialog
-	TranslationEditorDialog ted(theMainWindow, tex_canvas->getPalette(), "Edit Translation", &image);
+	TranslationEditorDialog ted(MainEditor::windowWx(), tex_canvas->getPalette(), "Edit Translation", &image);
 	ted.openTranslation(trans);
 	if (ted.ShowModal() == wxID_OK)
 	{

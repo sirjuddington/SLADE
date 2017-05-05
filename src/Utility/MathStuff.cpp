@@ -489,5 +489,5 @@ CONSOLE_COMMAND(angle2d, 6, false)
 	}
 
 	double ang = MathStuff::angle2DRad(fpoint2_t(vals[0], vals[1]), fpoint2_t(vals[2], vals[3]), fpoint2_t(vals[4], vals[5]));
-	wxLogMessage("Angle = %1.4f", ang);
+	LOG_MESSAGE(1, "Angle = %1.4f", ang);
 }

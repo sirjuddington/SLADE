@@ -33,7 +33,7 @@
 #include "MapSide.h"
 #include "Utility/MathStuff.h"
 #include "SLADEMap.h"
-#include "MainApp.h"
+#include "App.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 
 

@@ -1,12 +1,12 @@
-
-#ifndef __OBJECT_EDIT_H__
-#define __OBJECT_EDIT_H__
+#pragma once
 
 #include "Utility/Structs.h"
 
+class MapEditContext;
 class MapVertex;
 class MapLine;
 class MapThing;
+
 class ObjectEditGroup
 {
 public:
@@ -17,7 +17,7 @@ public:
 		MapVertex*	map_vertex;
 		bool		ignored;
 
-		vertex_t() { map_vertex = NULL; ignored = false; }
+		vertex_t() { map_vertex = nullptr; ignored = false; }
 	};
 
 	struct line_t
@@ -80,4 +80,43 @@ private:
 	bool				mirrored;
 };
 
-#endif//__OBJECT_EDIT_H__
+#undef None
+
+class ObjectEdit
+{
+public:
+	enum class State
+	{
+		None,
+		Move,
+		Left,
+		Right,
+		Top,
+		Bottom,
+		TopLeft,
+		BottomLeft,
+		TopRight,
+		BottomRight,
+	};
+
+	ObjectEdit(MapEditContext& context);
+
+	ObjectEditGroup&	group() { return group_; }
+	State				state() const { return state_; }
+	bool				rotating() const { return rotating_; }
+
+	bool				stateLeft(bool move = true) const;
+	bool				stateTop(bool move = true) const;
+	bool				stateRight(bool move = true) const;
+	bool				stateBottom(bool move = true) const;
+	void				determineState();
+
+	bool				begin();
+	void				end(bool accept);
+
+private:
+	MapEditContext&	context_;
+	ObjectEditGroup	group_;
+	State			state_;
+	bool			rotating_;
+};

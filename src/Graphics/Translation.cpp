@@ -38,7 +38,7 @@
 #include "Translation.h"
 #include "Utility/Tokenizer.h"
 #include "Palette/Palette.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 
  /*******************************************************************
  * VARIABLES
@@ -78,7 +78,7 @@ void Translation::parse(string def)
 	tz.setSpecialCharacters("[]:%,=#@");
 	tz.openString(def);
 
-	//wxLogMessage("Parse translation \"%s\"", def);
+	//LOG_MESSAGE(1, "Parse translation \"%s\"", def);
 	
 	// Test for ZDoom built-in translation
 	string test = tz.peekToken().Lower();
@@ -424,7 +424,7 @@ rgba_t Translation::translate(rgba_t col, Palette8bit * pal)
 {
 	rgba_t colour(col);
 	colour.blend = -1;
-	if (pal == NULL) pal = thePaletteChooser->getSelectedPalette();
+	if (pal == NULL) pal = MainEditor::currentPalette();
 	uint8_t i = (col.index == -1) ? pal->nearestColour(col) : col.index;
 
 	// Go through each translation component

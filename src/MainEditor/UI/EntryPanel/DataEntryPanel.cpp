@@ -31,8 +31,9 @@
 #include "Main.h"
 #include "DataEntryPanel.h"
 #include "General/ColourConfiguration.h"
+#include "App.h"
 #include "MainEditor/BinaryControlLump.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 
 
 /*******************************************************************
@@ -1071,7 +1072,7 @@ void DataEntryPanel::changeValue()
 	}
 
 	// Create dialog
-	wxDialog dlg(theMainWindow, -1, "Change Value");
+	wxDialog dlg(MainEditor::windowWx(), -1, "Change Value");
 
 	dep_column_t ci = table_data->getColumnInfo(selection[0].y);
 	wxArrayString choices;
@@ -1215,16 +1216,16 @@ void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 	LOG_MESSAGE(2, "Column %d", col);
 
 	wxMenu menu;
-	theApp->getAction("data_add_row")->addToMenu(&menu);
-	theApp->getAction("data_delete_row")->addToMenu(&menu);
+	SAction::fromId("data_add_row")->addToMenu(&menu);
+	SAction::fromId("data_delete_row")->addToMenu(&menu);
 	menu.AppendSeparator();
-	theApp->getAction("data_cut_row")->addToMenu(&menu);
-	theApp->getAction("data_copy_row")->addToMenu(&menu);
-	theApp->getAction("data_paste_row")->addToMenu(&menu);
+	SAction::fromId("data_cut_row")->addToMenu(&menu);
+	SAction::fromId("data_copy_row")->addToMenu(&menu);
+	SAction::fromId("data_paste_row")->addToMenu(&menu);
 	if (col >= 0)
 	{
 		menu.AppendSeparator();
-		theApp->getAction("data_change_value")->addToMenu(&menu);
+		SAction::fromId("data_change_value")->addToMenu(&menu);
 	}
 	PopupMenu(&menu);
 }

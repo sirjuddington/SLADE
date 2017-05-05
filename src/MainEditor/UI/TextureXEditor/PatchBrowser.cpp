@@ -39,7 +39,9 @@
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/SImage/SImage.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
+#include "UI/PaletteChooser.h"
 
 
 /*******************************************************************

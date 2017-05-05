@@ -34,10 +34,11 @@
 #include "GameConfiguration/GameConfiguration.h"
 #include "MapTextureManager.h"
 #include "UI/Dialogs/MapTextureBrowser.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/MapEditContext.h"
 #include "UI/Dialogs/ThingTypeBrowser.h"
 #include "Utility/MathStuff.h"
-#include "SectorBuilder.h"
+#include "General/SAction.h"
 
 
 /*******************************************************************
@@ -153,7 +154,7 @@ public:
 			return "No missing textures found";
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= lines.size())
 			return false;
@@ -161,7 +162,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(theMapEditor, 0, "-", map);
+			MapTextureBrowser browser(MapEditor::windowWx(), 0, "-", map);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				editor->beginUndoRecord("Change Texture", true, false, false);
@@ -306,10 +307,10 @@ public:
 			mo->getIndex(), special, as->getName());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		// Begin tag edit
-		theApp->doAction("mapw_line_tagedit");
+		SActionHandler::doAction("mapw_line_tagedit");
 
 		return false;
 	}
@@ -447,7 +448,7 @@ public:
 			special, as->getName());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		// Can't automatically fix that
 		return false;
@@ -554,7 +555,7 @@ public:
 			intersections[index].intersect_point.x, intersections[index].intersect_point.y);
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= intersections.size())
 			return false;
@@ -683,7 +684,7 @@ public:
 		return S_FMT("Lines %d and %d are overlapping", overlaps[index].line1->getIndex(), overlaps[index].line2->getIndex());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= overlaps.size())
 			return false;
@@ -917,7 +918,7 @@ public:
 		return S_FMT("Things %d and %d are overlapping", overlaps[index].thing1->getIndex(), overlaps[index].thing2->getIndex());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= overlaps.size())
 			return false;
@@ -1106,7 +1107,7 @@ public:
 		return line;
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= lines.size())
 			return false;
@@ -1114,7 +1115,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(theMapEditor, 0, "-", map);
+			MapTextureBrowser browser(MapEditor::windowWx(), 0, "-", map);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
@@ -1239,7 +1240,7 @@ public:
 			return S_FMT("Sector %d has unknown ceiling texture \"%s\"", sector->getIndex(), sector->getCeilingTex());
 	}
 
-	virtual bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	virtual bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= sectors.size())
 			return false;
@@ -1247,7 +1248,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(theMapEditor, 1, "", map);
+			MapTextureBrowser browser(MapEditor::windowWx(), 1, "", map);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
@@ -1331,14 +1332,14 @@ public:
 		return S_FMT("Thing %d has unknown type %d", things[index]->getIndex(), things[index]->getType());
 	}
 
-	virtual bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	virtual bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= things.size())
 			return false;
 
 		if (fix_type == 0)
 		{
-			ThingTypeBrowser browser(theMapEditor);
+			ThingTypeBrowser browser(MapEditor::windowWx());
 			if (browser.ShowModal() == wxID_OK)
 			{
 				editor->beginUndoRecord("Change Thing Type");
@@ -1451,7 +1452,7 @@ public:
 		return S_FMT("Thing %d is stuck inside line %d", things[index]->getIndex(), lines[index]->getIndex());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= things.size())
 			return false;
@@ -1578,7 +1579,7 @@ public:
 		return S_FMT("Line %d has potentially wrong %s sector %s", invalid_refs[index].line->getIndex(), side, sector);
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= invalid_refs.size())
 			return false;
@@ -1699,7 +1700,7 @@ public:
 			return S_FMT("Line %d has no sides", lines[index]);
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= lines.size())
 			return false;
@@ -1718,7 +1719,7 @@ public:
 			else if (fix_type == 1)
 			{
 				fpoint2_t pos = line->dirTabPoint(0.1);
-				editor->createSector(pos.x, pos.y);
+				editor->edit2D().createSector(pos.x, pos.y);
 				doCheck();
 				return true;
 			}
@@ -1737,7 +1738,7 @@ public:
 			else if (fix_type == 1)
 			{
 				fpoint2_t pos = line->dirTabPoint(0.1);
-				editor->createSector(pos.x, pos.y);
+				editor->edit2D().createSector(pos.x, pos.y);
 				doCheck();
 				return true;
 			}
@@ -1820,7 +1821,7 @@ public:
 		return S_FMT("Sector %d has no sides", sectors[index]);
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= sectors.size())
 			return false;
@@ -1917,7 +1918,7 @@ public:
 			objects[index]->getIndex(), special ? "special" : "type");
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= objects.size())
 			return false;
@@ -1994,7 +1995,7 @@ public:
 		return S_FMT("Thing %d is obsolete", things[index]->getIndex());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
 	{
 		if (index >= things.size())
 			return false;

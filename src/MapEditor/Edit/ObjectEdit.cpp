@@ -32,9 +32,18 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "SLADEMap/SLADEMap.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "ObjectEdit.h"
 #include "Utility/MathStuff.h"
+#include "General/KeyBind.h"
+#include "General/UI.h"
+
+using namespace MapEditor;
+
+
+EXTERN_CVAR(Bool, map_merge_undo_step)
 
 
 /*******************************************************************
@@ -86,10 +95,9 @@ void ObjectEditGroup::addVertex(MapVertex* vertex, bool ignored)
  *******************************************************************/
 void ObjectEditGroup::addConnectedLines()
 {
-	unsigned n_vertices = vertices.size();
-	for (unsigned a = 0; a < n_vertices; a++)
+	for (auto vertex : vertices)
 	{
-		MapVertex* map_vertex = vertices[a]->map_vertex;
+		MapVertex* map_vertex = vertex->map_vertex;
 		for (unsigned l = 0; l < map_vertex->nConnectedLines(); l++)
 		{
 			MapLine* map_line = map_vertex->connectedLine(l);
@@ -576,23 +584,23 @@ void ObjectEditGroup::applyEdit()
 		return;
 
 	// Move vertices
-	for (unsigned a = 0; a < vertices.size(); a++)
-		map->moveVertex(vertices[a]->map_vertex->getIndex(), vertices[a]->position.x, vertices[a]->position.y);
+	for (auto vertex : vertices)
+		map->moveVertex(vertex->map_vertex->getIndex(), vertex->position.x, vertex->position.y);
 
 	// Move things
-	for (unsigned a = 0; a < things.size(); a++)
+	for (auto& thing : things)
 	{
-		map->moveThing(things[a].map_thing->getIndex(), things[a].position.x, things[a].position.y);
-		things[a].map_thing->setIntProperty("angle", things[a].angle);
+		map->moveThing(thing.map_thing->getIndex(), thing.position.x, thing.position.y);
+		thing.map_thing->setIntProperty("angle", thing.angle);
 	}
 
 	// Flip lines if needed
 	if (mirrored)
 	{
-		for (unsigned a = 0; a < lines.size(); a++)
+		for (auto& line : lines)
 		{
-			if (!lines[a].isExtra())
-				lines[a].map_line->flip(false);
+			if (!line.isExtra())
+				line.map_line->flip(false);
 		}
 	}
 }
@@ -606,5 +614,274 @@ void ObjectEditGroup::getVertices(vector<MapVertex*>& list)
 	{
 		if (!vertices[a]->ignored)
 			list.push_back(vertices[a]->map_vertex);
+	}
+}
+
+
+
+
+
+ObjectEdit::ObjectEdit(MapEditContext& context) :
+	context_{ context },
+	state_{ State::None },
+	rotating_{ false }
+{
+}
+
+bool ObjectEdit::stateLeft(bool move) const
+{
+	return (state_ == State::Left ||
+		state_ == State::TopLeft ||
+		state_ == State::BottomLeft ||
+		(move && state_ == State::Move));
+}
+
+bool ObjectEdit::stateTop(bool move) const
+{
+	return (state_ == State::Top ||
+		state_ == State::TopLeft ||
+		state_ == State::TopRight ||
+		(move && state_ == State::Move));
+}
+
+bool ObjectEdit::stateRight(bool move) const
+{
+	return (state_ == State::Right ||
+		state_ == State::TopRight ||
+		state_ == State::BottomRight ||
+		(move && state_ == State::Move));
+}
+
+bool ObjectEdit::stateBottom(bool move) const
+{
+	return (state_ == State::Bottom ||
+		state_ == State::BottomRight ||
+		state_ == State::BottomLeft ||
+		(move && state_ == State::Move));
+}
+
+
+/* ObjectEdit::begin
+ * Begins an object edit operation
+ *******************************************************************/
+bool ObjectEdit::begin()
+{
+	// Things mode
+	if (context_.editMode() == Mode::Things)
+	{
+		// Get selected things
+		auto edit_objects = context_.selection().selectedObjects();
+
+		// Setup object group
+		group_.clear();
+		for (unsigned a = 0; a < edit_objects.size(); a++)
+			group_.addThing((MapThing*)edit_objects[a]);
+
+		// Filter objects
+		group_.filterObjects(true);
+	}
+	else
+	{
+		vector<MapObject*> edit_objects;
+
+		// Vertices mode
+		if (context_.editMode() == Mode::Vertices)
+		{
+			// Get selected vertices
+			edit_objects = context_.selection().selectedObjects();
+		}
+
+		// Lines mode
+		else if (context_.editMode() == Mode::Lines)
+		{
+			// Get vertices of selected lines
+			auto lines = context_.selection().selectedLines();
+			for (unsigned a = 0; a < lines.size(); a++)
+			{
+				VECTOR_ADD_UNIQUE(edit_objects, lines[a]->v1());
+				VECTOR_ADD_UNIQUE(edit_objects, lines[a]->v2());
+			}
+		}
+
+		// Sectors mode
+		else if (context_.editMode() == Mode::Sectors)
+		{
+			// Get vertices of selected sectors
+			auto sectors = context_.selection().selectedSectors();
+			for (unsigned a = 0; a < sectors.size(); a++)
+				sectors[a]->getVertices(edit_objects);
+		}
+
+		// Setup object group
+		group_.clear();
+		for (unsigned a = 0; a < edit_objects.size(); a++)
+			group_.addVertex((MapVertex*)edit_objects[a]);
+		group_.addConnectedLines();
+
+		// Filter objects
+		group_.filterObjects(true);
+	}
+
+	if (group_.empty())
+		return false;
+
+	MapEditor::showObjectEditPanel(true, &group_);
+
+	context_.input().setMouseState(Input::MouseState::ObjectEdit);
+	context_.renderer().renderer2D().forceUpdate();
+
+	// Setup help text
+	string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+	string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+	string key_toggle = KeyBind::getBind("me2d_begin_object_edit").keysAsString();
+	context_.setFeatureHelp({
+		"Object Edit",
+		S_FMT("%s = Accept", key_accept),
+		S_FMT("%s or %s = Cancel", key_cancel, key_toggle),
+		"Shift = Disable grid snapping",
+		"Ctrl = Rotate"
+	});
+
+	return true;
+}
+
+/* ObjectEdit::end
+ * Ends the object edit operation and applies changes if [accept] is
+ * true
+ *******************************************************************/
+void ObjectEdit::end(bool accept)
+{
+	// Un-filter objects
+	group_.filterObjects(false);
+
+	// Apply change if accepted
+	if (accept)
+	{
+		// Begin recording undo level
+		context_.beginUndoRecord(S_FMT("Edit %s", context_.modeString()));
+
+		// Apply changes
+		group_.applyEdit();
+
+		// Do merge
+		bool merge = true;
+		if (context_.editMode() != Mode::Things)
+		{
+			// Begin extra 'Merge' undo step if wanted
+			if (map_merge_undo_step)
+			{
+				context_.endUndoRecord(true);
+				context_.beginUndoRecord("Merge");
+			}
+
+			vector<MapVertex*> vertices;
+			group_.getVertices(vertices);
+			merge = context_.map().mergeArch(vertices);
+		}
+
+		// Clear selection
+		context_.selection().clear();
+
+		context_.endUndoRecord(merge || !map_merge_undo_step);
+	}
+
+	MapEditor::showObjectEditPanel(false, nullptr);
+	context_.setFeatureHelp({});
+}
+
+/* ObjectEdit::determineState
+ * Determines the current object edit state depending on the mouse
+ * cursor position relative to the object edit bounding box
+ *******************************************************************/
+void ObjectEdit::determineState()
+{
+	// Get object edit bbox
+	auto bbox = group_.getBBox();
+	int bbox_pad = 8;
+	int left = context_.renderer().view().screenX(bbox.min.x) - bbox_pad;
+	int right = context_.renderer().view().screenX(bbox.max.x) + bbox_pad;
+	int top = context_.renderer().view().screenY(bbox.max.y) - bbox_pad;
+	int bottom = context_.renderer().view().screenY(bbox.min.y) + bbox_pad;
+	rotating_ = context_.input().ctrlDown();
+
+	// Check if mouse is outside the bbox
+	auto mouse_pos = context_.input().mousePos();
+	if (mouse_pos.x < left || mouse_pos.x > right || mouse_pos.y < top || mouse_pos.y > bottom)
+	{
+		// Outside bbox
+		state_ = State::None;
+		context_.setCursor(UI::MouseCursor::Normal);
+		return;
+	}
+
+	// Left side
+	if (mouse_pos.x < left + bbox_pad && bbox.width() > 0)
+	{
+		// Top left
+		if (mouse_pos.y < top + bbox_pad && bbox.height() > 0)
+		{
+			state_ = State::TopLeft;
+			context_.setCursor(rotating_ ? UI::MouseCursor::Cross : UI::MouseCursor::SizeNWSE);
+		}
+			
+		// Bottom left
+		else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0)
+		{
+			state_ = State::BottomLeft;
+			context_.setCursor(rotating_ ? UI::MouseCursor::Cross : UI::MouseCursor::SizeNESW);
+		}
+			
+		// Left
+		else if (!rotating_)
+		{
+			state_ = State::Left;
+			context_.setCursor(UI::MouseCursor::SizeWE);
+		}
+	}
+
+	// Right side
+	else if (mouse_pos.x > right - bbox_pad && bbox.width() > 0)
+	{
+		// Top right
+		if (mouse_pos.y < top + bbox_pad && bbox.height() > 0)
+		{
+			state_ = State::TopRight;
+			context_.setCursor(rotating_ ? UI::MouseCursor::Cross : UI::MouseCursor::SizeNESW);
+		}
+
+		// Bottom right
+		else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0)
+		{
+			state_ = State::BottomRight;
+			context_.setCursor(rotating_ ? UI::MouseCursor::Cross : UI::MouseCursor::SizeNWSE);
+		}
+
+		// Right
+		else if (!rotating_)
+		{
+			state_ = State::Right;
+			context_.setCursor(UI::MouseCursor::SizeWE);
+		}
+	}
+
+	// Top
+	else if (mouse_pos.y < top + bbox_pad && bbox.height() > 0 && !rotating_)
+	{
+		state_ = State::Top;
+		context_.setCursor(UI::MouseCursor::SizeNS);
+	}
+
+	// Bottom
+	else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0 && !rotating_)
+	{
+		state_ = State::Bottom;
+		context_.setCursor(UI::MouseCursor::SizeNS);
+	}
+
+	// Middle
+	else
+	{
+		state_ = rotating_ ? State::None : State::Move;
+		context_.setCursor(rotating_ ? UI::MouseCursor::Normal : UI::MouseCursor::Move);
 	}
 }

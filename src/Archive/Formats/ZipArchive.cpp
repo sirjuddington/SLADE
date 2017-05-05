@@ -29,9 +29,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "ZipArchive.h"
 #include "WadArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -110,10 +111,10 @@ bool ZipArchive::open(string filename)
 	// Go through all zip entries
 	int entry_index = 0;
 	wxZipEntry* entry = zip.GetNextEntry();
-	theSplashWindow->setProgressMessage("Reading zip data");
+	UI::setSplashProgressMessage("Reading zip data");
 	while (entry)
 	{
-		theSplashWindow->setProgress(-1.0f);
+		UI::setSplashProgress(-1.0f);
 		if (entry->GetMethod() != wxZIP_METHOD_DEFLATE && entry->GetMethod() != wxZIP_METHOD_STORE)
 		{
 			Global::error = "Unsupported zip compression method";
@@ -178,7 +179,7 @@ bool ZipArchive::open(string filename)
 		entry = zip.GetNextEntry();
 		entry_index++;
 	}
-	theSplashWindow->forceRedraw();
+	UI::updateSplash();
 
 	// Set all entries/directories to unmodified
 	vector<ArchiveEntry*> entry_list;
@@ -194,7 +195,7 @@ bool ZipArchive::open(string filename)
 	setModified(false);
 	on_disk = true;
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -206,7 +207,7 @@ bool ZipArchive::open(string filename)
 bool ZipArchive::open(MemChunk& mc)
 {
 	// Write the MemChunk to a temp file
-	string tempfile = appPath("slade-temp-open.zip", DIR_TEMP);
+	string tempfile = App::path("slade-temp-open.zip", App::Dir::Temp);
 	mc.exportFile(tempfile);
 
 	// Load the file
@@ -227,7 +228,7 @@ bool ZipArchive::write(MemChunk& mc, bool update)
 	bool success = false;
 
 	// Write to a temporary file
-	string tempfile = appPath("slade-temp-write.zip", DIR_TEMP);
+	string tempfile = App::path("slade-temp-write.zip", App::Dir::Temp);
 	if (write(tempfile, true))
 	{
 		// Load file into MemChunk
@@ -341,7 +342,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Check that the entry belongs to this archive
 	if (entry->getParent() != this)
 	{
-		wxLogMessage("ZipArchive::loadEntryData: Entry %s attempting to load data from wrong parent!", entry->getName());
+		LOG_MESSAGE(1, "ZipArchive::loadEntryData: Entry %s attempting to load data from wrong parent!", entry->getName());
 		return false;
 	}
 
@@ -359,7 +360,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 		zip_index = entry->exProp("ZipIndex");
 	else
 	{
-		wxLogMessage("ZipArchive::loadEntryData: Entry %s has no zip entry index!", entry->getName());
+		LOG_MESSAGE(1, "ZipArchive::loadEntryData: Entry %s has no zip entry index!", entry->getName());
 		return false;
 	}
 
@@ -367,7 +368,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	wxFFileInputStream in(filename);
 	if (!in.IsOk())
 	{
-		wxLogMessage("ZipArchive::loadEntryData: Unable to open zip file \"%s\"!", filename);
+		LOG_MESSAGE(1, "ZipArchive::loadEntryData: Unable to open zip file \"%s\"!", filename);
 		return false;
 	}
 
@@ -375,7 +376,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	wxZipInputStream zip(in);
 	if (!zip.IsOk())
 	{
-		wxLogMessage("ZipArchive::loadEntryData: Invalid zip file \"%s\"!", filename);
+		LOG_MESSAGE(1, "ZipArchive::loadEntryData: Invalid zip file \"%s\"!", filename);
 		return false;
 	}
 
@@ -393,7 +394,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Abort if entry doesn't exist in zip (some kind of error)
 	if (!zentry)
 	{
-		wxLogMessage("Error: ZipEntry for entry \"%s\" does not exist in zip", entry->getName());
+		LOG_MESSAGE(1, "Error: ZipEntry for entry \"%s\" does not exist in zip", entry->getName());
 		return false;
 	}
 
@@ -617,7 +618,7 @@ vector<ArchiveEntry*> ZipArchive::findAll(search_options_t& options)
 void ZipArchive::generateTempFileName(string filename)
 {
 	wxFileName tfn(filename);
-	temp_file = appPath(tfn.GetFullName(), DIR_TEMP);
+	temp_file = App::path(tfn.GetFullName(), App::Dir::Temp);
 	if (wxFileExists(temp_file))
 	{
 		// Make sure we don't overwrite an existing temp file
@@ -625,7 +626,7 @@ void ZipArchive::generateTempFileName(string filename)
 		int n = 1;
 		while (1)
 		{
-			temp_file = appPath(S_FMT("%s.%d", CHR(tfn.GetFullName()), n), DIR_TEMP);
+			temp_file = App::path(S_FMT("%s.%d", CHR(tfn.GetFullName()), n), App::Dir::Temp);
 			if (!wxFileExists(temp_file))
 				break;
 

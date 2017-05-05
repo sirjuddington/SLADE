@@ -37,9 +37,13 @@
 #include "MapEditor/SLADEMap/MapSector.h"
 #include "OpenGL/Drawing.h"
 #include "Utility/MathStuff.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/MapEditContext.h"
 #include "General/ColourConfiguration.h"
 #include "OpenGL/OpenGL.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "OpenGL/GLTexture.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
@@ -80,7 +84,7 @@ void LineInfoOverlay::update(MapLine* line)
 
 	//info.clear();
 	string info_text;
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// General line info
 	if (Global::debug)
@@ -294,7 +298,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	col_fg.a = col_fg.a*alpha;
 
 	// Get texture
-	GLTexture* tex = theMapEditor->textureManager().getTexture(texture, theGameConfiguration->mixTexFlats());
+	GLTexture* tex = MapEditor::textureManager().getTexture(texture, theGameConfiguration->mixTexFlats());
 
 	// Valid texture
 	if (texture != "-" && tex != &(GLTexture::missingTex()))
@@ -323,7 +327,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	else if (tex == &(GLTexture::missingTex()) && texture != "-")
 	{
 		// Draw unknown icon
-		GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/unknown");
+		GLTexture* icon = MapEditor::textureManager().getEditorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255*alpha, 0);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
@@ -336,7 +340,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	else if (required)
 	{
 		// Draw missing icon
-		GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/minus");
+		GLTexture* icon = MapEditor::textureManager().getEditorImage("thing/minus");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255*alpha, 0);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);

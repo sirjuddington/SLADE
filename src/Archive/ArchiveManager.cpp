@@ -29,13 +29,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "ArchiveManager.h"
 #include "Formats/All.h"
 #include "Formats/DirArchive.h"
 #include "General/Console/Console.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 #include "General/ResourceManager.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 
 
 /*******************************************************************
@@ -106,7 +106,7 @@ bool ArchiveManager::validResDir(string dir)
 		wxFileName fn(dir + "/" + paths[a]);
 		if (!wxFileExists(fn.GetFullPath()))
 		{
-			wxLogMessage("Resource %s was not found in dir %s!\n"
+			LOG_MESSAGE(1, "Resource %s was not found in dir %s!\n"
 				"This resource folder cannot be used. "
 				"(Did you install SLADE 3 in a SLumpEd folder?)", paths[a], dir);
 			return false;
@@ -124,9 +124,9 @@ bool ArchiveManager::init()
 	program_resource_archive = new ZipArchive();
 
 #ifdef __WXOSX__
-	string resdir = appPath("../Resources", DIR_APP);	// Use Resources dir within bundle on mac
+	string resdir = App::path("../Resources", App::Dir::Executable);	// Use Resources dir within bundle on mac
 #else
-	string resdir = appPath("res", DIR_APP);
+	string resdir = App::path("res", App::Dir::Executable);
 #endif
 
 	if (wxDirExists(resdir) && validResDir(resdir))
@@ -137,20 +137,20 @@ bool ArchiveManager::init()
 	}
 
 	// Find slade3.pk3 directory
-	string dir_slade_pk3 = appPath("slade.pk3", DIR_RES);
+	string dir_slade_pk3 = App::path("slade.pk3", App::Dir::Resources);
 	if (!wxFileExists(dir_slade_pk3))
-		dir_slade_pk3 = appPath("slade.pk3", DIR_DATA);
+		dir_slade_pk3 = App::path("slade.pk3", App::Dir::Data);
 	if (!wxFileExists(dir_slade_pk3))
-		dir_slade_pk3 = appPath("slade.pk3", DIR_APP);
+		dir_slade_pk3 = App::path("slade.pk3", App::Dir::Executable);
 	if (!wxFileExists(dir_slade_pk3))
-		dir_slade_pk3 = appPath("slade.pk3", DIR_USER);
+		dir_slade_pk3 = App::path("slade.pk3", App::Dir::User);
 	if (!wxFileExists(dir_slade_pk3))
 		dir_slade_pk3 = "slade.pk3";
 
 	// Open slade.pk3
 	if (!program_resource_archive->open(dir_slade_pk3))
 	{
-		wxLogMessage("Unable to find slade.pk3!");
+		LOG_MESSAGE(1, "Unable to find slade.pk3!");
 		res_archive_open = false;
 	}
 	else
@@ -261,7 +261,7 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 
 	Archive* new_archive = getArchive(filename);
 
-	wxLogMessage("Opening archive %s", filename);
+	LOG_MESSAGE(1, "Opening archive %s", filename);
 
 	// If the archive is already open, just return it
 	if (new_archive)
@@ -357,7 +357,7 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 	}
 	else
 	{
-		wxLogMessage("Error: " + Global::error);
+		LOG_MESSAGE(1, "Error: " + Global::error);
 		delete new_archive;
 		return NULL;
 	}
@@ -474,7 +474,7 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 	}
 	else
 	{
-		wxLogMessage("Error: " + Global::error);
+		LOG_MESSAGE(1, "Error: " + Global::error);
 		delete new_archive;
 		return NULL;
 	}
@@ -488,7 +488,7 @@ Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
 {
 	Archive* new_archive = getArchive(dir);
 
-	wxLogMessage("Opening directory %s as archive", dir);
+	LOG_MESSAGE(1, "Opening directory %s as archive", dir);
 
 	// If the archive is already open, just return it
 	if (new_archive)
@@ -534,7 +534,7 @@ Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
 	}
 	else
 	{
-		wxLogMessage("Error: " + Global::error);
+		LOG_MESSAGE(1, "Error: " + Global::error);
 		delete new_archive;
 		return NULL;
 	}
@@ -574,7 +574,7 @@ Archive* ArchiveManager::newArchive(uint8_t type)
 		format_str = "zip";
 		break;
 	default:
-		wxLogMessage("This shouldn't happen.");
+		LOG_MESSAGE(1, "This shouldn't happen.");
 		return NULL;
 	}
 
@@ -948,18 +948,18 @@ bool ArchiveManager::openBaseResource(int index)
 		return false;
 
 	// Attempt to open the file
-	theSplashWindow->show(S_FMT("Opening %s...", filename), true);
+	UI::showSplash(S_FMT("Opening %s...", filename), true);
 	if (base_resource_archive->open(filename))
 	{
 		base_resource = index;
-		theSplashWindow->hide();
+		UI::hideSplash();
 		theResourceManager->addArchive(base_resource_archive);
 		announce("base_resource_changed");
 		return true;
 	}
 	delete base_resource_archive;
 	base_resource_archive = NULL;
-	theSplashWindow->hide();
+	UI::hideSplash();
 	announce("base_resource_changed");
 	return false;
 }
@@ -1326,12 +1326,12 @@ void ArchiveManager::onAnnouncement(Announcer* announcer, string event_name, Mem
  *******************************************************************/
 CONSOLE_COMMAND (list_archives, 0, true)
 {
-	wxLogMessage("%d Open Archives:", theArchiveManager->numArchives());
+	LOG_MESSAGE(1, "%d Open Archives:", theArchiveManager->numArchives());
 
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
 		Archive* archive = theArchiveManager->getArchive(a);
-		wxLogMessage("%d: \"%s\"", a + 1, archive->getFilename());
+		LOG_MESSAGE(1, "%d: \"%s\"", a + 1, archive->getFilename());
 	}
 }
 

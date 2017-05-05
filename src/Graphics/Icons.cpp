@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "UI/WxStuff.h"
 #include "Icons.h"
 #include "Archive/ArchiveManager.h"
@@ -99,7 +100,7 @@ namespace Icons
 			dir = (ArchiveTreeNode*)dir->getChild(icon_set_dir);
 
 		vector<icon_t>& icons = iconList(type);
-		string tempfile = appPath("sladetemp", DIR_TEMP);
+		string tempfile = App::path("sladetemp", App::Dir::Temp);
 
 		// Go through each entry in the directory
 		for (size_t a = 0; a < dir->numEntries(false); a++)
@@ -179,7 +180,7 @@ namespace Icons
  *******************************************************************/
 bool Icons::loadIcons()
 {
-	string tempfile = appPath("sladetemp", DIR_TEMP);
+	string tempfile = App::path("sladetemp", App::Dir::Temp);
 
 	// Get slade.pk3
 	Archive* res_archive = theArchiveManager->programResourceArchive();

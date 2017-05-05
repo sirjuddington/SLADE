@@ -31,8 +31,9 @@
 #include "Main.h"
 #include "ThingTypeBrowser.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "OpenGL/Drawing.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
@@ -68,21 +69,21 @@ ThingBrowserItem::~ThingBrowserItem()
 bool ThingBrowserItem::loadImage()
 {
 	// Get sprite
-	GLTexture* tex = theMapEditor->textureManager().getSprite(type->getSprite(), type->getTranslation(), type->getPalette());
+	GLTexture* tex = MapEditor::textureManager().getSprite(type->getSprite(), type->getTranslation(), type->getPalette());
 	if (!tex && use_zeth_icons && type->getZeth() >= 0)
 	{
 		// Sprite not found, try the Zeth icon
-		tex = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", type->getZeth()));
+		tex = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", type->getZeth()));
 	}
 	if (!tex)
 	{
 		// Sprite not found, try an icon
-		tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", type->getIcon()));
+		tex = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type->getIcon()));
 	}
 	if (!tex)
 	{
 		// Icon not found either, use unknown icon
-		tex = theMapEditor->textureManager().getEditorImage("thing/unknown");
+		tex = MapEditor::textureManager().getEditorImage("thing/unknown");
 	}
 
 	if (tex)
@@ -172,7 +173,7 @@ int ThingTypeBrowser::getSelectedType()
 	BrowserItem* selected = getSelectedItem();
 	if (selected)
 	{
-		wxLogMessage("Selected item %d", selected->getIndex());
+		LOG_MESSAGE(1, "Selected item %d", selected->getIndex());
 		return selected->getIndex();
 	}
 	else

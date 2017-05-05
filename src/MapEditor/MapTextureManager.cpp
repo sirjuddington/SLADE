@@ -32,12 +32,16 @@
 #include "MapTextureManager.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "Archive/ArchiveManager.h"
-#include "MapEditorWindow.h"
+#include "MapEditor.h"
+#include "MapEditContext.h"
 #include "OpenGL/OpenGL.h"
 #include "Graphics/SImage/SImage.h"
 #include "General/Misc.h"
+#include "UI/PaletteChooser.h"
+#include "GameConfiguration/GameConfiguration.h"
 
 
 /*******************************************************************
@@ -59,11 +63,6 @@ MapTextureManager::MapTextureManager(Archive* archive)
 	this->archive = archive;
 	editor_images_loaded = false;
 	palette = new Palette8bit();
-
-	// Listen to the various managers
-	listenTo(theResourceManager);
-	listenTo(theArchiveManager);
-	listenTo(thePaletteChooser);
 }
 
 /* MapTextureManager::~MapTextureManager
@@ -73,24 +72,36 @@ MapTextureManager::~MapTextureManager()
 {
 }
 
+/* MapTextureManager::init
+ * Initialises the texture manager
+ *******************************************************************/
+void MapTextureManager::init()
+{
+	// Listen to the various managers
+	listenTo(theResourceManager);
+	listenTo(theArchiveManager);
+	listenTo(theMainWindow->getPaletteChooser());
+	palette = getResourcePalette();
+}
+
 /* MapTextureManager::getResourcePalette
  * Returns the current resource palette (depending on open archives
  * and palette toolbar selection)
  *******************************************************************/
 Palette8bit* MapTextureManager::getResourcePalette()
 {
-	if (thePaletteChooser->globalSelected())
+	if (theMainWindow->getPaletteChooser()->globalSelected())
 	{
 		ArchiveEntry* entry = theResourceManager->getPaletteEntry("PLAYPAL", archive);
 
 		if (!entry)
-			return thePaletteChooser->getSelectedPalette();
+			return theMainWindow->getPaletteChooser()->getSelectedPalette();
 
 		palette->loadMem(entry->getMCData());
 		return palette;
 	}
 	else
-		return thePaletteChooser->getSelectedPalette();
+		return theMainWindow->getPaletteChooser()->getSelectedPalette();
 }
 
 /* MapTextureManager::getTexture
@@ -492,11 +503,11 @@ void MapTextureManager::refreshResources()
 	textures.clear();
 	flats.clear();
 	sprites.clear();
-	thePaletteChooser->setGlobalFromArchive(archive);
-	theMapEditor->forceRefresh(true);
+	theMainWindow->getPaletteChooser()->setGlobalFromArchive(archive);
+	MapEditor::forceRefresh(true);
 	palette = getResourcePalette();
 	buildTexInfoList();
-	//wxLogMessage("texture manager cleared");
+	//LOG_MESSAGE(1, "texture manager cleared");
 }
 
 /* MapTextureManager::buildTexInfoList
@@ -590,7 +601,7 @@ void MapTextureManager::onAnnouncement(Announcer* announcer, string event_name, 
 	// Only interested in the resource manager,
 	// archive manager and palette chooser.
 	if (announcer != theResourceManager
-	        && announcer != thePaletteChooser
+	        && announcer != theMainWindow->getPaletteChooser()
 	        && announcer != theArchiveManager)
 		return;
 
@@ -603,8 +614,8 @@ void MapTextureManager::onAnnouncement(Announcer* announcer, string event_name, 
 		event_data.read(&ac_index, 4);
 		if (theArchiveManager->getArchive(ac_index) == archive)
 		{
-			theMapEditor->Hide();
-			theMapEditor->mapEditor().clearMap();
+			MapEditor::windowWx()->Hide();
+			MapEditor::editContext().clearMap();
 			archive = NULL;
 		}
 	}
