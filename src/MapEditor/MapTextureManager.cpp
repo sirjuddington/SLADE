@@ -187,7 +187,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	{
 		textypefound = TEXTYPE_WALLTEXTURE;
 		SImage image;
-		if (ctex->toImage(image, archive, palette))
+		if (ctex->toImage(image, archive, palette, true))
 		{
 			mtex.texture = new GLTexture(false);
 			mtex.texture->setFilter(filter);
@@ -349,7 +349,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	else  	// Try composite textures then
 	{
 		CTexture* ctex = theResourceManager->getTexture(name, archive);
-		if (ctex && ctex->toImage(image, archive, this->palette))
+		if (ctex && ctex->toImage(image, archive, this->palette, true))
 			found = true;
 	}
 
@@ -358,7 +358,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	{
 		Palette8bit* pal = this->palette;
 		// Apply translation
-		if (!translation.IsEmpty()) image.applyTranslation(translation, pal);
+		if (!translation.IsEmpty()) image.applyTranslation(translation, pal, true);
 		// Apply palette override
 		if (!palette.IsEmpty())
 		{

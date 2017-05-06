@@ -122,7 +122,7 @@ public:
 	rgba_t getColour()
 	{
 		wxColour col = cp_colour->GetColour();
-		return rgba_t(col.Red(), col.Green(), col.Blue());
+		return rgba_t(COLWX(col));
 	}
 
 	// Re-apply the changes in selection and colour on a fresh palette
@@ -234,7 +234,7 @@ public:
 	rgba_t getColour()
 	{
 		wxColour col = cp_colour->GetColour();
-		return rgba_t(col.Red(), col.Green(), col.Blue());
+		return rgba_t(COLWX(col));
 	}
 
 	float getAmount()
@@ -646,13 +646,13 @@ public:
 	rgba_t getStartColour()
 	{
 		wxColour col = cp_startcolour->GetColour();
-		return rgba_t(col.Red(), col.Green(), col.Blue());
+		return rgba_t(COLWX(col));
 	}
 	
 	rgba_t getEndColour()
 	{
 		wxColour col = cp_endcolour->GetColour();
-		return rgba_t(col.Red(), col.Green(), col.Blue());
+		return rgba_t(COLWX(col));
 	}
 	
 	// Re-apply the changes in selection and colour on a fresh palette

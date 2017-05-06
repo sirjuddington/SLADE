@@ -48,6 +48,36 @@ EXTERN_CVAR(Float, col_greyscale_g)
 EXTERN_CVAR(Float, col_greyscale_b)
 
 /*******************************************************************
+* CONSTANTS
+*******************************************************************/
+
+// Colours used by the "Ice" translation, based on the Hexen palette
+rgba_t IceRange[16] = 
+{
+	rgba_t( 10,   8,  18), rgba_t( 15,  15,  26),
+	rgba_t( 20,  16,  36), rgba_t( 30,  26,  46),
+	rgba_t( 40,  36,  57), rgba_t( 50,  46,  67),
+	rgba_t( 59,  57,  78), rgba_t( 69,  67,  88),
+	rgba_t( 79,  77,  99), rgba_t( 89,  87, 109),
+	rgba_t( 99,  97, 120), rgba_t(109, 107, 130),
+	rgba_t(118, 118, 141), rgba_t(128, 128, 151),
+	rgba_t(138, 138, 162), rgba_t(148, 148, 172),
+};
+
+enum SpecialBlend
+{
+	BLEND_ICE = 0,
+	BLEND_DESAT_FIRST = 1,
+	BLEND_DESAT_LAST = 31,
+	BLEND_INVERSE,
+	BLEND_RED,
+	BLEND_GREEN,
+	BLEND_BLUE,
+	BLEND_GOLD,
+	BLEND_INVALID,
+};
+
+/*******************************************************************
  * TRANSLATION CLASS FUNCTIONS
  *******************************************************************/
 
@@ -75,7 +105,7 @@ void Translation::parse(string def)
 {
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
-	tz.setSpecialCharacters("[]:%,=#@");
+	tz.setSpecialCharacters("[]:%,=#@$");
 	tz.openString(def);
 
 	//LOG_MESSAGE(1, "Parse translation \"%s\"", def);
@@ -104,6 +134,12 @@ void Translation::parse(string def)
 	{
 		// TODO: Green translation
 		built_in_name = "Green";
+		return;
+	}
+	else if (test == "blue")
+	{
+		// TODO: Green translation
+		built_in_name = "Blue";
 		return;
 	}
 	else if (test == "ice")
@@ -242,7 +278,7 @@ void Translation::parse(string def)
 		if (!tz.checkToken(",")) return;
 		col.b = tz.getInteger();
 		if (!tz.checkToken("]")) return;
-		TransRangeColourise* tr = new TransRangeColourise();
+		TransRangeBlend* tr = new TransRangeBlend();
 		tr->o_start = o_start;
 		tr->o_end = o_end;
 		tr->setColour(col);
@@ -267,6 +303,16 @@ void Translation::parse(string def)
 		tr->o_end = o_end;
 		tr->setColour(col);
 		tr->setAmount(amount);
+		translations.push_back(tr);
+	}
+	else if (tz.peekToken() == '$')
+	{
+		tz.skipToken();
+		string special = tz.getToken();
+		TransRangeSpecial* tr = new TransRangeSpecial();
+		tr->o_start = o_start;
+		tr->o_end = o_end;
+		tr->special = special;
 		translations.push_back(tr);
 	}
 	else
@@ -396,10 +442,12 @@ void Translation::copy(Translation& copy)
 			translations.push_back(new TransRangeColour((TransRangeColour*)copy.translations[a]));
 		if (copy.translations[a]->type == TRANS_DESAT)
 			translations.push_back(new TransRangeDesat((TransRangeDesat*)copy.translations[a]));
-		if (copy.translations[a]->type == TRANS_COLOURISE)
-			translations.push_back(new TransRangeColourise((TransRangeColourise*)copy.translations[a]));
+		if (copy.translations[a]->type == TRANS_BLEND)
+			translations.push_back(new TransRangeBlend((TransRangeBlend*)copy.translations[a]));
 		if (copy.translations[a]->type == TRANS_TINT)
 			translations.push_back(new TransRangeTint((TransRangeTint*)copy.translations[a]));
+		if (copy.translations[a]->type == TRANS_SPECIAL)
+			translations.push_back(new TransRangeSpecial((TransRangeSpecial*)copy.translations[a]));
 	}
 
 	built_in_name = copy.built_in_name;
@@ -427,6 +475,29 @@ rgba_t Translation::translate(rgba_t col, Palette8bit * pal)
 	if (pal == NULL) pal = MainEditor::currentPalette();
 	uint8_t i = (col.index == -1) ? pal->nearestColour(col) : col.index;
 
+	// Handle ZDoom's predefined texture blending:
+	// blue, gold, green, red, ice, inverse, and desaturate
+	if (built_in_name.size())
+	{
+		uint8_t type = BLEND_INVALID;
+		if (S_CMPNOCASE(built_in_name, "ice"))
+			type = SpecialBlend::BLEND_ICE;
+		else if (S_CMPNOCASE(built_in_name, "inverse"))
+			type = SpecialBlend::BLEND_INVERSE;
+		else if (S_CMPNOCASE(built_in_name, "red"))
+			type = SpecialBlend::BLEND_RED;
+		else if (S_CMPNOCASE(built_in_name, "green"))
+			type = SpecialBlend::BLEND_GREEN;
+		else if (S_CMPNOCASE(built_in_name, "blue"))
+			type = SpecialBlend::BLEND_BLUE;
+		else if (S_CMPNOCASE(built_in_name, "gold"))
+			type = SpecialBlend::BLEND_GOLD;
+		else if (S_CMPNOCASE(built_in_name, "desaturate"))
+			type = desat_amount; // min 1, max 31 required
+
+		return specialBlend(col, type, pal);
+	}
+
 	// Go through each translation component
 	for (unsigned a = 0; a < nRanges(); a++)
 	{
@@ -435,6 +506,7 @@ rgba_t Translation::translate(rgba_t col, Palette8bit * pal)
 		// Check pixel is within translation range
 		if (i < r->oStart() || i > r->oEnd())
 			continue;
+
 
 		// Palette range translation
 		if (r->getType() == TRANS_PALETTE)
@@ -491,10 +563,10 @@ rgba_t Translation::translate(rgba_t col, Palette8bit * pal)
 			colour.index = pal->nearestColour(colour);
 		}
 
-		// Colourised range
-		else if (r->getType() == TRANS_COLOURISE)
+		// Blended range
+		else if (r->getType() == TRANS_BLEND)
 		{
-			TransRangeColourise* tc = (TransRangeColourise*)r;
+			TransRangeBlend* tc = (TransRangeBlend*)r;
 
 			// Get colours
 			rgba_t blend = tc->getColour();
@@ -510,7 +582,7 @@ rgba_t Translation::translate(rgba_t col, Palette8bit * pal)
 			colour.index = pal->nearestColour(colour);
 		}
 
-		// Colourised range
+		// Tinted range
 		else if (r->getType() == TRANS_TINT)
 		{
 			TransRangeTint* tt = (TransRangeTint*)r;
@@ -528,8 +600,115 @@ rgba_t Translation::translate(rgba_t col, Palette8bit * pal)
 			colour.b = col.b*inv_amt + tint.b*amount;
 			colour.index = pal->nearestColour(colour);
 		}
-	}
 
+		// Special range
+		else if (r->getType() == TRANS_SPECIAL)
+		{
+			TransRangeSpecial* ts = (TransRangeSpecial*)translations[a];
+			string spec = ts->getSpecial();
+			uint8_t type = BLEND_INVALID;
+			if (S_CMPNOCASE(spec, "ice"))
+				type = SpecialBlend::BLEND_ICE;
+			else if (S_CMPNOCASE(spec, "inverse"))
+				type = SpecialBlend::BLEND_INVERSE;
+			else if (S_CMPNOCASE(spec, "red"))
+				type = SpecialBlend::BLEND_RED;
+			else if (S_CMPNOCASE(spec, "green"))
+				type = SpecialBlend::BLEND_GREEN;
+			else if (S_CMPNOCASE(spec, "blue"))
+				type = SpecialBlend::BLEND_BLUE;
+			else if (S_CMPNOCASE(spec, "gold"))
+				type = SpecialBlend::BLEND_GOLD;
+			else if (spec.Lower().StartsWith("desat"))
+			{
+				// This relies on SpecialBlend::1 to ::31 being occupied with desat
+				long temp;
+				if (spec.Right(2).ToLong(&temp) && temp < 32 && temp > 0)
+					type = temp;
+			}
+			return specialBlend(col, type, pal);
+		}
+	}
+	return colour;
+}
+
+/* Translation::specialBlend
+ * Apply one of the special colour blending modes from ZDoom:
+ * Desaturate, Ice, Inverse, Blue, Gold, Green, Red.
+ *******************************************************************/
+rgba_t Translation::specialBlend(rgba_t col, uint8_t type, Palette8bit * pal)
+{
+	// Abort just in case
+	if (type == SpecialBlend::BLEND_INVALID)
+		return col;
+
+	rgba_t colour = col;
+
+	// Get greyscale using ZDoom formula
+	float grey = (col.r*77 + col.g*143 + col.b*37) / 256.f;
+
+	// Ice is a special case as it uses a colour range derived
+	// from the Hexen palette instead of a linear gradient.
+	if (type == BLEND_ICE)
+	{
+		// Determine destination palette index in IceRange
+		uint8_t di = MIN(((int)grey >> 4), 15);
+		rgba_t c = IceRange[di];
+		colour.r = c.r;
+		colour.g = c.g;
+		colour.b = c.b;
+		colour.a = c.a;
+		colour.index = pal->nearestColour(colour);
+	}
+	// Desaturated blending goes from no effect to nearly fully desaturated
+	else if (type >= BLEND_DESAT_FIRST && type <= BLEND_DESAT_LAST)
+	{
+		float amount = type - 1; // get value between 0 and 30
+
+		colour.r = MIN(255, int((colour.r * (31 - amount) + grey * amount) / 31));
+		colour.g = MIN(255, int((colour.g * (31 - amount) + grey * amount) / 31));
+		colour.b = MIN(255, int((colour.b * (31 - amount) + grey * amount) / 31));
+		colour.index = pal->nearestColour(colour);
+	}
+	// All others are essentially preset desaturated translations
+	else
+	{
+		float sr, sg, sb, er, eg, eb;		// start and end ranges
+		sr = sg = sb = er = eg = eb = 0.0;	// let's init them to 0.
+
+		switch (type)
+		{
+		case BLEND_INVERSE:
+			// inverted grayscale: Doom invulnerability, Strife sigil
+			// start white, ends black
+			sr = sg = sb = 1.0;
+			break;
+		case BLEND_GOLD:
+			// Heretic invulnerability
+			// starts black, ends reddish yellow
+			er = 1.5; eg = 0.75;
+			break;
+		case BLEND_RED:
+			// Skulltag doomsphere
+			// starts black, ends red
+			er = 1.5;
+			break;
+		case BLEND_GREEN:
+			// Skulltag guardsphere
+			// starts black, ends greenish-white
+			er = 1.25; eg = 1.5; eb = 1.0;
+			break;
+		case BLEND_BLUE:
+			// Hacx invulnerability
+			// starts black, ends blue
+			eb = 1.5;
+		}
+		// Apply new colour
+		colour.r = MIN(255, int(sr + grey*(er - sr)));
+		colour.g = MIN(255, int(sg + grey*(eg - sg)));
+		colour.b = MIN(255, int(sb + grey*(eb - sb)));
+		colour.index = pal->nearestColour(colour);
+	}
 	return colour;
 }
 
@@ -549,12 +728,14 @@ void Translation::addRange(int type, int pos)
 	case TRANS_DESAT:
 		tr = new TransRangeDesat();
 		break;
-	case TRANS_COLOURISE:
-		tr = new TransRangeColourise();
+	case TRANS_BLEND:
+		tr = new TransRangeBlend();
 		break;
 	case TRANS_TINT:
 		tr = new TransRangeTint();
 		break;
+	case TRANS_SPECIAL:
+		tr = new TransRangeSpecial();
 	default:
 		tr = new TransRangePalette();
 		break;

@@ -179,7 +179,7 @@ void ColourPrefsPanel::applyPreferences()
 				blend = 1;
 
 			// Set the colour
-			ColourConfiguration::setColour(colours[a], col.Red(), col.Green(), col.Blue(), alpha, blend);
+			ColourConfiguration::setColour(colours[a], COLWX(col), alpha, blend);
 
 			// Clear modified status
 			pg_colours->GetProperty(cdef_path)->SetModifiedStatus(false);

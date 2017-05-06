@@ -230,7 +230,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		if (toolbar_button_flat)
 		{
 			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
+			col_trans.Set(COLWX(col_trans), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(Drawing::darkColour(col_toggle, 5.0f)));
 			gc->DrawRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4);
@@ -238,7 +238,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		else
 		{
 			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
+			col_trans.Set(COLWX(col_trans), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(col_hilight));
 			gc->DrawRoundedRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4, 2);
@@ -254,12 +254,12 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 			trans = 200;
 
 		// Create semitransparent hilight colour
-		wxColour col_trans(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), trans);
+		wxColour col_trans(COLWX(col_hilight), trans);
 
 		if (toolbar_button_flat)
 		{
 			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
+			col_trans.Set(COLWX(col_trans), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(col_hilight));
 			gc->DrawRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4);
@@ -267,7 +267,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		else
 		{
 			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
+			col_trans.Set(COLWX(col_trans), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(col_hilight));
 			gc->DrawRoundedRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4, 2);

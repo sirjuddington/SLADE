@@ -2376,7 +2376,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						wxColour wxc(found_props["colour"].getStringValue());
 						if (wxc.IsOk())
 						{
-							tt->colour.r = wxc.Red(); tt->colour.g = wxc.Green(); tt->colour.b = wxc.Blue();
+							tt->colour.set(COLWX(wxc));
 						}
 					}
 					else if (found_props["color"].hasValue())

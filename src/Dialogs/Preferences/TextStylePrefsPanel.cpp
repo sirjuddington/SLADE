@@ -454,7 +454,7 @@ void TextStylePrefsPanel::updateForeground()
 	if (cb_override_foreground->GetValue())
 	{
 		wxColour wxc = cp_foreground->GetColour();
-		ts_current->setForeground(rgba_t(wxc.Red(), wxc.Green(), wxc.Blue(), 255));
+		ts_current->setForeground(rgba_t(COLWX(wxc), 255));
 	}
 	else
 	{
@@ -471,7 +471,7 @@ void TextStylePrefsPanel::updateBackground()
 	if (cb_override_background->GetValue())
 	{
 		wxColour wxc = cp_background->GetColour();
-		ts_current->setBackground(rgba_t(wxc.Red(), wxc.Green(), wxc.Blue(), 255));
+		ts_current->setBackground(rgba_t(COLWX(wxc), 255));
 	}
 	else
 	{

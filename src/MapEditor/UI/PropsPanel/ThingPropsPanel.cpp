@@ -176,11 +176,11 @@ ThingDirCanvas::ThingDirCanvas(wxWindow* parent) : OGLCanvas(parent, -1, true, 1
 
 	// Get system panel background colour
 	wxColour bgcolwx = Drawing::getPanelBGColour();
-	col_bg.set(bgcolwx.Red(), bgcolwx.Green(), bgcolwx.Blue());
+	col_bg.set(COLWX(bgcolwx));
 
 	// Get system text colour
 	wxColour textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
-	col_fg.set(textcol.Red(), textcol.Green(), textcol.Blue());
+	col_fg.set(COLWX(textcol));
 
 	// Setup dir points
 	double rot = 0;

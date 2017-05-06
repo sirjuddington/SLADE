@@ -670,9 +670,7 @@ GLTexture& GLTexture::bgTex()
 	{
 		wxColour col1(bgtx_colour1);
 		wxColour col2(bgtx_colour2);
-		tex_background.genChequeredTexture(8,
-		                                   rgba_t(col1.Red(), col1.Green(), col1.Blue(), 255),
-		                                   rgba_t(col2.Red(), col2.Green(), col2.Blue(), 255));
+		tex_background.genChequeredTexture(8, rgba_t(COLWX(col1), 255), rgba_t(COLWX(col2), 255));
 	}
 	return tex_background;
 }

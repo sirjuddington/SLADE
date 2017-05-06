@@ -294,7 +294,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 				if (tz.peekToken() != ",")
 				{
 					col.Set(first);
-					colour.set(col.Red(), col.Green(), col.Blue());
+					colour.set(COLWX(col));
 				}
 				else
 				{
@@ -306,7 +306,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 					if (tz.peekToken() != ",")
 					{
 						col.Set(first);
-						colour.set(col.Red(), col.Green(), col.Blue(), second*255);
+						colour.set(COLWX(col), second*255);
 						blendtype = 3;
 					}
 					else
@@ -994,7 +994,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool fo
 
 			// Apply translation before anything in case we're forcing rgba (can't translate rgba images)
 			if (patch->getBlendType() == 1)
-				p_img.applyTranslation(&(patch->getTranslation()), pal);
+				p_img.applyTranslation(&(patch->getTranslation()), pal, force_rgba);
 
 			// Convert to RGBA if forced
 			if (force_rgba)

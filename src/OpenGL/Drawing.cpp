@@ -986,7 +986,7 @@ wxColour Drawing::lightColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	hsl_t hsl = Misc::rgbToHsl(rgba_t(colour.Red(), colour.Green(), colour.Blue()));
+	hsl_t hsl = Misc::rgbToHsl(rgba_t(COLWX(colour)));
 
 	// Increase luminance
 	hsl.l += (float)((percent * 5.0)/100.0);
@@ -1004,7 +1004,7 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	hsl_t hsl = Misc::rgbToHsl(rgba_t(colour.Red(), colour.Green(), colour.Blue()));
+	hsl_t hsl = Misc::rgbToHsl(rgba_t(COLWX(colour)));
 
 	// Decrease luminance
 	hsl.l -= (float)((percent * 5.0)/100.0);

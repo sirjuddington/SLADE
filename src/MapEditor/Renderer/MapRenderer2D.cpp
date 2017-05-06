@@ -1600,9 +1600,9 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 
 	// Get colours
 	wxColour col(arrow_pathed_color);
-	rgba_t pathedcol(col.Red(), col.Green(), col.Blue(), col.Alpha());
+	rgba_t pathedcol(COLWX(col), col.Alpha());
 	col.Set(arrow_dragon_color);
-	rgba_t dragoncol(col.Red(), col.Green(), col.Blue(), col.Alpha());
+	rgba_t dragoncol(COLWX(col), col.Alpha());
 
 	if (update)
 	{

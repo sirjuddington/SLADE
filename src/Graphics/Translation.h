@@ -5,8 +5,9 @@
 #define	TRANS_PALETTE	1
 #define TRANS_COLOUR	2
 #define TRANS_DESAT		3
-#define TRANS_COLOURISE	4
+#define TRANS_BLEND		4
 #define TRANS_TINT		5
+#define TRANS_SPECIAL	6
 
 class Translation;
 
@@ -133,15 +134,15 @@ public:
 	}
 };
 
-class TransRangeColourise : public TransRange
+class TransRangeBlend : public TransRange
 {
 	friend class Translation;
 private:
 	rgba_t col;
 
 public:
-	TransRangeColourise() : TransRange(TRANS_COLOURISE) { col = COL_RED; }
-	TransRangeColourise(TransRangeColourise* copy) : TransRange(TRANS_COLOURISE)
+	TransRangeBlend() : TransRange(TRANS_BLEND) { col = COL_RED; }
+	TransRangeBlend(TransRangeBlend* copy) : TransRange(TRANS_BLEND)
 	{
 		o_start = copy->o_start;
 		o_end = copy->o_end;
@@ -187,6 +188,30 @@ public:
 	}
 };
 
+class TransRangeSpecial : public TransRange
+{
+	friend class Translation;
+private:
+	string special;
+
+public:
+	TransRangeSpecial() : TransRange(TRANS_SPECIAL) { special = ""; }
+	TransRangeSpecial(TransRangeSpecial* copy) : TransRange(TRANS_SPECIAL)
+	{
+		o_start = copy->o_start;
+		o_end = copy->o_end;
+		special = copy->special;
+	}
+
+	string	getSpecial() { return special; }
+	void	setSpecial(string sp) { special = sp; }
+
+	string asText()
+	{
+		return S_FMT("%d:%d=$%s", o_start, o_end, special);
+	}
+};
+
 class Palette8bit;
 class Translation
 {
@@ -212,6 +237,7 @@ public:
 	void		setDesaturationAmount(uint8_t amount) { desat_amount = amount; }
 
 	rgba_t	translate(rgba_t col, Palette8bit* pal = NULL);
+	rgba_t	specialBlend(rgba_t col, uint8_t type, Palette8bit* pal = NULL);
 
 	void	addRange(int type, int pos);
 	void	removeRange(int pos);
