@@ -838,6 +838,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\ActionSpecial.cpp" />
+    <ClCompile Include="..\..\src\Game\Args.cpp" />
     <ClCompile Include="..\..\src\Game\GameConfiguration.cpp" />
     <ClCompile Include="..\..\src\Game\GenLineSpecial.cpp" />
     <ClCompile Include="..\..\src\Game\ThingType.cpp" />

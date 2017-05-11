@@ -464,7 +464,7 @@ bool MOPGIntWithArgsProperty::hasArgs()
  *******************************************************************/
 void MOPGIntWithArgsProperty::updateArgs(wxPGProperty* args[5])
 {
-	argspec_t argspec = getArgspec();
+	auto argspec = getArgspec();
 	int default_value = 0;
 	unsigned argcount;
 
@@ -490,8 +490,8 @@ void MOPGIntWithArgsProperty::updateArgs(wxPGProperty* args[5])
 		}
 		else
 		{
-			args[a]->SetLabel(argspec.getArg(a).name);
-			args[a]->SetHelpString(argspec.getArg(a).desc);
+			args[a]->SetLabel(argspec[a].name);
+			args[a]->SetHelpString(argspec[a].desc);
 		}
 
 		// Show any args that this special uses, hide the others, but never
@@ -519,7 +519,7 @@ void MOPGIntWithArgsProperty::applyValue()
 		return;
 
 	// Initialize any unset and meaningful args to 0
-	const argspec_t argspec = getArgspec();
+	const auto argspec = getArgspec();
 
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent->getObjects();
@@ -559,7 +559,7 @@ void MOPGIntWithArgsProperty::OnSetValue()
 /* MOPGActionSpecialProperty::getArgspec
  * Returns a little object describing the args for this thing type
  *******************************************************************/
-const argspec_t MOPGActionSpecialProperty::getArgspec()
+const Game::ArgSpec MOPGActionSpecialProperty::getArgspec()
 {
 	int special = m_value.GetInteger();
 	ActionSpecial* as = theGameConfiguration->actionSpecial(special);
@@ -616,7 +616,7 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 /* MOPGThingTypeProperty::getArgspec
  * Returns a little object describing the args for this thing type
  *******************************************************************/
-const argspec_t MOPGThingTypeProperty::getArgspec()
+const Game::ArgSpec MOPGThingTypeProperty::getArgspec()
 {
 	int type = m_value.GetInteger();
 	ThingType* tt = theGameConfiguration->thingType(type);

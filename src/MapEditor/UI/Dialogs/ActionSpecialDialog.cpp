@@ -230,10 +230,10 @@ class ArgsControl : public wxPanel
 {
 protected:
 	// Original arg configuration
-	arg_t&		arg;
+	Arg&	arg;
 
 public:
-	ArgsControl(wxWindow* parent, arg_t& arg)
+	ArgsControl(wxWindow* parent, Arg& arg)
 		: wxPanel(parent, -1), arg(arg)
 	{
 		SetSizer(new wxBoxSizer(wxVERTICAL));
@@ -255,7 +255,7 @@ protected:
 	wxTextCtrl* text_control;
 
 public:
-	ArgsTextControl(wxWindow* parent, arg_t& arg, bool limit_byte) : ArgsControl(parent, arg)
+	ArgsTextControl(wxWindow* parent, Arg& arg, bool limit_byte) : ArgsControl(parent, arg)
 	{
 		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(40, -1));
 		if (limit_byte)
@@ -325,7 +325,7 @@ protected:
 	wxComboBox*			choice_control;
 
 public:
-	ArgsChoiceControl(wxWindow* parent, arg_t& arg)
+	ArgsChoiceControl(wxWindow* parent, Arg& arg)
 		: ArgsControl(parent, arg)
 	{
 		choice_control = new wxComboBox(this, -1, "", wxDefaultPosition, wxSize(100, -1));
@@ -481,7 +481,7 @@ private:
 	}
 
 public:
-	ArgsFlagsControl(wxWindow* parent, arg_t& arg, bool limit_byte)
+	ArgsFlagsControl(wxWindow* parent, Arg& arg, bool limit_byte)
 		: ArgsTextControl(parent, arg, limit_byte),
 		flag_to_bit_group(arg.custom_flags.size(), 0),
 		controls(arg.custom_flags.size(), NULL)
@@ -610,7 +610,7 @@ protected:
 	}
 
 public:
-	ArgsSpeedControl(wxWindow* parent, arg_t& arg)
+	ArgsSpeedControl(wxWindow* parent, Arg& arg)
 		: ArgsChoiceControl(parent, arg)
 	{
 		wxBoxSizer* row = new wxBoxSizer(wxHORIZONTAL);
@@ -676,7 +676,7 @@ ArgsPanel::ArgsPanel(wxWindow* parent)
 /* ArgsPanel::setup
  * Sets up the arg names and descriptions from specification in [args]
  *******************************************************************/
-void ArgsPanel::setup(argspec_t* args, bool udmf)
+void ArgsPanel::setup(ArgSpec* args, bool udmf)
 {
 	// Reset stuff (but preserve the values)
 	int old_values[5];
@@ -700,17 +700,17 @@ void ArgsPanel::setup(argspec_t* args, bool udmf)
 	int row = 0;
 	for (unsigned a = 0; a < 5; a++)
 	{
-		arg_t& arg = args->getArg(a);
+		auto& arg = (*args)[a];
 		bool has_desc = false;
 		
 		if ((int)a < args->count) {
 			has_desc = !arg.desc.IsEmpty();
 
-			if (arg.type == ARGT_CHOICE)
+			if (arg.type == Arg::Type::Choice)
 				control_args[a] = new ArgsChoiceControl(this, arg);
-			else if (arg.type == ARGT_FLAGS)
+			else if (arg.type == Arg::Type::Flags)
 				control_args[a] = new ArgsFlagsControl(this, arg, !udmf);
-			else if (arg.type == ARGT_SPEED)
+			else if (arg.type == Arg::Type::Speed)
 				control_args[a] = new ArgsSpeedControl(this, arg);
 			else
 				control_args[a] = new ArgsTextControl(this, arg, !udmf);
@@ -762,7 +762,7 @@ void ArgsPanel::setup(argspec_t* args, bool udmf)
 	int available_width = fg_sizer->GetColWidths()[1];
 	for (int a = 0; a < args->count; a++)
 	{
-		arg_t& arg = args->getArg(a);
+		Arg& arg = (*args)[a];
 
 		if (!arg.desc.IsEmpty())
 		{
@@ -984,7 +984,7 @@ void ActionSpecialPanel::setSpecial(int special)
 	// Setup args if any
 	if (panel_args)
 	{
-		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
+		auto args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
 		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }
@@ -1201,7 +1201,7 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
 
 	if (panel_args)
 	{
-		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
+		auto args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
 		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }
@@ -1222,7 +1222,7 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
 	// Jump to args tab, if there is one
 	if (panel_args)
 	{
-		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
+		auto args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
 		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 		panel_args->SetFocus();
 	}
@@ -1297,7 +1297,7 @@ void ActionSpecialDialog::setSpecial(int special)
 	panel_special->setSpecial(special);
 	if (panel_args)
 	{
-		argspec_t args = theGameConfiguration->actionSpecial(special)->getArgspec();
+		auto args = theGameConfiguration->actionSpecial(special)->getArgspec();
 		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }

@@ -3,6 +3,7 @@
 #define __THING_TYPE_H__
 
 #include "Args.h"
+using namespace Game; // TODO: Move into Game namespace
 
 enum ThingFlags
 {
@@ -19,33 +20,6 @@ class ParseTreeNode;
 class ThingType
 {
 	friend class GameConfiguration;
-private:
-	string	name;
-	string	group;
-	rgba_t	colour;
-	int		radius;
-	int		height;
-	float	scaleX;
-	float	scaleY;
-	bool	angled;
-	bool	hanging;
-	bool	shrink;
-	bool	fullbright;
-	bool	decoration;
-	int		zeth;
-	string	sprite;
-	string	icon;
-	string	translation;
-	string	palette;
-	arg_t	args[5];
-	int		arg_count;
-	bool	decorate;
-	bool	solid;
-	int		nexttype;
-	int		nextargs;
-	int		flags;
-	int		tagged;
-
 public:
 	ThingType(string name = "Unknown");
 	~ThingType() {}
@@ -74,13 +48,39 @@ public:
 	string	getIcon() { return icon; }
 	string	getTranslation() { return translation; }
 	string	getPalette() { return palette; }
-	const argspec_t getArgspec() { return argspec_t(args, arg_count); }
+	const ArgSpec& getArgspec() { return args; }
 	string	getArgsString(int args[5], string argstr[2]);
 	void	setSprite(string sprite) { this->sprite = sprite; }
 
 	void	reset();
 	void	parse(ParseTreeNode* node);
 	string	stringDesc();
+
+private:
+	string	name;
+	string	group;
+	rgba_t	colour;
+	int		radius;
+	int		height;
+	float	scaleX;
+	float	scaleY;
+	bool	angled;
+	bool	hanging;
+	bool	shrink;
+	bool	fullbright;
+	bool	decoration;
+	int		zeth;
+	string	sprite;
+	string	icon;
+	string	translation;
+	string	palette;
+	ArgSpec	args;
+	bool	decorate;
+	bool	solid;
+	int		nexttype;
+	int		nextargs;
+	int		flags;
+	int		tagged;
 };
 
 #endif//__THING_TYPE_H__

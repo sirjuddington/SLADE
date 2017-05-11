@@ -1449,6 +1449,9 @@
     <ClCompile Include="..\..\src\Game\UDMFProperty.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Game\Args.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />

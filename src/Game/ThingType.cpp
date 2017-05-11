@@ -61,9 +61,9 @@ ThingType::ThingType(string name)
 	this->nextargs = 0;
 	this->flags = 0;
 	this->tagged = 0;
-	this->arg_count = 0;
 
 	// Init args
+	args.count = 0;
 	args[0].name = "Arg1";
 	args[1].name = "Arg2";
 	args[2].name = "Arg3";
@@ -102,11 +102,7 @@ void ThingType::copy(ThingType* copy)
 	this->nextargs = copy->nextargs;
 	this->flags = copy->flags;
 	this->tagged = copy->tagged;
-	this->arg_count = copy->arg_count;
-
-	// Copy args
-	for (unsigned a = 0; a < 5; a++)
-		this->args[a] = copy->args[a];
+	this->args = copy->args;
 }
 
 /* ThingType::getArgsString
@@ -168,13 +164,13 @@ void ThingType::reset()
 	this->nextargs = 0;
 	this->flags = 0;
 	this->tagged = 0;
-	this->arg_count = 0;
 
 	// Reset args
+		args.count = 0;
 	for (unsigned a = 0; a < 5; a++)
 	{
 		args[a].name = S_FMT("Arg%d", a+1);
-		args[a].type = ARGT_NUMBER;
+		args[a].type = Arg::Type::Number;
 		args[a].custom_flags.clear();
 		args[a].custom_values.clear();
 	}
@@ -320,8 +316,8 @@ void ThingType::parse(ParseTreeNode* node)
 		if (arg >= 0)
 		{
 			// Update arg count
-			if (arg + 1 > arg_count)
-				arg_count = arg + 1;
+			if (arg + 1 > args.count)
+				args.count = arg + 1;
 
 			// Check for simple definition
 			if (child->isLeaf())
@@ -349,13 +345,13 @@ void ThingType::parse(ParseTreeNode* node)
 				string atype;
 				if (val) atype = val->getStringValue();
 				if (S_CMPNOCASE(atype, "yesno"))
-					args[arg].type = ARGT_YESNO;
+					args[arg].type = Arg::Type::YesNo;
 				else if (S_CMPNOCASE(atype, "noyes"))
-					args[arg].type = ARGT_NOYES;
+					args[arg].type = Arg::Type::NoYes;
 				else if (S_CMPNOCASE(atype, "angle"))
-					args[arg].type = ARGT_ANGLE;
+					args[arg].type = Arg::Type::Angle;
 				else
-					args[arg].type = ARGT_NUMBER;
+					args[arg].type = Arg::Type::Number;
 			}
 		}
 	}

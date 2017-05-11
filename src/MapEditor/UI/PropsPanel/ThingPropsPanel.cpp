@@ -820,12 +820,12 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		// Setup
 		if (ival > 0)
 		{
-			argspec_t as = theGameConfiguration->actionSpecial(ival)->getArgspec();
+			auto as = theGameConfiguration->actionSpecial(ival)->getArgspec();
 			panel_args->setup(&as, (map_format == MAP_UDMF));
 		}
 		else
 		{
-			argspec_t as = theGameConfiguration->thingType(type_current)->getArgspec();
+			auto as = theGameConfiguration->thingType(type_current)->getArgspec();
 			panel_args->setup(&as, (map_format == MAP_UDMF));
 		}
 
@@ -959,7 +959,7 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 		// Update args
 		if (panel_args)
 		{
-			argspec_t as = tt->getArgspec();
+			auto as = tt->getArgspec();
 			panel_args->setup(&as, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 		}
 

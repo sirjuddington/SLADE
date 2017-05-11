@@ -46,9 +46,9 @@ ActionSpecial::ActionSpecial(string name, string group)
 	this->name = name;
 	this->group = group;
 	this->tagged = 0;
-	this->arg_count = 0;
 
 	// Init args
+	args.count = 0;
 	args[0].name = "Arg1";
 	args[1].name = "Arg2";
 	args[2].name = "Arg3";
@@ -68,11 +68,7 @@ void ActionSpecial::copy(ActionSpecial* copy)
 	this->name = copy->name;
 	this->group = copy->group;
 	this->tagged = copy->tagged;
-	this->arg_count = copy->arg_count;
-
-	// Copy args
-	for (unsigned a = 0; a < 5; a++)
-		this->args[a] = copy->args[a];
+	this->args = copy->args;
 }
 
 /* ActionSpecial::reset
@@ -89,7 +85,7 @@ void ActionSpecial::reset()
 	for (unsigned a = 0; a < 5; a++)
 	{
 		args[a].name = S_FMT("Arg%d", a+1);
-		args[a].type = ARGT_NUMBER;
+		args[a].type = Arg::Type::Number;
 		args[a].custom_flags.clear();
 		args[a].custom_values.clear();
 	}
@@ -98,7 +94,7 @@ void ActionSpecial::reset()
 /* ActionSpecial::parse
  * Reads an action special definition from a parsed tree [node]
  *******************************************************************/
-void ActionSpecial::parse(ParseTreeNode* node, SpecialArgMap* shared_args)
+void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 {
 	// Check for simple definition
 	if (node->isLeaf())
@@ -108,7 +104,7 @@ void ActionSpecial::parse(ParseTreeNode* node, SpecialArgMap* shared_args)
 	}
 
 	// Go through all child nodes/values
-	ParseTreeNode* child = NULL;
+	ParseTreeNode* child = nullptr;
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		child = (ParseTreeNode*)node->getChild(a);
@@ -139,96 +135,10 @@ void ActionSpecial::parse(ParseTreeNode* node, SpecialArgMap* shared_args)
 		if (argn >= 0)
 		{
 			// Update arg count
-			if (argn + 1 > arg_count)
-				arg_count = argn + 1;
+			if (argn + 1 > args.count)
+				args.count = argn + 1;
 
-			parseArg(child, shared_args, args[argn]);
-		}
-	}
-}
-
-/* ActionSpecial::parseArg
- * Reads an action special argument definition from a parsed tree [node]
- *******************************************************************/
-void ActionSpecial::parseArg(ParseTreeNode* node, SpecialArgMap* shared_args, arg_t& arg)
-{
-	ParseTreeNode* custom = NULL;
-
-	// Check for simple definition
-	if (node->isLeaf())
-	{
-		string name = node->getStringValue();
-		string shared_arg_name;
-
-		// Names beginning with a dollar sign are references to predeclared args
-		if (shared_args && name.StartsWith("$", &shared_arg_name))
-		{
-			SpecialArgMap::iterator it = shared_args->find(shared_arg_name);
-			if (it == shared_args->end())
-				// Totally bogus reference; silently ignore this arg
-				return;
-
-			arg = it->second;
-		}
-		else
-		{
-			// Set name
-			arg.name = node->getStringValue();
-
-			// Set description (if specified)
-			if (node->nValues() > 1) arg.desc = node->getStringValue(1);
-		}
-	}
-	else
-	{
-		// Extended arg definition
-
-		// Name
-		ParseTreeNode* val = (ParseTreeNode*)node->getChild("name");
-		if (val) arg.name = val->getStringValue();
-
-		// Description
-		val = (ParseTreeNode*)node->getChild("desc");
-		if (val) arg.desc = val->getStringValue();
-
-		// Type
-		val = (ParseTreeNode*)node->getChild("type");
-		string atype;
-		if (val) atype = val->getStringValue();
-		if (S_CMPNOCASE(atype, "yesno"))
-			arg.type = ARGT_YESNO;
-		else if (S_CMPNOCASE(atype, "noyes"))
-			arg.type = ARGT_NOYES;
-		else if (S_CMPNOCASE(atype, "angle"))
-			arg.type = ARGT_ANGLE;
-		else if (S_CMPNOCASE(atype, "choice"))
-			arg.type = ARGT_CHOICE;
-		else if (S_CMPNOCASE(atype, "flags"))
-			arg.type = ARGT_FLAGS;
-		else if (S_CMPNOCASE(atype, "speed"))
-			arg.type = ARGT_SPEED;
-		else
-			arg.type = ARGT_NUMBER;
-
-		// Customs
-		val = (ParseTreeNode*)node->getChild("custom_values");
-		if (val) {
-			for (unsigned b = 0; b < val->nChildren(); b++)
-			{
-				custom = (ParseTreeNode*)val->getChild(b);
-				arg.custom_values.push_back(
-					arg_val_t(custom->getStringValue(), wxAtoi(custom->getName())));
-			}
-		}
-
-		val = (ParseTreeNode*)node->getChild("custom_flags");
-		if (val) {
-			for (unsigned b = 0; b < val->nChildren(); b++)
-			{
-				custom = (ParseTreeNode*)val->getChild(b);
-				arg.custom_flags.push_back(
-					arg_val_t(custom->getStringValue(), wxAtoi(custom->getName())));
-			}
+			args[argn].parse(child, shared_args);
 		}
 	}
 }
@@ -284,15 +194,15 @@ string ActionSpecial::stringDesc()
 	{
 		ret += args[a].name + ": ";
 
-		if (args[a].type == ARGT_NUMBER)
+		if (args[a].type == Arg::Type::Number)
 			ret += "Number";
-		else if (args[a].type == ARGT_YESNO)
+		else if (args[a].type == Arg::Type::YesNo)
 			ret += "Yes/No";
-		else if (args[a].type == ARGT_NOYES)
+		else if (args[a].type == Arg::Type::NoYes)
 			ret += "No/Yes";
-		else if (args[a].type == ARGT_ANGLE)
+		else if (args[a].type == Arg::Type::Angle)
 			ret += "Angle";
-		else if (args[a].type == ARGT_CHOICE)
+		else if (args[a].type == Arg::Type::Choice)
 			ret += "Choice";
 		else
 			ret += "Unknown Type";

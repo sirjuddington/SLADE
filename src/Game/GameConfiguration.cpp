@@ -680,7 +680,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
  * Reads action special definitions from a parsed tree [node], using
  * [group_defaults] for default values
  *******************************************************************/
-void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* group_defaults, SpecialArgMap* shared_args)
+void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* group_defaults, Arg::SpecialMap* shared_args)
 {
 	// Check if we're clearing all existing specials
 	if (node->getChild("clearexisting"))
@@ -707,7 +707,7 @@ void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* g
 	bool own_shared_args = false;
 	if (!shared_args)
 	{
-		shared_args = new SpecialArgMap();
+		shared_args = new Arg::SpecialMap();
 		own_shared_args = true;
 	}
 
@@ -724,10 +724,9 @@ void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* g
 		if (S_CMPNOCASE(child->getType(), "group"))
 			readActionSpecials(child, as_defaults, shared_args);
 
-		// Predeclared argument, for action specials that share the same
-		// complex argument
+		// Predeclared argument, for action specials that share the same complex argument
 		else if (S_CMPNOCASE(child->getType(), "arg"))
-			ActionSpecial::parseArg(child, shared_args, (*shared_args)[child->getName()]);
+			((*shared_args)[child->getName()]).parse(child, shared_args);
 
 		// Action special
 		else if (S_CMPNOCASE(child->getType(), "special"))
