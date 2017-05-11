@@ -71,6 +71,7 @@ file(GLOB_RECURSE SLADE_SOURCES
 	Archive/*.cpp
 	Audio/*.cpp
 	Dialogs/*.cpp
+	Game/*.cpp
 	General/*.cpp
 	Graphics/*.cpp
 	MainEditor/*.cpp
