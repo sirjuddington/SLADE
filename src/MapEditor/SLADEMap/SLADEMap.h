@@ -132,6 +132,7 @@ private:
 
 public:
 	SLADEMap();
+	SLADEMap(const SLADEMap& copy) = delete;
 	~SLADEMap();
 
 	// Map entry ordering
