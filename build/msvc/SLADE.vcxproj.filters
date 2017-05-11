@@ -160,12 +160,6 @@
     <Filter Include="Archive\EntryType\Config">
       <UniqueIdentifier>{e7b5e9e0-b8de-4082-845a-f7bd5fa91926}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Map Editor\Game Configuration\Games\Include">
-      <UniqueIdentifier>{8f7723e0-c2a6-405d-864d-98b43e8e2fc0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\Game Configuration\Ports\Include">
-      <UniqueIdentifier>{dad6c254-dc84-48a3-911b-cc8916623c42}</UniqueIdentifier>
-    </Filter>
     <Filter Include="UI\Text Editor\Languages">
       <UniqueIdentifier>{ae982b5a-81f7-4648-92ec-71b69c823459}</UniqueIdentifier>
     </Filter>
@@ -2531,138 +2525,6 @@
     <None Include="..\..\dist\makebuild.ps1">
       <Filter>Installer</Filter>
     </None>
-    <None Include="..\..\dist\res\config\games\include\flags_doom.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\flags_doom64.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\flags_hexen.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\flags_strife.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\props_base.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\props_hexen.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_doom.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_doom64.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_heretic.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_hexen.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_strife.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_doom1.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_doom2.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_doom64.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_heretic.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_hexen.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_strife.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_action2.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_chex1.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_chex3.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_common.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_doom1.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_doom2.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_doom64.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_heretic.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_hexen.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_strife.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_boom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_eternity.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_mbf.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\props_boom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\props_eternity.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\props_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\sectors_eternity.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\sectors_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_boom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_eternity.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_mbf.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_boom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_eternity.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_mbf.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
     <None Include="..\..\dist\res\config\text_styles\0default_dark.sss">
       <Filter>UI\Text Editor\Styles</Filter>
     </None>
@@ -2695,9 +2557,6 @@
     </None>
     <None Include="..\..\dist\res\config\colours\SLADE 2.cfg">
       <Filter>General\Colours</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\prefabs_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

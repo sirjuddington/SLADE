@@ -31,7 +31,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
 #include "ItemSelection.h"
 #include "MapEditContext.h"
 #include "UI/MapCanvas.h"
