@@ -28,11 +28,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MapSide.h"
+#include "Game/GameConfiguration.h"
 #include "MapSector.h"
+#include "MapSide.h"
 #include "SLADEMap.h"
-#include "App.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 
 
 /*******************************************************************

@@ -31,7 +31,7 @@
 #include "App.h"
 #include "Clipboard.h"
 #include "Graphics/CTexture/CTexture.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/SectorBuilder.h"
 

@@ -29,11 +29,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Application/App.h"
+#include "App.h"
+#include "Game/GameConfiguration.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/Edit/LineDraw.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"

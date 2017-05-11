@@ -30,9 +30,9 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
+#include "Game/GameConfiguration.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/Edit/ObjectEdit.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -41,7 +41,6 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
-#include "UI/WxStuff.h"
 #include "Utility/Polygon2D.h"
 
 

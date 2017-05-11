@@ -29,19 +29,19 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MapTextureManager.h"
+#include "Archive/ArchiveManager.h"
+#include "Game/GameConfiguration.h"
+#include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "Archive/ArchiveManager.h"
-#include "MapEditor.h"
 #include "MapEditContext.h"
+#include "MapEditor.h"
+#include "MapTextureManager.h"
 #include "OpenGL/OpenGL.h"
-#include "Graphics/SImage/SImage.h"
-#include "General/Misc.h"
 #include "UI/PaletteChooser.h"
-#include "GameConfiguration/GameConfiguration.h"
 
 
 /*******************************************************************

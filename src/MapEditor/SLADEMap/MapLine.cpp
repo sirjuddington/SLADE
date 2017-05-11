@@ -29,12 +29,10 @@
  *******************************************************************/
 #include "Main.h"
 #include "MapLine.h"
-#include "MapVertex.h"
 #include "MapSide.h"
-#include "Utility/MathStuff.h"
+#include "MapVertex.h"
 #include "SLADEMap.h"
-#include "App.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Utility/MathStuff.h"
 
 
 /*******************************************************************

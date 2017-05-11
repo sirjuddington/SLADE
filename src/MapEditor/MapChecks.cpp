@@ -31,7 +31,7 @@
 #include "UI/WxStuff.h"
 #include "SLADEMap/SLADEMap.h"
 #include "MapChecks.h"
-#include "GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
 #include "MapTextureManager.h"
 #include "UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/MapEditor.h"

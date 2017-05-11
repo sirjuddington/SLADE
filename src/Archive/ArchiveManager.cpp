@@ -36,6 +36,7 @@
 #include "General/Console/Console.h"
 #include "General/UI.h"
 #include "General/ResourceManager.h"
+#include "Game/GameConfiguration.h"
 
 
 /*******************************************************************

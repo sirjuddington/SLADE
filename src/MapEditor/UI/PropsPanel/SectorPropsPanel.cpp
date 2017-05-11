@@ -28,18 +28,18 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "SectorPropsPanel.h"
+#include "Game/GameConfiguration.h"
+#include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
+#include "MapEditor/MapTextureManager.h"
 #include "MapEditor/SLADEMap/MapObject.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapObjectPropsPanel.h"
 #include "OpenGL/Drawing.h"
+#include "SectorPropsPanel.h"
 #include "UI/NumberTextCtrl.h"
 #include "UI/STabCtrl.h"
-#include "MapEditor/MapTextureManager.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************

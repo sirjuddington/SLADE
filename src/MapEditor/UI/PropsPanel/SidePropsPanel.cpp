@@ -28,16 +28,16 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "SidePropsPanel.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
+#include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
+#include "MapEditor/MapTextureManager.h"
+#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
+#include "SidePropsPanel.h"
 #include "UI/NumberTextCtrl.h"
-#include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
-#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************

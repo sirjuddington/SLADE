@@ -39,7 +39,7 @@
 #include "General/ResourceManager.h"
 #include "OpenGL/GLTexture.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
 #include "OpenGL/OpenGL.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"

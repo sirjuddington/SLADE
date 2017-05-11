@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "ThingType.h"
 #include "Utility/Parser.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
 
 
 /*******************************************************************

@@ -31,8 +31,8 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MOPGProperty.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
+#include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
@@ -40,7 +40,7 @@
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
-#include "MapEditor/MapEditContext.h"
+#include "MOPGProperty.h"
 
 
 /*******************************************************************

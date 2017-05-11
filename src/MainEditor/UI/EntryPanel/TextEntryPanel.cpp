@@ -28,10 +28,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "TextEntryPanel.h"
 #include "Archive/ArchiveManager.h"
-#include "App.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
+#include "TextEntryPanel.h"
 
 
 /*******************************************************************

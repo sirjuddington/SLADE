@@ -29,18 +29,18 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "ThingPropsPanel.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
+#include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
+#include "MapEditor/MapTextureManager.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
 #include "OpenGL/Drawing.h"
+#include "ThingPropsPanel.h"
 #include "UI/NumberTextCtrl.h"
 #include "UI/STabCtrl.h"
 #include "Utility/MathStuff.h"
-#include "MapEditor/MapTextureManager.h"
-#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************

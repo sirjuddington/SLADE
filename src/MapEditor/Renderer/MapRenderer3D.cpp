@@ -30,20 +30,18 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "UI/WxStuff.h"
-#include "MapRenderer3D.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
-#include "MapEditor/UI/MapEditorWindow.h"
+#include "Game/GameConfiguration.h"
 #include "General/ColourConfiguration.h"
 #include "General/ResourceManager.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "OpenGL/OpenGL.h"
-#include "UI/PaletteChooser.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"
+#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "MapRenderer3D.h"
+#include "OpenGL/OpenGL.h"
+#include "UI/PaletteChooser.h"
+#include "Utility/MathStuff.h"
 
 
 /*******************************************************************

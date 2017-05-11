@@ -33,7 +33,7 @@
 #include "UI/WxStuff.h"
 #include "MapEditor/SLADEMap/MapThing.h"
 #include "ThingInfoOverlay.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
 #include "General/ColourConfiguration.h"
 #include "OpenGL/Drawing.h"
 #include "MapEditor/MapEditor.h"

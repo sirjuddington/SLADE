@@ -28,17 +28,16 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "SLADEMap.h"
-#include "Utility/Parser.h"
-#include "Utility/MathStuff.h"
-#include "General/ResourceManager.h"
-#include "General/UI.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/Formats/WadArchive.h"
-#include "General/UndoRedo.h"
+#include "Game/GameConfiguration.h"
+#include "General/ResourceManager.h"
+#include "General/UI.h"
 #include "MapEditor/SectorBuilder.h"
+#include "SLADEMap.h"
+#include "Utility/MathStuff.h"
+#include "Utility/Parser.h"
 
 #define IDEQ(x) (((x) != 0) && ((x) == id))
 

@@ -31,17 +31,17 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "UI/WxStuff.h"
-#include "MapEditor/UI/MapEditorWindow.h"
-#include "MapEditor/MapEditor.h"
-#include "InfoOverlay3d.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "Game/GameConfiguration.h"
 #include "General/ColourConfiguration.h"
+#include "InfoOverlay3d.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/MapTextureManager.h"
+#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditContext.h"
-#include "MapEditor/MapTextureManager.h"
+#include "UI/WxStuff.h"
 
 
 /*******************************************************************

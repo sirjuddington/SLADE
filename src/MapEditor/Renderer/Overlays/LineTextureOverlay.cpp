@@ -30,17 +30,15 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
+#include "Game/GameConfiguration.h"
+#include "General/ColourConfiguration.h"
 #include "LineTextureOverlay.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapTextureManager.h"
 #include "MapEditor/SLADEMap/MapLine.h"
 #include "MapEditor/SLADEMap/MapSide.h"
-#include "General/ColourConfiguration.h"
-#include "OpenGL/Drawing.h"
-#include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
-#include "MapEditor/MapEditContext.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapTextureManager.h"
+#include "OpenGL/Drawing.h"
 
 
 /*******************************************************************
@@ -462,7 +460,7 @@ void LineTextureOverlay::browseTexture(tex_inf_t& tex, string position)
 		texture = "-";
 
 	// Open texture browser
-	MapTextureBrowser browser(MapEditor::window(), 0, texture, &(MapEditor::editContext().map()));
+	MapTextureBrowser browser(MapEditor::windowWx(), 0, texture, &(MapEditor::editContext().map()));
 	browser.SetTitle(S_FMT("Browse %s Texture", position));
 	if (browser.ShowModal() == wxID_OK)
 	{

@@ -35,7 +35,7 @@
 #include "App.h"
 #include "SLADEMap.h"
 #include "Utility/MathStuff.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
 
 // Number of radians in the unit circle
 const double TAU = M_PI * 2;

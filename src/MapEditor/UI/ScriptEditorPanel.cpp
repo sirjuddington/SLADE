@@ -28,13 +28,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "ScriptEditorPanel.h"
 #include "Archive/Archive.h"
+#include "Game/GameConfiguration.h"
 #include "MainEditor/EntryOperations.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditor.h"
-#include "UI/SToolBar/SToolBar.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "ScriptEditorPanel.h"
+#include "UI/SToolBar/SToolBar.h"
 
 
 /*******************************************************************

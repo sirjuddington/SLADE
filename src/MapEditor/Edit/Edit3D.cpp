@@ -29,11 +29,10 @@
  *******************************************************************/
 #include "Main.h"
 #include "Edit3D.h"
+#include "Game/GameConfiguration.h"
 #include "General/UndoRedo.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/UI/MapCanvas.h"
 #include "MapEditor/UndoSteps.h"
 #include "Utility/MathStuff.h"
 

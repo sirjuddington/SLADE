@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "SectorSpecialDialog.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
 
 /*******************************************************************
  * SECTORSPECIALPANEL CLASS FUNCTIONS

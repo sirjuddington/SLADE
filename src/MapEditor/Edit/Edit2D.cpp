@@ -30,8 +30,8 @@
  *******************************************************************/
 #include "Main.h"
 #include "Edit2D.h"
+#include "Game/GameConfiguration.h"
 #include "General/Clipboard.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/SectorBuilder.h"
 #include "MapEditor/UndoSteps.h"

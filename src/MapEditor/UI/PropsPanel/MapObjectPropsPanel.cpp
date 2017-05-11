@@ -30,14 +30,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MapObjectPropsPanel.h"
+#include "Game/GameConfiguration.h"
 #include "Graphics/Icons.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapEditContext.h"
 #include "MapEditor/UI/MapEditorWindow.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "MapObjectPropsPanel.h"
 #include "MOPGProperty.h"
 #include "UI/STabCtrl.h"
-#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************

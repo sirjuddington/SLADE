@@ -36,7 +36,7 @@
 #include "OpenGL/Drawing.h"
 #include "MapEditor/MapEditor.h"
 #include "General/ColourConfiguration.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
 #include "OpenGL/OpenGL.h"
 #include "MapEditor/MapTextureManager.h"
 

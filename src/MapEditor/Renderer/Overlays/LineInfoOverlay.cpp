@@ -30,20 +30,18 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
+#include "Game/GameConfiguration.h"
+#include "General/ColourConfiguration.h"
 #include "LineInfoOverlay.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/MapTextureManager.h"
 #include "MapEditor/SLADEMap/MapLine.h"
 #include "MapEditor/SLADEMap/MapSide.h"
-#include "MapEditor/SLADEMap/MapSector.h"
 #include "OpenGL/Drawing.h"
-#include "Utility/MathStuff.h"
-#include "MapEditor/MapEditor.h"
-#include "MapEditor/MapEditContext.h"
-#include "General/ColourConfiguration.h"
-#include "OpenGL/OpenGL.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "OpenGL/GLTexture.h"
-#include "MapEditor/MapTextureManager.h"
+#include "OpenGL/OpenGL.h"
+#include "Utility/MathStuff.h"
 
 
 /*******************************************************************

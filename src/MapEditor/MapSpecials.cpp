@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "SLADEMap/SLADEMap.h"
 #include "MapSpecials.h"
-#include "GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
 #include "Utility/Tokenizer.h"
 #include "Utility/MathStuff.h"
 

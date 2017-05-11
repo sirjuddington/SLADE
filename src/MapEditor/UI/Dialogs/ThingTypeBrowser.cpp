@@ -29,11 +29,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "ThingTypeBrowser.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/GameConfiguration.h"
 #include "MapEditor/MapEditor.h"
-#include "OpenGL/Drawing.h"
 #include "MapEditor/MapTextureManager.h"
+#include "OpenGL/Drawing.h"
+#include "ThingTypeBrowser.h"
 
 
 /*******************************************************************

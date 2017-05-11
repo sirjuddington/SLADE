@@ -837,6 +837,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\src\Game\ActionSpecial.cpp" />
+    <ClCompile Include="..\..\src\Game\GameConfiguration.cpp" />
+    <ClCompile Include="..\..\src\Game\GenLineSpecial.cpp" />
+    <ClCompile Include="..\..\src\Game\ThingType.cpp" />
+    <ClCompile Include="..\..\src\Game\UDMFProperty.cpp" />
     <ClCompile Include="..\..\src\General\Clipboard.cpp" />
     <ClCompile Include="..\..\src\General\ColourConfiguration.cpp" />
     <ClCompile Include="..\..\src\General\Console\Console.cpp" />
@@ -1323,11 +1328,6 @@
     <ClCompile Include="..\..\src\MapEditor\Edit\LineDraw.cpp" />
     <ClCompile Include="..\..\src\MapEditor\Edit\MoveObjects.cpp" />
     <ClCompile Include="..\..\src\MapEditor\Edit\ObjectEdit.cpp" />
-    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.cpp" />
-    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.cpp" />
-    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GenLineSpecial.cpp" />
-    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\ThingType.cpp" />
-    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.cpp" />
     <ClCompile Include="..\..\src\MapEditor\ItemSelection.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapBackupManager.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapChecks.cpp" />
@@ -1663,6 +1663,12 @@
     <ClInclude Include="..\..\src\External\email\wxEmailMessage.h" />
     <ClInclude Include="..\..\src\External\email\wxEmailMessageID.h" />
     <ClInclude Include="..\..\src\External\email\wxMailer.h" />
+    <ClInclude Include="..\..\src\Game\ActionSpecial.h" />
+    <ClInclude Include="..\..\src\Game\Args.h" />
+    <ClInclude Include="..\..\src\Game\GameConfiguration.h" />
+    <ClInclude Include="..\..\src\Game\GenLineSpecial.h" />
+    <ClInclude Include="..\..\src\Game\ThingType.h" />
+    <ClInclude Include="..\..\src\Game\UDMFProperty.h" />
     <ClInclude Include="..\..\src\General\Clipboard.h" />
     <ClInclude Include="..\..\src\General\ColourConfiguration.h" />
     <ClInclude Include="..\..\src\General\Console\Console.h" />
@@ -1791,12 +1797,6 @@
     <ClInclude Include="..\..\src\MapEditor\Edit\LineDraw.h" />
     <ClInclude Include="..\..\src\MapEditor\Edit\MoveObjects.h" />
     <ClInclude Include="..\..\src\MapEditor\Edit\ObjectEdit.h" />
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.h" />
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\Args.h" />
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.h" />
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\GenLineSpecial.h" />
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\ThingType.h" />
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.h" />
     <ClInclude Include="..\..\src\MapEditor\ItemSelection.h" />
     <ClInclude Include="..\..\src\MapEditor\MapBackupManager.h" />
     <ClInclude Include="..\..\src\MapEditor\MapChecks.h" />
@@ -1925,13 +1925,6 @@
   <ItemGroup>
     <None Include="..\..\dist\makebuild.ps1" />
     <None Include="..\..\dist\res\config\colours\SLADE 2.cfg" />
-    <None Include="..\..\dist\res\config\games\chex1.cfg" />
-    <None Include="..\..\dist\res\config\games\chex3.cfg" />
-    <None Include="..\..\dist\res\config\games\doom1.cfg" />
-    <None Include="..\..\dist\res\config\games\doom2.cfg" />
-    <None Include="..\..\dist\res\config\games\doom64.cfg" />
-    <None Include="..\..\dist\res\config\games\heretic.cfg" />
-    <None Include="..\..\dist\res\config\games\hexen.cfg" />
     <None Include="..\..\dist\res\config\games\include\flags_doom.cfg" />
     <None Include="..\..\dist\res\config\games\include\flags_doom64.cfg" />
     <None Include="..\..\dist\res\config\games\include\flags_hexen.cfg" />
@@ -1959,10 +1952,6 @@
     <None Include="..\..\dist\res\config\games\include\things_heretic.cfg" />
     <None Include="..\..\dist\res\config\games\include\things_hexen.cfg" />
     <None Include="..\..\dist\res\config\games\include\things_strife.cfg" />
-    <None Include="..\..\dist\res\config\games\strife.cfg" />
-    <None Include="..\..\dist\res\config\games\urbanbrawl.cfg" />
-    <None Include="..\..\dist\res\config\ports\boom.cfg" />
-    <None Include="..\..\dist\res\config\ports\eternity.cfg" />
     <None Include="..\..\dist\res\config\ports\include\flags_boom.cfg" />
     <None Include="..\..\dist\res\config\ports\include\flags_eternity.cfg" />
     <None Include="..\..\dist\res\config\ports\include\flags_mbf.cfg" />
@@ -1981,7 +1970,6 @@
     <None Include="..\..\dist\res\config\ports\include\things_eternity.cfg" />
     <None Include="..\..\dist\res\config\ports\include\things_mbf.cfg" />
     <None Include="..\..\dist\res\config\ports\include\things_zdoom.cfg" />
-    <None Include="..\..\dist\res\config\ports\zdoom.cfg" />
     <None Include="..\..\dist\res\config\text_styles\0default_dark.sss" />
     <None Include="..\..\dist\res\config\text_styles\default.sss" />
     <None Include="..\..\dist\res\config\text_styles\faded.sss" />
