@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "LinePropsPanel.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -132,7 +132,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	int col = 0;
 
 	// Get all UDMF properties
-	vector<udmfp_t> props = theGameConfiguration->allUDMFProperties(MOBJ_LINE);
+	vector<udmfp_t> props = Game::configuration().allUDMFProperties(MOBJ_LINE);
 	sort(props.begin(), props.end());
 
 	// UDMF flags
@@ -170,11 +170,11 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	else
 	{
 		// Add flag checkboxes
-		int flag_mid = theGameConfiguration->nLineFlags() / 3;
-		if (theGameConfiguration->nLineFlags() % 3 == 0) flag_mid--;
-		for (int a = 0; a < theGameConfiguration->nLineFlags(); a++)
+		int flag_mid = Game::configuration().nLineFlags() / 3;
+		if (Game::configuration().nLineFlags() % 3 == 0) flag_mid--;
+		for (int a = 0; a < Game::configuration().nLineFlags(); a++)
 		{
-			wxCheckBox* cb_flag = new wxCheckBox(panel_flags, -1, theGameConfiguration->lineFlag(a), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+			wxCheckBox* cb_flag = new wxCheckBox(panel_flags, -1, Game::configuration().lineFlag(a), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
 			gb_sizer_flags->Add(cb_flag, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
 			cb_flags.push_back(cb_flag);
 
@@ -269,16 +269,16 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 	}
 	else
 	{
-		for (int a = 0; a < theGameConfiguration->nLineFlags(); a++)
+		for (int a = 0; a < Game::configuration().nLineFlags(); a++)
 		{
 			// Set initial flag checked value
-			cb_flags[a]->SetValue(theGameConfiguration->lineFlagSet(a, (MapLine*)lines[0]));
+			cb_flags[a]->SetValue(Game::configuration().lineFlagSet(a, (MapLine*)lines[0]));
 
 			// Go through subsequent lines
 			for (unsigned b = 1; b < lines.size(); b++)
 			{
 				// Check for mismatch			
-				if (cb_flags[a]->GetValue() != theGameConfiguration->lineFlagSet(a, (MapLine*)lines[b]))
+				if (cb_flags[a]->GetValue() != Game::configuration().lineFlagSet(a, (MapLine*)lines[b]))
 				{
 					// Set undefined
 					cb_flags[a]->Set3StateValue(wxCHK_UNDETERMINED);
@@ -401,7 +401,7 @@ void LinePropsPanel::applyChanges()
 					continue;
 
 				//for (unsigned l = 0; l < objects.size(); l++)
-					theGameConfiguration->setLineFlag(a, (MapLine*)objects[l], cb_flags[a]->GetValue());
+					Game::configuration().setLineFlag(a, (MapLine*)objects[l], cb_flags[a]->GetValue());
 			}
 		}
 

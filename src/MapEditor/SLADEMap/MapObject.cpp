@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapObject.h"
 #include "SLADEMap.h"
 
@@ -157,7 +157,7 @@ bool MapObject::boolProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
 			return prop->getDefaultValue().getBoolValue();
 		else
@@ -177,7 +177,7 @@ int MapObject::intProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
 			return prop->getDefaultValue().getIntValue();
 		else
@@ -197,7 +197,7 @@ double MapObject::floatProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
 			return prop->getDefaultValue().getFloatValue();
 		else
@@ -217,7 +217,7 @@ string MapObject::stringProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
 			return prop->getDefaultValue().getStringValue();
 		else

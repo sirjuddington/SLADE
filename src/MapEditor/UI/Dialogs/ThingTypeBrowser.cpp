@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/Drawing.h"
@@ -114,7 +114,7 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	sizer_bottom->Add(cb_view_tiles, 0, wxEXPAND|wxRIGHT, 4);
 
 	// Populate tree
-	vector<tt_t> types = theGameConfiguration->allThingTypes();
+	vector<tt_t> types = Game::configuration().allThingTypes();
 	for (unsigned a = 0; a < types.size(); a++)
 		addItem(new ThingBrowserItem(types[a].type->getName(), types[a].type, types[a].number), types[a].type->getGroup());
 	populateItemTree();
@@ -125,7 +125,7 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 
 	// Select initial item if any
 	if (type >= 0)
-		selectItem(theGameConfiguration->thingType(type)->getName());
+		selectItem(Game::configuration().thingType(type)->getName());
 	else
 		openTree(items_root);	// Otherwise open 'all' category
 

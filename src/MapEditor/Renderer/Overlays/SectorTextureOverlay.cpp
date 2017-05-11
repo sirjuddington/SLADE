@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -167,7 +167,7 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 	glPopMatrix();
 
 	// Draw first texture
-	bool mixed = theGameConfiguration->mixTexFlats();
+	bool mixed = Game::configuration().mixTexFlats();
 	OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 	Drawing::drawTextureWithin(MapEditor::textureManager().getFlat(textures[0], mixed), x, y, x + size, y + size, 0, 100);
 

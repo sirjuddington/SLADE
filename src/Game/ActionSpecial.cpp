@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "ActionSpecial.h"
 #include "Utility/Parser.h"
-#include "GameConfiguration.h"
+#include "Configuration.h"
 
 
 /*******************************************************************
@@ -129,7 +129,7 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 
 		// Tagged
 		else if (S_CMPNOCASE(name, "tagged"))
-			this->tagged = GameConfiguration::parseTagged(child);
+			this->tagged = Configuration::parseTagged(child);
 
 		// Parse arg definition if it was one
 		if (argn >= 0)

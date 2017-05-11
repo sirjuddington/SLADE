@@ -6,9 +6,10 @@
 using namespace Game; // TODO: Move this into Game namespace
 
 class ParseTreeNode;
+namespace Game { class Configuration; }
 class ActionSpecial
 {
-	friend class GameConfiguration;
+	friend class Game::Configuration;
 public:
 	ActionSpecial(string name = "Unknown", string group = "");
 	~ActionSpecial() {}

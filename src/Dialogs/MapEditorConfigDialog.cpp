@@ -35,7 +35,7 @@
 #include "Archive/Formats/WadArchive.h"
 #include "General/ColourConfiguration.h"
 #include "Graphics/Icons.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "UI/BaseResourceChooser.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
 #include "UI/ResourceArchiveChooser.h"
@@ -67,16 +67,16 @@ public:
 		msizer->Add(sizer, 1, wxEXPAND|wxALL, 10);
 
 		// Open selected game configuration if no map names are currently loaded
-		//if (theGameConfiguration->nMapNames() == 0)
+		//if (Game::configuration().nMapNames() == 0)
 		//{
-			string gname = theGameConfiguration->gameConfig(game).name;
-			string pname = theGameConfiguration->portConfig(port).name;
-			theGameConfiguration->openConfig(gname, pname);
+			string gname = Game::configuration().gameConfig(game).name;
+			string pname = Game::configuration().portConfig(port).name;
+			Game::configuration().openConfig(gname, pname);
 		//}
 
 		// Check if the game configuration allows any map name
 		int flags = 0;
-		if (!theGameConfiguration->anyMapName())
+		if (!Game::configuration().anyMapName())
 			flags = wxCB_READONLY;
 
 		// Create map name combo box
@@ -85,18 +85,18 @@ public:
 		sizer->Add(cbo_mapname, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
 		// Limit map name length if necessary
-		if (theGameConfiguration->anyMapName() &&
-			(!theGameConfiguration->allowLongNames() ||
+		if (Game::configuration().anyMapName() &&
+			(!Game::configuration().allowLongNames() ||
 			(archive && archive->getType() != ARCHIVE_ZIP &&
 				archive->getType() != ARCHIVE_7Z &&
 				archive->getType() != ARCHIVE_FOLDER)))
 			cbo_mapname->SetMaxLength(8);
 
 		// Add possible map names to the combo box
-		for (unsigned a = 0; a < theGameConfiguration->nMapNames(); a++)
+		for (unsigned a = 0; a < Game::configuration().nMapNames(); a++)
 		{
 			// Check if map already exists
-			string mapname = theGameConfiguration->mapName(a);
+			string mapname = Game::configuration().mapName(a);
 			bool exists = false;
 			for (unsigned m = 0; m < maps.size(); m++)
 			{
@@ -112,7 +112,7 @@ public:
 		}
 
 		// Set inital map name selection
-		if (theGameConfiguration->nMapNames() > 0)
+		if (Game::configuration().nMapNames() > 0)
 			cbo_mapname->SetSelection(0);
 
 		// Create map format combo box
@@ -126,7 +126,7 @@ public:
 			default_format = maps[0].format;
 		for (uint8_t map_type = 0; map_type < MAP_UNKNOWN; map_type++)
 		{
-			if (theGameConfiguration->mapFormatSupported(map_type, game, port))
+			if (Game::configuration().mapFormatSupported(map_type, game, port))
 			{
 				choice_mapformat->Append(MAP_TYPE_NAMES[map_type]);
 				if (map_type == default_format)
@@ -191,8 +191,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	// Init variables
 	this->archive = archive;
 	canvas_preview = NULL;
-	game_current = theGameConfiguration->currentGame();
-	port_current = theGameConfiguration->currentPort();
+	game_current = Game::configuration().currentGame();
+	port_current = Game::configuration().currentPort();
 	this->creating = creating;
 
 	// Setup main sizer
@@ -332,10 +332,10 @@ void MapEditorConfigDialog::populateGameList()
 
 	// Populate list
 	int selection = 0;
-	for (unsigned a = 0; a < theGameConfiguration->nGameConfigs(); a++)
+	for (unsigned a = 0; a < Game::configuration().nGameConfigs(); a++)
 	{
-		choice_game_config->Append(theGameConfiguration->gameConfig(a).title);
-		if (game_current == theGameConfiguration->gameConfig(a).name)
+		choice_game_config->Append(Game::configuration().gameConfig(a).title);
+		if (game_current == Game::configuration().gameConfig(a).name)
 			selection = a;
 	}
 
@@ -354,19 +354,19 @@ void MapEditorConfigDialog::populatePortList()
 	ports_list.clear();
 
 	// Get currently selected game
-	string game = theGameConfiguration->gameConfig(choice_game_config->GetSelection()).name;
+	string game = Game::configuration().gameConfig(choice_game_config->GetSelection()).name;
 
 	// Populate list
 	int selection = 0;
 	int index = 1;
 	choice_port_config->Append("None");
-	for (unsigned a = 0; a < theGameConfiguration->nPortConfigs(); a++)
+	for (unsigned a = 0; a < Game::configuration().nPortConfigs(); a++)
 	{
-		if (theGameConfiguration->portSupportsGame(a, game))
+		if (Game::configuration().portSupportsGame(a, game))
 		{
 			ports_list.push_back(a);
-			choice_port_config->Append(theGameConfiguration->portConfig(a).title);
-			if (port_current == theGameConfiguration->portConfig(a).name)
+			choice_port_config->Append(Game::configuration().portConfig(a).title);
+			if (port_current == Game::configuration().portConfig(a).name)
 				selection = index;
 			index++;
 		}
@@ -422,7 +422,7 @@ void MapEditorConfigDialog::populateMapList()
 		wxListItem li;
 		li.SetId(index);
 		li.SetText(S_FMT("(%s) %s", fmt, maps[a].name));
-		if (theGameConfiguration->mapFormatSupported(maps[a].format, game, port))
+		if (Game::configuration().mapFormatSupported(maps[a].format, game, port))
 			li.SetImage(0);
 		else
 			li.SetImage(1);
@@ -501,7 +501,7 @@ bool MapEditorConfigDialog::configMatchesMap(Archive::mapdesc_t map)
 	if (choice_port_config->GetSelection() > 0)
 		port = ports_list[choice_port_config->GetSelection() - 1];
 
-	return theGameConfiguration->mapFormatSupported(map.format, game, port);
+	return Game::configuration().mapFormatSupported(map.format, game, port);
 }
 
 /* MapEditorConfigDialog::selectedGame
@@ -512,7 +512,7 @@ string MapEditorConfigDialog::selectedGame()
 	if (choice_game_config->GetCount() == 0)
 		return "";
 
-	return theGameConfiguration->gameConfig(choice_game_config->GetSelection()).name;
+	return Game::configuration().gameConfig(choice_game_config->GetSelection()).name;
 }
 
 /* MapEditorConfigDialog::selectedPort
@@ -523,7 +523,7 @@ string MapEditorConfigDialog::selectedPort()
 	if (choice_port_config->GetSelection() == 0 || choice_port_config->GetCount() == 0)
 		return "";
 
-	return theGameConfiguration->portConfig(ports_list[choice_port_config->GetSelection()-1]).name;
+	return Game::configuration().portConfig(ports_list[choice_port_config->GetSelection()-1]).name;
 }
 
 

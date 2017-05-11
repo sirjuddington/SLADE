@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Archive/ArchiveManager.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -544,7 +544,7 @@ void MapTextureManager::buildTexInfoList()
 	}
 
 	// Texture namespace patches (TX_)
-	if (theGameConfiguration->txTextures())
+	if (Game::configuration().txTextures())
 	{
 		vector<ArchiveEntry*> patches;
 		theResourceManager->getAllPatchEntries(patches, NULL);

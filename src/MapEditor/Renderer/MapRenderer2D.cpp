@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/Edit/ObjectEdit.h"
 #include "MapEditor/MapEditContext.h"
@@ -1179,7 +1179,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 					continue;
 
 				// Get thing info
-				ThingType* tt = theGameConfiguration->thingType(thing->getType());
+				ThingType* tt = Game::configuration().thingType(thing->getType());
 				double radius = (tt->getRadius()+1);
 				if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
 				radius *= 1.3;
@@ -1234,7 +1234,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 			talpha = alpha;
 
 		// Get thing type properties from game configuration
-		ThingType* tt = theGameConfiguration->thingType(thing->getType());
+		ThingType* tt = Game::configuration().thingType(thing->getType());
 
 		// Reset thing sprite if modified
 		if (thing->modifiedTime() > last_update && thing_sprites.size() > a)
@@ -1268,7 +1268,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 
 			// Get thing info
 			thing = map->getThing(a);
-			ThingType* tt = theGameConfiguration->thingType(thing->getType());
+			ThingType* tt = Game::configuration().thingType(thing->getType());
 			x = thing->xPos();
 			y = thing->yPos();
 
@@ -1303,7 +1303,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 				thing = map->getThing(things_arrows[a]);
 				if (arrow_colour)
 				{
-					ThingType* tt = theGameConfiguration->thingType(thing->getType());
+					ThingType* tt = Game::configuration().thingType(thing->getType());
 					if (tt)
 					{
 						acol.set(tt->getColour());
@@ -1355,7 +1355,7 @@ void MapRenderer2D::renderThingHilight(int index, float fade)
 
 	// Get thing info
 	MapThing* thing = map->getThing(index);
-	ThingType* tt = theGameConfiguration->thingType(thing->getType());
+	ThingType* tt = Game::configuration().thingType(thing->getType());
 	double x = thing->xPos();
 	double y = thing->yPos();
 
@@ -1443,7 +1443,7 @@ void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float f
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		MapThing* thing = map->getThing(selection[a].index);
-		ThingType* tt = theGameConfiguration->thingType(thing->getType());
+		ThingType* tt = Game::configuration().thingType(thing->getType());
 		double radius = tt->getRadius();
 		if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -1483,7 +1483,7 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		MapThing* thing = things[a];
-		ThingType* tt = theGameConfiguration->thingType(thing->getType());
+		ThingType* tt = Game::configuration().thingType(thing->getType());
 		double radius = tt->getRadius();
 		if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -1537,7 +1537,7 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		MapThing* thing = things[a];
-		ThingType* tt = theGameConfiguration->thingType(thing->getType());
+		ThingType* tt = Game::configuration().thingType(thing->getType());
 		double radius = tt->getRadius();
 		if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -1615,7 +1615,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			path.from_index = 0;
 			path.to_index = 0;
 			
-			ThingType* tt = theGameConfiguration->thingType(thing->getType());
+			ThingType* tt = Game::configuration().thingType(thing->getType());
 
 			// Dragon Path
 			if (tt->getFlags() & THING_DRAGON)
@@ -1639,7 +1639,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 						int a13 = dragon_things[d]->intProperty("arg2");
 						int a14 = dragon_things[d]->intProperty("arg3");
 						int a15 = dragon_things[d]->intProperty("arg4");
-						ThingType* tt1 = theGameConfiguration->thingType(dragon_things[d]->getType());
+						ThingType* tt1 = Game::configuration().thingType(dragon_things[d]->getType());
 						for (unsigned e = d + 1; e < dragon_things.size(); ++e)
 						{
 							int id2 = dragon_things[e]->intProperty("id");
@@ -1648,7 +1648,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 							int a23 = dragon_things[e]->intProperty("arg2");
 							int a24 = dragon_things[e]->intProperty("arg3");
 							int a25 = dragon_things[e]->intProperty("arg4");
-							ThingType* tt2 = theGameConfiguration->thingType(dragon_things[e]->getType());
+							ThingType* tt2 = Game::configuration().thingType(dragon_things[e]->getType());
 							bool l1to2 = ((a11 == id2) || (a12 == id2) || (a13 == id2) || (a14 == id2) || (a15 == id2));
 							bool l2to1 = ((a21 == id1) || (a22 == id1) || (a23 == id1) || (a24 == id1) || (a25 == id1));
 							if (!((tt1->getFlags()|tt2->getFlags()) & THING_DRAGON))
@@ -1697,7 +1697,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 				MapThing* thing2 = things[b];
 				if (thing2->getType() == nexttype)
 				{
-					ThingType* tt2 = theGameConfiguration->thingType(thing2->getType());
+					ThingType* tt2 = Game::configuration().thingType(thing2->getType());
 					nextargs = tt2->getNextArgs();
 					if (nextargs)
 					{
@@ -1826,9 +1826,9 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 			{
 				// Get the sector texture
 				if (type <= 1)
-					tex = MapEditor::textureManager().getFlat(sector->getFloorTex(), theGameConfiguration->mixTexFlats());
+					tex = MapEditor::textureManager().getFlat(sector->getFloorTex(), Game::configuration().mixTexFlats());
 				else
-					tex = MapEditor::textureManager().getFlat(sector->getCeilingTex(), theGameConfiguration->mixTexFlats());
+					tex = MapEditor::textureManager().getFlat(sector->getCeilingTex(), Game::configuration().mixTexFlats());
 
 				tex_flats[a] = tex;
 			}
@@ -1867,33 +1867,33 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 				// Floor
 				if (type <= 1)
 				{
-					if (theGameConfiguration->udmfFlatPanning())
+					if (Game::configuration().udmfFlatPanning())
 					{
 						ox = sector->floatProperty("xpanningfloor");
 						oy = sector->floatProperty("ypanningfloor");
 					}
-					if (theGameConfiguration->udmfFlatScaling())
+					if (Game::configuration().udmfFlatScaling())
 					{
 						sx *= (1.0 / sector->floatProperty("xscalefloor"));
 						sy *= (1.0 / sector->floatProperty("yscalefloor"));
 					}
-					if (theGameConfiguration->udmfFlatRotation())
+					if (Game::configuration().udmfFlatRotation())
 						rot = sector->floatProperty("rotationfloor");
 				}
 				// Ceiling
 				else
 				{
-					if (theGameConfiguration->udmfFlatPanning())
+					if (Game::configuration().udmfFlatPanning())
 					{
 						ox = sector->floatProperty("xpanningceiling");
 						oy = sector->floatProperty("ypanningceiling");
 					}
-					if (theGameConfiguration->udmfFlatScaling())
+					if (Game::configuration().udmfFlatScaling())
 					{
 						sx *= (1.0 / sector->floatProperty("xscaleceiling"));
 						sy *= (1.0 / sector->floatProperty("yscaleceiling"));
 					}
-					if (theGameConfiguration->udmfFlatRotation())
+					if (Game::configuration().udmfFlatRotation())
 						rot = sector->floatProperty("rotationceiling");
 				}
 			}
@@ -1991,9 +1991,9 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 			{
 				// Get the sector texture
 				if (type <= 1)
-					tex = MapEditor::textureManager().getFlat(sector->getFloorTex(), theGameConfiguration->mixTexFlats());
+					tex = MapEditor::textureManager().getFlat(sector->getFloorTex(), Game::configuration().mixTexFlats());
 				else
-					tex = MapEditor::textureManager().getFlat(sector->getCeilingTex(), theGameConfiguration->mixTexFlats());
+					tex = MapEditor::textureManager().getFlat(sector->getCeilingTex(), Game::configuration().mixTexFlats());
 
 				tex_flats[a] = tex;
 			}
@@ -2019,33 +2019,33 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 				// Floor
 				if (type <= 1)
 				{
-					if (theGameConfiguration->udmfFlatPanning())
+					if (Game::configuration().udmfFlatPanning())
 					{
 						ox = sector->floatProperty("xpanningfloor");
 						oy = sector->floatProperty("ypanningfloor");
 					}
-					if (theGameConfiguration->udmfFlatScaling())
+					if (Game::configuration().udmfFlatScaling())
 					{
 						sx *= (1.0 / sector->floatProperty("xscalefloor"));
 						sy *= (1.0 / sector->floatProperty("yscalefloor"));
 					}
-					if (theGameConfiguration->udmfFlatRotation())
+					if (Game::configuration().udmfFlatRotation())
 						rot = sector->floatProperty("rotationfloor");
 				}
 				// Ceiling
 				else
 				{
-					if (theGameConfiguration->udmfFlatPanning())
+					if (Game::configuration().udmfFlatPanning())
 					{
 						ox = sector->floatProperty("xpanningceiling");
 						oy = sector->floatProperty("ypanningceiling");
 					}
-					if (theGameConfiguration->udmfFlatScaling())
+					if (Game::configuration().udmfFlatScaling())
 					{
 						sx *= (1.0 / sector->floatProperty("xscaleceiling"));
 						sy *= (1.0 / sector->floatProperty("yscaleceiling"));
 					}
-					if (theGameConfiguration->udmfFlatRotation())
+					if (Game::configuration().udmfFlatRotation())
 						rot = sector->floatProperty("rotationceiling");
 				}
 			}
@@ -2500,7 +2500,7 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, fp
 		angle = thing->getAngle();
 
 		// Get thing type properties from game configuration
-		ThingType* tt = theGameConfiguration->thingType(thing->getType());
+		ThingType* tt = Game::configuration().thingType(thing->getType());
 
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == TDT_SPRITE)		// Drawtype 2: Sprites
@@ -2520,7 +2520,7 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, fp
 		{
 			// Get thing info
 			thing = map->getThing(things[a].index);
-			ThingType* tt = theGameConfiguration->thingType(thing->getType());
+			ThingType* tt = Game::configuration().thingType(thing->getType());
 			x = thing->xPos() + move_vec.x;
 			y = thing->yPos() + move_vec.y;
 			angle = thing->getAngle();
@@ -2537,7 +2537,7 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, fp
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		thing = map->getThing(things[a].index);
-		ThingType* tt = theGameConfiguration->thingType(thing->getType());
+		ThingType* tt = Game::configuration().thingType(thing->getType());
 		double radius = tt->getRadius();
 		if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -2579,7 +2579,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 		angle = thing->getAngle();
 
 		// Get thing type properties from game configuration
-		ThingType* tt = theGameConfiguration->thingType(thing->getType());
+		ThingType* tt = Game::configuration().thingType(thing->getType());
 
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == TDT_SPRITE)		// Drawtype 2: Sprites
@@ -2599,7 +2599,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 		{
 			// Get thing info
 			thing = things[a];
-			ThingType* tt = theGameConfiguration->thingType(thing->getType());
+			ThingType* tt = Game::configuration().thingType(thing->getType());
 			x = thing->xPos() + pos.x;
 			y = thing->yPos() + pos.y;
 			angle = thing->getAngle();
@@ -2616,7 +2616,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		thing = things[a];
-		ThingType* tt = theGameConfiguration->thingType(thing->getType());
+		ThingType* tt = Game::configuration().thingType(thing->getType());
 		double radius = tt->getRadius();
 		if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -2722,7 +2722,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 			angle = thing->getAngle();
 
 			// Get thing type properties from game configuration
-			ThingType* tt = theGameConfiguration->thingType(thing->getType());
+			ThingType* tt = Game::configuration().thingType(thing->getType());
 
 			// Draw thing depending on 'things_drawtype' cvar
 			if (thing_drawtype == TDT_SPRITE)		// Drawtype 2: Sprites
@@ -2742,7 +2742,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 			{
 				// Get thing info
 				thing = things[a].map_thing;
-				ThingType* tt = theGameConfiguration->thingType(thing->getType());
+				ThingType* tt = Game::configuration().thingType(thing->getType());
 				x = things[a].position.x;
 				y = things[a].position.y;
 				angle = thing->getAngle();
@@ -2759,7 +2759,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 		for (unsigned a = 0; a < things.size(); a++)
 		{
 			thing = things[a].map_thing;
-			ThingType* tt = theGameConfiguration->thingType(thing->getType());
+			ThingType* tt = Game::configuration().thingType(thing->getType());
 			double radius = tt->getRadius();
 			if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -2966,7 +2966,7 @@ void MapRenderer2D::updateVisibility(fpoint2_t view_tl, fpoint2_t view_br)
 		y = map->getThing(a)->yPos();
 
 		// Get thing type properties from game configuration
-		ThingType* tt = theGameConfiguration->thingType(map->getThing(a)->getType());
+		ThingType* tt = Game::configuration().thingType(map->getThing(a)->getType());
 		radius = tt->getRadius() * 1.3;
 
 		// Ignore if outside of screen

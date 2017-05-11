@@ -31,7 +31,7 @@
 #include "UI/WxStuff.h"
 #include "SLADEMap/SLADEMap.h"
 #include "MapChecks.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapTextureManager.h"
 #include "UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/MapEditor.h"
@@ -57,7 +57,7 @@ public:
 
 	void doCheck()
 	{
-		string sky_flat = theGameConfiguration->skyFlat();
+		string sky_flat = Game::configuration().skyFlat();
 		for (unsigned a = 0; a < map->nLines(); a++)
 		{
 			// Check what textures the line needs
@@ -253,7 +253,7 @@ public:
 			int tag = map->getLine(a)->intProperty("arg0");
 
 			// Get action special
-			ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+			ActionSpecial* as = Game::configuration().actionSpecial(special);
 			int tagged = as->needsTag();
 
 			// Check for back sector that removes need for tagged sector
@@ -270,7 +270,7 @@ public:
 			for (unsigned a = 0; a < map->nThings(); ++a)
 			{
 				// Ignore the Heresiarch which does not have a real special
-				ThingType* tt = theGameConfiguration->thingType(map->getThing(a)->getType());
+				ThingType* tt = Game::configuration().thingType(map->getThing(a)->getType());
 				if (tt->getFlags() & THING_SCRIPT)
 					continue;
 
@@ -279,7 +279,7 @@ public:
 				int tag = map->getThing(a)->intProperty("arg0");
 
 				// Get action special
-				ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+				ActionSpecial* as = Game::configuration().actionSpecial(special);
 				int tagged = as->needsTag();
 
 				// Check if tag is required but not set
@@ -301,7 +301,7 @@ public:
 
 		MapObject* mo = objects[index];
 		int special = mo->intProperty("special");
-		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+		ActionSpecial* as = Game::configuration().actionSpecial(special);
 		return S_FMT("%s %d: Special %d (%s) requires a tag",
 			mo->getObjType() == MOBJ_LINE ? "Line" : "Thing",
 			mo->getIndex(), special, as->getName());
@@ -372,7 +372,7 @@ public:
 			// Ignore the Heresiarch which does not have a real special
 			if (thingmode)
 			{
-				ThingType* tt = theGameConfiguration->thingType(((MapThing*)mo)->getType());
+				ThingType* tt = Game::configuration().thingType(((MapThing*)mo)->getType());
 				if (tt->getFlags() & THING_SCRIPT)
 					continue;
 			}
@@ -382,7 +382,7 @@ public:
 			int tag = mo->intProperty("arg0");
 
 			// Get action special
-			ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+			ActionSpecial* as = Game::configuration().actionSpecial(special);
 			int tagged = as->needsTag();
 
 			// Check if tag is required and set (not set is a different check...)
@@ -440,7 +440,7 @@ public:
 			return "No missing tagged objects found";
 
 		int special = objects[index]->intProperty("special");
-		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+		ActionSpecial* as = Game::configuration().actionSpecial(special);
 		return S_FMT("%s %d: No object tagged %d for Special %d (%s)", 
 			objects[index]->getObjType() == MOBJ_LINE ? "Line" : "Thing",
 			objects[index]->getIndex(), 
@@ -774,7 +774,7 @@ public:
 		for (unsigned a = 0; a < map->nThings(); a++)
 		{
 			MapThing* thing1 = map->getThing(a);
-			tt1 = theGameConfiguration->thingType(thing1->getType());
+			tt1 = Game::configuration().thingType(thing1->getType());
 			r1 = tt1->getRadius() - 1;
 
 			// Ignore if no radius
@@ -783,8 +783,8 @@ public:
 
 			// Go through uncompared things
 			int map_format = map->currentFormat();
-			bool udmf_zdoom = (map_format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"));
-			bool udmf_eternity = (map_format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "eternity"));
+			bool udmf_zdoom = (map_format == MAP_UDMF && S_CMPNOCASE(Game::configuration().udmfNamespace(), "zdoom"));
+			bool udmf_eternity = (map_format == MAP_UDMF && S_CMPNOCASE(Game::configuration().udmfNamespace(), "eternity"));
 			int min_skill = udmf_zdoom || udmf_eternity ? 1 : 2;
 			int max_skill = udmf_zdoom ? 17 : 5;
 			int max_class = udmf_zdoom ? 17 : 4;
@@ -792,7 +792,7 @@ public:
 			for (unsigned b = a + 1; b < map->nThings(); b++)
 			{
 				MapThing* thing2 = map->getThing(b);
-				tt2 = theGameConfiguration->thingType(thing2->getType());
+				tt2 = Game::configuration().thingType(thing2->getType());
 				r2 = tt2->getRadius() - 1;
 
 				// Ignore if no radius
@@ -805,8 +805,8 @@ public:
 				for (int s = min_skill; s < max_skill; ++s)
 				{
 					string skill = S_FMT("skill%d", s);
-					if (theGameConfiguration->thingBasicFlagSet(skill, thing1, map_format) && 
-						theGameConfiguration->thingBasicFlagSet(skill, thing2, map_format))
+					if (Game::configuration().thingBasicFlagSet(skill, thing1, map_format) && 
+						Game::configuration().thingBasicFlagSet(skill, thing2, map_format))
 					{
 						shareflag = true;
 						s = max_skill;
@@ -817,12 +817,12 @@ public:
 
 				// Booleans for single, coop, deathmatch, and teamgame status for each thing
 				bool s1, s2, c1, c2, d1, d2, t1, t2;
-				s1 = theGameConfiguration->thingBasicFlagSet("single", thing1, map_format);
-				s2 = theGameConfiguration->thingBasicFlagSet("single", thing2, map_format);
-				c1 = theGameConfiguration->thingBasicFlagSet("coop", thing1, map_format);
-				c2 = theGameConfiguration->thingBasicFlagSet("coop", thing2, map_format);
-				d1 = theGameConfiguration->thingBasicFlagSet("dm", thing1, map_format);
-				d2 = theGameConfiguration->thingBasicFlagSet("dm", thing2, map_format);
+				s1 = Game::configuration().thingBasicFlagSet("single", thing1, map_format);
+				s2 = Game::configuration().thingBasicFlagSet("single", thing2, map_format);
+				c1 = Game::configuration().thingBasicFlagSet("coop", thing1, map_format);
+				c2 = Game::configuration().thingBasicFlagSet("coop", thing2, map_format);
+				d1 = Game::configuration().thingBasicFlagSet("dm", thing1, map_format);
+				d2 = Game::configuration().thingBasicFlagSet("dm", thing2, map_format);
 
 				// Player starts
 				// P1 are automatically S and C; P2+ are automatically C;
@@ -870,8 +870,8 @@ public:
 					for (int c = 1; c < max_class; ++c)
 					{
 						string pclass = S_FMT("class%d", c);
-						if (theGameConfiguration->thingBasicFlagSet(pclass, thing1, map_format) && 
-							theGameConfiguration->thingBasicFlagSet(pclass, thing2, map_format))
+						if (Game::configuration().thingBasicFlagSet(pclass, thing1, map_format) && 
+							Game::configuration().thingBasicFlagSet(pclass, thing2, map_format))
 						{
 							shareflag = true;
 							c = max_class;
@@ -1001,7 +1001,7 @@ public:
 
 	void doCheck()
 	{
-		bool mixed = theGameConfiguration->mixTexFlats();
+		bool mixed = Game::configuration().mixTexFlats();
 
 		// Go through lines
 		for (unsigned a = 0; a < map->nLines(); a++)
@@ -1202,7 +1202,7 @@ public:
 
 	virtual void doCheck()
 	{
-		bool mixed = theGameConfiguration->mixTexFlats();
+		bool mixed = Game::configuration().mixTexFlats();
 
 		// Go through sectors
 		for (unsigned a = 0; a < map->nSectors(); a++)
@@ -1313,7 +1313,7 @@ public:
 	{
 		for (unsigned a = 0; a < map->nThings(); a++)
 		{
-			ThingType* tt = theGameConfiguration->thingType(map->getThing(a)->getType());
+			ThingType* tt = Game::configuration().thingType(map->getThing(a)->getType());
 			if (tt->getName() == "Unknown")
 				things.push_back(map->getThing(a));
 		}
@@ -1404,7 +1404,7 @@ public:
 			line = map->getLine(a);
 
 			// Skip if line is 2-sided and not blocking
-			if (line->s2() && !theGameConfiguration->lineBasicFlagSet("blocking", line, map->currentFormat()))
+			if (line->s2() && !Game::configuration().lineBasicFlagSet("blocking", line, map->currentFormat()))
 				continue;
 
 			check_lines.push_back(line);
@@ -1414,7 +1414,7 @@ public:
 		for (unsigned a = 0; a < map->nThings(); a++)
 		{
 			MapThing* thing = map->getThing(a);
-			ThingType* tt = theGameConfiguration->thingType(thing->getType());
+			ThingType* tt = Game::configuration().thingType(thing->getType());
 
 			// Skip if not a solid thing
 			if (!tt->isSolid())
@@ -1466,7 +1466,7 @@ public:
 			fpoint2_t np = MathStuff::closestPointOnLine(thing->point(), line->seg());
 
 			// Get distance to move
-			double r = theGameConfiguration->thingType(thing->getType())->getRadius();
+			double r = Game::configuration().thingType(thing->getType())->getRadius();
 			double dist = MathStuff::distance(fpoint2_t(), fpoint2_t(r, r));
 
 			editor->beginUndoRecord("Move Thing", true, false, false);
@@ -1802,8 +1802,8 @@ public:
 		for (unsigned a = 0; a < map->nSectors(); a++)
 		{
 			int special = map->getSector(a)->getSpecial();
-			int base = theGameConfiguration->baseSectorType(special);
-			if (S_CMP(theGameConfiguration->sectorTypeName(special), "Unknown"))
+			int base = Game::configuration().baseSectorType(special);
+			if (S_CMP(Game::configuration().sectorTypeName(special), "Unknown"))
 				sectors.push_back(a);
 		}
 	}
@@ -1831,7 +1831,7 @@ public:
 		{
 			// Try to preserve flags if they exist
 			int special = sec->getSpecial();
-			int base = theGameConfiguration->baseSectorType(special);
+			int base = Game::configuration().baseSectorType(special);
 			special &= ~base;
 			sec->setIntProperty("special", special);
 		}
@@ -1881,7 +1881,7 @@ public:
 		for (unsigned a = 0; a < map->nLines(); ++a)
 		{
 			int special = map->getLine(a)->getSpecial();
-			if (S_CMP(theGameConfiguration->actionSpecialName(special), "Unknown"))
+			if (S_CMP(Game::configuration().actionSpecialName(special), "Unknown"))
 				objects.push_back(map->getLine(a));
 		}
 		// In Hexen or UDMF, go through map things too since they too can have specials
@@ -1890,13 +1890,13 @@ public:
 			for (unsigned a = 0; a < map->nThings(); ++a)
 			{
 				// Ignore the Heresiarch which does not have a real special
-				ThingType* tt = theGameConfiguration->thingType(map->getThing(a)->getType());
+				ThingType* tt = Game::configuration().thingType(map->getThing(a)->getType());
 				if (tt->getFlags() & THING_SCRIPT)
 					continue;
 
 				// Otherwise, check special
 				int special = map->getThing(a)->intProperty("special");
-				if (S_CMP(theGameConfiguration->actionSpecialName(special), "Unknown"))
+				if (S_CMP(Game::configuration().actionSpecialName(special), "Unknown"))
 					objects.push_back(map->getThing(a));
 			}
 		}
@@ -1975,7 +1975,7 @@ public:
 		for (unsigned a = 0; a < map->nThings(); ++a)
 		{
 			MapThing* thing = map->getThing(a);
-			ThingType* tt = theGameConfiguration->thingType(thing->getType());
+			ThingType* tt = Game::configuration().thingType(thing->getType());
 			if (tt->getFlags() & THING_OBSOLETE)
 				things.push_back(thing);
 		}

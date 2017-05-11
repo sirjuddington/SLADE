@@ -35,7 +35,7 @@
 #include "App.h"
 #include "SLADEMap.h"
 #include "Utility/MathStuff.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 
 // Number of radians in the unit circle
 const double TAU = M_PI * 2;
@@ -195,10 +195,10 @@ void MapSector::setFloatProperty(string key, double value)
 	// Check if flat offset/scale/rotation is changing (if UDMF)
 	if (parent_map->currentFormat() == MAP_UDMF)
 	{
-		if ((theGameConfiguration->udmfFlatPanning() && (key == "xpanningfloor" || key == "ypanningfloor")) ||
-			(theGameConfiguration->udmfFlatScaling() && (key == "xscalefloor" || key == "yscalefloor" ||
+		if ((Game::configuration().udmfFlatPanning() && (key == "xpanningfloor" || key == "ypanningfloor")) ||
+			(Game::configuration().udmfFlatScaling() && (key == "xscalefloor" || key == "yscalefloor" ||
 			 key == "xscaleceiling" || key == "yscaleceiling")) || 
-			(theGameConfiguration->udmfFlatRotation() && (key == "rotationfloor" || key == "rotationceiling")))
+			(Game::configuration().udmfFlatRotation() && (key == "rotationfloor" || key == "rotationceiling")))
 			polygon.setTexture(NULL);	// Clear texture to force update
 	}
 
@@ -462,7 +462,7 @@ bool MapSector::getVertices(vector<MapObject*>& list)
 uint8_t MapSector::getLight(int where)
 {
 	// Check for UDMF + flat lighting
-	if (parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfFlatLighting())
+	if (parent_map->currentFormat() == MAP_UDMF && Game::configuration().udmfFlatLighting())
 	{
 		// Get general light level
 		int l = light;
@@ -523,7 +523,7 @@ void MapSector::changeLight(int amount, int where)
 		amount = -ll;
 
 	// Check for UDMF + flat lighting independent from the sector
-	bool separate = parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfFlatLighting();
+	bool separate = parent_map->currentFormat() == MAP_UDMF && Game::configuration().udmfFlatLighting();
 
 	// Change light level by amount
 	if (where == 1 && separate)
@@ -575,12 +575,12 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 	}
 
 	// Check for UDMF
-	if (parent_map->currentFormat() == MAP_UDMF && (theGameConfiguration->udmfSectorColor() ||
-		theGameConfiguration->udmfFlatLighting()))
+	if (parent_map->currentFormat() == MAP_UDMF && (Game::configuration().udmfSectorColor() ||
+		Game::configuration().udmfFlatLighting()))
 	{
 		// Get sector light colour
 		wxColour wxcol;
-		if(theGameConfiguration->udmfSectorColor())
+		if(Game::configuration().udmfSectorColor())
 		{
 			int intcol = MapObject::intProperty("lightcolor");
 			wxcol = wxColour(intcol);
@@ -596,7 +596,7 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 		// Get sector light level
 		int ll = light;
 
-		if (theGameConfiguration->udmfFlatLighting())
+		if (Game::configuration().udmfFlatLighting())
 		{
 			// Get specific light level
 			if(where == 1)
@@ -662,7 +662,7 @@ rgba_t MapSector::getFogColour()
 	}
 
 	// udmf
-	if (parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfSectorFog())
+	if (parent_map->currentFormat() == MAP_UDMF && Game::configuration().udmfSectorFog())
 	{
 		int intcol = MapObject::intProperty("fadecolor");
 

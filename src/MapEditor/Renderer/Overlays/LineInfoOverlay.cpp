@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "LineInfoOverlay.h"
 #include "MapEditor/MapEditContext.h"
@@ -99,11 +99,11 @@ void LineInfoOverlay::update(MapLine* line)
 		info_text += (S_FMT("Macro: #%d\n", macro));
 	}
 	else
-		info_text += (S_FMT("Special: %d (%s)\n", as_id, theGameConfiguration->actionSpecialName(as_id)));
+		info_text += (S_FMT("Special: %d (%s)\n", as_id, Game::configuration().actionSpecialName(as_id)));
 
 	// Line trigger
 	if (map_format == MAP_HEXEN || map_format == MAP_UDMF)
-		info_text += (S_FMT("Trigger: %s\n", theGameConfiguration->spacTriggerString(line, map_format)));
+		info_text += (S_FMT("Trigger: %s\n", Game::configuration().spacTriggerString(line, map_format)));
 
 	// Line args (or sector tag)
 	if (map_format == MAP_HEXEN || map_format == MAP_UDMF)
@@ -117,7 +117,7 @@ void LineInfoOverlay::update(MapLine* line)
 		string argxstr[2];
 		argxstr[0] = line->stringProperty("arg0str");
 		argxstr[1] = line->stringProperty("arg1str");
-		string argstr = theGameConfiguration->actionSpecial(as_id)->getArgsString(args, argxstr);
+		string argstr = Game::configuration().actionSpecial(as_id)->getArgsString(args, argxstr);
 		if (!argstr.IsEmpty())
 			info_text += (S_FMT("%s", argstr));
 		else
@@ -128,7 +128,7 @@ void LineInfoOverlay::update(MapLine* line)
 
 	// Line flags
 	if (map_format != MAP_UDMF)
-		info_text += (S_FMT("\nFlags: %s", theGameConfiguration->lineFlagsString(line)));
+		info_text += (S_FMT("\nFlags: %s", Game::configuration().lineFlagsString(line)));
 
 	// Setup text box
 	text_box->setText(info_text);
@@ -296,7 +296,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	col_fg.a = col_fg.a*alpha;
 
 	// Get texture
-	GLTexture* tex = MapEditor::textureManager().getTexture(texture, theGameConfiguration->mixTexFlats());
+	GLTexture* tex = MapEditor::textureManager().getTexture(texture, Game::configuration().mixTexFlats());
 
 	// Valid texture
 	if (texture != "-" && tex != &(GLTexture::missingTex()))

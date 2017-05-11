@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Edit2D.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/SectorBuilder.h"
@@ -386,9 +386,9 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 
 		// Increment/decrement
 		if (up)
-			light = fine ? light + 1 : theGameConfiguration->upLightLevel(light);
+			light = fine ? light + 1 : Game::configuration().upLightLevel(light);
 		else
-			light = fine ? light - 1 : theGameConfiguration->downLightLevel(light);
+			light = fine ? light - 1 : Game::configuration().downLightLevel(light);
 
 		// Change light level
 		selection[a]->setIntProperty("lightlevel", light);
@@ -399,7 +399,7 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 
 	// Add editor message
 	//auto dir = up ? "increased" : "decreased";
-	int amount = fine ? 1 : theGameConfiguration->lightLevelInterval();
+	int amount = fine ? 1 : Game::configuration().lightLevelInterval();
 	context_.addEditorMessage(S_FMT("Light level %s by %d", up ? "increased" : "decreased", amount));
 
 	// Update display
@@ -579,7 +579,7 @@ void Edit2D::changeThingType() const
 		context_.endUndoRecord(true);
 
 		// Add editor message
-		string type_name = theGameConfiguration->thingType(newtype)->getName();
+		string type_name = Game::configuration().thingType(newtype)->getName();
 		if (selection.size() == 1)
 			context_.addEditorMessage(S_FMT("Changed type to \"%s\"", type_name));
 		else
@@ -921,7 +921,7 @@ void Edit2D::createThing(double x, double y) const
 	auto thing = context_.map().createThing(x, y);
 
 	// Setup properties
-	theGameConfiguration->applyDefaults(thing, context_.map().currentFormat() == MAP_UDMF);
+	Game::configuration().applyDefaults(thing, context_.map().currentFormat() == MAP_UDMF);
 	if (thing_copied_ && thing)
 	{
 		// Copy type and angle from the last copied thing
@@ -986,7 +986,7 @@ void Edit2D::createSector(double x, double y) const
 	{
 		auto new_sector = map.getSector(map.nSectors() - 1);
 		if (new_sector->getCeilingTex().IsEmpty())
-			theGameConfiguration->applyDefaults(new_sector, map.currentFormat() == MAP_UDMF);
+			Game::configuration().applyDefaults(new_sector, map.currentFormat() == MAP_UDMF);
 	}
 
 	// Editor message

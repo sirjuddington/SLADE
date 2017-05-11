@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "ThingType.h"
 #include "Utility/Parser.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 
 
 /*******************************************************************
@@ -310,7 +310,7 @@ void ThingType::parse(ParseTreeNode* node)
 
 		// Some things tag other things directly
 		else if (S_CMPNOCASE(name, "tagged"))
-			this->tagged = GameConfiguration::parseTagged(child);
+			this->tagged = Configuration::parseTagged(child);
 
 		// Parse arg definition if it was one
 		if (arg >= 0)

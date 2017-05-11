@@ -35,7 +35,7 @@
 #include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/RunDialog.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
@@ -478,7 +478,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 			return false;
 
 		// Attempt to load selected game configuration
-		if (!theGameConfiguration->openConfig(dlg.selectedGame(), dlg.selectedPort(), md.format))
+		if (!Game::configuration().openConfig(dlg.selectedGame(), dlg.selectedPort(), md.format))
 		{
 			wxMessageBox("An error occurred loading the game configuration, see the console log for details", "Error", wxICON_ERROR);
 			return false;
@@ -575,10 +575,10 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 		MapEditor::editContext().mapDesc() = map;
 
 		// Read DECORATE definitions if any
-		theGameConfiguration->clearDecorateDefs();
-		theGameConfiguration->parseDecorateDefs(theArchiveManager->baseResourceArchive());
+		Game::configuration().clearDecorateDefs();
+		Game::configuration().parseDecorateDefs(theArchiveManager->baseResourceArchive());
 		for (int i = 0; i < theArchiveManager->numArchives(); ++i)
-			theGameConfiguration->parseDecorateDefs(theArchiveManager->getArchive(i));
+			Game::configuration().parseDecorateDefs(theArchiveManager->getArchive(i));
 
 		// Load scripts if any
 		loadMapScripts(map);
@@ -612,7 +612,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 {
 	// Don't bother if no scripting language specified
-	if (theGameConfiguration->scriptLanguage().IsEmpty())
+	if (Game::configuration().scriptLanguage().IsEmpty())
 	{
 		// Hide script editor
 		wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
@@ -652,8 +652,8 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 	while (entry && entry != map.end->nextEntry())
 	{
 		// Check for SCRIPTS/BEHAVIOR
-		if (theGameConfiguration->scriptLanguage() == "acs_hexen" ||
-		        theGameConfiguration->scriptLanguage() == "acs_zdoom")
+		if (Game::configuration().scriptLanguage() == "acs_hexen" ||
+		        Game::configuration().scriptLanguage() == "acs_zdoom")
 		{
 			if (S_CMPNOCASE(entry->getName(), "SCRIPTS"))
 				scripts = entry;
@@ -769,15 +769,15 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 
 	// Check script language
 	bool acs = false;
-	if (theGameConfiguration->scriptLanguage() == "acs_hexen" ||
-		theGameConfiguration->scriptLanguage() == "acs_zdoom")
+	if (Game::configuration().scriptLanguage() == "acs_hexen" ||
+		Game::configuration().scriptLanguage() == "acs_zdoom")
 		acs = true;
 	// Force ACS on for Hexen map format, and off for Doom map format
 	if (mdesc_current.format == MAP_DOOM) acs = false;
 	if (mdesc_current.format == MAP_HEXEN) acs = true;
 	bool dialogue = false;
-	if (theGameConfiguration->scriptLanguage() == "usdf" ||
-		theGameConfiguration->scriptLanguage() == "zsdf")
+	if (Game::configuration().scriptLanguage() == "usdf" ||
+		Game::configuration().scriptLanguage() == "zsdf")
 		dialogue = true;
 
 	// Add map data to temporary wad
@@ -1222,7 +1222,7 @@ bool MapEditorWindow::handleAction(string id)
 			p_inf.Show(false);
 			map_canvas->SetFocus();
 		}
-		else if (!theGameConfiguration->scriptLanguage().IsEmpty())
+		else if (!Game::configuration().scriptLanguage().IsEmpty())
 		{
 			p_inf.Show(true);
 			p_inf.window->SetFocus();

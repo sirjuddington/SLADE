@@ -28,7 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -83,7 +83,7 @@ void SideTexCanvas::setTexture(string tex)
 	if (tex == "-" || tex == "")
 		texture = nullptr;
 	else
-		texture = MapEditor::textureManager().getTexture(tex, theGameConfiguration->mixTexFlats());
+		texture = MapEditor::textureManager().getTexture(tex, Game::configuration().mixTexFlats());
 
 	Refresh();
 }

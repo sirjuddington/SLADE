@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "LineTextureOverlay.h"
 #include "MapEditor/MapEditContext.h"
@@ -319,7 +319,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 	{
 		// Draw first texture
 		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
-		tex_first = MapEditor::textureManager().getTexture(tex.textures[0], theGameConfiguration->mixTexFlats());
+		tex_first = MapEditor::textureManager().getTexture(tex.textures[0], Game::configuration().mixTexFlats());
 		Drawing::drawTextureWithin(tex_first, tex.position.x - halfsize, tex.position.y - halfsize,
 		                           tex.position.x + halfsize, tex.position.y + halfsize, 0, 2);
 
@@ -327,7 +327,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 		OpenGL::setColour(255, 255, 255, 127*alpha, 0);
 		for (unsigned a = 1; a < tex.textures.size() && a < 5; a++)
 		{
-			Drawing::drawTextureWithin(MapEditor::textureManager().getTexture(tex.textures[a], theGameConfiguration->mixTexFlats()),
+			Drawing::drawTextureWithin(MapEditor::textureManager().getTexture(tex.textures[a], Game::configuration().mixTexFlats()),
 			                           tex.position.x - halfsize, tex.position.y - halfsize,
 			                           tex.position.x + halfsize, tex.position.y + halfsize, 0, 2);
 		}

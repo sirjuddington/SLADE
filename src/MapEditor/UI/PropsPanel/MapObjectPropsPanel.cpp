@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UI/MapEditorWindow.h"
@@ -556,8 +556,8 @@ void MapObjectPropsPanel::setupType(int objtype)
 			wxPGProperty* g_flags = pg_properties->Append(new wxPropertyCategory("Flags"));
 
 			// Add flags
-			for (int a = 0; a < theGameConfiguration->nLineFlags(); a++)
-				addLineFlagProperty(g_flags, theGameConfiguration->lineFlag(a), S_FMT("flag%u", a), a);
+			for (int a = 0; a < Game::configuration().nLineFlags(); a++)
+				addLineFlagProperty(g_flags, Game::configuration().lineFlag(a), S_FMT("flag%u", a), a);
 		}
 
 		// --- Sides ---
@@ -733,8 +733,8 @@ void MapObjectPropsPanel::setupType(int objtype)
 			wxPGProperty* g_flags = pg_properties->Append(new wxPropertyCategory("Flags"));
 
 			// Add flags
-			for (int a = 0; a < theGameConfiguration->nThingFlags(); a++)
-				addThingFlagProperty(g_flags, theGameConfiguration->thingFlag(a), S_FMT("flag%u", a), a);
+			for (int a = 0; a < Game::configuration().nThingFlags(); a++)
+				addThingFlagProperty(g_flags, Game::configuration().thingFlag(a), S_FMT("flag%u", a), a);
 		}
 	}
 
@@ -784,7 +784,7 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		stc_sections->SetPageText(0, "Thing");
 
 	// Go through all possible properties for this type
-	vector<udmfp_t> props = theGameConfiguration->allUDMFProperties(objtype);
+	vector<udmfp_t> props = Game::configuration().allUDMFProperties(objtype);
 	sort(props.begin(), props.end());
 	for (unsigned a = 0; a < props.size(); a++)
 	{
@@ -811,7 +811,7 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		stc_sections->AddPage(pg_props_side2, "Back Side");
 
 		// Get side properties
-		vector<udmfp_t> sprops = theGameConfiguration->allUDMFProperties(MOBJ_SIDE);
+		vector<udmfp_t> sprops = Game::configuration().allUDMFProperties(MOBJ_SIDE);
 		sort(sprops.begin(), sprops.end());
 
 		// Front side

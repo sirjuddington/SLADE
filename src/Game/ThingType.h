@@ -17,9 +17,10 @@ enum ThingFlags
 };
 
 class ParseTreeNode;
+namespace Game { class Configuration; }
 class ThingType
 {
-	friend class GameConfiguration;
+	friend class Game::Configuration;
 public:
 	ThingType(string name = "Unknown");
 	~ThingType() {}

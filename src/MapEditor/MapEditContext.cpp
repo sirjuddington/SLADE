@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/Console/Console.h"
 #include "General/UndoRedo.h"
@@ -552,7 +552,7 @@ void MapEditContext::updateTagged()
 				MapLine* line = map_.getLine(hilight_item);
 				if (line->s2()) back = line->s2()->getSector();
 				if (line->s1()) front = line->s1()->getSector();
-				needs_tag = theGameConfiguration->actionSpecial(line->intProperty("special"))->needsTag();
+				needs_tag = Game::configuration().actionSpecial(line->intProperty("special"))->needsTag();
 				tag = line->intProperty("arg0");
 				arg2 = line->intProperty("arg1");
 				arg3 = line->intProperty("arg2");
@@ -565,13 +565,13 @@ void MapEditContext::updateTagged()
 			else /* edit_mode == Mode::Things */
 			{
 				MapThing* thing = map_.getThing(hilight_item);
-				if (theGameConfiguration->thingType(thing->getType())->getFlags() & THING_SCRIPT)
+				if (Game::configuration().thingType(thing->getType())->getFlags() & THING_SCRIPT)
 					needs_tag = AS_TT_NO;
 				else
 				{
-					needs_tag = theGameConfiguration->thingType(thing->getType())->needsTag();
+					needs_tag = Game::configuration().thingType(thing->getType())->needsTag();
 					if (!needs_tag)
-						needs_tag = theGameConfiguration->actionSpecial(thing->intProperty("special"))->needsTag();
+						needs_tag = Game::configuration().actionSpecial(thing->intProperty("special"))->needsTag();
 					tag = thing->intProperty("arg0");
 					arg2 = thing->intProperty("arg1");
 					arg3 = thing->intProperty("arg2");
@@ -1036,7 +1036,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 		// Toggle linked light levels
 		else if (key == "me3d_light_toggle_link")
 		{
-			if (!is_udmf || !theGameConfiguration->udmfFlatLighting())
+			if (!is_udmf || !Game::configuration().udmfFlatLighting())
 				addEditorMessage("Unlinked light levels not supported in this game configuration");
 			else
 			{
@@ -1050,7 +1050,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 		// Toggle linked offsets
 		else if (key == "me3d_wall_toggle_link_ofs")
 		{
-			if (!is_udmf || !theGameConfiguration->udmfTextureOffsets())
+			if (!is_udmf || !Game::configuration().udmfTextureOffsets())
 				addEditorMessage("Unlinked wall offsets not supported in this game configuration");
 			else
 			{

@@ -31,7 +31,7 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/Formats/WadArchive.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/ResourceManager.h"
 #include "General/UI.h"
 #include "MapEditor/SectorBuilder.h"
@@ -380,7 +380,7 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 		current_format = map.format;
 		// When creating a new map, retrieve UDMF namespace information from the configuration
 		if (map.format == MAP_UDMF && udmf_namespace.IsEmpty())
-			udmf_namespace = theGameConfiguration->udmfNamespace();
+			udmf_namespace = Game::configuration().udmfNamespace();
 	}
 
 	initSectorPolygons();
@@ -989,7 +989,7 @@ bool SLADEMap::addLine(hexenline_t& l)
 	// Handle some special cases
 	if (l.type)
 	{
-		int needs_tag = theGameConfiguration->actionSpecial(l.type)->needsTag();
+		int needs_tag = Game::configuration().actionSpecial(l.type)->needsTag();
 		if (needs_tag == AS_TT_LINEID || needs_tag == AS_TT_1LINEID_2LINE)
 		{
 			nl->properties["id"] = l.args[0];
@@ -2370,7 +2370,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		// Other properties
 		if (!things[a]->properties.isEmpty())
 		{
-			theGameConfiguration->cleanObjectUDMFProps(things[a]);
+			Game::configuration().cleanObjectUDMFProps(things[a]);
 			object_def += things[a]->properties.toString(true);
 		}
 
@@ -2398,7 +2398,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		// Other properties
 		if (!lines[a]->properties.isEmpty())
 		{
-			theGameConfiguration->cleanObjectUDMFProps(lines[a]);
+			Game::configuration().cleanObjectUDMFProps(lines[a]);
 			object_def += lines[a]->properties.toString(true);
 		}
 
@@ -2429,7 +2429,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		// Other properties
 		if (!sides[a]->properties.isEmpty())
 		{
-			theGameConfiguration->cleanObjectUDMFProps(sides[a]);
+			Game::configuration().cleanObjectUDMFProps(sides[a]);
 			object_def += sides[a]->properties.toString(true);
 		}
 
@@ -2450,7 +2450,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		// Other properties
 		if (!vertices[a]->properties.isEmpty())
 		{
-			theGameConfiguration->cleanObjectUDMFProps(vertices[a]);
+			Game::configuration().cleanObjectUDMFProps(vertices[a]);
 			object_def += vertices[a]->properties.toString(true);
 		}
 
@@ -2476,7 +2476,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		// Other properties
 		if (!sectors[a]->properties.isEmpty())
 		{
-			theGameConfiguration->cleanObjectUDMFProps(sectors[a]);
+			Game::configuration().cleanObjectUDMFProps(sectors[a]);
 			object_def += sectors[a]->properties.toString(true);
 		}
 
@@ -2699,8 +2699,8 @@ bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 			l->side2 = NULL;
 
 		// Set appropriate line flags
-		theGameConfiguration->setLineBasicFlag("blocking", l, current_format, true);
-		theGameConfiguration->setLineBasicFlag("twosided", l, current_format, false);
+		Game::configuration().setLineBasicFlag("blocking", l, current_format, true);
+		Game::configuration().setLineBasicFlag("twosided", l, current_format, false);
 	}
 
 	// Remove side from its sector, if any
@@ -3338,7 +3338,7 @@ MapThing* SLADEMap::getFirstThingWithId(int id)
 	// Find things with matching id, but ignore dragons, we don't want them!
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+		ThingType* tt = Game::configuration().thingType(things[a]->getType());
 		if (things[a]->intProperty("id") == id && !(tt->getFlags() & THING_DRAGON))
 			return things[a];
 	}
@@ -3403,7 +3403,7 @@ void SLADEMap::getPathedThings(vector<MapThing*>& list)
 	// Find things that need to be pathed
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+		ThingType* tt = Game::configuration().thingType(things[a]->getType());
 		if (tt->getFlags() & (THING_PATHED|THING_DRAGON))
 			list.push_back(things[a]);
 	}
@@ -3434,10 +3434,10 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, i
 	int needs_tag, tag, arg2, arg3, arg4, arg5, tid;
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+		ThingType* tt = Game::configuration().thingType(things[a]->getType());
 		if (tt->needsTag() || (things[a]->intProperty("special") && !(tt->getFlags() & THING_SCRIPT)))
 		{
-			needs_tag = tt->needsTag() ? tt->needsTag() : theGameConfiguration->actionSpecial(things[a]->intProperty("special"))->needsTag();
+			needs_tag = tt->needsTag() ? tt->needsTag() : Game::configuration().actionSpecial(things[a]->intProperty("special"))->needsTag();
 			tag = things[a]->intProperty("arg0");
 			bool fits = false;
 			switch (needs_tag)
@@ -3523,7 +3523,7 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, i
 				// the thing types in question are in the 9000 range, and the TagTypes
 				// enum is quite unlikely to reach that far. :p
 				tid = things[a]->intProperty("id");
-				ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+				ThingType* tt = Game::configuration().thingType(things[a]->getType());
 				fits = ((needs_tag == ttype) && (IDEQ(tid)) && (tt->needsTag() == needs_tag));
 				break;
 			}
@@ -3544,7 +3544,7 @@ void SLADEMap::getTaggingLinesById(int id, int type, vector<MapLine*>& list)
 		int special = lines[a]->special;
 		if (special)
 		{
-			needs_tag = theGameConfiguration->actionSpecial(lines[a]->special)->needsTag();
+			needs_tag = Game::configuration().actionSpecial(lines[a]->special)->needsTag();
 			tag = lines[a]->intProperty("arg0");
 			bool fits = false;
 			switch (needs_tag)
@@ -3702,7 +3702,7 @@ int SLADEMap::findUnusedLineId()
 	}
 
 	// Boom (sector tag (arg0))
-	else if (current_format == MAP_DOOM && theGameConfiguration->isBoom())
+	else if (current_format == MAP_DOOM && Game::configuration().isBoom())
 	{
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
@@ -4495,8 +4495,8 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 
 		// Set appropriate line flags
 		bool twosided = (lines[line]->side1 && lines[line]->side2);
-		theGameConfiguration->setLineBasicFlag("blocking", lines[line], current_format, !twosided);
-		theGameConfiguration->setLineBasicFlag("twosided", lines[line], current_format, twosided);
+		Game::configuration().setLineBasicFlag("blocking", lines[line], current_format, !twosided);
+		Game::configuration().setLineBasicFlag("twosided", lines[line], current_format, twosided);
 
 		// Invalidate sector polygon
 		sectors[sector]->resetPolygon();
@@ -5086,7 +5086,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		}
 
 		// Otherwise, use defaults from game configuration
-		theGameConfiguration->applyDefaults(sectors[a], current_format == MAP_UDMF);
+		Game::configuration().applyDefaults(sectors[a], current_format == MAP_UDMF);
 	}
 
 	// Update line textures
@@ -5107,7 +5107,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 
 			// If no adjacent texture, get default from game configuration
 			if (tex == "-")
-				tex = theGameConfiguration->getDefaultString(MOBJ_SIDE, "texturemiddle");
+				tex = Game::configuration().getDefaultString(MOBJ_SIDE, "texturemiddle");
 
 			// Set texture
 			sides[a]->setStringProperty("texturemiddle", tex);

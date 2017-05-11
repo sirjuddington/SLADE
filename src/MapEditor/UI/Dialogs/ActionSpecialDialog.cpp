@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ActionSpecialDialog.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
@@ -62,7 +62,7 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	wxSize textsize;
 
 	// Populate tree
-	vector<as_t> specials = theGameConfiguration->allActionSpecials();
+	vector<as_t> specials = Game::configuration().allActionSpecials();
 	std::sort(specials.begin(), specials.end());
 	for (unsigned a = 0; a < specials.size(); a++)
 	{
@@ -838,7 +838,7 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	// Setup layout
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 
-	if (theGameConfiguration->isBoom())
+	if (Game::configuration().isBoom())
 	{
 		// Action Special radio button
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -903,7 +903,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 		if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 		{
 			// Get all UDMF properties
-			vector<udmfp_t> props = theGameConfiguration->allUDMFProperties(MOBJ_LINE);
+			vector<udmfp_t> props = Game::configuration().allUDMFProperties(MOBJ_LINE);
 			sort(props.begin(), props.end());
 
 			// Get all UDMF trigger properties
@@ -949,7 +949,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 			sizer->Add(hbox, 0, wxEXPAND|wxTOP, 4);
 
 			hbox->Add(new wxStaticText(panel_action_special, -1, "Special Trigger:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-			choice_trigger = new wxChoice(panel_action_special, -1, wxDefaultPosition, wxDefaultSize, theGameConfiguration->allSpacTriggers());
+			choice_trigger = new wxChoice(panel_action_special, -1, wxDefaultPosition, wxDefaultSize, Game::configuration().allSpacTriggers());
 			hbox->Add(choice_trigger, 1, wxEXPAND);
 		}
 	}
@@ -963,7 +963,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 void ActionSpecialPanel::setSpecial(int special)
 {
 	// Check for boom generalised special
-	if (theGameConfiguration->isBoom())
+	if (Game::configuration().isBoom())
 	{
 		if (panel_gen_specials->loadSpecial(special))
 		{
@@ -984,7 +984,7 @@ void ActionSpecialPanel::setSpecial(int special)
 	// Setup args if any
 	if (panel_args)
 	{
-		auto args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
+		auto args = Game::configuration().actionSpecial(selectedSpecial())->getArgspec();
 		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }
@@ -1014,7 +1014,7 @@ void ActionSpecialPanel::setTrigger(int index)
  *******************************************************************/
 int ActionSpecialPanel::selectedSpecial()
 {
-	if (theGameConfiguration->isBoom())
+	if (Game::configuration().isBoom())
 	{
 		if (rb_special->GetValue())
 			return tree_specials->selectedSpecial();
@@ -1031,7 +1031,7 @@ int ActionSpecialPanel::selectedSpecial()
  *******************************************************************/
 void ActionSpecialPanel::showGeneralised(bool show)
 {
-	if (!theGameConfiguration->isBoom())
+	if (!Game::configuration().isBoom())
 		return;
 
 	if (show)
@@ -1106,7 +1106,7 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 
 			// Hexen
 			else if (choice_trigger && choice_trigger->GetSelection() >= 0)
-				theGameConfiguration->setLineSpacTrigger(choice_trigger->GetSelection(), (MapLine*)lines[a]);
+				Game::configuration().setLineSpacTrigger(choice_trigger->GetSelection(), (MapLine*)lines[a]);
 		}
 	}
 }
@@ -1154,10 +1154,10 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 		// Trigger (Hexen)
 		else if (choice_trigger)
 		{
-			int trigger = theGameConfiguration->spacTriggerIndexHexen((MapLine*)lines[0]);
+			int trigger = Game::configuration().spacTriggerIndexHexen((MapLine*)lines[0]);
 			for (unsigned a = 1; a < lines.size(); a++)
 			{
-				if (trigger != theGameConfiguration->spacTriggerIndexHexen((MapLine*)lines[a]))
+				if (trigger != Game::configuration().spacTriggerIndexHexen((MapLine*)lines[a]))
 				{
 					trigger = -1;
 					break;
@@ -1189,7 +1189,7 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
  *******************************************************************/
 void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
 {
-	if ((theGameConfiguration->isBoom() && rb_generalised->GetValue()) ||
+	if ((Game::configuration().isBoom() && rb_generalised->GetValue()) ||
 		selectedSpecial() < 0)
 	{
 		e.Skip();
@@ -1201,7 +1201,7 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
 
 	if (panel_args)
 	{
-		auto args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
+		auto args = Game::configuration().actionSpecial(selectedSpecial())->getArgspec();
 		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }
@@ -1222,7 +1222,7 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
 	// Jump to args tab, if there is one
 	if (panel_args)
 	{
-		auto args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
+		auto args = Game::configuration().actionSpecial(selectedSpecial())->getArgspec();
 		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 		panel_args->SetFocus();
 	}
@@ -1297,7 +1297,7 @@ void ActionSpecialDialog::setSpecial(int special)
 	panel_special->setSpecial(special);
 	if (panel_args)
 	{
-		auto args = theGameConfiguration->actionSpecial(special)->getArgspec();
+		auto args = Game::configuration().actionSpecial(special)->getArgspec();
 		panel_args->setup(&args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }

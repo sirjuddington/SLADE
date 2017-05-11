@@ -31,7 +31,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
@@ -562,7 +562,7 @@ void MOPGIntWithArgsProperty::OnSetValue()
 const Game::ArgSpec MOPGActionSpecialProperty::getArgspec()
 {
 	int special = m_value.GetInteger();
-	ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+	ActionSpecial* as = Game::configuration().actionSpecial(special);
 	return as->getArgspec();
 }
 
@@ -579,7 +579,7 @@ wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags
 		return "0: None";
 	else
 	{
-		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+		ActionSpecial* as = Game::configuration().actionSpecial(special);
 		return S_FMT("%d: %s", special, as->getName());
 	}
 }
@@ -619,7 +619,7 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 const Game::ArgSpec MOPGThingTypeProperty::getArgspec()
 {
 	int type = m_value.GetInteger();
-	ThingType* tt = theGameConfiguration->thingType(type);
+	ThingType* tt = Game::configuration().thingType(type);
 	return tt->getArgspec();
 }
 
@@ -636,7 +636,7 @@ wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) co
 		return "0: None";
 
 
-	ThingType* tt = theGameConfiguration->thingType(type);
+	ThingType* tt = Game::configuration().thingType(type);
 	return S_FMT("%d: %s", type, tt->getName());
 }
 
@@ -695,12 +695,12 @@ void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Check flag against first object
-	bool first = theGameConfiguration->lineFlagSet(index, (MapLine*)objects[0]);
+	bool first = Game::configuration().lineFlagSet(index, (MapLine*)objects[0]);
 
 	// Check whether all objects share the same flag setting
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (theGameConfiguration->lineFlagSet(index, (MapLine*)objects[a]) != first)
+		if (Game::configuration().lineFlagSet(index, (MapLine*)objects[a]) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -732,7 +732,7 @@ void MOPGLineFlagProperty::applyValue()
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent->getObjects();
 	for (unsigned a = 0; a < objects.size(); a++)
-		theGameConfiguration->setLineFlag(index, (MapLine*)objects[a], GetValue());
+		Game::configuration().setLineFlag(index, (MapLine*)objects[a], GetValue());
 }
 
 
@@ -764,12 +764,12 @@ void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Check flag against first object
-	bool first = theGameConfiguration->thingFlagSet(index, (MapThing*)objects[0]);
+	bool first = Game::configuration().thingFlagSet(index, (MapThing*)objects[0]);
 
 	// Check whether all objects share the same flag setting
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (theGameConfiguration->thingFlagSet(index, (MapThing*)objects[a]) != first)
+		if (Game::configuration().thingFlagSet(index, (MapThing*)objects[a]) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -801,7 +801,7 @@ void MOPGThingFlagProperty::applyValue()
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent->getObjects();
 	for (unsigned a = 0; a < objects.size(); a++)
-		theGameConfiguration->setThingFlag(index, (MapThing*)objects[a], GetValue());
+		Game::configuration().setThingFlag(index, (MapThing*)objects[a], GetValue());
 }
 
 
@@ -1112,7 +1112,7 @@ MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wx
 	SetEditor(wxPGEditor_ComboBox);
 
 	// Setup combo box choices
-	wxArrayString labels = theGameConfiguration->allSpacTriggers();
+	wxArrayString labels = Game::configuration().allSpacTriggers();
 	SetChoices(wxPGChoices(labels));
 }
 
@@ -1131,12 +1131,12 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 
 	// Get property of first object
 	int map_format = MapEditor::editContext().mapDesc().format;
-	string first = theGameConfiguration->spacTriggerString((MapLine*)objects[0], map_format);
+	string first = Game::configuration().spacTriggerString((MapLine*)objects[0], map_format);
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (theGameConfiguration->spacTriggerString((MapLine*)objects[a], map_format) != first)
+		if (Game::configuration().spacTriggerString((MapLine*)objects[a], map_format) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -1186,7 +1186,7 @@ void MOPGSPACTriggerProperty::applyValue()
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent->getObjects();
 	for (unsigned a = 0; a < objects.size(); a++)
-		theGameConfiguration->setLineSpacTrigger(GetChoiceSelection(), (MapLine*)objects[a]);
+		Game::configuration().setLineSpacTrigger(GetChoiceSelection(), (MapLine*)objects[a]);
 	//objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
@@ -1329,7 +1329,7 @@ wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, int argFlags
 {
 	int type = value.GetInteger();
 
-	return S_FMT("%d: %s", type, theGameConfiguration->sectorTypeName(type));
+	return S_FMT("%d: %s", type, Game::configuration().sectorTypeName(type));
 }
 
 /* MOPGSectorSpecialProperty::OnEvent

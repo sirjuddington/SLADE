@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/Edit/LineDraw.h"
@@ -1584,7 +1584,7 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 		if (!t) return;
 
 		// Get thing type
-		auto tt = theGameConfiguration->thingType(t->getType());
+		auto tt = Game::configuration().thingType(t->getType());
 
 		// Start animation
 		double radius = tt->getRadius();
