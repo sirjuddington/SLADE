@@ -820,13 +820,13 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		// Setup
 		if (ival > 0)
 		{
-			auto as = Game::configuration().actionSpecial(ival)->getArgspec();
-			panel_args->setup(&as, (map_format == MAP_UDMF));
+			auto& as = Game::configuration().actionSpecial(ival)->getArgspec();
+			panel_args->setup(as, (map_format == MAP_UDMF));
 		}
 		else
 		{
-			auto as = Game::configuration().thingType(type_current)->getArgspec();
-			panel_args->setup(&as, (map_format == MAP_UDMF));
+			auto& as = Game::configuration().thingType(type_current)->getArgspec();
+			panel_args->setup(as, (map_format == MAP_UDMF));
 		}
 
 		// Load values
@@ -959,8 +959,8 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 		// Update args
 		if (panel_args)
 		{
-			auto as = tt->getArgspec();
-			panel_args->setup(&as, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
+			auto& as = tt->getArgspec();
+			panel_args->setup(as, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 		}
 
 		// Update layout

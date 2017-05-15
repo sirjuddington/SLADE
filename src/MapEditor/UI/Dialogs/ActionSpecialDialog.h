@@ -56,7 +56,7 @@ public:
 	ArgsPanel(wxWindow* parent);
 	~ArgsPanel() {}
 
-	void	setup(Game::ArgSpec* args, bool udmf);
+	void	setup(const Game::ArgSpec& args, bool udmf);
 	void	setValues(int args[5]);
 	int		getArgValue(int index);
 	void	onSize(wxSizeEvent& event);
