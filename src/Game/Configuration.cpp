@@ -46,8 +46,8 @@ using namespace Game;
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-CVAR(String, game_configuration, "", CVAR_SAVE)
-CVAR(String, port_configuration, "", CVAR_SAVE)
+EXTERN_CVAR(String, game_configuration)
+EXTERN_CVAR(String, port_configuration)
 CVAR(Bool, debug_configuration, false, CVAR_SAVE)
 
 
@@ -172,249 +172,6 @@ string Configuration::readConfigName(MemChunk& mc)
 	return "";
 }
 
-/* Configuration::readBasicGameConfig
- * Parses the game configuration definition in [mc] to a gconf_t,
- * which contains only basic information about the game
- * configuration (no thing types, specials etc)
- *******************************************************************/
-Configuration::gconf_t Configuration::readBasicGameConfig(MemChunk& mc)
-{
-	// Parse configuration
-	Parser parser;
-	parser.parseText(mc, "");
-	gconf_t conf;
-
-	// Check for game section
-	ParseTreeNode* node_game = nullptr;
-	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
-	{
-		ParseTreeNode* child = (ParseTreeNode*)parser.parseTreeRoot()->getChild(a);
-		if (child->getType() == "game")
-		{
-			node_game = child;
-			break;
-		}
-	}
-	if (node_game)
-	{
-		// Game id
-		conf.name = node_game->getName();
-
-		// Game name
-		ParseTreeNode* node_name = (ParseTreeNode*)node_game->getChild("name");
-		if (node_name)
-			conf.title = node_name->getStringValue();
-
-		// Supported map formats
-		ParseTreeNode* node_maps = (ParseTreeNode*)node_game->getChild("map_formats");
-		if (node_maps)
-		{
-			for (unsigned a = 0; a < node_maps->nValues(); a++)
-			{
-				if (S_CMPNOCASE(node_maps->getStringValue(a), "doom"))
-					conf.supported_formats[MAP_DOOM] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "hexen"))
-					conf.supported_formats[MAP_HEXEN] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "doom64"))
-					conf.supported_formats[MAP_DOOM64] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "udmf"))
-					conf.supported_formats[MAP_UDMF] = true;
-			}
-		}
-		// Filters
-		ParseTreeNode* node_filters = (ParseTreeNode*)node_game->getChild("filters");
-		if (node_filters)
-		{
-			for (unsigned a = 0; a < node_filters->nValues(); a++)
-				conf.filters.push_back(node_filters->getStringValue(a).Lower());
-		}
-
-	}
-
-	return conf;
-}
-
-/* Configuration::readBasicPortConfig
- * Parses the port configuration definition in [mc] to a pconf_t,
- * which contains only basic information about the port
- * configuration (no thing types, specials etc)
- *******************************************************************/
-Configuration::pconf_t Configuration::readBasicPortConfig(MemChunk& mc)
-{
-	// Parse configuration
-	Parser parser;
-	parser.parseText(mc, "");
-	pconf_t conf;
-
-	// Check for port section
-	ParseTreeNode* node_port = nullptr;
-	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
-	{
-		ParseTreeNode* child = (ParseTreeNode*)parser.parseTreeRoot()->getChild(a);
-		if (child->getType() == "port")
-		{
-			node_port = child;
-			break;
-		}
-	}
-	if (node_port)
-	{
-		// Port id
-		conf.name = node_port->getName();
-
-		// Port name
-		ParseTreeNode* node_name = (ParseTreeNode*)node_port->getChild("name");
-		if (node_name)
-			conf.title = node_name->getStringValue();
-
-		// Supported games
-		ParseTreeNode* node_games = (ParseTreeNode*)node_port->getChild("games");
-		if (node_games)
-		{
-			for (unsigned a = 0; a < node_games->nValues(); a++)
-				conf.supported_games.push_back(node_games->getStringValue(a));
-		}
-
-		// Supported map formats
-		ParseTreeNode* node_maps = (ParseTreeNode*)node_port->getChild("map_formats");
-		if (node_maps)
-		{
-			for (unsigned a = 0; a < node_maps->nValues(); a++)
-			{
-				if (S_CMPNOCASE(node_maps->getStringValue(a), "doom"))
-					conf.supported_formats[MAP_DOOM] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "hexen"))
-					conf.supported_formats[MAP_HEXEN] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "doom64"))
-					conf.supported_formats[MAP_DOOM64] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "udmf"))
-					conf.supported_formats[MAP_UDMF] = true;
-			}
-		}
-	}
-
-	return conf;
-}
-
-/* Configuration::init
- * Init all Configuration related stuff - load game/port
- * configurations defined in the user dir as well as the predefined
- * ones from the program resource
- *******************************************************************/
-void Configuration::init()
-{
-	// Add game configurations from user dir
-	wxArrayString allfiles;
-	wxDir::GetAllFiles(App::path("games", App::Dir::User), &allfiles);
-	for (unsigned a = 0; a < allfiles.size(); a++)
-	{
-		// Read config info
-		MemChunk mc;
-		mc.importFile(allfiles[a]);
-		gconf_t conf = readBasicGameConfig(mc);
-
-		// Add to list if valid
-		if (!conf.name.IsEmpty())
-		{
-			conf.filename = wxFileName(allfiles[a]).GetName();
-			conf.user = true;
-			game_configs.push_back(conf);
-		}
-	}
-
-	// Add port configurations from user dir
-	allfiles.clear();
-	wxDir::GetAllFiles(App::path("ports", App::Dir::User), &allfiles);
-	for (unsigned a = 0; a < allfiles.size(); a++)
-	{
-		// Read config info
-		MemChunk mc;
-		mc.importFile(allfiles[a]);
-		pconf_t conf = readBasicPortConfig(mc);
-
-		// Add to list if valid
-		if (!conf.name.IsEmpty())
-		{
-			conf.filename = wxFileName(allfiles[a]).GetName();
-			conf.user = true;
-			port_configs.push_back(conf);
-		}
-	}
-
-	// Add game configurations from program resource
-	ArchiveTreeNode* dir = theArchiveManager->programResourceArchive()->getDir("config/games");
-	if (dir)
-	{
-		for (unsigned a = 0; a < dir->numEntries(); a++)
-		{
-			// Read config info
-			gconf_t conf = readBasicGameConfig(dir->getEntry(a)->getMCData());
-
-			// Ignore if invalid
-			if (conf.name.IsEmpty())
-				continue;
-
-			// Add to list if it doesn't already exist
-			bool exists = false;
-			for (unsigned b = 0; b < game_configs.size(); b++)
-			{
-				if (game_configs[b].name == conf.name)
-				{
-					exists = true;
-					break;
-				}
-			}
-			if (!exists)
-			{
-				conf.filename = dir->getEntry(a)->getName(true);
-				conf.user = false;
-				game_configs.push_back(conf);
-			}
-		}
-	}
-
-	// Add port configurations from program resource
-	dir = theArchiveManager->programResourceArchive()->getDir("config/ports");
-	if (dir)
-	{
-		for (unsigned a = 0; a < dir->numEntries(); a++)
-		{
-			// Read config info
-			pconf_t conf = readBasicPortConfig(dir->getEntry(a)->getMCData());
-
-			// Ignore if invalid
-			if (conf.name.IsEmpty())
-				continue;
-
-			// Add to list if it doesn't already exist
-			bool exists = false;
-			for (unsigned b = 0; b < port_configs.size(); b++)
-			{
-				if (port_configs[b].name == conf.name)
-				{
-					exists = true;
-					break;
-				}
-			}
-			if (!exists)
-			{
-				conf.filename = dir->getEntry(a)->getName(true);
-				conf.user = false;
-				port_configs.push_back(conf);
-			}
-		}
-	}
-
-	// Sort configuration lists by title
-	std::sort(game_configs.begin(), game_configs.end());
-	std::sort(port_configs.begin(), port_configs.end());
-	lastDefaultConfig = game_configs.size();
-
-	// Load last configuration if any
-	if (game_configuration != "")
-		openConfig(game_configuration, port_configuration);
-}
-
 /* Configuration::mapName
  * Returns the map name at [index] for the game configuration
  *******************************************************************/
@@ -442,117 +199,6 @@ gc_mapinfo_t Configuration::mapInfo(string name)
 		return maps[0];
 	else
 		return gc_mapinfo_t();
-}
-
-/* Configuration::gameConfig
- * Returns the basic game configuration at [index]
- *******************************************************************/
-Configuration::gconf_t Configuration::gameConfig(unsigned index)
-{
-	if (index >= game_configs.size())
-		return gconf_none;
-	else
-		return game_configs[index];
-}
-
-/* Configuration::gameConfig
- * Returns the basic game configuration matching [id]
- *******************************************************************/
-Configuration::gconf_t Configuration::gameConfig(string id)
-{
-	for (unsigned a = 0; a < game_configs.size(); a++)
-	{
-		if (game_configs[a].name == id)
-			return game_configs[a];
-	}
-
-	return gconf_none;
-}
-
-/* Configuration::portConfig
- * Returns the basic port configuration at [index]
- *******************************************************************/
-Configuration::pconf_t Configuration::portConfig(unsigned index)
-{
-	if (index >= port_configs.size())
-		return pconf_none;
-	else
-		return port_configs[index];
-}
-
-/* Configuration::portConfig
- * Returns the basic port configuration matching [id]
- *******************************************************************/
-Configuration::pconf_t Configuration::portConfig(string id)
-{
-	for (unsigned a = 0; a < port_configs.size(); a++)
-	{
-		if (port_configs[a].name == id)
-			return port_configs[a];
-	}
-
-	return pconf_none;
-}
-
-/* Configuration::portSupportsGame
- * Checks if the port at index [port] supports the game [game]
- *******************************************************************/
-bool Configuration::portSupportsGame(unsigned port, string game)
-{
-	// Check index
-	if (port >= port_configs.size())
-		return false;
-
-	// Check if game is supported
-	for (unsigned b = 0; b < port_configs[port].supported_games.size(); b++)
-	{
-		if (port_configs[port].supported_games[b] == game)
-			return true;
-	}
-
-	// Not supported
-	return false;
-}
-
-/* Configuration::gameSupportsFilter
- * Checks if [game] supports [filter]
- *******************************************************************/
-bool Configuration::gameSupportsFilter(string game, string filter)
-{
-	gconf_t config = gameConfig(game);
-	if (&config == &gconf_none)
-		return false;
-
-	// Check if filter is supported
-	for (unsigned b = 0; b < config.filters.size(); b++)
-	{
-		if (S_CMPNOCASE(config.filters[b], filter))
-			return true;
-	}
-
-	// Not supported
-	return false;
-}
-
-/* Configuration::mapFormatSupported
- * Checks if the combination of [game] and [port] supports the map
- * format [map_format]
- *******************************************************************/
-bool Configuration::mapFormatSupported(int map_format, int game, int port)
-{
-	if (map_format < 0 || map_format > 3)
-		return false;
-
-	// Check port if one specified
-	if (port >= 0 && port <= (int)port_configs.size())
-		return port_configs[port].supported_formats[map_format];
-
-	// Check game
-	if (game >= 0 && game <= (int)game_configs.size())
-		return game_configs[game].supported_formats[map_format];
-
-	// Not supported
-	return false;
 }
 
 /* Configuration::buildConfig
@@ -1421,31 +1067,29 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 	string full_config;
 
 	// Get game configuration as string
-	for (unsigned a = 0; a < game_configs.size(); a++)
+	auto& game_config = gameDef(game);
+	if (game_config.name == game)
 	{
-		if (game_configs[a].name == game)
+		if (game_config.user)
 		{
-			if (game_configs[a].user)
-			{
-				// Config is in user dir
-				string filename = App::path("games/", App::Dir::User) + game_configs[a].filename + ".cfg";
-				if (wxFileExists(filename))
-					buildConfig(filename, full_config);
-				else
-				{
-					LOG_MESSAGE(1, "Error: Game configuration file \"%s\" not found", filename);
-					return false;
-				}
-			}
+			// Config is in user dir
+			string filename = App::path("games/", App::Dir::User) + game_config.filename + ".cfg";
+			if (wxFileExists(filename))
+				buildConfig(filename, full_config);
 			else
 			{
-				// Config is in program resource
-				string epath = S_FMT("config/games/%s.cfg", game_configs[a].filename);
-				Archive* archive = theArchiveManager->programResourceArchive();
-				ArchiveEntry* entry = archive->entryAtPath(epath);
-				if (entry)
-					buildConfig(entry, full_config);
+				LOG_MESSAGE(1, "Error: Game configuration file \"%s\" not found", filename);
+				return false;
 			}
+		}
+		else
+		{
+			// Config is in program resource
+			string epath = S_FMT("config/games/%s.cfg", game_config.filename);
+			Archive* archive = theArchiveManager->programResourceArchive();
+			ArchiveEntry* entry = archive->entryAtPath(epath);
+			if (entry)
+				buildConfig(entry, full_config);
 		}
 	}
 
@@ -1454,46 +1098,30 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 	{
 		full_config += "\n\n";
 
-		// Get port config
-		for (unsigned a = 0; a < port_configs.size(); a++)
+		// Check the port supports this game
+		auto& conf = portDef(port);
+		if (conf.supportsGame(game))
 		{
-			pconf_t& conf = port_configs[a];
-			if (conf.name == port)
+			if (conf.user)
 			{
-				// Check the port supports this game
-				bool supported = false;
-				for (unsigned b = 0; b < conf.supported_games.size(); b++)
-				{
-					if (conf.supported_games[b] == game)
-					{
-						supported = true;
-						break;
-					}
-				}
-				if (!supported)
-					continue;
-
-				if (conf.user)
-				{
-					// Config is in user dir
-					string filename = App::path("games/", App::Dir::User) + conf.filename + ".cfg";
-					if (wxFileExists(filename))
-						buildConfig(filename, full_config);
-					else
-					{
-						LOG_MESSAGE(1, "Error: Port configuration file \"%s\" not found", filename);
-						return false;
-					}
-				}
+				// Config is in user dir
+				string filename = App::path("games/", App::Dir::User) + conf.filename + ".cfg";
+				if (wxFileExists(filename))
+					buildConfig(filename, full_config);
 				else
 				{
-					// Config is in program resource
-					string epath = S_FMT("config/ports/%s.cfg", conf.filename);
-					Archive* archive = theArchiveManager->programResourceArchive();
-					ArchiveEntry* entry = archive->entryAtPath(epath);
-					if (entry)
-						buildConfig(entry, full_config);
+					LOG_MESSAGE(1, "Error: Port configuration file \"%s\" not found", filename);
+					return false;
 				}
+			}
+			else
+			{
+				// Config is in program resource
+				string epath = S_FMT("config/ports/%s.cfg", conf.filename);
+				Archive* archive = theArchiveManager->programResourceArchive();
+				ArchiveEntry* entry = archive->entryAtPath(epath);
+				if (entry)
+					buildConfig(entry, full_config);
 			}
 		}
 	}
@@ -2095,7 +1723,7 @@ bool Configuration::parseDecorateDefs(Archive* archive)
 						else if (S_CMPNOCASE(token, "game"))
 						{
 							filters_present = true;
-							if (gameSupportsFilter(currentGame(), tz.getToken()))
+							if (gameDef(currentGame()).supportsFilter(tz.getToken()))
 								available = true;
 						}
 

@@ -31,7 +31,8 @@ private:
 
 	Archive*					archive;
 	vector<Archive::mapdesc_t>	maps;
-	vector<int>					ports_list;
+	vector<string>				games_list;
+	vector<string>				ports_list;
 
 public:
 	MapEditorConfigDialog(wxWindow* parent, Archive* archive = NULL, bool show_maps = true, bool creating = false);

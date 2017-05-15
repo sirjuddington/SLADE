@@ -130,32 +130,6 @@ namespace Game
 	class Configuration
 	{
 	public:
-		struct gconf_t
-		{
-			string			name;
-			string			title;
-			string			filename;
-			bool			supported_formats[4];
-			bool			user;
-			vector<string>	filters;
-			gconf_t() { for (int a = 0; a < 4; a++) supported_formats[a] = false; user = true; }
-			bool operator>(const gconf_t& right) const { return title > right.title; }
-			bool operator<(const gconf_t& right) const { return title < right.title; }
-		};
-
-		struct pconf_t
-		{
-			string			name;
-			string			title;
-			string			filename;
-			bool			supported_formats[4];
-			vector<string>	supported_games;
-			bool			user;
-			pconf_t() { for (int a = 0; a < 4; a++) supported_formats[a] = false; user = true; }
-			bool operator>(const pconf_t& right) const { return title > right.title; }
-			bool operator<(const pconf_t& right) const { return title < right.title; }
-		};
-
 		Configuration();
 		~Configuration();
 
@@ -169,18 +143,6 @@ namespace Game
 		int		lightLevelInterval();
 
 		string			readConfigName(MemChunk& mc);
-		gconf_t			readBasicGameConfig(MemChunk& mc);
-		pconf_t			readBasicPortConfig(MemChunk& mc);
-		void			init();
-		unsigned		nGameConfigs() { return game_configs.size(); }
-		unsigned		nPortConfigs() { return port_configs.size(); }
-		gconf_t			gameConfig(unsigned index);
-		gconf_t			gameConfig(string id);
-		pconf_t			portConfig(unsigned index);
-		pconf_t			portConfig(string id);
-		bool			portSupportsGame(unsigned port, string game);
-		bool			gameSupportsFilter(string game, string filter);
-		bool			mapFormatSupported(int map_format, int game, int port = -1);
 		unsigned		nMapNames() { return maps.size(); }
 		string			mapName(unsigned index);
 		gc_mapinfo_t	mapInfo(string mapname);
@@ -295,16 +257,6 @@ namespace Game
 		string				sky_flat;			// Sky flat for 3d mode
 		string				script_language;	// Scripting language (should be extended to allow multiple)
 		vector<int>			light_levels;		// Light levels for up/down light in editor
-
-		// Basic game configuration info
-		gconf_t			gconf_none;
-		vector<gconf_t>	game_configs;
-		size_t			lastDefaultConfig;
-
-		
-		pconf_t			pconf_none;
-		vector<pconf_t>	port_configs;
-		size_t			lastDefaultPort;
 
 		// Flags
 		struct flag_t

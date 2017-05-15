@@ -364,7 +364,8 @@ bool App::init()
 	Log::info("Base resource loaded");
 
 	// Init game configuration
-	Game::configuration().init();
+	Log::info("Loading game configurations");
+	Game::init();
 
 	// Show the main window
 	MainEditor::windowWx()->Show(true);
