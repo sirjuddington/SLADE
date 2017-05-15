@@ -3702,7 +3702,7 @@ int SLADEMap::findUnusedLineId()
 	}
 
 	// Boom (sector tag (arg0))
-	else if (current_format == MAP_DOOM && Game::configuration().isBoom())
+	else if (current_format == MAP_DOOM && Game::configuration().featureSupported(Feature::Boom))
 	{
 		for (unsigned a = 0; a < lines.size(); a++)
 		{

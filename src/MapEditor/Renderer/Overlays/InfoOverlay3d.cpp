@@ -138,7 +138,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			info2.push_back("Upper Texture");
 
 		// Offsets
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureOffsets())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// Get x offset info
 			int xoff = side->intProperty("offsetx");
@@ -187,7 +187,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		}
 
 		// UDMF extras
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureScaling())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			// Scale
 			double xscale, yscale;
@@ -289,7 +289,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			texname = side->getTexMiddle();
 		else
 			texname = side->getTexUpper();
-		texture = MapEditor::textureManager().getTexture(texname, Game::configuration().mixTexFlats());
+		texture = MapEditor::textureManager().getTexture(texname, Game::configuration().featureSupported(Feature::MixTexFlats));
 	}
 
 
@@ -333,7 +333,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// Light
 		int light = sector->intProperty("lightlevel");
-		if (Game::configuration().udmfFlatLighting())
+		if (Game::configuration().featureSupported(UDMFFeature::FlatLighting))
 		{
 			// Get extra light info
 			int fl = 0;
@@ -373,7 +373,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			// Offsets
 			double xoff, yoff;
 			xoff = yoff = 0.0;
-			if (Game::configuration().udmfFlatPanning())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
 			{
 				if (item_type == MapEditor::ItemType::Floor)
 				{
@@ -391,7 +391,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			// Scaling
 			double xscale, yscale;
 			xscale = yscale = 1.0;
-			if (Game::configuration().udmfFlatScaling())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 			{
 				if (item_type == MapEditor::ItemType::Floor)
 				{
@@ -412,7 +412,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			texname = sector->getFloorTex();
 		else
 			texname = sector->getCeilingTex();
-		texture = MapEditor::textureManager().getFlat(texname, Game::configuration().mixTexFlats());
+		texture = MapEditor::textureManager().getFlat(texname, Game::configuration().featureSupported(Feature::MixTexFlats));
 	}
 
 	// Thing

@@ -819,32 +819,32 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 	{
 		if (floor)
 		{
-			if (Game::configuration().udmfFlatPanning())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
 			{
 				ox = sector->floatProperty("xpanningfloor");
 				oy = sector->floatProperty("ypanningfloor");
 			}
-			if (Game::configuration().udmfFlatScaling())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 			{
 				sx *= (1.0 / sector->floatProperty("xscalefloor"));
 				sy *= (1.0 / sector->floatProperty("yscalefloor"));
 			}
-			if (Game::configuration().udmfFlatRotation())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatRotation))
 				rot = sector->floatProperty("rotationfloor");
 		}
 		else
 		{
-			if (Game::configuration().udmfFlatPanning())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
 			{
 				ox = sector->floatProperty("xpanningceiling");
 				oy = sector->floatProperty("ypanningceiling");
 			}
-			if (Game::configuration().udmfFlatScaling())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 			{
 				sx *= (1.0 / sector->floatProperty("xscaleceiling"));
 				sy *= (1.0 / sector->floatProperty("yscaleceiling"));
 			}
-			if (Game::configuration().udmfFlatRotation())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatRotation))
 				rot = sector->floatProperty("rotationceiling");
 		}
 	}
@@ -874,7 +874,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	// Update floor
 	MapSector* sector = map->getSector(index);
 	floors[index].sector = sector;
-	floors[index].texture = MapEditor::textureManager().getFlat(sector->getFloorTex(), Game::configuration().mixTexFlats());
+	floors[index].texture = MapEditor::textureManager().getFlat(sector->getFloorTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
 	floors[index].colour = sector->getColour(1, true);
 	floors[index].fogcolour = sector->getFogColour();
 	floors[index].light = sector->getLight(1);
@@ -895,7 +895,7 @@ void MapRenderer3D::updateSector(unsigned index)
 
 	// Update ceiling
 	ceilings[index].sector = sector;
-	ceilings[index].texture = MapEditor::textureManager().getFlat(sector->getCeilingTex(), Game::configuration().mixTexFlats());
+	ceilings[index].texture = MapEditor::textureManager().getFlat(sector->getCeilingTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
 	ceilings[index].colour = sector->getColour(2, true);
 	ceilings[index].fogcolour = sector->getFogColour();
 	ceilings[index].light = sector->getLight(2);
@@ -1218,7 +1218,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	bool upeg = Game::configuration().lineBasicFlagSet("dontpegtop", line, map_format);
 	bool lpeg = Game::configuration().lineBasicFlagSet("dontpegbottom", line, map_format);
 	double xoff, yoff, sx, sy;
-	bool mixed = Game::configuration().mixTexFlats();
+	bool mixed = Game::configuration().featureSupported(Feature::MixTexFlats);
 	lines[index].line = line;
 	double alpha = 1.0;
 	if (line->hasProp("alpha"))
@@ -1265,7 +1265,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureOffsets())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			if (line->s1()->hasProp("offsetx_mid"))
 				xoff += line->s1()->floatProperty("offsetx_mid");
@@ -1275,7 +1275,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (Game::configuration().udmfTextureScaling())
+		if (Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_mid"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_mid");
@@ -1355,7 +1355,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureOffsets())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_bottom"))
@@ -1366,7 +1366,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureScaling())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_bottom"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_bottom");
@@ -1407,7 +1407,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		xoff = xoff1;
 		yoff = yoff1;
 		double ytex = 0;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureOffsets())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			if (line->s1()->hasProp("offsetx_mid"))
 				xoff += line->s1()->floatProperty("offsetx_mid");
@@ -1417,7 +1417,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureScaling())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_mid"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_mid");
@@ -1430,7 +1430,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Setup quad coordinates
 		double top, bottom;
 		if ((map->currentFormat() == MAP_DOOM64) || ((map->currentFormat() == MAP_UDMF &&
-			Game::configuration().udmfSideMidtexWrapping() && line->boolProperty("wrapmidtex"))))
+			Game::configuration().featureSupported(UDMFFeature::SideMidtexWrapping) &&
+			line->boolProperty("wrapmidtex"))))
 		{
 			top = lowceil;
 			bottom = highfloor;
@@ -1481,7 +1482,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureOffsets())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_top"))
@@ -1492,7 +1493,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureScaling())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_top"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_top");
@@ -1525,7 +1526,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureOffsets())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_bottom"))
@@ -1536,7 +1537,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureScaling())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_bottom"))
 				sx = 1.0 / line->s2()->floatProperty("scalex_bottom");
@@ -1577,7 +1578,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		xoff = xoff2;
 		yoff = yoff2;
 		double ytex = 0;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureOffsets())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			if (line->s2()->hasProp("offsetx_mid"))
 				xoff += line->s2()->floatProperty("offsetx_mid");
@@ -1587,7 +1588,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureScaling())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_mid"))
 				sx = 1.0 / line->s2()->floatProperty("scalex_mid");
@@ -1600,7 +1601,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Setup quad coordinates
 		double top, bottom;
 		if ((map->currentFormat() == MAP_DOOM64) || (map->currentFormat() == MAP_UDMF &&
-			Game::configuration().udmfSideMidtexWrapping() && line->boolProperty("wrapmidtex")))
+			Game::configuration().featureSupported(UDMFFeature::SideMidtexWrapping) && line->boolProperty("wrapmidtex")))
 		{
 			top = lowceil;
 			bottom = highfloor;
@@ -1652,7 +1653,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureOffsets())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_top"))
@@ -1663,7 +1664,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().udmfTextureScaling())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_top"))
 				sx = 1.0 / line->s2()->floatProperty("scalex_top");

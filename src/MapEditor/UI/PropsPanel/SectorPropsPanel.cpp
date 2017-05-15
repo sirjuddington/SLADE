@@ -85,7 +85,7 @@ void FlatTexCanvas::setTexture(string tex)
 	if (tex == "-" || tex == "")
 		texture = nullptr;
 	else
-		texture = MapEditor::textureManager().getFlat(tex, Game::configuration().mixTexFlats());
+		texture = MapEditor::textureManager().getFlat(tex, Game::configuration().featureSupported(Feature::MixTexFlats));
 
 	Refresh();
 }

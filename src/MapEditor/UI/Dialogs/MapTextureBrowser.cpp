@@ -150,7 +150,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	SetTitle("Browse Map Textures");
 
 	// Textures
-	if (type == 0 || Game::configuration().mixTexFlats())
+	if (type == 0 || Game::configuration().featureSupported(Feature::MixTexFlats))
 	{
 		addGlobalItem(new MapTexBrowserItem("-", 0, 0));
 
@@ -164,7 +164,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	}
 
 	// Flats
-	if (type == 1 || Game::configuration().mixTexFlats())
+	if (type == 1 || Game::configuration().featureSupported(Feature::MixTexFlats))
 	{
 		vector<map_texinfo_t>& flats = MapEditor::textureManager().getAllFlatsInfo();
 		for (unsigned a = 0; a < flats.size(); a++)

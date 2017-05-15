@@ -544,7 +544,7 @@ void MapTextureManager::buildTexInfoList()
 	}
 
 	// Texture namespace patches (TX_)
-	if (Game::configuration().txTextures())
+	if (Game::configuration().featureSupported(Feature::TxTextures))
 	{
 		vector<ArchiveEntry*> patches;
 		theResourceManager->getAllPatchEntries(patches, NULL);

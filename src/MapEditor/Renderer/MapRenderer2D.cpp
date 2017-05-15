@@ -1826,9 +1826,9 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 			{
 				// Get the sector texture
 				if (type <= 1)
-					tex = MapEditor::textureManager().getFlat(sector->getFloorTex(), Game::configuration().mixTexFlats());
+					tex = MapEditor::textureManager().getFlat(sector->getFloorTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
 				else
-					tex = MapEditor::textureManager().getFlat(sector->getCeilingTex(), Game::configuration().mixTexFlats());
+					tex = MapEditor::textureManager().getFlat(sector->getCeilingTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
 
 				tex_flats[a] = tex;
 			}
@@ -1867,33 +1867,33 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 				// Floor
 				if (type <= 1)
 				{
-					if (Game::configuration().udmfFlatPanning())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
 					{
 						ox = sector->floatProperty("xpanningfloor");
 						oy = sector->floatProperty("ypanningfloor");
 					}
-					if (Game::configuration().udmfFlatScaling())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 					{
 						sx *= (1.0 / sector->floatProperty("xscalefloor"));
 						sy *= (1.0 / sector->floatProperty("yscalefloor"));
 					}
-					if (Game::configuration().udmfFlatRotation())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatRotation))
 						rot = sector->floatProperty("rotationfloor");
 				}
 				// Ceiling
 				else
 				{
-					if (Game::configuration().udmfFlatPanning())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
 					{
 						ox = sector->floatProperty("xpanningceiling");
 						oy = sector->floatProperty("ypanningceiling");
 					}
-					if (Game::configuration().udmfFlatScaling())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 					{
 						sx *= (1.0 / sector->floatProperty("xscaleceiling"));
 						sy *= (1.0 / sector->floatProperty("yscaleceiling"));
 					}
-					if (Game::configuration().udmfFlatRotation())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatRotation))
 						rot = sector->floatProperty("rotationceiling");
 				}
 			}
@@ -1991,9 +1991,9 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 			{
 				// Get the sector texture
 				if (type <= 1)
-					tex = MapEditor::textureManager().getFlat(sector->getFloorTex(), Game::configuration().mixTexFlats());
+					tex = MapEditor::textureManager().getFlat(sector->getFloorTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
 				else
-					tex = MapEditor::textureManager().getFlat(sector->getCeilingTex(), Game::configuration().mixTexFlats());
+					tex = MapEditor::textureManager().getFlat(sector->getCeilingTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
 
 				tex_flats[a] = tex;
 			}
@@ -2019,33 +2019,33 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 				// Floor
 				if (type <= 1)
 				{
-					if (Game::configuration().udmfFlatPanning())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
 					{
 						ox = sector->floatProperty("xpanningfloor");
 						oy = sector->floatProperty("ypanningfloor");
 					}
-					if (Game::configuration().udmfFlatScaling())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 					{
 						sx *= (1.0 / sector->floatProperty("xscalefloor"));
 						sy *= (1.0 / sector->floatProperty("yscalefloor"));
 					}
-					if (Game::configuration().udmfFlatRotation())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatRotation))
 						rot = sector->floatProperty("rotationfloor");
 				}
 				// Ceiling
 				else
 				{
-					if (Game::configuration().udmfFlatPanning())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
 					{
 						ox = sector->floatProperty("xpanningceiling");
 						oy = sector->floatProperty("ypanningceiling");
 					}
-					if (Game::configuration().udmfFlatScaling())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 					{
 						sx *= (1.0 / sector->floatProperty("xscaleceiling"));
 						sy *= (1.0 / sector->floatProperty("yscaleceiling"));
 					}
-					if (Game::configuration().udmfFlatRotation())
+					if (Game::configuration().featureSupported(UDMFFeature::FlatRotation))
 						rot = sector->floatProperty("rotationceiling");
 				}
 			}

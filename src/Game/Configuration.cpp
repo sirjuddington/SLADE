@@ -95,9 +95,6 @@ void Configuration::setDefaults()
 	udmf_namespace = "";
 	ttype_unknown.icon = "unknown";
 	ttype_unknown.shrink = true;
-	any_map_name = false;
-	mix_tex_flats = false;
-	tx_textures = false;
 	defaults_line.clear();
 	defaults_side.clear();
 	defaults_sector.clear();
@@ -108,17 +105,13 @@ void Configuration::setDefaults()
 	light_levels.clear();
 	for (int a = 0; a < 4; a++)
 		map_formats[a] = false;
-	boom = false;
 	boom_sector_flag_start = 0;
 	as_generalized_s.setName("Boom Generalized Switched Special");
 	as_generalized_s.setTagged(AS_TT_SECTOR);
 	as_generalized_m.setName("Boom Generalized Manual Special");
 	as_generalized_m.setTagged(AS_TT_SECTOR_BACK);
-
-	udmf_texture_offsets = udmf_slopes = udmf_flat_lighting = udmf_flat_panning =
-	udmf_flat_rotation = udmf_flat_scaling = udmf_line_transparency = udmf_sector_color =
-	udmf_sector_fog = udmf_side_lighting = udmf_side_midtex_wrapping = udmf_side_scaling =
-	udmf_texture_scaling = udmf_thing_scaling = udmf_thing_rotation = false;
+	supported_features_.clear();
+	udmf_features_.clear();
 }
 
 /* Configuration::udmfNamespace
@@ -898,7 +891,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 
 		// Allow any map name
 		if (S_CMPNOCASE(node->getName(), "map_name_any"))
-			any_map_name = node->getBoolValue();
+			supported_features_[Feature::AnyMapName] = node->getBoolValue();
 
 		// Map formats
 		else if (S_CMPNOCASE(node->getName(), "map_formats"))
@@ -933,7 +926,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 
 		// Boom extensions
 		else if (S_CMPNOCASE(node->getName(), "boom"))
-			boom = node->getBoolValue();
+			supported_features_[Feature::Boom] = node->getBoolValue();
 		else if (S_CMPNOCASE(node->getName(), "boom_sector_flag_start"))
 			boom_sector_flag_start = node->getIntValue();
 
@@ -943,11 +936,11 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 
 		// Mixed Textures and Flats
 		else if (S_CMPNOCASE(node->getName(), "mix_tex_flats"))
-			mix_tex_flats = node->getBoolValue();
+			supported_features_[Feature::MixTexFlats] = node->getBoolValue();
 
 		// TX_/'textures' namespace enabled
 		else if (S_CMPNOCASE(node->getName(), "tx_textures"))
-			tx_textures = node->getBoolValue();
+			supported_features_[Feature::TxTextures] = node->getBoolValue();
 
 		// Sky flat
 		else if (S_CMPNOCASE(node->getName(), "sky_flat"))
@@ -963,23 +956,23 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 
 		// Long names
 		else if (S_CMPNOCASE(node->getName(), "long_names"))
-			allow_long_names = node->getBoolValue();
+			supported_features_[Feature::LongNames] = node->getBoolValue();
 
-		READ_BOOL(udmf_slopes, udmf_slopes); // UDMF slopes
-		READ_BOOL(udmf_flat_lighting, udmf_flat_lighting); // UDMF flat lighting
-		READ_BOOL(udmf_flat_panning, udmf_flat_panning); // UDMF flat panning
-		READ_BOOL(udmf_flat_rotation, udmf_flat_rotation); // UDMF flat rotation
-		READ_BOOL(udmf_flat_scaling, udmf_flat_scaling); // UDMF flat scaling
-		READ_BOOL(udmf_line_transparency, udmf_line_transparency); // UDMF line transparency
-		READ_BOOL(udmf_sector_color, udmf_sector_color); // UDMF sector color
-		READ_BOOL(udmf_sector_fog, udmf_sector_fog); // UDMF sector fog
-		READ_BOOL(udmf_side_lighting, udmf_side_lighting); // UDMF per-sidedef lighting
-		READ_BOOL(udmf_side_midtex_wrapping, udmf_side_midtex_wrapping); // UDMF per-sidetex midtex wrapping
-		READ_BOOL(udmf_side_scaling, udmf_side_scaling); // UDMF per-sidedef scaling
-		READ_BOOL(udmf_texture_scaling, udmf_texture_scaling); // UDMF per-texture scaling
-		READ_BOOL(udmf_texture_offsets, udmf_texture_offsets); // UDMF per-texture offsets
-		READ_BOOL(udmf_thing_scaling, udmf_thing_scaling); // UDMF per-thing scaling
-		READ_BOOL(udmf_thing_rotation, udmf_thing_rotation); // UDMF per-thing pitch and yaw rotation
+		READ_BOOL(udmf_features_[UDMFFeature::Slopes], udmf_slopes); // UDMF slopes
+		READ_BOOL(udmf_features_[UDMFFeature::FlatLighting], udmf_flat_lighting); // UDMF flat lighting
+		READ_BOOL(udmf_features_[UDMFFeature::FlatPanning], udmf_flat_panning); // UDMF flat panning
+		READ_BOOL(udmf_features_[UDMFFeature::FlatRotation], udmf_flat_rotation); // UDMF flat rotation
+		READ_BOOL(udmf_features_[UDMFFeature::FlatScaling], udmf_flat_scaling); // UDMF flat scaling
+		READ_BOOL(udmf_features_[UDMFFeature::LineTransparency], udmf_line_transparency); // UDMF line transparency
+		READ_BOOL(udmf_features_[UDMFFeature::SectorColor], udmf_sector_color); // UDMF sector color
+		READ_BOOL(udmf_features_[UDMFFeature::SectorFog], udmf_sector_fog); // UDMF sector fog
+		READ_BOOL(udmf_features_[UDMFFeature::SideLighting], udmf_side_lighting); // UDMF per-sidedef lighting
+		READ_BOOL(udmf_features_[UDMFFeature::SideMidtexWrapping], udmf_side_midtex_wrapping); // UDMF per-sidetex midtex wrapping
+		READ_BOOL(udmf_features_[UDMFFeature::SideScaling], udmf_side_scaling); // UDMF per-sidedef scaling
+		READ_BOOL(udmf_features_[UDMFFeature::TextureScaling], udmf_texture_scaling); // UDMF per-texture scaling
+		READ_BOOL(udmf_features_[UDMFFeature::TextureOffsets], udmf_texture_offsets); // UDMF per-texture offsets
+		READ_BOOL(udmf_features_[UDMFFeature::ThingScaling], udmf_thing_scaling); // UDMF per-thing scaling
+		READ_BOOL(udmf_features_[UDMFFeature::ThingRotation], udmf_thing_rotation); // UDMF per-thing pitch and yaw rotation
 
 		// Defaults section
 		else if (S_CMPNOCASE(node->getName(), "defaults"))
@@ -1558,7 +1551,7 @@ ActionSpecial* Configuration::actionSpecial(unsigned id)
 	{
 		return as.special;
 	}
-	else if (boom && id >= 0x2f80)
+	else if (supported_features_[Feature::Boom] && id >= 0x2f80)
 	{
 		if ((id & 7) >= 6)
 			return &as_generalized_m;
@@ -1584,7 +1577,7 @@ string Configuration::actionSpecialName(int special)
 
 	if (action_specials[special].special)
 		return action_specials[special].special->getName();
-	else if (special >= 0x2F80 && boom)
+	else if (special >= 0x2F80 && supported_features_[Feature::Boom])
 		return BoomGenLineSpecial::parseLineType(special);
 	else
 		return "Unknown";
@@ -1743,7 +1736,7 @@ bool Configuration::thingBasicFlagSet(string flag, MapThing* thing, int map_form
 		if (hexen)
 			return !!(flags & 512);
 		// *Not* Not In Coop
-		else if (isBoom())
+		else if (supported_features_[Feature::Boom])
 			return !(flags & 64);
 		else
 			return true;
@@ -1754,7 +1747,7 @@ bool Configuration::thingBasicFlagSet(string flag, MapThing* thing, int map_form
 		if (hexen)
 			return !!(flags & 1024);
 		// *Not* Not In DM
-		else if (isBoom())
+		else if (supported_features_[Feature::Boom])
 			return !(flags & 32);
 		else
 			return true;
@@ -1916,7 +1909,7 @@ void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_form
 		if (hexen)
 			flag_val = 512;
 		// *Not* Not In Coop
-		else if (isBoom())
+		else if (supported_features_[Feature::Boom])
 		{
 			flag_val = 64;
 			set = !set;
@@ -1931,7 +1924,7 @@ void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_form
 		if (hexen)
 			flag_val = 1024;
 		// *Not* Not In DM
-		else if (isBoom())
+		else if (supported_features_[Feature::Boom])
 		{
 			flag_val = 32;
 			set = !set;

@@ -1036,7 +1036,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 		// Toggle linked light levels
 		else if (key == "me3d_light_toggle_link")
 		{
-			if (!is_udmf || !Game::configuration().udmfFlatLighting())
+			if (!is_udmf || !Game::configuration().featureSupported(UDMFFeature::FlatLighting))
 				addEditorMessage("Unlinked light levels not supported in this game configuration");
 			else
 			{
@@ -1050,7 +1050,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 		// Toggle linked offsets
 		else if (key == "me3d_wall_toggle_link_ofs")
 		{
-			if (!is_udmf || !Game::configuration().udmfTextureOffsets())
+			if (!is_udmf || !Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 				addEditorMessage("Unlinked wall offsets not supported in this game configuration");
 			else
 			{

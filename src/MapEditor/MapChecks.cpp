@@ -1001,7 +1001,7 @@ public:
 
 	void doCheck()
 	{
-		bool mixed = Game::configuration().mixTexFlats();
+		bool mixed = Game::configuration().featureSupported(Feature::MixTexFlats);
 
 		// Go through lines
 		for (unsigned a = 0; a < map->nLines(); a++)
@@ -1202,7 +1202,7 @@ public:
 
 	virtual void doCheck()
 	{
-		bool mixed = Game::configuration().mixTexFlats();
+		bool mixed = Game::configuration().featureSupported(Feature::MixTexFlats);
 
 		// Go through sectors
 		for (unsigned a = 0; a < map->nSectors(); a++)

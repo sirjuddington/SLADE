@@ -115,7 +115,8 @@ uint8_t MapSide::getLight()
 	int light = 0;
 	bool include_sector = true;
 
-	if (parent_map->currentFormat() == MAP_UDMF && Game::configuration().udmfSideLighting())
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		Game::configuration().featureSupported(UDMFFeature::SideLighting))
 	{
 		light += intProperty("light");
 		if (boolProperty("lightabsolute"))
@@ -138,7 +139,8 @@ uint8_t MapSide::getLight()
  *******************************************************************/
 void MapSide::changeLight(int amount)
 {
-	if (parent_map->currentFormat() == MAP_UDMF && Game::configuration().udmfSideLighting())
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		Game::configuration().featureSupported(UDMFFeature::SideLighting))
 		setIntProperty("light", intProperty("light") + amount);
 }
 

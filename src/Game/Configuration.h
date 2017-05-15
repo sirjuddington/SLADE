@@ -15,6 +15,33 @@ class MapObject;
 
 namespace Game
 {
+	// Feature Support
+	enum class Feature
+	{
+		Boom,
+		AnyMapName,
+		MixTexFlats,
+		TxTextures,
+		LongNames,
+	};
+	enum class UDMFFeature
+	{
+		Slopes,				// Slope support
+		FlatLighting,		// Flat lighting independent from sector lighting
+		FlatPanning,		// Flat panning
+		FlatRotation,		// Flat rotation
+		FlatScaling,		// Flat scaling
+		LineTransparency,	// Line transparency
+		SectorColor,		// Sector colour
+		SectorFog,			// Sector fog
+		SideLighting,		// Sidedef lighting independent from sector lighting
+		SideMidtexWrapping,	// Per-sidedef midtex wrapping
+		SideScaling,		// Line scaling
+		TextureScaling,		// Per-texture line scaling
+		TextureOffsets,		// Per-texture offsets compared to per-sidedef
+		ThingScaling,		// Per-thing scaling
+		ThingRotation,		// Per-thing pitch and yaw rotation
+	};
 
 	// Tag types
 	enum TagTypes
@@ -102,46 +129,7 @@ namespace Game
 
 	class Configuration
 	{
-	private:
-		//string			name;				// Game/port name
-		string				current_game;		// Current game name
-		string				current_port;		// Current port name (empty if none)
-		bool				map_formats[4];		// Supported map formats
-		string				udmf_namespace;		// Namespace to use for UDMF
-		bool				boom;				// Boom extensions enabled
-		int 				boom_sector_flag_start;  // Beginning of Boom sector flags
-		ASpecialMap			action_specials;	// Action specials
-		ActionSpecial		as_unknown;			// Default action special
-		ActionSpecial		as_generalized_s;	// Dummy for Boom generalized switched specials
-		ActionSpecial		as_generalized_m;	// Dummy for Boom generalized manual specials
-		ThingTypeMap		thing_types;		// Thing types
-		vector<ThingType*>	tt_group_defaults;	// Thing type group defaults
-		ThingType			ttype_unknown;		// Default thing type
-		bool				any_map_name;		// Allow any map name
-		bool				mix_tex_flats;		// Allow mixed textures/flats
-		bool				tx_textures;		// Allow TX_ textures
-		string				sky_flat;			// Sky flat for 3d mode
-		string				script_language;	// Scripting language (should be extended to allow multiple)
-		vector<int>			light_levels;		// Light levels for up/down light in editor
-		bool				allow_long_names;	// Allow long names for maps/textures
-
-		bool				udmf_slopes;		// If UDMF has slope support
-		bool				udmf_flat_lighting;	// If UDMF has flat lighting independent from sector lighting
-		bool				udmf_flat_panning;	// If UDMF has flat panning
-		bool				udmf_flat_rotation;	// If UDMF has flat rotation
-		bool				udmf_flat_scaling;	// If UDMF has flat scaling
-		bool				udmf_line_transparency;	// If UDMF has line transparency
-		bool				udmf_sector_color;	// If UDMF has sector colour
-		bool				udmf_sector_fog;	// If UDMF has sector fog
-		bool				udmf_side_lighting;	// If UDMF has sidedef lighting independent from sector lighting
-		bool				udmf_side_midtex_wrapping;	// If UDMF has per-sidedef midtex wrapping
-		bool				udmf_side_scaling;	// If UDMF has line scaling
-		bool				udmf_texture_scaling;	// If UDMF has per-texture line scaling
-		bool				udmf_texture_offsets;	// If UDMF has per-texture offsets compared to per-sidedef
-		bool				udmf_thing_scaling;		// If UDMF has per-thing scaling
-		bool				udmf_thing_rotation;	// If UDMF has per-thing pitch and yaw rotation
-
-		// Basic game configuration info
+	public:
 		struct gconf_t
 		{
 			string			name;
@@ -154,11 +142,7 @@ namespace Game
 			bool operator>(const gconf_t& right) const { return title > right.title; }
 			bool operator<(const gconf_t& right) const { return title < right.title; }
 		};
-		gconf_t			gconf_none;
-		vector<gconf_t>	game_configs;
-		size_t			lastDefaultConfig;
 
-		// Basic port configuration info
 		struct pconf_t
 		{
 			string			name;
@@ -171,78 +155,18 @@ namespace Game
 			bool operator>(const pconf_t& right) const { return title > right.title; }
 			bool operator<(const pconf_t& right) const { return title < right.title; }
 		};
-		pconf_t			pconf_none;
-		vector<pconf_t>	port_configs;
-		size_t			lastDefaultPort;
 
-		// Flags
-		struct flag_t
-		{
-			int		flag;
-			string	name;
-			string	udmf;
-			flag_t() { flag = 0; name = ""; udmf = ""; }
-			flag_t(int flag, string name, string udmf = "") { this->flag = flag; this->name = name; this->udmf = udmf; }
-		};
-		vector<flag_t>	flags_thing;
-		vector<flag_t>	flags_line;
-		vector<flag_t>	triggers_line;
-
-		// Sector types
-		vector<sectype_t>	sector_types;
-
-		// Map info
-		vector<gc_mapinfo_t>	maps;
-
-		// UDMF properties
-		UDMFPropMap	udmf_vertex_props;
-		UDMFPropMap	udmf_linedef_props;
-		UDMFPropMap	udmf_sidedef_props;
-		UDMFPropMap	udmf_sector_props;
-		UDMFPropMap	udmf_thing_props;
-
-		// Defaults
-		PropertyList	defaults_line;
-		PropertyList	defaults_line_udmf;
-		PropertyList	defaults_side;
-		PropertyList	defaults_side_udmf;
-		PropertyList	defaults_sector;
-		PropertyList	defaults_sector_udmf;
-		PropertyList	defaults_thing;
-		PropertyList	defaults_thing_udmf;
-
-	public:
 		Configuration();
 		~Configuration();
 
 		void	setDefaults();
 		string	currentGame() { return current_game; }
 		string	currentPort() { return current_port; }
-		bool	isBoom() { return boom; }
 		bool	supportsSectorFlags() { return boom_sector_flag_start > 0; }
-		bool	anyMapName() { return any_map_name; }
-		bool	mixTexFlats() { return mix_tex_flats; }
-		bool	txTextures() { return tx_textures; }
 		string	udmfNamespace();
 		string	skyFlat() { return sky_flat; }
 		string	scriptLanguage() { return script_language; }
 		int		lightLevelInterval();
-		bool	allowLongNames() { return allow_long_names; }
-		bool	udmfSlopes() { return udmf_slopes; }
-		bool	udmfFlatLighting() { return udmf_flat_lighting; }
-		bool	udmfFlatPanning() { return udmf_flat_panning; }
-		bool	udmfFlatRotation() { return udmf_flat_rotation; }
-		bool	udmfFlatScaling() { return udmf_flat_scaling; }
-		bool	udmfLineTransparency() { return udmf_line_transparency; }
-		bool	udmfSectorColor() { return udmf_sector_color; }
-		bool	udmfSectorFog() { return udmf_sector_fog; }
-		bool	udmfSideLighting() { return udmf_side_lighting; }
-		bool	udmfSideMidtexWrapping() { return udmf_side_midtex_wrapping; }
-		bool	udmfSideScaling() { return udmf_side_scaling; }
-		bool	udmfTextureScaling() { return udmf_texture_scaling; }
-		bool	udmfTextureOffsets() { return udmf_texture_offsets; }
-		bool	udmfThingScaling() { return udmf_thing_scaling; }
-		bool	udmfThingRotation() { return udmf_thing_rotation; }
 
 		string			readConfigName(MemChunk& mc);
 		gconf_t			readBasicGameConfig(MemChunk& mc);
@@ -260,6 +184,10 @@ namespace Game
 		unsigned		nMapNames() { return maps.size(); }
 		string			mapName(unsigned index);
 		gc_mapinfo_t	mapInfo(string mapname);
+
+		// Feature Support
+		bool	featureSupported(Feature feature) { return supported_features_[feature]; }
+		bool	featureSupported(UDMFFeature feature) { return udmf_features_[feature]; }
 
 		// Config #include handling
 		void	buildConfig(string filename, string& out);
@@ -350,5 +278,72 @@ namespace Game
 		void	dumpThingTypes();
 		void	dumpValidMapNames();
 		void	dumpUDMFProperties();
+
+	private:
+		string				current_game;		// Current game name
+		string				current_port;		// Current port name (empty if none)
+		bool				map_formats[4];		// Supported map formats
+		string				udmf_namespace;		// Namespace to use for UDMF
+		int 				boom_sector_flag_start;  // Beginning of Boom sector flags
+		ASpecialMap			action_specials;	// Action specials
+		ActionSpecial		as_unknown;			// Default action special
+		ActionSpecial		as_generalized_s;	// Dummy for Boom generalized switched specials
+		ActionSpecial		as_generalized_m;	// Dummy for Boom generalized manual specials
+		ThingTypeMap		thing_types;		// Thing types
+		vector<ThingType*>	tt_group_defaults;	// Thing type group defaults
+		ThingType			ttype_unknown;		// Default thing type
+		string				sky_flat;			// Sky flat for 3d mode
+		string				script_language;	// Scripting language (should be extended to allow multiple)
+		vector<int>			light_levels;		// Light levels for up/down light in editor
+
+		// Basic game configuration info
+		gconf_t			gconf_none;
+		vector<gconf_t>	game_configs;
+		size_t			lastDefaultConfig;
+
+		
+		pconf_t			pconf_none;
+		vector<pconf_t>	port_configs;
+		size_t			lastDefaultPort;
+
+		// Flags
+		struct flag_t
+		{
+			int		flag;
+			string	name;
+			string	udmf;
+			flag_t() { flag = 0; name = ""; udmf = ""; }
+			flag_t(int flag, string name, string udmf = "") { this->flag = flag; this->name = name; this->udmf = udmf; }
+		};
+		vector<flag_t>	flags_thing;
+		vector<flag_t>	flags_line;
+		vector<flag_t>	triggers_line;
+
+		// Sector types
+		vector<sectype_t>	sector_types;
+
+		// Map info
+		vector<gc_mapinfo_t>	maps;
+
+		// UDMF properties
+		UDMFPropMap	udmf_vertex_props;
+		UDMFPropMap	udmf_linedef_props;
+		UDMFPropMap	udmf_sidedef_props;
+		UDMFPropMap	udmf_sector_props;
+		UDMFPropMap	udmf_thing_props;
+
+		// Defaults
+		PropertyList	defaults_line;
+		PropertyList	defaults_line_udmf;
+		PropertyList	defaults_side;
+		PropertyList	defaults_side_udmf;
+		PropertyList	defaults_sector;
+		PropertyList	defaults_sector_udmf;
+		PropertyList	defaults_thing;
+		PropertyList	defaults_thing_udmf;
+
+		// Feature Support
+		std::map<Feature, bool>		supported_features_;
+		std::map<UDMFFeature, bool>	udmf_features_;
 	};
 }

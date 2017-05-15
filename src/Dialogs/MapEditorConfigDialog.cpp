@@ -76,7 +76,7 @@ public:
 
 		// Check if the game configuration allows any map name
 		int flags = 0;
-		if (!Game::configuration().anyMapName())
+		if (!Game::configuration().featureSupported(Feature::AnyMapName))
 			flags = wxCB_READONLY;
 
 		// Create map name combo box
@@ -85,8 +85,8 @@ public:
 		sizer->Add(cbo_mapname, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
 		// Limit map name length if necessary
-		if (Game::configuration().anyMapName() &&
-			(!Game::configuration().allowLongNames() ||
+		if (Game::configuration().featureSupported(Feature::AnyMapName) &&
+			(!Game::configuration().featureSupported(Feature::LongNames) ||
 			(archive && archive->getType() != ARCHIVE_ZIP &&
 				archive->getType() != ARCHIVE_7Z &&
 				archive->getType() != ARCHIVE_FOLDER)))

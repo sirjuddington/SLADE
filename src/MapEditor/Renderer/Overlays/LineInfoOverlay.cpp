@@ -296,7 +296,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	col_fg.a = col_fg.a*alpha;
 
 	// Get texture
-	GLTexture* tex = MapEditor::textureManager().getTexture(texture, Game::configuration().mixTexFlats());
+	GLTexture* tex = MapEditor::textureManager().getTexture(texture, Game::configuration().featureSupported(Feature::MixTexFlats));
 
 	// Valid texture
 	if (texture != "-" && tex != &(GLTexture::missingTex()))
