@@ -83,7 +83,10 @@ void SideTexCanvas::setTexture(string tex)
 	if (tex == "-" || tex == "")
 		texture = nullptr;
 	else
-		texture = MapEditor::textureManager().getTexture(tex, Game::configuration().featureSupported(Feature::MixTexFlats));
+		texture = MapEditor::textureManager().getTexture(
+			tex,
+			Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+		);
 
 	Refresh();
 }

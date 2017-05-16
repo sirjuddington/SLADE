@@ -34,6 +34,8 @@
 #include "Utility/Parser.h"
 #include "Configuration.h"
 
+using namespace Game;
+
 
 // ----------------------------------------------------------------------------
 //
@@ -41,8 +43,8 @@
 //
 // ----------------------------------------------------------------------------
 ActionSpecial ActionSpecial::unknown_;
-ActionSpecial ActionSpecial::gen_switched_(TagType::Sector, "Boom Generalized Switched Special");
-ActionSpecial ActionSpecial::gen_manual_(TagType::Back, "Boom Generalized Manual Special");
+ActionSpecial ActionSpecial::gen_switched_;
+ActionSpecial ActionSpecial::gen_manual_;
 
 
 // ----------------------------------------------------------------------------
@@ -61,19 +63,6 @@ ActionSpecial::ActionSpecial(string name, string group) :
 	name_{ name },
 	group_{ group },
 	tagged_{ TagType::None },
-	number_{ -1 }
-{
-}
-
-// ----------------------------------------------------------------------------
-// ActionSpecial::ActionSpecial
-//
-// ActionSpecial class constructor
-// ----------------------------------------------------------------------------
-ActionSpecial::ActionSpecial(TagType tag_type, string name, string group) :
-	name_{ name },
-	group_{ group },
-	tagged_{ tag_type },
 	number_{ -1 }
 {
 }
@@ -117,10 +106,9 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 	}
 
 	// Go through all child nodes/values
-	ParseTreeNode* child = nullptr;
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		child = node->getChildPTN(a);
+		auto child = node->getChildPTN(a);
 		string name = child->getName();
 		int argn = -1;
 
@@ -195,4 +183,13 @@ string ActionSpecial::stringDesc() const
 	}
 
 	return ret;
+}
+
+void Game::ActionSpecial::initGlobal()
+{
+	gen_switched_.name_ = "Boom Generalized Switched Special";
+	gen_switched_.tagged_ = TagType::Sector;
+
+	gen_manual_.name_ = "Boom Generalized Manual Special";
+	gen_manual_.tagged_ = TagType::Back;
 }

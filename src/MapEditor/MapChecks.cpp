@@ -28,17 +28,18 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
-#include "SLADEMap/SLADEMap.h"
-#include "MapChecks.h"
 #include "Game/Configuration.h"
-#include "MapTextureManager.h"
-#include "UI/Dialogs/MapTextureBrowser.h"
-#include "MapEditor/MapEditor.h"
-#include "MapEditor/MapEditContext.h"
-#include "UI/Dialogs/ThingTypeBrowser.h"
-#include "Utility/MathStuff.h"
+#include "Game/ThingType.h"
 #include "General/SAction.h"
+#include "MapChecks.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "MapTextureManager.h"
+#include "SLADEMap/SLADEMap.h"
+#include "UI/Dialogs/MapTextureBrowser.h"
+#include "UI/Dialogs/ThingTypeBrowser.h"
+#include "UI/WxStuff.h"
+#include "Utility/MathStuff.h"
 
 
 /*******************************************************************
@@ -210,7 +211,7 @@ public:
 	MapObject* getObject(unsigned index) override
 	{
 		if (index >= lines.size())
-			return NULL;
+			return nullptr;
 
 		return lines[index];
 	}
@@ -246,6 +247,8 @@ public:
 
 	void doCheck() override
 	{
+		using Game::TagType;
+
 		for (unsigned a = 0; a < map->nLines(); a++)
 		{
 			// Get special and tag
@@ -269,8 +272,8 @@ public:
 			for (unsigned a = 0; a < map->nThings(); ++a)
 			{
 				// Ignore the Heresiarch which does not have a real special
-				ThingType* tt = Game::configuration().thingType(map->getThing(a)->getType());
-				if (tt->getFlags() & THING_SCRIPT)
+				auto& tt = Game::configuration().thingType(map->getThing(a)->getType());
+				if (tt.flags() & Game::ThingType::FLAG_SCRIPT)
 					continue;
 
 				// Get special and tag
@@ -319,7 +322,7 @@ public:
 	MapObject* getObject(unsigned index) override
 	{
 		if (index >= objects.size())
-			return NULL;
+			return nullptr;
 
 		return objects[index];
 	}
@@ -355,13 +358,15 @@ public:
 
 	void doCheck() override
 	{
+		using Game::TagType;
+
 		unsigned nlines = map->nLines();
 		unsigned nthings = 0;
 		if (map->currentFormat() == MAP_HEXEN || map->currentFormat() == MAP_UDMF)
 			nthings = map->nThings();
 		for (unsigned a = 0; a < (nlines + nthings); a++)
 		{
-			MapObject* mo = NULL;
+			MapObject* mo = nullptr;
 			bool thingmode = false;
 			if (a >= nlines)
 			{
@@ -373,8 +378,8 @@ public:
 			// Ignore the Heresiarch which does not have a real special
 			if (thingmode)
 			{
-				ThingType* tt = Game::configuration().thingType(((MapThing*)mo)->getType());
-				if (tt->getFlags() & THING_SCRIPT)
+				auto& tt = Game::configuration().thingType(((MapThing*)mo)->getType());
+				if (tt.flags() & Game::ThingType::FLAG_SCRIPT)
 					continue;
 			}
 
@@ -458,7 +463,7 @@ public:
 	MapObject* getObject(unsigned index) override
 	{
 		if (index >= objects.size())
-			return NULL;
+			return nullptr;
 
 		return objects[index];
 	}
@@ -608,7 +613,7 @@ public:
 	MapObject* getObject(unsigned index) override
 	{
 		if (index >= intersections.size())
-			return NULL;
+			return nullptr;
 
 		return intersections[index].line1;
 	}
@@ -722,7 +727,7 @@ public:
 	MapObject* getObject(unsigned index) override
 	{
 		if (index >= overlaps.size())
-			return NULL;
+			return nullptr;
 
 		return overlaps[index].line1;
 	}
@@ -768,18 +773,17 @@ public:
 
 	void doCheck() override
 	{
-		ThingType* tt1, *tt2;
 		double r1, r2;
 
 		// Go through things
 		for (unsigned a = 0; a < map->nThings(); a++)
 		{
 			MapThing* thing1 = map->getThing(a);
-			tt1 = Game::configuration().thingType(thing1->getType());
-			r1 = tt1->getRadius() - 1;
+			auto& tt1 = Game::configuration().thingType(thing1->getType());
+			r1 = tt1.radius() - 1;
 
 			// Ignore if no radius
-			if (r1 < 0 || !tt1->isSolid())
+			if (r1 < 0 || !tt1.solid())
 				continue;
 
 			// Go through uncompared things
@@ -793,11 +797,11 @@ public:
 			for (unsigned b = a + 1; b < map->nThings(); b++)
 			{
 				MapThing* thing2 = map->getThing(b);
-				tt2 = Game::configuration().thingType(thing2->getType());
-				r2 = tt2->getRadius() - 1;
+				auto& tt2 = Game::configuration().thingType(thing2->getType());
+				r2 = tt2.radius() - 1;
 
 				// Ignore if no radius
-				if (r2 < 0 || !tt2->isSolid())
+				if (r2 < 0 || !tt2.solid())
 					continue;
 
 				// Check flags
@@ -828,33 +832,33 @@ public:
 				// Player starts
 				// P1 are automatically S and C; P2+ are automatically C;
 				// Deathmatch starts are automatically D, and team start are T.
-				if (tt1->getFlags() & THING_COOPSTART)
+				if (tt1.flags() & Game::ThingType::FLAG_COOPSTART)
 				{
 					c1 = true; d1 = t1 = false;
 					if (thing1->getType() == 1)
 						s1 = true;
 					else s1 = false;
 				}
-				else if (tt1->getFlags() & THING_DMSTART)
+				else if (tt1.flags() & Game::ThingType::FLAG_DMSTART)
 				{
 					s1 = c1 = t1 = false; d1 = true;
 				}
-				else if (tt1->getFlags() & THING_TEAMSTART)
+				else if (tt1.flags() & Game::ThingType::FLAG_TEAMSTART)
 				{
 					s1 = c1 = d1 = false; t1 = true;
 				}
-				if (tt2->getFlags() & THING_COOPSTART)
+				if (tt2.flags() & Game::ThingType::FLAG_COOPSTART)
 				{
 					c2 = true; d2 = t2 = false;
 					if (thing2->getType() == 1)
 						s2 = true;
 					else s2 = false;
 				}
-				else if (tt2->getFlags() & THING_DMSTART)
+				else if (tt2.flags() & Game::ThingType::FLAG_DMSTART)
 				{
 					s2 = c2 = t2 = false; d2 = true;
 				}
-				else if (tt2->getFlags() & THING_TEAMSTART)
+				else if (tt2.flags() & Game::ThingType::FLAG_TEAMSTART)
 				{
 					s2 = c2 = d2 = false; t2 = true;
 				}
@@ -884,7 +888,7 @@ public:
 
 				// Also check player start spots in Hexen-style hubs
 				shareflag = false;
-				if (tt1->getFlags() & THING_COOPSTART && tt2->getFlags() & THING_COOPSTART)
+				if (tt1.flags() & Game::ThingType::FLAG_COOPSTART && tt2.flags() & Game::ThingType::FLAG_COOPSTART)
 				{
 					if (thing1->intProperty("arg0") == thing2->intProperty("arg0"))
 						shareflag = true;
@@ -925,7 +929,7 @@ public:
 			return false;
 
 		// Get thing to remove (depending on fix)
-		MapThing* thing = NULL;
+		MapThing* thing = nullptr;
 		if (fix_type == 0)
 			thing = overlaps[index].thing1;
 		else if (fix_type == 1)
@@ -957,7 +961,7 @@ public:
 	MapObject* getObject(unsigned index) override
 	{
 		if (index >= overlaps.size())
-			return NULL;
+			return nullptr;
 
 		return overlaps[index].thing1;
 	}
@@ -1002,7 +1006,7 @@ public:
 
 	void doCheck() override
 	{
-		bool mixed = Game::configuration().featureSupported(Feature::MixTexFlats);
+		bool mixed = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
 
 		// Go through lines
 		for (unsigned a = 0; a < map->nLines(); a++)
@@ -1163,7 +1167,7 @@ public:
 	MapObject* getObject(unsigned index) override
 	{
 		if (index >= lines.size())
-			return NULL;
+			return nullptr;
 
 		return lines[index];
 	}
@@ -1203,7 +1207,7 @@ public:
 
 	void doCheck() override
 	{
-		bool mixed = Game::configuration().featureSupported(Feature::MixTexFlats);
+		bool mixed = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
 
 		// Go through sectors
 		for (unsigned a = 0; a < map->nSectors(); a++)
@@ -1277,7 +1281,7 @@ public:
 	MapObject* getObject(unsigned index) override
 	{
 		if (index >= sectors.size())
-			return NULL;
+			return nullptr;
 
 		return sectors[index];
 	}
@@ -1314,8 +1318,8 @@ public:
 	{
 		for (unsigned a = 0; a < map->nThings(); a++)
 		{
-			ThingType* tt = Game::configuration().thingType(map->getThing(a)->getType());
-			if (tt->getName() == "Unknown")
+			auto& tt = Game::configuration().thingType(map->getThing(a)->getType());
+			if (!tt.defined())
 				things.push_back(map->getThing(a));
 		}
 	}
@@ -1358,7 +1362,7 @@ public:
 	MapObject* getObject(unsigned index) override
 	{
 		if (index >= things.size())
-			return NULL;
+			return nullptr;
 
 		return things[index];
 	}
@@ -1415,13 +1419,13 @@ public:
 		for (unsigned a = 0; a < map->nThings(); a++)
 		{
 			MapThing* thing = map->getThing(a);
-			ThingType* tt = Game::configuration().thingType(thing->getType());
+			auto& tt = Game::configuration().thingType(thing->getType());
 
 			// Skip if not a solid thing
-			if (!tt->isSolid())
+			if (!tt.solid())
 				continue;
 
-			radius = tt->getRadius() - 1;
+			radius = tt.radius() - 1;
 			frect_t bbox(thing->xPos(), thing->yPos(), radius * 2, radius * 2, 1);
 
 			// Go through lines
@@ -1467,7 +1471,7 @@ public:
 			fpoint2_t np = MathStuff::closestPointOnLine(thing->point(), line->seg());
 
 			// Get distance to move
-			double r = Game::configuration().thingType(thing->getType())->getRadius();
+			double r = Game::configuration().thingType(thing->getType()).radius();
 			double dist = MathStuff::distance(fpoint2_t(), fpoint2_t(r, r));
 
 			editor->beginUndoRecord("Move Thing", true, false, false);
@@ -1486,7 +1490,7 @@ public:
 	MapObject* getObject(unsigned index) override
 	{
 		if (index >= things.size())
-			return NULL;
+			return nullptr;
 
 		return things[index];
 	}
@@ -1634,7 +1638,7 @@ public:
 		if (index < invalid_refs.size())
 			return invalid_refs[index].line;
 
-		return NULL;
+		return nullptr;
 	}
 
 	string progressText() override
@@ -1753,7 +1757,7 @@ public:
 		if (index < lines.size())
 			return map->getLine(lines[index]);
 
-		return NULL;
+		return nullptr;
 	}
 
 	string progressText() override
@@ -1844,7 +1848,7 @@ public:
 		if (index < sectors.size())
 			return map->getSector(sectors[index]);
 
-		return NULL;
+		return nullptr;
 	}
 
 	string progressText() override
@@ -1891,8 +1895,8 @@ public:
 			for (unsigned a = 0; a < map->nThings(); ++a)
 			{
 				// Ignore the Heresiarch which does not have a real special
-				ThingType* tt = Game::configuration().thingType(map->getThing(a)->getType());
-				if (tt->getFlags() & THING_SCRIPT)
+				auto& tt = Game::configuration().thingType(map->getThing(a)->getType());
+				if (tt.flags() & Game::ThingType::FLAG_SCRIPT)
 					continue;
 
 				// Otherwise, check special
@@ -1939,7 +1943,7 @@ public:
 		if (index < objects.size())
 			return objects[index];
 
-		return NULL;
+		return nullptr;
 	}
 
 	string progressText() override
@@ -1976,8 +1980,8 @@ public:
 		for (unsigned a = 0; a < map->nThings(); ++a)
 		{
 			MapThing* thing = map->getThing(a);
-			ThingType* tt = Game::configuration().thingType(thing->getType());
-			if (tt->getFlags() & THING_OBSOLETE)
+			auto& tt = Game::configuration().thingType(thing->getType());
+			if (tt.flags() & Game::ThingType::FLAG_OBSOLETE)
 				things.push_back(thing);
 		}
 	}
@@ -2018,7 +2022,7 @@ public:
 		if (index < things.size())
 			return things[index];
 
-		return NULL;
+		return nullptr;
 	}
 
 	string progressText() override

@@ -80,13 +80,6 @@ Configuration::Configuration()
 Configuration::~Configuration()
 {
 	// Clean up stuff
-	ThingTypeMap::iterator tt = thing_types_.begin();
-	while (tt != thing_types_.end())
-	{
-		if (tt->second.type) delete tt->second.type;
-		tt++;
-	}
-
 	for (unsigned a = 0; a < tt_group_defaults_.size(); a++)
 		delete tt_group_defaults_[a];
 }
@@ -99,8 +92,6 @@ Configuration::~Configuration()
 void Configuration::setDefaults()
 {
 	udmf_namespace_ = "";
-	ttype_unknown_.icon = "unknown";
-	ttype_unknown_.shrink = true;
 	defaults_line_.clear();
 	defaults_side_.clear();
 	defaults_sector_.clear();
@@ -434,12 +425,10 @@ void Configuration::readThingTypes(ParseTreeNode* node, ThingType* group_default
 
 	// --- Set up group default properties ---
 	ParseTreeNode* child = nullptr;
-	ThingType* tt_defaults = new ThingType();
-	tt_defaults->copy(group_defaults);
+	ThingType* tt_defaults = new ThingType("", groupname);
+	if (group_defaults) tt_defaults->copy(*group_defaults);
 	tt_defaults->parse(node);
-	tt_defaults->group_ = groupname;
 	tt_group_defaults_.push_back(tt_defaults);
-
 
 	// --- Go through all child nodes ---
 	for (unsigned a = 0; a < node->nChildren(); a++)
@@ -457,29 +446,23 @@ void Configuration::readThingTypes(ParseTreeNode* node, ThingType* group_default
 			long type;
 			child->getName().ToLong(&type);
 
-			// Create thing type object if needed
-			if (!thing_types_[type].type)
-			{
-				thing_types_[type].type = new ThingType();
-				thing_types_[type].index = thing_types_.size();
-			}
-
 			// Reset the thing type (in case it's being redefined for whatever reason)
-			thing_types_[type].type->reset();
+			thing_types_[type].reset();
 
 			// Apply group defaults
-			thing_types_[type].type->copy(tt_defaults);
-			thing_types_[type].type->group_ = groupname;
+			thing_types_[type].copy(*tt_defaults);
 
 			// Check for simple definition
 			if (child->isLeaf())
-				thing_types_[type].type->name_ = child->getStringValue();
+				thing_types_[type].define(type, child->getStringValue(), groupname);
 			else
-				thing_types_[type].type->parse(child);	// Extended definition
+			{
+				// Extended definition
+				thing_types_[type].define(type, "", groupname);
+				thing_types_[type].parse(child);
+			}
 		}
 	}
-
-	//delete tt_defaults;
 }
 
 // ----------------------------------------------------------------------------
@@ -1231,38 +1214,13 @@ string Configuration::actionSpecialName(int special)
 //
 // Returns the thing type definition for [type]
 // ----------------------------------------------------------------------------
-ThingType* Configuration::thingType(unsigned type)
+const ThingType& Configuration::thingType(unsigned type)
 {
-	tt_t& ttype = thing_types_[type];
-	if (ttype.type)
-		return ttype.type;
+	auto& ttype = thing_types_[type];
+	if (ttype.defined())
+		return ttype;
 	else
-		return &ttype_unknown_;
-}
-
-// ----------------------------------------------------------------------------
-// Configuration::allThingTypes
-//
-// Returns a list of all thing types defined in the configuration
-// ----------------------------------------------------------------------------
-vector<tt_t> Configuration::allThingTypes()
-{
-	vector<tt_t> ret;
-
-	ThingTypeMap::iterator i = thing_types_.begin();
-	while (i != thing_types_.end())
-	{
-		if (i->second.type)
-		{
-			tt_t tt(i->second.type);
-			tt.number = i->first;
-			ret.push_back(tt);
-		}
-
-		i++;
-	}
-
-	return ret;
+		return ThingType::unknown();
 }
 
 // ----------------------------------------------------------------------------
@@ -1628,6 +1586,8 @@ enum StateSprites
 // ----------------------------------------------------------------------------
 bool Configuration::parseDecorateDefs(Archive* archive)
 {
+	// TODO: Move this stuff out to a separate class/namespace
+#if 0
 	if (!archive)
 		return false;
 
@@ -1951,7 +1911,7 @@ bool Configuration::parseDecorateDefs(Archive* archive)
 						thing_types_[type].type = new ThingType();
 						thing_types_[type].index = thing_types_.size();
 						thing_types_[type].number = type;
-						thing_types_[type].type->decorate = true;
+						thing_types_[type].type->decorate_ = true;
 					}
 					else
 						defined = true;
@@ -1977,40 +1937,40 @@ bool Configuration::parseDecorateDefs(Archive* archive)
 					}
 
 					// Setup thing
-					if (!defined || title_given || tt->decorate)
+					if (!defined || title_given || tt->decorate_)
 						tt->name_ = name;
-					if (!defined || group_given || tt->decorate)
+					if (!defined || group_given || tt->decorate_)
 						tt->group_ = group.empty() ? "Decorate" : group;
-					if (!defined || sprite_given || tt->sprite.IsEmpty() || tt->decorate)
+					if (!defined || sprite_given || tt->sprite_.IsEmpty() || tt->decorate_)
 					{
 						if (found_props["sprite"].hasValue())
 						{
 							if (S_CMPNOCASE(found_props["sprite"].getStringValue(), "tnt1a?"))
 							{
-								if ((!(found_props["icon"].hasValue())) && tt->icon.IsEmpty())
-									tt->icon = "tnt1a0";
+								if ((!(found_props["icon"].hasValue())) && tt->icon_.IsEmpty())
+									tt->icon_ = "tnt1a0";
 							}
 							else
-								tt->sprite = found_props["sprite"].getStringValue();
+								tt->sprite_ = found_props["sprite"].getStringValue();
 						}
 					}
-					if (found_props["radius"].hasValue()) tt->radius = found_props["radius"].getIntValue();
-					if (found_props["height"].hasValue()) tt->height = found_props["height"].getIntValue();
-					if (found_props["scalex"].hasValue()) tt->scaleX = found_props["scalex"].getFloatValue();
-					if (found_props["scaley"].hasValue()) tt->scaleY = found_props["scaley"].getFloatValue();
-					if (found_props["hanging"].hasValue()) tt->hanging = found_props["hanging"].getBoolValue();
-					if (found_props["angled"].hasValue()) tt->angled = found_props["angled"].getBoolValue();
-					if (found_props["bright"].hasValue()) tt->fullbright = found_props["bright"].getBoolValue();
-					if (found_props["decoration"].hasValue()) tt->decoration = found_props["decoration"].getBoolValue();
-					if (found_props["icon"].hasValue()) tt->icon = found_props["icon"].getStringValue();
-					if (found_props["translation"].hasValue()) tt->translation = found_props["translation"].getStringValue();
-					if (found_props["solid"].hasValue()) tt->solid = found_props["solid"].getBoolValue();
+					if (found_props["radius"].hasValue()) tt->radius_ = found_props["radius"].getIntValue();
+					if (found_props["height"].hasValue()) tt->height_ = found_props["height"].getIntValue();
+					if (found_props["scalex"].hasValue()) tt->scale_.x = found_props["scalex"].getFloatValue();
+					if (found_props["scaley"].hasValue()) tt->scale_.y = found_props["scaley"].getFloatValue();
+					if (found_props["hanging"].hasValue()) tt->hanging_ = found_props["hanging"].getBoolValue();
+					if (found_props["angled"].hasValue()) tt->angled_ = found_props["angled"].getBoolValue();
+					if (found_props["bright"].hasValue()) tt->fullbright_ = found_props["bright"].getBoolValue();
+					if (found_props["decoration"].hasValue()) tt->decoration_ = found_props["decoration"].getBoolValue();
+					if (found_props["icon"].hasValue()) tt->icon_ = found_props["icon"].getStringValue();
+					if (found_props["translation"].hasValue()) tt->translation_ = found_props["translation"].getStringValue();
+					if (found_props["solid"].hasValue()) tt->solid_ = found_props["solid"].getBoolValue();
 					if (found_props["colour"].hasValue())
 					{
 						wxColour wxc(found_props["colour"].getStringValue());
 						if (wxc.IsOk())
 						{
-							tt->colour.set(COLWX(wxc));
+							tt->colour_.set(COLWX(wxc));
 						}
 					}
 					else if (found_props["color"].hasValue())
@@ -2020,48 +1980,48 @@ bool Configuration::parseDecorateDefs(Archive* archive)
 						switch (color)
 						{
 						case  0:	// DimGray			ARGB value of #FF696969
-							tt->colour.r = 0x69; tt->colour.g = 0x69; tt->colour.b = 0x69; break;
+							tt->colour_.r = 0x69; tt->colour_.g = 0x69; tt->colour_.b = 0x69; break;
 						case  1:	// RoyalBlue		ARGB value of #FF4169E1
-							tt->colour.r = 0x41; tt->colour.g = 0x69; tt->colour.b = 0xE1; break;
+							tt->colour_.r = 0x41; tt->colour_.g = 0x69; tt->colour_.b = 0xE1; break;
 						case  2:	// ForestGreen		ARGB value of #FF228B22
-							tt->colour.r = 0x22; tt->colour.g = 0x8B; tt->colour.b = 0x22; break;
+							tt->colour_.r = 0x22; tt->colour_.g = 0x8B; tt->colour_.b = 0x22; break;
 						case  3:	// LightSeaGreen	ARGB value of #FF20B2AA
-							tt->colour.r = 0x20; tt->colour.g = 0xB2; tt->colour.b = 0xAA; break;
+							tt->colour_.r = 0x20; tt->colour_.g = 0xB2; tt->colour_.b = 0xAA; break;
 						case  4:	// Firebrick		ARGB value of #FFB22222
-							tt->colour.r = 0xB2; tt->colour.g = 0x22; tt->colour.b = 0x22; break;
+							tt->colour_.r = 0xB2; tt->colour_.g = 0x22; tt->colour_.b = 0x22; break;
 						case  5:	// DarkViolet		ARGB value of #FF9400D3
-							tt->colour.r = 0x94; tt->colour.g = 0x00; tt->colour.b = 0xD3; break;
+							tt->colour_.r = 0x94; tt->colour_.g = 0x00; tt->colour_.b = 0xD3; break;
 						case  6:	// DarkGoldenrod	ARGB value of #FFB8860B
-							tt->colour.r = 0xB8; tt->colour.g = 0x86; tt->colour.b = 0x0B; break;
+							tt->colour_.r = 0xB8; tt->colour_.g = 0x86; tt->colour_.b = 0x0B; break;
 						case  7:	// Silver			ARGB value of #FFC0C0C0
-							tt->colour.r = 0xC0; tt->colour.g = 0xC0; tt->colour.b = 0xC0; break;
+							tt->colour_.r = 0xC0; tt->colour_.g = 0xC0; tt->colour_.b = 0xC0; break;
 						case  8:	// Gray				ARGB value of #FF808080
-							tt->colour.r = 0x80; tt->colour.g = 0x80; tt->colour.b = 0x80; break;
+							tt->colour_.r = 0x80; tt->colour_.g = 0x80; tt->colour_.b = 0x80; break;
 						case  9:	// DeepSkyBlue		ARGB value of #FF00BFFF
-							tt->colour.r = 0x00; tt->colour.g = 0xBF; tt->colour.b = 0xFF; break;
+							tt->colour_.r = 0x00; tt->colour_.g = 0xBF; tt->colour_.b = 0xFF; break;
 						case 10:	// LimeGreen		ARGB value of #FF32CD32
-							tt->colour.r = 0x32; tt->colour.g = 0xCD; tt->colour.b = 0x32; break;
+							tt->colour_.r = 0x32; tt->colour_.g = 0xCD; tt->colour_.b = 0x32; break;
 						case 11:	// PaleTurquoise	ARGB value of #FFAFEEEE
-							tt->colour.r = 0xAF; tt->colour.g = 0xEE; tt->colour.b = 0xEE; break;
+							tt->colour_.r = 0xAF; tt->colour_.g = 0xEE; tt->colour_.b = 0xEE; break;
 						case 12:	// Tomato			ARGB value of #FFFF6347
-							tt->colour.r = 0xFF; tt->colour.g = 0x63; tt->colour.b = 0x47; break;
+							tt->colour_.r = 0xFF; tt->colour_.g = 0x63; tt->colour_.b = 0x47; break;
 						case 13:	// Violet			ARGB value of #FFEE82EE
-							tt->colour.r = 0xEE; tt->colour.g = 0x82; tt->colour.b = 0xEE; break;
+							tt->colour_.r = 0xEE; tt->colour_.g = 0x82; tt->colour_.b = 0xEE; break;
 						case 14:	// Yellow			ARGB value of #FFFFFF00
-							tt->colour.r = 0xFF; tt->colour.g = 0xFF; tt->colour.b = 0x00; break;
+							tt->colour_.r = 0xFF; tt->colour_.g = 0xFF; tt->colour_.b = 0x00; break;
 						case 15:	// WhiteSmoke		ARGB value of #FFF5F5F5
-							tt->colour.r = 0xF5; tt->colour.g = 0xF5; tt->colour.b = 0xF5; break;
+							tt->colour_.r = 0xF5; tt->colour_.g = 0xF5; tt->colour_.b = 0xF5; break;
 						case 16:	// LightPink		ARGB value of #FFFFB6C1
-							tt->colour.r = 0xFF; tt->colour.g = 0xB6; tt->colour.b = 0xC1; break;
+							tt->colour_.r = 0xFF; tt->colour_.g = 0xB6; tt->colour_.b = 0xC1; break;
 						case 17:	// DarkOrange		ARGB value of #FFFF8C00
-							tt->colour.r = 0xFF; tt->colour.g = 0x8C; tt->colour.b = 0x00; break;
+							tt->colour_.r = 0xFF; tt->colour_.g = 0x8C; tt->colour_.b = 0x00; break;
 						case 18:	// DarkKhaki		ARGB value of #FFBDB76B
-							tt->colour.r = 0xBD; tt->colour.g = 0xB7; tt->colour.b = 0x6B; break;
+							tt->colour_.r = 0xBD; tt->colour_.g = 0xB7; tt->colour_.b = 0x6B; break;
 						case 19:	// Goldenrod		ARGB value of #FFDAA520
-							tt->colour.r = 0xDA; tt->colour.g = 0xA5; tt->colour.b = 0x20; break;
+							tt->colour_.r = 0xDA; tt->colour_.g = 0xA5; tt->colour_.b = 0x20; break;
 						}
 					}
-					if (found_props["obsolete"].hasValue()) tt->flags |= THING_OBSOLETE;
+					if (found_props["obsolete"].hasValue()) tt->flags_ |= THING_OBSOLETE;
 				}
 			}
 		}
@@ -2144,7 +2104,7 @@ bool Configuration::parseDecorateDefs(Archive* archive)
 					thing_types_[type].type = new ThingType();
 					thing_types_[type].index = thing_types_.size();
 					thing_types_[type].number = type;
-					thing_types_[type].type->decorate = true;
+					thing_types_[type].type->decorate_ = true;
 				}
 				else
 					defined = true;
@@ -2157,22 +2117,22 @@ bool Configuration::parseDecorateDefs(Archive* archive)
 					tt->group_ = "Decorate";
 					if (group.length())
 						tt->group_ += "/" + group;
-					tt->angled = false;
+					tt->angled_ = false;
 					if (spritefound && framefound)
 					{
 						sprite = sprite + frame + '?';
 						if (S_CMPNOCASE(sprite, "tnt1a?"))
-							tt->icon = "tnt1a0";
+							tt->icon_ = "tnt1a0";
 						else
-							tt->sprite = sprite;
+							tt->sprite_ = sprite;
 					}
 				}
-				if (found_props["radius"].hasValue()) tt->radius = found_props["radius"].getIntValue();
-				if (found_props["height"].hasValue()) tt->height = found_props["height"].getIntValue();
-				if (found_props["scale"].hasValue()) tt->scaleX = tt->scaleY = found_props["scale"].getFloatValue();
-				if (found_props["hanging"].hasValue()) tt->hanging = found_props["hanging"].getBoolValue();
-				if (found_props["bright"].hasValue()) tt->fullbright = found_props["bright"].getBoolValue();
-				if (found_props["translation"].hasValue()) tt->translation = found_props["translation"].getStringValue();
+				if (found_props["radius"].hasValue()) tt->radius_ = found_props["radius"].getIntValue();
+				if (found_props["height"].hasValue()) tt->height_ = found_props["height"].getIntValue();
+				if (found_props["scale"].hasValue()) tt->scale_.x = tt->scale_.y = found_props["scale"].getFloatValue();
+				if (found_props["hanging"].hasValue()) tt->hanging_ = found_props["hanging"].getBoolValue();
+				if (found_props["bright"].hasValue()) tt->fullbright_ = found_props["bright"].getBoolValue();
+				if (found_props["translation"].hasValue()) tt->translation_ = found_props["translation"].getStringValue();
 				LOG_MESSAGE(3, "Parsed %s %s: %d", group.length() ? group : "decoration", name, type);
 			}
 			else
@@ -2186,6 +2146,7 @@ bool Configuration::parseDecorateDefs(Archive* archive)
 	//tempfile.Write(full_defs);
 	//tempfile.Close();
 
+#endif
 	return true;
 }
 
@@ -3147,42 +3108,6 @@ int Configuration::downLightLevel(int light_level)
 }
 
 // ----------------------------------------------------------------------------
-// Configuration::parseTagged
-//
-// Returns the tagged type of the parsed tree node [tagged]
-// ----------------------------------------------------------------------------
-int Configuration::parseTagged(ParseTreeNode* tagged)
-{
-	string str = tagged->getStringValue();
-	if (S_CMPNOCASE(str, "no")) return AS_TT_NO;
-	else if (S_CMPNOCASE(str, "sector")) return AS_TT_SECTOR;
-	else if (S_CMPNOCASE(str, "line")) return AS_TT_LINE;
-	else if (S_CMPNOCASE(str, "lineid")) return AS_TT_LINEID;
-	else if (S_CMPNOCASE(str, "lineid_hi5")) return AS_TT_LINEID_HI5;
-	else if (S_CMPNOCASE(str, "thing")) return AS_TT_THING;
-	else if (S_CMPNOCASE(str, "sector_back")) return AS_TT_SECTOR_BACK;
-	else if (S_CMPNOCASE(str, "sector_or_back")) return AS_TT_SECTOR_OR_BACK;
-	else if (S_CMPNOCASE(str, "sector_and_back")) return AS_TT_SECTOR_AND_BACK;
-	else if (S_CMPNOCASE(str, "line_negative")) return AS_TT_LINE_NEGATIVE;
-	else if (S_CMPNOCASE(str, "ex_1thing_2sector")) return AS_TT_1THING_2SECTOR;
-	else if (S_CMPNOCASE(str, "ex_1thing_3sector")) return AS_TT_1THING_3SECTOR;
-	else if (S_CMPNOCASE(str, "ex_1thing_2thing")) return AS_TT_1THING_2THING;
-	else if (S_CMPNOCASE(str, "ex_1thing_4thing")) return AS_TT_1THING_4THING;
-	else if (S_CMPNOCASE(str, "ex_1thing_2thing_3thing")) return AS_TT_1THING_2THING_3THING;
-	else if (S_CMPNOCASE(str, "ex_1sector_2thing_3thing_5thing")) return AS_TT_1SECTOR_2THING_3THING_5THING;
-	else if (S_CMPNOCASE(str, "ex_1lineid_2line")) return AS_TT_1LINEID_2LINE;
-	else if (S_CMPNOCASE(str, "ex_4thing")) return AS_TT_4THING;
-	else if (S_CMPNOCASE(str, "ex_5thing")) return AS_TT_5THING;
-	else if (S_CMPNOCASE(str, "ex_1line_2sector")) return AS_TT_1LINE_2SECTOR;
-	else if (S_CMPNOCASE(str, "ex_1sector_2sector")) return AS_TT_1SECTOR_2SECTOR;
-	else if (S_CMPNOCASE(str, "ex_1sector_2sector_3sector_4_sector")) return AS_TT_1SECTOR_2SECTOR_3SECTOR_4SECTOR;
-	else if (S_CMPNOCASE(str, "ex_sector_2is3_line")) return AS_TT_SECTOR_2IS3_LINE;
-	else if (S_CMPNOCASE(str, "ex_1sector_2thing")) return AS_TT_1SECTOR_2THING;
-	else
-		return tagged->getIntValue();
-}
-
-// ----------------------------------------------------------------------------
 // Configuration::dumpActionSpecials
 //
 // Dumps all defined action specials to the log
@@ -3201,13 +3126,9 @@ void Configuration::dumpActionSpecials()
 // ----------------------------------------------------------------------------
 void Configuration::dumpThingTypes()
 {
-	ThingTypeMap::iterator i = thing_types_.begin();
-
-	while (i != thing_types_.end())
-	{
-		LOG_MESSAGE(1, "Thing type %d = %s", i->first, i->second.type->stringDesc());
-		i++;
-	}
+	for (auto& i : thing_types_)
+		if (i.second.defined())
+			LOG_MESSAGE(1, "Thing type %d = %s", i.first, i.second.stringDesc());
 }
 
 // ----------------------------------------------------------------------------

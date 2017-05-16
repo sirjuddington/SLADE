@@ -784,7 +784,7 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		stc_sections->SetPageText(0, "Thing");
 
 	// Go through all possible properties for this type
-	vector<udmfp_t> props = Game::configuration().allUDMFProperties(objtype);
+	vector<Game::udmfp_t> props = Game::configuration().allUDMFProperties(objtype);
 	sort(props.begin(), props.end());
 	for (unsigned a = 0; a < props.size(); a++)
 	{
@@ -811,7 +811,7 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		stc_sections->AddPage(pg_props_side2, "Back Side");
 
 		// Get side properties
-		vector<udmfp_t> sprops = Game::configuration().allUDMFProperties(MOBJ_SIDE);
+		vector<Game::udmfp_t> sprops = Game::configuration().allUDMFProperties(MOBJ_SIDE);
 		sort(sprops.begin(), sprops.end());
 
 		// Front side

@@ -55,7 +55,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	lv_specials->enableSizeUpdate(false);
 	lv_specials->AppendColumn("#");
 	lv_specials->AppendColumn("Name");
-	vector<sectype_t> types = Game::configuration().allSectorTypes();
+	vector<Game::sectype_t> types = Game::configuration().allSectorTypes();
 	for (unsigned a = 0; a < types.size(); a++)
 	{
 		wxArrayString item;
@@ -118,7 +118,7 @@ void SectorSpecialPanel::setup(int special)
 	int base_type = Game::configuration().baseSectorType(special);
 
 	// Select base type
-	vector<sectype_t> types = Game::configuration().allSectorTypes();
+	vector<Game::sectype_t> types = Game::configuration().allSectorTypes();
 	for (unsigned a = 0; a < types.size(); a++)
 	{
 		if (types[a].type == base_type)
@@ -151,7 +151,7 @@ void SectorSpecialPanel::setup(int special)
  *******************************************************************/
 int SectorSpecialPanel::getSelectedSpecial()
 {
-	vector<sectype_t> types = Game::configuration().allSectorTypes();
+	vector<Game::sectype_t> types = Game::configuration().allSectorTypes();
 	int selection = 0;
 	wxArrayInt items = lv_specials->selectedItems();
 	if (items.GetCount())

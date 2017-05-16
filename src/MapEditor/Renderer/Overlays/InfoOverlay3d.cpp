@@ -80,6 +80,9 @@ InfoOverlay3D::~InfoOverlay3D()
  *******************************************************************/
 void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEMap* map)
 {
+	using Game::Feature;
+	using Game::UDMFFeature;
+
 	// Clear current info
 	info.clear();
 	info2.clear();
@@ -437,11 +440,11 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 
 		// Type
-		ThingType* tt = Game::configuration().thingType(thing->getType());
-		if (tt->getName() == "Unknown")
+		auto& tt = Game::configuration().thingType(thing->getType());
+		if (!tt.defined())
 			info2.push_back(S_FMT("Type: %d", thing->getType()));
 		else
-			info2.push_back(S_FMT("Type: %s", tt->getName()));
+			info2.push_back(S_FMT("Type: %s", tt.name()));
 
 		// Args
 		if (MapEditor::editContext().mapDesc().format == MAP_HEXEN ||
@@ -458,7 +461,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			string argxstr[2];
 			argxstr[0] = thing->stringProperty("arg0str");
 			argxstr[1] = thing->stringProperty("arg1str");
-			string argstr = tt->getArgsString(args, argxstr);
+			string argstr = tt.argSpec().stringDesc(args, argxstr);
 
 			if (argstr.IsEmpty())
 				info2.push_back("No Args");
@@ -475,13 +478,13 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 
 		// Texture
-		texture = MapEditor::textureManager().getSprite(tt->getSprite(), tt->getTranslation(), tt->getPalette());
+		texture = MapEditor::textureManager().getSprite(tt.sprite(), tt.translation(), tt.palette());
 		if (!texture)
 		{
-			if (use_zeth_icons && tt->getZeth() >= 0)
-				texture = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", tt->getZeth()));
+			if (use_zeth_icons && tt.zethIcon() >= 0)
+				texture = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", tt.zethIcon()));
 			if (!texture)
-				texture = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", tt->getIcon()));
+				texture = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", tt.icon()));
 			thing_icon = true;
 		}
 		texname = "";

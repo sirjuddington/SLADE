@@ -579,7 +579,7 @@ void Edit2D::changeThingType() const
 		context_.endUndoRecord(true);
 
 		// Add editor message
-		string type_name = Game::configuration().thingType(newtype)->getName();
+		string type_name = Game::configuration().thingType(newtype).name();
 		if (selection.size() == 1)
 			context_.addEditorMessage(S_FMT("Changed type to \"%s\"", type_name));
 		else

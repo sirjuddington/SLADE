@@ -86,8 +86,8 @@ void ThingInfoOverlay::update(MapThing* thing)
 	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Index + type
-	ThingType* tt = Game::configuration().thingType(thing->getType());
-	string type = S_FMT("%s (Type %d)", tt->getName(), thing->getType());
+	auto& tt = Game::configuration().thingType(thing->getType());
+	string type = S_FMT("%s (Type %d)", tt.name(), thing->getType());
 	if (Global::debug)
 		info_text += S_FMT("Thing #%d (%d): %s\n", thing->getIndex(), thing->getId(), type);
 	else
@@ -136,8 +136,8 @@ void ThingInfoOverlay::update(MapThing* thing)
 		argxstr[0] = thing->stringProperty("arg0str");
 		argxstr[1] = thing->stringProperty("arg1str");
 		string argstr;
-		if (tt->getArgspec().count > 0)
-			argstr = tt->getArgsString(args, argxstr);
+		if (tt.argSpec().count > 0)
+			argstr = tt.argSpec().stringDesc(args, argxstr);
 		else
 			argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(args, argxstr);
 
@@ -159,11 +159,11 @@ void ThingInfoOverlay::update(MapThing* thing)
 		info_text.RemoveLast(1);
 
 	// Set sprite and translation
-	sprite = tt->getSprite();
-	translation = tt->getTranslation();
-	palette = tt->getPalette();
-	icon = tt->getIcon();
-	zeth = tt->getZeth();
+	sprite = tt.sprite();
+	translation = tt.translation();
+	palette = tt.palette();
+	icon = tt.icon();
+	zeth = tt.zethIcon();
 
 	// Setup text box
 	text_box->setText(info_text);

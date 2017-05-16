@@ -81,20 +81,20 @@ string SpriteTexCanvas::getTexName()
 /* SpriteTexCanvas::setTexture
  * Sets the texture to display
  *******************************************************************/
-void SpriteTexCanvas::setSprite(ThingType* type)
+void SpriteTexCanvas::setSprite(const Game::ThingType& type)
 {
-	texname = type->getSprite();
+	texname = type.sprite();
 	icon = false;
 	col = COL_WHITE;
 
 	// Sprite
-	texture = MapEditor::textureManager().getSprite(texname, type->getTranslation(), type->getPalette());
+	texture = MapEditor::textureManager().getSprite(texname, type.translation(), type.palette());
 
 	// Icon
 	if (!texture)
 	{
-		texture = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type->getIcon()));
-		col = type->getColour();
+		texture = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type.icon()));
+		col = type.colour();
 		icon = true;
 	}
 
@@ -600,7 +600,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	int col = 0;
 
 	// Get all UDMF properties
-	vector<udmfp_t> props = Game::configuration().allUDMFProperties(MOBJ_THING);
+	vector<Game::udmfp_t> props = Game::configuration().allUDMFProperties(MOBJ_THING);
 	sort(props.begin(), props.end());
 
 	// UDMF flags
@@ -800,9 +800,9 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	type_current = 0;
 	if (MapObject::multiIntProperty(objects, "type", type_current))
 	{
-		ThingType* tt = Game::configuration().thingType(type_current);
+		auto& tt = Game::configuration().thingType(type_current);
 		gfx_sprite->setSprite(tt);
-		label_type->SetLabel(S_FMT("%d: %s", type_current, tt->getName()));
+		label_type->SetLabel(S_FMT("%d: %s", type_current, tt.name()));
 		label_type->Wrap(136);
 	}
 
@@ -825,7 +825,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		}
 		else
 		{
-			auto& as = Game::configuration().thingType(type_current)->getArgspec();
+			auto& as = Game::configuration().thingType(type_current).argSpec();
 			panel_args->setup(as, (map_format == MAP_UDMF));
 		}
 
@@ -950,16 +950,16 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 	{
 		// Get selected type
 		type_current = browser.getSelectedType();
-		ThingType* tt = Game::configuration().thingType(type_current);
+		auto& tt = Game::configuration().thingType(type_current);
 
 		// Update sprite
 		gfx_sprite->setSprite(tt);
-		label_type->SetLabel(tt->getName());
+		label_type->SetLabel(tt.name());
 
 		// Update args
 		if (panel_args)
 		{
-			auto& as = tt->getArgspec();
+			auto& as = tt.argSpec();
 			panel_args->setup(as, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 		}
 

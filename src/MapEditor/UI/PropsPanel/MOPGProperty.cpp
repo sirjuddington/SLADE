@@ -614,9 +614,7 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
  *******************************************************************/
 const Game::ArgSpec& MOPGThingTypeProperty::getArgspec()
 {
-	int type = m_value.GetInteger();
-	ThingType* tt = Game::configuration().thingType(type);
-	return tt->getArgspec();
+	return Game::configuration().thingType(m_value.GetInteger()).argSpec();
 }
 
 /* MOPGThingTypeProperty::ValueToString
@@ -631,9 +629,8 @@ wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) co
 	if (type == 0)
 		return "0: None";
 
-
-	ThingType* tt = Game::configuration().thingType(type);
-	return S_FMT("%d: %s", type, tt->getName());
+	auto& tt = Game::configuration().thingType(type);
+	return S_FMT("%d: %s", type, tt.name());
 }
 
 /* MOPGThingTypeProperty::OnEvent

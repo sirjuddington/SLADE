@@ -264,7 +264,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		{
 			MapSector* sector = context_.map().getSector(items[a].index);
 
-			if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
+			if (Game::configuration().featureSupported(Game::UDMFFeature::FlatPanning))
 			{
 				if (items[a].type == ItemType::Floor)
 				{
@@ -448,7 +448,7 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 	// Get texture width
 	auto gl_tex = MapEditor::textureManager().getTexture(
 		tex,
-		Game::configuration().featureSupported(Feature::MixTexFlats)
+		Game::configuration().featureSupported(Game::Feature::MixTexFlats)
 	);
 	int tex_width = -1;
 	if (gl_tex)
@@ -475,6 +475,8 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
  *******************************************************************/
 void Edit3D::resetOffsets() const
 {
+	using Game::UDMFFeature;
+
 	// Get items to process
 	vector<MapEditor::Item> walls;
 	vector<MapEditor::Item> flats;
@@ -1054,6 +1056,8 @@ void Edit3D::deleteThing() const
  *******************************************************************/
 void Edit3D::changeScale(double amount, bool x) const
 {
+	using Game::UDMFFeature;
+
 	// Get items to process
 	vector<MapEditor::Item> items;
 	auto& selection_3d = context_.selection();
@@ -1081,8 +1085,10 @@ void Edit3D::changeScale(double amount, bool x) const
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Wall
-		if (items[a].type >= ItemType::WallTop && items[a].type <= ItemType::WallBottom &&
-			(Game::configuration().featureSupported(UDMFFeature::SideScaling) || Game::configuration().featureSupported(UDMFFeature::TextureScaling)))
+		if (items[a].type >= ItemType::WallTop &&
+			items[a].type <= ItemType::WallBottom &&
+			(Game::configuration().featureSupported(UDMFFeature::SideScaling) ||
+			Game::configuration().featureSupported(UDMFFeature::TextureScaling)))
 		{
 			auto side = context_.map().getSide(items[a].index);
 
@@ -1278,7 +1284,7 @@ void Edit3D::changeTexture() const
 	tex = MapEditor::browseTexture(tex, type, map);
 	if (!tex.empty())
 	{
-		bool mix = Game::configuration().featureSupported(Feature::MixTexFlats);
+		bool mix = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
 		MapEditor::Item hl = context_.hilightItem();
 
 		// Begin undo level

@@ -12,7 +12,6 @@ namespace Game
 	{
 	public:
 		ActionSpecial(string name = "Unknown", string group = "");
-		ActionSpecial(TagType tag_type, string name = "Unknown", string group = "");
 
 		const string&	name() const { return name_; }
 		const string&	group() const { return group_; }
@@ -33,6 +32,7 @@ namespace Game
 		static const ActionSpecial&	unknown() { return unknown_; }
 		static const ActionSpecial&	generalSwitched() { return gen_switched_; }
 		static const ActionSpecial&	generalManual() { return gen_manual_; }
+		static void					initGlobal();
 
 	private:
 		string	name_;

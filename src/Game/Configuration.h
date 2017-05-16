@@ -43,50 +43,6 @@ namespace Game
 		ThingRotation,		// Per-thing pitch and yaw rotation
 	};
 
-	// Tag types
-	enum TagTypes // TODO: Remove this enum
-	{
-		AS_TT_NO = 0,
-		AS_TT_SECTOR,
-		AS_TT_LINE,
-		AS_TT_THING,
-		AS_TT_SECTOR_BACK,
-		AS_TT_SECTOR_OR_BACK,
-		AS_TT_SECTOR_AND_BACK,
-
-		// Special handling for that one
-		AS_TT_LINEID,
-		AS_TT_LINEID_HI5,
-
-		// Some more specific types
-		AS_TT_1THING_2SECTOR,					// most ZDoom teleporters work like this
-		AS_TT_1THING_3SECTOR,					// Teleport_NoFog & Thing_Destroy
-		AS_TT_1THING_2THING,					// TeleportOther, NoiseAlert, Thing_Move, Thing_SetGoal
-		AS_TT_1THING_4THING,					// Thing_ProjectileIntercept, Thing_ProjectileAimed
-		AS_TT_1THING_2THING_3THING,				// TeleportGroup
-		AS_TT_1SECTOR_2THING_3THING_5THING,		// TeleportInSector
-		AS_TT_1LINEID_2LINE,					// Teleport_Line
-		AS_TT_LINE_NEGATIVE,					// Scroll_Texture_Both
-		AS_TT_4THING,							// ThrustThing
-		AS_TT_5THING,							// Radius_Quake
-		AS_TT_1LINE_2SECTOR,					// Sector_Attach3dMidtex
-		AS_TT_1SECTOR_2SECTOR,					// Sector_SetLink
-		AS_TT_1SECTOR_2SECTOR_3SECTOR_4SECTOR,	// Plane_Copy
-		AS_TT_SECTOR_2IS3_LINE,					// Static_Init
-		AS_TT_1SECTOR_2THING,					// PointPush_SetForce
-	};
-
-	struct tt_t
-	{
-		ThingType*	type;
-		int			number;
-		int			index;
-		tt_t(ThingType* type = nullptr) { this->type = type; index = 0; }
-
-		bool operator< (const tt_t& right) const { return (index < right.index); }
-		bool operator> (const tt_t& right) const { return (index > right.index); }
-	};
-
 	struct udmfp_t
 	{
 		UDMFProperty*	property;
@@ -112,7 +68,6 @@ namespace Game
 		sectype_t(int type, string name) { this->type = type; this->name = name; }
 	};
 
-	WX_DECLARE_HASH_MAP(int, tt_t, wxIntegerHash, wxIntegerEqual, ThingTypeMap);
 	WX_DECLARE_STRING_HASH_MAP(udmfp_t, UDMFPropMap);
 
 	class Configuration
@@ -164,11 +119,11 @@ namespace Game
 		// Action specials
 		const ActionSpecial&				actionSpecial(unsigned id);
 		string								actionSpecialName(int special);
-		const std::map<int, ActionSpecial>&	allActionSpecials() { return action_specials_; }
+		const std::map<int, ActionSpecial>&	allActionSpecials() const { return action_specials_; }
 
 		// Thing types
-		ThingType*		thingType(unsigned type);
-		vector<tt_t>	allThingTypes();
+		const ThingType&				thingType(unsigned type);
+		const std::map<int, ThingType>&	allThingTypes() const { return thing_types_; }
 
 		// Thing flags
 		int		nThingFlags() const { return flags_thing_.size(); }
@@ -243,11 +198,10 @@ namespace Game
 		bool				map_formats_[4];		// Supported map formats
 		string				udmf_namespace_;		// Namespace to use for UDMF
 		int 				boom_sector_flag_start_;  // Beginning of Boom sector flags
+		
+		std::map<int, ActionSpecial>	action_specials_;	// Action specials
+		std::map<int, ThingType>		thing_types_;		// Thing types
 
-		// Action specials
-		std::map<int, ActionSpecial>	action_specials_;
-
-		ThingTypeMap		thing_types_;		// Thing types
 		vector<ThingType*>	tt_group_defaults_;	// Thing type group defaults
 		ThingType			ttype_unknown_;		// Default thing type
 		string				sky_flat_;			// Sky flat for 3d mode

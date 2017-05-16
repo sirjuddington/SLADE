@@ -319,7 +319,10 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 	{
 		// Draw first texture
 		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
-		tex_first = MapEditor::textureManager().getTexture(tex.textures[0], Game::configuration().featureSupported(Feature::MixTexFlats));
+		tex_first = MapEditor::textureManager().getTexture(
+			tex.textures[0],
+			Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+		);
 		Drawing::drawTextureWithin(tex_first, tex.position.x - halfsize, tex.position.y - halfsize,
 		                           tex.position.x + halfsize, tex.position.y + halfsize, 0, 2);
 
@@ -327,9 +330,20 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 		OpenGL::setColour(255, 255, 255, 127*alpha, 0);
 		for (unsigned a = 1; a < tex.textures.size() && a < 5; a++)
 		{
-			Drawing::drawTextureWithin(MapEditor::textureManager().getTexture(tex.textures[a], Game::configuration().featureSupported(Feature::MixTexFlats)),
-			                           tex.position.x - halfsize, tex.position.y - halfsize,
-			                           tex.position.x + halfsize, tex.position.y + halfsize, 0, 2);
+			auto gl_tex = MapEditor::textureManager().getTexture(
+				tex.textures[a],
+				Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+			);
+
+			Drawing::drawTextureWithin(
+				gl_tex,
+				tex.position.x - halfsize,
+				tex.position.y - halfsize,
+				tex.position.x + halfsize,
+				tex.position.y + halfsize,
+				0,
+				2
+			);
 		}
 	}
 

@@ -800,6 +800,8 @@ void MapRenderer3D::renderSky()
  *******************************************************************/
 void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 {
+	using Game::UDMFFeature;
+
 	// Check index
 	if (index >= map->nSectors())
 		return;
@@ -874,7 +876,10 @@ void MapRenderer3D::updateSector(unsigned index)
 	// Update floor
 	MapSector* sector = map->getSector(index);
 	floors[index].sector = sector;
-	floors[index].texture = MapEditor::textureManager().getFlat(sector->getFloorTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
+	floors[index].texture = MapEditor::textureManager().getFlat(
+		sector->getFloorTex(),
+		Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+	);
 	floors[index].colour = sector->getColour(1, true);
 	floors[index].fogcolour = sector->getFogColour();
 	floors[index].light = sector->getLight(1);
@@ -895,7 +900,10 @@ void MapRenderer3D::updateSector(unsigned index)
 
 	// Update ceiling
 	ceilings[index].sector = sector;
-	ceilings[index].texture = MapEditor::textureManager().getFlat(sector->getCeilingTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
+	ceilings[index].texture = MapEditor::textureManager().getFlat(
+		sector->getCeilingTex(),
+		Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+	);
 	ceilings[index].colour = sector->getColour(2, true);
 	ceilings[index].fogcolour = sector->getFogColour();
 	ceilings[index].light = sector->getLight(2);
@@ -1198,6 +1206,9 @@ void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int lengt
  *******************************************************************/
 void MapRenderer3D::updateLine(unsigned index)
 {
+	using Game::Feature;
+	using Game::UDMFFeature;
+
 	// Check index
 	if (index > lines.size())
 		return;
@@ -1925,25 +1936,25 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		return;
 
 	// Setup thing info
-	things[index].type = Game::configuration().thingType(thing->getType());
+	things[index].type = &(Game::configuration().thingType(thing->getType()));
 	things[index].sector = map->getSector(map->sectorAt(thing->point()));
 
 	// Get sprite texture
 	uint32_t theight = render_thing_icon_size;
-	things[index].sprite = MapEditor::textureManager().getSprite(things[index].type->getSprite(), things[index].type->getTranslation(), things[index].type->getPalette());
+	things[index].sprite = MapEditor::textureManager().getSprite(things[index].type->sprite(), things[index].type->translation(), things[index].type->palette());
 	if (!things[index].sprite)
 	{
 		// Sprite not found, try an icon
-		if (use_zeth_icons && things[index].type->getZeth() >= 0)
+		if (use_zeth_icons && things[index].type->zethIcon() >= 0)
 		{
-			things[index].sprite = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", things[index].type->getZeth()));
+			things[index].sprite = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", things[index].type->zethIcon()));
 			things[index].flags |= ZETH;
 		}
 		if (!things[index].sprite)
-			things[index].sprite = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", things[index].type->getIcon()));
+			things[index].sprite = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", things[index].type->icon()));
 		things[index].flags |= ICON;
 	}
-	else theight = things[index].type->getScaleY() * things[index].sprite->getHeight();
+	else theight = things[index].type->scaleY() * things[index].sprite->getHeight();
 	if (!things[index].sprite)
 	{
 		// Icon not found either, use unknown icon
@@ -1956,7 +1967,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		// Get sector floor (or ceiling) height
 		int sheight;
 		float zheight = thing->floatProperty("height");
-		if (things[index].type->isHanging())
+		if (things[index].type->hanging())
 		{
 			sheight = things[index].sector->getCeilingPlane().height_at(thing->xPos(), thing->yPos());
 			sheight -= theight;
@@ -1977,7 +1988,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	}
 
 	// Adjust height by sprite Y offset if needed
-	things[index].z += MapEditor::textureManager().getVerticalOffset(things[index].type->getSprite());
+	things[index].z += MapEditor::textureManager().getVerticalOffset(things[index].type->sprite());
 
 	things[index].updated_time = App::runTimer();
 }
@@ -2031,7 +2042,7 @@ void MapRenderer3D::renderThings()
 		}
 
 		// Skip if not shown
-		if (!things[a].type->isDecoration() && render_3d_things == 2)
+		if (!things[a].type->decoration() && render_3d_things == 2)
 			continue;
 
 		// Get thing sprite
@@ -2045,8 +2056,8 @@ void MapRenderer3D::renderThings()
 		}
 
 		// Determine coordinates
-		halfwidth = things[a].type->getScaleX() * tex->getWidth() * 0.5;
-		theight = things[a].type->getScaleY() * tex->getHeight();
+		halfwidth = things[a].type->scaleX() * tex->getWidth() * 0.5;
+		theight = things[a].type->scaleY() * tex->getHeight();
 		if (things[a].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size*0.5;
@@ -2062,7 +2073,7 @@ void MapRenderer3D::renderThings()
 		light = 255;
 		// If a thing is defined as fullbright but the sprite is missing,
 		// we'll fallback on the icon, which needs to be colored as appropriate.
-		if (things[a].type->isFullbright() && !(things[a].flags & ICON))
+		if (things[a].type->fullbright() && !(things[a].flags & ICON))
 			col.set(255, 255, 255, 255);
 		else
 		{
@@ -2076,7 +2087,7 @@ void MapRenderer3D::renderThings()
 				if (things[a].flags & ZETH)
 					col.set(255, 255, 255, 255);
 				else
-					col.set(things[a].type->getColour());
+					col.set(things[a].type->colour());
 			}
 
 			// Otherwise use sector colour
@@ -2117,14 +2128,14 @@ void MapRenderer3D::renderThings()
 				continue;
 
 			MapThing* thing = map->getThing(a);
-			col.set(things[a].type->getColour());
-			float radius = things[a].type->getRadius();
+			col.set(things[a].type->colour());
+			float radius = things[a].type->radius();
 			float bottom = things[a].z + 0.5f;
 			float top = things[a].z;
-			if (things[a].type->getHeight() < 0)
+			if (things[a].type->height() < 0)
 				top += things[a].height;
 			else
-				top += things[a].type->getHeight();
+				top += things[a].type->height();
 
 			// Fill
 			glColor4f(col.fr(), col.fg(), col.fb(), 0.21f);
@@ -2265,7 +2276,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 			updateThing(selection[a].index, thing);
 
 		// Skip if not shown
-		if (!things[selection[a].index].type->isDecoration() && render_3d_things == 2)
+		if (!things[selection[a].index].type->decoration() && render_3d_things == 2)
 			continue;
 
 		// Determine coordinates
@@ -2760,7 +2771,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			continue;
 
 		// Ignore if not shown
-		if (!things[a].type->isDecoration() && render_3d_things == 2)
+		if (!things[a].type->decoration() && render_3d_things == 2)
 			continue;
 
 		// Find distance to thing sprite
@@ -2933,8 +2944,8 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 			return;
 
 		// Determine coordinates
-		double halfwidth = things[hilight.index].type->getScaleX() * things[hilight.index].sprite->getWidth() * 0.5;
-		double theight = things[hilight.index].type->getScaleY() * things[hilight.index].sprite->getHeight();
+		double halfwidth = things[hilight.index].type->scaleX() * things[hilight.index].sprite->getWidth() * 0.5;
+		double theight = things[hilight.index].type->scaleY() * things[hilight.index].sprite->getHeight();
 		if (things[hilight.index].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size*0.5;

@@ -192,14 +192,19 @@ void MapSector::setStringProperty(string key, string value)
  *******************************************************************/
 void MapSector::setFloatProperty(string key, double value)
 {
+	using Game::UDMFFeature;
+
 	// Check if flat offset/scale/rotation is changing (if UDMF)
 	if (parent_map->currentFormat() == MAP_UDMF)
 	{
-		if ((Game::configuration().featureSupported(UDMFFeature::FlatPanning) && (key == "xpanningfloor" || key == "ypanningfloor")) ||
-			(Game::configuration().featureSupported(UDMFFeature::FlatScaling) && (key == "xscalefloor" || key == "yscalefloor" ||
+		if ((Game::configuration().featureSupported(UDMFFeature::FlatPanning) &&
+			(key == "xpanningfloor" || key == "ypanningfloor")) ||
+			(Game::configuration().featureSupported(UDMFFeature::FlatScaling) &&
+			(key == "xscalefloor" || key == "yscalefloor" ||
 			 key == "xscaleceiling" || key == "yscaleceiling")) || 
-			(Game::configuration().featureSupported(UDMFFeature::FlatRotation) && (key == "rotationfloor" || key == "rotationceiling")))
-			polygon.setTexture(NULL);	// Clear texture to force update
+			(Game::configuration().featureSupported(UDMFFeature::FlatRotation) &&
+			(key == "rotationfloor" || key == "rotationceiling")))
+			polygon.setTexture(nullptr);	// Clear texture to force update
 	}
 
 	MapObject::setFloatProperty(key, value);
@@ -320,7 +325,7 @@ bool MapSector::isWithin(fpoint2_t point)
 	// Find nearest line in the sector
 	double dist;
 	double min_dist = 999999;
-	MapLine* nline = NULL;
+	MapLine* nline = nullptr;
 	for (unsigned a = 0; a < connected_sides.size(); a++)
 	{
 		// Calculate distance to line
@@ -462,7 +467,8 @@ bool MapSector::getVertices(vector<MapObject*>& list)
 uint8_t MapSector::getLight(int where)
 {
 	// Check for UDMF + flat lighting
-	if (parent_map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::FlatLighting))
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		Game::configuration().featureSupported(Game::UDMFFeature::FlatLighting))
 	{
 		// Get general light level
 		int l = light;
@@ -523,7 +529,8 @@ void MapSector::changeLight(int amount, int where)
 		amount = -ll;
 
 	// Check for UDMF + flat lighting independent from the sector
-	bool separate = parent_map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::FlatLighting);
+	bool separate = parent_map->currentFormat() == MAP_UDMF &&
+					Game::configuration().featureSupported(Game::UDMFFeature::FlatLighting);
 
 	// Change light level by amount
 	if (where == 1 && separate)
@@ -549,6 +556,8 @@ void MapSector::changeLight(int amount, int where)
  *******************************************************************/
 rgba_t MapSector::getColour(int where, bool fullbright)
 {
+	using Game::UDMFFeature;
+
 	// Check for sector colour set in open script
 	// TODO: Test if this is correct behaviour
 	if (parent_map->mapSpecials()->tagColoursSet())
@@ -663,7 +672,8 @@ rgba_t MapSector::getFogColour()
 	}
 
 	// udmf
-	if (parent_map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::SectorFog))
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		Game::configuration().featureSupported(Game::UDMFFeature::SectorFog))
 	{
 		int intcol = MapObject::intProperty("fadecolor");
 

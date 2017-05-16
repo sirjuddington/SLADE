@@ -173,7 +173,10 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	col_fg.a = col_fg.a*alpha;
 
 	// Get texture
-	GLTexture* tex = MapEditor::textureManager().getFlat(texture, Game::configuration().featureSupported(Feature::MixTexFlats));
+	GLTexture* tex = MapEditor::textureManager().getFlat(
+		texture,
+		Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+	);
 
 	// Valid texture
 	if (texture != "-" && tex != &(GLTexture::missingTex()))

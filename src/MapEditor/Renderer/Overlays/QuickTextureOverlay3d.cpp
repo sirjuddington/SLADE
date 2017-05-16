@@ -73,7 +73,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 		// Determine texture type
 		sel_type = 2;
 		int initial = 0;
-		if (!Game::configuration().featureSupported(Feature::MixTexFlats))
+		if (!Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 		{
 			sel_type = 0;
 			for (unsigned a = 0; a < sel.size(); a++)

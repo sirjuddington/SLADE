@@ -130,8 +130,8 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 		if (nearest.size() == 1)
 		{
 			auto t = map.getThing(nearest[0]);
-			auto type = Game::configuration().thingType(t->getType());
-			if (MathStuff::distance(mouse_pos, t->point()) <= type->getRadius() + (32 / dist_scale))
+			auto& type = Game::configuration().thingType(t->getType());
+			if (MathStuff::distance(mouse_pos, t->point()) <= type.radius() + (32 / dist_scale))
 				hilight_.index = nearest[0];
 		}
 		else
@@ -139,8 +139,8 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 			for (unsigned a = 0; a < nearest.size(); a++)
 			{
 				auto t = map.getThing(nearest[a]);
-				auto type = Game::configuration().thingType(t->getType());
-				if (MathStuff::distance(mouse_pos, t->point()) <= type->getRadius() + (32 / dist_scale))
+				auto& type = Game::configuration().thingType(t->getType());
+				if (MathStuff::distance(mouse_pos, t->point()) <= type.radius() + (32 / dist_scale))
 					hilight_.index = nearest[a];
 			}
 		}

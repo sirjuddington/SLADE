@@ -37,6 +37,8 @@
 #include "Archive/ArchiveManager.h"
 #include "App.h"
 
+using namespace Game;
+
 
 // ----------------------------------------------------------------------------
 //
@@ -230,33 +232,35 @@ Configuration& Game::configuration()
 // ----------------------------------------------------------------------------
 TagType Game::parseTagged(ParseTreeNode* tagged)
 {
-	string str = tagged->getStringValue();
-	if (S_CMPNOCASE(str, "no")) return TagType::None;
-	else if (S_CMPNOCASE(str, "sector")) return TagType::Sector;
-	else if (S_CMPNOCASE(str, "line")) return TagType::Line;
-	else if (S_CMPNOCASE(str, "lineid")) return TagType::LineId;
-	else if (S_CMPNOCASE(str, "lineid_hi5")) return TagType::LineIdHi5;
-	else if (S_CMPNOCASE(str, "thing")) return TagType::Thing;
-	else if (S_CMPNOCASE(str, "sector_back")) return TagType::Back;
-	else if (S_CMPNOCASE(str, "sector_or_back")) return TagType::SectorOrBack;
-	else if (S_CMPNOCASE(str, "sector_and_back")) return TagType::SectorAndBack;
-	else if (S_CMPNOCASE(str, "line_negative")) return TagType::LineNegative;
-	else if (S_CMPNOCASE(str, "ex_1thing_2sector")) return TagType::Thing1Sector2;
-	else if (S_CMPNOCASE(str, "ex_1thing_3sector")) return TagType::Thing1Sector3;
-	else if (S_CMPNOCASE(str, "ex_1thing_2thing")) return TagType::Thing1Thing2;
-	else if (S_CMPNOCASE(str, "ex_1thing_4thing")) return TagType::Thing1Thing4;
-	else if (S_CMPNOCASE(str, "ex_1thing_2thing_3thing")) return TagType::Thing1Thing2Thing3;
-	else if (S_CMPNOCASE(str, "ex_1sector_2thing_3thing_5thing")) return TagType::Sector1Thing2Thing3Thing5;
-	else if (S_CMPNOCASE(str, "ex_1lineid_2line")) return TagType::LineId1Line2;
-	else if (S_CMPNOCASE(str, "ex_4thing")) return TagType::Thing4;
-	else if (S_CMPNOCASE(str, "ex_5thing")) return TagType::Thing5;
-	else if (S_CMPNOCASE(str, "ex_1line_2sector")) return TagType::Line1Sector2;
-	else if (S_CMPNOCASE(str, "ex_1sector_2sector")) return TagType::Sector1Sector2;
-	else if (S_CMPNOCASE(str, "ex_1sector_2sector_3sector_4_sector")) return TagType::Sector1Sector2Sector3Sector4;
-	else if (S_CMPNOCASE(str, "ex_sector_2is3_line")) return TagType::Sector2Is3Line;
-	else if (S_CMPNOCASE(str, "ex_1sector_2thing")) return TagType::Sector1Thing2;
-	else
-		return (TagType)tagged->getIntValue();
+	static std::map<string, TagType> tag_type_map
+	{
+		{ "no",										TagType::None },
+		{ "sector",									TagType::Sector },
+		{ "line",									TagType::Line },
+		{ "lineid",									TagType::LineId },
+		{ "lineid_hi5",								TagType::LineIdHi5 },
+		{ "thing",									TagType::Thing },
+		{ "sector_back",							TagType::Back },
+		{ "sector_or_back",							TagType::SectorOrBack },
+		{ "sector_and_back",						TagType::SectorAndBack },
+		{ "line_negative",							TagType::LineNegative },
+		{ "ex_1thing_2sector",						TagType::Thing1Sector2 },
+		{ "ex_1thing_3sector",						TagType::Thing1Sector3 },
+		{ "ex_1thing_2thing",						TagType::Thing1Thing2 },
+		{ "ex_1thing_4thing",						TagType::Thing1Thing4 },
+		{ "ex_1thing_2thing_3thing",				TagType::Thing1Thing2Thing3 },
+		{ "ex_1sector_2thing_3thing_5thing",		TagType::Sector1Thing2Thing3Thing5 },
+		{ "ex_1lineid_2line",						TagType::LineId1Line2 },
+		{ "ex_4thing",								TagType::Thing4 },
+		{ "ex_5thing",								TagType::Thing5 },
+		{ "ex_1line_2sector",						TagType::Line1Sector2 },
+		{ "ex_1sector_2sector",						TagType::Sector1Sector2 },
+		{ "ex_1sector_2sector_3sector_4_sector",	TagType::Sector1Sector2Sector3Sector4 },
+		{ "ex_sector_2is3_line",					TagType::Sector2Is3Line },
+		{ "ex_1sector_2thing",						TagType::Sector1Thing2 }
+	};
+
+	return tag_type_map[tagged->getStringValue().MakeLower()];
 }
 
 // ----------------------------------------------------------------------------
@@ -266,6 +270,12 @@ TagType Game::parseTagged(ParseTreeNode* tagged)
 // ----------------------------------------------------------------------------
 void Game::init()
 {
+	// Init static ThingTypes
+	ThingType::initGlobal();
+
+	// Init static ActionSpecials
+	ActionSpecial::initGlobal();
+
 	// Add game configurations from user dir
 	wxArrayString allfiles;
 	wxDir::GetAllFiles(App::path("games", App::Dir::User), &allfiles);

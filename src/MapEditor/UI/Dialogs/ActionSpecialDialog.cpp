@@ -231,10 +231,10 @@ class ArgsControl : public wxPanel
 {
 protected:
 	// Original arg configuration
-	Arg	arg;
+	Game::Arg	arg;
 
 public:
-	ArgsControl(wxWindow* parent, const Arg& arg) : wxPanel(parent, -1), arg(arg)
+	ArgsControl(wxWindow* parent, const Game::Arg& arg) : wxPanel(parent, -1), arg(arg)
 	{
 		SetSizer(new wxBoxSizer(wxVERTICAL));
 	}
@@ -255,7 +255,7 @@ protected:
 	wxTextCtrl* text_control;
 
 public:
-	ArgsTextControl(wxWindow* parent, const Arg& arg, bool limit_byte) : ArgsControl(parent, arg)
+	ArgsTextControl(wxWindow* parent, const Game::Arg& arg, bool limit_byte) : ArgsControl(parent, arg)
 	{
 		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(40, -1));
 		if (limit_byte)
@@ -325,7 +325,7 @@ protected:
 	wxComboBox*			choice_control;
 
 public:
-	ArgsChoiceControl(wxWindow* parent, const Arg& arg)
+	ArgsChoiceControl(wxWindow* parent, const Game::Arg& arg)
 		: ArgsControl(parent, arg)
 	{
 		choice_control = new wxComboBox(this, -1, "", wxDefaultPosition, wxSize(100, -1));
@@ -481,7 +481,7 @@ private:
 	}
 
 public:
-	ArgsFlagsControl(wxWindow* parent, const Arg& arg, bool limit_byte)
+	ArgsFlagsControl(wxWindow* parent, const Game::Arg& arg, bool limit_byte)
 		: ArgsTextControl(parent, arg, limit_byte),
 		flag_to_bit_group(arg.custom_flags.size(), 0),
 		controls(arg.custom_flags.size(), NULL)
@@ -610,7 +610,7 @@ protected:
 	}
 
 public:
-	ArgsSpeedControl(wxWindow* parent, const Arg& arg)
+	ArgsSpeedControl(wxWindow* parent, const Game::Arg& arg)
 		: ArgsChoiceControl(parent, arg)
 	{
 		wxBoxSizer* row = new wxBoxSizer(wxHORIZONTAL);
@@ -676,8 +676,10 @@ ArgsPanel::ArgsPanel(wxWindow* parent)
 /* ArgsPanel::setup
  * Sets up the arg names and descriptions from specification in [args]
  *******************************************************************/
-void ArgsPanel::setup(const ArgSpec& args, bool udmf)
+void ArgsPanel::setup(const Game::ArgSpec& args, bool udmf)
 {
+	using Game::Arg;
+
 	// Reset stuff (but preserve the values)
 	int old_values[5];
 	fg_sizer->Clear();
@@ -838,7 +840,7 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	// Setup layout
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 
-	if (Game::configuration().featureSupported(Feature::Boom))
+	if (Game::configuration().featureSupported(Game::Feature::Boom))
 	{
 		// Action Special radio button
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -903,7 +905,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 		if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 		{
 			// Get all UDMF properties
-			vector<udmfp_t> props = Game::configuration().allUDMFProperties(MOBJ_LINE);
+			vector<Game::udmfp_t> props = Game::configuration().allUDMFProperties(MOBJ_LINE);
 			sort(props.begin(), props.end());
 
 			// Get all UDMF trigger properties
@@ -963,7 +965,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 void ActionSpecialPanel::setSpecial(int special)
 {
 	// Check for boom generalised special
-	if (Game::configuration().featureSupported(Feature::Boom))
+	if (Game::configuration().featureSupported(Game::Feature::Boom))
 	{
 		if (panel_gen_specials->loadSpecial(special))
 		{
@@ -1014,7 +1016,7 @@ void ActionSpecialPanel::setTrigger(int index)
  *******************************************************************/
 int ActionSpecialPanel::selectedSpecial()
 {
-	if (Game::configuration().featureSupported(Feature::Boom))
+	if (Game::configuration().featureSupported(Game::Feature::Boom))
 	{
 		if (rb_special->GetValue())
 			return tree_specials->selectedSpecial();
@@ -1031,7 +1033,7 @@ int ActionSpecialPanel::selectedSpecial()
  *******************************************************************/
 void ActionSpecialPanel::showGeneralised(bool show)
 {
-	if (!Game::configuration().featureSupported(Feature::Boom))
+	if (!Game::configuration().featureSupported(Game::Feature::Boom))
 		return;
 
 	if (show)
@@ -1189,7 +1191,7 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
  *******************************************************************/
 void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
 {
-	if ((Game::configuration().featureSupported(Feature::Boom) && rb_generalised->GetValue()) ||
+	if ((Game::configuration().featureSupported(Game::Feature::Boom) && rb_generalised->GetValue()) ||
 		selectedSpecial() < 0)
 	{
 		e.Skip();

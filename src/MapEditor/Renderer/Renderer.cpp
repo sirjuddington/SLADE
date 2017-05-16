@@ -1584,11 +1584,11 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 		if (!t) return;
 
 		// Get thing type
-		auto tt = Game::configuration().thingType(t->getType());
+		auto& tt = Game::configuration().thingType(t->getType());
 
 		// Start animation
-		double radius = tt->getRadius();
-		if (tt->shrinkOnZoom()) radius = renderer_2d_.scaledRadius(radius);
+		double radius = tt.radius();
+		if (tt.shrinkOnZoom()) radius = renderer_2d_.scaledRadius(radius);
 		animations_.push_back(
 			std::make_unique<MCAThingSelection>(
 				App::runTimer(),

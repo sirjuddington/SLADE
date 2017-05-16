@@ -132,7 +132,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	int col = 0;
 
 	// Get all UDMF properties
-	vector<udmfp_t> props = Game::configuration().allUDMFProperties(MOBJ_LINE);
+	vector<Game::udmfp_t> props = Game::configuration().allUDMFProperties(MOBJ_LINE);
 	sort(props.begin(), props.end());
 
 	// UDMF flags

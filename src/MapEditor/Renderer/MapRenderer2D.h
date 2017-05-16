@@ -12,7 +12,7 @@ class MapSector;
 class MapThing;
 class ObjectEditGroup;
 class SLADEMap;
-class ThingType;
+namespace Game { class ThingType; }
 
 class MapRenderer2D
 {
@@ -116,10 +116,39 @@ public:
 	// Things
 	bool	setupThingOverlay();
 	void	renderThingOverlay(double x, double y, double radius, bool point);
-	void	renderRoundThing(double x, double y, double angle, ThingType* type, float alpha = 1.0f, double radius_mult = 1.0);
-	bool	renderSpriteThing(double x, double y, double angle, ThingType* type, unsigned index, float alpha = 1.0f, bool fitradius = false);
-	void	renderSimpleSquareThing(double x, double y, double angle, ThingType* type, float alpha = 1.0f);
-	bool	renderSquareThing(double x, double y, double angle, ThingType* type, float alpha = 1.0f, bool showicon = true, bool framed = false);
+	void	renderRoundThing(
+				double x,
+				double y,
+				double angle,
+				const Game::ThingType& type,
+				float alpha = 1.0f,
+				double radius_mult = 1.0
+			);
+	bool	renderSpriteThing(
+				double x,
+				double y,
+				double angle,
+				const Game::ThingType& type,
+				unsigned index,
+				float alpha = 1.0f,
+				bool fitradius = false
+			);
+	void	renderSimpleSquareThing(
+				double x,
+				double y,
+				double angle,
+				const Game::ThingType& type,
+				float alpha = 1.0f
+			);
+	bool	renderSquareThing(
+				double x,
+				double y,
+				double angle,
+				const Game::ThingType& type,
+				float alpha = 1.0f,
+				bool showicon = true,
+				bool framed = false
+			);
 	void	renderThings(float alpha = 1.0f, bool force_dir = false);
 	void	renderThingsImmediate(float alpha);
 	void	renderThingHilight(int index, float fade);

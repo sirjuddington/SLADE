@@ -33,14 +33,11 @@
 #include "MapEditorConfigDialog.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
-#include "General/ColourConfiguration.h"
 #include "Graphics/Icons.h"
 #include "Game/Configuration.h"
 #include "UI/BaseResourceChooser.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
 #include "UI/ResourceArchiveChooser.h"
-#include "UI/SplashWindow.h"
-#include "Utility/SFileDialog.h"
 
 
 /*******************************************************************
@@ -76,7 +73,7 @@ public:
 
 		// Check if the game configuration allows any map name
 		int flags = 0;
-		if (!Game::configuration().featureSupported(Feature::AnyMapName))
+		if (!Game::configuration().featureSupported(Game::Feature::AnyMapName))
 			flags = wxCB_READONLY;
 
 		// Create map name combo box
@@ -85,8 +82,8 @@ public:
 		sizer->Add(cbo_mapname, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
 		// Limit map name length if necessary
-		if (Game::configuration().featureSupported(Feature::AnyMapName) &&
-			(!Game::configuration().featureSupported(Feature::LongNames) ||
+		if (Game::configuration().featureSupported(Game::Feature::AnyMapName) &&
+			(!Game::configuration().featureSupported(Game::Feature::LongNames) ||
 			(archive && archive->getType() != ARCHIVE_ZIP &&
 				archive->getType() != ARCHIVE_7Z &&
 				archive->getType() != ARCHIVE_FOLDER)))

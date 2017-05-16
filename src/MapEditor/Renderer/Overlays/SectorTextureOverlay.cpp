@@ -167,7 +167,7 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 	glPopMatrix();
 
 	// Draw first texture
-	bool mixed = Game::configuration().featureSupported(Feature::MixTexFlats);
+	bool mixed = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
 	OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 	Drawing::drawTextureWithin(MapEditor::textureManager().getFlat(textures[0], mixed), x, y, x + size, y + size, 0, 100);
 
