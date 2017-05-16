@@ -139,7 +139,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 		if (tt->getArgspec().count > 0)
 			argstr = tt->getArgsString(args, argxstr);
 		else
-			argstr = Game::configuration().actionSpecial(as_id)->getArgsString(args, argxstr);
+			argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(args, argxstr);
 
 		if (!argstr.IsEmpty())
 			info_text += S_FMT("%s\n", argstr);

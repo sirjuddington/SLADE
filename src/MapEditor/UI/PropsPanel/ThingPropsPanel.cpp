@@ -820,7 +820,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		// Setup
 		if (ival > 0)
 		{
-			auto& as = Game::configuration().actionSpecial(ival)->getArgspec();
+			auto& as = Game::configuration().actionSpecial(ival).argSpec();
 			panel_args->setup(as, (map_format == MAP_UDMF));
 		}
 		else

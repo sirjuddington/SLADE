@@ -55,7 +55,7 @@ private:
 public:
 	MissingTextureCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void doCheck()
+	void doCheck() override
 	{
 		string sky_flat = Game::configuration().skyFlat();
 		for (unsigned a = 0; a < map->nLines(); a++)
@@ -126,7 +126,7 @@ public:
 		LOG_MESSAGE(3, "Missing Texture Check: %lu missing textures", parts.size());
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return lines.size();
 	}
@@ -146,7 +146,7 @@ public:
 		return "";
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index < lines.size())
 			return S_FMT("Line %d missing %s", lines[index]->getIndex(), texName(parts[index]));
@@ -154,7 +154,7 @@ public:
 			return "No missing textures found";
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= lines.size())
 			return false;
@@ -207,7 +207,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index >= lines.size())
 			return NULL;
@@ -215,12 +215,12 @@ public:
 		return lines[index];
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for missing textures...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -244,7 +244,7 @@ private:
 public:
 	SpecialTagsCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void doCheck()
+	void doCheck() override
 	{
 		for (unsigned a = 0; a < map->nLines(); a++)
 		{
@@ -253,15 +253,14 @@ public:
 			int tag = map->getLine(a)->intProperty("arg0");
 
 			// Get action special
-			ActionSpecial* as = Game::configuration().actionSpecial(special);
-			int tagged = as->needsTag();
+			auto tagged = Game::configuration().actionSpecial(special).needsTag();
 
 			// Check for back sector that removes need for tagged sector
-			if ((tagged == AS_TT_SECTOR_BACK || AS_TT_SECTOR_OR_BACK) && map->getLine(a)->backSector())
+			if ((tagged == TagType::Back || tagged == TagType::SectorOrBack) && map->getLine(a)->backSector())
 				continue;
 
 			// Check if tag is required but not set
-			if (tagged != AS_TT_NO && tag == 0)
+			if (tagged != TagType::None && tag == 0)
 				objects.push_back(map->getLine(a));
 		}
 		// Hexen and UDMF allow specials on things
@@ -279,35 +278,37 @@ public:
 				int tag = map->getThing(a)->intProperty("arg0");
 
 				// Get action special
-				ActionSpecial* as = Game::configuration().actionSpecial(special);
-				int tagged = as->needsTag();
+				auto tagged = Game::configuration().actionSpecial(special).needsTag();
 
 				// Check if tag is required but not set
-				if (tagged != AS_TT_NO && tagged != AS_TT_SECTOR_BACK && tag == 0)
+				if (tagged != TagType::None && tagged != TagType::Back && tag == 0)
 					objects.push_back(map->getThing(a));
 			}
 		}
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return objects.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= objects.size())
 			return "No missing special tags found";
 
 		MapObject* mo = objects[index];
 		int special = mo->intProperty("special");
-		ActionSpecial* as = Game::configuration().actionSpecial(special);
-		return S_FMT("%s %d: Special %d (%s) requires a tag",
+		return S_FMT(
+			"%s %d: Special %d (%s) requires a tag",
 			mo->getObjType() == MOBJ_LINE ? "Line" : "Thing",
-			mo->getIndex(), special, as->getName());
+			mo->getIndex(),
+			special,
+			Game::configuration().actionSpecial(special).name()
+		);
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		// Begin tag edit
 		SActionHandler::doAction("mapw_line_tagedit");
@@ -315,7 +316,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index >= objects.size())
 			return NULL;
@@ -323,12 +324,12 @@ public:
 		return objects[index];
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for missing special tags...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Set Tagged...";
@@ -352,7 +353,7 @@ private:
 public:
 	MissingTaggedCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void doCheck()
+	void doCheck() override
 	{
 		unsigned nlines = map->nLines();
 		unsigned nthings = 0;
@@ -382,17 +383,16 @@ public:
 			int tag = mo->intProperty("arg0");
 
 			// Get action special
-			ActionSpecial* as = Game::configuration().actionSpecial(special);
-			int tagged = as->needsTag();
+			auto tagged = Game::configuration().actionSpecial(special).needsTag();
 
 			// Check if tag is required and set (not set is a different check...)
-			if (tagged != AS_TT_NO && /*(thingmode || (tagged != AS_TT_SECTOR_BACK && tagged != AS_TT_SECTOR_OR_BACK)) &&*/ tag != 0)
+			if (tagged != TagType::None && tag != 0)
 			{
 				bool okay = false;
 				switch (tagged)
 				{
-				case AS_TT_SECTOR:
-				case AS_TT_SECTOR_OR_BACK:
+				case TagType::Sector:
+				case TagType::SectorOrBack:
 					{
 						std::vector<MapSector *> foundsectors;
 						map->getSectorsByTag(tag, foundsectors);
@@ -400,7 +400,7 @@ public:
 							okay = true;
 					}
 					break;
-				case AS_TT_LINE:
+				case TagType::Line:
 					{
 						std::vector<MapLine *> foundlines;
 						map->getLinesById(tag, foundlines);
@@ -408,7 +408,7 @@ public:
 							okay = true;
 					}
 					break;
-				case AS_TT_THING:
+				case TagType::Thing:
 					{
 						std::vector<MapThing *> foundthings;
 						map->getThingsById(tag, foundthings);
@@ -429,32 +429,33 @@ public:
 		}
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return objects.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= objects.size())
 			return "No missing tagged objects found";
 
 		int special = objects[index]->intProperty("special");
-		ActionSpecial* as = Game::configuration().actionSpecial(special);
-		return S_FMT("%s %d: No object tagged %d for Special %d (%s)", 
+		return S_FMT(
+			"%s %d: No object tagged %d for Special %d (%s)", 
 			objects[index]->getObjType() == MOBJ_LINE ? "Line" : "Thing",
 			objects[index]->getIndex(), 
 			objects[index]->intProperty("arg0"), 
-			special, as->getName());
+			special, Game::configuration().actionSpecial(special).name()
+		);
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		// Can't automatically fix that
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index >= objects.size())
 			return NULL;
@@ -462,12 +463,12 @@ public:
 		return objects[index];
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for missing tagged objects...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "...";
@@ -529,7 +530,7 @@ public:
 		}
 	}
 
-	void doCheck()
+	void doCheck() override
 	{
 		// Get all map lines
 		vector<MapLine*> all_lines;
@@ -540,12 +541,12 @@ public:
 		checkIntersections(all_lines);
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return intersections.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= intersections.size())
 			return "No intersecting lines found";
@@ -555,7 +556,7 @@ public:
 			intersections[index].intersect_point.x, intersections[index].intersect_point.y);
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= intersections.size())
 			return false;
@@ -604,7 +605,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index >= intersections.size())
 			return NULL;
@@ -612,12 +613,12 @@ public:
 		return intersections[index].line1;
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for intersecting lines...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Split Lines";
@@ -651,7 +652,7 @@ private:
 public:
 	LinesOverlapCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void doCheck()
+	void doCheck() override
 	{
 		// Go through lines
 		for (unsigned a = 0; a < map->nLines(); a++)
@@ -671,12 +672,12 @@ public:
 		}
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return overlaps.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= overlaps.size())
 			return "No overlapping lines found";
@@ -684,7 +685,7 @@ public:
 		return S_FMT("Lines %d and %d are overlapping", overlaps[index].line1->getIndex(), overlaps[index].line2->getIndex());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= overlaps.size())
 			return false;
@@ -718,7 +719,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index >= overlaps.size())
 			return NULL;
@@ -726,12 +727,12 @@ public:
 		return overlaps[index].line1;
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for overlapping lines...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Merge Lines";
@@ -765,7 +766,7 @@ private:
 public:
 	ThingsOverlapCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void doCheck()
+	void doCheck() override
 	{
 		ThingType* tt1, *tt2;
 		double r1, r2;
@@ -905,12 +906,12 @@ public:
 		}
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return overlaps.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= overlaps.size())
 			return "No overlapping things found";
@@ -918,7 +919,7 @@ public:
 		return S_FMT("Things %d and %d are overlapping", overlaps[index].thing1->getIndex(), overlaps[index].thing2->getIndex());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= overlaps.size())
 			return false;
@@ -953,7 +954,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index >= overlaps.size())
 			return NULL;
@@ -961,12 +962,12 @@ public:
 		return overlaps[index].thing1;
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for overlapping things...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (index >= overlaps.size())
 			return "";
@@ -999,7 +1000,7 @@ public:
 		this->texman = texman;
 	}
 
-	void doCheck()
+	void doCheck() override
 	{
 		bool mixed = Game::configuration().featureSupported(Feature::MixTexFlats);
 
@@ -1070,12 +1071,12 @@ public:
 		}
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return lines.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= lines.size())
 			return "No unknown wall textures found";
@@ -1107,7 +1108,7 @@ public:
 		return line;
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= lines.size())
 			return false;
@@ -1159,7 +1160,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index >= lines.size())
 			return NULL;
@@ -1167,12 +1168,12 @@ public:
 		return lines[index];
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for unknown wall textures...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -1200,7 +1201,7 @@ public:
 		this->texman = texman;
 	}
 
-	virtual void doCheck()
+	void doCheck() override
 	{
 		bool mixed = Game::configuration().featureSupported(Feature::MixTexFlats);
 
@@ -1223,12 +1224,12 @@ public:
 		}
 	}
 
-	virtual unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return sectors.size();
 	}
 
-	virtual string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= sectors.size())
 			return "No unknown flats found";
@@ -1240,7 +1241,7 @@ public:
 			return S_FMT("Sector %d has unknown ceiling texture \"%s\"", sector->getIndex(), sector->getCeilingTex());
 	}
 
-	virtual bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= sectors.size())
 			return false;
@@ -1273,7 +1274,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index >= sectors.size())
 			return NULL;
@@ -1281,12 +1282,12 @@ public:
 		return sectors[index];
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for unknown flats...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -1309,7 +1310,7 @@ private:
 public:
 	UnknownThingTypesCheck(SLADEMap* map) : MapCheck(map) {}
 
-	virtual void doCheck()
+	void doCheck() override
 	{
 		for (unsigned a = 0; a < map->nThings(); a++)
 		{
@@ -1319,12 +1320,12 @@ public:
 		}
 	}
 
-	virtual unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return things.size();
 	}
 
-	virtual string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= things.size())
 			return "No unknown thing types found";
@@ -1332,7 +1333,7 @@ public:
 		return S_FMT("Thing %d has unknown type %d", things[index]->getIndex(), things[index]->getType());
 	}
 
-	virtual bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= things.size())
 			return false;
@@ -1354,7 +1355,7 @@ public:
 		return false;
 	}
 
-	virtual MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index >= things.size())
 			return NULL;
@@ -1362,12 +1363,12 @@ public:
 		return things[index];
 	}
 
-	virtual string progressText()
+	string progressText() override
 	{
 		return "Checking for unknown thing types...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Type...";
@@ -1392,7 +1393,7 @@ private:
 public:
 	StuckThingsCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void doCheck()
+	void doCheck() override
 	{
 		double radius;
 
@@ -1439,12 +1440,12 @@ public:
 		}
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return things.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= things.size())
 			return "No stuck things found";
@@ -1452,7 +1453,7 @@ public:
 		return S_FMT("Thing %d is stuck inside line %d", things[index]->getIndex(), lines[index]->getIndex());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= things.size())
 			return false;
@@ -1482,7 +1483,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index >= things.size())
 			return NULL;
@@ -1490,12 +1491,12 @@ public:
 		return things[index];
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for things stuck in lines...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Move Thing";
@@ -1545,19 +1546,19 @@ public:
 			invalid_refs.push_back(sector_ref_t(line, false, s2));
 	}
 
-	void doCheck()
+	void doCheck() override
 	{
 		// Go through map lines
 		for (unsigned a = 0; a < map->nLines(); a++)
 			checkLine(map->getLine(a));
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return invalid_refs.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= invalid_refs.size())
 			return "No wrong sector references found";
@@ -1579,7 +1580,7 @@ public:
 		return S_FMT("Line %d has potentially wrong %s sector %s", invalid_refs[index].line->getIndex(), side, sector);
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= invalid_refs.size())
 			return false;
@@ -1628,7 +1629,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index < invalid_refs.size())
 			return invalid_refs[index].line;
@@ -1636,12 +1637,12 @@ public:
 		return NULL;
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking sector references...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 		{
@@ -1673,7 +1674,7 @@ private:
 public:
 	InvalidLineCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void doCheck()
+	void doCheck() override
 	{
 		// Go through map lines
 		lines.clear();
@@ -1684,12 +1685,12 @@ public:
 		}
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return lines.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= lines.size())
 			return "No invalid lines found";
@@ -1700,7 +1701,7 @@ public:
 			return S_FMT("Line %d has no sides", lines[index]);
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= lines.size())
 			return false;
@@ -1747,7 +1748,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index < lines.size())
 			return map->getLine(lines[index]);
@@ -1755,12 +1756,12 @@ public:
 		return NULL;
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for invalid lines...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (map->getLine(lines[index])->s2())
 		{
@@ -1795,7 +1796,7 @@ private:
 public:
 	UnknownSectorCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void doCheck()
+	void doCheck() override
 	{
 		// Go through map lines
 		sectors.clear();
@@ -1808,12 +1809,12 @@ public:
 		}
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return sectors.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		if (index >= sectors.size())
 			return "No unknown sector types found";
@@ -1821,7 +1822,7 @@ public:
 		return S_FMT("Sector %d has no sides", sectors[index]);
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= sectors.size())
 			return false;
@@ -1838,7 +1839,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index < sectors.size())
 			return map->getSector(sectors[index]);
@@ -1846,12 +1847,12 @@ public:
 		return NULL;
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for unknown sector types...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Reset sector type";
@@ -1874,7 +1875,7 @@ private:
 public:
 	UnknownSpecialCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void doCheck()
+	void doCheck() override
 	{
 		// Go through map lines
 		objects.clear();
@@ -1902,12 +1903,12 @@ public:
 		}
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return objects.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		bool special = (map->currentFormat() == MAP_HEXEN || map->currentFormat() == MAP_UDMF);
 		if (index >= objects.size())
@@ -1918,7 +1919,7 @@ public:
 			objects[index]->getIndex(), special ? "special" : "type");
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= objects.size())
 			return false;
@@ -1933,7 +1934,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index < objects.size())
 			return objects[index];
@@ -1941,12 +1942,12 @@ public:
 		return NULL;
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for unknown specials...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Reset special";
@@ -1968,7 +1969,7 @@ private:
 public:
 	ObsoleteThingCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void doCheck()
+	void doCheck() override
 	{
 		// Go through map lines
 		things.clear();
@@ -1981,12 +1982,12 @@ public:
 		}
 	}
 
-	unsigned nProblems()
+	unsigned nProblems() override
 	{
 		return things.size();
 	}
 
-	string problemDesc(unsigned index)
+	string problemDesc(unsigned index) override
 	{
 		bool special = (map->currentFormat() == MAP_HEXEN || map->currentFormat() == MAP_UDMF);
 		if (index >= things.size())
@@ -1995,7 +1996,7 @@ public:
 		return S_FMT("Thing %d is obsolete", things[index]->getIndex());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
 	{
 		if (index >= things.size())
 			return false;
@@ -2012,7 +2013,7 @@ public:
 		return false;
 	}
 
-	MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index) override
 	{
 		if (index < things.size())
 			return things[index];
@@ -2020,12 +2021,12 @@ public:
 		return NULL;
 	}
 
-	string progressText()
+	string progressText() override
 	{
 		return "Checking for obsolete things...";
 	}
 
-	string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Delete thing";

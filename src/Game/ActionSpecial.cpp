@@ -1,105 +1,118 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    ActionSpecial.cpp
- * Description: ActionSpecial class, represents an action special
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ActionSpecial.cpp
+// Description: ActionSpecial class, represents an action special
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "ActionSpecial.h"
 #include "Utility/Parser.h"
 #include "Configuration.h"
 
 
-/*******************************************************************
- * ACTIONSPECIAL CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
+ActionSpecial ActionSpecial::unknown_;
+ActionSpecial ActionSpecial::gen_switched_(TagType::Sector, "Boom Generalized Switched Special");
+ActionSpecial ActionSpecial::gen_manual_(TagType::Back, "Boom Generalized Manual Special");
 
-/* ActionSpecial::ActionSpecial
- * ActionSpecial class constructor
- *******************************************************************/
-ActionSpecial::ActionSpecial(string name, string group)
+
+// ----------------------------------------------------------------------------
+//
+// ActionSpecial Class Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// ActionSpecial::ActionSpecial
+//
+// ActionSpecial class constructor
+// ----------------------------------------------------------------------------
+ActionSpecial::ActionSpecial(string name, string group) :
+	name_{ name },
+	group_{ group },
+	tagged_{ TagType::None },
+	number_{ -1 }
 {
-	// Init variables
-	this->name = name;
-	this->group = group;
-	this->tagged = 0;
-
-	// Init args
-	args.count = 0;
-	args[0].name = "Arg1";
-	args[1].name = "Arg2";
-	args[2].name = "Arg3";
-	args[3].name = "Arg4";
-	args[4].name = "Arg5";
 }
 
-/* ActionSpecial::copy
- * Copies another ActionSpecial
- *******************************************************************/
-void ActionSpecial::copy(ActionSpecial* copy)
+// ----------------------------------------------------------------------------
+// ActionSpecial::ActionSpecial
+//
+// ActionSpecial class constructor
+// ----------------------------------------------------------------------------
+ActionSpecial::ActionSpecial(TagType tag_type, string name, string group) :
+	name_{ name },
+	group_{ group },
+	tagged_{ tag_type },
+	number_{ -1 }
 {
-	// Check AS to copy was given
-	if (!copy) return;
-
-	// Copy properties
-	this->name = copy->name;
-	this->group = copy->group;
-	this->tagged = copy->tagged;
-	this->args = copy->args;
 }
 
-/* ActionSpecial::reset
- * Resets all values to defaults
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ActionSpecial::reset
+//
+// Resets all values to defaults
+// ----------------------------------------------------------------------------
 void ActionSpecial::reset()
 {
 	// Reset variables
-	name = "Unknown";
-	group = "";
-	tagged = 0;
+	name_ = "Unknown";
+	group_ = "";
+	tagged_ = TagType::None;
+	number_ = -1;
 
 	// Reset args
 	for (unsigned a = 0; a < 5; a++)
 	{
-		args[a].name = S_FMT("Arg%d", a+1);
-		args[a].type = Arg::Type::Number;
-		args[a].custom_flags.clear();
-		args[a].custom_values.clear();
+		args_[a].name = S_FMT("Arg%d", a + 1);
+		args_[a].desc = wxEmptyString;
+		args_[a].type = Arg::Number;
+		args_[a].custom_flags.clear();
+		args_[a].custom_values.clear();
 	}
 }
 
-/* ActionSpecial::parse
- * Reads an action special definition from a parsed tree [node]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ActionSpecial::parse
+//
+// Reads an action special definition from a parsed tree [node]
+// ----------------------------------------------------------------------------
 void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 {
 	// Check for simple definition
 	if (node->isLeaf())
 	{
-		name = node->getStringValue();
+		name_ = node->getStringValue();
 		return;
 	}
 
@@ -107,13 +120,13 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 	ParseTreeNode* child = nullptr;
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		child = (ParseTreeNode*)node->getChild(a);
+		child = node->getChildPTN(a);
 		string name = child->getName();
 		int argn = -1;
 
 		// Name
 		if (S_CMPNOCASE(name, "name"))
-			this->name = child->getStringValue();
+			name_ = child->getStringValue();
 
 		// Args
 		else if (S_CMPNOCASE(name, "arg1"))
@@ -129,61 +142,32 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 
 		// Tagged
 		else if (S_CMPNOCASE(name, "tagged"))
-			this->tagged = Configuration::parseTagged(child);
+			this->tagged_ = Game::parseTagged(child);
 
 		// Parse arg definition if it was one
 		if (argn >= 0)
 		{
 			// Update arg count
-			if (argn + 1 > args.count)
-				args.count = argn + 1;
+			if (argn + 1 > args_.count)
+				args_.count = argn + 1;
 
-			args[argn].parse(child, shared_args);
+			args_[argn].parse(child, shared_args);
 		}
 	}
 }
 
-/* ActionSpecial::getArgsString
- * Returns a string representation of the action special's args
- * given the values in [args]
- *******************************************************************/
-string ActionSpecial::getArgsString(int args[5], string argstr[2])
-{
-	string ret;
-
-	// Add each arg to the string
-	for (unsigned a = 0; a < 5; a++)
-	{
-		// Skip if the arg name is undefined and the arg value is 0
-		if (args[a] == 0 && this->args[a].name.StartsWith("Arg"))
-			continue;
-
-		ret += this->args[a].name;
-		ret += ": ";
-		if (a < 2 && args[a] == 0 && !argstr[a].IsEmpty())
-			ret += argstr[a];
-		else
-			ret += this->args[a].valueString(args[a]);
-		ret += ", ";
-	}
-
-	// Cut ending ", "
-	if (!ret.IsEmpty())
-		ret.RemoveLast(2);
-
-	return ret;
-}
-
-/* ActionSpecial::stringDesc
- * Returns the action special info as a string
- *******************************************************************/
-string ActionSpecial::stringDesc()
+// ----------------------------------------------------------------------------
+// ActionSpecial::stringDesc
+//
+// Returns the action special info as a string
+// ----------------------------------------------------------------------------
+string ActionSpecial::stringDesc() const
 {
 	// Init string
-	string ret = S_FMT("\"%s\" in group \"%s\"", name, group);
+	string ret = S_FMT("\"%s\" in group \"%s\"", name_, group_);
 
 	// Add tagged info
-	if (tagged)
+	if (tagged_ != TagType::None)
 		ret += " (tagged)";
 	else
 		ret += " (not tagged)";
@@ -192,17 +176,17 @@ string ActionSpecial::stringDesc()
 	ret += "\nArgs: ";
 	for (unsigned a = 0; a < 5; a++)
 	{
-		ret += args[a].name + ": ";
+		ret += args_[a].name + ": ";
 
-		if (args[a].type == Arg::Type::Number)
+		if (args_[a].type == Arg::Number)
 			ret += "Number";
-		else if (args[a].type == Arg::Type::YesNo)
+		else if (args_[a].type == Arg::YesNo)
 			ret += "Yes/No";
-		else if (args[a].type == Arg::Type::NoYes)
+		else if (args_[a].type == Arg::NoYes)
 			ret += "No/Yes";
-		else if (args[a].type == Arg::Type::Angle)
+		else if (args_[a].type == Arg::Angle)
 			ret += "Angle";
-		else if (args[a].type == Arg::Type::Choice)
+		else if (args_[a].type == Arg::Choice)
 			ret += "Choice";
 		else
 			ret += "Unknown Type";

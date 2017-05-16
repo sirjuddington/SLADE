@@ -44,7 +44,7 @@ namespace Game
 	};
 
 	// Tag types
-	enum TagTypes
+	enum TagTypes // TODO: Remove this enum
 	{
 		AS_TT_NO = 0,
 		AS_TT_SECTOR,
@@ -81,28 +81,17 @@ namespace Game
 		ThingType*	type;
 		int			number;
 		int			index;
-		tt_t(ThingType* type = NULL) { this->type = type; index = 0; }
+		tt_t(ThingType* type = nullptr) { this->type = type; index = 0; }
 
 		bool operator< (const tt_t& right) const { return (index < right.index); }
 		bool operator> (const tt_t& right) const { return (index > right.index); }
-	};
-
-	struct as_t
-	{
-		ActionSpecial*	special;
-		int				number;
-		int				index;
-		as_t(ActionSpecial* special = NULL) { this->special = special; index = 0; }
-
-		bool operator< (const as_t& right) const { return (index < right.index); }
-		bool operator> (const as_t& right) const { return (index > right.index); }
 	};
 
 	struct udmfp_t
 	{
 		UDMFProperty*	property;
 		int				index;
-		udmfp_t(UDMFProperty* property = NULL) { this->property = property; index = 0; }
+		udmfp_t(UDMFProperty* property = nullptr) { this->property = property; index = 0; }
 
 		bool operator< (const udmfp_t& right) const { return (index < right.index); }
 		bool operator> (const udmfp_t& right) const { return (index > right.index); }
@@ -123,7 +112,6 @@ namespace Game
 		sectype_t(int type, string name) { this->type = type; this->name = name; }
 	};
 
-	WX_DECLARE_HASH_MAP(int, as_t, wxIntegerHash, wxIntegerEqual, ASpecialMap);
 	WX_DECLARE_HASH_MAP(int, tt_t, wxIntegerHash, wxIntegerEqual, ThingTypeMap);
 	WX_DECLARE_STRING_HASH_MAP(udmfp_t, UDMFPropMap);
 
@@ -134,16 +122,16 @@ namespace Game
 		~Configuration();
 
 		void	setDefaults();
-		string	currentGame() { return current_game; }
-		string	currentPort() { return current_port; }
-		bool	supportsSectorFlags() { return boom_sector_flag_start > 0; }
+		string	currentGame() const { return current_game_; }
+		string	currentPort() const { return current_port_; }
+		bool	supportsSectorFlags() const { return boom_sector_flag_start_ > 0; }
 		string	udmfNamespace();
-		string	skyFlat() { return sky_flat; }
-		string	scriptLanguage() { return script_language; }
+		string	skyFlat() const { return sky_flat_; }
+		string	scriptLanguage() const { return script_language_; }
 		int		lightLevelInterval();
 
 		string			readConfigName(MemChunk& mc);
-		unsigned		nMapNames() { return maps.size(); }
+		unsigned		nMapNames() const { return maps_.size(); }
 		string			mapName(unsigned index);
 		gc_mapinfo_t	mapInfo(string mapname);
 
@@ -156,26 +144,34 @@ namespace Game
 		void	buildConfig(ArchiveEntry* entry, string& out, bool use_res = true);
 
 		// Configuration reading
-		void	readActionSpecials(ParseTreeNode* node, ActionSpecial* group_defaults = NULL, Arg::SpecialMap* shared_args = NULL);
-		void	readThingTypes(ParseTreeNode* node, ThingType* group_defaults = NULL);
+		void	readActionSpecials(
+					ParseTreeNode* node,
+					Arg::SpecialMap& shared_args,
+					ActionSpecial* group_defaults = nullptr
+				);
+		void	readThingTypes(ParseTreeNode* node, ThingType* group_defaults = nullptr);
 		void	readUDMFProperties(ParseTreeNode* node, UDMFPropMap& plist);
 		void	readGameSection(ParseTreeNode* node_game, bool port_section = false);
-		bool	readConfiguration(string& cfg, string source = "", uint8_t format = MAP_UNKNOWN, bool ignore_game = false, bool clear = true);
+		bool	readConfiguration(
+					string& cfg,
+					string source = "",
+					uint8_t format = MAP_UNKNOWN,
+					bool ignore_game = false,
+					bool clear = true
+				);
 		bool	openConfig(string game, string port = "", uint8_t format = MAP_UNKNOWN);
-		//bool	openEmbeddedConfig(ArchiveEntry* entry);
-		//bool	removeEmbeddedConfig(string name);
 
 		// Action specials
-		ActionSpecial*	actionSpecial(unsigned id);
-		string			actionSpecialName(int special);
-		vector<as_t>	allActionSpecials();
+		const ActionSpecial&				actionSpecial(unsigned id);
+		string								actionSpecialName(int special);
+		const std::map<int, ActionSpecial>&	allActionSpecials() { return action_specials_; }
 
 		// Thing types
 		ThingType*		thingType(unsigned type);
 		vector<tt_t>	allThingTypes();
 
 		// Thing flags
-		int		nThingFlags() { return flags_thing.size(); }
+		int		nThingFlags() const { return flags_thing_.size(); }
 		string	thingFlag(unsigned flag_index);
 		bool	thingFlagSet(unsigned flag_index, MapThing* thing);
 		bool	thingFlagSet(string udmf_name, MapThing* thing, int map_format);
@@ -190,7 +186,7 @@ namespace Game
 		void	clearDecorateDefs();
 
 		// Line flags
-		int		nLineFlags() { return flags_line.size(); }
+		int		nLineFlags() const { return flags_line_.size(); }
 		string	lineFlag(unsigned flag_index);
 		bool	lineFlagSet(unsigned flag_index, MapLine* line);
 		bool	lineFlagSet(string udmf_name, MapLine* line, int map_format);
@@ -214,7 +210,7 @@ namespace Game
 
 		// Sector types
 		string				sectorTypeName(int type);
-		vector<sectype_t>	allSectorTypes() { return sector_types; }
+		vector<sectype_t>	allSectorTypes() const { return sector_types_; }
 		int					sectorTypeByName(string name);
 		int					baseSectorType(int type);
 		int					sectorBoomDamage(int type);
@@ -242,21 +238,21 @@ namespace Game
 		void	dumpUDMFProperties();
 
 	private:
-		string				current_game;		// Current game name
-		string				current_port;		// Current port name (empty if none)
-		bool				map_formats[4];		// Supported map formats
-		string				udmf_namespace;		// Namespace to use for UDMF
-		int 				boom_sector_flag_start;  // Beginning of Boom sector flags
-		ASpecialMap			action_specials;	// Action specials
-		ActionSpecial		as_unknown;			// Default action special
-		ActionSpecial		as_generalized_s;	// Dummy for Boom generalized switched specials
-		ActionSpecial		as_generalized_m;	// Dummy for Boom generalized manual specials
-		ThingTypeMap		thing_types;		// Thing types
-		vector<ThingType*>	tt_group_defaults;	// Thing type group defaults
-		ThingType			ttype_unknown;		// Default thing type
-		string				sky_flat;			// Sky flat for 3d mode
-		string				script_language;	// Scripting language (should be extended to allow multiple)
-		vector<int>			light_levels;		// Light levels for up/down light in editor
+		string				current_game_;		// Current game name
+		string				current_port_;		// Current port name (empty if none)
+		bool				map_formats_[4];		// Supported map formats
+		string				udmf_namespace_;		// Namespace to use for UDMF
+		int 				boom_sector_flag_start_;  // Beginning of Boom sector flags
+
+		// Action specials
+		std::map<int, ActionSpecial>	action_specials_;
+
+		ThingTypeMap		thing_types_;		// Thing types
+		vector<ThingType*>	tt_group_defaults_;	// Thing type group defaults
+		ThingType			ttype_unknown_;		// Default thing type
+		string				sky_flat_;			// Sky flat for 3d mode
+		string				script_language_;	// Scripting language (should be extended to allow multiple)
+		vector<int>			light_levels_;		// Light levels for up/down light in editor
 
 		// Flags
 		struct flag_t
@@ -267,32 +263,32 @@ namespace Game
 			flag_t() { flag = 0; name = ""; udmf = ""; }
 			flag_t(int flag, string name, string udmf = "") { this->flag = flag; this->name = name; this->udmf = udmf; }
 		};
-		vector<flag_t>	flags_thing;
-		vector<flag_t>	flags_line;
-		vector<flag_t>	triggers_line;
+		vector<flag_t>	flags_thing_;
+		vector<flag_t>	flags_line_;
+		vector<flag_t>	triggers_line_;
 
 		// Sector types
-		vector<sectype_t>	sector_types;
+		vector<sectype_t>	sector_types_;
 
 		// Map info
-		vector<gc_mapinfo_t>	maps;
+		vector<gc_mapinfo_t>	maps_;
 
 		// UDMF properties
-		UDMFPropMap	udmf_vertex_props;
-		UDMFPropMap	udmf_linedef_props;
-		UDMFPropMap	udmf_sidedef_props;
-		UDMFPropMap	udmf_sector_props;
-		UDMFPropMap	udmf_thing_props;
+		UDMFPropMap	udmf_vertex_props_;
+		UDMFPropMap	udmf_linedef_props_;
+		UDMFPropMap	udmf_sidedef_props_;
+		UDMFPropMap	udmf_sector_props_;
+		UDMFPropMap	udmf_thing_props_;
 
 		// Defaults
-		PropertyList	defaults_line;
-		PropertyList	defaults_line_udmf;
-		PropertyList	defaults_side;
-		PropertyList	defaults_side_udmf;
-		PropertyList	defaults_sector;
-		PropertyList	defaults_sector_udmf;
-		PropertyList	defaults_thing;
-		PropertyList	defaults_thing_udmf;
+		PropertyList	defaults_line_;
+		PropertyList	defaults_line_udmf_;
+		PropertyList	defaults_side_;
+		PropertyList	defaults_side_udmf_;
+		PropertyList	defaults_sector_;
+		PropertyList	defaults_sector_udmf_;
+		PropertyList	defaults_thing_;
+		PropertyList	defaults_thing_udmf_;
 
 		// Feature Support
 		std::map<Feature, bool>		supported_features_;

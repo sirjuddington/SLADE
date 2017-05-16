@@ -62,12 +62,13 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	wxSize textsize;
 
 	// Populate tree
-	vector<as_t> specials = Game::configuration().allActionSpecials();
-	std::sort(specials.begin(), specials.end());
-	for (unsigned a = 0; a < specials.size(); a++)
+	for (auto& i : Game::configuration().allActionSpecials())
 	{
-		string label = S_FMT("%d: %s", specials[a].number, specials[a].special->getName());
-		AppendItem(getGroup(specials[a].special->getGroup()), label);
+		if (!i.second.defined())
+			continue;
+
+		string label = S_FMT("%d: %s", i.second.number(), i.second.name());
+		AppendItem(getGroup(i.second.group()), label);
 		textsize.IncTo(dc.GetTextExtent(label));
 	}
 	Expand(root);
@@ -983,7 +984,7 @@ void ActionSpecialPanel::setSpecial(int special)
 	// Setup args if any
 	if (panel_args)
 	{
-		auto& args = Game::configuration().actionSpecial(selectedSpecial())->getArgspec();
+		auto& args = Game::configuration().actionSpecial(selectedSpecial()).argSpec();
 		panel_args->setup(args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }
@@ -1200,7 +1201,7 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
 
 	if (panel_args)
 	{
-		auto& args = Game::configuration().actionSpecial(selectedSpecial())->getArgspec();
+		auto& args = Game::configuration().actionSpecial(selectedSpecial()).argSpec();
 		panel_args->setup(args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }
@@ -1221,7 +1222,7 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
 	// Jump to args tab, if there is one
 	if (panel_args)
 	{
-		auto& args = Game::configuration().actionSpecial(selectedSpecial())->getArgspec();
+		auto& args = Game::configuration().actionSpecial(selectedSpecial()).argSpec();
 		panel_args->setup(args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 		panel_args->SetFocus();
 	}
@@ -1296,7 +1297,7 @@ void ActionSpecialDialog::setSpecial(int special)
 	panel_special->setSpecial(special);
 	if (panel_args)
 	{
-		auto& args = Game::configuration().actionSpecial(special)->getArgspec();
+		auto& args = Game::configuration().actionSpecial(special).argSpec();
 		panel_args->setup(args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }

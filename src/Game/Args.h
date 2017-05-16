@@ -34,8 +34,8 @@ namespace Game
 		Arg() {}
 		Arg(string name) { this->name = name; }
 
-		string	valueString(int value);
-		string	speedLabel(int value);
+		string	valueString(int value) const;
+		string	speedLabel(int value) const;
 		void	parse(ParseTreeNode* node, SpecialMap* shared_args);
 	};
 
@@ -49,6 +49,6 @@ namespace Game
 		Arg&		operator[](int index) { return args[index]; }
 		const Arg&	operator[](int index) const { return args[index]; }
 
-		string	stringDesc(int values[5], string values_str[2]);
+		string	stringDesc(int values[5], string values_str[2]) const;
 	};
 }

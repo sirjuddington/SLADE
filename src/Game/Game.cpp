@@ -224,6 +224,42 @@ Configuration& Game::configuration()
 }
 
 // ----------------------------------------------------------------------------
+// Game::parseTagged
+//
+// Returns the tagged type of the parsed tree node [tagged]
+// ----------------------------------------------------------------------------
+TagType Game::parseTagged(ParseTreeNode* tagged)
+{
+	string str = tagged->getStringValue();
+	if (S_CMPNOCASE(str, "no")) return TagType::None;
+	else if (S_CMPNOCASE(str, "sector")) return TagType::Sector;
+	else if (S_CMPNOCASE(str, "line")) return TagType::Line;
+	else if (S_CMPNOCASE(str, "lineid")) return TagType::LineId;
+	else if (S_CMPNOCASE(str, "lineid_hi5")) return TagType::LineIdHi5;
+	else if (S_CMPNOCASE(str, "thing")) return TagType::Thing;
+	else if (S_CMPNOCASE(str, "sector_back")) return TagType::Back;
+	else if (S_CMPNOCASE(str, "sector_or_back")) return TagType::SectorOrBack;
+	else if (S_CMPNOCASE(str, "sector_and_back")) return TagType::SectorAndBack;
+	else if (S_CMPNOCASE(str, "line_negative")) return TagType::LineNegative;
+	else if (S_CMPNOCASE(str, "ex_1thing_2sector")) return TagType::Thing1Sector2;
+	else if (S_CMPNOCASE(str, "ex_1thing_3sector")) return TagType::Thing1Sector3;
+	else if (S_CMPNOCASE(str, "ex_1thing_2thing")) return TagType::Thing1Thing2;
+	else if (S_CMPNOCASE(str, "ex_1thing_4thing")) return TagType::Thing1Thing4;
+	else if (S_CMPNOCASE(str, "ex_1thing_2thing_3thing")) return TagType::Thing1Thing2Thing3;
+	else if (S_CMPNOCASE(str, "ex_1sector_2thing_3thing_5thing")) return TagType::Sector1Thing2Thing3Thing5;
+	else if (S_CMPNOCASE(str, "ex_1lineid_2line")) return TagType::LineId1Line2;
+	else if (S_CMPNOCASE(str, "ex_4thing")) return TagType::Thing4;
+	else if (S_CMPNOCASE(str, "ex_5thing")) return TagType::Thing5;
+	else if (S_CMPNOCASE(str, "ex_1line_2sector")) return TagType::Line1Sector2;
+	else if (S_CMPNOCASE(str, "ex_1sector_2sector")) return TagType::Sector1Sector2;
+	else if (S_CMPNOCASE(str, "ex_1sector_2sector_3sector_4_sector")) return TagType::Sector1Sector2Sector3Sector4;
+	else if (S_CMPNOCASE(str, "ex_sector_2is3_line")) return TagType::Sector2Is3Line;
+	else if (S_CMPNOCASE(str, "ex_1sector_2thing")) return TagType::Sector1Thing2;
+	else
+		return (TagType)tagged->getIntValue();
+}
+
+// ----------------------------------------------------------------------------
 // Game::init
 //
 // Game related initialisation (read basic definitions, etc.)

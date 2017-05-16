@@ -559,11 +559,10 @@ void MOPGIntWithArgsProperty::OnSetValue()
 /* MOPGActionSpecialProperty::getArgspec
  * Returns a little object describing the args for this thing type
  *******************************************************************/
-const Game::ArgSpec MOPGActionSpecialProperty::getArgspec()
+const Game::ArgSpec& MOPGActionSpecialProperty::getArgspec()
 {
 	int special = m_value.GetInteger();
-	ActionSpecial* as = Game::configuration().actionSpecial(special);
-	return as->getArgspec();
+	return Game::configuration().actionSpecial(special).argSpec();
 }
 
 /* MOPGActionSpecialProperty::ValueToString
@@ -578,10 +577,7 @@ wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags
 	if (special == 0)
 		return "0: None";
 	else
-	{
-		ActionSpecial* as = Game::configuration().actionSpecial(special);
-		return S_FMT("%d: %s", special, as->getName());
-	}
+		return S_FMT("%d: %s", special, Game::configuration().actionSpecial(special).name());
 }
 
 /* MOPGActionSpecialProperty::OnEvent
@@ -616,7 +612,7 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 /* MOPGThingTypeProperty::getArgspec
  * Returns a little object describing the args for this thing type
  *******************************************************************/
-const Game::ArgSpec MOPGThingTypeProperty::getArgspec()
+const Game::ArgSpec& MOPGThingTypeProperty::getArgspec()
 {
 	int type = m_value.GetInteger();
 	ThingType* tt = Game::configuration().thingType(type);

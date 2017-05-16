@@ -545,14 +545,15 @@ void MapEditContext::updateTagged()
 		{
 			MapSector* back = nullptr;
 			MapSector* front = nullptr;
-			int needs_tag, tag, arg2, arg3, arg4, arg5, tid;
+			int tag, arg2, arg3, arg4, arg5, tid;
+			Game::TagType needs_tag = TagType::None;
 			// Line specials have front and possibly back sectors
 			if (edit_mode_ == Mode::Lines)
 			{
 				MapLine* line = map_.getLine(hilight_item);
 				if (line->s2()) back = line->s2()->getSector();
 				if (line->s1()) front = line->s1()->getSector();
-				needs_tag = Game::configuration().actionSpecial(line->intProperty("special"))->needsTag();
+				needs_tag = Game::configuration().actionSpecial(line->intProperty("special")).needsTag();
 				tag = line->intProperty("arg0");
 				arg2 = line->intProperty("arg1");
 				arg3 = line->intProperty("arg2");
@@ -562,8 +563,9 @@ void MapEditContext::updateTagged()
 
 				// Hexen and UDMF things can have specials too
 			}
-			else /* edit_mode == Mode::Things */
+			/*else // edit_mode == Mode::Things
 			{
+			// TODO: This once ThingType is done
 				MapThing* thing = map_.getThing(hilight_item);
 				if (Game::configuration().thingType(thing->getType())->getFlags() & THING_SCRIPT)
 					needs_tag = AS_TT_NO;
@@ -579,19 +581,18 @@ void MapEditContext::updateTagged()
 					arg5 = thing->intProperty("arg4");
 					tid = thing->intProperty("id");
 				}
-			}
+			}*/
 
 			// Sector tag
-			if (needs_tag == AS_TT_SECTOR ||
-					(needs_tag == AS_TT_SECTOR_AND_BACK && tag > 0))
+			if (needs_tag == TagType::Sector || (needs_tag == TagType::SectorAndBack && tag > 0))
 				map_.getSectorsByTag(tag, tagged_sectors_);
 
 			// Backside sector (for local doors)
-			else if ((needs_tag == AS_TT_SECTOR_BACK || needs_tag == AS_TT_SECTOR_AND_BACK) && back)
+			else if ((needs_tag == TagType::Back || needs_tag == TagType::SectorAndBack) && back)
 				tagged_sectors_.push_back(back);
 
 			// Sector tag *or* backside sector (for zdoom local doors)
-			else if (needs_tag == AS_TT_SECTOR_OR_BACK)
+			else if (needs_tag == TagType::SectorOrBack)
 			{
 				if (tag > 0)
 					map_.getSectorsByTag(tag, tagged_sectors_);
@@ -600,25 +601,25 @@ void MapEditContext::updateTagged()
 			}
 
 			// Thing ID
-			else if (needs_tag == AS_TT_THING)
+			else if (needs_tag == TagType::Thing)
 				map_.getThingsById(tag, tagged_things_);
 
 			// Line ID
-			else if (needs_tag == AS_TT_LINE)
+			else if (needs_tag == TagType::Line)
 				map_.getLinesById(tag, tagged_lines_);
 
 			// ZDoom quirkiness
-			else if (needs_tag)
+			else if (needs_tag != TagType::None)
 			{
 				switch (needs_tag)
 				{
-				case AS_TT_1THING_2SECTOR:
-				case AS_TT_1THING_3SECTOR:
-				case AS_TT_1SECTOR_2THING:
+				case TagType::Thing1Sector2:
+				case TagType::Thing1Sector3:
+				case TagType::Sector1Thing2:
 				{
-					int thingtag = (needs_tag == AS_TT_1SECTOR_2THING) ? arg2 : tag;
-					int sectag = (needs_tag == AS_TT_1SECTOR_2THING) ? tag :
-								 (needs_tag == AS_TT_1THING_2SECTOR) ? arg2 : arg3;
+					int thingtag = (needs_tag == TagType::Sector1Thing2) ? arg2 : tag;
+					int sectag = (needs_tag == TagType::Sector1Thing2) ? tag :
+								 (needs_tag == TagType::Thing1Sector2) ? arg2 : arg3;
 					if ((thingtag | sectag) == 0)
 						break;
 					else if (thingtag == 0)
@@ -628,40 +629,40 @@ void MapEditContext::updateTagged()
 					else // neither thingtag nor sectag are 0
 						map_.getThingsByIdInSectorTag(thingtag, sectag, tagged_things_);
 				}	break;
-				case AS_TT_1THING_2THING_3THING:
+				case TagType::Thing1Thing2Thing3:
 					if (arg3) map_.getThingsById(arg3, tagged_things_);
-				case AS_TT_1THING_2THING:
+				case TagType::Thing1Thing2:
 					if (arg2) map_.getThingsById(arg2, tagged_things_);
-				case AS_TT_1THING_4THING:
+				case TagType::Thing1Thing4:
 					if (tag ) map_.getThingsById(tag, tagged_things_);
-				case AS_TT_4THING:
-					if (needs_tag == AS_TT_1THING_4THING || needs_tag == AS_TT_4THING)
+				case TagType::Thing4:
+					if (needs_tag == TagType::Thing1Thing4 || needs_tag == TagType::Thing4)
 						if (arg4) map_.getThingsById(arg4, tagged_things_);
 					break;
-				case AS_TT_5THING:
+				case TagType::Thing5:
 					if (arg5) map_.getThingsById(arg5, tagged_things_);
 					break;
-				case AS_TT_LINE_NEGATIVE:
+				case TagType::LineNegative:
 					if (tag ) map_.getLinesById(abs(tag), tagged_lines_);
 					break;
-				case AS_TT_1LINEID_2LINE:
+				case TagType::LineId1Line2:
 					if (arg2) map_.getLinesById(arg2, tagged_lines_);
 					break;
-				case AS_TT_1LINE_2SECTOR:
+				case TagType::Line1Sector2:
 					if (tag ) map_.getLinesById(tag, tagged_lines_);
 					if (arg2) map_.getSectorsByTag(arg2, tagged_sectors_);
 					break;
-				case AS_TT_1SECTOR_2THING_3THING_5THING:
+				case TagType::Sector1Thing2Thing3Thing5:
 					if (arg5) map_.getThingsById(arg5, tagged_things_);
 					if (arg3) map_.getThingsById(arg3, tagged_things_);
-				case AS_TT_1SECTOR_2SECTOR_3SECTOR_4SECTOR:
+				case TagType::Sector1Sector2Sector3Sector4:
 					if (arg4) map_.getSectorsByTag(arg4, tagged_sectors_);
 					if (arg3) map_.getSectorsByTag(arg3, tagged_sectors_);
-				case AS_TT_1SECTOR_2SECTOR:
+				case TagType::Sector1Sector2:
 					if (arg2) map_.getSectorsByTag(arg2, tagged_sectors_);
 					if (tag ) map_.getSectorsByTag(tag , tagged_sectors_);
 					break;
-				case AS_TT_SECTOR_2IS3_LINE:
+				case TagType::Sector2Is3Line:
 					if (tag)
 					{
 						if (arg2 == 3) map_.getLinesById(tag, tagged_lines_);
@@ -670,7 +671,8 @@ void MapEditContext::updateTagged()
 					break;
 				default:
 					// This is to handle interpolation specials and patrol specials
-					if (tid) map_.getThingsById(tid, tagged_things_, 0, needs_tag);
+					// TODO: How does this work? Why is needs_tag being used for the type argument?
+					//if (tid) map_.getThingsById(tid, tagged_things_, 0, needs_tag);
 					
 					break;
 				}

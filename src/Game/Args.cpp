@@ -114,7 +114,7 @@ namespace
 //
 // Returns a string representation of [value] depending on the arg's type
 // ----------------------------------------------------------------------------
-string Arg::valueString(int value)
+string Arg::valueString(int value) const
 {
 	switch (type)
 	{
@@ -163,7 +163,7 @@ string Arg::valueString(int value)
 //
 // Returns a string representation of speed [value]
 // ----------------------------------------------------------------------------
-string Arg::speedLabel(int value)
+string Arg::speedLabel(int value) const
 {
 	// Speed can optionally have a set of predefined values, most taken
 	// from the Boom generalized values
@@ -279,7 +279,7 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 //
 // Returns a string representation of [values] depending on the spec arg types
 // ----------------------------------------------------------------------------
-string ArgSpec::stringDesc(int values[5], string values_str[2])
+string ArgSpec::stringDesc(int values[5], string values_str[2]) const
 {
 	string ret;
 
