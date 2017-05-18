@@ -365,7 +365,7 @@ void MapEditorConfigDialog::populatePortList()
 			ports_list.push_back(i.second.name);
 			choice_port_config->Append(i.second.title);
 			if (port_current == i.second.name)
-				selection = ports_list.size() - 1;
+				selection = ports_list.size();
 		}
 	}
 
