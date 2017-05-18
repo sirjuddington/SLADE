@@ -184,26 +184,47 @@ void MapEditor::showObjectEditPanel(bool show, ObjectEditGroup* group)
 
 string MapEditor::browseTexture(const string &init_texture, int tex_type, SLADEMap& map, const string& title)
 {
-	// Open texture browser
+	// Unlock cursor if locked
+	bool cursor_locked = edit_context.get()->mouseLocked();
+	if (cursor_locked)
+		edit_context.get()->lockMouse(false);
+
+	// Setup texture browser
 	MapTextureBrowser browser(map_window.get(), tex_type, init_texture, &map);
 	browser.SetTitle(title);
 
-	// Return selected texture if not cancelled
+	// Get selected texture
+	string tex;
 	if (browser.ShowModal() == wxID_OK)
-		return browser.getSelectedItem()->getName();
+		tex = browser.getSelectedItem()->getName();
 
-	return wxEmptyString;
+	// Re-lock cursor if needed
+	if (cursor_locked)
+		edit_context.get()->lockMouse(true);
+
+	return tex;
 }
 
 int MapEditor::browseThingType(int init_type, SLADEMap& map)
 {
-	// Open thing browser
+	// Unlock cursor if locked
+	bool cursor_locked = edit_context.get()->mouseLocked();
+	if (cursor_locked)
+		edit_context.get()->lockMouse(false);
+
+	// Setup thing browser
 	ThingTypeBrowser browser(map_window.get(), init_type);
 
+	// Get selected type
+	int type = -1;
 	if (browser.ShowModal() == wxID_OK)
-		return browser.getSelectedType();
+		type = browser.getSelectedType();
 
-	return -1;
+	// Re-lock cursor if needed
+	if (cursor_locked)
+		edit_context.get()->lockMouse(true);
+
+	return type;
 }
 
 bool MapEditor::editObjectProperties(vector<MapObject*>& list)

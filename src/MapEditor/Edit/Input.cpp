@@ -329,7 +329,7 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 		}
 
 		// Remove line draw point if in line drawing state
-		if (mouse_state_ == MouseState::LineDraw)
+		else if (mouse_state_ == MouseState::LineDraw)
 		{
 			// Line drawing
 			if (context_.lineDraw().state() == LineDraw::State::Line)
