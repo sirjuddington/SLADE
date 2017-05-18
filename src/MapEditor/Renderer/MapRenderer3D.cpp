@@ -1941,7 +1941,11 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 
 	// Get sprite texture
 	uint32_t theight = render_thing_icon_size;
-	things[index].sprite = MapEditor::textureManager().getSprite(things[index].type->sprite(), things[index].type->translation(), things[index].type->palette());
+	things[index].sprite = MapEditor::textureManager().getSprite(
+		things[index].type->sprite(),
+		things[index].type->translation(),
+		things[index].type->palette()
+	);
 	if (!things[index].sprite)
 	{
 		// Sprite not found, try an icon

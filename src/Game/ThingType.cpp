@@ -75,7 +75,8 @@ ThingType::ThingType(const string& name, const string& group) :
 	next_args_{ 0 },
 	flags_{ 0 },
 	tagged_{ TagType::None },
-	number_{ -1 }
+	number_{ -1 },
+	scale_{ 1.0, 1.0 }
 {
 	// Init args
 	args_.count = 0;
@@ -372,6 +373,12 @@ string ThingType::stringDesc() const
 	return ret;
 }
 
+// ----------------------------------------------------------------------------
+// ThingType::loadProps
+//
+// Reads type properties from [props] and marks as a decorate type if
+// [decorate] is true
+// ----------------------------------------------------------------------------
 void ThingType::loadProps(PropertyList& props, bool decorate)
 {
 	// Set decorate flag
