@@ -257,7 +257,9 @@ TagType Game::parseTagged(ParseTreeNode* tagged)
 		{ "ex_1sector_2sector",						TagType::Sector1Sector2 },
 		{ "ex_1sector_2sector_3sector_4_sector",	TagType::Sector1Sector2Sector3Sector4 },
 		{ "ex_sector_2is3_line",					TagType::Sector2Is3Line },
-		{ "ex_1sector_2thing",						TagType::Sector1Thing2 }
+		{ "ex_1sector_2thing",						TagType::Sector1Thing2 },
+		{ "patrol",									TagType::Patrol },
+		{ "interpolation",							TagType::Interpolation }
 	};
 
 	return tag_type_map[tagged->getStringValue().MakeLower()];

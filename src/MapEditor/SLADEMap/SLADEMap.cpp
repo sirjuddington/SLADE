@@ -3372,10 +3372,9 @@ void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list
 /* SLADEMap::getDragonTargets
  * Gets dragon targets (needs better description)
  *******************************************************************/
-WX_DECLARE_HASH_MAP(int, int, wxIntegerHash, wxIntegerEqual, UsedValuesMap);
 void SLADEMap::getDragonTargets(MapThing* first, vector<MapThing*>& list)
 {
-	UsedValuesMap used;
+	std::map<int, int> used;
 	list.clear();
 	list.push_back(first);
 	unsigned i = 0;
@@ -3446,6 +3445,7 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, i
 				needs_tag = Game::configuration().actionSpecial(things[a]->intProperty("special")).needsTag();
 			tag = things[a]->intProperty("arg0");
 			bool fits = false;
+			int path_type;
 			switch (needs_tag)
 			{
 			case TagType::Sector:
@@ -3523,15 +3523,14 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, i
 				arg2 = things[a]->intProperty("arg1");
 				fits = (type == SECTORS ? (IDEQ(tag)) : (IDEQ(arg2) && type == THINGS));
 				break;
-			default:
-				// Kind of a hack here. Patrol points and interpolation points only tag
-				// certain thing types with the same TID as themselves. Fortunately,
-				// the thing types in question are in the 9000 range, and the TagTypes
-				// enum is quite unlikely to reach that far. :p
-				// TODO: Redo this
-				/*tid = things[a]->intProperty("id");
+			case TagType::Patrol:
+				path_type = 9047;
+			case TagType::Interpolation:
+				path_type = 9075;
+
+				tid = things[a]->intProperty("id");
 				auto& tt = Game::configuration().thingType(things[a]->getType());
-				fits = ((needs_tag == ttype) && (IDEQ(tid)) && (tt.needsTag() == needs_tag));*/
+				fits = ((path_type == ttype) && (IDEQ(tid)) && (tt.needsTag() == needs_tag));
 				break;
 			}
 			if (fits) list.push_back(things[a]);

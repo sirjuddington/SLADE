@@ -548,7 +548,7 @@ void MapEditContext::updateTagged()
 			MapSector* back = nullptr;
 			MapSector* front = nullptr;
 			int tag, arg2, arg3, arg4, arg5, tid;
-			Game::TagType needs_tag = TagType::None;
+			auto needs_tag = TagType::None;
 			// Line specials have front and possibly back sectors
 			if (edit_mode_ == Mode::Lines)
 			{
@@ -565,17 +565,16 @@ void MapEditContext::updateTagged()
 
 				// Hexen and UDMF things can have specials too
 			}
-			/*else // edit_mode == Mode::Things
+			else // edit_mode == Mode::Things
 			{
-			// TODO: This once ThingType is done
 				MapThing* thing = map_.getThing(hilight_item);
-				if (Game::configuration().thingType(thing->getType())->getFlags() & THING_SCRIPT)
-					needs_tag = AS_TT_NO;
+				if (Game::configuration().thingType(thing->getType()).flags() & Game::ThingType::FLAG_SCRIPT)
+					needs_tag = TagType::None;
 				else
 				{
-					needs_tag = Game::configuration().thingType(thing->getType())->needsTag();
-					if (!needs_tag)
-						needs_tag = Game::configuration().actionSpecial(thing->intProperty("special"))->needsTag();
+					needs_tag = Game::configuration().thingType(thing->getType()).needsTag();
+					if (needs_tag == TagType::None)
+						needs_tag = Game::configuration().actionSpecial(thing->intProperty("special")).needsTag();
 					tag = thing->intProperty("arg0");
 					arg2 = thing->intProperty("arg1");
 					arg3 = thing->intProperty("arg2");
@@ -583,7 +582,7 @@ void MapEditContext::updateTagged()
 					arg5 = thing->intProperty("arg4");
 					tid = thing->intProperty("id");
 				}
-			}*/
+			}
 
 			// Sector tag
 			if (needs_tag == TagType::Sector || (needs_tag == TagType::SectorAndBack && tag > 0))
@@ -671,11 +670,11 @@ void MapEditContext::updateTagged()
 						else map_.getSectorsByTag(tag, tagged_sectors_);
 					}
 					break;
-				default:
-					// This is to handle interpolation specials and patrol specials
-					// TODO: How does this work? Why is needs_tag being used for the type argument?
-					//if (tid) map_.getThingsById(tid, tagged_things_, 0, needs_tag);
-					
+				case TagType::Patrol:
+					if (tid) map_.getThingsById(tid, tagged_things_, 0, 9047);
+					break;
+				case TagType::Interpolation:
+					if (tid) map_.getThingsById(tid, tagged_things_, 0, 9075);
 					break;
 				}
 			}

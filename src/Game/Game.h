@@ -79,6 +79,9 @@ namespace Game
 		Sector1Sector2Sector3Sector4,	// Plane_Copy
 		Sector2Is3Line,					// Static_Init
 		Sector1Thing2,					// PointPush_SetForce
+
+		Patrol,
+		Interpolation
 	};
 
 	// General
