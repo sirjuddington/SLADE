@@ -446,7 +446,7 @@ void Renderer::drawGrid() const
 	{
 		auto mouse_pos = context_.input().mousePos();
 		double x = context_.snapToGrid(view_.mapX(mouse_pos.x), false);
-		double y = context_.snapToGrid(view_.mapX(mouse_pos.y), false);
+		double y = context_.snapToGrid(view_.mapY(mouse_pos.y), false);
 		auto col = ColourConfiguration::getColour("map_64grid");
 
 		// Small
