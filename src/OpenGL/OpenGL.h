@@ -22,6 +22,7 @@
 
 #ifndef USE_SFML_RENDERWINDOW
 #include <wx/glcanvas.h>
+#undef None // Why does <X11/X.h> #define this? Idiotic
 #endif
 
 #define BLEND_NORMAL	0

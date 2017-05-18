@@ -685,7 +685,10 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 
 		// Action specials section
 		else if (S_CMPNOCASE(node->getName(), "action_specials"))
-			readActionSpecials(node, Arg::SpecialMap());
+		{
+			Arg::SpecialMap sm;
+			readActionSpecials(node, sm);
+		}
 
 		// Thing types section
 		else if (S_CMPNOCASE(node->getName(), "thing_types"))
