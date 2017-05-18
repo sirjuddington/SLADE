@@ -32,19 +32,19 @@ public:
 	Property(unsigned value);
 	~Property();
 
-	uint8_t		getType() { return type; }
-	bool		isType(uint8_t type) { return this->type == type; }
-	bool		hasValue() { return has_value; }
+	uint8_t		getType() const { return type; }
+	bool		isType(uint8_t type) const { return this->type == type; }
+	bool		hasValue() const { return has_value; }
 
 	void	changeType(uint8_t newtype);
 	void	setHasValue(bool hv) { has_value = hv; }
 
-	inline operator bool () { return getBoolValue(); }
-	inline operator int () { return getIntValue(); }
-	inline operator float () { return (float)getFloatValue(); }
-	inline operator double () { return getFloatValue(); }
-	inline operator string () { return getStringValue(); }
-	inline operator unsigned () { return getUnsignedValue(); }
+	inline operator bool () const { return getBoolValue(); }
+	inline operator int () const { return getIntValue(); }
+	inline operator float () const { return (float)getFloatValue(); }
+	inline operator double () const { return getFloatValue(); }
+	inline operator string () const { return getStringValue(); }
+	inline operator unsigned () const { return getUnsignedValue(); }
 
 	inline bool operator= (bool val) { setValue(val); return val; }
 	inline int operator= (int val) { setValue(val); return val; }

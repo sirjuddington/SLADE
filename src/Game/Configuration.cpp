@@ -33,14 +33,16 @@
 // ----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include "Configuration.h"
-#include "Utility/Tokenizer.h"
-#include "Utility/Parser.h"
-#include "General/Console/Console.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "Configuration.h"
+#include "General/Console/Console.h"
 #include "GenLineSpecial.h"
+#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
+#include "Utility/Tokenizer.h"
+#include "Decorate.h"
 
 using namespace Game;
 
@@ -79,9 +81,6 @@ Configuration::Configuration()
 // ----------------------------------------------------------------------------
 Configuration::~Configuration()
 {
-	// Clean up stuff
-	for (unsigned a = 0; a < tt_group_defaults_.size(); a++)
-		delete tt_group_defaults_[a];
 }
 
 // ----------------------------------------------------------------------------
@@ -205,124 +204,6 @@ gc_mapinfo_t Configuration::mapInfo(string name)
 }
 
 // ----------------------------------------------------------------------------
-// Configuration::buildConfig
-//
-// Reads the text file at [filename], processing any #include statements in the
-// file recursively. The resulting 'expanded' text is written to [out]
-// ----------------------------------------------------------------------------
-void Configuration::buildConfig(string filename, string& out)
-{
-	// Open file
-	wxTextFile file;
-	if (!file.Open(filename))
-		return;
-
-	// Get file path
-	wxFileName fn(filename);
-	string path = fn.GetPath(true);
-
-	// Go through line-by-line
-	string line = file.GetNextLine();
-	while (!file.Eof())
-	{
-		// Check for #include
-		if (line.Lower().Trim().StartsWith("#include"))
-		{
-			// Get filename to include
-			Tokenizer tz;
-			tz.openString(line);
-			tz.getToken();	// Skip #include
-			string fn = tz.getToken();
-
-			// Process the file
-			buildConfig(path + fn, out);
-		}
-		else
-			out.Append(line + "\n");
-
-		line = file.GetNextLine();
-	}
-}
-
-// ----------------------------------------------------------------------------
-// Configuration::buildConfig
-//
-// Reads the text entry [entry], processing any #include statements in the
-// entry text recursively. This will search in the resource folder and archive
-// as well as in the parent archive. The resulting 'expanded' text is written 
-// to [out]
-// ----------------------------------------------------------------------------
-void Configuration::buildConfig(ArchiveEntry* entry, string& out, bool use_res)
-{
-	// Check entry was given
-	if (!entry)
-		return;
-
-	// Write entry to temp file
-	string filename = App::path(entry->getName(), App::Dir::Temp);
-	entry->exportFile(filename);
-
-	// Open file
-	wxTextFile file;
-	if (!file.Open(filename))
-		return;
-
-	// Go through line-by-line
-	string line = file.GetFirstLine();
-	while (!file.Eof())
-	{
-		// Check for #include
-		if (line.Lower().Trim().StartsWith("#include"))
-		{
-			// Get name of entry to include
-			Tokenizer tz;
-			tz.openString(line);
-			tz.getToken();	// Skip #include
-			tz.setSpecialCharacters("");
-			string inc_name = tz.getToken();
-			string name = entry->getPath() + inc_name;
-
-			// Get the entry
-			bool done = false;
-			ArchiveEntry* entry_inc = entry->getParent()->entryAtPath(name);
-			// DECORATE paths start from the root, not from the #including entry's directory
-			if (!entry_inc)
-				entry_inc = entry->getParent()->entryAtPath(inc_name);
-			if (entry_inc)
-			{
-				buildConfig(entry_inc, out);
-				done = true;
-			}
-			else
-				LOG_MESSAGE(2, "Couldn't find entry to #include: %s", name);
-
-			// Look in resource pack
-			if (use_res && !done && theArchiveManager->programResourceArchive())
-			{
-				name = "config/games/" + inc_name;
-				entry_inc = theArchiveManager->programResourceArchive()->entryAtPath(name);
-				if (entry_inc)
-				{
-					buildConfig(entry_inc, out);
-					done = true;
-				}
-			}
-
-			// Okay, we've exhausted all possibilities
-			if (!done)
-				LOG_MESSAGE(1, "Error: Attempting to #include nonexistant entry \"%s\" from entry %s", name, entry->getName());
-		}
-		else
-			out.Append(line + "\n");
-
-		line = file.GetNextLine();
-	}
-
-	// Delete temp file
-	wxRemoveFile(filename);
-}
-
-// ----------------------------------------------------------------------------
 // Configuration::readActionSpecials
 //
 // Reads action special definitions from a parsed tree [node], using
@@ -399,7 +280,7 @@ void Configuration::readActionSpecials(
 // Reads thing type definitions from a parsed tree [node], using
 // [group_defaults] for default values
 // ----------------------------------------------------------------------------
-void Configuration::readThingTypes(ParseTreeNode* node, ThingType* group_defaults)
+void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_defaults)
 {
 	// Check if we're clearing all existing specials
 	if (node->getChild("clearexisting"))
@@ -424,20 +305,21 @@ void Configuration::readThingTypes(ParseTreeNode* node, ThingType* group_default
 
 
 	// --- Set up group default properties ---
-	ParseTreeNode* child = nullptr;
-	ThingType* tt_defaults = new ThingType("", groupname);
-	if (group_defaults) tt_defaults->copy(*group_defaults);
-	tt_defaults->parse(node);
-	tt_group_defaults_.push_back(tt_defaults);
+	auto& cur_group_defaults = tt_group_defaults_[groupname];
+	cur_group_defaults.define(-1, "", groupname);
+	if (&group_defaults != &ThingType::unknown())
+		cur_group_defaults.copy(group_defaults);
+	cur_group_defaults.parse(node);
 
 	// --- Go through all child nodes ---
+	ParseTreeNode* child = nullptr;
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		child = (ParseTreeNode*)node->getChild(a);
+		child = node->getChildPTN(a);
 
 		// Check for 'group'
 		if (S_CMPNOCASE(child->getType(), "group"))
-			readThingTypes(child, tt_defaults);
+			readThingTypes(child, cur_group_defaults);
 
 		// Thing type
 		else if (S_CMPNOCASE(child->getType(), "thing"))
@@ -450,7 +332,7 @@ void Configuration::readThingTypes(ParseTreeNode* node, ThingType* group_default
 			thing_types_[type].reset();
 
 			// Apply group defaults
-			thing_types_[type].copy(*tt_defaults);
+			thing_types_[type].copy(cur_group_defaults);
 
 			// Check for simple definition
 			if (child->isLeaf())
@@ -733,8 +615,6 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		udmf_sidedef_props_.clear();
 		udmf_sector_props_.clear();
 		udmf_thing_props_.clear();
-		for (unsigned a = 0; a < tt_group_defaults_.size(); a++)
-			delete tt_group_defaults_[a];
 		tt_group_defaults_.clear();
 	}
 
@@ -1068,7 +948,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 			// Config is in user dir
 			string filename = App::path("games/", App::Dir::User) + game_config.filename + ".cfg";
 			if (wxFileExists(filename))
-				buildConfig(filename, full_config);
+				StringUtils::processIncludes(filename, full_config);
 			else
 			{
 				LOG_MESSAGE(1, "Error: Game configuration file \"%s\" not found", filename);
@@ -1082,7 +962,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 			Archive* archive = theArchiveManager->programResourceArchive();
 			ArchiveEntry* entry = archive->entryAtPath(epath);
 			if (entry)
-				buildConfig(entry, full_config);
+				StringUtils::processIncludes(entry, full_config);
 		}
 	}
 
@@ -1100,7 +980,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 				// Config is in user dir
 				string filename = App::path("games/", App::Dir::User) + conf.filename + ".cfg";
 				if (wxFileExists(filename))
-					buildConfig(filename, full_config);
+					StringUtils::processIncludes(filename, full_config);
 				else
 				{
 					LOG_MESSAGE(1, "Error: Port configuration file \"%s\" not found", filename);
@@ -1114,7 +994,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 				Archive* archive = theArchiveManager->programResourceArchive();
 				ArchiveEntry* entry = archive->entryAtPath(epath);
 				if (entry)
-					buildConfig(entry, full_config);
+					StringUtils::processIncludes(entry, full_config);
 			}
 		}
 	}
@@ -1221,6 +1101,16 @@ const ThingType& Configuration::thingType(unsigned type)
 		return ttype;
 	else
 		return ThingType::unknown();
+}
+
+// ----------------------------------------------------------------------------
+// Configuration::thingTypeGroupDefaults
+//
+// Returns the default ThingType properties for [group]
+// ----------------------------------------------------------------------------
+const ThingType& Configuration::thingTypeGroupDefaults(const string& group)
+{
+	return tt_group_defaults_[group];
 }
 
 // ----------------------------------------------------------------------------
@@ -1568,17 +1458,6 @@ void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_form
 	thingFlagSet(flag, thing, map_format);
 }
 
-// This is used to have the same priority order as DB2
-// Idle, See, Inactive, Spawn, first defined
-enum StateSprites
-{
-	SS_FIRSTDEFINED = 1,
-	SS_SPAWN,
-	SS_INACTIVE,
-	SS_SEE,
-	SS_IDLE,
-};
-
 // ----------------------------------------------------------------------------
 // Configuration::parseDecorateDefs
 //
@@ -1586,7 +1465,8 @@ enum StateSprites
 // ----------------------------------------------------------------------------
 bool Configuration::parseDecorateDefs(Archive* archive)
 {
-	// TODO: Move this stuff out to a separate class/namespace
+	return Game::readDecorateDefs(archive, thing_types_);
+	
 #if 0
 	if (!archive)
 		return false;
@@ -1609,8 +1489,8 @@ bool Configuration::parseDecorateDefs(Archive* archive)
 	// Build full definition string
 	string full_defs;
 	for (unsigned a = 0; a < decorate_entries.size(); a++)
-		buildConfig(decorate_entries[a], full_defs, false);
-	//buildConfig(decorate_base, full_defs, false);
+		StringUtils::processIncludes(decorate_entries[a], full_defs, false);
+	//StringUtils::processIncludes(decorate_base, full_defs, false);
 
 	// Init tokenizer
 	Tokenizer tz;

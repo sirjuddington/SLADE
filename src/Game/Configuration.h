@@ -94,17 +94,13 @@ namespace Game
 		bool	featureSupported(Feature feature) { return supported_features_[feature]; }
 		bool	featureSupported(UDMFFeature feature) { return udmf_features_[feature]; }
 
-		// Config #include handling
-		void	buildConfig(string filename, string& out);
-		void	buildConfig(ArchiveEntry* entry, string& out, bool use_res = true);
-
 		// Configuration reading
 		void	readActionSpecials(
 					ParseTreeNode* node,
 					Arg::SpecialMap& shared_args,
 					ActionSpecial* group_defaults = nullptr
 				);
-		void	readThingTypes(ParseTreeNode* node, ThingType* group_defaults = nullptr);
+		void	readThingTypes(ParseTreeNode* node, const ThingType& group_defaults = ThingType::unknown());
 		void	readUDMFProperties(ParseTreeNode* node, UDMFPropMap& plist);
 		void	readGameSection(ParseTreeNode* node_game, bool port_section = false);
 		bool	readConfiguration(
@@ -124,6 +120,7 @@ namespace Game
 		// Thing types
 		const ThingType&				thingType(unsigned type);
 		const std::map<int, ThingType>&	allThingTypes() const { return thing_types_; }
+		const ThingType&				thingTypeGroupDefaults(const string& group);
 
 		// Thing flags
 		int		nThingFlags() const { return flags_thing_.size(); }
@@ -193,20 +190,21 @@ namespace Game
 		void	dumpUDMFProperties();
 
 	private:
-		string				current_game_;		// Current game name
-		string				current_port_;		// Current port name (empty if none)
-		bool				map_formats_[4];		// Supported map formats
-		string				udmf_namespace_;		// Namespace to use for UDMF
-		int 				boom_sector_flag_start_;  // Beginning of Boom sector flags
+		string		current_game_;				// Current game name
+		string		current_port_;				// Current port name (empty if none)
+		bool		map_formats_[4];			// Supported map formats
+		string		udmf_namespace_;			// Namespace to use for UDMF
+		int 		boom_sector_flag_start_;	// Beginning of Boom sector flags
+		string		sky_flat_;					// Sky flat for 3d mode
+		string		script_language_;			// Scripting language (should be extended to allow multiple)
+		vector<int>	light_levels_;				// Light levels for up/down light in editor
 		
-		std::map<int, ActionSpecial>	action_specials_;	// Action specials
-		std::map<int, ThingType>		thing_types_;		// Thing types
+		// Action specials
+		std::map<int, ActionSpecial>	action_specials_;
 
-		vector<ThingType*>	tt_group_defaults_;	// Thing type group defaults
-		ThingType			ttype_unknown_;		// Default thing type
-		string				sky_flat_;			// Sky flat for 3d mode
-		string				script_language_;	// Scripting language (should be extended to allow multiple)
-		vector<int>			light_levels_;		// Light levels for up/down light in editor
+		// Thing types
+		std::map<int, ThingType>	thing_types_;
+		std::map<string, ThingType>	tt_group_defaults_;
 
 		// Flags
 		struct flag_t

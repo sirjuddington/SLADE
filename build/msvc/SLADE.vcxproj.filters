@@ -1449,6 +1449,9 @@
     <ClCompile Include="..\..\src\Game\Configuration.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Game\Decorate.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2514,6 +2517,9 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Game\Configuration.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Decorate.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,6 +2,7 @@
 
 #include "Args.h"
 
+class PropertyList;
 class ParseTreeNode;
 
 namespace Game
@@ -60,6 +61,7 @@ namespace Game
 		void	reset();
 		void	parse(ParseTreeNode* node);
 		string	stringDesc() const;
+		void	loadProps(PropertyList& props, bool decorate = true);
 
 		static const ThingType&	unknown() { return unknown_; }
 		static void				initGlobal();

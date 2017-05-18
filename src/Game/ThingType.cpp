@@ -372,6 +372,78 @@ string ThingType::stringDesc() const
 	return ret;
 }
 
+void ThingType::loadProps(PropertyList& props, bool decorate)
+{
+	// Set decorate flag
+	decorate_ = decorate;
+
+	// Sprite
+	if (props["sprite"].hasValue())
+	{
+		if (S_CMPNOCASE(props["sprite"].getStringValue(), "tnt1a?"))
+		{
+			if ((!(props["icon"].hasValue())) && icon_.IsEmpty())
+				icon_ = "tnt1a0";
+		}
+		else
+			sprite_ = props["sprite"].getStringValue();
+	}
+
+	// Colour
+	if (props["colour"].hasValue())
+	{
+		// SLADE Colour
+		wxColour wxc(props["colour"].getStringValue());
+		if (wxc.IsOk())
+			colour_.set(COLWX(wxc));
+	}
+	else if (props["color"].hasValue())
+	{
+		// Translate DB2 color indices to RGB values
+		static vector<rgba_t> db2_colours
+		{
+			{ 0x69, 0x69, 0x69, 0xFF },   // DimGray		ARGB value of #FF696969
+			{ 0x41, 0x69, 0xE1, 0xFF },   // RoyalBlue		ARGB value of #FF4169E1
+			{ 0x22, 0x8B, 0x22, 0xFF },   // ForestGreen	ARGB value of #FF228B22
+			{ 0x20, 0xB2, 0xAA, 0xFF },   // LightSeaGreen	ARGB value of #FF20B2AA
+			{ 0xB2, 0x22, 0x22, 0xFF },   // Firebrick		ARGB value of #FFB22222
+			{ 0x94, 0x00, 0xD3, 0xFF },   // DarkViolet		ARGB value of #FF9400D3
+			{ 0xB8, 0x86, 0x0B, 0xFF },   // DarkGoldenrod	ARGB value of #FFB8860B
+			{ 0xC0, 0xC0, 0xC0, 0xFF },   // Silver			ARGB value of #FFC0C0C0
+			{ 0x80, 0x80, 0x80, 0xFF },   // Gray			ARGB value of #FF808080
+			{ 0x00, 0xBF, 0xFF, 0xFF },   // DeepSkyBlue	ARGB value of #FF00BFFF
+			{ 0x32, 0xCD, 0x32, 0xFF },   // LimeGreen		ARGB value of #FF32CD32
+			{ 0xAF, 0xEE, 0xEE, 0xFF },   // PaleTurquoise	ARGB value of #FFAFEEEE
+			{ 0xFF, 0x63, 0x47, 0xFF },   // Tomato			ARGB value of #FFFF6347
+			{ 0xEE, 0x82, 0xEE, 0xFF },   // Violet			ARGB value of #FFEE82EE
+			{ 0xFF, 0xFF, 0x00, 0xFF },   // Yellow			ARGB value of #FFFFFF00
+			{ 0xF5, 0xF5, 0xF5, 0xFF },   // WhiteSmoke		ARGB value of #FFF5F5F5
+			{ 0xFF, 0xB6, 0xC1, 0xFF },   // LightPink		ARGB value of #FFFFB6C1
+			{ 0xFF, 0x8C, 0x00, 0xFF },   // DarkOrange		ARGB value of #FFFF8C00
+			{ 0xBD, 0xB7, 0x6B, 0xFF },   // DarkKhaki		ARGB value of #FFBDB76B
+			{ 0xDA, 0xA5, 0x20, 0xFF },   // Goldenrod		ARGB value of #FFDAA520
+		};
+
+		int color = props["color"].getIntValue();
+		if (color < db2_colours.size())
+			colour_ = db2_colours[color];
+	}
+
+	// Other props
+	if (props["radius"].hasValue()) radius_ = props["radius"].getIntValue();
+	if (props["height"].hasValue()) height_ = props["height"].getIntValue();
+	if (props["scalex"].hasValue()) scale_.x = props["scalex"].getFloatValue();
+	if (props["scaley"].hasValue()) scale_.y = props["scaley"].getFloatValue();
+	if (props["hanging"].hasValue()) hanging_ = props["hanging"].getBoolValue();
+	if (props["angled"].hasValue()) angled_ = props["angled"].getBoolValue();
+	if (props["bright"].hasValue()) fullbright_ = props["bright"].getBoolValue();
+	if (props["decoration"].hasValue()) decoration_ = props["decoration"].getBoolValue();
+	if (props["icon"].hasValue()) icon_ = props["icon"].getStringValue();
+	if (props["translation"].hasValue()) translation_ = props["translation"].getStringValue();
+	if (props["solid"].hasValue()) solid_ = props["solid"].getBoolValue();
+	if (props["obsolete"].hasValue()) flags_ |= FLAG_OBSOLETE;
+}
+
 
 // ----------------------------------------------------------------------------
 //

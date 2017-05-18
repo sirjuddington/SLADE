@@ -4,7 +4,7 @@
 // Copyright(C) 2008 - 2017 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
-// Web:         https://slade.mancubus.net
+// Web:         http://slade.mancubus.net
 // Filename:    Game.cpp
 // Description: Game namespace, brings together all game-handling stuff like
 //              game configurations, port features, etc.
