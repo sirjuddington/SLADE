@@ -55,12 +55,12 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	lv_specials->enableSizeUpdate(false);
 	lv_specials->AppendColumn("#");
 	lv_specials->AppendColumn("Name");
-	vector<Game::sectype_t> types = Game::configuration().allSectorTypes();
-	for (unsigned a = 0; a < types.size(); a++)
+	auto& types = Game::configuration().allSectorTypes();
+	for (auto& type : types)
 	{
 		wxArrayString item;
-		item.Add(S_FMT("%d", types[a].type));
-		item.Add(types[a].name);
+		item.Add(S_FMT("%d", type.first));
+		item.Add(type.second);
 		lv_specials->addItem(999999, item);
 	}
 	lv_specials->enableSizeUpdate(true);
@@ -118,15 +118,18 @@ void SectorSpecialPanel::setup(int special)
 	int base_type = Game::configuration().baseSectorType(special);
 
 	// Select base type
-	vector<Game::sectype_t> types = Game::configuration().allSectorTypes();
-	for (unsigned a = 0; a < types.size(); a++)
+	auto& types = Game::configuration().allSectorTypes();
+	int index = 0;
+	for (auto& i : types)
 	{
-		if (types[a].type == base_type)
+		if (i.first == base_type)
 		{
-			lv_specials->selectItem(a);
-			lv_specials->EnsureVisible(a);
+			lv_specials->selectItem(index);
+			lv_specials->EnsureVisible(index);
 			break;
 		}
+
+		index++;
 	}
 
 	// Flags
@@ -151,7 +154,7 @@ void SectorSpecialPanel::setup(int special)
  *******************************************************************/
 int SectorSpecialPanel::getSelectedSpecial()
 {
-	vector<Game::sectype_t> types = Game::configuration().allSectorTypes();
+	auto& types = Game::configuration().allSectorTypes();
 	int selection = 0;
 	wxArrayInt items = lv_specials->selectedItems();
 	if (items.GetCount())
@@ -160,10 +163,30 @@ int SectorSpecialPanel::getSelectedSpecial()
 	// Get selected base type
 	int base = 0;
 	if (selection < (int)types.size())
-		base = types[selection].type;
+	{
+		int index = 0;
+		for (auto& i : types)
+		{
+			if (index == selection)
+			{
+				base = i.first;
+				break;
+			}
+
+			index++;
+		}
+	}
 
 	if (Game::configuration().supportsSectorFlags())
-		return Game::configuration().boomSectorType(base, choice_damage->GetSelection(), cb_secret->GetValue(), cb_friction->GetValue(), cb_pushpull->GetValue());
+	{
+		return Game::configuration().boomSectorType(
+			base,
+			choice_damage->GetSelection(),
+			cb_secret->GetValue(),
+			cb_friction->GetValue(),
+			cb_pushpull->GetValue()
+		);
+	}
 	else
 		return base;
 }

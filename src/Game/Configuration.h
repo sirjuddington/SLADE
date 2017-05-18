@@ -50,14 +50,6 @@ namespace Game
 		string	sky2;
 	};
 
-	struct sectype_t
-	{
-		int		type;
-		string	name;
-		sectype_t() { type = -1; name = "Unknown"; }
-		sectype_t(int type, string name) { this->type = type; this->name = name; }
-	};
-
 	typedef std::map<string, UDMFProperty>	UDMFPropMap;
 
 	class Configuration
@@ -78,6 +70,11 @@ namespace Game
 		unsigned		nMapNames() const { return maps_.size(); }
 		string			mapName(unsigned index);
 		gc_mapinfo_t	mapInfo(string mapname);
+
+		// General Accessors
+		const std::map<int, ActionSpecial>&	allActionSpecials() const { return action_specials_; }
+		const std::map<int, ThingType>&		allThingTypes() const { return thing_types_; }
+		const std::map<int, string>&		allSectorTypes() const { return sector_types_; }
 
 		// Feature Support
 		bool	featureSupported(Feature feature) { return supported_features_[feature]; }
@@ -102,14 +99,12 @@ namespace Game
 		bool	openConfig(string game, string port = "", uint8_t format = MAP_UNKNOWN);
 
 		// Action specials
-		const ActionSpecial&				actionSpecial(unsigned id);
-		string								actionSpecialName(int special);
-		const std::map<int, ActionSpecial>&	allActionSpecials() const { return action_specials_; }
+		const ActionSpecial&	actionSpecial(unsigned id);
+		string					actionSpecialName(int special);
 
 		// Thing types
-		const ThingType&				thingType(unsigned type);
-		const std::map<int, ThingType>&	allThingTypes() const { return thing_types_; }
-		const ThingType&				thingTypeGroupDefaults(const string& group);
+		const ThingType&	thingType(unsigned type);
+		const ThingType&	thingTypeGroupDefaults(const string& group);
 
 		// Thing flags
 		int		nThingFlags() const { return flags_thing_.size(); }
@@ -149,15 +144,14 @@ namespace Game
 		void			cleanObjectUDMFProps(MapObject* object);
 
 		// Sector types
-		string				sectorTypeName(int type);
-		vector<sectype_t>	allSectorTypes() const { return sector_types_; }
-		int					sectorTypeByName(string name);
-		int					baseSectorType(int type);
-		int					sectorBoomDamage(int type);
-		bool				sectorBoomSecret(int type);
-		bool				sectorBoomFriction(int type);
-		bool				sectorBoomPushPull(int type);
-		int					boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull);
+		string	sectorTypeName(int type);
+		int		sectorTypeByName(string name);
+		int		baseSectorType(int type);
+		int		sectorBoomDamage(int type);
+		bool	sectorBoomSecret(int type);
+		bool	sectorBoomFriction(int type);
+		bool	sectorBoomPushPull(int type);
+		int		boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull);
 
 		// Defaults
 		string	getDefaultString(int type, string property);
@@ -195,20 +189,18 @@ namespace Game
 		std::map<string, ThingType>	tt_group_defaults_;
 
 		// Flags
-		struct flag_t
+		struct Flag
 		{
-			int		flag;
+			int		flag = 0;
 			string	name;
 			string	udmf;
-			flag_t() { flag = 0; name = ""; udmf = ""; }
-			flag_t(int flag, string name, string udmf = "") { this->flag = flag; this->name = name; this->udmf = udmf; }
 		};
-		vector<flag_t>	flags_thing_;
-		vector<flag_t>	flags_line_;
-		vector<flag_t>	triggers_line_;
+		vector<Flag>	flags_thing_;
+		vector<Flag>	flags_line_;
+		vector<Flag>	triggers_line_;
 
 		// Sector types
-		vector<sectype_t>	sector_types_;
+		std::map<int, string>	sector_types_;
 
 		// Map info
 		vector<gc_mapinfo_t>	maps_;

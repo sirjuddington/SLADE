@@ -696,7 +696,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 
 				// Add flag otherwise
 				if (!exists)
-					flags_line_.push_back(flag_t(flag_val, flag_name, flag_udmf));
+					flags_line_.push_back({ (int)flag_val, flag_name, flag_udmf });
 			}
 		}
 
@@ -754,7 +754,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 
 				// Add trigger otherwise
 				if (!exists)
-					triggers_line_.push_back(flag_t(flag_val, flag_name, flag_udmf));
+					triggers_line_.push_back({ (int)flag_val, flag_name, flag_udmf });
 			}
 		}
 
@@ -812,7 +812,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 
 				// Add flag otherwise
 				if (!exists)
-					flags_thing_.push_back(flag_t(flag_val, flag_name, flag_udmf));
+					flags_thing_.push_back({ (int)flag_val, flag_name, flag_udmf });
 			}
 		}
 
@@ -821,30 +821,18 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
-				ParseTreeNode* value = (ParseTreeNode*)node->getChild(c);
+				auto value = node->getChildPTN(c);
 
 				// Check for 'type'
 				if (!(S_CMPNOCASE(value->getType(), "type")))
 					continue;
 
+				// Parse type value
 				long type_val;
 				value->getName().ToLong(&type_val);
 
-				// Check if the sector type already exists
-				bool exists = false;
-				for (unsigned t = 0; t < sector_types_.size(); t++)
-				{
-					if (sector_types_[t].type == type_val)
-					{
-						exists = true;
-						sector_types_[t].name = value->getStringValue();
-						break;
-					}
-				}
-
-				// Add type otherwise
-				if (!exists)
-					sector_types_.push_back(sectype_t(type_val, value->getStringValue()));
+				// Set type name
+				sector_types_[type_val] = value->getStringValue();
 			}
 		}
 
@@ -1947,16 +1935,10 @@ string Configuration::sectorTypeName(int type)
 		return name;
 	}
 
-	// Go through sector types
-	string name = "Unknown";
-	for (unsigned a = 0; a < sector_types_.size(); a++)
-	{
-		if (sector_types_[a].type == type)
-		{
-			name = sector_types_[a].name;
-			break;
-		}
-	}
+	// Get base type name
+	string name = sector_types_[type];
+	if (name.empty())
+		name = "Unknown";
 
 	// Add generalised flags to type name
 	for (unsigned a = 0; a < gen_flags.size(); a++)
@@ -1972,11 +1954,9 @@ string Configuration::sectorTypeName(int type)
 // ----------------------------------------------------------------------------
 int Configuration::sectorTypeByName(string name)
 {
-	for (unsigned a = 0; a < sector_types_.size(); a++)
-	{
-		if (sector_types_[a].name == name)
-			return sector_types_[a].type;
-	}
+	for (auto& i : sector_types_)
+		if (i.second == name)
+			return i.first;
 
 	return 0;
 }
