@@ -43,16 +43,6 @@ namespace Game
 		ThingRotation,		// Per-thing pitch and yaw rotation
 	};
 
-	struct udmfp_t
-	{
-		UDMFProperty*	property;
-		int				index;
-		udmfp_t(UDMFProperty* property = nullptr) { this->property = property; index = 0; }
-
-		bool operator< (const udmfp_t& right) const { return (index < right.index); }
-		bool operator> (const udmfp_t& right) const { return (index > right.index); }
-	};
-
 	struct gc_mapinfo_t
 	{
 		string	mapname;
@@ -68,7 +58,7 @@ namespace Game
 		sectype_t(int type, string name) { this->type = type; this->name = name; }
 	};
 
-	WX_DECLARE_STRING_HASH_MAP(udmfp_t, UDMFPropMap);
+	typedef std::map<string, UDMFProperty>	UDMFPropMap;
 
 	class Configuration
 	{
@@ -85,7 +75,6 @@ namespace Game
 		string	scriptLanguage() const { return script_language_; }
 		int		lightLevelInterval();
 
-		string			readConfigName(MemChunk& mc);
 		unsigned		nMapNames() const { return maps_.size(); }
 		string			mapName(unsigned index);
 		gc_mapinfo_t	mapInfo(string mapname);
@@ -153,11 +142,10 @@ namespace Game
 		int				spacTriggerIndexHexen(MapLine* line);
 		wxArrayString	allSpacTriggers();
 		void			setLineSpacTrigger(unsigned trigger_index, MapLine* line);
-		static int		parseTagged(ParseTreeNode* tagged);
 
 		// UDMF properties
 		UDMFProperty*	getUDMFProperty(string name, int type);
-		vector<udmfp_t>	allUDMFProperties(int type);
+		UDMFPropMap&	allUDMFProperties(int type);
 		void			cleanObjectUDMFProps(MapObject* object);
 
 		// Sector types

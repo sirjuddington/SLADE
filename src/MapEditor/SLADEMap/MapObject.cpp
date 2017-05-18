@@ -159,7 +159,7 @@ bool MapObject::boolProperty(string key)
 	{
 		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getBoolValue();
+			return prop->defaultValue().getBoolValue();
 		else
 			return false;
 	}
@@ -179,7 +179,7 @@ int MapObject::intProperty(string key)
 	{
 		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getIntValue();
+			return prop->defaultValue().getIntValue();
 		else
 			return 0;
 	}
@@ -199,7 +199,7 @@ double MapObject::floatProperty(string key)
 	{
 		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getFloatValue();
+			return prop->defaultValue().getFloatValue();
 		else
 			return 0;
 	}
@@ -219,7 +219,7 @@ string MapObject::stringProperty(string key)
 	{
 		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getStringValue();
+			return prop->defaultValue().getStringValue();
 		else
 			return "";
 	}

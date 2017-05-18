@@ -130,47 +130,6 @@ int Configuration::lightLevelInterval()
 }
 
 // ----------------------------------------------------------------------------
-// Configuration::readConfigName
-//
-// Parses the game configuration definition in [mc] and returns the
-// configuration name
-// ----------------------------------------------------------------------------
-string Configuration::readConfigName(MemChunk& mc)
-{
-	Tokenizer tz;
-	tz.openMem(&mc, "gameconfig");
-
-	// Parse text
-	string token = tz.getToken();
-	while (!token.IsEmpty())
-	{
-		// Game section
-		if (S_CMPNOCASE(token, "game"))
-		{
-			tz.getToken();	// Skip {
-
-			token = tz.getToken();
-			while (token != "}")
-			{
-				// Config name
-				if (S_CMPNOCASE(token, "name"))
-				{
-					tz.getToken();	// Skip =
-					return tz.getToken();
-				}
-
-				token = tz.getToken();
-			}
-		}
-
-		token = tz.getToken();
-	}
-
-	// Name not found (invalid config?)
-	return "";
-}
-
-// ----------------------------------------------------------------------------
 // Configuration::mapName
 //
 // Returns the map name at [index] for the game configuration
@@ -357,7 +316,7 @@ void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 	// Read block properties
 	for (unsigned a = 0; a < block->nChildren(); a++)
 	{
-		ParseTreeNode* group = (ParseTreeNode*)block->getChild(a);
+		auto group = block->getChildPTN(a);
 
 		// Group definition
 		if (S_CMPNOCASE(group->getType(), "group"))
@@ -367,22 +326,15 @@ void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 			// Go through the group
 			for (unsigned b = 0; b < group->nChildren(); b++)
 			{
-				ParseTreeNode* def = (ParseTreeNode*)group->getChild(b);
+				auto def = group->getChildPTN(b);
 
 				if (S_CMPNOCASE(def->getType(), "property"))
 				{
-					// Create property if needed
-					if (!plist[def->getName()].property)
-						plist[def->getName()].property = new UDMFProperty();
-
 					// Parse group defaults
-					plist[def->getName()].property->parse(group, groupname);
+					plist[def->getName()].parse(group, groupname);
 
 					// Parse definition
-					plist[def->getName()].property->parse(def, groupname);
-
-					// Set index
-					plist[def->getName()].index = plist.size();
+					plist[def->getName()].parse(def, groupname);
 				}
 			}
 		}
@@ -401,10 +353,6 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 	for (unsigned a = 0; a < node_game->nChildren(); a++)
 	{
 		ParseTreeNode* node = (ParseTreeNode*)node_game->getChild(a);
-
-		//// Game name
-		//if (S_CMPNOCASE(node->getName(), "name"))
-		//	this->name = node->getStringValue();
 
 		// Allow any map name
 		if (S_CMPNOCASE(node->getName(), "map_name_any"))
@@ -1469,568 +1417,6 @@ void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_form
 bool Configuration::parseDecorateDefs(Archive* archive)
 {
 	return Game::readDecorateDefs(archive, thing_types_);
-	
-#if 0
-	if (!archive)
-		return false;
-
-	// Get base decorate file
-	Archive::search_options_t opt;
-	opt.match_name = "decorate";
-	//opt.match_type = EntryType::getType("text");
-	opt.ignore_ext = true;
-	vector<ArchiveEntry*> decorate_entries = archive->findAll(opt);
-	if (decorate_entries.empty())
-		return false;
-
-	LOG_MESSAGE(2, "Parsing DECORATE entries found in archive %s", archive->getFilename());
-
-	//ArchiveEntry* decorate_base = archive->getEntry("DECORATE", true);
-	//if (!decorate_base)
-	//	return false;
-
-	// Build full definition string
-	string full_defs;
-	for (unsigned a = 0; a < decorate_entries.size(); a++)
-		StringUtils::processIncludes(decorate_entries[a], full_defs, false);
-	//StringUtils::processIncludes(decorate_base, full_defs, false);
-
-	// Init tokenizer
-	Tokenizer tz;
-	tz.setSpecialCharacters(":,{}");
-	tz.enableDecorate(true);
-	tz.openString(full_defs);
-
-	// --- Parse ---
-	string token = tz.getToken();
-	while (!token.empty())
-	{
-		// Check for actor definition
-		if (S_CMPNOCASE(token, "actor"))
-		{
-			// Get actor name
-			string name = tz.getToken();
-
-			// Check for inheritance
-			string next = tz.peekToken();
-			if (next == ":")
-			{
-				tz.skipToken(); // Skip :
-				tz.skipToken(); // Skip parent actor
-				next = tz.peekToken();
-			}
-
-			// Check for replaces
-			if (S_CMPNOCASE(next, "replaces"))
-			{
-				tz.skipToken(); // Skip replaces
-				tz.skipToken(); // Skip replace actor
-			}
-
-			// Skip "native" keyword if present
-			if (S_CMPNOCASE(tz.peekToken(), "native"))
-				tz.skipToken();
-
-			// Check for no editor number (ie can't be placed in the map)
-			if (tz.peekToken() == "{")
-			{
-				LOG_MESSAGE(3, "Not adding actor %s, no editor number", name);
-
-				// Skip actor definition
-				tz.skipToken();
-				tz.skipSection("{", "}");
-			}
-			else
-			{
-				// Read editor number
-				int type;
-				tz.getInteger(&type);
-				string group;
-				PropertyList found_props;
-				bool title_given = false;
-				bool sprite_given = false;
-				bool group_given = false;
-				bool filters_present = false;
-				bool available = false;
-
-				// Skip "native" keyword if present
-				if (S_CMPNOCASE(tz.peekToken(), "native"))
-					tz.skipToken();
-
-				// Check for actor definition open
-				token = tz.getToken();
-				if (token == "{")
-				{
-					token = tz.getToken();
-					while (token != "}")
-					{
-						// Check for subsection
-						if (token == "{")
-							tz.skipSection("{", "}");
-
-						// Title
-						else if (S_CMPNOCASE(token, "//$Title"))
-						{
-							name = tz.getLine();
-							title_given = true;
-						}
-
-						// Game filter
-						else if (S_CMPNOCASE(token, "game"))
-						{
-							filters_present = true;
-							if (gameDef(currentGame()).supportsFilter(tz.getToken()))
-								available = true;
-						}
-
-						// Tag
-						else if (!title_given && S_CMPNOCASE(token, "tag"))
-							name = tz.getToken();
-
-						// Category
-						else if (S_CMPNOCASE(token, "//$Group") || S_CMPNOCASE(token, "//$Category"))
-						{
-							group = tz.getLine();
-							group_given = true;
-						}
-
-						// Sprite
-						else if (S_CMPNOCASE(token, "//$EditorSprite") || S_CMPNOCASE(token, "//$Sprite"))
-						{
-							found_props["sprite"] = tz.getToken();
-							sprite_given = true;
-						}
-
-						// Radius
-						else if (S_CMPNOCASE(token, "radius"))
-							found_props["radius"] = tz.getInteger();
-
-						// Height
-						else if (S_CMPNOCASE(token, "height"))
-							found_props["height"] = tz.getInteger();
-
-						// Scale
-						else if (S_CMPNOCASE(token, "scale"))
-							found_props["scalex"] = found_props["scaley"] = tz.getFloat();
-						else if (S_CMPNOCASE(token, "xscale"))
-							found_props["scalex"] = tz.getFloat();
-						else if (S_CMPNOCASE(token, "yscale"))
-							found_props["scaley"] = tz.getFloat();
-
-						// Angled
-						else if (S_CMPNOCASE(token, "//$Angled"))
-							found_props["angled"] = true;
-						else if (S_CMPNOCASE(token, "//$NotAngled"))
-							found_props["angled"] = false;
-
-						// Monster
-						else if (S_CMPNOCASE(token, "monster"))
-						{
-							found_props["solid"] = true;		// Solid
-							found_props["decoration"] = false;	// Not a decoration
-						}
-
-						// Hanging
-						else if (S_CMPNOCASE(token, "+spawnceiling"))
-							found_props["hanging"] = true;
-
-						// Fullbright
-						else if (S_CMPNOCASE(token, "+bright"))
-							found_props["bright"] = true;
-
-						// Is Decoration
-						else if (S_CMPNOCASE(token, "//$IsDecoration"))
-							found_props["decoration"] = true;
-
-						// Icon
-						else if (S_CMPNOCASE(token, "//$Icon"))
-							found_props["icon"] = tz.getToken();
-
-						// DB2 Color
-						else if (S_CMPNOCASE(token, "//$Color"))
-							found_props["color"] = tz.getToken();
-
-						// SLADE 3 Colour (overrides DB2 color)
-						// Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
-						else if (S_CMPNOCASE(token, "//$Colour"))
-							found_props["colour"] = tz.getLine();
-
-						// Obsolete thing
-						else if (S_CMPNOCASE(token, "//$Obsolete"))
-							found_props["obsolete"] = true;
-
-						// Translation
-						else if (S_CMPNOCASE(token, "translation"))
-						{
-							string translation = "\"";
-							translation += tz.getToken();
-							while (tz.peekToken() == ",")
-							{
-								translation += tz.getToken(); // ,
-								translation += tz.getToken(); // next range
-							}
-							translation += "\"";
-							found_props["translation"] = translation;
-						}
-
-						// Solid
-						else if (S_CMPNOCASE(token, "+solid"))
-							found_props["solid"] = true;
-
-						// States
-						if (!sprite_given && S_CMPNOCASE(token, "states"))
-						{
-							tz.skipToken(); // Skip {
-
-							int statecounter = 0;
-							string spritestate;
-							string laststate;
-							int priority = 0;
-							int lastpriority = 0;
-
-							token = tz.getToken();
-							while (token != "}")
-							{
-								// Idle, See, Inactive, Spawn, and finally first defined
-								if (priority < SS_IDLE)
-								{
-									string myspritestate = token;
-									token = tz.getToken();
-									while (token.Cmp(":") && token.Cmp("}"))
-									{
-										myspritestate = token;
-										token = tz.getToken();
-									}
-									if (S_CMPNOCASE(token, "}"))
-										break;
-									string sb = tz.getToken(); // Sprite base
-
-									// Handle removed states
-									if (S_CMPNOCASE(sb, "Stop"))
-										continue;
-									// Handle direct gotos, like ZDoom's dead monsters
-									if (S_CMPNOCASE(sb, "Goto"))
-									{
-										tz.skipToken();
-										// Skip scope and state
-										if (tz.peekToken() == ":")
-										{
-											tz.skipToken();	// first :
-											tz.skipToken(); // second :
-											tz.skipToken(); // state name
-										}
-										continue;
-									}
-									string sf = tz.getToken(); // Sprite frame(s)
-									int mypriority = 0;
-									// If the same state is given several names, 
-									// don't read the next name as a sprite name!
-									// If "::" is encountered, it's a scope operator.
-									if ((!sf.Cmp(":")) && tz.peekToken().Cmp(":"))
-									{
-										if (S_CMPNOCASE(myspritestate, "spawn"))			mypriority = SS_SPAWN;
-										else if (S_CMPNOCASE(myspritestate, "inactive"))	mypriority = SS_INACTIVE;
-										else if (S_CMPNOCASE(myspritestate, "see"))			mypriority = SS_SEE;
-										else if (S_CMPNOCASE(myspritestate, "idle"))		mypriority = SS_IDLE;
-										if (mypriority > lastpriority)
-										{
-											laststate = myspritestate;
-											lastpriority = mypriority;
-										}
-										continue;
-									}
-									else
-									{
-										spritestate = myspritestate;
-										if (statecounter++ == 0)						mypriority = SS_FIRSTDEFINED;
-										if (S_CMPNOCASE(spritestate, "spawn"))			mypriority = SS_SPAWN;
-										else if (S_CMPNOCASE(spritestate, "inactive"))	mypriority = SS_INACTIVE;
-										else if (S_CMPNOCASE(spritestate, "see"))		mypriority = SS_SEE;
-										else if (S_CMPNOCASE(spritestate, "idle"))		mypriority = SS_IDLE;
-										if (lastpriority > mypriority)
-										{
-											spritestate = laststate;
-											mypriority = lastpriority;
-										}
-									}
-									if (sb.length() == 4)
-									{
-										string sprite = sb + sf.Left(1) + "?";
-										if (mypriority > priority)
-										{
-											priority = mypriority;
-											found_props["sprite"] = sprite;
-											LOG_MESSAGE(3, "Actor %s found sprite %s from state %s", name, sprite, spritestate);
-											lastpriority = -1;
-										}
-									}
-								}
-								else
-								{
-									tz.skipSection("{", "}");
-									break;
-								}
-								token = tz.getToken();
-							}
-						}
-
-						token = tz.getToken();
-					}
-
-					LOG_MESSAGE(3, "Parsed actor %s: %d", name, type);
-				}
-				else
-					LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", name);
-
-				// Ignore actors filtered for other games, 
-				// and actors with a negative or null type
-				if (type > 0 && (available || !filters_present))
-				{
-					bool defined = false;
-
-					// Create thing type object if needed
-					if (!thing_types_[type].type)
-					{
-						thing_types_[type].type = new ThingType();
-						thing_types_[type].index = thing_types_.size();
-						thing_types_[type].number = type;
-						thing_types_[type].type->decorate_ = true;
-					}
-					else
-						defined = true;
-					ThingType* tt = thing_types_[type].type;
-
-					// Get group defaults (if any)
-					if (!group.empty())
-					{
-						ThingType* group_defaults = NULL;
-						for (unsigned a = 0; a < tt_group_defaults_.size(); a++)
-						{
-							if (S_CMPNOCASE(group, tt_group_defaults_[a]->group_))
-							{
-								group_defaults = tt_group_defaults_[a];
-								break;
-							}
-						}
-
-						if (group_defaults)
-						{
-							tt->copy(group_defaults);
-						}
-					}
-
-					// Setup thing
-					if (!defined || title_given || tt->decorate_)
-						tt->name_ = name;
-					if (!defined || group_given || tt->decorate_)
-						tt->group_ = group.empty() ? "Decorate" : group;
-					if (!defined || sprite_given || tt->sprite_.IsEmpty() || tt->decorate_)
-					{
-						if (found_props["sprite"].hasValue())
-						{
-							if (S_CMPNOCASE(found_props["sprite"].getStringValue(), "tnt1a?"))
-							{
-								if ((!(found_props["icon"].hasValue())) && tt->icon_.IsEmpty())
-									tt->icon_ = "tnt1a0";
-							}
-							else
-								tt->sprite_ = found_props["sprite"].getStringValue();
-						}
-					}
-					if (found_props["radius"].hasValue()) tt->radius_ = found_props["radius"].getIntValue();
-					if (found_props["height"].hasValue()) tt->height_ = found_props["height"].getIntValue();
-					if (found_props["scalex"].hasValue()) tt->scale_.x = found_props["scalex"].getFloatValue();
-					if (found_props["scaley"].hasValue()) tt->scale_.y = found_props["scaley"].getFloatValue();
-					if (found_props["hanging"].hasValue()) tt->hanging_ = found_props["hanging"].getBoolValue();
-					if (found_props["angled"].hasValue()) tt->angled_ = found_props["angled"].getBoolValue();
-					if (found_props["bright"].hasValue()) tt->fullbright_ = found_props["bright"].getBoolValue();
-					if (found_props["decoration"].hasValue()) tt->decoration_ = found_props["decoration"].getBoolValue();
-					if (found_props["icon"].hasValue()) tt->icon_ = found_props["icon"].getStringValue();
-					if (found_props["translation"].hasValue()) tt->translation_ = found_props["translation"].getStringValue();
-					if (found_props["solid"].hasValue()) tt->solid_ = found_props["solid"].getBoolValue();
-					if (found_props["colour"].hasValue())
-					{
-						wxColour wxc(found_props["colour"].getStringValue());
-						if (wxc.IsOk())
-						{
-							tt->colour_.set(COLWX(wxc));
-						}
-					}
-					else if (found_props["color"].hasValue())
-					{
-						// Translate DB2 color indices to RGB values
-						int color = found_props["color"].getIntValue();
-						switch (color)
-						{
-						case  0:	// DimGray			ARGB value of #FF696969
-							tt->colour_.r = 0x69; tt->colour_.g = 0x69; tt->colour_.b = 0x69; break;
-						case  1:	// RoyalBlue		ARGB value of #FF4169E1
-							tt->colour_.r = 0x41; tt->colour_.g = 0x69; tt->colour_.b = 0xE1; break;
-						case  2:	// ForestGreen		ARGB value of #FF228B22
-							tt->colour_.r = 0x22; tt->colour_.g = 0x8B; tt->colour_.b = 0x22; break;
-						case  3:	// LightSeaGreen	ARGB value of #FF20B2AA
-							tt->colour_.r = 0x20; tt->colour_.g = 0xB2; tt->colour_.b = 0xAA; break;
-						case  4:	// Firebrick		ARGB value of #FFB22222
-							tt->colour_.r = 0xB2; tt->colour_.g = 0x22; tt->colour_.b = 0x22; break;
-						case  5:	// DarkViolet		ARGB value of #FF9400D3
-							tt->colour_.r = 0x94; tt->colour_.g = 0x00; tt->colour_.b = 0xD3; break;
-						case  6:	// DarkGoldenrod	ARGB value of #FFB8860B
-							tt->colour_.r = 0xB8; tt->colour_.g = 0x86; tt->colour_.b = 0x0B; break;
-						case  7:	// Silver			ARGB value of #FFC0C0C0
-							tt->colour_.r = 0xC0; tt->colour_.g = 0xC0; tt->colour_.b = 0xC0; break;
-						case  8:	// Gray				ARGB value of #FF808080
-							tt->colour_.r = 0x80; tt->colour_.g = 0x80; tt->colour_.b = 0x80; break;
-						case  9:	// DeepSkyBlue		ARGB value of #FF00BFFF
-							tt->colour_.r = 0x00; tt->colour_.g = 0xBF; tt->colour_.b = 0xFF; break;
-						case 10:	// LimeGreen		ARGB value of #FF32CD32
-							tt->colour_.r = 0x32; tt->colour_.g = 0xCD; tt->colour_.b = 0x32; break;
-						case 11:	// PaleTurquoise	ARGB value of #FFAFEEEE
-							tt->colour_.r = 0xAF; tt->colour_.g = 0xEE; tt->colour_.b = 0xEE; break;
-						case 12:	// Tomato			ARGB value of #FFFF6347
-							tt->colour_.r = 0xFF; tt->colour_.g = 0x63; tt->colour_.b = 0x47; break;
-						case 13:	// Violet			ARGB value of #FFEE82EE
-							tt->colour_.r = 0xEE; tt->colour_.g = 0x82; tt->colour_.b = 0xEE; break;
-						case 14:	// Yellow			ARGB value of #FFFFFF00
-							tt->colour_.r = 0xFF; tt->colour_.g = 0xFF; tt->colour_.b = 0x00; break;
-						case 15:	// WhiteSmoke		ARGB value of #FFF5F5F5
-							tt->colour_.r = 0xF5; tt->colour_.g = 0xF5; tt->colour_.b = 0xF5; break;
-						case 16:	// LightPink		ARGB value of #FFFFB6C1
-							tt->colour_.r = 0xFF; tt->colour_.g = 0xB6; tt->colour_.b = 0xC1; break;
-						case 17:	// DarkOrange		ARGB value of #FFFF8C00
-							tt->colour_.r = 0xFF; tt->colour_.g = 0x8C; tt->colour_.b = 0x00; break;
-						case 18:	// DarkKhaki		ARGB value of #FFBDB76B
-							tt->colour_.r = 0xBD; tt->colour_.g = 0xB7; tt->colour_.b = 0x6B; break;
-						case 19:	// Goldenrod		ARGB value of #FFDAA520
-							tt->colour_.r = 0xDA; tt->colour_.g = 0xA5; tt->colour_.b = 0x20; break;
-						}
-					}
-					if (found_props["obsolete"].hasValue()) tt->flags_ |= THING_OBSOLETE;
-				}
-			}
-		}
-		// Old DECORATE definitions might be found
-		else
-		{
-			string name;
-			string sprite;
-			string group;
-			bool spritefound = false;
-			char frame;
-			bool framefound = false;
-			int type = -1;
-			PropertyList found_props;
-			if (tz.peekToken() == "{")
-				name = token;
-			// DamageTypes aren't old DECORATE format, but we handle them here to skip over them
-			else if ((S_CMPNOCASE(token, "pickup")) || (S_CMPNOCASE(token, "breakable")) 
-				|| (S_CMPNOCASE(token, "projectile")) || (S_CMPNOCASE(token, "damagetype")))
-			{
-				group = token;
-				name = tz.getToken();
-			}
-			tz.skipToken();	// skip '{'
-			do
-			{
-				token = tz.getToken();
-				if (S_CMPNOCASE(token, "DoomEdNum"))
-				{
-					tz.getInteger(&type);
-				}
-				else if (S_CMPNOCASE(token, "Sprite"))
-				{
-					sprite = tz.getToken();
-					spritefound = true;
-				}
-				else if (S_CMPNOCASE(token, "Frames"))
-				{
-					token = tz.getToken();
-					unsigned pos = 0;
-					if (token.length() > 0)
-					{
-						if ((token[0] < 'a' || token[0] > 'z') && (token[0] < 'A' || token[0] > ']'))
-						{
-							pos = token.find(':') + 1;
-							if (token.length() <= pos)
-								pos = token.length() + 1;
-							else if ((token.length() >= pos + 2) && token[pos + 1] == '*')
-								found_props["bright"] = true;
-						}
-					}
-					if (pos < token.length())
-					{
-						frame = token[pos];
-						framefound = true;
-					}
-				}
-				else if (S_CMPNOCASE(token, "Radius"))
-					found_props["radius"] = tz.getInteger();
-				else if (S_CMPNOCASE(token, "Height"))
-					found_props["height"] = tz.getInteger();
-				else if (S_CMPNOCASE(token, "Solid"))
-					found_props["solid"] = true;
-				else if (S_CMPNOCASE(token, "SpawnCeiling"))
-					found_props["hanging"] = true;
-				else if (S_CMPNOCASE(token, "Scale"))
-					found_props["scale"] = tz.getFloat();
-				else if (S_CMPNOCASE(token, "Translation1"))
-					found_props["translation"] = S_FMT("doom%d", tz.getInteger());
-			}
-			while (token != "}" && !token.empty());
-
-			// Add only if a DoomEdNum is present
-			if (type > 0)
-			{
-				bool defined = false;
-				// Create thing type object if needed
-				if (!thing_types_[type].type)
-				{
-					thing_types_[type].type = new ThingType();
-					thing_types_[type].index = thing_types_.size();
-					thing_types_[type].number = type;
-					thing_types_[type].type->decorate_ = true;
-				}
-				else
-					defined = true;
-				ThingType* tt = thing_types_[type].type;
-
-				// Setup thing
-				if (!defined)
-				{
-					tt->name_ = name;
-					tt->group_ = "Decorate";
-					if (group.length())
-						tt->group_ += "/" + group;
-					tt->angled_ = false;
-					if (spritefound && framefound)
-					{
-						sprite = sprite + frame + '?';
-						if (S_CMPNOCASE(sprite, "tnt1a?"))
-							tt->icon_ = "tnt1a0";
-						else
-							tt->sprite_ = sprite;
-					}
-				}
-				if (found_props["radius"].hasValue()) tt->radius_ = found_props["radius"].getIntValue();
-				if (found_props["height"].hasValue()) tt->height_ = found_props["height"].getIntValue();
-				if (found_props["scale"].hasValue()) tt->scale_.x = tt->scale_.y = found_props["scale"].getFloatValue();
-				if (found_props["hanging"].hasValue()) tt->hanging_ = found_props["hanging"].getBoolValue();
-				if (found_props["bright"].hasValue()) tt->fullbright_ = found_props["bright"].getBoolValue();
-				if (found_props["translation"].hasValue()) tt->translation_ = found_props["translation"].getStringValue();
-				LOG_MESSAGE(3, "Parsed %s %s: %d", group.length() ? group : "decoration", name, type);
-			}
-			else
-				LOG_MESSAGE(3, "Not adding %s %s, no editor number", group.length() ? group : "decoration", name);
-		}
-
-		token = tz.getToken();
-	}
-
-	//wxFile tempfile(App::path("decorate_full.txt", App::Dir::Executable), wxFile::write);
-	//tempfile.Write(full_defs);
-	//tempfile.Close();
-
-#endif
-	return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -2040,12 +1426,9 @@ bool Configuration::parseDecorateDefs(Archive* archive)
 // ----------------------------------------------------------------------------
 void Configuration::clearDecorateDefs()
 {
-	/*for (auto def : thing_types)
-		if (def.second.type && def.second.type->decorate)
-		{
-			delete def.second.type;
-			def.second.type = nullptr;
-		}*/
+	for (auto def : thing_types_)
+		if (def.second.decorate() && def.second.defined())
+			def.second.define(-1, "", "");
 }
 
 // ----------------------------------------------------------------------------
@@ -2320,20 +1703,19 @@ string Configuration::spacTriggerString(MapLine* line, int map_format)
 	{
 		// Go through all line UDMF properties
 		string trigger = "";
-		vector<udmfp_t> props = allUDMFProperties(MOBJ_LINE);
-		sort(props.begin(), props.end());
-		for (unsigned a = 0; a < props.size(); a++)
+		auto& props = allUDMFProperties(MOBJ_LINE);
+		for (auto& prop : props)
 		{
 			// Check for trigger property
-			if (props[a].property->isTrigger())
+			if (prop.second.isTrigger())
 			{
 				// Check if the line has this property
-				if (line->boolProperty(props[a].property->getProperty()))
+				if (line->boolProperty(prop.second.propName()))
 				{
 					// Add to trigger line
 					if (!trigger.IsEmpty())
 						trigger += ", ";
-					trigger += props[a].property->getName();
+					trigger += prop.second.name();
 				}
 			}
 		}
@@ -2421,15 +1803,15 @@ void Configuration::setLineSpacTrigger(unsigned index, MapLine* line)
 UDMFProperty* Configuration::getUDMFProperty(string name, int type)
 {
 	if (type == MOBJ_VERTEX)
-		return udmf_vertex_props_[name].property;
+		return &udmf_vertex_props_[name];
 	else if (type == MOBJ_LINE)
-		return udmf_linedef_props_[name].property;
+		return &udmf_linedef_props_[name];
 	else if (type == MOBJ_SIDE)
-		return udmf_sidedef_props_[name].property;
+		return &udmf_sidedef_props_[name];
 	else if (type == MOBJ_SECTOR)
-		return udmf_sector_props_[name].property;
+		return &udmf_sector_props_[name];
 	else if (type == MOBJ_THING)
-		return udmf_thing_props_[name].property;
+		return &udmf_thing_props_[name];
 	else
 		return nullptr;
 }
@@ -2439,39 +1821,23 @@ UDMFProperty* Configuration::getUDMFProperty(string name, int type)
 //
 // Returns all defined UDMF properties for MapObject type [type]
 // ----------------------------------------------------------------------------
-vector<udmfp_t> Configuration::allUDMFProperties(int type)
+UDMFPropMap& Configuration::allUDMFProperties(int type)
 {
-	vector<udmfp_t> ret;
+	static UDMFPropMap map_invalid_type;
 
 	// Build list depending on type
-	UDMFPropMap* map = nullptr;
 	if (type == MOBJ_VERTEX)
-		map = &udmf_vertex_props_;
+		return udmf_vertex_props_;
 	else if (type == MOBJ_LINE)
-		map = &udmf_linedef_props_;
+		return udmf_linedef_props_;
 	else if (type == MOBJ_SIDE)
-		map = &udmf_sidedef_props_;
+		return udmf_sidedef_props_;
 	else if (type == MOBJ_SECTOR)
-		map = &udmf_sector_props_;
+		return udmf_sector_props_;
 	else if (type == MOBJ_THING)
-		map = &udmf_thing_props_;
-	else
-		return ret;
+		return udmf_thing_props_;
 
-	UDMFPropMap::iterator i = map->begin();
-	while (i != map->end())
-	{
-		if (i->second.property)
-		{
-			udmfp_t up(i->second.property);
-			up.index = i->second.index;
-			ret.push_back(up);
-		}
-
-		i++;
-	}
-
-	return ret;
+	return map_invalid_type;
 }
 
 // ----------------------------------------------------------------------------
@@ -2499,46 +1865,33 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 		return;
 
 	// Go through properties
-	UDMFPropMap::iterator i = map->begin();
-	while (i != map->end())
+	for (auto& i : *map)
 	{
-		if (!i->second.property)
-		{
-			i++;
-			continue;
-		}
-
 		// Check if the object even has this property
-		if (!object->hasProp(i->first))
-		{
-			i++;
+		if (!object->hasProp(i.first))
 			continue;
-		}
 
 		// Remove the property from the object if it is the default value
-		//Property& def = i->second.property->getDefaultValue();
-		if (i->second.property->getDefaultValue().getType() == PROP_BOOL)
+		if (i.second.defaultValue().getType() == PROP_BOOL)
 		{
-			if (i->second.property->getDefaultValue().getBoolValue() == object->boolProperty(i->first))
-				object->props().removeProperty(i->first);
+			if (i.second.defaultValue().getBoolValue() == object->boolProperty(i.first))
+				object->props().removeProperty(i.first);
 		}
-		else if (i->second.property->getDefaultValue().getType() == PROP_INT)
+		else if (i.second.defaultValue().getType() == PROP_INT)
 		{
-			if (i->second.property->getDefaultValue().getIntValue() == object->intProperty(i->first))
-				object->props().removeProperty(i->first);
+			if (i.second.defaultValue().getIntValue() == object->intProperty(i.first))
+				object->props().removeProperty(i.first);
 		}
-		else if (i->second.property->getDefaultValue().getType() == PROP_FLOAT)
+		else if (i.second.defaultValue().getType() == PROP_FLOAT)
 		{
-			if (i->second.property->getDefaultValue().getFloatValue() == object->floatProperty(i->first))
-				object->props().removeProperty(i->first);
+			if (i.second.defaultValue().getFloatValue() == object->floatProperty(i.first))
+				object->props().removeProperty(i.first);
 		}
-		else if (i->second.property->getDefaultValue().getType() == PROP_STRING)
+		else if (i.second.defaultValue().getType() == PROP_STRING)
 		{
-			if (i->second.property->getDefaultValue().getStringValue() == object->stringProperty(i->first))
-				object->props().removeProperty(i->first);
+			if (i.second.defaultValue().getStringValue() == object->stringProperty(i.first))
+				object->props().removeProperty(i.first);
 		}
-
-		i++;
 	}
 }
 
@@ -3034,49 +2387,29 @@ void Configuration::dumpValidMapNames()
 void Configuration::dumpUDMFProperties()
 {
 	// Vertex
-	LOG_MESSAGE(1, "\nVertex properties:");
-	UDMFPropMap::iterator i = udmf_vertex_props_.begin();
-	while (i != udmf_vertex_props_.end())
-	{
-		Log::info(i->second.property->getStringRep());
-		i++;
-	}
+	Log::info(1, "\nVertex properties:");
+	for (auto& i : udmf_vertex_props_)
+		Log::info(i.second.getStringRep());
 
 	// Line
-	LOG_MESSAGE(1, "\nLine properties:");
-	i = udmf_linedef_props_.begin();
-	while (i != udmf_linedef_props_.end())
-	{
-		Log::info(i->second.property->getStringRep());
-		i++;
-	}
+	Log::info(1, "\nLine properties:");
+	for (auto& i : udmf_linedef_props_)
+		Log::info(i.second.getStringRep());
 
 	// Side
-	LOG_MESSAGE(1, "\nSide properties:");
-	i = udmf_sidedef_props_.begin();
-	while (i != udmf_sidedef_props_.end())
-	{
-		Log::info(i->second.property->getStringRep());
-		i++;
-	}
+	Log::info(1, "\nSide properties:");
+	for (auto& i : udmf_sidedef_props_)
+		Log::info(i.second.getStringRep());
 
 	// Sector
-	LOG_MESSAGE(1, "\nSector properties:");
-	i = udmf_sector_props_.begin();
-	while (i != udmf_sector_props_.end())
-	{
-		Log::info(i->second.property->getStringRep());
-		i++;
-	}
+	Log::info(1, "\nSector properties:");
+	for (auto& i : udmf_sector_props_)
+		Log::info(i.second.getStringRep());
 
 	// Thing
-	LOG_MESSAGE(1, "\nThing properties:");
-	i = udmf_thing_props_.begin();
-	while (i != udmf_thing_props_.end())
-	{
-		Log::info(i->second.property->getStringRep());
-		i++;
-	}
+	Log::info(1, "\nThing properties:");
+	for (auto& i : udmf_thing_props_)
+		Log::info(i.second.getStringRep());
 }
 
 

@@ -1,242 +1,260 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    UDMFProperty.cpp
- * Description: UDMFProperty class, contains info about a UDMF property
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    UDMFProperty.cpp
+// Description: UDMFProperty class, contains info about a UDMF property
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "UDMFProperty.h"
 #include "Utility/Parser.h"
 
 
-/*******************************************************************
- * UDMFPROPERTY CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// UDMFProperty Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* UDMFProperty::UDMFProperty
- * UDMFProperty class constructor
- *******************************************************************/
-UDMFProperty::UDMFProperty()
+
+// ----------------------------------------------------------------------------
+// UDMFProperty::UDMFProperty
+//
+// UDMFProperty class constructor
+// ----------------------------------------------------------------------------
+UDMFProperty::UDMFProperty() :
+	type_{ Type::Unknown },
+	flag_{ false },
+	trigger_{ false },
+	has_default_{ false },
+	show_always_{ false },
+	internal_only_{ false }
 {
-	has_default = false;
-	flag = false;
-	trigger = false;
-	type = -1;
-	show_always = false;
-	internal_only = false;
 }
 
-/* UDMFProperty::~UDMFProperty
- * UDMFProperty class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// UDMFProperty::~UDMFProperty
+//
+// UDMFProperty class destructor
+// ----------------------------------------------------------------------------
 UDMFProperty::~UDMFProperty()
 {
 }
 
-/* UDMFProperty::parse
- * Reads a UDMF property definition from a parsed tree [node]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// UDMFProperty::parse
+//
+// Reads a UDMF property definition from a parsed tree [node]
+// ----------------------------------------------------------------------------
 void UDMFProperty::parse(ParseTreeNode* node, string group)
 {
 	// Set group and property name
-	this->group = group;
-	this->property = node->getName();
+	this->group_ = group;
+	this->property_ = node->getName();
 
 	// Check for basic definition
 	if (node->nChildren() == 0)
 	{
-		name = node->getStringValue();
+		name_ = node->getStringValue();
 		return;
 	}
 
 	// Otherwise, read node data
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		ParseTreeNode* prop = (ParseTreeNode*)node->getChild(a);
+		auto prop = node->getChildPTN(a);
 
 		// Property type
 		if (S_CMPNOCASE(prop->getName(), "type"))
 		{
 			if (S_CMPNOCASE(prop->getStringValue(), "bool"))
-				type = TYPE_BOOL;
+				type_ = Type::Boolean;
 			else if (S_CMPNOCASE(prop->getStringValue(), "int"))
-				type = TYPE_INT;
+				type_ = Type::Int;
 			else if (S_CMPNOCASE(prop->getStringValue(), "float"))
-				type = TYPE_FLOAT;
+				type_ = Type::Float;
 			else if (S_CMPNOCASE(prop->getStringValue(), "string"))
-				type = TYPE_STRING;
+				type_ = Type::String;
 			else if (S_CMPNOCASE(prop->getStringValue(), "colour"))
-				type = TYPE_COLOUR;
+				type_ = Type::Colour;
 			else if (S_CMPNOCASE(prop->getStringValue(), "actionspecial"))
-				type = TYPE_ASPECIAL;
+				type_ = Type::ActionSpecial;
 			else if (S_CMPNOCASE(prop->getStringValue(), "sectorspecial"))
-				type = TYPE_SSPECIAL;
+				type_ = Type::SectorSpecial;
 			else if (S_CMPNOCASE(prop->getStringValue(), "thingtype"))
-				type = TYPE_TTYPE;
+				type_ = Type::ThingType;
 			else if (S_CMPNOCASE(prop->getStringValue(), "angle"))
-				type = TYPE_ANGLE;
+				type_ = Type::Angle;
 			else if (S_CMPNOCASE(prop->getStringValue(), "texture_wall"))
-				type = TYPE_TEX_WALL;
+				type_ = Type::TextureWall;
 			else if (S_CMPNOCASE(prop->getStringValue(), "texture_flat"))
-				type = TYPE_TEX_FLAT;
+				type_ = Type::TextureFlat;
 			else if (S_CMPNOCASE(prop->getStringValue(), "id"))
-				type = TYPE_ID;
+				type_ = Type::ID;
 		}
 
 		// Property name
 		else if (S_CMPNOCASE(prop->getName(), "name"))
-			name = prop->getStringValue();
+			name_ = prop->getStringValue();
 
 		// Default value
 		else if (S_CMPNOCASE(prop->getName(), "default"))
 		{
-			switch (type)
+			switch (type_)
 			{
-			case TYPE_BOOL: 	default_value = prop->getBoolValue(); break;
-			case TYPE_INT:		default_value = prop->getIntValue(); break;
-			case TYPE_FLOAT:	default_value = prop->getFloatValue(); break;
-			case TYPE_STRING:	default_value = prop->getStringValue(); break;
-				//case TYPE_COLOUR:	default_value = prop->getIntValue(); LOG_MESSAGE(1, "Colour default value %d (%s)", prop->getIntValue(), prop->getStringValue()); break;
-			case TYPE_ASPECIAL:	default_value = prop->getIntValue(); break;
-			case TYPE_SSPECIAL:	default_value = prop->getIntValue(); break;
-			case TYPE_TTYPE:	default_value = prop->getIntValue(); break;
-			case TYPE_ANGLE:	default_value = prop->getIntValue(); break;
-			case TYPE_TEX_WALL:	default_value = prop->getStringValue(); break;
-			case TYPE_TEX_FLAT:	default_value = prop->getStringValue(); break;
-			case TYPE_ID:		default_value = prop->getIntValue(); break;
-			default:			default_value = prop->getStringValue(); break;
+			case Type::Boolean: 			default_value_ = prop->getBoolValue(); break;
+			case Type::Int:				default_value_ = prop->getIntValue(); break;
+			case Type::Float:			default_value_ = prop->getFloatValue(); break;
+			case Type::String:			default_value_ = prop->getStringValue(); break;
+			case Type::ActionSpecial:	default_value_ = prop->getIntValue(); break;
+			case Type::SectorSpecial:	default_value_ = prop->getIntValue(); break;
+			case Type::ThingType:		default_value_ = prop->getIntValue(); break;
+			case Type::Angle:			default_value_ = prop->getIntValue(); break;
+			case Type::TextureWall:		default_value_ = prop->getStringValue(); break;
+			case Type::TextureFlat:		default_value_ = prop->getStringValue(); break;
+			case Type::ID:				default_value_ = prop->getIntValue(); break;
+			default:					default_value_ = prop->getStringValue(); break;
 			}
 
-			// Not sure why I have to do this here, but for whatever reason prop->getIntValue() doesn't work if the value parsed was hex
-			// (or it could be to do with the colour type? who knows)
-			if (type == TYPE_COLOUR)
+			// Not sure why I have to do this here, but for whatever reason prop->getIntValue() doesn't work
+			// if the value parsed was hex (or it could be to do with the colour type? who knows)
+			if (type_ == Type::Colour)
 			{
 				long val;
 				prop->getStringValue().ToLong(&val, 0);
-				default_value = (int)val;
+				default_value_ = (int)val;
 			}
 
-			has_default = true;
+			has_default_ = true;
 		}
 
 		// Property is a flag
 		else if (S_CMPNOCASE(prop->getName(), "flag"))
-			flag = true;
+			flag_ = true;
 
 		// Property is a SPAC trigger
 		else if (S_CMPNOCASE(prop->getName(), "trigger"))
-			trigger = true;
+			trigger_ = true;
 
 		// Possible values
 		else if (S_CMPNOCASE(prop->getName(), "values"))
 		{
-			if (type == TYPE_BOOL)
+			switch (type_)
 			{
+			case Type::Boolean:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values.push_back(prop->getBoolValue(b));
-			}
-			else if (type == TYPE_INT || type == TYPE_ASPECIAL || type == TYPE_SSPECIAL || type == TYPE_TTYPE)
-			{
+					values_.push_back(prop->getBoolValue(b));
+				break;
+			case Type::Int:
+			case Type::ActionSpecial:
+			case Type::SectorSpecial:
+			case Type::ThingType:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values.push_back(prop->getIntValue(b));
-			}
-			else if (type == TYPE_FLOAT)
-			{
+					values_.push_back(prop->getIntValue(b));
+				break;
+			case Type::Float:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values.push_back(prop->getFloatValue(b));
-			}
-			else
-			{
+					values_.push_back(prop->getFloatValue(b));
+				break;
+			default:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values.push_back(prop->getStringValue(b));
+					values_.push_back(prop->getStringValue(b));
+				break;
 			}
 		}
 
 		// Show always
 		else if (S_CMPNOCASE(prop->getName(), "show_always"))
-			show_always = prop->getBoolValue();
+			show_always_ = prop->getBoolValue();
 	}
 }
 
-/* UDMFProperty::getStringRep
- * Returns a string representation of the UDMF property definition
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// UDMFProperty::getStringRep
+//
+// Returns a string representation of the UDMF property definition
+// ----------------------------------------------------------------------------
 string UDMFProperty::getStringRep()
 {
-	string ret = S_FMT("Property \"%s\": name = \"%s\", group = \"%s\"", property, name, group);
+	string ret = S_FMT("Property \"%s\": name = \"%s\", group = \"%s\"", property_, name_, group_);
 
-	switch (type)
+	switch (type_)
 	{
-	case TYPE_BOOL: ret += ", type = bool"; break;
-	case TYPE_INT: ret += ", type = int"; break;
-	case TYPE_FLOAT: ret += ", type = float"; break;
-	case TYPE_STRING: ret += ", type = string"; break;
-	case TYPE_COLOUR: ret += ", type = colour"; break;
-	case TYPE_ASPECIAL: ret += ", type = actionspecial"; break;
-	case TYPE_SSPECIAL: ret += ", type = sectorspecial"; break;
-	case TYPE_TTYPE: ret += ", type = thingtype"; break;
-	case TYPE_ANGLE: ret += ", type = angle"; break;
-	case TYPE_TEX_WALL: ret += ", type = wall texture"; break;
-	case TYPE_TEX_FLAT: ret += ", type = flat texture"; break;
-	case TYPE_ID: ret += ", type = id"; break;
+	case Type::Boolean: ret += ", type = bool"; break;
+	case Type::Int: ret += ", type = int"; break;
+	case Type::Float: ret += ", type = float"; break;
+	case Type::String: ret += ", type = string"; break;
+	case Type::Colour: ret += ", type = colour"; break;
+	case Type::ActionSpecial: ret += ", type = actionspecial"; break;
+	case Type::SectorSpecial: ret += ", type = sectorspecial"; break;
+	case Type::ThingType: ret += ", type = thingtype"; break;
+	case Type::Angle: ret += ", type = angle"; break;
+	case Type::TextureWall: ret += ", type = wall texture"; break;
+	case Type::TextureFlat: ret += ", type = flat texture"; break;
+	case Type::ID: ret += ", type = id"; break;
 	default: ret += ", ******unknown type********"; break;
 	};
 
-	if (has_default)
+	if (has_default_)
 	{
-		if (type == TYPE_BOOL)
+		if (type_ == Type::Boolean)
 		{
-			if ((bool)default_value)
+			if ((bool)default_value_)
 				ret += ", default = true";
 			else
 				ret += ", default = false";
 		}
-		else if (type == TYPE_INT || type == TYPE_ASPECIAL || type == TYPE_SSPECIAL || type == TYPE_TTYPE || type == TYPE_COLOUR)
-			ret += S_FMT(", default = %d", default_value.getIntValue());
-		else if (type == TYPE_FLOAT)
-			ret += S_FMT(", default = %1.2f", (double)default_value);
+		else if (type_ == Type::Int ||
+				type_ == Type::ActionSpecial ||
+				type_ == Type::SectorSpecial ||
+				type_ == Type::ThingType ||
+				type_ == Type::Colour)
+			ret += S_FMT(", default = %d", default_value_.getIntValue());
+		else if (type_ == Type::Float)
+			ret += S_FMT(", default = %1.2f", (double)default_value_);
 		else
-			ret += S_FMT(", default = \"%s\"", default_value.getStringValue());
+			ret += S_FMT(", default = \"%s\"", default_value_.getStringValue());
 	}
 	else
 		ret += ", no valid default";
 
-	if (flag)
+	if (flag_)
 		ret += ", is flag";
-	if (trigger)
+	if (trigger_)
 		ret += ", is trigger";
 
-	if (values.size() > 0)
+	if (values_.size() > 0)
 	{
 		ret += "\nPossible values: ";
-		for (unsigned a = 0; a < values.size(); a++)
+		for (unsigned a = 0; a < values_.size(); a++)
 		{
-			ret += values[a].getStringValue();
-			if (a < values.size() - 1)
+			ret += values_[a].getStringValue();
+			if (a < values_.size() - 1)
 				ret += ", ";
 		}
 	}

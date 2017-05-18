@@ -600,25 +600,24 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	int col = 0;
 
 	// Get all UDMF properties
-	vector<Game::udmfp_t> props = Game::configuration().allUDMFProperties(MOBJ_THING);
-	sort(props.begin(), props.end());
+	auto& props = Game::configuration().allUDMFProperties(MOBJ_THING);
 
 	// UDMF flags
 	if (map_format == MAP_UDMF)
 	{
 		// Get all udmf flag properties
 		vector<string> flags;
-		for (unsigned a = 0; a < props.size(); a++)
+		for (auto& i : props)
 		{
-			if (props[a].property->isFlag())
+			if (i.second.isFlag())
 			{
-				if (props[a].property->showAlways())
+				if (i.second.showAlways())
 				{
-					flags.push_back(props[a].property->getName());
-					udmf_flags.push_back(props[a].property->getProperty());
+					flags.push_back(i.second.name());
+					udmf_flags.push_back(i.second.propName());
 				}
 				else
-					udmf_flags_extra.push_back(props[a].property->getProperty());
+					udmf_flags_extra.push_back(i.second.propName());
 			}
 		}
 
@@ -725,7 +724,7 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	for (unsigned a = 0; a < udmf_flags_extra.size(); a++)
 	{
 		UDMFProperty* prop = Game::configuration().getUDMFProperty(udmf_flags_extra[a], MOBJ_THING);
-		flags.push_back(prop->getName());
+		flags.push_back(prop->name());
 	}
 
 	// Add flag checkboxes

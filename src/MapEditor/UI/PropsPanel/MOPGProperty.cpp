@@ -119,7 +119,7 @@ void MOPGBoolProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getBoolValue()
+		&& udmf_prop->defaultValue().getBoolValue()
 			== GetValue().GetBool()
 	)
 		Hide(true);
@@ -206,7 +206,7 @@ void MOPGIntProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getIntValue()
+		&& udmf_prop->defaultValue().getIntValue()
 			== GetValue().GetInteger()
 	)
 		Hide(true);
@@ -292,7 +292,7 @@ void MOPGFloatProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getFloatValue()
+		&& udmf_prop->defaultValue().getFloatValue()
 			== GetValue().GetDouble()
 	)
 		Hide(true);
@@ -346,11 +346,10 @@ void MOPGStringProperty::setUDMFProp(UDMFProperty* prop)
 	// with the possible values
 	if (prop && prop->hasPossibleValues())
 	{
-		const vector<Property> values = prop->getPossibleValues();
 		wxPGChoices choices = wxPGChoices();
 
-		for (unsigned n = 0; n < values.size(); n++)
-			choices.Add(values[n].getStringValue());
+		for (auto& val : prop->possibleValues())
+			choices.Add(val.getStringValue());
 
 		SetChoices(choices);
 		SetEditor(wxPGEditor_ComboBox);
@@ -403,7 +402,7 @@ void MOPGStringProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getStringValue()
+		&& udmf_prop->defaultValue().getStringValue()
 			== GetValue().GetString()
 	)
 		Hide(true);
@@ -469,7 +468,7 @@ void MOPGIntWithArgsProperty::updateArgs(wxPGProperty* args[5])
 	unsigned argcount;
 
 	if (udmf_prop)
-		default_value = udmf_prop->getDefaultValue().getIntValue();
+		default_value = udmf_prop->defaultValue().getIntValue();
 
 	if (parent->showAll())
 		argcount = 5;
@@ -879,7 +878,7 @@ void MOPGAngleProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getIntValue()
+		&& udmf_prop->defaultValue().getIntValue()
 			== GetValue().GetInteger()
 	)
 		Hide(true);
@@ -1154,7 +1153,7 @@ void MOPGSPACTriggerProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getIntValue()
+		&& udmf_prop->defaultValue().getIntValue()
 			== GetValue().GetInteger()
 	)
 		Hide(true);

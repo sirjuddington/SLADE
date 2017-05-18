@@ -905,19 +905,17 @@ void ActionSpecialPanel::setupSpecialPanel()
 		if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 		{
 			// Get all UDMF properties
-			vector<Game::udmfp_t> props = Game::configuration().allUDMFProperties(MOBJ_LINE);
-			sort(props.begin(), props.end());
+			auto& props = Game::configuration().allUDMFProperties(MOBJ_LINE);
 
 			// Get all UDMF trigger properties
 			vector<string> triggers;
 			NamedFlexGridMap named_flexgrids;
-			for (unsigned a = 0; a < props.size(); a++)
+			for (auto& i : props)
 			{
-				UDMFProperty* property = props[a].property;
-				if (!property->isTrigger())
+				if (!i.second.isTrigger())
 					continue;
 
-				string group = property->getGroup();
+				string group = i.second.group();
 				wxFlexGridSizer* frame_sizer = named_flexgrids[group];
 				if (!frame_sizer)
 				{
@@ -934,11 +932,11 @@ void ActionSpecialPanel::setupSpecialPanel()
 					named_flexgrids.find(group)->second = frame_sizer;
 				}
 
-				wxCheckBox* cb_trigger = new wxCheckBox(panel_action_special, -1, property->getName(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+				wxCheckBox* cb_trigger = new wxCheckBox(panel_action_special, -1, i.second.name(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
 				frame_sizer->Add(cb_trigger, 0, wxEXPAND);
 
-				triggers.push_back(property->getName());
-				triggers_udmf.push_back(property->getProperty());
+				triggers.push_back(i.second.name());
+				triggers_udmf.push_back(i.second.propName());
 				cb_triggers.push_back(cb_trigger);
 			}
 		}

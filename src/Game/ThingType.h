@@ -52,6 +52,7 @@ namespace Game
 		const string&	palette() const { return palette_; }
 		const ArgSpec&	argSpec() const { return args_; }
 		int				number() const { return number_; }
+		bool 			decorate() const { return decorate_; }
 
 		void	setSprite(string sprite) { this->sprite_ = sprite; }
 
