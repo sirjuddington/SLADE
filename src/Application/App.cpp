@@ -33,7 +33,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "External/dumb/dumb.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "General/Console/Console.h"
 #include "General/Executables.h"
@@ -364,7 +364,8 @@ bool App::init()
 	Log::info("Base resource loaded");
 
 	// Init game configuration
-	theGameConfiguration->init();
+	Log::info("Loading game configurations");
+	Game::init();
 
 	// Show the main window
 	MainEditor::windowWx()->Show(true);

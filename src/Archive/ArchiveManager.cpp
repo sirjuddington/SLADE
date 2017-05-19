@@ -36,7 +36,7 @@
 #include "General/Console/Console.h"
 #include "General/UI.h"
 #include "General/ResourceManager.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 
 
 /*******************************************************************
@@ -613,7 +613,7 @@ bool ArchiveManager::closeArchive(int index)
 	theResourceManager->removeArchive(open_archives[index].archive);
 
 	// Delete any embedded configuration
-	//theGameConfiguration->removeEmbeddedConfig(open_archives[index].archive->getFilename());
+	//Game::configuration().removeEmbeddedConfig(open_archives[index].archive->getFilename());
 
 	// Close any open child archives
 	// Clear out the open_children vector first, lest the children try to

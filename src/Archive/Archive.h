@@ -40,6 +40,8 @@ public:
 	unsigned			numEntries(bool inc_subdirs = false);
 	int					entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
 
+	const vector<ArchiveEntry::SPtr>&	getEntries() const { return entries; }
+
 	void	setName(string name) { dir_entry->name = name; }
 
 	void	linkEntries(ArchiveEntry* first, ArchiveEntry* second);

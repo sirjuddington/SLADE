@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Archive/ArchiveManager.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "TextEntryPanel.h"
 
 
@@ -213,10 +213,10 @@ bool TextEntryPanel::saveEntry()
 	// Update DECORATE definitions if decorate
 	if (text_area->getLanguage() && text_area->getLanguage()->getId() == "decorate")
 	{
-		theGameConfiguration->clearDecorateDefs();
-		theGameConfiguration->parseDecorateDefs(theArchiveManager->baseResourceArchive());
+		Game::configuration().clearDecorateDefs();
+		Game::configuration().parseDecorateDefs(theArchiveManager->baseResourceArchive());
 		for (int i = 0; i < theArchiveManager->numArchives(); ++i)
-			theGameConfiguration->parseDecorateDefs(theArchiveManager->getArchive(i));
+			Game::configuration().parseDecorateDefs(theArchiveManager->getArchive(i));
 	}
 
 	// Update variables

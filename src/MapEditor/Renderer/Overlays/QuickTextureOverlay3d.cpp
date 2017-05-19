@@ -39,7 +39,7 @@
 #include "General/ResourceManager.h"
 #include "OpenGL/GLTexture.h"
 #include "MapEditor/MapEditor.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "OpenGL/OpenGL.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"
@@ -73,7 +73,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 		// Determine texture type
 		sel_type = 2;
 		int initial = 0;
-		if (!theGameConfiguration->mixTexFlats())
+		if (!Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 		{
 			sel_type = 0;
 			for (unsigned a = 0; a < sel.size(); a++)

@@ -32,7 +32,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "MapChecksPanel.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapEditor/MapChecks.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"

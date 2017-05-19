@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -81,20 +81,20 @@ string SpriteTexCanvas::getTexName()
 /* SpriteTexCanvas::setTexture
  * Sets the texture to display
  *******************************************************************/
-void SpriteTexCanvas::setSprite(ThingType* type)
+void SpriteTexCanvas::setSprite(const Game::ThingType& type)
 {
-	texname = type->getSprite();
+	texname = type.sprite();
 	icon = false;
 	col = COL_WHITE;
 
 	// Sprite
-	texture = MapEditor::textureManager().getSprite(texname, type->getTranslation(), type->getPalette());
+	texture = MapEditor::textureManager().getSprite(texname, type.translation(), type.palette());
 
 	// Icon
 	if (!texture)
 	{
-		texture = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type->getIcon()));
-		col = type->getColour();
+		texture = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type.icon()));
+		col = type.colour();
 		icon = true;
 	}
 
@@ -600,25 +600,24 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	int col = 0;
 
 	// Get all UDMF properties
-	vector<udmfp_t> props = theGameConfiguration->allUDMFProperties(MOBJ_THING);
-	sort(props.begin(), props.end());
+	auto& props = Game::configuration().allUDMFProperties(MOBJ_THING);
 
 	// UDMF flags
 	if (map_format == MAP_UDMF)
 	{
 		// Get all udmf flag properties
 		vector<string> flags;
-		for (unsigned a = 0; a < props.size(); a++)
+		for (auto& i : props)
 		{
-			if (props[a].property->isFlag())
+			if (i.second.isFlag())
 			{
-				if (props[a].property->showAlways())
+				if (i.second.showAlways())
 				{
-					flags.push_back(props[a].property->getName());
-					udmf_flags.push_back(props[a].property->getProperty());
+					flags.push_back(i.second.name());
+					udmf_flags.push_back(i.second.propName());
 				}
 				else
-					udmf_flags_extra.push_back(props[a].property->getProperty());
+					udmf_flags_extra.push_back(i.second.propName());
 			}
 		}
 
@@ -643,11 +642,11 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	else
 	{
 		// Add flag checkboxes
-		int flag_mid = theGameConfiguration->nThingFlags() / 3;
-		if (theGameConfiguration->nThingFlags() % 3 == 0) flag_mid--;
-		for (int a = 0; a < theGameConfiguration->nThingFlags(); a++)
+		int flag_mid = Game::configuration().nThingFlags() / 3;
+		if (Game::configuration().nThingFlags() % 3 == 0) flag_mid--;
+		for (int a = 0; a < Game::configuration().nThingFlags(); a++)
 		{
-			wxCheckBox* cb_flag = new wxCheckBox(panel, -1, theGameConfiguration->thingFlag(a), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+			wxCheckBox* cb_flag = new wxCheckBox(panel, -1, Game::configuration().thingFlag(a), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
 			gb_sizer->Add(cb_flag, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
 			cb_flags.push_back(cb_flag);
 
@@ -724,8 +723,8 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	vector<string> flags;
 	for (unsigned a = 0; a < udmf_flags_extra.size(); a++)
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(udmf_flags_extra[a], MOBJ_THING);
-		flags.push_back(prop->getName());
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(udmf_flags_extra[a], MOBJ_THING);
+		flags.push_back(prop->name());
 	}
 
 	// Add flag checkboxes
@@ -777,16 +776,16 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	}
 	else
 	{
-		for (int a = 0; a < theGameConfiguration->nThingFlags(); a++)
+		for (int a = 0; a < Game::configuration().nThingFlags(); a++)
 		{
 			// Set initial flag checked value
-			cb_flags[a]->SetValue(theGameConfiguration->thingFlagSet(a, (MapThing*)objects[0]));
+			cb_flags[a]->SetValue(Game::configuration().thingFlagSet(a, (MapThing*)objects[0]));
 
 			// Go through subsequent things
 			for (unsigned b = 1; b < objects.size(); b++)
 			{
 				// Check for mismatch			
-				if (cb_flags[a]->GetValue() != theGameConfiguration->thingFlagSet(a, (MapThing*)objects[b]))
+				if (cb_flags[a]->GetValue() != Game::configuration().thingFlagSet(a, (MapThing*)objects[b]))
 				{
 					// Set undefined
 					cb_flags[a]->Set3StateValue(wxCHK_UNDETERMINED);
@@ -800,9 +799,9 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	type_current = 0;
 	if (MapObject::multiIntProperty(objects, "type", type_current))
 	{
-		ThingType* tt = theGameConfiguration->thingType(type_current);
+		auto& tt = Game::configuration().thingType(type_current);
 		gfx_sprite->setSprite(tt);
-		label_type->SetLabel(S_FMT("%d: %s", type_current, tt->getName()));
+		label_type->SetLabel(S_FMT("%d: %s", type_current, tt.name()));
 		label_type->Wrap(136);
 	}
 
@@ -820,13 +819,13 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		// Setup
 		if (ival > 0)
 		{
-			argspec_t as = theGameConfiguration->actionSpecial(ival)->getArgspec();
-			panel_args->setup(&as, (map_format == MAP_UDMF));
+			auto& as = Game::configuration().actionSpecial(ival).argSpec();
+			panel_args->setup(as, (map_format == MAP_UDMF));
 		}
 		else
 		{
-			argspec_t as = theGameConfiguration->thingType(type_current)->getArgspec();
-			panel_args->setup(&as, (map_format == MAP_UDMF));
+			auto& as = Game::configuration().thingType(type_current).argSpec();
+			panel_args->setup(as, (map_format == MAP_UDMF));
 		}
 
 		// Load values
@@ -876,10 +875,10 @@ void ThingPropsPanel::applyChanges()
 		// Flags
 		if (udmf_flags.empty())
 		{
-			for (int f = 0; f < theGameConfiguration->nThingFlags(); f++)
+			for (int f = 0; f < Game::configuration().nThingFlags(); f++)
 			{
 				if (cb_flags[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					theGameConfiguration->setThingFlag(f, (MapThing*)objects[a], cb_flags[f]->GetValue());
+					Game::configuration().setThingFlag(f, (MapThing*)objects[a], cb_flags[f]->GetValue());
 			}
 		}
 
@@ -950,17 +949,17 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 	{
 		// Get selected type
 		type_current = browser.getSelectedType();
-		ThingType* tt = theGameConfiguration->thingType(type_current);
+		auto& tt = Game::configuration().thingType(type_current);
 
 		// Update sprite
 		gfx_sprite->setSprite(tt);
-		label_type->SetLabel(tt->getName());
+		label_type->SetLabel(tt.name());
 
 		// Update args
 		if (panel_args)
 		{
-			argspec_t as = tt->getArgspec();
-			panel_args->setup(&as, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
+			auto& as = tt.argSpec();
+			panel_args->setup(as, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 		}
 
 		// Update layout

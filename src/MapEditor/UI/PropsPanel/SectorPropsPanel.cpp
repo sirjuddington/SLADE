@@ -28,7 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -85,7 +85,10 @@ void FlatTexCanvas::setTexture(string tex)
 	if (tex == "-" || tex == "")
 		texture = nullptr;
 	else
-		texture = MapEditor::textureManager().getFlat(tex, theGameConfiguration->mixTexFlats());
+		texture = MapEditor::textureManager().getFlat(
+			tex,
+			Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+		);
 
 	Refresh();
 }

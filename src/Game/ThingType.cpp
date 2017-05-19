@@ -1,201 +1,189 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    ThingType.cpp
- * Description: ThingType class, represents a thing type
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ThingType.cpp
+// Description: ThingType class, represents a thing type
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "ThingType.h"
 #include "Utility/Parser.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
+
+using namespace Game;
 
 
-/*******************************************************************
- * THINGTYPE CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
+ThingType ThingType::unknown_;
 
-/* ThingType::ThingType
- * ThingType class constructor
- *******************************************************************/
-ThingType::ThingType(string name)
+
+// ----------------------------------------------------------------------------
+//
+// ThingType Class Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// ThingType::ThingType
+//
+// ThingType class constructor
+// ----------------------------------------------------------------------------
+ThingType::ThingType(const string& name, const string& group) :
+	name_{ name },
+	group_{ group },
+	colour_{ 170, 170, 180, 255, 0 },
+	radius_{ 20 },
+	height_{ -1 },
+	angled_{ true },
+	hanging_{ false },
+	shrink_{ false },
+	fullbright_{ false },
+	decoration_{ false },
+	zeth_icon_{ -1 },
+	decorate_{ false },
+	solid_{ false },
+	next_type_{ 0 },
+	next_args_{ 0 },
+	flags_{ 0 },
+	tagged_{ TagType::None },
+	number_{ -1 },
+	scale_{ 1.0, 1.0 }
 {
-	// Init variables
-	this->name = name;
-	this->angled = true;
-	this->hanging = false;
-	this->shrink = false;
-	this->colour = rgba_t(170, 170, 180, 255, 0);
-	this->radius = 20;
-	this->height = -1;
-	this->scaleX = 1.0;
-	this->scaleY = 1.0;
-	this->fullbright = false;
-	this->decoration = false;
-	this->decorate = false;
-	this->solid = false;
-	this->zeth = -1;
-	this->nexttype = 0;
-	this->nextargs = 0;
-	this->flags = 0;
-	this->tagged = 0;
-	this->arg_count = 0;
-
 	// Init args
-	args[0].name = "Arg1";
-	args[1].name = "Arg2";
-	args[2].name = "Arg3";
-	args[3].name = "Arg4";
-	args[4].name = "Arg5";
+	args_.count = 0;
+	args_[0].name = "Arg1";
+	args_[1].name = "Arg2";
+	args_[2].name = "Arg3";
+	args_[3].name = "Arg4";
+	args_[4].name = "Arg5";
 }
 
-/* ThingType::copy
- * Copies values from [copy]
- *******************************************************************/
-void ThingType::copy(ThingType* copy)
+// ----------------------------------------------------------------------------
+// ThingType::copy
+//
+// Copies all properties from [copy]
+// (excludes definition variables like name, number, etc.)
+// ----------------------------------------------------------------------------
+void ThingType::copy(const ThingType& copy)
 {
-	// Check TT was given
-	if (!copy) return;
-
-	// Copy properties
-	this->name = copy->name;
-	this->group = copy->group;
-	this->colour = copy->colour;
-	this->radius = copy->radius;
-	this->height = copy->height;
-	this->scaleX = copy->scaleX;
-	this->scaleY = copy->scaleY;
-	this->angled = copy->angled;
-	this->hanging = copy->hanging;
-	this->fullbright = copy->fullbright;
-	this->shrink = copy->shrink;
-	this->sprite = copy->sprite;
-	this->icon = copy->icon;
-	this->translation = copy->translation;
-	this->palette = copy->palette;
-	this->decoration = copy->decoration;
-	this->solid = copy->solid;
-	this->zeth = copy->zeth;
-	this->nexttype = copy->nexttype;
-	this->nextargs = copy->nextargs;
-	this->flags = copy->flags;
-	this->tagged = copy->tagged;
-	this->arg_count = copy->arg_count;
-
-	// Copy args
-	for (unsigned a = 0; a < 5; a++)
-		this->args[a] = copy->args[a];
+	angled_ = copy.angled_;
+	hanging_ = copy.hanging_;
+	shrink_ = copy.shrink_;
+	colour_ = copy.colour_;
+	radius_ = copy.radius_;
+	height_ = copy.height_;
+	scale_ = copy.scale_;
+	fullbright_ = copy.fullbright_;
+	decoration_ = copy.decoration_;
+	decorate_ = copy.decorate_;
+	solid_ = copy.solid_;
+	zeth_icon_ = copy.zeth_icon_;
+	next_type_ = copy.next_type_;
+	next_args_ = copy.next_args_;
+	flags_ = copy.flags_;
+	tagged_ = copy.tagged_;
+	args_ = copy.args_;
 }
 
-/* ThingType::getArgsString
- * Returns a string representation of the thing type's args given
- * the values in [args]
- *******************************************************************/
-string ThingType::getArgsString(int args[5], string argstr[2])
+// ----------------------------------------------------------------------------
+// ThingType::define
+//
+// Defines this thing type's [number], [name] and [group]
+// ----------------------------------------------------------------------------
+void ThingType::define(int number, const string& name, const string& group)
 {
-	string ret;
-
-	// Add each arg to the string
-	for (unsigned a = 0; a < 5; a++)
-	{
-		// Skip if the arg name is undefined and the arg value is 0
-		if (args[a] == 0 && this->args[a].name.StartsWith("Arg"))
-			continue;
-
-		ret += this->args[a].name;
-		ret += ": ";
-		if (a < 2 && args[a] == 0 && !argstr[a].IsEmpty())
-			ret += argstr[a];
-		else
-			ret += this->args[a].valueString(args[a]);
-		ret += ", ";
-	}
-
-	// Cut ending ", "
-	if (!ret.IsEmpty())
-		ret.RemoveLast(2);
-
-	return ret;
+	number_ = number;
+	name_ = name;
+	group_ = group;
 }
 
-/* ThingType::reset
- * Resets all values to defaults
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ThingType::reset
+//
+// Resets all values to defaults
+// ----------------------------------------------------------------------------
 void ThingType::reset()
 {
 	// Reset variables
-	this->name = "Unknown";
-	this->group = "";
-	this->sprite = "";
-	this->icon = "";
-	this->translation = "";
-	this->palette = "";
-	this->angled = true;
-	this->hanging = false;
-	this->shrink = false;
-	this->colour = COL_WHITE;
-	this->radius = 20;
-	this->height = -1;
-	this->scaleX = 1.0;
-	this->scaleY = 1.0;
-	this->fullbright = false;
-	this->decoration = false;
-	this->solid = false;
-	this->zeth = -1;
-	this->nexttype = 0;
-	this->nextargs = 0;
-	this->flags = 0;
-	this->tagged = 0;
-	this->arg_count = 0;
+	name_ = "Unknown";
+	group_ = "";
+	sprite_ = "";
+	icon_ = "";
+	translation_ = "";
+	palette_ = "";
+	angled_ = true;
+	hanging_ = false;
+	shrink_ = false;
+	colour_ = COL_WHITE;
+	radius_ = 20;
+	height_ = -1;
+	scale_ = { 1.0, 1.0 };
+	fullbright_ = false;
+	decoration_ = false;
+	solid_ = false;
+	zeth_icon_ = -1;
+	next_type_ = 0;
+	next_args_ = 0;
+	flags_ = 0;
+	tagged_ = TagType::None;
 
 	// Reset args
+	args_.count = 0;
 	for (unsigned a = 0; a < 5; a++)
 	{
-		args[a].name = S_FMT("Arg%d", a+1);
-		args[a].type = ARGT_NUMBER;
-		args[a].custom_flags.clear();
-		args[a].custom_values.clear();
+		args_[a].name = S_FMT("Arg%d", a+1);
+		args_[a].type = Arg::Type::Number;
+		args_[a].custom_flags.clear();
+		args_[a].custom_values.clear();
 	}
 }
 
-/* ThingType::parse
- * Reads an thing type definition from a parsed tree [node]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ThingType::parse
+//
+// Reads an thing type definition from a parsed tree [node]
+// ----------------------------------------------------------------------------
 void ThingType::parse(ParseTreeNode* node)
 {
 	// Go through all child nodes/values
-	ParseTreeNode* child = NULL;
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		child = (ParseTreeNode*)node->getChild(a);
+		auto child = node->getChildPTN(a);
 		string name = child->getName();
 		int arg = -1;
 
 		// Name
 		if (S_CMPNOCASE(name, "name"))
-			this->name = child->getStringValue();
+			name_ = child->getStringValue();
 
 		// Args
 		else if (S_CMPNOCASE(name, "arg1"))
@@ -211,171 +199,273 @@ void ThingType::parse(ParseTreeNode* node)
 
 		// Sprite
 		else if (S_CMPNOCASE(name, "sprite"))
-			this->sprite = child->getStringValue();
+			sprite_ = child->getStringValue();
 
 		// Icon
 		else if (S_CMPNOCASE(name, "icon"))
-			this->icon = child->getStringValue();
+			icon_ = child->getStringValue();
 
 		// Radius
 		else if (S_CMPNOCASE(name, "radius"))
-			this->radius = child->getIntValue();
+			radius_ = child->getIntValue();
 
 		// Height
 		else if (S_CMPNOCASE(name, "height"))
-			this->height = child->getIntValue();
+			height_ = child->getIntValue();
 
 		// Scale
 		else if (S_CMPNOCASE(name, "scale"))
-			this->scaleX = this->scaleY = child->getFloatValue();
+		{
+			float s = child->getFloatValue();
+			scale_ = { s, s };
+		}
 
 		// ScaleX
 		else if (S_CMPNOCASE(name, "scalex"))
-			this->scaleX = child->getFloatValue();
+			scale_.x = child->getFloatValue();
 
 		// ScaleY
 		else if (S_CMPNOCASE(name, "scaley"))
-			this->scaleY = child->getFloatValue();
+			scale_.y = child->getFloatValue();
 
 		// Colour
 		else if (S_CMPNOCASE(name, "colour"))
-			this->colour.set(child->getIntValue(0), child->getIntValue(1), child->getIntValue(2));
+			colour_.set(child->getIntValue(0), child->getIntValue(1), child->getIntValue(2));
 
 		// Show angle
 		else if (S_CMPNOCASE(name, "angle"))
-			this->angled = child->getBoolValue();
+			angled_ = child->getBoolValue();
 
 		// Hanging object
 		else if (S_CMPNOCASE(name, "hanging"))
-			this->hanging = child->getBoolValue();
+			hanging_ = child->getBoolValue();
 
 		// Shrink on zoom
 		else if (S_CMPNOCASE(name, "shrink"))
-			this->shrink = child->getBoolValue();
+			shrink_ = child->getBoolValue();
 
 		// Fullbright
 		else if (S_CMPNOCASE(name, "fullbright"))
-			this->fullbright = child->getBoolValue();
+			fullbright_ = child->getBoolValue();
 
 		// Decoration
 		else if (S_CMPNOCASE(name, "decoration"))
-			this->decoration = child->getBoolValue();
+			decoration_ = child->getBoolValue();
 
 		// Solid
 		else if (S_CMPNOCASE(name, "solid"))
-			this->solid = child->getBoolValue();
+			solid_ = child->getBoolValue();
 
 		// Translation
 		else if (S_CMPNOCASE(name, "translation"))
 		{
-			this->translation += "\"";
+			translation_ += "\"";
 			size_t v = 0;
 			do
 			{
-				this->translation += child->getStringValue(v++);
+				translation_ += child->getStringValue(v++);
 			}
-			while ((v < child->nValues()) && ((this->translation += "\", \""), true));
-			this->translation += "\"";
+			while ((v < child->nValues()) && ((translation_ += "\", \""), true));
+			translation_ += "\"";
 		}
 
 		// Palette override
 		else if (S_CMPNOCASE(name, "palette"))
-			this->palette = child->getStringValue();
+			palette_ = child->getStringValue();
 
 		// Zeth icon
 		else if (S_CMPNOCASE(name, "zeth"))
-			this->zeth = child->getIntValue();
+			zeth_icon_ = child->getIntValue();
 
 		// Pathed things stuff
 		else if (S_CMPNOCASE(name, "nexttype"))
 		{
-			this->nexttype = child->getIntValue();
-			this->flags |= THING_PATHED;
+			next_type_ = child->getIntValue();
+			flags_ |= FLAG_PATHED;
 		}
 		else if (S_CMPNOCASE(name, "nextargs"))
 		{
-			this->nextargs = child->getIntValue();
-			this->flags |= THING_PATHED;
+			next_args_ = child->getIntValue();
+			flags_ |= FLAG_PATHED;
 		}
 
 		// Handle player starts
 		else if (S_CMPNOCASE(name, "player_coop"))
-			this->flags |= THING_COOPSTART;
+			flags_ |= FLAG_COOPSTART;
 		else if (S_CMPNOCASE(name, "player_dm"))
-			this->flags |= THING_DMSTART;
+			flags_ |= FLAG_DMSTART;
 		else if (S_CMPNOCASE(name, "player_team"))
-			this->flags |= THING_TEAMSTART;
+			flags_ |= FLAG_TEAMSTART;
 
 		// Hexen's critters are weird
 		else if (S_CMPNOCASE(name, "dragon"))
-			this->flags |= THING_DRAGON;
+			flags_ |= FLAG_DRAGON;
 		else if (S_CMPNOCASE(name, "script"))
-			this->flags |= THING_SCRIPT;
+			flags_ |= FLAG_SCRIPT;
 
 		// Some things tag other things directly
 		else if (S_CMPNOCASE(name, "tagged"))
-			this->tagged = GameConfiguration::parseTagged(child);
+			tagged_ = Game::parseTagged(child);
 
 		// Parse arg definition if it was one
 		if (arg >= 0)
 		{
 			// Update arg count
-			if (arg + 1 > arg_count)
-				arg_count = arg + 1;
+			if (arg + 1 > args_.count)
+				args_.count = arg + 1;
 
 			// Check for simple definition
 			if (child->isLeaf())
 			{
 				// Set name
-				args[arg].name = child->getStringValue();
+				args_[arg].name = child->getStringValue();
 
 				// Set description (if specified)
-				if (child->nValues() > 1) args[arg].desc = child->getStringValue(1);
+				if (child->nValues() > 1) args_[arg].desc = child->getStringValue(1);
 			}
 			else
 			{
 				// Extended arg definition
 
 				// Name
-				ParseTreeNode* val = (ParseTreeNode*)child->getChild("name");
-				if (val) args[arg].name = val->getStringValue();
+				auto val = child->getChildPTN("name");
+				if (val) args_[arg].name = val->getStringValue();
 
 				// Description
-				val = (ParseTreeNode*)child->getChild("desc");
-				if (val) args[arg].desc = val->getStringValue();
+				val = child->getChildPTN("desc");
+				if (val) args_[arg].desc = val->getStringValue();
 
 				// Type
-				val = (ParseTreeNode*)child->getChild("type");
+				val = child->getChildPTN("type");
 				string atype;
 				if (val) atype = val->getStringValue();
 				if (S_CMPNOCASE(atype, "yesno"))
-					args[arg].type = ARGT_YESNO;
+					args_[arg].type = Arg::Type::YesNo;
 				else if (S_CMPNOCASE(atype, "noyes"))
-					args[arg].type = ARGT_NOYES;
+					args_[arg].type = Arg::Type::NoYes;
 				else if (S_CMPNOCASE(atype, "angle"))
-					args[arg].type = ARGT_ANGLE;
+					args_[arg].type = Arg::Type::Angle;
 				else
-					args[arg].type = ARGT_NUMBER;
+					args_[arg].type = Arg::Type::Number;
 			}
 		}
 	}
 }
 
-/* ThingType::stringDesc
- * Returns the thing type info as a string
- *******************************************************************/
-string ThingType::stringDesc()
+// ----------------------------------------------------------------------------
+// ThingType::stringDesc
+//
+// Returns the thing type info as a string
+// ----------------------------------------------------------------------------
+string ThingType::stringDesc() const
 {
 	// Init return string
-	string ret = S_FMT("\"%s\" in group \"%s\", colour %d,%d,%d, radius %d", name, group, colour.r, colour.g, colour.b, radius);
+	string ret = S_FMT("\"%s\" in group \"%s\", colour %d,%d,%d, radius %d", name_, group_, colour_.r, colour_.g, colour_.b, radius_);
 
 	// Add any extra info
-	if (!sprite.IsEmpty()) ret += S_FMT(", sprite \"%s\"", sprite);
-	if (!angled) ret += ", angle hidden";
-	if (hanging) ret += ", hanging";
-	if (fullbright) ret += ", fullbright";
-	if (decoration) ret += ", decoration";
-	if (decorate) ret += ", defined in DECORATE";
+	if (!sprite_.IsEmpty()) ret += S_FMT(", sprite \"%s\"", sprite_);
+	if (!angled_) ret += ", angle hidden";
+	if (hanging_) ret += ", hanging";
+	if (fullbright_) ret += ", fullbright";
+	if (decoration_) ret += ", decoration";
+	if (decorate_) ret += ", defined in DECORATE";
 
 	return ret;
+}
+
+// ----------------------------------------------------------------------------
+// ThingType::loadProps
+//
+// Reads type properties from [props] and marks as a decorate type if
+// [decorate] is true
+// ----------------------------------------------------------------------------
+void ThingType::loadProps(PropertyList& props, bool decorate)
+{
+	// Set decorate flag
+	decorate_ = decorate;
+
+	// Sprite
+	if (props["sprite"].hasValue())
+	{
+		if (S_CMPNOCASE(props["sprite"].getStringValue(), "tnt1a?"))
+		{
+			if ((!(props["icon"].hasValue())) && icon_.IsEmpty())
+				icon_ = "tnt1a0";
+		}
+		else
+			sprite_ = props["sprite"].getStringValue();
+	}
+
+	// Colour
+	if (props["colour"].hasValue())
+	{
+		// SLADE Colour
+		wxColour wxc(props["colour"].getStringValue());
+		if (wxc.IsOk())
+			colour_.set(COLWX(wxc));
+	}
+	else if (props["color"].hasValue())
+	{
+		// Translate DB2 color indices to RGB values
+		static vector<rgba_t> db2_colours
+		{
+			{ 0x69, 0x69, 0x69, 0xFF },   // DimGray		ARGB value of #FF696969
+			{ 0x41, 0x69, 0xE1, 0xFF },   // RoyalBlue		ARGB value of #FF4169E1
+			{ 0x22, 0x8B, 0x22, 0xFF },   // ForestGreen	ARGB value of #FF228B22
+			{ 0x20, 0xB2, 0xAA, 0xFF },   // LightSeaGreen	ARGB value of #FF20B2AA
+			{ 0xB2, 0x22, 0x22, 0xFF },   // Firebrick		ARGB value of #FFB22222
+			{ 0x94, 0x00, 0xD3, 0xFF },   // DarkViolet		ARGB value of #FF9400D3
+			{ 0xB8, 0x86, 0x0B, 0xFF },   // DarkGoldenrod	ARGB value of #FFB8860B
+			{ 0xC0, 0xC0, 0xC0, 0xFF },   // Silver			ARGB value of #FFC0C0C0
+			{ 0x80, 0x80, 0x80, 0xFF },   // Gray			ARGB value of #FF808080
+			{ 0x00, 0xBF, 0xFF, 0xFF },   // DeepSkyBlue	ARGB value of #FF00BFFF
+			{ 0x32, 0xCD, 0x32, 0xFF },   // LimeGreen		ARGB value of #FF32CD32
+			{ 0xAF, 0xEE, 0xEE, 0xFF },   // PaleTurquoise	ARGB value of #FFAFEEEE
+			{ 0xFF, 0x63, 0x47, 0xFF },   // Tomato			ARGB value of #FFFF6347
+			{ 0xEE, 0x82, 0xEE, 0xFF },   // Violet			ARGB value of #FFEE82EE
+			{ 0xFF, 0xFF, 0x00, 0xFF },   // Yellow			ARGB value of #FFFFFF00
+			{ 0xF5, 0xF5, 0xF5, 0xFF },   // WhiteSmoke		ARGB value of #FFF5F5F5
+			{ 0xFF, 0xB6, 0xC1, 0xFF },   // LightPink		ARGB value of #FFFFB6C1
+			{ 0xFF, 0x8C, 0x00, 0xFF },   // DarkOrange		ARGB value of #FFFF8C00
+			{ 0xBD, 0xB7, 0x6B, 0xFF },   // DarkKhaki		ARGB value of #FFBDB76B
+			{ 0xDA, 0xA5, 0x20, 0xFF },   // Goldenrod		ARGB value of #FFDAA520
+		};
+
+		int color = props["color"].getIntValue();
+		if (color < db2_colours.size())
+			colour_ = db2_colours[color];
+	}
+
+	// Other props
+	if (props["radius"].hasValue()) radius_ = props["radius"].getIntValue();
+	if (props["height"].hasValue()) height_ = props["height"].getIntValue();
+	if (props["scalex"].hasValue()) scale_.x = props["scalex"].getFloatValue();
+	if (props["scaley"].hasValue()) scale_.y = props["scaley"].getFloatValue();
+	if (props["hanging"].hasValue()) hanging_ = props["hanging"].getBoolValue();
+	if (props["angled"].hasValue()) angled_ = props["angled"].getBoolValue();
+	if (props["bright"].hasValue()) fullbright_ = props["bright"].getBoolValue();
+	if (props["decoration"].hasValue()) decoration_ = props["decoration"].getBoolValue();
+	if (props["icon"].hasValue()) icon_ = props["icon"].getStringValue();
+	if (props["translation"].hasValue()) translation_ = props["translation"].getStringValue();
+	if (props["solid"].hasValue()) solid_ = props["solid"].getBoolValue();
+	if (props["obsolete"].hasValue()) flags_ |= FLAG_OBSOLETE;
+}
+
+
+// ----------------------------------------------------------------------------
+//
+// ThingType Class Static Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// ThingType::initGlobal
+//
+// Initialises global (static) ThingType objects
+// ----------------------------------------------------------------------------
+void ThingType::initGlobal()
+{
+	unknown_.shrink_ = true;
+	unknown_.icon_ = "unknown";
 }

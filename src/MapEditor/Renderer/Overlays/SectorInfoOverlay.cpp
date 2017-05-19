@@ -36,7 +36,7 @@
 #include "OpenGL/Drawing.h"
 #include "MapEditor/MapEditor.h"
 #include "General/ColourConfiguration.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "OpenGL/OpenGL.h"
 #include "MapEditor/MapTextureManager.h"
 
@@ -80,7 +80,7 @@ void SectorInfoOverlay::update(MapSector* sector)
 
 	// Info (index + type)
 	int t = sector->intProperty("special");
-	string type = S_FMT("%s (Type %d)", theGameConfiguration->sectorTypeName(t), t);
+	string type = S_FMT("%s (Type %d)", Game::configuration().sectorTypeName(t), t);
 	if (Global::debug)
 		info_text += S_FMT("Sector #%d (%d): %s\n", sector->getIndex(), sector->getId(), type);
 	else
@@ -173,7 +173,10 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	col_fg.a = col_fg.a*alpha;
 
 	// Get texture
-	GLTexture* tex = MapEditor::textureManager().getFlat(texture, theGameConfiguration->mixTexFlats());
+	GLTexture* tex = MapEditor::textureManager().getFlat(
+		texture,
+		Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+	);
 
 	// Valid texture
 	if (texture != "-" && tex != &(GLTexture::missingTex()))

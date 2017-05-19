@@ -47,6 +47,10 @@ public:
 	bool		getBoolValue(unsigned index = 0);
 	double		getFloatValue(unsigned index = 0);
 
+	// To avoid need for casts everywhere
+	ParseTreeNode*	getChildPTN(const string& name) { return static_cast<ParseTreeNode*>(getChild(name)); }
+	ParseTreeNode*	getChildPTN(unsigned index) { return static_cast<ParseTreeNode*>(getChild(index)); }
+
 	bool	parse(Tokenizer& tz);
 
 	typedef std::unique_ptr<ParseTreeNode> UPtr;
@@ -69,6 +73,9 @@ public:
 	bool	parseText(string& text, string source = "string", bool debug = false);
 	void	define(string def);
 	bool	defined(string def);
+
+	// To simplify casts from STreeNode to ParseTreeNode
+	static ParseTreeNode*	node(STreeNode* node) { return static_cast<ParseTreeNode*>(node); }
 };
 
 #endif//__PARSER_H__

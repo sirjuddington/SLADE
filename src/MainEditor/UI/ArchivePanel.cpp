@@ -52,7 +52,7 @@
 #include "EntryPanel/PaletteEntryPanel.h"
 #include "EntryPanel/SwitchesEntryPanel.h"
 #include "EntryPanel/TextEntryPanel.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
@@ -3735,7 +3735,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 			else
 			{
 				// Load game configuration
-				theGameConfiguration->openConfig(dlg.selectedGame(), dlg.selectedPort(), info.format);
+				Game::configuration().openConfig(dlg.selectedGame(), dlg.selectedPort(), info.format);
 
 				// Attempt to open map
 				if (MapEditor::window()->openMap(info))

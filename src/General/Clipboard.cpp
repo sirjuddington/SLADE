@@ -31,7 +31,7 @@
 #include "App.h"
 #include "Clipboard.h"
 #include "Graphics/CTexture/CTexture.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/SectorBuilder.h"
 
@@ -437,13 +437,13 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 
 		// Set important flags (needed when copying from Doom/Hexen format to UDMF)
 		// Won't be needed when proper map format conversion stuff is implemented
-		theGameConfiguration->setLineBasicFlag(
+		Game::configuration().setLineBasicFlag(
 			"twosided",
 			newline,
 			map->currentFormat(),
 			(newS1 && newS2)
 		);
-		theGameConfiguration->setLineBasicFlag(
+		Game::configuration().setLineBasicFlag(
 			"blocking",
 			newline,
 			map->currentFormat(),

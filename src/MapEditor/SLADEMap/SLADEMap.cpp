@@ -31,7 +31,7 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/Formats/WadArchive.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/ResourceManager.h"
 #include "General/UI.h"
 #include "MapEditor/SectorBuilder.h"
@@ -62,7 +62,7 @@ SLADEMap::SLADEMap()
 	this->position_frac = false;
 
 	// Object id 0 is always null
-	all_objects.push_back(mobj_holder_t(NULL, false));
+	all_objects.push_back(mobj_holder_t(nullptr, false));
 
 	// Init opened time so it's not random leftover garbage values
 	setOpenedTime();
@@ -338,7 +338,7 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 	Archive::mapdesc_t omap = map;
 
 	// Check for map archive
-	Archive* tempwad = NULL;
+	Archive* tempwad = nullptr;
 	if (map.archive && map.head)
 	{
 		tempwad = new WadArchive();
@@ -380,7 +380,7 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 		current_format = map.format;
 		// When creating a new map, retrieve UDMF namespace information from the configuration
 		if (map.format == MAP_UDMF && udmf_namespace.IsEmpty())
-			udmf_namespace = theGameConfiguration->udmfNamespace();
+			udmf_namespace = Game::configuration().udmfNamespace();
 	}
 
 	initSectorPolygons();
@@ -467,8 +467,8 @@ bool SLADEMap::addSide(doom64side_t& s)
 bool SLADEMap::addLine(doomline_t& l)
 {
 	// Get relevant sides
-	MapSide* s1 = NULL;
-	MapSide* s2 = NULL;
+	MapSide* s1 = nullptr;
+	MapSide* s2 = nullptr;
 	if (sides.size() > 32767)
 	{
 		// Support for > 32768 sides
@@ -529,8 +529,8 @@ bool SLADEMap::addLine(doomline_t& l)
 bool SLADEMap::addLine(doom64line_t& l)
 {
 	// Get relevant sides
-	MapSide* s1 = NULL;
-	MapSide* s2 = NULL;
+	MapSide* s1 = nullptr;
+	MapSide* s2 = nullptr;
 	if (sides.size() > 32767)
 	{
 		// Support for > 32768 sides
@@ -854,11 +854,11 @@ bool SLADEMap::readDoomMap(Archive::mapdesc_t map)
 	LOG_MESSAGE(2, "Reading Doom format map");
 
 	// Find map entries
-	ArchiveEntry* v = NULL;
-	ArchiveEntry* si = NULL;
-	ArchiveEntry* l = NULL;
-	ArchiveEntry* se = NULL;
-	ArchiveEntry* t = NULL;
+	ArchiveEntry* v = nullptr;
+	ArchiveEntry* si = nullptr;
+	ArchiveEntry* l = nullptr;
+	ArchiveEntry* se = nullptr;
+	ArchiveEntry* t = nullptr;
 	ArchiveEntry* entry = map.head;
 	while (entry != map.end->nextEntry())
 	{
@@ -932,8 +932,8 @@ bool SLADEMap::readDoomMap(Archive::mapdesc_t map)
 bool SLADEMap::addLine(hexenline_t& l)
 {
 	// Get relevant sides
-	MapSide* s1 = NULL;
-	MapSide* s2 = NULL;
+	MapSide* s1 = nullptr;
+	MapSide* s2 = nullptr;
 	if (sides.size() > 32767)
 	{
 		// Support for > 32768 sides
@@ -989,14 +989,15 @@ bool SLADEMap::addLine(hexenline_t& l)
 	// Handle some special cases
 	if (l.type)
 	{
-		int needs_tag = theGameConfiguration->actionSpecial(l.type)->needsTag();
-		if (needs_tag == AS_TT_LINEID || needs_tag == AS_TT_1LINEID_2LINE)
+		switch (Game::configuration().actionSpecial(l.type).needsTag())
 		{
-			nl->properties["id"] = l.args[0];
-		}
-		else if (needs_tag == AS_TT_LINEID_HI5)
-		{
-			nl->properties["id"] = (l.args[0] + (l.args[4]<<8));
+		case Game::TagType::LineId:
+		case Game::TagType::LineId1Line2:
+			nl->properties["id"] = l.args[0]; break;
+		case Game::TagType::LineIdHi5:
+			nl->properties["id"] = (l.args[0] + (l.args[4] << 8)); break;
+		default:
+			break;
 		}
 	}
 
@@ -1102,11 +1103,11 @@ bool SLADEMap::readHexenMap(Archive::mapdesc_t map)
 	LOG_MESSAGE(2, "Reading Hexen format map");
 
 	// Find map entries
-	ArchiveEntry* v = NULL;
-	ArchiveEntry* si = NULL;
-	ArchiveEntry* l = NULL;
-	ArchiveEntry* se = NULL;
-	ArchiveEntry* t = NULL;
+	ArchiveEntry* v = nullptr;
+	ArchiveEntry* si = nullptr;
+	ArchiveEntry* l = nullptr;
+	ArchiveEntry* se = nullptr;
+	ArchiveEntry* t = nullptr;
 	ArchiveEntry* entry = map.head;
 	while (entry != map.end->nextEntry())
 	{
@@ -1339,11 +1340,11 @@ bool SLADEMap::readDoom64Map(Archive::mapdesc_t map)
 	LOG_MESSAGE(2, "Reading Doom 64 format map");
 
 	// Find map entries
-	ArchiveEntry* v = NULL;
-	ArchiveEntry* si = NULL;
-	ArchiveEntry* l = NULL;
-	ArchiveEntry* se = NULL;
-	ArchiveEntry* t = NULL;
+	ArchiveEntry* v = nullptr;
+	ArchiveEntry* si = nullptr;
+	ArchiveEntry* l = nullptr;
+	ArchiveEntry* se = nullptr;
+	ArchiveEntry* t = nullptr;
 	ArchiveEntry* entry = map.head;
 	while (entry != map.end->nextEntry())
 	{
@@ -1423,7 +1424,7 @@ bool SLADEMap::addVertex(ParseTreeNode* def)
 	MapVertex* nv = new MapVertex(prop_x->getFloatValue(), prop_y->getFloatValue(), this);
 
 	// Add extra vertex info
-	ParseTreeNode* prop = NULL;
+	ParseTreeNode* prop = nullptr;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
 		prop = (ParseTreeNode*)def->getChild(a);
@@ -1467,7 +1468,7 @@ bool SLADEMap::addSide(ParseTreeNode* def)
 	ns->tex_lower = "-";
 
 	// Add extra side info
-	ParseTreeNode* prop = NULL;
+	ParseTreeNode* prop = nullptr;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
 		prop = (ParseTreeNode*)def->getChild(a);
@@ -1526,7 +1527,7 @@ bool SLADEMap::addLine(ParseTreeNode* def)
 		return false;
 
 	// Get second side if any
-	MapSide* side2 = NULL;
+	MapSide* side2 = nullptr;
 	ParseTreeNode* prop_s2 = (ParseTreeNode*)def->getChild("sideback");
 	if (prop_s2) side2 = getSide(prop_s2->getIntValue());
 
@@ -1537,7 +1538,7 @@ bool SLADEMap::addLine(ParseTreeNode* def)
 	nl->special = 0;
 
 	// Add extra line info
-	ParseTreeNode* prop = NULL;
+	ParseTreeNode* prop = nullptr;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
 		prop = (ParseTreeNode*)def->getChild(a);
@@ -1582,7 +1583,7 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 	ns->tag = 0;
 
 	// Add extra sector info
-	ParseTreeNode* prop = NULL;
+	ParseTreeNode* prop = nullptr;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
 		prop = (ParseTreeNode*)def->getChild(a);
@@ -1627,7 +1628,7 @@ bool SLADEMap::addThing(ParseTreeNode* def)
 	MapThing* nt = new MapThing(prop_x->getFloatValue(), prop_y->getFloatValue(), prop_type->getIntValue(), this);
 
 	// Add extra thing info
-	ParseTreeNode* prop = NULL;
+	ParseTreeNode* prop = nullptr;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
 		prop = (ParseTreeNode*)def->getChild(a);
@@ -2370,7 +2371,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		// Other properties
 		if (!things[a]->properties.isEmpty())
 		{
-			theGameConfiguration->cleanObjectUDMFProps(things[a]);
+			Game::configuration().cleanObjectUDMFProps(things[a]);
 			object_def += things[a]->properties.toString(true);
 		}
 
@@ -2398,7 +2399,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		// Other properties
 		if (!lines[a]->properties.isEmpty())
 		{
-			theGameConfiguration->cleanObjectUDMFProps(lines[a]);
+			Game::configuration().cleanObjectUDMFProps(lines[a]);
 			object_def += lines[a]->properties.toString(true);
 		}
 
@@ -2429,7 +2430,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		// Other properties
 		if (!sides[a]->properties.isEmpty())
 		{
-			theGameConfiguration->cleanObjectUDMFProps(sides[a]);
+			Game::configuration().cleanObjectUDMFProps(sides[a]);
 			object_def += sides[a]->properties.toString(true);
 		}
 
@@ -2450,7 +2451,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		// Other properties
 		if (!vertices[a]->properties.isEmpty())
 		{
-			theGameConfiguration->cleanObjectUDMFProps(vertices[a]);
+			Game::configuration().cleanObjectUDMFProps(vertices[a]);
 			object_def += vertices[a]->properties.toString(true);
 		}
 
@@ -2476,7 +2477,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		// Other properties
 		if (!sectors[a]->properties.isEmpty())
 		{
-			theGameConfiguration->cleanObjectUDMFProps(sectors[a]);
+			Game::configuration().cleanObjectUDMFProps(sectors[a]);
 			object_def += sectors[a]->properties.toString(true);
 		}
 
@@ -2517,7 +2518,7 @@ void SLADEMap::clearMap()
 	all_objects.clear();
 
 	// Object id 0 is always null
-	all_objects.push_back(mobj_holder_t(NULL, false));
+	all_objects.push_back(mobj_holder_t(nullptr, false));
 
 	// Clear usage counts
 	usage_flat.clear();
@@ -2694,13 +2695,13 @@ bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 		MapLine* l = sides[index]->parent;
 		l->setModified();
 		if (l->side1 == sides[index])
-			l->side1 = NULL;
+			l->side1 = nullptr;
 		if (l->side2 == sides[index])
-			l->side2 = NULL;
+			l->side2 = nullptr;
 
 		// Set appropriate line flags
-		theGameConfiguration->setLineBasicFlag("blocking", l, current_format, true);
-		theGameConfiguration->setLineBasicFlag("twosided", l, current_format, false);
+		Game::configuration().setLineBasicFlag("blocking", l, current_format, true);
+		Game::configuration().setLineBasicFlag("twosided", l, current_format, false);
 	}
 
 	// Remove side from its sector, if any
@@ -2811,7 +2812,7 @@ int SLADEMap::nearestVertex(fpoint2_t point, double min)
 {
 	// Go through vertices
 	double min_dist = 999999999;
-	MapVertex* v = NULL;
+	MapVertex* v = nullptr;
 	double dist = 0;
 	int index = -1;
 	for (unsigned a = 0; a < vertices.size(); a++)
@@ -2885,7 +2886,7 @@ int SLADEMap::nearestThing(fpoint2_t point, double min)
 {
 	// Go through things
 	double min_dist = 999999999;
-	MapThing* t = NULL;
+	MapThing* t = nullptr;
 	double dist = 0;
 	int index = -1;
 	for (unsigned a = 0; a < things.size(); a++)
@@ -2925,7 +2926,7 @@ vector<int> SLADEMap::nearestThingMulti(fpoint2_t point)
 	// Go through things
 	vector<int> ret;
 	double min_dist = 999999999;
-	MapThing* t = NULL;
+	MapThing* t = nullptr;
 	double dist = 0;
 	for (unsigned a = 0; a < things.size(); a++)
 	{
@@ -3010,7 +3011,7 @@ MapVertex* SLADEMap::vertexAt(double x, double y)
 	}
 
 	// No vertex at [x,y]
-	return NULL;
+	return nullptr;
 }
 
 // Sorting functions for SLADEMap::cutLines
@@ -3096,7 +3097,7 @@ MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 	fseg2_t seg(x1, y1, x2, y2);
 
 	// Go through vertices
-	MapVertex* cv = NULL;
+	MapVertex* cv = nullptr;
 	double min_dist = 999999;
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
@@ -3254,14 +3255,14 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 	// Get sector
 	MapSector* sector = front ? line->frontSector() : line->backSector();
 	if (!sector)
-		return NULL;
+		return nullptr;
 
 	// Get lines to test
 	vector<MapLine*> lines;
 	sector->getLines(lines);
 
 	// Get nearest line intersecting with line vector
-	MapLine* nearest = NULL;
+	MapLine* nearest = nullptr;
 	fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
 	fpoint2_t vec = line->frontVector();
 	if (front)
@@ -3333,16 +3334,16 @@ void SLADEMap::getThingsById(int id, vector<MapThing*>& list, unsigned start, in
 MapThing* SLADEMap::getFirstThingWithId(int id)
 {
 	if (id == 0)
-		return NULL;
+		return nullptr;
 
 	// Find things with matching id, but ignore dragons, we don't want them!
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
-		if (things[a]->intProperty("id") == id && !(tt->getFlags() & THING_DRAGON))
+		auto& tt = Game::configuration().thingType(things[a]->getType());
+		if (things[a]->intProperty("id") == id && !(tt.flags() & Game::ThingType::FLAG_DRAGON))
 			return things[a];
 	}
-	return NULL;
+	return nullptr;
 }
 
 /* SLADEMap::getThingsByIdInSectorTag
@@ -3371,10 +3372,9 @@ void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list
 /* SLADEMap::getDragonTargets
  * Gets dragon targets (needs better description)
  *******************************************************************/
-WX_DECLARE_HASH_MAP(int, int, wxIntegerHash, wxIntegerEqual, UsedValuesMap);
 void SLADEMap::getDragonTargets(MapThing* first, vector<MapThing*>& list)
 {
-	UsedValuesMap used;
+	std::map<int, int> used;
 	list.clear();
 	list.push_back(first);
 	unsigned i = 0;
@@ -3403,8 +3403,8 @@ void SLADEMap::getPathedThings(vector<MapThing*>& list)
 	// Find things that need to be pathed
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
-		if (tt->getFlags() & (THING_PATHED|THING_DRAGON))
+		auto& tt = Game::configuration().thingType(things[a]->getType());
+		if (tt.flags() & (Game::ThingType::FLAG_PATHED | Game::ThingType::FLAG_DRAGON))
 			list.push_back(things[a]);
 	}
 }
@@ -3430,101 +3430,107 @@ void SLADEMap::getLinesById(int id, vector<MapLine*>& list)
  *******************************************************************/
 void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype)
 {
+	using Game::TagType;
+
 	// Find things with special affecting matching id
-	int needs_tag, tag, arg2, arg3, arg4, arg5, tid;
+	int tag, arg2, arg3, arg4, arg5, tid;
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
-		if (tt->needsTag() || (things[a]->intProperty("special") && !(tt->getFlags() & THING_SCRIPT)))
+		auto& tt = Game::configuration().thingType(things[a]->getType());
+		auto needs_tag = tt.needsTag();
+		if (needs_tag != TagType::None ||
+			(things[a]->intProperty("special") && !(tt.flags() & Game::ThingType::FLAG_SCRIPT)))
 		{
-			needs_tag = tt->needsTag() ? tt->needsTag() : theGameConfiguration->actionSpecial(things[a]->intProperty("special"))->needsTag();
+			if (needs_tag == TagType::None)
+				needs_tag = Game::configuration().actionSpecial(things[a]->intProperty("special")).needsTag();
 			tag = things[a]->intProperty("arg0");
 			bool fits = false;
+			int path_type;
 			switch (needs_tag)
 			{
-			case AS_TT_SECTOR:
-			case AS_TT_SECTOR_OR_BACK:
-			case AS_TT_SECTOR_AND_BACK:
+			case TagType::Sector:
+			case TagType::SectorOrBack:
+			case TagType::SectorAndBack:
 				fits = (IDEQ(tag) && type == SECTORS);
 				break;
-			case AS_TT_LINE_NEGATIVE:
+			case TagType::LineNegative:
 				tag = abs(tag);
-			case AS_TT_LINE:
+			case TagType::Line:
 				fits = (IDEQ(tag) && type == LINEDEFS);
 				break;
-			case AS_TT_THING:
+			case TagType::Thing:
 				fits = (IDEQ(tag) && type == THINGS);
 				break;
-			case AS_TT_1THING_2SECTOR:
+			case TagType::Thing1Sector2:
 				arg2 = things[a]->intProperty("arg1");
 				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg2) && type == SECTORS));
 				break;
-			case AS_TT_1THING_3SECTOR:
+			case TagType::Thing1Sector3:
 				arg3 = things[a]->intProperty("arg2");
 				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg3) && type == SECTORS));
 				break;
-			case AS_TT_1THING_2THING:
+			case TagType::Thing1Thing2:
 				arg2 = things[a]->intProperty("arg1");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
-			case AS_TT_1THING_4THING:
+			case TagType::Thing1Thing4:
 				arg4 = things[a]->intProperty("arg3");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg4)));
 				break;
-			case AS_TT_1THING_2THING_3THING:
+			case TagType::Thing1Thing2Thing3:
 				arg2 = things[a]->intProperty("arg1");
 				arg3 = things[a]->intProperty("arg2");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3)));
 				break;
-			case AS_TT_1SECTOR_2THING_3THING_5THING:
+			case TagType::Sector1Thing2Thing3Thing5:
 				arg2 = things[a]->intProperty("arg1");
 				arg3 = things[a]->intProperty("arg2");
 				arg5 = things[a]->intProperty("arg4");
 				fits = (type == SECTORS ? (IDEQ(tag)) : (type == THINGS &&
 						(IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
 				break;
-			case AS_TT_1LINEID_2LINE:
+			case TagType::LineId1Line2:
 				arg2 = things[a]->intProperty("arg1");
 				fits = (type == LINEDEFS && IDEQ(arg2));
 				break;
-			case AS_TT_4THING:
+			case TagType::Thing4:
 				arg4 = things[a]->intProperty("arg3");
 				fits = (type == THINGS && IDEQ(arg4));
 				break;
-			case AS_TT_5THING:
+			case TagType::Thing5:
 				arg5 = things[a]->intProperty("arg4");
 				fits = (type == THINGS && IDEQ(arg5));
 				break;
-			case AS_TT_1LINE_2SECTOR:
+			case TagType::Line1Sector2:
 				arg2 = things[a]->intProperty("arg1");
 				fits = (type == LINEDEFS ? (IDEQ(tag)) : (IDEQ(arg2) && type == SECTORS));
 				break;
-			case AS_TT_1SECTOR_2SECTOR:
+			case TagType::Sector1Sector2:
 				arg2 = things[a]->intProperty("arg1");
 				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
-			case AS_TT_1SECTOR_2SECTOR_3SECTOR_4SECTOR:
+			case TagType::Sector1Sector2Sector3Sector4:
 				arg2 = things[a]->intProperty("arg1");
 				arg3 = things[a]->intProperty("arg2");
 				arg4 = things[a]->intProperty("arg3");
 				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg4)));
 				break;
-			case AS_TT_SECTOR_2IS3_LINE:
+			case TagType::Sector2Is3Line:
 				arg2 = things[a]->intProperty("arg1");
 				fits = (IDEQ(tag) && (arg2 == 3 ? type == LINEDEFS : type == SECTORS));
 				break;
-			case AS_TT_1SECTOR_2THING:
+			case TagType::Sector1Thing2:
 				arg2 = things[a]->intProperty("arg1");
 				fits = (type == SECTORS ? (IDEQ(tag)) : (IDEQ(arg2) && type == THINGS));
 				break;
-			default:
-				// Kind of a hack here. Patrol points and interpolation points only tag
-				// certain thing types with the same TID as themselves. Fortunately,
-				// the thing types in question are in the 9000 range, and the TagTypes
-				// enum is quite unlikely to reach that far. :p
+			case TagType::Patrol:
+				path_type = 9047;
+			case TagType::Interpolation:
+				path_type = 9075;
+
 				tid = things[a]->intProperty("id");
-				ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
-				fits = ((needs_tag == ttype) && (IDEQ(tid)) && (tt->needsTag() == needs_tag));
+				auto& tt = Game::configuration().thingType(things[a]->getType());
+				fits = ((path_type == ttype) && (IDEQ(tid)) && (tt.needsTag() == needs_tag));
 				break;
 			}
 			if (fits) list.push_back(things[a]);
@@ -3537,90 +3543,91 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, i
  *******************************************************************/
 void SLADEMap::getTaggingLinesById(int id, int type, vector<MapLine*>& list)
 {
+	using Game::TagType;
+
 	// Find lines with special affecting matching id
-	int needs_tag, tag, arg2, arg3, arg4, arg5;
+	int tag, arg2, arg3, arg4, arg5;
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		int special = lines[a]->special;
 		if (special)
 		{
-			needs_tag = theGameConfiguration->actionSpecial(lines[a]->special)->needsTag();
 			tag = lines[a]->intProperty("arg0");
 			bool fits = false;
-			switch (needs_tag)
+			switch (Game::configuration().actionSpecial(lines[a]->special).needsTag())
 			{
-			case AS_TT_SECTOR:
-			case AS_TT_SECTOR_OR_BACK:
-			case AS_TT_SECTOR_AND_BACK:
+			case TagType::Sector:
+			case TagType::SectorOrBack:
+			case TagType::SectorAndBack:
 				fits = (IDEQ(tag) && type == SECTORS);
 				break;
-			case AS_TT_LINE_NEGATIVE:
+			case TagType::LineNegative:
 				tag = abs(tag);
-			case AS_TT_LINE:
+			case TagType::Line:
 				fits = (IDEQ(tag) && type == LINEDEFS);
 				break;
-			case AS_TT_THING:
+			case TagType::Thing:
 				fits = (IDEQ(tag) && type == THINGS);
 				break;
-			case AS_TT_1THING_2SECTOR:
+			case TagType::Thing1Sector2:
 				arg2 = lines[a]->intProperty("arg1");
 				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg2) && type == SECTORS));
 				break;
-			case AS_TT_1THING_3SECTOR:
+			case TagType::Thing1Sector3:
 				arg3 = lines[a]->intProperty("arg2");
 				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg3) && type == SECTORS));
 				break;
-			case AS_TT_1THING_2THING:
+			case TagType::Thing1Thing2:
 				arg2 = lines[a]->intProperty("arg1");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
-			case AS_TT_1THING_4THING:
+			case TagType::Thing1Thing4:
 				arg4 = lines[a]->intProperty("arg3");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg4)));
 				break;
-			case AS_TT_1THING_2THING_3THING:
+			case TagType::Thing1Thing2Thing3:
 				arg2 = lines[a]->intProperty("arg1");
 				arg3 = lines[a]->intProperty("arg2");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3)));
 				break;
-			case AS_TT_1SECTOR_2THING_3THING_5THING:
+			case TagType::Sector1Thing2Thing3Thing5:
 				arg2 = lines[a]->intProperty("arg1");
 				arg3 = lines[a]->intProperty("arg2");
 				arg5 = lines[a]->intProperty("arg4");
 				fits = (type == SECTORS ? (IDEQ(tag)) : (type == THINGS &&
 						(IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
 				break;
-			case AS_TT_1LINEID_2LINE:
+			case TagType::LineId1Line2:
 				arg2 = lines[a]->intProperty("arg1");
 				fits = (type == LINEDEFS && IDEQ(arg2));
 				break;
-			case AS_TT_4THING:
+			case TagType::Thing4:
 				arg4 = lines[a]->intProperty("arg3");
 				fits = (type == THINGS && IDEQ(arg4));
 				break;
-			case AS_TT_5THING:
+			case TagType::Thing5:
 				arg5 = lines[a]->intProperty("arg4");
 				fits = (type == THINGS && IDEQ(arg5));
 				break;
-			case AS_TT_1LINE_2SECTOR:
+			case TagType::Line1Sector2:
 				arg2 = lines[a]->intProperty("arg1");
 				fits = (type == LINEDEFS ? (IDEQ(tag)) : (IDEQ(arg2) && type == SECTORS));
 				break;
-			case AS_TT_1SECTOR_2SECTOR:
+			case TagType::Sector1Sector2:
 				arg2 = lines[a]->intProperty("arg1");
 				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
-			case AS_TT_1SECTOR_2SECTOR_3SECTOR_4SECTOR:
+			case TagType::Sector1Sector2Sector3Sector4:
 				arg2 = lines[a]->intProperty("arg1");
 				arg3 = lines[a]->intProperty("arg2");
 				arg4 = lines[a]->intProperty("arg3");
 				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg4)));
 				break;
-			case AS_TT_SECTOR_2IS3_LINE:
+			case TagType::Sector2Is3Line:
 				arg2 = lines[a]->intProperty("arg1");
 				fits = (IDEQ(tag) && (arg2 == 3 ? type == LINEDEFS : type == SECTORS));
 				break;
-			case AS_TT_1SECTOR_2THING:
+			case TagType::Sector1Thing2:
 				arg2 = lines[a]->intProperty("arg1");
 				fits = (type == SECTORS ? (IDEQ(tag)) : (IDEQ(arg2) && type == THINGS));
 				break;
@@ -3702,7 +3709,7 @@ int SLADEMap::findUnusedLineId()
 	}
 
 	// Boom (sector tag (arg0))
-	else if (current_format == MAP_DOOM && theGameConfiguration->isBoom())
+	else if (current_format == MAP_DOOM && Game::configuration().featureSupported(Game::Feature::Boom))
 	{
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
@@ -3830,7 +3837,7 @@ MapSector* SLADEMap::getLineSideSector(MapLine* line, bool front)
 		MapLine* l = lines[index];
 
 		// Check side of line
-		MapSector* sector = NULL;
+		MapSector* sector = nullptr;
 		if (MathStuff::lineSide(mid, l->seg()) >= 0)
 			sector = l->frontSector();
 		else
@@ -3855,7 +3862,7 @@ MapSector* SLADEMap::getLineSideSector(MapLine* line, bool front)
 		return l->backSector();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /* SLADEMap::getModifiedObjects
@@ -4135,9 +4142,9 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 {
 	// Check both vertices were given
 	if (!vertex1 || vertex1->parent_map != this)
-		return NULL;
+		return nullptr;
 	if (!vertex2 || vertex2->parent_map != this)
-		return NULL;
+		return nullptr;
 
 	// Check if there is already a line along the two given vertices
 	if(!force)
@@ -4151,7 +4158,7 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 	}
 
 	// Create new line between vertices
-	MapLine* nl = new MapLine(vertex1, vertex2, NULL, NULL, this);
+	MapLine* nl = new MapLine(vertex1, vertex2, nullptr, nullptr, this);
 	nl->index = lines.size();
 	lines.push_back(nl);
 
@@ -4210,7 +4217,7 @@ MapSide* SLADEMap::createSide(MapSector* sector)
 {
 	// Check sector
 	if (!sector)
-		return NULL;
+		return nullptr;
 
 	// Create side
 	MapSide* side = new MapSide(sector, this);
@@ -4345,7 +4352,7 @@ MapVertex* SLADEMap::mergeVerticesPoint(double x, double y)
 MapLine* SLADEMap::splitLine(MapLine* l, MapVertex* v)
 {
 	if (!l || !v)
-		return NULL;
+		return nullptr;
 
 	// Shorten line
 	MapVertex* v2 = l->vertex2;
@@ -4356,8 +4363,8 @@ MapLine* SLADEMap::splitLine(MapLine* l, MapVertex* v)
 	l->length = -1;
 
 	// Create and add new sides
-	MapSide* s1 = NULL;
-	MapSide* s2 = NULL;
+	MapSide* s1 = nullptr;
+	MapSide* s2 = nullptr;
 	if (l->side1)
 	{
 		// Create side 1
@@ -4470,7 +4477,7 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 		return false;
 
 	// Get the MapSide to set
-	MapSide* side = NULL;
+	MapSide* side = nullptr;
 	if (front)
 		side = lines[line]->side1;
 	else
@@ -4495,8 +4502,8 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 
 		// Set appropriate line flags
 		bool twosided = (lines[line]->side1 && lines[line]->side2);
-		theGameConfiguration->setLineBasicFlag("blocking", lines[line], current_format, !twosided);
-		theGameConfiguration->setLineBasicFlag("twosided", lines[line], current_format, twosided);
+		Game::configuration().setLineBasicFlag("blocking", lines[line], current_format, !twosided);
+		Game::configuration().setLineBasicFlag("twosided", lines[line], current_format, twosided);
 
 		// Invalidate sector polygon
 		sectors[sector]->resetPolygon();
@@ -5020,7 +5027,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 			if (!reused)
 				sectors_reused.push_back(sector);
 			else
-				sector = NULL;
+				sector = nullptr;
 		}
 
 		// Create sector
@@ -5049,7 +5056,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 	}
 
 	// Find an adjacent sector to copy properties from
-	MapSector* sector_copy = NULL;
+	MapSector* sector_copy = nullptr;
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		// Check front sector
@@ -5086,7 +5093,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		}
 
 		// Otherwise, use defaults from game configuration
-		theGameConfiguration->applyDefaults(sectors[a], current_format == MAP_UDMF);
+		Game::configuration().applyDefaults(sectors[a], current_format == MAP_UDMF);
 	}
 
 	// Update line textures
@@ -5107,7 +5114,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 
 			// If no adjacent texture, get default from game configuration
 			if (tex == "-")
-				tex = theGameConfiguration->getDefaultString(MOBJ_SIDE, "texturemiddle");
+				tex = Game::configuration().getDefaultString(MOBJ_SIDE, "texturemiddle");
 
 			// Set texture
 			sides[a]->setStringProperty("texturemiddle", tex);

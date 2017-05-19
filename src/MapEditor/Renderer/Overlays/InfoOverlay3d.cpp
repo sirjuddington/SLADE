@@ -31,7 +31,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "InfoOverlay3d.h"
 #include "MapEditor/MapEditContext.h"
@@ -80,6 +80,9 @@ InfoOverlay3D::~InfoOverlay3D()
  *******************************************************************/
 void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEMap* map)
 {
+	using Game::Feature;
+	using Game::UDMFFeature;
+
 	// Clear current info
 	info.clear();
 	info2.clear();
@@ -112,11 +115,11 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// Relevant flags
 		string flags = "";
-		if (theGameConfiguration->lineBasicFlagSet("dontpegtop", line, map_format))
+		if (Game::configuration().lineBasicFlagSet("dontpegtop", line, map_format))
 			flags += "Upper Unpegged, ";
-		if (theGameConfiguration->lineBasicFlagSet("dontpegbottom", line, map_format))
+		if (Game::configuration().lineBasicFlagSet("dontpegbottom", line, map_format))
 			flags += "Lower Unpegged, ";
-		if (theGameConfiguration->lineBasicFlagSet("blocking", line, map_format))
+		if (Game::configuration().lineBasicFlagSet("blocking", line, map_format))
 			flags += "Blocking, ";
 		if (!flags.IsEmpty())
 			flags.RemoveLast(2);
@@ -138,7 +141,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			info2.push_back("Upper Texture");
 
 		// Offsets
-		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// Get x offset info
 			int xoff = side->intProperty("offsetx");
@@ -187,7 +190,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		}
 
 		// UDMF extras
-		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
+		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			// Scale
 			double xscale, yscale;
@@ -289,7 +292,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			texname = side->getTexMiddle();
 		else
 			texname = side->getTexUpper();
-		texture = MapEditor::textureManager().getTexture(texname, theGameConfiguration->mixTexFlats());
+		texture = MapEditor::textureManager().getTexture(texname, Game::configuration().featureSupported(Feature::MixTexFlats));
 	}
 
 
@@ -315,7 +318,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// ZDoom UDMF extras
 		/*
-		if (theGameConfiguration->udmfNamespace() == "zdoom") {
+		if (Game::configuration().udmfNamespace() == "zdoom") {
 			// Sector colour
 			rgba_t col = sector->getColour(0, true);
 			info.push_back(S_FMT("Colour: R%d, G%d, B%d", col.r, col.g, col.b));
@@ -333,7 +336,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// Light
 		int light = sector->intProperty("lightlevel");
-		if (theGameConfiguration->udmfFlatLighting())
+		if (Game::configuration().featureSupported(UDMFFeature::FlatLighting))
 		{
 			// Get extra light info
 			int fl = 0;
@@ -373,7 +376,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			// Offsets
 			double xoff, yoff;
 			xoff = yoff = 0.0;
-			if (theGameConfiguration->udmfFlatPanning())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
 			{
 				if (item_type == MapEditor::ItemType::Floor)
 				{
@@ -391,7 +394,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			// Scaling
 			double xscale, yscale;
 			xscale = yscale = 1.0;
-			if (theGameConfiguration->udmfFlatScaling())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 			{
 				if (item_type == MapEditor::ItemType::Floor)
 				{
@@ -412,7 +415,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			texname = sector->getFloorTex();
 		else
 			texname = sector->getCeilingTex();
-		texture = MapEditor::textureManager().getFlat(texname, theGameConfiguration->mixTexFlats());
+		texture = MapEditor::textureManager().getFlat(texname, Game::configuration().featureSupported(Feature::MixTexFlats));
 	}
 
 	// Thing
@@ -437,16 +440,16 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 
 		// Type
-		ThingType* tt = theGameConfiguration->thingType(thing->getType());
-		if (tt->getName() == "Unknown")
+		auto& tt = Game::configuration().thingType(thing->getType());
+		if (!tt.defined())
 			info2.push_back(S_FMT("Type: %d", thing->getType()));
 		else
-			info2.push_back(S_FMT("Type: %s", tt->getName()));
+			info2.push_back(S_FMT("Type: %s", tt.name()));
 
 		// Args
 		if (MapEditor::editContext().mapDesc().format == MAP_HEXEN ||
 			(MapEditor::editContext().mapDesc().format == MAP_UDMF &&
-				theGameConfiguration->getUDMFProperty("arg0", MOBJ_THING)))
+				Game::configuration().getUDMFProperty("arg0", MOBJ_THING)))
 		{
 			// Get thing args
 			int args[5];
@@ -458,7 +461,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			string argxstr[2];
 			argxstr[0] = thing->stringProperty("arg0str");
 			argxstr[1] = thing->stringProperty("arg1str");
-			string argstr = tt->getArgsString(args, argxstr);
+			string argstr = tt.argSpec().stringDesc(args, argxstr);
 
 			if (argstr.IsEmpty())
 				info2.push_back("No Args");
@@ -475,13 +478,13 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 
 		// Texture
-		texture = MapEditor::textureManager().getSprite(tt->getSprite(), tt->getTranslation(), tt->getPalette());
+		texture = MapEditor::textureManager().getSprite(tt.sprite(), tt.translation(), tt.palette());
 		if (!texture)
 		{
-			if (use_zeth_icons && tt->getZeth() >= 0)
-				texture = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", tt->getZeth()));
+			if (use_zeth_icons && tt.zethIcon() >= 0)
+				texture = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", tt.zethIcon()));
 			if (!texture)
-				texture = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", tt->getIcon()));
+				texture = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", tt.icon()));
 			thing_icon = true;
 		}
 		texname = "";
