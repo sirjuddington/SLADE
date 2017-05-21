@@ -101,7 +101,7 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 	// Check for simple definition
 	if (node->isLeaf())
 	{
-		name_ = node->getStringValue();
+		name_ = node->stringValue();
 		return;
 	}
 
@@ -114,7 +114,7 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 
 		// Name
 		if (S_CMPNOCASE(name, "name"))
-			name_ = child->getStringValue();
+			name_ = child->stringValue();
 
 		// Args
 		else if (S_CMPNOCASE(name, "arg1"))

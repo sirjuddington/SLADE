@@ -5,6 +5,7 @@
 #include "ThingType.h"
 #include "UDMFProperty.h"
 #include "Utility/PropertyList/PropertyList.h"
+#include "SpecialPreset.h"
 
 class ParseTreeNode;
 class ArchiveEntry;
@@ -137,6 +138,7 @@ namespace Game
 		int				spacTriggerIndexHexen(MapLine* line);
 		wxArrayString	allSpacTriggers();
 		void			setLineSpacTrigger(unsigned trigger_index, MapLine* line);
+		string			spacTriggerUDMFName(unsigned trigger_index);
 
 		// UDMF properties
 		UDMFProperty*	getUDMFProperty(string name, int type);
@@ -159,6 +161,9 @@ namespace Game
 		double	getDefaultFloat(int type, string property);
 		bool	getDefaultBool(int type, string property);
 		void	applyDefaults(MapObject* object, bool udmf = false);
+
+		// Special Presets
+		const vector<SpecialPreset>&	specialPresets() const { return special_presets_; }
 
 		// Misc
 		void	setLightLevelInterval(int interval);
@@ -191,7 +196,7 @@ namespace Game
 		// Flags
 		struct Flag
 		{
-			int		flag = 0;
+			int		flag;
 			string	name;
 			string	udmf;
 		};
@@ -225,5 +230,8 @@ namespace Game
 		// Feature Support
 		std::map<Feature, bool>		supported_features_;
 		std::map<UDMFFeature, bool>	udmf_features_;
+
+		// Special Presets
+		vector<SpecialPreset>	special_presets_;
 	};
 }

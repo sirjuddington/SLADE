@@ -32,6 +32,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Tree.h"
+#include "TreeNew.h"
 
 
 /*******************************************************************
@@ -276,4 +277,17 @@ bool STreeNode::removeChild(STreeNode* child)
 
 	// Child didn't exist
 	return false;
+}
+
+
+
+
+
+template <class T>
+string TreeNode<T>::path()
+{
+	if (!parent)
+		return name_ + "/";
+	else
+		return parent->path() + name_ + "/";
 }

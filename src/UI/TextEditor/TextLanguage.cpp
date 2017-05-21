@@ -483,13 +483,13 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 		TextLanguage* lang = new TextLanguage(node->getName());
 
 		// Check for inheritance
-		if (!node->getInherit().IsEmpty())
+		if (!node->inherit().IsEmpty())
 		{
-			TextLanguage* inherit = getLanguage(node->getInherit());
+			TextLanguage* inherit = getLanguage(node->inherit());
 			if (inherit)
 				inherit->copyTo(lang);
 			else
-				LOG_MESSAGE(1, "Warning: Language %s inherits from undefined language %s", node->getName(), node->getInherit());
+				LOG_MESSAGE(1, "Warning: Language %s inherits from undefined language %s", node->getName(), node->inherit());
 		}
 
 		// Parse language info
@@ -499,76 +499,76 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 
 			// Language name
 			if (S_CMPNOCASE(child->getName(), "name"))
-				lang->setName(child->getStringValue());
+				lang->setName(child->stringValue());
 
 			// Comment begin
 			else if (S_CMPNOCASE(child->getName(), "comment_begin"))
-				lang->setCommentBegin(child->getStringValue());
+				lang->setCommentBegin(child->stringValue());
 
 			// Comment end
 			else if (S_CMPNOCASE(child->getName(), "comment_end"))
-				lang->setCommentEnd(child->getStringValue());
+				lang->setCommentEnd(child->stringValue());
 
 			// Line comment
 			else if (S_CMPNOCASE(child->getName(), "comment_line"))
-				lang->setLineComment(child->getStringValue());
+				lang->setLineComment(child->stringValue());
 
 			// Preprocessor
 			else if (S_CMPNOCASE(child->getName(), "preprocessor"))
-				lang->setPreprocessor(child->getStringValue());
+				lang->setPreprocessor(child->stringValue());
 
 			// Case sensitive
 			else if (S_CMPNOCASE(child->getName(), "case_sensitive"))
-				lang->setCaseSensitive(child->getBoolValue());
+				lang->setCaseSensitive(child->boolValue());
 
 			// Doc comment
 			else if (S_CMPNOCASE(child->getName(), "comment_doc"))
-				lang->setDocComment(child->getStringValue());
+				lang->setDocComment(child->stringValue());
 
 			// Keyword lookup link
 			else if (S_CMPNOCASE(child->getName(), "keyword_link"))
-				lang->word_lists[WordType::Keyword].lookup_url = child->getStringValue();
+				lang->word_lists[WordType::Keyword].lookup_url = child->stringValue();
 
 			// Constant lookup link
 			else if (S_CMPNOCASE(child->getName(), "constant_link"))
-				lang->word_lists[WordType::Constant].lookup_url = child->getStringValue();
+				lang->word_lists[WordType::Constant].lookup_url = child->stringValue();
 
 			// Function lookup link
 			else if (S_CMPNOCASE(child->getName(), "function_link"))
-				lang->f_lookup_url = child->getStringValue();
+				lang->f_lookup_url = child->stringValue();
 
 			// Jump blocks
 			else if (S_CMPNOCASE(child->getName(), "blocks"))
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
-					lang->jump_blocks.push_back(child->getStringValue(v));
+					lang->jump_blocks.push_back(child->stringValue(v));
 			}
 			else if (S_CMPNOCASE(child->getName(), "blocks_ignore"))
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
-					lang->jb_ignore.push_back(child->getStringValue(v));
+					lang->jb_ignore.push_back(child->stringValue(v));
 			}
 
 			// Block begin
 			else if (S_CMPNOCASE(child->getName(), "block_begin"))
-				lang->block_begin = child->getStringValue();
+				lang->block_begin = child->stringValue();
 
 			// Block end
 			else if (S_CMPNOCASE(child->getName(), "block_end"))
-				lang->block_end = child->getStringValue();
+				lang->block_end = child->stringValue();
 
 			// Preprocessor block begin
 			else if (S_CMPNOCASE(child->getName(), "pp_block_begin"))
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
-					lang->pp_block_begin.push_back(child->getStringValue(v));
+					lang->pp_block_begin.push_back(child->stringValue(v));
 			}
 
 			// Preprocessor block end
 			else if (S_CMPNOCASE(child->getName(), "pp_block_end"))
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
-					lang->pp_block_end.push_back(child->getStringValue(v));
+					lang->pp_block_end.push_back(child->stringValue(v));
 			}
 
 			// Keywords
@@ -577,7 +577,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
 				{
-					string val = child->getStringValue(v);
+					string val = child->stringValue(v);
 
 					// Check for '$override'
 					if (S_CMPNOCASE(val, "$override"))
@@ -598,7 +598,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
 				{
-					string val = child->getStringValue(v);
+					string val = child->stringValue(v);
 
 					// Check for '$override'
 					if (S_CMPNOCASE(val, "$override"))
@@ -619,7 +619,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
 				{
-					string val = child->getStringValue(v);
+					string val = child->stringValue(v);
 
 					// Check for '$override'
 					if (S_CMPNOCASE(val, "$override"))
@@ -640,7 +640,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
 				{
-					string val = child->getStringValue(v);
+					string val = child->stringValue(v);
 
 					// Check for '$override'
 					if (S_CMPNOCASE(val, "$override"))
@@ -669,14 +669,14 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 						// Add function
 						lang->addFunction(
 							child_func->getName(),
-							child_func->getStringValue(0),
+							child_func->stringValue(0),
 							"",
 							true,
-							child_func->getType());
+							child_func->type());
 
 						// Add args
 						for (unsigned v = 1; v < child_func->nValues(); v++)
-							lang->addFunction(child_func->getName(), child_func->getStringValue(v));
+							lang->addFunction(child_func->getName(), child_func->stringValue(v));
 					}
 
 					// Full definition
@@ -691,14 +691,14 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 							if (child_prop->getName() == "args")
 							{
 								for (unsigned v = 0; v < child_prop->nValues(); v++)
-									args.push_back(child_prop->getStringValue(v));
+									args.push_back(child_prop->stringValue(v));
 							}
 							else if (child_prop->getName() == "description")
-								desc = child_prop->getStringValue();
+								desc = child_prop->stringValue();
 						}
 
 						for (unsigned as = 0; as < args.size(); as++)
-							lang->addFunction(name, args[as], desc, as == 0, child_func->getType());
+							lang->addFunction(name, args[as], desc, as == 0, child_func->type());
 					}
 				}
 			}

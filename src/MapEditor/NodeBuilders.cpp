@@ -90,23 +90,23 @@ void NodeBuilders::init()
 			ParseTreeNode* node = (ParseTreeNode*)n_builder->getChild(b);
 
 			// Option
-			if (S_CMPNOCASE(node->getType(), "option"))
+			if (S_CMPNOCASE(node->type(), "option"))
 			{
 				builder.options.push_back(node->getName());
-				builder.option_desc.push_back(node->getStringValue());
+				builder.option_desc.push_back(node->stringValue());
 			}
 
 			// Builder name
 			else if (S_CMPNOCASE(node->getName(), "name"))
-				builder.name = node->getStringValue();
+				builder.name = node->stringValue();
 
 			// Builder command
 			else if (S_CMPNOCASE(node->getName(), "command"))
-				builder.command = node->getStringValue();
+				builder.command = node->stringValue();
 
 			// Builder executable
 			else if (S_CMPNOCASE(node->getName(), "executable"))
-				builder.exe = node->getStringValue();
+				builder.exe = node->stringValue();
 		}
 		builders.push_back(builder);
 	}

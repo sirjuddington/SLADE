@@ -305,14 +305,12 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 		// Enable special tab
 		cb_override_special->Enable(false);
 		cb_override_special->Show(false);
-		//panel_special->Enable(true);
 	}
 	else
 	{
 		cb_override_special->Enable(true);
 		cb_override_special->SetValue(false);
 		cb_override_special->Enable(true);
-		//panel_special->Enable(false);
 	}
 
 	// Sector tag
@@ -383,25 +381,15 @@ void LinePropsPanel::applyChanges()
 		{
 			// UDMF
 			for (unsigned a = 0; a < udmf_flags.size(); a++)
-			{
-				if (cb_flags[a]->Get3StateValue() == wxCHK_UNDETERMINED)
-					continue;
-
-				//for (unsigned l = 0; l < objects.size(); l++)
+				if (cb_flags[a]->Get3StateValue() != wxCHK_UNDETERMINED)
 					objects[l]->setBoolProperty(udmf_flags[a], cb_flags[a]->GetValue());
-			}
 		}
 		else
 		{
 			// Other
 			for (unsigned a = 0; a < cb_flags.size(); a++)
-			{
-				if (cb_flags[a]->Get3StateValue() == wxCHK_UNDETERMINED)
-					continue;
-
-				//for (unsigned l = 0; l < objects.size(); l++)
+				if (cb_flags[a]->Get3StateValue() != wxCHK_UNDETERMINED)
 					Game::configuration().setLineFlag(a, (MapLine*)objects[l], cb_flags[a]->GetValue());
-			}
 		}
 
 		// Sector tag

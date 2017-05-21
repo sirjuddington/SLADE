@@ -11,23 +11,6 @@ class Parser;
 
 class ParseTreeNode : public STreeNode
 {
-private:
-	string				name;
-	string				inherit;
-	string				type;
-	vector<Property>	values;
-	Parser*				parser;
-	ArchiveTreeNode*	archive_dir;
-
-protected:
-	STreeNode*	createChild(string name) override
-	{
-		ParseTreeNode* ret = new ParseTreeNode();
-		ret->setName(name);
-		ret->parser = parser;
-		return ret;
-	}
-
 public:
 	ParseTreeNode(
 		ParseTreeNode* parent = nullptr,
@@ -36,16 +19,19 @@ public:
 	);
 	~ParseTreeNode();
 
-	string		getName() override { return name; }
-	void		setName(string name) override { this->name = name; }
-	string		getInherit() { return inherit; }
-	string		getType() { return type; }
-	unsigned	nValues() { return values.size(); }
-	Property	getValue(unsigned index = 0);
-	string		getStringValue(unsigned index = 0);
-	int			getIntValue(unsigned index = 0);
-	bool		getBoolValue(unsigned index = 0);
-	double		getFloatValue(unsigned index = 0);
+	string	getName() override { return name_; }
+	void	setName(string name) override { this->name_ = name; }
+
+	const string&			inherit() const { return inherit_; }
+	const string&			type() const { return type_; }
+	const vector<Property>&	values() const { return values_; }
+
+	unsigned		nValues() const { return values_.size(); }
+	Property		value(unsigned index = 0);
+	string			stringValue(unsigned index = 0);
+	int				intValue(unsigned index = 0);
+	bool			boolValue(unsigned index = 0);
+	double			floatValue(unsigned index = 0);
 
 	// To avoid need for casts everywhere
 	ParseTreeNode*	getChildPTN(const string& name) { return static_cast<ParseTreeNode*>(getChild(name)); }
@@ -54,6 +40,23 @@ public:
 	bool	parse(Tokenizer& tz);
 
 	typedef std::unique_ptr<ParseTreeNode> UPtr;
+
+protected:
+	STreeNode* createChild(string name) override
+	{
+		ParseTreeNode* ret = new ParseTreeNode();
+		ret->setName(name);
+		ret->parser_ = parser_;
+		return ret;
+	}
+
+private:
+	string				name_;
+	string				inherit_;
+	string				type_;
+	vector<Property>	values_;
+	Parser*				parser_;
+	ArchiveTreeNode*	archive_dir_;
 };
 
 class Parser
@@ -67,7 +70,7 @@ public:
 	Parser(ArchiveTreeNode* dir_root = nullptr);
 	~Parser();
 
-	ParseTreeNode*	parseTreeRoot() { return pt_root.get(); }
+	ParseTreeNode*	parseTreeRoot() const { return pt_root.get(); }
 
 	bool	parseText(MemChunk& mc, string source = "memory chunk", bool debug = false);
 	bool	parseText(string& text, string source = "string", bool debug = false);

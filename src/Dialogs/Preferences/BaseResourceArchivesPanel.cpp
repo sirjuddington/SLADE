@@ -265,9 +265,9 @@ void BaseResourceArchivesPanel::autodetect()
 		for (size_t i = 0; i < list->nChildren(); ++i)
 		{
 			ParseTreeNode* child = (ParseTreeNode*)list->getChild(i);
-			gamepath = gogregistrypath + ((ParseTreeNode*)child->getChild("id"))->getStringValue();
+			gamepath = gogregistrypath + ((ParseTreeNode*)child->getChild("id"))->stringValue();
 			if (QueryPathKey(wxRegKey::HKLM, gamepath, "Path", path))
-				paths.Add(path + ((ParseTreeNode*)child->getChild("path"))->getStringValue());
+				paths.Add(path + ((ParseTreeNode*)child->getChild("path"))->stringValue());
 		}
 
 	}
@@ -282,7 +282,7 @@ void BaseResourceArchivesPanel::autodetect()
 		gamepath += "/SteamApps/common/";
 		ParseTreeNode* list = (ParseTreeNode*)p.parseTreeRoot()->getChild("steam");
 		for (size_t i = 0; i < list->nChildren(); ++i)
-			paths.Add(gamepath + ((ParseTreeNode*)list->getChild(i))->getStringValue());
+			paths.Add(gamepath + ((ParseTreeNode*)list->getChild(i))->stringValue());
 	}
 #else
 	// TODO: Querying Steam registry on Linux and OSX. This involves parsing Steam's config.vdf file, which is found in

@@ -166,24 +166,24 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 
 				// Colour name
 				if (prop->getName() == "name")
-					col.name = prop->getStringValue();
+					col.name = prop->stringValue();
 
 				// Colour group (for config ui)
 				else if (prop->getName() == "group")
-					col.group = prop->getStringValue();
+					col.group = prop->stringValue();
 
 				// Colour
 				else if (prop->getName() == "rgb")
-					col.colour.set(prop->getIntValue(0), prop->getIntValue(1), prop->getIntValue(2));
+					col.colour.set(prop->intValue(0), prop->intValue(1), prop->intValue(2));
 
 				// Alpha
 				else if (prop->getName() == "alpha")
-					col.colour.a = prop->getIntValue();
+					col.colour.a = prop->intValue();
 
 				// Additive
 				else if (prop->getName() == "additive")
 				{
-					if (prop->getBoolValue())
+					if (prop->boolValue())
 						col.colour.blend = 1;
 					else
 						col.colour.blend = 0;
@@ -205,13 +205,13 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 			ParseTreeNode* prop = (ParseTreeNode*)theme->getChild(a);
 
 			if (prop->getName() == "line_hilight_width")
-				line_hilight_width = prop->getFloatValue();
+				line_hilight_width = prop->floatValue();
 
 			else if (prop->getName() == "line_selection_width")
-				line_selection_width = prop->getFloatValue();
+				line_selection_width = prop->floatValue();
 
 			else if (prop->getName() == "flat_alpha")
-				flat_alpha = prop->getFloatValue();
+				flat_alpha = prop->floatValue();
 
 			else
 				LOG_MESSAGE(1, "Warning: unknown theme property \"%s\"", prop->getName());

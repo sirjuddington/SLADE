@@ -193,7 +193,7 @@ void Executables::parse(Parser* p, bool custom)
 	for (unsigned a = 0; a < n->nChildren(); a++)
 	{
 		ParseTreeNode* exe_node = (ParseTreeNode*)n->getChild(a);
-		string type = exe_node->getType();
+		string type = exe_node->type();
 
 		// Game Executable (if type is blank it's a game executable in old config format)
 		if (type == "game_exe" || type.IsEmpty())
@@ -228,7 +228,7 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 		string prop_name = prop->getName().Lower();
 
 		// Config
-		if (prop->getType().Lower() == "config")
+		if (prop->type().Lower() == "config")
 		{
 			// Update if exists
 			bool found = false;
@@ -236,7 +236,7 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 			{
 				if (exe->configs[c].key == prop->getName())
 				{
-					exe->configs[c].value = prop->getStringValue();
+					exe->configs[c].value = prop->stringValue();
 					found = true;
 				}
 			}
@@ -244,18 +244,18 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 			// Create if new
 			if (!found)
 			{
-				exe->configs.push_back(key_value_t(prop->getName(), prop->getStringValue()));
+				exe->configs.push_back(key_value_t(prop->getName(), prop->stringValue()));
 				exe->configs_custom.push_back(custom);
 			}
 		}
 
 		// Name
 		else if (prop_name == "name")
-			exe->name = prop->getStringValue();
+			exe->name = prop->stringValue();
 
 		// Executable name
 		else if (prop_name == "exe_name")
-			exe->exe_name = prop->getStringValue();
+			exe->exe_name = prop->stringValue();
 	}
 
 	// Set path if loaded
@@ -390,11 +390,11 @@ void Executables::parseExternalExe(ParseTreeNode* node)
 
 		// Entry category
 		if (prop_name == "category")
-			exe.category = prop->getStringValue();
+			exe.category = prop->stringValue();
 
 		// Path
 		else if (prop_name == "path")
-			exe.path = prop->getStringValue();
+			exe.path = prop->stringValue();
 	}
 
 	external_exes.push_back(exe);

@@ -67,27 +67,16 @@ class MapObject;
 class NumberTextCtrl;
 class ActionSpecialPanel : public wxPanel
 {
-private:
-	ActionSpecialTreeView*	tree_specials;
-	wxPanel*				panel_action_special;
-	GenLineSpecialPanel*	panel_gen_specials;
-	wxRadioButton*			rb_special;
-	wxRadioButton*			rb_generalised;
-	ArgsPanel*				panel_args;
-	vector<wxCheckBox*>		cb_triggers;
-	vector<string>			triggers_udmf;
-	wxChoice*				choice_trigger;
-	bool					show_trigger;
-	NumberTextCtrl*			text_special;
-
 public:
 	ActionSpecialPanel(wxWindow* parent, bool trigger = true);
 	~ActionSpecialPanel();
 
 	void	setupSpecialPanel();
-	void	setArgsPanel(ArgsPanel* panel) { panel_args = panel; }
+	void	setArgsPanel(ArgsPanel* panel) { panel_args_ = panel; }
 	void	setSpecial(int special);
 	void	setTrigger(int index);
+	void	setTrigger(string trigger);
+	void	clearTrigger();
 	int		selectedSpecial();
 	void	showGeneralised(bool show = true);
 	void	applyTo(vector<MapObject*>& lines, bool apply_special);
@@ -97,6 +86,21 @@ public:
 	void	onSpecialSelectionChanged(wxDataViewEvent& e);
 	void	onSpecialTextChanged(wxCommandEvent& e);
 	void	onSpecialItemActivated(wxDataViewEvent& e);
+	void	onSpecialPresetClicked(wxCommandEvent& e);
+
+private:
+	ActionSpecialTreeView*	tree_specials_;
+	wxPanel*				panel_action_special_;
+	GenLineSpecialPanel*	panel_gen_specials_;
+	wxRadioButton*			rb_special_;
+	wxRadioButton*			rb_generalised_;
+	ArgsPanel*				panel_args_;
+	vector<wxCheckBox*>		cb_triggers_;
+	vector<string>			triggers_udmf_;
+	wxChoice*				choice_trigger_;
+	bool					show_trigger_;
+	NumberTextCtrl*			text_special_;
+	wxButton*				btn_preset_;
 };
 
 class STabCtrl;

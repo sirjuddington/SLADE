@@ -843,6 +843,7 @@
     <ClCompile Include="..\..\src\Game\Decorate.cpp" />
     <ClCompile Include="..\..\src\Game\Game.cpp" />
     <ClCompile Include="..\..\src\Game\GenLineSpecial.cpp" />
+    <ClCompile Include="..\..\src\Game\SpecialPreset.cpp" />
     <ClCompile Include="..\..\src\Game\ThingType.cpp" />
     <ClCompile Include="..\..\src\Game\UDMFProperty.cpp" />
     <ClCompile Include="..\..\src\General\Clipboard.cpp" />
@@ -1365,6 +1366,7 @@
     <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\MapTextureBrowser.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\SectorSpecialDialog.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\ShowItemDialog.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\SpecialPresetDialog.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\ThingTypeBrowser.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\GenLineSpecialPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\MapBackupPanel.cpp" />
@@ -1672,6 +1674,7 @@
     <ClInclude Include="..\..\src\Game\Decorate.h" />
     <ClInclude Include="..\..\src\Game\Game.h" />
     <ClInclude Include="..\..\src\Game\GenLineSpecial.h" />
+    <ClInclude Include="..\..\src\Game\SpecialPreset.h" />
     <ClInclude Include="..\..\src\Game\ThingType.h" />
     <ClInclude Include="..\..\src\Game\UDMFProperty.h" />
     <ClInclude Include="..\..\src\General\Clipboard.h" />
@@ -1837,6 +1840,7 @@
     <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\MapTextureBrowser.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\SectorSpecialDialog.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\ShowItemDialog.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\SpecialPresetDialog.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\ThingTypeBrowser.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\GenLineSpecialPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\MapBackupPanel.h" />

@@ -1421,7 +1421,7 @@ bool SLADEMap::addVertex(ParseTreeNode* def)
 		return false;
 
 	// Create new vertex
-	MapVertex* nv = new MapVertex(prop_x->getFloatValue(), prop_y->getFloatValue(), this);
+	MapVertex* nv = new MapVertex(prop_x->floatValue(), prop_y->floatValue(), this);
 
 	// Add extra vertex info
 	ParseTreeNode* prop = nullptr;
@@ -1433,7 +1433,7 @@ bool SLADEMap::addVertex(ParseTreeNode* def)
 		if (prop == prop_x || prop == prop_y)
 			continue;
 
-		nv->properties[prop->getName()] = prop->getValue();
+		nv->properties[prop->getName()] = prop->value();
 	}
 
 	// Add vertex to map
@@ -1453,7 +1453,7 @@ bool SLADEMap::addSide(ParseTreeNode* def)
 		return false;
 
 	// Check sector index
-	int sector = prop_sector->getIntValue();
+	int sector = prop_sector->intValue();
 	if (sector < 0 || sector >= (int)sectors.size())
 		return false;
 
@@ -1478,17 +1478,17 @@ bool SLADEMap::addSide(ParseTreeNode* def)
 			continue;
 
 		if (S_CMPNOCASE(prop->getName(), "texturetop"))
-			ns->tex_upper = prop->getStringValue();
+			ns->tex_upper = prop->stringValue();
 		else if (S_CMPNOCASE(prop->getName(), "texturemiddle"))
-			ns->tex_middle = prop->getStringValue();
+			ns->tex_middle = prop->stringValue();
 		else if (S_CMPNOCASE(prop->getName(), "texturebottom"))
-			ns->tex_lower = prop->getStringValue();
+			ns->tex_lower = prop->stringValue();
 		else if (S_CMPNOCASE(prop->getName(), "offsetx"))
-			ns->offset_x = prop->getIntValue();
+			ns->offset_x = prop->intValue();
 		else if (S_CMPNOCASE(prop->getName(), "offsety"))
-			ns->offset_y = prop->getIntValue();
+			ns->offset_y = prop->intValue();
 		else
-			ns->properties[prop->getName()] = prop->getValue();
+			ns->properties[prop->getName()] = prop->value();
 		//LOG_MESSAGE(1, "Property %s type %s (%s)", prop->getName(), prop->getValue().typeString(), prop->getValue().getStringValue());
 	}
 
@@ -1516,9 +1516,9 @@ bool SLADEMap::addLine(ParseTreeNode* def)
 		return false;
 
 	// Check indices
-	int v1 = prop_v1->getIntValue();
-	int v2 = prop_v2->getIntValue();
-	int s1 = prop_s1->getIntValue();
+	int v1 = prop_v1->intValue();
+	int v2 = prop_v2->intValue();
+	int s1 = prop_s1->intValue();
 	if (v1 < 0 || v1 >= (int)vertices.size())
 		return false;
 	if (v2 < 0 || v2 >= (int)vertices.size())
@@ -1529,7 +1529,7 @@ bool SLADEMap::addLine(ParseTreeNode* def)
 	// Get second side if any
 	MapSide* side2 = nullptr;
 	ParseTreeNode* prop_s2 = (ParseTreeNode*)def->getChild("sideback");
-	if (prop_s2) side2 = getSide(prop_s2->getIntValue());
+	if (prop_s2) side2 = getSide(prop_s2->intValue());
 
 	// Create new line
 	MapLine* nl = new MapLine(vertices[v1], vertices[v2], sides[s1], side2, this);
@@ -1548,9 +1548,9 @@ bool SLADEMap::addLine(ParseTreeNode* def)
 			continue;
 
 		if (prop->getName() == "special")
-			nl->special = prop->getIntValue();
+			nl->special = prop->intValue();
 		else
-			nl->properties[prop->getName()] = prop->getValue();
+			nl->properties[prop->getName()] = prop->value();
 	}
 
 	// Add line to map
@@ -1571,7 +1571,7 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 		return false;
 
 	// Create new sector
-	MapSector* ns = new MapSector(prop_ftex->getStringValue(), prop_ctex->getStringValue(), this);
+	MapSector* ns = new MapSector(prop_ftex->stringValue(), prop_ctex->stringValue(), this);
 	usage_flat[ns->f_tex.Upper()] += 1;
 	usage_flat[ns->c_tex.Upper()] += 1;
 
@@ -1593,17 +1593,17 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 			continue;
 
 		if (S_CMPNOCASE(prop->getName(), "heightfloor"))
-			ns->setFloorHeight(prop->getIntValue());
+			ns->setFloorHeight(prop->intValue());
 		else if (S_CMPNOCASE(prop->getName(), "heightceiling"))
-			ns->setCeilingHeight(prop->getIntValue());
+			ns->setCeilingHeight(prop->intValue());
 		else if (S_CMPNOCASE(prop->getName(), "lightlevel"))
-			ns->light = prop->getIntValue();
+			ns->light = prop->intValue();
 		else if (S_CMPNOCASE(prop->getName(), "special"))
-			ns->special = prop->getIntValue();
+			ns->special = prop->intValue();
 		else if (S_CMPNOCASE(prop->getName(), "id"))
-			ns->tag = prop->getIntValue();
+			ns->tag = prop->intValue();
 		else
-			ns->properties[prop->getName()] = prop->getValue();
+			ns->properties[prop->getName()] = prop->value();
 	}
 
 	// Add sector to map
@@ -1625,7 +1625,7 @@ bool SLADEMap::addThing(ParseTreeNode* def)
 		return false;
 
 	// Create new thing
-	MapThing* nt = new MapThing(prop_x->getFloatValue(), prop_y->getFloatValue(), prop_type->getIntValue(), this);
+	MapThing* nt = new MapThing(prop_x->floatValue(), prop_y->floatValue(), prop_type->intValue(), this);
 
 	// Add extra thing info
 	ParseTreeNode* prop = nullptr;
@@ -1639,9 +1639,9 @@ bool SLADEMap::addThing(ParseTreeNode* def)
 
 		// Builtin properties
 		if (S_CMPNOCASE(prop->getName(), "angle"))
-			nt->angle = prop->getIntValue();
+			nt->angle = prop->intValue();
 		else
-			nt->properties[prop->getName()] = prop->getValue();
+			nt->properties[prop->getName()] = prop->value();
 	}
 
 	// Add thing to map
@@ -1707,7 +1707,7 @@ bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
 
 		// Namespace
 		else if (S_CMPNOCASE(node->getName(), "namespace"))
-			udmf_namespace = node->getStringValue();
+			udmf_namespace = node->stringValue();
 
 		// Unknown
 		else

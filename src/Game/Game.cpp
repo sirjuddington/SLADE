@@ -36,6 +36,7 @@
 #include "Utility/Parser.h"
 #include "Archive/ArchiveManager.h"
 #include "App.h"
+#include "General/Console/Console.h"
 
 using namespace Game;
 
@@ -80,7 +81,7 @@ bool Game::GameDef::parse(MemChunk& mc)
 	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
 	{
 		auto child = parser.parseTreeRoot()->getChildPTN(a);
-		if (child->getType() == "game")
+		if (child->type() == "game")
 		{
 			node_game = child;
 			break;
@@ -94,7 +95,7 @@ bool Game::GameDef::parse(MemChunk& mc)
 		// Game name
 		auto node_name = node_game->getChildPTN("name");
 		if (node_name)
-			title = node_name->getStringValue();
+			title = node_name->stringValue();
 
 		// Supported map formats
 		auto node_maps = node_game->getChildPTN("map_formats");
@@ -102,13 +103,13 @@ bool Game::GameDef::parse(MemChunk& mc)
 		{
 			for (unsigned a = 0; a < node_maps->nValues(); a++)
 			{
-				if (S_CMPNOCASE(node_maps->getStringValue(a), "doom"))
+				if (S_CMPNOCASE(node_maps->stringValue(a), "doom"))
 					supported_formats[MAP_DOOM] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "hexen"))
+				else if (S_CMPNOCASE(node_maps->stringValue(a), "hexen"))
 					supported_formats[MAP_HEXEN] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "doom64"))
+				else if (S_CMPNOCASE(node_maps->stringValue(a), "doom64"))
 					supported_formats[MAP_DOOM64] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "udmf"))
+				else if (S_CMPNOCASE(node_maps->stringValue(a), "udmf"))
 					supported_formats[MAP_UDMF] = true;
 			}
 		}
@@ -117,7 +118,7 @@ bool Game::GameDef::parse(MemChunk& mc)
 		if (node_filters)
 		{
 			for (unsigned a = 0; a < node_filters->nValues(); a++)
-				filters.push_back(node_filters->getStringValue(a).Lower());
+				filters.push_back(node_filters->stringValue(a).Lower());
 		}
 	}
 
@@ -162,7 +163,7 @@ bool Game::PortDef::parse(MemChunk& mc)
 	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
 	{
 		auto child = parser.parseTreeRoot()->getChildPTN(a);
-		if (child->getType() == "port")
+		if (child->type() == "port")
 		{
 			node_port = child;
 			break;
@@ -176,14 +177,14 @@ bool Game::PortDef::parse(MemChunk& mc)
 		// Port name
 		auto node_name = node_port->getChildPTN("name");
 		if (node_name)
-			title = node_name->getStringValue();
+			title = node_name->stringValue();
 
 		// Supported games
 		auto node_games = node_port->getChildPTN("games");
 		if (node_games)
 		{
 			for (unsigned a = 0; a < node_games->nValues(); a++)
-				supported_games.push_back(node_games->getStringValue(a));
+				supported_games.push_back(node_games->stringValue(a));
 		}
 
 		// Supported map formats
@@ -192,13 +193,13 @@ bool Game::PortDef::parse(MemChunk& mc)
 		{
 			for (unsigned a = 0; a < node_maps->nValues(); a++)
 			{
-				if (S_CMPNOCASE(node_maps->getStringValue(a), "doom"))
+				if (S_CMPNOCASE(node_maps->stringValue(a), "doom"))
 					supported_formats[MAP_DOOM] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "hexen"))
+				else if (S_CMPNOCASE(node_maps->stringValue(a), "hexen"))
 					supported_formats[MAP_HEXEN] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "doom64"))
+				else if (S_CMPNOCASE(node_maps->stringValue(a), "doom64"))
 					supported_formats[MAP_DOOM64] = true;
-				else if (S_CMPNOCASE(node_maps->getStringValue(a), "udmf"))
+				else if (S_CMPNOCASE(node_maps->stringValue(a), "udmf"))
 					supported_formats[MAP_UDMF] = true;
 			}
 		}
@@ -262,7 +263,7 @@ TagType Game::parseTagged(ParseTreeNode* tagged)
 		{ "interpolation",							TagType::Interpolation }
 	};
 
-	return tag_type_map[tagged->getStringValue().MakeLower()];
+	return tag_type_map[tagged->stringValue().MakeLower()];
 }
 
 // ----------------------------------------------------------------------------
@@ -421,3 +422,285 @@ bool Game::mapFormatSupported(int format, const string& game, const string& port
 
 	return false;
 }
+
+
+
+
+
+#if 0
+
+// XLAT Parser to generate Special Presets from ZDoom XLAT definitions
+
+namespace
+{
+	typedef std::map<string, int> enummap;
+	struct xlatline_t
+	{
+		int type;
+		int flags;
+		string special;
+		string args[5];
+		string description;
+		string group;
+		string game;
+		bool operator<(const xlatline_t &other)
+		{
+			return type < other.type;
+			//return special.Cmp(other.special) < 0 ||
+			//	(special.Cmp(other.special) == 0 && other.type < type);
+		}
+	};
+	bool parseXlat(Archive* archive)
+	{
+		if (!archive)
+			return false;
+
+		char* entries[] = { "xlat/defines.i", "xlat/base.txt", "xlat/heretic.txt", "xlat/strife.txt", "xlat/eternity.txt" };
+		char* games[] = { "", "doom2", "heretic", "strife", "doom2" };
+		char* groups[] = { "", "", "Heretic", "Strife", "Eternity" };
+
+		enummap enums;
+		std::vector<xlatline_t> lines;
+		long line = 0;
+
+		ArchiveEntry* entry;
+		for (uint8_t i = 0; i < 5; ++i)
+		{
+			entry = archive->entryAtPath(entries[i]);
+			if (entry)
+			{
+				Tokenizer tz;
+				Tokenizer tl;
+				tz.setSpecialCharacters("(),[=|");
+				if (tz.openMem(&(entry->getMCData()), entries[i]))
+				{
+					string token = tz.getToken();
+					while (!token.empty())
+					{
+						if (S_CMPNOCASE(token, "enum"))
+						{
+							// enum
+							int val = 0;
+							string def;
+							tz.checkToken("{");
+							while (!S_CMP(tz.peekToken(), "}"))
+							{
+								def = tz.getToken();
+								if (S_CMP(tz.peekToken(), "="))
+								{
+									tz.skipToken();
+									val = tz.getInteger();
+								}
+								enums[def] = val;
+								++val;
+								if (S_CMP(tz.peekToken(), ","))
+									tz.skipToken();
+							}
+						}
+
+						else if (S_CMPNOCASE(token, "define"))
+						{
+							string def = tz.getToken();
+							tz.skipToken();
+							int val = tz.getInteger();
+							tz.skipToken();
+							enums[def] = val;
+						}
+
+						else if (token.ToLong(&line, 0) && S_CMP(tz.peekToken(), "="))
+						{
+							tz.setSpecialCharacters("");
+							string lnstr = tz.getLine();
+							tz.setSpecialCharacters("(),[=|");
+							tl.openString(lnstr, 0, 0, S_FMT("Line %d", line));
+							tl.setSpecialCharacters("(),[=|");
+#if 1
+							// Create line
+							xlatline_t xline;
+							xline.type = (int)line;
+							xline.game = groups[i];
+
+							// skip =
+							tl.skipToken();
+
+							// Parse flags
+							tl.enableDebug(true);
+							token = tl.getToken();
+							int flags = 0;
+							long tmp;
+							while (!S_CMP(token, ","))
+							{
+								if (enums.find(token) != enums.end())
+									flags |= enums[token];
+								else if (token.ToLong(&tmp, 0))
+									flags |= tmp;
+								if (S_CMP(tl.peekToken(), "|"))
+									tl.skipToken();
+								token = tl.getToken();
+							}
+							tl.enableDebug(false);
+							xline.flags = flags;
+
+							// Parse special
+							xline.special = tl.getToken();
+
+							// Parse arg
+							tl.skipToken(); // Skip (
+							for (int a = 0; a < 5 && !token.empty(); ++a)
+							{
+								int val = -666;
+								xline.args[a] = "";
+								token = tl.getToken();
+								int loop = 0;
+
+								while (!S_CMP(token, ",") && !token.empty())
+								{
+									if (S_CMP(token, ")"))
+										break;
+									if (enums.find(token) != enums.end())
+									{
+										if (val == -666) val = 0;
+										val |= enums[token];
+									}
+									else if (token.ToLong(&tmp, 0))
+									{
+										if (val == -666) val = 0;
+										val |= tmp;
+									}
+									else xline.args[a].append(token);
+
+									if (S_CMP(tl.peekToken(), "|"))
+										tl.skipToken();
+									token = tl.getToken();
+								}
+
+								if (val != -666 && xline.args[a].IsEmpty())
+									xline.args[a] = S_FMT("%d", val);
+
+								if (S_CMP(tl.peekToken(), ")"))
+									break;
+							}
+							if (!S_CMP(token, ")")) tl.skipToken(); // skip )
+
+							lines.push_back(xline);
+#endif
+						}
+
+						else if (S_CMPNOCASE(token, "include"))
+							tz.skipLineComment();
+						else if (S_CMPNOCASE(token, "lineflag"))
+							tz.skipLineComment();
+						else if (S_CMPNOCASE(token, "sector"))
+							tz.skipLineComment();
+
+						// Skip generalized line definitions...
+						else if (S_CMPNOCASE(token, "["))
+						{
+							break;
+						}
+
+						token = tz.getToken();
+					}
+				}
+			}
+			// Read configuration
+			if (i > 0 && configuration().openConfig(games[i], i < 4 ? "zdoom" : "eternity", MAP_DOOM))
+			{
+				for (size_t z = 0; z < lines.size(); ++z)
+				{
+					lines[z].description = configuration().actionSpecialName(lines[z].type);
+					if (lines[z].game.empty())
+						lines[z].group = configuration().actionSpecial(lines[z].type).group();
+					else
+						lines[z].group = S_FMT("%s/%s", lines[z].game, configuration().actionSpecial(lines[z].type).group());
+				}
+			}
+			// Convert special names to numbers
+			configuration().openConfig("doom2", "zdoom", MAP_HEXEN);
+			for (auto& l : lines)
+			{
+				for (auto& i : configuration().allActionSpecials())
+					if (i.second.defined() && i.second.name() == l.special)
+						l.special = S_FMT("%d", i.first);
+			}
+		}
+#if 0
+		for (enummap::iterator it = enums.begin(); it != enums.end(); ++it)
+		{
+			DPrintf("%s: %d", it->first, it->second);
+		}
+#endif
+#if 1
+		std::sort(lines.begin(), lines.end());
+
+		// Remove duplicates
+		for (size_t l = 1; l < lines.size(); l++)
+		{
+			// Check special
+			if (lines[l].special != lines[l - 1].special)
+				continue;
+
+			// Check flags
+			if (lines[l].flags != lines[l - 1].flags)
+				continue;
+
+			// Check args
+			bool diff = false;
+			for (size_t a = 0; a < 5; a++)
+			{
+				if (lines[l].args[a] != lines[l-1].args[a])
+				{
+					diff = true;
+					break;
+				}
+			}
+			if (diff)
+				continue;
+
+			// Duplicate, remove
+			lines.erase(lines.begin() + l);
+			l--;
+		}
+
+		string file;
+		for (size_t l = 0; l < lines.size(); ++l)
+		{
+			string output = S_FMT("preset \"%d: %s\"\n{\n", lines[l].type, lines[l].description);
+			output += S_FMT("\tgroup = \"%s\";\n", lines[l].group);
+			output += S_FMT("\tspecial = %s;\n", lines[l].special);
+			for (size_t i = 0; i < 5; ++i)
+			{
+				if (lines[l].args[i].size() && lines[l].args[i] != "tag" && lines[l].args[i] != "0")
+					output += S_FMT("\targ%d = %s;\n", i+1, lines[l].args[i]);
+			}
+			int spac = 1 << ((lines[l].flags & 15) >> 1);
+			string flags = "";
+			if (spac == 1) flags = "playercross, ";
+			else if (spac == 2) flags = "playeruse, ";
+			else if (spac == 4) flags = "monstercross, ";
+			else flags = "impact, missilecross, ";
+			if (lines[l].flags & 1)  flags += "repeatspecial, ";
+			if (lines[l].flags & 16) flags += "monsteractivate, ";
+			flags.RemoveLast(2);
+			output += S_FMT("\tflags = %s;\n", flags);
+			output += "}\n\n";
+			Log::debug(S_FMT("%s", output));
+			file += output;
+			//		DPrintf("%d = %s : %d, %s (%s, %s, %s, %s, %s)",
+			//			lines[l].type, lines[l].description, lines[l].flags, lines[l].special,
+			//			lines[l].args[0], lines[l].args[1], lines[l].args[2], lines[l].args[3], lines[l].args[4]);
+		}
+		wxFile tempfile(App::path("prefabs.txt", App::Dir::Executable), wxFile::write);
+		tempfile.Write(file);
+		tempfile.Close();
+#endif
+		return false;
+	}
+}
+
+CONSOLE_COMMAND(parsexlat, 0, false)
+{
+	parseXlat(theArchiveManager->getArchive(0));
+}
+
+#endif
