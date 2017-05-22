@@ -5,6 +5,7 @@
 #include "common.h"
 #include "PropsPanelBase.h"
 #include "UI/Canvas/OGLCanvas.h"
+#include "UI/STabCtrl.h"
 
 class GLTexture;
 class FlatTexCanvas : public OGLCanvas
@@ -36,7 +37,6 @@ public:
 	void onKeyDown(wxKeyEvent& e);
 };
 
-class STabCtrl;
 class SectorSpecialPanel;
 class MapObject;
 class MapObjectPropsPanel;
@@ -44,7 +44,7 @@ class NumberTextCtrl;
 class SectorPropsPanel : public PropsPanelBase
 {
 private:
-	STabCtrl*				stc_tabs;
+	TabControl*				stc_tabs;
 	SectorSpecialPanel*		panel_special;
 	wxCheckBox*				cb_override_special;
 	MapObjectPropsPanel*	mopp_all_props;

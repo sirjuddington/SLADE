@@ -82,3 +82,12 @@ wxSize STabCtrl::DoGetBestClientSize() const
 
 	return ret;
 }
+
+TabControl* STabCtrl::createControl(wxWindow* parent, bool close_buttons, bool window_list, int height, bool main_tabs)
+{
+#ifdef WIN32
+	return new STabCtrl(parent, close_buttons, window_list, height, main_tabs);
+#else
+	return new wxNotebook(parent, -1);
+#endif
+}

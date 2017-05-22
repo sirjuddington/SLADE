@@ -344,9 +344,9 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 
 		// highlight top of tab
 		wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
-		dc.SetPen(*wxTRANSPARENT_PEN);// *wxWHITE_PEN);
-		dc.SetBrush(wxBrush(col_hilight));// *wxWHITE_BRUSH);
-		dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, 1);
+		dc.SetPen(*wxTRANSPARENT_PEN);
+		dc.SetBrush(wxBrush(col_hilight));
+		dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, 2);
 	}
 	else
 	{

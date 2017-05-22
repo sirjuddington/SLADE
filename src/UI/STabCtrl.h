@@ -4,13 +4,33 @@
 
 #include "common.h"
 
+#ifdef WIN32
+typedef STabCtrl TabControl;
+#else
+typedef wxNotebook TabControl;
+#endif
+
 class STabCtrl : public wxAuiNotebook
 {
 private:
 
 public:
-	STabCtrl(wxWindow* parent, bool close_buttons = false, bool window_list = false, int height = 24, bool main_tabs = false);
+	STabCtrl(
+		wxWindow* parent,
+		bool close_buttons = false,
+		bool window_list = false,
+		int height = 28,
+		bool main_tabs = false
+	);
 	~STabCtrl();
+
+	static TabControl*	createControl(
+							wxWindow* parent,
+							bool close_buttons = false,
+							bool window_list = false,
+							int height = 28,
+							bool main_tabs = false
+						);
 
 protected:
 	wxSize	DoGetBestClientSize() const;

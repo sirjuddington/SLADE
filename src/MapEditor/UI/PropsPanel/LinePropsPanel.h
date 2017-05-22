@@ -3,8 +3,8 @@
 #define __LINE_PROPS_PANEL_H__
 
 #include "PropsPanelBase.h"
+#include "UI/STabCtrl.h"
 
-class STabCtrl;
 class MapObject;
 class MapObjectPropsPanel;
 class ActionSpecialPanel;
@@ -14,7 +14,7 @@ class NumberTextCtrl;
 class LinePropsPanel : public PropsPanelBase
 {
 private:
-	STabCtrl*				stc_tabs;
+	TabControl*				stc_tabs;
 	vector<wxCheckBox*>		cb_flags;
 	MapObjectPropsPanel*	mopp_all_props;
 	wxCheckBox*				cb_override_special;

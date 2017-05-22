@@ -203,8 +203,8 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	SetSizer(sizer);
 
 	// Add tabs
-	tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxAUI_NB_SCROLL_BUTTONS|wxAUI_NB_WINDOWLIST_BUTTON|wxBORDER_NONE);
-	tabs->SetArtProvider(new SAuiTabArt());
+	//tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxAUI_NB_SCROLL_BUTTONS|wxAUI_NB_WINDOWLIST_BUTTON|wxBORDER_NONE);
+	tabs = STabCtrl::createControl(this);
 	sizer->Add(tabs, 1, wxEXPAND|wxALL, 4);
 
 	// Bind events
@@ -291,7 +291,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 	// Open texture editor tabs
 	for (size_t a = 0; a < tx_entries.size(); a++)
 	{
-		TextureXPanel* tx_panel = new TextureXPanel(this, this);
+		TextureXPanel* tx_panel = new TextureXPanel(tabs, this);
 
 		// Init texture panel
 		tx_panel->Show(false);
@@ -316,7 +316,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 	// Open patch table tab if needed
 	if (pnames)
 	{
-		PatchTablePanel* ptp = new PatchTablePanel(this, &patch_table);
+		PatchTablePanel* ptp = new PatchTablePanel(tabs, &patch_table);
 		tabs->AddPage(ptp, "Patch Table (PNAMES)");
 		ptp->SetName("pnames");
 	}
@@ -328,7 +328,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 	// Open texture editor tabs
 	for (unsigned a = 0; a < ztx_entries.size(); a++)
 	{
-		TextureXPanel* tx_panel = new TextureXPanel(this, this);
+		TextureXPanel* tx_panel = new TextureXPanel(tabs, this);
 
 		// Init texture panel
 		tx_panel->Show(false);
@@ -651,6 +651,9 @@ void TextureXEditor::setSelection(ArchiveEntry* entry)
  *******************************************************************/
 void TextureXEditor::updateMenuStatus()
 {
+	if (tabs->GetSelection() < 0)
+		return;
+
 	wxWindow* current = tabs->GetPage(tabs->GetSelection());
 
 	// Check if the currently opened tab is a texturex list

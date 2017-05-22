@@ -203,7 +203,7 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Tabs
-	stc_tabs = new STabCtrl(this);
+	stc_tabs = STabCtrl::createControl(this);
 	sizer->Add(stc_tabs, 1, wxEXPAND | wxALL, 8);
 
 	// General

@@ -68,7 +68,7 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	wxStaticBoxSizer* fsizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(fsizer, 1, wxEXPAND|wxALL, 4);
 
-	STabCtrl* stc_tabs = new STabCtrl(this);
+	TabControl* stc_tabs = STabCtrl::createControl(this);
 	fsizer->Add(stc_tabs, 1, wxEXPAND | wxALL, 4);
 
 	// --- General ---
