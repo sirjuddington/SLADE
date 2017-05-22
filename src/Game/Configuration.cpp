@@ -1541,17 +1541,17 @@ string Configuration::lineFlagsString(MapLine* line)
 		return "None";
 
 	// Get raw flags
-	unsigned long flags = line->intProperty("flags");
+	unsigned flags = line->intProperty("flags");
 	// TODO: UDMF flags
 
 	// Check against all flags
 	string ret = "";
-	for (unsigned long a = 0; a < flags_line_.size(); a++)
+	for (auto& flag : flags_line_)
 	{
-		if (flags & flags_line_[a].flag)
+		if (flags & flag.flag)
 		{
 			// Add flag name to string
-			ret += flags_line_[a].name;
+			ret += flag.name;
 			ret += ", ";
 		}
 	}

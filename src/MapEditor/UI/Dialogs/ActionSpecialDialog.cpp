@@ -954,7 +954,10 @@ void ActionSpecialPanel::setupSpecialPanel()
 	// Special box
 	text_special_ = new NumberTextCtrl(panel_action_special_);
 	sizer->Add(text_special_, 0, wxEXPAND|wxALL, 4);
-	text_special_->Bind(wxEVT_TEXT, &ActionSpecialPanel::onSpecialTextChanged, this);
+	text_special_->Bind(wxEVT_TEXT, [&](wxCommandEvent &e)
+	{
+		tree_specials_->showSpecial(text_special_->getNumber(), false);
+	});
 
 	// Action specials tree
 	tree_specials_ = new ActionSpecialTreeView(panel_action_special_);
@@ -1250,7 +1253,10 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 				if (flag.check_box->Get3StateValue() == wxCHK_UNDETERMINED)
 					continue;
 
-				lines[a]->setBoolProperty(flag.udmf, flag.check_box->GetValue());
+				if (choice_trigger_)
+					Game::configuration().setLineFlag(flag.index, (MapLine*)lines[a], flag.check_box->GetValue());
+				else
+					lines[a]->setBoolProperty(flag.udmf, flag.check_box->GetValue());
 			}
 		}
 	}
@@ -1286,7 +1292,7 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 	// Trigger
 	if (show_trigger_)
 	{
-		// Trigger (Hexen)
+		// Hexen
 		if (choice_trigger_)
 		{
 			int trigger = Game::configuration().spacTriggerIndexHexen((MapLine*)lines[0]);
@@ -1301,16 +1307,40 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 
 			if (trigger >= 0)
 				choice_trigger_->SetSelection(trigger);
+
+			// Flags
+			for (auto& flag : flags_)
+			{
+				// Set initial flag checked value
+				flag.check_box->SetValue(Game::configuration().lineFlagSet(flag.index, (MapLine*)lines[0]));
+
+				// Go through subsequent lines
+				for (unsigned b = 1; b < lines.size(); b++)
+				{
+					// Check for mismatch			
+					if (flag.check_box->GetValue() !=
+						Game::configuration().lineFlagSet(flag.index, (MapLine*)lines[b]))
+					{
+						// Set undefined
+						flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
+						break;
+					}
+				}
+			}
 		}
 
-		// Trigger (UDMF) / Flags
-		for (auto& flag : flags_)
+		// UDMF
+		else
 		{
-			bool set;
-			if (MapObject::multiBoolProperty(lines, flag.udmf, set))
-				flag.check_box->SetValue(set);
-			else
-				flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
+			
+			for (auto& flag : flags_)
+			{
+				bool set;
+				if (MapObject::multiBoolProperty(lines, flag.udmf, set))
+					flag.check_box->SetValue(set);
+				else
+					flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
+			}
 		}
 	}
 }
@@ -1382,7 +1412,7 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
 }
 
 // ----------------------------------------------------------------------------
-// ActionSpecialPanel::onSpecialTextChanged
+// ActionSpecialPanel::onSpecialPresetClicked
 //
 // Called when the special preset button is clicked
 // ----------------------------------------------------------------------------
@@ -1411,15 +1441,6 @@ void ActionSpecialPanel::onSpecialPresetClicked(wxCommandEvent& e)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ActionSpecialPanel::onSpecialTextChanged
-//
-// Called when the action special number box is changed
-// ----------------------------------------------------------------------------
-void ActionSpecialPanel::onSpecialTextChanged(wxCommandEvent& e)
-{
-	tree_specials_->showSpecial(text_special_->getNumber(), false);
-}
 
 // ----------------------------------------------------------------------------
 //
