@@ -73,21 +73,21 @@ void NodeBuilders::init()
 	parser.parseText(config->getMCData(), "nodebuilders.cfg");
 
 	// Get 'nodebuilders' block
-	ParseTreeNode* root = (ParseTreeNode*)parser.parseTreeRoot()->getChild("nodebuilders");
+	auto root = parser.parseTreeRoot()->getChildPTN("nodebuilders");
 	if (!root)
 		return;
 
 	// Go through child block
 	for (unsigned a = 0; a < root->nChildren(); a++)
 	{
-		ParseTreeNode* n_builder = (ParseTreeNode*)root->getChild(a);
+		auto n_builder = root->getChildPTN(a);
 
 		// Parse builder block
 		builder_t builder;
 		builder.id = n_builder->getName();
 		for (unsigned b = 0; b < n_builder->nChildren(); b++)
 		{
-			ParseTreeNode* node = (ParseTreeNode*)n_builder->getChild(b);
+			auto node = n_builder->getChildPTN(b);
 
 			// Option
 			if (S_CMPNOCASE(node->type(), "option"))

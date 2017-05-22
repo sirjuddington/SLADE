@@ -477,7 +477,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 	// Get parsed data
 	for (unsigned a = 0; a < root.nChildren(); a++)
 	{
-		ParseTreeNode* node = (ParseTreeNode*)root.getChild(a);
+		auto node = root.getChildPTN(a);
 
 		// Create language
 		TextLanguage* lang = new TextLanguage(node->getName());
@@ -495,7 +495,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 		// Parse language info
 		for (unsigned c = 0; c < node->nChildren(); c++)
 		{
-			ParseTreeNode* child = (ParseTreeNode*)node->getChild(c);
+			auto child = node->getChildPTN(c);
 
 			// Language name
 			if (S_CMPNOCASE(child->getName(), "name"))
@@ -661,7 +661,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 				// Go through children (functions)
 				for (unsigned f = 0; f < child->nChildren(); f++)
 				{
-					ParseTreeNode* child_func = (ParseTreeNode*)child->getChild(f);
+					auto child_func = child->getChildPTN(f);
 
 					// Simple definition
 					if (child_func->nChildren() == 0)
@@ -687,7 +687,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 						vector<string> args;
 						for (unsigned p = 0; p < child_func->nChildren(); p++)
 						{
-							ParseTreeNode* child_prop = (ParseTreeNode*)child_func->getChild(p);
+							auto child_prop = child_func->getChildPTN(p);
 							if (child_prop->getName() == "args")
 							{
 								for (unsigned v = 0; v < child_prop->nValues(); v++)

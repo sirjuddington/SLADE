@@ -149,18 +149,18 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 	parser.parseText(mc);
 
 	// Get 'colours' block
-	ParseTreeNode* colours = (ParseTreeNode*)parser.parseTreeRoot()->getChild("colours");
+	auto colours = parser.parseTreeRoot()->getChildPTN("colours");
 	if (colours)
 	{
 		// Read all colour definitions
 		for (unsigned a = 0; a < colours->nChildren(); a++)
 		{
-			ParseTreeNode* def = (ParseTreeNode*)colours->getChild(a);
+			auto def = colours->getChildPTN(a);
 
 			// Read properties
 			for (unsigned b = 0; b < def->nChildren(); b++)
 			{
-				ParseTreeNode* prop = (ParseTreeNode*)def->getChild(b);
+				auto prop = def->getChildPTN(b);
 				cc_col_t& col = cc_colours[def->getName()];
 				col.exists = true;
 
@@ -196,13 +196,13 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 	}
 
 	// Get 'theme' block
-	ParseTreeNode* theme = (ParseTreeNode*)parser.parseTreeRoot()->getChild("theme");
+	auto theme = parser.parseTreeRoot()->getChildPTN("theme");
 	if (theme)
 	{
 		// Read all theme definitions
 		for (unsigned a = 0; a < theme->nChildren(); a++)
 		{
-			ParseTreeNode* prop = (ParseTreeNode*)theme->getChild(a);
+			auto prop = theme->getChildPTN(a);
 
 			if (prop->getName() == "line_hilight_width")
 				line_hilight_width = prop->floatValue();

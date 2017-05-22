@@ -103,7 +103,7 @@ bool TextStyle::parse(ParseTreeNode* node)
 	// Go through info nodes
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		ParseTreeNode* child = (ParseTreeNode*)node->getChild(a);
+		auto child = node->getChildPTN(a);
 		string name = child->getName();
 
 		// Font name
@@ -342,16 +342,16 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 		return false;
 
 	// Get name
-	ParseTreeNode* node = (ParseTreeNode*)root->getChild("name");
+	auto node = root->getChildPTN("name");
 	if (node)
 		name = node->stringValue();
 
 	// Parse styles
-	ts_default.parse((ParseTreeNode*)root->getChild("default"));			// Default style
-	ts_selection.parse((ParseTreeNode*)root->getChild("selection"));		// Selection style
-	for (unsigned a = 0; a < styles.size(); a++)							// Other styles
+	ts_default.parse(root->getChildPTN("default"));			// Default style
+	ts_selection.parse(root->getChildPTN("selection"));		// Selection style
+	for (unsigned a = 0; a < styles.size(); a++)			// Other styles
 	{
-		if (ParseTreeNode* node = (ParseTreeNode*)root->getChild(styles[a]->name))
+		if (ParseTreeNode* node = root->getChildPTN(styles[a]->name))
 			styles[a]->parse(node);
 		else
 		{
@@ -632,7 +632,7 @@ void StyleSet::initCurrent()
 		root.parse(tz);
 
 		// Find definition
-		ParseTreeNode* node = (ParseTreeNode*)root.getChild("styleset");
+		auto node = root.getChildPTN("styleset");
 		if (node)
 		{
 			// If found, load it into the current set

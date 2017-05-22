@@ -353,7 +353,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 {
 	for (unsigned a = 0; a < node_game->nChildren(); a++)
 	{
-		ParseTreeNode* node = (ParseTreeNode*)node_game->getChild(a);
+		auto node = node_game->getChildPTN(a);
 
 		// Allow any map name
 		if (S_CMPNOCASE(node->getName(), "map_name_any"))
@@ -446,14 +446,14 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 			// Go through defaults blocks
 			for (unsigned b = 0; b < node->nChildren(); b++)
 			{
-				ParseTreeNode* block = (ParseTreeNode*)node->getChild(b);
+				auto block = node->getChildPTN(b);
 
 				// Linedef defaults
 				if (S_CMPNOCASE(block->getName(), "linedef"))
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
-						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
+						auto def = block->getChildPTN(c);
 						if (S_CMPNOCASE(def->type(), "udmf"))
 							defaults_line_udmf_[def->getName()] = def->value();
 						else	
@@ -466,7 +466,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
-						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
+						auto def = block->getChildPTN(c);
 						if (S_CMPNOCASE(def->type(), "udmf"))
 							defaults_side_udmf_[def->getName()] = def->value();
 						else
@@ -479,7 +479,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
-						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
+						auto def = block->getChildPTN(c);
 						if (S_CMPNOCASE(def->type(), "udmf"))
 							defaults_sector_udmf_[def->getName()] = def->value();
 						else
@@ -492,7 +492,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
-						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
+						auto def = block->getChildPTN(c);
 						if (S_CMPNOCASE(def->type(), "udmf"))
 							defaults_thing_udmf_[def->getName()] = def->value();
 						else
@@ -511,7 +511,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 			// Go through map blocks
 			for (unsigned b = 0; b < node->nChildren(); b++)
 			{
-				ParseTreeNode* block = (ParseTreeNode*)node->getChild(b);
+				auto block = node->getChildPTN(b);
 
 				// Map definition
 				if (S_CMPNOCASE(block->type(), "map"))
@@ -522,7 +522,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 					// Go through map properties
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
-						ParseTreeNode* prop = (ParseTreeNode*)block->getChild(c);
+						auto prop = block->getChildPTN(c);
 
 						// Sky texture
 						if (S_CMPNOCASE(prop->getName(), "sky"))
@@ -590,7 +590,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		// 'Game' section (this is required for it to be a valid game configuration, shouldn't be missing)
 		for (unsigned a = 0; a < base->nChildren(); a++)
 		{
-			ParseTreeNode* child = (ParseTreeNode*)base->getChild(a);
+			auto child = base->getChildPTN(a);
 			if (child->type() == "game")
 			{
 				node_game = child;
@@ -607,7 +607,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		// 'Port' section
 		for (unsigned a = 0; a < base->nChildren(); a++)
 		{
-			ParseTreeNode* child = (ParseTreeNode*)base->getChild(a);
+			auto child = base->getChildPTN(a);
 			if (child->type() == "port")
 			{
 				node_port = child;
@@ -622,7 +622,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 	ParseTreeNode* node = nullptr;
 	for (unsigned a = 0; a < base->nChildren(); a++)
 	{
-		node = (ParseTreeNode*)base->getChild(a);
+		node = base->getChildPTN(a);
 
 		// Skip read game/port section
 		if (node == node_game || node == node_port)
@@ -648,7 +648,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
-				ParseTreeNode* value = (ParseTreeNode*)node->getChild(c);
+				auto value = node->getChildPTN(c);
 
 				// Check for 'flag' type
 				if (!(S_CMPNOCASE(value->type(), "flag")))
@@ -664,7 +664,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 
 					for (unsigned v = 0; v < value->nChildren(); v++)
 					{
-						ParseTreeNode* prop = (ParseTreeNode*)value->getChild(v);
+						auto prop = value->getChildPTN(v);
 
 						if (S_CMPNOCASE(prop->getName(), "value"))
 							flag_val = prop->intValue();
@@ -706,7 +706,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
-				ParseTreeNode* value = (ParseTreeNode*)node->getChild(c);
+				auto value = node->getChildPTN(c);
 
 				// Check for 'trigger' type
 				if (!(S_CMPNOCASE(value->type(), "trigger")))
@@ -722,7 +722,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 
 					for (unsigned v = 0; v < value->nChildren(); v++)
 					{
-						ParseTreeNode* prop = (ParseTreeNode*)value->getChild(v);
+						auto prop = value->getChildPTN(v);
 
 						if (S_CMPNOCASE(prop->getName(), "value"))
 							flag_val = prop->intValue();
@@ -764,7 +764,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
-				ParseTreeNode* value = (ParseTreeNode*)node->getChild(c);
+				auto value = node->getChildPTN(c);
 
 				// Check for 'flag' type
 				if (!(S_CMPNOCASE(value->type(), "flag")))
@@ -780,7 +780,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 
 					for (unsigned v = 0; v < value->nChildren(); v++)
 					{
-						ParseTreeNode* prop = (ParseTreeNode*)value->getChild(v);
+						auto prop = value->getChildPTN(v);
 
 						if (S_CMPNOCASE(prop->getName(), "value"))
 							flag_val = prop->intValue();
@@ -841,23 +841,23 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		else if (S_CMPNOCASE(node->getName(), "udmf_properties"))
 		{
 			// Parse vertex block properties (if any)
-			ParseTreeNode* block = (ParseTreeNode*)node->getChild("vertex");
+			auto block = node->getChildPTN("vertex");
 			if (block) readUDMFProperties(block, udmf_vertex_props_);
 
 			// Parse linedef block properties (if any)
-			block = (ParseTreeNode*)node->getChild("linedef");
+			block = node->getChildPTN("linedef");
 			if (block) readUDMFProperties(block, udmf_linedef_props_);
 
 			// Parse sidedef block properties (if any)
-			block = (ParseTreeNode*)node->getChild("sidedef");
+			block = node->getChildPTN("sidedef");
 			if (block) readUDMFProperties(block, udmf_sidedef_props_);
 
 			// Parse sector block properties (if any)
-			block = (ParseTreeNode*)node->getChild("sector");
+			block = node->getChildPTN("sector");
 			if (block) readUDMFProperties(block, udmf_sector_props_);
 
 			// Parse thing block properties (if any)
-			block = (ParseTreeNode*)node->getChild("thing");
+			block = node->getChildPTN("thing");
 			if (block) readUDMFProperties(block, udmf_thing_props_);
 		}
 

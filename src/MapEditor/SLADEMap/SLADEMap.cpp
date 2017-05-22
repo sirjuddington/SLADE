@@ -1415,8 +1415,8 @@ bool SLADEMap::readDoom64Map(Archive::mapdesc_t map)
 bool SLADEMap::addVertex(ParseTreeNode* def)
 {
 	// Check for required properties
-	ParseTreeNode* prop_x = (ParseTreeNode*)def->getChild("x");
-	ParseTreeNode* prop_y = (ParseTreeNode*)def->getChild("y");
+	auto prop_x = def->getChildPTN("x");
+	auto prop_y = def->getChildPTN("y");
 	if (!prop_x || !prop_y)
 		return false;
 
@@ -1427,7 +1427,7 @@ bool SLADEMap::addVertex(ParseTreeNode* def)
 	ParseTreeNode* prop = nullptr;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
-		prop = (ParseTreeNode*)def->getChild(a);
+		prop = def->getChildPTN(a);
 
 		// Skip required properties
 		if (prop == prop_x || prop == prop_y)
@@ -1448,7 +1448,7 @@ bool SLADEMap::addVertex(ParseTreeNode* def)
 bool SLADEMap::addSide(ParseTreeNode* def)
 {
 	// Check for required properties
-	ParseTreeNode* prop_sector = (ParseTreeNode*)def->getChild("sector");
+	auto prop_sector = def->getChildPTN("sector");
 	if (!prop_sector)
 		return false;
 
@@ -1471,7 +1471,7 @@ bool SLADEMap::addSide(ParseTreeNode* def)
 	ParseTreeNode* prop = nullptr;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
-		prop = (ParseTreeNode*)def->getChild(a);
+		prop = def->getChildPTN(a);
 
 		// Skip required properties
 		if (prop == prop_sector)
@@ -1509,9 +1509,9 @@ bool SLADEMap::addSide(ParseTreeNode* def)
 bool SLADEMap::addLine(ParseTreeNode* def)
 {
 	// Check for required properties
-	ParseTreeNode* prop_v1 = (ParseTreeNode*)def->getChild("v1");
-	ParseTreeNode* prop_v2 = (ParseTreeNode*)def->getChild("v2");
-	ParseTreeNode* prop_s1 = (ParseTreeNode*)def->getChild("sidefront");
+	auto prop_v1 = def->getChildPTN("v1");
+	auto prop_v2 = def->getChildPTN("v2");
+	auto prop_s1 = def->getChildPTN("sidefront");
 	if (!prop_v1 || !prop_v2 || !prop_s1)
 		return false;
 
@@ -1528,7 +1528,7 @@ bool SLADEMap::addLine(ParseTreeNode* def)
 
 	// Get second side if any
 	MapSide* side2 = nullptr;
-	ParseTreeNode* prop_s2 = (ParseTreeNode*)def->getChild("sideback");
+	auto prop_s2 = def->getChildPTN("sideback");
 	if (prop_s2) side2 = getSide(prop_s2->intValue());
 
 	// Create new line
@@ -1541,7 +1541,7 @@ bool SLADEMap::addLine(ParseTreeNode* def)
 	ParseTreeNode* prop = nullptr;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
-		prop = (ParseTreeNode*)def->getChild(a);
+		prop = def->getChildPTN(a);
 
 		// Skip required properties
 		if (prop == prop_v1 || prop == prop_v2 || prop == prop_s1 || prop == prop_s2)
@@ -1565,8 +1565,8 @@ bool SLADEMap::addLine(ParseTreeNode* def)
 bool SLADEMap::addSector(ParseTreeNode* def)
 {
 	// Check for required properties
-	ParseTreeNode* prop_ftex = (ParseTreeNode*)def->getChild("texturefloor");
-	ParseTreeNode* prop_ctex = (ParseTreeNode*)def->getChild("textureceiling");
+	auto prop_ftex = def->getChildPTN("texturefloor");
+	auto prop_ctex = def->getChildPTN("textureceiling");
 	if (!prop_ftex || !prop_ctex)
 		return false;
 
@@ -1586,7 +1586,7 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 	ParseTreeNode* prop = nullptr;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
-		prop = (ParseTreeNode*)def->getChild(a);
+		prop = def->getChildPTN(a);
 
 		// Skip required properties
 		if (prop == prop_ftex || prop == prop_ctex)
@@ -1618,9 +1618,9 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 bool SLADEMap::addThing(ParseTreeNode* def)
 {
 	// Check for required properties
-	ParseTreeNode* prop_x = (ParseTreeNode*)def->getChild("x");
-	ParseTreeNode* prop_y = (ParseTreeNode*)def->getChild("y");
-	ParseTreeNode* prop_type = (ParseTreeNode*)def->getChild("type");
+	auto prop_x = def->getChildPTN("x");
+	auto prop_y = def->getChildPTN("y");
+	auto prop_type = def->getChildPTN("type");
 	if (!prop_x || !prop_y || !prop_type)
 		return false;
 
@@ -1631,7 +1631,7 @@ bool SLADEMap::addThing(ParseTreeNode* def)
 	ParseTreeNode* prop = nullptr;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
-		prop = (ParseTreeNode*)def->getChild(a);
+		prop = def->getChildPTN(a);
 
 		// Skip required properties
 		if (prop == prop_x || prop == prop_y || prop == prop_type)
@@ -1683,7 +1683,7 @@ bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
 	{
 		UI::setSplashProgress((float)a / root->nChildren());
 
-		ParseTreeNode* node = (ParseTreeNode*)root->getChild(a);
+		auto node = root->getChildPTN(a);
 
 		// Vertex definition
 		if (S_CMPNOCASE(node->getName(), "vertex"))

@@ -277,7 +277,7 @@ bool SAction::parse(ParseTreeNode* node)
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto prop = (ParseTreeNode*)node->getChild(a);
+		auto prop = node->getChildPTN(a);
 		string prop_name = prop->getName();
 		
 		// Text
@@ -368,7 +368,7 @@ bool SAction::initActions()
 		auto root = parser.parseTreeRoot();
 		for (unsigned a = 0; a < root->nChildren(); a++)
 		{
-			auto node = (ParseTreeNode*)root->getChild(a);
+			auto node = root->getChildPTN(a);
 
 			// Single action
 			if (S_CMPNOCASE(node->type(), "action"))
@@ -387,7 +387,7 @@ bool SAction::initActions()
 
 				for (unsigned b = 0; b < node->nChildren(); b++)
 				{
-					auto group_node = (ParseTreeNode*)node->getChild(b);
+					auto group_node = node->getChildPTN(b);
 					if (S_CMPNOCASE(group_node->type(), "action"))
 					{
 						auto action = new SAction(group_node->getName(), group_node->getName());

@@ -187,12 +187,12 @@ void Executables::init()
  *******************************************************************/
 void Executables::parse(Parser* p, bool custom)
 {
-	ParseTreeNode* n = (ParseTreeNode*)p->parseTreeRoot()->getChild("executables");
+	auto n = p->parseTreeRoot()->getChildPTN("executables");
 	if (!n) return;
 
 	for (unsigned a = 0; a < n->nChildren(); a++)
 	{
-		ParseTreeNode* exe_node = (ParseTreeNode*)n->getChild(a);
+		auto exe_node = n->getChildPTN(a);
 		string type = exe_node->type();
 
 		// Game Executable (if type is blank it's a game executable in old config format)
@@ -224,7 +224,7 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 	exe->id = node->getName();
 	for (unsigned b = 0; b < node->nChildren(); b++)
 	{
-		ParseTreeNode* prop = (ParseTreeNode*)node->getChild(b);
+		auto prop = node->getChildPTN(b);
 		string prop_name = prop->getName().Lower();
 
 		// Config
@@ -385,7 +385,7 @@ void Executables::parseExternalExe(ParseTreeNode* node)
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		ParseTreeNode* prop = (ParseTreeNode*)node->getChild(a);
+		auto prop = node->getChildPTN(a);
 		string prop_name = prop->getName().Lower();
 
 		// Entry category

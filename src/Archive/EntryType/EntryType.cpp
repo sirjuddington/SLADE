@@ -388,7 +388,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 	p.parseText(mc);
 
 	// Get entry_types tree
-	ParseTreeNode* pt_etypes = (ParseTreeNode*)(p.parseTreeRoot()->getChild("entry_types"));
+	auto pt_etypes = p.parseTreeRoot()->getChildPTN("entry_types");
 
 	// Check it exists
 	if (!pt_etypes)
@@ -398,7 +398,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 	for (unsigned a = 0; a < pt_etypes->nChildren(); a++)
 	{
 		// Get child as ParseTreeNode
-		ParseTreeNode* typenode = (ParseTreeNode*)pt_etypes->getChild(a);
+		auto typenode = pt_etypes->getChildPTN(a);
 
 		// Create new entry type
 		EntryType* ntype = new EntryType(typenode->getName().Lower());
@@ -418,7 +418,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 		for (unsigned b = 0; b < typenode->nChildren(); b++)
 		{
 			// Get child as ParseTreeNode
-			ParseTreeNode* fieldnode = (ParseTreeNode*)typenode->getChild(b);
+			auto fieldnode = typenode->getChildPTN(b);
 
 			// Process it
 			if (S_CMPNOCASE(fieldnode->getName(), "name"))  				// Name field
