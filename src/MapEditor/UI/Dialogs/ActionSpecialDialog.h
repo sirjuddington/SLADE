@@ -95,12 +95,18 @@ private:
 	wxRadioButton*			rb_special_;
 	wxRadioButton*			rb_generalised_;
 	ArgsPanel*				panel_args_;
-	vector<wxCheckBox*>		cb_triggers_;
-	vector<string>			triggers_udmf_;
 	wxChoice*				choice_trigger_;
 	bool					show_trigger_;
 	NumberTextCtrl*			text_special_;
 	wxButton*				btn_preset_;
+
+	struct FlagHolder
+	{
+		wxCheckBox*	check_box;
+		int			index;
+		string		udmf;
+	};
+	vector<FlagHolder>	flags_;
 };
 
 class STabCtrl;

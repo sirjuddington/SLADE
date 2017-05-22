@@ -41,7 +41,6 @@
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
-#include "Utility/Tokenizer.h"
 #include "Decorate.h"
 
 using namespace Game;
@@ -656,6 +655,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 
 				unsigned long flag_val;
 				string flag_name, flag_udmf;
+				bool activation = false;
 
 				if (value->nValues() == 0)
 				{
@@ -674,6 +674,8 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 								flag_udmf += prop->stringValue(u) + " ";
 							flag_udmf.RemoveLast(1);
 						}
+						else if (S_CMPNOCASE(prop->getName(), "activation"))
+							activation = prop->boolValue();
 					}
 				}
 				else
@@ -697,7 +699,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 
 				// Add flag otherwise
 				if (!exists)
-					flags_line_.push_back({ (int)flag_val, flag_name, flag_udmf });
+					flags_line_.push_back({ (int)flag_val, flag_name, flag_udmf, activation });
 			}
 		}
 
@@ -1439,13 +1441,14 @@ void Configuration::clearDecorateDefs()
 //
 // Returns the name of the line flag at [index]
 // ----------------------------------------------------------------------------
-string Configuration::lineFlag(unsigned index)
+const Configuration::Flag& Configuration::lineFlag(unsigned index)
 {
 	// Check index
+	static Flag invalid{ 0, "", "", false };
 	if (index >= flags_line_.size())
-		return "";
+		return invalid;
 
-	return flags_line_[index].name;
+	return flags_line_[index];
 }
 
 // ----------------------------------------------------------------------------

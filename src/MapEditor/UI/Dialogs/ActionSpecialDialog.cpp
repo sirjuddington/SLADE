@@ -969,7 +969,6 @@ void ActionSpecialPanel::setupSpecialPanel()
 			auto& props = Game::configuration().allUDMFProperties(MOBJ_LINE);
 
 			// Get all UDMF trigger properties
-			vector<string> triggers;
 			std::map<string, wxFlexGridSizer*> named_flexgrids;
 			for (auto& i : props)
 			{
@@ -980,8 +979,8 @@ void ActionSpecialPanel::setupSpecialPanel()
 				wxFlexGridSizer* frame_sizer = named_flexgrids[group];
 				if (!frame_sizer)
 				{
-					wxStaticBox* frame_triggers = new wxStaticBox(panel_action_special_, -1, group);
-					wxStaticBoxSizer* sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
+					auto frame_triggers = new wxStaticBox(panel_action_special_, -1, group);
+					auto sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
 					sizer->Add(sizer_triggers, 0, wxEXPAND|wxTOP, 4);
 
 					frame_sizer = new wxFlexGridSizer(3);
@@ -993,25 +992,55 @@ void ActionSpecialPanel::setupSpecialPanel()
 					named_flexgrids.find(group)->second = frame_sizer;
 				}
 
-				wxCheckBox* cb_trigger = new wxCheckBox(panel_action_special_, -1, i.second.name(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+				auto cb_trigger = new wxCheckBox(
+					panel_action_special_,
+					-1,
+					i.second.name(),
+					wxDefaultPosition,
+					wxDefaultSize,
+					wxCHK_3STATE
+				);
 				frame_sizer->Add(cb_trigger, 0, wxEXPAND);
 
-				triggers.push_back(i.second.name());
-				triggers_udmf_.push_back(i.second.propName());
-				cb_triggers_.push_back(cb_trigger);
+				flags_.push_back({ cb_trigger, -1, i.second.propName() });
 			}
 		}
 
 		// Hexen trigger
 		else if (MapEditor::editContext().mapDesc().format == MAP_HEXEN)
 		{
-			// Add triggers dropdown
-			wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-			sizer->Add(hbox, 0, wxEXPAND|wxTOP, 4);
+			auto frame_trigger = new wxStaticBox(panel_action_special_, -1, "Special Trigger");
+			auto sizer_trigger = new wxStaticBoxSizer(frame_trigger, wxVERTICAL);
+			sizer->Add(sizer_trigger, 0, wxEXPAND | wxALL, 4);
 
-			hbox->Add(new wxStaticText(panel_action_special_, -1, "Special Trigger:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-			choice_trigger_ = new wxChoice(panel_action_special_, -1, wxDefaultPosition, wxDefaultSize, Game::configuration().allSpacTriggers());
-			hbox->Add(choice_trigger_, 1, wxEXPAND);
+			// Add triggers dropdown
+			choice_trigger_ = new wxChoice(
+				panel_action_special_,
+				-1,
+				wxDefaultPosition,
+				wxDefaultSize,
+				Game::configuration().allSpacTriggers()
+			);
+			sizer_trigger->Add(choice_trigger_, 0, wxEXPAND | wxALL, 4);
+
+			// Add activation-related flags
+			auto fg_sizer = new wxFlexGridSizer(3);
+			fg_sizer->AddGrowableCol(0, 1);
+			fg_sizer->AddGrowableCol(1, 1);
+			fg_sizer->AddGrowableCol(2, 1);
+			sizer_trigger->Add(fg_sizer, 0, wxEXPAND | wxALL, 4);
+			for (unsigned a = 0; a < Game::configuration().nLineFlags(); a++)
+			{
+				if (Game::configuration().lineFlag(a).activation)
+				{
+					flags_.push_back({
+						new wxCheckBox(panel_action_special_, -1, Game::configuration().lineFlag(a).name),
+						(int)a,
+						Game::configuration().lineFlag(a).udmf
+					});
+					fg_sizer->Add(flags_.back().check_box, 0, wxEXPAND);
+				}
+			}
 		}
 
 		// Preset button
@@ -1067,16 +1096,13 @@ void ActionSpecialPanel::setTrigger(int index)
 	if (!show_trigger_)
 		return;
 
-	// UDMF Trigger
-	if (cb_triggers_.size() > 0)
-	{
-		if (index < (int)cb_triggers_.size())
-			cb_triggers_[index]->SetValue(true);
-	}
-
 	// Hexen trigger
-	else
+	if (choice_trigger_)
 		choice_trigger_->SetSelection(index);
+
+	// UDMF Trigger
+	else if (index < (int)flags_.size())
+		flags_[index].check_box->SetValue(true);
 }
 
 // ----------------------------------------------------------------------------
@@ -1089,27 +1115,24 @@ void ActionSpecialPanel::setTrigger(string trigger)
 	if (!show_trigger_)
 		return;
 
-	// UDMF Trigger
-	if (cb_triggers_.size() > 0)
-	{
-		for (unsigned a = 0; a < triggers_udmf_.size(); a++)
-			if (triggers_udmf_[a] == trigger)
-			{
-				cb_triggers_[a]->SetValue(true);
-				return;
-			}
-	}
-
 	// Hexen trigger
-	else
+	if (choice_trigger_)
 	{
 		for (unsigned a = 0; a < choice_trigger_->GetCount(); a++)
 			if (Game::configuration().spacTriggerUDMFName(a) == trigger)
 			{
 				choice_trigger_->SetSelection(a);
-				return;
+				break;
 			}
 	}
+
+	// UDMF Trigger or Hexen Flag
+	for (auto& flag : flags_)
+		if (flag.udmf == trigger)
+		{
+			flag.check_box->SetValue(true);
+			break;
+		}
 }
 
 // ----------------------------------------------------------------------------
@@ -1119,9 +1142,9 @@ void ActionSpecialPanel::setTrigger(string trigger)
 // ----------------------------------------------------------------------------
 void ActionSpecialPanel::clearTrigger()
 {
-	// UDMF Triggers
-	for (unsigned a = 0; a < cb_triggers_.size(); a++)
-		cb_triggers_[a]->SetValue(false);
+	// UDMF Triggers and Flags
+	for (auto& flag : flags_)
+		flag.check_box->SetValue(false);
 
 	// Hexen trigger
 	if (choice_trigger_)
@@ -1217,21 +1240,18 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 	{
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
-			// UDMF
-			if (!cb_triggers_.empty())
-			{
-				for (unsigned b = 0; b < cb_triggers_.size(); b++)
-				{
-					if (cb_triggers_[b]->Get3StateValue() == wxCHK_UNDETERMINED)
-						continue;
-
-					lines[a]->setBoolProperty(triggers_udmf_[b], cb_triggers_[b]->GetValue());
-				}
-			}
-
 			// Hexen
-			else if (choice_trigger_ && choice_trigger_->GetSelection() >= 0)
+			if (choice_trigger_)
 				Game::configuration().setLineSpacTrigger(choice_trigger_->GetSelection(), (MapLine*)lines[a]);
+
+			// UDMF / Flags
+			for (auto& flag : flags_)
+			{
+				if (flag.check_box->Get3StateValue() == wxCHK_UNDETERMINED)
+					continue;
+
+				lines[a]->setBoolProperty(flag.udmf, flag.check_box->GetValue());
+			}
 		}
 	}
 }
@@ -1263,23 +1283,11 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 		panel_args_->setValues(args);
 	}
 
-	// Trigger (UDMF)
+	// Trigger
 	if (show_trigger_)
 	{
-		if (!cb_triggers_.empty())
-		{
-			for (unsigned a = 0; a < triggers_udmf_.size(); a++)
-			{
-				bool set;
-				if (MapObject::multiBoolProperty(lines, triggers_udmf_[a], set))
-					cb_triggers_[a]->SetValue(set);
-				else
-					cb_triggers_[a]->Set3StateValue(wxCHK_UNDETERMINED);
-			}
-		}
-
 		// Trigger (Hexen)
-		else if (choice_trigger_)
+		if (choice_trigger_)
 		{
 			int trigger = Game::configuration().spacTriggerIndexHexen((MapLine*)lines[0]);
 			for (unsigned a = 1; a < lines.size(); a++)
@@ -1293,6 +1301,16 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 
 			if (trigger >= 0)
 				choice_trigger_->SetSelection(trigger);
+		}
+
+		// Trigger (UDMF) / Flags
+		for (auto& flag : flags_)
+		{
+			bool set;
+			if (MapObject::multiBoolProperty(lines, flag.udmf, set))
+				flag.check_box->SetValue(set);
+			else
+				flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
 		}
 	}
 }

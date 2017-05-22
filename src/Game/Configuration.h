@@ -56,6 +56,14 @@ namespace Game
 	class Configuration
 	{
 	public:
+		struct Flag
+		{
+			int		flag;
+			string	name;
+			string	udmf;
+			bool	activation;
+		};
+
 		Configuration();
 		~Configuration();
 
@@ -123,15 +131,15 @@ namespace Game
 		void	clearDecorateDefs();
 
 		// Line flags
-		int		nLineFlags() const { return flags_line_.size(); }
-		string	lineFlag(unsigned flag_index);
-		bool	lineFlagSet(unsigned flag_index, MapLine* line);
-		bool	lineFlagSet(string udmf_name, MapLine* line, int map_format);
-		bool	lineBasicFlagSet(string flag, MapLine* line, int map_format);
-		string	lineFlagsString(MapLine* line);
-		void	setLineFlag(unsigned flag_index, MapLine* line, bool set = true);
-		void	setLineFlag(string udmf_name, MapLine* line, int map_format, bool set = true);
-		void	setLineBasicFlag(string flag, MapLine* line, int map_format, bool set = true);
+		int			nLineFlags() const { return flags_line_.size(); }
+		const Flag&	lineFlag(unsigned flag_index);
+		bool		lineFlagSet(unsigned flag_index, MapLine* line);
+		bool		lineFlagSet(string udmf_name, MapLine* line, int map_format);
+		bool		lineBasicFlagSet(string flag, MapLine* line, int map_format);
+		string		lineFlagsString(MapLine* line);
+		void		setLineFlag(unsigned flag_index, MapLine* line, bool set = true);
+		void		setLineFlag(string udmf_name, MapLine* line, int map_format, bool set = true);
+		void		setLineBasicFlag(string flag, MapLine* line, int map_format, bool set = true);
 
 		// Line action (SPAC) triggers
 		string			spacTriggerString(MapLine* line, int map_format);
@@ -194,12 +202,6 @@ namespace Game
 		std::map<string, ThingType>	tt_group_defaults_;
 
 		// Flags
-		struct Flag
-		{
-			int		flag;
-			string	name;
-			string	udmf;
-		};
 		vector<Flag>	flags_thing_;
 		vector<Flag>	flags_line_;
 		vector<Flag>	triggers_line_;
