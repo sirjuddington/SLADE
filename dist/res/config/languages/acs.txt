@@ -254,6 +254,7 @@ acs_z : acs {
 		NOT_BOTTOM, NOT_MIDDLE, NOT_TOP, NOT_FLOOR, NOT_CEILING, 
 
 		DAMAGE_PLAYERS, DAMAGE_NONPLAYERS, DAMAGE_IN_AIR, DAMAGE_SUBCLASSES_PROTECT, 
+		DAMAGE_NO_ARMOR,
 
 		MRF_OLDEFFECTS, MRF_ADDSTAMINA, MRF_FULLHEALTH, MRF_UNDOBYTOMEOFPOWER, 
 		MRF_UNDOBYCHAOSDEVICE, MRF_FAILNOTELEFRAG, MRF_FAILNOLAUGH, 
@@ -381,7 +382,8 @@ acs_z : acs {
 
 		FOGP_DENSITY, FOGP_OUTSIDEDENSITY, FOGP_SKYFOG, 
 
-		PRINTNAME_LEVELNAME, PRINTNAME_LEVEL, PRINTNAME_SKILL, 
+		PRINTNAME_LEVELNAME, PRINTNAME_LEVEL, PRINTNAME_SKILL, PRINTNAME_NEXTLEVEL,
+		PRINTNAME_NEXTSECRET,
 
 		CSF_NOFAKEFLOORS, CSF_NOBLOCKALL,
 
@@ -697,6 +699,7 @@ acs_z : acs {
 		AmbientSound = "str sound, int volume";
 		CancelFade;
 		CanRaiseActor = "int tid";
+		Ceil = "fixed value";
 		ChangeActorAngle = "int tid, fixed angle, [bool interpolate]";
 		ChangeActorPitch = "int tid, fixed pitch, [bool interpolate]";
 		ChangeActorRoll = "int tid, fixed angle, [bool interpolate]";
@@ -733,11 +736,14 @@ acs_z : acs {
 		FixedDiv = "fixed a, fixed b";
 		FixedMul = "fixed a, fixed b";
 		FixedSqrt = "fixed number";
+		Floor = "fixed value";
 		GameSkill;
 		GameType;
 		GetActorAngle = "int tid";
 		GetActorCeilingZ = "int tid";
 		GetActorClass = "int tid";
+		GetActorFloorTerrain = "int tid";
+		GetActorFloorTexture = "int tid";
 		GetActorFloorZ = "int tid";
 		GetActorLightLevel = "int tid";
 		GetActorPitch = "int tid";
@@ -761,8 +767,10 @@ acs_z : acs {
 		GetLevelInfo = "int levelinfo";
 		GetLineActivation = "int lineid";
 		GetLineRowOffset;
-		GetLineUDMFFixed = "int lineid, string key";
-		GetLineUDMFInt = "int lineid, string key";
+		GetLineUDMFFixed = "int lineid, str key";
+		GetLineUDMFInt = "int lineid, str key";
+		GetLineX = "unknown parameter list";
+		GetLineY = "unknown parameter list";
 		GetMaxInventory = "int tid, str inventory";
 		GetPlayerInfo = "int playernumber, int playerinfo";
 		GetPlayerInput = "int player, int input";
@@ -815,6 +823,8 @@ acs_z : acs {
 		Radius_Quake2 = "int tid, int intensity, int duration, int damrad, int tremrad, str sound";
 		Random = "int min, int max";
 		ReplaceTextures = "str oldtexturename, str newtexturename, [int flags]";
+		Round = "fixed value";
+		ScriptCall = "str classname, str funcname, args";
 		ScriptWait = "int script";
 		SectorDamage = "int tag, int amount, str type, str protection_item, int flags";
 		SectorSound = "str sound, int volume";
@@ -837,6 +847,7 @@ acs_z : acs {
 		SetCVar = "str cvarname, int newvalue", "str cvarname, fixed newvalue", "str cvarname, bool newvalue";
 		SetCVarString = "str cvarname, str newvalue";
 		SetFloorTrigger = "int tag, int height, int special, [int arg1], [int arg2], [int arg3], [int arg4], [int arg5]";
+		SetFogDensity = "int tag, int amount";
 		SetFont = "str fontlump";
 		SetGravity = "fixed amount";
 		SetHUDClipRect = "int x, int y, int width, int height, [int wrapwidth], [bool aspectratio]";
@@ -855,6 +866,7 @@ acs_z : acs {
 		SetPointer = "int assign_slot, int tid, [int pointer_selector], [int flags]";
 		SetResultValue = "int value";
 		SetSectorDamage = "int tag, int amount, [str damagetype], [int interval], [int leaky]";
+		SetSectorGlow = "int tag, bool which, int red, int green, int blue, int height";
 		SetSectorTerrain = "int tag, int whichplane, str terraintype";
 		SetSkyScrollSpeed = "int sky, float skyspeed";
 		SetThingSpecial = "int tid, int special, [int arg1], [int arg2], [int arg3], [int arg4], [int arg5]";
@@ -869,7 +881,7 @@ acs_z : acs {
 		SoundSequenceOnPolyobj = "int polynum, str sndseq";
 		SoundSequenceOnSector = "int tag, string seqname, int location";
 		SoundVolume = "int tid, int channel, fixed volume";
- 		Spawn = "str classname, fixed x, fixed y, fixed z, [int tid], [int angle]";
+		Spawn = "str classname, fixed x, fixed y, fixed z, [int tid], [int angle]";
 		SpawnDecal = "int tid, str decalname, [int flags], [fixed angle], [fixed zoffset], [fixed distance]";
 		SpawnForced = "str classname, fixed x, fixed y, fixed z, [int tid], [int angle]";
 		SpawnParticle = "int color, [bool fullbright], [int lifetime], [int size], [fixed x], [fixed y], [fixed z], [fixed velx], [fixed vely], [fixed velz], [fixed accelx], [fixed accely], [fixed accelz], [int startalpha], [int fadestep], [fixed endsize]";
@@ -879,7 +891,9 @@ acs_z : acs {
 		SpawnSpotFacingForced = "str classname, int spottid, [int tid]";
 		SpawnSpotForced = "str classname, int spottid, [int tid], [int angle]";
 		Sqrt = "int number";
+		StartSlideshow = "unknown parameter list";
 		StopSound = "int tid, [int channel]";
+		StrArg = "unknown parameter list";
 		StrCaseCmp = "str string1, str string2, [int maxcomparenum]";
 		StrCmp = "str string1, str string2, [int maxcomparenum]";
 		StrCpy = "a:destination, string source, [int source_index]";
