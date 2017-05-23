@@ -13,15 +13,14 @@ typedef wxNotebook TabControl;
 
 class STabCtrl : public wxAuiNotebook
 {
-private:
-
 public:
 	STabCtrl(
 		wxWindow* parent,
 		bool close_buttons = false,
 		bool window_list = false,
 		int height = -1,
-		bool main_tabs = false
+		bool main_tabs = false,
+		bool move_tabs = false
 	);
 	~STabCtrl();
 
@@ -30,7 +29,8 @@ public:
 							bool close_buttons = false,
 							bool window_list = false,
 							int height = -1,
-							bool main_tabs = false
+							bool main_tabs = false,
+							bool move_tabs = false
 						);
 
 protected:
