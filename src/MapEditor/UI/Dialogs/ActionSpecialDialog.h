@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "UI/SDialog.h"
+#include "UI/STabCtrl.h"
 #include "UI/WxBasicControls.h"
 
 
@@ -99,13 +100,12 @@ public:
 	void	onSpecialItemActivated(wxDataViewEvent& e);
 };
 
-class STabCtrl;
 class ActionSpecialDialog : public SDialog
 {
 private:
 	ActionSpecialPanel* panel_special;
 	ArgsPanel*			panel_args;
-	STabCtrl*			stc_tabs;
+	TabControl*			stc_tabs;
 
 public:
 	ActionSpecialDialog(wxWindow* parent, bool show_args = false);

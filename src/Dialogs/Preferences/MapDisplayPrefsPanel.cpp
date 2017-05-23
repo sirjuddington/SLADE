@@ -30,7 +30,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "MapDisplayPrefsPanel.h"
-#include "UI/STabCtrl.h"
 
 
 /*******************************************************************
@@ -87,7 +86,7 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	psizer->Add(fsizer, 1, wxEXPAND|wxALL, 4);
 
 	// Create notebook
-	stc_pages = new STabCtrl(this, false);
+	stc_pages = STabCtrl::createControl(this);
 	fsizer->Add(stc_pages, 1, wxEXPAND|wxALL, 4);
 
 	// Setup tabs

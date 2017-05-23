@@ -3,12 +3,13 @@
 #define __MAP_DISPLAY_PREFS_PANEL_H__
 
 #include "PrefsPanelBase.h"
+#include "UI/STabCtrl.h"
 
 class STabCtrl;
 class MapDisplayPrefsPanel : public PrefsPanelBase
 {
 private:
-	STabCtrl*	stc_pages;
+	TabControl*	stc_pages;
 
 	wxCheckBox*	cb_grid_dashed;
 	wxChoice*	choice_grid_64;

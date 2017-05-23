@@ -35,7 +35,6 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
 #include "UI/NumberTextCtrl.h"
-#include "UI/STabCtrl.h"
 
 
 /*******************************************************************
@@ -1260,7 +1259,7 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args)
 	// Args (use tabs)
 	else
 	{
-		stc_tabs = new STabCtrl(this, false);
+		stc_tabs = STabCtrl::createControl(this);
 		sizer->Add(stc_tabs, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 
 		// Special panel

@@ -525,7 +525,7 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	SetSizer(sizer);
 
 	// Tabs
-	stc_tabs = new STabCtrl(this, false);
+	stc_tabs = STabCtrl::createControl(this);
 	sizer->Add(stc_tabs, 1, wxEXPAND|wxALL, 4);
 
 	// General tab

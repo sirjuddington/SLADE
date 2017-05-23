@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "MapReplaceDialog.h"
 #include "MainEditor/ArchiveOperations.h"
-#include "UI/STabCtrl.h"
 
 
 /*******************************************************************
@@ -265,7 +264,7 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive)
 	SetSizer(sizer);
 
 	// Add tabs
-	stc_tabs = new STabCtrl(this, false);
+	stc_tabs = STabCtrl::createControl(this);
 	sizer->Add(stc_tabs, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 
 	// Thing type tab

@@ -36,7 +36,6 @@
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "MapObjectPropsPanel.h"
 #include "MOPGProperty.h"
-#include "UI/STabCtrl.h"
 
 
 /*******************************************************************
@@ -78,7 +77,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : Prop
 	sizer->AddSpacer(4);
 
 	// Add tabs
-	stc_sections = new STabCtrl(this, false);
+	stc_sections = STabCtrl::createControl(this);
 	sizer->Add(stc_sections, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Add main property grid
