@@ -275,6 +275,11 @@ long App::runTimer()
 	return timer.Time();
 }
 
+bool App::isExiting()
+{
+	return exiting;
+}
+
 bool App::init()
 {
 	// Set locale to C so that the tokenizer will work properly

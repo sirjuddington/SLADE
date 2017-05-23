@@ -741,7 +741,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
  *******************************************************************/
 void SLADEWxApp::onActivate(wxActivateEvent& e)
 {
-	if (!e.GetActive())
+	if (!e.GetActive() || App::isExiting())
 	{
 		e.Skip();
 		return;

@@ -9,6 +9,7 @@ namespace App
 	Console*		console();
 	PaletteManager*	paletteManager();
 	long			runTimer();
+	bool			isExiting();
 
 	bool	init();
 	void	saveConfigFile();

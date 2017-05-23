@@ -15,11 +15,11 @@
 
 namespace MapEditor
 {
-	std::unique_ptr<MapEditContext>		edit_context;
-	MapTextureManager					texture_manager;
-	Archive::mapdesc_t					current_map_desc;
-	std::unique_ptr<MapEditorWindow>	map_window;
-	MapBackupManager					backup_manager;
+	std::unique_ptr<MapEditContext>	edit_context;
+	MapTextureManager				texture_manager;
+	Archive::mapdesc_t				current_map_desc;
+	MapEditorWindow*				map_window;
+	MapBackupManager				backup_manager;
 }
 
 MapEditContext& MapEditor::editContext()
@@ -40,7 +40,7 @@ MapEditorWindow* MapEditor::window()
 	if (!map_window)
 		init();
 
-	return map_window.get();
+	return map_window;
 }
 
 wxWindow* MapEditor::windowWx()
@@ -48,7 +48,7 @@ wxWindow* MapEditor::windowWx()
 	if (!map_window)
 		init();
 
-	return map_window.get();
+	return map_window;
 }
 
 MapBackupManager& MapEditor::backupManager()
@@ -58,7 +58,7 @@ MapBackupManager& MapEditor::backupManager()
 
 void MapEditor::init()
 {
-	map_window = std::make_unique<MapEditorWindow>();
+	map_window = new MapEditorWindow();
 	texture_manager.init();
 }
 
@@ -190,7 +190,7 @@ string MapEditor::browseTexture(const string &init_texture, int tex_type, SLADEM
 		edit_context.get()->lockMouse(false);
 
 	// Setup texture browser
-	MapTextureBrowser browser(map_window.get(), tex_type, init_texture, &map);
+	MapTextureBrowser browser(map_window, tex_type, init_texture, &map);
 	browser.SetTitle(title);
 
 	// Get selected texture
@@ -213,7 +213,7 @@ int MapEditor::browseThingType(int init_type, SLADEMap& map)
 		edit_context.get()->lockMouse(false);
 
 	// Setup thing browser
-	ThingTypeBrowser browser(map_window.get(), init_type);
+	ThingTypeBrowser browser(map_window, init_type);
 
 	// Get selected type
 	int type = -1;
