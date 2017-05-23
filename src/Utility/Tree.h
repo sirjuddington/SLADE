@@ -34,6 +34,7 @@ public:
 	virtual void 				addChild(STreeNode* child);
 	virtual STreeNode*			addChild(string name);
 	virtual bool 				removeChild(STreeNode* child);
+	const vector<STreeNode*>&	allChildren() const { return children; }
 
 	virtual bool	isLeaf() { return children.empty(); }
 };

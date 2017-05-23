@@ -4,14 +4,15 @@
 
 #include "UI/Browser/BrowserWindow.h"
 
-class ThingType;
+namespace Game { class ThingType; }
+
 class ThingBrowserItem : public BrowserItem
 {
 private:
-	ThingType*	type;
+	Game::ThingType const&	type;
 
 public:
-	ThingBrowserItem(string name, ThingType* type, unsigned index);
+	ThingBrowserItem(string name, const Game::ThingType& type, unsigned index);
 	~ThingBrowserItem();
 
 	bool	loadImage();

@@ -8,7 +8,8 @@
 #include "UI/STabCtrl.h"
 
 class GLTexture;
-class ThingType;
+namespace Game { class ThingType; }
+
 class SpriteTexCanvas : public OGLCanvas
 {
 private:
@@ -22,7 +23,7 @@ public:
 	~SpriteTexCanvas();
 
 	string	getTexName();
-	void	setSprite(ThingType* type);
+	void	setSprite(const Game::ThingType& type);
 	void	draw();
 };
 

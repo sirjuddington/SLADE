@@ -39,6 +39,8 @@ struct mobj_cd_t
 };
 
 class ParseTreeNode;
+namespace Game { enum class TagType; }
+
 class SLADEMap
 {
 private:
@@ -226,7 +228,7 @@ public:
 	void	getThingsById(int id, vector<MapThing*>& list, unsigned start = 0, int type = 0);
 	void	getLinesById(int id, vector<MapLine*>& list);
 	void	getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list);
-	void	getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype = 0);
+	void	getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype);
 	void	getPathedThings(vector<MapThing*>& list);
 	void	getDragonTargets(MapThing* first, vector<MapThing*>& list);
 	void	getTaggingLinesById(int id, int type, vector<MapLine*>& list);

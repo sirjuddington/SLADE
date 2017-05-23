@@ -1,43 +1,48 @@
-
-#ifndef __ACTION_SPECIAL_H__
-#define __ACTION_SPECIAL_H__
+#pragma once
 
 #include "Args.h"
 
-WX_DECLARE_STRING_HASH_MAP(arg_t, SpecialArgMap);
-
 class ParseTreeNode;
-class ActionSpecial
+
+namespace Game
 {
-	friend class GameConfiguration;
-private:
-	string	name;
-	string	group;
-	int		tagged;
-	arg_t	args[5];
-	int		arg_count;
+	enum class TagType;
 
-public:
-	ActionSpecial(string name = "Unknown", string group = "");
-	~ActionSpecial() {}
+	class ActionSpecial
+	{
+	public:
+		ActionSpecial(string name = "Unknown", string group = "");
 
-	void	copy(ActionSpecial* copy);
+		const string&	name() const { return name_; }
+		const string&	group() const { return group_; }
+		TagType			needsTag() const { return tagged_; }
+		const ArgSpec&	argSpec() const { return args_; }
+		int				number() const { return number_; }
+		bool			defined() const { return number_ >= 0; }
 
-	string	getName() { return name; }
-	string	getGroup() { return group; }
-	int		needsTag() { return tagged; }
-	const argspec_t getArgspec() { return argspec_t(args, arg_count); }
+		void	setName(string name) { name_ = name; }
+		void	setGroup(string group) { group_ = group; }
+		void	setTagged(TagType tagged) { tagged_ = tagged; }
+		void	setNumber(int number) { number_ = number; }
 
-	void	setName(string name) { this->name = name; }
-	void	setGroup(string group) { this->group = group; }
-	void	setTagged(int tagged) { this->tagged = tagged; }
+		void	reset();
+		void	parse(ParseTreeNode* node, Arg::SpecialMap* shared_args);
+		string	stringDesc() const;
 
-	string	getArgsString(int args[5], string argstr[2]);
+		static const ActionSpecial&	unknown() { return unknown_; }
+		static const ActionSpecial&	generalSwitched() { return gen_switched_; }
+		static const ActionSpecial&	generalManual() { return gen_manual_; }
+		static void					initGlobal();
 
-	void	reset();
-	void	parse(ParseTreeNode* node, SpecialArgMap* shared_args);
-	static void	parseArg(ParseTreeNode* node, SpecialArgMap* shared_args, arg_t& arg);
-	string	stringDesc();
-};
+	private:
+		string	name_;
+		string	group_;
+		TagType	tagged_;
+		ArgSpec	args_;
+		int		number_;
 
-#endif//__ACTION_SPECIAL_H__
+		static ActionSpecial	unknown_;
+		static ActionSpecial	gen_switched_;
+		static ActionSpecial	gen_manual_;
+	};
+}

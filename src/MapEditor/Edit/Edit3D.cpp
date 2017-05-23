@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Edit3D.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/UndoRedo.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"
@@ -264,7 +264,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		{
 			MapSector* sector = context_.map().getSector(items[a].index);
 
-			if (theGameConfiguration->udmfFlatPanning())
+			if (Game::configuration().featureSupported(Game::UDMFFeature::FlatPanning))
 			{
 				if (items[a].type == ItemType::Floor)
 				{
@@ -446,7 +446,10 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 		return;
 
 	// Get texture width
-	auto gl_tex = MapEditor::textureManager().getTexture(tex, theGameConfiguration->mixTexFlats());
+	auto gl_tex = MapEditor::textureManager().getTexture(
+		tex,
+		Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+	);
 	int tex_width = -1;
 	if (gl_tex)
 		tex_width = gl_tex->getWidth();
@@ -472,6 +475,8 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
  *******************************************************************/
 void Edit3D::resetOffsets() const
 {
+	using Game::UDMFFeature;
+
 	// Get items to process
 	vector<MapEditor::Item> walls;
 	vector<MapEditor::Item> flats;
@@ -543,7 +548,8 @@ void Edit3D::resetOffsets() const
 		}
 
 		// Reset scaling
-		if (context_.mapDesc().format == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
+		if (context_.mapDesc().format == MAP_UDMF &&
+			Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (walls[a].type == ItemType::WallTop)
 			{
@@ -578,17 +584,17 @@ void Edit3D::resetOffsets() const
 				plane = "ceiling";
 
 			// Reset offsets, scale, and rotation
-			if (theGameConfiguration->udmfFlatPanning())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
 			{
 				sector->setFloatProperty("xpanning" + plane, 0);
 				sector->setFloatProperty("ypanning" + plane, 0);
 			}
-			if (theGameConfiguration->udmfFlatScaling())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 			{
 				sector->setFloatProperty("xscale" + plane, 1);
 				sector->setFloatProperty("yscale" + plane, 1);
 			}
-			if (theGameConfiguration->udmfFlatRotation())
+			if (Game::configuration().featureSupported(UDMFFeature::FlatRotation))
 				sector->setFloatProperty("rotation" + plane, 0);
 		}
 	}
@@ -608,14 +614,14 @@ void Edit3D::resetOffsets() const
 			{
 				thing->setFloatProperty("height", 0);
 				// Reset scale
-				if (theGameConfiguration->udmfThingScaling())
+				if (Game::configuration().featureSupported(UDMFFeature::ThingScaling))
 				{
 					thing->setFloatProperty("scalex", 1);
 					thing->setFloatProperty("scaley", 1);
 					thing->setFloatProperty("scale", 1);
 				}
 				// Reset non-angle rotations
-				if (theGameConfiguration->udmfThingRotation())
+				if (Game::configuration().featureSupported(UDMFFeature::ThingRotation))
 				{
 					thing->setIntProperty("pitch", 0);
 					thing->setIntProperty("yaw", 0);
@@ -628,8 +634,10 @@ void Edit3D::resetOffsets() const
 	context_.endUndoRecord();
 
 	// Editor message
-	if (context_.mapDesc().format == MAP_UDMF && (theGameConfiguration->udmfFlatScaling() ||
-		theGameConfiguration->udmfSideScaling() || theGameConfiguration->udmfTextureScaling()))
+	if (context_.mapDesc().format == MAP_UDMF &&
+		(Game::configuration().featureSupported(UDMFFeature::FlatScaling) ||
+		Game::configuration().featureSupported(UDMFFeature::SideScaling) ||
+		Game::configuration().featureSupported(UDMFFeature::TextureScaling)))
 		context_.addEditorMessage("Offsets and scaling reset");
 	else
 		context_.addEditorMessage("Offsets reset");
@@ -690,12 +698,12 @@ void Edit3D::toggleUnpegged(bool lower) const
 		context_.recordPropertyChangeUndoStep(line);
 		if (lower)
 		{
-			bool unpegged = theGameConfiguration->lineBasicFlagSet(
+			bool unpegged = Game::configuration().lineBasicFlagSet(
 				"dontpegbottom",
 				line,
 				context_.mapDesc().format
 			);
-			theGameConfiguration->setLineBasicFlag(
+			Game::configuration().setLineBasicFlag(
 				"dontpegbottom",
 				line,
 				context_.map().currentFormat(),
@@ -704,12 +712,12 @@ void Edit3D::toggleUnpegged(bool lower) const
 		}
 		else
 		{
-			bool unpegged = theGameConfiguration->lineBasicFlagSet(
+			bool unpegged = Game::configuration().lineBasicFlagSet(
 				"dontpegtop",
 				line,
 				context_.mapDesc().format
 			);
-			theGameConfiguration->setLineBasicFlag(
+			Game::configuration().setLineBasicFlag(
 				"dontpegtop",
 				line,
 				context_.map().currentFormat(),
@@ -1048,6 +1056,8 @@ void Edit3D::deleteThing() const
  *******************************************************************/
 void Edit3D::changeScale(double amount, bool x) const
 {
+	using Game::UDMFFeature;
+
 	// Get items to process
 	vector<MapEditor::Item> items;
 	auto& selection_3d = context_.selection();
@@ -1075,15 +1085,17 @@ void Edit3D::changeScale(double amount, bool x) const
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Wall
-		if (items[a].type >= ItemType::WallTop && items[a].type <= ItemType::WallBottom &&
-			(theGameConfiguration->udmfSideScaling() || theGameConfiguration->udmfTextureScaling()))
+		if (items[a].type >= ItemType::WallTop &&
+			items[a].type <= ItemType::WallBottom &&
+			(Game::configuration().featureSupported(UDMFFeature::SideScaling) ||
+			Game::configuration().featureSupported(UDMFFeature::TextureScaling)))
 		{
 			auto side = context_.map().getSide(items[a].index);
 
 			// Build property string (offset[x/y]_[top/mid/bottom])
 			string ofs = "scalex";
 			if (!x) ofs = "scaley";
-			if (theGameConfiguration->udmfTextureScaling())
+			if (Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 			{
 				if (items[a].type == ItemType::WallBottom)
 					ofs += "_bottom";
@@ -1100,7 +1112,7 @@ void Edit3D::changeScale(double amount, bool x) const
 		}
 
 		// Flat (UDMF only)
-		else if (theGameConfiguration->udmfFlatScaling())
+		else if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 		{
 			auto sector = context_.map().getSector(items[a].index);
 
@@ -1272,7 +1284,7 @@ void Edit3D::changeTexture() const
 	tex = MapEditor::browseTexture(tex, type, map);
 	if (!tex.empty())
 	{
-		bool mix = theGameConfiguration->mixTexFlats();
+		bool mix = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
 		MapEditor::Item hl = context_.hilightItem();
 
 		// Begin undo level

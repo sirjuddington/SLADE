@@ -31,7 +31,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
@@ -119,7 +119,7 @@ void MOPGBoolProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getBoolValue()
+		&& udmf_prop->defaultValue().getBoolValue()
 			== GetValue().GetBool()
 	)
 		Hide(true);
@@ -206,7 +206,7 @@ void MOPGIntProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getIntValue()
+		&& udmf_prop->defaultValue().getIntValue()
 			== GetValue().GetInteger()
 	)
 		Hide(true);
@@ -292,7 +292,7 @@ void MOPGFloatProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getFloatValue()
+		&& udmf_prop->defaultValue().getFloatValue()
 			== GetValue().GetDouble()
 	)
 		Hide(true);
@@ -346,11 +346,10 @@ void MOPGStringProperty::setUDMFProp(UDMFProperty* prop)
 	// with the possible values
 	if (prop && prop->hasPossibleValues())
 	{
-		const vector<Property> values = prop->getPossibleValues();
 		wxPGChoices choices = wxPGChoices();
 
-		for (unsigned n = 0; n < values.size(); n++)
-			choices.Add(values[n].getStringValue());
+		for (auto& val : prop->possibleValues())
+			choices.Add(val.getStringValue());
 
 		SetChoices(choices);
 		SetEditor(wxPGEditor_ComboBox);
@@ -403,7 +402,7 @@ void MOPGStringProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getStringValue()
+		&& udmf_prop->defaultValue().getStringValue()
 			== GetValue().GetString()
 	)
 		Hide(true);
@@ -464,12 +463,12 @@ bool MOPGIntWithArgsProperty::hasArgs()
  *******************************************************************/
 void MOPGIntWithArgsProperty::updateArgs(wxPGProperty* args[5])
 {
-	argspec_t argspec = getArgspec();
+	auto argspec = getArgspec();
 	int default_value = 0;
 	unsigned argcount;
 
 	if (udmf_prop)
-		default_value = udmf_prop->getDefaultValue().getIntValue();
+		default_value = udmf_prop->defaultValue().getIntValue();
 
 	if (parent->showAll())
 		argcount = 5;
@@ -490,8 +489,8 @@ void MOPGIntWithArgsProperty::updateArgs(wxPGProperty* args[5])
 		}
 		else
 		{
-			args[a]->SetLabel(argspec.getArg(a).name);
-			args[a]->SetHelpString(argspec.getArg(a).desc);
+			args[a]->SetLabel(argspec[a].name);
+			args[a]->SetHelpString(argspec[a].desc);
 		}
 
 		// Show any args that this special uses, hide the others, but never
@@ -519,7 +518,7 @@ void MOPGIntWithArgsProperty::applyValue()
 		return;
 
 	// Initialize any unset and meaningful args to 0
-	const argspec_t argspec = getArgspec();
+	const auto argspec = getArgspec();
 
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent->getObjects();
@@ -559,11 +558,10 @@ void MOPGIntWithArgsProperty::OnSetValue()
 /* MOPGActionSpecialProperty::getArgspec
  * Returns a little object describing the args for this thing type
  *******************************************************************/
-const argspec_t MOPGActionSpecialProperty::getArgspec()
+const Game::ArgSpec& MOPGActionSpecialProperty::getArgspec()
 {
 	int special = m_value.GetInteger();
-	ActionSpecial* as = theGameConfiguration->actionSpecial(special);
-	return as->getArgspec();
+	return Game::configuration().actionSpecial(special).argSpec();
 }
 
 /* MOPGActionSpecialProperty::ValueToString
@@ -578,10 +576,7 @@ wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags
 	if (special == 0)
 		return "0: None";
 	else
-	{
-		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
-		return S_FMT("%d: %s", special, as->getName());
-	}
+		return S_FMT("%d: %s", special, Game::configuration().actionSpecial(special).name());
 }
 
 /* MOPGActionSpecialProperty::OnEvent
@@ -616,11 +611,9 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 /* MOPGThingTypeProperty::getArgspec
  * Returns a little object describing the args for this thing type
  *******************************************************************/
-const argspec_t MOPGThingTypeProperty::getArgspec()
+const Game::ArgSpec& MOPGThingTypeProperty::getArgspec()
 {
-	int type = m_value.GetInteger();
-	ThingType* tt = theGameConfiguration->thingType(type);
-	return tt->getArgspec();
+	return Game::configuration().thingType(m_value.GetInteger()).argSpec();
 }
 
 /* MOPGThingTypeProperty::ValueToString
@@ -635,9 +628,8 @@ wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) co
 	if (type == 0)
 		return "0: None";
 
-
-	ThingType* tt = theGameConfiguration->thingType(type);
-	return S_FMT("%d: %s", type, tt->getName());
+	auto& tt = Game::configuration().thingType(type);
+	return S_FMT("%d: %s", type, tt.name());
 }
 
 /* MOPGThingTypeProperty::OnEvent
@@ -695,12 +687,12 @@ void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Check flag against first object
-	bool first = theGameConfiguration->lineFlagSet(index, (MapLine*)objects[0]);
+	bool first = Game::configuration().lineFlagSet(index, (MapLine*)objects[0]);
 
 	// Check whether all objects share the same flag setting
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (theGameConfiguration->lineFlagSet(index, (MapLine*)objects[a]) != first)
+		if (Game::configuration().lineFlagSet(index, (MapLine*)objects[a]) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -732,7 +724,7 @@ void MOPGLineFlagProperty::applyValue()
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent->getObjects();
 	for (unsigned a = 0; a < objects.size(); a++)
-		theGameConfiguration->setLineFlag(index, (MapLine*)objects[a], GetValue());
+		Game::configuration().setLineFlag(index, (MapLine*)objects[a], GetValue());
 }
 
 
@@ -764,12 +756,12 @@ void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Check flag against first object
-	bool first = theGameConfiguration->thingFlagSet(index, (MapThing*)objects[0]);
+	bool first = Game::configuration().thingFlagSet(index, (MapThing*)objects[0]);
 
 	// Check whether all objects share the same flag setting
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (theGameConfiguration->thingFlagSet(index, (MapThing*)objects[a]) != first)
+		if (Game::configuration().thingFlagSet(index, (MapThing*)objects[a]) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -801,7 +793,7 @@ void MOPGThingFlagProperty::applyValue()
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent->getObjects();
 	for (unsigned a = 0; a < objects.size(); a++)
-		theGameConfiguration->setThingFlag(index, (MapThing*)objects[a], GetValue());
+		Game::configuration().setThingFlag(index, (MapThing*)objects[a], GetValue());
 }
 
 
@@ -886,7 +878,7 @@ void MOPGAngleProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getIntValue()
+		&& udmf_prop->defaultValue().getIntValue()
 			== GetValue().GetInteger()
 	)
 		Hide(true);
@@ -1112,7 +1104,7 @@ MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wx
 	SetEditor(wxPGEditor_ComboBox);
 
 	// Setup combo box choices
-	wxArrayString labels = theGameConfiguration->allSpacTriggers();
+	wxArrayString labels = Game::configuration().allSpacTriggers();
 	SetChoices(wxPGChoices(labels));
 }
 
@@ -1131,12 +1123,12 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 
 	// Get property of first object
 	int map_format = MapEditor::editContext().mapDesc().format;
-	string first = theGameConfiguration->spacTriggerString((MapLine*)objects[0], map_format);
+	string first = Game::configuration().spacTriggerString((MapLine*)objects[0], map_format);
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (theGameConfiguration->spacTriggerString((MapLine*)objects[a], map_format) != first)
+		if (Game::configuration().spacTriggerString((MapLine*)objects[a], map_format) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -1161,7 +1153,7 @@ void MOPGSPACTriggerProperty::updateVisibility()
 		&& !IsValueUnspecified()
 		&& udmf_prop
 		&& !udmf_prop->showAlways()
-		&& udmf_prop->getDefaultValue().getIntValue()
+		&& udmf_prop->defaultValue().getIntValue()
 			== GetValue().GetInteger()
 	)
 		Hide(true);
@@ -1186,7 +1178,7 @@ void MOPGSPACTriggerProperty::applyValue()
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent->getObjects();
 	for (unsigned a = 0; a < objects.size(); a++)
-		theGameConfiguration->setLineSpacTrigger(GetChoiceSelection(), (MapLine*)objects[a]);
+		Game::configuration().setLineSpacTrigger(GetChoiceSelection(), (MapLine*)objects[a]);
 	//objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
@@ -1329,7 +1321,7 @@ wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, int argFlags
 {
 	int type = value.GetInteger();
 
-	return S_FMT("%d: %s", type, theGameConfiguration->sectorTypeName(type));
+	return S_FMT("%d: %s", type, Game::configuration().sectorTypeName(type));
 }
 
 /* MOPGSectorSpecialProperty::OnEvent

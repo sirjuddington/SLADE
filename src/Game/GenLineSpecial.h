@@ -1,6 +1,4 @@
-
-#ifndef __GEN_LINE_SPECIAL_H__
-#define __GEN_LINE_SPECIAL_H__
+#pragma once
 
 namespace BoomGenLineSpecial
 {
@@ -20,5 +18,3 @@ namespace BoomGenLineSpecial
 	int		getLineTypeProperties(int type, int* props);
 	int		generateSpecial(int type, int* props);
 }
-
-#endif//__GEN_LINE_SPECIAL_H__

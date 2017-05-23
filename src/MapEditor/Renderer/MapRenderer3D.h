@@ -9,7 +9,8 @@
 class ItemSelection;
 class GLTexture;
 class Polygon2D;
-class ThingType;
+
+namespace Game { class ThingType; }
 
 class MapRenderer3D : public Listener
 {
@@ -70,13 +71,13 @@ public:
 	};
 	struct thing_3d_t
 	{
-		uint8_t		flags;
-		ThingType*	type;
-		MapSector*	sector;
-		float		z;
-		float		height;
-		GLTexture*	sprite;
-		long		updated_time;
+		uint8_t					flags;
+		Game::ThingType const*	type;
+		MapSector*				sector;
+		float					z;
+		float					height;
+		GLTexture*				sprite;
+		long					updated_time;
 
 		thing_3d_t()
 		{

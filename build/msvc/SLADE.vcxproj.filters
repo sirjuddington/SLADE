@@ -1431,9 +1431,6 @@
     <ClCompile Include="..\..\src\Game\ActionSpecial.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\GameConfiguration.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Game\GenLineSpecial.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -1441,6 +1438,18 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\UDMFProperty.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Args.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Configuration.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Decorate.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2495,9 +2504,6 @@
     <ClInclude Include="..\..\src\Game\Args.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Game\GameConfiguration.h">
-      <Filter>Game</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Game\GenLineSpecial.h">
       <Filter>Game</Filter>
     </ClInclude>
@@ -2505,6 +2511,15 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Game\UDMFProperty.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Configuration.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Decorate.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>

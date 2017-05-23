@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/ResourceManager.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -150,7 +150,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	SetTitle("Browse Map Textures");
 
 	// Textures
-	if (type == 0 || theGameConfiguration->mixTexFlats())
+	if (type == 0 || Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 	{
 		addGlobalItem(new MapTexBrowserItem("-", 0, 0));
 
@@ -164,7 +164,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	}
 
 	// Flats
-	if (type == 1 || theGameConfiguration->mixTexFlats())
+	if (type == 1 || Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 	{
 		vector<map_texinfo_t>& flats = MapEditor::textureManager().getAllFlatsInfo();
 		for (unsigned a = 0; a < flats.size(); a++)

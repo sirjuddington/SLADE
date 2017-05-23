@@ -1,86 +1,98 @@
-
-#ifndef __THING_TYPE_H__
-#define __THING_TYPE_H__
+#pragma once
 
 #include "Args.h"
 
-enum ThingFlags
-{
-	THING_PATHED	= 1<<0,	// Things that work in paths (ZDoom's interpolation points and patrol points)
-	THING_DRAGON	= 1<<1,	// Dragon makes its own paths, without using special things
-	THING_SCRIPT	= 1<<2,	// Special is actually a script number (like Hexen's Heresiarch)
-	THING_COOPSTART	= 1<<3, // Thing is a numbered player start
-	THING_DMSTART	= 1<<4, // Thing is a free-for-all player start
-	THING_TEAMSTART	= 1<<5, // Thing is a team-game player start
-	THING_OBSOLETE	= 1<<6,	// Thing is flagged as obsolete
-};
-
+class PropertyList;
 class ParseTreeNode;
-class ThingType
+
+namespace Game
 {
-	friend class GameConfiguration;
-private:
-	string	name;
-	string	group;
-	rgba_t	colour;
-	int		radius;
-	int		height;
-	float	scaleX;
-	float	scaleY;
-	bool	angled;
-	bool	hanging;
-	bool	shrink;
-	bool	fullbright;
-	bool	decoration;
-	int		zeth;
-	string	sprite;
-	string	icon;
-	string	translation;
-	string	palette;
-	arg_t	args[5];
-	int		arg_count;
-	bool	decorate;
-	bool	solid;
-	int		nexttype;
-	int		nextargs;
-	int		flags;
-	int		tagged;
+	enum class TagType;
 
-public:
-	ThingType(string name = "Unknown");
-	~ThingType() {}
+	class ThingType
+	{
+	public:
+		enum Flags
+		{
+			FLAG_PATHED = 1 << 0,		// Things that work in paths (ZDoom's interpolation points and patrol points)
+			FLAG_DRAGON = 1 << 1,		// Dragon makes its own paths, without using special things
+			FLAG_SCRIPT = 1 << 2,		// Special is actually a script number (like Hexen's Heresiarch)
+			FLAG_COOPSTART = 1 << 3,	// Thing is a numbered player start
+			FLAG_DMSTART = 1 << 4,		// Thing is a free-for-all player start
+			FLAG_TEAMSTART = 1 << 5,	// Thing is a team-game player start
+			FLAG_OBSOLETE = 1 << 6,		// Thing is flagged as obsolete
+		};
 
-	void	copy(ThingType* copy);
+		ThingType(const string& name = "Unknown", const string& group = "");
+		~ThingType() {}
 
-	string	getName() { return name; }
-	string	getGroup() { return group; }
-	rgba_t	getColour() { return colour; }
-	int		getRadius() { return radius; }
-	int		getHeight() { return height; }
-	float	getScaleX()	{ return scaleX; }
-	float	getScaleY()	{ return scaleY; }
-	bool	isAngled() { return angled; }
-	bool	isHanging() { return hanging; }
-	bool	isFullbright() { return fullbright; }
-	bool	shrinkOnZoom() { return shrink; }
-	bool	isDecoration() { return decoration; }
-	bool	isSolid() { return solid; }
-	int		getZeth() { return zeth; }
-	int		getFlags() { return flags; }
-	int		getNextType() { return nexttype; }
-	int		getNextArgs() { return nextargs; }
-	int		needsTag() { return tagged; }
-	string	getSprite() { return sprite; }
-	string	getIcon() { return icon; }
-	string	getTranslation() { return translation; }
-	string	getPalette() { return palette; }
-	const argspec_t getArgspec() { return argspec_t(args, arg_count); }
-	string	getArgsString(int args[5], string argstr[2]);
-	void	setSprite(string sprite) { this->sprite = sprite; }
+		void	copy(const ThingType& copy);
 
-	void	reset();
-	void	parse(ParseTreeNode* node);
-	string	stringDesc();
-};
+		const string&	name() const { return name_; }
+		const string&	group() const { return group_; }
+		rgba_t			colour() const { return colour_; }
+		int				radius() const { return radius_; }
+		int				height() const { return height_; }
+		float			scaleX() const { return scale_.x; }
+		float			scaleY() const { return scale_.y; }
+		bool			angled() const { return angled_; }
+		bool			hanging() const { return hanging_; }
+		bool			fullbright() const { return fullbright_; }
+		bool			shrinkOnZoom() const { return shrink_; }
+		bool			decoration() const { return decoration_; }
+		bool			solid() const { return solid_; }
+		int				zethIcon() const { return zeth_icon_; }
+		int				flags() const { return flags_; }
+		int				nextType() const { return next_type_; }
+		int				nextArgs() const { return next_args_; }
+		TagType			needsTag() const { return tagged_; }
+		const string&	sprite() const { return sprite_; }
+		const string&	icon() const { return icon_; }
+		const string&	translation() const { return translation_; }
+		const string&	palette() const { return palette_; }
+		const ArgSpec&	argSpec() const { return args_; }
+		int				number() const { return number_; }
+		bool 			decorate() const { return decorate_; }
 
-#endif//__THING_TYPE_H__
+		void	setSprite(string sprite) { this->sprite_ = sprite; }
+
+		bool	defined() const { return number_ >= 0; }
+		void	define(int number, const string& name, const string& group);
+
+		void	reset();
+		void	parse(ParseTreeNode* node);
+		string	stringDesc() const;
+		void	loadProps(PropertyList& props, bool decorate = true);
+
+		static const ThingType&	unknown() { return unknown_; }
+		static void				initGlobal();
+
+	private:
+		string		name_;
+		string		group_;
+		rgba_t		colour_;
+		int			radius_;
+		int			height_;
+		fpoint2_t	scale_;
+		bool		angled_;
+		bool		hanging_;
+		bool		shrink_;
+		bool		fullbright_;
+		bool		decoration_;
+		int			zeth_icon_;
+		string		sprite_;
+		string		icon_;
+		string		translation_;
+		string		palette_;
+		ArgSpec		args_;
+		bool		decorate_;
+		bool		solid_;
+		int			next_type_;
+		int			next_args_;
+		int			flags_;
+		TagType		tagged_;
+		int			number_;
+
+		static ThingType	unknown_;
+	};
+}

@@ -838,7 +838,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\ActionSpecial.cpp" />
-    <ClCompile Include="..\..\src\Game\GameConfiguration.cpp" />
+    <ClCompile Include="..\..\src\Game\Args.cpp" />
+    <ClCompile Include="..\..\src\Game\Configuration.cpp" />
+    <ClCompile Include="..\..\src\Game\Decorate.cpp" />
+    <ClCompile Include="..\..\src\Game\Game.cpp" />
     <ClCompile Include="..\..\src\Game\GenLineSpecial.cpp" />
     <ClCompile Include="..\..\src\Game\ThingType.cpp" />
     <ClCompile Include="..\..\src\Game\UDMFProperty.cpp" />
@@ -1665,7 +1668,9 @@
     <ClInclude Include="..\..\src\External\email\wxMailer.h" />
     <ClInclude Include="..\..\src\Game\ActionSpecial.h" />
     <ClInclude Include="..\..\src\Game\Args.h" />
-    <ClInclude Include="..\..\src\Game\GameConfiguration.h" />
+    <ClInclude Include="..\..\src\Game\Configuration.h" />
+    <ClInclude Include="..\..\src\Game\Decorate.h" />
+    <ClInclude Include="..\..\src\Game\Game.h" />
     <ClInclude Include="..\..\src\Game\GenLineSpecial.h" />
     <ClInclude Include="..\..\src\Game\ThingType.h" />
     <ClInclude Include="..\..\src\Game\UDMFProperty.h" />

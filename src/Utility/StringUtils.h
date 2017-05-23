@@ -1,5 +1,7 @@
 #pragma once
 
+class ArchiveEntry;
+
 namespace StringUtils
 {
 	// Static common strings
@@ -16,4 +18,7 @@ namespace StringUtils
 	static string	ESCAPED_SLASH_BACK = "\\\\";
 
 	string	escapedString(const string& str, bool swap_backslash = false);
+
+	void	processIncludes(string filename, string& out);
+	void	processIncludes(ArchiveEntry* entry, string& out, bool use_res = true);
 }

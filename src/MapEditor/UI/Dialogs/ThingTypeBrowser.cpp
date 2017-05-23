@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Game/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/Drawing.h"
@@ -50,10 +50,10 @@ CVAR(Bool, use_zeth_icons, false, CVAR_SAVE)
 /* ThingBrowserItem::ThingBrowserItem
  * ThingBrowserItem class constructor
  *******************************************************************/
-ThingBrowserItem::ThingBrowserItem(string name, ThingType* type, unsigned index) : BrowserItem(name, index)
+ThingBrowserItem::ThingBrowserItem(string name, const Game::ThingType& type, unsigned index) :
+	BrowserItem(name, index),
+	type{type}
 {
-	// Init variables
-	this->type = type;
 }
 
 /* ThingBrowserItem::~ThingBrowserItem
@@ -69,16 +69,16 @@ ThingBrowserItem::~ThingBrowserItem()
 bool ThingBrowserItem::loadImage()
 {
 	// Get sprite
-	GLTexture* tex = MapEditor::textureManager().getSprite(type->getSprite(), type->getTranslation(), type->getPalette());
-	if (!tex && use_zeth_icons && type->getZeth() >= 0)
+	GLTexture* tex = MapEditor::textureManager().getSprite(type.sprite(), type.translation(), type.palette());
+	if (!tex && use_zeth_icons && type.zethIcon() >= 0)
 	{
 		// Sprite not found, try the Zeth icon
-		tex = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", type->getZeth()));
+		tex = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", type.zethIcon()));
 	}
 	if (!tex)
 	{
 		// Sprite not found, try an icon
-		tex = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type->getIcon()));
+		tex = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type.icon()));
 	}
 	if (!tex)
 	{
@@ -114,9 +114,9 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	sizer_bottom->Add(cb_view_tiles, 0, wxEXPAND|wxRIGHT, 4);
 
 	// Populate tree
-	vector<tt_t> types = theGameConfiguration->allThingTypes();
-	for (unsigned a = 0; a < types.size(); a++)
-		addItem(new ThingBrowserItem(types[a].type->getName(), types[a].type, types[a].number), types[a].type->getGroup());
+	auto& types = Game::configuration().allThingTypes();
+	for (auto& i : types)
+		addItem(new ThingBrowserItem(i.second.name(), i.second, i.first), i.second.group());
 	populateItemTree();
 
 	// Set browser options
@@ -125,7 +125,7 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 
 	// Select initial item if any
 	if (type >= 0)
-		selectItem(theGameConfiguration->thingType(type)->getName());
+		selectItem(Game::configuration().thingType(type).name());
 	else
 		openTree(items_root);	// Otherwise open 'all' category
 

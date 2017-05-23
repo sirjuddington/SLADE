@@ -42,7 +42,7 @@ public:
 	void	onItemActivated(wxDataViewEvent& e);
 };
 
-struct argspec_t;
+namespace Game { struct ArgSpec; }
 class wxFlexGridSizer;
 class ArgsControl;
 class ArgsPanel : public wxScrolled<wxPanel>
@@ -57,7 +57,7 @@ public:
 	ArgsPanel(wxWindow* parent);
 	~ArgsPanel() {}
 
-	void	setup(argspec_t* args, bool udmf);
+	void	setup(const Game::ArgSpec& args, bool udmf);
 	void	setValues(int args[5]);
 	int		getArgValue(int index);
 	void	onSize(wxSizeEvent& event);
