@@ -65,6 +65,8 @@ CVAR(Bool, confirm_exit, true, CVAR_SAVE);
 
 DECLARE_APP(SLADEWxApp)
 
+EXTERN_CVAR(Bool, tabs_condensed)
+
 
 /*******************************************************************
  * MAINWINDOWDROPTARGET CLASS
@@ -189,7 +191,7 @@ void MainWindow::setupLayout()
 
 
 	// -- Editor Area --
-	stc_tabs = new STabCtrl(this, true, true, 32, true);
+	stc_tabs = new STabCtrl(this, true, true, tabs_condensed ? 27 : 31, true);
 
 	// Setup panel info & add panel
 	p_inf.CenterPane();

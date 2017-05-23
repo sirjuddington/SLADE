@@ -51,7 +51,7 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	SetSizer(sizer);
 
 	// Tabs
-	stc_tabs = STabCtrl::createControl(this, -1);
+	stc_tabs = STabCtrl::createControl(this);
 	sizer->Add(stc_tabs, 1, wxEXPAND);
 
 	// General tab

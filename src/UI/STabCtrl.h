@@ -5,6 +5,7 @@
 #include "common.h"
 
 #ifdef WIN32
+class STabCtrl;
 typedef STabCtrl TabControl;
 #else
 typedef wxNotebook TabControl;
@@ -19,7 +20,7 @@ public:
 		wxWindow* parent,
 		bool close_buttons = false,
 		bool window_list = false,
-		int height = 28,
+		int height = -1,
 		bool main_tabs = false
 	);
 	~STabCtrl();
@@ -28,7 +29,7 @@ public:
 							wxWindow* parent,
 							bool close_buttons = false,
 							bool window_list = false,
-							int height = 28,
+							int height = -1,
 							bool main_tabs = false
 						);
 
