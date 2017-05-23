@@ -80,7 +80,7 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 	// Check for basic definition
 	if (node->nChildren() == 0)
 	{
-		name_ = node->getStringValue();
+		name_ = node->stringValue();
 		return;
 	}
 
@@ -92,53 +92,53 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 		// Property type
 		if (S_CMPNOCASE(prop->getName(), "type"))
 		{
-			if (S_CMPNOCASE(prop->getStringValue(), "bool"))
+			if (S_CMPNOCASE(prop->stringValue(), "bool"))
 				type_ = Type::Boolean;
-			else if (S_CMPNOCASE(prop->getStringValue(), "int"))
+			else if (S_CMPNOCASE(prop->stringValue(), "int"))
 				type_ = Type::Int;
-			else if (S_CMPNOCASE(prop->getStringValue(), "float"))
+			else if (S_CMPNOCASE(prop->stringValue(), "float"))
 				type_ = Type::Float;
-			else if (S_CMPNOCASE(prop->getStringValue(), "string"))
+			else if (S_CMPNOCASE(prop->stringValue(), "string"))
 				type_ = Type::String;
-			else if (S_CMPNOCASE(prop->getStringValue(), "colour"))
+			else if (S_CMPNOCASE(prop->stringValue(), "colour"))
 				type_ = Type::Colour;
-			else if (S_CMPNOCASE(prop->getStringValue(), "actionspecial"))
+			else if (S_CMPNOCASE(prop->stringValue(), "actionspecial"))
 				type_ = Type::ActionSpecial;
-			else if (S_CMPNOCASE(prop->getStringValue(), "sectorspecial"))
+			else if (S_CMPNOCASE(prop->stringValue(), "sectorspecial"))
 				type_ = Type::SectorSpecial;
-			else if (S_CMPNOCASE(prop->getStringValue(), "thingtype"))
+			else if (S_CMPNOCASE(prop->stringValue(), "thingtype"))
 				type_ = Type::ThingType;
-			else if (S_CMPNOCASE(prop->getStringValue(), "angle"))
+			else if (S_CMPNOCASE(prop->stringValue(), "angle"))
 				type_ = Type::Angle;
-			else if (S_CMPNOCASE(prop->getStringValue(), "texture_wall"))
+			else if (S_CMPNOCASE(prop->stringValue(), "texture_wall"))
 				type_ = Type::TextureWall;
-			else if (S_CMPNOCASE(prop->getStringValue(), "texture_flat"))
+			else if (S_CMPNOCASE(prop->stringValue(), "texture_flat"))
 				type_ = Type::TextureFlat;
-			else if (S_CMPNOCASE(prop->getStringValue(), "id"))
+			else if (S_CMPNOCASE(prop->stringValue(), "id"))
 				type_ = Type::ID;
 		}
 
 		// Property name
 		else if (S_CMPNOCASE(prop->getName(), "name"))
-			name_ = prop->getStringValue();
+			name_ = prop->stringValue();
 
 		// Default value
 		else if (S_CMPNOCASE(prop->getName(), "default"))
 		{
 			switch (type_)
 			{
-			case Type::Boolean: 			default_value_ = prop->getBoolValue(); break;
-			case Type::Int:				default_value_ = prop->getIntValue(); break;
-			case Type::Float:			default_value_ = prop->getFloatValue(); break;
-			case Type::String:			default_value_ = prop->getStringValue(); break;
-			case Type::ActionSpecial:	default_value_ = prop->getIntValue(); break;
-			case Type::SectorSpecial:	default_value_ = prop->getIntValue(); break;
-			case Type::ThingType:		default_value_ = prop->getIntValue(); break;
-			case Type::Angle:			default_value_ = prop->getIntValue(); break;
-			case Type::TextureWall:		default_value_ = prop->getStringValue(); break;
-			case Type::TextureFlat:		default_value_ = prop->getStringValue(); break;
-			case Type::ID:				default_value_ = prop->getIntValue(); break;
-			default:					default_value_ = prop->getStringValue(); break;
+			case Type::Boolean: 			default_value_ = prop->boolValue(); break;
+			case Type::Int:				default_value_ = prop->intValue(); break;
+			case Type::Float:			default_value_ = prop->floatValue(); break;
+			case Type::String:			default_value_ = prop->stringValue(); break;
+			case Type::ActionSpecial:	default_value_ = prop->intValue(); break;
+			case Type::SectorSpecial:	default_value_ = prop->intValue(); break;
+			case Type::ThingType:		default_value_ = prop->intValue(); break;
+			case Type::Angle:			default_value_ = prop->intValue(); break;
+			case Type::TextureWall:		default_value_ = prop->stringValue(); break;
+			case Type::TextureFlat:		default_value_ = prop->stringValue(); break;
+			case Type::ID:				default_value_ = prop->intValue(); break;
+			default:					default_value_ = prop->stringValue(); break;
 			}
 
 			// Not sure why I have to do this here, but for whatever reason prop->getIntValue() doesn't work
@@ -146,7 +146,7 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 			if (type_ == Type::Colour)
 			{
 				long val;
-				prop->getStringValue().ToLong(&val, 0);
+				prop->stringValue().ToLong(&val, 0);
 				default_value_ = (int)val;
 			}
 
@@ -168,29 +168,29 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 			{
 			case Type::Boolean:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values_.push_back(prop->getBoolValue(b));
+					values_.push_back(prop->boolValue(b));
 				break;
 			case Type::Int:
 			case Type::ActionSpecial:
 			case Type::SectorSpecial:
 			case Type::ThingType:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values_.push_back(prop->getIntValue(b));
+					values_.push_back(prop->intValue(b));
 				break;
 			case Type::Float:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values_.push_back(prop->getFloatValue(b));
+					values_.push_back(prop->floatValue(b));
 				break;
 			default:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values_.push_back(prop->getStringValue(b));
+					values_.push_back(prop->stringValue(b));
 				break;
 			}
 		}
 
 		// Show always
 		else if (S_CMPNOCASE(prop->getName(), "show_always"))
-			show_always_ = prop->getBoolValue();
+			show_always_ = prop->boolValue();
 	}
 }
 

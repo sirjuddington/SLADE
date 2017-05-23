@@ -149,41 +149,41 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 	parser.parseText(mc);
 
 	// Get 'colours' block
-	ParseTreeNode* colours = (ParseTreeNode*)parser.parseTreeRoot()->getChild("colours");
+	auto colours = parser.parseTreeRoot()->getChildPTN("colours");
 	if (colours)
 	{
 		// Read all colour definitions
 		for (unsigned a = 0; a < colours->nChildren(); a++)
 		{
-			ParseTreeNode* def = (ParseTreeNode*)colours->getChild(a);
+			auto def = colours->getChildPTN(a);
 
 			// Read properties
 			for (unsigned b = 0; b < def->nChildren(); b++)
 			{
-				ParseTreeNode* prop = (ParseTreeNode*)def->getChild(b);
+				auto prop = def->getChildPTN(b);
 				cc_col_t& col = cc_colours[def->getName()];
 				col.exists = true;
 
 				// Colour name
 				if (prop->getName() == "name")
-					col.name = prop->getStringValue();
+					col.name = prop->stringValue();
 
 				// Colour group (for config ui)
 				else if (prop->getName() == "group")
-					col.group = prop->getStringValue();
+					col.group = prop->stringValue();
 
 				// Colour
 				else if (prop->getName() == "rgb")
-					col.colour.set(prop->getIntValue(0), prop->getIntValue(1), prop->getIntValue(2));
+					col.colour.set(prop->intValue(0), prop->intValue(1), prop->intValue(2));
 
 				// Alpha
 				else if (prop->getName() == "alpha")
-					col.colour.a = prop->getIntValue();
+					col.colour.a = prop->intValue();
 
 				// Additive
 				else if (prop->getName() == "additive")
 				{
-					if (prop->getBoolValue())
+					if (prop->boolValue())
 						col.colour.blend = 1;
 					else
 						col.colour.blend = 0;
@@ -196,22 +196,22 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 	}
 
 	// Get 'theme' block
-	ParseTreeNode* theme = (ParseTreeNode*)parser.parseTreeRoot()->getChild("theme");
+	auto theme = parser.parseTreeRoot()->getChildPTN("theme");
 	if (theme)
 	{
 		// Read all theme definitions
 		for (unsigned a = 0; a < theme->nChildren(); a++)
 		{
-			ParseTreeNode* prop = (ParseTreeNode*)theme->getChild(a);
+			auto prop = theme->getChildPTN(a);
 
 			if (prop->getName() == "line_hilight_width")
-				line_hilight_width = prop->getFloatValue();
+				line_hilight_width = prop->floatValue();
 
 			else if (prop->getName() == "line_selection_width")
-				line_selection_width = prop->getFloatValue();
+				line_selection_width = prop->floatValue();
 
 			else if (prop->getName() == "flat_alpha")
-				flat_alpha = prop->getFloatValue();
+				flat_alpha = prop->floatValue();
 
 			else
 				LOG_MESSAGE(1, "Warning: unknown theme property \"%s\"", prop->getName());

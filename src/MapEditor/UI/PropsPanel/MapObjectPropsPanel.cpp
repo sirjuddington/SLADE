@@ -544,7 +544,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 
 			// Add flags
 			for (int a = 0; a < Game::configuration().nLineFlags(); a++)
-				addLineFlagProperty(g_flags, Game::configuration().lineFlag(a), S_FMT("flag%u", a), a);
+				addLineFlagProperty(g_flags, Game::configuration().lineFlag(a).name, S_FMT("flag%u", a), a);
 		}
 
 		// --- Sides ---

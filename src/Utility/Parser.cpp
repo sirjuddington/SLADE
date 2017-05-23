@@ -51,10 +51,10 @@ wxRegEx re_float("^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT|wxRE_NO
 /* ParseTreeNode::ParseTreeNode
  * ParseTreeNode class constructor
  *******************************************************************/
-ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveTreeNode* archive_dir) :
+ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveTreeNode* archive_dir_) :
 	STreeNode{ parent },
-	parser{ parser },
-	archive_dir{ archive_dir }
+	parser_{ parser },
+	archive_dir_{ archive_dir_ }
 {
 	allowDup(true);
 }
@@ -66,65 +66,65 @@ ParseTreeNode::~ParseTreeNode()
 {
 }
 
-Property ParseTreeNode::getValue(unsigned index)
+Property ParseTreeNode::value(unsigned index)
 {
 	// Check index
-	if (index >= values.size())
+	if (index >= values_.size())
 		return Property(false);
 
-	return values[index];
+	return values_[index];
 }
 
 /* ParseTreeNode::getStringValue
  * Returns the node's value at [index] as a string. If [index] is
  * out of range, returns an empty string
  *******************************************************************/
-string ParseTreeNode::getStringValue(unsigned index)
+string ParseTreeNode::stringValue(unsigned index)
 {
 	// Check index
-	if (index >= values.size())
+	if (index >= values_.size())
 		return wxEmptyString;
 
-	return values[index].getStringValue();
+	return values_[index].getStringValue();
 }
 
 /* ParseTreeNode::getStringValue
  * Returns the node's value at [index] as an integer. If [index] is
  * out of range, returns 0
  *******************************************************************/
-int ParseTreeNode::getIntValue(unsigned index)
+int ParseTreeNode::intValue(unsigned index)
 {
 	// Check index
-	if (index >= values.size())
+	if (index >= values_.size())
 		return 0;
 
-	return (int)values[index];
+	return (int)values_[index];
 }
 
 /* ParseTreeNode::getStringValue
  * Returns the node's value at [index] as a boolean. If [index] is
  * out of range, returns false
  *******************************************************************/
-bool ParseTreeNode::getBoolValue(unsigned index)
+bool ParseTreeNode::boolValue(unsigned index)
 {
 	// Check index
-	if (index >= values.size())
+	if (index >= values_.size())
 		return false;
 
-	return (bool)values[index];
+	return (bool)values_[index];
 }
 
 /* ParseTreeNode::getStringValue
  * Returns the node's value at [index] as a float. If [index] is
  * out of range, returns 0.0f
  *******************************************************************/
-double ParseTreeNode::getFloatValue(unsigned index)
+double ParseTreeNode::floatValue(unsigned index)
 {
 	// Check index
-	if (index >= values.size())
+	if (index >= values_.size())
 		return 0.0f;
 
-	return (double)values[index];
+	return (double)values_[index];
 }
 
 /* ParseTreeNode::parse
@@ -146,12 +146,12 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 	while (!(S_CMP(token, "}")) && !token.IsEmpty())
 	{
 		// Check for preprocessor stuff
-		if (parser)
+		if (parser_)
 		{
 			// #define
 			if (S_CMPNOCASE(token, "#define"))
 			{
-				parser->define(tz.getToken());
+				parser_->define(tz.getToken());
 				token = tz.getToken();
 				continue;
 			}
@@ -163,7 +163,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 				if (S_CMPNOCASE(token, "#ifndef"))
 					test = false;
 				string define = tz.getToken();
-				if (parser->defined(define) == test)
+				if (parser_->defined(define) == test)
 				{
 					// Continue
 					token = tz.getToken();
@@ -198,20 +198,20 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			if (S_CMPNOCASE(token, "#include"))
 			{
 				// Include entry at the given path if we have an archive dir set
-				if (archive_dir)
+				if (archive_dir_)
 				{
 					// Get entry to include
 					auto inc_path = tz.getToken();
-					auto archive = archive_dir->getArchive();
-					auto inc_entry = archive->entryAtPath(archive_dir->getPath() + inc_path);
+					auto archive = archive_dir_->getArchive();
+					auto inc_entry = archive->entryAtPath(archive_dir_->getPath() + inc_path);
 					if (!inc_entry) // Try absolute path
 						inc_entry = archive->entryAtPath(inc_path);
 
 					if (inc_entry)
 					{
 						// Save the current dir and set it to the included entry's dir
-						auto orig_dir = archive_dir;
-						archive_dir = inc_entry->getParentDir();
+						auto orig_dir = archive_dir_;
+						archive_dir_ = inc_entry->getParentDir();
 
 						// Parse text in the entry
 						Tokenizer inc_tz;
@@ -219,7 +219,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 						bool ok = parse(inc_tz);
 
 						// Reset dir and abort if parsing failed
-						archive_dir = orig_dir;
+						archive_dir_ = orig_dir;
 						if (!ok)
 							return false;
 					}
@@ -282,7 +282,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 
 			// Create item node
 			ParseTreeNode* child = (ParseTreeNode*)addChild(name);
-			child->type = type;
+			child->type_ = type;
 
 			// Check type of assignment list
 			token = tz.getToken();
@@ -335,7 +335,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 					value = token;
 
 				// Add value
-				child->values.push_back(value);
+				child->values_.push_back(value);
 
 				// Check for ,
 				if (S_CMP(tz.peekToken(), ","))
@@ -357,7 +357,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		{
 			// Add child node
 			ParseTreeNode* child = (ParseTreeNode*)addChild(name);
-			child->type = type;
+			child->type_ = type;
 
 			// Skip {
 			tz.skipToken();
@@ -372,7 +372,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		{
 			// Add child node
 			ParseTreeNode* child = (ParseTreeNode*)addChild(name);
-			child->type = type;
+			child->type_ = type;
 
 			// Skip ;
 			tz.skipToken();
@@ -392,10 +392,10 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			{
 				// Add child node
 				ParseTreeNode* child = (ParseTreeNode*)addChild(name);
-				child->type = type;
+				child->type_ = type;
 
 				// Set its inheritance
-				child->inherit = inherit;
+				child->inherit_ = inherit;
 
 				// Parse child node
 				if (!child->parse(tz))

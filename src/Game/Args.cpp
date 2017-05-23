@@ -196,7 +196,7 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 	// Check for simple definition
 	if (node->isLeaf())
 	{
-		string name = node->getStringValue();
+		string name = node->stringValue();
 		string shared_arg_name;
 
 		// Names beginning with a dollar sign are references to predeclared args
@@ -212,10 +212,10 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		else
 		{
 			// Set name
-			name = node->getStringValue();
+			this->name = node->stringValue();
 
 			// Set description (if specified)
-			if (node->nValues() > 1) desc = node->getStringValue(1);
+			if (node->nValues() > 1) desc = node->stringValue(1);
 		}
 	}
 	else
@@ -224,16 +224,16 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 
 		// Name
 		auto val = node->getChildPTN("name");
-		if (val) name = val->getStringValue();
+		if (val) name = val->stringValue();
 
 		// Description
 		val = node->getChildPTN("desc");
-		if (val) desc = val->getStringValue();
+		if (val) desc = val->stringValue();
 
 		// Type
 		val = node->getChildPTN("type");
 		string atype;
-		if (val) atype = val->getStringValue();
+		if (val) atype = val->stringValue();
 		if (S_CMPNOCASE(atype, "yesno"))
 			type = YesNo;
 		else if (S_CMPNOCASE(atype, "noyes"))
@@ -254,14 +254,14 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		if (val)
 		{
 			for (auto cv : val->allChildren())
-				custom_values.push_back({ Parser::node(cv)->getStringValue(), atoi(CHR(cv->getName())) });
+				custom_values.push_back({ Parser::node(cv)->stringValue(), atoi(CHR(cv->getName())) });
 		}
 
 		val = node->getChildPTN("custom_flags");
 		if (val)
 		{
 			for (auto cf : val->allChildren())
-				custom_flags.push_back({ Parser::node(cf)->getStringValue(), atoi(CHR(cf->getName())) });
+				custom_flags.push_back({ Parser::node(cf)->stringValue(), atoi(CHR(cf->getName())) });
 		}
 	}
 }

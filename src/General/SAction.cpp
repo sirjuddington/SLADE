@@ -277,33 +277,33 @@ bool SAction::parse(ParseTreeNode* node)
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto prop = (ParseTreeNode*)node->getChild(a);
+		auto prop = node->getChildPTN(a);
 		string prop_name = prop->getName();
 		
 		// Text
 		if (S_CMPNOCASE(prop_name, "text"))
-			text = prop->getStringValue();
+			text = prop->stringValue();
 
 		// Icon
 		else if (S_CMPNOCASE(prop_name, "icon"))
-			icon = prop->getStringValue();
+			icon = prop->stringValue();
 
 		// Help Text
 		else if (S_CMPNOCASE(prop_name, "help_text"))
-			helptext = prop->getStringValue();
+			helptext = prop->stringValue();
 
 		// Shortcut
 		else if (S_CMPNOCASE(prop_name, "shortcut"))
-			shortcut = prop->getStringValue();
+			shortcut = prop->stringValue();
 
 		// Keybind (shortcut)
 		else if (S_CMPNOCASE(prop_name, "keybind"))
-			shortcut = S_FMT("kb:%s", prop->getStringValue());
+			shortcut = S_FMT("kb:%s", prop->stringValue());
 
 		// Type
 		else if (S_CMPNOCASE(prop_name, "type"))
 		{
-			string lc_type = prop->getStringValue().Lower();
+			string lc_type = prop->stringValue().Lower();
 			if (lc_type == "check")
 				type = Type::Check;
 			else if (lc_type == "radio")
@@ -312,15 +312,15 @@ bool SAction::parse(ParseTreeNode* node)
 
 		// Linked CVar
 		else if (S_CMPNOCASE(prop_name, "linked_cvar"))
-			linked_cvar = prop->getStringValue();
+			linked_cvar = prop->stringValue();
 
 		// Custom wx id
 		else if (S_CMPNOCASE(prop_name, "custom_wx_id"))
-			custom_wxid = prop->getIntValue();
+			custom_wxid = prop->intValue();
 
 		// Reserve ids
 		else if (S_CMPNOCASE(prop_name, "reserve_ids"))
-			reserved_ids = prop->getIntValue();
+			reserved_ids = prop->intValue();
 	}
 
 	// Setup wxWidgets id stuff
@@ -368,10 +368,10 @@ bool SAction::initActions()
 		auto root = parser.parseTreeRoot();
 		for (unsigned a = 0; a < root->nChildren(); a++)
 		{
-			auto node = (ParseTreeNode*)root->getChild(a);
+			auto node = root->getChildPTN(a);
 
 			// Single action
-			if (S_CMPNOCASE(node->getType(), "action"))
+			if (S_CMPNOCASE(node->type(), "action"))
 			{
 				auto action = new SAction(node->getName(), node->getName());
 				if (action->parse(node))
@@ -387,8 +387,8 @@ bool SAction::initActions()
 
 				for (unsigned b = 0; b < node->nChildren(); b++)
 				{
-					auto group_node = (ParseTreeNode*)node->getChild(b);
-					if (S_CMPNOCASE(group_node->getType(), "action"))
+					auto group_node = node->getChildPTN(b);
+					if (S_CMPNOCASE(group_node->type(), "action"))
 					{
 						auto action = new SAction(group_node->getName(), group_node->getName());
 						if (action->parse(group_node))

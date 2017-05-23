@@ -211,7 +211,7 @@ void BaseResourceArchivesPanel::autodetect()
 		wxArrayString paths = wxSplit(doomwadpath, separator);
 		paths.Add(doomwaddir);
 		wxArrayString iwadnames;
-		ParseTreeNode* list = (ParseTreeNode*)p.parseTreeRoot()->getChild("iwads");
+		auto list = p.parseTreeRoot()->getChildPTN("iwads");
 		for (size_t i = 0; i < list->nChildren(); ++i)
 			iwadnames.Add(list->getChild(i)->getName());
 
@@ -261,13 +261,13 @@ void BaseResourceArchivesPanel::autodetect()
 #endif
 	if (QueryPathKey(wxRegKey::HKLM, gogregistrypath, "DefaultPackPath", path))
 	{
-		ParseTreeNode* list = (ParseTreeNode*)p.parseTreeRoot()->getChild("gog");
+		auto list = p.parseTreeRoot()->getChildPTN("gog");
 		for (size_t i = 0; i < list->nChildren(); ++i)
 		{
-			ParseTreeNode* child = (ParseTreeNode*)list->getChild(i);
-			gamepath = gogregistrypath + ((ParseTreeNode*)child->getChild("id"))->getStringValue();
+			auto child =list->getChildPTN(i);
+			gamepath = gogregistrypath + (child->getChildPTN("id"))->stringValue();
 			if (QueryPathKey(wxRegKey::HKLM, gamepath, "Path", path))
-				paths.Add(path + ((ParseTreeNode*)child->getChild("path"))->getStringValue());
+				paths.Add(path + (child->getChildPTN("path"))->stringValue());
 		}
 
 	}
@@ -280,9 +280,9 @@ void BaseResourceArchivesPanel::autodetect()
 		QueryPathKey(wxRegKey::HKLM, "Software\\Valve\\Steam", "InstallPath", gamepath))
 	{
 		gamepath += "/SteamApps/common/";
-		ParseTreeNode* list = (ParseTreeNode*)p.parseTreeRoot()->getChild("steam");
+		auto list = p.parseTreeRoot()->getChildPTN("steam");
 		for (size_t i = 0; i < list->nChildren(); ++i)
-			paths.Add(gamepath + ((ParseTreeNode*)list->getChild(i))->getStringValue());
+			paths.Add(gamepath + (list->getChildPTN(i))->stringValue());
 	}
 #else
 	// TODO: Querying Steam registry on Linux and OSX. This involves parsing Steam's config.vdf file, which is found in

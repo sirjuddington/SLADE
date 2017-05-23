@@ -183,7 +183,7 @@ void ThingType::parse(ParseTreeNode* node)
 
 		// Name
 		if (S_CMPNOCASE(name, "name"))
-			name_ = child->getStringValue();
+			name_ = child->stringValue();
 
 		// Args
 		else if (S_CMPNOCASE(name, "arg1"))
@@ -199,62 +199,62 @@ void ThingType::parse(ParseTreeNode* node)
 
 		// Sprite
 		else if (S_CMPNOCASE(name, "sprite"))
-			sprite_ = child->getStringValue();
+			sprite_ = child->stringValue();
 
 		// Icon
 		else if (S_CMPNOCASE(name, "icon"))
-			icon_ = child->getStringValue();
+			icon_ = child->stringValue();
 
 		// Radius
 		else if (S_CMPNOCASE(name, "radius"))
-			radius_ = child->getIntValue();
+			radius_ = child->intValue();
 
 		// Height
 		else if (S_CMPNOCASE(name, "height"))
-			height_ = child->getIntValue();
+			height_ = child->intValue();
 
 		// Scale
 		else if (S_CMPNOCASE(name, "scale"))
 		{
-			float s = child->getFloatValue();
+			float s = child->floatValue();
 			scale_ = { s, s };
 		}
 
 		// ScaleX
 		else if (S_CMPNOCASE(name, "scalex"))
-			scale_.x = child->getFloatValue();
+			scale_.x = child->floatValue();
 
 		// ScaleY
 		else if (S_CMPNOCASE(name, "scaley"))
-			scale_.y = child->getFloatValue();
+			scale_.y = child->floatValue();
 
 		// Colour
 		else if (S_CMPNOCASE(name, "colour"))
-			colour_.set(child->getIntValue(0), child->getIntValue(1), child->getIntValue(2));
+			colour_.set(child->intValue(0), child->intValue(1), child->intValue(2));
 
 		// Show angle
 		else if (S_CMPNOCASE(name, "angle"))
-			angled_ = child->getBoolValue();
+			angled_ = child->boolValue();
 
 		// Hanging object
 		else if (S_CMPNOCASE(name, "hanging"))
-			hanging_ = child->getBoolValue();
+			hanging_ = child->boolValue();
 
 		// Shrink on zoom
 		else if (S_CMPNOCASE(name, "shrink"))
-			shrink_ = child->getBoolValue();
+			shrink_ = child->boolValue();
 
 		// Fullbright
 		else if (S_CMPNOCASE(name, "fullbright"))
-			fullbright_ = child->getBoolValue();
+			fullbright_ = child->boolValue();
 
 		// Decoration
 		else if (S_CMPNOCASE(name, "decoration"))
-			decoration_ = child->getBoolValue();
+			decoration_ = child->boolValue();
 
 		// Solid
 		else if (S_CMPNOCASE(name, "solid"))
-			solid_ = child->getBoolValue();
+			solid_ = child->boolValue();
 
 		// Translation
 		else if (S_CMPNOCASE(name, "translation"))
@@ -263,7 +263,7 @@ void ThingType::parse(ParseTreeNode* node)
 			size_t v = 0;
 			do
 			{
-				translation_ += child->getStringValue(v++);
+				translation_ += child->stringValue(v++);
 			}
 			while ((v < child->nValues()) && ((translation_ += "\", \""), true));
 			translation_ += "\"";
@@ -271,21 +271,21 @@ void ThingType::parse(ParseTreeNode* node)
 
 		// Palette override
 		else if (S_CMPNOCASE(name, "palette"))
-			palette_ = child->getStringValue();
+			palette_ = child->stringValue();
 
 		// Zeth icon
 		else if (S_CMPNOCASE(name, "zeth"))
-			zeth_icon_ = child->getIntValue();
+			zeth_icon_ = child->intValue();
 
 		// Pathed things stuff
 		else if (S_CMPNOCASE(name, "nexttype"))
 		{
-			next_type_ = child->getIntValue();
+			next_type_ = child->intValue();
 			flags_ |= FLAG_PATHED;
 		}
 		else if (S_CMPNOCASE(name, "nextargs"))
 		{
-			next_args_ = child->getIntValue();
+			next_args_ = child->intValue();
 			flags_ |= FLAG_PATHED;
 		}
 
@@ -318,10 +318,10 @@ void ThingType::parse(ParseTreeNode* node)
 			if (child->isLeaf())
 			{
 				// Set name
-				args_[arg].name = child->getStringValue();
+				args_[arg].name = child->stringValue();
 
 				// Set description (if specified)
-				if (child->nValues() > 1) args_[arg].desc = child->getStringValue(1);
+				if (child->nValues() > 1) args_[arg].desc = child->stringValue(1);
 			}
 			else
 			{
@@ -329,16 +329,16 @@ void ThingType::parse(ParseTreeNode* node)
 
 				// Name
 				auto val = child->getChildPTN("name");
-				if (val) args_[arg].name = val->getStringValue();
+				if (val) args_[arg].name = val->stringValue();
 
 				// Description
 				val = child->getChildPTN("desc");
-				if (val) args_[arg].desc = val->getStringValue();
+				if (val) args_[arg].desc = val->stringValue();
 
 				// Type
 				val = child->getChildPTN("type");
 				string atype;
-				if (val) atype = val->getStringValue();
+				if (val) atype = val->stringValue();
 				if (S_CMPNOCASE(atype, "yesno"))
 					args_[arg].type = Arg::Type::YesNo;
 				else if (S_CMPNOCASE(atype, "noyes"))

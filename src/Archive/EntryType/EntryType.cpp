@@ -388,7 +388,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 	p.parseText(mc);
 
 	// Get entry_types tree
-	ParseTreeNode* pt_etypes = (ParseTreeNode*)(p.parseTreeRoot()->getChild("entry_types"));
+	auto pt_etypes = p.parseTreeRoot()->getChildPTN("entry_types");
 
 	// Check it exists
 	if (!pt_etypes)
@@ -398,44 +398,44 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 	for (unsigned a = 0; a < pt_etypes->nChildren(); a++)
 	{
 		// Get child as ParseTreeNode
-		ParseTreeNode* typenode = (ParseTreeNode*)pt_etypes->getChild(a);
+		auto typenode = pt_etypes->getChildPTN(a);
 
 		// Create new entry type
 		EntryType* ntype = new EntryType(typenode->getName().Lower());
 
 		// Copy from existing type if inherited
-		if (!typenode->getInherit().IsEmpty())
+		if (!typenode->inherit().IsEmpty())
 		{
-			EntryType* parent_type = EntryType::getType(typenode->getInherit().Lower());
+			EntryType* parent_type = EntryType::getType(typenode->inherit().Lower());
 
 			if (parent_type != EntryType::unknownType())
 				parent_type->copyToType(ntype);
 			else
-				LOG_MESSAGE(1, "Warning: Entry type %s inherits from unknown type %s", ntype->getId(), typenode->getInherit());
+				LOG_MESSAGE(1, "Warning: Entry type %s inherits from unknown type %s", ntype->getId(), typenode->inherit());
 		}
 
 		// Go through all parsed fields
 		for (unsigned b = 0; b < typenode->nChildren(); b++)
 		{
 			// Get child as ParseTreeNode
-			ParseTreeNode* fieldnode = (ParseTreeNode*)typenode->getChild(b);
+			auto fieldnode = typenode->getChildPTN(b);
 
 			// Process it
 			if (S_CMPNOCASE(fieldnode->getName(), "name"))  				// Name field
 			{
-				ntype->name = fieldnode->getStringValue();
+				ntype->name = fieldnode->stringValue();
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "detectable"))  		// Detectable field
 			{
-				ntype->detectable = fieldnode->getBoolValue();
+				ntype->detectable = fieldnode->boolValue();
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "export_ext"))  		// Export Extension field
 			{
-				ntype->extension = fieldnode->getStringValue();
+				ntype->extension = fieldnode->stringValue();
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "format"))  			// Format field
 			{
-				string format_string = fieldnode->getStringValue();
+				string format_string = fieldnode->stringValue();
 				ntype->format = EntryDataFormat::getFormat(format_string);
 
 				// Warn if undefined format
@@ -444,68 +444,68 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "icon"))  			// Icon field
 			{
-				ntype->icon = fieldnode->getStringValue();
+				ntype->icon = fieldnode->stringValue();
 				if (ntype->icon.StartsWith("e_"))
 					ntype->icon = ntype->icon.Mid(2);
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "editor"))  			// Editor field (to be removed)
 			{
-				ntype->editor = fieldnode->getStringValue();
+				ntype->editor = fieldnode->stringValue();
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "section"))  		// Section field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->section.push_back(fieldnode->getStringValue(v).Lower());
+					ntype->section.push_back(fieldnode->stringValue(v).Lower());
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "match_ext"))  		// Match Extension field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_extension.push_back(fieldnode->getStringValue(v).Upper());
+					ntype->match_extension.push_back(fieldnode->stringValue(v).Upper());
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "match_name"))  		// Match Name field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_name.push_back(fieldnode->getStringValue(v).Upper());
+					ntype->match_name.push_back(fieldnode->stringValue(v).Upper());
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "match_extorname"))  // Match name or extension
 			{
-				ntype->matchextorname = fieldnode->getBoolValue();
+				ntype->matchextorname = fieldnode->boolValue();
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "size"))  			// Size field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_size.push_back(fieldnode->getIntValue(v));
+					ntype->match_size.push_back(fieldnode->intValue(v));
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "min_size"))  		// Min Size field
 			{
-				ntype->size_limit[0] = fieldnode->getIntValue();
+				ntype->size_limit[0] = fieldnode->intValue();
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "max_size"))  		// Max Size field
 			{
-				ntype->size_limit[1] = fieldnode->getIntValue();
+				ntype->size_limit[1] = fieldnode->intValue();
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "size_multiple"))  	// Size Multiple field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->size_multiple.push_back(fieldnode->getIntValue(v));
+					ntype->size_multiple.push_back(fieldnode->intValue(v));
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "reliability"))  	// Reliability field
 			{
-				ntype->reliability = fieldnode->getIntValue();
+				ntype->reliability = fieldnode->intValue();
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "match_archive"))  	// Archive field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_archive.push_back(fieldnode->getStringValue(v).Lower());
+					ntype->match_archive.push_back(fieldnode->stringValue(v).Lower());
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "extra"))  			// Extra properties
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->extra.addFlag(fieldnode->getStringValue(v));
+					ntype->extra.addFlag(fieldnode->stringValue(v));
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "category"))  		// Type category
 			{
-				ntype->category = fieldnode->getStringValue();
+				ntype->category = fieldnode->stringValue();
 
 				// Add to category list if needed
 				bool exists = false;
@@ -520,18 +520,18 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 				if (!exists) entry_categories.push_back(ntype->category);
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "image_format"))		// Image format hint
-				ntype->extra["image_format"] = fieldnode->getStringValue(0);
+				ntype->extra["image_format"] = fieldnode->stringValue(0);
 			else if (S_CMPNOCASE(fieldnode->getName(), "colour"))  			// Colour
 			{
 				if (fieldnode->nValues() >= 3)
-					ntype->colour = rgba_t(fieldnode->getIntValue(0), fieldnode->getIntValue(1), fieldnode->getIntValue(2));
+					ntype->colour = rgba_t(fieldnode->intValue(0), fieldnode->intValue(1), fieldnode->intValue(2));
 				else
 					LOG_MESSAGE(1, "Not enough colour components defined for entry type %s", ntype->getId());
 			}
 			else
 			{
 				// Unhandled properties can go into 'extra', only their first value is kept
-				ntype->extra[fieldnode->getName()] = fieldnode->getStringValue();
+				ntype->extra[fieldnode->getName()] = fieldnode->stringValue();
 			}
 		}
 

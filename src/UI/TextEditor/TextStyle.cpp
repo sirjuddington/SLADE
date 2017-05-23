@@ -103,42 +103,42 @@ bool TextStyle::parse(ParseTreeNode* node)
 	// Go through info nodes
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		ParseTreeNode* child = (ParseTreeNode*)node->getChild(a);
+		auto child = node->getChildPTN(a);
 		string name = child->getName();
 
 		// Font name
 		if (S_CMPNOCASE(name, "font"))
-			font = child->getStringValue();
+			font = child->stringValue();
 
 		// Font size
 		if (S_CMPNOCASE(name, "size"))
-			size = child->getIntValue();
+			size = child->intValue();
 
 		// Foreground colour
 		if (S_CMPNOCASE(name, "foreground"))
 		{
-			foreground.set(child->getIntValue(0), child->getIntValue(1), child->getIntValue(2), 255);
+			foreground.set(child->intValue(0), child->intValue(1), child->intValue(2), 255);
 			fg_defined = true;
 		}
 
 		// Background colour
 		if (S_CMPNOCASE(name, "background"))
 		{
-			background.set(child->getIntValue(0), child->getIntValue(1), child->getIntValue(2), 255);
+			background.set(child->intValue(0), child->intValue(1), child->intValue(2), 255);
 			bg_defined = true;
 		}
 
 		// Bold
 		if (S_CMPNOCASE(name, "bold"))
-			bold = (int)child->getBoolValue();
+			bold = (int)child->boolValue();
 
 		// Italic
 		if (S_CMPNOCASE(name, "italic"))
-			italic = (int)child->getBoolValue();
+			italic = (int)child->boolValue();
 
 		// Underlined
 		if (S_CMPNOCASE(name, "underlined"))
-			underlined = (int)child->getBoolValue();
+			underlined = (int)child->boolValue();
 	}
 
 	return true;
@@ -342,16 +342,16 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 		return false;
 
 	// Get name
-	ParseTreeNode* node = (ParseTreeNode*)root->getChild("name");
+	auto node = root->getChildPTN("name");
 	if (node)
-		name = node->getStringValue();
+		name = node->stringValue();
 
 	// Parse styles
-	ts_default.parse((ParseTreeNode*)root->getChild("default"));			// Default style
-	ts_selection.parse((ParseTreeNode*)root->getChild("selection"));		// Selection style
-	for (unsigned a = 0; a < styles.size(); a++)							// Other styles
+	ts_default.parse(root->getChildPTN("default"));			// Default style
+	ts_selection.parse(root->getChildPTN("selection"));		// Selection style
+	for (unsigned a = 0; a < styles.size(); a++)			// Other styles
 	{
-		if (ParseTreeNode* node = (ParseTreeNode*)root->getChild(styles[a]->name))
+		if (ParseTreeNode* node = root->getChildPTN(styles[a]->name))
 			styles[a]->parse(node);
 		else
 		{
@@ -632,7 +632,7 @@ void StyleSet::initCurrent()
 		root.parse(tz);
 
 		// Find definition
-		ParseTreeNode* node = (ParseTreeNode*)root.getChild("styleset");
+		auto node = root.getChildPTN("styleset");
 		if (node)
 		{
 			// If found, load it into the current set

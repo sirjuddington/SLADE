@@ -73,40 +73,40 @@ void NodeBuilders::init()
 	parser.parseText(config->getMCData(), "nodebuilders.cfg");
 
 	// Get 'nodebuilders' block
-	ParseTreeNode* root = (ParseTreeNode*)parser.parseTreeRoot()->getChild("nodebuilders");
+	auto root = parser.parseTreeRoot()->getChildPTN("nodebuilders");
 	if (!root)
 		return;
 
 	// Go through child block
 	for (unsigned a = 0; a < root->nChildren(); a++)
 	{
-		ParseTreeNode* n_builder = (ParseTreeNode*)root->getChild(a);
+		auto n_builder = root->getChildPTN(a);
 
 		// Parse builder block
 		builder_t builder;
 		builder.id = n_builder->getName();
 		for (unsigned b = 0; b < n_builder->nChildren(); b++)
 		{
-			ParseTreeNode* node = (ParseTreeNode*)n_builder->getChild(b);
+			auto node = n_builder->getChildPTN(b);
 
 			// Option
-			if (S_CMPNOCASE(node->getType(), "option"))
+			if (S_CMPNOCASE(node->type(), "option"))
 			{
 				builder.options.push_back(node->getName());
-				builder.option_desc.push_back(node->getStringValue());
+				builder.option_desc.push_back(node->stringValue());
 			}
 
 			// Builder name
 			else if (S_CMPNOCASE(node->getName(), "name"))
-				builder.name = node->getStringValue();
+				builder.name = node->stringValue();
 
 			// Builder command
 			else if (S_CMPNOCASE(node->getName(), "command"))
-				builder.command = node->getStringValue();
+				builder.command = node->stringValue();
 
 			// Builder executable
 			else if (S_CMPNOCASE(node->getName(), "executable"))
-				builder.exe = node->getStringValue();
+				builder.exe = node->stringValue();
 		}
 		builders.push_back(builder);
 	}

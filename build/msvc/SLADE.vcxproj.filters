@@ -1452,6 +1452,12 @@
     <ClCompile Include="..\..\src\Game\Decorate.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Game\SpecialPreset.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\SpecialPresetDialog.cpp">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2521,6 +2527,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Game\Decorate.h">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\SpecialPreset.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\SpecialPresetDialog.h">
+      <Filter>Map Editor\UI\Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
