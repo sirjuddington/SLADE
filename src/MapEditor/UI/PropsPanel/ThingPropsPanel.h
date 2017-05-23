@@ -5,6 +5,7 @@
 #include "common.h"
 #include "PropsPanelBase.h"
 #include "UI/Canvas/OGLCanvas.h"
+#include "UI/STabCtrl.h"
 
 class GLTexture;
 namespace Game { class ThingType; }
@@ -69,14 +70,13 @@ public:
 	void	onAngleTextChanged(wxCommandEvent& e);
 };
 
-class STabCtrl;
 class MapObjectPropsPanel;
 class ArgsPanel;
 class ActionSpecialPanel;
 class ThingPropsPanel : public PropsPanelBase
 {
 private:
-	STabCtrl*				stc_tabs;
+	TabControl*				stc_tabs;
 	MapObjectPropsPanel*	mopp_other_props;
 	vector<wxCheckBox*>		cb_flags;
 	vector<wxCheckBox*>		cb_flags_extra;

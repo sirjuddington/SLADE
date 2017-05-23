@@ -34,12 +34,10 @@
 #include "Game/Configuration.h"
 #include "LinePropsPanel.h"
 #include "MapEditor/MapEditContext.h"
-#include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
 #include "MapObjectPropsPanel.h"
 #include "SidePropsPanel.h"
 #include "UI/NumberTextCtrl.h"
-#include "UI/STabCtrl.h"
 
 
 // ----------------------------------------------------------------------------
@@ -60,7 +58,7 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	SetSizer(sizer);
 
 	// Tabs
-	stc_tabs = new STabCtrl(this, false);
+	stc_tabs = STabCtrl::createControl(this);
 	sizer->Add(stc_tabs, 1, wxEXPAND);
 
 	// General tab

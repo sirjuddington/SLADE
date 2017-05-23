@@ -48,6 +48,7 @@ EXTERN_CVAR(Int, tab_style)
 EXTERN_CVAR(Bool, am_file_browser_tab)
 EXTERN_CVAR(String, iconset_general)
 EXTERN_CVAR(String, iconset_entry_list)
+EXTERN_CVAR(Bool, tabs_condensed)
 
 
 /*******************************************************************
@@ -68,7 +69,7 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	wxStaticBoxSizer* fsizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(fsizer, 1, wxEXPAND|wxALL, 4);
 
-	STabCtrl* stc_tabs = new STabCtrl(this);
+	TabControl* stc_tabs = STabCtrl::createControl(this);
 	fsizer->Add(stc_tabs, 1, wxEXPAND | wxALL, 4);
 
 	// --- General ---
@@ -91,6 +92,10 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	// Monospace list font
 	cb_list_monospace = new wxCheckBox(panel, -1, "Use monospaced font for lists");
 	gb_sizer->Add(cb_list_monospace, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
+
+	// Condensed Tabs
+	cb_condensed_tabs = new wxCheckBox(panel, -1, "Condensed tabs *");
+	gb_sizer->Add(cb_condensed_tabs, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Toolbar size
 	string sizes[] = { "Small (16px)", "Medium (24px)", "Large (32px)" };
@@ -176,6 +181,7 @@ void InterfacePrefsPanel::init()
 	cb_context_submenus->SetValue(context_submenus);
 	cb_elist_bgcol->SetValue(elist_type_bgcol);
 	cb_file_browser->SetValue(am_file_browser_tab);
+	cb_condensed_tabs->SetValue(tabs_condensed);
 
 	if (toolbar_size <= 16)
 		choice_toolbar_size->Select(0);
@@ -218,6 +224,7 @@ void InterfacePrefsPanel::applyPreferences()
 	context_submenus = cb_context_submenus->GetValue();
 	elist_type_bgcol = cb_elist_bgcol->GetValue();
 	am_file_browser_tab = cb_file_browser->GetValue();
+	tabs_condensed = cb_condensed_tabs->GetValue();
 
 	if (choice_toolbar_size->GetSelection() == 0)
 		toolbar_size = 16;

@@ -3,8 +3,8 @@
 #define __LINE_PROPS_PANEL_H__
 
 #include "PropsPanelBase.h"
+#include "UI/STabCtrl.h"
 
-class STabCtrl;
 class MapObject;
 class MapObjectPropsPanel;
 class ActionSpecialPanel;
@@ -23,7 +23,7 @@ public:
 	void		applyChanges() override;
 
 private:
-	STabCtrl*				stc_tabs;
+	TabControl*				stc_tabs;
 	MapObjectPropsPanel*	mopp_all_props;
 	wxCheckBox*				cb_override_special;
 	ActionSpecialPanel*		panel_special;

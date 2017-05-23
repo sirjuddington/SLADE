@@ -37,6 +37,10 @@ public:
 	ParseTreeNode*	getChildPTN(const string& name) { return static_cast<ParseTreeNode*>(getChild(name)); }
 	ParseTreeNode*	getChildPTN(unsigned index) { return static_cast<ParseTreeNode*>(getChild(index)); }
 
+	// To avoid need for casts everywhere
+	ParseTreeNode*	getChildPTN(const string& name) { return static_cast<ParseTreeNode*>(getChild(name)); }
+	ParseTreeNode*	getChildPTN(unsigned index) { return static_cast<ParseTreeNode*>(getChild(index)); }
+
 	bool	parse(Tokenizer& tz);
 
 	typedef std::unique_ptr<ParseTreeNode> UPtr;
