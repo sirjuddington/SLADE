@@ -595,6 +595,8 @@ void MapPreviewCanvas::clearMap()
 	verts.clear();
 	lines.clear();
 	things.clear();
+	n_sides = 0;
+	n_sectors = 0;
 }
 
 /* MapPreviewCanvas::showMap
