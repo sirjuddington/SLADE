@@ -12,6 +12,11 @@ namespace Game
 		int				args[5] = { 0, 0, 0, 0, 0 };
 		vector<string>	flags;
 
-		void	parse(ParseTreeNode* node);
+		void			parse(ParseTreeNode* node);
+		ParseTreeNode*	write(ParseTreeNode* parent);
 	};
+
+	const vector<SpecialPreset>&	customSpecialPresets();
+	bool							loadCustomSpecialPresets();
+	bool							saveCustomSpecialPresets();
 }

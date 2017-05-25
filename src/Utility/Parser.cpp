@@ -1,71 +1,93 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    Parser.cpp
- * Description: Parser/Parse tree classes. Parses formatted text
- *              data and generates a tree of ParseTreeNodes containing
- *              the parsed data. Currently supports SLADE/DB/UDMF
- *              formatting style.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Parser.cpp
+// Description: Parser/Parse tree classes. Parses formatted text data and
+//              generates a tree of ParseTreeNodes containing the parsed data.
+//              Currently supports SLADE/DB/UDMF formatting style.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive/Archive.h"
 #include "Parser.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 wxRegEx re_int1("^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT|wxRE_NOSUB);
 wxRegEx re_int2("^0[0-9]+$", wxRE_DEFAULT|wxRE_NOSUB);
 wxRegEx re_int3("^0x[0-9A-Fa-f]+$", wxRE_DEFAULT|wxRE_NOSUB);
 wxRegEx re_float("^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT|wxRE_NOSUB);
 
 
-/*******************************************************************
- * PARSETREENODE CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// ParseTreeNode Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* ParseTreeNode::ParseTreeNode
- * ParseTreeNode class constructor
- *******************************************************************/
-ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveTreeNode* archive_dir_) :
+
+// ----------------------------------------------------------------------------
+// ParseTreeNode::ParseTreeNode
+//
+// ParseTreeNode class constructor
+// ----------------------------------------------------------------------------
+ParseTreeNode::ParseTreeNode(
+	ParseTreeNode* parent,
+	Parser* parser,
+	ArchiveTreeNode* archive_dir,
+	string type
+) :
 	STreeNode{ parent },
+	type_{ type },
 	parser_{ parser },
-	archive_dir_{ archive_dir_ }
+	archive_dir_{ archive_dir }
 {
 	allowDup(true);
 }
 
-/* ParseTreeNode::~ParseTreeNode
- * ParseTreeNode class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ParseTreeNode::~ParseTreeNode
+//
+// ParseTreeNode class destructor
+// ----------------------------------------------------------------------------
 ParseTreeNode::~ParseTreeNode()
 {
 }
 
+// ----------------------------------------------------------------------------
+// ParseTreeNode::value
+//
+// Returns the node's value at [index] as a Property. If [index] is out of
+// range, returns a false boolean Property
+// ----------------------------------------------------------------------------
 Property ParseTreeNode::value(unsigned index)
 {
 	// Check index
@@ -75,10 +97,12 @@ Property ParseTreeNode::value(unsigned index)
 	return values_[index];
 }
 
-/* ParseTreeNode::getStringValue
- * Returns the node's value at [index] as a string. If [index] is
- * out of range, returns an empty string
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ParseTreeNode::stringValue
+//
+// Returns the node's value at [index] as a string. If [index] is out of range,
+// returns an empty string
+// ----------------------------------------------------------------------------
 string ParseTreeNode::stringValue(unsigned index)
 {
 	// Check index
@@ -88,10 +112,12 @@ string ParseTreeNode::stringValue(unsigned index)
 	return values_[index].getStringValue();
 }
 
-/* ParseTreeNode::getStringValue
- * Returns the node's value at [index] as an integer. If [index] is
- * out of range, returns 0
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ParseTreeNode::intValue
+//
+// Returns the node's value at [index] as an integer. If [index] is out of
+// range, returns 0
+// ----------------------------------------------------------------------------
 int ParseTreeNode::intValue(unsigned index)
 {
 	// Check index
@@ -101,10 +127,12 @@ int ParseTreeNode::intValue(unsigned index)
 	return (int)values_[index];
 }
 
-/* ParseTreeNode::getStringValue
- * Returns the node's value at [index] as a boolean. If [index] is
- * out of range, returns false
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ParseTreeNode::boolValue
+//
+// Returns the node's value at [index] as a boolean. If [index] is out of
+// range, returns false
+// ----------------------------------------------------------------------------
 bool ParseTreeNode::boolValue(unsigned index)
 {
 	// Check index
@@ -114,10 +142,12 @@ bool ParseTreeNode::boolValue(unsigned index)
 	return (bool)values_[index];
 }
 
-/* ParseTreeNode::getStringValue
- * Returns the node's value at [index] as a float. If [index] is
- * out of range, returns 0.0f
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ParseTreeNode::floatValue
+//
+// Returns the node's value at [index] as a float. If [index] is out of range,
+// returns 0.0f
+// ----------------------------------------------------------------------------
 double ParseTreeNode::floatValue(unsigned index)
 {
 	// Check index
@@ -127,16 +157,31 @@ double ParseTreeNode::floatValue(unsigned index)
 	return (double)values_[index];
 }
 
-/* ParseTreeNode::parse
- * Parses formatted text data. Current valid formatting is:
- * (type) child = value;
- * (type) child = value1, value2, ...;
- * (type) child = { value1, value2, ... }
- * (type) child { grandchild = value; etc... }
- * (type) child : inherited { ... }
- * All values are read as strings, but can be retrieved as string,
- * int, bool or float.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ParseTreeNode::addChildPTN
+//
+// Adds a child ParseTreeNode of [name] and [type]
+// ----------------------------------------------------------------------------
+ParseTreeNode* ParseTreeNode::addChildPTN(const string& name, const string& type)
+{
+	auto node = static_cast<ParseTreeNode*>(addChild(name));
+	node->type_ = type;
+	return node;
+}
+
+// ----------------------------------------------------------------------------
+// ParseTreeNode::parse
+//
+// Parses formatted text data. Current valid formatting is:
+// (type) child = value;
+// (type) child = value1, value2, ...;
+// (type) child = { value1, value2, ... }
+// (type) child { grandchild = value; etc... }
+// (type) child : inherited { ... }
+//
+// All values are read as strings, but can be retrieved as string, int, bool
+// or float.
+// ----------------------------------------------------------------------------
 bool ParseTreeNode::parse(Tokenizer& tz)
 {
 	// Get first token
@@ -244,7 +289,13 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// If it's a special character (ie not a valid name), parsing fails
 		if (tz.isSpecialCharacter(token.at(0)))
 		{
-			LOG_MESSAGE(1, "Parsing error: Unexpected special character '%s' in %s (line %d)", token, tz.getName(), tz.lineNo());
+			LOG_MESSAGE(
+				1,
+				"Parsing error: Unexpected special character '%s' in %s (line %d)",
+				token,
+				tz.getName(),
+				tz.lineNo()
+			);
 			return false;
 		}
 
@@ -252,7 +303,11 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		string name = token;
 		if (name.IsEmpty())
 		{
-			LOG_MESSAGE(1, "Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
+			LOG_MESSAGE(1,
+				"Parsing error: Unexpected empty string in %s (line %d)",
+				tz.getName(),
+				tz.lineNo()
+			);
 			return false;
 		}
 
@@ -269,7 +324,12 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 
 			if (name.IsEmpty())
 			{
-				LOG_MESSAGE(1, "Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
+				LOG_MESSAGE(
+					1,
+					"Parsing error: Unexpected empty string in %s (line %d)",
+					tz.getName(),
+					tz.lineNo()
+				);
 				return false;
 			}
 		}
@@ -281,8 +341,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			tz.skipToken();
 
 			// Create item node
-			ParseTreeNode* child = (ParseTreeNode*)addChild(name);
-			child->type_ = type;
+			auto child = addChildPTN(name, type);
 
 			// Check type of assignment list
 			token = tz.getToken();
@@ -344,7 +403,14 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 				{
 					string t = tz.getToken();
 					string n = tz.getName();
-					LOG_MESSAGE(1, "Parsing error: Expected \",\" or \"%s\", got \"%s\" in %s (line %d)", list_end, t, n, tz.lineNo());
+					LOG_MESSAGE(
+						1,
+						"Parsing error: Expected \",\" or \"%s\", got \"%s\" in %s (line %d)",
+						list_end,
+						t,
+						n,
+						tz.lineNo()
+					);
 					return false;
 				}
 
@@ -356,8 +422,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		else if (S_CMP(next, "{"))
 		{
 			// Add child node
-			ParseTreeNode* child = (ParseTreeNode*)addChild(name);
-			child->type_ = type;
+			auto child = addChildPTN(name, type);
 
 			// Skip {
 			tz.skipToken();
@@ -371,8 +436,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		else if (S_CMP(next, ";"))
 		{
 			// Add child node
-			ParseTreeNode* child = (ParseTreeNode*)addChild(name);
-			child->type_ = type;
+			addChildPTN(name, type);
 
 			// Skip ;
 			tz.skipToken();
@@ -391,8 +455,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			if (tz.checkToken("{"))
 			{
 				// Add child node
-				ParseTreeNode* child = (ParseTreeNode*)addChild(name);
-				child->type_ = type;
+				auto child = addChildPTN(name, type);
 
 				// Set its inheritance
 				child->inherit_ = inherit;
@@ -406,7 +469,13 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// Unexpected token
 		else
 		{
-			LOG_MESSAGE(1, "Parsing error: \"%s\" unexpected in %s (line %d)", next, tz.getName(), tz.lineNo());
+			LOG_MESSAGE(
+				1,
+				"Parsing error: \"%s\" unexpected in %s (line %d)",
+				next,
+				tz.getName(),
+				tz.lineNo()
+			);
 			return false;
 		}
 
@@ -417,58 +486,149 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 	return true;
 }
 
+// ----------------------------------------------------------------------------
+// ParseTreeNode::write
+//
+// Writes this node and its children as text to [out], indented by [indent] tab
+// characters. See the Parser::parseText description below for an example of
+// the output.
+//
+// Strings are written within enclosing "" in the following cases:
+// Node names:     only if the name contains a space
+// String values:  always
+// Node types:     never
+// Node 'inherit': never
+// ----------------------------------------------------------------------------
+void ParseTreeNode::write(string& out, int indent) const
+{
+	// Indentation
+	string tabs;
+	for (int a = 0; a < indent; a++)
+		tabs += "\t";
 
-/*******************************************************************
- * PARSER CLASS FUNCTIONS
- *******************************************************************/
+	// Type
+	out += tabs;
+	if (!type_.empty())
+		out += type_ + " ";
 
-/* Parser::Parser
- * Parser class constructor
- *******************************************************************/
-Parser::Parser(ArchiveTreeNode* dir_root) :
-	archive_dir_root { dir_root }
+	// Name
+	if (name_.Contains(" ") || name_.empty())
+		out += S_FMT("\"%s\"", CHR(name_));
+	else
+		out += S_FMT("%s", CHR(name_));
+
+	// Inherit
+	if (!inherit_.empty())
+		out += " : " + inherit_;
+
+	// Leaf node - write value(s)
+	if (children.size() == 0)
+	{
+		out += " = ";
+
+		bool first = true;
+		for (auto& value : values_)
+		{
+			if (!first)
+				out += ", ";
+			first = false;
+
+			switch (value.getType())
+			{
+			case PROP_BOOL:
+			case PROP_FLAG:
+				out += value.getBoolValue() ? "true" : "false"; break;
+			case PROP_INT:
+				out += S_FMT("%d", value.getIntValue()); break;
+			case PROP_FLOAT:
+				out += S_FMT("%1.3f", value.getFloatValue()); break;
+			case PROP_UINT:
+				out += S_FMT("%d", value.getUnsignedValue()); break;
+			default:
+				out += S_FMT("\"%s\"", value.getStringValue()); break;
+			}
+		}
+
+		out += ";\n";
+	}
+
+	// Otherwise write child nodes
+	else
+	{
+		// Opening brace
+		out += "\n" + tabs + "{\n";
+
+		for (unsigned a = 0; a < children.size(); a++)
+			static_cast<ParseTreeNode*>(children[a])->write(out, indent + 1);
+
+		// Closing brace
+		out += tabs + "}\n";
+	}
+}
+
+
+// ----------------------------------------------------------------------------
+//
+// Parser Class Functions
+//
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+// Parser::Parser
+//
+// Parser class constructor
+// ----------------------------------------------------------------------------
+Parser::Parser(ArchiveTreeNode* dir_root) : archive_dir_root { dir_root }
 {
 	// Create parse tree root node
 	pt_root = std::make_unique<ParseTreeNode>(nullptr, this, archive_dir_root);
 }
 
-/* Parser::~Parser
- * Parser class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Parser::~Parser
+//
+// Parser class destructor
+// ----------------------------------------------------------------------------
 Parser::~Parser()
 {
 }
 
-/* Parser::parseText
- * Parses the given text data to build a tree of ParseTreeNodes.
- * Example:
- * 	base {
- * 		child1 = value1;
- * 		child2 = value2, value3, value4;
- * 		child3 {
- * 			grandchild1 = value5;
- * 			grandchild2 = value6;
- * 		}
- * 		child4 {
- * 			grandchild3 = value7, value8;
- * 		}
- * 	}
- *
- * will generate this tree (represented in xml-like format, node names within <>):
- * 	<root>
- * 		<base>
- * 			<child1>value1</child1>
- * 			<child2>value2, value3, value4</child2>
- * 			<child3>
- * 				<grandchild1>value5</grandchild1>
- * 				<grandchild2>value6</grandchild2>
- * 			</child3>
- * 			<child4>
- * 				<grandchild3>value7, value8</grandchild3>
- * 			</child4>
- * 		</base>
- * 	</root>
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Parser::parseText
+//
+// Parses the given text data to build a tree of ParseTreeNodes.
+// Example:
+// base
+// {
+//     child1 = value1;
+//     child2 = value2, value3, value4;
+//     child3
+//     {
+// 	       grandchild1 = value5;
+// 	       grandchild2 = value6;
+//     }
+//     child4
+//     {
+// 	       grandchild3 = value7, value8;
+//     }
+// }
+//
+// will generate this tree
+// (represented in xml-like format, node names within <>):
+// 	<root>
+// 		<base>
+// 			<child1>value1</child1>
+// 			<child2>value2, value3, value4</child2>
+// 			<child3>
+// 				<grandchild1>value5</grandchild1>
+// 				<grandchild2>value6</grandchild2>
+// 			</child3>
+// 			<child4>
+// 				<grandchild3>value7, value8</grandchild3>
+// 			</child4>
+// 		</base>
+// 	</root>
+// ----------------------------------------------------------------------------
 bool Parser::parseText(MemChunk& mc, string source, bool debug)
 {
 	Tokenizer tz;
@@ -500,17 +660,21 @@ bool Parser::parseText(string& text, string source, bool debug)
 	return pt_root->parse(tz);
 }
 
-/* Parser::define
- * Adds [def] to the defines list
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Parser::define
+//
+// Adds [def] to the defines list
+// ----------------------------------------------------------------------------
 void Parser::define(string def)
 {
 	defines.push_back(def);
 }
 
-/* Parser::defined
- * Returns true if [def] is in the defines list
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Parser::defined
+//
+// Returns true if [def] is in the defines list
+// ----------------------------------------------------------------------------
 bool Parser::defined(string def)
 {
 	for (unsigned a = 0; a < defines.size(); a++)

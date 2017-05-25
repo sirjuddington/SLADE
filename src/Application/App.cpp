@@ -1,33 +1,35 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    App.cpp
- * Description: The App namespace, with various general application
- *              related functions
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    App.cpp
+// Description: The App namespace, with various general application
+//              related functions
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
@@ -53,9 +55,11 @@
 #include "Utility/Tokenizer.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 namespace App
 {
 	wxStopWatch	timer;
@@ -84,17 +88,20 @@ CVAR(String, temp_location_custom, "", CVAR_SAVE)
 CVAR(Bool, setup_wizard_run, false, CVAR_SAVE)
 
 
-/*******************************************************************
- * APP NAMESPACE FUNCTIONS
- *******************************************************************/
-
+// ----------------------------------------------------------------------------
+//
+// App Namespace Functions
+//
+// ----------------------------------------------------------------------------
 namespace App
 {
-	/* initDirectories
-	 * Checks for and creates necessary application directories. Returns
-	 * true if all directories existed and were created successfully if
-	 * needed, false otherwise
-	 *******************************************************************/
+	// ------------------------------------------------------------------------
+	// initDirectories
+	//
+	// Checks for and creates necessary application directories. Returns true
+	// if all directories existed and were created successfully if needed,
+	// false otherwise
+	// ------------------------------------------------------------------------
 	bool initDirectories()
 	{
 		// If we're passed in a INSTALL_PREFIX (from CMAKE_INSTALL_PREFIX),
@@ -127,7 +134,11 @@ namespace App
 		{
 			if (!wxMkdir(dir_user))
 			{
-				wxMessageBox(S_FMT("Unable to create user directory \"%s\"", dir_user), "Error", wxICON_ERROR);
+				wxMessageBox(
+					S_FMT("Unable to create user directory \"%s\"", dir_user),
+					"Error",
+					wxICON_ERROR
+				);
 				return false;
 			}
 		}
@@ -143,9 +154,11 @@ namespace App
 		return true;
 	}
 
-	/* readConfigFile
-	 * Reads and parses the SLADE configuration file
-	 *******************************************************************/
+	// ------------------------------------------------------------------------
+	// readConfigFile
+	//
+	// Reads and parses the SLADE configuration file
+	// ------------------------------------------------------------------------
 	void readConfigFile()
 	{
 		// Open SLADE.cfg
@@ -255,31 +268,61 @@ namespace App
 	}
 }
 
+// ----------------------------------------------------------------------------
+// App::isInitialised
+//
+// Returns true if the application has been initialised
+// ----------------------------------------------------------------------------
 bool App::isInitialised()
 {
 	return init_ok;
 }
 
+// ----------------------------------------------------------------------------
+// App::console
+//
+// Returns the global Console
+// ----------------------------------------------------------------------------
 Console* App::console()
 {
 	return &console_main;
 }
 
+// ----------------------------------------------------------------------------
+// App::paletteManager
+//
+// Returns the Palette Manager
+// ----------------------------------------------------------------------------
 PaletteManager* App::paletteManager()
 {
 	return &palette_manager;
 }
 
+// ----------------------------------------------------------------------------
+// App::runTimer
+//
+// Returns the number of ms elapsed since the application was started
+// ----------------------------------------------------------------------------
 long App::runTimer()
 {
 	return timer.Time();
 }
 
+// ----------------------------------------------------------------------------
+// App::isExiting
+//
+// Returns true if the application is exiting
+// ----------------------------------------------------------------------------
 bool App::isExiting()
 {
 	return exiting;
 }
 
+// ----------------------------------------------------------------------------
+// App::init
+//
+// Application initialisation
+// ----------------------------------------------------------------------------
 bool App::init()
 {
 	// Set locale to C so that the tokenizer will work properly
@@ -305,7 +348,12 @@ bool App::init()
 	theArchiveManager->init();
 	if (!theArchiveManager->resArchiveOK())
 	{
-		wxMessageBox("Unable to find slade.pk3, make sure it exists in the same directory as the SLADE executable", "Error", wxICON_ERROR);
+		wxMessageBox(
+			"Unable to find slade.pk3, make sure it exists in the same directory as the "
+			"SLADE executable",
+			"Error",
+			wxICON_ERROR
+		);
 		return false;
 	}
 
@@ -402,9 +450,11 @@ bool App::init()
 	return true;
 }
 
-/* App::saveConfigFile
- * Saves the SLADE configuration file
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// App::saveConfigFile
+//
+// Saves the SLADE configuration file
+// ----------------------------------------------------------------------------
 void App::saveConfigFile()
 {
 	// Open SLADE.cfg for writing text
@@ -466,6 +516,12 @@ void App::saveConfigFile()
 	file.Write("\n// End Configuration File\n\n");
 }
 
+// ----------------------------------------------------------------------------
+// App::exit
+//
+// Application exit, shuts down and cleans everything up. If [save_config] is
+// true, saves all configuration related files
+// ----------------------------------------------------------------------------
 void App::exit(bool save_config)
 {
 	exiting = true;
@@ -488,6 +544,9 @@ void App::exit(bool save_config)
 		f.Open(App::path("executables.cfg", App::Dir::User), wxFile::write);
 		f.Write(Executables::writeExecutables());
 		f.Close();
+
+		// Save custom special presets
+		Game::saveCustomSpecialPresets();
 	}
 
 	// Close all open archives
@@ -519,13 +578,15 @@ void App::exit(bool save_config)
 	wxTheApp->Exit();
 }
 
-/* App::path
- * Prepends an application-related path to a filename,
- * App::Dir::Data: SLADE application data directory (for SLADE.pk3)
- * App::Dir::User: User configuration and resources directory
- * App::Dir::Executable: Directory of the SLADE executable
- * App::Dir::Temp: Temporary files directory
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// App::path
+//
+// Prepends an application-related path to a filename,
+// App::Dir::Data: SLADE application data directory (for SLADE.pk3)
+// App::Dir::User: User configuration and resources directory
+// App::Dir::Executable: Directory of the SLADE executable
+// App::Dir::Temp: Temporary files directory
+// ----------------------------------------------------------------------------
 string App::path(string filename, Dir dir)
 {
 	if (dir == Dir::Data)

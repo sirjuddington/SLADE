@@ -362,6 +362,10 @@ void Game::init()
 	// Load last configuration if any
 	if (game_configuration != "")
 		config_current.openConfig(game_configuration, port_configuration);
+
+	// Load custom special presets
+	if (!loadCustomSpecialPresets())
+		Log::warning("An error occurred loading user special_presets.cfg");
 }
 
 // ----------------------------------------------------------------------------

@@ -15,7 +15,8 @@ public:
 	ParseTreeNode(
 		ParseTreeNode* parent = nullptr,
 		Parser* parser = nullptr,
-		ArchiveTreeNode* archive_dir = nullptr
+		ArchiveTreeNode* archive_dir = nullptr,
+		string type = ""
 	);
 	~ParseTreeNode();
 
@@ -34,10 +35,19 @@ public:
 	double			floatValue(unsigned index = 0);
 
 	// To avoid need for casts everywhere
-	ParseTreeNode*	getChildPTN(const string& name) { return static_cast<ParseTreeNode*>(getChild(name)); }
-	ParseTreeNode*	getChildPTN(unsigned index) { return static_cast<ParseTreeNode*>(getChild(index)); }
+	ParseTreeNode*	getChildPTN(const string& name)
+					{ return static_cast<ParseTreeNode*>(getChild(name)); }
+	ParseTreeNode*	getChildPTN(unsigned index)
+					{ return static_cast<ParseTreeNode*>(getChild(index)); }
+
+	ParseTreeNode*	addChildPTN(const string& name, const string& type = "");
+	void			addStringValue(const string& value) { values_.push_back({value}); }
+	void			addIntValue(int value) { values_.push_back({value}); }
+	void			addBoolValue(bool value) { values_.push_back({value}); }
+	void			addFloatValue(double value) { values_.push_back({value}); }
 
 	bool	parse(Tokenizer& tz);
+	void	write(string& out, int indent = 0) const;
 
 	typedef std::unique_ptr<ParseTreeNode> UPtr;
 

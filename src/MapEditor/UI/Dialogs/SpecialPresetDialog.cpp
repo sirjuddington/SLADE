@@ -75,12 +75,8 @@ public:
 		wxSize textsize;
 
 		// Populate tree
-		for (auto& preset : Game::configuration().specialPresets())
-		{
-			auto item = AppendItem(getGroup(preset.group), preset.name);
-			SetItemData(item, new SpecialPresetData(preset));
-			textsize.IncTo(dc.GetTextExtent(preset.name));
-		}
+		addPresets(Game::customSpecialPresets(), textsize, dc);				// User custom presets
+		addPresets(Game::configuration().specialPresets(), textsize, dc);	// From game configuration
 		wxDataViewCtrl::Expand(root_);
 
 		// Bind events
@@ -170,6 +166,16 @@ private:
 
 		return current;
 	}
+
+	void addPresets(const vector<Game::SpecialPreset>& presets, wxSize& textsize, wxClientDC& dc)
+	{
+		for (auto& preset : presets)
+		{
+			auto item = AppendItem(getGroup(preset.group), preset.name);
+			SetItemData(item, new SpecialPresetData(preset));
+			textsize.IncTo(dc.GetTextExtent(preset.name));
+		}
+	}
 };
 
 
@@ -219,4 +225,16 @@ SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) :
 Game::SpecialPreset SpecialPresetDialog::selectedPreset() const
 {
 	return tree_presets_->selectedPreset();
+}
+
+
+
+
+// Testing
+#include "General/Console/Console.h"
+
+CONSOLE_COMMAND(test_spresets, 0, false)
+{
+	SpecialPresetDialog dlg(nullptr);
+	dlg.ShowModal();
 }
