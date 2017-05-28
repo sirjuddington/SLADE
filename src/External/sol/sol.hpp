@@ -798,7 +798,7 @@ namespace sol {
 #include <lualib.h>
 #include <lauxlib.h>
 #else
-#include "External/Lua/lua.hpp"
+#include "External/lua/lua.hpp"
 #endif // C++ Mangling for Lua
 
 #if defined(_WIN32) || defined(_MSC_VER)

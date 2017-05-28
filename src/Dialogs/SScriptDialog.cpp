@@ -85,7 +85,9 @@ SScriptDialog::SScriptDialog(wxWindow* parent) :
 		{ 200, -1 },
 		wxTR_DEFAULT_STYLE | wxTR_NO_LINES | wxTR_HIDE_ROOT | wxTR_FULL_ROW_HIGHLIGHT
 	);
-	tree_scripts_->EnableSystemTheme();
+#if wxMAJOR_VERSION > 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
+	tree_scripts_->EnableSystemTheme(true);
+#endif
 	populateScriptsTree();
 	hbox->Add(tree_scripts_, 0, wxEXPAND | wxRIGHT, 10);
 
