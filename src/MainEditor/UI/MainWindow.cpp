@@ -49,6 +49,7 @@
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/PaletteChooser.h"
 #include "ArchiveManagerPanel.h"
+#include "Dialogs/SScriptDialog.h"
 #ifdef USE_WEBVIEW_STARTPAGE
 #include "DocsPage.h"
 #endif
@@ -313,6 +314,11 @@ void MainWindow::setupLayout()
 	SAction::fromId("main_showconsole")->addToMenu(viewMenu);
 	SAction::fromId("main_showundohistory")->addToMenu(viewMenu);
 	menu->Append(viewMenu, "&View");
+
+	// Tools menu
+	wxMenu* toolsMenu = new wxMenu("");
+	SAction::fromId("main_runscript")->addToMenu(toolsMenu);
+	menu->Append(toolsMenu, "&Tools");
 
 	// Help menu
 	wxMenu* helpMenu = new wxMenu("");
@@ -775,6 +781,14 @@ bool MainWindow::handleAction(string id)
 		wxAuiPaneInfo& p_inf = m_mgr->GetPane("undo_history");
 		p_inf.Show(!p_inf.IsShown());
 		m_mgr->Update();
+		return true;
+	}
+
+	// Tools->Run Script
+	if (id == "main_runscript")
+	{
+		SScriptDialog dlg(this);
+		dlg.ShowModal();
 		return true;
 	}
 

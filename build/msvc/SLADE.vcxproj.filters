@@ -1464,6 +1464,9 @@
     <ClCompile Include="..\..\src\External\lua\lzio.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\SScriptDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2545,6 +2548,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\External\sol\sol.hpp">
       <Filter>External\Sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\SScriptDialog.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

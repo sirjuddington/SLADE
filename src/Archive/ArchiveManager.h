@@ -102,6 +102,9 @@ public:
 	unsigned		numBookmarks() { return bookmarks.size(); }
 
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+
+	// For scripting
+	Archive* luaOpenFile(const char* filename) { return openArchive(filename); }
 };
 
 // Define for less cumbersome ArchiveManager::getInstance()

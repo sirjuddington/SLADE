@@ -1,0 +1,24 @@
+
+sladescript : lua
+{
+    name = "SLADE Script";
+	case_sensitive = true;
+
+    properties =
+	{
+		slade
+	}
+
+	functions
+	{
+		// SLADE general
+        logMessage = "message";
+        messageBox = "title, message";
+        String promptString = "title, message, default_value";
+        Number promptNumber = "title, message, default_value, min, max";
+        Boolean promptYesNo = "title, message";
+        Archive currentArchive;
+        ArchiveEntry currentEntry;
+        ArchiveEntry[] currentEntrySelection;
+	}
+}

@@ -54,6 +54,11 @@ public:
 	bool				merge(ArchiveTreeNode* node, unsigned position = 0xFFFFFFFF, int state = 2);
 
 	bool	exportTo(string path);
+
+	// For scripting
+	vector<ArchiveEntry*>		luaGetEntries();
+	vector<ArchiveTreeNode*>	luaGetSubDirs();
+	int							luaEntryIndex(ArchiveEntry* entry) { return entryIndex(entry); }
 };
 
 // Define archive types
@@ -242,6 +247,12 @@ public:
 	virtual ArchiveEntry*			findLast(search_options_t& options);
 	virtual vector<ArchiveEntry*>	findAll(search_options_t& options);
 	virtual vector<ArchiveEntry*>	findModifiedEntries(ArchiveTreeNode* dir = NULL);
+
+	// For Scripting
+	vector<ArchiveEntry*>	luaAllEntries() { vector<ArchiveEntry*> list; getEntryTreeAsList(list); return list; }
+	ArchiveTreeNode*		luaGetDir(string path) { return getDir(path); }
+	ArchiveEntry*			luaCreateEntry(string full_path, int position);
+	ArchiveEntry*			luaCreateEntryInNamespace(string name, string ns);
 };
 
 // Base class for list-based archive formats

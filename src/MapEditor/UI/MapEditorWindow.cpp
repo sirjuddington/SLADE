@@ -232,6 +232,11 @@ void MapEditorWindow::setupMenu()
 	SAction::fromId("mapw_show_item")->addToMenu(menu_view);
 	menu->Append(menu_view, "View");
 
+	// Tools menu
+	wxMenu* menu_tools = new wxMenu("");
+	SAction::fromId("mapw_runscript")->addToMenu(menu_tools);
+	menu->Append(menu_tools, "&Tools");
+
 	SetMenuBar(menu);
 }
 
