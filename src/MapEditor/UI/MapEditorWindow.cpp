@@ -35,6 +35,7 @@
 #include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/RunDialog.h"
+#include "Dialogs/SScriptDialog.h"
 #include "Game/Configuration.h"
 #include "General/Misc.h"
 #include "General/UI.h"
@@ -1315,6 +1316,14 @@ bool MapEditorWindow::handleAction(string id)
 			}
 		}
 
+		return true;
+	}
+
+	// Tools->Run Script
+	else if (id == "mapw_runscript")
+	{
+		SScriptDialog dlg(this);
+		dlg.ShowModal();
 		return true;
 	}
 	

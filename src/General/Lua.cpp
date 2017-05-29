@@ -34,6 +34,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
 #include "External/sol/sol.hpp"
+#include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "General/Console/Console.h"
 #include "Lua.h"
@@ -189,6 +190,12 @@ namespace Lua
 		slade.set_function("showArchive",			&showArchive);
 		slade.set_function("showEntry",				&MainEditor::openEntry);
 		slade.set_function("mapEditor",				&MapEditor::editContext);
+	}
+
+	void registerGameFunctions()
+	{
+		sol::table game = lua.create_table("game");
+		game.set_function("thingType", [&](int type){ return Game::configuration().thingType(type); });
 	}
 
 	void registerArchiveManager()
@@ -552,11 +559,12 @@ namespace Lua
 // ----------------------------------------------------------------------------
 bool Lua::init()
 {
-	lua.open_libraries(sol::lib::base);
+	lua.open_libraries(sol::lib::base, sol::lib::string);
 
 	// Register functions
 	lua.create_named_table("slade");
 	registerGlobalFunctions();
+	registerGameFunctions();
 
 	// Register classes
 	registerArchiveManager();
