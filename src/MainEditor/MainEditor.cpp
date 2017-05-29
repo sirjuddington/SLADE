@@ -72,6 +72,11 @@ void MainEditor::openMapEditor(Archive* archive)
 	MapEditor::chooseMap(archive);
 }
 
+void ::MainEditor::openArchiveTab(Archive* archive)
+{
+	main_window->getArchiveManagerPanel()->openTab(archive);
+}
+
 /* MainWindow::openEntry
  * Opens [entry] in its own tab
  *******************************************************************/

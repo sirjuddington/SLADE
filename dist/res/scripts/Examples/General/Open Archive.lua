@@ -1,6 +1,6 @@
 
 -- Browse for archive file to open
-local path = slade.browseFile('Open Archive', slade.archiveManager():getArchiveExtensionsString(), '')
+local path = slade.browseFile('Open Archive', slade.archiveManager():fileExtensionsString(), '')
 if path == '' then
     slade.logMessage('No archive selected')
 else

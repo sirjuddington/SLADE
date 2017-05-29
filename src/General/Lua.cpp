@@ -31,13 +31,16 @@
 // ----------------------------------------------------------------------------
 #include "Main.h"
 #define SOL_CHECK_ARGUMENTS 1
-#include "External/sol/sol.hpp"
-#include "General/Console/Console.h"
-#include "Lua.h"
-#include "Utility/SFileDialog.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
+#include "External/sol/sol.hpp"
+#include "Game/ThingType.h"
+#include "General/Console/Console.h"
+#include "Lua.h"
 #include "MainEditor/MainEditor.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "Utility/SFileDialog.h"
 
 
 // ----------------------------------------------------------------------------
@@ -102,6 +105,12 @@ namespace Lua
 		Log::message(Log::MessageType::Script, message);
 	}
 
+	// Get the global error message
+	string globalError()
+	{
+		return Global::error;
+	}
+
 	// Show a message box
 	void messageBox(const string& title, const string& message)
 	{
@@ -149,23 +158,37 @@ namespace Lua
 		return filenames;
 	}
 
+	// Switch to the tab for [archive], opening it if necessary
+	bool showArchive(Archive* archive)
+	{
+		if (!archive)
+			return false;
+
+		MainEditor::openArchiveTab(archive);
+		return true;
+	}
+
 
 	// --- Function & Type Registration ---
 
 	void registerGlobalFunctions()
 	{
 		sol::table slade = lua["slade"];
-		slade.set_function("logMessage", &logMessage);
-		slade.set_function("messageBox", &messageBox);
-		slade.set_function("promptString", &promptString);
-		slade.set_function("promptNumber", &promptNumber);
-		slade.set_function("promptYesNo", &promptYesNo);
-		slade.set_function("browseFile", &browseFile);
-		slade.set_function("browseFiles", &browseFiles);
-		slade.set_function("archiveManager", &ArchiveManager::getInstance);
-		slade.set_function("currentArchive", &MainEditor::currentArchive);
-		slade.set_function("currentEntry", &MainEditor::currentEntry);
-		slade.set_function("currentEntrySelection", &MainEditor::currentEntrySelection);
+		slade.set_function("logMessage",			&logMessage);
+		slade.set_function("globalError",			&globalError);
+		slade.set_function("messageBox",			&messageBox);
+		slade.set_function("promptString",			&promptString);
+		slade.set_function("promptNumber",			&promptNumber);
+		slade.set_function("promptYesNo",			&promptYesNo);
+		slade.set_function("browseFile",			&browseFile);
+		slade.set_function("browseFiles",			&browseFiles);
+		slade.set_function("archiveManager",		&ArchiveManager::getInstance);
+		slade.set_function("currentArchive",		&MainEditor::currentArchive);
+		slade.set_function("currentEntry",			&MainEditor::currentEntry);
+		slade.set_function("currentEntrySelection",	&MainEditor::currentEntrySelection);
+		slade.set_function("showArchive",			&showArchive);
+		slade.set_function("showEntry",				&MainEditor::openEntry);
+		slade.set_function("mapEditor",				&MapEditor::editContext);
 	}
 
 	void registerArchiveManager()
@@ -177,12 +200,12 @@ namespace Lua
 			"new", sol::no_constructor,
 
 			// Functions
-			"numArchives",					&ArchiveManager::numArchives,
-			"openFile",						&ArchiveManager::luaOpenFile,
-			"closeAll",						&ArchiveManager::closeAll,
-			"getArchive",					sol::resolve<Archive*(int)>(&ArchiveManager::getArchive),
-			"closeArchive",					sol::resolve<bool(Archive*)>(&ArchiveManager::closeArchive),
-			"getArchiveExtensionsString",	&ArchiveManager::getArchiveExtensionsString
+			"numArchives",			&ArchiveManager::numArchives,
+			"openFile",				&ArchiveManager::luaOpenFile,
+			"closeAll",				&ArchiveManager::closeAll,
+			"getArchive",			sol::resolve<Archive*(int)>(&ArchiveManager::getArchive),
+			"closeArchive",			sol::resolve<bool(Archive*)>(&ArchiveManager::closeArchive),
+			"fileExtensionsString",	&ArchiveManager::getArchiveExtensionsString
 		);
 	}
 
@@ -207,6 +230,7 @@ namespace Lua
 		// Register all subclasses
 		// (perhaps it'd be a good idea to make Archive not abstract and handle
 		//  the format-specific stuff somewhere else, rather than in subclasses)
+		//#define REGISTER_ARCHIVE(type) lua.new_usertype<type>(#type, sol::base_classes, sol::bases<Archive>());
 		lua.new_usertype<WadArchive>("WadArchive", sol::base_classes, sol::bases<Archive>());
 		lua.new_usertype<ZipArchive>("ZipArchive", sol::base_classes, sol::bases<Archive>());
 		lua.new_usertype<LibArchive>("LibArchive", sol::base_classes, sol::bases<Archive>());
@@ -249,6 +273,276 @@ namespace Lua
 			"getType",				&ArchiveEntry::getType
 		);
 	}
+
+	void registerArchiveTreeNode()
+	{
+		lua.new_usertype<ArchiveTreeNode>(
+			"ArchiveDir",
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Functions
+			"getArchive",	&ArchiveTreeNode::getArchive,
+			"getName",		&ArchiveTreeNode::getName,
+			"numEntries",	&ArchiveTreeNode::numEntries,
+			"getEntries",	&ArchiveTreeNode::luaGetEntries,
+			"entryIndex",	&ArchiveTreeNode::luaEntryIndex,
+			"getEntry",		sol::resolve<ArchiveEntry*(unsigned)>(&ArchiveTreeNode::getEntry)
+		);
+	}
+
+	void registerEntryType()
+	{
+		lua.new_usertype<EntryType>(
+			"EntryType",
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Properties
+			"id",	sol::property(&EntryType::getId),
+			"name",	sol::property(&EntryType::getName)
+		);
+	}
+
+	void registerSLADEMap()
+	{
+		lua.new_usertype<SLADEMap>(
+			"Map",
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Properties
+			"name",				sol::property(&SLADEMap::mapName),
+			"udmfNamespace",	sol::property(&SLADEMap::udmfNamespace),
+			"vertices",			sol::property(&SLADEMap::vertices),
+			"linedefs",			sol::property(&SLADEMap::lines),
+			"sidedefs",			sol::property(&SLADEMap::sides),
+			"sectors",			sol::property(&SLADEMap::sectors),
+			"things",			sol::property(&SLADEMap::things),
+
+			// Functions
+			"numVertices",	&SLADEMap::nVertices,
+			"numLines",		&SLADEMap::nLines,
+			"numSides",		&SLADEMap::nSides,
+			"numSectors",	&SLADEMap::nSectors,
+			"numThings",	&SLADEMap::nThings
+		);
+	}
+
+	void registerItemSelection()
+	{
+		lua.new_usertype<ItemSelection>(
+			"ItemSelection",
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Functions
+			"selectedVertices",	&ItemSelection::selectedVertices,
+			"selectedLines",	&ItemSelection::selectedLines,
+			"selectedSectors",	&ItemSelection::selectedSectors,
+			"selectedThings",	&ItemSelection::selectedThings
+		);
+	}
+
+	void registerMapEditor()
+	{
+		registerItemSelection();
+
+		// MapEditor enums
+		lua.create_named_table("mapEditor");
+		lua.new_enum(
+			"Mode",
+			"Vertices",	MapEditor::Mode::Vertices,
+			"Lines",	MapEditor::Mode::Lines,
+			"Sectors",	MapEditor::Mode::Sectors,
+			"Things",	MapEditor::Mode::Things,
+			"Visual",	MapEditor::Mode::Visual
+		);
+		lua.new_enum(
+			"SectorMode",
+			"Both",		MapEditor::SectorMode::Both,
+			"Floor",	MapEditor::SectorMode::Floor,
+			"Ceiling",	MapEditor::SectorMode::Ceiling
+		);
+
+		lua.new_usertype<MapEditContext>(
+			"MapEditor",
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Properties
+			"editMode",			sol::property(&MapEditContext::editMode),
+			"sectorEditMode",	sol::property(&MapEditContext::sectorEditMode),
+			"gridSize",			sol::property(&MapEditContext::gridSize),
+			"selection",		sol::property(&MapEditContext::selection),
+			"map",				sol::property(&MapEditContext::map)
+		);
+	}
+
+	void registerMapVertex()
+	{
+		lua.new_usertype<MapVertex>(
+			"MapVertex",
+			sol::base_classes, sol::bases<MapObject>(),
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Properties
+			"x",	&MapVertex::xPos,
+			"y",	&MapVertex::yPos
+		);
+	}
+
+	void registerMapLine()
+	{
+		lua.new_usertype<MapLine>(
+			"MapLine",
+			sol::base_classes, sol::bases<MapObject>(),
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Properties
+			"x1",		sol::property(&MapLine::x1),
+			"y1",		sol::property(&MapLine::y1),
+			"x2",		sol::property(&MapLine::x2),
+			"y2",		sol::property(&MapLine::y2),
+			"vertex1",	sol::property(&MapLine::v1),
+			"vertex2",	sol::property(&MapLine::v2),
+			"side1",	sol::property(&MapLine::s1),
+			"side2",	sol::property(&MapLine::s2),
+			"special",	sol::property(&MapLine::getSpecial),
+
+			// Functions
+			"length",		&MapLine::getLength,
+			"frontSector",	&MapLine::frontSector,
+			"backSector",	&MapLine::backSector
+		);
+	}
+
+	void registerMapSide()
+	{
+		lua.new_usertype<MapSide>(
+			"MapSide",
+			sol::base_classes, sol::bases<MapObject>(),
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Properties
+			"sector",			sol::property(&MapSide::getSector),
+			"line",				sol::property(&MapSide::getParentLine),
+			"textureBottom",	sol::property(&MapSide::getTexLower),
+			"textureMiddle",	sol::property(&MapSide::getTexMiddle),
+			"textureTop",		sol::property(&MapSide::getTexUpper),
+			"offsetX",			sol::property(&MapSide::getOffsetX),
+			"offsetY",			sol::property(&MapSide::getOffsetY)
+		);
+	}
+
+	void registerMapSector()
+	{
+		lua.new_usertype<MapSector>(
+			"MapSector",
+			sol::base_classes, sol::bases<MapObject>(),
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Properties
+			"textureFloor",		sol::property(&MapSector::getFloorTex),
+			"textureCeiling",	sol::property(&MapSector::getCeilingTex),
+			"heightFloor",		sol::property(&MapSector::getFloorHeight),
+			"heightCeiling",	sol::property(&MapSector::getCeilingHeight),
+			"lightLevel",		sol::property(&MapSector::getLightLevel),
+			"special",			sol::property(&MapSector::getSpecial),
+			"id",				sol::property(&MapSector::getTag)
+		);
+	}
+
+	void registerMapThing()
+	{
+		lua.new_usertype<MapThing>(
+			"MapThing",
+			sol::base_classes, sol::bases<MapObject>(),
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Properties
+			"x",		sol::property(&MapThing::xPos),
+			"y",		sol::property(&MapThing::yPos),
+			"type",		sol::property(&MapThing::getType),
+			"angle",	sol::property(&MapThing::getAngle)
+		);
+		
+		// //dukglue_register_method(context, &MapThing::s_TypeInfo,	"typeInfo");
+	}
+
+	void registerMapObject()
+	{
+		lua.new_usertype<MapObject>(
+			"MapObject",
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Properties
+			"index", sol::property(&MapObject::getIndex),
+			"typeName", sol::property(&MapObject::getTypeName),
+
+			// Functions
+			"hasProperty",			&MapObject::hasProp,
+			"boolProperty",			&MapObject::boolProperty,
+			"intProperty",			&MapObject::intProperty,
+			"floatProperty",		&MapObject::floatProperty,
+			"stringProperty",		&MapObject::stringProperty,
+			"setBoolProperty",		&MapObject::luaSetBoolProperty,
+			"setIntProperty",		&MapObject::luaSetIntProperty,
+			"setFloatProperty",		&MapObject::luaSetFloatProperty,
+			"setStringProperty",	&MapObject::luaSetStringProperty
+		);
+
+		registerMapVertex();
+		registerMapLine();
+		registerMapSide();
+		registerMapSector();
+		registerMapThing();
+	}
+
+	void registerThingType()
+	{
+		lua.new_usertype<Game::ThingType>(
+			"ThingType",
+
+			// No constructor
+			"new", sol::no_constructor,
+
+			// Properties
+			"name",			sol::property(&Game::ThingType::name),
+			"group",		sol::property(&Game::ThingType::group),
+			"radius",		sol::property(&Game::ThingType::radius),
+			"height",		sol::property(&Game::ThingType::height),
+			"scaleY",		sol::property(&Game::ThingType::scaleY),
+			"scaleX",		sol::property(&Game::ThingType::scaleX),
+			"angled",		sol::property(&Game::ThingType::angled),
+			"hanging",		sol::property(&Game::ThingType::hanging),
+			"fullbright",	sol::property(&Game::ThingType::fullbright),
+			"decoration",	sol::property(&Game::ThingType::decoration),
+			"solid",		sol::property(&Game::ThingType::solid),
+			"tagged",		sol::property(&Game::ThingType::needsTag),
+			"sprite",		sol::property(&Game::ThingType::sprite),
+			"icon",			sol::property(&Game::ThingType::icon),
+			"translation",	sol::property(&Game::ThingType::translation),
+			"palette",		sol::property(&Game::ThingType::palette)
+		);
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -263,9 +557,16 @@ bool Lua::init()
 	// Register functions
 	lua.create_named_table("slade");
 	registerGlobalFunctions();
+
+	// Register classes
 	registerArchiveManager();
 	registerArchive();
 	registerArchiveEntry();
+	registerArchiveTreeNode();
+	registerSLADEMap();
+	registerMapEditor();
+	registerMapObject();
+	registerThingType();
 
 	return true;
 }

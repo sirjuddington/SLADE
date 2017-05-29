@@ -71,17 +71,17 @@ private:
 	fpoint2_t	front_vec;
 
 public:
-	MapLine(SLADEMap* parent = NULL);
-	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent = NULL);
+	MapLine(SLADEMap* parent = nullptr);
+	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent = nullptr);
 	~MapLine();
 
-	bool	isOk() { return vertex1 && vertex2; }
+	bool	isOk() const { return vertex1 && vertex2; }
 
-	MapVertex*		v1() { return vertex1; }
-	MapVertex*		v2() { return vertex2; }
-	MapSide*		s1() { return side1; }
-	MapSide*		s2() { return side2; }
-	int				getSpecial() { return special; }
+	MapVertex*		v1() const { return vertex1; }
+	MapVertex*		v2() const { return vertex2; }
+	MapSide*		s1() const { return side1; }
+	MapSide*		s2() const { return side2; }
+	int				getSpecial() const { return special; }
 
 	MapSector*	frontSector();
 	MapSector*	backSector();
@@ -96,19 +96,20 @@ public:
 	int	s1Index();
 	int	s2Index();
 
-	bool	boolProperty(string key);
-	int		intProperty(string key);
-	double	floatProperty(string key);
-	string	stringProperty(string key);
-	void	setBoolProperty(string key, bool value);
-	void	setIntProperty(string key, int value);
-	void	setFloatProperty(string key, double value);
-	void	setStringProperty(string key, string value);
+	bool	boolProperty(string key) override;
+	int		intProperty(string key) override;
+	double	floatProperty(string key) override;
+	string	stringProperty(string key) override;
+	void	setBoolProperty(string key, bool value) override;
+	void	setIntProperty(string key, int value) override;
+	void	setFloatProperty(string key, double value) override;
+	void	setStringProperty(string key, string value) override;
+	bool	scriptCanModifyProp(const string& key) override;
 
 	void	setS1(MapSide* side);
 	void	setS2(MapSide* side);
 
-	fpoint2_t	getPoint(uint8_t point);
+	fpoint2_t	getPoint(uint8_t point) override;
 	fpoint2_t	point1();
 	fpoint2_t	point2();
 	fseg2_t		seg();
@@ -123,9 +124,9 @@ public:
 	void	resetInternals();
 	void	flip(bool sides = true);
 
-	void	writeBackup(mobj_backup_t* backup);
-	void	readBackup(mobj_backup_t* backup);
-	void	copy(MapObject*);
+	void	writeBackup(mobj_backup_t* backup) override;
+	void	readBackup(mobj_backup_t* backup) override;
+	void	copy(MapObject*) override;
 
 	operator Debuggable() const {
 		if (!this)
