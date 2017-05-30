@@ -324,6 +324,8 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 		new_archive = new PodArchive();
 	else if (ChasmBinArchive::isChasmBinArchive(filename))
 		new_archive = new ChasmBinArchive();
+	else if (SiNArchive::isSiNArchive(filename))
+		new_archive = new SiNArchive();
 	else
 	{
 		// Unsupported format
@@ -438,6 +440,8 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 		new_archive = new PodArchive();
 	else if (ChasmBinArchive::isChasmBinArchive(entry->getMCData()))
 		new_archive = new ChasmBinArchive();
+	else if (SiNArchive::isSiNArchive(entry->getMCData()))
+		new_archive = new SiNArchive();
 	else
 	{
 		// Unsupported format

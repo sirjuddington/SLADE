@@ -217,6 +217,7 @@
     <ClCompile Include="..\..\src\Archive\Formats\PodArchive.cpp" />
     <ClCompile Include="..\..\src\Archive\Formats\ResArchive.cpp" />
     <ClCompile Include="..\..\src\Archive\Formats\RffArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\SiNArchive.cpp" />
     <ClCompile Include="..\..\src\Archive\Formats\TarArchive.cpp" />
     <ClCompile Include="..\..\src\Archive\Formats\Wad2Archive.cpp" />
     <ClCompile Include="..\..\src\Archive\Formats\WadArchive.cpp" />
@@ -1603,6 +1604,7 @@
     <ClInclude Include="..\..\src\Archive\Formats\PodArchive.h" />
     <ClInclude Include="..\..\src\Archive\Formats\ResArchive.h" />
     <ClInclude Include="..\..\src\Archive\Formats\RffArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\SiNArchive.h" />
     <ClInclude Include="..\..\src\Archive\Formats\TarArchive.h" />
     <ClInclude Include="..\..\src\Archive\Formats\Wad2Archive.h" />
     <ClInclude Include="..\..\src\Archive\Formats\WadArchive.h" />
