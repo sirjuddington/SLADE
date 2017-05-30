@@ -39,9 +39,10 @@ struct mobj_cd_t
 };
 
 class ParseTreeNode;
+namespace Game { enum class TagType; }
+
 class SLADEMap
 {
-	friend class MapEditor;
 private:
 	vector<MapLine*>	lines;
 	vector<MapSide*>	sides;
@@ -133,6 +134,7 @@ private:
 
 public:
 	SLADEMap();
+	SLADEMap(const SLADEMap& copy) = delete;
 	~SLADEMap();
 
 	// Map entry ordering
@@ -145,22 +147,22 @@ public:
 	    SECTORS
 	};
 
-	string		mapName() { return name; }
-	string		udmfNamespace() { return udmf_namespace; }
-	int			currentFormat() { return current_format; }
-	MapVertex*	getVertex(unsigned index);
-	MapSide*	getSide(unsigned index);
-	MapLine*	getLine(unsigned index);
-	MapSector*	getSector(unsigned index);
-	MapThing*	getThing(unsigned index);
-	MapObject*	getObject(uint8_t type, unsigned index);
-	size_t		nVertices() { return vertices.size(); }
-	size_t		nLines() { return lines.size(); }
-	size_t		nSides() { return sides.size(); }
-	size_t		nSectors() { return sectors.size(); }
-	size_t		nThings() { return things.size(); }
-	long		geometryUpdated() { return geometry_updated; }
-	long		thingsUpdated() { return things_updated; }
+	string		mapName() const { return name; }
+	string		udmfNamespace() const { return udmf_namespace; }
+	int			currentFormat() const { return current_format; }
+	MapVertex*	getVertex(unsigned index) const;
+	MapSide*	getSide(unsigned index) const;
+	MapLine*	getLine(unsigned index) const;
+	MapSector*	getSector(unsigned index) const;
+	MapThing*	getThing(unsigned index) const;
+	MapObject*	getObject(uint8_t type, unsigned index) const;
+	size_t		nVertices() const { return vertices.size(); }
+	size_t		nLines() const { return lines.size(); }
+	size_t		nSides() const { return sides.size(); }
+	size_t		nSectors() const { return sectors.size(); }
+	size_t		nThings() const { return things.size(); }
+	long		geometryUpdated() const { return geometry_updated; }
+	long		thingsUpdated() const { return things_updated; }
 	void		setGeometryUpdated();
 	void		setThingsUpdated();
 
@@ -226,7 +228,7 @@ public:
 	void	getThingsById(int id, vector<MapThing*>& list, unsigned start = 0, int type = 0);
 	void	getLinesById(int id, vector<MapLine*>& list);
 	void	getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list);
-	void	getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype = 0);
+	void	getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype);
 	void	getPathedThings(vector<MapThing*>& list);
 	void	getDragonTargets(MapThing* first, vector<MapThing*>& list);
 	void	getTaggingLinesById(int id, int type, vector<MapLine*>& list);

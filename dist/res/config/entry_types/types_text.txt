@@ -391,16 +391,10 @@ entry_types
 	}
 	
 	// SRB2 text lumps
-	maincfg : text
+	soc : text
 	{
 		name = "Main Configuration";
-		match_name = "maincfg";
-	}
-
-	objctcfg : text
-	{
-		name = "Object Configuration";
-		match_name = "objctcfg";
+		match_name = "soc_*", "maincfg", "objctcfg";
 	}
 
 	srb2lua : text

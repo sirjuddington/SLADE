@@ -33,12 +33,13 @@
 #include "UI/WxStuff.h"
 #include "MCAnimations.h"
 #include "General/ColourConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/MapLine.h"
 #include "MapEditor/SLADEMap/MapVertex.h"
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
 #include "OpenGL/OpenGL.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
@@ -193,9 +194,9 @@ void MCAThingSelection::draw()
 		// Get thing selection texture
 		GLTexture* tex = NULL;
 		if (thing_drawtype == TDT_ROUND || thing_drawtype == TDT_SPRITE)
-			tex = theMapEditor->textureManager().getEditorImage("thing/hilight");
+			tex = MapEditor::textureManager().getEditorImage("thing/hilight");
 		else
-			tex = theMapEditor->textureManager().getEditorImage("thing/square/hilight");
+			tex = MapEditor::textureManager().getEditorImage("thing/square/hilight");
 
 		if (!tex)
 			return;
@@ -373,18 +374,18 @@ void MCAVertexSelection::draw()
 	{
 		// Get appropriate vertex texture
 		GLTexture* tex;
-		//if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex_r");
-		//else tex = theMapEditor->textureManager().getEditorImage("vertex_s");
+		//if (vertex_round) tex = MapEditor::textureManager().getEditorImage("vertex_r");
+		//else tex = MapEditor::textureManager().getEditorImage("vertex_s");
 
 		if (select)
 		{
-			if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex/round");
-			else tex = theMapEditor->textureManager().getEditorImage("vertex/square");
+			if (vertex_round) tex = MapEditor::textureManager().getEditorImage("vertex/round");
+			else tex = MapEditor::textureManager().getEditorImage("vertex/square");
 		}
 		else
 		{
-			if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex/hilight_r");
-			else tex = theMapEditor->textureManager().getEditorImage("vertex/hilight_s");
+			if (vertex_round) tex = MapEditor::textureManager().getEditorImage("vertex/hilight_r");
+			else tex = MapEditor::textureManager().getEditorImage("vertex/hilight_s");
 		}
 
 		// If it was found, enable point sprites
@@ -709,13 +710,20 @@ void MCAHilightFade::draw()
 /* MCAHilightFade3D::MCAHilightFade3D
  * MCAHilightFade3D class constructor
  *******************************************************************/
-MCAHilightFade3D::MCAHilightFade3D(long start, int item_index, uint8_t item_type, MapRenderer3D* renderer, float fade_init) : MCAnimation(start, true)
+MCAHilightFade3D::MCAHilightFade3D(
+	long start,
+	int item_index,
+	MapEditor::ItemType item_type,
+	MapRenderer3D* renderer,
+	float fade_init
+) :
+	MCAnimation(start, true),
+	item_index{ item_index },
+	item_type{ item_type },
+	fade{ fade_init },
+	init_fade{ fade_init },
+	renderer{ renderer }
 {
-	this->item_index = item_index;
-	this->item_type = item_type;
-	this->renderer = renderer;
-	this->init_fade = fade_init;
-	this->fade = fade_init;
 }
 
 /* MCAHilightFade3D::~MCAHilightFade3D
@@ -745,5 +753,5 @@ bool MCAHilightFade3D::update(long time)
  *******************************************************************/
 void MCAHilightFade3D::draw()
 {
-	renderer->renderHilight(selection_3d_t(item_index, item_type), fade);
+	renderer->renderHilight({ item_index, item_type }, fade);
 }

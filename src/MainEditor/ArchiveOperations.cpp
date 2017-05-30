@@ -35,7 +35,8 @@
 #include "Graphics/CTexture/TextureXList.h"
 #include "General/ResourceManager.h"
 #include "Dialogs/ExtMessageDialog.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/SLADEMap/MapSide.h"
 #include "MapEditor/SLADEMap/MapSector.h"
 #include "MapEditor/SLADEMap/MapThing.h"
@@ -115,7 +116,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 				tx_lists[t]->removePatch(p.name);
 
 			// Remove the patch from the patch table
-			wxLogMessage("Removed patch %s", p.name);
+			LOG_MESSAGE(1, "Removed patch %s", p.name);
 			removed++;
 			ptable.removePatch(a--);
 		}
@@ -124,7 +125,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 	// Remove unused patch entries
 	for (unsigned a = 0; a < to_remove.size(); a++)
 	{
-		wxLogMessage("Removed entry %s", to_remove[a]->getName());
+		LOG_MESSAGE(1, "Removed entry %s", to_remove[a]->getName());
 		archive->removeEntry(to_remove[a]);
 	}
 
@@ -761,7 +762,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			if (flatname == flat_anim_start[b])
 			{
 				anim = true;
-				wxLogMessage("%s anim start", flatname);
+				LOG_MESSAGE(1, "%s anim start", flatname);
 				break;
 			}
 		}
@@ -774,7 +775,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			{
 				anim = false;
 				thisend = true;
-				wxLogMessage("%s anim end", flatname);
+				LOG_MESSAGE(1, "%s anim end", flatname);
 				break;
 			}
 		}
@@ -814,13 +815,13 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 
 CONSOLE_COMMAND(test_cleantex, 0, false)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::currentArchive();
 	if (current) ArchiveOperations::removeUnusedTextures(current);
 }
 
 CONSOLE_COMMAND(test_cleanflats, 0, false)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::currentArchive();
 	if (current) ArchiveOperations::removeUnusedFlats(current);
 }
 
@@ -1009,7 +1010,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 					achanged = replaceThingsUDMF(things, oldtype, newtype);
 					break;
 				default:
-					wxLogMessage("Unknown map format for " + maps[a].head->getName());
+					LOG_MESSAGE(1, "Unknown map format for " + maps[a].head->getName());
 					break;
 				}
 			}
@@ -1017,13 +1018,13 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 		report += S_FMT("%s:\t%i things changed\n", maps[a].head->getName(), achanged);
 		changed += achanged;
 	}
-	wxLogMessage(report);
+	LOG_MESSAGE(1, report);
 	return changed;
 }
 
 CONSOLE_COMMAND(replacethings, 2, true)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::currentArchive();
 	long oldtype, newtype;
 
 	if (current && args[0].ToLong(&oldtype) && args[1].ToLong(&newtype))
@@ -1034,7 +1035,7 @@ CONSOLE_COMMAND(replacethings, 2, true)
 
 CONSOLE_COMMAND(convertmapchex1to3, 0, false)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::currentArchive();
 	long rep[23][2] = 
 	{				//  #	Chex 1 actor			==>	Chex 3 actor			(unwanted replacement)
 		{25, 78},	//  0	ChexTallFlower2			==> PropFlower1				(PropGlobeStand)
@@ -1069,7 +1070,7 @@ CONSOLE_COMMAND(convertmapchex1to3, 0, false)
 
 CONSOLE_COMMAND(convertmapchex2to3, 0, false)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::currentArchive();
 	long rep[20][2] = 
 	{
 		{3001, 9057},	//  0	Quadrumpus
@@ -1350,7 +1351,7 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 												   oldarg0, oldarg1, oldarg2, oldarg3, oldarg4, newarg0, newarg1, newarg2, newarg3, newarg4);
 					break;
 				default:
-					wxLogMessage("Unknown map format for " + maps[a].head->getName());
+					LOG_MESSAGE(1, "Unknown map format for " + maps[a].head->getName());
 					break;
 				}
 			}
@@ -1358,13 +1359,13 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 		report += S_FMT("%s:\t%i specials changed\n", maps[a].head->getName(), achanged);
 		changed += achanged;
 	}
-	wxLogMessage(report);
+	LOG_MESSAGE(1, report);
 	return changed;
 }
 
 CONSOLE_COMMAND(replacespecials, 2, true)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::currentArchive();
 	long oldtype, newtype;
 	bool arg0 = false, arg1 = false, arg2 = false, arg3 = false, arg4 = false;
 	long oldarg0, oldarg1, oldarg2, oldarg3, oldarg4;
@@ -1392,7 +1393,7 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 			run  = args[oldtail--].ToLong(&oldtype) && args[newtail--].ToLong(&newtype);
 			break;
 		default:
-			wxLogMessage("Invalid number of arguments: %d", fullarg);
+			LOG_MESSAGE(1, "Invalid number of arguments: %d", fullarg);
 		}
 	}
 
@@ -1693,7 +1694,7 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 					achanged = replaceTexturesUDMF(sectors, oldtex, newtex, floor, ceiling, lower, middle, upper);
 					break;
 				default:
-					wxLogMessage("Unknown map format for " + maps[a].head->getName());
+					LOG_MESSAGE(1, "Unknown map format for " + maps[a].head->getName());
 					break;
 				}
 			}
@@ -1701,13 +1702,13 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 		report += S_FMT("%s:\t%i elements changed\n", maps[a].head->getName(), achanged);
 		changed += achanged;
 	}
-	wxLogMessage(report);
+	LOG_MESSAGE(1, report);
 	return changed;
 }
 
 CONSOLE_COMMAND(replacetextures, 2, true)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::currentArchive();
 
 	if (current)
 	{

@@ -31,7 +31,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Wad2Archive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -104,7 +104,7 @@ bool Wad2Archive::open(MemChunk& mc)
 	if (wad_type[0] != 'W' || wad_type[1] != 'A' || wad_type[2] != 'D' ||
 	        (wad_type[3] != '2' && wad_type[3] != '3'))
 	{
-		wxLogMessage("Wad2Archive::open: Invalid header");
+		LOG_MESSAGE(1, "Wad2Archive::open: Invalid header");
 		Global::error = "Invalid wad2 header";
 		return false;
 	}
@@ -116,11 +116,11 @@ bool Wad2Archive::open(MemChunk& mc)
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	theSplashWindow->setProgressMessage("Reading wad archive data");
+	UI::setSplashProgressMessage("Reading wad archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		wad2entry_t info;
@@ -135,7 +135,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if ((unsigned)(info.offset + info.dsize) > mc.getSize())
 		{
-			wxLogMessage("Wad2Archive::open: Wad2 archive is invalid or corrupt");
+			LOG_MESSAGE(1, "Wad2Archive::open: Wad2 archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -156,11 +156,11 @@ bool Wad2Archive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -185,7 +185,7 @@ bool Wad2Archive::open(MemChunk& mc)
 	}
 
 	// Detect maps (will detect map entry types)
-	theSplashWindow->setProgressMessage("Detecting maps");
+	UI::setSplashProgressMessage("Detecting maps");
 	detectMaps();
 
 	// Setup variables
@@ -193,7 +193,7 @@ bool Wad2Archive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -285,7 +285,7 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("Wad2Archive::loadEntryData: Failed to open wadfile %s", filename);
+		LOG_MESSAGE(1, "Wad2Archive::loadEntryData: Failed to open wadfile %s", filename);
 		return false;
 	}
 

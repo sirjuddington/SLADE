@@ -29,10 +29,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
+#include "Game/Configuration.h"
 #include "MapObject.h"
 #include "SLADEMap.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MainApp.h"
 
 
 /*******************************************************************
@@ -55,7 +55,7 @@ MapObject::MapObject(int type, SLADEMap* parent)
 	this->parent_map = parent;
 	this->index = 0;
 	this->filtered = false;
-	this->modified_time = theApp->runTimer();
+	this->modified_time = App::runTimer();
 	this->id = 0;
 	this->obj_backup = NULL;
 
@@ -118,7 +118,7 @@ void MapObject::setModified()
 		backup(obj_backup);
 	}
 
-	modified_time = theApp->runTimer();
+	modified_time = App::runTimer();
 }
 
 /* MapObject::copy
@@ -157,9 +157,9 @@ bool MapObject::boolProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getBoolValue();
+			return prop->defaultValue().getBoolValue();
 		else
 			return false;
 	}
@@ -177,9 +177,9 @@ int MapObject::intProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getIntValue();
+			return prop->defaultValue().getIntValue();
 		else
 			return 0;
 	}
@@ -197,9 +197,9 @@ double MapObject::floatProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getFloatValue();
+			return prop->defaultValue().getFloatValue();
 		else
 			return 0;
 	}
@@ -217,9 +217,9 @@ string MapObject::stringProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getStringValue();
+			return prop->defaultValue().getStringValue();
 		else
 			return "";
 	}
@@ -297,13 +297,13 @@ void MapObject::loadFromBackup(mobj_backup_t* backup)
 	// Check type match
 	if (backup->type != type)
 	{
-		wxLogMessage("loadFromBackup: Mobj type mismatch, %d != %d", type, backup->type);
+		LOG_MESSAGE(1, "loadFromBackup: Mobj type mismatch, %d != %d", type, backup->type);
 		return;
 	}
 	// Check id match
 	if (backup->id != id)
 	{
-		wxLogMessage("loadFromBackup: Mobj id mismatch, %d != %d", id, backup->id);
+		LOG_MESSAGE(1, "loadFromBackup: Mobj id mismatch, %d != %d", id, backup->id);
 		return;
 	}
 

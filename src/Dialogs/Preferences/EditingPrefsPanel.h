@@ -4,12 +4,12 @@
 
 #include "PrefsPanelBase.h"
 #include "UI/Lists/VirtualListView.h"
+#include "UI/STabCtrl.h"
 
-class STabCtrl;
 class EditingPrefsPanel : public PrefsPanelBase
 {
 private:
-	STabCtrl*	stc_tabs;
+	TabControl*	stc_tabs;
 
 	// General
 	wxCheckBox*	cb_wad_force_uppercase;

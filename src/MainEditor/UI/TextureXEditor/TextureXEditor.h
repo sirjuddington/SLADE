@@ -8,9 +8,9 @@
 #include "Archive/Archive.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "PatchBrowser.h"
+#include "UI/STabCtrl.h"
 
 class UndoManager;
-class wxAuiNotebook;
 class TextureXEditor : public wxPanel, public Listener
 {
 private:
@@ -22,9 +22,9 @@ private:
 	UndoManager*				undo_manager;
 
 	// UI Stuff
-	wxAuiNotebook*		tabs;
-	wxButton*			btn_save;
-	wxMenu*				menu_texture;
+	TabControl*	tabs;
+	wxButton*	btn_save;
+	wxMenu*		menu_texture;
 
 	bool	pb_update;
 	bool	pnames_modified;

@@ -3,9 +3,12 @@
 #define __QUICK_TEXTURE_OVERLAY_3D_H__
 
 #include "MCOverlay.h"
+#include "MapEditor/Edit/Edit3D.h"
 
+class ItemSelection;
 class GLTexture;
-class MapEditor;
+class MapEditContext;
+
 class QuickTextureOverlay3d : public MCOverlay
 {
 private:
@@ -19,11 +22,11 @@ private:
 	unsigned			current_index;
 	string				search;
 	double				anim_offset;
-	MapEditor*			editor;
+	MapEditContext*		editor;
 	int					sel_type;	// 0=flats, 1=walls, 2=both
 
 public:
-	QuickTextureOverlay3d(MapEditor* editor);
+	QuickTextureOverlay3d(MapEditContext* editor);
 	~QuickTextureOverlay3d();
 
 	void	setTexture(string name);
@@ -43,7 +46,7 @@ public:
 	void	doSearch();
 	void	keyDown(string key);
 
-	static bool	ok(vector<selection_3d_t> &sel);
+	static bool	ok(const ItemSelection& sel);
 };
 
 #endif//__QUICK_TEXTURE_OVERLAY_3D_H__

@@ -32,9 +32,9 @@
  *******************************************************************/
 #include "Main.h"
 #include "DirArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 #include "WadArchive.h"
-#include "MainApp.h"
+#include "App.h"
 
 
 /*******************************************************************
@@ -92,8 +92,8 @@ string DirArchive::getFormat()
  *******************************************************************/
 bool DirArchive::open(string filename)
 {
-	theSplashWindow->setProgressMessage("Reading directory structure");
-	theSplashWindow->setProgress(0);
+	UI::setSplashProgressMessage("Reading directory structure");
+	UI::setSplashProgress(0);
 	//wxArrayString files;
 	//wxDir::GetAllFiles(filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
 	vector<string> files, dirs;
@@ -104,10 +104,10 @@ bool DirArchive::open(string filename)
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
 
-	theSplashWindow->setProgressMessage("Reading files");
+	UI::setSplashProgressMessage("Reading files");
 	for (unsigned a = 0; a < files.size(); a++)
 	{
-		theSplashWindow->setProgress((float)a / (float)files.size());
+		UI::setSplashProgress((float)a / (float)files.size());
 
 		// Cut off directory to get entry name + relative path
 		string name = files[a];
@@ -171,7 +171,7 @@ bool DirArchive::open(string filename)
 	setModified(false);
 	on_disk = true;
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -229,16 +229,16 @@ bool DirArchive::save(string filename)
 	}
 
 	// Get current directory structure
-	long time = theApp->runTimer();
+	long time = App::runTimer();
 	vector<string> files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir dir(this->filename);
 	dir.Traverse(traverser, "", wxDIR_FILES|wxDIR_DIRS);
 	//wxDir::GetAllFiles(this->filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
-	LOG_MESSAGE(2, "GetAllFiles took %lums", theApp->runTimer() - time);
+	LOG_MESSAGE(2, "GetAllFiles took %lums", App::runTimer() - time);
 
 	// Check for any files to remove
-	time = theApp->runTimer();
+	time = App::runTimer();
 	for (unsigned a = 0; a < removed_files.size(); a++)
 	{
 		if (wxFileExists(removed_files[a]))
@@ -268,7 +268,7 @@ bool DirArchive::save(string filename)
 		if (!found && wxRmdir(dirs[a]))
 			LOG_MESSAGE(2, "Removing directory %s", dirs[a]);
 	}
-	LOG_MESSAGE(2, "Remove check took %lums", theApp->runTimer() - time);
+	LOG_MESSAGE(2, "Remove check took %lums", App::runTimer() - time);
 
 	// Go through entries
 	vector<string> files_written;

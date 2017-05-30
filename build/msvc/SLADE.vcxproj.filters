@@ -142,9 +142,6 @@
     <Filter Include="Dialogs\Setup Wizard">
       <UniqueIdentifier>{90dc0f0c-92e7-414e-a30b-76c8c288e615}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Map Editor\Game Configuration">
-      <UniqueIdentifier>{69273e0b-abaf-403b-b0cb-f3aede6fb016}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Graphics\Composite Texture">
       <UniqueIdentifier>{25d4520a-4015-4838-81d3-9596df6d636e}</UniqueIdentifier>
     </Filter>
@@ -163,18 +160,6 @@
     <Filter Include="Archive\EntryType\Config">
       <UniqueIdentifier>{e7b5e9e0-b8de-4082-845a-f7bd5fa91926}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Map Editor\Game Configuration\Games">
-      <UniqueIdentifier>{059773c6-6149-4dfd-af4a-52a4c8406cfc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\Game Configuration\Ports">
-      <UniqueIdentifier>{a46d1f03-32ba-4082-b3b6-cbb63e8936e3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\Game Configuration\Games\Include">
-      <UniqueIdentifier>{8f7723e0-c2a6-405d-864d-98b43e8e2fc0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\Game Configuration\Ports\Include">
-      <UniqueIdentifier>{dad6c254-dc84-48a3-911b-cc8916623c42}</UniqueIdentifier>
-    </Filter>
     <Filter Include="UI\Text Editor\Languages">
       <UniqueIdentifier>{ae982b5a-81f7-4648-92ec-71b69c823459}</UniqueIdentifier>
     </Filter>
@@ -183,6 +168,12 @@
     </Filter>
     <Filter Include="General\Colours">
       <UniqueIdentifier>{2396ead4-6f0e-4df8-9e57-2d51554e5f40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Map Editor\Edit">
+      <UniqueIdentifier>{8c15c8af-a29b-46c5-b73c-699f04cea254}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{6484ec95-d6fd-4bdc-96ee-3e1faf24e057}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -921,9 +912,6 @@
     <ClCompile Include="..\..\src\UI\WxStuff.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Application\MainApp.cpp">
-      <Filter>Application</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\General\SAction.cpp">
       <Filter>General</Filter>
     </ClCompile>
@@ -1146,9 +1134,6 @@
     <ClCompile Include="..\..\src\MainEditor\EntryOperations.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MainEditor\MainWindow.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.cpp">
       <Filter>Main Editor\UI</Filter>
     </ClCompile>
@@ -1224,9 +1209,6 @@
     <ClCompile Include="..\..\src\MapEditor\MapEditor.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\MapEditorWindow.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\MapSpecials.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
@@ -1236,26 +1218,8 @@
     <ClCompile Include="..\..\src\MapEditor\NodeBuilders.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\ObjectEdit.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\SectorBuilder.cpp">
       <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.cpp">
-      <Filter>Map Editor\Game Configuration</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.cpp">
-      <Filter>Map Editor\Game Configuration</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GenLineSpecial.cpp">
-      <Filter>Map Editor\Game Configuration</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\ThingType.cpp">
-      <Filter>Map Editor\Game Configuration</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.cpp">
-      <Filter>Map Editor\Game Configuration</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\Renderer\MapRenderer2D.cpp">
       <Filter>Map Editor\Renderer</Filter>
@@ -1406,6 +1370,93 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Audio\AudioTags.cpp">
       <Filter>Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\MainEditor.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\UI.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\MainWindow.cpp">
+      <Filter>Main Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Application\App.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Application\SLADEWxApp.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Log.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\MapEditContext.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\MapEditorWindow.cpp">
+      <Filter>Map Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\LineDraw.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\Edit3D.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\ItemSelection.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UndoSteps.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Renderer.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\Input.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\ObjectEdit.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\RenderView.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\Edit2D.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\MoveObjects.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\StringUtils.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ActionSpecial.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\GenLineSpecial.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ThingType.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\UDMFProperty.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Args.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Configuration.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Decorate.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\SpecialPreset.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\SpecialPresetDialog.cpp">
+      <Filter>Map Editor\UI\Dialogs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1872,9 +1923,6 @@
     <ClInclude Include="..\..\src\Application\Main.h">
       <Filter>Application</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Application\MainApp.h">
-      <Filter>Application</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\General\SAction.h">
       <Filter>General</Filter>
     </ClInclude>
@@ -2139,9 +2187,6 @@
     <ClInclude Include="..\..\src\MainEditor\EntryOperations.h">
       <Filter>Main Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MainEditor\MainWindow.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h">
       <Filter>Main Editor\UI</Filter>
     </ClInclude>
@@ -2217,9 +2262,6 @@
     <ClInclude Include="..\..\src\MapEditor\MapEditor.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\MapEditorWindow.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\MapSpecials.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
@@ -2229,29 +2271,8 @@
     <ClInclude Include="..\..\src\MapEditor\NodeBuilders.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\ObjectEdit.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\SectorBuilder.h">
       <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.h">
-      <Filter>Map Editor\Game Configuration</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\Args.h">
-      <Filter>Map Editor\Game Configuration</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.h">
-      <Filter>Map Editor\Game Configuration</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\GenLineSpecial.h">
-      <Filter>Map Editor\Game Configuration</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\ThingType.h">
-      <Filter>Map Editor\Game Configuration</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.h">
-      <Filter>Map Editor\Game Configuration</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\Renderer\MapRenderer2D.h">
       <Filter>Map Editor\Renderer</Filter>
@@ -2426,6 +2447,93 @@
     <ClInclude Include="..\..\src\Audio\AudioTags.h">
       <Filter>Audio</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\MainEditor.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\UI.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\MainWindow.h">
+      <Filter>Main Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Application\App.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Application\SLADEWxApp.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Log.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\MapEditContext.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\MapEditorWindow.h">
+      <Filter>Map Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\LineDraw.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\Edit3D.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\ItemSelection.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UndoSteps.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Renderer.h">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\Input.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\ObjectEdit.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\RenderView.h">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\Edit2D.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\MoveObjects.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\StringUtils.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\ActionSpecial.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Args.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\GenLineSpecial.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\ThingType.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\UDMFProperty.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Configuration.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Decorate.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\SpecialPreset.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\SpecialPresetDialog.h">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />
@@ -2443,174 +2551,6 @@
     </None>
     <None Include="..\..\dist\makebuild.ps1">
       <Filter>Installer</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\chex1.cfg">
-      <Filter>Map Editor\Game Configuration\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\chex3.cfg">
-      <Filter>Map Editor\Game Configuration\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\doom1.cfg">
-      <Filter>Map Editor\Game Configuration\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\doom2.cfg">
-      <Filter>Map Editor\Game Configuration\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\doom64.cfg">
-      <Filter>Map Editor\Game Configuration\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\heretic.cfg">
-      <Filter>Map Editor\Game Configuration\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\hexen.cfg">
-      <Filter>Map Editor\Game Configuration\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\strife.cfg">
-      <Filter>Map Editor\Game Configuration\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\urbanbrawl.cfg">
-      <Filter>Map Editor\Game Configuration\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\flags_doom.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\flags_doom64.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\flags_hexen.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\flags_strife.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\props_base.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\props_hexen.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_doom.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_doom64.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_heretic.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_hexen.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_strife.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_doom1.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_doom2.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_doom64.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_heretic.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_hexen.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_strife.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_action2.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_chex1.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_chex3.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_common.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_doom1.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_doom2.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_doom64.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_heretic.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_hexen.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_strife.cfg">
-      <Filter>Map Editor\Game Configuration\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\boom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\eternity.cfg">
-      <Filter>Map Editor\Game Configuration\Ports</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_boom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_eternity.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_mbf.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\props_boom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\props_eternity.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\props_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\sectors_eternity.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\sectors_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_boom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_eternity.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_mbf.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_boom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_eternity.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_mbf.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
     </None>
     <None Include="..\..\dist\res\config\text_styles\0default_dark.sss">
       <Filter>UI\Text Editor\Styles</Filter>
@@ -2644,9 +2584,6 @@
     </None>
     <None Include="..\..\dist\res\config\colours\SLADE 2.cfg">
       <Filter>General\Colours</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\prefabs_zdoom.cfg">
-      <Filter>Map Editor\Game Configuration\Ports\Include</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

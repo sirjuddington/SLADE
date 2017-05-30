@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "WadArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 #include "General/Misc.h"
 #include "Utility/Tokenizer.h"
 
@@ -270,7 +270,7 @@ void WadArchive::updateNamespaces()
 		ns.end_index = entryIndex(ns.end);
 
 		// Testing
-		//wxLogMessage("Namespace %s from %s (%d) to %s (%d)", ns.name,
+		//LOG_MESSAGE(1, "Namespace %s from %s (%d) to %s (%d)", ns.name,
 		//	ns.start->getName(), ns.start_index, ns.end->getName(), ns.end_index);
 	}
 }
@@ -332,7 +332,7 @@ bool WadArchive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type[1] != 'W' || wad_type[2] != 'A' || wad_type[3] != 'D')
 	{
-		wxLogMessage("WadArchive::openFile: File %s has invalid header", filename);
+		LOG_MESSAGE(1, "WadArchive::openFile: File %s has invalid header", filename);
 		Global::error = "Invalid wad header";
 		return false;
 	}
@@ -348,11 +348,11 @@ bool WadArchive::open(MemChunk& mc)
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	theSplashWindow->setProgressMessage("Reading wad archive data");
+	UI::setSplashProgressMessage("Reading wad archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char name[9] = "";
@@ -428,7 +428,7 @@ bool WadArchive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if (offset + actualsize > mc.getSize())
 		{
-			wxLogMessage("WadArchive::open: Wad archive is invalid or corrupt");
+			LOG_MESSAGE(1, "WadArchive::open: Wad archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt (lump %d: %s data goes past end of file)", d, name);
 			setMuted(false);
 			return false;
@@ -456,11 +456,11 @@ bool WadArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)numEntries())));
+		UI::setSplashProgress((((float)a / (float)numEntries())));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -476,7 +476,7 @@ bool WadArchive::open(MemChunk& mc)
 				        && (unsigned)(int)(entry->exProp("FullSize")) >  entry->getSize())
 					edata.reSize((int)(entry->exProp("FullSize")), true);
 				if (!JaguarDecode(edata))
-					wxLogMessage("%i: %s (following %s), did not decode properly", a, entry->getName(), a>0?getEntry(a-1)->getName():"nothing");
+					LOG_MESSAGE(1, "%i: %s (following %s), did not decode properly", a, entry->getName(), a>0?getEntry(a-1)->getName():"nothing");
 			}
 			entry->importMemChunk(edata);
 		}
@@ -496,7 +496,7 @@ bool WadArchive::open(MemChunk& mc)
 	detectIncludes();
 
 	// Detect maps (will detect map entry types)
-	theSplashWindow->setProgressMessage("Detecting maps");
+	UI::setSplashProgressMessage("Detecting maps");
 	detectMaps();
 
 	// Setup variables
@@ -505,7 +505,7 @@ bool WadArchive::open(MemChunk& mc)
 	//if (iwad && iwad_lock) read_only = true;
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -687,7 +687,7 @@ bool WadArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("WadArchive::loadEntryData: Failed to open wadfile %s", filename);
+		LOG_MESSAGE(1, "WadArchive::loadEntryData: Failed to open wadfile %s", filename);
 		return false;
 	}
 

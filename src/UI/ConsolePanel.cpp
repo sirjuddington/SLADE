@@ -31,6 +31,7 @@
 #include "ConsolePanel.h"
 #include "General/Console/Console.h"
 #include "UI/WxStuff.h"
+#include "App.h"
 
 
 /*******************************************************************
@@ -45,19 +46,18 @@ ConsolePanel::ConsolePanel(wxWindow* parent, int id)
 {
 	// Init variables
 	cmd_log_index = 0;
+	next_message_index = 0;
 
 	// Setup layout
 	initLayout();
-
-	// Listen to the console
-	listenTo(theConsole);
 
 	// Bind events
 	text_command->Bind(wxEVT_TEXT_ENTER, &ConsolePanel::onCommandEnter, this);
 	text_command->Bind(wxEVT_KEY_DOWN, &ConsolePanel::onCommandKeyDown, this);
 
-	// Load the current contents of the console log
-	text_log->AppendText(theConsole->dumpLog());
+	// Start update timer
+	timer_update.Bind(wxEVT_TIMER, [&](wxTimerEvent&){ update(); });
+	timer_update.Start(100);
 }
 
 /* ConsolePanel::~ConsolePanel
@@ -73,7 +73,7 @@ ConsolePanel::~ConsolePanel()
 void ConsolePanel::initLayout()
 {
 	// Create and set the sizer for the panel
-	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	auto vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(vbox);
 
 	// Create and add the message log textbox
@@ -88,21 +88,37 @@ void ConsolePanel::initLayout()
 	Layout();
 
 	// Set console font to default+monospace
-	wxFont font = getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+	auto font = getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 	text_log->SetFont(font);
 	text_command->SetFont(font);
 }
 
-/* ConsolePanel::onAnnouncement
- * Handles any announcement events
+/* ConsolePanel::update
+ * Update the log text with any new log messages
  *******************************************************************/
-void ConsolePanel::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+void ConsolePanel::update()
 {
-	// New console log message added
-	if (event_name == "console_logmessage")
+	// Check if any new log messages were added since the last update
+	auto& log = Log::history();
+	if (log.size() <= next_message_index)
 	{
-		text_log->AppendText(theConsole->lastLogLine());
+		// None added, check again in 500ms
+		timer_update.Start(500);
+		return;
 	}
+
+	// Get combined string of new messages
+	string new_logs = (next_message_index == 0) ? "" : "\n";
+	for (auto a = next_message_index; a < log.size(); a++)
+		new_logs += log[a].formattedMessageLine() + "\n";
+	new_logs.RemoveLast(1); // Remove ending newline
+
+	// Append to text box
+	text_log->AppendText(new_logs);
+	next_message_index = Log::history().size();
+
+	// Check again in 100ms
+	timer_update.Start(100);
 }
 
 
@@ -115,7 +131,8 @@ void ConsolePanel::onAnnouncement(Announcer* announcer, string event_name, MemCh
  *******************************************************************/
 void ConsolePanel::onCommandEnter(wxCommandEvent& e)
 {
-	theConsole->execute(e.GetString());
+	App::console()->execute(e.GetString());
+	update();
 	text_command->Clear();
 	cmd_log_index = 0;
 }
@@ -127,15 +144,15 @@ void ConsolePanel::onCommandKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_UP)
 	{
-		text_command->SetValue(theConsole->prevCommand(cmd_log_index));
+		text_command->SetValue(App::console()->prevCommand(cmd_log_index));
 		text_command->SetInsertionPointEnd();
-		if (cmd_log_index < theConsole->numPrevCommands()-1)
+		if (cmd_log_index < App::console()->numPrevCommands()-1)
 			cmd_log_index++;
 	}
 	else if (e.GetKeyCode() == WXK_DOWN)
 	{
 		cmd_log_index--;
-		text_command->SetValue(theConsole->prevCommand(cmd_log_index));
+		text_command->SetValue(App::console()->prevCommand(cmd_log_index));
 		text_command->SetInsertionPointEnd();
 		if (cmd_log_index < 0)
 			cmd_log_index = 0;

@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "TarArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -273,7 +273,7 @@ bool TarArchive::open(MemChunk& mc)
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
-	theSplashWindow->setProgressMessage("Reading tar archive data");
+	UI::setSplashProgressMessage("Reading tar archive data");
 
 	// Two consecutive empty blocks mark the end of the file
 	int blankcount = 0;
@@ -283,7 +283,7 @@ bool TarArchive::open(MemChunk& mc)
 	{
 		// Update splash window progress
 		// Since there is no directory in Unix tape archives, use the size
-		theSplashWindow->setProgress(((float)mc.currentPos() / (float)mc.getSize()));
+		UI::setSplashProgress(((float)mc.currentPos() / (float)mc.getSize()));
 
 		// Read tar header
 		tar_header header;
@@ -306,7 +306,7 @@ bool TarArchive::open(MemChunk& mc)
 
 		if (!TarChecksum(&header))
 		{
-			wxLogMessage("Invalid checksum for block at 0x%x", mc.currentPos() - 512);
+			LOG_MESSAGE(1, "Invalid checksum for block at 0x%x", mc.currentPos() - 512);
 			continue;
 		}
 
@@ -361,11 +361,11 @@ bool TarArchive::open(MemChunk& mc)
 	MemChunk edata;
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)all_entries.size())));
+		UI::setSplashProgress((((float)a / (float)all_entries.size())));
 
 		// Get entry
 		ArchiveEntry* entry = all_entries[a];
@@ -394,7 +394,7 @@ bool TarArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -429,7 +429,7 @@ bool TarArchive::write(MemChunk& mc, bool update)
 		name.Remove(0, 1);	// Remove leading /
 		if (name.Len() > 99)
 		{
-			wxLogMessage("Warning: Entry %s path is too long (> 99 characters), putting it in the root directory", name);
+			LOG_MESSAGE(1, "Warning: Entry %s path is too long (> 99 characters), putting it in the root directory", name);
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 99)
@@ -490,7 +490,7 @@ bool TarArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("TarArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "TarArchive::loadEntryData: Unable to open archive file %s", filename);
 		return false;
 	}
 

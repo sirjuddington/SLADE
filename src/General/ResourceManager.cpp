@@ -449,7 +449,7 @@ void ResourceManager::listAllPatches()
 	EntryResourceMap::iterator i = patches.begin();
 	while (i != patches.end())
 	{
-		wxLogMessage("%s (%d)", i->first, i->second.length());
+		LOG_MESSAGE(1, "%s (%d)", i->first, i->second.length());
 		i++;
 	}
 }
@@ -681,18 +681,18 @@ CONSOLE_COMMAND(list_res_patches, 0, false)
 	theResourceManager->listAllPatches();
 }
 
-#include "MainApp.h"
+#include "App.h"
 CONSOLE_COMMAND(test_res_speed, 0, false)
 {
 	vector<ArchiveEntry*> list;
 
-	theConsole->logMessage("Testing...");
+	Log::console("Testing...");
 
 	long times[5];
 
 	for (unsigned t = 0; t < 5; t++)
 	{
-		auto start = theApp->runTimer();
+		auto start = App::runTimer();
 		for (unsigned a = 0; a < 100; a++)
 		{
 			theResourceManager->getAllPatchEntries(list, nullptr);
@@ -703,10 +703,10 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 			theResourceManager->getAllFlatEntries(list, nullptr);
 			list.clear();
 		}
-		auto end = theApp->runTimer();
+		auto end = App::runTimer();
 		times[t] = end - start;
 	}
 
 	float avg = float(times[0] + times[1] + times[2] + times[3] + times[4]) / 5.0f;
-	theConsole->logMessage(S_FMT("Test took %dms avg", (int)avg));
+	Log::console(S_FMT("Test took %dms avg", (int)avg));
 }

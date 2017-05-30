@@ -4,17 +4,17 @@
 
 #include "PropsPanelBase.h"
 #include "MOPGProperty.h"
+#include "UI/STabCtrl.h"
 
 class wxPropertyGrid;
 class wxPGProperty;
 class MapObject;
 class UDMFProperty;
 class MOPGProperty;
-class STabCtrl;
 class MapObjectPropsPanel : public PropsPanelBase
 {
 private:
-	STabCtrl*				stc_sections;
+	TabControl*				stc_sections;
 	wxPropertyGrid*			pg_properties;
 	wxPropertyGrid*			pg_props_side1;
 	wxPropertyGrid*			pg_props_side2;
@@ -43,7 +43,7 @@ private:
 	MOPGProperty*	addLineFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
 	MOPGProperty*	addThingFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
 	MOPGProperty*	addTextureProperty(wxPGProperty* group, string label, string propname, int textype, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
-	void			addUDMFProperty(UDMFProperty* prop, int objtype, string basegroup = "", wxPropertyGrid* grid = NULL);
+	void			addUDMFProperty(UDMFProperty& prop, int objtype, string basegroup = "", wxPropertyGrid* grid = NULL);
 
 	bool	setBoolProperty(wxPGProperty* prop, bool value, bool force_set = false);
 

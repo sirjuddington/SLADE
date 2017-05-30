@@ -35,8 +35,8 @@
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "General/Misc.h"
 #include "MainEditor/EntryOperations.h"
-#include "MainEditor/MainWindow.h"
-#include "UI/HexEditorPanel.h"
+#include "MainEditor/MainEditor.h"
+#include "General/SAction.h"
 
 
 /*******************************************************************
@@ -220,7 +220,7 @@ bool DefaultEntryPanel::saveEntry()
  *******************************************************************/
 void DefaultEntryPanel::onBtnGfxConvert(wxCommandEvent& e)
 {
-	theApp->doAction("arch_gfx_convert");
+	SActionHandler::doAction("arch_gfx_convert");
 }
 
 /* DefaultEntryPanel::onBtnGfxModifyOffsets
@@ -236,7 +236,7 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
 	// Apply offsets to selected entries
 	for (uint32_t a = 0; a < entries.size(); a++)
 		EntryOperations::modifyGfxOffsets(entries[a], &mod);
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 }
 
 /* DefaultEntryPanel::onBtnTextureEdit
@@ -244,5 +244,5 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
  *******************************************************************/
 void DefaultEntryPanel::onBtnTextureEdit(wxCommandEvent& e)
 {
-	theMainWindow->openTextureEditor(entry->getParent(), entry);
+	MainEditor::openTextureEditor(entry->getParent(), entry);
 }

@@ -34,16 +34,35 @@
 
 
 /*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+CVAR(Bool, tabs_condensed, false, CVAR_SAVE)
+
+
+/*******************************************************************
  * STABCTRL CLASS FUNCTIONS
  *******************************************************************/
 
 /* STabCtrl::STabCtrl
  * STabCtrl class constructor
  *******************************************************************/
-STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int height, bool main_tabs) : wxAuiNotebook()
+STabCtrl::STabCtrl(
+	wxWindow* parent,
+	bool close_buttons,
+	bool window_list,
+	int height,
+	bool main_tabs,
+	bool move_tabs
+) :	wxAuiNotebook()
 {
+	// Init height
+	if (height < 0)
+		height = tabs_condensed ? 24 : 27;
+
 	// Determine style
-	long style = wxAUI_NB_TOP | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS;
+	long style = wxAUI_NB_TOP | wxAUI_NB_SCROLL_BUTTONS;
+	if (move_tabs)
+		style |= wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE;
 	if (window_list)
 		style |= wxAUI_NB_WINDOWLIST_BUTTON;
 	if (close_buttons)
@@ -81,4 +100,28 @@ wxSize STabCtrl::DoGetBestClientSize() const
 	ret.IncBy(0, GetTabCtrlHeight());
 
 	return ret;
+}
+
+
+/*******************************************************************
+ * STABCTRL CLASS STATIC FUNCTIONS
+ *******************************************************************/
+
+/* STabCtrl::createControl
+ * Creates a platform-dependant tab control (STabCtrl in Windows,
+ * wxNotebook anywhere else)
+ *******************************************************************/
+TabControl* STabCtrl::createControl(
+	wxWindow* parent,
+	bool close_buttons,
+	bool window_list,
+	int height,
+	bool main_tabs,
+	bool move_tabs)
+{
+#ifdef WIN32
+	return new STabCtrl(parent, close_buttons, window_list, height, main_tabs, move_tabs);
+#else
+	return new wxNotebook(parent, -1);
+#endif
 }

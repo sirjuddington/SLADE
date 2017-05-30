@@ -28,11 +28,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MapSide.h"
+#include "Game/Configuration.h"
 #include "MapSector.h"
+#include "MapSide.h"
 #include "SLADEMap.h"
-#include "MainApp.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 
 
 /*******************************************************************
@@ -116,7 +115,8 @@ uint8_t MapSide::getLight()
 	int light = 0;
 	bool include_sector = true;
 
-	if (parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfSideLighting())
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		Game::configuration().featureSupported(Game::UDMFFeature::SideLighting))
 	{
 		light += intProperty("light");
 		if (boolProperty("lightabsolute"))
@@ -139,7 +139,8 @@ uint8_t MapSide::getLight()
  *******************************************************************/
 void MapSide::changeLight(int amount)
 {
-	if (parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfSideLighting())
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		Game::configuration().featureSupported(Game::UDMFFeature::SideLighting))
 		setIntProperty("light", intProperty("light") + amount);
 }
 
@@ -266,7 +267,7 @@ void MapSide::writeBackup(mobj_backup_t* backup)
 	backup->props_internal["offsetx"] = offset_x;
 	backup->props_internal["offsety"] = offset_y;
 
-	//wxLogMessage("Side %d backup sector #%d", id, sector->getIndex());
+	//LOG_MESSAGE(1, "Side %d backup sector #%d", id, sector->getIndex());
 }
 
 /* MapSide::readBackup
@@ -281,7 +282,7 @@ void MapSide::readBackup(mobj_backup_t* backup)
 		sector->disconnectSide(this);
 		sector = (MapSector*)s;
 		sector->connectSide(this);
-		//wxLogMessage("Side %d load backup sector #%d", id, s->getIndex());
+		//LOG_MESSAGE(1, "Side %d load backup sector #%d", id, s->getIndex());
 	}
 	else
 	{

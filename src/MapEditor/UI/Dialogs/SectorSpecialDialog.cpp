@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "SectorSpecialDialog.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/Configuration.h"
 
 /*******************************************************************
  * SECTORSPECIALPANEL CLASS FUNCTIONS
@@ -55,12 +55,12 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	lv_specials->enableSizeUpdate(false);
 	lv_specials->AppendColumn("#");
 	lv_specials->AppendColumn("Name");
-	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
-	for (unsigned a = 0; a < types.size(); a++)
+	auto& types = Game::configuration().allSectorTypes();
+	for (auto& type : types)
 	{
 		wxArrayString item;
-		item.Add(S_FMT("%d", types[a].type));
-		item.Add(types[a].name);
+		item.Add(S_FMT("%d", type.first));
+		item.Add(type.second);
 		lv_specials->addItem(999999, item);
 	}
 	lv_specials->enableSizeUpdate(true);
@@ -68,7 +68,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Boom Flags
 	int width = 300;
-	if (theGameConfiguration->supportsSectorFlags())
+	if (Game::configuration().supportsSectorFlags())
 	{
 		frame = new wxStaticBox(this, -1, "Flags");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
@@ -115,34 +115,37 @@ SectorSpecialPanel::~SectorSpecialPanel()
  *******************************************************************/
 void SectorSpecialPanel::setup(int special)
 {
-	int base_type = theGameConfiguration->baseSectorType(special);
+	int base_type = Game::configuration().baseSectorType(special);
 
 	// Select base type
-	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
-	for (unsigned a = 0; a < types.size(); a++)
+	auto& types = Game::configuration().allSectorTypes();
+	int index = 0;
+	for (auto& i : types)
 	{
-		if (types[a].type == base_type)
+		if (i.first == base_type)
 		{
-			lv_specials->selectItem(a);
-			lv_specials->EnsureVisible(a);
+			lv_specials->selectItem(index);
+			lv_specials->EnsureVisible(index);
 			break;
 		}
+
+		index++;
 	}
 
 	// Flags
-	if (theGameConfiguration->supportsSectorFlags())
+	if (Game::configuration().supportsSectorFlags())
 	{
 		// Damage
-		choice_damage->Select(theGameConfiguration->sectorBoomDamage(special));
+		choice_damage->Select(Game::configuration().sectorBoomDamage(special));
 
 		// Secret
-		cb_secret->SetValue(theGameConfiguration->sectorBoomSecret(special));
+		cb_secret->SetValue(Game::configuration().sectorBoomSecret(special));
 
 		// Friction
-		cb_friction->SetValue(theGameConfiguration->sectorBoomFriction(special));
+		cb_friction->SetValue(Game::configuration().sectorBoomFriction(special));
 
 		// Pusher/Puller
-		cb_pushpull->SetValue(theGameConfiguration->sectorBoomPushPull(special));
+		cb_pushpull->SetValue(Game::configuration().sectorBoomPushPull(special));
 	}
 }
 
@@ -151,7 +154,7 @@ void SectorSpecialPanel::setup(int special)
  *******************************************************************/
 int SectorSpecialPanel::getSelectedSpecial()
 {
-	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
+	auto& types = Game::configuration().allSectorTypes();
 	int selection = 0;
 	wxArrayInt items = lv_specials->selectedItems();
 	if (items.GetCount())
@@ -160,10 +163,30 @@ int SectorSpecialPanel::getSelectedSpecial()
 	// Get selected base type
 	int base = 0;
 	if (selection < (int)types.size())
-		base = types[selection].type;
+	{
+		int index = 0;
+		for (auto& i : types)
+		{
+			if (index == selection)
+			{
+				base = i.first;
+				break;
+			}
 
-	if (theGameConfiguration->supportsSectorFlags())
-		return theGameConfiguration->boomSectorType(base, choice_damage->GetSelection(), cb_secret->GetValue(), cb_friction->GetValue(), cb_pushpull->GetValue());
+			index++;
+		}
+	}
+
+	if (Game::configuration().supportsSectorFlags())
+	{
+		return Game::configuration().boomSectorType(
+			base,
+			choice_damage->GetSelection(),
+			cb_secret->GetValue(),
+			cb_friction->GetValue(),
+			cb_pushpull->GetValue()
+		);
+	}
 	else
 		return base;
 }

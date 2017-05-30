@@ -28,11 +28,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainEditor/MainWindow.h"
 #include "TextureXList.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
-#include "UI/PaletteChooser.h"
+#include "MainEditor/MainEditor.h"
 
 
 /*******************************************************************
@@ -268,7 +267,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 	if (!add) clear();
 
 	// Update palette
-	theMainWindow->getPaletteChooser()->setGlobalFromArchive(texturex->getParent());
+	MainEditor::setGlobalPaletteFromArchive(texturex->getParent());
 
 	// Read TEXTUREx
 
@@ -280,7 +279,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 	// Number of textures
 	if (!texturex->read(&n_tex, 4))
 	{
-		wxLogMessage("Error: TEXTUREx entry is corrupt (can't read texture count)");
+		LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't read texture count)");
 		return false;
 	}
 	n_tex = wxINT32_SWAP_ON_BE(n_tex);
@@ -293,21 +292,21 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 	offsets = new int32_t[n_tex];
 	if (!texturex->read(offsets, n_tex * 4))
 	{
-		wxLogMessage("Error: TEXTUREx entry is corrupt (can't read first offset)");
+		LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't read first offset)");
 		return false;
 	}
 
 	// Read the first texture definition to try to identify the format
 	if (!texturex->seek(wxINT32_SWAP_ON_BE(offsets[0]), SEEK_SET))
 	{
-		wxLogMessage("Error: TEXTUREx entry is corrupt (can't read first definition)");
+		LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't read first definition)");
 		return false;
 	}
 	// Look at the name field. Is it present or not?
 	char tempname[8];
 	if (!texturex->read(&tempname, 8))
 	{
-		wxLogMessage("Error: TEXTUREx entry is corrupt (can't read first name)");
+		LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't read first name)");
 		return false;
 	}
 	// Let's pretend it is and see what happens.
@@ -322,7 +321,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		if (tempname[a] >= 'a' && tempname[a] <= 'z')
 		{
 			txformat = TXF_JAGUAR;
-			//wxLogMessage("Jaguar texture");
+			//LOG_MESSAGE(1, "Jaguar texture");
 			break;
 		}
 		else if (!((tempname[a] >= 'A' && tempname[a] <= '[') ||
@@ -331,7 +330,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 			// We're out of character range, so this is probably not a texture name.
 		{
 			txformat = TXF_NAMELESS;
-			//wxLogMessage("Nameless texture");
+			//LOG_MESSAGE(1, "Nameless texture");
 			break;
 		}
 	}
@@ -344,7 +343,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		ftdef_t temp;
 		if (!texturex->read(&temp, 22))
 		{
-			wxLogMessage("Error: TEXTUREx entry is corrupt (can't test definition)");
+			LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't test definition)");
 			return false;
 		}
 		// Test condition adapted from ZDoom; apparently the first two bytes of columndir
@@ -359,7 +358,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		// Skip to texture definition
 		if (!texturex->seek(offsets[a], SEEK_SET))
 		{
-			wxLogMessage("Error: TEXTUREx entry is corrupt (can't find definition)");
+			LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't find definition)");
 			return false;
 		}
 
@@ -371,7 +370,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 			// Auto-naming mechanism taken from DeuTex
 			if (a > 99999)
 			{
-				wxLogMessage("Error: More than 100000 nameless textures");
+				LOG_MESSAGE(1, "Error: More than 100000 nameless textures");
 				return false;
 			}
 			char temp[9] = "";
@@ -381,7 +380,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 			// Read texture info
 			if (!texturex->read(&nameless, 8))
 			{
-				wxLogMessage("Error: TEXTUREx entry is corrupt (can't read nameless definition #%d)", a);
+				LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't read nameless definition #%d)", a);
 				return false;
 			}
 
@@ -394,7 +393,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		}
 		else if (!texturex->read(&tdef, 16))
 		{
-			wxLogMessage("Error: TEXTUREx entry is corrupt, (can't read texture definition #%d)", a);
+			LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt, (can't read texture definition #%d)", a);
 			return false;
 		}
 
@@ -403,7 +402,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		{
 			if (!texturex->seek(4, SEEK_CUR))
 			{
-				wxLogMessage("Error: TEXTUREx entry is corrupt (can't skip dummy data past #%d)", a);
+				LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't skip dummy data past #%d)", a);
 				return false;
 			}
 		}
@@ -424,12 +423,12 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		int16_t n_patches = 0;
 		if (!texturex->read(&n_patches, 2))
 		{
-			wxLogMessage("Error: TEXTUREx entry is corrupt (can't read patchcount #%d)", a);
+			LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't read patchcount #%d)", a);
 			delete tex;
 			return false;
 		}
 
-		//wxLogMessage("Texture #%d: %d patch%s", a, n_patches, n_patches == 1 ? "" : "es");
+		//LOG_MESSAGE(1, "Texture #%d: %d patch%s", a, n_patches, n_patches == 1 ? "" : "es");
 
 		for (uint16_t p = 0; p < n_patches; p++)
 		{
@@ -437,8 +436,8 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 			tx_patch_t pdef;
 			if (!texturex->read(&pdef, 6))
 			{
-				wxLogMessage("Error: TEXTUREx entry is corrupt (can't read patch definition #%d:%d)", a, p);
-				wxLogMessage("Lump size %d, offset %d", texturex->getSize(), texturex->currentPos());
+				LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't read patch definition #%d:%d)", a, p);
+				LOG_MESSAGE(1, "Lump size %d, offset %d", texturex->getSize(), texturex->currentPos());
 				return false;
 			}
 
@@ -447,7 +446,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 			{
 				if (!texturex->seek(4, SEEK_CUR))
 				{
-					wxLogMessage("Error: TEXTUREx entry is corrupt (can't skip dummy data past #%d:%d)", a, p);
+					LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't skip dummy data past #%d:%d)", a, p);
 					return false;
 				}
 			}
@@ -465,7 +464,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 			}
 			if (patch.IsEmpty())
 			{
-				//wxLogMessage("Warning: Texture %s contains patch %d which is invalid - may be incorrect PNAMES entry", tex->getName(), pdef.patch);
+				//LOG_MESSAGE(1, "Warning: Texture %s contains patch %d which is invalid - may be incorrect PNAMES entry", tex->getName(), pdef.patch);
 				patch = S_FMT("INVPATCH%04d", pdef.patch);
 			}
 
@@ -498,7 +497,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_t
 	if (texturex->isLocked())
 		return false;
 
-	wxLogMessage("Writing " + getTextureXFormatString() + " format TEXTUREx entry");
+	LOG_MESSAGE(1, "Writing " + getTextureXFormatString() + " format TEXTUREx entry");
 
 	/* Total size of a TEXTUREx lump, in bytes:
 		Header: 4 + (4 * numtextures)
@@ -516,7 +515,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_t
 	{
 		numpatchrefs += textures[i]->nPatches();
 	}
-	wxLogMessage("%i patch references in %i textures", numpatchrefs, numtextures);
+	LOG_MESSAGE(1, "%i patch references in %i textures", numpatchrefs, numtextures);
 
 	size_t datasize = 0;
 	size_t headersize = 4 + (4 * numtextures);
@@ -760,7 +759,7 @@ bool TextureXList::writeTEXTURESData(ArchiveEntry* entry)
 	if (txformat != TXF_TEXTURES)
 		return false;
 
-	wxLogMessage("Writing ZDoom text format TEXTURES entry");
+	LOG_MESSAGE(1, "Writing ZDoom text format TEXTURES entry");
 
 	// Generate a big string :P
 	string textures_data = "// Texture definitions generated by SLADE3\n// on " + wxNow() + "\n\n";
@@ -768,7 +767,7 @@ bool TextureXList::writeTEXTURESData(ArchiveEntry* entry)
 		textures_data += textures[a]->asText();
 	textures_data += "// End of texture definitions\n";
 
-	wxLogMessage("%u texture%s written on %u bytes", textures.size(), textures.size()<2?"":"s", textures_data.length());
+	LOG_MESSAGE(1, "%u texture%s written on %u bytes", textures.size(), textures.size()<2?"":"s", textures_data.length());
 
 	// Write it to the entry
 	return entry->importMem(textures_data.ToAscii(), textures_data.length());
@@ -841,7 +840,7 @@ bool TextureXList::findErrors()
 		if (textures[a]->nPatches() == 0)
 		{
 			ret = true;
-			wxLogMessage("Texture %u: %s does not have any patch", a, textures[a]->getName());
+			LOG_MESSAGE(1, "Texture %u: %s does not have any patch", a, textures[a]->getName());
 		}
 		else
 		{
@@ -853,7 +852,7 @@ bool TextureXList::findErrors()
 				if (patch == NULL)
 				{
 					ret = true;
-					wxLogMessage("Texture %u: %s: patch %s cannot be found in any open archive", 
+					LOG_MESSAGE(1, "Texture %u: %s: patch %s cannot be found in any open archive", 
 						a, textures[a]->getName(), textures[a]->patches[i]->getName());
 					// Don't list missing columns when we don't know the size of the patch
 					memset(columns, true, textures[a]->getWidth());
@@ -873,7 +872,7 @@ bool TextureXList::findErrors()
 				if (columns[c] == false)
 				{
 					ret = true;
-					wxLogMessage("Texture %u: %s: column %d without a patch", a, textures[a]->getName(), c);
+					LOG_MESSAGE(1, "Texture %u: %s: column %d without a patch", a, textures[a]->getName(), c);
 					break;
 				}
 			}

@@ -22,6 +22,7 @@
 
 #ifndef USE_SFML_RENDERWINDOW
 #include <wx/glcanvas.h>
+#undef None // Why does <X11/X.h> #define this? Idiotic
 #endif
 
 #define BLEND_NORMAL	0
@@ -58,11 +59,7 @@ namespace OpenGL
 #ifndef USE_SFML_RENDERWINDOW
 	int*			getWxGLAttribs();
 #endif
-#ifdef _MSC_VER
-	void			setColour(rgba_t& col, bool set_blend = true);
-#else
 	void			setColour(rgba_t col, bool set_blend = true);
-#endif
 	void			setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, int8_t blend = BLEND_IGNORE);
 	void			setBlend(int blend);
 	void			resetBlend();

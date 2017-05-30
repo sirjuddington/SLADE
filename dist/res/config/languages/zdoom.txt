@@ -29,7 +29,7 @@ z_cvarinfo {
 		// Scopes
 		server, user,
 
-		noarchive,
+		noarchive, cheat,
 
 		// Types
 		bool, color, float, int, string
@@ -66,7 +66,7 @@ z_fontdefs {
 	function_link = "http://zdoom.org/wiki/FONTDEFS";
 
 	keywords = {
-		Template, NOTRANSLATION, SPACEWIDTH, BASE, COUNT, CURSOR, FIRST
+		Template, NOTRANSLATION, SPACEWIDTH, BASE, COUNT, CURSOR, FIRST, DONTTRANSLATE
 	}
 
 	constants = {
@@ -101,7 +101,7 @@ z_gldefs {
 
 	constants = {
 		color, size, offset, subtractive, secondarySize, interval, chance, dontlightself,
-		scale, map, iwad, thiswad, disablefullbright, Texture, Shader, speed
+		scale, map, iwad, thiswad, disablefullbright, Texture, Shader, speed, attenuate
 	}
 }
 
@@ -165,7 +165,7 @@ z_mapinfo {
 	constant_link = "http://zdoom.org/wiki/MAPINFO";
 	function_link = "http://zdoom.org/wiki/MAPINFO";
 	blocks = "gameinfo", "skill", "map", "episode", "cluster", "automap", "automap_overlay",
-	         "doomednums", "spawnnums", "conversationids";
+	         "doomednums", "spawnnums", "conversationids", "damagetype";
 
 	keywords = {
 		// Generic
@@ -173,6 +173,7 @@ z_mapinfo {
 		
 		// Cluster
 		Cluster, ClusterDef, EnterText, ExitText, ExitTextIsLump, Music, Flat, Pic, Hub, 
+		AllowIntermission,
 		
 		// Episode
 		ClearEpisodes, Episode, Name, PicName, Key, Remove, NoSkillMenu, Optional, Extended,
@@ -201,16 +202,18 @@ z_mapinfo {
 		SpiderMastermindSpecial, StrictMonsterActivation, StrifeFallingDamage,
 		SuckTime, TeamDamage, TeamPlayOff, TeamPlayOn, TitlePatch, TotalInfighting,
 		Translator, UnFreezeSinglePlayerConversations, UsePlayerStartZ, VertWallShade,
-		ForceFakeContrast, PrecacheTextures, PrecacheClasses,
+		ForceFakeContrast, PrecacheTextures, PrecacheClasses, HazardColor, HazardFlash,
+		AddEventHandlers, EventHandlers,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
+		LightAdditiveSurfaces, NoLightFade,
 
 		// Skill definitions
 		Skill, ClearSkills, AmmoFactor, DropAmmoFactor, DoubleAmmoFactor, DamageFactor, RespawnTime, RespawnLimit,
 		Aggressiveness, SpawnFilter, ACSReturn, Key, MustConfirm, Name, PlayerClassName, PicName, TextColor, EasyBossBrain,
 		FastMonsters, SlowMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain,
-		DefaultSkill, ArmorFactor, EasyKey, HealthFactor,
+		DefaultSkill, ArmorFactor, EasyKey, HealthFactor, KickbackFactor, NoMenu,
 
 		// GameInfo definitions
 		GameInfo, AddCreditPage, AddInfoPage, AddPlayerClasses, AddQuitMessages, AdvisoryTime, Border, BackpackType,
@@ -242,7 +245,10 @@ z_mapinfo {
 		SpawnNums,
 
 		// Conversation IDs
-		ConversationIDs
+		ConversationIDs,
+
+		// Damage types
+		DamageType, Factor, ReplaceFactor, NoArmor, Obituary
 	}
 
 	constants = {
@@ -256,16 +262,17 @@ z_menudef {
 	keyword_link = "http://zdoom.org/wiki/MENUDEF";
 	constant_link = "http://zdoom.org/wiki/MENUDEF";
 	function_link = "http://zdoom.org/wiki/MENUDEF";
-	blocks = "listmenu", "optionmenu", "optionvalue", "optionstring";
+	blocks = "listmenu", "optionmenu", addoptionmenu, "optionvalue", "optionstring";
 	
 	keywords = { 
-		ListMenu, OptionMenu, OptionValue, OptionString, 
+		ListMenu, OptionMenu, AddOptionMenu, OptionValue, OptionString, 
 		DefaultListMenu, DefaultOptionMenu, OptionMenuSettings, 
 		Font, Linespacing, LabelOffset, PlayerDisplay, Position, Selector, StaticText, 
 		StaticTextSwitchable, ScrollTop, SafeCommand, ColorPicker, Class, ScreenResolution, 
 		StaticPatch, Control, Option, Slider, PatchItem, TextItem, Submenu, Command,
 		NetgameMessage, StaticPatchCentered, StaticTextCentered, MouseWindow, CenterMenu,
-		Title, PlayerNameBox, ValueText, MapControl, Else, TextField, NumberField
+		Title, PlayerNameBox, ValueText, MapControl, Else, TextField, NumberField,
+		ScaleSlider
 	}
 	
 	functions { ifgame = "game, [...]"; ifoption = "option, [...]"; }
@@ -293,7 +300,7 @@ z_modeldef {
 
 	constants = {
 		PITCHFROMMOMENTUM, IGNORETRANSLATION, INTERPOLATEDOUBLEDFRAMES, ROTATING, NOINTERPOLATION,
-		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL
+		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL, DONTCULLBACKFACES
 	}
 }
 

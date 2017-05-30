@@ -33,11 +33,13 @@
 #include "UI/WxStuff.h"
 #include "MapEditor/SLADEMap/MapThing.h"
 #include "ThingInfoOverlay.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "OpenGL/Drawing.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "OpenGL/OpenGL.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
@@ -81,11 +83,11 @@ void ThingInfoOverlay::update(MapThing* thing)
 	translation = "";
 	palette = "";
 	icon = "";
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Index + type
-	ThingType* tt = theGameConfiguration->thingType(thing->getType());
-	string type = S_FMT("%s (Type %d)", tt->getName(), thing->getType());
+	auto& tt = Game::configuration().thingType(thing->getType());
+	string type = S_FMT("%s (Type %d)", tt.name(), thing->getType());
 	if (Global::debug)
 		info_text += S_FMT("Thing #%d (%d): %s\n", thing->getIndex(), thing->getId(), type);
 	else
@@ -120,10 +122,10 @@ void ThingInfoOverlay::update(MapThing* thing)
 
 	// Special and Args (if in hexen format or udmf with thing args)
 	if (map_format == MAP_HEXEN ||
-	        (map_format == MAP_UDMF && theGameConfiguration->getUDMFProperty("arg0", MOBJ_THING)))
+	        (map_format == MAP_UDMF && Game::configuration().getUDMFProperty("arg0", MOBJ_THING)))
 	{
 		int as_id = thing->intProperty("special");
-		info_text += S_FMT("Special: %d (%s)\n", as_id, theGameConfiguration->actionSpecialName(as_id));
+		info_text += S_FMT("Special: %d (%s)\n", as_id, Game::configuration().actionSpecialName(as_id));
 		int args[5];
 		args[0] = thing->intProperty("arg0");
 		args[1] = thing->intProperty("arg1");
@@ -134,10 +136,10 @@ void ThingInfoOverlay::update(MapThing* thing)
 		argxstr[0] = thing->stringProperty("arg0str");
 		argxstr[1] = thing->stringProperty("arg1str");
 		string argstr;
-		if (tt->getArgspec().count > 0)
-			argstr = tt->getArgsString(args, argxstr);
+		if (tt.argSpec().count > 0)
+			argstr = tt.argSpec().stringDesc(args, argxstr);
 		else
-			argstr = theGameConfiguration->actionSpecial(as_id)->getArgsString(args, argxstr);
+			argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(args, argxstr);
 
 		if (!argstr.IsEmpty())
 			info_text += S_FMT("%s\n", argstr);
@@ -147,7 +149,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 
 	// Flags
 	if (map_format != MAP_UDMF)
-		info_text += S_FMT("Flags: %s\n", theGameConfiguration->thingFlagsString(thing->intProperty("flags")));
+		info_text += S_FMT("Flags: %s\n", Game::configuration().thingFlagsString(thing->intProperty("flags")));
 
 	// TID (if in doom64/hexen/udmf format)
 	if (map_format != MAP_DOOM)
@@ -157,11 +159,11 @@ void ThingInfoOverlay::update(MapThing* thing)
 		info_text.RemoveLast(1);
 
 	// Set sprite and translation
-	sprite = tt->getSprite();
-	translation = tt->getTranslation();
-	palette = tt->getPalette();
-	icon = tt->getIcon();
-	zeth = tt->getZeth();
+	sprite = tt.sprite();
+	translation = tt.translation();
+	palette = tt.palette();
+	icon = tt.icon();
+	zeth = tt.zethIcon();
 
 	// Setup text box
 	text_box->setText(info_text);
@@ -209,13 +211,13 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 
 	// Draw sprite
 	bool isicon = false;
-	GLTexture* tex = theMapEditor->textureManager().getSprite(sprite, translation, palette);
+	GLTexture* tex = MapEditor::textureManager().getSprite(sprite, translation, palette);
 	if (!tex)
 	{
 		if (use_zeth_icons && zeth >= 0)
-			tex = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", zeth));
+			tex = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", zeth));
 		if (!tex)
-			tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", icon));
+			tex = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", icon));
 		isicon = true;
 	}
 	glEnable(GL_TEXTURE_2D);

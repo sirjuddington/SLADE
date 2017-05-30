@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "PreferencesDialog.h"
 #include "ACSPrefsPanel.h"
 #include "AdvancedPrefsPanel.h"
@@ -44,14 +45,15 @@
 #include "HudOffsetsPrefsPanel.h"
 #include "InputPrefsPanel.h"
 #include "InterfacePrefsPanel.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
+#include "MainEditor/UI/ArchiveManagerPanel.h"
 #include "Map3DPrefsPanel.h"
 #include "MapDisplayPrefsPanel.h"
 #include "MapEditorPrefsPanel.h"
 #include "NodesPrefsPanel.h"
 #include "OpenGLPrefsPanel.h"
 #include "PNGPrefsPanel.h"
-#include "TextEditorPrefsPanel.h"
 #include "TextEditorPrefsPanel.h"
 #include "TextStylePrefsPanel.h"
 
@@ -226,7 +228,7 @@ void PreferencesDialog::applyPreferences()
 	prefs_advanced->applyPreferences();
 
 	// Write file so changes are not lost
-	theApp->saveConfigFile();
+	App::saveConfigFile();
 }
 
 

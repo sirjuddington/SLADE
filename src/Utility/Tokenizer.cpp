@@ -95,7 +95,7 @@ bool Tokenizer::openFile(string filename, uint32_t offset, uint32_t length)
 	// Check file opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("Tokenizer::openFile: Unable to open file %s", filename);
+		LOG_MESSAGE(1, "Tokenizer::openFile: Unable to open file %s", filename);
 		return false;
 	}
 
@@ -154,7 +154,7 @@ bool Tokenizer::openMem(const char* mem, uint32_t length, string source)
 	// Length must be specified
 	if (length == 0)
 	{
-		wxLogMessage("Tokenizer::openMem: length not specified");
+		LOG_MESSAGE(1, "Tokenizer::openMem: length not specified");
 		return false;
 	}
 
@@ -183,7 +183,7 @@ bool Tokenizer::openMem(const uint8_t* mem, uint32_t length, string source)
 	// Length must be specified
 	if (length == 0)
 	{
-		wxLogMessage("Tokenizer::openMem: length not specified");
+		LOG_MESSAGE(1, "Tokenizer::openMem: length not specified");
 		return false;
 	}
 
@@ -212,7 +212,7 @@ bool Tokenizer::openMem(MemChunk* mem, string source)
 	// Needs to be valid
 	if (mem == NULL)
 	{
-		wxLogMessage("Tokenizer::openMem: invalid MemChunk");
+		LOG_MESSAGE(1, "Tokenizer::openMem: invalid MemChunk");
 		return false;
 	}
 
@@ -469,7 +469,7 @@ void Tokenizer::readToken(bool toeol)
 
 	// Write token to log if debug mode enabled
 	if (debug)
-		wxLogMessage("%s", token_current);
+		LOG_MESSAGE(1, "%s", token_current);
 
 	// Return the token
 	return;

@@ -81,7 +81,7 @@ bool Compression::GenericDeflate(MemChunk& in, MemChunk& out, int level, int win
 	else ret = deflateInit2(&strm, level, Z_DEFLATED, windowbits, 9, Z_DEFAULT_STRATEGY);
 	if (ret != Z_OK)
 	{
-		wxLogMessage("%s init error %i: %s", function, ret, strm.msg);
+		LOG_MESSAGE(1, "%s init error %i: %s", function, ret, strm.msg);
 		return false;
 	}
 
@@ -134,7 +134,7 @@ bool Compression::ZipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 	bool ret = Compression::GenericInflate(in, out, -MAX_WBITS, "ZipInflate");
 
 	if (maxsize && out.getSize() != maxsize)
-		wxLogMessage("Zip stream inflated to %d, expected %d", out.getSize(), maxsize);
+		LOG_MESSAGE(1, "Zip stream inflated to %d, expected %d", out.getSize(), maxsize);
 
 	return ret;
 }
@@ -159,7 +159,7 @@ bool Compression::GZipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 	bool ret = Compression::GenericInflate(in, out, 16 + MAX_WBITS, "GZipInflate");
 
 	if (maxsize && out.getSize() != maxsize)
-		wxLogMessage("Zip stream inflated to %d, expected %d", out.getSize(), maxsize);
+		LOG_MESSAGE(1, "Zip stream inflated to %d, expected %d", out.getSize(), maxsize);
 
 	return ret;
 }
@@ -185,7 +185,7 @@ bool Compression::ZlibInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 	bool ret = Compression::GenericInflate(in, out, 0, "ZlibInflate");
 
 	if (maxsize && out.getSize() != maxsize)
-		wxLogMessage("Zlib stream inflated to %d, expected %d", out.getSize(), maxsize);
+		LOG_MESSAGE(1, "Zlib stream inflated to %d, expected %d", out.getSize(), maxsize);
 
 	return ret;
 }
@@ -218,7 +218,7 @@ bool Compression::BZip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
 	while (gotten == 4096 && stream.Status == BZ_OK);
 
 	if (maxsize && out.getSize() != maxsize)
-		wxLogMessage("bzip2 stream inflated to %d, expected %d", out.getSize(), maxsize);
+		LOG_MESSAGE(1, "bzip2 stream inflated to %d, expected %d", out.getSize(), maxsize);
 
 	return (stream.Status == BZ_OK || stream.Status == BZ_STREAM_END);
 }

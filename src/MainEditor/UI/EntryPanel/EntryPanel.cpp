@@ -30,7 +30,8 @@
  *******************************************************************/
 #include "Main.h"
 #include "EntryPanel.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/ArchivePanel.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
@@ -312,7 +313,7 @@ void EntryPanel::removeCustomToolBar()
  *******************************************************************/
 bool EntryPanel::isActivePanel()
 {
-	return (IsShown() && theActivePanel == this);
+	return (IsShown() && MainEditor::currentEntryPanel() == this);
 }
 
 /* EntryPanel::updateToolbar
@@ -365,7 +366,7 @@ void EntryPanel::onBtnRevert(wxCommandEvent& e)
  *******************************************************************/
 void EntryPanel::onBtnEditExt(wxCommandEvent& e)
 {
-	wxLogMessage("External edit not implemented");
+	LOG_MESSAGE(1, "External edit not implemented");
 }
 
 /* EntryPanel::onToolbarButton

@@ -56,13 +56,13 @@ namespace Lua
 			message += lua_tostring(ls, a);
 
 		if (!message.IsEmpty())
-			wxLogMessage(message);
+			LOG_MESSAGE(1, message);
 
 		return 0;
 	}
 
 	/*int set_mobj_int_prop(lua_State* ls) {
-		SLADEMap& map = theMapEditor->mapEditor().getMap();
+		SLADEMap& map = MapEditor::editContext().getMap();
 
 		int argc = lua_gettop(ls);
 		if (argc < 4)
@@ -73,7 +73,7 @@ namespace Lua
 		MapObject* mobj = map.getObject(type, index);
 
 		if (!mobj) {
-			wxLogMessage("Invalid map object");
+			LOG_MESSAGE(1, "Invalid map object");
 			return 0;
 		}
 
@@ -157,12 +157,12 @@ CONSOLE_COMMAND(lua_execfile, 1, true)
 {
 	if (!wxFile::Exists(args[0]))
 	{
-		wxLogMessage("File \"%s\" does not exist", args[0]);
+		LOG_MESSAGE(1, "File \"%s\" does not exist", args[0]);
 		return;
 	}
 
 	if (!Lua::runFile(args[0]))
-		wxLogMessage("Error loading lua script file \"%s\"", args[0]);
+		LOG_MESSAGE(1, "Error loading lua script file \"%s\"", args[0]);
 }
 
 

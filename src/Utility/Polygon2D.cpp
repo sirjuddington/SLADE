@@ -474,7 +474,7 @@ bool PolygonSplitter::detectUnclosed()
 			info += S_FMT("%1.2f", vertices[end_verts[a]].y);
 			info += " ";
 		}
-		wxLogMessage(info);
+		Log::info(info);
 		info = "Vertices with no incoming edges: ";
 		for (unsigned a = 0; a < start_verts.size(); a++)
 		{
@@ -483,7 +483,7 @@ bool PolygonSplitter::detectUnclosed()
 			info += S_FMT("%1.2f", vertices[start_verts[a]].y);
 			info += " ";
 		}
-		wxLogMessage(info);
+		Log::info(info);
 	}
 
 	// Check if any of this is caused by flipped edges
@@ -616,7 +616,7 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 
 	if (a >= 99999)
 	{
-		if (verbose) wxLogMessage("Possible infinite loop in tracePolyOutline");
+		if (verbose) LOG_MESSAGE(1, "Possible infinite loop in tracePolyOutline");
 		return false;
 	}
 
@@ -636,7 +636,7 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 		else info += "concave, ";
 		if (poly.clockwise) info += "clockwise";
 		else info += "anticlockwise";
-		wxLogMessage(info);
+		Log::info(info);
 	}
 
 	return true;
@@ -669,7 +669,7 @@ bool PolygonSplitter::testTracePolyOutline(int edge_start)
 
 	if (a >= 99999)
 	{
-		if (verbose) wxLogMessage("Possible infinite loop in tracePolyOutline");
+		if (verbose) LOG_MESSAGE(1, "Possible infinite loop in tracePolyOutline");
 		return false;
 	}
 
@@ -865,7 +865,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 			continue;
 		tracePolyOutline(a);
 	}
-	if (verbose) wxLogMessage("%lu Polygon outlines detected", polygon_outlines.size());
+	if (verbose) LOG_MESSAGE(1, "%lu Polygon outlines detected", polygon_outlines.size());
 
 	// Check if any edges are not part of a polygon outline
 	for (unsigned a = 0; a < edges.size(); a++)
@@ -895,7 +895,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		// If the polygon didn't intersect, and is convex and clockwise ('outer')
 		if (separate && polygon_outlines[a].clockwise && polygon_outlines[a].convex)
 		{
-			if (verbose) wxLogMessage("Separate, convex polygon exists, cutting (valid)");
+			if (verbose) LOG_MESSAGE(1, "Separate, convex polygon exists, cutting (valid)");
 			for (unsigned b = 0; b < polygon_outlines[a].edges.size(); b++)
 			{
 				// Set the edge to 'done' so it is ignored, but still used to build polygons
@@ -915,7 +915,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		// If the polygon didn't intersect, and is anticlockwise (inner), it is invalid
 		else if (separate && !polygon_outlines[a].clockwise)
 		{
-			if (verbose) wxLogMessage("Separate, anticlockwise polygon exists, cutting (invalid)");
+			if (verbose) LOG_MESSAGE(1, "Separate, anticlockwise polygon exists, cutting (invalid)");
 			for (unsigned b = 0; b < polygon_outlines[a].edges.size(); b++)
 			{
 				// Set the edge to 'done' so it is ignored, but still used to build polygons

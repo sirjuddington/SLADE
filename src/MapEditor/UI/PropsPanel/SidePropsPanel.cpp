@@ -28,12 +28,15 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "SidePropsPanel.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "Game/Configuration.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/MapTextureManager.h"
+#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
+#include "SidePropsPanel.h"
 #include "UI/NumberTextCtrl.h"
 
 
@@ -50,7 +53,7 @@
 SideTexCanvas::SideTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 {
 	// Init variables
-	texture = NULL;
+	texture = nullptr;
 	SetWindowStyleFlag(wxBORDER_SIMPLE);
 
 	SetInitialSize(wxSize(136, 136));
@@ -78,9 +81,12 @@ void SideTexCanvas::setTexture(string tex)
 {
 	texname = tex;
 	if (tex == "-" || tex == "")
-		texture = NULL;
+		texture = nullptr;
 	else
-		texture = theMapEditor->textureManager().getTexture(tex, theGameConfiguration->mixTexFlats());
+		texture = MapEditor::textureManager().getTexture(
+			tex,
+			Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+		);
 
 	Refresh();
 }
@@ -121,7 +127,7 @@ void SideTexCanvas::draw()
 	else if (texture == &(GLTexture::missingTex()))
 	{
 		// Draw unknown icon
-		GLTexture* tex = theMapEditor->textureManager().getEditorImage("thing/unknown");
+		GLTexture* tex = MapEditor::textureManager().getEditorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0);
 		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
@@ -155,7 +161,7 @@ TextureComboBox::TextureComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 	// Add all textures to dropdown on OSX, since the wxEVT_COMBOBOX_DROPDOWN event isn't supported there
 	// (it is in wx 3.0.2, with cocoa at least)
 //#ifdef __WXOSX__
-//	vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllTexturesInfo();
+//	vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllTexturesInfo();
 //	for (unsigned a = 0; a < textures.size(); a++)
 //		list.Add(textures[a].name);
 //#else
@@ -184,7 +190,7 @@ void TextureComboBox::onDropDown(wxCommandEvent& e)
 		text = "";
 	
 	// Populate dropdown with matching texture names
-	vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllTexturesInfo();
+	vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllTexturesInfo();
 	wxArrayString list;
 	list.Add("-");
 	for (unsigned a = 0; a < textures.size(); a++)
@@ -449,8 +455,8 @@ void SidePropsPanel::onTextureChanged(wxCommandEvent& e)
 void SidePropsPanel::onTextureClicked(wxMouseEvent& e)
 {
 	// Get canvas
-	SideTexCanvas* stc = NULL;
-	TextureComboBox* tcb = NULL;
+	SideTexCanvas* stc = nullptr;
+	TextureComboBox* tcb = nullptr;
 	if (e.GetEventObject() == gfx_upper)
 	{
 		stc = gfx_upper;
@@ -474,7 +480,7 @@ void SidePropsPanel::onTextureClicked(wxMouseEvent& e)
 	}
 
 	// Browse
-	MapTextureBrowser browser(this, 0, stc->getTexName(), &(theMapEditor->mapEditor().getMap()));
+	MapTextureBrowser browser(this, 0, stc->getTexName(), &(MapEditor::editContext().map()));
 	if (browser.ShowModal() == wxID_OK)
 		tcb->SetValue(browser.getSelectedItem()->getName());
 }

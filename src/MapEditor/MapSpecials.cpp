@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "SLADEMap/SLADEMap.h"
 #include "MapSpecials.h"
-#include "GameConfiguration/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "Utility/Tokenizer.h"
 #include "Utility/MathStuff.h"
 
@@ -61,10 +61,10 @@ void MapSpecials::reset()
 void MapSpecials::processMapSpecials(SLADEMap* map)
 {
 	// ZDoom
-	if (theGameConfiguration->currentPort() == "zdoom")
+	if (Game::configuration().currentPort() == "zdoom")
 		processZDoomMapSpecials(map);
    // Eternity, currently no need for processEternityMapSpecials
-   else if (theGameConfiguration->currentPort() == "eternity")
+   else if (Game::configuration().currentPort() == "eternity")
       processEternitySlopes(map);
 }
 
@@ -73,7 +73,7 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
  *******************************************************************/
 void MapSpecials::processLineSpecial(MapLine* line)
 {
-	if (theGameConfiguration->currentPort() == "zdoom")
+	if (Game::configuration().currentPort() == "zdoom")
 		processZDoomLineSpecial(line);
 }
 

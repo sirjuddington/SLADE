@@ -33,6 +33,8 @@
 /src/updaterevision
 /src/gitinfo.h
 /win_installer/Output
+cmake-build-debug/
+\.idea/
 
 /dist/*
 !/dist/res

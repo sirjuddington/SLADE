@@ -3,8 +3,8 @@
 #define __LINE_PROPS_PANEL_H__
 
 #include "PropsPanelBase.h"
+#include "UI/STabCtrl.h"
 
-class STabCtrl;
 class MapObject;
 class MapObjectPropsPanel;
 class ActionSpecialPanel;
@@ -13,9 +13,17 @@ class SidePropsPanel;
 class NumberTextCtrl;
 class LinePropsPanel : public PropsPanelBase
 {
+public:
+	LinePropsPanel(wxWindow* parent);
+	~LinePropsPanel();
+
+	wxPanel*	setupGeneralTab();
+	wxPanel*	setupSpecialTab();
+	void		openObjects(vector<MapObject*>& objects) override;
+	void		applyChanges() override;
+
 private:
-	STabCtrl*				stc_tabs;
-	vector<wxCheckBox*>		cb_flags;
+	TabControl*				stc_tabs;
 	MapObjectPropsPanel*	mopp_all_props;
 	wxCheckBox*				cb_override_special;
 	ActionSpecialPanel*		panel_special;
@@ -27,20 +35,13 @@ private:
 	NumberTextCtrl*			text_id;
 	wxButton*				btn_new_id;
 
-	vector<string>	udmf_flags;
-
-public:
-	LinePropsPanel(wxWindow* parent);
-	~LinePropsPanel();
-
-	wxPanel*	setupGeneralTab();
-	wxPanel*	setupSpecialTab();
-	void		openObjects(vector<MapObject*>& objects);
-	void		applyChanges();
-
-	void	onOverrideSpecialChecked(wxCommandEvent& e);
-	void	onBtnNewTag(wxCommandEvent& e);
-	void	onBtnNewId(wxCommandEvent& e);
+	struct FlagHolder
+	{
+		wxCheckBox*	check_box;
+		int			index;
+		string		udmf;
+	};
+	vector<FlagHolder>	flags;
 };
 
 #endif//__LINE_PROPS_PANEL_H__

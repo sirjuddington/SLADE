@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "UI/SDialog.h"
+#include "UI/STabCtrl.h"
 #include "UI/WxBasicControls.h"
 
 
@@ -41,7 +42,7 @@ public:
 	void	onItemActivated(wxDataViewEvent& e);
 };
 
-struct argspec_t;
+namespace Game { struct ArgSpec; }
 class wxFlexGridSizer;
 class ArgsControl;
 class ArgsPanel : public wxScrolled<wxPanel>
@@ -56,7 +57,7 @@ public:
 	ArgsPanel(wxWindow* parent);
 	~ArgsPanel() {}
 
-	void	setup(argspec_t* args, bool udmf);
+	void	setup(const Game::ArgSpec& args, bool udmf);
 	void	setValues(int args[5]);
 	int		getArgValue(int index);
 	void	onSize(wxSizeEvent& event);
@@ -67,27 +68,16 @@ class MapObject;
 class NumberTextCtrl;
 class ActionSpecialPanel : public wxPanel
 {
-private:
-	ActionSpecialTreeView*	tree_specials;
-	wxPanel*				panel_action_special;
-	GenLineSpecialPanel*	panel_gen_specials;
-	wxRadioButton*			rb_special;
-	wxRadioButton*			rb_generalised;
-	ArgsPanel*				panel_args;
-	vector<wxCheckBox*>		cb_triggers;
-	vector<string>			triggers_udmf;
-	wxChoice*				choice_trigger;
-	bool					show_trigger;
-	NumberTextCtrl*			text_special;
-
 public:
 	ActionSpecialPanel(wxWindow* parent, bool trigger = true);
 	~ActionSpecialPanel();
 
 	void	setupSpecialPanel();
-	void	setArgsPanel(ArgsPanel* panel) { panel_args = panel; }
+	void	setArgsPanel(ArgsPanel* panel) { panel_args_ = panel; }
 	void	setSpecial(int special);
 	void	setTrigger(int index);
+	void	setTrigger(string trigger);
+	void	clearTrigger();
 	int		selectedSpecial();
 	void	showGeneralised(bool show = true);
 	void	applyTo(vector<MapObject*>& lines, bool apply_special);
@@ -95,17 +85,36 @@ public:
 
 	void	onRadioButtonChanged(wxCommandEvent& e);
 	void	onSpecialSelectionChanged(wxDataViewEvent& e);
-	void	onSpecialTextChanged(wxCommandEvent& e);
 	void	onSpecialItemActivated(wxDataViewEvent& e);
+	void	onSpecialPresetClicked(wxCommandEvent& e);
+
+private:
+	ActionSpecialTreeView*	tree_specials_;
+	wxPanel*				panel_action_special_;
+	GenLineSpecialPanel*	panel_gen_specials_;
+	wxRadioButton*			rb_special_;
+	wxRadioButton*			rb_generalised_;
+	ArgsPanel*				panel_args_;
+	wxChoice*				choice_trigger_;
+	bool					show_trigger_;
+	NumberTextCtrl*			text_special_;
+	wxButton*				btn_preset_;
+
+	struct FlagHolder
+	{
+		wxCheckBox*	check_box;
+		int			index;
+		string		udmf;
+	};
+	vector<FlagHolder>	flags_;
 };
 
-class STabCtrl;
 class ActionSpecialDialog : public SDialog
 {
 private:
 	ActionSpecialPanel* panel_special;
 	ArgsPanel*			panel_args;
-	STabCtrl*			stc_tabs;
+	TabControl*			stc_tabs;
 
 public:
 	ActionSpecialDialog(wxWindow* parent, bool show_args = false);

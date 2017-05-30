@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "GrpArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -126,7 +126,7 @@ bool GrpArchive::open(MemChunk& mc)
 	// Check the header
 	if (!(S_CMP(wxString::FromAscii(ken_magic), "KenSilverman")))
 	{
-		wxLogMessage("GrpArchive::openFile: File %s has invalid header", filename);
+		LOG_MESSAGE(1, "GrpArchive::openFile: File %s has invalid header", filename);
 		Global::error = "Invalid grp header";
 		return false;
 	}
@@ -138,11 +138,11 @@ bool GrpArchive::open(MemChunk& mc)
 	uint32_t	entryoffset = 16 * (1 + num_lumps);
 
 	// Read the directory
-	theSplashWindow->setProgressMessage("Reading grp archive data");
+	UI::setSplashProgressMessage("Reading grp archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char name[13] = "";
@@ -163,7 +163,7 @@ bool GrpArchive::open(MemChunk& mc)
 		// the grpfile is invalid
 		if (offset + size > mc.getSize())
 		{
-			wxLogMessage("GrpArchive::open: grp archive is invalid or corrupt");
+			LOG_MESSAGE(1, "GrpArchive::open: grp archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -181,11 +181,11 @@ bool GrpArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -210,7 +210,7 @@ bool GrpArchive::open(MemChunk& mc)
 	}
 
 	// Detect maps (will detect map entry types)
-	//theSplashWindow->setProgressMessage("Detecting maps");
+	//UI::setSplashProgressMessage("Detecting maps");
 	//detectMaps();
 
 	// Setup variables
@@ -218,7 +218,7 @@ bool GrpArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -295,7 +295,7 @@ bool GrpArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("GrpArchive::loadEntryData: Failed to open grpfile %s", filename);
+		LOG_MESSAGE(1, "GrpArchive::loadEntryData: Failed to open grpfile %s", filename);
 		return false;
 	}
 
@@ -468,11 +468,11 @@ bool GrpArchive::isGrpArchive(string filename)
  * EXTRA CONSOLE COMMANDS
  *******************************************************************/
 #include "General/Console/Console.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 
 CONSOLE_COMMAND(lookupdat, 0, false)
 {
-	ArchiveEntry* entry = theMainWindow->getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;
@@ -531,7 +531,7 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 
 CONSOLE_COMMAND(palettedat, 0, false)
 {
-	ArchiveEntry* entry = theMainWindow->getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;
@@ -573,7 +573,7 @@ CONSOLE_COMMAND(palettedat, 0, false)
 
 CONSOLE_COMMAND(tablesdat, 0, false)
 {
-	ArchiveEntry* entry = theMainWindow->getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;

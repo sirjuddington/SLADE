@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MapEditor/GameConfiguration/GenLineSpecial.h"
+#include "Game/GenLineSpecial.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
 
 

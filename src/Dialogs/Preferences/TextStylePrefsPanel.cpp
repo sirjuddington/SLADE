@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "TextStylePrefsPanel.h"
 #include "UI/TextEditor/TextEditor.h"
 
@@ -662,7 +663,7 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 	name.Replace(" ", "_");
 
 	// Write set to file
-	string filename = appPath(S_FMT("text_styles/%s.sss", name), DIR_USER);
+	string filename = App::path(S_FMT("text_styles/%s.sss", name), App::Dir::User);
 	ss_temp.writeFile(filename);
 }
 

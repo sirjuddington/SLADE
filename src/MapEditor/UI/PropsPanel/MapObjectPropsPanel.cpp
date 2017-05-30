@@ -30,13 +30,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MapObjectPropsPanel.h"
+#include "Game/Configuration.h"
 #include "Graphics/Icons.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/UI/MapEditorWindow.h"
+#include "MapObjectPropsPanel.h"
 #include "MOPGProperty.h"
-#include "UI/STabCtrl.h"
 
 
 /*******************************************************************
@@ -78,7 +77,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : Prop
 	sizer->AddSpacer(4);
 
 	// Add tabs
-	stc_sections = new STabCtrl(this, false);
+	stc_sections = STabCtrl::createControl(this);
 	sizer->Add(stc_sections, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Add main property grid
@@ -345,12 +344,8 @@ bool MapObjectPropsPanel::setBoolProperty(wxPGProperty* prop, bool value, bool f
  * Adds the UDMF property [prop] to the grid, under [basegroup]. Will
  * add the correct property cell type for the UDMF property
  *******************************************************************/
-void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, string basegroup, wxPropertyGrid* grid)
+void MapObjectPropsPanel::addUDMFProperty(UDMFProperty& prop, int objtype, string basegroup, wxPropertyGrid* grid)
 {
-	// Check property was given
-	if (!prop)
-		return;
-
 	// Set grid to add to (main one if grid is NULL)
 	if (!grid)
 		grid = pg_properties;
@@ -359,74 +354,73 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 	string groupname;
 	if (!basegroup.IsEmpty())
 		groupname = basegroup + ".";
-	groupname += prop->getGroup();
+	groupname += prop.group();
 
 	// Get group to add
 	wxPGProperty* group = grid->GetProperty(groupname);
 	if (!group)
-		group = grid->Append(new wxPropertyCategory(prop->getGroup(), groupname));
+		group = grid->Append(new wxPropertyCategory(prop.group(), groupname));
 
 	// Determine property name
 	string propname;
 	if (!basegroup.IsEmpty())
 		propname = basegroup + ".";
-	propname += prop->getProperty();
+	propname += prop.propName();
 
 	// Add property depending on type
-	//MOPGProperty* mopg_prop = NULL;
-	if (prop->getType() == UDMFProperty::TYPE_BOOL)
-		addBoolProperty(group, prop->getName(), propname, false, grid, prop);
-	else if (prop->getType() == UDMFProperty::TYPE_INT)
-		addIntProperty(group, prop->getName(), propname, false, grid, prop);
-	else if (prop->getType() == UDMFProperty::TYPE_FLOAT)
-		addFloatProperty(group, prop->getName(), propname, false, grid, prop);
-	else if (prop->getType() == UDMFProperty::TYPE_STRING)
-		addStringProperty(group, prop->getName(), propname, false, grid, prop);
-	else if (prop->getType() == UDMFProperty::TYPE_COLOUR)
+	if (prop.type() == UDMFProperty::Type::Boolean)
+		addBoolProperty(group, prop.name(), propname, false, grid, &prop);
+	else if (prop.type() == UDMFProperty::Type::Int)
+		addIntProperty(group, prop.name(), propname, false, grid, &prop);
+	else if (prop.type() == UDMFProperty::Type::Float)
+		addFloatProperty(group, prop.name(), propname, false, grid, &prop);
+	else if (prop.type() == UDMFProperty::Type::String)
+		addStringProperty(group, prop.name(), propname, false, grid, &prop);
+	else if (prop.type() == UDMFProperty::Type::Colour)
 	{
-		MOPGColourProperty* prop_col = new MOPGColourProperty(prop->getName(), propname);
+		MOPGColourProperty* prop_col = new MOPGColourProperty(prop.name(), propname);
 		prop_col->setParent(this);
-		prop_col->setUDMFProp(prop);
+		prop_col->setUDMFProp(&prop);
 		properties.push_back(prop_col);
 		grid->AppendIn(group, prop_col);
 	}
-	else if (prop->getType() == UDMFProperty::TYPE_ASPECIAL)
+	else if (prop.type() == UDMFProperty::Type::ActionSpecial)
 	{
-		MOPGActionSpecialProperty* prop_as = new MOPGActionSpecialProperty(prop->getName(), propname);
+		MOPGActionSpecialProperty* prop_as = new MOPGActionSpecialProperty(prop.name(), propname);
 		prop_as->setParent(this);
-		prop_as->setUDMFProp(prop);
+		prop_as->setUDMFProp(&prop);
 		properties.push_back(prop_as);
 		grid->AppendIn(group, prop_as);
 	}
-	else if (prop->getType() == UDMFProperty::TYPE_SSPECIAL)
+	else if (prop.type() == UDMFProperty::Type::SectorSpecial)
 	{
-		MOPGSectorSpecialProperty* prop_ss = new MOPGSectorSpecialProperty(prop->getName(), propname);
+		MOPGSectorSpecialProperty* prop_ss = new MOPGSectorSpecialProperty(prop.name(), propname);
 		prop_ss->setParent(this);
-		prop_ss->setUDMFProp(prop);
+		prop_ss->setUDMFProp(&prop);
 		properties.push_back(prop_ss);
 		grid->AppendIn(group, prop_ss);
 	}
-	else if (prop->getType() == UDMFProperty::TYPE_TTYPE)
+	else if (prop.type() == UDMFProperty::Type::ThingType)
 	{
-		MOPGThingTypeProperty* prop_tt = new MOPGThingTypeProperty(prop->getName(), propname);
+		MOPGThingTypeProperty* prop_tt = new MOPGThingTypeProperty(prop.name(), propname);
 		prop_tt->setParent(this);
-		prop_tt->setUDMFProp(prop);
+		prop_tt->setUDMFProp(&prop);
 		properties.push_back(prop_tt);
 		grid->AppendIn(group, prop_tt);
 	}
-	else if (prop->getType() == UDMFProperty::TYPE_ANGLE)
+	else if (prop.type() == UDMFProperty::Type::Angle)
 	{
-		MOPGAngleProperty* prop_angle = new MOPGAngleProperty(prop->getName(), propname);
+		MOPGAngleProperty* prop_angle = new MOPGAngleProperty(prop.name(), propname);
 		prop_angle->setParent(this);
-		prop_angle->setUDMFProp(prop);
+		prop_angle->setUDMFProp(&prop);
 		properties.push_back(prop_angle);
 		grid->AppendIn(group, prop_angle);
 	}
-	else if (prop->getType() == UDMFProperty::TYPE_TEX_WALL)
-		addTextureProperty(group, prop->getName(), propname, 0, false, grid, prop);
-	else if (prop->getType() == UDMFProperty::TYPE_TEX_FLAT)
-		addTextureProperty(group, prop->getName(), propname, 1, false, grid, prop);
-	else if (prop->getType() == UDMFProperty::TYPE_ID)
+	else if (prop.type() == UDMFProperty::Type::TextureWall)
+		addTextureProperty(group, prop.name(), propname, 0, false, grid, &prop);
+	else if (prop.type() == UDMFProperty::Type::TextureFlat)
+		addTextureProperty(group, prop.name(), propname, 1, false, grid, &prop);
+	else if (prop.type() == UDMFProperty::Type::ID)
 	{
 		int tagtype;
 		if (objtype == MOBJ_LINE)
@@ -436,19 +430,12 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 		else
 			tagtype = MOPGTagProperty::TT_SECTORTAG;
 
-		MOPGTagProperty* prop_id = new MOPGTagProperty(tagtype, prop->getName(), propname);
+		MOPGTagProperty* prop_id = new MOPGTagProperty(tagtype, prop.name(), propname);
 		prop_id->setParent(this);
-		prop_id->setUDMFProp(prop);
+		prop_id->setUDMFProp(&prop);
 		properties.push_back(prop_id);
 		grid->AppendIn(group, prop_id);
 	}
-
-	/*if (mopg_prop) {
-		mopg_prop->setParent(this);
-		mopg_prop->setUDMFProp(prop);
-		properties.push_back(mopg_prop);
-		grid->AppendIn(group, (wxPGProperty*)mopg_prop);
-	}*/
 }
 
 /* MapObjectPropsPanel::setupType
@@ -461,7 +448,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 		return;
 
 	// Get map format
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Clear property grid
 	clearGrid();
@@ -556,8 +543,8 @@ void MapObjectPropsPanel::setupType(int objtype)
 			wxPGProperty* g_flags = pg_properties->Append(new wxPropertyCategory("Flags"));
 
 			// Add flags
-			for (int a = 0; a < theGameConfiguration->nLineFlags(); a++)
-				addLineFlagProperty(g_flags, theGameConfiguration->lineFlag(a), S_FMT("flag%u", a), a);
+			for (int a = 0; a < Game::configuration().nLineFlags(); a++)
+				addLineFlagProperty(g_flags, Game::configuration().lineFlag(a).name, S_FMT("flag%u", a), a);
 		}
 
 		// --- Sides ---
@@ -733,8 +720,8 @@ void MapObjectPropsPanel::setupType(int objtype)
 			wxPGProperty* g_flags = pg_properties->Append(new wxPropertyCategory("Flags"));
 
 			// Add flags
-			for (int a = 0; a < theGameConfiguration->nThingFlags(); a++)
-				addThingFlagProperty(g_flags, theGameConfiguration->thingFlag(a), S_FMT("flag%u", a), a);
+			for (int a = 0; a < Game::configuration().nThingFlags(); a++)
+				addThingFlagProperty(g_flags, Game::configuration().thingFlag(a), S_FMT("flag%u", a), a);
 		}
 	}
 
@@ -784,21 +771,20 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		stc_sections->SetPageText(0, "Thing");
 
 	// Go through all possible properties for this type
-	vector<udmfp_t> props = theGameConfiguration->allUDMFProperties(objtype);
-	sort(props.begin(), props.end());
-	for (unsigned a = 0; a < props.size(); a++)
+	auto& props = Game::configuration().allUDMFProperties(objtype);
+	for (auto& i : props)
 	{
 		// Skip if hidden
-		if ((hide_flags && props[a].property->isFlag()) ||
-			(hide_triggers && props[a].property->isTrigger()))
+		if ((hide_flags && i.second.isFlag()) ||
+			(hide_triggers && i.second.isTrigger()))
 		{
-			hide_props.push_back(props[a].property->getProperty());
+			hide_props.push_back(i.second.propName());
 			continue;
 		}
-		if (VECTOR_EXISTS(hide_props, props[a].property->getProperty()))
+		if (VECTOR_EXISTS(hide_props, i.second.propName()))
 			continue;
 
-		addUDMFProperty(props[a].property, objtype);
+		addUDMFProperty(i.second, objtype);
 	}
 
 	// Add side properties if line type
@@ -811,39 +797,38 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		stc_sections->AddPage(pg_props_side2, "Back Side");
 
 		// Get side properties
-		vector<udmfp_t> sprops = theGameConfiguration->allUDMFProperties(MOBJ_SIDE);
-		sort(sprops.begin(), sprops.end());
+		auto& sprops = Game::configuration().allUDMFProperties(MOBJ_SIDE);
 
 		// Front side
-		for (unsigned a = 0; a < sprops.size(); a++)
+		for (auto& i : sprops)
 		{
 			// Skip if hidden
-			if ((hide_flags && sprops[a].property->isFlag()) ||
-				(hide_triggers && sprops[a].property->isTrigger()))
+			if ((hide_flags && i.second.isFlag()) ||
+				(hide_triggers && i.second.isTrigger()))
 			{
-				hide_props.push_back(sprops[a].property->getProperty());
+				hide_props.push_back(i.second.propName());
 				continue;
 			}
-			if (VECTOR_EXISTS(hide_props, sprops[a].property->getProperty()))
+			if (VECTOR_EXISTS(hide_props, i.second.propName()))
 				continue;
 
-			addUDMFProperty(sprops[a].property, objtype, "side1", pg_props_side1);
+			addUDMFProperty(i.second, objtype, "side1", pg_props_side1);
 		}
 
 		// Back side
-		for (unsigned a = 0; a < sprops.size(); a++)
+		for (auto& i : sprops)
 		{
 			// Skip if hidden
-			if ((hide_flags && sprops[a].property->isFlag()) ||
-				(hide_triggers && sprops[a].property->isTrigger()))
+			if ((hide_flags && i.second.isFlag()) ||
+				(hide_triggers && i.second.isTrigger()))
 			{
-				hide_props.push_back(sprops[a].property->getProperty());
+				hide_props.push_back(i.second.propName());
 				continue;
 			}
-			if (VECTOR_EXISTS(hide_props, sprops[a].property->getProperty()))
+			if (VECTOR_EXISTS(hide_props, i.second.propName()))
 				continue;
 
-			addUDMFProperty(sprops[a].property, objtype, "side2", pg_props_side2);
+			addUDMFProperty(i.second, objtype, "side2", pg_props_side2);
 		}
 	}
 
@@ -899,13 +884,13 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		pg_properties->EnableProperty(pg_properties->GetGrid()->GetRoot());
 
 	// Setup property grid for the object type
-	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
+	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 		setupTypeUDMF(objects[0]->getObjType());
 	else
 		setupType(objects[0]->getObjType());
 
 	// Find any custom properties (UDMF only)
-	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
+	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 	{
 		for (unsigned a = 0; a < objects.size(); a++)
 		{
@@ -1099,12 +1084,12 @@ void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 		type = "Thing";
 
 	// Apply changes
-	theMapEditor->mapEditor().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
+	MapEditor::editContext().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
 	applyChanges();
-	theMapEditor->mapEditor().endUndoRecord();
+	MapEditor::editContext().endUndoRecord();
 
 	// Refresh map view
-	theMapEditor->forceRefresh(true);
+	MapEditor::window()->forceRefresh(true);
 }
 
 /* MapObjectPropsPanel::onBtnReset
@@ -1246,9 +1231,9 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 			else if (last_type == MOBJ_THING)
 				type = "Thing";
 			
-			theMapEditor->mapEditor().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
+			MapEditor::editContext().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
 			properties[a]->applyValue();
-			theMapEditor->mapEditor().endUndoRecord();
+			MapEditor::editContext().endUndoRecord();
 			return;
 		}
 	}

@@ -73,8 +73,8 @@ WXCURSOR_PENCIL         CURSOR  DISCARDABLE     "wx/msw/pencil.cur"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,1,5
- PRODUCTVERSION 3,1,1,5
+ FILEVERSION 3,1,2,0
+ PRODUCTVERSION 3,1,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -90,12 +90,12 @@ BEGIN
         BLOCK "0c0904b0"
         BEGIN
             VALUE "FileDescription", "SLADE"
-            VALUE "FileVersion", "3.1.1.5"
+            VALUE "FileVersion", "3.1.2 Beta 1"
             VALUE "InternalName", "SLADE.exe"
             VALUE "LegalCopyright", "Copyright (C) 2017"
             VALUE "OriginalFilename", "SLADE.exe"
             VALUE "ProductName", "SLADE"
-            VALUE "ProductVersion", "3.1.1.5"
+            VALUE "ProductVersion", "3.1.2 Beta 1"
         END
     END
     BLOCK "VarFileInfo"

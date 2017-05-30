@@ -4,7 +4,7 @@
 
 #include "common.h"
 
-#include "MapEditor/GameConfiguration/Args.h"
+#include "Game/Args.h"
 
 class MapObject;
 class MapObjectPropsPanel;
@@ -100,7 +100,7 @@ public:
 class MOPGIntWithArgsProperty : public MOPGIntProperty
 {
 protected:
-	virtual const argspec_t getArgspec() = 0;
+	virtual const Game::ArgSpec& getArgspec() = 0;
 
 public:
 	MOPGIntWithArgsProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
@@ -116,7 +116,7 @@ public:
 class MOPGActionSpecialProperty : public MOPGIntWithArgsProperty
 {
 protected:
-	const argspec_t getArgspec();
+	const Game::ArgSpec& getArgspec();
 
 public:
 	MOPGActionSpecialProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL)
@@ -132,7 +132,7 @@ public:
 class MOPGThingTypeProperty : public MOPGIntWithArgsProperty
 {
 protected:
-	const argspec_t getArgspec();
+	const Game::ArgSpec& getArgspec();
 
 public:
 	MOPGThingTypeProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL)
