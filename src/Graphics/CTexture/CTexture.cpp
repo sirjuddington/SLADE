@@ -618,17 +618,15 @@ bool CTexture::removePatch(string patch)
 {
 	// Go through patches
 	bool removed = false;
-	vector<CTPatch*>::iterator i = patches.begin();
-	while (i != patches.end())
+	for (unsigned a = 0; a < patches.size(); a++)
 	{
-		if (S_CMP((*i)->getName(), patch))
+		if (S_CMP(patches[a]->getName(), patch))
 		{
-			delete (*i);
-			patches.erase(i);
+			delete patches[a];
+			patches.erase(patches.begin() + a);
 			removed = true;
+			a--;
 		}
-		else
-			i++;
 	}
 
 	// Cannot be a simple define anymore

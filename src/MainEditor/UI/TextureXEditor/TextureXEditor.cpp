@@ -316,7 +316,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 	// Open patch table tab if needed
 	if (pnames)
 	{
-		PatchTablePanel* ptp = new PatchTablePanel(tabs, &patch_table);
+		PatchTablePanel* ptp = new PatchTablePanel(tabs, &patch_table, this);
 		tabs->AddPage(ptp, "Patch Table (PNAMES)");
 		ptp->SetName("pnames");
 	}
@@ -474,14 +474,15 @@ void TextureXEditor::showTextureMenu(bool show)
 bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
 {
 	// Get patch we're removing
-	patch_t& p = patch_table.patch(index);
+	auto& p = patch_table.patch(index);
+	string name = p.name;
 
 	// Update TEXTUREx lists
 	for (unsigned a = 0; a < texture_editors.size(); a++)
-		texture_editors[a]->txList().removePatch(p.name);
+		texture_editors[a]->txList().removePatch(name);
 
 	// Delete patch entry if it's part of this archive (and delete_entry is true)
-	ArchiveEntry* entry = theResourceManager->getPatchEntry(p.name, "patches", archive);
+	ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "patches", archive);
 	if (delete_entry && entry && entry->getParent() == archive)
 		archive->removeEntry(entry);
 

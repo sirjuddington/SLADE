@@ -46,7 +46,7 @@ private:
 	wxStaticText*		label_textures;
 
 public:
-	PatchTablePanel(wxWindow* parent, PatchTable* patch_table);
+	PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor = nullptr);
 	~PatchTablePanel();
 
 	// Events

@@ -199,12 +199,11 @@ void PatchTableListView::sortItems()
 /* PatchTablePanel::PatchTablePanel
  * PatchTablePanel class constructor
  *******************************************************************/
-PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table) : wxPanel(parent, -1)
+PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor) :
+	wxPanel(parent, -1),
+	patch_table{ patch_table },
+	parent{ tx_editor }
 {
-	// Init variables
-	this->patch_table = patch_table;
-	this->parent = (TextureXEditor*)parent;
-
 	// Setup sizers
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
