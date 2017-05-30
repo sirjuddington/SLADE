@@ -50,7 +50,7 @@ public:
 
 	string	getName() { return name; }
 	bool	openFile(string filename, uint32_t offset = 0, uint32_t length = 0);
-	bool	openString(string text, uint32_t offset = 0, uint32_t length = 0, string source = "unknown");
+	bool	openString(const string& text, uint32_t offset = 0, uint32_t length = 0, string source = "unknown");
 	bool	openMem(const char* mem, uint32_t length, string source);
 	bool	openMem(const uint8_t* mem, uint32_t length, string source);
 	bool	openMem(MemChunk* mc, string source);

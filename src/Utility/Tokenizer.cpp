@@ -123,12 +123,13 @@ bool Tokenizer::openFile(string filename, uint32_t offset, uint32_t length)
 /* Tokenizer::openString
  * Reads a portion of a string to the Tokenizer
  *******************************************************************/
-bool Tokenizer::openString(string text, uint32_t offset, uint32_t length, string source)
+bool Tokenizer::openString(const string& text, uint32_t offset, uint32_t length, string source)
 {
 	// If length isn't specified or exceeds the string's length,
 	// only copy to the end of the string
-	if (offset + length > (uint32_t) text.length() || length == 0)
-		length = (uint32_t) text.length() - offset;
+	string ascii = text.ToAscii();
+	if (offset + length > (uint32_t)ascii.length() || length == 0)
+		length = (uint32_t)ascii.length() - offset;
 
 	// Setup variables & allocate memory
 	size = length;
@@ -141,7 +142,7 @@ bool Tokenizer::openString(string text, uint32_t offset, uint32_t length, string
 	name = source;
 
 	// Copy the string portion
-	memcpy(start, ((char*) text.char_str()) + offset, size);
+	memcpy(start, ascii.data().AsChar() + offset, size);
 
 	return true;
 }
