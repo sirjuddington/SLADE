@@ -1,37 +1,38 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MapEditContext.cpp
- * Description: MapEditContext class - handles the map editing
- *              context for a map (selection, highlight, undo/redo,
- *              editing functions, etc.)
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    MapEditContext.cpp
+// Description: MapEditContext class - handles the map editing
+//              context for a map (selection, highlight, undo/redo,
+//              editing functions, etc.)
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/Console/Console.h"
@@ -53,9 +54,11 @@ using MapEditor::Mode;
 using MapEditor::SectorMode;
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 namespace
 {
 	double grid_sizes[] =
@@ -88,34 +91,45 @@ CVAR(Int, map_bg_ms, 15, CVAR_SAVE)
 CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// External Variables
+//
+// ----------------------------------------------------------------------------
 EXTERN_CVAR(Int, flat_drawtype)
 
 
-/*******************************************************************
- * MapEditContext CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// MapEditContext Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* MapEditContext::MapEditContext
- * MapEditContext class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// MapEditContext::MapEditContext
+//
+// MapEditContext class constructor
+// ----------------------------------------------------------------------------
 MapEditContext::MapEditContext()
 {
 	undo_manager_ = std::make_unique<UndoManager>(&map_);
 }
 
-/* MapEditContext::~MapEditContext
- * MapEditContext class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::~MapEditContext
+//
+// MapEditContext class destructor
+// ----------------------------------------------------------------------------
 MapEditContext::~MapEditContext()
 {
 }
 
-/* MapEditContext::setEditMode
- * Changes the current edit mode to [mode]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::setEditMode
+//
+// Changes the current edit mode to [mode]
+// ----------------------------------------------------------------------------
 void MapEditContext::setEditMode(Mode mode)
 {
 	// Check if we are changing to the same mode
@@ -129,9 +143,10 @@ void MapEditContext::setEditMode(Mode mode)
 		return;
 	}
 
-	// Clear 3d mode undo manager on exiting 3d mode
+	// Clear 3d mode undo manager etc on exiting 3d mode
 	if (edit_mode_ == Mode::Visual && mode != Mode::Visual)
 	{
+		info_3d_.clearTexture();
 		undo_manager_->createMergedLevel(edit_3d_.undoManager(), "3D Mode Editing");
 		edit_3d_.undoManager()->clear();
 	}
@@ -216,9 +231,11 @@ void MapEditContext::setEditMode(Mode mode)
 	MapEditor::window()->refreshToolBar();
 }
 
-/* MapEditContext::setSectorEditMode
- * Changes the current sector edit mode to [mode]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::setSectorEditMode
+//
+// Changes the current sector edit mode to [mode]
+// ----------------------------------------------------------------------------
 void MapEditContext::setSectorEditMode(SectorMode mode)
 {
 	// Set sector mode
@@ -235,9 +252,11 @@ void MapEditContext::setSectorEditMode(SectorMode mode)
 	updateStatusText();
 }
 
-/* MapEditContext::cycleSectorEditMode
- * Cycles to the next sector edit mode. Both -> Floors -> Ceilings
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::cycleSectorEditMode
+//
+// Cycles to the next sector edit mode. Both -> Floors -> Ceilings
+// ----------------------------------------------------------------------------
 void MapEditContext::cycleSectorEditMode()
 {
 	switch (sector_mode_)
@@ -248,19 +267,23 @@ void MapEditContext::cycleSectorEditMode()
 	}
 }
 
-/* MapEditContext::lockMouse
- * Locks/unlocks the mouse cursor. A locked cursor is invisible and
- * will be moved to the center of the canvas every frame
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::lockMouse
+//
+// Locks/unlocks the mouse cursor. A locked cursor is invisible and will be
+// moved to the center of the canvas every frame
+// ----------------------------------------------------------------------------
 void MapEditContext::lockMouse(bool lock)
 {
 	mouse_locked_ = lock;
 	canvas_->lockMouse(lock);
 }
 
-/* MapEditContext::update
- * Updates the current map editor state (hilight, animations, etc.)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::update
+//
+// Updates the current map editor state (hilight, animations, etc.)
+// ----------------------------------------------------------------------------
 bool MapEditContext::update(long frametime)
 {
 	// Ignore if we aren't ready to update
@@ -345,9 +368,11 @@ bool MapEditContext::update(long frametime)
 	return true;
 }
 
-/* MapEditContext::openMap
- * Opens [map]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::openMap
+//
+// Opens [map]
+// ----------------------------------------------------------------------------
 bool MapEditContext::openMap(Archive::mapdesc_t map)
 {
 	LOG_MESSAGE(1, "Opening map %s", map.name);
@@ -392,9 +417,11 @@ bool MapEditContext::openMap(Archive::mapdesc_t map)
 	return true;
 }
 
-/* MapEditContext::clearMap
- * Clears and resets the map
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::clearMap
+//
+// Clears and resets the map
+// ----------------------------------------------------------------------------
 void MapEditContext::clearMap()
 {
 	// Clear map
@@ -413,11 +440,13 @@ void MapEditContext::clearMap()
 	pathed_things_.clear();
 }
 
-/* MapEditContext::showItem
- * Moves and zooms the view to show the object at [index], depending
- * on the current edit mode. If [index] is negative, show the
- * current selection or hilight instead
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::showItem
+//
+// Moves and zooms the view to show the object at [index], depending on the
+// current edit mode. If [index] is negative, show the current selection or
+// hilight instead
+// ----------------------------------------------------------------------------
 void MapEditContext::showItem(int index)
 {
 	// Show current selection/hilight if index is not specified
@@ -446,9 +475,11 @@ void MapEditContext::showItem(int index)
 	}
 }
 
-/* MapEditContext::getModeString
- * Returns a string representation of the current edit mode
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::getModeString
+//
+// Returns a string representation of the current edit mode
+// ----------------------------------------------------------------------------
 string MapEditContext::modeString(bool plural) const
 {
 	switch (edit_mode_)
@@ -463,9 +494,11 @@ string MapEditContext::modeString(bool plural) const
 	return plural ? "Items" : "Object";
 }
 
-/* MapEditContext::updateThingLists
- * Rebuilds thing info lists (pathed things, etc.)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::updateThingLists
+//
+// Rebuilds thing info lists (pathed things, etc.)
+// ----------------------------------------------------------------------------
 void MapEditContext::updateThingLists()
 {
 	pathed_things_.clear();
@@ -473,17 +506,21 @@ void MapEditContext::updateThingLists()
 	map_.setThingsUpdated();
 }
 
-/* MapEditContext::setCursor
- * Sets the cursor on the canvas to [cursor]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::setCursor
+//
+// Sets the cursor on the canvas to [cursor]
+// ----------------------------------------------------------------------------
 void MapEditContext::setCursor(UI::MouseCursor cursor) const
 {
 	UI::setCursor(canvas_, cursor);
 }
 
-/* MapEditContext::forceRefreshRenderer
- * Forces a full refresh of the 2d/3d renderers
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::forceRefreshRenderer
+//
+// Forces a full refresh of the 2d/3d renderers
+// ----------------------------------------------------------------------------
 void MapEditContext::forceRefreshRenderer()
 {
 	// Update 3d mode info overlay if needed
@@ -499,9 +536,11 @@ void MapEditContext::forceRefreshRenderer()
 	renderer_.forceUpdate();
 }
 
-/* MapEditContext::updateTagged
- * Rebuilds tagged object lists based on the current hilight
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::updateTagged
+//
+// Rebuilds tagged object lists based on the current hilight
+// ----------------------------------------------------------------------------
 void MapEditContext::updateTagged()
 {
 	using Game::TagType;
@@ -682,9 +721,11 @@ void MapEditContext::updateTagged()
 	}
 }
 
-/* MapEditContext::selectionUpdated
- * Called when the selection is updated, updates the properties panel
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::selectionUpdated
+//
+// Called when the selection is updated, updates the properties panel
+// ----------------------------------------------------------------------------
 void MapEditContext::selectionUpdated()
 {
 	// Open selected objects in properties panel
@@ -698,17 +739,21 @@ void MapEditContext::selectionUpdated()
 	updateStatusText();
 }
 
-/* MapEditContext::gridSize
- * Returns the current grid size
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::gridSize
+//
+// Returns the current grid size
+// ----------------------------------------------------------------------------
 double MapEditContext::gridSize()
 {
 	return grid_sizes[grid_size_];
 }
 
-/* MapEditContext::incrementGrid
- * Increments the grid size
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::incrementGrid
+//
+// Increments the grid size
+// ----------------------------------------------------------------------------
 void MapEditContext::incrementGrid()
 {
 	grid_size_++;
@@ -719,9 +764,11 @@ void MapEditContext::incrementGrid()
 	updateStatusText();
 }
 
-/* MapEditContext::decrementGrid
- * Decrements the grid size
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::decrementGrid
+//
+// Decrements the grid size
+// ----------------------------------------------------------------------------
 void MapEditContext::decrementGrid()
 {
 	grid_size_--;
@@ -733,10 +780,12 @@ void MapEditContext::decrementGrid()
 	updateStatusText();
 }
 
-/* MapEditContext::snapToGrid
- * Returns the nearest grid point to [position], unless snap to grid
- * is disabled. If [force] is true, grid snap setting is ignored
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::snapToGrid
+//
+// Returns the nearest grid point to [position], unless snap to grid is
+// disabled. If [force] is true, grid snap setting is ignored
+// ----------------------------------------------------------------------------
 double MapEditContext::snapToGrid(double position, bool force)
 {
 	if (!force && !grid_snap_)
@@ -750,11 +799,12 @@ double MapEditContext::snapToGrid(double position, bool force)
 	return ceil(position / gridSize() - 0.5) * gridSize();
 }
 
-/* MapEditContext::relativeSnapToGrid
- * Used for pasting. Given an [origin] point and the current
- * [mouse_pos], snaps in such a way that the mouse is a number of
- * grid units away from the origin.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::relativeSnapToGrid
+//
+// Used for pasting. Given an [origin] point and the current [mouse_pos], snaps
+// in such a way that the mouse is a number of grid units away from the origin.
+// ----------------------------------------------------------------------------
 fpoint2_t MapEditContext::relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos)
 {
 	fpoint2_t delta = mouse_pos - origin;
@@ -763,9 +813,11 @@ fpoint2_t MapEditContext::relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_p
 	return origin + delta;
 }
 
-/* MapEditContext::beginTagEdit
- * Begins a tag edit operation
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::beginTagEdit
+//
+// Begins a tag edit operation
+// ----------------------------------------------------------------------------
 int MapEditContext::beginTagEdit()
 {
 	// Check lines mode
@@ -798,10 +850,12 @@ int MapEditContext::beginTagEdit()
 	return 1;
 }
 
-/* MapEditContext::tagSectorAt
- * Applies the current tag edit tag to the sector at [x,y], or clears
- * the sector tag if it is already the same
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::tagSectorAt
+//
+// Applies the current tag edit tag to the sector at [x,y], or clears the
+// sector tag if it is already the same
+// ----------------------------------------------------------------------------
 void MapEditContext::tagSectorAt(double x, double y)
 {
 	fpoint2_t point(x, y);
@@ -829,9 +883,11 @@ void MapEditContext::tagSectorAt(double x, double y)
 	addEditorMessage(S_FMT("Tagged sector %u", sector->getIndex()));
 }
 
-/* MapEditContext::endTagEdit
- * Ends the tag edit operation and applies changes if [accept] is true
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::endTagEdit
+//
+// Ends the tag edit operation and applies changes if [accept] is true
+// ----------------------------------------------------------------------------
 void MapEditContext::endTagEdit(bool accept)
 {
 	// Get selected lines
@@ -877,9 +933,11 @@ void MapEditContext::endTagEdit(bool accept)
 	setFeatureHelp({});
 }
 
-/* MapEditContext::getEditorMessage
- * Returns the current editor message at [index]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::getEditorMessage
+//
+// Returns the current editor message at [index]
+// ----------------------------------------------------------------------------
 string MapEditContext::editorMessage(int index)
 {
 	// Check index
@@ -889,10 +947,11 @@ string MapEditContext::editorMessage(int index)
 	return editor_messages_[index].message;
 }
 
-/* MapEditContext::getEditorMessageTime
- * Returns the amount of time the editor message at [index] has been
- * active
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::getEditorMessageTime
+//
+// Returns the amount of time the editor message at [index] has been active
+// ----------------------------------------------------------------------------
 long MapEditContext::editorMessageTime(int index)
 {
 	// Check index
@@ -902,9 +961,11 @@ long MapEditContext::editorMessageTime(int index)
 	return App::runTimer() - editor_messages_[index].act_time;
 }
 
-/* MapEditContext::addEditorMessage
- * Adds an editor message, removing the oldest if needed
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::addEditorMessage
+//
+// Adds an editor message, removing the oldest if needed
+// ----------------------------------------------------------------------------
 void MapEditContext::addEditorMessage(string message)
 {
 	// Remove oldest message if there are too many active
@@ -918,6 +979,11 @@ void MapEditContext::addEditorMessage(string message)
 	editor_messages_.push_back(msg);
 }
 
+// ----------------------------------------------------------------------------
+// MapEditContext::setFeatureHelp
+//
+// Sets the feature help text to display [lines]
+// ----------------------------------------------------------------------------
 void MapEditContext::setFeatureHelp(const vector<string>& lines)
 {
 	feature_help_lines_.clear();
@@ -928,9 +994,11 @@ void MapEditContext::setFeatureHelp(const vector<string>& lines)
 		Log::debug(l);
 }
 
-/* MapEditContext::handleKeyBind
- * Handles the keybind [key]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::handleKeyBind
+//
+// Handles the keybind [key]
+// ----------------------------------------------------------------------------
 bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 {
 	// --- General keybinds ---
@@ -1142,10 +1210,12 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 	return true;
 }
 
-/* MapEditContext::updateDisplay
- * Updates the map object properties panel and current info overlay
- * from the current hilight/selection
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::updateDisplay
+//
+// Updates the map object properties panel and current info overlay from the
+// current hilight/selection
+// ----------------------------------------------------------------------------
 void MapEditContext::updateDisplay()
 {
 	// Update map object properties panel
@@ -1160,9 +1230,11 @@ void MapEditContext::updateDisplay()
 	}
 }
 
-/* MapEditContext::updateStatusText
- * Updates the window status bar text (mode, grid, etc.)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::updateStatusText
+//
+// Updates the window status bar text (mode, grid, etc.)
+// ----------------------------------------------------------------------------
 void MapEditContext::updateStatusText()
 {
 	// Edit mode
@@ -1208,11 +1280,13 @@ void MapEditContext::updateStatusText()
 	MapEditor::setStatusText(grid, 2);
 }
 
-/* MapEditContext::beginUndoRecord
- * Begins recording undo level [name]. [mod] is true if the operation
- * about to begin will modify object properties, [create/del] are
- * true if it will create or delete objects
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::beginUndoRecord
+//
+// Begins recording undo level [name]. [mod] is true if the operation about to
+// begin will modify object properties, [create/del] are true if it will create
+// or delete objects
+// ----------------------------------------------------------------------------
 void MapEditContext::beginUndoRecord(string name, bool mod, bool create, bool del)
 {
 	// Setup
@@ -1238,12 +1312,14 @@ void MapEditContext::beginUndoRecord(string name, bool mod, bool create, bool de
 	last_undo_level_ = "";
 }
 
-/* MapEditContext::beginUndoRecordLocked
- * Same as beginUndoRecord, except that subsequent calls to this
- * will not record another undo level if [name] is the same as last
- * (used for repeated operations like offset changes etc. so that
- * 5 offset changes to the same object only create 1 undo level)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::beginUndoRecordLocked
+//
+// Same as beginUndoRecord, except that subsequent calls to this will not
+// record another undo level if [name] is the same as last (used for repeated
+// operations like offset changes etc. so that 5 offset changes to the same
+// object only create 1 undo level)
+// ----------------------------------------------------------------------------
 void MapEditContext::beginUndoRecordLocked(string name, bool mod, bool create, bool del)
 {
 	if (name != last_undo_level_)
@@ -1253,9 +1329,11 @@ void MapEditContext::beginUndoRecordLocked(string name, bool mod, bool create, b
 	}
 }
 
-/* MapEditContext::endUndoRecord
- * Finish recording undo level. Discarded if [success] is false
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::endUndoRecord
+//
+// Finish recording undo level. Discarded if [success] is false
+// ----------------------------------------------------------------------------
 void MapEditContext::endUndoRecord(bool success)
 {
 	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
@@ -1282,18 +1360,22 @@ void MapEditContext::endUndoRecord(bool success)
 	map_.recomputeSpecials();
 }
 
-/* MapEditContext::recordPropertyChangeUndoStep
- * Records an object property change undo step for [object]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::recordPropertyChangeUndoStep
+//
+// Records an object property change undo step for [object]
+// ----------------------------------------------------------------------------
 void MapEditContext::recordPropertyChangeUndoStep(MapObject* object)
 {
 	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
 	manager->recordUndoStep(new MapEditor::PropertyChangeUS(object));
 }
 
-/* MapEditContext::doUndo
- * Undoes the current undo level
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::doUndo
+//
+// Undoes the current undo level
+// ----------------------------------------------------------------------------
 void MapEditContext::doUndo()
 {
 	// Clear selection first, since part of it may become invalid
@@ -1321,9 +1403,11 @@ void MapEditContext::doUndo()
 	map_.recomputeSpecials();
 }
 
-/* MapEditContext::doRedo
- * Redoes the next undo level
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::doRedo
+//
+// Redoes the next undo level
+// ----------------------------------------------------------------------------
 void MapEditContext::doRedo()
 {
 	// Clear selection first, since part of it may become invalid
@@ -1351,6 +1435,11 @@ void MapEditContext::doRedo()
 	map_.recomputeSpecials();
 }
 
+// ----------------------------------------------------------------------------
+// MapEditContext::overlayActive
+//
+// Returns true if a fullscreen overlay is currently active
+// ----------------------------------------------------------------------------
 bool MapEditContext::overlayActive()
 {
 	if (!overlay_current_)
@@ -1359,10 +1448,12 @@ bool MapEditContext::overlayActive()
 		return overlay_current_->isActive();
 }
 
-/* MapEditContext::swapPlayerStart3d
- * Moves the player 1 start thing to the current position and
- * direction of the 3d mode camera
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::swapPlayerStart3d
+//
+// Moves the player 1 start thing to the current position and direction of the
+// 3d mode camera
+// ----------------------------------------------------------------------------
 void MapEditContext::swapPlayerStart3d()
 {
 	// Find player 1 start
@@ -1385,9 +1476,11 @@ void MapEditContext::swapPlayerStart3d()
 	pstart->setAnglePoint(campos + renderer_.cameraDir2D());
 }
 
-/* MapEditContext::swapPlayerStart2d
- * Moves the player 1 start thing to [pos]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::swapPlayerStart2d
+//
+// Moves the player 1 start thing to [pos]
+// ----------------------------------------------------------------------------
 void MapEditContext::swapPlayerStart2d(fpoint2_t pos)
 {
 	// Find player 1 start
@@ -1408,9 +1501,11 @@ void MapEditContext::swapPlayerStart2d(fpoint2_t pos)
 	pstart->setPos(pos.x, pos.y);
 }
 
-/* MapEditContext::resetPlayerStart
- * Resets the player 1 start thing to its original position
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::resetPlayerStart
+//
+// Resets the player 1 start thing to its original position
+// ----------------------------------------------------------------------------
 void MapEditContext::resetPlayerStart()
 {
 	// Find player 1 start
@@ -1428,15 +1523,22 @@ void MapEditContext::resetPlayerStart()
 	pstart->setIntProperty("angle", player_start_dir_);
 }
 
-/* MapEditContext::openSectorTextureOverlay
- * Opens the sector texture selection overlay
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::openSectorTextureOverlay
+//
+// Opens the sector texture selection overlay
+// ----------------------------------------------------------------------------
 void MapEditContext::openSectorTextureOverlay(vector<MapSector*>& sectors)
 {
 	overlay_current_ = std::make_unique<SectorTextureOverlay>();
 	((SectorTextureOverlay*)overlay_current_.get())->openSectors(sectors);
 }
 
+// ----------------------------------------------------------------------------
+// MapEditContext::openQuickTextureOverlay
+//
+// Opens the quick texture selection (3d mode) overlay
+// ----------------------------------------------------------------------------
 void MapEditContext::openQuickTextureOverlay()
 {
 	if (QuickTextureOverlay3d::ok(selection_))
@@ -1449,6 +1551,11 @@ void MapEditContext::openQuickTextureOverlay()
 	}
 }
 
+// ----------------------------------------------------------------------------
+// MapEditContext::openLineTextureOverlay
+//
+// Opens the line texture selection overlay
+// ----------------------------------------------------------------------------
 void MapEditContext::openLineTextureOverlay()
 {
 	// Get selection
@@ -1462,15 +1569,22 @@ void MapEditContext::openLineTextureOverlay()
 	}
 }
 
+// ----------------------------------------------------------------------------
+// MapEditContext::closeCurrentOverlay
+//
+// Closes the current fullscreen overlay
+// ----------------------------------------------------------------------------
 void MapEditContext::closeCurrentOverlay(bool cancel) const
 {
 	if (overlay_current_ && overlay_current_->isActive())
 		overlay_current_->close(cancel);
 }
 
-/* MapEditContext::updateInfoOverlay
- * Updates the current info overlay, depending on edit mode
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::updateInfoOverlay
+//
+// Updates the current info overlay, depending on edit mode
+// ----------------------------------------------------------------------------
 void MapEditContext::updateInfoOverlay()
 {
 	// Update info overlay depending on edit mode
@@ -1484,9 +1598,11 @@ void MapEditContext::updateInfoOverlay()
 	}
 }
 
-/* MapEditContext::drawInfoOverlay
- * Draws the current info overlay
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::drawInfoOverlay
+//
+// Draws the current info overlay
+// ----------------------------------------------------------------------------
 void MapEditContext::drawInfoOverlay(const point2_t& size, float alpha)
 {
 	switch (edit_mode_)
@@ -1504,10 +1620,11 @@ void MapEditContext::drawInfoOverlay(const point2_t& size, float alpha)
 	}
 }
 
-/* MapEditContext::handleAction
- * Handles an SAction [id]. Returns true if the action was handled
- * here
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapEditContext::handleAction
+//
+// Handles an SAction [id]. Returns true if the action was handled here
+// ----------------------------------------------------------------------------
 bool MapEditContext::handleAction(string id)
 {
 	using namespace MapEditor;
@@ -1874,9 +1991,11 @@ bool MapEditContext::handleAction(string id)
 }
 
 
-/*******************************************************************
- * CONSOLE COMMANDS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Console Commands
+//
+// ----------------------------------------------------------------------------
 
 CONSOLE_COMMAND(m_show_item, 1, true)
 {
