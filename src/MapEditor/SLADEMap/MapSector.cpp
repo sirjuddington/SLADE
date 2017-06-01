@@ -601,7 +601,7 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 
 		// Ignore light level if fullbright
 		if (fullbright)
-			return rgba_t(COLWX(wxcol), 255);
+			return rgba_t(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255);
 
 		// Get sector light level
 		int ll = light;
@@ -678,7 +678,7 @@ rgba_t MapSector::getFogColour()
 		int intcol = MapObject::intProperty("fadecolor");
 
 		wxColour wxcol(intcol);
-		color = rgba_t(COLWX(wxcol), 0);
+		color = rgba_t(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 0);
 	}
 	return color;
 }
