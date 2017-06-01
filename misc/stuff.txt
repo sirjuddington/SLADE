@@ -17,7 +17,6 @@ TODO List ---------------------------------------------------------------
 
 --- Map Editor 3.1 ---
 - Checks:
-	- Mismatching tags
 	- Invalid sector references
 		- Add 'rebuild sector' fix option
 - Better UDMF property handling, proper support for unknown properties read with the map
@@ -26,15 +25,12 @@ TODO List ---------------------------------------------------------------
 
 --- Other 3.1 ---
 - Look into using wxWebView to show documentation in a tab
-- Automatically email stack trace on crash (if possible)
 
 
 --- Map Editor post-3.1 ---
 - 3d mode
 	- Offsets/scaling copy+paste
 	- (Z)MAPINFO parsing for sky texture
-	- Line transparency (udmf+zdoom)
-	- Slopes preview
 	- Auto-align Y
 	- Better vis checking
 	- 3d floors preview
@@ -56,14 +52,11 @@ TODO List ---------------------------------------------------------------
 - Resource editor:
 	- Edit entries externally
 - Map editor:
-	- Slopes preview
 	- Offsets/scaling copy+paste
 	- (Z)MAPINFO parsing for sky texture
-	- Line transparency (udmf+zdoom)
 
 
 --- Editor Features ---
-- Generic entry data view (for VERTEXES, LINEDEFS, SIDEDEFS, SECTORS, THINGS, DEMO*, TEXTUREX/PNAMES, ...)
 - ANSI screen editor
 - Proper font viewer
 - 'Cleanup' stuff (unused patches, textures, flats, unneeded entries...)
@@ -80,17 +73,12 @@ TODO List ---------------------------------------------------------------
 
 --- Text Editor ---
 - 'Tabs as Spaces' option
-- Better Find+Replace
-	- Make it a bar rather than popup
-	- Enter to find next
-	- Esc to cancel
 
 --- Texture Editor ---
 - Make 'grid' size optional
 - Snap to grid for dragging patches
 
 --- Gfx Editor ---
-- Basic pixel-drawing tools
 
 --- Audio ---
 
@@ -143,7 +131,7 @@ Unimplemented Feature Requests ------------------------------------------
 - sorting lumps in archive (not just their display)
 
 --- Entry Editing ---
-- SBARINFO viewer/editor
+- SBARINFO viewer/editor -- SBARINFO is getting deprecated, so maybe not
 
 --- Gfx ---
 - Save offset type between sessions
@@ -153,7 +141,7 @@ Translation dialog:
 - Zoom on preview gfx (perhaps in pop-up window?)
 - Allow use with truecolour gfx
 - Tool for trimming blank space around a graphic.
-- Tool for adding blank space to either side as needed to put the x offset right in the center (better for mirrored sprites).
+- Tool for adding blank space to either side as needed to put the x offset right in the center -- done as CCMD
 
 Conversion dialog:
 - Enter and esc mapped to convert all and skip all
