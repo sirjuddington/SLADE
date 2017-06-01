@@ -52,6 +52,7 @@
 #include "OpenGL/Drawing.h"
 #include "UI/TextEditor/TextLanguage.h"
 #include "UI/TextEditor/TextStyle.h"
+#include "UI/SBrush.h"
 #include "Utility/Tokenizer.h"
 
 
@@ -376,6 +377,9 @@ bool App::init()
 
 	// Init SImage formats
 	SIFormat::initFormats();
+
+	// Init brushes
+	theBrushManager->initBrushes();
 
 	// Load program icons
 	Log::info("Loading icons");

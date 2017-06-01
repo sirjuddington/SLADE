@@ -1408,6 +1408,7 @@
     <ClCompile Include="..\..\src\UI\PaletteChooser.cpp" />
     <ClCompile Include="..\..\src\UI\ResourceArchiveChooser.cpp" />
     <ClCompile Include="..\..\src\UI\SAuiTabArt.cpp" />
+    <ClCompile Include="..\..\src\UI\SBrush.cpp" />
     <ClCompile Include="..\..\src\UI\SDialog.cpp" />
     <ClCompile Include="..\..\src\UI\SplashWindow.cpp" />
     <ClCompile Include="..\..\src\UI\STabCtrl.cpp" />
@@ -1885,6 +1886,7 @@
     <ClInclude Include="..\..\src\UI\PaletteChooser.h" />
     <ClInclude Include="..\..\src\UI\ResourceArchiveChooser.h" />
     <ClInclude Include="..\..\src\UI\SAuiTabArt.h" />
+    <ClInclude Include="..\..\src\UI\SBrush.h" />
     <ClInclude Include="..\..\src\UI\SDialog.h" />
     <ClInclude Include="..\..\src\UI\SplashWindow.h" />
     <ClInclude Include="..\..\src\UI\STabCtrl.h" />

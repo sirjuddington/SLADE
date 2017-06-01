@@ -214,7 +214,7 @@ entry_types
 
 	sin
 	{
-		name = "SiN Archive"
+		name = "SiN Archive";
 		format = "archive_sin";
 		export_ext = "sin";
 		icon = "e_archive";
