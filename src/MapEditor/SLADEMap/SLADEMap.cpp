@@ -5262,36 +5262,94 @@ bool SLADEMap::convertToUDMF()
 
 	if (current_format == MAP_HEXEN)
 	{
-		// Line_SetIdentification special, set line id
+		// Handle special cases for conversion from Hexen format
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
-			if (lines[a]->intProperty("special") == 121)
+			int special = lines[a]->intProperty("special");
+			int flags = 0;
+			int id, hi;
+			switch (special)
 			{
-				int id = lines[a]->intProperty("arg0");
+			case 1:
+				id = lines[a]->intProperty("arg3");
+				lines[a]->setIntProperty("id", id);
+				lines[a]->setIntProperty("arg3", 0);
+				break;
 
-				// id high byte
-				int hi = lines[a]->intProperty("arg4");
+			case 5:
+				id = lines[a]->intProperty("arg4");
+				lines[a]->setIntProperty("id", id);
+				lines[a]->setIntProperty("arg4", 0);
+				break;
+
+			case 121:
+				id = lines[a]->intProperty("arg0");
+				hi = lines[a]->intProperty("arg4");
 				id = (hi*256) + id;
-
-				// flags
-				int flags = lines[a]->intProperty("arg1");
-				if (flags & 1) lines[a]->setBoolProperty("zoneboundary", true);
-				if (flags & 2) lines[a]->setBoolProperty("jumpover", true);
-				if (flags & 4) lines[a]->setBoolProperty("blockfloaters", true);
-				if (flags & 8) lines[a]->setBoolProperty("clipmidtex", true);
-				if (flags & 16) lines[a]->setBoolProperty("wrapmidtex", true);
-				if (flags & 32) lines[a]->setBoolProperty("midtex3d", true);
-				if (flags & 64) lines[a]->setBoolProperty("checkswitchrange", true);
+				flags = lines[a]->intProperty("arg1");
 
 				lines[a]->setIntProperty("special", 0);
 				lines[a]->setIntProperty("id", id);
 				lines[a]->setIntProperty("arg0", 0);
+				lines[a]->setIntProperty("arg1", 0);
+				lines[a]->setIntProperty("arg2", 0);
+				lines[a]->setIntProperty("arg3", 0);
+				lines[a]->setIntProperty("arg4", 0);
+				break;
+
+			case 160:
+				hi = id = lines[a]->intProperty("arg4");
+				flags = lines[a]->intProperty("arg1");
+				if (flags & 8)
+				{
+					lines[a]->setIntProperty("id", id);
+				}
+				else
+				{
+					id = lines[a]->intProperty("arg0");
+					lines[a]->setIntProperty("id", (hi * 256) + id);
+				}
+				lines[a]->setIntProperty("arg4", 0);
+				flags = 0; // don't keep it set!
+				break;
+
+			case 181:
+				id = lines[a]->intProperty("arg2");
+				lines[a]->setIntProperty("id", id);
+				lines[a]->setIntProperty("arg2", 0);
+				break;
+
+			case 208:
+				id = lines[a]->intProperty("arg0");
+				flags = lines[a]->intProperty("arg3");
+
+				lines[a]->setIntProperty("id", id); // arg0 must be preserved
+				lines[a]->setIntProperty("arg3", 0);
+				break;
+
+			case 215:
+				id = lines[a]->intProperty("arg0");
+				lines[a]->setIntProperty("id", id);
+				lines[a]->setIntProperty("arg0", 0);
+				break;
+
+			case 222:
+				id = lines[a]->intProperty("arg0");
+				lines[a]->setIntProperty("id", id); // arg0 must be preserved
+				break;
 			}
+
+			// flags (only set by 121 and 208)
+			if (flags & 1) lines[a]->setBoolProperty("zoneboundary", true);
+			if (flags & 2) lines[a]->setBoolProperty("jumpover", true);
+			if (flags & 4) lines[a]->setBoolProperty("blockfloaters", true);
+			if (flags & 8) lines[a]->setBoolProperty("clipmidtex", true);
+			if (flags & 16) lines[a]->setBoolProperty("wrapmidtex", true);
+			if (flags & 32) lines[a]->setBoolProperty("midtex3d", true);
+			if (flags & 64) lines[a]->setBoolProperty("checkswitchrange", true);
 		}
 	}
 	else return false;
-
-	// flags
 
 	// Set format
 	current_format = MAP_UDMF;
