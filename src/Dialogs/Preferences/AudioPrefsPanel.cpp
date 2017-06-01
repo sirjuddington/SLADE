@@ -37,6 +37,7 @@
  *******************************************************************/
 EXTERN_CVAR(Bool, snd_autoplay)
 EXTERN_CVAR(Bool, dmx_padding)
+EXTERN_CVAR(Int, snd_volume)
 #ifndef NO_FLUIDSYNTH
 EXTERN_CVAR(String, fs_soundfont_path)
 EXTERN_CVAR(String, dir_last)
@@ -239,4 +240,5 @@ void AudioPrefsPanel::onBtnBrowseTimidityExe(wxCommandEvent &e)
 void AudioPrefsPanel::onBtnResetPlayer(wxCommandEvent& e)
 {
 	theMIDIPlayer->resetPlayer();
+	theMIDIPlayer->setVolume(snd_volume);
 }

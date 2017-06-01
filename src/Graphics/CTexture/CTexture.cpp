@@ -256,27 +256,20 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 			// Translation
 			if (S_CMPNOCASE(property, "Translation"))
 			{
-				// Add first translation string
-				translation.parse(tz.getToken());
-
-				if (tz.peekToken() == "," && translation.builtInName() == "Desaturate")
+				// Build translation string
+				string translate;
+				string temp = tz.getToken();
+				if (temp.Contains("=")) temp = S_FMT("\"%s\"", temp);
+				translate += temp;
+				while (tz.peekToken() == ",")
 				{
-					// Desaturation, get amount
-					tz.skipToken(); // Skip ,
-					int amount = tz.getInteger();
-					LOG_MESSAGE(2, "%d", amount);
-					translation.setDesaturationAmount(amount);
+					translate += tz.getToken(); // add ','
+					temp = tz.getToken();
+					if (temp.Contains("=")) temp = S_FMT("\"%s\"", temp);
+					translate += temp;
 				}
-				else
-				{
-					// Add any subsequent translations (separated by commas)
-					while (tz.peekToken() == ",")
-					{
-						tz.skipToken();	// Skip ,
-						translation.parse(tz.getToken());
-					}
-				}
-
+				// Parse whole string
+				translation.parse(translate);
 				blendtype = 1;
 			}
 

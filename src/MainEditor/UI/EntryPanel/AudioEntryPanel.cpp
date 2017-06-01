@@ -251,7 +251,7 @@ string AudioEntryPanel::statusString()
 	string ret = wxEmptyString;
 	if (hours) ret = S_FMT("%d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
 	else if (minutes) ret = S_FMT("%d:%02d.%03d", minutes, seconds, milliseconds);
-	else ret = S_FMT("%d:%03d", seconds, milliseconds);
+	else ret = S_FMT("%d.%03d", seconds, milliseconds);
 
 	return ret;
 }

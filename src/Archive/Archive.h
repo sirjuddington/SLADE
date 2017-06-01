@@ -87,6 +87,7 @@ enum ArchiveTypes
 	ARCHIVE_FOLDER,
 	ARCHIVE_POD,
 	ARCHIVE_CHASM_BIN,
+	ARCHIVE_SIN,
 };
 
 struct archive_desc_t

@@ -1458,6 +1458,12 @@
     <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\SpecialPresetDialog.cpp">
       <Filter>Map Editor\UI\Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\SiNArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\SBrush.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2533,6 +2539,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\SpecialPresetDialog.h">
       <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\SiNArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\SBrush.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
