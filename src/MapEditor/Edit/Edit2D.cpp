@@ -599,10 +599,8 @@ void Edit2D::thingQuickAngle(fpoint2_t mouse_pos) const
 	if (context_.editMode() != MapEditor::Mode::Things)
 		return;
 
-	context_.beginUndoRecord("Thing Quick Angle Change", true, false, false);
 	for (auto thing : context_.selection().selectedThings())
 		thing->setAnglePoint(mouse_pos);
-	context_.endUndoRecord(true);
 }
 
 /* Edit2D::copy
