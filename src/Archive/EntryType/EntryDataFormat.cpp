@@ -256,7 +256,7 @@ void EntryDataFormat::initBuiltinFormats()
 	new BZip2DataFormat();
 	new TarDataFormat();
 	new DiskDataFormat();
-	//new PodArchiveDataFormat();
+	new PodArchiveDataFormat();
 	new ChasmBinArchiveDataFormat();
 	new SinArchiveDataFormat();
 	new MUSDataFormat();

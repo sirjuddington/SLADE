@@ -326,15 +326,14 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 	if (mc.getSize() < 84 + (num_files * 40))
 		return false;
 
-	// Read directory
-	file_entry_t* files = new file_entry_t[num_files];
-	mc.read(files, num_files * sizeof(file_entry_t));
-
-	// Check offsets
+	// Read directory and check offsets
+	file_entry_t entry;
 	for (unsigned a = 0; a < num_files; a++)
-		if (files[a].offset + files[a].size > mc.getSize())
+	{
+		mc.read(&entry, 40);
+		if (entry.offset + entry.size > mc.getSize())
 			return false;
-
+	}
 	return true;
 }
 
@@ -373,18 +372,14 @@ bool PodArchive::isPodArchive(string filename)
 		return false;
 	}
 
-	// Read directory
-	file_entry_t* files = new file_entry_t[num_files];
-	file.Read(files, num_files * sizeof(file_entry_t));
-
-	// Check offsets
+	// Read directory and check offsets
+	file_entry_t entry;
 	for (unsigned a = 0; a < num_files; a++)
-		if (files[a].offset + files[a].size > file_size)
-		{
-			file.Close();
+	{
+		file.Read(&entry, 40);
+		if (entry.offset + entry.size > file_size)
 			return false;
-		}
-
+	}
 	return true;
 }
 
