@@ -686,7 +686,7 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 	}
 
 	// Get text to parse
-	Tokenizer tz;
+	TokenizerOld tz;
 	tz.openMem(&(entry->getMCData()), entry->getName());
 
 	// Parsing gogo

@@ -182,7 +182,7 @@ ParseTreeNode* ParseTreeNode::addChildPTN(const string& name, const string& type
 // All values are read as strings, but can be retrieved as string, int, bool
 // or float.
 // ----------------------------------------------------------------------------
-bool ParseTreeNode::parse(Tokenizer& tz)
+bool ParseTreeNode::parse(TokenizerOld& tz)
 {
 	// Get first token
 	string token = tz.getToken();
@@ -259,7 +259,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 						archive_dir_ = inc_entry->getParentDir();
 
 						// Parse text in the entry
-						Tokenizer inc_tz;
+						TokenizerOld inc_tz;
 						inc_tz.openMem(&inc_entry->getMCData(), inc_entry->getName());
 						bool ok = parse(inc_tz);
 
@@ -631,7 +631,7 @@ Parser::~Parser()
 // ----------------------------------------------------------------------------
 bool Parser::parseText(MemChunk& mc, string source, bool debug)
 {
-	Tokenizer tz;
+	TokenizerOld tz;
 	if (debug) tz.enableDebug(debug);
 
 	// Open the given text data
@@ -646,7 +646,7 @@ bool Parser::parseText(MemChunk& mc, string source, bool debug)
 }
 bool Parser::parseText(string& text, string source, bool debug)
 {
-	Tokenizer tz;
+	TokenizerOld tz;
 	if (debug) tz.enableDebug(debug);
 
 	// Open the given text data

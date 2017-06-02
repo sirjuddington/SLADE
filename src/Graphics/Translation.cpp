@@ -36,7 +36,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Translation.h"
-#include "Utility/Tokenizer.h"
+#include "Utility/TokenizerOld.h"
 #include "Palette/Palette.h"
 #include "MainEditor/MainEditor.h"
 #include "Archive/ArchiveManager.h"
@@ -163,7 +163,7 @@ void Translation::parse(string def)
 	else def = getPredefined(def);
 
 	// Now we're guaranteed to have normal translation strings to parse
-	Tokenizer tz;
+	TokenizerOld tz;
 	tz.openString(def);
 	string token = tz.getToken();
 	while (!token.IsEmpty())
@@ -181,7 +181,7 @@ void Translation::parse(string def)
 void Translation::parseRange(string range)
 {
 	// Open definition string for processing w/tokenizer
-	Tokenizer tz;
+	TokenizerOld tz;
 	tz.setSpecialCharacters("[]:%,=#@$");
 	tz.openString(range);
 

@@ -53,7 +53,7 @@
 #include "UI/TextEditor/TextLanguage.h"
 #include "UI/TextEditor/TextStyle.h"
 #include "UI/SBrush.h"
-#include "Utility/Tokenizer.h"
+#include "Utility/TokenizerOld.h"
 
 
 // ----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ namespace App
 	void readConfigFile()
 	{
 		// Open SLADE.cfg
-		Tokenizer tz;
+		TokenizerOld tz;
 		if (!tz.openFile(App::path("slade3.cfg", App::Dir::User)))
 			return;
 

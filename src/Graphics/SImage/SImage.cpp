@@ -38,7 +38,7 @@
 #include "SIFormat.h"
 #include "Graphics/Translation.h"
 #include "Utility/MathStuff.h"
-#include "Utility/Tokenizer.h"
+#include "Utility/TokenizerOld.h"
 
 #undef BOOL
 

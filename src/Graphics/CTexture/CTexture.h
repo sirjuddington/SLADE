@@ -2,7 +2,7 @@
 #ifndef __CTEXTURE_H__
 #define __CTEXTURE_H__
 
-#include "Utility/Tokenizer.h"
+#include "Utility/TokenizerOld.h"
 #include "Archive/ArchiveEntry.h"
 #include "General/ListenerAnnouncer.h"
 #include "Graphics/Translation.h"
@@ -79,7 +79,7 @@ public:
 
 	ArchiveEntry*	getPatchEntry(Archive* parent = NULL);
 
-	bool	parse(Tokenizer& tz, uint8_t type = 0);
+	bool	parse(TokenizerOld& tz, uint8_t type = 0);
 	string	asText();
 };
 
@@ -174,8 +174,8 @@ public:
 	bool	duplicatePatch(size_t index, int16_t offset_x = 8, int16_t offset_y = 8);
 	bool	swapPatches(size_t p1, size_t p2);
 
-	bool	parse(Tokenizer& tz, string type);
-	bool	parseDefine(Tokenizer& tz);
+	bool	parse(TokenizerOld& tz, string type);
+	bool	parseDefine(TokenizerOld& tz);
 	string	asText();
 
 	bool	convertExtended();

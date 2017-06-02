@@ -40,7 +40,7 @@
 #include "General/Console/Console.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Utility/StringUtils.h"
-#include "Utility/Tokenizer.h"
+#include "Utility/TokenizerOld.h"
 #include "External/zlib/zlib.h"
 
 
@@ -729,7 +729,7 @@ void Misc::setWindowInfo(string id, int width, int height, int left, int top)
 	window_info.push_back(winf_t(id, width, height, left, top));
 }
 
-void Misc::readWindowInfo(Tokenizer* tz)
+void Misc::readWindowInfo(TokenizerOld* tz)
 {
 	// Read definitions
 	string token = tz->getToken();

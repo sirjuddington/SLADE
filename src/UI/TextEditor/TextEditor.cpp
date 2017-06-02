@@ -317,7 +317,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 {
 	string jump_points;
 
-	Tokenizer tz;
+	TokenizerOld tz;
 	tz.setSpecialCharacters(";,:|={}/()");
 	tz.openString(text);
 

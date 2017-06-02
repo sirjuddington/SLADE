@@ -32,7 +32,7 @@
 #include "WadArchive.h"
 #include "General/UI.h"
 #include "General/Misc.h"
-#include "Utility/Tokenizer.h"
+#include "Utility/TokenizerOld.h"
 
 bool JaguarDecode(MemChunk& mc);
 
@@ -1253,7 +1253,7 @@ void WadArchive::detectIncludes()
 	const char * tokens[6] = { "#include", "#include", "#include", "translator", "extradata", "lumpinclude" };
 	Archive::search_options_t opt;
 	opt.ignore_ext = true;
-	Tokenizer tz;
+	TokenizerOld tz;
 	tz.setSpecialCharacters(";,:|={}/()");
 
 	for (int i = 0; i < 6; ++i)

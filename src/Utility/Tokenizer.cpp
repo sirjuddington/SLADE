@@ -1,700 +1,545 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    Tokenizer.cpp
- * Description: My trusty old string tokenizer class.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Tokenizer.cpp
+// Description: A string tokenizer
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "Tokenizer.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-const string Tokenizer::DEFAULT_SPECIAL_CHARS = ";,:|={}/";
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
+const string Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
 
 
-/*******************************************************************
- * TOKENIZER CLASS FUNCTIONS
- *******************************************************************/
-
-/* Tokenizer::Tokenizer
- * Tokenizer class constructor
- *******************************************************************/
-Tokenizer::Tokenizer(CommentTypes comments_style)
+// ----------------------------------------------------------------------------
+//
+// Local Functions
+//
+// ----------------------------------------------------------------------------
+namespace
 {
-	// Initialize variables
-	current = NULL;
-	start = NULL;
-	size = 0;
-	comments = comments_style;
-	debug = false;
-	setSpecialCharacters(DEFAULT_SPECIAL_CHARS);
-	name = "nothing";
-	line = 1;
-	t_start = 0;
-	t_end = 0;
-	decorate = false;
-}
-
-/* Tokenizer::~Tokenizer
- * Tokenizer class destructor
- *******************************************************************/
-Tokenizer::~Tokenizer()
-{
-	// Free memory if used
-	if (start) free(start);
-}
-
-/* Tokenizer::setSpecialCharacters
-* sets special to a value
-*******************************************************************/
-void Tokenizer::setSpecialCharacters(string special_new)
-{
-	this->special.clear();
-	this->special_length = special_new.size();
-	for (unsigned a = 0; a < special_length; a++)
+	// ------------------------------------------------------------------------
+	// isWhitespace
+	//
+	// Returns true if [p] is a whitespace character
+	// ------------------------------------------------------------------------
+	bool isWhitespace(char p)
 	{
-		this->special.push_back(special_new[a]);
+		// Whitespace is either a newline, tab character or space
+		if (p == '\n' || p == 13 || p == ' ' || p == '\t')
+			return true;
+		else
+			return false;
 	}
 }
 
-/* Tokenizer::openFile
- * Reads a portion of a file to the Tokenizer
- *******************************************************************/
-bool Tokenizer::openFile(string filename, uint32_t offset, uint32_t length)
+
+// ----------------------------------------------------------------------------
+//
+// Tokenizer Class Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// Tokenizer::Tokenizer
+//
+// Tokenizer class constructor
+// ----------------------------------------------------------------------------
+Tokenizer::Tokenizer(CommentTypes comments, const string& special_characters) :
+	comment_types_{ comments },
+	special_characters_{special_characters.begin(), special_characters.end()},
+	decorate_{ false },
+	case_sensitive_{ true }
+{
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::setSpecialCharacters
+//
+// Sets the special characters to each character in [special_characters].
+// Special characters are always read as a single token
+// ----------------------------------------------------------------------------
+void Tokenizer::setSpecialCharacters(const char* characters)
+{
+	special_characters_.assign(characters, characters + strlen(characters));
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::openFile
+//
+// Opens text from a file [filename], reading [length] bytes from [offset].
+// If [length] is 0, read to the end of the file
+// ----------------------------------------------------------------------------
+bool Tokenizer::openFile(const string& filename, unsigned offset, unsigned length)
 {
 	// Open the file
 	wxFile file(filename);
 
-	name = filename;
-
 	// Check file opened
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "Tokenizer::openFile: Unable to open file %s", filename);
+		Log::error(S_FMT("Tokenizer::openFile: Unable to open file %s", filename));
 		return false;
 	}
+
+	// Use filename as source
+	source_ = filename;
 
 	// If length isn't specified or exceeds the file length,
 	// only read to the end of the file
 	if (offset + length > file.Length() || length == 0)
 		length = file.Length() - offset;
 
-	// Setup variables & allocate memory
-	size = length;
-	position = 0;
-	start = current = (char*) malloc(size);
-	end = start + size + 1;
-	line = 1;
-	t_start = 0;
-	t_end = 0;
-
 	// Read the file portion
+	data_.resize(length, 0);
 	file.Seek(offset, wxFromStart);
-	file.Read(start, size);
+	file.Read(data_.data(), length);
 
 	return true;
 }
 
-/* Tokenizer::openString
- * Reads a portion of a string to the Tokenizer
- *******************************************************************/
-bool Tokenizer::openString(const string& text, uint32_t offset, uint32_t length, string source)
+// ----------------------------------------------------------------------------
+// Tokenizer::openString
+//
+// Opens text from a string [text], reading [length] bytes from [offset].
+// If [length] is 0, read to the end of the string
+// ----------------------------------------------------------------------------
+bool Tokenizer::openString(const string& text, unsigned offset, unsigned length, const string& source)
 {
+	source_ = source;
+
 	// If length isn't specified or exceeds the string's length,
 	// only copy to the end of the string
 	string ascii = text.ToAscii();
-	if (offset + length > (uint32_t)ascii.length() || length == 0)
-		length = (uint32_t)ascii.length() - offset;
-
-	// Setup variables & allocate memory
-	size = length;
-	position = 0;
-	line = 1;
-	t_start = 0;
-	t_end = 0;
-	start = current = (char*) malloc(size);
-	end = start + size + 1;
-	name = source;
+	if (offset + length > (unsigned)ascii.length() || length == 0)
+		length = (unsigned)ascii.length() - offset;
 
 	// Copy the string portion
-	memcpy(start, ascii.data().AsChar() + offset, size);
+	data_.assign(ascii.begin() + offset, ascii.begin() + offset + length);
 
 	return true;
 }
 
-/* Tokenizer::openMem
- * Reads a chunk of memory to the Tokenizer
- *******************************************************************/
-bool Tokenizer::openMem(const char* mem, uint32_t length, string source)
+// ----------------------------------------------------------------------------
+// Tokenizer::openMem
+//
+// Opens text from memory [mem], reading [length] bytes
+// ----------------------------------------------------------------------------
+bool Tokenizer::openMem(const char* mem, unsigned length, const string& source)
 {
-	// Length must be specified
-	if (length == 0)
+	source_ = source;
+	data_.assign(mem, mem + length);
+
+	return true;
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::openMem
+//
+// Opens text from a MemChunk [mc]
+// ----------------------------------------------------------------------------
+bool Tokenizer::openMem(const MemChunk& mc, const string& source)
+{
+	source_ = source;
+	data_.assign(mc.getData(), mc.getData() + mc.getSize());
+
+	return true;
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::checkCommentBegin
+//
+// Checks if a comment begins at [state]'s current position and returns the
+// comment type if one does (0 otherwise)
+// ----------------------------------------------------------------------------
+unsigned Tokenizer::checkCommentBegin(const TokenizeState& state)
+{
+	// C-Style comment (/*)
+	if (comment_types_ & CStyle &&
+		state.position + 1 < state.size &&
+		data_[state.position] == '/' &&
+		data_[state.position + 1] == '*')
+		return CStyle;
+
+	// CPP-Style comment (//)
+	if (comment_types_ & CPPStyle &&
+		state.position + 1 < state.size &&
+		data_[state.position] == '/' &&
+		data_[state.position + 1] == '/')
+		return CPPStyle;
+
+	// ## comment
+	if (comment_types_ & DoubleHash &&
+		state.position + 1 < state.size &&
+		data_[state.position] == '#' &&
+		data_[state.position + 1] == '#')
+		return DoubleHash;
+
+	// # comment
+	if (comment_types_ & Hash && data_[state.position] == '#')
+		return Hash;
+
+	// ; comment
+	if (comment_types_ & Shell && data_[state.position] == ';')
+		return Shell;
+
+	// Not a comment
+	return 0;
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::tokenizeUnknown
+//
+// Process the current unknown character at [state]
+// ----------------------------------------------------------------------------
+void Tokenizer::tokenizeUnknown(TokenizeState& state)
+{
+	// Whitespace
+	if (isWhitespace(data_[state.position]))
 	{
-		LOG_MESSAGE(1, "Tokenizer::openMem: length not specified");
-		return false;
+		state.state = TokenizeState::State::Whitespace;
+		state.position++;
+		return;
 	}
 
-	name = source;
-
-	// Setup variables & allocate memory
-	size = length;
-	position = 0;
-	line = 1;
-	t_start = 0;
-	t_end = 0;
-	start = current = (char*) malloc(size);
-	end = start + size + 1;
-
-	// Copy the data
-	memcpy(start, mem, size);
-
-	return true;
-}
-
-/* Tokenizer::openMem
- * Reads a chunk of memory to the Tokenizer
- *******************************************************************/
-bool Tokenizer::openMem(const uint8_t* mem, uint32_t length, string source)
-{
-	// Length must be specified
-	if (length == 0)
+	// Comment
+	state.comment_type = checkCommentBegin(state);
+	if (state.comment_type > 0)
 	{
-		LOG_MESSAGE(1, "Tokenizer::openMem: length not specified");
-		return false;
+		state.state = TokenizeState::State::Comment;
+		if (state.comment_type == Hash || state.comment_type == Shell)
+			state.position++;
+		else
+			state.position += 2;
+
+		return;
 	}
 
-	name = source;
-
-	// Setup variables & allocate memory
-	size = length;
-	position = 0;
-	line = 1;
-	t_start = 0;
-	t_end = 0;
-	start = current = (char*) malloc(size);
-	end = start + size + 1;
-
-	// Copy the data
-	memcpy(start, mem, size);
-
-	return true;
-}
-
-/* Tokenizer::openMem
- * Reads a chunk of memory to the Tokenizer
- *******************************************************************/
-bool Tokenizer::openMem(MemChunk* mem, string source)
-{
-	// Needs to be valid
-	if (mem == NULL)
+	// Special character
+	if (isSpecialCharacter(data_[state.position]))
 	{
-		LOG_MESSAGE(1, "Tokenizer::openMem: invalid MemChunk");
-		return false;
+		// Add it as a token
+		tokens_.push_back(
+		{
+			data_[state.position],
+			state.current_line,
+			false,
+			state.position,
+			state.position + 1
+		});
+
+		// Continue
+		state.position++;
+		return;
 	}
 
-	name = source;
+	// Quoted string
+	if (data_[state.position] == '\"')
+	{
+		// Skip "
+		state.position++;
 
-	// Setup variables & allocate memory
-	size = mem->getSize();
-	position = 0;
-	line = 1;
-	t_start = 0;
-	t_end = 0;
-	start = current = (char*) malloc(size);
-	end = start + size + 1;
+		// Begin token
+		state.current_token.text.clear();
+		state.current_token.quoted_string = true;
+		state.current_token.pos_start = state.position;
+		state.state = TokenizeState::State::Token;
 
-	// Copy the data
-	memcpy(start, mem->getData(), size);
+		return;
+	}
 
-	return true;
+	// Token
+	state.current_token.text.clear();
+	state.current_token.quoted_string = false;
+	state.current_token.pos_start = state.position;
+	state.state = TokenizeState::State::Token;
 }
 
-/* Tokenizer::isWhitespace
- * Checks if a character is 'whitespace'
- *******************************************************************/
-bool Tokenizer::isWhitespace(char p)
+// ----------------------------------------------------------------------------
+// Tokenizer::tokenizeToken
+//
+// Process the current token character at [state]
+// ----------------------------------------------------------------------------
+void Tokenizer::tokenizeToken(TokenizeState& state)
 {
-	// Whitespace is either a newline, tab character or space
-	if (p == '\n' || p == 13 || p == ' ' || p == '\t')
-		return true;
+	// Quoted string
+	if (state.current_token.quoted_string)
+	{
+		// Check for closing "
+		if (data_[state.position] == '\"')
+		{
+			// Add token
+			addCurrentToken(state);
+
+			// Skip to character after closing " and continue
+			state.position++;
+			state.state = TokenizeState::State::Unknown;
+			return;
+		}
+
+		// Escape backslash
+		if (data_[state.position] == '\\')
+			state.position++;
+
+		// Continue token
+		state.position++;
+
+		return;
+	}
+
+	// Whitespace
+	if (isWhitespace(data_[state.position]))
+	{
+		// Add current token
+		addCurrentToken(state);
+
+		// Continue
+		state.position++;
+		state.state = TokenizeState::State::Whitespace;
+
+		return;
+	}
+
+	// Special character
+	if (isSpecialCharacter(data_[state.position]))
+	{
+		// Add current token
+		addCurrentToken(state);
+
+		// Add special character as token
+		tokens_.push_back(
+		{
+			data_[state.position],
+			state.current_line,
+			false,
+			state.position,
+			state.position + 1
+		});
+
+		// Continue
+		state.position++;
+		state.state = TokenizeState::State::Unknown;
+
+		return;
+	}
+
+	// Comment
+	unsigned comment_type = checkCommentBegin(state);
+	if (comment_type > 0)
+	{
+		// Add current token
+		addCurrentToken(state);
+
+		// Begin comment
+		state.state = TokenizeState::State::Comment;
+		if (state.comment_type == Hash || state.comment_type == Shell)
+			state.position++;
+		else
+			state.position += 2;
+
+		return;
+	}
+
+	// Continue token
+	state.position++;
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::tokenizeComment
+//
+// Process the current comment character at [state]
+// ----------------------------------------------------------------------------
+void Tokenizer::tokenizeComment(TokenizeState& state)
+{
+	// Check for end of line comment
+	if (state.comment_type != CStyle && data_[state.position] == '\n')
+	{
+		state.state = TokenizeState::State::Unknown;
+		state.position++;
+		return;
+	}
+
+	// Check for end of C-Style multi line comment
+	else if (state.comment_type == CStyle)
+	{
+		if (state.position + 1 < state.size &&
+			data_[state.position] == '*' &&
+			data_[state.position + 1] == '/')
+		{
+			state.state = TokenizeState::State::Unknown;
+			state.position += 2;
+			return;
+		}
+	}
+
+	// Continue comment
+	state.position++;
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::tokenizeWhitespace
+//
+// Process the current whitespace character at [state]
+// ----------------------------------------------------------------------------
+void Tokenizer::tokenizeWhitespace(TokenizeState& state)
+{
+	if (isWhitespace(data_[state.position]))
+		state.position++;
 	else
-		return false;
+		state.state = TokenizeState::State::Unknown;
 }
 
-/* Tokenizer::isSpecialCharacter
- * Checks if a character is a 'special' character, ie a character
- * that should always be its own token (;, =, | etc)
- *******************************************************************/
-bool Tokenizer::isSpecialCharacter(char p)
+// ----------------------------------------------------------------------------
+// Tokenizer::addCurrentToken
+//
+// Adds the current token at [state] to the tokens list
+// ----------------------------------------------------------------------------
+void Tokenizer::addCurrentToken(const TokenizeState& state)
 {
-	// Check through special tokens string
-	for (unsigned a = 0; a < special_length; a++)
+	tokens_.push_back(
 	{
-		if (special[a] == p)
-			return true;
-	}
+		wxString::FromAscii(
+			data_.data() + state.current_token.pos_start,
+			state.position - state.current_token.pos_start
+		),
+		state.current_line,
+		state.current_token.quoted_string,
+		state.current_token.pos_start,
+		state.position
+	});
 
-	return false;
+	// Convert to lower-case if not case sensitive (and not a quoted string)
+	if (!case_sensitive_ && !state.current_token.quoted_string)
+		tokens_.back().text.MakeLower();
 }
 
-/* Tokenizer::incrementCurrent
- * Increments the position pointer, returns false on end of block
- *******************************************************************/
-bool Tokenizer::incrementCurrent()
+// ----------------------------------------------------------------------------
+// Tokenizer::tokenize
+//
+// Tokenizes the currently open text data, adding all tokens to the tokens list
+// ----------------------------------------------------------------------------
+void Tokenizer::tokenize()
 {
-	if (position >= size - 1)
-	{
-		// At end of text, return false
-		position = size;
-		return false;
-	}
-	else
+	tokens_.clear();
+
+	// Init tokenizing state
+	auto state = TokenizeState{};
+	state.size = data_.size();
+
+#ifdef DEBUG
+	// Debug stuff
+	unsigned prev_position = 0;
+	unsigned prev_position_count = 0;
+#endif
+
+	while (state.position < state.size)
 	{
 		// Check for newline
-		if (current[0] == '\n')
-			line++;
+		if (data_[state.position] == '\n')
+			state.current_line++;
 
-		// Increment position & current pointer
-		position++;
-		current++;
-		t_end++;
-		return true;
+		// Process character depending on state
+		switch (state.state)
+		{
+		case TokenizeState::State::Unknown:		tokenizeUnknown(state); break;
+		case TokenizeState::State::Whitespace:	tokenizeWhitespace(state); break;
+		case TokenizeState::State::Token:		tokenizeToken(state); break;
+		case TokenizeState::State::Comment:		tokenizeComment(state); break;
+		default: state.position++; break;
+		}
+
+#ifdef DEBUG
+		// (Debug) Check we aren't stuck on a character
+		if (state.position != prev_position)
+		{
+			prev_position = state.position;
+			prev_position_count = 0;
+		}
+		else
+		{
+			prev_position_count++;
+			if (prev_position_count > 5)
+			{
+				Log::warning(
+					S_FMT(
+						"Tokenizer stuck on character '%c', line %d, position %d. Skipping",
+						data_[state.position],
+						state.current_line,
+						state.position
+				));
+				state.position++;
+			}
+		}
+#endif
 	}
+	
+	// Add token if the end of the data was reached during a token
+	if (state.state == TokenizeState::State::Token)
+		addCurrentToken(state);
 }
 
-/* Tokenizer::skipLineComment
- * Skips a '//' comment
- *******************************************************************/
-void Tokenizer::skipLineComment()
+
+
+
+
+// Testing
+
+#include "General/Console/Console.h"
+#include "MainEditor/MainEditor.h"
+#include "Archive/ArchiveEntry.h"
+
+CONSOLE_COMMAND(test_tokenizer, 0, false)
 {
-	if (atEnd())
+	auto entry = MainEditor::currentEntry();
+	if (!entry)
 		return;
 
-	// Increment position until a newline or end is found
-	while (current[0] != '\n' && current[0] != 13)
+	// Tokenize it
+	Tokenizer tz;
+	tz.setCaseSensitive(false);
+	tz.openMem(entry->getMCData(), entry->getName());
+	tz.tokenize();
+
+	for (auto& token : tz.tokens())
 	{
-		if (!incrementCurrent())
-			return;
-	}
-
-	// Skip the newline character also
-	incrementCurrent();
-}
-
-/* Tokenizer::skipMultilineComment
- * Skips a multiline comment (like this one :P)
- *******************************************************************/
-void Tokenizer::skipMultilineComment()
-{
-	if (atEnd())
-		return;
-
-	// Increment position until '*/' or end is found
-	while (!(current[0] == '*' && current[1] == '/'))
-	{
-		if (!incrementCurrent())
-			return;
-	}
-
-	// Skip the ending '*/'
-	incrementCurrent();
-	incrementCurrent();
-}
-
-/* Tokenizer::readToken
- * Reads the next 'token' from the text & moves past it
- *******************************************************************/
-void Tokenizer::readToken(bool toeol)
-{
-	token_current.clear();
-	bool ready = false;
-	qstring = false;
-
-	// Increment pointer to next token
-	while (!ready)
-	{
-		ready = true;
-
-		// Increment pointer until non-whitespace is found
-		while (isWhitespace(current[0]))
-		{
-			// Return if end of text found
-			if (!incrementCurrent())
-				return;
-		}
-
-		// Skip C-style comments
-		if (comments & CCOMMENTS)
-		{
-			// Check if we have a line comment
-			if (current + 1 < end && current[0] == '/' && current[1] == '/')
-			{
-				ready = false;
-
-				// DECORATE //$ handling
-				if (!decorate)
-					skipLineComment();
-				else if (current + 2 < end && current[2] != '$')
-					skipLineComment();
-				else
-					ready = true;
-			}
-
-			// Check if we have a multiline comment
-			if (current + 1 != end && current[0] == '/' && current[1] == '*')
-			{
-				skipMultilineComment(); // Skip it
-				ready = false;
-			}
-		}
-
-		// Skip '##' comments
-		if (comments & DCOMMENTS)
-		{
-			if (current + 1 != end && current[0] == '#' && current[1] == '#')
-			{
-				skipLineComment(); // Skip it
-				ready = false;
-			}
-		}
-
-		// Skip '#' comments
-		if (comments & HCOMMENTS)
-		{
-			if (current + 1 != end && current[0] == '#')
-			{
-				skipLineComment(); // Skip it
-				ready = false;
-			}
-		}
-
-		// Skip ';' comments
-		if (comments & SCOMMENTS)
-		{
-			if (current[0] == ';')
-			{
-				skipLineComment(); // Skip it
-				ready = false;
-			}
-		}
-
-		// Check for end of text
-		if (position == size)
-			return;
-	}
-
-	// Init token delimiters
-	t_start = position;
-	t_end = position;
-
-	// If we're at a special character, it's our token
-	if (isSpecialCharacter(current[0]))
-	{
-		token_current += current[0];
-		t_end = position + 1;
-		incrementCurrent();
-		return;
-	}
-
-	// Now read the token
-	if (current[0] == '\"')   // If we have a literal string (enclosed with "")
-	{
-		qstring = true;
-
-		// Skip opening "
-		incrementCurrent();
-
-		// Read literal string (include whitespace)
-		while (current[0] != '\"')
-		{
-			//if (position < size - 1 && current[0] == '\\' && current[1] == '\"')
-			if (current[0] == '\\')
-				incrementCurrent();
-
-			token_current += current[0];
-
-			if (!incrementCurrent())
-				return;
-		}
-
-		// Skip closing "
-		incrementCurrent();
-	}
-	else
-	{
-		// Read token (don't include whitespace)
-		while (!((!toeol && isWhitespace(current[0])) || current[0] == '\n'))
-		{
-			// Return if special character found
-			if (!toeol && isSpecialCharacter(current[0]))
-				return;
-
-			// Return if a comment starts without whitespace
-			if (comments & CCOMMENTS && token_current.size() && current + 1 < end &&
-				current[0] == '/' && (current[1] == '/' || current[1] == '*'))
-				return;
-
-			// Add current character to the token
-			token_current += current[0];
-
-			// Return if end of text found
-			if (!incrementCurrent())
-				return;
-		}
-	}
-
-	// Write token to log if debug mode enabled
-	if (debug)
-		LOG_MESSAGE(1, "%s", token_current);
-
-	// Return the token
-	return;
-}
-
-/* Tokenizer::skipToken
- * Reads the next 'token' from the text & moves past it
- *******************************************************************/
-void Tokenizer::skipToken()
-{
-	readToken();
-}
-
-/* Tokenizer::getToken
- * Gets the next 'token' from the text & moves past it, returns
- * a blank string if we're at the end of the text
- *******************************************************************/
-string Tokenizer::getToken()
-{
-	readToken();
-	return token_current;
-}
-
-/* Tokenizer::getLine
- * Gets the rest of the line (including whitespace) as a single token
- * and moves past it, returns a blank string if we're at the end of 
- * the text
- *******************************************************************/
-string Tokenizer::getLine()
-{
-	readToken(true);
-	return token_current;
-}
-
-/* Tokenizer::getToken
- * Gets the next 'token' from the text & moves past it, writes
- * the result to [s]
- *******************************************************************/
-void Tokenizer::getToken(string* s)
-{
-	// Read token
-	readToken();
-
-	// Set string value
-	*s = token_current;
-}
-
-/* Tokenizer::peekToken
- * Returns the next token without actually moving past it
- *******************************************************************/
-string Tokenizer::peekToken()
-{
-	// Backup current position
-	char* c = current;
-	uint32_t p = position;
-	int oline = line;
-
-	// Read the next token
-	readToken();
-
-	// Go back to original position
-	current = c;
-	position = p;
-	line = oline;
-
-	// Return the token
-	return token_current;
-}
-
-/* Tokenizer::checkToken
- * Compares the current token with a string
- *******************************************************************/
-bool Tokenizer::checkToken(string check)
-{
-	readToken();
-	return !(token_current.Cmp(check));
-}
-
-/* Tokenizer::getInteger
- * Reads a token and returns its integer value
- *******************************************************************/
-int Tokenizer::getInteger()
-{
-	// Read token
-	readToken();
-
-	// Return integer value
-	return atoi(CHR(token_current));
-}
-
-/* Tokenizer::getInteger
- * Reads a token and writes its integer value to [i]
- *******************************************************************/
-void Tokenizer::getInteger(int* i)
-{
-	// Read token
-	readToken();
-
-	// Set integer value
-	*i = atoi(CHR(token_current));
-}
-
-/* Tokenizer::getFloat
- * Reads a token and returns its floating point value
- *******************************************************************/
-float Tokenizer::getFloat()
-{
-	// Read token
-	readToken();
-
-	// Return float value
-	return (float) atof(CHR(token_current));
-}
-
-/* Tokenizer::getFloat
- * Reads a token and writes its float value to [f]
- *******************************************************************/
-void Tokenizer::getFloat(float* f)
-{
-	// Read token
-	readToken();
-
-	// Set float value
-	*f = (float)atof(CHR(token_current));
-}
-
-/* Tokenizer::getDouble
- * Reads a token and returns its double-precision floating point
- * value
- *******************************************************************/
-double Tokenizer::getDouble()
-{
-	// Read token
-	readToken();
-
-	// Return double value
-	return atof(CHR(token_current));
-}
-
-/* Tokenizer::getDouble
- * Reads a token and writes its double value to [d]
- *******************************************************************/
-void Tokenizer::getDouble(double* d)
-{
-	// Read token
-	readToken();
-
-	// Set double value
-	*d = atof(CHR(token_current));
-}
-
-/* Tokenizer::getBool
- * Reads a token and returns its boolean value, anything except
- * "0", "no", or "false" will return true
- *******************************************************************/
-bool Tokenizer::getBool()
-{
-	// Read token
-	readToken();
-
-	// If the token is a string "no" or "false", the value is false
-	if (S_CMPNOCASE(token_current, "no") || S_CMPNOCASE(token_current, "false"))
-		return false;
-
-	// Returns true ("1") or false ("0")
-	return !!atoi(CHR(token_current));
-}
-
-/* Tokenizer::getBool
- * Reads a token and writes its boolean value to [b], same rules as
- * getBool above
- *******************************************************************/
-void Tokenizer::getBool(bool* b)
-{
-	// Read token
-	readToken();
-
-	// If the token is a string "no" or "false", the value is false
-	if (S_CMPNOCASE(token_current, "no") || S_CMPNOCASE(token_current, "false"))
-		*b = false;
-	else
-		*b = !!atoi(CHR(token_current));
-}
-
-/* Tokenizer::getTokensUntil
- * Reads tokens into [tokens] until either [end] token is found, or
- * the end of the data is reached
- *******************************************************************/
-void Tokenizer::getTokensUntil(vector<string>& tokens, string end)
-{
-	while (1)
-	{
-		readToken();
-		if (token_current.IsEmpty() && !qstring)
-			break;
-		if (S_CMPNOCASE(token_current, end))
-			break;
-		tokens.push_back(token_current);
-	}
-}
-
-/* Tokenizer::skipSection
- * Skips a 'section' of tokens delimited by [open] and [close]. Also
- * handles nested sections
- *******************************************************************/
-void Tokenizer::skipSection(string open, string close)
-{
-	int level = 0;
-	readToken();
-	while (!(token_current.empty() && !qstring))
-	{
-		// Increase depth level if another opener
-		if (token_current == open)
-			level++;
-
-		// Check for section closer
-		else if (token_current == close)
-		{
-			if (level == 0)
-				break;
-			else
-				level--;
-		}
-
-		readToken();
+		Log::info(
+			S_FMT("Line %d: [%d - %d] \"%s\" (%s)",
+			token.line_no,
+			token.pos_start,
+			token.pos_end,
+			CHR(token.text),
+			token.quoted_string ? "quoted" : "normal"
+		));
 	}
 }

@@ -623,7 +623,7 @@ void StyleSet::initCurrent()
 	if (wxFileExists(path))
 	{
 		// Read it in
-		Tokenizer tz;
+		TokenizerOld tz;
 		tz.openFile(path);
 
 		// Parse it
@@ -788,7 +788,7 @@ bool StyleSet::loadResourceStyles()
 	if (default_style)
 	{
 		// Read entry data into tokenizer
-		Tokenizer tz;
+		TokenizerOld tz;
 		tz.openMem(&default_style->getMCData(), default_style->getName());
 
 		// Parse it
@@ -818,7 +818,7 @@ bool StyleSet::loadResourceStyles()
 			continue;
 
 		// Read entry data into tokenizer
-		Tokenizer tz;
+		TokenizerOld tz;
 		tz.openMem(&entry->getMCData(), entry->getName());
 
 		// Parse it
@@ -860,7 +860,7 @@ bool StyleSet::loadCustomStyles()
 	while (files)
 	{
 		// Read file into tokenizer
-		Tokenizer tz;
+		TokenizerOld tz;
 		tz.openFile(res_dir.GetName() + "/" + filename);
 
 		// Parse it

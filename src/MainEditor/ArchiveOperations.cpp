@@ -475,7 +475,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	total_maps += udmfmaps.size();
 
 	// Go through and add used textures to list
-	Tokenizer tz;
+	TokenizerOld tz;
 	tz.setSpecialCharacters("{};=");
 	for (unsigned a = 0; a < udmfmaps.size(); a++)
 	{
@@ -701,7 +701,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 	total_maps += udmfmaps.size();
 
 	// Go through and add used flats to list
-	Tokenizer tz;
+	TokenizerOld tz;
 	tz.setSpecialCharacters("{};=");
 	for (unsigned a = 0; a < udmfmaps.size(); a++)
 	{

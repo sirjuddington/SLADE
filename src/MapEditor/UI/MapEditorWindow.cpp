@@ -113,7 +113,7 @@ MapEditorWindow::~MapEditorWindow()
 void MapEditorWindow::loadLayout()
 {
 	// Open layout file
-	Tokenizer tz;
+	TokenizerOld tz;
 	if (!tz.openFile(App::path("mapwindow.layout", App::Dir::User)))
 		return;
 

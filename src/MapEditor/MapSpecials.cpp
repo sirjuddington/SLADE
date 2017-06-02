@@ -33,7 +33,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "MapSpecials.h"
 #include "Game/Configuration.h"
-#include "Utility/Tokenizer.h"
+#include "Utility/TokenizerOld.h"
 #include "Utility/MathStuff.h"
 
 
@@ -234,7 +234,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 	if (!entry || entry->getSize() == 0)
 		return;
 
-	Tokenizer tz;
+	TokenizerOld tz;
 	tz.setSpecialCharacters(";,:|={}/()");
 	tz.openMem(entry->getData(), entry->getSize(), "ACS Scripts");
 

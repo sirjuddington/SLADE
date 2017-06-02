@@ -21,7 +21,7 @@ class SImage;
 class Archive;
 class ArchiveEntry;
 class Palette8bit;
-class Tokenizer;
+class TokenizerOld;
 namespace Misc
 {
 	bool		loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index = 0);
@@ -59,7 +59,7 @@ namespace Misc
 	};
 	winf_t	getWindowInfo(string id);
 	void	setWindowInfo(string id, int width, int height, int left, int top);
-	void	readWindowInfo(Tokenizer* tz);
+	void	readWindowInfo(TokenizerOld* tz);
 	void	writeWindowInfo(wxFile& file);
 }
 

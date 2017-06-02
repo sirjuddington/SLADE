@@ -36,7 +36,7 @@
 #include "Game.h"
 #include "ThingType.h"
 #include "Utility/StringUtils.h"
-#include "Utility/Tokenizer.h"
+#include "Utility/TokenizerOld.h"
 
 
 // ----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ namespace Game
 	//
 	// Parses a DECORATE 'States' block
 	// ------------------------------------------------------------------------
-	void parseStates(Tokenizer& tz, PropertyList& props)
+	void parseStates(TokenizerOld& tz, PropertyList& props)
 	{
 		int lastpriority = 0;
 		int priority = 0;
@@ -159,7 +159,7 @@ namespace Game
 	//
 	// Parses a DECORATE 'actor' definition
 	// ------------------------------------------------------------------------
-	void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types)
+	void parseDecorateActor(TokenizerOld& tz, std::map<int, ThingType>& types)
 	{
 		// Get actor name
 		string name = tz.getToken();
@@ -368,7 +368,7 @@ namespace Game
 	//
 	// Parses an old-style (non-actor) DECORATE definition
 	// ------------------------------------------------------------------------
-	void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
+	void parseDecorateOld(TokenizerOld& tz, std::map<int, ThingType>& types)
 	{
 		string name, sprite, group, token;
 		bool spritefound = false;
@@ -486,7 +486,7 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types)
 		StringUtils::processIncludes(decorate_entries[a], full_defs, false);
 
 	// Init tokenizer
-	Tokenizer tz;
+	TokenizerOld tz;
 	tz.setSpecialCharacters(":,{}");
 	tz.enableDecorate(true);
 	tz.openString(full_defs);

@@ -1058,7 +1058,7 @@ void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 void ZTextureEditorPanel::onTextTranslationEnter(wxCommandEvent& e)
 {
 	// Parse translation text line
-	Tokenizer tz;
+	TokenizerOld tz;
 	tz.openString(text_translation->GetValue());
 	Translation trans;
 

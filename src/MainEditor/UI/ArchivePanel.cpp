@@ -4204,7 +4204,7 @@ CONSOLE_COMMAND(run, 1, true)
 		}
 	}
 
-	Tokenizer t;
+	TokenizerOld t;
 	if (!t.openMem(&mc, args[0]))
 		return;
 

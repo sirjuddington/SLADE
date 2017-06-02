@@ -31,7 +31,7 @@
 #include "General/Misc.h"
 #include "AnimatedList.h"
 #include "UI/Lists/ListView.h"
-#include "Utility/Tokenizer.h"
+#include "Utility/TokenizerOld.h"
 
 /*******************************************************************
  * ANIMATEDENTRY CLASS FUNCTIONS
@@ -275,7 +275,7 @@ bool AnimatedList::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, bool
  *******************************************************************/
 bool AnimatedList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 {
-	Tokenizer tz(HCOMMENTS);
+	TokenizerOld tz(HCOMMENTS);
 	tz.openMem(&(entry->getMCData()), entry->getName());
 
 	string token;

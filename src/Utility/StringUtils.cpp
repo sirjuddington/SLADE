@@ -31,7 +31,7 @@
 // ----------------------------------------------------------------------------
 #include "Main.h"
 #include "StringUtils.h"
-#include "Tokenizer.h"
+#include "TokenizerOld.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 
@@ -85,7 +85,7 @@ void StringUtils::processIncludes(string filename, string& out)
 		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get filename to include
-			Tokenizer tz;
+			TokenizerOld tz;
 			tz.openString(line);
 			tz.getToken();	// Skip #include
 			string fn = tz.getToken();
@@ -131,7 +131,7 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get name of entry to include
-			Tokenizer tz;
+			TokenizerOld tz;
 			tz.openString(line);
 			tz.getToken();	// Skip #include
 			tz.setSpecialCharacters("");

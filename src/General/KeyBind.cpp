@@ -778,7 +778,7 @@ string KeyBind::writeBinds()
 /* KeyBind::readBinds
  * Reads keybind defeinitions from tokenizer [tz]
  *******************************************************************/
-bool KeyBind::readBinds(Tokenizer& tz)
+bool KeyBind::readBinds(TokenizerOld& tz)
 {
 	// Parse until ending }
 	string name = tz.getToken();

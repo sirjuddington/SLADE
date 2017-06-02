@@ -33,7 +33,7 @@
 #include "General/Misc.h"
 #include "Graphics/Translation.h"
 #include "Graphics/SImage/SIFormat.h"
-#include "Utility/Tokenizer.h"
+#include "Utility/TokenizerOld.h"
 #include "Utility/CIEDeltaEquations.h"
 
 
@@ -208,7 +208,7 @@ bool Palette8bit::loadMem(MemChunk& mc, int format)
 		if (memchr(mc.getData(), 0, mc.getSize() -1))
 			return false; // Not text
 
-		Tokenizer tz;
+		TokenizerOld tz;
 		tz.setSpecialCharacters(",:#");
 		tz.openMem(&mc, "Palette Import");
 

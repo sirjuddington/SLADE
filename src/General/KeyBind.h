@@ -2,7 +2,7 @@
 #ifndef __KEYBIND_H__
 #define __KEYBIND_H__
 
-#include "Utility/Tokenizer.h"
+#include "Utility/TokenizerOld.h"
 
 #define KPM_CTRL	0x01
 #define KPM_ALT		0x02
@@ -114,7 +114,7 @@ public:
 
 	static void		initBinds();
 	static string	writeBinds();
-	static bool		readBinds(Tokenizer& tz);
+	static bool		readBinds(TokenizerOld& tz);
 	static void     updateSortedBindsList();
 };
 

@@ -156,7 +156,7 @@ bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
 			return false;
 
 		// Start parsing
-		Tokenizer tz;
+		TokenizerOld tz;
 		tz.openMem(udmfdata->getData(), udmfdata->getSize(), map.head->getName());
 
 		// Get first token

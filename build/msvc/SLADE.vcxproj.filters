@@ -1464,7 +1464,7 @@
     <ClCompile Include="..\..\src\UI\SBrush.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Utility\Tokenizer2.cpp">
+    <ClCompile Include="..\..\src\Utility\TokenizerOld.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2549,7 +2549,7 @@
     <ClInclude Include="..\..\src\UI\SBrush.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Utility\Tokenizer2.h">
+    <ClInclude Include="..\..\src\Utility\TokenizerOld.h">
       <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>

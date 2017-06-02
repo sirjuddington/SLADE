@@ -217,7 +217,7 @@ ArchiveEntry* CTPatchEx::getPatchEntry(Archive* parent)
 /* CTPatchEx::parse
  * Parses a ZDoom TEXTURES format patch definition
  *******************************************************************/
-bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
+bool CTPatchEx::parse(TokenizerOld& tz, uint8_t type)
 {
 	// Read basic info
 	this->type = type;
@@ -708,7 +708,7 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 /* CTexture::parse
  * Parses a TEXTURES format texture definition
  *******************************************************************/
-bool CTexture::parse(Tokenizer& tz, string type)
+bool CTexture::parse(TokenizerOld& tz, string type)
 {
 	// Check if optional
 	if (S_CMPNOCASE(tz.peekToken(), "optional"))
@@ -798,7 +798,7 @@ bool CTexture::parse(Tokenizer& tz, string type)
 /* CTexture::parseDefine
  * Parses a HIRESTEX define block
  *******************************************************************/
-bool CTexture::parseDefine(Tokenizer& tz)
+bool CTexture::parseDefine(TokenizerOld& tz)
 {
 	this->type = "Define";
 	this->extended = true;
