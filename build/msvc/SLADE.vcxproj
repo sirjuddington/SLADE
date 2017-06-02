@@ -1450,6 +1450,7 @@
     <ClCompile Include="..\..\src\Utility\SFileDialog.cpp" />
     <ClCompile Include="..\..\src\Utility\StringUtils.cpp" />
     <ClCompile Include="..\..\src\Utility\Tokenizer.cpp" />
+    <ClCompile Include="..\..\src\Utility\Tokenizer2.cpp" />
     <ClCompile Include="..\..\src\Utility\Tree.cpp" />
     <ClCompile Include="..\..\src\External\zlib\adler32.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -1915,6 +1916,7 @@
     <ClInclude Include="..\..\src\Utility\StringUtils.h" />
     <ClInclude Include="..\..\src\Utility\Structs.h" />
     <ClInclude Include="..\..\src\Utility\Tokenizer.h" />
+    <ClInclude Include="..\..\src\Utility\Tokenizer2.h" />
     <ClInclude Include="..\..\src\Utility\Tree.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\src\External\zlib\crc32.h" />
