@@ -21,6 +21,16 @@ public:
 		bool		quoted_string;
 		unsigned	pos_start;
 		unsigned	pos_end;
+
+		explicit	operator	string() const { return text; }
+		explicit	operator	const string() const { return text; }
+		explicit	operator	const char*() const { return CHR(text); }
+					operator	char() const { return text[0]; }
+		bool		operator	==(const string& cmp) const { return text == cmp; }
+		bool		operator	==(const char* cmp) const { return text == cmp; }
+		bool		operator	!=(const string& cmp) const { return text != cmp; }
+		bool		operator	!=(const char* cmp) const { return text != cmp; }
+		char		operator	[](unsigned index) const { return text[index]; }
 	};
 
 	struct TokenizeState
@@ -39,6 +49,7 @@ public:
 		unsigned	current_line = 1;
 		unsigned	comment_type = 0;
 		Token		current_token;
+		bool		done = false;
 	};
 
 	// Constructors
@@ -48,10 +59,14 @@ public:
 	);
 
 	// Accessors
-	const vector<Token>&	tokens() const { return tokens_; }
-	const string&			source() const { return source_; }
-	bool					decorate() const { return decorate_; }
-	bool					caseSensitive() const { return case_sensitive_; }
+	const string&	source() const { return source_; }
+	bool			decorate() const { return decorate_; }
+	bool			caseSensitive() const { return case_sensitive_; }
+	const Token&	current() const { return token_current_; }
+	const Token&	next(bool inc_index = false);
+	void			skip(int inc = 1);
+	void			skipToNextLine();
+	bool			atEnd() const { return token_current_.pos_start == token_next_.pos_start; }
 
 	// Modifiers
 	void	setCommentTypes(CommentTypes types) { comment_types_ = types; }
@@ -70,14 +85,18 @@ public:
 	bool	openMem(const char* mem, unsigned length, const string& source);
 	bool	openMem(const MemChunk& mc, const string& source);
 
-	// Tokenize
-	void	tokenize();
+	// General
+	bool	isSpecialCharacter(char p) const { return VECTOR_EXISTS(special_characters_, p); }
+	void	reset();
 
 	static const string DEFAULT_SPECIAL_CHARACTERS;
+	static const Token&	invalidToken() { return invalid_token_; }
 
 private:
 	vector<char>	data_;
-	vector<Token>	tokens_;
+	Token			token_current_;
+	Token			token_next_;
+	TokenizeState	state_;
 
 	// Configuration
 	CommentTypes	comment_types_;			// Types of comments to skip
@@ -87,12 +106,15 @@ private:
 	bool			case_sensitive_;		// If false, tokens will all be read in lowercase
 											// (except for quoted strings, obviously)
 
+	// Static
+	static Token	invalid_token_;
+
 	// Tokenizing
-	unsigned	checkCommentBegin(const TokenizeState& state);
-	bool		isSpecialCharacter(char p) { return VECTOR_EXISTS(special_characters_, p); }
-	void		tokenizeUnknown(TokenizeState& state);
-	void		tokenizeToken(TokenizeState& state);
-	void		tokenizeComment(TokenizeState& state);
-	void		tokenizeWhitespace(TokenizeState& state);
-	void		addCurrentToken(const TokenizeState& state);
+	unsigned	checkCommentBegin();
+	void		tokenizeUnknown();
+	void		tokenizeToken();
+	void		tokenizeComment();
+	void		tokenizeWhitespace();
+	bool		readNext(Token* target);
+	bool		readNext() { return readNext(&token_next_); }
 };

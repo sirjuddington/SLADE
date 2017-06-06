@@ -39,6 +39,7 @@
 //
 // ----------------------------------------------------------------------------
 const string Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
+Tokenizer::Token Tokenizer::invalid_token_{ "", 0, false, 0, 0 };
 
 
 // ----------------------------------------------------------------------------
@@ -85,6 +86,79 @@ Tokenizer::Tokenizer(CommentTypes comments, const string& special_characters) :
 }
 
 // ----------------------------------------------------------------------------
+// Tokenizer::next
+//
+// Returns the 'next' token and advances to it if [inc_index] is true
+// ----------------------------------------------------------------------------
+const Tokenizer::Token& Tokenizer::next(bool inc_index)
+{
+	if (token_next_.pos_start == token_current_.pos_start)
+		return invalid_token_;
+
+	if (inc_index)
+	{
+		token_current_ = token_next_;
+		readNext();
+		return token_current_;
+	}
+
+	return token_next_;
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::skip
+//
+// Skips [inc] tokens
+// ----------------------------------------------------------------------------
+void Tokenizer::skip(int inc)
+{
+	if (inc <= 0)
+		return;
+
+	for (int a = 0; a < inc - 1; a++)
+		readNext();
+
+	token_current_ = token_next_;
+	readNext();
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::skipToNextLine
+//
+// Skips to the first token on the next line
+// ----------------------------------------------------------------------------
+void Tokenizer::skipToNextLine()
+{
+	// Ignore if we're on the last token already
+	if (token_next_.pos_start == token_current_.pos_start)
+		return;
+
+	// If the next token is on the next line just move to it
+	if (token_next_.line_no > token_current_.line_no)
+	{
+		token_current_ = token_next_;
+		readNext();
+		return;
+	}
+
+	// Otherwise skip until the line increments or we reach the last token
+	unsigned line = token_current_.line_no;
+	while (token_next_.pos_start > token_current_.pos_start)
+	{
+		readNext(&token_current_);
+
+		if (token_current_.line_no > line)
+		{
+			readNext();
+			return;
+		}
+	}
+
+	// If we got to the end, update the 'next' token
+	token_next_ = token_current_;
+}
+
+// ----------------------------------------------------------------------------
 // Tokenizer::setSpecialCharacters
 //
 // Sets the special characters to each character in [special_characters].
@@ -126,6 +200,8 @@ bool Tokenizer::openFile(const string& filename, unsigned offset, unsigned lengt
 	file.Seek(offset, wxFromStart);
 	file.Read(data_.data(), length);
 
+	reset();
+
 	return true;
 }
 
@@ -148,6 +224,8 @@ bool Tokenizer::openString(const string& text, unsigned offset, unsigned length,
 	// Copy the string portion
 	data_.assign(ascii.begin() + offset, ascii.begin() + offset + length);
 
+	reset();
+
 	return true;
 }
 
@@ -160,6 +238,8 @@ bool Tokenizer::openMem(const char* mem, unsigned length, const string& source)
 {
 	source_ = source;
 	data_.assign(mem, mem + length);
+
+	reset();
 
 	return true;
 }
@@ -174,44 +254,62 @@ bool Tokenizer::openMem(const MemChunk& mc, const string& source)
 	source_ = source;
 	data_.assign(mc.getData(), mc.getData() + mc.getSize());
 
+	reset();
+
 	return true;
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::reset
+//
+// Resets the tokenizer to the beginning of the data
+// ----------------------------------------------------------------------------
+void Tokenizer::reset()
+{
+	// Init tokenizing state
+	state_ = TokenizeState{};
+	state_.size = data_.size();
+
+	// Read first tokens
+	readNext(&token_current_);
+	readNext(&token_next_);
 }
 
 // ----------------------------------------------------------------------------
 // Tokenizer::checkCommentBegin
 //
-// Checks if a comment begins at [state]'s current position and returns the
-// comment type if one does (0 otherwise)
+// Checks if a comment begins at the current position and returns the comment
+// type if one does (0 otherwise)
 // ----------------------------------------------------------------------------
-unsigned Tokenizer::checkCommentBegin(const TokenizeState& state)
+unsigned Tokenizer::checkCommentBegin()
 {
 	// C-Style comment (/*)
 	if (comment_types_ & CStyle &&
-		state.position + 1 < state.size &&
-		data_[state.position] == '/' &&
-		data_[state.position + 1] == '*')
+		state_.position + 1 < state_.size &&
+		data_[state_.position] == '/' &&
+		data_[state_.position + 1] == '*')
 		return CStyle;
 
 	// CPP-Style comment (//)
 	if (comment_types_ & CPPStyle &&
-		state.position + 1 < state.size &&
-		data_[state.position] == '/' &&
-		data_[state.position + 1] == '/')
+		state_.position + 1 < state_.size &&
+		data_[state_.position] == '/' &&
+		data_[state_.position + 1] == '/')
 		return CPPStyle;
 
 	// ## comment
 	if (comment_types_ & DoubleHash &&
-		state.position + 1 < state.size &&
-		data_[state.position] == '#' &&
-		data_[state.position + 1] == '#')
+		state_.position + 1 < state_.size &&
+		data_[state_.position] == '#' &&
+		data_[state_.position + 1] == '#')
 		return DoubleHash;
 
 	// # comment
-	if (comment_types_ & Hash && data_[state.position] == '#')
+	if (comment_types_ & Hash && data_[state_.position] == '#')
 		return Hash;
 
 	// ; comment
-	if (comment_types_ & Shell && data_[state.position] == ';')
+	if (comment_types_ & Shell && data_[state_.position] == ';')
 		return Shell;
 
 	// Not a comment
@@ -221,295 +319,225 @@ unsigned Tokenizer::checkCommentBegin(const TokenizeState& state)
 // ----------------------------------------------------------------------------
 // Tokenizer::tokenizeUnknown
 //
-// Process the current unknown character at [state]
+// Process the current unknown character
 // ----------------------------------------------------------------------------
-void Tokenizer::tokenizeUnknown(TokenizeState& state)
+void Tokenizer::tokenizeUnknown()
 {
 	// Whitespace
-	if (isWhitespace(data_[state.position]))
+	if (isWhitespace(data_[state_.position]))
 	{
-		state.state = TokenizeState::State::Whitespace;
-		state.position++;
+		state_.state = TokenizeState::State::Whitespace;
+		++state_.position;
 		return;
 	}
 
 	// Comment
-	state.comment_type = checkCommentBegin(state);
-	if (state.comment_type > 0)
+	state_.comment_type = checkCommentBegin();
+	if (state_.comment_type > 0)
 	{
-		state.state = TokenizeState::State::Comment;
-		if (state.comment_type == Hash || state.comment_type == Shell)
-			state.position++;
+		state_.state = TokenizeState::State::Comment;
+		if (state_.comment_type == Hash || state_.comment_type == Shell)
+			++state_.position;
 		else
-			state.position += 2;
+			state_.position += 2;
 
 		return;
 	}
 
 	// Special character
-	if (isSpecialCharacter(data_[state.position]))
+	if (isSpecialCharacter(data_[state_.position]))
 	{
-		// Add it as a token
-		tokens_.push_back(
-		{
-			data_[state.position],
-			state.current_line,
-			false,
-			state.position,
-			state.position + 1
-		});
-
-		// Continue
-		state.position++;
+		// End token
+		state_.current_token.line_no = state_.current_line;
+		state_.current_token.quoted_string = false;
+		state_.current_token.pos_start = state_.position;
+		++state_.position;
+		state_.done = true;
 		return;
 	}
 
 	// Quoted string
-	if (data_[state.position] == '\"')
+	if (data_[state_.position] == '\"')
 	{
 		// Skip "
-		state.position++;
+		++state_.position;
 
 		// Begin token
-		state.current_token.text.clear();
-		state.current_token.quoted_string = true;
-		state.current_token.pos_start = state.position;
-		state.state = TokenizeState::State::Token;
+		state_.current_token.line_no = state_.current_line;
+		state_.current_token.quoted_string = true;
+		state_.current_token.pos_start = state_.position;
+		state_.state = TokenizeState::State::Token;
 
 		return;
 	}
 
 	// Token
-	state.current_token.text.clear();
-	state.current_token.quoted_string = false;
-	state.current_token.pos_start = state.position;
-	state.state = TokenizeState::State::Token;
+	state_.current_token.line_no = state_.current_line;
+	state_.current_token.quoted_string = false;
+	state_.current_token.pos_start = state_.position;
+	state_.state = TokenizeState::State::Token;
 }
 
 // ----------------------------------------------------------------------------
 // Tokenizer::tokenizeToken
 //
-// Process the current token character at [state]
+// Process the current token character
 // ----------------------------------------------------------------------------
-void Tokenizer::tokenizeToken(TokenizeState& state)
+void Tokenizer::tokenizeToken()
 {
 	// Quoted string
-	if (state.current_token.quoted_string)
+	if (state_.current_token.quoted_string)
 	{
 		// Check for closing "
-		if (data_[state.position] == '\"')
+		if (data_[state_.position] == '\"')
 		{
-			// Add token
-			addCurrentToken(state);
-
-			// Skip to character after closing " and continue
-			state.position++;
-			state.state = TokenizeState::State::Unknown;
+			// Skip to character after closing " and end token
+			state_.state = TokenizeState::State::Unknown;
+			state_.done = true;
 			return;
 		}
 
 		// Escape backslash
-		if (data_[state.position] == '\\')
-			state.position++;
+		if (data_[state_.position] == '\\')
+			++state_.position;
 
 		// Continue token
-		state.position++;
+		++state_.position;
 
 		return;
 	}
 
-	// Whitespace
-	if (isWhitespace(data_[state.position]))
+	// Check for end of token
+	if (isWhitespace(data_[state_.position]) ||			// Whitespace
+		isSpecialCharacter(data_[state_.position]) ||	// Special character
+		checkCommentBegin() > 0)						// Comment
 	{
-		// Add current token
-		addCurrentToken(state);
-
-		// Continue
-		state.position++;
-		state.state = TokenizeState::State::Whitespace;
-
-		return;
-	}
-
-	// Special character
-	if (isSpecialCharacter(data_[state.position]))
-	{
-		// Add current token
-		addCurrentToken(state);
-
-		// Add special character as token
-		tokens_.push_back(
-		{
-			data_[state.position],
-			state.current_line,
-			false,
-			state.position,
-			state.position + 1
-		});
-
-		// Continue
-		state.position++;
-		state.state = TokenizeState::State::Unknown;
-
-		return;
-	}
-
-	// Comment
-	unsigned comment_type = checkCommentBegin(state);
-	if (comment_type > 0)
-	{
-		// Add current token
-		addCurrentToken(state);
-
-		// Begin comment
-		state.state = TokenizeState::State::Comment;
-		if (state.comment_type == Hash || state.comment_type == Shell)
-			state.position++;
-		else
-			state.position += 2;
+		// End token
+		state_.state = TokenizeState::State::Unknown;
+		state_.done = true;
 
 		return;
 	}
 
 	// Continue token
-	state.position++;
+	++state_.position;
 }
 
 // ----------------------------------------------------------------------------
 // Tokenizer::tokenizeComment
 //
-// Process the current comment character at [state]
+// Process the current comment character
 // ----------------------------------------------------------------------------
-void Tokenizer::tokenizeComment(TokenizeState& state)
+void Tokenizer::tokenizeComment()
 {
-	// Check for end of line comment
-	if (state.comment_type != CStyle && data_[state.position] == '\n')
+	// Check for decorate //$
+	if (decorate_ && state_.comment_type == CPPStyle)
 	{
-		state.state = TokenizeState::State::Unknown;
-		state.position++;
+		if (data_[state_.position] == '$' &&
+			data_[state_.position - 1] == '/' &&
+			data_[state_.position - 2] == '/')
+		{
+			// We have a token instead
+			state_.current_token.line_no = state_.current_line;
+			state_.current_token.quoted_string = false;
+			state_.current_token.pos_start = state_.position - 2;
+			state_.state = TokenizeState::State::Token;
+			return;
+		}
+	}
+
+	// Check for end of line comment
+	if (state_.comment_type != CStyle && data_[state_.position] == '\n')
+	{
+		state_.state = TokenizeState::State::Unknown;
+		++state_.position;
 		return;
 	}
 
 	// Check for end of C-Style multi line comment
-	else if (state.comment_type == CStyle)
+	if (state_.comment_type == CStyle)
 	{
-		if (state.position + 1 < state.size &&
-			data_[state.position] == '*' &&
-			data_[state.position + 1] == '/')
+		if (state_.position + 1 < state_.size &&
+			data_[state_.position] == '*' &&
+			data_[state_.position + 1] == '/')
 		{
-			state.state = TokenizeState::State::Unknown;
-			state.position += 2;
+			state_.state = TokenizeState::State::Unknown;
+			state_.position += 2;
 			return;
 		}
 	}
 
 	// Continue comment
-	state.position++;
+	++state_.position;
 }
 
 // ----------------------------------------------------------------------------
 // Tokenizer::tokenizeWhitespace
 //
-// Process the current whitespace character at [state]
+// Process the current whitespace character
 // ----------------------------------------------------------------------------
-void Tokenizer::tokenizeWhitespace(TokenizeState& state)
+void Tokenizer::tokenizeWhitespace()
 {
-	if (isWhitespace(data_[state.position]))
-		state.position++;
+	if (isWhitespace(data_[state_.position]))
+		++state_.position;
 	else
-		state.state = TokenizeState::State::Unknown;
+		state_.state = TokenizeState::State::Unknown;
 }
 
 // ----------------------------------------------------------------------------
-// Tokenizer::addCurrentToken
+// Tokenizer::readNext
 //
-// Adds the current token at [state] to the tokens list
+// Reads the next token from the data and writes it to [target] if specified
 // ----------------------------------------------------------------------------
-void Tokenizer::addCurrentToken(const TokenizeState& state)
+bool Tokenizer::readNext(Token* target)
 {
-	tokens_.push_back(
-	{
-		wxString::FromAscii(
-			data_.data() + state.current_token.pos_start,
-			state.position - state.current_token.pos_start
-		),
-		state.current_line,
-		state.current_token.quoted_string,
-		state.current_token.pos_start,
-		state.position
-	});
+	if (data_.size() == 0 || state_.position >= state_.size)
+		return false;
 
-	// Convert to lower-case if not case sensitive (and not a quoted string)
-	if (!case_sensitive_ && !state.current_token.quoted_string)
-		tokens_.back().text.MakeLower();
-}
-
-// ----------------------------------------------------------------------------
-// Tokenizer::tokenize
-//
-// Tokenizes the currently open text data, adding all tokens to the tokens list
-// ----------------------------------------------------------------------------
-void Tokenizer::tokenize()
-{
-	tokens_.clear();
-
-	// Init tokenizing state
-	auto state = TokenizeState{};
-	state.size = data_.size();
-
-#ifdef DEBUG
-	// Debug stuff
-	unsigned prev_position = 0;
-	unsigned prev_position_count = 0;
-#endif
-
-	while (state.position < state.size)
+	// Process until the end of a token or the end of the data
+	state_.done = false;
+	while (state_.position < state_.size && !state_.done)
 	{
 		// Check for newline
-		if (data_[state.position] == '\n')
-			state.current_line++;
+		if (data_[state_.position] == '\n')
+			++state_.current_line;
 
-		// Process character depending on state
-		switch (state.state)
+		// Process current character depending on state
+		switch (state_.state)
 		{
-		case TokenizeState::State::Unknown:		tokenizeUnknown(state); break;
-		case TokenizeState::State::Whitespace:	tokenizeWhitespace(state); break;
-		case TokenizeState::State::Token:		tokenizeToken(state); break;
-		case TokenizeState::State::Comment:		tokenizeComment(state); break;
-		default: state.position++; break;
+		case TokenizeState::State::Unknown:		tokenizeUnknown(); break;
+		case TokenizeState::State::Whitespace:	tokenizeWhitespace(); break;
+		case TokenizeState::State::Token:		tokenizeToken(); break;
+		case TokenizeState::State::Comment:		tokenizeComment(); break;
+		default: ++state_.position; break;
 		}
-
-#ifdef DEBUG
-		// (Debug) Check we aren't stuck on a character
-		if (state.position != prev_position)
-		{
-			prev_position = state.position;
-			prev_position_count = 0;
-		}
-		else
-		{
-			prev_position_count++;
-			if (prev_position_count > 5)
-			{
-				Log::warning(
-					S_FMT(
-						"Tokenizer stuck on character '%c', line %d, position %d. Skipping",
-						data_[state.position],
-						state.current_line,
-						state.position
-				));
-				state.position++;
-			}
-		}
-#endif
 	}
-	
-	// Add token if the end of the data was reached during a token
-	if (state.state == TokenizeState::State::Token)
-		addCurrentToken(state);
+
+	// Write to target token (if specified)
+	if (target)
+	{
+		// How is this slower than using += in a loop as below? Just wxString things >_>
+		//target->text.assign(
+		//	data_.data() + state_.current_token.pos_start,
+		//	state_.position - state_.current_token.pos_start
+		//);
+		
+		target->text.Empty();
+		for (unsigned a = state_.current_token.pos_start; a < state_.position; ++a)
+			target->text += data_[a];
+
+		target->line_no = state_.current_token.line_no;
+		target->quoted_string = state_.current_token.quoted_string;
+		target->pos_start = state_.current_token.pos_start;
+		target->pos_end = state_.position;
+	}
+
+	// Skip closing " if it was a quoted string
+	if (state_.current_token.quoted_string)
+		++state_.position;
+		
+	return true;
 }
-
-
 
 
 
@@ -518,6 +546,8 @@ void Tokenizer::tokenize()
 #include "General/Console/Console.h"
 #include "MainEditor/MainEditor.h"
 #include "Archive/ArchiveEntry.h"
+#include "App.h"
+#include "Utility/TokenizerOld.h"
 
 CONSOLE_COMMAND(test_tokenizer, 0, false)
 {
@@ -525,21 +555,60 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 	if (!entry)
 		return;
 
+	long num = 1;
+	if (!args.empty())
+		args[0].ToLong(&num);
+
+	struct TestToken
+	{
+		string text;
+		bool quoted_string;
+		unsigned line_no;
+	};
+
 	// Tokenize it
 	Tokenizer tz;
-	tz.setCaseSensitive(false);
+	vector<TestToken> t_new;
+	//tz.setCaseSensitive(false);
+	long time = App::runTimer();
 	tz.openMem(entry->getMCData(), entry->getName());
-	tz.tokenize();
-
-	for (auto& token : tz.tokens())
+	for (long a = 0; a < num; a++)
 	{
-		Log::info(
-			S_FMT("Line %d: [%d - %d] \"%s\" (%s)",
-			token.line_no,
-			token.pos_start,
-			token.pos_end,
-			CHR(token.text),
-			token.quoted_string ? "quoted" : "normal"
-		));
+		while (!tz.atEnd())
+		{
+			if (a == 0)
+				t_new.push_back({ tz.current().text, tz.current().quoted_string, tz.current().line_no });
+
+			tz.next(true);
+		}
+		tz.reset();
 	}
+
+	time = App::runTimer() - time;
+
+	Log::info(S_FMT("Tokenize x%d took %dms", num, time));
+
+
+	// Test old tokenizer also
+	TokenizerOld tzo;
+	vector<TestToken> t_old;
+	time = App::runTimer();
+	tzo.openMem(&entry->getMCData(), entry->getName());
+	for (long a = 0; a < num; a++)
+	{
+		string token = tzo.getToken();
+		while (!tzo.isAtEnd())
+		{
+			if (a == 0)
+				t_old.push_back({ token, tzo.quotedString(), tzo.lineNo() });
+
+			tzo.getToken(&token);
+		}
+		tzo.reset();
+	}
+	time = App::runTimer() - time;
+	Log::info(S_FMT("Old Tokenize x%d took %dms", num, time));
+
+	for (auto& token : t_new)
+		Log::debug(S_FMT("%d: \"%s\"%s", token.line_no, CHR(token.text), token.quoted_string ? " (quoted)" : ""));
 }
