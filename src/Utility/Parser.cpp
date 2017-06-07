@@ -34,6 +34,8 @@
 #include "Main.h"
 #include "Archive/Archive.h"
 #include "Parser.h"
+#include "Utility/Tokenizer.h"
+#include "App.h"
 
 
 // ----------------------------------------------------------------------------
@@ -170,6 +172,189 @@ ParseTreeNode* ParseTreeNode::addChildPTN(const string& name, const string& type
 }
 
 // ----------------------------------------------------------------------------
+// ParseTreeNode::logError
+//
+// Writes an error log message [error], showing the source and current line
+// from tokenizer [tz]
+// ----------------------------------------------------------------------------
+void ParseTreeNode::logError(const Tokenizer& tz, const string& error) const
+{
+	Log::error(S_FMT(
+		"Parse Error in %s (Line %d): %s\n",
+		CHR(tz.source()),
+		tz.current().line_no,
+		CHR(error)
+	));
+}
+
+// ----------------------------------------------------------------------------
+// ParseTreeNode::parsePreprocessor
+//
+// Parses a preprocessor directive at [tz]'s current token
+// ----------------------------------------------------------------------------
+bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
+{
+	//Log::debug(S_FMT("Preprocessor %s", CHR(tz.current().text)));
+
+	// #define
+	if (tz.current() == "#define")
+		parser_->define(tz.next(true).text);
+
+	// #if(n)def
+	else if (tz.current() == "#ifdef" || tz.current() == "#ifndef")
+	{
+		// Continue if condition succeeds
+		bool test = true;
+		if (tz.current() == "#ifndef")
+			test = false;
+		string define = tz.next(true).text;
+		if (parser_->defined(define) == test)
+			return true;
+
+		// Failed condition, skip section
+		int skip = 0;
+		while (true)
+		{
+			auto& token = tz.next(true);
+			if (token == "#endif")
+				skip--;
+			else if (token == "#ifdef")
+				skip++;
+			else if (token == "#ifndef")
+				skip++;
+
+			if (skip < 0)
+				break;
+		}
+	}
+
+	// #include
+	else if (tz.current() == "#include")
+	{
+		// Include entry at the given path if we have an archive dir set
+		if (archive_dir_)
+		{
+			// Get entry to include
+			auto inc_path = tz.next(true).text;
+			auto archive = archive_dir_->getArchive();
+			auto inc_entry = archive->entryAtPath(archive_dir_->getPath() + inc_path);
+			if (!inc_entry) // Try absolute path
+				inc_entry = archive->entryAtPath(inc_path);
+
+			//Log::debug(S_FMT("Include %s", CHR(inc_path)));
+
+			if (inc_entry)
+			{
+				// Save the current dir and set it to the included entry's dir
+				auto orig_dir = archive_dir_;
+				archive_dir_ = inc_entry->getParentDir();
+
+				// Parse text in the entry
+				Tokenizer inc_tz;
+				inc_tz.openMem(inc_entry->getMCData(), inc_entry->getName());
+				bool ok = parse(inc_tz);
+
+				// Reset dir and abort if parsing failed
+				archive_dir_ = orig_dir;
+				if (!ok)
+					return false;
+			}
+			else
+				logError(tz, S_FMT("Include entry %s not found", CHR(inc_path)));
+		}
+		else
+			tz.skip();	// Skip include path
+	}
+
+	// #endif (ignore)
+	else if (tz.current() == "#endif")
+		return true;
+
+	// Unrecognised
+	else
+		logError(tz, S_FMT("Unrecognised preprocessor directive \"%s\"", CHR(tz.current().text)));
+
+	return true;
+}
+
+// ----------------------------------------------------------------------------
+// ParseTreeNode::parseAssignment
+//
+// Parses an assignment operation at [tz]'s current token to [child]
+// ----------------------------------------------------------------------------
+bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
+{
+	// Check type of assignment list
+	string list_end = ";";
+	if (tz.current() == "{" && !tz.current().quoted_string)
+	{
+		list_end = "}";
+		tz.skip();
+	}
+
+	// Parse until ; or }
+	while (true)
+	{
+		auto& token = tz.current();
+
+		// Check for list end
+		if (token == list_end && !token.quoted_string)
+			break;
+
+		// Setup value
+		Property value;
+
+		// Detect value type
+		if (token.quoted_string)				// Quoted string
+			value = token.text;
+		else if (token == "true")				// Boolean (true)
+			value = true;
+		else if (token == "false")				// Boolean (false)
+			value = false;
+		else if (re_int1.Matches(token.text) ||	// Integer
+			re_int2.Matches(token.text))
+		{
+			long val;
+			token.text.ToLong(&val);
+			value = (int)val;
+		}
+		else if (re_int3.Matches(token.text))  	// Hex (0xXXXXXX)
+		{
+			long val;
+			token.text.ToLong(&val, 0);
+			value = (int)val;
+		}
+		else if (re_float.Matches(token.text))	// Floating point
+		{
+			double val;
+			token.text.ToDouble(&val);
+			value = (double)val;
+		}
+		else									// Unknown, just treat as string
+			value = token.text;
+
+		// Add value
+		child->values_.push_back(value);
+
+		// Check for ,
+		if (tz.next() == ",")
+			tz.skip();	// Skip it
+		else if (tz.next() != list_end)
+		{
+			logError(
+				tz,
+				S_FMT("Expected \",\" or \"%s\", got \"%s\"", CHR(list_end), CHR(tz.next().text))
+			);
+			return false;
+		}
+
+		tz.skip();
+	}
+
+	return true;
+}
+
+// ----------------------------------------------------------------------------
 // ParseTreeNode::parse
 //
 // Parses formatted text data. Current valid formatting is:
@@ -182,307 +367,123 @@ ParseTreeNode* ParseTreeNode::addChildPTN(const string& name, const string& type
 // All values are read as strings, but can be retrieved as string, int, bool
 // or float.
 // ----------------------------------------------------------------------------
-bool ParseTreeNode::parse(TokenizerOld& tz)
+bool ParseTreeNode::parse(Tokenizer& tz)
 {
-	// Get first token
-	string token = tz.getToken();
-
 	// Keep parsing until final } is reached (or end of file)
-	while (!(S_CMP(token, "}")) && !token.IsEmpty())
+	string name, type;
+	while (!tz.atEnd() && tz.current() != "}")
 	{
 		// Check for preprocessor stuff
-		if (parser_)
+		if (parser_ && tz.current()[0] == '#')
 		{
-			// #define
-			if (S_CMPNOCASE(token, "#define"))
-			{
-				parser_->define(tz.getToken());
-				token = tz.getToken();
-				continue;
-			}
+			if (!parsePreprocessor(tz))
+				return false;
 
-			// #if(n)def
-			if (S_CMPNOCASE(token, "#ifdef") || S_CMPNOCASE(token, "#ifndef"))
-			{
-				bool test = true;
-				if (S_CMPNOCASE(token, "#ifndef"))
-					test = false;
-				string define = tz.getToken();
-				if (parser_->defined(define) == test)
-				{
-					// Continue
-					token = tz.getToken();
-					continue;
-				}
-
-				// Skip section
-				int skip = 0;
-				while (true)
-				{
-					token = tz.getToken();
-					if (S_CMPNOCASE(token, "#endif"))
-						skip--;
-					else if (S_CMPNOCASE(token, "#ifdef"))
-						skip++;
-					else if (S_CMPNOCASE(token, "#ifndef"))
-						skip++;
-
-					if (skip < 0)
-						break;
-					if (token.IsEmpty())
-					{
-						LOG_MESSAGE(1, "Error: found end of file within #if(n)def block");
-						break;
-					}
-				}
-
-				continue;
-			}
-
-			// #include
-			if (S_CMPNOCASE(token, "#include"))
-			{
-				// Include entry at the given path if we have an archive dir set
-				if (archive_dir_)
-				{
-					// Get entry to include
-					auto inc_path = tz.getToken();
-					auto archive = archive_dir_->getArchive();
-					auto inc_entry = archive->entryAtPath(archive_dir_->getPath() + inc_path);
-					if (!inc_entry) // Try absolute path
-						inc_entry = archive->entryAtPath(inc_path);
-
-					if (inc_entry)
-					{
-						// Save the current dir and set it to the included entry's dir
-						auto orig_dir = archive_dir_;
-						archive_dir_ = inc_entry->getParentDir();
-
-						// Parse text in the entry
-						TokenizerOld inc_tz;
-						inc_tz.openMem(&inc_entry->getMCData(), inc_entry->getName());
-						bool ok = parse(inc_tz);
-
-						// Reset dir and abort if parsing failed
-						archive_dir_ = orig_dir;
-						if (!ok)
-							return false;
-					}
-					else
-						LOG_MESSAGE(2, "Parsing error: Include entry %s not found", inc_path);
-				}
-				else
-					tz.skipToken();	// Skip include path
-
-				tz.getToken(&token);
-				continue;
-			}
-
-			// #endif (ignore)
-			if (S_CMPNOCASE(token, "#endif"))
-			{
-				token = tz.getToken();
-				continue;
-			}
+			tz.skipToNextLine();
+			continue;
 		}
 
 		// If it's a special character (ie not a valid name), parsing fails
-		if (tz.isSpecialCharacter(token.at(0)))
+		if (tz.isSpecialCharacter(tz.current()))
 		{
-			LOG_MESSAGE(
-				1,
-				"Parsing error: Unexpected special character '%s' in %s (line %d)",
-				token,
-				tz.getName(),
-				tz.lineNo()
-			);
+			logError(tz, S_FMT("Unexpected special character '%s'", CHR(tz.current().text)));
 			return false;
 		}
 
 		// So we have either a node or property name
-		string name = token;
-		if (name.IsEmpty())
+		name = tz.current().text;
+		type.Empty();
+		if (name.empty())
 		{
-			LOG_MESSAGE(1,
-				"Parsing error: Unexpected empty string in %s (line %d)",
-				tz.getName(),
-				tz.lineNo()
-			);
+			logError(tz, "Unexpected empty string");
 			return false;
 		}
 
-		// Check next token to determine what we're doing
-		string next = tz.peekToken();
-
 		// Check for type+name pair
-		string type = "";
-		if (next != "=" && next != "{" && next != ";" && next != ":")
+		if (tz.next() != "=" && tz.next() != "{" && tz.next() != ";" && tz.next() != ":")
 		{
 			type = name;
-			name = tz.getToken();
-			next = tz.peekToken();
+			name = tz.next(true).text;
 
-			if (name.IsEmpty())
+			if (name == "")
 			{
-				LOG_MESSAGE(
-					1,
-					"Parsing error: Unexpected empty string in %s (line %d)",
-					tz.getName(),
-					tz.lineNo()
-				);
+				logError(tz, "Unexpected empty string");
 				return false;
 			}
 		}
 
+		tz.skip();
+		//Log::debug(S_FMT("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
+
 		// Assignment
-		if (S_CMP(next, "="))
+		if (tz.current() == "=")
 		{
-			// Skip =
-			tz.skipToken();
+			tz.skip();
 
-			// Create item node
-			auto child = addChildPTN(name, type);
-
-			// Check type of assignment list
-			token = tz.getToken();
-			string list_end = ";";
-			if (token == "{" && !tz.quotedString())
-			{
-				list_end = "}";
-				token = tz.getToken();
-			}
-
-			// Parse until ; or }
-			while (1)
-			{
-				// Check for list end
-				if (S_CMP(token, list_end) && !tz.quotedString())
-					break;
-
-				// Setup value
-				Property value;
-
-				// Detect value type
-				if (tz.quotedString())					// Quoted string
-					value = token;
-				else if (S_CMPNOCASE(token, "true"))	// Boolean (true)
-					value = true;
-				else if (S_CMPNOCASE(token, "false"))	// Boolean (false)
-					value = false;
-				else if (re_int1.Matches(token) ||		// Integer
-				         re_int2.Matches(token))
-				{
-					long val;
-					token.ToLong(&val);
-					value = (int)val;
-				}
-				else if (re_int3.Matches(token))  		// Hex (0xXXXXXX)
-				{
-					long val;
-					token.ToLong(&val, 0);
-					value = (int)val;
-					//LOG_MESSAGE(1, "%s: %s is hex %d", name, token, value.getIntValue());
-				}
-				else if (re_float.Matches(token))  		// Floating point
-				{
-					double val;
-					token.ToDouble(&val);
-					value = (double)val;
-					//LOG_MESSAGE(3, "%s: %s is float %1.3f", name, token, val);
-				}
-				else									// Unknown, just treat as string
-					value = token;
-
-				// Add value
-				child->values_.push_back(value);
-
-				// Check for ,
-				if (S_CMP(tz.peekToken(), ","))
-					tz.skipToken();	// Skip it
-				else if (!(S_CMP(tz.peekToken(), list_end)))
-				{
-					string t = tz.getToken();
-					string n = tz.getName();
-					LOG_MESSAGE(
-						1,
-						"Parsing error: Expected \",\" or \"%s\", got \"%s\" in %s (line %d)",
-						list_end,
-						t,
-						n,
-						tz.lineNo()
-					);
-					return false;
-				}
-
-				token = tz.getToken();
-			}
+			if (!parseAssignment(tz, addChildPTN(name, type)))
+				return false;
 		}
 
 		// Child node
-		else if (S_CMP(next, "{"))
+		else if (tz.current() == "{")
 		{
-			// Add child node
-			auto child = addChildPTN(name, type);
-
-			// Skip {
-			tz.skipToken();
+			tz.skip();
 
 			// Parse child node
-			if (!child->parse(tz))
+			if (!addChildPTN(name, type)->parse(tz))
 				return false;
 		}
 
 		// Child node (with no values/children)
-		else if (S_CMP(next, ";"))
+		else if (tz.current() == ";")
 		{
+			tz.skip();
+
 			// Add child node
 			addChildPTN(name, type);
-
-			// Skip ;
-			tz.skipToken();
+			continue;
 		}
 
 		// Child node + inheritance
-		else if (S_CMP(next, ":"))
+		else if (tz.current() == ":")
 		{
-			// Skip :
-			tz.skipToken();
-
-			// Read inherited name
-			string inherit = tz.getToken();
+			tz.skip();
 
 			// Check for opening brace
-			if (tz.checkToken("{"))
+			if (tz.next() == "{")
 			{
 				// Add child node
 				auto child = addChildPTN(name, type);
+				child->inherit_ = tz.current().text;
 
-				// Set its inheritance
-				child->inherit_ = inherit;
+				// Skip {
+				//tz.skip(2);
+				tz.skip();
+				tz.skip();
 
 				// Parse child node
 				if (!child->parse(tz))
 					return false;
+			}
+			else
+			{
+				logError(tz, S_FMT("Expecting \"{\", got \"%s\"", CHR(tz.next().text)));
+				return false;
 			}
 		}
 
 		// Unexpected token
 		else
 		{
-			LOG_MESSAGE(
-				1,
-				"Parsing error: \"%s\" unexpected in %s (line %d)",
-				next,
-				tz.getName(),
-				tz.lineNo()
-			);
+			logError(tz, S_FMT("Unexpected token \"%s\"", CHR(tz.current().text)));
 			return false;
 		}
 
 		// Continue parsing
-		token = tz.getToken();
+		tz.skip();
 	}
 
+	// Success
 	return true;
 }
 
@@ -631,23 +632,23 @@ Parser::~Parser()
 // ----------------------------------------------------------------------------
 bool Parser::parseText(MemChunk& mc, string source, bool debug)
 {
-	TokenizerOld tz;
-	if (debug) tz.enableDebug(debug);
+	Tokenizer tz;
 
 	// Open the given text data
-	if (!tz.openMem(&mc, source))
+	if (!tz.openMem(mc, source))
 	{
 		LOG_MESSAGE(1, "Unable to open text data for parsing");
 		return false;
 	}
 
 	// Do parsing
-	return pt_root->parse(tz);
+	tz.setCaseSensitive(false);
+	bool ok = pt_root->parse(tz);
+	return ok;
 }
 bool Parser::parseText(string& text, string source, bool debug)
 {
-	TokenizerOld tz;
-	if (debug) tz.enableDebug(debug);
+	Tokenizer tz;
 
 	// Open the given text data
 	if (!tz.openString(text, 0, 0, source))

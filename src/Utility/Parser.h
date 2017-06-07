@@ -3,11 +3,11 @@
 #define __PARSER_H__
 
 #include "Tree.h"
-#include "TokenizerOld.h"
 #include "PropertyList/Property.h"
 
 class ArchiveTreeNode;
 class Parser;
+class Tokenizer;
 
 class ParseTreeNode : public STreeNode
 {
@@ -46,7 +46,7 @@ public:
 	void			addBoolValue(bool value) { values_.push_back({value}); }
 	void			addFloatValue(double value) { values_.push_back({value}); }
 
-	bool	parse(TokenizerOld& tz);
+	bool	parse(Tokenizer& tz);
 	void	write(string& out, int indent = 0) const;
 
 	typedef std::unique_ptr<ParseTreeNode> UPtr;
@@ -67,6 +67,10 @@ private:
 	vector<Property>	values_;
 	Parser*				parser_;
 	ArchiveTreeNode*	archive_dir_;
+
+	void	logError(const Tokenizer& tz, const string& error) const;
+	bool	parsePreprocessor(Tokenizer& tz);
+	bool	parseAssignment(Tokenizer& tz, ParseTreeNode* child) const;
 };
 
 class Parser

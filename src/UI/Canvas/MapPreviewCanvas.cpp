@@ -39,7 +39,7 @@
 #include "MapEditor/SLADEMap/MapThing.h"
 #include "MapEditor/SLADEMap/MapVertex.h"
 #include "OpenGL/GLTexture.h"
-#include "Utility/Parser.h"
+#include "Utility/TokenizerOld.h"
 
 
 /*******************************************************************

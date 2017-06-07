@@ -38,6 +38,8 @@
 #include "TextStyle.h"
 #include "Lexer.h"
 #include "Archive/ArchiveManager.h"
+#include "Utility/Parser.h"
+#include "Utility/TokenizerOld.h"
 
 
 /*******************************************************************
