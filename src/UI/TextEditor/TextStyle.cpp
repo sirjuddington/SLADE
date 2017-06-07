@@ -39,7 +39,7 @@
 #include "Lexer.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
-#include "Utility/TokenizerOld.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -625,7 +625,7 @@ void StyleSet::initCurrent()
 	if (wxFileExists(path))
 	{
 		// Read it in
-		TokenizerOld tz;
+		Tokenizer tz;
 		tz.openFile(path);
 
 		// Parse it
@@ -790,8 +790,8 @@ bool StyleSet::loadResourceStyles()
 	if (default_style)
 	{
 		// Read entry data into tokenizer
-		TokenizerOld tz;
-		tz.openMem(&default_style->getMCData(), default_style->getName());
+		Tokenizer tz;
+		tz.openMem(default_style->getMCData(), default_style->getName());
 
 		// Parse it
 		ParseTreeNode root;
@@ -820,8 +820,8 @@ bool StyleSet::loadResourceStyles()
 			continue;
 
 		// Read entry data into tokenizer
-		TokenizerOld tz;
-		tz.openMem(&entry->getMCData(), entry->getName());
+		Tokenizer tz;
+		tz.openMem(entry->getMCData(), entry->getName());
 
 		// Parse it
 		ParseTreeNode root;
@@ -862,7 +862,7 @@ bool StyleSet::loadCustomStyles()
 	while (files)
 	{
 		// Read file into tokenizer
-		TokenizerOld tz;
+		Tokenizer tz;
 		tz.openFile(res_dir.GetName() + "/" + filename);
 
 		// Parse it

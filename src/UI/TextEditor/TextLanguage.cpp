@@ -32,7 +32,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "TextLanguage.h"
-#include "Utility/TokenizerOld.h"
+#include "Utility/Tokenizer.h"
 #include "Utility/Parser.h"
 #include "Archive/ArchiveManager.h"
 
@@ -460,10 +460,10 @@ TLFunction* TextLanguage::getFunction(string name)
  *******************************************************************/
 bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 {
-	TokenizerOld tz;
+	Tokenizer tz;
 
 	// Open the given text data
-	if (!tz.openMem(&mc, source))
+	if (!tz.openMem(mc, source))
 	{
 		LOG_MESSAGE(1, "Unable to open file");
 		return false;
