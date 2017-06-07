@@ -38,6 +38,20 @@
 
 // ----------------------------------------------------------------------------
 //
+// Variables
+//
+// ----------------------------------------------------------------------------
+namespace StringUtils
+{
+	wxRegEx re_int1{ "^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT | wxRE_NOSUB };
+	wxRegEx re_int2{ "^0[0-9]+$", wxRE_DEFAULT | wxRE_NOSUB };
+	wxRegEx re_int3{ "^0x[0-9A-Fa-f]+$", wxRE_DEFAULT | wxRE_NOSUB };
+	wxRegEx re_float{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT | wxRE_NOSUB };
+}
+
+
+// ----------------------------------------------------------------------------
+//
 // StringUtils Namespace Functions
 //
 // ----------------------------------------------------------------------------
@@ -181,4 +195,35 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 
 	// Delete temp file
 	wxRemoveFile(filename);
+}
+
+// ----------------------------------------------------------------------------
+// StringUtils::isInteger
+//
+// Returns true if [str] is a valid integer. If [allow_hex] is true, can also
+// be a valid hex string
+// ----------------------------------------------------------------------------
+bool StringUtils::isInteger(const string& str, bool allow_hex)
+{
+	return (re_int1.Matches(str) || re_int2.Matches(str) || (allow_hex && re_int3.Matches(str)));
+}
+
+// ----------------------------------------------------------------------------
+// StringUtils::isHex
+//
+// Returns true if [str] is a valid hex string
+// ----------------------------------------------------------------------------
+bool StringUtils::isHex(const string& str)
+{
+	return re_int3.Matches(str);
+}
+
+// ----------------------------------------------------------------------------
+// StringUtils::isFloat
+//
+// Returns true if [str] is a valid floating-point number
+// ----------------------------------------------------------------------------
+bool StringUtils::isFloat(const string& str)
+{
+	return (re_float.Matches(str));
 }

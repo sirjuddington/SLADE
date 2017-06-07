@@ -21,4 +21,8 @@ namespace StringUtils
 
 	void	processIncludes(string filename, string& out);
 	void	processIncludes(ArchiveEntry* entry, string& out, bool use_res = true);
+
+	bool	isInteger(const string& str, bool allow_hex = true);
+	bool	isHex(const string& str);
+	bool	isFloat(const string& str);
 }

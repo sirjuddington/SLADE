@@ -31,6 +31,7 @@
 // ----------------------------------------------------------------------------
 #include "Main.h"
 #include "Tokenizer.h"
+#include "StringUtils.h"
 
 
 // ----------------------------------------------------------------------------
@@ -62,6 +63,28 @@ namespace
 		else
 			return false;
 	}
+}
+
+
+// ----------------------------------------------------------------------------
+//
+// Tokenizer::Token Struct Functions
+//
+// ----------------------------------------------------------------------------
+
+bool Tokenizer::Token::isInteger(bool allow_hex) const
+{
+	return StringUtils::isInteger(text, allow_hex);
+}
+
+bool Tokenizer::Token::isHex() const
+{
+	return StringUtils::isHex(text);
+}
+
+bool Tokenizer::Token::isFloat() const
+{
+	return StringUtils::isFloat(text);
 }
 
 

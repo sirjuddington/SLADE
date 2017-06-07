@@ -39,17 +39,6 @@
 
 // ----------------------------------------------------------------------------
 //
-// Variables
-//
-// ----------------------------------------------------------------------------
-wxRegEx re_int1("^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT|wxRE_NOSUB);
-wxRegEx re_int2("^0[0-9]+$", wxRE_DEFAULT|wxRE_NOSUB);
-wxRegEx re_int3("^0x[0-9A-Fa-f]+$", wxRE_DEFAULT|wxRE_NOSUB);
-wxRegEx re_float("^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT|wxRE_NOSUB);
-
-
-// ----------------------------------------------------------------------------
-//
 // ParseTreeNode Class Functions
 //
 // ----------------------------------------------------------------------------
@@ -307,32 +296,31 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 		Property value;
 
 		// Detect value type
-		if (token.quoted_string)				// Quoted string
+		if (token.quoted_string)	// Quoted string
 			value = token.text;
-		else if (token == "true")				// Boolean (true)
+		else if (token == "true")	// Boolean (true)
 			value = true;
-		else if (token == "false")				// Boolean (false)
+		else if (token == "false")	// Boolean (false)
 			value = false;
-		else if (re_int1.Matches(token.text) ||	// Integer
-			re_int2.Matches(token.text))
+		else if (token.isInteger())	// Integer
 		{
 			long val;
 			token.text.ToLong(&val);
 			value = (int)val;
 		}
-		else if (re_int3.Matches(token.text))  	// Hex (0xXXXXXX)
+		else if (token.isHex())  	// Hex (0xXXXXXX)
 		{
 			long val;
 			token.text.ToLong(&val, 0);
 			value = (int)val;
 		}
-		else if (re_float.Matches(token.text))	// Floating point
+		else if (token.isFloat())	// Floating point
 		{
 			double val;
 			token.text.ToDouble(&val);
 			value = (double)val;
 		}
-		else									// Unknown, just treat as string
+		else						// Unknown, just treat as string
 			value = token.text;
 
 		// Add value

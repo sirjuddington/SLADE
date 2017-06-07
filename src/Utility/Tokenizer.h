@@ -31,6 +31,10 @@ public:
 		bool		operator	!=(const string& cmp) const { return text != cmp; }
 		bool		operator	!=(const char* cmp) const { return text != cmp; }
 		char		operator	[](unsigned index) const { return text[index]; }
+
+		bool	isInteger(bool allow_hex = false) const;
+		bool	isHex() const;
+		bool	isFloat() const;
 	};
 
 	struct TokenizeState
