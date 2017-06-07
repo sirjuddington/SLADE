@@ -61,18 +61,27 @@ public:
 	// Accessors
 	const string&	source() const { return source_; }
 	bool			decorate() const { return decorate_; }
-	bool			caseSensitive() const { return case_sensitive_; }
+	bool			readLowerCase() const { return read_lowercase_; }
 	const Token&	current() const { return token_current_; }
-	const Token&	next(bool inc_index = false);
-	void			skip(int inc = 1);
-	void			skipToNextLine();
-	bool			atEnd() const { return token_current_.pos_start == token_next_.pos_start; }
+	const Token&	peek() const;
 
 	// Modifiers
 	void	setCommentTypes(CommentTypes types) { comment_types_ = types; }
-	void 	setSpecialCharacters(const char* characters);
+	void 	setSpecialCharacters(const char* characters)
+			{ special_characters_.assign(characters, characters + strlen(characters)); }
 	void	setSource(const string& source) { source_ = source; }
-	void	setCaseSensitive(bool case_sensitive) { case_sensitive_ = case_sensitive; }
+	void	setReadLowerCase(bool lower) { read_lowercase_ = lower; }
+
+	// Token Iterating
+	const Token&	next();
+	void			skip(int inc = 1);
+	bool			skipIf(const char* check, int inc = 1);
+	bool			skipIfNext(const char* check, int inc = 1);
+	void			skipToNextLine();
+
+	// Token Checking
+	bool	check(const char* check) const { return token_current_ == check; }
+	bool	checkNext(const char* check) const;
 
 	// Load Data
 	bool	openFile(const string& filename, unsigned offset = 0, unsigned length = 0);
@@ -87,6 +96,7 @@ public:
 
 	// General
 	bool	isSpecialCharacter(char p) const { return VECTOR_EXISTS(special_characters_, p); }
+	bool	atEnd() const { return token_current_.pos_start == token_next_.pos_start; }
 	void	reset();
 
 	static const string DEFAULT_SPECIAL_CHARACTERS;
@@ -103,7 +113,7 @@ private:
 	vector<char>	special_characters_;	// These will always be read as separate tokens
 	string			source_;				// What file/entry/chunk is being tokenized
 	bool			decorate_;				// Special handling for //$ comments
-	bool			case_sensitive_;		// If false, tokens will all be read in lowercase
+	bool			read_lowercase_;		// If true, tokens will all be read in lowercase
 											// (except for quoted strings, obviously)
 
 	// Static

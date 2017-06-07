@@ -35,7 +35,6 @@
 #include "Archive/Archive.h"
 #include "Parser.h"
 #include "Utility/Tokenizer.h"
-#include "App.h"
 
 
 // ----------------------------------------------------------------------------
@@ -198,7 +197,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 
 	// #define
 	if (tz.current() == "#define")
-		parser_->define(tz.next(true).text);
+		parser_->define(tz.next().text);
 
 	// #if(n)def
 	else if (tz.current() == "#ifdef" || tz.current() == "#ifndef")
@@ -207,7 +206,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 		bool test = true;
 		if (tz.current() == "#ifndef")
 			test = false;
-		string define = tz.next(true).text;
+		string define = tz.next().text;
 		if (parser_->defined(define) == test)
 			return true;
 
@@ -215,7 +214,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 		int skip = 0;
 		while (true)
 		{
-			auto& token = tz.next(true);
+			auto& token = tz.next();
 			if (token == "#endif")
 				skip--;
 			else if (token == "#ifdef")
@@ -236,7 +235,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 		if (archive_dir_)
 		{
 			// Get entry to include
-			auto inc_path = tz.next(true).text;
+			auto inc_path = tz.next().text;
 			auto archive = archive_dir_->getArchive();
 			auto inc_entry = archive->entryAtPath(archive_dir_->getPath() + inc_path);
 			if (!inc_entry) // Try absolute path
@@ -340,13 +339,13 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 		child->values_.push_back(value);
 
 		// Check for ,
-		if (tz.next() == ",")
+		if (tz.peek() == ",")
 			tz.skip();	// Skip it
-		else if (tz.next() != list_end)
+		else if (tz.peek() != list_end)
 		{
 			logError(
 				tz,
-				S_FMT("Expected \",\" or \"%s\", got \"%s\"", CHR(list_end), CHR(tz.next().text))
+				S_FMT("Expected \",\" or \"%s\", got \"%s\"", CHR(list_end), CHR(tz.peek().text))
 			);
 			return false;
 		}
@@ -403,10 +402,10 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		}
 
 		// Check for type+name pair
-		if (tz.next() != "=" && tz.next() != "{" && tz.next() != ";" && tz.next() != ":")
+		if (tz.peek() != "=" && tz.peek() != "{" && tz.peek() != ";" && tz.peek() != ":")
 		{
 			type = name;
-			name = tz.next(true).text;
+			name = tz.next().text;
 
 			if (name == "")
 			{
@@ -415,62 +414,62 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			}
 		}
 
-		tz.skip();
 		//Log::debug(S_FMT("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
 
 		// Assignment
-		if (tz.current() == "=")
+		if (tz.skipIfNext("=", 2))
 		{
-			tz.skip();
-
 			if (!parseAssignment(tz, addChildPTN(name, type)))
 				return false;
 		}
 
 		// Child node
-		else if (tz.current() == "{")
+		else if (tz.skipIfNext("{", 2))
 		{
-			tz.skip();
-
 			// Parse child node
 			if (!addChildPTN(name, type)->parse(tz))
 				return false;
 		}
 
 		// Child node (with no values/children)
-		else if (tz.current() == ";")
+		else if (tz.skipIfNext(";", 2))
 		{
-			tz.skip();
-
 			// Add child node
 			addChildPTN(name, type);
 			continue;
 		}
 
 		// Child node + inheritance
-		else if (tz.current() == ":")
+		else if (tz.skipIfNext(":", 2))
 		{
-			tz.skip();
-
 			// Check for opening brace
-			if (tz.next() == "{")
+			if (tz.checkNext("{"))
 			{
 				// Add child node
 				auto child = addChildPTN(name, type);
 				child->inherit_ = tz.current().text;
 
 				// Skip {
-				//tz.skip(2);
-				tz.skip();
-				tz.skip();
+				tz.skip(2);
 
 				// Parse child node
 				if (!child->parse(tz))
 					return false;
 			}
+			else if (tz.checkNext(";"))	// Empty child node
+			{
+				// Add child node
+				auto child = addChildPTN(name, type);
+				child->inherit_ = tz.current().text;
+
+				// Skip ;
+				tz.skip(2);
+
+				continue;
+			}
 			else
 			{
-				logError(tz, S_FMT("Expecting \"{\", got \"%s\"", CHR(tz.next().text)));
+				logError(tz, S_FMT("Expecting \"{\" or \";\", got \"%s\"", CHR(tz.next().text)));
 				return false;
 			}
 		}
@@ -478,7 +477,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// Unexpected token
 		else
 		{
-			logError(tz, S_FMT("Unexpected token \"%s\"", CHR(tz.current().text)));
+			logError(tz, S_FMT("Unexpected token \"%s\"", CHR(tz.next().text)));
 			return false;
 		}
 
@@ -582,10 +581,10 @@ void ParseTreeNode::write(string& out, int indent) const
 //
 // Parser class constructor
 // ----------------------------------------------------------------------------
-Parser::Parser(ArchiveTreeNode* dir_root) : archive_dir_root { dir_root }
+Parser::Parser(ArchiveTreeNode* dir_root) : archive_dir_root_ { dir_root }
 {
 	// Create parse tree root node
-	pt_root = std::make_unique<ParseTreeNode>(nullptr, this, archive_dir_root);
+	pt_root_ = std::make_unique<ParseTreeNode>(nullptr, this, archive_dir_root_);
 }
 
 // ----------------------------------------------------------------------------
@@ -638,6 +637,7 @@ bool Parser::parseText(MemChunk& mc, string source, bool debug)
 	Tokenizer tz;
 
 	// Open the given text data
+	tz.setReadLowerCase(!case_sensitive_);
 	if (!tz.openMem(mc, source))
 	{
 		LOG_MESSAGE(1, "Unable to open text data for parsing");
@@ -645,15 +645,14 @@ bool Parser::parseText(MemChunk& mc, string source, bool debug)
 	}
 
 	// Do parsing
-	tz.setCaseSensitive(false);
-	bool ok = pt_root->parse(tz);
-	return ok;
+	return pt_root_->parse(tz);
 }
 bool Parser::parseText(string& text, string source, bool debug)
 {
 	Tokenizer tz;
 
 	// Open the given text data
+	tz.setReadLowerCase(!case_sensitive_);
 	if (!tz.openString(text, 0, 0, source))
 	{
 		LOG_MESSAGE(1, "Unable to open text data for parsing");
@@ -661,33 +660,7 @@ bool Parser::parseText(string& text, string source, bool debug)
 	}
 
 	// Do parsing
-	return pt_root->parse(tz);
-}
-
-// ----------------------------------------------------------------------------
-// Parser::define
-//
-// Adds [def] to the defines list
-// ----------------------------------------------------------------------------
-void Parser::define(string def)
-{
-	defines.push_back(def);
-}
-
-// ----------------------------------------------------------------------------
-// Parser::defined
-//
-// Returns true if [def] is in the defines list
-// ----------------------------------------------------------------------------
-bool Parser::defined(string def)
-{
-	for (unsigned a = 0; a < defines.size(); a++)
-	{
-		if (S_CMPNOCASE(defines[a], def))
-			return true;
-	}
-
-	return false;
+	return pt_root_->parse(tz);
 }
 
 

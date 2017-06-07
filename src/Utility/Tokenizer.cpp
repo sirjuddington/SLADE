@@ -81,28 +81,36 @@ Tokenizer::Tokenizer(CommentTypes comments, const string& special_characters) :
 	comment_types_{ comments },
 	special_characters_{special_characters.begin(), special_characters.end()},
 	decorate_{ false },
-	case_sensitive_{ true }
+	read_lowercase_{ false }
 {
 }
 
 // ----------------------------------------------------------------------------
 // Tokenizer::next
 //
-// Returns the 'next' token and advances to it if [inc_index] is true
+// Returns the 'next' token but doesn't advance
 // ----------------------------------------------------------------------------
-const Tokenizer::Token& Tokenizer::next(bool inc_index)
+const Tokenizer::Token& Tokenizer::peek() const
 {
 	if (token_next_.pos_start == token_current_.pos_start)
 		return invalid_token_;
 
-	if (inc_index)
-	{
-		token_current_ = token_next_;
-		readNext();
-		return token_current_;
-	}
-
 	return token_next_;
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::next
+//
+// Returns the 'next' token and advances to it
+// ----------------------------------------------------------------------------
+const Tokenizer::Token& Tokenizer::next()
+{
+	if (token_next_.pos_start == token_current_.pos_start)
+		return invalid_token_;
+
+	token_current_ = token_next_;
+	readNext();
+	return token_current_;
 }
 
 // ----------------------------------------------------------------------------
@@ -120,6 +128,41 @@ void Tokenizer::skip(int inc)
 
 	token_current_ = token_next_;
 	readNext();
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::skipIf
+//
+// Skips [inc] tokens if the current token matches [check]
+// ----------------------------------------------------------------------------
+bool Tokenizer::skipIf(const char* check, int inc)
+{
+	if (token_current_ == check)
+	{
+		skip(inc);
+		return true;
+	}
+
+	return false;
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::skipIfNext
+//
+// Skips [inc] tokens if the next token matches [check]
+// ----------------------------------------------------------------------------
+bool Tokenizer::skipIfNext(const char* check, int inc)
+{
+	if (token_next_.pos_start == token_current_.pos_start)
+		return false;
+
+	if (token_next_ == check)
+	{
+		skip(inc);
+		return true;
+	}
+
+	return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -159,14 +202,16 @@ void Tokenizer::skipToNextLine()
 }
 
 // ----------------------------------------------------------------------------
-// Tokenizer::setSpecialCharacters
+// Tokenizer::checkNext
 //
-// Sets the special characters to each character in [special_characters].
-// Special characters are always read as a single token
+// Returns true if the next token matches [check]
 // ----------------------------------------------------------------------------
-void Tokenizer::setSpecialCharacters(const char* characters)
+bool Tokenizer::checkNext(const char* check) const
 {
-	special_characters_.assign(characters, characters + strlen(characters));
+	if (token_next_.pos_start == token_current_.pos_start)
+		return false;
+
+	return token_next_ == check;
 }
 
 // ----------------------------------------------------------------------------
@@ -530,6 +575,10 @@ bool Tokenizer::readNext(Token* target)
 		target->quoted_string = state_.current_token.quoted_string;
 		target->pos_start = state_.current_token.pos_start;
 		target->pos_end = state_.position;
+
+		// Convert to lowercase if configured to and it isn't a quoted string
+		if (read_lowercase_ && !target->quoted_string)
+			target->text.LowerCase();
 	}
 
 	// Skip closing " if it was a quoted string
@@ -559,6 +608,9 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 	if (!args.empty())
 		args[0].ToLong(&num);
 
+	bool lower = (VECTOR_EXISTS(args, "lower"));
+	bool dump = (VECTOR_EXISTS(args, "dump"));
+
 	struct TestToken
 	{
 		string text;
@@ -569,7 +621,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 	// Tokenize it
 	Tokenizer tz;
 	vector<TestToken> t_new;
-	//tz.setCaseSensitive(false);
+	tz.setReadLowerCase(lower);
 	long time = App::runTimer();
 	tz.openMem(entry->getMCData(), entry->getName());
 	for (long a = 0; a < num; a++)
@@ -579,14 +631,14 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 			if (a == 0)
 				t_new.push_back({ tz.current().text, tz.current().quoted_string, tz.current().line_no });
 
-			tz.next(true);
+			tz.next();
 		}
 		tz.reset();
 	}
 
-	time = App::runTimer() - time;
+	long new_time = App::runTimer() - time;
 
-	Log::info(S_FMT("Tokenize x%d took %dms", num, time));
+	Log::info(S_FMT("Tokenize x%d took %dms", num, new_time));
 
 
 	// Test old tokenizer also
@@ -608,7 +660,11 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 	}
 	time = App::runTimer() - time;
 	Log::info(S_FMT("Old Tokenize x%d took %dms", num, time));
+	Log::info(S_FMT("%1.3fx time", (float)new_time / (float)time));
 
-	for (auto& token : t_new)
-		Log::debug(S_FMT("%d: \"%s\"%s", token.line_no, CHR(token.text), token.quoted_string ? " (quoted)" : ""));
+	if (dump)
+	{
+		for (auto& token : t_new)
+			Log::debug(S_FMT("%d: \"%s\"%s", token.line_no, CHR(token.text), token.quoted_string ? " (quoted)" : ""));
+	}
 }

@@ -75,24 +75,27 @@ private:
 
 class Parser
 {
-private:
-	ParseTreeNode::UPtr	pt_root;
-	vector<string>		defines;
-	ArchiveTreeNode*	archive_dir_root;
-
 public:
 	Parser(ArchiveTreeNode* dir_root = nullptr);
 	~Parser();
 
-	ParseTreeNode*	parseTreeRoot() const { return pt_root.get(); }
+	ParseTreeNode*	parseTreeRoot() const { return pt_root_.get(); }
+
+	void	setCaseSensitive(bool cs) { case_sensitive_ = cs; }
 
 	bool	parseText(MemChunk& mc, string source = "memory chunk", bool debug = false);
 	bool	parseText(string& text, string source = "string", bool debug = false);
-	void	define(string def);
-	bool	defined(string def);
+	void	define(const string& def) { defines_.push_back(def.Lower()); }
+	bool	defined(const string& def) { return VECTOR_EXISTS(defines_, def.Lower()); }
 
 	// To simplify casts from STreeNode to ParseTreeNode
 	static ParseTreeNode*	node(STreeNode* node) { return static_cast<ParseTreeNode*>(node); }
+
+private:
+	ParseTreeNode::UPtr	pt_root_;
+	vector<string>		defines_;
+	ArchiveTreeNode*	archive_dir_root_	= nullptr;
+	bool				case_sensitive_		= false;
 };
 
 #endif//__PARSER_H__
