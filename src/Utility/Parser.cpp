@@ -222,6 +222,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 				skip++;
 			else if (token == "#ifndef")
 				skip++;
+			// TODO: #else
 
 			if (skip < 0)
 				break;
@@ -269,6 +270,8 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 	// #endif (ignore)
 	else if (tz.current() == "#endif")
 		return true;
+
+	// TODO: #else
 
 	// Unrecognised
 	else
