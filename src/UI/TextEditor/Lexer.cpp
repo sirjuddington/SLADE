@@ -106,7 +106,7 @@ bool Lexer::doStyling(TextEditor* editor, int start, int end)
 	};
 
 	editor->StartStyling(start, 31);
-	LOG_MESSAGE(3, "START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1);
+	LOG_MESSAGE(4, "START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1);
 
 	bool done = false;
 	while (!done)

@@ -75,7 +75,7 @@ string StringUtils::escapedString(const string& str, bool swap_backslash)
 }
 
 // ----------------------------------------------------------------------------
-// StringUtils::buildConfig
+// StringUtils::processIncludes
 //
 // Reads the text file at [filename], processing any #include statements in the
 // file recursively. The resulting 'expanded' text is written to [out]

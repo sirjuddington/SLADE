@@ -36,7 +36,7 @@
 #include "Game.h"
 #include "ThingType.h"
 #include "Utility/StringUtils.h"
-#include "Utility/TokenizerOld.h"
+#include "Utility/Tokenizer.h"
 
 
 // ----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ namespace Game
 	//
 	// Parses a DECORATE 'States' block
 	// ------------------------------------------------------------------------
-	void parseStates(TokenizerOld& tz, PropertyList& props)
+	void parseStates(Tokenizer& tz, PropertyList& props)
 	{
 		int lastpriority = 0;
 		int priority = 0;
@@ -59,22 +59,22 @@ namespace Game
 		string laststate;
 		string spritestate;
 
-		string token = tz.getToken();
+		string token = tz.next().text;
 		while (token != "}")
 		{
 			// Idle, See, Inactive, Spawn, and finally first defined
 			if (priority < StateSprites::Idle)
 			{
 				string myspritestate = token;
-				token = tz.getToken();
+				token = tz.next().text;
 				while (token.Cmp(":") && token.Cmp("}"))
 				{
 					myspritestate = token;
-					token = tz.getToken();
+					token = tz.next().text;
 				}
 				if (S_CMPNOCASE(token, "}"))
 					break;
-				string sb = tz.getToken(); // Sprite base
+				string sb = tz.next().text; // Sprite base
 
 				// Handle removed states
 				if (S_CMPNOCASE(sb, "Stop"))
@@ -82,22 +82,22 @@ namespace Game
 				// Handle direct gotos, like ZDoom's dead monsters
 				if (S_CMPNOCASE(sb, "Goto"))
 				{
-					tz.skipToken();
+					tz.skip();
 					// Skip scope and state
-					if (tz.peekToken() == ":")
+					if (tz.peek() == ":")
 					{
-						tz.skipToken();	// first :
-						tz.skipToken(); // second :
-						tz.skipToken(); // state name
+						tz.skip();	// first :
+						tz.skip(); // second :
+						tz.skip(); // state name
 					}
 					continue;
 				}
-				string sf = tz.getToken(); // Sprite frame(s)
+				string sf = tz.next().text; // Sprite frame(s)
 				int mypriority = 0;
 				// If the same state is given several names, 
 				// don't read the next name as a sprite name!
 				// If "::" is encountered, it's a scope operator.
-				if ((!sf.Cmp(":")) && tz.peekToken().Cmp(":"))
+				if ((!sf.Cmp(":")) && tz.peek().text.Cmp(":"))
 				{
 					if (S_CMPNOCASE(myspritestate, "spawn"))
 						mypriority = StateSprites::Spawn;
@@ -150,7 +150,7 @@ namespace Game
 				tz.skipSection("{", "}");
 				break;
 			}
-			token = tz.getToken();
+			tz.skip();
 		}
 	}
 
@@ -159,38 +159,31 @@ namespace Game
 	//
 	// Parses a DECORATE 'actor' definition
 	// ------------------------------------------------------------------------
-	void parseDecorateActor(TokenizerOld& tz, std::map<int, ThingType>& types)
+	void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types)
 	{
 		// Get actor name
-		string name = tz.getToken();
+		string name = tz.next().text;
 
 		// Check for inheritance
-		string next = tz.peekToken();
-		if (next == ":")
-		{
-			tz.skipToken(); // Skip :
-			tz.skipToken(); // Skip parent actor
-			next = tz.peekToken();
-		}
-
+		//string next = tz.peekToken();
+		if (tz.checkNext(":"))
+			tz.skip(2); // Skip ':' and parent
+		
 		// Check for replaces
-		if (S_CMPNOCASE(next, "replaces"))
-		{
-			tz.skipToken(); // Skip replaces
-			tz.skipToken(); // Skip replace actor
-		}
+		if (tz.checkNextNC("replaces"))
+			tz.skip(2); // Skip 'replaces' and actor
 
 		// Skip "native" keyword if present
-		if (S_CMPNOCASE(tz.peekToken(), "native"))
-			tz.skipToken();
+		if (tz.checkNextNC("native"))
+			tz.skip();
 
 		// Check for no editor number (ie can't be placed in the map)
-		if (tz.peekToken() == "{")
+		if (tz.checkNext("{"))
 		{
 			LOG_MESSAGE(3, "Not adding actor %s, no editor number", name);
 
 			// Skip actor definition
-			tz.skipToken();
+			tz.skip(2);
 			tz.skipSection("{", "}");
 		}
 		else
@@ -204,137 +197,142 @@ namespace Game
 			string group;
 
 			// Read editor number
-			tz.getInteger(&type);
+			tz.next().asInt(type);
 
 			// Skip "native" keyword if present
-			if (S_CMPNOCASE(tz.peekToken(), "native"))
-				tz.skipToken();
+			tz.skipIfNextNC("native");
 
 			// Check for actor definition open
-			string token = tz.getToken();
-			if (token == "{")
+			if (tz.skipIfNext("{", 2))
 			{
-				token = tz.getToken();
-				while (token != "}")
+				while (!tz.check("}") && !tz.atEnd())
 				{
 					// Check for subsection
-					if (token == "{")
+					if (tz.skipIf("{"))
 						tz.skipSection("{", "}");
 
 					// Title
-					else if (S_CMPNOCASE(token, "//$Title"))
+					else if (tz.checkNC("//$Title"))
 					{
 						name = tz.getLine();
 						title_given = true;
 					}
 
 					// Game filter
-					else if (S_CMPNOCASE(token, "game"))
+					else if (tz.checkNC("game"))
 					{
 						filters_present = true;
-						if (gameDef(configuration().currentGame()).supportsFilter(tz.getToken()))
+						if (gameDef(configuration().currentGame()).supportsFilter(tz.next().text))
 							available = true;
 					}
 
 					// Tag
-					else if (!title_given && S_CMPNOCASE(token, "tag"))
-						name = tz.getToken();
+					else if (!title_given && tz.checkNC("tag"))
+						name = tz.next().text;
 
 					// Category
-					else if (S_CMPNOCASE(token, "//$Group") || S_CMPNOCASE(token, "//$Category"))
+					else if (tz.checkNC("//$Group") || tz.checkNC("//$Category"))
 						group = tz.getLine();
 
 					// Sprite
-					else if (S_CMPNOCASE(token, "//$EditorSprite") || S_CMPNOCASE(token, "//$Sprite"))
+					else if (tz.checkNC("//$EditorSprite") || tz.checkNC("//$Sprite"))
 					{
-						found_props["sprite"] = tz.getToken();
+						found_props["sprite"] = tz.next().text;
 						sprite_given = true;
 					}
 
 					// Radius
-					else if (S_CMPNOCASE(token, "radius"))
-						found_props["radius"] = tz.getInteger();
+					else if (tz.checkNC("radius"))
+						found_props["radius"] = tz.next().asInt();
 
 					// Height
-					else if (S_CMPNOCASE(token, "height"))
-						found_props["height"] = tz.getInteger();
+					else if (tz.checkNC("height"))
+						found_props["height"] = tz.next().asInt();
 
 					// Scale
-					else if (S_CMPNOCASE(token, "scale"))
-						found_props["scalex"] = found_props["scaley"] = tz.getFloat();
-					else if (S_CMPNOCASE(token, "xscale"))
-						found_props["scalex"] = tz.getFloat();
-					else if (S_CMPNOCASE(token, "yscale"))
-						found_props["scaley"] = tz.getFloat();
+					else if (tz.checkNC("scale"))
+						found_props["scalex"] = found_props["scaley"] = tz.next().asFloat();
+					else if (tz.checkNC("xscale"))
+						found_props["scalex"] = tz.next().asFloat();
+					else if (tz.checkNC("yscale"))
+						found_props["scaley"] = tz.next().asFloat();
 
 					// Angled
-					else if (S_CMPNOCASE(token, "//$Angled"))
+					else if (tz.checkNC("//$Angled"))
 						found_props["angled"] = true;
-					else if (S_CMPNOCASE(token, "//$NotAngled"))
+					else if (tz.checkNC("//$NotAngled"))
 						found_props["angled"] = false;
 
 					// Monster
-					else if (S_CMPNOCASE(token, "monster"))
+					else if (tz.checkNC("monster"))
 					{
 						found_props["solid"] = true;		// Solid
 						found_props["decoration"] = false;	// Not a decoration
 					}
 
 					// Hanging
-					else if (S_CMPNOCASE(token, "+spawnceiling"))
+					else if (tz.checkNC("+spawnceiling"))
 						found_props["hanging"] = true;
 
 					// Fullbright
-					else if (S_CMPNOCASE(token, "+bright"))
+					else if (tz.checkNC("+bright"))
 						found_props["bright"] = true;
 
 					// Is Decoration
-					else if (S_CMPNOCASE(token, "//$IsDecoration"))
+					else if (tz.checkNC("//$IsDecoration"))
 						found_props["decoration"] = true;
 
 					// Icon
-					else if (S_CMPNOCASE(token, "//$Icon"))
-						found_props["icon"] = tz.getToken();
+					else if (tz.checkNC("//$Icon"))
+						found_props["icon"] = tz.next().text;
 
 					// DB2 Color
-					else if (S_CMPNOCASE(token, "//$Color"))
-						found_props["color"] = tz.getToken();
+					else if (tz.checkNC("//$Color"))
+						found_props["color"] = tz.next().text;
 
 					// SLADE 3 Colour (overrides DB2 color)
 					// Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
-					else if (S_CMPNOCASE(token, "//$Colour"))
+					else if (tz.checkNC("//$Colour"))
 						found_props["colour"] = tz.getLine();
 
 					// Obsolete thing
-					else if (S_CMPNOCASE(token, "//$Obsolete"))
+					else if (tz.checkNC("//$Obsolete"))
 						found_props["obsolete"] = true;
 
 					// Translation
-					else if (S_CMPNOCASE(token, "translation"))
+					else if (tz.checkNC("translation"))
 					{
 						string translation = "\"";
-						translation += tz.getToken();
-						while (tz.peekToken() == ",")
+						translation += tz.next().text;
+						while (tz.checkNext(","))
 						{
-							translation += tz.getToken(); // ,
-							translation += tz.getToken(); // next range
+							translation += tz.next().text; // ,
+							translation += tz.next().text; // next range
 						}
 						translation += "\"";
 						found_props["translation"] = translation;
 					}
 
 					// Solid
-					else if (S_CMPNOCASE(token, "+solid"))
+					else if (tz.checkNC("+solid"))
 						found_props["solid"] = true;
 
-					// States
-					if (!sprite_given && S_CMPNOCASE(token, "states"))
+					// Unrecognised DB comment prop
+					else if (tz.current().text.StartsWith("//$"))
 					{
-						tz.skipToken(); // Skip {
-						parseStates(tz, found_props);
+						tz.skipToNextLine();
+						continue;
 					}
 
-					token = tz.getToken();
+					// States
+					if (!sprite_given && tz.checkNC("states"))
+					{
+						tz.skip(); // Skip {
+						parseStates(tz, found_props);
+						continue;
+					}
+
+					tz.skip();
 				}
 
 				LOG_MESSAGE(3, "Parsed actor %s: %d", name, type);
@@ -368,70 +366,78 @@ namespace Game
 	//
 	// Parses an old-style (non-actor) DECORATE definition
 	// ------------------------------------------------------------------------
-	void parseDecorateOld(TokenizerOld& tz, std::map<int, ThingType>& types)
+	void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 	{
-		string name, sprite, group, token;
+		string name, sprite, group;
 		bool spritefound = false;
 		char frame;
 		bool framefound = false;
 		int type = -1;
 		PropertyList found_props;
-		if (tz.peekToken() == "{")
-			name = token;
+		if (tz.checkNext("{"))
+			name = tz.current().text;
 		// DamageTypes aren't old DECORATE format, but we handle them here to skip over them
-		else if ((S_CMPNOCASE(token, "pickup")) || (S_CMPNOCASE(token, "breakable"))
-			|| (S_CMPNOCASE(token, "projectile")) || (S_CMPNOCASE(token, "damagetype")))
+		else if (
+			tz.checkNC("pickup") ||
+			tz.checkNC("breakable") ||
+			tz.checkNC("projectile") ||
+			tz.checkNC("damagetype"))
 		{
-			group = token;
-			name = tz.getToken();
+			group = tz.current().text;
+			name = tz.next().text;
 		}
-		tz.skipToken();	// skip '{'
+		tz.skip();	// skip '{'
 		do
 		{
-			token = tz.getToken();
-			if (S_CMPNOCASE(token, "DoomEdNum"))
+			tz.skip();
+
+			//if (S_CMPNOCASE(token, "DoomEdNum"))
+			if (tz.checkNC("doomednum"))
 			{
-				tz.getInteger(&type);
+				//tz.getInteger(&type);
+				type = tz.next().asInt();
 			}
-			else if (S_CMPNOCASE(token, "Sprite"))
+			//else if (S_CMPNOCASE(token, "Sprite"))
+			else if (tz.checkNC("sprite"))
 			{
-				sprite = tz.getToken();
+				sprite = tz.next().text;
 				spritefound = true;
 			}
-			else if (S_CMPNOCASE(token, "Frames"))
+			//else if (S_CMPNOCASE(token, "Frames"))
+			else if (tz.checkNC("frames"))
 			{
-				token = tz.getToken();
+				string frames = tz.next().text;
 				unsigned pos = 0;
-				if (token.length() > 0)
+				if (frames.length() > 0)
 				{
-					if ((token[0] < 'a' || token[0] > 'z') && (token[0] < 'A' || token[0] > ']'))
+					if ((frames[0] < 'a' || frames[0] > 'z') && (frames[0] < 'A' || frames[0] > ']'))
 					{
-						pos = token.find(':') + 1;
-						if (token.length() <= pos)
-							pos = token.length() + 1;
-						else if ((token.length() >= pos + 2) && token[pos + 1] == '*')
+						pos = frames.find(':') + 1;
+						if (frames.length() <= pos)
+							pos = frames.length() + 1;
+						else if ((frames.length() >= pos + 2) && frames[pos + 1] == '*')
 							found_props["bright"] = true;
 					}
 				}
-				if (pos < token.length())
+				if (pos < frames.length())
 				{
-					frame = token[pos];
+					frame = frames[pos];
 					framefound = true;
 				}
 			}
-			else if (S_CMPNOCASE(token, "Radius"))
-				found_props["radius"] = tz.getInteger();
-			else if (S_CMPNOCASE(token, "Height"))
-				found_props["height"] = tz.getInteger();
-			else if (S_CMPNOCASE(token, "Solid"))
+			else if (tz.checkNC("radius"))
+				found_props["radius"] = tz.next().asInt();
+			else if (tz.checkNC("height"))
+				found_props["height"] = tz.next().asInt();
+			else if (tz.checkNC("solid"))
 				found_props["solid"] = true;
-			else if (S_CMPNOCASE(token, "SpawnCeiling"))
+			else if (tz.checkNC("spawnceiling"))
 				found_props["hanging"] = true;
-			else if (S_CMPNOCASE(token, "Scale"))
-				found_props["scale"] = tz.getFloat();
-			else if (S_CMPNOCASE(token, "Translation1"))
-				found_props["translation"] = S_FMT("doom%d", tz.getInteger());
-		} while (token != "}" && !token.empty());
+			else if (tz.checkNC("scale"))
+				found_props["scale"] = tz.next().asFloat();
+			else if (tz.checkNC("translation1"))
+				found_props["translation"] = S_FMT("doom%d", tz.next().asInt());
+		} while (!tz.check("}") && !tz.atEnd());
 
 		// Add only if a DoomEdNum is present
 		if (type > 0)
@@ -486,23 +492,37 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types)
 		StringUtils::processIncludes(decorate_entries[a], full_defs, false);
 
 	// Init tokenizer
-	TokenizerOld tz;
+	Tokenizer tz;
 	tz.setSpecialCharacters(":,{}");
 	tz.enableDecorate(true);
 	tz.openString(full_defs);
 
 	// --- Parse ---
-	string token = tz.getToken();
-	while (!token.empty())
+	while (!tz.atEnd())
 	{
 		// Check for actor definition
-		if (S_CMPNOCASE(token, "actor"))
+		if (tz.checkNC("actor"))
 			parseDecorateActor(tz, types);
 		else
 			parseDecorateOld(tz, types);	// Old DECORATE definitions might be found
 
-		token = tz.getToken();
+		tz.skipIf("}");
 	}
 
 	return true;
+}
+
+#include "General/Console/Console.h"
+#include "MainEditor/MainEditor.h"
+CONSOLE_COMMAND(test_decorate, 0, false)
+{
+	auto archive = MainEditor::currentArchive();
+	if (!archive)
+		return;
+
+	std::map<int, Game::ThingType> types;
+	Game::readDecorateDefs(archive, types);
+
+	for (auto& i : types)
+		Log::console(S_FMT("%d: %s", i.first, CHR(i.second.stringDesc())));
 }

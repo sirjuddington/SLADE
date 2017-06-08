@@ -72,19 +72,62 @@ namespace
 //
 // ----------------------------------------------------------------------------
 
+
+// ----------------------------------------------------------------------------
+// Token::isInteger
+//
+// Returns true if the token is a valid integer. If [allow_hex] is true, can
+// also be a valid hex string
+// ----------------------------------------------------------------------------
 bool Tokenizer::Token::isInteger(bool allow_hex) const
 {
 	return StringUtils::isInteger(text, allow_hex);
 }
 
+// ----------------------------------------------------------------------------
+// Token::isHex
+//
+// Returns true if the token is a valid hex string
+// ----------------------------------------------------------------------------
 bool Tokenizer::Token::isHex() const
 {
 	return StringUtils::isHex(text);
 }
 
+// ----------------------------------------------------------------------------
+// Token::isFloat
+//
+// Returns true if the token is a floating point number
+// ----------------------------------------------------------------------------
 bool Tokenizer::Token::isFloat() const
 {
 	return StringUtils::isFloat(text);
+}
+
+// ----------------------------------------------------------------------------
+// Token::asBool
+//
+// Returns the token as a bool value.
+// "false", "no" and "0" are false, anything else is true.
+// ----------------------------------------------------------------------------
+bool Tokenizer::Token::asBool() const
+{
+	return !(S_CMPNOCASE(text, "false") ||
+			S_CMPNOCASE(text, "no") ||
+			S_CMPNOCASE(text, "0"));
+}
+
+// ----------------------------------------------------------------------------
+// Token::asBool
+//
+// Sets [val] to the token as a bool value.
+// "false", "no" and "0" are false, anything else is true.
+// ----------------------------------------------------------------------------
+void Tokenizer::Token::asBool(bool& val) const
+{
+	val = !(S_CMPNOCASE(text, "false") ||
+			S_CMPNOCASE(text, "no") ||
+			S_CMPNOCASE(text, "0"));
 }
 
 
@@ -104,7 +147,8 @@ Tokenizer::Tokenizer(CommentTypes comments, const string& special_characters) :
 	comment_types_{ comments },
 	special_characters_{special_characters.begin(), special_characters.end()},
 	decorate_{ false },
-	read_lowercase_{ false }
+	read_lowercase_{ false },
+	debug_{ false }
 {
 }
 
@@ -170,6 +214,22 @@ bool Tokenizer::skipIf(const char* check, int inc)
 }
 
 // ----------------------------------------------------------------------------
+// Tokenizer::skipIfNC
+//
+// Skips [inc] tokens if the current token matches [check] (Case-Insensitive)
+// ----------------------------------------------------------------------------
+bool Tokenizer::skipIfNC(const char* check, int inc)
+{
+	if (S_CMPNOCASE(token_current_.text, check))
+	{
+		skip(inc);
+		return true;
+	}
+
+	return false;
+}
+
+// ----------------------------------------------------------------------------
 // Tokenizer::skipIfNext
 //
 // Skips [inc] tokens if the next token matches [check]
@@ -180,6 +240,25 @@ bool Tokenizer::skipIfNext(const char* check, int inc)
 		return false;
 
 	if (token_next_ == check)
+	{
+		skip(inc);
+		return true;
+	}
+
+	return false;
+}
+
+// ----------------------------------------------------------------------------
+// Tokenizer::skipIfNextNC
+//
+// Skips [inc] tokens if the next token matches [check] (Case-Insensitive)
+// ----------------------------------------------------------------------------
+bool Tokenizer::skipIfNextNC(const char* check, int inc)
+{
+	if (token_next_.pos_start == token_current_.pos_start)
+		return false;
+
+	if (S_CMPNOCASE(token_next_.text, check))
 	{
 		skip(inc);
 		return true;
@@ -225,6 +304,118 @@ void Tokenizer::skipToNextLine()
 }
 
 // ----------------------------------------------------------------------------
+// Tokenizer::skipSection
+//
+// Skips tokens until [end] is found. Can also handle nesting if [begin] is
+// specified. If [allow_quoted] is true, section delimiters will count even if
+// within a quoted string.
+//
+// Relies on the current token being *within* the section to be skipped, and
+// will exit on the token after the end of the section.
+// ----------------------------------------------------------------------------
+void Tokenizer::skipSection(const char* begin, const char* end, bool allow_quoted)
+{
+	int depth = 1;
+	while (depth > 0 && !atEnd())
+	{
+		if (token_current_.quoted_string && !allow_quoted)
+		{
+			skip();
+			continue;
+		}
+
+		if (token_current_ == begin)
+			depth++;
+		if (token_current_ == end)
+			depth--;
+
+		skip();
+	}
+}
+
+vector<Tokenizer::Token> Tokenizer::getTokensUntil(const char* end)
+{
+	vector<Token> tokens;
+	while (!atEnd())
+	{
+		tokens.push_back(token_current_);
+
+		skip();
+
+		if (token_current_ == end)
+			break;
+	}
+
+	return tokens;
+}
+
+vector<Tokenizer::Token> Tokenizer::getTokensUntilNC(const char* end)
+{
+	vector<Token> tokens;
+	while (!atEnd())
+	{
+		tokens.push_back(token_current_);
+
+		skip();
+
+		if (token_current_ == end)
+			break;
+	}
+
+	return tokens;
+}
+
+vector<Tokenizer::Token> Tokenizer::getTokensUntilNextLine(bool from_start)
+{
+	// Reset to start of line if needed
+	if (from_start)
+	{
+		resetToLineStart();
+		readNext(&token_current_);
+		readNext(&token_next_);
+	}
+
+	vector<Token> tokens;
+	while (!atEnd())
+	{
+		tokens.push_back(token_current_);
+
+		if (token_next_.line_no > token_current_.line_no)
+		{
+			skip();
+			break;
+		}
+
+		skip();
+	}
+
+	return tokens;
+}
+
+string Tokenizer::getLine(bool from_start)
+{
+	// Reset to start of line if needed
+	if (from_start)
+		resetToLineStart();
+
+	// Otherwise reset to start of next token
+	else
+	{
+		state_.position = token_next_.pos_start;
+		state_.current_line = token_next_.line_no;
+	}
+
+	string line;
+	while (data_[state_.position] != '\n')
+		line += data_[state_.position++];
+
+	readNext(&token_current_);
+	readNext(&token_next_);
+
+	return line;
+}
+
+// ----------------------------------------------------------------------------
 // Tokenizer::checkNext
 //
 // Returns true if the next token matches [check]
@@ -235,6 +426,14 @@ bool Tokenizer::checkNext(const char* check) const
 		return false;
 
 	return token_next_ == check;
+}
+
+bool Tokenizer::checkNextNC(const char* check) const
+{
+	if (token_next_.pos_start == token_current_.pos_start)
+		return false;
+
+	return S_CMPNOCASE(token_next_.text, check);
 }
 
 // ----------------------------------------------------------------------------
@@ -607,10 +806,33 @@ bool Tokenizer::readNext(Token* target)
 	// Skip closing " if it was a quoted string
 	if (state_.current_token.quoted_string)
 		++state_.position;
+
+	if (debug_)
+		Log::debug(S_FMT("%d: \"%s\"", token_current_.line_no, CHR(token_current_.text)));
 		
 	return true;
 }
 
+void Tokenizer::resetToLineStart()
+{
+	// Reset state to start of current token
+	state_.position = token_current_.pos_start;
+	state_.current_line = token_current_.line_no;
+	state_.state = TokenizeState::State::Unknown;
+
+	while (true)
+	{
+		if (state_.position == 0)
+			return;
+		if (data_[state_.position] == '\n')
+		{
+			++state_.position;
+			return;
+		}
+
+		--state_.position;
+	}
+}
 
 
 // Testing

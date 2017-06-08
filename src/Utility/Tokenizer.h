@@ -35,6 +35,13 @@ public:
 		bool	isInteger(bool allow_hex = false) const;
 		bool	isHex() const;
 		bool	isFloat() const;
+
+		int		asInt() const { return wxAtoi(text); }
+		void 	asInt(int& val) const { val = wxAtoi(text); }
+		bool	asBool() const;
+		void 	asBool(bool& val) const;
+		double 	asFloat() const { return wxAtof(text); }
+		void 	asFloat(double& val) const { val = wxAtof(text); }
 	};
 
 	struct TokenizeState
@@ -75,17 +82,28 @@ public:
 			{ special_characters_.assign(characters, characters + strlen(characters)); }
 	void	setSource(const string& source) { source_ = source; }
 	void	setReadLowerCase(bool lower) { read_lowercase_ = lower; }
+	void 	enableDecorate(bool enable) { decorate_ = enable; }
+	void	enableDebug(bool enable) { debug_ = enable; }
 
 	// Token Iterating
 	const Token&	next();
 	void			skip(int inc = 1);
 	bool			skipIf(const char* check, int inc = 1);
+	bool			skipIfNC(const char* check, int inc = 1);
 	bool			skipIfNext(const char* check, int inc = 1);
+	bool			skipIfNextNC(const char* check, int inc = 1);
 	void			skipToNextLine();
+	void 			skipSection(const char* begin, const char* end, bool allow_quoted = false);
+	vector<Token>	getTokensUntil(const char* end);
+	vector<Token>	getTokensUntilNC(const char* end);
+	vector<Token>	getTokensUntilNextLine(bool from_start = false);
+	string			getLine(bool from_start = false);
 
 	// Token Checking
 	bool	check(const char* check) const { return token_current_ == check; }
+	bool	checkNC(const char* check) const { return S_CMPNOCASE(token_current_.text, check); }
 	bool	checkNext(const char* check) const;
+	bool	checkNextNC(const char* check) const;
 
 	// Load Data
 	bool	openFile(const string& filename, unsigned offset = 0, unsigned length = 0);
@@ -119,6 +137,7 @@ private:
 	bool			decorate_;				// Special handling for //$ comments
 	bool			read_lowercase_;		// If true, tokens will all be read in lowercase
 											// (except for quoted strings, obviously)
+	bool			debug_;					// Log each token read
 
 	// Static
 	static Token	invalid_token_;
@@ -131,4 +150,5 @@ private:
 	void		tokenizeWhitespace();
 	bool		readNext(Token* target);
 	bool		readNext() { return readNext(&token_next_); }
+	void		resetToLineStart();
 };
