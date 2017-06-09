@@ -56,6 +56,7 @@
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UndoManagerHistoryPanel.h"
 #include "Utility/SFileDialog.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -113,7 +114,7 @@ MapEditorWindow::~MapEditorWindow()
 void MapEditorWindow::loadLayout()
 {
 	// Open layout file
-	TokenizerOld tz;
+	Tokenizer tz;
 	if (!tz.openFile(App::path("mapwindow.layout", App::Dir::User)))
 		return;
 

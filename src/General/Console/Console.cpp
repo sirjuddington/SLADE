@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "App.h"
 #include "Console.h"
-#include "Utility/TokenizerOld.h"
+#include "Utility/Tokenizer.h"
 #include "General/CVar.h"
 #include "MainEditor/MainEditor.h"
 
@@ -80,7 +80,7 @@ void Console::execute(string command)
 	cmd_log.insert(cmd_log.begin(), command);
 
 	// Tokenize the command string
-	TokenizerOld tz;
+	Tokenizer tz;
 	tz.openString(command);
 
 	// Get the command name

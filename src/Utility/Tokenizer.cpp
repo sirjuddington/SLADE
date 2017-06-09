@@ -303,6 +303,24 @@ void Tokenizer::skipToNextLine()
 	token_next_ = token_current_;
 }
 
+void Tokenizer::skipToEndOfLine()
+{
+	// Ignore if we're on the last token already
+	if (token_next_.pos_start == token_current_.pos_start)
+		return;
+
+	// Ignore if the next token is on the next line
+	if (token_next_.line_no > token_current_.line_no)
+		return;
+
+	// Otherwise skip until the next token is on the next line
+	// (or we reach the last token)
+	unsigned line = token_current_.line_no;
+	while (token_next_.pos_start > token_current_.pos_start &&
+			token_next_.line_no <= token_current_.line_no)
+		skip();
+}
+
 // ----------------------------------------------------------------------------
 // Tokenizer::skipSection
 //
@@ -841,7 +859,6 @@ void Tokenizer::resetToLineStart()
 #include "MainEditor/MainEditor.h"
 #include "Archive/ArchiveEntry.h"
 #include "App.h"
-#include "Utility/TokenizerOld.h"
 
 CONSOLE_COMMAND(test_tokenizer, 0, false)
 {
@@ -887,6 +904,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 
 
 	// Test old tokenizer also
+	/*
 	TokenizerOld tzo;
 	vector<TestToken> t_old;
 	time = App::runTimer();
@@ -906,6 +924,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 	time = App::runTimer() - time;
 	Log::info(S_FMT("Old Tokenize x%d took %dms", num, time));
 	Log::info(S_FMT("%1.3fx time", (float)new_time / (float)time));
+	*/
 
 	if (dump)
 	{

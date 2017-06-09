@@ -31,7 +31,7 @@
 // ----------------------------------------------------------------------------
 #include "Main.h"
 #include "StringUtils.h"
-#include "TokenizerOld.h"
+#include "Tokenizer.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 
@@ -93,19 +93,19 @@ void StringUtils::processIncludes(string filename, string& out)
 
 	// Go through line-by-line
 	string line = file.GetNextLine();
+	Tokenizer tz;
+	tz.setSpecialCharacters("");
 	while (!file.Eof())
 	{
 		// Check for #include
 		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get filename to include
-			TokenizerOld tz;
 			tz.openString(line);
-			tz.getToken();	// Skip #include
-			string fn = tz.getToken();
+			tz.skip();	// Skip #include
 
 			// Process the file
-			processIncludes(path + fn, out);
+			processIncludes(path + tz.next().text, out);
 		}
 		else
 			out.Append(line + "\n");
@@ -138,6 +138,8 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 		return;
 
 	// Go through line-by-line
+	Tokenizer tz;
+	tz.setSpecialCharacters("");
 	string line = file.GetFirstLine();
 	while (!file.Eof())
 	{
@@ -145,19 +147,15 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get name of entry to include
-			TokenizerOld tz;
 			tz.openString(line);
-			tz.getToken();	// Skip #include
-			tz.setSpecialCharacters("");
-			string inc_name = tz.getToken();
-			string name = entry->getPath() + inc_name;
+			string name = entry->getPath() + tz.next().text;
 
 			// Get the entry
 			bool done = false;
 			ArchiveEntry* entry_inc = entry->getParent()->entryAtPath(name);
 			// DECORATE paths start from the root, not from the #including entry's directory
 			if (!entry_inc)
-				entry_inc = entry->getParent()->entryAtPath(inc_name);
+				entry_inc = entry->getParent()->entryAtPath(tz.current().text);
 			if (entry_inc)
 			{
 				processIncludes(entry_inc, out);
@@ -169,7 +167,7 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 			// Look in resource pack
 			if (use_res && !done && theArchiveManager->programResourceArchive())
 			{
-				name = "config/games/" + inc_name;
+				name = "config/games/" + tz.current().text;
 				entry_inc = theArchiveManager->programResourceArchive()->entryAtPath(name);
 				if (entry_inc)
 				{

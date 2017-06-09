@@ -2,11 +2,11 @@
 #ifndef __KEYBIND_H__
 #define __KEYBIND_H__
 
-#include "Utility/TokenizerOld.h"
-
 #define KPM_CTRL	0x01
 #define KPM_ALT		0x02
 #define KPM_SHIFT	0x04
+
+class Tokenizer;
 
 struct keypress_t
 {
@@ -114,7 +114,7 @@ public:
 
 	static void		initBinds();
 	static string	writeBinds();
-	static bool		readBinds(TokenizerOld& tz);
+	static bool		readBinds(Tokenizer& tz);
 	static void     updateSortedBindsList();
 };
 

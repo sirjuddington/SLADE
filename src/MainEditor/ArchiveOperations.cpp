@@ -42,7 +42,7 @@
 #include "MapEditor/SLADEMap/MapThing.h"
 #include "MapEditor/SLADEMap/MapLine.h"
 #include "General/Console/Console.h"
-
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -475,12 +475,12 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	total_maps += udmfmaps.size();
 
 	// Go through and add used textures to list
-	TokenizerOld tz;
+	Tokenizer tz;
 	tz.setSpecialCharacters("{};=");
 	for (unsigned a = 0; a < udmfmaps.size(); a++)
 	{
 		// Open in tokenizer
-		tz.openMem(udmfmaps[a]->getData(), udmfmaps[a]->getSize(), "UDMF TEXTMAP");
+		tz.openMem(udmfmaps[a]->getMCData(), "UDMF TEXTMAP");
 
 		// Go through text tokens
 		string token = tz.getToken();
@@ -701,12 +701,12 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 	total_maps += udmfmaps.size();
 
 	// Go through and add used flats to list
-	TokenizerOld tz;
+	Tokenizer tz;
 	tz.setSpecialCharacters("{};=");
 	for (unsigned a = 0; a < udmfmaps.size(); a++)
 	{
 		// Open in tokenizer
-		tz.openMem(udmfmaps[a]->getData(), udmfmaps[a]->getSize(), "UDMF TEXTMAP");
+		tz.openMem(udmfmaps[a]->getMCData(), "UDMF TEXTMAP");
 
 		// Go through text tokens
 		string token = tz.getToken();

@@ -29,12 +29,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "CTexture.h"
 #include "Archive/ArchiveManager.h"
-#include "General/ResourceManager.h"
+#include "CTexture.h"
 #include "General/Misc.h"
+#include "General/ResourceManager.h"
 #include "Graphics/SImage/SImage.h"
 #include "TextureXList.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -217,7 +218,7 @@ ArchiveEntry* CTPatchEx::getPatchEntry(Archive* parent)
 /* CTPatchEx::parse
  * Parses a ZDoom TEXTURES format patch definition
  *******************************************************************/
-bool CTPatchEx::parse(TokenizerOld& tz, uint8_t type)
+bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 {
 	// Read basic info
 	this->type = type;
@@ -708,7 +709,7 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 /* CTexture::parse
  * Parses a TEXTURES format texture definition
  *******************************************************************/
-bool CTexture::parse(TokenizerOld& tz, string type)
+bool CTexture::parse(Tokenizer& tz, string type)
 {
 	// Check if optional
 	if (S_CMPNOCASE(tz.peekToken(), "optional"))
@@ -798,7 +799,7 @@ bool CTexture::parse(TokenizerOld& tz, string type)
 /* CTexture::parseDefine
  * Parses a HIRESTEX define block
  *******************************************************************/
-bool CTexture::parseDefine(TokenizerOld& tz)
+bool CTexture::parseDefine(Tokenizer& tz)
 {
 	this->type = "Define";
 	this->extended = true;

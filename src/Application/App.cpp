@@ -53,7 +53,7 @@
 #include "UI/TextEditor/TextLanguage.h"
 #include "UI/TextEditor/TextStyle.h"
 #include "UI/SBrush.h"
-#include "Utility/TokenizerOld.h"
+#include "Utility/Tokenizer.h"
 
 
 // ----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ namespace App
 	void readConfigFile()
 	{
 		// Open SLADE.cfg
-		TokenizerOld tz;
+		Tokenizer tz;
 		if (!tz.openFile(App::path("slade3.cfg", App::Dir::User)))
 			return;
 
@@ -260,7 +260,7 @@ namespace App
 			if (token == "window_info")
 			{
 				token = tz.getToken();	// Skip {
-				Misc::readWindowInfo(&tz);
+				Misc::readWindowInfo(tz);
 			}
 
 			// Get next token

@@ -38,7 +38,7 @@
 #include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "UI/BaseResourceChooser.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
-#include "Utility/TokenizerOld.h"
+#include "Utility/Tokenizer.h"
 #include "MapEditor/MapEditor.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UndoManagerHistoryPanel.h"
@@ -123,7 +123,7 @@ MainWindow::~MainWindow()
 void MainWindow::loadLayout()
 {
 	// Open layout file
-	TokenizerOld tz;
+	Tokenizer tz;
 	if (!tz.openFile(App::path("mainwindow.layout", App::Dir::User)))
 		return;
 
@@ -447,7 +447,7 @@ void MainWindow::createStartPage(bool newtip)
 	string tip = "It seems tips.txt is missing from your slade.pk3";
 	if (entry_tips)
 	{
-		TokenizerOld tz;
+		Tokenizer tz;
 		tz.openMem((const char*)entry_tips->getData(), entry_tips->getSize(), entry_tips->getName());
 		srand(wxGetLocalTime());
 		int numtips = tz.getInteger();

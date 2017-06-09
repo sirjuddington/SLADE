@@ -29,6 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "KeyBind.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -778,7 +779,7 @@ string KeyBind::writeBinds()
 /* KeyBind::readBinds
  * Reads keybind defeinitions from tokenizer [tz]
  *******************************************************************/
-bool KeyBind::readBinds(TokenizerOld& tz)
+bool KeyBind::readBinds(Tokenizer& tz)
 {
 	// Parse until ending }
 	string name = tz.getToken();

@@ -38,7 +38,7 @@
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "Utility/MathStuff.h"
-#include "Utility/TokenizerOld.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -1243,7 +1243,7 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 		string filename = dialog_open.GetPath();
 
 		// Load file in a tokenizer
-		TokenizerOld tz;
+		Tokenizer tz;
 		tz.openFile(dialog_open.GetPath());
 
 		// Parse translation

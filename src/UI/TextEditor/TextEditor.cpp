@@ -34,6 +34,7 @@
 #include "Graphics/Icons.h"
 #include "General/KeyBind.h"
 #include "SCallTip.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -317,7 +318,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 {
 	string jump_points;
 
-	TokenizerOld tz;
+	Tokenizer tz;
 	tz.setSpecialCharacters(";,:|={}/()");
 	tz.openString(text);
 

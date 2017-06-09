@@ -93,6 +93,7 @@ public:
 	bool			skipIfNext(const char* check, int inc = 1);
 	bool			skipIfNextNC(const char* check, int inc = 1);
 	void			skipToNextLine();
+	void			skipToEndOfLine();
 	void 			skipSection(const char* begin, const char* end, bool allow_quoted = false);
 	vector<Token>	getTokensUntil(const char* end);
 	vector<Token>	getTokensUntilNC(const char* end);
@@ -120,6 +121,24 @@ public:
 	bool	isSpecialCharacter(char p) const { return VECTOR_EXISTS(special_characters_, p); }
 	bool	atEnd() const { return token_current_.pos_start == token_next_.pos_start; }
 	void	reset();
+
+	// Old tokenizer interface bridge (don't use)
+	string		getToken()
+				{ if (atEnd()) return ""; string t = token_current_.text; skip(); return t; }
+	void		getToken(string* str)
+				{ if (atEnd()) *str = ""; else *str = token_current_.text; skip(); }
+	string		peekToken() const { if (atEnd()) return ""; return token_next_.text; }
+	int			getInteger()
+				{ if (atEnd()) return 0; int v = token_current_.asInt(); skip(); return v; }
+	double		getDouble()
+				{ if (atEnd()) return 0; double v = token_current_.asFloat(); skip(); return v; }
+	double		getFloat()
+				{ if (atEnd()) return 0; double v = token_current_.asFloat(); skip(); return v; }
+	void		skipToken() { skip(); }
+	bool		checkToken(const string& cmp) { next(); return check(cmp); }
+	unsigned	lineNo() const { return token_current_.line_no; }
+	unsigned	tokenEnd() const { return token_current_.pos_end; }
+
 
 	static const string DEFAULT_SPECIAL_CHARACTERS;
 	static const Token&	invalidToken() { return invalid_token_; }

@@ -32,7 +32,7 @@
 #include "WadArchive.h"
 #include "General/UI.h"
 #include "General/Misc.h"
-#include "Utility/TokenizerOld.h"
+#include "Utility/Tokenizer.h"
 
 bool JaguarDecode(MemChunk& mc);
 
@@ -1248,12 +1248,19 @@ void WadArchive::detectIncludes()
 	// EMAPINFO: extradata = lumpname
 	// EDFROOT: lumpinclude("lumpname")
 
-	const char * lumptypes[6]  = { "DECORATE", "GLDEFS", "SBARINFO", "ZMAPINFO", "EMAPINFO", "EDFROOT" };
-	const char * entrytypes[6] = { "decorate", "gldefslump", "sbarinfo", "xlat", "extradata", "edf" };
-	const char * tokens[6] = { "#include", "#include", "#include", "translator", "extradata", "lumpinclude" };
+	static const char * lumptypes[6]  =
+	{ "DECORATE", "GLDEFS", "SBARINFO",
+		"ZMAPINFO", "EMAPINFO", "EDFROOT" };
+	static const char * entrytypes[6] =
+	{ "decorate", "gldefslump", "sbarinfo",
+		"xlat", "extradata", "edf" };
+	static const char * tokens[6] =
+	{ "#include", "#include", "#include",
+		"translator", "extradata", "lumpinclude" };
+
 	Archive::search_options_t opt;
 	opt.ignore_ext = true;
-	TokenizerOld tz;
+	Tokenizer tz;
 	tz.setSpecialCharacters(";,:|={}/()");
 
 	for (int i = 0; i < 6; ++i)
@@ -1264,24 +1271,24 @@ void WadArchive::detectIncludes()
 		{
 			for (size_t j = 0; j < entries.size(); ++j)
 			{
-				tz.openMem(&entries[j]->getMCData(), lumptypes[i]);
-				string token = tz.getToken();
-				while (token.length())
+				tz.openMem(entries[j]->getMCData(), lumptypes[i]);
+
+				while (!tz.atEnd())
 				{
-					if (token.Lower() == tokens[i])
+					if (tz.checkNC(tokens[i]))
 					{
 						if (i >= 3) // skip '=' or '('
-							tz.getToken();
-						string name = tz.getToken();
+							tz.skip();
+						string name = tz.next().text;
 						if (i == 5) // skip ')'
-							tz.getToken();
+							tz.skip();
 						opt.match_name = name;
 						ArchiveEntry * entry = findFirst(opt);
 						if (entry)
 							entry->setType(EntryType::getType(entrytypes[i]));
+						tz.skip();
 					}
-					else tz.skipLineComment();
-					token = tz.getToken();
+					else tz.skipToNextLine();
 				}
 			}
 		}

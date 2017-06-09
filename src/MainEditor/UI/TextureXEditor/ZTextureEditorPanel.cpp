@@ -36,6 +36,7 @@
 #include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -1058,7 +1059,7 @@ void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 void ZTextureEditorPanel::onTextTranslationEnter(wxCommandEvent& e)
 {
 	// Parse translation text line
-	TokenizerOld tz;
+	Tokenizer tz;
 	tz.openString(text_translation->GetValue());
 	Translation trans;
 

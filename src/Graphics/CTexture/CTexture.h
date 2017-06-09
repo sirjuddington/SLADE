@@ -2,12 +2,12 @@
 #ifndef __CTEXTURE_H__
 #define __CTEXTURE_H__
 
-#include "Utility/TokenizerOld.h"
 #include "Archive/ArchiveEntry.h"
 #include "General/ListenerAnnouncer.h"
 #include "Graphics/Translation.h"
 
 class SImage;
+class Tokenizer;
 
 // Basic patch
 class CTPatch
@@ -31,7 +31,7 @@ public:
 	void	setOffsetX(int16_t offset) { offset_x = offset; }
 	void	setOffsetY(int16_t offset) { offset_y = offset; }
 
-	virtual ArchiveEntry*	getPatchEntry(Archive* parent = NULL);
+	virtual ArchiveEntry*	getPatchEntry(Archive* parent = nullptr);
 };
 
 // Extended patch (for TEXTURES)
@@ -77,9 +77,9 @@ public:
 	void	setStyle(string s) { style = s; }
 	void	setBlendType(uint8_t type) { blendtype = type; }
 
-	ArchiveEntry*	getPatchEntry(Archive* parent = NULL);
+	ArchiveEntry*	getPatchEntry(Archive* parent = nullptr) override;
 
-	bool	parse(TokenizerOld& tz, uint8_t type = 0);
+	bool	parse(Tokenizer& tz, uint8_t type = 0);
 	string	asText();
 };
 
@@ -174,14 +174,14 @@ public:
 	bool	duplicatePatch(size_t index, int16_t offset_x = 8, int16_t offset_y = 8);
 	bool	swapPatches(size_t p1, size_t p2);
 
-	bool	parse(TokenizerOld& tz, string type);
-	bool	parseDefine(TokenizerOld& tz);
+	bool	parse(Tokenizer& tz, string type);
+	bool	parseDefine(Tokenizer& tz);
 	string	asText();
 
 	bool	convertExtended();
 	bool	convertRegular();
-	bool	loadPatchImage(unsigned pindex, SImage& image, Archive* parent = NULL, Palette8bit* pal = NULL);
-	bool	toImage(SImage& image, Archive* parent = NULL, Palette8bit* pal = NULL, bool force_rgba = false);
+	bool	loadPatchImage(unsigned pindex, SImage& image, Archive* parent = nullptr, Palette8bit* pal = nullptr);
+	bool	toImage(SImage& image, Archive* parent = nullptr, Palette8bit* pal = nullptr, bool force_rgba = false);
 
 	typedef std::unique_ptr<CTexture>	UPtr;
 	typedef std::shared_ptr<CTexture>	SPtr;

@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "SCallTip.h"
 #include "TextLanguage.h"
-#include "Utility/TokenizerOld.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -138,7 +138,7 @@ void SCallTip::loadArgSet(int set)
 	args.clear();
 	if (!function->getArgSet(set).empty())
 	{
-		TokenizerOld tz;
+		Tokenizer tz;
 		tz.setSpecialCharacters("[],");
 		tz.openString(function->getArgSet(set));
 		string token = tz.getToken();

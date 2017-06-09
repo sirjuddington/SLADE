@@ -32,6 +32,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "MainEditor/MainEditor.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -686,8 +687,8 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 	}
 
 	// Get text to parse
-	TokenizerOld tz;
-	tz.openMem(&(entry->getMCData()), entry->getName());
+	Tokenizer tz;
+	tz.openMem(entry->getMCData(), entry->getName());
 
 	// Parsing gogo
 	string token = tz.getToken();

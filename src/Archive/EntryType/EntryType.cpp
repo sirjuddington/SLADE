@@ -30,7 +30,6 @@
 #include "App.h"
 #include "MainEditor/MainEditor.h"
 #include "EntryType.h"
-#include "Utility/TokenizerOld.h"
 #include "General/Console/Console.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
