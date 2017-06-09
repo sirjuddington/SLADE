@@ -782,16 +782,16 @@ string KeyBind::writeBinds()
 bool KeyBind::readBinds(Tokenizer& tz)
 {
 	// Parse until ending }
-	string name = tz.getToken();
-	while (name != "}" && !tz.atEnd())
+	while (!tz.checkOrEnd("}"))
 	{
 		// Clear any current binds for the key
+		string name = tz.current().text;
 		getBind(name).keys.clear();
 
 		// Read keys
-		while (1)
+		while (true)
 		{
-			string keystr = tz.getToken();
+			string keystr = tz.next().text;
 
 			// Finish if no keys are bound
 			if (keystr == "unbound")
@@ -811,14 +811,12 @@ bool KeyBind::readBinds(Tokenizer& tz)
 			addBind(name, keypress_t(key, mods.Find('a') >= 0, mods.Find('c') >= 0, mods.Find('s') >= 0));
 
 			// Check for more keys
-			if (tz.peekToken() == ",")
-				tz.getToken();			// Skip ,
-			else
+			if (!tz.skipIfNext(","))
 				break;
 		}
 
 		// Next keybind
-		name = tz.getToken();
+		tz.skip();
 	}
 
 	// Create sorted list

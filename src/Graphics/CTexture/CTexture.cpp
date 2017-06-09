@@ -222,50 +222,46 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 {
 	// Read basic info
 	this->type = type;
-	name = tz.getToken().Upper();
-	tz.skipToken();	// Skip ,
-	offset_x = tz.getInteger();
-	tz.skipToken();	// Skip ,
-	offset_y = tz.getInteger();
+	name = tz.next().text.Upper();
+	tz.skip();	// Skip ,
+	offset_x = tz.next().asInt();
+	tz.skip();	// Skip ,
+	offset_y = tz.next().asInt();
 
 	// Check if there is any extended info
-	if (tz.peekToken() == "{")
+	if (tz.skipIfNext("{", 2))
 	{
-		// Skip {
-		tz.skipToken();
-
 		// Parse extended info
-		string property = tz.getToken();
-		while (property != "}")
+		while (!tz.checkOrEnd("}"))
 		{
 			// FlipX
-			if (S_CMPNOCASE(property, "FlipX"))
+			if (tz.checkNC("FlipX"))
 				flip_x = true;
 
 			// FlipY
-			if (S_CMPNOCASE(property, "FlipY"))
+			if (tz.checkNC("FlipY"))
 				flip_y = true;
 
 			// UseOffsets
-			if (S_CMPNOCASE(property, "UseOffsets"))
+			if (tz.checkNC("UseOffsets"))
 				use_offsets = true;
 
 			// Rotate
-			if (S_CMPNOCASE(property, "Rotate"))
-				rotation = tz.getInteger();
+			if (tz.checkNC("Rotate"))
+				rotation = tz.next().asInt();
 
 			// Translation
-			if (S_CMPNOCASE(property, "Translation"))
+			if (tz.checkNC("Translation"))
 			{
 				// Build translation string
 				string translate;
-				string temp = tz.getToken();
+				string temp = tz.next().text;
 				if (temp.Contains("=")) temp = S_FMT("\"%s\"", temp);
 				translate += temp;
-				while (tz.peekToken() == ",")
+				while (tz.checkNext(","))
 				{
-					translate += tz.getToken(); // add ','
-					temp = tz.getToken();
+					translate += tz.next().text; // add ','
+					temp = tz.next().text;
 					if (temp.Contains("=")) temp = S_FMT("\"%s\"", temp);
 					translate += temp;
 				}
@@ -275,17 +271,17 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 			}
 
 			// Blend
-			if (S_CMPNOCASE(property, "Blend"))
+			if (tz.checkNC("Blend"))
 			{
 				double val;
 				wxColour col;
 				blendtype = 2;
 
 				// Read first value
-				string first = tz.getToken();
+				string first = tz.next().text;
 
 				// If no second value, it's just a colour string
-				if (tz.peekToken() != ",")
+				if (!tz.checkNext(","))
 				{
 					col.Set(first);
 					colour.set(COLWX(col));
@@ -293,11 +289,11 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 				else
 				{
 					// Second value could be alpha or green
-					tz.skipToken();	// Skip ,
-					double second = tz.getDouble();
+					tz.skip();	// Skip ,
+					double second = tz.next().asFloat();
 
 					// If no third value, it's an alpha value
-					if (tz.peekToken() != ",")
+					if (!tz.checkNext(","))
 					{
 						col.Set(first);
 						colour.set(COLWX(col), second*255);
@@ -307,33 +303,36 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 					{
 						// Third value exists, must be R,G,B,A format
 						// RGB are ints in the 0-255 range; A is float in the 0.0-1.0 range
-						tz.skipToken();	// Skip ,
+						tz.skip();	// Skip ,
 						first.ToDouble(&val);
 						colour.r = val;
 						colour.g = second;
-						colour.b = tz.getInteger();
-						if (tz.peekToken() != ",")
+						colour.b = tz.next().asInt();
+						if (!tz.checkNext(","))
 						{
-							LOG_MESSAGE(1, "Invalid TEXTURES definition, expected ',', got '%s'", tz.getToken());
+							Log::error(S_FMT(
+								"Invalid TEXTURES definition, expected ',', got '%s'",
+								tz.peek().text
+							));
 							return false;
 						}
-						tz.skipToken();	// Skip ,
-						colour.a = tz.getDouble()*255;
+						tz.skip();	// Skip ,
+						colour.a = tz.next().asFloat()*255;
 						blendtype = 3;
 					}
 				}
 			}
 
 			// Alpha
-			if (S_CMPNOCASE(property, "Alpha"))
-				alpha = tz.getFloat();
+			if (tz.checkNC("Alpha"))
+				alpha = tz.next().asFloat();
 
 			// Style
-			if (S_CMPNOCASE(property, "Style"))
-				style = tz.getToken();
+			if (tz.checkNC("Style"))
+				style = tz.next().text;
 
 			// Read next property name
-			property = tz.getToken();
+			tz.skip();
 		}
 	}
 
@@ -712,68 +711,65 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 bool CTexture::parse(Tokenizer& tz, string type)
 {
 	// Check if optional
-	if (S_CMPNOCASE(tz.peekToken(), "optional"))
-	{
-		tz.getToken();	// Skip it
+	if (tz.skipIfNext("optional"))
 		optional = true;
-	}
 
 	// Read basic info
 	this->type = type;
 	this->extended = true;
 	this->defined = false;
-	name = tz.getToken().Upper();
-	tz.skipToken();	// Skip ,
-	width = tz.getInteger();
-	tz.skipToken();	// Skip ,
-	height = tz.getInteger();
+	name = tz.next().text.Upper();
+	tz.skip();	// Skip ,
+	width = tz.next().asInt();
+	tz.skip();	// Skip ,
+	height = tz.next().asInt();
 
 	// Check for extended info
-	if (tz.peekToken() == "{")
+	if (tz.skipIfNext("{", 2))
 	{
-		tz.skipToken();	// Skip {
-
 		// Read properties
-		string property = tz.getToken();
-		while (property != "}")
+		while (!tz.check("}"))
 		{
 			// Check if end of text is reached (error)
-			if (property.IsEmpty())
+			if (tz.atEnd())
 			{
-				LOG_MESSAGE(1, "Error parsing texture %s: End of text found, missing } perhaps?", name);
+				Log::error(S_FMT(
+					"Error parsing texture %s: End of text found, missing } perhaps?",
+					name
+				));
 				return false;
 			}
 
 			// XScale
-			if (S_CMPNOCASE(property, "XScale"))
-				scale_x = tz.getFloat();
+			if (tz.checkNC("XScale"))
+				scale_x = tz.next().asFloat();
 
 			// YScale
-			if (S_CMPNOCASE(property, "YScale"))
-				scale_y = tz.getFloat();
+			else if (tz.checkNC("YScale"))
+				scale_y = tz.next().asFloat();
 
 			// Offset
-			if (S_CMPNOCASE(property, "Offset"))
+			else if (tz.checkNC("Offset"))
 			{
-				offset_x = tz.getInteger();
+				offset_x = tz.next().asInt();
 				tz.skipToken();	// Skip ,
-				offset_y = tz.getInteger();
+				offset_y = tz.next().asInt();
 			}
 
 			// WorldPanning
-			if (S_CMPNOCASE(property, "WorldPanning"))
+			else if (tz.checkNC("WorldPanning"))
 				world_panning = true;
 
 			// NoDecals
-			if (S_CMPNOCASE(property, "NoDecals"))
+			else if (tz.checkNC("NoDecals"))
 				no_decals = true;
 
 			// NullTexture
-			if (S_CMPNOCASE(property, "NullTexture"))
+			else if (tz.checkNC("NullTexture"))
 				null_texture = true;
 
 			// Patch
-			if (S_CMPNOCASE(property, "Patch"))
+			else if (tz.checkNC("Patch"))
 			{
 				CTPatchEx* patch = new CTPatchEx();
 				patch->parse(tz);
@@ -781,7 +777,7 @@ bool CTexture::parse(Tokenizer& tz, string type)
 			}
 
 			// Graphic
-			if (S_CMPNOCASE(property, "Graphic"))
+			else if (tz.checkNC("Graphic"))
 			{
 				CTPatchEx* patch = new CTPatchEx();
 				patch->parse(tz, PTYPE_GRAPHIC);
@@ -789,7 +785,7 @@ bool CTexture::parse(Tokenizer& tz, string type)
 			}
 
 			// Read next property
-			property = tz.getToken();
+			tz.skip();
 		}
 	}
 
@@ -804,9 +800,9 @@ bool CTexture::parseDefine(Tokenizer& tz)
 	this->type = "Define";
 	this->extended = true;
 	this->defined = true;
-	name = tz.getToken().Upper();
-	def_width = tz.getInteger();
-	def_height = tz.getInteger();
+	name = tz.next().text.Upper();
+	def_width = tz.next().asInt();
+	def_height = tz.next().asInt();
 	width = def_width;
 	height = def_height;
 	ArchiveEntry* entry = theResourceManager->getPatchEntry(name);

@@ -433,6 +433,24 @@ string Tokenizer::getLine(bool from_start)
 	return line;
 }
 
+bool Tokenizer::checkOrEnd(const char* check) const
+{
+	// At end, return true
+	if (token_next_.pos_start == token_current_.pos_start)
+		return true;
+
+	return token_current_ == check;
+}
+
+bool Tokenizer::checkOrEndNC(const char* check) const
+{
+	// At end, return true
+	if (token_next_.pos_start == token_current_.pos_start)
+		return true;
+
+	return S_CMPNOCASE(token_current_.text, check);
+}
+
 // ----------------------------------------------------------------------------
 // Tokenizer::checkNext
 //

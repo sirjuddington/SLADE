@@ -102,7 +102,9 @@ public:
 
 	// Token Checking
 	bool	check(const char* check) const { return token_current_ == check; }
+	bool	checkOrEnd(const char* check) const;
 	bool	checkNC(const char* check) const { return S_CMPNOCASE(token_current_.text, check); }
+	bool	checkOrEndNC(const char* check) const;
 	bool	checkNext(const char* check) const;
 	bool	checkNextNC(const char* check) const;
 
