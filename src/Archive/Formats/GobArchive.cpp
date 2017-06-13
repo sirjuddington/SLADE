@@ -46,11 +46,11 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* GobArchive::GobArchive
  * GobArchive class constructor
  *******************************************************************/
-GobArchive::GobArchive() : TreelessArchive(ARCHIVE_GOB)
+GobArchive::GobArchive() : TreelessArchive("gob")
 {
-	desc.max_name_length = 12;
-	desc.names_extensions = false;
-	desc.supports_dirs = false;
+	//desc.max_name_length = 12;
+	//desc.names_extensions = false;
+	//desc.supports_dirs = false;
 }
 
 /* GobArchive::~GobArchive

@@ -45,10 +45,10 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* PakArchive::PakArchive
  * PakArchive class constructor
  *******************************************************************/
-PakArchive::PakArchive() : Archive(ARCHIVE_PAK)
+PakArchive::PakArchive() : Archive("pak")
 {
-	desc.max_name_length = 56;
-	desc.supports_dirs = true;
+	//desc.max_name_length = 56;
+	//desc.supports_dirs = true;
 }
 
 /* PakArchive::~PakArchive

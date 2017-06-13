@@ -508,9 +508,9 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	Archive* base = theArchiveManager->baseResourceArchive();
 	if (base)
 	{
-		if (base->getType() == ARCHIVE_WAD)
+		if (base->getType() == "wad")
 			cmd += S_FMT(" -resource wad \"%s\"", base->getFilename());
-		else if (base->getType() == ARCHIVE_ZIP)
+		else if (base->getType() == "zip")
 			cmd += S_FMT(" -resource pk3 \"%s\"", base->getFilename());
 	}
 
@@ -520,9 +520,9 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 		Archive* archive = theArchiveManager->getArchive(a);
 
 		// Check archive type (only wad and zip supported by db2)
-		if (archive->getType() == ARCHIVE_WAD)
+		if (archive->getType() == "wad")
 			cmd += S_FMT(" -resource wad \"%s\"", archive->getFilename());
-		else if (archive->getType() == ARCHIVE_ZIP)
+		else if (archive->getType() == "zip")
 			cmd += S_FMT(" -resource pk3 \"%s\"", archive->getFilename());
 	}
 

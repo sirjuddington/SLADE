@@ -101,11 +101,11 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* WadArchive::WadArchive
  * WadArchive class constructor
  *******************************************************************/
-WadArchive::WadArchive() : TreelessArchive(ARCHIVE_WAD)
+WadArchive::WadArchive() : TreelessArchive("wad")
 {
 	// Init variables
-	desc.max_name_length = 8;
-	desc.names_extensions = false;
+	//desc.max_name_length = 8;
+	//desc.names_extensions = false;
 	iwad = false;
 }
 

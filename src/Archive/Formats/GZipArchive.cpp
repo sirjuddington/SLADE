@@ -54,10 +54,10 @@
 /* GZipArchive::GZipArchive
  * GZipArchive class constructor
  *******************************************************************/
-GZipArchive::GZipArchive() : TreelessArchive(ARCHIVE_GZIP)
+GZipArchive::GZipArchive() : TreelessArchive("gzip")
 {
-	desc.names_extensions = true;
-	desc.supports_dirs = true;
+	//desc.names_extensions = true;
+	//desc.supports_dirs = true;
 }
 
 /* GZipArchive::~GZipArchive

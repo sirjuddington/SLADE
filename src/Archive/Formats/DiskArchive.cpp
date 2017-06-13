@@ -56,11 +56,11 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* DiskArchive::DiskArchive
  * DiskArchive class constructor
  *******************************************************************/
-DiskArchive::DiskArchive() : Archive(ARCHIVE_DISK)
+DiskArchive::DiskArchive() : Archive("disk")
 {
-	desc.max_name_length = 64;
-	desc.names_extensions = true;
-	desc.supports_dirs = true;
+	//desc.max_name_length = 64;
+	//desc.names_extensions = true;
+	//desc.supports_dirs = true;
 }
 
 /* DiskArchive::~DiskArchive

@@ -48,10 +48,10 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* ZipArchive::ZipArchive
  * ZipArchive class constructor
  *******************************************************************/
-ZipArchive::ZipArchive() : Archive(ARCHIVE_ZIP)
+ZipArchive::ZipArchive() : Archive("zip")
 {
-	desc.names_extensions = true;
-	desc.supports_dirs = true;
+	//desc.names_extensions = true;
+	//desc.supports_dirs = true;
 }
 
 /* ZipArchive::~ZipArchive

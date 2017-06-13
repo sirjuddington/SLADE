@@ -33,6 +33,7 @@
 #include "General/Misc.h"
 #include "General/UndoRedo.h"
 #include "General/Clipboard.h"
+#include "Utility/Parser.h"
 
 /* Archive Directory Layout:
  * ---------------------
@@ -56,6 +57,7 @@
 CVAR(Bool, archive_load_data, false, CVAR_SAVE)
 CVAR(Bool, backup_archives, true, CVAR_SAVE)
 bool Archive::save_backup = true;
+vector<ArchiveFormat> Archive::formats;
 
 
 /*******************************************************************
@@ -780,17 +782,16 @@ public:
 /* Archive::Archive
  * Archive class constructor
  *******************************************************************/
-Archive::Archive(uint8_t type)
+Archive::Archive(string format) :
+	format{ format },
+	modified{ true },
+	on_disk{ false },
+	parent{ nullptr },
+	read_only{ false },
+	dir_root{ std::make_unique<ArchiveTreeNode>() }
 {
-	// Init variables
-	desc.type = type;
-	modified = true;
-	on_disk = false;
-	parent = nullptr;
-	read_only = false;
-
 	// Create root directory
-	dir_root = new ArchiveTreeNode();
+	//dir_root = new ArchiveTreeNode();
 	dir_root->archive = this;
 }
 
@@ -799,10 +800,20 @@ Archive::Archive(uint8_t type)
  *******************************************************************/
 Archive::~Archive()
 {
-	if (dir_root)
-		delete dir_root;
 	if (parent)
 		parent->unlock();
+}
+
+/* Archive::~getDesc
+ * Returns the ArchiveFormat descriptor for this archive
+ *******************************************************************/
+ArchiveFormat Archive::getDesc()
+{
+	for (auto fmt : formats)
+		if (fmt.id == format)
+			return fmt;
+
+	return ArchiveFormat("unknown");
 }
 
 /* Archive::getFilename
@@ -919,7 +930,7 @@ ArchiveEntry* Archive::getEntry(string name, bool cut_ext, ArchiveTreeNode* dir)
 {
 	// Check if dir was given
 	if (!dir)
-		dir = dir_root;	// None given, use root
+		dir = dir_root.get();	// None given, use root
 
 	return dir->getEntry(name, cut_ext);
 }
@@ -932,7 +943,7 @@ ArchiveEntry* Archive::getEntry(unsigned index, ArchiveTreeNode* dir)
 {
 	// Check if dir was given
 	if (!dir)
-		dir = dir_root;	// None given, use root
+		dir = dir_root.get();	// None given, use root
 
 	return dir->getEntry(index);
 }
@@ -945,7 +956,7 @@ int	Archive::entryIndex(ArchiveEntry* entry, ArchiveTreeNode* dir)
 {
 	// Check if dir was given
 	if (!dir)
-		dir = dir_root;	// None given, use root
+		dir = dir_root.get();	// None given, use root
 
 	return dir->entryIndex(entry);
 }
@@ -1104,10 +1115,11 @@ void Archive::close()
 	announce("closing");
 
 	// Delete root directory
-	delete dir_root;
+	//delete dir_root.get();
 
 	// Recreate root directory
-	dir_root = new ArchiveTreeNode();
+	//dir_root = new ArchiveTreeNode();
+	dir_root = std::make_unique<ArchiveTreeNode>();
 	dir_root->archive = this;
 
 	// Unlock parent entry if it exists
@@ -1152,10 +1164,10 @@ void Archive::getEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveTreeNode* s
 {
 	// If no start dir is specified, use the root dir
 	if (!start)
-		start = dir_root;
+		start = dir_root.get();
 
 	// Add the directory entry to the list if it isn't the root dir
-	if (start != dir_root)
+	if (start != dir_root.get())
 		list.push_back(start->dir_entry.get());
 
 	// Add all entries to the list
@@ -1174,10 +1186,10 @@ void Archive::getEntryTreeAsList(vector<ArchiveEntry::SPtr>& list, ArchiveTreeNo
 {
 	// If no start dir is specified, use the root dir
 	if (!start)
-		start = dir_root;
+		start = dir_root.get();
 
 	// Add the directory entry to the list if it isn't the root dir
-	if (start != dir_root)
+	if (start != dir_root.get())
 		list.push_back(start->dir_entry);
 
 	// Add all entries to the list
@@ -1222,11 +1234,11 @@ ArchiveTreeNode* Archive::getDir(string path, ArchiveTreeNode* base)
 	if (!base)
 	{
 		// None given, use root
-		base = dir_root;
+		base = dir_root.get();
 
 		// If empty directory, just return the root
 		if (path == "/" || path == "")
-			return dir_root;
+			return dir_root.get();
 
 		// Remove starting '/'
 		if (path.StartsWith("/"))
@@ -1246,11 +1258,11 @@ ArchiveTreeNode* Archive::createDir(string path, ArchiveTreeNode* base)
 {
 	// Abort if read only
 	if (read_only)
-		return dir_root;
+		return dir_root.get();
 
 	// If no base dir specified, set it to root
 	if (!base)
-		base = dir_root;
+		base = dir_root.get();
 
 	if (path.IsEmpty())
 		return base;
@@ -1366,7 +1378,7 @@ ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveT
 
 	// If no dir given, set it to the root dir
 	if (!dir)
-		dir = dir_root;
+		dir = dir_root.get();
 
 	// Make a copy of the entry to add if needed
 	if (copy)
@@ -1503,7 +1515,7 @@ bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveTreeNode* dir
 {
 	// Get directory
 	if (!dir)
-		dir = dir_root;
+		dir = dir_root.get();
 
 	// Check if either entry is locked
 	if (dir->getEntry(index1)->isLocked() || dir->getEntry(index2)->isLocked())
@@ -1614,7 +1626,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode*
 
 	// If no destination dir specified, use root
 	if (!dir)
-		dir = dir_root;
+		dir = dir_root.get();
 
 	// Remove the entry from its current dir
 	auto sptr = dir->getEntryShared(dir->entryIndex(entry)); // Get a shared pointer so it isn't deleted
@@ -1786,7 +1798,7 @@ ArchiveEntry* Archive::findFirst(search_options_t& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = options.dir;
-	if (!dir) dir = dir_root;
+	if (!dir) dir = dir_root.get();
 	options.match_name.MakeLower();		// Force case-insensitive
 
 	// Begin search
@@ -1860,7 +1872,7 @@ ArchiveEntry* Archive::findLast(search_options_t& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = options.dir;
-	if (!dir) dir = dir_root;
+	if (!dir) dir = dir_root.get();
 	options.match_name.MakeLower();		// Force case-insensitive
 
 	// Begin search
@@ -1934,7 +1946,7 @@ vector<ArchiveEntry*> Archive::findAll(search_options_t& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = options.dir;
-	if (!dir) dir = dir_root;
+	if (!dir) dir = dir_root.get();
 	vector<ArchiveEntry*> ret;
 	options.match_name.MakeLower();		// Force case-insensitive
 
@@ -2000,7 +2012,6 @@ vector<ArchiveEntry*> Archive::findAll(search_options_t& options)
 	return ret;
 }
 
-
 /* Archive::findModifiedEntries
  * Returns a list of modified entries, and set archive to unmodified
  * status if the list is empty
@@ -2008,7 +2019,7 @@ vector<ArchiveEntry*> Archive::findAll(search_options_t& options)
 vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveTreeNode* dir)
 {
 	// Init search variables
-	if (dir == nullptr) dir = dir_root;
+	if (dir == nullptr) dir = dir_root.get();
 	vector<ArchiveEntry*> ret;
 
 	// Search entries
@@ -2035,6 +2046,83 @@ vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveTreeNode* dir)
 	// Return matches
 	return ret;
 }
+
+
+/*******************************************************************
+ * ARCHIVE CLASS STATIC FUNCTIONS
+ *******************************************************************/
+
+/* Archive::loadFormats
+ * Reads archive formats configuration file from [mc]
+ *******************************************************************/
+bool Archive::loadFormats(MemChunk& mc)
+{
+	Parser parser;
+	if (!parser.parseText(mc))
+		return false;
+
+	auto root = parser.parseTreeRoot();
+	auto formats_node = root->getChild("archive_formats");
+	for (unsigned a = 0; a < formats_node->nChildren(); a++)
+	{
+		auto fmt_desc = (ParseTreeNode*)formats_node->getChild(a);
+		ArchiveFormat fmt{ fmt_desc->getName() };
+
+		for (unsigned p = 0; p < fmt_desc->nChildren(); p++)
+		{
+			auto prop = (ParseTreeNode*)fmt_desc->getChild(p);
+
+			// Format name
+			if (S_CMPNOCASE(prop->getName(), "name"))
+				fmt.name = prop->stringValue();
+
+			// Supports dirs
+			else if (S_CMPNOCASE(prop->getName(), "supports_dirs"))
+				fmt.supports_dirs = prop->boolValue();
+
+			// Entry names have extensions
+			else if (S_CMPNOCASE(prop->getName(), "names_extensions"))
+				fmt.names_extensions = prop->boolValue();
+
+			// Max entry name length
+			else if (S_CMPNOCASE(prop->getName(), "max_name_length"))
+				fmt.max_name_length = prop->intValue();
+
+			// Entry format (id)
+			else if (S_CMPNOCASE(prop->getName(), "entry_format"))
+				fmt.entry_format = prop->stringValue();
+
+			// Extensions
+			else if (S_CMPNOCASE(prop->getName(), "extensions"))
+			{
+				for (unsigned e = 0; e < prop->nChildren(); e++)
+				{
+					auto ext = (ParseTreeNode*)prop->getChild(e);
+					fmt.extensions.push_back({ ext->getName(), ext->stringValue() });
+				}
+			}
+		}
+
+		LOG_MESSAGE(3, "Read archive format %s: \"%s\"", fmt.id, fmt.name);
+		if (fmt.supports_dirs) { LOG_MESSAGE(3, "  Supports folders"); }
+		if (fmt.names_extensions) { LOG_MESSAGE(3, "  Entry names have extensions"); }
+		if (fmt.max_name_length >= 0) { LOG_MESSAGE(3, "  Max entry name length: %d", fmt.max_name_length); }
+		for (auto ext : fmt.extensions)
+			LOG_MESSAGE(3, "  Extension \"%s\" = \"%s\"", ext.key, ext.value);
+
+		formats.push_back(fmt);
+	}
+
+	// Add builtin 'folder' format
+	ArchiveFormat fmt_folder("folder");
+	fmt_folder.name = "Folder";
+	fmt_folder.names_extensions = true;
+	fmt_folder.supports_dirs = true;
+	formats.push_back(fmt_folder);
+
+	return true;
+}
+
 
 /*******************************************************************
  * TREELESSARCHIVE CLASS FUNCTIONS

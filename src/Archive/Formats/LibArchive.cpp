@@ -44,11 +44,11 @@
  * LibArchive class constructor
  *******************************************************************/
 LibArchive::LibArchive()
-	: TreelessArchive(ARCHIVE_LIB)
+	: TreelessArchive("lib")
 {
-	desc.max_name_length = 12;
-	desc.names_extensions = false;
-	desc.supports_dirs = false;
+	//desc.max_name_length = 12;
+	//desc.names_extensions = false;
+	//desc.supports_dirs = false;
 }
 
 /* LibArchive::~LibArchive

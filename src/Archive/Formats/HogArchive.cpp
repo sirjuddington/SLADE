@@ -107,11 +107,11 @@ bool ShouldEncodeTXB(string name)
 /* HogArchive::HogArchive
  * HogArchive class constructor
  *******************************************************************/
-HogArchive::HogArchive() : TreelessArchive(ARCHIVE_HOG)
+HogArchive::HogArchive() : TreelessArchive("hog")
 {
-	desc.max_name_length = 13;
-	desc.names_extensions = false;
-	desc.supports_dirs = false;
+	//desc.max_name_length = 13;
+	//desc.names_extensions = false;
+	//desc.supports_dirs = false;
 }
 
 /* HogArchive::~HogArchive

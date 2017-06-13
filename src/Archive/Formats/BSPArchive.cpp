@@ -53,7 +53,7 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* BSPArchive::BSPArchive
  * BSPArchive class constructor
  *******************************************************************/
-BSPArchive::BSPArchive() : Archive(ARCHIVE_BSP)
+BSPArchive::BSPArchive() : Archive("bsp")
 {
 }
 

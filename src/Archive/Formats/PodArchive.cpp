@@ -49,7 +49,7 @@ EXTERN_CVAR(Bool, wad_force_uppercase)
 /* PodArchive::PodArchive
  * PodArchive class constructor
  *******************************************************************/
-PodArchive::PodArchive() : Archive(ARCHIVE_POD)
+PodArchive::PodArchive() : Archive("pod")
 {
 	// Blank id
 	memset(id, 0, 80);
@@ -391,7 +391,7 @@ bool PodArchive::isPodArchive(string filename)
 CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
 	Archive* archive = MainEditor::currentArchive();
-	if (archive && archive->getType() == ARCHIVE_POD)
+	if (archive && archive->getType() == "pod")
 		Log::console(((PodArchive*)archive)->getId());
 	else
 		Log::console("Current tab is not a POD archive");
@@ -401,7 +401,7 @@ CONSOLE_COMMAND(pod_get_id, 0, 1)
 CONSOLE_COMMAND(pod_set_id, 1, true)
 {
 	Archive* archive = MainEditor::currentArchive();
-	if (archive && archive->getType() == ARCHIVE_POD)
+	if (archive && archive->getType() == "pod")
 		((PodArchive*)archive)->setId(args[0].Truncate(80));
 	else
 		Log::console("Current tab is not a POD archive");

@@ -322,7 +322,7 @@ void ExpandWolfGraphLump (ArchiveEntry* entry, size_t lumpnum, size_t numlumps, 
  * WolfArchive class constructor
  *******************************************************************/
 WolfArchive::WolfArchive()
-	: TreelessArchive(ARCHIVE_WOLF)
+	: TreelessArchive("wolf")
 {
 }
 

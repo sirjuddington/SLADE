@@ -46,10 +46,8 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* SiNArchive::SiNArchive
  * SiNArchive class constructor
  *******************************************************************/
-SiNArchive::SiNArchive() : Archive(ARCHIVE_SIN)
+SiNArchive::SiNArchive() : Archive("sin")
 {
-	desc.max_name_length = 120;
-	desc.supports_dirs = true;
 }
 
 /* SiNArchive::~SiNArchive

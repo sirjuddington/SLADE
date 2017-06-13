@@ -921,8 +921,7 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 		string rs = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
-		SActionHandler::setWxIdOffset(index);
-		SActionHandler::doAction("aman_recent");
+		SActionHandler::doAction("aman_recent", index);
 		createStartPage();
 	}
 	else if (href.StartsWith("action://"))

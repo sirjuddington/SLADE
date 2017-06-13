@@ -50,7 +50,7 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* DirArchive::DirArchive
  * DirArchive class constructor
  *******************************************************************/
-DirArchive::DirArchive() : Archive(ARCHIVE_FOLDER)
+DirArchive::DirArchive() : Archive("folder")
 {
 	// Setup separator character
 #ifdef WIN32
@@ -59,8 +59,8 @@ DirArchive::DirArchive() : Archive(ARCHIVE_FOLDER)
 	separator = "/";
 #endif
 	// Init variables
-	desc.names_extensions = true;
-	desc.supports_dirs = true;
+	//desc.names_extensions = true;
+	//desc.supports_dirs = true;
 }
 
 /* DirArchive::~DirArchive

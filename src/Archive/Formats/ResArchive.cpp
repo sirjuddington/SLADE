@@ -44,10 +44,10 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* ResArchive::ResArchive
  * ResArchive class constructor
  *******************************************************************/
-ResArchive::ResArchive() : Archive(ARCHIVE_RES)
+ResArchive::ResArchive() : Archive("res")
 {
 	// Init variables
-	desc.supports_dirs = true;
+	//desc.supports_dirs = true;
 }
 
 /* ResArchive::~ResArchive

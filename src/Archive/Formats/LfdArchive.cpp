@@ -46,11 +46,11 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* LfdArchive::LfdArchive
  * LfdArchive class constructor
  *******************************************************************/
-LfdArchive::LfdArchive() : TreelessArchive(ARCHIVE_LFD)
+LfdArchive::LfdArchive() : TreelessArchive("lfd")
 {
-	desc.max_name_length = 8;
-	desc.names_extensions = false;
-	desc.supports_dirs = false;
+	//desc.max_name_length = 8;
+	//desc.names_extensions = false;
+	//desc.supports_dirs = false;
 }
 
 /* LfdArchive::~LfdArchive

@@ -24,7 +24,8 @@ private:
 	vector<ArchiveEntry*>	bookmarks;
 	static ArchiveManager*	instance;
 
-	void		getDependentArchivesInternal(Archive* archive, vector<Archive*>& vec);
+	bool	initArchiveFormats();
+	void	getDependentArchivesInternal(Archive* archive, vector<Archive*>& vec);
 
 public:
 	ArchiveManager();
@@ -57,7 +58,7 @@ public:
 	Archive*	openArchive(string filename, bool manage = true, bool silent = false);
 	Archive*	openArchive(ArchiveEntry* entry, bool manage = true, bool silent = false);
 	Archive*	openDirArchive(string dir, bool manage = true, bool silent = false);
-	Archive*	newArchive(uint8_t type);
+	Archive*	newArchive(string format);
 	Archive*	createTemporaryArchive();
 	bool		closeArchive(int index);
 	bool		closeArchive(string filename);
@@ -100,6 +101,9 @@ public:
 	bool			deleteBookmarksInDir(ArchiveTreeNode* node);
 	ArchiveEntry*	getBookmark(unsigned index);
 	unsigned		numBookmarks() { return bookmarks.size(); }
+
+	// Formats
+	ArchiveFormat&	archiveFormat(string id);
 
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 };

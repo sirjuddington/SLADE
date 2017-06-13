@@ -48,7 +48,7 @@ EXTERN_CVAR(Bool, wad_force_uppercase)
 /* Wad2Archive::Wad2Archive
  * Wad2Archive class constructor
  *******************************************************************/
-Wad2Archive::Wad2Archive() : TreelessArchive(ARCHIVE_WAD2)
+Wad2Archive::Wad2Archive() : TreelessArchive("wad2")
 {
 	// Init variables
 	wad3 = false;

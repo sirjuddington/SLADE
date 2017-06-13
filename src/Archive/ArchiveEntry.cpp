@@ -627,7 +627,7 @@ bool ArchiveEntry::isInNamespace(string ns)
 		return false;
 
 	// Some special cases first
-	if (ns == "graphics" && getParent()->getType() == ARCHIVE_WAD)
+	if (ns == "graphics" && getParent()->getType() == "wad")
 		ns = "global";	// Graphics namespace doesn't exist in wad files, use global instead
 
 	return getParent()->detectNamespace(this) == ns;

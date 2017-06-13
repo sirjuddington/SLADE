@@ -54,65 +54,38 @@ public:
 	bool				merge(ArchiveTreeNode* node, unsigned position = 0xFFFFFFFF, int state = 2);
 
 	bool	exportTo(string path);
+
+	typedef	std::unique_ptr<ArchiveTreeNode> Ptr;
 };
 
-// Define archive types
-enum ArchiveTypes
+struct ArchiveFormat
 {
-	ARCHIVE_INVALID = 0,
-	ARCHIVE_WAD,
-	ARCHIVE_ZIP,
-	ARCHIVE_LIB,
-	ARCHIVE_DAT,
-	ARCHIVE_RES,
-	ARCHIVE_WAD2,
-	ARCHIVE_WAD3,
-	ARCHIVE_PAK,
-	ARCHIVE_BSP,
-	ARCHIVE_GRP,
-	ARCHIVE_RFF,
-	ARCHIVE_WOLF,
-	ARCHIVE_GOB,
-	ARCHIVE_LFD,
-	ARCHIVE_HOG,
-	ARCHIVE_HOG2,
-	ARCHIVE_PIG,
-	ARCHIVE_MVL,
-	ARCHIVE_ADAT,
-	ARCHIVE_TAR,
-	ARCHIVE_GZIP,
-	ARCHIVE_BZ2,
-	ARCHIVE_7Z,
-	ARCHIVE_DISK,
-	ARCHIVE_FOLDER,
-	ARCHIVE_POD,
-	ARCHIVE_CHASM_BIN,
-	ARCHIVE_SIN,
-};
-
-struct archive_desc_t
-{
-	uint8_t	type;				// See ArchiveTypes enum
+	string	id;
+	string	name;
 	bool	supports_dirs;
 	bool	names_extensions;
 	int		max_name_length;
+	string	entry_format;
+	vector<key_value_t>	extensions;
 
-	archive_desc_t()
-	{
-		supports_dirs = false;
-		names_extensions = true;
-		max_name_length = -1;
-	}
+	ArchiveFormat(string id) :
+		id{ id },
+		name{ id },
+		supports_dirs{ false },
+		names_extensions{ true },
+		max_name_length{ -1 } {}
 };
 
 class Archive : public Announcer
 {
 private:
-	bool				modified;
-	ArchiveTreeNode*	dir_root;
+	bool					modified;
+	ArchiveTreeNode::Ptr	dir_root;
+
+	static vector<ArchiveFormat>	formats;
 
 protected:
-	archive_desc_t		desc;
+	string			format;
 	string			filename;
 	ArchiveEntry*	parent;
 	bool			on_disk;	// Specifies whether the archive exists on disk (as opposed to being newly created)
@@ -139,15 +112,15 @@ public:
 
 	static bool	save_backup;
 
-	Archive(uint8_t type = ARCHIVE_INVALID);
+	Archive(string format = "");
 	virtual ~Archive();
 
-	archive_desc_t		getDesc() { return desc; }
-	uint8_t				getType() { return desc.type; }
+	ArchiveFormat		getDesc();// { return desc; }
+	string				getType() { return format; }
 	string				getFilename(bool full = true);
 	ArchiveEntry*		getParent() { return parent; }
 	Archive*			getParentArchive() { return (parent ? parent->getParent() : NULL); }
-	ArchiveTreeNode*	getRoot() { return dir_root; }
+	ArchiveTreeNode*	getRoot() { return dir_root.get(); }
 	bool				isModified() { return modified; }
 	bool				isOnDisk() { return on_disk; }
 	bool				isReadOnly() { return read_only; }
@@ -243,13 +216,17 @@ public:
 	virtual ArchiveEntry*			findLast(search_options_t& options);
 	virtual vector<ArchiveEntry*>	findAll(search_options_t& options);
 	virtual vector<ArchiveEntry*>	findModifiedEntries(ArchiveTreeNode* dir = NULL);
+
+	// Static functions
+	static bool						loadFormats(MemChunk& mc);
+	static vector<ArchiveFormat>&	allFormats() { return formats; }
 };
 
 // Base class for list-based archive formats
 class TreelessArchive : public Archive
 {
 public:
-	TreelessArchive(uint8_t type = ARCHIVE_INVALID) :Archive(type) { desc.supports_dirs = false; }
+	TreelessArchive(string format = "") : Archive(format) { }
 	virtual ~TreelessArchive() {}
 
 	// Entry retrieval/info

@@ -41,10 +41,10 @@
 /* BZip2Archive::BZip2Archive
  * BZip2Archive class constructor
  *******************************************************************/
-BZip2Archive::BZip2Archive() : TreelessArchive(ARCHIVE_BZ2)
+BZip2Archive::BZip2Archive() : TreelessArchive("bz2")
 {
-	desc.names_extensions = true;
-	desc.supports_dirs = true;
+	//desc.names_extensions = true;
+	//desc.supports_dirs = true;
 }
 
 /* BZip2Archive::~BZip2Archive

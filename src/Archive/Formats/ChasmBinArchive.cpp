@@ -54,9 +54,9 @@ EXTERN_CVAR(Bool, archive_load_data)
  * ChasmBinArchive class constructor
  *******************************************************************/
 ChasmBinArchive::ChasmBinArchive()
-: Archive(ARCHIVE_CHASM_BIN)
+: Archive("chasm_bin")
 {
-	desc.max_name_length = static_cast<int>(NAME_SIZE);
+	//desc.max_name_length = static_cast<int>(NAME_SIZE);
 }
 
 /* ChasmBinArchive::getFileExtensionString

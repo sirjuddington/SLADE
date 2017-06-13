@@ -119,6 +119,7 @@ bool JaguarDecode(MemChunk& mc)
 WadJArchive::WadJArchive()
 	: WadArchive()
 {
+	format = "wadj";
 }
 
 /* WadJArchive::~WadJArchive

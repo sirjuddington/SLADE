@@ -113,7 +113,7 @@ struct RFFLump
 /* RffArchive::RffArchive
  * RffArchive class constructor
  *******************************************************************/
-RffArchive::RffArchive() : TreelessArchive(ARCHIVE_RFF)
+RffArchive::RffArchive() : TreelessArchive("rff")
 {
 }
 

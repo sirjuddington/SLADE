@@ -232,7 +232,7 @@ static void TarDefaultHeader(tar_header* header)
 /* TarArchive::TarArchive
  * TarArchive class constructor
  *******************************************************************/
-TarArchive::TarArchive() : Archive(ARCHIVE_TAR)
+TarArchive::TarArchive() : Archive("tar")
 {
 }
 

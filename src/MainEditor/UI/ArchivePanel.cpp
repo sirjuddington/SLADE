@@ -664,7 +664,7 @@ bool ArchivePanel::newEntry(int type)
 		return false;
 
 	// Check for \ character (e.g., from Arch-Viles graphics). They have to be kept.
-	if (archive->getType() == ARCHIVE_WAD && name.length() <= 8
+	if (archive->getType() == "wad" && name.length() <= 8
 	        && (name.find('\\') != wxNOT_FOUND || name.find('/') != wxNOT_FOUND))
 	{
 	} // Don't process as a file name
@@ -858,7 +858,7 @@ bool ArchivePanel::cleanupArchive()
  *******************************************************************/
 bool ArchivePanel::buildArchive()
 {
-	if (archive->getType() != ARCHIVE_FOLDER)
+	if (archive->getType() != "folder")
 	{
 		wxMessageBox("This function is only supported with directories", "Can't build archive", wxICON_ERROR);
 		return false;
@@ -2205,7 +2205,7 @@ bool ArchivePanel::swanConvert()
 			undo_manager->beginRecord(S_FMT("Creating %s", wadnames[e]));
 
 			ArchiveEntry * output = archive->addNewEntry(
-				(archive->getType() == ARCHIVE_WAD ?  wadnames[e] : zipnames[e]), 
+				(archive->getType() == "wad" ?  wadnames[e] : zipnames[e]), 
 				index, entry_list->getCurrentDir());
 			if (output)
 			{
@@ -2245,8 +2245,8 @@ bool ArchivePanel::basConvert(bool animdefs)
 	// Create new entry
 	ArchiveEntry* output = archive->addNewEntry(
 		(animdefs
-		? (archive->getType() == ARCHIVE_WAD ? "ANIMDEFS" : "animdefs.txt")
-		: (archive->getType() == ARCHIVE_WAD ? "SWANTBLS" : "swantbls.dat")
+		? (archive->getType() == "wad" ? "ANIMDEFS" : "animdefs.txt")
+		: (archive->getType() == "wad" ? "SWANTBLS" : "swantbls.dat")
 		), index, entry_list->getCurrentDir());
 
 	// Finish recording undo level

@@ -40,7 +40,7 @@
  * DatArchive class constructor
  *******************************************************************/
 DatArchive::DatArchive()
-	: TreelessArchive(ARCHIVE_DAT)
+	: TreelessArchive("dat")
 {
 }
 

@@ -818,11 +818,11 @@ void ArchiveManagerPanel::openTab(Archive* archive)
 
 		// Determine icon
 		string icon = "archive";
-		if (archive->getType() == ARCHIVE_WAD)
+		if (archive->getType() == "wad")
 			icon = "wad";
-		else if (archive->getType() == ARCHIVE_ZIP)
+		else if (archive->getType() == "zip")
 			icon = "zip";
-		else if (archive->getType() == ARCHIVE_FOLDER)
+		else if (archive->getType() == "folder")
 			icon = "folder";
 
 		wp->SetName("archive");
@@ -1232,7 +1232,7 @@ void ArchiveManagerPanel::checkDirArchives()
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
 		Archive* archive = theArchiveManager->getArchive(a);
-		if (archive->getType() != ARCHIVE_FOLDER)
+		if (archive->getType() != "folder")
 			continue;
 
 		if (VECTOR_EXISTS(checking_archives, archive))
@@ -1249,14 +1249,12 @@ void ArchiveManagerPanel::checkDirArchives()
 /* ArchiveManagerPanel::createNewArchive
  * Creates a new archive of the given type and opens it in a tab
  *******************************************************************/
-void ArchiveManagerPanel::createNewArchive(uint8_t type)
+void ArchiveManagerPanel::createNewArchive(string format)
 {
-	Archive* new_archive = theArchiveManager->newArchive(type);
+	Archive* new_archive = theArchiveManager->newArchive(format);
 
 	if (new_archive)
-	{
 		openTab(theArchiveManager->archiveIndex(new_archive));
-	}
 }
 
 /* ArchiveManagerPanel::saveEntryChanges
@@ -1323,7 +1321,7 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive)
 		return false;
 
 	// Check archive type
-	if (archive->getType() == ARCHIVE_FOLDER)
+	if (archive->getType() == "folder")
 		return true;	// Can't do save as for folder
 
 	// Check for unsaved entry changes
@@ -1706,11 +1704,11 @@ bool ArchiveManagerPanel::handleAction(string id)
 
 	// File->New Wad
 	if (id == "aman_newwad")
-		createNewArchive(ARCHIVE_WAD);
+		createNewArchive("wad");
 
 	// File->New Zip
 	else if (id == "aman_newzip")
-		createNewArchive(ARCHIVE_ZIP);
+		createNewArchive("zip");
 
 	// File->New Map
 	else if (id == "aman_newmap")

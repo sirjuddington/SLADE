@@ -143,7 +143,7 @@ public:
 	bool	beforeCloseArchive(Archive* archive);
 	bool	closeArchive(Archive* archive);
 
-	void	createNewArchive(uint8_t type);
+	void	createNewArchive(string format);
 	bool	closeAll();
 	void	saveAll();
 	void	checkDirArchives();

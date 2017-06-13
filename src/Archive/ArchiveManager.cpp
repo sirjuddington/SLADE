@@ -42,7 +42,7 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-ArchiveManager* ArchiveManager::instance = NULL;
+ArchiveManager* ArchiveManager::instance = nullptr;
 CVAR(Int, base_resource, -1, CVAR_SAVE)
 CVAR(Int, max_recent_files, 25, CVAR_SAVE)
 CVAR(Bool, auto_open_wads_root, false, CVAR_SAVE)
@@ -59,7 +59,7 @@ ArchiveManager::ArchiveManager()
 {
 	// Init variables
 	res_archive_open = false;
-	base_resource_archive = NULL;
+	base_resource_archive = nullptr;
 }
 
 /* ArchiveManager::~ArchiveManager
@@ -134,6 +134,10 @@ bool ArchiveManager::init()
 	{
 		program_resource_archive->importDir(resdir);
 		res_archive_open = (program_resource_archive->numEntries() > 0);
+
+		if (!initArchiveFormats())
+			LOG_MESSAGE(1, "An error occurred reading archive formats configuration");
+
 		return res_archive_open;
 	}
 
@@ -157,7 +161,20 @@ bool ArchiveManager::init()
 	else
 		res_archive_open = true;
 
+	if (!initArchiveFormats())
+		LOG_MESSAGE(1, "An error occurred reading archive formats configuration");
+
 	return res_archive_open;
+}
+
+/* ArchiveManager::initArchiveFormats
+ * Loads archive formats configuration from the program resource
+ *******************************************************************/
+bool ArchiveManager::initArchiveFormats()
+{
+	return Archive::loadFormats(
+		program_resource_archive->entryAtPath("config/archive_formats.cfg")->getMCData()
+	);
 }
 
 /* ArchiveManager::initBaseResource
@@ -192,7 +209,7 @@ bool ArchiveManager::addArchive(Archive* archive)
 		theResourceManager->addArchive(archive);
 
 		// ZDoom also loads any WADs found in the root of a PK3 or directory
-		if ((archive->getType() == ARCHIVE_ZIP || archive->getType() == ARCHIVE_FOLDER) && auto_open_wads_root)
+		if ((archive->getType() == "zip" || archive->getType() == "folder") && auto_open_wads_root)
 		{
 			ArchiveTreeNode* root = archive->getRoot();
 			ArchiveEntry* entry;
@@ -221,20 +238,20 @@ bool ArchiveManager::addArchive(Archive* archive)
 
 /* ArchiveManager::getArchive
  * Returns the archive at the index specified
- * (NULL if it doesn't exist)
+ * (nullptr if it doesn't exist)
  *******************************************************************/
 Archive* ArchiveManager::getArchive(int index)
 {
 	// Check that index is valid
 	if (index < 0 || index >= (int) open_archives.size())
-		return NULL;
+		return nullptr;
 	else
 		return open_archives[index].archive;
 }
 
 /* ArchiveManager::getArchive
  * Returns the archive with the specified filename
- * (NULL if it doesn't exist)
+ * (nullptr if it doesn't exist)
  *******************************************************************/
 Archive* ArchiveManager::getArchive(string filename)
 {
@@ -246,13 +263,13 @@ Archive* ArchiveManager::getArchive(string filename)
 			return open_archives[a].archive;
 	}
 
-	// If no archive is found with a matching filename, return NULL
-	return NULL;
+	// If no archive is found with a matching filename, return nullptr
+	return nullptr;
 }
 
 /* ArchiveManager::openArchive
  * Opens and adds a archive to the list, returns a pointer to the
- * newly opened and added archive, or NULL if an error occurred
+ * newly opened and added archive, or nullptr if an error occurred
  *******************************************************************/
 Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 {
@@ -330,11 +347,11 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 	{
 		// Unsupported format
 		Global::error = "Unsupported or invalid Archive format";
-		return NULL;
+		return nullptr;
 	}
 
 	// If it opened successfully, add it to the list if needed & return it,
-	// Otherwise, delete it and return NULL
+	// Otherwise, delete it and return nullptr
 	if (new_archive->open(filename))
 	{
 		if (manage)
@@ -362,7 +379,7 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 	{
 		LOG_MESSAGE(1, "Error: " + Global::error);
 		delete new_archive;
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -371,11 +388,11 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
  *******************************************************************/
 Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool silent)
 {
-	Archive* new_archive = NULL;
+	Archive* new_archive = nullptr;
 
 	// Check entry was given
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if the entry is already opened
 	for (size_t a = 0; a < open_archives.size(); a++)
@@ -446,11 +463,11 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 	{
 		// Unsupported format
 		Global::error = "Unsupported or invalid Archive format";
-		return NULL;
+		return nullptr;
 	}
 
 	// If it opened successfully, add it to the list & return it,
-	// Otherwise, delete it and return NULL
+	// Otherwise, delete it and return nullptr
 	if (new_archive->open(entry))
 	{
 		if (manage)
@@ -481,13 +498,13 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 	{
 		LOG_MESSAGE(1, "Error: " + Global::error);
 		delete new_archive;
-		return NULL;
+		return nullptr;
 	}
 }
 
 /* ArchiveManager::openDirArchive
  * Opens [dir] as a DirArchive and adds it to the list. Returns a
- * pointer to the archive or NULL if an error occurred.
+ * pointer to the archive or nullptr if an error occurred.
  *******************************************************************/
 Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
 {
@@ -513,7 +530,7 @@ Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
 	new_archive = new DirArchive();
 
 	// If it opened successfully, add it to the list if needed & return it,
-	// Otherwise, delete it and return NULL
+	// Otherwise, delete it and return nullptr
 	if (new_archive->open(dir))
 	{
 		if (manage)
@@ -541,7 +558,7 @@ Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
 	{
 		LOG_MESSAGE(1, "Error: " + Global::error);
 		delete new_archive;
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -551,42 +568,36 @@ Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
  *******************************************************************/
 Archive* ArchiveManager::createTemporaryArchive()
 {
-	Archive* new_archive = NULL;
+	Archive* new_archive = nullptr;
 	new_archive = new ZipArchive();
 	return new_archive;
 }
 
 /* ArchiveManager::newArchive
  * Creates a new archive of the specified format and adds it to the
- * list of open archives. Returns the created archive, or NULL if an
+ * list of open archives. Returns the created archive, or nullptr if an
  * invalid archive type was given
  *******************************************************************/
-Archive* ArchiveManager::newArchive(uint8_t type)
+Archive* ArchiveManager::newArchive(string format)
 {
 	// Init variables
-	Archive* new_archive = NULL;
-	string format_str = "";
-
+	Archive* new_archive = nullptr;
+	
 	// Create a new archive depending on the type specified
-	switch (type)
-	{
-	case ARCHIVE_WAD:
+	if (format == "wad")
 		new_archive = new WadArchive();
-		format_str = "wad";
-		break;
-	case ARCHIVE_ZIP:
+	else if (format == "zip")
 		new_archive = new ZipArchive();
-		format_str = "zip";
-		break;
-	default:
-		LOG_MESSAGE(1, "This shouldn't happen.");
-		return NULL;
+	else
+	{
+		Log::error("This shouldn't happen.");
+		return nullptr;
 	}
 
 	// If the archive was created, set its filename and add it to the list
 	if (new_archive)
 	{
-		new_archive->setFilename(S_FMT("UNSAVED (%s)", format_str));
+		new_archive->setFilename(S_FMT("UNSAVED (%s)", new_archive->getDesc().name));
 		addArchive(new_archive);
 	}
 
@@ -767,6 +778,28 @@ vector<Archive*> ArchiveManager::getDependentArchives(Archive* archive)
  *******************************************************************/
 string ArchiveManager::getArchiveExtensionsString()
 {
+	auto formats = Archive::allFormats();
+	vector<string> ext_strings;
+	string ext_all = "Any supported file|";
+	for (auto fmt : formats)
+	{
+		for (auto ext : fmt.extensions)
+		{
+			string ext_case = S_FMT("*.%s;", ext.key.Lower());
+			ext_case += S_FMT("*.%s;", ext.key.Upper());
+			ext_case += S_FMT("*.%s", ext.key.Capitalize());
+
+			ext_all += S_FMT("%s;", ext_case);
+			ext_strings.push_back(S_FMT("%s files (*.%s)|%s", ext.value, ext.key, ext_case));
+		}
+	}
+
+	ext_all.RemoveLast(1);
+	for (auto ext : ext_strings)
+		ext_all += S_FMT("|%s", ext);
+
+	return ext_all;
+
 	// Create extensions strings
 	string extensions = "Any supported file|";
 	string ext_wad = "*.wad;*.WAD;*.Wad;*.rts;*.RTS;*.Rts";		extensions += ext_wad + ";";
@@ -932,7 +965,7 @@ bool ArchiveManager::openBaseResource(int index)
 	{
 		theResourceManager->removeArchive(base_resource_archive);
 		delete base_resource_archive;
-		base_resource_archive = NULL;
+		base_resource_archive = nullptr;
 	}
 
 	// Check index
@@ -963,7 +996,7 @@ bool ArchiveManager::openBaseResource(int index)
 		return true;
 	}
 	delete base_resource_archive;
-	base_resource_archive = NULL;
+	base_resource_archive = nullptr;
 	UI::hideSplash();
 	announce("base_resource_changed");
 	return false;
@@ -996,7 +1029,7 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string name, Archive* ignore)
 	if (base_resource_archive)
 		return base_resource_archive->getEntry(name);
 
-	return NULL;
+	return nullptr;
 }
 
 /* ArchiveManager::findResourceEntry
@@ -1025,7 +1058,7 @@ ArchiveEntry* ArchiveManager::findResourceEntry(Archive::search_options_t& optio
 	if (base_resource_archive)
 		return base_resource_archive->findLast(options);
 
-	return NULL;
+	return nullptr;
 }
 
 /* ArchiveManager::findAllResourceEntries
@@ -1288,7 +1321,7 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
 {
 	// Check index
 	if (index >= bookmarks.size())
-		return NULL;
+		return nullptr;
 
 	return bookmarks[index];
 }
