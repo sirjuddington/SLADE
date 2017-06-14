@@ -157,7 +157,7 @@ string ArchiveEntry::getUpperNameNoExt()
 Archive* ArchiveEntry::getParent()
 {
 	if (parent)
-		return parent->getArchive();
+		return parent->archive();
 	else
 		return NULL;
 }
@@ -169,10 +169,10 @@ Archive* ArchiveEntry::getTopParent()
 {
 	if (parent)
 	{
-		if (!parent->getArchive()->getParent())
-			return parent->getArchive();
+		if (!parent->archive()->getParent())
+			return parent->archive();
 		else
-			return parent->getArchive()->getParent()->getTopParent();
+			return parent->archive()->getParent()->getTopParent();
 	}
 	else
 		return NULL;
@@ -230,7 +230,7 @@ MemChunk& ArchiveEntry::getMCData(bool allow_load)
 ArchiveEntry::SPtr ArchiveEntry::getShared()
 {
 	if (parent)
-		return parent->getEntryShared(this);
+		return parent->sharedEntry(this);
 	else
 		return nullptr;
 }

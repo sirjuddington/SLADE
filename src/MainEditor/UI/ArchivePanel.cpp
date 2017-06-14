@@ -251,7 +251,7 @@ void initNamespaceVector(vector<string> &ns, bool flathack)
  * Checks through a mapdesc_t vector and returns which one, 
  * if any, the entry index is in, -1 otherwise
  */
-int isInMap(size_t index, vector<Archive::mapdesc_t> &maps)
+int isInMap(size_t index, vector<Archive::MapDesc> &maps)
 {
 	for (size_t m = 0; m < maps.size(); ++m)
 	{
@@ -269,7 +269,7 @@ int isInMap(size_t index, vector<Archive::mapdesc_t> &maps)
  * a bit to put less entries in the global namespace
  * and allow sorting a bit by categories.
  */
-size_t getNamespaceNumber(ArchiveEntry * entry, size_t index, vector<string> &ns, vector<Archive::mapdesc_t> &maps)
+size_t getNamespaceNumber(ArchiveEntry * entry, size_t index, vector<string> &ns, vector<Archive::MapDesc> &maps)
 {
 	string ens = entry->getParent()->detectNamespace(index);
 	if (S_CMPNOCASE(ens, "global"))
@@ -930,7 +930,7 @@ bool ArchivePanel::buildArchive()
 	
 			// Set unmodified
 			entry->setState(0);
-			dir->getDirEntry()->setState(0);
+			dir->dirEntry()->setState(0);
 		}
 
 		UI::setSplashProgress(1.0f);
@@ -1325,10 +1325,10 @@ bool ArchivePanel::sort()
 		return false;
 
 	vector<string> nspaces;
-	initNamespaceVector(nspaces, dir->getArchive()->hasFlatHack());
-	vector<Archive::mapdesc_t> maps = dir->getArchive()->detectMaps();
+	initNamespaceVector(nspaces, dir->archive()->hasFlatHack());
+	vector<Archive::MapDesc> maps = dir->archive()->detectMaps();
 
-	string ns = dir->getArchive()->detectNamespace(entry_list->getEntry(selection[0]));
+	string ns = dir->archive()->detectNamespace(entry_list->getEntry(selection[0]));
 	size_t nsn = 0, lnsn = 0;
 
 	// Fill a map with <entry name, entry index> pairs
@@ -1362,9 +1362,9 @@ bool ArchivePanel::sort()
 			if (head_index < start) start = head_index;
 			if (end_index+1 > stop) stop = end_index+1;
 		}
-		else if (dir->getArchive()->detectNamespace(selection[i]) != ns)
+		else if (dir->archive()->detectNamespace(selection[i]) != ns)
 		{
-			ns = dir->getArchive()->detectNamespace(selection[i]);
+			ns = dir->archive()->detectNamespace(selection[i]);
 			nsn = getNamespaceNumber(entry, selection[i], nspaces, maps) * 1000;
 			ns_changed = true;
 		}
@@ -3727,7 +3727,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 		MapEditorConfigDialog dlg(this, archive, false);
 		if (dlg.ShowModal() == wxID_OK)
 		{
-			Archive::mapdesc_t info = archive->getMapInfo(entry);
+			Archive::MapDesc info = archive->getMapInfo(entry);
 
 			// Check selected game configuration is ok
 			if (!dlg.configMatchesMap(info))
@@ -3887,7 +3887,7 @@ bool EntryDataUS::swapData()
 	if (dir)
 	{
 		// Get entry
-		ArchiveEntry* entry = dir->getEntry(index);
+		ArchiveEntry* entry = dir->entryAt(index);
 
 		// Backup data
 		MemChunk temp_data;
@@ -4089,7 +4089,7 @@ vector<ArchiveEntry*> Console_SearchEntries(string name)
 
 	if (archive)
 	{
-		Archive::search_options_t options;
+		Archive::SearchOptions options;
 		options.search_subdirs = true;
 		if (panel)
 		{

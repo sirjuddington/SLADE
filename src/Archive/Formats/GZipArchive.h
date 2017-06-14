@@ -44,12 +44,12 @@ public:
 	bool	moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL) { return false ; }
 
 	// Detection
-	vector<mapdesc_t>	detectMaps() { vector<mapdesc_t> ret; return ret; }
+	vector<MapDesc>	detectMaps() { vector<MapDesc> ret; return ret; }
 
 	// Search
-	ArchiveEntry*			findFirst(search_options_t& options);
-	ArchiveEntry*			findLast(search_options_t& options);
-	vector<ArchiveEntry*>	findAll(search_options_t& options);
+	ArchiveEntry*			findFirst(SearchOptions& options);
+	ArchiveEntry*			findLast(SearchOptions& options);
+	vector<ArchiveEntry*>	findAll(SearchOptions& options);
 
 	// Static functions
 	static bool isGZipArchive(MemChunk& mc);

@@ -485,12 +485,12 @@ bool TarArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "TarArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "TarArchive::loadEntryData: Unable to open archive file %s", filename_);
 		return false;
 	}
 

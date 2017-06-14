@@ -80,13 +80,13 @@ public:
 	bool			renameEntry(ArchiveEntry* entry, string name);
 
 	// Detection
-	mapdesc_t			getMapInfo(ArchiveEntry* maphead);
-	vector<mapdesc_t>	detectMaps();
+	MapDesc			getMapInfo(ArchiveEntry* maphead);
+	vector<MapDesc>	detectMaps();
 
 	// Search
-	ArchiveEntry*			findFirst(search_options_t& options);
-	ArchiveEntry*			findLast(search_options_t& options);
-	vector<ArchiveEntry*>	findAll(search_options_t& options);
+	ArchiveEntry*			findFirst(SearchOptions& options);
+	ArchiveEntry*			findLast(SearchOptions& options);
+	vector<ArchiveEntry*>	findAll(SearchOptions& options);
 
 	// DirArchive-specific
 	void	ignoreChangedEntries(vector<dir_entry_change_t>& changes);

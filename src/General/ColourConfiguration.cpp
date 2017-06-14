@@ -322,8 +322,8 @@ bool ColourConfiguration::readConfiguration(string name)
 	ArchiveTreeNode* dir = res->getDir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		if (S_CMPNOCASE(dir->getEntry(a)->getName(true), name))
-			return readConfiguration(dir->getEntry(a)->getMCData());
+		if (S_CMPNOCASE(dir->entryAt(a)->getName(true), name))
+			return readConfiguration(dir->entryAt(a)->getMCData());
 	}
 
 	return false;
@@ -340,7 +340,7 @@ void ColourConfiguration::getConfigurationNames(vector<string>& names)
 	Archive* res = theArchiveManager->programResourceArchive();
 	ArchiveTreeNode* dir = res->getDir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
-		names.push_back(dir->getEntry(a)->getName(true));
+		names.push_back(dir->entryAt(a)->getName(true));
 }
 
 /* ColourConfiguration::getColourNames

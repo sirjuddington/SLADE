@@ -448,7 +448,7 @@ void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string path)
 	// Go through entries
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		ArchiveEntry* entry = dir->getEntry(a);
+		ArchiveEntry* entry = dir->entryAt(a);
 
 		// Load entry to image
 		if (image.open(entry->getMCData()))

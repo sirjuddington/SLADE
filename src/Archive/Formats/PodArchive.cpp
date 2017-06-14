@@ -271,12 +271,12 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "PodArchive::loadEntryData: Failed to open file %s", filename);
+		LOG_MESSAGE(1, "PodArchive::loadEntryData: Failed to open file %s", filename_);
 		return false;
 	}
 
@@ -293,9 +293,9 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 /* WadArchive::detectMaps
  * Searches for any maps in the archive and adds them to the map list
  *******************************************************************/
-vector<Archive::mapdesc_t> PodArchive::detectMaps()
+vector<Archive::MapDesc> PodArchive::detectMaps()
 {
-	vector<mapdesc_t> list;
+	vector<MapDesc> list;
 	return list;
 }
 

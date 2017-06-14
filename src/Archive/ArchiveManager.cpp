@@ -216,7 +216,7 @@ bool ArchiveManager::addArchive(Archive* archive)
 			EntryType* type;
 			for (unsigned a = 0; a < root->numEntries(); a++)
 			{
-				entry = root->getEntry(a);
+				entry = root->entryAt(a);
 
 				if (entry->getType() == EntryType::unknownType())
 					EntryType::detectEntryType(entry);
@@ -1035,7 +1035,7 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string name, Archive* ignore)
 /* ArchiveManager::findResourceEntry
  * Searches for an entry matching [options] in the resource archives
  *******************************************************************/
-ArchiveEntry* ArchiveManager::findResourceEntry(Archive::search_options_t& options, Archive* ignore)
+ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options, Archive* ignore)
 {
 	// Go through all open archives
 	for (size_t a = 0; a < open_archives.size(); a++)
@@ -1064,7 +1064,7 @@ ArchiveEntry* ArchiveManager::findResourceEntry(Archive::search_options_t& optio
 /* ArchiveManager::findAllResourceEntries
  * Searches for entries matching [options] in the resource archives
  *******************************************************************/
-vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::search_options_t& options, Archive* ignore)
+vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOptions& options, Archive* ignore)
 {
 	vector<ArchiveEntry*> ret;
 
@@ -1278,8 +1278,8 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 bool ArchiveManager::deleteBookmarksInDir(ArchiveTreeNode* node)
 {
 	// Go through bookmarks
-	Archive * archive = node->getArchive();
-	bool removed = deleteBookmark(node->getDirEntry());
+	Archive * archive = node->archive();
+	bool removed = deleteBookmark(node->dirEntry());
 	for (unsigned a = 0; a < bookmarks.size(); ++a)
 	{
 		// Check bookmarked entry's parent archive

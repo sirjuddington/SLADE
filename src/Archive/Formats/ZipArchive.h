@@ -29,13 +29,13 @@ public:
 	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
 
 	// Detection
-	mapdesc_t			getMapInfo(ArchiveEntry* maphead);
-	vector<mapdesc_t>	detectMaps();
+	MapDesc			getMapInfo(ArchiveEntry* maphead);
+	vector<MapDesc>	detectMaps();
 
 	// Search
-	ArchiveEntry*			findFirst(search_options_t& options);
-	ArchiveEntry*			findLast(search_options_t& options);
-	vector<ArchiveEntry*>	findAll(search_options_t& options);
+	ArchiveEntry*			findFirst(SearchOptions& options);
+	ArchiveEntry*			findLast(SearchOptions& options);
+	vector<ArchiveEntry*>	findAll(SearchOptions& options);
 
 	// Static functions
 	static bool	isZipArchive(MemChunk& mc);

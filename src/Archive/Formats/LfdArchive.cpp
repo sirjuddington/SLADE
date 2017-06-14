@@ -326,12 +326,12 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open lfdfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "LfdArchive::loadEntryData: Failed to open lfdfile %s", filename);
+		LOG_MESSAGE(1, "LfdArchive::loadEntryData: Failed to open lfdfile %s", filename_);
 		return false;
 	}
 

@@ -676,11 +676,11 @@ ArchiveEntry* ArchiveEntryList::getEntry(int index, bool filtered) const
 	// Subdirectories
 	int subdirs = current_dir->nChildren();
 	if (index < subdirs)
-		return ((ArchiveTreeNode*)(current_dir->getChild(index)))->getDirEntry();
+		return ((ArchiveTreeNode*)(current_dir->getChild(index)))->dirEntry();
 
 	// Entries
 	if ((unsigned)index < subdirs + current_dir->numEntries())
-		return current_dir->getEntry(index - subdirs);
+		return current_dir->entryAt(index - subdirs);
 
 	// Out of bounds
 	return nullptr;

@@ -83,8 +83,8 @@ public:
 
 	// Resource entry get/search
 	ArchiveEntry*			getResourceEntry(string name, Archive* ignore = NULL);
-	ArchiveEntry*			findResourceEntry(Archive::search_options_t& options, Archive* ignore = NULL);
-	vector<ArchiveEntry*>	findAllResourceEntries(Archive::search_options_t& options, Archive* ignore = NULL);
+	ArchiveEntry*			findResourceEntry(Archive::SearchOptions& options, Archive* ignore = NULL);
+	vector<ArchiveEntry*>	findAllResourceEntries(Archive::SearchOptions& options, Archive* ignore = NULL);
 
 	// Recent files
 	string		recentFile(unsigned index);

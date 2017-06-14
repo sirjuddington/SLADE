@@ -607,7 +607,7 @@ bool EntryType::loadEntryTypes()
 	unsigned int et_dir_numEntries = et_dir->numEntries();
 	for (unsigned a = 0; a < et_dir_numEntries; a++)
 	{
-		if (readEntryTypeDefinition(et_dir->getEntry(a)->getMCData()))
+		if (readEntryTypeDefinition(et_dir->entryAt(a)->getMCData()))
 			etypes_read = true;
 	}
 

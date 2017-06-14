@@ -198,6 +198,7 @@
     <ClCompile Include="..\..\src\Archive\Archive.cpp" />
     <ClCompile Include="..\..\src\Archive\ArchiveEntry.cpp" />
     <ClCompile Include="..\..\src\Archive\ArchiveManager.cpp" />
+    <ClCompile Include="..\..\src\Archive\ArchiveTreeNode.cpp" />
     <ClCompile Include="..\..\src\Archive\EntryType\EntryDataFormat.cpp" />
     <ClCompile Include="..\..\src\Archive\EntryType\EntryType.cpp" />
     <ClCompile Include="..\..\src\Archive\Formats\ADatArchive.cpp" />
@@ -1579,6 +1580,7 @@
     <ClInclude Include="..\..\src\Archive\Archive.h" />
     <ClInclude Include="..\..\src\Archive\ArchiveEntry.h" />
     <ClInclude Include="..\..\src\Archive\ArchiveManager.h" />
+    <ClInclude Include="..\..\src\Archive\ArchiveTreeNode.h" />
     <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ArchiveFormats.h" />
     <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\AudioFormats.h" />
     <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ImageFormats.h" />

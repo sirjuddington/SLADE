@@ -332,12 +332,12 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open gzip file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "GZipArchive::loadEntryData: Failed to open gzip file %s", filename);
+		LOG_MESSAGE(1, "GZipArchive::loadEntryData: Failed to open gzip file %s", filename_);
 		return false;
 	}
 
@@ -355,7 +355,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
  * Returns the entry if it matches the search criteria in [options],
  * or NULL otherwise
  *******************************************************************/
-ArchiveEntry* GZipArchive::findFirst(search_options_t& options)
+ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
 	options.match_name = options.match_name.Lower();
@@ -396,7 +396,7 @@ ArchiveEntry* GZipArchive::findFirst(search_options_t& options)
  * Returns the last entry matching the search criteria in [options],
  * or NULL if no matching entry was found
  *******************************************************************/
-ArchiveEntry* GZipArchive::findLast(search_options_t& options)
+ArchiveEntry* GZipArchive::findLast(SearchOptions& options)
 {
 	return findFirst(options);
 }
@@ -404,7 +404,7 @@ ArchiveEntry* GZipArchive::findLast(search_options_t& options)
 /* GZipArchive::findAll
  * Returns all entries matching the search criteria in [options]
  *******************************************************************/
-vector<ArchiveEntry*> GZipArchive::findAll(search_options_t& options)
+vector<ArchiveEntry*> GZipArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
 	options.match_name = options.match_name.Lower();

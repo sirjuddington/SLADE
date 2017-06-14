@@ -65,17 +65,17 @@ public:
 	bool	moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL);
 
 	// Detection
-	mapdesc_t			getMapInfo(ArchiveEntry* maphead);
-	vector<mapdesc_t>	detectMaps();
+	MapDesc			getMapInfo(ArchiveEntry* maphead);
+	vector<MapDesc>	detectMaps();
 	string				detectNamespace(ArchiveEntry* entry);
 	string				detectNamespace(size_t index, ArchiveTreeNode * dir = NULL);
 	void				detectIncludes();
 	bool				hasFlatHack();
 
 	// Search
-	ArchiveEntry*			findFirst(search_options_t& options);
-	ArchiveEntry*			findLast(search_options_t& options);
-	vector<ArchiveEntry*>	findAll(search_options_t& options);
+	ArchiveEntry*			findFirst(SearchOptions& options);
+	ArchiveEntry*			findLast(SearchOptions& options);
+	vector<ArchiveEntry*>	findAll(SearchOptions& options);
 
 	// Static functions
 	static bool isWadArchive(MemChunk& mc);

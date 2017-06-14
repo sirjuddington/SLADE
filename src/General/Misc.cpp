@@ -223,7 +223,7 @@ bool Misc::loadPaletteFromArchive(Palette8bit* pal, Archive* archive, int lump)
 	if (!playpal || playpal->getSize() < 768)
 	{
 		// Search archive for any palette
-		Archive::search_options_t opt;
+		Archive::SearchOptions opt;
 
 		// Search "PLAYPAL" first
 		opt.match_type = EntryType::getType("palette");

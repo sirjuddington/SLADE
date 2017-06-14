@@ -45,7 +45,7 @@ public:
 	bool loadEntryData(ArchiveEntry* entry);
 
 	// Detection
-	virtual vector<mapdesc_t> detectMaps() { return vector<mapdesc_t>(); }
+	virtual vector<MapDesc> detectMaps() { return vector<MapDesc>(); }
 
 	// Static functions
 	static bool isChasmBinArchive(MemChunk& mc);

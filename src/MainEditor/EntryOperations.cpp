@@ -465,7 +465,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	}
 
 	// Get map info for entry
-	Archive::mapdesc_t map = entry->getParent()->getMapInfo(entry);
+	Archive::MapDesc map = entry->getParent()->getMapInfo(entry);
 
 	// Check valid map
 	if (map.format == MAP_UNKNOWN)
@@ -890,7 +890,7 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries)
 		return true;
 
 	// Find patch table in parent archive
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_type = EntryType::getType("pnames");
 	ArchiveEntry* pnames = parent->findLast(opt);
 
@@ -972,7 +972,7 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 		return false;
 
 	// Find texturex entry to add to
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_type = EntryType::getType("texturex");
 	ArchiveEntry* texturex = parent->findFirst(opt);
 
@@ -1106,7 +1106,7 @@ bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries)
 		return false;
 
 	// Find patch table in parent archive
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_type = EntryType::getType("pnames");
 	ArchiveEntry* pnames = parent->findLast(opt);
 
@@ -1156,7 +1156,7 @@ bool EntryOperations::findTextureErrors(vector<ArchiveEntry*> entries)
 		return false;
 
 	// Find patch table in parent archive
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_type = EntryType::getType("pnames");
 	ArchiveEntry* pnames = parent->findLast(opt);
 
@@ -1227,7 +1227,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	}
 
 	// Find/export any resource libraries
-	Archive::search_options_t sopt;
+	Archive::SearchOptions sopt;
 	sopt.match_type = EntryType::getType("acs");
 	sopt.search_subdirs = true;
 	vector<ArchiveEntry*> entries = theArchiveManager->findAllResourceEntries(sopt);
@@ -1319,7 +1319,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 				// Otherwise, treat it as a library
 
 				// See if the compiled library already exists as an entry
-				Archive::search_options_t opt;
+				Archive::SearchOptions opt;
 				opt.match_namespace = "acs";
 				opt.match_name = entry->getName(true);
 				if (entry->getParent()->getDesc().names_extensions)

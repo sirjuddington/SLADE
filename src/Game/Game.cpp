@@ -321,7 +321,7 @@ void Game::init()
 	auto dir = theArchiveManager->programResourceArchive()->getDir("config/games");
 	if (dir)
 	{
-		for (auto& entry : dir->getEntries())
+		for (auto& entry : dir->entries())
 		{
 			// Read config info
 			GameDef conf;
@@ -342,7 +342,7 @@ void Game::init()
 	dir = theArchiveManager->programResourceArchive()->getDir("config/ports");
 	if (dir)
 	{
-		for (auto& entry : dir->getEntries())
+		for (auto& entry : dir->entries())
 		{
 			// Read config info
 			PortDef conf;

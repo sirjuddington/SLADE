@@ -347,12 +347,12 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open hogfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "HogArchive::loadEntryData: Failed to open hogfile %s", filename);
+		LOG_MESSAGE(1, "HogArchive::loadEntryData: Failed to open hogfile %s", filename_);
 		return false;
 	}
 

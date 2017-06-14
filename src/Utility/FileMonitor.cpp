@@ -147,7 +147,7 @@ void DB2MapFileMonitor::fileModified()
 	wad->open(filename);
 
 	// Get map info for target archive
-	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	vector<Archive::MapDesc> maps = archive->detectMaps();
 	for (unsigned a = 0; a < maps.size(); a++)
 	{
 		if (S_CMPNOCASE(maps[a].name, map_name))
@@ -197,7 +197,7 @@ void DB2MapFileMonitor::fileModified()
 void DB2MapFileMonitor::processTerminated()
 {
 	// Get map info for target archive
-	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	vector<Archive::MapDesc> maps = archive->detectMaps();
 	for (unsigned a = 0; a < maps.size(); a++)
 	{
 		if (S_CMPNOCASE(maps[a].name, map_name))

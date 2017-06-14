@@ -471,7 +471,7 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types)
 		return false;
 
 	// Get base decorate file
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_name = "decorate";
 	opt.ignore_ext = true;
 	vector<ArchiveEntry*> decorate_entries = archive->findAll(opt);

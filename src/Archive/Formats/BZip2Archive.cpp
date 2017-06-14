@@ -156,12 +156,12 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "BZip2Archive::loadEntryData: Failed to open gzip file %s", filename);
+		LOG_MESSAGE(1, "BZip2Archive::loadEntryData: Failed to open gzip file %s", filename_);
 		return false;
 	}
 
@@ -179,7 +179,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
  * Returns the entry if it matches the search criteria in [options],
  * or NULL otherwise
  *******************************************************************/
-ArchiveEntry* BZip2Archive::findFirst(search_options_t& options)
+ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 {
 	// Init search variables
 	options.match_name = options.match_name.Lower();
@@ -219,7 +219,7 @@ ArchiveEntry* BZip2Archive::findFirst(search_options_t& options)
 /* BZip2Archive::findLast
  * Same as findFirst since there's just one entry
  *******************************************************************/
-ArchiveEntry* BZip2Archive::findLast(search_options_t& options)
+ArchiveEntry* BZip2Archive::findLast(SearchOptions& options)
 {
 	return findFirst(options);
 }
@@ -227,7 +227,7 @@ ArchiveEntry* BZip2Archive::findLast(search_options_t& options)
 /* BZip2Archive::findAll
  * Returns all entries matching the search criteria in [options]
  *******************************************************************/
-vector<ArchiveEntry*> BZip2Archive::findAll(search_options_t& options)
+vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options)
 {
 	// Init search variables
 	options.match_name = options.match_name.Lower();

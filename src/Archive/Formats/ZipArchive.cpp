@@ -191,9 +191,9 @@ bool ZipArchive::open(string filename)
 	setMuted(false);
 
 	// Setup variables
-	this->filename = filename;
+	this->filename_ = filename;
 	setModified(false);
-	on_disk = true;
+	on_disk_ = true;
 
 	UI::setSplashProgressMessage("");
 
@@ -365,10 +365,10 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open the file
-	wxFFileInputStream in(filename);
+	wxFFileInputStream in(filename_);
 	if (!in.IsOk())
 	{
-		LOG_MESSAGE(1, "ZipArchive::loadEntryData: Unable to open zip file \"%s\"!", filename);
+		LOG_MESSAGE(1, "ZipArchive::loadEntryData: Unable to open zip file \"%s\"!", filename_);
 		return false;
 	}
 
@@ -376,7 +376,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	wxZipInputStream zip(in);
 	if (!zip.IsOk())
 	{
-		LOG_MESSAGE(1, "ZipArchive::loadEntryData: Invalid zip file \"%s\"!", filename);
+		LOG_MESSAGE(1, "ZipArchive::loadEntryData: Invalid zip file \"%s\"!", filename_);
 		return false;
 	}
 
@@ -440,9 +440,9 @@ ArchiveEntry* ZipArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  * [entry] is actually a valid map (ie. a wad archive in the maps
  * folder)
  *******************************************************************/
-Archive::mapdesc_t ZipArchive::getMapInfo(ArchiveEntry* entry)
+Archive::MapDesc ZipArchive::getMapInfo(ArchiveEntry* entry)
 {
-	mapdesc_t map;
+	MapDesc map;
 
 	// Check entry
 	if (!checkEntry(entry))
@@ -469,9 +469,9 @@ Archive::mapdesc_t ZipArchive::getMapInfo(ArchiveEntry* entry)
  * Detects all the maps in the archive and returns a vector of
  * information about them.
  *******************************************************************/
-vector<Archive::mapdesc_t> ZipArchive::detectMaps()
+vector<Archive::MapDesc> ZipArchive::detectMaps()
 {
-	vector<mapdesc_t> ret;
+	vector<MapDesc> ret;
 
 	// Get the maps directory
 	ArchiveTreeNode* mapdir = getDir("maps");
@@ -481,7 +481,7 @@ vector<Archive::mapdesc_t> ZipArchive::detectMaps()
 	// Go through entries in map dir
 	for (unsigned a = 0; a < mapdir->numEntries(); a++)
 	{
-		ArchiveEntry* entry = mapdir->getEntry(a);
+		ArchiveEntry* entry = mapdir->entryAt(a);
 
 		// Maps can only be wad archives
 		if (entry->getType()->getFormat() != "archive_wad")
@@ -491,13 +491,13 @@ vector<Archive::mapdesc_t> ZipArchive::detectMaps()
 		int format = MAP_UNKNOWN;
 		Archive* tempwad = new WadArchive();
 		tempwad->open(entry);
-		vector<mapdesc_t> emaps = tempwad->detectMaps();
+		vector<MapDesc> emaps = tempwad->detectMaps();
 		if (emaps.size() > 0)
 			format = emaps[0].format;
 		delete tempwad;
 
 		// Add map description
-		mapdesc_t md;
+		MapDesc md;
 		md.head = entry;
 		md.end = entry;
 		md.archive = true;
@@ -513,7 +513,7 @@ vector<Archive::mapdesc_t> ZipArchive::detectMaps()
  * Returns the first entry matching the search criteria in [options],
  * or NULL if no matching entry was found
  *******************************************************************/
-ArchiveEntry* ZipArchive::findFirst(search_options_t& options)
+ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = getRoot();
@@ -537,7 +537,7 @@ ArchiveEntry* ZipArchive::findFirst(search_options_t& options)
 	}
 
 	// Do default search
-	search_options_t opt = options;
+	SearchOptions opt = options;
 	opt.dir = dir;
 	opt.match_namespace = "";
 	return Archive::findFirst(opt);
@@ -547,7 +547,7 @@ ArchiveEntry* ZipArchive::findFirst(search_options_t& options)
  * Returns the last entry matching the search criteria in [options],
  * or NULL if no matching entry was found
  *******************************************************************/
-ArchiveEntry* ZipArchive::findLast(search_options_t& options)
+ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = getRoot();
@@ -571,7 +571,7 @@ ArchiveEntry* ZipArchive::findLast(search_options_t& options)
 	}
 
 	// Do default search
-	search_options_t opt = options;
+	SearchOptions opt = options;
 	opt.dir = dir;
 	opt.match_namespace = "";
 	return Archive::findLast(opt);
@@ -580,7 +580,7 @@ ArchiveEntry* ZipArchive::findLast(search_options_t& options)
 /* ZipArchive::findAll
  * Returns all entries matching the search criteria in [options]
  *******************************************************************/
-vector<ArchiveEntry*> ZipArchive::findAll(search_options_t& options)
+vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = getRoot();
@@ -605,7 +605,7 @@ vector<ArchiveEntry*> ZipArchive::findAll(search_options_t& options)
 	}
 
 	// Do default search
-	search_options_t opt = options;
+	SearchOptions opt = options;
 	opt.dir = dir;
 	opt.match_namespace = "";
 	return Archive::findAll(opt);

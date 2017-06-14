@@ -184,7 +184,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 				// Save offset to restore it once the recursion is done
 				size_t myoffset = mc.currentPos();
 				readDirectory(mc, d_o, n_l, ndir);
-				ndir->getDirEntry()->setState(0);
+				ndir->dirEntry()->setState(0);
 				// Restore offset and clean out the entry
 				mc.seek(myoffset, SEEK_SET);
 				delete nlump;
@@ -237,14 +237,14 @@ bool ResArchive::open(MemChunk& mc)
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'e' || magic[2] != 's' || magic[3] != '!')
 	{
-		LOG_MESSAGE(1, "ResArchive::openFile: File %s has invalid header", filename);
+		LOG_MESSAGE(1, "ResArchive::openFile: File %s has invalid header", filename_);
 		Global::error = "Invalid res header";
 		return false;
 	}
 
 	if (dir_size % RESDIRENTRYSIZE)
 	{
-		LOG_MESSAGE(1, "ResArchive::openFile: File %s has invalid directory size", filename);
+		LOG_MESSAGE(1, "ResArchive::openFile: File %s has invalid directory size", filename_);
 		Global::error = "Invalid res directory size";
 		return false;
 	}
@@ -347,12 +347,12 @@ bool ResArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open resfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "ResArchive::loadEntryData: Failed to open resfile %s", filename);
+		LOG_MESSAGE(1, "ResArchive::loadEntryData: Failed to open resfile %s", filename_);
 		return false;
 	}
 

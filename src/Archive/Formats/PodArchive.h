@@ -37,7 +37,7 @@ public:
 	bool	loadEntryData(ArchiveEntry* entry);
 
 	// Detection
-	vector<mapdesc_t>	detectMaps();
+	vector<MapDesc>	detectMaps();
 
 	// Static functions
 	static bool isPodArchive(MemChunk& mc);

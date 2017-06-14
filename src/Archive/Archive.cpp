@@ -29,26 +29,9 @@
  *******************************************************************/
 #include "Main.h"
 #include "Archive.h"
-#include "App.h"
-#include "General/Misc.h"
 #include "General/UndoRedo.h"
 #include "General/Clipboard.h"
 #include "Utility/Parser.h"
-
-/* Archive Directory Layout:
- * ---------------------
- * [root entries]
- * [subdir 1]
- * [subdir 1 entries]
- * [subdir 1/subdir 1.1]
- * [subdir 1/subdir 1.1 entries]
- * [subdir 1/subdir 1.2]
- * [subdir 1/subdir 1.2 entries]
- * [subdir 2] (has no entries)
- * [subdir 2/subdir 2.1]
- * [subdir 2/subdir 2.1 entries]
- * etc...
- */
 
 
 /*******************************************************************
@@ -61,458 +44,8 @@ vector<ArchiveFormat> Archive::formats;
 
 
 /*******************************************************************
- * ARCHIVETREENODE CLASS FUNCTIONS
+ * UNDO STEPS
  *******************************************************************/
-
-/* ArchiveTreeNode::ArchiveTreeNode
- * ArchiveTreeNode class constructor
- *******************************************************************/
-ArchiveTreeNode::ArchiveTreeNode(ArchiveTreeNode* parent) : STreeNode(parent)
-{
-	// Init dir entry
-	dir_entry = std::make_unique<ArchiveEntry>();
-	dir_entry->type = EntryType::folderType();
-	dir_entry->parent = parent;
-
-	// Init variables
-	archive = nullptr;
-}
-
-/* ArchiveTreeNode::~ArchiveTreeNode
- * ArchiveTreeNode class destructor
- *******************************************************************/
-ArchiveTreeNode::~ArchiveTreeNode()
-{
-}
-
-/* ArchiveTreeNode::addChild
- * Override of STreeNode::addChild to also set the child node's
- * directory entry parent to this node
- *******************************************************************/
-void ArchiveTreeNode::addChild(STreeNode* child)
-{
-	// Do default child add
-	STreeNode::addChild(child);
-
-	// The child node's dir_entry should have this as parent
-	((ArchiveTreeNode*)child)->dir_entry->parent = this;
-}
-
-/* ArchiveTreeNode::getArchive
- * Returns the parent archive of this node (gets the parent archive
- * of the *root* parent of this node)
- *******************************************************************/
-Archive* ArchiveTreeNode::getArchive()
-{
-	if (parent)
-		return ((ArchiveTreeNode*)parent)->getArchive();
-	else
-		return archive;
-}
-
-/* ArchiveTreeNode::getName
- * Returns the node (directory) name
- *******************************************************************/
-string ArchiveTreeNode::getName()
-{
-	// Check dir entry exists
-	if (!dir_entry)
-		return "ERROR";
-
-	return dir_entry->getName();
-}
-
-/* ArchiveTreeNode::entryIndex
- * Returns the index of [entry] within this directory, or -1 if
- * the entry doesn't exist
- *******************************************************************/
-int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
-{
-	// Check entry was given
-	if (!entry)
-		return -1;
-
-	// Search for it
-	size_t size = entries.size();
-	if (entry->index_guess < startfrom || entry->index_guess >= size)
-	{
-		for (unsigned a = startfrom; a < size; a++)
-		{
-			if (entries[a].get() == entry)
-			{
-				entry->index_guess = a;
-				return (int)a;
-			}
-		}
-	} else {
-		for (unsigned a = entry->index_guess; a < size; a++)
-		{
-			if (entries[a].get() == entry)
-			{
-				entry->index_guess = a;
-				return (int)a;
-			}
-		}
-		for (unsigned a = startfrom; a < entry->index_guess; a++)
-		{
-			if (entries[a].get() == entry)
-			{
-				entry->index_guess = a;
-				return (int)a;
-			}
-		}
-	}
-
-	// Not found
-	return -1;
-}
-
-/* ArchiveTreeNode::getEntry
- * Returns the entry at [index] in this directory, or null if [index]
- * is out of bounds
- *******************************************************************/
-ArchiveEntry* ArchiveTreeNode::getEntry(unsigned index)
-{
-	// Check index
-	if (index >= entries.size())
-		return nullptr;
-
-	return entries[index].get();
-}
-
-/* ArchiveTreeNode::getEntryShared
- * Returns a shared pointer to the entry at [index] in this
- * directory, or null if [index] is out of bounds
- *******************************************************************/
-ArchiveEntry::SPtr ArchiveTreeNode::getEntryShared(unsigned index)
-{
-	// Check index
-	if (index >= entries.size())
-		return nullptr;
-
-	return entries[index];
-}
-
-/* ArchiveTreeNode::getEntry
- * Returns the entry matching [name] in this directory, or null if
- * no entries match
- *******************************************************************/
-ArchiveEntry* ArchiveTreeNode::getEntry(string name, bool cut_ext)
-{
-	// Check name was given
-	if (name == "")
-		return nullptr;
-
-	// Go through entries
-	for (auto& entry : entries)
-	{
-		// Check for (non-case-sensitive) name match
-		if (S_CMPNOCASE(entry->getName(cut_ext), name))
-			return entry.get();
-	}
-
-	// Not found
-	return nullptr;
-}
-
-/* ArchiveTreeNode::getEntryShared
- * Returns a shared pointer to the entry matching [name] in this
- * directory, or null if no entries match
- *******************************************************************/
-ArchiveEntry::SPtr ArchiveTreeNode::getEntryShared(string name, bool cut_ext)
-{
-	// Check name was given
-	if (name == "")
-		return nullptr;
-
-	// Go through entries
-	for (auto& entry : entries)
-	{
-		// Check for (non-case-sensitive) name match
-		if (S_CMPNOCASE(entry->getName(cut_ext), name))
-			return entry;
-	}
-
-	// Not found
-	return nullptr;
-}
-
-/* ArchiveTreeNode::getEntryShared
- * Returns a shared pointer to [entry] in this directory, or null if
- * no entries match
- *******************************************************************/
-ArchiveEntry::SPtr ArchiveTreeNode::getEntryShared(ArchiveEntry* entry)
-{
-	// Find entry
-	for (auto& e : entries)
-		if (entry == e.get())
-			return e;
-
-	// Not in this ArchiveTreeNode
-	return nullptr;
-}
-
-/* ArchiveTreeNode::numEntries
- * Returns the number of entries in this directory
- *******************************************************************/
-unsigned ArchiveTreeNode::numEntries(bool inc_subdirs)
-{
-	if (!inc_subdirs)
-		return entries.size();
-	else
-	{
-		unsigned count = entries.size();
-		for (unsigned a = 0; a < children.size(); a++)
-			count += ((ArchiveTreeNode*)children[a])->numEntries(true);
-
-		return count;
-	}
-}
-
-/* ArchiveTreeNode::linkEntries
- * Links two entries. [first] must come before [second] in the list
- *******************************************************************/
-void ArchiveTreeNode::linkEntries(ArchiveEntry* first, ArchiveEntry* second)
-{
-	if (first) first->next = second;
-	if (second) second->prev = first;
-}
-
-/* ArchiveTreeNode::addEntry
- * Adds [entry] to this directory at [index], or at the end if
- * [index] is out of bounds
- *******************************************************************/
-bool ArchiveTreeNode::addEntry(ArchiveEntry* entry, unsigned index)
-{
-	// Check entry
-	if (!entry)
-		return false;
-
-	// Check index
-	if (index >= entries.size())
-	{
-		// 'Invalid' index, add to end of list
-
-		// Link entry
-		if (entries.size() > 0)
-		{
-			entries.back()->next = entry;
-			entry->prev = entries.back().get();
-		}
-		entry->next = nullptr;
-
-		// Add it to end
-		entries.push_back(ArchiveEntry::SPtr(entry));
-	}
-	else
-	{
-		// Link entry
-		if (index > 0)
-		{
-			entries[index-1]->next = entry;
-			entry->prev = entries[index-1].get();
-		}
-		entries[index]->prev = entry;
-		entry->next = entries[index].get();
-
-		// Add it at index
-		entries.insert(entries.begin() + index, ArchiveEntry::SPtr(entry));
-	}
-
-	// Set entry's parent to this node
-	entry->parent = this;
-
-	return true;
-}
-
-/* ArchiveTreeNode::addEntry
- * Adds [entry] to this directory at [index], or at the end if
- * [index] is out of bounds
- *******************************************************************/
-bool ArchiveTreeNode::addEntry(ArchiveEntry::SPtr& entry, unsigned index)
-{
-	// Check entry
-	if (!entry)
-		return false;
-
-	// Check index
-	if (index >= entries.size())
-	{
-		// 'Invalid' index, add to end of list
-
-		// Link entry
-		if (entries.size() > 0)
-		{
-			entries.back()->next = entry.get();
-			entry->prev = entries.back().get();
-		}
-		entry->next = nullptr;
-
-		// Add it to end
-		entries.push_back(ArchiveEntry::SPtr(entry));
-	}
-	else
-	{
-		// Link entry
-		if (index > 0)
-		{
-			entries[index-1]->next = entry.get();
-			entry->prev = entries[index-1].get();
-		}
-		entries[index]->prev = entry.get();
-		entry->next = entries[index].get();
-
-		// Add it at index
-		entries.insert(entries.begin() + index, ArchiveEntry::SPtr(entry));
-	}
-
-	// Set entry's parent to this node
-	entry->parent = this;
-
-	return true;
-}
-
-/* ArchiveTreeNode::removeEntry
- * Removes the entry at [index] in this directory . Returns false if
- * [index] was out of bounds, true otherwise
- *******************************************************************/
-bool ArchiveTreeNode::removeEntry(unsigned index)
-{
-	// Check index
-	if (index >= entries.size())
-		return false;
-
-	// De-parent entry
-	entries[index]->parent = nullptr;
-
-	// De-link entry
-	entries[index]->prev = nullptr;
-	entries[index]->next = nullptr;
-	if (index > 0) entries[index-1]->next = getEntry(index+1);
-	if (index < entries.size()-1) entries[index+1]->prev = getEntry(index-1);
-
-	// Remove it from the entry list
-	entries.erase(entries.begin() + index);
-
-	return true;
-}
-
-/* ArchiveTreeNode::swapEntries
- * Swaps the entry at [index1] with the entry at [index2] within this
- * directory. Returns false if either index was invalid,
- * true otherwise
- *******************************************************************/
-bool ArchiveTreeNode::swapEntries(unsigned index1, unsigned index2)
-{
-	// Check indices
-	if (index1 >= entries.size() || index2 >= entries.size() || index1==index2)
-		return false;
-
-	// Get entries to swap
-	ArchiveEntry* entry1 = entries[index1].get();
-	ArchiveEntry* entry2 = entries[index2].get();
-
-	// Swap entries
-	//entries[index1] = entry2;
-	//entries[index2] = entry1;
-	entries[index1].swap(entries[index2]);
-
-	// Update links
-	linkEntries(getEntry(index1-1), entry2);
-	linkEntries(entry2, getEntry(index1+1));
-	linkEntries(getEntry(index2-1), entry1);
-	linkEntries(entry1, getEntry(index2+1));
-
-	return true;
-}
-
-/* ArchiveTreeNode::clone
- * Returns a clone of this node
- *******************************************************************/
-ArchiveTreeNode* ArchiveTreeNode::clone()
-{
-	// Create copy
-	ArchiveTreeNode* copy = new ArchiveTreeNode();
-	copy->setName(dir_entry->getName());
-
-	// Copy entries
-	for (unsigned a = 0; a < entries.size(); a++)
-		copy->addEntry(new ArchiveEntry(*(entries[a])));
-
-	// Copy subdirectories
-	for (unsigned a = 0; a < children.size(); a++)
-		copy->addChild(((ArchiveTreeNode*)children[a])->clone());
-
-	return copy;
-}
-
-/* ArchiveTreeNode::merge
- * Merges [node] with this node. Entries within [node] are added
- * at [position] within this node. Returns false if [node] is invalid,
- * true otherwise
- *******************************************************************/
-bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
-{
-	// Check node was given to merge
-	if (!node)
-		return false;
-
-	// Merge entries
-	for (unsigned a = 0; a < node->numEntries(); a++)
-	{
-		if (node->getEntry(a))
-		{
-			string name = Misc::lumpNameToFileName(node->getEntry(a)->getName());
-			node->getEntry(a)->setName(name);
-		}
-		ArchiveEntry* nentry = new ArchiveEntry(*(node->getEntry(a)));
-		addEntry(nentry, position);
-		nentry->setState(state);
-
-		if (position < entries.size())
-			position++;
-	}
-
-	// Merge subdirectories
-	for (unsigned a = 0; a < node->nChildren(); a++)
-	{
-		ArchiveTreeNode* child = (ArchiveTreeNode*)STreeNode::addChild(node->getChild(a)->getName());
-		child->merge((ArchiveTreeNode*)node->getChild(a));
-		child->getDirEntry()->setState(state);
-	}
-
-	return true;
-}
-
-bool ArchiveTreeNode::exportTo(string path)
-{
-	// Create directory if needed
-	if (!wxDirExists(path))
-		wxMkDir(path, 0);
-
-	// Export entries as files
-	for (unsigned a = 0; a < entries.size(); a++)
-	{
-		// Setup entry filename
-		wxFileName fn(entries[a]->getName());
-		fn.SetPath(path);
-
-		// Add file extension if it doesn't exist
-		if (!fn.HasExt())
-			fn.SetExt(entries[a]->getType()->getExtension());
-
-		// Do export
-		entries[a]->exportFile(fn.GetFullPath());
-	}
-
-	// Export subdirectories
-	for (unsigned a = 0; a < children.size(); a++)
-		((ArchiveTreeNode*)children[a])->exportTo(path + "/" + children[a]->getName());
-
-	return true;
-}
-
-
 
 class EntryRenameUS : public UndoStep
 {
@@ -533,28 +66,28 @@ public:
 		this->new_name = new_name;
 	}
 
-	bool doUndo()
+	bool doUndo() override
 	{
 		// Get entry parent dir
 		ArchiveTreeNode* dir = archive->getDir(entry_path);
 		if (dir)
 		{
 			// Rename entry
-			ArchiveEntry* entry = dir->getEntry(entry_index);
+			ArchiveEntry* entry = dir->entryAt(entry_index);
 			return archive->renameEntry(entry, old_name);
 		}
 
 		return false;
 	}
 
-	bool doRedo()
+	bool doRedo() override
 	{
 		// Get entry parent dir
 		ArchiveTreeNode* dir = archive->getDir(entry_path);
 		if (dir)
 		{
 			// Rename entry
-			ArchiveEntry* entry = dir->getEntry(entry_index);
+			ArchiveEntry* entry = dir->entryAt(entry_index);
 			return archive->renameEntry(entry, new_name);
 		}
 
@@ -574,11 +107,11 @@ private:
 public:
 	DirRenameUS(ArchiveTreeNode* dir, string new_name) : UndoStep()
 	{
-		this->archive = dir->getArchive();
+		this->archive = dir->archive();
 		this->new_name = new_name;
 		this->old_name = dir->getName();
 		this->path = dir->getParent()->getPath() + new_name;
-		this->prev_state = dir->getDirEntry()->getState();
+		this->prev_state = dir->dirEntry()->getState();
 	}
 
 	void swapNames()
@@ -590,14 +123,14 @@ public:
 		path = dir->getPath();
 	}
 
-	bool doUndo()
+	bool doUndo() override
 	{
 		swapNames();
-		archive->getDir(path)->getDirEntry()->setState(prev_state);
+		archive->getDir(path)->dirEntry()->setState(prev_state);
 		return true;
 	}
 
-	bool doRedo()
+	bool doRedo() override
 	{
 		swapNames();
 		return true;
@@ -615,13 +148,13 @@ private:
 public:
 	EntrySwapUS(ArchiveTreeNode* dir, unsigned index1, unsigned index2)
 	{
-		archive = dir->getArchive();
+		archive = dir->archive();
 		path = dir->getPath();
 		this->index1 = index1;
 		this->index2 = index2;
 	}
 
-	bool doSwap()
+	bool doSwap() const
 	{
 		// Get parent dir
 		ArchiveTreeNode* dir = archive->getDir(path);
@@ -630,8 +163,8 @@ public:
 		return false;
 	}
 
-	bool doUndo() { return doSwap(); }
-	bool doRedo() { return doSwap(); }
+	bool doUndo() override { return doSwap(); }
+	bool doRedo() override { return doSwap(); }
 };
 
 class EntryCreateDeleteUS : public UndoStep
@@ -659,17 +192,17 @@ public:
 			delete entry_copy;
 	}
 
-	bool deleteEntry()
+	bool deleteEntry() const
 	{
 		// Get parent dir
 		ArchiveTreeNode* dir = archive->getDir(path);
 		if (dir)
-			return archive->removeEntry(dir->getEntry(index));
+			return archive->removeEntry(dir->entryAt(index));
 		else
 			return false;
 	}
 
-	bool createEntry()
+	bool createEntry() const
 	{
 		// Get parent dir
 		ArchiveTreeNode* dir = archive->getDir(path);
@@ -682,7 +215,7 @@ public:
 			return false;
 	}
 
-	bool doUndo()
+	bool doUndo() override
 	{
 		if (created)
 			return deleteEntry();
@@ -690,7 +223,7 @@ public:
 			return createEntry();
 	}
 
-	bool doRedo()
+	bool doRedo() override
 	{
 		if (!created)
 			return deleteEntry();
@@ -713,7 +246,7 @@ public:
 	DirCreateDeleteUS(bool created, ArchiveTreeNode* dir)
 	{
 		this->created = created;
-		this->archive = dir->getArchive();
+		this->archive = dir->archive();
 		this->path = dir->getPath();
 		cb_tree = nullptr;
 
@@ -726,7 +259,7 @@ public:
 			// Get child entries
 			vector<ArchiveEntry*> entries;
 			for (unsigned a = 0; a < dir->numEntries(); a++)
-				entries.push_back(dir->getEntry(a));
+				entries.push_back(dir->entryAt(a));
 
 			// Get subdirectories
 			vector<ArchiveTreeNode*> subdirs;
@@ -745,7 +278,7 @@ public:
 			delete cb_tree;
 	}
 
-	bool doUndo()
+	bool doUndo() override
 	{
 		if (created)
 			return archive->removeDir(path);
@@ -759,13 +292,13 @@ public:
 				dir->merge(cb_tree->getTree(), 0, 0);
 
 			if (dir)
-				dir->getDirEntry()->setState(0);
+				dir->dirEntry()->setState(0);
 
 			return !!dir;
 		}
 	}
 
-	bool doRedo()
+	bool doRedo() override
 	{
 		if (!created)
 			return archive->removeDir(path);
@@ -783,16 +316,13 @@ public:
  * Archive class constructor
  *******************************************************************/
 Archive::Archive(string format) :
-	format{ format },
-	modified{ true },
-	on_disk{ false },
-	parent{ nullptr },
-	read_only{ false },
-	dir_root{ std::make_unique<ArchiveTreeNode>() }
+	format_{ format },
+	parent_{ nullptr },
+	on_disk_{ false },
+	read_only_{ false },
+	modified_{ true },
+	dir_root_{ nullptr, this }
 {
-	// Create root directory
-	//dir_root = new ArchiveTreeNode();
-	dir_root->archive = this;
 }
 
 /* Archive::~Archive
@@ -800,17 +330,17 @@ Archive::Archive(string format) :
  *******************************************************************/
 Archive::~Archive()
 {
-	if (parent)
-		parent->unlock();
+	if (parent_)
+		parent_->unlock();
 }
 
-/* Archive::~getDesc
+/* Archive::getDesc
  * Returns the ArchiveFormat descriptor for this archive
  *******************************************************************/
-ArchiveFormat Archive::getDesc()
+ArchiveFormat Archive::getDesc() const
 {
 	for (auto fmt : formats)
-		if (fmt.id == format)
+		if (fmt.id == format_)
 			return fmt;
 
 	return ArchiveFormat("unknown");
@@ -822,22 +352,22 @@ ArchiveFormat Archive::getDesc()
 string Archive::getFilename(bool full)
 {
 	// If the archive is within another archive, return "<parent archive>/<entry name>"
-	if (parent)
+	if (parent_)
 	{
 		string parent_archive = "";
 		if (getParentArchive())
 			parent_archive = getParentArchive()->getFilename(false) + "/";
 
-		wxFileName fn(parent->getName());
+		wxFileName fn(parent_->getName());
 		return parent_archive + fn.GetName();
 	}
 
 	if (full)
-		return filename;
+		return filename_;
 	else
 	{
 		// Get the filename without the path
-		wxFileName fn(filename);
+		wxFileName fn(filename_);
 		return fn.GetFullName();
 	}
 }
@@ -857,20 +387,20 @@ bool Archive::open(string filename)
 	}
 
 	// Update filename before opening
-	string backupname = this->filename;
-	this->filename = filename;
+	string backupname = this->filename_;
+	this->filename_ = filename;
 
 	// Load from MemChunk
 	sf::Clock timer;
 	if (open(mc))
 	{
 		LOG_MESSAGE(2, "Archive::open took %dms", timer.getElapsedTime().asMilliseconds());
-		this->on_disk = true;
+		this->on_disk_ = true;
 		return true;
 	}
 	else
 	{
-		this->filename = backupname;
+		this->filename_ = backupname;
 		return false;
 	}
 }
@@ -885,8 +415,8 @@ bool Archive::open(ArchiveEntry* entry)
 	if (entry && open(entry->getMCData()))
 	{
 		// Update variables and return success
-		parent = entry;
-		parent->lock();
+		parent_ = entry;
+		parent_->lock();
 		return true;
 	}
 	else
@@ -899,7 +429,7 @@ bool Archive::open(ArchiveEntry* entry)
 void Archive::setModified(bool modified)
 {
 	// Set modified
-	this->modified = modified;
+	this->modified_ = modified;
 
 	// Announce
 	announce("modified");
@@ -930,9 +460,9 @@ ArchiveEntry* Archive::getEntry(string name, bool cut_ext, ArchiveTreeNode* dir)
 {
 	// Check if dir was given
 	if (!dir)
-		dir = dir_root.get();	// None given, use root
+		dir = &dir_root_;	// None given, use root
 
-	return dir->getEntry(name, cut_ext);
+	return dir->entry(name, cut_ext);
 }
 
 /* Archive::getEntry
@@ -943,9 +473,9 @@ ArchiveEntry* Archive::getEntry(unsigned index, ArchiveTreeNode* dir)
 {
 	// Check if dir was given
 	if (!dir)
-		dir = dir_root.get();	// None given, use root
+		dir = &dir_root_;	// None given, use root
 
-	return dir->getEntry(index);
+	return dir->entryAt(index);
 }
 
 /* Archive::entryIndex
@@ -956,7 +486,7 @@ int	Archive::entryIndex(ArchiveEntry* entry, ArchiveTreeNode* dir)
 {
 	// Check if dir was given
 	if (!dir)
-		dir = dir_root.get();	// None given, use root
+		dir = &dir_root_;	// None given, use root
 
 	return dir->entryIndex(entry);
 }
@@ -986,7 +516,7 @@ ArchiveEntry* Archive::entryAtPath(string path)
 		return nullptr;
 
 	// Return entry
-	return dir->getEntry(fn.GetFullName());
+	return dir->entry(fn.GetFullName());
 }
 
 /* Archive::entryAtPath
@@ -1014,7 +544,7 @@ ArchiveEntry::SPtr Archive::entryAtPathShared(string path)
 		return nullptr;
 
 	// Return entry
-	return dir->getEntryShared(fn.GetFullName());
+	return dir->sharedEntry(fn.GetFullName());
 }
 
 /* Archive::write
@@ -1043,17 +573,17 @@ bool Archive::save(string filename)
 	bool success = false;
 
 	// Check if the archive is read-only
-	if (read_only)
+	if (read_only_)
 	{
 		Global::error = "Archive is read-only";
 		return false;
 	}
 
 	// If the archive has a parent ArchiveEntry, just write it to that
-	if (parent)
+	if (parent_)
 	{
-		success = write(parent->getMCData());
-		parent->setState(1);
+		success = write(parent_->getMCData());
+		parent_->setState(1);
 	}
 	else
 	{
@@ -1062,29 +592,29 @@ bool Archive::save(string filename)
 		{
 			// New filename is given (ie 'save as'), write to new file and change archive filename accordingly
 			success = write(filename);
-			if (success) this->filename = filename;
+			if (success) this->filename_ = filename;
 
 			// Update variables
-			this->on_disk = true;
+			this->on_disk_ = true;
 		}
-		else if (!this->filename.IsEmpty())
+		else if (!this->filename_.IsEmpty())
 		{
 			// No filename is given, but the archive has a filename, so overwrite it (and make a backup)
 
 			// Create backup
-			if (backup_archives && wxFileName::FileExists(this->filename) && save_backup)
+			if (backup_archives && wxFileName::FileExists(this->filename_) && save_backup)
 			{
 				// Copy current file contents to new backup file
-				string bakfile = this->filename + ".bak";
+				string bakfile = this->filename_ + ".bak";
 				LOG_MESSAGE(1, "Creating backup %s", bakfile);
-				wxCopyFile(this->filename, bakfile, true);
+				wxCopyFile(this->filename_, bakfile, true);
 			}
 
 			// Write it to the file
-			success = write(this->filename);
+			success = write(this->filename_);
 
 			// Update variables
-			this->on_disk = true;
+			this->on_disk_ = true;
 		}
 	}
 
@@ -1103,7 +633,7 @@ bool Archive::save(string filename)
  *******************************************************************/
 unsigned Archive::numEntries()
 {
-	return dir_root->numEntries(true);
+	return dir_root_.numEntries(true);
 }
 
 /* Archive::close
@@ -1114,17 +644,12 @@ void Archive::close()
 	// Announce
 	announce("closing");
 
-	// Delete root directory
-	//delete dir_root.get();
-
-	// Recreate root directory
-	//dir_root = new ArchiveTreeNode();
-	dir_root = std::make_unique<ArchiveTreeNode>();
-	dir_root->archive = this;
+	// Clear the root dir
+	dir_root_.clear();
 
 	// Unlock parent entry if it exists
-	if (parent)
-		parent->unlock();
+	if (parent_)
+		parent_->unlock();
 
 	// Announce
 	announce("closed");
@@ -1164,15 +689,15 @@ void Archive::getEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveTreeNode* s
 {
 	// If no start dir is specified, use the root dir
 	if (!start)
-		start = dir_root.get();
+		start = &dir_root_;
 
 	// Add the directory entry to the list if it isn't the root dir
-	if (start != dir_root.get())
-		list.push_back(start->dir_entry.get());
+	if (start != &dir_root_)
+		list.push_back(start->dir_entry_.get());
 
 	// Add all entries to the list
 	for (unsigned a = 0; a < start->numEntries(); a++)
-		list.push_back(start->getEntry(a));
+		list.push_back(start->entryAt(a));
 
 	// Go through subdirectories and add them to the list
 	for (unsigned a = 0; a < start->nChildren(); a++)
@@ -1186,15 +711,15 @@ void Archive::getEntryTreeAsList(vector<ArchiveEntry::SPtr>& list, ArchiveTreeNo
 {
 	// If no start dir is specified, use the root dir
 	if (!start)
-		start = dir_root.get();
+		start = &dir_root_;
 
 	// Add the directory entry to the list if it isn't the root dir
-	if (start != dir_root.get())
-		list.push_back(start->dir_entry);
+	if (start != &dir_root_)
+		list.push_back(start->dir_entry_);
 
 	// Add all entries to the list
 	for (unsigned a = 0; a < start->numEntries(); a++)
-		list.push_back(start->getEntryShared(a));
+		list.push_back(start->sharedEntryAt(a));
 
 	// Go through subdirectories and add them to the list
 	for (unsigned a = 0; a < start->nChildren(); a++)
@@ -1234,11 +759,11 @@ ArchiveTreeNode* Archive::getDir(string path, ArchiveTreeNode* base)
 	if (!base)
 	{
 		// None given, use root
-		base = dir_root.get();
+		base = &dir_root_;
 
 		// If empty directory, just return the root
 		if (path == "/" || path == "")
-			return dir_root.get();
+			return &dir_root_;
 
 		// Remove starting '/'
 		if (path.StartsWith("/"))
@@ -1257,12 +782,12 @@ ArchiveTreeNode* Archive::getDir(string path, ArchiveTreeNode* base)
 ArchiveTreeNode* Archive::createDir(string path, ArchiveTreeNode* base)
 {
 	// Abort if read only
-	if (read_only)
-		return dir_root.get();
+	if (read_only_)
+		return &dir_root_;
 
 	// If no base dir specified, set it to root
 	if (!base)
-		base = dir_root.get();
+		base = &dir_root_;
 
 	if (path.IsEmpty())
 		return base;
@@ -1294,7 +819,7 @@ ArchiveTreeNode* Archive::createDir(string path, ArchiveTreeNode* base)
 bool Archive::removeDir(string path, ArchiveTreeNode* base)
 {
 	// Abort if read only
-	if (read_only)
+	if (read_only_)
 		return false;
 
 	// Get the dir to remove
@@ -1328,11 +853,11 @@ bool Archive::removeDir(string path, ArchiveTreeNode* base)
 bool Archive::renameDir(ArchiveTreeNode* dir, string new_name)
 {
 	// Abort if read only
-	if (read_only)
+	if (read_only_)
 		return false;
 
 	// Check the directory is part of this archive
-	if (dir->getArchive() != this)
+	if (dir->archive() != this)
 		return false;
 
 	// Rename the directory if needed
@@ -1342,7 +867,7 @@ bool Archive::renameDir(ArchiveTreeNode* dir, string new_name)
 			UndoRedo::currentManager()->recordUndoStep(new DirRenameUS(dir, new_name));
 
 		dir->setName(new_name);
-		dir->getDirEntry()->setState(1);
+		dir->dirEntry()->setState(1);
 	}
 	else
 		return true;
@@ -1369,7 +894,7 @@ bool Archive::renameDir(ArchiveTreeNode* dir, string new_name)
 ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
 {
 	// Abort if read only
-	if (read_only)
+	if (read_only_)
 		return nullptr;
 
 	// Check valid entry
@@ -1378,7 +903,7 @@ ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveT
 
 	// If no dir given, set it to the root dir
 	if (!dir)
-		dir = dir_root.get();
+		dir = &dir_root_;
 
 	// Make a copy of the entry to add if needed
 	if (copy)
@@ -1414,7 +939,7 @@ ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveT
 ArchiveEntry* Archive::addNewEntry(string name, unsigned position, ArchiveTreeNode* dir)
 {
 	// Abort if read only
-	if (read_only)
+	if (read_only_)
 		return nullptr;
 
 	// Create the new entry
@@ -1434,7 +959,7 @@ ArchiveEntry* Archive::addNewEntry(string name, unsigned position, ArchiveTreeNo
 ArchiveEntry* Archive::addNewEntry(string name, string add_namespace)
 {
 	// Abort if read only
-	if (read_only)
+	if (read_only_)
 		return nullptr;
 
 	// Create the new entry
@@ -1454,7 +979,7 @@ ArchiveEntry* Archive::addNewEntry(string name, string add_namespace)
 bool Archive::removeEntry(ArchiveEntry* entry)
 {
 	// Abort if read only
-	if (read_only)
+	if (read_only_)
 		return false;
 
 	// Check entry
@@ -1515,10 +1040,10 @@ bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveTreeNode* dir
 {
 	// Get directory
 	if (!dir)
-		dir = dir_root.get();
+		dir = &dir_root_;
 
 	// Check if either entry is locked
-	if (dir->getEntry(index1)->isLocked() || dir->getEntry(index2)->isLocked())
+	if (dir->entryAt(index1)->isLocked() || dir->entryAt(index2)->isLocked())
 		return false;
 
 	// Create undo step
@@ -1548,7 +1073,7 @@ bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveTreeNode* dir
 bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 {
 	// Abort if read only
-	if (read_only)
+	if (read_only_)
 		return false;
 
 	// Check both entries
@@ -1606,7 +1131,7 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir)
 {
 	// Abort if read only
-	if (read_only)
+	if (read_only_)
 		return false;
 
 	// Check the entry
@@ -1626,10 +1151,10 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode*
 
 	// If no destination dir specified, use root
 	if (!dir)
-		dir = dir_root.get();
+		dir = &dir_root_;
 
 	// Remove the entry from its current dir
-	auto sptr = dir->getEntryShared(dir->entryIndex(entry)); // Get a shared pointer so it isn't deleted
+	auto sptr = dir->sharedEntryAt(dir->entryIndex(entry)); // Get a shared pointer so it isn't deleted
 	removeEntry(entry);
 
 	// Add it to the destination dir
@@ -1649,7 +1174,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode*
 bool Archive::renameEntry(ArchiveEntry* entry, string name)
 {
 	// Abort if read only
-	if (read_only)
+	if (read_only_)
 		return false;
 
 	// Check entry
@@ -1719,7 +1244,7 @@ bool Archive::importDir(string directory)
 
 		// Set unmodified
 		entry->setState(0);
-		dir->getDirEntry()->setState(0);
+		dir->dirEntry()->setState(0);
 	}
 
 	return true;
@@ -1763,7 +1288,7 @@ string Archive::detectNamespace(size_t index, ArchiveTreeNode * dir)
 {
 	if (dir && index < dir->numEntries())
 	{
-		return detectNamespace(dir->getEntry(index));
+		return detectNamespace(dir->entryAt(index));
 	}
 	return "global";
 }
@@ -1794,11 +1319,11 @@ string Archive::detectNamespace(ArchiveEntry* entry)
  * Returns the first entry matching the search criteria in [options],
  * or null if no matching entry was found
  *******************************************************************/
-ArchiveEntry* Archive::findFirst(search_options_t& options)
+ArchiveEntry* Archive::findFirst(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = options.dir;
-	if (!dir) dir = dir_root.get();
+	if (!dir) dir = &dir_root_;
 	options.match_name.MakeLower();		// Force case-insensitive
 
 	// Begin search
@@ -1806,7 +1331,7 @@ ArchiveEntry* Archive::findFirst(search_options_t& options)
 	// Search entries
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		ArchiveEntry* entry = dir->getEntry(a);
+		ArchiveEntry* entry = dir->entryAt(a);
 
 		// Check type
 		if (options.match_type)
@@ -1850,7 +1375,7 @@ ArchiveEntry* Archive::findFirst(search_options_t& options)
 	{
 		for (unsigned a = 0; a < dir->nChildren(); a++)
 		{
-			search_options_t opt = options;
+			SearchOptions opt = options;
 			opt.dir = (ArchiveTreeNode*)dir->getChild(a);
 			ArchiveEntry* match = findFirst(opt);
 
@@ -1868,11 +1393,11 @@ ArchiveEntry* Archive::findFirst(search_options_t& options)
  * Returns the last entry matching the search criteria in [options],
  * or null if no matching entry was found
  *******************************************************************/
-ArchiveEntry* Archive::findLast(search_options_t& options)
+ArchiveEntry* Archive::findLast(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = options.dir;
-	if (!dir) dir = dir_root.get();
+	if (!dir) dir = &dir_root_;
 	options.match_name.MakeLower();		// Force case-insensitive
 
 	// Begin search
@@ -1882,7 +1407,7 @@ ArchiveEntry* Archive::findLast(search_options_t& options)
 	{
 		for (int a = dir->nChildren() - 1; a >= 0; a--)
 		{
-			search_options_t opt = options;
+			SearchOptions opt = options;
 			opt.dir = (ArchiveTreeNode*)dir->getChild(a);
 			ArchiveEntry* match = findLast(opt);
 
@@ -1895,7 +1420,7 @@ ArchiveEntry* Archive::findLast(search_options_t& options)
 	// Search entries (bottom-up)
 	for (int a = dir->numEntries() - 1; a >= 0; a--)
 	{
-		ArchiveEntry* entry = dir->getEntry(a);
+		ArchiveEntry* entry = dir->entryAt(a);
 
 		// Check type
 		if (options.match_type)
@@ -1942,11 +1467,11 @@ ArchiveEntry* Archive::findLast(search_options_t& options)
  * Returns a list of entries matching the search criteria in
  * [options]
  *******************************************************************/
-vector<ArchiveEntry*> Archive::findAll(search_options_t& options)
+vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = options.dir;
-	if (!dir) dir = dir_root.get();
+	if (!dir) dir = &dir_root_;
 	vector<ArchiveEntry*> ret;
 	options.match_name.MakeLower();		// Force case-insensitive
 
@@ -1955,7 +1480,7 @@ vector<ArchiveEntry*> Archive::findAll(search_options_t& options)
 	// Search entries
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		ArchiveEntry* entry = dir->getEntry(a);
+		ArchiveEntry* entry = dir->entryAt(a);
 
 		// Check type
 		if (options.match_type)
@@ -1999,7 +1524,7 @@ vector<ArchiveEntry*> Archive::findAll(search_options_t& options)
 	{
 		for (unsigned a = 0; a < dir->nChildren(); a++)
 		{
-			search_options_t opt = options;
+			SearchOptions opt = options;
 			opt.dir = (ArchiveTreeNode*)dir->getChild(a);
 
 			// Add any matches to the list
@@ -2019,13 +1544,13 @@ vector<ArchiveEntry*> Archive::findAll(search_options_t& options)
 vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveTreeNode* dir)
 {
 	// Init search variables
-	if (dir == nullptr) dir = dir_root.get();
+	if (dir == nullptr) dir = &dir_root_;
 	vector<ArchiveEntry*> ret;
 
 	// Search entries
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		ArchiveEntry* entry = dir->getEntry(a);
+		ArchiveEntry* entry = dir->entryAt(a);
 
 		// Add new and modified entries
 		if (entry->getState() != 0)
@@ -2142,7 +1667,7 @@ bool TreelessArchive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTre
 	for (unsigned a = 0; a < tree->numEntries(); a++)
 	{
 		// Add entry to archive
-		ArchiveEntry* entry = addEntry(tree->getEntry(a), position, nullptr, true);
+		ArchiveEntry* entry = addEntry(tree->entryAt(a), position, nullptr, true);
 
 		// Update [position] if needed
 		if (position < 0xFFFFFFFF)

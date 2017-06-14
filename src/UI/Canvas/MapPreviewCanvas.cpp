@@ -110,7 +110,7 @@ void MapPreviewCanvas::addThing(double x, double y)
 /* MapPreviewCanvas::openMap
  * Opens a map from a mapdesc_t
  *******************************************************************/
-bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
+bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 {
 	// All errors = invalid map
 	Global::error = "Invalid map";
@@ -130,7 +130,7 @@ bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
 		}
 
 		// Detect maps
-		vector<Archive::mapdesc_t> maps = temp_archive->detectMaps();
+		vector<Archive::MapDesc> maps = temp_archive->detectMaps();
 
 		// Set map if there are any in the archive
 		if (maps.size() > 0)

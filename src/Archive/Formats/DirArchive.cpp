@@ -128,7 +128,7 @@ bool DirArchive::open(string filename)
 		// Add entry and directory to directory tree
 		ArchiveTreeNode* ndir = createDir(fn.GetPath(true, wxPATH_UNIX));
 		ndir->addEntry(new_entry);
-		ndir->getDirEntry()->exProp("filePath") = filename + fn.GetPath(true, wxPATH_UNIX);
+		ndir->dirEntry()->exProp("filePath") = filename + fn.GetPath(true, wxPATH_UNIX);
 
 		// Read entry data
 		new_entry->importFile(files[a]);
@@ -154,7 +154,7 @@ bool DirArchive::open(string filename)
 			name.Remove(0, 1);
 		name.Replace("\\", "/");
 		ArchiveTreeNode* ndir = createDir(name);
-		ndir->getDirEntry()->exProp("filePath") = dirs[a];
+		ndir->dirEntry()->exProp("filePath") = dirs[a];
 	}
 
 	// Set all entries/directories to unmodified
@@ -167,9 +167,9 @@ bool DirArchive::open(string filename)
 	setMuted(false);
 
 	// Setup variables
-	this->filename = filename;
+	this->filename_ = filename;
 	setModified(false);
-	on_disk = true;
+	on_disk_ = true;
 
 	UI::setSplashProgressMessage("");
 
@@ -224,7 +224,7 @@ bool DirArchive::save(string filename)
 	vector<string> entry_paths;
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
-		entry_paths.push_back(this->filename + entries[a]->getPath(true));
+		entry_paths.push_back(this->filename_ + entries[a]->getPath(true));
 		if (separator != "/") entry_paths.back().Replace("/", separator);
 	}
 
@@ -232,7 +232,7 @@ bool DirArchive::save(string filename)
 	long time = App::runTimer();
 	vector<string> files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
-	wxDir dir(this->filename);
+	wxDir dir(this->filename_);
 	dir.Traverse(traverser, "", wxDIR_FILES|wxDIR_DIRS);
 	//wxDir::GetAllFiles(this->filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
 	LOG_MESSAGE(2, "GetAllFiles took %lums", App::runTimer() - time);
@@ -338,7 +338,7 @@ bool DirArchive::loadEntryData(ArchiveEntry* entry)
 bool DirArchive::removeDir(string path, ArchiveTreeNode* base)
 {
 	// Abort if read only
-	if (read_only)
+	if (read_only_)
 		return false;
 
 	// Get the dir to remove
@@ -428,9 +428,9 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string name)
  * [entry] is actually a valid map (ie. a wad archive in the maps
  * folder)
  *******************************************************************/
-Archive::mapdesc_t DirArchive::getMapInfo(ArchiveEntry* entry)
+Archive::MapDesc DirArchive::getMapInfo(ArchiveEntry* entry)
 {
-	mapdesc_t map;
+	MapDesc map;
 
 	// Check entry
 	if (!checkEntry(entry))
@@ -457,9 +457,9 @@ Archive::mapdesc_t DirArchive::getMapInfo(ArchiveEntry* entry)
  * Detects all the maps in the archive and returns a vector of
  * information about them.
  *******************************************************************/
-vector<Archive::mapdesc_t> DirArchive::detectMaps()
+vector<Archive::MapDesc> DirArchive::detectMaps()
 {
-	vector<mapdesc_t> ret;
+	vector<MapDesc> ret;
 
 	// Get the maps directory
 	ArchiveTreeNode* mapdir = getDir("maps");
@@ -469,7 +469,7 @@ vector<Archive::mapdesc_t> DirArchive::detectMaps()
 	// Go through entries in map dir
 	for (unsigned a = 0; a < mapdir->numEntries(); a++)
 	{
-		ArchiveEntry* entry = mapdir->getEntry(a);
+		ArchiveEntry* entry = mapdir->entryAt(a);
 
 		// Maps can only be wad archives
 		if (entry->getType()->getFormat() != "archive_wad")
@@ -479,13 +479,13 @@ vector<Archive::mapdesc_t> DirArchive::detectMaps()
 		int format = MAP_UNKNOWN;
 		Archive* tempwad = new WadArchive();
 		tempwad->open(entry);
-		vector<mapdesc_t> emaps = tempwad->detectMaps();
+		vector<MapDesc> emaps = tempwad->detectMaps();
 		if (emaps.size() > 0)
 			format = emaps[0].format;
 		delete tempwad;
 
 		// Add map description
-		mapdesc_t md;
+		MapDesc md;
 		md.head = entry;
 		md.end = entry;
 		md.archive = true;
@@ -501,7 +501,7 @@ vector<Archive::mapdesc_t> DirArchive::detectMaps()
  * Returns the first entry matching the search criteria in [options],
  * or NULL if no matching entry was found
  *******************************************************************/
-ArchiveEntry* DirArchive::findFirst(search_options_t& options)
+ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = getRoot();
@@ -525,7 +525,7 @@ ArchiveEntry* DirArchive::findFirst(search_options_t& options)
 	}
 
 	// Do default search
-	search_options_t opt = options;
+	SearchOptions opt = options;
 	opt.dir = dir;
 	opt.match_namespace = "";
 	return Archive::findFirst(opt);
@@ -535,7 +535,7 @@ ArchiveEntry* DirArchive::findFirst(search_options_t& options)
  * Returns the last entry matching the search criteria in [options],
  * or NULL if no matching entry was found
  *******************************************************************/
-ArchiveEntry* DirArchive::findLast(search_options_t& options)
+ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = getRoot();
@@ -559,7 +559,7 @@ ArchiveEntry* DirArchive::findLast(search_options_t& options)
 	}
 
 	// Do default search
-	search_options_t opt = options;
+	SearchOptions opt = options;
 	opt.dir = dir;
 	opt.match_namespace = "";
 	return Archive::findLast(opt);
@@ -568,7 +568,7 @@ ArchiveEntry* DirArchive::findLast(search_options_t& options)
 /* DirArchive::findAll
  * Returns all entries matching the search criteria in [options]
  *******************************************************************/
-vector<ArchiveEntry*> DirArchive::findAll(search_options_t& options)
+vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveTreeNode* dir = getRoot();
@@ -593,7 +593,7 @@ vector<ArchiveEntry*> DirArchive::findAll(search_options_t& options)
 	}
 
 	// Do default search
-	search_options_t opt = options;
+	SearchOptions opt = options;
 	opt.dir = dir;
 	opt.match_namespace = "";
 	return Archive::findAll(opt);
@@ -645,21 +645,21 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 		else if (changes[a].action == dir_entry_change_t::ADDED_DIR)
 		{
 			string name = changes[a].file_path;
-			name.Remove(0, filename.Length());
+			name.Remove(0, filename_.Length());
 			if (name.StartsWith(separator))
 				name.Remove(0, 1);
 			name.Replace("\\", "/");
 
 			ArchiveTreeNode* ndir = createDir(name);
-			ndir->getDirEntry()->setState(0);
-			ndir->getDirEntry()->exProp("filePath") = changes[a].file_path;
+			ndir->dirEntry()->setState(0);
+			ndir->dirEntry()->exProp("filePath") = changes[a].file_path;
 		}
 
 		// New Entry
 		else if (changes[a].action == dir_entry_change_t::ADDED_FILE)
 		{
 			string name = changes[a].file_path;
-			name.Remove(0, filename.Length());
+			name.Remove(0, filename_.Length());
 			if (name.StartsWith(separator))
 				name.Remove(0, 1);
 			name.Replace("\\", "/");

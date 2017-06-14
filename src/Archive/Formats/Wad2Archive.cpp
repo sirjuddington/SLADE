@@ -280,12 +280,12 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "Wad2Archive::loadEntryData: Failed to open wadfile %s", filename);
+		LOG_MESSAGE(1, "Wad2Archive::loadEntryData: Failed to open wadfile %s", filename_);
 		return false;
 	}
 

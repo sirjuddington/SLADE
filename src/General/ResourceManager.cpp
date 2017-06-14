@@ -370,7 +370,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		PatchTable ptable;
 		if (txentry == 1)
 		{
-			Archive::search_options_t opt;
+			Archive::SearchOptions opt;
 			opt.match_type = EntryType::getType("pnames");
 			ArchiveEntry* pnames = entry->getParent()->findLast(opt);
 			ptable.loadPNAMES(pnames, entry->getParent());

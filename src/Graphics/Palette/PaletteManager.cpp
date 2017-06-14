@@ -176,11 +176,11 @@ bool PaletteManager::loadResourcePalettes()
 	{
 		// Load palette data
 		auto pal = std::make_unique<Palette8bit>();
-		MemChunk mc(dir_palettes->getEntry(a)->getData(true), dir_palettes->getEntry(a)->getSize());
+		MemChunk mc(dir_palettes->entryAt(a)->getData(true), dir_palettes->entryAt(a)->getSize());
 		pal->loadMem(mc);
 
 		// Add the palette
-		addPalette(std::move(pal), dir_palettes->getEntry(a)->getName(true));
+		addPalette(std::move(pal), dir_palettes->entryAt(a)->getName(true));
 	}
 
 	return true;

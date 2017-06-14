@@ -119,7 +119,7 @@ bool JaguarDecode(MemChunk& mc)
 WadJArchive::WadJArchive()
 	: WadArchive()
 {
-	format = "wadj";
+	format_ = "wadj";
 }
 
 /* WadJArchive::~WadJArchive
@@ -154,7 +154,7 @@ bool WadJArchive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type[1] != 'W' || wad_type[2] != 'A' || wad_type[3] != 'D')
 	{
-		LOG_MESSAGE(1, "WadJArchive::openFile: File %s has invalid header", filename);
+		LOG_MESSAGE(1, "WadJArchive::openFile: File %s has invalid header", filename_);
 		Global::error = "Invalid wad header";
 		return false;
 	}

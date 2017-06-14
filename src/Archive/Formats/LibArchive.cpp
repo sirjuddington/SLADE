@@ -284,12 +284,12 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "LibArchive::loadEntryData: Failed to open libfile %s", filename);
+		LOG_MESSAGE(1, "LibArchive::loadEntryData: Failed to open libfile %s", filename_);
 		return false;
 	}
 

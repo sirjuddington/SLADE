@@ -472,7 +472,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		Archive::mapdesc_t md = dlg.selectedMap();
+		Archive::MapDesc md = dlg.selectedMap();
 
 		if (md.name.IsEmpty() || (archive && !md.head))
 			return false;
@@ -505,7 +505,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 /* MapEditorWindow::openMap
  * Opens [map] in the editor
  *******************************************************************/
-bool MapEditorWindow::openMap(Archive::mapdesc_t map)
+bool MapEditorWindow::openMap(Archive::MapDesc map)
 {
 	// If a map is currently open and modified, prompt to save changes
 	if (MapEditor::editContext().map().isModified())
@@ -609,7 +609,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 /* MapEditorWindow::loadMapScripts
  * Loads any scripts from [map] into the script editor
  *******************************************************************/
-void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
+void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 {
 	// Don't bother if no scripting language specified
 	if (Game::configuration().scriptLanguage().IsEmpty())
@@ -634,7 +634,7 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 	{
 		WadArchive* wad = new WadArchive();
 		wad->open(map.head->getMCData());
-		vector<Archive::mapdesc_t> maps = wad->detectMaps();
+		vector<Archive::MapDesc> maps = wad->detectMaps();
 		if (!maps.empty())
 		{
 			loadMapScripts(maps[0]);
@@ -838,12 +838,12 @@ bool MapEditorWindow::saveMap()
 
 	// Check for map archive
 	Archive* tempwad = nullptr;
-	Archive::mapdesc_t map = mdesc_current;
+	Archive::MapDesc map = mdesc_current;
 	if (mdesc_current.archive && mdesc_current.head)
 	{
 		tempwad = new WadArchive();
 		tempwad->open(mdesc_current.head);
-		vector<Archive::mapdesc_t> amaps = tempwad->detectMaps();
+		vector<Archive::MapDesc> amaps = tempwad->detectMaps();
 		if (amaps.size() > 0)
 			map = amaps[0];
 		else
@@ -936,7 +936,7 @@ bool MapEditorWindow::saveMapAs()
 	theArchiveManager->addRecentFile(info.filenames[0]);
 
 	// Update current map description
-	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	vector<Archive::MapDesc> maps = archive->detectMaps();
 	if (!maps.empty())
 	{
 		mdesc_current.head = maps[0].head;
@@ -1117,7 +1117,7 @@ bool MapEditorWindow::handleAction(string id)
 			Archive* data = MapEditor::backupManager().openBackup(mdesc_current.head->getTopParent()->getFilename(false), mdesc_current.name);
 			if (data)
 			{
-				vector<Archive::mapdesc_t> maps = data->detectMaps();
+				vector<Archive::MapDesc> maps = data->detectMaps();
 				if (!maps.empty())
 				{
 					MapEditor::editContext().clearMap();

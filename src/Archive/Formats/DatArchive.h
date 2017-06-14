@@ -45,7 +45,7 @@ public:
 	bool	renameEntry(ArchiveEntry* entry, string name);
 
 	// Detection
-	vector<mapdesc_t>	detectMaps() { vector<mapdesc_t> ret; return ret; }
+	vector<MapDesc>	detectMaps() { vector<MapDesc> ret; return ret; }
 	string				detectNamespace(size_t index, ArchiveTreeNode * dir = NULL);
 	string				detectNamespace(ArchiveEntry* entry);
 

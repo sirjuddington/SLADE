@@ -43,7 +43,7 @@ public:
 	bool	renameEntry(ArchiveEntry* entry, string name);
 
 	// Detection
-	vector<mapdesc_t>	detectMaps() { return vector<mapdesc_t>(); }
+	vector<MapDesc>	detectMaps() { return vector<MapDesc>(); }
 
 	// Static functions
 	static bool isWad2Archive(MemChunk& mc);

@@ -434,8 +434,8 @@ bool WolfArchive::open(string filename)
 	if (opened)
 	{
 		// Update variables
-		this->filename = filename;
-		this->on_disk = true;
+		this->filename_ = filename;
+		this->on_disk_ = true;
 
 		return true;
 	}
@@ -1050,12 +1050,12 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "WolfArchive::loadEntryData: Failed to open datfile %s", filename);
+		LOG_MESSAGE(1, "WolfArchive::loadEntryData: Failed to open datfile %s", filename_);
 		return false;
 	}
 

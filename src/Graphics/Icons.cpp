@@ -105,7 +105,7 @@ namespace Icons
 		// Go through each entry in the directory
 		for (size_t a = 0; a < dir->numEntries(false); a++)
 		{
-			ArchiveEntry* entry = dir->getEntry(a);
+			ArchiveEntry* entry = dir->entryAt(a);
 
 			// Ignore anything not png format
 			if (!entry->getName().EndsWith("png"))
@@ -133,7 +133,7 @@ namespace Icons
 		{
 			for (size_t a = 0; a < dir_large->numEntries(false); a++)
 			{
-				ArchiveEntry* entry = dir_large->getEntry(a);
+				ArchiveEntry* entry = dir_large->entryAt(a);
 
 				// Ignore anything not png format
 				if (!entry->getName().EndsWith("png"))

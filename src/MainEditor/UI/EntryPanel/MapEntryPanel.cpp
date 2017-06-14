@@ -105,8 +105,8 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	map_canvas->clearMap();
 
 	// Find map definition for entry
-	vector<Archive::mapdesc_t> maps = entry->getParent()->detectMaps();
-	Archive::mapdesc_t thismap;
+	vector<Archive::MapDesc> maps = entry->getParent()->detectMaps();
+	Archive::MapDesc thismap;
 	bool found = false;
 	for (unsigned a = 0; a < maps.size(); a++)
 	{

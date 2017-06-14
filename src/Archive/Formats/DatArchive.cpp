@@ -264,7 +264,7 @@ void DatArchive::updateNamespaces()
 	// Go through all entries
 	for (unsigned a = 0; a < numEntries(); a++)
 	{
-		ArchiveEntry* entry = getRoot()->getEntry(a);
+		ArchiveEntry* entry = getRoot()->entryAt(a);
 
 		// Check for markers
 		if (!entry->getName().Cmp("startflats"))
@@ -580,12 +580,12 @@ bool DatArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "DatArchive::loadEntryData: Failed to open datfile %s", filename);
+		LOG_MESSAGE(1, "DatArchive::loadEntryData: Failed to open datfile %s", filename_);
 		return false;
 	}
 

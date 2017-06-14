@@ -979,7 +979,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 	}
 
 	// Read any embedded configurations in resource archives
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_name = "sladecfg";
 	vector<ArchiveEntry*> cfg_entries = theArchiveManager->findAllResourceEntries(opt);
 	for (unsigned a = 0; a < cfg_entries.size(); a++)

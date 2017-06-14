@@ -31,8 +31,8 @@ public:
 	void		setupMenu();
 	void		setupLayout();
 	bool		chooseMap(Archive* archive = nullptr);
-	bool		openMap(Archive::mapdesc_t map);
-	void		loadMapScripts(Archive::mapdesc_t map);
+	bool		openMap(Archive::MapDesc map);
+	void		loadMapScripts(Archive::MapDesc map);
 	WadArchive*	writeMap(string name="MAP01", bool nodes = true);
 	bool		saveMap();
 	bool		saveMapAs();
