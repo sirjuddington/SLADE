@@ -409,7 +409,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	btn_clear_filter->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnClearFilter, this);
 
 	// Do a quick check to see if we need the path display
-	if (archive->getRoot()->nChildren() == 0)
+	if (archive->rootDir()->nChildren() == 0)
 		sizer_path_controls->Show(false);
 
 	// Update size+layout
@@ -611,7 +611,11 @@ bool ArchivePanel::saveAs()
 
 	// Do save dialog
 	SFileDialog::fd_info_t info;
-	if (SFileDialog::saveFile(info, "Save Archive " + archive->getFilename(false) + " As", archive->getFileExtensionString(), this))
+	if (SFileDialog::saveFile(
+		info,
+		"Save Archive " + archive->filename(false) + " As",
+		archive->fileExtensionString(),
+		this))
 	{
 		// Save the archive
 		if (!archive->save(info.filenames[0]))
@@ -664,7 +668,7 @@ bool ArchivePanel::newEntry(int type)
 		return false;
 
 	// Check for \ character (e.g., from Arch-Viles graphics). They have to be kept.
-	if (archive->getType() == "wad" && name.length() <= 8
+	if (archive->formatId() == "wad" && name.length() <= 8
 	        && (name.find('\\') != wxNOT_FOUND || name.find('/') != wxNOT_FOUND))
 	{
 	} // Don't process as a file name
@@ -744,7 +748,7 @@ bool ArchivePanel::newEntry(int type)
 bool ArchivePanel::newDirectory()
 {
 	// Check archive supports directories
-	if (!archive->getDesc().supports_dirs)
+	if (!archive->formatDesc().supports_dirs)
 	{
 		wxMessageBox("This Archive format does not support directories", "Can't create new directory", wxICON_ERROR);
 		return false;
@@ -858,7 +862,7 @@ bool ArchivePanel::cleanupArchive()
  *******************************************************************/
 bool ArchivePanel::buildArchive()
 {
-	if (archive->getType() != "folder")
+	if (archive->formatId() != "folder")
 	{
 		wxMessageBox("This function is only supported with directories", "Can't build archive", wxICON_ERROR);
 		return false;
@@ -886,7 +890,7 @@ bool ArchivePanel::buildArchive()
 		// import all files into new archive
 		// Get a list of all files in the directory
 		wxArrayString files;
-		wxDir::GetAllFiles(archive->getFilename(), &files);
+		wxDir::GetAllFiles(archive->filename(), &files);
 
 		// Go through files
 		for (unsigned a = 0; a < files.size(); a++)
@@ -902,7 +906,7 @@ bool ArchivePanel::buildArchive()
 			}
 			
 			string name = files[a];
-			name.Replace(archive->getFilename(), "", false);	// Remove directory from entry name
+			name.Replace(archive->filename(), "", false);	// Remove directory from entry name
 	
 			// Split filename into dir+name
 			wxFileName fn(name);
@@ -2205,7 +2209,7 @@ bool ArchivePanel::swanConvert()
 			undo_manager->beginRecord(S_FMT("Creating %s", wadnames[e]));
 
 			ArchiveEntry * output = archive->addNewEntry(
-				(archive->getType() == "wad" ?  wadnames[e] : zipnames[e]), 
+				(archive->formatId() == "wad" ?  wadnames[e] : zipnames[e]), 
 				index, entry_list->getCurrentDir());
 			if (output)
 			{
@@ -2245,8 +2249,8 @@ bool ArchivePanel::basConvert(bool animdefs)
 	// Create new entry
 	ArchiveEntry* output = archive->addNewEntry(
 		(animdefs
-		? (archive->getType() == "wad" ? "ANIMDEFS" : "animdefs.txt")
-		: (archive->getType() == "wad" ? "SWANTBLS" : "swantbls.dat")
+		? (archive->formatId() == "wad" ? "ANIMDEFS" : "animdefs.txt")
+		: (archive->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")
 		), index, entry_list->getCurrentDir());
 
 	// Finish recording undo level
@@ -3181,7 +3185,7 @@ void ArchivePanel::onAnnouncement(Announcer* announcer, string event_name, MemCh
 	{
 		// Update this tab's name in the parent notebook (if filename was changed)
 		wxAuiNotebook* parent = (wxAuiNotebook*)GetParent();
-		parent->SetPageText(parent->GetPageIndex(this), archive->getFilename(false));
+		parent->SetPageText(parent->GetPageIndex(this), archive->filename(false));
 	}
 
 	// If a directory was added
@@ -4169,7 +4173,7 @@ CONSOLE_COMMAND(cd, 1, true)
 			if (args[0].Matches(".."))
 				newdir = (ArchiveTreeNode*) dir->getParent();
 			else if (args[0].Matches("/") || args[0].Matches("\\"))
-				newdir = current->getRoot();
+				newdir = current->rootDir();
 		}
 
 		if (newdir)

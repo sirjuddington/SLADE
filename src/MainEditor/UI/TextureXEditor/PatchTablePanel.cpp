@@ -109,7 +109,7 @@ string PatchTableListView::getItemText(long item, long column, long index) const
 
 		// If patch entry can't be found return invalid
 		if (entry)
-			return entry->getParent()->getFilename(false);
+			return entry->getParent()->filename(false);
 		else
 			return "(!) NOT FOUND";
 	}

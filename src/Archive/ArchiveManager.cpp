@@ -209,9 +209,9 @@ bool ArchiveManager::addArchive(Archive* archive)
 		theResourceManager->addArchive(archive);
 
 		// ZDoom also loads any WADs found in the root of a PK3 or directory
-		if ((archive->getType() == "zip" || archive->getType() == "folder") && auto_open_wads_root)
+		if ((archive->formatId() == "zip" || archive->formatId() == "folder") && auto_open_wads_root)
 		{
-			ArchiveTreeNode* root = archive->getRoot();
+			ArchiveTreeNode* root = archive->rootDir();
 			ArchiveEntry* entry;
 			EntryType* type;
 			for (unsigned a = 0; a < root->numEntries(); a++)
@@ -259,7 +259,7 @@ Archive* ArchiveManager::getArchive(string filename)
 	for (int a = 0; a < (int) open_archives.size(); a++)
 	{
 		// If the filename matches, return it
-		if (open_archives[a].archive->getFilename().compare(filename) == 0)
+		if (open_archives[a].archive->filename().compare(filename) == 0)
 			return open_archives[a].archive;
 	}
 
@@ -397,7 +397,7 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 	// Check if the entry is already opened
 	for (size_t a = 0; a < open_archives.size(); a++)
 	{
-		if (open_archives[a].archive->getParent() == entry)
+		if (open_archives[a].archive->parentEntry() == entry)
 		{
 			// Announce open
 			if (!silent)
@@ -597,7 +597,7 @@ Archive* ArchiveManager::newArchive(string format)
 	// If the archive was created, set its filename and add it to the list
 	if (new_archive)
 	{
-		new_archive->setFilename(S_FMT("UNSAVED (%s)", new_archive->getDesc().name));
+		new_archive->setFilename(S_FMT("UNSAVED (%s)", new_archive->formatDesc().name));
 		addArchive(new_archive);
 	}
 
@@ -643,7 +643,7 @@ bool ArchiveManager::closeArchive(int index)
 	}
 
 	// Remove ourselves from our parent's open-child list
-	ArchiveEntry* parent = open_archives[index].archive->getParent();
+	ArchiveEntry* parent = open_archives[index].archive->parentEntry();
 	if (parent)
 	{
 		Archive* gp = parent->getParent();
@@ -693,7 +693,7 @@ bool ArchiveManager::closeArchive(string filename)
 	for (int a = 0; a < (int) open_archives.size(); a++)
 	{
 		// If the filename matches, remove it
-		if (open_archives[a].archive->getFilename().compare(filename) == 0)
+		if (open_archives[a].archive->filename().compare(filename) == 0)
 			return closeArchive(a);
 	}
 
@@ -1289,7 +1289,7 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveTreeNode* node)
 			// the removed dir or one of its descendants
 			ArchiveTreeNode* anode = bookmarks[a]->getParentDir();
 			bool remove = false;
-			while (anode != archive->getRoot() && !remove)
+			while (anode != archive->rootDir() && !remove)
 			{
 				if (anode == node)
 					remove = true;
@@ -1369,7 +1369,7 @@ CONSOLE_COMMAND (list_archives, 0, true)
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
 		Archive* archive = theArchiveManager->getArchive(a);
-		LOG_MESSAGE(1, "%d: \"%s\"", a + 1, archive->getFilename());
+		LOG_MESSAGE(1, "%d: \"%s\"", a + 1, archive->filename());
 	}
 }
 

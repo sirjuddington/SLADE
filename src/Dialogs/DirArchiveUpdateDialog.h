@@ -10,12 +10,12 @@ class DirArchiveUpdateDialog : public SDialog
 {
 private:
 	DirArchive*					archive;
-	vector<dir_entry_change_t>	changes;
+	vector<DirEntryChange>	changes;
 	wxDataViewListCtrl*			list_changes;
 	wxButton*					btn_ok;
 
 public:
-	DirArchiveUpdateDialog(wxWindow* parent, DirArchive* archive, vector<dir_entry_change_t>& changes);
+	DirArchiveUpdateDialog(wxWindow* parent, DirArchive* archive, vector<DirEntryChange>& changes);
 	~DirArchiveUpdateDialog();
 
 	void	populateChangeList();

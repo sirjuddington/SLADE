@@ -128,7 +128,7 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, string nspace, bool ns_
 
 		// Check if in priority archive (or its parent)
 		if (priority &&
-			(entry->getParent() == priority || entry->getParent()->getParentArchive() == priority))
+			(entry->getParent() == priority || entry->getParent()->parentArchive() == priority))
 		{
 			best = entry;
 			break;

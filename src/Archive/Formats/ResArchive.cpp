@@ -46,8 +46,6 @@ EXTERN_CVAR(Bool, archive_load_data)
  *******************************************************************/
 ResArchive::ResArchive() : Archive("res")
 {
-	// Init variables
-	//desc.supports_dirs = true;
 }
 
 /* ResArchive::~ResArchive
@@ -79,22 +77,6 @@ void ResArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 		return;
 
 	entry->exProp("Offset") = (int)offset;
-}
-
-/* ResArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string ResArchive::getFileExtensionString()
-{
-	return "Res Files (*.res)|*.res";
-}
-
-/* ResArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string ResArchive::getFormat()
-{
-	return "archive_res";
 }
 
 /* ResArchive::readDirectory
@@ -256,7 +238,7 @@ bool ResArchive::open(MemChunk& mc)
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
 	UI::setSplashProgressMessage("Reading res archive data");
-	if (!readDirectory(mc, dir_offset, num_lumps, getRoot()))
+	if (!readDirectory(mc, dir_offset, num_lumps, rootDir()))
 		return false;
 
 	// Detect maps (will detect map entry types)

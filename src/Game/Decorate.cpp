@@ -478,7 +478,7 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types)
 	if (decorate_entries.empty())
 		return false;
 
-	Log::info(2, S_FMT("Parsing DECORATE entries found in archive %s", archive->getFilename()));
+	Log::info(2, S_FMT("Parsing DECORATE entries found in archive %s", archive->filename()));
 
 	// Build full definition string
 	string full_defs;

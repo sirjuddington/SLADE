@@ -84,9 +84,9 @@ public:
 		// Limit map name length if necessary
 		if (Game::configuration().featureSupported(Game::Feature::AnyMapName) &&
 			(!Game::configuration().featureSupported(Game::Feature::LongNames) ||
-			(archive && archive->getType() != "zip" &&
-				archive->getType() != "7z" &&
-				archive->getType() != "folder")))
+			(archive && archive->formatId() != "zip" &&
+				archive->formatId() != "7z" &&
+				archive->formatId() != "folder")))
 			cbo_mapname->SetMaxLength(8);
 
 		// Add possible map names to the combo box
@@ -609,7 +609,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			}
 
 		// Check archive type
-		if (archive->getType() == "wad")
+		if (archive->formatId() == "wad")
 		{
 			// Create new (empty) map at the end of the wad
 			ArchiveEntry* head = archive->addNewEntry(mapname);
@@ -639,8 +639,8 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			populateMapList();
 			list_maps->selectItem(list_maps->GetItemCount()-1);
 		}
-		else if (archive->getType() == "zip"
-			|| archive->getType() == "folder")
+		else if (archive->formatId() == "zip"
+			|| archive->formatId() == "folder")
 		{
 			// Create new wad archive for the map
 			Archive* wad = new WadArchive();

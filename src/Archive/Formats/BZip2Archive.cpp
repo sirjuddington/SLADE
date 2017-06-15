@@ -43,8 +43,6 @@
  *******************************************************************/
 BZip2Archive::BZip2Archive() : TreelessArchive("bz2")
 {
-	//desc.names_extensions = true;
-	//desc.supports_dirs = true;
 }
 
 /* BZip2Archive::~BZip2Archive
@@ -52,22 +50,6 @@ BZip2Archive::BZip2Archive() : TreelessArchive("bz2")
  *******************************************************************/
 BZip2Archive::~BZip2Archive()
 {
-}
-
-/* BZip2Archive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string BZip2Archive::getFileExtensionString()
-{
-	return "BZip2 Files (*.bz2)|*.bz2";
-}
-
-/* BZip2Archive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string BZip2Archive::getFormat()
-{
-	return "archive_bz2";
 }
 
 /* BZip2Archive::open
@@ -89,7 +71,7 @@ bool BZip2Archive::open(MemChunk& mc)
 		return false;
 
 	// Build name from filename
-	string name = getFilename(false);
+	string name = filename(false);
 	wxFileName fn(name);
 	if (!fn.GetExt().CmpNoCase("tbz") || !fn.GetExt().CmpNoCase("tb2") || !fn.GetExt().CmpNoCase("tbz2"))
 		fn.SetExt("tar");
@@ -111,7 +93,7 @@ bool BZip2Archive::open(MemChunk& mc)
 		setMuted(false);
 		return false;
 	}
-	getRoot()->addEntry(entry);
+	rootDir()->addEntry(entry);
 	EntryType::detectEntryType(entry);
 	entry->setState(0);
 

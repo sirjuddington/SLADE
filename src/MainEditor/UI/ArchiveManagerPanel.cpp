@@ -72,8 +72,8 @@ wxDEFINE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
 DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive)
 {
 	this->handler = handler;
-	dir_path = archive->getFilename();
-	removed_files = archive->getRemovedFiles();
+	dir_path = archive->filename();
+	removed_files = archive->removedFiles();
 	change_list.archive = archive;
 
 	// Get flat entry list
@@ -102,7 +102,7 @@ DirArchiveCheck::~DirArchiveCheck()
 /* DirArchiveCheck::addChange
  * Register a change to a file, as long as it hasn't been ignored
  *******************************************************************/
-void DirArchiveCheck::addChange(dir_entry_change_t change)
+void DirArchiveCheck::addChange(DirEntryChange change)
 {
 	if (! ((DirArchive*)change_list.archive)->shouldIgnoreEntryChange(change))
 		change_list.changes.push_back(change);
@@ -131,12 +131,12 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 		if (entry_info[a].is_dir)
 		{
 			if (!wxDirExists(path))
-				addChange(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, path, entry_info[a].entry_path));
+				addChange(DirEntryChange(DirEntryChange::DELETED_DIR, path, entry_info[a].entry_path));
 		}
 		else
 		{
 			if (!wxFileExists(path))
-				addChange(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, path, entry_info[a].entry_path));
+				addChange(DirEntryChange(DirEntryChange::DELETED_FILE, path, entry_info[a].entry_path));
 		}
 	}
 
@@ -163,10 +163,10 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 		time_t mod = wxFileModificationTime(files[a]);
 		// No match, added to archive
 		if (!found)
-			addChange(dir_entry_change_t(dir_entry_change_t::ADDED_FILE, files[a], "", mod));
+			addChange(DirEntryChange(DirEntryChange::ADDED_FILE, files[a], "", mod));
 		// Matched, check modification time
 		else if (mod > inf.file_modified)
-			addChange(dir_entry_change_t(dir_entry_change_t::UPDATED, files[a], inf.entry_path, mod));
+			addChange(DirEntryChange(DirEntryChange::UPDATED, files[a], inf.entry_path, mod));
 	}
 
 	// Check for new dirs
@@ -192,7 +192,7 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 		time_t mod = wxFileModificationTime(dirs[a]);
 		// No match, added to archive
 		if (!found)
-			addChange(dir_entry_change_t(dir_entry_change_t::ADDED_DIR, dirs[a], "", mod));
+			addChange(DirEntryChange(DirEntryChange::ADDED_DIR, dirs[a], "", mod));
 	}
 
 	// Send changes via event
@@ -513,7 +513,7 @@ void ArchiveManagerPanel::updateOpenListItem(int index)
 		return;
 
 	// Get path as wxFileName for processing
-	wxFileName fn(archive->getFilename());
+	wxFileName fn(archive->filename());
 
 	// Set item name
 	
@@ -579,9 +579,9 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index)
 		{
 			string title;
 			if (archive->isModified())
-				title = S_FMT("%s *", archive->getFilename(false));
+				title = S_FMT("%s *", archive->filename(false));
 			else
-				title = archive->getFilename(false);
+				title = archive->filename(false);
 			stc_archives->SetPageText(a, title);
 			return;
 		}
@@ -818,15 +818,15 @@ void ArchiveManagerPanel::openTab(Archive* archive)
 
 		// Determine icon
 		string icon = "archive";
-		if (archive->getType() == "wad")
+		if (archive->formatId() == "wad")
 			icon = "wad";
-		else if (archive->getType() == "zip")
+		else if (archive->formatId() == "zip")
 			icon = "zip";
-		else if (archive->getType() == "folder")
+		else if (archive->formatId() == "folder")
 			icon = "folder";
 
 		wp->SetName("archive");
-		stc_archives->AddPage(wp, archive->getFilename(false), false);
+		stc_archives->AddPage(wp, archive->filename(false), false);
 		stc_archives->SetSelection(stc_archives->GetPageCount() - 1);
 		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, icon));
 		wp->addMenus();
@@ -886,7 +886,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 			return;
 		}
 
-		stc_archives->AddPage(txed, S_FMT("Texture Editor (%s)", archive->getFilename(false)), true);
+		stc_archives->AddPage(txed, S_FMT("Texture Editor (%s)", archive->filename(false)), true);
 		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, "texturex"));
 		txed->SetName("texture");
 		txed->setSelection(entry);
@@ -989,7 +989,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry)
 	}
 
 	// Create new tab for the EntryPanel
-	stc_archives->AddPage(ep, S_FMT("%s/%s", entry->getParent()->getFilename(false), entry->getName()), true);
+	stc_archives->AddPage(ep, S_FMT("%s/%s", entry->getParent()->filename(false), entry->getName()), true);
 	stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, entry->getType()->getIcon()));
 	ep->SetName("entry");
 	ep->Show(true);
@@ -1199,8 +1199,8 @@ void ArchiveManagerPanel::saveAll()
 			// If the archive is newly created, do Save As instead
 
 			// Popup file save dialog
-			string formats = archive->getFileExtensionString();
-			string filename = wxFileSelector("Save Archive " + archive->getFilename(false) + " As", dir_last, "", wxEmptyString, formats, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+			string formats = archive->fileExtensionString();
+			string filename = wxFileSelector("Save Archive " + archive->filename(false) + " As", dir_last, "", wxEmptyString, formats, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 			// Check a filename was selected
 			if (!filename.empty())
@@ -1232,13 +1232,13 @@ void ArchiveManagerPanel::checkDirArchives()
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
 		Archive* archive = theArchiveManager->getArchive(a);
-		if (archive->getType() != "folder")
+		if (archive->formatId() != "folder")
 			continue;
 
 		if (VECTOR_EXISTS(checking_archives, archive))
 			continue;
 
-		LOG_MESSAGE(2, "Checking %s for external changes...", CHR(archive->getFilename()));
+		LOG_MESSAGE(2, "Checking %s for external changes...", CHR(archive->filename()));
 		checking_archives.push_back(archive);
 		DirArchiveCheck* check = new DirArchiveCheck(this, (DirArchive*)archive);
 		check->Create();
@@ -1321,15 +1321,15 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive)
 		return false;
 
 	// Check archive type
-	if (archive->getType() == "folder")
+	if (archive->formatId() == "folder")
 		return true;	// Can't do save as for folder
 
 	// Check for unsaved entry changes
 	saveEntryChanges(archive);
 
 	// Popup file save dialog
-	string formats = archive->getFileExtensionString();
-	string filename = wxFileSelector("Save Archive " + archive->getFilename(false) + " As", dir_last, "", wxEmptyString, formats, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	string formats = archive->fileExtensionString();
+	string filename = wxFileSelector("Save Archive " + archive->filename(false) + " As", dir_last, "", wxEmptyString, formats, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	// Check a filename was selected
 	if (!filename.empty())
@@ -1390,7 +1390,7 @@ bool ArchiveManagerPanel::beforeCloseArchive(Archive* archive)
 	if (archive->isModified() && archive->isWritable())
 	{
 		asked_save_unchanged = true;
-		wxMessageDialog md(this, S_FMT("Save changes to archive %s?", archive->getFilename(false)), "Unsaved Changes", wxYES_NO|wxCANCEL);
+		wxMessageDialog md(this, S_FMT("Save changes to archive %s?", archive->filename(false)), "Unsaved Changes", wxYES_NO|wxCANCEL);
 		int result = md.ShowModal();
 		if (result == wxID_YES)
 		{
@@ -1841,7 +1841,7 @@ void ArchiveManagerPanel::updateBookmarkListItem(int index)
 
 	// Set item name
 	list_bookmarks->setItemText(index, 0, entry->getName());
-	list_bookmarks->setItemText(index, 1, entry->getParent()->getFilename());
+	list_bookmarks->setItemText(index, 1, entry->getParent()->filename());
 
 	// Set item status colour
 	if (entry->isLocked())
@@ -2152,7 +2152,7 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 	// Check the archive is still open
 	if (theArchiveManager->archiveIndex(change_list.archive) >= 0)
 	{
-		LOG_MESSAGE(2, "Finished checking %s for external changes", CHR(change_list.archive->getFilename()));
+		LOG_MESSAGE(2, "Finished checking %s for external changes", CHR(change_list.archive->filename()));
 
 		if (!change_list.changes.empty())
 		{

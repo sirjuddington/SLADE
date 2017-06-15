@@ -987,7 +987,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 		// Log message
 		Archive* parent = cfg_entries[a]->getParent();
 		if (parent)
-			LOG_MESSAGE(1, "Reading SLADECFG in %s", parent->getFilename());
+			LOG_MESSAGE(1, "Reading SLADECFG in %s", parent->filename());
 
 		// Read embedded config
 		string config = wxString::FromAscii(cfg_entries[a]->getData(), cfg_entries[a]->getSize());

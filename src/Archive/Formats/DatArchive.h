@@ -6,11 +6,6 @@
 
 class DatArchive : public TreelessArchive
 {
-private:
-	int						sprites[2];
-	int						flats[2];
-	int						walls[2];
-
 public:
 	DatArchive();
 	~DatArchive();
@@ -20,37 +15,46 @@ public:
 	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
 	void		updateNamespaces();
 
-	// Archive type info
-	string			getFileExtensionString();
-	string			getFormat();
-
 	// Opening/writing
-	bool	open(MemChunk& mc);							// Open from MemChunk
-	bool	write(MemChunk& mc, bool update = true);	// Write to MemChunk
+	bool	open(MemChunk& mc) override;						// Open from MemChunk
+	bool	write(MemChunk& mc, bool update = true) override;	// Write to MemChunk
 
 	// Misc
-	bool		loadEntryData(ArchiveEntry* entry);
-	unsigned 	numEntries() { return getRoot()->numEntries(); }
+	bool		loadEntryData(ArchiveEntry* entry) override;
+	unsigned 	numEntries() override { return rootDir()->numEntries(); }
 
 	// Entry addition/removal
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false);
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
-	bool			removeEntry(ArchiveEntry* entry);
+	ArchiveEntry*	addEntry(
+						ArchiveEntry* entry,
+						unsigned position = 0xFFFFFFFF,
+						ArchiveTreeNode* dir = nullptr,
+						bool copy = false
+					) override;
+	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
+	bool			removeEntry(ArchiveEntry* entry) override;
 
 	// Entry moving
-	bool	swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2);
-	bool	moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL);
+	bool	swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override;
+	bool	moveEntry(
+				ArchiveEntry* entry,
+				unsigned position = 0xFFFFFFFF,
+				ArchiveTreeNode* dir = nullptr
+			) override;
 
 	// Entry modification
-	bool	renameEntry(ArchiveEntry* entry, string name);
+	bool	renameEntry(ArchiveEntry* entry, string name) override;
 
 	// Detection
-	vector<MapDesc>	detectMaps() { vector<MapDesc> ret; return ret; }
-	string				detectNamespace(size_t index, ArchiveTreeNode * dir = NULL);
-	string				detectNamespace(ArchiveEntry* entry);
+	string	detectNamespace(size_t index, ArchiveTreeNode * dir = nullptr) override;
+	string	detectNamespace(ArchiveEntry* entry) override;
 
 	static bool isDatArchive(MemChunk& mc);
 	static bool isDatArchive(string filename);
+
+private:
+	int	sprites[2];
+	int	flats[2];
+	int	walls[2];
 };
 
 #endif	/* __DATARCHIVE_H__ */

@@ -243,22 +243,6 @@ TarArchive::~TarArchive()
 {
 }
 
-/* TarArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string TarArchive::getFileExtensionString()
-{
-	return "Tar Files (*.tar)|*.tar";
-}
-
-/* TarArchive::getFormat
- * Returns the string id for the tar EntryDataFormat
- *******************************************************************/
-string TarArchive::getFormat()
-{
-	return "archive_tar";
-}
-
 /* TarArchive::open
  * Reads tar format data from a MemChunk
  * Returns true if successful, false otherwise

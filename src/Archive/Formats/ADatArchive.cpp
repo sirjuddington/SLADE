@@ -66,22 +66,6 @@ ADatArchive::~ADatArchive()
 {
 }
 
-/* ADatArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string ADatArchive::getFileExtensionString()
-{
-	return "Dat Files (*.dat)|*.dat";
-}
-
-/* ADatArchive::getFormat
- * Returns the string id for the dat EntryDataFormat
- *******************************************************************/
-string ADatArchive::getFormat()
-{
-	return "archive_adat";
-}
-
 /* ADatArchive::open
  * Reads dat format data from a MemChunk
  * Returns true if successful, false otherwise

@@ -36,12 +36,6 @@
 #include "DiskArchive.h"
 #include "General/UI.h"
 
-struct diskentry_t
-{
-	char name[64];
-	size_t offset;
-	size_t length;
-};
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -68,22 +62,6 @@ DiskArchive::DiskArchive() : Archive("disk")
  *******************************************************************/
 DiskArchive::~DiskArchive()
 {
-}
-
-/* DiskArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string DiskArchive::getFileExtensionString()
-{
-	return "Nerve Disk Files (*.disk)|*.disk";
-}
-
-/* DiskArchive::getFormat
- * Returns the string id for the disk EntryDataFormat
- *******************************************************************/
-string DiskArchive::getFormat()
-{
-	return "archive_disk";
 }
 
 /* DiskArchive::open
@@ -120,7 +98,7 @@ bool DiskArchive::open(MemChunk& mc)
 		UI::setSplashProgress(((float)d / (float)num_entries));
 
 		// Read entry info
-		diskentry_t dent;
+		DiskEntry dent;
 		mc.read(&dent, 72);
 
 		// Byteswap if needed
@@ -268,7 +246,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		}
 		name = "GAME:" + name;
 
-		diskentry_t dent;
+		DiskEntry dent;
 
 		// Write entry name
 		// The names field are padded with FD for doom.disk, FE for doom2.disk. No idea whether
@@ -376,7 +354,7 @@ bool DiskArchive::isDiskArchive(MemChunk& mc)
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Read entry info
-		diskentry_t entry;
+		DiskEntry entry;
 		mc.read(&entry, 72);
 
 		// Byteswap if needed
@@ -431,7 +409,7 @@ bool DiskArchive::isDiskArchive(string filename)
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Read entry info
-		diskentry_t entry;
+		DiskEntry entry;
 		file.Read(&entry, 72);
 
 		// Byteswap if needed

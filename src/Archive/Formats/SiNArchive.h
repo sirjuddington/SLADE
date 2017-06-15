@@ -5,25 +5,16 @@
 
 class SiNArchive : public Archive
 {
-private:
-
 public:
 	SiNArchive();
 	~SiNArchive();
 
-	// Archive type info
-	string	getFileExtensionString();
-	string	getFormat();
-
 	// Opening/writing
-	bool	open(MemChunk& mc);							// Open from MemChunk
-	bool	write(MemChunk& mc, bool update = true);	// Write to MemChunk
+	bool	open(MemChunk& mc) override;						// Open from MemChunk
+	bool	write(MemChunk& mc, bool update = true) override;	// Write to MemChunk
 
 	// Misc
-	bool	loadEntryData(ArchiveEntry* entry);
-
-	// Detection
-	virtual vector<MapDesc>	detectMaps() { return vector<MapDesc>(); }
+	bool	loadEntryData(ArchiveEntry* entry) override;
 
 	// Static functions
 	static bool isSiNArchive(MemChunk& mc);

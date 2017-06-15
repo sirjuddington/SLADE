@@ -169,10 +169,10 @@ Archive* ArchiveEntry::getTopParent()
 {
 	if (parent)
 	{
-		if (!parent->archive()->getParent())
+		if (!parent->archive()->parentEntry())
 			return parent->archive();
 		else
-			return parent->archive()->getParent()->getTopParent();
+			return parent->archive()->parentEntry()->getTopParent();
 	}
 	else
 		return NULL;
@@ -599,7 +599,7 @@ void ArchiveEntry::stateChanged()
 void ArchiveEntry::setExtensionByType()
 {
 	// Ignore if the parent archive doesn't support entry name extensions
-	if (getParent() && !getParent()->getDesc().names_extensions)
+	if (getParent() && !getParent()->formatDesc().names_extensions)
 		return;
 
 	// Convert name to wxFileName for processing
@@ -627,7 +627,7 @@ bool ArchiveEntry::isInNamespace(string ns)
 		return false;
 
 	// Some special cases first
-	if (ns == "graphics" && getParent()->getType() == "wad")
+	if (ns == "graphics" && getParent()->formatId() == "wad")
 		ns = "global";	// Graphics namespace doesn't exist in wad files, use global instead
 
 	return getParent()->detectNamespace(this) == ns;

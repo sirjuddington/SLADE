@@ -293,7 +293,7 @@ void ArchiveEntryList::setArchive(Archive* archive)
 		listenTo(archive);
 
 		// Open root directory
-		current_dir = archive->getRoot();
+		current_dir = archive->rootDir();
 		applyFilter();
 		updateList();
 	}

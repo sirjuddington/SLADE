@@ -84,22 +84,6 @@ void GrpArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* GrpArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string GrpArchive::getFileExtensionString()
-{
-	return "Grp Files (*.grp)|*.grp";
-}
-
-/* GrpArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string GrpArchive::getFormat()
-{
-	return "archive_grp";
-}
-
 /* GrpArchive::open
  * Reads grp format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -176,7 +160,7 @@ bool GrpArchive::open(MemChunk& mc)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect all entry types

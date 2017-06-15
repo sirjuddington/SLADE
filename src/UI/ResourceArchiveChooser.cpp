@@ -60,7 +60,7 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 		Archive* arch = theArchiveManager->getArchive(a);
 		if (arch != archive)
 		{
-			list_resources->Append(arch->getFilename(false));
+			list_resources->Append(arch->filename(false));
 			archives.push_back(arch);
 			if (theArchiveManager->archiveIsResource(arch))
 				list_resources->Check(index);
@@ -114,7 +114,7 @@ string ResourceArchiveChooser::getSelectedResourceList()
 	vector<Archive*> selected = getSelectedResourceArchives();
 	string ret;
 	for (unsigned a = 0; a < selected.size(); a++)
-		ret += S_FMT("\"%s\" ", selected[a]->getFilename());
+		ret += S_FMT("\"%s\" ", selected[a]->filename());
 	return ret;
 }
 
@@ -136,7 +136,7 @@ void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 		UI::hideSplash();
 		if (na)
 		{
-			list_resources->Append(na->getFilename(false));
+			list_resources->Append(na->filename(false));
 			list_resources->Check(list_resources->GetCount()-1);
 			archives.push_back(na);
 		}
@@ -160,7 +160,7 @@ void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 		Archive* na = theArchiveManager->openArchive(theArchiveManager->recentFile(dlg.GetSelection()), true, true);
 		if (na)
 		{
-			list_resources->Append(na->getFilename(false));
+			list_resources->Append(na->filename(false));
 			list_resources->Check(list_resources->GetCount()-1);
 			archives.push_back(na);
 		}

@@ -472,7 +472,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 		return false;
 
 	// Export the map to a temp .wad file
-	string filename = App::path(entry->getParent()->getFilename(false) + "-" + entry->getName(true) + ".wad", App::Dir::Temp);
+	string filename = App::path(entry->getParent()->filename(false) + "-" + entry->getName(true) + ".wad", App::Dir::Temp);
 	filename.Replace("/", "-");
 	if (map.archive)
 	{
@@ -508,10 +508,10 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	Archive* base = theArchiveManager->baseResourceArchive();
 	if (base)
 	{
-		if (base->getType() == "wad")
-			cmd += S_FMT(" -resource wad \"%s\"", base->getFilename());
-		else if (base->getType() == "zip")
-			cmd += S_FMT(" -resource pk3 \"%s\"", base->getFilename());
+		if (base->formatId() == "wad")
+			cmd += S_FMT(" -resource wad \"%s\"", base->filename());
+		else if (base->formatId() == "zip")
+			cmd += S_FMT(" -resource pk3 \"%s\"", base->filename());
 	}
 
 	// Add resource archives to command line
@@ -520,10 +520,10 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 		Archive* archive = theArchiveManager->getArchive(a);
 
 		// Check archive type (only wad and zip supported by db2)
-		if (archive->getType() == "wad")
-			cmd += S_FMT(" -resource wad \"%s\"", archive->getFilename());
-		else if (archive->getType() == "zip")
-			cmd += S_FMT(" -resource pk3 \"%s\"", archive->getFilename());
+		if (archive->formatId() == "wad")
+			cmd += S_FMT(" -resource wad \"%s\"", archive->filename());
+		else if (archive->formatId() == "zip")
+			cmd += S_FMT(" -resource pk3 \"%s\"", archive->filename());
 	}
 
 	// Run DB2
@@ -1240,7 +1240,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 		// Ignore entries from other archives
 		if (entry->getParent() &&
-			(entry->getParent()->getFilename(true) != entries[a]->getParent()->getFilename(true)))
+			(entry->getParent()->filename(true) != entries[a]->getParent()->filename(true)))
 			continue;
 
 		string path = App::path(entries[a]->getName(true) + ".acs", App::Dir::Temp);
@@ -1322,7 +1322,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 				Archive::SearchOptions opt;
 				opt.match_namespace = "acs";
 				opt.match_name = entry->getName(true);
-				if (entry->getParent()->getDesc().names_extensions)
+				if (entry->getParent()->formatDesc().names_extensions)
 				{
 					opt.match_name += ".o";
 					opt.ignore_ext = false;

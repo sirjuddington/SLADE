@@ -167,7 +167,7 @@ bool MapEntryPanel::createImage()
 	else
 		map_canvas->createImage(temp, min<int>(map_image_width, map_canvas->GetSize().x),
 		                        min<int>(map_image_height, map_canvas->GetSize().y));
-	string name = S_FMT("%s_%s", entry->getParent()->getFilename(false), entry->getName());
+	string name = S_FMT("%s_%s", entry->getParent()->filename(false), entry->getName());
 	wxFileName fn(name);
 
 	// Create save file dialog

@@ -47,8 +47,6 @@ EXTERN_CVAR(Bool, archive_load_data)
  *******************************************************************/
 PakArchive::PakArchive() : Archive("pak")
 {
-	//desc.max_name_length = 56;
-	//desc.supports_dirs = true;
 }
 
 /* PakArchive::~PakArchive
@@ -56,22 +54,6 @@ PakArchive::PakArchive() : Archive("pak")
  *******************************************************************/
 PakArchive::~PakArchive()
 {
-}
-
-/* PakArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string PakArchive::getFileExtensionString()
-{
-	return "Pak Files (*.pak)|*.pak";
-}
-
-/* PakArchive::getFormat
- * Returns the string id for the pak EntryDataFormat
- *******************************************************************/
-string PakArchive::getFormat()
-{
-	return "archive_pak";
 }
 
 /* PakArchive::open

@@ -87,7 +87,7 @@ bool MapBackupPanel::loadBackups(string archive_name, string map_name)
 
 	// Get backup dir for map
 	dir_current = archive_backups->getDir(map_name);
-	if (dir_current == archive_backups->getRoot() || !dir_current)
+	if (dir_current == archive_backups->rootDir() || !dir_current)
 		return false;
 
 	// Populate backups list

@@ -33,12 +33,14 @@
 #include "WadJArchive.h"
 #include "General/UI.h"
 
+
 /*******************************************************************
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, archive_load_data)
 EXTERN_CVAR(Bool, iwad_lock)
 extern string map_lumps[];
+
 
 /*******************************************************************
  * WADJARCHIVE HELPER FUNCTIONS
@@ -143,7 +145,7 @@ bool WadJArchive::open(MemChunk& mc)
 	uint32_t num_lumps = 0;
 	uint32_t dir_offset = 0;
 	mc.seek(0, SEEK_SET);
-	mc.read(&wad_type, 4);		// Wad type
+	mc.read(&wad_type_, 4);		// Wad type
 	mc.read(&num_lumps, 4);		// No. of lumps in wad
 	mc.read(&dir_offset, 4);	// Offset to directory
 
@@ -152,7 +154,7 @@ bool WadJArchive::open(MemChunk& mc)
 	dir_offset = wxINT32_SWAP_ON_LE(dir_offset);
 
 	// Check the header
-	if (wad_type[1] != 'W' || wad_type[2] != 'A' || wad_type[3] != 'D')
+	if (wad_type_[1] != 'W' || wad_type_[2] != 'A' || wad_type_[3] != 'D')
 	{
 		LOG_MESSAGE(1, "WadJArchive::openFile: File %s has invalid header", filename_);
 		Global::error = "Invalid wad header";
@@ -239,7 +241,7 @@ bool WadJArchive::open(MemChunk& mc)
 		}
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect namespaces (needs to be done before type detection as some types
@@ -282,7 +284,7 @@ bool WadJArchive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Lock entry if IWAD
-		if (wad_type[0] == 'I' && iwad_lock)
+		if (wad_type_[0] == 'I' && iwad_lock)
 			entry->lock();
 
 		// Set entry to unchanged
@@ -327,7 +329,7 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 
 	// Setup wad type
 	char wad_type[4] = { 'P', 'W', 'A', 'D' };
-	if (iwad) wad_type[0] = 'I';
+	if (iwad_) wad_type[0] = 'I';
 
 	// Write the header
 	uint32_t num_lumps = wxINT32_SWAP_ON_LE(numEntries());

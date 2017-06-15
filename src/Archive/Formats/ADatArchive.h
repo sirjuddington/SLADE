@@ -6,28 +6,19 @@
 
 class ADatArchive : public Archive
 {
-private:
-
 public:
 	ADatArchive();
 	~ADatArchive();
 
-	// Archive type info
-	string	getFileExtensionString();
-	string	getFormat();
-
 	// Opening
-	bool	open(MemChunk& mc);			// Open from MemChunk
+	bool	open(MemChunk& mc) override;	// Open from MemChunk
 
 	// Writing/Saving
-	bool	write(MemChunk& mc, bool update = true);	// Write to MemChunk
-	bool	write(string filename, bool update = true);	// Write to File
+	bool	write(MemChunk& mc, bool update = true) override;		// Write to MemChunk
+	bool	write(string filename, bool update = true) override;	// Write to File
 
 	// Misc
-	bool	loadEntryData(ArchiveEntry* entry);
-
-	// Detection
-	virtual vector<MapDesc>	detectMaps() { return vector<MapDesc>(); }
+	bool	loadEntryData(ArchiveEntry* entry) override;
 
 	// Static functions
 	static bool isADatArchive(MemChunk& mc);

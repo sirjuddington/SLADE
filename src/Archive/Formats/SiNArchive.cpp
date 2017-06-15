@@ -1,3 +1,4 @@
+
 /*******************************************************************
  * SLADE - It's a Doom Editor
  * Copyright (C) 2008-2014 Simon Judd
@@ -55,22 +56,6 @@ SiNArchive::SiNArchive() : Archive("sin")
  *******************************************************************/
 SiNArchive::~SiNArchive()
 {
-}
-
-/* SiNArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string SiNArchive::getFileExtensionString()
-{
-	return "SiN Files (*.sin)|*.sin";
-}
-
-/* SiNArchive::getFormat
- * Returns the string id for the SiN EntryDataFormat
- *******************************************************************/
-string SiNArchive::getFormat()
-{
-	return "archive_sin";
 }
 
 /* SiNArchive::open

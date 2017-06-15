@@ -594,12 +594,12 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 
 		// Set window title
 		if (archive)
-			SetTitle(S_FMT("SLADE - %s of %s", map.name, archive->getFilename(false)));
+			SetTitle(S_FMT("SLADE - %s of %s", map.name, archive->filename(false)));
 		else
 			SetTitle(S_FMT("SLADE - %s (UNSAVED)", map.name));
 
 		// Create backup
-		if (map.head && !MapEditor::backupManager().writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
+		if (map.head && !MapEditor::backupManager().writeBackup(map_data, map.head->getTopParent()->filename(false), map.head->getName(true)))
 			LOG_MESSAGE(1, "Warning: Failed to backup map data");
 	}
 
@@ -867,7 +867,7 @@ bool MapEditorWindow::saveMap()
 	}
 
 	// Create backup
-	if (!MapEditor::backupManager().writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
+	if (!MapEditor::backupManager().writeBackup(map_data, map.head->getTopParent()->filename(false), map.head->getName(true)))
 		LOG_MESSAGE(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
@@ -945,7 +945,7 @@ bool MapEditorWindow::saveMapAs()
 	}
 
 	// Set window title
-	SetTitle(S_FMT("SLADE - %s of %s", mdesc_current.name, wad.getFilename(false)));
+	SetTitle(S_FMT("SLADE - %s of %s", mdesc_current.name, wad.filename(false)));
 
 	return true;
 }
@@ -1114,7 +1114,7 @@ bool MapEditorWindow::handleAction(string id)
 	{
 		if (mdesc_current.head)
 		{
-			Archive* data = MapEditor::backupManager().openBackup(mdesc_current.head->getTopParent()->getFilename(false), mdesc_current.name);
+			Archive* data = MapEditor::backupManager().openBackup(mdesc_current.head->getTopParent()->filename(false), mdesc_current.name);
 			if (data)
 			{
 				vector<Archive::MapDesc> maps = data->detectMaps();
@@ -1295,7 +1295,7 @@ bool MapEditorWindow::handleAction(string id)
 			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")
 				MapEditor::editContext().resetPlayerStart();
 
-			string command = dlg.getSelectedCommandLine(archive, mdesc_current.name, wad->getFilename());
+			string command = dlg.getSelectedCommandLine(archive, mdesc_current.name, wad->filename());
 			if (!command.IsEmpty())
 			{
 				// Set working directory

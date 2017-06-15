@@ -14,25 +14,23 @@ public:
 	uint32_t	getEntryOffset(ArchiveEntry* entry);
 	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
 
-	// Archive type info
-	string			getFileExtensionString();
-	string			getFormat();
-
 	// Opening/writing
-	bool	open(MemChunk& mc);							// Open from MemChunk
-	bool	write(MemChunk& mc, bool update = true);	// Write to MemChunk
+	bool	open(MemChunk& mc) override;						// Open from MemChunk
+	bool	write(MemChunk& mc, bool update = true) override;	// Write to MemChunk
 
 	// Misc
-	bool		loadEntryData(ArchiveEntry* entry);
-	unsigned 	numEntries() { return getRoot()->numEntries(); }
+	bool		loadEntryData(ArchiveEntry* entry) override;
+	unsigned 	numEntries() override { return rootDir()->numEntries(); }
 
 	// Entry addition/modification
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false);
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
-	bool			renameEntry(ArchiveEntry* entry, string name);
-
-	// Detection
-	vector<MapDesc>	detectMaps() { vector<MapDesc> ret; return ret; }
+	ArchiveEntry*	addEntry(
+						ArchiveEntry* entry,
+						unsigned position = 0xFFFFFFFF,
+						ArchiveTreeNode* dir = nullptr,
+						bool copy = false
+					) override;
+	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
+	bool			renameEntry(ArchiveEntry* entry, string name) override;
 
 	static bool isLibArchive(MemChunk& mc);
 	static bool isLibArchive(string filename);

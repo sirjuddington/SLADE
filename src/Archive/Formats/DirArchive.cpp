@@ -54,13 +54,10 @@ DirArchive::DirArchive() : Archive("folder")
 {
 	// Setup separator character
 #ifdef WIN32
-	separator = "\\";
+	separator_ = "\\";
 #else
 	separator = "/";
 #endif
-	// Init variables
-	//desc.names_extensions = true;
-	//desc.supports_dirs = true;
 }
 
 /* DirArchive::~DirArchive
@@ -68,22 +65,6 @@ DirArchive::DirArchive() : Archive("folder")
  *******************************************************************/
 DirArchive::~DirArchive()
 {
-}
-
-/* DirArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string DirArchive::getFileExtensionString()
-{
-	return "";
-}
-
-/* DirArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string DirArchive::getFormat()
-{
-	return "";
 }
 
 /* DirArchive::open
@@ -112,7 +93,7 @@ bool DirArchive::open(string filename)
 		// Cut off directory to get entry name + relative path
 		string name = files[a];
 		name.Remove(0, filename.Length());
-		if (name.StartsWith(separator))
+		if (name.StartsWith(separator_))
 			name.Remove(0, 1);
 
 		//LOG_MESSAGE(3, fn.GetPath(true, wxPATH_UNIX));
@@ -135,7 +116,7 @@ bool DirArchive::open(string filename)
 		new_entry->setLoaded(true);
 
 		time_t modtime = wxFileModificationTime(files[a]);
-		file_modification_times[new_entry] = modtime;
+		file_modification_times_[new_entry] = modtime;
 
 		// Detect entry type
 		EntryType::detectEntryType(new_entry);
@@ -150,7 +131,7 @@ bool DirArchive::open(string filename)
 	{
 		string name = dirs[a];
 		name.Remove(0, filename.Length());
-		if (name.StartsWith(separator))
+		if (name.StartsWith(separator_))
 			name.Remove(0, 1);
 		name.Replace("\\", "/");
 		ArchiveTreeNode* ndir = createDir(name);
@@ -225,7 +206,7 @@ bool DirArchive::save(string filename)
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		entry_paths.push_back(this->filename_ + entries[a]->getPath(true));
-		if (separator != "/") entry_paths.back().Replace("/", separator);
+		if (separator_ != "/") entry_paths.back().Replace("/", separator_);
 	}
 
 	// Get current directory structure
@@ -239,12 +220,12 @@ bool DirArchive::save(string filename)
 
 	// Check for any files to remove
 	time = App::runTimer();
-	for (unsigned a = 0; a < removed_files.size(); a++)
+	for (unsigned a = 0; a < removed_files_.size(); a++)
 	{
-		if (wxFileExists(removed_files[a]))
+		if (wxFileExists(removed_files_[a]))
 		{
-			LOG_MESSAGE(2, "Removing file %s", removed_files[a]);
-			wxRemoveFile(removed_files[a]);
+			LOG_MESSAGE(2, "Removing file %s", removed_files_[a]);
+			wxRemoveFile(removed_files_[a]);
 		}
 	}
 
@@ -304,10 +285,10 @@ bool DirArchive::save(string filename)
 		// Set unmodified
 		entries[a]->setState(0);
 		entries[a]->exProp("filePath") = path;
-		file_modification_times[entries[a]] = wxFileModificationTime(path);
+		file_modification_times_[entries[a]] = wxFileModificationTime(path);
 	}
 
-	removed_files.clear();
+	removed_files_.clear();
 	setModified(false);
 
 	return true;
@@ -320,7 +301,7 @@ bool DirArchive::loadEntryData(ArchiveEntry* entry)
 {
 	if (entry->importFile(entry->exProp("filePath").getStringValue()))
 	{
-		file_modification_times[entry] = wxFileModificationTime(entry->exProp("filePath").getStringValue());
+		file_modification_times_[entry] = wxFileModificationTime(entry->exProp("filePath").getStringValue());
 		return true;
 	}
 
@@ -345,7 +326,7 @@ bool DirArchive::removeDir(string path, ArchiveTreeNode* base)
 	ArchiveTreeNode* dir = getDir(path, base);
 
 	// Check it exists (and that it isn't the root dir)
-	if (!dir || dir == getRoot())
+	if (!dir || dir == rootDir())
 		return false;
 
 	// Get all entries in the directory (and subdirectories)
@@ -356,7 +337,7 @@ bool DirArchive::removeDir(string path, ArchiveTreeNode* base)
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		LOG_MESSAGE(2, entries[a]->exProp("filePath").getStringValue());
-		removed_files.push_back(entries[a]->exProp("filePath").getStringValue());
+		removed_files_.push_back(entries[a]->exProp("filePath").getStringValue());
 	}
 
 	// Do normal dir remove
@@ -370,9 +351,9 @@ bool DirArchive::removeDir(string path, ArchiveTreeNode* base)
 bool DirArchive::renameDir(ArchiveTreeNode* dir, string new_name)
 {
 	string path = dir->getParent()->getPath();
-	if (separator != "/") path.Replace("/", separator);
+	if (separator_ != "/") path.Replace("/", separator_);
 	key_value_t rename(path + dir->getName(), path + new_name);
-	renamed_dirs.push_back(rename);
+	renamed_dirs_.push_back(rename);
 	LOG_MESSAGE(2, "RENAME %s to %s", rename.key, rename.value);
 
 	return Archive::renameDir(dir, new_name);
@@ -407,7 +388,7 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
 	string old_name = entry->exProp("filePath").getStringValue();
 	bool success = Archive::removeEntry(entry);
 	if (success)
-		removed_files.push_back(old_name);
+		removed_files_.push_back(old_name);
 	return success;
 }
 
@@ -419,7 +400,7 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string name)
 	string old_name = entry->exProp("filePath").getStringValue();
 	bool success = Archive::renameEntry(entry, name);
 	if (success)
-		removed_files.push_back(old_name);
+		removed_files_.push_back(old_name);
 	return success;
 }
 
@@ -441,7 +422,7 @@ Archive::MapDesc DirArchive::getMapInfo(ArchiveEntry* entry)
 		return map;
 
 	// Check entry directory
-	if (entry->getParentDir()->getParent() != getRoot() || entry->getParentDir()->getName() != "maps")
+	if (entry->getParentDir()->getParent() != rootDir() || entry->getParentDir()->getName() != "maps")
 		return map;
 
 	// Setup map info
@@ -504,7 +485,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	ArchiveTreeNode* dir = getRoot();
+	ArchiveTreeNode* dir = rootDir();
 	options.match_name = options.match_name.Lower();
 
 	// Check for search directory (overrides namespace)
@@ -538,7 +519,7 @@ ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 {
 	// Init search variables
-	ArchiveTreeNode* dir = getRoot();
+	ArchiveTreeNode* dir = rootDir();
 	options.match_name = options.match_name.Lower();
 
 	// Check for search directory (overrides namespace)
@@ -571,7 +552,7 @@ ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
-	ArchiveTreeNode* dir = getRoot();
+	ArchiveTreeNode* dir = rootDir();
 	options.match_name = options.match_name.Lower();
 	vector<ArchiveEntry*> ret;
 
@@ -602,34 +583,34 @@ vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 /* DirArchive::ignoreChangedEntries
  * Remember to ignore the given files until they change again
  *******************************************************************/
-void DirArchive::ignoreChangedEntries(vector<dir_entry_change_t>& changes)
+void DirArchive::ignoreChangedEntries(vector<DirEntryChange>& changes)
 {
 	for (unsigned a = 0; a < changes.size(); a++)
-		ignored_file_changes[changes[a].file_path] = changes[a];
+		ignored_file_changes_[changes[a].file_path] = changes[a];
 }
 
 /* DirArchive::updateChangedEntries
  * Updates entries/directories based on [changes] list
  *******************************************************************/
-void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
+void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 {
 	bool was_modified = isModified();
 
 	for (unsigned a = 0; a < changes.size(); a++)
 	{
-		ignored_file_changes.erase(changes[a].file_path);
+		ignored_file_changes_.erase(changes[a].file_path);
 
 		// Modified Entries
-		if (changes[a].action == dir_entry_change_t::UPDATED)
+		if (changes[a].action == DirEntryChange::UPDATED)
 		{
 			ArchiveEntry* entry = entryAtPath(changes[a].entry_path);
 			entry->importFile(changes[a].file_path);
 			EntryType::detectEntryType(entry);
-			file_modification_times[entry] = wxFileModificationTime(changes[a].file_path);
+			file_modification_times_[entry] = wxFileModificationTime(changes[a].file_path);
 		}
 
 		// Deleted Entries
-		else if (changes[a].action == dir_entry_change_t::DELETED_FILE)
+		else if (changes[a].action == DirEntryChange::DELETED_FILE)
 		{
 			ArchiveEntry* entry = entryAtPath(changes[a].entry_path);
 			// If the parent directory was already removed, this entry no longer exists
@@ -638,15 +619,15 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 		}
 
 		// Deleted Directories
-		else if (changes[a].action == dir_entry_change_t::DELETED_DIR)
+		else if (changes[a].action == DirEntryChange::DELETED_DIR)
 			removeDir(changes[a].entry_path);
 
 		// New Directory
-		else if (changes[a].action == dir_entry_change_t::ADDED_DIR)
+		else if (changes[a].action == DirEntryChange::ADDED_DIR)
 		{
 			string name = changes[a].file_path;
 			name.Remove(0, filename_.Length());
-			if (name.StartsWith(separator))
+			if (name.StartsWith(separator_))
 				name.Remove(0, 1);
 			name.Replace("\\", "/");
 
@@ -656,11 +637,11 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 		}
 
 		// New Entry
-		else if (changes[a].action == dir_entry_change_t::ADDED_FILE)
+		else if (changes[a].action == DirEntryChange::ADDED_FILE)
 		{
 			string name = changes[a].file_path;
 			name.Remove(0, filename_.Length());
-			if (name.StartsWith(separator))
+			if (name.StartsWith(separator_))
 				name.Remove(0, 1);
 			name.Replace("\\", "/");
 
@@ -681,7 +662,7 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 			new_entry->setLoaded(true);
 
 			time_t modtime = wxFileModificationTime(changes[a].file_path);
-			file_modification_times[new_entry] = modtime;
+			file_modification_times_[new_entry] = modtime;
 
 			// Detect entry type
 			EntryType::detectEntryType(new_entry);
@@ -703,21 +684,21 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
  * Returns true iff the user has previously indicated no interest in this
  * change
  *******************************************************************/
-bool DirArchive::shouldIgnoreEntryChange(dir_entry_change_t& change)
+bool DirArchive::shouldIgnoreEntryChange(DirEntryChange& change)
 {
-	ignored_file_changes_t::iterator it = ignored_file_changes.find(change.file_path);
+	IgnoredFileChanges::iterator it = ignored_file_changes_.find(change.file_path);
 	// If we've never seen this file before, definitely don't ignore the change
-	if (it == ignored_file_changes.end())
+	if (it == ignored_file_changes_.end())
 		return false;
 
-	dir_entry_change_t old_change = it->second;
+	DirEntryChange old_change = it->second;
 	bool was_deleted = (
-		old_change.action == dir_entry_change_t::DELETED_FILE ||
-		old_change.action == dir_entry_change_t::DELETED_DIR
+		old_change.action == DirEntryChange::DELETED_FILE ||
+		old_change.action == DirEntryChange::DELETED_DIR
 	);
 	bool is_deleted = (
-		change.action == dir_entry_change_t::DELETED_FILE ||
-		change.action == dir_entry_change_t::DELETED_DIR
+		change.action == DirEntryChange::DELETED_FILE ||
+		change.action == DirEntryChange::DELETED_DIR
 	);
 
 	// Was deleted, is still deleted, nothing's changed

@@ -76,22 +76,6 @@ uint32_t BSPArchive::getEntryOffset(ArchiveEntry* entry)
 	return (uint32_t)(int)entry->exProp("Offset");
 }
 
-/* BSPArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string BSPArchive::getFileExtensionString()
-{
-	return "BSP Files (*.bsp)|*.bsp";
-}
-
-/* BSPArchive::getFormat
- * Returns the string id for the pak EntryDataFormat
- *******************************************************************/
-string BSPArchive::getFormat()
-{
-	return "archive_bsp";
-}
-
 /* BSPArchive::open
  * Reads BSP format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -249,7 +233,7 @@ bool BSPArchive::open(MemChunk& mc)
 			nlump->setState(0);
 
 			// Add to entry list
-			getRoot()->addEntry(nlump);
+			rootDir()->addEntry(nlump);
 
 			// Okay, that texture works, go back to where we were and check the next
 			mc.seek(currentpos, SEEK_SET);

@@ -48,9 +48,6 @@ EXTERN_CVAR(Bool, archive_load_data)
  *******************************************************************/
 GobArchive::GobArchive() : TreelessArchive("gob")
 {
-	//desc.max_name_length = 12;
-	//desc.names_extensions = false;
-	//desc.supports_dirs = false;
 }
 
 /* GobArchive::~GobArchive
@@ -82,22 +79,6 @@ void GobArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 		return;
 
 	entry->exProp("Offset") = (int)offset;
-}
-
-/* GobArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string GobArchive::getFileExtensionString()
-{
-	return "Gob Files (*.gob)|*.gob";
-}
-
-/* GobArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string GobArchive::getFormat()
-{
-	return "archive_gob";
 }
 
 /* GobArchive::open
@@ -179,7 +160,7 @@ bool GobArchive::open(MemChunk& mc)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect all entry types

@@ -38,6 +38,7 @@
  *******************************************************************/
 EXTERN_CVAR(Bool, archive_load_data)
 
+
 /*******************************************************************
  * HOGARCHIVE HELPER FUNCTIONS
  *******************************************************************/
@@ -145,22 +146,6 @@ void HogArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* HogArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string HogArchive::getFileExtensionString()
-{
-	return "Hog Files (*.hog)|*.hog";
-}
-
-/* HogArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string HogArchive::getFormat()
-{
-	return "archive_hog";
-}
-
 /* HogArchive::open
  * Reads hog format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -224,7 +209,7 @@ bool HogArchive::open(MemChunk& mc)
 			nlump->setEncryption(ENC_TXB);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 
 		// Update entry size to compute next offset
 		iter_offset = offset + size;

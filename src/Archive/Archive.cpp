@@ -239,7 +239,6 @@ private:
 	bool					created;
 	Archive*				archive;
 	string					path;
-	unsigned				index;
 	EntryTreeClipboardItem*	cb_tree;
 
 public:
@@ -334,10 +333,10 @@ Archive::~Archive()
 		parent_->unlock();
 }
 
-/* Archive::getDesc
+/* Archive::formatDesc
  * Returns the ArchiveFormat descriptor for this archive
  *******************************************************************/
-ArchiveFormat Archive::getDesc() const
+ArchiveFormat Archive::formatDesc() const
 {
 	for (auto fmt : formats)
 		if (fmt.id == format_)
@@ -346,17 +345,61 @@ ArchiveFormat Archive::getDesc() const
 	return ArchiveFormat("unknown");
 }
 
-/* Archive::getFilename
+/* Archive::fileExtensionString
+ * Gets the wxWidgets file dialog filter string for the archive type
+ *******************************************************************/
+string Archive::fileExtensionString() const
+{
+	auto fmt = formatDesc();
+
+	// Multiple extensions
+	if (fmt.extensions.size() > 1)
+	{
+		string ext_all = S_FMT("Any %s File|", CHR(fmt.name));
+		vector<string> ext_strings;
+		for (auto ext : fmt.extensions)
+		{
+			string ext_case = S_FMT("*.%s;", CHR(ext.key.Lower()));
+			ext_case += S_FMT("*.%s;", CHR(ext.key.Upper()));
+			ext_case += S_FMT("*.%s", CHR(ext.key.Capitalize()));
+
+			ext_all += S_FMT("%s;", CHR(ext_case));
+			ext_strings.push_back(S_FMT("%s File (*.%s)|%s", CHR(ext.value), CHR(ext.key), CHR(ext_case)));
+		}
+
+		ext_all.RemoveLast(1);
+		for (auto ext : ext_strings)
+			ext_all += S_FMT("|%s", ext);
+
+		return ext_all;
+	}
+
+	// Single extension
+	if (fmt.extensions.size() == 1)
+	{
+		auto& ext = fmt.extensions[0];
+		string ext_case = S_FMT("*.%s;", CHR(ext.key.Lower()));
+		ext_case += S_FMT("*.%s;", CHR(ext.key.Upper()));
+		ext_case += S_FMT("*.%s", CHR(ext.key.Capitalize()));
+
+		return S_FMT("%s File (*.%s)|%s", CHR(ext.value), CHR(ext.key), CHR(ext_case));
+	}
+
+	// No extension (probably unknown type)
+	return "Any File|*.*";
+}
+
+/* Archive::filename
  * Returns the archive's filename, including the path if specified
  *******************************************************************/
-string Archive::getFilename(bool full)
+string Archive::filename(bool full)
 {
 	// If the archive is within another archive, return "<parent archive>/<entry name>"
 	if (parent_)
 	{
 		string parent_archive = "";
-		if (getParentArchive())
-			parent_archive = getParentArchive()->getFilename(false) + "/";
+		if (parentArchive())
+			parent_archive = parentArchive()->filename(false) + "/";
 
 		wxFileName fn(parent_->getName());
 		return parent_archive + fn.GetName();
@@ -507,7 +550,7 @@ ArchiveEntry* Archive::entryAtPath(string path)
 	// Get directory from path
 	ArchiveTreeNode* dir;
 	if (fn.GetPath(false, wxPATH_UNIX).IsEmpty())
-		dir = getRoot();
+		dir = &dir_root_;
 	else
 		dir = getDir(fn.GetPath(true, wxPATH_UNIX));
 
@@ -535,7 +578,7 @@ ArchiveEntry::SPtr Archive::entryAtPathShared(string path)
 	// Get directory from path
 	ArchiveTreeNode* dir;
 	if (fn.GetPath(false, wxPATH_UNIX).IsEmpty())
-		dir = getRoot();
+		dir = &dir_root_;
 	else
 		dir = getDir(fn.GetPath(true, wxPATH_UNIX));
 
@@ -739,7 +782,7 @@ bool Archive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTreeNode* b
 
 	// Paste to root dir if none specified
 	if (!base)
-		base = getRoot();
+		base = &dir_root_;
 
 	// Set modified
 	setModified(true);
@@ -826,7 +869,7 @@ bool Archive::removeDir(string path, ArchiveTreeNode* base)
 	ArchiveTreeNode* dir = getDir(path, base);
 
 	// Check it exists (and that it isn't the root dir)
-	if (!dir || dir == getRoot())
+	if (!dir || dir == &dir_root_)
 		return false;
 
 	// Record undo step
@@ -1300,12 +1343,12 @@ string Archive::detectNamespace(ArchiveEntry* entry)
 		return "global";
 
 	// If the entry is in the root dir, it's in the global namespace
-	if (entry->getParentDir() == getRoot())
+	if (entry->getParentDir() == &dir_root_)
 		return "global";
 
 	// Get the entry's *first* parent directory after root (ie <root>/namespace/)
 	ArchiveTreeNode* dir = entry->getParentDir();
-	while (dir && dir->getParent() != getRoot())
+	while (dir && dir->getParent() != &dir_root_)
 		dir = (ArchiveTreeNode*)dir->getParent();
 
 	// Namespace is the directory's name (in lowercase)
@@ -1667,7 +1710,7 @@ bool TreelessArchive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTre
 	for (unsigned a = 0; a < tree->numEntries(); a++)
 	{
 		// Add entry to archive
-		ArchiveEntry* entry = addEntry(tree->entryAt(a), position, nullptr, true);
+		addEntry(tree->entryAt(a), position, nullptr, true);
 
 		// Update [position] if needed
 		if (position < 0xFFFFFFFF)

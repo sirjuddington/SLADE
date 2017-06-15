@@ -68,23 +68,6 @@ void DatArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-
-/* DatArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string DatArchive::getFileExtensionString()
-{
-	return "Raven Software Data Files (*.dat; *.cd; *.hd)|*.dat;*.cd;*.hd";
-}
-
-/* DatArchive::getFormat
- * Gives the "archive_dat" string
- *******************************************************************/
-string DatArchive::getFormat()
-{
-	return "archive_dat";
-}
-
 /* DatArchive::open
  * Reads wad format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -185,7 +168,7 @@ bool DatArchive::open(MemChunk& mc)
 			walls[1] = d;
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect all entry types
@@ -264,7 +247,7 @@ void DatArchive::updateNamespaces()
 	// Go through all entries
 	for (unsigned a = 0; a < numEntries(); a++)
 	{
-		ArchiveEntry* entry = getRoot()->entryAt(a);
+		ArchiveEntry* entry = rootDir()->entryAt(a);
 
 		// Check for markers
 		if (!entry->getName().Cmp("startflats"))

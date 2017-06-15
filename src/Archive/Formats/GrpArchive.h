@@ -14,26 +14,24 @@ public:
 	uint32_t	getEntryOffset(ArchiveEntry* entry);
 	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
 
-	// Archive type info
-	string	getFileExtensionString();
-	string	getFormat();
-
 	// Opening/writing
-	bool	open(MemChunk& mc);							// Open from MemChunk
-	bool	write(MemChunk& mc, bool update = true);	// Write to MemChunk
+	bool	open(MemChunk& mc) override;						// Open from MemChunk
+	bool	write(MemChunk& mc, bool update = true) override;	// Write to MemChunk
 
 	// Misc
-	bool		loadEntryData(ArchiveEntry* entry);
+	bool	loadEntryData(ArchiveEntry* entry) override;
 
 	// Entry addition/removal
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false);
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
+	ArchiveEntry*	addEntry(
+						ArchiveEntry* entry,
+						unsigned position = 0xFFFFFFFF,
+						ArchiveTreeNode* dir = nullptr,
+						bool copy = false
+					) override;
+	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
 
 	// Entry modification
-	bool	renameEntry(ArchiveEntry* entry, string name);
-
-	// Detection
-	vector<MapDesc>	detectMaps() { vector<MapDesc> ret; return ret; }
+	bool	renameEntry(ArchiveEntry* entry, string name) override;
 
 	// Static functions
 	static bool isGrpArchive(MemChunk& mc);

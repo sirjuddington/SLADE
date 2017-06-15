@@ -46,9 +46,6 @@
 LibArchive::LibArchive()
 	: TreelessArchive("lib")
 {
-	//desc.max_name_length = 12;
-	//desc.names_extensions = false;
-	//desc.supports_dirs = false;
 }
 
 /* LibArchive::~LibArchive
@@ -81,22 +78,6 @@ void LibArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 		return;
 
 	entry->exProp("Offset") = (int)offset;
-}
-
-/* LibArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string LibArchive::getFileExtensionString()
-{
-	return "Shadowcaster Lib Files (*.lib)|*.lib";
-}
-
-/* LibArchive::getFormat
- * Gives the "archive_lib" string
- *******************************************************************/
-string LibArchive::getFormat()
-{
-	return "archive_lib";
 }
 
 /* LibArchive::open
@@ -158,7 +139,7 @@ bool LibArchive::open(MemChunk& mc)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 		//entries.push_back(nlump);
 	}
 

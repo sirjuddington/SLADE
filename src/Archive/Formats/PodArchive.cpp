@@ -52,7 +52,7 @@ EXTERN_CVAR(Bool, wad_force_uppercase)
 PodArchive::PodArchive() : Archive("pod")
 {
 	// Blank id
-	memset(id, 0, 80);
+	memset(id_, 0, 80);
 }
 
 /* PodArchive::~PodArchive
@@ -67,24 +67,8 @@ PodArchive::~PodArchive()
  *******************************************************************/
 void PodArchive::setId(string id)
 {
-	memset(this->id, 0, 80);
-	memcpy(this->id, CHR(id), id.Length());
-}
-
-/* PodArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string PodArchive::getFileExtensionString()
-{
-	return "POD Files (*.pod)|*.pod";
-}
-
-/* PodArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string PodArchive::getFormat()
-{
-	return "archive_pod";
+	memset(id_, 0, 80);
+	memcpy(id_, CHR(id), id.Length());
 }
 
 /* PodArchive::open
@@ -103,11 +87,11 @@ bool PodArchive::open(MemChunk& mc)
 	mc.read(&num_files, 4);
 
 	// Read id
-	mc.read(id, 80);
+	mc.read(id_, 80);
 
 	// Read directory
-	file_entry_t* files = new file_entry_t[num_files];
-	mc.read(files, num_files * sizeof(file_entry_t));
+	FileEntry* files = new FileEntry[num_files];
+	mc.read(files, num_files * sizeof(FileEntry));
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
@@ -212,11 +196,11 @@ bool PodArchive::write(MemChunk& mc, bool update)
 	mc.write(&n_entries, 4);
 
 	// Write id
-	LOG_MESSAGE(5, "id %s", id);
-	mc.write(id, 80);
+	LOG_MESSAGE(5, "id %s", id_);
+	mc.write(id_, 80);
 
 	// Write directory
-	file_entry_t fe;
+	FileEntry fe;
 	fe.offset = 4 + 80 + (n_entries * 40);
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
@@ -290,15 +274,6 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 	return true;
 }
 
-/* WadArchive::detectMaps
- * Searches for any maps in the archive and adds them to the map list
- *******************************************************************/
-vector<Archive::MapDesc> PodArchive::detectMaps()
-{
-	vector<MapDesc> list;
-	return list;
-}
-
 
 /*******************************************************************
  * PODARCHIVE CLASS STATIC FUNCTIONS
@@ -327,7 +302,7 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 		return false;
 
 	// Read directory and check offsets
-	file_entry_t entry;
+	FileEntry entry;
 	for (unsigned a = 0; a < num_files; a++)
 	{
 		mc.read(&entry, 40);
@@ -373,7 +348,7 @@ bool PodArchive::isPodArchive(string filename)
 	}
 
 	// Read directory and check offsets
-	file_entry_t entry;
+	FileEntry entry;
 	for (unsigned a = 0; a < num_files; a++)
 	{
 		file.Read(&entry, 40);
@@ -391,7 +366,7 @@ bool PodArchive::isPodArchive(string filename)
 CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
 	Archive* archive = MainEditor::currentArchive();
-	if (archive && archive->getType() == "pod")
+	if (archive && archive->formatId() == "pod")
 		Log::console(((PodArchive*)archive)->getId());
 	else
 		Log::console("Current tab is not a POD archive");
@@ -401,7 +376,7 @@ CONSOLE_COMMAND(pod_get_id, 0, 1)
 CONSOLE_COMMAND(pod_set_id, 1, true)
 {
 	Archive* archive = MainEditor::currentArchive();
-	if (archive && archive->getType() == "pod")
+	if (archive && archive->formatId() == "pod")
 		((PodArchive*)archive)->setId(args[0].Truncate(80));
 	else
 		Log::console("Current tab is not a POD archive");

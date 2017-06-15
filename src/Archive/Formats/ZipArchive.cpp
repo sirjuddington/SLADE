@@ -50,8 +50,6 @@ EXTERN_CVAR(Bool, archive_load_data)
  *******************************************************************/
 ZipArchive::ZipArchive() : Archive("zip")
 {
-	//desc.names_extensions = true;
-	//desc.supports_dirs = true;
 }
 
 /* ZipArchive::~ZipArchive
@@ -59,24 +57,8 @@ ZipArchive::ZipArchive() : Archive("zip")
  *******************************************************************/
 ZipArchive::~ZipArchive()
 {
-	if (wxFileExists(temp_file))
-		wxRemoveFile(temp_file);
-}
-
-/* ZipArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string ZipArchive::getFileExtensionString()
-{
-	return "Any Zip Format File (*.zip;*.pk3;*.pke;*.jdf)|*.zip;*.pk3;*.pke;*.jdf|Zip File (*.zip)|*.zip|Pk3 File (*.pk3)|*.pk3|Eternity Pke File (*.pke)|*.pke|JDF File (*.jdf)|*.jdf";
-}
-
-/* ZipArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string ZipArchive::getFormat()
-{
-	return "archive_zip";
+	if (wxFileExists(temp_file_))
+		wxRemoveFile(temp_file_);
 }
 
 /* ZipArchive::open
@@ -87,7 +69,7 @@ bool ZipArchive::open(string filename)
 {
 	// Copy the zip to a temp file (for use when saving)
 	generateTempFileName(filename);
-	wxCopyFile(filename, temp_file);
+	wxCopyFile(filename, temp_file_);
 
 	// Open the file
 	wxFFileInputStream in(filename);
@@ -267,7 +249,7 @@ bool ZipArchive::write(string filename, bool update)
 	// This is used to copy any entries that have been previously saved/compressed
 	// and are unmodified, to greatly speed up zip file saving by not having to
 	// recompress unchanged entries
-	wxFFileInputStream in(temp_file);
+	wxFFileInputStream in(temp_file_);
 	wxZipInputStream inzip(in);
 
 	// Get a list of all entries in the old zip
@@ -325,9 +307,9 @@ bool ZipArchive::write(string filename, bool update)
 	out.Close();
 
 	// Update the temp file
-	if (temp_file.IsEmpty())
+	if (temp_file_.IsEmpty())
 		generateTempFileName(filename);
-	wxCopyFile(filename, temp_file);
+	wxCopyFile(filename, temp_file_);
 
 	return true;
 }
@@ -453,7 +435,7 @@ Archive::MapDesc ZipArchive::getMapInfo(ArchiveEntry* entry)
 		return map;
 
 	// Check entry directory
-	if (entry->getParentDir()->getParent() != getRoot() || entry->getParentDir()->getName() != "maps")
+	if (entry->getParentDir()->getParent() != rootDir() || entry->getParentDir()->getName() != "maps")
 		return map;
 
 	// Setup map info
@@ -516,7 +498,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	ArchiveTreeNode* dir = getRoot();
+	ArchiveTreeNode* dir = rootDir();
 	options.match_name = options.match_name.Lower();
 
 	// Check for search directory (overrides namespace)
@@ -550,7 +532,7 @@ ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
 ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 {
 	// Init search variables
-	ArchiveTreeNode* dir = getRoot();
+	ArchiveTreeNode* dir = rootDir();
 	options.match_name = options.match_name.Lower();
 
 	// Check for search directory (overrides namespace)
@@ -583,7 +565,7 @@ ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
-	ArchiveTreeNode* dir = getRoot();
+	ArchiveTreeNode* dir = rootDir();
 	options.match_name = options.match_name.Lower();
 	vector<ArchiveEntry*> ret;
 
@@ -618,16 +600,16 @@ vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 void ZipArchive::generateTempFileName(string filename)
 {
 	wxFileName tfn(filename);
-	temp_file = App::path(tfn.GetFullName(), App::Dir::Temp);
-	if (wxFileExists(temp_file))
+	temp_file_ = App::path(tfn.GetFullName(), App::Dir::Temp);
+	if (wxFileExists(temp_file_))
 	{
 		// Make sure we don't overwrite an existing temp file
 		// (in case there are multiple zips open with the same name)
 		int n = 1;
 		while (1)
 		{
-			temp_file = App::path(S_FMT("%s.%d", CHR(tfn.GetFullName()), n), App::Dir::Temp);
-			if (!wxFileExists(temp_file))
+			temp_file_ = App::path(S_FMT("%s.%d", CHR(tfn.GetFullName()), n), App::Dir::Temp);
+			if (!wxFileExists(temp_file_))
 				break;
 
 			n++;

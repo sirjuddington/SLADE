@@ -148,22 +148,6 @@ void RffArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* RffArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string RffArchive::getFileExtensionString()
-{
-	return "Rff Files (*.rff)|*.rff";
-}
-
-/* RffArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string RffArchive::getFormat()
-{
-	return "archive_rff";
-}
-
 /* RffArchive::open
  * Reads grp format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -247,7 +231,7 @@ bool RffArchive::open(MemChunk& mc)
 			nlump->setEncryption(ENC_BLOOD);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 	delete[] lumps;
 

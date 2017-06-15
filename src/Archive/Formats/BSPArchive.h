@@ -6,26 +6,17 @@
 
 class BSPArchive : public Archive
 {
-private:
-
 public:
 	BSPArchive();
 	~BSPArchive();
 
-	// Archive type info
-	string		getFileExtensionString();
-	string		getFormat();
-
 	// Opening/writing
-	bool	open(MemChunk& mc);							// Open from MemChunk
-	bool	write(MemChunk& mc, bool update = true);	// Write to MemChunk
+	bool	open(MemChunk& mc) override;						// Open from MemChunk
+	bool	write(MemChunk& mc, bool update = true) override;	// Write to MemChunk
 
 	// Misc
-	bool		loadEntryData(ArchiveEntry* entry);
+	bool		loadEntryData(ArchiveEntry* entry) override;
 	uint32_t	getEntryOffset(ArchiveEntry* entry);
-
-	// Detection
-	virtual		vector<MapDesc>	detectMaps() { return vector<MapDesc>(); }
 
 	// Static functions
 	static bool isBSPArchive(MemChunk& mc);

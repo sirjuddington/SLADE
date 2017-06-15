@@ -43,6 +43,33 @@ CVAR(Bool, wad_force_uppercase, true, CVAR_SAVE)
 CVAR(Bool, iwad_lock, true, CVAR_SAVE)
 
 // Used for map detection
+enum MapLumpNames
+{
+	LUMP_THINGS,
+	LUMP_VERTEXES,
+	LUMP_LINEDEFS,
+	LUMP_SIDEDEFS,
+	LUMP_SECTORS,
+	LUMP_SEGS,
+	LUMP_SSECTORS,
+	LUMP_NODES,
+	LUMP_BLOCKMAP,
+	LUMP_REJECT,
+	LUMP_SCRIPTS,
+	LUMP_BEHAVIOR,
+	LUMP_LEAFS,
+	LUMP_LIGHTS,
+	LUMP_MACROS,
+	LUMP_GL_HEADER,
+	LUMP_GL_VERT,
+	LUMP_GL_SEGS,
+	LUMP_GL_SSECT,
+	LUMP_GL_NODES,
+	LUMP_GL_PVS,
+	LUMP_TEXTMAP,
+	LUMP_ZNODES,
+	NUMMAPLUMPS
+};
 string map_lumps[NUMMAPLUMPS] =
 {
 	"THINGS",
@@ -94,6 +121,7 @@ const int n_special_namespaces = 11;
  *******************************************************************/
 EXTERN_CVAR(Bool, archive_load_data)
 
+
 /*******************************************************************
  * WADARCHIVE CLASS FUNCTIONS
  *******************************************************************/
@@ -106,7 +134,7 @@ WadArchive::WadArchive() : TreelessArchive("wad")
 	// Init variables
 	//desc.max_name_length = 8;
 	//desc.names_extensions = false;
-	iwad = false;
+	iwad_ = false;
 }
 
 /* WadArchive::~WadArchive
@@ -118,7 +146,7 @@ WadArchive::~WadArchive()
 
 bool WadArchive::isWritable()
 {
-	return !(iwad && iwad_lock);
+	return !(iwad_ && iwad_lock);
 }
 
 /* WadArchive::getEntryOffset
@@ -151,19 +179,19 @@ void WadArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 void WadArchive::updateNamespaces()
 {
 	// Clear current namespace info
-	while (namespaces.size() > 0)
-		namespaces.pop_back();
+	while (namespaces_.size() > 0)
+		namespaces_.pop_back();
 
 	// Go through all entries
 	for (unsigned a = 0; a < numEntries(); a++)
 	{
-		ArchiveEntry* entry = getRoot()->entryAt(a);
+		ArchiveEntry* entry = rootDir()->entryAt(a);
 
 		// Check for namespace begin
 		if (entry->getName().Matches("*_START"))
 		{
 			// Create new namespace
-			wad_ns_pair_t ns(entry, NULL);
+			NSPair ns(entry, NULL);
 			string name = entry->getName();
 			ns.name = name.Left(name.Length() - 6).Lower();
 			ns.start_index = entryIndex(ns.start);
@@ -179,7 +207,7 @@ void WadArchive::updateNamespaces()
 				ns.name = "t";
 
 			// Add to namespace list
-			namespaces.push_back(ns);
+			namespaces_.push_back(ns);
 		}
 		// Check for namespace end
 		else if (entry->getName().Matches("?_END") || entry->getName().Matches("??_END"))
@@ -203,30 +231,30 @@ void WadArchive::updateNamespaces()
 			//size_t index = entryIndex(entry);
 
 			bool found = false;
-			for (unsigned b = 0; b < namespaces.size(); b++)
+			for (unsigned b = 0; b < namespaces_.size(); b++)
 			{
 				// Can't close a namespace that starts afterwards
-				if (namespaces[b].start_index > a)
+				if (namespaces_[b].start_index > a)
 					break;
 				// Can't close an already-closed namespace
-				if (namespaces[b].end != NULL)
+				if (namespaces_[b].end != NULL)
 					continue;
-				if (S_CMP(ns_name, namespaces[b].name))
+				if (S_CMP(ns_name, namespaces_[b].name))
 				{
 					found = true;
-					namespaces[b].end = entry;
-					namespaces[b].end_index = a;
+					namespaces_[b].end = entry;
+					namespaces_[b].end_index = a;
 					break;
 				}
 			}
 			// Flat hack: closing the flat namespace without opening it
 			if (found == false && ns_name == "f")
 			{
-				wad_ns_pair_t ns(getRoot()->entryAt(0), entry);
+				NSPair ns(rootDir()->entryAt(0), entry);
 				ns.start_index = 0;
 				ns.end_index = a;
 				ns.name = "f";
-				namespaces.push_back(ns);
+				namespaces_.push_back(ns);
 			}
 		}
 	}
@@ -234,27 +262,27 @@ void WadArchive::updateNamespaces()
 	// ROTT stuff. The first lump in the archive is always WALLSTRT, the last lump is either
 	// LICENSE (darkwar.wad) or VENDOR (huntbgin.wad), with TABLES just before in both cases.
 	// The shareware version has 2091 lumps, the complete version has about 50% more.
-	if (numEntries() > 2090 && getRoot()->entryAt(0)->getName().Matches("WALLSTRT") &&
-	        getRoot()->entryAt(numEntries()-2)->getName().Matches("TABLES"))
+	if (numEntries() > 2090 && rootDir()->entryAt(0)->getName().Matches("WALLSTRT") &&
+	        rootDir()->entryAt(numEntries()-2)->getName().Matches("TABLES"))
 	{
-		wad_ns_pair_t ns(getRoot()->entryAt(0), getRoot()->entryAt(numEntries()-1));
+		NSPair ns(rootDir()->entryAt(0), rootDir()->entryAt(numEntries()-1));
 		ns.name = "rott";
 		ns.start_index = 0;
 		ns.end_index = entryIndex(ns.end);
-		namespaces.push_back(ns);
+		namespaces_.push_back(ns);
 	}
 
 
 	// Check namespaces
-	for (unsigned a = 0; a < namespaces.size(); a++)
+	for (unsigned a = 0; a < namespaces_.size(); a++)
 	{
-		wad_ns_pair_t& ns = namespaces[a];
+		NSPair& ns = namespaces_[a];
 
 		// Check the namespace has an end
 		if (!ns.end)
 		{
 			// If not, remove the namespace as it is invalid
-			namespaces.erase(namespaces.begin() + a);
+			namespaces_.erase(namespaces_.begin() + a);
 			a--;
 			continue;
 		}
@@ -280,30 +308,14 @@ void WadArchive::updateNamespaces()
  *******************************************************************/
 bool WadArchive::hasFlatHack()
 {
-	for (size_t i = 0; i < namespaces.size(); ++i)
+	for (size_t i = 0; i < namespaces_.size(); ++i)
 	{
-		if (namespaces[i].name == "f")
+		if (namespaces_[i].name == "f")
 		{
-			return (namespaces[i].start_index == 0 && namespaces[i].start->getSize() != 0);
+			return (namespaces_[i].start_index == 0 && namespaces_[i].start->getSize() != 0);
 		}
 	}
 	return false;
-}
-
-/* WadArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string WadArchive::getFileExtensionString()
-{
-	return "Wad Files (*.wad)|*.wad";
-}
-
-/* WadArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string WadArchive::getFormat()
-{
-	return "archive_wad";
 }
 
 /* WadArchive::open
@@ -339,7 +351,7 @@ bool WadArchive::open(MemChunk& mc)
 
 	// Check for iwad
 	if (wad_type[0] == 'I')
-		iwad = true;
+		iwad_ = true;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
@@ -447,7 +459,7 @@ bool WadArchive::open(MemChunk& mc)
 		}
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect namespaces (needs to be done before type detection as some types
@@ -517,7 +529,7 @@ bool WadArchive::open(MemChunk& mc)
 bool WadArchive::write(MemChunk& mc, bool update)
 {
 	// Don't write if iwad
-	if (iwad && iwad_lock)
+	if (iwad_ && iwad_lock)
 	{
 		Global::error = "IWAD saving disabled";
 		return false;
@@ -544,7 +556,7 @@ bool WadArchive::write(MemChunk& mc, bool update)
 
 	// Setup wad type
 	char wad_type[4] = { 'P', 'W', 'A', 'D' };
-	if (iwad) wad_type[0] = 'I';
+	if (iwad_) wad_type[0] = 'I';
 
 	// Write the header
 	uint32_t num_lumps = numEntries();
@@ -591,7 +603,7 @@ bool WadArchive::write(MemChunk& mc, bool update)
 bool WadArchive::write(string filename, bool update)
 {
 	// Don't write if iwad
-	if (iwad && iwad_lock)
+	if (iwad_ && iwad_lock)
 	{
 		Global::error = "IWAD saving disabled";
 		return false;
@@ -618,7 +630,7 @@ bool WadArchive::write(string filename, bool update)
 
 	// Setup wad type
 	char wad_type[4] = { 'P', 'W', 'A', 'D' };
-	if (iwad) wad_type[0] = 'I';
+	if (iwad_) wad_type[0] = 'I';
 
 	// Write the header
 	uint32_t num_lumps = numEntries();
@@ -745,12 +757,12 @@ ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
 	// Find requested namespace
-	for (unsigned a = 0; a < namespaces.size(); a++)
+	for (unsigned a = 0; a < namespaces_.size(); a++)
 	{
-		if (S_CMPNOCASE(namespaces[a].name, add_namespace))
+		if (S_CMPNOCASE(namespaces_[a].name, add_namespace))
 		{
 			// Namespace found, add entry before end marker
-			return addEntry(entry, namespaces[a].end_index++, NULL, copy);
+			return addEntry(entry, namespaces_[a].end_index++, NULL, copy);
 		}
 	}
 
@@ -1220,15 +1232,15 @@ string WadArchive::detectNamespace(ArchiveEntry* entry)
 string WadArchive::detectNamespace(size_t index, ArchiveTreeNode * dir)
 {
 	// Go through namespaces
-	for (unsigned a = 0; a < namespaces.size(); a++)
+	for (unsigned a = 0; a < namespaces_.size(); a++)
 	{
 		// Get namespace start and end indices
-		size_t start = namespaces[a].start_index;
-		size_t end = namespaces[a].end_index;
+		size_t start = namespaces_[a].start_index;
+		size_t end = namespaces_[a].end_index;
 
 		// Check if the entry is within this namespace
 		if (start <= index && index <= end)
-			return namespaces[a].name;
+			return namespaces_[a].name;
 	}
 
 	// In no namespace
@@ -1308,12 +1320,12 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 	{
 		// Find matching namespace
 		bool ns_found = false;
-		for (unsigned a = 0; a < namespaces.size(); a++)
+		for (unsigned a = 0; a < namespaces_.size(); a++)
 		{
-			if (namespaces[a].name == options.match_namespace)
+			if (namespaces_[a].name == options.match_namespace)
 			{
-				start = namespaces[a].start->nextEntry();
-				end = namespaces[a].end;
+				start = namespaces_[a].start->nextEntry();
+				end = namespaces_[a].end;
 				ns_found = true;
 				break;
 			}
@@ -1388,12 +1400,12 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 	{
 		// Find matching namespace
 		bool ns_found = false;
-		for (unsigned a = 0; a < namespaces.size(); a++)
+		for (unsigned a = 0; a < namespaces_.size(); a++)
 		{
-			if (namespaces[a].name == options.match_namespace)
+			if (namespaces_[a].name == options.match_namespace)
 			{
-				start = namespaces[a].end->prevEntry();
-				end = namespaces[a].start;
+				start = namespaces_[a].end->prevEntry();
+				end = namespaces_[a].start;
 				ns_found = true;
 				break;
 			}
@@ -1464,13 +1476,13 @@ vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
 	{
 		// Find matching namespace
 		bool ns_found = false;
-		size_t namespaces_size = namespaces.size();
+		size_t namespaces_size = namespaces_.size();
 		for (unsigned a = 0; a < namespaces_size; a++)
 		{
-			if (namespaces[a].name == options.match_namespace)
+			if (namespaces_[a].name == options.match_namespace)
 			{
-				start = namespaces[a].start->nextEntry();
-				end = namespaces[a].end;
+				start = namespaces_[a].start->nextEntry();
+				end = namespaces_[a].end;
 				ns_found = true;
 				break;
 			}
