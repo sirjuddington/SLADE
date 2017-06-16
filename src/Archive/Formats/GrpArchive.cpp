@@ -46,11 +46,11 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* GrpArchive::GrpArchive
  * GrpArchive class constructor
  *******************************************************************/
-GrpArchive::GrpArchive() : TreelessArchive(ARCHIVE_GRP)
+GrpArchive::GrpArchive() : TreelessArchive("grp")
 {
-	desc.max_name_length = 12;
-	desc.names_extensions = false;
-	desc.supports_dirs = false;
+	//desc.max_name_length = 12;
+	//desc.names_extensions = false;
+	//desc.supports_dirs = false;
 }
 
 /* GrpArchive::~GrpArchive
@@ -84,22 +84,6 @@ void GrpArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* GrpArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string GrpArchive::getFileExtensionString()
-{
-	return "Grp Files (*.grp)|*.grp";
-}
-
-/* GrpArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string GrpArchive::getFormat()
-{
-	return "archive_grp";
-}
-
 /* GrpArchive::open
  * Reads grp format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -126,7 +110,7 @@ bool GrpArchive::open(MemChunk& mc)
 	// Check the header
 	if (!(S_CMP(wxString::FromAscii(ken_magic), "KenSilverman")))
 	{
-		LOG_MESSAGE(1, "GrpArchive::openFile: File %s has invalid header", filename);
+		LOG_MESSAGE(1, "GrpArchive::openFile: File %s has invalid header", filename_);
 		Global::error = "Invalid grp header";
 		return false;
 	}
@@ -176,7 +160,7 @@ bool GrpArchive::open(MemChunk& mc)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect all entry types
@@ -290,12 +274,12 @@ bool GrpArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open grpfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "GrpArchive::loadEntryData: Failed to open grpfile %s", filename);
+		LOG_MESSAGE(1, "GrpArchive::loadEntryData: Failed to open grpfile %s", filename_);
 		return false;
 	}
 

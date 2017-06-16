@@ -105,7 +105,7 @@ namespace Icons
 		// Go through each entry in the directory
 		for (size_t a = 0; a < dir->numEntries(false); a++)
 		{
-			ArchiveEntry* entry = dir->getEntry(a);
+			ArchiveEntry* entry = dir->entryAt(a);
 
 			// Ignore anything not png format
 			if (!entry->getName().EndsWith("png"))
@@ -133,7 +133,7 @@ namespace Icons
 		{
 			for (size_t a = 0; a < dir_large->numEntries(false); a++)
 			{
-				ArchiveEntry* entry = dir_large->getEntry(a);
+				ArchiveEntry* entry = dir_large->entryAt(a);
 
 				// Ignore anything not png format
 				if (!entry->getName().EndsWith("png"))
@@ -183,7 +183,7 @@ bool Icons::loadIcons()
 	string tempfile = App::path("sladetemp", App::Dir::Temp);
 
 	// Get slade.pk3
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 
 	// Do nothing if it doesn't exist
 	if (!res_archive)

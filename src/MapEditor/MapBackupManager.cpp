@@ -125,7 +125,7 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archi
 			for (unsigned a = 0; a < last_backup->numEntries(); a++)
 			{
 				ArchiveEntry* e1 = backup_entries[a];
-				ArchiveEntry* e2 = last_backup->getEntry(a);
+				ArchiveEntry* e2 = last_backup->entryAt(a);
 				if (e1->getSize() != e2->getSize())
 				{
 					same = false;

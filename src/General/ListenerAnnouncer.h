@@ -31,7 +31,7 @@ private:
 
 public:
 	Announcer();
-	~Announcer();
+	virtual ~Announcer();
 
 	void addListener(Listener* l);
 	void removeListener(Listener* l);

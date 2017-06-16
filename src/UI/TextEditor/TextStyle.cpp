@@ -774,7 +774,7 @@ void StyleSet::applyCurrentToAll()
 bool StyleSet::loadResourceStyles()
 {
 	// Get 'config/text_styles' directory in slade.pk3
-	ArchiveTreeNode* dir = theArchiveManager->programResourceArchive()->getDir("config/text_styles");
+	ArchiveTreeNode* dir = App::archiveManager().programResourceArchive()->getDir("config/text_styles");
 
 	// Check it exists
 	if (!dir)
@@ -784,7 +784,7 @@ bool StyleSet::loadResourceStyles()
 	}
 
 	// Read default style set first
-	ArchiveEntry* default_style = dir->getEntry("default.sss");
+	ArchiveEntry* default_style = dir->entry("default.sss");
 	if (default_style)
 	{
 		// Read entry data into tokenizer
@@ -811,7 +811,7 @@ bool StyleSet::loadResourceStyles()
 	// Go through all entries within it
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		ArchiveEntry* entry = dir->getEntry(a);
+		ArchiveEntry* entry = dir->entryAt(a);
 
 		// Skip default
 		if (entry->getName(true) == "default")

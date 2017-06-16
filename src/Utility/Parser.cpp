@@ -247,7 +247,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 				{
 					// Get entry to include
 					auto inc_path = tz.getToken();
-					auto archive = archive_dir_->getArchive();
+					auto archive = archive_dir_->archive();
 					auto inc_entry = archive->entryAtPath(archive_dir_->getPath() + inc_path);
 					if (!inc_entry) // Try absolute path
 						inc_entry = archive->entryAtPath(inc_path);

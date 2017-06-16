@@ -82,7 +82,7 @@ public:
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
 	{
 		for (unsigned a = 0; a < filenames.size(); a++)
-			theArchiveManager->openArchive(filenames[a]);
+			App::archiveManager().openArchive(filenames[a]);
 
 		return true;
 	}
@@ -185,7 +185,7 @@ void MainWindow::setupLayout()
 
 	// Set icon
 	string icon_filename = App::path("slade.ico", App::Dir::Temp);
-	theArchiveManager->programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
+	App::archiveManager().programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
 
@@ -421,7 +421,7 @@ void MainWindow::setupLayout()
 void MainWindow::createStartPage(bool newtip)
 {
 	// Get relevant resource entries
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 	if (!res_archive)
 		return;
 
@@ -471,17 +471,17 @@ void MainWindow::createStartPage(bool newtip)
 	// Generate recent files string
 	string recent;
 	recent += "<table class=\"box\">";
-	if (theArchiveManager->numRecentFiles() > 0)
+	if (App::archiveManager().numRecentFiles() > 0)
 	{
 		for (unsigned a = 0; a < 12; a++)
 		{
-			if (a >= theArchiveManager->numRecentFiles())
+			if (a >= App::archiveManager().numRecentFiles())
 				break;	// No more recent files
 
 			recent += "<tr><td valign=\"middle\" class=\"box\">";
 
 			// Determine icon
-			string fn = theArchiveManager->recentFile(a);
+			string fn = App::archiveManager().recentFile(a);
 			string icon = "archive";
 			if (fn.EndsWith(".wad"))
 				icon = "wad";
@@ -537,7 +537,7 @@ void MainWindow::createStartPage(bool newtip)
 void MainWindow::createStartPage(bool newtip)
 {
 	// Get relevant resource entries
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 	if (!res_archive)
 		return;
 	ArchiveEntry* entry_html = res_archive->entryAtPath("html/startpage_basic.htm");
@@ -579,14 +579,14 @@ void MainWindow::createStartPage(bool newtip)
 	string recent;
 	for (unsigned a = 0; a < 12; a++)
 	{
-		if (a >= theArchiveManager->numRecentFiles())
+		if (a >= App::archiveManager().numRecentFiles())
 			break;	// No more recent files
 
 		// Add line break if needed
 		if (a > 0) recent += "<br/>\n";
 
 		// Add recent file link
-		recent += S_FMT("<a href=\"recent://%d\">%s</a>", a, theArchiveManager->recentFile(a));
+		recent += S_FMT("<a href=\"recent://%d\">%s</a>", a, App::archiveManager().recentFile(a));
 	}
 
 	// Insert tip and recent files into html
@@ -734,7 +734,7 @@ bool MainWindow::handleAction(string id)
 		dialog_ebr.SetInitialSize(wxSize(500, 300));
 		dialog_ebr.CenterOnParent();
 		if (dialog_ebr.ShowModal() == wxID_OK)
-			theArchiveManager->openBaseResource(brap.getSelectedPath());
+			App::archiveManager().openBaseResource(brap.getSelectedPath());
 
 		return true;
 	}
@@ -792,7 +792,7 @@ bool MainWindow::handleAction(string id)
 
 		// Set icon
 		string icon_filename = App::path("slade.ico", App::Dir::Temp);
-		theArchiveManager->programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
+		App::archiveManager().programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
 		info.SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 		wxRemoveFile(icon_filename);
 
@@ -891,13 +891,13 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 		// Navigating to file, open it
 		string page = App::path("startpage.htm", App::Dir::Temp);
 		if (wxFileName(href).GetLongPath() != wxFileName(page).GetLongPath())
-			theArchiveManager->openArchive(href);
+			App::archiveManager().openArchive(href);
 		ev.Veto();
 	}
 	else if (wxDirExists(href))
 	{
 		// Navigating to folder, open it
-		theArchiveManager->openDirArchive(href);
+		App::archiveManager().openDirArchive(href);
 		ev.Veto();
 	}
 }
@@ -921,8 +921,7 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 		string rs = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
-		SActionHandler::setWxIdOffset(index);
-		SActionHandler::doAction("aman_recent");
+		SActionHandler::doAction("aman_recent", index);
 		createStartPage();
 	}
 	else if (href.StartsWith("action://"))

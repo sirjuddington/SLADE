@@ -373,7 +373,7 @@ bool MapEditContext::update(long frametime)
 //
 // Opens [map]
 // ----------------------------------------------------------------------------
-bool MapEditContext::openMap(Archive::mapdesc_t map)
+bool MapEditContext::openMap(Archive::MapDesc map)
 {
 	LOG_MESSAGE(1, "Opening map %s", map.name);
 	if (!this->map_.readMap(map))

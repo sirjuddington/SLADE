@@ -20,7 +20,7 @@ wxDECLARE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
 struct dir_archive_changelist_t
 {
 	Archive*					archive;
-	vector<dir_entry_change_t>	changes;
+	vector<DirEntryChange>	changes;
 };
 
 class DirArchiveCheck : public wxThread
@@ -40,7 +40,7 @@ private:
 	vector<string>				removed_files;
 	dir_archive_changelist_t	change_list;
 
-	void addChange(dir_entry_change_t change);
+	void addChange(DirEntryChange change);
 
 public:
 	DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive);
@@ -143,7 +143,7 @@ public:
 	bool	beforeCloseArchive(Archive* archive);
 	bool	closeArchive(Archive* archive);
 
-	void	createNewArchive(uint8_t type);
+	void	createNewArchive(string format);
 	bool	closeAll();
 	void	saveAll();
 	void	checkDirArchives();

@@ -714,7 +714,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 bool TextLanguage::loadLanguages()
 {
 	// Get slade resource archive
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 
 	// Read language definitions from resource archive
 	if (res_archive)
@@ -726,7 +726,7 @@ bool TextLanguage::loadLanguages()
 		{
 			// Read all entries in this dir
 			for (unsigned a = 0; a < dir->numEntries(); a++)
-				readLanguageDefinition(dir->getEntry(a)->getMCData(), dir->getEntry(a)->getName());
+				readLanguageDefinition(dir->entryAt(a)->getMCData(), dir->entryAt(a)->getName());
 		}
 		else
 			LOG_MESSAGE(1, "Warning: 'config/languages' not found in slade.pk3, no builtin text language definitions loaded");
