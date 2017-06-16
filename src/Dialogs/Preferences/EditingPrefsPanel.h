@@ -19,6 +19,7 @@ private:
 	wxChoice*	choice_entry_mod;
 	wxCheckBox*	cb_confirm_entry_delete;
 	wxCheckBox*	cb_confirm_entry_revert;
+	wxChoice*	choice_dir_mod;
 
 	// External editors
 	VirtualListView*	lv_ext_editors;
