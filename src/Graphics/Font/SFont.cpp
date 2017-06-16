@@ -307,7 +307,7 @@ SFont& SFont::vgaFont()
 	if (!font_vga.texture.isLoaded())
 	{
 		// Get vga font entry
-		ArchiveEntry* entry_vgafont = theArchiveManager->programResourceArchive()->entryAtPath("vga-rom-font.16");
+		ArchiveEntry* entry_vgafont = App::archiveManager().programResourceArchive()->entryAtPath("vga-rom-font.16");
 
 		// Load font
 		if (entry_vgafont)

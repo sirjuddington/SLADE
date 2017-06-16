@@ -145,8 +145,8 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, string nspace, bool ns_
 		}
 
 		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-		if (theArchiveManager->archiveIndex(best.get()->getParent()) <=
-			theArchiveManager->archiveIndex(entry.get()->getParent()))
+		if (App::archiveManager().archiveIndex(best.get()->getParent()) <=
+			App::archiveManager().archiveIndex(entry.get()->getParent()))
 			best = entry;
 	}
 
@@ -494,8 +494,8 @@ void ResourceManager::getAllTextures(vector<TextureResource::Texture*>& list, Ar
 				break;
 
 			// Otherwise, if it's in a 'later' archive than the current resource, set it
-			if (theArchiveManager->archiveIndex(res->parent) <=
-			        theArchiveManager->archiveIndex(i.second.textures[a].get()->parent))
+			if (App::archiveManager().archiveIndex(res->parent) <=
+			        App::archiveManager().archiveIndex(i.second.textures[a].get()->parent))
 				res = i.second.textures[a].get();
 		}
 
@@ -615,8 +615,8 @@ CTexture* ResourceManager::getTexture(string texture, Archive* priority, Archive
 			return &res.textures[a].get()->tex;
 
 		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-		if (theArchiveManager->archiveIndex(parent) <=
-		        theArchiveManager->archiveIndex(res.textures[a].get()->parent))
+		if (App::archiveManager().archiveIndex(parent) <=
+		        App::archiveManager().archiveIndex(res.textures[a].get()->parent))
 		{
 			tex = &res.textures[a].get()->tex;
 			parent = res.textures[a].get()->parent;

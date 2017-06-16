@@ -318,7 +318,7 @@ void Game::init()
 	}
 
 	// Add game configurations from program resource
-	auto dir = theArchiveManager->programResourceArchive()->getDir("config/games");
+	auto dir = App::archiveManager().programResourceArchive()->getDir("config/games");
 	if (dir)
 	{
 		for (auto& entry : dir->entries())
@@ -339,7 +339,7 @@ void Game::init()
 	}
 
 	// Add port configurations from program resource
-	dir = theArchiveManager->programResourceArchive()->getDir("config/ports");
+	dir = App::archiveManager().programResourceArchive()->getDir("config/ports");
 	if (dir)
 	{
 		for (auto& entry : dir->entries())
@@ -704,7 +704,7 @@ namespace
 
 CONSOLE_COMMAND(parsexlat, 0, false)
 {
-	parseXlat(theArchiveManager->getArchive(0));
+	parseXlat(App::archiveManager().getArchive(0));
 }
 
 #endif

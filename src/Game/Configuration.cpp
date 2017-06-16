@@ -915,7 +915,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 		{
 			// Config is in program resource
 			string epath = S_FMT("config/games/%s.cfg", game_config.filename);
-			Archive* archive = theArchiveManager->programResourceArchive();
+			Archive* archive = App::archiveManager().programResourceArchive();
 			ArchiveEntry* entry = archive->entryAtPath(epath);
 			if (entry)
 				StringUtils::processIncludes(entry, full_config);
@@ -947,7 +947,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 			{
 				// Config is in program resource
 				string epath = S_FMT("config/ports/%s.cfg", conf.filename);
-				Archive* archive = theArchiveManager->programResourceArchive();
+				Archive* archive = App::archiveManager().programResourceArchive();
 				ArchiveEntry* entry = archive->entryAtPath(epath);
 				if (entry)
 					StringUtils::processIncludes(entry, full_config);
@@ -981,7 +981,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 	// Read any embedded configurations in resource archives
 	Archive::SearchOptions opt;
 	opt.match_name = "sladecfg";
-	vector<ArchiveEntry*> cfg_entries = theArchiveManager->findAllResourceEntries(opt);
+	vector<ArchiveEntry*> cfg_entries = App::archiveManager().findAllResourceEntries(opt);
 	for (unsigned a = 0; a < cfg_entries.size(); a++)
 	{
 		// Log message

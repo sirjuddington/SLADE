@@ -153,10 +153,10 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 				Log::info(2, S_FMT("Couldn't find entry to #include: %s", name));
 
 			// Look in resource pack
-			if (use_res && !done && theArchiveManager->programResourceArchive())
+			if (use_res && !done && App::archiveManager().programResourceArchive())
 			{
 				name = "config/games/" + inc_name;
-				entry_inc = theArchiveManager->programResourceArchive()->entryAtPath(name);
+				entry_inc = App::archiveManager().programResourceArchive()->entryAtPath(name);
 				if (entry_inc)
 				{
 					processIncludes(entry_inc, out);

@@ -238,7 +238,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 {
 	// Do nothing if there is no base resource archive,
 	// or if the archive *is* the base resource archive.
-	Archive* bra = theArchiveManager->baseResourceArchive();
+	Archive* bra = App::archiveManager().baseResourceArchive();
 	if (bra == NULL || bra == archive || archive == NULL)
 		return;
 
@@ -565,7 +565,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	wxMultiChoiceDialog dialog(theMainWindow, "The following textures are not used in any map,\nselect which textures to delete", "Delete Unused Textures", unused_tex);
 
 	// Get base resource textures (if any)
-	Archive* base_resource = theArchiveManager->baseResourceArchive();
+	Archive* base_resource = App::archiveManager().baseResourceArchive();
 	vector<ArchiveEntry*> base_tx_entries;
 	if (base_resource)
 		base_tx_entries = base_resource->findAll(opt);

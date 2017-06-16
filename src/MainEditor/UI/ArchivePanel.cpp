@@ -70,6 +70,7 @@
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "UI/PaletteChooser.h"
 #include "Utility/SFileDialog.h"
+#include "Archive/Formats/ZipArchive.h"
 
 
 /*******************************************************************
@@ -630,7 +631,7 @@ bool ArchivePanel::saveAs()
 	entry_list->updateList();
 
 	// Add as recent file
-	theArchiveManager->addRecentFile(info.filenames[0]);
+	App::archiveManager().addRecentFile(info.filenames[0]);
 
 	return true;
 }
@@ -721,13 +722,13 @@ bool ArchivePanel::newEntry(int type)
 			break;
 			// Import the ZDoom definitions as a baseline
 		case ENTRY_ANIMATED:
-			e_import = theArchiveManager->programResourceArchive()->entryAtPath("animated.lmp");
+			e_import = App::archiveManager().programResourceArchive()->entryAtPath("animated.lmp");
 			if (e_import)
 				new_entry->importEntry(e_import);
 			break;
 			// Import the Boom definitions as a baseline
 		case ENTRY_SWITCHES:
-			e_import = theArchiveManager->programResourceArchive()->entryAtPath("switches.lmp");
+			e_import = App::archiveManager().programResourceArchive()->entryAtPath("switches.lmp");
 			if (e_import)
 				new_entry->importEntry(e_import);
 			break;
@@ -868,17 +869,15 @@ bool ArchivePanel::buildArchive()
 		return false;
 	}
 
-	Archive *new_archive = NULL;
+	// Create temporary archive
+	ZipArchive zip;
 
 	// Create dialog
 	SFileDialog::fd_info_t info;
-	if (SFileDialog::saveFile(info, "Build archive", "Any Zip Format File (*.zip;*.pk3;*.pke;*.jdf)", this))
+	if (SFileDialog::saveFile(info, "Build archive", zip.fileExtensionString(), this))
 	{
 		UI::showSplash(string("Building ") + info.filenames[0], true);
 		UI::setSplashProgress(0.0f);
-
-		// Create temporary archive
-		new_archive = theArchiveManager->createTemporaryArchive();
 
 		// prevent for "archive in archive" when saving in the current directory
 		if(wxFileExists(info.filenames[0]))
@@ -898,9 +897,6 @@ bool ArchivePanel::buildArchive()
 			// Cancel event
 			if (wxGetKeyState(WXK_ESCAPE))
 			{
-				if (new_archive)
-					delete new_archive;
-
 				UI::hideSplash();
 				return true;
 			}
@@ -922,8 +918,8 @@ bool ArchivePanel::buildArchive()
 				continue;
 
 			// Add the entry
-			ArchiveTreeNode* dir = new_archive->createDir(edir);
-			ArchiveEntry* entry = new_archive->addNewEntry(ename, dir->numEntries()+1, dir);
+			ArchiveTreeNode* dir = zip.createDir(edir);
+			ArchiveEntry* entry = zip.addNewEntry(ename, dir->numEntries()+1, dir);
 
 			// Log
 			UI::setSplashProgressMessage(ename);
@@ -942,9 +938,8 @@ bool ArchivePanel::buildArchive()
 		UI::setSplashProgressMessage("");
 		
 		// Save the archive
-		if (!new_archive->save(info.filenames[0]))
+		if (!zip.save(info.filenames[0]))
 		{
-			delete new_archive;
 			UI::hideSplash();
 
 			// If there was an error pop up a message box
@@ -952,9 +947,6 @@ bool ArchivePanel::buildArchive()
 			return false;
 		}
 	}
-
-	if (new_archive)
-		delete new_archive;
 
 	UI::hideSplash();
 
@@ -1131,7 +1123,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 			entry_list->setEntriesAutoUpdate(true);
 
 		// Remove from bookmarks
-		theArchiveManager->deleteBookmark(selected_entries[a]);
+		App::archiveManager().deleteBookmark(selected_entries[a]);
 
 		// Remove the current selected entry if it isn't a directory
 		if (selected_entries[a]->getType() != EntryType::folderType())
@@ -1146,7 +1138,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 			entry_list->setEntriesAutoUpdate(true);
 
 		// Remove from bookmarks
-		theArchiveManager->deleteBookmarksInDir(selected_dirs[a]);
+		App::archiveManager().deleteBookmarksInDir(selected_dirs[a]);
 
 		// Remove the selected directory from the archive
 		archive->removeDir(selected_dirs[a]->getName(), entry_list->getCurrentDir());
@@ -1484,7 +1476,7 @@ bool ArchivePanel::bookmark()
 
 	if (entry)
 	{
-		theArchiveManager->addBookmark(entry_list->getFocusedEntry());
+		App::archiveManager().addBookmark(entry_list->getFocusedEntry());
 		return true;
 	}
 	else
@@ -3715,7 +3707,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 
 	// Archive
 	if (entry->getType()->getFormat().substr(0, 8) == "archive_")
-		theArchiveManager->openArchive(entry);
+		App::archiveManager().openArchive(entry);
 
 	// Texture list
 	else if (entry->getType()->getFormat() == "texturex" ||

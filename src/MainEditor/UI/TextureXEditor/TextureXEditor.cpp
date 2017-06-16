@@ -271,7 +271,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 		{
 			Archive::SearchOptions options;
 			options.match_type = EntryType::getType("pnames");
-			entry_pnames = theArchiveManager->findResourceEntry(options, archive);
+			entry_pnames = App::archiveManager().findResourceEntry(options, archive);
 		}
 		else
 			pnames = entry_pnames;	// If PNAMES was found in the archive, set the class variable so it is written to if modified
@@ -819,7 +819,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 						PatchTable ptt;
 
 						// Create dummy patch
-						ArchiveEntry* dpatch = theArchiveManager->programResourceArchive()->entryAtPath("s3dummy.lmp");
+						ArchiveEntry* dpatch = App::archiveManager().programResourceArchive()->entryAtPath("s3dummy.lmp");
 						dpatch = archive->addEntry(dpatch, "patches", true);
 						ptt.addPatch("S3DUMMY");
 
@@ -868,7 +868,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 				else
 				{
 					// User selected to import texture definitions from the base resource archive
-					Archive* bra = theArchiveManager->baseResourceArchive();
+					Archive* bra = App::archiveManager().baseResourceArchive();
 
 					if (!bra)
 					{
@@ -921,7 +921,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 		{
 			Archive::SearchOptions options;
 			options.match_type = EntryType::getType("pnames");
-			entry_pnames = theArchiveManager->findResourceEntry(options, archive);
+			entry_pnames = App::archiveManager().findResourceEntry(options, archive);
 		}
 
 		// If no PNAMES entry is found at all, show an error and abort

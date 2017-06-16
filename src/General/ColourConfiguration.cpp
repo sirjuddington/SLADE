@@ -304,7 +304,7 @@ bool ColourConfiguration::init()
 void ColourConfiguration::loadDefaults()
 {
 	// Read default colours
-	Archive* pres = theArchiveManager->programResourceArchive();
+	Archive* pres = App::archiveManager().programResourceArchive();
 	ArchiveEntry* entry_default_cc = pres->entryAtPath("config/colours/default.txt");
 	if (entry_default_cc)
 		readConfiguration(entry_default_cc->getMCData());
@@ -318,7 +318,7 @@ bool ColourConfiguration::readConfiguration(string name)
 	// TODO: search custom folder
 
 	// Search resource pk3
-	Archive* res = theArchiveManager->programResourceArchive();
+	Archive* res = App::archiveManager().programResourceArchive();
 	ArchiveTreeNode* dir = res->getDir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
@@ -337,7 +337,7 @@ void ColourConfiguration::getConfigurationNames(vector<string>& names)
 	// TODO: search custom folder
 
 	// Search resource pk3
-	Archive* res = theArchiveManager->programResourceArchive();
+	Archive* res = App::archiveManager().programResourceArchive();
 	ArchiveTreeNode* dir = res->getDir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 		names.push_back(dir->entryAt(a)->getName(true));

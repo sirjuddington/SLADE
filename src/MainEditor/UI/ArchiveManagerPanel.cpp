@@ -326,7 +326,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	Bind(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, &ArchiveManagerPanel::onDirArchiveCheckCompleted, this);
 
 	// Listen to the ArchiveManager
-	listenTo(theArchiveManager);
+	listenTo(&App::archiveManager());
 
 	// Init layout
 	Layout();
@@ -423,7 +423,7 @@ void ArchiveManagerPanel::refreshRecentFileList()
 
 	// Add each recent archive (same logic as the recent files submenu)
 	list_recent->enableSizeUpdate(false);
-	for (unsigned a = 0; a < theArchiveManager->numRecentFiles(); a++)
+	for (unsigned a = 0; a < App::archiveManager().numRecentFiles(); a++)
 	{
 		list_recent->addItem(a, wxEmptyString);
 		updateRecentListItem(a);
@@ -431,7 +431,7 @@ void ArchiveManagerPanel::refreshRecentFileList()
 		if (a < 8)
 		{
 			// Get path and determine icon
-			string fn = theArchiveManager->recentFile(a);
+			string fn = App::archiveManager().recentFile(a);
 			string icon = "archive";
 			if (fn.EndsWith(".wad"))
 				icon = "wad";
@@ -475,7 +475,7 @@ void ArchiveManagerPanel::refreshArchiveList()
 
 	// Add each archive that is opened in the ArchiveManager
 	list_archives->enableSizeUpdate(false);
-	for (int a = 0; a < theArchiveManager->numArchives(); a++)
+	for (int a = 0; a < App::archiveManager().numArchives(); a++)
 	{
 		list_archives->addItem(a, wxEmptyString);
 		updateOpenListItem(a);
@@ -507,7 +507,7 @@ void ArchiveManagerPanel::refreshAllTabs()
  *******************************************************************/
 void ArchiveManagerPanel::updateOpenListItem(int index)
 {
-	Archive* archive = theArchiveManager->getArchive(index);
+	Archive* archive = App::archiveManager().getArchive(index);
 
 	if (!archive)
 		return;
@@ -538,7 +538,7 @@ void ArchiveManagerPanel::updateOpenListItem(int index)
 void ArchiveManagerPanel::updateRecentListItem(int index)
 {
 	// Get path as wxFileName for processing
-	string path = theArchiveManager->recentFile(index);
+	string path = App::archiveManager().recentFile(index);
 	wxFileName fn(path);
 
 	// Set item name
@@ -561,7 +561,7 @@ void ArchiveManagerPanel::updateRecentListItem(int index)
  *******************************************************************/
 void ArchiveManagerPanel::updateArchiveTabTitle(int index)
 {
-	Archive* archive = theArchiveManager->getArchive(index);
+	Archive* archive = App::archiveManager().getArchive(index);
 
 	if (!archive)
 		return;
@@ -762,7 +762,7 @@ vector<ArchiveEntry*> ArchiveManagerPanel::currentEntrySelection()
  *******************************************************************/
 void ArchiveManagerPanel::openTab(int archive_index)
 {
-	Archive* archive = theArchiveManager->getArchive(archive_index);
+	Archive* archive = App::archiveManager().getArchive(archive_index);
 	if (archive)
 	{
 		openTab(archive);
@@ -842,7 +842,7 @@ void ArchiveManagerPanel::openTab(Archive* archive)
  *******************************************************************/
 void ArchiveManagerPanel::closeTab(int archive_index)
 {
-	Archive* archive = theArchiveManager->getArchive(archive_index);
+	Archive* archive = App::archiveManager().getArchive(archive_index);
 	ArchivePanel* ap = getArchiveTab(archive);
 
 	if (ap)
@@ -855,7 +855,7 @@ void ArchiveManagerPanel::closeTab(int archive_index)
  *******************************************************************/
 void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 {
-	Archive* archive = theArchiveManager->getArchive(archive_index);
+	Archive* archive = App::archiveManager().getArchive(archive_index);
 
 	if (archive)
 	{
@@ -909,7 +909,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
  *******************************************************************/
 TextureXEditor* ArchiveManagerPanel::getTextureTab(int archive_index)
 {
-	Archive* archive = theArchiveManager->getArchive(archive_index);
+	Archive* archive = App::archiveManager().getArchive(archive_index);
 
 	if (archive)
 	{
@@ -1048,7 +1048,7 @@ void ArchiveManagerPanel::openFile(string filename)
 	sw.Start();
 
 	// Open the file in the archive manager
-	Archive* new_archive = theArchiveManager->openArchive(filename);
+	Archive* new_archive = App::archiveManager().openArchive(filename);
 
 	sw.Pause();
 	LOG_MESSAGE(1, "Opening took %d ms", (int)sw.Time());
@@ -1090,7 +1090,7 @@ void ArchiveManagerPanel::openDirAsArchive(string dir)
 	sw.Start();
 
 	// Open the file in the archive manager
-	Archive* new_archive = theArchiveManager->openDirArchive(dir);
+	Archive* new_archive = App::archiveManager().openDirArchive(dir);
 
 	sw.Pause();
 	LOG_MESSAGE(1, "Opening took %d ms", (int)sw.Time());
@@ -1165,9 +1165,9 @@ bool ArchiveManagerPanel::closeAll()
 {
 	asked_save_unchanged = false;
 
-	while (theArchiveManager->numArchives() > 0)
+	while (App::archiveManager().numArchives() > 0)
 	{
-		if (!closeArchive(theArchiveManager->getArchive(0)))
+		if (!closeArchive(App::archiveManager().getArchive(0)))
 			return false;
 	}
 
@@ -1180,10 +1180,10 @@ bool ArchiveManagerPanel::closeAll()
 void ArchiveManagerPanel::saveAll()
 {
 	// Go through all open archives
-	for (int a = 0; a < theArchiveManager->numArchives(); a++)
+	for (int a = 0; a < App::archiveManager().numArchives(); a++)
 	{
 		// Get the archive to be saved
-		Archive* archive = theArchiveManager->getArchive(a);
+		Archive* archive = App::archiveManager().getArchive(a);
 
 		if (archive->canSave())
 		{
@@ -1229,9 +1229,9 @@ void ArchiveManagerPanel::checkDirArchives()
 	if (checked_dir_archive_changes || !check_dir_archives)
 		return;
 
-	for (int a = 0; a < theArchiveManager->numArchives(); a++)
+	for (int a = 0; a < App::archiveManager().numArchives(); a++)
 	{
-		Archive* archive = theArchiveManager->getArchive(a);
+		Archive* archive = App::archiveManager().getArchive(a);
 		if (archive->formatId() != "folder")
 			continue;
 
@@ -1251,10 +1251,10 @@ void ArchiveManagerPanel::checkDirArchives()
  *******************************************************************/
 void ArchiveManagerPanel::createNewArchive(string format)
 {
-	Archive* new_archive = theArchiveManager->newArchive(format);
+	Archive* new_archive = App::archiveManager().newArchive(format);
 
 	if (new_archive)
-		openTab(theArchiveManager->archiveIndex(new_archive));
+		openTab(App::archiveManager().archiveIndex(new_archive));
 }
 
 /* ArchiveManagerPanel::saveEntryChanges
@@ -1347,7 +1347,7 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive)
 		dir_last = fn.GetPath(true);
 
 		// Add recent file
-		theArchiveManager->addRecentFile(filename);
+		App::archiveManager().addRecentFile(filename);
 	}
 	else
 		return false;
@@ -1377,7 +1377,7 @@ bool ArchiveManagerPanel::beforeCloseArchive(Archive* archive)
 	saveEntryChanges(archive);
 
 	// Check for unsaved texture editor changes
-	int archive_index = theArchiveManager->archiveIndex(archive);
+	int archive_index = App::archiveManager().archiveIndex(archive);
 	TextureXEditor* txed = getTextureTab(archive_index);
 	if (txed)
 	{
@@ -1415,7 +1415,7 @@ bool ArchiveManagerPanel::closeArchive(Archive* archive)
 		return false;
 
 	checked_dir_archive_changes = true;
-	bool ok = beforeCloseArchive(archive) && theArchiveManager->closeArchive(archive);
+	bool ok = beforeCloseArchive(archive) && App::archiveManager().closeArchive(archive);
 	checked_dir_archive_changes = false;
 
 	return ok;
@@ -1512,7 +1512,7 @@ void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, string event_name
 
 		// Close any related tabs
 		closeTextureTab(index);
-		closeEntryTabs(theArchiveManager->getArchive(index));
+		closeEntryTabs(App::archiveManager().getArchive(index));
 		closeTab(index);
 	}
 
@@ -1527,7 +1527,7 @@ void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, string event_name
 	// If an archive was added
 	if (event_name == "archive_added")
 	{
-		int index = theArchiveManager->numArchives() - 1;
+		int index = App::archiveManager().numArchives() - 1;
 		list_archives->addItem(index, wxEmptyString);
 		updateOpenListItem(index);
 	}
@@ -1595,7 +1595,7 @@ void ArchiveManagerPanel::saveSelection()
 	for (size_t a = 0; a < selection.size(); a++)
 	{
 		// Get the archive to be saved
-		Archive* archive = theArchiveManager->getArchive(selection[a]);
+		Archive* archive = App::archiveManager().getArchive(selection[a]);
 
 		saveArchive(archive);
 	}
@@ -1617,7 +1617,7 @@ void ArchiveManagerPanel::saveSelectionAs()
 	for (size_t a = 0; a < selection.size(); a++)
 	{
 		// Get the archive
-		Archive* archive = theArchiveManager->getArchive(selection[a]);
+		Archive* archive = App::archiveManager().getArchive(selection[a]);
 		saveArchiveAs(archive);
 	}
 
@@ -1639,7 +1639,7 @@ bool ArchiveManagerPanel::closeSelection()
 	// Get the list of selected archives
 	vector<Archive*> selected_archives;
 	for (size_t a = 0; a < selection.size(); a++)
-		selected_archives.push_back(theArchiveManager->getArchive(selection[a]));
+		selected_archives.push_back(App::archiveManager().getArchive(selection[a]));
 
 	// Close all selected archives, starting from the last
 	bool all_closed = true;
@@ -1667,11 +1667,11 @@ void ArchiveManagerPanel::openSelection()
 	// Get the list of selected archives
 	vector<string> selected_archives;
 	for (size_t a = 0; a < selection.size(); a++)
-		selected_archives.push_back(theArchiveManager->recentFile(selection[a]));
+		selected_archives.push_back(App::archiveManager().recentFile(selection[a]));
 
 	// Open all selected archives
 	for (size_t a = 0; a < selected_archives.size(); a++)
-		theArchiveManager->openArchive(selected_archives[a]);
+		App::archiveManager().openArchive(selected_archives[a]);
 }
 
 /* ArchiveManagerPanel::removeSelection
@@ -1689,7 +1689,7 @@ void ArchiveManagerPanel::removeSelection()
 	// Remove selected recent files (starting from the last and going backward,
 	// because the list reorders itself whenever an item is removed)
 	for (unsigned a = selection.size(); a > 0; --a)
-		theArchiveManager->removeRecentFile(theArchiveManager->recentFile(selection[a - 1]));
+		App::archiveManager().removeRecentFile(App::archiveManager().recentFile(selection[a - 1]));
 }
 
 /* ArchiveManagerPanel::handleAction
@@ -1721,7 +1721,7 @@ bool ArchiveManagerPanel::handleAction(string id)
 	else if (id == "aman_open")
 	{
 		// Create extensions string
-		string extensions = theArchiveManager->getArchiveExtensionsString();
+		string extensions = App::archiveManager().getArchiveExtensionsString();
 
 		// Open a file browser dialog that allows multiple selection
 		// and filters by wad, zip and pk3 file extensions
@@ -1774,7 +1774,7 @@ bool ArchiveManagerPanel::handleAction(string id)
 		unsigned index = wx_id_offset;//SAction::fromId(id)->getWxId() - SAction::fromId("aman_recent1")->getWxId();
 
 		// Open it
-		openFile(theArchiveManager->recentFile(index));
+		openFile(App::archiveManager().recentFile(index));
 	}
 
 	// File->Save
@@ -1832,10 +1832,10 @@ bool ArchiveManagerPanel::handleAction(string id)
 void ArchiveManagerPanel::updateBookmarkListItem(int index)
 {
 	// Only valid indices
-	if (index < 0 || (unsigned)index >= theArchiveManager->numBookmarks())
+	if (index < 0 || (unsigned)index >= App::archiveManager().numBookmarks())
 		return;
 
-	ArchiveEntry* entry = theArchiveManager->getBookmark(index);
+	ArchiveEntry* entry = App::archiveManager().getBookmark(index);
 	if (!entry)
 		return;
 
@@ -1869,7 +1869,7 @@ void ArchiveManagerPanel::refreshBookmarkList()
 
 	// Add each bookmark
 	list_bookmarks->enableSizeUpdate(false);
-	for (unsigned a = 0; a < theArchiveManager->numBookmarks(); a++)
+	for (unsigned a = 0; a < App::archiveManager().numBookmarks(); a++)
 	{
 		list_bookmarks->addItem(a, wxEmptyString);
 		updateBookmarkListItem(a);
@@ -1897,7 +1897,7 @@ void ArchiveManagerPanel::deleteSelectedBookmarks()
 	// Remove bookmarks
 	for (int a = selection.size()-1; a >= 0; a--)
 	{
-		theArchiveManager->deleteBookmark(a);
+		App::archiveManager().deleteBookmark(a);
 	}
 }
 
@@ -1907,7 +1907,7 @@ void ArchiveManagerPanel::deleteSelectedBookmarks()
 void ArchiveManagerPanel::goToBookmark(long index)
 {
 	// Get the selected bookmark entry
-	ArchiveEntry* bookmark = theArchiveManager->getBookmark(list_bookmarks->selectedItems()[0]);
+	ArchiveEntry* bookmark = App::archiveManager().getBookmark(list_bookmarks->selectedItems()[0]);
 
 	// Check it's valid
 	if (!bookmark)
@@ -1942,7 +1942,7 @@ void ArchiveManagerPanel::goToBookmark(long index)
 void ArchiveManagerPanel::onListArchivesChanged(wxListEvent& e)
 {
 	// Get the selected archive
-	Archive* selected_archive = theArchiveManager->getArchive(e.GetIndex());
+	Archive* selected_archive = App::archiveManager().getArchive(e.GetIndex());
 
 	// Return if selection doesn't exist
 	if (!selected_archive)
@@ -1984,7 +1984,7 @@ void ArchiveManagerPanel::onListArchivesRightClick(wxListEvent& e)
 void ArchiveManagerPanel::onListRecentActivated(wxListEvent& e)
 {
 	// Open the archive
-	openFile(theArchiveManager->recentFile(e.GetIndex()));
+	openFile(App::archiveManager().recentFile(e.GetIndex()));
 	// Refresh the list
 	refreshRecentFileList();
 }
@@ -2089,7 +2089,7 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 		ArchivePanel* ap = (ArchivePanel*)page;
 		Archive* archive = ap->getArchive();
 
-		vector<Archive*> deps = theArchiveManager->getDependentArchives(archive);
+		vector<Archive*> deps = App::archiveManager().getDependentArchives(archive);
 		deps.insert(deps.begin(), archive);
 		// Iterate in reverse order so the deepest-nested is closed first
 		for (unsigned a = deps.size(); a > 0; a--)
@@ -2126,7 +2126,7 @@ void ArchiveManagerPanel::onArchiveTabClosed(wxAuiNotebookEvent& e)
 	// Actually close the archive the CLOSE event decided to close
 	if (pending_closed_archive)
 	{
-		theArchiveManager->closeArchive(pending_closed_archive);
+		App::archiveManager().closeArchive(pending_closed_archive);
 		pending_closed_archive = NULL;
 	}
 
@@ -2150,7 +2150,7 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 	dir_archive_changelist_t change_list = e.GetPayload<dir_archive_changelist_t>();
 
 	// Check the archive is still open
-	if (theArchiveManager->archiveIndex(change_list.archive) >= 0)
+	if (App::archiveManager().archiveIndex(change_list.archive) >= 0)
 	{
 		LOG_MESSAGE(2, "Finished checking %s for external changes", CHR(change_list.archive->filename()));
 

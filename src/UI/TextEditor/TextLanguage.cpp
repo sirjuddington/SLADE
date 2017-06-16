@@ -714,7 +714,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 bool TextLanguage::loadLanguages()
 {
 	// Get slade resource archive
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 
 	// Read language definitions from resource archive
 	if (res_archive)

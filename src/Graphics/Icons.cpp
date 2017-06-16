@@ -183,7 +183,7 @@ bool Icons::loadIcons()
 	string tempfile = App::path("sladetemp", App::Dir::Temp);
 
 	// Get slade.pk3
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 
 	// Do nothing if it doesn't exist
 	if (!res_archive)

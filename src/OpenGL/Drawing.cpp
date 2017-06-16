@@ -151,23 +151,23 @@ int FontManager::initFonts()
 	int ret = 0;
 
 	// Normal
-	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
+	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry) ++ret, font_normal.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Condensed
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
 	if (entry) ++ret, font_condensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
 	if (entry) ++ret, font_bold.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Condensed Bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
 	if (entry) ++ret, font_boldcondensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Monospace
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
 	if (entry) ++ret, font_small.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	return ret;
@@ -190,7 +190,7 @@ int FontManager::initFonts()
 	if (font_small)			{ delete font_small;			font_small = NULL;			}
 
 	// Normal
-	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
+	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
 	{
 		font_normal = new FTTextureFont(entry->getData(), entry->getSize());
@@ -206,7 +206,7 @@ int FontManager::initFonts()
 	}
 
 	// Condensed
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
 	if (entry)
 	{
 		font_condensed = new FTTextureFont(entry->getData(), entry->getSize());
@@ -222,7 +222,7 @@ int FontManager::initFonts()
 	}
 
 	// Bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
 	if (entry)
 	{
 		font_bold = new FTTextureFont(entry->getData(), entry->getSize());
@@ -238,7 +238,7 @@ int FontManager::initFonts()
 	}
 
 	// Condensed bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
 	if (entry)
 	{
 		font_boldcondensed = new FTTextureFont(entry->getData(), entry->getSize());
@@ -254,7 +254,7 @@ int FontManager::initFonts()
 	}
 
 	// Monospace
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
 	if (entry)
 	{
 		font_mono = new FTTextureFont(entry->getData(), entry->getSize());
@@ -270,7 +270,7 @@ int FontManager::initFonts()
 	}
 
 	// Small
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
 	{
 		font_small = new FTTextureFont(entry->getData(), entry->getSize());
@@ -1161,7 +1161,7 @@ void TextBox::draw(int x, int y, rgba_t colour, int alignment)
 
 /*
 CONSOLE_COMMAND(d_testfont, 1) {
-	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath(S_FMT("fonts/%s.ttf", args[0]));
+	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath(S_FMT("fonts/%s.ttf", args[0]));
 	if (entry) {
 		if (Drawing::font_condensed) {
 			delete Drawing::font_condensed;

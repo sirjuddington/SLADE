@@ -583,7 +583,7 @@ bool EntryType::loadEntryTypes()
 	// -------- READ BUILT-IN TYPES ---------
 
 	// Get builtin entry types from resource archive
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 
 	// Check resource archive exists
 	if (!res_archive)

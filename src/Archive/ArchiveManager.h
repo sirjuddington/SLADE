@@ -1,83 +1,44 @@
+#pragma once
 
-#ifndef __ARCHIVEMANAGER_H__
-#define __ARCHIVEMANAGER_H__
-
+#include "App.h"
 #include "General/ListenerAnnouncer.h"
 #include "Archive.h"
 
 class ArchiveManager : public Announcer, Listener
 {
-private:
-	struct archive_t
-	{
-		Archive*			archive;
-		vector<Archive*>	open_children;	// A list of currently open archives that are within this archive
-		bool				resource;
-	};
-
-	vector<archive_t>		open_archives;
-	Archive*				program_resource_archive;
-	Archive*				base_resource_archive;
-	bool					res_archive_open;
-	vector<string>			base_resource_paths;
-	vector<string>			recent_files;
-	vector<ArchiveEntry*>	bookmarks;
-	static ArchiveManager*	instance;
-
-	bool	initArchiveFormats();
-	void	getDependentArchivesInternal(Archive* archive, vector<Archive*>& vec);
-
 public:
 	ArchiveManager();
 	~ArchiveManager();
 
-	static ArchiveManager*	getInstance()
-	{
-		if (!instance)
-			instance = new ArchiveManager();
-
-		return instance;
-	}
-
-	static void deleteInstance()
-	{
-		if (instance)
-		{
-			delete instance;
-			instance = NULL;
-		}
-	}
-
 	bool		init();
 	bool		initBaseResource();
-	bool		resArchiveOK() { return res_archive_open; }
+	bool		resArchiveOK() const { return res_archive_open_; }
 	bool		addArchive(Archive* archive);
-	bool		validResDir(string dir);
+	bool		validResDir(string dir) const;
 	Archive*	getArchive(int index);
 	Archive*	getArchive(string filename);
 	Archive*	openArchive(string filename, bool manage = true, bool silent = false);
 	Archive*	openArchive(ArchiveEntry* entry, bool manage = true, bool silent = false);
 	Archive*	openDirArchive(string dir, bool manage = true, bool silent = false);
 	Archive*	newArchive(string format);
-	Archive*	createTemporaryArchive();
 	bool		closeArchive(int index);
 	bool		closeArchive(string filename);
 	bool		closeArchive(Archive* archive);
 	void		closeAll();
-	int			numArchives() { return (int)open_archives.size(); }
+	int			numArchives() const { return (int)open_archives_.size(); }
 	int			archiveIndex(Archive* archive);
 	vector<Archive*>
 				getDependentArchives(Archive* archive);
-	Archive*	programResourceArchive() { return program_resource_archive; }
-	string		getArchiveExtensionsString();
+	Archive*	programResourceArchive() const { return program_resource_archive_; }
+	string		getArchiveExtensionsString() const;
 	bool		archiveIsResource(Archive* archive);
 	void		setArchiveResource(Archive* archive, bool resource = true);
 
 	// Base resource archive stuff
-	Archive*	baseResourceArchive() { return base_resource_archive; }
+	Archive*	baseResourceArchive() const { return base_resource_archive_; }
 	bool		addBaseResourcePath(string path);
 	void		removeBaseResourcePath(unsigned index);
-	unsigned	numBaseResourcePaths() { return base_resource_paths.size(); }
+	unsigned	numBaseResourcePaths() const { return base_resource_paths_.size(); }
 	string		getBaseResourcePath(unsigned index);
 	bool		openBaseResource(int index);
 
@@ -88,7 +49,7 @@ public:
 
 	// Recent files
 	string		recentFile(unsigned index);
-	unsigned	numRecentFiles() { return recent_files.size(); }
+	unsigned	numRecentFiles() const { return recent_files_.size(); }
 	void		addRecentFile(string path);
 	void		addRecentFiles(vector<string> paths);
 	void		removeRecentFile(string path);
@@ -100,15 +61,26 @@ public:
 	bool			deleteBookmarksInArchive(Archive* archive);
 	bool			deleteBookmarksInDir(ArchiveTreeNode* node);
 	ArchiveEntry*	getBookmark(unsigned index);
-	unsigned		numBookmarks() { return bookmarks.size(); }
+	unsigned		numBookmarks() const { return bookmarks_.size(); }
 
-	// Formats
-	ArchiveFormat&	archiveFormat(string id);
+	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
 
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+private:
+	struct OpenArchive
+	{
+		Archive*			archive;
+		vector<Archive*>	open_children;	// A list of currently open archives that are within this archive
+		bool				resource;
+	};
+
+	vector<OpenArchive>		open_archives_;
+	Archive*				program_resource_archive_;
+	Archive*				base_resource_archive_;
+	bool					res_archive_open_;
+	vector<string>			base_resource_paths_;
+	vector<string>			recent_files_;
+	vector<ArchiveEntry*>	bookmarks_;
+
+	bool	initArchiveFormats() const;
+	void	getDependentArchivesInternal(Archive* archive, vector<Archive*>& vec);
 };
-
-// Define for less cumbersome ArchiveManager::getInstance()
-#define theArchiveManager ArchiveManager::getInstance()
-
-#endif //__ARCHIVEMANAGER_H__

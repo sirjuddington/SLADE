@@ -90,7 +90,7 @@ MapEditorWindow::MapEditorWindow()
 
 	// Set icon
 	string icon_filename = App::path("slade.ico", App::Dir::Temp);
-	theArchiveManager->programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
+	App::archiveManager().programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
 
@@ -576,9 +576,9 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 
 		// Read DECORATE definitions if any
 		Game::configuration().clearDecorateDefs();
-		Game::configuration().parseDecorateDefs(theArchiveManager->baseResourceArchive());
-		for (int i = 0; i < theArchiveManager->numArchives(); ++i)
-			Game::configuration().parseDecorateDefs(theArchiveManager->getArchive(i));
+		Game::configuration().parseDecorateDefs(App::archiveManager().baseResourceArchive());
+		for (int i = 0; i < App::archiveManager().numArchives(); ++i)
+			Game::configuration().parseDecorateDefs(App::archiveManager().getArchive(i));
 
 		// Load scripts if any
 		loadMapScripts(map);
@@ -932,8 +932,8 @@ bool MapEditorWindow::saveMapAs()
 
 	// Write wad to file
 	wad.save(info.filenames[0]);
-	Archive* archive = theArchiveManager->openArchive(info.filenames[0], true, true);
-	theArchiveManager->addRecentFile(info.filenames[0]);
+	Archive* archive = App::archiveManager().openArchive(info.filenames[0], true, true);
+	App::archiveManager().addRecentFile(info.filenames[0]);
 
 	// Update current map description
 	vector<Archive::MapDesc> maps = archive->detectMaps();
@@ -1160,7 +1160,7 @@ bool MapEditorWindow::handleAction(string id)
 		dialog_ebr.SetInitialSize(wxSize(500, 300));
 		dialog_ebr.CenterOnParent();
 		if (dialog_ebr.ShowModal() == wxID_OK)
-			theArchiveManager->openBaseResource(brap.getSelectedPath());
+			App::archiveManager().openBaseResource(brap.getSelectedPath());
 
 		return true;
 	}

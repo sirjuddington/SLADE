@@ -505,7 +505,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	string cmd = S_FMT("%s \"%s\" -map %s", path, filename, entry->getName());
 
 	// Add base resource archive to command line
-	Archive* base = theArchiveManager->baseResourceArchive();
+	Archive* base = App::archiveManager().baseResourceArchive();
 	if (base)
 	{
 		if (base->formatId() == "wad")
@@ -515,9 +515,9 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	}
 
 	// Add resource archives to command line
-	for (int a = 0; a < theArchiveManager->numArchives(); ++a)
+	for (int a = 0; a < App::archiveManager().numArchives(); ++a)
 	{
-		Archive* archive = theArchiveManager->getArchive(a);
+		Archive* archive = App::archiveManager().getArchive(a);
 
 		// Check archive type (only wad and zip supported by db2)
 		if (archive->formatId() == "wad")
@@ -1230,7 +1230,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	Archive::SearchOptions sopt;
 	sopt.match_type = EntryType::getType("acs");
 	sopt.search_subdirs = true;
-	vector<ArchiveEntry*> entries = theArchiveManager->findAllResourceEntries(sopt);
+	vector<ArchiveEntry*> entries = App::archiveManager().findAllResourceEntries(sopt);
 	wxArrayString lib_paths;
 	for (unsigned a = 0; a < entries.size(); a++)
 	{

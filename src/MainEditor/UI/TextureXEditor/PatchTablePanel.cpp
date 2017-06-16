@@ -70,7 +70,7 @@ PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table
 	updateList();
 
 	// Listen to archive manager
-	listenTo(theArchiveManager);
+	listenTo(&App::archiveManager());
 }
 
 /* PatchTableListView::~PatchTableListView
@@ -161,7 +161,7 @@ void PatchTableListView::onAnnouncement(Announcer* announcer, string event_name,
 	if (announcer == patch_table)
 		updateList();
 
-	if (announcer == theArchiveManager)
+	if (announcer == &App::archiveManager())
 		updateList();
 }
 

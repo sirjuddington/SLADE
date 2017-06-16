@@ -774,7 +774,7 @@ void StyleSet::applyCurrentToAll()
 bool StyleSet::loadResourceStyles()
 {
 	// Get 'config/text_styles' directory in slade.pk3
-	ArchiveTreeNode* dir = theArchiveManager->programResourceArchive()->getDir("config/text_styles");
+	ArchiveTreeNode* dir = App::archiveManager().programResourceArchive()->getDir("config/text_styles");
 
 	// Check it exists
 	if (!dir)

@@ -241,7 +241,7 @@ void PreferencesDialog::applyPreferences()
  *******************************************************************/
 void PreferencesDialog::onBtnBRAOpenClicked(wxCommandEvent& e)
 {
-	theArchiveManager->openBaseResource(panel_bra->getSelectedPath());
+	App::archiveManager().openBaseResource(panel_bra->getSelectedPath());
 }
 
 /* PreferencesDialog::onButtonClicked

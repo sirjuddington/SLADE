@@ -2,6 +2,7 @@
 
 class Console;
 class PaletteManager;
+class ArchiveManager;
 
 namespace App
 {
@@ -10,6 +11,7 @@ namespace App
 	PaletteManager*	paletteManager();
 	long			runTimer();
 	bool			isExiting();
+	ArchiveManager&	archiveManager();
 
 	bool	init();
 	void	saveConfigFile();

@@ -329,7 +329,7 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 		}
 
 		// IWAD
-		Archive* bra = theArchiveManager->baseResourceArchive();
+		Archive* bra = App::archiveManager().baseResourceArchive();
 		path.Replace("%i", S_FMT("\"%s\"", bra ? bra->filename() : ""));
 
 		// Resources

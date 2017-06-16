@@ -718,7 +718,7 @@ void MapPreviewCanvas::draw()
 	{
 		// Load thing texture
 		SImage image;
-		ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("images/thing/normal_n.png");
+		ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("images/thing/normal_n.png");
 		if (entry)
 		{
 			image.open(entry->getMCData());

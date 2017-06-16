@@ -55,14 +55,14 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 
 	// Populate resource archive list
 	int index = 0;
-	for (int a = 0; a < theArchiveManager->numArchives(); a++)
+	for (int a = 0; a < App::archiveManager().numArchives(); a++)
 	{
-		Archive* arch = theArchiveManager->getArchive(a);
+		Archive* arch = App::archiveManager().getArchive(a);
 		if (arch != archive)
 		{
 			list_resources->Append(arch->filename(false));
 			archives.push_back(arch);
-			if (theArchiveManager->archiveIsResource(arch))
+			if (App::archiveManager().archiveIsResource(arch))
 				list_resources->Check(index);
 			index++;
 		}
@@ -129,10 +129,10 @@ string ResourceArchiveChooser::getSelectedResourceList()
 void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 {
 	SFileDialog::fd_info_t info;
-	if (SFileDialog::openFile(info, "Open Resource Archive", theArchiveManager->getArchiveExtensionsString(), this))
+	if (SFileDialog::openFile(info, "Open Resource Archive", App::archiveManager().getArchiveExtensionsString(), this))
 	{
 		UI::showSplash("Opening Resource Archive", true);
-		Archive* na = theArchiveManager->openArchive(info.filenames[0], true, true);
+		Archive* na = App::archiveManager().openArchive(info.filenames[0], true, true);
 		UI::hideSplash();
 		if (na)
 		{
@@ -150,14 +150,14 @@ void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 {
 	// Build list of recent wad filename strings
 	wxArrayString recent;
-	for (unsigned a = 0; a < theArchiveManager->numRecentFiles(); a++)
-		recent.Add(theArchiveManager->recentFile(a));
+	for (unsigned a = 0; a < App::archiveManager().numRecentFiles(); a++)
+		recent.Add(App::archiveManager().recentFile(a));
 
 	// Show dialog
 	wxSingleChoiceDialog dlg(this, "Select a recent Archive to open", "Open Recent", recent);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		Archive* na = theArchiveManager->openArchive(theArchiveManager->recentFile(dlg.GetSelection()), true, true);
+		Archive* na = App::archiveManager().openArchive(App::archiveManager().recentFile(dlg.GetSelection()), true, true);
 		if (na)
 		{
 			list_resources->Append(na->filename(false));
@@ -169,5 +169,5 @@ void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 
 void ResourceArchiveChooser::onResourceChecked(wxCommandEvent& e)
 {
-	theArchiveManager->setArchiveResource(archives[e.GetInt()], list_resources->IsChecked(e.GetInt()));
+	App::archiveManager().setArchiveResource(archives[e.GetInt()], list_resources->IsChecked(e.GetInt()));
 }
