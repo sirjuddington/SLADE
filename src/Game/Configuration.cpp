@@ -915,7 +915,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 		{
 			// Config is in program resource
 			string epath = S_FMT("config/games/%s.cfg", game_config.filename);
-			Archive* archive = theArchiveManager->programResourceArchive();
+			Archive* archive = App::archiveManager().programResourceArchive();
 			ArchiveEntry* entry = archive->entryAtPath(epath);
 			if (entry)
 				StringUtils::processIncludes(entry, full_config);
@@ -947,7 +947,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 			{
 				// Config is in program resource
 				string epath = S_FMT("config/ports/%s.cfg", conf.filename);
-				Archive* archive = theArchiveManager->programResourceArchive();
+				Archive* archive = App::archiveManager().programResourceArchive();
 				ArchiveEntry* entry = archive->entryAtPath(epath);
 				if (entry)
 					StringUtils::processIncludes(entry, full_config);
@@ -979,15 +979,15 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 	}
 
 	// Read any embedded configurations in resource archives
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_name = "sladecfg";
-	vector<ArchiveEntry*> cfg_entries = theArchiveManager->findAllResourceEntries(opt);
+	vector<ArchiveEntry*> cfg_entries = App::archiveManager().findAllResourceEntries(opt);
 	for (unsigned a = 0; a < cfg_entries.size(); a++)
 	{
 		// Log message
 		Archive* parent = cfg_entries[a]->getParent();
 		if (parent)
-			LOG_MESSAGE(1, "Reading SLADECFG in %s", parent->getFilename());
+			LOG_MESSAGE(1, "Reading SLADECFG in %s", parent->filename());
 
 		// Read embedded config
 		string config = wxString::FromAscii(cfg_entries[a]->getData(), cfg_entries[a]->getSize());

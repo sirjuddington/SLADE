@@ -30,7 +30,7 @@ private:
 	bool						creating;
 
 	Archive*					archive;
-	vector<Archive::mapdesc_t>	maps;
+	vector<Archive::MapDesc>	maps;
 	vector<string>				games_list;
 	vector<string>				ports_list;
 
@@ -41,8 +41,8 @@ public:
 	void				populateGameList();
 	void				populatePortList();
 	void				populateMapList();
-	Archive::mapdesc_t	selectedMap();
-	bool				configMatchesMap(Archive::mapdesc_t map);
+	Archive::MapDesc	selectedMap();
+	bool				configMatchesMap(Archive::MapDesc map);
 	string				selectedGame();
 	string				selectedPort();
 

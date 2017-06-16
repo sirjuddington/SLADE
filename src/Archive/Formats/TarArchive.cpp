@@ -232,7 +232,7 @@ static void TarDefaultHeader(tar_header* header)
 /* TarArchive::TarArchive
  * TarArchive class constructor
  *******************************************************************/
-TarArchive::TarArchive() : Archive(ARCHIVE_TAR)
+TarArchive::TarArchive() : Archive("tar")
 {
 }
 
@@ -241,22 +241,6 @@ TarArchive::TarArchive() : Archive(ARCHIVE_TAR)
  *******************************************************************/
 TarArchive::~TarArchive()
 {
-}
-
-/* TarArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string TarArchive::getFileExtensionString()
-{
-	return "Tar Files (*.tar)|*.tar";
-}
-
-/* TarArchive::getFormat
- * Returns the string id for the tar EntryDataFormat
- *******************************************************************/
-string TarArchive::getFormat()
-{
-	return "archive_tar";
 }
 
 /* TarArchive::open
@@ -485,12 +469,12 @@ bool TarArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "TarArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "TarArchive::loadEntryData: Unable to open archive file %s", filename_);
 		return false;
 	}
 

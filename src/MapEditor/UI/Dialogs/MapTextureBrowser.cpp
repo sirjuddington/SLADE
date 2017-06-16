@@ -203,7 +203,7 @@ string MapTextureBrowser::determineTexturePath(Archive* archive, uint8_t categor
 	for (unsigned b = 0; b < tree_spec.size(); b++)
 	{
 		if (tree_spec[b] == "archive")
-			ret += archive->getFilename(false);
+			ret += archive->filename(false);
 		else if (tree_spec[b] == "type")
 			ret += type;
 		else if (tree_spec[b] == "category")

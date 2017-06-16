@@ -94,7 +94,7 @@ void PaletteChooser::setGlobalFromArchive(Archive* archive, int lump)
 		pal_global->copyPalette(App::paletteManager()->globalPalette());
 
 	else if (!Misc::loadPaletteFromArchive(pal_global, archive, lump))
-		setGlobalFromArchive(archive->getParentArchive(), lump);
+		setGlobalFromArchive(archive->parentArchive(), lump);
 }
 
 /* PaletteChooser::getSelectedPalette

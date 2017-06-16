@@ -471,14 +471,14 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types)
 		return false;
 
 	// Get base decorate file
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_name = "decorate";
 	opt.ignore_ext = true;
 	vector<ArchiveEntry*> decorate_entries = archive->findAll(opt);
 	if (decorate_entries.empty())
 		return false;
 
-	Log::info(2, S_FMT("Parsing DECORATE entries found in archive %s", archive->getFilename()));
+	Log::info(2, S_FMT("Parsing DECORATE entries found in archive %s", archive->filename()));
 
 	// Build full definition string
 	string full_defs;

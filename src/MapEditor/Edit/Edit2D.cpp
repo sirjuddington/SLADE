@@ -1015,6 +1015,10 @@ void Edit2D::deleteObject() const
 
 	// Record undo step
 	context_.endUndoRecord(true);
+
+	// Clear hilight and selection
+	context_.selection().clear();
+	context_.selection().clearHilight();
 }
 
 /* Edit2D::deleteVertex
@@ -1027,10 +1031,6 @@ void Edit2D::deleteVertex() const
 	int index = -1;
 	if (verts.size() == 1)
 		index = verts[0]->getIndex();
-
-	// Clear hilight and selection
-	context_.selection().clear();
-	context_.selection().clearHilight();
 
 	// Begin undo step
 	context_.beginUndoRecord("Delete Vertices", map_merge_lines_on_delete_vertex, false, true);
@@ -1060,10 +1060,6 @@ void Edit2D::deleteLine() const
 	if (lines.size() == 1)
 		index = lines[0]->getIndex();
 
-	// Clear hilight and selection
-	context_.selection().clear();
-	context_.selection().clearHilight();
-
 	// Begin undo step
 	context_.beginUndoRecord("Delete Lines", false, false, true);
 
@@ -1092,10 +1088,6 @@ void Edit2D::deleteThing() const
 	if (things.size() == 1)
 		index = things[0]->getIndex();
 
-	// Clear hilight and selection
-	context_.selection().clear();
-	context_.selection().clearHilight();
-
 	// Begin undo step
 	context_.beginUndoRecord("Delete Things", false, false, true);
 
@@ -1120,10 +1112,6 @@ void Edit2D::deleteSector() const
 	int index = -1;
 	if (sectors.size() == 1)
 		index = sectors[0]->getIndex();
-
-	// Clear hilight and selection
-	context_.selection().clear();
-	context_.selection().clearHilight();
 
 	// Begin undo step
 	context_.beginUndoRecord("Delete Sectors", true, false, true);

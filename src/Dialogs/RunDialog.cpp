@@ -329,19 +329,19 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 		}
 
 		// IWAD
-		Archive* bra = theArchiveManager->baseResourceArchive();
-		path.Replace("%i", S_FMT("\"%s\"", bra ? bra->getFilename() : ""));
+		Archive* bra = App::archiveManager().baseResourceArchive();
+		path.Replace("%i", S_FMT("\"%s\"", bra ? bra->filename() : ""));
 
 		// Resources
 		path.Replace("%r", getSelectedResourceList());
 
 		// Archive (+ temp map if specified)
 		if (map_file.IsEmpty() && archive)
-			path.Replace("%a", S_FMT("\"%s\"", archive->getFilename()));
+			path.Replace("%a", S_FMT("\"%s\"", archive->filename()));
 		else
 		{
 			if (archive)
-				path.Replace("%a", S_FMT("\"%s\" \"%s\"", archive->getFilename(), map_file));
+				path.Replace("%a", S_FMT("\"%s\" \"%s\"", archive->filename(), map_file));
 			else
 				path.Replace("%a", S_FMT("\"%s\"", map_file));
 		}

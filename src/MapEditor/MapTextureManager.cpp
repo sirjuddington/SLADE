@@ -79,7 +79,7 @@ void MapTextureManager::init()
 {
 	// Listen to the various managers
 	listenTo(theResourceManager);
-	listenTo(theArchiveManager);
+	listenTo(&App::archiveManager());
 	listenTo(theMainWindow->getPaletteChooser());
 	palette = getResourcePalette();
 }
@@ -448,7 +448,7 @@ void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string path)
 	// Go through entries
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		ArchiveEntry* entry = dir->getEntry(a);
+		ArchiveEntry* entry = dir->entryAt(a);
 
 		// Load entry to image
 		if (image.open(entry->getMCData()))
@@ -483,7 +483,7 @@ GLTexture* MapTextureManager::getEditorImage(string name)
 	if (!editor_images_loaded)
 	{
 		// Load all thing images to textures
-		Archive* slade_pk3 = theArchiveManager->programResourceArchive();
+		Archive* slade_pk3 = App::archiveManager().programResourceArchive();
 		ArchiveTreeNode* dir = slade_pk3->getDir("images");
 		if (dir)
 			importEditorImages(editor_images, dir, "");
@@ -524,7 +524,7 @@ void MapTextureManager::buildTexInfoList()
 
 	// Composite textures
 	vector<TextureResource::Texture*> textures;
-	theResourceManager->getAllTextures(textures, theArchiveManager->baseResourceArchive());
+	theResourceManager->getAllTextures(textures, App::archiveManager().baseResourceArchive());
 	for (unsigned a = 0; a < textures.size(); a++)
 	{
 		CTexture * tex = &textures[a]->tex;
@@ -602,7 +602,7 @@ void MapTextureManager::onAnnouncement(Announcer* announcer, string event_name, 
 	// archive manager and palette chooser.
 	if (announcer != theResourceManager
 	        && announcer != theMainWindow->getPaletteChooser()
-	        && announcer != theArchiveManager)
+	        && announcer != &App::archiveManager())
 		return;
 
 	// If the map's archive is being closed,
@@ -612,7 +612,7 @@ void MapTextureManager::onAnnouncement(Announcer* announcer, string event_name, 
 		event_data.seek(0, SEEK_SET);
 		int32_t ac_index;
 		event_data.read(&ac_index, 4);
-		if (theArchiveManager->getArchive(ac_index) == archive)
+		if (App::archiveManager().getArchive(ac_index) == archive)
 		{
 			MapEditor::windowWx()->Hide();
 			MapEditor::editContext().clearMap();

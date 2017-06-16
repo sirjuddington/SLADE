@@ -61,7 +61,7 @@ vector<ArchiveEntry*> MainEditor::currentEntrySelection()
  *******************************************************************/
 void MainEditor::openTextureEditor(Archive* archive, ArchiveEntry* entry)
 {
-	main_window->getArchiveManagerPanel()->openTextureTab(theArchiveManager->archiveIndex(archive), entry);
+	main_window->getArchiveManagerPanel()->openTextureTab(App::archiveManager().archiveIndex(archive), entry);
 }
 
 /* MainWindow::openMapEditor

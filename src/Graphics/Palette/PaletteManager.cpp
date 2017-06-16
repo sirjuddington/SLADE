@@ -95,11 +95,11 @@ bool PaletteManager::addPalette(Palette8bit::UPtr pal, string name)
 Palette8bit* PaletteManager::globalPalette()
 {
 	// Check if a base resource archive is open
-	if (!theArchiveManager->baseResourceArchive())
+	if (!App::archiveManager().baseResourceArchive())
 		return &pal_default;
 
 	// Return the palette contained in the base resource archive
-	Misc::loadPaletteFromArchive(&pal_global, theArchiveManager->baseResourceArchive());
+	Misc::loadPaletteFromArchive(&pal_global, App::archiveManager().baseResourceArchive());
 	return &pal_global;
 }
 
@@ -164,7 +164,7 @@ string PaletteManager::getPalName(Palette8bit* pal)
 bool PaletteManager::loadResourcePalettes()
 {
 	// Get the 'palettes' directory of SLADE.pk3
-	auto res_archive = theArchiveManager->programResourceArchive();
+	auto res_archive = App::archiveManager().programResourceArchive();
 	auto dir_palettes = res_archive->getDir("palettes/");
 
 	// Check it exists
@@ -176,11 +176,11 @@ bool PaletteManager::loadResourcePalettes()
 	{
 		// Load palette data
 		auto pal = std::make_unique<Palette8bit>();
-		MemChunk mc(dir_palettes->getEntry(a)->getData(true), dir_palettes->getEntry(a)->getSize());
+		MemChunk mc(dir_palettes->entryAt(a)->getData(true), dir_palettes->entryAt(a)->getSize());
 		pal->loadMem(mc);
 
 		// Add the palette
-		addPalette(std::move(pal), dir_palettes->getEntry(a)->getName(true));
+		addPalette(std::move(pal), dir_palettes->entryAt(a)->getName(true));
 	}
 
 	return true;

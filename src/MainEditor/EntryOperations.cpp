@@ -465,14 +465,14 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	}
 
 	// Get map info for entry
-	Archive::mapdesc_t map = entry->getParent()->getMapInfo(entry);
+	Archive::MapDesc map = entry->getParent()->getMapInfo(entry);
 
 	// Check valid map
 	if (map.format == MAP_UNKNOWN)
 		return false;
 
 	// Export the map to a temp .wad file
-	string filename = App::path(entry->getParent()->getFilename(false) + "-" + entry->getName(true) + ".wad", App::Dir::Temp);
+	string filename = App::path(entry->getParent()->filename(false) + "-" + entry->getName(true) + ".wad", App::Dir::Temp);
 	filename.Replace("/", "-");
 	if (map.archive)
 	{
@@ -505,25 +505,25 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	string cmd = S_FMT("%s \"%s\" -map %s", path, filename, entry->getName());
 
 	// Add base resource archive to command line
-	Archive* base = theArchiveManager->baseResourceArchive();
+	Archive* base = App::archiveManager().baseResourceArchive();
 	if (base)
 	{
-		if (base->getType() == ARCHIVE_WAD)
-			cmd += S_FMT(" -resource wad \"%s\"", base->getFilename());
-		else if (base->getType() == ARCHIVE_ZIP)
-			cmd += S_FMT(" -resource pk3 \"%s\"", base->getFilename());
+		if (base->formatId() == "wad")
+			cmd += S_FMT(" -resource wad \"%s\"", base->filename());
+		else if (base->formatId() == "zip")
+			cmd += S_FMT(" -resource pk3 \"%s\"", base->filename());
 	}
 
 	// Add resource archives to command line
-	for (int a = 0; a < theArchiveManager->numArchives(); ++a)
+	for (int a = 0; a < App::archiveManager().numArchives(); ++a)
 	{
-		Archive* archive = theArchiveManager->getArchive(a);
+		Archive* archive = App::archiveManager().getArchive(a);
 
 		// Check archive type (only wad and zip supported by db2)
-		if (archive->getType() == ARCHIVE_WAD)
-			cmd += S_FMT(" -resource wad \"%s\"", archive->getFilename());
-		else if (archive->getType() == ARCHIVE_ZIP)
-			cmd += S_FMT(" -resource pk3 \"%s\"", archive->getFilename());
+		if (archive->formatId() == "wad")
+			cmd += S_FMT(" -resource wad \"%s\"", archive->filename());
+		else if (archive->formatId() == "zip")
+			cmd += S_FMT(" -resource pk3 \"%s\"", archive->filename());
 	}
 
 	// Run DB2
@@ -890,7 +890,7 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries)
 		return true;
 
 	// Find patch table in parent archive
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_type = EntryType::getType("pnames");
 	ArchiveEntry* pnames = parent->findLast(opt);
 
@@ -972,7 +972,7 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 		return false;
 
 	// Find texturex entry to add to
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_type = EntryType::getType("texturex");
 	ArchiveEntry* texturex = parent->findFirst(opt);
 
@@ -1106,7 +1106,7 @@ bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries)
 		return false;
 
 	// Find patch table in parent archive
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_type = EntryType::getType("pnames");
 	ArchiveEntry* pnames = parent->findLast(opt);
 
@@ -1156,7 +1156,7 @@ bool EntryOperations::findTextureErrors(vector<ArchiveEntry*> entries)
 		return false;
 
 	// Find patch table in parent archive
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_type = EntryType::getType("pnames");
 	ArchiveEntry* pnames = parent->findLast(opt);
 
@@ -1227,10 +1227,10 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	}
 
 	// Find/export any resource libraries
-	Archive::search_options_t sopt;
+	Archive::SearchOptions sopt;
 	sopt.match_type = EntryType::getType("acs");
 	sopt.search_subdirs = true;
-	vector<ArchiveEntry*> entries = theArchiveManager->findAllResourceEntries(sopt);
+	vector<ArchiveEntry*> entries = App::archiveManager().findAllResourceEntries(sopt);
 	wxArrayString lib_paths;
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
@@ -1240,7 +1240,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 		// Ignore entries from other archives
 		if (entry->getParent() &&
-			(entry->getParent()->getFilename(true) != entries[a]->getParent()->getFilename(true)))
+			(entry->getParent()->filename(true) != entries[a]->getParent()->filename(true)))
 			continue;
 
 		string path = App::path(entries[a]->getName(true) + ".acs", App::Dir::Temp);
@@ -1319,10 +1319,10 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 				// Otherwise, treat it as a library
 
 				// See if the compiled library already exists as an entry
-				Archive::search_options_t opt;
+				Archive::SearchOptions opt;
 				opt.match_namespace = "acs";
 				opt.match_name = entry->getName(true);
-				if (entry->getParent()->getDesc().names_extensions)
+				if (entry->getParent()->formatDesc().names_extensions)
 				{
 					opt.match_name += ".o";
 					opt.ignore_ext = false;
