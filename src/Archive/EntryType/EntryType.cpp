@@ -30,7 +30,6 @@
 #include "App.h"
 #include "MainEditor/MainEditor.h"
 #include "EntryType.h"
-#include "Utility/Tokenizer.h"
 #include "General/Console/Console.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
@@ -381,11 +380,11 @@ int EntryType::isThisType(ArchiveEntry* entry)
  * Reads in a block of entry type definitions. Returns false if there
  * was a parsing error, true otherwise
  *******************************************************************/
-bool EntryType::readEntryTypeDefinition(MemChunk& mc)
+bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 {
 	// Parse the definition
 	Parser p;
-	p.parseText(mc);
+	p.parseText(mc, source);
 
 	// Get entry_types tree
 	auto pt_etypes = p.parseTreeRoot()->getChildPTN("entry_types");
@@ -607,7 +606,7 @@ bool EntryType::loadEntryTypes()
 	unsigned int et_dir_numEntries = et_dir->numEntries();
 	for (unsigned a = 0; a < et_dir_numEntries; a++)
 	{
-		if (readEntryTypeDefinition(et_dir->entryAt(a)->getMCData()))
+		if (readEntryTypeDefinition(et_dir->entryAt(a)->getMCData(), et_dir->entryAt(a)->getName()))
 			etypes_read = true;
 	}
 
@@ -635,7 +634,7 @@ bool EntryType::loadEntryTypes()
 		mc.importFile(res_dir.GetName() + "/" + filename);
 
 		// Parse file
-		readEntryTypeDefinition(mc);
+		readEntryTypeDefinition(mc, filename);
 
 		// Next file
 		files = res_dir.GetNext(&filename);

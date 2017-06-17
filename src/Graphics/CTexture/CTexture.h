@@ -2,12 +2,12 @@
 #ifndef __CTEXTURE_H__
 #define __CTEXTURE_H__
 
-#include "Utility/Tokenizer.h"
 #include "Archive/ArchiveEntry.h"
 #include "General/ListenerAnnouncer.h"
 #include "Graphics/Translation.h"
 
 class SImage;
+class Tokenizer;
 
 // Basic patch
 class CTPatch
@@ -31,7 +31,7 @@ public:
 	void	setOffsetX(int16_t offset) { offset_x = offset; }
 	void	setOffsetY(int16_t offset) { offset_y = offset; }
 
-	virtual ArchiveEntry*	getPatchEntry(Archive* parent = NULL);
+	virtual ArchiveEntry*	getPatchEntry(Archive* parent = nullptr);
 };
 
 // Extended patch (for TEXTURES)
@@ -77,7 +77,7 @@ public:
 	void	setStyle(string s) { style = s; }
 	void	setBlendType(uint8_t type) { blendtype = type; }
 
-	ArchiveEntry*	getPatchEntry(Archive* parent = NULL);
+	ArchiveEntry*	getPatchEntry(Archive* parent = nullptr) override;
 
 	bool	parse(Tokenizer& tz, uint8_t type = 0);
 	string	asText();
@@ -180,8 +180,8 @@ public:
 
 	bool	convertExtended();
 	bool	convertRegular();
-	bool	loadPatchImage(unsigned pindex, SImage& image, Archive* parent = NULL, Palette8bit* pal = NULL);
-	bool	toImage(SImage& image, Archive* parent = NULL, Palette8bit* pal = NULL, bool force_rgba = false);
+	bool	loadPatchImage(unsigned pindex, SImage& image, Archive* parent = nullptr, Palette8bit* pal = nullptr);
+	bool	toImage(SImage& image, Archive* parent = nullptr, Palette8bit* pal = nullptr, bool force_rgba = false);
 
 	typedef std::unique_ptr<CTexture>	UPtr;
 	typedef std::shared_ptr<CTexture>	SPtr;

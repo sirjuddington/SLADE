@@ -169,103 +169,83 @@ namespace App
 			return;
 
 		// Go through the file with the tokenizer
-		string token = tz.getToken();
 		while (!tz.atEnd())
 		{
 			// If we come across a 'cvars' token, read in the cvars section
-			if (!token.Cmp("cvars"))
+			if (tz.skipIf("cvars", 2))
 			{
-				token = tz.getToken();	// Skip '{'
-
-										// Keep reading name/value pairs until we hit the ending '}'
-				string cvar_name = tz.getToken();
-				while (cvar_name.Cmp("}") && !tz.atEnd())
+				// Keep reading name/value pairs until we hit the ending '}'
+				while (!tz.checkOrEnd("}"))
 				{
-					string cvar_val = tz.getToken();
-					read_cvar(cvar_name, cvar_val);
-					cvar_name = tz.getToken();
+					read_cvar(tz.current().text, tz.peek().text);
+					tz.skip(2);
 				}
+
+				tz.skip(); // Skip ending }
 			}
 
 			// Read base resource archive paths
-			if (!token.Cmp("base_resource_paths"))
+			if (tz.skipIf("base_resource_paths", 2))
 			{
-				// Skip {
-				token = wxString::FromUTF8(UTF8(tz.getToken()));
-
-				// Read paths until closing brace found
-				token = tz.getToken();
-				while (token.Cmp("}") && !tz.atEnd())
+				while (!tz.checkOrEnd("}"))
 				{
-					archive_manager.addBaseResourcePath(token);
-					token = wxString::FromUTF8(UTF8(tz.getToken()));
+					archive_manager.addBaseResourcePath(
+						wxString::FromUTF8(UTF8(tz.current().text))
+					);
+					tz.skip();
 				}
+
+				tz.skip(); // Skip ending }
 			}
 
 			// Read recent files list
-			if (token == "recent_files")
+			if (tz.skipIf("recent_files", 2))
 			{
-				// Skip {
-				token = tz.getToken();
-
-				// Read files until closing brace found
-				token = wxString::FromUTF8(UTF8(tz.getToken()));
-				while (token != "}" && !tz.atEnd())
+				while (!tz.checkOrEnd("}"))
 				{
-					archive_manager.addRecentFile(token);
-					token = wxString::FromUTF8(UTF8(tz.getToken()));
+					archive_manager.addRecentFile(
+						wxString::FromUTF8(UTF8(tz.current().text))
+					);
+					tz.skip();
 				}
+
+				tz.skip(); // Skip ending }
 			}
 
 			// Read keybinds
-			if (token == "keys")
-			{
-				token = tz.getToken();	// Skip {
+			if (tz.skipIf("keys", 2))
 				KeyBind::readBinds(tz);
-			}
 
 			// Read nodebuilder paths
-			if (token == "nodebuilder_paths")
+			if (tz.skipIf("nodebuilder_paths", 2))
 			{
-				token = tz.getToken();	// Skip {
-
-										// Read paths until closing brace found
-				token = tz.getToken();
-				while (token != "}" && !tz.atEnd())
+				while (!tz.checkOrEnd("}"))
 				{
-					string path = tz.getToken();
-					NodeBuilders::addBuilderPath(token, path);
-					token = tz.getToken();
+					NodeBuilders::addBuilderPath(tz.current().text, tz.peek().text);
+					tz.skip(2);
 				}
+
+				tz.skip(); // Skip ending }
 			}
 
 			// Read game exe paths
-			if (token == "executable_paths")
+			if (tz.skipIf("executable_paths", 2))
 			{
-				token = tz.getToken();	// Skip {
-
-										// Read paths until closing brace found
-				token = tz.getToken();
-				while (token != "}" && !tz.atEnd())
+				while (!tz.checkOrEnd("}"))
 				{
-					if (token.length())
-					{
-						string path = tz.getToken();
-						Executables::setGameExePath(token, path);
-					}
-					token = tz.getToken();
+					Executables::setGameExePath(tz.current().text, tz.peek().text);
+					tz.skip(2);
 				}
+
+				tz.skip(); // Skip ending }
 			}
 
 			// Read window size/position info
-			if (token == "window_info")
-			{
-				token = tz.getToken();	// Skip {
-				Misc::readWindowInfo(&tz);
-			}
+			if (tz.skipIf("window_info", 2))
+				Misc::readWindowInfo(tz);
 
-			// Get next token
-			token = tz.getToken();
+			// Next token
+			tz.skip();
 		}
 	}
 }

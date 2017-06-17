@@ -275,8 +275,8 @@ bool AnimatedList::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, bool
  *******************************************************************/
 bool AnimatedList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 {
-	Tokenizer tz(HCOMMENTS);
-	tz.openMem(&(entry->getMCData()), entry->getName());
+	Tokenizer tz(Tokenizer::Hash);
+	tz.openMem(entry->getMCData(), entry->getName());
 
 	string token;
 	char buffer[23];

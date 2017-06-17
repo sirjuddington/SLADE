@@ -34,6 +34,7 @@
 #include "Graphics/Icons.h"
 #include "General/KeyBind.h"
 #include "SCallTip.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************

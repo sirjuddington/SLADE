@@ -63,9 +63,9 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
 	// ZDoom
 	if (Game::configuration().currentPort() == "zdoom")
 		processZDoomMapSpecials(map);
-   // Eternity, currently no need for processEternityMapSpecials
-   else if (Game::configuration().currentPort() == "eternity")
-      processEternitySlopes(map);
+	// Eternity, currently no need for processEternityMapSpecials
+	else if (Game::configuration().currentPort() == "eternity")
+		processEternitySlopes(map);
 }
 
 /* MapSpecials::processLineSpecial
@@ -236,10 +236,10 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 
 	Tokenizer tz;
 	tz.setSpecialCharacters(";,:|={}/()");
-	tz.openMem(entry->getData(), entry->getSize(), "ACS Scripts");
+	tz.openMem(entry->getMCData(), "ACS Scripts");
 
 	string token = tz.getToken();
-	while (!tz.isAtEnd())
+	while (!tz.atEnd())
 	{
 		if (S_CMPNOCASE(token, "script"))
 		{
@@ -265,8 +265,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 					if (S_CMPNOCASE(token, "Sector_SetColor"))
 					{
 						// Get parameters
-						vector<string> parameters;
-						tz.getTokensUntil(parameters, ")");
+						auto parameters = tz.getTokensUntil(")");
 
 						// Parse parameters
 						long val;
@@ -276,7 +275,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b = -1;
 						for (unsigned a = 0; a < parameters.size(); a++)
 						{
-							if (parameters[a].ToLong(&val))
+							if (parameters[a].text.ToLong(&val))
 							{
 								if (tag < 0)
 									tag = val;
@@ -307,8 +306,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 					else if (S_CMPNOCASE(token, "Sector_SetFade"))
 					{
 						// Get parameters
-						vector<string> parameters;
-						tz.getTokensUntil(parameters, ")");
+						auto parameters = tz.getTokensUntil(")");
 
 						// Parse parameters
 						long val;
@@ -318,7 +316,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b = -1;
 						for (unsigned a = 0; a < parameters.size(); a++)
 						{
-							if (parameters[a].ToLong(&val))
+							if (parameters[a].text.ToLong(&val))
 							{
 								if (tag < 0)
 									tag = val;

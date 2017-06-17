@@ -70,7 +70,7 @@ public:
 	int		isThisType(ArchiveEntry* entry);
 
 	// Static functions
-	static bool 				readEntryTypeDefinition(MemChunk& mc);
+	static bool 				readEntryTypeDefinition(MemChunk& mc, const string& source);
 	static bool 				loadEntryTypes();
 	static bool 				detectEntryType(ArchiveEntry* entry);
 	static EntryType*			getType(string id);

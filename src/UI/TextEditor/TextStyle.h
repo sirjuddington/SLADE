@@ -3,9 +3,10 @@
 #define __TEXT_STYLE_H__
 
 #include "common.h"
-#include "Utility/Parser.h"
 
 class TextEditor;
+class ParseTreeNode;
+
 class TextStyle
 {
 	friend class StyleSet;

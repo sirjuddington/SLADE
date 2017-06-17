@@ -56,6 +56,7 @@
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UndoManagerHistoryPanel.h"
 #include "Utility/SFileDialog.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************

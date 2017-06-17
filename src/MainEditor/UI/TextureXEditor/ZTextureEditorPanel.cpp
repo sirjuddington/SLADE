@@ -36,6 +36,7 @@
 #include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************

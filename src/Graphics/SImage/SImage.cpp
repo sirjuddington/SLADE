@@ -34,11 +34,9 @@
  *******************************************************************/
 #include "Main.h"
 #include "SImage.h"
-#include "General/Misc.h"
 #include "SIFormat.h"
 #include "Graphics/Translation.h"
 #include "Utility/MathStuff.h"
-#include "Utility/Tokenizer.h"
 
 #undef BOOL
 
