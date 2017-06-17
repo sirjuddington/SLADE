@@ -188,6 +188,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb)
 
 	// Dialog buttons
 	btn_run = new wxButton(this, wxID_OK, "Run");
+	btn_run->SetDefault();
 	hbox->Add(btn_run, 0, wxEXPAND|wxRIGHT, 4);
 
 	btn_cancel = new wxButton(this, wxID_CANCEL, "Cancel");
