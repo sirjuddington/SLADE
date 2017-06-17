@@ -56,7 +56,7 @@ DirArchive::DirArchive() : Archive("folder")
 #ifdef WIN32
 	separator_ = "\\";
 #else
-	separator = "/";
+	separator_ = "/";
 #endif
 }
 
