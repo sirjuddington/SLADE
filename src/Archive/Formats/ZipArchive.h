@@ -10,39 +10,35 @@ public:
 	ZipArchive();
 	~ZipArchive();
 
-	// Archive type info
-	string	getFileExtensionString();
-	string	getFormat();
-
 	// Opening
-	bool	open(string filename);		// Open from File
-	bool	open(MemChunk& mc);			// Open from MemChunk
+	bool	open(string filename) override;	// Open from File
+	bool	open(MemChunk& mc) override;	// Open from MemChunk
 
 	// Writing/Saving
-	bool	write(MemChunk& mc, bool update = true);	// Write to MemChunk
-	bool	write(string filename, bool update = true);	// Write to File
+	bool	write(MemChunk& mc, bool update = true) override;		// Write to MemChunk
+	bool	write(string filename, bool update = true) override;	// Write to File
 
 	// Misc
-	bool	loadEntryData(ArchiveEntry* entry);
+	bool	loadEntryData(ArchiveEntry* entry) override;
 
 	// Entry addition/removal
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
+	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
 
 	// Detection
-	mapdesc_t			getMapInfo(ArchiveEntry* maphead);
-	vector<mapdesc_t>	detectMaps();
+	MapDesc			getMapInfo(ArchiveEntry* maphead) override;
+	vector<MapDesc>	detectMaps() override;
 
 	// Search
-	ArchiveEntry*			findFirst(search_options_t& options);
-	ArchiveEntry*			findLast(search_options_t& options);
-	vector<ArchiveEntry*>	findAll(search_options_t& options);
+	ArchiveEntry*			findFirst(SearchOptions& options) override;
+	ArchiveEntry*			findLast(SearchOptions& options) override;
+	vector<ArchiveEntry*>	findAll(SearchOptions& options) override;
 
 	// Static functions
 	static bool	isZipArchive(MemChunk& mc);
 	static bool isZipArchive(string filename);
 
 private:
-	string	temp_file;
+	string	temp_file_;
 
 	void	generateTempFileName(string filename);
 };

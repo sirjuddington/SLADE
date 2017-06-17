@@ -113,7 +113,7 @@ struct RFFLump
 /* RffArchive::RffArchive
  * RffArchive class constructor
  *******************************************************************/
-RffArchive::RffArchive() : TreelessArchive(ARCHIVE_RFF)
+RffArchive::RffArchive() : TreelessArchive("rff")
 {
 }
 
@@ -148,22 +148,6 @@ void RffArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* RffArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string RffArchive::getFileExtensionString()
-{
-	return "Rff Files (*.rff)|*.rff";
-}
-
-/* RffArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string RffArchive::getFormat()
-{
-	return "archive_rff";
-}
-
 /* RffArchive::open
  * Reads grp format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -192,7 +176,7 @@ bool RffArchive::open(MemChunk& mc)
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
 	{
-		LOG_MESSAGE(1, "RffArchive::openFile: File %s has invalid header", filename);
+		LOG_MESSAGE(1, "RffArchive::openFile: File %s has invalid header", filename_);
 		Global::error = "Invalid rff header";
 		return false;
 	}
@@ -247,7 +231,7 @@ bool RffArchive::open(MemChunk& mc)
 			nlump->setEncryption(ENC_BLOOD);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 	delete[] lumps;
 
@@ -337,12 +321,12 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open rfffile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "RffArchive::loadEntryData: Failed to open rfffile %s", filename);
+		LOG_MESSAGE(1, "RffArchive::loadEntryData: Failed to open rfffile %s", filename_);
 		return false;
 	}
 

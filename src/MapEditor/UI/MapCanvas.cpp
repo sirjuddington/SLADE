@@ -343,6 +343,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 
 	// Send to editor context
 	bool skip = true;
+	context_->input().updateKeyModifiersWx(e.GetModifiers());
 	if (e.LeftDown())
 		skip = context_->input().mouseDown(Input::MouseButton::Left);
 	else if (e.LeftDClick())
@@ -382,6 +383,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 
 	// Send to editor context
 	bool skip = true;
+	context_->input().updateKeyModifiersWx(e.GetModifiers());
 	if (e.LeftUp())
 		skip = context_->input().mouseUp(Input::MouseButton::Left);
 	else if (e.RightUp())

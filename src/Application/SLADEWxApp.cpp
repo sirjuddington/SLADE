@@ -53,9 +53,9 @@ namespace Global
 {
 	string error = "";
 
-	int beta_num = 1;
+	int beta_num = 2;
 	int version_num = 3120;
-	string version = "3.1.2 Beta 1";
+	string version = "3.1.2 Beta 2";
 #ifdef GIT_DESCRIPTION
 	string sc_rev = GIT_DESCRIPTION;
 #else
@@ -177,7 +177,7 @@ public:
 		sizer->Add(hbox, 0, wxEXPAND);
 
 		// Add dead doomguy picture
-		theArchiveManager->programResourceArchive()
+		App::archiveManager().programResourceArchive()
 			->entryAtPath("images/STFDEAD0.png")
 			->exportFile(App::path("STFDEAD0.png", App::Dir::Temp));
 		wxImage img;
@@ -417,7 +417,7 @@ public:
 		size_t size,
 		wxIPCFormat format) override
 	{
-		theArchiveManager->openArchive(item);
+		App::archiveManager().openArchive(item);
 		return true;
 	}
 };

@@ -64,7 +64,7 @@ SBrush::SBrush(string name)
 	cx = 0;
 	cy = 0;
 
-	Archive* res = theArchiveManager->programResourceArchive();
+	Archive* res = App::archiveManager().programResourceArchive();
 	if (res == nullptr)
 		return;
 	ArchiveEntry* file = res->entryAtPath(S_FMT("icons/general/%s.png", icon));

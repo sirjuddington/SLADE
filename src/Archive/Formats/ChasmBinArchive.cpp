@@ -1,9 +1,12 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2015 Alexey Lysiuk
+ * Copyright (C) 2008-2017 Simon Judd
+ * 
+ * ChasmBinArchive code copyright (C) 2015 Alexey Lysiuk
+ * alexey.lysiuk@gmail.com
  *
- * Email:       alexey.lysiuk@gmail.com
+ * Email:       sirjuddington@gmail.com
  * Filename:    ChasmBinArchive.cpp
  * Description: ChasmBinArchive, archive class to handle 
  *              Chasm: The Rift bin file format
@@ -40,6 +43,7 @@ static const uint32_t NAME_SIZE = 1 + 12;				// length + characters
 static const uint32_t ENTRY_SIZE = NAME_SIZE + 4 + 4;	// name + size + offset
 static const uint16_t MAX_ENTRY_COUNT = 2048;			// the same for Demo and Full versions
 
+
 /*******************************************************************
  * EXTERNAL VARIABLES
  *******************************************************************/
@@ -47,32 +51,15 @@ EXTERN_CVAR(Bool, archive_load_data)
 
 
 /*******************************************************************
- * ChasmBinArchive CLASS FUNCTIONS
+ * CHASMBINARCHIVE CLASS FUNCTIONS
  *******************************************************************/
 
 /* ChasmBinArchive::ChasmBinArchive
  * ChasmBinArchive class constructor
  *******************************************************************/
 ChasmBinArchive::ChasmBinArchive()
-: Archive(ARCHIVE_CHASM_BIN)
+: Archive("chasm_bin")
 {
-	desc.max_name_length = static_cast<int>(NAME_SIZE);
-}
-
-/* ChasmBinArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string ChasmBinArchive::getFileExtensionString()
-{
-	return "Chasm bin Files (*.bin)|*.bin";
-}
-
-/* ChasmBinArchive::getFormat
- * Returns the string id for Chasm bin EntryDataFormat
- *******************************************************************/
-string ChasmBinArchive::getFormat()
-{
-	return "archive_chasm_bin";
 }
 
 static void FixBrokenWave(ArchiveEntry* const entry)
@@ -165,7 +152,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		entry->setLoaded(false);
 		entry->setState(0);
 
-		getRoot()->addEntry(entry);
+		rootDir()->addEntry(entry);
 	}
 
 	// Detect all entry types
@@ -326,12 +313,12 @@ bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "ChasmBinArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "ChasmBinArchive::loadEntryData: Unable to open archive file %s", filename_);
 		return false;
 	}
 

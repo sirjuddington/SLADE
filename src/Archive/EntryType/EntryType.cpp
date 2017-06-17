@@ -194,7 +194,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		bool match = false;
 		for (size_t a = 0; a < match_archive.size(); a++)
 		{
-			if (entry->getParent() && entry->getParent()->getFormat() == match_archive[a])
+			if (entry->getParent() && entry->getParent()->formatId() == match_archive[a])
 			{
 				match = true;
 				break;
@@ -582,7 +582,7 @@ bool EntryType::loadEntryTypes()
 	// -------- READ BUILT-IN TYPES ---------
 
 	// Get builtin entry types from resource archive
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 
 	// Check resource archive exists
 	if (!res_archive)
@@ -606,7 +606,7 @@ bool EntryType::loadEntryTypes()
 	unsigned int et_dir_numEntries = et_dir->numEntries();
 	for (unsigned a = 0; a < et_dir_numEntries; a++)
 	{
-		if (readEntryTypeDefinition(et_dir->getEntry(a)->getMCData(), et_dir->getEntry(a)->getName()))
+		if (readEntryTypeDefinition(et_dir->entryAt(a)->getMCData(), et_dir->entryAt(a)->getName()))
 			etypes_read = true;
 	}
 

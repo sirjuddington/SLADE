@@ -46,11 +46,8 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* LfdArchive::LfdArchive
  * LfdArchive class constructor
  *******************************************************************/
-LfdArchive::LfdArchive() : TreelessArchive(ARCHIVE_LFD)
+LfdArchive::LfdArchive() : TreelessArchive("lfd")
 {
-	desc.max_name_length = 8;
-	desc.names_extensions = false;
-	desc.supports_dirs = false;
 }
 
 /* LfdArchive::~LfdArchive
@@ -82,22 +79,6 @@ void LfdArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 		return;
 
 	entry->exProp("Offset") = (int)offset;
-}
-
-/* LfdArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string LfdArchive::getFileExtensionString()
-{
-	return "Lfd Files (*.lfd)|*.lfd";
-}
-
-/* LfdArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string LfdArchive::getFormat()
-{
-	return "archive_lfd";
 }
 
 /* LfdArchive::open
@@ -178,7 +159,7 @@ bool LfdArchive::open(MemChunk& mc)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 
 		// Move to next entry
 		offset += length;
@@ -326,12 +307,12 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open lfdfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "LfdArchive::loadEntryData: Failed to open lfdfile %s", filename);
+		LOG_MESSAGE(1, "LfdArchive::loadEntryData: Failed to open lfdfile %s", filename_);
 		return false;
 	}
 

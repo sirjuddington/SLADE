@@ -67,7 +67,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 		return false;
 
 	// Find PNAMES entry
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_type = EntryType::getType("pnames");
 	ArchiveEntry* pnames = archive->findLast(opt);
 
@@ -238,7 +238,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 {
 	// Do nothing if there is no base resource archive,
 	// or if the archive *is* the base resource archive.
-	Archive* bra = theArchiveManager->baseResourceArchive();
+	Archive* bra = App::archiveManager().baseResourceArchive();
 	if (bra == NULL || bra == archive || archive == NULL)
 		return;
 
@@ -247,7 +247,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 	archive->getEntryTreeAsList(entries);
 
 	// Init search options
-	Archive::search_options_t search;
+	Archive::SearchOptions search;
 	ArchiveEntry* other = NULL;
 	string dups = "";
 	size_t count = 0;
@@ -439,7 +439,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	int total_maps = 0;
 
 	// Get all SIDEDEFS entries
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_type = EntryType::getType("map_sidedefs");
 	vector<ArchiveEntry*> sidedefs = archive->findAll(opt);
 	total_maps += sidedefs.size();
@@ -565,7 +565,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	wxMultiChoiceDialog dialog(theMainWindow, "The following textures are not used in any map,\nselect which textures to delete", "Delete Unused Textures", unused_tex);
 
 	// Get base resource textures (if any)
-	Archive* base_resource = theArchiveManager->baseResourceArchive();
+	Archive* base_resource = App::archiveManager().baseResourceArchive();
 	vector<ArchiveEntry*> base_tx_entries;
 	if (base_resource)
 		base_tx_entries = base_resource->findAll(opt);
@@ -667,7 +667,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 	int total_maps = 0;
 
 	// Get all SECTORS entries
-	Archive::search_options_t opt;
+	Archive::SearchOptions opt;
 	opt.match_type = EntryType::getType("map_sectors");
 	vector<ArchiveEntry*> sectors = archive->findAll(opt);
 	total_maps += sectors.size();
@@ -929,7 +929,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 		return changed;
 
 	// Get all maps
-	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	vector<Archive::MapDesc> maps = archive->detectMaps();
 	string report = "";
 
 	for (size_t a = 0; a < maps.size(); ++a)
@@ -1255,7 +1255,7 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 		return changed;
 
 	// Get all maps
-	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	vector<Archive::MapDesc> maps = archive->detectMaps();
 	string report = "";
 
 	for (size_t a = 0; a < maps.size(); ++a)
@@ -1601,7 +1601,7 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 		return changed;
 
 	// Get all maps
-	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	vector<Archive::MapDesc> maps = archive->detectMaps();
 	string report = "";
 
 	for (size_t a = 0; a < maps.size(); ++a)

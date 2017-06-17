@@ -1,3 +1,4 @@
+
 /*******************************************************************
  * SLADE - It's a Doom Editor
  * Copyright (C) 2008-2014 Simon Judd
@@ -46,10 +47,8 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* SiNArchive::SiNArchive
  * SiNArchive class constructor
  *******************************************************************/
-SiNArchive::SiNArchive() : Archive(ARCHIVE_SIN)
+SiNArchive::SiNArchive() : Archive("sin")
 {
-	desc.max_name_length = 120;
-	desc.supports_dirs = true;
 }
 
 /* SiNArchive::~SiNArchive
@@ -57,22 +56,6 @@ SiNArchive::SiNArchive() : Archive(ARCHIVE_SIN)
  *******************************************************************/
 SiNArchive::~SiNArchive()
 {
-}
-
-/* SiNArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string SiNArchive::getFileExtensionString()
-{
-	return "SiN Files (*.sin)|*.sin";
-}
-
-/* SiNArchive::getFormat
- * Returns the string id for the SiN EntryDataFormat
- *******************************************************************/
-string SiNArchive::getFormat()
-{
-	return "archive_sin";
 }
 
 /* SiNArchive::open
@@ -309,12 +292,12 @@ bool SiNArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "SiNArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "SiNArchive::loadEntryData: Unable to open archive file %s", filename_);
 		return false;
 	}
 

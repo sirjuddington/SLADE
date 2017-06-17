@@ -87,7 +87,7 @@ bool MapBackupPanel::loadBackups(string archive_name, string map_name)
 
 	// Get backup dir for map
 	dir_current = archive_backups->getDir(map_name);
-	if (dir_current == archive_backups->getRoot() || !dir_current)
+	if (dir_current == archive_backups->rootDir() || !dir_current)
 		return false;
 
 	// Populate backups list
@@ -137,10 +137,10 @@ void MapBackupPanel::updateMapPreview()
 	archive_mapdata = new WadArchive();
 	ArchiveTreeNode* dir = (ArchiveTreeNode*)dir_current->getChild(selection);
 	for (unsigned a = 0; a < dir->numEntries(); a++)
-		archive_mapdata->addEntry(dir->getEntry(a), "", true);
+		archive_mapdata->addEntry(dir->entryAt(a), "", true);
 
 	// Open map preview
-	vector<Archive::mapdesc_t> maps = archive_mapdata->detectMaps();
+	vector<Archive::MapDesc> maps = archive_mapdata->detectMaps();
 	if (!maps.empty())
 		canvas_map->openMap(maps[0]);
 }

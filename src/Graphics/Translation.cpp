@@ -151,7 +151,7 @@ void Translation::parse(string def)
 	else if (test.StartsWith("\"$@", &temp))
 	{
 		temp.RemoveLast(1); // remove the closing '\"'
-		ArchiveEntry *trantbl = theArchiveManager->getResourceEntry(temp);
+		ArchiveEntry *trantbl = App::archiveManager().getResourceEntry(temp);
 
 		if (trantbl && trantbl->getSize() == 256)
 		{

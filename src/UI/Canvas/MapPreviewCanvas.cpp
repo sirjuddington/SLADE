@@ -110,7 +110,7 @@ void MapPreviewCanvas::addThing(double x, double y)
 /* MapPreviewCanvas::openMap
  * Opens a map from a mapdesc_t
  *******************************************************************/
-bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
+bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 {
 	// All errors = invalid map
 	Global::error = "Invalid map";
@@ -130,7 +130,7 @@ bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
 		}
 
 		// Detect maps
-		vector<Archive::mapdesc_t> maps = temp_archive->detectMaps();
+		vector<Archive::MapDesc> maps = temp_archive->detectMaps();
 
 		// Set map if there are any in the archive
 		if (maps.size() > 0)
@@ -718,7 +718,7 @@ void MapPreviewCanvas::draw()
 	{
 		// Load thing texture
 		SImage image;
-		ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("images/thing/normal_n.png");
+		ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("images/thing/normal_n.png");
 		if (entry)
 		{
 			image.open(entry->getMCData());

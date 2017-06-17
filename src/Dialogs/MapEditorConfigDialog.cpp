@@ -58,7 +58,7 @@ public:
 		wxWindow* parent,
 		const string& game,
 		const string& port,
-		vector<Archive::mapdesc_t>& maps,
+		vector<Archive::MapDesc>& maps,
 		Archive* archive
 	) : wxDialog(parent, -1, "New Map")
 	{
@@ -84,9 +84,9 @@ public:
 		// Limit map name length if necessary
 		if (Game::configuration().featureSupported(Game::Feature::AnyMapName) &&
 			(!Game::configuration().featureSupported(Game::Feature::LongNames) ||
-			(archive && archive->getType() != ARCHIVE_ZIP &&
-				archive->getType() != ARCHIVE_7Z &&
-				archive->getType() != ARCHIVE_FOLDER)))
+			(archive && archive->formatId() != "zip" &&
+				archive->formatId() != "7z" &&
+				archive->formatId() != "folder")))
 			cbo_mapname->SetMaxLength(8);
 
 		// Add possible map names to the combo box
@@ -437,7 +437,7 @@ void MapEditorConfigDialog::populateMapList()
 /* MapEditorConfigDialog::selectedMap
  * Returns info on the currently selected map
  *******************************************************************/
-Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
+Archive::MapDesc MapEditorConfigDialog::selectedMap()
 {
 	if (creating)
 	{
@@ -449,13 +449,13 @@ Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
 		string sel_game = games_list[choice_game_config->GetSelection()];
 
 		// Show new map dialog
-		vector<Archive::mapdesc_t> temp;
+		vector<Archive::MapDesc> temp;
 		NewMapDialog dlg(this, sel_game, sel_port, temp, archive);
 		dlg.SetInitialSize(wxSize(250, -1));
 		if (dlg.ShowModal() == wxID_OK)
 		{
 			// Get selected map name
-			Archive::mapdesc_t mdesc;
+			Archive::MapDesc mdesc;
 			mdesc.name = dlg.getMapName();
 
 			// Get selected map format
@@ -471,7 +471,7 @@ Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
 			return mdesc;
 		}
 
-		return Archive::mapdesc_t();
+		return Archive::MapDesc();
 	}
 
 	// Get selected map
@@ -482,7 +482,7 @@ Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
 
 	// Return it if valid
 	if ((unsigned)selection >= maps.size())
-		return Archive::mapdesc_t();
+		return Archive::MapDesc();
 	else
 		return maps[selection];
 }
@@ -491,7 +491,7 @@ Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
  * Returns true if the currently selected game/port supports the
  * format of [map]
  *******************************************************************/
-bool MapEditorConfigDialog::configMatchesMap(Archive::mapdesc_t map)
+bool MapEditorConfigDialog::configMatchesMap(Archive::MapDesc map)
 {
 	// Get currently selected game/port
 	string game = games_list[choice_game_config->GetSelection()];
@@ -609,7 +609,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			}
 
 		// Check archive type
-		if (archive->getType() == ARCHIVE_WAD)
+		if (archive->formatId() == "wad")
 		{
 			// Create new (empty) map at the end of the wad
 			ArchiveEntry* head = archive->addNewEntry(mapname);
@@ -639,8 +639,8 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			populateMapList();
 			list_maps->selectItem(list_maps->GetItemCount()-1);
 		}
-		else if (archive->getType() == ARCHIVE_ZIP
-			|| archive->getType() == ARCHIVE_FOLDER)
+		else if (archive->formatId() == "zip"
+			|| archive->formatId() == "folder")
 		{
 			// Create new wad archive for the map
 			Archive* wad = new WadArchive();
@@ -700,7 +700,7 @@ void MapEditorConfigDialog::onMapSelected(wxListEvent& e)
 	if (!canvas_preview)
 		return;
 
-	Archive::mapdesc_t map = selectedMap();
+	Archive::MapDesc map = selectedMap();
 	canvas_preview->clearMap();
 	canvas_preview->openMap(map);
 	btn_ok->Enable(configMatchesMap(map));

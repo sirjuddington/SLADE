@@ -17,7 +17,7 @@ namespace MapEditor
 {
 	std::unique_ptr<MapEditContext>	edit_context;
 	MapTextureManager				texture_manager;
-	Archive::mapdesc_t				current_map_desc;
+	Archive::MapDesc				current_map_desc;
 	MapEditorWindow*				map_window;
 	MapBackupManager				backup_manager;
 }

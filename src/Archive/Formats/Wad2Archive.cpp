@@ -48,10 +48,10 @@ EXTERN_CVAR(Bool, wad_force_uppercase)
 /* Wad2Archive::Wad2Archive
  * Wad2Archive class constructor
  *******************************************************************/
-Wad2Archive::Wad2Archive() : TreelessArchive(ARCHIVE_WAD2)
+Wad2Archive::Wad2Archive() : TreelessArchive("wad2")
 {
 	// Init variables
-	wad3 = false;
+	wad3_ = false;
 }
 
 /* Wad2Archive::~Wad2Archive
@@ -59,22 +59,6 @@ Wad2Archive::Wad2Archive() : TreelessArchive(ARCHIVE_WAD2)
  *******************************************************************/
 Wad2Archive::~Wad2Archive()
 {
-}
-
-/* Wad2Archive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string Wad2Archive::getFileExtensionString()
-{
-	return "WAD2 Files (*.wad)|*.wad";
-}
-
-/* Wad2Archive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string Wad2Archive::getFormat()
-{
-	return "archive_wad2";
 }
 
 /* Wad2Archive::open
@@ -109,7 +93,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		return false;
 	}
 	if (wad_type[3] == '3')
-		wad3 = true;
+		wad3_ = true;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
@@ -123,7 +107,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
-		wad2entry_t info;
+		Wad2Entry info;
 		mc.read(&info, 32);
 
 		// Byteswap values for big endian if needed
@@ -151,7 +135,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect all entry types
@@ -221,7 +205,7 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 
 	// Setup wad type
 	char wad_type[4] = { 'W', 'A', 'D', '2' };
-	if (wad3) wad_type[3] = '3';
+	if (wad3_) wad_type[3] = '3';
 
 	// Write the header
 	uint32_t num_lumps = numEntries();
@@ -242,7 +226,7 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 		entry = getEntry(l);
 
 		// Setup directory entry
-		wad2entry_t info;
+		Wad2Entry info;
 		memset(info.name, 0, 16);
 		memcpy(info.name, CHR(entry->getName()), entry->getName().Len());
 		info.cmprs = (bool)entry->exProp("W2Comp");
@@ -280,12 +264,12 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "Wad2Archive::loadEntryData: Failed to open wadfile %s", filename);
+		LOG_MESSAGE(1, "Wad2Archive::loadEntryData: Failed to open wadfile %s", filename_);
 		return false;
 	}
 

@@ -46,6 +46,7 @@ EXTERN_CVAR(Bool, auto_entry_replace)
 EXTERN_CVAR(Bool, save_archive_with_map)
 EXTERN_CVAR(Bool, confirm_entry_delete)
 EXTERN_CVAR(Bool, confirm_entry_revert)
+EXTERN_CVAR(Int, dir_archive_change_action)
 
 
 /*******************************************************************
@@ -267,8 +268,26 @@ wxPanel* EditingPrefsPanel::setupGeneralTab()
 	sizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
 	string choices[] = { "Don't Save", "Save", "Ask" };
 	choice_entry_mod = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, choices);
-	hbox->Add(new wxStaticText(panel, -1, "Action on unsaved entry changes:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
+	hbox->Add(
+		new wxStaticText(panel, -1, "Action on unsaved entry changes:"),
+		0,
+		wxALIGN_CENTER_VERTICAL | wxRIGHT,
+		4)
+	;
 	hbox->Add(choice_entry_mod, 1, wxEXPAND, 0);
+
+	// External dir changes
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
+	string choices_dir[] = { "Ignore Changes", "Apply Changes", "Ask" };
+	choice_dir_mod = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, choices_dir);
+	hbox->Add(
+		new wxStaticText(panel, -1, "Action on external directory changes:"),
+		0,
+		wxALIGN_CENTER_VERTICAL | wxRIGHT,
+		4
+	);
+	hbox->Add(choice_dir_mod, 1, wxEXPAND, 0);
 
 	return panel;
 }
@@ -323,6 +342,7 @@ void EditingPrefsPanel::init()
 	choice_entry_mod->SetSelection(autosave_entry_changes);
 	cb_confirm_entry_delete->SetValue(confirm_entry_delete);
 	cb_confirm_entry_revert->SetValue(confirm_entry_revert);
+	choice_dir_mod->SetSelection(dir_archive_change_action);
 
 	choice_category->SetSelection(0);
 	((ExternalEditorList*)lv_ext_editors)->setCategory(choice_category->GetStringSelection());
@@ -340,6 +360,7 @@ void EditingPrefsPanel::applyPreferences()
 	autosave_entry_changes = choice_entry_mod->GetSelection();
 	confirm_entry_delete = cb_confirm_entry_delete->GetValue();
 	confirm_entry_revert = cb_confirm_entry_revert->GetValue();
+	dir_archive_change_action = choice_dir_mod->GetSelection();
 }
 
 /* EditingPrefsPanel::showSubSection

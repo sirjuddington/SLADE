@@ -70,6 +70,7 @@
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "UI/PaletteChooser.h"
 #include "Utility/SFileDialog.h"
+#include "Archive/Formats/ZipArchive.h"
 
 
 /*******************************************************************
@@ -251,7 +252,7 @@ void initNamespaceVector(vector<string> &ns, bool flathack)
  * Checks through a mapdesc_t vector and returns which one, 
  * if any, the entry index is in, -1 otherwise
  */
-int isInMap(size_t index, vector<Archive::mapdesc_t> &maps)
+int isInMap(size_t index, vector<Archive::MapDesc> &maps)
 {
 	for (size_t m = 0; m < maps.size(); ++m)
 	{
@@ -269,7 +270,7 @@ int isInMap(size_t index, vector<Archive::mapdesc_t> &maps)
  * a bit to put less entries in the global namespace
  * and allow sorting a bit by categories.
  */
-size_t getNamespaceNumber(ArchiveEntry * entry, size_t index, vector<string> &ns, vector<Archive::mapdesc_t> &maps)
+size_t getNamespaceNumber(ArchiveEntry * entry, size_t index, vector<string> &ns, vector<Archive::MapDesc> &maps)
 {
 	string ens = entry->getParent()->detectNamespace(index);
 	if (S_CMPNOCASE(ens, "global"))
@@ -409,7 +410,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	btn_clear_filter->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnClearFilter, this);
 
 	// Do a quick check to see if we need the path display
-	if (archive->getRoot()->nChildren() == 0)
+	if (archive->rootDir()->nChildren() == 0)
 		sizer_path_controls->Show(false);
 
 	// Update size+layout
@@ -611,7 +612,11 @@ bool ArchivePanel::saveAs()
 
 	// Do save dialog
 	SFileDialog::fd_info_t info;
-	if (SFileDialog::saveFile(info, "Save Archive " + archive->getFilename(false) + " As", archive->getFileExtensionString(), this))
+	if (SFileDialog::saveFile(
+		info,
+		"Save Archive " + archive->filename(false) + " As",
+		archive->fileExtensionString(),
+		this))
 	{
 		// Save the archive
 		if (!archive->save(info.filenames[0]))
@@ -626,7 +631,7 @@ bool ArchivePanel::saveAs()
 	entry_list->updateList();
 
 	// Add as recent file
-	theArchiveManager->addRecentFile(info.filenames[0]);
+	App::archiveManager().addRecentFile(info.filenames[0]);
 
 	return true;
 }
@@ -664,7 +669,7 @@ bool ArchivePanel::newEntry(int type)
 		return false;
 
 	// Check for \ character (e.g., from Arch-Viles graphics). They have to be kept.
-	if (archive->getType() == ARCHIVE_WAD && name.length() <= 8
+	if (archive->formatId() == "wad" && name.length() <= 8
 	        && (name.find('\\') != wxNOT_FOUND || name.find('/') != wxNOT_FOUND))
 	{
 	} // Don't process as a file name
@@ -717,13 +722,13 @@ bool ArchivePanel::newEntry(int type)
 			break;
 			// Import the ZDoom definitions as a baseline
 		case ENTRY_ANIMATED:
-			e_import = theArchiveManager->programResourceArchive()->entryAtPath("animated.lmp");
+			e_import = App::archiveManager().programResourceArchive()->entryAtPath("animated.lmp");
 			if (e_import)
 				new_entry->importEntry(e_import);
 			break;
 			// Import the Boom definitions as a baseline
 		case ENTRY_SWITCHES:
-			e_import = theArchiveManager->programResourceArchive()->entryAtPath("switches.lmp");
+			e_import = App::archiveManager().programResourceArchive()->entryAtPath("switches.lmp");
 			if (e_import)
 				new_entry->importEntry(e_import);
 			break;
@@ -744,7 +749,7 @@ bool ArchivePanel::newEntry(int type)
 bool ArchivePanel::newDirectory()
 {
 	// Check archive supports directories
-	if (!archive->getDesc().supports_dirs)
+	if (!archive->formatDesc().supports_dirs)
 	{
 		wxMessageBox("This Archive format does not support directories", "Can't create new directory", wxICON_ERROR);
 		return false;
@@ -858,23 +863,21 @@ bool ArchivePanel::cleanupArchive()
  *******************************************************************/
 bool ArchivePanel::buildArchive()
 {
-	if (archive->getType() != ARCHIVE_FOLDER)
+	if (archive->formatId() != "folder")
 	{
 		wxMessageBox("This function is only supported with directories", "Can't build archive", wxICON_ERROR);
 		return false;
 	}
 
-	Archive *new_archive = NULL;
+	// Create temporary archive
+	ZipArchive zip;
 
 	// Create dialog
 	SFileDialog::fd_info_t info;
-	if (SFileDialog::saveFile(info, "Build archive", "Any Zip Format File (*.zip;*.pk3;*.pke;*.jdf)", this))
+	if (SFileDialog::saveFile(info, "Build archive", zip.fileExtensionString(), this))
 	{
 		UI::showSplash(string("Building ") + info.filenames[0], true);
 		UI::setSplashProgress(0.0f);
-
-		// Create temporary archive
-		new_archive = theArchiveManager->createTemporaryArchive();
 
 		// prevent for "archive in archive" when saving in the current directory
 		if(wxFileExists(info.filenames[0]))
@@ -886,7 +889,7 @@ bool ArchivePanel::buildArchive()
 		// import all files into new archive
 		// Get a list of all files in the directory
 		wxArrayString files;
-		wxDir::GetAllFiles(archive->getFilename(), &files);
+		wxDir::GetAllFiles(archive->filename(), &files);
 
 		// Go through files
 		for (unsigned a = 0; a < files.size(); a++)
@@ -894,15 +897,12 @@ bool ArchivePanel::buildArchive()
 			// Cancel event
 			if (wxGetKeyState(WXK_ESCAPE))
 			{
-				if (new_archive)
-					delete new_archive;
-
 				UI::hideSplash();
 				return true;
 			}
 			
 			string name = files[a];
-			name.Replace(archive->getFilename(), "", false);	// Remove directory from entry name
+			name.Replace(archive->filename(), "", false);	// Remove directory from entry name
 	
 			// Split filename into dir+name
 			wxFileName fn(name);
@@ -918,8 +918,8 @@ bool ArchivePanel::buildArchive()
 				continue;
 
 			// Add the entry
-			ArchiveTreeNode* dir = new_archive->createDir(edir);
-			ArchiveEntry* entry = new_archive->addNewEntry(ename, dir->numEntries()+1, dir);
+			ArchiveTreeNode* dir = zip.createDir(edir);
+			ArchiveEntry* entry = zip.addNewEntry(ename, dir->numEntries()+1, dir);
 
 			// Log
 			UI::setSplashProgressMessage(ename);
@@ -930,7 +930,7 @@ bool ArchivePanel::buildArchive()
 	
 			// Set unmodified
 			entry->setState(0);
-			dir->getDirEntry()->setState(0);
+			dir->dirEntry()->setState(0);
 		}
 
 		UI::setSplashProgress(1.0f);
@@ -938,9 +938,8 @@ bool ArchivePanel::buildArchive()
 		UI::setSplashProgressMessage("");
 		
 		// Save the archive
-		if (!new_archive->save(info.filenames[0]))
+		if (!zip.save(info.filenames[0]))
 		{
-			delete new_archive;
 			UI::hideSplash();
 
 			// If there was an error pop up a message box
@@ -948,9 +947,6 @@ bool ArchivePanel::buildArchive()
 			return false;
 		}
 	}
-
-	if (new_archive)
-		delete new_archive;
 
 	UI::hideSplash();
 
@@ -1127,7 +1123,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 			entry_list->setEntriesAutoUpdate(true);
 
 		// Remove from bookmarks
-		theArchiveManager->deleteBookmark(selected_entries[a]);
+		App::archiveManager().deleteBookmark(selected_entries[a]);
 
 		// Remove the current selected entry if it isn't a directory
 		if (selected_entries[a]->getType() != EntryType::folderType())
@@ -1142,7 +1138,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 			entry_list->setEntriesAutoUpdate(true);
 
 		// Remove from bookmarks
-		theArchiveManager->deleteBookmarksInDir(selected_dirs[a]);
+		App::archiveManager().deleteBookmarksInDir(selected_dirs[a]);
 
 		// Remove the selected directory from the archive
 		archive->removeDir(selected_dirs[a]->getName(), entry_list->getCurrentDir());
@@ -1325,10 +1321,10 @@ bool ArchivePanel::sort()
 		return false;
 
 	vector<string> nspaces;
-	initNamespaceVector(nspaces, dir->getArchive()->hasFlatHack());
-	vector<Archive::mapdesc_t> maps = dir->getArchive()->detectMaps();
+	initNamespaceVector(nspaces, dir->archive()->hasFlatHack());
+	vector<Archive::MapDesc> maps = dir->archive()->detectMaps();
 
-	string ns = dir->getArchive()->detectNamespace(entry_list->getEntry(selection[0]));
+	string ns = dir->archive()->detectNamespace(entry_list->getEntry(selection[0]));
 	size_t nsn = 0, lnsn = 0;
 
 	// Fill a map with <entry name, entry index> pairs
@@ -1362,9 +1358,9 @@ bool ArchivePanel::sort()
 			if (head_index < start) start = head_index;
 			if (end_index+1 > stop) stop = end_index+1;
 		}
-		else if (dir->getArchive()->detectNamespace(selection[i]) != ns)
+		else if (dir->archive()->detectNamespace(selection[i]) != ns)
 		{
-			ns = dir->getArchive()->detectNamespace(selection[i]);
+			ns = dir->archive()->detectNamespace(selection[i]);
 			nsn = getNamespaceNumber(entry, selection[i], nspaces, maps) * 1000;
 			ns_changed = true;
 		}
@@ -1480,7 +1476,7 @@ bool ArchivePanel::bookmark()
 
 	if (entry)
 	{
-		theArchiveManager->addBookmark(entry_list->getFocusedEntry());
+		App::archiveManager().addBookmark(entry_list->getFocusedEntry());
 		return true;
 	}
 	else
@@ -2205,7 +2201,7 @@ bool ArchivePanel::swanConvert()
 			undo_manager->beginRecord(S_FMT("Creating %s", wadnames[e]));
 
 			ArchiveEntry * output = archive->addNewEntry(
-				(archive->getType() == ARCHIVE_WAD ?  wadnames[e] : zipnames[e]), 
+				(archive->formatId() == "wad" ?  wadnames[e] : zipnames[e]), 
 				index, entry_list->getCurrentDir());
 			if (output)
 			{
@@ -2245,8 +2241,8 @@ bool ArchivePanel::basConvert(bool animdefs)
 	// Create new entry
 	ArchiveEntry* output = archive->addNewEntry(
 		(animdefs
-		? (archive->getType() == ARCHIVE_WAD ? "ANIMDEFS" : "animdefs.txt")
-		: (archive->getType() == ARCHIVE_WAD ? "SWANTBLS" : "swantbls.dat")
+		? (archive->formatId() == "wad" ? "ANIMDEFS" : "animdefs.txt")
+		: (archive->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")
 		), index, entry_list->getCurrentDir());
 
 	// Finish recording undo level
@@ -3181,7 +3177,7 @@ void ArchivePanel::onAnnouncement(Announcer* announcer, string event_name, MemCh
 	{
 		// Update this tab's name in the parent notebook (if filename was changed)
 		wxAuiNotebook* parent = (wxAuiNotebook*)GetParent();
-		parent->SetPageText(parent->GetPageIndex(this), archive->getFilename(false));
+		parent->SetPageText(parent->GetPageIndex(this), archive->filename(false));
 	}
 
 	// If a directory was added
@@ -3711,7 +3707,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 
 	// Archive
 	if (entry->getType()->getFormat().substr(0, 8) == "archive_")
-		theArchiveManager->openArchive(entry);
+		App::archiveManager().openArchive(entry);
 
 	// Texture list
 	else if (entry->getType()->getFormat() == "texturex" ||
@@ -3727,7 +3723,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 		MapEditorConfigDialog dlg(this, archive, false);
 		if (dlg.ShowModal() == wxID_OK)
 		{
-			Archive::mapdesc_t info = archive->getMapInfo(entry);
+			Archive::MapDesc info = archive->getMapInfo(entry);
 
 			// Check selected game configuration is ok
 			if (!dlg.configMatchesMap(info))
@@ -3887,7 +3883,7 @@ bool EntryDataUS::swapData()
 	if (dir)
 	{
 		// Get entry
-		ArchiveEntry* entry = dir->getEntry(index);
+		ArchiveEntry* entry = dir->entryAt(index);
 
 		// Backup data
 		MemChunk temp_data;
@@ -4089,7 +4085,7 @@ vector<ArchiveEntry*> Console_SearchEntries(string name)
 
 	if (archive)
 	{
-		Archive::search_options_t options;
+		Archive::SearchOptions options;
 		options.search_subdirs = true;
 		if (panel)
 		{
@@ -4169,7 +4165,7 @@ CONSOLE_COMMAND(cd, 1, true)
 			if (args[0].Matches(".."))
 				newdir = (ArchiveTreeNode*) dir->getParent();
 			else if (args[0].Matches("/") || args[0].Matches("\\"))
-				newdir = current->getRoot();
+				newdir = current->rootDir();
 		}
 
 		if (newdir)
