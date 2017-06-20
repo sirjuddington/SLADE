@@ -223,13 +223,13 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 	// Read basic info
 	this->type = type;
 	name = tz.next().text.Upper();
-	tz.skip();	// Skip ,
+	tz.adv();	// Skip ,
 	offset_x = tz.next().asInt();
-	tz.skip();	// Skip ,
+	tz.adv();	// Skip ,
 	offset_y = tz.next().asInt();
 
 	// Check if there is any extended info
-	if (tz.skipIfNext("{", 2))
+	if (tz.advIfNext("{", 2))
 	{
 		// Parse extended info
 		while (!tz.checkOrEnd("}"))
@@ -289,7 +289,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 				else
 				{
 					// Second value could be alpha or green
-					tz.skip();	// Skip ,
+					tz.adv();	// Skip ,
 					double second = tz.next().asFloat();
 
 					// If no third value, it's an alpha value
@@ -303,7 +303,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 					{
 						// Third value exists, must be R,G,B,A format
 						// RGB are ints in the 0-255 range; A is float in the 0.0-1.0 range
-						tz.skip();	// Skip ,
+						tz.adv();	// Skip ,
 						first.ToDouble(&val);
 						colour.r = val;
 						colour.g = second;
@@ -316,7 +316,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 							));
 							return false;
 						}
-						tz.skip();	// Skip ,
+						tz.adv();	// Skip ,
 						colour.a = tz.next().asFloat()*255;
 						blendtype = 3;
 					}
@@ -332,7 +332,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 				style = tz.next().text;
 
 			// Read next property name
-			tz.skip();
+			tz.adv();
 		}
 	}
 
@@ -711,7 +711,7 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 bool CTexture::parse(Tokenizer& tz, string type)
 {
 	// Check if optional
-	if (tz.skipIfNext("optional"))
+	if (tz.advIfNext("optional"))
 		optional = true;
 
 	// Read basic info
@@ -719,13 +719,13 @@ bool CTexture::parse(Tokenizer& tz, string type)
 	this->extended = true;
 	this->defined = false;
 	name = tz.next().text.Upper();
-	tz.skip();	// Skip ,
+	tz.adv();	// Skip ,
 	width = tz.next().asInt();
-	tz.skip();	// Skip ,
+	tz.adv();	// Skip ,
 	height = tz.next().asInt();
 
 	// Check for extended info
-	if (tz.skipIfNext("{", 2))
+	if (tz.advIfNext("{", 2))
 	{
 		// Read properties
 		while (!tz.check("}"))
@@ -785,7 +785,7 @@ bool CTexture::parse(Tokenizer& tz, string type)
 			}
 
 			// Read next property
-			tz.skip();
+			tz.adv();
 		}
 	}
 

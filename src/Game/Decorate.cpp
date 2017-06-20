@@ -82,13 +82,13 @@ namespace Game
 				// Handle direct gotos, like ZDoom's dead monsters
 				if (S_CMPNOCASE(sb, "Goto"))
 				{
-					tz.skip();
+					tz.adv();
 					// Skip scope and state
 					if (tz.peek() == ":")
 					{
-						tz.skip();	// first :
-						tz.skip(); // second :
-						tz.skip(); // state name
+						tz.adv();	// first :
+						tz.adv(); // second :
+						tz.adv(); // state name
 					}
 					continue;
 				}
@@ -150,7 +150,7 @@ namespace Game
 				tz.skipSection("{", "}");
 				break;
 			}
-			tz.skip();
+			tz.adv();
 		}
 	}
 
@@ -167,15 +167,15 @@ namespace Game
 		// Check for inheritance
 		//string next = tz.peekToken();
 		if (tz.checkNext(":"))
-			tz.skip(2); // Skip ':' and parent
+			tz.adv(2); // Skip ':' and parent
 		
 		// Check for replaces
 		if (tz.checkNextNC("replaces"))
-			tz.skip(2); // Skip 'replaces' and actor
+			tz.adv(2); // Skip 'replaces' and actor
 
 		// Skip "native" keyword if present
 		if (tz.checkNextNC("native"))
-			tz.skip();
+			tz.adv();
 
 		// Check for no editor number (ie can't be placed in the map)
 		if (tz.checkNext("{"))
@@ -183,7 +183,7 @@ namespace Game
 			LOG_MESSAGE(3, "Not adding actor %s, no editor number", name);
 
 			// Skip actor definition
-			tz.skip(2);
+			tz.adv(2);
 			tz.skipSection("{", "}");
 		}
 		else
@@ -197,18 +197,18 @@ namespace Game
 			string group;
 
 			// Read editor number
-			tz.next().asInt(type);
+			tz.next().toInt(type);
 
 			// Skip "native" keyword if present
-			tz.skipIfNextNC("native");
+			tz.advIfNextNC("native");
 
 			// Check for actor definition open
-			if (tz.skipIfNext("{", 2))
+			if (tz.advIfNext("{", 2))
 			{
 				while (!tz.check("}") && !tz.atEnd())
 				{
 					// Check for subsection
-					if (tz.skipIf("{"))
+					if (tz.advIf("{"))
 						tz.skipSection("{", "}");
 
 					// Title
@@ -320,19 +320,19 @@ namespace Game
 					// Unrecognised DB comment prop
 					else if (tz.current().text.StartsWith("//$"))
 					{
-						tz.skipToNextLine();
+						tz.advToNextLine();
 						continue;
 					}
 
 					// States
 					if (!sprite_given && tz.checkNC("states"))
 					{
-						tz.skip(); // Skip {
+						tz.adv(); // Skip {
 						parseStates(tz, found_props);
 						continue;
 					}
 
-					tz.skip();
+					tz.adv();
 				}
 
 				LOG_MESSAGE(3, "Parsed actor %s: %d", name, type);
@@ -386,10 +386,10 @@ namespace Game
 			group = tz.current().text;
 			name = tz.next().text;
 		}
-		tz.skip();	// skip '{'
+		tz.adv();	// skip '{'
 		do
 		{
-			tz.skip();
+			tz.adv();
 
 			//if (S_CMPNOCASE(token, "DoomEdNum"))
 			if (tz.checkNC("doomednum"))
@@ -506,7 +506,7 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types)
 		else
 			parseDecorateOld(tz, types);	// Old DECORATE definitions might be found
 
-		tz.skipIf("}");
+		tz.advIf("}");
 	}
 
 	return true;

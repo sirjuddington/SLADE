@@ -811,12 +811,12 @@ bool KeyBind::readBinds(Tokenizer& tz)
 			addBind(name, keypress_t(key, mods.Find('a') >= 0, mods.Find('c') >= 0, mods.Find('s') >= 0));
 
 			// Check for more keys
-			if (!tz.skipIfNext(","))
+			if (!tz.advIfNext(","))
 				break;
 		}
 
 		// Next keybind
-		tz.skip();
+		tz.adv();
 	}
 
 	// Create sorted list

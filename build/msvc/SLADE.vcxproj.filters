@@ -1467,6 +1467,9 @@
     <ClCompile Include="..\..\src\Archive\ArchiveTreeNode.cpp">
       <Filter>Archive</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Game\MapInfo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2551,6 +2554,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Archive\ArchiveTreeNode.h">
       <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\MapInfo.h">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -741,7 +741,7 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 				addTexture(tex);
 		}
 
-		tz.skip();
+		tz.adv();
 	}
 
 	txformat = TXF_TEXTURES;

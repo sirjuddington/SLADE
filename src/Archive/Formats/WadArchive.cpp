@@ -1290,17 +1290,17 @@ void WadArchive::detectIncludes()
 					if (tz.checkNC(tokens[i]))
 					{
 						if (i >= 3) // skip '=' or '('
-							tz.skip();
+							tz.adv();
 						string name = tz.next().text;
 						if (i == 5) // skip ')'
-							tz.skip();
+							tz.adv();
 						opt.match_name = name;
 						ArchiveEntry * entry = findFirst(opt);
 						if (entry)
 							entry->setType(EntryType::getType(entrytypes[i]));
-						tz.skip();
+						tz.adv();
 					}
-					else tz.skipToNextLine();
+					else tz.advToNextLine();
 				}
 			}
 		}

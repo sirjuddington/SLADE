@@ -252,7 +252,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 				logError(tz, S_FMT("Include entry %s not found", CHR(inc_path)));
 		}
 		else
-			tz.skip();	// Skip include path
+			tz.adv();	// Skip include path
 	}
 
 	// #endif (ignore)
@@ -280,7 +280,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 	if (tz.current() == "{" && !tz.current().quoted_string)
 	{
 		list_end = "}";
-		tz.skip();
+		tz.adv();
 	}
 
 	// Parse until ; or }
@@ -328,7 +328,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 
 		// Check for ,
 		if (tz.peek() == ",")
-			tz.skip();	// Skip it
+			tz.adv();	// Skip it
 		else if (tz.peek() != list_end)
 		{
 			logError(
@@ -338,7 +338,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 			return false;
 		}
 
-		tz.skip();
+		tz.adv();
 	}
 
 	return true;
@@ -369,12 +369,12 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			if (!parsePreprocessor(tz))
 				return false;
 
-			tz.skipToNextLine();
+			tz.advToNextLine();
 			continue;
 		}
 
 		// If it's a special character (ie not a valid name), parsing fails
-		if (tz.isSpecialCharacter(tz.current()))
+		if (tz.isSpecialCharacter(tz.current().text[0]))
 		{
 			logError(tz, S_FMT("Unexpected special character '%s'", CHR(tz.current().text)));
 			return false;
@@ -405,14 +405,14 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		//Log::debug(S_FMT("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
 
 		// Assignment
-		if (tz.skipIfNext("=", 2))
+		if (tz.advIfNext("=", 2))
 		{
 			if (!parseAssignment(tz, addChildPTN(name, type)))
 				return false;
 		}
 
 		// Child node
-		else if (tz.skipIfNext("{", 2))
+		else if (tz.advIfNext("{", 2))
 		{
 			// Parse child node
 			if (!addChildPTN(name, type)->parse(tz))
@@ -420,7 +420,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		}
 
 		// Child node (with no values/children)
-		else if (tz.skipIfNext(";", 2))
+		else if (tz.advIfNext(";", 2))
 		{
 			// Add child node
 			addChildPTN(name, type);
@@ -428,7 +428,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		}
 
 		// Child node + inheritance
-		else if (tz.skipIfNext(":", 2))
+		else if (tz.advIfNext(":", 2))
 		{
 			// Check for opening brace
 			if (tz.checkNext("{"))
@@ -438,7 +438,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 				child->inherit_ = tz.current().text;
 
 				// Skip {
-				tz.skip(2);
+				tz.adv(2);
 
 				// Parse child node
 				if (!child->parse(tz))
@@ -451,7 +451,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 				child->inherit_ = tz.current().text;
 
 				// Skip ;
-				tz.skip(2);
+				tz.adv(2);
 
 				continue;
 			}
@@ -470,7 +470,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		}
 
 		// Continue parsing
-		tz.skip();
+		tz.adv();
 	}
 
 	// Success

@@ -172,80 +172,80 @@ namespace App
 		while (!tz.atEnd())
 		{
 			// If we come across a 'cvars' token, read in the cvars section
-			if (tz.skipIf("cvars", 2))
+			if (tz.advIf("cvars", 2))
 			{
 				// Keep reading name/value pairs until we hit the ending '}'
 				while (!tz.checkOrEnd("}"))
 				{
 					read_cvar(tz.current().text, tz.peek().text);
-					tz.skip(2);
+					tz.adv(2);
 				}
 
-				tz.skip(); // Skip ending }
+				tz.adv(); // Skip ending }
 			}
 
 			// Read base resource archive paths
-			if (tz.skipIf("base_resource_paths", 2))
+			if (tz.advIf("base_resource_paths", 2))
 			{
 				while (!tz.checkOrEnd("}"))
 				{
 					archive_manager.addBaseResourcePath(
 						wxString::FromUTF8(UTF8(tz.current().text))
 					);
-					tz.skip();
+					tz.adv();
 				}
 
-				tz.skip(); // Skip ending }
+				tz.adv(); // Skip ending }
 			}
 
 			// Read recent files list
-			if (tz.skipIf("recent_files", 2))
+			if (tz.advIf("recent_files", 2))
 			{
 				while (!tz.checkOrEnd("}"))
 				{
 					archive_manager.addRecentFile(
 						wxString::FromUTF8(UTF8(tz.current().text))
 					);
-					tz.skip();
+					tz.adv();
 				}
 
-				tz.skip(); // Skip ending }
+				tz.adv(); // Skip ending }
 			}
 
 			// Read keybinds
-			if (tz.skipIf("keys", 2))
+			if (tz.advIf("keys", 2))
 				KeyBind::readBinds(tz);
 
 			// Read nodebuilder paths
-			if (tz.skipIf("nodebuilder_paths", 2))
+			if (tz.advIf("nodebuilder_paths", 2))
 			{
 				while (!tz.checkOrEnd("}"))
 				{
 					NodeBuilders::addBuilderPath(tz.current().text, tz.peek().text);
-					tz.skip(2);
+					tz.adv(2);
 				}
 
-				tz.skip(); // Skip ending }
+				tz.adv(); // Skip ending }
 			}
 
 			// Read game exe paths
-			if (tz.skipIf("executable_paths", 2))
+			if (tz.advIf("executable_paths", 2))
 			{
 				while (!tz.checkOrEnd("}"))
 				{
 					Executables::setGameExePath(tz.current().text, tz.peek().text);
-					tz.skip(2);
+					tz.adv(2);
 				}
 
-				tz.skip(); // Skip ending }
+				tz.adv(); // Skip ending }
 			}
 
 			// Read window size/position info
-			if (tz.skipIf("window_info", 2))
+			if (tz.advIf("window_info", 2))
 				Misc::readWindowInfo(tz);
 
 			// Next token
-			tz.skip();
+			tz.adv();
 		}
 	}
 }

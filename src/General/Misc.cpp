@@ -727,7 +727,7 @@ void Misc::setWindowInfo(string id, int width, int height, int left, int top)
 void Misc::readWindowInfo(Tokenizer& tz)
 {
 	// Read definitions
-	tz.skipIf("{");
+	tz.advIf("{");
 	while (!tz.check("}") && !tz.atEnd())
 	{
 		string id = tz.current().text;
@@ -736,7 +736,7 @@ void Misc::readWindowInfo(Tokenizer& tz)
 		int left = tz.next().asInt();
 		int top = tz.next().asInt();
 		setWindowInfo(id, width, height, left, top);
-		tz.skip();
+		tz.adv();
 	}
 }
 

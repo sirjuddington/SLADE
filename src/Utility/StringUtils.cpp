@@ -102,7 +102,7 @@ void StringUtils::processIncludes(string filename, string& out)
 		{
 			// Get filename to include
 			tz.openString(line);
-			tz.skip();	// Skip #include
+			tz.adv();	// Skip #include
 
 			// Process the file
 			processIncludes(path + tz.next().text, out);

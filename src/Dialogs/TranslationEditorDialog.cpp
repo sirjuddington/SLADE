@@ -1252,7 +1252,7 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 		{
 			// Parse translation range
 			trans.parse(tz.current().text);
-			tz.skip(2); // Skip ,
+			tz.adv(2); // Skip ,
 		}
 
 		// Open it if parsed ok

@@ -25,7 +25,6 @@ public:
 		explicit	operator	string() const { return text; }
 		explicit	operator	const string() const { return text; }
 		explicit	operator	const char*() const { return CHR(text); }
-					operator	char() const { return text[0]; }
 		bool		operator	==(const string& cmp) const { return text == cmp; }
 		bool		operator	==(const char* cmp) const { return text == cmp; }
 		bool		operator	!=(const string& cmp) const { return text != cmp; }
@@ -37,11 +36,13 @@ public:
 		bool	isFloat() const;
 
 		int		asInt() const { return wxAtoi(text); }
-		void 	asInt(int& val) const { val = wxAtoi(text); }
 		bool	asBool() const;
-		void 	asBool(bool& val) const;
 		double 	asFloat() const { return wxAtof(text); }
-		void 	asFloat(double& val) const { val = wxAtof(text); }
+
+		void 	toInt(int& val) const { val = wxAtoi(text); }
+		void 	toBool(bool& val) const;
+		void 	toFloat(double& val) const { val = wxAtof(text); }
+		void	toFloat(float& val) const { val = wxAtof(text); }
 	};
 
 	struct TokenizeState
@@ -87,13 +88,13 @@ public:
 
 	// Token Iterating
 	const Token&	next();
-	void			skip(int inc = 1);
-	bool			skipIf(const char* check, int inc = 1);
-	bool			skipIfNC(const char* check, int inc = 1);
-	bool			skipIfNext(const char* check, int inc = 1);
-	bool			skipIfNextNC(const char* check, int inc = 1);
-	void			skipToNextLine();
-	void			skipToEndOfLine();
+	void			adv(int inc = 1);
+	bool			advIf(const char* check, int inc = 1);
+	bool			advIfNC(const char* check, int inc = 1);
+	bool			advIfNext(const char* check, int inc = 1);
+	bool			advIfNextNC(const char* check, int inc = 1);
+	void			advToNextLine();
+	void			advToEndOfLine();
 	void 			skipSection(const char* begin, const char* end, bool allow_quoted = false);
 	vector<Token>	getTokensUntil(const char* end);
 	vector<Token>	getTokensUntilNC(const char* end);
@@ -126,17 +127,17 @@ public:
 
 	// Old tokenizer interface bridge (don't use)
 	string		getToken()
-				{ if (atEnd()) return ""; string t = token_current_.text; skip(); return t; }
+				{ if (atEnd()) return ""; string t = token_current_.text; adv(); return t; }
 	void		getToken(string* str)
-				{ if (atEnd()) *str = ""; else *str = token_current_.text; skip(); }
+				{ if (atEnd()) *str = ""; else *str = token_current_.text; adv(); }
 	string		peekToken() const { if (atEnd()) return ""; return token_next_.text; }
 	int			getInteger()
-				{ if (atEnd()) return 0; int v = token_current_.asInt(); skip(); return v; }
+				{ if (atEnd()) return 0; int v = token_current_.asInt(); adv(); return v; }
 	double		getDouble()
-				{ if (atEnd()) return 0; double v = token_current_.asFloat(); skip(); return v; }
+				{ if (atEnd()) return 0; double v = token_current_.asFloat(); adv(); return v; }
 	double		getFloat()
-				{ if (atEnd()) return 0; double v = token_current_.asFloat(); skip(); return v; }
-	void		skipToken() { skip(); }
+				{ if (atEnd()) return 0; double v = token_current_.asFloat(); adv(); return v; }
+	void		skipToken() { adv(); }
 	bool		checkToken(const string& cmp) { next(); return check(cmp); }
 	unsigned	lineNo() const { return token_current_.line_no; }
 	unsigned	tokenEnd() const { return token_current_.pos_end; }

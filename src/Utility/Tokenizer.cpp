@@ -118,12 +118,12 @@ bool Tokenizer::Token::asBool() const
 }
 
 // ----------------------------------------------------------------------------
-// Token::asBool
+// Token::toBool
 //
 // Sets [val] to the token as a bool value.
 // "false", "no" and "0" are false, anything else is true.
 // ----------------------------------------------------------------------------
-void Tokenizer::Token::asBool(bool& val) const
+void Tokenizer::Token::toBool(bool& val) const
 {
 	val = !(S_CMPNOCASE(text, "false") ||
 			S_CMPNOCASE(text, "no") ||
@@ -153,7 +153,7 @@ Tokenizer::Tokenizer(CommentTypes comments, const string& special_characters) :
 }
 
 // ----------------------------------------------------------------------------
-// Tokenizer::next
+// Tokenizer::peek
 //
 // Returns the 'next' token but doesn't advance
 // ----------------------------------------------------------------------------
@@ -181,11 +181,11 @@ const Tokenizer::Token& Tokenizer::next()
 }
 
 // ----------------------------------------------------------------------------
-// Tokenizer::skip
+// Tokenizer::adv
 //
-// Skips [inc] tokens
+// Advances [inc] tokens
 // ----------------------------------------------------------------------------
-void Tokenizer::skip(int inc)
+void Tokenizer::adv(int inc)
 {
 	if (inc <= 0)
 		return;
@@ -198,15 +198,15 @@ void Tokenizer::skip(int inc)
 }
 
 // ----------------------------------------------------------------------------
-// Tokenizer::skipIf
+// Tokenizer::advIf
 //
-// Skips [inc] tokens if the current token matches [check]
+// Advances [inc] tokens if the current token matches [check]
 // ----------------------------------------------------------------------------
-bool Tokenizer::skipIf(const char* check, int inc)
+bool Tokenizer::advIf(const char* check, int inc)
 {
 	if (token_current_ == check)
 	{
-		skip(inc);
+		adv(inc);
 		return true;
 	}
 
@@ -214,15 +214,15 @@ bool Tokenizer::skipIf(const char* check, int inc)
 }
 
 // ----------------------------------------------------------------------------
-// Tokenizer::skipIfNC
+// Tokenizer::advIfNC
 //
-// Skips [inc] tokens if the current token matches [check] (Case-Insensitive)
+// Advances [inc] tokens if the current token matches [check] (Case-Insensitive)
 // ----------------------------------------------------------------------------
-bool Tokenizer::skipIfNC(const char* check, int inc)
+bool Tokenizer::advIfNC(const char* check, int inc)
 {
 	if (S_CMPNOCASE(token_current_.text, check))
 	{
-		skip(inc);
+		adv(inc);
 		return true;
 	}
 
@@ -230,18 +230,18 @@ bool Tokenizer::skipIfNC(const char* check, int inc)
 }
 
 // ----------------------------------------------------------------------------
-// Tokenizer::skipIfNext
+// Tokenizer::advIfNext
 //
-// Skips [inc] tokens if the next token matches [check]
+// Advances [inc] tokens if the next token matches [check]
 // ----------------------------------------------------------------------------
-bool Tokenizer::skipIfNext(const char* check, int inc)
+bool Tokenizer::advIfNext(const char* check, int inc)
 {
 	if (token_next_.pos_start == token_current_.pos_start)
 		return false;
 
 	if (token_next_ == check)
 	{
-		skip(inc);
+		adv(inc);
 		return true;
 	}
 
@@ -249,18 +249,18 @@ bool Tokenizer::skipIfNext(const char* check, int inc)
 }
 
 // ----------------------------------------------------------------------------
-// Tokenizer::skipIfNextNC
+// Tokenizer::advIfNextNC
 //
-// Skips [inc] tokens if the next token matches [check] (Case-Insensitive)
+// Advances [inc] tokens if the next token matches [check] (Case-Insensitive)
 // ----------------------------------------------------------------------------
-bool Tokenizer::skipIfNextNC(const char* check, int inc)
+bool Tokenizer::advIfNextNC(const char* check, int inc)
 {
 	if (token_next_.pos_start == token_current_.pos_start)
 		return false;
 
 	if (S_CMPNOCASE(token_next_.text, check))
 	{
-		skip(inc);
+		adv(inc);
 		return true;
 	}
 
@@ -268,11 +268,11 @@ bool Tokenizer::skipIfNextNC(const char* check, int inc)
 }
 
 // ----------------------------------------------------------------------------
-// Tokenizer::skipToNextLine
+// Tokenizer::advToNextLine
 //
-// Skips to the first token on the next line
+// Advances to the first token on the next line
 // ----------------------------------------------------------------------------
-void Tokenizer::skipToNextLine()
+void Tokenizer::advToNextLine()
 {
 	// Ignore if we're on the last token already
 	if (token_next_.pos_start == token_current_.pos_start)
@@ -303,7 +303,7 @@ void Tokenizer::skipToNextLine()
 	token_next_ = token_current_;
 }
 
-void Tokenizer::skipToEndOfLine()
+void Tokenizer::advToEndOfLine()
 {
 	// Ignore if we're on the last token already
 	if (token_next_.pos_start == token_current_.pos_start)
@@ -318,13 +318,13 @@ void Tokenizer::skipToEndOfLine()
 	unsigned line = token_current_.line_no;
 	while (token_next_.pos_start > token_current_.pos_start &&
 			token_next_.line_no <= token_current_.line_no)
-		skip();
+		adv();
 }
 
 // ----------------------------------------------------------------------------
 // Tokenizer::skipSection
 //
-// Skips tokens until [end] is found. Can also handle nesting if [begin] is
+// Advances tokens until [end] is found. Can also handle nesting if [begin] is
 // specified. If [allow_quoted] is true, section delimiters will count even if
 // within a quoted string.
 //
@@ -338,7 +338,7 @@ void Tokenizer::skipSection(const char* begin, const char* end, bool allow_quote
 	{
 		if (token_current_.quoted_string && !allow_quoted)
 		{
-			skip();
+			adv();
 			continue;
 		}
 
@@ -347,7 +347,7 @@ void Tokenizer::skipSection(const char* begin, const char* end, bool allow_quote
 		if (token_current_ == end)
 			depth--;
 
-		skip();
+		adv();
 	}
 }
 
@@ -358,7 +358,7 @@ vector<Tokenizer::Token> Tokenizer::getTokensUntil(const char* end)
 	{
 		tokens.push_back(token_current_);
 
-		skip();
+		adv();
 
 		if (token_current_ == end)
 			break;
@@ -374,7 +374,7 @@ vector<Tokenizer::Token> Tokenizer::getTokensUntilNC(const char* end)
 	{
 		tokens.push_back(token_current_);
 
-		skip();
+		adv();
 
 		if (token_current_ == end)
 			break;
@@ -400,11 +400,11 @@ vector<Tokenizer::Token> Tokenizer::getTokensUntilNextLine(bool from_start)
 
 		if (token_next_.line_no > token_current_.line_no)
 		{
-			skip();
+			adv();
 			break;
 		}
 
-		skip();
+		adv();
 	}
 
 	return tokens;
