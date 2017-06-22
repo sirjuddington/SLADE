@@ -94,8 +94,9 @@ EntryPanel* MainEditor::currentEntryPanel()
 {
 	return main_window->getArchiveManagerPanel()->currentArea();
 }
-
+#ifdef USE_WEBVIEW_STARTPAGE
 void MainEditor::openDocs(string page_name)
 {
 	main_window->openDocs(page_name);
 }
+#endif
