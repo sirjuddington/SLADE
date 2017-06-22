@@ -49,6 +49,7 @@
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/PaletteChooser.h"
 #include "ArchiveManagerPanel.h"
+#include "Dialogs/AboutDialog.h"
 #ifdef USE_WEBVIEW_STARTPAGE
 #include "DocsPage.h"
 #endif
@@ -781,7 +782,7 @@ bool MainWindow::handleAction(string id)
 	// Help->About
 	if (id == "main_about")
 	{
-		wxAboutDialogInfo info;
+		/*wxAboutDialogInfo info;
 		info.SetName("SLADE");
 		string version = "v" + Global::version;
 		if (Global::sc_rev != "")
@@ -799,7 +800,10 @@ bool MainWindow::handleAction(string id)
 		string year = wxNow().Right(4);
 		info.SetCopyright(S_FMT("(C) 2008-%s Simon Judd <sirjuddington@gmail.com>", year));
 
-		wxAboutBox(info);
+		wxAboutBox(info);*/
+
+		AboutDialog dlg(this);
+		dlg.ShowModal();
 
 		return true;
 	}
