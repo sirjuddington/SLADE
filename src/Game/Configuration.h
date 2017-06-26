@@ -200,6 +200,8 @@ namespace Game
 		// Thing types
 		std::map<int, ThingType>	thing_types_;
 		std::map<string, ThingType>	tt_group_defaults_;
+		std::map<string, ThingType> parsed_types_;		// ThingTypes parsed from definitions
+														// (DECORATE, ZScript etc.)
 
 		// Flags
 		vector<Flag>	flags_thing_;

@@ -159,10 +159,14 @@ namespace Game
 	//
 	// Parses a DECORATE 'actor' definition
 	// ------------------------------------------------------------------------
-	void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types)
+	void parseDecorateActor(
+		Tokenizer& tz,
+		std::map<int, ThingType>& types,
+		std::map<string, ThingType>& parsed)
 	{
 		// Get actor name
 		string name = tz.next().text;
+		string actor_name = name;
 
 		// Check for inheritance
 		//string next = tz.peekToken();
@@ -178,26 +182,29 @@ namespace Game
 			tz.adv();
 
 		// Check for no editor number (ie can't be placed in the map)
-		if (tz.checkNext("{"))
+		int type;
+		if (!tz.peek().isInteger())
 		{
-			LOG_MESSAGE(3, "Not adding actor %s, no editor number", name);
+			type = -1;
+			//LOG_MESSAGE(3, "Not adding actor %s, no editor number", name);
 
 			// Skip actor definition
-			tz.adv(2);
-			tz.skipSection("{", "}");
+			//tz.adv(2);
+			//tz.skipSection("{", "}");
 		}
 		else
+			tz.next().toInt(type);
+		
 		{
 			PropertyList found_props;
 			bool available = false;
 			bool filters_present = false;
 			bool sprite_given = false;
 			bool title_given = false;
-			int type;
 			string group;
 
 			// Read editor number
-			tz.next().toInt(type);
+			//tz.next().toInt(type);
 
 			// Skip "native" keyword if present
 			tz.advIfNextNC("native");
@@ -209,7 +216,10 @@ namespace Game
 				{
 					// Check for subsection
 					if (tz.advIf("{"))
+					{
 						tz.skipSection("{", "}");
+						continue;
+					}
 
 					// Title
 					else if (tz.checkNC("//$Title"))
@@ -329,7 +339,7 @@ namespace Game
 					{
 						tz.adv(); // Skip {
 						parseStates(tz, found_props);
-						continue;
+						//continue;
 					}
 
 					tz.adv();
@@ -342,21 +352,22 @@ namespace Game
 
 			// Ignore actors filtered for other games, 
 			// and actors with a negative or null type
-			if (type > 0 && (available || !filters_present))
+			if (available || !filters_present)
 			{
-				// Add new ThingType
-				types[type].define(type, name, group.empty() ? "Decorate" : "Decorate/" + group);
+				// Add/update definition
+				auto& def = (type > 0) ? types[type] : parsed[actor_name];
+				def.define(type, name, group.empty() ? "Decorate" : "Decorate/" + group);
 
 				// Set group defaults (if any)
 				if (!group.empty())
 				{
 					auto& group_defaults = configuration().thingTypeGroupDefaults(group);
 					if (!group_defaults.group().empty())
-						types[type].copy(group_defaults);
+						def.copy(group_defaults);
 				}
 
 				// Set parsed properties
-				types[type].loadProps(found_props);
+				def.loadProps(found_props);
 			}
 		}
 	}
@@ -471,7 +482,10 @@ namespace Game
 //
 // Parses all DECORATE thing definitions in [archive] and adds them to [types]
 // ----------------------------------------------------------------------------
-bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types)
+bool Game::readDecorateDefs(
+	Archive* archive, 
+	std::map<int, ThingType>& types,
+	std::map<string, ThingType>& parsed)
 {
 	if (!archive)
 		return false;
@@ -500,9 +514,11 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types)
 	// --- Parse ---
 	while (!tz.atEnd())
 	{
+		Log::debug(2, S_FMT("token %s", CHR(tz.current().text)));
+
 		// Check for actor definition
 		if (tz.checkNC("actor"))
-			parseDecorateActor(tz, types);
+			parseDecorateActor(tz, types, parsed);
 		else
 			parseDecorateOld(tz, types);	// Old DECORATE definitions might be found
 
@@ -521,8 +537,15 @@ CONSOLE_COMMAND(test_decorate, 0, false)
 		return;
 
 	std::map<int, Game::ThingType> types;
-	Game::readDecorateDefs(archive, types);
+	std::map<string, Game::ThingType> parsed;
+	Game::readDecorateDefs(archive, types, parsed);
 
 	for (auto& i : types)
 		Log::console(S_FMT("%d: %s", i.first, CHR(i.second.stringDesc())));
+	if (!parsed.empty())
+	{
+		Log::console("Parsed types with no DoomEdNum:");
+		for (auto& i : parsed)
+			Log::console(S_FMT("%s: %s", CHR(i.first), CHR(i.second.stringDesc())));
+	}
 }

@@ -1421,7 +1421,7 @@ void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_form
 // ----------------------------------------------------------------------------
 bool Configuration::parseDecorateDefs(Archive* archive)
 {
-	return Game::readDecorateDefs(archive, thing_types_);
+	return Game::readDecorateDefs(archive, thing_types_, parsed_types_);
 }
 
 // ----------------------------------------------------------------------------

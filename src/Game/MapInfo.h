@@ -63,16 +63,16 @@ public:
 
 	// Maps access
 	const vector<Map>&	maps() const { return maps_; }
-	Map&				getMap(string name);
+	Map&				getMap(const string& name);
 	bool				addOrUpdateMap(Map& map);
 
 	// General parsing helpers
 	bool	checkEqualsToken(Tokenizer& tz, const string& parsing) const;
-	bool	strToCol(string str, rgba_t& col);
+	bool	strToCol(const string& str, rgba_t& col);
 
 	// ZDoom MAPINFO parsing
 	bool	parseZMapInfo(ArchiveEntry* entry);
-	bool	parseZMap(Tokenizer& tz, string type);
+	bool	parseZMap(Tokenizer& tz, const string& type);
 	bool	parseDoomEdNums(Tokenizer& tz);
 
 	// Debug info

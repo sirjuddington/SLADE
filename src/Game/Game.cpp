@@ -36,7 +36,6 @@
 #include "Utility/Parser.h"
 #include "Archive/ArchiveManager.h"
 #include "App.h"
-#include "General/Console/Console.h"
 
 using namespace Game;
 
@@ -70,7 +69,7 @@ CVAR(String, port_configuration, "", CVAR_SAVE)
 //
 // Parses the basic game definition in [mc]
 // ----------------------------------------------------------------------------
-bool Game::GameDef::parse(MemChunk& mc)
+bool GameDef::parse(MemChunk& mc)
 {
 	// Parse configuration
 	Parser parser;
@@ -152,7 +151,7 @@ bool GameDef::supportsFilter(const string& filter) const
 //
 // Parses the basic port definition in [mc]
 // ----------------------------------------------------------------------------
-bool Game::PortDef::parse(MemChunk& mc)
+bool PortDef::parse(MemChunk& mc)
 {
 	// Parse configuration
 	Parser parser;
@@ -373,7 +372,7 @@ void Game::init()
 //
 // Returns a vector of all basic game definitions
 // ----------------------------------------------------------------------------
-const std::map<string, Game::GameDef>& Game::gameDefs()
+const std::map<string, GameDef>& Game::gameDefs()
 {
 	return game_defs;
 }
@@ -383,7 +382,7 @@ const std::map<string, Game::GameDef>& Game::gameDefs()
 //
 // Returns the basic game configuration matching [id]
 // ----------------------------------------------------------------------------
-const Game::GameDef& Game::gameDef(const string& id)
+const GameDef& Game::gameDef(const string& id)
 {
 	return game_defs.empty() ? game_def_unknown : game_defs[id];
 }
@@ -393,7 +392,7 @@ const Game::GameDef& Game::gameDef(const string& id)
 //
 // Returns a vector of all basic port definitions
 // ----------------------------------------------------------------------------
-const std::map<string, Game::PortDef>& Game::portDefs()
+const std::map<string, PortDef>& Game::portDefs()
 {
 	return port_defs;
 }
@@ -403,7 +402,7 @@ const std::map<string, Game::PortDef>& Game::portDefs()
 //
 // Returns the basic port configuration matching [id]
 // ----------------------------------------------------------------------------
-const Game::PortDef& Game::portDef(const string& id)
+const PortDef& Game::portDef(const string& id)
 {
 	return port_defs.empty() ? port_def_unknown : port_defs[id];
 }
@@ -701,6 +700,8 @@ namespace
 		return false;
 	}
 }
+
+#include "General/Console/Console.h"
 
 CONSOLE_COMMAND(parsexlat, 0, false)
 {

@@ -24,7 +24,7 @@ void MapInfo::clear(bool maps, bool editor_nums)
 		this->editor_nums_.clear();
 }
 
-MapInfo::Map& MapInfo::getMap(string name)
+MapInfo::Map& MapInfo::getMap(const string& name)
 {
 	for (auto& map : maps_)
 		if (map.entry_name == name)
@@ -62,7 +62,7 @@ bool MapInfo::checkEqualsToken(Tokenizer& tz, const string& parsing) const
 	return true;
 }
 
-bool MapInfo::strToCol(string str, rgba_t& col)
+bool MapInfo::strToCol(const string& str, rgba_t& col)
 {
 	wxColor wxcol;
 	if (!wxcol.Set(str))
@@ -167,7 +167,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 	return true;
 }
 
-bool MapInfo::parseZMap(Tokenizer& tz, string type)
+bool MapInfo::parseZMap(Tokenizer& tz, const string& type)
 {
 	// TODO: Handle adddefaultmap
 
