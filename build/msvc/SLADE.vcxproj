@@ -862,13 +862,13 @@
     <ClCompile Include="..\..\src\General\SAction.cpp" />
     <ClCompile Include="..\..\src\General\UI.cpp" />
     <ClCompile Include="..\..\src\General\UndoRedo.cpp" />
-    <ClCompile Include="..\..\src\General\VersionCheck.cpp" />
     <ClCompile Include="..\..\src\External\glew\glew.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\src\General\WebGet.cpp" />
     <ClCompile Include="..\..\src\Graphics\CTexture\CTexture.cpp" />
     <ClCompile Include="..\..\src\Graphics\CTexture\PatchTable.cpp" />
     <ClCompile Include="..\..\src\Graphics\CTexture\TextureXList.cpp" />
@@ -1316,6 +1316,7 @@
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\MainWindow.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\StartPage.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.cpp" />
@@ -1697,10 +1698,10 @@
     <ClInclude Include="..\..\src\General\SAction.h" />
     <ClInclude Include="..\..\src\General\UI.h" />
     <ClInclude Include="..\..\src\General\UndoRedo.h" />
-    <ClInclude Include="..\..\src\General\VersionCheck.h" />
     <ClInclude Include="..\..\src\External\glew\glew.h" />
     <ClInclude Include="..\..\src\External\glew\glxew.h" />
     <ClInclude Include="..\..\src\External\glew\wglew.h" />
+    <ClInclude Include="..\..\src\General\WebGet.h" />
     <ClInclude Include="..\..\src\Graphics\CTexture\CTexture.h" />
     <ClInclude Include="..\..\src\Graphics\CTexture\PatchTable.h" />
     <ClInclude Include="..\..\src\Graphics\CTexture\TextureXList.h" />
@@ -1798,6 +1799,7 @@
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\MainWindow.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\StartPage.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.h" />

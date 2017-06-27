@@ -1,210 +1,215 @@
 <html>
+
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-<title>SLADE - It's a Doom Editor</title>
-<style type="text/css">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>SLADE - It's a Doom Editor</title>
+  <style type="text/css">
+    @import url('base.css');
 
-body, table, td {
-	font-family: 'Segoe UI', 'Nimbus Sans L', 'Nimbus Sans', 'Ubuntu', sans-serif;
-	font-size: 14px;
-	background: #e0eeff;
-}
+    /*#theme#*/
+    
+    @font-face {
+      font-family: 'Fira Sans';
+      src: url('FiraSans-Regular.woff');
+      font-weight: normal;
+      font-style: normal;
+    }
 
-table.box, td.box {
-	background-color: #FCFEFF;
-	padding-top: 0px;
-	padding-left: 0px;
-	padding-right: 4px;
-	padding-bottom: 0px;
-	border-spacing: 0px;
-}
+    @font-face {
+      font-family: 'Fira Sans';
+      src: url('FiraSans-Italic.woff');
+      font-weight: normal;
+      font-style: italic;
+    }
+    
+    @font-face {
+      font-family: 'Fira Sans';
+      src: url('FiraSans-Medium.woff');
+      font-weight: 500;
+      font-style: normal;
+    }
 
-A, A:link, A:visited, A:hover, A:active {
-	font-weight: 600;
-	text-decoration: none;
-	font-size: inherit;
-	background-color: inherit;
-}
+    @font-face {
+      font-family: 'Fira Sans';
+      src: url('FiraSans-Bold.woff');
+      font-weight: 700;
+      font-style: normal;
+    }
+    
+    @font-face {
+      font-family: 'Fira Sans';
+      src: url('FiraSans-Heavy.woff');
+      font-weight: 900;
+      font-style: normal;
+    }
 
-A:link, A:visited {
-	color: #0055cc;
-	background-color: inherit;
-	transition: all .1s ease-in;
-}
+    #topbar {
+      background-color: hsl(220, 27%, 57%);
+      width: 100%;
+      height: 0.2em;
+      position: fixed;
+      z-index: 999;
+    }
 
-A:hover, A:active {
-	color: #99a4ff;
-	background-color: inherit;
-	transition: all .06s ease-out;
-}
+    a.link,
+    img.link {
+      display: inline-block;
+      vertical-align: middle;
+      margin-bottom: 0;
+    }
+    
+    img.link {
+      margin-top: 0;
+      margin-right: 0.5em;
+    }
 
-div.main {
-	width: 800px;
-	text-align: left;
-	/*width: 60%;*/
-}
+    #content a.link,
+    #content img.link {
+      line-height: 1em;
+      padding: 0;
+      margin: 0;
+    }
 
-div.box, #sidebox, #recent {
-	background-color: #FCFEFF;
-	border-color: #ADBFD8;
-	border: 1px;
-	border-top-width: 0px;
-	border-bottom-width: 4px;
-	padding-top: 4px;
-	padding-bottom: 8px;
-	padding-left: 8px;
-	padding-right: 8px;
-	border-style: solid;
-	/*line-height: 1.5em;*/
-	margin-bottom: 8px;
-}
+    #content img.link {
+      margin-right: 0.5em;
+    }
+    
+    #side {
+      position: fixed;
+      width: 17em;
+      height: 100%;
+      padding-top: 0.5em;
+    }
+    
+    #side #title {
+      margin: 0.6em 0 0.4em 0;
+      border-radius: 0;
+      padding-top: 0.2em;
+      padding-bottom: 0.1em;
+    }
+    
+    #side p {
+      margin: 0 1em;
+    }
+    
+    #side img {
+      margin-bottom: 0;
+    }
+    
+    #side img.link {
+      margin-right: 0;
+      margin-left: 1em;
+    }
+    
+    #content {
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 19em;
+      padding-right: 1em;
+      padding-top: 2em;
+      max-width: 51em;
+    }
+    
+    #slade {
+      font-size: 2em;
+      font-weight: 900;
+      margin-top: 0;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: -0.2em;
+    }
+    
+    #version {
+      font-size: 0.5em;
+    }
 
-#sidebox {
-	height: 72px;
-	border-color: #ADBFD8;
-}
+    a.refresh {
+      color: hsl(220, 100%, 97%);
+    }
 
-#recent {
-	/*height: 188px;*/
-	border-color: #ADBFD8;
-}
-
-div.boxhead {
-	border: 1px;
-	padding-left: 8px;
-	padding-right: 8px;
-	border-style: solid;
-	line-height: 1.5em;
-	font-weight: bold;
-	font-size: 14pt;
-	margin-bottom: 0px;
-	background-color: #7488AF;
-	color: #F2F6FF;
-	border-color: #64789F;/*#ADBFD8;*/
-}
-
-div.boxshadow {
-	background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0,0,0,0));
-	height: 6px;
-}
-
-img {
-	padding-top: 2px;
-}
-</style>
+    a.refresh:hover {
+      color: hsl(40, 100%, 55%);
+    }
+  </style>
 </head>
+
 <body>
-<center>
+  <div id="topbar"></div>
 
-<img src="logo.png"/>
+  <!-- Side Bar -->
+  <div id="side">
 
-<center>
-<div class='main'>
+    <!-- Logo & Version -->
+    <center>
+      <img src="logo_icon.png" />
+      <div id="slade">
+        SLADE
+        <span id="version">v#version#</span>
+      </div>
+    </center>
 
+    <!-- Get Started -->
+    <div id="title">Get Started</div>
+    <p>
+      <div class="link">
+        <img src="open.png" class="link" />
+        <a href="action://open" class="link">Open Archive</a>
+      </div>
+      <div class="link">
+        <img src="newarchive.png" class="link" />
+        <a href="action://newwad" class="link">Create Wad Archive</a>
+      </div>
+      <div class="link">
+        <img src="newzip.png" class="link" />
+        <a href="action://newzip" class="link">Create Zip Archive</a>
+      </div>
+      <div class="link">
+        <img src="mapeditor.png" class="link" />
+        <a href="action://newmap" class="link">Create New Map</a>
+      </div>
+    </p>
 
-<table width=100%>
-<tr><td width='25%'>
+    <!-- Links -->
+    <div id="title">Links</div>
+    <p>
+      <div class="link">
+        <img src="wiki.png" class="link" />
+        <a href="http://slade.mancubus.net" class="link">Home Page</a>
+      </div>
+      <div class="link">
+        <img src="wiki.png" class="link" />
+        <a href="http://slade.mancubus.net/index.php?page=wiki" class="link">Documentation</a>
+      </div>
+      <div class="link">
+        <img src="wiki.png" class="link" />
+        <a href="http://slade.mancubus.net/index.php?page=downloads" class="link">Downloads</a>
+      </div>
+      <div class="link">
+        <img src="wiki.png" class="link" />
+        <a href="https://github.com/sirjuddington/SLADE" class="link">GitHub</a>
+      </div>
+    </p>
 
-<div class='boxhead'>
-Get Started
-</div>
-<div id = 'sidebox'>
-<a href="action://open">Open Archive</a><br/>
-<a href="action://newwad">Create Wad Archive</a><br/>
-<a href="action://newzip">Create Zip Archive</a><br/>
-<a href="action://newmap">Create New Map</a>
-</div>
+    <!-- Tip of the Day -->
+    <div id="title">Tip of the Day<span style="float: right; padding-top: 0.1em;"><a href="action://reloadstartpage" class="refresh">&#x21bb;</a></span></div>
+    <p>
+      #totd#
+    </p>
+  </div>
 
-</td><td width='25%'>
+  <!-- Content -->
+  <div id="content">
 
-<div class='boxhead'>
-Links
-</div>
-<div id='sidebox'>
-<a href="http://slade.mancubus.net">SLADE Homepage</a><br/>
-<a href="http://slade.mancubus.net/index.php?page=downloads">SLADE Downloads</a><br/>
-<a href="http://slade.mancubus.net/forum">SLADE Forums</a><br/>
-<a href="http://slade.mancubus.net/index.php?page=wiki">SLADE Wiki</a>
-</div>
+    <!-- Recent Files -->
+    <div id="back" class="recentbox">
+      <div id="title">Recent Files</div>
+      #recent#
+    </div>
 
-</td><td width='50%'>
-
-<div class='boxhead'>
-Tip Of The Day <span style="float: right;"><a href="action://reloadstartpage">+</a></span>
-</div>
-<div id='sidebox'>
-#totd#
-</div>
-
-</td></tr>
-<tr><td colspan="3">
-
-<div class='boxhead'>
-Recent Files
-</div>
-<div id='recent'>
-#recent#
-</div>
-
-</td></tr>
-</table>
-
-
-<!--
-<table width=100%>
-<tr><td width='30%'>
-
-<div class='boxhead'>
-Get Started
-</div>
-<div id = 'sidebox'>
-<a href="action://open">Open Archive</a><br/>
-<a href="action://newwad">Create Wad Archive</a><br/>
-<a href="action://newzip">Create Zip Archive</a><br/>
-<a href="action://newmap">Create New Map</a>
-</div>
-
-</td><td rowspan = 2 valign=top>
-
-<div class='boxhead'>
-Recent Files
-</div>
-<div id='recent'>
-#recent#
-</div>
-
-</td></tr>
-<tr><td width='30%'>
-
-<div class='boxhead'>
-Links
-</div>
-<div id='sidebox'>
-<a href="http://slade.mancubus.net">SLADE Homepage</a><br/>
-<a href="http://slade.mancubus.net/index.php?page=downloads">SLADE Downloads</a><br/>
-<a href="http://slade.mancubus.net/forum">SLADE Forums</a><br/>
-<a href="http://slade.mancubus.net/wiki">SLADE Wiki</a>
-</div>
-
-</td></tr>
-<tr><td colspan=2>
-
-<div class='boxhead'>
-Tip Of The Day <span style="float: right;"><a href="action://reloadstartpage">+</a></span>
-</div>
-<div class='box'>
-#totd#
-</div>
-
-</td></tr>
-</table>
--->
-
-</div>
-</center>
-
-</center>
+    <!-- Latest News Post -->
+    #news#
+  </div>
 </body>
-</html>
 
+</html>

@@ -11,8 +11,8 @@ class SToolBar;
 class STabCtrl;
 class UndoManagerHistoryPanel;
 class wxAuiManager;
+class SStartPage;
 #ifdef USE_WEBVIEW_STARTPAGE
-class wxWebView;
 class DocsPage;
 #endif
 class MainWindow : public STopWindow, SActionHandler
@@ -26,11 +26,9 @@ private:
 	PaletteChooser*				palette_chooser;
 
 	// Start page
+	SStartPage*	start_page;
 #ifdef USE_WEBVIEW_STARTPAGE
-	wxWebView*					html_startpage;
-	DocsPage*					docs_page;
-#else
-	wxHtmlWindow*				html_startpage;
+	DocsPage*	docs_page;
 #endif
 
 	// Action handling
@@ -57,7 +55,6 @@ public:
 #endif
 
 	// Events
-	void	onHTMLLinkClicked(wxEvent& e);
 	void	onClose(wxCloseEvent& e);
 	void	onTabChanged(wxAuiNotebookEvent& e);
 	void	onSize(wxSizeEvent& e);

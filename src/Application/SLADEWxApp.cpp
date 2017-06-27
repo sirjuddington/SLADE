@@ -32,7 +32,7 @@
 #include "Archive/ArchiveManager.h"
 #include "External/email/wxMailer.h"
 #include "General/Console/Console.h"
-#include "General/VersionCheck.h"
+#include "General/WebGet.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
@@ -519,6 +519,9 @@ bool SLADEWxApp::OnInit()
 	// Init global variables
 	Global::error = "";
 
+	// Init wxSocket stuff (for WebGet)
+	wxSocketBase::Initialize();
+
 	// Start up file listener
 	file_listener = new MainAppFileListener();
 	file_listener->Create("SLADE_MAFL");
@@ -567,7 +570,7 @@ bool SLADEWxApp::OnInit()
 
 	// Bind events
 	Bind(wxEVT_MENU, &SLADEWxApp::onMenu, this);
-	Bind(wxEVT_COMMAND_VERSIONCHECK_COMPLETED, &SLADEWxApp::onVersionCheckCompleted, this);
+	Bind(wxEVT_THREAD_WEBGET_COMPLETED, &SLADEWxApp::onVersionCheckCompleted, this);
 	Bind(wxEVT_ACTIVATE_APP, &SLADEWxApp::onActivate, this);
 
 	return true;
@@ -578,6 +581,7 @@ bool SLADEWxApp::OnInit()
  *******************************************************************/
 int SLADEWxApp::OnExit()
 {
+	wxSocketBase::Shutdown();
 	delete single_instance_checker;
 	delete file_listener;
 
@@ -612,7 +616,7 @@ void SLADEWxApp::checkForUpdates(bool message_box)
 #ifdef __WXMSW__
 	update_check_message_box = message_box;
 	LOG_MESSAGE(1, "Checking for updates...");
-	VersionCheck* checker = new VersionCheck(this);
+	auto checker = new WebGet(this, "slade.mancubus.net", "/version.txt");
 	checker->Create();
 	checker->Run();
 #endif

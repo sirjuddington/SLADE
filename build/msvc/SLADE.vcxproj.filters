@@ -903,9 +903,6 @@
     <ClCompile Include="..\..\src\General\UndoRedo.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\General\VersionCheck.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\General\Console\Console.cpp">
       <Filter>General\Console</Filter>
     </ClCompile>
@@ -1467,6 +1464,12 @@
     <ClCompile Include="..\..\src\Archive\ArchiveTreeNode.cpp">
       <Filter>Archive</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\StartPage.cpp">
+      <Filter>Main Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\WebGet.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -1915,9 +1918,6 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\General\UndoRedo.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\General\VersionCheck.h">
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\General\Console\Console.h">
@@ -2551,6 +2551,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Archive\ArchiveTreeNode.h">
       <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\StartPage.h">
+      <Filter>Main Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\WebGet.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
