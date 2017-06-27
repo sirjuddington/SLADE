@@ -60,10 +60,13 @@ void SStartPage::init()
 		Log::error(e.GetString());
 	});
 
-	html_startpage_->Bind(wxEVT_WEBVIEW_LOADED, [&](wxWebViewEvent& e)
+	if (App::platform() == App::Platform::Windows)
 	{
-		html_startpage_->Reload();
-	});
+		html_startpage_->Bind(wxEVT_WEBVIEW_LOADED, [&](wxWebViewEvent& e)
+		{
+			html_startpage_->Reload();
+		});
+	}
 
 	Bind(wxEVT_THREAD_WEBGET_COMPLETED, [&](wxThreadEvent& e)
 	{
@@ -238,7 +241,7 @@ void SStartPage::load(bool new_tip)
 void SStartPage::load(bool new_tip)
 {
 	// Get relevant resource entries
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 	if (!res_archive)
 		return;
 	ArchiveEntry* entry_html = res_archive->entryAtPath("html/startpage_basic.htm");
@@ -280,14 +283,14 @@ void SStartPage::load(bool new_tip)
 	string recent;
 	for (unsigned a = 0; a < 12; a++)
 	{
-		if (a >= theArchiveManager->numRecentFiles())
+		if (a >= App::archiveManager().numRecentFiles())
 			break;	// No more recent files
 
 					// Add line break if needed
 		if (a > 0) recent += "<br/>\n";
 
 		// Add recent file link
-		recent += S_FMT("<a href=\"recent://%d\">%s</a>", a, theArchiveManager->recentFile(a));
+		recent += S_FMT("<a href=\"recent://%d\">%s</a>", a, App::archiveManager().recentFile(a));
 	}
 
 	// Insert tip and recent files into html
@@ -411,7 +414,8 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 		string rs = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
-		SActionHandler::doAction("aman_recent", index);
+		SActionHandler::setWxIdOffset(index);
+		SActionHandler::doAction("aman_recent");
 		load();
 	}
 	else if (href.StartsWith("action://"))

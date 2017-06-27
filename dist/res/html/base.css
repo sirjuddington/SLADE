@@ -580,16 +580,3 @@ img.inline {
 hidewebsite {
 	display: none;
 }
-
-
-/* --------- WebKit Stuff --------- */
-
-::-webkit-scrollbar,
-::-webkit-scrollbar:horizontal {
-	width: 12px;
-	height: 12px;
-}
-
-::-webkit-scrollbar-thumb {
-	border: solid 1px;
-}
