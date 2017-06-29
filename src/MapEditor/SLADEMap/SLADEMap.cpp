@@ -333,9 +333,9 @@ void SLADEMap::restoreObjectIdList(uint8_t type, vector<unsigned>& list)
 /* SLADEMap::readMap
  * Reads map data using info in [map]
  *******************************************************************/
-bool SLADEMap::readMap(Archive::mapdesc_t map)
+bool SLADEMap::readMap(Archive::MapDesc map)
 {
-	Archive::mapdesc_t omap = map;
+	Archive::MapDesc omap = map;
 
 	// Check for map archive
 	Archive* tempwad = nullptr;
@@ -343,7 +343,7 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 	{
 		tempwad = new WadArchive();
 		tempwad->open(map.head);
-		vector<Archive::mapdesc_t> amaps = tempwad->detectMaps();
+		vector<Archive::MapDesc> amaps = tempwad->detectMaps();
 		if (amaps.size() > 0)
 			omap = amaps[0];
 		else
@@ -849,7 +849,7 @@ bool SLADEMap::readDoomThings(ArchiveEntry* entry)
 /* SLADEMap::readDoomMap
  * Reads a doom format map using info in [map]
  *******************************************************************/
-bool SLADEMap::readDoomMap(Archive::mapdesc_t map)
+bool SLADEMap::readDoomMap(Archive::MapDesc map)
 {
 	LOG_MESSAGE(2, "Reading Doom format map");
 
@@ -1098,7 +1098,7 @@ bool SLADEMap::readHexenThings(ArchiveEntry* entry)
 /* SLADEMap::readHexenMap
  * Reads a hexen format using info in [map]
  *******************************************************************/
-bool SLADEMap::readHexenMap(Archive::mapdesc_t map)
+bool SLADEMap::readHexenMap(Archive::MapDesc map)
 {
 	LOG_MESSAGE(2, "Reading Hexen format map");
 
@@ -1335,7 +1335,7 @@ bool SLADEMap::readDoom64Things(ArchiveEntry* entry)
 /* SLADEMap::readDoom64Map
  * Reads a doom64 format using info in [map]
  *******************************************************************/
-bool SLADEMap::readDoom64Map(Archive::mapdesc_t map)
+bool SLADEMap::readDoom64Map(Archive::MapDesc map)
 {
 	LOG_MESSAGE(2, "Reading Doom 64 format map");
 
@@ -1653,7 +1653,7 @@ bool SLADEMap::addThing(ParseTreeNode* def)
 /* SLADEMap::readDoomMap
  * Reads a UDMF format map using info in [map]
  *******************************************************************/
-bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
+bool SLADEMap::readUDMFMap(Archive::MapDesc map)
 {
 	// Get TEXTMAP entry (will always be after the 'head' entry)
 	ArchiveEntry* textmap = map.head->nextEntry();

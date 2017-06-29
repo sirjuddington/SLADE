@@ -373,7 +373,7 @@ bool MapEditContext::update(long frametime)
 //
 // Opens [map]
 // ----------------------------------------------------------------------------
-bool MapEditContext::openMap(Archive::mapdesc_t map)
+bool MapEditContext::openMap(Archive::MapDesc map)
 {
 	LOG_MESSAGE(1, "Opening map %s", map.name);
 	if (!this->map_.readMap(map))
@@ -424,9 +424,6 @@ bool MapEditContext::openMap(Archive::mapdesc_t map)
 // ----------------------------------------------------------------------------
 void MapEditContext::clearMap()
 {
-	// Clear map
-	map_.clearMap();
-
 	// Clear selection
 	selection_.clear();
 	selection_.clearHilight();
@@ -438,6 +435,9 @@ void MapEditContext::clearMap()
 
 	// Clear other data
 	pathed_things_.clear();
+
+	// Clear map
+	map_.clearMap();
 }
 
 // ----------------------------------------------------------------------------

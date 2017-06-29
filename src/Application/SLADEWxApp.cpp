@@ -177,7 +177,7 @@ public:
 		sizer->Add(hbox, 0, wxEXPAND);
 
 		// Add dead doomguy picture
-		theArchiveManager->programResourceArchive()
+		App::archiveManager().programResourceArchive()
 			->entryAtPath("images/STFDEAD0.png")
 			->exportFile(App::path("STFDEAD0.png", App::Dir::Temp));
 		wxImage img;
@@ -417,7 +417,7 @@ public:
 		size_t size,
 		wxIPCFormat format) override
 	{
-		theArchiveManager->openArchive(item);
+		App::archiveManager().openArchive(item);
 		return true;
 	}
 };

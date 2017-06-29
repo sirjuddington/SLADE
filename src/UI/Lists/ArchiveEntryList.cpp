@@ -293,7 +293,7 @@ void ArchiveEntryList::setArchive(Archive* archive)
 		listenTo(archive);
 
 		// Open root directory
-		current_dir = archive->getRoot();
+		current_dir = archive->rootDir();
 		applyFilter();
 		updateList();
 	}
@@ -599,43 +599,26 @@ void ArchiveEntryList::sortItems()
 		auto le = getEntry(left, false);
 		auto re = getEntry(right, false);
 
-		// Check entries exist (just to be needlessly safe)
-		if (!le || !re)
-			return sort_descend ? right < left : left < right;
-
 		// Sort folder->entry first
 		if (le->getType() == EntryType::folderType() && re->getType() != EntryType::folderType())
 			return true;
 		if (re->getType() == EntryType::folderType() && le->getType() != EntryType::folderType())
 			return false;
 
-		// Sort folder<->folder or entry<->entry
-		int result = 0;
+		// Name sort
+		if (col_name >= 0 && col_name == sortColumn())
+			return sort_descend ? le->getName() > re->getName() : le->getName() < re->getName();
 
 		// Size sort
 		if (col_size >= 0 && col_size == sortColumn())
-			result = entrySize(left) - entrySize(right);
+			return sort_descend ? entrySize(left) > entrySize(right) : entrySize(left) < entrySize(right);
 
 		// Index sort
-		else if (col_index >= 0 && col_index == sortColumn())
-			result = 0;
-
-		// Name sort
-		else if (col_name >= 0 && col_name == sortColumn())
-		{
-			const wxChar* reName = re->getName().c_str();
-			result = le->getName().CompareTo(reName, string::ignoreCase);
-		}
+		if (col_index >= 0 && col_index == sortColumn())
+			return sort_descend ? left > right : left < right;
 
 		// Other (default) sort
-		else
-			return VirtualListView::defaultSort(left, right);
-
-		// If sort values are equal, just sort by index
-		if (result == 0)
-			result = left - right;
-
-		return sort_descend ? result > 0 : result < 0;
+		return VirtualListView::defaultSort(left, right);
 	});
 }
 
@@ -693,11 +676,11 @@ ArchiveEntry* ArchiveEntryList::getEntry(int index, bool filtered) const
 	// Subdirectories
 	int subdirs = current_dir->nChildren();
 	if (index < subdirs)
-		return ((ArchiveTreeNode*)(current_dir->getChild(index)))->getDirEntry();
+		return ((ArchiveTreeNode*)(current_dir->getChild(index)))->dirEntry();
 
 	// Entries
 	if ((unsigned)index < subdirs + current_dir->numEntries())
-		return current_dir->getEntry(index - subdirs);
+		return current_dir->entryAt(index - subdirs);
 
 	// Out of bounds
 	return nullptr;

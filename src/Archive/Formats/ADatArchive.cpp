@@ -53,10 +53,10 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* ADatArchive::ADatArchive
  * ADatArchive class constructor
  *******************************************************************/
-ADatArchive::ADatArchive() : Archive(ARCHIVE_ADAT)
+ADatArchive::ADatArchive() : Archive("adat")
 {
-	desc.supports_dirs = true;
-	desc.max_name_length = 128;
+	//desc.supports_dirs = true;
+	//desc.max_name_length = 128;
 }
 
 /* ADatArchive::~ADatArchive
@@ -64,22 +64,6 @@ ADatArchive::ADatArchive() : Archive(ARCHIVE_ADAT)
  *******************************************************************/
 ADatArchive::~ADatArchive()
 {
-}
-
-/* ADatArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string ADatArchive::getFileExtensionString()
-{
-	return "Dat Files (*.dat)|*.dat";
-}
-
-/* ADatArchive::getFormat
- * Returns the string id for the dat EntryDataFormat
- *******************************************************************/
-string ADatArchive::getFormat()
-{
-	return "archive_adat";
 }
 
 /* ADatArchive::open
@@ -360,12 +344,12 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "ADatArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "ADatArchive::loadEntryData: Unable to open archive file %s", filename_);
 		return false;
 	}
 

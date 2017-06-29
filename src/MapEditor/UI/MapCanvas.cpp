@@ -161,12 +161,22 @@ void MapCanvas::mouseLook3d()
 		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
 		{
 			// Get relative mouse movement
-			int xpos = wxGetMousePosition().x - GetScreenPosition().x;
-			int ypos = wxGetMousePosition().y - GetScreenPosition().y;
-			double xrel = xpos - int(GetSize().x * 0.5);
-			double yrel = ypos - int(GetSize().y * 0.5);
+			const double scale = GetContentScaleFactor();
+			const double threshold = scale - 1.0;
 
-			if (xrel != 0 || yrel != 0)
+			wxRealPoint mousePos = wxGetMousePosition();
+			mousePos.x *= scale;
+			mousePos.y *= scale;
+
+			const wxRealPoint screenPos = GetScreenPosition();
+			const double xpos = mousePos.x - screenPos.x;
+			const double ypos = mousePos.y - screenPos.y;
+
+			const wxSize size = GetSize();
+			const double xrel = xpos - floor(size.x * 0.5);
+			const double yrel = ypos - floor(size.y * 0.5);
+
+			if (fabs(xrel) > threshold || fabs(yrel) > threshold)
 			{
 				context_->renderer().renderer3D().cameraLook(xrel, yrel);
 				mouseToCenter();
@@ -343,6 +353,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 
 	// Send to editor context
 	bool skip = true;
+	context_->input().updateKeyModifiersWx(e.GetModifiers());
 	if (e.LeftDown())
 		skip = context_->input().mouseDown(Input::MouseButton::Left);
 	else if (e.LeftDClick())
@@ -382,6 +393,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 
 	// Send to editor context
 	bool skip = true;
+	context_->input().updateKeyModifiersWx(e.GetModifiers());
 	if (e.LeftUp())
 		skip = context_->input().mouseUp(Input::MouseButton::Left);
 	else if (e.RightUp())

@@ -1095,7 +1095,7 @@ void TextureXPanel::paste()
 			}
 
 			// If the entry exists in the base resource archive or this archive, do nothing
-			else if (entry->getParent() == theArchiveManager->baseResourceArchive() ||
+			else if (entry->getParent() == App::archiveManager().baseResourceArchive() ||
 			         entry->getParent() == tx_editor->getArchive())
 				continue;
 

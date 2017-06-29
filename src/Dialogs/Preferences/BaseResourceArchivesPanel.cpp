@@ -58,9 +58,9 @@ BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent)
 	// Init paths list
 	//int sel_index = -1;
 	list_base_archive_paths = new wxListBox(this, -1);
-	for (size_t a = 0; a < theArchiveManager->numBaseResourcePaths(); a++)
+	for (size_t a = 0; a < App::archiveManager().numBaseResourcePaths(); a++)
 	{
-		list_base_archive_paths->Append(theArchiveManager->getBaseResourcePath(a));
+		list_base_archive_paths->Append(App::archiveManager().getBaseResourcePath(a));
 	}
 
 	// Select the currently open base archive if any
@@ -116,7 +116,7 @@ int BaseResourceArchivesPanel::getSelectedPath()
 void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
 {
 	// Create extensions string
-	string extensions = theArchiveManager->getArchiveExtensionsString();
+	string extensions = App::archiveManager().getArchiveExtensionsString();
 
 	// Open a file browser dialog that allows multiple selection
 	wxFileDialog dialog_open(this, "Choose file(s) to open", dir_last, wxEmptyString, extensions, wxFD_OPEN|wxFD_MULTIPLE|wxFD_FILE_MUST_EXIST, wxDefaultPosition);
@@ -131,7 +131,7 @@ void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
 		// Add each to the paths list
 		for (size_t a = 0; a < files.size(); a++)
 		{
-			if (theArchiveManager->addBaseResourcePath(files[a]))
+			if (App::archiveManager().addBaseResourcePath(files[a]))
 				list_base_archive_paths->Append(files[a]);
 		}
 
@@ -150,7 +150,7 @@ void BaseResourceArchivesPanel::onBtnRemove(wxCommandEvent& e)
 	list_base_archive_paths->Delete(index);
 
 	// Also remove it from the archive manager
-	theArchiveManager->removeBaseResourcePath(index);
+	App::archiveManager().removeBaseResourcePath(index);
 }
 
 /* BaseResourceArchivesPanel::onBtnDetect
@@ -183,7 +183,7 @@ static bool QueryPathKey(wxRegKey::StdKey hkey, string path, string variable, st
 void BaseResourceArchivesPanel::autodetect()
 {
 	// List of known IWADs and common aliases
-	ArchiveEntry * iwadlist = theArchiveManager->programResourceArchive()->entryAtPath("config/iwads.cfg");
+	ArchiveEntry * iwadlist = App::archiveManager().programResourceArchive()->entryAtPath("config/iwads.cfg");
 	if (!iwadlist)
 		return;
 	Parser p;
@@ -236,7 +236,7 @@ void BaseResourceArchivesPanel::autodetect()
 					// Verify existence before adding it to the list
 					if (list_base_archive_paths->FindString(iwad) == wxNOT_FOUND)
 					{
-						theArchiveManager->addBaseResourcePath(iwad);
+						App::archiveManager().addBaseResourcePath(iwad);
 						list_base_archive_paths->Append(iwad);
 					}
 				}
@@ -302,7 +302,7 @@ void BaseResourceArchivesPanel::autodetect()
 			// Verify existence before adding it to the list
 			if (list_base_archive_paths->FindString(iwad) == wxNOT_FOUND)
 			{
-				theArchiveManager->addBaseResourcePath(iwad);
+				App::archiveManager().addBaseResourcePath(iwad);
 				list_base_archive_paths->Append(iwad);
 			}
 		}

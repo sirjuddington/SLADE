@@ -8,8 +8,6 @@
 
 class ResArchive : public Archive
 {
-private:
-
 public:
 	ResArchive();
 	~ResArchive();
@@ -17,35 +15,31 @@ public:
 	// Res specific
 	uint32_t	getEntryOffset(ArchiveEntry* entry);
 	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
-	void		updateNamespaces();
-
-	// Archive type info
-	string	getFileExtensionString();
-	string	getFormat();
 
 	// Opening/writing
 	bool	readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps, ArchiveTreeNode* parent);
-	bool	open(MemChunk& mc);							// Open from MemChunk
-	bool	write(MemChunk& mc, bool update = true);	// Write to MemChunk
+	bool	open(MemChunk& mc) override;						// Open from MemChunk
+	bool	write(MemChunk& mc, bool update = true) override;	// Write to MemChunk
 
 	// Misc
-	bool		loadEntryData(ArchiveEntry* entry);
+	bool	loadEntryData(ArchiveEntry* entry) override;
 
 	// Entry addition/removal
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false);
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
+	ArchiveEntry*	addEntry(
+						ArchiveEntry* entry,
+						unsigned position = 0xFFFFFFFF,
+						ArchiveTreeNode* dir = nullptr,
+						bool copy = false
+					) override;
+	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
 
 	// Entry modification
-	bool	renameEntry(ArchiveEntry* entry, string name);
-
-	// Detection
-	vector<mapdesc_t>	detectMaps() { vector<mapdesc_t> ret; return ret; }
+	bool	renameEntry(ArchiveEntry* entry, string name) override;
 
 	// Static functions
 	static bool isResArchive(MemChunk& mc);
 	static bool isResArchive(MemChunk& mc, size_t& d_o, size_t& n_l);
 	static bool isResArchive(string filename);
-
 };
 
 #endif//__RESARCHIVE_H__

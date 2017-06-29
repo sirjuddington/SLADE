@@ -82,6 +82,7 @@ namespace App
 	// App objects (managers, etc.)
 	Console			console_main;
 	PaletteManager	palette_manager;
+	ArchiveManager	archive_manager;
 }
 
 CVAR(Int, temp_location, 0, CVAR_SAVE)
@@ -196,7 +197,7 @@ namespace App
 				token = tz.getToken();
 				while (token.Cmp("}") && !tz.atEnd())
 				{
-					theArchiveManager->addBaseResourcePath(token);
+					archive_manager.addBaseResourcePath(token);
 					token = wxString::FromUTF8(UTF8(tz.getToken()));
 				}
 			}
@@ -211,7 +212,7 @@ namespace App
 				token = wxString::FromUTF8(UTF8(tz.getToken()));
 				while (token != "}" && !tz.atEnd())
 				{
-					theArchiveManager->addRecentFile(token);
+					archive_manager.addRecentFile(token);
 					token = wxString::FromUTF8(UTF8(tz.getToken()));
 				}
 			}
@@ -300,6 +301,16 @@ PaletteManager* App::paletteManager()
 }
 
 // ----------------------------------------------------------------------------
+// App::archiveManager
+//
+// Returns the Archive Manager
+// ----------------------------------------------------------------------------
+ArchiveManager& App::archiveManager()
+{
+	return archive_manager;
+}
+
+// ----------------------------------------------------------------------------
 // App::runTimer
 //
 // Returns the number of ms elapsed since the application was started
@@ -346,8 +357,8 @@ bool App::init()
 
 	// Check that SLADE.pk3 can be found
 	Log::info("Loading resources");
-	theArchiveManager->init();
-	if (!theArchiveManager->resArchiveOK())
+	archive_manager.init();
+	if (!archive_manager.resArchiveOK())
 	{
 		wxMessageBox(
 			"Unable to find slade.pk3, make sure it exists in the same directory as the "
@@ -417,7 +428,7 @@ bool App::init()
 
 	// Init base resource
 	Log::info("Loading base resource");
-	theArchiveManager->initBaseResource();
+	archive_manager.initBaseResource();
 	Log::info("Base resource loaded");
 
 	// Init game configuration
@@ -433,7 +444,7 @@ bool App::init()
 	// argv[0] is normally the executable itself (i.e. SLADE.exe)
 	// and opening it as an archive should not be attempted...
 	for (int a = 1; a < wxTheApp->argc; a++)
-		theArchiveManager->openArchive(wxTheApp->argv[a]);
+		archive_manager.openArchive(wxTheApp->argv[a]);
 
 	// Hide splash screen
 	UI::hideSplash();
@@ -479,9 +490,9 @@ void App::saveConfigFile()
 
 	// Write base resource archive paths
 	file.Write("\nbase_resource_paths\n{\n");
-	for (size_t a = 0; a < theArchiveManager->numBaseResourcePaths(); a++)
+	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
 	{
-		string path = theArchiveManager->getBaseResourcePath(a);
+		string path = archive_manager.getBaseResourcePath(a);
 		path.Replace("\\", "/");
 		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
 	}
@@ -489,9 +500,9 @@ void App::saveConfigFile()
 
 	// Write recent files list (in reverse to keep proper order when reading back)
 	file.Write("\nrecent_files\n{\n");
-	for (int a = theArchiveManager->numRecentFiles() - 1; a >= 0; a--)
+	for (int a = archive_manager.numRecentFiles() - 1; a >= 0; a--)
 	{
-		string path = theArchiveManager->recentFile(a);
+		string path = archive_manager.recentFile(a);
 		path.Replace("\\", "/");
 		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
 	}
@@ -554,11 +565,10 @@ void App::exit(bool save_config)
 	}
 
 	// Close all open archives
-	theArchiveManager->closeAll();
+	archive_manager.closeAll();
 
 	// Clean up
 	EntryType::cleanupEntryTypes();
-	ArchiveManager::deleteInstance();
 
 	// Clear temp folder
 	wxDir temp;

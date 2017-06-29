@@ -51,7 +51,7 @@ public:
 	vector<MapThing*>&		pathedThings() { return pathed_things_; }
 	bool					gridSnap() const { return grid_snap_; }
 	UndoManager*			undoManager() const { return undo_manager_.get(); }
-	Archive::mapdesc_t&		mapDesc() { return map_desc_; }
+	Archive::MapDesc&		mapDesc() { return map_desc_; }
 	MapCanvas*				canvas() const { return canvas_; }
 	MapEditor::Renderer&	renderer() { return renderer_; }
 	MapEditor::Input&		input() { return input_; }
@@ -68,7 +68,7 @@ public:
 	bool	update(long frametime);
 
 	// Map loading
-	bool	openMap(Archive::mapdesc_t map);
+	bool	openMap(Archive::MapDesc map);
 	void	clearMap();
 
 	// Selection/hilight
@@ -145,7 +145,7 @@ public:
 private:
 	SLADEMap			map_;
 	MapCanvas*			canvas_				= nullptr;
-	Archive::mapdesc_t	map_desc_;
+	Archive::MapDesc	map_desc_;
 	long				next_frame_length_	= 0;
 
 	// Undo/Redo stuff
