@@ -1,4 +1,37 @@
 
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    StartPage.cpp
+// Description: SLADE Start Page implementation. If wxWebView support is
+//              enabled, the full featured start page is shown in a wxWebView.
+//              Otherwise, a (much) more basic version of the start page is
+//              shown in a wxHtmlWindow.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
@@ -8,9 +41,26 @@
 #include "Utility/Tokenizer.h"
 
 
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 CVAR(Bool, web_dark_theme, false, CVAR_SAVE)
 
 
+// ----------------------------------------------------------------------------
+//
+// SStartPage Class Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// SStartPage::SStartPage
+//
+// SStartPage class constructor
+// ----------------------------------------------------------------------------
 SStartPage::SStartPage(wxWindow* parent) : wxPanel(parent, -1)
 {
 	wxPanel::SetName("startpage");
@@ -19,6 +69,11 @@ SStartPage::SStartPage(wxWindow* parent) : wxPanel(parent, -1)
 	SetSizer(sizer);
 }
 
+// ----------------------------------------------------------------------------
+// SStartPage::init
+//
+// Initialises the start page
+// ----------------------------------------------------------------------------
 void SStartPage::init()
 {
 	// wxWebView
@@ -124,8 +179,15 @@ void SStartPage::init()
 	}
 }
 
+
 #ifdef USE_WEBVIEW_STARTPAGE
 
+// ----------------------------------------------------------------------------
+// SStartPage::load
+//
+// Loads the start page (wxWebView implementation). If [new_tip] is true, a new
+// random 'tip of the day' is shown
+// ----------------------------------------------------------------------------
 void SStartPage::load(bool new_tip)
 {
 	// Get latest news post
@@ -240,6 +302,12 @@ void SStartPage::load(bool new_tip)
 
 #else
 
+// ----------------------------------------------------------------------------
+// SStartPage::load
+//
+// Loads the start page (wxHtmlWindow implementation). If [new_tip] is true, a
+// new random 'tip of the day' is shown
+// ----------------------------------------------------------------------------
 void SStartPage::load(bool new_tip)
 {
 	// Get relevant resource entries
@@ -316,6 +384,11 @@ void SStartPage::load(bool new_tip)
 
 #endif
 
+// ----------------------------------------------------------------------------
+// SStartPage::refresh
+//
+// Refreshes the page (wxWebView only)
+// ----------------------------------------------------------------------------
 void SStartPage::refresh()
 {
 #ifdef USE_WEBVIEW_STARTPAGE
@@ -323,6 +396,11 @@ void SStartPage::refresh()
 #endif
 }
 
+// ----------------------------------------------------------------------------
+// SStartPage::updateAvailable
+//
+// Updates the start page to show that an update to [version_name] is available
+// ----------------------------------------------------------------------------
 void SStartPage::updateAvailable(string version_name)
 {
 	update_version_ = version_name;
@@ -332,10 +410,12 @@ void SStartPage::updateAvailable(string version_name)
 
 #ifdef USE_WEBVIEW_STARTPAGE
 
-/* SStartPage::onHTMLLinkClicked
- * Called when a link is clicked on the HTML Window, so that
- * external (http) links are opened in the default browser
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SStartPage::onHTMLLinkClicked
+//
+// Called when a link is clicked on the start page, so that external (http)
+// links are opened in the default browser (wxWebView implementation)
+// ----------------------------------------------------------------------------
 void SStartPage::onHTMLLinkClicked(wxEvent& e)
 {
 	wxWebViewEvent& ev = (wxWebViewEvent&)e;
@@ -419,10 +499,12 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 
 #else
 
-/* SStartPage::onHTMLLinkClicked
- * Called when a link is clicked on the HTML Window, so that
- * external (http) links are opened in the default browser
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SStartPage::onHTMLLinkClicked
+//
+// Called when a link is clicked on the start page, so that external (http)
+// links are opened in the default browser (wxHtmlWindow implementation)
+// ----------------------------------------------------------------------------
 void SStartPage::onHTMLLinkClicked(wxEvent& e)
 {
 	wxHtmlLinkEvent& ev = (wxHtmlLinkEvent&)e;
