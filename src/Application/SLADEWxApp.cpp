@@ -36,6 +36,7 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
+#include "MainEditor/UI/StartPage.h"
 #include "OpenGL/OpenGL.h"
 #include <wx/statbmp.h>
 
@@ -53,7 +54,7 @@ namespace Global
 {
 	string error = "";
 
-	int beta_num = 2;
+	int beta_num = 1;
 	int version_num = 3120;
 	string version = "3.1.2 Beta 2";
 #ifdef GIT_DESCRIPTION
@@ -673,11 +674,16 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	{
 		LOG_MESSAGE(1, "Version check failed, unable to connect");
 		if (update_check_message_box)
-			wxMessageBox("Update check failed: unable to connect to internet. Check your connection and try again.", "Check for Updates");
+			wxMessageBox(
+				"Update check failed: unable to connect to internet. "
+				"Check your connection and try again.",
+				"Check for Updates"
+			);
+
 		return;
 	}
 
-	wxArrayString info = wxSplit(e.GetString(), '\n');
+	auto info = wxSplit(e.GetString(), '\n');
 	
 	// Check for correct info
 	if (info.size() != 5)
@@ -717,27 +723,54 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 			new_beta = true;
 	}
 
-	// Ask for new beta
+	// Set up for new beta/stable version prompt (if any)
+	string message, caption, version;
 	if (update_check_beta && new_beta)
 	{
-		if (wxMessageBox(S_FMT("A new beta version of SLADE is available (%s), click OK to visit the SLADE homepage and download the update.", info[4].Trim()), "New Beta Version Available", wxOK|wxCANCEL) == wxOK)
-			wxLaunchDefaultBrowser("http://slade.mancubus.net/index.php?page=downloads");
-
-		return;
+		// New Beta
+		caption = "New Beta Version Available";
+		version = info[4].Trim();
+		message = S_FMT(
+			"A new beta version of SLADE is available (%s), click OK to visit the SLADE homepage "
+			"and download the update.",
+			CHR(version)
+		);
 	}
-
-	// Ask for new stable
-	if (new_stable)
+	else if (new_stable)
 	{
-		if (wxMessageBox(S_FMT("A new version of SLADE is available (%s), click OK to visit the SLADE homepage and download the update.", info[1].Trim()), "New Version Available", wxOK|wxCANCEL) == wxOK)
-			wxLaunchDefaultBrowser("http://slade.mancubus.net/index.php?page=downloads");
+		// New Stable
+		caption = "New Version Available";
+		version = info[1].Trim();
+		message = S_FMT(
+			"A new version of SLADE is available (%s), click OK to visit the SLADE homepage and "
+			"download the update.",
+			CHR(version)
+		);
+	}
+	else
+	{
+		// No update
+		Log::info(1, "Already up-to-date");
+		if (update_check_message_box)
+			wxMessageBox("SLADE is already up to date", "Check for Updates");
 
 		return;
 	}
 
-	LOG_MESSAGE(1, "Already up-to-date");
-	if (update_check_message_box)
-		wxMessageBox("SLADE is already up to date", "Check for Updates");
+	// Prompt to update
+	auto main_window = MainEditor::window();
+	if (main_window->startPageTabOpen() && App::useWebView())
+	{
+		// Start Page (webview version) is open, show it there
+		main_window->openStartPageTab();
+		main_window->startPage()->updateAvailable(version);
+	}
+	else
+	{
+		// No start page, show a message box
+		if (wxMessageBox(message, caption, wxOK | wxCANCEL) == wxOK)
+			wxLaunchDefaultBrowser("http://slade.mancubus.net/index.php?page=downloads");
+	}
 }
 
 /* SLADEWxApp::onActivate

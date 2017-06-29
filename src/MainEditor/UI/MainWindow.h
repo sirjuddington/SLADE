@@ -43,12 +43,16 @@ public:
 	void	saveLayout();
 
 	void	setupLayout();
-	void	createStartPage(bool newtip = true);
+	void	createStartPage(bool newtip = true) const;
 	bool	exitProgram();
+
+	bool	startPageTabOpen() const;
+	void	openStartPageTab();
 
 	ArchiveManagerPanel*		getArchiveManagerPanel() { return panel_archivemanager; }
 	PaletteChooser*				getPaletteChooser() { return palette_chooser; }
 	UndoManagerHistoryPanel*	getUndoHistoryPanel() { return panel_undo_history; }
+	SStartPage*					startPage() const { return start_page; }
 
 #ifdef USE_WEBVIEW_STARTPAGE
 	void	openDocs(string page_name = "");

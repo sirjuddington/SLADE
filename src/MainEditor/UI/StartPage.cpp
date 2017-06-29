@@ -128,8 +128,6 @@ void SStartPage::init()
 
 void SStartPage::load(bool new_tip)
 {
-	//html_startpage_->SetPage("<html><head></head><body>Loading...</body></html>", wxEmptyString);
-
 	// Get latest news post
 	if (latest_news_ == "")
 	{
@@ -210,12 +208,16 @@ void SStartPage::load(bool new_tip)
 	else
 		recent = "No recently opened files";
 
-	// Insert css, tip and recent files into html
+	// Replace placeholders in the html (theme css, recent files, tip, etc.)
 	html.Replace("/*#theme#*/", css);
 	html.Replace("#recent#", recent);
 	html.Replace("#totd#", tip);
 	html.Replace("#news#", latest_news_);
 	html.Replace("#version#", Global::version);
+	if (update_version_.empty())
+		html.Replace("/*#hideupdate#*/", "#update { display: none; }");
+	else
+		html.Replace("#updateversion#", update_version_);
 
 	// Write html and images to temp folder
 	for (unsigned a = 0; a < entry_export_.size(); a++)
@@ -321,6 +323,12 @@ void SStartPage::refresh()
 #endif
 }
 
+void SStartPage::updateAvailable(string version_name)
+{
+	update_version_ = version_name;
+	load(false);
+}
+
 
 #ifdef USE_WEBVIEW_STARTPAGE
 
@@ -375,6 +383,20 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 		}
 		else if (href.EndsWith("reloadstartpage"))
 			load();
+		else if (href.EndsWith("hide-update"))
+		{
+			update_version_ = "";
+			load(false);
+		}
+		else if (href.EndsWith("update"))
+		{
+			if (wxLaunchDefaultBrowser("http://slade.mancubus.net/index.php?page=downloads"))
+			{
+				update_version_ = "";
+				load(false);
+			}
+		}
+		
 		html_startpage_->Reload();
 	}
 	else if (wxFileExists(href))

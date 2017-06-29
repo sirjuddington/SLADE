@@ -45,11 +45,30 @@
     }
 
     #topbar {
-      background-color: hsl(220, 27%, 57%);
+      background-color: rgb(116, 135, 175);
       width: 100%;
       height: 0.2em;
       position: fixed;
+      z-index: 998;
+    }
+
+    #update {
+      background-color: rgb(200, 80, 60);
+      color: white;
+      width: 100%;
+      font-size: 1.2em;
+      padding: 0.6em 0.8em 0.5em 0.8em;
+      position: fixed;
+      bottom: 0;
       z-index: 999;
+    }
+
+    #update a {
+      color: hsl(40, 100%, 70%);
+    }
+
+    #update a:hover {
+      color: hsl(40, 100%, 95%);
     }
 
     a.link,
@@ -132,11 +151,22 @@
     a.refresh:hover {
       color: hsl(40, 100%, 55%);
     }
+
+    /*#hideupdate#*/
+
   </style>
 </head>
 
 <body>
   <div id="topbar"></div>
+
+  <!-- Update -->
+  <div id="update">
+    <strong>Update Available</strong>: <a href="action://update">#updateversion#</a>
+    <span style="float: right; padding-right: 1.6em;">
+      <a href="action://hide-update">&#10060;</a>
+    </span>
+  </div>
 
   <!-- Side Bar -->
   <div id="side">

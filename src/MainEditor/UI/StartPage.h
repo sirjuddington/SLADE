@@ -13,6 +13,7 @@ public:
 	void	init();
 	void	load(bool new_tip = true);
 	void	refresh();
+	void	updateAvailable(string version_name);
 
 #ifdef USE_WEBVIEW_STARTPAGE
 	typedef wxWebView WebView;
@@ -26,6 +27,7 @@ private:
 	vector<string>	tips_;
 	int				last_tip_index_ = -1;
 	string			latest_news_;
+	string			update_version_;
 
 	ArchiveEntry*			entry_base_html_	= nullptr;
 	ArchiveEntry*			entry_css_			= nullptr;

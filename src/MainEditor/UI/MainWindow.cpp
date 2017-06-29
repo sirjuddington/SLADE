@@ -294,6 +294,7 @@ void MainWindow::setupLayout()
 	SAction::fromId("main_showam")->addToMenu(viewMenu);
 	SAction::fromId("main_showconsole")->addToMenu(viewMenu);
 	SAction::fromId("main_showundohistory")->addToMenu(viewMenu);
+	SAction::fromId("main_showstartpage")->addToMenu(viewMenu);
 	menu->Append(viewMenu, "&View");
 
 	// Help menu
@@ -385,6 +386,13 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
 	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar->GetId());
 	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
+	Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [&](wxAuiNotebookEvent& e)
+	{
+		// Null start_page pointer if start page tab is closed
+		auto page = stc_tabs->GetPage(stc_tabs->GetSelection());
+		if (page->GetName() == "startpage")
+			start_page = nullptr;
+	});
 
 	// Initial focus to toolbar
 	toolbar->SetFocus();
@@ -394,9 +402,10 @@ void MainWindow::setupLayout()
  * Builds the HTML start page and loads it into the html viewer
  * (start page tab)
  *******************************************************************/
-void MainWindow::createStartPage(bool newtip)
+void MainWindow::createStartPage(bool newtip) const
 {
-	start_page->load(newtip);
+	if (start_page)
+		start_page->load(newtip);
 }
 
 /* MainWindow::exitProgram
@@ -435,6 +444,44 @@ bool MainWindow::exitProgram()
 	App::exit(true);
 
 	return true;
+}
+
+/* MainWindow::startPageTabOpen
+ * Returns true if the Start Page tab is currently open
+ *******************************************************************/
+bool MainWindow::startPageTabOpen() const
+{
+	for (unsigned a = 0; a < stc_tabs->GetPageCount(); a++)
+	{
+		if (stc_tabs->GetPage(a)->GetName() == "startpage")
+			return true;
+	}
+
+	return false;
+}
+
+/* MainWindow::openStartPageTab
+ * Switches to the Start Page tab, or (re)creates it if it has been
+ * closed
+ *******************************************************************/
+void MainWindow::openStartPageTab()
+{
+	// Find existing tab
+	for (unsigned a = 0; a < stc_tabs->GetPageCount(); a++)
+	{
+		if (stc_tabs->GetPage(a)->GetName() == "startpage")
+		{
+			stc_tabs->SetSelection(a);
+			return;
+		}
+	}
+
+	// Not found, create start page tab
+	start_page = new SStartPage(stc_tabs);
+	start_page->init();
+	stc_tabs->AddPage(start_page, "Start Page");
+	stc_tabs->SetPageBitmap(0, Icons::getIcon(Icons::GENERAL, "logo"));
+	createStartPage();
 }
 
 /* MainWindow::openDocs
@@ -567,6 +614,10 @@ bool MainWindow::handleAction(string id)
 		m_mgr->Update();
 		return true;
 	}
+
+	// View->Show Start Page
+	if (id == "main_showstartpage")
+		openStartPageTab();
 
 	// Help->About
 	if (id == "main_about")
