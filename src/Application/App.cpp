@@ -639,6 +639,37 @@ string App::path(string filename, Dir dir)
 	return filename;
 }
 
+App::Platform App::platform()
+{
+#ifdef __WXMSW__
+	return Platform::Windows;
+#elif __WXGTK__
+	return Platform::Linux;
+#elif __WXOSX__
+	return Platform::MacOS;
+#else
+	return Platform::Unknown;
+#endif
+}
+
+bool App::useWebView()
+{
+#ifdef USE_WEBVIEW_STARTPAGE
+	return true;
+#else
+	return false;
+#endif
+}
+
+bool App::useSFMLRenderWindow()
+{
+#ifdef USE_SFML_RENDERWINDOW
+	return true;
+#else
+	return false;
+#endif
+}
+
 
 CONSOLE_COMMAND(setup_wizard, 0, false)
 {

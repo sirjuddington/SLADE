@@ -11,8 +11,8 @@ class SToolBar;
 class STabCtrl;
 class UndoManagerHistoryPanel;
 class wxAuiManager;
+class SStartPage;
 #ifdef USE_WEBVIEW_STARTPAGE
-class wxWebView;
 class DocsPage;
 #endif
 class MainWindow : public STopWindow, SActionHandler
@@ -26,11 +26,9 @@ private:
 	PaletteChooser*				palette_chooser;
 
 	// Start page
+	SStartPage*	start_page;
 #ifdef USE_WEBVIEW_STARTPAGE
-	wxWebView*					html_startpage;
-	DocsPage*					docs_page;
-#else
-	wxHtmlWindow*				html_startpage;
+	DocsPage*	docs_page;
 #endif
 
 	// Action handling
@@ -45,19 +43,22 @@ public:
 	void	saveLayout();
 
 	void	setupLayout();
-	void	createStartPage(bool newtip = true);
+	void	createStartPage(bool newtip = true) const;
 	bool	exitProgram();
+
+	bool	startPageTabOpen() const;
+	void	openStartPageTab();
 
 	ArchiveManagerPanel*		getArchiveManagerPanel() { return panel_archivemanager; }
 	PaletteChooser*				getPaletteChooser() { return palette_chooser; }
 	UndoManagerHistoryPanel*	getUndoHistoryPanel() { return panel_undo_history; }
+	SStartPage*					startPage() const { return start_page; }
 
 #ifdef USE_WEBVIEW_STARTPAGE
 	void	openDocs(string page_name = "");
 #endif
 
 	// Events
-	void	onHTMLLinkClicked(wxEvent& e);
 	void	onClose(wxCloseEvent& e);
 	void	onTabChanged(wxAuiNotebookEvent& e);
 	void	onSize(wxSizeEvent& e);
