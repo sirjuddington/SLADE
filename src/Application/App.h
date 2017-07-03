@@ -20,4 +20,16 @@ namespace App
 	// Path related stuff
 	enum class Dir { User, Data, Executable, Resources, Temp };
 	string path(string filename, Dir dir);
+
+	// Platform and build options
+	enum Platform
+	{
+		Windows,
+		Linux,
+		MacOS,
+		Unknown
+	};
+	Platform	platform();
+	bool		useWebView();
+	bool		useSFMLRenderWindow();
 }

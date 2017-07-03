@@ -76,6 +76,7 @@ protected:
 	wxColour	inactive_tab_colour_;
 	bool		main_tabs_;
 	int			padding_;
+	wxBitmap	close_bitmap_white_;
 };
 
 class SAuiDockArt : public wxAuiDefaultDockArt

@@ -449,6 +449,7 @@ void ArchiveTreeNode::clear()
 	// Clear subdirs
 	for (unsigned a = 0; a < children.size(); a++)
 		delete children[a];
+	children.clear();
 }
 
 // ----------------------------------------------------------------------------

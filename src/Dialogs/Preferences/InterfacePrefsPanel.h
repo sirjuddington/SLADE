@@ -15,6 +15,7 @@ private:
 	wxCheckBox*	cb_elist_bgcol;
 	wxCheckBox* cb_file_browser;
 	wxCheckBox*	cb_condensed_tabs;
+	wxCheckBox*	cb_web_dark_theme;
 	wxChoice*	choice_toolbar_size;
 	wxChoice*	choice_tab_style;
 	wxChoice*	choice_iconset_general;

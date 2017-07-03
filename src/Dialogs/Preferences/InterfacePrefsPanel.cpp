@@ -49,6 +49,7 @@ EXTERN_CVAR(Bool, am_file_browser_tab)
 EXTERN_CVAR(String, iconset_general)
 EXTERN_CVAR(String, iconset_entry_list)
 EXTERN_CVAR(Bool, tabs_condensed)
+EXTERN_CVAR(Bool, web_dark_theme)
 
 
 /*******************************************************************
@@ -84,6 +85,13 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	int row = 0;
 	cb_start_page = new wxCheckBox(panel, -1, "Show Start Page on Startup");
 	gb_sizer->Add(cb_start_page, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
+
+	// Use dark theme for web
+	cb_web_dark_theme = new wxCheckBox(panel, -1, "Use dark theme for web content *");
+	cb_web_dark_theme->SetToolTip(
+		"Use a dark theme for web content eg. the Start Page and Online Documentation"
+	);
+	gb_sizer->Add(cb_web_dark_theme, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Show file browser
 	cb_file_browser = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel *");
@@ -182,6 +190,7 @@ void InterfacePrefsPanel::init()
 	cb_elist_bgcol->SetValue(elist_type_bgcol);
 	cb_file_browser->SetValue(am_file_browser_tab);
 	cb_condensed_tabs->SetValue(tabs_condensed);
+	cb_web_dark_theme->SetValue(web_dark_theme);
 
 	if (toolbar_size <= 16)
 		choice_toolbar_size->Select(0);
@@ -225,6 +234,7 @@ void InterfacePrefsPanel::applyPreferences()
 	elist_type_bgcol = cb_elist_bgcol->GetValue();
 	am_file_browser_tab = cb_file_browser->GetValue();
 	tabs_condensed = cb_condensed_tabs->GetValue();
+	web_dark_theme = cb_web_dark_theme->GetValue();
 
 	if (choice_toolbar_size->GetSelection() == 0)
 		toolbar_size = 16;

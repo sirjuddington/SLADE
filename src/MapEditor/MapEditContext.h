@@ -127,7 +127,7 @@ public:
 	// Player start swapping
 	void	swapPlayerStart3d();
 	void	swapPlayerStart2d(fpoint2_t pos);
-	void	resetPlayerStart();
+	void	resetPlayerStart() const;
 
 	// Misc
 	string	modeString(bool plural = true) const;
