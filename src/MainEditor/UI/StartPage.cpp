@@ -329,24 +329,21 @@ void SStartPage::load(bool new_tip)
 	string html = wxString::FromAscii((const char*)(entry_html->getData()), entry_html->getSize());
 
 	// Generate tip of the day string
-	string tip = "It seems tips.txt is missing from your slade.pk3";
-	if (entry_tips)
+	string tip;
+	if (tips_.size() < 2) // Needs at least two choices or it's kinda pointless.
+		tip = "Did you know? Something is wrong with the tips.txt file in your slade.pk3.";
+	else
 	{
-		Tokenizer tz;
-		tz.openMem((const char*)entry_tips->getData(), entry_tips->getSize(), entry_tips->getName());
-		srand(wxGetLocalTime());
-		int numtips = tz.getInteger();
-		if (numtips < 2) // Needs at least two choices or it's kinda pointless.
-			tip = "Did you know? Something is wrong with the tips.txt file in your slade.pk3.";
-		else
+		int tipindex = last_tip_index_;
+		if (new_tip || last_tip_index_ <= 0)
 		{
-			int tipindex = 0;
 			// Don't show same tip twice in a row
-			do { tipindex = 1 + (rand() % numtips); } while (tipindex == last_tip_index_);
-			last_tip_index_ = tipindex;
-			for (int a = 0; a < tipindex; a++)
-				tip = tz.getToken();
+			do { tipindex = 1 + rand() % (tips_.size() - 1); } while (tipindex == last_tip_index_);
 		}
+
+		last_tip_index_ = tipindex;
+		tip = tips_[tipindex];
+		Log::debug(S_FMT("Tip index %d/%d", last_tip_index_, tips_.size()));
 	}
 
 	// Generate recent files string
@@ -356,7 +353,7 @@ void SStartPage::load(bool new_tip)
 		if (a >= App::archiveManager().numRecentFiles())
 			break;	// No more recent files
 
-					// Add line break if needed
+		// Add line break if needed
 		if (a > 0) recent += "<br/>\n";
 
 		// Add recent file link
