@@ -3,6 +3,7 @@
 #include "MapInfo.h"
 #include "Archive/Archive.h"
 
+using namespace Game;
 
 MapInfo::MapInfo()
 {
@@ -43,6 +44,40 @@ bool MapInfo::addOrUpdateMap(Map& map)
 		}
 
 	maps_.push_back(map);
+	return false;
+}
+
+int MapInfo::doomEdNumForClass(const string& actor_class)
+{
+	// Find DoomEdNum def with matching class
+	for (auto& i : editor_nums_)
+		if (S_CMPNOCASE(i.second.actor_class, actor_class))
+			return i.first;
+
+	// Invalid
+	return -1;
+}
+
+bool MapInfo::readMapInfo(Archive* archive)
+{
+	vector<ArchiveEntry*> entries;
+	archive->getEntryTreeAsList(entries);
+
+	for (auto entry : entries)
+	{
+		// ZMapInfo
+		if (entry->getType()->getId() == "zmapinfo")
+			parseZMapInfo(entry);
+
+		// TODO: EMapInfo
+		else if (entry->getType()->getId() == "emapinfo")
+			Log::info("EMAPINFO not implemented");
+
+		// TODO: MapInfo
+		else if (entry->getType()->getId() == "mapinfo")
+			Log::info("MAPINFO not implemented");
+	}
+
 	return false;
 }
 
