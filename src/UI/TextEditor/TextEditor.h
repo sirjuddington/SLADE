@@ -132,6 +132,10 @@ public:
 	void	setupFolding();
 	void	updateFolding();
 
+	// Comments
+	void	lineComment();
+	void 	blockComment();
+
 	// Events
 	void	onKeyDown(wxKeyEvent& e);
 	void	onKeyUp(wxKeyEvent& e);

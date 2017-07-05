@@ -1229,6 +1229,76 @@ void TextEditor::updateFolding()
 	}*/
 }
 
+/* TextEditor::lineComment
+ * Comment current line of code
+ *******************************************************************/
+
+void TextEditor::lineComment()
+{
+	string comment = wxString::FromUTF8("// ");
+	string commentNoSpace = wxString::FromUTF8("//");
+	string emptyString = wxString::FromUTF8("");
+
+	int selectionStart, selectionEnd, firstLine, lastLine;
+	GetSelection(&selectionStart, &selectionEnd);
+
+	GotoPos(selectionStart);
+	firstLine = GetCurrentLine();
+
+	GotoPos(selectionEnd);
+	lastLine = GetCurrentLine();
+
+	for (int line = firstLine; line <= lastLine; ++line)
+	{
+		GotoLine(line);
+		string lineText = GetLineText(GetCurrentLine());
+		Home();
+		SetTargetStart(GetCurrentPos());
+		GotoPos(GetLineEndPosition(GetCurrentLine()));
+		SetTargetEnd(GetCurrentPos());
+
+		if (lineText.Find(comment) != wxNOT_FOUND)
+		{
+			lineText.Replace(comment, emptyString, false);
+			ReplaceTarget(lineText);
+		}
+		else if (lineText.Find(commentNoSpace) != wxNOT_FOUND)
+		{
+			lineText.Replace(commentNoSpace, emptyString, false);
+			ReplaceTarget(lineText);
+		}
+		else if (lineText.Len() != 0)
+		{
+			ReplaceTarget(lineText.Prepend(comment));
+		}
+	}
+
+	GotoLine(firstLine);
+	Home();
+	selectionStart = GetCurrentPos();
+
+	GotoLine(lastLine);
+	LineEnd();
+	selectionEnd = GetCurrentPos();
+
+	if (selectionEnd < selectionStart)
+	{
+		wxSwap(selectionStart, selectionEnd);
+	}
+
+	SetSelection(selectionStart, selectionEnd);
+
+}
+
+
+/* TextEditor::blockComment
+ * Comment current line of code
+ *******************************************************************/
+
+void TextEditor::blockComment()
+{
+
+}
 
 /*******************************************************************
  * TEXTEDITOR CLASS EVENTS
@@ -1332,6 +1402,19 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 		else if (name == "ted_jumptoline")
 		{
 			jumpToLine();
+			handled = true;
+		}
+
+		// Commenting
+		else if (name == "ted_line_comment")
+		{
+			lineComment();
+			handled = true;
+		}
+
+		else if (name == "ted_block_comment")
+		{
+			blockComment();
 			handled = true;
 		}
 	}
