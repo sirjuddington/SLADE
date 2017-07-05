@@ -1230,74 +1230,122 @@ void TextEditor::updateFolding()
 }
 
 /* TextEditor::lineComment
- * Comment current line of code
+ * Comment selected/current lines using line comments
  *******************************************************************/
 
 void TextEditor::lineComment()
 {
 	string comment = wxString::FromUTF8("// ");
 	string commentNoSpace = wxString::FromUTF8("//");
-	string emptyString = wxString::FromUTF8("");
+	string empty = wxString::FromUTF8("");
 
-	int selectionStart, selectionEnd, firstLine, lastLine;
-	GetSelection(&selectionStart, &selectionEnd);
+	int selectionStart, selectionEnd;
+    GetSelection(&selectionStart, &selectionEnd);
 
-	GotoPos(selectionStart);
-	firstLine = GetCurrentLine();
+    bool singleLine = false;
+    if (selectionStart == selectionEnd)
+        singleLine = true;
 
-	GotoPos(selectionEnd);
-	lastLine = GetCurrentLine();
+    int firstLine, lastLine;
+	firstLine = LineFromPosition(selectionStart);
+	lastLine = LineFromPosition(selectionEnd);
 
+    size_t selectionStartOffs = 0, selectionEndOffs = 0;
+
+    BeginUndoAction();
 	for (int line = firstLine; line <= lastLine; ++line)
 	{
-		GotoLine(line);
-		string lineText = GetLineText(GetCurrentLine());
-		Home();
-		SetTargetStart(GetCurrentPos());
-		GotoPos(GetLineEndPosition(GetCurrentLine()));
-		SetTargetEnd(GetCurrentPos());
+        string lineText = GetTextRange(GetLineIndentPosition(line), GetLineEndPosition(line));
+
+        SetTargetStart(GetLineIndentPosition(line));
+		SetTargetEnd(GetLineEndPosition(line));
 
 		if (lineText.Find(comment) != wxNOT_FOUND)
 		{
-			lineText.Replace(comment, emptyString, false);
-			ReplaceTarget(lineText);
-		}
+            if (line == firstLine) {
+                selectionStartOffs -= comment.Len();
+            }
+            selectionEndOffs -= comment.Len();
+
+            lineText.Replace(comment, empty, false);
+            ReplaceTarget(lineText);
+        }
 		else if (lineText.Find(commentNoSpace) != wxNOT_FOUND)
 		{
-			lineText.Replace(commentNoSpace, emptyString, false);
-			ReplaceTarget(lineText);
-		}
-		else if (lineText.Len() != 0)
+            if (line == firstLine) {
+                selectionStartOffs -= commentNoSpace.Len();
+            }
+            selectionEndOffs -= commentNoSpace.Len();
+
+            lineText.Replace(commentNoSpace, empty, false);
+            ReplaceTarget(lineText);
+        }
+		else if (lineText.Trim(true).Len() != 0)
 		{
-			ReplaceTarget(lineText.Prepend(comment));
-		}
-	}
+            if (line == firstLine) {
+                selectionStartOffs += comment.Len();
+            }
+            selectionEndOffs += comment.Len();
 
-	GotoLine(firstLine);
-	Home();
-	selectionStart = GetCurrentPos();
+            ReplaceTarget(lineText.Prepend(comment));
+        }
+    }
+    EndUndoAction();
 
-	GotoLine(lastLine);
-	LineEnd();
-	selectionEnd = GetCurrentPos();
-
-	if (selectionEnd < selectionStart)
-	{
-		wxSwap(selectionStart, selectionEnd);
-	}
-
-	SetSelection(selectionStart, selectionEnd);
-
+    if (singleLine)
+    {
+        LineDown();
+        GotoPos(GetLineIndentPosition(GetCurrentLine()));
+    }
+    else
+    {
+        SetSelection(selectionStart + selectionStartOffs, selectionEnd + selectionEndOffs);
+    }
 }
 
 
 /* TextEditor::blockComment
- * Comment current line of code
+ * Comment selected text using block comments
  *******************************************************************/
 
 void TextEditor::blockComment()
 {
+    string leftComment = wxString::FromUTF8("/*");
+    string rightComment = wxString::FromUTF8("*/");
+    string space = wxString::FromUTF8(" ");
 
+    size_t rCommentLenght = 2, lCommentLength = 2;
+
+    int selectionStart, selectionEnd;
+    GetSelection(&selectionStart, &selectionEnd);
+    SetTargetStart(selectionStart);
+    SetTargetEnd(selectionEnd);
+
+    SetInsertionPoint(selectionStart);
+
+    string textString = GetRange(selectionStart, selectionEnd);
+
+    if (!textString.StartsWith(leftComment, NULL) && !textString.EndsWith(rightComment, NULL))
+    {
+        rCommentLenght = 3;
+        ReplaceTarget(textString.Prepend(leftComment.append(space)).append(rightComment.Prepend(space)));
+        selectionEnd += (int) rCommentLenght * 2;
+    }
+    else if (textString.StartsWith(leftComment, NULL) && textString.EndsWith(rightComment, NULL))
+    {
+        if (textString.StartsWith(leftComment.append(space), NULL))
+        {
+            lCommentLength = 3;
+        }
+        if (textString.EndsWith(rightComment.Prepend(space), NULL))
+        {
+            rCommentLenght = 3;
+        }
+        ReplaceTarget(textString.Remove(0, lCommentLength).RemoveLast(rCommentLenght));
+        selectionEnd -= (int)lCommentLength + (int)rCommentLenght;
+    }
+
+    SetSelection(selectionStart, selectionEnd);
 }
 
 /*******************************************************************
