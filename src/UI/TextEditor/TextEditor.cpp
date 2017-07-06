@@ -1235,9 +1235,14 @@ void TextEditor::updateFolding()
 
 void TextEditor::lineComment()
 {
-	string comment = wxString::FromUTF8("// ");
-	string commentNoSpace = wxString::FromUTF8("//");
-	string empty = wxString::FromUTF8("");
+	string space, empty, comment, commentSpace;
+	space = wxString::FromUTF8(" ");
+	empty = wxString::FromUTF8("");
+	if(language)
+		comment = language->getLineComment();
+	else
+		comment = wxString::FromUTF8("//");
+	commentSpace = comment.append(space);
 
 	int selectionStart, selectionEnd;
 	GetSelection(&selectionStart, &selectionEnd);
@@ -1260,7 +1265,17 @@ void TextEditor::lineComment()
 		SetTargetStart(GetLineIndentPosition(line));
 		SetTargetEnd(GetLineEndPosition(line));
 
-		if (lineText.Find(comment) != wxNOT_FOUND)
+		if (lineText.Find(commentSpace) != wxNOT_FOUND)
+		{
+			if (line == firstLine) {
+				selectionStartOffs -= commentSpace.Len();
+			}
+			selectionEndOffs -= commentSpace.Len();
+
+			lineText.Replace(commentSpace, empty, false);
+			ReplaceTarget(lineText);
+		}
+		else if (lineText.Find(comment) != wxNOT_FOUND)
 		{
 			if (line == firstLine) {
 				selectionStartOffs -= comment.Len();
@@ -1270,24 +1285,14 @@ void TextEditor::lineComment()
 			lineText.Replace(comment, empty, false);
 			ReplaceTarget(lineText);
 		}
-		else if (lineText.Find(commentNoSpace) != wxNOT_FOUND)
-		{
-			if (line == firstLine) {
-				selectionStartOffs -= commentNoSpace.Len();
-			}
-			selectionEndOffs -= commentNoSpace.Len();
-
-			lineText.Replace(commentNoSpace, empty, false);
-			ReplaceTarget(lineText);
-		}
 		else if (lineText.Trim(true).Len() != 0)
 		{
 			if (line == firstLine) {
-				selectionStartOffs += comment.Len();
+				selectionStartOffs += commentSpace.Len();
 			}
-			selectionEndOffs += comment.Len();
+			selectionEndOffs += commentSpace.Len();
 
-			ReplaceTarget(lineText.Prepend(comment));
+			ReplaceTarget(lineText.Prepend(commentSpace));
 		}
 	}
 	EndUndoAction();
@@ -1310,9 +1315,18 @@ void TextEditor::lineComment()
 
 void TextEditor::blockComment()
 {
-	string leftComment = wxString::FromUTF8("/*");
-	string rightComment = wxString::FromUTF8("*/");
-	string space = wxString::FromUTF8(" ");
+	string space, commentBegin, commentEnd;
+	space = wxString::FromUTF8(" ");
+	if(language)
+	{
+		commentBegin = language->getCommentBegin();
+		commentEnd = language->getCommentEnd();
+	}
+	else
+	{
+		commentBegin = wxString::FromUTF8("/*");
+		commentEnd = wxString::FromUTF8("*/");
+	}
 
 	size_t rCommentLenght = 2, lCommentLength = 2;
 
@@ -1325,19 +1339,19 @@ void TextEditor::blockComment()
 
 	string textString = GetRange(selectionStart, selectionEnd);
 
-	if (!textString.StartsWith(leftComment, NULL) && !textString.EndsWith(rightComment, NULL))
+	if (!textString.StartsWith(commentBegin, NULL) && !textString.EndsWith(commentEnd, NULL))
 	{
 		rCommentLenght = 3;
-		ReplaceTarget(textString.Prepend(leftComment.append(space)).append(rightComment.Prepend(space)));
+		ReplaceTarget(textString.Prepend(commentBegin.append(space)).append(commentEnd.Prepend(space)));
 		selectionEnd += (int) rCommentLenght * 2;
 	}
-	else if (textString.StartsWith(leftComment, NULL) && textString.EndsWith(rightComment, NULL))
+	else if (textString.StartsWith(commentBegin, NULL) && textString.EndsWith(commentEnd, NULL))
 	{
-		if (textString.StartsWith(leftComment.append(space), NULL))
+		if (textString.StartsWith(commentBegin.append(space), NULL))
 		{
 			lCommentLength = 3;
 		}
-		if (textString.EndsWith(rightComment.Prepend(space), NULL))
+		if (textString.EndsWith(commentEnd.Prepend(space), NULL))
 		{
 			rCommentLenght = 3;
 		}
@@ -1453,7 +1467,7 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 			handled = true;
 		}
 
-		// Commenting
+		// Comments
 		else if (name == "ted_line_comment")
 		{
 			lineComment();
