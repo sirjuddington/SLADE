@@ -93,8 +93,11 @@ namespace Game
 
 		// ZDoom MAPINFO parsing
 		bool	parseZMapInfo(ArchiveEntry* entry);
-		bool	parseZMap(Tokenizer& tz, const string& type);
+		bool	parseZMap(Tokenizer& tz, string type);
 		bool	parseDoomEdNums(Tokenizer& tz);
+
+		// General
+		Format	detectMapInfoType(ArchiveEntry* entry);
 
 		// Debug info
 		void	dumpDoomEdNums();

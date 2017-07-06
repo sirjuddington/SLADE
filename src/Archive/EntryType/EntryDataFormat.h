@@ -51,7 +51,7 @@ public:
 	EntryDataFormat(string id);
 	virtual ~EntryDataFormat();
 
-	string	getId() { return id; }
+	const string&	getId() const { return id; }
 
 	virtual int		isThisFormat(MemChunk& mc);
 	void			copyToFormat(EntryDataFormat& target);

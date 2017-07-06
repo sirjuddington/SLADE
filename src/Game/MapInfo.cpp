@@ -73,9 +73,17 @@ bool MapInfo::readMapInfo(Archive* archive)
 		else if (entry->getType()->getId() == "emapinfo")
 			Log::info("EMAPINFO not implemented");
 
-		// TODO: MapInfo
+		// MapInfo
 		else if (entry->getType()->getId() == "mapinfo")
-			Log::info("MAPINFO not implemented");
+		{
+			// Detect format
+			auto format = detectMapInfoType(entry);
+
+			if (format == Format::ZDoomNew)
+				parseZMapInfo(entry);
+			else
+				Log::info("MAPINFO not implemented");
+		}
 	}
 
 	return false;
@@ -202,9 +210,10 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 	return true;
 }
 
-bool MapInfo::parseZMap(Tokenizer& tz, const string& type)
+bool MapInfo::parseZMap(Tokenizer& tz, string type)
 {
 	// TODO: Handle adddefaultmap
+	Log::debug(2, S_FMT("Map type %s", CHR(type)));
 
 	Map map = default_map_;
 
@@ -212,6 +221,7 @@ bool MapInfo::parseZMap(Tokenizer& tz, const string& type)
 	tz.adv();
 	if (type == "map")
 	{
+		Log::debug(2, "MAP TYPE");
 		// Entry name should be just after map keyword
 		map.entry_name = tz.current().text;
 
@@ -221,11 +231,13 @@ bool MapInfo::parseZMap(Tokenizer& tz, const string& type)
 		{
 			map.lookup_name = true;
 			map.name = tz.next().text;
+			Log::debug(2, S_FMT("map name lookup %s", CHR(map.name)));
 		}
 		else
 		{
 			map.lookup_name = false;
 			map.name = tz.current().text;
+			Log::debug(2, S_FMT("map name %s", CHR(map.name)));
 		}
 
 		tz.adv();
@@ -470,6 +482,43 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 	Log::info(2, "Parsed ZMapInfo DoomEdNums successfully");
 
 	return true;
+}
+
+MapInfo::Format MapInfo::detectMapInfoType(ArchiveEntry* entry)
+{
+	Tokenizer tz;
+	tz.openMem(entry->getMCData(), entry->getName());
+	tz.setSpecialCharacters("={}[]+,|");
+
+	string prev;
+
+	while (!tz.atEnd())
+	{
+		// Ignore quoted strings
+		if (tz.current().quoted_string)
+		{
+			tz.adv();
+			continue;
+		}
+
+		// '[' or ']' generally means Eternity format
+		if (tz.check("[") || tz.check("]"))
+			return Format::Eternity;
+
+		// Opening curly brace
+		if (tz.check("{"))
+		{
+			// If this isn't an endgame block it's ZMAPINFO
+			if (prev != "endgame")
+				return Format::ZDoomNew;
+		}
+
+		prev = tz.current().text;
+		tz.adv();
+	}
+
+	// Default standard MAPINFO for now
+	return Format::Hexen;
 }
 
 void MapInfo::dumpDoomEdNums()
