@@ -238,31 +238,28 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 	tz.setSpecialCharacters(";,:|={}/()");
 	tz.openMem(entry->getMCData(), "ACS Scripts");
 
-	string token = tz.getToken();
 	while (!tz.atEnd())
 	{
-		if (S_CMPNOCASE(token, "script"))
+		if (tz.checkNC("script"))
 		{
 			LOG_MESSAGE(3, "script found");
 
-			tz.skipToken();	// Skip script #
-			tz.getToken(&token);
+			tz.adv(2);	// Skip script #
 
 			// Check for open script
-			if (S_CMPNOCASE(token, "OPEN"))
+			if (tz.checkNC("OPEN"))
 			{
 				LOG_MESSAGE(3, "script is OPEN");
 
 				// Skip to opening brace
-				while (token != "{")
-					tz.getToken(&token);
+				while (!tz.check("{"))
+					tz.adv();
 
 				// Parse script
-				tz.getToken(&token);
-				while (token != "}")
+				while (!tz.checkOrEnd("}"))
 				{
 					// --- Sector_SetColor ---
-					if (S_CMPNOCASE(token, "Sector_SetColor"))
+					if (tz.checkNC("Sector_SetColor"))
 					{
 						// Get parameters
 						auto parameters = tz.getTokensUntil(")");
@@ -303,7 +300,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						}
 					}
 					// --- Sector_SetFade ---
-					else if (S_CMPNOCASE(token, "Sector_SetFade"))
+					else if (tz.checkNC("Sector_SetFade"))
 					{
 						// Get parameters
 						auto parameters = tz.getTokensUntil(")");
@@ -344,12 +341,12 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						}
 					}
 
-					tz.getToken(&token);
+					tz.adv();
 				}
 			}
 		}
 
-		tz.getToken(&token);
+		tz.adv();
 	}
 }
 
