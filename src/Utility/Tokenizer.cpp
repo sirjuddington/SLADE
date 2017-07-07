@@ -288,9 +288,10 @@ void Tokenizer::advToNextLine()
 
 	// Otherwise skip until the line increments or we reach the last token
 	unsigned line = token_current_.line_no;
-	while (token_next_.pos_start > token_current_.pos_start)
+	bool end = false;
+	while (!end)
 	{
-		readNext(&token_current_);
+		end = !readNext(&token_current_);
 
 		if (token_current_.line_no > line)
 		{
@@ -424,7 +425,7 @@ string Tokenizer::getLine(bool from_start)
 	}
 
 	string line;
-	while (data_[state_.position] != '\n')
+	while (data_[state_.position] != '\n' && data_[state_.position] != '\r')
 		line += data_[state_.position++];
 
 	readNext(&token_current_);
