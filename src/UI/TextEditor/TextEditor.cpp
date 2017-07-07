@@ -1242,7 +1242,7 @@ void TextEditor::lineComment()
 		comment = language->getLineComment();
 	else
 		comment = wxString::FromUTF8("//");
-	commentSpace = comment.append(space);
+	commentSpace = comment + space;
 
 	int selectionStart, selectionEnd;
 	GetSelection(&selectionStart, &selectionEnd);
@@ -1255,7 +1255,8 @@ void TextEditor::lineComment()
 	firstLine = LineFromPosition(selectionStart);
 	lastLine = LineFromPosition(selectionEnd);
 
-	size_t selectionStartOffs = 0, selectionEndOffs = 0;
+	size_t selectionStartOffs, selectionEndOffs;
+	selectionStartOffs = selectionEndOffs = 0;
 
 	BeginUndoAction();
 	for (int line = firstLine; line <= lastLine; ++line)
@@ -1328,10 +1329,13 @@ void TextEditor::blockComment()
 		commentEnd = wxString::FromUTF8("*/");
 	}
 
-	size_t rCommentLenght = 2, lCommentLength = 2;
+	size_t commentBeginLen, commentEndLen;
+	commentBeginLen = commentBegin.Len();
+	commentEndLen = commentEnd.Len();
 
 	int selectionStart, selectionEnd;
 	GetSelection(&selectionStart, &selectionEnd);
+
 	SetTargetStart(selectionStart);
 	SetTargetEnd(selectionEnd);
 
@@ -1341,22 +1345,21 @@ void TextEditor::blockComment()
 
 	if (!textString.StartsWith(commentBegin, NULL) && !textString.EndsWith(commentEnd, NULL))
 	{
-		rCommentLenght = 3;
-		ReplaceTarget(textString.Prepend(commentBegin.append(space)).append(commentEnd.Prepend(space)));
-		selectionEnd += (int) rCommentLenght * 2;
+		commentBegin = commentBegin.append(space);
+		commentEnd = commentEnd.Prepend(space);
+
+		ReplaceTarget(textString.Prepend(commentBegin).append(commentEnd));
+		selectionEnd += (int)(commentBegin.Len() + commentEnd.Len());
 	}
 	else if (textString.StartsWith(commentBegin, NULL) && textString.EndsWith(commentEnd, NULL))
 	{
 		if (textString.StartsWith(commentBegin.append(space), NULL))
-		{
-			lCommentLength = 3;
-		}
+			commentBeginLen = commentBegin.Len();
 		if (textString.EndsWith(commentEnd.Prepend(space), NULL))
-		{
-			rCommentLenght = 3;
-		}
-		ReplaceTarget(textString.Remove(0, lCommentLength).RemoveLast(rCommentLenght));
-		selectionEnd -= (int)lCommentLength + (int)rCommentLenght;
+			commentEndLen = commentEnd.Len();
+
+		ReplaceTarget(textString.Remove(0, commentBeginLen).RemoveLast(commentEndLen));
+		selectionEnd -= (int)(commentBeginLen + commentEndLen);
 	}
 
 	SetSelection(selectionStart, selectionEnd);
