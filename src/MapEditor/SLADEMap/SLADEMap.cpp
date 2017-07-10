@@ -333,9 +333,9 @@ void SLADEMap::restoreObjectIdList(uint8_t type, vector<unsigned>& list)
 /* SLADEMap::readMap
  * Reads map data using info in [map]
  *******************************************************************/
-bool SLADEMap::readMap(Archive::mapdesc_t map)
+bool SLADEMap::readMap(Archive::MapDesc map)
 {
-	Archive::mapdesc_t omap = map;
+	Archive::MapDesc omap = map;
 
 	// Check for map archive
 	Archive* tempwad = nullptr;
@@ -343,7 +343,7 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 	{
 		tempwad = new WadArchive();
 		tempwad->open(map.head);
-		vector<Archive::mapdesc_t> amaps = tempwad->detectMaps();
+		vector<Archive::MapDesc> amaps = tempwad->detectMaps();
 		if (amaps.size() > 0)
 			omap = amaps[0];
 		else
@@ -849,7 +849,7 @@ bool SLADEMap::readDoomThings(ArchiveEntry* entry)
 /* SLADEMap::readDoomMap
  * Reads a doom format map using info in [map]
  *******************************************************************/
-bool SLADEMap::readDoomMap(Archive::mapdesc_t map)
+bool SLADEMap::readDoomMap(Archive::MapDesc map)
 {
 	LOG_MESSAGE(2, "Reading Doom format map");
 
@@ -1098,7 +1098,7 @@ bool SLADEMap::readHexenThings(ArchiveEntry* entry)
 /* SLADEMap::readHexenMap
  * Reads a hexen format using info in [map]
  *******************************************************************/
-bool SLADEMap::readHexenMap(Archive::mapdesc_t map)
+bool SLADEMap::readHexenMap(Archive::MapDesc map)
 {
 	LOG_MESSAGE(2, "Reading Hexen format map");
 
@@ -1335,7 +1335,7 @@ bool SLADEMap::readDoom64Things(ArchiveEntry* entry)
 /* SLADEMap::readDoom64Map
  * Reads a doom64 format using info in [map]
  *******************************************************************/
-bool SLADEMap::readDoom64Map(Archive::mapdesc_t map)
+bool SLADEMap::readDoom64Map(Archive::MapDesc map)
 {
 	LOG_MESSAGE(2, "Reading Doom 64 format map");
 
@@ -1653,7 +1653,7 @@ bool SLADEMap::addThing(ParseTreeNode* def)
 /* SLADEMap::readDoomMap
  * Reads a UDMF format map using info in [map]
  *******************************************************************/
-bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
+bool SLADEMap::readUDMFMap(Archive::MapDesc map)
 {
 	// Get TEXTMAP entry (will always be after the 'head' entry)
 	ArchiveEntry* textmap = map.head->nextEntry();
@@ -5262,36 +5262,94 @@ bool SLADEMap::convertToUDMF()
 
 	if (current_format_ == MAP_HEXEN)
 	{
-		// Line_SetIdentification special, set line id
+		// Handle special cases for conversion from Hexen format
 		for (unsigned a = 0; a < lines_.size(); a++)
 		{
-			if (lines_[a]->intProperty("special") == 121)
+			int special = lines_[a]->intProperty("special");
+			int flags = 0;
+			int id, hi;
+			switch (special)
 			{
-				int id = lines_[a]->intProperty("arg0");
+			case 1:
+				id = lines_[a]->intProperty("arg3");
+				lines_[a]->setIntProperty("id", id);
+				lines_[a]->setIntProperty("arg3", 0);
+				break;
 
-				// id high byte
-				int hi = lines_[a]->intProperty("arg4");
-				id = (hi*256) + id;
+			case 5:
+				id = lines_[a]->intProperty("arg4");
+				lines_[a]->setIntProperty("id", id);
+				lines_[a]->setIntProperty("arg4", 0);
+				break;
 
-				// flags
-				int flags = lines_[a]->intProperty("arg1");
-				if (flags & 1) lines_[a]->setBoolProperty("zoneboundary", true);
-				if (flags & 2) lines_[a]->setBoolProperty("jumpover", true);
-				if (flags & 4) lines_[a]->setBoolProperty("blockfloaters", true);
-				if (flags & 8) lines_[a]->setBoolProperty("clipmidtex", true);
-				if (flags & 16) lines_[a]->setBoolProperty("wrapmidtex", true);
-				if (flags & 32) lines_[a]->setBoolProperty("midtex3d", true);
-				if (flags & 64) lines_[a]->setBoolProperty("checkswitchrange", true);
+			case 121:
+				id = lines_[a]->intProperty("arg0");
+				hi = lines_[a]->intProperty("arg4");
+				id = (hi * 256) + id;
+				flags = lines_[a]->intProperty("arg1");
 
 				lines_[a]->setIntProperty("special", 0);
 				lines_[a]->setIntProperty("id", id);
 				lines_[a]->setIntProperty("arg0", 0);
+				lines_[a]->setIntProperty("arg1", 0);
+				lines_[a]->setIntProperty("arg2", 0);
+				lines_[a]->setIntProperty("arg3", 0);
+				lines_[a]->setIntProperty("arg4", 0);
+				break;
+
+			case 160:
+				hi = id = lines_[a]->intProperty("arg4");
+				flags = lines_[a]->intProperty("arg1");
+				if (flags & 8)
+				{
+					lines_[a]->setIntProperty("id", id);
+				}
+				else
+				{
+					id = lines_[a]->intProperty("arg0");
+					lines_[a]->setIntProperty("id", (hi * 256) + id);
+				}
+				lines_[a]->setIntProperty("arg4", 0);
+				flags = 0; // don't keep it set!
+				break;
+
+			case 181:
+				id = lines_[a]->intProperty("arg2");
+				lines_[a]->setIntProperty("id", id);
+				lines_[a]->setIntProperty("arg2", 0);
+				break;
+
+			case 208:
+				id = lines_[a]->intProperty("arg0");
+				flags = lines_[a]->intProperty("arg3");
+
+				lines_[a]->setIntProperty("id", id); // arg0 must be preserved
+				lines_[a]->setIntProperty("arg3", 0);
+				break;
+
+			case 215:
+				id = lines_[a]->intProperty("arg0");
+				lines_[a]->setIntProperty("id", id);
+				lines_[a]->setIntProperty("arg0", 0);
+				break;
+
+			case 222:
+				id = lines_[a]->intProperty("arg0");
+				lines_[a]->setIntProperty("id", id); // arg0 must be preserved
+				break;
 			}
+
+			// flags (only set by 121 and 208)
+			if (flags & 1) lines_[a]->setBoolProperty("zoneboundary", true);
+			if (flags & 2) lines_[a]->setBoolProperty("jumpover", true);
+			if (flags & 4) lines_[a]->setBoolProperty("blockfloaters", true);
+			if (flags & 8) lines_[a]->setBoolProperty("clipmidtex", true);
+			if (flags & 16) lines_[a]->setBoolProperty("wrapmidtex", true);
+			if (flags & 32) lines_[a]->setBoolProperty("midtex3d", true);
+			if (flags & 64) lines_[a]->setBoolProperty("checkswitchrange", true);
 		}
 	}
 	else return false;
-
-	// flags
 
 	// Set format
 	current_format_ = MAP_UDMF;

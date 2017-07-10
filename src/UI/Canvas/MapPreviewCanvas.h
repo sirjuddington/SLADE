@@ -53,7 +53,7 @@ public:
 	void addVertex(double x, double y);
 	void addLine(unsigned v1, unsigned v2, bool twosided, bool special, bool macro = false);
 	void addThing(double x, double y);
-	bool openMap(Archive::mapdesc_t map);
+	bool openMap(Archive::MapDesc map);
 	bool readVertices(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format);
 	bool readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format);
 	bool readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format);

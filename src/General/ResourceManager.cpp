@@ -128,7 +128,7 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, string nspace, bool ns_
 
 		// Check if in priority archive (or its parent)
 		if (priority &&
-			(entry->getParent() == priority || entry->getParent()->getParentArchive() == priority))
+			(entry->getParent() == priority || entry->getParent()->parentArchive() == priority))
 		{
 			best = entry;
 			break;
@@ -145,8 +145,8 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, string nspace, bool ns_
 		}
 
 		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-		if (theArchiveManager->archiveIndex(best.get()->getParent()) <=
-			theArchiveManager->archiveIndex(entry.get()->getParent()))
+		if (App::archiveManager().archiveIndex(best.get()->getParent()) <=
+			App::archiveManager().archiveIndex(entry.get()->getParent()))
 			best = entry;
 	}
 
@@ -370,7 +370,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		PatchTable ptable;
 		if (txentry == 1)
 		{
-			Archive::search_options_t opt;
+			Archive::SearchOptions opt;
 			opt.match_type = EntryType::getType("pnames");
 			ArchiveEntry* pnames = entry->getParent()->findLast(opt);
 			ptable.loadPNAMES(pnames, entry->getParent());
@@ -494,8 +494,8 @@ void ResourceManager::getAllTextures(vector<TextureResource::Texture*>& list, Ar
 				break;
 
 			// Otherwise, if it's in a 'later' archive than the current resource, set it
-			if (theArchiveManager->archiveIndex(res->parent) <=
-			        theArchiveManager->archiveIndex(i.second.textures[a].get()->parent))
+			if (App::archiveManager().archiveIndex(res->parent) <=
+			        App::archiveManager().archiveIndex(i.second.textures[a].get()->parent))
 				res = i.second.textures[a].get();
 		}
 
@@ -615,8 +615,8 @@ CTexture* ResourceManager::getTexture(string texture, Archive* priority, Archive
 			return &res.textures[a].get()->tex;
 
 		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-		if (theArchiveManager->archiveIndex(parent) <=
-		        theArchiveManager->archiveIndex(res.textures[a].get()->parent))
+		if (App::archiveManager().archiveIndex(parent) <=
+		        App::archiveManager().archiveIndex(res.textures[a].get()->parent))
 		{
 			tex = &res.textures[a].get()->tex;
 			parent = res.textures[a].get()->parent;

@@ -41,6 +41,7 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/PaletteChooser.h"
+#include "UI/SBrush.h"
 
 
 /*******************************************************************
@@ -50,37 +51,6 @@ EXTERN_CVAR(Bool, gfx_arc)
 EXTERN_CVAR(String, last_colour)
 EXTERN_CVAR(String, last_tint_colour)
 EXTERN_CVAR(Int, last_tint_amount)
-
-string brushlist[Brush::NUM_BRUSHES] =
-{
-	"brush_sq_1",
-	"brush_sq_3",
-	"brush_sq_5",
-	"brush_sq_7",
-	"brush_sq_9",
-	"brush_ci_5",
-	"brush_ci_7",
-	"brush_ci_9",
-	"brush_di_3",
-	"brush_di_5",
-	"brush_di_7",
-	"brush_di_9",
-	"brush_pa_a",
-	"brush_pa_b",
-	"brush_pa_c",
-	"brush_pa_d",
-	"brush_pa_e",
-	"brush_pa_f",
-	"brush_pa_g",
-	"brush_pa_h",
-	"brush_pa_i",
-	"brush_pa_j",
-	"brush_pa_k",
-	"brush_pa_l",
-	"brush_pa_m",
-	"brush_pa_n",
-	"brush_pa_o",
-};
 
 /*******************************************************************
  * GFXENTRYPANEL CLASS FUNCTIONS
@@ -700,18 +670,8 @@ bool GfxEntryPanel::handleAction(string id)
 	// For pgfx_brush actions, the string after pgfx is a brush name
 	if (id.StartsWith("pgfx_brush"))
 	{
-		string br = id.AfterFirst('_');
-
-		uint8_t i;
-		for (i = 0; i < Brush::NUM_BRUSHES; ++i)
-			if (S_CMP(br, brushlist[i]))
-				break;
-
-		if (i == Brush::NUM_BRUSHES)
-			return false;
-
-		gfx_canvas->setBrush(i);
-		button_brush->setIcon(br);
+		gfx_canvas->setBrush(theBrushManager->get(id));
+		button_brush->setIcon(id.AfterFirst('_'));
 	}
 
 	// Editing - drag mode

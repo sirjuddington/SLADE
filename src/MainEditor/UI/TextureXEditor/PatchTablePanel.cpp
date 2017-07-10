@@ -70,7 +70,7 @@ PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table
 	updateList();
 
 	// Listen to archive manager
-	listenTo(theArchiveManager);
+	listenTo(&App::archiveManager());
 }
 
 /* PatchTableListView::~PatchTableListView
@@ -109,7 +109,7 @@ string PatchTableListView::getItemText(long item, long column, long index) const
 
 		// If patch entry can't be found return invalid
 		if (entry)
-			return entry->getParent()->getFilename(false);
+			return entry->getParent()->filename(false);
 		else
 			return "(!) NOT FOUND";
 	}
@@ -161,7 +161,7 @@ void PatchTableListView::onAnnouncement(Announcer* announcer, string event_name,
 	if (announcer == patch_table)
 		updateList();
 
-	if (announcer == theArchiveManager)
+	if (announcer == &App::archiveManager())
 		updateList();
 }
 
@@ -199,12 +199,11 @@ void PatchTableListView::sortItems()
 /* PatchTablePanel::PatchTablePanel
  * PatchTablePanel class constructor
  *******************************************************************/
-PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table) : wxPanel(parent, -1)
+PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor) :
+	wxPanel(parent, -1),
+	patch_table{ patch_table },
+	parent{ tx_editor }
 {
-	// Init variables
-	this->patch_table = patch_table;
-	this->parent = (TextureXEditor*)parent;
-
 	// Setup sizers
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);

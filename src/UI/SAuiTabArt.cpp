@@ -153,6 +153,7 @@ SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs)
 	m_baseColourBrush = wxBrush(m_baseColour);
 
 	m_activeCloseBmp = bitmapFromBits(close_bits, 16, 16, wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT));
+	close_bitmap_white_ = bitmapFromBits(close_bits, 16, 16, *wxWHITE);
 	m_disabledCloseBmp = bitmapFromBits(close_bits, 16, 16, wxColour(128, 128, 128));
 
 	m_activeLeftBmp = bitmapFromBits(left_bits, 16, 16, *wxBLACK);
@@ -335,6 +336,7 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 
 
 	wxColour bgcol;
+	wxColour bluetab_colour(116, 135, 175);
 	if (page.active)
 	{
 		// draw active tab
@@ -342,15 +344,18 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 
 		// draw base background color
 		wxRect r(tab_x, tab_y, tab_width, tab_height);
-		dc.SetPen(wxPen(bluetab ? wxColor(224, 238, 255) : m_activeColour));
-		dc.SetBrush(wxBrush(bluetab ? wxColor(224, 238, 255) : m_activeColour));
+		dc.SetPen(wxPen(bluetab ? bluetab_colour : m_activeColour));
+		dc.SetBrush(wxBrush(bluetab ? bluetab_colour : m_activeColour));
 		dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, r.height - 5);
 
 		// highlight top of tab
-		wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
-		dc.SetPen(*wxTRANSPARENT_PEN);
-		dc.SetBrush(wxBrush(col_hilight));
-		dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, 2);
+		if (!bluetab)
+		{
+			wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
+			dc.SetPen(*wxTRANSPARENT_PEN);
+			dc.SetBrush(wxBrush(col_hilight));
+			dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, 2);
+		}
 	}
 	else
 	{
@@ -375,7 +380,7 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 		if (m_flags &wxAUI_NB_BOTTOM)
 			dc.SetPen(wxPen(m_baseColour.ChangeLightness(170)));
 		else
-			dc.SetPen(wxPen(bluetab ? wxColor(224, 238, 255) : m_activeColour));
+			dc.SetPen(wxPen(bluetab ? bluetab_colour : m_activeColour));
 		dc.DrawLine(border_points[0].x + 1,
 			border_points[0].y,
 			border_points[5].x,
@@ -396,7 +401,7 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 	// draw tab text
 	dc.SetTextForeground(
 		page.active && bluetab ?
-		wxColor(0, 0, 0) :
+		wxColor(255, 255, 255) :
 		wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT)
 	);
 	dc.DrawText(
@@ -425,19 +430,21 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 
 		IndentPressedBitmap(&rect, close_button_state);
 
+		bool close_white = (bluetab && page.active);
+
 		if (close_button_state == wxAUI_BUTTON_STATE_HOVER ||
 			close_button_state == wxAUI_BUTTON_STATE_PRESSED)
 		{
-			dc.SetPen(wxPen(Drawing::darkColour(bgcol, 2.0f)));
-			dc.SetBrush(wxBrush(Drawing::lightColour(bgcol, 1.0f)));
+			dc.SetPen(wxPen(Drawing::darkColour(close_white ? bluetab_colour : bgcol, 2.0f)));
+			dc.SetBrush(wxBrush(Drawing::lightColour(close_white ? bluetab_colour : bgcol, 1.0f)));
 			dc.DrawRectangle(rect.x, rect.y + 1, rect.width - 1, rect.width - 2);
 
-			bmp = m_activeCloseBmp;
+			bmp = close_white ? close_bitmap_white_ : m_activeCloseBmp;
 			dc.DrawBitmap(bmp, rect.x, rect.y, true);
 		}
 		else
 		{
-			bmp = m_disabledCloseBmp;
+			bmp = close_white ? close_bitmap_white_ : m_disabledCloseBmp;
 			dc.DrawBitmap(bmp, rect.x, rect.y, true);
 		}
 

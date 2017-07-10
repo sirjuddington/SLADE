@@ -183,7 +183,7 @@ namespace Lua
 		slade.set_function("promptYesNo",			&promptYesNo);
 		slade.set_function("browseFile",			&browseFile);
 		slade.set_function("browseFiles",			&browseFiles);
-		slade.set_function("archiveManager",		&ArchiveManager::getInstance);
+		slade.set_function("archiveManager",		&App::archiveManager);
 		slade.set_function("currentArchive",		&MainEditor::currentArchive);
 		slade.set_function("currentEntry",			&MainEditor::currentEntry);
 		slade.set_function("currentEntrySelection",	&MainEditor::currentEntrySelection);
@@ -225,7 +225,7 @@ namespace Lua
 			"new", sol::no_constructor,
 
 			// Functions
-			"getFilename",				&Archive::getFilename,
+			"getFilename",				&Archive::filename,
 			"allEntries",				&Archive::luaAllEntries,
 			"getDir",					&Archive::luaGetDir,
 			"createEntry",				&Archive::luaCreateEntry,
@@ -290,12 +290,12 @@ namespace Lua
 			"new", sol::no_constructor,
 
 			// Functions
-			"getArchive",	&ArchiveTreeNode::getArchive,
+			"getArchive",	&ArchiveTreeNode::archive,
 			"getName",		&ArchiveTreeNode::getName,
 			"numEntries",	&ArchiveTreeNode::numEntries,
 			"getEntries",	&ArchiveTreeNode::luaGetEntries,
 			"entryIndex",	&ArchiveTreeNode::luaEntryIndex,
-			"getEntry",		sol::resolve<ArchiveEntry*(unsigned)>(&ArchiveTreeNode::getEntry)
+			"getEntry",		&ArchiveTreeNode::entryAt
 		);
 	}
 

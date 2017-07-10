@@ -256,27 +256,20 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 			// Translation
 			if (S_CMPNOCASE(property, "Translation"))
 			{
-				// Add first translation string
-				translation.parse(tz.getToken());
-
-				if (tz.peekToken() == "," && translation.builtInName() == "Desaturate")
+				// Build translation string
+				string translate;
+				string temp = tz.getToken();
+				if (temp.Contains("=")) temp = S_FMT("\"%s\"", temp);
+				translate += temp;
+				while (tz.peekToken() == ",")
 				{
-					// Desaturation, get amount
-					tz.skipToken(); // Skip ,
-					int amount = tz.getInteger();
-					LOG_MESSAGE(2, "%d", amount);
-					translation.setDesaturationAmount(amount);
+					translate += tz.getToken(); // add ','
+					temp = tz.getToken();
+					if (temp.Contains("=")) temp = S_FMT("\"%s\"", temp);
+					translate += temp;
 				}
-				else
-				{
-					// Add any subsequent translations (separated by commas)
-					while (tz.peekToken() == ",")
-					{
-						tz.skipToken();	// Skip ,
-						translation.parse(tz.getToken());
-					}
-				}
-
+				// Parse whole string
+				translation.parse(translate);
 				blendtype = 1;
 			}
 
@@ -618,17 +611,15 @@ bool CTexture::removePatch(string patch)
 {
 	// Go through patches
 	bool removed = false;
-	vector<CTPatch*>::iterator i = patches.begin();
-	while (i != patches.end())
+	for (unsigned a = 0; a < patches.size(); a++)
 	{
-		if (S_CMP((*i)->getName(), patch))
+		if (S_CMP(patches[a]->getName(), patch))
 		{
-			delete (*i);
-			patches.erase(i);
+			delete patches[a];
+			patches.erase(patches.begin() + a);
 			removed = true;
+			a--;
 		}
-		else
-			i++;
 	}
 
 	// Cannot be a simple define anymore

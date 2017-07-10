@@ -98,7 +98,8 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	Bind(wxEVT_LIST_END_LABEL_EDIT, &VirtualListView::onLabelEditEnd, this);
 	Bind(wxEVT_LIST_COL_CLICK, &VirtualListView::onColumnLeftClick, this);
 #ifdef __WXGTK__
-	Bind(wxEVT_LIST_ITEM_SELECTED, &VirtualListView::onItemSelected, this);
+	// Not sure if this is needed any more - causes duplicate selection events in linux
+	//Bind(wxEVT_LIST_ITEM_SELECTED, &VirtualListView::onItemSelected, this);
 #endif
 }
 

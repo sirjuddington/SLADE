@@ -214,9 +214,9 @@ bool TextEntryPanel::saveEntry()
 	if (text_area->getLanguage() && text_area->getLanguage()->getId() == "decorate")
 	{
 		Game::configuration().clearDecorateDefs();
-		Game::configuration().parseDecorateDefs(theArchiveManager->baseResourceArchive());
-		for (int i = 0; i < theArchiveManager->numArchives(); ++i)
-			Game::configuration().parseDecorateDefs(theArchiveManager->getArchive(i));
+		Game::configuration().parseDecorateDefs(App::archiveManager().baseResourceArchive());
+		for (int i = 0; i < App::archiveManager().numArchives(); ++i)
+			Game::configuration().parseDecorateDefs(App::archiveManager().getArchive(i));
 	}
 
 	// Update variables

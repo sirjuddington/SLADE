@@ -45,10 +45,8 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* PakArchive::PakArchive
  * PakArchive class constructor
  *******************************************************************/
-PakArchive::PakArchive() : Archive(ARCHIVE_PAK)
+PakArchive::PakArchive() : Archive("pak")
 {
-	desc.max_name_length = 56;
-	desc.supports_dirs = true;
 }
 
 /* PakArchive::~PakArchive
@@ -56,22 +54,6 @@ PakArchive::PakArchive() : Archive(ARCHIVE_PAK)
  *******************************************************************/
 PakArchive::~PakArchive()
 {
-}
-
-/* PakArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string PakArchive::getFileExtensionString()
-{
-	return "Pak Files (*.pak)|*.pak";
-}
-
-/* PakArchive::getFormat
- * Returns the string id for the pak EntryDataFormat
- *******************************************************************/
-string PakArchive::getFormat()
-{
-	return "archive_pak";
 }
 
 /* PakArchive::open
@@ -308,12 +290,12 @@ bool PakArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "PakArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "PakArchive::loadEntryData: Unable to open archive file %s", filename_);
 		return false;
 	}
 

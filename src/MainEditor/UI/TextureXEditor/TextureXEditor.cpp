@@ -255,7 +255,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 		return false;
 
 	// Search archive for any texture-related entries
-	Archive::search_options_t options;
+	Archive::SearchOptions options;
 	options.match_type = EntryType::getType("texturex");
 	vector<ArchiveEntry*> tx_entries = archive->findAll(options);	// Find all TEXTUREx entries
 	options.match_type = EntryType::getType("pnames");
@@ -269,9 +269,9 @@ bool TextureXEditor::openArchive(Archive* archive)
 		// If no PNAMES entry was found, search resource archives
 		if (!entry_pnames)
 		{
-			Archive::search_options_t options;
+			Archive::SearchOptions options;
 			options.match_type = EntryType::getType("pnames");
-			entry_pnames = theArchiveManager->findResourceEntry(options, archive);
+			entry_pnames = App::archiveManager().findResourceEntry(options, archive);
 		}
 		else
 			pnames = entry_pnames;	// If PNAMES was found in the archive, set the class variable so it is written to if modified
@@ -316,7 +316,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 	// Open patch table tab if needed
 	if (pnames)
 	{
-		PatchTablePanel* ptp = new PatchTablePanel(tabs, &patch_table);
+		PatchTablePanel* ptp = new PatchTablePanel(tabs, &patch_table, this);
 		tabs->AddPage(ptp, "Patch Table (PNAMES)");
 		ptp->SetName("pnames");
 	}
@@ -474,14 +474,15 @@ void TextureXEditor::showTextureMenu(bool show)
 bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
 {
 	// Get patch we're removing
-	patch_t& p = patch_table.patch(index);
+	auto& p = patch_table.patch(index);
+	string name = p.name;
 
 	// Update TEXTUREx lists
 	for (unsigned a = 0; a < texture_editors.size(); a++)
-		texture_editors[a]->txList().removePatch(p.name);
+		texture_editors[a]->txList().removePatch(name);
 
 	// Delete patch entry if it's part of this archive (and delete_entry is true)
-	ArchiveEntry* entry = theResourceManager->getPatchEntry(p.name, "patches", archive);
+	ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "patches", archive);
 	if (delete_entry && entry && entry->getParent() == archive)
 		archive->removeEntry(entry);
 
@@ -765,7 +766,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 		return false;
 
 	// Search archive for any ZDoom TEXTURES entries
-	Archive::search_options_t options;
+	Archive::SearchOptions options;
 	options.match_type = EntryType::getType("zdtextures");
 	ArchiveEntry* entry_tx = archive->findFirst(options);	// Find any TEXTURES entry
 
@@ -818,7 +819,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 						PatchTable ptt;
 
 						// Create dummy patch
-						ArchiveEntry* dpatch = theArchiveManager->programResourceArchive()->entryAtPath("s3dummy.lmp");
+						ArchiveEntry* dpatch = App::archiveManager().programResourceArchive()->entryAtPath("s3dummy.lmp");
 						dpatch = archive->addEntry(dpatch, "patches", true);
 						ptt.addPatch("S3DUMMY");
 
@@ -867,7 +868,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 				else
 				{
 					// User selected to import texture definitions from the base resource archive
-					Archive* bra = theArchiveManager->baseResourceArchive();
+					Archive* bra = App::archiveManager().baseResourceArchive();
 
 					if (!bra)
 					{
@@ -876,7 +877,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 					}
 
 					// Find all relevant entries in the base resource archive
-					Archive::search_options_t options;
+					Archive::SearchOptions options;
 					options.match_type = EntryType::getType("texturex");
 					vector<ArchiveEntry*> import_tx = bra->findAll(options);	// Find all TEXTUREx entries
 					options.match_type = EntryType::getType("pnames");
@@ -918,9 +919,9 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 		// If no PNAMES entry was found, search resource archives
 		if (!entry_pnames)
 		{
-			Archive::search_options_t options;
+			Archive::SearchOptions options;
 			options.match_type = EntryType::getType("pnames");
-			entry_pnames = theArchiveManager->findResourceEntry(options, archive);
+			entry_pnames = App::archiveManager().findResourceEntry(options, archive);
 		}
 
 		// If no PNAMES entry is found at all, show an error and abort

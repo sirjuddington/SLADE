@@ -2,6 +2,7 @@
 
 class Console;
 class PaletteManager;
+class ArchiveManager;
 
 namespace App
 {
@@ -10,6 +11,7 @@ namespace App
 	PaletteManager*	paletteManager();
 	long			runTimer();
 	bool			isExiting();
+	ArchiveManager&	archiveManager();
 
 	bool	init();
 	void	saveConfigFile();
@@ -18,4 +20,16 @@ namespace App
 	// Path related stuff
 	enum class Dir { User, Data, Executable, Resources, Temp };
 	string path(string filename, Dir dir);
+
+	// Platform and build options
+	enum Platform
+	{
+		Windows,
+		Linux,
+		MacOS,
+		Unknown
+	};
+	Platform	platform();
+	bool		useWebView();
+	bool		useSFMLRenderWindow();
 }

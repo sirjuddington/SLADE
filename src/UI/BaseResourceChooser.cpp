@@ -58,7 +58,7 @@ BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change)
 	populateChoices();
 
 	// Listen to the archive manager
-	listenTo(theArchiveManager);
+	listenTo(&App::archiveManager());
 
 	// Bind events
 	Bind(wxEVT_CHOICE, &BaseResourceChooser::onChoiceChanged, this);
@@ -84,9 +84,9 @@ void BaseResourceChooser::populateChoices()
 	AppendString("<none>");
 
 	// Populate with base resource paths
-	for (unsigned a = 0; a < theArchiveManager->numBaseResourcePaths(); a++)
+	for (unsigned a = 0; a < App::archiveManager().numBaseResourcePaths(); a++)
 	{
-		wxFileName fn(theArchiveManager->getBaseResourcePath(a));
+		wxFileName fn(App::archiveManager().getBaseResourcePath(a));
 		AppendString(fn.GetFullName());
 	}
 
@@ -100,7 +100,7 @@ void BaseResourceChooser::populateChoices()
 void BaseResourceChooser::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
 	// Check the announcer
-	if (announcer != theArchiveManager)
+	if (announcer != &App::archiveManager())
 		return;
 
 	// Base resource archive changed
@@ -124,5 +124,5 @@ void BaseResourceChooser::onChoiceChanged(wxCommandEvent& e)
 {
 	// Open the selected base resource
 	if (load_change)
-		theArchiveManager->openBaseResource(GetSelection() - 1);
+		App::archiveManager().openBaseResource(GetSelection() - 1);
 }

@@ -322,7 +322,7 @@ void ExpandWolfGraphLump (ArchiveEntry* entry, size_t lumpnum, size_t numlumps, 
  * WolfArchive class constructor
  *******************************************************************/
 WolfArchive::WolfArchive()
-	: TreelessArchive(ARCHIVE_WOLF)
+	: TreelessArchive("wolf")
 {
 }
 
@@ -348,23 +348,6 @@ uint32_t WolfArchive::getEntryOffset(ArchiveEntry* entry)
 void WolfArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 {
 	entry->exProp("Offset") = (int)offset;
-}
-
-
-/* WolfArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string WolfArchive::getFileExtensionString()
-{
-	return "Wolfenstein 3D Files (*.wl1; *.wl6; *.sod; *.sd?)|*.wl1;*.wl6;*.sod;*.sd1;*.sd2;*.sd3";
-}
-
-/* WolfArchive::getFormat
- * Gives the "archive_dat" string
- *******************************************************************/
-string WolfArchive::getFormat()
-{
-	return "archive_wolf";
 }
 
 /* WolfArchive::open
@@ -434,8 +417,8 @@ bool WolfArchive::open(string filename)
 	if (opened)
 	{
 		// Update variables
-		this->filename = filename;
-		this->on_disk = true;
+		this->filename_ = filename;
+		this->on_disk_ = true;
 
 		return true;
 	}
@@ -457,11 +440,11 @@ bool WolfArchive::open(MemChunk& mc)
 	mc.seek(0, SEEK_SET);
 	uint16_t num_chunks, num_lumps;
 	mc.read(&num_chunks, 2);	// Number of chunks
-	mc.read(&spritestart, 2);	// First sprite
-	mc.read(&soundstart, 2);	// First sound
+	mc.read(&spritestart_, 2);	// First sprite
+	mc.read(&soundstart_, 2);	// First sound
 	num_chunks	= wxINT16_SWAP_ON_BE(num_chunks);
-	spritestart	= wxINT16_SWAP_ON_BE(spritestart);
-	soundstart	= wxINT16_SWAP_ON_BE(soundstart);
+	spritestart_	= wxINT16_SWAP_ON_BE(spritestart_);
+	soundstart_	= wxINT16_SWAP_ON_BE(soundstart_);
 	num_lumps	= num_chunks;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
@@ -505,9 +488,9 @@ bool WolfArchive::open(MemChunk& mc)
 
 		// Wolf chunks have no names, so just give them a number
 		string name;
-		if (d < spritestart)		name = S_FMT("WAL%05d", l);
-		else if (d < soundstart)	name = S_FMT("SPR%05d", l - spritestart);
-		else						name = S_FMT("SND%05d", l - soundstart);
+		if (d < spritestart_)		name = S_FMT("WAL%05d", l);
+		else if (d < soundstart_)	name = S_FMT("SPR%05d", l - spritestart_);
+		else						name = S_FMT("SND%05d", l - soundstart_);
 
 		++l;
 
@@ -518,7 +501,7 @@ bool WolfArchive::open(MemChunk& mc)
 
 			// Digitized sounds can be made of multiple pages
 			size_t e = d;
-			if (d >= soundstart && size == 4096)
+			if (d >= soundstart_ && size == 4096)
 			{
 				size_t fullsize = 4096;
 				do
@@ -541,7 +524,7 @@ bool WolfArchive::open(MemChunk& mc)
 			d = e;
 
 			// Add to entry list
-			getRoot()->addEntry(nlump);
+			rootDir()->addEntry(nlump);
 
 			// If the lump data goes past the end of file,
 			// the data file is invalid
@@ -607,7 +590,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 
 	// Read Wolf header file
 	uint32_t num_lumps = (head.getSize()>>2) - 1;
-	spritestart	= soundstart = num_lumps;
+	spritestart_	= soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
@@ -729,7 +712,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 
 		// Add to entry list
 		nlump->setState(0);
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Setup variables
@@ -754,7 +737,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 
 	// Read Wolf header file
 	uint32_t num_lumps = (head.getSize()- 2) >> 2;
-	spritestart	= soundstart = num_lumps;
+	spritestart_	= soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
@@ -797,7 +780,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 
 		// Add map planes to entry list
 		uint32_t planeofs[3];
@@ -815,7 +798,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 			nlump->setLoaded(false);
 			nlump->exProp("Offset") = (int)planeofs[i];
 			nlump->setState(0);
-			getRoot()->addEntry(nlump);
+			rootDir()->addEntry(nlump);
 		}
 	}
 
@@ -876,7 +859,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 
 	// Read Wolf header file
 	uint32_t num_lumps = (head.getSize() / 3) - 1;
-	spritestart	= soundstart = num_lumps;
+	spritestart_	= soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
@@ -930,7 +913,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect all entry types
@@ -1050,12 +1033,12 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "WolfArchive::loadEntryData: Failed to open datfile %s", filename);
+		LOG_MESSAGE(1, "WolfArchive::loadEntryData: Failed to open datfile %s", filename_);
 		return false;
 	}
 

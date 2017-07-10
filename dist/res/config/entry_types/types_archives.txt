@@ -193,4 +193,31 @@ entry_types
 		reliability = 175;
 		category = "Archives";
 	}
+
+	pod
+	{
+		name = "Pod Archive";
+		format = "archive_pod";
+		export_ext = "pod";
+		icon = "e_archive";
+		category = "Archives";
+	}
+
+	chasm_bin
+	{
+		name = "Chasm Archive";
+		format = "archive_chasm_bin";
+		export_ext = "bin";
+		icon = "e_archive";
+		category = "Archives";
+	}
+
+	sin
+	{
+		name = "SiN Archive";
+		format = "archive_sin";
+		export_ext = "sin";
+		icon = "e_archive";
+		category = "Archives";
+	}
 }

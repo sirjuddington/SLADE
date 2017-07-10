@@ -157,7 +157,7 @@ void SScriptDialog::populateScriptsTree()
 	tree_scripts_->DeleteAllItems();
 
 	// Get 'scripts' dir of slade.pk3
-	auto scripts_dir = theArchiveManager->programResourceArchive()->getDir("scripts");
+	auto scripts_dir = App::archiveManager().programResourceArchive()->getDir("scripts");
 	if (!scripts_dir)
 		return;
 
@@ -176,7 +176,7 @@ void SScriptDialog::populateScriptsTree()
 		// Add script files
 		for (unsigned a = 0; a < dir->numEntries(); a++)
 		{
-			auto entry = dir->getEntry(a);
+			auto entry = dir->entryAt(a);
 			if (entry->getName(true) != "init")
 				tree->AppendItem(node, entry->getName(true), -1, -1, new ScriptTreeItemData(entry));
 		}

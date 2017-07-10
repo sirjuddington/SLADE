@@ -162,7 +162,7 @@ string Executables::writeExecutables()
 void Executables::init()
 {
 	// Load from pk3
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 	ArchiveEntry* entry = res_archive->entryAtPath("config/executables.cfg");
 	if (!entry)
 		return;

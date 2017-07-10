@@ -95,17 +95,17 @@ public:
 	void		restoreObjectIdList(uint8_t type, vector<unsigned>& list);
 
 	void	refreshIndices();
-	bool	readMap(Archive::mapdesc_t map);
+	bool	readMap(Archive::MapDesc map);
 	void	clearMap();
 
 	MapSpecials*	mapSpecials() { return &map_specials_; }
 	void			recomputeSpecials();
 
 	// Map loading
-	bool	readDoomMap(Archive::mapdesc_t map);
-	bool	readHexenMap(Archive::mapdesc_t map);
-	bool	readDoom64Map(Archive::mapdesc_t map);
-	bool	readUDMFMap(Archive::mapdesc_t map);
+	bool	readDoomMap(Archive::MapDesc map);
+	bool	readHexenMap(Archive::MapDesc map);
+	bool	readDoom64Map(Archive::MapDesc map);
+	bool	readUDMFMap(Archive::MapDesc map);
 
 	// Map saving
 	bool	writeDoomMap(vector<ArchiveEntry*>& map_entries);

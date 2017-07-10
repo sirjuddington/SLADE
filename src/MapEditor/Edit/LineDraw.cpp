@@ -266,6 +266,7 @@ void LineDraw::begin(bool shape)
 			"Left Click = Draw point",
 			"Right Click = Undo previous point"
 		});
+		MapEditor::showShapeDrawPanel(true);
 	}
 	else
 	{
@@ -286,6 +287,9 @@ void LineDraw::begin(bool shape)
  *******************************************************************/
 void LineDraw::end(bool apply)
 {
+	// Hide shape draw panel
+	MapEditor::showShapeDrawPanel(true);
+
 	// Do nothing if we don't need to create any lines
 	if (!apply || draw_points.size() <= 1)
 	{

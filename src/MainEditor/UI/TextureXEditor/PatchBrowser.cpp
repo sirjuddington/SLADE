@@ -202,7 +202,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 			parent_archive = entry->getParent();
 
 			if (parent_archive)
-				whereis = parent_archive->getFilename(false);
+				whereis = parent_archive->filename(false);
 		}
 
 		// Add it
@@ -276,7 +276,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 		// Check entry parent archive
 		string arch = "Unknown";
 		if (entry->getParent())
-			arch = entry->getParent()->getFilename(false);
+			arch = entry->getParent()->filename(false);
 
 		// Add it
 		PatchBrowserItem* item = new PatchBrowserItem(entry->getName(true).Truncate(8).Upper(), archive, 0, ns);
@@ -296,7 +296,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 		PatchBrowserItem* item = new PatchBrowserItem(res->tex.getName(), res->parent, 1);
 
 		// Add to textures node (under parent archive name)
-		addItem(item, "Textures/" + res->parent->getFilename(false));
+		addItem(item, "Textures/" + res->parent->filename(false));
 	}
 
 	// Open 'patches' node
@@ -327,7 +327,7 @@ bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 		// Set archive name
 		string arch = "Unknown";
 		if (parent)
-			arch = parent->getFilename(false);
+			arch = parent->filename(false);
 
 		// Add to textures node (under parent archive name)
 		addItem(item, "Textures/" + arch);

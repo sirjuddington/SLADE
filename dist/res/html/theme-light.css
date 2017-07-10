@@ -1,0 +1,283 @@
+
+/* --------- Start Page ---------- */
+
+#slade {
+	color: hsl(220, 27%, 57%);
+}
+
+#version {
+	color: hsl(220, 27%, 57%);
+}
+
+
+/* ----------- General ----------- */
+
+body,
+table,
+td,
+th,
+div,
+a {
+	color: #000000;
+}
+
+html,
+body {
+	background-color: hsl(220, 100%, 94%);
+}
+
+
+/* ------------ Links ------------ */
+
+A:link,
+A:visited {
+	color: hsl(220, 100%, 40%);
+}
+
+A:hover,
+A:active {
+	color: hsl(40, 100%, 55%);
+}
+
+
+/* ------------ Boxes ------------ */
+
+#title,
+.back,
+#back,
+div.news_title,
+div.news_byline,
+div.news_comments,
+div.news_postbody,
+#side {
+	background-color: hsl(220, 100%, 99%);
+	border-color: hsl(220, 36%, 76%);
+}
+
+.back,
+#back,
+div.wikifooter,
+#side {
+	box-shadow: 0px 0px 20px hsl(220, 35%, 71%);
+}
+
+
+/* Box Title */
+
+#title,
+div.news_title,
+#date {
+	background-color: hsl(220, 27%, 57%);
+	color: hsl(220, 100%, 97%);
+	border-color: hsl(220, 24%, 51%);
+}
+
+/* News page box content */
+
+/*
+div.news_postbody {
+	border: 0;
+	padding: 0;
+	padding-top: 16px;
+}
+
+div.news_byline {
+	height: 0px;
+}
+
+div.news_comments {
+	border-top: 0px;
+	padding: 0;
+	margin: 0;
+	text-align: right;
+	font-size: 0.7em;
+	position: relative;
+	border: 0;
+	height: 0;
+	top: -1.5em;
+}
+
+span.news_authorname {
+	visibility: hidden;
+}
+
+span.news_time {
+	position: relative;
+	top: -30px;
+	right: -16px;
+	color: hsl(220, 100%, 97%);
+}
+*/
+
+
+/* Code box */
+
+.bbc_code,
+#code,
+div.code,
+div.newspost blockquote {
+	background: none repeat scroll 0 0 hsl(220, 93%, 97%);
+	border: 1px solid hsl(220, 12%, 78%);
+}
+
+
+/* Menu item boxes */
+
+a.menu2,
+a.menu-hover2,
+a.menul,
+a.menul-hover,
+a.menur,
+a.menur-hover,
+a.menu-current,
+a.menul-current,
+a.menur-current {
+	background-color: hsl(220, 27%, 57%);
+	border-color: hsl(220, 20%, 42%);
+	color: hsl(220, 100%, 97%);
+}
+
+a.menul-hover,
+a.menur-hover,
+a.menu-hover2 {
+	background-color: hsl(220, 27%, 57%);
+	color: #ffffff;
+	border-color: hsl(40, 100%, 63%);
+	text-shadow: hsl(220, 100%, 83%) 0px 0px 6px;
+}
+
+a.menur-current,
+a.menul-current,
+a.menu-current {
+	background: linear-gradient(to bottom, hsl(220, 27%, 57%), hsl(220, 19%, 46%));
+}
+
+
+/* --------- Page Header --------- */
+
+div.header {
+	background: linear-gradient(to bottom, hsl(220, 31%, 61%), hsl(220, 27%, 57%));
+}
+
+div.headershadow {
+	background: linear-gradient(to bottom, hsl(220, 20%, 42%), hsl(220, 100%, 94%));
+}
+
+table.hidden,
+td.title1,
+td.title2,
+td.title3 {
+	background: linear-gradient(to bottom, hsla(220, 31%, 61%, 1), hsl(220, 27%, 57%));
+	color: hsla(220, 19%, 30%, 1);
+}
+
+
+/* Page Title */
+
+div#pagetitle {
+	background-color: hsl(220, 27%, 57%);
+	color: hsl(220, 100%, 97%);
+	border-color: hsl(220, 36%, 76%);
+}
+
+
+/* --------- Inner Tables --------- */
+
+table.inner,
+table.wiki {
+	background-color: hsl(220, 100%, 99%);
+	border-color: hsl(220, 12%, 88%);
+}
+
+td.inner,
+th.inner,
+th.innertop,
+table.wiki th,
+table.wiki td,
+th.innertopright {
+	background-color: hsl(220, 100%, 99%);
+	border-color: hsl(220, 12%, 88%);
+}
+
+th.inner,
+table.wiki th {
+	background-color: hsl(220, 78%, 96%);
+	color: hsl(220, 27%, 57%);
+	border-color: hsl(220, 35%, 90%);
+}
+
+th.innertop,
+th.innertopright {
+	background-color: hsl(220, 57%, 91%);
+	color: hsl(220, 24%, 51%);
+}
+
+table.wiki tr:nth-child(even) td {
+	background-color: hsl(220, 100%, 98%) !important;
+}
+
+
+/* ------------- Wiki ------------- */
+
+div.wiki hr {
+	color: hsl(220, 35%, 90%);
+	border-color: hsl(220, 35%, 90%);
+}
+
+code {
+	border-color: hsl(220, 35%, 80%);
+	background-color: hsl(220, 88%, 93%);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+	color: hsl(220, 28%, 43%);
+}
+
+h2,
+h1 {
+	border-color: hsl(220, 35%, 90%);
+}
+
+pre code {
+	background: none repeat scroll 0 0 hsl(220, 33%, 95%);
+	border: 1px solid hsl(220, 12%, 88%);
+}
+
+div.wikifooter {
+	background-color: hsl(220, 27%, 57%);
+	color: hsl(220, 36%, 76%);
+	border-color: hsl(220, 24%, 51%);
+}
+
+div.wikifooter a {
+	color: #FFF;
+}
+
+div.wikifooter a:hover {
+	color: hsl(40, 100%, 55%);
+}
+
+div.wiki blockquote {
+	color: hsl(220, 18%, 52%);
+	border-color: hsl(220, 36%, 76%);
+}
+
+
+/* --------- WebKit Stuff --------- */
+
+::-webkit-scrollbar-track {
+	background-color: hsl(220, 33%, 95%);
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: hsl(220, 26%, 72%);
+	border-color: hsl(220, 33%, 95%);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: hsl(220, 27%, 57%);
+}
