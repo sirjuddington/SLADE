@@ -505,6 +505,8 @@ void KeyBind::initBinds()
 	addBind("ted_jumptoline", keypress_t("G", KPM_CTRL), "Jump to Line", group);
 	addBind("ted_fold_foldall", keypress_t("[", KPM_CTRL|KPM_SHIFT), "Fold All", group);
 	addBind("ted_fold_unfoldall", keypress_t("]", KPM_CTRL|KPM_SHIFT), "Fold All", group);
+	addBind("ted_line_comment", keypress_t("/", KPM_CTRL), "Line Comment", group);
+	addBind("ted_block_comment", keypress_t("/", KPM_CTRL|KPM_SHIFT), "Block Comment", group);
 
 	// Texture editor (txed*)
 	group = "Texture Editor";

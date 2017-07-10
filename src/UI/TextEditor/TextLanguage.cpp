@@ -719,7 +719,7 @@ bool TextLanguage::loadLanguages()
 	// Read language definitions from resource archive
 	if (res_archive)
 	{
-		// Get 'config/languages' directlry
+		// Get 'config/languages' directly
 		ArchiveTreeNode* dir = res_archive->getDir("config/languages");
 
 		if (dir)
