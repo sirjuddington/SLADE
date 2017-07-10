@@ -1229,6 +1229,141 @@ void TextEditor::updateFolding()
 	}*/
 }
 
+/* TextEditor::lineComment
+ * Comment selected/current lines using line comments
+ *******************************************************************/
+
+void TextEditor::lineComment()
+{
+	string space, empty, comment, commentSpace;
+	space = wxString::FromUTF8(" ");
+	empty = wxString::FromUTF8("");
+	if(language)
+		comment = language->getLineComment();
+	else
+		comment = wxString::FromUTF8("//");
+	commentSpace = comment + space;
+
+	int selectionStart, selectionEnd;
+	GetSelection(&selectionStart, &selectionEnd);
+
+	bool singleLine = false;
+	if (selectionStart == selectionEnd)
+		singleLine = true;
+
+	int firstLine, lastLine;
+	firstLine = LineFromPosition(selectionStart);
+	lastLine = LineFromPosition(selectionEnd);
+
+	size_t selectionStartOffs, selectionEndOffs;
+	selectionStartOffs = selectionEndOffs = 0;
+
+	BeginUndoAction();
+	for (int line = firstLine; line <= lastLine; ++line)
+	{
+		string lineText = GetTextRange(GetLineIndentPosition(line), GetLineEndPosition(line));
+
+		SetTargetStart(GetLineIndentPosition(line));
+		SetTargetEnd(GetLineEndPosition(line));
+
+		if (lineText.Find(commentSpace) != wxNOT_FOUND)
+		{
+			if (line == firstLine) {
+				selectionStartOffs -= commentSpace.Len();
+			}
+			selectionEndOffs -= commentSpace.Len();
+
+			lineText.Replace(commentSpace, empty, false);
+			ReplaceTarget(lineText);
+		}
+		else if (lineText.Find(comment) != wxNOT_FOUND)
+		{
+			if (line == firstLine) {
+				selectionStartOffs -= comment.Len();
+			}
+			selectionEndOffs -= comment.Len();
+
+			lineText.Replace(comment, empty, false);
+			ReplaceTarget(lineText);
+		}
+		else if (lineText.Trim(true).Len() != 0)
+		{
+			if (line == firstLine) {
+				selectionStartOffs += commentSpace.Len();
+			}
+			selectionEndOffs += commentSpace.Len();
+
+			ReplaceTarget(lineText.Prepend(commentSpace));
+		}
+	}
+	EndUndoAction();
+
+	if (singleLine)
+	{
+		LineDown();
+		GotoPos(GetLineIndentPosition(GetCurrentLine()));
+	}
+	else
+	{
+		SetSelection(selectionStart + selectionStartOffs, selectionEnd + selectionEndOffs);
+	}
+}
+
+
+/* TextEditor::blockComment
+ * Comment selected text using block comments
+ *******************************************************************/
+
+void TextEditor::blockComment()
+{
+	string space, commentBegin, commentEnd;
+	space = wxString::FromUTF8(" ");
+	if(language)
+	{
+		commentBegin = language->getCommentBegin();
+		commentEnd = language->getCommentEnd();
+	}
+	else
+	{
+		commentBegin = wxString::FromUTF8("/*");
+		commentEnd = wxString::FromUTF8("*/");
+	}
+
+	size_t commentBeginLen, commentEndLen;
+	commentBeginLen = commentBegin.Len();
+	commentEndLen = commentEnd.Len();
+
+	int selectionStart, selectionEnd;
+	GetSelection(&selectionStart, &selectionEnd);
+
+	SetTargetStart(selectionStart);
+	SetTargetEnd(selectionEnd);
+
+	SetInsertionPoint(selectionStart);
+
+	string textString = GetRange(selectionStart, selectionEnd);
+
+	if (!textString.StartsWith(commentBegin, NULL) && !textString.EndsWith(commentEnd, NULL))
+	{
+		commentBegin = commentBegin.append(space);
+		commentEnd = commentEnd.Prepend(space);
+
+		ReplaceTarget(textString.Prepend(commentBegin).append(commentEnd));
+		selectionEnd += (int)(commentBegin.Len() + commentEnd.Len());
+	}
+	else if (textString.StartsWith(commentBegin, NULL) && textString.EndsWith(commentEnd, NULL))
+	{
+		if (textString.StartsWith(commentBegin.append(space), NULL))
+			commentBeginLen = commentBegin.Len();
+		if (textString.EndsWith(commentEnd.Prepend(space), NULL))
+			commentEndLen = commentEnd.Len();
+
+		ReplaceTarget(textString.Remove(0, commentBeginLen).RemoveLast(commentEndLen));
+		selectionEnd -= (int)(commentBeginLen + commentEndLen);
+	}
+
+	SetSelection(selectionStart, selectionEnd);
+}
 
 /*******************************************************************
  * TEXTEDITOR CLASS EVENTS
@@ -1332,6 +1467,19 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 		else if (name == "ted_jumptoline")
 		{
 			jumpToLine();
+			handled = true;
+		}
+
+		// Comments
+		else if (name == "ted_line_comment")
+		{
+			lineComment();
+			handled = true;
+		}
+
+		else if (name == "ted_block_comment")
+		{
+			blockComment();
 			handled = true;
 		}
 	}
