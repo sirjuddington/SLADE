@@ -6,7 +6,7 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    Lua.cpp
-// Description: Lua scripting system (nothing much here yet)
+// Description: Lua scripting system
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -183,7 +183,6 @@ namespace Lua
 		slade.set_function("promptYesNo",			&promptYesNo);
 		slade.set_function("browseFile",			&browseFile);
 		slade.set_function("browseFiles",			&browseFiles);
-		slade.set_function("archiveManager",		&App::archiveManager);
 		slade.set_function("currentArchive",		&MainEditor::currentArchive);
 		slade.set_function("currentEntry",			&MainEditor::currentEntry);
 		slade.set_function("currentEntrySelection",	&MainEditor::currentEntrySelection);
@@ -195,24 +194,27 @@ namespace Lua
 	void registerGameFunctions()
 	{
 		sol::table game = lua.create_table("game");
-		game.set_function("thingType", [&](int type){ return Game::configuration().thingType(type); });
+		game.set_function("thingType", [&](int type) { return Game::configuration().thingType(type); });
 	}
 
 	void registerArchiveManager()
 	{
-		lua.new_usertype<ArchiveManager>(
-			"ArchiveManager",
+		sol::table archives = lua.create_table("archives");
 
-			// No constructor
-			"new", sol::no_constructor,
-
-			// Functions
-			"numArchives",			&ArchiveManager::numArchives,
-			"openFile",				&ArchiveManager::luaOpenFile,
-			"closeAll",				&ArchiveManager::closeAll,
-			"getArchive",			sol::resolve<Archive*(int)>(&ArchiveManager::getArchive),
-			"closeArchive",			sol::resolve<bool(Archive*)>(&ArchiveManager::closeArchive),
-			"fileExtensionsString",	&ArchiveManager::getArchiveExtensionsString
+		archives.set_function("numArchives", [&]() { return App::archiveManager().numArchives(); });
+		archives.set_function(
+			"openFile",
+			[&](const char* filename) { return App::archiveManager().openArchive(filename); }
+		);
+		archives.set_function("closeAll", [&]() { App::archiveManager().closeAll(); });
+		archives.set_function("getArchive", [&](int index) { return App::archiveManager().getArchive(index); });
+		archives.set_function(
+			"closeArchive",
+			[&](Archive* archive) { return App::archiveManager().closeArchive(archive); }
+		);
+		archives.set_function(
+			"fileExtensionsString",
+			[&]() { return App::archiveManager().getArchiveExtensionsString(); }
 		);
 	}
 
