@@ -35,6 +35,7 @@
 #include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/RunDialog.h"
+#include "Dialogs/SScriptDialog.h"
 #include "Game/Configuration.h"
 #include "General/Misc.h"
 #include "General/UI.h"
@@ -231,6 +232,11 @@ void MapEditorWindow::setupMenu()
 	SAction::fromId("mapw_show_fullmap")->addToMenu(menu_view);
 	SAction::fromId("mapw_show_item")->addToMenu(menu_view);
 	menu->Append(menu_view, "View");
+
+	// Tools menu
+	wxMenu* menu_tools = new wxMenu("");
+	SAction::fromId("mapw_runscript")->addToMenu(menu_tools);
+	menu->Append(menu_tools, "&Tools");
 
 	SetMenuBar(menu);
 }
@@ -1310,6 +1316,14 @@ bool MapEditorWindow::handleAction(string id)
 			}
 		}
 
+		return true;
+	}
+
+	// Tools->Run Script
+	else if (id == "mapw_runscript")
+	{
+		SScriptDialog dlg(this);
+		dlg.ShowModal();
 		return true;
 	}
 	

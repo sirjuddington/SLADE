@@ -247,6 +247,17 @@ void MapSide::setStringProperty(string key, string value)
 		MapObject::setStringProperty(key, value);
 }
 
+/* MapSide::scriptCanModifyProp
+ * Returns true if the property [key] can be modified via script
+ *******************************************************************/
+bool MapSide::scriptCanModifyProp(const string& key)
+{
+	if (key == "sector")
+		return false;
+
+	return true;
+}
+
 /* MapSide::writeBackup
  * Write all side info to a mobj_backup_t struct
  *******************************************************************/

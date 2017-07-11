@@ -76,8 +76,9 @@ public:
 	virtual void	setIntProperty(string key, int value);
 	virtual void	setFloatProperty(string key, double value);
 	virtual void	setStringProperty(string key, string value);
+	virtual bool	scriptCanModifyProp(const string& key) { return true; }
 
-	virtual fpoint2_t	getPoint(uint8_t point) { return fpoint2_t(0,0); }
+	virtual fpoint2_t	getPoint(uint8_t point) { return fpoint2_t(0, 0); }
 
 	void	filter(bool f = true) { filtered = f; }
 
@@ -94,11 +95,17 @@ public:
 	static long propBackupTime();
 	static void beginPropBackup(long current_time);
 	static void endPropBackup();
-	
+
 	static bool	multiBoolProperty(vector<MapObject*>& objects, string prop, bool& value);
 	static bool multiIntProperty(vector<MapObject*>& objects, string prop, int& value);
 	static bool multiFloatProperty(vector<MapObject*>& objects, string prop, double& value);
 	static bool multiStringProperty(vector<MapObject*>& objects, string prop, string& value);
+
+	// For scripting
+	void	luaSetBoolProperty(string key, bool value);
+	void	luaSetIntProperty(string key, int value);
+	void	luaSetFloatProperty(string key, double value);
+	void	luaSetStringProperty(string key, string value);
 };
 
 #endif//__MAP_OBJECT_H__

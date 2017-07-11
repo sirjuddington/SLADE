@@ -155,6 +155,12 @@ public:
 	static bool						loadFormats(MemChunk& mc);
 	static vector<ArchiveFormat>&	allFormats() { return formats; }
 
+	// For Scripting
+	vector<ArchiveEntry*>	luaAllEntries() { vector<ArchiveEntry*> list; getEntryTreeAsList(list); return list; }
+	ArchiveTreeNode*		luaGetDir(string path) { return getDir(path); }
+	ArchiveEntry*			luaCreateEntry(string full_path, int position);
+	ArchiveEntry*			luaCreateEntryInNamespace(string name, string ns);
+
 protected:
 	string			format_;
 	string			filename_;

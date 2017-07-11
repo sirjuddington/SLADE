@@ -65,6 +65,9 @@ public:
 
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
 
+	// For scripting
+	Archive* luaOpenFile(const char* filename) { return openArchive(filename); }
+
 private:
 	struct OpenArchive
 	{
