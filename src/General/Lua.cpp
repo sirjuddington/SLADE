@@ -42,6 +42,7 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "Utility/SFileDialog.h"
+#include "General/Misc.h"
 
 
 // ----------------------------------------------------------------------------
@@ -226,10 +227,15 @@ namespace Lua
 			// No constructor
 			"new", sol::no_constructor,
 
+			// Properties
+			"filename",	sol::property([](Archive& self) { return self.filename(); }),
+			"entries",	sol::property(&Archive::luaAllEntries),
+			"rootDir",	sol::property(&Archive::rootDir),
+
 			// Functions
-			"getFilename",				&Archive::filename,
-			"allEntries",				&Archive::luaAllEntries,
-			"getDir",					&Archive::luaGetDir,
+			"filenameNoPath",			[](Archive& self) { return self.filename(false); },
+			"entryAtPath",				&Archive::entryAtPath,
+			"dirAtPath",				&Archive::luaGetDir,
 			"createEntry",				&Archive::luaCreateEntry,
 			"createEntryInNamespace",	&Archive::luaCreateEntryInNamespace,
 			"removeEntry",				&Archive::removeEntry,
@@ -272,14 +278,28 @@ namespace Lua
 			// No constructor
 			"new", sol::no_constructor,
 
+			// Properties
+			"name",		sol::property([](ArchiveEntry& self) { return self.getName(); }),
+			"path",		sol::property([](ArchiveEntry& self) { return self.getPath(); }),
+			"type",		sol::property(&ArchiveEntry::getType),
+			"size",		sol::property(&ArchiveEntry::getSize),
+			"index",	sol::property([](ArchiveEntry& self) { return self.getParentDir()->entryIndex(&self); }),
+
 			// Functions
-			"getName",				&ArchiveEntry::getName,
-			"getUpperName",			&ArchiveEntry::getUpperName,
-			"getUpperNameNoExt",	&ArchiveEntry::getUpperNameNoExt,
-			"getPath",				&ArchiveEntry::getPath,
-			"getSizeString",		&ArchiveEntry::getSizeString,
-			"getTypeString",		&ArchiveEntry::getTypeString,
-			"getType",				&ArchiveEntry::getType
+			"formattedName",
+			[](ArchiveEntry& self, bool include_path, bool include_extension, bool name_uppercase)
+			{
+				string name;
+				if (include_path)
+					name = self.getPath();
+				if (name_uppercase)
+					name += include_extension ? self.getUpperName() : self.getUpperNameNoExt();
+				else
+					name += self.getName(!include_extension);
+				return name;
+			},
+			"formattedSize",	&ArchiveEntry::getSizeString,
+			"crc32",			[](ArchiveEntry& self) { return Misc::crc(self.getData(), self.getSize()); }
 		);
 	}
 
@@ -291,13 +311,12 @@ namespace Lua
 			// No constructor
 			"new", sol::no_constructor,
 
-			// Functions
-			"getArchive",	&ArchiveTreeNode::archive,
-			"getName",		&ArchiveTreeNode::getName,
-			"numEntries",	&ArchiveTreeNode::numEntries,
-			"getEntries",	&ArchiveTreeNode::luaGetEntries,
-			"entryIndex",	&ArchiveTreeNode::luaEntryIndex,
-			"getEntry",		&ArchiveTreeNode::entryAt
+			// Properties
+			"name",		sol::property(&ArchiveTreeNode::getName),
+			"archive",	sol::property(&ArchiveTreeNode::archive),
+			"entries",	sol::property(&ArchiveTreeNode::luaGetEntries),
+			"parent",	sol::property([](ArchiveTreeNode& self) { return (ArchiveTreeNode*)self.getParent(); })
+			// subDirectories
 		);
 	}
 
@@ -310,8 +329,12 @@ namespace Lua
 			"new", sol::no_constructor,
 
 			// Properties
-			"id",	sol::property(&EntryType::getId),
-			"name",	sol::property(&EntryType::getName)
+			"id",			sol::property(&EntryType::getId),
+			"name",			sol::property(&EntryType::getName),
+			"extension",	sol::property(&EntryType::getExtension),
+			"formatId",		sol::property(&EntryType::getFormat),
+			"editor",		sol::property(&EntryType::getEditor),
+			"category",		sol::property(&EntryType::getCategory)
 		);
 	}
 
@@ -572,6 +595,7 @@ bool Lua::init()
 	registerArchiveManager();
 	registerArchive();
 	registerArchiveEntry();
+	registerEntryType();
 	registerArchiveTreeNode();
 	registerSLADEMap();
 	registerMapEditor();
