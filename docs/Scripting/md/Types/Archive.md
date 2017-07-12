@@ -30,7 +30,8 @@ Returns the directory in the archive at `path`, or `null` if the path does not e
 
 **Returns** <code>[ArchiveEntry](ArchiveEntry.md)</code>
 
-> Description required
+!!! note
+    Description required
 
 ---
 ### createEntryInNamespace
@@ -42,7 +43,8 @@ Returns the directory in the archive at `path`, or `null` if the path does not e
 
 **Returns** <code>[ArchiveEntry](ArchiveEntry.md)</code>
 
-> Description required
+!!! note
+    Description required
 
 ---
 ### removeEntry

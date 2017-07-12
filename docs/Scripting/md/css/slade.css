@@ -1,0 +1,106 @@
+
+body, h1, h2, h3, h4, h5, h6 {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+a {
+    font-weight: 600;
+}
+
+A:link,
+A:visited {
+	color: hsl(220, 90%, 40%);
+}
+
+A:hover,
+A:active {
+	color: hsl(40, 100%, 45%);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+	color: hsl(220, 28%, 43%);
+}
+
+h2,
+h1 {
+    border-color: hsl(220, 35%, 90%);
+    border-bottom-width: 0.05em;
+    border-bottom-style: solid;
+    padding-bottom: 0.2em;
+}
+
+code {
+    font-family: 'Consolas', monospace;
+    font-size: 0.9em;
+    color: black;
+    border-color: hsl(220, 35%, 80%);
+	background-color: hsl(220, 88%, 93%);
+}
+
+pre code {
+	background: none repeat scroll 0 0 hsl(220, 33%, 95%);
+	border: 1px solid hsl(220, 12%, 88%);
+}
+
+.wy-nav-top,
+.wy-side-nav-search {
+    background-color: hsl(220, 27%, 57%);
+}
+
+.wy-side-nav-search a {
+    color: hsl(220, 100%, 94%);
+}
+
+.wy-nav-side {
+    background-color: hsl(220, 100%, 94%);
+    color: black;
+}
+
+.wy-menu-vertical a {
+    color: black;
+}
+
+.wy-menu-vertical a:hover {
+    background-color: hsl(220, 47%, 87%);
+}
+
+span.caption-text {
+    color: hsl(220, 47%, 40%);
+    background-color: hsl(220, 97%, 92%);
+    border-bottom: 1px solid hsl(220, 97%, 90%);
+}
+
+.wy-menu-vertical .subnav a,
+.wy-menu-vertical .subnav .subnav a {
+    color: black;
+}
+
+.wy-menu-vertical .subnav .subnav a:hover {
+    background-color: hsl(220, 77%, 93%);
+}
+
+li.current a,
+.subnav .subnav {
+    background-color: hsl(220, 77%, 97%);
+    color: black !important;
+}
+
+li.current a:hover {
+    background-color: hsl(220, 77%, 93%) !important;
+}
+
+.rst-versions {
+    background-color: hsl(220, 27%, 37%);
+}
+
+.rst-versions .rst-current-version {
+    background-color: hsl(220, 27%, 57%);
+}
+
+.rst-versions .rst-current-version a:hover {
+    color: white;
+}

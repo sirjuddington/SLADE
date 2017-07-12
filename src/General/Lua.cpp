@@ -315,7 +315,8 @@ namespace Lua
 			"name",		sol::property(&ArchiveTreeNode::getName),
 			"archive",	sol::property(&ArchiveTreeNode::archive),
 			"entries",	sol::property(&ArchiveTreeNode::luaGetEntries),
-			"parent",	sol::property([](ArchiveTreeNode& self) { return (ArchiveTreeNode*)self.getParent(); })
+			"parent",	sol::property([](ArchiveTreeNode& self) { return (ArchiveTreeNode*)self.getParent(); }),
+			"path",		sol::property(&ArchiveTreeNode::getPath)
 			// subDirectories
 		);
 	}
@@ -568,7 +569,7 @@ namespace Lua
 			"fullbright",	sol::property(&Game::ThingType::fullbright),
 			"decoration",	sol::property(&Game::ThingType::decoration),
 			"solid",		sol::property(&Game::ThingType::solid),
-			"tagged",		sol::property(&Game::ThingType::needsTag),
+			//"tagged",		sol::property(&Game::ThingType::needsTag),
 			"sprite",		sol::property(&Game::ThingType::sprite),
 			"icon",			sol::property(&Game::ThingType::icon),
 			"translation",	sol::property(&Game::ThingType::translation),
