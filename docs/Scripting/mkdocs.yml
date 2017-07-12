@@ -1,0 +1,14 @@
+site_name: SLADE Scripting Documentation
+docs_dir: 'md'
+theme: material
+
+pages:
+- Home: index.md
+- Namespaces:
+  - Archives: 'Namespaces/Archives.md'
+  - Game: 'Namespaces/Game.md'
+  - SLADE: 'Namespaces/SLADE.md'
+- Types:
+  - Archive: 'Types/Archive.md'
+  - ArchiveEntry: 'Types/ArchiveEntry.md'
+  - EntryType: 'Types/EntryType.md'
