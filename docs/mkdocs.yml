@@ -1,7 +1,7 @@
 site_name: SLADE Scripting Documentation
 # repo_url: https://github.com/sirjuddington/SLADE
 edit_uri: ''
-docs_dir: 'docs'
+docs_dir: 'mkdocs'
 site_dir: '../../dist/res/docs/Scripting'
 use_directory_urls: false
 theme: readthedocs
