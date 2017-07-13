@@ -1,5 +1,7 @@
 site_name: SLADE Scripting Documentation
-docs_dir: 'md'
+# repo_url: https://github.com/sirjuddington/SLADE
+edit_uri: ''
+docs_dir: 'docs'
 site_dir: '../../dist/res/docs/Scripting'
 use_directory_urls: false
 theme: readthedocs
@@ -12,13 +14,20 @@ markdown_extensions:
 
 pages:
 - Home: index.md
+- Examples:
+  - Open Archive: 'md/Examples/OpenArchive.md'
 - Namespaces:
-  - Archives: 'Namespaces/Archives.md'
-  - Game: 'Namespaces/Game.md'
-  - SLADE: 'Namespaces/SLADE.md'
+  - SLADE: 'md/Namespaces/SLADE.md'
+  - Archives: 'md/Namespaces/Archives.md'
+  - Game: 'md/Namespaces/Game.md'
+  - MapEditor: 'md/Namespaces/MapEditor.md'
 - Types:
-  - Archive: 'Types/Archive.md'
-  - ArchiveEntry: 'Types/ArchiveEntry.md'
-  - ArchiveDir: 'Types/ArchiveDir.md'
-  - EntryType: 'Types/EntryType.md'
-  - ThingType: 'Types/ThingType.md'
+  - Archive: 'md/Types/Archive.md'
+  - ArchiveEntry: 'md/Types/ArchiveEntry.md'
+  - ArchiveDir: 'md/Types/ArchiveDir.md'
+  - EntryType: 'md/Types/EntryType.md'
+  - ThingType: 'md/Types/ThingType.md'
+  - Map: 'md/Types/Map.md'
+  - MapEditor: 'md/Types/MapEditor.md'
+  - ItemSelection: 'md/Types/ItemSelection.md'
+  - MapObject: 'md/Types/MapObject.md'

@@ -7,13 +7,13 @@ a {
     font-weight: 600;
 }
 
-A:link,
-A:visited {
+.wy-nav-content A:link,
+.wy-nav-content A:visited {
 	color: hsl(220, 90%, 40%);
 }
 
-A:hover,
-A:active {
+.wy-nav-content A:hover,
+.wy-nav-content A:active {
 	color: hsl(40, 100%, 45%);
 }
 
@@ -33,12 +33,39 @@ h1 {
     padding-bottom: 0.2em;
 }
 
+type,
+arg,
+prop,
 code {
     font-family: 'Consolas', monospace;
     font-size: 0.9em;
-    color: black;
-    border-color: hsl(220, 35%, 80%);
-	background-color: hsl(220, 88%, 93%);
+}
+
+code {
+	color: black;
+    border-color: hsl(220, 35%, 84%);
+	background-color: hsl(220, 88%, 96%);
+	padding: 0em 0.3em;
+}
+
+type,
+type a {
+	/*font-weight: 600;*/
+	color: hsl(40, 98%, 33%) !important;
+}
+
+type a:hover {
+	color: hsl(40, 100%, 45%) !important;
+}
+
+arg,
+prop {
+	font-weight: 600;
+	color: hsl(270, 68%, 43%);
+}
+
+prop {
+	color: hsl(190, 68%, 33%);
 }
 
 pre code {
@@ -46,11 +73,24 @@ pre code {
 	border: 1px solid hsl(220, 12%, 88%);
 }
 
+
 .wy-nav-top,
 .wy-side-nav-search {
     background-color: hsl(220, 27%, 57%);
 }
 
+a.btn.btn-neutral {
+	border: none;
+	background-color: hsl(220, 27%, 57%) !important;
+	color: white !important;
+	box-shadow: none;
+}
+
+a.btn.btn-neutral:hover {
+	background-color: hsl(220, 27%, 47%) !important;
+}
+
+/*
 .wy-side-nav-search a {
     color: hsl(220, 100%, 94%);
 }
@@ -103,4 +143,4 @@ li.current a:hover {
 
 .rst-versions .rst-current-version a:hover {
     color: white;
-}
+}*/
