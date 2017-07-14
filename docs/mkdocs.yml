@@ -16,6 +16,8 @@ pages:
 - Home: index.md
 - Examples:
   - Open Archive: 'md/Examples/OpenArchive.md'
+  - Change Textures: 'md/Examples/ChangeTextures.md'
+  - Archvile Madness: 'md/Examples/ArchvileMadness.md'
 - Namespaces:
   - SLADE: 'md/Namespaces/SLADE.md'
   - Archives: 'md/Namespaces/Archives.md'
@@ -31,3 +33,8 @@ pages:
   - MapEditor: 'md/Types/MapEditor.md'
   - ItemSelection: 'md/Types/ItemSelection.md'
   - MapObject: 'md/Types/MapObject.md'
+  - MapVertex: 'md/Types/MapVertex.md'
+  - MapLine: 'md/Types/MapLine.md'
+  - MapSide: 'md/Types/MapSide.md'
+  - MapSector: 'md/Types/MapSector.md'
+  - MapThing: 'md/Types/MapThing.md'

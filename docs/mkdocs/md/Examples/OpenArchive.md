@@ -1,3 +1,11 @@
+
+This example script does the following:
+
+1. Prompts the user to select a SLADE-supported archive file
+1. Opens the selected archive
+1. Lists details for all entries in the archive
+1. Prompts the user to close the archive and closes it if they click Yes
+
 ```lua
 -- Browse for archive file to open
 local path = slade.browseFile('Open Archive', slade.archiveManager():fileExtensionsString(), '')

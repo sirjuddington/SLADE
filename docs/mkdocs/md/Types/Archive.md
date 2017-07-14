@@ -30,8 +30,22 @@ Returns the directory in the archive at <arg>path</arg>, or `null` if the path d
 
 **Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
 
-!!! note
-    Description required
+Creates a new entry named <arg>fullPath</arg> in the Archive. If the Archive is a format that supports directories, <arg>fullPath</arg> can optionally contain a path eg. `Scripts/NewScript.txt`.
+
+The new entry will be inserted at <arg>position</arg> in the directory it is added to (always the root for Archives that don't support directories). If <arg>position</arg> is negative or larger than the number of entries in the destination directory, the new entry will be added at the end.
+
+**Example**
+
+```lua
+-- Create entry in the root directory of a zip, after all other entries
+newEntry = zip.createEntry('InRoot.txt', -1)
+
+-- Create entry in a subdirectory of a zip, before all other entries in the subdirectory
+newEntry = zip.createEntry('Path/To/NewEntry.txt', 0)
+
+-- Create entry in the middle of a wad somewhere
+newEntry = wad.createEntry('NEWENTRY', 12)
+```
 
 ---
 ### createEntryInNamespace
@@ -43,8 +57,22 @@ Returns the directory in the archive at <arg>path</arg>, or `null` if the path d
 
 **Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
 
-!!! note
-    Description required
+Creates a new entry named <arg>name</arg> in the Archive, at the end of <arg>namespace</arg>. If the Archive supports directories, <arg>namespace</arg> can be a path.
+
+See below for a list of supported namespaces:
+
+| Namespace | Wad Archive Markers | Zip Archive Directory |
+|-----------|---------------------|-----------------------|
+`patches` | `P_START` / `P_END` | `patches`
+`sprites` | `S_START` / `S_END` | `sprites`
+`flats` | `F_START` / `F_END` | `flats`
+`textures` | `TX_START` / `TX_END` | `textures`
+`hires` | `HI_START` / `HI_END` | `hires`
+`colormaps` | `C_START` / `C_END` | `colormaps`
+`acs` | `A_START` / `A_END` | `acs`
+`voices` | `V_START` / `V_END` | `voices`
+`voxels` | `VX_START` / `VX_END` | `voxels`
+`sounds` | `DS_START` / `DS_END` | `sounds`
 
 ---
 ### removeEntry

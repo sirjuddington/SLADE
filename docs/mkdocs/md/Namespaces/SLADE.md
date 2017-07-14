@@ -149,3 +149,10 @@ Shows the tab for the given archive in the main SLADE window.
   * <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type> <arg>entry</arg>: The entry to show_
 
 Shows the given entry in a tab in the main SLADE window.
+
+---
+### mapEditor
+
+**Returns** <type>[MapEditor](../Types/MapEditor.md)</type>
+
+Returns the currently open map editor

@@ -1,6 +1,9 @@
 
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,500,700,700i,800');
+@import url('https://fonts.googleapis.com/css?family=Fira+Mono:500,600');
+
 body, h1, h2, h3, h4, h5, h6 {
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Fira Sans', 'Segoe UI', sans-serif;
 }
 
 a {
@@ -37,7 +40,7 @@ type,
 arg,
 prop,
 code {
-    font-family: 'Consolas', monospace;
+    font-family: 'Fira Mono', 'Consolas', monospace;
     font-size: 0.9em;
 }
 
@@ -46,6 +49,15 @@ code {
     border-color: hsl(220, 35%, 84%);
 	background-color: hsl(220, 88%, 96%);
 	padding: 0em 0.3em;
+}
+
+div.codehilite {
+	font-size: 0.8em;
+	overflow: auto;
+	background-color: hsl(220, 58%, 98%);
+	border: 1px solid hsl(220, 58%, 90%);
+	margin-bottom: 1.5em;
+	padding: 0 0.5em;
 }
 
 type,
@@ -71,6 +83,7 @@ prop {
 pre code {
 	background: none repeat scroll 0 0 hsl(220, 33%, 95%);
 	border: 1px solid hsl(220, 12%, 88%);
+	line-height: 1.5em !important;
 }
 
 
@@ -88,6 +101,25 @@ a.btn.btn-neutral {
 
 a.btn.btn-neutral:hover {
 	background-color: hsl(220, 27%, 47%) !important;
+}
+
+table.docutils td,
+table.docutils th {
+	border: none !important;
+}
+
+table.docutils thead {
+	color: hsl(220, 57%, 97%) !important;
+	background-color: hsl(220, 27%, 57%) !important;
+	font-size: 1.1em;
+}
+
+table.docutils tbody td {
+	background-color: inherit !important;
+}
+
+table.docutils tbody tr:nth-child(odd) {
+	background-color: hsl(220, 60%, 96%) !important;
 }
 
 /*

@@ -1,5 +1,17 @@
-!!! attention
-    Description here
+The **MapObject** type is a base type for all map editor objects.
+
+**Regarding MapObject `*Property` and `set*Property` functions**  
+MapObject properties in SLADE generally mirror the properties defined in the [UDMF](https://doomwiki.org/wiki/UDMF) specification. As an example, setting the `texturetop` string property on a <type>[MapSide](MapSide.md)</type> MapObject will set its upper texture.
+
+### Derived Types
+
+The following types inherit all MapObject properties and functions:
+
+* <type>[MapVertex](MapVertex.md)</type>
+* <type>[MapLine](MapLine.md)</type>
+* <type>[MapSide](MapSide.md)</type>
+* <type>[MapSector](MapSector.md)</type>
+* <type>[MapThing](MapThing.md)</type>
 
 ## Properties
 
@@ -62,7 +74,7 @@ Returns the floating point <type>number</type> value of the property matching th
 
 **Returns** <type>string</type>
 
-Returns the <type>string</type> value of the property matching the given <arg>key</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns 0.
+Returns the <type>string</type> value of the property matching the given <arg>key</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns an empty string.
 
 ---
 ### setBoolProperty

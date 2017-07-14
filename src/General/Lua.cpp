@@ -442,20 +442,16 @@ namespace Lua
 			"new", sol::no_constructor,
 
 			// Properties
-			"x1",		sol::property(&MapLine::x1),
-			"y1",		sol::property(&MapLine::y1),
-			"x2",		sol::property(&MapLine::x2),
-			"y2",		sol::property(&MapLine::y2),
-			"vertex1",	sol::property(&MapLine::v1),
-			"vertex2",	sol::property(&MapLine::v2),
-			"side1",	sol::property(&MapLine::s1),
-			"side2",	sol::property(&MapLine::s2),
-			"special",	sol::property(&MapLine::getSpecial),
-
-			// Functions
-			"length",		&MapLine::getLength,
-			"frontSector",	&MapLine::frontSector,
-			"backSector",	&MapLine::backSector
+			"x1",			sol::property(&MapLine::x1),
+			"y1",			sol::property(&MapLine::y1),
+			"x2",			sol::property(&MapLine::x2),
+			"y2",			sol::property(&MapLine::y2),
+			"vertex1",		sol::property(&MapLine::v1),
+			"vertex2",		sol::property(&MapLine::v2),
+			"side1",		sol::property(&MapLine::s1),
+			"side2",		sol::property(&MapLine::s2),
+			"special",		sol::property(&MapLine::getSpecial),
+			"length",		sol::property(&MapLine::getLength)
 		);
 	}
 
@@ -514,8 +510,6 @@ namespace Lua
 			"type",		sol::property(&MapThing::getType),
 			"angle",	sol::property(&MapThing::getAngle)
 		);
-		
-		// //dukglue_register_method(context, &MapThing::s_TypeInfo,	"typeInfo");
 	}
 
 	void registerMapObject()
@@ -529,6 +523,7 @@ namespace Lua
 			// Properties
 			"index", sol::property(&MapObject::getIndex),
 			"typeName", sol::property(&MapObject::getTypeName),
+			//"properties", sol::property(&MapObject::props), // Need to export MobjPropertyList first
 
 			// Functions
 			"hasProperty",			&MapObject::hasProp,
