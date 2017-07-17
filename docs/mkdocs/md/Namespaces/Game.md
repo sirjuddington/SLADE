@@ -2,9 +2,9 @@ The `game` scripting namespace contains functions related to the currently loade
 
 ## Functions
 
-### thingType
+### `thingType`
 
-**Parameters**
+<params>Parameters</params>
 
   * <type>number</type> <arg>type</arg>: The editor number (DoomEdNum) of the type
 

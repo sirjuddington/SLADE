@@ -11,3 +11,43 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 <prop>y</prop> | <type>number</type> | The Y coordinate of the thing
 <prop>type</prop> | <type>number</type> | The thing type
 <prop>angle</prop> | <type>number</type> | The direction the thing is facing in degrees, with 0 being east.
+
+## Constructors
+
+!!! attention "No Constructors"
+    This type can not be created directly in scripts.
+
+## Functions
+
+### `flag`
+
+<params>Parameters</params>
+
+* <type>string</type> <arg>flagName</arg>: The name of the flag to check
+
+**Returns** <type>boolean</type>
+
+Returns `true` if the given flag is set.
+
+If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly the same as <code>[MapObject:boolProperty](MapObject.md#boolproperty)</code>. Otherwise, <arg>flagName</arg> needs to be one of the following:
+
+* `skill1`
+* `skill2`
+* `skill3`
+* `skill4`
+* `skill5`
+* `single`
+* `coop`
+* `dm`
+* `class1`
+* `class2`
+* `class3`
+
+---
+### `setAnglePoint`
+
+<params>Parameters</params>
+
+* <type>[Point](Point.md)</type> <arg>position</arg>: Position in map coordinates
+
+Sets the <prop>angle</prop> property so that the thing is facing towards <arg>position</arg>.

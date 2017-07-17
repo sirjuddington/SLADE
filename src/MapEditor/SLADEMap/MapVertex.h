@@ -43,6 +43,8 @@ public:
 	void		disconnectLine(MapLine* line);
 	unsigned	nConnectedLines() const { return connected_lines.size(); }
 	MapLine*	connectedLine(unsigned index);
+	
+	const vector<MapLine*>&	connectedLines() const { return connected_lines; }
 
 	void	writeBackup(mobj_backup_t* backup) override;
 	void	readBackup(mobj_backup_t* backup) override;

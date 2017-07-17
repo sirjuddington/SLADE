@@ -1,7 +1,5 @@
 
-# SLADE Scripting Documentation
-
-A basic overview of SLADE Lua scripting types and functions.
+Documentation for SLADE Lua scripting types and functions.
 
 !!! Warning
     This is all very WIP, expect changes before 3.1.2 is released
@@ -30,8 +28,6 @@ A basic overview of SLADE Lua scripting types and functions.
 
 * [Map](md/Types/Map.md)
 * [MapEditor](md/Types/MapEditor.md)
-* [ItemSelection](md/Types/ItemSelection.md)
-* [MapObject](md/Types/MapObject.md)
     * [MapVertex](md/Types/MapVertex.md)
     * [MapLine](md/Types/MapLine.md)
     * [MapSide](md/Types/MapSide.md)

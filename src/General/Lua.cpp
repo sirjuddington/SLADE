@@ -173,7 +173,7 @@ namespace Lua
 
 	// --- Function & Type Registration ---
 
-	void registerGlobalFunctions()
+	void registerSLADENamespace()
 	{
 		sol::table slade = lua["slade"];
 		slade.set_function("logMessage",			&logMessage);
@@ -192,13 +192,13 @@ namespace Lua
 		slade.set_function("mapEditor",				&MapEditor::editContext);
 	}
 
-	void registerGameFunctions()
+	void registerGameNamespace()
 	{
 		sol::table game = lua.create_table("game");
 		game.set_function("thingType", [&](int type) { return Game::configuration().thingType(type); });
 	}
 
-	void registerArchiveManager()
+	void registerArchivesNamespace()
 	{
 		sol::table archives = lua.create_table("archives");
 
@@ -216,6 +216,50 @@ namespace Lua
 		archives.set_function(
 			"fileExtensionsString",
 			[&]() { return App::archiveManager().getArchiveExtensionsString(); }
+		);
+	}
+
+	void registerMiscTypes()
+	{
+		lua.new_simple_usertype<fpoint2_t>(
+			"Point",
+
+			sol::constructors<fpoint2_t(), fpoint2_t(double, double)>(),
+
+			// Properties
+			"x",	&fpoint2_t::x,
+			"y",	&fpoint2_t::y
+		);
+
+		lua.new_simple_usertype<rgba_t>(
+			"Colour",
+
+			sol::constructors<
+				rgba_t(),
+				rgba_t(uint8_t, uint8_t, uint8_t),
+				rgba_t(uint8_t, uint8_t, uint8_t, uint8_t)
+			>(),
+
+			// Properties
+			"r", &rgba_t::r,
+			"g", &rgba_t::g,
+			"b", &rgba_t::b,
+			"a", &rgba_t::a
+		);
+
+		lua.new_simple_usertype<plane_t>(
+			"Plane",
+
+			sol::constructors<plane_t(), plane_t(double, double, double, double)>(),
+
+			// Properties
+			"a", &plane_t::a,
+			"b", &plane_t::b,
+			"c", &plane_t::c,
+			"d", &plane_t::d,
+
+			// Functions
+			"heightAt", sol::resolve<double(fpoint2_t)>(&plane_t::height_at)
 		);
 	}
 
@@ -312,12 +356,21 @@ namespace Lua
 			"new", sol::no_constructor,
 
 			// Properties
-			"name",		sol::property(&ArchiveTreeNode::getName),
-			"archive",	sol::property(&ArchiveTreeNode::archive),
-			"entries",	sol::property(&ArchiveTreeNode::luaGetEntries),
-			"parent",	sol::property([](ArchiveTreeNode& self) { return (ArchiveTreeNode*)self.getParent(); }),
-			"path",		sol::property(&ArchiveTreeNode::getPath)
-			// subDirectories
+			"name",				sol::property(&ArchiveTreeNode::getName),
+			"archive",			sol::property(&ArchiveTreeNode::archive),
+			"entries",			sol::property(&ArchiveTreeNode::luaGetEntries),
+			"parent",			sol::property([](ArchiveTreeNode& self)
+			{
+				return (ArchiveTreeNode*)self.getParent();
+			}),
+			"path",				sol::property(&ArchiveTreeNode::getPath),
+			"subDirectories",	sol::property([](ArchiveTreeNode& self)
+			{
+				vector<ArchiveTreeNode*> dirs;
+				for (auto child : self.allChildren())
+					dirs.push_back((ArchiveTreeNode*)child);
+				return dirs;
+			})
 		);
 	}
 
@@ -354,37 +407,18 @@ namespace Lua
 			"linedefs",			sol::property(&SLADEMap::lines),
 			"sidedefs",			sol::property(&SLADEMap::sides),
 			"sectors",			sol::property(&SLADEMap::sectors),
-			"things",			sol::property(&SLADEMap::things),
-
-			// Functions
-			"numVertices",	&SLADEMap::nVertices,
-			"numLines",		&SLADEMap::nLines,
-			"numSides",		&SLADEMap::nSides,
-			"numSectors",	&SLADEMap::nSectors,
-			"numThings",	&SLADEMap::nThings
+			"things",			sol::property(&SLADEMap::things)
 		);
 	}
 
-	void registerItemSelection()
+	void selectMapObject(MapEditContext& self, MapObject* object, bool select)
 	{
-		lua.new_usertype<ItemSelection>(
-			"ItemSelection",
-
-			// No constructor
-			"new", sol::no_constructor,
-
-			// Functions
-			"selectedVertices",	&ItemSelection::selectedVertices,
-			"selectedLines",	&ItemSelection::selectedLines,
-			"selectedSectors",	&ItemSelection::selectedSectors,
-			"selectedThings",	&ItemSelection::selectedThings
-		);
+		if (object)
+			self.selection().select({ (int)object->getIndex(), MapEditor::itemTypeFromObject(object) }, select);
 	}
 
 	void registerMapEditor()
 	{
-		registerItemSelection();
-
 		// MapEditor enums
 		lua.create_named_table("mapEditor");
 		lua.new_enum(
@@ -412,8 +446,44 @@ namespace Lua
 			"editMode",			sol::property(&MapEditContext::editMode),
 			"sectorEditMode",	sol::property(&MapEditContext::sectorEditMode),
 			"gridSize",			sol::property(&MapEditContext::gridSize),
-			"selection",		sol::property(&MapEditContext::selection),
-			"map",				sol::property(&MapEditContext::map)
+			"map",				sol::property(&MapEditContext::map),
+
+			// Functions
+
+			"selectedVertices", sol::overload(
+				[](MapEditContext& self, bool try_hilight)
+				{ return self.selection().selectedVertices(try_hilight); },
+				[](MapEditContext& self)
+				{ return self.selection().selectedVertices(false); }
+			),
+
+			"selectedLines", sol::overload(
+				[](MapEditContext& self, bool try_hilight)
+				{ return self.selection().selectedLines(try_hilight); },
+				[](MapEditContext& self)
+				{ return self.selection().selectedLines(false); }
+			),
+
+			"selectedSectors", sol::overload(
+				[](MapEditContext& self, bool try_hilight)
+				{ return self.selection().selectedSectors(try_hilight); },
+				[](MapEditContext& self)
+				{ return self.selection().selectedSectors(false); }
+			),
+
+			"selectedThings", sol::overload(
+				[](MapEditContext& self, bool try_hilight)
+				{ return self.selection().selectedThings(try_hilight); },
+				[](MapEditContext& self)
+				{ return self.selection().selectedThings(false); }
+			),
+
+			"clearSelection", [](MapEditContext& self) { self.selection().clear(); },
+
+			"select", sol::overload(
+				&selectMapObject,
+				[](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); }
+			)
 		);
 	}
 
@@ -427,8 +497,9 @@ namespace Lua
 			"new", sol::no_constructor,
 
 			// Properties
-			"x",	&MapVertex::xPos,
-			"y",	&MapVertex::yPos
+			"x",				&MapVertex::xPos,
+			"y",				&MapVertex::yPos,
+			"connectedLines",	&MapVertex::connectedLines
 		);
 	}
 
@@ -442,16 +513,42 @@ namespace Lua
 			"new", sol::no_constructor,
 
 			// Properties
-			"x1",			sol::property(&MapLine::x1),
-			"y1",			sol::property(&MapLine::y1),
-			"x2",			sol::property(&MapLine::x2),
-			"y2",			sol::property(&MapLine::y2),
-			"vertex1",		sol::property(&MapLine::v1),
-			"vertex2",		sol::property(&MapLine::v2),
-			"side1",		sol::property(&MapLine::s1),
-			"side2",		sol::property(&MapLine::s2),
-			"special",		sol::property(&MapLine::getSpecial),
-			"length",		sol::property(&MapLine::getLength)
+			"x1",				sol::property(&MapLine::x1),
+			"y1",				sol::property(&MapLine::y1),
+			"x2",				sol::property(&MapLine::x2),
+			"y2",				sol::property(&MapLine::y2),
+			"vertex1",			sol::property(&MapLine::v1),
+			"vertex2",			sol::property(&MapLine::v2),
+			"side1",			sol::property(&MapLine::s1),
+			"side2",			sol::property(&MapLine::s2),
+			"special",			sol::property(&MapLine::getSpecial),
+			"length",			sol::property(&MapLine::getLength),
+			"visibleTextures",	sol::property([](MapLine& self)
+			{
+				auto needs_tex = self.needsTexture();
+				return lua.create_table_with(
+					"frontUpper",	(needs_tex & TEX_FRONT_UPPER) != 0,
+					"frontMiddle",	(needs_tex & TEX_FRONT_MIDDLE) != 0,
+					"frontLower",	(needs_tex & TEX_FRONT_LOWER) != 0,
+					"backUpper",	(needs_tex & TEX_BACK_UPPER) != 0,
+					"backMiddle",	(needs_tex & TEX_BACK_MIDDLE) != 0,
+					"backLower",	(needs_tex & TEX_BACK_LOWER) != 0
+				);
+			}),
+
+			// Functions
+			"flag", [](MapLine& self, const string& flag) -> bool
+			{
+				if (Game::configuration().lineBasicFlagSet(flag, &self, self.getParentMap()->currentFormat()))
+					return true;
+
+				return Game::configuration().lineFlagSet(flag, &self, self.getParentMap()->currentFormat());
+			},
+
+			"flip", sol::overload(
+				&MapLine::flip,
+				[](MapLine& self) { self.flip(true); }
+			)
 		);
 	}
 
@@ -491,7 +588,16 @@ namespace Lua
 			"heightCeiling",	sol::property(&MapSector::getCeilingHeight),
 			"lightLevel",		sol::property(&MapSector::getLightLevel),
 			"special",			sol::property(&MapSector::getSpecial),
-			"id",				sol::property(&MapSector::getTag)
+			"id",				sol::property(&MapSector::getTag),
+			"connectedSides",	sol::property(&MapSector::connectedSides),
+			"colour",			sol::property(&MapSector::getColour),
+			"fogColour",		sol::property(&MapSector::getFogColour),
+			"planeFloor",		sol::property(&MapSector::getFloorPlane),
+			"planeCeiling",		sol::property(&MapSector::getCeilingPlane),
+			// bbox (need to export bbox_t first)
+
+			// Functions
+			"containsPoint", &MapSector::isWithin
 		);
 	}
 
@@ -508,7 +614,18 @@ namespace Lua
 			"x",		sol::property(&MapThing::xPos),
 			"y",		sol::property(&MapThing::yPos),
 			"type",		sol::property(&MapThing::getType),
-			"angle",	sol::property(&MapThing::getAngle)
+			"angle",	sol::property(&MapThing::getAngle),
+
+			// Functions
+			"flag", [](MapThing& self, const string& flag) -> bool
+			{
+				if (Game::configuration().thingBasicFlagSet(flag, &self, self.getParentMap()->currentFormat()))
+					return true;
+
+				return Game::configuration().thingFlagSet(flag, &self, self.getParentMap()->currentFormat());
+			},
+
+			"setAnglePoint", &MapThing::setAnglePoint
 		);
 	}
 
@@ -582,13 +699,14 @@ bool Lua::init()
 {
 	lua.open_libraries(sol::lib::base, sol::lib::string);
 
-	// Register functions
+	// Register namespaces
 	lua.create_named_table("slade");
-	registerGlobalFunctions();
-	registerGameFunctions();
+	registerSLADENamespace();
+	registerGameNamespace();
+	registerArchivesNamespace();
 
-	// Register classes
-	registerArchiveManager();
+	// Register types
+	registerMiscTypes();
 	registerArchive();
 	registerArchiveEntry();
 	registerEntryType();

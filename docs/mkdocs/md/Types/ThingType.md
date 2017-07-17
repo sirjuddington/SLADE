@@ -1,5 +1,5 @@
-!!! note
-    description here
+
+Represents a thing type definition from the current game configuration (or parsed from DECORATE/ZScript etc.)
 
 ## Properties
 
@@ -20,3 +20,8 @@
 <prop>icon</prop> | <type>string</type> | The icon to display for this thing type
 <prop>translation</prop> | <type>string</type> | The palette translation to apply to the sprite for this thing type
 <prop>palette</prop> | <type>string</type> | Palette for this thing type
+
+## Constructors
+
+!!! attention "No Constructors"
+    This type can not be created directly in scripts.

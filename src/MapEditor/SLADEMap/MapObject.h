@@ -55,12 +55,12 @@ public:
 	bool operator< (const MapObject& right) const { return (index < right.index); }
 	bool operator> (const MapObject& right) const { return (index > right.index); }
 
-	uint8_t		getObjType() { return type; }
+	uint8_t		getObjType() const { return type; }
 	unsigned	getIndex();
-	SLADEMap*	getParentMap() { return parent_map; }
-	bool		isFiltered() { return filtered; }
-	long		modifiedTime() { return modified_time; }
-	unsigned	getId() { return id; }
+	SLADEMap*	getParentMap() const { return parent_map; }
+	bool		isFiltered() const { return filtered; }
+	long		modifiedTime() const { return modified_time; }
+	unsigned	getId() const { return id; }
 	string		getTypeName();
 	void		setModified();
 

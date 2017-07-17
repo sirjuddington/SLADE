@@ -1,5 +1,5 @@
-!!! attention
-    Description here
+
+Contains information and structures representing a Doom map.
 
 ## Properties
 
@@ -13,38 +13,7 @@
 <prop>sectors</prop>       | <type>[MapSector](MapSector.md)\[\]</type> | An array of all sectors in the map
 <prop>things</prop>        | <type>[MapThing](MapThing.md)\[\]</type> | An array of all things in the map
 
-## Functions
+## Constructors
 
-### numVertices
-
-**Returns** <type>number</type>
-
-Returns the number of vertices in the map
-
----
-### numLines
-
-**Returns** <type>number</type>
-
-Returns the number of lines in the map
-
----
-### numSides
-
-**Returns** <type>number</type>
-
-Returns the number of sides in the map
-
----
-### numSectors
-
-**Returns** <type>number</type>
-
-Returns the number of sectors in the map
-
----
-### numThings
-
-**Returns** <type>number</type>
-
-Returns the number of things in the map
+!!! attention "No Constructors"
+    This type can not be created directly in scripts.

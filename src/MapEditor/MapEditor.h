@@ -110,4 +110,5 @@ namespace MapEditor
 
 	// Misc
 	ItemType	baseItemType(const ItemType& type);
+	ItemType	itemTypeFromObject(const MapObject* object);
 }

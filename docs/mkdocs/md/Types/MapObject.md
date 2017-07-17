@@ -1,7 +1,8 @@
 The **MapObject** type is a base type for all map editor objects.
 
-**Regarding MapObject `*Property` and `set*Property` functions**  
-MapObject properties in SLADE generally mirror the properties defined in the [UDMF](https://doomwiki.org/wiki/UDMF) specification. As an example, setting the `texturetop` string property on a <type>[MapSide](MapSide.md)</type> MapObject will set its upper texture.
+#### Regarding MapObject `*Property` and `set*Property` functions
+
+MapObject properties in SLADE generally mirror the properties defined in the [UDMF](https://doomwiki.org/wiki/UDMF) specification. As an example, setting the `texturetop` string property on a <type>[MapSide](MapSide.md)</type> MapObject will set its upper texture. Note that not all basic UDMF properties are supported for non-UDMF maps.
 
 ### Derived Types
 
@@ -20,98 +21,103 @@ The following types inherit all MapObject properties and functions:
 <prop>index</prop>     | <type>number</type> | The object's index in the map
 <prop>typeName</prop>  | <type>string</type> | The object type name (eg. `Vertex`)
 
+## Constructors
+
+!!! attention "No Constructors"
+    This type can not be created directly in scripts.
+
 ## Functions
 
-### hasProperty
+### `hasProperty`
 
-**Parameters**
+<params>Parameters</params>
 
-* <type>string</type> <arg>key</arg>: The property key to check
-
-**Returns** <type>boolean</type>
-
-Returns `true` if the object has a property matching the given <arg>key</arg>
-
----
-### boolProperty
-
-**Parameters**
-
-* <type>string</type> <arg>key</arg>: The property key
+* <type>string</type> <arg>name</arg>: The name of the property to check
 
 **Returns** <type>boolean</type>
 
-Returns the <type>boolean</type> value of the property matching the given <arg>key</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns `false`.
+Returns `true` if the object has a property matching the given <arg>name</arg>
 
 ---
-### intProperty
+### `boolProperty`
 
-**Parameters**
+<params>Parameters</params>
 
-* <type>string</type> <arg>key</arg>: The property key
+* <type>string</type> <arg>name</arg>: The name of the property to get
+
+**Returns** <type>boolean</type>
+
+Returns the <type>boolean</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns `false`.
+
+---
+### `intProperty`
+
+<params>Parameters</params>
+
+* <type>string</type> <arg>name</arg>: The name of the property to get
 
 **Returns** <type>number</type>
 
-Returns the integer <type>number</type> value of the property matching the given <arg>key</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns 0.
+Returns the integer <type>number</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns 0.
 
 ---
-### floatProperty
+### `floatProperty`
 
-**Parameters**
+<params>Parameters</params>
 
-* <type>string</type> <arg>key</arg>: The property key
+* <type>string</type> <arg>name</arg>: The name of the property to get
 
 **Returns** <type>number</type>
 
-Returns the floating point <type>number</type> value of the property matching the given <arg>key</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns 0.
+Returns the floating point <type>number</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns 0.
 
 ---
-### stringProperty
+### `stringProperty`
 
-**Parameters**
+<params>Parameters</params>
 
-* <type>string</type> <arg>key</arg>: The property key
+* <type>string</type> <arg>name</arg>: The name of the property to get
 
 **Returns** <type>string</type>
 
-Returns the <type>string</type> value of the property matching the given <arg>key</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns an empty string.
+Returns the <type>string</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns an empty string.
 
 ---
-### setBoolProperty
+### `setBoolProperty`
 
-**Parameters**
+<params>Parameters</params>
 
-* <type>string</type> <arg>key</arg>: The key of the property to set
+* <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>boolean</type> <arg>value</arg>: The value to apply
 
-Sets the property <arg>key</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
+Sets the property <arg>name</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
 
 ---
-### setIntProperty
+### `setIntProperty`
 
-**Parameters**
+<params>Parameters</params>
 
-* <type>string</type> <arg>key</arg>: The key of the property to set
+* <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>number</type> <arg>value</arg>: The value to apply
 
-Sets the property <arg>key</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
+Sets the property <arg>name</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
 
 ---
-### setFloatProperty
+### `setFloatProperty`
 
-**Parameters**
+<params>Parameters</params>
 
-* <type>string</type> <arg>key</arg>: The key of the property to set
+* <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>number</type> <arg>value</arg>: The value to apply
 
-Sets the property <arg>key</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
+Sets the property <arg>name</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
 
 ---
-### setStringProperty
+### `setStringProperty`
 
-**Parameters**
+<params>Parameters</params>
 
-* <type>string</type> <arg>key</arg>: The key of the property to set
+* <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>string</type> <arg>value</arg>: The value to apply
 
-Sets the property <arg>key</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
+Sets the property <arg>name</arg> to <arg>value</arg>. The property is created if it doesn't already exist.

@@ -1,11 +1,13 @@
 site_name: SLADE Scripting Documentation
-# repo_url: https://github.com/sirjuddington/SLADE
+repo_url: https://github.com/sirjuddington/SLADE
 edit_uri: ''
 docs_dir: 'mkdocs'
 site_dir: '../../dist/res/docs/Scripting'
 use_directory_urls: false
-theme: readthedocs
 
+# Theme
+theme: readthedocs
+theme_dir: 'theme'
 extra_css:
   - 'css/slade.css'
 
@@ -24,6 +26,9 @@ pages:
   - Game: 'md/Namespaces/Game.md'
   - MapEditor: 'md/Namespaces/MapEditor.md'
 - Types:
+  - Colour: 'md/Types/Colour.md'
+  - Plane: 'md/Types/Plane.md'
+  - Point: 'md/Types/Point.md'
   - Archive: 'md/Types/Archive.md'
   - ArchiveEntry: 'md/Types/ArchiveEntry.md'
   - ArchiveDir: 'md/Types/ArchiveDir.md'
@@ -31,7 +36,6 @@ pages:
   - ThingType: 'md/Types/ThingType.md'
   - Map: 'md/Types/Map.md'
   - MapEditor: 'md/Types/MapEditor.md'
-  - ItemSelection: 'md/Types/ItemSelection.md'
   - MapObject: 'md/Types/MapObject.md'
   - MapVertex: 'md/Types/MapVertex.md'
   - MapLine: 'md/Types/MapLine.md'

@@ -14,3 +14,8 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 <prop>textureTop</prop> | <type>string</type> | The side's top (upper) texture
 <prop>offsetX</prop> | <type>number</type> | Texture X offset
 <prop>offsetY</prop> | <type>number</type> | Texture Y offset
+
+## Constructors
+
+!!! attention "No Constructors"
+    This type can not be created directly in scripts.

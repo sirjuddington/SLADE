@@ -297,3 +297,22 @@ MapEditor::ItemType MapEditor::baseItemType(const ItemType& type)
 	default:					return ItemType::Any;
 	}
 }
+
+MapEditor::ItemType MapEditor::itemTypeFromObject(const MapObject* object)
+{
+	switch (object->getObjType())
+	{
+	case MOBJ_VERTEX:
+		return ItemType::Vertex;
+	case MOBJ_LINE:
+		return ItemType::Line;
+	case MOBJ_SIDE:
+		return ItemType::Side;
+	case MOBJ_SECTOR:
+		return ItemType::Sector;
+	case MOBJ_THING:
+		return ItemType::Thing;
+	default:
+		return ItemType::Any;
+	}
+}

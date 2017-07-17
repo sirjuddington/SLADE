@@ -10,3 +10,8 @@ The **EntryType** type contains information about an entry's type/format.
 <prop>formatId</prop>  | <type>string</type> | The type's data format id
 <prop>editor</prop>    | <type>string</type> | The id of the editor used to open entries of this type
 <prop>category</prop>  | <type>string</type> | The type category, used in the entry list filter
+
+## Constructors
+
+!!! attention "No Constructors"
+    This type can not be created directly in scripts.

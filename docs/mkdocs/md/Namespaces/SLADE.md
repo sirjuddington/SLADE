@@ -2,9 +2,9 @@ The `slade` scripting namespace contains a set of functions for general interact
 
 ## Functions
 
-### logMessage
+### `logMessage`
 
-**Parameters**
+<params>Parameters</params>
 
 * <type>string</type> <arg>message</arg>: The message to print to the log
 
@@ -17,16 +17,16 @@ slade.logMessage('This is a log message')
 ```
 
 ---
-### globalError
+### `globalError`
 
 **Returns** <type>string</type>
 
 Returns the most recently generated error message
 
 ---
-### messageBox
+### `messageBox`
 
-**Parameters**
+<params>Parameters</params>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>message</arg>: The message to display
@@ -34,9 +34,9 @@ Returns the most recently generated error message
 Shows a simple message dialog
 
 ---
-### promptString
+### `promptString`
 
-**Parameters**
+<params>Parameters</params>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>message</arg>: The message to display
@@ -47,9 +47,9 @@ Shows a simple message dialog
 Shows a dialog prompt for the user to enter a string value
 
 ---
-### promptNumber
+### `promptNumber`
 
-**Parameters**
+<params>Parameters</params>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>message</arg>: The message to display
@@ -62,9 +62,9 @@ Shows a dialog prompt for the user to enter a string value
 Shows a dialog prompt for the user to enter a numeric value
 
 ---
-### promptYesNo
+### `promptYesNo`
 
-**Parameters**
+<params>Parameters</params>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>message</arg>: The message to display
@@ -74,9 +74,9 @@ Shows a dialog prompt for the user to enter a numeric value
 Shows a dialog prompt with 'Yes' and 'No' buttons, returning `true` for yes or `false` for no
 
 ---
-### browseFile
+### `browseFile`
 
-**Parameters**
+<params>Parameters</params>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>extensions</arg>: A formatted list of selectable file extensions (see description for format)
@@ -100,9 +100,9 @@ slade.logMessage('Selected file ' .. path)
 ```
 
 ---
-### browseFiles
+### `browseFiles`
 
-**Parameters**
+<params>Parameters</params>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>extensions</arg>: A formatted list of selectable file extensions
@@ -112,46 +112,46 @@ slade.logMessage('Selected file ' .. path)
 Shows a file browser dialog allowing the user to select multiple files and returns an array of full paths to the selected files. If no file was selected it will return an empty array. See **browseFile** above for the formatting of the <arg>extensions</arg> parameter.
 
 ---
-### currentArchive
+### `currentArchive`
 
 **Returns** <type>[Archive](../Types/Archive.md)</type>
 
 Returns the archive for the currently open tab in the main SLADE window.
 
 ---
-### currentEntry
+### `currentEntry`
 
 **Returns** <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type>
 
 Returns the currently open entry in the main SLADE window.
 
 ---
-### currentEntrySelection
+### `currentEntrySelection`
 
 **Returns** <type>[ArchiveEntry](../Types/ArchiveEntry.md)\[\]</type>
 
 Returns an array of the currently selected entries in the main SLADE window.
 
 ---
-### showArchive
+### `showArchive`
 
-**Parameters**
+<params>Parameters</params>
 
   * <type>[Archive](../Types/Archive.md)</type> <arg>archive</arg>: The archive to show
 
 Shows the tab for the given archive in the main SLADE window.
 
 ---
-### showEntry
+### `showEntry`
 
-**Parameters**
+<params>Parameters</params>
 
   * <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type> <arg>entry</arg>: The entry to show_
 
 Shows the given entry in a tab in the main SLADE window.
 
 ---
-### mapEditor
+### `mapEditor`
 
 **Returns** <type>[MapEditor](../Types/MapEditor.md)</type>
 

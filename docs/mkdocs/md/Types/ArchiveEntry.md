@@ -9,11 +9,16 @@ The **ArchiveEntry** type represents an entry in SLADE.
 <prop>type</prop> | <type>[EntryType](EntryType.md)</type> | The entry's type information
 <prop>size</prop> | <type>number</type> | The size of the entry in bytes
 
+## Constructors
+
+!!! attention "No Constructors"
+    This type can not be created directly in scripts.
+
 ## Functions
 
-### formattedName
+### `formattedName`
 
-**Parameters**
+<params>Parameters</params>
 
 * <type>boolean</type> <arg>includePath</arg>: Whether to include the entry path
 * <type>boolean</type> <arg>includeExtension</arg>: Whether to include the entry extension
@@ -23,7 +28,7 @@ The **ArchiveEntry** type represents an entry in SLADE.
 
 Returns a formatted name of the entry, depending on the parameters given. Note that <arg>upperCase</arg> will not affect the path.
 
-### formattedSize
+### `formattedSize`
 
 **Returns** <type>string</type>
 
