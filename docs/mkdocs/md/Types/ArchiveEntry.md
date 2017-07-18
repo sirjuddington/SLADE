@@ -20,9 +20,9 @@ The **ArchiveEntry** type represents an entry in SLADE.
 
 <params>Parameters</params>
 
-* <type>boolean</type> <arg>includePath</arg>: Whether to include the entry path
-* <type>boolean</type> <arg>includeExtension</arg>: Whether to include the entry extension
-* <type>boolean</type> <arg>upperCase</arg>: Whether to convert the entry name to uppercase
+* `[`<type>boolean</type> <arg>includePath</arg> : `true]`: Whether to include the entry path
+* `[`<type>boolean</type> <arg>includeExtension</arg> : `true]`: Whether to include the entry extension
+* `[`<type>boolean</type> <arg>upperCase</arg> : `false]`: Whether to convert the entry name to uppercase
 
 **Returns** <type>string</type>
 

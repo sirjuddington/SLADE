@@ -178,6 +178,12 @@
     <Filter Include="External\Sol">
       <UniqueIdentifier>{413f5b0e-9e77-4fc8-bd97-5a9ea1597884}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripting">
+      <UniqueIdentifier>{2503b7fc-d9c2-4a42-822e-3b3de37ebfc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting\Export">
+      <UniqueIdentifier>{11e5d755-3751-42e9-8221-b24a5c1bf0cd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
@@ -1416,9 +1422,6 @@
     <ClCompile Include="..\..\src\General\Log.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\General\Lua.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\General\Misc.cpp">
       <Filter>General</Filter>
     </ClCompile>
@@ -1478,6 +1481,21 @@
     </ClCompile>
     <ClCompile Include="..\..\src\External\lua\lutf8lib.c">
       <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\Lua.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\Export\General.cpp">
+      <Filter>Scripting\Export</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\Export\Game.cpp">
+      <Filter>Scripting\Export</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\Export\Archive.cpp">
+      <Filter>Scripting\Export</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\Export\MapEditor.cpp">
+      <Filter>Scripting\Export</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2528,9 +2546,6 @@
     <ClInclude Include="..\..\src\General\Log.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\General\Lua.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\General\Misc.h">
       <Filter>General</Filter>
     </ClInclude>
@@ -2575,6 +2590,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Graphics\SImage\SImage.h">
       <Filter>Graphics\SImage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\Lua.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\Export\Export.h">
+      <Filter>Scripting\Export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\SolUtil.h">
+      <Filter>Scripting</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

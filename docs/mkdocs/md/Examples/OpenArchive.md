@@ -8,12 +8,12 @@ This example script does the following:
 
 ```lua
 -- Browse for archive file to open
-local path = slade.browseFile('Open Archive', slade.archiveManager():fileExtensionsString(), '')
+local path = slade.browseFile('Open Archive', archives.fileExtensionsString(), '')
 if path == '' then
     slade.logMessage('No archive selected')
 else
     -- Open it
-    local archive = slade.archiveManager():openFile(path)
+    local archive = archives.openFile(path)
 
     -- Check it opened ok
     if archive == nil then
@@ -28,7 +28,7 @@ else
 
         -- Prompt to close
         if (slade.promptYesNo('Close Archive', 'Do you want to close the archive now?')) then
-            slade.archiveManager():closeArchive(archive)
+            archives.close(archive)
         end
     end
 end

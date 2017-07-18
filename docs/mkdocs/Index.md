@@ -33,3 +33,9 @@ Documentation for SLADE Lua scripting types and functions.
     * [MapSide](md/Types/MapSide.md)
     * [MapSector](md/Types/MapSector.md)
     * [MapThing](md/Types/MapThing.md)
+
+### Miscellaneous
+
+* [Colour](md/Types/Colour.md)
+* [Plane](md/Types/Plane.md)
+* [Point](md/Types/Point.md)

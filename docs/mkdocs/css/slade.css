@@ -33,12 +33,16 @@ a {
 }
 
 .wy-nav-content A:link,
-.wy-nav-content A:visited {
+.wy-nav-content A:visited,
+.wy-nav-content code A:link,
+.wy-nav-content code A:visited {
 	color: hsl(220, 90%, 40%);
 }
 
 .wy-nav-content A:hover,
-.wy-nav-content A:active {
+.wy-nav-content A:active,
+.wy-nav-content code A:hover,
+.wy-nav-content code A:active {
 	color: hsl(40, 100%, 45%);
 }
 

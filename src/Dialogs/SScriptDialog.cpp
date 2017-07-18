@@ -30,9 +30,9 @@
 //
 // ----------------------------------------------------------------------------
 #include "Main.h"
-#include "SScriptDialog.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Lua.h"
+#include "Scripting/Lua.h"
+#include "SScriptDialog.h"
 #include "UI/TextEditor/TextEditor.h"
 
 

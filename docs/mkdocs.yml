@@ -26,9 +26,6 @@ pages:
   - Game: 'md/Namespaces/Game.md'
   - MapEditor: 'md/Namespaces/MapEditor.md'
 - Types:
-  - Colour: 'md/Types/Colour.md'
-  - Plane: 'md/Types/Plane.md'
-  - Point: 'md/Types/Point.md'
   - Archive: 'md/Types/Archive.md'
   - ArchiveEntry: 'md/Types/ArchiveEntry.md'
   - ArchiveDir: 'md/Types/ArchiveDir.md'
@@ -42,3 +39,6 @@ pages:
   - MapSide: 'md/Types/MapSide.md'
   - MapSector: 'md/Types/MapSector.md'
   - MapThing: 'md/Types/MapThing.md'
+  - Colour: 'md/Types/Colour.md'
+  - Plane: 'md/Types/Plane.md'
+  - Point: 'md/Types/Point.md'

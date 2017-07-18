@@ -40,7 +40,6 @@
 #include "General/Console/Console.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
-#include "General/Lua.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
 #include "General/UI.h"
@@ -50,9 +49,10 @@
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/NodeBuilders.h"
 #include "OpenGL/Drawing.h"
+#include "Scripting/Lua.h"
+#include "UI/SBrush.h"
 #include "UI/TextEditor/TextLanguage.h"
 #include "UI/TextEditor/TextStyle.h"
-#include "UI/SBrush.h"
 #include "Utility/Tokenizer.h"
 
 
