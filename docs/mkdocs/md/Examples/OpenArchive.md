@@ -22,8 +22,8 @@ else
         slade.logMessage('Archive opened successfully')
 
         -- List all entries
-        for i,entry in ipairs(archive:allEntries()) do
-            slade.logMessage(entry:getPath(true) .. ' (' .. entry:getSizeString() .. ', ' .. entry:getTypeString() .. ')')
+        for i,entry in ipairs(archive.entries) do
+            slade.logMessage(entry:formattedName() .. ' (' .. entry:formattedSize() .. ', ' .. entry.type.name .. ')')
         end
 
         -- Prompt to close
