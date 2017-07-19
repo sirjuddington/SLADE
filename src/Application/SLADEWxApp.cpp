@@ -617,9 +617,10 @@ void SLADEWxApp::checkForUpdates(bool message_box)
 #ifdef __WXMSW__
 	update_check_message_box = message_box;
 	LOG_MESSAGE(1, "Checking for updates...");
-	auto checker = new WebGet(this, "slade.mancubus.net", "/version.txt");
-	checker->Create();
-	checker->Run();
+	//auto checker = new WebGet(this, "slade.mancubus.net", "/version.txt");
+	//checker->Create();
+	//checker->Run();
+	Web::getHttp("slade.mancubus.net", "/version.txt", this);
 #endif
 }
 

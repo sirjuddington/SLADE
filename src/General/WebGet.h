@@ -16,3 +16,8 @@ private:
 	string			host_;
 	string			path_;
 };
+
+namespace Web
+{
+	void getHttp(const char* host, const char* uri, wxEvtHandler* event_handler);
+}
