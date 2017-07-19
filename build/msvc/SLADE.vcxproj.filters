@@ -184,6 +184,9 @@
     <Filter Include="Scripting\Export">
       <UniqueIdentifier>{11e5d755-3751-42e9-8221-b24a5c1bf0cd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripting\UI">
+      <UniqueIdentifier>{c751e646-38bb-48e7-b8c7-c188148c104a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
@@ -1371,9 +1374,6 @@
     <ClCompile Include="..\..\src\External\lua\lvm.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Dialogs\SScriptDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Game\ActionSpecial.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -1496,6 +1496,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Scripting\Export\MapEditor.cpp">
       <Filter>Scripting\Export</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\UI\ScriptManagerWindow.cpp">
+      <Filter>Scripting\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\ScriptManager.cpp">
+      <Filter>Scripting</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2495,9 +2501,6 @@
     <ClInclude Include="..\..\src\External\sol\sol.hpp">
       <Filter>External\Sol</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Dialogs\SScriptDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Game\ActionSpecial.h">
       <Filter>Game</Filter>
     </ClInclude>
@@ -2598,6 +2601,12 @@
       <Filter>Scripting\Export</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Scripting\SolUtil.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\UI\ScriptManagerWindow.h">
+      <Filter>Scripting\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\ScriptManager.h">
       <Filter>Scripting</Filter>
     </ClInclude>
   </ItemGroup>

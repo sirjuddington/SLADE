@@ -35,7 +35,6 @@
 #include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/RunDialog.h"
-#include "Dialogs/SScriptDialog.h"
 #include "Game/Configuration.h"
 #include "General/Misc.h"
 #include "General/UI.h"
@@ -52,6 +51,7 @@
 #include "MapEditor/UI/ScriptEditorPanel.h"
 #include "MapEditor/UI/ShapeDrawPanel.h"
 #include "MapEditorWindow.h"
+#include "Scripting/ScriptManager.h"
 #include "UI/ConsolePanel.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
@@ -1322,8 +1322,7 @@ bool MapEditorWindow::handleAction(string id)
 	// Tools->Run Script
 	else if (id == "mapw_runscript")
 	{
-		SScriptDialog dlg(this);
-		dlg.ShowModal();
+		ScriptManager::open();
 		return true;
 	}
 	

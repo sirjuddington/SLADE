@@ -207,6 +207,11 @@ bool Lua::runFile(string filename)
 	return true;
 }
 
+sol::state& Lua::state()
+{
+	return lua;
+}
+
 wxWindow* Lua::currentWindow()
 {
 	return current_window;

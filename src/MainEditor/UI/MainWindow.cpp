@@ -50,7 +50,7 @@
 #include "UI/PaletteChooser.h"
 #include "ArchiveManagerPanel.h"
 #include "StartPage.h"
-#include "Dialogs/SScriptDialog.h"
+#include "Scripting/ScriptManager.h"
 #ifdef USE_WEBVIEW_STARTPAGE
 #include "DocsPage.h"
 #endif
@@ -628,8 +628,7 @@ bool MainWindow::handleAction(string id)
 	// Tools->Run Script
 	if (id == "main_runscript")
 	{
-		SScriptDialog dlg(this);
-		dlg.ShowModal();
+		ScriptManager::open();
 		return true;
 	}
 

@@ -296,7 +296,6 @@
     <ClCompile Include="..\..\src\Audio\MIDIPlayer.cpp" />
     <ClCompile Include="..\..\src\Audio\ModMusic.cpp" />
     <ClCompile Include="..\..\src\Dialogs\GfxCropDialog.cpp" />
-    <ClCompile Include="..\..\src\Dialogs\SScriptDialog.cpp" />
     <ClCompile Include="..\..\src\External\bzip2\blocksort.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
@@ -1658,6 +1657,8 @@
     <ClCompile Include="..\..\src\Scripting\Export\General.cpp" />
     <ClCompile Include="..\..\src\Scripting\Export\MapEditor.cpp" />
     <ClCompile Include="..\..\src\Scripting\Lua.cpp" />
+    <ClCompile Include="..\..\src\Scripting\ScriptManager.cpp" />
+    <ClCompile Include="..\..\src\Scripting\UI\ScriptManagerWindow.cpp" />
     <ClCompile Include="..\..\src\UI\BaseResourceChooser.cpp" />
     <ClCompile Include="..\..\src\UI\Browser\BrowserCanvas.cpp" />
     <ClCompile Include="..\..\src\UI\Browser\BrowserItem.cpp" />
@@ -1913,7 +1914,6 @@
     <ClInclude Include="..\..\src\common.h" />
     <ClInclude Include="..\..\src\common2.h" />
     <ClInclude Include="..\..\src\Dialogs\GfxCropDialog.h" />
-    <ClInclude Include="..\..\src\Dialogs\SScriptDialog.h" />
     <ClInclude Include="..\..\src\External\bzip2\bzlib.h" />
     <ClInclude Include="..\..\src\External\bzip2\bzlib_private.h" />
     <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h" />
@@ -2165,7 +2165,9 @@
     <ClInclude Include="..\..\src\OpenGL\OpenGL.h" />
     <ClInclude Include="..\..\src\Scripting\Export\Export.h" />
     <ClInclude Include="..\..\src\Scripting\Lua.h" />
+    <ClInclude Include="..\..\src\Scripting\ScriptManager.h" />
     <ClInclude Include="..\..\src\Scripting\SolUtil.h" />
+    <ClInclude Include="..\..\src\Scripting\UI\ScriptManagerWindow.h" />
     <ClInclude Include="..\..\src\UI\BaseResourceChooser.h" />
     <ClInclude Include="..\..\src\UI\Browser\BrowserCanvas.h" />
     <ClInclude Include="..\..\src\UI\Browser\BrowserItem.h" />

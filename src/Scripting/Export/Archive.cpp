@@ -36,6 +36,14 @@ string formattedEntryName(ArchiveEntry& self, bool include_path, bool include_ex
 	return name;
 }
 
+vector<ArchiveTreeNode*> archiveDirSubDirs(ArchiveTreeNode& self)
+{
+	vector<ArchiveTreeNode*> dirs;
+	for (auto child : self.allChildren())
+		dirs.push_back((ArchiveTreeNode*)child);
+	return dirs;
+}
+
 void registerArchive(sol::state& lua)
 {
 	lua.new_usertype<Archive>(
@@ -45,46 +53,48 @@ void registerArchive(sol::state& lua)
 		"new", sol::no_constructor,
 
 		// Properties
-		"filename", sol::property([](Archive& self) { return self.filename(); }),
-		"entries", sol::property(&Archive::luaAllEntries),
-		"rootDir", sol::property(&Archive::rootDir),
+		"filename",	sol::property([](Archive& self) { return self.filename(); }),
+		"entries",	sol::property(&Archive::luaAllEntries),
+		"rootDir",	sol::property(&Archive::rootDir),
 
 		// Functions
-		"filenameNoPath", [](Archive& self) { return self.filename(false); },
-		"entryAtPath", &Archive::entryAtPath,
-		"dirAtPath", &Archive::luaGetDir,
-		"createEntry", &Archive::luaCreateEntry,
-		"createEntryInNamespace", &Archive::luaCreateEntryInNamespace,
-		"removeEntry", &Archive::removeEntry,
-		"renameEntry", &Archive::renameEntry
-		);
+		"filenameNoPath",			[](Archive& self) { return self.filename(false); },
+		"entryAtPath",				&Archive::entryAtPath,
+		"dirAtPath",				&Archive::luaGetDir,
+		"createEntry",				&Archive::luaCreateEntry,
+		"createEntryInNamespace",	&Archive::luaCreateEntryInNamespace,
+		"removeEntry",				&Archive::removeEntry,
+		"renameEntry",				&Archive::renameEntry
+	);
 
 	// Register all subclasses
 	// (perhaps it'd be a good idea to make Archive not abstract and handle
 	//  the format-specific stuff somewhere else, rather than in subclasses)
-	//#define REGISTER_ARCHIVE(type) lua.new_usertype<type>(#type, sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<WadArchive>("WadArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<ZipArchive>("ZipArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<LibArchive>("LibArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<DatArchive>("DatArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<ResArchive>("ResArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<PakArchive>("PakArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<BSPArchive>("BSPArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<GrpArchive>("GrpArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<RffArchive>("RffArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<GobArchive>("GobArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<LfdArchive>("LfdArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<HogArchive>("HogArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<ADatArchive>("ADatArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<Wad2Archive>("Wad2Archive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<WadJArchive>("WadJArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<WolfArchive>("WolfArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<GZipArchive>("GZipArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<BZip2Archive>("BZip2Archive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<TarArchive>("TarArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<DiskArchive>("DiskArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<PodArchive>("PodArchive", sol::base_classes, sol::bases<Archive>());
-	lua.new_usertype<ChasmBinArchive>("ChasmBinArchive", sol::base_classes, sol::bases<Archive>());
+	#define REGISTER_ARCHIVE(type) lua.new_usertype<type>(#type, sol::base_classes, sol::bases<Archive>())
+	REGISTER_ARCHIVE(WadArchive);
+	REGISTER_ARCHIVE(WadArchive);
+	REGISTER_ARCHIVE(ZipArchive);
+	REGISTER_ARCHIVE(LibArchive);
+	REGISTER_ARCHIVE(DatArchive);
+	REGISTER_ARCHIVE(ResArchive);
+	REGISTER_ARCHIVE(PakArchive);
+	REGISTER_ARCHIVE(BSPArchive);
+	REGISTER_ARCHIVE(GrpArchive);
+	REGISTER_ARCHIVE(RffArchive);
+	REGISTER_ARCHIVE(GobArchive);
+	REGISTER_ARCHIVE(LfdArchive);
+	REGISTER_ARCHIVE(HogArchive);
+	REGISTER_ARCHIVE(ADatArchive);
+	REGISTER_ARCHIVE(Wad2Archive);
+	REGISTER_ARCHIVE(WadJArchive);
+	REGISTER_ARCHIVE(WolfArchive);
+	REGISTER_ARCHIVE(GZipArchive);
+	REGISTER_ARCHIVE(BZip2Archive);
+	REGISTER_ARCHIVE(TarArchive);
+	REGISTER_ARCHIVE(DiskArchive);
+	REGISTER_ARCHIVE(PodArchive);
+	REGISTER_ARCHIVE(ChasmBinArchive);
+	#undef REGISTER_ARCHIVE
 }
 
 void registerArchiveEntry(sol::state& lua)
@@ -96,11 +106,11 @@ void registerArchiveEntry(sol::state& lua)
 		"new", sol::no_constructor,
 
 		// Properties
-		"name", sol::property([](ArchiveEntry& self) { return self.getName(); }),
-		"path", sol::property([](ArchiveEntry& self) { return self.getPath(); }),
-		"type", sol::property(&ArchiveEntry::getType),
-		"size", sol::property(&ArchiveEntry::getSize),
-		"index", sol::property([](ArchiveEntry& self) { return self.getParentDir()->entryIndex(&self); }),
+		"name",		sol::property([](ArchiveEntry& self) { return self.getName(); }),
+		"path",		sol::property([](ArchiveEntry& self) { return self.getPath(); }),
+		"type",		sol::property(&ArchiveEntry::getType),
+		"size",		sol::property(&ArchiveEntry::getSize),
+		"index",	sol::property([](ArchiveEntry& self) { return self.getParentDir()->entryIndex(&self); }),
 
 		// Functions
 		"formattedName", sol::overload(
@@ -112,8 +122,8 @@ void registerArchiveEntry(sol::state& lua)
 			{ return formattedEntryName(self, include_path, include_extension, false); },
 			&formattedEntryName
 		),
-		"formattedSize", &ArchiveEntry::getSizeString,
-		"crc32", [](ArchiveEntry& self) { return Misc::crc(self.getData(), self.getSize()); }
+		"formattedSize",	&ArchiveEntry::getSizeString,
+		"crc32",			[](ArchiveEntry& self) { return Misc::crc(self.getData(), self.getSize()); }
 	);
 }
 
@@ -126,22 +136,13 @@ void registerArchiveTreeNode(sol::state& lua)
 		"new", sol::no_constructor,
 
 		// Properties
-		"name", sol::property(&ArchiveTreeNode::getName),
-		"archive", sol::property(&ArchiveTreeNode::archive),
-		"entries", sol::property(&ArchiveTreeNode::luaGetEntries),
-		"parent", sol::property([](ArchiveTreeNode& self)
-	{
-		return (ArchiveTreeNode*)self.getParent();
-	}),
-		"path", sol::property(&ArchiveTreeNode::getPath),
-		"subDirectories", sol::property([](ArchiveTreeNode& self)
-	{
-		vector<ArchiveTreeNode*> dirs;
-		for (auto child : self.allChildren())
-			dirs.push_back((ArchiveTreeNode*)child);
-		return dirs;
-	})
-		);
+		"name",				sol::property(&ArchiveTreeNode::getName),
+		"archive",			sol::property(&ArchiveTreeNode::archive),
+		"entries",			sol::property(&ArchiveTreeNode::luaGetEntries),
+		"parent",			sol::property([](ArchiveTreeNode& self) { return (ArchiveTreeNode*)self.getParent(); }),
+		"path",				sol::property(&ArchiveTreeNode::getPath),
+		"subDirectories",	sol::property(&archiveDirSubDirs)
+	);
 }
 
 void registerEntryType(sol::state& lua)
@@ -153,13 +154,13 @@ void registerEntryType(sol::state& lua)
 		"new", sol::no_constructor,
 
 		// Properties
-		"id", sol::property(&EntryType::getId),
-		"name", sol::property(&EntryType::getName),
-		"extension", sol::property(&EntryType::getExtension),
-		"formatId", sol::property(&EntryType::getFormat),
-		"editor", sol::property(&EntryType::getEditor),
-		"category", sol::property(&EntryType::getCategory)
-		);
+		"id",			sol::property(&EntryType::getId),
+		"name",			sol::property(&EntryType::getName),
+		"extension",	sol::property(&EntryType::getExtension),
+		"formatId",		sol::property(&EntryType::getFormat),
+		"editor",		sol::property(&EntryType::getEditor),
+		"category",		sol::property(&EntryType::getCategory)
+	);
 }
 	
 void registerArchivesNamespace(sol::state& lua)
@@ -240,4 +241,4 @@ void registerArchiveTypes(sol::state& lua)
 	registerArchiveTreeNode(lua);
 }
 
-}
+} // namespace Lua

@@ -3,6 +3,7 @@
 #define __LUA_H__
 
 class wxWindow;
+namespace sol { class state; }
 
 namespace Lua
 {
@@ -10,6 +11,8 @@ namespace Lua
 	void	close();
 	bool	run(string program);
 	bool	runFile(string filename);
+
+	sol::state&	state();
 
 	wxWindow*	currentWindow();
 	void		setCurrentWindow(wxWindow* window);
