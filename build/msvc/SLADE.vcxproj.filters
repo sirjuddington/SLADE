@@ -1278,9 +1278,6 @@
     <ClCompile Include="..\..\src\MainEditor\UI\StartPage.cpp">
       <Filter>Main Editor\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\General\WebGet.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\External\lua\lapi.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
@@ -1502,6 +1499,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Scripting\ScriptManager.cpp">
       <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Web.cpp">
+      <Filter>General</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2417,9 +2417,6 @@
     <ClInclude Include="..\..\src\MainEditor\UI\StartPage.h">
       <Filter>Main Editor\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\General\WebGet.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\External\lua\lapi.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
@@ -2608,6 +2605,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Scripting\ScriptManager.h">
       <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Web.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

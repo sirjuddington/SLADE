@@ -32,7 +32,7 @@
 #include "Archive/ArchiveManager.h"
 #include "External/email/wxMailer.h"
 #include "General/Console/Console.h"
-#include "General/WebGet.h"
+#include "General/Web.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
@@ -616,10 +616,8 @@ void SLADEWxApp::checkForUpdates(bool message_box)
 {
 #ifdef __WXMSW__
 	update_check_message_box = message_box;
-	LOG_MESSAGE(1, "Checking for updates...");
-	auto checker = new WebGet(this, "slade.mancubus.net", "/version.txt");
-	checker->Create();
-	checker->Run();
+	Log::info(1, "Checking for updates...");
+	Web::getHttpAsync("slade.mancubus.net", "/version.txt", this);
 #endif
 }
 
@@ -718,8 +716,10 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 			new_beta = true;
 
 		// Beta -> Beta
-		else if (Global::version_num < version_beta ||															// New version beta
-				(Global::beta_num < beta_num && Global::version_num == version_beta && Global::beta_num > 0))	// Same version, newer beta
+		else if (Global::version_num < version_beta ||		// New version beta
+				(Global::beta_num < beta_num &&				// Same version, newer beta
+					Global::version_num == version_beta &&
+					Global::beta_num > 0))
 			new_beta = true;
 	}
 

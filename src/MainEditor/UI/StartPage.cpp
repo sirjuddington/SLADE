@@ -36,7 +36,7 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
-#include "General/WebGet.h"
+#include "General/Web.h"
 #include "StartPage.h"
 #include "Utility/Tokenizer.h"
 
@@ -192,11 +192,7 @@ void SStartPage::load(bool new_tip)
 {
 	// Get latest news post
 	if (latest_news_ == "")
-	{
-		auto thread_get_news = new WebGet(this, "slade.mancubus.net", "/news-latest.php");
-		thread_get_news->Create();
-		thread_get_news->Run();
-	}
+		Web::getHttpAsync("slade.mancubus.net", "/news-latest.php", this);
 
 	// Can't do anything without html entry
 	if (!entry_base_html_)

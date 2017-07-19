@@ -1042,7 +1042,7 @@
     <ClCompile Include="..\..\src\General\SAction.cpp" />
     <ClCompile Include="..\..\src\General\UI.cpp" />
     <ClCompile Include="..\..\src\General\UndoRedo.cpp" />
-    <ClCompile Include="..\..\src\General\WebGet.cpp" />
+    <ClCompile Include="..\..\src\General\Web.cpp" />
     <ClCompile Include="..\..\src\External\lua\lapi.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
@@ -2020,7 +2020,7 @@
     <ClInclude Include="..\..\src\General\SAction.h" />
     <ClInclude Include="..\..\src\General\UI.h" />
     <ClInclude Include="..\..\src\General\UndoRedo.h" />
-    <ClInclude Include="..\..\src\General\WebGet.h" />
+    <ClInclude Include="..\..\src\General\Web.h" />
     <ClInclude Include="..\..\src\Graphics\CTexture\CTexture.h" />
     <ClInclude Include="..\..\src\Graphics\CTexture\PatchTable.h" />
     <ClInclude Include="..\..\src\Graphics\CTexture\TextureXList.h" />
