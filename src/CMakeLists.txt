@@ -20,10 +20,10 @@ include(${wxWidgets_USE_FILE})
 
 # SFML
 if (USE_SFML_RENDERWINDOW)
-set(SFML_FIND_COMPONENTS system audio window graphics)
+set(SFML_FIND_COMPONENTS system audio window graphics network)
 ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
 else (USE_SFML_RENDERWINDOW)
-set(SFML_FIND_COMPONENTS system audio window)
+set(SFML_FIND_COMPONENTS system audio window network)
 endif(USE_SFML_RENDERWINDOW)
 
 # Fluidsynth
