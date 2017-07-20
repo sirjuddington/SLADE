@@ -2582,9 +2582,6 @@
     <ClInclude Include="..\..\src\Scripting\Lua.h">
       <Filter>Scripting</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Scripting\SolUtil.h">
-      <Filter>Scripting</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Scripting\UI\ScriptManagerWindow.h">
       <Filter>Scripting\UI</Filter>
     </ClInclude>

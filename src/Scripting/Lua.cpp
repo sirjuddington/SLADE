@@ -30,8 +30,10 @@
 //
 // ----------------------------------------------------------------------------
 #include "Main.h"
+#define SOL_CHECK_ARGUMENTS 1
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
+#include "External/sol/sol.hpp"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "General/Console/Console.h"
@@ -41,7 +43,6 @@
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
-#include "SolUtil.h"
 #include "Utility/SFileDialog.h"
 
 
@@ -55,6 +56,45 @@ namespace Lua
 	sol::state	lua;
 	wxWindow*	current_window = nullptr;
 }
+
+
+// ----------------------------------------------------------------------------
+// wxString support for Sol
+//
+// See: https://github.com/ThePhD/sol2/issues/140
+// ----------------------------------------------------------------------------
+namespace sol
+{
+	namespace stack
+	{
+
+		template<>
+		struct pusher<wxString>
+		{
+			static int push(lua_State* L, const wxString& str)
+			{
+				//return stack::push(L, CHR(str));
+				return stack::push(L, static_cast<const char*>(str.ToAscii()));
+			}
+		};
+
+		template<>
+		struct getter<wxString>
+		{
+			static wxString get(lua_State *L, int index, record &tracking)
+			{
+				tracking.use(1);
+				const char* luastr = stack::get<const char *>(L, index);
+				return wxString::FromUTF8(luastr);
+			}
+		};
+
+	} // namespace stack
+
+	template<>
+	struct lua_type_of<wxString> : std::integral_constant<type, type::string> {};
+
+} // namespace sol
 
 
 // ----------------------------------------------------------------------------

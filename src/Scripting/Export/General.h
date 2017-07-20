@@ -127,7 +127,7 @@ void registerSLADENamespace(sol::state& lua)
 
 void registerSplashWindowNamespace(sol::state& lua)
 {
-	sol::table splash = lua["splashWindow"];
+	sol::table splash = lua.create_named_table("splashWindow");
 
 	splash.set_function("show", sol::overload(
 		[](const string& message) { UI::showSplash(message, false, Lua::currentWindow()); },
