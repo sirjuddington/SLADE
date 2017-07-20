@@ -1,12 +1,12 @@
 
-#include "Main.h"
-#include "Export.h"
-#include "MapEditor/MapEditContext.h"
-#include "Game/Configuration.h"
-#include "Scripting/Lua.h"
+// #include "Main.h"
+// #include "Export.h"
+// #include "MapEditor/MapEditContext.h"
+// #include "Game/Configuration.h"
+// #include "Scripting/Lua.h"
 
-namespace Lua
-{
+// namespace Lua
+// {
 	
 void registerSLADEMap(sol::state& lua)
 {
@@ -290,4 +290,4 @@ void registerMapEditorTypes(sol::state& lua)
 	registerMapThing(lua);
 }
 
-} // namespace Lua
+//} // namespace Lua

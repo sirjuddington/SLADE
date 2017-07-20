@@ -1,13 +1,6 @@
 
-#include "Main.h"
-#include "Export.h"
-#include "Archive/Archive.h"
-#include "Archive/ArchiveManager.h"
-#include "Archive/Formats/All.h"
-#include "General/Misc.h"
-
-namespace Lua
-{
+//namespace Lua
+//{
 
 vector<Archive*> allArchives(bool resources_only)
 {
@@ -241,4 +234,4 @@ void registerArchiveTypes(sol::state& lua)
 	registerArchiveTreeNode(lua);
 }
 
-} // namespace Lua
+//} // namespace Lua

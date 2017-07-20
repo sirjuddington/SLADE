@@ -1652,10 +1652,6 @@
     <ClCompile Include="..\..\src\OpenGL\Drawing.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLTexture.cpp" />
     <ClCompile Include="..\..\src\OpenGL\OpenGL.cpp" />
-    <ClCompile Include="..\..\src\Scripting\Export\Archive.cpp" />
-    <ClCompile Include="..\..\src\Scripting\Export\Game.cpp" />
-    <ClCompile Include="..\..\src\Scripting\Export\General.cpp" />
-    <ClCompile Include="..\..\src\Scripting\Export\MapEditor.cpp" />
     <ClCompile Include="..\..\src\Scripting\Lua.cpp" />
     <ClCompile Include="..\..\src\Scripting\ScriptManager.cpp" />
     <ClCompile Include="..\..\src\Scripting\UI\ScriptManagerWindow.cpp" />
@@ -2163,7 +2159,10 @@
     <ClInclude Include="..\..\src\OpenGL\Drawing.h" />
     <ClInclude Include="..\..\src\OpenGL\GLTexture.h" />
     <ClInclude Include="..\..\src\OpenGL\OpenGL.h" />
-    <ClInclude Include="..\..\src\Scripting\Export\Export.h" />
+    <ClInclude Include="..\..\src\Scripting\Export\Archive.h" />
+    <ClInclude Include="..\..\src\Scripting\Export\Game.h" />
+    <ClInclude Include="..\..\src\Scripting\Export\General.h" />
+    <ClInclude Include="..\..\src\Scripting\Export\MapEditor.h" />
     <ClInclude Include="..\..\src\Scripting\Lua.h" />
     <ClInclude Include="..\..\src\Scripting\ScriptManager.h" />
     <ClInclude Include="..\..\src\Scripting\SolUtil.h" />

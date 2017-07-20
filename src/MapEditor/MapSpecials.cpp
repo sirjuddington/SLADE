@@ -65,7 +65,7 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
 		processZDoomMapSpecials(map);
    // Eternity, currently no need for processEternityMapSpecials
    else if (Game::configuration().currentPort() == "eternity")
-      processEternitySlopes(map);
+		processEternitySlopes(map);
 }
 
 /* MapSpecials::processLineSpecial

@@ -1482,18 +1482,6 @@
     <ClCompile Include="..\..\src\Scripting\Lua.cpp">
       <Filter>Scripting</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Scripting\Export\General.cpp">
-      <Filter>Scripting\Export</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Scripting\Export\Game.cpp">
-      <Filter>Scripting\Export</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Scripting\Export\Archive.cpp">
-      <Filter>Scripting\Export</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Scripting\Export\MapEditor.cpp">
-      <Filter>Scripting\Export</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Scripting\UI\ScriptManagerWindow.cpp">
       <Filter>Scripting\UI</Filter>
     </ClCompile>
@@ -2594,9 +2582,6 @@
     <ClInclude Include="..\..\src\Scripting\Lua.h">
       <Filter>Scripting</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Scripting\Export\Export.h">
-      <Filter>Scripting\Export</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Scripting\SolUtil.h">
       <Filter>Scripting</Filter>
     </ClInclude>
@@ -2608,6 +2593,18 @@
     </ClInclude>
     <ClInclude Include="..\..\src\General\Web.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\Export\Archive.h">
+      <Filter>Scripting\Export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\Export\Game.h">
+      <Filter>Scripting\Export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\Export\General.h">
+      <Filter>Scripting\Export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\Export\MapEditor.h">
+      <Filter>Scripting\Export</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -35,12 +35,13 @@
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "General/Console/Console.h"
+#include "General/Misc.h"
 #include "Lua.h"
-#include "SolUtil.h"
+#include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
-#include "General/Misc.h"
-#include "Export/Export.h"
+#include "SolUtil.h"
+#include "Utility/SFileDialog.h"
 
 
 // ----------------------------------------------------------------------------
@@ -62,66 +63,11 @@ namespace Lua
 // ----------------------------------------------------------------------------
 namespace Lua
 {
-
-// --- Function & Type Registration ---
-
-
-
-
-
-
-
-void registerMiscTypes()
-{
-	lua.new_simple_usertype<fpoint2_t>(
-		"Point",
-
-		sol::constructors<fpoint2_t(), fpoint2_t(double, double)>(),
-
-		// Properties
-		"x",	&fpoint2_t::x,
-		"y",	&fpoint2_t::y
-	);
-
-	lua.new_simple_usertype<rgba_t>(
-		"Colour",
-
-		sol::constructors<
-			rgba_t(),
-			rgba_t(uint8_t, uint8_t, uint8_t),
-			rgba_t(uint8_t, uint8_t, uint8_t, uint8_t)
-		>(),
-
-		// Properties
-		"r", &rgba_t::r,
-		"g", &rgba_t::g,
-		"b", &rgba_t::b,
-		"a", &rgba_t::a
-	);
-
-	lua.new_simple_usertype<plane_t>(
-		"Plane",
-
-		sol::constructors<plane_t(), plane_t(double, double, double, double)>(),
-
-		// Properties
-		"a", &plane_t::a,
-		"b", &plane_t::b,
-		"c", &plane_t::c,
-		"d", &plane_t::d,
-
-		// Functions
-		"heightAt", sol::resolve<double(fpoint2_t)>(&plane_t::height_at)
-	);
+#include "Export/Archive.h"
+#include "Export/Game.h"
+#include "Export/General.h"
+#include "Export/MapEditor.h"
 }
-
-
-
-
-
-
-
-} // namespace Lua
 
 // ----------------------------------------------------------------------------
 // Lua::init
@@ -140,7 +86,7 @@ bool Lua::init()
 	registerMapEditorNamespace(lua);
 
 	// Register types
-	registerMiscTypes();
+	registerMiscTypes(lua);
 	registerArchiveTypes(lua);
 	registerMapEditorTypes(lua);
 	registerGameTypes(lua);
@@ -207,16 +153,33 @@ bool Lua::runFile(string filename)
 	return true;
 }
 
+// ----------------------------------------------------------------------------
+// Lua::state
+//
+// Returns the active lua state
+// ----------------------------------------------------------------------------
 sol::state& Lua::state()
 {
 	return lua;
 }
 
+// ----------------------------------------------------------------------------
+// Lua::currentWindow
+//
+// Returns the current window (used as the parent window for UI-related
+// scripting functions such as messageBox)
+// ----------------------------------------------------------------------------
 wxWindow* Lua::currentWindow()
 {
 	return current_window;
 }
 
+// ----------------------------------------------------------------------------
+// Lua::currentWindow
+//
+// Sets the current [window] (used as the parent window for UI-related
+// scripting functions such as messageBox)
+// ----------------------------------------------------------------------------
 void Lua::setCurrentWindow(wxWindow* window)
 {
 	current_window = window;

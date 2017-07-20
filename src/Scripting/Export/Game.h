@@ -1,11 +1,11 @@
 
-#include "Main.h"
-#include "Export.h"
-#include "Game/Game.h"
-#include "Game/Configuration.h"
+//#include "Main.h"
+//#include "Export.h"
+//#include "Game/Game.h"
+//#include "Game/Configuration.h"
 
-namespace Lua
-{
+//namespace Lua
+//{
 
 void registerThingType(sol::state& lua)
 {
@@ -46,4 +46,4 @@ void registerGameTypes(sol::state& lua)
 	registerThingType(lua);
 }
 
-} // namespace Lua
+//} // namespace Lua
