@@ -23,6 +23,7 @@ pages:
 - Home: index.md
 - Examples:
   - Open Archive: 'md/Examples/OpenArchive.md'
+  - Find Text In Entries: 'md/Examples/FindTextInEntries.md'
   - Change Textures: 'md/Examples/ChangeTextures.md'
   - Archvile Madness: 'md/Examples/ArchvileMadness.md'
 - Namespaces:

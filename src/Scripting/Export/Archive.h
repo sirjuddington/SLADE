@@ -111,6 +111,16 @@ void registerArchive(sol::state& lua)
 	#undef REGISTER_ARCHIVE
 }
 
+std::string entryData(ArchiveEntry& self)
+{
+	return std::string((const char*)self.getData(), self.getSize());
+}
+
+bool entryImportString(ArchiveEntry& self, const std::string& string)
+{
+	return self.importMem(string.data(), string.size());
+}
+
 void registerArchiveEntry(sol::state& lua)
 {
 	lua.new_usertype<ArchiveEntry>(
@@ -126,6 +136,7 @@ void registerArchiveEntry(sol::state& lua)
 		"size",		sol::property(&ArchiveEntry::getSize),
 		"index",	sol::property([](ArchiveEntry& self) { return self.getParentDir()->entryIndex(&self); }),
 		"crc32",	sol::property([](ArchiveEntry& self) { return Misc::crc(self.getData(), self.getSize()); }),
+		"data",		sol::property(&entryData),
 
 		// Functions
 		"formattedName", sol::overload(
@@ -139,6 +150,8 @@ void registerArchiveEntry(sol::state& lua)
 		),
 		"formattedSize",	&ArchiveEntry::getSizeString,
 		"importFile",		[](ArchiveEntry& self, const string& filename) { return self.importFile(filename); },
+		"importEntry",		&ArchiveEntry::importEntry,
+		"importData",		&entryImportString,
 		"exportFile",		&ArchiveEntry::exportFile
 	);
 }
