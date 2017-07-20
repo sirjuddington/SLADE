@@ -1,7 +1,4 @@
 
-//namespace Lua
-//{
-
 vector<Archive*> allArchives(bool resources_only)
 {
 	vector<Archive*> list;
@@ -37,6 +34,25 @@ vector<ArchiveTreeNode*> archiveDirSubDirs(ArchiveTreeNode& self)
 	return dirs;
 }
 
+void registerArchiveFormat(sol::state& lua)
+{
+	lua.new_usertype<ArchiveFormat>(
+		"ArchiveFormat",
+
+		// No constructor
+		"new", sol::no_constructor,
+
+		// Properties
+		"id",				sol::property(&ArchiveFormat::id),
+		"name",				sol::property(&ArchiveFormat::name),
+		"supportsDirs",		sol::property(&ArchiveFormat::supports_dirs),
+		"hasExtensions",	sol::property(&ArchiveFormat::names_extensions),
+		"maxNameLength",	sol::property(&ArchiveFormat::max_name_length)
+		//"entryFormat",	sol::property(&ArchiveFormat::entry_format)
+		//"extensions" - need to export key_value_t or do something custom
+	);
+}
+
 void registerArchive(sol::state& lua)
 {
 	lua.new_usertype<Archive>(
@@ -49,6 +65,7 @@ void registerArchive(sol::state& lua)
 		"filename",	sol::property([](Archive& self) { return self.filename(); }),
 		"entries",	sol::property(&Archive::luaAllEntries),
 		"rootDir",	sol::property(&Archive::rootDir),
+		"format",	sol::property(&Archive::formatDesc),
 
 		// Functions
 		"filenameNoPath",			[](Archive& self) { return self.filename(false); },
@@ -57,7 +74,11 @@ void registerArchive(sol::state& lua)
 		"createEntry",				&Archive::luaCreateEntry,
 		"createEntryInNamespace",	&Archive::luaCreateEntryInNamespace,
 		"removeEntry",				&Archive::removeEntry,
-		"renameEntry",				&Archive::renameEntry
+		"renameEntry",				&Archive::renameEntry,
+		"save", sol::overload(
+			[](Archive& self) { return self.save(); },
+			[](Archive& self, const string& filename) { return self.save(filename); }
+		)
 	);
 
 	// Register all subclasses
@@ -104,6 +125,7 @@ void registerArchiveEntry(sol::state& lua)
 		"type",		sol::property(&ArchiveEntry::getType),
 		"size",		sol::property(&ArchiveEntry::getSize),
 		"index",	sol::property([](ArchiveEntry& self) { return self.getParentDir()->entryIndex(&self); }),
+		"crc32",	sol::property([](ArchiveEntry& self) { return Misc::crc(self.getData(), self.getSize()); }),
 
 		// Functions
 		"formattedName", sol::overload(
@@ -116,7 +138,8 @@ void registerArchiveEntry(sol::state& lua)
 			&formattedEntryName
 		),
 		"formattedSize",	&ArchiveEntry::getSizeString,
-		"crc32",			[](ArchiveEntry& self) { return Misc::crc(self.getData(), self.getSize()); }
+		"importFile",		[](ArchiveEntry& self, const string& filename) { return self.importFile(filename); },
+		"exportFile",		&ArchiveEntry::exportFile
 	);
 }
 
@@ -164,6 +187,11 @@ void registerArchivesNamespace(sol::state& lua)
 		&allArchives,
 		[]() { return allArchives(false); }
 	));
+
+	archives.set_function("create", [](const char* format)
+	{
+		return App::archiveManager().newArchive(format);
+	});
 
 	archives.set_function("openFile", [](const char* filename)
 	{
@@ -228,10 +256,9 @@ void registerArchivesNamespace(sol::state& lua)
 
 void registerArchiveTypes(sol::state& lua)
 {
+	registerArchiveFormat(lua);
 	registerArchive(lua);
 	registerArchiveEntry(lua);
 	registerEntryType(lua);
 	registerArchiveTreeNode(lua);
 }
-
-//} // namespace Lua

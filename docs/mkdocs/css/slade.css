@@ -4,7 +4,7 @@
 
 li,
 p {
-	font-size: 15.5px;
+	font-size: 0.97em;
 	line-height: 1.5em;
 }
 
@@ -68,12 +68,14 @@ type,
 arg,
 prop,
 code,
-function {
+function,
+.admonition code {
     font-family: 'Fira Mono', 'Consolas', monospace;
     font-size: 0.9em;
 }
 
-code {
+code,
+.admonition code {
 	color: hsl(220, 28%, 43%);
 	border: none;
 	background-color: inherit;
@@ -272,21 +274,15 @@ li.current .subnav li a:hover,
 
 .rst-content .warning,
 .rst-content .attention,
-.rst-content .note {
+.rst-content .note,
+.rst-content .tip {
 	border-radius: 3px;
 }
 
 .rst-content .warning .admonition-title,
-.rst-content .attention .admonition-title {
-	border-top-left-radius: 3px;
-	border-top-right-radius: 3px;
-}
-
-.rst-content .note {
-	border-radius: 3px;
-}
-
-.rst-content .note .admonition-title {
+.rst-content .attention .admonition-title,
+.rst-content .note .admonition-title,
+.rst-content .tip .admonition-title {
 	border-top-left-radius: 3px;
 	border-top-right-radius: 3px;
 }

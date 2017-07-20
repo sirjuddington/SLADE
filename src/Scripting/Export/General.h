@@ -5,12 +5,6 @@ void logMessage(const char* message)
 	Log::message(Log::MessageType::Script, message);
 }
 
-// Get the global error message
-string globalError()
-{
-	return Global::error;
-}
-
 // Show a message box
 void messageBox(const string& title, const string& message)
 {
@@ -116,7 +110,7 @@ void registerSLADENamespace(sol::state& lua)
 {
 	sol::table slade = lua["slade"];
 	slade.set_function("logMessage",			&logMessage);
-	slade.set_function("globalError",			&globalError);
+	slade.set_function("globalError",			[]() { return Global::error; });
 	slade.set_function("messageBox",			&messageBox);
 	slade.set_function("promptString",			&promptString);
 	slade.set_function("promptNumber",			&promptNumber);
@@ -129,4 +123,20 @@ void registerSLADENamespace(sol::state& lua)
 	slade.set_function("showArchive",			&showArchive);
 	slade.set_function("showEntry",				&MainEditor::openEntry);
 	slade.set_function("mapEditor",				&MapEditor::editContext);
+}
+
+void registerSplashWindowNamespace(sol::state& lua)
+{
+	sol::table splash = lua["splashWindow"];
+
+	splash.set_function("show", sol::overload(
+		[](const string& message) { UI::showSplash(message, false, Lua::currentWindow()); },
+		[](const string& message, bool progress) { UI::showSplash(message, progress, Lua::currentWindow()); }
+	));
+	splash.set_function("hide",					&UI::hideSplash);
+	splash.set_function("update",				&UI::updateSplash);
+	splash.set_function("progress",				&UI::getSplashProgress);
+	splash.set_function("setMessage",			&UI::setSplashMessage);
+	splash.set_function("setProgressMessage",	&UI::setSplashProgressMessage);
+	splash.set_function("setProgress",			&UI::setSplashProgress);
 }

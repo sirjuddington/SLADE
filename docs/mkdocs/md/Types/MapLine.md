@@ -68,4 +68,5 @@ if line.visibleTextures.frontUpper == true then
 end
 ```
 
-Note that the <prop>visibleTextures</prop> property is re-calculated each time it is accessed, so for performance reasons it is best to store it in a variable if it needs to be accessed multiple times.
+!!! Tip
+    The <prop>visibleTextures</prop> property is re-calculated each time it is accessed, so for performance reasons it is best to store it in a variable if it needs to be accessed multiple times.

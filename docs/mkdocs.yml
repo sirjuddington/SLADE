@@ -1,6 +1,9 @@
+# Info
 site_name: SLADE Scripting Documentation
 repo_url: https://github.com/sirjuddington/SLADE
 edit_uri: ''
+
+# Settings
 docs_dir: 'mkdocs'
 site_dir: '../../dist/res/docs/Scripting'
 use_directory_urls: false
@@ -11,9 +14,11 @@ theme_dir: 'theme'
 extra_css:
   - 'css/slade.css'
 
+# Extensions
 markdown_extensions:
   - admonition
 
+# Documentation Pages
 pages:
 - Home: index.md
 - Examples:
@@ -21,12 +26,14 @@ pages:
   - Change Textures: 'md/Examples/ChangeTextures.md'
   - Archvile Madness: 'md/Examples/ArchvileMadness.md'
 - Namespaces:
-  - SLADE: 'md/Namespaces/SLADE.md'
-  - Archives: 'md/Namespaces/Archives.md'
-  - Game: 'md/Namespaces/Game.md'
-  - MapEditor: 'md/Namespaces/MapEditor.md'
+  - slade: 'md/Namespaces/SLADE.md'
+  - splashWindow: 'md/Namespaces/SplashWindow.md'
+  - archives: 'md/Namespaces/Archives.md'
+  - game: 'md/Namespaces/Game.md'
+  - mapEditor: 'md/Namespaces/MapEditor.md'
 - Types:
   - Archive: 'md/Types/Archive.md'
+  - ArchiveFormat: 'md/Types/ArchiveFormat.md'
   - ArchiveEntry: 'md/Types/ArchiveEntry.md'
   - ArchiveDir: 'md/Types/ArchiveDir.md'
   - EntryType: 'md/Types/EntryType.md'

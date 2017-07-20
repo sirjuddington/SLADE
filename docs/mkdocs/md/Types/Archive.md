@@ -6,7 +6,8 @@ The **Archive** type represents an archive (wad/pk3/etc) in SLADE.
 |:---------|:-----|:------------|
 <prop>filename</prop> | <type>string</type> | The full path to the archive file on disk
 <prop>entries</prop> | <type>[ArchiveEntry](ArchiveEntry.md)\[\]</type> | An array of all entries in the archive
-<prop>rootDir</prop>  | <type>[ArchiveDir](ArchiveDir.md)</type> | The root directory of the archive
+<prop>rootDir</prop> | <type>[ArchiveDir](ArchiveDir.md)</type> | The root directory of the archive
+<prop>format</prop> | <type>[ArchiveFormat](ArchiveFormat.md)</type> | Information about the archive's format
 
 ## Constructors
 
@@ -101,3 +102,29 @@ Removes the given entry from the archive (but does not delete it). Returns `fals
 **Returns** <type>boolean</type>
 
 Renames the given entry. Returns `false` if the entry was not found in the archive.
+
+---
+### `save`
+
+<params>Parameters</params>
+
+* `[`<type>string</type> <arg>path</arg>`]`: The full path to the file to save as
+
+**Returns** <type>boolean</type>
+
+Saves the archive to disk. If no <arg>path</arg> path is given, the archive's current <prop>filename</prop> is used.
+
+If <arg>path</arg> is given, this will work like 'Save As' - the archive will be saved to a new file at the given path, overwriting the file if it already exists. This will also update the <prop>filename</prop> property.
+
+**Example**
+
+```lua
+-- Open an archive
+local archive = archives.openFile('c:/filename.wad')
+slade.logMessage(archive.filename) -- 'c:/filename.wad'
+
+-- Save as new file
+archive.save('c:/newfile.wad')
+
+slade.logMessage(archive.filename) -- 'c:/newfile.wad'
+```

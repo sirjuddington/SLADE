@@ -36,6 +36,7 @@
 #include "Game/ThingType.h"
 #include "General/Console/Console.h"
 #include "General/Misc.h"
+#include "General/UI.h"
 #include "Lua.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditContext.h"
@@ -81,6 +82,7 @@ bool Lua::init()
 	// Register namespaces
 	lua.create_named_table("slade");
 	registerSLADENamespace(lua);
+	registerSplashWindowNamespace(lua);
 	registerGameNamespace(lua);
 	registerArchivesNamespace(lua);
 	registerMapEditorNamespace(lua);
