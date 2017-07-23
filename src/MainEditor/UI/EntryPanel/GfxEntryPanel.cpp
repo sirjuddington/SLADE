@@ -438,7 +438,7 @@ void GfxEntryPanel::refresh()
 	int MENU_GFXEP_ALPH = SAction::fromId("pgfx_alph")->getWxId();
 	int MENU_GFXEP_TRNS = SAction::fromId("pgfx_trns")->getWxId();
 	int MENU_GFXEP_EXTRACT = SAction::fromId("pgfx_extract")->getWxId();
-	int MENU_GFXEP_TRANSLATE = SAction::fromId("pgfx_translate")->getWxId();
+	int MENU_GFXEP_TRANSLATE = SAction::fromId("pgfx_remap")->getWxId();
 	int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->getWxId();
 
 	// Set PNG check menus
@@ -1015,10 +1015,10 @@ bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 	SAction::fromId("pgfx_rotate")->addToMenu(custom);
 	SAction::fromId("pgfx_convert")->addToMenu(custom);
 	custom->AppendSeparator();
-	SAction::fromId("pgfx_translate")->addToMenu(custom);
+	SAction::fromId("pgfx_remap")->addToMenu(custom);
 	SAction::fromId("pgfx_colourise")->addToMenu(custom);
 	SAction::fromId("pgfx_tint")->addToMenu(custom);
-	//SAction::fromId("pgfx_crop")->addToMenu(custom);
+	SAction::fromId("pgfx_crop")->addToMenu(custom);
 	custom->AppendSeparator();
 	SAction::fromId("pgfx_alph")->addToMenu(custom);
 	SAction::fromId("pgfx_trns")->addToMenu(custom);
