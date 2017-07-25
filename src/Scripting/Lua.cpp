@@ -238,12 +238,16 @@ void Lua::setCurrentWindow(wxWindow* window)
 //
 // ----------------------------------------------------------------------------
 
-CONSOLE_COMMAND(lua_exec, 1, true)
+CONSOLE_COMMAND(script, 1, true)
 {
-	Lua::run(args[0]);
+	string script = args[0];
+	for (int a = 1; a < args.size(); a++)
+		script += " " + args[a];
+
+	Lua::run(script);
 }
 
-CONSOLE_COMMAND(lua_execfile, 1, true)
+CONSOLE_COMMAND(script_file, 1, true)
 {
 	if (!wxFile::Exists(args[0]))
 	{
@@ -253,4 +257,10 @@ CONSOLE_COMMAND(lua_execfile, 1, true)
 
 	if (!Lua::runFile(args[0]))
 		LOG_MESSAGE(1, "Error loading lua script file \"%s\"", args[0]);
+}
+
+CONSOLE_COMMAND(lua_mem, 0, false)
+{
+	auto mem = Lua::state().memory_used();
+	Log::console(S_FMT("Lua state using %s memory", CHR(Misc::sizeAsString(mem))));
 }
