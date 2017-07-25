@@ -4,7 +4,7 @@ The `slade` scripting namespace contains a set of functions for general interact
 
 ### `logMessage`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>message</arg>: The message to print to the log
 
@@ -26,7 +26,7 @@ Returns the most recently generated error message
 ---
 ### `messageBox`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>message</arg>: The message to display
@@ -36,7 +36,7 @@ Shows a simple message dialog
 ---
 ### `promptString`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>message</arg>: The message to display
@@ -49,7 +49,7 @@ Shows a dialog prompt for the user to enter a string value
 ---
 ### `promptNumber`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>message</arg>: The message to display
@@ -64,7 +64,7 @@ Shows a dialog prompt for the user to enter a numeric value
 ---
 ### `promptYesNo`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>message</arg>: The message to display
@@ -76,7 +76,7 @@ Shows a dialog prompt with 'Yes' and 'No' buttons, returning `true` for yes or `
 ---
 ### `browseFile`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>extensions</arg>: A formatted list of selectable file extensions (see description for format)
@@ -102,7 +102,7 @@ slade.logMessage('Selected file ' .. path)
 ---
 ### `browseFiles`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>extensions</arg>: A formatted list of selectable file extensions
@@ -135,7 +135,7 @@ Returns an array of the currently selected entries in the main SLADE window.
 ---
 ### `showArchive`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
   * <type>[Archive](../Types/Archive.md)</type> <arg>archive</arg>: The archive to show
 
@@ -144,7 +144,7 @@ Shows the tab for the given archive in the main SLADE window.
 ---
 ### `showEntry`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
   * <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type> <arg>entry</arg>: The entry to show_
 

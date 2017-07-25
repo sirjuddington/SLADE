@@ -16,11 +16,16 @@ The **ArchiveEntry** type represents an entry in SLADE.
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
+<listhead>See:</listhead>
+
+* <code>[Archive:createEntry](Archive.md#createentry)</code>
+* <code>[Archive:createEntryInNamespace](Archive.md#createentryinnamespace)</code>
+
 ## Functions
 
 ### `formattedName`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * `[`<type>boolean</type> <arg>includePath</arg> : `true]`: Whether to include the entry path
 * `[`<type>boolean</type> <arg>includeExtension</arg> : `true]`: Whether to include the entry extension
@@ -40,7 +45,7 @@ Returns the size of the entry in a formatted string, eg. `1.3kb`
 ---
 ### `importFile`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>path</arg>: The full path to the file to import
 
@@ -53,7 +58,7 @@ If the import fails, the error that occurred should be available via <code>[slad
 ---
 ### `importEntry`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>ArchiveEntry</type> <arg>entry</arg>: The entry to import data from
 
@@ -66,7 +71,7 @@ If the import fails, the error that occurred should be available via <code>[slad
 ---
 ### `importData`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>data</arg>: The data to import
 
@@ -79,7 +84,7 @@ If the import fails, the error that occurred should be available via <code>[slad
 ---
 ### `exportFile`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>path</arg>: The full path to the file to export
 

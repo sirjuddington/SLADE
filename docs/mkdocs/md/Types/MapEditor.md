@@ -19,7 +19,7 @@ Map editing context for the currently open map editor in SLADE.
 
 ### `selectedVertices`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * `[`<type>boolean</type> <arg>tryHighlight</arg> : `false]`: Whether to get the current highlight if nothing is selected
 
@@ -30,7 +30,7 @@ Returns an array of all currently selected vertices. If nothing is selected and 
 ---
 ### `selectedLines`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * `[`<type>boolean</type> <arg>tryHighlight</arg> : `false]`: Whether to get the current highlight if nothing is selected
 
@@ -41,7 +41,7 @@ Returns an array of all currently selected lines. If nothing is selected and <ar
 ---
 ### `selectedSectors`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * `[`<type>boolean</type> <arg>tryHighlight</arg> : `false]`: Whether to get the current highlight if nothing is selected
 
@@ -52,7 +52,7 @@ Returns an array of all currently selected sectors. If nothing is selected and <
 ---
 ### `selectedThings`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * `[`<type>boolean</type> <arg>tryHighlight</arg> : `false]`: Whether to get the current highlight if nothing is selected
 
@@ -68,9 +68,19 @@ Deselects all currently selected items
 ---
 ### `select`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>[MapObject](MapObject.md)</type> <arg>object</arg>: The <type>[MapObject](MapObject.md)</type> to (de)select
 * `[`<type>boolean</type> <arg>select</arg> : `true]`: Whether to select or deselect the object
 
 Selects or deselects the given <type>[MapObject](MapObject.md)</type> (or derived type), depending on <arg>select</arg>.
+
+---
+### `setEditMode`
+
+<listhead>Parameters</listhead>
+
+* <type>number</type> <arg>mode</arg>: The [edit mode](../Namespaces/MapEditor.md#mode) to switch to
+* `[`<type>number</type> <arg>sectorMode</arg> : `mapEditor.SectorMode.Both]`: The [sector edit mode](../Namespaces/MapEditor.md#sectormode) to switch to
+
+Sets the edit mode to the given <arg>mode</arg>. If the mode is being set to `mapEditor.Mode.Sectors`, the <arg>sectorMode</arg> parameter can be given to specify the sector edit mode.

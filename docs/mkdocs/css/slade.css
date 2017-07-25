@@ -209,7 +209,8 @@ args type {
 	padding-left: 2em;
 }
 
-params {
+params,
+listhead {
 	font-weight: 700;
 	display: block;
 	margin-bottom: -1.3em;

@@ -28,7 +28,7 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 ### `flag`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>flagName</arg>: The name of the flag to check
 
@@ -46,7 +46,7 @@ If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly 
 ---
 ### `flip`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * `[`<type>boolean</type> <arg>swapSides</arg> : `true]`: Whether to swap the sides
 

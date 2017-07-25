@@ -30,7 +30,7 @@ The following types inherit all MapObject properties and functions:
 
 ### `hasProperty`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to check
 
@@ -41,7 +41,7 @@ Returns `true` if the object has a property matching the given <arg>name</arg>
 ---
 ### `boolProperty`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to get
 
@@ -52,7 +52,7 @@ Returns the <type>boolean</type> value of the property matching the given <arg>n
 ---
 ### `intProperty`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to get
 
@@ -63,7 +63,7 @@ Returns the integer <type>number</type> value of the property matching the given
 ---
 ### `floatProperty`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to get
 
@@ -74,7 +74,7 @@ Returns the floating point <type>number</type> value of the property matching th
 ---
 ### `stringProperty`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to get
 
@@ -85,7 +85,7 @@ Returns the <type>string</type> value of the property matching the given <arg>na
 ---
 ### `setBoolProperty`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>boolean</type> <arg>value</arg>: The value to apply
@@ -95,7 +95,7 @@ Sets the property <arg>name</arg> to <arg>value</arg>. The property is created i
 ---
 ### `setIntProperty`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>number</type> <arg>value</arg>: The value to apply
@@ -105,7 +105,7 @@ Sets the property <arg>name</arg> to <arg>value</arg>. The property is created i
 ---
 ### `setFloatProperty`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>number</type> <arg>value</arg>: The value to apply
@@ -115,7 +115,7 @@ Sets the property <arg>name</arg> to <arg>value</arg>. The property is created i
 ---
 ### `setStringProperty`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>string</type> <arg>value</arg>: The value to apply

@@ -5,48 +5,52 @@ edit_uri: ''
 
 # Settings
 docs_dir: 'mkdocs'
-site_dir: '../../dist/res/docs/Scripting'
+site_dir: '../dist/res/docs/Scripting'
 use_directory_urls: false
 
 # Theme
-theme: readthedocs
-theme_dir: 'theme'
+theme: material
 extra_css:
-  - 'css/slade.css'
+- 'css/slade-material.css'
 
 # Extensions
 markdown_extensions:
   - admonition
+  - codehilite
 
 # Documentation Pages
 pages:
 - Home: index.md
 - Examples:
-  - Open Archive: 'md/Examples/OpenArchive.md'
-  - Find Text In Entries: 'md/Examples/FindTextInEntries.md'
-  - Change Textures: 'md/Examples/ChangeTextures.md'
   - Archvile Madness: 'md/Examples/ArchvileMadness.md'
+  - Change Textures: 'md/Examples/ChangeTextures.md'
+  - Find Text In Entries: 'md/Examples/FindTextInEntries.md'
+  - Open Archive: 'md/Examples/OpenArchive.md'
 - Namespaces:
-  - slade: 'md/Namespaces/SLADE.md'
-  - splashWindow: 'md/Namespaces/SplashWindow.md'
   - archives: 'md/Namespaces/Archives.md'
   - game: 'md/Namespaces/Game.md'
   - mapEditor: 'md/Namespaces/MapEditor.md'
+  - slade: 'md/Namespaces/SLADE.md'
+  - splashWindow: 'md/Namespaces/SplashWindow.md'
 - Types:
-  - Archive: 'md/Types/Archive.md'
-  - ArchiveFormat: 'md/Types/ArchiveFormat.md'
-  - ArchiveEntry: 'md/Types/ArchiveEntry.md'
-  - ArchiveDir: 'md/Types/ArchiveDir.md'
-  - EntryType: 'md/Types/EntryType.md'
-  - ThingType: 'md/Types/ThingType.md'
-  - Map: 'md/Types/Map.md'
-  - MapEditor: 'md/Types/MapEditor.md'
-  - MapObject: 'md/Types/MapObject.md'
-  - MapVertex: 'md/Types/MapVertex.md'
-  - MapLine: 'md/Types/MapLine.md'
-  - MapSide: 'md/Types/MapSide.md'
-  - MapSector: 'md/Types/MapSector.md'
-  - MapThing: 'md/Types/MapThing.md'
-  - Colour: 'md/Types/Colour.md'
-  - Plane: 'md/Types/Plane.md'
-  - Point: 'md/Types/Point.md'
+  - Archive:
+    - Archive: 'md/Types/Archive.md'
+    - ArchiveDir: 'md/Types/ArchiveDir.md'
+    - ArchiveEntry: 'md/Types/ArchiveEntry.md'
+    - ArchiveFormat: 'md/Types/ArchiveFormat.md'
+    - EntryType: 'md/Types/EntryType.md'
+  - Game:
+    - ThingType: 'md/Types/ThingType.md'
+  - Map Editor:
+    - Map: 'md/Types/Map.md'
+    - MapEditor: 'md/Types/MapEditor.md'
+    - MapLine: 'md/Types/MapLine.md'
+    - MapObject: 'md/Types/MapObject.md'
+    - MapSector: 'md/Types/MapSector.md'
+    - MapSide: 'md/Types/MapSide.md'
+    - MapThing: 'md/Types/MapThing.md'
+    - MapVertex: 'md/Types/MapVertex.md'
+  - General:
+    - Colour: 'md/Types/Colour.md'
+    - Plane: 'md/Types/Plane.md'
+    - Point: 'md/Types/Point.md'

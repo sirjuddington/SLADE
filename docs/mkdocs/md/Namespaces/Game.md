@@ -4,7 +4,7 @@ The `game` scripting namespace contains functions related to the currently loade
 
 ### `thingType`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
   * <type>number</type> <arg>type</arg>: The editor number (DoomEdNum) of the type
 

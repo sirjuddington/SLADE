@@ -29,7 +29,7 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 ### `containsPoint`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>[Point](Point.md)</type> <arg>position</arg>: Point coordinates in map units
 

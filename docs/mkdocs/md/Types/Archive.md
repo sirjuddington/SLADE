@@ -14,22 +14,27 @@ The **Archive** type represents an archive (wad/pk3/etc) in SLADE.
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
+<listhead>See:</listhead>
+
+* <code>[archives.create](../Namespaces/Archives.md#create)</code>
+* <code>[archives.openFile](../Namespaces/Archives.md#openfile)</code>
+
 ## Functions
 
 ### `getDir`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>path</arg>: The path of the directory to get
 
 **Returns** <type>[ArchiveDir](ArchiveDir.md)</type>
 
-Returns the directory in the archive at <arg>path</arg>, or `null` if the path does not exist. If the archive does not support directories (eg. Doom Wad format) the 'root' directory is always returned, regardless of <arg>path</arg>.
+Returns the directory in the archive at <arg>path</arg>, or `nil` if the path does not exist. If the archive does not support directories (eg. Doom Wad format) the 'root' directory is always returned, regardless of <arg>path</arg>.
 
 ---
 ### `createEntry`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>fullPath</arg>: The full path and name of the entry to create
 * <type>number</type> <arg>position</arg>: The position to insert the entry
@@ -56,7 +61,7 @@ newEntry = wad.createEntry('NEWENTRY', 12)
 ---
 ### `createEntryInNamespace`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the entry
 * <type>string</type> <arg>namespace</arg>: The namespace to add the entry to
@@ -83,7 +88,7 @@ See below for a list of supported namespaces:
 ---
 ### `removeEntry`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type> <arg>entry</arg>: The entry to remove
 
@@ -94,7 +99,7 @@ Removes the given entry from the archive (but does not delete it). Returns `fals
 ---
 ### `renameEntry`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type> <arg>entry</arg>: The entry to rename
 * <type>string</type> <arg>name</arg>: The new name for the entry
@@ -106,7 +111,7 @@ Renames the given entry. Returns `false` if the entry was not found in the archi
 ---
 ### `save`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * `[`<type>string</type> <arg>path</arg>`]`: The full path to the file to save as
 
