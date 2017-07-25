@@ -1,13 +1,5 @@
 
-// #include "Main.h"
-// #include "Export.h"
-// #include "MapEditor/MapEditContext.h"
-// #include "Game/Configuration.h"
-// #include "Scripting/Lua.h"
 
-// namespace Lua
-// {
-	
 void registerSLADEMap(sol::state& lua)
 {
 	lua.new_usertype<SLADEMap>(
@@ -34,6 +26,16 @@ void selectMapObject(MapEditContext& self, MapObject* object, bool select)
 			{ (int)object->getIndex(), MapEditor::itemTypeFromObject(object) },
 			select
 		);
+}
+
+void setEditMode(
+	MapEditContext& self,
+	MapEditor::Mode mode,
+	MapEditor::SectorMode sector_mode = MapEditor::SectorMode::Both)
+{
+	self.setEditMode(mode);
+	if (mode == MapEditor::Mode::Sectors)
+		self.setSectorEditMode(sector_mode);
 }
 
 void registerMapEditor(sol::state& lua)
@@ -84,6 +86,13 @@ void registerMapEditor(sol::state& lua)
 		"select", sol::overload(
 			&selectMapObject,
 			[](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); }
+		),
+
+		"setEditMode", sol::overload(
+			[](MapEditContext& self, MapEditor::Mode mode)
+			{ setEditMode(self, mode); },
+			[](MapEditContext& self, MapEditor::Mode mode, MapEditor::SectorMode sector_mode)
+			{ setEditMode(self, mode, sector_mode); }
 		)
 	);
 }
@@ -263,8 +272,8 @@ void registerMapObject(sol::state& lua)
 void registerMapEditorNamespace(sol::state& lua)
 {
 	// MapEditor enums
-	lua.create_named_table("mapEditor");
-	lua.new_enum(
+	auto mapeditor = lua.create_named_table("mapEditor");
+	mapeditor.new_enum(
 		"Mode",
 		"Vertices",	MapEditor::Mode::Vertices,
 		"Lines",	MapEditor::Mode::Lines,
@@ -272,7 +281,7 @@ void registerMapEditorNamespace(sol::state& lua)
 		"Things",	MapEditor::Mode::Things,
 		"Visual",	MapEditor::Mode::Visual
 	);
-	lua.new_enum(
+	mapeditor.new_enum(
 		"SectorMode",
 		"Both",		MapEditor::SectorMode::Both,
 		"Floor",	MapEditor::SectorMode::Floor,
@@ -289,5 +298,3 @@ void registerMapEditorTypes(sol::state& lua)
 	registerMapSector(lua);
 	registerMapThing(lua);
 }
-
-//} // namespace Lua
