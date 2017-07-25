@@ -152,7 +152,9 @@ void Lua::close()
 // ----------------------------------------------------------------------------
 bool Lua::run(string program)
 {
-	auto result = lua.script(CHR(program), sol::simple_on_error);
+	sol::environment sandbox(lua, sol::create, lua.globals());
+	auto result = lua.script(CHR(program), sandbox, sol::simple_on_error);
+	lua.collect_garbage();
 
 	if (!result.valid())
 	{
@@ -177,7 +179,9 @@ bool Lua::run(string program)
 // ----------------------------------------------------------------------------
 bool Lua::runFile(string filename)
 {
-	auto result = lua.script_file(CHR(filename), sol::simple_on_error);
+	sol::environment sandbox(lua, sol::create, lua.globals());
+	auto result = lua.script_file(CHR(filename), sandbox, sol::simple_on_error);
+	lua.collect_garbage();
 
 	if (!result.valid())
 	{
