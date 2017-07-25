@@ -26,6 +26,7 @@
 /dist/*.log
 /dist/*.map
 /dist/portable
+/docs/build/
 /ipch
 /src/bzip2/Release
 /src/lzma/Release

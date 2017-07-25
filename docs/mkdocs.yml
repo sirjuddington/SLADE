@@ -5,7 +5,7 @@ edit_uri: ''
 
 # Settings
 docs_dir: 'mkdocs'
-site_dir: '../dist/res/docs/Scripting'
+site_dir: 'build'
 use_directory_urls: false
 
 # Theme
