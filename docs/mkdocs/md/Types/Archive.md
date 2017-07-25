@@ -36,12 +36,12 @@ Returns the directory in the archive at <arg>path</arg>, or `nil` if the path do
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>fullPath</arg>: The full path and name of the entry to create
+* <type>string</type> <arg>full_path</arg>: The full path and name of the entry to create
 * <type>number</type> <arg>position</arg>: The position to insert the entry
 
 **Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
 
-Creates a new entry named <arg>fullPath</arg> in the Archive. If the Archive is a format that supports directories, <arg>fullPath</arg> can optionally contain a path eg. `Scripts/NewScript.txt`.
+Creates a new entry named <arg>full_path</arg> in the Archive. If the Archive is a format that supports directories, <arg>full_path</arg> can optionally contain a path eg. `Scripts/NewScript.txt`.
 
 The new entry will be inserted at <arg>position</arg> in the directory it is added to (always the root for Archives that don't support directories). If <arg>position</arg> is negative or larger than the number of entries in the destination directory, the new entry will be added at the end.
 
@@ -49,13 +49,13 @@ The new entry will be inserted at <arg>position</arg> in the directory it is add
 
 ```lua
 -- Create entry in the root directory of a zip, after all other entries
-newEntry = zip.createEntry('InRoot.txt', -1)
+newEntry = zip:createEntry('InRoot.txt', -1)
 
 -- Create entry in a subdirectory of a zip, before all other entries in the subdirectory
-newEntry = zip.createEntry('Path/To/NewEntry.txt', 0)
+newEntry = zip:createEntry('Path/To/NewEntry.txt', 0)
 
 -- Create entry in the middle of a wad somewhere
-newEntry = wad.createEntry('NEWENTRY', 12)
+newEntry = wad:createEntry('NEWENTRY', 12)
 ```
 
 ---
@@ -125,11 +125,11 @@ If <arg>path</arg> is given, this will work like 'Save As' - the archive will be
 
 ```lua
 -- Open an archive
-local archive = archives.openFile('c:/filename.wad')
-slade.logMessage(archive.filename) -- 'c:/filename.wad'
+local archive = Archives.openFile('c:/filename.wad')
+App.logMessage(archive.filename) -- 'c:/filename.wad'
 
 -- Save as new file
-archive.save('c:/newfile.wad')
+archive:save('c:/newfile.wad')
 
-slade.logMessage(archive.filename) -- 'c:/newfile.wad'
+App.logMessage(archive.filename) -- 'c:/newfile.wad'
 ```

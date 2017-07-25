@@ -106,28 +106,28 @@ void registerMiscTypes(sol::state& lua)
 	);
 }
 
-void registerSLADENamespace(sol::state& lua)
+void registerAppNamespace(sol::state& lua)
 {
-	sol::table slade = lua["slade"];
-	slade.set_function("logMessage",			&logMessage);
-	slade.set_function("globalError",			[]() { return Global::error; });
-	slade.set_function("messageBox",			&messageBox);
-	slade.set_function("promptString",			&promptString);
-	slade.set_function("promptNumber",			&promptNumber);
-	slade.set_function("promptYesNo",			&promptYesNo);
-	slade.set_function("browseFile",			&browseFile);
-	slade.set_function("browseFiles",			&browseFiles);
-	slade.set_function("currentArchive",		&MainEditor::currentArchive);
-	slade.set_function("currentEntry",			&MainEditor::currentEntry);
-	slade.set_function("currentEntrySelection",	&MainEditor::currentEntrySelection);
-	slade.set_function("showArchive",			&showArchive);
-	slade.set_function("showEntry",				&MainEditor::openEntry);
-	slade.set_function("mapEditor",				&MapEditor::editContext);
+	sol::table app = lua.create_named_table("App");
+	app.set_function("logMessage",				&logMessage);
+	app.set_function("globalError",				[]() { return Global::error; });
+	app.set_function("messageBox",				&messageBox);
+	app.set_function("promptString",			&promptString);
+	app.set_function("promptNumber",			&promptNumber);
+	app.set_function("promptYesNo",				&promptYesNo);
+	app.set_function("browseFile",				&browseFile);
+	app.set_function("browseFiles",				&browseFiles);
+	app.set_function("currentArchive",			&MainEditor::currentArchive);
+	app.set_function("currentEntry",			&MainEditor::currentEntry);
+	app.set_function("currentEntrySelection",	&MainEditor::currentEntrySelection);
+	app.set_function("showArchive",				&showArchive);
+	app.set_function("showEntry",				&MainEditor::openEntry);
+	app.set_function("mapEditor",				&MapEditor::editContext);
 }
 
 void registerSplashWindowNamespace(sol::state& lua)
 {
-	sol::table splash = lua.create_named_table("splashWindow");
+	sol::table splash = lua.create_named_table("SplashWindow");
 
 	splash.set_function("show", sol::overload(
 		[](const string& message) { UI::showSplash(message, false, Lua::currentWindow()); },

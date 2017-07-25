@@ -1,26 +1,26 @@
 
 -- Browse for archive file to open
-local path = slade.browseFile('Open Archive', archives.fileExtensionsString(), '')
+local path = App.browseFile('Open Archive', Archives.fileExtensionsString(), '')
 if path == '' then
-    slade.logMessage('No archive selected')
+    App.logMessage('No archive selected')
 else
     -- Open it
-    local archive = archives.openFile(path)
+    local archive = Archives.openFile(path)
 
     -- Check it opened ok
     if archive == nil then
-        slade.logMessage('Archive not opened: ' .. slade.globalError())
+        App.logMessage('Archive not opened: ' .. App.globalError())
     else
-        slade.logMessage('Archive opened successfully')
+        App.logMessage('Archive opened successfully')
 
         -- List all entries
         for i,entry in ipairs(archive.entries) do
-            slade.logMessage(entry:formattedName() .. ' (' .. entry:formattedSize() .. ', ' .. entry.type.name .. ')')
+            App.logMessage(entry:formattedName() .. ' (' .. entry:formattedSize() .. ', ' .. entry.type.name .. ')')
         end
 
         -- Prompt to close
-        if (slade.promptYesNo('Close Archive', 'Do you want to close the archive now?')) then
-            archives.close(archive)
+        if (App.promptYesNo('Close Archive', 'Do you want to close the archive now?')) then
+            Archives.close(archive)
         end
     end
 end

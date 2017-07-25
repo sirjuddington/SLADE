@@ -194,7 +194,7 @@ void registerEntryType(sol::state& lua)
 	
 void registerArchivesNamespace(sol::state& lua)
 {
-	sol::table archives = lua.create_table("archives");
+	sol::table archives = lua.create_table("Archives");
 
 	archives.set_function("all", sol::overload(
 		&allArchives,

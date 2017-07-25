@@ -120,8 +120,7 @@ bool Lua::init()
 	lua.open_libraries(sol::lib::base, sol::lib::string);
 
 	// Register namespaces
-	lua.create_named_table("slade");
-	registerSLADENamespace(lua);
+	registerAppNamespace(lua);
 	registerSplashWindowNamespace(lua);
 	registerGameNamespace(lua);
 	registerArchivesNamespace(lua);

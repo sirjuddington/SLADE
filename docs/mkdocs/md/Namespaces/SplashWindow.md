@@ -1,4 +1,4 @@
-The `splashWindow` scripting namespace contains functions for controlling the SLADE splash window.
+The `SplashWindow` scripting namespace contains functions for controlling the SLADE splash window.
 
 ## Functions
 

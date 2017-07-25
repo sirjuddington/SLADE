@@ -7,7 +7,7 @@ local walltex = 'AASHITTY'
 local flattex = 'SLIME09'
 
 -- Get map sidedefs
-local sides = slade.mapEditor().map.sidedefs
+local sides = App.mapEditor().map.sidedefs
 
 -- Loop through all sidedefs
 for i,side in ipairs(sides) do
@@ -28,7 +28,7 @@ for i,side in ipairs(sides) do
 end
 
 -- Get map sectors
-local sectors = slade.mapEditor().map.sectors
+local sectors = App.mapEditor().map.sectors
 
 -- Loop through all sectors
 for i,sector in ipairs(sectors) do

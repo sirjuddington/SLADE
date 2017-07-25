@@ -1,4 +1,4 @@
-The `game` scripting namespace contains functions related to the currently loaded game configuration in SLADE.
+The `Game` scripting namespace contains functions related to the currently loaded game configuration in SLADE.
 
 ## Functions
 

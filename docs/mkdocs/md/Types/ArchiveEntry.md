@@ -27,13 +27,13 @@ The **ArchiveEntry** type represents an entry in SLADE.
 
 <listhead>Parameters</listhead>
 
-* `[`<type>boolean</type> <arg>includePath</arg> : `true]`: Whether to include the entry path
-* `[`<type>boolean</type> <arg>includeExtension</arg> : `true]`: Whether to include the entry extension
-* `[`<type>boolean</type> <arg>upperCase</arg> : `false]`: Whether to convert the entry name to uppercase
+* `[`<type>boolean</type> <arg>include_path</arg> : `true]`: Whether to include the entry path
+* `[`<type>boolean</type> <arg>include_extension</arg> : `true]`: Whether to include the entry extension
+* `[`<type>boolean</type> <arg>upper_case</arg> : `false]`: Whether to convert the entry name to uppercase
 
 **Returns** <type>string</type>
 
-Returns a formatted name of the entry, depending on the parameters given. Note that <arg>upperCase</arg> will not affect the path.
+Returns a formatted name of the entry, depending on the parameters given. Note that <arg>upper_case</arg> will not affect the path.
 
 ---
 ### `formattedSize`

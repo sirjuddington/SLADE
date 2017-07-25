@@ -272,7 +272,7 @@ void registerMapObject(sol::state& lua)
 void registerMapEditorNamespace(sol::state& lua)
 {
 	// MapEditor enums
-	auto mapeditor = lua.create_named_table("mapEditor");
+	auto mapeditor = lua.create_named_table("MapEditor");
 	mapeditor.new_enum(
 		"Mode",
 		"Vertices",	MapEditor::Mode::Vertices,
@@ -291,6 +291,8 @@ void registerMapEditorNamespace(sol::state& lua)
 
 void registerMapEditorTypes(sol::state& lua)
 {
+	registerMapEditor(lua);
+	registerSLADEMap(lua);
 	registerMapObject(lua);
 	registerMapVertex(lua);
 	registerMapLine(lua);

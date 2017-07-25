@@ -1,4 +1,4 @@
-The `archives` scripting namespace contains functions for managing archives.
+The `Archives` scripting namespace contains functions for managing archives.
 
 ## Functions
 
@@ -13,11 +13,11 @@ Returns an array of all currently open archives.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>formatId</arg>: The <type>[ArchiveFormat](../Types/ArchiveFormat.md)</type> id to create
+* <type>string</type> <arg>format_id</arg>: The <type>[ArchiveFormat](../Types/ArchiveFormat.md)</type> id to create
 
 **Returns** <type>[Archive](../Types/Archive.md)</type>
 
-Creates a new archive of the format specified in <arg>formatId</arg>. Returns `nil` if the archive could not be created (generally if the <arg>formatId</arg> is invalid).
+Creates a new archive of the format specified in <arg>format_id</arg>. Returns `nil` if the archive could not be created (generally if the <arg>format_id</arg> is invalid).
 
 !!! Note
     Currently only `wad` and `zip` formats are supported for creation

@@ -27,11 +27,11 @@ pages:
   - Find Text In Entries: 'md/Examples/FindTextInEntries.md'
   - Open Archive: 'md/Examples/OpenArchive.md'
 - Namespaces:
-  - archives: 'md/Namespaces/Archives.md'
-  - game: 'md/Namespaces/Game.md'
-  - mapEditor: 'md/Namespaces/MapEditor.md'
-  - slade: 'md/Namespaces/SLADE.md'
-  - splashWindow: 'md/Namespaces/SplashWindow.md'
+  - App: 'md/Namespaces/App.md'
+  - Archives: 'md/Namespaces/Archives.md'
+  - Game: 'md/Namespaces/Game.md'
+  - MapEditor: 'md/Namespaces/MapEditor.md'
+  - SplashWindow: 'md/Namespaces/SplashWindow.md'
 - Types:
   - Archive:
     - Archive: 'md/Types/Archive.md'
