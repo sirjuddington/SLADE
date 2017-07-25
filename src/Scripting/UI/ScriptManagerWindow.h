@@ -14,7 +14,6 @@ public:
 private:
 	// Widgets
 	TextEditor*	text_editor_;
-	wxButton*	btn_run_;
 	wxTreeCtrl*	tree_scripts_;
 
 	// Layout

@@ -222,13 +222,6 @@ wxPanel* ScriptManagerWindow::setupMainArea()
 	text_editor_->setLanguage(TextLanguage::getLanguage("sladescript"));
 	hbox->Add(text_editor_, 1, wxEXPAND);
 
-	// Buttons
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
-	btn_run_ = new wxButton(panel, -1, "Run Script");
-	hbox->AddStretchSpacer();
-	hbox->Add(btn_run_, 0, wxEXPAND);
-
 	return panel;
 }
 
@@ -291,21 +284,6 @@ void ScriptManagerWindow::setupToolbar()
 // ----------------------------------------------------------------------------
 void ScriptManagerWindow::bindEvents()
 {
-	// 'Run' button click
-	btn_run_->Bind(wxEVT_BUTTON, [=](wxCommandEvent)
-	{
-		// TODO: Show error in message box
-		if (!Lua::run(text_editor_->GetText()))
-		{
-			wxMessageBox("See Console Log", "Script Error", wxOK | wxICON_ERROR, this);
-			auto m_mgr = wxAuiManager::GetManager(this);
-			auto& p_inf = m_mgr->GetPane("console");
-			p_inf.Show(true);
-			p_inf.MinSize(200, 128);
-			m_mgr->Update();
-		}
-	});
-
 	// Tree item activate
 	tree_scripts_->Bind(wxEVT_TREE_ITEM_ACTIVATED, [=](wxTreeEvent e)
 	{
@@ -380,6 +358,24 @@ bool ScriptManagerWindow::handleAction(string id)
 	// We're only interested in "scrm_" actions
 	if (!id.StartsWith("scrm_"))
 		return false;
+
+	// Script->Run
+	if (id == "scrm_run")
+	{
+		// TODO: Show error in message box
+		Lua::setCurrentWindow(this);
+		if (!Lua::run(text_editor_->GetText()))
+		{
+			wxMessageBox("See Console Log", "Script Error", wxOK | wxICON_ERROR, this);
+			auto m_mgr = wxAuiManager::GetManager(this);
+			auto& p_inf = m_mgr->GetPane("console");
+			p_inf.Show(true);
+			p_inf.MinSize(200, 128);
+			m_mgr->Update();
+		}
+
+		return true;
+	}
 
 	// View->Console
 	if (id == "scrm_showconsole")
