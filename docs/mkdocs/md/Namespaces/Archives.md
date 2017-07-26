@@ -33,7 +33,7 @@ Creates a new archive of the format specified in <arg>format_id</arg>. Returns `
 
 Attempts to open the file at <arg>path</arg> on disk. Returns the archive if it opened successfully, or `nil` if it could not be opened.
 
-If opening fails, the error that occurred should be available via <code>[slade.globalError](SLADE.md#globalerror)()</code>.
+If opening fails, the error that occurred should be available via <code>[slade.globalError](App.md#globalerror)()</code>.
 
 ---
 ### `close` <sup>(1)</sup>
@@ -69,7 +69,7 @@ Closes all currently open archives.
 
 Returns a string with the extension filter for all supported archive file types.
 
-See <code>[slade.browseFile](SLADE.md#browsefile)</code> and the [Open Archive](../Examples/OpenArchive.md) example for more information.
+See <code>[slade.browseFile](App.md#browsefile)</code> and the [Open Archive](../Examples/OpenArchive.md) example for more information.
 
 ---
 ### `baseResource`

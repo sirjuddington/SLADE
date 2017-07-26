@@ -53,7 +53,7 @@ Returns the size of the entry in a formatted string, eg. `1.3kb`
 
 Imports the file at the given <arg>path</arg> into the entry. Returns `true` if the import succeeded.
 
-If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/SLADE.md#globalerror)()</code>.
+If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/App.md#globalerror)()</code>.
 
 ---
 ### `importEntry`
@@ -66,7 +66,7 @@ If the import fails, the error that occurred should be available via <code>[slad
 
 Imports (copies) the data from <arg>entry</arg>. Returns `true` if the import succeeded.
 
-If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/SLADE.md#globalerror)()</code>.
+If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/App.md#globalerror)()</code>.
 
 ---
 ### `importData`
@@ -79,7 +79,7 @@ If the import fails, the error that occurred should be available via <code>[slad
 
 Imports <arg>data</arg> into the entry. Returns `true` if the import succeeded.
 
-If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/SLADE.md#globalerror)()</code>.
+If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/App.md#globalerror)()</code>.
 
 ---
 ### `exportFile`
@@ -92,4 +92,4 @@ If the import fails, the error that occurred should be available via <code>[slad
 
 Exports the entry data to a file at <arg>path</arg>. If a file already exists at <arg>path</arg>, it will be overwritten. Returns `true` if the export succeeded.
 
-If the export fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/SLADE.md#globalerror)()</code>.
+If the export fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/App.md#globalerror)()</code>.
