@@ -9,6 +9,15 @@ namespace Lua
 {
 	bool	init();
 	void	close();
+
+	struct Error
+	{
+		string	type;
+		string	message;
+		int		line_no;
+	};
+	Error&	error();
+
 	bool	run(string program);
 	bool	runFile(string filename);
 

@@ -55,6 +55,7 @@ namespace Lua
 {
 	sol::state	lua;
 	wxWindow*	current_window = nullptr;
+	Error		script_error;
 }
 
 
@@ -108,7 +109,52 @@ namespace Lua
 #include "Export/Game.h"
 #include "Export/General.h"
 #include "Export/MapEditor.h"
+
+// ----------------------------------------------------------------------------
+// Lua::resetError
+//
+// Resets error information
+// ----------------------------------------------------------------------------
+void resetError()
+{
+	script_error.type = "No";
+	script_error.message = "No error(s) occurred";
+	script_error.line_no = 0;
 }
+
+// ----------------------------------------------------------------------------
+// Lua::processError
+//
+// Processes error information from [result]
+// ----------------------------------------------------------------------------
+void processError(sol::protected_function_result& result)
+{
+	// Error Type
+	script_error.type = sol::to_string(result.status());
+	script_error.type = script_error.type.MakeCapitalized();
+
+	// Error Message
+	sol::error error = result;
+	script_error.message = error.what();
+	script_error.message = script_error.message.Right(
+		script_error.message.size() - script_error.message.Find("]:") - 2
+	);
+
+	// Line No.
+	auto split = wxSplit(script_error.message, ':');
+	if (split.size() > 0)
+	{
+		long tmp;
+		if (split[0].ToLong(&tmp))
+			script_error.line_no = tmp;
+	}
+
+	script_error.message = script_error.message.Right(
+		script_error.message.size() - script_error.message.Find(": ") - 2
+	);
+}
+
+} // namespace Lua
 
 // ----------------------------------------------------------------------------
 // Lua::init
@@ -145,25 +191,36 @@ void Lua::close()
 }
 
 // ----------------------------------------------------------------------------
+// Lua::error
+//
+// Returns information about the last script error that occurred
+// ----------------------------------------------------------------------------
+Lua::Error& Lua::error()
+{
+	return script_error;
+}
+
+// ----------------------------------------------------------------------------
 // Lua::run
 //
 // Runs a lua script [program]
 // ----------------------------------------------------------------------------
 bool Lua::run(string program)
 {
+	resetError();
+
 	sol::environment sandbox(lua, sol::create, lua.globals());
 	auto result = lua.script(CHR(program), sandbox, sol::simple_on_error);
 	lua.collect_garbage();
 
 	if (!result.valid())
 	{
-		sol::error error = result;
-		string error_type = sol::to_string(result.status());
-		string error_message = error.what();
+		processError(result);
 		Log::error(S_FMT(
-			"%s Error running Lua script: %s",
-			CHR(error_type.MakeCapitalized()),
-			CHR(error_message)
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
 		));
 		return false;
 	}
@@ -178,19 +235,20 @@ bool Lua::run(string program)
 // ----------------------------------------------------------------------------
 bool Lua::runFile(string filename)
 {
+	resetError();
+
 	sol::environment sandbox(lua, sol::create, lua.globals());
 	auto result = lua.script_file(CHR(filename), sandbox, sol::simple_on_error);
 	lua.collect_garbage();
 
 	if (!result.valid())
 	{
-		sol::error error = result;
-		string error_type = sol::to_string(result.status());
-		string error_message = error.what();
+		processError(result);
 		Log::error(S_FMT(
-			"%s Error running Lua script: %s",
-			CHR(error_type.MakeCapitalized()),
-			CHR(error_message)
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
 		));
 		return false;
 	}
