@@ -460,35 +460,3 @@ bool MapObject::multiStringProperty(vector<MapObject*>& objects, string prop, st
 	value = first;
 	return true;
 }
-
-void MapObject::luaSetBoolProperty(string key, bool value)
-{
-	if (scriptCanModifyProp(key))
-		setBoolProperty(key, value);
-	else
-		LOG_MESSAGE(1, "%s boolean property \"%s\" can not be modified via script", getTypeName(), key);
-}
-
-void MapObject::luaSetIntProperty(string key, int value)
-{
-	if (scriptCanModifyProp(key))
-		setIntProperty(key, value);
-	else
-		LOG_MESSAGE(1, "%s integer property \"%s\" can not be modified via script", getTypeName(), key);
-}
-
-void MapObject::luaSetFloatProperty(string key, double value)
-{
-	if (scriptCanModifyProp(key))
-		setFloatProperty(key, value);
-	else
-		LOG_MESSAGE(1, "%s float property \"%s\" can not be modified via script", getTypeName(), key);
-}
-
-void MapObject::luaSetStringProperty(string key, string value)
-{
-	if (scriptCanModifyProp(key))
-		setStringProperty(key, value);
-	else
-		LOG_MESSAGE(1, "%s string property \"%s\" can not be modified via script", getTypeName(), key);
-}

@@ -100,12 +100,6 @@ public:
 	static bool multiIntProperty(vector<MapObject*>& objects, string prop, int& value);
 	static bool multiFloatProperty(vector<MapObject*>& objects, string prop, double& value);
 	static bool multiStringProperty(vector<MapObject*>& objects, string prop, string& value);
-
-	// For scripting
-	void	luaSetBoolProperty(string key, bool value);
-	void	luaSetIntProperty(string key, int value);
-	void	luaSetFloatProperty(string key, double value);
-	void	luaSetStringProperty(string key, string value);
 };
 
 #endif//__MAP_OBJECT_H__

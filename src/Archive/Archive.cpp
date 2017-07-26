@@ -1615,30 +1615,6 @@ vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveTreeNode* dir)
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// Archive::luaCreateEntry
-//
-// Creates a new entry named [full_path] (including directory path) at
-// [position] and returns the entry
-// (for lua scripting purposes, avoid using this in actual code)
-// ----------------------------------------------------------------------------
-ArchiveEntry* Archive::luaCreateEntry(string full_path, int position)
-{
-	auto dir = getDir(full_path.BeforeLast('/'));
-	return addNewEntry(full_path.AfterLast('/'), position, dir);
-}
-
-// ----------------------------------------------------------------------------
-// Archive::luaCreateEntry
-//
-// Creates a new entry named [name] in the namespace [ns] and returns the entry
-// (for lua scripting purposes, avoid using this in actual code)
-// ----------------------------------------------------------------------------
-ArchiveEntry* Archive::luaCreateEntryInNamespace(string name, string ns)
-{
-	return addNewEntry(name, ns);
-}
-
 
 /*******************************************************************
  * ARCHIVE CLASS STATIC FUNCTIONS

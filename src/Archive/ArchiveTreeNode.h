@@ -42,11 +42,6 @@ public:
 	bool				merge(ArchiveTreeNode* node, unsigned position = 0xFFFFFFFF, int state = 2);
 	bool				exportTo(string path);
 
-	// For scripting
-	vector<ArchiveEntry*>		luaGetEntries();
-	vector<ArchiveTreeNode*>	luaGetSubDirs();
-	int							luaEntryIndex(ArchiveEntry* entry) { return entryIndex(entry); }
-
 	typedef	std::unique_ptr<ArchiveTreeNode> Ptr;
 
 protected:

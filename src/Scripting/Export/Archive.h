@@ -26,6 +26,32 @@ string formattedEntryName(ArchiveEntry& self, bool include_path, bool include_ex
 	return name;
 }
 
+vector<ArchiveEntry*> archiveAllEntries(Archive& self)
+{
+	vector<ArchiveEntry*> list;
+	self.getEntryTreeAsList(list);
+	return list;
+}
+
+ArchiveEntry* archiveCreateEntry(Archive& self, const string& full_path, int position)
+{
+	auto dir = self.getDir(full_path.BeforeLast('/'));
+	return self.addNewEntry(full_path.AfterLast('/'), position, dir);
+}
+
+ArchiveEntry* archiveCreateEntryInNamespace(Archive& self, const string& name, const string& ns)
+{
+	return self.addNewEntry(name, ns);
+}
+
+vector<ArchiveEntry*> archiveDirEntries(ArchiveTreeNode& self)
+{
+	vector<ArchiveEntry*> list;
+	for (auto e : self.entries())
+		list.push_back(e.get());
+	return list;
+}
+
 vector<ArchiveTreeNode*> archiveDirSubDirs(ArchiveTreeNode& self)
 {
 	vector<ArchiveTreeNode*> dirs;
@@ -63,16 +89,16 @@ void registerArchive(sol::state& lua)
 
 		// Properties
 		"filename",	sol::property([](Archive& self) { return self.filename(); }),
-		"entries",	sol::property(&Archive::luaAllEntries),
+		"entries",	sol::property(&archiveAllEntries),
 		"rootDir",	sol::property(&Archive::rootDir),
 		"format",	sol::property(&Archive::formatDesc),
 
 		// Functions
 		"filenameNoPath",			[](Archive& self) { return self.filename(false); },
 		"entryAtPath",				&Archive::entryAtPath,
-		"dirAtPath",				&Archive::luaGetDir,
-		"createEntry",				&Archive::luaCreateEntry,
-		"createEntryInNamespace",	&Archive::luaCreateEntryInNamespace,
+		"dirAtPath",				[](Archive& self, const string& path) { return self.getDir(path); },
+		"createEntry",				&archiveCreateEntry,
+		"createEntryInNamespace",	&archiveCreateEntryInNamespace,
 		"removeEntry",				&Archive::removeEntry,
 		"renameEntry",				&Archive::renameEntry,
 		"save", sol::overload(
@@ -167,7 +193,7 @@ void registerArchiveTreeNode(sol::state& lua)
 		// Properties
 		"name",				sol::property(&ArchiveTreeNode::getName),
 		"archive",			sol::property(&ArchiveTreeNode::archive),
-		"entries",			sol::property(&ArchiveTreeNode::luaGetEntries),
+		"entries",			sol::property(&archiveDirEntries),
 		"parent",			sol::property([](ArchiveTreeNode& self) { return (ArchiveTreeNode*)self.getParent(); }),
 		"path",				sol::property(&ArchiveTreeNode::getPath),
 		"subDirectories",	sol::property(&archiveDirSubDirs)

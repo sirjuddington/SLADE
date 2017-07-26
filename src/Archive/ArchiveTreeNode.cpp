@@ -545,31 +545,3 @@ bool ArchiveTreeNode::exportTo(string path)
 
 	return true;
 }
-
-// ----------------------------------------------------------------------------
-// ArchiveTreeNode::luaGetEntries
-//
-// Returns a list of all entries in this dir
-// (for lua scripting purposes, avoid using this in actual code)
-// ----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveTreeNode::luaGetEntries()
-{
-	vector<ArchiveEntry*> list;
-	for (auto e : entries_)
-		list.push_back(e.get());
-	return list;
-}
-
-// ----------------------------------------------------------------------------
-// ArchiveTreeNode::luaGetSubDirs
-//
-// Returns a list of all subdirs of this dir
-// (for lua scripting purposes, avoid using this in actual code)
-// ----------------------------------------------------------------------------
-vector<ArchiveTreeNode*> ArchiveTreeNode::luaGetSubDirs()
-{
-	vector<ArchiveTreeNode*> list;
-	for (auto s : children)
-		list.push_back((ArchiveTreeNode*)s);
-	return list;
-}
