@@ -576,7 +576,7 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 	setupFolding();
 
 	// Update variables
-	SetWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.$");
+	SetWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-$");
 	this->language = lang;
 
 	// Re-colour text
