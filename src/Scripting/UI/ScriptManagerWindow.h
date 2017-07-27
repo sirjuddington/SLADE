@@ -14,6 +14,7 @@ public:
 
 	void					openScriptTab(ScriptManager::Script* script);
 	ScriptManager::Script*	currentScript();
+	string					currentScriptText();
 
 private:
 	ScriptManager::Script	script_scratchbox_;

@@ -9,6 +9,7 @@ public:
 	ScriptPanel(wxWindow* parent, ScriptManager::Script* script = nullptr);
 
 	ScriptManager::Script*	script() const { return script_; }
+	string					currentText() const;
 
 private:
 	ScriptManager::Script*	script_;

@@ -19,3 +19,8 @@ ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) :
 		text_editor_->SetText(script_->text);
 	sizer->Add(text_editor_, 1, wxEXPAND | wxALL, 10);
 }
+
+string ScriptPanel::currentText() const
+{
+	return text_editor_->GetText();
+}

@@ -464,6 +464,15 @@ ScriptManager::Script* ScriptManagerWindow::currentScript()
 	return nullptr;
 }
 
+string ScriptManagerWindow::currentScriptText()
+{
+	auto page = tabs_scripts_->GetCurrentPage();
+	if (page->GetName() == "script")
+		return ((ScriptPanel*)page)->currentText();
+
+	return wxEmptyString;
+}
+
 // ----------------------------------------------------------------------------
 // ScriptManagerWindow::handleAction
 //
@@ -479,13 +488,9 @@ bool ScriptManagerWindow::handleAction(string id)
 	// Script->Run
 	if (id == "scrm_run")
 	{
-		auto script = currentScript();
-		if (!script)
-			return true;
-
 		Lua::setCurrentWindow(this);
 		auto start_time = wxDateTime::Now().GetTicks();
-		if (!Lua::run(script->text))
+		if (!Lua::run(currentScriptText()))
 		{
 			auto log = Log::since(start_time, Log::MessageType::Script);
 			string output;
