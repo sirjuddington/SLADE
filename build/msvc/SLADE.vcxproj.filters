@@ -1491,6 +1491,9 @@
     <ClCompile Include="..\..\src\General\Web.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\UI\ScriptPanel.cpp">
+      <Filter>Scripting\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2602,6 +2605,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Scripting\Export\MapEditor.h">
       <Filter>Scripting\Export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\UI\ScriptPanel.h">
+      <Filter>Scripting\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

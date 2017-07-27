@@ -54,6 +54,7 @@
 #include "UI/TextEditor/TextLanguage.h"
 #include "UI/TextEditor/TextStyle.h"
 #include "Utility/Tokenizer.h"
+#include "Scripting/ScriptManager.h"
 
 
 // ----------------------------------------------------------------------------
@@ -434,6 +435,9 @@ bool App::init()
 	// Init game configuration
 	Log::info("Loading game configurations");
 	Game::init();
+
+	// Init script manager
+	ScriptManager::init();
 
 	// Show the main window
 	MainEditor::windowWx()->Show(true);

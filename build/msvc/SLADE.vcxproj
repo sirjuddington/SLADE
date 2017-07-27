@@ -1655,6 +1655,7 @@
     <ClCompile Include="..\..\src\Scripting\Lua.cpp" />
     <ClCompile Include="..\..\src\Scripting\ScriptManager.cpp" />
     <ClCompile Include="..\..\src\Scripting\UI\ScriptManagerWindow.cpp" />
+    <ClCompile Include="..\..\src\Scripting\UI\ScriptPanel.cpp" />
     <ClCompile Include="..\..\src\UI\BaseResourceChooser.cpp" />
     <ClCompile Include="..\..\src\UI\Browser\BrowserCanvas.cpp" />
     <ClCompile Include="..\..\src\UI\Browser\BrowserItem.cpp" />
@@ -2166,6 +2167,7 @@
     <ClInclude Include="..\..\src\Scripting\Lua.h" />
     <ClInclude Include="..\..\src\Scripting\ScriptManager.h" />
     <ClInclude Include="..\..\src\Scripting\UI\ScriptManagerWindow.h" />
+    <ClInclude Include="..\..\src\Scripting\UI\ScriptPanel.h" />
     <ClInclude Include="..\..\src\UI\BaseResourceChooser.h" />
     <ClInclude Include="..\..\src\UI\Browser\BrowserCanvas.h" />
     <ClInclude Include="..\..\src\UI\Browser\BrowserItem.h" />

@@ -38,10 +38,14 @@
 #include "UI/ConsolePanel.h"
 #include "UI/TextEditor/TextEditor.h"
 #include "Scripting/Lua.h"
+#include "Scripting/ScriptManager.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "Dialogs/ExtMessageDialog.h"
+#include "UI/STabCtrl.h"
+#include "ScriptPanel.h"
+#include "Graphics/Icons.h"
 
 
 // ----------------------------------------------------------------------------
@@ -53,15 +57,53 @@ CVAR(Bool, sm_maximized, false, CVAR_SAVE)
 
 
 // ----------------------------------------------------------------------------
+//
+// Functions
+//
+// ----------------------------------------------------------------------------
+namespace
+{
+
+wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const string& path)
+{
+	string path_rest;
+	string name = path.BeforeFirst('/', &path_rest);
+
+	// Find child node with name
+	wxTreeItemIdValue cookie;
+	wxTreeItemId child = tree->GetFirstChild(parent_node, cookie);
+	while (child.IsOk())
+	{
+		if (S_CMPNOCASE(tree->GetItemText(child), name))
+			break;
+
+		child = tree->GetNextSibling(child);
+	}
+
+	// Not found, create child node
+	if (!child.IsOk())
+		child = tree->AppendItem(parent_node, name);
+
+	// Return it or go deeper into the tree
+	if (path_rest.empty())
+		return child;
+	else
+		return getOrCreateNode(tree, child, path_rest);
+}
+
+} // namespace (anonymous)
+
+
+// ----------------------------------------------------------------------------
 // ScriptTreeItemData Class
 //
-// Just used to store ArchiveEntry pointers with wxTreeCtrl items
+// Just used to store Script pointers with wxTreeCtrl items
 // ----------------------------------------------------------------------------
 class ScriptTreeItemData : public wxTreeItemData
 {
 public:
-	ScriptTreeItemData(ArchiveEntry* entry) : entry{ entry } {}
-	ArchiveEntry* entry;
+	ScriptTreeItemData(ScriptManager::Script* script) : script{ script } {}
+	ScriptManager::Script* script;
 };
 
 
@@ -77,9 +119,17 @@ public:
 //
 // ScriptManagerWindow class constructor
 // ----------------------------------------------------------------------------
-ScriptManagerWindow::ScriptManagerWindow() : STopWindow("SLADE Script Manager", "scriptmanager")
+ScriptManagerWindow::ScriptManagerWindow() :
+	STopWindow("SLADE Script Manager", "scriptmanager"),
+	script_scratchbox_{ "", "Scratch Box", "" }
 {
 	setupLayout();
+
+	// Open 'scratch box' initially
+	script_scratchbox_.text =
+		"-- Use this script to write ad-hoc SLADE editor scripts\n"
+		"-- Note that this will not be saved between sessions\n\n";
+	openScriptTab(&script_scratchbox_);
 }
 
 // ----------------------------------------------------------------------------
@@ -125,9 +175,14 @@ void ScriptManagerWindow::saveLayout()
 	// Write component layout
 	auto m_mgr = wxAuiManager::GetManager(this);
 
+	// Scripts pane
+	file.Write("\"scripts_area\" ");
+	auto pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("scripts_area"));
+	file.Write(S_FMT("\"%s\"\n", pinf));
+
 	// Console pane
 	file.Write("\"console\" ");
-	auto pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("console"));
+	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("console"));
 	file.Write(S_FMT("\"%s\"\n", pinf));
 
 	// Close file
@@ -161,6 +216,16 @@ void ScriptManagerWindow::setupLayout()
 	p_inf.Name("editor_area");
 	p_inf.PaneBorder(false);
 	m_mgr->AddPane(setupMainArea(), p_inf);
+
+	// -- Scripts Panel --
+	p_inf.DefaultPane();
+	p_inf.Left();
+	p_inf.BestSize(256, 480);
+	p_inf.Caption("Scripts");
+	p_inf.Name("scripts_area");
+	p_inf.Show(true);
+	p_inf.Dock();
+	m_mgr->AddPane(setupScriptTreePanel(), p_inf);
 
 	// -- Console Panel --
 	auto panel_console = new ConsolePanel(this, -1);
@@ -202,26 +267,9 @@ wxPanel* ScriptManagerWindow::setupMainArea()
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
-	// Scripts Tree
-	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 1, wxEXPAND | wxALL, 10);
-	tree_scripts_ = new wxTreeCtrl(
-		panel,
-		-1,
-		wxDefaultPosition,
-		{ 200, -1 },
-		wxTR_DEFAULT_STYLE | wxTR_NO_LINES | wxTR_HIDE_ROOT | wxTR_FULL_ROW_HIGHLIGHT
-	);
-#if wxMAJOR_VERSION > 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
-	tree_scripts_->EnableSystemTheme(true);
-#endif
-	populateScriptsTree();
-	hbox->Add(tree_scripts_, 0, wxEXPAND | wxRIGHT, 10);
-
-	// Text Editor
-	text_editor_ = new TextEditor(panel, -1);
-	text_editor_->setLanguage(TextLanguage::getLanguage("sladescript"));
-	hbox->Add(text_editor_, 1, wxEXPAND);
+	// Tabs
+	tabs_scripts_ = new STabCtrl(panel, true, true, -1, true, true);
+	sizer->Add(tabs_scripts_, 1, wxEXPAND);
 
 	return panel;
 }
@@ -244,6 +292,7 @@ void ScriptManagerWindow::setupMenu()
 
 	// View menu
 	auto viewMenu = new wxMenu("");
+	SAction::fromId("scrm_showscripts")->addToMenu(viewMenu);
 	SAction::fromId("scrm_showconsole")->addToMenu(viewMenu);
 	menu->Append(viewMenu, "&View");
 
@@ -289,8 +338,11 @@ void ScriptManagerWindow::bindEvents()
 	tree_scripts_->Bind(wxEVT_TREE_ITEM_ACTIVATED, [=](wxTreeEvent e)
 	{
 		auto data = (ScriptTreeItemData*)tree_scripts_->GetItemData(e.GetItem());
-		if (data && data->entry)
-			text_editor_->loadEntry(data->entry);
+		if (data && data->script)
+			openScriptTab(data->script);
+			//text_editor_->SetText(data->script->text);
+		else if (tree_scripts_->ItemHasChildren(e.GetItem()))
+			tree_scripts_->Toggle(e.GetItem());
 	});
 
 	// Window close
@@ -308,6 +360,34 @@ void ScriptManagerWindow::bindEvents()
 }
 
 // ----------------------------------------------------------------------------
+// ScriptManagerWindow::setupScriptTreePanel
+//
+// Creates and returns the script tree area as a wxPanel
+// ----------------------------------------------------------------------------
+wxPanel* ScriptManagerWindow::setupScriptTreePanel()
+{
+	auto panel = new wxPanel(this);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(sizer);
+
+	// Scripts Tree
+	tree_scripts_ = new wxTreeCtrl(
+		panel,
+		-1,
+		wxDefaultPosition,
+		{ 200, -1 },
+		wxTR_DEFAULT_STYLE | wxTR_NO_LINES | wxTR_HIDE_ROOT | wxTR_FULL_ROW_HIGHLIGHT
+	);
+#if wxMAJOR_VERSION > 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
+	tree_scripts_->EnableSystemTheme(true);
+#endif
+	populateScriptsTree();
+	sizer->Add(tree_scripts_, 1, wxEXPAND | wxALL, 10);
+
+	return panel;
+}
+
+// ----------------------------------------------------------------------------
 // ScriptManagerWindow::populateScriptsTree
 //
 // Loads scripts from slade.pk3 into the scripts tree control
@@ -317,35 +397,71 @@ void ScriptManagerWindow::populateScriptsTree()
 	// Clear tree
 	tree_scripts_->DeleteAllItems();
 
-	// Get 'scripts' dir of slade.pk3
-	auto scripts_dir = App::archiveManager().programResourceArchive()->getDir("scripts");
-	if (!scripts_dir)
-		return;
-
-	// Recursive function to populate the tree
-	std::function<void(wxTreeCtrl*, wxTreeItemId, ArchiveTreeNode*)> addToTree =
-		[&](wxTreeCtrl* tree, wxTreeItemId node, ArchiveTreeNode* dir)
-	{
-		// Add subdirs
-		for (unsigned a = 0; a < dir->nChildren(); a++)
-		{
-			auto subdir = (ArchiveTreeNode*)dir->getChild(a);
-			auto subnode = tree->AppendItem(node, subdir->getName());
-			addToTree(tree, subnode, subdir);
-		}
-
-		// Add script files
-		for (unsigned a = 0; a < dir->numEntries(); a++)
-		{
-			auto entry = dir->entryAt(a);
-			if (entry->getName(true) != "init")
-				tree->AppendItem(node, entry->getName(true), -1, -1, new ScriptTreeItemData(entry));
-		}
-	};
-
-	// Populate from root
+	// Populate it
 	auto root = tree_scripts_->AddRoot("Scripts");
-	addToTree(tree_scripts_, root, scripts_dir);
+
+	// Editor scripts (general)
+	auto editor_scripts = tree_scripts_->AppendItem(root, "SLADE Editor Scripts");
+	tree_scripts_->AppendItem(editor_scripts, "Scratch Box", -1, -1, new ScriptTreeItemData(&script_scratchbox_));
+	for (auto& script : ScriptManager::editorScripts())
+		tree_scripts_->AppendItem(
+			getOrCreateNode(tree_scripts_, editor_scripts, script.path),
+			script.name,
+			-1,
+			-1,
+			new ScriptTreeItemData(&script)
+		);
+
+	// Global (custom) scripts
+	auto global_scripts = tree_scripts_->AppendItem(editor_scripts, "Global Scripts");
+
+	// Archive scripts
+	auto archive_scripts = tree_scripts_->AppendItem(editor_scripts, "Archive Scripts");
+
+	// Entry scripts
+	auto entry_scripts = tree_scripts_->AppendItem(editor_scripts, "Entry Scripts");
+}
+
+// ----------------------------------------------------------------------------
+// ScriptManagerWindow::openScriptTab
+//
+// Opens the tab for [script], or creates a new tab for it if needed
+// ----------------------------------------------------------------------------
+void ScriptManagerWindow::openScriptTab(ScriptManager::Script* script)
+{
+	// Find existing tab
+	for (unsigned a = 0; a < tabs_scripts_->GetPageCount(); a++)
+	{
+		auto page = tabs_scripts_->GetPage(a);
+		if (page->GetName() == "script")
+			if (((ScriptPanel*)page)->script() == script)
+			{
+				tabs_scripts_->ChangeSelection(a);
+				return;
+			}
+	}
+
+	// Not found, create new tab for script
+	tabs_scripts_->AddPage(
+		new ScriptPanel(tabs_scripts_, script),
+		script->name,
+		true,
+		Icons::getIcon(Icons::ENTRY, "text")
+	);
+}
+
+// ----------------------------------------------------------------------------
+// ScriptManagerWindow::currentScript
+//
+// Returns the currently open/focused script, or nullptr if none are open
+// ----------------------------------------------------------------------------
+ScriptManager::Script* ScriptManagerWindow::currentScript()
+{
+	auto page = tabs_scripts_->GetCurrentPage();
+	if (page->GetName() == "script")
+		return ((ScriptPanel*)page)->script();
+
+	return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -363,9 +479,13 @@ bool ScriptManagerWindow::handleAction(string id)
 	// Script->Run
 	if (id == "scrm_run")
 	{
+		auto script = currentScript();
+		if (!script)
+			return true;
+
 		Lua::setCurrentWindow(this);
 		auto start_time = wxDateTime::Now().GetTicks();
-		if (!Lua::run(text_editor_->GetText()))
+		if (!Lua::run(script->text))
 		{
 			auto log = Log::since(start_time, Log::MessageType::Script);
 			string output;
@@ -383,14 +503,18 @@ bool ScriptManagerWindow::handleAction(string id)
 			));
 			dlg.CenterOnParent();
 			dlg.ShowModal();
-
-			auto m_mgr = wxAuiManager::GetManager(this);
-			auto& p_inf = m_mgr->GetPane("console");
-			p_inf.Show(true);
-			p_inf.MinSize(200, 128);
-			m_mgr->Update();
 		}
 
+		return true;
+	}
+
+	// View->Scripts
+	if (id == "scrm_showscripts")
+	{
+		auto m_mgr = wxAuiManager::GetManager(this);
+		auto& p_inf = m_mgr->GetPane("scripts_area");
+		p_inf.Show(!p_inf.IsShown());
+		m_mgr->Update();
 		return true;
 	}
 
