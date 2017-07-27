@@ -41,6 +41,7 @@
 #include "General/Misc.h"
 #include "General/SAction.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "Dialogs/ExtMessageDialog.h"
 
 
 // ----------------------------------------------------------------------------
@@ -362,11 +363,27 @@ bool ScriptManagerWindow::handleAction(string id)
 	// Script->Run
 	if (id == "scrm_run")
 	{
-		// TODO: Show error in message box
 		Lua::setCurrentWindow(this);
+		auto start_time = wxDateTime::Now().GetTicks();
 		if (!Lua::run(text_editor_->GetText()))
 		{
-			wxMessageBox("See Console Log", "Script Error", wxOK | wxICON_ERROR, this);
+			auto log = Log::since(start_time, Log::MessageType::Script);
+			string output;
+			for (auto msg : log)
+				output += msg->formattedMessageLine() + "\n";
+
+			ExtMessageDialog dlg(this, "Script Error");
+			dlg.setMessage("An error occurred running the script, see details below");
+			dlg.setExt(S_FMT(
+				"%s Error\nLine %d: %s\n\nScript Output:\n%s",
+				CHR(Lua::error().type),
+				Lua::error().line_no,
+				CHR(Lua::error().message),
+				CHR(output)
+			));
+			dlg.CenterOnParent();
+			dlg.ShowModal();
+
 			auto m_mgr = wxAuiManager::GetManager(this);
 			auto& p_inf = m_mgr->GetPane("console");
 			p_inf.Show(true);
