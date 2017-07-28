@@ -33,6 +33,7 @@
 #define SOL_CHECK_ARGUMENTS 1
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
+#include "Dialogs/ExtMessageDialog.h"
 #include "External/sol/sol.hpp"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
@@ -56,6 +57,7 @@ namespace Lua
 	sol::state	lua;
 	wxWindow*	current_window = nullptr;
 	Error		script_error;
+	time_t		script_start_time;
 }
 
 
@@ -201,6 +203,33 @@ Lua::Error& Lua::error()
 }
 
 // ----------------------------------------------------------------------------
+// Lua::showErrorDialog
+//
+// Shows an extended message dialog with details of the last script error that
+// occurred
+// ----------------------------------------------------------------------------
+void Lua::showErrorDialog(wxWindow* parent, const string& title, const string& message)
+{
+	// Get script log messages since the last script was started
+	auto log = Log::since(script_start_time, Log::MessageType::Script);
+	string output;
+	for (auto msg : log)
+		output += msg->formattedMessageLine() + "\n";
+
+	ExtMessageDialog dlg(parent ? parent : current_window, title);
+	dlg.setMessage(message);
+	dlg.setExt(S_FMT(
+		"%s Error\nLine %d: %s\n\nScript Output:\n%s",
+		CHR(Lua::error().type),
+		Lua::error().line_no,
+		CHR(Lua::error().message),
+		CHR(output)
+	));
+	dlg.CenterOnParent();
+	dlg.ShowModal();
+}
+
+// ----------------------------------------------------------------------------
 // Lua::run
 //
 // Runs a lua script [program]
@@ -208,6 +237,7 @@ Lua::Error& Lua::error()
 bool Lua::run(string program)
 {
 	resetError();
+	script_start_time = wxDateTime::Now().GetTicks();
 
 	sol::environment sandbox(lua, sol::create, lua.globals());
 	auto result = lua.script(CHR(program), sandbox, sol::simple_on_error);
@@ -236,6 +266,7 @@ bool Lua::run(string program)
 bool Lua::runFile(string filename)
 {
 	resetError();
+	script_start_time = wxDateTime::Now().GetTicks();
 
 	sol::environment sandbox(lua, sol::create, lua.globals());
 	auto result = lua.script_file(CHR(filename), sandbox, sol::simple_on_error);

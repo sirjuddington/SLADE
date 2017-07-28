@@ -480,9 +480,10 @@ bool ScriptManagerWindow::handleAction(string id)
 	if (id == "scrm_run")
 	{
 		Lua::setCurrentWindow(this);
-		auto start_time = wxDateTime::Now().GetTicks();
+		//auto start_time = wxDateTime::Now().GetTicks();
 		if (!Lua::run(currentScriptText()))
-		{
+			Lua::showErrorDialog();
+		/*{
 			auto log = Log::since(start_time, Log::MessageType::Script);
 			string output;
 			for (auto msg : log)
@@ -499,7 +500,7 @@ bool ScriptManagerWindow::handleAction(string id)
 			));
 			dlg.CenterOnParent();
 			dlg.ShowModal();
-		}
+		}*/
 
 		return true;
 	}
