@@ -108,7 +108,7 @@ protected:
 #endif
 	void DoLogText(const wxString& msg) override
 	{
-		Log::message(Log::MessageType::Info, msg);
+		Log::message(Log::MessageType::Info, msg.Right(msg.size() - 10));
 	}
 
 public:
@@ -580,12 +580,12 @@ bool SLADEWxApp::OnInit()
 	LOG_MESSAGE(1, "Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor);
 #endif
 
+	// Reroute wx log messages
+	wxLog::SetActiveTarget(new SLADELog());
+
 	// Init application
 	if (!App::init())
 		return false;
-
-	// Reroute wx log messages
-	wxLog::SetActiveTarget(new SLADELog());
 
 	// Check for updates
 #ifdef __WXMSW__
