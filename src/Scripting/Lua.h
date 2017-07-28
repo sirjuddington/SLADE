@@ -25,6 +25,7 @@ namespace Lua
 
 	bool	run(string program);
 	bool	runFile(string filename);
+	bool	runArchiveScript(const string& script, Archive* archive);
 
 	sol::state&	state();
 

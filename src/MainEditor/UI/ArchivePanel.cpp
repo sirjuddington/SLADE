@@ -71,6 +71,7 @@
 #include "UI/PaletteChooser.h"
 #include "Utility/SFileDialog.h"
 #include "Archive/Formats/ZipArchive.h"
+#include "Scripting/ScriptManager.h"
 
 
 /*******************************************************************
@@ -486,6 +487,9 @@ void ArchivePanel::addMenus()
 		SAction::fromId("arch_check_duplicates2")->addToMenu(menu_clean);
 		SAction::fromId("arch_replace_maps")->addToMenu(menu_clean);
 		menu_archive->AppendSubMenu(menu_clean, "&Maintenance");
+		auto menu_scripts = new wxMenu();
+		ScriptManager::populateArchiveScriptMenu(menu_scripts);
+		menu_archive->AppendSubMenu(menu_scripts, "&Scripts");
 	}
 	if (!menu_entry)
 	{
@@ -2992,6 +2996,10 @@ bool ArchivePanel::handleAction(string id)
 		MapReplaceDialog dlg(this, archive);
 		dlg.ShowModal();
 	}
+
+	// Archive->Scripts->...
+	else if (id == "arch_script")
+		ScriptManager::runArchiveScript(archive, wx_id_offset);
 
 
 	// *************************************************************

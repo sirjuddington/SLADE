@@ -288,6 +288,50 @@ bool Lua::runFile(string filename)
 }
 
 // ----------------------------------------------------------------------------
+// Lua::runArchiveScript
+//
+// Runs the 'execute(archive)' function in the given [script], passing
+// [archive] as the parameter
+// ----------------------------------------------------------------------------
+bool Lua::runArchiveScript(const string& script, Archive* archive)
+{
+	resetError();
+	script_start_time = wxDateTime::Now().GetTicks();
+
+	// Load script
+	sol::environment sandbox(lua, sol::create, lua.globals());
+	auto load_result = lua.script(CHR(script), sandbox, sol::simple_on_error);
+	if (!load_result.valid())
+	{
+		processError(load_result);
+		Log::error(S_FMT(
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
+		));
+		return false;
+	}
+
+	// Run script execute function
+	sol::protected_function func = sandbox["execute"];
+	auto exec_result = func(archive);
+	if (!exec_result.valid())
+	{
+		processError(exec_result);
+		Log::error(S_FMT(
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
+		));
+		return false;
+	}
+
+	return true;
+}
+
+// ----------------------------------------------------------------------------
 // Lua::state
 //
 // Returns the active lua state

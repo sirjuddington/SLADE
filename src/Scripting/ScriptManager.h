@@ -12,7 +12,12 @@ namespace ScriptManager
 		ArchiveEntry::WPtr	source;
 	};
 
+	vector<Script>&	editorScripts();
+	vector<Script>&	archiveScripts();
+
 	void			init();
 	void			open();
-	vector<Script>&	editorScripts();
+	
+	void	populateArchiveScriptMenu(wxMenu* menu);
+	void	runArchiveScript(Archive* archive, int index, wxWindow* parent = nullptr);
 }

@@ -405,6 +405,8 @@ void ScriptManagerWindow::populateScriptsTree()
 
 	// Archive scripts
 	auto archive_scripts = tree_scripts_->AppendItem(editor_scripts, "Archive Scripts", 1);
+	for (auto& script : ScriptManager::archiveScripts())
+		tree_scripts_->AppendItem(archive_scripts, script.name, 0, 0, new ScriptTreeItemData(&script));
 
 	// Entry scripts
 	auto entry_scripts = tree_scripts_->AppendItem(editor_scripts, "Entry Scripts", 1);

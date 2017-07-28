@@ -37,5 +37,5 @@ private:
 	void		populateScriptsTree();
 
 	// SActionHandler
-	bool	handleAction(string id);
+	bool	handleAction(string id) override;
 };
