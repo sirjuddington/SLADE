@@ -82,13 +82,21 @@ wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const s
 
 	// Not found, create child node
 	if (!child.IsOk())
-		child = tree->AppendItem(parent_node, name);
+		child = tree->AppendItem(parent_node, name, 1);
 
 	// Return it or go deeper into the tree
 	if (path_rest.empty())
 		return child;
 	else
 		return getOrCreateNode(tree, child, path_rest);
+}
+
+wxImageList* createTreeImageList()
+{
+	auto image_list = new wxImageList(16, 16, false, 0);
+	image_list->Add(Icons::getIcon(Icons::ENTRY, "text"));
+	image_list->Add(Icons::getIcon(Icons::ENTRY, "folder"));
+	return image_list;
 }
 
 } // namespace (anonymous)
@@ -140,26 +148,15 @@ ScriptManagerWindow::ScriptManagerWindow() :
 void ScriptManagerWindow::loadLayout()
 {
 	// Open layout file
-	Tokenizer tz;
-	if (!tz.openFile(App::path("scriptmanager.layout", App::Dir::User)))
-		return;
+	wxFile file(App::path("scriptmanager.layout", App::Dir::User), wxFile::read);
 
-	// Parse layout
-	auto m_mgr = wxAuiManager::GetManager(this);
-	while (true)
-	{
-		// Read component+layout pair
-		string component = tz.getToken();
-		string layout = tz.getToken();
+	// Read component layout
+	string layout;
+	file.ReadAll(&layout);
+	wxAuiManager::GetManager(this)->LoadPerspective(layout);
 
-		// Load layout to component
-		if (!component.IsEmpty() && !layout.IsEmpty())
-			m_mgr->LoadPaneInfo(layout, m_mgr->GetPane(component));
-
-		// Check if we're done
-		if (tz.peekToken().IsEmpty())
-			break;
-	}
+	// Close file
+	file.Close();
 }
 
 // ----------------------------------------------------------------------------
@@ -173,17 +170,7 @@ void ScriptManagerWindow::saveLayout()
 	wxFile file(App::path("scriptmanager.layout", App::Dir::User), wxFile::write);
 
 	// Write component layout
-	auto m_mgr = wxAuiManager::GetManager(this);
-
-	// Scripts pane
-	file.Write("\"scripts_area\" ");
-	auto pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("scripts_area"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
-
-	// Console pane
-	file.Write("\"console\" ");
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("console"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	file.Write(wxAuiManager::GetManager(this)->SavePerspective());
 
 	// Close file
 	file.Close();
@@ -381,6 +368,7 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 #if wxMAJOR_VERSION > 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
 	tree_scripts_->EnableSystemTheme(true);
 #endif
+	tree_scripts_->SetImageList(createTreeImageList());
 	populateScriptsTree();
 	sizer->Add(tree_scripts_, 1, wxEXPAND | wxALL, 10);
 
@@ -401,25 +389,28 @@ void ScriptManagerWindow::populateScriptsTree()
 	auto root = tree_scripts_->AddRoot("Scripts");
 
 	// Editor scripts (general)
-	auto editor_scripts = tree_scripts_->AppendItem(root, "SLADE Editor Scripts");
-	tree_scripts_->AppendItem(editor_scripts, "Scratch Box", -1, -1, new ScriptTreeItemData(&script_scratchbox_));
+	auto editor_scripts = tree_scripts_->AppendItem(root, "SLADE Editor Scripts", 1);
+	tree_scripts_->AppendItem(editor_scripts, "Scratch Box", 0, 0, new ScriptTreeItemData(&script_scratchbox_));
 	for (auto& script : ScriptManager::editorScripts())
 		tree_scripts_->AppendItem(
 			getOrCreateNode(tree_scripts_, editor_scripts, script.path),
 			script.name,
-			-1,
-			-1,
+			0,
+			0,
 			new ScriptTreeItemData(&script)
 		);
 
 	// Global (custom) scripts
-	auto global_scripts = tree_scripts_->AppendItem(editor_scripts, "Global Scripts");
+	auto global_scripts = tree_scripts_->AppendItem(editor_scripts, "Global Scripts", 1);
 
 	// Archive scripts
-	auto archive_scripts = tree_scripts_->AppendItem(editor_scripts, "Archive Scripts");
+	auto archive_scripts = tree_scripts_->AppendItem(editor_scripts, "Archive Scripts", 1);
 
 	// Entry scripts
-	auto entry_scripts = tree_scripts_->AppendItem(editor_scripts, "Entry Scripts");
+	auto entry_scripts = tree_scripts_->AppendItem(editor_scripts, "Entry Scripts", 1);
+
+	// Expand editor scripts initially
+	tree_scripts_->Expand(editor_scripts);
 }
 
 // ----------------------------------------------------------------------------
