@@ -34,6 +34,17 @@ Returns the most recently generated error message
 Shows a simple message dialog
 
 ---
+### `messageBoxExt`
+
+<listhead>Parameters</listhead>
+
+  * <type>string</type> <arg>title</arg>: The dialog caption
+  * <type>string</type> <arg>message</arg>: The message to display
+  * <type>string</type> <arg>detail</arg>: The detailed message to display
+
+Shows an extended message box with an extra scrollable text box displaying <arg>detail</arg>
+
+---
 ### `promptString`
 
 <listhead>Parameters</listhead>

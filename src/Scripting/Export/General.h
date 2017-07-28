@@ -11,6 +11,16 @@ void messageBox(const string& title, const string& message)
 	wxMessageBox(message, title, 5L, Lua::currentWindow());
 }
 
+// Show an extended message box
+void messageBoxExtended(const string& title, const string& message, const string& extra)
+{
+	ExtMessageDialog dlg(Lua::currentWindow(), title);
+	dlg.setMessage(message);
+	dlg.setExt(extra);
+	dlg.CenterOnParent();
+	dlg.ShowModal();
+}
+
 // Prompt for a string
 string promptString(const string& title, const string& message, const string& default_value)
 {
@@ -112,6 +122,7 @@ void registerAppNamespace(sol::state& lua)
 	app.set_function("logMessage",				&logMessage);
 	app.set_function("globalError",				[]() { return Global::error; });
 	app.set_function("messageBox",				&messageBox);
+	app.set_function("messageBoxExt",			&messageBoxExtended);
 	app.set_function("promptString",			&promptString);
 	app.set_function("promptNumber",			&promptNumber);
 	app.set_function("promptYesNo",				&promptYesNo);
