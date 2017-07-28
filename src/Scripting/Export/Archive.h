@@ -62,19 +62,19 @@ vector<ArchiveTreeNode*> archiveDirSubDirs(ArchiveTreeNode& self)
 
 void registerArchiveFormat(sol::state& lua)
 {
-	lua.new_usertype<ArchiveFormat>(
+	lua.new_simple_usertype<ArchiveFormat>(
 		"ArchiveFormat",
 
 		// No constructor
 		"new", sol::no_constructor,
 
 		// Properties
-		"id",				sol::property(&ArchiveFormat::id),
-		"name",				sol::property(&ArchiveFormat::name),
-		"supportsDirs",		sol::property(&ArchiveFormat::supports_dirs),
-		"hasExtensions",	sol::property(&ArchiveFormat::names_extensions),
-		"maxNameLength",	sol::property(&ArchiveFormat::max_name_length)
-		//"entryFormat",	sol::property(&ArchiveFormat::entry_format)
+		"id",				sol::readonly(&ArchiveFormat::id),
+		"name",				sol::readonly(&ArchiveFormat::name),
+		"supportsDirs",		sol::readonly(&ArchiveFormat::supports_dirs),
+		"hasExtensions",	sol::readonly(&ArchiveFormat::names_extensions),
+		"maxNameLength",	sol::readonly(&ArchiveFormat::max_name_length)
+		//"entryFormat",	sol::readonly(&ArchiveFormat::entry_format)
 		//"extensions" - need to export key_value_t or do something custom
 	);
 }
