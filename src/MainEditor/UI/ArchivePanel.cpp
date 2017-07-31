@@ -1109,7 +1109,11 @@ bool ArchivePanel::deleteEntry(bool confirm)
 		else if (num > 0)
 			item = S_FMT("these %d items", num);
 
-		if (wxMessageBox(S_FMT("Are you sure you want to delete %s?", item), "Delete Confirmation", wxYES_NO|wxICON_QUESTION) == wxNO)
+		if (wxMessageBox(
+				S_FMT("Are you sure you want to delete %s?", item),
+				"Delete Confirmation",
+				wxYES_NO|wxICON_QUESTION
+			) != wxYES)
 			return false;
 	}
 
