@@ -1,10 +1,47 @@
 
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ScriptManager.cpp
+// Description: ScriptManager namespace, provides the backend for the script
+//              manager window. 
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "ScriptManager.h"
 #include "UI/ScriptManagerWindow.h"
 #include "Archive/ArchiveManager.h"
 #include "Lua.h"
 
+
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 namespace ScriptManager
 {
 	ScriptManagerWindow*	window = nullptr;
@@ -15,9 +52,22 @@ namespace ScriptManager
 	vector<Script>			scripts_zscript;
 }
 
+
+// ----------------------------------------------------------------------------
+//
+// ScriptManager Namespace Functions
+//
+// ----------------------------------------------------------------------------
+
 namespace ScriptManager
 {
 
+// ----------------------------------------------------------------------------
+// addScriptFromEntry
+//
+// Adds a new script to [list], created from [entry]. [cut_path] will be
+// removed from the start of the script's path property
+// ----------------------------------------------------------------------------
 void addScriptFromEntry(ArchiveEntry::SPtr& entry, vector<ScriptManager::Script>& list, const string& cut_path)
 {
 	ScriptManager::Script s;
@@ -30,6 +80,11 @@ void addScriptFromEntry(ArchiveEntry::SPtr& entry, vector<ScriptManager::Script>
 	list.back().text = wxString::FromAscii((const char*)entry->getData(), entry->getSize());
 }
 
+// ----------------------------------------------------------------------------
+// addScriptFromFile
+//
+// Adds a new script to [list], created from the file at [filename]
+// ----------------------------------------------------------------------------
 void addScriptFromFile(const string& filename, vector<ScriptManager::Script>& list)
 {
 	wxFileName fn(filename);
@@ -45,6 +100,11 @@ void addScriptFromFile(const string& filename, vector<ScriptManager::Script>& li
 	file.Close();
 }
 
+// ----------------------------------------------------------------------------
+// loadGeneralScripts
+//
+// Loads all 'general' scripts from slade.pk3
+// ----------------------------------------------------------------------------
 void loadGeneralScripts()
 {
 	// Get 'scripts/general' dir of slade.pk3
@@ -54,6 +114,11 @@ void loadGeneralScripts()
 			addScriptFromEntry(entry, scripts_editor, "/scripts/general/");
 }
 
+// ----------------------------------------------------------------------------
+// loadArchiveScripts
+//
+// Loads all Archive scripts from slade.pk3 and the user dir
+// ----------------------------------------------------------------------------
 void loadArchiveScripts()
 {
 	// Get 'scripts/archive' dir of slade.pk3
@@ -88,12 +153,22 @@ void loadArchiveScripts()
 
 } // namespace ScriptManager
 
+// ----------------------------------------------------------------------------
+// ScriptManager::init
+//
+// Initialises the script manager
+// ----------------------------------------------------------------------------
 void ScriptManager::init()
 {
 	loadGeneralScripts();
 	loadArchiveScripts();
 }
 
+// ----------------------------------------------------------------------------
+// ScriptManager::open
+//
+// Opens the script manager window
+// ----------------------------------------------------------------------------
 void ScriptManager::open()
 {
 	if (!window)
@@ -102,16 +177,31 @@ void ScriptManager::open()
 	window->Show();
 }
 
+// ----------------------------------------------------------------------------
+// ScriptManager::editorScripts
+//
+// Returns a list of all general editor scripts
+// ----------------------------------------------------------------------------
 vector<ScriptManager::Script>& ScriptManager::editorScripts()
 {
 	return scripts_editor;
 }
 
+// ----------------------------------------------------------------------------
+// ScriptManager::archiveScripts
+//
+// Returns a list of all archive scripts
+// ----------------------------------------------------------------------------
 vector<ScriptManager::Script>& ScriptManager::archiveScripts()
 {
 	return scripts_archive;
 }
 
+// ----------------------------------------------------------------------------
+// ScriptManager::populateArchiveScriptMenu
+//
+// Populates [menu] with all loaded archive scripts
+// ----------------------------------------------------------------------------
 void ScriptManager::populateArchiveScriptMenu(wxMenu* menu)
 {
 	int index = 0;
@@ -119,6 +209,11 @@ void ScriptManager::populateArchiveScriptMenu(wxMenu* menu)
 		menu->Append(SAction::fromId("arch_script")->getWxId() + index++, script.name);
 }
 
+// ----------------------------------------------------------------------------
+// ScriptManager::runArchiveScript
+//
+// Runs the archive script at [index] on [archive]
+// ----------------------------------------------------------------------------
 void ScriptManager::runArchiveScript(Archive* archive, int index, wxWindow* parent)
 {
 	if (parent)

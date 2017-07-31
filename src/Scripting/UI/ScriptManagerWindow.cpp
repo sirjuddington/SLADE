@@ -64,6 +64,12 @@ CVAR(Bool, sm_maximized, false, CVAR_SAVE)
 namespace
 {
 
+// ----------------------------------------------------------------------------
+// getOrCreateNode
+//
+// Returns a new or existing wxTreeItemId for [tree], at [path] from
+// [parent_node]. Creates any required nodes along the way.
+// ----------------------------------------------------------------------------
 wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const string& path)
 {
 	string path_rest;
@@ -91,6 +97,11 @@ wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const s
 		return getOrCreateNode(tree, child, path_rest);
 }
 
+// ----------------------------------------------------------------------------
+// createTreeImageList
+//
+// Creates the wxImageList to use for the script tree control
+// ----------------------------------------------------------------------------
 wxImageList* createTreeImageList()
 {
 	auto image_list = new wxImageList(16, 16, false, 0);
@@ -457,6 +468,11 @@ ScriptManager::Script* ScriptManagerWindow::currentScript()
 	return nullptr;
 }
 
+// ----------------------------------------------------------------------------
+// ScriptManagerWindow::currentScriptText
+//
+// Returns the currently open/focused script text
+// ----------------------------------------------------------------------------
 string ScriptManagerWindow::currentScriptText()
 {
 	auto page = tabs_scripts_->GetCurrentPage();
@@ -482,27 +498,8 @@ bool ScriptManagerWindow::handleAction(string id)
 	if (id == "scrm_run")
 	{
 		Lua::setCurrentWindow(this);
-		//auto start_time = wxDateTime::Now().GetTicks();
 		if (!Lua::run(currentScriptText()))
 			Lua::showErrorDialog();
-		/*{
-			auto log = Log::since(start_time, Log::MessageType::Script);
-			string output;
-			for (auto msg : log)
-				output += msg->formattedMessageLine() + "\n";
-
-			ExtMessageDialog dlg(this, "Script Error");
-			dlg.setMessage("An error occurred running the script, see details below");
-			dlg.setExt(S_FMT(
-				"%s Error\nLine %d: %s\n\nScript Output:\n%s",
-				CHR(Lua::error().type),
-				Lua::error().line_no,
-				CHR(Lua::error().message),
-				CHR(output)
-			));
-			dlg.CenterOnParent();
-			dlg.ShowModal();
-		}*/
 
 		return true;
 	}
