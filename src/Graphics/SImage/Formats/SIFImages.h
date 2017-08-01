@@ -166,7 +166,7 @@ protected:
 
 		// Get image palette if it exists
 		RGBQUAD* bm_pal = FreeImage_GetPalette(bm);
-		Palette8bit palette;
+		Palette palette;
 		if (bpp == 8 && bm_pal)
 		{
 			type = PALMASK;
@@ -248,7 +248,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& data, Palette8bit* pal, int index)
+	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index)
 	{
 		// Variables
 		FIBITMAP*	bm = NULL;
@@ -280,7 +280,7 @@ protected:
 			bm = FreeImage_Allocate(width, height, 8);
 
 			// Get palette to use
-			Palette8bit usepal;
+			Palette usepal;
 			if (image.hasPalette())
 				usepal.copyPalette(&imagePalette(image));
 			else if (pal)

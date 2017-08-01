@@ -69,7 +69,7 @@ public:
 
 	bool	openTEXTUREX(ArchiveEntry* texturex);
 	bool	saveTEXTUREX();
-	void	setPalette(Palette8bit* pal);
+	void	setPalette(Palette* pal);
 	void	applyChanges();
 	void	updateTextureList() { list_textures->updateList(); }
 

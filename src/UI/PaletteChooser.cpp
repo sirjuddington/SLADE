@@ -47,7 +47,7 @@ PaletteChooser::PaletteChooser(wxWindow* parent, int id)
 	: wxChoice(parent, id)
 {
 	// Init variables
-	pal_global = new Palette8bit();
+	pal_global = new Palette();
 	pal_global->copyPalette(App::paletteManager()->globalPalette());
 
 	// Add first 'existing' item
@@ -100,7 +100,7 @@ void PaletteChooser::setGlobalFromArchive(Archive* archive, int lump)
 /* PaletteChooser::getSelectedPalette
  * Returns the selected palette (from the PaletteManager)
  *******************************************************************/
-Palette8bit* PaletteChooser::getSelectedPalette(ArchiveEntry* entry)
+Palette* PaletteChooser::getSelectedPalette(ArchiveEntry* entry)
 {
 	if (GetSelection() > 0)
 		return App::paletteManager()->getPalette(GetSelection() - 1);

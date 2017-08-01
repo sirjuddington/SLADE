@@ -11,7 +11,7 @@ class TextureXEditor;
 class TextureXList;
 class CTextureCanvas;
 class CTexture;
-class Palette8bit;
+class Palette;
 class TextureEditorPanel : public wxPanel, SActionHandler
 {
 protected:
@@ -73,9 +73,9 @@ public:
 
 	bool	openTexture(CTexture* tex, TextureXList* list);
 	void	clearTexture();
-	void	setPalette(Palette8bit* pal);
+	void	setPalette(Palette* pal);
 
-	Palette8bit*		getPalette();
+	Palette*		getPalette();
 	bool				getBlendRGBA();
 
 	// Editing

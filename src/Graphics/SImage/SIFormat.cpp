@@ -135,7 +135,7 @@ protected:
 
 		// Get image palette if it exists
 		RGBQUAD* bm_pal = FreeImage_GetPalette(bm);
-		Palette8bit palette;
+		Palette palette;
 		if (bm_pal)
 		{
 			int a = 0;
@@ -175,7 +175,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette8bit* pal, int index)
+	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
 	{
 		return false;
 	}
@@ -375,7 +375,7 @@ public:
 class SIFRawFlat : public SIFRaw
 {
 protected:
-	bool writeImage(SImage& image, MemChunk& data, Palette8bit* pal, int index)
+	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index)
 	{
 		// Can't write if RGBA
 		if (image.getType() == RGBA)

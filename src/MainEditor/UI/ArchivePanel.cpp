@@ -711,7 +711,7 @@ bool ArchivePanel::newEntry(int type)
 		case ENTRY_PALETTE:
 			if (cp.ShowModal() == wxID_OK)
 			{
-				Palette8bit* pal;
+				Palette* pal;
 				int choice = cp.getChoice();
 				if (choice)
 					pal = App::paletteManager()->getPalette(choice - 1);
@@ -1870,7 +1870,7 @@ bool ArchivePanel::gfxRemap()
 	Misc::loadImageFromEntry(&image, selection[0]);
 
 	// Create translation editor dialog
-	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 	TranslationEditorDialog ted(this, pal, "Colour Remap", &image);
 	ted.openTranslation(((GfxEntryPanel*)gfx_area)->prevTranslation());
 
@@ -1928,7 +1928,7 @@ bool ArchivePanel::gfxColourise()
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 
 	// Create colourise dialog
-	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 	GfxColouriseDialog gcd(this, selection[0], pal);
 	gcd.setColour(last_colour);
 
@@ -1983,7 +1983,7 @@ bool ArchivePanel::gfxTint()
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 
 	// Create colourise dialog
-	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 	GfxTintDialog gtd(this, selection[0], pal);
 	gtd.setValues(last_tint_colour, last_tint_amount);
 

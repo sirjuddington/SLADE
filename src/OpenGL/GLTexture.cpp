@@ -230,7 +230,7 @@ bool GLTexture::loadRawData(const uint8_t* data, uint32_t w, uint32_t h)
  * 128x128 squares. Returns false if the given data is invalid, true
  * otherwise
  *******************************************************************/
-bool GLTexture::loadImage(SImage* image, Palette8bit* pal)
+bool GLTexture::loadImage(SImage* image, Palette* pal)
 {
 	// Check image was given
 	if (!image)
@@ -288,7 +288,7 @@ bool GLTexture::loadImage(SImage* image, Palette8bit* pal)
  * Loads a portion of a SImage to the texture. Only used internally,
  * the portion must be 128x128 in size
  *******************************************************************/
-bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette8bit* pal, bool add)
+bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette* pal, bool add)
 {
 	// Check image was given
 	if (!image)

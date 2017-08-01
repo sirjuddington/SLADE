@@ -90,7 +90,7 @@ void MainEditor::setGlobalPaletteFromArchive(Archive * archive)
 	main_window->getPaletteChooser()->setGlobalFromArchive(archive);
 }
 
-Palette8bit* MainEditor::currentPalette(ArchiveEntry* entry)
+Palette* MainEditor::currentPalette(ArchiveEntry* entry)
 {
 	return main_window->getPaletteChooser()->getSelectedPalette(entry);
 }

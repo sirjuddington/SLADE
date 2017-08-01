@@ -1,63 +1,53 @@
-
-#ifndef __PALETTE_H__
-#define	__PALETTE_H__
+#pragma once
 
 class Translation;
 
-class Palette8bit
+class Palette
 {
-private:
-	rgba_t	colours[256];
-	hsl_t	colours_hsl[256];
-	lab_t	colours_lab[256];
-	short	index_trans;
-
-	double	colourDiff(rgba_t& rgb, hsl_t& hsl, lab_t& lab, int index, int match);
-
 public:
-	enum PaletteFormats
+	enum class Format
 	{
-	    FORMAT_RAW,
-	    FORMAT_IMAGE,
-	    FORMAT_CSV,
-	    FORMAT_JASC,
-	    FORMAT_GIMP,
+	    Raw,
+	    Image,
+	    CSV,
+	    JASC,
+	    GIMP,
 	};
-	enum ColorMatching
+	enum class ColourMatch
 	{
-	    MATCH_DEFAULT,
-	    MATCH_OLD,
-	    MATCH_RGB,
-	    MATCH_HSL,
-	    MATCH_C76,
-	    MATCH_C94,
-	    MATCH_C2K,
-	    MATCH_STOP,
+	    Default,
+	    Old,
+	    RGB,
+	    HSL,
+	    C76,
+	    C94,
+	    C2K,
+	    Stop,
 	};
 
-	Palette8bit();
-	~Palette8bit();
+	Palette(unsigned size = 256);
+	~Palette();
 
-	rgba_t	colour(uint8_t index) { return colours[index]; }
-	short	transIndex() { return index_trans; }
+	rgba_t	colour(uint8_t index) { return colours_[index]; }
+	short	transIndex() { return index_trans_; }
 
 	bool	loadMem(MemChunk& mc);
 	bool	loadMem(const uint8_t* data, uint32_t size);
-	bool	loadMem(MemChunk& mc, int format);
-	bool	loadFile(string filename, int format = FORMAT_RAW);
-	bool	saveMem(MemChunk& mc, int format = FORMAT_RAW, string name = "");
-	bool	saveFile(string filename, int format = FORMAT_RAW);
+	bool	loadMem(MemChunk& mc, Format format);
+	bool	loadFile(const string& filename, Format format = Format::Raw);
+	bool	saveMem(MemChunk& mc, Format format = Format::Raw, const string& name = "");
+	bool	saveFile(const string& filename, Format format = Format::Raw);
 
 	void	setColour (uint8_t index, rgba_t  col);
 	void	setColourR(uint8_t index, uint8_t val);
 	void	setColourG(uint8_t index, uint8_t val);
 	void	setColourB(uint8_t index, uint8_t val);
-	void	setColourA(uint8_t index, uint8_t val)	{ colours[index].a = val; }
-	void	setTransIndex(short index)				{ index_trans = index; }
+	void	setColourA(uint8_t index, uint8_t val)	{ colours_[index].a = val; }
+	void	setTransIndex(short index)				{ index_trans_ = index; }
 	
-	void	copyPalette(Palette8bit* copy);
+	void	copyPalette(Palette* copy);
 	short	findColour(rgba_t colour);
-	short	nearestColour(rgba_t colour, int match = MATCH_DEFAULT);
+	short	nearestColour(rgba_t colour, ColourMatch match = ColourMatch::Default);
 	size_t	countColours();
 	void	applyTranslation(Translation* trans);
 
@@ -73,7 +63,13 @@ public:
 	// For automated palette generation
 	void	idtint(int r, int g, int b, int shift, int steps);
 
-	typedef std::unique_ptr<Palette8bit> UPtr;
-};
+	typedef std::unique_ptr<Palette> UPtr;
 
-#endif //__PALETTE_H__
+private:
+	vector<rgba_t>	colours_;
+	vector<hsl_t>	colours_hsl_;
+	vector<lab_t>	colours_lab_;
+	short			index_trans_;
+
+	double	colourDiff(rgba_t& rgb, hsl_t& hsl, lab_t& lab, int index, ColourMatch match);
+};

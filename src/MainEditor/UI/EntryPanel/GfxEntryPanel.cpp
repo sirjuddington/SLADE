@@ -707,7 +707,7 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_settrans")
 	{
 		// Create translation editor dialog
-		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+		Palette* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 		TranslationEditorDialog ted(theMainWindow, pal, " Colour Remap", getImage());
 
 		// Create translation to edit
@@ -796,7 +796,7 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_remap")
 	{
 		// Create translation editor dialog
-		Palette8bit* pal = MainEditor::currentPalette();
+		Palette* pal = MainEditor::currentPalette();
 		TranslationEditorDialog ted(theMainWindow, pal, " Colour Remap", gfx_canvas->getImage());
 
 		// Create translation to edit
@@ -823,7 +823,7 @@ bool GfxEntryPanel::handleAction(string id)
 	// Colourise
 	else if (id == "pgfx_colourise")
 	{
-		Palette8bit* pal = MainEditor::currentPalette();
+		Palette* pal = MainEditor::currentPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry, pal);
 		gcd.setColour(last_colour);
 
@@ -849,7 +849,7 @@ bool GfxEntryPanel::handleAction(string id)
 	// Tint
 	else if (id == "pgfx_tint")
 	{
-		Palette8bit* pal = MainEditor::currentPalette();
+		Palette* pal = MainEditor::currentPalette();
 		GfxTintDialog gtd(theMainWindow, entry, pal);
 		gtd.setValues(last_tint_colour, last_tint_amount);
 

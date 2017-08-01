@@ -564,7 +564,7 @@ bool TextureXPanel::saveTEXTUREX()
 /* TextureXPanel::setPalette
  * Sets the texture editor's palette
  *******************************************************************/
-void TextureXPanel::setPalette(Palette8bit* pal)
+void TextureXPanel::setPalette(Palette* pal)
 {
 	texture_editor->setPalette(pal);
 }
