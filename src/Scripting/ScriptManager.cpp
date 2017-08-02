@@ -160,6 +160,11 @@ void loadArchiveScripts()
 // ----------------------------------------------------------------------------
 void ScriptManager::init()
 {
+	// Create user scripts directory if it doesn't exist
+	auto user_scripts_dir = App::path("scripts", App::Dir::User);
+	if (!wxDirExists(user_scripts_dir))
+		wxMkdir(user_scripts_dir);
+
 	loadGeneralScripts();
 	loadArchiveScripts();
 }
