@@ -143,6 +143,23 @@ void registerMapEditor(sol::state& lua)
 			{ setEditMode(self, mode, sector_mode); }
 		)
 	);
+
+	// MapEditor enums
+	sol::table mapeditor = lua["MapEditor"];
+	mapeditor.new_enum(
+		"Mode",
+		"Vertices",	MapEditor::Mode::Vertices,
+		"Lines",	MapEditor::Mode::Lines,
+		"Sectors",	MapEditor::Mode::Sectors,
+		"Things",	MapEditor::Mode::Things,
+		"Visual",	MapEditor::Mode::Visual
+	);
+	mapeditor.new_enum(
+		"SectorMode",
+		"Both",		MapEditor::SectorMode::Both,
+		"Floor",	MapEditor::SectorMode::Floor,
+		"Ceiling",	MapEditor::SectorMode::Ceiling
+	);
 }
 
 void registerMapVertex(sol::state& lua)
@@ -314,26 +331,6 @@ void registerMapObject(sol::state& lua)
 		"setIntProperty",		&objectSetIntProperty,
 		"setFloatProperty",		&objectSetFloatProperty,
 		"setStringProperty",	&objectSetStringProperty
-	);
-}
-
-void registerMapEditorNamespace(sol::state& lua)
-{
-	// MapEditor enums
-	auto mapeditor = lua.create_named_table("MapEditor");
-	mapeditor.new_enum(
-		"Mode",
-		"Vertices",	MapEditor::Mode::Vertices,
-		"Lines",	MapEditor::Mode::Lines,
-		"Sectors",	MapEditor::Mode::Sectors,
-		"Things",	MapEditor::Mode::Things,
-		"Visual",	MapEditor::Mode::Visual
-	);
-	mapeditor.new_enum(
-		"SectorMode",
-		"Both",		MapEditor::SectorMode::Both,
-		"Floor",	MapEditor::SectorMode::Floor,
-		"Ceiling",	MapEditor::SectorMode::Ceiling
 	);
 }
 

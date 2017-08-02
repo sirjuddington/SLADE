@@ -172,7 +172,6 @@ bool Lua::init()
 	registerSplashWindowNamespace(lua);
 	registerGameNamespace(lua);
 	registerArchivesNamespace(lua);
-	registerMapEditorNamespace(lua);
 
 	// Register types
 	registerMiscTypes(lua);

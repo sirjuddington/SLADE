@@ -5,10 +5,20 @@ Map editing context for the currently open map editor in SLADE.
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>editMode</prop>        | <type>[mapEditor.Mode](../Namespaces/MapEditor.md#mode)</type> | The current edit mode
-<prop>sectorEditMode</prop>  | <type>[mapEditor.SectorMode](../Namespaces/MapEditor.md#sectormode)</type> | The current sector edit mode
+<prop>editMode</prop>        | <type>number</type> | The current edit mode (see [Mode](#mode))
+<prop>sectorEditMode</prop>  | <type>number</type> | The current sector edit mode (see [SectorMode](#sectormode))
 <prop>gridSize</prop>        | <type>number</type> | The current grid size
 <prop>map</prop>             | <type>[Map](Map.md)</type> | The map associated with this editor
+
+## Enumerations
+
+### Mode
+
+**Values**: `Vertices`, `Lines`, `Sectors`, `Things`, `Visual`
+
+### SectorMode
+
+**Values**: `Both`, `Floor`, `Ceiling`
 
 ## Constructors
 
@@ -80,7 +90,7 @@ Selects or deselects the given <type>[MapObject](MapObject.md)</type> (or derive
 
 <listhead>Parameters</listhead>
 
-* <type>number</type> <arg>mode</arg>: The [edit mode](../Namespaces/MapEditor.md#mode) to switch to
-* `[`<type>number</type> <arg>sector_mode</arg> : `mapEditor.SectorMode.Both]`: The [sector edit mode](../Namespaces/MapEditor.md#sectormode) to switch to
+* <type>number</type> <arg>mode</arg>: The [edit mode](#mode) to switch to
+* `[`<type>number</type> <arg>sector_mode</arg> : `MapEditor.SectorMode.Both]`: The [sector edit mode](#sectormode) to switch to
 
-Sets the edit mode to the given <arg>mode</arg>. If the mode is being set to `mapEditor.Mode.Sectors`, the <arg>sector_mode</arg> parameter can be given to specify the sector edit mode.
+Sets the edit mode to the given <arg>mode</arg>. If the mode is being set to `MapEditor.Mode.Sectors`, the <arg>sector_mode</arg> parameter can be given to specify the sector edit mode.

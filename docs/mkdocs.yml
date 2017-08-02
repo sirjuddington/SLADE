@@ -30,7 +30,6 @@ pages:
   - App: 'md/Namespaces/App.md'
   - Archives: 'md/Namespaces/Archives.md'
   - Game: 'md/Namespaces/Game.md'
-  - MapEditor: 'md/Namespaces/MapEditor.md'
   - SplashWindow: 'md/Namespaces/SplashWindow.md'
 - Types:
   - Archive:
