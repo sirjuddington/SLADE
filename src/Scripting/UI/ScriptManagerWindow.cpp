@@ -162,9 +162,12 @@ void ScriptManagerWindow::loadLayout()
 	wxFile file(App::path("scriptmanager.layout", App::Dir::User), wxFile::read);
 
 	// Read component layout
-	string layout;
-	file.ReadAll(&layout);
-	wxAuiManager::GetManager(this)->LoadPerspective(layout);
+	if (file.IsOpened())
+	{
+		string layout;
+		file.ReadAll(&layout);
+		wxAuiManager::GetManager(this)->LoadPerspective(layout);
+	}
 
 	// Close file
 	file.Close();
