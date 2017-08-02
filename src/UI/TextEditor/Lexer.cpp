@@ -70,15 +70,15 @@ void Lexer::loadLanguage(TextLanguage* language)
 		return;
 
 	// Load language words
-	for (auto word : language->getWordListSorted(TextLanguage::WordType::Constant))
+	for (auto word : language->wordListSorted(TextLanguage::WordType::Constant))
 		addWord(word, Lexer::Style::Constant);
-	for (auto word : language->getWordListSorted(TextLanguage::WordType::Property))
+	for (auto word : language->wordListSorted(TextLanguage::WordType::Property))
 		addWord(word, Lexer::Style::Property);
-	for (auto word : language->getFunctionsSorted())
+	for (auto word : language->functionsSorted())
 		addWord(word, Lexer::Style::Function);
-	for (auto word : language->getWordListSorted(TextLanguage::WordType::Type))
+	for (auto word : language->wordListSorted(TextLanguage::WordType::Type))
 		addWord(word, Lexer::Style::Type);
-	for (auto word : language->getWordListSorted(TextLanguage::WordType::Keyword))
+	for (auto word : language->wordListSorted(TextLanguage::WordType::Keyword))
 		addWord(word, Lexer::Style::Keyword);
 }
 
@@ -144,7 +144,7 @@ bool Lexer::doStyling(TextEditor* editor, int start, int end)
  *******************************************************************/
 void Lexer::addWord(string word, int style)
 {
-	word_list[word.Lower()].style = style;
+	word_list[language->caseSensitive() ? word : word.Lower()].style = style;
 }
 
 /* Lexer::styleWord
@@ -153,11 +153,12 @@ void Lexer::addWord(string word, int style)
  *******************************************************************/
 void Lexer::styleWord(TextEditor* editor, string word)
 {
-	string wl = word.Lower();
+	if (!language->caseSensitive())
+		word = word.Lower();
 
-	if (word_list[wl].style > 0)
-		editor->SetStyling(word.length(), word_list[wl].style);
-	else if (word.StartsWith(language->getPreprocessor()))
+	if (word_list[word].style > 0)
+		editor->SetStyling(word.length(), word_list[word].style);
+	else if (word.StartsWith(language->preprocessor()))
 		editor->SetStyling(word.length(), Style::Preprocessor);
 	else
 	{
@@ -206,11 +207,11 @@ bool Lexer::processUnknown(LexerState& state)
 
 	if (language)
 	{
-		comment_begin = language->getCommentBegin();
-		comment_doc = language->getDocComment();
-		comment_line = language->getLineComment();
-		block_begin = language->getBlockBegin();
-		block_end = language->getBlockEnd();
+		comment_begin = language->commentBegin();
+		comment_doc = language->docComment();
+		comment_line = language->lineComment();
+		block_begin = language->blockBegin();
+		block_end = language->blockEnd();
 	}
 	else {
 		comment_begin = "";
@@ -301,7 +302,7 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Preprocessor
-		else if (c == language->getPreprocessor()[0])
+		else if (c == language->preprocessor()[0])
 		{
 			pp = true;
 			u_length++;
@@ -366,7 +367,7 @@ bool Lexer::processUnknown(LexerState& state)
 bool Lexer::processComment(LexerState& state)
 {
 	bool end = false;
-	string comment_block_end = language ? language->getCommentEnd() : "";
+	string comment_block_end = language ? language->commentEnd() : "";
 
 	while (true)
 	{
@@ -438,13 +439,13 @@ bool Lexer::processWord(LexerState& state)
 	// Check for preprocessor folding word
 	if (fold_preprocessor)
 	{
-		char preprocessor = language->getPreprocessor()[0];
+		char preprocessor = language->preprocessor()[0];
 		if (word_string.StartsWith(preprocessor))
 		{
 			string word_lower = word_string.Lower().After(preprocessor);
-			if (VECTOR_EXISTS(language->getPPBlockBegin(), word_lower))
+			if (VECTOR_EXISTS(language->ppBlockBegin(), word_lower))
 				state.fold_increment++;
-			else if (VECTOR_EXISTS(language->getPPBlockEnd(), word_lower))
+			else if (VECTOR_EXISTS(language->ppBlockEnd(), word_lower))
 				state.fold_increment--;
 		}
 	}

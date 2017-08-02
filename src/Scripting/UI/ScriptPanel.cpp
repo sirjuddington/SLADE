@@ -14,7 +14,7 @@ ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) :
 	SetSizer(sizer);
 	
 	text_editor_ = new TextEditor(this, -1);
-	text_editor_->setLanguage(TextLanguage::getLanguage("sladescript"));
+	text_editor_->setLanguage(TextLanguage::fromId("sladescript"));
 	if (script_)
 		text_editor_->SetText(script_->text);
 	sizer->Add(text_editor_, 1, wxEXPAND | wxALL, 10);

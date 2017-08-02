@@ -48,6 +48,7 @@ private:
 	int				btn_mouse_over;
 	wxBitmap		buffer;
 	wxFont			font;
+	string			context;
 
 	void	addArg(vector<string>& tokens);
 	void	loadArgSet(int set);
