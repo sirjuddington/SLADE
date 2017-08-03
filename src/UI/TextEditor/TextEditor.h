@@ -12,6 +12,9 @@ class wxButton;
 class wxCheckBox;
 class wxTextCtrl;
 class TextEditor;
+class SCallTip;
+class wxChoice;
+
 class FindReplacePanel : public wxPanel
 {
 public:
@@ -66,29 +69,8 @@ private:
 	vector<string>	ignore;
 };
 
-class SCallTip;
-class wxChoice;
 class TextEditor : public wxStyledTextCtrl
 {
-private:
-	TextLanguage*		language;
-	FindReplacePanel*	panel_fr;
-	SCallTip*			call_tip;
-	wxChoice*			choice_jump_to;
-	JumpToCalculator*	jump_to_calculator;
-	wxTimer				timer_update;
-	Lexer				lexer;
-	string				prev_word_match;
-	string				autocomp_list;
-	int					bm_cursor_last_pos;
-	vector<int>			jump_to_lines;
-
-	// Calltip stuff
-	TLFunction*	ct_function;
-	int			ct_argset;
-	int			ct_start;
-	bool		ct_dwell;	
-
 public:
 	TextEditor(wxWindow* parent, int id);
 	~TextEditor();
@@ -97,7 +79,7 @@ public:
 	bool			setLanguage(TextLanguage* lang);
 
 	void	setup();
-	void	setupFoldMargin(TextStyle* margin_style = NULL);
+	void	setupFoldMargin(TextStyle* margin_style = nullptr);
 	bool	applyStyleSet(StyleSet* style);
 	bool	loadEntry(ArchiveEntry* entry);
 	void	getRawText(MemChunk& mc);
@@ -113,8 +95,10 @@ public:
 	bool	replaceCurrent(string find, string replace, int flags);
 	int		replaceAll(string find, string replace, int flags);
 
-	// Brace matching
+	// Hilight/matching
 	void	checkBraceMatch();
+	void	matchWord();
+	void	clearWordMatch();
 
 	// Calltips
 	void	showCalltip(int position);
@@ -153,6 +137,32 @@ public:
 	void	onModified(wxStyledTextEvent& e);
 	void	onUpdateTimer(wxTimerEvent& e);
 	void	onStyleNeeded(wxStyledTextEvent& e);
+
+private:
+	TextLanguage*		language;
+	FindReplacePanel*	panel_fr;
+	SCallTip*			call_tip;
+	wxChoice*			choice_jump_to;
+	JumpToCalculator*	jump_to_calculator;
+	Lexer				lexer;
+	string				prev_word_match;
+	string				autocomp_list;
+	vector<int>			jump_to_lines;
+
+	// State tracking for updates
+	int	prev_cursor_pos;
+	int	prev_text_length;
+
+	// Timed update stuff
+	wxTimer	timer_update;
+	bool	update_jump_to;
+	bool	update_word_match;
+
+	// Calltip stuff
+	TLFunction*	ct_function;
+	int			ct_argset;
+	int			ct_start;
+	bool		ct_dwell;
 };
 
 #endif //__TEXTEDITOR_H__

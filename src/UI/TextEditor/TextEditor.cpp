@@ -396,11 +396,14 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	ct_argset = 0;
 	ct_function = nullptr;
 	ct_start = 0;
-	bm_cursor_last_pos = -1;
+	prev_cursor_pos = -1;
+	prev_text_length = -1;
 	panel_fr = nullptr;
 	call_tip = new SCallTip(this);
 	choice_jump_to = nullptr;
 	jump_to_calculator = nullptr;
+	update_jump_to = false;
+	update_word_match = false;
 
 	// Set tab width
 	SetTabWidth(txed_tab_width);
@@ -442,7 +445,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	Bind(wxEVT_ACTIVATE, &TextEditor::onActivate, this);
 	Bind(wxEVT_STC_MARGINCLICK, &TextEditor::onMarginClick, this);
 	Bind(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, &TextEditor::onJumpToCalculateComplete, this);
-	Bind(wxEVT_STC_MODIFIED, &TextEditor::onModified, this);
+	Bind(wxEVT_STC_CHANGE, &TextEditor::onModified, this);
 	Bind(wxEVT_TIMER, &TextEditor::onUpdateTimer, this);
 	Bind(wxEVT_STC_STYLENEEDED, &TextEditor::onStyleNeeded, this);
 }
@@ -881,10 +884,8 @@ void TextEditor::checkBraceMatch()
 #endif
 
 	// Ignore if cursor position hasn't changed since the last check
-	if (GetCurrentPos() == bm_cursor_last_pos)
+	if (GetCurrentPos() == prev_cursor_pos)
 		return;
-
-	bm_cursor_last_pos = GetCurrentPos();
 
 	// Check for brace match at current position
 	int bracematch = BraceMatch(GetCurrentPos());
@@ -919,6 +920,69 @@ void TextEditor::checkBraceMatch()
 		Refresh();
 		Update();
 	}
+}
+
+/* TextEditor::matchWord
+ * Highlights all words in the text matching the word at the current
+ * cursor position
+ *******************************************************************/
+void TextEditor::matchWord()
+{
+	if (!txed_match_cursor_word || !language)
+		return;
+
+	// Get word/text to match
+	string current_word;
+	int word_start, word_end;
+	if (GetSelectionEmpty())
+	{
+		// No selection, get word at cursor
+		word_start = WordStartPosition(GetCurrentPos(), true);
+		word_end = WordEndPosition(GetCurrentPos(), true);
+		current_word = GetTextRange(word_start, word_end);
+	}
+	else
+	{
+		// Get selection
+		current_word = GetSelectedText();
+		GetSelection(&word_start, &word_end);
+	}
+
+	if (!current_word.IsEmpty() && HasFocus())
+	{
+		if (current_word != prev_word_match)
+		{
+			prev_word_match = current_word;
+
+			// Apply word match indicator to matching text
+			SetIndicatorCurrent(8);
+			IndicatorClearRange(0, GetTextLength());
+			SetTargetStart(0);
+			SetTargetEnd(GetTextLength());
+			SetSearchFlags(0);
+			while (SearchInTarget(current_word) != -1)
+			{
+				// Don't apply to current selection
+				if (GetTargetStart() != word_start || GetSelectionEmpty())
+					IndicatorFillRange(GetTargetStart(), GetTargetEnd() - GetTargetStart());
+
+				SetTargetStart(GetTargetEnd());
+				SetTargetEnd(GetTextLength());
+			}
+		}
+	}
+	else
+		clearWordMatch();
+}
+
+/* TextEditor::clearWordMatch
+ * Clears all word match highlights
+ *******************************************************************/
+void TextEditor::clearWordMatch()
+{
+	SetIndicatorCurrent(8);
+	IndicatorClearRange(0, GetTextLength());
+	prev_word_match = "";
 }
 
 /* TextEditor::showCalltip
@@ -1661,36 +1725,15 @@ void TextEditor::onUpdateUI(wxStyledTextEvent& e)
 		updateCalltip();
 
 	// Do word matching if appropriate
-	if (txed_match_cursor_word && language)
+	if (txed_match_cursor_word && language && prev_cursor_pos != GetCurrentPos())
 	{
-		int word_start = WordStartPosition(GetCurrentPos(), true);
-		int word_end = WordEndPosition(GetCurrentPos(), true);
-		string current_word = GetTextRange(word_start, word_end);
-		if (!current_word.IsEmpty() && HasFocus())
-		{
-			if (current_word != prev_word_match)
-			{
-				prev_word_match = current_word;
+		clearWordMatch();
+		update_word_match = true;
 
-				SetIndicatorCurrent(8);
-				IndicatorClearRange(0, GetTextLength());
-				SetTargetStart(0);
-				SetTargetEnd(GetTextLength());
-				SetSearchFlags(0);
-				while (SearchInTarget(current_word) != -1)
-				{
-					IndicatorFillRange(GetTargetStart(), GetTargetEnd() - GetTargetStart());
-					SetTargetStart(GetTargetEnd());
-					SetTargetEnd(GetTextLength());
-				}
-			}
-		}
+		if (GetSelectionEmpty())
+			timer_update.Start(500, true);
 		else
-		{
-			SetIndicatorCurrent(8);
-			IndicatorClearRange(0, GetTextLength());
-			prev_word_match = "";
-		}
+			timer_update.Start(100, true);
 	}
 
 	// Hilight current line
@@ -1703,6 +1746,9 @@ void TextEditor::onUpdateUI(wxStyledTextEvent& e)
 		if (txed_hilight_current_line > 1)
 			MarkerAdd(line, 2);
 	}
+
+	prev_cursor_pos = GetCurrentPos();
+	prev_text_length = GetTextLength();
 
 	e.Skip();
 }
@@ -1924,19 +1970,28 @@ void TextEditor::onJumpToChoiceSelected(wxCommandEvent& e)
  *******************************************************************/
 void TextEditor::onModified(wxStyledTextEvent& e)
 {
-	// (Re)start update timer
-	timer_update.Start(1000, true);
+	// (Re)start update timer for jump to list if text has changed
+	if (prev_text_length != GetTextLength())
+	{
+		update_jump_to = true;
+		timer_update.Start(1000, true);
+	}
 
 	e.Skip();
 }
-
 
 /* TextEditor::onUpdateTimer
  * Called when the update timer finishes
  *******************************************************************/
 void TextEditor::onUpdateTimer(wxTimerEvent& e)
 {
-	updateJumpToList();
+	if (update_jump_to)
+		updateJumpToList();
+	if (update_word_match)
+		matchWord();
+
+	update_jump_to = false;
+	update_word_match = false;
 }
 
 /* TextEditor::onStyleNeeded
