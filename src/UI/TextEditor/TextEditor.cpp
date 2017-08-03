@@ -569,7 +569,7 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 		lexer.loadLanguage(lang);
 
 		// Load autocompletion list
-		autocomp_list = lang->getAutocompletionList();
+		autocomp_list = lang->autocompletionList();
 	}
 
 	// Set folding options
@@ -934,7 +934,7 @@ void TextEditor::showCalltip(int position)
 	if (txed_calltips_colourise)
 	{
 		call_tip->setFunctionColour(ss_current->getStyle("function")->getForeground());
-		call_tip->setTypeColour(ss_current->getStyle("keyword")->getForeground());
+		call_tip->setTypeColour(ss_current->getStyle("type")->getForeground());
 	}
 	if (txed_calltips_use_font)
 		call_tip->setFont(ss_current->getDefaultFontFace(), ss_current->getDefaultFontSize());
@@ -976,7 +976,7 @@ bool TextEditor::openCalltip(int pos, int arg, bool dwell)
 	string word = GetTextRange(WordStartPosition(start, true), WordEndPosition(start, true));
 
 	// Get matching language function (if any)
-	TLFunction* func = language->getFunction(word);
+	TLFunction* func = language->function(word);
 
 	// Show calltip if it's a function
 	if (func && func->nArgSets() > 0)
@@ -1126,17 +1126,9 @@ void TextEditor::updateJumpToList()
 		return;
 	}
 
-	// Get jump blocks and ignored blocks from the current language
-	vector<string> jump_blocks;
-	for (unsigned a = 0; a < language->nJumpBlocks(); a++)
-		jump_blocks.push_back(language->jumpBlock(a));
-	vector<string> ignore;
-	for (unsigned a = 0; a < language->nJBIgnore(); a++)
-		ignore.push_back(language->jBIgnore(a));
-
 	// Begin jump to calculation thread
 	choice_jump_to->Enable(false);
-	jump_to_calculator = new JumpToCalculator(this, GetText(), jump_blocks, ignore);
+	jump_to_calculator = new JumpToCalculator(this, GetText(), language->jumpBlocks(), language->jumpBlocksIgnored());
 	jump_to_calculator->Run();
 }
 
@@ -1239,7 +1231,7 @@ void TextEditor::lineComment()
 	space = wxString::FromUTF8(" ");
 	empty = wxString::FromUTF8("");
 	if(language)
-		comment = language->getLineComment();
+		comment = language->lineComment();
 	else
 		comment = wxString::FromUTF8("//");
 	commentSpace = comment + space;
@@ -1320,8 +1312,8 @@ void TextEditor::blockComment()
 	space = wxString::FromUTF8(" ");
 	if(language)
 	{
-		commentBegin = language->getCommentBegin();
-		commentEnd = language->getCommentEnd();
+		commentBegin = language->commentBegin();
+		commentEnd = language->commentEnd();
 	}
 	else
 	{
@@ -1399,7 +1391,7 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 			// If a language is loaded, bring up autocompletion list
 			if (language)
 			{
-				autocomp_list = language->getAutocompletionList(word);
+				autocomp_list = language->autocompletionList(word);
 				AutoCompShow(word.size(), autocomp_list);
 			}
 
@@ -1813,7 +1805,7 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
 			// Check for function
 			if (language->isFunction(word))
 			{
-				string url = language->getFunctionLink();
+				string url = language->functionLink();
 				if (!url.IsEmpty())
 				{
 					url.Replace("%s", word);

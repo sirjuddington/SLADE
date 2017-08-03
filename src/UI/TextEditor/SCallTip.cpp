@@ -136,11 +136,11 @@ void SCallTip::addArg(vector<string>& tokens)
 void SCallTip::loadArgSet(int set)
 {
 	args.clear();
-	if (!function->getArgSet(set).empty())
+	if (!function->argSet(set).args.empty())
 	{
 		Tokenizer tz;
 		tz.setSpecialCharacters("[],");
-		tz.openString(function->getArgSet(set));
+		tz.openString(function->argSet(set).args);
 		string token = tz.getToken();
 		vector<string> tokens;
 		while (true)
@@ -161,6 +161,8 @@ void SCallTip::loadArgSet(int set)
 			token = tz.getToken();
 		}
 	}
+
+	context = function->argSet(set).context;
 
 	updateSize();
 
@@ -316,13 +318,20 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		}
 
 		// Draw function return type
-		string ftype = function->getReturnType() + " ";
+		string ftype = function->returnType() + " ";
 		wxRect rect;
 		dc.SetTextForeground(WXCOL(col_type));
 		dc.DrawLabel(ftype, wxNullBitmap, wxRect(left, yoff, 900, 900), 0, -1, &rect);
 
+		// Draw function context (if any)
+		if (!context.empty())
+		{
+			dc.SetTextForeground(WXCOL(col_fg));
+			drawText(dc, context + ".", rect.GetRight() + 1, rect.GetTop(), &rect);
+		}
+
 		// Draw function name
-		string fname = function->getName();
+		string fname = function->name();
 		//wxRect rect;
 		dc.SetTextForeground(WXCOL(col_func));
 		//dc.DrawLabel(fname, wxNullBitmap, wxRect(left, 0, 900, 900), 0, -1, &rect);
@@ -401,7 +410,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			max_right = rect.GetRight();
 
 		// Description
-		string desc = function->getDescription();
+		string desc = function->description();
 		if (!desc.IsEmpty())
 		{
 			wxFont italic = font.Italic();

@@ -98,13 +98,13 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	string lang = Game::configuration().scriptLanguage();
 	if (S_CMPNOCASE(lang, "acs_hexen"))
 	{
-		text_editor->setLanguage(TextLanguage::getLanguage("acs"));
+		text_editor->setLanguage(TextLanguage::fromId("acs"));
 		entry_script->setName("SCRIPTS");
 		entry_compiled->setName("BEHAVIOR");
 	}
 	else if (S_CMPNOCASE(lang, "acs_zdoom"))
 	{
-		text_editor->setLanguage(TextLanguage::getLanguage("acs_z"));
+		text_editor->setLanguage(TextLanguage::fromId("acs_z"));
 		entry_script->setName("SCRIPTS");
 		entry_compiled->setName("BEHAVIOR");
 	}
@@ -181,9 +181,9 @@ void ScriptEditorPanel::populateWordList()
 	list_words->AppendColumn("Language");
 
 	// Get functions and constants
-	TextLanguage* tl = TextLanguage::getLanguage("acs_z");
-	wxArrayString functions = tl->getFunctionsSorted();
-	wxArrayString constants = tl->getWordListSorted(TextLanguage::WordType::Constant);
+	TextLanguage* tl = TextLanguage::fromId("acs_z");
+	wxArrayString functions = tl->functionsSorted();
+	wxArrayString constants = tl->wordListSorted(TextLanguage::WordType::Constant);
 
 	// Add functions to list
 	wxTreeListItem item = list_words->AppendItem(list_words->GetRootItem(), "Functions");
@@ -302,7 +302,7 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 	int pos = text_editor->GetCurrentPos();
 	if (language->isFunction(word))
 	{
-		TLFunction* func = language->getFunction(word);
+		TLFunction* func = language->function(word);
 
 		// Add function + ()
 		word += "()";
