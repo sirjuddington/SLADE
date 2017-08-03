@@ -33,6 +33,7 @@
 #include "ZipArchive.h"
 #include "WadArchive.h"
 #include "General/UI.h"
+#include <fstream>
 
 
 /*******************************************************************
@@ -57,8 +58,14 @@ ZipArchive::ZipArchive() : Archive("zip")
  *******************************************************************/
 ZipArchive::~ZipArchive()
 {
-	if (wxFileExists(temp_file_))
+	std::ifstream test(temp_file_);
+	if (test.good())
+	{
+		test.close();
 		wxRemoveFile(temp_file_);
+	}
+	//if (wxFileExists(temp_file_))
+	//	wxRemoveFile(temp_file_);
 }
 
 /* ZipArchive::open
