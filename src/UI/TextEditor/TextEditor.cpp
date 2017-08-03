@@ -934,7 +934,7 @@ void TextEditor::matchWord()
 	// Get word/text to match
 	string current_word;
 	int word_start, word_end;
-	if (GetSelectionEmpty())
+	if (!HasSelection())
 	{
 		// No selection, get word at cursor
 		word_start = WordStartPosition(GetCurrentPos(), true);
@@ -963,7 +963,7 @@ void TextEditor::matchWord()
 			while (SearchInTarget(current_word) != -1)
 			{
 				// Don't apply to current selection
-				if (GetTargetStart() != word_start || GetSelectionEmpty())
+				if (GetTargetStart() != word_start || !HasSelection())
 					IndicatorFillRange(GetTargetStart(), GetTargetEnd() - GetTargetStart());
 
 				SetTargetStart(GetTargetEnd());
@@ -1730,7 +1730,7 @@ void TextEditor::onUpdateUI(wxStyledTextEvent& e)
 		clearWordMatch();
 		update_word_match = true;
 
-		if (GetSelectionEmpty())
+		if (!HasSelection())
 			timer_update.Start(500, true);
 		else
 			timer_update.Start(100, true);
