@@ -583,8 +583,13 @@ bool SLADEWxApp::OnInit()
 	// Reroute wx log messages
 	wxLog::SetActiveTarget(new SLADELog());
 
+	// Get command line arguments
+	vector<string> args;
+	for (int a = 0; a < argc; a++)
+		args.push_back(argv[a]);
+
 	// Init application
-	if (!App::init())
+	if (!App::init(args))
 		return false;
 
 	// Check for updates
