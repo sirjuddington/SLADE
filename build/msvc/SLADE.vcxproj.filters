@@ -1491,6 +1491,9 @@
     <ClCompile Include="..\..\src\TextEditor\UI\TextEditorCtrl.cpp">
       <Filter>Text Editor\UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\TextEditor\UI\FindReplacePanel.cpp">
+      <Filter>Text Editor\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2604,6 +2607,9 @@
       <Filter>Text Editor\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\TextEditor\UI\TextEditorCtrl.h">
+      <Filter>Text Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\TextEditor\UI\FindReplacePanel.h">
       <Filter>Text Editor\UI</Filter>
     </ClInclude>
   </ItemGroup>

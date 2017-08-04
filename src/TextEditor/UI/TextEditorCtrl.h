@@ -9,39 +9,9 @@
 class wxButton;
 class wxCheckBox;
 class wxTextCtrl;
-class TextEditorCtrl;
+class FindReplacePanel;
 class SCallTip;
 class wxChoice;
-
-class FindReplacePanel : public wxPanel
-{
-public:
-	FindReplacePanel(wxWindow* parent, TextEditorCtrl* text_editor);
-	~FindReplacePanel();
-
-	void	setFindText(string find);
-	string	getFindText();
-	int		getFindFlags();
-	string	getReplaceText();
-
-private:
-	TextEditorCtrl*	text_editor_;
-
-	wxTextCtrl*	text_find_;
-	wxTextCtrl*	text_replace_;
-	wxButton*	btn_find_next_;
-	wxButton*	btn_find_prev_;
-	wxButton*	btn_replace_;
-	wxButton*	btn_replace_all_;
-	wxCheckBox*	cb_match_case_;
-	wxCheckBox*	cb_match_word_whole_;
-	wxCheckBox*	cb_match_word_start_;
-	wxCheckBox*	cb_search_regex_;
-	wxCheckBox*	cb_allow_escape_;
-
-	// Events
-	void	onKeyDown(wxKeyEvent& e);
-};
 
 wxDECLARE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 

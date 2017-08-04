@@ -1659,6 +1659,7 @@
     <ClCompile Include="..\..\src\TextEditor\Lexer.cpp" />
     <ClCompile Include="..\..\src\TextEditor\TextLanguage.cpp" />
     <ClCompile Include="..\..\src\TextEditor\TextStyle.cpp" />
+    <ClCompile Include="..\..\src\TextEditor\UI\FindReplacePanel.cpp" />
     <ClCompile Include="..\..\src\TextEditor\UI\SCallTip.cpp" />
     <ClCompile Include="..\..\src\TextEditor\UI\TextEditorCtrl.cpp" />
     <ClCompile Include="..\..\src\UI\BaseResourceChooser.cpp" />
@@ -2171,6 +2172,7 @@
     <ClInclude Include="..\..\src\TextEditor\Lexer.h" />
     <ClInclude Include="..\..\src\TextEditor\TextLanguage.h" />
     <ClInclude Include="..\..\src\TextEditor\TextStyle.h" />
+    <ClInclude Include="..\..\src\TextEditor\UI\FindReplacePanel.h" />
     <ClInclude Include="..\..\src\TextEditor\UI\SCallTip.h" />
     <ClInclude Include="..\..\src\TextEditor\UI\TextEditorCtrl.h" />
     <ClInclude Include="..\..\src\UI\BaseResourceChooser.h" />

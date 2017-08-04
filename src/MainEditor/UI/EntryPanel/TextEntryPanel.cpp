@@ -30,6 +30,7 @@
 #include "Main.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
+#include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "TextEntryPanel.h"
 
