@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "SCallTip.h"
-#include "TextLanguage.h"
+#include "TextEditor/TextLanguage.h"
 #include "Utility/Tokenizer.h"
 
 

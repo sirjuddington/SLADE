@@ -1,6 +1,4 @@
-
-#ifndef __TEXTLANGUAGE_H__
-#define __TEXTLANGUAGE_H__
+#pragma once
 
 class TLFunction
 {
@@ -144,5 +142,3 @@ private:
 	bool				f_caps;
 	string				f_lookup_url;
 };
-
-#endif//__TEXTLANGUAGE_H__

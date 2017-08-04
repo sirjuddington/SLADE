@@ -80,6 +80,7 @@ file(GLOB_RECURSE SLADE_SOURCES
 	UI/*.cpp
 	Utility/*.cpp
 	Scripting/*.cpp
+	TextEditor/*.cpp
 	)
 set(SLADE_HEADERS
 )

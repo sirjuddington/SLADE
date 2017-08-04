@@ -1,7 +1,7 @@
 #pragma once
 
 namespace ScriptManager { struct Script; }
-class TextEditor;
+class TextEditorCtrl;
 
 class ScriptPanel : public wxPanel
 {
@@ -13,5 +13,5 @@ public:
 
 private:
 	ScriptManager::Script*	script_;
-	TextEditor*				text_editor_;
+	TextEditorCtrl*				text_editor_;
 };

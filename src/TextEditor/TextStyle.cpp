@@ -34,7 +34,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "TextEditor.h"
+#include "UI/TextEditorCtrl.h"
 #include "TextStyle.h"
 #include "Lexer.h"
 #include "Archive/ArchiveManager.h"
@@ -47,7 +47,7 @@ CVAR(String, txed_override_font, "", CVAR_SAVE)
 CVAR(Int, txed_override_font_size, 0, CVAR_SAVE)
 vector<StyleSet*>	style_sets;
 StyleSet*			ss_current = NULL;
-vector<TextEditor*>	StyleSet::editors;
+vector<TextEditorCtrl*>	StyleSet::editors;
 
 
 /*******************************************************************
@@ -147,7 +147,7 @@ bool TextStyle::parse(ParseTreeNode* node)
 /* TextStyle::applyTo
  * Applies the style settings to the scintilla text control [stc]
  *******************************************************************/
-void TextStyle::applyTo(TextEditor* stc)
+void TextStyle::applyTo(TextEditorCtrl* stc)
 {
 	for (unsigned a = 0; a < wx_styles.size(); a++)
 	{
@@ -404,7 +404,7 @@ bool StyleSet::parseSet(ParseTreeNode* root)
  * Applies all the styles in this set to the text styles in scintilla
  * text control [stc]
  *******************************************************************/
-void StyleSet::applyTo(TextEditor* stc)
+void StyleSet::applyTo(TextEditorCtrl* stc)
 {
 	// Set default style
 	ts_default.applyTo(stc);
@@ -705,7 +705,7 @@ bool StyleSet::loadSet(unsigned index)
 /* StyleSet::applyCurrent
  * Applies the current style set to the scintilla text control [stc]
  *******************************************************************/
-void StyleSet::applyCurrent(TextEditor* stc)
+void StyleSet::applyCurrent(TextEditorCtrl* stc)
 {
 	currentSet()->applyTo(stc);
 }
@@ -746,7 +746,7 @@ StyleSet* StyleSet::getSet(unsigned index)
 /* StyleSet::addEditor
  * Adds [stc] to the current list of text editors
  *******************************************************************/
-void StyleSet::addEditor(TextEditor* stc)
+void StyleSet::addEditor(TextEditorCtrl* stc)
 {
 	editors.push_back(stc);
 }
@@ -754,7 +754,7 @@ void StyleSet::addEditor(TextEditor* stc)
 /* StyleSet::removeEditor
  * Removes [stc] from the current list of text editors
  *******************************************************************/
-void StyleSet::removeEditor(TextEditor* stc)
+void StyleSet::removeEditor(TextEditorCtrl* stc)
 {
 	VECTOR_REMOVE(editors, stc);
 }

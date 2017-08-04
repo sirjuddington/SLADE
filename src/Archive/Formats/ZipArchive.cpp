@@ -58,7 +58,7 @@ ZipArchive::ZipArchive() : Archive("zip")
  *******************************************************************/
 ZipArchive::~ZipArchive()
 {
-	std::ifstream test(temp_file_);
+	std::ifstream test(CHR(temp_file_));
 	if (test.good())
 	{
 		test.close();

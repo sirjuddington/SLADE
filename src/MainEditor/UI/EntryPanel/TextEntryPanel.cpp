@@ -30,6 +30,7 @@
 #include "Main.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
+#include "TextEditor/UI/TextEditorCtrl.h"
 #include "TextEntryPanel.h"
 
 
@@ -56,7 +57,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	: EntryPanel(parent, "text")
 {
 	// Create the text area
-	text_area = new TextEditor(this, -1);
+	text_area = new TextEditorCtrl(this, -1);
 	sizer_main->Add(text_area, 1, wxEXPAND, 0);
 
 	// Create the find+replace panel

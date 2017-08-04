@@ -3,11 +3,13 @@
 #define __SCRIPT_EDITOR_PANEL_H__
 
 #include "common.h"
-#include "UI/TextEditor/TextEditor.h"
 #include "General/SAction.h"
 
 class ArchiveEntry;
 class wxTreeListCtrl;
+class TextEditorCtrl;
+class FindReplacePanel;
+
 class ScriptEditorPanel : public wxPanel, SActionHandler
 {
 private:
@@ -15,7 +17,7 @@ private:
 	ArchiveEntry*	entry_script;
 	ArchiveEntry*	entry_compiled;
 
-	TextEditor*			text_editor;
+	TextEditorCtrl*		text_editor;
 	wxButton*			btn_save;
 	wxButton*			btn_compile;
 	wxTreeListCtrl*		list_words;

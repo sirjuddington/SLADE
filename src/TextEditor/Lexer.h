@@ -1,6 +1,6 @@
 #pragma once
 
-class TextEditor;
+class TextEditorCtrl;
 class TextLanguage;
 class Lexer
 {
@@ -29,14 +29,14 @@ public:
 
 	void	loadLanguage(TextLanguage* language);
 
-	bool	doStyling(TextEditor* editor, int start, int end);
+	bool	doStyling(TextEditorCtrl* editor, int start, int end);
 	void	addWord(string word, int style);
 	void	clearWords() { word_list.clear(); }
 
 	void	setWordChars(string chars);
 	void	setOperatorChars(string chars);
 
-	void	updateFolding(TextEditor* editor, int line_start);
+	void	updateFolding(TextEditorCtrl* editor, int line_start);
 	void	foldComments(bool fold) { fold_comments = fold; }
 	void	foldPreprocessor(bool fold) { fold_preprocessor = fold; }
 
@@ -82,14 +82,14 @@ private:
 
 	struct LexerState
 	{
-		int			position;
-		int			end;
-		int			line;
-		State		state;
-		int			length;
-		int			fold_increment;
-		bool		has_word;
-		TextEditor*	editor;
+		int				position;
+		int				end;
+		int				line;
+		State			state;
+		int				length;
+		int				fold_increment;
+		bool			has_word;
+		TextEditorCtrl*	editor;
 	};
 	bool	processUnknown(LexerState& state);
 	bool	processComment(LexerState& state);
@@ -99,6 +99,6 @@ private:
 	bool	processOperator(LexerState& state);
 	bool	processWhitespace(LexerState& state);
 
-	void	styleWord(TextEditor* editor, string word);
-	bool	checkToken(TextEditor* editor, int pos, string& token);
+	void	styleWord(TextEditorCtrl* editor, string word);
+	bool	checkToken(TextEditorCtrl* editor, int pos, string& token);
 };

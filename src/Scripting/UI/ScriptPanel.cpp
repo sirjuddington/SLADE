@@ -2,7 +2,7 @@
 #include "Main.h"
 #include "ScriptPanel.h"
 #include "Scripting/ScriptManager.h"
-#include "UI/TextEditor/TextEditor.h"
+#include "TextEditor/UI/TextEditorCtrl.h"
 
 ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) :
 	wxPanel(parent, -1),
@@ -13,7 +13,7 @@ ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) :
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 	
-	text_editor_ = new TextEditor(this, -1);
+	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setLanguage(TextLanguage::fromId("sladescript"));
 	if (script_)
 		text_editor_->SetText(script_->text);

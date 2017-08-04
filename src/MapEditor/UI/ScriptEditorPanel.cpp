@@ -28,12 +28,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Archive/Archive.h"
 #include "Game/Configuration.h"
 #include "MainEditor/EntryOperations.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "ScriptEditorPanel.h"
+#include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/SToolBar/SToolBar.h"
 
 
@@ -90,7 +90,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	hbox->Add(vbox, 1, wxEXPAND);
 
-	text_editor = new TextEditor(this, -1);
+	text_editor = new TextEditorCtrl(this, -1);
 	text_editor->setJumpToControl(choice_jump_to);
 	vbox->Add(text_editor, 1, wxEXPAND|wxALL, 4);
 

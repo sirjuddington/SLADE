@@ -30,22 +30,19 @@
 //
 // ----------------------------------------------------------------------------
 #include "Main.h"
-#include "ScriptManagerWindow.h"
 #include "App.h"
-#include "Utility/Tokenizer.h"
-#include "UI/SAuiTabArt.h"
 #include "Archive/ArchiveManager.h"
-#include "UI/ConsolePanel.h"
-#include "UI/TextEditor/TextEditor.h"
-#include "Scripting/Lua.h"
-#include "Scripting/ScriptManager.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "Dialogs/ExtMessageDialog.h"
-#include "UI/STabCtrl.h"
-#include "ScriptPanel.h"
 #include "Graphics/Icons.h"
+#include "Scripting/Lua.h"
+#include "Scripting/ScriptManager.h"
+#include "ScriptManagerWindow.h"
+#include "ScriptPanel.h"
+#include "UI/ConsolePanel.h"
+#include "UI/SAuiTabArt.h"
+#include "UI/STabCtrl.h"
+#include "UI/SToolBar/SToolBar.h"
 
 
 // ----------------------------------------------------------------------------

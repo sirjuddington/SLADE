@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Lexer.h"
-#include "TextEditor.h"
+#include "UI/TextEditorCtrl.h"
 #include "TextLanguage.h"
 
 
@@ -87,7 +87,7 @@ void Lexer::loadLanguage(TextLanguage* language)
  * [end]. Returns true if the next line needs to be styled (eg. for
  * multi-line comments)
  *******************************************************************/
-bool Lexer::doStyling(TextEditor* editor, int start, int end)
+bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 {
 	if (start < 0)
 		start = 0;
@@ -151,7 +151,7 @@ void Lexer::addWord(string word, int style)
  * Applies a style to [word] in [editor], depending on if it is in
  * the word list, a number or begins with the preprocessor character
  *******************************************************************/
-void Lexer::styleWord(TextEditor* editor, string word)
+void Lexer::styleWord(TextEditorCtrl* editor, string word)
 {
 	if (!language->caseSensitive())
 		word = word.Lower();
@@ -605,7 +605,7 @@ bool Lexer::processWhitespace(LexerState& state)
 /* Lexer::checkToken
  * Checks if the text in [editor] starting from [pos] matches [token]
  *******************************************************************/
-bool Lexer::checkToken(TextEditor* editor, int pos, string& token)
+bool Lexer::checkToken(TextEditorCtrl* editor, int pos, string& token)
 {
 	if (!token.empty())
 	{
@@ -624,7 +624,7 @@ bool Lexer::checkToken(TextEditor* editor, int pos, string& token)
  * Updates code folding levels in [editor], starting from line
  * [line_start]
  *******************************************************************/
-void Lexer::updateFolding(TextEditor* editor, int line_start)
+void Lexer::updateFolding(TextEditorCtrl* editor, int line_start)
 {
 	int fold_level = editor->GetFoldLevel(line_start) & wxSTC_FOLDLEVELNUMBERMASK;
 
