@@ -34,6 +34,10 @@ lua
 	comment_end = "]]";
 	comment_line = "--";
 	case_sensitive = true;
+	block_begin = "{";
+	block_end = "}";
+	word_block_begin = "do", "function", "if";
+	word_block_end = "end";
 
 	keywords =
 	{

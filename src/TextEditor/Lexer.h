@@ -31,14 +31,14 @@ public:
 
 	bool	doStyling(TextEditorCtrl* editor, int start, int end);
 	void	addWord(string word, int style);
-	void	clearWords() { word_list.clear(); }
+	void	clearWords() { word_list_.clear(); }
 
 	void	setWordChars(string chars);
 	void	setOperatorChars(string chars);
 
 	void	updateFolding(TextEditorCtrl* editor, int line_start);
-	void	foldComments(bool fold) { fold_comments = fold; }
-	void	foldPreprocessor(bool fold) { fold_preprocessor = fold; }
+	void	foldComments(bool fold) { fold_comments_ = fold; }
+	void	foldPreprocessor(bool fold) { fold_preprocessor_ = fold; }
 
 private:
 	enum class State
@@ -53,23 +53,24 @@ private:
 		Whitespace,
 	};
 
-	vector<char>	word_chars;
-	vector<char>	operator_chars;
-	vector<char>	whitespace_chars;
-	TextLanguage*	language;
-	wxRegEx			re_int1;
-	wxRegEx			re_int2;
-	wxRegEx			re_int3;
-	wxRegEx			re_float;
-	bool			fold_comments;
-	bool			fold_preprocessor;
+	vector<char>	word_chars_;
+	vector<char>	operator_chars_;
+	vector<char>	whitespace_chars_;
+	TextLanguage*	language_;
+	wxRegEx			re_int1_;
+	wxRegEx			re_int2_;
+	wxRegEx			re_int3_;
+	wxRegEx			re_float_;
+	bool			fold_comments_;
+	bool			fold_preprocessor_;
+	char			preprocessor_char_;
 
 	struct WLIndex
 	{
 		char style;
 		WLIndex() : style(0) {}
 	};
-	std::map<string, WLIndex>	word_list;
+	std::map<string, WLIndex>	word_list_;
 
 	struct LineInfo
 	{
@@ -78,7 +79,7 @@ private:
 		bool	has_word;
 		LineInfo() : commented{ false }, fold_increment{ 0 }, has_word{ false } {}
 	};
-	std::map<int, LineInfo>	lines;
+	std::map<int, LineInfo>	lines_;
 
 	struct LexerState
 	{

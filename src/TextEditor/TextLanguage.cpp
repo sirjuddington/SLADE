@@ -203,20 +203,20 @@ void TextLanguage::copyTo(TextLanguage* copy)
 	copy->comment_end_ = comment_end_;
 	copy->preprocessor_ = preprocessor_;
 	copy->case_sensitive_ = case_sensitive_;
-	copy->f_lookup_url = f_lookup_url;
+	copy->f_lookup_url_ = f_lookup_url_;
 	copy->doc_comment_ = doc_comment_;
 	copy->block_begin_ = block_begin_;
 	copy->block_end_ = block_end_;
 
 	// Copy word lists
 	for (unsigned a = 0; a < 4; a++)
-		copy->word_lists[a] = word_lists[a];
+		copy->word_lists_[a] = word_lists_[a];
 
 	// Copy functions
-	size_t functions_size = functions.size();
+	size_t functions_size = functions_.size();
 	for (unsigned a = 0; a < functions_size; a++)
 	{
-		TLFunction* f = functions[a];
+		TLFunction* f = functions_[a];
 		size_t nargsets = f->nArgSets();
 		for (unsigned b = 0; b < nargsets; b++)
 			copy->addFunction(
@@ -228,10 +228,13 @@ void TextLanguage::copyTo(TextLanguage* copy)
 			);
 	}
 
-	// Copy preprocessor block begin/end
-	copy->pp_block_begin_.clear();
-	copy->pp_block_end_.clear();
-	size_t pp_block_begin_size = pp_block_begin_.size();
+	// Copy preprocessor/word block begin/end
+	copy->pp_block_begin_ = pp_block_begin_;
+	copy->pp_block_end_ = pp_block_end_;
+	copy->word_block_begin_ = word_block_begin_;
+	copy->word_block_end_ = word_block_end_;
+
+	/*size_t pp_block_begin_size = pp_block_begin_.size();
 
 	for (unsigned a = 0; a < pp_block_begin_size; a++)
 		copy->pp_block_begin_.push_back(pp_block_begin_[a]);
@@ -239,7 +242,7 @@ void TextLanguage::copyTo(TextLanguage* copy)
 	size_t pp_block_end_size = pp_block_end_.size();
 
 	for (unsigned a = 0; a < pp_block_end_size; a++)
-		copy->pp_block_end_.push_back(pp_block_end_[a]);
+		copy->pp_block_end_.push_back(pp_block_end_[a]);*/
 }
 
 /* TextLanguage::addWord
@@ -249,7 +252,7 @@ void TextLanguage::copyTo(TextLanguage* copy)
 void TextLanguage::addWord(WordType type, string keyword)
 {
 	// Add only if it doesn't already exist
-	vector<string>& list = word_lists[type].list;
+	vector<string>& list = word_lists_[type].list;
 	if (std::find(list.begin(), list.end(), keyword) == list.end())
 		list.push_back(keyword);
 }
@@ -277,16 +280,16 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 	if (!func)
 	{
 		func = new TLFunction(name, return_type.empty() ? "void" : return_type);
-		functions.push_back(func);
+		functions_.push_back(func);
 	}
 
 	// Remove/recreate the function if we're replacing it
 	else if (replace)
 	{
-		VECTOR_REMOVE(functions, func);
+		VECTOR_REMOVE(functions_, func);
 		delete func;
 		func = new TLFunction(name, return_type.empty() ? "void" : return_type);
-		functions.push_back(func);
+		functions_.push_back(func);
 	}
 
 	// Add the arg set
@@ -307,7 +310,7 @@ string TextLanguage::wordList(WordType type)
 	string ret = "";
 
 	// Add each word to return string (separated by spaces)
-	vector<string>& list = word_lists[type].list;
+	vector<string>& list = word_lists_[type].list;
 	for (size_t a = 0; a < list.size(); a++)
 		ret += list[a] + " ";
 
@@ -325,8 +328,8 @@ string TextLanguage::functionsList()
 	string ret = "";
 
 	// Add each function name to return string (separated by spaces)
-	for (unsigned a = 0; a < functions.size(); a++)
-		ret += functions[a]->name() + " ";
+	for (unsigned a = 0; a < functions_.size(); a++)
+		ret += functions_[a]->name() + " ";
 
 	return ret;
 }
@@ -343,15 +346,15 @@ string TextLanguage::autocompletionList(string start)
 
 	// Add word lists
 	for (unsigned type = 0; type < 4; type++)
-		for (unsigned a = 0; a < word_lists[type].list.size(); a++)
-			if (word_lists[type].list[a].Lower().StartsWith(start))
-				list.Add(word_lists[type].list[a] + S_FMT("?%d", type + 1));
+		for (unsigned a = 0; a < word_lists_[type].list.size(); a++)
+			if (word_lists_[type].list[a].Lower().StartsWith(start))
+				list.Add(word_lists_[type].list[a] + S_FMT("?%d", type + 1));
 
 	// Add functions
-	for (unsigned a = 0; a < functions.size(); a++)
+	for (unsigned a = 0; a < functions_.size(); a++)
 	{
-		if (functions[a]->name().Lower().StartsWith(start))
-			list.Add(functions[a]->name() + "?3");
+		if (functions_[a]->name().Lower().StartsWith(start))
+			list.Add(functions_[a]->name() + "?3");
 	}
 
 	// Sort the list
@@ -373,8 +376,8 @@ wxArrayString TextLanguage::wordListSorted(WordType type)
 {
 	// Get list
 	wxArrayString list;
-	for (unsigned a = 0; a < word_lists[type].list.size(); a++)
-		list.Add(word_lists[type].list[a]);
+	for (unsigned a = 0; a < word_lists_[type].list.size(); a++)
+		list.Add(word_lists_[type].list[a]);
 
 	// Sort
 	list.Sort();
@@ -389,8 +392,8 @@ wxArrayString TextLanguage::functionsSorted()
 {
 	// Get list
 	wxArrayString list;
-	for (unsigned a = 0; a < functions.size(); a++)
-		list.Add(functions[a]->name());
+	for (unsigned a = 0; a < functions_.size(); a++)
+		list.Add(functions_[a]->name());
 
 	// Sort
 	list.Sort();
@@ -404,7 +407,7 @@ wxArrayString TextLanguage::functionsSorted()
  *******************************************************************/
 bool TextLanguage::isWord(WordType type, string word)
 {
-	vector<string>& list = word_lists[type].list;
+	vector<string>& list = word_lists_[type].list;
 	for (unsigned a = 0; a < list.size(); a++)
 	{
 		if (list[a] == word)
@@ -420,9 +423,9 @@ bool TextLanguage::isWord(WordType type, string word)
  *******************************************************************/
 bool TextLanguage::isFunction(string word)
 {
-	for (unsigned a = 0; a < functions.size(); a++)
+	for (unsigned a = 0; a < functions_.size(); a++)
 	{
-		if (functions[a]->name() == word)
+		if (functions_[a]->name() == word)
 			return true;
 	}
 
@@ -436,21 +439,21 @@ bool TextLanguage::isFunction(string word)
 TLFunction* TextLanguage::function(string name)
 {
 	// Find function matching [name]
-	size_t functions_size = functions.size();
+	size_t functions_size = functions_.size();
 	if (case_sensitive_)
 	{
 		for (unsigned a = 0; a < functions_size; a++)
 		{
-			if (functions[a]->name() == name)
-				return functions[a];
+			if (functions_[a]->name() == name)
+				return functions_[a];
 		}
 	}
 	else
 	{
 		for (unsigned a = 0; a < functions_size; a++)
 		{
-			if (S_CMPNOCASE(functions[a]->name(), name))
-				return functions[a];
+			if (S_CMPNOCASE(functions_[a]->name(), name))
+				return functions_[a];
 		}
 	}
 
@@ -536,15 +539,15 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 
 			// Keyword lookup link
 			else if (S_CMPNOCASE(child->getName(), "keyword_link"))
-				lang->word_lists[WordType::Keyword].lookup_url = child->stringValue();
+				lang->word_lists_[WordType::Keyword].lookup_url = child->stringValue();
 
 			// Constant lookup link
 			else if (S_CMPNOCASE(child->getName(), "constant_link"))
-				lang->word_lists[WordType::Constant].lookup_url = child->stringValue();
+				lang->word_lists_[WordType::Constant].lookup_url = child->stringValue();
 
 			// Function lookup link
 			else if (S_CMPNOCASE(child->getName(), "function_link"))
-				lang->f_lookup_url = child->stringValue();
+				lang->f_lookup_url_ = child->stringValue();
 
 			// Jump blocks
 			else if (S_CMPNOCASE(child->getName(), "blocks"))
@@ -578,6 +581,20 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->pp_block_end_.push_back(child->stringValue(v));
+			}
+
+			// Word block begin
+			else if (S_CMPNOCASE(child->getName(), "word_block_begin"))
+			{
+				for (unsigned v = 0; v < child->nValues(); v++)
+					lang->word_block_begin_.push_back(child->stringValue(v));
+			}
+
+			// Word block end
+			else if (S_CMPNOCASE(child->getName(), "word_block_end"))
+			{
+				for (unsigned v = 0; v < child->nValues(); v++)
+					lang->word_block_end_.push_back(child->stringValue(v));
 			}
 
 			// Keywords

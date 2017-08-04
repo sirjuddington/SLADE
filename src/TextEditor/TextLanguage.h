@@ -43,22 +43,30 @@ public:
 		Property	= 3,
 	};
 
+	struct Block
+	{
+		string	start;
+		string	end;
+	};
+
 	TextLanguage(string id);
 	~TextLanguage();
 
-	string	id() const { return id_; }
-	string	name() const { return name_; }
-	string	lineComment() const { return line_comment_; }
-	string	commentBegin() const { return comment_begin_; }
-	string	commentEnd() const { return comment_end_; }
-	string	preprocessor() const { return preprocessor_; }
-	string	docComment() const { return doc_comment_; }
-	bool	caseSensitive() const { return case_sensitive_; }
-	string	blockBegin() const { return block_begin_; }
-	string	blockEnd() const { return block_end_; }
+	const string&	id() const { return id_; }
+	const string&	name() const { return name_; }
+	const string&	lineComment() const { return line_comment_; }
+	const string&	commentBegin() const { return comment_begin_; }
+	const string&	commentEnd() const { return comment_end_; }
+	const string&	preprocessor() const { return preprocessor_; }
+	const string&	docComment() const { return doc_comment_; }
+	bool			caseSensitive() const { return case_sensitive_; }
+	const string&	blockBegin() const { return block_begin_; }
+	const string&	blockEnd() const { return block_end_; }
 
 	const vector<string>&	ppBlockBegin() const { return pp_block_begin_; }
 	const vector<string>&	ppBlockEnd() const { return pp_block_end_; }
+	const vector<string>&	wordBlockBegin() const { return word_block_begin_; }
+	const vector<string>&	wordBlockEnd() const { return word_block_end_; }
 	const vector<string>&	jumpBlocks() const { return jump_blocks_; }
 	const vector<string>&	jumpBlocksIgnored() const { return jb_ignore_; }
 
@@ -87,18 +95,16 @@ public:
 	wxArrayString	wordListSorted(WordType type);
 	wxArrayString	functionsSorted();
 
-	string	wordLink(WordType type) const { return word_lists[type].lookup_url; }
-	string	functionLink() const { return f_lookup_url; }
+	string	wordLink(WordType type) const { return word_lists_[type].lookup_url; }
+	string	functionLink() const { return f_lookup_url_; }
 
 	bool	isWord(WordType type, string word);
 	bool	isFunction(string word);
 
 	TLFunction*	function(string name);
 
-	void	clearWordList(WordType type) { word_lists[type].list.clear(); }
-	void	clearFunctions() { functions.clear(); }
-
-	
+	void	clearWordList(WordType type) { word_lists_[type].list.clear(); }
+	void	clearFunctions() { functions_.clear(); }
 
 	// Static functions
 	static bool				readLanguageDefinition(MemChunk& mc, string source);
@@ -123,6 +129,8 @@ private:
 	string				block_end_;			// The end of a block (eg. '}' in c/c++)
 	vector<string>		pp_block_begin_;	// Preprocessor words to start a folding block (eg. 'ifdef')
 	vector<string>		pp_block_end_;		// Preprocessor words to end a folding block (eg. 'endif')
+	vector<string>		word_block_begin_;	// Words to start a folding block (eg. 'do' in lua)
+	vector<string>		word_block_end_;	// Words to end a folding block (eg. 'end' in lua)
 
 	// Word lists
 	struct WordList
@@ -133,12 +141,12 @@ private:
 		bool			caps;
 		string			lookup_url;
 	};
-	WordList	word_lists[4];
+	WordList	word_lists_[4];
 
 	// Functions
-	vector<TLFunction*>	functions;
-	bool				f_upper;
-	bool				f_lower;
-	bool				f_caps;
-	string				f_lookup_url;
+	vector<TLFunction*>	functions_;
+	bool				f_upper_;
+	bool				f_lower_;
+	bool				f_caps_;
+	string				f_lookup_url_;
 };
