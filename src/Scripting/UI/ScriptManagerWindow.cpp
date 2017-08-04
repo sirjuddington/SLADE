@@ -288,6 +288,18 @@ void ScriptManagerWindow::setupMenu()
 	SAction::fromId("scrm_run")->addToMenu(scriptMenu);
 	menu->Append(scriptMenu, "&Script");
 
+	// Text menu
+	auto textMenu = new wxMenu();
+	SAction::fromId("scrm_find_replace")->addToMenu(textMenu);
+	SAction::fromId("scrm_jump_to_line")->addToMenu(textMenu);
+	wxMenu* menu_fold = new wxMenu();
+	textMenu->AppendSubMenu(menu_fold, "Code Folding");
+	SAction::fromId("scrm_fold_foldall")->addToMenu(menu_fold);
+	SAction::fromId("scrm_fold_unfoldall")->addToMenu(menu_fold);
+	textMenu->AppendSeparator();
+	SAction::fromId("scrm_wrap")->addToMenu(textMenu);
+	menu->Append(textMenu, "&Text");
+
 	// View menu
 	auto viewMenu = new wxMenu("");
 	SAction::fromId("scrm_showscripts")->addToMenu(viewMenu);
@@ -427,11 +439,25 @@ void ScriptManagerWindow::populateScriptsTree()
 }
 
 // ----------------------------------------------------------------------------
+// ScriptManagerWindow::currentPage
+//
+// Returns the currently open/focused ScriptPanel
+// ----------------------------------------------------------------------------
+ScriptPanel* ScriptManagerWindow::currentPage() const
+{
+	auto page = tabs_scripts_->GetCurrentPage();
+	if (page->GetName() == "script")
+		return (ScriptPanel*)page;
+
+	return nullptr;
+}
+
+// ----------------------------------------------------------------------------
 // ScriptManagerWindow::openScriptTab
 //
 // Opens the tab for [script], or creates a new tab for it if needed
 // ----------------------------------------------------------------------------
-void ScriptManagerWindow::openScriptTab(ScriptManager::Script* script)
+void ScriptManagerWindow::openScriptTab(ScriptManager::Script* script) const
 {
 	// Find existing tab
 	for (unsigned a = 0; a < tabs_scripts_->GetPageCount(); a++)
@@ -459,7 +485,7 @@ void ScriptManagerWindow::openScriptTab(ScriptManager::Script* script)
 //
 // Returns the currently open/focused script, or nullptr if none are open
 // ----------------------------------------------------------------------------
-ScriptManager::Script* ScriptManagerWindow::currentScript()
+ScriptManager::Script* ScriptManagerWindow::currentScript() const
 {
 	auto page = tabs_scripts_->GetCurrentPage();
 	if (page->GetName() == "script")
@@ -473,7 +499,7 @@ ScriptManager::Script* ScriptManagerWindow::currentScript()
 //
 // Returns the currently open/focused script text
 // ----------------------------------------------------------------------------
-string ScriptManagerWindow::currentScriptText()
+string ScriptManagerWindow::currentScriptText() const
 {
 	auto page = tabs_scripts_->GetCurrentPage();
 	if (page->GetName() == "script")
@@ -493,6 +519,11 @@ bool ScriptManagerWindow::handleAction(string id)
 	// We're only interested in "scrm_" actions
 	if (!id.StartsWith("scrm_"))
 		return false;
+
+	// Send to current ScriptPanel first
+	auto current = currentPage();
+	if (current && current->handleAction(id))
+		return true;
 
 	// Script->Run
 	if (id == "scrm_run")
