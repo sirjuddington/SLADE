@@ -375,6 +375,7 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	cb_target_reverse->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBTargetReverse, this);
 	cb_truecolor->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBTruecolor, this);
 	cb_paletteonly->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBPaletteOnly, this);
+	//text_string->Bind(wxEVT_TEXT, &TranslationEditorDialog::onChangeTranslationString, this);
 
 	// Setup layout
 	Layout();
@@ -1366,6 +1367,21 @@ void TranslationEditorDialog::onCBTruecolor(wxCommandEvent& e)
 void TranslationEditorDialog::onCBPaletteOnly(wxCommandEvent& e)
 {
 	updatePreviews();
+}
+
+void TranslationEditorDialog::onChangeTranslationString(wxEvent &e) {
+	Translation oldtrans;
+	translation.copy(oldtrans);
+	translation.clear();
+	if(!translation.parse(text_string->GetValue())) {
+		oldtrans.copy(translation);
+	}
+	for(int i = 0; i < translation.nRanges(); i++) {
+		updateListItem(i);
+	}
+	updatePreviews();
+
+
 }
 
 /*******************************************************************

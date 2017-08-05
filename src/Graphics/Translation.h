@@ -224,8 +224,8 @@ public:
 	Translation();
 	~Translation();
 
-	void	parse(string def);
-	void	parseRange(string range);
+	bool parse(string def);
+	bool parseRange(string range);
 	void	read(const uint8_t * data);
 	string	asText();
 	void	clear();

@@ -406,7 +406,7 @@ bool Input::mouseUp(MouseButton button)
 		if (mouse_state_ == MouseState::ObjectEdit)
 			context_.objectEdit().group().resetPositions();
 	}
-	
+
 	// Right button
 	else if (button == Right)
 	{
@@ -1087,16 +1087,16 @@ void Input::handleKeyBind3d(const string& name) const
 	{
 		// Change hilight type
 		render_3d_hilight = render_3d_hilight + 1;
-		if (render_3d_hilight > 2)
+		if (render_3d_hilight > 1)
 			render_3d_hilight = 0;
 
 		// Editor message
 		if (render_3d_hilight == 0)
 			context_.addEditorMessage("Hilight disabled");
 		else if (render_3d_hilight == 1)
-			context_.addEditorMessage("Hilight enabled: Outline");
-		else if (render_3d_hilight == 2)
-			context_.addEditorMessage("Hilight enabled: Solid");
+			context_.addEditorMessage("Hilight enabled");
+		/*else if (render_3d_hilight == 2)
+			context_.addEditorMessage("Hilight enabled: Solid");*/
 	}
 
 	// Toggle info overlay

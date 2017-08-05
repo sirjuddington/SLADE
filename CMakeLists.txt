@@ -23,6 +23,7 @@ if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+set(wxWidgets_CONFIG_EXECUTABLE /usr/bin/wx-config-gtk3)
 set(SLADE_OUTPUT_DIR ${CMAKE_BINARY_DIR} CACHE PATH "Directory where slade will be created.")
 
 OPTION(NO_WEBVIEW "Disable wxWebview usage (for start page and documentation)" OFF)

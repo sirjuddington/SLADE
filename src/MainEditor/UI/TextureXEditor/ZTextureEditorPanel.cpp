@@ -128,12 +128,12 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	// Bind events
 	spin_tex_scalex->Bind(wxEVT_SPINCTRLDOUBLE, &ZTextureEditorPanel::onTexScaleXChanged, this);
 	spin_tex_scaley->Bind(wxEVT_SPINCTRLDOUBLE, &ZTextureEditorPanel::onTexScaleYChanged, this);
-	spin_tex_scalex->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onTexScaleXChanged, this);
-	spin_tex_scaley->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onTexScaleYChanged, this);
+	spin_tex_scalex->Bind(wxEVT_TEXT, &ZTextureEditorPanel::onTexScaleXChanged, this);
+	spin_tex_scaley->Bind(wxEVT_TEXT, &ZTextureEditorPanel::onTexScaleYChanged, this);
 	spin_tex_offsetx->Bind(wxEVT_SPINCTRL, &ZTextureEditorPanel::onTexOffsetXChanged, this);
 	spin_tex_offsety->Bind(wxEVT_SPINCTRL, &ZTextureEditorPanel::onTexOffsetYChanged, this);
-	spin_tex_offsetx->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onTexOffsetXChanged, this);
-	spin_tex_offsety->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onTexOffsetYChanged, this);
+	spin_tex_offsetx->Bind(wxEVT_TEXT, &ZTextureEditorPanel::onTexOffsetXChanged, this);
+	spin_tex_offsety->Bind(wxEVT_TEXT, &ZTextureEditorPanel::onTexOffsetYChanged, this);
 	choice_type->Bind(wxEVT_CHOICE, &ZTextureEditorPanel::onTexTypeChanged, this);
 	cb_optional->Bind(wxEVT_CHECKBOX, &ZTextureEditorPanel::onTexOptionalChanged, this);
 	cb_worldpanning->Bind(wxEVT_CHECKBOX, &ZTextureEditorPanel::onTexWorldPanningChanged, this);
@@ -359,7 +359,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	cb_useofs->Bind(wxEVT_CHECKBOX, &ZTextureEditorPanel::onPatchUseOfsChanged, this);
 	choice_rotation->Bind(wxEVT_CHOICE, &ZTextureEditorPanel::onPatchRotationChanged, this);
 	spin_alpha->Bind(wxEVT_SPINCTRLDOUBLE, &ZTextureEditorPanel::onPatchAlphaChanged, this);
-	spin_alpha->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onPatchAlphaChanged, this);
+	spin_alpha->Bind(wxEVT_TEXT, &ZTextureEditorPanel::onPatchAlphaChanged, this);
 	choice_style->Bind(wxEVT_CHOICE, &ZTextureEditorPanel::onPatchAlphaStyleChanged, this);
 	rb_pc_normal->Bind(wxEVT_RADIOBUTTON, &ZTextureEditorPanel::onPCNormalSelected, this);
 	rb_pc_blend->Bind(wxEVT_RADIOBUTTON, &ZTextureEditorPanel::onPCBlendSelected, this);
@@ -367,9 +367,9 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	rb_pc_translation->Bind(wxEVT_RADIOBUTTON, &ZTextureEditorPanel::onPCTranslationSelected, this);
 	cb_blend_col->Bind(wxEVT_COLOURBOX_CHANGED, &ZTextureEditorPanel::onPatchColourChanged, this);
 	spin_tint_amount->Bind(wxEVT_SPINCTRLDOUBLE, &ZTextureEditorPanel::onPatchTintAmountChanged, this);
-	spin_tint_amount->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onPatchTintAmountChanged, this);
+	spin_tint_amount->Bind(wxEVT_TEXT, &ZTextureEditorPanel::onPatchTintAmountChanged, this);
 	btn_edit_translation->Bind(wxEVT_BUTTON, &ZTextureEditorPanel::onBtnEditTranslation, this);
-	text_translation->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onTextTranslationEnter, this);
+	text_translation->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onTextTranslationEnter, this); // crashes if just wxEVT_TEXT
 
 	return panel;
 }

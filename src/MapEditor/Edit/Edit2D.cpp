@@ -41,7 +41,7 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-CVAR(Bool, map_merge_lines_on_delete_vertex, false, CVAR_SAVE)
+CVAR(Bool, map_merge_lines_on_delete_vertex, true, CVAR_SAVE)
 CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
 
 

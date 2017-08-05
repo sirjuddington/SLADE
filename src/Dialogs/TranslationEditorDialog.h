@@ -123,6 +123,8 @@ public:
 	void	onCBTargetReverse(wxCommandEvent& e);
 	void	onCBTruecolor(wxCommandEvent& e);
 	void	onCBPaletteOnly(wxCommandEvent& e);
+
+	void onChangeTranslationString(wxEvent &e);
 };
 
 
