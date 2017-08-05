@@ -116,7 +116,7 @@ void GradientBox::draw()
 /* TranslationEditorDialog::TranslationEditorDialog
  * TranslationEditorDialog class constructor
  *******************************************************************/
-TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* pal, string title, SImage* preview_image)
+TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette* pal, string title, SImage* preview_image)
 	: wxDialog(parent, -1, title)
 {
 	// Init variables
@@ -1387,7 +1387,7 @@ void TranslationEditorDialog::onChangeTranslationString(wxEvent &e) {
 /*******************************************************************
 * GFXCOLOURISEDIALOG FUNCTIONS
 *******************************************************************/
-GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
+GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal)
 : wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
 	// Init variables
@@ -1480,7 +1480,7 @@ void GfxColouriseDialog::onResize(wxSizeEvent& e)
 * GFXTINTDIALOG FUNCTIONS
 *******************************************************************/
 
-GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
+GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal)
 : wxDialog(parent, -1, "Tint", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
 	// Init variables

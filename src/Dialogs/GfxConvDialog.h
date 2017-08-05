@@ -30,7 +30,7 @@
 class Archive;
 class ArchiveEntry;
 class CTexture;
-class Palette8bit;
+class Palette;
 
 struct gcd_item_t
 {
@@ -39,7 +39,7 @@ struct gcd_item_t
 	SImage			image;
 	bool			modified;
 	SIFormat*		new_format;
-	Palette8bit*	palette;
+	Palette*	palette;
 	Archive*		archive;
 	bool			force_rgba;
 
@@ -54,7 +54,7 @@ struct gcd_item_t
 		this->force_rgba = false;
 	}
 
-	gcd_item_t(CTexture* texture, Palette8bit* palette = NULL, Archive* archive = NULL, bool force_rgba = false)
+	gcd_item_t(CTexture* texture, Palette* palette = NULL, Archive* archive = NULL, bool force_rgba = false)
 	{
 		this->entry = NULL;
 		this->texture = texture;
@@ -109,7 +109,7 @@ private:
 	ColourBox*		colbox_transparent;
 
 	// Conversion options
-	Palette8bit		target_pal;
+	Palette		target_pal;
 	uint8_t			pal_convert_type;	// 0=nearest colour, 1=keep indices
 	uint8_t			alpha_threshold;
 	bool			keep_trans;
@@ -129,7 +129,7 @@ public:
 
 	void	openEntry(ArchiveEntry* entry);
 	void	openEntries(vector<ArchiveEntry*> entries);
-	void	openTextures(vector<CTexture*> textures, Palette8bit* palette = NULL, Archive* archive = NULL, bool force_rgba = false);
+	void	openTextures(vector<CTexture*> textures, Palette* palette = NULL, Archive* archive = NULL, bool force_rgba = false);
 	void	updatePreviewGfx();
 	void	updateControls();
 	void	getConvertOptions(SIFormat::convert_options_t& opt);
@@ -137,7 +137,7 @@ public:
 	bool			itemModified(int index);
 	SImage*			getItemImage(int index);
 	SIFormat*		getItemFormat(int index);
-	Palette8bit*	getItemPalette(int index);
+	Palette*	getItemPalette(int index);
 
 	void	applyConversion();
 

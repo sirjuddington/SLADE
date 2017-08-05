@@ -59,9 +59,9 @@ namespace Global
 {
 	string error = "";
 
-	int beta_num = 2;
+	int beta_num = 4;
 	int version_num = 3120;
-	string version = "3.1.2 Beta 2";
+	string version = "3.1.2 Beta 4";
 #ifdef GIT_DESCRIPTION
 	string sc_rev = GIT_DESCRIPTION;
 #else
@@ -108,7 +108,7 @@ protected:
 #endif
 	void DoLogText(const wxString& msg) override
 	{
-		Log::message(Log::MessageType::Info, msg);
+		Log::message(Log::MessageType::Info, msg.Right(msg.size() - 10));
 	}
 
 public:
@@ -580,12 +580,17 @@ bool SLADEWxApp::OnInit()
 	LOG_MESSAGE(1, "Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor);
 #endif
 
-	// Init application
-	if (!App::init())
-		return false;
-
 	// Reroute wx log messages
 	wxLog::SetActiveTarget(new SLADELog());
+
+	// Get command line arguments
+	vector<string> args;
+	for (int a = 0; a < argc; a++)
+		args.push_back(argv[a]);
+
+	// Init application
+	if (!App::init(args))
+		return false;
 
 	// Check for updates
 #ifdef __WXMSW__

@@ -5,7 +5,7 @@
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
- * Filename:    TextEditor.cpp
+ * Filename:    TextEditorCtrl.cpp
  * Description: The SLADE Text Editor control, does syntax
  *              highlighting, calltips, autocomplete and more,
  *              using an associated TextLanguage
@@ -30,10 +30,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "TextEditor.h"
+#include "TextEditorCtrl.h"
 #include "Graphics/Icons.h"
 #include "General/KeyBind.h"
 #include "SCallTip.h"
+#include "FindReplacePanel.h"
 
 
 /*******************************************************************
@@ -64,249 +65,6 @@ wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 
 
 /*******************************************************************
- * FINDREPLACEPANEL CLASS FUNCTIONS
- *******************************************************************/
-
-/* FindReplacePanel::FindReplacePanel
- * FindReplacePanel class constructor
- *******************************************************************/
-FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditor* text_editor)
-	: wxPanel(parent, -1), text_editor(text_editor)
-{
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
-
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
-	sizer->Add(gb_sizer, 1, wxEXPAND | wxBOTTOM, 4);
-
-	// Find
-	text_find = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	btn_find_next = new wxButton(this, -1, "Find Next");
-	btn_find_prev = new wxButton(this, -1, "Find Previous");
-	gb_sizer->Add(new wxStaticText(this, -1, "Find What:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(text_find, wxGBPosition(0, 1), wxDefaultSpan, wxALIGN_CENTER_VERTICAL|wxEXPAND);
-	gb_sizer->Add(btn_find_next, wxGBPosition(0, 2), wxDefaultSpan, wxEXPAND);
-	gb_sizer->Add(btn_find_prev, wxGBPosition(0, 3), wxDefaultSpan, wxEXPAND);
-
-	// Replace
-	text_replace = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	btn_replace = new wxButton(this, -1, "Replace");
-	btn_replace_all = new wxButton(this, -1, "Replace All");
-	gb_sizer->Add(new wxStaticText(this, -1, "Replace With:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(text_replace, wxGBPosition(1, 1), wxDefaultSpan, wxALIGN_CENTER_VERTICAL | wxEXPAND);
-	gb_sizer->Add(btn_replace, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND);
-	gb_sizer->Add(btn_replace_all, wxGBPosition(1, 3), wxDefaultSpan, wxEXPAND);
-
-	// Options
-	cb_match_case = new wxCheckBox(this, -1, "Match Case");
-	cb_match_word_whole = new wxCheckBox(this, -1, "Match Word (Whole)");
-	cb_match_word_start = new wxCheckBox(this, -1, "Match Word (Start)");
-	cb_search_regex = new wxCheckBox(this, -1, "Regular Expression");
-	cb_allow_escape = new wxCheckBox(this, -1, "Allow Backslash Expressions");
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND);
-	hbox->Add(cb_match_case, 0, wxEXPAND | wxRIGHT, 4);
-	hbox->Add(cb_match_word_whole, 0, wxEXPAND | wxRIGHT, 4);
-	hbox->Add(cb_match_word_start, 0, wxEXPAND | wxRIGHT, 4);
-	hbox->Add(cb_search_regex, 0, wxEXPAND | wxRIGHT, 4);
-	hbox->Add(cb_allow_escape, 0, wxEXPAND);
-
-	gb_sizer->AddGrowableCol(1, 1);
-
-	// Bind events
-	btn_find_next->Bind(wxEVT_BUTTON, &FindReplacePanel::onBtnFindNext, this);
-	btn_find_prev->Bind(wxEVT_BUTTON, &FindReplacePanel::onBtnFindPrev, this);
-	btn_replace->Bind(wxEVT_BUTTON, &FindReplacePanel::onBtnReplace, this);
-	btn_replace_all->Bind(wxEVT_BUTTON, &FindReplacePanel::onBtnReplaceAll, this);
-	text_find->Bind(wxEVT_TEXT_ENTER, &FindReplacePanel::onTextFindEnter, this);
-	text_replace->Bind(wxEVT_TEXT_ENTER, &FindReplacePanel::onTextReplaceEnter, this);
-	Bind(wxEVT_CHAR_HOOK, &FindReplacePanel::onKeyDown, this);
-
-	// Set tab order
-	text_replace->MoveAfterInTabOrder(text_find);
-}
-
-/* FindReplacePanel::~FindReplacePanel
- * FindReplacePanel class destructor
- *******************************************************************/
-FindReplacePanel::~FindReplacePanel()
-{
-}
-
-/* FindReplacePanel::setFindText
- * Sets the 'Find' text to [find], selects all and focuses the text
- * box
- *******************************************************************/
-void FindReplacePanel::setFindText(string find)
-{
-	text_find->SetFocus();
-	text_find->SetValue(find);
-	text_find->SelectAll();
-}
-
-/* FindReplacePanel::getFindText
- * Returns the current 'Find' text
- *******************************************************************/
-string FindReplacePanel::getFindText()
-{
-	string find = text_find->GetValue();
-
-	if (cb_allow_escape->GetValue())
-	{
-		find.Replace("\\n", "\n");
-		find.Replace("\\r", "\r");
-		find.Replace("\\t", "\t");
-	}
-
-	return find;
-}
-
-/* FindReplacePanel::getFindFlags
- * Returns the selected search options
- *******************************************************************/
-int FindReplacePanel::getFindFlags()
-{
-	int flags = 0;
-	if (cb_match_case->GetValue())
-		flags |= wxSTC_FIND_MATCHCASE;
-	if (cb_match_word_start->GetValue())
-		flags |= wxSTC_FIND_WORDSTART;
-	if (cb_match_word_whole->GetValue())
-		flags |= wxSTC_FIND_WHOLEWORD;
-	if (cb_search_regex->GetValue())
-		flags |= wxSTC_FIND_REGEXP;
-
-	return flags;
-}
-
-/* FindReplacePanel::getReplaceText
- * Returns the current 'Replace' text
- *******************************************************************/
-string FindReplacePanel::getReplaceText()
-{
-	string replace = text_replace->GetValue();
-
-	if (cb_allow_escape->GetValue())
-	{
-		replace.Replace("\\n", "\n");
-		replace.Replace("\\r", "\r");
-		replace.Replace("\\t", "\t");
-	}
-
-	return replace;
-}
-
-
-/*******************************************************************
- * FINDREPLACEPANEL CLASS EVENTS
- *******************************************************************/
-
-/* FindReplacePanel::onBtnFindNext
- * Called when the 'Find Next' button is clicked
- *******************************************************************/
-void FindReplacePanel::onBtnFindNext(wxCommandEvent& e)
-{
-	text_editor->findNext(getFindText(), getFindFlags());
-}
-
-/* FindReplacePanel::onBtnFindPrev
- * Called when the 'Find Previous' button is clicked
- *******************************************************************/
-void FindReplacePanel::onBtnFindPrev(wxCommandEvent& e)
-{
-	text_editor->findPrev(getFindText(), getFindFlags());
-}
-
-/* FindReplacePanel::onBtnReplace
- * Called when the 'Replace' button is clicked
- *******************************************************************/
-void FindReplacePanel::onBtnReplace(wxCommandEvent& e)
-{
-	text_editor->replaceCurrent(getFindText(), getReplaceText(), getFindFlags());
-}
-
-/* FindReplacePanel::onBtnReplaceAll
- * Called when the 'Replace All' button is clicked
- *******************************************************************/
-void FindReplacePanel::onBtnReplaceAll(wxCommandEvent& e)
-{
-	text_editor->replaceAll(getFindText(), getReplaceText(), getFindFlags());
-}
-
-/* FindReplacePanel::onKeyDown
- * Called when a key is pressed while the panel has focus
- *******************************************************************/
-void FindReplacePanel::onKeyDown(wxKeyEvent& e)
-{
-	// Check if keypress matches any keybinds
-	wxArrayString binds = KeyBind::getBinds(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
-
-	// Go through matching binds
-	bool handled = false;
-	for (unsigned a = 0; a < binds.size(); a++)
-	{
-		string name = binds[a];
-
-		// Find next
-		if (name == "ted_findnext")
-		{
-			text_editor->findNext(getFindText(), getFindFlags());
-			handled = true;
-		}
-
-		// Find previous
-		else if (name == "ted_findprev")
-		{
-			text_editor->findPrev(getFindText(), getFindFlags());
-			handled = true;
-		}
-
-		// Replace next
-		else if (name == "ted_replacenext")
-		{
-			text_editor->replaceCurrent(getFindText(), getReplaceText(), getFindFlags());
-			handled = true;
-		}
-
-		// Replace all
-		else if (name == "ted_replaceall")
-		{
-			text_editor->replaceAll(getFindText(), getReplaceText(), getFindFlags());
-			handled = true;
-		}
-	}
-
-	if (!handled)
-	{
-		// Esc = close panel
-		if (e.GetKeyCode() == WXK_ESCAPE)
-			text_editor->showFindReplacePanel(false);
-		else
-			e.Skip();
-	}
-}
-
-/* FindReplacePanel::onTextFindEnter
- * Called when the enter key is pressed within the 'Find' text box
- *******************************************************************/
-void FindReplacePanel::onTextFindEnter(wxCommandEvent& e)
-{
-	if (wxGetKeyState(WXK_SHIFT))
-		text_editor->findPrev(getFindText(), getFindFlags());
-	else
-		text_editor->findNext(getFindText(), getFindFlags());
-}
-
-/* FindReplacePanel::onTextReplaceEnter
- * Called when the enter key is pressed within the 'Find' text box
- *******************************************************************/
-void FindReplacePanel::onTextReplaceEnter(wxCommandEvent& e)
-{
-	text_editor->replaceCurrent(getFindText(), getReplaceText(), getFindFlags());
-}
-
-
-/*******************************************************************
  * JUMPTOCALCULATOR CLASS FUNCTIONS
  *******************************************************************/
 
@@ -319,7 +77,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 
 	Tokenizer tz;
 	tz.setSpecialCharacters(";,:|={}/()");
-	tz.openString(text);
+	tz.openString(text_);
 
 	string token = tz.getToken();
 	while (!tz.atEnd())
@@ -331,10 +89,10 @@ wxThread::ExitCode JumpToCalculator::Entry()
 				token = tz.getToken();
 		}
 
-		for (unsigned a = 0; a < block_names.size(); a++)
+		for (unsigned a = 0; a < block_names_.size(); a++)
 		{
 			// Get jump block keyword
-			string block = block_names[a];
+			string block = block_names_[a];
 			long skip = 0;
 			if (block.Contains(":"))
 			{
@@ -349,8 +107,8 @@ wxThread::ExitCode JumpToCalculator::Entry()
 				for (int s = 0; s < skip; s++)
 					name = tz.getToken();
 
-				for (unsigned i = 0; i < ignore.size(); ++i)
-					if (S_CMPNOCASE(name, ignore[i]))
+				for (unsigned i = 0; i < ignore_.size(); ++i)
+					if (S_CMPNOCASE(name, ignore_[i]))
 						name = tz.getToken();
 
 				// Numbered block, add block name
@@ -375,7 +133,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 	// Send event
 	wxThreadEvent* event = new wxThreadEvent(wxEVT_COMMAND_JTCALCULATOR_COMPLETED);
 	event->SetString(jump_points);
-	wxQueueEvent(handler, event);
+	wxQueueEvent(handler_, event);
 
 	return nullptr;
 }
@@ -385,22 +143,25 @@ wxThread::ExitCode JumpToCalculator::Entry()
  * TEXTEDITOR CLASS FUNCTIONS
  *******************************************************************/
 
-/* TextEditor::TextEditor
- * TextEditor class constructor
+/* TextEditorCtrl::TextEditorCtrl
+ * TextEditorCtrl class constructor
  *******************************************************************/
-TextEditor::TextEditor(wxWindow* parent, int id)
-	: wxStyledTextCtrl(parent, id), timer_update(this)
+TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id)
+	: wxStyledTextCtrl(parent, id), timer_update_(this)
 {
 	// Init variables
-	language = nullptr;
-	ct_argset = 0;
-	ct_function = nullptr;
-	ct_start = 0;
-	bm_cursor_last_pos = -1;
-	panel_fr = nullptr;
-	call_tip = new SCallTip(this);
-	choice_jump_to = nullptr;
-	jump_to_calculator = nullptr;
+	language_ = nullptr;
+	ct_argset_ = 0;
+	ct_function_ = nullptr;
+	ct_start_ = 0;
+	prev_cursor_pos_ = -1;
+	prev_text_length_ = -1;
+	panel_fr_ = nullptr;
+	call_tip_ = new SCallTip(this);
+	choice_jump_to_ = nullptr;
+	jump_to_calculator_ = nullptr;
+	update_jump_to_ = false;
+	update_word_match_ = false;
 
 	// Set tab width
 	SetTabWidth(txed_tab_width);
@@ -430,36 +191,36 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	StyleSet::addEditor(this);
 
 	// Bind events
-	Bind(wxEVT_KEY_DOWN, &TextEditor::onKeyDown, this);
-	Bind(wxEVT_KEY_UP, &TextEditor::onKeyUp, this);
-	Bind(wxEVT_STC_CHARADDED, &TextEditor::onCharAdded, this);
-	Bind(wxEVT_STC_UPDATEUI, &TextEditor::onUpdateUI, this);
-	Bind(wxEVT_STC_CALLTIP_CLICK, &TextEditor::onCalltipClicked, this);
-	Bind(wxEVT_STC_DWELLSTART, &TextEditor::onMouseDwellStart, this);
-	Bind(wxEVT_STC_DWELLEND, &TextEditor::onMouseDwellEnd, this);
-	Bind(wxEVT_LEFT_DOWN, &TextEditor::onMouseDown, this);
-	Bind(wxEVT_KILL_FOCUS, &TextEditor::onFocusLoss, this);
-	Bind(wxEVT_ACTIVATE, &TextEditor::onActivate, this);
-	Bind(wxEVT_STC_MARGINCLICK, &TextEditor::onMarginClick, this);
-	Bind(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, &TextEditor::onJumpToCalculateComplete, this);
-	Bind(wxEVT_STC_MODIFIED, &TextEditor::onModified, this);
-	Bind(wxEVT_TIMER, &TextEditor::onUpdateTimer, this);
-	Bind(wxEVT_STC_STYLENEEDED, &TextEditor::onStyleNeeded, this);
+	Bind(wxEVT_KEY_DOWN, &TextEditorCtrl::onKeyDown, this);
+	Bind(wxEVT_KEY_UP, &TextEditorCtrl::onKeyUp, this);
+	Bind(wxEVT_STC_CHARADDED, &TextEditorCtrl::onCharAdded, this);
+	Bind(wxEVT_STC_UPDATEUI, &TextEditorCtrl::onUpdateUI, this);
+	Bind(wxEVT_STC_CALLTIP_CLICK, &TextEditorCtrl::onCalltipClicked, this);
+	Bind(wxEVT_STC_DWELLSTART, &TextEditorCtrl::onMouseDwellStart, this);
+	Bind(wxEVT_STC_DWELLEND, &TextEditorCtrl::onMouseDwellEnd, this);
+	Bind(wxEVT_LEFT_DOWN, &TextEditorCtrl::onMouseDown, this);
+	Bind(wxEVT_KILL_FOCUS, &TextEditorCtrl::onFocusLoss, this);
+	Bind(wxEVT_ACTIVATE, &TextEditorCtrl::onActivate, this);
+	Bind(wxEVT_STC_MARGINCLICK, &TextEditorCtrl::onMarginClick, this);
+	Bind(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, &TextEditorCtrl::onJumpToCalculateComplete, this);
+	Bind(wxEVT_STC_CHANGE, &TextEditorCtrl::onModified, this);
+	Bind(wxEVT_TIMER, &TextEditorCtrl::onUpdateTimer, this);
+	Bind(wxEVT_STC_STYLENEEDED, &TextEditorCtrl::onStyleNeeded, this);
 }
 
-/* TextEditor::~TextEditor
- * TextEditor class destructor
+/* TextEditorCtrl::~TextEditorCtrl
+ * TextEditorCtrl class destructor
  *******************************************************************/
-TextEditor::~TextEditor()
+TextEditorCtrl::~TextEditorCtrl()
 {
 	StyleSet::removeEditor(this);
 }
 
-/* TextEditor::setup
+/* TextEditorCtrl::setup
  * Sets up text editor properties depending on cvars and the current
  * text styleset/style
  *******************************************************************/
-void TextEditor::setup()
+void TextEditorCtrl::setup()
 {
 	// General settings
 	SetBufferedDraw(true);
@@ -503,10 +264,10 @@ void TextEditor::setup()
 	IndicatorSetAlpha(8, 40);
 }
 
-/* TextEditor::setupFoldMargin
+/* TextEditorCtrl::setupFoldMargin
  * Sets up the code folding margin
  *******************************************************************/
-void TextEditor::setupFoldMargin(TextStyle* margin_style)
+void TextEditorCtrl::setupFoldMargin(TextStyle* margin_style)
 {
 	if (!txed_fold_enable)
 	{
@@ -541,10 +302,10 @@ void TextEditor::setupFoldMargin(TextStyle* margin_style)
 	MarkerDefine(wxSTC_MARKNUM_FOLDERMIDTAIL, wxSTC_MARK_TCORNER, col_bg, col_fg);
 }
 
-/* TextEditor::setLanguage
+/* TextEditorCtrl::setLanguage
  * Sets the text editor language
  *******************************************************************/
-bool TextEditor::setLanguage(TextLanguage* lang)
+bool TextEditorCtrl::setLanguage(TextLanguage* lang)
 {
 	// Check language was given
 	if (!lang)
@@ -556,28 +317,28 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 		SetKeyWords(3, "");
 
 		// Clear autocompletion list
-		autocomp_list.Clear();
+		autocomp_list_.Clear();
 
 		// Set lexer to basic mode
-		lexer.loadLanguage(nullptr);
+		lexer_.loadLanguage(nullptr);
 	}
 
 	// Setup syntax hilighting if needed
 	else
 	{
 		// Load to lexer
-		lexer.loadLanguage(lang);
+		lexer_.loadLanguage(lang);
 
 		// Load autocompletion list
-		autocomp_list = lang->getAutocompletionList();
+		autocomp_list_ = lang->autocompletionList();
 	}
 
 	// Set folding options
 	setupFolding();
 
 	// Update variables
-	SetWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.$");
-	this->language = lang;
+	SetWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-$");
+	this->language_ = lang;
 
 	// Re-colour text
 	Colourise(0, GetTextLength());
@@ -588,10 +349,10 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 	return true;
 }
 
-/* TextEditor::applyStyleSet
+/* TextEditorCtrl::applyStyleSet
  * Applies the styleset [style] to the text editor
  *******************************************************************/
-bool TextEditor::applyStyleSet(StyleSet* style)
+bool TextEditorCtrl::applyStyleSet(StyleSet* style)
 {
 	// Check if one was given
 	if (!style)
@@ -603,11 +364,11 @@ bool TextEditor::applyStyleSet(StyleSet* style)
 	return true;
 }
 
-/* TextEditor::loadEntry
+/* TextEditorCtrl::loadEntry
  * Reads the contents of [entry] into the text area, returns false
  * if the given entry is invalid
  *******************************************************************/
-bool TextEditor::loadEntry(ArchiveEntry* entry)
+bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 {
 	// Clear current text
 	ClearAll();
@@ -640,20 +401,20 @@ bool TextEditor::loadEntry(ArchiveEntry* entry)
 	return true;
 }
 
-/* TextEditor::getRawText
+/* TextEditorCtrl::getRawText
  * Writes the raw ASCII text to [mc]
  *******************************************************************/
-void TextEditor::getRawText(MemChunk& mc)
+void TextEditorCtrl::getRawText(MemChunk& mc)
 {
 	mc.clear();
 	string text = GetText();
 	bool result = mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
 }
 
-/* TextEditor::trimWhitespace
+/* TextEditorCtrl::trimWhitespace
  * Removes any unneeded whitespace from the ends of lines
  *******************************************************************/
-void TextEditor::trimWhitespace()
+void TextEditorCtrl::trimWhitespace()
 {
 	// Go through lines
 	for (int a = 0; a < GetLineCount(); a++)
@@ -679,22 +440,22 @@ void TextEditor::trimWhitespace()
 	}
 }
 
-/* TextEditor::showFindReplacePanel
+/* TextEditorCtrl::showFindReplacePanel
  * Shows or hides the Find+Replace panel, depending on [show]. If
  * shown, fills the find text box with the current selection or the
  * current word at the caret
  *******************************************************************/
-void TextEditor::showFindReplacePanel(bool show)
+void TextEditorCtrl::showFindReplacePanel(bool show)
 {
 	// Do nothing if no F+R panel has been set
-	if (!panel_fr)
+	if (!panel_fr_)
 		return;
 
 	// Hide if needed
 	if (!show)
 	{
-		panel_fr->Hide();
-		panel_fr->GetParent()->Layout();
+		panel_fr_->Hide();
+		panel_fr_->GetParent()->Layout();
 		SetFocus();
 		return;
 	}
@@ -711,17 +472,17 @@ void TextEditor::showFindReplacePanel(bool show)
 	}
 
 	// Show the F+R panel
-	panel_fr->Show();
-	panel_fr->GetParent()->Layout();
-	panel_fr->setFindText(find);
+	panel_fr_->Show();
+	panel_fr_->GetParent()->Layout();
+	panel_fr_->setFindText(find);
 }
 
-/* TextEditor::findNext
+/* TextEditorCtrl::findNext
  * Finds the next occurrence of the [find] after the caret position,
  * selects it and scrolls to it if needed. Returns false if the
  * [find] was invalid or no match was found, true otherwise
  *******************************************************************/
-bool TextEditor::findNext(string find, int flags)
+bool TextEditorCtrl::findNext(string find, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -758,12 +519,12 @@ bool TextEditor::findNext(string find, int flags)
 	return true;
 }
 
-/* TextEditor::findPrev
+/* TextEditorCtrl::findPrev
  * Finds the previous occurrence of the [find] after the caret
  * position, selects it and scrolls to it if needed. Returns false
  * if the [find] was invalid or no match was found, true otherwise
  *******************************************************************/
-bool TextEditor::findPrev(string find, int flags)
+bool TextEditorCtrl::findPrev(string find, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -800,13 +561,13 @@ bool TextEditor::findPrev(string find, int flags)
 	return true;
 }
 
-/* TextEditor::replaceCurrent
+/* TextEditorCtrl::replaceCurrent
  * Replaces the currently selected occurrence of [find] with
  * [replace], then selects and scrolls to the next occurrence of
  * [find] in the text. Returns false if [find] is invalid or the
  * current selection does not match it, true otherwise
  *******************************************************************/
-bool TextEditor::replaceCurrent(string find, string replace, int flags)
+bool TextEditorCtrl::replaceCurrent(string find, string replace, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -833,11 +594,11 @@ bool TextEditor::replaceCurrent(string find, string replace, int flags)
 	return true;
 }
 
-/* TextEditor::replaceAll
+/* TextEditorCtrl::replaceAll
  * Replaces all occurrences of [find] in the text with [replace].
  * Returns the number of occurrences replaced
  *******************************************************************/
-int TextEditor::replaceAll(string find, string replace, int flags)
+int TextEditorCtrl::replaceAll(string find, string replace, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -869,10 +630,10 @@ int TextEditor::replaceAll(string find, string replace, int flags)
 	return replaced;
 }
 
-/* TextEditor::checkBraceMatch
+/* TextEditorCtrl::checkBraceMatch
  * Checks for a brace match at the current cursor position
  *******************************************************************/
-void TextEditor::checkBraceMatch()
+void TextEditorCtrl::checkBraceMatch()
 {
 #ifdef __WXMAC__
 	bool refresh = false;
@@ -881,10 +642,8 @@ void TextEditor::checkBraceMatch()
 #endif
 
 	// Ignore if cursor position hasn't changed since the last check
-	if (GetCurrentPos() == bm_cursor_last_pos)
+	if (GetCurrentPos() == prev_cursor_pos_)
 		return;
-
-	bm_cursor_last_pos = GetCurrentPos();
 
 	// Check for brace match at current position
 	int bracematch = BraceMatch(GetCurrentPos());
@@ -921,51 +680,114 @@ void TextEditor::checkBraceMatch()
 	}
 }
 
-/* TextEditor::showCalltip
+/* TextEditorCtrl::matchWord
+ * Highlights all words in the text matching the word at the current
+ * cursor position
+ *******************************************************************/
+void TextEditorCtrl::matchWord()
+{
+	if (!txed_match_cursor_word || !language_)
+		return;
+
+	// Get word/text to match
+	string current_word;
+	int word_start, word_end;
+	if (!HasSelection())
+	{
+		// No selection, get word at cursor
+		word_start = WordStartPosition(GetCurrentPos(), true);
+		word_end = WordEndPosition(GetCurrentPos(), true);
+		current_word = GetTextRange(word_start, word_end);
+	}
+	else
+	{
+		// Get selection
+		current_word = GetSelectedText();
+		GetSelection(&word_start, &word_end);
+	}
+
+	if (!current_word.IsEmpty() && HasFocus())
+	{
+		if (current_word != prev_word_match_)
+		{
+			prev_word_match_ = current_word;
+
+			// Apply word match indicator to matching text
+			SetIndicatorCurrent(8);
+			IndicatorClearRange(0, GetTextLength());
+			SetTargetStart(0);
+			SetTargetEnd(GetTextLength());
+			SetSearchFlags(0);
+			while (SearchInTarget(current_word) != -1)
+			{
+				// Don't apply to current selection
+				if (GetTargetStart() != word_start || !HasSelection())
+					IndicatorFillRange(GetTargetStart(), GetTargetEnd() - GetTargetStart());
+
+				SetTargetStart(GetTargetEnd());
+				SetTargetEnd(GetTextLength());
+			}
+		}
+	}
+	else
+		clearWordMatch();
+}
+
+/* TextEditorCtrl::clearWordMatch
+ * Clears all word match highlights
+ *******************************************************************/
+void TextEditorCtrl::clearWordMatch()
+{
+	SetIndicatorCurrent(8);
+	IndicatorClearRange(0, GetTextLength());
+	prev_word_match_ = "";
+}
+
+/* TextEditorCtrl::showCalltip
  * Shows the calltip window underneath [position] in the text
  *******************************************************************/
-void TextEditor::showCalltip(int position)
+void TextEditorCtrl::showCalltip(int position)
 {
 	// Setup calltip colours
 	StyleSet* ss_current = StyleSet::currentSet();
-	call_tip->setBackgroundColour(ss_current->getStyle("calltip")->getBackground());
-	call_tip->setTextColour(ss_current->getStyle("calltip")->getForeground());
-	call_tip->setTextHighlightColour(ss_current->getStyle("calltip_hl")->getForeground());
+	call_tip_->setBackgroundColour(ss_current->getStyle("calltip")->getBackground());
+	call_tip_->setTextColour(ss_current->getStyle("calltip")->getForeground());
+	call_tip_->setTextHighlightColour(ss_current->getStyle("calltip_hl")->getForeground());
 	if (txed_calltips_colourise)
 	{
-		call_tip->setFunctionColour(ss_current->getStyle("function")->getForeground());
-		call_tip->setTypeColour(ss_current->getStyle("keyword")->getForeground());
+		call_tip_->setFunctionColour(ss_current->getStyle("function")->getForeground());
+		call_tip_->setTypeColour(ss_current->getStyle("type")->getForeground());
 	}
 	if (txed_calltips_use_font)
-		call_tip->setFont(ss_current->getDefaultFontFace(), ss_current->getDefaultFontSize());
+		call_tip_->setFont(ss_current->getDefaultFontFace(), ss_current->getDefaultFontSize());
 	else
-		call_tip->setFont("", 0);
+		call_tip_->setFont("", 0);
 
 	// Determine position
 	wxPoint pos = GetScreenPosition() + PointFromPosition(position);
 	pos.y += TextHeight(GetCurrentLine()) + 2;
-	call_tip->SetPosition(wxPoint(pos.x, pos.y));
+	call_tip_->SetPosition(wxPoint(pos.x, pos.y));
 
-	call_tip->Show();
+	call_tip_->Show();
 }
 
-/* TextEditor::hideCalltip
+/* TextEditorCtrl::hideCalltip
  * Hides the calltip window
  *******************************************************************/
-void TextEditor::hideCalltip()
+void TextEditorCtrl::hideCalltip()
 {
-	call_tip->Hide();
+	call_tip_->Hide();
 	CallTipCancel();
 }
 
-/* TextEditor::openCalltip
+/* TextEditorCtrl::openCalltip
  * Opens a calltip for the function name before [pos]. Returns false
  * if the word before [pos] was not a function name, true otherwise
  *******************************************************************/
-bool TextEditor::openCalltip(int pos, int arg, bool dwell)
+bool TextEditorCtrl::openCalltip(int pos, int arg, bool dwell)
 {
 	// Don't bother if no language
-	if (!language)
+	if (!language_)
 		return false;
 
 	// Get start of word before bracket
@@ -976,42 +798,42 @@ bool TextEditor::openCalltip(int pos, int arg, bool dwell)
 	string word = GetTextRange(WordStartPosition(start, true), WordEndPosition(start, true));
 
 	// Get matching language function (if any)
-	TLFunction* func = language->getFunction(word);
+	TLFunction* func = language_->function(word);
 
 	// Show calltip if it's a function
 	if (func && func->nArgSets() > 0)
 	{
-		call_tip->enableArgSwitch(!dwell && func->nArgSets() > 1);
-		call_tip->openFunction(func, arg);
+		call_tip_->enableArgSwitch(!dwell && func->nArgSets() > 1);
+		call_tip_->openFunction(func, arg);
 		showCalltip(dwell ? pos : end + 1);
 
-		ct_function = func;
-		ct_start = pos;
-		ct_dwell = dwell;
+		ct_function_ = func;
+		ct_start_ = pos;
+		ct_dwell_ = dwell;
 
 		// Highlight arg
-		call_tip->setCurrentArg(arg);
+		call_tip_->setCurrentArg(arg);
 
 		return true;
 	}
 	else
 	{
-		ct_function = nullptr;
+		ct_function_ = nullptr;
 		return false;
 	}
 }
 
-/* TextEditor::updateCalltip
+/* TextEditorCtrl::updateCalltip
  * Updates the current calltip, or attempts to open one if none is
  * currently showing
  *******************************************************************/
-void TextEditor::updateCalltip()
+void TextEditorCtrl::updateCalltip()
 {
 	// Don't bother if no language
-	if (!language)
+	if (!language_)
 		return;
 
-	if (!call_tip->IsShown())
+	if (!call_tip_->IsShown())
 	{
 		// No calltip currently showing, check if we're in a function
 		int pos = GetCurrentPos() - 1;
@@ -1046,18 +868,18 @@ void TextEditor::updateCalltip()
 		}
 	}
 
-	if (ct_function)
+	if (ct_function_)
 	{
 		// Hide calltip if we've gone before the start of the function
-		if (GetCurrentPos() < ct_start)
+		if (GetCurrentPos() < ct_start_)
 		{
 			hideCalltip();
-			ct_function = nullptr;
+			ct_function_ = nullptr;
 			return;
 		}
 
 		// Calltip currently showing, determine what arg we're at
-		int pos = ct_start+1;
+		int pos = ct_start_+1;
 		int arg = 0;
 		while (pos < GetCurrentPos() && pos < GetTextLength())
 		{
@@ -1090,7 +912,7 @@ void TextEditor::updateCalltip()
 			if (chr == ')')
 			{
 				hideCalltip();
-				ct_function = nullptr;
+				ct_function_ = nullptr;
 				return;
 			}
 
@@ -1099,52 +921,44 @@ void TextEditor::updateCalltip()
 		}
 
 		// Update calltip string with the selected arg set and the current arg highlighted
-		call_tip->setCurrentArg(arg);
+		call_tip_->setCurrentArg(arg);
 	}
 }
 
-/* TextEditor::setJumpToControl
+/* TextEditorCtrl::setJumpToControl
  * Sets the wxChoice control to use for the 'Jump To' feature
  *******************************************************************/
-void TextEditor::setJumpToControl(wxChoice* jump_to)
+void TextEditorCtrl::setJumpToControl(wxChoice* jump_to)
 {
-	choice_jump_to = jump_to;
-	choice_jump_to->Bind(wxEVT_CHOICE, &TextEditor::onJumpToChoiceSelected, this);
+	choice_jump_to_ = jump_to;
+	choice_jump_to_->Bind(wxEVT_CHOICE, &TextEditorCtrl::onJumpToChoiceSelected, this);
 }
 
-/* TextEditor::updateJumpToList
+/* TextEditorCtrl::updateJumpToList
  * Begin updating the 'Jump To' list
  *******************************************************************/
-void TextEditor::updateJumpToList()
+void TextEditorCtrl::updateJumpToList()
 {
-	if (!choice_jump_to)
+	if (!choice_jump_to_)
 		return;
 
-	if (!language || jump_to_calculator || GetText().length() == 0)
+	if (!language_ || jump_to_calculator_ || GetText().length() == 0)
 	{
-		choice_jump_to->Clear();
+		choice_jump_to_->Clear();
 		return;
 	}
 
-	// Get jump blocks and ignored blocks from the current language
-	vector<string> jump_blocks;
-	for (unsigned a = 0; a < language->nJumpBlocks(); a++)
-		jump_blocks.push_back(language->jumpBlock(a));
-	vector<string> ignore;
-	for (unsigned a = 0; a < language->nJBIgnore(); a++)
-		ignore.push_back(language->jBIgnore(a));
-
 	// Begin jump to calculation thread
-	choice_jump_to->Enable(false);
-	jump_to_calculator = new JumpToCalculator(this, GetText(), jump_blocks, ignore);
-	jump_to_calculator->Run();
+	choice_jump_to_->Enable(false);
+	jump_to_calculator_ = new JumpToCalculator(this, GetText(), language_->jumpBlocks(), language_->jumpBlocksIgnored());
+	jump_to_calculator_->Run();
 }
 
-/* TextEditor::jumpToLine
+/* TextEditorCtrl::jumpToLine
  * Prompts the user for a line number and moves the cursor to the end
  * of the entered line
  *******************************************************************/
-void TextEditor::jumpToLine()
+void TextEditorCtrl::jumpToLine()
 {
 	int numlines = GetNumberOfLines();
 
@@ -1169,10 +983,10 @@ void TextEditor::jumpToLine()
 	}
 }
 
-/* TextEditor::foldAll
+/* TextEditorCtrl::foldAll
  * Folds or unfolds all code folding levels, depending on [fold]
  *******************************************************************/
-void TextEditor::foldAll(bool fold)
+void TextEditorCtrl::foldAll(bool fold)
 {
 #if (wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1)
 	// FoldAll is only available in wxWidgets 3.1+
@@ -1190,16 +1004,16 @@ void TextEditor::foldAll(bool fold)
 	updateFolding();
 }
 
-/* TextEditor::setupFolding
+/* TextEditorCtrl::setupFolding
  * Sets up code folding options
  *******************************************************************/
-void TextEditor::setupFolding()
+void TextEditorCtrl::setupFolding()
 {
 	if (txed_fold_enable)
 	{
 		// Set folding options
-		lexer.foldComments(txed_fold_comments);
-		lexer.foldPreprocessor(txed_fold_preprocessor);
+		lexer_.foldComments(txed_fold_comments);
+		lexer_.foldPreprocessor(txed_fold_preprocessor);
 
 		int flags = 0;
 		if (txed_fold_debug)
@@ -1210,10 +1024,10 @@ void TextEditor::setupFolding()
 	}
 }
 
-/* TextEditor::updateFolding
+/* TextEditorCtrl::updateFolding
  * Updates code folding markers
  *******************************************************************/
-void TextEditor::updateFolding()
+void TextEditorCtrl::updateFolding()
 {
 	/*MarkerDeleteAll(3);
 	MarkerDeleteAll(4);
@@ -1229,17 +1043,17 @@ void TextEditor::updateFolding()
 	}*/
 }
 
-/* TextEditor::lineComment
+/* TextEditorCtrl::lineComment
  * Comment selected/current lines using line comments
  *******************************************************************/
 
-void TextEditor::lineComment()
+void TextEditorCtrl::lineComment()
 {
 	string space, empty, comment, commentSpace;
 	space = wxString::FromUTF8(" ");
 	empty = wxString::FromUTF8("");
-	if(language)
-		comment = language->getLineComment();
+	if(language_)
+		comment = language_->lineComment();
 	else
 		comment = wxString::FromUTF8("//");
 	commentSpace = comment + space;
@@ -1310,18 +1124,18 @@ void TextEditor::lineComment()
 }
 
 
-/* TextEditor::blockComment
+/* TextEditorCtrl::blockComment
  * Comment selected text using block comments
  *******************************************************************/
 
-void TextEditor::blockComment()
+void TextEditorCtrl::blockComment()
 {
 	string space, commentBegin, commentEnd;
 	space = wxString::FromUTF8(" ");
-	if(language)
+	if(language_)
 	{
-		commentBegin = language->getCommentBegin();
-		commentEnd = language->getCommentEnd();
+		commentBegin = language_->commentBegin();
+		commentEnd = language_->commentEnd();
 	}
 	else
 	{
@@ -1369,10 +1183,10 @@ void TextEditor::blockComment()
  * TEXTEDITOR CLASS EVENTS
  *******************************************************************/
 
-/* TextEditor::onKeyDown
+/* TextEditorCtrl::onKeyDown
  * Called when a key is pressed
  *******************************************************************/
-void TextEditor::onKeyDown(wxKeyEvent& e)
+void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 {
 	// Check if keypress matches any keybinds
 	wxArrayString binds = KeyBind::getBinds(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
@@ -1397,10 +1211,10 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 			string word = GetTextRange(WordStartPosition(GetCurrentPos(), true), GetCurrentPos());
 
 			// If a language is loaded, bring up autocompletion list
-			if (language)
+			if (language_)
 			{
-				autocomp_list = language->getAutocompletionList(word);
-				AutoCompShow(word.size(), autocomp_list);
+				autocomp_list_ = language_->autocompletionList(word);
+				AutoCompShow(word.size(), autocomp_list_);
 			}
 
 			handled = true;
@@ -1416,8 +1230,8 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 		// Find next
 		else if (name == "ted_findnext")
 		{
-			if (panel_fr && panel_fr->IsShown())
-				findNext(panel_fr->getFindText(), panel_fr->getFindFlags());
+			if (panel_fr_ && panel_fr_->IsShown())
+				findNext(panel_fr_->findText(), panel_fr_->findFlags());
 
 			handled = true;
 		}
@@ -1425,8 +1239,8 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 		// Find previous
 		else if (name == "ted_findprev")
 		{
-			if (panel_fr && panel_fr->IsShown())
-				findPrev(panel_fr->getFindText(), panel_fr->getFindFlags());
+			if (panel_fr_ && panel_fr_->IsShown())
+				findPrev(panel_fr_->findText(), panel_fr_->findFlags());
 
 			handled = true;
 		}
@@ -1434,8 +1248,8 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 		// Replace next
 		else if (name == "ted_replacenext")
 		{
-			if (panel_fr && panel_fr->IsShown())
-				replaceCurrent(panel_fr->getFindText(), panel_fr->getReplaceText(), panel_fr->getFindFlags());
+			if (panel_fr_ && panel_fr_->IsShown())
+				replaceCurrent(panel_fr_->findText(), panel_fr_->replaceText(), panel_fr_->findFlags());
 
 			handled = true;
 		}
@@ -1443,8 +1257,8 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 		// Replace all
 		else if (name == "ted_replaceall")
 		{
-			if (panel_fr && panel_fr->IsShown())
-				replaceAll(panel_fr->getFindText(), panel_fr->getReplaceText(), panel_fr->getFindFlags());
+			if (panel_fr_ && panel_fr_->IsShown())
+				replaceAll(panel_fr_->findText(), panel_fr_->replaceText(), panel_fr_->findFlags());
 
 			handled = true;
 		}
@@ -1488,25 +1302,25 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 	if (!handled && e.GetKeyCode() == WXK_ESCAPE)
 	{
 		// Hide call tip if showing
-		if (call_tip->IsShown())
-			call_tip->Show(false);
+		if (call_tip_->IsShown())
+			call_tip_->Show(false);
 
 		// Hide F+R panel if showing
-		else if (panel_fr && panel_fr->IsShown())
+		else if (panel_fr_ && panel_fr_->IsShown())
 			showFindReplacePanel(false);
 	}
 
 	// Check for up/down keys while calltip with multiple arg sets is open
-	if (call_tip->IsShown() && ct_function && ct_function->nArgSets() > 1 && !ct_dwell)
+	if (call_tip_->IsShown() && ct_function_ && ct_function_->nArgSets() > 1 && !ct_dwell_)
 	{
 		if (e.GetKeyCode() == WXK_UP)
 		{
-			call_tip->prevArgSet();
+			call_tip_->prevArgSet();
 			handled = true;
 		}
 		else if (e.GetKeyCode() == WXK_DOWN)
 		{
-			call_tip->nextArgSet();
+			call_tip_->nextArgSet();
 			handled = true;
 		}
 	}
@@ -1591,18 +1405,18 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 		e.Skip();
 }
 
-/* TextEditor::onKeyUp
+/* TextEditorCtrl::onKeyUp
  * Called when a key is released
  *******************************************************************/
-void TextEditor::onKeyUp(wxKeyEvent& e)
+void TextEditorCtrl::onKeyUp(wxKeyEvent& e)
 {
 	e.Skip();
 }
 
-/* TextEditor::onCharAdded
+/* TextEditorCtrl::onCharAdded
  * Called when a character is added to the text
  *******************************************************************/
-void TextEditor::onCharAdded(wxStyledTextEvent& e)
+void TextEditorCtrl::onCharAdded(wxStyledTextEvent& e)
 {
 	// Update line numbers margin width
 	string numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
@@ -1635,7 +1449,7 @@ void TextEditor::onCharAdded(wxStyledTextEvent& e)
 	}
 
 	// The following require a language to work
-	if (language)
+	if (language_)
 	{
 		// Call tip
 		if (e.GetKey() == '(' && txed_calltips_parenthesis)
@@ -1654,51 +1468,30 @@ void TextEditor::onCharAdded(wxStyledTextEvent& e)
 	e.Skip();
 }
 
-/* TextEditor::onUpdateUI
+/* TextEditorCtrl::onUpdateUI
  * Called when anything is modified in the text editor (cursor
  * position, styling, text, etc)
  *******************************************************************/
-void TextEditor::onUpdateUI(wxStyledTextEvent& e)
+void TextEditorCtrl::onUpdateUI(wxStyledTextEvent& e)
 {
 	// Check for brace match
 	if (txed_brace_match)
 		checkBraceMatch();
 
 	// If a calltip is open, update it
-	if (call_tip->IsShown())
+	if (call_tip_->IsShown())
 		updateCalltip();
 
 	// Do word matching if appropriate
-	if (txed_match_cursor_word && language)
+	if (txed_match_cursor_word && language_ && prev_cursor_pos_ != GetCurrentPos())
 	{
-		int word_start = WordStartPosition(GetCurrentPos(), true);
-		int word_end = WordEndPosition(GetCurrentPos(), true);
-		string current_word = GetTextRange(word_start, word_end);
-		if (!current_word.IsEmpty() && HasFocus())
-		{
-			if (current_word != prev_word_match)
-			{
-				prev_word_match = current_word;
+		clearWordMatch();
+		update_word_match_ = true;
 
-				SetIndicatorCurrent(8);
-				IndicatorClearRange(0, GetTextLength());
-				SetTargetStart(0);
-				SetTargetEnd(GetTextLength());
-				SetSearchFlags(0);
-				while (SearchInTarget(current_word) != -1)
-				{
-					IndicatorFillRange(GetTargetStart(), GetTargetEnd() - GetTargetStart());
-					SetTargetStart(GetTargetEnd());
-					SetTargetEnd(GetTextLength());
-				}
-			}
-		}
+		if (!HasSelection())
+			timer_update_.Start(500, true);
 		else
-		{
-			SetIndicatorCurrent(8);
-			IndicatorClearRange(0, GetTextLength());
-			prev_word_match = "";
-		}
+			timer_update_.Start(100, true);
 	}
 
 	// Hilight current line
@@ -1712,24 +1505,27 @@ void TextEditor::onUpdateUI(wxStyledTextEvent& e)
 			MarkerAdd(line, 2);
 	}
 
+	prev_cursor_pos_ = GetCurrentPos();
+	prev_text_length_ = GetTextLength();
+
 	e.Skip();
 }
 
-/* TextEditor::onCalltipClicked
+/* TextEditorCtrl::onCalltipClicked
  * Called when the current calltip is clicked on
  *******************************************************************/
-void TextEditor::onCalltipClicked(wxStyledTextEvent& e)
+void TextEditorCtrl::onCalltipClicked(wxStyledTextEvent& e)
 {
 	// Can't do anything without function
-	if (!ct_function)
+	if (!ct_function_)
 		return;
 
 	// Argset up
 	if (e.GetPosition() == 1)
 	{
-		if (ct_argset > 0)
+		if (ct_argset_ > 0)
 		{
-			ct_argset--;
+			ct_argset_--;
 			updateCalltip();
 		}
 	}
@@ -1737,46 +1533,45 @@ void TextEditor::onCalltipClicked(wxStyledTextEvent& e)
 	// Argset down
 	if (e.GetPosition() == 2)
 	{
-		if ((unsigned)ct_argset < ct_function->nArgSets() - 1)
+		if ((unsigned)ct_argset_ < ct_function_->nArgSets() - 1)
 		{
-			ct_argset++;
+			ct_argset_++;
 			updateCalltip();
 		}
 	}
 }
 
-/* TextEditor::onMouseDwellStart
+/* TextEditorCtrl::onMouseDwellStart
  * Called when the mouse pointer has 'dwelt' in one position for a
  * certain amount of time
  *******************************************************************/
-void TextEditor::onMouseDwellStart(wxStyledTextEvent& e)
+void TextEditorCtrl::onMouseDwellStart(wxStyledTextEvent& e)
 {
-	if (wxTheApp->IsActive() && HasFocus() && !call_tip->IsShown() && txed_calltips_mouse && e.GetPosition() >= 0)
+	if (wxTheApp->IsActive() && HasFocus() && !call_tip_->IsShown() && txed_calltips_mouse && e.GetPosition() >= 0)
 	{
 		openCalltip(e.GetPosition(), -1, true);
-		ct_dwell = true;
+		ct_dwell_ = true;
 	}
 }
 
-/* TextEditor::onMouseDwellEnd
+/* TextEditorCtrl::onMouseDwellEnd
  * Called when a mouse 'dwell' is interrupted/ended
  *******************************************************************/
-void TextEditor::onMouseDwellEnd(wxStyledTextEvent& e)
+void TextEditorCtrl::onMouseDwellEnd(wxStyledTextEvent& e)
 {
-	//if (!(ct_function && ct_function->nArgSets() > 1) || !wxTheApp->IsActive() || !HasFocus())
-	if (call_tip->IsShown() && ct_dwell)
+	if (call_tip_->IsShown() && ct_dwell_)
 		hideCalltip();
 }
 
-/* TextEditor::onMouseDown
+/* TextEditorCtrl::onMouseDown
  * Called when a mouse button is clicked
  *******************************************************************/
-void TextEditor::onMouseDown(wxMouseEvent& e)
+void TextEditorCtrl::onMouseDown(wxMouseEvent& e)
 {
 	e.Skip();
 
 	// No language, no checks
-	if (!language)
+	if (!language_)
 		return;
 
 	// Check for ctrl+left (web lookup)
@@ -1811,9 +1606,9 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
 			//}
 
 			// Check for function
-			if (language->isFunction(word))
+			if (language_->isFunction(word))
 			{
-				string url = language->getFunctionLink();
+				string url = language_->functionLink();
 				if (!url.IsEmpty())
 				{
 					url.Replace("%s", word);
@@ -1829,10 +1624,10 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
 		hideCalltip();
 }
 
-/* TextEditor::onFocusLoss
+/* TextEditorCtrl::onFocusLoss
  * Called when the text editor loses focus
  *******************************************************************/
-void TextEditor::onFocusLoss(wxFocusEvent& e)
+void TextEditorCtrl::onFocusLoss(wxFocusEvent& e)
 {
 	// Hide calltip+autocomplete box
 	hideCalltip();
@@ -1845,24 +1640,24 @@ void TextEditor::onFocusLoss(wxFocusEvent& e)
 	// Clear word matches
 	SetIndicatorCurrent(8);
 	IndicatorClearRange(0, GetTextLength());
-	prev_word_match = "";
+	prev_word_match_ = "";
 
 	e.Skip();
 }
 
-/* TextEditor::onActivate
+/* TextEditorCtrl::onActivate
  * Called when the text editor is activated/deactivated
  *******************************************************************/
-void TextEditor::onActivate(wxActivateEvent& e)
+void TextEditorCtrl::onActivate(wxActivateEvent& e)
 {
 	if (!e.GetActive())
 		hideCalltip();
 }
 
-/* TextEditor::onMarginClick
+/* TextEditorCtrl::onMarginClick
  * Called when a margin is clicked
  *******************************************************************/
-void TextEditor::onMarginClick(wxStyledTextEvent& e)
+void TextEditorCtrl::onMarginClick(wxStyledTextEvent& e)
 {
 	if (e.GetMargin() == 1)
 	{
@@ -1874,19 +1669,19 @@ void TextEditor::onMarginClick(wxStyledTextEvent& e)
 	}
 }
 
-/* TextEditor::onJumpToCalculateComplete
+/* TextEditorCtrl::onJumpToCalculateComplete
  * Called when the 'Jump To' calculation thread completes
  *******************************************************************/
-void TextEditor::onJumpToCalculateComplete(wxThreadEvent& e)
+void TextEditorCtrl::onJumpToCalculateComplete(wxThreadEvent& e)
 {
-	if (!choice_jump_to)
+	if (!choice_jump_to_)
 	{
-		jump_to_calculator = nullptr;
+		jump_to_calculator_ = nullptr;
 		return;
 	}
 
-	choice_jump_to->Clear();
-	jump_to_lines.clear();
+	choice_jump_to_->Clear();
+	jump_to_lines_.clear();
 
 	string jump_points = e.GetString();
 	wxArrayString split = wxSplit(jump_points, ',');
@@ -1903,54 +1698,63 @@ void TextEditor::onJumpToCalculateComplete(wxThreadEvent& e)
 		string name = split[a + 1];
 
 		items.push_back(name);
-		jump_to_lines.push_back(line);
+		jump_to_lines_.push_back(line);
 	}
 
-	choice_jump_to->Append(items);
-	choice_jump_to->Enable(true);
+	choice_jump_to_->Append(items);
+	choice_jump_to_->Enable(true);
 
-	jump_to_calculator = nullptr;
+	jump_to_calculator_ = nullptr;
 }
 
-/* TextEditor::onJumpToChoiceSelected
+/* TextEditorCtrl::onJumpToChoiceSelected
  * Called when the 'Jump To' dropdown is changed
  *******************************************************************/
-void TextEditor::onJumpToChoiceSelected(wxCommandEvent& e)
+void TextEditorCtrl::onJumpToChoiceSelected(wxCommandEvent& e)
 {
 	// Move to line
-	int line = jump_to_lines[choice_jump_to->GetSelection()];
+	int line = jump_to_lines_[choice_jump_to_->GetSelection()];
 	int pos = GetLineEndPosition(line);
 	SetCurrentPos(pos);
 	SetSelection(pos, pos);
 	SetFirstVisibleLine(line);
 	SetFocus();
-	choice_jump_to->SetSelection(-1);
+	choice_jump_to_->SetSelection(-1);
 }
 
-/* TextEditor::onModified
+/* TextEditorCtrl::onModified
  * Called when the text is modified
  *******************************************************************/
-void TextEditor::onModified(wxStyledTextEvent& e)
+void TextEditorCtrl::onModified(wxStyledTextEvent& e)
 {
-	// (Re)start update timer
-	timer_update.Start(1000, true);
+	// (Re)start update timer for jump to list if text has changed
+	if (prev_text_length_ != GetTextLength())
+	{
+		update_jump_to_ = true;
+		timer_update_.Start(1000, true);
+	}
 
 	e.Skip();
 }
 
-
-/* TextEditor::onUpdateTimer
+/* TextEditorCtrl::onUpdateTimer
  * Called when the update timer finishes
  *******************************************************************/
-void TextEditor::onUpdateTimer(wxTimerEvent& e)
+void TextEditorCtrl::onUpdateTimer(wxTimerEvent& e)
 {
-	updateJumpToList();
+	if (update_jump_to_)
+		updateJumpToList();
+	if (update_word_match_)
+		matchWord();
+
+	update_jump_to_ = false;
+	update_word_match_ = false;
 }
 
-/* TextEditor::onStyleNeeded
+/* TextEditorCtrl::onStyleNeeded
  * Called when text styling is needed
  *******************************************************************/
-void TextEditor::onStyleNeeded(wxStyledTextEvent& e)
+void TextEditorCtrl::onStyleNeeded(wxStyledTextEvent& e)
 {
 	// Get range of lines to be updated
 	int line_start = LineFromPosition(GetEndStyled());
@@ -1967,10 +1771,10 @@ void TextEditor::onStyleNeeded(wxStyledTextEvent& e)
 		if (start > end)
 			end = start;
 
-		force_next = lexer.doStyling(this, start, end);
+		force_next = lexer_.doStyling(this, start, end);
 		l++;
 	}
 
 	if (txed_fold_enable)
-		lexer.updateFolding(this, line_start);
+		lexer_.updateFolding(this, line_start);
 }

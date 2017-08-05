@@ -33,6 +33,7 @@
 #define SOL_CHECK_ARGUMENTS 1
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
+#include "Dialogs/ExtMessageDialog.h"
 #include "External/sol/sol.hpp"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
@@ -55,6 +56,8 @@ namespace Lua
 {
 	sol::state	lua;
 	wxWindow*	current_window = nullptr;
+	Error		script_error;
+	time_t		script_start_time;
 }
 
 
@@ -108,7 +111,52 @@ namespace Lua
 #include "Export/Game.h"
 #include "Export/General.h"
 #include "Export/MapEditor.h"
+
+// ----------------------------------------------------------------------------
+// Lua::resetError
+//
+// Resets error information
+// ----------------------------------------------------------------------------
+void resetError()
+{
+	script_error.type = "No";
+	script_error.message = "No error(s) occurred";
+	script_error.line_no = 0;
 }
+
+// ----------------------------------------------------------------------------
+// Lua::processError
+//
+// Processes error information from [result]
+// ----------------------------------------------------------------------------
+void processError(sol::protected_function_result& result)
+{
+	// Error Type
+	script_error.type = sol::to_string(result.status());
+	script_error.type = script_error.type.MakeCapitalized();
+
+	// Error Message
+	sol::error error = result;
+	script_error.message = error.what();
+	script_error.message = script_error.message.Right(
+		script_error.message.size() - script_error.message.Find("]:") - 2
+	);
+
+	// Line No.
+	auto split = wxSplit(script_error.message, ':');
+	if (split.size() > 0)
+	{
+		long tmp;
+		if (split[0].ToLong(&tmp))
+			script_error.line_no = tmp;
+	}
+
+	script_error.message = script_error.message.Right(
+		script_error.message.size() - script_error.message.Find(": ") - 2
+	);
+}
+
+} // namespace Lua
 
 // ----------------------------------------------------------------------------
 // Lua::init
@@ -120,12 +168,10 @@ bool Lua::init()
 	lua.open_libraries(sol::lib::base, sol::lib::string);
 
 	// Register namespaces
-	lua.create_named_table("slade");
-	registerSLADENamespace(lua);
+	registerAppNamespace(lua);
 	registerSplashWindowNamespace(lua);
 	registerGameNamespace(lua);
 	registerArchivesNamespace(lua);
-	registerMapEditorNamespace(lua);
 
 	// Register types
 	registerMiscTypes(lua);
@@ -146,23 +192,64 @@ void Lua::close()
 }
 
 // ----------------------------------------------------------------------------
+// Lua::error
+//
+// Returns information about the last script error that occurred
+// ----------------------------------------------------------------------------
+Lua::Error& Lua::error()
+{
+	return script_error;
+}
+
+// ----------------------------------------------------------------------------
+// Lua::showErrorDialog
+//
+// Shows an extended message dialog with details of the last script error that
+// occurred
+// ----------------------------------------------------------------------------
+void Lua::showErrorDialog(wxWindow* parent, const string& title, const string& message)
+{
+	// Get script log messages since the last script was started
+	auto log = Log::since(script_start_time, Log::MessageType::Script);
+	string output;
+	for (auto msg : log)
+		output += msg->formattedMessageLine() + "\n";
+
+	ExtMessageDialog dlg(parent ? parent : current_window, title);
+	dlg.setMessage(message);
+	dlg.setExt(S_FMT(
+		"%s Error\nLine %d: %s\n\nScript Output:\n%s",
+		CHR(Lua::error().type),
+		Lua::error().line_no,
+		CHR(Lua::error().message),
+		CHR(output)
+	));
+	dlg.CenterOnParent();
+	dlg.ShowModal();
+}
+
+// ----------------------------------------------------------------------------
 // Lua::run
 //
 // Runs a lua script [program]
 // ----------------------------------------------------------------------------
 bool Lua::run(string program)
 {
-	auto result = lua.script(CHR(program), sol::simple_on_error);
+	resetError();
+	script_start_time = wxDateTime::Now().GetTicks();
+
+	sol::environment sandbox(lua, sol::create, lua.globals());
+	auto result = lua.script(CHR(program), sandbox, sol::simple_on_error);
+	lua.collect_garbage();
 
 	if (!result.valid())
 	{
-		sol::error error = result;
-		string error_type = sol::to_string(result.status());
-		string error_message = error.what();
+		processError(result);
 		Log::error(S_FMT(
-			"%s Error running Lua script: %s",
-			CHR(error_type.MakeCapitalized()),
-			CHR(error_message)
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
 		));
 		return false;
 	}
@@ -177,17 +264,65 @@ bool Lua::run(string program)
 // ----------------------------------------------------------------------------
 bool Lua::runFile(string filename)
 {
-	auto result = lua.script_file(CHR(filename), sol::simple_on_error);
+	resetError();
+	script_start_time = wxDateTime::Now().GetTicks();
+
+	sol::environment sandbox(lua, sol::create, lua.globals());
+	auto result = lua.script_file(CHR(filename), sandbox, sol::simple_on_error);
+	lua.collect_garbage();
 
 	if (!result.valid())
 	{
-		sol::error error = result;
-		string error_type = sol::to_string(result.status());
-		string error_message = error.what();
+		processError(result);
 		Log::error(S_FMT(
-			"%s Error running Lua script: %s",
-			CHR(error_type.MakeCapitalized()),
-			CHR(error_message)
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
+		));
+		return false;
+	}
+
+	return true;
+}
+
+// ----------------------------------------------------------------------------
+// Lua::runArchiveScript
+//
+// Runs the 'execute(archive)' function in the given [script], passing
+// [archive] as the parameter
+// ----------------------------------------------------------------------------
+bool Lua::runArchiveScript(const string& script, Archive* archive)
+{
+	resetError();
+	script_start_time = wxDateTime::Now().GetTicks();
+
+	// Load script
+	sol::environment sandbox(lua, sol::create, lua.globals());
+	auto load_result = lua.script(CHR(script), sandbox, sol::simple_on_error);
+	if (!load_result.valid())
+	{
+		processError(load_result);
+		Log::error(S_FMT(
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
+		));
+		return false;
+	}
+
+	// Run script execute function
+	sol::protected_function func = sandbox["execute"];
+	auto exec_result = func(archive);
+	if (!exec_result.valid())
+	{
+		processError(exec_result);
+		Log::error(S_FMT(
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
 		));
 		return false;
 	}
@@ -234,12 +369,16 @@ void Lua::setCurrentWindow(wxWindow* window)
 //
 // ----------------------------------------------------------------------------
 
-CONSOLE_COMMAND(lua_exec, 1, true)
+CONSOLE_COMMAND(script, 1, true)
 {
-	Lua::run(args[0]);
+	string script = args[0];
+	for (int a = 1; a < args.size(); a++)
+		script += " " + args[a];
+
+	Lua::run(script);
 }
 
-CONSOLE_COMMAND(lua_execfile, 1, true)
+CONSOLE_COMMAND(script_file, 1, true)
 {
 	if (!wxFile::Exists(args[0]))
 	{
@@ -249,4 +388,10 @@ CONSOLE_COMMAND(lua_execfile, 1, true)
 
 	if (!Lua::runFile(args[0]))
 		LOG_MESSAGE(1, "Error loading lua script file \"%s\"", args[0]);
+}
+
+CONSOLE_COMMAND(lua_mem, 0, false)
+{
+	auto mem = Lua::state().memory_used();
+	Log::console(S_FMT("Lua state using %s memory", CHR(Misc::sizeAsString(mem))));
 }

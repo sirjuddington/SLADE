@@ -62,7 +62,7 @@ MapTextureManager::MapTextureManager(Archive* archive)
 	// Init variables
 	this->archive = archive;
 	editor_images_loaded = false;
-	palette = new Palette8bit();
+	palette = new Palette();
 }
 
 /* MapTextureManager::~MapTextureManager
@@ -88,7 +88,7 @@ void MapTextureManager::init()
  * Returns the current resource palette (depending on open archives
  * and palette toolbar selection)
  *******************************************************************/
-Palette8bit* MapTextureManager::getResourcePalette()
+Palette* MapTextureManager::getResourcePalette()
 {
 	if (theMainWindow->getPaletteChooser()->globalSelected())
 	{
@@ -357,7 +357,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	// We have a valid image either from an entry or a composite texture.
 	if (found)
 	{
-		Palette8bit* pal = this->palette;
+		Palette* pal = this->palette;
 		// Apply translation
 		if (!translation.IsEmpty()) image.applyTranslation(translation, pal, true);
 		// Apply palette override

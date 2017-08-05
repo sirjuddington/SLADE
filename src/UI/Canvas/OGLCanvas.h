@@ -16,7 +16,7 @@ class OGLCanvas : public wxGLCanvas
 #endif
 protected:
 	bool		init_done;
-	Palette8bit	palette;
+	Palette	palette;
 	wxTimer		timer;
 	long		last_time;
 	bool		recreate;
@@ -25,8 +25,8 @@ public:
 	OGLCanvas(wxWindow* parent, int id, bool handle_timer = true, int timer_interval = 100);
 	~OGLCanvas();
 
-	Palette8bit*	getPalette() { return &palette; }
-	void			setPalette(Palette8bit* pal) { palette.copyPalette(pal); }
+	Palette*	getPalette() { return &palette; }
+	void			setPalette(Palette* pal) { palette.copyPalette(pal); }
 	bool			setContext();
 	void			createSFML();
 	void			init();

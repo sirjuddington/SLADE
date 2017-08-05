@@ -225,7 +225,9 @@ z_mapinfo {
 		MenuFontColor_Action, MenuFontColor_Header, MenuFontColor_Highlight, MenuFontColor_Selection, MenuBackButton,
 		PlayerClasses, PauseSign, GibFactor, CursorPic, SwapMenu, TextScreenX, TextScreenY, DefaultEndSequence, MapArrow,
 		NoRandomPlayerclass, StatScreen_EnteringPatch, StatScreen_FinishedPatch, StatScreen_MapNameFont, NightmareFast,
-		DontCrunchCorpses, CheatKey, ForceKillScripts,
+		DontCrunchCorpses, CheatKey, ForceKillScripts, MessageBoxClass, StatusBarClass, DefaultConversationMenuClass,
+		StatScreen_FinishedFont, StatScreen_EnteringFont, Dialogue, StatScreen_Single, StatScreen_Coop, StatScreen_DM,
+		BlurAmount,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
@@ -239,7 +241,7 @@ z_mapinfo {
 		ThingColor_NocountMonster, TwoSidedWallColor, WallColor, XHairColor, YourColor,
 
 		// Thing editor numbers
-		DoomEdNums,
+		DoomEdNums, NoSkillFlags,
 
 		// Spawn numbers (SpawnIDs)
 		SpawnNums,
@@ -356,7 +358,7 @@ z_sbarinfo {
 		Resolution, StatusBar, alpha, aspectratio, drawbar, DrawGem, DrawKeyBar, DrawInventoryBar, DrawImage, DrawMugShot,
 		DrawNumber, DrawSelectedInventory, DrawShader, DrawString, DrawSwitchableImage, Else, GameMode, HasWeaponPiece,
 		IfHealth, InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, PlayerType, UsesAmmo, UsesSecondaryAmmo,
-		WeaponAmmo, mugshot, IfInvulnerable, IfWaterLevel, IfCVarInt
+		WeaponAmmo, mugshot, IfInvulnerable, IfWaterLevel, IfCVarInt, Protrusion
 	}
 
 	constants = {

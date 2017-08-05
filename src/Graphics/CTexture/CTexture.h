@@ -85,7 +85,7 @@ public:
 
 class TextureXList;
 class SImage;
-class Palette8bit;
+class Palette;
 
 #define TEXTYPE_TEXTURE		0
 #define TEXTYPE_SPRITE		1
@@ -180,8 +180,8 @@ public:
 
 	bool	convertExtended();
 	bool	convertRegular();
-	bool	loadPatchImage(unsigned pindex, SImage& image, Archive* parent = NULL, Palette8bit* pal = NULL);
-	bool	toImage(SImage& image, Archive* parent = NULL, Palette8bit* pal = NULL, bool force_rgba = false);
+	bool	loadPatchImage(unsigned pindex, SImage& image, Archive* parent = NULL, Palette* pal = NULL);
+	bool	toImage(SImage& image, Archive* parent = NULL, Palette* pal = NULL, bool force_rgba = false);
 
 	typedef std::unique_ptr<CTexture>	UPtr;
 	typedef std::shared_ptr<CTexture>	SPtr;

@@ -5,7 +5,7 @@
 #include "common.h"
 #include "Utility/Parser.h"
 
-class TextEditor;
+class TextEditorCtrl;
 class TextStyle
 {
 	friend class StyleSet;
@@ -54,7 +54,7 @@ public:
 	rgba_t	getBackground() { return background; }
 
 	bool	parse(ParseTreeNode* node);
-	void	applyTo(TextEditor* stc);
+	void	applyTo(TextEditorCtrl* stc);
 	bool	copyStyle(TextStyle* copy);
 	string	getDefinition(unsigned tabs = 0);
 };
@@ -68,7 +68,7 @@ private:
 
 	vector<TextStyle*>	styles;
 	
-	static vector<TextEditor*>	editors;
+	static vector<TextEditorCtrl*>	editors;
 
 public:
 	StyleSet(string name = "Unnamed Style");
@@ -78,7 +78,7 @@ public:
 	unsigned	nStyles() { return styles.size(); }
 
 	bool		parseSet(ParseTreeNode* root);
-	void		applyTo(TextEditor* stc);
+	void		applyTo(TextEditorCtrl* stc);
 	bool		copySet(StyleSet* copy);
 	TextStyle*	getStyle(string name);
 	TextStyle*	getStyle(unsigned index);
@@ -95,12 +95,12 @@ public:
 	static StyleSet*	currentSet();
 	static bool			loadSet(string name);
 	static bool			loadSet(unsigned index);
-	static void			applyCurrent(TextEditor* stc);
+	static void			applyCurrent(TextEditorCtrl* stc);
 	static string		getName(unsigned index);
 	static unsigned		numSets();
 	static StyleSet*	getSet(unsigned index);
-	static void			addEditor(TextEditor* stc);
-	static void			removeEditor(TextEditor* stc);
+	static void			addEditor(TextEditorCtrl* stc);
+	static void			removeEditor(TextEditorCtrl* stc);
 	static void			applyCurrentToAll();
 
 	static bool			loadResourceStyles();

@@ -5,7 +5,7 @@ class Archive;
 class ArchiveEntry;
 class EntryPanel;
 class MainWindow;
-class Palette8bit;
+class Palette;
 class wxWindow;
 
 namespace MainEditor
@@ -17,7 +17,7 @@ namespace MainEditor
 	Archive*				currentArchive();
 	ArchiveEntry*			currentEntry();
 	vector<ArchiveEntry*>	currentEntrySelection();
-	Palette8bit*			currentPalette(ArchiveEntry* entry = nullptr);
+	Palette*			currentPalette(ArchiveEntry* entry = nullptr);
 	EntryPanel*				currentEntryPanel();
 
 	void	openTextureEditor(Archive* archive, ArchiveEntry* entry = nullptr);

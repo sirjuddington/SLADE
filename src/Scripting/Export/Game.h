@@ -37,7 +37,7 @@ void registerThingType(sol::state& lua)
 	
 void registerGameNamespace(sol::state& lua)
 {
-	sol::table game = lua.create_table("game");
+	sol::table game = lua.create_table("Game");
 	game.set_function("thingType", [](int type) { return Game::configuration().thingType(type); });
 }
 

@@ -156,6 +156,22 @@ int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 	return -1;
 }
 
+vector<ArchiveEntry::SPtr> ArchiveTreeNode::allEntries()
+{
+	vector<ArchiveEntry::SPtr> entries;
+	std::function<void(vector<ArchiveEntry::SPtr>&, ArchiveTreeNode*)> f =
+	[&](vector<ArchiveEntry::SPtr>& list, ArchiveTreeNode* dir)
+	{
+		for (unsigned a = 0; a < dir->nChildren(); a++)
+			f(list, (ArchiveTreeNode*)dir->getChild(a));
+
+		for (auto& entry : dir->entries_)
+			list.push_back(entry);
+	};
+	f(entries, this);
+	return entries;
+}
+
 // ----------------------------------------------------------------------------
 // ArchiveTreeNode::getEntry
 //
@@ -544,32 +560,4 @@ bool ArchiveTreeNode::exportTo(string path)
 		((ArchiveTreeNode*)children[a])->exportTo(path + "/" + children[a]->getName());
 
 	return true;
-}
-
-// ----------------------------------------------------------------------------
-// ArchiveTreeNode::luaGetEntries
-//
-// Returns a list of all entries in this dir
-// (for lua scripting purposes, avoid using this in actual code)
-// ----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveTreeNode::luaGetEntries()
-{
-	vector<ArchiveEntry*> list;
-	for (auto e : entries_)
-		list.push_back(e.get());
-	return list;
-}
-
-// ----------------------------------------------------------------------------
-// ArchiveTreeNode::luaGetSubDirs
-//
-// Returns a list of all subdirs of this dir
-// (for lua scripting purposes, avoid using this in actual code)
-// ----------------------------------------------------------------------------
-vector<ArchiveTreeNode*> ArchiveTreeNode::luaGetSubDirs()
-{
-	vector<ArchiveTreeNode*> list;
-	for (auto s : children)
-		list.push_back((ArchiveTreeNode*)s);
-	return list;
 }

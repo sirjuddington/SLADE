@@ -244,7 +244,7 @@
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase31u.lib;wxbase31u_net.lib;wxmsw31u_core.lib;wxmsw31u_gl.lib;wxmsw31u_aui.lib;wxmsw31u_webview.lib;wxmsw31u_adv.lib;wxmsw31u_stc.lib;wxmsw31u_propgrid.lib;wxmsw31u_media.lib;wxregexu.lib;wxzlib.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxscintilla.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s.lib;sfml-audio-s.lib;sfml-window-s.lib;sfml-system-s.lib;sfml-main.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase31u.lib;wxbase31u_net.lib;wxmsw31u_core.lib;wxmsw31u_gl.lib;wxmsw31u_aui.lib;wxmsw31u_webview.lib;wxmsw31u_adv.lib;wxmsw31u_stc.lib;wxmsw31u_propgrid.lib;wxmsw31u_media.lib;wxregexu.lib;wxzlib.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxscintilla.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-network-s.lib;sfml-graphics-s.lib;sfml-audio-s.lib;sfml-window-s.lib;sfml-system-s.lib;sfml-main.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableUAC>false</EnableUAC>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -1655,6 +1655,13 @@
     <ClCompile Include="..\..\src\Scripting\Lua.cpp" />
     <ClCompile Include="..\..\src\Scripting\ScriptManager.cpp" />
     <ClCompile Include="..\..\src\Scripting\UI\ScriptManagerWindow.cpp" />
+    <ClCompile Include="..\..\src\Scripting\UI\ScriptPanel.cpp" />
+    <ClCompile Include="..\..\src\TextEditor\Lexer.cpp" />
+    <ClCompile Include="..\..\src\TextEditor\TextLanguage.cpp" />
+    <ClCompile Include="..\..\src\TextEditor\TextStyle.cpp" />
+    <ClCompile Include="..\..\src\TextEditor\UI\FindReplacePanel.cpp" />
+    <ClCompile Include="..\..\src\TextEditor\UI\SCallTip.cpp" />
+    <ClCompile Include="..\..\src\TextEditor\UI\TextEditorCtrl.cpp" />
     <ClCompile Include="..\..\src\UI\BaseResourceChooser.cpp" />
     <ClCompile Include="..\..\src\UI\Browser\BrowserCanvas.cpp" />
     <ClCompile Include="..\..\src\UI\Browser\BrowserItem.cpp" />
@@ -1683,11 +1690,6 @@
     <ClCompile Include="..\..\src\UI\SToolBar\SToolBar.cpp" />
     <ClCompile Include="..\..\src\UI\SToolBar\SToolBarButton.cpp" />
     <ClCompile Include="..\..\src\UI\STopWindow.cpp" />
-    <ClCompile Include="..\..\src\UI\TextEditor\Lexer.cpp" />
-    <ClCompile Include="..\..\src\UI\TextEditor\SCallTip.cpp" />
-    <ClCompile Include="..\..\src\UI\TextEditor\TextEditor.cpp" />
-    <ClCompile Include="..\..\src\UI\TextEditor\TextLanguage.cpp" />
-    <ClCompile Include="..\..\src\UI\TextEditor\TextStyle.cpp" />
     <ClCompile Include="..\..\src\UI\UndoManagerHistoryPanel.cpp" />
     <ClCompile Include="..\..\src\UI\WxStuff.cpp" />
     <ClCompile Include="..\..\src\Utility\CIEDeltaEquations.cpp">
@@ -2166,6 +2168,13 @@
     <ClInclude Include="..\..\src\Scripting\Lua.h" />
     <ClInclude Include="..\..\src\Scripting\ScriptManager.h" />
     <ClInclude Include="..\..\src\Scripting\UI\ScriptManagerWindow.h" />
+    <ClInclude Include="..\..\src\Scripting\UI\ScriptPanel.h" />
+    <ClInclude Include="..\..\src\TextEditor\Lexer.h" />
+    <ClInclude Include="..\..\src\TextEditor\TextLanguage.h" />
+    <ClInclude Include="..\..\src\TextEditor\TextStyle.h" />
+    <ClInclude Include="..\..\src\TextEditor\UI\FindReplacePanel.h" />
+    <ClInclude Include="..\..\src\TextEditor\UI\SCallTip.h" />
+    <ClInclude Include="..\..\src\TextEditor\UI\TextEditorCtrl.h" />
     <ClInclude Include="..\..\src\UI\BaseResourceChooser.h" />
     <ClInclude Include="..\..\src\UI\Browser\BrowserCanvas.h" />
     <ClInclude Include="..\..\src\UI\Browser\BrowserItem.h" />
@@ -2194,11 +2203,6 @@
     <ClInclude Include="..\..\src\UI\SToolBar\SToolBar.h" />
     <ClInclude Include="..\..\src\UI\SToolBar\SToolBarButton.h" />
     <ClInclude Include="..\..\src\UI\STopWindow.h" />
-    <ClInclude Include="..\..\src\UI\TextEditor\Lexer.h" />
-    <ClInclude Include="..\..\src\UI\TextEditor\SCallTip.h" />
-    <ClInclude Include="..\..\src\UI\TextEditor\TextEditor.h" />
-    <ClInclude Include="..\..\src\UI\TextEditor\TextLanguage.h" />
-    <ClInclude Include="..\..\src\UI\TextEditor\TextStyle.h" />
     <ClInclude Include="..\..\src\UI\UndoManagerHistoryPanel.h" />
     <ClInclude Include="..\..\src\UI\WxBasicControls.h" />
     <ClInclude Include="..\..\src\UI\WxStuff.h" />
@@ -2239,16 +2243,6 @@
   <ItemGroup>
     <None Include="..\..\dist\makebuild.ps1" />
     <None Include="..\..\dist\res\config\colours\SLADE 2.cfg" />
-    <None Include="..\..\dist\res\config\text_styles\0default_dark.sss" />
-    <None Include="..\..\dist\res\config\text_styles\default.sss" />
-    <None Include="..\..\dist\res\config\text_styles\faded.sss" />
-    <None Include="..\..\dist\res\config\text_styles\gzdb_dark.sss" />
-    <None Include="..\..\dist\res\config\text_styles\gzdb_light.sss" />
-    <None Include="..\..\dist\res\config\text_styles\material.sss" />
-    <None Include="..\..\dist\res\config\text_styles\old_dark.sss" />
-    <None Include="..\..\dist\res\config\text_styles\old_default.sss" />
-    <None Include="..\..\dist\res\config\text_styles\vs_dark.sss" />
-    <None Include="..\..\dist\res\config\text_styles\vs_light.sss" />
     <None Include="slade.ico" />
     <None Include="..\..\src\External\dumb\helpers\resamp2.inc" />
     <None Include="..\..\src\External\dumb\helpers\resamp3.inc" />
@@ -2275,19 +2269,6 @@
     <Text Include="..\..\dist\res\config\entry_types\types_misc.txt" />
     <Text Include="..\..\dist\res\config\entry_types\types_model.txt" />
     <Text Include="..\..\dist\res\config\entry_types\types_text.txt" />
-    <Text Include="..\..\dist\res\config\languages\0_base.txt" />
-    <Text Include="..\..\dist\res\config\languages\acs.txt" />
-    <Text Include="..\..\dist\res\config\languages\decorate.txt" />
-    <Text Include="..\..\dist\res\config\languages\dehacked.txt" />
-    <Text Include="..\..\dist\res\config\languages\edf.txt" />
-    <Text Include="..\..\dist\res\config\languages\fragglescript.txt" />
-    <Text Include="..\..\dist\res\config\languages\hexen.txt" />
-    <Text Include="..\..\dist\res\config\languages\kssc.txt" />
-    <Text Include="..\..\dist\res\config\languages\srb2lua.txt" />
-    <Text Include="..\..\dist\res\config\languages\usdf.txt" />
-    <Text Include="..\..\dist\res\config\languages\zdaemon.txt" />
-    <Text Include="..\..\dist\res\config\languages\zdoom.txt" />
-    <Text Include="..\..\dist\res\config\languages\zscript.txt" />
     <Text Include="..\..\misc\stuff.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

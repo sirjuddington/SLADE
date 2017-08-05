@@ -29,6 +29,8 @@ public:
 	unsigned			numEntries(bool inc_subdirs = false);
 	int					entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
 
+	vector<ArchiveEntry::SPtr>	allEntries();
+
 	// Entry Operations
 	void	linkEntries(ArchiveEntry* first, ArchiveEntry* second);
 	bool	addEntry(ArchiveEntry* entry, unsigned index = 0xFFFFFFFF);
@@ -41,11 +43,6 @@ public:
 	ArchiveTreeNode*	clone();
 	bool				merge(ArchiveTreeNode* node, unsigned position = 0xFFFFFFFF, int state = 2);
 	bool				exportTo(string path);
-
-	// For scripting
-	vector<ArchiveEntry*>		luaGetEntries();
-	vector<ArchiveTreeNode*>	luaGetSubDirs();
-	int							luaEntryIndex(ArchiveEntry* entry) { return entryIndex(entry); }
 
 	typedef	std::unique_ptr<ArchiveTreeNode> Ptr;
 

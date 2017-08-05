@@ -1,10 +1,10 @@
-The `game` scripting namespace contains functions related to the currently loaded game configuration in SLADE.
+The `Game` scripting namespace contains functions related to the currently loaded game configuration in SLADE.
 
 ## Functions
 
 ### `thingType`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
   * <type>number</type> <arg>type</arg>: The editor number (DoomEdNum) of the type
 

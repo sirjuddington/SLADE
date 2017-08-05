@@ -394,7 +394,7 @@ void GfxConvDialog::openEntries(vector<ArchiveEntry*> entries)
 /* GfxConvDialog::openTextures
  * Opens a list of composite textures to be converted
  *******************************************************************/
-void GfxConvDialog::openTextures(vector<CTexture*> textures, Palette8bit* palette, Archive* archive, bool force_rgba)
+void GfxConvDialog::openTextures(vector<CTexture*> textures, Palette* palette, Archive* archive, bool force_rgba)
 {
 	// Add entries to item list
 	for (unsigned a = 0; a < textures.size(); a++)
@@ -564,7 +564,7 @@ SIFormat* GfxConvDialog::getItemFormat(int index)
 /* GfxConvDialog::getItemPalette
  * Returns the palette for the item at [index]
  *******************************************************************/
-Palette8bit* GfxConvDialog::getItemPalette(int index)
+Palette* GfxConvDialog::getItemPalette(int index)
 {
 	// Check index
 	if (index < 0 || index >= (int)items.size())

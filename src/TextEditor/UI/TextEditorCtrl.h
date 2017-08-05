@@ -1,52 +1,17 @@
-
-#ifndef __TEXTEDITOR_H__
-#define	__TEXTEDITOR_H__
+#pragma once
 
 #include "common.h"
 #include "Archive/ArchiveEntry.h"
-#include "TextLanguage.h"
-#include "TextStyle.h"
-#include "Lexer.h"
+#include "TextEditor/TextLanguage.h"
+#include "TextEditor/TextStyle.h"
+#include "TextEditor/Lexer.h"
 
 class wxButton;
 class wxCheckBox;
 class wxTextCtrl;
-class TextEditor;
-class FindReplacePanel : public wxPanel
-{
-public:
-	FindReplacePanel(wxWindow* parent, TextEditor* text_editor);
-	~FindReplacePanel();
-
-	void	setFindText(string find);
-	string	getFindText();
-	int		getFindFlags();
-	string	getReplaceText();
-
-private:
-	TextEditor*	text_editor;
-
-	wxTextCtrl*	text_find;
-	wxTextCtrl*	text_replace;
-	wxButton*	btn_find_next;
-	wxButton*	btn_find_prev;
-	wxButton*	btn_replace;
-	wxButton*	btn_replace_all;
-	wxCheckBox*	cb_match_case;
-	wxCheckBox*	cb_match_word_whole;
-	wxCheckBox*	cb_match_word_start;
-	wxCheckBox*	cb_search_regex;
-	wxCheckBox*	cb_allow_escape;
-
-	// Events
-	void	onBtnFindNext(wxCommandEvent& e);
-	void	onBtnFindPrev(wxCommandEvent& e);
-	void	onBtnReplace(wxCommandEvent& e);
-	void	onBtnReplaceAll(wxCommandEvent& e);
-	void	onKeyDown(wxKeyEvent& e);
-	void	onTextFindEnter(wxCommandEvent& e);
-	void	onTextReplaceEnter(wxCommandEvent& e);
-};
+class FindReplacePanel;
+class SCallTip;
+class wxChoice;
 
 wxDECLARE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 
@@ -54,50 +19,29 @@ class JumpToCalculator : public wxThread
 {
 public:
 	JumpToCalculator(wxEvtHandler* handler, string text, vector<string> block_names, vector<string> ignore)
-		: handler(handler), text(text), block_names(block_names), ignore(ignore) {}
+		: handler_(handler), text_(text), block_names_(block_names), ignore_(ignore) {}
 	virtual ~JumpToCalculator() {}
 
 	ExitCode Entry();
 
 private:
-	wxEvtHandler*	handler;
-	string			text;
-	vector<string>	block_names;
-	vector<string>	ignore;
+	wxEvtHandler*	handler_;
+	string			text_;
+	vector<string>	block_names_;
+	vector<string>	ignore_;
 };
 
-class SCallTip;
-class wxChoice;
-class TextEditor : public wxStyledTextCtrl
+class TextEditorCtrl : public wxStyledTextCtrl
 {
-private:
-	TextLanguage*		language;
-	FindReplacePanel*	panel_fr;
-	SCallTip*			call_tip;
-	wxChoice*			choice_jump_to;
-	JumpToCalculator*	jump_to_calculator;
-	wxTimer				timer_update;
-	Lexer				lexer;
-	string				prev_word_match;
-	string				autocomp_list;
-	int					bm_cursor_last_pos;
-	vector<int>			jump_to_lines;
-
-	// Calltip stuff
-	TLFunction*	ct_function;
-	int			ct_argset;
-	int			ct_start;
-	bool		ct_dwell;	
-
 public:
-	TextEditor(wxWindow* parent, int id);
-	~TextEditor();
+	TextEditorCtrl(wxWindow* parent, int id);
+	~TextEditorCtrl();
 
-	TextLanguage*	getLanguage() { return language; }
+	TextLanguage*	getLanguage() { return language_; }
 	bool			setLanguage(TextLanguage* lang);
 
 	void	setup();
-	void	setupFoldMargin(TextStyle* margin_style = NULL);
+	void	setupFoldMargin(TextStyle* margin_style = nullptr);
 	bool	applyStyleSet(StyleSet* style);
 	bool	loadEntry(ArchiveEntry* entry);
 	void	getRawText(MemChunk& mc);
@@ -106,15 +50,17 @@ public:
 	void	trimWhitespace();
 
 	// Find/Replace
-	void	setFindReplacePanel(FindReplacePanel* panel) { panel_fr = panel; }
+	void	setFindReplacePanel(FindReplacePanel* panel) { panel_fr_ = panel; }
 	void	showFindReplacePanel(bool show = true);
 	bool	findNext(string find, int flags);
 	bool	findPrev(string find, int flags);
 	bool	replaceCurrent(string find, string replace, int flags);
 	int		replaceAll(string find, string replace, int flags);
 
-	// Brace matching
+	// Hilight/matching
 	void	checkBraceMatch();
+	void	matchWord();
+	void	clearWordMatch();
 
 	// Calltips
 	void	showCalltip(int position);
@@ -136,6 +82,32 @@ public:
 	void	lineComment();
 	void 	blockComment();
 
+private:
+	TextLanguage*		language_;
+	FindReplacePanel*	panel_fr_;
+	SCallTip*			call_tip_;
+	wxChoice*			choice_jump_to_;
+	JumpToCalculator*	jump_to_calculator_;
+	Lexer				lexer_;
+	string				prev_word_match_;
+	string				autocomp_list_;
+	vector<int>			jump_to_lines_;
+
+	// State tracking for updates
+	int	prev_cursor_pos_;
+	int	prev_text_length_;
+
+	// Timed update stuff
+	wxTimer	timer_update_;
+	bool	update_jump_to_;
+	bool	update_word_match_;
+
+	// Calltip stuff
+	TLFunction*	ct_function_;
+	int			ct_argset_;
+	int			ct_start_;
+	bool		ct_dwell_;
+
 	// Events
 	void	onKeyDown(wxKeyEvent& e);
 	void	onKeyUp(wxKeyEvent& e);
@@ -154,5 +126,3 @@ public:
 	void	onUpdateTimer(wxTimerEvent& e);
 	void	onStyleNeeded(wxStyledTextEvent& e);
 };
-
-#endif //__TEXTEDITOR_H__

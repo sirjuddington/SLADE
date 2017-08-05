@@ -1,10 +1,10 @@
-The `splashWindow` scripting namespace contains functions for controlling the SLADE splash window.
+The `SplashWindow` scripting namespace contains functions for controlling the SLADE splash window.
 
 ## Functions
 
 ### `show`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>message</arg>: The message to show
 * `[`<type>boolean</type> <arg>progress</arg>: `false]`: Whether to show the progress bar
@@ -31,7 +31,7 @@ Returns the current progress bar progress. This is a floating point number betwe
 ---
 ### `setMessage`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>message</arg>: The message to show
 
@@ -40,7 +40,7 @@ Sets the splash window message to <arg>message</arg>.
 ---
 ### `setProgressMessage`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>message</arg>: The progress bar message to show
 
@@ -49,7 +49,7 @@ Sets the small message within the progress bar to <arg>message</arg>.
 ---
 ### `setProgress`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>number</type> <arg>progress</arg>: The progress amount
 

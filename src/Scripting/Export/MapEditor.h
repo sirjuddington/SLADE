@@ -1,13 +1,53 @@
 
-// #include "Main.h"
-// #include "Export.h"
-// #include "MapEditor/MapEditContext.h"
-// #include "Game/Configuration.h"
-// #include "Scripting/Lua.h"
 
-// namespace Lua
-// {
-	
+void objectSetBoolProperty(MapObject& self, const string& key, bool value)
+{
+	if (self.scriptCanModifyProp(key))
+		self.setBoolProperty(key, value);
+	else
+		Log::warning(1, S_FMT(
+			"%s boolean property \"%s\" can not be modified via script",
+			CHR(self.getTypeName()),
+			key
+		));
+}
+
+void objectSetIntProperty(MapObject& self, const string& key, int value)
+{
+	if (self.scriptCanModifyProp(key))
+		self.setIntProperty(key, value);
+	else
+		Log::warning(1, S_FMT(
+			"%s integer property \"%s\" can not be modified via script",
+			CHR(self.getTypeName()),
+			key
+		));
+}
+
+void objectSetFloatProperty(MapObject& self, const string& key, double value)
+{
+	if (self.scriptCanModifyProp(key))
+		self.setFloatProperty(key, value);
+	else
+		Log::warning(1, S_FMT(
+			"%s float property \"%s\" can not be modified via script",
+			CHR(self.getTypeName()),
+			key
+		));
+}
+
+void objectSetStringProperty(MapObject& self, const string& key, const string& value)
+{
+	if (self.scriptCanModifyProp(key))
+		self.setStringProperty(key, value);
+	else
+		Log::warning(1, S_FMT(
+			"%s string property \"%s\" can not be modified via script",
+			CHR(self.getTypeName()),
+			key
+		));
+}
+
 void registerSLADEMap(sol::state& lua)
 {
 	lua.new_usertype<SLADEMap>(
@@ -34,6 +74,16 @@ void selectMapObject(MapEditContext& self, MapObject* object, bool select)
 			{ (int)object->getIndex(), MapEditor::itemTypeFromObject(object) },
 			select
 		);
+}
+
+void setEditMode(
+	MapEditContext& self,
+	MapEditor::Mode mode,
+	MapEditor::SectorMode sector_mode = MapEditor::SectorMode::Both)
+{
+	self.setEditMode(mode);
+	if (mode == MapEditor::Mode::Sectors)
+		self.setSectorEditMode(sector_mode);
 }
 
 void registerMapEditor(sol::state& lua)
@@ -84,7 +134,31 @@ void registerMapEditor(sol::state& lua)
 		"select", sol::overload(
 			&selectMapObject,
 			[](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); }
+		),
+
+		"setEditMode", sol::overload(
+			[](MapEditContext& self, MapEditor::Mode mode)
+			{ setEditMode(self, mode); },
+			[](MapEditContext& self, MapEditor::Mode mode, MapEditor::SectorMode sector_mode)
+			{ setEditMode(self, mode, sector_mode); }
 		)
+	);
+
+	// MapEditor enums
+	sol::table mapeditor = lua["MapEditor"];
+	mapeditor.new_enum(
+		"Mode",
+		"Vertices",	MapEditor::Mode::Vertices,
+		"Lines",	MapEditor::Mode::Lines,
+		"Sectors",	MapEditor::Mode::Sectors,
+		"Things",	MapEditor::Mode::Things,
+		"Visual",	MapEditor::Mode::Visual
+	);
+	mapeditor.new_enum(
+		"SectorMode",
+		"Both",		MapEditor::SectorMode::Both,
+		"Floor",	MapEditor::SectorMode::Floor,
+		"Ceiling",	MapEditor::SectorMode::Ceiling
 	);
 }
 
@@ -253,35 +327,17 @@ void registerMapObject(sol::state& lua)
 		"intProperty",			&MapObject::intProperty,
 		"floatProperty",		&MapObject::floatProperty,
 		"stringProperty",		&MapObject::stringProperty,
-		"setBoolProperty",		&MapObject::luaSetBoolProperty,
-		"setIntProperty",		&MapObject::luaSetIntProperty,
-		"setFloatProperty",		&MapObject::luaSetFloatProperty,
-		"setStringProperty",	&MapObject::luaSetStringProperty
-	);
-}
-
-void registerMapEditorNamespace(sol::state& lua)
-{
-	// MapEditor enums
-	lua.create_named_table("mapEditor");
-	lua.new_enum(
-		"Mode",
-		"Vertices",	MapEditor::Mode::Vertices,
-		"Lines",	MapEditor::Mode::Lines,
-		"Sectors",	MapEditor::Mode::Sectors,
-		"Things",	MapEditor::Mode::Things,
-		"Visual",	MapEditor::Mode::Visual
-	);
-	lua.new_enum(
-		"SectorMode",
-		"Both",		MapEditor::SectorMode::Both,
-		"Floor",	MapEditor::SectorMode::Floor,
-		"Ceiling",	MapEditor::SectorMode::Ceiling
+		"setBoolProperty",		&objectSetBoolProperty,
+		"setIntProperty",		&objectSetIntProperty,
+		"setFloatProperty",		&objectSetFloatProperty,
+		"setStringProperty",	&objectSetStringProperty
 	);
 }
 
 void registerMapEditorTypes(sol::state& lua)
 {
+	registerMapEditor(lua);
+	registerSLADEMap(lua);
 	registerMapObject(lua);
 	registerMapVertex(lua);
 	registerMapLine(lua);
@@ -289,5 +345,3 @@ void registerMapEditorTypes(sol::state& lua)
 	registerMapSector(lua);
 	registerMapThing(lua);
 }
-
-//} // namespace Lua

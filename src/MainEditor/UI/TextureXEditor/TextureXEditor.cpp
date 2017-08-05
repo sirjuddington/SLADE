@@ -381,7 +381,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 void TextureXEditor::updateTexturePalette()
 {
 	// Get palette
-	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 
 	// Send to whatever needs it
 	for (size_t a = 0; a < texture_editors.size(); a++)

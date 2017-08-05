@@ -21,15 +21,15 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 ### `flag`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
-* <type>string</type> <arg>flagName</arg>: The name of the flag to check
+* <type>string</type> <arg>flag_name</arg>: The name of the flag to check
 
 **Returns** <type>boolean</type>
 
 Returns `true` if the given flag is set.
 
-If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly the same as <code>[MapObject:boolProperty](MapObject.md#boolproperty)</code>. Otherwise, <arg>flagName</arg> needs to be one of the following:
+If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly the same as <code>[MapObject:boolProperty](MapObject.md#boolproperty)</code>. Otherwise, <arg>flag_name</arg> needs to be one of the following:
 
 * `skill1`
 * `skill2`
@@ -46,7 +46,7 @@ If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly 
 ---
 ### `setAnglePoint`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>[Point](Point.md)</type> <arg>position</arg>: Position in map coordinates
 

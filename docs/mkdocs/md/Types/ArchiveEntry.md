@@ -16,19 +16,24 @@ The **ArchiveEntry** type represents an entry in SLADE.
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
+<listhead>See:</listhead>
+
+* <code>[Archive:createEntry](Archive.md#createentry)</code>
+* <code>[Archive:createEntryInNamespace](Archive.md#createentryinnamespace)</code>
+
 ## Functions
 
 ### `formattedName`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
-* `[`<type>boolean</type> <arg>includePath</arg> : `true]`: Whether to include the entry path
-* `[`<type>boolean</type> <arg>includeExtension</arg> : `true]`: Whether to include the entry extension
-* `[`<type>boolean</type> <arg>upperCase</arg> : `false]`: Whether to convert the entry name to uppercase
+* `[`<type>boolean</type> <arg>include_path</arg> : `true]`: Whether to include the entry path
+* `[`<type>boolean</type> <arg>include_extension</arg> : `true]`: Whether to include the entry extension
+* `[`<type>boolean</type> <arg>upper_case</arg> : `false]`: Whether to convert the entry name to uppercase
 
 **Returns** <type>string</type>
 
-Returns a formatted name of the entry, depending on the parameters given. Note that <arg>upperCase</arg> will not affect the path.
+Returns a formatted name of the entry, depending on the parameters given. Note that <arg>upper_case</arg> will not affect the path.
 
 ---
 ### `formattedSize`
@@ -40,7 +45,7 @@ Returns the size of the entry in a formatted string, eg. `1.3kb`
 ---
 ### `importFile`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>path</arg>: The full path to the file to import
 
@@ -48,12 +53,12 @@ Returns the size of the entry in a formatted string, eg. `1.3kb`
 
 Imports the file at the given <arg>path</arg> into the entry. Returns `true` if the import succeeded.
 
-If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/SLADE.md#globalerror)()</code>.
+If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/App.md#globalerror)()</code>.
 
 ---
 ### `importEntry`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>ArchiveEntry</type> <arg>entry</arg>: The entry to import data from
 
@@ -61,12 +66,12 @@ If the import fails, the error that occurred should be available via <code>[slad
 
 Imports (copies) the data from <arg>entry</arg>. Returns `true` if the import succeeded.
 
-If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/SLADE.md#globalerror)()</code>.
+If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/App.md#globalerror)()</code>.
 
 ---
 ### `importData`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>data</arg>: The data to import
 
@@ -74,12 +79,12 @@ If the import fails, the error that occurred should be available via <code>[slad
 
 Imports <arg>data</arg> into the entry. Returns `true` if the import succeeded.
 
-If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/SLADE.md#globalerror)()</code>.
+If the import fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/App.md#globalerror)()</code>.
 
 ---
 ### `exportFile`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>path</arg>: The full path to the file to export
 
@@ -87,4 +92,4 @@ If the import fails, the error that occurred should be available via <code>[slad
 
 Exports the entry data to a file at <arg>path</arg>. If a file already exists at <arg>path</arg>, it will be overwritten. Returns `true` if the export succeeded.
 
-If the export fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/SLADE.md#globalerror)()</code>.
+If the export fails, the error that occurred should be available via <code>[slade.globalError](../Namespaces/App.md#globalerror)()</code>.

@@ -1,4 +1,4 @@
-The `archives` scripting namespace contains functions for managing archives.
+The `Archives` scripting namespace contains functions for managing archives.
 
 ## Functions
 
@@ -11,13 +11,13 @@ Returns an array of all currently open archives.
 ---
 ### `create`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
-* <type>string</type> <arg>formatId</arg>: The <type>[ArchiveFormat](../Types/ArchiveFormat.md)</type> id to create
+* <type>string</type> <arg>format_id</arg>: The <type>[ArchiveFormat](../Types/ArchiveFormat.md)</type> id to create
 
 **Returns** <type>[Archive](../Types/Archive.md)</type>
 
-Creates a new archive of the format specified in <arg>formatId</arg>. Returns `false` if the archive could not be created (generally if the <arg>formatId</arg> is invalid).
+Creates a new archive of the format specified in <arg>format_id</arg>. Returns `nil` if the archive could not be created (generally if the <arg>format_id</arg> is invalid).
 
 !!! Note
     Currently only `wad` and `zip` formats are supported for creation
@@ -25,7 +25,7 @@ Creates a new archive of the format specified in <arg>formatId</arg>. Returns `f
 ---
 ### `openFile`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>string</type> <arg>path</arg>: The full path + name of the archive file to open
 
@@ -33,12 +33,12 @@ Creates a new archive of the format specified in <arg>formatId</arg>. Returns `f
 
 Attempts to open the file at <arg>path</arg> on disk. Returns the archive if it opened successfully, or `nil` if it could not be opened.
 
-If opening fails, the error that occurred should be available via <code>[slade.globalError](SLADE.md#globalerror)()</code>.
+If opening fails, the error that occurred should be available via <code>[slade.globalError](App.md#globalerror)()</code>.
 
 ---
 ### `close` <sup>(1)</sup>
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>[Archive](../Types/Archive.md)</type> <arg>archive</arg>: The archive to close
 
@@ -49,7 +49,7 @@ Closes the given <arg>archive</arg>. Returns `false` if <arg>archive</arg> is in
 ---
 ### `close` <sup>(2)</sup>
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>number</type> <arg>index</arg>: The index of the archive to close
 
@@ -69,7 +69,7 @@ Closes all currently open archives.
 
 Returns a string with the extension filter for all supported archive file types.
 
-See <code>[slade.browseFile](SLADE.md#browsefile)</code> and the [Open Archive](../Examples/OpenArchive.md) example for more information.
+See <code>[slade.browseFile](App.md#browsefile)</code> and the [Open Archive](../Examples/OpenArchive.md) example for more information.
 
 ---
 ### `baseResource`
@@ -91,7 +91,7 @@ Returns an array of configured base resource archive file paths.
 ---
 ### `openBaseResource`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>number</type> <arg>index</arg>: The base resource path index to open
 
@@ -126,7 +126,7 @@ Returns an array of all currently bookmarked entries.
 ---
 ### `addBookmark`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type> <arg>entry</arg>: The entry to bookmark
 
@@ -135,7 +135,7 @@ Adds <arg>entry</arg> as a bookmark.
 ---
 ### `removeBookmark`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type> <arg>entry</arg>: The entry to un-bookmark
 

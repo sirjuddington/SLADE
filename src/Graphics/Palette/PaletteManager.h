@@ -11,23 +11,23 @@ public:
 	~PaletteManager();
 
 	bool			init();
-	bool			addPalette(Palette8bit::UPtr pal, string name);
+	bool			addPalette(Palette::UPtr pal, string name);
 	int				numPalettes() const { return (int)palettes.size(); }
-	Palette8bit*	defaultPalette() { return &pal_default; }
-	Palette8bit*	globalPalette();
-	Palette8bit*	getPalette(int index);
-	Palette8bit*	getPalette(string name);
+	Palette*	defaultPalette() { return &pal_default; }
+	Palette*	globalPalette();
+	Palette*	getPalette(int index);
+	Palette*	getPalette(string name);
 	string			getPalName(int index);
-	string			getPalName(Palette8bit* pal);
+	string			getPalName(Palette* pal);
 
 	bool	loadResourcePalettes();
 	bool	loadCustomPalettes();
 
 private:
-	vector<Palette8bit::UPtr>	palettes;
+	vector<Palette::UPtr>	palettes;
 	vector<string>				pal_names;
-	Palette8bit					pal_default;	// A greyscale palette
-	Palette8bit					pal_global;		// The global palette (read from the base resource archive)
+	Palette					pal_default;	// A greyscale palette
+	Palette					pal_global;		// The global palette (read from the base resource archive)
 };
 
 #endif //__PALETTEMANAGER_H__

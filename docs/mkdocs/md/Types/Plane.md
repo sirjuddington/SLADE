@@ -21,7 +21,7 @@ Creates a new plane with the given <arg>a</arg>, <arg>b</arg>, <arg>c</arg> and 
 
 ### `heightAt`
 
-<params>Parameters</params>
+<listhead>Parameters</listhead>
 
 * <type>[Point](Point.md)</type> <arg>position</arg>: The 2D position to find the plane height at
 

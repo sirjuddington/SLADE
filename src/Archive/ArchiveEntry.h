@@ -46,6 +46,7 @@ private:
 public:
 	typedef	std::unique_ptr<ArchiveEntry>	UPtr;
 	typedef	std::shared_ptr<ArchiveEntry>	SPtr;
+	typedef std::weak_ptr<ArchiveEntry>		WPtr;
 
 	// Constructor/Destructor
 	ArchiveEntry(string name = "", uint32_t size = 0);

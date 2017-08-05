@@ -10,7 +10,7 @@ class GLTexture;
 class CropCanvas : public OGLCanvas
 {
 public:
-	CropCanvas(wxWindow* parent, SImage* image, Palette8bit* palette);
+	CropCanvas(wxWindow* parent, SImage* image, Palette* palette);
 
 	rect_t	cropRect() { return crop_rect; }
 	void	setCropRect(rect_t& rect) { crop_rect.set(rect); }
@@ -25,7 +25,7 @@ private:
 class GfxCropDialog : public wxDialog
 {
 public:
-	GfxCropDialog(wxWindow* parent, SImage* image, Palette8bit* palette);
+	GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette);
 	~GfxCropDialog() {}
 
 	rect_t	getCropRect() { return crop_rect; }

@@ -2,8 +2,10 @@
 
 #include "UI/STopWindow.h"
 #include "General/SAction.h"
+#include "Scripting/ScriptManager.h"
 
-class TextEditor;
+class STabCtrl;
+class ScriptPanel;
 
 class ScriptManagerWindow : public STopWindow, SActionHandler
 {
@@ -11,10 +13,15 @@ public:
 	ScriptManagerWindow();
 	virtual ~ScriptManagerWindow() {}
 
+	void					openScriptTab(ScriptManager::Script* script) const;
+	ScriptManager::Script*	currentScript() const;
+	string					currentScriptText() const;
+
 private:
+	ScriptManager::Script	script_scratchbox_;
+
 	// Widgets
-	TextEditor*	text_editor_;
-	wxButton*	btn_run_;
+	STabCtrl*	tabs_scripts_;
 	wxTreeCtrl*	tree_scripts_;
 
 	// Layout
@@ -22,13 +29,15 @@ private:
 	void	saveLayout();
 
 	// Setup
-	void		setupLayout();
-	wxPanel*	setupMainArea();
-	void		setupMenu();
-	void		setupToolbar();
-	void		bindEvents();
-	void		populateScriptsTree();
+	void			setupLayout();
+	wxPanel*		setupMainArea();
+	void			setupMenu();
+	void			setupToolbar();
+	void			bindEvents();
+	wxPanel*		setupScriptTreePanel();
+	void			populateScriptsTree();
+	ScriptPanel*	currentPage() const;
 
 	// SActionHandler
-	bool	handleAction(string id);
+	bool	handleAction(string id) override;
 };

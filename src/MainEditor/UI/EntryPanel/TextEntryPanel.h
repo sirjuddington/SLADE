@@ -4,13 +4,15 @@
 
 #include "EntryPanel.h"
 #include "General/SAction.h"
-#include "UI/TextEditor/TextEditor.h"
 #include "MainEditor/EntryOperations.h"
+
+class TextEditorCtrl;
+class FindReplacePanel;
 
 class TextEntryPanel : public EntryPanel, SActionHandler
 {
 private:
-	TextEditor*			text_area;
+	TextEditorCtrl*		text_area;
 	FindReplacePanel*	panel_fr;
 	wxButton*			btn_find_replace;
 	wxChoice*			choice_text_language;

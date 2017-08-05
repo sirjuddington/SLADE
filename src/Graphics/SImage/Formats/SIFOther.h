@@ -21,7 +21,7 @@ protected:
 		}
 
 		// Let's build the palette now
-		Palette8bit palette;
+		Palette palette;
 		size_t pal_offset = READ_L32(data.getData(), 36) + ((READ_L32(data.getData(), 16) >> 3) * (READ_L32(data.getData(), 20) >> 3));
 		if (data.getSize() < pal_offset + 5)
 		{
@@ -559,7 +559,7 @@ protected:
 			return false;
 
 		// Build palette
-		Palette8bit palette;
+		Palette palette;
 		for (size_t c = 0; c < 256; ++c)
 		{
 			rgba_t color;

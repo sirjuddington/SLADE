@@ -42,7 +42,7 @@
 /* CropCanvas::CropCanvas
  * CropCanvas class constructor
  *******************************************************************/
-CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette8bit* palette) :
+CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette* palette) :
 	OGLCanvas(parent, -1, false)
 {
 	if (image && image->isValid())
@@ -125,7 +125,7 @@ void CropCanvas::draw()
 /* GfxCropDialog::GfxCropDialog
  * GfxCropDialog class constructor
  *******************************************************************/
-GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette8bit* palette) :
+GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) :
 	wxDialog(parent, -1, "Crop", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
 	// Set max crop size

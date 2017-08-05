@@ -487,7 +487,7 @@ void TextureEditorPanel::clearTexture()
 /* TextureEditorPanel::setPalette
  * Sets the texture canvas' palette and refreshes it
  *******************************************************************/
-void TextureEditorPanel::setPalette(Palette8bit* pal)
+void TextureEditorPanel::setPalette(Palette* pal)
 {
 	tex_canvas->setPalette(pal);
 	tex_canvas->updatePatchTextures();
@@ -497,7 +497,7 @@ void TextureEditorPanel::setPalette(Palette8bit* pal)
 /* TextureEditorPanel::getPalette
  * Returns the texture canvas' palette
  *******************************************************************/
-Palette8bit* TextureEditorPanel::getPalette()
+Palette* TextureEditorPanel::getPalette()
 {
 	return tex_canvas->getPalette();
 }

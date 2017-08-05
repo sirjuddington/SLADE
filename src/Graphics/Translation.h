@@ -212,7 +212,7 @@ public:
 	}
 };
 
-class Palette8bit;
+class Palette;
 class Translation
 {
 private:
@@ -237,8 +237,8 @@ public:
 	string		builtInName() { return built_in_name; }
 	void		setDesaturationAmount(uint8_t amount) { desat_amount = amount; }
 
-	rgba_t	translate(rgba_t col, Palette8bit* pal = NULL);
-	rgba_t	specialBlend(rgba_t col, uint8_t type, Palette8bit* pal = NULL);
+	rgba_t	translate(rgba_t col, Palette* pal = NULL);
+	rgba_t	specialBlend(rgba_t col, uint8_t type, Palette* pal = NULL);
 
 	void	addRange(int type, int pos);
 	void	removeRange(int pos);

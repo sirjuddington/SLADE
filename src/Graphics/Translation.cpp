@@ -500,7 +500,7 @@ TransRange* Translation::getRange(unsigned index)
 /* Translation::translate
  * Apply the translation to the given color
  *******************************************************************/
-rgba_t Translation::translate(rgba_t col, Palette8bit * pal)
+rgba_t Translation::translate(rgba_t col, Palette * pal)
 {
 	rgba_t colour(col);
 	colour.blend = -1;
@@ -674,7 +674,7 @@ rgba_t Translation::translate(rgba_t col, Palette8bit * pal)
  * Apply one of the special colour blending modes from ZDoom:
  * Desaturate, Ice, Inverse, Blue, Gold, Green, Red.
  *******************************************************************/
-rgba_t Translation::specialBlend(rgba_t col, uint8_t type, Palette8bit * pal)
+rgba_t Translation::specialBlend(rgba_t col, uint8_t type, Palette * pal)
 {
 	// Abort just in case
 	if (type == SpecialBlend::BLEND_INVALID)
