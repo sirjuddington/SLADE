@@ -42,11 +42,15 @@
 #include <FTGL/ftgl.h>
 #endif
 
-#ifdef __WXGTK__
 #define GSocket GlibGSocket
+#ifdef USE_GTK3
 #include <gtk-3.0/gtk/gtk.h>
-#undef GSocket
+#else
+#ifdef __WXGTK__
+#include <gtk-2.0/gtk/gtk.h>
 #endif
+#endif
+#undef GSocket
 
 
 /*******************************************************************

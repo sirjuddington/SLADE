@@ -23,11 +23,18 @@ if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-set(wxWidgets_CONFIG_EXECUTABLE /usr/bin/wx-config-gtk3)
-set(SLADE_OUTPUT_DIR ${CMAKE_BINARY_DIR} CACHE PATH "Directory where slade will be created.")
+
 
 OPTION(NO_WEBVIEW "Disable wxWebview usage (for start page and documentation)" OFF)
 OPTION(USE_SFML_RENDERWINDOW "Use SFML RenderWindow for OpenGL displays" OFF)
+OPTION(USE_GTK3 "Use GTK3" ON)
+
+
+if(USE_GTK3)
+	set(wxWidgets_CONFIG_EXECUTABLE /usr/bin/wx-config-gtk3)
+endif(USE_GTK3)
+
+set(SLADE_OUTPUT_DIR ${CMAKE_BINARY_DIR} CACHE PATH "Directory where slade will be created.")
 
 # c++14 is required to compile
 if(CMAKE_VERSION VERSION_LESS 3.1)

@@ -1,3 +1,10 @@
+if(USE_GTK3)
+	set(gtk3_version_wx_build 3)
+	ADD_DEFINITIONS(-DUSE_GTK3)
+else(USE_GTK3)
+	set(gtk3_version_wx_build 2)
+endif(USE_GTK3)
+
 if (NOT NO_COTIRE)
 	include(cotire)
 endif()
@@ -39,9 +46,9 @@ find_package (PkgConfig REQUIRED)
 if (APPLE)
 	# There is no need to have GTK2 installed on OS X
 	# Although, GLib is required by FluidSynth
-	pkg_check_modules (GLib REQUIRED glib-3.0)
+	pkg_check_modules (GLib REQUIRED glib-${gtk3_version_wx_build}.0)
 else (APPLE)
-	pkg_check_modules (GTK3 REQUIRED gtk+-3.0)
+	pkg_check_modules (GTK${gtk3_version_wx_build} REQUIRED gtk+-${gtk3_version_wx_build}.0)
 endif (APPLE)
 
 if(NOT NO_FLUIDSYNTH)
@@ -57,7 +64,7 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(CURL REQUIRED)
-include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK3_INCLUDE_DIRS} ${CURL_INCLUDE_DIR} . ./External/dumb ./Application)
+include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK${gtk3_version_wx_build}_INCLUDE_DIRS} ${CURL_INCLUDE_DIR} . ./External/dumb ./Application)
 
 if (NOT NO_FLUIDSYNTH)
 	include_directories(${FLUIDSYNTH_INCLUDE_DIR})
@@ -117,7 +124,7 @@ target_link_libraries(slade
 	${OPENGL_LIBRARIES}
 	${FREETYPE_LIBRARIES}
 	${GLEW_LIBRARY}
-	${GTK3_LIBRARIES}
+	${GTK${gtk3_version_wx_build}_LIBRARIES}
 	${CURL_LIBRARIES}
 )
 
