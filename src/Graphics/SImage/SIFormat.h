@@ -16,10 +16,10 @@ protected:
 	// Stuff to access protected image data
 	uint8_t*		imageData(SImage& image) { return image.data; }
 	uint8_t*		imageMask(SImage& image) { return image.mask; }
-	Palette8bit&	imagePalette(SImage& image) { return image.palette; }
+	Palette&	imagePalette(SImage& image) { return image.palette; }
 
 	virtual bool	readImage(SImage& image, MemChunk& data, int index) = 0;
-	virtual bool	writeImage(SImage& image, MemChunk& data, Palette8bit* pal, int index) { return false; }
+	virtual bool	writeImage(SImage& image, MemChunk& data, Palette* pal, int index) { return false; }
 
 public:
 	// Conversion options stuff
@@ -32,8 +32,8 @@ public:
 	};
 	struct convert_options_t
 	{
-		Palette8bit*	pal_current;
-		Palette8bit*	pal_target;
+		Palette*	pal_current;
+		Palette*	pal_target;
 		int				mask_source;
 		rgba_t			mask_colour;
 		uint8_t			alpha_threshold;
@@ -98,7 +98,7 @@ public:
 	virtual bool	convertWritable(SImage& image, convert_options_t opt) { return false; }
 	virtual bool	writeOffset(SImage& image, ArchiveEntry* entry, point2_t offset) { return false; }
 
-	bool saveImage(SImage& image, MemChunk& out, Palette8bit* pal = NULL, int index = 0)
+	bool saveImage(SImage& image, MemChunk& out, Palette* pal = NULL, int index = 0)
 	{
 		// Attempt to write image data
 		bool ok = writeImage(image, out, pal, index);

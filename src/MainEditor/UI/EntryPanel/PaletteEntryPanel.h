@@ -18,13 +18,13 @@
  *   beta version which used a green colormap for the light amp visors).
  */
 class PaletteCanvas;
-class Palette8bit;
+class Palette;
 class ArchiveEntry;
 class PaletteEntryPanel : public EntryPanel, public SActionHandler
 {
 private:
 	PaletteCanvas*			pal_canvas;
-	vector<Palette8bit*>	palettes;
+	vector<Palette*>	palettes;
 	uint32_t				cur_palette;
 
 	wxStaticText*			text_curpal;

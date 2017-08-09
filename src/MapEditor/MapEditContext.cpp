@@ -1458,7 +1458,7 @@ void MapEditContext::swapPlayerStart3d()
 {
 	// Find player 1 start
 	MapThing* pstart = nullptr;
-	for (unsigned a = 0; a < map_.nThings(); a++)
+	for (int a = map_.nThings() - 1; a >= 0 ; a--)
 		if (map_.getThing(a)->getType() == 1)
 		{
 			pstart = map_.getThing(a);
@@ -1485,7 +1485,7 @@ void MapEditContext::swapPlayerStart2d(fpoint2_t pos)
 {
 	// Find player 1 start
 	MapThing* pstart = nullptr;
-	for (unsigned a = 0; a < map_.nThings(); a++)
+	for (int a = map_.nThings() - 1; a >= 0; a--)
 		if (map_.getThing(a)->getType() == 1)
 		{
 			pstart = map_.getThing(a);
@@ -1506,11 +1506,11 @@ void MapEditContext::swapPlayerStart2d(fpoint2_t pos)
 //
 // Resets the player 1 start thing to its original position
 // ----------------------------------------------------------------------------
-void MapEditContext::resetPlayerStart()
+void MapEditContext::resetPlayerStart() const
 {
 	// Find player 1 start
 	MapThing* pstart = nullptr;
-	for (unsigned a = 0; a < map_.nThings(); a++)
+	for (int a = map_.nThings() - 1; a >= 0; a--)
 		if (map_.getThing(a)->getType() == 1)
 		{
 			pstart = map_.getThing(a);

@@ -54,7 +54,7 @@ private:
 protected:
 	BrowserTreeNode*		items_root;
 	wxBoxSizer*				sizer_bottom;
-	Palette8bit				palette;
+	Palette				palette;
 	BrowserCanvas*			canvas;
 	vector<BrowserItem*>	items_global;
 	bool					truncate_names;
@@ -65,8 +65,8 @@ public:
 
 	bool	truncateNames() { return truncate_names; }
 
-	Palette8bit*	getPalette() { return &palette; }
-	void			setPalette(Palette8bit* pal) { palette.copyPalette(pal); }
+	Palette*	getPalette() { return &palette; }
+	void			setPalette(Palette* pal) { palette.copyPalette(pal); }
 
 	bool			addItem(BrowserItem* item, string where = "");
 	void			addGlobalItem(BrowserItem* item);

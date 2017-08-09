@@ -5,7 +5,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Variables
-		Palette8bit palette;
+		Palette palette;
 		int width = 640;
 		int height = 480;
 
@@ -75,7 +75,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette8bit* pal, int index)
+	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
 	{
 		// Is there really any point to being able to write this format?
 		// Answer: yeah, no other tool can do it. :p
@@ -104,7 +104,7 @@ protected:
 		}
 
 		// Get palette to use
-		Palette8bit usepal;
+		Palette usepal;
 		if (image.hasPalette())
 			usepal.copyPalette(image.getPalette());
 		else if (pal)
@@ -275,7 +275,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette8bit* pal, int index)
+	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
 	{
 		// Again, don't see much point
 		if (!gfx_extraconv)
@@ -302,7 +302,7 @@ protected:
 		}
 
 		// Get palette to use
-		Palette8bit usepal;
+		Palette usepal;
 		if (image.hasPalette())
 			usepal.copyPalette(image.getPalette());
 		else if (pal)

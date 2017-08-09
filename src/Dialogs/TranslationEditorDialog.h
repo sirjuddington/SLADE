@@ -10,7 +10,7 @@
 
 class GfxCanvas;
 class PaletteCanvas;
-class Palette8bit;
+class Palette;
 class GradientBox : public OGLCanvas
 {
 private:
@@ -35,7 +35,7 @@ class wxPanel;
 class TranslationEditorDialog : public wxDialog
 {
 private:
-	Palette8bit*	palette;
+	Palette*	palette;
 	Translation		translation;
 	SImage			image_preview;
 
@@ -81,7 +81,7 @@ private:
 	wxCheckBox*		cb_paletteonly;
 
 public:
-	TranslationEditorDialog(wxWindow* parent, Palette8bit* pal, string title = "Edit Translation", SImage* preview_image = NULL);
+	TranslationEditorDialog(wxWindow* parent, Palette* pal, string title = "Edit Translation", SImage* preview_image = NULL);
 	~TranslationEditorDialog();
 
 	Translation&	getTranslation() { return translation; }
@@ -137,11 +137,11 @@ class GfxColouriseDialog : public wxDialog
 private:
 	GfxCanvas*			gfx_preview;
 	ArchiveEntry*		entry;
-	Palette8bit*		palette;
+	Palette*		palette;
 	ColourBox*			cb_colour;
 
 public:
-	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal);
+	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
 	rgba_t getColour();
 	void setColour(string col);
 	void onColourChanged(wxEvent& e);
@@ -160,13 +160,13 @@ class GfxTintDialog : public wxDialog
 private:
 	GfxCanvas*			gfx_preview;
 	ArchiveEntry*		entry;
-	Palette8bit*		palette;
+	Palette*		palette;
 	ColourBox*			cb_colour;
 	wxSlider*			slider_amount;
 	wxStaticText*		label_amount;
 
 public:
-	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal);
+	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
 	rgba_t getColour();
 	float getAmount();
 	void setValues(string col, int val);

@@ -4,7 +4,7 @@
 
 #include "common.h"
 #include "PrefsPanelBase.h"
-#include "UI/TextEditor/TextStyle.h"
+#include "TextEditor/TextStyle.h"
 
 class wxListBox;
 class TextLanguage;
@@ -32,7 +32,7 @@ private:
 	wxCheckBox*			cb_override_background;
 
 	TextLanguage*		language_preview;
-	TextEditor*			te_preview;
+	TextEditorCtrl*		te_preview;
 
 public:
 	TextStylePrefsPanel(wxWindow* parent);

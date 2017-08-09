@@ -71,6 +71,7 @@
 #include "UI/PaletteChooser.h"
 #include "Utility/SFileDialog.h"
 #include "Archive/Formats/ZipArchive.h"
+#include "Scripting/ScriptManager.h"
 
 
 /*******************************************************************
@@ -486,6 +487,9 @@ void ArchivePanel::addMenus()
 		SAction::fromId("arch_check_duplicates2")->addToMenu(menu_clean);
 		SAction::fromId("arch_replace_maps")->addToMenu(menu_clean);
 		menu_archive->AppendSubMenu(menu_clean, "&Maintenance");
+		auto menu_scripts = new wxMenu();
+		ScriptManager::populateArchiveScriptMenu(menu_scripts);
+		menu_archive->AppendSubMenu(menu_scripts, "&Scripts");
 	}
 	if (!menu_entry)
 	{
@@ -707,7 +711,7 @@ bool ArchivePanel::newEntry(int type)
 		case ENTRY_PALETTE:
 			if (cp.ShowModal() == wxID_OK)
 			{
-				Palette8bit* pal;
+				Palette* pal;
 				int choice = cp.getChoice();
 				if (choice)
 					pal = App::paletteManager()->getPalette(choice - 1);
@@ -1105,7 +1109,11 @@ bool ArchivePanel::deleteEntry(bool confirm)
 		else if (num > 0)
 			item = S_FMT("these %d items", num);
 
-		if (wxMessageBox(S_FMT("Are you sure you want to delete %s?", item), "Delete Confirmation", wxYES_NO|wxICON_QUESTION) == wxNO)
+		if (wxMessageBox(
+				S_FMT("Are you sure you want to delete %s?", item),
+				"Delete Confirmation",
+				wxYES_NO|wxICON_QUESTION
+			) != wxYES)
 			return false;
 	}
 
@@ -1862,7 +1870,7 @@ bool ArchivePanel::gfxRemap()
 	Misc::loadImageFromEntry(&image, selection[0]);
 
 	// Create translation editor dialog
-	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 	TranslationEditorDialog ted(this, pal, "Colour Remap", &image);
 	ted.openTranslation(((GfxEntryPanel*)gfx_area)->prevTranslation());
 
@@ -1920,7 +1928,7 @@ bool ArchivePanel::gfxColourise()
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 
 	// Create colourise dialog
-	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 	GfxColouriseDialog gcd(this, selection[0], pal);
 	gcd.setColour(last_colour);
 
@@ -1975,7 +1983,7 @@ bool ArchivePanel::gfxTint()
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 
 	// Create colourise dialog
-	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 	GfxTintDialog gtd(this, selection[0], pal);
 	gtd.setValues(last_tint_colour, last_tint_amount);
 
@@ -2992,6 +3000,10 @@ bool ArchivePanel::handleAction(string id)
 		MapReplaceDialog dlg(this, archive);
 		dlg.ShowModal();
 	}
+
+	// Archive->Scripts->...
+	else if (id == "arch_script")
+		ScriptManager::runArchiveScript(archive, wx_id_offset);
 
 
 	// *************************************************************

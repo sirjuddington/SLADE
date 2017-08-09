@@ -148,6 +148,17 @@ void MapVertex::setFloatProperty(string key, double value)
 		return MapObject::setFloatProperty(key, value);
 }
 
+/* MapVertex::scriptCanModifyProp
+ * Returns true if the property [key] can be modified via script
+ *******************************************************************/
+bool MapVertex::scriptCanModifyProp(const string& key)
+{
+	if (key == "x" || key == "y")
+		return false;
+
+	return true;
+}
+
 /* MapVertex::connectLine
  * Adds [line] to the list of lines connected to this vertex
  *******************************************************************/

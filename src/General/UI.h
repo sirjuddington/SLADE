@@ -4,6 +4,7 @@ class wxWindow;
 namespace UI
 {
 	// Splash Window
+	void	enableSplash(bool enable);
 	void	showSplash(string message, bool progress = false, wxWindow* parent = nullptr);
 	void	hideSplash();
 	void	updateSplash();

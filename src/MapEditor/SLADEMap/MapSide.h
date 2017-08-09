@@ -31,6 +31,36 @@ class MapSide : public MapObject
 {
 	friend class SLADEMap;
 	friend class MapLine;
+public:
+	MapSide(MapSector* sector = nullptr, SLADEMap* parent = nullptr);
+	MapSide(SLADEMap* parent);
+	~MapSide();
+
+	void	copy(MapObject* c) override;
+
+	bool	isOk() const { return !!sector; }
+
+	MapSector*	getSector() const { return sector; }
+	MapLine*	getParentLine() const { return parent; }
+	string		getTexUpper() const { return tex_upper; }
+	string		getTexMiddle() const { return tex_middle; }
+	string		getTexLower() const { return tex_lower; }
+	short		getOffsetX() const { return offset_x; }
+	short		getOffsetY() const { return offset_y; }
+	uint8_t		getLight();
+
+	void	setSector(MapSector* sector);
+	void	changeLight(int amount);
+
+	int		intProperty(string key) override;
+	void	setIntProperty(string key, int value) override;
+	string	stringProperty(string key) override;
+	void	setStringProperty(string key, string value) override;
+	bool	scriptCanModifyProp(const string& key) override;
+
+	void	writeBackup(mobj_backup_t* backup) override;
+	void	readBackup(mobj_backup_t* backup) override;
+
 private:
 	// Basic data
 	MapSector*	sector;
@@ -40,35 +70,6 @@ private:
 	string		tex_lower;
 	short		offset_x;
 	short		offset_y;
-
-public:
-	MapSide(MapSector* sector = NULL, SLADEMap* parent = NULL);
-	MapSide(SLADEMap* parent);
-	~MapSide();
-
-	void	copy(MapObject* c);
-
-	bool	isOk() { return !!sector; }
-
-	MapSector*	getSector() { return sector; }
-	MapLine*	getParentLine() { return parent; }
-	string		getTexUpper() { return tex_upper; }
-	string		getTexMiddle() { return tex_middle; }
-	string		getTexLower() { return tex_lower; }
-	short		getOffsetX() { return offset_x; }
-	short		getOffsetY() { return offset_y; }
-	uint8_t		getLight();
-
-	void	setSector(MapSector* sector);
-	void	changeLight(int amount);
-
-	int		intProperty(string key);
-	void	setIntProperty(string key, int value);
-	string	stringProperty(string key);
-	void	setStringProperty(string key, string value);
-
-	void	writeBackup(mobj_backup_t* backup);
-	void	readBackup(mobj_backup_t* backup);
 };
 
 #endif //__MAPSIDE_H__

@@ -156,6 +156,22 @@ int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 	return -1;
 }
 
+vector<ArchiveEntry::SPtr> ArchiveTreeNode::allEntries()
+{
+	vector<ArchiveEntry::SPtr> entries;
+	std::function<void(vector<ArchiveEntry::SPtr>&, ArchiveTreeNode*)> f =
+	[&](vector<ArchiveEntry::SPtr>& list, ArchiveTreeNode* dir)
+	{
+		for (unsigned a = 0; a < dir->nChildren(); a++)
+			f(list, (ArchiveTreeNode*)dir->getChild(a));
+
+		for (auto& entry : dir->entries_)
+			list.push_back(entry);
+	};
+	f(entries, this);
+	return entries;
+}
+
 // ----------------------------------------------------------------------------
 // ArchiveTreeNode::getEntry
 //
@@ -449,6 +465,7 @@ void ArchiveTreeNode::clear()
 	// Clear subdirs
 	for (unsigned a = 0; a < children.size(); a++)
 		delete children[a];
+	children.clear();
 }
 
 // ----------------------------------------------------------------------------

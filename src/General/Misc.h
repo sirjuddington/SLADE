@@ -20,13 +20,13 @@ enum
 class SImage;
 class Archive;
 class ArchiveEntry;
-class Palette8bit;
+class Palette;
 class Tokenizer;
 namespace Misc
 {
 	bool		loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index = 0);
 	int			detectPaletteHack(ArchiveEntry* entry);
-	bool		loadPaletteFromArchive(Palette8bit* pal, Archive* archive, int lump = PAL_NOHACK);
+	bool		loadPaletteFromArchive(Palette* pal, Archive* archive, int lump = PAL_NOHACK);
 	string		sizeAsString(uint32_t size);
 	string		lumpNameToFileName(string lump);
 	string		fileNameToLumpName(string file);

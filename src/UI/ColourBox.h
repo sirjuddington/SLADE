@@ -4,12 +4,12 @@
 
 #include "common.h"
 
-class Palette8bit;
+class Palette;
 class ColourBox : public wxPanel
 {
 private:
 	rgba_t			colour;
-	Palette8bit*	palette;
+	Palette*	palette;
 	bool			alpha;
 	bool			altmode;
 
@@ -21,7 +21,7 @@ public:
 
 	rgba_t	getColour() { return colour; }
 
-	void	setPalette(Palette8bit* pal)	{ palette = pal; }
+	void	setPalette(Palette* pal)	{ palette = pal; }
 	void	setColour(rgba_t col)			{ colour = col; Refresh(); }
 
 	void	popPalette();

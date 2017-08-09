@@ -207,7 +207,8 @@ void ColorimetryPrefsPanel::init()
 	spin_grey_r->SetValue(col_greyscale_r);
 	spin_grey_g->SetValue(col_greyscale_g);
 	spin_grey_b->SetValue(col_greyscale_b);
-	if (col_match > Palette8bit::MATCH_DEFAULT && col_match < Palette8bit::MATCH_STOP) choice_colmatch->SetSelection(col_match - 1);
+	if (col_match > (int)Palette::ColourMatch::Default && col_match < (int)Palette::ColourMatch::Stop)
+		choice_colmatch->SetSelection(col_match - 1);
 	spin_factor_r->SetValue(col_match_r);
 	spin_factor_g->SetValue(col_match_g);
 	spin_factor_b->SetValue(col_match_b);

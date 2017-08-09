@@ -303,7 +303,8 @@ bool MIDIPlayer::play()
 	if (usetimidity)
 	{
 		string commandline = snd_timidity_path + " " + file + " " + snd_timidity_options;
-		program = wxProcess::Open(commandline);
+		if (!(program = wxProcess::Open(commandline)))
+			return false;
 
 		int pid = program->GetPid();
 		return program->Exists(pid);

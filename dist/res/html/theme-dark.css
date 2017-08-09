@@ -1,0 +1,273 @@
+/* --------- Start Page ---------- */
+
+#slade {
+	color: hsla(220, 35%, 60%, 1);
+}
+
+#version {
+	color: hsla(220, 35%, 60%, 1);
+}
+
+
+/* ----------- General ----------- */
+
+body,
+table,
+td,
+th,
+div,
+a {
+	color: hsl(220, 10%, 85%);
+}
+
+html,
+body {
+	background-color: hsla(220, 20%, 15%, 1);
+}
+
+strong {
+	color: hsl(220, 10%, 90%);
+}
+
+
+/* ------------ Links ------------ */
+
+A:link,
+A:visited {
+	color: hsl(40, 100%, 70%);
+}
+
+A:hover,
+A:active {
+	color: hsl(40, 100%, 95%);
+}
+
+
+/* ------------ Boxes ------------ */
+
+#title,
+.back,
+#back,
+div.news_title,
+div.news_byline,
+div.news_comments,
+div.news_postbody,
+#side {
+	background-color: hsl(220, 10%, 23%);
+	border-color: #516282;
+}
+
+.back,
+#back,
+div.wikifooter,
+#side {
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+
+/* Box Title */
+
+#title,
+div.news_title,
+#date {
+	background-color: hsla(220, 35%, 40%, 1);
+	color: hsl(222, 100%, 98%);
+	border-color: #64789F;
+}
+
+
+/* News page box title */
+
+#date {
+	color: hsl(222, 80%, 90%);
+}
+
+
+/* News page box content */
+
+span.news_time {
+	color: hsl(222, 80%, 90%);
+}
+
+
+/* Code box */
+
+.bbc_code,
+#code,
+div.code,
+div.newspost blockquote {
+	background: none repeat scroll 0 0 hsl(220, 10%, 20%);
+	border: 1px solid hsl(220, 12%, 38%);
+	color: hsl(220, 10%, 75%);
+}
+
+
+/* Menu item boxes */
+
+a.menu2,
+a.menu-hover2,
+a.menul,
+a.menul-hover,
+a.menur,
+a.menur-hover,
+a.menu-current,
+a.menul-current,
+a.menur-current {
+	background-color: hsla(220, 35%, 40%, 1);
+	border-color: hsl(220, 35%, 30%);
+	color: hsl(220, 55%, 90%);
+}
+
+a.menul-hover,
+a.menur-hover,
+a.menu-hover2 {
+	background-color: hsl(220, 35%, 40%);
+	color: #ffffff;
+	border-color: hsl(40, 100%, 70%);
+	text-shadow: hsl(220, 45%, 60%) 0px 0px 3px;
+}
+
+a.menur-current,
+a.menul-current,
+a.menu-current {
+	background: linear-gradient(to bottom, hsl(220, 35%, 40%), hsl(220, 35%, 35%));
+}
+
+
+/* --------- Page Header --------- */
+
+div.header {
+	background: linear-gradient(to bottom, hsl(220, 35%, 45%), hsl(220, 35%, 40%));
+}
+
+div.headershadow {
+	background: linear-gradient(to bottom, #0b0d11, #1d232d);
+}
+
+td.title1 {
+	text-shadow: 0px 0px 3px #263244;
+}
+
+td.title2 {
+	text-shadow: 0px 0px 3px #263244;
+}
+
+table.hidden,
+td.title1,
+td.title2,
+td.title3 {
+	background: linear-gradient(to bottom, hsl(220, 35%, 45%), hsl(220, 35%, 40%));
+	color: hsl(220, 80%, 80%);
+}
+
+
+/* Page Title */
+
+div#pagetitle {
+	background-color: #7488AF;
+	color: #F2F6FF;
+	border-color: #ADBFD8;
+}
+
+
+/* --------- Inner Tables --------- */
+
+table.inner,
+table.wiki {
+	background-color: hsl(220, 20%, 20%);
+	border-color: hsl(220, 10%, 35%);
+}
+
+td.inner,
+th.inner,
+th.innertop,
+th.innertopright,
+table.wiki th,
+table.wiki td {
+	background-color: hsl(220, 10%, 23%);
+	border-color: #4d5f79;
+}
+
+th.inner,
+table.wiki th {
+	background-color: hsl(220, 10%, 26%);
+	color: hsl(220, 30%, 66%);
+	border-color: #617798;
+}
+
+th.innertop,
+th.innertopright {
+	background-color: hsl(220, 12%, 28%);
+	color: hsl(220, 30%, 86%);
+}
+
+table.wiki tr:nth-child(even) td {
+	background-color: hsl(220, 10%, 22%) !important;
+}
+
+
+/* ------------- Wiki ------------- */
+
+div.wiki hr {
+	color: #DEE0EF;
+	border-color: #DEE0EF;
+}
+
+code {
+	border-color: hsl(220, 15%, 35%);
+	background-color: hsl(220, 20%, 30%);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+	color: hsl(220, 91%, 95%);
+}
+
+h2,
+h1 {
+	border-color: hsl(218, 15%, 36%);
+}
+
+pre code {
+	background: none repeat scroll 0 0 hsl(220, 10%, 20%);
+	border: 1px solid hsl(220, 20%, 35%);
+}
+
+div.wikifooter {
+	background-color: hsl(220, 35%, 40%);
+	color: hsl(220, 36%, 76%);
+	border-color: hsl(220, 35%, 30%);
+}
+
+div.wikifooter a {
+	color: #FFF;
+}
+
+div.wikifooter a:hover {
+	color: #bbc1ff;
+}
+
+div.wiki blockquote {
+	color: hsl(220, 23%, 68%);
+	border-color: hsl(220, 23%, 48%);
+}
+
+
+/* --------- WebKit Stuff --------- */
+
+::-webkit-scrollbar-track {
+	background-color: hsl(220, 10%, 20%);
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: hsl(220, 35%, 50%);
+	border: solid 0px;
+	border-color: hsl(220, 20%, 70%);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: hsl(220, 50%, 60%);
+}

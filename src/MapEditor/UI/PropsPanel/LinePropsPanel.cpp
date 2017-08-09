@@ -150,15 +150,10 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	if (map_format == MAP_UDMF)
 	{
 		// Get all udmf flag properties
-		vector<string> flags_udmf;
+		vector<UDMFProperty> flags_udmf;
 		for (auto& i : props)
-		{
 			if (i.second.isFlag())
-			{
-				flags_udmf.push_back(i.second.name());
-				//udmf_flags.push_back(i.second.propName());
-			}
-		}
+				flags_udmf.push_back(i.second);
 
 		// Add flag checkboxes
 		int flag_mid = flags_udmf.size() / 3;
@@ -168,13 +163,13 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 			auto cb_flag = new wxCheckBox(
 				panel_flags,
 				-1,
-				flags_udmf[a],
+				flags_udmf[a].name(),
 				wxDefaultPosition,
 				wxDefaultSize,
 				wxCHK_3STATE
 			);
 			gb_sizer_flags->Add(cb_flag, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
-			flags.push_back({ cb_flag, (int)a, flags_udmf[a] });
+			flags.push_back({ cb_flag, (int)a, flags_udmf[a].propName() });
 
 			if (row > flag_mid)
 			{
@@ -195,7 +190,14 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 			if (Game::configuration().lineFlag(a).activation)
 				continue;
 
-			wxCheckBox* cb_flag = new wxCheckBox(panel_flags, -1, Game::configuration().lineFlag(a).name, wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+			wxCheckBox* cb_flag = new wxCheckBox(
+				panel_flags,
+				-1,
+				Game::configuration().lineFlag(a).name,
+				wxDefaultPosition,
+				wxDefaultSize,
+				wxCHK_3STATE
+			);
 			gb_sizer_flags->Add(cb_flag, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
 			flags.push_back({ cb_flag, (int)a, wxEmptyString });
 

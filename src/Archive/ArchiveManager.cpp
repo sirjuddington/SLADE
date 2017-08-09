@@ -607,7 +607,8 @@ Archive* ArchiveManager::newArchive(string format)
 		new_archive = new ZipArchive();
 	else
 	{
-		Log::error("This shouldn't happen.");
+		Global::error = S_FMT("Can not create archive of format: %s", CHR(format));
+		Log::error(Global::error);
 		return nullptr;
 	}
 

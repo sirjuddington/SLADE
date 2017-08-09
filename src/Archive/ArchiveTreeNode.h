@@ -29,6 +29,8 @@ public:
 	unsigned			numEntries(bool inc_subdirs = false);
 	int					entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
 
+	vector<ArchiveEntry::SPtr>	allEntries();
+
 	// Entry Operations
 	void	linkEntries(ArchiveEntry* first, ArchiveEntry* second);
 	bool	addEntry(ArchiveEntry* entry, unsigned index = 0xFFFFFFFF);

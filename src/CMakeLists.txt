@@ -20,10 +20,10 @@ include(${wxWidgets_USE_FILE})
 
 # SFML
 if (USE_SFML_RENDERWINDOW)
-set(SFML_FIND_COMPONENTS system audio window graphics)
+set(SFML_FIND_COMPONENTS system audio window graphics network)
 ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
 else (USE_SFML_RENDERWINDOW)
-set(SFML_FIND_COMPONENTS system audio window)
+set(SFML_FIND_COMPONENTS system audio window network)
 endif(USE_SFML_RENDERWINDOW)
 
 # Fluidsynth
@@ -79,6 +79,8 @@ file(GLOB_RECURSE SLADE_SOURCES
 	OpenGL/*.cpp
 	UI/*.cpp
 	Utility/*.cpp
+	Scripting/*.cpp
+	TextEditor/*.cpp
 	)
 set(SLADE_HEADERS
 )
@@ -98,14 +100,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 
 # External libraries are compiled separately to enable unity builds
 add_subdirectory(External)
-
-# c++14 is required to compile
-if(CMAKE_VERSION VERSION_LESS 3.1)
-	add_compile_options(-std=c++14)
-else()
-	set(CMAKE_CXX_STANDARD 14)
-	set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-endif()
 
 add_executable(slade WIN32 MACOSX_BUNDLE
 	${SLADE_SOURCES}

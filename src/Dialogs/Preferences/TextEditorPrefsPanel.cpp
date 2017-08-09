@@ -121,7 +121,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	// Word matching
 	cb_match_cursor_word = new wxCheckBox(this, -1, "Hilight Matching Words");
 	cb_match_cursor_word->SetToolTip(
-		"When enabled, any words matching the word at the current cursor position will be hilighted"
+		"When enabled, any words matching the word at the current cursor position or selection will be hilighted"
 	);
 	sizer->Add(cb_match_cursor_word, 0, wxEXPAND|wxALL, 4);
 

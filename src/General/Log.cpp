@@ -1,40 +1,44 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    Log.cpp
- * Description: The SLADE logging implementation
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Log.cpp
+// Description: The SLADE logging implementation
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
 #include <fstream>
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 namespace Log
 {
 	vector<Message>	log;
@@ -43,13 +47,17 @@ namespace Log
 CVAR(Int, log_verbosity, 1, CVAR_SAVE)
 
 
-/*******************************************************************
- * FREEIMAGE ERROR HANDLER
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// FreeImage Error Handler
+//
+// ----------------------------------------------------------------------------
 
-/* FreeImageErrorHandler
- * Allows us to catch FreeImage errors and log them
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// FreeImageErrorHandler
+//
+// Allows us to catch FreeImage errors and log them
+// ----------------------------------------------------------------------------
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 {
 	string error = "FreeImage: ";
@@ -61,27 +69,35 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 }
 
 
-/*******************************************************************
- * LOG::MESSAGE STRUCT FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Log::Message Struct Functions
+//
+// ----------------------------------------------------------------------------
 
-/* Log::Message::formattedMessageLine
- * Returns the log entry as a formatted string:
- * HH:MM:SS: <message>
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Log::Message::formattedMessageLine
+//
+// Returns the log entry as a formatted string:
+// HH:MM:SS: <message>
+// ----------------------------------------------------------------------------
 string Log::Message::formattedMessageLine() const
 {
 	return S_FMT("%s: %s", wxDateTime(timestamp).FormatISOTime(), CHR(message));
 }
 
 
-/*******************************************************************
- * LOG NAMESPACE FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Log Namespace Functions
+//
+// ----------------------------------------------------------------------------
 
-/* Log::init
- * Initialises the log file and logging stuff
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Log::init
+//
+// Initialises the log file and logging stuff
+// ----------------------------------------------------------------------------
 void Log::init()
 {
 	// Redirect sf::err output to the log file
@@ -118,34 +134,42 @@ void Log::init()
 	FreeImage_SetOutputMessage(FreeImageErrorHandler);
 }
 
-/* Log::history
- * Returns the log message history
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Log::history
+//
+// Returns the log message history
+// ----------------------------------------------------------------------------
 const vector<Log::Message>& Log::history()
 {
 	return log;
 }
 
-/* Log::verbosity
- * Returns the current log verbosity level, log messages with a
- * higher level than the current verbosity will not be logged
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Log::verbosity
+//
+// Returns the current log verbosity level, log messages with a
+// higher level than the current verbosity will not be logged
+// ----------------------------------------------------------------------------
 int Log::verbosity()
 {
 	return log_verbosity;
 }
 
-/* Log::setVerbosity
- * Sets the log verbosity level to [verbosity]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Log::setVerbosity
+//
+// Sets the log verbosity level to [verbosity]
+// ----------------------------------------------------------------------------
 void Log::setVerbosity(int verbosity)
 {
 	log_verbosity = verbosity;
 }
 
-/* Log::message
- * Logs a message [text] of [type]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Log::message
+//
+// Logs a message [text] of [type]
+// ----------------------------------------------------------------------------
 void Log::message(MessageType type, const char* text)
 {
 	// Add log message
@@ -156,9 +180,26 @@ void Log::message(MessageType type, const char* text)
 		sf::err() << log.back().formattedMessageLine() << "\n";
 }
 
-/* Log::message
- * Logs a message [text] of [type] at verbosity [level]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Log::since
+//
+// Returns a list of log messages of [type] that have been recorded since
+// [time]
+// ----------------------------------------------------------------------------
+vector<Log::Message*> Log::since(time_t time, MessageType type)
+{
+	vector<Message*> list;
+	for (auto& msg : log)
+		if (msg.timestamp >= time && (type == MessageType::Any || msg.type == type))
+			list.push_back(&msg);
+	return list;
+}
+
+// ----------------------------------------------------------------------------
+// Log::message
+//
+// Logs a message [text] of [type] at verbosity [level]
+// ----------------------------------------------------------------------------
 void Log::message(MessageType type, int level, const char* text)
 {
 	if (level > log_verbosity)

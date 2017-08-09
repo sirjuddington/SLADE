@@ -72,6 +72,11 @@ void MainEditor::openMapEditor(Archive* archive)
 	MapEditor::chooseMap(archive);
 }
 
+void ::MainEditor::openArchiveTab(Archive* archive)
+{
+	main_window->getArchiveManagerPanel()->openTab(archive);
+}
+
 /* MainWindow::openEntry
  * Opens [entry] in its own tab
  *******************************************************************/
@@ -85,7 +90,7 @@ void MainEditor::setGlobalPaletteFromArchive(Archive * archive)
 	main_window->getPaletteChooser()->setGlobalFromArchive(archive);
 }
 
-Palette8bit* MainEditor::currentPalette(ArchiveEntry* entry)
+Palette* MainEditor::currentPalette(ArchiveEntry* entry)
 {
 	return main_window->getPaletteChooser()->getSelectedPalette(entry);
 }

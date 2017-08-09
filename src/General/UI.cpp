@@ -6,12 +6,21 @@
 
 namespace UI
 {
-	std::unique_ptr<SplashWindow> splash_window;
+	std::unique_ptr<SplashWindow>	splash_window;
+	bool							splash_enabled = true;
 }
 
 
+void UI::enableSplash(bool enable)
+{
+	splash_enabled = enable;
+}
+
 void UI::showSplash(string message, bool progress, wxWindow* parent)
 {
+	if (!splash_enabled)
+		return;
+
 	if (!splash_window)
 	{
 		SplashWindow::init();

@@ -401,6 +401,20 @@ void MapLine::setStringProperty(string key, string value)
 		MapObject::setStringProperty(key, value);
 }
 
+/* MapLine::scriptCanModifyProp
+ * Returns true if the property [key] can be modified via script
+ *******************************************************************/
+bool MapLine::scriptCanModifyProp(const string& key)
+{
+	if (key == "v1" ||
+		key == "v2" ||
+		key == "sidefront" ||
+		key == "sideback")
+		return false;
+
+	return true;
+}
+
 /* MapLine::setS1
  * Sets the front side of the line to [side]
  *******************************************************************/

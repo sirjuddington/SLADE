@@ -30,6 +30,8 @@
 #include "Main.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
+#include "TextEditor/UI/FindReplacePanel.h"
+#include "TextEditor/UI/TextEditorCtrl.h"
 #include "TextEntryPanel.h"
 
 
@@ -56,7 +58,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	: EntryPanel(parent, "text")
 {
 	// Create the text area
-	text_area = new TextEditor(this, -1);
+	text_area = new TextEditorCtrl(this, -1);
 	sizer_main->Add(text_area, 1, wxEXPAND, 0);
 
 	// Create the find+replace panel
@@ -68,7 +70,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 
 	// Add 'Text Language' choice to toolbar
 	SToolBarGroup* group_language = new SToolBarGroup(toolbar, "Text Language", true);
-	languages = TextLanguage::getLanguageNames();
+	languages = TextLanguage::languageNames();
 	languages.Sort();
 	languages.Insert("None", 0, 1);
 	choice_text_language = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
@@ -144,20 +146,20 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 
 	// Level markers use FraggleScript
 	if (entry->getType() == EntryType::mapMarkerType())
-		tl = TextLanguage::getLanguage("fragglescript");
+		tl = TextLanguage::fromId("fragglescript");
 
 	// From entry language hint
 	if (entry->exProps().propertyExists("TextLanguage"))
 	{
 		string lang_id = entry->exProp("TextLanguage");
-		tl = TextLanguage::getLanguage(lang_id);
+		tl = TextLanguage::fromId(lang_id);
 	}
 
 	// Or, from entry type
 	if (!tl && entry->getType()->extraProps().propertyExists("text_language"))
 	{
 		string lang_id = entry->getType()->extraProps()["text_language"];
-		tl = TextLanguage::getLanguage(lang_id);
+		tl = TextLanguage::fromId(lang_id);
 	}
 
 	// Load language
@@ -168,7 +170,7 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	{
 		for (unsigned a = 0; a < languages.size(); a++)
 		{
-			if (S_CMPNOCASE(tl->getName(), languages[a]))
+			if (S_CMPNOCASE(tl->name(), languages[a]))
 			{
 				choice_text_language->Select(a);
 				break;
@@ -211,7 +213,7 @@ bool TextEntryPanel::saveEntry()
 		entry->setType(EntryType::getType("text"));
 
 	// Update DECORATE definitions if decorate
-	if (text_area->getLanguage() && text_area->getLanguage()->getId() == "decorate")
+	if (text_area->getLanguage() && text_area->getLanguage()->id() == "decorate")
 	{
 		Game::configuration().clearDecorateDefs();
 		Game::configuration().parseDecorateDefs(App::archiveManager().baseResourceArchive());
@@ -371,14 +373,14 @@ void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 {
 	int index = choice_text_language->GetSelection();
 	// Get selected language
-	TextLanguage* tl = TextLanguage::getLanguageByName(choice_text_language->GetStringSelection());
+	TextLanguage* tl = TextLanguage::fromName(choice_text_language->GetStringSelection());
 
 	// Set text editor language
 	text_area->setLanguage(tl);
 
 	// Set entry language hint
 	if (tl)
-		entry->exProp("TextLanguage") = tl->getId();
+		entry->exProp("TextLanguage") = tl->id();
 	else
 		entry->exProps().removeProperty("TextLanguage");
 }

@@ -15,6 +15,9 @@ class ItemSelection
 {
 public:
 	typedef std::map<MapEditor::Item, bool> ChangeSet;
+	typedef vector<MapEditor::Item>::const_iterator const_iterator;
+	typedef vector<MapEditor::Item>::iterator iterator;
+	typedef vector<MapEditor::Item>::value_type value_type;
 
 	ItemSelection(MapEditContext* context = nullptr);
 
@@ -24,8 +27,10 @@ public:
 	const ChangeSet&	lastChange() const { return last_change_; }
 
 	// Access to selection
-	vector<MapEditor::Item>::const_iterator begin() { return selection_.begin(); }
-	vector<MapEditor::Item>::const_iterator end() { return selection_.end(); }
+	const_iterator begin() const { return selection_.begin(); }
+	const_iterator end() const { return selection_.end(); }
+	iterator begin() { return selection_.begin(); }
+	iterator end() { return selection_.end(); }
 	MapEditor::Item& operator[] (unsigned index) { return selection_[index]; }
 	const MapEditor::Item& operator[] (unsigned index) const { return selection_[index]; }
 
