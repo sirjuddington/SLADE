@@ -1,5 +1,6 @@
 
 #include "Main.h"
+#include "App.h"
 #include "ScriptPanel.h"
 #include "Scripting/ScriptManager.h"
 #include "TextEditor/UI/FindReplacePanel.h"
@@ -28,6 +29,8 @@ ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) :
 	find_replace_panel_->Show(false);
 
 	text_editor_->setFindReplacePanel(find_replace_panel_);
+
+	last_saved_ = App::runTimer();
 }
 
 string ScriptPanel::currentText() const
@@ -35,37 +38,71 @@ string ScriptPanel::currentText() const
 	return text_editor_->GetText();
 }
 
+bool ScriptPanel::modified() const
+{
+	return text_editor_->lastModified() > last_saved_;
+}
+
+bool ScriptPanel::close()
+{
+	if (modified() && !script_->read_only)
+	{
+		auto response = wxMessageBox("Save changes to script?", "Close", wxYES_NO | wxCANCEL);
+		if (response == wxCANCEL)
+			return false;
+		if (response == wxYES)
+			save();
+	}
+
+	return true;
+}
+
+bool ScriptPanel::save()
+{
+	last_saved_ = App::runTimer();
+
+	if (script_ && !script_->read_only)
+	{
+		script_->text = text_editor_->GetText();
+		return true;
+	}
+
+	return false;
+}
+
 bool ScriptPanel::handleAction(const string& id)
 {
-	// Jump To Line
-	if (id == "scrm_jump_to_line")
+	// Script->Save
+	if (id == "scrm_save")
+		save();
+
+	// Text->Jump To Line
+	else if (id == "scrm_jump_to_line")
 		text_editor_->jumpToLine();
 
-	// Find+Replace
+	// Text->Find+Replace
 	else if (id == "scrm_find_replace")
 		text_editor_->showFindReplacePanel();
 
-	// Word Wrapping toggle
+	// Text->Word Wrapping toggle
 	else if (id == "scrm_wrap")
 	{
 		SAction* action = SAction::fromId("scrm_wrap");
-		//bool m = isModified();
 		if (action->isChecked())
 			text_editor_->SetWrapMode(wxSTC_WRAP_WORD);
 		else
 			text_editor_->SetWrapMode(wxSTC_WRAP_NONE);
-		//setModified(m);
 	}
 
-	// Fold All
+	// Text->Fold All
 	else if (id == "scrm_fold_foldall")
 		text_editor_->foldAll(true);
 
-	// Unfold All
+	// Text->Unfold All
 	else if (id == "scrm_fold_unfoldall")
 		text_editor_->foldAll(false);
 
-	// Not handled
+	// Text->Not handled
 	else
 		return false;
 

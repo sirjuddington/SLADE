@@ -136,16 +136,25 @@ public:
 // ScriptManagerWindow class constructor
 // ----------------------------------------------------------------------------
 ScriptManagerWindow::ScriptManagerWindow() :
-	STopWindow("SLADE Script Manager", "scriptmanager"),
-	script_scratchbox_{ "", "Scratch Box", "" }
+	STopWindow("SLADE Script Manager", "scriptmanager")
 {
 	setupLayout();
 
 	// Open 'scratch box' initially
+	script_scratchbox_.name = "Scratch Box";
 	script_scratchbox_.text =
 		"-- Use this script to write ad-hoc SLADE editor scripts\n"
 		"-- Note that this will not be saved between sessions\n\n";
+	script_scratchbox_.read_only = true;
 	openScriptTab(&script_scratchbox_);
+
+	// Bind events
+	tabs_scripts_->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [&](wxAuiNotebookEvent& e)
+	{
+		auto page = currentPage();
+		if (page && !page->close())
+			e.Veto();
+	});
 }
 
 // ----------------------------------------------------------------------------
@@ -283,9 +292,18 @@ void ScriptManagerWindow::setupMenu()
 	auto menu = new wxMenuBar();
 	menu->SetThemeEnabled(false);
 
+	// File menu
+	auto fileMenu = new wxMenu();
+	auto newMenu = new wxMenu();
+	SAction::fromId("scrm_newscript_custom")->addToMenu(newMenu, true, "&Custom Script");
+	SAction::fromId("scrm_newscript_archive")->addToMenu(newMenu, true, "&Archive Script");
+	fileMenu->AppendSubMenu(newMenu, "&New");
+	menu->Append(fileMenu, "&File");
+
 	// Script menu
-	auto scriptMenu = new wxMenu("");
+	auto scriptMenu = new wxMenu();
 	SAction::fromId("scrm_run")->addToMenu(scriptMenu);
+	SAction::fromId("scrm_save")->addToMenu(scriptMenu);
 	menu->Append(scriptMenu, "&Script");
 
 	// Text menu
@@ -301,7 +319,7 @@ void ScriptManagerWindow::setupMenu()
 	menu->Append(textMenu, "&Text");
 
 	// View menu
-	auto viewMenu = new wxMenu("");
+	auto viewMenu = new wxMenu();
 	SAction::fromId("scrm_showscripts")->addToMenu(viewMenu);
 	SAction::fromId("scrm_showconsole")->addToMenu(viewMenu);
 	menu->Append(viewMenu, "&View");
@@ -322,6 +340,7 @@ void ScriptManagerWindow::setupToolbar()
 	// Create File toolbar
 	auto tbg_script = new SToolBarGroup(toolbar, "_Script");
 	tbg_script->addActionButton("scrm_run");
+	tbg_script->addActionButton("scrm_save");
 	toolbar->addGroup(tbg_script);
 
 	// Add toolbar
@@ -398,6 +417,40 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 	return panel;
 }
 
+void ScriptManagerWindow::populateCustomScripts(wxTreeItemId tree_node)
+{
+	static wxTreeItemId custom_scripts;
+	if (tree_node.IsOk())
+		custom_scripts = tree_node;
+
+	tree_scripts_->DeleteChildren(custom_scripts);
+	for (auto& script : ScriptManager::customScripts())
+		tree_scripts_->AppendItem(
+			custom_scripts,
+			script->name,
+			0,
+			0,
+			new ScriptTreeItemData(script.get())
+		);
+}
+
+void ScriptManagerWindow::populateArchiveScripts(wxTreeItemId tree_node)
+{
+	static wxTreeItemId archive_scripts;
+	if (tree_node.IsOk())
+		archive_scripts = tree_node;
+
+	tree_scripts_->DeleteChildren(archive_scripts);
+	for (auto& script : ScriptManager::archiveScripts())
+		tree_scripts_->AppendItem(
+			archive_scripts,
+			script->name.empty() ? "UNSAVED" : script->name,
+			0,
+			0,
+			new ScriptTreeItemData(script.get())
+		);
+}
+
 // ----------------------------------------------------------------------------
 // ScriptManagerWindow::populateScriptsTree
 //
@@ -416,20 +469,23 @@ void ScriptManagerWindow::populateScriptsTree()
 	tree_scripts_->AppendItem(editor_scripts, "Scratch Box", 0, 0, new ScriptTreeItemData(&script_scratchbox_));
 	for (auto& script : ScriptManager::editorScripts())
 		tree_scripts_->AppendItem(
-			getOrCreateNode(tree_scripts_, editor_scripts, script.path),
-			script.name,
+			getOrCreateNode(tree_scripts_, editor_scripts, script->path),
+			script->name,
 			0,
 			0,
-			new ScriptTreeItemData(&script)
+			new ScriptTreeItemData(script.get())
 		);
 
-	// Global (custom) scripts
+	// Custom scripts
+	auto custom_scripts = tree_scripts_->AppendItem(editor_scripts, "Custom Scripts", 1);
+	populateCustomScripts(custom_scripts);
+
+	// Global scripts
 	auto global_scripts = tree_scripts_->AppendItem(editor_scripts, "Global Scripts", 1);
 
 	// Archive scripts
 	auto archive_scripts = tree_scripts_->AppendItem(editor_scripts, "Archive Scripts", 1);
-	for (auto& script : ScriptManager::archiveScripts())
-		tree_scripts_->AppendItem(archive_scripts, script.name, 0, 0, new ScriptTreeItemData(&script));
+	populateArchiveScripts(archive_scripts);
 
 	// Entry scripts
 	auto entry_scripts = tree_scripts_->AppendItem(editor_scripts, "Entry Scripts", 1);
@@ -474,7 +530,7 @@ void ScriptManagerWindow::openScriptTab(ScriptManager::Script* script) const
 	// Not found, create new tab for script
 	tabs_scripts_->AddPage(
 		new ScriptPanel(tabs_scripts_, script),
-		script->name,
+		script->name.empty() ? "UNSAVED" : script->name,
 		true,
 		Icons::getIcon(Icons::ENTRY, "text")
 	);
@@ -524,6 +580,32 @@ bool ScriptManagerWindow::handleAction(string id)
 	auto current = currentPage();
 	if (current && current->handleAction(id))
 		return true;
+
+	// File->New->Custom Script
+	if (id == "scrm_newscript_custom")
+	{
+		string name = wxGetTextFromUser("Enter a name for the script", "New Custom Script");
+		if (!name.empty())
+		{
+			auto script = ScriptManager::createCustomScript(name);
+			populateCustomScripts();
+			openScriptTab(script);
+		}
+		return true;
+	}
+
+	// File->New->Archive Script
+	if (id == "scrm_newscript_archive")
+	{
+		string name = wxGetTextFromUser("Enter a name for the script", "New Archive Script");
+		if (!name.empty())
+		{
+			auto script = ScriptManager::createArchiveScript(name);
+			populateArchiveScripts();
+			openScriptTab(script);
+		}
+		return true;
+	}
 
 	// Script->Run
 	if (id == "scrm_run")

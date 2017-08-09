@@ -37,8 +37,10 @@ public:
 	TextEditorCtrl(wxWindow* parent, int id);
 	~TextEditorCtrl();
 
-	TextLanguage*	getLanguage() { return language_; }
-	bool			setLanguage(TextLanguage* lang);
+	TextLanguage*	language() const { return language_; }
+	long			lastModified() const { return last_modified_; }
+
+	bool	setLanguage(TextLanguage* lang);
 
 	void	setup();
 	void	setupFoldMargin(TextStyle* margin_style = nullptr);
@@ -92,6 +94,7 @@ private:
 	string				prev_word_match_;
 	string				autocomp_list_;
 	vector<int>			jump_to_lines_;
+	long				last_modified_;
 
 	// State tracking for updates
 	int	prev_cursor_pos_;

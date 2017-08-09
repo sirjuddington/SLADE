@@ -178,7 +178,7 @@ namespace App
 			{
 				token = tz.getToken();	// Skip '{'
 
-										// Keep reading name/value pairs until we hit the ending '}'
+				// Keep reading name/value pairs until we hit the ending '}'
 				string cvar_name = tz.getToken();
 				while (cvar_name.Cmp("}") && !tz.atEnd())
 				{
@@ -597,6 +597,9 @@ void App::exit(bool save_config)
 
 		// Save custom special presets
 		Game::saveCustomSpecialPresets();
+
+		// Save custom scripts
+		ScriptManager::saveUserScripts();
 	}
 
 	// Close all open archives

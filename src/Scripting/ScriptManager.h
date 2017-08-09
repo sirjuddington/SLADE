@@ -9,15 +9,29 @@ namespace ScriptManager
 		string				text;
 		string				name;
 		string				path;
+		bool				read_only = false;
 		ArchiveEntry::WPtr	source;
+
+		typedef std::unique_ptr<Script>	UPtr;
 	};
 
-	vector<Script>&	editorScripts();
-	vector<Script>&	archiveScripts();
+	struct CreateResult
+	{
+		bool	created;
+		Script*	script;
+	};
 
-	void			init();
-	void			open();
+	vector<Script::UPtr>&	editorScripts();
+	vector<Script::UPtr>&	customScripts();
+	vector<Script::UPtr>&	archiveScripts();
+
+	void	init();
+	void	open();
+	void	saveUserScripts();
+
+	Script*	createCustomScript(const string& name);
 	
 	void	populateArchiveScriptMenu(wxMenu* menu);
 	void	runArchiveScript(Archive* archive, int index, wxWindow* parent = nullptr);
+	Script*	createArchiveScript(const string& name);
 }

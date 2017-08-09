@@ -877,7 +877,7 @@ bool ArchiveManager::addBaseResourcePath(string path)
 {
 	// Firstly, check the file exists
 	if (!wxFileExists(path))
-		return false;;
+		return false;
 
 	// Second, check the path doesn't already exist
 	for (unsigned a = 0; a < base_resource_paths_.size(); a++)

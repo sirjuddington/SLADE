@@ -30,6 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "TextEditorCtrl.h"
 #include "Graphics/Icons.h"
 #include "General/KeyBind.h"
@@ -162,6 +163,7 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id)
 	jump_to_calculator_ = nullptr;
 	update_jump_to_ = false;
 	update_word_match_ = false;
+	last_modified_ = App::runTimer();
 
 	// Set tab width
 	SetTabWidth(txed_tab_width);
@@ -393,6 +395,7 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 
 	// Load text into editor
 	SetText(text);
+	last_modified_ = App::runTimer();
 
 	// Update line numbers margin width
 	string numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
@@ -1046,7 +1049,6 @@ void TextEditorCtrl::updateFolding()
 /* TextEditorCtrl::lineComment
  * Comment selected/current lines using line comments
  *******************************************************************/
-
 void TextEditorCtrl::lineComment()
 {
 	string space, empty, comment, commentSpace;
@@ -1730,6 +1732,7 @@ void TextEditorCtrl::onModified(wxStyledTextEvent& e)
 	// (Re)start update timer for jump to list if text has changed
 	if (prev_text_length_ != GetTextLength())
 	{
+		last_modified_ = App::runTimer();
 		update_jump_to_ = true;
 		timer_update_.Start(1000, true);
 	}
@@ -1776,5 +1779,9 @@ void TextEditorCtrl::onStyleNeeded(wxStyledTextEvent& e)
 	}
 
 	if (txed_fold_enable)
+	{
+		auto modified = last_modified_;
 		lexer_.updateFolding(this, line_start);
+		last_modified_ = modified;
+	}
 }

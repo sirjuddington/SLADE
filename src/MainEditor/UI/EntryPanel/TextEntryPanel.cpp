@@ -213,7 +213,7 @@ bool TextEntryPanel::saveEntry()
 		entry->setType(EntryType::getType("text"));
 
 	// Update DECORATE definitions if decorate
-	if (text_area->getLanguage() && text_area->getLanguage()->id() == "decorate")
+	if (text_area->language() && text_area->language()->id() == "decorate")
 	{
 		Game::configuration().clearDecorateDefs();
 		Game::configuration().parseDecorateDefs(App::archiveManager().baseResourceArchive());

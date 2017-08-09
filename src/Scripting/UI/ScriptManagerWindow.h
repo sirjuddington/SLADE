@@ -35,6 +35,8 @@ private:
 	void			setupToolbar();
 	void			bindEvents();
 	wxPanel*		setupScriptTreePanel();
+	void			populateCustomScripts(wxTreeItemId tree_node = wxTreeItemId());
+	void			populateArchiveScripts(wxTreeItemId tree_node = wxTreeItemId());
 	void			populateScriptsTree();
 	ScriptPanel*	currentPage() const;
 

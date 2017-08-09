@@ -286,7 +286,7 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 	string word = list_words->GetItemText(item);
 
 	// Get language
-	TextLanguage* language = text_editor->getLanguage();
+	TextLanguage* language = text_editor->language();
 	if (!language)
 		return;
 
