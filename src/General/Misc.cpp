@@ -30,18 +30,18 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "General/Misc.h"
-#include "Graphics/SImage/SImage.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "General/Console/Console.h"
+#include "General/Misc.h"
 #include "Graphics/SImage/SIFormat.h"
+#include "Graphics/SImage/SImage.h"
+#include "third_party/zlib/zlib.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
-#include "External/zlib/zlib.h"
 
 
 /*******************************************************************

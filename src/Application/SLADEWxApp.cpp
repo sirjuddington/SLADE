@@ -31,16 +31,16 @@
 // ----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include "SLADEWxApp.h"
 #include "Archive/ArchiveManager.h"
-#include "External/email/wxMailer.h"
 #include "General/Console/Console.h"
 #include "General/Web.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/StartPage.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEWxApp.h"
+#include "third_party/email/wxMailer.h"
 #include <wx/statbmp.h>
 
 #undef BOOL

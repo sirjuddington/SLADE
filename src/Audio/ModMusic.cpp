@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ModMusic.h"
-#include "External/dumb/dumb.h"
+#include "third_party/dumb/dumb.h"
 
 
 /*******************************************************************

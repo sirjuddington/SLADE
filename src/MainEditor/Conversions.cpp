@@ -29,10 +29,10 @@
  *******************************************************************/
 #include "Main.h"
 #include "Archive/Archive.h"
-#include "Conversions.h"
 #include "Archive/ArchiveEntry.h"
-#include "External/mus2mid/mus2mid.h"
-#include "External/zreaders/i_music.h"
+#include "Conversions.h"
+#include "third_party/mus2mid/mus2mid.h"
+#include "third_party/zreaders/i_music.h"
 
 
 /*******************************************************************

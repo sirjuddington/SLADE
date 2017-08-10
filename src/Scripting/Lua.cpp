@@ -34,7 +34,6 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
 #include "Dialogs/ExtMessageDialog.h"
-#include "External/sol/sol.hpp"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "General/Console/Console.h"
@@ -44,6 +43,7 @@
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
+#include "third_party/sol/sol.hpp"
 #include "Utility/SFileDialog.h"
 
 

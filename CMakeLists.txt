@@ -36,5 +36,8 @@ else()
 	set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 endif()
 
+# Third Party libraries are compiled separately to enable unity builds
+add_subdirectory(third_party)
+
 add_subdirectory(src)
 add_subdirectory(dist)

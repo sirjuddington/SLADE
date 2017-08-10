@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Compression.h"
-#include "External/zreaders/files.h"
+#include "third_party/zreaders/files.h"
 
 
 /*******************************************************************
