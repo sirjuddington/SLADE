@@ -19,6 +19,9 @@ public:
 
 private:
 	ScriptManager::Script	script_scratchbox_;
+	ScriptManager::Script*	script_clicked_	= nullptr;
+
+	std::map<ScriptManager::ScriptType, wxTreeItemId>	editor_script_nodes_;
 
 	// Widgets
 	STabCtrl*	tabs_scripts_;
@@ -35,10 +38,10 @@ private:
 	void			setupToolbar();
 	void			bindEvents();
 	wxPanel*		setupScriptTreePanel();
-	void			populateCustomScripts(wxTreeItemId tree_node = wxTreeItemId());
-	void			populateArchiveScripts(wxTreeItemId tree_node = wxTreeItemId());
+	void			populateEditorScriptsTree(ScriptManager::ScriptType type);
 	void			populateScriptsTree();
 	ScriptPanel*	currentPage() const;
+	void			closeScriptTab(ScriptManager::Script* script);
 
 	// SActionHandler
 	bool	handleAction(string id) override;

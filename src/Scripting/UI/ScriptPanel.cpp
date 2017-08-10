@@ -6,6 +6,8 @@
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "General/SAction.h"
+#include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 
 ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) :
 	wxPanel(parent, -1),
@@ -15,13 +17,17 @@ ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) :
 
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
+
+	// Toolbar
+	auto toolbar = setupToolbar();
+	sizer->Add(toolbar, 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
 	
 	// Text Editor
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setLanguage(TextLanguage::fromId("sladescript"));
 	if (script_)
 		text_editor_->SetText(script_->text);
-	sizer->Add(text_editor_, 1, wxEXPAND | wxALL, 10);
+	sizer->Add(text_editor_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
 	// Find+Replace panel
 	find_replace_panel_ = new FindReplacePanel(this, text_editor_);
@@ -107,4 +113,17 @@ bool ScriptPanel::handleAction(const string& id)
 		return false;
 
 	return true;
+}
+
+SToolBar* ScriptPanel::setupToolbar()
+{
+	auto toolbar = new SToolBar(this);
+
+	// Create Script toolbar
+	auto tbg_script = new SToolBarGroup(toolbar, "_Script");
+	tbg_script->addActionButton("scrm_run", "", true);
+	tbg_script->addActionButton("scrm_save", "", true)->Enable(!script_->read_only);
+	toolbar->addGroup(tbg_script);
+
+	return toolbar;
 }

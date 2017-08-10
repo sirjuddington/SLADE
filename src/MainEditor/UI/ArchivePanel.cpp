@@ -488,7 +488,7 @@ void ArchivePanel::addMenus()
 		SAction::fromId("arch_replace_maps")->addToMenu(menu_clean);
 		menu_archive->AppendSubMenu(menu_clean, "&Maintenance");
 		auto menu_scripts = new wxMenu();
-		ScriptManager::populateArchiveScriptMenu(menu_scripts);
+		ScriptManager::populateEditorScriptMenu(menu_scripts, ScriptManager::ScriptType::Archive, "arch_script");
 		menu_archive->AppendSubMenu(menu_scripts, "&Scripts");
 	}
 	if (!menu_entry)

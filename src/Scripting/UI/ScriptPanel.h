@@ -3,6 +3,7 @@
 namespace ScriptManager { struct Script; }
 class TextEditorCtrl;
 class FindReplacePanel;
+class SToolBar;
 
 class ScriptPanel : public wxPanel
 {
@@ -24,4 +25,6 @@ private:
 	TextEditorCtrl*			text_editor_		= nullptr;
 	FindReplacePanel*		find_replace_panel_	= nullptr;
 	long					last_saved_			= 0;
+
+	SToolBar*	setupToolbar();
 };

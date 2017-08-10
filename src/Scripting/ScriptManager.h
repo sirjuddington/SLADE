@@ -4,8 +4,19 @@
 
 namespace ScriptManager
 {
+	enum class ScriptType
+	{
+		Editor,
+		Custom,
+		Global,
+		Archive,
+		Entry,
+		NonEditor
+	};
+
 	struct Script
 	{
+		ScriptType			type = ScriptType::Editor;
 		string				text;
 		string				name;
 		string				path;
@@ -15,23 +26,19 @@ namespace ScriptManager
 		typedef std::unique_ptr<Script>	UPtr;
 	};
 
-	struct CreateResult
-	{
-		bool	created;
-		Script*	script;
-	};
+	typedef vector<Script::UPtr> ScriptList;
 
-	vector<Script::UPtr>&	editorScripts();
-	vector<Script::UPtr>&	customScripts();
-	vector<Script::UPtr>&	archiveScripts();
+	ScriptList&	editorScripts(ScriptType type = ScriptType::Editor);
 
 	void	init();
 	void	open();
 	void	saveUserScripts();
 
-	Script*	createCustomScript(const string& name);
-	
-	void	populateArchiveScriptMenu(wxMenu* menu);
+	bool	renameScript(Script* script, const string& new_name);
+	bool	deleteScript(Script* script);
+
+	Script*	createEditorScript(const string& name, ScriptType type);
+	void	populateEditorScriptMenu(wxMenu* menu, ScriptType type, const string& action_id);
+
 	void	runArchiveScript(Archive* archive, int index, wxWindow* parent = nullptr);
-	Script*	createArchiveScript(const string& name);
 }

@@ -147,14 +147,6 @@ ScriptManagerWindow::ScriptManagerWindow() :
 		"-- Note that this will not be saved between sessions\n\n";
 	script_scratchbox_.read_only = true;
 	openScriptTab(&script_scratchbox_);
-
-	// Bind events
-	tabs_scripts_->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [&](wxAuiNotebookEvent& e)
-	{
-		auto page = currentPage();
-		if (page && !page->close())
-			e.Veto();
-	});
 }
 
 // ----------------------------------------------------------------------------
@@ -304,6 +296,8 @@ void ScriptManagerWindow::setupMenu()
 	auto scriptMenu = new wxMenu();
 	SAction::fromId("scrm_run")->addToMenu(scriptMenu);
 	SAction::fromId("scrm_save")->addToMenu(scriptMenu);
+	//SAction::fromId("scrm_rename")->addToMenu(scriptMenu);
+	//SAction::fromId("scrm_delete")->addToMenu(scriptMenu);
 	menu->Append(scriptMenu, "&Script");
 
 	// Text menu
@@ -335,25 +329,27 @@ void ScriptManagerWindow::setupMenu()
 // ----------------------------------------------------------------------------
 void ScriptManagerWindow::setupToolbar()
 {
-	toolbar = new SToolBar(this, true);
+	//toolbar = new SToolBar(this, true);
 
-	// Create File toolbar
-	auto tbg_script = new SToolBarGroup(toolbar, "_Script");
-	tbg_script->addActionButton("scrm_run");
-	tbg_script->addActionButton("scrm_save");
-	toolbar->addGroup(tbg_script);
+	//// Create File toolbar
+	//auto tbg_script = new SToolBarGroup(toolbar, "_Script");
+	//tbg_script->addActionButton("scrm_run");
+	//tbg_script->addActionButton("scrm_save");
+	////tbg_script->addActionButton("scrm_rename");
+	////tbg_script->addActionButton("scrm_delete");
+	//toolbar->addGroup(tbg_script);
 
-	// Add toolbar
-	wxAuiManager::GetManager(this)->AddPane(
-		toolbar,
-		wxAuiPaneInfo()
-			.Top()
-			.CaptionVisible(false)
-			.MinSize(-1, SToolBar::getBarHeight())
-			.Resizable(false)
-			.PaneBorder(false)
-			.Name("toolbar")
-	);
+	//// Add toolbar
+	//wxAuiManager::GetManager(this)->AddPane(
+	//	toolbar,
+	//	wxAuiPaneInfo()
+	//		.Top()
+	//		.CaptionVisible(false)
+	//		.MinSize(-1, SToolBar::getBarHeight())
+	//		.Resizable(false)
+	//		.PaneBorder(false)
+	//		.Name("toolbar")
+	//);
 }
 
 // ----------------------------------------------------------------------------
@@ -369,9 +365,22 @@ void ScriptManagerWindow::bindEvents()
 		auto data = (ScriptTreeItemData*)tree_scripts_->GetItemData(e.GetItem());
 		if (data && data->script)
 			openScriptTab(data->script);
-			//text_editor_->SetText(data->script->text);
 		else if (tree_scripts_->ItemHasChildren(e.GetItem()))
 			tree_scripts_->Toggle(e.GetItem());
+	});
+
+	// Tree item right click
+	tree_scripts_->Bind(wxEVT_TREE_ITEM_RIGHT_CLICK, [&](wxTreeEvent& e)
+	{
+		auto data = (ScriptTreeItemData*)tree_scripts_->GetItemData(e.GetItem());
+		if (data && data->script && !data->script->read_only)
+		{
+			script_clicked_ = data->script;
+			wxMenu popup;
+			SAction::fromId("scrm_rename")->addToMenu(&popup);
+			SAction::fromId("scrm_delete")->addToMenu(&popup);
+			PopupMenu(&popup);
+		}
 	});
 
 	// Window close
@@ -385,6 +394,14 @@ void ScriptManagerWindow::bindEvents()
 
 		// Hide
 		Show(false);
+	});
+
+	// Tab closing
+	tabs_scripts_->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [&](wxAuiNotebookEvent& e)
+	{
+		auto page = currentPage();
+		if (page && !page->close())
+			e.Veto();
 	});
 }
 
@@ -417,34 +434,16 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 	return panel;
 }
 
-void ScriptManagerWindow::populateCustomScripts(wxTreeItemId tree_node)
+void ScriptManagerWindow::populateEditorScriptsTree(ScriptManager::ScriptType type)
 {
-	static wxTreeItemId custom_scripts;
-	if (tree_node.IsOk())
-		custom_scripts = tree_node;
+	if (!editor_script_nodes_[type].IsOk())
+		return;
 
-	tree_scripts_->DeleteChildren(custom_scripts);
-	for (auto& script : ScriptManager::customScripts())
+	tree_scripts_->DeleteChildren(editor_script_nodes_[type]);
+	for (auto& script : ScriptManager::editorScripts(type))
 		tree_scripts_->AppendItem(
-			custom_scripts,
+			editor_script_nodes_[type],
 			script->name,
-			0,
-			0,
-			new ScriptTreeItemData(script.get())
-		);
-}
-
-void ScriptManagerWindow::populateArchiveScripts(wxTreeItemId tree_node)
-{
-	static wxTreeItemId archive_scripts;
-	if (tree_node.IsOk())
-		archive_scripts = tree_node;
-
-	tree_scripts_->DeleteChildren(archive_scripts);
-	for (auto& script : ScriptManager::archiveScripts())
-		tree_scripts_->AppendItem(
-			archive_scripts,
-			script->name.empty() ? "UNSAVED" : script->name,
 			0,
 			0,
 			new ScriptTreeItemData(script.get())
@@ -458,6 +457,8 @@ void ScriptManagerWindow::populateArchiveScripts(wxTreeItemId tree_node)
 // ----------------------------------------------------------------------------
 void ScriptManagerWindow::populateScriptsTree()
 {
+	using namespace ScriptManager;
+
 	// Clear tree
 	tree_scripts_->DeleteAllItems();
 
@@ -477,15 +478,15 @@ void ScriptManagerWindow::populateScriptsTree()
 		);
 
 	// Custom scripts
-	auto custom_scripts = tree_scripts_->AppendItem(editor_scripts, "Custom Scripts", 1);
-	populateCustomScripts(custom_scripts);
+	editor_script_nodes_[ScriptType::Custom] = tree_scripts_->AppendItem(editor_scripts, "Custom Scripts", 1);
+	populateEditorScriptsTree(ScriptType::Custom);
 
 	// Global scripts
 	auto global_scripts = tree_scripts_->AppendItem(editor_scripts, "Global Scripts", 1);
 
 	// Archive scripts
-	auto archive_scripts = tree_scripts_->AppendItem(editor_scripts, "Archive Scripts", 1);
-	populateArchiveScripts(archive_scripts);
+	editor_script_nodes_[ScriptType::Archive] = tree_scripts_->AppendItem(editor_scripts, "Archive Scripts", 1);
+	populateEditorScriptsTree(ScriptType::Archive);
 
 	// Entry scripts
 	auto entry_scripts = tree_scripts_->AppendItem(editor_scripts, "Entry Scripts", 1);
@@ -506,6 +507,21 @@ ScriptPanel* ScriptManagerWindow::currentPage() const
 		return (ScriptPanel*)page;
 
 	return nullptr;
+}
+
+void ScriptManagerWindow::closeScriptTab(ScriptManager::Script* script)
+{
+	// Find existing tab
+	for (unsigned a = 0; a < tabs_scripts_->GetPageCount(); a++)
+	{
+		auto page = tabs_scripts_->GetPage(a);
+		if (page->GetName() == "script")
+			if (((ScriptPanel*)page)->script() == script)
+			{
+				tabs_scripts_->RemovePage(a);
+				return;
+			}
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -572,6 +588,8 @@ string ScriptManagerWindow::currentScriptText() const
 // ----------------------------------------------------------------------------
 bool ScriptManagerWindow::handleAction(string id)
 {
+	using namespace ScriptManager;
+
 	// We're only interested in "scrm_" actions
 	if (!id.StartsWith("scrm_"))
 		return false;
@@ -587,8 +605,8 @@ bool ScriptManagerWindow::handleAction(string id)
 		string name = wxGetTextFromUser("Enter a name for the script", "New Custom Script");
 		if (!name.empty())
 		{
-			auto script = ScriptManager::createCustomScript(name);
-			populateCustomScripts();
+			auto script = ScriptManager::createEditorScript(name, ScriptType::Custom);
+			populateEditorScriptsTree(ScriptType::Custom);
 			openScriptTab(script);
 		}
 		return true;
@@ -600,8 +618,8 @@ bool ScriptManagerWindow::handleAction(string id)
 		string name = wxGetTextFromUser("Enter a name for the script", "New Archive Script");
 		if (!name.empty())
 		{
-			auto script = ScriptManager::createArchiveScript(name);
-			populateArchiveScripts();
+			auto script = ScriptManager::createEditorScript(name, ScriptType::Archive);
+			populateEditorScriptsTree(ScriptType::Archive);
 			openScriptTab(script);
 		}
 		return true;
@@ -611,8 +629,55 @@ bool ScriptManagerWindow::handleAction(string id)
 	if (id == "scrm_run")
 	{
 		Lua::setCurrentWindow(this);
-		if (!Lua::run(currentScriptText()))
+
+		if (!Lua::run(script_clicked_ ? script_clicked_->text : currentScriptText()))
 			Lua::showErrorDialog();
+
+		script_clicked_ = nullptr;
+
+		return true;
+	}
+
+	// Script->Rename
+	if (id == "scrm_rename")
+	{
+		auto script = script_clicked_ ? script_clicked_ : currentScript();
+
+		if (script)
+		{
+			string name = wxGetTextFromUser(
+				"Enter a new name for the script",
+				"Rename Script",
+				script->name
+			);
+
+			if (!name.empty())
+			{
+				ScriptManager::renameScript(script, name);
+				populateEditorScriptsTree(script->type);
+			}
+		}
+
+		script_clicked_ = nullptr;
+
+		return true;
+	}
+
+	// Script->Delete
+	if (id == "scrm_delete")
+	{
+		auto script = script_clicked_ ? script_clicked_ : currentScript();
+
+		if (script)
+		{
+			if (ScriptManager::deleteScript(script))
+			{
+				closeScriptTab(script);
+				populateEditorScriptsTree(script->type);
+			}
+		}
+
+		script_clicked_ = nullptr;
 
 		return true;
 	}
