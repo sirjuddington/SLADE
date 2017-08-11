@@ -25,17 +25,32 @@ Map editing context for the currently open map editor in SLADE.
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-## Functions
+## Functions - General
 
-### `selectedVertices`
+### `setEditMode`
 
 <listhead>Parameters</listhead>
 
-* `[`<type>boolean</type> <arg>try_highlight</arg> : `false]`: Whether to get the current highlight if nothing is selected
+* <type>number</type> <arg>mode</arg>: The [edit mode](#mode) to switch to
+* `[`<type>number</type> <arg>sector_mode</arg> : `MapEditor.SectorMode.Both]`: The [sector edit mode](#sectormode) to switch to
 
-**Returns** <type>[MapVertex](MapVertex.md)\[\]</type>
+Sets the edit mode to the given <arg>mode</arg>. If the mode is being set to `MapEditor.Mode.Sectors`, the <arg>sector_mode</arg> parameter can be given to specify the sector edit mode.
 
-Returns an array of all currently selected vertices. If nothing is selected and <arg>try_highlight</arg> is `true`, the currently highlighted vertex is returned in the array.
+## Functions - Selection
+
+### `clearSelection`
+
+Deselects all currently selected items
+
+---
+### `select`
+
+<listhead>Parameters</listhead>
+
+* <type>[MapObject](MapObject.md)</type> <arg>object</arg>: The <type>[MapObject](MapObject.md)</type> to (de)select
+* `[`<type>boolean</type> <arg>select</arg> : `true]`: Whether to select or deselect the object
+
+Selects or deselects the given <type>[MapObject](MapObject.md)</type> (or derived type), depending on <arg>select</arg>.
 
 ---
 ### `selectedLines`
@@ -71,26 +86,12 @@ Returns an array of all currently selected sectors. If nothing is selected and <
 Returns an array of all currently selected things. If nothing is selected and <arg>try_highlight</arg> is `true`, the currently highlighted thing is returned in the array.
 
 ---
-### `clearSelection`
-
-Deselects all currently selected items
-
----
-### `select`
+### `selectedVertices`
 
 <listhead>Parameters</listhead>
 
-* <type>[MapObject](MapObject.md)</type> <arg>object</arg>: The <type>[MapObject](MapObject.md)</type> to (de)select
-* `[`<type>boolean</type> <arg>select</arg> : `true]`: Whether to select or deselect the object
+* `[`<type>boolean</type> <arg>try_highlight</arg> : `false]`: Whether to get the current highlight if nothing is selected
 
-Selects or deselects the given <type>[MapObject](MapObject.md)</type> (or derived type), depending on <arg>select</arg>.
+**Returns** <type>[MapVertex](MapVertex.md)\[\]</type>
 
----
-### `setEditMode`
-
-<listhead>Parameters</listhead>
-
-* <type>number</type> <arg>mode</arg>: The [edit mode](#mode) to switch to
-* `[`<type>number</type> <arg>sector_mode</arg> : `MapEditor.SectorMode.Both]`: The [sector edit mode](#sectormode) to switch to
-
-Sets the edit mode to the given <arg>mode</arg>. If the mode is being set to `MapEditor.Mode.Sectors`, the <arg>sector_mode</arg> parameter can be given to specify the sector edit mode.
+Returns an array of all currently selected vertices. If nothing is selected and <arg>try_highlight</arg> is `true`, the currently highlighted vertex is returned in the array.

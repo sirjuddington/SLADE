@@ -19,9 +19,9 @@ The **Archive** type represents an archive (wad/pk3/etc) in SLADE.
 * <code>[archives.create](../Namespaces/Archives.md#create)</code>
 * <code>[archives.openFile](../Namespaces/Archives.md#openfile)</code>
 
-## Functions
+## Functions - General
 
-### `getDir`
+### `dirAtPath`
 
 <listhead>Parameters</listhead>
 
@@ -32,6 +32,51 @@ The **Archive** type represents an archive (wad/pk3/etc) in SLADE.
 Returns the directory in the archive at <arg>path</arg>, or `nil` if the path does not exist. If the archive does not support directories (eg. Doom Wad format) the 'root' directory is always returned, regardless of <arg>path</arg>.
 
 ---
+### `entryAtPath`
+
+<listhead>Parameters</listhead>
+
+* <type>string</type> <arg>path</arg>: The path of the entry to get
+
+**Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
+
+Returns the entry in the archive at <arg>path</arg>, or `nil` if no entry at the given path exists. If multiple entries exist with the same <arg>path</arg>, the first match is returned.
+
+---
+### `filenameNoPath`
+
+**Returns** <type>string</type>
+
+Returns the archive's <prop>filename</prop> without the full path, eg. if <prop>filename</prop> is `C:/games/doom/archive.wad`, this will return `archive.wad`.
+
+---
+### `save`
+
+<listhead>Parameters</listhead>
+
+* `[`<type>string</type> <arg>path</arg>`]`: The full path to the file to save as
+
+**Returns** <type>boolean</type>
+
+Saves the archive to disk. If no <arg>path</arg> path is given, the archive's current <prop>filename</prop> is used.
+
+If <arg>path</arg> is given, this will work like 'Save As' - the archive will be saved to a new file at the given path, overwriting the file if it already exists. This will also update the <prop>filename</prop> property.
+
+**Example**
+
+```lua
+-- Open an archive
+local archive = Archives.openFile('c:/filename.wad')
+App.logMessage(archive.filename) -- 'c:/filename.wad'
+
+-- Save as new file
+archive:save('c:/newfile.wad')
+
+App.logMessage(archive.filename) -- 'c:/newfile.wad'
+```
+
+## Functions - Entry Manipulation
+
 ### `createEntry`
 
 <listhead>Parameters</listhead>
@@ -107,29 +152,3 @@ Removes the given entry from the archive (but does not delete it). Returns `fals
 **Returns** <type>boolean</type>
 
 Renames the given entry. Returns `false` if the entry was not found in the archive.
-
----
-### `save`
-
-<listhead>Parameters</listhead>
-
-* `[`<type>string</type> <arg>path</arg>`]`: The full path to the file to save as
-
-**Returns** <type>boolean</type>
-
-Saves the archive to disk. If no <arg>path</arg> path is given, the archive's current <prop>filename</prop> is used.
-
-If <arg>path</arg> is given, this will work like 'Save As' - the archive will be saved to a new file at the given path, overwriting the file if it already exists. This will also update the <prop>filename</prop> property.
-
-**Example**
-
-```lua
--- Open an archive
-local archive = Archives.openFile('c:/filename.wad')
-App.logMessage(archive.filename) -- 'c:/filename.wad'
-
--- Save as new file
-archive:save('c:/newfile.wad')
-
-App.logMessage(archive.filename) -- 'c:/newfile.wad'
-```
