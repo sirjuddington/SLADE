@@ -146,7 +146,7 @@ void MapEditContext::setEditMode(Mode mode)
 	// Clear 3d mode undo manager etc on exiting 3d mode
 	if (edit_mode_ == Mode::Visual && mode != Mode::Visual)
 	{
-		info_3d_.clearTexture();
+		info_3d_.reset();
 		undo_manager_->createMergedLevel(edit_3d_.undoManager(), "3D Mode Editing");
 		edit_3d_.undoManager()->clear();
 	}
@@ -434,7 +434,8 @@ void MapEditContext::clearMap()
 	last_undo_level_ = "";
 
 	// Clear other data
-	pathed_things_.clear();
+	updateTagged();
+	info_3d_.reset();
 
 	// Clear map
 	map_.clearMap();
