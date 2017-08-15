@@ -1339,8 +1339,15 @@ bool MapEditorWindow::handleAction(string id)
  *******************************************************************/
 void MapEditorWindow::onClose(wxCloseEvent& e)
 {
+	// Unlock mouse cursor
+	bool locked = MapEditor::editContext().mouseLocked();
+	MapEditor::editContext().lockMouse(false);
+
 	if (!tryClose())
 	{
+		// Restore mouse cursor lock
+		MapEditor::editContext().lockMouse(locked);
+
 		e.Veto();
 		return;
 	}
