@@ -1072,14 +1072,14 @@ void GfxEntryPanel::onPaintColourChanged(wxEvent& e)
  *******************************************************************/
 void GfxEntryPanel::onXOffsetChanged(wxCommandEvent& e)
 {
-	// Change the image x-offset
+	// Ignore if the value wasn't changed
 	int offset = spin_xoffset->GetValue();
+	if (offset == getImage()->offset().x)
+		return;
+
+	// Update offset & refresh
 	getImage()->setXOffset(offset);
-
-	// Update variables
 	setModified();
-
-	// Refresh canvas
 	gfx_canvas->Refresh();
 }
 
@@ -1088,14 +1088,14 @@ void GfxEntryPanel::onXOffsetChanged(wxCommandEvent& e)
  *******************************************************************/
 void GfxEntryPanel::onYOffsetChanged(wxCommandEvent& e)
 {
-	// Change the image y-offset
+	// Ignore if the value wasn't changed
 	int offset = spin_yoffset->GetValue();
+	if (offset == getImage()->offset().y)
+		return;
+
+	// Update offset & refresh
 	getImage()->setYOffset(offset);
-
-	// Update variables
 	setModified();
-
-	// Refresh canvas
 	gfx_canvas->Refresh();
 }
 
