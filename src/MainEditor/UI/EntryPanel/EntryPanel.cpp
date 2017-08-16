@@ -109,8 +109,6 @@ EntryPanel::~EntryPanel()
  *******************************************************************/
 void EntryPanel::setModified(bool c)
 {
-	bool mod = modified;
-
 	if (!entry)
 	{
 		modified = c;
@@ -124,7 +122,7 @@ void EntryPanel::setModified(bool c)
 			modified = c;
 	}
 
-	if (mod != modified)
+	if (stb_save->IsEnabled() != modified)
 	{
 		toolbar->enableGroup("Entry", modified);
 		callRefresh();

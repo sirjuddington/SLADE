@@ -14,6 +14,7 @@ class SCallTip;
 class wxChoice;
 
 wxDECLARE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
+wxDECLARE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
 
 class JumpToCalculator : public wxThread
 {

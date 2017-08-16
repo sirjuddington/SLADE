@@ -11,32 +11,32 @@ class FindReplacePanel;
 
 class TextEntryPanel : public EntryPanel, SActionHandler
 {
-private:
-	TextEditorCtrl*		text_area;
-	FindReplacePanel*	panel_fr;
-	wxButton*			btn_find_replace;
-	wxChoice*			choice_text_language;
-	wxCheckBox*			cb_wordwrap;
-	wxButton*			btn_jump_to;
-	wxChoice*			choice_jump_to;
-
 public:
 	TextEntryPanel(wxWindow* parent);
 	~TextEntryPanel();
 
-	bool	loadEntry(ArchiveEntry* entry);
-	bool	saveEntry();
-	void	refreshPanel();
-	void	closeEntry();
-	string	statusString();
-	bool	undo();
-	bool	redo();
+	bool	loadEntry(ArchiveEntry* entry) override;
+	bool	saveEntry() override;
+	void	refreshPanel() override;
+	void	closeEntry() override;
+	string	statusString() override;
+	bool	undo() override;
+	bool	redo() override;
 
 	// SAction Handler
-	bool	handleAction(string id);
+	bool	handleAction(string id) override;
+
+private:
+	TextEditorCtrl*		text_area_;
+	FindReplacePanel*	panel_fr_;
+	wxButton*			btn_find_replace_;
+	wxChoice*			choice_text_language_;
+	wxCheckBox*			cb_wordwrap_;
+	wxButton*			btn_jump_to_;
+	wxChoice*			choice_jump_to_;
 
 	// Events
-	void	onTextModified(wxStyledTextEvent& e);
+	void	onTextModified(wxCommandEvent& e);
 	void	onChoiceLanguageChanged(wxCommandEvent& e);
 	void	onUpdateUI(wxStyledTextEvent& e);
 };

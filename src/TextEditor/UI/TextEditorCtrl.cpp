@@ -63,6 +63,7 @@ CVAR(Bool, txed_match_cursor_word, true, CVAR_SAVE)
 CVAR(Int, txed_hilight_current_line, 2, CVAR_SAVE)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
+wxDEFINE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
 
 
 /*******************************************************************
@@ -1735,6 +1736,10 @@ void TextEditorCtrl::onModified(wxStyledTextEvent& e)
 		last_modified_ = App::runTimer();
 		update_jump_to_ = true;
 		timer_update_.Start(1000, true);
+
+		// Send change event
+		wxCommandEvent event(wxEVT_TEXT_CHANGED);
+		wxPostEvent(this, event);
 	}
 
 	e.Skip();
