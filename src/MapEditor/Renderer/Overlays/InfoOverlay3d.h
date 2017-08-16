@@ -16,7 +16,7 @@ public:
 	void	update(int item_index, MapEditor::ItemType item_type, SLADEMap* map);
 	void	draw(int bottom, int right, int middle, float alpha = 1.0f);
 	void	drawTexture(float alpha, int x, int y);
-	void	clearTexture() { texture = nullptr; }
+	void	reset() { texture = nullptr; object = nullptr; }
 
 private:
 	vector<string>		info;

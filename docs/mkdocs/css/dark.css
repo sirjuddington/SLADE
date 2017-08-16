@@ -1,0 +1,167 @@
+
+body, h1, h2, h3, h4, h5, h6 {
+	color: hsl(0, 0%, 90%);
+}
+
+.wy-nav-content {
+	background-color: hsl(220, 10%, 23%);
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.wy-nav-content-wrap {
+	background-color: hsla(220, 10%, 15%, 1);
+}
+
+.wy-nav-content A:link,
+.wy-nav-content A:visited {
+	color: hsl(40, 100%, 70%);
+}
+
+.wy-nav-content A:hover,
+.wy-nav-content A:active {
+	color: hsl(40, 100%, 95%);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+	color: hsl(220, 65%, 80%);
+}
+
+h2,
+h1 {
+	border-bottom: 0.1em solid hsl(220, 20%, 50%);
+    padding-bottom: 0.2em;
+}
+
+hr {
+	border-top: 0.1em solid hsl(220, 20%, 50%);
+}
+
+code {
+	color: hsl(220, 65%, 80%);
+}
+
+type,
+type a {
+	color: hsl(20, 98%, 73%) !important;
+}
+
+
+type a:hover {
+	color: hsl(40, 100%, 85%) !important;
+}
+
+arg,
+prop {
+	color: hsl(270, 98%, 80%);
+}
+
+prop {
+	color: hsl(170, 78%, 60%);
+}
+
+pre code {
+	background: none repeat scroll 0 0 hsl(220, 10%, 18%);
+	border: 1px solid hsl(220, 12%, 38%);
+}
+
+.hljs {
+	color: hsl(0, 0%, 80%);
+}
+
+.hljs-number {
+	color: hsl(0, 0%, 94%);
+}
+
+.hljs-keyword {
+	color: hsl(270, 98%, 80%);
+}
+
+.hljs-string {
+	color: hsl(345, 86%, 77%);
+}
+
+.hljs-comment {
+	color: hsl(100, 20%, 50%);
+}
+
+.hljs-built_in {
+	color: hsl(200, 88%, 73%);
+}
+
+.wy-nav-top,
+.wy-side-nav-search {
+	background-color: hsl(220, 35%, 40%);
+}
+
+a.btn.btn-neutral {
+	background-color: hsl(220, 35%, 40%) !important;
+	color: hsl(222, 100%, 98%) !important;
+}
+
+table.docutils thead {
+	color: hsl(220, 57%, 97%) !important;
+	background-color: hsl(220, 35%, 40%) !important;
+}
+
+table.docutils tbody tr:nth-child(odd) {
+	background-color: hsl(220, 10%, 25%) !important;
+}
+
+blockquote {
+	color: hsl(220, 27%, 65%);
+}
+
+pagetitle,
+homepagetitle {
+	background-color: hsl(220, 35%, 40%);
+	color: hsl(222, 100%, 98%);
+}
+
+ul.wy-breadcrumbs {
+	background-color: hsl(220, 35%, 40%);
+	color: hsl(222, 100%, 88%);
+}
+
+
+li.current .subnav,
+.subnav .subnav {
+	background-color: hsl(0, 3%, 17%);
+}
+
+li.current .subnav li a:hover,
+.subnav .subnav li a:hover {
+	background-color: hsl(0, 3%, 19%);
+}
+
+.wy-menu-vertical li.current>a {
+	background-color: hsl(220, 35%, 40%);
+	color: hsl(222, 100%, 88%);
+}
+
+.wy-menu-vertical li.current>a:hover {
+	background-color: hsl(220, 35%, 38%);
+	color: hsl(222, 100%, 88%);
+}
+
+.rst-content .warning,
+.rst-content .attention,
+.rst-content .note {
+	background-color: hsl(220, 10%, 30%);
+}
+
+.rst-content .warning .admonition-title,
+.rst-content .attention .admonition-title {
+	background-color: hsl(28, 55%, 40%);
+}
+
+.rst-content .note {
+	background-color: hsl(220, 10%, 30%);
+}
+
+.rst-content .note .admonition-title {
+	background-color: hsl(210, 35%, 50%);
+}

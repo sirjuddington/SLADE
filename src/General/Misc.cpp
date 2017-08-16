@@ -180,7 +180,7 @@ int	Misc::detectPaletteHack(ArchiveEntry* entry)
  * <pal>. Returns false if PLAYPAL entry was missing or invalid,
  * true otherwise
  *******************************************************************/
-bool Misc::loadPaletteFromArchive(Palette8bit* pal, Archive* archive, int lump)
+bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 {
 	// Check parameters
 	if (!pal || !archive)

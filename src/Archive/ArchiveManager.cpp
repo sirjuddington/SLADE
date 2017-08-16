@@ -607,7 +607,8 @@ Archive* ArchiveManager::newArchive(string format)
 		new_archive = new ZipArchive();
 	else
 	{
-		Log::error("This shouldn't happen.");
+		Global::error = S_FMT("Can not create archive of format: %s", CHR(format));
+		Log::error(Global::error);
 		return nullptr;
 	}
 
@@ -876,7 +877,7 @@ bool ArchiveManager::addBaseResourcePath(string path)
 {
 	// Firstly, check the file exists
 	if (!wxFileExists(path))
-		return false;;
+		return false;
 
 	// Second, check the path doesn't already exist
 	for (unsigned a = 0; a < base_resource_paths_.size(); a++)

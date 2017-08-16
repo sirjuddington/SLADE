@@ -148,9 +148,6 @@
     <Filter Include="Archive\EntryType\Data Formats">
       <UniqueIdentifier>{639d4195-f616-4708-bc9b-82e7652914c0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="UI\Text Editor">
-      <UniqueIdentifier>{54fbf714-855d-444d-885d-1e12f9df2ef7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Utility\Property List">
       <UniqueIdentifier>{999a30d0-f905-4f75-885f-209959ffe1c9}</UniqueIdentifier>
     </Filter>
@@ -160,12 +157,6 @@
     <Filter Include="Archive\EntryType\Config">
       <UniqueIdentifier>{e7b5e9e0-b8de-4082-845a-f7bd5fa91926}</UniqueIdentifier>
     </Filter>
-    <Filter Include="UI\Text Editor\Languages">
-      <UniqueIdentifier>{ae982b5a-81f7-4648-92ec-71b69c823459}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Text Editor\Styles">
-      <UniqueIdentifier>{a0faea0e-caa5-461a-8e6d-766b478bb8f7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="General\Colours">
       <UniqueIdentifier>{2396ead4-6f0e-4df8-9e57-2d51554e5f40}</UniqueIdentifier>
     </Filter>
@@ -174,6 +165,24 @@
     </Filter>
     <Filter Include="Game">
       <UniqueIdentifier>{6484ec95-d6fd-4bdc-96ee-3e1faf24e057}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\Sol">
+      <UniqueIdentifier>{413f5b0e-9e77-4fc8-bd97-5a9ea1597884}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting">
+      <UniqueIdentifier>{2503b7fc-d9c2-4a42-822e-3b3de37ebfc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting\Export">
+      <UniqueIdentifier>{11e5d755-3751-42e9-8221-b24a5c1bf0cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting\UI">
+      <UniqueIdentifier>{c751e646-38bb-48e7-b8c7-c188148c104a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Text Editor">
+      <UniqueIdentifier>{119f7cbd-9e0c-43eb-90a5-6614f4cedcdc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Text Editor\UI">
+      <UniqueIdentifier>{9b86963f-b602-4d90-aaa9-c50bc1ae60aa}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -347,105 +356,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\External\lzma\C\XzIn.c">
       <Filter>External\Lzma</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\glew\glew.c">
-      <Filter>External\GLEW</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lapi.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lauxlib.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lbaselib.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lbitlib.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lcode.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lcorolib.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lctype.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ldblib.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ldebug.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ldo.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ldump.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lfunc.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lgc.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\linit.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\liolib.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\llex.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lmathlib.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lmem.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\loadlib.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lobject.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lopcodes.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\loslib.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lparser.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lstate.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lstring.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lstrlib.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ltable.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ltablib.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ltm.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lundump.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lvm.c">
-      <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lzio.c">
-      <Filter>External\Lua</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\BaseResourceWizardPage.cpp">
       <Filter>Dialogs\Setup Wizard</Filter>
@@ -876,41 +786,8 @@
     <ClCompile Include="..\..\src\Utility\MemChunk.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\General\Clipboard.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\General\ColourConfiguration.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\General\CVar.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\General\Executables.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\General\KeyBind.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\General\ListenerAnnouncer.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\General\Lua.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\General\Misc.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\General\UndoRedo.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\General\Console\Console.cpp">
-      <Filter>General\Console</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\UI\WxStuff.cpp">
       <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\General\SAction.cpp">
-      <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utility\FileMonitor.cpp">
       <Filter>Utility</Filter>
@@ -938,15 +815,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\UI\SToolBar\SToolBarButton.cpp">
       <Filter>UI\SToolBar</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\TextEditor\TextEditor.cpp">
-      <Filter>UI\Text Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\TextEditor\TextLanguage.cpp">
-      <Filter>UI\Text Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\TextEditor\TextStyle.cpp">
-      <Filter>UI\Text Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\UI\Canvas\ANSICanvas.cpp">
       <Filter>UI\Canvas</Filter>
@@ -1004,39 +872,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\UI\UndoManagerHistoryPanel.cpp">
       <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Graphics\CTexture\CTexture.cpp">
-      <Filter>Graphics\Composite Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Graphics\CTexture\PatchTable.cpp">
-      <Filter>Graphics\Composite Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Graphics\CTexture\TextureXList.cpp">
-      <Filter>Graphics\Composite Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Graphics\Font\SFont.cpp">
-      <Filter>Graphics\Font</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Graphics\Palette\Palette.cpp">
-      <Filter>Graphics\Palette</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Graphics\Palette\PaletteManager.cpp">
-      <Filter>Graphics\Palette</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Graphics\SImage\SImage.cpp">
-      <Filter>Graphics\SImage</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Graphics\SImage\SImageFormats.cpp">
-      <Filter>Graphics\SImage</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Graphics\Icons.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Graphics\Translation.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Graphics\SImage\SIFormat.cpp">
-      <Filter>Graphics\SImage</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Archive\Archive.cpp">
       <Filter>Archive</Filter>
@@ -1329,9 +1164,6 @@
     <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.cpp">
       <Filter>Map Editor\Renderer\Overlays</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\General\ResourceManager.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\AnimatedList.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
@@ -1340,9 +1172,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp">
       <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\TextEditor\SCallTip.cpp">
-      <Filter>UI\Text Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\External\email\wxEmailMessage.cpp">
       <Filter>External\wxEmail</Filter>
@@ -1356,9 +1185,6 @@
     <ClCompile Include="_CreatePCH.cpp">
       <Filter>Application</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\UI\TextEditor\Lexer.cpp">
-      <Filter>UI\Text Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utility\StringUtils.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -1371,9 +1197,6 @@
     <ClCompile Include="..\..\src\MainEditor\MainEditor.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\General\UI.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\MainWindow.cpp">
       <Filter>Main Editor\UI</Filter>
     </ClCompile>
@@ -1382,9 +1205,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Application\SLADEWxApp.cpp">
       <Filter>Application</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\General\Log.cpp">
-      <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\MapEditContext.cpp">
       <Filter>Map Editor</Filter>
@@ -1425,33 +1245,6 @@
     <ClCompile Include="..\..\src\Utility\StringUtils.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\ActionSpecial.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\GenLineSpecial.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\ThingType.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\UDMFProperty.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Args.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Game.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Configuration.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Decorate.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\SpecialPreset.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\SpecialPresetDialog.cpp">
       <Filter>Map Editor\UI\Dialogs</Filter>
     </ClCompile>
@@ -1467,8 +1260,239 @@
     <ClCompile Include="..\..\src\MainEditor\UI\StartPage.cpp">
       <Filter>Main Editor\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\General\WebGet.cpp">
+    <ClCompile Include="..\..\src\External\lua\lapi.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lauxlib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lbaselib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lbitlib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lcode.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lcorolib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lctype.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ldblib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ldebug.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ldo.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ldump.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lfunc.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lgc.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\linit.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\liolib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\llex.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lmathlib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lmem.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\loadlib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lobject.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lopcodes.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\loslib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lparser.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lstate.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lstring.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lstrlib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ltable.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ltablib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ltm.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lundump.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lvm.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ActionSpecial.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Args.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Configuration.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Decorate.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\GenLineSpecial.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\SpecialPreset.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ThingType.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\UDMFProperty.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Clipboard.cpp">
       <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\ColourConfiguration.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\CVar.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Executables.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\KeyBind.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\ListenerAnnouncer.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Log.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Misc.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\ResourceManager.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\SAction.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\UI.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\UndoRedo.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Console\Console.cpp">
+      <Filter>General\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Icons.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Translation.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\CTexture\CTexture.cpp">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\CTexture\PatchTable.cpp">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\CTexture\TextureXList.cpp">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Font\SFont.cpp">
+      <Filter>Graphics\Font</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Palette\Palette.cpp">
+      <Filter>Graphics\Palette</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Palette\PaletteManager.cpp">
+      <Filter>Graphics\Palette</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\SImage\SIFormat.cpp">
+      <Filter>Graphics\SImage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\SImage\SImage.cpp">
+      <Filter>Graphics\SImage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\SImage\SImageFormats.cpp">
+      <Filter>Graphics\SImage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\glew\glew.c">
+      <Filter>External\GLEW</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lzio.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lutf8lib.c">
+      <Filter>External\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\Lua.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\UI\ScriptManagerWindow.cpp">
+      <Filter>Scripting\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\ScriptManager.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Web.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\UI\ScriptPanel.cpp">
+      <Filter>Scripting\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\TextEditor\Lexer.cpp">
+      <Filter>Text Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\TextEditor\TextLanguage.cpp">
+      <Filter>Text Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\TextEditor\TextStyle.cpp">
+      <Filter>Text Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\TextEditor\UI\SCallTip.cpp">
+      <Filter>Text Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\TextEditor\UI\TextEditorCtrl.cpp">
+      <Filter>Text Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\TextEditor\UI\FindReplacePanel.cpp">
+      <Filter>Text Editor\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\MapInfo.cpp">
       <Filter>Game</Filter>
@@ -1613,81 +1637,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\External\lzma\C\XzEnc.h">
       <Filter>External\Lzma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lapi.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lauxlib.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lcode.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lctype.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\ldebug.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\ldo.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lfunc.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lgc.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\llex.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\llimits.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lmem.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lobject.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lopcodes.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lparser.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lstate.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lstring.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\ltable.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\ltm.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lua.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lua.hpp">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\luaconf.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lualib.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lundump.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lvm.h">
-      <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\lua\lzio.h">
-      <Filter>External\Lua</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\BaseResourceWizardPage.h">
       <Filter>Dialogs\Setup Wizard</Filter>
@@ -1896,33 +1845,6 @@
     <ClInclude Include="..\..\src\Utility\MemChunk.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\General\Clipboard.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\General\ColourConfiguration.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\General\CVar.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\General\Executables.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\General\KeyBind.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\General\ListenerAnnouncer.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\General\Lua.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\General\Misc.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\General\UndoRedo.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\General\Console\Console.h">
       <Filter>General\Console</Filter>
     </ClInclude>
@@ -1934,9 +1856,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Application\Main.h">
       <Filter>Application</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\General\SAction.h">
-      <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utility\FileMonitor.h">
       <Filter>Utility</Filter>
@@ -1964,15 +1883,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\UI\SToolBar\SToolBarButton.h">
       <Filter>UI\SToolBar</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\TextEditor\TextEditor.h">
-      <Filter>UI\Text Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\TextEditor\TextLanguage.h">
-      <Filter>UI\Text Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\TextEditor\TextStyle.h">
-      <Filter>UI\Text Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\UI\Canvas\ANSICanvas.h">
       <Filter>UI\Canvas</Filter>
@@ -2031,27 +1941,6 @@
     <ClInclude Include="..\..\src\UI\UndoManagerHistoryPanel.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Graphics\CTexture\CTexture.h">
-      <Filter>Graphics\Composite Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Graphics\CTexture\PatchTable.h">
-      <Filter>Graphics\Composite Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Graphics\CTexture\TextureXList.h">
-      <Filter>Graphics\Composite Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Graphics\Font\SFont.h">
-      <Filter>Graphics\Font</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Graphics\Palette\Palette.h">
-      <Filter>Graphics\Palette</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Graphics\Palette\PaletteManager.h">
-      <Filter>Graphics\Palette</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Graphics\SImage\SImage.h">
-      <Filter>Graphics\SImage</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFJedi.h">
       <Filter>Graphics\SImage\Formats</Filter>
     </ClInclude>
@@ -2075,15 +1964,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFImages.h">
       <Filter>Graphics\SImage\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Graphics\Icons.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Graphics\Translation.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Graphics\SImage\SIFormat.h">
-      <Filter>Graphics\SImage</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Archive\Archive.h">
       <Filter>Archive</Filter>
@@ -2403,9 +2283,6 @@
     <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.h">
       <Filter>Map Editor\Renderer\Overlays</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\General\ResourceManager.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\AnimatedList.h">
       <Filter>Main Editor</Filter>
     </ClInclude>
@@ -2420,9 +2297,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h">
       <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\TextEditor\SCallTip.h">
-      <Filter>UI\Text Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\email\wxEmailMessage.h">
       <Filter>External\wxEmail</Filter>
@@ -2447,9 +2321,6 @@
     <ClInclude Include="..\..\src\External\mus2mid\mus2mid.h">
       <Filter>External\Mus2Mid</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\UI\TextEditor\Lexer.h">
-      <Filter>UI\Text Editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Utility\StringUtils.h">
       <Filter>Utility</Filter>
     </ClInclude>
@@ -2462,9 +2333,6 @@
     <ClInclude Include="..\..\src\MainEditor\MainEditor.h">
       <Filter>Main Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\General\UI.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\MainWindow.h">
       <Filter>Main Editor\UI</Filter>
     </ClInclude>
@@ -2473,9 +2341,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Application\SLADEWxApp.h">
       <Filter>Application</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\General\Log.h">
-      <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\MapEditContext.h">
       <Filter>Map Editor</Filter>
@@ -2516,33 +2381,6 @@
     <ClInclude Include="..\..\src\Utility\StringUtils.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Game\ActionSpecial.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Game\Args.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Game\GenLineSpecial.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Game\ThingType.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Game\UDMFProperty.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Game\Game.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Game\Configuration.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Game\Decorate.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Game\SpecialPreset.h">
-      <Filter>Game</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\SpecialPresetDialog.h">
       <Filter>Map Editor\UI\Dialogs</Filter>
     </ClInclude>
@@ -2558,8 +2396,224 @@
     <ClInclude Include="..\..\src\MainEditor\UI\StartPage.h">
       <Filter>Main Editor\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\General\WebGet.h">
+    <ClInclude Include="..\..\src\External\lua\lapi.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lauxlib.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lcode.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lctype.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\ldebug.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\ldo.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lfunc.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lgc.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\llex.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\llimits.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lmem.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lobject.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lopcodes.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lparser.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lprefix.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lstate.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lstring.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\ltable.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\ltm.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lua.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lua.hpp">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\luaconf.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lualib.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lundump.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lvm.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\lua\lzio.h">
+      <Filter>External\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\sol\sol.hpp">
+      <Filter>External\Sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\ActionSpecial.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Args.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Configuration.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Decorate.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\GenLineSpecial.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\SpecialPreset.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\ThingType.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\UDMFProperty.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Clipboard.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\ColourConfiguration.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\CVar.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Executables.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\KeyBind.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\ListenerAnnouncer.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Log.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Misc.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\ResourceManager.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\SAction.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\UI.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\UndoRedo.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Icons.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Translation.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\CTexture\CTexture.h">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\CTexture\PatchTable.h">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\CTexture\TextureXList.h">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Font\SFont.h">
+      <Filter>Graphics\Font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Palette\Palette.h">
+      <Filter>Graphics\Palette</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Palette\PaletteManager.h">
+      <Filter>Graphics\Palette</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\SIFormat.h">
+      <Filter>Graphics\SImage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\SImage.h">
+      <Filter>Graphics\SImage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\Lua.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\UI\ScriptManagerWindow.h">
+      <Filter>Scripting\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\ScriptManager.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Web.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\Export\Archive.h">
+      <Filter>Scripting\Export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\Export\Game.h">
+      <Filter>Scripting\Export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\Export\General.h">
+      <Filter>Scripting\Export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\Export\MapEditor.h">
+      <Filter>Scripting\Export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Scripting\UI\ScriptPanel.h">
+      <Filter>Scripting\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\TextEditor\Lexer.h">
+      <Filter>Text Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\TextEditor\TextLanguage.h">
+      <Filter>Text Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\TextEditor\TextStyle.h">
+      <Filter>Text Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\TextEditor\UI\SCallTip.h">
+      <Filter>Text Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\TextEditor\UI\TextEditorCtrl.h">
+      <Filter>Text Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\TextEditor\UI\FindReplacePanel.h">
+      <Filter>Text Editor\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Game\MapInfo.h">
       <Filter>Game</Filter>
@@ -2581,36 +2635,6 @@
     </None>
     <None Include="..\..\dist\makebuild.ps1">
       <Filter>Installer</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\text_styles\0default_dark.sss">
-      <Filter>UI\Text Editor\Styles</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\text_styles\default.sss">
-      <Filter>UI\Text Editor\Styles</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\text_styles\faded.sss">
-      <Filter>UI\Text Editor\Styles</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\text_styles\gzdb_dark.sss">
-      <Filter>UI\Text Editor\Styles</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\text_styles\gzdb_light.sss">
-      <Filter>UI\Text Editor\Styles</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\text_styles\material.sss">
-      <Filter>UI\Text Editor\Styles</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\text_styles\old_dark.sss">
-      <Filter>UI\Text Editor\Styles</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\text_styles\old_default.sss">
-      <Filter>UI\Text Editor\Styles</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\text_styles\vs_dark.sss">
-      <Filter>UI\Text Editor\Styles</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\text_styles\vs_light.sss">
-      <Filter>UI\Text Editor\Styles</Filter>
     </None>
     <None Include="..\..\dist\res\config\colours\SLADE 2.cfg">
       <Filter>General\Colours</Filter>
@@ -2653,45 +2677,6 @@
     </Text>
     <Text Include="..\..\dist\res\config\entry_types\types_text.txt">
       <Filter>Archive\EntryType\Config</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\0_base.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\acs.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\decorate.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\dehacked.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\edf.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\fragglescript.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\hexen.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\kssc.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\srb2lua.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\usdf.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\zdaemon.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\zdoom.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
-    </Text>
-    <Text Include="..\..\dist\res\config\languages\zscript.txt">
-      <Filter>UI\Text Editor\Languages</Filter>
     </Text>
     <Text Include="..\..\dist\res\config\colours\Clean.txt">
       <Filter>General\Colours</Filter>

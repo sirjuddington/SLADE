@@ -34,7 +34,7 @@ struct map_texinfo_t
 
 typedef std::map<string, map_tex_t> MapTexHashMap;
 
-class Palette8bit;
+class Palette;
 class MapTextureManager : public Listener
 {
 private:
@@ -44,7 +44,7 @@ private:
 	MapTexHashMap			sprites;
 	MapTexHashMap			editor_images;
 	bool					editor_images_loaded;
-	Palette8bit*			palette;
+	Palette*			palette;
 	vector<map_texinfo_t>	tex_info;
 	vector<map_texinfo_t>	flat_info;
 
@@ -67,7 +67,7 @@ public:
 	void	refreshResources();
 	void	buildTexInfoList();
 
-	Palette8bit*	getResourcePalette();
+	Palette*	getResourcePalette();
 	GLTexture*		getTexture(string name, bool mixed);
 	GLTexture*		getFlat(string name, bool mixed);
 	GLTexture*		getSprite(string name, string translation = "", string palette = "");

@@ -168,7 +168,7 @@ protected:
 		return readDoomFormat(image, data, 0);
 	}
 
-	virtual bool writeImage(SImage& image, MemChunk& out, Palette8bit* pal, int index)
+	virtual bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
 	{
 		// Convert image to column/post structure
 		vector<column_t> columns;

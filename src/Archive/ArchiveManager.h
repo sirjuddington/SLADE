@@ -34,6 +34,11 @@ public:
 	bool		archiveIsResource(Archive* archive);
 	void		setArchiveResource(Archive* archive, bool resource = true);
 
+	// General access
+	const vector<string>&			recentFiles() const { return recent_files_; }
+	const vector<string>&			baseResourcePaths() const { return base_resource_paths_; }
+	const vector<ArchiveEntry*>&	bookmarks() const { return bookmarks_; }
+
 	// Base resource archive stuff
 	Archive*	baseResourceArchive() const { return base_resource_archive_; }
 	bool		addBaseResourcePath(string path);

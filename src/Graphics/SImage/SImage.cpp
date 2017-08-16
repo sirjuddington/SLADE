@@ -81,7 +81,7 @@ SImage::~SImage()
  * Loads the image as RGBA data into <mc>. Returns false if image is
  * invalid, true otherwise
  *******************************************************************/
-bool SImage::getRGBAData(MemChunk& mc, Palette8bit* pal)
+bool SImage::getRGBAData(MemChunk& mc, Palette* pal)
 {
 	// Check the image is valid
 	if (!isValid())
@@ -145,7 +145,7 @@ bool SImage::getRGBAData(MemChunk& mc, Palette8bit* pal)
  * Loads the image as RGB data into <mc>. Returns false if image is
  * invalid, true otherwise
  *******************************************************************/
-bool SImage::getRGBData(MemChunk& mc, Palette8bit* pal)
+bool SImage::getRGBData(MemChunk& mc, Palette* pal)
 {
 	// Check the image is valid
 	if (!isValid())
@@ -278,7 +278,7 @@ SImage::info_t SImage::getInfo()
  * Returns the colour of the pixel at [x,y] in the image, or black+
  * invisible if out of range
  *******************************************************************/
-rgba_t SImage::getPixel(unsigned x, unsigned y, Palette8bit* pal)
+rgba_t SImage::getPixel(unsigned x, unsigned y, Palette* pal)
 {
 	// Get pixel index
 	unsigned index = y * getStride() + x * getBpp();
@@ -378,7 +378,7 @@ void SImage::clearData(bool clear_mask)
 /* SImage::create
  * Creates an empty image
  *******************************************************************/
-void SImage::create(int width, int height, SIType type, Palette8bit* pal, int index, int numimages)
+void SImage::create(int width, int height, SIType type, Palette* pal, int index, int numimages)
 {
 	// Check valid width/height
 	if (width < 0 || height < 0)
@@ -426,7 +426,7 @@ void SImage::create(int width, int height, SIType type, Palette8bit* pal, int in
 /* SImage::create
  * Creates an empty image, initialising with properties from [info]
  *******************************************************************/
-void SImage::create(SImage::info_t info, Palette8bit* pal)
+void SImage::create(SImage::info_t info, Palette* pal)
 {
 	// Normal creation
 	create(info.width, info.height, (SIType)info.colformat, pal, info.imgindex, info.numimages);
@@ -545,7 +545,7 @@ size_t SImage::countColours()
 /* SImage::shrinkPalette
  * Shifts all the used colours to the beginning of the palette
  *******************************************************************/
-void SImage::shrinkPalette(Palette8bit* pal)
+void SImage::shrinkPalette(Palette* pal)
 {
 	// If the picture is not paletted, stop.
 	if (type != PALMASK)
@@ -556,7 +556,7 @@ void SImage::shrinkPalette(Palette8bit* pal)
 		pal = &palette;
 
 	// Init variables
-	Palette8bit newpal;
+	Palette newpal;
 	bool* usedcolours = new bool[256];
 	int* remap = new int[256];
 	memset(usedcolours, 0, 256);
@@ -654,7 +654,7 @@ bool SImage::open(MemChunk& data, int index, string type_hint)
  * Converts the image to 32bpp (RGBA). Returns false if the image was
  * already 32bpp, true otherwise.
  *******************************************************************/
-bool SImage::convertRGBA(Palette8bit* pal)
+bool SImage::convertRGBA(Palette* pal)
 {
 	// If it's already 32bpp do nothing
 	if (type == RGBA)
@@ -688,7 +688,7 @@ bool SImage::convertRGBA(Palette8bit* pal)
  * this). [pal_current] will be used as the image's current palette
  * if it doesn't already have one
  *******************************************************************/
-bool SImage::convertPaletted(Palette8bit* pal_target, Palette8bit* pal_current)
+bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 {
 	// Check image/parameters are valid
 	if (!isValid() || !pal_target)
@@ -749,7 +749,7 @@ bool SImage::convertPaletted(Palette8bit* pal_target, Palette8bit* pal_current)
  * either pixel brightness or existing alpha, depending on the value
  * of [alpha_source]
  *******************************************************************/
-bool SImage::convertAlphaMap(int alpha_source, Palette8bit* pal)
+bool SImage::convertAlphaMap(int alpha_source, Palette* pal)
 {
 	// Get RGBA data
 	MemChunk rgba;
@@ -786,7 +786,7 @@ bool SImage::convertAlphaMap(int alpha_source, Palette8bit* pal)
  * Changes the mask/alpha channel so that pixels that match [colour]
  * are fully transparent, and all other pixels fully opaque
  *******************************************************************/
-bool SImage::maskFromColour(rgba_t colour, Palette8bit* pal)
+bool SImage::maskFromColour(rgba_t colour, Palette* pal)
 {
 	if (type == PALMASK)
 	{
@@ -833,7 +833,7 @@ bool SImage::maskFromColour(rgba_t colour, Palette8bit* pal)
  * Changes the mask/alpha channel so that each pixel's transparency
  * matches its brigntness level (where black is fully transparent)
  *******************************************************************/
-bool SImage::maskFromBrightness(Palette8bit* pal)
+bool SImage::maskFromBrightness(Palette* pal)
 {
 	if (type == PALMASK)
 	{
@@ -923,7 +923,7 @@ bool SImage::cutoffMask(uint8_t threshold)
  * Sets the pixel at [x],[y] to [colour]. Returns false if the
  * position is out of range, true otherwise
  *******************************************************************/
-bool SImage::setPixel(int x, int y, rgba_t colour, Palette8bit* pal)
+bool SImage::setPixel(int x, int y, rgba_t colour, Palette* pal)
 {
 	// Check position
 	if (x < 0 || x >= width || y < 0 || y >= height)
@@ -1297,7 +1297,7 @@ bool SImage::setImageData(uint8_t* ndata, int nwidth, int nheight, SIType ntype)
 /* SImage::applyTranslation
  * Applies a palette translation to the image
  *******************************************************************/
-bool SImage::applyTranslation(Translation* tr, Palette8bit* pal, bool truecolor)
+bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 {
 	// Check image is ok
 	if (!data)
@@ -1372,7 +1372,7 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal, bool truecolor)
 /* SImage::applyTranslation
  * Applies a palette translation to the image
  *******************************************************************/
-bool SImage::applyTranslation(string tr, Palette8bit* pal, bool truecolor)
+bool SImage::applyTranslation(string tr, Palette* pal, bool truecolor)
 {
 	Translation trans;
 	trans.clear();
@@ -1385,7 +1385,7 @@ bool SImage::applyTranslation(string tr, Palette8bit* pal, bool truecolor)
  * the options set in [properties]. If the image is paletted, the
  * resulting pixel colour is converted to its nearest match in [pal]
  *******************************************************************/
-bool SImage::drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, Palette8bit* pal)
+bool SImage::drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, Palette* pal)
 {
 	// Check valid coords
 	if (x < 0 || y < 0 || x >= width || y >= height)
@@ -1496,7 +1496,7 @@ bool SImage::drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, 
  * [pal_dest] is used for the destination image, if either is
  * paletted
  *******************************************************************/
-bool SImage::drawImage(SImage& img, int x_pos, int y_pos, si_drawprops_t& properties, Palette8bit* pal_src, Palette8bit* pal_dest)
+bool SImage::drawImage(SImage& img, int x_pos, int y_pos, si_drawprops_t& properties, Palette* pal_src, Palette* pal_dest)
 {
 	// Check images
 	if (!data || !img.data)
@@ -1563,7 +1563,7 @@ bool SImage::drawImage(SImage& img, int x_pos, int y_pos, si_drawprops_t& proper
  * Colourises the image to [colour]. If the image is paletted, each
  * pixel will be set to its nearest matching colour in [pal]
  *******************************************************************/
-bool SImage::colourise(rgba_t colour, Palette8bit* pal, int start, int stop)
+bool SImage::colourise(rgba_t colour, Palette* pal, int start, int stop)
 {
 	// Can't do this with alpha maps
 	if (type == ALPHAMAP)
@@ -1612,7 +1612,7 @@ bool SImage::colourise(rgba_t colour, Palette8bit* pal, int start, int stop)
  * Tints the image to [colour] by [amount]. If the image is paletted,
  * each pixel will be set to its nearest matching colour in [pal]
  *******************************************************************/
-bool SImage::tint(rgba_t colour, float amount, Palette8bit* pal, int start, int stop)
+bool SImage::tint(rgba_t colour, float amount, Palette* pal, int start, int stop)
 {
 	// Can't do this with alpha maps
 	if (type == ALPHAMAP)

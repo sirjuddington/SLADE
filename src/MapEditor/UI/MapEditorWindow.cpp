@@ -51,6 +51,7 @@
 #include "MapEditor/UI/ScriptEditorPanel.h"
 #include "MapEditor/UI/ShapeDrawPanel.h"
 #include "MapEditorWindow.h"
+#include "Scripting/ScriptManager.h"
 #include "UI/ConsolePanel.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
@@ -232,6 +233,11 @@ void MapEditorWindow::setupMenu()
 	SAction::fromId("mapw_show_fullmap")->addToMenu(menu_view);
 	SAction::fromId("mapw_show_item")->addToMenu(menu_view);
 	menu->Append(menu_view, "View");
+
+	// Tools menu
+	wxMenu* menu_tools = new wxMenu("");
+	SAction::fromId("mapw_runscript")->addToMenu(menu_tools);
+	menu->Append(menu_tools, "&Tools");
 
 	SetMenuBar(menu);
 }
@@ -1319,6 +1325,13 @@ bool MapEditorWindow::handleAction(string id)
 
 		return true;
 	}
+
+	// Tools->Run Script
+	else if (id == "mapw_runscript")
+	{
+		ScriptManager::open();
+		return true;
+	}
 	
 	return false;
 }
@@ -1333,8 +1346,15 @@ bool MapEditorWindow::handleAction(string id)
  *******************************************************************/
 void MapEditorWindow::onClose(wxCloseEvent& e)
 {
+	// Unlock mouse cursor
+	bool locked = MapEditor::editContext().mouseLocked();
+	MapEditor::editContext().lockMouse(false);
+
 	if (!tryClose())
 	{
+		// Restore mouse cursor lock
+		MapEditor::editContext().lockMouse(locked);
+
 		e.Veto();
 		return;
 	}

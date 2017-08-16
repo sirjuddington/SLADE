@@ -26,3 +26,26 @@ cstyle
 		NULL
 	}
 }
+
+lua
+{
+	name = "Lua";
+	comment_begin = "--[[";
+	comment_end = "]]";
+	comment_line = "--";
+	case_sensitive = true;
+	block_begin = "{";
+	block_end = "}";
+	word_block_begin = "do", "function", "if";
+	word_block_end = "end";
+
+	keywords =
+	{
+		and, break, do, else, elseif, end, for, function, if, in, local, not, or, repeat, return, then, until, while
+    }
+
+	constants =
+	{
+		false, true, nil
+	}
+}

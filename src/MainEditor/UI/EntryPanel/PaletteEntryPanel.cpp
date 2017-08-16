@@ -49,6 +49,25 @@ CVAR(Float, col_greyscale_r, 0.299, CVAR_SAVE)
 CVAR(Float, col_greyscale_g, 0.587, CVAR_SAVE)
 CVAR(Float, col_greyscale_b, 0.114, CVAR_SAVE)
 
+namespace
+{
+	string extensions =
+		"Raw Palette (*.pal)|*.pal|"
+		"PNG File (*.png)|*.png|"
+		"CSV Palette (*.csv)|*.csv|"
+		"JASC Palette (*.pal)|*.pal|"
+		"GIMP Palette (*.gpl)|*.gpl";
+
+	vector<Palette::Format> pal_formats =
+	{
+		Palette::Format::Raw,
+		Palette::Format::Image,
+		Palette::Format::CSV,
+		Palette::Format::JASC,
+		Palette::Format::GIMP
+	};
+}
+
 
 /*******************************************************************
  * PALETTECOLOURISEDIALOG CLASS
@@ -60,11 +79,11 @@ class PaletteColouriseDialog : public wxDialog
 {
 private:
 	PaletteCanvas*		pal_preview;
-	Palette8bit*		palette;
+	Palette*		palette;
 	wxColourPickerCtrl*	cp_colour;
 
 public:
-	PaletteColouriseDialog(wxWindow* parent, Palette8bit* pal)
+	PaletteColouriseDialog(wxWindow* parent, Palette* pal)
 		: wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 	{
 		// Init variable
@@ -114,7 +133,7 @@ public:
 		CenterOnParent();
 	}
 
-	Palette8bit* getFinalPalette()
+	Palette* getFinalPalette()
 	{
 		return &(pal_preview->getPalette());
 	}
@@ -156,13 +175,13 @@ class PaletteTintDialog : public wxDialog
 {
 private:
 	PaletteCanvas*		pal_preview;
-	Palette8bit*		palette;
+	Palette*		palette;
 	wxColourPickerCtrl*	cp_colour;
 	wxSlider*			slider_amount;
 	wxStaticText*		label_amount;
 
 public:
-	PaletteTintDialog(wxWindow* parent, Palette8bit* pal)
+	PaletteTintDialog(wxWindow* parent, Palette* pal)
 		: wxDialog(parent, -1, "Tint", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 	{
 		// Init variables
@@ -226,7 +245,7 @@ public:
 		label_amount->SetLabel("50% ");
 	}
 
-	Palette8bit* getFinalPalette()
+	Palette* getFinalPalette()
 	{
 		return &(pal_preview->getPalette());
 	}
@@ -282,7 +301,7 @@ class PaletteColourTweakDialog : public wxDialog
 {
 private:
 	PaletteCanvas*		pal_preview;
-	Palette8bit*		palette;
+	Palette*		palette;
 	wxSlider*			slider_hue;
 	wxSlider*			slider_sat;
 	wxSlider*			slider_lum;
@@ -291,7 +310,7 @@ private:
 	wxStaticText*		label_lum;
 
 public:
-	PaletteColourTweakDialog(wxWindow* parent, Palette8bit* pal)
+	PaletteColourTweakDialog(wxWindow* parent, Palette* pal)
 		: wxDialog(parent, -1, "Tweak Colours", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 	{
 		// Init variables
@@ -372,7 +391,7 @@ public:
 		label_lum->SetLabel("100% ");
 	}
 
-	Palette8bit* getFinalPalette()
+	Palette* getFinalPalette()
 	{
 		return &(pal_preview->getPalette());
 	}
@@ -440,10 +459,10 @@ class PaletteInvertDialog : public wxDialog
 {
 private:
 	PaletteCanvas*		pal_preview;
-	Palette8bit*		palette;
+	Palette*		palette;
 
 public:
-	PaletteInvertDialog(wxWindow* parent, Palette8bit* pal)
+	PaletteInvertDialog(wxWindow* parent, Palette* pal)
 		: wxDialog(parent, -1, "Invert", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 	{
 		// Init variable
@@ -484,7 +503,7 @@ public:
 		CenterOnParent();
 	}
 
-	Palette8bit* getFinalPalette()
+	Palette* getFinalPalette()
 	{
 		return &(pal_preview->getPalette());
 	}
@@ -578,12 +597,12 @@ class PaletteGradientDialog : public wxDialog
 {
 private:
 	PaletteCanvas*		pal_preview;
-	Palette8bit*		palette;
+	Palette*		palette;
 	wxColourPickerCtrl*	cp_startcolour;
 	wxColourPickerCtrl*	cp_endcolour;
 	
 public:
-	PaletteGradientDialog(wxWindow* parent, Palette8bit* pal)
+	PaletteGradientDialog(wxWindow* parent, Palette* pal)
 	: wxDialog(parent, -1, "Gradient", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 	{
 		// Init variable
@@ -638,7 +657,7 @@ public:
 		CenterOnParent();
 	}
 	
-	Palette8bit* getFinalPalette()
+	Palette* getFinalPalette()
 	{
 		return &(pal_preview->getPalette());
 	}
@@ -762,7 +781,7 @@ bool PaletteEntryPanel::loadEntry(ArchiveEntry* entry)
 		entry->read(&pal_data, 768);
 
 		// Create palette
-		Palette8bit* pal = new Palette8bit();
+		Palette* pal = new Palette();
 		pal->loadMem(pal_data, 768);
 
 		// Add palette
@@ -789,7 +808,7 @@ bool PaletteEntryPanel::saveEntry()
 	// Write each palette as raw data
 	for (size_t a = 0; a < palettes.size(); a++)
 	{
-		palettes[a]->saveMem(mc, Palette8bit::FORMAT_RAW);
+		palettes[a]->saveMem(mc);
 		full.write(mc.getData(), 768);
 	}
 	entry->importMemChunk(full);
@@ -894,7 +913,7 @@ bool PaletteEntryPanel::addCustomPalette()
 	palettes[cur_palette]->saveFile(path);
 
 	// Add to palette manager and main palette chooser
-	auto pal = std::make_unique<Palette8bit>();
+	auto pal = std::make_unique<Palette>();
 	pal->copyPalette(palettes[cur_palette]);
 	App::paletteManager()->addPalette(std::move(pal), name);
 	theMainWindow->getPaletteChooser()->addPalette(name);
@@ -913,7 +932,7 @@ bool PaletteEntryPanel::testPalette()
 	string name = "Test: " + wxGetTextFromUser("Enter name for Palette:", "Test Palettes");
 
 	// Add to palette manager and main palette chooser
-	auto pal = std::make_unique<Palette8bit>();
+	auto pal = std::make_unique<Palette>();
 	pal->copyPalette(palettes[cur_palette]);
 	App::paletteManager()->addPalette(std::move(pal), name);
 	theMainWindow->getPaletteChooser()->addPalette(name);
@@ -929,9 +948,8 @@ bool PaletteEntryPanel::exportAs()
 {
 	// Run save file dialog
 	SFileDialog::fd_info_t info;
-	string extensions = "Raw Palette (*.pal)|*.pal|PNG File (*.png)|*.png|CSV Palette (*.csv)|*.csv|JASC Palette (*.pal)|*.pal|GIMP Palette (*.gpl)|*.gpl";
 	if (SFileDialog::saveFile(info, "Export Palette As", extensions, this))
-		return palettes[cur_palette]->saveFile(info.filenames[0], info.ext_index);
+		return palettes[cur_palette]->saveFile(info.filenames[0], pal_formats[info.ext_index]);
 
 	return false;
 }
@@ -945,11 +963,10 @@ bool PaletteEntryPanel::importFrom()
 
 	// Run open file dialog
 	SFileDialog::fd_info_t info;
-	string extensions = "Raw Palette (*.pal)|*.pal|PNG File (*.png)|*.png|CSV Palette (*.csv)|*.csv|JASC Palette (*.pal)|*.pal|GIMP Palette (*.gpl)|*.gpl";
 	if (SFileDialog::openFile(info, "Import Palette As", extensions, this))
 	{
 		// Load palette
-		ret = palettes[cur_palette]->loadFile(info.filenames[0], info.ext_index);
+		ret = palettes[cur_palette]->loadFile(info.filenames[0], pal_formats[info.ext_index]);
 		if (ret)
 		{
 			setModified();
@@ -995,7 +1012,7 @@ bool PaletteEntryPanel::clearOthers()
 		return true;
 
 	// Keeping a pointer to the palette we keep
-	Palette8bit* pal = palettes[cur_palette];
+	Palette* pal = palettes[cur_palette];
 
 	// Swap current palette with the first one if needed
 	if (cur_palette != 0)
@@ -1025,7 +1042,7 @@ bool PaletteEntryPanel::clearOthers()
  *******************************************************************/
 bool PaletteEntryPanel::duplicate()
 {
-	Palette8bit* newpalette = new Palette8bit;
+	Palette* newpalette = new Palette;
 	if (!newpalette)
 		return false;
 
@@ -1059,7 +1076,7 @@ bool PaletteEntryPanel::move(bool infront)
 			newpos = 0;
 		else ++newpos;
 	}
-	Palette8bit* tmp = palettes[cur_palette];
+	Palette* tmp = palettes[cur_palette];
 	palettes[cur_palette] = palettes[newpos];
 	palettes[newpos] = tmp;
 
@@ -1075,7 +1092,7 @@ bool PaletteEntryPanel::move(bool infront)
  *******************************************************************/
 bool PaletteEntryPanel::tint()
 {
-	Palette8bit* pal = new Palette8bit;
+	Palette* pal = new Palette;
 	if (pal == NULL) return false;
 	pal->copyPalette(palettes[cur_palette]);
 	PaletteTintDialog ptd(theMainWindow, pal);
@@ -1094,7 +1111,7 @@ bool PaletteEntryPanel::tint()
  *******************************************************************/
 bool PaletteEntryPanel::colourise()
 {
-	Palette8bit* pal = new Palette8bit;
+	Palette* pal = new Palette;
 	if (pal == NULL) return false;
 	pal->copyPalette(palettes[cur_palette]);
 	PaletteColouriseDialog pcd(theMainWindow, pal);
@@ -1113,7 +1130,7 @@ bool PaletteEntryPanel::colourise()
  *******************************************************************/
 bool PaletteEntryPanel::tweak()
 {
-	Palette8bit* pal = new Palette8bit;
+	Palette* pal = new Palette;
 	if (pal == NULL) return false;
 	pal->copyPalette(palettes[cur_palette]);
 	PaletteColourTweakDialog pctd(theMainWindow, pal);
@@ -1132,7 +1149,7 @@ bool PaletteEntryPanel::tweak()
  *******************************************************************/
 bool PaletteEntryPanel::invert()
 {
-	Palette8bit* pal = new Palette8bit;
+	Palette* pal = new Palette;
 	if (pal == NULL) return false;
 	pal->copyPalette(palettes[cur_palette]);
 	PaletteInvertDialog pid(theMainWindow, pal);
@@ -1151,7 +1168,7 @@ bool PaletteEntryPanel::invert()
  *******************************************************************/
 bool PaletteEntryPanel::gradient()
 {
-	Palette8bit* pal = new Palette8bit;
+	Palette* pal = new Palette;
 	if (pal == NULL) return false;
 	pal->copyPalette(palettes[cur_palette]);
 	PaletteGradientDialog pgd(theMainWindow, pal);
@@ -1274,7 +1291,7 @@ bool PaletteEntryPanel::generateColormaps()
 void PaletteEntryPanel::generatePalette(int r, int g, int b, int shift, int steps)
 {
 	// Create a new palette
-	Palette8bit* pal = new Palette8bit;
+	Palette* pal = new Palette;
 	if (pal == NULL) return;
 
 	// Seed it with the basic palette

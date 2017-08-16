@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "App.h"
 #include "TextStylePrefsPanel.h"
-#include "UI/TextEditor/TextEditor.h"
+#include "TextEditor/UI/TextEditorCtrl.h"
 
 
 /*******************************************************************
@@ -149,7 +149,7 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	vbox->Add(cp_background, 0, wxEXPAND);
 
 	// Preview
-	te_preview = new TextEditor(this, -1);
+	te_preview = new TextEditorCtrl(this, -1);
 	vbox->Add(te_preview, 1, wxEXPAND | wxTOP, 8);
 
 

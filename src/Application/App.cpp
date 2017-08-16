@@ -40,7 +40,6 @@
 #include "General/Console/Console.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
-#include "General/Lua.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
 #include "General/UI.h"
@@ -50,8 +49,10 @@
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/NodeBuilders.h"
 #include "OpenGL/Drawing.h"
-#include "UI/TextEditor/TextLanguage.h"
-#include "UI/TextEditor/TextStyle.h"
+#include "Scripting/Lua.h"
+#include "Scripting/ScriptManager.h"
+#include "TextEditor/TextLanguage.h"
+#include "TextEditor/TextStyle.h"
 #include "UI/SBrush.h"
 #include "Utility/Tokenizer.h"
 
@@ -248,6 +249,36 @@ namespace App
 			tz.adv();
 		}
 	}
+
+	vector<string> processCommandLine(vector<string>& args)
+	{
+		vector<string> to_open;
+
+		// Process command line args (except the first as it is normally the executable name)
+		for (auto& arg : args)
+		{
+			// -nosplash: Disable splash window
+			if (S_CMPNOCASE(arg, "-nosplash"))
+				UI::enableSplash(false);
+
+			// -debug: Enable debug mode
+			else if (S_CMPNOCASE(arg, "-debug"))
+			{
+				Global::debug = true;
+				Log::info("Debugging stuff enabled");
+			}
+
+			// Other (no dash), open as archive
+			else if (!arg.StartsWith("-"))
+				to_open.push_back(arg);
+
+			// Unknown parameter
+			else
+				Log::warning(S_FMT("Unknown command line parameter: \"%s\"", CHR(arg)));
+		}
+
+		return to_open;
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -315,7 +346,7 @@ bool App::isExiting()
 //
 // Application initialisation
 // ----------------------------------------------------------------------------
-bool App::init()
+bool App::init(vector<string>& args)
 {
 	// Set locale to C so that the tokenizer will work properly
 	// even in locales where the decimal separator is a comma.
@@ -327,6 +358,9 @@ bool App::init()
 
 	// Init log
 	Log::init();
+
+	// Process the command line arguments
+	vector<string> paths_to_open = processCommandLine(args);
 
 	// Init keybinds
 	KeyBind::initBinds();
@@ -415,16 +449,17 @@ bool App::init()
 	Log::info("Loading game configurations");
 	Game::init();
 
+	// Init script manager
+	ScriptManager::init();
+
 	// Show the main window
 	MainEditor::windowWx()->Show(true);
 	wxTheApp->SetTopWindow(MainEditor::windowWx());
 	UI::showSplash("Starting up...", false, MainEditor::windowWx());
 
-	// Open any archives on the command line
-	// argv[0] is normally the executable itself (i.e. SLADE.exe)
-	// and opening it as an archive should not be attempted...
-	for (int a = 1; a < wxTheApp->argc; a++)
-		archive_manager.openArchive(wxTheApp->argv[a]);
+	// Open any archives from the command line
+	for (auto& path : paths_to_open)
+		archive_manager.openArchive(path);
 
 	// Hide splash screen
 	UI::hideSplash();
@@ -542,6 +577,9 @@ void App::exit(bool save_config)
 
 		// Save custom special presets
 		Game::saveCustomSpecialPresets();
+
+		// Save custom scripts
+		ScriptManager::saveUserScripts();
 	}
 
 	// Close all open archives

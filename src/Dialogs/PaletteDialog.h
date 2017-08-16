@@ -5,14 +5,14 @@
 #include "common.h"
 
 class PaletteCanvas;
-class Palette8bit;
+class Palette;
 class PaletteDialog : public wxDialog
 {
 private:
 	PaletteCanvas*	pal_canvas;
 
 public:
-	PaletteDialog(Palette8bit* palette);
+	PaletteDialog(Palette* palette);
 	~PaletteDialog();
 
 	rgba_t	getSelectedColour();

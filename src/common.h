@@ -141,6 +141,7 @@
 // C++
 #include <map>
 #include <vector>
+#include <functional>
 #include <algorithm>
 #include <set>
 #include <cmath>
