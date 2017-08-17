@@ -58,6 +58,8 @@ DirArchive::DirArchive() : Archive("folder")
 #else
 	separator_ = "/";
 #endif
+
+	rootDir()->allowDuplicateNames(false);
 }
 
 /* DirArchive::~DirArchive
@@ -397,6 +399,13 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
  *******************************************************************/
 bool DirArchive::renameEntry(ArchiveEntry* entry, string name)
 {
+	// Check rename won't result in duplicated name
+	if (entry->getParentDir()->entry(name))
+	{
+		Global::error = S_FMT("An entry named %s already exists", CHR(name));
+		return false;
+	}
+
 	string old_name = entry->exProp("filePath").getStringValue();
 	bool success = Archive::renameEntry(entry, name);
 	if (success)

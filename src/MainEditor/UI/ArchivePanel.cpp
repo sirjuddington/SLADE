@@ -965,6 +965,8 @@ bool ArchivePanel::buildArchive()
  *******************************************************************/
 bool ArchivePanel::renameEntry(bool each)
 {
+	Global::error = "Rename failed";
+
 	// Get a list of selected entries
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 
@@ -989,7 +991,14 @@ bool ArchivePanel::renameEntry(bool each)
 
 			// Rename entry (if needed)
 			if (!new_name.IsEmpty() && selection[a]->getName() != new_name)
-				archive->renameEntry(selection[a], new_name);
+			{
+				if (!archive->renameEntry(selection[a], new_name))
+					wxMessageBox(
+						S_FMT("Unable to rename entry %s: %s", CHR(selection[a]->getName()), CHR(Global::error)),
+						"Rename Entry",
+						wxICON_EXCLAMATION|wxOK
+					);
+			}
 		}
 	}
 	else if (selection.size() > 1)
@@ -1040,7 +1049,14 @@ bool ArchivePanel::renameEntry(bool each)
 					filename.Replace("&&", wxString::FromDouble(a, 0));
 					filename.Replace("&", wxString::FromDouble(a+1, 0));
 					fn.SetName(filename);							// Change name
-					archive->renameEntry(entry, fn.GetFullName());	// Rename in archive
+
+					// Rename in archive
+					if (!archive->renameEntry(entry, fn.GetFullName()))
+						wxMessageBox(
+							S_FMT("Unable to rename entry %s: %s", CHR(selection[a]->getName()), CHR(Global::error)),
+							"Rename Entry",
+							wxICON_EXCLAMATION | wxOK
+						);
 				}
 			}
 		}

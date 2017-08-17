@@ -55,6 +55,9 @@ ArchiveTreeNode::ArchiveTreeNode(ArchiveTreeNode* parent, Archive* archive) :
 	dir_entry_ = std::make_unique<ArchiveEntry>();
 	dir_entry_->type = EntryType::folderType();
 	dir_entry_->parent = parent;
+
+	if (parent)
+		allow_duplicate_names_ = parent->allow_duplicate_names_;
 }
 
 // ----------------------------------------------------------------------------
@@ -173,7 +176,7 @@ vector<ArchiveEntry::SPtr> ArchiveTreeNode::allEntries()
 }
 
 // ----------------------------------------------------------------------------
-// ArchiveTreeNode::getEntry
+// ArchiveTreeNode::entryAt
 //
 // Returns the entry at [index] in this directory, or null if [index] is out of
 // bounds
@@ -188,7 +191,7 @@ ArchiveEntry* ArchiveTreeNode::entryAt(unsigned index)
 }
 
 // ----------------------------------------------------------------------------
-// ArchiveTreeNode::getEntryShared
+// ArchiveTreeNode::sharedEntryAt
 //
 // Returns a shared pointer to the entry at [index] in this directory, or null
 // if [index] is out of bounds
@@ -203,7 +206,7 @@ ArchiveEntry::SPtr ArchiveTreeNode::sharedEntryAt(unsigned index)
 }
 
 // ----------------------------------------------------------------------------
-// ArchiveTreeNode::getEntry
+// ArchiveTreeNode::entry
 //
 // Returns the entry matching [name] in this directory, or null if no entries
 // match
@@ -227,7 +230,7 @@ ArchiveEntry* ArchiveTreeNode::entry(string name, bool cut_ext)
 }
 
 // ----------------------------------------------------------------------------
-// ArchiveTreeNode::getEntryShared
+// ArchiveTreeNode::sharedEntry
 //
 // Returns a shared pointer to the entry matching [name] in this directory, or
 // null if no entries match
@@ -251,7 +254,7 @@ ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(string name, bool cut_ext)
 }
 
 // ----------------------------------------------------------------------------
-// ArchiveTreeNode::getEntryShared
+// ArchiveTreeNode::sharedEntry
 //
 // Returns a shared pointer to [entry] in this directory, or null if no entries
 // match
@@ -343,6 +346,10 @@ bool ArchiveTreeNode::addEntry(ArchiveEntry* entry, unsigned index)
 	// Set entry's parent to this node
 	entry->parent = this;
 
+	// Check entry name if duplicate names aren't allowed
+	if (!allow_duplicate_names_)
+		ensureUniqueName(entry);
+
 	return true;
 }
 
@@ -391,6 +398,10 @@ bool ArchiveTreeNode::addEntry(ArchiveEntry::SPtr& entry, unsigned index)
 
 	// Set entry's parent to this node
 	entry->parent = this;
+
+	// Check entry name if duplicate names aren't allowed
+	if (!allow_duplicate_names_)
+		ensureUniqueName(entry.get());
 
 	return true;
 }
@@ -560,4 +571,34 @@ bool ArchiveTreeNode::exportTo(string path)
 		((ArchiveTreeNode*)children[a])->exportTo(path + "/" + children[a]->getName());
 
 	return true;
+}
+
+void ArchiveTreeNode::ensureUniqueName(ArchiveEntry* entry)
+{
+	unsigned index = 0;
+	unsigned number = 0;
+	unsigned n_entries = entries_.size();
+	wxFileName fn(entry->getName());
+	string name = fn.GetFullName();
+	while (index < n_entries)
+	{
+		if (entries_[index].get() == entry)
+		{
+			index++;
+			continue;
+		}
+
+		if (S_CMPNOCASE(entries_[index]->getName(false), name))
+		{
+			fn.SetName(S_FMT("%s%d", CHR(entry->getName(true)), ++number));
+			name = fn.GetFullName();
+			index = 0;
+			continue;
+		}
+
+		index++;
+	}
+
+	if (number > 0)
+		entry->rename(name);
 }

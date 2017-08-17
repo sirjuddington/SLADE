@@ -43,6 +43,7 @@ public:
 	ArchiveTreeNode*	clone();
 	bool				merge(ArchiveTreeNode* node, unsigned position = 0xFFFFFFFF, int state = 2);
 	bool				exportTo(string path);
+	void				allowDuplicateNames(bool allow) { allow_duplicate_names_ = allow; }
 
 	typedef	std::unique_ptr<ArchiveTreeNode> Ptr;
 
@@ -52,6 +53,7 @@ protected:
 		ArchiveTreeNode* node = new ArchiveTreeNode();
 		node->dir_entry_->name = name;
 		node->archive_ = archive_;
+		node->allow_duplicate_names_ = allow_duplicate_names_;
 		return node;
 	}
 
@@ -59,4 +61,7 @@ private:
 	Archive*					archive_;
 	ArchiveEntry::SPtr			dir_entry_;
 	vector<ArchiveEntry::SPtr>	entries_;
+	bool						allow_duplicate_names_ = true;
+
+	void	ensureUniqueName(ArchiveEntry* entry);
 };
