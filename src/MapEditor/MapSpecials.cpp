@@ -177,6 +177,8 @@ void MapSpecials::processZDoomMapSpecials(SLADEMap* map)
 
 	// All slope specials, which must be done in a particular order
 	processZDoomSlopes(map);
+
+	process3DFloors(map);
 }
 
 /* MapSpecials::processZDoomLineSpecial
@@ -899,4 +901,20 @@ void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& 
 	fpoint3_t p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
 	fpoint3_t p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
 	target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
+}
+
+void MapSpecials::process3DFloors(SLADEMap *map) {
+	/*for (unsigned a = 0; a < map->nLines(); a++) {
+		MapLine *line = map->getLine(a);
+		if(line->getSpecial() != 160) continue; // Sector_Set3DFloor
+		if(line->intProperty("arg0") == 0) {
+			LOG_MESSAGE(1, "Ignoring Sector_Set3DFloor on sector %d because of zero tag", line->s1()->getSector()->getIndex());
+		}
+		unsigned tag = (unsigned int) line->intProperty("arg0");
+		vector<MapSector*> sectors;
+		map->getSectorsByTag(tag, sectors);
+		for(MapSector* sector : sectors) {
+			sector->set3DFloor(line->s1()->getSector());
+		}
+	}*/
 }

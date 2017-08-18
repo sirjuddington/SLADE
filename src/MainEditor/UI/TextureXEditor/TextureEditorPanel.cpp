@@ -163,8 +163,8 @@ void TextureEditorPanel::setupLayout()
 	text_tex_name->Bind(wxEVT_TEXT, &TextureEditorPanel::onTexNameChanged, this);
 	spin_tex_width->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexWidthChanged, this);
 	spin_tex_height->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexHeightChanged, this);
-	spin_tex_width->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexWidthChanged, this);
-	spin_tex_height->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexHeightChanged, this);
+	spin_tex_width->Bind(wxEVT_TEXT, &TextureEditorPanel::onTexWidthChanged, this);
+	spin_tex_height->Bind(wxEVT_TEXT, &TextureEditorPanel::onTexHeightChanged, this);
 	list_patches->Bind(wxEVT_LIST_ITEM_SELECTED, &TextureEditorPanel::onPatchListSelect, this);
 	list_patches->Bind(wxEVT_LIST_ITEM_DESELECTED, &TextureEditorPanel::onPatchListDeSelect, this);
 	btn_patch_add->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnPatchAdd, this);
@@ -175,8 +175,8 @@ void TextureEditorPanel::setupLayout()
 	btn_patch_duplicate->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnPatchDuplicate, this);
 	spin_patch_left->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onPatchPositionXChanged, this);
 	spin_patch_top->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onPatchPositionYChanged, this);
-	spin_patch_left->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onPatchPositionXChanged, this);
-	spin_patch_top->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onPatchPositionYChanged, this);
+	spin_patch_left->Bind(wxEVT_TEXT, &TextureEditorPanel::onPatchPositionXChanged, this);
+	spin_patch_top->Bind(wxEVT_TEXT, &TextureEditorPanel::onPatchPositionYChanged, this);
 	cb_tex_scale->Bind(wxEVT_CHECKBOX, &TextureEditorPanel::onApplyScaleChanged, this);
 	cb_tex_arc->Bind(wxEVT_CHECKBOX, &TextureEditorPanel::onARCChanged, this);
 
@@ -271,17 +271,17 @@ void TextureEditorPanel::updateTextureScaleLabel()
 		return;
 
 	// Determine scaled X value
-	uint32_t scaled_x = tex_current->getWidth();
+	double scaled_x = tex_current->getWidth();
 	if (tex_current->getScaleX() != 0)
 		scaled_x /= tex_current->getScaleX();
 
 	// Determine scaled Y value
-	uint32_t scaled_y = tex_current->getHeight();
+	double scaled_y = tex_current->getHeight();
 	if (tex_current->getScaleY() != 0)
 		scaled_y /= tex_current->getScaleY();
 
 	// Update the label
-	label_scaled_size->SetLabel(S_FMT("Scaled Size: %dx%d", scaled_x, scaled_y));
+	label_scaled_size->SetLabel(S_FMT("Scaled Size: %.2fx%.2f", scaled_x, scaled_y));
 }
 
 /* TextureEditorPanel::createPatchControls

@@ -102,7 +102,7 @@ Translation::~Translation()
  * Parses a text definition [def] (in zdoom format, detailed here:
  * http://zdoom.org/wiki/Translation)
  *******************************************************************/
-void Translation::parse(string def)
+bool Translation::parse(string def)
 {
 	//wxLogMessage("Parse translation \"%s\"", def);
 	//LOG_MESSAGE(1, "Parse translation \"%s\"", def);
@@ -113,38 +113,38 @@ void Translation::parse(string def)
 	if (test == "inverse")
 	{
 		built_in_name = "Inverse";
-		return;
+		return true;
 	}
 	else if (test == "gold")
 	{
 		built_in_name = "Gold";
-		return;
+        return true;
 	}
 	else if (test == "red")
 	{
 		built_in_name = "Red";
-		return;
+        return true;
 	}
 	else if (test == "green")
 	{
 		built_in_name = "Green";
-		return;
+        return true;
 	}
 	else if (test == "blue")
 	{
 		built_in_name = "Blue";
-		return;
+        return true;
 	}
 	else if (test == "ice")
 	{
 		built_in_name = "Ice";
-		return;
+        return true;
 	}
 	else if (test.StartsWith("desaturate,", &temp))
 	{
 		built_in_name = "Desaturate";
 		desat_amount = MAX(MIN(atoi(CHR(temp)), 31), 1);
-		return;
+        return true;
 	}
 
 	// Get Hexen tables
@@ -156,7 +156,7 @@ void Translation::parse(string def)
 		if (trantbl && trantbl->getSize() == 256)
 		{
 			read(trantbl->getData());
-			return;
+			return true;
 		}
 	}
 	// Test for hardcoded predefined translations
@@ -168,17 +168,18 @@ void Translation::parse(string def)
 	string token = tz.getToken();
 	while (!token.IsEmpty())
 	{
-		parseRange(token);
+		if(!parseRange(token)) return false;
 		tz.getToken();
 		token = tz.getToken();
 	}
+    return true;
 
 }
 
 /* Translation::parseRange
  * Parses a single translation range
  *******************************************************************/
-void Translation::parseRange(string range)
+bool Translation::parseRange(string range)
 {
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
@@ -189,9 +190,9 @@ void Translation::parseRange(string range)
 	uint8_t o_start, o_end;
 	o_start = tz.getInteger();
 	if (tz.peekToken() == "=") o_end = o_start;
-	else if (!tz.checkToken(":")) return;
+	else if (!tz.checkToken(":")) return false;
 	else o_end = tz.getInteger();
-	if (!tz.checkToken("=")) return;
+	if (!tz.checkToken("=")) return false;
 
 	// Check for reverse origin range
 	bool reverse = (o_start > o_end);
@@ -206,23 +207,23 @@ void Translation::parseRange(string range)
 
 		// Read start colour
 		start.r = tz.getInteger();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		start.g = tz.getInteger();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		start.b = tz.getInteger();
 
-		if (!tz.checkToken("]")) return;
-		if (!tz.checkToken(":")) return;
-		if (!tz.checkToken("[")) return;
+		if (!tz.checkToken("]")) return false;
+		if (!tz.checkToken(":")) return false;
+		if (!tz.checkToken("[")) return false;
 
 		// Read end colour
 		end.r = tz.getInteger();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		end.g = tz.getInteger();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		end.b = tz.getInteger();
 
-		if (!tz.checkToken("]")) return;
+		if (!tz.checkToken("]")) return false;
 
 		// Add translation
 		TransRangeColour* tr = new TransRangeColour();
@@ -248,27 +249,27 @@ void Translation::parseRange(string range)
 		float sr, sg, sb, er, eg, eb;
 
 		tz.getToken();	// Skip %
-		if (!tz.checkToken("[")) return;
+		if (!tz.checkToken("[")) return false;
 
 		// Read start colour
 		sr = tz.getFloat();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		sg = tz.getFloat();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		sb = tz.getFloat();
 
-		if (!tz.checkToken("]")) return;
-		if (!tz.checkToken(":")) return;
-		if (!tz.checkToken("[")) return;
+		if (!tz.checkToken("]")) return false;
+		if (!tz.checkToken(":")) return false;
+		if (!tz.checkToken("[")) return false;
 
 		// Read end colour
 		er = tz.getFloat();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		eg = tz.getFloat();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		eb = tz.getFloat();
 
-		if (!tz.checkToken("]")) return;
+		if (!tz.checkToken("]")) return false;
 
 		// Add translation
 		TransRangeDesat* tr = new TransRangeDesat();
@@ -301,13 +302,13 @@ void Translation::parseRange(string range)
 		// Colourise translation
 		rgba_t col;
 		tz.skipToken(); // skip #
-		if (!tz.checkToken("[")) return;
+		if (!tz.checkToken("[")) return false;
 		col.r = tz.getInteger();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		col.g = tz.getInteger();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		col.b = tz.getInteger();
-		if (!tz.checkToken("]")) return;
+		if (!tz.checkToken("]")) return false;
 		TransRangeBlend* tr = new TransRangeBlend();
 		tr->o_start = o_start;
 		tr->o_end = o_end;
@@ -321,13 +322,13 @@ void Translation::parseRange(string range)
 		uint8_t amount;
 		tz.skipToken(); // skip @
 		amount = tz.getInteger();
-		if (!tz.checkToken("[")) return;
+		if (!tz.checkToken("[")) return false;
 		col.r = tz.getInteger();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		col.g = tz.getInteger();
-		if (!tz.checkToken(",")) return;
+		if (!tz.checkToken(",")) return false;
 		col.b = tz.getInteger();
-		if (!tz.checkToken("]")) return;
+		if (!tz.checkToken("]")) return false;
 		TransRangeTint* tr = new TransRangeTint();
 		tr->o_start = o_start;
 		tr->o_end = o_end;
@@ -373,6 +374,7 @@ void Translation::parseRange(string range)
 		}
 		translations.push_back(tr);
 	}
+    return true;
 }
 
 /* Translation::read

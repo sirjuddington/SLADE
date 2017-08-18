@@ -166,10 +166,12 @@ namespace Game
 
 		// Check for inheritance
 		string next = tz.peekToken();
+
+		string parent = "";
 		if (next == ":")
 		{
 			tz.skipToken(); // Skip :
-			tz.skipToken(); // Skip parent actor
+			parent = tz.getToken();
 			next = tz.peekToken();
 		}
 
@@ -196,12 +198,32 @@ namespace Game
 		else
 		{
 			PropertyList found_props;
-			bool available = false;
-			bool filters_present = false;
-			bool sprite_given = false;
-			bool title_given = false;
-			int type;
-			string group;
+            bool available = false;
+            bool filters_present = false;
+            bool sprite_given = false;
+            bool title_given = false;
+            int type;
+            string group;
+            if(!parent.empty()) {
+				for(std::pair<const int, ThingType> & t : types) {
+					if(t.second.name().compare(parent) == 0) {
+                        found_props["radius"] = t.second.radius();
+                        found_props["height"] = t.second.height();
+                        found_props["sprite"] = t.second.sprite();
+                        found_props["solid"] = t.second.solid();
+                        found_props["translation"] = t.second.translation();
+                        found_props["hanging"] = t.second.hanging();
+                        found_props["decoration"] = t.second.decoration();
+                        found_props["scalex"] = t.second.scaleX();
+                        found_props["scaley"] = t.second.scaleY();
+                        found_props["icon"] = t.second.icon();
+                        found_props["angled"] = t.second.angled();
+                        found_props["bright"] = t.second.fullbright();
+                        group = t.second.group();
+                        break;
+					}
+				}
+			}
 
 			// Read editor number
 			tz.getInteger(&type);

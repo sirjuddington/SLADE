@@ -55,6 +55,8 @@ public:
 	void	updateZDoomSector(MapSector* line);
 	void	processACSScripts(ArchiveEntry* entry);
 	void	setModified(SLADEMap *map, int tag);
+
+    void process3DFloors(SLADEMap *pMap);
 };
 
 #endif//__MAP_SPECIALS_H__

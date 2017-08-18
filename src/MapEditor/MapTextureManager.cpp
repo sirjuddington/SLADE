@@ -334,6 +334,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	//Palette8bit* pal = getResourcePalette();
 	ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "sprites", archive);
 	if (!entry) entry = theResourceManager->getPatchEntry(name, "", archive);
+	CTexture* ctex = nullptr;
 	if (!entry && name.length() == 8)
 	{
 		string newname = name;
@@ -348,7 +349,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	}
 	else  	// Try composite textures then
 	{
-		CTexture* ctex = theResourceManager->getTexture(name, archive);
+		ctex = theResourceManager->getTexture(name, archive);
 		if (ctex && ctex->toImage(image, archive, this->palette, true))
 			found = true;
 	}
@@ -382,6 +383,11 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 		mtex.texture->setFilter(filter);
 		mtex.texture->setTiling(false);
 		mtex.texture->loadImage(&image, pal);
+		if(ctex != nullptr) {
+			double scaleX = ctex->getScaleX();
+			double scaleY = ctex->getScaleY();
+			mtex.texture->setScale((scaleX == 0) ? 1.0 : scaleX, (scaleY == 0) ? 1.0 : scaleY);
+		}
 		return mtex.texture;
 	}
 	else if (name.EndsWith("?"))

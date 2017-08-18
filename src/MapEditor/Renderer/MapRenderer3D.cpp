@@ -55,7 +55,7 @@ CVAR(Bool, render_max_dist_adaptive, false, CVAR_SAVE)
 CVAR(Int, render_adaptive_ms, 15, CVAR_SAVE)
 CVAR(Bool, render_3d_sky, true, CVAR_SAVE)
 CVAR(Int, render_3d_things, 1, CVAR_SAVE)
-CVAR(Int, render_3d_things_style, 1, CVAR_SAVE)
+CVAR(Int, render_3d_things_style, 2, CVAR_SAVE)
 CVAR(Int, render_3d_hilight, 1, CVAR_SAVE)
 CVAR(Float, render_3d_brightness, 1, CVAR_SAVE)
 CVAR(Float, render_fog_distance, 1500, CVAR_SAVE)
@@ -567,6 +567,7 @@ void MapRenderer3D::renderMap()
 	{
 		floors.resize(map->nSectors());
 		ceilings.resize(map->nSectors());
+        //_3dfloors.resize(map->nSectors());
 	}
 
 	// Create lines array if empty
@@ -933,7 +934,7 @@ void MapRenderer3D::updateSector(unsigned index)
 }
 
 /* MapRenderer3D::renderFlat
- * Renders [flat]
+ * Renders [flat]renderFlat
  *******************************************************************/
 void MapRenderer3D::renderFlat(flat_3d_t* flat)
 {
@@ -2060,8 +2061,8 @@ void MapRenderer3D::renderThings()
 		}
 
 		// Determine coordinates
-		halfwidth = things[a].type->scaleX() * tex->getWidth() * 0.5;
-		theight = things[a].type->scaleY() * tex->getHeight();
+		halfwidth = things[a].type->scaleX() / tex->getScaleX() * tex->getWidth() * 0.5;
+		theight = things[a].type->scaleY() / tex->getScaleY() * tex->getHeight();
 		if (things[a].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size*0.5;
@@ -2123,7 +2124,7 @@ void MapRenderer3D::renderThings()
 		glDepthMask(GL_FALSE);
 		glAlphaFunc(GL_GREATER, 0.2f);
 		glDisable(GL_CULL_FACE);
-		glLineWidth(3.5f);
+		glLineWidth(1.f);
 
 		for (unsigned a = 0; a < map->nThings(); a++)
 		{
@@ -2142,7 +2143,7 @@ void MapRenderer3D::renderThings()
 				top += things[a].type->height();
 
 			// Fill
-			glColor4f(col.fr(), col.fg(), col.fb(), 0.21f);
+			/*glColor4f(col.fr(), col.fg(), col.fb(), 0.21f);
 			uint8_t light2 = 255;
 			rgba_t fogcol2 = rgba_t(0, 0, 0, 0);
 			if (things[a].sector)
@@ -2186,7 +2187,7 @@ void MapRenderer3D::renderThings()
 				glVertex3f(thing->xPos() - radius, thing->yPos() - radius, top);
 			}
 			glEnd();
-
+			*/
 			// Outline
 			glColor4f(col.fr(), col.fg(), col.fb(), 0.6f);
 			// Bottom
@@ -2218,17 +2219,23 @@ void MapRenderer3D::renderThings()
 				glEnd();
 			}
 
+			float middle = things[a].z + top / 2;
+
 			// Direction
 			glPushMatrix();
-			glTranslatef(thing->xPos(), thing->yPos(), bottom);
+			glTranslatef(thing->xPos(), thing->yPos(), middle);
 			glRotated(thing->getAngle(), 0, 0, 1);
 			glBegin(GL_LINES);
 			glVertex3f(0.0f, 0.0f, 0.0f);
 			glVertex3f(radius, 0.0f, 0.0f);
 			glVertex3f(radius, 0.0f, 0.0f);
-			glVertex3f(radius - (radius*0.2f), -radius * 0.2f, 0.0f);
+			glVertex3f(radius - (radius*0.2f), -radius * 0.2f, -radius * 0.2f);
 			glVertex3f(radius, 0.0f, 0.0f);
-			glVertex3f(radius - (radius*0.2f), radius * 0.2f, 0.0f);
+			glVertex3f(radius - (radius*0.2f), radius * 0.2f, -radius * 0.2f);
+			glVertex3f(radius, 0.0f, 0.0f);
+			glVertex3f(radius - (radius*0.2f), -radius * 0.2f, radius * 0.2f);
+			glVertex3f(radius, 0.0f, 0.0f);
+			glVertex3f(radius - (radius*0.2f), radius * 0.2f, radius * 0.2f);
 			glEnd();
 			glPopMatrix();
 		}
@@ -2284,8 +2291,10 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 			continue;
 
 		// Determine coordinates
-		halfwidth = things[selection[a].index].sprite->getWidth() * 0.5;
-		theight = things[selection[a].index].sprite->getHeight();
+		//halfwidth = things[selection[a].index].sprite->getWidth() * 0.5;
+		//theight = things[selection[a].index].sprite->getHeight();
+		halfwidth = things[selection[a].index].type->scaleX() / things[selection[a].index].sprite->getScaleX() * things[selection[a].index].sprite->getWidth() * 0.5;
+		theight = things[selection[a].index].type->scaleY() / things[selection[a].index].sprite->getScaleY() * things[selection[a].index].sprite->getHeight();
 		if (things[selection[a].index].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size*0.5;
@@ -2575,7 +2584,7 @@ void MapRenderer3D::checkVisibleFlats()
 {
 	// Create flats array if empty
 	if (!flats)
-		flats = (flat_3d_t**)malloc(sizeof(flat_3d_t*) * map->nSectors() * 2);
+		flats = (flat_3d_t**)malloc(sizeof(flat_3d_t*) * (map->nSectors() * 2) * 2);
 
 	// Go through sectors
 	MapSector* sector;
@@ -2619,6 +2628,8 @@ void MapRenderer3D::checkVisibleFlats()
 
 		// Add floor flat
 		flats[n_flats++] = &(floors[a]);
+        //if(sector.get3DFloor)
+        /**/
 	}
 	for (unsigned a = 0; a < map->nSectors(); a++)
 	{
@@ -2779,7 +2790,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			continue;
 
 		// Find distance to thing sprite
-		halfwidth = things[a].sprite->getWidth() * 0.5;
+		halfwidth = things[a].type->scaleX() / things[a].sprite->getScaleX() * things[a].sprite->getWidth() * 0.5;
 		if (things[a].flags & ICON)
 			halfwidth = render_thing_icon_size*0.5;
 		dist = MathStuff::distanceRayLine(
@@ -2791,7 +2802,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			continue;
 
 		// Check intersection height
-		theight = things[a].sprite->getHeight();
+		theight = things[a].type->scaleY() / things[a].sprite->getScaleY() * things[a].sprite->getHeight();
 		height = cam_position.z + cam_dir3d.z*dist;
 		if (things[a].flags & ICON)
 			theight = render_thing_icon_size;
@@ -2879,23 +2890,23 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		if (!quad)
 			return;
 
-		// Render outline
+		/*// Render outline
 		glBegin(GL_LINE_LOOP);
 		for (unsigned a = 0; a < 4; a++)
 			glVertex3f(quad->points[a].x, quad->points[a].y, quad->points[a].z);
 		glEnd();
-
+		*/
 		// Render fill (if needed)
-		if (render_3d_hilight > 1)
-		{
-			glCullFace(GL_BACK);
+		/*if (render_3d_hilight > 1)
+		{*/
+			glDisable(GL_CULL_FACE);
 			col_hilight.a *= 0.3;
 			OpenGL::setColour(col_hilight, false);
 			glBegin(GL_QUADS);
 			for (unsigned a = 0; a < 4; a++)
 				glVertex3f(quad->points[a].x, quad->points[a].y, quad->points[a].z);
 			glEnd();
-		}
+		/*}*/
 	}
 
 	// Sector hilight
@@ -2916,17 +2927,17 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		// Render sector outline
 		vector<MapLine*> lines;
 		sector->getLines(lines);
-		glBegin(GL_LINES);
+		/*glBegin(GL_LINES);
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
 			glVertex3d(lines[a]->x1(), lines[a]->y1(), plane.height_at(lines[a]->x1(), lines[a]->y1()));
 			glVertex3d(lines[a]->x2(), lines[a]->y2(), plane.height_at(lines[a]->x2(), lines[a]->y2()));
 		}
-		glEnd();
+		glEnd();*/
 
 		// Render fill if needed
-		if (render_3d_hilight > 1)
-		{
+		/*if (render_3d_hilight > 1)
+		{*/
 			col_hilight.a *= 0.3;
 			OpenGL::setColour(col_hilight, false);
 			glDisable(GL_CULL_FACE);
@@ -2934,7 +2945,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 			sector->getPolygon()->render();
 			sector->getPolygon()->setZ(0);
 			glEnable(GL_CULL_FACE);
-		}
+		//}
 	}
 
 	// Thing hilight
@@ -2948,8 +2959,8 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 			return;
 
 		// Determine coordinates
-		double halfwidth = things[hilight.index].type->scaleX() * things[hilight.index].sprite->getWidth() * 0.5;
-		double theight = things[hilight.index].type->scaleY() * things[hilight.index].sprite->getHeight();
+		double halfwidth = things[hilight.index].type->scaleX() / things[hilight.index].sprite->getScaleX() * things[hilight.index].sprite->getWidth() * 0.5;
+		double theight = things[hilight.index].type->scaleY() / things[hilight.index].sprite->getScaleY() * things[hilight.index].sprite->getHeight();
 		if (things[hilight.index].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size*0.5;
@@ -2962,26 +2973,49 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 
 		// Render outline of sprite
 		double z = things[hilight.index].z;
-		glBegin(GL_LINE_LOOP);
+		/*glBegin(GL_LINE_LOOP);
 		glVertex3f(x1, y1, z + theight);
 		glVertex3f(x1, y1, z);
 		glVertex3f(x2, y2, z);
 		glVertex3f(x2, y2, z + theight);
-		glEnd();
+		glEnd();*/
 
 		// Render fill if needed
-		if (render_3d_hilight > 1)
+		/*if (render_3d_hilight > 1)
+		{*/
+
+
+		glEnable(GL_TEXTURE_2D);
+		glPushAttrib(GL_TEXTURE_BIT);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_REPLACE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_TEXTURE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+		GLTexture* tex = nullptr;
+		// Get thing sprite
+		tex = things[hilight.index].sprite;
+
+		// Bind texture if needed
+		if (tex != tex_last)
 		{
-			glCullFace(GL_BACK);
-			col_hilight.a *= 0.3;
-			OpenGL::setColour(col_hilight, false);
-			glBegin(GL_QUADS);
-			glVertex3f(x1, y1, z + theight);
-			glVertex3f(x1, y1, z);
-			glVertex3f(x2, y2, z);
-			glVertex3f(x2, y2, z + theight);
-			glEnd();
+			tex->bind();
+			tex_last = tex;
 		}
+		glCullFace(GL_BACK);
+		col_hilight.a *= 0.3;
+		OpenGL::setColour(col_hilight, false);
+		glBegin(GL_QUADS);
+		glTexCoord2f(0.0f, 0.0f);	glVertex3d(x1, y1, z + theight);
+		glTexCoord2f(0.0f, 1.0f);	glVertex3d(x1, y1, z);
+		glTexCoord2f(1.0f, 1.0f);	glVertex3d(x2, y2, z);
+		glTexCoord2f(1.0f, 0.0f);	glVertex3d(x2, y2, z + theight);
+		glEnd();
+		glPopAttrib();
+		glDisable(GL_ALPHA_TEST);
+		//}
 	}
 
 	//glEnable(GL_DEPTH_TEST);

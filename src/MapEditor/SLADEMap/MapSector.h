@@ -137,6 +137,7 @@ public:
 
 		return Debuggable(S_FMT("<sector %u>", index));
 	}
+
 };
 
 // Note: these MUST be inline, or the linker will complain
