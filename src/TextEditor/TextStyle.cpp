@@ -38,6 +38,8 @@
 #include "TextStyle.h"
 #include "Lexer.h"
 #include "Archive/ArchiveManager.h"
+#include "Utility/Parser.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -789,7 +791,7 @@ bool StyleSet::loadResourceStyles()
 	{
 		// Read entry data into tokenizer
 		Tokenizer tz;
-		tz.openMem(&default_style->getMCData(), default_style->getName());
+		tz.openMem(default_style->getMCData(), default_style->getName());
 
 		// Parse it
 		ParseTreeNode root;
@@ -819,7 +821,7 @@ bool StyleSet::loadResourceStyles()
 
 		// Read entry data into tokenizer
 		Tokenizer tz;
-		tz.openMem(&entry->getMCData(), entry->getName());
+		tz.openMem(entry->getMCData(), entry->getName());
 
 		// Parse it
 		ParseTreeNode root;

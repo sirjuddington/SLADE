@@ -84,16 +84,12 @@ void Console::execute(string command)
 	tz.openString(command);
 
 	// Get the command name
-	string cmd_name = tz.getToken();
+	string cmd_name = tz.current().text;
 
 	// Get all args
-	string arg = tz.getToken();
 	vector<string> args;
-	while (arg != "")
-	{
-		args.push_back(arg);
-		arg = tz.getToken();
-	}
+	while (!tz.atEnd())
+		args.push_back(tz.next().text);
 
 	// Check that it is a valid command
 	for (size_t a = 0; a < commands.size(); a++)

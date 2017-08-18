@@ -6,6 +6,7 @@
 #include "UDMFProperty.h"
 #include "Utility/PropertyList/PropertyList.h"
 #include "SpecialPreset.h"
+#include "MapInfo.h"
 
 class ParseTreeNode;
 class ArchiveEntry;
@@ -130,6 +131,11 @@ namespace Game
 		bool	parseDecorateDefs(Archive* archive);
 		void	clearDecorateDefs();
 
+		// MapInfo
+		bool	parseMapInfo(Archive* archive);
+		void	clearMapInfo() { map_info_.clear(); }
+		void	linkDoomEdNums();
+
 		// Line flags
 		int			nLineFlags() const { return flags_line_.size(); }
 		const Flag&	lineFlag(unsigned flag_index);
@@ -200,6 +206,8 @@ namespace Game
 		// Thing types
 		std::map<int, ThingType>	thing_types_;
 		std::map<string, ThingType>	tt_group_defaults_;
+		std::map<string, ThingType> parsed_types_;		// ThingTypes parsed from definitions
+														// (DECORATE, ZScript etc.)
 
 		// Flags
 		vector<Flag>	flags_thing_;
@@ -211,6 +219,7 @@ namespace Game
 
 		// Map info
 		vector<gc_mapinfo_t>	maps_;
+		MapInfo					map_info_;
 
 		// UDMF properties
 		UDMFPropMap	udmf_vertex_props_;

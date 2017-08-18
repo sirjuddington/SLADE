@@ -4208,6 +4208,9 @@ CONSOLE_COMMAND(cd, 1, true)
 	}
 }
 
+/*
+#include "Utility/Tokenizer.h"
+
 CONSOLE_COMMAND(run, 1, true)
 {
 	MemChunk mc;
@@ -4229,7 +4232,7 @@ CONSOLE_COMMAND(run, 1, true)
 	}
 
 	Tokenizer t;
-	if (!t.openMem(&mc, args[0]))
+	if (!t.openMem(mc, args[0]))
 		return;
 
 	string cmdline, s;
@@ -4248,3 +4251,4 @@ CONSOLE_COMMAND(run, 1, true)
 		cmdline += s;
 	};
 }
+*/

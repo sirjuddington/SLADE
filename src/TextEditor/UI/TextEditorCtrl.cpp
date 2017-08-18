@@ -36,6 +36,7 @@
 #include "General/KeyBind.h"
 #include "SCallTip.h"
 #include "FindReplacePanel.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************

@@ -59,7 +59,7 @@ namespace Misc
 	};
 	winf_t	getWindowInfo(string id);
 	void	setWindowInfo(string id, int width, int height, int left, int top);
-	void	readWindowInfo(Tokenizer* tz);
+	void	readWindowInfo(Tokenizer& tz);
 	void	writeWindowInfo(wxFile& file);
 }
 

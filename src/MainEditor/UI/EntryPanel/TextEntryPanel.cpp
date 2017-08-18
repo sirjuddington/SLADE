@@ -189,6 +189,7 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 
 	return true;
 }
+
 /* TextEntryPanel::saveEntry
  * Saves any changes to the entry
  *******************************************************************/

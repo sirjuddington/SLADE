@@ -32,6 +32,7 @@
 #include "UI/Lists/ListView.h"
 #include "Utility/Tokenizer.h"
 
+
 /*******************************************************************
  * SWITCHESENTRY CLASS FUNCTIONS
  *******************************************************************/
@@ -265,8 +266,8 @@ bool SwitchesList::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, bool
  *******************************************************************/
 bool SwitchesList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 {
-	Tokenizer tz(HCOMMENTS);
-	tz.openMem(&(entry->getMCData()), entry->getName());
+	Tokenizer tz(Tokenizer::Hash);
+	tz.openMem(entry->getMCData(), entry->getName());
 
 	string token;
 	char buffer[20];

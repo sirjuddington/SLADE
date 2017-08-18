@@ -475,7 +475,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 	Tokenizer tz;
 
 	// Open the given text data
-	if (!tz.openMem(&mc, source))
+	if (!tz.openMem(mc, source))
 	{
 		LOG_MESSAGE(1, "Unable to open file");
 		return false;

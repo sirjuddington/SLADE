@@ -230,7 +230,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 
 		Tokenizer tz;
 		tz.setSpecialCharacters(",:#");
-		tz.openMem(&mc, "Palette Import");
+		tz.openMem(mc, "Palette Import");
 
 		// Parse headers
 		if (format == Format::JASC)
@@ -267,17 +267,17 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			// Get the first token. If it begins with #, it's a comment in GIMP. Ignore.
 			// Since the lexer expects ## for comments, not just #, tell it explicitly to skip.
 			s1 = tz.getToken(); if (format == Format::CSV) tz.checkToken(",");
-			else if (format == Format::GIMP && !s1.Cmp("#")) { tz.skipLineComment(); continue; }
+			else if (format == Format::GIMP && !s1.Cmp("#")) { tz.advToEndOfLine(); continue; }
 
 			// Get the second token. If it is :, then that means the first word was a field name.
 			// Since we're ignoring them, skip the line.
 			s2 = tz.getToken(); if (format == Format::CSV) tz.checkToken(",");
-			else if (format == Format::GIMP && !s2.Cmp(":")) { tz.skipLineComment(); continue; }
+			else if (format == Format::GIMP && !s2.Cmp(":")) { tz.advToEndOfLine(); continue; }
 
 			// Get the third token. In GIMP, the RGB values are followed by the color name, which
 			// can include spaces and is unquoted, so just skip the whole rest of the line.
 			s3 = tz.getToken(); if (format == Format::CSV) tz.checkToken(",");
-			if (format == Format::GIMP) tz.skipLineComment();
+			if (format == Format::GIMP) tz.advToEndOfLine();
 
 			// If we haven't skipped this part from a continue, then we have a colour triplet.
 			col.r = atoi(CHR(s1)); col.g = atoi(CHR(s2)); col.b = atoi(CHR(s3)); col.index = c;

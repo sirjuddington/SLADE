@@ -1421,7 +1421,7 @@ void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_form
 // ----------------------------------------------------------------------------
 bool Configuration::parseDecorateDefs(Archive* archive)
 {
-	return Game::readDecorateDefs(archive, thing_types_);
+	return Game::readDecorateDefs(archive, thing_types_, parsed_types_);
 }
 
 // ----------------------------------------------------------------------------
@@ -1434,6 +1434,39 @@ void Configuration::clearDecorateDefs()
 	for (auto def : thing_types_)
 		if (def.second.decorate() && def.second.defined())
 			def.second.define(-1, "", "");
+}
+
+// ----------------------------------------------------------------------------
+// Configuration::parseMapInfo
+//
+// Parses all (Z/E/U)MAPINFO definitions in [archive]
+// ----------------------------------------------------------------------------
+bool Configuration::parseMapInfo(Archive* archive)
+{
+	return map_info_.readMapInfo(archive);
+}
+
+// ----------------------------------------------------------------------------
+// Configuration::linkDoomEdNums
+//
+// Attempts to find editor numbers in *MAPINFO for parsed DECORATE types that
+// were not given one along with their definition
+// ----------------------------------------------------------------------------
+void Configuration::linkDoomEdNums()
+{
+	for (auto& i : parsed_types_)
+	{
+		// Find MAPINFO editor number for parsed actor class
+		int ednum = map_info_.doomEdNumForClass(i.first);
+
+		if (ednum >= 0)
+		{
+			// Editor number found, copy the definition to thing types map
+			thing_types_[ednum].define(ednum, i.second.name(), i.second.group());
+			thing_types_[ednum].copy(i.second);
+			Log::info(2, S_FMT("Linked parsed DECORATE actor %s to DoomEdNum %d", CHR(i.first), ednum));
+		}
+	}
 }
 
 // ----------------------------------------------------------------------------

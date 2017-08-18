@@ -112,6 +112,10 @@ void ThingType::copy(const ThingType& copy)
 	flags_ = copy.flags_;
 	tagged_ = copy.tagged_;
 	args_ = copy.args_;
+	sprite_ = copy.sprite_;
+	icon_ = copy.icon_;
+	translation_ = copy.translation_;
+	palette_ = copy.palette_;
 }
 
 // ----------------------------------------------------------------------------

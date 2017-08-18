@@ -39,7 +39,7 @@
 #include "MapEditor/SLADEMap/MapThing.h"
 #include "MapEditor/SLADEMap/MapVertex.h"
 #include "OpenGL/GLTexture.h"
-#include "Utility/Parser.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -157,7 +157,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 
 		// Start parsing
 		Tokenizer tz;
-		tz.openMem(udmfdata->getData(), udmfdata->getSize(), map.head->getName());
+		tz.openMem(udmfdata->getMCData(), map.head->getName());
 
 		// Get first token
 		string token = tz.getToken();
@@ -300,7 +300,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 				// map preview ignores sidedefs, sectors, comments,
 				// unknown fields, etc. so skip to end of block
 				do { token = tz.getToken(); }
-				while (token.Cmp("}"));
+				while (token.Cmp("}") && !token.empty());
 			}
 			// Iterate to next token
 			token = tz.getToken();

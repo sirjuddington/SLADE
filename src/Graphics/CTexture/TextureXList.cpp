@@ -32,6 +32,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "MainEditor/MainEditor.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -687,14 +688,13 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 
 	// Get text to parse
 	Tokenizer tz;
-	tz.openMem(&(entry->getMCData()), entry->getName());
+	tz.openMem(entry->getMCData(), entry->getName());
 
 	// Parsing gogo
-	string token = tz.getToken();
-	while (!token.IsEmpty())
+	while (!tz.atEnd())
 	{
 		// Texture definition
-		if (S_CMPNOCASE(token, "Texture"))
+		if (tz.checkNC("Texture"))
 		{
 			CTexture* tex = new CTexture();
 			if (tex->parse(tz, "Texture"))
@@ -702,7 +702,7 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 		}
 
 		// Sprite definition
-		if (S_CMPNOCASE(token, "Sprite"))
+		else if (tz.checkNC("Sprite"))
 		{
 			CTexture* tex = new CTexture();
 			if (tex->parse(tz, "Sprite"))
@@ -710,7 +710,7 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 		}
 
 		// Graphic definition
-		if (S_CMPNOCASE(token, "Graphic"))
+		else if (tz.checkNC("Graphic"))
 		{
 			CTexture* tex = new CTexture();
 			if (tex->parse(tz, "Graphic"))
@@ -718,7 +718,7 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 		}
 
 		// WallTexture definition
-		if (S_CMPNOCASE(token, "WallTexture"))
+		else if (tz.checkNC("WallTexture"))
 		{
 			CTexture* tex = new CTexture();
 			if (tex->parse(tz, "WallTexture"))
@@ -726,7 +726,7 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 		}
 
 		// Flat definition
-		if (S_CMPNOCASE(token, "Flat"))
+		else if (tz.checkNC("Flat"))
 		{
 			CTexture* tex = new CTexture();
 			if (tex->parse(tz, "Flat"))
@@ -734,14 +734,14 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 		}
 
 		// Old HIRESTEX "Define"
-		if (S_CMPNOCASE(token, "Define"))
+		else if (tz.checkNC("Define"))
 		{
 			CTexture* tex = new CTexture();
 			if (tex->parseDefine(tz))
 				addTexture(tex);
 		}
 
-		token = tz.getToken();
+		tz.adv();
 	}
 
 	txformat = TXF_TEXTURES;

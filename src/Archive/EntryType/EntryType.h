@@ -8,6 +8,45 @@ class ArchiveEntry;
 
 class EntryType
 {
+public:
+	EntryType(string id = "Unknown");
+	~EntryType();
+
+	// Getters
+	const string&	getId() const			{ return id; }
+	const string&	getName() const			{ return name; }
+	const string&	getExtension() const	{ return extension; }
+	const string&	getFormat() const		{ return format->getId(); }
+	const string&	getEditor() const		{ return editor; }
+	const string&	getCategory() const		{ return category; }
+	const string&	getIcon() const			{ return icon; }
+	int				getIndex() const		{ return index; }
+	uint8_t			getReliability() const	{ return reliability; }
+	PropertyList&	extraProps()			{ return extra; }
+	rgba_t			getColour() const		{ return colour; }
+
+	// Misc
+	void	addToList();
+	void	dump();
+	void	copyToType(EntryType* target);
+	string	getFileFilterString();
+
+	// Magic goes here
+	int		isThisType(ArchiveEntry* entry);
+
+	// Static functions
+	static bool 				readEntryTypeDefinition(MemChunk& mc, const string& source);
+	static bool 				loadEntryTypes();
+	static bool 				detectEntryType(ArchiveEntry* entry);
+	static EntryType*			getType(string id);
+	static EntryType*			unknownType();
+	static EntryType*			folderType();
+	static EntryType*			mapMarkerType();
+	static wxArrayString		getIconList();
+	static void					cleanupEntryTypes();
+	static vector<EntryType*>	allTypes();
+	static vector<string>		allCategories();
+
 private:
 	// Type info
 	string		id;
@@ -23,9 +62,11 @@ private:
 								// likely this type can be detected erroneously. 0-255 (default is 255)
 	PropertyList	extra;		// Extra properties for types with certain special behaviours
 								// Current recognised properties listed below:
-								// bool "image": Can be loaded into a SImage, therefore can be converted to other supported image formats
+								// bool "image": Can be loaded into a SImage,
+								// therefore can be converted to other supported image formats
 								// bool "patch": Can be used as a TEXTUREx patch
-								// string "image_format": An SIFormat type id 'hint', mostly used for Misc::loadImageFromEntry
+								// string "image_format": An SIFormat type id 'hint',
+								// mostly used for Misc::loadImageFromEntry
 
 	// Type matching criteria
 	EntryDataFormat*	format;				// To be of this type, the entry data must match the
@@ -42,45 +83,6 @@ private:
 										// for entries between SS_START/SS_END in a wad, or the 'sprites'
 										// folder in a zip
 	vector<string>	match_archive;		// The types of archive the entry can be found in (e.g., wad or zip)
-
-public:
-	EntryType(string id = "Unknown");
-	~EntryType();
-
-	// Getters
-	string			getId()				{ return id; }
-	string			getName()			{ return name; }
-	string			getExtension()		{ return extension; }
-	string			getFormat()			{ return format->getId(); }
-	string			getEditor()			{ return editor; }
-	string			getCategory()		{ return category; }
-	string			getIcon()			{ return icon; }
-	int				getIndex()			{ return index; }
-	uint8_t			getReliability()	{ return reliability; }
-	PropertyList&	extraProps()		{ return extra; }
-	rgba_t			getColour()			{ return colour; }
-
-	// Misc
-	void	addToList();
-	void	dump();
-	void	copyToType(EntryType* target);
-	string	getFileFilterString();
-
-	// Magic goes here
-	int		isThisType(ArchiveEntry* entry);
-
-	// Static functions
-	static bool 				readEntryTypeDefinition(MemChunk& mc);
-	static bool 				loadEntryTypes();
-	static bool 				detectEntryType(ArchiveEntry* entry);
-	static EntryType*			getType(string id);
-	static EntryType*			unknownType();
-	static EntryType*			folderType();
-	static EntryType*			mapMarkerType();
-	static wxArrayString		getIconList();
-	static void					cleanupEntryTypes();
-	static vector<EntryType*>	allTypes();
-	static vector<string>		allCategories();
 };
 
 #endif//__ENTRYTYPE_H__

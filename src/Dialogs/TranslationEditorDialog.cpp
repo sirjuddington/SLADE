@@ -1248,14 +1248,11 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 
 		// Parse translation
 		Translation trans;
-		string token = tz.getToken();
-		while (!token.IsEmpty())
+		while (!tz.atEnd())
 		{
 			// Parse translation range
-			trans.parse(token);
-
-			tz.getToken();			// Skip ,
-			token = tz.getToken();
+			trans.parse(tz.current().text);
+			tz.adv(2); // Skip ,
 		}
 
 		// Open it if parsed ok

@@ -17,5 +17,9 @@ namespace Game
 		Idle,
 	};
 
-	bool readDecorateDefs(Archive* archive, std::map<int, ThingType>& types);
+	bool readDecorateDefs(
+		Archive* archive,
+		std::map<int, ThingType>& types,
+		std::map<string, ThingType>& parsed
+	);
 }

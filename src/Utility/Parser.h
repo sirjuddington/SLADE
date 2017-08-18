@@ -3,11 +3,11 @@
 #define __PARSER_H__
 
 #include "Tree.h"
-#include "Tokenizer.h"
 #include "PropertyList/Property.h"
 
 class ArchiveTreeNode;
 class Parser;
+class Tokenizer;
 
 class ParseTreeNode : public STreeNode
 {
@@ -67,28 +67,35 @@ private:
 	vector<Property>	values_;
 	Parser*				parser_;
 	ArchiveTreeNode*	archive_dir_;
+
+	void	logError(const Tokenizer& tz, const string& error) const;
+	bool	parsePreprocessor(Tokenizer& tz);
+	bool	parseAssignment(Tokenizer& tz, ParseTreeNode* child) const;
 };
 
 class Parser
 {
-private:
-	ParseTreeNode::UPtr	pt_root;
-	vector<string>		defines;
-	ArchiveTreeNode*	archive_dir_root;
-
 public:
 	Parser(ArchiveTreeNode* dir_root = nullptr);
 	~Parser();
 
-	ParseTreeNode*	parseTreeRoot() const { return pt_root.get(); }
+	ParseTreeNode*	parseTreeRoot() const { return pt_root_.get(); }
+
+	void	setCaseSensitive(bool cs) { case_sensitive_ = cs; }
 
 	bool	parseText(MemChunk& mc, string source = "memory chunk", bool debug = false);
 	bool	parseText(string& text, string source = "string", bool debug = false);
-	void	define(string def);
-	bool	defined(string def);
+	void	define(const string& def) { defines_.push_back(def.Lower()); }
+	bool	defined(const string& def) { return VECTOR_EXISTS(defines_, def.Lower()); }
 
 	// To simplify casts from STreeNode to ParseTreeNode
 	static ParseTreeNode*	node(STreeNode* node) { return static_cast<ParseTreeNode*>(node); }
+
+private:
+	ParseTreeNode::UPtr	pt_root_;
+	vector<string>		defines_;
+	ArchiveTreeNode*	archive_dir_root_	= nullptr;
+	bool				case_sensitive_		= false;
 };
 
 #endif//__PARSER_H__

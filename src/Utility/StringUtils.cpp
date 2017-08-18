@@ -38,6 +38,20 @@
 
 // ----------------------------------------------------------------------------
 //
+// Variables
+//
+// ----------------------------------------------------------------------------
+namespace StringUtils
+{
+	wxRegEx re_int1{ "^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT | wxRE_NOSUB };
+	wxRegEx re_int2{ "^0[0-9]+$", wxRE_DEFAULT | wxRE_NOSUB };
+	wxRegEx re_int3{ "^0x[0-9A-Fa-f]+$", wxRE_DEFAULT | wxRE_NOSUB };
+	wxRegEx re_float{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT | wxRE_NOSUB };
+}
+
+
+// ----------------------------------------------------------------------------
+//
 // StringUtils Namespace Functions
 //
 // ----------------------------------------------------------------------------
@@ -61,7 +75,7 @@ string StringUtils::escapedString(const string& str, bool swap_backslash)
 }
 
 // ----------------------------------------------------------------------------
-// StringUtils::buildConfig
+// StringUtils::processIncludes
 //
 // Reads the text file at [filename], processing any #include statements in the
 // file recursively. The resulting 'expanded' text is written to [out]
@@ -79,19 +93,19 @@ void StringUtils::processIncludes(string filename, string& out)
 
 	// Go through line-by-line
 	string line = file.GetNextLine();
+	Tokenizer tz;
+	tz.setSpecialCharacters("");
 	while (!file.Eof())
 	{
 		// Check for #include
 		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get filename to include
-			Tokenizer tz;
 			tz.openString(line);
-			tz.getToken();	// Skip #include
-			string fn = tz.getToken();
+			tz.adv();	// Skip #include
 
 			// Process the file
-			processIncludes(path + fn, out);
+			processIncludes(path + tz.next().text, out);
 		}
 		else
 			out.Append(line + "\n");
@@ -124,6 +138,8 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 		return;
 
 	// Go through line-by-line
+	Tokenizer tz;
+	tz.setSpecialCharacters("");
 	string line = file.GetFirstLine();
 	while (!file.Eof())
 	{
@@ -131,19 +147,15 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get name of entry to include
-			Tokenizer tz;
 			tz.openString(line);
-			tz.getToken();	// Skip #include
-			tz.setSpecialCharacters("");
-			string inc_name = tz.getToken();
-			string name = entry->getPath() + inc_name;
+			string name = entry->getPath() + tz.next().text;
 
 			// Get the entry
 			bool done = false;
 			ArchiveEntry* entry_inc = entry->getParent()->entryAtPath(name);
 			// DECORATE paths start from the root, not from the #including entry's directory
 			if (!entry_inc)
-				entry_inc = entry->getParent()->entryAtPath(inc_name);
+				entry_inc = entry->getParent()->entryAtPath(tz.current().text);
 			if (entry_inc)
 			{
 				processIncludes(entry_inc, out);
@@ -155,7 +167,7 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 			// Look in resource pack
 			if (use_res && !done && App::archiveManager().programResourceArchive())
 			{
-				name = "config/games/" + inc_name;
+				name = "config/games/" + tz.current().text;
 				entry_inc = App::archiveManager().programResourceArchive()->entryAtPath(name);
 				if (entry_inc)
 				{
@@ -181,4 +193,35 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 
 	// Delete temp file
 	wxRemoveFile(filename);
+}
+
+// ----------------------------------------------------------------------------
+// StringUtils::isInteger
+//
+// Returns true if [str] is a valid integer. If [allow_hex] is true, can also
+// be a valid hex string
+// ----------------------------------------------------------------------------
+bool StringUtils::isInteger(const string& str, bool allow_hex)
+{
+	return (re_int1.Matches(str) || re_int2.Matches(str) || (allow_hex && re_int3.Matches(str)));
+}
+
+// ----------------------------------------------------------------------------
+// StringUtils::isHex
+//
+// Returns true if [str] is a valid hex string
+// ----------------------------------------------------------------------------
+bool StringUtils::isHex(const string& str)
+{
+	return re_int3.Matches(str);
+}
+
+// ----------------------------------------------------------------------------
+// StringUtils::isFloat
+//
+// Returns true if [str] is a valid floating-point number
+// ----------------------------------------------------------------------------
+bool StringUtils::isFloat(const string& str)
+{
+	return (re_float.Matches(str));
 }
