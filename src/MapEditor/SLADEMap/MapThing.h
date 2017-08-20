@@ -56,23 +56,23 @@ public:
 	double		yPos() { return y; }
 	void		setPos(double x, double y) { this->x = x; this->y = y; }
 
-	fpoint2_t	getPoint(uint8_t point);
+	fpoint2_t	getPoint(uint8_t point) override;
 	fpoint2_t	point();
 
 	short	getType() const { return type; }
 	short	getAngle() const { return angle; }
 
-	int		intProperty(string key);
-	double	floatProperty(string key);
-	void	setIntProperty(string key, int value);
-	void	setFloatProperty(string key, double value);
+	int		intProperty(const string& key) override;
+	double	floatProperty(const string& key) override;
+	void	setIntProperty(const string& key, int value) override;
+	void	setFloatProperty(const string& key, double value) override;
 
-	void	copy(MapObject* c);
+	void	copy(MapObject* c) override;
 
 	void	setAnglePoint(fpoint2_t point);
 
-	void	writeBackup(mobj_backup_t* backup);
-	void	readBackup(mobj_backup_t* backup);
+	void	writeBackup(mobj_backup_t* backup) override;
+	void	readBackup(mobj_backup_t* backup) override;
 
 	operator Debuggable() const {
 		if (!this)

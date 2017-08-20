@@ -52,10 +52,10 @@ public:
 	void	setSector(MapSector* sector);
 	void	changeLight(int amount);
 
-	int		intProperty(string key) override;
-	void	setIntProperty(string key, int value) override;
-	string	stringProperty(string key) override;
-	void	setStringProperty(string key, string value) override;
+	int		intProperty(const string& key) override;
+	void	setIntProperty(const string& key, int value) override;
+	string	stringProperty(const string& key) override;
+	void	setStringProperty(const string& key, const string& value) override;
 	bool	scriptCanModifyProp(const string& key) override;
 
 	void	writeBackup(mobj_backup_t* backup) override;

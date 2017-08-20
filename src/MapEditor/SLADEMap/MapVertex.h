@@ -33,10 +33,10 @@ public:
 	fpoint2_t	getPoint(uint8_t point) override;
 	fpoint2_t	point();
 
-	int		intProperty(string key) override;
-	double	floatProperty(string key) override;
-	void	setIntProperty(string key, int value) override;
-	void	setFloatProperty(string key, double value) override;
+	int		intProperty(const string& key) override;
+	double	floatProperty(const string& key) override;
+	void	setIntProperty(const string& key, int value) override;
+	void	setFloatProperty(const string& key, double value) override;
 	bool	scriptCanModifyProp(const string& key) override;
 
 	void		connectLine(MapLine* line);

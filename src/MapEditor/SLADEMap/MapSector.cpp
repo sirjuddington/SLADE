@@ -134,7 +134,7 @@ void MapSector::setGeometryUpdated()
 /* MapSector::stringProperty
  * Returns the value of the string property matching [key]
  *******************************************************************/
-string MapSector::stringProperty(string key)
+string MapSector::stringProperty(const string& key)
 {
 	if (key == "texturefloor")
 		return f_tex;
@@ -147,7 +147,7 @@ string MapSector::stringProperty(string key)
 /* MapSector::intProperty
  * Returns the value of the integer property matching [key]
  *******************************************************************/
-int MapSector::intProperty(string key)
+int MapSector::intProperty(const string& key)
 {
 	if (key == "heightfloor")
 		return f_height;
@@ -166,7 +166,7 @@ int MapSector::intProperty(string key)
 /* MapSector::setStringProperty
  * Sets the string value of the property [key] to [value]
  *******************************************************************/
-void MapSector::setStringProperty(string key, string value)
+void MapSector::setStringProperty(const string& key, const string& value)
 {
 	// Update modified time
 	setModified();
@@ -190,7 +190,7 @@ void MapSector::setStringProperty(string key, string value)
 /* MapSector::setFloatProperty
  * Sets the float value of the property [key] to [value]
  *******************************************************************/
-void MapSector::setFloatProperty(string key, double value)
+void MapSector::setFloatProperty(const string& key, double value)
 {
 	using Game::UDMFFeature;
 
@@ -213,7 +213,7 @@ void MapSector::setFloatProperty(string key, double value)
 /* MapSector::setIntProperty
  * Sets the integer value of the property [key] to [value]
  *******************************************************************/
-void MapSector::setIntProperty(string key, int value)
+void MapSector::setIntProperty(const string& key, int value)
 {
 	// Update modified time
 	setModified();

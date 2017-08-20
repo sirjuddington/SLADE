@@ -185,7 +185,7 @@ int MapLine::s2Index()
  * prefixed with 'side1.' or 'side2.' to get bool properties from the
  * front and back sides respectively
  *******************************************************************/
-bool MapLine::boolProperty(string key)
+bool MapLine::boolProperty(const string& key)
 {
 	if (key.StartsWith("side1.") && side1)
 		return side1->boolProperty(key.Mid(6));
@@ -200,7 +200,7 @@ bool MapLine::boolProperty(string key)
  * prefixed with 'side1.' or 'side2.' to get int properties from the
  * front and back sides respectively
  *******************************************************************/
-int MapLine::intProperty(string key)
+int MapLine::intProperty(const string& key)
 {
 	if (key.StartsWith("side1.") && side1)
 		return side1->intProperty(key.Mid(6));
@@ -216,6 +216,8 @@ int MapLine::intProperty(string key)
 		return s2Index();
 	else if (key == "special")
 		return special;
+	else if (key == "id")
+		return line_id;
 	else
 		return MapObject::intProperty(key);
 }
@@ -225,7 +227,7 @@ int MapLine::intProperty(string key)
  * prefixed with 'side1.' or 'side2.' to get float properties from
  * the front and back sides respectively
  *******************************************************************/
-double MapLine::floatProperty(string key)
+double MapLine::floatProperty(const string& key)
 {
 	if (key.StartsWith("side1.") && side1)
 		return side1->floatProperty(key.Mid(6));
@@ -240,7 +242,7 @@ double MapLine::floatProperty(string key)
  * prefixed with 'side1.' or 'side2.' to get string properties from
  * the front and back sides respectively
  *******************************************************************/
-string MapLine::stringProperty(string key)
+string MapLine::stringProperty(const string& key)
 {
 	if (key.StartsWith("side1.") && side1)
 		return side1->stringProperty(key.Mid(6));
@@ -255,7 +257,7 @@ string MapLine::stringProperty(string key)
  * prefixed with 'side1.' or 'side2.' to set bool properties on the
  * front and back sides respectively.
  *******************************************************************/
-void MapLine::setBoolProperty(string key, bool value)
+void MapLine::setBoolProperty(const string& key, bool value)
 {
 	// Front side property
 	if (key.StartsWith("side1."))
@@ -281,7 +283,7 @@ void MapLine::setBoolProperty(string key, bool value)
  * prefixed with 'side1.' or 'side2.' to set int properties on the
  * front and back sides respectively.
  *******************************************************************/
-void MapLine::setIntProperty(string key, int value)
+void MapLine::setIntProperty(const string& key, int value)
 {
 	// Front side property
 	if (key.StartsWith("side1."))
@@ -344,6 +346,10 @@ void MapLine::setIntProperty(string key, int value)
 	else if (key == "special")
 		special = value;
 
+	// Id
+	else if (key == "id")
+		line_id = value;
+
 	// Line property
 	else
 		MapObject::setIntProperty(key, value);
@@ -354,7 +360,7 @@ void MapLine::setIntProperty(string key, int value)
  * prefixed with 'side1.' or 'side2.' to set float properties on the
  * front and back sides respectively.
  *******************************************************************/
-void MapLine::setFloatProperty(string key, double value)
+void MapLine::setFloatProperty(const string& key, double value)
 {
 	// Front side property
 	if (key.StartsWith("side1."))
@@ -380,7 +386,7 @@ void MapLine::setFloatProperty(string key, double value)
  * prefixed with 'side1.' or 'side2.' to set string properties on the
  * front and back sides respectively.
  *******************************************************************/
-void MapLine::setStringProperty(string key, string value)
+void MapLine::setStringProperty(const string& key, const string& value)
 {
 	// Front side property
 	if (key.StartsWith("side1."))
@@ -728,6 +734,7 @@ void MapLine::writeBackup(mobj_backup_t* backup)
 
 	// Special
 	backup->props_internal["special"] = special;
+	backup->props_internal["id"] = line_id;
 }
 
 /* MapLine::readBackup
@@ -763,6 +770,7 @@ void MapLine::readBackup(mobj_backup_t* backup)
 
 	// Special
 	special = backup->props_internal["special"];
+	line_id = backup->props_internal["id"];
 }
 
 /* MapLine::copy
@@ -783,5 +791,7 @@ void MapLine::copy(MapObject* c)
 	if(side2 && l->side2)
 		side2->copy(l->side2);
 
-	setIntProperty("special", l->intProperty("special"));
+	//setIntProperty("special", l->intProperty("special"));
+	special = l->special;
+	line_id = l->line_id;
 }

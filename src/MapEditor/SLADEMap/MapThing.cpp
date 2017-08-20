@@ -88,7 +88,7 @@ fpoint2_t MapThing::point()
 /* MapThing::intProperty
  * Returns the value of the integer property matching [key]
  *******************************************************************/
-int MapThing::intProperty(string key)
+int MapThing::intProperty(const string& key)
 {
 	if (key == "type")
 		return type;
@@ -105,7 +105,7 @@ int MapThing::intProperty(string key)
 /* MapThing::floatProperty
  * Returns the value of the float property matching [key]
  *******************************************************************/
-double MapThing::floatProperty(string key)
+double MapThing::floatProperty(const string& key)
 {
 	if (key == "x")
 		return x;
@@ -118,7 +118,7 @@ double MapThing::floatProperty(string key)
 /* MapThing::setIntProperty
  * Sets the integer value of the property [key] to [value]
  *******************************************************************/
-void MapThing::setIntProperty(string key, int value)
+void MapThing::setIntProperty(const string& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -138,7 +138,7 @@ void MapThing::setIntProperty(string key, int value)
 /* MapThing::setFloatProperty
  * Sets the float value of the property [key] to [value]
  *******************************************************************/
-void MapThing::setFloatProperty(string key, double value)
+void MapThing::setFloatProperty(const string& key, double value)
 {
 	// Update modified time
 	setModified();

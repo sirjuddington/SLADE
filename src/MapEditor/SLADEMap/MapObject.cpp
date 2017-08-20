@@ -148,7 +148,7 @@ void MapObject::copy(MapObject* c)
 /* MapObject::boolProperty
  * Returns the value of the boolean property matching [key]
  *******************************************************************/
-bool MapObject::boolProperty(string key)
+bool MapObject::boolProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties[key].hasValue())
@@ -168,7 +168,7 @@ bool MapObject::boolProperty(string key)
 /* MapObject::intProperty
  * Returns the value of the integer property matching [key]
  *******************************************************************/
-int MapObject::intProperty(string key)
+int MapObject::intProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties[key].hasValue())
@@ -188,7 +188,7 @@ int MapObject::intProperty(string key)
 /* MapObject::floatProperty
  * Returns the value of the float property matching [key]
  *******************************************************************/
-double MapObject::floatProperty(string key)
+double MapObject::floatProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties[key].hasValue())
@@ -208,7 +208,7 @@ double MapObject::floatProperty(string key)
 /* MapObject::stringProperty
  * Returns the value of the string property matching [key]
  *******************************************************************/
-string MapObject::stringProperty(string key)
+string MapObject::stringProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties[key].hasValue())
@@ -228,7 +228,7 @@ string MapObject::stringProperty(string key)
 /* MapObject::setBoolProperty
  * Sets the boolean value of the property [key] to [value]
  *******************************************************************/
-void MapObject::setBoolProperty(string key, bool value)
+void MapObject::setBoolProperty(const string& key, bool value)
 {
 	// Update modified time
 	setModified();
@@ -240,7 +240,7 @@ void MapObject::setBoolProperty(string key, bool value)
 /* MapObject::setIntProperty
  * Sets the integer value of the property [key] to [value]
  *******************************************************************/
-void MapObject::setIntProperty(string key, int value)
+void MapObject::setIntProperty(const string& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -252,7 +252,7 @@ void MapObject::setIntProperty(string key, int value)
 /* MapObject::setFloatProperty
  * Sets the float value of the property [key] to [value]
  *******************************************************************/
-void MapObject::setFloatProperty(string key, double value)
+void MapObject::setFloatProperty(const string& key, double value)
 {
 	// Update modified time
 	setModified();
@@ -264,7 +264,7 @@ void MapObject::setFloatProperty(string key, double value)
 /* MapObject::setStringProperty
  * Sets the string value of the property [key] to [value]
  *******************************************************************/
-void MapObject::setStringProperty(string key, string value)
+void MapObject::setStringProperty(const string& key, const string& value)
 {
 	// Update modified time
 	setModified();

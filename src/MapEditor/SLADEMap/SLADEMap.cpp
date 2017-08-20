@@ -1536,6 +1536,7 @@ bool SLADEMap::addLine(ParseTreeNode* def)
 
 	// Set defaults
 	nl->special = 0;
+	nl->line_id = 0;
 
 	// Add extra line info
 	ParseTreeNode* prop = nullptr;
@@ -1549,6 +1550,8 @@ bool SLADEMap::addLine(ParseTreeNode* def)
 
 		if (prop->getName() == "special")
 			nl->special = prop->intValue();
+		else if (prop->getName() == "id")
+			nl->line_id = prop->intValue();
 		else
 			nl->properties[prop->getName()] = prop->value();
 	}
@@ -2392,6 +2395,8 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 			object_def += S_FMT("sideback=%d;\n", lines_[a]->s2Index());
 		if (lines_[a]->special != 0)
 			object_def += S_FMT("special=%d;\n", lines_[a]->special);
+		if (lines_[a]->line_id != 0)
+			object_def += S_FMT("id=%d;\n", lines_[a]->line_id);
 
 		// Remove internal 'flags' property if it exists
 		lines_[a]->props().removeProperty("flags");
@@ -3306,7 +3311,7 @@ void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 	// Find sectors with matching tag
 	for (unsigned a = 0; a < sectors_.size(); a++)
 	{
-		if (sectors_[a]->intProperty("id") == tag)
+		if (sectors_[a]->tag == tag)
 			list.push_back(sectors_[a]);
 	}
 }
@@ -3361,7 +3366,7 @@ void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list
 		if (things_[a]->intProperty("id") == id)
 		{
 			int si = sectorAt(things_[a]->point());
-			if (si > -1 && (unsigned)si < sectors_.size() && sectors_[si]->intProperty("id") == tag)
+			if (si > -1 && (unsigned)si < sectors_.size() && sectors_[si]->tag == tag)
 			{
 				list.push_back(things_[a]);
 			}
@@ -3420,7 +3425,7 @@ void SLADEMap::getLinesById(int id, vector<MapLine*>& list)
 	// Find lines with matching id
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
-		if (lines_[a]->intProperty("id") == id)
+		if (lines_[a]->line_id == id)
 			list.push_back(lines_[a]);
 	}
 }
@@ -3647,7 +3652,7 @@ int SLADEMap::findUnusedSectorTag()
 	int tag = 1;
 	for (unsigned a = 0; a < sectors_.size(); a++)
 	{
-		if (sectors_[a]->intProperty("id") == tag)
+		if (sectors_[a]->tag == tag)
 		{
 			tag++;
 			a = 0;
@@ -3687,7 +3692,7 @@ int SLADEMap::findUnusedLineId()
 	{
 		for (unsigned a = 0; a < lines_.size(); a++)
 		{
-			if (lines_[a]->intProperty("id") == tag)
+			if (lines_[a]->line_id == tag)
 			{
 				tag++;
 				a = 0;

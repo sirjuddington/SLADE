@@ -63,6 +63,7 @@ private:
 	MapSide*	side1;
 	MapSide*	side2;
 	int			special;
+	int			line_id;
 
 	// Internally used info
 	double		length;
@@ -96,14 +97,14 @@ public:
 	int	s1Index();
 	int	s2Index();
 
-	bool	boolProperty(string key) override;
-	int		intProperty(string key) override;
-	double	floatProperty(string key) override;
-	string	stringProperty(string key) override;
-	void	setBoolProperty(string key, bool value) override;
-	void	setIntProperty(string key, int value) override;
-	void	setFloatProperty(string key, double value) override;
-	void	setStringProperty(string key, string value) override;
+	bool	boolProperty(const string& key) override;
+	int		intProperty(const string& key) override;
+	double	floatProperty(const string& key) override;
+	string	stringProperty(const string& key) override;
+	void	setBoolProperty(const string& key, bool value) override;
+	void	setIntProperty(const string& key, int value) override;
+	void	setFloatProperty(const string& key, double value) override;
+	void	setStringProperty(const string& key, const string& value) override;
 	bool	scriptCanModifyProp(const string& key) override;
 
 	void	setS1(MapSide* side);

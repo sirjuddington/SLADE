@@ -85,7 +85,7 @@ fpoint2_t MapVertex::point()
 /* MapVertex::intProperty
  * Returns the value of the integer property matching [key]
  *******************************************************************/
-int MapVertex::intProperty(string key)
+int MapVertex::intProperty(const string& key)
 {
 	if (key == "x")
 		return (int)x;
@@ -98,7 +98,7 @@ int MapVertex::intProperty(string key)
 /* MapVertex::floatProperty
  * Returns the value of the float property matching [key]
  *******************************************************************/
-double MapVertex::floatProperty(string key)
+double MapVertex::floatProperty(const string& key)
 {
 	if (key == "x")
 		return x;
@@ -111,7 +111,7 @@ double MapVertex::floatProperty(string key)
 /* MapVertex::setIntProperty
  * Sets the integer value of the property [key] to [value]
  *******************************************************************/
-void MapVertex::setIntProperty(string key, int value)
+void MapVertex::setIntProperty(const string& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -135,7 +135,7 @@ void MapVertex::setIntProperty(string key, int value)
 /* MapVertex::setFloatProperty
  * Sets the float value of the property [key] to [value]
  *******************************************************************/
-void MapVertex::setFloatProperty(string key, double value)
+void MapVertex::setFloatProperty(const string& key, double value)
 {
 	// Update modified time
 	setModified();
