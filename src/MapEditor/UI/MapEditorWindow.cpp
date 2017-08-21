@@ -581,17 +581,8 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 	{
 		MapEditor::editContext().mapDesc() = map;
 
-		// Read DECORATE and *MAPINFO definitions if any
-		Game::configuration().clearDecorateDefs();
-		Game::configuration().clearMapInfo();
-		Game::configuration().parseDecorateDefs(App::archiveManager().baseResourceArchive());
-		Game::configuration().parseMapInfo(App::archiveManager().baseResourceArchive());
-		for (int i = 0; i < App::archiveManager().numArchives(); ++i)
-		{
-			Game::configuration().parseDecorateDefs(App::archiveManager().getArchive(i));
-			Game::configuration().parseMapInfo(App::archiveManager().getArchive(i));
-		}
-		Game::configuration().linkDoomEdNums();
+		// Update DECORATE and *MAPINFO definitions
+		Game::updateCustomDefinitions();
 
 		// Load scripts if any
 		loadMapScripts(map);

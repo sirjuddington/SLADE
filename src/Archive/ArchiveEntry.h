@@ -54,7 +54,7 @@ public:
 	~ArchiveEntry();
 
 	// Accessors
-	string				getName(bool cut_ext = false);
+	string				getName(bool cut_ext = false) const;
 	string				getUpperName();
 	string				getUpperNameNoExt();
 	uint32_t			getSize()			{ if (data_loaded) return data.getSize(); else return size; }
@@ -63,7 +63,7 @@ public:
 	ArchiveTreeNode*	getParentDir()		{ return parent; }
 	Archive*			getParent();
 	Archive*			getTopParent();
-	string				getPath(bool name = false);
+	string				getPath(bool name = false) const;
 	EntryType*			getType()			{ return type; }
 	PropertyList&		exProps()			{ return ex_props; }
 	Property&			exProp(string key)	{ return ex_props[key]; }
@@ -111,12 +111,13 @@ public:
 	uint32_t	currentPos() { return data.currentPos(); }
 
 	// Misc
-	string	getSizeString();
-	string	getTypeString() { if (type) return type->getName(); else return "Unknown"; }
-	void	stateChanged();
-	void	setExtensionByType();
-	int		getTypeReliability() { return (type ? (getType()->getReliability() * reliability / 255) : 0); }
-	bool	isInNamespace(string ns);
+	string			getSizeString();
+	string			getTypeString() { if (type) return type->getName(); else return "Unknown"; }
+	void			stateChanged();
+	void			setExtensionByType();
+	int				getTypeReliability() { return (type ? (getType()->getReliability() * reliability / 255) : 0); }
+	bool			isInNamespace(string ns);
+	ArchiveEntry*	relativeEntry(const string& path, bool allow_absolute_path = true) const;
 
 	size_t	index_guess; // for speed
 };

@@ -42,6 +42,7 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include "Decorate.h"
+#include "ZScript.h"
 
 using namespace Game;
 
@@ -1437,9 +1438,19 @@ void Configuration::clearDecorateDefs()
 }
 
 // ----------------------------------------------------------------------------
+// Configuration::importZScriptDefs
+//
+// Imports parsed classes from ZScript [defs] as thing types
+// ----------------------------------------------------------------------------
+void Configuration::importZScriptDefs(ZScript::Definitions& defs)
+{
+	defs.exportThingTypes(thing_types_, parsed_types_);
+}
+
+// ----------------------------------------------------------------------------
 // Configuration::parseMapInfo
 //
-// Parses all (Z/E/U)MAPINFO definitions in [archive]
+// Parses all *MAPINFO definitions in [archive]
 // ----------------------------------------------------------------------------
 bool Configuration::parseMapInfo(Archive* archive)
 {
@@ -1449,22 +1460,23 @@ bool Configuration::parseMapInfo(Archive* archive)
 // ----------------------------------------------------------------------------
 // Configuration::linkDoomEdNums
 //
-// Attempts to find editor numbers in *MAPINFO for parsed DECORATE types that
-// were not given one along with their definition
+// Attempts to find editor numbers in *MAPINFO for parsed DECORATE/ZScript
+// types that were not given one along with their definition
 // ----------------------------------------------------------------------------
 void Configuration::linkDoomEdNums()
 {
-	for (auto& i : parsed_types_)
+	for (auto& parsed : parsed_types_)
 	{
 		// Find MAPINFO editor number for parsed actor class
-		int ednum = map_info_.doomEdNumForClass(i.first);
+		int ednum = map_info_.doomEdNumForClass(parsed.className());
+		Log::debug(S_FMT("Find doomednum for class %s", CHR(parsed.className())));
 
 		if (ednum >= 0)
 		{
 			// Editor number found, copy the definition to thing types map
-			thing_types_[ednum].define(ednum, i.second.name(), i.second.group());
-			thing_types_[ednum].copy(i.second);
-			Log::info(2, S_FMT("Linked parsed DECORATE actor %s to DoomEdNum %d", CHR(i.first), ednum));
+			thing_types_[ednum].define(ednum, parsed.name(), parsed.group());
+			thing_types_[ednum].copy(parsed);
+			Log::info(2, S_FMT("Linked parsed class %s to DoomEdNum %d", CHR(parsed.className()), ednum));
 		}
 	}
 }

@@ -100,4 +100,7 @@ namespace Game
 
 	// Tagging
 	TagType		parseTagged(ParseTreeNode* tagged);
+
+	// Custom definitions (ZScript, DECORATE, EDF, etc.)
+	void	updateCustomDefinitions();
 }

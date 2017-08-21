@@ -1030,6 +1030,7 @@
     <ClCompile Include="..\..\src\Game\SpecialPreset.cpp" />
     <ClCompile Include="..\..\src\Game\ThingType.cpp" />
     <ClCompile Include="..\..\src\Game\UDMFProperty.cpp" />
+    <ClCompile Include="..\..\src\Game\ZScript.cpp" />
     <ClCompile Include="..\..\src\General\Clipboard.cpp" />
     <ClCompile Include="..\..\src\General\ColourConfiguration.cpp" />
     <ClCompile Include="..\..\src\General\Console\Console.cpp" />
@@ -2003,6 +2004,7 @@
     <ClInclude Include="..\..\src\Game\SpecialPreset.h" />
     <ClInclude Include="..\..\src\Game\ThingType.h" />
     <ClInclude Include="..\..\src\Game\UDMFProperty.h" />
+    <ClInclude Include="..\..\src\Game\ZScript.h" />
     <ClInclude Include="..\..\src\General\Clipboard.h" />
     <ClInclude Include="..\..\src\General\ColourConfiguration.h" />
     <ClInclude Include="..\..\src\General\Console\Console.h" />

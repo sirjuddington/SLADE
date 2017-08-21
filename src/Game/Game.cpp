@@ -35,7 +35,9 @@
 #include "Configuration.h"
 #include "Utility/Parser.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/Formats/ZipArchive.h"
 #include "App.h"
+#include "ZScript.h"
 
 using namespace Game;
 
@@ -52,9 +54,11 @@ namespace Game
 	GameDef						game_def_unknown;
 	std::map<string, PortDef>	port_defs;
 	PortDef						port_def_unknown;
+	ZScript::Definitions		zscript;
 }
 CVAR(String, game_configuration, "", CVAR_SAVE)
 CVAR(String, port_configuration, "", CVAR_SAVE)
+CVAR(String, zdoom_pk3_path, "", CVAR_SAVE)
 
 
 // ----------------------------------------------------------------------------
@@ -225,6 +229,44 @@ Configuration& Game::configuration()
 	return config_current;
 }
 
+void Game::updateCustomDefinitions()
+{
+	// Clear out all existing custom definitions
+	config_current.clearDecorateDefs();
+	config_current.clearMapInfo();
+	zscript.clear();
+
+	// Parse custom definitions in base resource
+	zscript.parseZScript(App::archiveManager().baseResourceArchive());
+	config_current.parseDecorateDefs(App::archiveManager().baseResourceArchive());
+	config_current.parseMapInfo(App::archiveManager().baseResourceArchive());
+
+
+	// Parse custom definitions in all resource archives
+	vector<Archive*> resource_archives;
+	for (unsigned a = 0; a < App::archiveManager().numArchives(); a++)
+	{
+		auto archive = App::archiveManager().getArchive(a);
+		if (App::archiveManager().archiveIsResource(archive))
+			resource_archives.push_back(archive);
+	}
+
+	// ZScript first
+	for (auto archive : resource_archives)
+		zscript.parseZScript(archive);
+
+	// Other definitions
+	for (auto archive : resource_archives)
+	{
+		config_current.parseDecorateDefs(archive);
+		config_current.parseMapInfo(archive);
+	}
+
+	// Process custom definitions
+	config_current.importZScriptDefs(zscript);
+	config_current.linkDoomEdNums();
+}
+
 // ----------------------------------------------------------------------------
 // Game::parseTagged
 //
@@ -365,6 +407,19 @@ void Game::init()
 	// Load custom special presets
 	if (!loadCustomSpecialPresets())
 		Log::warning("An error occurred loading user special_presets.cfg");
+
+	// Load zdoom.pk3 stuff
+	ZipArchive zdoom_pk3;
+	if (wxFileExists(zdoom_pk3_path) && zdoom_pk3.open(zdoom_pk3_path))
+	{
+		// ZScript
+		auto zscript_entry = zdoom_pk3.entryAtPath("zscript.txt");
+		zscript.parseZScript(zscript_entry);
+
+		// MapInfo
+		//auto mapinfo_entry = zdoom_pk3.entryAtPath("zmapinfo.txt");
+		//mapInfo().parseZMapInfo(mapinfo_entry);
+	}
 }
 
 // ----------------------------------------------------------------------------

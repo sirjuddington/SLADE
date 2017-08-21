@@ -1497,6 +1497,9 @@
     <ClCompile Include="..\..\src\Game\MapInfo.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Game\ZScript.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2616,6 +2619,9 @@
       <Filter>Text Editor\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Game\MapInfo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Game\ZScript.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
