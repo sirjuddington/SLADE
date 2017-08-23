@@ -14,7 +14,7 @@ namespace ZScript
 		vector<string>			tokens;
 		vector<ParsedStatement>	block;
 
-		bool	parse(Tokenizer& tz, bool first_expression = false);
+		bool	parse(Tokenizer& tz);
 		void	dump(int indent = 0);
 	};
 
@@ -76,9 +76,18 @@ namespace ZScript
 			string type;
 			string default_value;
 			Parameter() : name{ "<unknown>" }, type{ "<unknown>" }, default_value{ "" } {}
+
+			unsigned parse(const vector<string>& tokens, unsigned start_index);
 		};
 
+		const string&				returnType() const { return return_type_; }
+		const vector<Parameter>&	parameters() const { return parameters_; }
+		bool						isVirtual() const { return virtual_; }
+		bool						isStatic() const { return static_; }
+		bool						isAction() const { return action_; }
+
 		bool	parse(ParsedStatement& statement);
+		string	asString();
 
 		static bool isFunction(ParsedStatement& block);
 
@@ -88,6 +97,35 @@ namespace ZScript
 		bool				virtual_	= false;
 		bool				static_		= false;
 		bool				action_		= false;
+	};
+
+	struct State
+	{
+		struct Frame
+		{
+			string	sprite_base;
+			string	sprite_frame;
+			int		duration;
+		};
+
+		string editorSprite();
+
+		vector<Frame>	frames;
+	};
+
+	class StateTable
+	{
+	public:
+		StateTable() {}
+
+		const string&	firstState() const { return state_first_; }
+
+		bool	parse(ParsedStatement& states);
+		string	editorSprite();
+
+	private:
+		std::map<string, State>	states_;
+		string					state_first_;
 	};
 
 	class Class : public Identifier
@@ -112,6 +150,7 @@ namespace ZScript
 		vector<Function>	functions_;
 		vector<Enumerator>	enumerators_;
 		PropertyList		default_properties_;
+		StateTable			states_;
 
 		vector<std::pair<string, string>>	db_properties_;
 

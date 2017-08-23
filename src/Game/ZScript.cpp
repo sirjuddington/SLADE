@@ -7,12 +7,83 @@
 namespace ZScript
 {
 	bool dump_parsed_blocks = false;
+	bool dump_parsed_states = false;
+	bool dump_parsed_functions = false;
 }
 
 
 using namespace ZScript;
 
+namespace ZScript
+{
 
+string parseType(const vector<string>& tokens, unsigned& index)
+{
+	auto type = tokens[index];
+
+	// Check for 'out'
+	if (S_CMPNOCASE(type, "out"))
+		type = "out " + tokens[++index];
+
+	// Check for ...
+	if (index + 2 < tokens.size() && tokens[index] == "." && tokens[index + 1] == "." && tokens[index + 2] == ".")
+	{
+		type = "...";
+		index += 2;
+	}
+	
+	// Check for <>
+	if (tokens[index + 1] == "<")
+	{
+		type += "<";
+		index += 2;
+		while (index < tokens.size() && tokens[index] != ">")
+			type += tokens[index++];
+		type += ">";
+		++index;
+	}
+
+	++index;
+
+	return type;
+}
+
+string parseValue(const vector<string>& tokens, unsigned& index)
+{
+	string value;
+	while (true)
+	{
+		// Read between ()
+		if (tokens[index] == "(")
+		{
+			int level = 1;
+			value += tokens[index++];
+			while (level > 0)
+			{
+				if (tokens[index] == "(")
+					++level;
+				if (tokens[index] == ")")
+					--level;
+
+				value += tokens[index++];
+			}
+
+			continue;
+		}
+
+		if (tokens[index] == "," || tokens[index] == ";" || tokens[index] == ")")
+			break;
+
+		value += tokens[index++];
+
+		if (index >= tokens.size())
+			break;
+	}
+
+	return value;
+}
+
+}
 
 bool Enumerator::parse(ParsedStatement& statement)
 {
@@ -45,6 +116,34 @@ bool Enumerator::parse(ParsedStatement& statement)
 	}
 
 	return true;
+}
+
+unsigned Function::Parameter::parse(const vector<string>& tokens, unsigned index)
+{
+	// Type
+	type = parseType(tokens, index);
+	
+	// Special case - '...'
+	if (type == "...")
+	{
+		name = "...";
+		type.clear();
+		return index;
+	}
+
+	// Name
+	if (index >= tokens.size() || tokens[index] == ")")
+		return index;
+	name = tokens[index++];
+
+	// Default value
+	if (index < tokens.size() && tokens[index] == "=")
+	{
+		++index;
+		default_value = parseValue(tokens, index);
+	}
+
+	return index;
 }
 
 bool Function::parse(ParsedStatement& statement)
@@ -84,9 +183,58 @@ bool Function::parse(ParsedStatement& statement)
 	if (name_.empty() || return_type_.empty())
 		return false;
 
-	// TODO: Parse parameters
+	// Parse parameters
+	while (statement.tokens[index] != "(")
+	{
+		if (index == statement.tokens.size())
+			return true;
+		++index;
+	}
+	++index; // Skip (
+
+	while (statement.tokens[index] != ")" && index < statement.tokens.size())
+	{
+		parameters_.push_back({});
+		index = parameters_.back().parse(statement.tokens, index);
+
+		if (statement.tokens[index] == ",")
+			++index;
+	}
+
+	if (dump_parsed_functions)
+		Log::debug(asString());
 
 	return true;
+}
+
+string Function::asString()
+{
+	string str;
+	if (deprecated_)
+		str += "deprecated ";
+	if (static_)
+		str += "static ";
+	if (native_)
+		str += "native ";
+	if (virtual_)
+		str += "virtual ";
+	if (action_)
+		str += "action ";
+
+	str += S_FMT("%s %s(", CHR(return_type_), CHR(name_));
+
+	for (auto& p : parameters_)
+	{
+		str += S_FMT("%s %s", CHR(p.type), CHR(p.name));
+		if (!p.default_value.empty())
+			str += " = " + p.default_value;
+
+		if (&p != &parameters_.back())
+			str += ", ";
+	}
+	str += ")";
+
+	return str;
 }
 
 bool Function::isFunction(ParsedStatement& statement)
@@ -115,6 +263,116 @@ bool Function::isFunction(ParsedStatement& statement)
 	return false;
 }
 
+
+string State::editorSprite()
+{
+	if (frames.empty())
+		return "";
+
+	for (auto& f : frames)
+		if (!f.sprite_frame.empty())
+			return f.sprite_base + f.sprite_frame[0] + "?";
+
+	return "";
+}
+
+bool StateTable::parse(ParsedStatement& states)
+{
+	vector<string> current_states;
+	for (auto& statement : states.block)
+	{
+		auto states_added = false;
+		auto index = 0u;
+
+		// Check for state labels
+		for (auto a = 0u; a < statement.tokens.size(); ++a)
+		{
+			if (statement.tokens[a] == ":")
+			{
+				// Ignore ::
+				if (a + 1 < statement.tokens.size() && statement.tokens[a + 1] == ":")
+				{
+					++a;
+					continue;
+				}
+
+				if (!states_added)
+					current_states.clear();
+
+				string state;
+				for (auto b = index; b < a; ++b)
+					state += statement.tokens[b];
+
+				current_states.push_back(state.Lower());
+				if (state_first_.empty())
+					state_first_ = state;
+				states_added = true;
+
+				index = a + 1;
+			}
+		}
+
+		// Ignore state commands
+		if (S_CMPNOCASE(statement.tokens[index], "stop") ||
+			S_CMPNOCASE(statement.tokens[index], "goto") ||
+			S_CMPNOCASE(statement.tokens[index], "loop") ||
+			S_CMPNOCASE(statement.tokens[index], "wait") ||
+			S_CMPNOCASE(statement.tokens[index], "fail"))
+			continue;
+
+		if (index + 2 < statement.tokens.size())
+		{
+			// Parse duration
+			long duration = 0;
+			if (statement.tokens[index + 2] == "-" && index + 3 < statement.tokens.size())
+			{
+				// Negative number
+				statement.tokens[index + 3].ToLong(&duration);
+				duration = -duration;
+			}
+			else
+				statement.tokens[index + 2].ToLong(&duration);
+
+			for (auto& state : current_states)
+				states_[state].frames.push_back({ statement.tokens[index], statement.tokens[index + 1], duration });
+		}
+	}
+
+	states_.erase("");
+
+	if (dump_parsed_states)
+	{
+		for (auto& state : states_)
+		{
+			Log::debug(S_FMT("State %s:", CHR(state.first)));
+			for (auto& frame : state.second.frames)
+				Log::debug(S_FMT(
+					"Sprite: %s, Frames: %s, Duration: %d",
+					CHR(frame.sprite_base),
+					CHR(frame.sprite_frame),
+					frame.duration
+				));
+		}
+	}
+
+	return true;
+}
+
+string StateTable::editorSprite()
+{
+	if (!states_["idle"].frames.empty())
+		return states_["idle"].editorSprite();
+	if (!states_["see"].frames.empty())
+		return states_["see"].editorSprite();
+	if (!states_["inactive"].frames.empty())
+		return states_["inactive"].editorSprite();
+	if (!states_["spawn"].frames.empty())
+		return states_["spawn"].editorSprite();
+	if (!states_[state_first_].frames.empty())
+		return states_[state_first_].editorSprite();
+
+	return "";
+}
 
 bool Class::parse(ParsedStatement& class_statement)
 {
@@ -155,9 +413,9 @@ bool Class::parse(ParsedStatement& class_statement)
 			enumerators_.push_back(e);
 		}
 
-		// TODO: States
+		// States
 		else if (S_CMPNOCASE(statement.tokens[0], "states"))
-			continue;
+			states_.parse(statement);
 
 		// DB property comment
 		else if (statement.tokens[0].StartsWith("//$"))
@@ -180,6 +438,9 @@ bool Class::parse(ParsedStatement& class_statement)
 		else if (statement.tokens.size() >= 2 && statement.block.empty())
 			continue;
 	}
+
+	// Set editor sprite from parsed states
+	default_properties_["sprite"] = states_.editorSprite();
 
 	// Add DB comment props to default properties
 	for (auto& i : db_properties_)
@@ -319,7 +580,7 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 {
 	Tokenizer tz;
-	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-<>[].&!?");
+	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.");
 	tz.enableDecorate(true);
 	tz.openMem(entry->getMCData(), "ZScript");
 
@@ -442,7 +703,7 @@ void Definitions::exportThingTypes(std::map<int, Game::ThingType>& types, vector
 }
 
 
-bool ParsedStatement::parse(Tokenizer& tz, bool first_expression)
+bool ParsedStatement::parse(Tokenizer& tz)
 {
 	auto start_line = tz.lineNo();
 
@@ -474,13 +735,12 @@ bool ParsedStatement::parse(Tokenizer& tz, bool first_expression)
 			}
 
 			// End of statement
-			//if (first_expression)
-				return true;
+			return true;
 		}
 
 		if (tz.atEnd())
 		{
-			Log::debug(S_FMT("Failed parsing zscript expression beginning line %d", start_line));
+			Log::debug(S_FMT("Failed parsing zscript statement beginning line %d", start_line));
 			return false;
 		}
 
@@ -510,15 +770,15 @@ bool ParsedStatement::parse(Tokenizer& tz, bool first_expression)
 
 		if (tz.atEnd())
 		{
-			Log::debug(S_FMT("Failed parsing zscript expression beginning line %d", start_line));
+			Log::debug(S_FMT("Failed parsing zscript statement beginning line %d", start_line));
 			return false;
 		}
 
-		ParsedStatement expression;
-		if (!expression.parse(tz, block.empty()))
+		ParsedStatement statement;
+		if (!statement.parse(tz))
 			return false;
-		if (!expression.tokens.empty())
-			block.push_back(std::move(expression));
+		if (!statement.tokens.empty())
+			block.push_back(std::move(statement));
 	}
 }
 
@@ -546,12 +806,18 @@ void ParsedStatement::dump(int indent)
 CONSOLE_COMMAND(test_parse_zscript, 0, false)
 {
 	dump_parsed_blocks = false;
+	dump_parsed_states = false;
+	dump_parsed_functions = false;
 	ArchiveEntry* entry = nullptr;
 
 	for (auto& arg : args)
 	{
 		if (S_CMPNOCASE(arg, "dump"))
 			dump_parsed_blocks = true;
+		else if (S_CMPNOCASE(arg, "states"))
+			dump_parsed_states = true;
+		else if (S_CMPNOCASE(arg, "func"))
+			dump_parsed_functions = true;
 		else if (!entry)
 			entry = MainEditor::currentArchive()->entryAtPath(arg);
 	}
@@ -569,4 +835,8 @@ CONSOLE_COMMAND(test_parse_zscript, 0, false)
 	}
 	else
 		Log::console("Select an entry or enter a valid entry name/path");
+
+	dump_parsed_blocks = false;
+	dump_parsed_states = false;
+	dump_parsed_functions = false;
 }

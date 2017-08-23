@@ -244,7 +244,7 @@ void Game::updateCustomDefinitions()
 
 	// Parse custom definitions in all resource archives
 	vector<Archive*> resource_archives;
-	for (unsigned a = 0; a < App::archiveManager().numArchives(); a++)
+	for (auto a = 0; a < App::archiveManager().numArchives(); a++)
 	{
 		auto archive = App::archiveManager().getArchive(a);
 		if (App::archiveManager().archiveIsResource(archive))
