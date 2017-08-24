@@ -20,11 +20,19 @@ namespace ZScript
 
 string parseType(const vector<string>& tokens, unsigned& index)
 {
-	auto type = tokens[index];
+	string type;
 
-	// Check for 'out'
-	if (S_CMPNOCASE(type, "out"))
-		type = "out " + tokens[++index];
+	// Qualifiers
+	while (index < tokens.size())
+	{
+		if (S_CMPNOCASE(tokens[index], "in") ||
+			S_CMPNOCASE(tokens[index], "out"))
+			type += tokens[index++] + " ";
+		else
+			break;
+	}
+
+	type += tokens[index];
 
 	// Check for ...
 	if (index + 2 < tokens.size() && tokens[index] == "." && tokens[index + 1] == "." && tokens[index + 2] == ".")
