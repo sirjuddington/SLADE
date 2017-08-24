@@ -191,44 +191,58 @@ int SCallTip::drawText(wxDC& dc, string text, int left, int top, wxRect* bounds)
 
 wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, int left, int top)
 {
-	wxRect rect;
+	wxRect rect{ left, top, 0, 0 };
+	int rect_left = left;
+
+	// Draw deprecated version
+	if (!context.deprecated.empty())
+	{
+		dc.SetTextForeground(*wxRED);
+		left = drawText(dc, S_FMT("(Deprecated v%s) ", CHR(context.deprecated)), left, top, &rect);
+	}
 
 	// Draw function qualifiers
 	if (!context.qualifiers.empty())
 	{
 		dc.SetTextForeground(WXCOL(col_keyword_));
-		dc.DrawLabel(context.qualifiers, wxNullBitmap, wxRect(left, top, 900, 900), 0, -1, &rect);
+		left = drawText(dc, context.qualifiers, left, top, &rect);
 	}
 
 	// Draw function return type
 	string ftype = context.return_type + " ";
 	dc.SetTextForeground(wxcol_type);
-	drawText(dc, ftype, rect.GetRight() + 1, rect.GetTop(), &rect);
+	left = drawText(dc, ftype, left, top, &rect);
 
 	// Draw function context (if any)
 	if (!context.context.empty())
 	{
 		dc.SetTextForeground(wxcol_fg);
-		drawText(dc, context.context + ".", rect.GetRight() + 1, rect.GetTop(), &rect);
+		left = drawText(dc, context.context + ".", left, top, &rect);
 	}
 
 	// Draw function name
 	string fname = function_->name();
 	dc.SetTextForeground(WXCOL(col_func_));
-	left = drawText(dc, fname, rect.GetRight() + 1, rect.GetTop(), &rect);
+	left = drawText(dc, fname, left, top, &rect);
 
 	// Draw opening bracket
 	dc.SetTextForeground(wxcol_fg);
-	left = drawText(dc, "(", left, rect.GetTop(), &rect);
+	left = drawText(dc, "(", left, top, &rect);
 
-	return rect;
+	return { { rect_left, top }, rect.GetBottomRight() };
 }
 
-wxRect SCallTip::drawArgs(wxDC& dc, const TLFunction::Context& context, int left, int top, wxColour& col_faded, wxFont& bold)
+wxRect SCallTip::drawArgs(
+	wxDC& dc,
+	const TLFunction::Context& context,
+	int left,
+	int top,
+	wxColour& col_faded,
+	wxFont& bold)
 {
-	wxRect rect;
+	wxRect rect{ left, top, 0, 0 };
 
-	int max_right = 0;
+	int max_right = left;
 	int args_left = left;
 	int args_top = top;
 	for (unsigned a = 0; a < context.params.size(); a++)
@@ -301,7 +315,13 @@ wxRect SCallTip::drawFunctionContext(
 	auto rect_func = drawFunctionSpec(dc, context, left, top);
 	auto rect_args = drawArgs(dc, context, rect_func.GetRight() + 1, top, col_faded, bold);
 
-	return wxRect(rect_func.GetTopLeft(), rect_args.GetBottomRight());
+	return wxRect{
+		rect_func.GetTopLeft(),
+		wxPoint{
+			std::max(rect_func.GetRight(), rect_args.GetRight()),
+			std::max(rect_func.GetBottom(), rect_args.GetBottom())
+		}
+	};
 }
 
 wxRect SCallTip::drawFunctionDescription(wxDC& dc, string desc, int left, int top, int max_width)
@@ -454,13 +474,34 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		else
 		{
 			bool first = true;
-			for (auto& context : function_->contexts())
+			auto num = std::min(function_->contexts().size(), 12u);
+			for (auto a = 0u; a < num; a++)
 			{
-				auto rect = drawFunctionContext(dc, context, xoff, bottom + (first ? 0 : 5), wxcol_faded, bold);
+				auto& context = function_->contexts()[a];
+
+				if (!first)
+				{
+					dc.SetPen(wxPen(wxcol_faded));
+					dc.DrawLine(xoff, bottom + 5, 2000, bottom + 5);
+				}
+
+				auto rect = drawFunctionContext(dc, context, xoff, bottom + (first ? 0 : 11), wxcol_faded, bold);
 				bottom = rect.GetBottom() + 1;
 				max_right = std::max(max_right, rect.GetRight());
 				first = false;
 			}
+
+			// Show '... # more' if there are too many contexts
+			if (function_->contexts().size() > num)
+			{
+				dc.SetTextForeground(wxcol_faded);
+				wxRect rect;
+				drawText(dc, S_FMT("... %d more", function_->contexts().size() - num), xoff, bottom + 11, &rect);
+				bottom = rect.GetBottom() + 1;
+			}
+
+			if (num > 1)
+				bottom--;
 		}
 
 		// Size buffer bitmap to fit

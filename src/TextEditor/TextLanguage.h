@@ -22,6 +22,7 @@ public:
 		string				return_type;
 		string				description;
 		string				qualifiers;
+		string				deprecated;
 	};
 
 	TLFunction(string name = "");

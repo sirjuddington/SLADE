@@ -170,6 +170,7 @@ void TLFunction::addContext(const string& context, const ZScript::Function& func
 	auto& ctx = contexts_.back();
 
 	ctx.return_type = func.returnType();
+	ctx.deprecated = func.deprecated();
 
 	if (func.isVirtual())
 		ctx.qualifiers += "virtual ";
