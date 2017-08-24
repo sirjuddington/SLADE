@@ -1,37 +1,38 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    TextStyle.cpp
- * Description: Classes which handle font and colour settings for
- *              the text editor. TextStyle contains the actual font
- *              and colour settings for a particular 'style' (eg.
- *              keywords, comments, etc). StyleSet is just a set
- *              of these styles that can be loaded to the scintilla
- *              'styles' in the text editor
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    TextStyle.cpp
+// Description: Classes which handle font and colour settings for the text
+//              editor. TextStyle contains the actual font and colour settings
+//              for a particular 'style' (eg. keywords, comments, etc).
+//              StyleSet is just a set of these styles that can be loaded to
+//              the scintilla 'styles' in the text editor
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
 #include "UI/TextEditorCtrl.h"
@@ -42,23 +43,30 @@
 #include "Utility/Tokenizer.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 CVAR(String, txed_override_font, "", CVAR_SAVE)
 CVAR(Int, txed_override_font_size, 0, CVAR_SAVE)
-vector<StyleSet*>	style_sets;
-StyleSet*			ss_current = NULL;
+vector<StyleSet*>		style_sets;
+StyleSet*				ss_current = nullptr;
 vector<TextEditorCtrl*>	StyleSet::editors;
 
 
-/*******************************************************************
- * TEXTSTYLE CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// TextStyle Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* TextStyle::TextStyle
- * TextStyle class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// TextStyle::TextStyle
+//
+// TextStyle class constructor
+// ----------------------------------------------------------------------------
 TextStyle::TextStyle(string name, string description, int style_id)
 {
 	// Init variables
@@ -77,25 +85,31 @@ TextStyle::TextStyle(string name, string description, int style_id)
 	underlined = -1;
 }
 
-/* TextStyle::~TextStyle
- * TextStyle class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextStyle::~TextStyle
+//
+// TextStyle class destructor
+// ----------------------------------------------------------------------------
 TextStyle::~TextStyle()
 {
 }
 
-/* TextStyle::addWxStyleId
- * Adds a wxSTC style id to the list (used for applying style to the
- * wxStyledTextCtrl, in case this style replaces multiple)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextStyle::addWxStyleId
+//
+// Adds a wxSTC style id to the list (used for applying style to the
+// wxStyledTextCtrl, in case this style replaces multiple)
+// ----------------------------------------------------------------------------
 void TextStyle::addWxStyleId(int style)
 {
 	wx_styles.push_back(style);
 }
 
-/* TextStyle::parse
- * Reads text style information from a parse tree
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextStyle::parse
+//
+// Reads text style information from a parse tree
+// ----------------------------------------------------------------------------
 bool TextStyle::parse(ParseTreeNode* node)
 {
 	// Check any info was given
@@ -146,9 +160,11 @@ bool TextStyle::parse(ParseTreeNode* node)
 	return true;
 }
 
-/* TextStyle::applyTo
- * Applies the style settings to the scintilla text control [stc]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextStyle::applyTo
+//
+// Applies the style settings to the scintilla text control [stc]
+// ----------------------------------------------------------------------------
 void TextStyle::applyTo(TextEditorCtrl* stc)
 {
 	for (unsigned a = 0; a < wx_styles.size(); a++)
@@ -193,9 +209,11 @@ void TextStyle::applyTo(TextEditorCtrl* stc)
 	}
 }
 
-/* TextStyle::copyStyle
- * Copies style info from [copy]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextStyle::copyStyle
+//
+// Copies style info from [copy]
+// ----------------------------------------------------------------------------
 bool TextStyle::copyStyle(TextStyle* copy)
 {
 	if (!copy)
@@ -215,9 +233,11 @@ bool TextStyle::copyStyle(TextStyle* copy)
 	return true;
 }
 
-/* TextStyle::getDefinition
- * Returns a formatted string defining this style
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextStyle::getDefinition
+//
+// Returns a formatted string defining this style
+// ----------------------------------------------------------------------------
 string TextStyle::getDefinition(unsigned tabs)
 {
 	string ret = "";
@@ -275,13 +295,18 @@ string TextStyle::getDefinition(unsigned tabs)
 }
 
 
-/*******************************************************************
- * STYLESET CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// StyleSet Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* StyleSet::StyleSet
- * StyleSet class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// StyleSet::StyleSet
+//
+// StyleSet class constructor
+// ----------------------------------------------------------------------------
 StyleSet::StyleSet(string name) : ts_default("default", "Default", wxSTC_STYLE_DEFAULT), ts_selection("selection", "Selected Text")
 {
 	// Init default style
@@ -326,18 +351,22 @@ StyleSet::StyleSet(string name) : ts_default("default", "Default", wxSTC_STYLE_D
 	styles.push_back(new TextStyle("current_line",	"Current Line"));
 }
 
-/* StyleSet::~StyleSet
- * StyleSet class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::~StyleSet
+//
+// StyleSet class destructor
+// ----------------------------------------------------------------------------
 StyleSet::~StyleSet()
 {
 	for (unsigned a = 0; a < styles.size(); a++)
 		delete styles[a];
 }
 
-/* StyleSet::parseSet
- * Reads style set info from a parse tree
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::parseSet
+//
+// Reads style set info from a parse tree
+// ----------------------------------------------------------------------------
 bool StyleSet::parseSet(ParseTreeNode* root)
 {
 	if (!root)
@@ -402,10 +431,12 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 	return true;
 }
 
-/* StyleSet::applyTo
- * Applies all the styles in this set to the text styles in scintilla
- * text control [stc]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::applyTo
+//
+// Applies all the styles in this set to the text styles in scintilla text
+// control [stc]
+// ----------------------------------------------------------------------------
 void StyleSet::applyTo(TextEditorCtrl* stc)
 {
 	// Set default style
@@ -460,9 +491,11 @@ void StyleSet::applyTo(TextEditorCtrl* stc)
 	);
 }
 
-/* StyleSet::copySet
- * Copies all styles in [copy] to this set
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::copySet
+//
+// Copies all styles in [copy] to this set
+// ----------------------------------------------------------------------------
 bool StyleSet::copySet(StyleSet* copy)
 {
 	if (!copy)
@@ -477,10 +510,12 @@ bool StyleSet::copySet(StyleSet* copy)
 	return true;
 }
 
-/* StyleSet::getStyle
- * Returns the text style associated with [name] (these are hard
- * coded), or NULL if [name] was invalid
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::getStyle
+//
+// Returns the text style associated with [name] (these are hard coded), or
+// nullptr if [name] was invalid
+// ----------------------------------------------------------------------------
 TextStyle* StyleSet::getStyle(string name)
 {
 	// Return style matching name given
@@ -498,23 +533,27 @@ TextStyle* StyleSet::getStyle(string name)
 	}
 
 	// Not a valid style
-	return NULL;
+	return nullptr;
 }
 
-/* StyleSet::getStyle
- * Returns the extra text style at [index]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::getStyle
+//
+// Returns the extra text style at [index]
+// ----------------------------------------------------------------------------
 TextStyle* StyleSet::getStyle(unsigned index)
 {
 	if (index < styles.size())
 		return styles[index];
 	else
-		return NULL;
+		return nullptr;
 }
 
-/* StyleSet::writeFile
- * Writes this style set as a text definition to a file [filename]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::writeFile
+//
+// Writes this style set as a text definition to a file [filename]
+// ----------------------------------------------------------------------------
 bool StyleSet::writeFile(string filename)
 {
 	// Open file for writing
@@ -556,10 +595,12 @@ bool StyleSet::writeFile(string filename)
 	return true;
 }
 
-/* StyleSet::getStyleForeground
- * Returns the foreground colour of [style], or the default style's
- * foreground colour if it is not set
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::getStyleForeground
+//
+// Returns the foreground colour of [style], or the default style's foreground
+// colour if it is not set
+// ----------------------------------------------------------------------------
 rgba_t StyleSet::getStyleForeground(string style)
 {
 	TextStyle* s = getStyle(style);
@@ -569,10 +610,12 @@ rgba_t StyleSet::getStyleForeground(string style)
 		return ts_default.getForeground();
 }
 
-/* StyleSet::getStyleBackground
- * Returns the background colour of [style], or the default style's
- * background colour if it is not set
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::getStyleBackground
+//
+// Returns the background colour of [style], or the default style's background
+// colour if it is not set
+// ----------------------------------------------------------------------------
 rgba_t StyleSet::getStyleBackground(string style)
 {
 	TextStyle* s = getStyle(style);
@@ -582,9 +625,11 @@ rgba_t StyleSet::getStyleBackground(string style)
 		return ts_default.getBackground();
 }
 
-/* StyleSet::getDefaultFontFace
- * Returns the default style font face
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::getDefaultFontFace
+//
+// Returns the default style font face
+// ----------------------------------------------------------------------------
 string StyleSet::getDefaultFontFace()
 {
 	if (txed_override_font != "")
@@ -593,9 +638,11 @@ string StyleSet::getDefaultFontFace()
 		return getStyle("default")->getFontFace();
 }
 
-/* StyleSet::getDefaultFontSize
- * Returns the default style font size
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::getDefaultFontSize
+//
+// Returns the default style font size
+// ----------------------------------------------------------------------------
 int StyleSet::getDefaultFontSize()
 {
 	if (txed_override_font != "" && txed_override_font_size > 0)
@@ -605,15 +652,19 @@ int StyleSet::getDefaultFontSize()
 }
 
 
-/*******************************************************************
- * STYLESET STATIC FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// StyleSet Class Static Functions
+//
+// ----------------------------------------------------------------------------
 
-/* StyleSet::initCurrent
- * Initialises the 'current' style set from the previously saved
- * 'current.sss' file, or uses the default set if the file does not
- * exist
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// StyleSet::initCurrent
+//
+// Initialises the 'current' style set from the previously saved 'current.sss'
+// file, or uses the default set if the file does not exist
+// ----------------------------------------------------------------------------
 void StyleSet::initCurrent()
 {
 	// Create 'current' styleset
@@ -648,9 +699,11 @@ void StyleSet::initCurrent()
 		ss_current->copySet(style_sets[0]);
 }
 
-/* StyleSet::saveCurrent
- * Writes the current style set to the 'current.sss' file
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::saveCurrent
+//
+// Writes the current style set to the 'current.sss' file
+// ----------------------------------------------------------------------------
 void StyleSet::saveCurrent()
 {
 	if (!ss_current)
@@ -659,9 +712,11 @@ void StyleSet::saveCurrent()
 	ss_current->writeFile(App::path("current.sss", App::Dir::User));
 }
 
-/* StyleSet::currentSet
- * Returns the current style set
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::currentSet
+//
+// Returns the current style set
+// ----------------------------------------------------------------------------
 StyleSet* StyleSet::currentSet()
 {
 	if (!ss_current)
@@ -670,10 +725,12 @@ StyleSet* StyleSet::currentSet()
 	return ss_current;
 }
 
-/* StyleSet::loadSet
- * Loads the style set matching [name] to the current style set.
- * Returns false if no match was found, true otherwise
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::loadSet
+//
+// Loads the style set matching [name] to the current style set.
+// Returns false if no match was found, true otherwise
+// ----------------------------------------------------------------------------
 bool StyleSet::loadSet(string name)
 {
 	// Search for set matching name
@@ -689,10 +746,12 @@ bool StyleSet::loadSet(string name)
 	return false;
 }
 
-/* StyleSet::loadSet
- * Loads the style set at [index] to the current style set. Returns
- * false if [index] was out of bounds, true otherwise
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::loadSet
+//
+// Loads the style set at [index] to the current style set.
+// Returns false if [index] was out of bounds, true otherwise
+// ----------------------------------------------------------------------------
 bool StyleSet::loadSet(unsigned index)
 {
 	// Check index
@@ -704,18 +763,22 @@ bool StyleSet::loadSet(unsigned index)
 	return true;
 }
 
-/* StyleSet::applyCurrent
- * Applies the current style set to the scintilla text control [stc]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::applyCurrent
+//
+// Applies the current style set to the scintilla text control [stc]
+// ----------------------------------------------------------------------------
 void StyleSet::applyCurrent(TextEditorCtrl* stc)
 {
 	currentSet()->applyTo(stc);
 }
 
-/* StyleSet::getName
- * Returns the name of the style set at [index], or an empty string
- * if [index] is out of bounds
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::getName
+//
+// Returns the name of the style set at [index], or an empty string if [index]
+// is out of bounds
+// ----------------------------------------------------------------------------
 string StyleSet::getName(unsigned index)
 {
 	// Check index
@@ -725,54 +788,66 @@ string StyleSet::getName(unsigned index)
 	return style_sets[index]->name;
 }
 
-/* StyleSet::numSets
- * Returns the number of loaded style sets
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::numSets
+//
+// Returns the number of loaded style sets
+// ----------------------------------------------------------------------------
 unsigned StyleSet::numSets()
 {
 	return style_sets.size();
 }
 
-/* StyleSet::getSet
- * Returns the style set at [index], or NULL if [index] is out of bounds
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::getSet
+//
+// Returns the style set at [index], or nullptr if [index] is out of bounds
+// ----------------------------------------------------------------------------
 StyleSet* StyleSet::getSet(unsigned index)
 {
 	// Check index
 	if (index >= style_sets.size())
-		return NULL;
+		return nullptr;
 
 	return style_sets[index];
 }
 
-/* StyleSet::addEditor
- * Adds [stc] to the current list of text editors
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::addEditor
+//
+// Adds [stc] to the current list of text editors
+// ----------------------------------------------------------------------------
 void StyleSet::addEditor(TextEditorCtrl* stc)
 {
 	editors.push_back(stc);
 }
 
-/* StyleSet::removeEditor
- * Removes [stc] from the current list of text editors
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::removeEditor
+//
+// Removes [stc] from the current list of text editors
+// ----------------------------------------------------------------------------
 void StyleSet::removeEditor(TextEditorCtrl* stc)
 {
 	VECTOR_REMOVE(editors, stc);
 }
 
-/* StyleSet::applyCurrentToAll
- * Applies the current style set to all text editors in the list
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::applyCurrentToAll
+//
+// Applies the current style set to all text editors in the list
+// ----------------------------------------------------------------------------
 void StyleSet::applyCurrentToAll()
 {
 	for (unsigned a = 0; a < editors.size(); a++)
 		applyCurrent(editors[a]);
 }
 
-/* StyleSet::loadResourceStyles
- * Loads all text styles from the slade resource archive (slade.pk3)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::loadResourceStyles
+//
+// Loads all text styles from the slade resource archive (slade.pk3)
+// ----------------------------------------------------------------------------
 bool StyleSet::loadResourceStyles()
 {
 	// Get 'config/text_styles' directory in slade.pk3
@@ -843,9 +918,11 @@ bool StyleSet::loadResourceStyles()
 	return true;
 }
 
-/* StyleSet::loadCustomStyles
- * Loads all text styles from the user text style directory
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// StyleSet::loadCustomStyles
+//
+// Loads all text styles from the user text style directory
+// ----------------------------------------------------------------------------
 bool StyleSet::loadCustomStyles()
 {
 	// If the custom stylesets directory doesn't exist, create it

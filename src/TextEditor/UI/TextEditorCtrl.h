@@ -79,7 +79,6 @@ public:
 	// Folding
 	void	foldAll(bool fold = true);
 	void	setupFolding();
-	void	updateFolding();
 
 	// Comments
 	void	lineComment();

@@ -1,34 +1,36 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    TextEditorCtrl.cpp
- * Description: The SLADE Text Editor control, does syntax
- *              highlighting, calltips, autocomplete and more,
- *              using an associated TextLanguage
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    TextEditorCtrl.cpp
+// Description: The SLADE Text Editor control. Does syntax highlighting,
+//              calltips, autocomplete and more, using an associated
+//              TextLanguage
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
 #include "TextEditorCtrl.h"
@@ -39,9 +41,11 @@
 #include "Utility/Tokenizer.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 CVAR(Int, txed_tab_width, 4, CVAR_SAVE)
 CVAR(Bool, txed_auto_indent, true, CVAR_SAVE)
 CVAR(Bool, txed_syntax_hilight, true, CVAR_SAVE)
@@ -62,18 +66,24 @@ CVAR(Bool, txed_calltips_colourise, true, CVAR_SAVE)
 CVAR(Bool, txed_calltips_use_font, false, CVAR_SAVE)
 CVAR(Bool, txed_match_cursor_word, true, CVAR_SAVE)
 CVAR(Int, txed_hilight_current_line, 2, CVAR_SAVE)
+CVAR(Int, txed_line_extra_height, 0, CVAR_SAVE)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
 
 
-/*******************************************************************
- * JUMPTOCALCULATOR CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// JumpToCalculator Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* JumpToCalculator::Entry
- * JumpToCalculator thread entry function
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// JumpToCalculator::Entry
+//
+// JumpToCalculator thread entry function
+// ----------------------------------------------------------------------------
 wxThread::ExitCode JumpToCalculator::Entry()
 {
 	string jump_points;
@@ -142,13 +152,18 @@ wxThread::ExitCode JumpToCalculator::Entry()
 }
 
 
-/*******************************************************************
- * TEXTEDITOR CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// TextEditorCtrl Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* TextEditorCtrl::TextEditorCtrl
- * TextEditorCtrl class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::TextEditorCtrl
+//
+// TextEditorCtrl class constructor
+// ----------------------------------------------------------------------------
 TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id)
 	: wxStyledTextCtrl(parent, id), timer_update_(this)
 {
@@ -212,18 +227,22 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id)
 	Bind(wxEVT_STC_STYLENEEDED, &TextEditorCtrl::onStyleNeeded, this);
 }
 
-/* TextEditorCtrl::~TextEditorCtrl
- * TextEditorCtrl class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::~TextEditorCtrl
+//
+// TextEditorCtrl class destructor
+// ----------------------------------------------------------------------------
 TextEditorCtrl::~TextEditorCtrl()
 {
 	StyleSet::removeEditor(this);
 }
 
-/* TextEditorCtrl::setup
- * Sets up text editor properties depending on cvars and the current
- * text styleset/style
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::setup
+//
+// Sets up text editor properties depending on cvars and the current text
+// styleset/style
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::setup()
 {
 	// General settings
@@ -232,6 +251,8 @@ void TextEditorCtrl::setup()
 	SetMouseDwellTime(500);
 	AutoCompSetIgnoreCase(true);
 	SetIndentationGuides(txed_indent_guides);
+	SetExtraAscent(txed_line_extra_height);
+	SetExtraDescent(txed_line_extra_height);
 
 	// Right margin line
 	SetEdgeColumn(txed_edge_column);
@@ -268,9 +289,11 @@ void TextEditorCtrl::setup()
 	IndicatorSetAlpha(8, 40);
 }
 
-/* TextEditorCtrl::setupFoldMargin
- * Sets up the code folding margin
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::setupFoldMargin
+//
+// Sets up the code folding margin
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::setupFoldMargin(TextStyle* margin_style)
 {
 	if (!txed_fold_enable)
@@ -306,9 +329,11 @@ void TextEditorCtrl::setupFoldMargin(TextStyle* margin_style)
 	MarkerDefine(wxSTC_MARKNUM_FOLDERMIDTAIL, wxSTC_MARK_TCORNER, col_bg, col_fg);
 }
 
-/* TextEditorCtrl::setLanguage
- * Sets the text editor language
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::setLanguage
+//
+// Sets the text editor language
+// ----------------------------------------------------------------------------
 bool TextEditorCtrl::setLanguage(TextLanguage* lang)
 {
 	// Check language was given
@@ -353,9 +378,11 @@ bool TextEditorCtrl::setLanguage(TextLanguage* lang)
 	return true;
 }
 
-/* TextEditorCtrl::applyStyleSet
- * Applies the styleset [style] to the text editor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::applyStyleSet
+//
+// Applies the styleset [style] to the text editor
+// ----------------------------------------------------------------------------
 bool TextEditorCtrl::applyStyleSet(StyleSet* style)
 {
 	// Check if one was given
@@ -368,10 +395,12 @@ bool TextEditorCtrl::applyStyleSet(StyleSet* style)
 	return true;
 }
 
-/* TextEditorCtrl::loadEntry
- * Reads the contents of [entry] into the text area, returns false
- * if the given entry is invalid
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::loadEntry
+//
+// Reads the contents of [entry] into the text area, returns false if the given
+// entry is invalid
+// ----------------------------------------------------------------------------
 bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 {
 	// Clear current text
@@ -389,7 +418,6 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 		return true;
 
 	// Get character entry data
-	//string text = wxString::From8BitData((const char*)entry->getData(), entry->getSize());
 	string text = wxString::FromUTF8((const char*)entry->getData(), entry->getSize());
 	// If opening as UTF8 failed for some reason, try again as 8-bit data
 	if (text.length() == 0)
@@ -406,9 +434,11 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 	return true;
 }
 
-/* TextEditorCtrl::getRawText
- * Writes the raw ASCII text to [mc]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::getRawText
+//
+// Writes the raw ASCII text to [mc]
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::getRawText(MemChunk& mc)
 {
 	mc.clear();
@@ -416,9 +446,11 @@ void TextEditorCtrl::getRawText(MemChunk& mc)
 	bool result = mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
 }
 
-/* TextEditorCtrl::trimWhitespace
- * Removes any unneeded whitespace from the ends of lines
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::trimWhitespace
+//
+// Removes any unneeded whitespace from the ends of lines
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::trimWhitespace()
 {
 	// Go through lines
@@ -445,11 +477,13 @@ void TextEditorCtrl::trimWhitespace()
 	}
 }
 
-/* TextEditorCtrl::showFindReplacePanel
- * Shows or hides the Find+Replace panel, depending on [show]. If
- * shown, fills the find text box with the current selection or the
- * current word at the caret
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::showFindReplacePanel
+//
+// Shows or hides the Find+Replace panel, depending on [show].
+// If shown, fills the find text box with the current selection or the current
+// word at the caret
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::showFindReplacePanel(bool show)
 {
 	// Do nothing if no F+R panel has been set
@@ -482,11 +516,14 @@ void TextEditorCtrl::showFindReplacePanel(bool show)
 	panel_fr_->setFindText(find);
 }
 
-/* TextEditorCtrl::findNext
- * Finds the next occurrence of the [find] after the caret position,
- * selects it and scrolls to it if needed. Returns false if the
- * [find] was invalid or no match was found, true otherwise
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::findNext
+//
+// Finds the next occurrence of the [find] after the caret position, selects it
+// and scrolls to it if needed.
+// Returns false if the [find] was invalid or no match was found, true
+// otherwise
+// ----------------------------------------------------------------------------
 bool TextEditorCtrl::findNext(string find, int flags)
 {
 	// Check search string
@@ -524,11 +561,14 @@ bool TextEditorCtrl::findNext(string find, int flags)
 	return true;
 }
 
-/* TextEditorCtrl::findPrev
- * Finds the previous occurrence of the [find] after the caret
- * position, selects it and scrolls to it if needed. Returns false
- * if the [find] was invalid or no match was found, true otherwise
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::findPrev
+//
+// Finds the previous occurrence of the [find] after the caret position,
+// selects it and scrolls to it if needed.
+// Returns false if the [find] was invalid or no match was found, true
+// otherwise
+// ----------------------------------------------------------------------------
 bool TextEditorCtrl::findPrev(string find, int flags)
 {
 	// Check search string
@@ -566,12 +606,14 @@ bool TextEditorCtrl::findPrev(string find, int flags)
 	return true;
 }
 
-/* TextEditorCtrl::replaceCurrent
- * Replaces the currently selected occurrence of [find] with
- * [replace], then selects and scrolls to the next occurrence of
- * [find] in the text. Returns false if [find] is invalid or the
- * current selection does not match it, true otherwise
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::replaceCurrent
+//
+// Replaces the currently selected occurrence of [find] with [replace], then
+// selects and scrolls to the next occurrence of [find] in the text.
+// Returns false if [find] is invalid or the current selection does not match
+// it, true otherwise
+// ----------------------------------------------------------------------------
 bool TextEditorCtrl::replaceCurrent(string find, string replace, int flags)
 {
 	// Check search string
@@ -599,10 +641,12 @@ bool TextEditorCtrl::replaceCurrent(string find, string replace, int flags)
 	return true;
 }
 
-/* TextEditorCtrl::replaceAll
- * Replaces all occurrences of [find] in the text with [replace].
- * Returns the number of occurrences replaced
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::replaceAll
+//
+// Replaces all occurrences of [find] in the text with [replace].
+// Returns the number of occurrences replaced
+// ----------------------------------------------------------------------------
 int TextEditorCtrl::replaceAll(string find, string replace, int flags)
 {
 	// Check search string
@@ -635,9 +679,11 @@ int TextEditorCtrl::replaceAll(string find, string replace, int flags)
 	return replaced;
 }
 
-/* TextEditorCtrl::checkBraceMatch
- * Checks for a brace match at the current cursor position
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::checkBraceMatch
+//
+// Checks for a brace match at the current cursor position
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::checkBraceMatch()
 {
 #ifdef __WXMAC__
@@ -685,10 +731,12 @@ void TextEditorCtrl::checkBraceMatch()
 	}
 }
 
-/* TextEditorCtrl::matchWord
- * Highlights all words in the text matching the word at the current
- * cursor position
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::matchWord
+//
+// Highlights all words in the text matching the word at the current cursor
+// position
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::matchWord()
 {
 	if (!txed_match_cursor_word || !language_)
@@ -738,9 +786,11 @@ void TextEditorCtrl::matchWord()
 		clearWordMatch();
 }
 
-/* TextEditorCtrl::clearWordMatch
- * Clears all word match highlights
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::clearWordMatch
+//
+// Clears all word match highlights
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::clearWordMatch()
 {
 	SetIndicatorCurrent(8);
@@ -748,9 +798,11 @@ void TextEditorCtrl::clearWordMatch()
 	prev_word_match_ = "";
 }
 
-/* TextEditorCtrl::showCalltip
- * Shows the calltip window underneath [position] in the text
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::showCalltip
+//
+// Shows the calltip window underneath [position] in the text
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::showCalltip(int position)
 {
 	// Setup calltip colours
@@ -777,19 +829,24 @@ void TextEditorCtrl::showCalltip(int position)
 	call_tip_->Show();
 }
 
-/* TextEditorCtrl::hideCalltip
- * Hides the calltip window
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::hideCalltip
+//
+// Hides the calltip window
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::hideCalltip()
 {
 	call_tip_->Hide();
 	CallTipCancel();
 }
 
-/* TextEditorCtrl::openCalltip
- * Opens a calltip for the function name before [pos]. Returns false
- * if the word before [pos] was not a function name, true otherwise
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::openCalltip
+//
+// Opens a calltip for the function name before [pos].
+// Returns false if the word before [pos] was not a function name, true
+// otherwise
+// ----------------------------------------------------------------------------
 bool TextEditorCtrl::openCalltip(int pos, int arg, bool dwell)
 {
 	// Don't bother if no language
@@ -829,10 +886,12 @@ bool TextEditorCtrl::openCalltip(int pos, int arg, bool dwell)
 	}
 }
 
-/* TextEditorCtrl::updateCalltip
- * Updates the current calltip, or attempts to open one if none is
- * currently showing
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::updateCalltip
+//
+// Updates the current calltip, or attempts to open one if none is currently
+// showing
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::updateCalltip()
 {
 	// Don't bother if no language
@@ -931,18 +990,22 @@ void TextEditorCtrl::updateCalltip()
 	}
 }
 
-/* TextEditorCtrl::setJumpToControl
- * Sets the wxChoice control to use for the 'Jump To' feature
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::setJumpToControl
+//
+// Sets the wxChoice control to use for the 'Jump To' feature
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::setJumpToControl(wxChoice* jump_to)
 {
 	choice_jump_to_ = jump_to;
 	choice_jump_to_->Bind(wxEVT_CHOICE, &TextEditorCtrl::onJumpToChoiceSelected, this);
 }
 
-/* TextEditorCtrl::updateJumpToList
- * Begin updating the 'Jump To' list
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::updateJumpToList
+//
+// Begin updating the 'Jump To' list
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::updateJumpToList()
 {
 	if (!choice_jump_to_)
@@ -960,10 +1023,12 @@ void TextEditorCtrl::updateJumpToList()
 	jump_to_calculator_->Run();
 }
 
-/* TextEditorCtrl::jumpToLine
- * Prompts the user for a line number and moves the cursor to the end
- * of the entered line
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::jumpToLine
+//
+// Prompts the user for a line number and moves the cursor to the end of the
+// entered line
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::jumpToLine()
 {
 	int numlines = GetNumberOfLines();
@@ -989,9 +1054,11 @@ void TextEditorCtrl::jumpToLine()
 	}
 }
 
-/* TextEditorCtrl::foldAll
- * Folds or unfolds all code folding levels, depending on [fold]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::foldAll
+//
+// Folds or unfolds all code folding levels, depending on [fold]
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::foldAll(bool fold)
 {
 #if (wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1)
@@ -1006,13 +1073,13 @@ void TextEditorCtrl::foldAll(bool fold)
 			ToggleFold(a);
 	}
 #endif
-
-	updateFolding();
 }
 
-/* TextEditorCtrl::setupFolding
- * Sets up code folding options
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::setupFolding
+//
+// Sets up code folding options
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::setupFolding()
 {
 	if (txed_fold_enable)
@@ -1030,28 +1097,11 @@ void TextEditorCtrl::setupFolding()
 	}
 }
 
-/* TextEditorCtrl::updateFolding
- * Updates code folding markers
- *******************************************************************/
-void TextEditorCtrl::updateFolding()
-{
-	/*MarkerDeleteAll(3);
-	MarkerDeleteAll(4);
-
-	for (int a = 0; a < GetNumberOfLines(); a++)
-	{
-		int level = GetFoldLevel(a);
-		if ((level & wxSTC_FOLDLEVELHEADERFLAG) > 0 && GetFoldExpanded(a) == false)
-		{
-			MarkerAdd(a, 3);
-			MarkerAdd(a, 4);
-		}
-	}*/
-}
-
-/* TextEditorCtrl::lineComment
- * Comment selected/current lines using line comments
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::lineComment
+//
+// Comment selected/current lines using line comments
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::lineComment()
 {
 	string space, empty, comment, commentSpace;
@@ -1087,9 +1137,8 @@ void TextEditorCtrl::lineComment()
 
 		if (lineText.Find(commentSpace) != wxNOT_FOUND)
 		{
-			if (line == firstLine) {
+			if (line == firstLine)
 				selectionStartOffs -= commentSpace.Len();
-			}
 			selectionEndOffs -= commentSpace.Len();
 
 			lineText.Replace(commentSpace, empty, false);
@@ -1097,9 +1146,8 @@ void TextEditorCtrl::lineComment()
 		}
 		else if (lineText.Find(comment) != wxNOT_FOUND)
 		{
-			if (line == firstLine) {
+			if (line == firstLine)
 				selectionStartOffs -= comment.Len();
-			}
 			selectionEndOffs -= comment.Len();
 
 			lineText.Replace(comment, empty, false);
@@ -1107,9 +1155,8 @@ void TextEditorCtrl::lineComment()
 		}
 		else if (lineText.Trim(true).Len() != 0)
 		{
-			if (line == firstLine) {
+			if (line == firstLine)
 				selectionStartOffs += commentSpace.Len();
-			}
 			selectionEndOffs += commentSpace.Len();
 
 			ReplaceTarget(lineText.Prepend(commentSpace));
@@ -1123,16 +1170,14 @@ void TextEditorCtrl::lineComment()
 		GotoPos(GetLineIndentPosition(GetCurrentLine()));
 	}
 	else
-	{
 		SetSelection(selectionStart + selectionStartOffs, selectionEnd + selectionEndOffs);
-	}
 }
 
-
-/* TextEditorCtrl::blockComment
- * Comment selected text using block comments
- *******************************************************************/
-
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::blockComment
+//
+// Comment selected text using block comments
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::blockComment()
 {
 	string space, commentBegin, commentEnd;
@@ -1184,13 +1229,19 @@ void TextEditorCtrl::blockComment()
 	SetSelection(selectionStart, selectionEnd);
 }
 
-/*******************************************************************
- * TEXTEDITOR CLASS EVENTS
- *******************************************************************/
 
-/* TextEditorCtrl::onKeyDown
- * Called when a key is pressed
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// TextEditorCtrl Class Events
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onKeyDown
+//
+// Called when a key is pressed
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 {
 	// Check if keypress matches any keybinds
@@ -1335,70 +1386,67 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 #endif
 	
 #ifdef __APPLE__
-	if (!handled) {
+	if (!handled)
+	{
 		const int  keyCode =   e.GetKeyCode();
 		const bool shiftDown = e.ShiftDown();
 
-		if (e.ControlDown()) {
-			if (WXK_LEFT == keyCode) {
-				if (shiftDown) {
+		if (e.ControlDown())
+		{
+			if (WXK_LEFT == keyCode)
+			{
+				if (shiftDown)
 					HomeExtend();
-				}
-				else {
+				else
 					Home();
-				}
 
 				handled = true;
 			}
-			else if (WXK_RIGHT == keyCode) {
-				if (shiftDown) {
+			else if (WXK_RIGHT == keyCode)
+			{
+				if (shiftDown)
 					LineEndExtend();
-				}
-				else {
+				else
 					LineEnd();
-				}
 
 				handled = true;
 			}
-			else if (WXK_UP == keyCode) {
-				if (shiftDown) {
+			else if (WXK_UP == keyCode)
+			{
+				if (shiftDown)
 					DocumentStartExtend();
-				}
-				else {
+				else
 					DocumentStart();
-				}
 
 				handled = true;
 			}
-			else if (WXK_DOWN == keyCode) {
-				if (shiftDown) {
+			else if (WXK_DOWN == keyCode)
+			{
+				if (shiftDown)
 					DocumentEndExtend();
-				}
-				else {
+				else
 					DocumentEnd();
-				}
 
 				handled = true;
 			}
 		}
-		else if (e.RawControlDown()) {
-			if (WXK_LEFT == keyCode) {
-				if (shiftDown) {
+		else if (e.RawControlDown())
+		{
+			if (WXK_LEFT == keyCode)
+			{
+				if (shiftDown)
 					WordLeftExtend();
-				}
-				else {
+				else
 					WordLeft();
-				}
 
 				handled = true;
 			}
-			else if (WXK_RIGHT == keyCode) {
-				if (shiftDown) {
+			else if (WXK_RIGHT == keyCode)
+			{
+				if (shiftDown)
 					WordRightExtend();
-				}
-				else {
+				else
 					WordRight();
-				}
 
 				handled = true;
 			}
@@ -1410,17 +1458,21 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 		e.Skip();
 }
 
-/* TextEditorCtrl::onKeyUp
- * Called when a key is released
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onKeyUp
+//
+// Called when a key is released
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onKeyUp(wxKeyEvent& e)
 {
 	e.Skip();
 }
 
-/* TextEditorCtrl::onCharAdded
- * Called when a character is added to the text
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onCharAdded
+//
+// Called when a character is added to the text
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onCharAdded(wxStyledTextEvent& e)
 {
 	// Update line numbers margin width
@@ -1473,10 +1525,12 @@ void TextEditorCtrl::onCharAdded(wxStyledTextEvent& e)
 	e.Skip();
 }
 
-/* TextEditorCtrl::onUpdateUI
- * Called when anything is modified in the text editor (cursor
- * position, styling, text, etc)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onUpdateUI
+//
+// Called when anything is modified in the text editor
+// (cursor position, styling, text, etc)
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onUpdateUI(wxStyledTextEvent& e)
 {
 	// Check for brace match
@@ -1516,9 +1570,11 @@ void TextEditorCtrl::onUpdateUI(wxStyledTextEvent& e)
 	e.Skip();
 }
 
-/* TextEditorCtrl::onCalltipClicked
- * Called when the current calltip is clicked on
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onCalltipClicked
+//
+// Called when the current calltip is clicked on
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onCalltipClicked(wxStyledTextEvent& e)
 {
 	// Can't do anything without function
@@ -1546,10 +1602,12 @@ void TextEditorCtrl::onCalltipClicked(wxStyledTextEvent& e)
 	}
 }
 
-/* TextEditorCtrl::onMouseDwellStart
- * Called when the mouse pointer has 'dwelt' in one position for a
- * certain amount of time
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onMouseDwellStart
+//
+// Called when the mouse pointer has 'dwelt' in one position for a certain
+// amount of time
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onMouseDwellStart(wxStyledTextEvent& e)
 {
 	if (wxTheApp->IsActive() && HasFocus() && !call_tip_->IsShown() && txed_calltips_mouse && e.GetPosition() >= 0)
@@ -1559,18 +1617,22 @@ void TextEditorCtrl::onMouseDwellStart(wxStyledTextEvent& e)
 	}
 }
 
-/* TextEditorCtrl::onMouseDwellEnd
- * Called when a mouse 'dwell' is interrupted/ended
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onMouseDwellEnd
+//
+// Called when a mouse 'dwell' is interrupted/ended
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onMouseDwellEnd(wxStyledTextEvent& e)
 {
 	if (call_tip_->IsShown() && ct_dwell_)
 		hideCalltip();
 }
 
-/* TextEditorCtrl::onMouseDown
- * Called when a mouse button is clicked
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onMouseDown
+//
+// Called when a mouse button is clicked
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onMouseDown(wxMouseEvent& e)
 {
 	e.Skip();
@@ -1629,9 +1691,11 @@ void TextEditorCtrl::onMouseDown(wxMouseEvent& e)
 		hideCalltip();
 }
 
-/* TextEditorCtrl::onFocusLoss
- * Called when the text editor loses focus
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onFocusLoss
+//
+// Called when the text editor loses focus
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onFocusLoss(wxFocusEvent& e)
 {
 	// Hide calltip+autocomplete box
@@ -1650,18 +1714,22 @@ void TextEditorCtrl::onFocusLoss(wxFocusEvent& e)
 	e.Skip();
 }
 
-/* TextEditorCtrl::onActivate
- * Called when the text editor is activated/deactivated
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onActivate
+//
+// Called when the text editor is activated/deactivated
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onActivate(wxActivateEvent& e)
 {
 	if (!e.GetActive())
 		hideCalltip();
 }
 
-/* TextEditorCtrl::onMarginClick
- * Called when a margin is clicked
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onMarginClick
+//
+// Called when a margin is clicked
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onMarginClick(wxStyledTextEvent& e)
 {
 	if (e.GetMargin() == 1)
@@ -1670,13 +1738,14 @@ void TextEditorCtrl::onMarginClick(wxStyledTextEvent& e)
 		int level = GetFoldLevel(line);
 		if ((level & wxSTC_FOLDLEVELHEADERFLAG) > 0)
 			ToggleFold(line);
-		updateFolding();
 	}
 }
 
-/* TextEditorCtrl::onJumpToCalculateComplete
- * Called when the 'Jump To' calculation thread completes
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onJumpToCalculateComplete
+//
+// Called when the 'Jump To' calculation thread completes
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onJumpToCalculateComplete(wxThreadEvent& e)
 {
 	if (!choice_jump_to_)
@@ -1712,9 +1781,11 @@ void TextEditorCtrl::onJumpToCalculateComplete(wxThreadEvent& e)
 	jump_to_calculator_ = nullptr;
 }
 
-/* TextEditorCtrl::onJumpToChoiceSelected
- * Called when the 'Jump To' dropdown is changed
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onJumpToChoiceSelected
+//
+// Called when the 'Jump To' dropdown is changed
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onJumpToChoiceSelected(wxCommandEvent& e)
 {
 	// Move to line
@@ -1727,9 +1798,11 @@ void TextEditorCtrl::onJumpToChoiceSelected(wxCommandEvent& e)
 	choice_jump_to_->SetSelection(-1);
 }
 
-/* TextEditorCtrl::onModified
- * Called when the text is modified
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onModified
+//
+// Called when the text is modified
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onModified(wxStyledTextEvent& e)
 {
 	// (Re)start update timer for jump to list if text has changed
@@ -1747,9 +1820,11 @@ void TextEditorCtrl::onModified(wxStyledTextEvent& e)
 	e.Skip();
 }
 
-/* TextEditorCtrl::onUpdateTimer
- * Called when the update timer finishes
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onUpdateTimer
+//
+// Called when the update timer finishes
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onUpdateTimer(wxTimerEvent& e)
 {
 	if (update_jump_to_)
@@ -1761,9 +1836,11 @@ void TextEditorCtrl::onUpdateTimer(wxTimerEvent& e)
 	update_word_match_ = false;
 }
 
-/* TextEditorCtrl::onStyleNeeded
- * Called when text styling is needed
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::onStyleNeeded
+//
+// Called when text styling is needed
+// ----------------------------------------------------------------------------
 void TextEditorCtrl::onStyleNeeded(wxStyledTextEvent& e)
 {
 	// Get range of lines to be updated
