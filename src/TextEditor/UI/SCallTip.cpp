@@ -1,40 +1,44 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    SCallTip.cpp
- * Description: Custom calltip implementation for the text editor
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    SCallTip.cpp
+// Description: Custom calltip implementation for the text editor
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "SCallTip.h"
 #include "TextEditor/TextLanguage.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 namespace
 {
 	wxColour wxcol_fg;
@@ -44,13 +48,18 @@ namespace
 CVAR(Bool, txed_calltips_dim_optional, true, CVAR_SAVE)
 
 
-/*******************************************************************
- * SCALLTIP CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// SCallTip Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* SCallTip::SCallTip
- * SCallTip class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// SCallTip::SCallTip
+//
+// SCallTip class constructor
+// ----------------------------------------------------------------------------
 SCallTip::SCallTip(wxWindow* parent) :
 	wxPopupWindow(parent),
 	function_(nullptr),
@@ -78,16 +87,20 @@ SCallTip::SCallTip(wxWindow* parent) :
 	Bind(wxEVT_SHOW, &SCallTip::onShow, this);
 }
 
-/* SCallTip::~SCallTip
- * SCallTip class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::~SCallTip
+//
+// SCallTip class destructor
+// ----------------------------------------------------------------------------
 SCallTip::~SCallTip()
 {
 }
 
-/* SCallTip::setFont
- * Sets the font [face] and [size]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::setFont
+//
+// Sets the font [face] and [size]
+// ----------------------------------------------------------------------------
 void SCallTip::setFont(string face, int size)
 {
 	if (face == "")
@@ -102,9 +115,11 @@ void SCallTip::setFont(string face, int size)
 	}
 }
 
-/* SCallTip::loadArgSet
- * Opens and displays the context [index] from the current function
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::loadArgSet
+//
+// Opens and displays the context [index] from the current function
+// ----------------------------------------------------------------------------
 void SCallTip::loadContext(int index)
 {
 	context_ = function_->context(index);
@@ -115,9 +130,11 @@ void SCallTip::loadContext(int index)
 	Refresh();
 }
 
-/* SCallTip::openFunction
- * Opens [function] in the call tip, with [arg] highlighted
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::openFunction
+//
+// Opens [function] in the call tip, with [arg] highlighted
+// ----------------------------------------------------------------------------
 void SCallTip::openFunction(TLFunction* function, int arg)
 {
 	// Set current function
@@ -131,9 +148,11 @@ void SCallTip::openFunction(TLFunction* function, int arg)
 	loadContext(context_current_);
 }
 
-/* SCallTip::nextArgSet
- * Open the next (cyclic) arg set in the current function
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::nextArgSet
+//
+// Open the next (cyclic) arg set in the current function
+// ----------------------------------------------------------------------------
 void SCallTip::nextArgSet()
 {
 	context_current_++;
@@ -142,9 +161,11 @@ void SCallTip::nextArgSet()
 	loadContext(context_current_);
 }
 
-/* SCallTip::prevArgSet
- * Open the previous (cyclic) arg set in the current function
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::prevArgSet
+//
+// Open the previous (cyclic) arg set in the current function
+// ----------------------------------------------------------------------------
 void SCallTip::prevArgSet()
 {
 	context_current_--;
@@ -153,9 +174,11 @@ void SCallTip::prevArgSet()
 	loadContext(context_current_);
 }
 
-/* SCallTip::updateSize
- * Recalculates the calltip text and size
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::updateSize
+//
+// Recalculates the calltip text and size
+// ----------------------------------------------------------------------------
 void SCallTip::updateSize()
 {
 	updateBuffer();
@@ -179,16 +202,24 @@ void SCallTip::updateSize()
 	Refresh();
 }
 
-/* SCallTip::drawText
- * Using [dc], draw [text] at [left,top], writing the bounds of the
- * drawn text to [bounds]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::drawText
+//
+// Using [dc], draw [text] at [left,top], writing the bounds of the drawn text
+// to [bounds]
+// ----------------------------------------------------------------------------
 int SCallTip::drawText(wxDC& dc, string text, int left, int top, wxRect* bounds)
 {
 	dc.DrawLabel(text, wxNullBitmap, wxRect(left, top, 900, 900), 0, -1, bounds);
 	return bounds->GetRight() + 1;
 }
 
+// ----------------------------------------------------------------------------
+// SCallTip::drawFunctionSpec
+//
+// Draws function 'spec' text for [context] at [left,top].
+// Returns a rect of the bounds of the drawn text
+// ----------------------------------------------------------------------------
 wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, int left, int top)
 {
 	wxRect rect{ left, top, 0, 0 };
@@ -232,6 +263,12 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	return { { rect_left, top }, rect.GetBottomRight() };
 }
 
+// ----------------------------------------------------------------------------
+// SCallTip::drawArgs
+//
+// Draws function args text for [context] at [left,top].
+// Returns a rect of the bounds of the drawn text
+// ----------------------------------------------------------------------------
 wxRect SCallTip::drawArgs(
 	wxDC& dc,
 	const TLFunction::Context& context,
@@ -304,6 +341,12 @@ wxRect SCallTip::drawArgs(
 	return { args_left, args_top, max_right - args_left, rect.GetBottom() - args_top };
 }
 
+// ----------------------------------------------------------------------------
+// SCallTip::drawFunctionContext
+//
+// Draws function text (spec+args) for [context] at [left,top].
+// Returns a rect of the bounds of the drawn text
+// ----------------------------------------------------------------------------
 wxRect SCallTip::drawFunctionContext(
 	wxDC& dc,
 	const TLFunction::Context& context,
@@ -324,6 +367,12 @@ wxRect SCallTip::drawFunctionContext(
 	};
 }
 
+// ----------------------------------------------------------------------------
+// SCallTip::drawFunctionDescription
+//
+// Draws function description text [desc] at [left,top].
+// Returns a rect of the bounds of the drawn text
+// ----------------------------------------------------------------------------
 wxRect SCallTip::drawFunctionDescription(wxDC& dc, string desc, int left, int top, int max_width)
 {
 	wxFont italic = font_.Italic();
@@ -378,10 +427,12 @@ wxRect SCallTip::drawFunctionDescription(wxDC& dc, string desc, int left, int to
 	return { left, top, max_right - left, rect.GetBottom() - top };
 }
 
-/* SCallTip::drawCallTip
- * Using [dc], draw the calltip contents at [xoff,yoff]. Returns the
- * dimensions of the drawn calltip text
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::drawCallTip
+//
+// Using [dc], draw the calltip contents at [xoff,yoff].
+// Returns the dimensions of the drawn calltip text
+// ----------------------------------------------------------------------------
 wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 {
 	wxSize ct_size;
@@ -414,10 +465,11 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		dc.SetFont(font_);
 		dc.SetTextForeground(wxcol_fg);
 
-		// Draw arg set switching stuff
 		int left = xoff;
 		int max_right = 0;
 		int bottom = yoff;
+
+		// Context switching calltip
 		if (switch_contexts_)
 		{
 			// up-filled	\xE2\x96\xB2
@@ -471,10 +523,12 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 				bottom = rect_desc.GetBottom();
 			}
 		}
+
+		// Normal calltip - show (potentially) multiple contexts
 		else
 		{
 			bool first = true;
-			auto num = std::min(function_->contexts().size(), 12u);
+			auto num = std::min<unsigned>(function_->contexts().size(), 12u);
 			for (auto a = 0u; a < num; a++)
 			{
 				auto& context = function_->contexts()[a];
@@ -507,80 +561,6 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		// Size buffer bitmap to fit
 		ct_size.SetWidth(max_right + 1);
 		ct_size.SetHeight(bottom + 1);
-
-		//// Draw function
-		//auto rect = drawFunctionContext(dc, context_, left, yoff, wxcol_faded, bold);
-
-		//// Draw overloads number
-		//if (function_->contexts().size() > 1 && !switch_contexts_)
-		//	dc.DrawLabel(
-		//		S_FMT(" (+%d)", function_->contexts().size() - 1),
-		//		wxNullBitmap,
-		//		wxRect(args_rect.GetRight(), args_rect.GetTop(), 900, 900),
-		//		0,
-		//		-1,
-		//		&rect);
-
-		//// Update max width
-		//int max_right = rect.GetRight();
-		//if (rect.GetRight() > max_right)
-		//	max_right = rect.GetRight();
-
-		//// Description
-		//string desc = context_.description;
-		//if (!desc.IsEmpty())
-		//{
-		//	wxFont italic = font_.Italic();
-		//	dc.SetFont(italic);
-		//	if (dc.GetTextExtent(desc).x > SCALLTIP_MAX_WIDTH)
-		//	{
-		//		// Description is too long, split into multiple lines
-		//		vector<string> desc_lines;
-		//		string line = desc;
-		//		wxArrayInt extents;
-		//		while (true)
-		//		{
-		//			dc.GetPartialTextExtents(line, extents);
-		//			bool split = false;
-		//			for (unsigned a = 0; a < extents.size(); a++)
-		//			{
-		//				if (extents[a] > SCALLTIP_MAX_WIDTH)
-		//				{
-		//					int eol = line.SubString(0, a).Last(' ');
-		//					desc_lines.push_back(line.SubString(0, eol));
-		//					line = line.SubString(eol + 1, line.Length());
-		//					split = true;
-		//					break;
-		//				}
-		//			}
-
-		//			if (!split)
-		//			{
-		//				desc_lines.push_back(line);
-		//				break;
-		//			}
-		//		}
-
-		//		int bottom = rect.GetBottom() + 8;
-		//		for (unsigned a = 0; a < desc_lines.size(); a++)
-		//		{
-		//			drawText(dc, desc_lines[a], 0, bottom, &rect);
-		//			bottom = rect.GetBottom();
-		//			if (rect.GetRight() > max_right)
-		//				max_right = rect.GetRight();
-		//		}
-		//	}
-		//	else
-		//	{
-		//		drawText(dc, desc, 0, rect.GetBottom() + 8, &rect);
-		//		if (rect.GetRight() > max_right)
-		//			max_right = rect.GetRight();
-		//	}
-		//}
-
-		//// Size buffer bitmap to fit
-		//ct_size.SetWidth(max_right + 1);
-		//ct_size.SetHeight(rect.GetBottom() + 1);
 	}
 	else
 	{
@@ -592,10 +572,12 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 	return ct_size;
 }
 
-/* SCallTip::updateBuffer
- * Redraws the calltip text to the buffer image, setting the buffer
- * image size to the exact dimensions of the text
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::updateBuffer
+//
+// Redraws the calltip text to the buffer image, setting the buffer image size
+// to the exact dimensions of the text
+// ----------------------------------------------------------------------------
 void SCallTip::updateBuffer()
 {
 	buffer_.SetWidth(1000);
@@ -608,13 +590,18 @@ void SCallTip::updateBuffer()
 }
 
 
-/*******************************************************************
- * SCALLTIP CLASS EVENTS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// SCallTip Class Events
+//
+// ----------------------------------------------------------------------------
 
-/* SCallTip::onPaint
- * Called when the control is to be (re)painted
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// SCallTip::onPaint
+//
+// Called when the control is to be (re)painted
+// ----------------------------------------------------------------------------
 void SCallTip::onPaint(wxPaintEvent& e)
 {
 	// Create device context
@@ -663,17 +650,21 @@ void SCallTip::onPaint(wxPaintEvent& e)
 #endif
 }
 
-/* SCallTip::onEraseBackground
- * Erase background - overridden to do nothing, to avoid flickering
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::onEraseBackground
+//
+// Erase background - overridden to do nothing, to avoid flickering
+// ----------------------------------------------------------------------------
 void SCallTip::onEraseBackground(wxEraseEvent& e)
 {
 	// Do nothing
 }
 
-/* SCallTip::onMouseMove
- * Called when the mouse pointer is moved within the control
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::onMouseMove
+//
+// Called when the mouse pointer is moved within the control
+// ----------------------------------------------------------------------------
 void SCallTip::onMouseMove(wxMouseEvent& e)
 {
 	if (rect_btn_down_.Contains(e.GetPosition()))
@@ -707,9 +698,11 @@ void SCallTip::onMouseMove(wxMouseEvent& e)
 	}
 }
 
-/* SCallTip::onMouseDown
- * Called when a mouse button is clicked within the control
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::onMouseDown
+//
+// Called when a mouse button is clicked within the control
+// ----------------------------------------------------------------------------
 void SCallTip::onMouseDown(wxMouseEvent& e)
 {
 	if (e.Button(wxMOUSE_BTN_LEFT))
@@ -721,9 +714,11 @@ void SCallTip::onMouseDown(wxMouseEvent& e)
 	}
 }
 
-/* SCallTip::onShow
- * Called when the control is shown
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SCallTip::onShow
+//
+// Called when the control is shown
+// ----------------------------------------------------------------------------
 void SCallTip::onShow(wxShowEvent& e)
 {
 	if (e.IsShown())
