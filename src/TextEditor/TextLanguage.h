@@ -21,6 +21,7 @@ public:
 		vector<Parameter>	params;
 		string				return_type;
 		string				description;
+		string				qualifiers;
 	};
 
 	TLFunction(string name = "");

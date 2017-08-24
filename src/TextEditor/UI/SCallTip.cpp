@@ -261,11 +261,19 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			rect_btn_down_.Offset(12, 8);
 		}
 
+		wxRect rect;
+
+		// Draw function qualifiers
+		if (!context_.qualifiers.empty())
+		{
+			dc.SetTextForeground(WXCOL(col_keyword_));
+			dc.DrawLabel(context_.qualifiers, wxNullBitmap, wxRect(left, yoff, 900, 900), 0, -1, &rect);
+		}
+
 		// Draw function return type
 		string ftype = context_.return_type + " ";
-		wxRect rect;
 		dc.SetTextForeground(wxcol_type);
-		dc.DrawLabel(ftype, wxNullBitmap, wxRect(left, yoff, 900, 900), 0, -1, &rect);
+		drawText(dc, ftype, rect.GetRight() + 1, rect.GetTop(), &rect);
 
 		// Draw function context (if any)
 		if (!context_.context.empty())

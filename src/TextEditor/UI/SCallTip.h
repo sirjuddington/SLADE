@@ -12,10 +12,11 @@ public:
 	~SCallTip();
 
 	void	setBackgroundColour(rgba_t col) { col_bg_ = col; }
-	void	setTextColour(rgba_t col) { col_fg_ = col_func_ = col_type_ = col; }
+	void	setTextColour(rgba_t col) { col_fg_ = col_func_ = col_type_ = col_keyword_ = col; }
 	void	setTextHighlightColour(rgba_t col) { col_fg_hl = col; }
 	void	setFunctionColour(rgba_t col) { col_func_ = col; }
 	void	setTypeColour(rgba_t col) { col_type_ = col; }
+	void	setKeywordColour(rgba_t col) { col_keyword_ = col; }
 	void	setCurrentArg(int arg) { arg_current_ = arg; updateSize(); }
 	void	enableArgSwitch(bool enable) { switch_contexts_ = enable; }
 	void	setFont(string face, int size);
@@ -33,6 +34,7 @@ private:
 	rgba_t			col_fg_hl;
 	rgba_t			col_func_;
 	rgba_t			col_type_;
+	rgba_t			col_keyword_;
 	int				arg_current_;
 	bool			switch_contexts_;
 	int				context_current_;

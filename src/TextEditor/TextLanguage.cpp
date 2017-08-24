@@ -129,7 +129,7 @@ void TLFunction::addContext(
 	const string& return_type,
 	const string& description)
 {
-	contexts_.push_back(Context{ context, {}, return_type, description });
+	contexts_.push_back(Context{ context, {}, return_type, description, "" });
 	auto& ctx = contexts_.back();
 
 	// Parse args
@@ -170,6 +170,11 @@ void TLFunction::addContext(const string& context, const ZScript::Function& func
 	auto& ctx = contexts_.back();
 
 	ctx.return_type = func.returnType();
+
+	if (func.isVirtual())
+		ctx.qualifiers += "virtual ";
+	if (func.native())
+		ctx.qualifiers += "native ";
 
 	for (auto& p : func.parameters())
 		ctx.params.push_back({ p.type, p.name, p.default_value, !p.default_value.empty() });
