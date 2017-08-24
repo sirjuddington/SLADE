@@ -1,10 +1,10 @@
 #pragma once
 
 #include "common.h"
+#include "TextEditor/TextLanguage.h"
 
 #define SCALLTIP_MAX_WIDTH 800
 
-class TLFunction;
 class SCallTip : public wxPopupWindow
 {
 public:
@@ -24,22 +24,23 @@ public:
 	void	nextArgSet();
 	void	prevArgSet();
 
-	struct arg_t
+	/*struct arg_t
 	{
 		string	type;
 		string	name;
 		bool	optional;
 		arg_t() : optional(false) {}
-	};
+	};*/
 
 private:
+	TLFunction*			function;
+	TLFunction::Context	context;
+
 	rgba_t			col_bg;
 	rgba_t			col_fg;
 	rgba_t			col_fg_hl;
 	rgba_t			col_func;
 	rgba_t			col_type;
-	TLFunction*		function;
-	vector<arg_t>	args;
 	int				arg_current;
 	bool			switch_args;
 	int				arg_set_current;
@@ -48,7 +49,6 @@ private:
 	int				btn_mouse_over;
 	wxBitmap		buffer;
 	wxFont			font;
-	string			context;
 
 	void	addArg(vector<string>& tokens);
 	void	loadArgSet(int set);

@@ -102,32 +102,32 @@ void SCallTip::setFont(string face, int size)
  *******************************************************************/
 void SCallTip::addArg(vector<string>& tokens)
 {
-	arg_t arg;
+	//arg_t arg;
 
-	// Optional
-	if (tokens[0] == "[")
-	{
-		arg.optional = true;
-		tokens.erase(tokens.begin());
-		tokens.pop_back();
-	}
+	//// Optional
+	//if (tokens[0] == "[")
+	//{
+	//	arg.optional = true;
+	//	tokens.erase(tokens.begin());
+	//	tokens.pop_back();
+	//}
 
-	if (tokens.empty())
-		return;
+	//if (tokens.empty())
+	//	return;
 
-	// (Type) and name
-	if (tokens.size() > 1)
-	{
-		arg.type = tokens[0];
-		arg.name = tokens[1];
-	}
-	else
-	{
-		arg.name = tokens[0];
-	}
+	//// (Type) and name
+	//if (tokens.size() > 1)
+	//{
+	//	arg.type = tokens[0];
+	//	arg.name = tokens[1];
+	//}
+	//else
+	//{
+	//	arg.name = tokens[0];
+	//}
 
-	args.push_back(arg);
-	tokens.clear();
+	//args.push_back(arg);
+	//tokens.clear();
 }
 
 /* SCallTip::loadArgSet
@@ -135,12 +135,12 @@ void SCallTip::addArg(vector<string>& tokens)
  *******************************************************************/
 void SCallTip::loadArgSet(int set)
 {
-	args.clear();
-	if (!function->argSet(set).args.empty())
+	/*args.clear();
+	if (!function->context(set).args.empty())
 	{
 		Tokenizer tz;
 		tz.setSpecialCharacters("[],");
-		tz.openString(function->argSet(set).args);
+		tz.openString(function->context(set).args);
 		string token = tz.getToken();
 		vector<string> tokens;
 		while (true)
@@ -162,7 +162,9 @@ void SCallTip::loadArgSet(int set)
 		}
 	}
 
-	context = function->argSet(set).context;
+	context = function->context(set).context;*/
+
+	context = function->context(set);
 
 	updateSize();
 
@@ -192,7 +194,7 @@ void SCallTip::openFunction(TLFunction* function, int arg)
 void SCallTip::nextArgSet()
 {
 	arg_set_current++;
-	if (arg_set_current >= (int)function->nArgSets())
+	if (arg_set_current >= (int)function->contexts().size())
 		arg_set_current = 0;
 	loadArgSet(arg_set_current);
 }
@@ -204,7 +206,7 @@ void SCallTip::prevArgSet()
 {
 	arg_set_current--;
 	if (arg_set_current < 0)
-		arg_set_current = function->nArgSets() - 1;
+		arg_set_current = function->contexts().size() - 1;
 	loadArgSet(arg_set_current);
 }
 
@@ -297,7 +299,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			int width = dc.GetTextExtent("X/X").x;
 			dc.SetTextForeground(WXCOL(col_fg));
 			dc.DrawLabel(
-				S_FMT("%d/%d", arg_set_current + 1, function->nArgSets()),
+				S_FMT("%d/%d", arg_set_current + 1, function->contexts().size()),
 				wxNullBitmap,
 				wxRect(rect_btn_up.GetRight() + 4, yoff, width, 900),
 				wxALIGN_CENTER_HORIZONTAL);
@@ -318,16 +320,16 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		}
 
 		// Draw function return type
-		string ftype = function->returnType() + " ";
+		string ftype = context.return_type + " ";
 		wxRect rect;
 		dc.SetTextForeground(WXCOL(col_type));
 		dc.DrawLabel(ftype, wxNullBitmap, wxRect(left, yoff, 900, 900), 0, -1, &rect);
 
 		// Draw function context (if any)
-		if (!context.empty())
+		if (!context.context.empty())
 		{
 			dc.SetTextForeground(WXCOL(col_fg));
-			drawText(dc, context + ".", rect.GetRight() + 1, rect.GetTop(), &rect);
+			drawText(dc, context.context + ".", rect.GetRight() + 1, rect.GetTop(), &rect);
 		}
 
 		// Draw function name
@@ -345,8 +347,10 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		int top = rect.GetTop();
 		int max_right = 0;
 		int args_left = left;
-		for (unsigned a = 0; a < args.size(); a++)
+		for (unsigned a = 0; a < context.params.size(); a++)
 		{
+			auto& arg = context.params[a];
+
 			// Go down to next line if current is too long
 			if (left > SCALLTIP_MAX_WIDTH)
 			{
@@ -362,29 +366,29 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			}
 
 			// Optional opening bracket
-			if (args[a].optional && !txed_calltips_dim_optional)
+			if (arg.optional && !txed_calltips_dim_optional)
 				left = drawText(dc, "[", left, top, &rect);
 
 			// Type
-			if (!args[a].type.empty())
+			if (!arg.type.empty())
 			{
 				if (a != arg_current) dc.SetTextForeground(WXCOL(col_type));
-				left = drawText(dc, args[a].type + " ", left, top, &rect);
+				left = drawText(dc, arg.type + " ", left, top, &rect);
 			}
 
 			// Name
 			if (a != arg_current)
-				dc.SetTextForeground(args[a].optional ? WXCOL(faded) : WXCOL(col_fg));	// Faded text if optional
-			left = drawText(dc, args[a].name, left, top, &rect);
+				dc.SetTextForeground(arg.optional ? WXCOL(faded) : WXCOL(col_fg));	// Faded text if optional
+			left = drawText(dc, arg.name, left, top, &rect);
 
 			// Optional closing bracket
-			if (args[a].optional && !txed_calltips_dim_optional)
+			if (arg.optional && !txed_calltips_dim_optional)
 				left = drawText(dc, "]", left, top, &rect);
 
 			// Comma (if needed)
 			dc.SetFont(font);
 			dc.SetTextForeground(WXCOL(col_fg));
-			if (a < args.size() - 1)
+			if (a < context.params.size() - 1)
 				left = drawText(dc, ", ", left, top, &rect);
 
 			// Update max width
@@ -396,9 +400,9 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		left = drawText(dc, ")", left, top, &rect);
 
 		// Draw overloads number
-		if (function->nArgSets() > 1 && !switch_args)
+		if (function->contexts().size() > 1 && !switch_args)
 			dc.DrawLabel(
-				S_FMT(" (+%d)", function->nArgSets() - 1),
+				S_FMT(" (+%d)", function->contexts().size() - 1),
 				wxNullBitmap,
 				wxRect(left, top, 900, 900),
 				0,
@@ -410,7 +414,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			max_right = rect.GetRight();
 
 		// Description
-		string desc = function->description();
+		string desc = context.description;
 		if (!desc.IsEmpty())
 		{
 			wxFont italic = font.Italic();

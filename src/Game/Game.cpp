@@ -31,13 +31,15 @@
 //
 // ----------------------------------------------------------------------------
 #include "Main.h"
-#include "Game.h"
-#include "Configuration.h"
-#include "Utility/Parser.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
-#include "App.h"
+#include "Configuration.h"
+#include "Game.h"
+#include "TextEditor/TextLanguage.h"
+#include "Utility/Parser.h"
 #include "ZScript.h"
+#include <thread>
 
 using namespace Game;
 
@@ -54,7 +56,8 @@ namespace Game
 	GameDef						game_def_unknown;
 	std::map<string, PortDef>	port_defs;
 	PortDef						port_def_unknown;
-	ZScript::Definitions		zscript;
+	ZScript::Definitions		zscript_base;
+	ZScript::Definitions		zscript_custom;
 }
 CVAR(String, game_configuration, "", CVAR_SAVE)
 CVAR(String, port_configuration, "", CVAR_SAVE)
@@ -234,10 +237,10 @@ void Game::updateCustomDefinitions()
 	// Clear out all existing custom definitions
 	config_current.clearDecorateDefs();
 	config_current.clearMapInfo();
-	zscript.clear();
+	zscript_custom.clear();
 
 	// Parse custom definitions in base resource
-	zscript.parseZScript(App::archiveManager().baseResourceArchive());
+	zscript_custom.parseZScript(App::archiveManager().baseResourceArchive());
 	config_current.parseDecorateDefs(App::archiveManager().baseResourceArchive());
 	config_current.parseMapInfo(App::archiveManager().baseResourceArchive());
 
@@ -253,7 +256,7 @@ void Game::updateCustomDefinitions()
 
 	// ZScript first
 	for (auto archive : resource_archives)
-		zscript.parseZScript(archive);
+		zscript_custom.parseZScript(archive);
 
 	// Other definitions
 	for (auto archive : resource_archives)
@@ -263,7 +266,7 @@ void Game::updateCustomDefinitions()
 	}
 
 	// Process custom definitions
-	config_current.importZScriptDefs(zscript);
+	config_current.importZScriptDefs(zscript_custom);
 	config_current.linkDoomEdNums();
 }
 
@@ -409,16 +412,27 @@ void Game::init()
 		Log::warning("An error occurred loading user special_presets.cfg");
 
 	// Load zdoom.pk3 stuff
-	ZipArchive zdoom_pk3;
-	if (wxFileExists(zdoom_pk3_path) && zdoom_pk3.open(zdoom_pk3_path))
+	if (wxFileExists(zdoom_pk3_path))
 	{
-		// ZScript
-		auto zscript_entry = zdoom_pk3.entryAtPath("zscript.txt");
-		zscript.parseZScript(zscript_entry);
+		std::thread thread([=]()
+		{
+			ZipArchive zdoom_pk3;
+			if (!zdoom_pk3.open(zdoom_pk3_path))
+				return;
 
-		// MapInfo
-		//auto mapinfo_entry = zdoom_pk3.entryAtPath("zmapinfo.txt");
-		//mapInfo().parseZMapInfo(mapinfo_entry);
+			// ZScript
+			auto zscript_entry = zdoom_pk3.entryAtPath("zscript.txt");
+			zscript_base.parseZScript(zscript_entry);
+
+			auto lang = TextLanguage::fromId("zscript");
+			if (lang)
+				lang->loadZScript(zscript_base);
+
+			// MapInfo
+			auto mapinfo_entry = zdoom_pk3.entryAtPath("zmapinfo.txt");
+			config_current.parseMapInfo(&zdoom_pk3);
+		});
+		thread.detach();
 	}
 }
 

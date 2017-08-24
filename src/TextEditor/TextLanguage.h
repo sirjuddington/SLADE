@@ -1,35 +1,48 @@
 #pragma once
 
+namespace ZScript { class Function; class Definitions; }
+
 class TLFunction
 {
 public:
-	struct ArgSet
+	struct Parameter
 	{
-		string	args;
-		string	context;
+		string	type;
+		string	name;
+		string	default_value;
+		bool	optional;
+
+		void	parse(vector<string>& tokens);
 	};
 
-	TLFunction(string name = "", string return_type = "void");
+	struct Context
+	{
+		string				context;
+		vector<Parameter>	params;
+		string				return_type;
+		string				description;
+	};
+
+	TLFunction(string name = "");
 	~TLFunction();
 
-	const string&	name() const { return name_; }
-	ArgSet			argSet(unsigned index) const;
-	const string&	description() const { return description_; }
-	const string&	returnType() const { return return_type_; }
-	unsigned		nArgSets() const { return arg_sets_.size(); }
+	const string&			name() const { return name_; }
+	const vector<Context>&	contexts() const { return contexts_; }
+	Context					context(unsigned index) const;
 
 	void	setName(string name) { this->name_ = name; }
-	void	addArgSet(string args, string context = "") { arg_sets_.push_back({ args, context }); }
-	void	setDescription(string desc) { description_ = desc; }
-
-	string		generateCallTipString(int arg_set = 0);
-	point2_t	getArgTextExtent(int arg, int arg_set = 0);
+	void	addContext(
+				const string& context,
+				const string& args,
+				const string& return_type = "void",
+				const string& description = ""
+			);
+	void	addContext(const string& context, const ZScript::Function& func);
+	void	clear() { name_.clear(); contexts_.clear(); }
 
 private:
 	string			name_;
-	vector<ArgSet>	arg_sets_;
-	string			description_;
-	string			return_type_;
+	vector<Context>	contexts_;
 };
 
 class TextLanguage
@@ -87,6 +100,7 @@ public:
 		bool replace = false,
 		string return_type = ""
 	);
+	void	loadZScript(ZScript::Definitions& defs);
 
 	string	wordList(WordType type);
 	string	functionsList();
@@ -105,6 +119,7 @@ public:
 
 	void	clearWordList(WordType type) { word_lists_[type].list.clear(); }
 	void	clearFunctions() { functions_.clear(); }
+	void	clearCustomFunctions() { functions_custom_.clear(); }
 
 	// Static functions
 	static bool				readLanguageDefinition(MemChunk& mc, string source);
@@ -144,7 +159,8 @@ private:
 	WordList	word_lists_[4];
 
 	// Functions
-	vector<TLFunction*>	functions_;
+	vector<TLFunction>	functions_;
+	vector<TLFunction>	functions_custom_;
 	bool				f_upper_;
 	bool				f_lower_;
 	bool				f_caps_;

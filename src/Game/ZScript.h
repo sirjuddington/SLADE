@@ -85,6 +85,7 @@ namespace ZScript
 		bool						isVirtual() const { return virtual_; }
 		bool						isStatic() const { return static_; }
 		bool						isAction() const { return action_; }
+		bool						isOverride() const { return override_; }
 
 		bool	parse(ParsedStatement& statement);
 		string	asString();
@@ -97,6 +98,7 @@ namespace ZScript
 		bool				virtual_	= false;
 		bool				static_		= false;
 		bool				action_		= false;
+		bool				override_	= false;
 	};
 
 	struct State
@@ -140,7 +142,10 @@ namespace ZScript
 		Class(Type type, string name = "") : Identifier{ name }, type_{ type } {}
 		virtual ~Class() {}
 
+		const vector<Function>&	functions() const { return functions_; }
+
 		bool	parse(ParsedStatement& block);
+		bool	extend(ParsedStatement& block);
 		void	toThingType(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed);
 
 	private:
@@ -154,7 +159,8 @@ namespace ZScript
 
 		vector<std::pair<string, string>>	db_properties_;
 
-		bool parseDefaults(vector<ParsedStatement>& defaults);
+		bool	parseClassBlock(vector<ParsedStatement>& block);
+		bool	parseDefaults(vector<ParsedStatement>& defaults);
 	};
 
 	class Definitions	// rename this also
@@ -162,6 +168,8 @@ namespace ZScript
 	public:
 		Definitions() {}
 		~Definitions() {}
+
+		const vector<Class>&	classes() const { return classes_; }
 
 		void	clear();
 		bool	parseZScript(ArchiveEntry* entry);

@@ -3,6 +3,7 @@
 #include "ZScript.h"
 #include "Archive/Archive.h"
 #include "Utility/Tokenizer.h"
+#include "Archive/ArchiveManager.h"
 
 namespace ZScript
 {
@@ -149,7 +150,7 @@ unsigned Function::Parameter::parse(const vector<string>& tokens, unsigned index
 bool Function::parse(ParsedStatement& statement)
 {
 	unsigned index;
-	unsigned last_qualifier = 0;
+	int last_qualifier = -1;
 	for (index = 0; index < statement.tokens.size(); index++)
 	{
 		if (S_CMPNOCASE(statement.tokens[index], "virtual"))
@@ -172,7 +173,12 @@ bool Function::parse(ParsedStatement& statement)
 			action_ = true;
 			last_qualifier = index;
 		}
-		else if (index > last_qualifier + 2 && S_CMPNOCASE(statement.tokens[index], "("))
+		else if (S_CMPNOCASE(statement.tokens[index], "override"))
+		{
+			override_ = true;
+			last_qualifier = index;
+		}
+		else if (index > last_qualifier + 2 && statement.tokens[index] == "(")
 		{
 			name_ = statement.tokens[index - 1];
 			return_type_ = statement.tokens[index - 2];
@@ -391,7 +397,104 @@ bool Class::parse(ParsedStatement& class_statement)
 			deprecated_ = true;
 	}
 
-	for (auto& statement : class_statement.block)
+	if (!parseClassBlock(class_statement.block))
+		return false;
+
+	// Set editor sprite from parsed states
+	default_properties_["sprite"] = states_.editorSprite();
+
+	// Add DB comment props to default properties
+	for (auto& i : db_properties_)
+	{
+		// Sprite
+		if (S_CMPNOCASE(i.first, "EditorSprite") || S_CMPNOCASE(i.first, "Sprite"))
+			default_properties_["sprite"] = i.second;
+
+		// Angled
+		else if (S_CMPNOCASE(i.first, "Angled"))
+			default_properties_["angled"] = true;
+		else if (S_CMPNOCASE(i.first, "NotAngled"))
+			default_properties_["angled"] = false;
+
+		// Is Decoration
+		else if (S_CMPNOCASE(i.first, "IsDecoration"))
+			default_properties_["decoration"] = true;
+
+		// Icon
+		else if (S_CMPNOCASE(i.first, "Icon"))
+			default_properties_["icon"] = i.second;
+
+		// DB2 Color
+		else if (S_CMPNOCASE(i.first, "Color"))
+			default_properties_["color"] = i.second;
+
+		// SLADE 3 Colour (overrides DB2 color)
+		// Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
+		else if (S_CMPNOCASE(i.first, "Colour"))
+			default_properties_["colour"] = i.second;
+
+		// Obsolete thing
+		else if (S_CMPNOCASE(i.first, "Obsolete"))
+			default_properties_["obsolete"] = true;
+	}
+
+	return true;
+}
+
+bool Class::extend(ParsedStatement& block)
+{
+	return parseClassBlock(block.block);
+}
+
+void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed)
+{
+	// Find existing definition
+	Game::ThingType* def = nullptr;
+
+	// Check types with ednums first
+	for (auto& type : types)
+		if (S_CMPNOCASE(name_, type.second.className()))
+		{
+			def = &type.second;
+			break;
+		}
+	if (!def)
+	{
+		// Check all parsed types
+		for (auto& type : parsed)
+			if (S_CMPNOCASE(name_, type.className()))
+			{
+				def = &type;
+				break;
+			}
+	}
+
+	// Create new type if it didn't exist
+	if (!def)
+	{
+		parsed.push_back(Game::ThingType(name_, "ZScript", name_));
+		def = &parsed.back();
+	}
+
+	// Set properties from DB comments
+	string title = name_;
+	string group = "ZScript";
+	for (auto& prop : db_properties_)
+	{
+		if (S_CMPNOCASE(prop.first, "Title"))
+			title = prop.second;
+		else if (S_CMPNOCASE(prop.first, "Group") || S_CMPNOCASE(prop.first, "Category"))
+			group = "ZScript/" + prop.second;
+	}
+	def->define(def->number(), title, group);
+
+	// Set properties from defaults section
+	def->loadProps(default_properties_);
+}
+
+bool Class::parseClassBlock(vector<ParsedStatement>& block)
+{
+	for (auto& statement : block)
 	{
 		if (statement.tokens.empty())
 			continue;
@@ -439,91 +542,7 @@ bool Class::parse(ParsedStatement& class_statement)
 			continue;
 	}
 
-	// Set editor sprite from parsed states
-	default_properties_["sprite"] = states_.editorSprite();
-
-	// Add DB comment props to default properties
-	for (auto& i : db_properties_)
-	{
-		// Sprite
-		if (S_CMPNOCASE(i.first, "EditorSprite") || S_CMPNOCASE(i.first, "Sprite"))
-			default_properties_["sprite"] = i.second;
-
-		// Angled
-		else if (S_CMPNOCASE(i.first, "Angled"))
-			default_properties_["angled"] = true;
-		else if (S_CMPNOCASE(i.first, "NotAngled"))
-			default_properties_["angled"] = false;
-
-		// Is Decoration
-		else if (S_CMPNOCASE(i.first, "IsDecoration"))
-			default_properties_["decoration"] = true;
-
-		// Icon
-		else if (S_CMPNOCASE(i.first, "Icon"))
-			default_properties_["icon"] = i.second;
-
-		// DB2 Color
-		else if (S_CMPNOCASE(i.first, "Color"))
-			default_properties_["color"] = i.second;
-
-		// SLADE 3 Colour (overrides DB2 color)
-		// Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
-		else if (S_CMPNOCASE(i.first, "Colour"))
-			default_properties_["colour"] = i.second;
-
-		// Obsolete thing
-		else if (S_CMPNOCASE(i.first, "Obsolete"))
-			default_properties_["obsolete"] = true;
-	}
-
 	return true;
-}
-
-void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed)
-{
-	// Find existing definition
-	Game::ThingType* def = nullptr;
-
-	// Check types with ednums first
-	for (auto& type : types)
-		if (S_CMPNOCASE(name_, type.second.className()))
-		{
-			def = &type.second;
-			break;
-		}
-	if (!def)
-	{
-		// Check all parsed types
-		for (auto& type : parsed)
-			if (S_CMPNOCASE(name_, type.className()))
-			{
-				def = &type;
-				break;
-			}
-	}
-
-	// Create new type if it didn't exist
-	if (!def)
-	{
-		parsed.push_back(Game::ThingType(name_, "ZScript", name_));
-		def = &parsed.back();
-	}
-
-	// Set properties from DB comments
-	string title = name_;
-	string group = "ZScript";
-	for (auto& prop : db_properties_)
-	{
-		if (S_CMPNOCASE(prop.first, "Title"))
-			title = prop.second;
-		else if (S_CMPNOCASE(prop.first, "Group") || S_CMPNOCASE(prop.first, "Category"))
-			group = "ZScript/" + prop.second;
-	}
-	def->define(def->number(), title, group);
-
-	// Set properties from defaults section
-	def->loadProps(default_properties_);
 }
 
 bool Class::parseDefaults(vector<ParsedStatement>& defaults)
@@ -640,8 +659,11 @@ void Definitions::clear()
 bool Definitions::parseZScript(ArchiveEntry* entry)
 {
 	// Parse into tree of expressions and blocks
+	auto start = App::runTimer();
 	vector<ParsedStatement> parsed;
 	parseBlocks(entry, parsed);
+	Log::debug(2, S_FMT("parseBlocks: %dms", App::runTimer() - start));
+	start = App::runTimer();
 
 	for (auto& block : parsed)
 	{
@@ -651,6 +673,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 		if (dump_parsed_blocks)
 			block.dump();
 
+		// Class
 		if (S_CMPNOCASE(block.tokens[0], "class"))
 		{
 			Class nc(Class::Type::Class);
@@ -661,6 +684,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 			classes_.push_back(nc);
 		}
 
+		// Struct
 		else if (S_CMPNOCASE(block.tokens[0], "struct"))
 		{
 			Class nc(Class::Type::Struct);
@@ -670,7 +694,35 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 
 			classes_.push_back(nc);
 		}
+
+		// Extend Class
+		else if (block.tokens.size() > 2 &&
+				S_CMPNOCASE(block.tokens[0], "extend") &&
+				S_CMPNOCASE(block.tokens[1], "class"))
+		{
+			bool found = false;
+			for (auto& c : classes_)
+				if (S_CMPNOCASE(c.name(), block.tokens[2]))
+				{
+					found = true;
+					c.extend(block);
+					break;
+				}
+		}
+
+		// Enum
+		else if (S_CMPNOCASE(block.tokens[0], "enum"))
+		{
+			Enumerator e;
+
+			if (!e.parse(block))
+				return false;
+
+			enumerators_.push_back(e);
+		}
 	}
+
+	Log::debug(2, S_FMT("ZScript: %dms", App::runTimer() - start));
 
 	return true;
 }

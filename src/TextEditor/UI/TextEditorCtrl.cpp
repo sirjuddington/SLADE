@@ -806,9 +806,9 @@ bool TextEditorCtrl::openCalltip(int pos, int arg, bool dwell)
 	TLFunction* func = language_->function(word);
 
 	// Show calltip if it's a function
-	if (func && func->nArgSets() > 0)
+	if (func && func->contexts().size() > 0)
 	{
-		call_tip_->enableArgSwitch(!dwell && func->nArgSets() > 1);
+		call_tip_->enableArgSwitch(!dwell && func->contexts().size() > 1);
 		call_tip_->openFunction(func, arg);
 		showCalltip(dwell ? pos : end + 1);
 
@@ -1315,7 +1315,7 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 	}
 
 	// Check for up/down keys while calltip with multiple arg sets is open
-	if (call_tip_->IsShown() && ct_function_ && ct_function_->nArgSets() > 1 && !ct_dwell_)
+	if (call_tip_->IsShown() && ct_function_ && ct_function_->contexts().size() > 1 && !ct_dwell_)
 	{
 		if (e.GetKeyCode() == WXK_UP)
 		{
@@ -1537,7 +1537,7 @@ void TextEditorCtrl::onCalltipClicked(wxStyledTextEvent& e)
 	// Argset down
 	if (e.GetPosition() == 2)
 	{
-		if ((unsigned)ct_argset_ < ct_function_->nArgSets() - 1)
+		if ((unsigned)ct_argset_ < ct_function_->contexts().size() - 1)
 		{
 			ct_argset_++;
 			updateCalltip();
