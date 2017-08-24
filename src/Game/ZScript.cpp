@@ -92,6 +92,22 @@ string parseValue(const vector<string>& tokens, unsigned& index)
 	return value;
 }
 
+bool checkDeprecated(const vector<string>& tokens, unsigned index, string& version)
+{
+	if (index + 3 >= tokens.size())
+		return false;
+
+	if (S_CMPNOCASE(tokens[index], "deprecated") &&
+		tokens[index + 1] == "(" &&
+		tokens[index + 3] == ")")
+	{
+		version = tokens[index + 2];
+		return true;
+	}
+
+	return false;
+}
+
 }
 
 bool Enumerator::parse(ParsedStatement& statement)
@@ -192,6 +208,8 @@ bool Function::parse(ParsedStatement& statement)
 			return_type_ = statement.tokens[index - 2];
 			break;
 		}
+		else if (checkDeprecated(statement.tokens, index, deprecated_))
+			index += 3;
 	}
 
 	if (name_.empty() || return_type_.empty())
@@ -224,8 +242,8 @@ bool Function::parse(ParsedStatement& statement)
 string Function::asString()
 {
 	string str;
-	if (deprecated_)
-		str += "deprecated ";
+	if (!deprecated_.empty())
+		str += S_FMT("deprecated v%s ", CHR(deprecated_));
 	if (static_)
 		str += "static ";
 	if (native_)
@@ -397,12 +415,17 @@ bool Class::parse(ParsedStatement& class_statement)
 
 	for (unsigned a = 0; a < class_statement.tokens.size(); a++)
 	{
+		// Inherits
 		if (class_statement.tokens[a] == ":" && a < class_statement.tokens.size() - 1)
 			inherits_class_ = class_statement.tokens[a + 1];
+
+		// Native
 		else if (S_CMPNOCASE(class_statement.tokens[a], "native"))
 			native_ = true;
-		else if (S_CMPNOCASE(class_statement.tokens[a], "deprecated"))
-			deprecated_ = true;
+
+		// Deprecated
+		else if (checkDeprecated(class_statement.tokens, a, deprecated_))
+			a += 3;
 	}
 
 	if (!parseClassBlock(class_statement.block))

@@ -40,17 +40,17 @@ namespace ZScript
 	class Identifier	// rename this
 	{
 	public:
-		Identifier(string name = "") : name_{ name }, native_{ false }, deprecated_{ false } {}
+		Identifier(string name = "") : name_{ name }, native_{ false } {}
 		virtual ~Identifier() {}
 
 		string	name() const { return name_; }
 		bool	native() const { return native_; }
-		bool	deprecated() const { return deprecated_; }
+		string	deprecated() const { return deprecated_; }
 
 	protected:
 		string	name_;
 		bool	native_		= false;
-		bool	deprecated_	= false;
+		string	deprecated_;
 	};
 
 	class Variable : public Identifier
