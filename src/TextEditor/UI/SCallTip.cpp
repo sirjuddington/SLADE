@@ -35,6 +35,12 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
+namespace
+{
+	wxColour wxcol_fg;
+	wxColour wxcol_fg_hl;
+	wxColour wxcol_type;
+}
 CVAR(Bool, txed_calltips_dim_optional, true, CVAR_SAVE)
 
 
@@ -183,6 +189,175 @@ int SCallTip::drawText(wxDC& dc, string text, int left, int top, wxRect* bounds)
 	return bounds->GetRight() + 1;
 }
 
+wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, int left, int top)
+{
+	wxRect rect;
+
+	// Draw function qualifiers
+	if (!context.qualifiers.empty())
+	{
+		dc.SetTextForeground(WXCOL(col_keyword_));
+		dc.DrawLabel(context.qualifiers, wxNullBitmap, wxRect(left, top, 900, 900), 0, -1, &rect);
+	}
+
+	// Draw function return type
+	string ftype = context.return_type + " ";
+	dc.SetTextForeground(wxcol_type);
+	drawText(dc, ftype, rect.GetRight() + 1, rect.GetTop(), &rect);
+
+	// Draw function context (if any)
+	if (!context.context.empty())
+	{
+		dc.SetTextForeground(wxcol_fg);
+		drawText(dc, context.context + ".", rect.GetRight() + 1, rect.GetTop(), &rect);
+	}
+
+	// Draw function name
+	string fname = function_->name();
+	dc.SetTextForeground(WXCOL(col_func_));
+	left = drawText(dc, fname, rect.GetRight() + 1, rect.GetTop(), &rect);
+
+	// Draw opening bracket
+	dc.SetTextForeground(wxcol_fg);
+	left = drawText(dc, "(", left, rect.GetTop(), &rect);
+
+	return rect;
+}
+
+wxRect SCallTip::drawArgs(wxDC& dc, const TLFunction::Context& context, int left, int top, wxColour& col_faded, wxFont& bold)
+{
+	wxRect rect;
+
+	int max_right = 0;
+	int args_left = left;
+	int args_top = top;
+	for (unsigned a = 0; a < context.params.size(); a++)
+	{
+		auto& arg = context.params[a];
+
+		// Go down to next line if current is too long
+		if (left > SCALLTIP_MAX_WIDTH)
+		{
+			left = args_left;
+			top = rect.GetBottom() + 2;
+		}
+
+		// Set highlight colour if current arg
+		if (a == arg_current_)
+		{
+			dc.SetTextForeground(wxcol_fg_hl);
+			dc.SetFont(bold);
+		}
+
+		// Optional opening bracket
+		if (arg.optional && !txed_calltips_dim_optional)
+			left = drawText(dc, "[", left, top, &rect);
+
+		// Type
+		if (!arg.type.empty())
+		{
+			if (a != arg_current_) dc.SetTextForeground(wxcol_type);
+			left = drawText(dc, arg.type + " ", left, top, &rect);
+		}
+
+		// Name
+		if (a != arg_current_)
+			dc.SetTextForeground(arg.optional ? col_faded : wxcol_fg);	// Faded text if optional
+		left = drawText(dc, arg.name, left, top, &rect);
+
+		// Default value
+		if (!arg.default_value.empty())
+			left = drawText(dc, S_FMT(" = %s", CHR(arg.default_value)), left, top, &rect);
+
+		// Optional closing bracket
+		if (arg.optional && !txed_calltips_dim_optional)
+			left = drawText(dc, "]", left, top, &rect);
+
+		// Comma (if needed)
+		dc.SetFont(font_);
+		dc.SetTextForeground(wxcol_fg);
+		if (a < context.params.size() - 1)
+			left = drawText(dc, ", ", left, top, &rect);
+
+		// Update max width
+		max_right = std::max(max_right, rect.GetRight());
+	}
+	
+	// Draw closing bracket
+	drawText(dc, ")", left, top, &rect);
+	max_right = std::max(max_right, rect.GetRight());
+
+	return { args_left, args_top, max_right - args_left, rect.GetBottom() - args_top };
+}
+
+wxRect SCallTip::drawFunctionContext(
+	wxDC& dc,
+	const TLFunction::Context& context,
+	int left,
+	int top,
+	wxColour& col_faded,
+	wxFont& bold)
+{
+	auto rect_func = drawFunctionSpec(dc, context, left, top);
+	auto rect_args = drawArgs(dc, context, rect_func.GetRight() + 1, top, col_faded, bold);
+
+	return wxRect(rect_func.GetTopLeft(), rect_args.GetBottomRight());
+}
+
+wxRect SCallTip::drawFunctionDescription(wxDC& dc, string desc, int left, int top, int max_width)
+{
+	wxFont italic = font_.Italic();
+	wxRect rect(left, top, 0, 0);
+	dc.SetFont(italic);
+	int max_right = 0;
+	if (dc.GetTextExtent(desc).x > SCALLTIP_MAX_WIDTH)
+	{
+		// Description is too long, split into multiple lines
+		vector<string> desc_lines;
+		string line = desc;
+		wxArrayInt extents;
+		while (true)
+		{
+			dc.GetPartialTextExtents(line, extents);
+			bool split = false;
+			for (unsigned a = 0; a < extents.size(); a++)
+			{
+				if (extents[a] > SCALLTIP_MAX_WIDTH)
+				{
+					int eol = line.SubString(0, a).Last(' ');
+					desc_lines.push_back(line.SubString(0, eol));
+					line = line.SubString(eol + 1, line.Length());
+					split = true;
+					break;
+				}
+			}
+
+			if (!split)
+			{
+				desc_lines.push_back(line);
+				break;
+			}
+		}
+
+		int bottom = rect.GetBottom() + 8;
+		for (unsigned a = 0; a < desc_lines.size(); a++)
+		{
+			drawText(dc, desc_lines[a], 0, bottom, &rect);
+			bottom = rect.GetBottom();
+			if (rect.GetRight() > max_right)
+				max_right = rect.GetRight();
+		}
+	}
+	else
+	{
+		drawText(dc, desc, 0, rect.GetBottom() + 8, &rect);
+		if (rect.GetRight() > max_right)
+			max_right = rect.GetRight();
+	}
+
+	return { left, top, max_right - left, rect.GetBottom() - top };
+}
+
 /* SCallTip::drawCallTip
  * Using [dc], draw the calltip contents at [xoff,yoff]. Returns the
  * dimensions of the drawn calltip text
@@ -209,9 +384,10 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 	dc.DrawRectangle(0, 0, 1000, 1000);
 
 	// Wx Colours (to avoid creating them multiple times)
-	auto wxcol_fg = WXCOL(col_fg_);
-	auto wxcol_fg_hl = WXCOL(col_fg_hl);
-	auto wxcol_type = WXCOL(col_type_);
+	wxcol_fg = WXCOL(col_fg_);
+	wxcol_fg_hl = WXCOL(col_fg_hl);
+	wxcol_type = WXCOL(col_type_);
+	auto wxcol_faded = WXCOL(faded);
 
 	if (function_)
 	{
@@ -220,6 +396,8 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 
 		// Draw arg set switching stuff
 		int left = xoff;
+		int max_right = 0;
+		int bottom = yoff;
 		if (switch_contexts_)
 		{
 			// up-filled	\xE2\x96\xB2
@@ -259,167 +437,109 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			left = rect_btn_down_.GetRight() + 8;
 			rect_btn_up_.Offset(12, 8);
 			rect_btn_down_.Offset(12, 8);
-		}
 
-		wxRect rect;
-
-		// Draw function qualifiers
-		if (!context_.qualifiers.empty())
-		{
-			dc.SetTextForeground(WXCOL(col_keyword_));
-			dc.DrawLabel(context_.qualifiers, wxNullBitmap, wxRect(left, yoff, 900, 900), 0, -1, &rect);
-		}
-
-		// Draw function return type
-		string ftype = context_.return_type + " ";
-		dc.SetTextForeground(wxcol_type);
-		drawText(dc, ftype, rect.GetRight() + 1, rect.GetTop(), &rect);
-
-		// Draw function context (if any)
-		if (!context_.context.empty())
-		{
-			dc.SetTextForeground(wxcol_fg);
-			drawText(dc, context_.context + ".", rect.GetRight() + 1, rect.GetTop(), &rect);
-		}
-
-		// Draw function name
-		string fname = function_->name();
-		dc.SetTextForeground(WXCOL(col_func_));
-		left = drawText(dc, fname, rect.GetRight() + 1, rect.GetTop(), &rect);
-
-		// Draw opening bracket
-		dc.SetTextForeground(wxcol_fg);
-		left = drawText(dc, "(", left, rect.GetTop(), &rect);
-
-		// Draw args
-		int top = rect.GetTop();
-		int max_right = 0;
-		int args_left = left;
-		for (unsigned a = 0; a < context_.params.size(); a++)
-		{
-			auto& arg = context_.params[a];
-
-			// Go down to next line if current is too long
-			if (left > SCALLTIP_MAX_WIDTH)
-			{
-				left = args_left;
-				top = rect.GetBottom() + 2;
-			}
-
-			// Set highlight colour if current arg
-			if (a == arg_current_)
-			{
-				dc.SetTextForeground(wxcol_fg_hl);
-				dc.SetFont(bold);
-			}
-
-			// Optional opening bracket
-			if (arg.optional && !txed_calltips_dim_optional)
-				left = drawText(dc, "[", left, top, &rect);
-
-			// Type
-			if (!arg.type.empty())
-			{
-				if (a != arg_current_) dc.SetTextForeground(wxcol_type);
-				left = drawText(dc, arg.type + " ", left, top, &rect);
-			}
-
-			// Name
-			if (a != arg_current_)
-				dc.SetTextForeground(arg.optional ? WXCOL(faded) : wxcol_fg);	// Faded text if optional
-			left = drawText(dc, arg.name, left, top, &rect);
-
-			// Default value
-			if (!arg.default_value.empty())
-				left = drawText(dc, S_FMT(" = %s", CHR(arg.default_value)), left, top, &rect);
-
-			// Optional closing bracket
-			if (arg.optional && !txed_calltips_dim_optional)
-				left = drawText(dc, "]", left, top, &rect);
-
-			// Comma (if needed)
-			dc.SetFont(font_);
-			dc.SetTextForeground(wxcol_fg);
-			if (a < context_.params.size() - 1)
-				left = drawText(dc, ", ", left, top, &rect);
-
-			// Update max width
-			if (rect.GetRight() > max_right)
-				max_right = rect.GetRight();
-		}
-
-		// Draw closing bracket
-		left = drawText(dc, ")", left, top, &rect);
-
-		// Draw overloads number
-		if (function_->contexts().size() > 1 && !switch_contexts_)
-			dc.DrawLabel(
-				S_FMT(" (+%d)", function_->contexts().size() - 1),
-				wxNullBitmap,
-				wxRect(left, top, 900, 900),
-				0,
-				-1,
-				&rect);
-
-		// Update max width
-		if (rect.GetRight() > max_right)
+			// Draw function (current context)
+			auto rect = drawFunctionContext(dc, context_, left, yoff, wxcol_faded, bold);
 			max_right = rect.GetRight();
+			bottom = rect.GetBottom();
 
-		// Description
-		string desc = context_.description;
-		if (!desc.IsEmpty())
-		{
-			wxFont italic = font_.Italic();
-			dc.SetFont(italic);
-			if (dc.GetTextExtent(desc).x > SCALLTIP_MAX_WIDTH)
+			// Draw function description (if any)
+			if (!context_.description.empty())
 			{
-				// Description is too long, split into multiple lines
-				vector<string> desc_lines;
-				string line = desc;
-				wxArrayInt extents;
-				while (true)
-				{
-					dc.GetPartialTextExtents(line, extents);
-					bool split = false;
-					for (unsigned a = 0; a < extents.size(); a++)
-					{
-						if (extents[a] > SCALLTIP_MAX_WIDTH)
-						{
-							int eol = line.SubString(0, a).Last(' ');
-							desc_lines.push_back(line.SubString(0, eol));
-							line = line.SubString(eol + 1, line.Length());
-							split = true;
-							break;
-						}
-					}
-
-					if (!split)
-					{
-						desc_lines.push_back(line);
-						break;
-					}
-				}
-
-				int bottom = rect.GetBottom() + 8;
-				for (unsigned a = 0; a < desc_lines.size(); a++)
-				{
-					drawText(dc, desc_lines[a], 0, bottom, &rect);
-					bottom = rect.GetBottom();
-					if (rect.GetRight() > max_right)
-						max_right = rect.GetRight();
-				}
+				auto rect_desc = drawFunctionDescription(dc, context_.description, left, rect.GetBottom() + 8, 0);
+				max_right = std::max(max_right, rect_desc.GetRight());
+				bottom = rect_desc.GetBottom();
 			}
-			else
+		}
+		else
+		{
+			bool first = true;
+			for (auto& context : function_->contexts())
 			{
-				drawText(dc, desc, 0, rect.GetBottom() + 8, &rect);
-				if (rect.GetRight() > max_right)
-					max_right = rect.GetRight();
+				auto rect = drawFunctionContext(dc, context, xoff, bottom + (first ? 0 : 5), wxcol_faded, bold);
+				bottom = rect.GetBottom() + 1;
+				max_right = std::max(max_right, rect.GetRight());
+				first = false;
 			}
 		}
 
 		// Size buffer bitmap to fit
 		ct_size.SetWidth(max_right + 1);
-		ct_size.SetHeight(rect.GetBottom() + 1);
+		ct_size.SetHeight(bottom + 1);
+
+		//// Draw function
+		//auto rect = drawFunctionContext(dc, context_, left, yoff, wxcol_faded, bold);
+
+		//// Draw overloads number
+		//if (function_->contexts().size() > 1 && !switch_contexts_)
+		//	dc.DrawLabel(
+		//		S_FMT(" (+%d)", function_->contexts().size() - 1),
+		//		wxNullBitmap,
+		//		wxRect(args_rect.GetRight(), args_rect.GetTop(), 900, 900),
+		//		0,
+		//		-1,
+		//		&rect);
+
+		//// Update max width
+		//int max_right = rect.GetRight();
+		//if (rect.GetRight() > max_right)
+		//	max_right = rect.GetRight();
+
+		//// Description
+		//string desc = context_.description;
+		//if (!desc.IsEmpty())
+		//{
+		//	wxFont italic = font_.Italic();
+		//	dc.SetFont(italic);
+		//	if (dc.GetTextExtent(desc).x > SCALLTIP_MAX_WIDTH)
+		//	{
+		//		// Description is too long, split into multiple lines
+		//		vector<string> desc_lines;
+		//		string line = desc;
+		//		wxArrayInt extents;
+		//		while (true)
+		//		{
+		//			dc.GetPartialTextExtents(line, extents);
+		//			bool split = false;
+		//			for (unsigned a = 0; a < extents.size(); a++)
+		//			{
+		//				if (extents[a] > SCALLTIP_MAX_WIDTH)
+		//				{
+		//					int eol = line.SubString(0, a).Last(' ');
+		//					desc_lines.push_back(line.SubString(0, eol));
+		//					line = line.SubString(eol + 1, line.Length());
+		//					split = true;
+		//					break;
+		//				}
+		//			}
+
+		//			if (!split)
+		//			{
+		//				desc_lines.push_back(line);
+		//				break;
+		//			}
+		//		}
+
+		//		int bottom = rect.GetBottom() + 8;
+		//		for (unsigned a = 0; a < desc_lines.size(); a++)
+		//		{
+		//			drawText(dc, desc_lines[a], 0, bottom, &rect);
+		//			bottom = rect.GetBottom();
+		//			if (rect.GetRight() > max_right)
+		//				max_right = rect.GetRight();
+		//		}
+		//	}
+		//	else
+		//	{
+		//		drawText(dc, desc, 0, rect.GetBottom() + 8, &rect);
+		//		if (rect.GetRight() > max_right)
+		//			max_right = rect.GetRight();
+		//	}
+		//}
+
+		//// Size buffer bitmap to fit
+		//ct_size.SetWidth(max_right + 1);
+		//ct_size.SetHeight(rect.GetBottom() + 1);
 	}
 	else
 	{

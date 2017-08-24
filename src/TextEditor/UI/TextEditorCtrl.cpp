@@ -765,7 +765,7 @@ void TextEditorCtrl::showCalltip(int position)
 		call_tip_->setKeywordColour(ss_current->getStyle("keyword")->getForeground());
 	}
 	if (txed_calltips_use_font)
-		call_tip_->setFont(ss_current->getDefaultFontFace(), ss_current->getDefaultFontSize());
+		call_tip_->setFont(ss_current->getDefaultFontFace(), ss_current->getDefaultFontSize() * 0.9);
 	else
 		call_tip_->setFont("", 0);
 

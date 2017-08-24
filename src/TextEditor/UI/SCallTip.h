@@ -48,6 +48,17 @@ private:
 	void	updateSize();
 
 	int		drawText(wxDC& dc, string text, int left, int top, wxRect* bounds);
+	wxRect	drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, int left, int top);
+	wxRect	drawArgs(wxDC& dc, const TLFunction::Context& context, int left, int top, wxColour& col_faded, wxFont& bold);
+	wxRect	drawFunctionContext(
+				wxDC& dc,
+				const TLFunction::Context& context,
+				int left,
+				int top,
+				wxColour& col_faded,
+				wxFont& bold
+			);
+	wxRect	drawFunctionDescription(wxDC& dc, string desc, int left, int top, int max_width);
 	wxSize	drawCallTip(wxDC& dc, int xoff = 0, int yoff = 0);
 	void	updateBuffer();
 
