@@ -11,47 +11,38 @@ public:
 	SCallTip(wxWindow* parent);
 	~SCallTip();
 
-	void	setBackgroundColour(rgba_t col) { col_bg = col; }
-	void	setTextColour(rgba_t col) { col_fg = col_func = col_type = col; }
+	void	setBackgroundColour(rgba_t col) { col_bg_ = col; }
+	void	setTextColour(rgba_t col) { col_fg_ = col_func_ = col_type_ = col; }
 	void	setTextHighlightColour(rgba_t col) { col_fg_hl = col; }
-	void	setFunctionColour(rgba_t col) { col_func = col; }
-	void	setTypeColour(rgba_t col) { col_type = col; }
-	void	setCurrentArg(int arg) { arg_current = arg; updateSize(); }
-	void	enableArgSwitch(bool enable) { switch_args = enable; }
+	void	setFunctionColour(rgba_t col) { col_func_ = col; }
+	void	setTypeColour(rgba_t col) { col_type_ = col; }
+	void	setCurrentArg(int arg) { arg_current_ = arg; updateSize(); }
+	void	enableArgSwitch(bool enable) { switch_contexts_ = enable; }
 	void	setFont(string face, int size);
 
 	void	openFunction(TLFunction* function, int arg = -1);
 	void	nextArgSet();
 	void	prevArgSet();
 
-	/*struct arg_t
-	{
-		string	type;
-		string	name;
-		bool	optional;
-		arg_t() : optional(false) {}
-	};*/
-
 private:
-	TLFunction*			function;
-	TLFunction::Context	context;
+	TLFunction*			function_;
+	TLFunction::Context	context_;
 
-	rgba_t			col_bg;
-	rgba_t			col_fg;
+	rgba_t			col_bg_;
+	rgba_t			col_fg_;
 	rgba_t			col_fg_hl;
-	rgba_t			col_func;
-	rgba_t			col_type;
-	int				arg_current;
-	bool			switch_args;
-	int				arg_set_current;
-	wxRect			rect_btn_up;
-	wxRect			rect_btn_down;
-	int				btn_mouse_over;
-	wxBitmap		buffer;
-	wxFont			font;
+	rgba_t			col_func_;
+	rgba_t			col_type_;
+	int				arg_current_;
+	bool			switch_contexts_;
+	int				context_current_;
+	wxRect			rect_btn_up_;
+	wxRect			rect_btn_down_;
+	int				btn_mouse_over_;
+	wxBitmap		buffer_;
+	wxFont			font_;
 
-	void	addArg(vector<string>& tokens);
-	void	loadArgSet(int set);
+	void	loadContext(int index);
 	void	updateSize();
 
 	int		drawText(wxDC& dc, string text, int left, int top, wxRect* bounds);

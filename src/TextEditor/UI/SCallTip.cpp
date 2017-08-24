@@ -30,7 +30,6 @@
 #include "Main.h"
 #include "SCallTip.h"
 #include "TextEditor/TextLanguage.h"
-#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -46,20 +45,20 @@ CVAR(Bool, txed_calltips_dim_optional, true, CVAR_SAVE)
 /* SCallTip::SCallTip
  * SCallTip class constructor
  *******************************************************************/
-SCallTip::SCallTip(wxWindow* parent)
-	: wxPopupWindow(parent),
-	col_bg(240, 240, 240),
-	col_fg(240, 240, 240),
-	function(NULL),
-	arg_current(-1),
-	switch_args(false),
-	btn_mouse_over(0),
-	buffer(1000, 1000, 32)
+SCallTip::SCallTip(wxWindow* parent) :
+	wxPopupWindow(parent),
+	function_(nullptr),
+	col_bg_(240, 240, 240),
+	col_fg_(240, 240, 240),
+	arg_current_(-1),
+	switch_contexts_(false),
+	btn_mouse_over_(0),
+	buffer_(1000, 1000, 32)
 {
-	font = GetFont();
+	font_ = GetFont();
 
 	Show(false);
-
+	
 #ifndef __WXOSX__
 	SetDoubleBuffered(true);
 #endif // !__WXOSX__
@@ -87,84 +86,22 @@ void SCallTip::setFont(string face, int size)
 {
 	if (face == "")
 	{
-		font.SetFaceName(GetFont().GetFaceName());
-		font.SetPointSize(GetFont().GetPointSize());
+		font_.SetFaceName(GetFont().GetFaceName());
+		font_.SetPointSize(GetFont().GetPointSize());
 	}
 	else
 	{
-		font.SetFaceName(face);
-		font.SetPointSize(size);
+		font_.SetFaceName(face);
+		font_.SetPointSize(size);
 	}
-}
-
-/* SCallTip::addArg
- * Adds a function argument, defined in [tokens]
- *******************************************************************/
-void SCallTip::addArg(vector<string>& tokens)
-{
-	//arg_t arg;
-
-	//// Optional
-	//if (tokens[0] == "[")
-	//{
-	//	arg.optional = true;
-	//	tokens.erase(tokens.begin());
-	//	tokens.pop_back();
-	//}
-
-	//if (tokens.empty())
-	//	return;
-
-	//// (Type) and name
-	//if (tokens.size() > 1)
-	//{
-	//	arg.type = tokens[0];
-	//	arg.name = tokens[1];
-	//}
-	//else
-	//{
-	//	arg.name = tokens[0];
-	//}
-
-	//args.push_back(arg);
-	//tokens.clear();
 }
 
 /* SCallTip::loadArgSet
- * Opens and displays the arg set [set] from the current function
+ * Opens and displays the context [index] from the current function
  *******************************************************************/
-void SCallTip::loadArgSet(int set)
+void SCallTip::loadContext(int index)
 {
-	/*args.clear();
-	if (!function->context(set).args.empty())
-	{
-		Tokenizer tz;
-		tz.setSpecialCharacters("[],");
-		tz.openString(function->context(set).args);
-		string token = tz.getToken();
-		vector<string> tokens;
-		while (true)
-		{
-			tokens.push_back(token);
-
-			string next = tz.peekToken();
-			if (next == "," || next == "")
-			{
-				addArg(tokens);
-				tokens.clear();
-				tz.getToken();
-			}
-
-			if (next == "")
-				break;
-
-			token = tz.getToken();
-		}
-	}
-
-	context = function->context(set).context;*/
-
-	context = function->context(set);
+	context_ = function_->context(index);
 
 	updateSize();
 
@@ -178,14 +115,14 @@ void SCallTip::loadArgSet(int set)
 void SCallTip::openFunction(TLFunction* function, int arg)
 {
 	// Set current function
-	this->function = function;
+	function_ = function;
 	if (!function)
 		return;
 
 	// Init with first arg set
-	arg_set_current = 0;
-	arg_current = arg;
-	loadArgSet(arg_set_current);
+	context_current_ = 0;
+	arg_current_ = arg;
+	loadContext(context_current_);
 }
 
 /* SCallTip::nextArgSet
@@ -193,10 +130,10 @@ void SCallTip::openFunction(TLFunction* function, int arg)
  *******************************************************************/
 void SCallTip::nextArgSet()
 {
-	arg_set_current++;
-	if (arg_set_current >= (int)function->contexts().size())
-		arg_set_current = 0;
-	loadArgSet(arg_set_current);
+	context_current_++;
+	if (context_current_ >= (int)function_->contexts().size())
+		context_current_ = 0;
+	loadContext(context_current_);
 }
 
 /* SCallTip::prevArgSet
@@ -204,10 +141,10 @@ void SCallTip::nextArgSet()
  *******************************************************************/
 void SCallTip::prevArgSet()
 {
-	arg_set_current--;
-	if (arg_set_current < 0)
-		arg_set_current = function->contexts().size() - 1;
-	loadArgSet(arg_set_current);
+	context_current_--;
+	if (context_current_ < 0)
+		context_current_ = function_->contexts().size() - 1;
+	loadContext(context_current_);
 }
 
 /* SCallTip::updateSize
@@ -216,7 +153,7 @@ void SCallTip::prevArgSet()
 void SCallTip::updateSize()
 {
 	updateBuffer();
-	SetSize(buffer.GetWidth() + 24, buffer.GetHeight() + 16);
+	SetSize(buffer_.GetWidth() + 24, buffer_.GetHeight() + 16);
 
 	// Get screen bounds and window bounds
 	int index = wxDisplay::GetFromWindow(this->GetParent());
@@ -253,32 +190,37 @@ int SCallTip::drawText(wxDC& dc, string text, int left, int top, wxRect* bounds)
 wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 {
 	wxSize ct_size;
-	wxFont bold = font.Bold();
+	wxFont bold = font_.Bold();
 
 	// Setup faded text colour
 	rgba_t faded;
 	if (txed_calltips_dim_optional)
 		faded = rgba_t(
-			col_fg.r * 0.5 + col_bg.r * 0.5,
-			col_fg.g * 0.5 + col_bg.g * 0.5,
-			col_fg.b * 0.5 + col_bg.b * 0.5
+			col_fg_.r * 0.5 + col_bg_.r * 0.5,
+			col_fg_.g * 0.5 + col_bg_.g * 0.5,
+			col_fg_.b * 0.5 + col_bg_.b * 0.5
 		);
 	else
-		faded = col_fg;
+		faded = col_fg_;
 
 	// Clear
 	dc.SetPen(*wxTRANSPARENT_PEN);
-	dc.SetBrush(wxBrush(WXCOL(col_bg)));
+	dc.SetBrush(wxBrush(WXCOL(col_bg_)));
 	dc.DrawRectangle(0, 0, 1000, 1000);
 
-	if (function)
+	// Wx Colours (to avoid creating them multiple times)
+	auto wxcol_fg = WXCOL(col_fg_);
+	auto wxcol_fg_hl = WXCOL(col_fg_hl);
+	auto wxcol_type = WXCOL(col_type_);
+
+	if (function_)
 	{
-		dc.SetFont(font);
-		dc.SetTextForeground(WXCOL(col_fg));
+		dc.SetFont(font_);
+		dc.SetTextForeground(wxcol_fg);
 
 		// Draw arg set switching stuff
 		int left = xoff;
-		if (switch_args)
+		if (switch_contexts_)
 		{
 			// up-filled	\xE2\x96\xB2
 			// up-empty		\xE2\x96\xB3
@@ -286,70 +228,68 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			// down-empty	\xE2\x96\xBD
 
 			// Up arrow
-			dc.SetTextForeground((btn_mouse_over == 2) ? WXCOL(col_fg_hl) : WXCOL(col_fg));
+			dc.SetTextForeground((btn_mouse_over_ == 2) ? wxcol_fg_hl : wxcol_fg);
 			dc.DrawLabel(
 				wxString::FromUTF8("\xE2\x96\xB2"),
 				wxNullBitmap,
 				wxRect(xoff, yoff, 100, 100),
 				0,
 				-1,
-				&rect_btn_up);
+				&rect_btn_up_);
 
 			// Arg set
 			int width = dc.GetTextExtent("X/X").x;
-			dc.SetTextForeground(WXCOL(col_fg));
+			dc.SetTextForeground(wxcol_fg);
 			dc.DrawLabel(
-				S_FMT("%d/%d", arg_set_current + 1, function->contexts().size()),
+				S_FMT("%d/%d", context_current_ + 1, function_->contexts().size()),
 				wxNullBitmap,
-				wxRect(rect_btn_up.GetRight() + 4, yoff, width, 900),
+				wxRect(rect_btn_up_.GetRight() + 4, yoff, width, 900),
 				wxALIGN_CENTER_HORIZONTAL);
 
 			// Down arrow
-			dc.SetTextForeground((btn_mouse_over == 1) ? WXCOL(col_fg_hl) : WXCOL(col_fg));
+			dc.SetTextForeground((btn_mouse_over_ == 1) ? wxcol_fg_hl : wxcol_fg);
 			dc.DrawLabel(
 				wxString::FromUTF8("\xE2\x96\xBC"),
 				wxNullBitmap,
-				wxRect(rect_btn_up.GetRight() + width + 8, yoff, 900, 900),
+				wxRect(rect_btn_up_.GetRight() + width + 8, yoff, 900, 900),
 				0,
 				-1,
-				&rect_btn_down);
+				&rect_btn_down_);
 
-			left = rect_btn_down.GetRight() + 8;
-			rect_btn_up.Offset(12, 8);
-			rect_btn_down.Offset(12, 8);
+			left = rect_btn_down_.GetRight() + 8;
+			rect_btn_up_.Offset(12, 8);
+			rect_btn_down_.Offset(12, 8);
 		}
 
 		// Draw function return type
-		string ftype = context.return_type + " ";
+		string ftype = context_.return_type + " ";
 		wxRect rect;
-		dc.SetTextForeground(WXCOL(col_type));
+		dc.SetTextForeground(wxcol_type);
 		dc.DrawLabel(ftype, wxNullBitmap, wxRect(left, yoff, 900, 900), 0, -1, &rect);
 
 		// Draw function context (if any)
-		if (!context.context.empty())
+		if (!context_.context.empty())
 		{
-			dc.SetTextForeground(WXCOL(col_fg));
-			drawText(dc, context.context + ".", rect.GetRight() + 1, rect.GetTop(), &rect);
+			dc.SetTextForeground(wxcol_fg);
+			drawText(dc, context_.context + ".", rect.GetRight() + 1, rect.GetTop(), &rect);
 		}
 
 		// Draw function name
-		string fname = function->name();
-		//wxRect rect;
-		dc.SetTextForeground(WXCOL(col_func));
-		//dc.DrawLabel(fname, wxNullBitmap, wxRect(left, 0, 900, 900), 0, -1, &rect);
+		string fname = function_->name();
+		dc.SetTextForeground(WXCOL(col_func_));
 		left = drawText(dc, fname, rect.GetRight() + 1, rect.GetTop(), &rect);
 
 		// Draw opening bracket
-		dc.SetTextForeground(WXCOL(col_fg));
+		dc.SetTextForeground(wxcol_fg);
 		left = drawText(dc, "(", left, rect.GetTop(), &rect);
 
 		// Draw args
 		int top = rect.GetTop();
 		int max_right = 0;
 		int args_left = left;
-		for (unsigned a = 0; a < context.params.size(); a++)
+		for (unsigned a = 0; a < context_.params.size(); a++)
 		{
-			auto& arg = context.params[a];
+			auto& arg = context_.params[a];
 
 			// Go down to next line if current is too long
 			if (left > SCALLTIP_MAX_WIDTH)
@@ -359,9 +299,9 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			}
 
 			// Set highlight colour if current arg
-			if (a == arg_current)
+			if (a == arg_current_)
 			{
-				dc.SetTextForeground(WXCOL(col_fg_hl));
+				dc.SetTextForeground(wxcol_fg_hl);
 				dc.SetFont(bold);
 			}
 
@@ -372,23 +312,27 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			// Type
 			if (!arg.type.empty())
 			{
-				if (a != arg_current) dc.SetTextForeground(WXCOL(col_type));
+				if (a != arg_current_) dc.SetTextForeground(wxcol_type);
 				left = drawText(dc, arg.type + " ", left, top, &rect);
 			}
 
 			// Name
-			if (a != arg_current)
-				dc.SetTextForeground(arg.optional ? WXCOL(faded) : WXCOL(col_fg));	// Faded text if optional
+			if (a != arg_current_)
+				dc.SetTextForeground(arg.optional ? WXCOL(faded) : wxcol_fg);	// Faded text if optional
 			left = drawText(dc, arg.name, left, top, &rect);
+
+			// Default value
+			if (!arg.default_value.empty())
+				left = drawText(dc, S_FMT(" = %s", CHR(arg.default_value)), left, top, &rect);
 
 			// Optional closing bracket
 			if (arg.optional && !txed_calltips_dim_optional)
 				left = drawText(dc, "]", left, top, &rect);
 
 			// Comma (if needed)
-			dc.SetFont(font);
-			dc.SetTextForeground(WXCOL(col_fg));
-			if (a < context.params.size() - 1)
+			dc.SetFont(font_);
+			dc.SetTextForeground(wxcol_fg);
+			if (a < context_.params.size() - 1)
 				left = drawText(dc, ", ", left, top, &rect);
 
 			// Update max width
@@ -400,9 +344,9 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		left = drawText(dc, ")", left, top, &rect);
 
 		// Draw overloads number
-		if (function->contexts().size() > 1 && !switch_args)
+		if (function_->contexts().size() > 1 && !switch_contexts_)
 			dc.DrawLabel(
-				S_FMT(" (+%d)", function->contexts().size() - 1),
+				S_FMT(" (+%d)", function_->contexts().size() - 1),
 				wxNullBitmap,
 				wxRect(left, top, 900, 900),
 				0,
@@ -414,10 +358,10 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			max_right = rect.GetRight();
 
 		// Description
-		string desc = context.description;
+		string desc = context_.description;
 		if (!desc.IsEmpty())
 		{
-			wxFont italic = font.Italic();
+			wxFont italic = font_.Italic();
 			dc.SetFont(italic);
 			if (dc.GetTextExtent(desc).x > SCALLTIP_MAX_WIDTH)
 			{
@@ -485,13 +429,13 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
  *******************************************************************/
 void SCallTip::updateBuffer()
 {
-	buffer.SetWidth(1000);
-	buffer.SetHeight(1000);
+	buffer_.SetWidth(1000);
+	buffer_.SetHeight(1000);
 
-	wxMemoryDC dc(buffer);
+	wxMemoryDC dc(buffer_);
 	auto size = drawCallTip(dc);
-	buffer.SetWidth(size.GetWidth());
-	buffer.SetHeight(size.GetHeight());
+	buffer_.SetWidth(size.GetWidth());
+	buffer_.SetHeight(size.GetHeight());
 }
 
 
@@ -508,20 +452,20 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	wxAutoBufferedPaintDC dc(this);
 
 	// Determine border colours
-	wxColour bg = WXCOL(col_bg);
+	wxColour bg = WXCOL(col_bg_);
 	wxColour border, border2;
-	if (col_bg.greyscale().r < 128)
+	if (col_bg_.greyscale().r < 128)
 	{
-		rgba_t c = col_bg.amp(50, 50, 50, 0);
+		rgba_t c = col_bg_.amp(50, 50, 50, 0);
 		border = WXCOL(c);
-		c = col_bg.amp(20, 20, 20, 0);
+		c = col_bg_.amp(20, 20, 20, 0);
 		border2 = WXCOL(c);
 	}
 	else
 	{
-		rgba_t c = col_bg.amp(-50, -50, -50, 0);
+		rgba_t c = col_bg_.amp(-50, -50, -50, 0);
 		border = WXCOL(c);
-		c = col_bg.amp(-20, -20, -20, 0);
+		c = col_bg_.amp(-20, -20, -20, 0);
 		border2 = WXCOL(c);
 	}
 
@@ -546,7 +490,7 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	// so just draw the entire calltip again in this case
 	drawCallTip(dc, 12, 8);
 #else
-	dc.DrawBitmap(buffer, 12, 8, true);
+	dc.DrawBitmap(buffer_, 12, 8, true);
 #endif
 }
 
@@ -563,31 +507,31 @@ void SCallTip::onEraseBackground(wxEraseEvent& e)
  *******************************************************************/
 void SCallTip::onMouseMove(wxMouseEvent& e)
 {
-	if (rect_btn_down.Contains(e.GetPosition()))
+	if (rect_btn_down_.Contains(e.GetPosition()))
 	{
-		if (btn_mouse_over != 1)
+		if (btn_mouse_over_ != 1)
 		{
-			btn_mouse_over = 1;
+			btn_mouse_over_ = 1;
 			updateBuffer();
 			Refresh();
 			Update();
 		}
 	}
 
-	else if (rect_btn_up.Contains(e.GetPosition()))
+	else if (rect_btn_up_.Contains(e.GetPosition()))
 	{
-		if (btn_mouse_over != 2)
+		if (btn_mouse_over_ != 2)
 		{
-			btn_mouse_over = 2;
+			btn_mouse_over_ = 2;
 			updateBuffer();
 			Refresh();
 			Update();
 		}
 	}
 
-	else if (btn_mouse_over != 0)
+	else if (btn_mouse_over_ != 0)
 	{
-		btn_mouse_over = 0;
+		btn_mouse_over_ = 0;
 		updateBuffer();
 		Refresh();
 		Update();
@@ -601,9 +545,9 @@ void SCallTip::onMouseDown(wxMouseEvent& e)
 {
 	if (e.Button(wxMOUSE_BTN_LEFT))
 	{
-		if (btn_mouse_over == 1)
+		if (btn_mouse_over_ == 1)
 			nextArgSet();
-		else if (btn_mouse_over == 2)
+		else if (btn_mouse_over_ == 2)
 			prevArgSet();
 	}
 }
