@@ -527,6 +527,13 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		// Normal calltip - show (potentially) multiple contexts
 		else
 		{
+			// Determine separator colour
+			wxColour col_sep;
+			if (col_bg_.greyscale().r < 128)
+				col_sep = WXCOL(col_bg_.amp(30, 30, 30, 0));
+			else
+				col_sep = WXCOL(col_bg_.amp(-30, -30, -30, 0));
+
 			bool first = true;
 			auto num = std::min<unsigned>(function_->contexts().size(), 12u);
 			for (auto a = 0u; a < num; a++)
@@ -535,7 +542,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 
 				if (!first)
 				{
-					dc.SetPen(wxPen(wxcol_faded));
+					dc.SetPen(wxPen(col_sep));
 					dc.DrawLine(xoff, bottom + 5, 2000, bottom + 5);
 				}
 
