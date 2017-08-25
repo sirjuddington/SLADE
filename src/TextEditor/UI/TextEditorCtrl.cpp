@@ -67,6 +67,8 @@ CVAR(Bool, txed_calltips_use_font, false, CVAR_SAVE)
 CVAR(Bool, txed_match_cursor_word, true, CVAR_SAVE)
 CVAR(Int, txed_hilight_current_line, 2, CVAR_SAVE)
 CVAR(Int, txed_line_extra_height, 0, CVAR_SAVE)
+CVAR(Bool, txed_tab_spaces, false, CVAR_SAVE)
+CVAR(Int, txed_show_whitespace, 0, CVAR_SAVE)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
@@ -182,9 +184,6 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id)
 	update_word_match_ = false;
 	last_modified_ = App::runTimer();
 
-	// Set tab width
-	SetTabWidth(txed_tab_width);
-
 	// Line numbers by default
 	SetMarginType(0, wxSTC_MARGIN_NUMBER);
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, "9999"));
@@ -248,11 +247,35 @@ void TextEditorCtrl::setup()
 	// General settings
 	SetBufferedDraw(true);
 	SetUseAntiAliasing(true);
-	SetMouseDwellTime(500);
+	SetMouseDwellTime(300);
 	AutoCompSetIgnoreCase(true);
 	SetIndentationGuides(txed_indent_guides);
 	SetExtraAscent(txed_line_extra_height);
 	SetExtraDescent(txed_line_extra_height);
+
+	// Tab width and style
+	SetTabWidth(txed_tab_width);
+	SetIndent(txed_tab_width);
+	SetUseTabs(!txed_tab_spaces);
+
+	// TODO: Caret options?
+	//SetCaretWidth(2);
+	//SetCaretForeground(...);
+
+	// Caret line hilight
+	SetCaretLineVisible(txed_hilight_current_line > 0);
+
+	// Whitespace
+	if (txed_show_whitespace > 0)
+	{
+		SetViewWhiteSpace(txed_show_whitespace == 1 ? wxSTC_WS_VISIBLEAFTERINDENT : wxSTC_WS_VISIBLEALWAYS);
+		SetWhitespaceSize(3);
+
+		// TODO: separate colour
+		SetWhitespaceForeground(true, WXCOL(StyleSet::currentSet()->getStyle("guides")->getForeground()));
+	}
+	else
+		SetViewWhiteSpace(wxSTC_WS_INVISIBLE);
 
 	// Right margin line
 	SetEdgeColumn(txed_edge_column);
@@ -1559,7 +1582,6 @@ void TextEditorCtrl::onUpdateUI(wxStyledTextEvent& e)
 	if (txed_hilight_current_line > 0 && HasFocus())
 	{
 		int line = LineFromPosition(GetCurrentPos());
-		MarkerAdd(line, 1);
 		if (txed_hilight_current_line > 1)
 			MarkerAdd(line, 2);
 	}

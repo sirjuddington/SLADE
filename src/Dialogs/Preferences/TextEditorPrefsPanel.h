@@ -13,6 +13,7 @@ public:
 
 private:
 	wxSpinCtrl*	spin_tab_width_;
+	wxCheckBox*	cb_tab_spaces_;
 	wxCheckBox*	cb_auto_indent_;
 	wxCheckBox*	cb_trim_whitespace_;
 	wxCheckBox*	cb_syntax_hilight_;
@@ -31,4 +32,5 @@ private:
 	wxCheckBox*	cb_fold_lines_;
 	wxCheckBox*	cb_match_cursor_word_;
 	wxChoice*	choice_line_hilight_;
+	wxChoice*	choice_show_whitespace_;
 };

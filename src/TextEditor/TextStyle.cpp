@@ -477,6 +477,7 @@ void StyleSet::applyTo(TextEditorCtrl* stc)
 	stc->IndicatorSetForeground(8, WXCOL(getStyleForeground("wordmatch")));
 
 	// Set current line colour
+	stc->SetCaretLineBackground(WXCOL(getStyleBackground("current_line")));
 	stc->MarkerDefine(
 		1,
 		wxSTC_MARK_BACKGROUND,
