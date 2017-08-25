@@ -166,8 +166,8 @@ wxThread::ExitCode JumpToCalculator::Entry()
 //
 // TextEditorCtrl class constructor
 // ----------------------------------------------------------------------------
-TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id)
-	: wxStyledTextCtrl(parent, id), timer_update_(this)
+TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
+wxStyledTextCtrl(parent, id), timer_update_(this)
 {
 	// Init variables
 	language_ = nullptr;
@@ -176,6 +176,7 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id)
 	ct_start_ = 0;
 	prev_cursor_pos_ = -1;
 	prev_text_length_ = -1;
+	prev_brace_match_ = -1;
 	panel_fr_ = nullptr;
 	call_tip_ = new SCallTip(this);
 	choice_jump_to_ = nullptr;
@@ -724,11 +725,12 @@ void TextEditorCtrl::checkBraceMatch()
 	if (bracematch != wxSTC_INVALID_POSITION)
 	{
 		BraceHighlight(GetCurrentPos(), bracematch);
-		if (refresh)
+		if (refresh && prev_brace_match_ != bracematch)
 		{
 			Refresh();
 			Update();
 		}
+		prev_brace_match_ = bracematch;
 		return;
 	}
 
@@ -737,21 +739,24 @@ void TextEditorCtrl::checkBraceMatch()
 	if (bracematch != wxSTC_INVALID_POSITION)
 	{
 		BraceHighlight(GetCurrentPos() - 1, bracematch);
-		if (refresh)
+		if (refresh && prev_brace_match_ != bracematch)
 		{
 			Refresh();
 			Update();
 		}
+		prev_brace_match_ = bracematch;
 		return;
 	}
 
 	// No match at all, clear any previous brace match
 	BraceHighlight(-1, -1);
-	if (refresh)
+	if (refresh && prev_brace_match_ != -1)
 	{
 		Refresh();
 		Update();
 	}
+
+	prev_brace_match_ = -1;
 }
 
 // ----------------------------------------------------------------------------

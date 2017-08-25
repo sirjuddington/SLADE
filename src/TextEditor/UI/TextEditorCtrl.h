@@ -99,6 +99,7 @@ private:
 	// State tracking for updates
 	int	prev_cursor_pos_;
 	int	prev_text_length_;
+	int prev_brace_match_;
 
 	// Timed update stuff
 	wxTimer	timer_update_;
