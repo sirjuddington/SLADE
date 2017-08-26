@@ -149,7 +149,7 @@ bool TextStyle::parse(ParseTreeNode* node)
 /* TextStyle::applyTo
  * Applies the style settings to the scintilla text control [stc]
  *******************************************************************/
-void TextStyle::applyTo(TextEditorCtrl* stc)
+void TextStyle::applyTo(wxStyledTextCtrl* stc)
 {
 	for (unsigned a = 0; a < wx_styles.size(); a++)
 	{
@@ -408,6 +408,14 @@ bool StyleSet::parseSet(ParseTreeNode* root)
  *******************************************************************/
 void StyleSet::applyTo(TextEditorCtrl* stc)
 {
+	applyToWx(stc);
+
+	// Update code folding margin
+	stc->setupFoldMargin(getStyle("foldmargin"));
+}
+
+void StyleSet::applyToWx(wxStyledTextCtrl* stc)
+{
 	// Set default style
 	ts_default.applyTo(stc);
 
@@ -432,9 +440,6 @@ void StyleSet::applyTo(TextEditorCtrl* stc)
 
 	// Set caret colour to text foreground colour
 	stc->SetCaretForeground(WXCOL(ts_default.foreground));
-
-	// Update code folding margin
-	stc->setupFoldMargin(getStyle("foldmargin"));
 
 	// Set indent and right margin line colour
 	stc->SetEdgeColour(WXCOL(getStyle("guides")->getForeground()));
