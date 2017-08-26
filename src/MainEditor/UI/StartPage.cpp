@@ -229,7 +229,6 @@ void SStartPage::load(bool new_tip)
 
 		last_tip_index_ = tipindex;
 		tip = tips_[tipindex];
-		Log::debug(S_FMT("Tip index %d/%d", last_tip_index_, tips_.size()));
 	}
 
 	// Generate recent files string
