@@ -7,9 +7,10 @@
 
 namespace ZScript
 {
-	bool dump_parsed_blocks = false;
-	bool dump_parsed_states = false;
-	bool dump_parsed_functions = false;
+	bool		dump_parsed_blocks = false;
+	bool		dump_parsed_states = false;
+	bool		dump_parsed_functions = false;
+	EntryType*	etype_zscript = nullptr;
 }
 
 
@@ -313,6 +314,9 @@ bool StateTable::parse(ParsedStatement& states)
 	vector<string> current_states;
 	for (auto& statement : states.block)
 	{
+		if (statement.tokens.empty())
+			continue;
+
 		auto states_added = false;
 		auto index = 0u;
 
@@ -343,6 +347,10 @@ bool StateTable::parse(ParsedStatement& states)
 				index = a + 1;
 			}
 		}
+
+		// TODO: Log warning
+		if (index >= statement.tokens.size())
+			continue;
 
 		// Ignore state commands
 		if (S_CMPNOCASE(statement.tokens[index], "stop") ||
@@ -677,6 +685,10 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 		if (block.parse(tz))
 			parsed.push_back(std::move(block));
 	}
+
+	// Set entry type
+	if (etype_zscript && entry->getType() != etype_zscript)
+		entry->setType(etype_zscript);
 }
 
 void Definitions::clear()
@@ -760,7 +772,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 
 bool Definitions::parseZScript(Archive* archive)
 {
-	// Get base decorate file
+	// Get base ZScript file
 	Archive::SearchOptions opt;
 	opt.match_name = "zscript";
 	opt.ignore_ext = true;
@@ -770,7 +782,12 @@ bool Definitions::parseZScript(Archive* archive)
 
 	Log::info(2, S_FMT("Parsing ZScript entries found in archive %s", archive->filename()));
 
-	// Parse DECORATE entries
+	// Get ZScript entry type (all parsed ZScript entries will be set to this)
+	etype_zscript = EntryType::getType("zscript");
+	if (etype_zscript == EntryType::unknownType())
+		etype_zscript = nullptr;
+
+	// Parse ZScript entries
 	bool ok = true;
 	for (auto entry : zscript_enries)
 		if (!parseZScript(entry))

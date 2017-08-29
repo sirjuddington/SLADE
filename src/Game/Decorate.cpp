@@ -40,6 +40,17 @@
 
 using namespace Game;
 
+
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
+namespace
+{
+	EntryType* etype_decorate = nullptr;
+}
+
 // ----------------------------------------------------------------------------
 //
 // Local Functions
@@ -47,19 +58,6 @@ using namespace Game;
 // ----------------------------------------------------------------------------
 namespace
 {
-
-struct DecorateState
-{
-	struct Frame
-	{
-		string	sprite_base;
-		string	sprite_frame;
-		int		duration;
-	};
-
-	string			name;
-	vector<Frame>	frames;
-};
 
 // ----------------------------------------------------------------------------
 // parseStates
@@ -627,6 +625,10 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 
 		tz.advIf("}");
 	}
+
+	// Set entry type
+	if (etype_decorate && entry->getType() != etype_decorate)
+		entry->setType(etype_decorate);
 }
 
 } // namespace
@@ -658,6 +660,11 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, v
 		return false;
 
 	Log::info(2, S_FMT("Parsing DECORATE entries found in archive %s", archive->filename()));
+
+	// Get DECORATE entry type (all parsed DECORATE entries will be set to this)
+	etype_decorate = EntryType::getType("decorate");
+	if (etype_decorate == EntryType::unknownType())
+		etype_decorate = nullptr;
 
 	// Parse DECORATE entries
 	for (auto entry : decorate_entries)
