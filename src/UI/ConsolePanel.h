@@ -11,18 +11,19 @@ public:
 	~ConsolePanel();
 
 	void	initLayout();
+	void	setupTextArea() const;
 	void	update();
+
+private:
+	wxStyledTextCtrl*	text_log_;
+	wxTextCtrl*			text_command_;
+	int					cmd_log_index_;
+	wxTimer				timer_update_;
+	unsigned			next_message_index_;
 
 	// Events
 	void onCommandEnter(wxCommandEvent& e);
 	void onCommandKeyDown(wxKeyEvent& e);
-
-private:
-	wxTextCtrl*	text_log;
-	wxTextCtrl*	text_command;
-	int			cmd_log_index;
-	wxTimer		timer_update;
-	unsigned	next_message_index;
 };
 
 #endif//__CONSOLEPANEL_H__

@@ -54,7 +54,7 @@ public:
 	rgba_t	getBackground() { return background; }
 
 	bool	parse(ParseTreeNode* node);
-	void	applyTo(TextEditorCtrl* stc);
+	void	applyTo(wxStyledTextCtrl* stc);
 	bool	copyStyle(TextStyle* copy);
 	string	getDefinition(unsigned tabs = 0);
 };
@@ -79,6 +79,7 @@ public:
 
 	bool		parseSet(ParseTreeNode* root);
 	void		applyTo(TextEditorCtrl* stc);
+	void		applyToWx(wxStyledTextCtrl* stc);
 	bool		copySet(StyleSet* copy);
 	TextStyle*	getStyle(string name);
 	TextStyle*	getStyle(unsigned index);
