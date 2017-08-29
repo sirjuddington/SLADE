@@ -164,13 +164,14 @@ void TLFunction::addContext(
 //
 // Adds a [context] of the function from a parsed ZScript function [func]
 // ----------------------------------------------------------------------------
-void TLFunction::addContext(const string& context, const ZScript::Function& func)
+void TLFunction::addContext(const string& context, const ZScript::Function& func, bool custom)
 {
 	contexts_.push_back(Context{ context, {} });
 	auto& ctx = contexts_.back();
 
 	ctx.return_type = func.returnType();
 	ctx.deprecated = func.deprecated();
+	ctx.custom = custom;
 
 	if (func.isVirtual())
 		ctx.qualifiers += "virtual ";
@@ -179,6 +180,24 @@ void TLFunction::addContext(const string& context, const ZScript::Function& func
 
 	for (auto& p : func.parameters())
 		ctx.params.push_back({ p.type, p.name, p.default_value, !p.default_value.empty() });
+}
+
+void TLFunction::clearCustomContexts()
+{
+	for (auto i = contexts_.begin(); i != contexts_.end();)
+		if (i->custom)
+			i = contexts_.erase(i);
+		else
+			++i;
+}
+
+bool TLFunction::hasContext(const string& name)
+{
+	for (auto& c : contexts_)
+		if (S_CMPNOCASE(c.context, name))
+			return true;
+
+	return false;
 }
 
 
@@ -249,7 +268,6 @@ void TextLanguage::copyTo(TextLanguage* copy)
 
 	// Copy functions
 	copy->functions_ = functions_;
-	copy->functions_custom_ = functions_custom_;
 
 	// Copy preprocessor/word block begin/end
 	copy->pp_block_begin_ = pp_block_begin_;
@@ -263,10 +281,10 @@ void TextLanguage::copyTo(TextLanguage* copy)
 //
 // Adds a new word of [type] to the language, if it doesn't exist already
 // ----------------------------------------------------------------------------
-void TextLanguage::addWord(WordType type, string keyword)
+void TextLanguage::addWord(WordType type, string keyword, bool custom)
 {
 	// Add only if it doesn't already exist
-	vector<string>& list = word_lists_[type].list;
+	vector<string>& list = custom ? word_lists_custom_[type].list : word_lists_[type].list;
 	if (std::find(list.begin(), list.end(), keyword) == list.end())
 		list.push_back(keyword);
 }
@@ -312,13 +330,13 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 //
 // Loads types (classes) and functions from parsed ZScript definitions [defs]
 // ----------------------------------------------------------------------------
-void TextLanguage::loadZScript(ZScript::Definitions& defs)
+void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
 {
 	// Classes
 	for (auto& c : defs.classes())
 	{
 		// Add class as type
-		addWord(Type, c.name());
+		addWord(Type, c.name(), custom);
 
 		// Add class functions
 		for (auto& f : c.functions())
@@ -338,7 +356,8 @@ void TextLanguage::loadZScript(ZScript::Definitions& defs)
 			}
 
 			// Add the context
-			func->addContext(c.name(), f);
+			if (!func->hasContext(c.name()))
+				func->addContext(c.name(), f, custom);
 		}
 	}
 }
@@ -349,15 +368,19 @@ void TextLanguage::loadZScript(ZScript::Definitions& defs)
 // Returns a string of all words of [type] in the language, separated by
 // spaces, which can be sent directly to scintilla for syntax hilighting
 // ----------------------------------------------------------------------------
-string TextLanguage::wordList(WordType type)
+string TextLanguage::wordList(WordType type, bool include_custom)
 {
 	// Init return string
 	string ret = "";
 
 	// Add each word to return string (separated by spaces)
-	vector<string>& list = word_lists_[type].list;
-	for (size_t a = 0; a < list.size(); a++)
-		ret += list[a] + " ";
+	for (auto& word : word_lists_[type].list)
+		ret += word + " ";
+
+	// Include custom words if specified
+	if (include_custom)
+		for (auto& word : word_lists_custom_[type].list)
+			ret += word + " ";
 
 	return ret;
 }
@@ -376,8 +399,6 @@ string TextLanguage::functionsList()
 	// Add each function name to return string (separated by spaces)
 	for (auto& func : functions_)
 		ret += func.name() + " ";
-	for (auto& func : functions_custom_)
-		ret += func.name() + " ";
 
 	return ret;
 }
@@ -388,7 +409,7 @@ string TextLanguage::functionsList()
 // Returns a string containing all words and functions that can be used
 // directly in scintilla for an autocompletion list
 // ----------------------------------------------------------------------------
-string TextLanguage::autocompletionList(string start)
+string TextLanguage::autocompletionList(string start, bool include_custom)
 {
 	// Firstly, add all functions and word lists to a wxArrayString
 	wxArrayString list;
@@ -396,15 +417,21 @@ string TextLanguage::autocompletionList(string start)
 
 	// Add word lists
 	for (unsigned type = 0; type < 4; type++)
-		for (unsigned a = 0; a < word_lists_[type].list.size(); a++)
-			if (word_lists_[type].list[a].Lower().StartsWith(start))
-				list.Add(word_lists_[type].list[a] + S_FMT("?%d", type + 1));
+	{
+		for (auto& word : word_lists_[type].list)
+			if (word.Lower().StartsWith(start))
+				list.Add(word + S_FMT("?%d", type + 1));
+
+		if (!include_custom)
+			continue;
+
+		for (auto& word : word_lists_custom_[type].list)
+			if (word.Lower().StartsWith(start))
+				list.Add(word + S_FMT("?%d", type + 1));
+	}
 
 	// Add functions
 	for (auto& func : functions_)
-		if (func.name().Lower().StartsWith(start))
-			list.Add(func.name() + "?3");
-	for (auto& func : functions_custom_)
 		if (func.name().Lower().StartsWith(start))
 			list.Add(func.name() + "?3");
 
@@ -424,12 +451,16 @@ string TextLanguage::autocompletionList(string start)
 //
 // Returns a sorted wxArrayString of all words of [type] in the language
 // ----------------------------------------------------------------------------
-wxArrayString TextLanguage::wordListSorted(WordType type)
+wxArrayString TextLanguage::wordListSorted(WordType type, bool include_custom)
 {
 	// Get list
 	wxArrayString list;
-	for (unsigned a = 0; a < word_lists_[type].list.size(); a++)
-		list.Add(word_lists_[type].list[a]);
+	for (auto& word : word_lists_[type].list)
+		list.Add(word);
+
+	if (include_custom)
+		for (auto& word : word_lists_custom_[type].list)
+			list.Add(word);
 
 	// Sort
 	list.Sort();
@@ -447,8 +478,6 @@ wxArrayString TextLanguage::functionsSorted()
 	// Get list
 	wxArrayString list;
 	for (auto& func : functions_)
-		list.Add(func.name());
-	for (auto& func : functions_custom_)
 		list.Add(func.name());
 
 	// Sort
@@ -509,6 +538,23 @@ TLFunction* TextLanguage::function(string name)
 
 	// Not found
 	return nullptr;
+}
+
+void TextLanguage::clearCustomDefs()
+{
+	for (auto i = functions_.begin(); i != functions_.end();)
+	{
+		i->clearCustomContexts();
+
+		// Remove function if only contexts were custom
+		if (i->contexts().empty())
+			i = functions_.erase(i);
+		else
+			++i;
+	}
+
+	for (auto a = 0; a < 4; a++)
+		word_lists_custom_[a].list.clear();
 }
 
 

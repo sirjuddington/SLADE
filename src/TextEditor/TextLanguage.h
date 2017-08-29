@@ -23,6 +23,7 @@ public:
 		string				description;
 		string				qualifiers;
 		string				deprecated;
+		bool				custom;
 	};
 
 	TLFunction(string name = "");
@@ -39,8 +40,12 @@ public:
 				const string& return_type = "void",
 				const string& description = ""
 			);
-	void	addContext(const string& context, const ZScript::Function& func);
+	void	addContext(const string& context, const ZScript::Function& func, bool custom);
+
 	void	clear() { name_.clear(); contexts_.clear(); }
+	void	clearCustomContexts();
+
+	bool	hasContext(const string& name);
 
 private:
 	string			name_;
@@ -94,7 +99,7 @@ public:
 	void	setPreprocessor(string token) { preprocessor_ = token; }
 	void	setDocComment(string token) { doc_comment_ = token; }
 	void	setCaseSensitive(bool cs) { case_sensitive_ = cs; }
-	void	addWord(WordType type, string word);
+	void	addWord(WordType type, string word, bool custom = false);
 	void	addFunction(
 		string name,
 		string args,
@@ -102,13 +107,13 @@ public:
 		bool replace = false,
 		string return_type = ""
 	);
-	void	loadZScript(ZScript::Definitions& defs);
+	void	loadZScript(ZScript::Definitions& defs, bool custom = false);
 
-	string	wordList(WordType type);
+	string	wordList(WordType type, bool include_custom = true);
 	string	functionsList();
-	string	autocompletionList(string start = "");
+	string	autocompletionList(string start = "", bool include_custom = true);
 
-	wxArrayString	wordListSorted(WordType type);
+	wxArrayString	wordListSorted(WordType type, bool include_custom = true);
 	wxArrayString	functionsSorted();
 
 	string	wordLink(WordType type) const { return word_lists_[type].lookup_url; }
@@ -121,7 +126,7 @@ public:
 
 	void	clearWordList(WordType type) { word_lists_[type].list.clear(); }
 	void	clearFunctions() { functions_.clear(); }
-	void	clearCustomFunctions() { functions_custom_.clear(); }
+	void	clearCustomDefs();
 
 	// Static functions
 	static bool				readLanguageDefinition(MemChunk& mc, string source);
@@ -159,10 +164,10 @@ private:
 		string			lookup_url;
 	};
 	WordList	word_lists_[4];
+	WordList	word_lists_custom_[4];
 
 	// Functions
 	vector<TLFunction>	functions_;
-	vector<TLFunction>	functions_custom_;
 	bool				f_upper_;
 	bool				f_lower_;
 	bool				f_caps_;

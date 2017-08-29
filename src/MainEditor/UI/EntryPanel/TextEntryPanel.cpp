@@ -213,14 +213,10 @@ bool TextEntryPanel::saveEntry()
 	if (entry->getType() == EntryType::unknownType())
 		entry->setType(EntryType::getType("text"));
 
-	// Update DECORATE definitions if decorate
-	if (text_area_->language() && text_area_->language()->id() == "decorate")
-	{
-		Game::configuration().clearDecorateDefs();
-		Game::configuration().parseDecorateDefs(App::archiveManager().baseResourceArchive());
-		for (int i = 0; i < App::archiveManager().numArchives(); ++i)
-			Game::configuration().parseDecorateDefs(App::archiveManager().getArchive(i));
-	}
+	// Update custom definitions if decorate or zscript
+	if (text_area_->language() &&
+		(text_area_->language()->id() == "decorate" || text_area_->language()->id() == "zscript"))
+		Game::updateCustomDefinitions();
 
 	// Update variables
 	setModified(false);

@@ -58,10 +58,40 @@ namespace Game
 	PortDef						port_def_unknown;
 	ZScript::Definitions		zscript_base;
 	ZScript::Definitions		zscript_custom;
+	std::unique_ptr<Listener>	listener;
 }
 CVAR(String, game_configuration, "", CVAR_SAVE)
 CVAR(String, port_configuration, "", CVAR_SAVE)
 CVAR(String, zdoom_pk3_path, "", CVAR_SAVE)
+
+
+// ----------------------------------------------------------------------------
+// GameListener Class
+//
+// A Listener to handle custom definition updates resulting from archives being
+// opened or closed, since Game isn't a class
+// ----------------------------------------------------------------------------
+namespace Game
+{
+class GameListener : public Listener
+{
+public:
+	GameListener()
+	{
+		// Listen to archive manager
+		listenTo(&App::archiveManager());
+	}
+
+	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override
+	{
+		if (announcer == &App::archiveManager())
+		{
+			if (event_name == "archive_added" || event_name == "archive_closed")
+				updateCustomDefinitions();
+		}
+	}
+};
+}
 
 
 // ----------------------------------------------------------------------------
@@ -232,6 +262,12 @@ Configuration& Game::configuration()
 	return config_current;
 }
 
+// ----------------------------------------------------------------------------
+// Game::updateCustomDefinitions
+//
+// Clears and re-parses custom definitions in all open archives
+// (DECORATE, *MAPINFO, ZScript etc.)
+// ----------------------------------------------------------------------------
 void Game::updateCustomDefinitions()
 {
 	// Clear out all existing custom definitions
@@ -243,7 +279,6 @@ void Game::updateCustomDefinitions()
 	zscript_custom.parseZScript(App::archiveManager().baseResourceArchive());
 	config_current.parseDecorateDefs(App::archiveManager().baseResourceArchive());
 	config_current.parseMapInfo(App::archiveManager().baseResourceArchive());
-
 
 	// Parse custom definitions in all resource archives
 	vector<Archive*> resource_archives;
@@ -268,6 +303,13 @@ void Game::updateCustomDefinitions()
 	// Process custom definitions
 	config_current.importZScriptDefs(zscript_custom);
 	config_current.linkDoomEdNums();
+
+	auto lang = TextLanguage::fromId("zscript");
+	if (lang)
+	{
+		lang->clearCustomDefs();
+		lang->loadZScript(zscript_custom, true);
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -434,6 +476,9 @@ void Game::init()
 		});
 		thread.detach();
 	}
+
+	// Init game listener
+	listener = std::make_unique<GameListener>();
 }
 
 // ----------------------------------------------------------------------------
