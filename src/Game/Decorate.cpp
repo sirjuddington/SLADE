@@ -51,6 +51,7 @@ namespace
 	EntryType* etype_decorate = nullptr;
 }
 
+
 // ----------------------------------------------------------------------------
 //
 // Local Functions
@@ -592,8 +593,6 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 	// --- Parse ---
 	while (!tz.atEnd())
 	{
-		Log::debug(2, S_FMT("token %s", CHR(tz.current().text)));
-
 		// Check for #include
 		if (tz.checkNC("#include"))
 		{

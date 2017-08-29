@@ -642,7 +642,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 	tz.enableDecorate(true);
 	tz.openMem(entry->getMCData(), "ZScript");
 
-	Log::info(2, S_FMT("Parsing ZScript entry \"%s\"", entry->getPath(true)));
+	//Log::info(2, S_FMT("Parsing ZScript entry \"%s\"", entry->getPath(true)));
 
 	while (!tz.atEnd())
 	{

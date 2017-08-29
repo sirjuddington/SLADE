@@ -1469,7 +1469,6 @@ void Configuration::linkDoomEdNums()
 	{
 		// Find MAPINFO editor number for parsed actor class
 		int ednum = map_info_.doomEdNumForClass(parsed.className());
-		Log::debug(S_FMT("Find doomednum for class %s", CHR(parsed.className())));
 
 		if (ednum >= 0)
 		{

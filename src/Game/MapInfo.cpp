@@ -181,11 +181,10 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		// Unknown block (skip it)
 		else if (tz.check("{"))
 		{
-			LOG_MESSAGE(
-				2,
+			Log::warning(2, S_FMT(
 				"Warning - Parsing ZMapInfo \"%s\": Skipping {} block",
 				entry->getName()
-			);
+			));
 
 			tz.adv();
 			tz.skipSection("{", "}");
@@ -213,15 +212,12 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 bool MapInfo::parseZMap(Tokenizer& tz, string type)
 {
 	// TODO: Handle adddefaultmap
-	Log::debug(2, S_FMT("Map type %s", CHR(type)));
-
 	Map map = default_map_;
 
 	// Normal map, get lump/name/etc
 	tz.adv();
 	if (type == "map")
 	{
-		Log::debug(2, "MAP TYPE");
 		// Entry name should be just after map keyword
 		map.entry_name = tz.current().text;
 
@@ -231,13 +227,11 @@ bool MapInfo::parseZMap(Tokenizer& tz, string type)
 		{
 			map.lookup_name = true;
 			map.name = tz.next().text;
-			Log::debug(2, S_FMT("map name lookup %s", CHR(map.name)));
 		}
 		else
 		{
 			map.lookup_name = false;
 			map.name = tz.current().text;
-			Log::debug(2, S_FMT("map name %s", CHR(map.name)));
 		}
 
 		tz.adv();
