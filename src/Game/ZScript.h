@@ -11,6 +11,9 @@ namespace ZScript
 {
 	struct ParsedStatement
 	{
+		ArchiveEntry*	entry = nullptr;
+		int				line;
+
 		vector<string>			tokens;
 		vector<ParsedStatement>	block;
 

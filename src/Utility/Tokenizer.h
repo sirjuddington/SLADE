@@ -66,7 +66,7 @@ public:
 
 	// Constructors
 	Tokenizer(
-		CommentTypes comments = CommentTypes::Default,
+		int comments = CommentTypes::Default,
 		const string& special_characters = DEFAULT_SPECIAL_CHARACTERS
 	);
 
@@ -78,7 +78,7 @@ public:
 	const Token&	peek() const;
 
 	// Modifiers
-	void	setCommentTypes(CommentTypes types) { comment_types_ = types; }
+	void	setCommentTypes(int types) { comment_types_ = types; }
 	void 	setSpecialCharacters(const char* characters)
 			{ special_characters_.assign(characters, characters + strlen(characters)); }
 	void	setSource(const string& source) { source_ = source; }
@@ -153,7 +153,7 @@ private:
 	TokenizeState	state_;
 
 	// Configuration
-	CommentTypes	comment_types_;			// Types of comments to skip
+	int				comment_types_;			// Types of comments to skip
 	vector<char>	special_characters_;	// These will always be read as separate tokens
 	string			source_;				// What file/entry/chunk is being tokenized
 	bool			decorate_;				// Special handling for //$ comments

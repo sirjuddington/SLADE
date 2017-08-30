@@ -1,24 +1,87 @@
 
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ZScript.cpp
+// Description: ZScript definition classes and parsing
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "ZScript.h"
 #include "Archive/Archive.h"
 #include "Utility/Tokenizer.h"
 #include "Archive/ArchiveManager.h"
 
+using namespace ZScript;
+
+
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 namespace ZScript
 {
-	bool		dump_parsed_blocks = false;
-	bool		dump_parsed_states = false;
-	bool		dump_parsed_functions = false;
 	EntryType*	etype_zscript = nullptr;
+
+	// For test_parse_zscript console command
+	bool	dump_parsed_blocks = false;
+	bool	dump_parsed_states = false;
+	bool	dump_parsed_functions = false;
 }
 
 
-using namespace ZScript;
-
+// ----------------------------------------------------------------------------
+//
+// Local Functions
+//
+// ----------------------------------------------------------------------------
 namespace ZScript
 {
 
+// ----------------------------------------------------------------------------
+// logParserMessage
+//
+// Writes a log [message] of [type] beginning with the location of [statement]
+// ----------------------------------------------------------------------------
+void logParserMessage(ParsedStatement& statement, Log::MessageType type, string message)
+{
+	string location = "<unknown location>";
+	if (statement.entry)
+		location = statement.entry->getPath(true);
+
+	Log::message(type, S_FMT("%s:%d: %s", CHR(location), statement.line, CHR(message)));
+}
+
+// ----------------------------------------------------------------------------
+// parseType
+//
+// Parses a ZScript type (eg. 'class<Actor>') from [tokens] beginning at
+// [index]
+// ----------------------------------------------------------------------------
 string parseType(const vector<string>& tokens, unsigned& index)
 {
 	string type;
@@ -58,6 +121,11 @@ string parseType(const vector<string>& tokens, unsigned& index)
 	return type;
 }
 
+// ----------------------------------------------------------------------------
+// parseType
+//
+// Parses a ZScript value from [tokens] beginning at [index]
+// ----------------------------------------------------------------------------
 string parseValue(const vector<string>& tokens, unsigned& index)
 {
 	string value;
@@ -93,6 +161,13 @@ string parseValue(const vector<string>& tokens, unsigned& index)
 	return value;
 }
 
+// ----------------------------------------------------------------------------
+// checkDeprecated
+//
+// Checks for a ZScript deprecation statement in [tokens] beginning at [index].
+// Returns true if there is a deprecation statement and writes the deprecation
+// version to [version]
+// ----------------------------------------------------------------------------
 bool checkDeprecated(const vector<string>& tokens, unsigned index, string& version)
 {
 	if (index + 3 >= tokens.size())
@@ -109,8 +184,83 @@ bool checkDeprecated(const vector<string>& tokens, unsigned index, string& versi
 	return false;
 }
 
+// ----------------------------------------------------------------------------
+// parseBlocks
+//
+// Parses all statements/blocks in [entry], adding them to [parsed]
+// ----------------------------------------------------------------------------
+void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
+{
+	Tokenizer tz;
+	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.");
+	tz.enableDecorate(true);
+	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
+	tz.openMem(entry->getMCData(), "ZScript");
+
+	//Log::info(2, S_FMT("Parsing ZScript entry \"%s\"", entry->getPath(true)));
+
+	while (!tz.atEnd())
+	{
+		// Preprocessor
+		if (tz.current().text.StartsWith("#"))
+		{
+			if (tz.checkNC("#include"))
+			{
+				auto inc_entry = entry->relativeEntry(tz.next().text);
+
+				// Check #include path could be resolved
+				if (!inc_entry)
+				{
+					Log::warning(
+						S_FMT(
+							"Warning parsing ZScript entry %s: "
+							"Unable to find #included entry \"%s\" at line %d, skipping",
+							CHR(entry->getName()),
+							CHR(tz.current().text),
+							tz.current().line_no
+						));
+				}
+				else
+					parseBlocks(inc_entry, parsed);
+			}
+
+			tz.advToNextLine();
+			continue;
+		}
+
+		// Version
+		else if (tz.checkNC("version"))
+		{
+			tz.advToNextLine();
+			continue;
+		}
+
+		// ZScript
+		parsed.push_back({});
+		parsed.back().entry = entry;
+		if (!parsed.back().parse(tz))
+			parsed.pop_back();
+	}
+
+	// Set entry type
+	if (etype_zscript && entry->getType() != etype_zscript)
+		entry->setType(etype_zscript);
 }
 
+} // namespace ZScript
+
+
+// ----------------------------------------------------------------------------
+//
+// Enumerator Class Functions
+//
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+// Enumerator::parse
+//
+// Parses an enumerator block [statement]
+// ----------------------------------------------------------------------------
 bool Enumerator::parse(ParsedStatement& statement)
 {
 	// Check valid statement
@@ -144,6 +294,19 @@ bool Enumerator::parse(ParsedStatement& statement)
 	return true;
 }
 
+
+// ----------------------------------------------------------------------------
+//
+// Function Class Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// Function::Parameter::parse
+//
+// Parses a function parameter from [tokens] beginning at [index]
+// ----------------------------------------------------------------------------
 unsigned Function::Parameter::parse(const vector<string>& tokens, unsigned index)
 {
 	// Type
@@ -172,6 +335,11 @@ unsigned Function::Parameter::parse(const vector<string>& tokens, unsigned index
 	return index;
 }
 
+// ----------------------------------------------------------------------------
+// Function::parse
+//
+// Parses a function declaration [statement]
+// ----------------------------------------------------------------------------
 bool Function::parse(ParsedStatement& statement)
 {
 	unsigned index;
@@ -214,7 +382,10 @@ bool Function::parse(ParsedStatement& statement)
 	}
 
 	if (name_.empty() || return_type_.empty())
+	{
+		logParserMessage(statement, Log::MessageType::Warning, "Function parse failed");
 		return false;
+	}
 
 	// Parse parameters
 	while (statement.tokens[index] != "(")
@@ -240,6 +411,11 @@ bool Function::parse(ParsedStatement& statement)
 	return true;
 }
 
+// ----------------------------------------------------------------------------
+// Function::asString
+//
+// Returns a string representation of the function
+// ----------------------------------------------------------------------------
 string Function::asString()
 {
 	string str;
@@ -270,6 +446,11 @@ string Function::asString()
 	return str;
 }
 
+// ----------------------------------------------------------------------------
+// Function::isFunction
+//
+// Returns true if [statement] is a valid function declaration
+// ----------------------------------------------------------------------------
 bool Function::isFunction(ParsedStatement& statement)
 {
 	// Need at least type, name, (, )
@@ -297,6 +478,18 @@ bool Function::isFunction(ParsedStatement& statement)
 }
 
 
+// ----------------------------------------------------------------------------
+//
+// State Struct Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// State::editorSprite
+//
+// Returns the first valid frame sprite (eg. TNT1 A -> TNT1A?)
+// ----------------------------------------------------------------------------
 string State::editorSprite()
 {
 	if (frames.empty())
@@ -309,6 +502,19 @@ string State::editorSprite()
 	return "";
 }
 
+
+// ----------------------------------------------------------------------------
+//
+// StateTable Class Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// StateTable::parse
+//
+// Parses a states definition statement/block [states]
+// ----------------------------------------------------------------------------
 bool StateTable::parse(ParsedStatement& states)
 {
 	vector<string> current_states;
@@ -348,9 +554,15 @@ bool StateTable::parse(ParsedStatement& states)
 			}
 		}
 
-		// TODO: Log warning
 		if (index >= statement.tokens.size())
+		{
+			logParserMessage(
+				statement,
+				Log::MessageType::Warning,
+				S_FMT("Failed to parse states block beginning on line %d", states.line)
+			);
 			continue;
+		}
 
 		// Ignore state commands
 		if (S_CMPNOCASE(statement.tokens[index], "stop") ||
@@ -398,6 +610,13 @@ bool StateTable::parse(ParsedStatement& states)
 	return true;
 }
 
+// ----------------------------------------------------------------------------
+// StateTable::editorSprite
+//
+// Returns the most appropriate sprite from the state table to use for the
+// editor.
+// Uses a state priority: Idle > See > Inactive > Spawn > [first defined]
+// ----------------------------------------------------------------------------
 string StateTable::editorSprite()
 {
 	if (!states_["idle"].frames.empty())
@@ -414,10 +633,26 @@ string StateTable::editorSprite()
 	return "";
 }
 
+
+// ----------------------------------------------------------------------------
+//
+// Class Class Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// Class::parse
+//
+// Parses a class definition statement/block [class_statement]
+// ----------------------------------------------------------------------------
 bool Class::parse(ParsedStatement& class_statement)
 {
 	if (class_statement.tokens.size() < 2)
+	{
+		logParserMessage(class_statement, Log::MessageType::Warning, "Class parse failed");
 		return false;
+	}
 
 	name_ = class_statement.tokens[1];
 
@@ -437,7 +672,10 @@ bool Class::parse(ParsedStatement& class_statement)
 	}
 
 	if (!parseClassBlock(class_statement.block))
+	{
+		logParserMessage(class_statement, Log::MessageType::Warning, "Class parse failed");
 		return false;
+	}
 
 	// Set editor sprite from parsed states
 	default_properties_["sprite"] = states_.editorSprite();
@@ -480,11 +718,23 @@ bool Class::parse(ParsedStatement& class_statement)
 	return true;
 }
 
+// ----------------------------------------------------------------------------
+// Class::extend
+//
+// Parses a class definition block [block] only (ignores the class declaration
+// statement line, used for 'extend class')
+// ----------------------------------------------------------------------------
 bool Class::extend(ParsedStatement& block)
 {
 	return parseClassBlock(block.block);
 }
 
+// ----------------------------------------------------------------------------
+// Class::toThingType
+//
+// Adds this class as a ThingType to [parsed], or updates an existing
+// ThingType definition in [types] or [parsed]
+// ----------------------------------------------------------------------------
 void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed)
 {
 	// Find existing definition
@@ -531,6 +781,11 @@ void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::Thin
 	def->loadProps(default_properties_);
 }
 
+// ----------------------------------------------------------------------------
+// Class::parseClassBlock
+//
+// Parses a class definition from statements in [block]
+// ----------------------------------------------------------------------------
 bool Class::parseClassBlock(vector<ParsedStatement>& block)
 {
 	for (auto& statement : block)
@@ -584,6 +839,11 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 	return true;
 }
 
+// ----------------------------------------------------------------------------
+// Class::parseDefaults
+//
+// Parses a 'default' block from statements in [block]
+// ----------------------------------------------------------------------------
 bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 {
 	for (auto& statement : defaults)
@@ -632,65 +892,18 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 }
 
 
+// ----------------------------------------------------------------------------
+//
+// Definitions Class Functions
+//
+// ----------------------------------------------------------------------------
 
 
-
-void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
-{
-	Tokenizer tz;
-	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.");
-	tz.enableDecorate(true);
-	tz.openMem(entry->getMCData(), "ZScript");
-
-	//Log::info(2, S_FMT("Parsing ZScript entry \"%s\"", entry->getPath(true)));
-
-	while (!tz.atEnd())
-	{
-		// Preprocessor
-		if (tz.current().text.StartsWith("#"))
-		{
-			if (tz.checkNC("#include"))
-			{
-				auto inc_entry = entry->relativeEntry(tz.next().text);
-
-				// Check #include path could be resolved
-				if (!inc_entry)
-				{
-					Log::warning(
-						S_FMT(
-							"Warning parsing ZScript entry %s: "
-							"Unable to find #included entry \"%s\" at line %d, skipping",
-							CHR(entry->getName()),
-							CHR(tz.current().text),
-							tz.current().line_no
-						));
-				}
-				else
-					parseBlocks(inc_entry, parsed);
-			}
-
-			tz.advToNextLine();
-			continue;
-		}
-
-		// Version
-		else if (tz.checkNC("version"))
-		{
-			tz.advToNextLine();
-			continue;
-		}
-
-		// ZScript
-		ParsedStatement block;
-		if (block.parse(tz))
-			parsed.push_back(std::move(block));
-	}
-
-	// Set entry type
-	if (etype_zscript && entry->getType() != etype_zscript)
-		entry->setType(etype_zscript);
-}
-
+// ----------------------------------------------------------------------------
+// Definitions::clear
+//
+// Clears all definitions
+// ----------------------------------------------------------------------------
 void Definitions::clear()
 {
 	classes_.clear();
@@ -699,6 +912,11 @@ void Definitions::clear()
 	functions_.clear();
 }
 
+// ----------------------------------------------------------------------------
+// Definitions::parseZScript
+//
+// Parses ZScript in [entry]
+// ----------------------------------------------------------------------------
 bool Definitions::parseZScript(ArchiveEntry* entry)
 {
 	// Parse into tree of expressions and blocks
@@ -770,6 +988,11 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 	return true;
 }
 
+// ----------------------------------------------------------------------------
+// Definitions::parseZScript
+//
+// Parses all ZScript entries in [archive]
+// ----------------------------------------------------------------------------
 bool Definitions::parseZScript(Archive* archive)
 {
 	// Get base ZScript file
@@ -796,6 +1019,12 @@ bool Definitions::parseZScript(Archive* archive)
 	return ok;
 }
 
+// ----------------------------------------------------------------------------
+// Definitions::exportThingTypes
+//
+// Exports all classes to ThingTypes in [types] and [parsed] (from a
+// Game::Configuration object)
+// ----------------------------------------------------------------------------
 void Definitions::exportThingTypes(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed)
 {
 	for (auto& cdef : classes_)
@@ -803,9 +1032,34 @@ void Definitions::exportThingTypes(std::map<int, Game::ThingType>& types, vector
 }
 
 
+// ----------------------------------------------------------------------------
+//
+// ParsedStatement Struct Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// ParsedStatement::parse
+//
+// Parses a ZScript 'statement'. This isn't technically correct but suits our
+// purposes well enough
+//
+// tokens
+// {
+//     block[0].tokens
+//     {
+//         block[0].block[0].tokens;
+//         ...
+//     }
+//
+//     block[1].tokens;
+//     ...
+// }
+// ----------------------------------------------------------------------------
 bool ParsedStatement::parse(Tokenizer& tz)
 {
-	auto start_line = tz.lineNo();
+	line = tz.lineNo();
 
 	// Tokens
 	bool in_initializer = false;
@@ -840,7 +1094,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 
 		if (tz.atEnd())
 		{
-			Log::debug(S_FMT("Failed parsing zscript statement beginning line %d", start_line));
+			Log::debug(S_FMT("Failed parsing zscript statement/block beginning line %d", line));
 			return false;
 		}
 
@@ -870,18 +1124,22 @@ bool ParsedStatement::parse(Tokenizer& tz)
 
 		if (tz.atEnd())
 		{
-			Log::debug(S_FMT("Failed parsing zscript statement beginning line %d", start_line));
+			Log::debug(S_FMT("Failed parsing zscript statement/block beginning line %d", line));
 			return false;
 		}
 
-		ParsedStatement statement;
-		if (!statement.parse(tz))
-			return false;
-		if (!statement.tokens.empty())
-			block.push_back(std::move(statement));
+		block.push_back({});
+		block.back().entry = entry;
+		if (!block.back().parse(tz) || block.back().tokens.empty())
+			block.pop_back();
 	}
 }
 
+// ----------------------------------------------------------------------------
+// ParsedStatement::dump
+//
+// Dumps this statement to the log (debug), indenting by 2*[indent] spaces
+// ----------------------------------------------------------------------------
 void ParsedStatement::dump(int indent)
 {
 	string line = "";
@@ -899,7 +1157,12 @@ void ParsedStatement::dump(int indent)
 }
 
 
-// TEMP TESTING CONSOLE COMMANDS
+
+
+
+
+
+// TESTING CONSOLE COMMANDS
 #include "MainEditor/MainEditor.h"
 #include "General/Console/Console.h"
 

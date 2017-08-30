@@ -143,7 +143,7 @@ void Tokenizer::Token::toBool(bool& val) const
 //
 // Tokenizer class constructor
 // ----------------------------------------------------------------------------
-Tokenizer::Tokenizer(CommentTypes comments, const string& special_characters) :
+Tokenizer::Tokenizer(int comments, const string& special_characters) :
 	comment_types_{ comments },
 	special_characters_{special_characters.begin(), special_characters.end()},
 	decorate_{ false },
