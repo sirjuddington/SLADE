@@ -33,6 +33,7 @@
 #include "ZScript.h"
 #include "Archive/Archive.h"
 #include "Utility/Tokenizer.h"
+#include "Utility/StringUtils.h"
 #include "Archive/ArchiveManager.h"
 
 using namespace ZScript;
@@ -1093,24 +1094,25 @@ void Definitions::exportThingTypes(std::map<int, Game::ThingType>& types, vector
 bool ParsedStatement::parse(Tokenizer& tz)
 {
 	line = tz.lineNo();
+	static string db_comment = "//$";
 
 	// Tokens
 	bool in_initializer = false;
 	while (true)
 	{
 		// End of statement (;)
-		if (tz.advIf(";"))
+		if (tz.advIf(';'))
 			return true;
 
 		// DB comment
-		if (tz.current().text.StartsWith("//$"))
+		if (tz.current().text.StartsWith(db_comment))
 		{
 			tokens.push_back(tz.current().text);
 			tokens.push_back(tz.getLine());
 			return true;
 		}
 
-		if (tz.check("}"))
+		if (tz.check('}'))
 		{
 			// End of array initializer
 			if (in_initializer)
@@ -1132,11 +1134,11 @@ bool ParsedStatement::parse(Tokenizer& tz)
 		}
 
 		// Beginning of block
-		if (tz.advIf("{"))
+		if (tz.advIf('{'))
 			break;
 
 		// Array initializer: ... = { ... }
-		if (tz.current().text == "=" && tz.peek().text == "{")
+		if (tz.current().text.Cmp("=") == 0 && tz.peek().text[0] == '{')
 		{
 			tokens.push_back("=");
 			tokens.push_back("{");
@@ -1152,7 +1154,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 	// Block
 	while (true)
 	{
-		if (tz.advIf("}"))
+		if (tz.advIf('}'))
 			return true;
 
 		if (tz.atEnd())
@@ -1235,4 +1237,24 @@ CONSOLE_COMMAND(test_parse_zscript, 0, false)
 	dump_parsed_blocks = false;
 	dump_parsed_states = false;
 	dump_parsed_functions = false;
+}
+
+
+CONSOLE_COMMAND(test_parseblocks, 1, false)
+{
+	long num = 1;
+	args[0].ToLong(&num);
+
+	auto entry = MainEditor::currentEntry();
+	if (!entry)
+		return;
+
+	auto start = App::runTimer();
+	vector<ParsedStatement> parsed;
+	for (auto a = 0; a < num; ++a)
+	{
+		parseBlocks(entry, parsed);
+		parsed.clear();
+	}
+	Log::console(S_FMT("Took %dms", App::runTimer() - start));
 }

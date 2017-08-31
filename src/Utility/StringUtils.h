@@ -16,6 +16,8 @@ namespace StringUtils
 	static string	CARET = "^";
 	static string	ESCAPED_QUOTE_DOUBLE = "\\\"";
 	static string	ESCAPED_SLASH_BACK = "\\\\";
+	static string	CURLYBRACE_OPEN = "{";
+	static string	CURLYBRACE_CLOSE = "}";
 
 	string	escapedString(const string& str, bool swap_backslash = false);
 

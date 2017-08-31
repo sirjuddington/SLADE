@@ -212,6 +212,26 @@ bool Tokenizer::advIf(const char* check, int inc)
 
 	return false;
 }
+bool Tokenizer::advIf(const string& check, int inc)
+{
+	if (token_current_ == check)
+	{
+		adv(inc);
+		return true;
+	}
+
+	return false;
+}
+bool Tokenizer::advIf(char check, int inc)
+{
+	if (token_current_[0] == check)
+	{
+		adv(inc);
+		return true;
+	}
+
+	return false;
+}
 
 // ----------------------------------------------------------------------------
 // Tokenizer::advIfNC
@@ -219,6 +239,16 @@ bool Tokenizer::advIf(const char* check, int inc)
 // Advances [inc] tokens if the current token matches [check] (Case-Insensitive)
 // ----------------------------------------------------------------------------
 bool Tokenizer::advIfNC(const char* check, int inc)
+{
+	if (S_CMPNOCASE(token_current_.text, check))
+	{
+		adv(inc);
+		return true;
+	}
+
+	return false;
+}
+bool Tokenizer::advIfNC(const string& check, int inc)
 {
 	if (S_CMPNOCASE(token_current_.text, check))
 	{
