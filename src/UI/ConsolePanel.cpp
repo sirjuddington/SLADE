@@ -92,7 +92,7 @@ void ConsolePanel::initLayout()
 	// Create and add the message log textbox
 	text_log_ = new wxStyledTextCtrl(this, -1, wxDefaultPosition, wxDefaultSize);
 	text_log_->SetEditable(false);
-	text_log_->SetWrapMode(wxSTC_WRAP_WHITESPACE);
+	text_log_->SetWrapMode(wxSTC_WRAP_WORD);
 	text_log_->SetSizeHints(wxSize(-1, 0));
 	vbox->Add(text_log_, 1, wxEXPAND | wxALL, 4);
 
