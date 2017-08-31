@@ -14,7 +14,7 @@ zscript
 		class, default, private, static, native, return, if, else, for, while, do, break, continue,
 		deprecated, state, null, readonly, true, false, struct, extend, clearscope, vararg, ui, play,
 		virtual, virtualscope, meta, Property, version, in, out, states, action, override, super, is,
-		let, const, replaces, protected
+		let, const, replaces, protected, self
 	}
 
 	types =

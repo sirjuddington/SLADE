@@ -178,22 +178,22 @@ void Lexer::addWord(string word, int style)
 // Applies a style to [word] in [editor], depending on if it is in the word
 // list, a number or begins with the preprocessor character
 // ----------------------------------------------------------------------------
-void Lexer::styleWord(TextEditorCtrl* editor, string word)
+void Lexer::styleWord(LexerState& state, string word)
 {
 	if (!language_->caseSensitive())
 		word = word.Lower();
 
 	if (word_list_[word].style > 0)
-		editor->SetStyling(word.length(), word_list_[word].style);
+		state.editor->SetStyling(word.length(), word_list_[word].style);
 	else if (word.StartsWith(language_->preprocessor()))
-		editor->SetStyling(word.length(), Style::Preprocessor);
+		state.editor->SetStyling(word.length(), Style::Preprocessor);
 	else
 	{
 		// Check for number
 		if (re_int2_.Matches(word) || re_int1_.Matches(word) || re_float_.Matches(word) || re_int3_.Matches(word))
-			editor->SetStyling(word.length(), Style::Number);
+			state.editor->SetStyling(word.length(), Style::Number);
 		else
-			editor->SetStyling(word.length(), Style::Default);
+			state.editor->SetStyling(word.length(), Style::Default);
 	}
 }
 
@@ -294,7 +294,7 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Start of doc line comment
-		else if (checkToken(state.editor, state.position, comment_doc))
+		else if (checkToken(state, state.position, comment_doc))
 		{
 			// Format as comment to end of line
 			state.editor->SetStyling(u_length, Style::Default);
@@ -303,7 +303,7 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Start of line comment
-		else if (checkToken(state.editor, state.position, comment_line))
+		else if (checkToken(state, state.position, comment_line))
 		{
 			// Format as comment to end of line
 			state.editor->SetStyling(u_length, Style::Default);
@@ -312,7 +312,7 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Start of block comment
-		else if (checkToken(state.editor, state.position, comment_begin))
+		else if (checkToken(state, state.position, comment_begin))
 		{
 			state.state = State::Comment;
 			state.position += comment_begin.size();
@@ -370,11 +370,11 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Block begin
-		else if (checkToken(state.editor, state.position, block_begin))
+		else if (checkToken(state, state.position, block_begin))
 			state.fold_increment++;
 
 		// Block end
-		else if (checkToken(state.editor, state.position, block_end))
+		else if (checkToken(state, state.position, block_end))
 			state.fold_increment--;
 
 		//LOG_MESSAGE(4, "unknown char '%c' (%d)", c, c);
@@ -410,7 +410,7 @@ bool Lexer::processComment(LexerState& state)
 		}
 
 		// End of comment
-		if (checkToken(state.editor, state.position, comment_block_end))
+		if (checkToken(state, state.position, comment_block_end))
 		{
 			state.length += comment_block_end.size();
 			state.position += comment_block_end.size();
@@ -492,7 +492,7 @@ bool Lexer::processWord(LexerState& state)
 	if (debug_lexer)
 		Log::debug(S_FMT("word:%s", word_string));
 
-	styleWord(state.editor, word_string);
+	styleWord(state, word_string);
 
 	return end;
 }
@@ -664,13 +664,13 @@ bool Lexer::processWhitespace(LexerState& state)
 //
 // Checks if the text in [editor] starting from [pos] matches [token]
 // ----------------------------------------------------------------------------
-bool Lexer::checkToken(TextEditorCtrl* editor, int pos, string& token)
+bool Lexer::checkToken(LexerState& state, int pos, string& token)
 {
 	if (!token.empty())
 	{
 		size_t token_size = token.size();
 		for (unsigned a = 0; a < token_size; a++)
-			if (editor->GetCharAt(pos + a) != (int)token[a])
+			if (state.editor->GetCharAt(pos + a) != (int)token[a])
 				return false;
 
 		return true;
@@ -713,4 +713,108 @@ void Lexer::updateFolding(TextEditorCtrl* editor, int line_start)
 
 		fold_level = next_level;
 	}
+}
+
+// ----------------------------------------------------------------------------
+// Lexer::isFunction
+//
+// Returns true if the word from [start_pos] to [end_pos] in [editor] is a
+// function
+// ----------------------------------------------------------------------------
+bool Lexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
+{
+	string word = editor->GetTextRange(start_pos, end_pos);
+	return word_list_[language_->caseSensitive() ? word : word.MakeLower()].style == (int)Style::Function;
+}
+
+
+// ----------------------------------------------------------------------------
+//
+// ZScriptLexer Class Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// ZScriptLexer::addWord
+//
+// Sets the [style] for [word], or adds it to the functions list if [style]
+// is Function
+// ----------------------------------------------------------------------------
+void ZScriptLexer::addWord(string word, int style)
+{
+	if (style == Style::Function)
+		functions_.push_back(language_->caseSensitive() ? word : word.Lower());
+	else
+		Lexer::addWord(word, style);
+}
+
+// ----------------------------------------------------------------------------
+// ZScriptLexer::styleWord
+//
+// ZScript version of Lexer::styleWord - functions require a following '('
+// ----------------------------------------------------------------------------
+void ZScriptLexer::styleWord(LexerState& state, string word)
+{
+	// Skip whitespace after word
+	auto index = state.position;
+	while (index < state.end)
+	{
+		if (!(VECTOR_EXISTS(whitespace_chars_, state.editor->GetCharAt(index))))
+			break;
+		++index;
+	}
+
+	// Check for '(' (possible function)
+	if (state.editor->GetCharAt(index) == '(')
+	{
+		if (!language_->caseSensitive())
+			word = word.Lower();
+
+		if (VECTOR_EXISTS(functions_, word))
+		{
+			state.editor->SetStyling(word.length(), Style::Function);
+			return;
+		}
+	}
+
+	Lexer::styleWord(state, word);
+}
+
+// ----------------------------------------------------------------------------
+// ZScriptLexer::clearWords
+//
+// Clears out all defined words
+// ----------------------------------------------------------------------------
+void ZScriptLexer::clearWords()
+{
+	functions_.clear();
+	Lexer::clearWords();
+}
+
+// ----------------------------------------------------------------------------
+// ZScriptLexer::isFunction
+//
+// Returns true if the word from [start_pos] to [end_pos] in [editor] is a
+// function
+// ----------------------------------------------------------------------------
+bool ZScriptLexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
+{
+	// Check for '(' after word
+
+	// Skip whitespace
+	auto index = end_pos;
+	auto end = editor->GetTextLength();
+	while (index < end)
+	{
+		if (!(VECTOR_EXISTS(whitespace_chars_, editor->GetCharAt(index))))
+			break;
+		++index;
+	}
+	if (editor->GetCharAt(index) != '(')
+		return false;
+
+	// Check if word is a function name
+	string word = editor->GetTextRange(start_pos, end_pos);
+	return VECTOR_EXISTS(functions_, language_->caseSensitive() ? word : word.Lower());
 }

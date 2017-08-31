@@ -167,7 +167,9 @@ wxThread::ExitCode JumpToCalculator::Entry()
 // TextEditorCtrl class constructor
 // ----------------------------------------------------------------------------
 TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
-wxStyledTextCtrl(parent, id), timer_update_(this)
+	wxStyledTextCtrl(parent, id),
+	timer_update_(this),
+	lexer_{ std::make_unique<Lexer>() }
 {
 	// Init variables
 	language_ = nullptr;
@@ -373,14 +375,20 @@ bool TextEditorCtrl::setLanguage(TextLanguage* lang)
 		autocomp_list_.Clear();
 
 		// Set lexer to basic mode
-		lexer_.loadLanguage(nullptr);
+		lexer_->loadLanguage(nullptr);
 	}
 
 	// Setup syntax hilighting if needed
 	else
 	{
+		// Create correct lexer type for language
+		if (lang->id() == "zscript")
+			lexer_ = std::make_unique<ZScriptLexer>();
+		else
+			lexer_ = std::make_unique<Lexer>();
+
 		// Load to lexer
-		lexer_.loadLanguage(lang);
+		lexer_->loadLanguage(lang);
 
 		// Load autocompletion list
 		autocomp_list_ = lang->autocompletionList();
@@ -885,6 +893,10 @@ bool TextEditorCtrl::openCalltip(int pos, int arg, bool dwell)
 	int start = WordStartPosition(pos - 1, false);
 	int end = WordEndPosition(pos - 1, true);
 
+	// Check with the lexer if we have a function
+	if (!lexer_->isFunction(this, WordStartPosition(start, true), WordEndPosition(start, true)))
+		return false;
+
 	// Get word before bracket
 	string word = GetTextRange(WordStartPosition(start, true), WordEndPosition(start, true));
 
@@ -1113,8 +1125,8 @@ void TextEditorCtrl::setupFolding()
 	if (txed_fold_enable)
 	{
 		// Set folding options
-		lexer_.foldComments(txed_fold_comments);
-		lexer_.foldPreprocessor(txed_fold_preprocessor);
+		lexer_->foldComments(txed_fold_comments);
+		lexer_->foldPreprocessor(txed_fold_preprocessor);
 
 		int flags = 0;
 		if (txed_fold_debug)
@@ -1885,14 +1897,14 @@ void TextEditorCtrl::onStyleNeeded(wxStyledTextEvent& e)
 		if (start > end)
 			end = start;
 
-		force_next = lexer_.doStyling(this, start, end);
+		force_next = lexer_->doStyling(this, start, end);
 		l++;
 	}
 
 	if (txed_fold_enable)
 	{
 		auto modified = last_modified_;
-		lexer_.updateFolding(this, line_start);
+		lexer_->updateFolding(this, line_start);
 		last_modified_ = modified;
 	}
 }
