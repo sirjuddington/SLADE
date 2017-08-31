@@ -49,11 +49,13 @@ namespace ZScript
 		string	name() const { return name_; }
 		bool	native() const { return native_; }
 		string	deprecated() const { return deprecated_; }
+		string	version() const { return version_; }
 
 	protected:
 		string	name_;
 		bool	native_		= false;
 		string	deprecated_;
+		string	version_;
 	};
 
 	class Variable : public Identifier

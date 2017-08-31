@@ -47,6 +47,15 @@ namespace ZScript
 {
 	EntryType*	etype_zscript = nullptr;
 
+	// ZScript keywords (can't be function/variable names)
+	vector<string> keywords =
+	{
+		"class", "default", "private", "static", "native", "return", "if", "else", "for", "while", "do", "break",
+		"continue", "deprecated", "state", "null", "readonly", "true", "false", "struct", "extend", "clearscope",
+		"vararg", "ui", "play", "virtual", "virtualscope", "meta", "Property", "version", "in", "out", "states",
+		"action", "override", "super", "is", "let", "const", "replaces", "protected", "self"
+	};
+
 	// For test_parse_zscript console command
 	bool	dump_parsed_blocks = false;
 	bool	dump_parsed_states = false;
@@ -122,7 +131,7 @@ string parseType(const vector<string>& tokens, unsigned& index)
 }
 
 // ----------------------------------------------------------------------------
-// parseType
+// parseValue
 //
 // Parses a ZScript value from [tokens] beginning at [index]
 // ----------------------------------------------------------------------------
@@ -162,22 +171,23 @@ string parseValue(const vector<string>& tokens, unsigned& index)
 }
 
 // ----------------------------------------------------------------------------
-// checkDeprecated
+// checkKeywordValueStatement
 //
-// Checks for a ZScript deprecation statement in [tokens] beginning at [index].
-// Returns true if there is a deprecation statement and writes the deprecation
-// version to [version]
+// Checks for a ZScript keyword+value statement in [tokens] beginning at
+// [index], eg. deprecated("#.#") or version("#.#")
+// Returns true if there is a keyword+value statement and writes the value to
+// [value]
 // ----------------------------------------------------------------------------
-bool checkDeprecated(const vector<string>& tokens, unsigned index, string& version)
+bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, const string& word, string& value)
 {
 	if (index + 3 >= tokens.size())
 		return false;
 
-	if (S_CMPNOCASE(tokens[index], "deprecated") &&
+	if (S_CMPNOCASE(tokens[index], word) &&
 		tokens[index + 1] == "(" &&
 		tokens[index + 3] == ")")
 	{
-		version = tokens[index + 2];
+		value = tokens[index + 2];
 		return true;
 	}
 
@@ -245,6 +255,15 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 	// Set entry type
 	if (etype_zscript && entry->getType() != etype_zscript)
 		entry->setType(etype_zscript);
+}
+
+bool isKeyword(const string& word)
+{
+	for (auto& kw : keywords)
+		if (S_CMPNOCASE(word, kw))
+			return true;
+
+	return false;
 }
 
 } // namespace ZScript
@@ -377,13 +396,22 @@ bool Function::parse(ParsedStatement& statement)
 			return_type_ = statement.tokens[index - 2];
 			break;
 		}
-		else if (checkDeprecated(statement.tokens, index, deprecated_))
+		else if (checkKeywordValueStatement(statement.tokens, index, "deprecated", deprecated_))
+			index += 3;
+		else if (checkKeywordValueStatement(statement.tokens, index, "version", version_))
 			index += 3;
 	}
 
 	if (name_.empty() || return_type_.empty())
 	{
 		logParserMessage(statement, Log::MessageType::Warning, "Function parse failed");
+		return false;
+	}
+
+	// Name can't be a keyword
+	if (isKeyword(name_))
+	{
+		logParserMessage(statement, Log::MessageType::Warning, "Function name can't be a keyword");
 		return false;
 	}
 
@@ -458,19 +486,20 @@ bool Function::isFunction(ParsedStatement& statement)
 		return false;
 
 	// Check for ( before =
-	bool deprecated_func = false;
+	bool special_func = false;
 	for (unsigned a = 0; a < statement.tokens.size(); a++)
 	{
 		if (statement.tokens[a] == "=")
 			return false;
 
-		if (!deprecated_func && statement.tokens[a] == "(")
+		if (!special_func && statement.tokens[a] == "(")
 			return true;
 
-		if (S_CMPNOCASE(statement.tokens[a], "deprecated"))
-			deprecated_func = true;
-		else if (deprecated_func && statement.tokens[a] == ")")
-			deprecated_func = false;
+		if (S_CMPNOCASE(statement.tokens[a], "deprecated") ||
+			S_CMPNOCASE(statement.tokens[a], "version"))
+			special_func = true;
+		else if (special_func && statement.tokens[a] == ")")
+			special_func = false;
 	}
 
 	// No ( found
@@ -667,7 +696,11 @@ bool Class::parse(ParsedStatement& class_statement)
 			native_ = true;
 
 		// Deprecated
-		else if (checkDeprecated(class_statement.tokens, a, deprecated_))
+		else if (checkKeywordValueStatement(class_statement.tokens, a, "deprecated", deprecated_))
+			a += 3;
+
+		// Version
+		else if (checkKeywordValueStatement(class_statement.tokens, a, "version", version_))
 			a += 3;
 	}
 
