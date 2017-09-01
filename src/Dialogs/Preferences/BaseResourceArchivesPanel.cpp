@@ -1,172 +1,144 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    BaseResourceArchivesPanel.cpp
- * Description: Panel containing controls to select from and modify
- *              saved paths to base resource archives
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    BaseResourceArchivesPanel.cpp
+// Description: Panel containing controls to select from and modify saved paths
+//              to base resource archives
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "BaseResourceArchivesPanel.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
+#include "Utility/SFileDialog.h"
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// External Variables
+//
+// ----------------------------------------------------------------------------
 EXTERN_CVAR(Int, base_resource)
 EXTERN_CVAR(String, dir_last)
+EXTERN_CVAR(String, zdoom_pk3_path)
 
 
-/*******************************************************************
- * BASERESOURCEARCHIVESPANEL CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// BaseResourceArchivesPanel Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* BaseResourceArchivesPanel::BaseResourceArchivesPanel
- * BaseResourceArchivesPanel class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// BaseResourceArchivesPanel::BaseResourceArchivesPanel
+//
+// BaseResourceArchivesPanel class constructor
+// ----------------------------------------------------------------------------
 BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent)
 	: wxPanel(parent, -1)
 {
 	// Setup sizer
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	SetSizer(hbox);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(sizer);
 
 	// Init paths list
-	//int sel_index = -1;
-	list_base_archive_paths = new wxListBox(this, -1);
+	list_base_archive_paths_ = new wxListBox(this, -1);
 	for (size_t a = 0; a < App::archiveManager().numBaseResourcePaths(); a++)
-	{
-		list_base_archive_paths->Append(App::archiveManager().getBaseResourcePath(a));
-	}
+		list_base_archive_paths_->Append(App::archiveManager().getBaseResourcePath(a));
 
 	// Select the currently open base archive if any
 	if (base_resource >= 0)
-		list_base_archive_paths->Select(base_resource);
+		list_base_archive_paths_->Select(base_resource);
 
 	// Add paths list
-	hbox->Add(list_base_archive_paths, 1, wxEXPAND|wxALL, 4);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 1, wxEXPAND);
+	hbox->Add(list_base_archive_paths_, 1, wxEXPAND|wxALL, 4);
 
 	// Setup buttons
-	btn_add = new wxButton(this, -1, "Add Archive");
-	btn_remove = new wxButton(this, -1, "Remove Archive");
-	btn_detect = new wxButton(this, -1, "Detect Archives");
+	btn_add_ = new wxButton(this, -1, "Add Archive");
+	btn_remove_ = new wxButton(this, -1, "Remove Archive");
+	btn_detect_ = new wxButton(this, -1, "Detect Archives");
 
-	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(btn_add, 0, wxEXPAND|wxBOTTOM, 4);
-	vbox->Add(btn_remove, 0, wxEXPAND|wxBOTTOM, 4);
-	vbox->Add(btn_detect, 0, wxEXPAND|wxBOTTOM, 4);
+	auto vbox = new wxBoxSizer(wxVERTICAL);
+	vbox->Add(btn_add_, 0, wxEXPAND|wxBOTTOM, 4);
+	vbox->Add(btn_remove_, 0, wxEXPAND|wxBOTTOM, 4);
+	vbox->Add(btn_detect_, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(vbox, 0, wxEXPAND|wxALL, 4);
 
+	// ZDoom.pk3 path
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
+
+	text_zdoom_pk3_path_ = new wxTextCtrl(this, -1, zdoom_pk3_path, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+	hbox->Add(new wxStaticText(this, -1, "ZDoom PK3 Path:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
+	hbox->Add(text_zdoom_pk3_path_, 1, wxALIGN_CENTER_VERTICAL);
+
+	btn_browse_zdoom_pk3_ = new wxButton(this, -1, "Browse");
+	hbox->Add(btn_browse_zdoom_pk3_, 0, wxEXPAND | wxLEFT, 4);
+
 	// Bind events
-	btn_add->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnAdd, this);
-	btn_remove->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnRemove, this);
-	btn_detect->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnDetect, this);
+	btn_add_->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnAdd, this);
+	btn_remove_->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnRemove, this);
+	btn_detect_->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnDetect, this);
+	btn_browse_zdoom_pk3_->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnBrowseZDoomPk3, this);
 
 	// Init layout
 	Layout();
 }
 
-/* BaseResourceArchivesPanel::~BaseResourceArchivesPanel
- * BaseResourceArchivesPanel class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// BaseResourceArchivesPanel::~BaseResourceArchivesPanel
+//
+// BaseResourceArchivesPanel class destructor
+// ----------------------------------------------------------------------------
 BaseResourceArchivesPanel::~BaseResourceArchivesPanel()
 {
 }
 
-/* BaseResourceArchivesPanel::getSelectedPath
- * Returns the currently selected base resource path
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// BaseResourceArchivesPanel::getSelectedPath
+//
+// Returns the currently selected base resource path
+// ----------------------------------------------------------------------------
 int BaseResourceArchivesPanel::getSelectedPath()
 {
-	return list_base_archive_paths->GetSelection();
-}
-
-
-/*******************************************************************
- * BASERESOURCEARCHIVESPANEL CLASS EVENTS
- *******************************************************************/
-
-/* BaseResourceArchivesPanel::onBtnAdd
- * Called when the 'Add Archive' button is clicked
- *******************************************************************/
-void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
-{
-	// Create extensions string
-	string extensions = App::archiveManager().getArchiveExtensionsString();
-
-	// Open a file browser dialog that allows multiple selection
-	wxFileDialog dialog_open(this, "Choose file(s) to open", dir_last, wxEmptyString, extensions, wxFD_OPEN|wxFD_MULTIPLE|wxFD_FILE_MUST_EXIST, wxDefaultPosition);
-
-	// Run the dialog & check that the user didn't cancel
-	if (dialog_open.ShowModal() == wxID_OK)
-	{
-		// Get an array of selected filenames
-		wxArrayString files;
-		dialog_open.GetPaths(files);
-
-		// Add each to the paths list
-		for (size_t a = 0; a < files.size(); a++)
-		{
-			if (App::archiveManager().addBaseResourcePath(files[a]))
-				list_base_archive_paths->Append(files[a]);
-		}
-
-		// Save 'dir_last'
-		dir_last = dialog_open.GetDirectory();
-	}
-}
-
-/* BaseResourceArchivesPanel::onBtnRemove
- * Called when the 'Remove Archive' button is clicked
- *******************************************************************/
-void BaseResourceArchivesPanel::onBtnRemove(wxCommandEvent& e)
-{
-	// Get the selected item index and remove it
-	int index = list_base_archive_paths->GetSelection();
-	list_base_archive_paths->Delete(index);
-
-	// Also remove it from the archive manager
-	App::archiveManager().removeBaseResourcePath(index);
-}
-
-/* BaseResourceArchivesPanel::onBtnDetect
- * Called when the 'Detect Archives' button is clicked
- *******************************************************************/
-void BaseResourceArchivesPanel::onBtnDetect(wxCommandEvent& e)
-{
-	autodetect();
+	return list_base_archive_paths_->GetSelection();
 }
 
 #ifdef __WXMSW__
-/* QueryPathKey
- * Inspired by ZDoom. Automatizes some repetitive steps. Puts the
- * value of a registry key into the reference, and returns true if
- * the value actually exists and isn't an empty string.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// QueryPathKey
+//
+// Inspired by ZDoom. Automatizes some repetitive steps. Puts the value of a
+// registry key into the reference, and returns true if the value actually
+// exists and isn't an empty string.
+// ----------------------------------------------------------------------------
 static bool QueryPathKey(wxRegKey::StdKey hkey, string path, string variable, string &value)
 {
 	wxRegKey key(hkey, path);
@@ -177,9 +149,11 @@ static bool QueryPathKey(wxRegKey::StdKey hkey, string path, string variable, st
 }
 #endif
 
-/* BaseResourceArchivesPanel::autodetect
- * Automatically seek IWADs to populate the list
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// BaseResourceArchivesPanel::autodetect
+//
+// Automatically seek IWADs to populate the list
+// ----------------------------------------------------------------------------
 void BaseResourceArchivesPanel::autodetect()
 {
 	// List of known IWADs and common aliases
@@ -234,10 +208,10 @@ void BaseResourceArchivesPanel::autodetect()
 				if (wxFileExists(iwad))
 				{
 					// Verify existence before adding it to the list
-					if (list_base_archive_paths->FindString(iwad) == wxNOT_FOUND)
+					if (list_base_archive_paths_->FindString(iwad) == wxNOT_FOUND)
 					{
 						App::archiveManager().addBaseResourcePath(iwad);
-						list_base_archive_paths->Append(iwad);
+						list_base_archive_paths_->Append(iwad);
 					}
 				}
 			}
@@ -300,12 +274,91 @@ void BaseResourceArchivesPanel::autodetect()
 		if (wxFileExists(iwad))
 		{
 			// Verify existence before adding it to the list
-			if (list_base_archive_paths->FindString(iwad) == wxNOT_FOUND)
+			if (list_base_archive_paths_->FindString(iwad) == wxNOT_FOUND)
 			{
 				App::archiveManager().addBaseResourcePath(iwad);
-				list_base_archive_paths->Append(iwad);
+				list_base_archive_paths_->Append(iwad);
 			}
 		}
 	}
+}
 
+
+// ----------------------------------------------------------------------------
+//
+// BaseResourceArchivesPanel Class Events
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// BaseResourceArchivesPanel::onBtnAdd
+//
+// Called when the 'Add Archive' button is clicked
+// ----------------------------------------------------------------------------
+void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
+{
+	// Create extensions string
+	string extensions = App::archiveManager().getArchiveExtensionsString();
+
+	// Open a file browser dialog that allows multiple selection
+	wxFileDialog dialog_open(this, "Choose file(s) to open", dir_last, wxEmptyString, extensions, wxFD_OPEN|wxFD_MULTIPLE|wxFD_FILE_MUST_EXIST, wxDefaultPosition);
+
+	// Run the dialog & check that the user didn't cancel
+	if (dialog_open.ShowModal() == wxID_OK)
+	{
+		// Get an array of selected filenames
+		wxArrayString files;
+		dialog_open.GetPaths(files);
+
+		// Add each to the paths list
+		for (size_t a = 0; a < files.size(); a++)
+		{
+			if (App::archiveManager().addBaseResourcePath(files[a]))
+				list_base_archive_paths_->Append(files[a]);
+		}
+
+		// Save 'dir_last'
+		dir_last = dialog_open.GetDirectory();
+	}
+}
+
+// ----------------------------------------------------------------------------
+// BaseResourceArchivesPanel::onBtnRemove
+//
+// Called when the 'Remove Archive' button is clicked
+// ----------------------------------------------------------------------------
+void BaseResourceArchivesPanel::onBtnRemove(wxCommandEvent& e)
+{
+	// Get the selected item index and remove it
+	int index = list_base_archive_paths_->GetSelection();
+	list_base_archive_paths_->Delete(index);
+
+	// Also remove it from the archive manager
+	App::archiveManager().removeBaseResourcePath(index);
+}
+
+// ----------------------------------------------------------------------------
+// BaseResourceArchivesPanel::onBtnDetect
+//
+// Called when the 'Detect Archives' button is clicked
+// ----------------------------------------------------------------------------
+void BaseResourceArchivesPanel::onBtnDetect(wxCommandEvent& e)
+{
+	autodetect();
+}
+
+// ----------------------------------------------------------------------------
+// BaseResourceArchivesPanel::onBtnBrowseZDoomPk3
+//
+// Called when the 'Browse' for zdoom pk3 button is clicked
+// ----------------------------------------------------------------------------
+void BaseResourceArchivesPanel::onBtnBrowseZDoomPk3(wxCommandEvent& e)
+{
+	SFileDialog::fd_info_t info;
+	if (SFileDialog::openFile(info, "Browse ZDoom PK3", "Pk3 Files (*.pk3)|*.pk3"))
+	{
+		text_zdoom_pk3_path_->SetValue(info.filenames[0]);
+		zdoom_pk3_path = info.filenames[0];
+	}
 }

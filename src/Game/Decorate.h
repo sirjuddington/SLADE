@@ -20,6 +20,6 @@ namespace Game
 	bool readDecorateDefs(
 		Archive* archive,
 		std::map<int, ThingType>& types,
-		std::map<string, ThingType>& parsed
+		vector<ThingType>& parsed
 	);
 }

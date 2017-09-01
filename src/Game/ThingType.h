@@ -23,7 +23,7 @@ namespace Game
 			FLAG_OBSOLETE = 1 << 6,		// Thing is flagged as obsolete
 		};
 
-		ThingType(const string& name = "Unknown", const string& group = "");
+		ThingType(const string& name = "Unknown", const string& group = "", const string& class_name = "");
 		~ThingType() {}
 
 		void	copy(const ThingType& copy);
@@ -53,6 +53,7 @@ namespace Game
 		const ArgSpec&	argSpec() const { return args_; }
 		int				number() const { return number_; }
 		bool 			decorate() const { return decorate_; }
+		const string&	className() const { return class_name_; }
 
 		void	setSprite(string sprite) { this->sprite_ = sprite; }
 
@@ -92,6 +93,7 @@ namespace Game
 		int			flags_;
 		TagType		tagged_;
 		int			number_;
+		string		class_name_;
 
 		static ThingType	unknown_;
 	};

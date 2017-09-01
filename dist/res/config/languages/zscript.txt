@@ -1,156 +1,25 @@
 
-zscript : decorate
+zscript
 {
 	name = "ZDoom ZScript";
 	keyword_link = "http://zdoom.org/wiki/Special:Search/%s";
 	constant_link = "http://zdoom.org/wiki/Special:Search/%s";
 	function_link = "http://zdoom.org/wiki/%s";
 	case_sensitive = false;
-	blocks = "class", "struct";
+	blocks = "class", "struct", "enum";
 
 	keywords =
 	{
-		//$override,
-
 		// General keywords
 		class, default, private, static, native, return, if, else, for, while, do, break, continue,
-		deprecated, state, null, readonly, true, false, struct, extend,
+		deprecated, state, null, readonly, true, false, struct, extend, clearscope, vararg, ui, play,
+		virtual, virtualscope, meta, Property, version, in, out, states, action, override, super, is,
+		let, const, replaces, protected, self
+	}
 
-		// Types
+	types =
+	{
 		object, vector2, vector3, name, string, color, sound, void, double, bool, int, float,
-
-		// States
-		States, Spawn, See, Melee, Missile, Pain, Death, XDeath, Burn, Ice, Disintegrate,
-		Raise, Heal, Crash, Crush, Wound, Greetings, Yes, No, Extreme, Bounce, Floor, Ceiling,
-		Wall, Creature, Loop, Stop, Wait, Fail, Goto, Ready, Deselect, Select, Fire, AltFire,
-		Hold, AltHold, Flash, AltFlash, Reload, Zoom, Pickup, Use, Drop, Bright, Fast, Slow, NoDelay,
-		CanRaise, Idle, Active, Inactive, Light, Offset, Action, Native, Const, Enum, Replaces,
-		LightDone, Super, Spray, GenericFreezeDeath, GenericCrush, User1, User2, User3, User4,
-		DeadLowered,
-
-		// Properties
-		// (if more word lists were allowed by the scintilla lexer these would not be in the 'keywords' list, but oh well)
-		Pos, Prev, SpriteAngle, SpriteRotation, VisibleStartAngle, VisibleStartPitch,
-		VisibleEndAngle, VisibleEndPitch, Angle, Pitch, Roll, Vel, Speed, FloatSpeed, Sprite,
-		FloorSector, FloorPic, FloorTerrain, CeilingSector, CeilingPic, Height, Radius,
-		ProjectilePassHeight, Tics, CurState, Damage, ProjectileKickBack, Special1, Special2,
-		SpecialF1, SpecialF2, WeaponSpecial, Health, MoveDir, VisDir, MoveCount, StrafeCount,
-		Target, Master, Tracer, LastHeard, LastEnemy, LastLookActor, ReactionTime, Threshold,
-		DefThreshold, SpawnPoint, SpawnAngle, StartHealth, WeaveIndexXY, WeaveIndexZ,
-		SkillRespawnCount, Args, Mass, Special, TID, TIDtoHate, WaterLevel, Score, Accuracy,
-		Stamina, MeleeRange, PainThreshold, Gravity, FloorClip, DamageType, DamageTypeReceived,
-		FloatBobPhase, RipperLevel, RipLevelMin, RipLevelMax, Species, Alternative, Goal,
-		MinMissileChance, LastLookPlayerNumber, SpawnFlags, MeleeThreshold, MaxTargetRange,
-		BounceFactor, WallBounceFactor, BounceCount, Friction, FastChaseStrafeCount,
-		PushFactor, LastPush, ActivationType, LastBump, DesignatedTeam, BlockingMobj,
-		PoisonDamage, PoisonDamageType, PoisonDuration, PoisonPeriod, PoisonDamageReceived,
-		PoisonDamageTypeReceived, PoisonDurationReceived, PoisonPeriodReceived, Poisoner,
-		Inv, SmokeCounter, FriendPlayer, Translation, AttackSound, DeathSound, SeeSound,
-		PainSound, ActiveSound, UseSound, BounceSound, WallBounceSound, CrushPainSound,
-		MaxDropoffHeight, MaxStepHeight, PainChance, PainType, DeathType, DamageFactor,
-		DamageMultiply, TelefogSourceType, TelefogDestType, SpawnState, SeeState, MeleeState,
-		MissileState, Scale, RenderState, Alpha, VisibleAngles, VisiblePitch
-	}
-
-	constants =
-	{
-		// EMaskRotationFlags
-		VRF_NOANGLESTART, VRF_NOANGLEEND, VRF_NOPITCHSTART, VRF_NOPITCHEND, VRF_NOANGLE, VRF_NOPITCH,
-
-		// ERenderStyle
-		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_OptFuzzy, STYLE_Stencil,
-		STYLE_Translucent, STYLE_Add, STYLE_Shaded, STYLE_TranslucentStencil, STYLE_Shadow,
-		STYLE_Subtract, STYLE_AddStencil, STYLE_AddShaded,
-
-		// EStateType
-		STATE_Actor, STATE_Psprite, STATE_StateChain,
-
-		// EAimFlags
-		ALF_FORCENOSMART, ALF_CHECK3D, ALF_CHECKNONSHOOTABLE, ALF_CHECKCONVERSATION, ALF_NOFRIENDS,
-		ALF_PORTALRESTRICT,
-
-		// ELineAttackFlags
-		LAF_ISMELEEATTACK, LAF_NORANDOMPUFFZ, LAF_NOIMPACTDECAL, LAF_NOINTERACT,
-
-		// ESightFlags
-		SF_IGNOREVISIBILITY, SF_SEEPASTSHOOTABLELINES, SF_SEEPASTBLOCKEVERYTHING,
-		SF_IGNOREWATERBOUNDARY,
-
-		// EDmgFlags
-		DMG_NO_ARMOR, DMG_INFLICTOR_IS_PUFF, DMG_THRUSTLESS, DMG_FORCED, DMG_NO_FACTOR,
-		DMG_PLAYERATTACK, DMG_FOILINVUL, DMG_FOILBUDDHA, DMG_NO_PROTECT, DMG_USEANGLE,
-
-		// EReplace
-		NO_REPLACE, ALLOW_REPLACE,
-
-		// Other
-		SAWRANGE, MISSILERANGE, PLAYERMISSILERANGE, FLAG_NO_CHANGE
-	}
-
-	functions
-	{
-		bool IsPointerEqual = "int ptr_select1, int ptr_select2";
-		readonly<Actor> GetDefaultByType = "class<Actor> cls";
-		float deltaangle = "float ang1, float ang2";
-		void SetDamage = "int dmg";
-		bool isDehState = "state st";
-		void SetOrigin = "vector3 newpos, bool moving";
-		void SetXYZ = "vector3 newpos";
-		Actor GetPointer = "int aaptr";
-		Actor Spawn = "class<Actor> type, [vector3 pos], [int replace]";
-		Actor SpawnMissile = "Actor dest, class<Actor> type, [Actor owner]";
-		Actor OldSpawnMissile = "Actor dest, class<Actor> type, [Actor owner]";
-		Actor SpawnPuff = "class<Actor> pufftype, vector3 pos, float hitdir, float particledir, int updown, [int flags], [Actor vict]";
-		void TraceBleed = "int damage, Actor missile";
-		bool CheckMeleeRange;
-		int DamageMobj = "Actor inflictor, Actor source, int damage, Name mod, [int flags], [double angle]";
-		//double AimLineAttack = "double angle, double distance, [out FTranslatedLineTarget pLineTarget], [double vrange], [int flags], [Actor target], [Actor friender]";
-		//Actor, int LineAttack = "double angle, double distance, double pitch, int damage, Name damageType, class<Actor> pufftype, [int flags], [out FTranslatedLineTarget victim]";
-		bool CheckSight = "Actor target, [int flags]";
-		bool HitFriend;
-		bool SetState = "state st, [bool nofunction]";
-		void LinkToWorld;
-		void UnlinkFromWorld;
-		bool CanSeek = "Actor target";
-		double AngleTo = "Actor target, [bool absolute]";
-		void AddZ = "float zadd";
-		vector3 Vec3Offset = "float x, float y, float z, [bool absolute]";
-		vector3 Vec3Angle = "float length, float angle, [float z], [bool absolute]";
-		vector3 Vec2OffsetZ = "float x, float y, float atz, [bool absolute]";
-		void VelFromAngle = "[float speed], [float angle]";
-		bool isFriend = "Actor other";
-		void AdjustFloorClip;
-		DropItem GetDropItems;
-		void CopyFriendliness  = "Actor other, bool changeTarget, [bool resetHealth]";
-		bool LookForPlayers = "bool allaround";
-		bool TeleportMove = "Vector3 pos, bool telefrag, [bool modifyactor]";
-		double DistanceBySpeed = "Actor other, double speed";
-		name GetSpecies;
-
-		bool CheckClass = "class<Actor> checkclass, [int ptr_select], [bool match_superclass]";
-		int	CountInv = "class<Inventory> itemtype, [int ptr_select]";
-		float GetDistance = "bool checkz, [int ptr]";
-		float GetAngle = "int flags, [int ptr]";
-		float GetZAt = "[float px], [float py], [float angle], [int flags], [int pick_pointer]";
-		int GetSpawnHealth;
-		int GetGibHealth;
-		float GetCrouchFactor = "[int ptr]";
-		float GetCVar = "string cvar";
-		int GetPlayerInput = "int inputnum, [int ptr]";
-		int CountProximity = "class<Actor> classname, float distance, [int flags], [int ptr]";
-		float GetSpriteAngle = "[int ptr]";
-		float GetSpriteRotation = "[int ptr]";
-		int GetMissileDamage = "int mask, int add, [int ptr]";
-		int OverlayID;
-		float OverlayX = "[int layer]";
-		float OverlayY = "[int layer]";
-
-		void A_Face = "Actor faceto, [float max_turn], [float max_pitch], [float ang_offset], [float pitch_offset], [int flags], [float z_ofs]";
-		void A_ChangeLinkFlags = "[int blockmap], [int sector]";
-		bool A_SetInventory = "class<Inventory> itemtype, int amount, [int ptr], [bool beyondMax]";
-		void A_SetRenderStyle = "float alpha, int style";
-		void A_ChangeCountFlags = "[int kill], [int item], [int secret]";
-		bool A_SetVisibleRotation = "[float anglestart], [float angleend], [float pitchstart], [float pitchend], [int flags], [int ptr]";
-		void A_SetTranslation = "string transname";
+		uint8, uint16, uint, int8, int16, TextureID, SpriteID, Array, voidptr, short
 	}
 }

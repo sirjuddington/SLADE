@@ -57,12 +57,13 @@ ThingType ThingType::unknown_;
 //
 // ThingType class constructor
 // ----------------------------------------------------------------------------
-ThingType::ThingType(const string& name, const string& group) :
+ThingType::ThingType(const string& name, const string& group, const string& class_name) :
 	name_{ name },
 	group_{ group },
 	colour_{ 170, 170, 180, 255, 0 },
 	radius_{ 20 },
 	height_{ -1 },
+	scale_{ 1.0, 1.0 },
 	angled_{ true },
 	hanging_{ false },
 	shrink_{ false },
@@ -76,7 +77,7 @@ ThingType::ThingType(const string& name, const string& group) :
 	flags_{ 0 },
 	tagged_{ TagType::None },
 	number_{ -1 },
-	scale_{ 1.0, 1.0 }
+	class_name_{ class_name }
 {
 	// Init args
 	args_.count = 0;

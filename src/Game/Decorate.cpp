@@ -40,6 +40,18 @@
 
 using namespace Game;
 
+
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
+namespace
+{
+	EntryType* etype_decorate = nullptr;
+}
+
+
 // ----------------------------------------------------------------------------
 //
 // Local Functions
@@ -47,19 +59,6 @@ using namespace Game;
 // ----------------------------------------------------------------------------
 namespace
 {
-
-struct DecorateState
-{
-	struct Frame
-	{
-		string	sprite_base;
-		string	sprite_frame;
-		int		duration;
-	};
-
-	string			name;
-	vector<Frame>	frames;
-};
 
 // ----------------------------------------------------------------------------
 // parseStates
@@ -246,16 +245,17 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 void parseDecorateActor(
 	Tokenizer& tz,
 	std::map<int, ThingType>& types,
-	std::map<string, ThingType>& parsed)
+	vector<ThingType >& parsed)
 {
 	// Get actor name
 	string name = tz.next().text;
 	string actor_name = name;
+	string parent;
 
 	// Check for inheritance
 	//string next = tz.peekToken();
-	if (tz.checkNext(":"))
-		tz.adv(2); // Skip ':' and parent
+	if (tz.advIfNext(":"))
+		parent = tz.next().text;
 		
 	// Check for replaces
 	if (tz.checkNextNC("replaces"))
@@ -266,11 +266,11 @@ void parseDecorateActor(
 		tz.adv();
 
 	// Check for no editor number (ie can't be placed in the map)
-	int type;
+	int ednum;
 	if (!tz.peek().isInteger())
-		type = -1;
+		ednum = -1;
 	else
-		tz.next().toInt(type);
+		tz.next().toInt(ednum);
 		
 	PropertyList found_props;
 	bool available = false;
@@ -424,7 +424,7 @@ void parseDecorateActor(
 			tz.adv();
 		}
 
-		LOG_MESSAGE(3, "Parsed actor %s: %d", name, type);
+		LOG_MESSAGE(3, "Parsed actor %s: %d", name, ednum);
 	}
 	else
 		LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", name);
@@ -433,20 +433,50 @@ void parseDecorateActor(
 	// and actors with a negative or null type
 	if (available || !filters_present)
 	{
+		string group_path = group.empty() ? "Decorate" : "Decorate/" + group;
+
+		// Find existing definition or create it
+		ThingType* def = nullptr;
+		if (ednum <= 0)
+		{
+			for (auto& ptype : parsed)
+				if (S_CMPNOCASE(ptype.className(), actor_name))
+				{
+					def = &ptype;
+					break;
+				}
+
+			if (!def)
+			{
+				parsed.push_back(ThingType(name, group_path, actor_name));
+				def = &parsed.back();
+			}
+		}
+		else
+			def = &types[ednum];
+
 		// Add/update definition
-		auto& def = (type > 0) ? types[type] : parsed[actor_name];
-		def.define(type, name, group.empty() ? "Decorate" : "Decorate/" + group);
+		def->define(ednum, name, group_path);
 
 		// Set group defaults (if any)
 		if (!group.empty())
 		{
 			auto& group_defaults = configuration().thingTypeGroupDefaults(group);
 			if (!group_defaults.group().empty())
-				def.copy(group_defaults);
+				def->copy(group_defaults);
 		}
 
+		// Inherit from parent
+		if (!parent.empty())
+			for (auto& ptype : parsed)
+				if (S_CMPNOCASE(ptype.className(), parent))
+				{
+					def->copy(ptype);
+					break;
+				}
+
 		// Set parsed properties
-		def.loadProps(found_props);
+		def->loadProps(found_props);
 	}
 }
 
@@ -548,29 +578,11 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 }
 
 // ----------------------------------------------------------------------------
-// getIncludeEntry
-//
-// Returns the entry at [path] relative to [base], or failing that, the entry
-// at absolute [path] in the archive
-// ----------------------------------------------------------------------------
-ArchiveEntry* getIncludeEntry(ArchiveEntry* base, const string& path)
-{
-	// Try relative to the base entry
-	auto include = base->getParent()->entryAtPath(base->getPath() + path);
-
-	// Try absolute path
-	if (!include)
-		include = base->getParent()->entryAtPath(path);
-
-	return include;
-}
-
-// ----------------------------------------------------------------------------
 // parseDecorateEntry
 //
 // Parses all DECORATE thing definitions in [entry] and adds them to [types]
 // ----------------------------------------------------------------------------
-void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, std::map<string, ThingType>& parsed)
+void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, vector<ThingType>& parsed)
 {
 	// Init tokenizer
 	Tokenizer tz;
@@ -581,12 +593,10 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, st
 	// --- Parse ---
 	while (!tz.atEnd())
 	{
-		Log::debug(2, S_FMT("token %s", CHR(tz.current().text)));
-
 		// Check for #include
 		if (tz.checkNC("#include"))
 		{
-			auto inc_entry = getIncludeEntry(entry, tz.next().text);
+			auto inc_entry = entry->relativeEntry(tz.next().text);
 
 			// Check #include path could be resolved
 			if (!inc_entry)
@@ -614,6 +624,10 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, st
 
 		tz.advIf("}");
 	}
+
+	// Set entry type
+	if (etype_decorate && entry->getType() != etype_decorate)
+		entry->setType(etype_decorate);
 }
 
 } // namespace
@@ -631,7 +645,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, st
 //
 // Parses all DECORATE thing definitions in [archive] and adds them to [types]
 // ----------------------------------------------------------------------------
-bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, std::map<string, ThingType>& parsed)
+bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, vector<ThingType>& parsed)
 {
 	if (!archive)
 		return false;
@@ -645,6 +659,11 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, s
 		return false;
 
 	Log::info(2, S_FMT("Parsing DECORATE entries found in archive %s", archive->filename()));
+
+	// Get DECORATE entry type (all parsed DECORATE entries will be set to this)
+	etype_decorate = EntryType::getType("decorate");
+	if (etype_decorate == EntryType::unknownType())
+		etype_decorate = nullptr;
 
 	// Parse DECORATE entries
 	for (auto entry : decorate_entries)
@@ -664,7 +683,7 @@ CONSOLE_COMMAND(test_decorate, 0, false)
 		return;
 
 	std::map<int, Game::ThingType> types;
-	std::map<string, Game::ThingType> parsed;
+	vector<ThingType> parsed;
 
 	if (args.size() == 0)
 		Game::readDecorateDefs(archive, types, parsed);
@@ -683,6 +702,6 @@ CONSOLE_COMMAND(test_decorate, 0, false)
 	{
 		Log::console("Parsed types with no DoomEdNum:");
 		for (auto& i : parsed)
-			Log::console(S_FMT("%s: %s", CHR(i.first), CHR(i.second.stringDesc())));
+			Log::console(S_FMT("%s: %s", CHR(i.className()), CHR(i.stringDesc())));
 	}
 }

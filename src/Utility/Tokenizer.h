@@ -26,9 +26,9 @@ public:
 		explicit	operator	const string() const { return text; }
 		explicit	operator	const char*() const { return CHR(text); }
 		bool		operator	==(const string& cmp) const { return text == cmp; }
-		bool		operator	==(const char* cmp) const { return text == cmp; }
+		bool		operator	==(const char* cmp) const { return text.Cmp(cmp) == 0; }
 		bool		operator	!=(const string& cmp) const { return text != cmp; }
-		bool		operator	!=(const char* cmp) const { return text != cmp; }
+		bool		operator	!=(const char* cmp) const { return text.Cmp(cmp) != 0; }
 		char		operator	[](unsigned index) const { return text[index]; }
 
 		bool	isInteger(bool allow_hex = false) const;
@@ -66,7 +66,7 @@ public:
 
 	// Constructors
 	Tokenizer(
-		CommentTypes comments = CommentTypes::Default,
+		int comments = CommentTypes::Default,
 		const string& special_characters = DEFAULT_SPECIAL_CHARACTERS
 	);
 
@@ -78,7 +78,7 @@ public:
 	const Token&	peek() const;
 
 	// Modifiers
-	void	setCommentTypes(CommentTypes types) { comment_types_ = types; }
+	void	setCommentTypes(int types) { comment_types_ = types; }
 	void 	setSpecialCharacters(const char* characters)
 			{ special_characters_.assign(characters, characters + strlen(characters)); }
 	void	setSource(const string& source) { source_ = source; }
@@ -90,7 +90,10 @@ public:
 	const Token&	next();
 	void			adv(int inc = 1);
 	bool			advIf(const char* check, int inc = 1);
+	bool			advIf(const string& check, int inc = 1);
+	bool			advIf(char check, int inc = 1);
 	bool			advIfNC(const char* check, int inc = 1);
+	bool			advIfNC(const string& check, int inc = 1);
 	bool			advIfNext(const char* check, int inc = 1);
 	bool			advIfNextNC(const char* check, int inc = 1);
 	void			advToNextLine();
@@ -103,6 +106,8 @@ public:
 
 	// Token Checking
 	bool	check(const char* check) const { return token_current_ == check; }
+	bool	check(const string& check) const { return token_current_ == check; }
+	bool	check(char check) const { return token_current_[0] == check; }
 	bool	checkOrEnd(const char* check) const;
 	bool	checkNC(const char* check) const { return S_CMPNOCASE(token_current_.text, check); }
 	bool	checkOrEndNC(const char* check) const;
@@ -153,7 +158,7 @@ private:
 	TokenizeState	state_;
 
 	// Configuration
-	CommentTypes	comment_types_;			// Types of comments to skip
+	int				comment_types_;			// Types of comments to skip
 	vector<char>	special_characters_;	// These will always be read as separate tokens
 	string			source_;				// What file/entry/chunk is being tokenized
 	bool			decorate_;				// Special handling for //$ comments

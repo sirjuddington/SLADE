@@ -31,11 +31,15 @@
 //
 // ----------------------------------------------------------------------------
 #include "Main.h"
-#include "Game.h"
-#include "Configuration.h"
-#include "Utility/Parser.h"
-#include "Archive/ArchiveManager.h"
 #include "App.h"
+#include "Archive/ArchiveManager.h"
+#include "Archive/Formats/ZipArchive.h"
+#include "Configuration.h"
+#include "Game.h"
+#include "TextEditor/TextLanguage.h"
+#include "Utility/Parser.h"
+#include "ZScript.h"
+#include <thread>
 
 using namespace Game;
 
@@ -52,9 +56,42 @@ namespace Game
 	GameDef						game_def_unknown;
 	std::map<string, PortDef>	port_defs;
 	PortDef						port_def_unknown;
+	ZScript::Definitions		zscript_base;
+	ZScript::Definitions		zscript_custom;
+	std::unique_ptr<Listener>	listener;
 }
 CVAR(String, game_configuration, "", CVAR_SAVE)
 CVAR(String, port_configuration, "", CVAR_SAVE)
+CVAR(String, zdoom_pk3_path, "", CVAR_SAVE)
+
+
+// ----------------------------------------------------------------------------
+// GameListener Class
+//
+// A Listener to handle custom definition updates resulting from archives being
+// opened or closed, since Game isn't a class
+// ----------------------------------------------------------------------------
+namespace Game
+{
+class GameListener : public Listener
+{
+public:
+	GameListener()
+	{
+		// Listen to archive manager
+		listenTo(&App::archiveManager());
+	}
+
+	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override
+	{
+		if (announcer == &App::archiveManager())
+		{
+			if (event_name == "archive_added" || event_name == "archive_closed")
+				updateCustomDefinitions();
+		}
+	}
+};
+}
 
 
 // ----------------------------------------------------------------------------
@@ -226,6 +263,56 @@ Configuration& Game::configuration()
 }
 
 // ----------------------------------------------------------------------------
+// Game::updateCustomDefinitions
+//
+// Clears and re-parses custom definitions in all open archives
+// (DECORATE, *MAPINFO, ZScript etc.)
+// ----------------------------------------------------------------------------
+void Game::updateCustomDefinitions()
+{
+	// Clear out all existing custom definitions
+	config_current.clearDecorateDefs();
+	config_current.clearMapInfo();
+	zscript_custom.clear();
+
+	// Parse custom definitions in base resource
+	zscript_custom.parseZScript(App::archiveManager().baseResourceArchive());
+	config_current.parseDecorateDefs(App::archiveManager().baseResourceArchive());
+	config_current.parseMapInfo(App::archiveManager().baseResourceArchive());
+
+	// Parse custom definitions in all resource archives
+	vector<Archive*> resource_archives;
+	for (auto a = 0; a < App::archiveManager().numArchives(); a++)
+	{
+		auto archive = App::archiveManager().getArchive(a);
+		if (App::archiveManager().archiveIsResource(archive))
+			resource_archives.push_back(archive);
+	}
+
+	// ZScript first
+	for (auto archive : resource_archives)
+		zscript_custom.parseZScript(archive);
+
+	// Other definitions
+	for (auto archive : resource_archives)
+	{
+		config_current.parseDecorateDefs(archive);
+		config_current.parseMapInfo(archive);
+	}
+
+	// Process custom definitions
+	config_current.importZScriptDefs(zscript_custom);
+	config_current.linkDoomEdNums();
+
+	auto lang = TextLanguage::fromId("zscript");
+	if (lang)
+	{
+		lang->clearCustomDefs();
+		lang->loadZScript(zscript_custom, true);
+	}
+}
+
+// ----------------------------------------------------------------------------
 // Game::parseTagged
 //
 // Returns the tagged type of the parsed tree node [tagged]
@@ -365,6 +452,33 @@ void Game::init()
 	// Load custom special presets
 	if (!loadCustomSpecialPresets())
 		Log::warning("An error occurred loading user special_presets.cfg");
+
+	// Load zdoom.pk3 stuff
+	if (wxFileExists(zdoom_pk3_path))
+	{
+		std::thread thread([=]()
+		{
+			ZipArchive zdoom_pk3;
+			if (!zdoom_pk3.open(zdoom_pk3_path))
+				return;
+
+			// ZScript
+			auto zscript_entry = zdoom_pk3.entryAtPath("zscript.txt");
+			zscript_base.parseZScript(zscript_entry);
+
+			auto lang = TextLanguage::fromId("zscript");
+			if (lang)
+				lang->loadZScript(zscript_base);
+
+			// MapInfo
+			auto mapinfo_entry = zdoom_pk3.entryAtPath("zmapinfo.txt");
+			config_current.parseMapInfo(&zdoom_pk3);
+		});
+		thread.detach();
+	}
+
+	// Init game listener
+	listener = std::make_unique<GameListener>();
 }
 
 // ----------------------------------------------------------------------------

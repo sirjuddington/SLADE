@@ -1,35 +1,55 @@
 #pragma once
 
+namespace ZScript { class Function; class Definitions; }
+
 class TLFunction
 {
 public:
-	struct ArgSet
+	struct Parameter
 	{
-		string	args;
-		string	context;
+		string	type;
+		string	name;
+		string	default_value;
+		bool	optional;
+
+		void	parse(vector<string>& tokens);
 	};
 
-	TLFunction(string name = "", string return_type = "void");
+	struct Context
+	{
+		string				context;
+		vector<Parameter>	params;
+		string				return_type;
+		string				description;
+		string				qualifiers;
+		string				deprecated;
+		bool				custom;
+	};
+
+	TLFunction(string name = "");
 	~TLFunction();
 
-	const string&	name() const { return name_; }
-	ArgSet			argSet(unsigned index) const;
-	const string&	description() const { return description_; }
-	const string&	returnType() const { return return_type_; }
-	unsigned		nArgSets() const { return arg_sets_.size(); }
+	const string&			name() const { return name_; }
+	const vector<Context>&	contexts() const { return contexts_; }
+	Context					context(unsigned index) const;
 
 	void	setName(string name) { this->name_ = name; }
-	void	addArgSet(string args, string context = "") { arg_sets_.push_back({ args, context }); }
-	void	setDescription(string desc) { description_ = desc; }
+	void	addContext(
+				const string& context,
+				const string& args,
+				const string& return_type = "void",
+				const string& description = ""
+			);
+	void	addContext(const string& context, const ZScript::Function& func, bool custom);
 
-	string		generateCallTipString(int arg_set = 0);
-	point2_t	getArgTextExtent(int arg, int arg_set = 0);
+	void	clear() { name_.clear(); contexts_.clear(); }
+	void	clearCustomContexts();
+
+	bool	hasContext(const string& name);
 
 private:
 	string			name_;
-	vector<ArgSet>	arg_sets_;
-	string			description_;
-	string			return_type_;
+	vector<Context>	contexts_;
 };
 
 class TextLanguage
@@ -79,7 +99,7 @@ public:
 	void	setPreprocessor(string token) { preprocessor_ = token; }
 	void	setDocComment(string token) { doc_comment_ = token; }
 	void	setCaseSensitive(bool cs) { case_sensitive_ = cs; }
-	void	addWord(WordType type, string word);
+	void	addWord(WordType type, string word, bool custom = false);
 	void	addFunction(
 		string name,
 		string args,
@@ -87,12 +107,13 @@ public:
 		bool replace = false,
 		string return_type = ""
 	);
+	void	loadZScript(ZScript::Definitions& defs, bool custom = false);
 
-	string	wordList(WordType type);
+	string	wordList(WordType type, bool include_custom = true);
 	string	functionsList();
-	string	autocompletionList(string start = "");
+	string	autocompletionList(string start = "", bool include_custom = true);
 
-	wxArrayString	wordListSorted(WordType type);
+	wxArrayString	wordListSorted(WordType type, bool include_custom = true);
 	wxArrayString	functionsSorted();
 
 	string	wordLink(WordType type) const { return word_lists_[type].lookup_url; }
@@ -105,6 +126,7 @@ public:
 
 	void	clearWordList(WordType type) { word_lists_[type].list.clear(); }
 	void	clearFunctions() { functions_.clear(); }
+	void	clearCustomDefs();
 
 	// Static functions
 	static bool				readLanguageDefinition(MemChunk& mc, string source);
@@ -142,9 +164,10 @@ private:
 		string			lookup_url;
 	};
 	WordList	word_lists_[4];
+	WordList	word_lists_custom_[4];
 
 	// Functions
-	vector<TLFunction*>	functions_;
+	vector<TLFunction>	functions_;
 	bool				f_upper_;
 	bool				f_lower_;
 	bool				f_caps_;

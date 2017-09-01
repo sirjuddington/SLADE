@@ -14,6 +14,7 @@ class Archive;
 class MapLine;
 class MapThing;
 class MapObject;
+namespace ZScript { class Definitions; }
 
 namespace Game
 {
@@ -131,6 +132,9 @@ namespace Game
 		bool	parseDecorateDefs(Archive* archive);
 		void	clearDecorateDefs();
 
+		// ZScript
+		void	importZScriptDefs(ZScript::Definitions& defs);
+
 		// MapInfo
 		bool	parseMapInfo(Archive* archive);
 		void	clearMapInfo() { map_info_.clear(); }
@@ -206,7 +210,8 @@ namespace Game
 		// Thing types
 		std::map<int, ThingType>	thing_types_;
 		std::map<string, ThingType>	tt_group_defaults_;
-		std::map<string, ThingType> parsed_types_;		// ThingTypes parsed from definitions
+		vector<ThingType>			parsed_types_;
+		//std::map<string, ThingType> parsed_types_;		// ThingTypes parsed from definitions
 														// (DECORATE, ZScript etc.)
 
 		// Flags

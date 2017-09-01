@@ -79,27 +79,27 @@ public:
 	// Folding
 	void	foldAll(bool fold = true);
 	void	setupFolding();
-	void	updateFolding();
 
 	// Comments
 	void	lineComment();
 	void 	blockComment();
 
 private:
-	TextLanguage*		language_;
-	FindReplacePanel*	panel_fr_;
-	SCallTip*			call_tip_;
-	wxChoice*			choice_jump_to_;
-	JumpToCalculator*	jump_to_calculator_;
-	Lexer				lexer_;
-	string				prev_word_match_;
-	string				autocomp_list_;
-	vector<int>			jump_to_lines_;
-	long				last_modified_;
+	TextLanguage*			language_;
+	FindReplacePanel*		panel_fr_;
+	SCallTip*				call_tip_;
+	wxChoice*				choice_jump_to_;
+	JumpToCalculator*		jump_to_calculator_;
+	std::unique_ptr<Lexer>	lexer_;
+	string					prev_word_match_;
+	string					autocomp_list_;
+	vector<int>				jump_to_lines_;
+	long					last_modified_;
 
 	// State tracking for updates
 	int	prev_cursor_pos_;
 	int	prev_text_length_;
+	int prev_brace_match_;
 
 	// Timed update stuff
 	wxTimer	timer_update_;

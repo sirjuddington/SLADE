@@ -1,168 +1,218 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    TextLanguage.cpp
- * Description: Defines a 'language' for use by the TextEditor for
- *              syntax hilighting/autocompletion/etc. Contains lists
- *              of keywords, constants and functions, with various
- *              utility functions for using them.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    TextLanguage.cpp
+// Description: Defines a 'language' for use by the TextEditor for syntax
+//              hilighting/autocompletion/etc. Contains lists of keywords,
+//              constants and functions, with various utility functions for
+//              using them.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextLanguage.h"
 #include "Utility/Tokenizer.h"
 #include "Utility/Parser.h"
 #include "Archive/ArchiveManager.h"
+#include "Game/ZScript.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 vector<TextLanguage*>	text_languages;
 
 
-/*******************************************************************
- * TLFUNCTION CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// TLFunction Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* TLFunction::TLFunction
- * TLFunction class constructor
- *******************************************************************/
-TLFunction::TLFunction(string name, string return_type) :
-	name_{ name },
-	return_type_{ return_type }
+
+// ----------------------------------------------------------------------------
+// TLFunction::TLFunction
+//
+// TLFunction class constructor
+// ----------------------------------------------------------------------------
+TLFunction::TLFunction(string name) :
+	name_{ name }
 {
 }
 
-/* TLFunction::~TLFunction
- * TLFunction class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TLFunction::~TLFunction
+//
+// TLFunction class destructor
+// ----------------------------------------------------------------------------
 TLFunction::~TLFunction()
 {
 }
 
-/* TLFunction::getArgSet
- * Returns the arg set [index], or an empty string if [index] is
- * out of bounds
- *******************************************************************/
-TLFunction::ArgSet TLFunction::argSet(unsigned index) const
+// ----------------------------------------------------------------------------
+// TLFunction::getArgSet
+//
+// Returns the arg set [index], or an empty string if [index] is out of bounds
+// ----------------------------------------------------------------------------
+TLFunction::Context TLFunction::context(unsigned index) const
 {
 	// Check index
-	if (index >= arg_sets_.size())
-		return { "", "" };
+	if (index >= contexts_.size())
+		return Context();
 
-	return arg_sets_[index];
+	return contexts_[index];
 }
 
-/* TLFunction::generateCallTipString
- * Returns a string representation of arg set [arg_set] that can be
- * used directly in a scintilla calltip
- *******************************************************************/
-string TLFunction::generateCallTipString(int arg_set)
+// ----------------------------------------------------------------------------
+// TLFunction::Parameter::parse
+//
+// Parses a function parameter from a list of tokens
+// ----------------------------------------------------------------------------
+void TLFunction::Parameter::parse(vector<string>& tokens)
 {
-	// Check requested arg set exists
-	if (arg_set < 0 || (unsigned)arg_set >= arg_sets_.size())
-		return "<invalid argset index>";
+	// Optional
+	if (tokens[0] == "[")
+	{
+		optional = true;
+		tokens.erase(tokens.begin());
+		tokens.pop_back();
+	}
 
-	string calltip;
+	if (tokens.empty())
+		return;
 
-	// Add extra buttons for selection if there is more than one arg set
-	if (arg_sets_.size() > 1)
-		calltip += S_FMT("\001 %d of %lu \002 ", arg_set+1, arg_sets_.size());
-
-	// Generate scintilla-format calltip string
-	calltip += name_ + "(";
-	calltip += arg_sets_[arg_set].args;
-	calltip += ")";
-
-	return calltip;
+	// (Type) and name
+	if (tokens.size() > 1)
+	{
+		type = tokens[0];
+		name = tokens[1];
+	}
+	else
+	{
+		name = tokens[0];
+	}
 }
 
-/* TLFunction::getArgTextExtent
- * Returns the start and end position of [arg] within [arg_set]
- *******************************************************************/
-point2_t TLFunction::getArgTextExtent(int arg, int arg_set)
+// ----------------------------------------------------------------------------
+// TLFunction::addContext
+//
+// Adds a [context] of the function
+// ----------------------------------------------------------------------------
+void TLFunction::addContext(
+	const string& context,
+	const string& args,
+	const string& return_type,
+	const string& description)
 {
-	point2_t extent(-1, -1);
+	contexts_.push_back(Context{ context, {}, return_type, description, "" });
+	auto& ctx = contexts_.back();
 
-	// Check requested arg set exists
-	if (arg_set < 0 || (unsigned)arg_set >= arg_sets_.size())
-		return extent;
+	// Parse args
+	Tokenizer tz;
+	tz.setSpecialCharacters("[],");
+	tz.openString(args);
 
-	// Get start position of args list
-	int start_pos = name_.Length() + 1;
-	if (arg_sets_.size() > 1)
+	vector<string> arg_tokens;
+	while (true)
 	{
-		string temp = S_FMT("\001 %d of %lu \002 ", arg_set+1, arg_sets_.size());
-		start_pos += temp.Length();
-	}
-
-	// Check arg
-	string args = arg_sets_[arg_set].args;
-	if (arg < 0)
-	{
-		extent.set(start_pos, start_pos + args.Length());
-		return extent;
-	}
-
-	// Go through arg set string
-	int current_arg = 0;
-	extent.x = start_pos;
-	extent.y = start_pos + args.Length();
-	for (unsigned a = 0; a < args.Length(); a++)
-	{
-		// Check for ,
-		if (args.at(a) == ',')
+		while (!tz.check(","))
 		{
-			// ',' found, so increment current arg
-			current_arg++;
-
-			// If we're at the start of the arg we want
-			if (current_arg == arg)
-				extent.x = start_pos + a+1;
-
-			// If we've reached the end of the arg we want
-			if (current_arg > arg)
-			{
-				extent.y = start_pos + a;
+			arg_tokens.push_back(tz.current().text);
+			if (tz.atEnd())
 				break;
-			}
+			tz.adv();
 		}
-	}
 
-	return extent;
+		ctx.params.push_back({});
+		ctx.params.back().parse(arg_tokens);
+		arg_tokens.clear();
+
+		if (tz.atEnd())
+			break;
+
+		tz.adv();
+	}
+}
+
+// ----------------------------------------------------------------------------
+// TLFunction::addContext
+//
+// Adds a [context] of the function from a parsed ZScript function [func]
+// ----------------------------------------------------------------------------
+void TLFunction::addContext(const string& context, const ZScript::Function& func, bool custom)
+{
+	contexts_.push_back(Context{ context, {} });
+	auto& ctx = contexts_.back();
+
+	ctx.return_type = func.returnType();
+	ctx.deprecated = func.deprecated();
+	ctx.custom = custom;
+
+	if (func.isVirtual())
+		ctx.qualifiers += "virtual ";
+	if (func.native())
+		ctx.qualifiers += "native ";
+
+	for (auto& p : func.parameters())
+		ctx.params.push_back({ p.type, p.name, p.default_value, !p.default_value.empty() });
+}
+
+void TLFunction::clearCustomContexts()
+{
+	for (auto i = contexts_.begin(); i != contexts_.end();)
+		if (i->custom)
+			i = contexts_.erase(i);
+		else
+			++i;
+}
+
+bool TLFunction::hasContext(const string& name)
+{
+	for (auto& c : contexts_)
+		if (S_CMPNOCASE(c.context, name))
+			return true;
+
+	return false;
 }
 
 
-/*******************************************************************
- * TEXTLANGUAGE CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// TextLanguage Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* TextLanguage::TextLanguage
- * TextLanguage class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// TextLanguage::TextLanguage
+//
+// TextLanguage class constructor
+// ----------------------------------------------------------------------------
 TextLanguage::TextLanguage(string id) :
 	line_comment_{ "//" },
 	comment_begin_{ "/*" },
@@ -178,9 +228,11 @@ TextLanguage::TextLanguage(string id) :
 	text_languages.push_back(this);
 }
 
-/* TextLanguage::~TextLanguage
- * TextLanguage class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::~TextLanguage
+//
+// TextLanguage class destructor
+// ----------------------------------------------------------------------------
 TextLanguage::~TextLanguage()
 {
 	// Remove from languages list
@@ -192,9 +244,11 @@ TextLanguage::~TextLanguage()
 	}
 }
 
-/* TextLanguage::copyTo
- * Copies all language info to [copy]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::copyTo
+//
+// Copies all language info to [copy]
+// ----------------------------------------------------------------------------
 void TextLanguage::copyTo(TextLanguage* copy)
 {
 	// Copy general attributes
@@ -213,55 +267,35 @@ void TextLanguage::copyTo(TextLanguage* copy)
 		copy->word_lists_[a] = word_lists_[a];
 
 	// Copy functions
-	size_t functions_size = functions_.size();
-	for (unsigned a = 0; a < functions_size; a++)
-	{
-		TLFunction* f = functions_[a];
-		size_t nargsets = f->nArgSets();
-		for (unsigned b = 0; b < nargsets; b++)
-			copy->addFunction(
-				f->name(),
-				f->argSet(b).args,
-				f->description(),
-				false,
-				f->returnType()
-			);
-	}
+	copy->functions_ = functions_;
 
 	// Copy preprocessor/word block begin/end
 	copy->pp_block_begin_ = pp_block_begin_;
 	copy->pp_block_end_ = pp_block_end_;
 	copy->word_block_begin_ = word_block_begin_;
 	copy->word_block_end_ = word_block_end_;
-
-	/*size_t pp_block_begin_size = pp_block_begin_.size();
-
-	for (unsigned a = 0; a < pp_block_begin_size; a++)
-		copy->pp_block_begin_.push_back(pp_block_begin_[a]);
-
-	size_t pp_block_end_size = pp_block_end_.size();
-
-	for (unsigned a = 0; a < pp_block_end_size; a++)
-		copy->pp_block_end_.push_back(pp_block_end_[a]);*/
 }
 
-/* TextLanguage::addWord
- * Adds a new word of [type] to the language, if it doesn't exist
- * already
- *******************************************************************/
-void TextLanguage::addWord(WordType type, string keyword)
+// ----------------------------------------------------------------------------
+// TextLanguage::addWord
+//
+// Adds a new word of [type] to the language, if it doesn't exist already
+// ----------------------------------------------------------------------------
+void TextLanguage::addWord(WordType type, string keyword, bool custom)
 {
 	// Add only if it doesn't already exist
-	vector<string>& list = word_lists_[type].list;
+	vector<string>& list = custom ? word_lists_custom_[type].list : word_lists_[type].list;
 	if (std::find(list.begin(), list.end(), keyword) == list.end())
 		list.push_back(keyword);
 }
 
-/* TextLanguage::addFunction
- * Adds a function arg set to the language. If the function [name]
- * exists, [args] will be added to it as a new arg set, otherwise
- * a new function will be added
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::addFunction
+//
+// Adds a function arg set to the language. If the function [name] exists,
+// [args] will be added to it as a new arg set, otherwise a new function will
+// be added
+// ----------------------------------------------------------------------------
 void TextLanguage::addFunction(string name, string args, string desc, bool replace, string return_type)
 {
 	// Split out context from name
@@ -274,71 +308,108 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 	}
 
 	// Check if the function exists
-	TLFunction* func = function(name);
+	auto func = function(name);
 
 	// If it doesn't, create it
 	if (!func)
 	{
-		func = new TLFunction(name, return_type.empty() ? "void" : return_type);
-		functions_.push_back(func);
+		functions_.push_back(TLFunction(name));
+		func = &functions_.back();
 	}
 
-	// Remove/recreate the function if we're replacing it
+	// Clear the function if we're replacing it
 	else if (replace)
-	{
-		VECTOR_REMOVE(functions_, func);
-		delete func;
-		func = new TLFunction(name, return_type.empty() ? "void" : return_type);
-		functions_.push_back(func);
-	}
+		func->clear();
 
-	// Add the arg set
-	func->addArgSet(args, context);
-
-	// Set description
-	func->setDescription(desc);
+	// Add the context
+	func->addContext(context, args, desc);
 }
 
-/* TextLanguage::getWordList
- * Returns a string of all words of [type] in the language, separated
- * by spaces, which can be sent directly to scintilla for syntax
- * hilighting
- *******************************************************************/
-string TextLanguage::wordList(WordType type)
+// ----------------------------------------------------------------------------
+// TextLanguage::loadZScript
+//
+// Loads types (classes) and functions from parsed ZScript definitions [defs]
+// ----------------------------------------------------------------------------
+void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
+{
+	// Classes
+	for (auto& c : defs.classes())
+	{
+		// Add class as type
+		addWord(Type, c.name(), custom);
+
+		// Add class functions
+		for (auto& f : c.functions())
+		{
+			// Ignore overriding functions
+			if (f.isOverride())
+				continue;
+
+			// Check if the function exists
+			auto func = function(f.name());
+
+			// If it doesn't, create it
+			if (!func)
+			{
+				functions_.push_back(TLFunction(f.name()));
+				func = &functions_.back();
+			}
+
+			// Add the context
+			if (!func->hasContext(c.name()))
+				func->addContext(c.name(), f, custom);
+		}
+	}
+}
+
+// ----------------------------------------------------------------------------
+// TextLanguage::getWordList
+//
+// Returns a string of all words of [type] in the language, separated by
+// spaces, which can be sent directly to scintilla for syntax hilighting
+// ----------------------------------------------------------------------------
+string TextLanguage::wordList(WordType type, bool include_custom)
 {
 	// Init return string
 	string ret = "";
 
 	// Add each word to return string (separated by spaces)
-	vector<string>& list = word_lists_[type].list;
-	for (size_t a = 0; a < list.size(); a++)
-		ret += list[a] + " ";
+	for (auto& word : word_lists_[type].list)
+		ret += word + " ";
+
+	// Include custom words if specified
+	if (include_custom)
+		for (auto& word : word_lists_custom_[type].list)
+			ret += word + " ";
 
 	return ret;
 }
 
-/* TextLanguage::getFunctionsList
- * Returns a string of all functions in the language, separated by
- * spaces, which can be sent directly to scintilla for syntax
- * hilighting
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::getFunctionsList
+//
+// Returns a string of all functions in the language, separated by spaces,
+// which can be sent directly to scintilla for syntax hilighting
+// ----------------------------------------------------------------------------
 string TextLanguage::functionsList()
 {
 	// Init return string
 	string ret = "";
 
 	// Add each function name to return string (separated by spaces)
-	for (unsigned a = 0; a < functions_.size(); a++)
-		ret += functions_[a]->name() + " ";
+	for (auto& func : functions_)
+		ret += func.name() + " ";
 
 	return ret;
 }
 
-/* TextLanguage::getAutocompletionList
- * Returns a string containing all words and functions that can be
- * used directly in scintilla for an autocompletion list
- *******************************************************************/
-string TextLanguage::autocompletionList(string start)
+// ----------------------------------------------------------------------------
+// TextLanguage::getAutocompletionList
+//
+// Returns a string containing all words and functions that can be used
+// directly in scintilla for an autocompletion list
+// ----------------------------------------------------------------------------
+string TextLanguage::autocompletionList(string start, bool include_custom)
 {
 	// Firstly, add all functions and word lists to a wxArrayString
 	wxArrayString list;
@@ -346,16 +417,23 @@ string TextLanguage::autocompletionList(string start)
 
 	// Add word lists
 	for (unsigned type = 0; type < 4; type++)
-		for (unsigned a = 0; a < word_lists_[type].list.size(); a++)
-			if (word_lists_[type].list[a].Lower().StartsWith(start))
-				list.Add(word_lists_[type].list[a] + S_FMT("?%d", type + 1));
+	{
+		for (auto& word : word_lists_[type].list)
+			if (word.Lower().StartsWith(start))
+				list.Add(word + S_FMT("?%d", type + 1));
+
+		if (!include_custom)
+			continue;
+
+		for (auto& word : word_lists_custom_[type].list)
+			if (word.Lower().StartsWith(start))
+				list.Add(word + S_FMT("?%d", type + 1));
+	}
 
 	// Add functions
-	for (unsigned a = 0; a < functions_.size(); a++)
-	{
-		if (functions_[a]->name().Lower().StartsWith(start))
-			list.Add(functions_[a]->name() + "?3");
-	}
+	for (auto& func : functions_)
+		if (func.name().Lower().StartsWith(start))
+			list.Add(func.name() + "?3");
 
 	// Sort the list
 	list.Sort();
@@ -368,16 +446,21 @@ string TextLanguage::autocompletionList(string start)
 	return ret;
 }
 
-/* TextLanguage::getWordListSorted
- * Returns a sorted wxArrayString of all words of [type] in the
- * language
- *******************************************************************/
-wxArrayString TextLanguage::wordListSorted(WordType type)
+// ----------------------------------------------------------------------------
+// TextLanguage::getWordListSorted
+//
+// Returns a sorted wxArrayString of all words of [type] in the language
+// ----------------------------------------------------------------------------
+wxArrayString TextLanguage::wordListSorted(WordType type, bool include_custom)
 {
 	// Get list
 	wxArrayString list;
-	for (unsigned a = 0; a < word_lists_[type].list.size(); a++)
-		list.Add(word_lists_[type].list[a]);
+	for (auto& word : word_lists_[type].list)
+		list.Add(word);
+
+	if (include_custom)
+		for (auto& word : word_lists_custom_[type].list)
+			list.Add(word);
 
 	// Sort
 	list.Sort();
@@ -385,15 +468,17 @@ wxArrayString TextLanguage::wordListSorted(WordType type)
 	return list;
 }
 
-/* TextLanguage::getFunctionsSorted
- * Returns a sorted wxArrayString of all functions in the language
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::getFunctionsSorted
+//
+// Returns a sorted wxArrayString of all functions in the language
+// ----------------------------------------------------------------------------
 wxArrayString TextLanguage::functionsSorted()
 {
 	// Get list
 	wxArrayString list;
-	for (unsigned a = 0; a < functions_.size(); a++)
-		list.Add(functions_[a]->name());
+	for (auto& func : functions_)
+		list.Add(func.name());
 
 	// Sort
 	list.Sort();
@@ -401,75 +486,91 @@ wxArrayString TextLanguage::functionsSorted()
 	return list;
 }
 
-/* TextLanguage::isWord
- * Returns true if [word] is a [type] word in this language, false
- * otherwise
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::isWord
+//
+// Returns true if [word] is a [type] word in this language, false otherwise
+// ----------------------------------------------------------------------------
 bool TextLanguage::isWord(WordType type, string word)
 {
-	vector<string>& list = word_lists_[type].list;
-	for (unsigned a = 0; a < list.size(); a++)
-	{
-		if (list[a] == word)
+	for (auto& w : word_lists_[type].list)
+		if (w == word)
 			return true;
-	}
 
 	return false;
 }
 
-/* TextLanguage::isFunction
- * Returns true if [word] is a function in this language, false
- * otherwise
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::isFunction
+//
+// Returns true if [word] is a function in this language, false otherwise
+// ----------------------------------------------------------------------------
 bool TextLanguage::isFunction(string word)
 {
-	for (unsigned a = 0; a < functions_.size(); a++)
-	{
-		if (functions_[a]->name() == word)
+	for (auto& func : functions_)
+		if (func.name() == word)
 			return true;
-	}
 
 	return false;
 }
 
-/* TextLanguage::getFunction
- * Returns the function definition matching [name], or NULL if no
- * matching function exists
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::getFunction
+//
+// Returns the function definition matching [name], or NULL if no matching
+// function exists
+// ----------------------------------------------------------------------------
 TLFunction* TextLanguage::function(string name)
 {
 	// Find function matching [name]
-	size_t functions_size = functions_.size();
 	if (case_sensitive_)
 	{
-		for (unsigned a = 0; a < functions_size; a++)
-		{
-			if (functions_[a]->name() == name)
-				return functions_[a];
-		}
+		for (auto& func : functions_)
+			if (func.name() == name)
+				return &func;
 	}
 	else
 	{
-		for (unsigned a = 0; a < functions_size; a++)
-		{
-			if (S_CMPNOCASE(functions_[a]->name(), name))
-				return functions_[a];
-		}
+		for (auto& func : functions_)
+			if (S_CMPNOCASE(func.name(), name))
+				return &func;
 	}
 
 	// Not found
-	return NULL;
+	return nullptr;
+}
+
+void TextLanguage::clearCustomDefs()
+{
+	for (auto i = functions_.begin(); i != functions_.end();)
+	{
+		i->clearCustomContexts();
+
+		// Remove function if only contexts were custom
+		if (i->contexts().empty())
+			i = functions_.erase(i);
+		else
+			++i;
+	}
+
+	for (auto a = 0; a < 4; a++)
+		word_lists_custom_[a].list.clear();
 }
 
 
-/*******************************************************************
- * TEXTLANGUAGE STATIC FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// TextLanguage Static Functions
+//
+// ----------------------------------------------------------------------------
 
-/* TextLanguage::readLanguageDefinition
- * Reads in a text definition of a language. See slade.pk3 for
- * formatting examples
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// TextLanguage::readLanguageDefinition
+//
+// Reads in a text definition of a language. See slade.pk3 for
+// formatting examples
+// ----------------------------------------------------------------------------
 bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 {
 	Tokenizer tz;
@@ -734,9 +835,11 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 	return true;
 }
 
-/* TextLanguage::loadLanguages
- * Loads all text language definitions from slade.pk3
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::loadLanguages
+//
+// Loads all text language definitions from slade.pk3
+// ----------------------------------------------------------------------------
 bool TextLanguage::loadLanguages()
 {
 	// Get slade resource archive
@@ -755,16 +858,20 @@ bool TextLanguage::loadLanguages()
 				readLanguageDefinition(dir->entryAt(a)->getMCData(), dir->entryAt(a)->getName());
 		}
 		else
-			LOG_MESSAGE(1, "Warning: 'config/languages' not found in slade.pk3, no builtin text language definitions loaded");
+			Log::warning(
+				1,
+				"Warning: 'config/languages' not found in slade.pk3, no builtin text language definitions loaded"
+			);
 	}
 
 	return true;
 }
 
-/* TextLanguage::getLanguage
- * Returns the language definition matching [id], or NULL if no
- * match found
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::getLanguage
+//
+// Returns the language definition matching [id], or NULL if no match found
+// ----------------------------------------------------------------------------
 TextLanguage* TextLanguage::fromId(string id)
 {
 	// Find text language matching [id]
@@ -775,26 +882,29 @@ TextLanguage* TextLanguage::fromId(string id)
 	}
 
 	// Not found
-	return NULL;
+	return nullptr;
 }
 
-/* TextLanguage::getLanguage
- * Returns the language definition at [index], or NULL if [index] is
- * out of bounds
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::getLanguage
+//
+// Returns the language definition at [index], or NULL if [index] is out of
+// bounds
+// ----------------------------------------------------------------------------
 TextLanguage* TextLanguage::fromIndex(unsigned index)
 {
 	// Check index
 	if (index >= text_languages.size())
-		return NULL;
+		return nullptr;
 
 	return text_languages[index];
 }
 
-/* TextLanguage::getLanguageByName
- * Returns the language definition matching [name], or NULL if no
- * match found
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::getLanguageByName
+//
+// Returns the language definition matching [name], or NULL if no match found
+// ----------------------------------------------------------------------------
 TextLanguage* TextLanguage::fromName(string name)
 {
 	// Find text language matching [name]
@@ -805,12 +915,14 @@ TextLanguage* TextLanguage::fromName(string name)
 	}
 
 	// Not found
-	return NULL;
+	return nullptr;
 }
 
-/* TextLanguage::getLanguageNames
- * Returns a list of all language names
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextLanguage::getLanguageNames
+//
+// Returns a list of all language names
+// ----------------------------------------------------------------------------
 wxArrayString TextLanguage::languageNames()
 {
 	wxArrayString ret;

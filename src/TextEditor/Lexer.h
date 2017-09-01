@@ -6,7 +6,7 @@ class Lexer
 {
 public:
 	Lexer();
-	~Lexer() {}
+	virtual ~Lexer() {}
 
 	enum Style
 	{
@@ -27,11 +27,11 @@ public:
 		Property		= wxSTC_C_UUID,
 	};
 
-	void	loadLanguage(TextLanguage* language);
+	virtual void	loadLanguage(TextLanguage* language);
 
-	bool	doStyling(TextEditorCtrl* editor, int start, int end);
-	void	addWord(string word, int style);
-	void	clearWords() { word_list_.clear(); }
+	virtual bool	doStyling(TextEditorCtrl* editor, int start, int end);
+	virtual void	addWord(string word, int style);
+	virtual void	clearWords() { word_list_.clear(); }
 
 	void	setWordChars(string chars);
 	void	setOperatorChars(string chars);
@@ -40,7 +40,9 @@ public:
 	void	foldComments(bool fold) { fold_comments_ = fold; }
 	void	foldPreprocessor(bool fold) { fold_preprocessor_ = fold; }
 
-private:
+	virtual bool isFunction(TextEditorCtrl* editor, int start_pos, int end_pos);
+
+protected:
 	enum class State
 	{
 		Unknown,
@@ -100,6 +102,22 @@ private:
 	bool	processOperator(LexerState& state);
 	bool	processWhitespace(LexerState& state);
 
-	void	styleWord(TextEditorCtrl* editor, string word);
-	bool	checkToken(TextEditorCtrl* editor, int pos, string& token);
+	virtual void	styleWord(LexerState& state, string word);
+	bool			checkToken(LexerState& state, int pos, string& token);
+};
+
+class ZScriptLexer : public Lexer
+{
+public:
+	ZScriptLexer() {}
+	virtual ~ZScriptLexer() {}
+
+protected:
+	void addWord(string word, int style) override;
+	void styleWord(LexerState& state, string word) override;
+	void clearWords() override;
+	bool isFunction(TextEditorCtrl* editor, int start_pos, int end_pos) override;
+
+private:
+	vector<string>	functions_;
 };
