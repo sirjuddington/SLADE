@@ -276,10 +276,10 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 {
 	// Check type of assignment list
-	string list_end = ";";
-	if (tz.current() == "{" && !tz.current().quoted_string)
+	char list_end = ';';
+	if (tz.current() == '{' && !tz.current().quoted_string)
 	{
-		list_end = "}";
+		list_end = '}';
 		tz.adv();
 	}
 
@@ -327,13 +327,13 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 		child->values_.push_back(value);
 
 		// Check for ,
-		if (tz.peek() == ",")
+		if (tz.peek() == ',')
 			tz.adv();	// Skip it
 		else if (tz.peek() != list_end)
 		{
 			logError(
 				tz,
-				S_FMT("Expected \",\" or \"%s\", got \"%s\"", CHR(list_end), CHR(tz.peek().text))
+				S_FMT("Expected \",\" or \"%c\", got \"%s\"", list_end, CHR(tz.peek().text))
 			);
 			return false;
 		}
@@ -361,7 +361,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 {
 	// Keep parsing until final } is reached (or end of file)
 	string name, type;
-	while (!tz.atEnd() && tz.current() != "}")
+	while (!tz.atEnd() && tz.current() != '}')
 	{
 		// Check for preprocessor stuff
 		if (parser_ && tz.current()[0] == '#')
@@ -390,12 +390,12 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		}
 
 		// Check for type+name pair
-		if (tz.peek() != "=" && tz.peek() != "{" && tz.peek() != ";" && tz.peek() != ":")
+		if (tz.peek() != '=' && tz.peek() != '{' && tz.peek() != ';' && tz.peek() != ':')
 		{
 			type = name;
 			name = tz.next().text;
 
-			if (name == "")
+			if (name.empty())
 			{
 				logError(tz, "Unexpected empty string");
 				return false;
@@ -405,14 +405,14 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		//Log::debug(S_FMT("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
 
 		// Assignment
-		if (tz.advIfNext("=", 2))
+		if (tz.advIfNext('=', 2))
 		{
 			if (!parseAssignment(tz, addChildPTN(name, type)))
 				return false;
 		}
 
 		// Child node
-		else if (tz.advIfNext("{", 2))
+		else if (tz.advIfNext('{', 2))
 		{
 			// Parse child node
 			if (!addChildPTN(name, type)->parse(tz))
@@ -420,7 +420,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		}
 
 		// Child node (with no values/children)
-		else if (tz.advIfNext(";", 2))
+		else if (tz.advIfNext(';', 2))
 		{
 			// Add child node
 			addChildPTN(name, type);
@@ -428,10 +428,10 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		}
 
 		// Child node + inheritance
-		else if (tz.advIfNext(":", 2))
+		else if (tz.advIfNext(':', 2))
 		{
 			// Check for opening brace
-			if (tz.checkNext("{"))
+			if (tz.checkNext('{'))
 			{
 				// Add child node
 				auto child = addChildPTN(name, type);
@@ -444,7 +444,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 				if (!child->parse(tz))
 					return false;
 			}
-			else if (tz.checkNext(";"))	// Empty child node
+			else if (tz.checkNext(';'))	// Empty child node
 			{
 				// Add child node
 				auto child = addChildPTN(name, type);
@@ -650,24 +650,3 @@ bool Parser::parseText(string& text, string source, bool debug)
 	// Do parsing
 	return pt_root_->parse(tz);
 }
-
-
-#if 0
-// Console test commands
-CONSOLE_COMMAND (testparse, 0) {
-	string test = "root { item1 = value1; item2 = value1, value2; child1 { item1 = value1, value2, value3; item2 = value4; } child2 : child1 { item1 = value1; child3 { item1 = value1, value2; } } }";
-	Parser tp;
-	MemChunk mc((const uint8_t*)CHR(test), test.Length());
-	tp.parseText(mc);
-}
-
-#include "App.h"
-CONSOLE_COMMAND (testregex, 2, false)
-{
-	wxRegEx re(args[0]);
-	if (re.Matches(args[1]))
-		Log::console("Matches");
-	else
-		Log::console("Doesn't match");
-}
-#endif

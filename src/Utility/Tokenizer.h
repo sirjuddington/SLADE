@@ -21,14 +21,17 @@ public:
 		bool		quoted_string;
 		unsigned	pos_start;
 		unsigned	pos_end;
+		unsigned	length;
 
 		explicit	operator	string() const { return text; }
 		explicit	operator	const string() const { return text; }
 		explicit	operator	const char*() const { return CHR(text); }
 		bool		operator	==(const string& cmp) const { return text == cmp; }
 		bool		operator	==(const char* cmp) const { return text.Cmp(cmp) == 0; }
+		bool		operator	==(char cmp) const { return length == 1 && text[0] == cmp; }
 		bool		operator	!=(const string& cmp) const { return text != cmp; }
 		bool		operator	!=(const char* cmp) const { return text.Cmp(cmp) != 0; }
+		bool		operator	!=(char cmp) const { return length != 1 || text[0] != cmp; }
 		char		operator	[](unsigned index) const { return text[index]; }
 
 		bool	isInteger(bool allow_hex = false) const;
@@ -95,6 +98,8 @@ public:
 	bool			advIfNC(const char* check, int inc = 1);
 	bool			advIfNC(const string& check, int inc = 1);
 	bool			advIfNext(const char* check, int inc = 1);
+	bool			advIfNext(const string& check, int inc = 1);
+	bool			advIfNext(char check, int inc = 1);
 	bool			advIfNextNC(const char* check, int inc = 1);
 	void			advToNextLine();
 	void			advToEndOfLine();
@@ -109,9 +114,13 @@ public:
 	bool	check(const string& check) const { return token_current_ == check; }
 	bool	check(char check) const { return token_current_[0] == check; }
 	bool	checkOrEnd(const char* check) const;
+	bool	checkOrEnd(const string& check) const;
+	bool	checkOrEnd(char check) const;
 	bool	checkNC(const char* check) const { return S_CMPNOCASE(token_current_.text, check); }
 	bool	checkOrEndNC(const char* check) const;
 	bool	checkNext(const char* check) const;
+	bool	checkNext(const string& check) const;
+	bool	checkNext(char check) const;
 	bool	checkNextNC(const char* check) const;
 
 	// Load Data

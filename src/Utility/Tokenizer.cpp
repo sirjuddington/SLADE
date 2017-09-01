@@ -224,7 +224,7 @@ bool Tokenizer::advIf(const string& check, int inc)
 }
 bool Tokenizer::advIf(char check, int inc)
 {
-	if (token_current_[0] == check)
+	if (token_current_ == check)
 	{
 		adv(inc);
 		return true;
@@ -265,6 +265,32 @@ bool Tokenizer::advIfNC(const string& check, int inc)
 // Advances [inc] tokens if the next token matches [check]
 // ----------------------------------------------------------------------------
 bool Tokenizer::advIfNext(const char* check, int inc)
+{
+	if (token_next_.pos_start == token_current_.pos_start)
+		return false;
+
+	if (token_next_ == check)
+	{
+		adv(inc);
+		return true;
+	}
+
+	return false;
+}
+bool Tokenizer::advIfNext(const string& check, int inc)
+{
+	if (token_next_.pos_start == token_current_.pos_start)
+		return false;
+
+	if (token_next_ == check)
+	{
+		adv(inc);
+		return true;
+	}
+
+	return false;
+}
+bool Tokenizer::advIfNext(char check, int inc)
 {
 	if (token_next_.pos_start == token_current_.pos_start)
 		return false;
@@ -472,6 +498,22 @@ bool Tokenizer::checkOrEnd(const char* check) const
 
 	return token_current_ == check;
 }
+bool Tokenizer::checkOrEnd(const string& check) const
+{
+	// At end, return true
+	if (token_next_.pos_start == token_current_.pos_start)
+		return true;
+
+	return token_current_ == check;
+}
+bool Tokenizer::checkOrEnd(char check) const
+{
+	// At end, return true
+	if (token_next_.pos_start == token_current_.pos_start)
+		return true;
+
+	return token_current_ == check;
+}
 
 bool Tokenizer::checkOrEndNC(const char* check) const
 {
@@ -488,6 +530,20 @@ bool Tokenizer::checkOrEndNC(const char* check) const
 // Returns true if the next token matches [check]
 // ----------------------------------------------------------------------------
 bool Tokenizer::checkNext(const char* check) const
+{
+	if (token_next_.pos_start == token_current_.pos_start)
+		return false;
+
+	return token_next_ == check;
+}
+bool Tokenizer::checkNext(const string& check) const
+{
+	if (token_next_.pos_start == token_current_.pos_start)
+		return false;
+
+	return token_next_ == check;
+}
+bool Tokenizer::checkNext(char check) const
 {
 	if (token_next_.pos_start == token_current_.pos_start)
 		return false;
@@ -864,6 +920,7 @@ bool Tokenizer::readNext(Token* target)
 		target->quoted_string = state_.current_token.quoted_string;
 		target->pos_start = state_.current_token.pos_start;
 		target->pos_end = state_.position;
+		target->length = target->pos_end - target->pos_start;
 
 		// Convert to lowercase if configured to and it isn't a quoted string
 		if (read_lowercase_ && !target->quoted_string)
