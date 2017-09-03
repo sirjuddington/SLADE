@@ -196,6 +196,28 @@ vector<Log::Message*> Log::since(time_t time, MessageType type)
 }
 
 // ----------------------------------------------------------------------------
+// Log::debug
+//
+// Logs a debug message [text] at verbosity [level] only if debug mode is on
+// ----------------------------------------------------------------------------
+void Log::debug(int level, const char* text)
+{
+	if (Global::debug)
+		message(MessageType::Debug, level, text);
+}
+
+// ----------------------------------------------------------------------------
+// Log::debug
+//
+// Logs a debug message [text] only if debug mode is on
+// ----------------------------------------------------------------------------
+void Log::debug(const char* text)
+{
+	if (Global::debug)
+		message(MessageType::Debug, text);
+}
+
+// ----------------------------------------------------------------------------
 // Log::message
 //
 // Logs a message [text] of [type] at verbosity [level]

@@ -43,8 +43,8 @@ namespace Log
 	inline void	error(int level, const char* text) { message(MessageType::Error, level, text); }
 	inline void	error(const char* text) { message(MessageType::Error, text); }
 
-	inline void	debug(int level, const char* text) { message(MessageType::Debug, level, text); }
-	inline void	debug(const char* text) { message(MessageType::Debug, text); }
+	void	debug(int level, const char* text);
+	void	debug(const char* text);
 
 	inline void	console(const char* text) { message(MessageType::Console, text); }
 }
