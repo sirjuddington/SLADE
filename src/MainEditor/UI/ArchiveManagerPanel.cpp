@@ -205,7 +205,7 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 			}
 		}
 
-		time_t mod = wxFileModificationTime(dirs[a]);
+		time_t mod = wxDateTime::Now().GetTicks();
 		// No match, added to archive
 		if (!found)
 			addChange(DirEntryChange(DirEntryChange::ADDED_DIR, dirs[a], "", mod));

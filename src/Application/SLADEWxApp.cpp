@@ -108,7 +108,12 @@ protected:
 #endif
 	void DoLogText(const wxString& msg) override
 	{
-		Log::message(Log::MessageType::Info, msg.Right(msg.size() - 10));
+		if (msg.Lower().Contains("error"))
+			Log::error(msg.Right(msg.size() - 10));
+		else if (msg.Lower().Contains("warning"))
+			Log::warning(msg.Right(msg.size() - 10));
+		else
+			Log::info(msg.Right(msg.size() - 10));
 	}
 
 public:
