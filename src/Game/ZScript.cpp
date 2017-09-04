@@ -1199,8 +1199,8 @@ void ParsedStatement::dump(int indent)
 	Log::debug(line);
 
 	// Blocks
-	for (auto& block : block)
-		block.dump(indent + 1);
+	for (auto& b : block)
+		b.dump(indent + 1);
 }
 
 
