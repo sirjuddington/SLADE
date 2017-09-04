@@ -276,9 +276,13 @@ void Game::updateCustomDefinitions()
 	zscript_custom.clear();
 
 	// Parse custom definitions in base resource
-	zscript_custom.parseZScript(App::archiveManager().baseResourceArchive());
-	config_current.parseDecorateDefs(App::archiveManager().baseResourceArchive());
-	config_current.parseMapInfo(App::archiveManager().baseResourceArchive());
+	auto base_resource = App::archiveManager().baseResourceArchive();
+	if (base_resource)
+	{
+		zscript_custom.parseZScript(base_resource);
+		config_current.parseDecorateDefs(base_resource);
+		config_current.parseMapInfo(base_resource);
+	}
 
 	// Parse custom definitions in all resource archives
 	vector<Archive*> resource_archives;
