@@ -63,7 +63,7 @@ namespace Game
 		void	reset();
 		void	parse(ParseTreeNode* node);
 		string	stringDesc() const;
-		void	loadProps(PropertyList& props, bool decorate = true);
+		void	loadProps(PropertyList& props, bool decorate = true, bool zscript = false);
 
 		static const ThingType&	unknown() { return unknown_; }
 		static void				initGlobal();

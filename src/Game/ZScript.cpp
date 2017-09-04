@@ -61,6 +61,8 @@ namespace ZScript
 	bool	dump_parsed_blocks = false;
 	bool	dump_parsed_states = false;
 	bool	dump_parsed_functions = false;
+
+	string db_comment = "//$";
 }
 
 
@@ -109,7 +111,7 @@ string parseType(const vector<string>& tokens, unsigned& index)
 	type += tokens[index];
 
 	// Check for ...
-	if (index + 2 < tokens.size() && tokens[index] == "." && tokens[index + 1] == "." && tokens[index + 2] == ".")
+	if (index + 2 < tokens.size() && tokens[index] == '.' && tokens[index + 1] == '.' && tokens[index + 2] == '.')
 	{
 		type = "...";
 		index += 2;
@@ -142,15 +144,15 @@ string parseValue(const vector<string>& tokens, unsigned& index)
 	while (true)
 	{
 		// Read between ()
-		if (tokens[index] == "(")
+		if (tokens[index] == '(')
 		{
 			int level = 1;
 			value += tokens[index++];
 			while (level > 0)
 			{
-				if (tokens[index] == "(")
+				if (tokens[index] == '(')
 					++level;
-				if (tokens[index] == ")")
+				if (tokens[index] == ')')
 					--level;
 
 				value += tokens[index++];
@@ -159,7 +161,7 @@ string parseValue(const vector<string>& tokens, unsigned& index)
 			continue;
 		}
 
-		if (tokens[index] == "," || tokens[index] == ";" || tokens[index] == ")")
+		if (tokens[index] == ',' || tokens[index] == ';' || tokens[index] == ')')
 			break;
 
 		value += tokens[index++];
@@ -185,8 +187,8 @@ bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, co
 		return false;
 
 	if (S_CMPNOCASE(tokens[index], word) &&
-		tokens[index + 1] == "(" &&
-		tokens[index + 3] == ")")
+		tokens[index + 1] == '(' &&
+		tokens[index + 3] == ')')
 	{
 		value = tokens[index + 2];
 		return true;
@@ -305,7 +307,7 @@ bool Enumerator::parse(ParsedStatement& statement)
 
 		// Skip past next ,
 		while (index < count)
-			if (statement.block[0].tokens[++index] == ",")
+			if (statement.block[0].tokens[++index] == ',')
 				break;
 
 		index++;
@@ -341,12 +343,12 @@ unsigned Function::Parameter::parse(const vector<string>& tokens, unsigned index
 	}
 
 	// Name
-	if (index >= tokens.size() || tokens[index] == ")")
+	if (index >= tokens.size() || tokens[index] == ')')
 		return index;
 	name = tokens[index++];
 
 	// Default value
-	if (index < tokens.size() && tokens[index] == "=")
+	if (index < tokens.size() && tokens[index] == '=')
 	{
 		++index;
 		default_value = parseValue(tokens, index);
@@ -391,7 +393,7 @@ bool Function::parse(ParsedStatement& statement)
 			override_ = true;
 			last_qualifier = index;
 		}
-		else if (index > last_qualifier + 2 && statement.tokens[index] == "(")
+		else if (index > last_qualifier + 2 && statement.tokens[index] == '(')
 		{
 			name_ = statement.tokens[index - 1];
 			return_type_ = statement.tokens[index - 2];
@@ -417,7 +419,7 @@ bool Function::parse(ParsedStatement& statement)
 	}
 
 	// Parse parameters
-	while (statement.tokens[index] != "(")
+	while (statement.tokens[index] != '(')
 	{
 		if (index == statement.tokens.size())
 			return true;
@@ -425,12 +427,12 @@ bool Function::parse(ParsedStatement& statement)
 	}
 	++index; // Skip (
 
-	while (statement.tokens[index] != ")" && index < statement.tokens.size())
+	while (statement.tokens[index] != ')' && index < statement.tokens.size())
 	{
 		parameters_.push_back({});
 		index = parameters_.back().parse(statement.tokens, index);
 
-		if (statement.tokens[index] == ",")
+		if (statement.tokens[index] == ',')
 			++index;
 	}
 
@@ -490,16 +492,16 @@ bool Function::isFunction(ParsedStatement& statement)
 	bool special_func = false;
 	for (unsigned a = 0; a < statement.tokens.size(); a++)
 	{
-		if (statement.tokens[a] == "=")
+		if (statement.tokens[a] == '=')
 			return false;
 
-		if (!special_func && statement.tokens[a] == "(")
+		if (!special_func && statement.tokens[a] == '(')
 			return true;
 
 		if (S_CMPNOCASE(statement.tokens[a], "deprecated") ||
 			S_CMPNOCASE(statement.tokens[a], "version"))
 			special_func = true;
-		else if (special_func && statement.tokens[a] == ")")
+		else if (special_func && statement.tokens[a] == ')')
 			special_func = false;
 	}
 
@@ -559,10 +561,10 @@ bool StateTable::parse(ParsedStatement& states)
 		// Check for state labels
 		for (auto a = 0u; a < statement.tokens.size(); ++a)
 		{
-			if (statement.tokens[a] == ":")
+			if (statement.tokens[a] == ':')
 			{
 				// Ignore ::
-				if (a + 1 < statement.tokens.size() && statement.tokens[a + 1] == ":")
+				if (a + 1 < statement.tokens.size() && statement.tokens[a + 1] == ':')
 				{
 					++a;
 					continue;
@@ -689,7 +691,7 @@ bool Class::parse(ParsedStatement& class_statement)
 	for (unsigned a = 0; a < class_statement.tokens.size(); a++)
 	{
 		// Inherits
-		if (class_statement.tokens[a] == ":" && a < class_statement.tokens.size() - 1)
+		if (class_statement.tokens[a] == ':' && a < class_statement.tokens.size() - 1)
 			inherits_class_ = class_statement.tokens[a + 1];
 
 		// Native
@@ -812,7 +814,7 @@ void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::Thin
 	def->define(def->number(), title, group);
 
 	// Set properties from defaults section
-	def->loadProps(default_properties_);
+	def->loadProps(default_properties_, true, true);
 }
 
 // ----------------------------------------------------------------------------
@@ -849,7 +851,7 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 			states_.parse(statement);
 
 		// DB property comment
-		else if (statement.tokens[0].StartsWith("//$"))
+		else if (statement.tokens[0].StartsWith(db_comment))
 		{
 			if (statement.tokens.size() > 1)
 				db_properties_.push_back({ statement.tokens[0].substr(3),  statement.tokens[1] });
@@ -886,7 +888,7 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 			continue;
 
 		// DB property comment
-		if (statement.tokens[0].StartsWith("//$"))
+		if (statement.tokens[0].StartsWith(db_comment))
 		{
 			if (statement.tokens.size() > 1)
 				db_properties_.push_back({ statement.tokens[0].substr(3),  statement.tokens[1] });
@@ -900,9 +902,9 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 		unsigned count = statement.tokens.size();
 		while (t < count)
 		{
-			if (statement.tokens[t] == "+")
+			if (statement.tokens[t] == '+')
 				default_properties_[statement.tokens[++t]] = true;
-			else if (statement.tokens[t] == "-")
+			else if (statement.tokens[t] == '-')
 				default_properties_[statement.tokens[++t]] = false;
 			else
 				break;
@@ -910,16 +912,27 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 			t++;
 		}
 
-		// Name + Value
+		if (t >= count)
+			continue;
+
+		// Name
+		string name = statement.tokens[t];
+		if (t + 2 < count && statement.tokens[t + 1] == '.')
+		{
+			name += "." + statement.tokens[t + 2];
+			t += 2;
+		}
+
+		// Value
 		// For now ignore anything after the first whitespace/special character
 		// so stuff like arithmetic expressions or comma separated lists won't
 		// really work properly yet
-		if (t < count - 1)
-			default_properties_[statement.tokens[t]] = statement.tokens[t + 1];
+		if (t + 1 < count)
+			default_properties_[name] = statement.tokens[t + 1];
 
-		// Name only
+		// Name only (no value), set as boolean true
 		else if (t < count)
-			default_properties_[statement.tokens[t]] = true;
+			default_properties_[name] = true;
 	}
 
 	return true;
@@ -1094,7 +1107,6 @@ void Definitions::exportThingTypes(std::map<int, Game::ThingType>& types, vector
 bool ParsedStatement::parse(Tokenizer& tz)
 {
 	line = tz.lineNo();
-	static string db_comment = "//$";
 
 	// Tokens
 	bool in_initializer = false;

@@ -382,9 +382,9 @@ string ThingType::stringDesc() const
 // ThingType::loadProps
 //
 // Reads type properties from [props] and marks as a decorate type if
-// [decorate] is true
+// [decorate] is true. If [zscript] is true, support zscript-only properties
 // ----------------------------------------------------------------------------
-void ThingType::loadProps(PropertyList& props, bool decorate)
+void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 {
 	// Set decorate flag
 	decorate_ = decorate;
@@ -454,6 +454,14 @@ void ThingType::loadProps(PropertyList& props, bool decorate)
 	if (props["translation"].hasValue()) translation_ = props["translation"].getStringValue();
 	if (props["solid"].hasValue()) solid_ = props["solid"].getBoolValue();
 	if (props["obsolete"].hasValue()) flags_ |= FLAG_OBSOLETE;
+
+	// ZScript-only props
+	if (zscript)
+	{
+		if (props["scale"].hasValue()) scale_.x = scale_.y = props["scale"].getFloatValue();
+		if (props["scale.x"].hasValue()) scale_.x = props["scale.x"].getFloatValue();
+		if (props["scale.y"].hasValue()) scale_.y = props["scale.y"].getFloatValue();
+	}
 }
 
 
