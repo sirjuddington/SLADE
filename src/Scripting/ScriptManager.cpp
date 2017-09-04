@@ -251,7 +251,8 @@ void exportUserScripts(const string& path, ScriptList& list)
 void readResourceEntryText(string& target, const string& res_path)
 {
 	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path);
-	target = wxString::FromAscii(entry->getData(), entry->getSize());
+	if (entry)
+		target = wxString::FromAscii(entry->getData(), entry->getSize());
 }
 
 // ----------------------------------------------------------------------------
@@ -293,12 +294,14 @@ void ScriptManager::init()
 	readResourceEntryText(script_templates[ScriptType::Archive], "scripts/archive/_template.lua");
 	readResourceEntryText(script_templates[ScriptType::Entry], "scripts/entry/_template.lua");
 	readResourceEntryText(script_templates[ScriptType::Custom], "scripts/_template_custom.lua");
+	readResourceEntryText(script_templates[ScriptType::Map], "scripts/map/_template.lua");
 
 	// Load scripts
 	loadGeneralScripts();
 	loadCustomScripts();
 	loadEditorScripts(ScriptType::Archive, "archive");
 	loadEditorScripts(ScriptType::Entry, "entry");
+	loadEditorScripts(ScriptType::Map, "map");
 }
 
 // ----------------------------------------------------------------------------
@@ -324,6 +327,7 @@ void ScriptManager::saveUserScripts()
 	exportUserScripts("scripts/custom", scripts_editor[ScriptType::Custom]);
 	exportUserScripts("scripts/archive", scripts_editor[ScriptType::Archive]);
 	exportUserScripts("scripts/entry", scripts_editor[ScriptType::Entry]);
+	exportUserScripts("scripts/map", scripts_editor[ScriptType::Map]);
 }
 
 // ----------------------------------------------------------------------------
@@ -432,5 +436,19 @@ void ScriptManager::runEntryScript(vector<ArchiveEntry*> entries, int index, wxW
 		Lua::setCurrentWindow(parent);
 
 	if (!Lua::runEntryScript(scripts_editor[ScriptType::Entry][index]->text, entries))
+		Lua::showErrorDialog(parent);
+}
+
+// ----------------------------------------------------------------------------
+// ScriptManager::runMapScript
+//
+// Runs the map editor script at [index] on [map]
+// ----------------------------------------------------------------------------
+void ScriptManager::runMapScript(SLADEMap* map, int index, wxWindow* parent)
+{
+	if (parent)
+		Lua::setCurrentWindow(parent);
+
+	if (!Lua::runMapScript(scripts_editor[ScriptType::Map][index]->text, map))
 		Lua::showErrorDialog(parent);
 }

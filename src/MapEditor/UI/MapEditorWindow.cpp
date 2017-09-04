@@ -236,6 +236,9 @@ void MapEditorWindow::setupMenu()
 
 	// Tools menu
 	wxMenu* menu_tools = new wxMenu("");
+	menu_scripts_ = new wxMenu();
+	ScriptManager::populateEditorScriptMenu(menu_scripts_, ScriptManager::ScriptType::Map, "mapw_script");
+	menu_tools->AppendSubMenu(menu_scripts_, "Run Script");
 	SAction::fromId("mapw_runscript")->addToMenu(menu_tools);
 	menu->Append(menu_tools, "&Tools");
 
@@ -1021,6 +1024,14 @@ bool MapEditorWindow::hasMapOpen(Archive* archive)
 	return (mdesc.head->getParent() == archive);
 }
 
+void MapEditorWindow::reloadScriptsMenu()
+{
+	while (menu_scripts_->FindItemByPosition(0))
+		menu_scripts_->Delete(menu_scripts_->FindItemByPosition(0));
+
+	ScriptManager::populateEditorScriptMenu(menu_scripts_, ScriptManager::ScriptType::Map, "mapw_script");
+}
+
 /* MapEditorWindow::setUndoManager
  * Sets the undo manager to show in the undo history panel
  *******************************************************************/
@@ -1318,6 +1329,13 @@ bool MapEditorWindow::handleAction(string id)
 	}
 
 	// Tools->Run Script
+	else if (id == "mapw_script")
+	{
+		ScriptManager::runMapScript(&MapEditor::editContext().map(), wx_id_offset, this);
+		return true;
+	}
+
+	// Tools->Script Manager
 	else if (id == "mapw_runscript")
 	{
 		ScriptManager::open();

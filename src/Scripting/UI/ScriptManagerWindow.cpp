@@ -43,6 +43,8 @@
 #include "UI/SAuiTabArt.h"
 #include "UI/STabCtrl.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 
 
 // ----------------------------------------------------------------------------
@@ -51,6 +53,76 @@
 //
 // ----------------------------------------------------------------------------
 CVAR(Bool, sm_maximized, false, CVAR_SAVE)
+
+
+
+class NewEditorScriptDialog : public wxDialog
+{
+public:
+	NewEditorScriptDialog(wxWindow* parent) : wxDialog(parent, -1, "New Editor Script")
+	{
+		auto sizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(sizer);
+
+		auto gbsizer = new wxGridBagSizer(8, 8);
+		sizer->Add(gbsizer, 1, wxEXPAND | wxALL, 10);
+		gbsizer->AddGrowableCol(1, 1);
+
+		// Script type
+		string types[] = {
+			"Custom",
+			"Archive",
+			"Entry",
+			"Map Editor"
+		};
+		choice_type_ = new wxChoice(this, -1, { -1, -1 }, { -1, -1 }, 4, types);
+		choice_type_->SetSelection(0);
+		gbsizer->Add(new wxStaticText(this, -1, "Type:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		gbsizer->Add(choice_type_, { 0, 1 }, { 1, 1 }, wxEXPAND);
+
+		// Script name
+		text_name_ = new wxTextCtrl(this, -1, wxEmptyString, { -1, -1 }, { 200, -1 }, wxTE_PROCESS_ENTER);
+		gbsizer->Add(new wxStaticText(this, -1, "Name:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		gbsizer->Add(text_name_, { 1, 1 }, { 1, 1 }, wxEXPAND);
+		text_name_->Bind(wxEVT_TEXT_ENTER, [&](wxCommandEvent& e)
+		{
+			EndModal(wxID_OK);
+		});
+
+		// Dialog buttons
+		auto hbox = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, 10);
+		hbox->AddStretchSpacer(1);
+
+		// OK
+		hbox->Add(new wxButton(this, wxID_OK, "OK"), 0, wxEXPAND | wxRIGHT, 10);
+
+		SetEscapeId(wxID_CANCEL);
+		Layout();
+		sizer->Fit(this);
+	}
+
+	ScriptManager::ScriptType selectedType()
+	{
+		switch (choice_type_->GetCurrentSelection())
+		{
+		case 1:		return ScriptManager::ScriptType::Archive;
+		case 2:		return ScriptManager::ScriptType::Entry;
+		case 3:		return ScriptManager::ScriptType::Map;
+		default:	return ScriptManager::ScriptType::Custom;
+		}
+	}
+
+	string selectedName()
+	{
+		return text_name_->GetValue();
+	}
+
+private:
+	wxChoice*	choice_type_;
+	wxTextCtrl*	text_name_;
+};
+
 
 
 // ----------------------------------------------------------------------------
@@ -286,11 +358,10 @@ void ScriptManagerWindow::setupMenu()
 
 	// File menu
 	auto fileMenu = new wxMenu();
-	auto newMenu = new wxMenu();
-	SAction::fromId("scrm_newscript_custom")->addToMenu(newMenu, true, "&Custom Script");
-	SAction::fromId("scrm_newscript_archive")->addToMenu(newMenu, true, "&Archive Script");
-	SAction::fromId("scrm_newscript_entry")->addToMenu(newMenu, true, "&Entry Script");
-	fileMenu->AppendSubMenu(newMenu, "&New");
+	//auto newMenu = new wxMenu();
+	//SAction::fromId("scrm_newscript_editor")->addToMenu(newMenu, true, "&Editor Script");
+	//fileMenu->AppendSubMenu(newMenu, "&New");
+	SAction::fromId("scrm_newscript_editor")->addToMenu(fileMenu);
 	menu->Append(fileMenu, "&File");
 
 	// Script menu
@@ -451,6 +522,15 @@ void ScriptManagerWindow::populateEditorScriptsTree(ScriptManager::ScriptType ty
 		);
 }
 
+void ScriptManagerWindow::addEditorScriptsNode(
+	wxTreeItemId parent_node,
+	ScriptManager::ScriptType type,
+	const string& name)
+{
+	editor_script_nodes_[type] = tree_scripts_->AppendItem(parent_node, name, 1);
+	populateEditorScriptsTree(type);
+}
+
 // ----------------------------------------------------------------------------
 // ScriptManagerWindow::populateScriptsTree
 //
@@ -478,22 +558,14 @@ void ScriptManagerWindow::populateScriptsTree()
 			new ScriptTreeItemData(script.get())
 		);
 
-	// Custom scripts
-	editor_script_nodes_[ScriptType::Custom] = tree_scripts_->AppendItem(editor_scripts, "Custom Scripts", 1);
-	populateEditorScriptsTree(ScriptType::Custom);
+	// Editor scripts
+	addEditorScriptsNode(editor_scripts, ScriptType::Custom, "Custom Scripts");
+	tree_scripts_->AppendItem(editor_scripts, "Global Scripts", 1);
+	addEditorScriptsNode(editor_scripts, ScriptType::Archive, "Archive Scripts");
+	addEditorScriptsNode(editor_scripts, ScriptType::Entry, "Entry Scripts");
+	addEditorScriptsNode(editor_scripts, ScriptType::Map, "Map Editor Scripts");
 
-	// Global scripts
-	auto global_scripts = tree_scripts_->AppendItem(editor_scripts, "Global Scripts", 1);
-
-	// Archive scripts
-	editor_script_nodes_[ScriptType::Archive] = tree_scripts_->AppendItem(editor_scripts, "Archive Scripts", 1);
-	populateEditorScriptsTree(ScriptType::Archive);
-
-	// Entry scripts
-	editor_script_nodes_[ScriptType::Entry] = tree_scripts_->AppendItem(editor_scripts, "Entry Scripts", 1);
-	populateEditorScriptsTree(ScriptType::Entry);
-
-	// Expand editor scripts initially
+	// Expand editor scripts node initially
 	tree_scripts_->Expand(editor_scripts);
 }
 
@@ -601,19 +673,31 @@ bool ScriptManagerWindow::handleAction(string id)
 	if (current && current->handleAction(id))
 		return true;
 
-	// File->New->Custom Script
-	if (id == "scrm_newscript_custom")
+	// File->New->Editor Script
+	if (id == "scrm_newscript_editor")
 	{
-		string name = wxGetTextFromUser("Enter a name for the script", "New Custom Script");
-		if (!name.empty())
+		NewEditorScriptDialog dlg(this);
+		dlg.CenterOnParent();
+		if (dlg.ShowModal() == wxID_OK)
 		{
-			auto script = ScriptManager::createEditorScript(name, ScriptType::Custom);
-			populateEditorScriptsTree(ScriptType::Custom);
-			openScriptTab(script);
+			auto name = dlg.selectedName();
+			auto type = dlg.selectedType();
+
+			if (!name.empty())
+			{
+				auto script = ScriptManager::createEditorScript(name, type);
+				populateEditorScriptsTree(type);
+				openScriptTab(script);
+
+				if (type == ScriptType::Map)
+					MapEditor::window()->reloadScriptsMenu();
+			}
 		}
+		
 		return true;
 	}
 
+	/*
 	// File->New->Archive Script
 	if (id == "scrm_newscript_archive")
 	{
@@ -639,6 +723,7 @@ bool ScriptManagerWindow::handleAction(string id)
 		}
 		return true;
 	}
+	*/
 
 	// Script->Run
 	if (id == "scrm_run")

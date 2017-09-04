@@ -42,6 +42,7 @@ public:
 	void		setUndoManager(UndoManager* manager);
 	bool		tryClose();
 	bool		hasMapOpen(Archive* archive);
+	void		reloadScriptsMenu();
 
 	MapObjectPropsPanel*	propsPanel() { return panel_obj_props; }
 	ObjectEditPanel*		objectEditPanel() { return panel_obj_edit; }
@@ -60,6 +61,7 @@ private:
 	ObjectEditPanel*			panel_obj_edit;
 	MapChecksPanel*				panel_checks;
 	UndoManagerHistoryPanel*	panel_undo_history;
+	wxMenu*						menu_scripts_;
 
 	void	buildNodes(Archive* wad);
 	void	lockMapEntries(bool lock = true);

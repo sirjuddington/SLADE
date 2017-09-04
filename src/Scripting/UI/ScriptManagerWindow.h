@@ -39,6 +39,7 @@ private:
 	void			bindEvents();
 	wxPanel*		setupScriptTreePanel();
 	void			populateEditorScriptsTree(ScriptManager::ScriptType type);
+	void			addEditorScriptsNode(wxTreeItemId parent_node, ScriptManager::ScriptType type, const string& name);
 	void			populateScriptsTree();
 	ScriptPanel*	currentPage() const;
 	void			closeScriptTab(ScriptManager::Script* script);

@@ -1,5 +1,6 @@
 #pragma once
 
+class SLADEMap;
 class wxWindow;
 namespace sol { class state; }
 
@@ -25,6 +26,7 @@ namespace Lua
 	bool	runFile(string filename);
 	bool	runArchiveScript(const string& script, Archive* archive);
 	bool	runEntryScript(const string& script, vector<ArchiveEntry*> entries);
+	bool	runMapScript(const string& script, SLADEMap* map);
 
 	sol::state&	state();
 

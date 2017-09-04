@@ -156,6 +156,52 @@ void processError(sol::protected_function_result& result)
 	);
 }
 
+// ----------------------------------------------------------------------------
+// Lua::runEditorScript
+//
+// Template function for Lua::run*Script functions.
+// Loads [script] and runs the 'execute' function in the script, passing
+// [param] to the function
+// ----------------------------------------------------------------------------
+template<class T>
+bool runEditorScript(const string& script, T param)
+{
+	resetError();
+	script_start_time = wxDateTime::Now().GetTicks();
+
+	// Load script
+	sol::environment sandbox(lua, sol::create, lua.globals());
+	auto load_result = lua.script(CHR(script), sandbox, sol::simple_on_error);
+	if (!load_result.valid())
+	{
+		processError(load_result);
+		Log::error(S_FMT(
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
+		));
+		return false;
+	}
+
+	// Run script execute function
+	sol::protected_function func = sandbox["execute"];
+	auto exec_result = func(param);
+	if (!exec_result.valid())
+	{
+		processError(exec_result);
+		Log::error(S_FMT(
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
+		));
+		return false;
+	}
+
+	return true;
+}
+
 } // namespace Lua
 
 // ----------------------------------------------------------------------------
@@ -294,40 +340,7 @@ bool Lua::runFile(string filename)
 // ----------------------------------------------------------------------------
 bool Lua::runArchiveScript(const string& script, Archive* archive)
 {
-	resetError();
-	script_start_time = wxDateTime::Now().GetTicks();
-
-	// Load script
-	sol::environment sandbox(lua, sol::create, lua.globals());
-	auto load_result = lua.script(CHR(script), sandbox, sol::simple_on_error);
-	if (!load_result.valid())
-	{
-		processError(load_result);
-		Log::error(S_FMT(
-			"%s Error running Lua script: %d: %s",
-			CHR(script_error.type),
-			script_error.line_no,
-			CHR(script_error.message)
-		));
-		return false;
-	}
-
-	// Run script execute function
-	sol::protected_function func = sandbox["execute"];
-	auto exec_result = func(archive);
-	if (!exec_result.valid())
-	{
-		processError(exec_result);
-		Log::error(S_FMT(
-			"%s Error running Lua script: %d: %s",
-			CHR(script_error.type),
-			script_error.line_no,
-			CHR(script_error.message)
-		));
-		return false;
-	}
-
-	return true;
+	return runEditorScript<Archive*>(script, archive);
 }
 
 // ----------------------------------------------------------------------------
@@ -338,40 +351,18 @@ bool Lua::runArchiveScript(const string& script, Archive* archive)
 // ----------------------------------------------------------------------------
 bool Lua::runEntryScript(const string& script, vector<ArchiveEntry*> entries)
 {
-	resetError();
-	script_start_time = wxDateTime::Now().GetTicks();
+	return runEditorScript<vector<ArchiveEntry*>>(script, entries);
+}
 
-	// Load script
-	sol::environment sandbox(lua, sol::create, lua.globals());
-	auto load_result = lua.script(CHR(script), sandbox, sol::simple_on_error);
-	if (!load_result.valid())
-	{
-		processError(load_result);
-		Log::error(S_FMT(
-			"%s Error running Lua script: %d: %s",
-			CHR(script_error.type),
-			script_error.line_no,
-			CHR(script_error.message)
-		));
-		return false;
-	}
-
-	// Run script execute function
-	sol::protected_function func = sandbox["execute"];
-	auto exec_result = func(entries);
-	if (!exec_result.valid())
-	{
-		processError(exec_result);
-		Log::error(S_FMT(
-			"%s Error running Lua script: %d: %s",
-			CHR(script_error.type),
-			script_error.line_no,
-			CHR(script_error.message)
-		));
-		return false;
-	}
-
-	return true;
+// ----------------------------------------------------------------------------
+// Lua::runMapScript
+//
+// Runs the 'execute(map)' function in the given [script], passing [map] as the
+// parameter
+// ----------------------------------------------------------------------------
+bool Lua::runMapScript(const string& script, SLADEMap* map)
+{
+	return runEditorScript<SLADEMap*>(script, map);
 }
 
 // ----------------------------------------------------------------------------

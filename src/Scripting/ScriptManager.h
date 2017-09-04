@@ -2,6 +2,8 @@
 
 #include "Archive/ArchiveEntry.h"
 
+class SLADEMap;
+
 namespace ScriptManager
 {
 	enum class ScriptType
@@ -11,6 +13,7 @@ namespace ScriptManager
 		Global,
 		Archive,
 		Entry,
+		Map,
 		NonEditor
 	};
 
@@ -37,9 +40,10 @@ namespace ScriptManager
 	bool	renameScript(Script* script, const string& new_name);
 	bool	deleteScript(Script* script);
 
-	Script*		createEditorScript(const string& name, ScriptType type);
-	void		populateEditorScriptMenu(wxMenu* menu, ScriptType type, const string& action_id);
+	Script*	createEditorScript(const string& name, ScriptType type);
+	void	populateEditorScriptMenu(wxMenu* menu, ScriptType type, const string& action_id);
 
 	void	runArchiveScript(Archive* archive, int index, wxWindow* parent = nullptr);
 	void	runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent = nullptr);
+	void	runMapScript(SLADEMap* map, int index, wxWindow* parent = nullptr);
 }
