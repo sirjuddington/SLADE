@@ -331,6 +331,50 @@ bool Lua::runArchiveScript(const string& script, Archive* archive)
 }
 
 // ----------------------------------------------------------------------------
+// Lua::runEntryScript
+//
+// Runs the 'execute(entries)' function in the given [script], passing
+// [entries] as the parameter
+// ----------------------------------------------------------------------------
+bool Lua::runEntryScript(const string& script, vector<ArchiveEntry*> entries)
+{
+	resetError();
+	script_start_time = wxDateTime::Now().GetTicks();
+
+	// Load script
+	sol::environment sandbox(lua, sol::create, lua.globals());
+	auto load_result = lua.script(CHR(script), sandbox, sol::simple_on_error);
+	if (!load_result.valid())
+	{
+		processError(load_result);
+		Log::error(S_FMT(
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
+		));
+		return false;
+	}
+
+	// Run script execute function
+	sol::protected_function func = sandbox["execute"];
+	auto exec_result = func(entries);
+	if (!exec_result.valid())
+	{
+		processError(exec_result);
+		Log::error(S_FMT(
+			"%s Error running Lua script: %d: %s",
+			CHR(script_error.type),
+			script_error.line_no,
+			CHR(script_error.message)
+		));
+		return false;
+	}
+
+	return true;
+}
+
+// ----------------------------------------------------------------------------
 // Lua::state
 //
 // Returns the active lua state

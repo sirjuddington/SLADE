@@ -108,7 +108,12 @@ protected:
 #endif
 	void DoLogText(const wxString& msg) override
 	{
-		Log::message(Log::MessageType::Info, msg.Right(msg.size() - 10));
+		if (msg.Lower().Contains("error"))
+			Log::error(msg.Right(msg.size() - 10));
+		else if (msg.Lower().Contains("warning"))
+			Log::warning(msg.Right(msg.size() - 10));
+		else
+			Log::info(msg.Right(msg.size() - 10));
 	}
 
 public:
@@ -585,7 +590,7 @@ bool SLADEWxApp::OnInit()
 
 	// Get command line arguments
 	vector<string> args;
-	for (int a = 0; a < argc; a++)
+	for (int a = 1; a < argc; a++)
 		args.push_back(argv[a]);
 
 	// Init application
@@ -849,7 +854,10 @@ void SLADEWxApp::onActivate(wxActivateEvent& e)
 
 CONSOLE_COMMAND (crash, 0, false)
 {
-	if (wxMessageBox("Yes, this command does actually exist and *will* crash the program. Do you really want it to crash?", "...Really?", wxYES_NO|wxCENTRE) == wxYES)
+	if (wxMessageBox(
+		"Yes, this command does actually exist and *will* crash the program. Do you really want it to crash?",
+		"...Really?",
+		wxYES_NO|wxCENTRE) == wxYES)
 	{
 		uint8_t* test = nullptr;
 		test[123] = 5;

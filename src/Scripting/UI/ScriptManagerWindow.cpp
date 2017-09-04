@@ -289,6 +289,7 @@ void ScriptManagerWindow::setupMenu()
 	auto newMenu = new wxMenu();
 	SAction::fromId("scrm_newscript_custom")->addToMenu(newMenu, true, "&Custom Script");
 	SAction::fromId("scrm_newscript_archive")->addToMenu(newMenu, true, "&Archive Script");
+	SAction::fromId("scrm_newscript_entry")->addToMenu(newMenu, true, "&Entry Script");
 	fileMenu->AppendSubMenu(newMenu, "&New");
 	menu->Append(fileMenu, "&File");
 
@@ -489,7 +490,8 @@ void ScriptManagerWindow::populateScriptsTree()
 	populateEditorScriptsTree(ScriptType::Archive);
 
 	// Entry scripts
-	auto entry_scripts = tree_scripts_->AppendItem(editor_scripts, "Entry Scripts", 1);
+	editor_script_nodes_[ScriptType::Entry] = tree_scripts_->AppendItem(editor_scripts, "Entry Scripts", 1);
+	populateEditorScriptsTree(ScriptType::Entry);
 
 	// Expand editor scripts initially
 	tree_scripts_->Expand(editor_scripts);
@@ -620,6 +622,19 @@ bool ScriptManagerWindow::handleAction(string id)
 		{
 			auto script = ScriptManager::createEditorScript(name, ScriptType::Archive);
 			populateEditorScriptsTree(ScriptType::Archive);
+			openScriptTab(script);
+		}
+		return true;
+	}
+
+	// File->New->Entry Script
+	if (id == "scrm_newscript_entry")
+	{
+		string name = wxGetTextFromUser("Enter a name for the script", "New Entry Script");
+		if (!name.empty())
+		{
+			auto script = ScriptManager::createEditorScript(name, ScriptType::Entry);
+			populateEditorScriptsTree(ScriptType::Entry);
 			openScriptTab(script);
 		}
 		return true;

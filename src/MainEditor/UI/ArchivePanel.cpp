@@ -489,7 +489,7 @@ void ArchivePanel::addMenus()
 		menu_archive->AppendSubMenu(menu_clean, "&Maintenance");
 		auto menu_scripts = new wxMenu();
 		ScriptManager::populateEditorScriptMenu(menu_scripts, ScriptManager::ScriptType::Archive, "arch_script");
-		menu_archive->AppendSubMenu(menu_scripts, "&Scripts");
+		menu_archive->AppendSubMenu(menu_scripts, "&Run Script");
 	}
 	if (!menu_entry)
 	{
@@ -511,6 +511,9 @@ void ArchivePanel::addMenus()
 		SAction::fromId("arch_entry_export")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
 		SAction::fromId("arch_entry_bookmark")->addToMenu(menu_entry);
+		auto menu_scripts = new wxMenu();
+		ScriptManager::populateEditorScriptMenu(menu_scripts, ScriptManager::ScriptType::Entry, "arch_entry_script");
+		menu_entry->AppendSubMenu(menu_scripts, "&Run Script");
 	}
 
 	// Add them to the main window menubar
@@ -3097,6 +3100,9 @@ bool ArchivePanel::handleAction(string id)
 	else if (id == "arch_entry_openext")
 		openEntryExternal();
 
+	// Entry->Run Script
+	else if (id == "arch_entry_script")
+		ScriptManager::runEntryScript(entry_list->getSelectedEntries(), wx_id_offset, MainEditor::windowWx());
 
 
 	// Context menu actions
@@ -3584,7 +3590,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		if (context_submenus)
 		{
 			scripts = new wxMenu();
-			context.AppendSubMenu(scripts, "Scripts");
+			context.AppendSubMenu(scripts, "Script");
 		}
 		else
 		{
@@ -3602,6 +3608,15 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 #ifdef __WXMSW__
 		SAction::fromId("arch_map_opendb2")->addToMenu(&context, true);
 #endif
+	}
+
+	// Entry scripts
+	if (!ScriptManager::editorScripts(ScriptManager::ScriptType::Entry).empty())
+	{
+		auto menu_scripts = new wxMenu();
+		ScriptManager::populateEditorScriptMenu(menu_scripts, ScriptManager::ScriptType::Entry, "arch_entry_script");
+		context.AppendSeparator();
+		context.AppendSubMenu(menu_scripts, "Run &Script");
 	}
 
 	// Popup the context menu

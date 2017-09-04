@@ -159,21 +159,22 @@ void loadCustomScripts()
 }
 
 // ----------------------------------------------------------------------------
-// loadArchiveScripts
+// loadEditorScripts
 //
-// Loads all Archive scripts from slade.pk3 and the user dir
+// Loads all editor scripts of [type] from slade.pk3 and the user dir (in
+// scripts/[dir])
 // ----------------------------------------------------------------------------
-void loadArchiveScripts()
+void loadEditorScripts(ScriptType type, const string& dir)
 {
-	// Get 'scripts/archive' dir of slade.pk3
-	auto scripts_dir = App::archiveManager().programResourceArchive()->getDir("scripts/archive");
+	// Get 'scripts/(dir)' dir of slade.pk3
+	auto scripts_dir = App::archiveManager().programResourceArchive()->getDir(S_FMT("scripts/%s", CHR(dir)));
 	if (scripts_dir)
 	{
 		for (auto& entry : scripts_dir->allEntries())
 		{
 			if (!entry->getName().StartsWith("_"))
 			{
-				auto script = addEditorScriptFromEntry(entry, ScriptType::Archive, "/scripts/archive/");
+				auto script = addEditorScriptFromEntry(entry, type, S_FMT("/scripts/%s/", CHR(dir)));
 				script->read_only = true;
 			}
 		}
@@ -182,7 +183,7 @@ void loadArchiveScripts()
 	// Load user archive scripts
 
 	// If the directory doesn't exist create it
-	auto user_scripts_dir = App::path("scripts/archive", App::Dir::User);
+	auto user_scripts_dir = App::path(S_FMT("scripts/%s", CHR(dir)), App::Dir::User);
 	if (!wxDirExists(user_scripts_dir))
 		wxMkdir(user_scripts_dir);
 
@@ -195,7 +196,7 @@ void loadArchiveScripts()
 	bool files = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
 	while (files)
 	{
-		auto script = addEditorScriptFromFile(user_scripts_dir + "/" + filename, ScriptType::Archive);
+		auto script = addEditorScriptFromFile(user_scripts_dir + "/" + filename, type);
 
 		// Next file
 		files = res_dir.GetNext(&filename);
@@ -290,12 +291,14 @@ void ScriptManager::init()
 
 	// Init script templates
 	readResourceEntryText(script_templates[ScriptType::Archive], "scripts/archive/_template.lua");
+	readResourceEntryText(script_templates[ScriptType::Entry], "scripts/entry/_template.lua");
 	readResourceEntryText(script_templates[ScriptType::Custom], "scripts/_template_custom.lua");
 
 	// Load scripts
 	loadGeneralScripts();
 	loadCustomScripts();
-	loadArchiveScripts();
+	loadEditorScripts(ScriptType::Archive, "archive");
+	loadEditorScripts(ScriptType::Entry, "entry");
 }
 
 // ----------------------------------------------------------------------------
@@ -318,11 +321,9 @@ void ScriptManager::open()
 // ----------------------------------------------------------------------------
 void ScriptManager::saveUserScripts()
 {
-	// Custom scripts
 	exportUserScripts("scripts/custom", scripts_editor[ScriptType::Custom]);
-
-	// Archive scripts
 	exportUserScripts("scripts/archive", scripts_editor[ScriptType::Archive]);
+	exportUserScripts("scripts/entry", scripts_editor[ScriptType::Entry]);
 }
 
 // ----------------------------------------------------------------------------
@@ -417,5 +418,19 @@ void ScriptManager::runArchiveScript(Archive* archive, int index, wxWindow* pare
 		Lua::setCurrentWindow(parent);
 
 	if (!Lua::runArchiveScript(scripts_editor[ScriptType::Archive][index]->text, archive))
+		Lua::showErrorDialog(parent);
+}
+
+// ----------------------------------------------------------------------------
+// ScriptManager::runArchiveScript
+//
+// Runs the entry script at [index] on [archive]
+// ----------------------------------------------------------------------------
+void ScriptManager::runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent)
+{
+	if (parent)
+		Lua::setCurrentWindow(parent);
+
+	if (!Lua::runEntryScript(scripts_editor[ScriptType::Entry][index]->text, entries))
 		Lua::showErrorDialog(parent);
 }
