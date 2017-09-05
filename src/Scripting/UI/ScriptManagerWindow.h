@@ -23,6 +23,11 @@ private:
 
 	std::map<ScriptManager::ScriptType, wxTreeItemId>	editor_script_nodes_;
 
+	// Documentation tab
+#if USE_WEBVIEW_STARTPAGE
+	wxWebView*	webview_docs_;
+#endif
+
 	// Widgets
 	STabCtrl*	tabs_scripts_;
 	wxTreeCtrl*	tree_scripts_;
@@ -43,6 +48,7 @@ private:
 	void			populateScriptsTree();
 	ScriptPanel*	currentPage() const;
 	void			closeScriptTab(ScriptManager::Script* script);
+	void			showDocs(string url = "");
 
 	// SActionHandler
 	bool	handleAction(string id) override;

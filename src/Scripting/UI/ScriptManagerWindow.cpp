@@ -52,10 +52,21 @@
 // Variables
 //
 // ----------------------------------------------------------------------------
+namespace
+{
+	string	docs_url = "http://slade.mancubus.net/docs/scripting";
+	int		layout_version = 1;
+}
+
 CVAR(Bool, sm_maximized, false, CVAR_SAVE)
 
 
-
+// ----------------------------------------------------------------------------
+// NewEditorScriptDialog Class
+//
+// A simple dialog showing a dropdown to select an editor script type and a
+// text box to enter a name for the script
+// ----------------------------------------------------------------------------
 class NewEditorScriptDialog : public wxDialog
 {
 public:
@@ -124,6 +135,18 @@ private:
 };
 
 
+// ----------------------------------------------------------------------------
+// ScriptTreeItemData Class
+//
+// Just used to store Script pointers with wxTreeCtrl items
+// ----------------------------------------------------------------------------
+class ScriptTreeItemData : public wxTreeItemData
+{
+public:
+	ScriptTreeItemData(ScriptManager::Script* script) : script{ script } {}
+	ScriptManager::Script* script;
+};
+
 
 // ----------------------------------------------------------------------------
 //
@@ -183,19 +206,6 @@ wxImageList* createTreeImageList()
 
 
 // ----------------------------------------------------------------------------
-// ScriptTreeItemData Class
-//
-// Just used to store Script pointers with wxTreeCtrl items
-// ----------------------------------------------------------------------------
-class ScriptTreeItemData : public wxTreeItemData
-{
-public:
-	ScriptTreeItemData(ScriptManager::Script* script) : script{ script } {}
-	ScriptManager::Script* script;
-};
-
-
-// ----------------------------------------------------------------------------
 //
 // ScriptManagerWindow Class Functions
 //
@@ -234,9 +244,20 @@ void ScriptManagerWindow::loadLayout()
 	// Read component layout
 	if (file.IsOpened())
 	{
-		string layout;
-		file.ReadAll(&layout);
-		wxAuiManager::GetManager(this)->LoadPerspective(layout);
+		string text, layout;
+		file.ReadAll(&text);
+
+		// Get layout version
+		string version = text.BeforeFirst('\n', &layout);
+
+		// Check version
+		long val;
+		if (version.ToLong(&val))
+		{
+			// Load layout only if correct version
+			if (val == layout_version)
+				wxAuiManager::GetManager(this)->LoadPerspective(layout);
+		}
 	}
 
 	// Close file
@@ -254,6 +275,7 @@ void ScriptManagerWindow::saveLayout()
 	wxFile file(App::path("scriptmanager.layout", App::Dir::User), wxFile::write);
 
 	// Write component layout
+	file.Write(S_FMT("%d\n", layout_version));
 	file.Write(wxAuiManager::GetManager(this)->SavePerspective());
 
 	// Close file
@@ -358,9 +380,6 @@ void ScriptManagerWindow::setupMenu()
 
 	// File menu
 	auto fileMenu = new wxMenu();
-	//auto newMenu = new wxMenu();
-	//SAction::fromId("scrm_newscript_editor")->addToMenu(newMenu, true, "&Editor Script");
-	//fileMenu->AppendSubMenu(newMenu, "&New");
 	SAction::fromId("scrm_newscript_editor")->addToMenu(fileMenu);
 	menu->Append(fileMenu, "&File");
 
@@ -388,6 +407,8 @@ void ScriptManagerWindow::setupMenu()
 	auto viewMenu = new wxMenu();
 	SAction::fromId("scrm_showscripts")->addToMenu(viewMenu);
 	SAction::fromId("scrm_showconsole")->addToMenu(viewMenu);
+	if (App::useWebView())
+		SAction::fromId("scrm_showdocs")->addToMenu(viewMenu);
 	menu->Append(viewMenu, "&View");
 
 	// Set the menu
@@ -401,27 +422,24 @@ void ScriptManagerWindow::setupMenu()
 // ----------------------------------------------------------------------------
 void ScriptManagerWindow::setupToolbar()
 {
-	//toolbar = new SToolBar(this, true);
+	toolbar = new SToolBar(this, true);
 
-	//// Create File toolbar
-	//auto tbg_script = new SToolBarGroup(toolbar, "_Script");
-	//tbg_script->addActionButton("scrm_run");
-	//tbg_script->addActionButton("scrm_save");
-	////tbg_script->addActionButton("scrm_rename");
-	////tbg_script->addActionButton("scrm_delete");
-	//toolbar->addGroup(tbg_script);
+	// Create File toolbar
+	auto tbg_file = new SToolBarGroup(toolbar, "_File");
+	tbg_file->addActionButton("scrm_newscript_editor");
+	toolbar->addGroup(tbg_file);
 
-	//// Add toolbar
-	//wxAuiManager::GetManager(this)->AddPane(
-	//	toolbar,
-	//	wxAuiPaneInfo()
-	//		.Top()
-	//		.CaptionVisible(false)
-	//		.MinSize(-1, SToolBar::getBarHeight())
-	//		.Resizable(false)
-	//		.PaneBorder(false)
-	//		.Name("toolbar")
-	//);
+	// Add toolbar
+	wxAuiManager::GetManager(this)->AddPane(
+		toolbar,
+		wxAuiPaneInfo()
+			.Top()
+			.CaptionVisible(false)
+			.MinSize(-1, SToolBar::getBarHeight())
+			.Resizable(false)
+			.PaneBorder(false)
+			.Name("toolbar")
+	);
 }
 
 // ----------------------------------------------------------------------------
@@ -506,6 +524,11 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 	return panel;
 }
 
+// ----------------------------------------------------------------------------
+// ScriptManagerWindow::populateEditorScriptsTree
+//
+// Populates the editor scripts wxTreeCtrl node for [type]
+// ----------------------------------------------------------------------------
 void ScriptManagerWindow::populateEditorScriptsTree(ScriptManager::ScriptType type)
 {
 	if (!editor_script_nodes_[type].IsOk())
@@ -522,6 +545,12 @@ void ScriptManagerWindow::populateEditorScriptsTree(ScriptManager::ScriptType ty
 		);
 }
 
+// ----------------------------------------------------------------------------
+// ScriptManagerWindow::addEditorScriptsNode
+//
+// Adds the editor scripts wxTreeCtrl node for [type] with [name], under
+// [parent_node] and populates it
+// ----------------------------------------------------------------------------
 void ScriptManagerWindow::addEditorScriptsNode(
 	wxTreeItemId parent_node,
 	ScriptManager::ScriptType type,
@@ -583,6 +612,11 @@ ScriptPanel* ScriptManagerWindow::currentPage() const
 	return nullptr;
 }
 
+// ----------------------------------------------------------------------------
+// ScriptManagerWindow::closeScriptTab
+//
+// Closes the tab for [script] if it is currently open
+// ----------------------------------------------------------------------------
 void ScriptManagerWindow::closeScriptTab(ScriptManager::Script* script)
 {
 	// Find existing tab
@@ -596,6 +630,59 @@ void ScriptManagerWindow::closeScriptTab(ScriptManager::Script* script)
 				return;
 			}
 	}
+}
+
+// ----------------------------------------------------------------------------
+// ScriptManagerWindow::showDocs
+//
+// Shows the scripting documentation tab or creates it if it isn't currently
+// open. If [url] is specified, navigates to <scripting docs url>/[url]
+// ----------------------------------------------------------------------------
+void ScriptManagerWindow::showDocs(string url)
+{
+#ifdef USE_WEBVIEW_STARTPAGE
+
+	// Find existing tab
+	bool found = false;
+	for (unsigned a = 0; a < tabs_scripts_->GetPageCount(); a++)
+	{
+		auto page = tabs_scripts_->GetPage(a);
+		if (page->GetName() == "docs")
+		{
+			tabs_scripts_->SetSelection(a);
+			found = true;
+			break;
+		}
+	}
+
+	if (!found)
+	{
+		// Tab not open, create it
+		webview_docs_ = wxWebView::New(this, -1, wxEmptyString);
+		webview_docs_->SetName("docs");
+
+		// Bind HTML link click event
+		webview_docs_->Bind(wxEVT_WEBVIEW_NAVIGATING, [&](wxEvent& e)
+		{
+			wxWebViewEvent& ev = (wxWebViewEvent&)e;
+			string href = ev.GetURL();
+
+			// Open external links externally
+			if (!href.StartsWith(docs_url))
+			{
+				wxLaunchDefaultBrowser(href);
+				ev.Veto();
+			}
+		});
+		
+		tabs_scripts_->AddPage(webview_docs_, "Scripting Documentation", true, Icons::getIcon(Icons::GENERAL, "wiki"));
+	}
+
+	// Load page if set
+	if (!found || !url.empty())
+		webview_docs_->LoadURL(docs_url + "/" + url);
+
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -697,34 +784,6 @@ bool ScriptManagerWindow::handleAction(string id)
 		return true;
 	}
 
-	/*
-	// File->New->Archive Script
-	if (id == "scrm_newscript_archive")
-	{
-		string name = wxGetTextFromUser("Enter a name for the script", "New Archive Script");
-		if (!name.empty())
-		{
-			auto script = ScriptManager::createEditorScript(name, ScriptType::Archive);
-			populateEditorScriptsTree(ScriptType::Archive);
-			openScriptTab(script);
-		}
-		return true;
-	}
-
-	// File->New->Entry Script
-	if (id == "scrm_newscript_entry")
-	{
-		string name = wxGetTextFromUser("Enter a name for the script", "New Entry Script");
-		if (!name.empty())
-		{
-			auto script = ScriptManager::createEditorScript(name, ScriptType::Entry);
-			populateEditorScriptsTree(ScriptType::Entry);
-			openScriptTab(script);
-		}
-		return true;
-	}
-	*/
-
 	// Script->Run
 	if (id == "scrm_run")
 	{
@@ -800,6 +859,13 @@ bool ScriptManagerWindow::handleAction(string id)
 		p_inf.Show(!p_inf.IsShown());
 		p_inf.MinSize(200, 128);
 		m_mgr->Update();
+		return true;
+	}
+
+	// View->Documentation
+	if (id == "scrm_showdocs")
+	{
+		showDocs();
 		return true;
 	}
 
