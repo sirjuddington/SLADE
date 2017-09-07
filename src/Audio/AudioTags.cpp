@@ -615,6 +615,9 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const wav_chunk
 		if (s % 2)
 			s++;
 
+		if (end > mc.getSize())
+			break;
+
 		// Broadcast extensions (bext chunk)
 		if (temp->id[0] == 'b' && temp->id[1] == 'e' && temp->id[2] == 'x' && temp->id[3] == 't' && tempsize >= 602)
 		{
