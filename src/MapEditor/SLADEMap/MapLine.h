@@ -115,6 +115,7 @@ public:
 	fpoint2_t	point2();
 	fseg2_t		seg();
 	double		getLength();
+    double		getAngle();
 	bool		doubleSector();
 	fpoint2_t	frontVector();
 	fpoint2_t	dirTabPoint(double length = 0);
