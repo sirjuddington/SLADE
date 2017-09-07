@@ -306,7 +306,7 @@ bool Enumerator::parse(ParsedStatement& statement)
 		values_.push_back({ val_name, 0 });
 
 		// Skip past next ,
-		while (index < count)
+		while (index + 1 < count)
 			if (statement.block[0].tokens[++index] == ',')
 				break;
 
@@ -1150,7 +1150,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 			break;
 
 		// Array initializer: ... = { ... }
-		if (tz.current().text.Cmp("=") == 0 && tz.peek().text[0] == '{')
+		if (tz.current().text.Cmp("=") == 0 && tz.peek() == '{')
 		{
 			tokens.push_back("=");
 			tokens.push_back("{");

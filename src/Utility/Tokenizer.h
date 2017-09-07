@@ -112,7 +112,7 @@ public:
 	// Token Checking
 	bool	check(const char* check) const { return token_current_ == check; }
 	bool	check(const string& check) const { return token_current_ == check; }
-	bool	check(char check) const { return token_current_[0] == check; }
+	bool	check(char check) const { return token_current_ == check; }
 	bool	checkOrEnd(const char* check) const;
 	bool	checkOrEnd(const string& check) const;
 	bool	checkOrEnd(char check) const;
