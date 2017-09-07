@@ -74,6 +74,8 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 
 	// Remove save/revert buttons
 	toolbar->deleteGroup("Entry");
+	stb_save = nullptr;
+	stb_revert = nullptr;
 
 	// Setup bottom panel
 	sizer_bottom->Add(label_stats = new wxStaticText(this, -1, ""), 0, wxALIGN_CENTER_VERTICAL);

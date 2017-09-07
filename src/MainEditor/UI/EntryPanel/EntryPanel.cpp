@@ -122,7 +122,7 @@ void EntryPanel::setModified(bool c)
 			modified = c;
 	}
 
-	if (stb_save->IsEnabled() != modified)
+	if (stb_save && stb_save->IsEnabled() != modified)
 	{
 		toolbar->enableGroup("Entry", modified);
 		callRefresh();

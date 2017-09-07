@@ -90,6 +90,8 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent)
 
 	// Hide save/revert toolbar
 	toolbar->deleteGroup("Entry");
+	stb_save = nullptr;
+	stb_revert = nullptr;
 
 	// Setup toolbar
 	SToolBarGroup* group = new SToolBarGroup(toolbar, "View As");
