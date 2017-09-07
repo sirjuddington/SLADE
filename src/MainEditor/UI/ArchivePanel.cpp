@@ -2739,7 +2739,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 
 		// Show the new entry panel
 		bool changed = (cur_area != new_area);
-		if (!showEntryPanel(new_area))
+		if (!showEntryPanel(new_area, false))
 			return false;
 		else if (changed)
 			new_area->updateToolbar();
@@ -2848,7 +2848,8 @@ void ArchivePanel::focusOnEntry(ArchiveEntry* entry)
 bool ArchivePanel::showEntryPanel(EntryPanel* new_area, bool ask_save)
 {
 	// Save any changes if needed
-	saveEntryChanges();
+	if (ask_save)
+		saveEntryChanges();
 
 	// Get the panel sizer
 	wxSizer* sizer = GetSizer();

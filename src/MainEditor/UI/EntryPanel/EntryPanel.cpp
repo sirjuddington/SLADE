@@ -138,7 +138,7 @@ bool EntryPanel::openEntry(ArchiveEntry* entry)
 	if (!entry)
 	{
 		entry_data.clear();
-		this->entry = NULL;
+		this->entry = nullptr;
 		return false;
 	}
 
@@ -231,6 +231,8 @@ void EntryPanel::refreshPanel()
  *******************************************************************/
 void EntryPanel::closeEntry()
 {
+	entry_data.clear();
+	this->entry = nullptr;
 }
 
 /* EntryPanel::updateStatus
