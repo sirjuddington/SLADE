@@ -427,7 +427,10 @@ void MapEditContext::clearMap()
 	// Clear selection
 	selection_.clear();
 	selection_.clearHilight();
+
+	// Reset state
 	edit_3d_.setLinked(true, true);
+	input_.setMouseState(MapEditor::Input::MouseState::Normal);
 
 	// Clear undo manager
 	undo_manager_->clear();
