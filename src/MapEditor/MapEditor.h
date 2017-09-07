@@ -94,6 +94,7 @@ namespace MapEditor
 	void	openObjectProperties(MapObject* object);
 	void	openMultiObjectProperties(vector<MapObject*>& objects);
 	bool	editObjectProperties(vector<MapObject*>& list);
+	void	resetObjectPropertiesPanel();
 
 	// Other Panels
 	void	showShapeDrawPanel(bool show = true);

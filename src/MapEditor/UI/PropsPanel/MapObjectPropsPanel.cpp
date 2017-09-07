@@ -1061,6 +1061,9 @@ void MapObjectPropsPanel::clearGrid()
 	stc_sections->Thaw();
 	pg_props_side1->Show(false);
 	pg_props_side2->Show(false);
+
+	// Reset last type so the grid is rebuilt next time objects are opened
+	last_type = -1;
 }
 
 

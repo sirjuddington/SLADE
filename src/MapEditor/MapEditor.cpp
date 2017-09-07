@@ -280,6 +280,11 @@ bool MapEditor::editObjectProperties(vector<MapObject*>& list)
 	return false;
 }
 
+void MapEditor::resetObjectPropertiesPanel()
+{
+	map_window->propsPanel()->clearGrid();
+}
+
 MapEditor::ItemType MapEditor::baseItemType(const ItemType& type)
 {
 	switch (type)

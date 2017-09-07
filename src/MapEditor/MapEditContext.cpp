@@ -431,6 +431,7 @@ void MapEditContext::clearMap()
 	// Reset state
 	edit_3d_.setLinked(true, true);
 	input_.setMouseState(MapEditor::Input::MouseState::Normal);
+	MapEditor::resetObjectPropertiesPanel();
 
 	// Clear undo manager
 	undo_manager_->clear();
