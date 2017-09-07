@@ -89,10 +89,10 @@ EXTERN_CVAR(String, path_pngout)
 EXTERN_CVAR(String, path_pngcrush)
 EXTERN_CVAR(String, path_deflopt)
 EXTERN_CVAR(Bool, confirm_entry_revert)
-wxMenu* menu_archive = NULL;
-wxMenu* menu_entry = NULL;
-wxAuiToolBar* tb_archive = NULL;
-wxAuiToolBar* tb_entry = NULL;
+wxMenu* menu_archive = nullptr;
+wxMenu* menu_entry = nullptr;
+wxAuiToolBar* tb_archive = nullptr;
+wxAuiToolBar* tb_entry = nullptr;
 
 
 /*******************************************************************
@@ -135,7 +135,7 @@ public:
 			else
 			{
 				wxFileName fn(filenames[a]);
-				ArchiveEntry* entry = NULL;
+				ArchiveEntry* entry = nullptr;
 
 				// Find entry to replace if needed
 				if (auto_entry_replace)
@@ -153,14 +153,14 @@ public:
 						int result = dlg.ShowModal();
 
 						// User doesn't want to replace the entry
-						if (result == wxID_NO)			entry = NULL;
+						if (result == wxID_NO)			entry = nullptr;
 						// User wants to replace all entries
 						if (result == wxID_CANCEL)		yes_to_all = true;
 					}
 				}
 
 				// Create new entry if needed
-				if (entry == NULL)
+				if (entry == nullptr)
 					entry = parent->getArchive()->addNewEntry(fn.GetFullName(), index, list->getCurrentDir());
 
 				// Import the file to it
@@ -1152,6 +1152,9 @@ bool ArchivePanel::deleteEntry(bool confirm)
 		// Remove from bookmarks
 		App::archiveManager().deleteBookmark(selected_entries[a]);
 
+		// Close entry tab if open
+		MainEditor::window()->getArchiveManagerPanel()->closeEntryTab(selected_entries[a]);
+
 		// Remove the current selected entry if it isn't a directory
 		if (selected_entries[a]->getType() != EntryType::folderType())
 			archive->removeEntry(selected_entries[a]);
@@ -1166,6 +1169,10 @@ bool ArchivePanel::deleteEntry(bool confirm)
 
 		// Remove from bookmarks
 		App::archiveManager().deleteBookmarksInDir(selected_dirs[a]);
+
+		// Close entry tabs
+		for (auto entry : selected_dirs[a]->entries())
+			MainEditor::window()->getArchiveManagerPanel()->closeEntryTab(entry.get());
 
 		// Remove the selected directory from the archive
 		archive->removeDir(selected_dirs[a]->getName(), entry_list->getCurrentDir());
@@ -2145,7 +2152,7 @@ ArchiveEntry* ArchivePanel::currentEntry()
 	if (entry_list->GetSelectedItemCount() == 1)
 		return cur_area->getEntry();
 	else
-		return NULL;
+		return nullptr;
 }
 
 /* ArchivePanel::currentEntries
@@ -2166,7 +2173,7 @@ ArchiveTreeNode* ArchivePanel::currentDir()
 {
 	if (entry_list)
 		return entry_list->getCurrentDir();
-	return NULL;
+	return nullptr;
 }
 
 /* ArchivePanel::swanConvert
@@ -2317,7 +2324,7 @@ bool ArchivePanel::basConvert(bool animdefs)
 	// Force entrylist width update
 	Layout();
 
-	return (output != NULL);
+	return (output != nullptr);
 }
 
 /* ArchivePanel::palConvert
@@ -2514,7 +2521,7 @@ bool ArchivePanel::compileACS(bool hexen)
 		if (a == selection.size()-1)
 			entry_list->setEntriesAutoUpdate(true);
 		// Compile ACS script
-		EntryOperations::compileACS(selection[a], hexen, NULL, theMainWindow);
+		EntryOperations::compileACS(selection[a], hexen, nullptr, theMainWindow);
 	}
 	entry_list->setEntriesAutoUpdate(true);
 
@@ -2645,7 +2652,7 @@ bool ArchivePanel::openDir(ArchiveTreeNode* dir)
 void ArchivePanel::closeCurrentEntry()
 {
 	// Close the current entry
-	showEntryPanel(NULL, false);
+	showEntryPanel(nullptr, false);
 }
 
 /* ArchivePanel::openEntry
@@ -2662,12 +2669,12 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 	}
 
 	// First check if the entry is already open in its own tab
-	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
-	if (panel->redirectToTab(entry))
+	ArchiveManagerPanel* am_panel = theMainWindow->getArchiveManagerPanel();
+	/*if (panel->redirectToTab(entry))
 	{
 		closeCurrentEntry();
 		return true;
-	}
+	}*/
 
 	// Do nothing if the entry is already open
 	if (cur_area->getEntry() == entry && !force)
@@ -2681,14 +2688,14 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 	if (entry->getType() == EntryType::folderType())
 	{
 		// Get directory to open
-		ArchiveTreeNode* dir = NULL;
+		ArchiveTreeNode* dir = nullptr;
 
 		// Removes starting / from path
 		string name = entry->getPath(true);
 		if (name.StartsWith("/"))
 			name.Remove(0, 1);
 
-		dir = archive->getDir(name, NULL);
+		dir = archive->getDir(name, nullptr);
 
 		// Check it exists (really should)
 		if (!dir)
@@ -2708,7 +2715,9 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 
 		// Get the appropriate entry panel for the entry's type
 		EntryPanel* new_area = default_area;
-		if (entry->getType() == EntryType::mapMarkerType())
+		if (am_panel->entryIsOpenInTab(entry))
+			new_area = default_area;
+		else if (entry->getType() == EntryType::mapMarkerType())
 			new_area = map_area;
 		else if (!entry->getType()->editor().Cmp("gfx"))
 			new_area = gfx_area;
@@ -2733,9 +2742,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 
 		// Load the entry into the panel
 		if (!new_area->openEntry(entry))
-		{
 			wxMessageBox(S_FMT("Error loading entry:\n%s", Global::error), "Error", wxOK|wxICON_ERROR);
-		}
 
 		// Show the new entry panel
 		bool changed = (cur_area != new_area);
@@ -2760,7 +2767,7 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
 	if (panel->redirectToTab(entry))
 	{
-		closeCurrentEntry();
+		//closeCurrentEntry();
 		return true;
 	}
 
@@ -2790,7 +2797,7 @@ bool ArchivePanel::openEntryAsHex(ArchiveEntry* entry)
 	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
 	if (panel->redirectToTab(entry))
 	{
-		closeCurrentEntry();
+		//closeCurrentEntry();
 		return true;
 	}
 
@@ -2860,7 +2867,7 @@ bool ArchivePanel::showEntryPanel(EntryPanel* new_area, bool ask_save)
 		cur_area->Show(false);				// Hide current
 		cur_area->removeCustomMenu();		// Remove current custom menu (if any)
 		cur_area->removeCustomToolBar();	// Remove current custom toolbar (if any)
-		if (new_area != NULL)
+		if (new_area != nullptr)
 		{
 			sizer->Replace(cur_area, new_area);	// Swap the panels
 			cur_area = new_area;				// Set the new panel to current
@@ -3241,7 +3248,7 @@ void ArchivePanel::onAnnouncement(Announcer* announcer, string event_name, MemCh
 		if (currentArea()->getEntry() == entry)
 		{
 			currentArea()->closeEntry();
-			currentArea()->openEntry(NULL);
+			currentArea()->openEntry(nullptr);
 			currentArea()->Show(false);
 		}
 	}
@@ -3257,7 +3264,7 @@ void ArchivePanel::onAnnouncement(Announcer* announcer, string event_name, MemCh
  *******************************************************************/
 EntryPanel* ArchivePanel::createPanelForEntry(ArchiveEntry* entry, wxWindow* parent)
 {
-	EntryPanel* entry_panel = NULL;
+	EntryPanel* entry_panel = nullptr;
 
 	if (entry->getType() == EntryType::mapMarkerType())
 		entry_panel = new MapEntryPanel(parent);
@@ -3977,7 +3984,7 @@ Archive* CH::getCurrentArchive()
 			return MainEditor::window()->getArchiveManagerPanel()->currentArchive();
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 ArchivePanel* CH::getCurrentArchivePanel()
@@ -3988,7 +3995,7 @@ ArchivePanel* CH::getCurrentArchivePanel()
 		if (archie->isArchivePanel(archie->currentTabIndex()))
 			return (ArchivePanel*)(archie->currentPanel());
 	}
-	return NULL;
+	return nullptr;
 }
 
 CONSOLE_COMMAND(palconv, 0, false)
@@ -4204,7 +4211,7 @@ CONSOLE_COMMAND(cd, 1, true)
 	{
 		ArchiveTreeNode* dir = panel->currentDir();
 		ArchiveTreeNode* newdir = current->getDir(args[0], dir);
-		if (newdir == NULL)
+		if (newdir == nullptr)
 		{
 			if (args[0].Matches(".."))
 				newdir = (ArchiveTreeNode*) dir->getParent();

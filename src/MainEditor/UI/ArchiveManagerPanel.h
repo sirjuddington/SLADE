@@ -103,11 +103,13 @@ public:
 	TextureXEditor*	getTextureTab(int archive_index) const;
 	void			closeTextureTab(int archive_index) const;
 	void			openEntryTab(ArchiveEntry* entry) const;
+	void			closeEntryTab(ArchiveEntry* entry) const;
 	void			closeEntryTabs(Archive* parent) const;
 	void			openFile(string filename) const;
 	void			openFiles(wxArrayString& files) const;
 	void			openDirAsArchive(string dir) const;
 	bool			redirectToTab(ArchiveEntry* entry) const;
+	bool			entryIsOpenInTab(ArchiveEntry* entry) const;
 
 	// General actions
 	bool	undo() const;

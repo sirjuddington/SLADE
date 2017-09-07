@@ -1056,6 +1056,28 @@ bool ArchiveManagerPanel::redirectToTab(ArchiveEntry *entry) const
 }
 
 // ----------------------------------------------------------------------------
+// ArchiveManagerPanel::entryIsOpenInTab
+//
+// Returns true if [entry] is open in a tab
+// ----------------------------------------------------------------------------
+bool ArchiveManagerPanel::entryIsOpenInTab(ArchiveEntry* entry) const
+{
+	for (unsigned a = 0; a < stc_archives_->GetPageCount(); a++)
+	{
+		// Check page type is "entry"
+		if (stc_archives_->GetPage(a)->GetName() != "entry")
+			continue;
+
+		// Check for entry match
+		EntryPanel* ep = (EntryPanel*)stc_archives_->GetPage(a);
+		if (ep->getEntry() == entry)
+			return true;
+	}
+
+	return false;
+}
+
+// ----------------------------------------------------------------------------
 // ArchiveManagerPanel::openEntryTab
 //
 // Opens the appropriate EntryPanel for [entry] in a new tab
@@ -1063,11 +1085,12 @@ bool ArchiveManagerPanel::redirectToTab(ArchiveEntry *entry) const
 void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 {
 	// Close the same entry in archive tab
-	ArchivePanel *panel = getArchiveTab(entry->getParent());
+	ArchivePanel* panel = getArchiveTab(entry->getParent());
 	panel->closeCurrentEntry();
 
 	// First check if the entry is already open in a tab
-	redirectToTab(entry);
+	if (redirectToTab(entry))
+		return;
 
 	// Create an EntryPanel for the entry
 	EntryPanel* ep = ArchivePanel::createPanelForEntry(entry, stc_archives_);
@@ -1104,6 +1127,32 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 // ArchiveManagerPanel::closeEntryTab
 //
 // Closes the EntryPanel tab for [entry]
+// ----------------------------------------------------------------------------
+void ArchiveManagerPanel::closeEntryTab(ArchiveEntry* entry) const
+{
+	// Go through tabs
+	for (unsigned a = 0; a < stc_archives_->GetPageCount(); a++)
+	{
+		// Check page type is "entry"
+		if (stc_archives_->GetPage(a)->GetName() != "entry")
+			continue;
+
+		// Check for entry parent archive match
+		EntryPanel* ep = (EntryPanel*)stc_archives_->GetPage(a);
+		if (ep->getEntry() == entry)
+		{
+			// Close tab
+			ep->removeCustomMenu();
+			stc_archives_->DeletePage(a);
+			a--;
+		}
+	}
+}
+
+// ----------------------------------------------------------------------------
+// ArchiveManagerPanel::closeEntryTab
+//
+// Closes any EntryPanel tabs for entries in [parent]
 // ----------------------------------------------------------------------------
 void ArchiveManagerPanel::closeEntryTabs(Archive* parent) const
 {
