@@ -112,10 +112,10 @@ public:
 
 	// Misc
 	string			getSizeString();
-	string			getTypeString() { if (type) return type->getName(); else return "Unknown"; }
+	string			getTypeString() { if (type) return type->name(); else return "Unknown"; }
 	void			stateChanged();
 	void			setExtensionByType();
-	int				getTypeReliability() { return (type ? (getType()->getReliability() * reliability / 255) : 0); }
+	int				getTypeReliability() { return (type ? (getType()->reliability() * reliability / 255) : 0); }
 	bool			isInNamespace(string ns);
 	ArchiveEntry*	relativeEntry(const string& path, bool allow_absolute_path = true) const;
 

@@ -278,11 +278,11 @@ size_t getNamespaceNumber(ArchiveEntry * entry, size_t index, vector<string> &ns
 	{
 		if (maps.size() > 0 && isInMap(index, maps) >= 0)
 			ens = "maps";
-		else if (S_CMPNOCASE(entry->getType()->getCategory(), "Graphics"))
+		else if (S_CMPNOCASE(entry->getType()->category(), "Graphics"))
 			ens = "graphics";
-		else if (S_CMPNOCASE(entry->getType()->getCategory(), "Audio"))
+		else if (S_CMPNOCASE(entry->getType()->category(), "Audio"))
 		{
-			if (S_CMPNOCASE(entry->getType()->getIcon(), "music"))
+			if (S_CMPNOCASE(entry->getType()->icon(), "music"))
 				ens = "music";
 			else ens = "sounds";
 		}
@@ -1404,7 +1404,7 @@ bool ArchivePanel::sort()
 		string name, ename = entry->getName().Upper();
 		// Want to get another hack in this stuff? Yeah, of course you do!
 		// This here hack will sort Doom II songs by their associated map.
-		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->getType()->getIcon(), "music"))
+		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->getType()->icon(), "music"))
 		{
 			if		(ename == "D_RUNNIN")	ename = "D_MAP01";
 			else if (ename == "D_STALKS")	ename = "D_MAP02";
@@ -1578,7 +1578,7 @@ bool ArchivePanel::importEntry()
 
 			// Preserve gfx offset if needed
 			point2_t offset;
-			if (!selection[a]->getType()->getEditor().Cmp("gfx"))
+			if (!selection[a]->getType()->editor().Cmp("gfx"))
 			{
 				// We have an image
 				SImage si;
@@ -1596,7 +1596,7 @@ bool ArchivePanel::importEntry()
 			EntryType::detectEntryType(selection[a]);
 
 			// Restore offsets if needed
-			if (!selection[a]->getType()->getEditor().Cmp("gfx"))
+			if (!selection[a]->getType()->editor().Cmp("gfx"))
 			{
 				SImage si;
 				si.open(selection[a]->getMCData());
@@ -1658,7 +1658,7 @@ bool ArchivePanel::exportEntry()
 		wxFileName fn(name);
 
 		// Add appropriate extension if needed
-		if (fn.GetExt().Len() == 0) fn.SetExt(selection[0]->getType()->getExtension());
+		if (fn.GetExt().Len() == 0) fn.SetExt(selection[0]->getType()->extension());
 
 		// Run save file dialog
 		SFileDialog::fd_info_t info;
@@ -1680,7 +1680,7 @@ bool ArchivePanel::exportEntry()
 
 				// Add file extension if it doesn't exist
 				if (!fn.HasExt())
-					fn.SetExt(selection[a]->getType()->getExtension());
+					fn.SetExt(selection[a]->getType()->extension());
 
 				// Do export
 				selection[a]->exportFile(fn.GetFullPath());
@@ -2192,7 +2192,7 @@ bool ArchivePanel::swanConvert()
 	// Check each selected entry for possible conversion
 	for (size_t a = 0; a < selection.size(); a++)
 	{
-		if (selection[a]->getType()->getId() == "swantbls")
+		if (selection[a]->getType()->id() == "swantbls")
 		{
 			error |= !AnimatedList::convertSwanTbls(selection[a], &mca);
 			error |= !SwitchesList::convertSwanTbls(selection[a], &mcs);
@@ -2235,7 +2235,7 @@ bool ArchivePanel::swanConvert()
 				error |= !output->importMemChunk(*mc[e]);
 				EntryType::detectEntryType(output);
 				if (output->getType() == EntryType::unknownType())
-					output->setType(EntryType::getType(etypeids[e]));
+					output->setType(EntryType::fromId(etypeids[e]));
 				if (index >= 0) index++;
 			}
 			else error = true;
@@ -2300,9 +2300,9 @@ bool ArchivePanel::basConvert(bool animdefs)
 		// Check each selected entry for possible conversion
 		for (size_t a = 0; a < selection.size(); a++)
 		{
-			if (selection[a]->getType()->getFormat() == "animated")
+			if (selection[a]->getType()->formatId() == "animated")
 				AnimatedList::convertAnimated(selection[a], &animdata, animdefs);
-			else if (selection[a]->getType()->getFormat() == "switches")
+			else if (selection[a]->getType()->formatId() == "switches")
 				SwitchesList::convertSwitches(selection[a], &animdata, animdefs);
 		}
 		output->importMemChunk(animdata);
@@ -2311,7 +2311,7 @@ bool ArchivePanel::basConvert(bool animdefs)
 		EntryType::detectEntryType(output);
 		// Failsafe is detectEntryType doesn't accept to work, grumble
 		if (output->getType() == EntryType::unknownType())
-			output->setType(EntryType::getType("animdefs"));
+			output->setType(EntryType::fromId("animdefs"));
 	}
 
 	// Force entrylist width update
@@ -2360,7 +2360,7 @@ bool ArchivePanel::wavDSndConvert()
 			entry_list->setEntriesAutoUpdate(true);
 
 		// Convert WAV -> Doom Sound if the entry is WAV format
-		if (selection[a]->getType()->getFormat() == "snd_wav")
+		if (selection[a]->getType()->formatId() == "snd_wav")
 		{
 			MemChunk dsnd;
 			// Attempt conversion
@@ -2410,23 +2410,23 @@ bool ArchivePanel::dSndWavConvert()
 		bool worked = false;
 		MemChunk wav;
 		// Convert Doom Sound -> WAV if the entry is Doom Sound format
-		if (selection[a]->getType()->getFormat() == "snd_doom" ||
-		        selection[a]->getType()->getFormat() == "snd_doom_mac")
+		if (selection[a]->getType()->formatId() == "snd_doom" ||
+		        selection[a]->getType()->formatId() == "snd_doom_mac")
 			worked = Conversions::doomSndToWav(selection[a]->getMCData(), wav);
 		// Or Doom Speaker sound format
-		else if (selection[a]->getType()->getFormat() == "snd_speaker")
+		else if (selection[a]->getType()->formatId() == "snd_speaker")
 			worked = Conversions::spkSndToWav(selection[a]->getMCData(), wav);
 		// Or Jaguar Doom sound format
-		else if (selection[a]->getType()->getFormat() == "snd_jaguar")
+		else if (selection[a]->getType()->formatId() == "snd_jaguar")
 			worked = Conversions::jagSndToWav(selection[a]->getMCData(), wav);
 		// Or Wolfenstein 3D sound format
-		else if (selection[a]->getType()->getFormat() == "snd_wolf")
+		else if (selection[a]->getType()->formatId() == "snd_wolf")
 			worked = Conversions::wolfSndToWav(selection[a]->getMCData(), wav);
 		// Or Creative Voice File format
-		else if (selection[a]->getType()->getFormat() == "snd_voc")
+		else if (selection[a]->getType()->formatId() == "snd_voc")
 			worked = Conversions::vocToWav(selection[a]->getMCData(), wav);
 		// Or Blood SFX format (this one needs to be given the entry, not just the mem chunk)
-		else if (selection[a]->getType()->getFormat() == "snd_bloodsfx")
+		else if (selection[a]->getType()->formatId() == "snd_bloodsfx")
 			worked = Conversions::bloodToWav(selection[a], wav);
 		// If successfully converted, update the entry
 		if (worked)
@@ -2474,14 +2474,14 @@ bool ArchivePanel::musMidiConvert()
 			entry_list->setEntriesAutoUpdate(true);
 
 		// Convert MUS -> MIDI if the entry is a MIDI-like format
-		if (selection[a]->getType()->getFormat().StartsWith("midi_") &&
-			selection[a]->getType()->getFormat() != "midi_smf")
+		if (selection[a]->getType()->formatId().StartsWith("midi_") &&
+			selection[a]->getType()->formatId() != "midi_smf")
 		{
 			MemChunk midi;
 			undo_manager->recordUndoStep(new EntryDataUS(selection[a]));	// Create undo step
-			if (selection[a]->getType()->getFormat() == "midi_mus")
+			if (selection[a]->getType()->formatId() == "midi_mus")
 				Conversions::musToMidi(selection[a]->getMCData(), midi);	// Convert
-			else if (selection[a]->getType()->getFormat() == "midi_gmid")
+			else if (selection[a]->getType()->formatId() == "midi_gmid")
 				Conversions::gmidToMidi(selection[a]->getMCData(), midi);	// Convert
 			else
 				Conversions::zmusToMidi(selection[a]->getMCData(), midi);	// Convert
@@ -2555,7 +2555,7 @@ bool ArchivePanel::optimizePNG()
 
 		UI::setSplashProgressMessage(selection[a]->getName(true));
 		UI::setSplashProgress(float(a) / float(selection.size()));
-		if (selection[a]->getType()->getFormat() == "img_png")
+		if (selection[a]->getType()->formatId() == "img_png")
 		{
 			undo_manager->recordUndoStep(new EntryDataUS(selection[a]));
 			EntryOperations::optimizePNG(selection[a]);
@@ -2710,26 +2710,26 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		EntryPanel* new_area = default_area;
 		if (entry->getType() == EntryType::mapMarkerType())
 			new_area = map_area;
-		else if (!entry->getType()->getEditor().Cmp("gfx"))
+		else if (!entry->getType()->editor().Cmp("gfx"))
 			new_area = gfx_area;
-		else if (!entry->getType()->getEditor().Cmp("palette"))
+		else if (!entry->getType()->editor().Cmp("palette"))
 			new_area = pal_area;
-		else if (!entry->getType()->getEditor().Cmp("ansi"))
+		else if (!entry->getType()->editor().Cmp("ansi"))
 			new_area = ansi_area;
-		else if (!entry->getType()->getEditor().Cmp("text"))
+		else if (!entry->getType()->editor().Cmp("text"))
 			new_area = text_area;
-		else if (!entry->getType()->getEditor().Cmp("animated"))
+		else if (!entry->getType()->editor().Cmp("animated"))
 			new_area = animated_area;
-		else if (!entry->getType()->getEditor().Cmp("switches"))
+		else if (!entry->getType()->editor().Cmp("switches"))
 			new_area = switches_area;
-		else if (!entry->getType()->getEditor().Cmp("audio"))
+		else if (!entry->getType()->editor().Cmp("audio"))
 			new_area = audio_area;
-		else if (!entry->getType()->getEditor().Cmp("data"))
+		else if (!entry->getType()->editor().Cmp("data"))
 			new_area = data_area;
-		else if (!entry->getType()->getEditor().Cmp("default"))
+		else if (!entry->getType()->editor().Cmp("default"))
 			new_area = default_area;
 		else
-			LOG_MESSAGE(1, "Entry editor %s does not exist, using default editor", entry->getType()->getEditor());
+			LOG_MESSAGE(1, "Entry editor %s does not exist, using default editor", entry->getType()->editor());
 
 		// Load the entry into the panel
 		if (!new_area->openEntry(entry))
@@ -3260,19 +3260,19 @@ EntryPanel* ArchivePanel::createPanelForEntry(ArchiveEntry* entry, wxWindow* par
 
 	if (entry->getType() == EntryType::mapMarkerType())
 		entry_panel = new MapEntryPanel(parent);
-	else if (!entry->getType()->getEditor().Cmp("gfx"))
+	else if (!entry->getType()->editor().Cmp("gfx"))
 		entry_panel = new GfxEntryPanel(parent);
-	else if (!entry->getType()->getEditor().Cmp("palette"))
+	else if (!entry->getType()->editor().Cmp("palette"))
 		entry_panel = new PaletteEntryPanel(parent);
-	else if (!entry->getType()->getEditor().Cmp("ansi"))
+	else if (!entry->getType()->editor().Cmp("ansi"))
 		entry_panel = new ANSIEntryPanel(parent);
-	else if (!entry->getType()->getEditor().Cmp("text"))
+	else if (!entry->getType()->editor().Cmp("text"))
 		entry_panel = new TextEntryPanel(parent);
-	else if (!entry->getType()->getEditor().Cmp("animated"))
+	else if (!entry->getType()->editor().Cmp("animated"))
 		entry_panel = new AnimatedEntryPanel(parent);
-	else if (!entry->getType()->getEditor().Cmp("switches"))
+	else if (!entry->getType()->editor().Cmp("switches"))
 		entry_panel = new SwitchesEntryPanel(parent);
-	else if (!entry->getType()->getEditor().Cmp("audio"))
+	else if (!entry->getType()->editor().Cmp("audio"))
 		entry_panel = new AudioEntryPanel(parent);
 	else
 		entry_panel = new DefaultEntryPanel(parent);
@@ -3380,45 +3380,45 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		}
 		if (!png_selected)
 		{
-			if (selection[a]->getType()->getFormat() == "img_png")
+			if (selection[a]->getType()->formatId() == "img_png")
 				png_selected = true;
 		}
 		if (!bas_selected)
 		{
-			if (selection[a]->getType()->getFormat() == "animated" ||
-			        selection[a]->getType()->getFormat() == "switches")
+			if (selection[a]->getType()->formatId() == "animated" ||
+			        selection[a]->getType()->formatId() == "switches")
 				bas_selected = true;
 		}
 		if (!swan_selected)
 		{
-			if (selection[a]->getType()->getId() == "swantbls")
+			if (selection[a]->getType()->id() == "swantbls")
 				swan_selected = true;
 		}
 		if (!wav_selected)
 		{
-			if (selection[a]->getType()->getFormat() == "snd_wav")
+			if (selection[a]->getType()->formatId() == "snd_wav")
 				wav_selected = true;
 		}
 		if (!dsnd_selected)
 		{
-			if (selection[a]->getType()->getFormat() == "snd_doom" ||
-			        selection[a]->getType()->getFormat() == "snd_speaker" ||
-			        selection[a]->getType()->getFormat() == "snd_wolf" ||
-			        selection[a]->getType()->getFormat() == "snd_doom_mac" ||
-			        selection[a]->getType()->getFormat() == "snd_jaguar" ||
-			        selection[a]->getType()->getFormat() == "snd_bloodsfx" ||
-			        selection[a]->getType()->getFormat() == "snd_voc")
+			if (selection[a]->getType()->formatId() == "snd_doom" ||
+			        selection[a]->getType()->formatId() == "snd_speaker" ||
+			        selection[a]->getType()->formatId() == "snd_wolf" ||
+			        selection[a]->getType()->formatId() == "snd_doom_mac" ||
+			        selection[a]->getType()->formatId() == "snd_jaguar" ||
+			        selection[a]->getType()->formatId() == "snd_bloodsfx" ||
+			        selection[a]->getType()->formatId() == "snd_voc")
 				dsnd_selected = true;
 		}
 		if (!mus_selected)
 		{
-			if (selection[a]->getType()->getFormat().StartsWith("midi_") &&
-				selection[a]->getType()->getFormat() != "midi_smf")
+			if (selection[a]->getType()->formatId().StartsWith("midi_") &&
+				selection[a]->getType()->formatId() != "midi_smf")
 				mus_selected = true;
 		}
 		if (!text_selected)
 		{
-			if (selection[a]->getType()->getFormat() == "text")
+			if (selection[a]->getType()->formatId() == "text")
 				text_selected = true;
 		}
 		if (!unknown_selected)
@@ -3428,7 +3428,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		}
 		if (!texturex_selected)
 		{
-			if (selection[a]->getType()->getFormat() == "texturex")
+			if (selection[a]->getType()->formatId() == "texturex")
 				texturex_selected = true;
 		}
 		if (!modified_selected)
@@ -3453,10 +3453,10 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		if (category != "diff")
 		{
 			if (category == "")
-				category = selection[a]->getType()->getCategory();
+				category = selection[a]->getType()->category();
 			else
 			{
-				string ed = selection[a]->getType()->getCategory();
+				string ed = selection[a]->getType()->category();
 				if (category != ed)
 					category = "diff";
 			}
@@ -3749,13 +3749,13 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 		return;
 
 	// Archive
-	if (entry->getType()->getFormat().substr(0, 8) == "archive_")
+	if (entry->getType()->formatId().substr(0, 8) == "archive_")
 		App::archiveManager().openArchive(entry);
 
 	// Texture list
-	else if (entry->getType()->getFormat() == "texturex" ||
-		     entry->getType() == EntryType::getType("pnames") ||
-	         entry->getType() == EntryType::getType("zdtextures"))
+	else if (entry->getType()->formatId() == "texturex" ||
+		     entry->getType() == EntryType::fromId("pnames") ||
+	         entry->getType() == EntryType::fromId("zdtextures"))
 		MainEditor::openTextureEditor(archive, entry);
 
 	// Map

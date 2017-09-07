@@ -560,7 +560,7 @@ bool ArchiveTreeNode::exportTo(string path)
 
 		// Add file extension if it doesn't exist
 		if (!fn.HasExt())
-			fn.SetExt(entries_[a]->getType()->getExtension());
+			fn.SetExt(entries_[a]->getType()->extension());
 
 		// Do export
 		entries_[a]->exportFile(fn.GetFullPath());

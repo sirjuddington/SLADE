@@ -68,11 +68,11 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 
 	// Find PNAMES entry
 	Archive::SearchOptions opt;
-	opt.match_type = EntryType::getType("pnames");
+	opt.match_type = EntryType::fromId("pnames");
 	ArchiveEntry* pnames = archive->findLast(opt);
 
 	// Find TEXTUREx entries
-	opt.match_type = EntryType::getType("texturex");
+	opt.match_type = EntryType::fromId("texturex");
 	vector<ArchiveEntry*> tx_entries = archive->findAll(opt);
 
 	// Can't do anything without PNAMES/TEXTUREx
@@ -440,7 +440,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 
 	// Get all SIDEDEFS entries
 	Archive::SearchOptions opt;
-	opt.match_type = EntryType::getType("map_sidedefs");
+	opt.match_type = EntryType::fromId("map_sidedefs");
 	vector<ArchiveEntry*> sidedefs = archive->findAll(opt);
 	total_maps += sidedefs.size();
 
@@ -470,7 +470,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 
 	// Get all TEXTMAP entries
 	opt.match_name = "TEXTMAP";
-	opt.match_type = EntryType::getType("udmf_textmap");
+	opt.match_type = EntryType::fromId("udmf_textmap");
 	vector<ArchiveEntry*> udmfmaps = archive->findAll(opt);
 	total_maps += udmfmaps.size();
 
@@ -516,7 +516,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 
 	// Find all TEXTUREx entries
 	opt.match_name = "";
-	opt.match_type = EntryType::getType("texturex");
+	opt.match_type = EntryType::fromId("texturex");
 	vector<ArchiveEntry*> tx_entries = archive->findAll(opt);
 
 	// Go through texture lists
@@ -668,7 +668,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 
 	// Get all SECTORS entries
 	Archive::SearchOptions opt;
-	opt.match_type = EntryType::getType("map_sectors");
+	opt.match_type = EntryType::fromId("map_sectors");
 	vector<ArchiveEntry*> sectors = archive->findAll(opt);
 	total_maps += sectors.size();
 
@@ -696,7 +696,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 
 	// Get all TEXTMAP entries
 	opt.match_name = "TEXTMAP";
-	opt.match_type = EntryType::getType("udmf_textmap");
+	opt.match_type = EntryType::fromId("udmf_textmap");
 	vector<ArchiveEntry*> udmfmaps = archive->findAll(opt);
 	total_maps += udmfmaps.size();
 
@@ -971,7 +971,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if (mapentry->getType() == EntryType::getType("map_things"))
+					if (mapentry->getType() == EntryType::fromId("map_things"))
 					{
 						things = mapentry;
 						break;
@@ -983,7 +983,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if (mapentry->getType() == EntryType::getType("udmf_textmap"))
+					if (mapentry->getType() == EntryType::fromId("udmf_textmap"))
 					{
 						things = mapentry;
 						break;
@@ -1299,12 +1299,12 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if (things && mapentry->getType() == EntryType::getType("map_things"))
+					if (things && mapentry->getType() == EntryType::fromId("map_things"))
 					{
 						t_entry = mapentry;
 						if (l_entry || !lines) break;
 					}
-					if (lines && mapentry->getType() == EntryType::getType("map_linedefs"))
+					if (lines && mapentry->getType() == EntryType::fromId("map_linedefs"))
 					{
 						l_entry = mapentry;
 						if (t_entry || !things) break;
@@ -1316,7 +1316,7 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if (mapentry->getType() == EntryType::getType("udmf_textmap"))
+					if (mapentry->getType() == EntryType::fromId("udmf_textmap"))
 					{
 						l_entry = t_entry = mapentry;
 						break;
@@ -1644,12 +1644,12 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if ((floor || ceiling) && (mapentry->getType() == EntryType::getType("map_sectors")))
+					if ((floor || ceiling) && (mapentry->getType() == EntryType::fromId("map_sectors")))
 					{
 						sectors = mapentry;
 						if (sides || !(lower || middle || upper)) break;
 					}
-					if ((lower || middle || upper) && (mapentry->getType() == EntryType::getType("map_sidedefs")))
+					if ((lower || middle || upper) && (mapentry->getType() == EntryType::fromId("map_sidedefs")))
 					{
 						sides = mapentry;
 						if (sectors || !(floor || ceiling)) break;
@@ -1661,7 +1661,7 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if (mapentry->getType() == EntryType::getType("udmf_textmap"))
+					if (mapentry->getType() == EntryType::fromId("udmf_textmap"))
 					{
 						sectors = sides = mapentry;
 						break;

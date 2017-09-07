@@ -1083,7 +1083,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 
 	// Create new tab for the EntryPanel
 	stc_archives_->AddPage(ep, S_FMT("%s/%s", entry->getParent()->filename(false), entry->getName()), true);
-	stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, entry->getType()->getIcon()));
+	stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, entry->getType()->icon()));
 	ep->SetName("entry");
 	ep->Show(true);
 	ep->addCustomMenu();

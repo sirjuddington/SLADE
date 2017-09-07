@@ -482,7 +482,7 @@ TextureXPanel::~TextureXPanel()
 bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 {
 	// Open texture list (check format)
-	if (entry->getType()->getFormat() == "texturex")
+	if (entry->getType()->formatId() == "texturex")
 	{
 		// TEXTURE1/2 format
 		if (!texturex.readTEXTUREXData(entry, tx_editor->patchTable()))
@@ -749,7 +749,7 @@ void TextureXPanel::newTextureFromFile()
 		// If the type is a valid image type, add its extension filter
 		if (etypes[a]->extraProps().propertyExists("image"))
 		{
-			ext_filter += etypes[a]->getFileFilterString();
+			ext_filter += etypes[a]->fileFilterString();
 			ext_filter += "|";
 		}
 	}

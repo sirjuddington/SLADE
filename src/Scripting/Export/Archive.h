@@ -209,12 +209,12 @@ void registerEntryType(sol::state& lua)
 		"new", sol::no_constructor,
 
 		// Properties
-		"id",			sol::property(&EntryType::getId),
-		"name",			sol::property(&EntryType::getName),
-		"extension",	sol::property(&EntryType::getExtension),
-		"formatId",		sol::property(&EntryType::getFormat),
-		"editor",		sol::property(&EntryType::getEditor),
-		"category",		sol::property(&EntryType::getCategory)
+		"id",			sol::property(&EntryType::id),
+		"name",			sol::property(&EntryType::name),
+		"extension",	sol::property(&EntryType::extension),
+		"formatId",		sol::property(&EntryType::formatId),
+		"editor",		sol::property(&EntryType::editor),
+		"category",		sol::property(&EntryType::category)
 	);
 }
 	

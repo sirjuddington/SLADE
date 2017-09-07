@@ -211,7 +211,7 @@ bool TextEntryPanel::saveEntry()
 
 	// Set text if unknown
 	if (entry->getType() == EntryType::unknownType())
-		entry->setType(EntryType::getType("text"));
+		entry->setType(EntryType::fromId("text"));
 
 	// Update custom definitions if decorate or zscript
 	if (text_area_->language() &&

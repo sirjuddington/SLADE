@@ -205,7 +205,7 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 	}
 
 	// Hack for colormaps to be 256-wide
-	if (S_CMPNOCASE(entry->getType()->getName(), "colormap"))
+	if (S_CMPNOCASE(entry->getType()->name(), "colormap"))
 	{
 		getImage()->setWidth(256);
 	}
@@ -275,7 +275,7 @@ bool GfxEntryPanel::saveEntry()
 		EntryOperations::setGfxOffsets(entry, spin_xoffset->GetValue(), spin_yoffset->GetValue());
 
 	// Apply alPh/tRNS options
-	if (entry->getType()->getFormat() == "img_png")
+	if (entry->getType()->formatId() == "img_png")
 	{
 		bool alph = EntryOperations::getalPhChunk(entry);
 		bool trns = EntryOperations::gettRNSChunk(entry);
@@ -442,7 +442,7 @@ void GfxEntryPanel::refresh()
 	int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->getWxId();
 
 	// Set PNG check menus
-	if (this->entry->getType() != NULL && this->entry->getType()->getFormat() == "img_png")
+	if (this->entry->getType() != NULL && this->entry->getType()->formatId() == "img_png")
 	{
 		// Check for alph
 		alph = EntryOperations::getalPhChunk(this->entry);
@@ -516,7 +516,7 @@ string GfxEntryPanel::statusString()
 		status += ", 8bpp";
 
 	// PNG stuff
-	if (entry->getType()->getFormat() == "img_png")
+	if (entry->getType()->formatId() == "img_png")
 	{
 		// alPh
 		if (EntryOperations::getalPhChunk(entry))
@@ -565,7 +565,7 @@ int GfxEntryPanel::detectOffsetType()
 	// Check what section of the archive the entry is in -- only PNGs or images
 	// in the sprites section can be HUD or sprite
 	bool is_sprite = ("sprites" == entry->getParent()->detectNamespace(entry));
-	bool is_png = ("img_png" == entry->getType()->getFormat());
+	bool is_png = ("img_png" == entry->getType()->formatId());
 	if (!is_sprite && !is_png)
 		return GFXVIEW_DEFAULT;
 
@@ -971,7 +971,7 @@ bool GfxEntryPanel::handleAction(string id)
 			{
 				ArchiveEntry temp;
 				temp.importMemChunk(entry_data);
-				temp.setType(EntryType::getType("png"));
+				temp.setType(EntryType::fromId("png"));
 				menu_custom->Enable(MENU_GFXEP_ALPH, true);
 				menu_custom->Enable(MENU_GFXEP_TRNS, true);
 				menu_custom->Check(MENU_GFXEP_TRNS, EntryOperations::gettRNSChunk(&temp));

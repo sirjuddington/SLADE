@@ -82,7 +82,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 		format_hint = entry->getType()->extraProps()["image_format"].getStringValue();
 
 	// Font formats are still manually loaded for now
-	string format = entry->getType()->getFormat();
+	string format = entry->getType()->formatId();
 	if (S_CMPNOCASE(format, "font_doom_alpha"))
 		return image->loadFont0(entry->getData(), entry->getSize());
 	else if (S_CMPNOCASE(format, "font_zd_console"))
@@ -142,28 +142,28 @@ int	Misc::detectPaletteHack(ArchiveEntry* entry)
 {
 	if (entry == NULL || entry->getType() == NULL)
 		return PAL_NOHACK;
-	else if (entry->getType()->getFormat() == "img_doom_arah"	&& entry->getName() == "TITLEPIC")
+	else if (entry->getType()->formatId() == "img_doom_arah"	&& entry->getName() == "TITLEPIC")
 		return PAL_ALPHAHACK;	// Doom Alpha 0.2
-	else if (entry->getType()->getFormat() == "img_doom_snea"	&& entry->getName() == "TITLEPIC")
+	else if (entry->getType()->formatId() == "img_doom_snea"	&& entry->getName() == "TITLEPIC")
 		return PAL_ALPHAHACK;	// Doom Alpha 0.4 and 0.5
-	else if (entry->getType()->getFormat() == "img_raw"			&& entry->getName() == "E2END")
+	else if (entry->getType()->formatId() == "img_raw"			&& entry->getName() == "E2END")
 		return PAL_HERETICHACK;	// Heretic
-	else if (entry->getType()->getFormat() == "img_doom_arah"	&& entry->getName() == "shadowpage")
+	else if (entry->getType()->formatId() == "img_doom_arah"	&& entry->getName() == "shadowpage")
 		return PAL_SHADOWHACK;	// Shadowcaster
-	else if (entry->getType()->getFormat() == "img_rott"		&& entry->getName() == "NICOLAS")
+	else if (entry->getType()->formatId() == "img_rott"		&& entry->getName() == "NICOLAS")
 		return PAL_ROTTNHACK;	// Rise of the Triad
-	else if (entry->getType()->getFormat() == "img_rott"		&& entry->getName() == "FINLDOOR")
+	else if (entry->getType()->formatId() == "img_rott"		&& entry->getName() == "FINLDOOR")
 		return PAL_ROTTDHACK;	// Rise of the Triad
-	else if (entry->getType()->getFormat() == "img_rott"		&& entry->getName() == "FINLFIRE")
+	else if (entry->getType()->formatId() == "img_rott"		&& entry->getName() == "FINLFIRE")
 		return PAL_ROTTFHACK;	// Rise of the Triad
-	else if ((entry->getType()->getFormat() == "img_rott"		&& entry->getName() == "AP_TITL")
-	      || (entry->getType()->getFormat() == "img_rottraw"	&& entry->getName() == "AP_WRLD"))
+	else if ((entry->getType()->formatId() == "img_rott"		&& entry->getName() == "AP_TITL")
+	      || (entry->getType()->formatId() == "img_rottraw"	&& entry->getName() == "AP_WRLD"))
 		return PAL_ROTTAHACK;	// Rise of the Triad
-	else if (entry->getType()->getFormat() == "img_wolfpic"		&& entry->getName().Matches("IDG*"))
+	else if (entry->getType()->formatId() == "img_wolfpic"		&& entry->getName().Matches("IDG*"))
 		return PAL_SODIDHACK;	// Spear of Destiny team screens
-	else if (entry->getType()->getFormat() == "img_wolfpic"		&& entry->getName().Matches("TIT*"))
+	else if (entry->getType()->formatId() == "img_wolfpic"		&& entry->getName().Matches("TIT*"))
 		return PAL_SODTITLEHACK;// Spear of Destiny title screens
-	else if (entry->getType()->getFormat() == "img_wolfpic"		&& entry->getName().Matches("END*"))
+	else if (entry->getType()->formatId() == "img_wolfpic"		&& entry->getName().Matches("END*"))
 	{
 		long endscreen;			// Spear of Destiny ending screens (extra-hacky!)
 		if (entry->getName().Right(3).ToLong(&endscreen))
@@ -221,7 +221,7 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 		Archive::SearchOptions opt;
 
 		// Search "PLAYPAL" first
-		opt.match_type = EntryType::getType("palette");
+		opt.match_type = EntryType::fromId("palette");
 		opt.match_name = "PLAYPAL";
 		opt.search_subdirs = true;
 		playpal = archive->findFirst(opt);

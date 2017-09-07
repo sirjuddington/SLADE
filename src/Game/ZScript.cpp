@@ -1053,7 +1053,7 @@ bool Definitions::parseZScript(Archive* archive)
 	Log::info(2, S_FMT("Parsing ZScript entries found in archive %s", archive->filename()));
 
 	// Get ZScript entry type (all parsed ZScript entries will be set to this)
-	etype_zscript = EntryType::getType("zscript");
+	etype_zscript = EntryType::fromId("zscript");
 	if (etype_zscript == EntryType::unknownType())
 		etype_zscript = nullptr;
 

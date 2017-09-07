@@ -132,7 +132,7 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 	}
 
 	// Check for TEXTUREx related entry
-	if (entry->getType()->getId() == "texturex" || entry->getType()->getId() == "pnames")
+	if (entry->getType()->id() == "texturex" || entry->getType()->id() == "pnames")
 	{
 		frame_actions->Show(true);
 		btn_texture_edit->Show(true);
@@ -178,7 +178,7 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 			gfx = true;
 
 		// Check for TEXTUREx related entry
-		if (entries[a]->getType()->getId() == "texturex" || entries[a]->getType()->getId() == "pnames")
+		if (entries[a]->getType()->id() == "texturex" || entries[a]->getType()->id() == "pnames")
 			texture = true;
 
 		this->entries.push_back(entries[a]);

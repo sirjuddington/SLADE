@@ -146,7 +146,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		for (ArchiveEntry* mapentry = map.head; mapentry != map.end; mapentry = mapentry->nextEntry())
 		{
 			// Check entry type
-			if (mapentry->getType() == EntryType::getType("udmf_textmap"))
+			if (mapentry->getType() == EntryType::fromId("udmf_textmap"))
 			{
 				udmfdata = mapentry;
 				break;
@@ -328,9 +328,9 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		while (map.head)
 		{
 			// Check entry type
-			if (map.head->getType() == EntryType::getType("map_sidedefs"))
+			if (map.head->getType() == EntryType::fromId("map_sidedefs"))
 				sidedefs = map.head;
-			if (map.head->getType() == EntryType::getType("map_sectors"))
+			if (map.head->getType() == EntryType::fromId("map_sectors"))
 				sectors = map.head;
 
 			// Exit loop if we've reached the end of the map entries
@@ -381,7 +381,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 	while (map_head)
 	{
 		// Check entry type
-		if (map_head->getType() == EntryType::getType("map_vertexes"))
+		if (map_head->getType() == EntryType::fromId("map_vertexes"))
 		{
 			vertexes = map_head;
 			break;
@@ -442,7 +442,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 	while (map_head)
 	{
 		// Check entry type
-		if (map_head->getType() == EntryType::getType("map_linedefs"))
+		if (map_head->getType() == EntryType::fromId("map_linedefs"))
 		{
 			linedefs = map_head;
 			break;
@@ -544,7 +544,7 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 	while (map_head)
 	{
 		// Check entry type
-		if (map_head->getType() == EntryType::getType("map_things"))
+		if (map_head->getType() == EntryType::fromId("map_things"))
 		{
 			things = map_head;
 			break;

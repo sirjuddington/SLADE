@@ -247,7 +247,7 @@ void EntryPanel::updateStatus()
 			entry->getParentDir()->entryIndex(entry),
 			entry->getName(),
 			entry->getSize(),
-			entry->getType()->getName()
+			entry->getType()->name()
 		);
 
 		theMainWindow->CallAfter(&MainWindow::SetStatusText, text, 1);

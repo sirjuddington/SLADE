@@ -101,7 +101,7 @@ EXTERN_CVAR(Bool, list_font_monospace)
 	// Setup entry icons
 	wxImageList* image_list = new wxImageList(16, 16, false, 0);
 
-	wxArrayString et_icon_list = EntryType::getIconList();
+	wxArrayString et_icon_list = EntryType::iconList();
 	for (size_t a = 0; a < et_icon_list.size(); a++)
 	{
 		if (image_list->Add(Icons::getIcon(Icons::ENTRY, et_icon_list[a])) < 0)
@@ -204,7 +204,7 @@ int ArchiveEntryList::getItemIcon(long item, long column, long index) const
 	if (!entry)
 		return -1;
 
-	return entry->getType()->getIndex();
+	return entry->getType()->index();
 }
 
 // ----------------------------------------------------------------------------
@@ -234,7 +234,7 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 		item_attr->SetFont(list_font_monospace ? *font_monospace : *font_normal);
 
 	// Set background colour defined in entry type (if any)
-	rgba_t col = entry->getType()->getColour();
+	rgba_t col = entry->getType()->colour();
 	if ((col.r != 255 || col.g != 255 || col.b != 255) && elist_type_bgcol)
 	{
 		rgba_t bcol;
@@ -469,7 +469,7 @@ void ArchiveEntryList::applyFilter()
 		else
 		{
 			// Check for category match
-			if (S_CMPNOCASE(entry->getType()->getCategory(), filter_category))
+			if (S_CMPNOCASE(entry->getType()->category(), filter_category))
 				items.push_back(index);
 		}
 

@@ -925,7 +925,7 @@ Archive::MapDesc WadArchive::getMapInfo(ArchiveEntry* maphead)
 		return map;
 
 	// Check for embedded wads (e.g., Doom 64 maps)
-	if (maphead->getType()->getFormat() == "archive_wad")
+	if (maphead->getType()->formatId() == "archive_wad")
 	{
 		map.archive = true;
 		map.head = maphead;
@@ -1165,7 +1165,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 		}
 
 		// Embedded WAD check (for Doom 64)
-		if (entry->getType()->getFormat() == "archive_wad")
+		if (entry->getType()->formatId() == "archive_wad")
 		{
 			// Detect map format (probably kinda slow but whatever, no better way to do it really)
 			Archive* tempwad = new WadArchive();
@@ -1297,7 +1297,7 @@ void WadArchive::detectIncludes()
 						opt.match_name = name;
 						ArchiveEntry * entry = findFirst(opt);
 						if (entry)
-							entry->setType(EntryType::getType(entrytypes[i]));
+							entry->setType(EntryType::fromId(entrytypes[i]));
 						tz.adv();
 					}
 					else tz.advToNextLine();

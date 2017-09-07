@@ -667,7 +667,7 @@ void ArchiveEntry::setExtensionByType()
 	wxFileName fn(name);
 
 	// Set new extension
-	fn.SetExt(type->getExtension());
+	fn.SetExt(type->extension());
 
 	// Rename
 	Archive* parent_archive = getParent();

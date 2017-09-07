@@ -256,9 +256,9 @@ bool TextureXEditor::openArchive(Archive* archive)
 
 	// Search archive for any texture-related entries
 	Archive::SearchOptions options;
-	options.match_type = EntryType::getType("texturex");
+	options.match_type = EntryType::fromId("texturex");
 	vector<ArchiveEntry*> tx_entries = archive->findAll(options);	// Find all TEXTUREx entries
-	options.match_type = EntryType::getType("pnames");
+	options.match_type = EntryType::fromId("pnames");
 	ArchiveEntry* entry_pnames = archive->findLast(options);		// Find last PNAMES entry
 
 	// If any TEXTURE1/2 entries were found, setup patch table stuff
@@ -270,7 +270,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 		if (!entry_pnames)
 		{
 			Archive::SearchOptions options;
-			options.match_type = EntryType::getType("pnames");
+			options.match_type = EntryType::fromId("pnames");
 			entry_pnames = App::archiveManager().findResourceEntry(options, archive);
 		}
 		else
@@ -322,7 +322,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 	}
 
 	// Search archive for TEXTURES entries
-	options.match_type = EntryType::getType("zdtextures");
+	options.match_type = EntryType::fromId("zdtextures");
 	vector<ArchiveEntry*> ztx_entries = archive->findAll(options);
 
 	// Open texture editor tabs
@@ -410,7 +410,7 @@ void TextureXEditor::saveChanges()
 			// If no PNAMES entry exists in the archive, create one
 			int index = archive->entryIndex(texture_editors.back()->txEntry()) + 1;
 			pnames = archive->addNewEntry("PNAMES", index);
-			pnames->setType(EntryType::getType("pnames"));
+			pnames->setType(EntryType::fromId("pnames"));
 			pnames->setExtensionByType();
 		}
 
@@ -599,7 +599,7 @@ bool TextureXEditor::checkTextures()
 			EntryType* type = entry->getType();
 
 			if (!type->extraProps().propertyExists("patch"))
-				problems += S_FMT("Patch %s is of type \"%s\", which is not a valid gfx format for patches. Convert it to either Doom Gfx or PNG\n", patch.name, type->getName());
+				problems += S_FMT("Patch %s is of type \"%s\", which is not a valid gfx format for patches. Convert it to either Doom Gfx or PNG\n", patch.name, type->name());
 		}
 	}
 
@@ -767,7 +767,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 
 	// Search archive for any ZDoom TEXTURES entries
 	Archive::SearchOptions options;
-	options.match_type = EntryType::getType("zdtextures");
+	options.match_type = EntryType::fromId("zdtextures");
 	ArchiveEntry* entry_tx = archive->findFirst(options);	// Find any TEXTURES entry
 
 	// If it's found, we're done
@@ -776,9 +776,9 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 
 
 	// Search archive for any texture-related entries
-	options.match_type = EntryType::getType("texturex");
+	options.match_type = EntryType::fromId("texturex");
 	entry_tx = archive->findFirst(options);						// Find any TEXTUREx entry
-	options.match_type = EntryType::getType("pnames");
+	options.match_type = EntryType::fromId("pnames");
 	ArchiveEntry* entry_pnames = archive->findFirst(options);	// Find any PNAMES entry
 
 	// If both exist, we're done
@@ -839,13 +839,13 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 						// Add empty PNAMES entry to archive
 						entry_pnames = archive->addNewEntry("PNAMES");
 						ptt.writePNAMES(entry_pnames);
-						entry_pnames->setType(EntryType::getType("pnames"));
+						entry_pnames->setType(EntryType::fromId("pnames"));
 						entry_pnames->setExtensionByType();
 
 						// Add empty TEXTURE1 entry to archive
 						texturex = archive->addNewEntry("TEXTURE1");
 						txlist.writeTEXTUREXData(texturex, ptt);
-						texturex->setType(EntryType::getType("texturex"));
+						texturex->setType(EntryType::fromId("texturex"));
 						texturex->setExtensionByType();
 					}
 					else if (ctxd.getSelectedFormat() == TXF_TEXTURES)
@@ -856,7 +856,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 
 						// Add empty TEXTURES entry to archive
 						texturex = archive->addNewEntry("TEXTURES");
-						texturex->setType(EntryType::getType("zdtextures"));
+						texturex->setType(EntryType::fromId("zdtextures"));
 						texturex->setExtensionByType();
 
 						return false;
@@ -878,9 +878,9 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 
 					// Find all relevant entries in the base resource archive
 					Archive::SearchOptions options;
-					options.match_type = EntryType::getType("texturex");
+					options.match_type = EntryType::fromId("texturex");
 					vector<ArchiveEntry*> import_tx = bra->findAll(options);	// Find all TEXTUREx entries
-					options.match_type = EntryType::getType("pnames");
+					options.match_type = EntryType::fromId("pnames");
 					ArchiveEntry* import_pnames = bra->findLast(options);		// Find last PNAMES entry
 
 					// Check enough entries exist
@@ -894,13 +894,13 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 					for (unsigned a = 0; a < import_tx.size(); a++)
 					{
 						ArchiveEntry* texturex = archive->addEntry(import_tx[a], "global", true);
-						texturex->setType(EntryType::getType("texturex"));
+						texturex->setType(EntryType::fromId("texturex"));
 						texturex->setExtensionByType();
 					}
 
 					// Copy PNAMES entry over to current archive
 					entry_pnames = archive->addEntry(import_pnames, "global", true);
-					entry_pnames->setType(EntryType::getType("pnames"));
+					entry_pnames->setType(EntryType::fromId("pnames"));
 					entry_pnames->setExtensionByType();
 				}
 
@@ -920,7 +920,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 		if (!entry_pnames)
 		{
 			Archive::SearchOptions options;
-			options.match_type = EntryType::getType("pnames");
+			options.match_type = EntryType::fromId("pnames");
 			entry_pnames = App::archiveManager().findResourceEntry(options, archive);
 		}
 

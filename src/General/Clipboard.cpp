@@ -90,7 +90,7 @@ EntryTreeClipboardItem::EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, v
 		for (unsigned a = 0; a < entries.size(); a++)
 		{
 			// Export to file
-			string filename = tmp_directory + entries[a]->getName(true) + file_dot + entries[a]->getType()->getExtension();
+			string filename = tmp_directory + entries[a]->getName(true) + file_dot + entries[a]->getType()->extension();
 			//string filename = entries[a]->getName(true) + "." + entries[a]->getType()->getExtension();
 			//filename = App::path(filename, App::Dir::Temp);
 			entries[a]->exportFile(filename);

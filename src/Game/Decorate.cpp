@@ -661,7 +661,7 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, v
 	Log::info(2, S_FMT("Parsing DECORATE entries found in archive %s", archive->filename()));
 
 	// Get DECORATE entry type (all parsed DECORATE entries will be set to this)
-	etype_decorate = EntryType::getType("decorate");
+	etype_decorate = EntryType::fromId("decorate");
 	if (etype_decorate == EntryType::unknownType())
 		etype_decorate = nullptr;
 

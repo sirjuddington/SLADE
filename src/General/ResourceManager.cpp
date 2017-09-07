@@ -307,11 +307,11 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 	string path = entry->getPath(true).Upper().Mid(1);
 
 	// Check for palette entry
-	if (type->getId() == "palette")
+	if (type->id() == "palette")
 		palettes[name].add(entry);
 
 	// Check for various image entries, so only accept images
-	if (type->getEditor() == "gfx")
+	if (type->editor() == "gfx")
 	{
 		// Reject graphics that are not in a valid namespace:
 		// Patches in wads can be in the global namespace as well, and
@@ -336,7 +336,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		}
 
 		// Check for flat entry
-		if (type->getId() == "gfx_flat" || entry->isInNamespace("flats"))
+		if (type->id() == "gfx_flat" || entry->isInNamespace("flats"))
 		{
 			flats[name].add(entry);
 			// if (name.Length() > 8) flats[name.Left(8)].add(entry);
@@ -360,9 +360,9 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 
 	// Check for TEXTUREx entry
 	int txentry = 0;
-	if (type->getId() == "texturex")
+	if (type->id() == "texturex")
 		txentry = 1;
-	else if (type->getId() == "zdtextures")
+	else if (type->id() == "zdtextures")
 		txentry = 2;
 	if (txentry > 0)
 	{
@@ -371,7 +371,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		if (txentry == 1)
 		{
 			Archive::SearchOptions opt;
-			opt.match_type = EntryType::getType("pnames");
+			opt.match_type = EntryType::fromId("pnames");
 			ArchiveEntry* pnames = entry->getParent()->findLast(opt);
 			ptable.loadPNAMES(pnames, entry->getParent());
 		}
@@ -421,9 +421,9 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
 
 	// Check for TEXTUREx entry
 	int txentry = 0;
-	if (entry->getType()->getId() == "texturex")
+	if (entry->getType()->id() == "texturex")
 		txentry = 1;
-	else if (entry->getType()->getId() == "zdtextures")
+	else if (entry->getType()->id() == "zdtextures")
 		txentry = 2;
 	if (txentry > 0)
 	{

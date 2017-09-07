@@ -427,7 +427,7 @@ Archive::MapDesc DirArchive::getMapInfo(ArchiveEntry* entry)
 		return map;
 
 	// Check entry type
-	if (entry->getType()->getFormat() != "archive_wad")
+	if (entry->getType()->formatId() != "archive_wad")
 		return map;
 
 	// Check entry directory
@@ -462,7 +462,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 		ArchiveEntry* entry = mapdir->entryAt(a);
 
 		// Maps can only be wad archives
-		if (entry->getType()->getFormat() != "archive_wad")
+		if (entry->getType()->formatId() != "archive_wad")
 			continue;
 
 		// Detect map format (probably kinda slow but whatever, no better way to do it really)

@@ -240,7 +240,7 @@ bool ArchiveManager::addArchive(Archive* archive)
 
 				type = entry->getType();
 
-				if (type->getId() == "wad")
+				if (type->id() == "wad")
 					// First true: yes, manage this
 					// Second true: open silently, don't open a tab for it
 					openArchive(entry, true, true);

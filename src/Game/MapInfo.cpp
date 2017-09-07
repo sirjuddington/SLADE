@@ -66,15 +66,15 @@ bool MapInfo::readMapInfo(Archive* archive)
 	for (auto entry : entries)
 	{
 		// ZMapInfo
-		if (entry->getType()->getId() == "zmapinfo")
+		if (entry->getType()->id() == "zmapinfo")
 			parseZMapInfo(entry);
 
 		// TODO: EMapInfo
-		else if (entry->getType()->getId() == "emapinfo")
+		else if (entry->getType()->id() == "emapinfo")
 			Log::info("EMAPINFO not implemented");
 
 		// MapInfo
-		else if (entry->getType()->getId() == "mapinfo")
+		else if (entry->getType()->id() == "mapinfo")
 		{
 			// Detect format
 			auto format = detectMapInfoType(entry);

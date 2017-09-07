@@ -320,7 +320,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 		// If the type is a valid image type, add its extension filter
 		if (etypes[a]->extraProps().propertyExists("image"))
 		{
-			ext_filter += etypes[a]->getFileFilterString();
+			ext_filter += etypes[a]->fileFilterString();
 			ext_filter += "|";
 		}
 	}

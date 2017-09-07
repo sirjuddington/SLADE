@@ -66,7 +66,7 @@ static void FixBrokenWave(ArchiveEntry* const entry)
 {
 	static const uint32_t MIN_WAVE_SIZE = 44;
 
-	if ("snd_wav" != entry->getType()->getFormat()
+	if ("snd_wav" != entry->getType()->formatId()
 		|| entry->getSize() < MIN_WAVE_SIZE)
 	{
 		return;

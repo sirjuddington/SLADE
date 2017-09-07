@@ -444,7 +444,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	data.write(entry->getData(), entry->getSize());
 
 	// Setup columns
-	string type = entry->getType()->getId();
+	string type = entry->getType()->id();
 
 	// VERTEXES
 	if (type == "map_vertexes")
