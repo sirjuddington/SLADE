@@ -97,7 +97,7 @@ struct HMISong::TrackInfo
 	bool Enabled;
 	bool Finished;
 	uint8_t RunningStatus;
-    
+	
 	uint32_t ReadVarLenHMI();
 	uint32_t ReadVarLenHMP();
 };
@@ -430,7 +430,7 @@ void HMISong :: DoRestart()
 	// Set initial state.
 	FakeTrack = &Tracks[NumTracks];
 	NoteOffs.Clear();
-	for (i = 0; i <= NumTracks; ++i)
+	for (i = 0; i < NumTracks; ++i)
 	{
 		Tracks[i].TrackP = 0;
 		Tracks[i].Finished = false;
@@ -518,7 +518,7 @@ uint32_t *HMISong::MakeEvents(uint32_t *events, uint32_t *max_event_p, uint32_t 
 
 void HMISong::AdvanceTracks(uint32_t time)
 {
-	for (int i = 0; i <= NumTracks; ++i)
+	for (int i = 0; i < NumTracks; ++i)
 	{
 		if (Tracks[i].Enabled && !Tracks[i].Finished)
 		{
