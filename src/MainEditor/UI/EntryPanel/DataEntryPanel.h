@@ -81,15 +81,15 @@ public:
 	};
 
 	// wxGridTableBase overrides
-	int				GetNumberRows();
-	int				GetNumberCols();
-	string			GetValue(int row, int col);
-	void			SetValue(int row, int col, const string& value);
-	string			GetColLabelValue(int col);
-	string			GetRowLabelValue(int row);
-	bool			DeleteRows(size_t pos, size_t num);
-	bool			InsertRows(size_t pos, size_t num);
-	wxGridCellAttr*	GetAttr(int row, int col, wxGridCellAttr::wxAttrKind kind);
+	int				GetNumberRows() override;
+	int				GetNumberCols() override;
+	string			GetValue(int row, int col) override;
+	void			SetValue(int row, int col, const string& value) override;
+	string			GetColLabelValue(int col) override;
+	string			GetRowLabelValue(int row) override;
+	bool			DeleteRows(size_t pos, size_t num) override;
+	bool			InsertRows(size_t pos, size_t num) override;
+	wxGridCellAttr*	GetAttr(int row, int col, wxGridCellAttr::wxAttrKind kind) override;
 
 	MemChunk&		getData() { return data; }
 	dep_column_t	getColumnInfo(int col) { return columns[col]; }
@@ -109,8 +109,8 @@ public:
 	DataEntryPanel(wxWindow* parent);
 	~DataEntryPanel();
 
-	bool	loadEntry(ArchiveEntry* entry);
-	bool	saveEntry();
+	bool	loadEntry(ArchiveEntry* entry) override;
+	bool	saveEntry() override;
 	void	setModified(bool modified) { EntryPanel::setModified(modified); }
 
 	void	deleteRow();
@@ -118,7 +118,7 @@ public:
 	void	copyRow(bool cut);
 	void	pasteRow();
 	void	changeValue();
-	bool	handleAction(string id);
+	bool	handleAction(string id) override;
 	int		getColWithSelection();
 
 	vector<point2_t>	getSelection();
