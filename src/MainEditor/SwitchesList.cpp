@@ -83,7 +83,7 @@ SwitchesEntry* SwitchesList::getEntry(size_t index)
 {
 	// Check index range
 	if (index >= nEntries())
-		return NULL;
+		return nullptr;
 
 	return entries[index];
 }
@@ -102,7 +102,7 @@ SwitchesEntry* SwitchesList::getEntry(string name)
 	}
 
 	// No match found
-	return NULL;
+	return nullptr;
 }
 
 /* SwitchesList::clear
@@ -157,7 +157,7 @@ bool SwitchesList::readSWITCHESData(ArchiveEntry* switches)
  *******************************************************************/
 bool SwitchesList::addEntry(SwitchesEntry* entry, size_t pos)
 {
-	if (entry == NULL)
+	if (entry == nullptr)
 		return false;
 	if (pos >= nEntries())
 	{

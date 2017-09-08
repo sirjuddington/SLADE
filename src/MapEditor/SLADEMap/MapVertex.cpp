@@ -188,7 +188,7 @@ void MapVertex::disconnectLine(MapLine* line)
 MapLine* MapVertex::connectedLine(unsigned index)
 {
 	if (index > connected_lines.size())
-		return NULL;
+		return nullptr;
 
 	return connected_lines[index];
 }

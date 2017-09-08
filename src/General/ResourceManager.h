@@ -106,17 +106,17 @@ public:
 	void	listAllPatches();
 	void	getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority);
 
-	void	getAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore = NULL);
+	void	getAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore = nullptr);
 	void	getAllTextureNames(vector<string>& list);
 
 	void	getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority);
 	void	getAllFlatNames(vector<string>& list);
 
-	ArchiveEntry*	getPaletteEntry(string palette, Archive* priority = NULL);
-	ArchiveEntry*	getPatchEntry(string patch, string nspace = "patches", Archive* priority = NULL);
-	ArchiveEntry*	getFlatEntry(string flat, Archive* priority = NULL);
-	ArchiveEntry*	getTextureEntry(string texture, string nspace = "textures", Archive* priority = NULL);
-	CTexture*		getTexture(string texture, Archive* priority = NULL, Archive* ignore = NULL);
+	ArchiveEntry*	getPaletteEntry(string palette, Archive* priority = nullptr);
+	ArchiveEntry*	getPatchEntry(string patch, string nspace = "patches", Archive* priority = nullptr);
+	ArchiveEntry*	getFlatEntry(string flat, Archive* priority = nullptr);
+	ArchiveEntry*	getTextureEntry(string texture, string nspace = "textures", Archive* priority = nullptr);
+	CTexture*		getTexture(string texture, Archive* priority = nullptr, Archive* ignore = nullptr);
 	string			getTextureName(uint16_t hash) { return Doom64HashTable[hash]; }
 	uint16_t		getTextureHash(string name);
 

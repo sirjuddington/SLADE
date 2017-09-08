@@ -329,7 +329,7 @@ public:
 		evt->SetInt(sent ? 1 : 0);
 		wxQueueEvent(GetEventHandler(), evt);
 
-		return (wxThread::ExitCode)0;
+		return (wxThread::ExitCode)nullptr;
 	}
 
 	void onBtnCopyTrace(wxCommandEvent& e)

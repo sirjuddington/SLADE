@@ -250,7 +250,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		if (end > 3) end -= 2;
 		// Text is a special case, as other data formats can sometimes be detected as 'text',
 		// we'll only check for it if text data is specified in the entry type
-		if (entry->getSize() > 0 && memchr(entry->getData(), 0, end) != NULL)
+		if (entry->getSize() > 0 && memchr(entry->getData(), 0, end) != nullptr)
 			return EDF_FALSE;
 	}
 	else if (format_ != EntryDataFormat::anyFormat() && entry->getSize() > 0)
@@ -838,7 +838,7 @@ CONSOLE_COMMAND (type, 0, true)
 			return;
 		}
 
-		EntryDataFormat* foo = NULL;
+		EntryDataFormat* foo = nullptr;
 		if (desttype != EntryType::unknownType())
 		{
 			// Check if format corresponds to entry

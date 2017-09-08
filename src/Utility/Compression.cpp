@@ -74,9 +74,9 @@ bool Compression::GenericDeflate(MemChunk& in, MemChunk& out, int level, int win
 	unsigned char bout[CHUNK];
 
 	/* allocate deflate state */
-	strm.zalloc = Z_NULL;
-	strm.zfree = Z_NULL;
-	strm.opaque = Z_NULL;
+	strm.zalloc = nullptr;
+	strm.zfree = nullptr;
+	strm.opaque = nullptr;
 	if (windowbits == 0) ret = deflateInit(&strm, level);
 	else ret = deflateInit2(&strm, level, Z_DEFLATED, windowbits, 9, Z_DEFAULT_STRATEGY);
 	if (ret != Z_OK)

@@ -882,12 +882,12 @@ void DataEntryTable::pasteRows(int row)
 DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data")
 {
 	// Init variables
-	table_data = NULL;
+	table_data = nullptr;
 
 	// Cell value combo box
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	sizer_main->Add(vbox, 1, wxEXPAND);
-	combo_cell_value = new wxComboBox(this, -1, "", wxDefaultPosition, wxDefaultSize, 0, NULL, wxTE_PROCESS_ENTER);
+	combo_cell_value = new wxComboBox(this, -1, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxTE_PROCESS_ENTER);
 	vbox->Add(combo_cell_value, 0, wxEXPAND|wxBOTTOM, 4);
 
 	// Create grid

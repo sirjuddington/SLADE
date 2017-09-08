@@ -237,8 +237,8 @@ public:
 	string		builtInName() { return built_in_name; }
 	void		setDesaturationAmount(uint8_t amount) { desat_amount = amount; }
 
-	rgba_t	translate(rgba_t col, Palette* pal = NULL);
-	rgba_t	specialBlend(rgba_t col, uint8_t type, Palette* pal = NULL);
+	rgba_t	translate(rgba_t col, Palette* pal = nullptr);
+	rgba_t	specialBlend(rgba_t col, uint8_t type, Palette* pal = nullptr);
 
 	void	addRange(int type, int pos);
 	void	removeRange(int pos);

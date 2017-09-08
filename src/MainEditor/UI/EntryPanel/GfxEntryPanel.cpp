@@ -170,7 +170,7 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry)
 bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 {
 	// Check entry was given
-	if (entry == NULL)
+	if (entry == nullptr)
 	{
 		Global::error = "no entry to load";
 		return false;
@@ -391,7 +391,7 @@ bool GfxEntryPanel::extractAll()
 	int imgindex = getImage()->getIndex();
 
 	Archive* parent = entry->getParent();
-	if (parent == NULL) return false;
+	if (parent == nullptr) return false;
 
 	int index = parent->entryIndex(entry, entry->getParentDir());
 	string name = wxFileName(entry->getName()).GetName();
@@ -407,7 +407,7 @@ bool GfxEntryPanel::extractAll()
 		if (getImage()->getWidth() && getImage()->getHeight())
 		{
 			ArchiveEntry* newimg = parent->addNewEntry(newname, index+pos+1, entry->getParentDir());
-			if (newimg == NULL) return false;
+			if (newimg == nullptr) return false;
 			SIFormat::getFormat("png")->saveImage(*getImage(), newimg->getMCData(), gfx_canvas->getPalette());
 			EntryType::detectEntryType(newimg);
 			pos++;
@@ -442,7 +442,7 @@ void GfxEntryPanel::refresh()
 	int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->getWxId();
 
 	// Set PNG check menus
-	if (this->entry->getType() != NULL && this->entry->getType()->formatId() == "img_png")
+	if (this->entry->getType() != nullptr && this->entry->getType()->formatId() == "img_png")
 	{
 		// Check for alph
 		alph = EntryOperations::getalPhChunk(this->entry);
@@ -1248,7 +1248,7 @@ GfxEntryPanel* CH::getCurrentGfxPanel()
 			return (GfxEntryPanel*)panel;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 CONSOLE_COMMAND (rotate, 1, true)

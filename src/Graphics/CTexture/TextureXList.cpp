@@ -136,7 +136,7 @@ CTexture* TextureXList::removeTexture(unsigned index, bool delete_texture)
 {
 	// Check index
 	if (index >= textures.size())
-		return NULL;
+		return nullptr;
 
 	// Delete the texture
 	if (delete_texture)
@@ -177,7 +177,7 @@ CTexture* TextureXList::replaceTexture(unsigned index, CTexture* replacement)
 {
 	// Check index
 	if (index >= textures.size())
-		return NULL;
+		return nullptr;
 
 	// Replace texture
 	CTexture* replaced = textures[index];
@@ -275,7 +275,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 	// Read header
 	texturex->seek(0, SEEK_SET);
 	int32_t		n_tex = 0;
-	int32_t*	offsets = NULL;
+	int32_t*	offsets = nullptr;
 
 	// Number of textures
 	if (!texturex->read(&n_tex, 4))
@@ -849,7 +849,7 @@ bool TextureXList::findErrors()
 			for (size_t i = 0; i < textures[a]->nPatches(); ++i)
 			{
 				ArchiveEntry * patch = textures[a]->patches[i]->getPatchEntry();
-				if (patch == NULL)
+				if (patch == nullptr)
 				{
 					ret = true;
 					LOG_MESSAGE(1, "Texture %u: %s: patch %s cannot be found in any open archive", 

@@ -57,7 +57,7 @@ MapObject::MapObject(int type, SLADEMap* parent)
 	this->filtered = false;
 	this->modified_time = App::runTimer();
 	this->id = 0;
-	this->obj_backup = NULL;
+	this->obj_backup = nullptr;
 
 	if (parent)
 		parent->addMapObject(this);
@@ -324,7 +324,7 @@ void MapObject::loadFromBackup(mobj_backup_t* backup)
 mobj_backup_t* MapObject::getBackup(bool remove)
 {
 	mobj_backup_t* bak = obj_backup;
-	if (remove) obj_backup = NULL;
+	if (remove) obj_backup = nullptr;
 	return bak;
 }
 

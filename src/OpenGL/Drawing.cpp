@@ -61,7 +61,7 @@ CVAR(Int, gl_font_size, 12, CVAR_SAVE)
 namespace Drawing
 {
 #ifdef USE_SFML_RENDERWINDOW
-	sf::RenderWindow*	render_target = NULL;
+	sf::RenderWindow*	render_target = nullptr;
 	bool				text_state_reset = true;
 #endif
 	double				text_outline_width = 0;
@@ -133,7 +133,7 @@ public:
 
 };
 #define theFontManager FontManager::getInstance()
-FontManager* FontManager::instance = NULL;
+FontManager* FontManager::instance = nullptr;
 
 
 /*******************************************************************
@@ -305,7 +305,7 @@ sf::Font* FontManager::getFont(int font)
 	case Drawing::FONT_SMALL:			return &font_small;
 	default:							return &font_normal;
 	};
-	return NULL;
+	return nullptr;
 }
 #else // USE_SFML_RENDERWINDOW
 FTFont* FontManager::getFont(int font)

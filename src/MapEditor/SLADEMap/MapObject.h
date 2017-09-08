@@ -50,7 +50,7 @@ protected:
 	mobj_backup_t*		obj_backup;
 
 public:
-	MapObject(int type = MOBJ_UNKNOWN, SLADEMap* parent = NULL);
+	MapObject(int type = MOBJ_UNKNOWN, SLADEMap* parent = nullptr);
 	virtual ~MapObject();
 	bool operator< (const MapObject& right) const { return (index < right.index); }
 	bool operator> (const MapObject& right) const { return (index > right.index); }

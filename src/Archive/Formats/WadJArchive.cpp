@@ -314,7 +314,7 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 {
 	// Determine directory offset & individual lump offsets
 	uint32_t dir_offset = 12;
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);

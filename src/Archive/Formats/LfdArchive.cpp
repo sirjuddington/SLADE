@@ -218,7 +218,7 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 	// Determine total size
 	uint32_t dir_size = (numEntries() + 1)<<4;
 	uint32_t total_size = dir_size;
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);
@@ -335,11 +335,11 @@ ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -363,7 +363,7 @@ ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
  *******************************************************************/
 ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* LfdArchive::renameEntry

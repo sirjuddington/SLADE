@@ -314,7 +314,7 @@ public:
 	bool createTexture()
 	{
 		tx_panel->txList().addTexture(tex_removed, index);
-		tex_removed = NULL;
+		tex_removed = nullptr;
 		return true;
 	}
 
@@ -394,9 +394,9 @@ public:
 TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor) : wxPanel(parent, -1)
 {
 	// Init variables
-	this->tx_entry = NULL;
+	this->tx_entry = nullptr;
 	this->tx_editor = tx_editor;
-	this->tex_current = NULL;
+	this->tex_current = nullptr;
 	this->modified = false;
 	undo_manager = tx_editor->getUndoManager();
 
@@ -1260,7 +1260,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 
 	// Create image from entry
 	SImage image;
-	if (!texture->toImage(image, NULL, texture_editor->getPalette(), force_rgba))
+	if (!texture->toImage(image, nullptr, texture_editor->getPalette(), force_rgba))
 	{
 		LOG_MESSAGE(1, "Error converting %s: %s", texture->getName(), Global::error);
 		return false;
@@ -1486,7 +1486,7 @@ void TextureXPanel::onTextureListSelect(wxListEvent& e)
 	// Do nothing if multiple textures are selected
 	if (list_textures->GetSelectedItemCount() > 1)
 	{
-		tex_current = NULL;
+		tex_current = nullptr;
 		texture_editor->openTexture(tex_current, &texturex);
 		return;
 	}

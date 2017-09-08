@@ -55,10 +55,10 @@ EntryPanel::EntryPanel(wxWindow* parent, string id)
 {
 	// Init variables
 	modified = false;
-	entry = NULL;
+	entry = nullptr;
 	this->id = id;
-	menu_custom = NULL;
-	undo_manager = NULL;
+	menu_custom = nullptr;
+	undo_manager = nullptr;
 
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);

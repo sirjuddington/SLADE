@@ -81,7 +81,7 @@ private:
 	wxCheckBox*		cb_paletteonly;
 
 public:
-	TranslationEditorDialog(wxWindow* parent, Palette* pal, string title = "Edit Translation", SImage* preview_image = NULL);
+	TranslationEditorDialog(wxWindow* parent, Palette* pal, string title = "Edit Translation", SImage* preview_image = nullptr);
 	~TranslationEditorDialog();
 
 	Translation&	getTranslation() { return translation; }

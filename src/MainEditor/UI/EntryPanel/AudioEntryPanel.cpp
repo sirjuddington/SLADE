@@ -67,7 +67,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 {
 	// Init variables
 	timer_seek = new wxTimer(this);
-	sound_buffer = NULL;
+	sound_buffer = nullptr;
 	audio_type = AUTYPE_INVALID;
 	num_tracks = 1;
 	subsong = 0;
@@ -83,7 +83,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	if (value == 0)
 	{
 		LOG_MESSAGE(1, "Windows Media Player not installed, mp3 playback disabled.");
-		media_ctrl = NULL;
+		media_ctrl = nullptr;
 	}
 	else
 	{

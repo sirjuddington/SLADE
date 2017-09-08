@@ -55,8 +55,8 @@ BrowserCanvas::BrowserCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 	// Init variables
 	yoff = 0;
 	item_border = 8;
-	scrollbar = NULL;
-	item_selected = NULL;
+	scrollbar = nullptr;
+	item_selected = nullptr;
 	font = Drawing::FONT_BOLD;
 	show_names = NAMES_NORMAL;
 	item_size = -1;
@@ -382,7 +382,7 @@ BrowserItem* BrowserCanvas::itemAt(int index)
 {
 	// Check index
 	if (index < 0 || index >= (int)items_filter.size())
-		return NULL;
+		return nullptr;
 
 	return items[items_filter[index]];
 }
@@ -410,8 +410,8 @@ int BrowserCanvas::itemIndex(BrowserItem* item)
 void BrowserCanvas::selectItem(BrowserItem* item)
 {
 	// Check if we're clearing the selection
-	if (item == NULL)
-		item_selected = NULL;
+	if (item == nullptr)
+		item_selected = nullptr;
 	else
 	{
 		// Check the item exists in the current set
@@ -692,7 +692,7 @@ void BrowserCanvas::onMouseEvent(wxMouseEvent& e)
 	else if (e.GetEventType() == wxEVT_LEFT_DOWN)
 	{
 		// Clear selection
-		item_selected = NULL;
+		item_selected = nullptr;
 
 		// Get column clicked & number of columns
 		int col_width = GetSize().x / num_cols;

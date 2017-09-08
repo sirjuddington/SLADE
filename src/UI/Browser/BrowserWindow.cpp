@@ -83,7 +83,7 @@ BrowserItem* BrowserTreeNode::getItem(unsigned index)
 {
 	// Check index
 	if (index >= items.size())
-		return NULL;
+		return nullptr;
 
 	// Return the item
 	return items[index];
@@ -114,7 +114,7 @@ private:
 	BrowserTreeNode*	node;
 
 public:
-	BrowserTreeItemData(BrowserTreeNode* node = NULL) { this->node = node; }
+	BrowserTreeItemData(BrowserTreeNode* node = nullptr) { this->node = node; }
 	~BrowserTreeItemData() {}
 
 	BrowserTreeNode*	getNode() { return node; }

@@ -147,7 +147,7 @@ string PatchBrowserItem::itemInfo()
 PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent)
 {
 	// Init variables
-	this->patch_table = NULL;
+	this->patch_table = nullptr;
 
 	// Init browser tree
 	items_root->addChild("IWAD");
@@ -196,7 +196,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 		ArchiveEntry* entry = theResourceManager->getPatchEntry(patch.name);
 
 		// Check its parent archive
-		Archive* parent_archive = NULL;
+		Archive* parent_archive = nullptr;
 		if (entry)
 		{
 			parent_archive = entry->getParent();
@@ -285,7 +285,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 
 	// Get list of all available textures (that aren't in the given archive)
 	vector<TextureResource::Texture*> textures;
-	theResourceManager->getAllTextures(textures, NULL, archive);
+	theResourceManager->getAllTextures(textures, nullptr, archive);
 
 	// Go through the list
 	for (unsigned a = 0; a < textures.size(); a++)

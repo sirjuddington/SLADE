@@ -35,7 +35,7 @@ private:
 	vector<string>				ports_list;
 
 public:
-	MapEditorConfigDialog(wxWindow* parent, Archive* archive = NULL, bool show_maps = true, bool creating = false);
+	MapEditorConfigDialog(wxWindow* parent, Archive* archive = nullptr, bool show_maps = true, bool creating = false);
 	~MapEditorConfigDialog();
 
 	void				populateGameList();

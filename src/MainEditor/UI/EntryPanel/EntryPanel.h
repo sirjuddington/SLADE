@@ -60,7 +60,7 @@ public:
 	virtual bool	fillCustomMenu(wxMenu* custom) { return false; }
 	string			getCustomMenuName() { return custom_menu_name; }
 	void			callRefresh() { refreshPanel(); }
-	void			nullEntry() { entry = NULL; }
+	void			nullEntry() { entry = nullptr; }
 	virtual bool	undo() { return false; }
 	virtual bool	redo() { return false; }
 	void			updateToolbar();

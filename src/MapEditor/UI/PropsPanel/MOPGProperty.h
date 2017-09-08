@@ -19,7 +19,7 @@ protected:
 	string					propname;
 
 public:
-	MOPGProperty() { noupdate = false; udmf_prop = NULL; }
+	MOPGProperty() { noupdate = false; udmf_prop = nullptr; }
 	~MOPGProperty() {}
 
 	enum

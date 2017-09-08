@@ -76,7 +76,7 @@ bool SImage::loadFont0(const uint8_t* gfx_data, int size)
 	clearData();
 	has_palette = false;
 	type = PALMASK;
-	format = NULL;
+	format = nullptr;
 
 	// Technically each character is its own image, though.
 	numimages = 1;
@@ -144,7 +144,7 @@ bool SImage::loadFont1(const uint8_t* gfx_data, int size)
 
 	// Clear current data if it exists
 	clearData();
-	format = NULL;
+	format = nullptr;
 
 	// Read raw pixel data
 	data = new uint8_t[width*height];
@@ -202,7 +202,7 @@ struct Font2Char
 {
 	uint16_t width;
 	uint8_t* data;
-	Font2Char() { width = 0; data = NULL; }
+	Font2Char() { width = 0; data = nullptr; }
 };
 struct Font2Header
 {
@@ -224,7 +224,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	offset_x = offset_y = 0;
 	has_palette = true;
 	type = PALMASK;
-	format = NULL;
+	format = nullptr;
 
 	// Technically each character is its own image, though.
 	numimages = 1;
@@ -379,7 +379,7 @@ struct BMFChar
 	uint8_t shift; // 5
 	// Rest is not part of the header proper
 	const uint8_t* cdata;
-	BMFChar() { which = width = height = offsx = offsy = shift = 0; cdata = NULL; }
+	BMFChar() { which = width = height = offsx = offsy = shift = 0; cdata = nullptr; }
 };
 struct BMFFont
 {
@@ -403,7 +403,7 @@ struct BMFFont
 	{
 		lineheight = size_over = size_under = add_space = size_inner =
 		        num_colors = top_color = pal_size = info_size = num_chars = 0;
-		info = NULL; chars = NULL;
+		info = nullptr; chars = nullptr;
 	}
 	BMFFont(BMFFont* other)
 	{
@@ -417,7 +417,7 @@ struct BMFFont
 		pal_size = other->pal_size;
 		info_size = other->info_size;
 		num_chars = other->num_chars;
-		info = NULL; chars = NULL;
+		info = nullptr; chars = nullptr;
 	}
 	~BMFFont() { if (chars) delete[] chars; }
 };
@@ -437,7 +437,7 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 	clearData();
 	type = PALMASK;
 	has_palette = true;
-	format = NULL;
+	format = nullptr;
 
 	// Technically each character is its own image, though.
 	numimages = 1;
@@ -570,7 +570,7 @@ bool SImage::loadFontM(const uint8_t* gfx_data, int size)
 	offset_x = offset_y = 0;
 	has_palette = false;
 	type = PALMASK;
-	format = NULL;
+	format = nullptr;
 
 	size_t charwidth = 8;
 	size_t charheight = size>>8;
@@ -635,7 +635,7 @@ bool SImage::loadWolfFont(const uint8_t* gfx_data, int size)
 	clearData();
 	has_palette = false;
 	type = PALMASK;
-	format = NULL;
+	format = nullptr;
 
 	// Technically each character is its own image, though.
 	numimages = 1;
@@ -716,7 +716,7 @@ bool SImage::loadJediFNT(const uint8_t* gfx_data, int size)
 	clearData();
 	has_palette = false;
 	type = PALMASK;
-	format = NULL;
+	format = nullptr;
 
 	// Technically each character is its own image, though.
 	numimages = 1;
@@ -773,7 +773,7 @@ bool SImage::loadJediFONT(const uint8_t* gfx_data, int size)
 	width = READ_L16(gfx_data, 4);
 	has_palette = false;
 	type = PALMASK;
-	format = NULL;
+	format = nullptr;
 
 	// reset data
 	clearData();
@@ -821,7 +821,7 @@ bool SImage::loadJediFONT(const uint8_t* gfx_data, int size)
  *******************************************************************/
 bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t* gfx_data, int size)
 {
-	if (header == NULL || gfx_data == NULL || hdr_size < 16 || size == 0)
+	if (header == nullptr || gfx_data == nullptr || hdr_size < 16 || size == 0)
 	{
 		Global::error = "Invalid Jaguar sprite";
 		return false;
@@ -836,7 +836,7 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 	offset_x = ofsx; offset_y = ofsy;
 	has_palette = false;
 	type = PALMASK;
-	format = NULL;
+	format = nullptr;
 	numimages = 1;
 	imgindex = 0;
 
@@ -915,7 +915,7 @@ bool SImage::loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, i
 	height = i_width;	// We'll rotate them afterwards
 	has_palette = false;
 	type = PALMASK;
-	format = NULL;
+	format = nullptr;
 	numimages = 1;
 	imgindex = 0;
 

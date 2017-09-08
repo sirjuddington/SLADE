@@ -29,7 +29,7 @@ private:
 	SLADEMap*	map;
 
 public:
-	MapTextureBrowser(wxWindow* parent, int type = 0, string texture = "", SLADEMap* map = NULL);
+	MapTextureBrowser(wxWindow* parent, int type = 0, string texture = "", SLADEMap* map = nullptr);
 	~MapTextureBrowser();
 
 	string	determineTexturePath(Archive* archive, uint8_t category, string type, string path);

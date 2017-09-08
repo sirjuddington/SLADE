@@ -226,7 +226,7 @@ protected:
 			return false;
 
 		// Create image
-		image.create(info.width, info.height, PALMASK, NULL, index, info.numimages);
+		image.create(info.width, info.height, PALMASK, nullptr, index, info.numimages);
 		image.setXOffset(info.offset_x);
 		image.setYOffset(info.offset_y);
 
@@ -282,7 +282,7 @@ protected:
 		uint32_t imgofs = READ_L32(data.getData(), 24+(index<<2));
 
 		// Create image
-		image.create(info.width, info.height, (SIType)info.colformat, NULL, index, info.numimages);
+		image.create(info.width, info.height, (SIType)info.colformat, nullptr, index, info.numimages);
 		image.fillAlpha(255);
 
 		// Load image data
@@ -362,7 +362,7 @@ protected:
 		}
 
 		// Create image
-		image.create(info.width, info.height, PALMASK, NULL, index, info.numimages);
+		image.create(info.width, info.height, PALMASK, nullptr, index, info.numimages);
 		image.fillAlpha(255);
 
 		// Fill data with pixel data

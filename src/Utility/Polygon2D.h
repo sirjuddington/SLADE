@@ -23,7 +23,7 @@ struct gl_polygon_t
 	unsigned		vbo_offset;
 	unsigned		vbo_index;
 
-	gl_polygon_t() { vertices = NULL; n_vertices = 0; vbo_offset = 0; }
+	gl_polygon_t() { vertices = nullptr; n_vertices = 0; vbo_offset = 0; }
 	~gl_polygon_t() { if (vertices) delete[] vertices; }
 };
 

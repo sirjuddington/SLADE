@@ -16,7 +16,7 @@ struct mobj_holder_t
 	MapObject*	mobj;
 	bool		in_map;
 
-	mobj_holder_t() { mobj = NULL; in_map = false; }
+	mobj_holder_t() { mobj = nullptr; in_map = false; }
 	mobj_holder_t(MapObject* mobj, bool in_map) { this->mobj = mobj; this->in_map = in_map; }
 
 	void set(MapObject* object, bool in_map)

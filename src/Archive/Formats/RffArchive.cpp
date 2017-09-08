@@ -349,11 +349,11 @@ ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -377,7 +377,7 @@ ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
  *******************************************************************/
 ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* RffArchive::renameEntry

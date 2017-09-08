@@ -48,8 +48,8 @@ private:
 	short		angle;
 
 public:
-	MapThing(SLADEMap* parent = NULL);
-	MapThing(double x, double y, short type, SLADEMap* parent = NULL);
+	MapThing(SLADEMap* parent = nullptr);
+	MapThing(double x, double y, short type, SLADEMap* parent = nullptr);
 	~MapThing();
 
 	double		xPos() { return x; }

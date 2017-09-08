@@ -196,7 +196,7 @@ bool LibArchive::write(MemChunk& mc, bool update)
 
 	uint16_t num_files = numEntries();
 	uint32_t dir_offset = 0;
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint16_t l = 0; l < num_files; l++)
 	{
 		entry = getEntry(l);
@@ -293,11 +293,11 @@ ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -320,7 +320,7 @@ ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
  *******************************************************************/
 ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* LibArchive::renameEntry

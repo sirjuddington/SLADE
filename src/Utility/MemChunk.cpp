@@ -50,7 +50,7 @@ MemChunk::MemChunk(uint32_t size)
 	if (size)
 		allocData(size);
 	else
-		data = NULL;
+		data = nullptr;
 }
 
 /* MemChunk::MemChunk
@@ -60,7 +60,7 @@ MemChunk::MemChunk(const uint8_t* data, uint32_t size)
 {
 	// Init variables
 	this->cur_ptr = 0;
-	this->data = NULL;
+	this->data = nullptr;
 	this->size = size;
 
 	// Load given data
@@ -97,7 +97,7 @@ bool MemChunk::clear()
 	if (hasData())
 	{
 		delete[] data;
-		data = NULL;
+		data = nullptr;
 		size = 0;
 		cur_ptr = 0;
 		return true;
@@ -483,7 +483,7 @@ uint32_t MemChunk::crc()
  *******************************************************************/
 uint8_t* MemChunk::allocData(uint32_t size, bool set_data)
 {
-	uint8_t* ndata = NULL;
+	uint8_t* ndata = nullptr;
 	try
 	{
 		ndata = new uint8_t[size];
@@ -498,7 +498,7 @@ uint8_t* MemChunk::allocData(uint32_t size, bool set_data)
 			this->size = 0;
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	if (set_data)

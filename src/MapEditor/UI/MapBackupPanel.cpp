@@ -46,8 +46,8 @@ MapBackupPanel::MapBackupPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Init variables
 	archive_backups = new ZipArchive();
-	dir_current = NULL;
-	archive_mapdata = NULL;
+	dir_current = nullptr;
+	archive_mapdata = nullptr;
 
 	// Setup Sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);

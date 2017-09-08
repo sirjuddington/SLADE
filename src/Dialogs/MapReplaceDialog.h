@@ -72,7 +72,7 @@ private:
 	wxButton*				btn_done;
 
 public:
-	MapReplaceDialog(wxWindow* parent = NULL, Archive* archive = NULL);
+	MapReplaceDialog(wxWindow* parent = nullptr, Archive* archive = nullptr);
 	~MapReplaceDialog();
 
 	void	onBtnDone(wxCommandEvent& e);

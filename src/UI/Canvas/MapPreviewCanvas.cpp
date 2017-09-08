@@ -61,8 +61,8 @@ MapPreviewCanvas::MapPreviewCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 	zoom = 1;
 	offset_x = 0;
 	offset_y = 0;
-	temp_archive = NULL;
-	tex_thing = NULL;
+	temp_archive = nullptr;
+	tex_thing = nullptr;
 	tex_loaded = false;
 	n_sides = 0;
 	n_sectors = 0;
@@ -142,7 +142,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	// Parse UDMF map
 	if (map.format == MAP_UDMF)
 	{
-		ArchiveEntry* udmfdata = NULL;
+		ArchiveEntry* udmfdata = nullptr;
 		for (ArchiveEntry* mapentry = map.head; mapentry != map.end; mapentry = mapentry->nextEntry())
 		{
 			// Check entry type
@@ -152,7 +152,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 				break;
 			}
 		}
-		if (udmfdata == NULL)
+		if (udmfdata == nullptr)
 			return false;
 
 		// Start parsing
@@ -323,8 +323,8 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 			readThings(map.head, map.end, map.format);
 
 		// Read sides & sectors (count only)
-		ArchiveEntry* sidedefs = NULL;
-		ArchiveEntry* sectors = NULL;
+		ArchiveEntry* sidedefs = nullptr;
+		ArchiveEntry* sectors = nullptr;
 		while (map.head)
 		{
 			// Check entry type
@@ -362,7 +362,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	{
 		temp_archive->close();
 		delete temp_archive;
-		temp_archive = NULL;
+		temp_archive = nullptr;
 	}
 
 	// Refresh map
@@ -377,7 +377,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
 {
 	// Find VERTEXES entry
-	ArchiveEntry* vertexes = NULL;
+	ArchiveEntry* vertexes = nullptr;
 	while (map_head)
 	{
 		// Check entry type
@@ -438,7 +438,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
 {
 	// Find LINEDEFS entry
-	ArchiveEntry* linedefs = NULL;
+	ArchiveEntry* linedefs = nullptr;
 	while (map_head)
 	{
 		// Check entry type
@@ -540,7 +540,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
 {
 	// Find THINGS entry
-	ArchiveEntry* things = NULL;
+	ArchiveEntry* things = nullptr;
 	while (map_head)
 	{
 		// Check entry type
@@ -727,7 +727,7 @@ void MapPreviewCanvas::draw()
 			tex_thing->loadImage(&image);
 		}
 		else
-			tex_thing = NULL;
+			tex_thing = nullptr;
 
 		tex_loaded = true;
 	}
@@ -821,7 +821,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 		// We don't use mipmaps, but OpenGL will refuse to attach
 		// the texture to the framebuffer if they are not present
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glGenFramebuffersEXT(1, &fboID);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);

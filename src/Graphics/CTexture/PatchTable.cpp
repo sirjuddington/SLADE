@@ -105,7 +105,7 @@ ArchiveEntry* PatchTable::patchEntry(size_t index)
 {
 	// Check index
 	if (index >= patches.size())
-		return NULL;
+		return nullptr;
 
 	// Patches namespace > graphics
 	ArchiveEntry* entry = theResourceManager->getPatchEntry(patches[index].name, "patches", parent);
@@ -128,7 +128,7 @@ ArchiveEntry* PatchTable::patchEntry(string name)
 	}
 
 	// Not found
-	return NULL;
+	return nullptr;
 }
 
 /* PatchTable::patchIndex

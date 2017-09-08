@@ -45,7 +45,7 @@ MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, par
 {
 	// Init variables
 	this->sector = sector;
-	this->parent = NULL;
+	this->parent = nullptr;
 	this->offset_x = 0;
 	this->offset_y = 0;
 
@@ -59,8 +59,8 @@ MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, par
 MapSide::MapSide(SLADEMap* parent) : MapObject(MOBJ_SIDE, parent)
 {
 	// Init variables
-	this->sector = NULL;
-	this->parent = NULL;
+	this->sector = nullptr;
+	this->parent = nullptr;
 	this->offset_x = 0;
 	this->offset_y = 0;
 }
@@ -299,7 +299,7 @@ void MapSide::readBackup(mobj_backup_t* backup)
 	{
 		if (sector)
 			sector->disconnectSide(this);
-		sector = NULL;
+		sector = nullptr;
 	}
 
 	// Update texture counts (decrement previous)

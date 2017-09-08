@@ -357,11 +357,11 @@ ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -388,7 +388,7 @@ ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
 	// Namespace not found, add to global namespace (ie end of archive)
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* ResArchive::renameEntry

@@ -59,7 +59,7 @@ void Polygon2D::addSubPoly()
 gl_polygon_t* Polygon2D::getSubPoly(unsigned index)
 {
 	if (index >= subpolys.size())
-		return NULL;
+		return nullptr;
 	else
 		return subpolys[index];
 }
@@ -81,7 +81,7 @@ void Polygon2D::clear()
 		delete subpolys[a];
 	subpolys.clear();
 	vbo_update = 2;
-	texture = NULL;
+	texture = nullptr;
 }
 
 unsigned Polygon2D::totalVertices()
@@ -261,8 +261,8 @@ void Polygon2D::renderWireframeVBO(bool colour)
 
 void Polygon2D::setupVBOPointers()
 {
-	glVertexPointer(3, GL_FLOAT, 20, 0);
-	glTexCoordPointer(2, GL_FLOAT, 20, ((char*)NULL + 12));
+	glVertexPointer(3, GL_FLOAT, 20, nullptr);
+	glTexCoordPointer(2, GL_FLOAT, 20, ((char*)nullptr + 12));
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);

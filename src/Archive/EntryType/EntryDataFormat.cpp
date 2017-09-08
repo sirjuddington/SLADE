@@ -40,8 +40,8 @@
 // Declare hash map class to hold EntryDataFormats
 WX_DECLARE_STRING_HASH_MAP(EntryDataFormat*, EDFMap);
 EDFMap data_formats;
-EntryDataFormat*	edf_any = NULL;
-EntryDataFormat*	edf_text = NULL;
+EntryDataFormat*	edf_any = nullptr;
+EntryDataFormat*	edf_text = nullptr;
 
 
 /*******************************************************************

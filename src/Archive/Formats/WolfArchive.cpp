@@ -972,11 +972,11 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, Arch
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -994,7 +994,7 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, Arch
  *******************************************************************/
 ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* WolfArchive::renameEntry

@@ -77,7 +77,7 @@ public:
 	void	onColourPicked(wxEvent& e);
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 
-	SImage*	getImage() { if (gfx_canvas) return gfx_canvas->getImage(); else return NULL; }
+	SImage*	getImage() { if (gfx_canvas) return gfx_canvas->getImage(); else return nullptr; }
 };
 
 #endif //__GFXENTRYPANEL_H__

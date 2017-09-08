@@ -23,7 +23,7 @@ private:
 	}
 
 public:
-	BrowserTreeNode(BrowserTreeNode* parent = NULL);
+	BrowserTreeNode(BrowserTreeNode* parent = nullptr);
 	~BrowserTreeNode();
 
 	string			getName() { return name; }
@@ -70,10 +70,10 @@ public:
 
 	bool			addItem(BrowserItem* item, string where = "");
 	void			addGlobalItem(BrowserItem* item);
-	void			clearItems(BrowserTreeNode* node = NULL);
-	void			reloadItems(BrowserTreeNode* node = NULL);
+	void			clearItems(BrowserTreeNode* node = nullptr);
+	void			reloadItems(BrowserTreeNode* node = nullptr);
 	BrowserItem*	getSelectedItem();
-	bool			selectItem(string name, BrowserTreeNode* root = NULL);
+	bool			selectItem(string name, BrowserTreeNode* root = nullptr);
 
 	unsigned		addSortType(string name);
 	virtual void	doSort(unsigned sort_type = 0);

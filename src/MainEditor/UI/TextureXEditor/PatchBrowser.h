@@ -14,7 +14,7 @@ private:
 	string		nspace;
 
 public:
-	PatchBrowserItem(string name, Archive* archive = NULL, uint8_t type = 0, string nspace = "", unsigned index = 0);
+	PatchBrowserItem(string name, Archive* archive = nullptr, uint8_t type = 0, string nspace = "", unsigned index = 0);
 	~PatchBrowserItem();
 
 	bool	loadImage();

@@ -48,9 +48,9 @@ public:
 	bool		openBaseResource(int index);
 
 	// Resource entry get/search
-	ArchiveEntry*			getResourceEntry(string name, Archive* ignore = NULL);
-	ArchiveEntry*			findResourceEntry(Archive::SearchOptions& options, Archive* ignore = NULL);
-	vector<ArchiveEntry*>	findAllResourceEntries(Archive::SearchOptions& options, Archive* ignore = NULL);
+	ArchiveEntry*			getResourceEntry(string name, Archive* ignore = nullptr);
+	ArchiveEntry*			findResourceEntry(Archive::SearchOptions& options, Archive* ignore = nullptr);
+	vector<ArchiveEntry*>	findAllResourceEntries(Archive::SearchOptions& options, Archive* ignore = nullptr);
 
 	// Recent files
 	string		recentFile(unsigned index);

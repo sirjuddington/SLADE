@@ -43,7 +43,7 @@ public:
 	keypress_t	key;
 	KeyBind*	bind;
 
-	BindListItemData(keypress_t key, KeyBind* bind = NULL)
+	BindListItemData(keypress_t key, KeyBind* bind = nullptr)
 	{
 		this->bind = bind;
 		this->key = key;
@@ -412,7 +412,7 @@ void InputPrefsPanel::applyPreferences()
 	{
 		// Get bind info
 		BindListItemData* bind = ((BindListItemData*)list_binds->GetItemData(item));
-		KeyBind* kbind = NULL;
+		KeyBind* kbind = nullptr;
 		if (bind) kbind = bind->bind;
 
 		// Check if it's a primary key

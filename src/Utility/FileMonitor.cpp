@@ -180,7 +180,7 @@ void DB2MapFileMonitor::fileModified()
 			unsigned index = archive->entryIndex(entry);
 			for (unsigned b = 0; b < wad->numEntries(); b++)
 			{
-				ArchiveEntry* ne = archive->addEntry(wad->getEntry(b), index, NULL, true);
+				ArchiveEntry* ne = archive->addEntry(wad->getEntry(b), index, nullptr, true);
 				if (index <= archive->numEntries()) index++;
 				ne->lock();
 			}

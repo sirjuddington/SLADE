@@ -265,7 +265,7 @@ bool HogArchive::write(MemChunk& mc, bool update)
 {
 	// Determine individual lump offsets
 	uint32_t offset = 3;
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		offset += 17;
@@ -360,11 +360,11 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -390,7 +390,7 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 	if (ShouldEncodeTXB(entry->getName()))
 		entry->setEncryption(ENC_TXB);
 
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* HogArchive::renameEntry

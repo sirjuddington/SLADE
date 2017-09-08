@@ -122,7 +122,7 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action_id, string action
 	: wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton")
 {
 	// Init variables
-	this->action = NULL;
+	this->action = nullptr;
 	this->action_id = action_id;
 	this->action_name = action_name;
 	this->help_text = help_text;

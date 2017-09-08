@@ -186,7 +186,7 @@ protected:
 		if (bm_pal)
 			image.create(width, height, type, &palette);
 		else
-			image.create(width, height, type, NULL);
+			image.create(width, height, type, nullptr);
 
 		// Load image data
 		uint8_t* img_data = imageData(image);
@@ -251,7 +251,7 @@ protected:
 	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index)
 	{
 		// Variables
-		FIBITMAP*	bm = NULL;
+		FIBITMAP*	bm = nullptr;
 		uint8_t*	img_data = imageData(image);
 		uint8_t*	img_mask = imageMask(image);
 		int			type = image.getType();
@@ -562,6 +562,6 @@ public:
 		MemChunk mc;
 		image.setXOffset(offset.x);
 		image.setYOffset(offset.y);
-		return (writeImage(image, mc, NULL, 0) && entry->importMemChunk(mc));
+		return (writeImage(image, mc, nullptr, 0) && entry->importMemChunk(mc));
 	}
 };

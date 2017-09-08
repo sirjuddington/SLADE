@@ -167,7 +167,7 @@ bool KeyBind::isPressed(string name)
 bool KeyBind::addBind(string name, keypress_t key, string desc, string group, bool ignore_shift, int priority)
 {
 	// Find keybind
-	KeyBind* bind = NULL;
+	KeyBind* bind = nullptr;
 	for (unsigned a = 0; a < keybinds.size(); a++)
 	{
 		if (keybinds[a].name == name)

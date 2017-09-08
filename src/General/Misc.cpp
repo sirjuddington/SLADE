@@ -103,7 +103,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 	// they need manual loading as well rather than the SIFormat system
 	else if (S_CMPNOCASE(format, "img_jaguar_sprite"))
 	{
-		Archive* parent = entry->getParent(); if (parent == NULL) return false;
+		Archive* parent = entry->getParent(); if (parent == nullptr) return false;
 		ArchiveEntry* data = parent->getEntry(parent->entryIndex(entry) + 1);
 		if (data && S_CMPNOCASE(data->getName(), "."))
 			return image->loadJaguarSprite(entry->getData(), entry->getSize(), data->getData(), data->getSize());
@@ -111,8 +111,8 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 	}
 	else if (S_CMPNOCASE(format, "img_jaguar_texture"))
 	{
-		Archive* parent = entry->getParent(); if (parent == NULL) return false;
-		ArchiveEntry* texture1 = parent->getEntry("TEXTURE1"); if (texture1 == NULL) return false;
+		Archive* parent = entry->getParent(); if (parent == nullptr) return false;
+		ArchiveEntry* texture1 = parent->getEntry("TEXTURE1"); if (texture1 == nullptr) return false;
 		point2_t dimensions = findJaguarTextureDimensions(texture1, entry->getName(true));
 		return image->loadJaguarTexture(entry->getData(), entry->getSize(), dimensions.x, dimensions.y);
 	}
@@ -140,7 +140,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
  *******************************************************************/
 int	Misc::detectPaletteHack(ArchiveEntry* entry)
 {
-	if (entry == NULL || entry->getType() == NULL)
+	if (entry == nullptr || entry->getType() == nullptr)
 		return PAL_NOHACK;
 	else if (entry->getType()->formatId() == "img_doom_arah"	&& entry->getName() == "TITLEPIC")
 		return PAL_ALPHAHACK;	// Doom Alpha 0.2
@@ -188,7 +188,7 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 
 	// Find PLAYPAL entry
 	bool sixbit = false;
-	ArchiveEntry* playpal = NULL;
+	ArchiveEntry* playpal = nullptr;
 	if (lump == PAL_ALPHAHACK)
 		playpal = archive->getEntry("TITLEPAL", true);
 	else if (lump == PAL_HERETICHACK)

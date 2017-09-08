@@ -194,7 +194,7 @@ static size_t TarMakeChecksum(tar_header* header)
  *******************************************************************/
 static void TarDefaultHeader(tar_header* header)
 {
-	if (header == NULL)
+	if (header == nullptr)
 		return;
 
 	memset(header->name, 0, 100);			// Name: fill with zeroes

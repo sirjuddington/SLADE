@@ -427,7 +427,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 		}
 
 	// Setup file monitor depending on entry type
-	ExternalEditFileMonitor* monitor = NULL;
+	ExternalEditFileMonitor* monitor = nullptr;
 
 	// Gfx entry
 	if (entry->getType()->editor() == "gfx" && entry->getType()->id() != "png")

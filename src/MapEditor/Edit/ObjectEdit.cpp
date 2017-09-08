@@ -173,7 +173,7 @@ ObjectEditGroup::vertex_t* ObjectEditGroup::findVertex(MapVertex* vertex)
 			return vertices[a];
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /* ObjectEditGroup::clear
@@ -575,7 +575,7 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 void ObjectEditGroup::applyEdit()
 {
 	// Get map
-	SLADEMap* map = NULL;
+	SLADEMap* map = nullptr;
 	if (!vertices.empty())
 		map = vertices[0]->map_vertex->getParentMap();
 	else if (!things.empty())

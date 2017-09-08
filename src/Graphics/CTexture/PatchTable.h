@@ -33,7 +33,7 @@ private:
 	patch_t			patch_invalid;
 
 public:
-	PatchTable(Archive* parent = NULL);
+	PatchTable(Archive* parent = nullptr);
 	~PatchTable();
 
 	size_t		nPatches() { return patches.size(); }
@@ -51,7 +51,7 @@ public:
 	bool			replacePatch(unsigned index, string newname);
 	bool			addPatch(string name, bool allow_dup = false);
 
-	bool	loadPNAMES(ArchiveEntry* pnames, Archive* parent = NULL);
+	bool	loadPNAMES(ArchiveEntry* pnames, Archive* parent = nullptr);
 	bool	writePNAMES(ArchiveEntry* pnames);
 
 	void	clearPatchUsage();
