@@ -731,7 +731,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 	// Update toolbar layout (if needed)
 	toolbar_->updateLayout();
 #ifndef __WXMSW__
-	m_mgr->GetPane(toolbar).MinSize(-1, toolbar->minHeight());
+	m_mgr->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
 	m_mgr->Update();
 #endif
 
