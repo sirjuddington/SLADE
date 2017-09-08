@@ -422,16 +422,16 @@ void ScriptManagerWindow::setupMenu()
 // ----------------------------------------------------------------------------
 void ScriptManagerWindow::setupToolbar()
 {
-	toolbar = new SToolBar(this, true);
+	toolbar_ = new SToolBar(this, true);
 
 	// Create File toolbar
-	auto tbg_file = new SToolBarGroup(toolbar, "_File");
+	auto tbg_file = new SToolBarGroup(toolbar_, "_File");
 	tbg_file->addActionButton("scrm_newscript_editor");
-	toolbar->addGroup(tbg_file);
+	toolbar_->addGroup(tbg_file);
 
 	// Add toolbar
 	wxAuiManager::GetManager(this)->AddPane(
-		toolbar,
+		toolbar_,
 		wxAuiPaneInfo()
 			.Top()
 			.CaptionVisible(false)
@@ -480,7 +480,7 @@ void ScriptManagerWindow::bindEvents()
 		saveLayout();
 		sm_maximized = IsMaximized();
 		if (!IsMaximized())
-			Misc::setWindowInfo(id, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+			Misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
 		// Hide
 		Show(false);
@@ -589,7 +589,6 @@ void ScriptManagerWindow::populateScriptsTree()
 
 	// Editor scripts
 	addEditorScriptsNode(editor_scripts, ScriptType::Custom, "Custom Scripts");
-	tree_scripts_->AppendItem(editor_scripts, "Global Scripts", 1);
 	addEditorScriptsNode(editor_scripts, ScriptType::Archive, "Archive Scripts");
 	addEditorScriptsNode(editor_scripts, ScriptType::Entry, "Entry Scripts");
 	addEditorScriptsNode(editor_scripts, ScriptType::Map, "Map Editor Scripts");

@@ -62,6 +62,7 @@ public:
 	static int		newGroup();
 	static SAction*	fromId(const string& id);
 	static SAction*	fromWxId(int wx_id);
+	static void		add(SAction* action);
 
 private:
 	// The id associated with this action - to keep things consistent, it should be of the format xxxx_*,

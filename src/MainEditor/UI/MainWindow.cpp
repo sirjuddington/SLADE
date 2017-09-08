@@ -102,7 +102,7 @@ MainWindow::MainWindow()
 	: STopWindow("SLADE", "main")
 {
 	lasttipindex = 0;
-	custom_menus_begin = 2;
+	custom_menus_begin_ = 2;
 	if (mw_maximized) Maximize();
 	setupLayout();
 	SetDropTarget(new MainWindowDropTarget());
@@ -261,56 +261,58 @@ void MainWindow::setupLayout()
 	menu->SetThemeEnabled(false);
 
 	// File menu
-	wxMenu* fileNewMenu = new wxMenu("");
-	SAction::fromId("aman_newwad")->addToMenu(fileNewMenu, "&Wad Archive");
-	SAction::fromId("aman_newzip")->addToMenu(fileNewMenu, "&Zip Archive");
-	SAction::fromId("aman_newmap")->addToMenu(fileNewMenu, "&Map");
-	wxMenu* fileMenu = new wxMenu("");
-	fileMenu->AppendSubMenu(fileNewMenu, "&New", "Create a new Archive");
-	SAction::fromId("aman_open")->addToMenu(fileMenu);
-	SAction::fromId("aman_opendir")->addToMenu(fileMenu);
-	fileMenu->AppendSeparator();
-	SAction::fromId("aman_save")->addToMenu(fileMenu);
-	SAction::fromId("aman_saveas")->addToMenu(fileMenu);
-	SAction::fromId("aman_saveall")->addToMenu(fileMenu);
-	fileMenu->AppendSubMenu(panel_archivemanager->getRecentMenu(), "&Recent Files");
-	fileMenu->AppendSeparator();
-	SAction::fromId("aman_close")->addToMenu(fileMenu);
-	SAction::fromId("aman_closeall")->addToMenu(fileMenu);
-	fileMenu->AppendSeparator();
-	SAction::fromId("main_exit")->addToMenu(fileMenu);
-	menu->Append(fileMenu, "&File");
+	wxMenu* file_new_menu = new wxMenu("");
+	SAction::fromId("aman_newwad")->addToMenu(file_new_menu, "&Wad Archive");
+	SAction::fromId("aman_newzip")->addToMenu(file_new_menu, "&Zip Archive");
+	SAction::fromId("aman_newmap")->addToMenu(file_new_menu, "&Map");
+	wxMenu* file_menu = new wxMenu("");
+	file_menu->AppendSubMenu(file_new_menu, "&New", "Create a new Archive");
+	SAction::fromId("aman_open")->addToMenu(file_menu);
+	SAction::fromId("aman_opendir")->addToMenu(file_menu);
+	file_menu->AppendSeparator();
+	SAction::fromId("aman_save")->addToMenu(file_menu);
+	SAction::fromId("aman_saveas")->addToMenu(file_menu);
+	SAction::fromId("aman_saveall")->addToMenu(file_menu);
+	file_menu->AppendSubMenu(panel_archivemanager->getRecentMenu(), "&Recent Files");
+	file_menu->AppendSeparator();
+	SAction::fromId("aman_close")->addToMenu(file_menu);
+	SAction::fromId("aman_closeall")->addToMenu(file_menu);
+	file_menu->AppendSeparator();
+	SAction::fromId("main_exit")->addToMenu(file_menu);
+	menu->Append(file_menu, "&File");
 
 	// Edit menu
-	wxMenu* editorMenu = new wxMenu("");
-	SAction::fromId("main_undo")->addToMenu(editorMenu);
-	SAction::fromId("main_redo")->addToMenu(editorMenu);
-	editorMenu->AppendSeparator();
-	SAction::fromId("main_setbra")->addToMenu(editorMenu);
-	SAction::fromId("main_preferences")->addToMenu(editorMenu);
-	menu->Append(editorMenu, "E&dit");
+	wxMenu* editor_menu = new wxMenu("");
+	SAction::fromId("main_undo")->addToMenu(editor_menu);
+	SAction::fromId("main_redo")->addToMenu(editor_menu);
+	editor_menu->AppendSeparator();
+	SAction::fromId("main_setbra")->addToMenu(editor_menu);
+	SAction::fromId("main_preferences")->addToMenu(editor_menu);
+	menu->Append(editor_menu, "E&dit");
 
 	// View menu
-	wxMenu* viewMenu = new wxMenu("");
-	SAction::fromId("main_showam")->addToMenu(viewMenu);
-	SAction::fromId("main_showconsole")->addToMenu(viewMenu);
-	SAction::fromId("main_showundohistory")->addToMenu(viewMenu);
-	SAction::fromId("main_showstartpage")->addToMenu(viewMenu);
-	menu->Append(viewMenu, "&View");
+	wxMenu* view_menu = new wxMenu("");
+	SAction::fromId("main_showam")->addToMenu(view_menu);
+	SAction::fromId("main_showconsole")->addToMenu(view_menu);
+	SAction::fromId("main_showundohistory")->addToMenu(view_menu);
+	SAction::fromId("main_showstartpage")->addToMenu(view_menu);
+	toolbar_menu_ = new wxMenu();
+	view_menu->AppendSubMenu(toolbar_menu_, "Toolbars");
+	menu->Append(view_menu, "&View");
 
 	// Tools menu
-	wxMenu* toolsMenu = new wxMenu("");
-	SAction::fromId("main_runscript")->addToMenu(toolsMenu);
-	menu->Append(toolsMenu, "&Tools");
+	wxMenu* tools_menu = new wxMenu("");
+	SAction::fromId("main_runscript")->addToMenu(tools_menu);
+	menu->Append(tools_menu, "&Tools");
 
 	// Help menu
-	wxMenu* helpMenu = new wxMenu("");
-	SAction::fromId("main_onlinedocs")->addToMenu(helpMenu);
-	SAction::fromId("main_about")->addToMenu(helpMenu);
+	wxMenu* help_menu = new wxMenu("");
+	SAction::fromId("main_onlinedocs")->addToMenu(help_menu);
+	SAction::fromId("main_about")->addToMenu(help_menu);
 #ifdef __WXMSW__
-	SAction::fromId("main_updatecheck")->addToMenu(helpMenu);
+	SAction::fromId("main_updatecheck")->addToMenu(help_menu);
 #endif
-	menu->Append(helpMenu, "&Help");
+	menu->Append(help_menu, "&Help");
 
 	// Set the menu
 	SetMenuBar(menu);
@@ -318,10 +320,10 @@ void MainWindow::setupLayout()
 
 
 	// -- Toolbars --
-	toolbar = new SToolBar(this, true);
+	toolbar_ = new SToolBar(this, true);
 
 	// Create File toolbar
-	SToolBarGroup* tbg_file = new SToolBarGroup(toolbar, "_File");
+	SToolBarGroup* tbg_file = new SToolBarGroup(toolbar_, "_File");
 	tbg_file->addActionButton("aman_newwad");
 	tbg_file->addActionButton("aman_newzip");
 	tbg_file->addActionButton("aman_open");
@@ -331,49 +333,52 @@ void MainWindow::setupLayout()
 	tbg_file->addActionButton("aman_saveall");
 	tbg_file->addActionButton("aman_close");
 	tbg_file->addActionButton("aman_closeall");
-	toolbar->addGroup(tbg_file);
+	toolbar_->addGroup(tbg_file);
 
 	// Create Archive toolbar
-	SToolBarGroup* tbg_archive = new SToolBarGroup(toolbar, "_Archive");
+	SToolBarGroup* tbg_archive = new SToolBarGroup(toolbar_, "_Archive");
 	tbg_archive->addActionButton("arch_newentry");
 	tbg_archive->addActionButton("arch_newdir");
 	tbg_archive->addActionButton("arch_importfiles");
 	tbg_archive->addActionButton("arch_texeditor");
 	tbg_archive->addActionButton("arch_mapeditor");
 	tbg_archive->addActionButton("arch_run");
-	toolbar->addGroup(tbg_archive);
+	toolbar_->addGroup(tbg_archive);
 
 	// Create Entry toolbar
-	SToolBarGroup* tbg_entry = new SToolBarGroup(toolbar, "_Entry");
+	SToolBarGroup* tbg_entry = new SToolBarGroup(toolbar_, "_Entry");
 	tbg_entry->addActionButton("arch_entry_rename");
 	tbg_entry->addActionButton("arch_entry_delete");
 	tbg_entry->addActionButton("arch_entry_import");
 	tbg_entry->addActionButton("arch_entry_export");
 	tbg_entry->addActionButton("arch_entry_moveup");
 	tbg_entry->addActionButton("arch_entry_movedown");
-	toolbar->addGroup(tbg_entry);
+	toolbar_->addGroup(tbg_entry);
 
 	// Create Base Resource Archive toolbar
-	SToolBarGroup* tbg_bra = new SToolBarGroup(toolbar, "_Base Resource", true);
+	SToolBarGroup* tbg_bra = new SToolBarGroup(toolbar_, "_Base Resource", true);
 	BaseResourceChooser* brc = new BaseResourceChooser(tbg_bra);
 	tbg_bra->addCustomControl(brc);
 	tbg_bra->addActionButton("main_setbra", "settings");
-	toolbar->addGroup(tbg_bra);
+	toolbar_->addGroup(tbg_bra);
 
 	// Create Palette Chooser toolbar
-	SToolBarGroup* tbg_palette = new SToolBarGroup(toolbar, "_Palette", true);
+	SToolBarGroup* tbg_palette = new SToolBarGroup(toolbar_, "_Palette", true);
 	palette_chooser = new PaletteChooser(tbg_palette, -1);
 	palette_chooser->selectPalette(global_palette);
 	tbg_palette->addCustomControl(palette_chooser);
-	toolbar->addGroup(tbg_palette);
+	toolbar_->addGroup(tbg_palette);
 
 	// Archive and Entry toolbars are initially disabled
-	toolbar->enableGroup("_archive", false);
-	toolbar->enableGroup("_entry", false);
+	toolbar_->enableGroup("_archive", false);
+	toolbar_->enableGroup("_entry", false);
 
 	// Add toolbar
-	m_mgr->AddPane(toolbar, wxAuiPaneInfo().Top().CaptionVisible(false).MinSize(-1, SToolBar::getBarHeight()).Resizable(false).PaneBorder(false).Name("toolbar"));
+	m_mgr->AddPane(toolbar_, wxAuiPaneInfo().Top().CaptionVisible(false).MinSize(-1, SToolBar::getBarHeight()).Resizable(false).PaneBorder(false).Name("toolbar"));
 
+	// Populate the 'View->Toolbars' menu
+	populateToolbarsMenu();
+	toolbar_->enableContextMenu();
 
 	// -- Status Bar --
 	CreateStatusBar(3);
@@ -390,7 +395,7 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_SIZE, &MainWindow::onSize, this);
 	Bind(wxEVT_CLOSE_WINDOW, &MainWindow::onClose, this);
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
-	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar->GetId());
+	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar_->GetId());
 	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [&](wxAuiNotebookEvent& e)
 	{
@@ -401,7 +406,7 @@ void MainWindow::setupLayout()
 	});
 
 	// Initial focus to toolbar
-	toolbar->SetFocus();
+	toolbar_->SetFocus();
 }
 
 /* MainWindow::createStartPage
@@ -441,7 +446,7 @@ bool MainWindow::exitProgram()
 	saveLayout();
 	mw_maximized = IsMaximized();
 	if (!IsMaximized())
-		Misc::setWindowInfo(id, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		Misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
 	// Save selected palette
 	global_palette = palette_chooser->GetStringSelection();
@@ -724,7 +729,7 @@ void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
 void MainWindow::onSize(wxSizeEvent& e)
 {
 	// Update toolbar layout (if needed)
-	toolbar->updateLayout();
+	toolbar_->updateLayout();
 #ifndef __WXMSW__
 	m_mgr->GetPane(toolbar).MinSize(-1, toolbar->minHeight());
 	m_mgr->Update();
@@ -742,7 +747,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 {
 	// Update toolbar size
-	m_mgr->GetPane(toolbar).MinSize(-1, toolbar->minHeight());
+	m_mgr->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
 	m_mgr->Update();
 }
 

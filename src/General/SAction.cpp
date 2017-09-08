@@ -1,34 +1,36 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    SAction.cpp
- * Description: SAction class, represents an 'action', which can
- *              be put on any menu or toolbar and handled by any
- *              SActionHandler that claims its id
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    SAction.cpp
+// Description: SAction class, represents an 'action', which can be put on any
+//              menu or toolbar and handled by any SActionHandler that claims
+//              its id
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive/ArchiveManager.h"
 #include "General/KeyBind.h"
@@ -38,9 +40,11 @@
 #include "Utility/Parser.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 int						SAction::n_groups = 0;
 int						SAction::cur_id = 0;
 vector<SAction*>		SAction::actions;
@@ -49,13 +53,18 @@ vector<SActionHandler*>	SActionHandler::action_handlers;
 int						SActionHandler::wx_id_offset = 0;
 
 
-/*******************************************************************
- * SACTION CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// SAction Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* SAction::SAction
- * SAction class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// SAction::SAction
+//
+// SAction class constructor
+// ----------------------------------------------------------------------------
 SAction::SAction(
 	string id,
 	string text,
@@ -78,41 +87,23 @@ SAction::SAction(
 	checked{ false },
 	linked_cvar{ nullptr }
 {
-	//// Add to actions
-	//actions.push_back(this);
-
-	//// Setup wxWidgets id stuff
-	//if (custom_wxid == -1)
-	//{
-	//	wx_id = cur_id;
-	//	cur_id += reserved_ids;
-	//}
-	//else
-	//	wx_id = custom_wxid;
-
-	//// Setup linked cvar
-	//if (type == Type::Check && !linked_cvar.IsEmpty())
-	//{
-	//	auto cvar = get_cvar(linked_cvar);
-	//	if (cvar && cvar->type == CVAR_BOOLEAN)
-	//	{
-	//		this->linked_cvar = (CBoolCVar*)cvar;
-	//		checked = cvar->GetValue().Bool;
-	//	}
-	//}
 }
 
-/* SAction::~SAction
- * SAction class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SAction::~SAction
+//
+// SAction class destructor
+// ----------------------------------------------------------------------------
 SAction::~SAction()
 {
 }
 
-/* SAction::getShortcutText
- * Returns the shortcut key for this action as a string, taking into
- * account if the shortcut is a keybind
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SAction::getShortcutText
+//
+// Returns the shortcut key for this action as a string, taking into account if
+// the shortcut is a keybind
+// ----------------------------------------------------------------------------
 string SAction::getShortcutText() const
 {
 	if (shortcut.StartsWith("kb:"))
@@ -127,10 +118,12 @@ string SAction::getShortcutText() const
 	return shortcut;
 }
 
-/* SAction::setToggled
- * Sets the toggled state of the action to [toggle], and updates the
- * value of the linked cvar (if any) to match
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SAction::setToggled
+//
+// Sets the toggled state of the action to [toggle], and updates the value of
+// the linked cvar (if any) to match
+// ----------------------------------------------------------------------------
 void SAction::setChecked(bool toggle)
 {
 	if (type == Type::Normal)
@@ -159,12 +152,12 @@ void SAction::setChecked(bool toggle)
 		*linked_cvar = checked;
 }
 
-/* SAction::addToMenu
- * Adds this action to [menu]. If [text_override] is not "NO", it
- * will be used instead of the action's text as the menu item label.
- * If [popup] is true the shortcut key will always be added to the
- * item label
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SAction::addToMenu
+//
+// Adds this action to [menu]. If [text_override] is not "NO", it will be used
+// instead of the action's text as the menu item label
+// ----------------------------------------------------------------------------
 bool SAction::addToMenu(wxMenu* menu, string text_override, string icon_override, int wx_id_offset)
 {
 	return addToMenu(menu, false, text_override, icon_override, wx_id_offset);
@@ -213,10 +206,12 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override, 
 	return true;
 }
 
-/* SAction::addToToolbar
- * Adds this action to [toolbar]. If [icon_override] is not "NO", it
- * will be used instead of the action's icon as the tool icon
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SAction::addToToolbar
+//
+// Adds this action to [toolbar]. If [icon_override] is not "NO", it will be
+// used instead of the action's icon as the tool icon
+// ----------------------------------------------------------------------------
 bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override, int wx_id_offset)
 {
 	// Can't add to nonexistant toolbar
@@ -240,10 +235,12 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override, int wx_i
 	return true;
 }
 
-/* SAction::addToToolbar
- * Adds this action to [toolbar]. If [icon_override] is not "NO", it
- * will be used instead of the action's icon as the tool icon
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SAction::addToToolbar
+//
+// Adds this action to [toolbar]. If [icon_override] is not "NO", it
+// will be used instead of the action's icon as the tool icon
+// ----------------------------------------------------------------------------
 bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override, int wx_id_offset)
 {
 	// Can't add to nonexistant toolbar
@@ -267,9 +264,11 @@ bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override, int wx_id_o
 	return true;
 }
 
-/* SAction::parse
- * Loads a parsed SAction definition
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SAction::parse
+//
+// Loads a parsed SAction definition
+// ----------------------------------------------------------------------------
 bool SAction::parse(ParseTreeNode* node)
 {
 	string linked_cvar;
@@ -347,14 +346,19 @@ bool SAction::parse(ParseTreeNode* node)
 }
 
 
-/*******************************************************************
- * SACTION CLASS STATIC FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// SAction Class Static Functions
+//
+// ----------------------------------------------------------------------------
 
-/* SAction::initActions
- * Loads and parses all SActions configured in actions.cfg in the
- * program resource archive
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// SAction::initActions
+//
+// Loads and parses all SActions configured in actions.cfg in the program
+// resource archive
+// ----------------------------------------------------------------------------
 bool SAction::initActions()
 {
 	// Get actions.cfg from slade.pk3
@@ -407,17 +411,21 @@ bool SAction::initActions()
 	return true;
 }
 
-/* SAction::newGroup
- * Returns a new, unused SAction group id
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SAction::newGroup
+//
+// Returns a new, unused SAction group id
+// ----------------------------------------------------------------------------
 int SAction::newGroup()
 {
 	return n_groups++;
 }
 
-/* SAction::fromId
- * Returns the SAction with id matching [id]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SAction::fromId
+//
+// Returns the SAction with id matching [id]
+// ----------------------------------------------------------------------------
 SAction* SAction::fromId(const string& id)
 {
 	// Find action with id
@@ -429,9 +437,11 @@ SAction* SAction::fromId(const string& id)
 	return invalidAction();
 }
 
-/* SAction::fromWxId
- * Returns the SAction covering wxWidgets id [wx_id]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SAction::fromWxId
+//
+// Returns the SAction covering wxWidgets id [wx_id]
+// ----------------------------------------------------------------------------
 SAction* SAction::fromWxId(int wx_id)
 {
 	// Find action with id
@@ -443,9 +453,27 @@ SAction* SAction::fromWxId(int wx_id)
 	return invalidAction();
 }
 
-/* SAction::invalidAction
- * Returns the global 'invalid' SAction, creating it if necessary
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SAction::add
+//
+// Adds [action] to the list of all SActions (if it isn't in there already)
+// ----------------------------------------------------------------------------
+void SAction::add(SAction* action)
+{
+	if (!action)
+		return;
+
+	if (VECTOR_EXISTS(actions, action))
+		return;
+
+	actions.push_back(action);
+}
+
+// ----------------------------------------------------------------------------
+// SAction::invalidAction
+//
+// Returns the global 'invalid' SAction, creating it if necessary
+// ----------------------------------------------------------------------------
 SAction* SAction::invalidAction()
 {
 	if (!action_invalid)
@@ -455,30 +483,39 @@ SAction* SAction::invalidAction()
 }
 
 
-/*******************************************************************
- * SACTIONHANDLER CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// SActionHandler Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* SActionHandler::SActionHandler
- * SActionHandler class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// SActionHandler::SActionHandler
+//
+// SActionHandler class constructor
+// ----------------------------------------------------------------------------
 SActionHandler::SActionHandler()
 {
 	action_handlers.push_back(this);
 }
 
-/* SActionHandler::~SActionHandler
- * SActionHandler class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SActionHandler::~SActionHandler
+//
+// SActionHandler class destructor
+// ----------------------------------------------------------------------------
 SActionHandler::~SActionHandler()
 {
 	VECTOR_REMOVE(action_handlers, this);
 }
 
-/* SActionHandler::doAction
- * Handles the SAction [id], returns true if an SActionHandler
- * handled the action, false otherwise
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SActionHandler::doAction
+//
+// Handles the SAction [id], returns true if an SActionHandler handled the
+// action, false otherwise
+// ----------------------------------------------------------------------------
 bool SActionHandler::doAction(string id)
 {
 	// Toggle action if necessary
