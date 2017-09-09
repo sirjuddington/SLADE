@@ -618,7 +618,7 @@ bool StateTable::parse(ParsedStatement& states)
 				statement.tokens[index + 2].ToLong(&duration);
 
 			for (auto& state : current_states)
-				states_[state].frames.push_back({ statement.tokens[index], statement.tokens[index + 1], duration });
+				states_[state].frames.push_back({ statement.tokens[index], statement.tokens[index + 1], static_cast<int>(duration) });
 		}
 	}
 
