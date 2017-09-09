@@ -1247,7 +1247,7 @@ void TextEditorCtrl::blockComment()
 
 	string textString = GetRange(selectionStart, selectionEnd);
 
-	if (!textString.StartsWith(commentBegin, NULL) && !textString.EndsWith(commentEnd, NULL))
+	if (!textString.StartsWith(commentBegin, nullptr) && !textString.EndsWith(commentEnd, nullptr))
 	{
 		commentBegin = commentBegin.append(space);
 		commentEnd = commentEnd.Prepend(space);
@@ -1255,11 +1255,11 @@ void TextEditorCtrl::blockComment()
 		ReplaceTarget(textString.Prepend(commentBegin).append(commentEnd));
 		selectionEnd += (int)(commentBegin.Len() + commentEnd.Len());
 	}
-	else if (textString.StartsWith(commentBegin, NULL) && textString.EndsWith(commentEnd, NULL))
+	else if (textString.StartsWith(commentBegin, nullptr) && textString.EndsWith(commentEnd, nullptr))
 	{
-		if (textString.StartsWith(commentBegin.append(space), NULL))
+		if (textString.StartsWith(commentBegin.append(space), nullptr))
 			commentBeginLen = commentBegin.Len();
-		if (textString.EndsWith(commentEnd.Prepend(space), NULL))
+		if (textString.EndsWith(commentEnd.Prepend(space), nullptr))
 			commentEndLen = commentEnd.Len();
 
 		ReplaceTarget(textString.Remove(0, commentBeginLen).RemoveLast(commentEndLen));

@@ -65,8 +65,8 @@ private:
 	void		setGeometryUpdated();
 
 public:
-	MapSector(SLADEMap* parent = NULL);
-	MapSector(string f_tex, string c_tex, SLADEMap* parent = NULL);
+	MapSector(SLADEMap* parent = nullptr);
+	MapSector(string f_tex, string c_tex, SLADEMap* parent = nullptr);
 	~MapSector();
 
 	void	copy(MapObject* copy) override;

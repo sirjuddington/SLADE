@@ -100,13 +100,13 @@ bool GfxConvDialog::nextItem()
 	if (!items[current_item].image.isValid())
 	{
 		// If loading images from entries
-		if (items[current_item].entry != NULL)
+		if (items[current_item].entry != nullptr)
 		{
 			if (!Misc::loadImageFromEntry(&(items[current_item].image), items[current_item].entry))
 				return nextItem();	// Skip if not a valid image entry
 		}
 		// If loading images from textures
-		else if (items[current_item].texture != NULL)
+		else if (items[current_item].texture != nullptr)
 		{
 			if (items[current_item].force_rgba)
 				items[current_item].image.convertRGBA(items[current_item].palette);
@@ -183,7 +183,7 @@ bool GfxConvDialog::nextItem()
 
 	// Setup current format string
 	string fmt_string = "Current Format: ";
-	if (items[current_item].texture == NULL)
+	if (items[current_item].texture == nullptr)
 	{
 		if (items[current_item].image.getFormat())
 			fmt_string += items[current_item].image.getFormat()->getName();
@@ -469,7 +469,7 @@ void GfxConvDialog::updateControls()
 		colbox_transparent->setPalette(gfx_current->getPalette());
 	}
 	else
-		colbox_transparent->setPalette(NULL);
+		colbox_transparent->setPalette(nullptr);
 
 	// Disable/enable transparency options depending on transparency checkbox
 	if (cb_enable_transparency->GetValue())
@@ -544,7 +544,7 @@ SImage* GfxConvDialog::getItemImage(int index)
 {
 	// Check index
 	if (index < 0 || index >= (int)items.size())
-		return NULL;
+		return nullptr;
 
 	return &(items[index].image);
 }
@@ -556,7 +556,7 @@ SIFormat* GfxConvDialog::getItemFormat(int index)
 {
 	// Check index
 	if (index < 0 || index >= (int)items.size())
-		return NULL;
+		return nullptr;
 
 	return items[index].new_format;
 }
@@ -568,7 +568,7 @@ Palette* GfxConvDialog::getItemPalette(int index)
 {
 	// Check index
 	if (index < 0 || index >= (int)items.size())
-		return NULL;
+		return nullptr;
 
 	return items[index].palette;
 }

@@ -37,7 +37,7 @@
 /*******************************************************************
 * CONSTANTS
 *******************************************************************/
-SBrushManager* SBrushManager::instance = NULL;
+SBrushManager* SBrushManager::instance = nullptr;
 
 /*******************************************************************
 * VARIABLES
@@ -58,7 +58,7 @@ SBrushManager* SBrushManager::instance = NULL;
 SBrush::SBrush(string name)
 {
 
-	image = NULL;
+	image = nullptr;
 	this->name = name;
 	icon = name.AfterFirst('_');
 	cx = 0;

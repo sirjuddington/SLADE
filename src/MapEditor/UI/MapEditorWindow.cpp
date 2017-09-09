@@ -88,7 +88,7 @@ MapEditorWindow::MapEditorWindow()
 	if (mew_maximized) Maximize();
 	setupLayout();
 	Show(false);
-	custom_menus_begin = 2;
+	custom_menus_begin_ = 2;
 
 	// Set icon
 	string icon_filename = App::path("slade.ico", App::Dir::Temp);
@@ -229,6 +229,8 @@ void MapEditorWindow::setupMenu()
 	SAction::fromId("mapw_showundohistory")->addToMenu(menu_view);
 	SAction::fromId("mapw_showchecks")->addToMenu(menu_view);
 	SAction::fromId("mapw_showscripteditor")->addToMenu(menu_view);
+	toolbar_menu_ = new wxMenu();
+	menu_view->AppendSubMenu(toolbar_menu_, "Toolbars");
 	menu_view->AppendSeparator();
 	SAction::fromId("mapw_show_fullmap")->addToMenu(menu_view);
 	SAction::fromId("mapw_show_item")->addToMenu(menu_view);
@@ -265,31 +267,31 @@ void MapEditorWindow::setupLayout()
 
 
 	// --- Toolbars ---
-	toolbar = new SToolBar(this, true);
+	toolbar_ = new SToolBar(this, true);
 
 	// Map toolbar
-	SToolBarGroup* tbg_map = new SToolBarGroup(toolbar, "_Map");
+	SToolBarGroup* tbg_map = new SToolBarGroup(toolbar_, "_Map");
 	tbg_map->addActionButton("mapw_save");
 	tbg_map->addActionButton("mapw_saveas");
 	tbg_map->addActionButton("mapw_rename");
-	toolbar->addGroup(tbg_map);
+	toolbar_->addGroup(tbg_map);
 
 	// Mode toolbar
-	SToolBarGroup* tbg_mode = new SToolBarGroup(toolbar, "_Mode");
+	SToolBarGroup* tbg_mode = new SToolBarGroup(toolbar_, "_Mode");
 	tbg_mode->addActionButton("mapw_mode_vertices");
 	tbg_mode->addActionButton("mapw_mode_lines");
 	tbg_mode->addActionButton("mapw_mode_sectors");
 	tbg_mode->addActionButton("mapw_mode_things");
 	tbg_mode->addActionButton("mapw_mode_3d");
 	SAction::fromId("mapw_mode_lines")->setChecked();	// Lines mode by default
-	toolbar->addGroup(tbg_mode);
+	toolbar_->addGroup(tbg_mode);
 
 	// Flat type toolbar
-	SToolBarGroup* tbg_flats = new SToolBarGroup(toolbar, "_Flats Type");
+	SToolBarGroup* tbg_flats = new SToolBarGroup(toolbar_, "_Flats Type");
 	tbg_flats->addActionButton("mapw_flat_none");
 	tbg_flats->addActionButton("mapw_flat_untextured");
 	tbg_flats->addActionButton("mapw_flat_textured");
-	toolbar->addGroup(tbg_flats);
+	toolbar_->addGroup(tbg_flats);
 
 	// Toggle current flat type
 	if (flat_drawtype == 0) SAction::fromId("mapw_flat_none")->setChecked();
@@ -297,21 +299,25 @@ void MapEditorWindow::setupLayout()
 	else SAction::fromId("mapw_flat_textured")->setChecked();
 
 	// Edit toolbar
-	SToolBarGroup* tbg_edit = new SToolBarGroup(toolbar, "_Edit");
+	SToolBarGroup* tbg_edit = new SToolBarGroup(toolbar_, "_Edit");
 	tbg_edit->addActionButton("mapw_draw_lines");
 	tbg_edit->addActionButton("mapw_draw_shape");
 	tbg_edit->addActionButton("mapw_edit_objects");
 	tbg_edit->addActionButton("mapw_mirror_x");
 	tbg_edit->addActionButton("mapw_mirror_y");
-	toolbar->addGroup(tbg_edit);
+	toolbar_->addGroup(tbg_edit);
 
 	// Extra toolbar
-	SToolBarGroup* tbg_misc = new SToolBarGroup(toolbar, "_Misc");
+	SToolBarGroup* tbg_misc = new SToolBarGroup(toolbar_, "_Misc");
 	tbg_misc->addActionButton("mapw_run_map");
-	toolbar->addGroup(tbg_misc);
+	toolbar_->addGroup(tbg_misc);
 
 	// Add toolbar
-	m_mgr->AddPane(toolbar, wxAuiPaneInfo().Top().CaptionVisible(false).MinSize(-1, SToolBar::getBarHeight()).Resizable(false).PaneBorder(false).Name("toolbar"));
+	m_mgr->AddPane(toolbar_, wxAuiPaneInfo().Top().CaptionVisible(false).MinSize(-1, SToolBar::getBarHeight()).Resizable(false).PaneBorder(false).Name("toolbar"));
+
+	// Populate the 'View->Toolbars' menu
+	populateToolbarsMenu();
+	toolbar_->enableContextMenu();
 
 
 	// Status bar
@@ -990,7 +996,7 @@ void MapEditorWindow::forceRefresh(bool renderer)
  *******************************************************************/
 void MapEditorWindow::refreshToolBar()
 {
-	toolbar->Refresh();
+	toolbar_->Refresh();
 }
 
 /* MapEditorWindow::tryClose
@@ -1371,7 +1377,7 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 	// Save current layout
 	saveLayout();
 	if (!IsMaximized())
-		Misc::setWindowInfo(id, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		Misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
 	this->Show(false);
 	closeMap();

@@ -217,7 +217,7 @@ bool GrpArchive::write(MemChunk& mc, bool update)
 	mc.clear();
 	mc.seek(0, SEEK_SET);
 	mc.reSize((1 + numEntries()) * 16);
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 
 	// Write the header
 	uint32_t num_lumps = numEntries();
@@ -302,11 +302,11 @@ ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -330,7 +330,7 @@ ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
  *******************************************************************/
 ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* GrpArchive::renameEntry
@@ -465,8 +465,8 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 	if (mc.getSize() == 0)
 		return;
 
-	ArchiveEntry* nentry = NULL;
-	uint32_t* data = NULL;
+	ArchiveEntry* nentry = nullptr;
+	uint32_t* data = nullptr;
 	int index = entry->getParent()->entryIndex(entry, entry->getParentDir());
 	mc.seek(0, SEEK_SET);
 
@@ -526,8 +526,8 @@ CONSOLE_COMMAND(palettedat, 0, false)
 	if (mc.getSize() < 66306)
 		return;
 
-	ArchiveEntry* nentry = NULL;
-	uint32_t* data = NULL;
+	ArchiveEntry* nentry = nullptr;
+	uint32_t* data = nullptr;
 	int index = entry->getParent()->entryIndex(entry, entry->getParentDir());
 	mc.seek(0, SEEK_SET);
 
@@ -568,8 +568,8 @@ CONSOLE_COMMAND(tablesdat, 0, false)
 	if (mc.getSize() != 8448)
 		return;
 
-	ArchiveEntry* nentry = NULL;
-	uint32_t* data = NULL;
+	ArchiveEntry* nentry = nullptr;
+	uint32_t* data = nullptr;
 	int index = entry->getParent()->entryIndex(entry, entry->getParentDir());
 	mc.seek(5376, SEEK_SET);
 

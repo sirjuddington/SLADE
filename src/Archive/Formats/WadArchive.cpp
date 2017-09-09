@@ -191,7 +191,7 @@ void WadArchive::updateNamespaces()
 		if (entry->getName().Matches("*_START"))
 		{
 			// Create new namespace
-			NSPair ns(entry, NULL);
+			NSPair ns(entry, nullptr);
 			string name = entry->getName();
 			ns.name = name.Left(name.Length() - 6).Lower();
 			ns.start_index = entryIndex(ns.start);
@@ -237,7 +237,7 @@ void WadArchive::updateNamespaces()
 				if (namespaces_[b].start_index > a)
 					break;
 				// Can't close an already-closed namespace
-				if (namespaces_[b].end != NULL)
+				if (namespaces_[b].end != nullptr)
 					continue;
 				if (S_CMP(ns_name, namespaces_[b].name))
 				{
@@ -537,7 +537,7 @@ bool WadArchive::write(MemChunk& mc, bool update)
 
 	// Determine directory offset & individual lump offsets
 	uint32_t dir_offset = 12;
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);
@@ -620,7 +620,7 @@ bool WadArchive::write(string filename, bool update)
 
 	// Determine directory offset & individual lump offsets
 	uint32_t dir_offset = 12;
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);
@@ -724,11 +724,11 @@ ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -762,7 +762,7 @@ ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 		if (S_CMPNOCASE(namespaces_[a].name, add_namespace))
 		{
 			// Namespace found, add entry before end marker
-			return addEntry(entry, namespaces_[a].end_index++, NULL, copy);
+			return addEntry(entry, namespaces_[a].end_index++, nullptr, copy);
 		}
 	}
 
@@ -778,7 +778,7 @@ ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 	}
 
 	// Unsupported namespace not found, so add to global namespace (ie end of archive)
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* WadArchive::removeEntry
@@ -897,7 +897,7 @@ bool WadArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNo
 		return false;
 
 	// Do default move (force root dir)
-	bool ok = Archive::moveEntry(entry, position, NULL);
+	bool ok = Archive::moveEntry(entry, position, nullptr);
 
 	if (ok)
 	{
@@ -1067,7 +1067,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 			MapDesc md = getMapInfo(entry->prevEntry());
 
 			// Add to map list
-			if (md.head != NULL)
+			if (md.head != nullptr)
 			{
 				entry = md.end;
 				maps.push_back(md);
@@ -1315,7 +1315,7 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveEntry* start = getEntry(0);
-	ArchiveEntry* end = NULL;
+	ArchiveEntry* end = nullptr;
 	options.match_name = options.match_name.Lower();
 
 	// "graphics" namespace is the global namespace in a wad
@@ -1340,7 +1340,7 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 
 		// Return none if namespace not found
 		if (!ns_found)
-			return NULL;
+			return nullptr;
 	}
 
 	// Begin search
@@ -1380,7 +1380,7 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 	}
 
 	// No match found
-	return NULL;
+	return nullptr;
 }
 
 /* WadArchive::findLast
@@ -1391,7 +1391,7 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveEntry* start = getEntry(numEntries()-1);
-	ArchiveEntry* end = NULL;
+	ArchiveEntry* end = nullptr;
 	options.match_name = options.match_name.Lower();
 
 	// "graphics" namespace is the global namespace in a wad
@@ -1420,7 +1420,7 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 
 		// Return none if namespace not found
 		if (!ns_found)
-			return NULL;
+			return nullptr;
 	}
 
 	// Begin search
@@ -1460,7 +1460,7 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 	}
 
 	// No match found
-	return NULL;
+	return nullptr;
 }
 
 /* WadArchive::findAll
@@ -1470,7 +1470,7 @@ vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
 	ArchiveEntry* start = getEntry(0);
-	ArchiveEntry* end = NULL;
+	ArchiveEntry* end = nullptr;
 	options.match_name = options.match_name.Upper();
 	vector<ArchiveEntry*> ret;
 

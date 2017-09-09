@@ -467,7 +467,7 @@ protected:
 			return false;
 
 		// Create image (swapped width/height because column-major)
-		image.create(info.height, info.width, PALMASK, NULL, index, info.numimages);
+		image.create(info.height, info.width, PALMASK, nullptr, index, info.numimages);
 
 		// Read data
 		uint8_t* img_data = imageData(image);

@@ -1093,7 +1093,7 @@ bool PaletteEntryPanel::move(bool infront)
 bool PaletteEntryPanel::tint()
 {
 	Palette* pal = new Palette;
-	if (pal == NULL) return false;
+	if (pal == nullptr) return false;
 	pal->copyPalette(palettes[cur_palette]);
 	PaletteTintDialog ptd(theMainWindow, pal);
 	if (ptd.ShowModal() == wxID_OK)
@@ -1112,7 +1112,7 @@ bool PaletteEntryPanel::tint()
 bool PaletteEntryPanel::colourise()
 {
 	Palette* pal = new Palette;
-	if (pal == NULL) return false;
+	if (pal == nullptr) return false;
 	pal->copyPalette(palettes[cur_palette]);
 	PaletteColouriseDialog pcd(theMainWindow, pal);
 	if (pcd.ShowModal() == wxID_OK)
@@ -1131,7 +1131,7 @@ bool PaletteEntryPanel::colourise()
 bool PaletteEntryPanel::tweak()
 {
 	Palette* pal = new Palette;
-	if (pal == NULL) return false;
+	if (pal == nullptr) return false;
 	pal->copyPalette(palettes[cur_palette]);
 	PaletteColourTweakDialog pctd(theMainWindow, pal);
 	if (pctd.ShowModal() == wxID_OK)
@@ -1150,7 +1150,7 @@ bool PaletteEntryPanel::tweak()
 bool PaletteEntryPanel::invert()
 {
 	Palette* pal = new Palette;
-	if (pal == NULL) return false;
+	if (pal == nullptr) return false;
 	pal->copyPalette(palettes[cur_palette]);
 	PaletteInvertDialog pid(theMainWindow, pal);
 	if (pid.ShowModal() == wxID_OK)
@@ -1169,7 +1169,7 @@ bool PaletteEntryPanel::invert()
 bool PaletteEntryPanel::gradient()
 {
 	Palette* pal = new Palette;
-	if (pal == NULL) return false;
+	if (pal == nullptr) return false;
 	pal->copyPalette(palettes[cur_palette]);
 	PaletteGradientDialog pgd(theMainWindow, pal);
 	if (pgd.ShowModal() == wxID_OK)
@@ -1268,7 +1268,7 @@ bool PaletteEntryPanel::generateColormaps()
 	// Now override or create new entry
 	ArchiveEntry* colormap;
 	colormap = entry->getParent()->getEntry("COLORMAP", true);
-	bool preexisting = colormap != NULL;
+	bool preexisting = colormap != nullptr;
 	if (!colormap)
 	{
 		// We need to create this entry
@@ -1292,7 +1292,7 @@ void PaletteEntryPanel::generatePalette(int r, int g, int b, int shift, int step
 {
 	// Create a new palette
 	Palette* pal = new Palette;
-	if (pal == NULL) return;
+	if (pal == nullptr) return;
 
 	// Seed it with the basic palette
 	pal->copyPalette(palettes[0]);

@@ -31,7 +31,7 @@ private:
 
 	// Stuff used internally
 	bool	loadData(const uint8_t* data, uint32_t width, uint32_t height, bool add = false);
-	bool	loadImagePortion(SImage* image, rect_t rect, Palette* pal = NULL, bool add = false);
+	bool	loadImagePortion(SImage* image, rect_t rect, Palette* pal = nullptr, bool add = false);
 
 public:
 	enum
@@ -61,7 +61,7 @@ public:
 	void		setTiling(bool tiling) { this->tiling = tiling; }
 	void		setScale(double sx, double sy) { this->scale_x = sx; this->scale_y = sy; }
 
-	bool	loadImage(SImage* image, Palette* pal = NULL);
+	bool	loadImage(SImage* image, Palette* pal = nullptr);
 	bool	loadRawData(const uint8_t* data, uint32_t width, uint32_t height);
 
 	bool	clear();

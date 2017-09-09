@@ -56,7 +56,7 @@ public:
 		quad_3d_t()
 		{
 			colour.set(255, 255, 255, 255, 0);
-			texture = NULL;
+			texture = nullptr;
 			flags = 0;
 		}
 	};
@@ -82,9 +82,9 @@ public:
 		thing_3d_t()
 		{
 			flags = 0;
-			type = NULL;
-			sector = NULL;
-			sprite = NULL;
+			type = nullptr;
+			sector = nullptr;
+			sprite = nullptr;
 			z = 0;
 			updated_time = 0;
 		}
@@ -104,15 +104,15 @@ public:
 		flat_3d_t()
 		{
 			light = 255;
-			texture = NULL;
+			texture = nullptr;
 			updated_time = 0;
 			flags = 0;
 			alpha = 1.0f;
-			sector = NULL;
+			sector = nullptr;
 		}
 	};
 
-	MapRenderer3D(SLADEMap* map = NULL);
+	MapRenderer3D(SLADEMap* map = nullptr);
 	~MapRenderer3D();
 
 	bool	fullbrightEnabled() { return fullbright; }

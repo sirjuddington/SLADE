@@ -9,7 +9,7 @@
 struct map_tex_t
 {
 	GLTexture*	texture;
-	map_tex_t() { texture = NULL; }
+	map_tex_t() { texture = nullptr; }
 	~map_tex_t() { if (texture && texture != &(GLTexture::missingTex())) delete texture; }
 };
 
@@ -59,7 +59,7 @@ public:
 		TC_HIRES
 	};
 
-	MapTextureManager(Archive* archive = NULL);
+	MapTextureManager(Archive* archive = nullptr);
 	~MapTextureManager();
 
 	void	init();

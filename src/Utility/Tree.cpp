@@ -46,7 +46,7 @@ STreeNode::STreeNode(STreeNode* parent)
 	if (parent)
 		parent->addChild(this);
 	else
-		this->parent = NULL;
+		this->parent = nullptr;
 
 	// Disallow duplicate child names by default
 	allow_dup_child = false;
@@ -81,7 +81,7 @@ STreeNode* STreeNode::getChild(unsigned index)
 {
 	// Check index
 	if (index >= children.size())
-		return NULL;
+		return nullptr;
 
 	return children[index];
 }
@@ -95,7 +95,7 @@ STreeNode* STreeNode::getChild(string name)
 {
 	// Check name was given
 	if (name.IsEmpty())
-		return NULL;
+		return nullptr;
 
 	// If name ends with /, remove it
 	if (name.EndsWith("/"))
@@ -115,7 +115,7 @@ STreeNode* STreeNode::getChild(string name)
 		}
 
 		// Child not found
-		return NULL;
+		return nullptr;
 	}
 	else
 	{
@@ -131,7 +131,7 @@ STreeNode* STreeNode::getChild(string name)
 			return child->getChild(fn.GetFullPath(wxPATH_UNIX));
 		}
 		else
-			return NULL;	// Child doesn't exist
+			return nullptr;	// Child doesn't exist
 	}
 }
 
@@ -200,7 +200,7 @@ STreeNode* STreeNode::addChild(string name)
 {
 	// Check name was given
 	if (name.IsEmpty())
-		return NULL;
+		return nullptr;
 
 	// If name ends with /, remove it
 	if (name.EndsWith("/"))
@@ -214,7 +214,7 @@ STreeNode* STreeNode::addChild(string name)
 	{
 		// If child name duplication is disallowed,
 		// check if a child with this name exists
-		STreeNode* child = NULL;
+		STreeNode* child = nullptr;
 		if (!allow_dup_child)
 			child = getChild(name);
 
@@ -236,7 +236,7 @@ STreeNode* STreeNode::addChild(string name)
 
 		// If child name duplication is disallowed,
 		// check if a child with this name exists
-		STreeNode* child = NULL;
+		STreeNode* child = nullptr;
 		if (!allow_dup_child)
 			child = getChild(dir);
 
@@ -265,7 +265,7 @@ bool STreeNode::removeChild(STreeNode* child)
 		if (children[a] == child)
 		{
 			// Reset child's parent
-			children[a]->parent = NULL;
+			children[a]->parent = nullptr;
 
 			// Remove child from list
 			children.erase(children.begin() + a);

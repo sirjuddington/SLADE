@@ -135,7 +135,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 		{
 			// Otherwise, reload the texture
 			if (mtex.texture != &(GLTexture::missingTex())) delete mtex.texture;
-			mtex.texture = NULL;
+			mtex.texture = nullptr;
 		}
 	}
 
@@ -145,7 +145,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	// Look for stand-alone textures first
 	ArchiveEntry* etex = theResourceManager->getTextureEntry(name, "hires", archive);
 	int textypefound = TEXTYPE_HIRES;
-	if (etex == NULL)
+	if (etex == nullptr)
 	{
 		etex = theResourceManager->getTextureEntry(name, "textures", archive);
 		textypefound = TEXTYPE_TEXTURE;
@@ -244,7 +244,7 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 		{
 			// Otherwise, reload the texture
 			if (mtex.texture != &(GLTexture::missingTex())) delete mtex.texture;
-			mtex.texture = NULL;
+			mtex.texture = nullptr;
 		}
 	}
 
@@ -253,9 +253,9 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 	if (!mtex.texture)
 	{
 		ArchiveEntry* entry = theResourceManager->getTextureEntry(name, "hires", archive);
-		if (entry == NULL)
+		if (entry == nullptr)
 			entry = theResourceManager->getTextureEntry(name, "flats", archive);
-		if (entry == NULL)
+		if (entry == nullptr)
 			entry = theResourceManager->getFlatEntry(name, archive);
 		if (entry)
 		{
@@ -292,7 +292,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 {
 	// Don't bother looking for nameless sprites
 	if (name.IsEmpty())
-		return NULL;
+		return nullptr;
 
 	// Get sprite matching name
 	string hashname = name.Upper();
@@ -323,7 +323,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 		{
 			// Otherwise, reload the texture
 			delete mtex.texture;
-			mtex.texture = NULL;
+			mtex.texture = nullptr;
 		}
 	}
 
@@ -404,7 +404,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /* MapTextureManager::getVerticalOffset
@@ -477,7 +477,7 @@ void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string path)
 GLTexture* MapTextureManager::getEditorImage(string name)
 {
 	if (!OpenGL::isInitialised())
-		return NULL;
+		return nullptr;
 
 	// Load thing image textures if they haven't already
 	if (!editor_images_loaded)
@@ -547,7 +547,7 @@ void MapTextureManager::buildTexInfoList()
 	if (Game::configuration().featureSupported(Game::Feature::TxTextures))
 	{
 		vector<ArchiveEntry*> patches;
-		theResourceManager->getAllPatchEntries(patches, NULL);
+		theResourceManager->getAllPatchEntries(patches, nullptr);
 		for (unsigned a = 0; a < patches.size(); a++)
 		{
 			if (patches[a]->isInNamespace("textures") || patches[a]->isInNamespace("hires"))
@@ -568,7 +568,7 @@ void MapTextureManager::buildTexInfoList()
 
 	// Flats
 	vector<ArchiveEntry*> flats;
-	theResourceManager->getAllFlatEntries(flats, NULL);
+	theResourceManager->getAllFlatEntries(flats, nullptr);
 	for (unsigned a = 0; a < flats.size(); a++)
 	{
 		ArchiveEntry* entry = flats[a];
@@ -616,7 +616,7 @@ void MapTextureManager::onAnnouncement(Announcer* announcer, string event_name, 
 		{
 			MapEditor::windowWx()->Hide();
 			MapEditor::editContext().clearMap();
-			archive = NULL;
+			archive = nullptr;
 		}
 	}
 

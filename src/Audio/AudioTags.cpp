@@ -600,7 +600,7 @@ string ParseVorbisComment(MemChunk& mc, size_t start)
 
 string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const wav_chunk_t* cue, bool bigendian = false)
 {
-	const wav_chunk_t* temp = NULL;
+	const wav_chunk_t* temp = nullptr;
 	const char* data = (const char*)mc.getData();
 	const uint8_t* udata = (const uint8_t*)data;
 	string ret = "";
@@ -1291,11 +1291,11 @@ string Audio::getWavInfo(MemChunk& mc)
 	const char* data = (const char*)mc.getData();
 	const uint8_t* udata = (const uint8_t*)data;
 	const wav_chunk_t* head = (const wav_chunk_t*)data;
-	const wav_chunk_t* temp = NULL;
-	const wav_chunk_t* wdat = NULL;
-	const wav_chunk_t* fact = NULL;
-	const wav_chunk_t* cue  = NULL;
-	const wav_fmtchunk_t* fmt = NULL;
+	const wav_chunk_t* temp = nullptr;
+	const wav_chunk_t* wdat = nullptr;
+	const wav_chunk_t* fact = nullptr;
+	const wav_chunk_t* cue  = nullptr;
+	const wav_fmtchunk_t* fmt = nullptr;
 	size_t s = 12;
 
 	string chunksfound = "Chunks: ";
@@ -1323,8 +1323,8 @@ string Audio::getWavInfo(MemChunk& mc)
 	}
 	chunksfound.RemoveLast(2);
 
-	if (wdat == NULL || fmt == NULL)
-		return S_FMT("Invalid RIFF-WAVE file, %s", (fmt == NULL) ? (wdat == NULL) ? "no format or data" : "no format" : "no data");
+	if (wdat == nullptr || fmt == nullptr)
+		return S_FMT("Invalid RIFF-WAVE file, %s", (fmt == nullptr) ? (wdat == nullptr) ? "no format or data" : "no format" : "no data");
 
 	string format = "Format: ";
 	size_t tag = wxUINT16_SWAP_ON_BE(fmt->tag);
@@ -1398,8 +1398,8 @@ string Audio::getRmidInfo(MemChunk& mc)
 	const char* data = (const char*)mc.getData();
 	const uint8_t* udata = (const uint8_t*)data;
 	const wav_chunk_t* head = (const wav_chunk_t*)data;
-	const wav_chunk_t* temp = NULL;
-	const wav_chunk_t* cue  = NULL;
+	const wav_chunk_t* temp = nullptr;
+	const wav_chunk_t* cue  = nullptr;
 	size_t s = 12;
 
 	string chunksfound = "Chunks: ";
@@ -1432,9 +1432,9 @@ string Audio::getAiffInfo(MemChunk& mc)
 	const char* data = (const char*)mc.getData();
 	const uint8_t* udata = (const uint8_t*)data;
 	const wav_chunk_t* head = (const wav_chunk_t*)data;
-	const aiff_comm_t* comm = NULL;
-	const wav_chunk_t* temp = NULL;
-	const wav_chunk_t* cue  = NULL;
+	const aiff_comm_t* comm = nullptr;
+	const wav_chunk_t* temp = nullptr;
+	const wav_chunk_t* cue  = nullptr;
 	size_t s = 12;
 
 	string chunksfound = "Chunks: ";
@@ -1458,7 +1458,7 @@ string Audio::getAiffInfo(MemChunk& mc)
 	}
 	chunksfound.RemoveLast(2);
 
-	if (comm == NULL)
+	if (comm == nullptr)
 		return S_FMT("Invalid AIFF file, no common chunk");
 
 	size_t samplerate = 1;

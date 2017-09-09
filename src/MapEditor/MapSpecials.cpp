@@ -687,7 +687,7 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 	double this_dist;
 	MapVertex* this_vertex;
 	double furthest_dist = 0.0;
-	MapVertex* furthest_vertex = NULL;
+	MapVertex* furthest_vertex = nullptr;
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		this_vertex = vertices[a];
@@ -730,7 +730,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 	}
 
 	// These are computed on first use, to avoid extra work if no lines match
-	MapSector* containing_sector = NULL;
+	MapSector* containing_sector = nullptr;
 	double thingz;
 
 	vector<MapLine*> lines;
@@ -742,7 +742,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 		// Line slope things only affect the sector on the side of the line
 		// that faces the thing
 		double side = MathStuff::lineSide(thing->point(), line->seg());
-		MapSector* target = NULL;
+		MapSector* target = nullptr;
 		if (side < 0)
 			target = line->backSector();
 		else if (side > 0)

@@ -490,7 +490,7 @@ void Translation::copy(Translation& copy)
 TransRange* Translation::getRange(unsigned index)
 {
 	if (index >= translations.size())
-		return NULL;
+		return nullptr;
 	else
 		return translations[index];
 }
@@ -502,7 +502,7 @@ rgba_t Translation::translate(rgba_t col, Palette * pal)
 {
 	rgba_t colour(col);
 	colour.blend = -1;
-	if (pal == NULL) pal = MainEditor::currentPalette();
+	if (pal == nullptr) pal = MainEditor::currentPalette();
 	uint8_t i = (col.index == -1) ? pal->nearestColour(col) : col.index;
 
 	// Handle ZDoom's predefined texture blending:
@@ -753,7 +753,7 @@ rgba_t Translation::specialBlend(rgba_t col, uint8_t type, Palette * pal)
  *******************************************************************/
 void Translation::addRange(int type, int pos)
 {
-	TransRange* tr = NULL;
+	TransRange* tr = nullptr;
 
 	// Create range
 	switch (type)

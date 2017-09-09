@@ -273,11 +273,11 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -304,7 +304,7 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 	// Find requested namespace, only three non-global namespaces are valid in this format
 	if (S_CMPNOCASE(add_namespace, "textures"))
 	{
-		if (walls[1] >= 0) return addEntry(entry, walls[1], NULL, copy);
+		if (walls[1] >= 0) return addEntry(entry, walls[1], nullptr, copy);
 		else
 		{
 			addNewEntry("startwalls");
@@ -314,7 +314,7 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 	}
 	else if (S_CMPNOCASE(add_namespace, "flats"))
 	{
-		if (flats[1] >= 0) return addEntry(entry, flats[1], NULL, copy);
+		if (flats[1] >= 0) return addEntry(entry, flats[1], nullptr, copy);
 		else
 		{
 			addNewEntry("startflats");
@@ -324,7 +324,7 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 	}
 	else if (S_CMPNOCASE(add_namespace, "sprites"))
 	{
-		if (sprites[1] >= 0) return addEntry(entry, sprites[1], NULL, copy);
+		if (sprites[1] >= 0) return addEntry(entry, sprites[1], nullptr, copy);
 		else
 		{
 			addNewEntry("startsprites");
@@ -332,7 +332,7 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 			return addEntry(entry, add_namespace, copy);
 		}
 	}
-	else return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	else return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* DatArchive::removeEntry
@@ -425,7 +425,7 @@ bool DatArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNo
 		return false;
 
 	// Do default move (force root dir)
-	bool ok = Archive::moveEntry(entry, position, NULL);
+	bool ok = Archive::moveEntry(entry, position, nullptr);
 
 	if (ok)
 	{
@@ -457,7 +457,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 	uint32_t name_size = 0;
 	string previousname = "";
 	uint16_t* nameoffsets = new uint16_t[numEntries()];
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint16_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);

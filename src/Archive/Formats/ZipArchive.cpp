@@ -415,7 +415,7 @@ ArchiveEntry* ZipArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 {
 	// Check namespace
 	if (add_namespace.IsEmpty() || add_namespace == "global")
-		return Archive::addEntry(entry, 0xFFFFFFFF, NULL, copy);
+		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 
 	// Get/Create namespace dir
 	ArchiveTreeNode* dir = createDir(add_namespace.Lower());
@@ -520,7 +520,7 @@ ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
-			return NULL;
+			return nullptr;
 		else
 			options.search_subdirs = true;	// Namespace search always includes namespace subdirs
 	}
@@ -554,7 +554,7 @@ ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
-			return NULL;
+			return nullptr;
 		else
 			options.search_subdirs = true;	// Namespace search always includes namespace subdirs
 	}

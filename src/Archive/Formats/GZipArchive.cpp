@@ -343,7 +343,7 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 	// Init search variables
 	options.match_name = options.match_name.Lower();
 	ArchiveEntry* entry = getEntry(0);
-	if (entry == NULL)
+	if (entry == nullptr)
 		return entry;
 
 	// Check type
@@ -353,12 +353,12 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 		{
 			if (!options.match_type->isThisType(entry))
 			{
-				return NULL;
+				return nullptr;
 			}
 		}
 		else if (options.match_type != entry->getType())
 		{
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -367,7 +367,7 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 	{
 		if (!options.match_name.Matches(entry->getName().Lower()))
 		{
-			return NULL;
+			return nullptr;
 		}
 	}
 

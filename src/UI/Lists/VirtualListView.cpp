@@ -45,7 +45,7 @@
  *******************************************************************/
 wxDEFINE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
 CVAR(Bool, list_font_monospace, false, CVAR_SAVE)
-VirtualListView* VirtualListView::lv_current = NULL;
+VirtualListView* VirtualListView::lv_current = nullptr;
 int vlv_chars[] =
 {
 	'.', ',', '_', '-', '+', '=', '`', '~',

@@ -18,7 +18,7 @@ public:
 	~PaletteChooser();
 
 	void			setGlobalFromArchive(Archive* archive, int lump = 0);
-	Palette*	getSelectedPalette(ArchiveEntry* entry = NULL);
+	Palette*	getSelectedPalette(ArchiveEntry* entry = nullptr);
 	bool			globalSelected();
 	void			selectPalette(string name);
 	void			onPaletteChanged(wxCommandEvent& e);

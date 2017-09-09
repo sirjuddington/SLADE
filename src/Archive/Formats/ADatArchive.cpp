@@ -231,7 +231,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 			continue;
 
 		// Create compressed version of the lump
-		MemChunk* entry = NULL;
+		MemChunk* entry = nullptr;
 		if (Compression::ZlibDeflate(entries[a]->getMCData(), compressed, 9))
 		{
 			entry = &compressed;

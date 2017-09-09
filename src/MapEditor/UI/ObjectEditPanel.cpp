@@ -53,9 +53,9 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
 	msizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
-	wxIntegerValidator<int> val_int(NULL, wxNUM_VAL_DEFAULT);
-	wxIntegerValidator<unsigned int> val_uint(NULL, wxNUM_VAL_DEFAULT);
-	wxFloatingPointValidator<double> val_double(2, NULL, wxNUM_VAL_DEFAULT);
+	wxIntegerValidator<int> val_int(nullptr, wxNUM_VAL_DEFAULT);
+	wxIntegerValidator<unsigned int> val_uint(nullptr, wxNUM_VAL_DEFAULT);
+	wxFloatingPointValidator<double> val_double(2, nullptr, wxNUM_VAL_DEFAULT);
 
 	// X offset
 	text_xoff = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(64, -1), 0, val_int);

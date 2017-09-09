@@ -56,7 +56,7 @@ ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode)
 	: wxPanel(parent, id, wxDefaultPosition, wxSize(32, 24), wxSUNKEN_BORDER)
 {
 	alpha = enable_alpha;
-	palette = NULL;
+	palette = nullptr;
 	colour = COL_BLACK;
 	altmode = mode;
 
@@ -73,7 +73,7 @@ ColourBox::ColourBox(wxWindow* parent, int id, rgba_t col, bool enable_alpha, bo
 	: wxPanel(parent, id, wxDefaultPosition, wxSize(32, 24), wxSUNKEN_BORDER)
 {
 	alpha = enable_alpha;
-	palette = NULL;
+	palette = nullptr;
 	colour = col;
 	altmode = mode;
 
@@ -160,7 +160,7 @@ void ColourBox::popAlphaSlider()
 		return;
 
 	// Popup a dialog with a slider control for alpha
-	wxDialog dlg(NULL, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
+	wxDialog dlg(nullptr, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
 	wxBoxSizer* box = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(box);
 	wxSlider* slider = new wxSlider(&dlg, -1, colour.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);

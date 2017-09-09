@@ -71,9 +71,9 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id)
 	allow_scroll = false;
 	editing_mode = 0;
 	paint_colour = COL_BLACK;
-	translation = NULL;
+	translation = nullptr;
 	drawing = false;
-	drawing_mask = NULL;
+	drawing_mask = nullptr;
 	brush = nullptr;
 	tex_brush = new GLTexture();
 	cursor_pos.set(POINT_OUTSIDE);
@@ -445,7 +445,7 @@ void GfxCanvas::paintPixel(int x, int y)
 		painted = image->setPixel(x, y, 255, 0);
 	else if (editing_mode == 3) // translator
 	{
-		if (translation != NULL)
+		if (translation != nullptr)
 		{
 			rgba_t ocol = image->getPixel(x, y, getPalette());
 			uint8_t alpha = ocol.a;

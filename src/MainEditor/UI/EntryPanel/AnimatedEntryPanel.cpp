@@ -48,7 +48,7 @@
 AnimatedEntryPanel::AnimatedEntryPanel(wxWindow* parent)
 	: EntryPanel(parent, "animated")
 {
-	ae_current = NULL;
+	ae_current = nullptr;
 	ae_modified = false;
 
 	// Setup toolbar
@@ -246,7 +246,7 @@ bool AnimatedEntryPanel::saveEntry()
 bool AnimatedEntryPanel::revertEntry()
 {
 	ArchiveEntry* reload = entry;
-	entry = NULL;
+	entry = nullptr;
 	return loadEntry(reload);
 }
 
@@ -255,7 +255,7 @@ bool AnimatedEntryPanel::revertEntry()
  *******************************************************************/
 void AnimatedEntryPanel::insertListItem(AnimatedEntry* ent, uint32_t pos)
 {
-	if (ent == NULL) return;
+	if (ent == nullptr) return;
 	string cols[] = { ent->getType() ? "Texture" : "Flat",
 	                  ent->getFirst(), ent->getLast(),
 	                  ent->getSpeed() < 65535 ? S_FMT("%d tics", ent->getSpeed()) : "Swirl",
@@ -270,7 +270,7 @@ void AnimatedEntryPanel::insertListItem(AnimatedEntry* ent, uint32_t pos)
  *******************************************************************/
 void AnimatedEntryPanel::updateListItem(AnimatedEntry* ent, uint32_t pos)
 {
-	if (ent == NULL) return;
+	if (ent == nullptr) return;
 	string cols[] = { ent->getType() ? "Texture" : "Flat",
 	                  ent->getFirst(), ent->getLast(),
 	                  ent->getSpeed() < 65535 ? S_FMT("%d tics", ent->getSpeed()) : "Swirl",
@@ -313,7 +313,7 @@ void AnimatedEntryPanel::populateEntryList()
  *******************************************************************/
 void AnimatedEntryPanel::applyChanges()
 {
-	if (ae_current == NULL)
+	if (ae_current == nullptr)
 		return;
 
 	list_entries->enableSizeUpdate(false);
@@ -351,7 +351,7 @@ void AnimatedEntryPanel::applyChanges()
  *******************************************************************/
 void AnimatedEntryPanel::updateControls()
 {
-	if (ae_current == NULL)
+	if (ae_current == nullptr)
 	{
 		text_firstname->Clear();
 		text_lastname->Clear();
@@ -538,7 +538,7 @@ void AnimatedEntryPanel::onListSelect(wxListEvent& e)
 	// Do nothing if multiple animations are selected
 	if (list_entries->GetSelectedItemCount() > 1)
 	{
-		ae_current = NULL;
+		ae_current = nullptr;
 	}
 	else
 	{

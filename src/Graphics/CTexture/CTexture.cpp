@@ -212,7 +212,7 @@ ArchiveEntry* CTPatchEx::getPatchEntry(Archive* parent)
 		return entry;
 	}
 	// Silence warnings
-	return NULL;
+	return nullptr;
 }
 
 /* CTPatchEx::parse
@@ -419,7 +419,7 @@ CTexture::CTexture(bool extended)
 	this->offset_y = 0;
 	this->type = "Texture";
 	this->state = 0;
-	this->in_list = NULL;
+	this->in_list = nullptr;
 	this->index = -1;
 }
 
@@ -507,7 +507,7 @@ CTPatch* CTexture::getPatch(size_t index)
 {
 	// Check index
 	if (index >= patches.size())
-		return NULL;
+		return nullptr;
 
 	// Return patch at index
 	return patches[index];

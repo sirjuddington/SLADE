@@ -56,7 +56,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 {
 	// Init variables
 	this->tx_editor = tx_editor;
-	tex_current = NULL;
+	tex_current = nullptr;
 	alt_press = false;
 }
 
@@ -475,7 +475,7 @@ void TextureEditorPanel::clearTexture()
 	tex_canvas->clearTexture();
 
 	// Update variables
-	tex_current = NULL;
+	tex_current = nullptr;
 	tex_modified = false;
 
 	// Set control values

@@ -429,7 +429,7 @@ public:
 		MemChunk mc;
 		image.setXOffset(offset.x);
 		image.setYOffset(offset.y);
-		return (writeImage(image, mc, NULL, 0) && entry->importMemChunk(mc));
+		return (writeImage(image, mc, nullptr, 0) && entry->importMemChunk(mc));
 	}
 
 };

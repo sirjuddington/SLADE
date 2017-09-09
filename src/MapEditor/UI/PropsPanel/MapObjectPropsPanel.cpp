@@ -56,9 +56,9 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : Prop
 {
 	// Init variables
 	last_type = -1;
-	group_custom = NULL;
+	group_custom = nullptr;
 	for (unsigned a = 0; a < 5; a++)
-		args[a] = NULL;
+		args[a] = nullptr;
 	this->no_apply = no_apply;
 	hide_flags = false;
 	hide_triggers = false;
@@ -865,7 +865,7 @@ void MapObjectPropsPanel::openObject(MapObject* object)
 void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 {
 	// Check any objects were given
-	if (objects.size() == 0 || objects[0] == NULL)
+	if (objects.size() == 0 || objects[0] == nullptr)
 	{
 		this->objects.clear();
 		pg_properties->DisableProperty(pg_properties->GetGrid()->GetRoot());
@@ -981,7 +981,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Possibly update the argument names and visibility
-	updateArgs(NULL);
+	updateArgs(nullptr);
 
 	pg_properties->Refresh();
 	pg_props_side1->Refresh();
@@ -1042,11 +1042,11 @@ void MapObjectPropsPanel::clearGrid()
 {
 	// Clear property grids
 	for (unsigned a = 0; a < 5; a++)
-		args[a] = NULL;
+		args[a] = nullptr;
 	pg_properties->Clear();
 	pg_props_side1->Clear();
 	pg_props_side2->Clear();
-	group_custom = NULL;
+	group_custom = nullptr;
 	properties.clear();
 	btn_add->Show();
 
@@ -1116,7 +1116,7 @@ void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e)
 	for (unsigned a = 0; a < properties.size(); a++)
 		properties[a]->updateVisibility();
 
-	updateArgs(NULL);
+	updateArgs(nullptr);
 }
 
 /* MapObjectPropsPanel::onBtnAdd

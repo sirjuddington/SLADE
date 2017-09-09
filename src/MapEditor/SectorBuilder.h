@@ -22,7 +22,7 @@ private:
 		bool		front;
 		bool		side_created;
 
-		edge_t(MapLine* line = NULL, bool front = true)
+		edge_t(MapLine* line = nullptr, bool front = true)
 		{
 			this->line = line;
 			this->front = front;
@@ -63,7 +63,7 @@ public:
 	bool		isValidSector();
 
 	bool	traceSector(SLADEMap* map, MapLine* line, bool front = true);
-	void	createSector(MapSector* sector = NULL, MapSector* sector_copy = NULL);
+	void	createSector(MapSector* sector = nullptr, MapSector* sector_copy = nullptr);
 
 	// Testing
 	void	drawResult();

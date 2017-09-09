@@ -43,7 +43,7 @@
 SwitchesEntryPanel::SwitchesEntryPanel(wxWindow* parent)
 	: EntryPanel(parent, "switches")
 {
-	se_current = NULL;
+	se_current = nullptr;
 	se_modified = false;
 
 	// Setup toolbar
@@ -222,7 +222,7 @@ bool SwitchesEntryPanel::saveEntry()
 bool SwitchesEntryPanel::revertEntry()
 {
 	ArchiveEntry* reload = entry;
-	entry = NULL;
+	entry = nullptr;
 	return loadEntry(reload);
 }
 
@@ -231,7 +231,7 @@ bool SwitchesEntryPanel::revertEntry()
  *******************************************************************/
 void SwitchesEntryPanel::insertListItem(SwitchesEntry* ent, uint32_t pos)
 {
-	if (ent == NULL) return;
+	if (ent == nullptr) return;
 	string cols[] = { ent->getOff(), ent->getOn(),
 	                  ent->getType() == SWCH_COMM ? "Commercial"
 	                  : ent->getType() == SWCH_FULL ? "Registered"
@@ -247,7 +247,7 @@ void SwitchesEntryPanel::insertListItem(SwitchesEntry* ent, uint32_t pos)
  *******************************************************************/
 void SwitchesEntryPanel::updateListItem(SwitchesEntry* ent, uint32_t pos)
 {
-	if (ent == NULL) return;
+	if (ent == nullptr) return;
 	string cols[] = { ent->getOff(), ent->getOn(),
 	                  ent->getType() == SWCH_COMM ? "Commercial"
 	                  : ent->getType() == SWCH_FULL ? "Registered"
@@ -291,7 +291,7 @@ void SwitchesEntryPanel::populateEntryList()
  *******************************************************************/
 void SwitchesEntryPanel::applyChanges()
 {
-	if (se_current == NULL)
+	if (se_current == nullptr)
 		return;
 
 	list_entries->enableSizeUpdate(false);
@@ -328,7 +328,7 @@ void SwitchesEntryPanel::applyChanges()
  *******************************************************************/
 void SwitchesEntryPanel::updateControls()
 {
-	if (se_current == NULL)
+	if (se_current == nullptr)
 	{
 		text_offname->Clear();
 		text_onname->Clear();
@@ -502,7 +502,7 @@ void SwitchesEntryPanel::onListSelect(wxListEvent& e)
 	// Do nothing if multiple animations are selected
 	if (list_entries->GetSelectedItemCount() > 1)
 	{
-		se_current = NULL;
+		se_current = nullptr;
 	}
 	else
 	{

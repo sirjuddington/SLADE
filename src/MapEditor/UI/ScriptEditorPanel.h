@@ -31,7 +31,7 @@ public:
 	ArchiveEntry*	scriptEntry() { return entry_script; }
 	ArchiveEntry*	compiledEntry() { return entry_compiled; }
 
-	bool	openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = NULL);
+	bool	openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = nullptr);
 	void	populateWordList();
 	void	saveScripts();
 	void	updateUI();

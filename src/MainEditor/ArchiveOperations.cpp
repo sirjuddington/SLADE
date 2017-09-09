@@ -239,7 +239,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 	// Do nothing if there is no base resource archive,
 	// or if the archive *is* the base resource archive.
 	Archive* bra = App::archiveManager().baseResourceArchive();
-	if (bra == NULL || bra == archive || archive == NULL)
+	if (bra == nullptr || bra == archive || archive == nullptr)
 		return;
 
 	// Get list of all entries in archive
@@ -248,7 +248,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 
 	// Init search options
 	Archive::SearchOptions search;
-	ArchiveEntry* other = NULL;
+	ArchiveEntry* other = nullptr;
 	string dups = "";
 	size_t count = 0;
 
@@ -269,12 +269,12 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 		other = bra->findLast(search);
 
 		// If there is one, and it is identical, remove it
-		if (other != NULL && (other->getMCData().crc() == entries[a]->getMCData().crc()))
+		if (other != nullptr && (other->getMCData().crc() == entries[a]->getMCData().crc()))
 		{
 			++count;
 			dups += S_FMT("%s\n", search.match_name);
 			archive->removeEntry(entries[a]);
-			entries[a] = NULL;
+			entries[a] = nullptr;
 		}
 	}
 
@@ -743,7 +743,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 	// Find all flats
 	opt.match_name = "";
 	opt.match_namespace = "flats";
-	opt.match_type = NULL;
+	opt.match_type = nullptr;
 	vector<ArchiveEntry*> flats = archive->findAll(opt);
 
 	// Create list of all unused flats
@@ -827,7 +827,7 @@ CONSOLE_COMMAND(test_cleanflats, 0, false)
 
 size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype)
 {
-	if (entry == NULL) return 0;
+	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
 	size_t numthings = size / sizeof(doomthing_t);
@@ -854,7 +854,7 @@ size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype)
 }
 size_t replaceThingsDoom64(ArchiveEntry* entry, int oldtype, int newtype)
 {
-	if (entry == NULL)
+	if (entry == nullptr)
 		return 0;
 
 	size_t size = entry->getSize();
@@ -882,7 +882,7 @@ size_t replaceThingsDoom64(ArchiveEntry* entry, int oldtype, int newtype)
 }
 size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype)
 {
-	if (entry == NULL)
+	if (entry == nullptr)
 		return 0;
 
 	size_t size = entry->getSize();
@@ -910,7 +910,7 @@ size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype)
 }
 size_t replaceThingsUDMF(ArchiveEntry* entry, int oldtype, int newtype)
 {
-	if (entry == NULL) return 0;
+	if (entry == nullptr) return 0;
 
 	size_t changed = 0;
 	// TODO: parse and replace code
@@ -966,7 +966,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 		{
 			// Find the map entry to modify
 			ArchiveEntry* mapentry = maps[a].head;
-			ArchiveEntry* things = NULL;
+			ArchiveEntry* things = nullptr;
 			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN)
 			{
 				while (mapentry && mapentry != maps[a].end)
@@ -1101,7 +1101,7 @@ CONSOLE_COMMAND(convertmapchex2to3, 0, false)
 
 size_t replaceSpecialsDoom(ArchiveEntry* entry, int oldtype, int newtype, bool tag, int oldtag, int newtag)
 {
-	if (entry == NULL) return 0;
+	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
 	size_t numlines = size / sizeof(doomline_t);
@@ -1140,7 +1140,7 @@ size_t replaceSpecialsHexen(ArchiveEntry* l_entry, ArchiveEntry* t_entry, int ol
 							int oldarg0, int oldarg1, int oldarg2, int oldarg3, int oldarg4,
 							int newarg0, int newarg1, int newarg2, int newarg3, int newarg4)
 {
-	if (l_entry == NULL && t_entry == NULL)
+	if (l_entry == nullptr && t_entry == nullptr)
 		return 0;
 
 	size_t size = 0;
@@ -1231,7 +1231,7 @@ size_t replaceSpecialsUDMF(ArchiveEntry* entry, int oldtype, int newtype,
 						   int oldarg0, int oldarg1, int oldarg2, int oldarg3, int oldarg4,
 						   int newarg0, int newarg1, int newarg2, int newarg3, int newarg4)
 {
-	if (entry == NULL) return 0;
+	if (entry == nullptr) return 0;
 
 	size_t changed = 0;
 	// TODO: parse and replace code
@@ -1293,8 +1293,8 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 		{
 			// Find the map entry to modify
 			ArchiveEntry* mapentry = maps[a].head;
-			ArchiveEntry* t_entry = NULL;
-			ArchiveEntry* l_entry = NULL;
+			ArchiveEntry* t_entry = nullptr;
+			ArchiveEntry* l_entry = nullptr;
 			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN)
 			{
 				while (mapentry && mapentry != maps[a].end)
@@ -1436,7 +1436,7 @@ bool replaceTextureString(char* str, string oldtex, string newtex)
 }
 size_t replaceFlatsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, bool floor, bool ceiling)
 {
-	if (entry == NULL) return 0;
+	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
 	size_t numsectors = size / sizeof(doomsector_t);
@@ -1466,7 +1466,7 @@ size_t replaceFlatsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 }
 size_t replaceWallsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, bool lower, bool middle, bool upper)
 {
-	if (entry == NULL) return 0;
+	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
 	size_t numsides = size / sizeof(doomside_t);
@@ -1499,7 +1499,7 @@ size_t replaceWallsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 }
 size_t replaceFlatsDoom64(ArchiveEntry* entry, string oldtex, string newtex, bool floor, bool ceiling)
 {
-	if (entry == NULL) return 0;
+	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
 	size_t numsectors = size / sizeof(doom64sector_t);
@@ -1538,7 +1538,7 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 }
 size_t replaceWallsDoom64(ArchiveEntry* entry, string oldtex, string newtex, bool lower, bool middle, bool upper)
 {
-	if (entry == NULL) return 0;
+	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
 	size_t numsides = size / sizeof(doom64side_t);
@@ -1582,7 +1582,7 @@ size_t replaceWallsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 }
 size_t replaceTexturesUDMF(ArchiveEntry* entry, string oldtex, string newtex, bool floor, bool ceiling, bool lower, bool middle, bool upper)
 {
-	if (entry == NULL) return 0;
+	if (entry == nullptr) return 0;
 
 	size_t changed = 0;
 	// TODO: parse and replace code
@@ -1638,8 +1638,8 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 		{
 			// Find the map entry to modify
 			ArchiveEntry* mapentry = maps[a].head;
-			ArchiveEntry* sectors = NULL;
-			ArchiveEntry* sides = NULL;
+			ArchiveEntry* sectors = nullptr;
+			ArchiveEntry* sides = nullptr;
 			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN)
 			{
 				while (mapentry && mapentry != maps[a].end)

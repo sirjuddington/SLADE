@@ -54,7 +54,7 @@
 ArchiveEntry::ArchiveEntry(string name, uint32_t size)
 {
 	// Initialise attributes
-	this->parent = NULL;
+	this->parent = nullptr;
 	this->name = name;
 	this->upper_name = name.Upper();
 	this->size = size;
@@ -64,8 +64,8 @@ ArchiveEntry::ArchiveEntry(string name, uint32_t size)
 	this->locked = false;
 	this->state_locked = false;
 	this->reliability = 0;
-	this->next = NULL;
-	this->prev = NULL;
+	this->next = nullptr;
+	this->prev = nullptr;
 	this->encrypted = ENC_NONE;
 	this->index_guess = 0;
 }
@@ -78,7 +78,7 @@ ArchiveEntry::ArchiveEntry(string name, uint32_t size)
 ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 {
 	// Initialise (copy) attributes
-	this->parent = NULL;
+	this->parent = nullptr;
 	this->name = copy.name;
 	this->upper_name = copy.upper_name;
 	this->size = copy.size;
@@ -88,8 +88,8 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	this->locked = false;
 	this->state_locked = false;
 	this->reliability = copy.reliability;
-	this->next = NULL;
-	this->prev = NULL;
+	this->next = nullptr;
+	this->prev = nullptr;
 	this->encrypted = copy.encrypted;
 	this->index_guess = 0;
 
@@ -177,7 +177,7 @@ Archive* ArchiveEntry::getParent()
 	if (parent)
 		return parent->archive();
 	else
-		return NULL;
+		return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -195,7 +195,7 @@ Archive* ArchiveEntry::getTopParent()
 			return parent->archive()->parentEntry()->getTopParent();
 	}
 	else
-		return NULL;
+		return nullptr;
 }
 
 // ----------------------------------------------------------------------------

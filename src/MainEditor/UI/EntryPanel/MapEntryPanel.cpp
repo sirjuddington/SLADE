@@ -159,7 +159,7 @@ bool MapEntryPanel::saveEntry()
  *******************************************************************/
 bool MapEntryPanel::createImage()
 {
-	if (entry == NULL)
+	if (entry == nullptr)
 		return false;
 
 	ArchiveEntry temp;

@@ -37,7 +37,7 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-MIDIPlayer*	MIDIPlayer::instance = NULL;
+MIDIPlayer*	MIDIPlayer::instance = nullptr;
 CVAR(String, fs_soundfont_path, "", CVAR_SAVE);
 CVAR(String, fs_driver, "", CVAR_SAVE);
 
@@ -68,7 +68,7 @@ MIDIPlayer::MIDIPlayer()
 	// Init variables
 	fs_initialised = false;
 	fs_soundfont_ids.clear();
-	program = NULL;
+	program = nullptr;
 	file = "";
 
 #ifndef NO_FLUIDSYNTH
@@ -236,7 +236,7 @@ bool MIDIPlayer::openFile(string filename)
 
 	// Delete+Recreate player
 	delete_fluid_player(fs_player);
-	fs_player = NULL;
+	fs_player = nullptr;
 	fs_player = new_fluid_player(fs_synth);
 
 	// Open midi
@@ -276,7 +276,7 @@ bool MIDIPlayer::openData(MemChunk &mc)
 
 		// Delete+Recreate player
 		delete_fluid_player(fs_player);
-		fs_player = NULL;
+		fs_player = nullptr;
 		fs_player = new_fluid_player(fs_synth);
 
 		if (fs_player)

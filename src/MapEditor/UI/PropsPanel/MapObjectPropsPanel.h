@@ -36,14 +36,14 @@ private:
 	bool			hide_triggers;
 	vector<string>	hide_props;
 
-	MOPGProperty*	addBoolProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
-	MOPGProperty*	addIntProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
-	MOPGProperty*	addFloatProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
-	MOPGProperty*	addStringProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
-	MOPGProperty*	addLineFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
-	MOPGProperty*	addThingFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
-	MOPGProperty*	addTextureProperty(wxPGProperty* group, string label, string propname, int textype, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
-	void			addUDMFProperty(UDMFProperty& prop, int objtype, string basegroup = "", wxPropertyGrid* grid = NULL);
+	MOPGProperty*	addBoolProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
+	MOPGProperty*	addIntProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
+	MOPGProperty*	addFloatProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
+	MOPGProperty*	addStringProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
+	MOPGProperty*	addLineFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
+	MOPGProperty*	addThingFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
+	MOPGProperty*	addTextureProperty(wxPGProperty* group, string label, string propname, int textype, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
+	void			addUDMFProperty(UDMFProperty& prop, int objtype, string basegroup = "", wxPropertyGrid* grid = nullptr);
 
 	bool	setBoolProperty(wxPGProperty* prop, bool value, bool force_set = false);
 

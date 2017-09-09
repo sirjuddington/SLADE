@@ -160,7 +160,7 @@ bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFo
  *******************************************************************/
 bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog* dialog)
 {
-	if (entry == NULL || entry->getType() == NULL)
+	if (entry == nullptr || entry->getType() == nullptr)
 		return false;
 
 	// Check entry type
@@ -312,7 +312,7 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
  *******************************************************************/
 bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 {
-	if (entry == NULL || entry->getType() == NULL)
+	if (entry == nullptr || entry->getType() == nullptr)
 		return false;
 
 	// Check entry type
@@ -886,7 +886,7 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries)
 
 	// Get parent archive
 	Archive* parent = entries[0]->getParent();
-	if (parent == NULL)
+	if (parent == nullptr)
 		return true;
 
 	// Find patch table in parent archive
@@ -990,7 +990,7 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 	}
 
 	// Find patch table in parent archive
-	ArchiveEntry* pnames = NULL;
+	ArchiveEntry* pnames = nullptr;
 	if (!zdtextures)
 	{
 		opt.match_type = EntryType::fromId("pnames");
@@ -1361,7 +1361,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 		if (errors != "" || !success)
 		{
-			ExtMessageDialog dlg(NULL, success ? "ACC Output" : "Error Compiling");
+			ExtMessageDialog dlg(nullptr, success ? "ACC Output" : "Error Compiling");
 			dlg.setMessage(success ?
 				"The following errors were encountered while compiling, please fix them and recompile:" :
 				"Compiler output shown below: "
@@ -1598,7 +1598,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 
 	if (!crushed && !outed && !errormessages.IsEmpty())
 	{
-		ExtMessageDialog dlg(NULL, "Optimizing Report");
+		ExtMessageDialog dlg(nullptr, "Optimizing Report");
 		dlg.setMessage("The following issues were encountered while optimizing:");
 		dlg.setExt(errormessages);
 		dlg.ShowModal();

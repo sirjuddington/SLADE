@@ -58,11 +58,11 @@ SImage::SImage(SIType type)
 {
 	width = 0;
 	height = 0;
-	data = NULL;
-	mask = NULL;
+	data = nullptr;
+	mask = nullptr;
 	offset_x = 0;
 	offset_y = 0;
-	format = NULL;
+	format = nullptr;
 	this->type = type;
 	numimages = 1;
 	imgindex = 0;
@@ -365,13 +365,13 @@ void SImage::clearData(bool clear_mask)
 	if (data)
 	{
 		delete[] data;
-		data = NULL;
+		data = nullptr;
 	}
 	// Delete mask if it exists
 	if (mask && clear_mask)
 	{
 		delete[] mask;
-		mask = NULL;
+		mask = nullptr;
 	}
 }
 
@@ -1060,7 +1060,7 @@ bool SImage::rotate(int angle)
 	// Create new data and mask
 	nd = new uint8_t[numpixels*numbpp];
 	if (mask) nm = new uint8_t[numpixels*numbpp];
-	else nm = NULL;
+	else nm = nullptr;
 
 	// Remapping loop
 	int i, j, k;
@@ -1112,7 +1112,7 @@ bool SImage::mirror(bool vertical)
 	// Create new data and mask
 	nd = new uint8_t[numpixels*numbpp];
 	if (mask) nm = new uint8_t[numpixels*numbpp];
-	else nm = NULL;
+	else nm = nullptr;
 
 	// Remapping loop
 	int i, j, k;
@@ -1188,7 +1188,7 @@ bool SImage::crop(long x1, long y1, long x2, long y2)
 	// Create new data and mask
 	nd = new uint8_t[numpixels*numbpp];
 	if (mask) nm = new uint8_t[numpixels*numbpp];
-	else nm = NULL;
+	else nm = nullptr;
 
 	// Remapping loop
 	size_t i, a, b;
@@ -1241,7 +1241,7 @@ bool SImage::resize(int nwidth, int nheight)
 		memset(newmask, 0, nwidth*nheight);
 	}
 	else
-		newmask = NULL;
+		newmask = nullptr;
 
 	// Write new image data
 	unsigned offset = 0;
@@ -1316,7 +1316,7 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 	if (has_palette || !pal)
 		pal = &palette;
 
-	uint8_t* newdata = NULL;
+	uint8_t* newdata = nullptr;
 	if (truecolor && type == PALMASK)
 	{
 		newdata = new uint8_t[width*height*4];

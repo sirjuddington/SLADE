@@ -48,9 +48,9 @@ BrowserItem::BrowserItem(string name, unsigned index, string type)
 	this->name = name;
 	this->index = index;
 	this->type = type;
-	this->image = NULL;
+	this->image = nullptr;
 	this->blank = false;
-	this->text_box = NULL;
+	this->text_box = nullptr;
 }
 
 /* BrowserItem::~BrowserItem

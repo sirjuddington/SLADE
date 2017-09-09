@@ -45,10 +45,10 @@
 MapLine::MapLine(SLADEMap* parent) : MapObject(MOBJ_LINE, parent)
 {
 	// Init variables
-	vertex1 = NULL;
-	vertex2 = NULL;
-	side1 = NULL;
-	side2 = NULL;
+	vertex1 = nullptr;
+	vertex2 = nullptr;
+	side1 = nullptr;
+	side2 = nullptr;
 	length = -1;
 	special = 0;
 }
@@ -90,7 +90,7 @@ MapSector* MapLine::frontSector()
 	if (side1)
 		return side1->sector;
 	else
-		return NULL;
+		return nullptr;
 }
 
 /* MapLine::backSector
@@ -101,7 +101,7 @@ MapSector* MapLine::backSector()
 	if (side2)
 		return side2->sector;
 	else
-		return NULL;
+		return nullptr;
 }
 
 /* MapLine::x1

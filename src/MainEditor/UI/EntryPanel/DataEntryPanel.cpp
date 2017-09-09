@@ -204,7 +204,7 @@ string DataEntryTable::GetValue(int row, int col)
 void DataEntryTable::SetValue(int row, int col, const string& value)
 {
 	// Seek to data position
-	if (!data.seek((row * row_stride) + columns[col].row_offset, 0))
+	if (!data.seek(data_start + (row * row_stride) + columns[col].row_offset, 0))
 		return;
 
 	// Signed integer or custom value column
@@ -268,12 +268,12 @@ void DataEntryTable::SetValue(int row, int col, const string& value)
 	// String column
 	else if (columns[col].type == COL_STRING)
 	{
-		char* str = new char[columns[col].size];
+		//char* str = new char[columns[col].size];
+		vector<char> str(columns[col].size, 0);
 		unsigned minsize = MIN(columns[col].size, value.size());
 		for (unsigned a = 0; a < minsize; a++)
 			str[a] = value[a];
-		data.write(str, columns[col].size);
-		delete[] str;
+		data.write(str.data(), columns[col].size);
 	}
 
 	// Set cell to modified colour
@@ -339,6 +339,17 @@ bool DataEntryTable::DeleteRows(size_t pos, size_t num)
 	}
 	rows_new = new_rows_new;
 
+	// Update modified cells
+	vector<point2_t> new_cells_modified;
+	for (unsigned a = 0; a < cells_modified.size(); a++)
+	{
+		if ((unsigned)cells_modified[a].x >= pos + num)
+			new_cells_modified.push_back({ cells_modified[a].x - (int)num, cells_modified[a].y });
+		else if ((unsigned)cells_modified[a].x < pos)
+			new_cells_modified.push_back({ cells_modified[a].x, cells_modified[a].y });
+	}
+	cells_modified = new_cells_modified;
+
 	// Send message to grid
 	wxGridTableMessage msg(this, wxGRIDTABLE_NOTIFY_ROWS_DELETED, pos, num);
 	GetView()->ProcessTableMessage(msg);
@@ -371,12 +382,15 @@ bool DataEntryTable::InsertRows(size_t pos, size_t num)
 
 	// Update new rows
 	for (unsigned a = 0; a < rows_new.size(); a++)
-	{
 		if ((unsigned)rows_new[a] >= pos)
 			rows_new[a] += num;
-	}
 	for (unsigned a = 0; a < num; a++)
 		rows_new.push_back(pos + a);
+
+	// Update modified cells
+	for (unsigned a = 0; a < cells_modified.size(); a++)
+		if (cells_modified[a].x >= pos)
+			cells_modified[a].x += num;
 
 	// Send message to grid
 	wxGridTableMessage msg(this, wxGRIDTABLE_NOTIFY_ROWS_INSERTED, pos, num);
@@ -868,12 +882,12 @@ void DataEntryTable::pasteRows(int row)
 DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data")
 {
 	// Init variables
-	table_data = NULL;
+	table_data = nullptr;
 
 	// Cell value combo box
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	sizer_main->Add(vbox, 1, wxEXPAND);
-	combo_cell_value = new wxComboBox(this, -1, "", wxDefaultPosition, wxDefaultSize, 0, NULL, wxTE_PROCESS_ENTER);
+	combo_cell_value = new wxComboBox(this, -1, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxTE_PROCESS_ENTER);
 	vbox->Add(combo_cell_value, 0, wxEXPAND|wxBOTTOM, 4);
 
 	// Create grid
@@ -947,9 +961,9 @@ void DataEntryPanel::deleteRow()
 	wxArrayInt selected_rows = grid_data->GetSelectedRows();
 
 	// Delete row(s)
-	if (selected_rows.empty())
+	if (selected_rows.empty() && grid_data->GetGridCursorRow() >= 0)
 		grid_data->DeleteRows(grid_data->GetGridCursorRow(), 1);
-	else
+	else if (!selected_rows.empty())
 	{
 		// Go through selected rows
 		for (unsigned a = 0; a < selected_rows.size(); a++)
@@ -978,7 +992,8 @@ void DataEntryPanel::deleteRow()
  *******************************************************************/
 void DataEntryPanel::addRow()
 {
-	grid_data->InsertRows(grid_data->GetGridCursorRow(), 1);
+	auto row = grid_data->GetGridCursorRow();
+	grid_data->InsertRows(row < 0 ? 0 : row, 1);
 	//grid_data->UpdateDimensions();
 	grid_data->ClearSelection();
 	grid_data->ForceRefresh();
@@ -994,7 +1009,7 @@ void DataEntryPanel::copyRow(bool cut)
 	wxArrayInt selected_rows = grid_data->GetSelectedRows();
 
 	// Copy row(s)
-	if (selected_rows.empty())
+	if (selected_rows.empty() && grid_data->GetGridCursorRow() >= 0)
 	{
 		// Copy
 		table_data->copyRows(grid_data->GetGridCursorRow(), 1);
@@ -1003,7 +1018,7 @@ void DataEntryPanel::copyRow(bool cut)
 		if (cut)
 			grid_data->DeleteRows(grid_data->GetGridCursorRow(), 1);
 	}
-	else
+	else if (!selected_rows.empty())
 	{
 		// Copy
 		table_data->copyRows(selected_rows[0], 1);

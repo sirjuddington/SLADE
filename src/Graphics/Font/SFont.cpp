@@ -76,7 +76,7 @@ SFont::SFont()
 {
 	// Init character map
 	for (unsigned a = 0; a < 256; a++)
-		characters[a] = NULL;
+		characters[a] = nullptr;
 }
 
 /* SFont::~SFont

@@ -41,10 +41,10 @@
  * VARIABLES
  *******************************************************************/
 vector<SIFormat*>	simage_formats;
-SIFormat*			sif_raw = NULL;
-SIFormat*			sif_flat = NULL;
-SIFormat*			sif_general = NULL;
-SIFormat*			sif_unknown = NULL;
+SIFormat*			sif_raw = nullptr;
+SIFormat*			sif_flat = nullptr;
+SIFormat*			sif_general = nullptr;
+SIFormat*			sif_unknown = nullptr;
 
 
 /*******************************************************************
@@ -104,7 +104,7 @@ private:
 
 		// Check it created/read ok
 		if (!bm)
-			return NULL;
+			return nullptr;
 
 		// Get info from image
 		info.width = FreeImage_GetWidth(bm);

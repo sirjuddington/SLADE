@@ -42,7 +42,7 @@
  * ModifyOffsetsDialog class constructor
  *******************************************************************/
 ModifyOffsetsDialog::ModifyOffsetsDialog()
-	:	wxDialog(NULL, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
+	:	wxDialog(nullptr, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
 {
 	// Create main sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);

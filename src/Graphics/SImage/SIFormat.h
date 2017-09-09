@@ -42,7 +42,7 @@ public:
 
 		convert_options_t()
 		{
-			pal_current = pal_target = NULL;
+			pal_current = pal_target = nullptr;
 			mask_source = MASK_ALPHA;
 			transparency = true;
 			col_format = -1;
@@ -98,7 +98,7 @@ public:
 	virtual bool	convertWritable(SImage& image, convert_options_t opt) { return false; }
 	virtual bool	writeOffset(SImage& image, ArchiveEntry* entry, point2_t offset) { return false; }
 
-	bool saveImage(SImage& image, MemChunk& out, Palette* pal = NULL, int index = 0)
+	bool saveImage(SImage& image, MemChunk& out, Palette* pal = nullptr, int index = 0)
 	{
 		// Attempt to write image data
 		bool ok = writeImage(image, out, pal, index);

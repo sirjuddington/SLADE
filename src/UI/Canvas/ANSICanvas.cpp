@@ -63,7 +63,7 @@ ANSICanvas::ANSICanvas(wxWindow* parent, int id)
 	fontdata = ansi_font->getData();
 
 	// Init variables
-	ansidata = NULL;
+	ansidata = nullptr;
 	tex_image = new GLTexture();
 	char_width = 8;
 	char_height = ansi_font->getSize()/256;

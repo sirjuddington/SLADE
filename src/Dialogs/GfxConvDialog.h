@@ -43,23 +43,23 @@ struct gcd_item_t
 	Archive*		archive;
 	bool			force_rgba;
 
-	gcd_item_t(ArchiveEntry* entry = NULL)
+	gcd_item_t(ArchiveEntry* entry = nullptr)
 	{
 		this->entry = entry;
-		this->texture = NULL;
+		this->texture = nullptr;
 		this->modified = false;
-		this->new_format = NULL;
-		this->palette = NULL;
-		this->archive = NULL;
+		this->new_format = nullptr;
+		this->palette = nullptr;
+		this->archive = nullptr;
 		this->force_rgba = false;
 	}
 
-	gcd_item_t(CTexture* texture, Palette* palette = NULL, Archive* archive = NULL, bool force_rgba = false)
+	gcd_item_t(CTexture* texture, Palette* palette = nullptr, Archive* archive = nullptr, bool force_rgba = false)
 	{
-		this->entry = NULL;
+		this->entry = nullptr;
 		this->texture = texture;
 		this->modified = false;
-		this->new_format = NULL;
+		this->new_format = nullptr;
 		this->palette = palette;
 		this->archive = archive;
 		this->force_rgba = force_rgba;
@@ -77,7 +77,7 @@ private:
 		SIFormat*	format;
 		int			coltype;
 
-		conv_format_t(SIFormat* format = NULL, int coltype = RGBA)
+		conv_format_t(SIFormat* format = nullptr, int coltype = RGBA)
 		{
 			this->format = format;
 			this->coltype = coltype;
@@ -129,7 +129,7 @@ public:
 
 	void	openEntry(ArchiveEntry* entry);
 	void	openEntries(vector<ArchiveEntry*> entries);
-	void	openTextures(vector<CTexture*> textures, Palette* palette = NULL, Archive* archive = NULL, bool force_rgba = false);
+	void	openTextures(vector<CTexture*> textures, Palette* palette = nullptr, Archive* archive = nullptr, bool force_rgba = false);
 	void	updatePreviewGfx();
 	void	updateControls();
 	void	getConvertOptions(SIFormat::convert_options_t& opt);

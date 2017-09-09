@@ -16,7 +16,7 @@ private:
 	{
 		GLTexture*	texture;
 		string		name;
-		qt_tex_t(string name) { texture = NULL; this->name = name; }
+		qt_tex_t(string name) { texture = nullptr; this->name = name; }
 	};
 	vector<qt_tex_t>	textures;
 	unsigned			current_index;
