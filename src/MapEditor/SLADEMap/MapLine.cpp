@@ -51,6 +51,7 @@ MapLine::MapLine(SLADEMap* parent) : MapObject(MOBJ_LINE, parent)
 	side2 = nullptr;
 	length = -1;
 	special = 0;
+	line_id = 0;
 }
 
 /* MapLine::MapLine
@@ -65,6 +66,7 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMa
 	side2 = s2;
 	length = -1;
 	special = 0;
+	line_id = 0;
 
 	// Connect to vertices
 	if (v1) v1->connectLine(this);
