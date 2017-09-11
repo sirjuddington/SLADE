@@ -136,7 +136,7 @@ public:
 
 	// General
 	bool	isSpecialCharacter(char p) const { return VECTOR_EXISTS(special_characters_, p); }
-	bool	atEnd() const { return token_current_.pos_start == token_next_.pos_start; }
+	bool	atEnd() const { return data_.empty() || token_current_.pos_start == token_next_.pos_start; }
 	void	reset();
 
 	// Old tokenizer interface bridge (don't use)
