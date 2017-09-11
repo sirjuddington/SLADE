@@ -1,5 +1,5 @@
-$version = "3120_b4"
-$versionstring = "3.1.2 Beta 4"
+$version = "3120_b5"
+$versionstring = "3.1.2 Beta 5"
 
 # Check for 7-zip install
 $7zpath = "$env:ProgramFiles\7-Zip\7z.exe"
