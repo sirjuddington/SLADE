@@ -493,6 +493,18 @@ double MapLine::getLength()
 	return length;
 }
 
+/* MapLine::getAngle
+ * Returns the angle (in degrees) of line, east is zero, front side counter-clock wise.
+ *******************************************************************/
+double MapLine::getAngle()
+{
+    if (!vertex1 || !vertex2)
+        return -1;
+    double angle = (180.0 / M_PI) *  atan2(vertex1->yPos() - vertex2->yPos(), vertex1->xPos() - vertex2->xPos());
+    if (angle < 0) angle += 360.0;
+    return angle;
+}
+
 /* MapLine::doubleSector
  * Returns true if the line has the same sector on both sides
  *******************************************************************/
