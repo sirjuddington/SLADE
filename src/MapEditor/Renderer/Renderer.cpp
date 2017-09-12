@@ -1093,7 +1093,18 @@ void Renderer::drawMap2d()
 		renderer_2d_.renderVertices(fade_vertices_);				// Vertices
 		renderer_2d_.renderLines(line_tabs_always, fade_lines_);	// Lines
 
+		// Planning lines
 		renderer_2d_.renderPlanningLines();
+
+		// Hilight if needed
+		auto hl = context_.hilightItem();
+		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive() && hl.index >= 0)
+		{
+			if (hl.type == ItemType::PlanVertex && hl.index < context_.map().planVertices().size())
+				renderer_2d_.renderVertexHilight(context_.map().planVertices()[hl.index], anim_flash_level_);
+			else if (hl.type == ItemType::PlanLine && hl.index < context_.map().planLines().size())
+				renderer_2d_.renderLineHilight(context_.map().planLines()[hl.index], anim_flash_level_);
+		}
 	}
 
 	// Draw tagged sectors/lines/things if needed
@@ -1537,6 +1548,13 @@ bool Renderer::update2dModeCrossfade(double mult)
 		fade_lines_ = fa_lines;
 		if (fade_flats_ > fa_flats) { fade_flats_ -= mcs_speed*(1.0f - fa_flats)*mult; anim_mode_crossfade = true; }
 		if (fade_things_ < 1.0f) { fade_things_ += mcs_speed*(1.0f - fa_things)*mult; anim_mode_crossfade = true; }
+	}
+	else if (context_.editMode() == Mode::Plan)
+	{
+		if (fade_vertices_ > fa_vertices) { fade_vertices_ -= mcs_speed*(1.0f - fa_vertices)*mult; anim_mode_crossfade = true; }
+		fade_lines_ = fa_lines;
+		if (fade_flats_ > fa_flats) { fade_flats_ -= mcs_speed*(1.0f - fa_flats)*mult; anim_mode_crossfade = true; }
+		if (fade_things_ > fa_things) { fade_things_ -= mcs_speed*(1.0f - fa_things)*mult; anim_mode_crossfade = true; }
 	}
 
 	// Clamp

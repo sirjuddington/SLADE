@@ -145,6 +145,16 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 			}
 		}
 	}
+	else if (context_->editMode() == Mode::Plan)
+	{
+		auto obj = map.nearestPlanningObject(mouse_pos, 32 / dist_scale);
+		if (obj && obj->getObjType() == MOBJ_VERTEX)
+			hilight_ = { (int)obj->getIndex(), ItemType::PlanVertex };
+		else if (obj)
+			hilight_ = { (int)obj->getIndex(), ItemType::PlanLine };
+		else
+			hilight_ = { -1, ItemType::Any };
+	}
 
 	// Update tagged lists if the hilight changed
 	if (current != hilight_.index)
@@ -431,11 +441,20 @@ MapObject* ItemSelection::hilightedObject() const
 
 	switch (context_->editMode())
 	{
-	case Mode::Vertices: return hilightedVertex();
-	case Mode::Lines:	return hilightedLine();
-	case Mode::Sectors:	return hilightedSector();
-	case Mode::Things:	return hilightedThing();
-	default:							return nullptr;
+	case Mode::Vertices:	return hilightedVertex();
+	case Mode::Lines:		return hilightedLine();
+	case Mode::Sectors:		return hilightedSector();
+	case Mode::Things:		return hilightedThing();
+	case Mode::Plan:
+		if (context_ && hilight_.index >= 0)
+		{
+			if (hilight_.type == ItemType::PlanLine)
+				return context_->map().planLines()[hilight_.index];
+			else if (hilight_.type == ItemType::PlanVertex)
+				return context_->map().planVertices()[hilight_.index];
+		}
+	default:
+		return nullptr;
 	}
 }
 

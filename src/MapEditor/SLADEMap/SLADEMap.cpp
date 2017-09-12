@@ -193,6 +193,14 @@ void SLADEMap::refreshIndices()
 	// Thing indices
 	for (unsigned a = 0; a < things_.size(); a++)
 		things_[a]->index = a;
+
+	// Planning vertices
+	for (unsigned a = 0; a < plan_vertices_.size(); a++)
+		plan_vertices_[a]->index = a;
+
+	// Planning lines
+	for (unsigned a = 0; a < plan_lines_.size(); a++)
+		plan_lines_[a]->index = a;
 }
 
 /* SLADEMap::addMapObject
@@ -2513,6 +2521,8 @@ void SLADEMap::clearMap()
 	vertices_.clear();
 	sectors_.clear();
 	things_.clear();
+	plan_vertices_.clear();
+	plan_lines_.clear();
 
 	// Clear map objects
 	for (unsigned a = 0; a < all_objects_.size(); a++)
@@ -3297,6 +3307,51 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 	}
 
 	return nearest;
+}
+
+MapObject* SLADEMap::nearestPlanningObject(fpoint2_t point, double min)
+{
+	double min_dist = 999999999;
+
+	// Find nearest planning vertex
+	double dist = 0;
+	MapVertex* nearest_vertex = nullptr;
+	for (auto vertex : plan_vertices_)
+	{
+		dist = point.distance_to(vertex->point());
+		if (dist <= min && dist < min_dist)
+		{
+			nearest_vertex = vertex;
+			min_dist = dist;
+		}
+	}
+
+	if (nearest_vertex)
+		return nearest_vertex;
+
+	// Find nearest planning line
+	MapLine* nearest_line = nullptr;
+	for (auto line : plan_lines_)
+	{
+		// Check with line bounding box first (since we have a minimum distance)
+		fseg2_t bbox = line->seg();
+		bbox.expand(min, min);
+		if (!bbox.contains(point))
+			continue;
+
+		// Calculate distance to line
+		dist = line->distanceTo(point);
+
+		// Check if it's nearer than the previous nearest
+		if (dist < min_dist && dist <= min)
+		{
+			nearest_vertex = nullptr;
+			nearest_line = line;
+			min_dist = dist;
+		}
+	}
+
+	return nearest_vertex ? (MapObject*)nearest_vertex : (MapObject*)nearest_line;
 }
 
 /* SLADEMap::getSectorsByTag

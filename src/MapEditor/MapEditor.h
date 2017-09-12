@@ -28,6 +28,10 @@ namespace MapEditor
 		Ceiling,
 		Thing,	// (also 2d things mode)
 
+		// Planning mode
+		PlanVertex,
+		PlanLine,
+
 		Any
 	};
 

@@ -85,6 +85,7 @@ public:
 	const vector<MapSector*>&	sectors() const { return sectors_; }
 	const vector<MapThing*>&	things() const { return things_; }
 	const vector<MapLine*>&		planLines() const { return plan_lines_; }
+	const vector<MapVertex*>&	planVertices() const { return plan_vertices_; }
 
 	vector<ArchiveEntry*>&	udmfExtraEntries() { return udmf_extra_entries_; }
 
@@ -141,6 +142,7 @@ public:
 	void				findSectorTextPoint(MapSector* sector);
 	void				initSectorPolygons();
 	MapLine*			lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y);
+	MapObject*			nearestPlanningObject(fpoint2_t point, double min = 64);
 
 	// Tags/Ids
 	MapThing* getFirstThingWithId(int id);

@@ -267,9 +267,16 @@ void MapRenderer2D::renderVerticesVBO()
 void MapRenderer2D::renderVertexHilight(int index, float fade)
 {
 	// Check hilight
-	if (!map->getVertex(index))
-		return;
+	auto vertex = map->getVertex(index);
+	if (vertex)
+		renderVertexHilight(vertex, fade);
+}
 
+/* MapRenderer2D::renderVertexHilight
+ * Renders the vertex hilight overlay for [vertex]
+ *******************************************************************/
+void MapRenderer2D::renderVertexHilight(MapVertex* vertex, float fade)
+{
 	// Reset fade if hilight animation is disabled
 	if (!map_animate_hilight)
 		fade = 1.0f;
@@ -284,8 +291,7 @@ void MapRenderer2D::renderVertexHilight(int index, float fade)
 
 	// Draw vertex
 	glBegin(GL_POINTS);
-	glVertex2d(map->getVertex(index)->xPos(),
-			   map->getVertex(index)->yPos());
+	glVertex2d(vertex->xPos(), vertex->yPos());
 	glEnd();
 
 	if (point)
@@ -502,9 +508,16 @@ void MapRenderer2D::renderLinesVBO(bool show_direction, float alpha)
 void MapRenderer2D::renderLineHilight(int index, float fade)
 {
 	// Check hilight
-	if (!map->getLine(index))
-		return;
+	auto line = map->getLine(index);
+	if (line)
+		renderLineHilight(line, fade);
+}
 
+/* MapRenderer2D::renderLineHilight
+ * Renders the line hilight overlay for [line]
+ *******************************************************************/
+void MapRenderer2D::renderLineHilight(MapLine* line, float fade)
+{
 	// Reset fade if hilight animation is disabled
 	if (!map_animate_hilight)
 		fade = 1.0f;
@@ -518,7 +531,6 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 	glLineWidth(line_width*ColourConfiguration::getLineHilightWidth());
 
 	// Render line
-	MapLine* line = map->getLine(index);
 	double x1 = line->v1()->xPos();
 	double y1 = line->v1()->yPos();
 	double x2 = line->v2()->xPos();

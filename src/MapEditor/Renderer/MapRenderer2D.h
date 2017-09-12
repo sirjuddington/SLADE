@@ -101,6 +101,7 @@ public:
 	void	renderVerticesVBO();
 	void	renderVerticesImmediate();
 	void	renderVertexHilight(int index, float fade);
+	void	renderVertexHilight(MapVertex* vertex, float fade);
 	void	renderVertexSelection(const ItemSelection& selection, float fade = 1.0f);
 
 	// Lines
@@ -109,6 +110,7 @@ public:
 	void	renderLinesVBO(bool show_direction, float alpha);
 	void	renderLinesImmediate(bool show_direction, float alpha);
 	void	renderLineHilight(int index, float fade);
+	void	renderLineHilight(MapLine* line, float fade);
 	void	renderLineSelection(const ItemSelection& selection, float fade = 1.0f);
 	void	renderTaggedLines(vector<MapLine*>& lines, float fade);
 	void	renderTaggingLines(vector<MapLine*>& lines, float fade);

@@ -688,13 +688,13 @@ void MCAHilightFade::draw()
 	switch (object->getObjType())
 	{
 	case MOBJ_LINE:
-		renderer->renderLineHilight(object->getIndex(), fade); break;
+		renderer->renderLineHilight((MapLine*)object, fade); break;
 	case MOBJ_SECTOR:
 		renderer->renderFlatHilight(object->getIndex(), fade); break;
 	case MOBJ_THING:
 		renderer->renderThingHilight(object->getIndex(), fade); break;
 	case MOBJ_VERTEX:
-		renderer->renderVertexHilight(object->getIndex(), fade); break;
+		renderer->renderVertexHilight((MapVertex*)object, fade); break;
 	default:
 		break;
 	}
