@@ -64,6 +64,7 @@ namespace MapEditor
 		float	fade_things_;
 		float	fade_flats_;
 		float	fade_lines_;
+		float	fade_planning_;
 		float	anim_flash_level_;
 		bool	anim_flash_inc_;
 		float	anim_info_fade_;

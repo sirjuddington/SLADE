@@ -52,6 +52,7 @@ CVAR(Int, vertices_always, 0, CVAR_SAVE)
 CVAR(Bool, line_tabs_always, 1, CVAR_SAVE)
 CVAR(Bool, flat_fade, 1, CVAR_SAVE)
 CVAR(Bool, line_fade, 0, CVAR_SAVE)
+CVAR(Bool, planning_fade, 1, CVAR_SAVE)
 CVAR(Bool, grid_dashed, false, CVAR_SAVE)
 CVAR(Int, grid_64_style, 1, CVAR_SAVE)
 CVAR(Bool, scroll_smooth, true, CVAR_SAVE)
@@ -90,6 +91,7 @@ Renderer::Renderer(MapEditContext& context) :
 	fade_things_{1},
 	fade_flats_{1},
 	fade_lines_{1},
+	fade_planning_{1},
 	anim_flash_level_{0.5},
 	anim_flash_inc_{true},
 	anim_info_fade_{0},
@@ -1008,6 +1010,7 @@ void Renderer::drawMap2d()
 		// Vertices mode
 		renderer_2d_.renderThings(fade_things_);					// Things
 		renderer_2d_.renderLines(line_tabs_always, fade_lines_);	// Lines
+		renderer_2d_.renderPlanningLines(fade_planning_);			// Planning lines
 
 		// Vertices
 		if (mouse_state == Input::MouseState::Move)
@@ -1028,9 +1031,10 @@ void Renderer::drawMap2d()
 	else if (context_.editMode() == Mode::Lines)
 	{
 		// Lines mode
-		renderer_2d_.renderThings(fade_things_);		// Things
-		renderer_2d_.renderVertices(fade_vertices_);	// Vertices
-		renderer_2d_.renderLines(true);					// Lines
+		renderer_2d_.renderThings(fade_things_);			// Things
+		renderer_2d_.renderVertices(fade_vertices_);		// Vertices
+		renderer_2d_.renderPlanningLines(fade_planning_);	// Planning lines
+		renderer_2d_.renderLines(true);						// Lines
 		
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move &&
@@ -1048,6 +1052,7 @@ void Renderer::drawMap2d()
 		renderer_2d_.renderThings(fade_things_);					// Things
 		renderer_2d_.renderVertices(fade_vertices_);				// Vertices
 		renderer_2d_.renderLines(line_tabs_always, fade_lines_);	// Lines
+		renderer_2d_.renderPlanningLines(fade_planning_);			// Planning lines
 
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move &&
@@ -1071,6 +1076,7 @@ void Renderer::drawMap2d()
 		// Things mode
 		renderer_2d_.renderVertices(fade_vertices_);				// Vertices
 		renderer_2d_.renderLines(line_tabs_always, fade_lines_);	// Lines
+		renderer_2d_.renderPlanningLines(fade_planning_);			// Planning lines
 		renderer_2d_.renderThings(fade_things_, force_dir);			// Things
 
 		// Thing paths
@@ -1092,9 +1098,7 @@ void Renderer::drawMap2d()
 		renderer_2d_.renderThings(fade_things_);					// Things
 		renderer_2d_.renderVertices(fade_vertices_);				// Vertices
 		renderer_2d_.renderLines(line_tabs_always, fade_lines_);	// Lines
-
-		// Planning lines
-		renderer_2d_.renderPlanningLines();
+		renderer_2d_.renderPlanningLines(fade_planning_);			// Planning lines
 
 		// Hilight if needed
 		auto hl = context_.hilightItem();
@@ -1518,6 +1522,9 @@ bool Renderer::update2dModeCrossfade(double mult)
 	if (flat_fade)	fa_flats = 0.7f;
 	else			fa_flats = 1.0f;
 
+	// Planning
+	float fa_planning = planning_fade ? 0.5f : 1.0f;
+
 	// Interpolate
 	bool anim_mode_crossfade = false;
 	float mcs_speed = 0.08f;
@@ -1527,6 +1534,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 		fade_lines_ = fa_lines;
 		if (fade_flats_ > fa_flats) { fade_flats_ -= mcs_speed*(1.0f - fa_flats)*mult; anim_mode_crossfade = true; }
 		if (fade_things_ > fa_things) { fade_things_ -= mcs_speed*(1.0f - fa_things)*mult; anim_mode_crossfade = true; }
+		if (fade_planning_ > fa_planning) { fade_planning_ -= mcs_speed*(1.0f - fa_planning)*mult; anim_mode_crossfade = true; }
 	}
 	else if (context_.editMode() == Mode::Lines)
 	{
@@ -1534,6 +1542,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 		fade_lines_ = 1.0f;
 		if (fade_flats_ > fa_flats) { fade_flats_ -= mcs_speed*(1.0f - fa_flats)*mult; anim_mode_crossfade = true; }
 		if (fade_things_ > fa_things) { fade_things_ -= mcs_speed*(1.0f - fa_things)*mult; anim_mode_crossfade = true; }
+		if (fade_planning_ > fa_planning) { fade_planning_ -= mcs_speed*(1.0f - fa_planning)*mult; anim_mode_crossfade = true; }
 	}
 	else if (context_.editMode() == Mode::Sectors)
 	{
@@ -1541,6 +1550,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 		fade_lines_ = fa_lines;
 		if (fade_flats_ < 1.0f) { fade_flats_ += mcs_speed*(1.0f - fa_flats)*mult; anim_mode_crossfade = true; }
 		if (fade_things_ > fa_things) { fade_things_ -= mcs_speed*(1.0f - fa_things)*mult; anim_mode_crossfade = true; }
+		if (fade_planning_ > fa_planning) { fade_planning_ -= mcs_speed*(1.0f - fa_planning)*mult; anim_mode_crossfade = true; }
 	}
 	else if (context_.editMode() == Mode::Things)
 	{
@@ -1548,6 +1558,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 		fade_lines_ = fa_lines;
 		if (fade_flats_ > fa_flats) { fade_flats_ -= mcs_speed*(1.0f - fa_flats)*mult; anim_mode_crossfade = true; }
 		if (fade_things_ < 1.0f) { fade_things_ += mcs_speed*(1.0f - fa_things)*mult; anim_mode_crossfade = true; }
+		if (fade_planning_ > fa_planning) { fade_planning_ -= mcs_speed*(1.0f - fa_planning)*mult; anim_mode_crossfade = true; }
 	}
 	else if (context_.editMode() == Mode::Plan)
 	{
@@ -1555,6 +1566,7 @@ bool Renderer::update2dModeCrossfade(double mult)
 		fade_lines_ = fa_lines;
 		if (fade_flats_ > fa_flats) { fade_flats_ -= mcs_speed*(1.0f - fa_flats)*mult; anim_mode_crossfade = true; }
 		if (fade_things_ > fa_things) { fade_things_ -= mcs_speed*(1.0f - fa_things)*mult; anim_mode_crossfade = true; }
+		if (fade_planning_ < 1.0f) { fade_planning_ += mcs_speed*(1.0f - fa_planning)*mult; anim_mode_crossfade = true; }
 	}
 
 	// Clamp
@@ -1566,6 +1578,8 @@ bool Renderer::update2dModeCrossfade(double mult)
 	if (fade_flats_ > 1.0f) fade_flats_ = 1.0f;
 	if (fade_things_ < fa_things) fade_things_ = fa_things;
 	if (fade_things_ > 1.0f) fade_things_ = 1.0f;
+	if (fade_planning_ < fa_planning) fade_planning_ = fa_planning;
+	if (fade_planning_ > 1.0f) fade_planning_ = 1.0f;
 
 	return anim_mode_crossfade;
 }

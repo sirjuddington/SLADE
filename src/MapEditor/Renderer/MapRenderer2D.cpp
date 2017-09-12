@@ -701,11 +701,13 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 void MapRenderer2D::renderPlanningLines(float alpha)
 {
 	// Set hilight colour
-	rgba_t col = ColourConfiguration::getColour("map_tagged");
+	rgba_t col = ColourConfiguration::getColour("map_linedraw");
 	col.a *= alpha;
 	OpenGL::setColour(col);
 
 	// Setup rendering properties
+	glLineStipple(2, 0xAAAA);
+	glEnable(GL_LINE_STIPPLE);
 	glLineWidth(line_width*(ColourConfiguration::getLineHilightWidth()*0.5));
 
 	// Go through tagged lines
@@ -723,6 +725,8 @@ void MapRenderer2D::renderPlanningLines(float alpha)
 		glVertex2d(x2, y2);
 		glEnd();
 	}
+
+	glDisable(GL_LINE_STIPPLE);
 }
 
 /* MapRenderer2D::setupThingOverlay
