@@ -97,7 +97,7 @@ bool Input::mouseMove(int new_x, int new_y)
 	double my = context_.snapToGrid(mouse_pos_map_.y, false);
 	string status_text;
 	if (context_.mapDesc().format == MAP_UDMF)
-        status_text = S_FMT("Position: (%1.1f, %1.1f)", mx, my);
+		status_text = S_FMT("Position: (%1.1f, %1.1f)", mx, my);
 	else
 		status_text = S_FMT("Position: (%d, %d)", (int)mx, (int)my);
 	MapEditor::setStatusText(status_text, 3);
@@ -799,6 +799,10 @@ void Input::handleKeyBind2d(const string& name)
 		// 3d mode
 		else if (name == "me2d_mode_3d")
 			context_.setEditMode(Mode::Visual);
+
+		// Planning mode
+		else if (name == "me2d_mode_plan")
+			context_.setEditMode(Mode::Plan);
 
 		// Cycle flat type
 		if (name == "me2d_flat_type")

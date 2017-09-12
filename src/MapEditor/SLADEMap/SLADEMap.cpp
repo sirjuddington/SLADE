@@ -3006,14 +3006,13 @@ bbox_t SLADEMap::getMapBBox()
 /* SLADEMap::vertexAt
  * Returns the vertex at [x,y], or NULL if none there
  *******************************************************************/
-MapVertex* SLADEMap::vertexAt(double x, double y)
+MapVertex* SLADEMap::vertexAt(double x, double y, bool plan)
 {
 	// Go through all vertices
-	for (unsigned a = 0; a < vertices_.size(); a++)
-	{
-		if (vertices_[a]->x == x && vertices_[a]->y == y)
-			return vertices_[a];
-	}
+	auto& list = plan ? plan_vertices_ : vertices_;
+	for (auto vertex : list)
+		if (vertex->x == x && vertex->y == y)
+			return vertex;
 
 	// No vertex at [x,y]
 	return nullptr;
@@ -4062,7 +4061,7 @@ void SLADEMap::recomputeSpecials()
  * Creates a new vertex at [x,y] and returns it. Splits any lines
  * within [split_dist] from the position
  *******************************************************************/
-MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
+MapVertex* SLADEMap::createVertex(double x, double y, double split_dist, bool plan)
 {
 	// Round position to integral if fractional positions are disabled
 	if (!position_frac_)
@@ -4074,19 +4073,28 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
 	fpoint2_t point(x, y);
 
 	// First check that it won't overlap any other vertex
-	for (unsigned a = 0; a < vertices_.size(); a++)
+	auto& list = plan ? plan_vertices_ : vertices_;
+	for (auto vertex : list)
 	{
-		if (vertices_[a]->x == x && vertices_[a]->y == y)
-			return vertices_[a];
+		if (vertex->x == x && vertex->y == y)
+			return vertex;
 	}
 
 	// Create the vertex
 	MapVertex* nv = new MapVertex(x, y, this);
-	nv->index = vertices_.size();
-	vertices_.push_back(nv);
+	if (plan)
+	{
+		nv->index = plan_vertices_.size();
+		plan_vertices_.push_back(nv);
+	}
+	else
+	{
+		nv->index = vertices_.size();
+		vertices_.push_back(nv);
+	}
 
 	// Check if this vertex splits any lines (if needed)
-	if (split_dist >= 0)
+	if (split_dist >= 0 && !plan)
 	{
 		unsigned nlines = lines_.size();
 		for (unsigned a = 0; a < nlines; a++)
@@ -4113,7 +4121,7 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
  * Creates a new line and needed vertices from [x1,y1] to [x2,y2] and
  * returns it
  *******************************************************************/
-MapLine* SLADEMap::createLine(double x1, double y1, double x2, double y2, double split_dist)
+MapLine* SLADEMap::createLine(double x1, double y1, double x2, double y2, double split_dist, bool plan)
 {
 	// Round coordinates to integral if fractional positions are disabled
 	if (!position_frac_)
@@ -4127,23 +4135,23 @@ MapLine* SLADEMap::createLine(double x1, double y1, double x2, double y2, double
 	//LOG_MESSAGE(1, "Create line (%1.2f,%1.2f) to (%1.2f,%1.2f)", x1, y1, x2, y2);
 
 	// Get vertices at points
-	MapVertex* vertex1 = vertexAt(x1, y1);
-	MapVertex* vertex2 = vertexAt(x2, y2);
+	MapVertex* vertex1 = vertexAt(x1, y1, plan);
+	MapVertex* vertex2 = vertexAt(x2, y2, plan);
 
 	// Create vertices if required
 	if (!vertex1)
-		vertex1 = createVertex(x1, y1, split_dist);
+		vertex1 = createVertex(x1, y1, split_dist, plan);
 	if (!vertex2)
-		vertex2 = createVertex(x2, y2, split_dist);
+		vertex2 = createVertex(x2, y2, split_dist, plan);
 
 	// Create line between vertices
-	return createLine(vertex1, vertex2);
+	return createLine(vertex1, vertex2, false, plan);
 }
 
 /* SLADEMap::createLine
  * Creates a new line between [vertex1] and [vertex2] and returns it
  *******************************************************************/
-MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force)
+MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force, bool plan)
 {
 	// Check both vertices were given
 	if (!vertex1 || vertex1->parent_map != this)
@@ -4152,20 +4160,29 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 		return nullptr;
 
 	// Check if there is already a line along the two given vertices
-	if(!force)
+	if (!force)
 	{
-		for (unsigned a = 0; a < lines_.size(); a++)
+		auto& list = plan ? plan_lines_ : lines_;
+		for (auto line : list)
 		{
-			if ((lines_[a]->vertex1 == vertex1 && lines_[a]->vertex2 == vertex2) ||
-					(lines_[a]->vertex2 == vertex1 && lines_[a]->vertex1 == vertex2))
-				return lines_[a];
+			if ((line->vertex1 == vertex1 && line->vertex2 == vertex2) ||
+					(line->vertex2 == vertex1 && line->vertex1 == vertex2))
+				return line;
 		}
 	}
 
 	// Create new line between vertices
 	MapLine* nl = new MapLine(vertex1, vertex2, nullptr, nullptr, this);
-	nl->index = lines_.size();
-	lines_.push_back(nl);
+	if (plan)
+	{
+		nl->index = plan_lines_.size();
+		plan_lines_.push_back(nl);
+	}
+	else
+	{
+		nl->index = lines_.size();
+		lines_.push_back(nl);
+	}
 
 	// Connect line to vertices
 	vertex1->connectLine(nl);

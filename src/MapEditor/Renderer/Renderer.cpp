@@ -744,10 +744,20 @@ void Renderer::drawLineDrawLines(bool snap_nearest_vertex) const
 	if (npoints > 1)
 	{
 		for (int a = 0; a < npoints - 1; a++)
-			Drawing::drawLineTabbed(line_draw.point(a), line_draw.point(a + 1));
+		{
+			if (context_.editMode() == Mode::Plan)
+				Drawing::drawLine(line_draw.point(a), line_draw.point(a + 1));
+			else
+				Drawing::drawLineTabbed(line_draw.point(a), line_draw.point(a + 1));
+		}
 	}
 	if (npoints > 0 && context_.lineDraw().state() == LineDraw::State::Line)
-		Drawing::drawLineTabbed(line_draw.point(npoints - 1), end);
+	{
+		if (context_.editMode() == Mode::Plan)
+			Drawing::drawLine(line_draw.point(npoints - 1), end);
+		else
+			Drawing::drawLineTabbed(line_draw.point(npoints - 1), end);
+	}
 
 	// Draw line lengths
 	view_.setOverlayCoords(true);
@@ -1075,6 +1085,15 @@ void Renderer::drawMap2d()
 		// Hilight if needed
 		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
 			renderer_2d_.renderThingHilight(context_.hilightItem().index, anim_flash_level_);
+	}
+	else if (context_.editMode() == Mode::Plan)
+	{
+		// Planning mode
+		renderer_2d_.renderThings(fade_things_);					// Things
+		renderer_2d_.renderVertices(fade_vertices_);				// Vertices
+		renderer_2d_.renderLines(line_tabs_always, fade_lines_);	// Lines
+
+		renderer_2d_.renderPlanningLines();
 	}
 
 	// Draw tagged sectors/lines/things if needed

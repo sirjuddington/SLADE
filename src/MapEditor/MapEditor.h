@@ -37,7 +37,8 @@ namespace MapEditor
 		Lines,
 		Sectors,
 		Things,
-		Visual
+		Visual,
+		Plan
 	};
 
 	enum class SectorMode

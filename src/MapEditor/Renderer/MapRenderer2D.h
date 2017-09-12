@@ -112,6 +112,7 @@ public:
 	void	renderLineSelection(const ItemSelection& selection, float fade = 1.0f);
 	void	renderTaggedLines(vector<MapLine*>& lines, float fade);
 	void	renderTaggingLines(vector<MapLine*>& lines, float fade);
+	void	renderPlanningLines(float alpha = 1.0f);
 
 	// Things
 	bool	setupThingOverlay();

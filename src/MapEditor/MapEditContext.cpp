@@ -176,11 +176,12 @@ void MapEditContext::setEditMode(Mode mode)
 	// Add editor message
 	switch (edit_mode_)
 	{
-	case Mode::Vertices: addEditorMessage("Vertices mode"); break;
-	case Mode::Lines:	addEditorMessage("Lines mode"); break;
-	case Mode::Sectors:	addEditorMessage("Sectors mode (Normal)"); break;
-	case Mode::Things:	addEditorMessage("Things mode"); break;
+	case Mode::Vertices:	addEditorMessage("Vertices mode"); break;
+	case Mode::Lines:		addEditorMessage("Lines mode"); break;
+	case Mode::Sectors:		addEditorMessage("Sectors mode (Normal)"); break;
+	case Mode::Things:		addEditorMessage("Things mode"); break;
 	case Mode::Visual:		addEditorMessage("3d mode"); break;
+	case Mode::Plan:		addEditorMessage("Planning mode"); break;
 	default: break;
 	};
 
@@ -494,6 +495,7 @@ string MapEditContext::modeString(bool plural) const
 	case Mode::Sectors:		return plural ? "Sectors" : "Sector";
 	case Mode::Things:		return plural ? "Things" : "Thing";
 	case Mode::Visual:		return "3D";
+	case Mode::Plan:		return "Planning";
 	};
 
 	return plural ? "Items" : "Object";
@@ -1251,6 +1253,7 @@ void MapEditContext::updateStatusText()
 	case Mode::Sectors: mode += "Sectors"; break;
 	case Mode::Things: mode += "Things"; break;
 	case Mode::Visual: mode += "3D"; break;
+	case Mode::Plan: mode += "Planning"; break;
 	}
 
 	if (edit_mode_ == Mode::Sectors)
@@ -1622,6 +1625,7 @@ void MapEditContext::drawInfoOverlay(const point2_t& size, float alpha)
 		info_thing_.draw(size.y, size.x, alpha); return;
 	case Mode::Visual:
 		info_3d_.draw(size.y, size.x, size.x * 0.5, alpha); return;
+	default: return;
 	}
 }
 
@@ -1678,6 +1682,13 @@ bool MapEditContext::handleAction(string id)
 		canvas_->SetFocusFromKbd();
 		canvas_->SetFocus();
 		setEditMode(Mode::Visual);
+		return true;
+	}
+
+	// Planning mode
+	else if (id == "mapw_mode_plan")
+	{
+		setEditMode(Mode::Plan);
 		return true;
 	}
 

@@ -686,6 +686,33 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 	}
 }
 
+void MapRenderer2D::renderPlanningLines(float alpha)
+{
+	// Set hilight colour
+	rgba_t col = ColourConfiguration::getColour("map_tagged");
+	col.a *= alpha;
+	OpenGL::setColour(col);
+
+	// Setup rendering properties
+	glLineWidth(line_width*(ColourConfiguration::getLineHilightWidth()*0.5));
+
+	// Go through tagged lines
+	double x1, y1, x2, y2;
+	MapObject* object = MapEditor::editContext().selection().hilightedObject();
+	for (auto line : map->planLines())
+	{
+		// Render line
+		x1 = line->v1()->xPos();
+		y1 = line->v1()->yPos();
+		x2 = line->v2()->xPos();
+		y2 = line->v2()->yPos();
+		glBegin(GL_LINES);
+		glVertex2d(x1, y1);
+		glVertex2d(x2, y2);
+		glEnd();
+	}
+}
+
 /* MapRenderer2D::setupThingOverlay
  * Sets up the renderer for thing overlays (point sprites, etc.)
  *******************************************************************/

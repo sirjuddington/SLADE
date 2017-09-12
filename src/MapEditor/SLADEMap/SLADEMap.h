@@ -84,6 +84,7 @@ public:
 	const vector<MapSide*>&		sides() const { return sides_; }
 	const vector<MapSector*>&	sectors() const { return sectors_; }
 	const vector<MapThing*>&	things() const { return things_; }
+	const vector<MapLine*>&		planLines() const { return plan_lines_; }
 
 	vector<ArchiveEntry*>&	udmfExtraEntries() { return udmf_extra_entries_; }
 
@@ -132,7 +133,7 @@ public:
 	vector<int>			nearestThingMulti(fpoint2_t point);
 	int					sectorAt(fpoint2_t point);
 	bbox_t				getMapBBox();
-	MapVertex*			vertexAt(double x, double y);
+	MapVertex*			vertexAt(double x, double y, bool plan = false);
 	vector<fpoint2_t>	cutLines(double x1, double y1, double x2, double y2);
 	MapVertex*			lineCrossVertex(double x1, double y1, double x2, double y2);
 	void				updateGeometryInfo(long modified_time);
@@ -166,9 +167,9 @@ public:
 	bool				modifiedSince(long since, int type = -1);
 
 	// Creation
-	MapVertex*	createVertex(double x, double y, double split_dist = -1);
-	MapLine*	createLine(double x1, double y1, double x2, double y2, double split_dist = -1);
-	MapLine*	createLine(MapVertex* vertex1, MapVertex* vertex2, bool force = false);
+	MapVertex*	createVertex(double x, double y, double split_dist = -1, bool plan = false);
+	MapLine*	createLine(double x1, double y1, double x2, double y2, double split_dist = -1, bool plan = false);
+	MapLine*	createLine(MapVertex* vertex1, MapVertex* vertex2, bool force = false, bool plan = false);
 	MapThing*	createThing(double x, double y);
 	MapSector*	createSector();
 	MapSide*	createSide(MapSector* sector);
@@ -249,6 +250,10 @@ private:
 	std::map<string, int>	usage_tex_;
 	std::map<string, int>	usage_flat_;
 	std::map<int, int>		usage_thing_type_;
+
+	// Planning mode
+	vector<MapVertex*>	plan_vertices_;
+	vector<MapLine*>	plan_lines_;
 
 	// Doom format
 	bool	addVertex(doomvertex_t& v);

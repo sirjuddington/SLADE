@@ -283,6 +283,7 @@ void MapEditorWindow::setupLayout()
 	tbg_mode->addActionButton("mapw_mode_sectors");
 	tbg_mode->addActionButton("mapw_mode_things");
 	tbg_mode->addActionButton("mapw_mode_3d");
+	tbg_mode->addActionButton("mapw_mode_plan");
 	SAction::fromId("mapw_mode_lines")->setChecked();	// Lines mode by default
 	toolbar_->addGroup(tbg_mode);
 
@@ -322,7 +323,7 @@ void MapEditorWindow::setupLayout()
 
 	// Status bar
 	CreateStatusBar(4);
-    int status_widths[4] = { -1, 240, 200, 300 };
+	int status_widths[4] = { -1, 240, 200, 300 };
 	SetStatusWidths(4, status_widths);
 
 	// -- Console Panel --
@@ -666,7 +667,7 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 	{
 		// Check for SCRIPTS/BEHAVIOR
 		if (Game::configuration().scriptLanguage() == "acs_hexen" ||
-		        Game::configuration().scriptLanguage() == "acs_zdoom")
+			Game::configuration().scriptLanguage() == "acs_zdoom")
 		{
 			if (S_CMPNOCASE(entry->getName(), "SCRIPTS"))
 				scripts = entry;

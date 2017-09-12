@@ -299,7 +299,10 @@ void LineDraw::end(bool apply)
 	}
 
 	// Begin undo level
-	context.beginUndoRecord("Line Draw");
+	if (context.editMode() == Mode::Plan)
+		context.beginUndoRecord("Line Draw (Planning)");
+	else
+		context.beginUndoRecord("Line Draw");
 
 	// Add extra points if any lines overlap existing vertices
 	auto& map = context.map();
@@ -326,12 +329,27 @@ void LineDraw::end(bool apply)
 
 	// Create vertices
 	for (unsigned a = 0; a < draw_points.size(); a++)
-		map.createVertex(draw_points[a].x, draw_points[a].y, 1);
+		map.createVertex(draw_points[a].x, draw_points[a].y, 1, context.editMode() == Mode::Plan);
 
 	// Create lines
 	unsigned nl_start = map.nLines();
 	for (unsigned a = 0; a < draw_points.size() - 1; a++)
 	{
+		// Planning mode - just add a plan line
+		if (context.editMode() == Mode::Plan)
+		{
+			map.createLine(
+				draw_points[a].x,
+				draw_points[a].y,
+				draw_points[a + 1].x,
+				draw_points[a + 1].y,
+				1,
+				true
+			);
+			
+			continue;
+		}
+
 		// Check for intersections
 		auto intersect = map.cutLines(
 			draw_points[a].x,
@@ -384,23 +402,26 @@ void LineDraw::end(bool apply)
 		}
 	}
 
-	// Build new sectors
-	vector<MapLine*> new_lines;
-	for (unsigned a = nl_start; a < map.nLines(); a++)
-		new_lines.push_back(map.getLine(a));
-	map.correctSectors(new_lines);
-
-	// Check for and attempt to correct invalid lines
-	vector<MapLine*> invalid_lines;
-	for (unsigned a = 0; a < new_lines.size(); a++)
+	if (context.editMode() != Mode::Plan)
 	{
-		if (new_lines[a]->s1())
-			continue;
+		// Build new sectors
+		vector<MapLine*> new_lines;
+		for (unsigned a = nl_start; a < map.nLines(); a++)
+			new_lines.push_back(map.getLine(a));
+		map.correctSectors(new_lines);
 
-		new_lines[a]->flip();
-		invalid_lines.push_back(new_lines[a]);
+		// Check for and attempt to correct invalid lines
+		vector<MapLine*> invalid_lines;
+		for (unsigned a = 0; a < new_lines.size(); a++)
+		{
+			if (new_lines[a]->s1())
+				continue;
+
+			new_lines[a]->flip();
+			invalid_lines.push_back(new_lines[a]);
+		}
+		map.correctSectors(invalid_lines);
 	}
-	map.correctSectors(invalid_lines);
 
 	// End recording undo level
 	context.endUndoRecord(true);
