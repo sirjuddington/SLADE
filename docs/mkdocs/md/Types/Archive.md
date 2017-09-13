@@ -4,10 +4,10 @@ The **Archive** type represents an archive (wad/pk3/etc) in SLADE.
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>filename</prop> | <type>string</type> | The full path to the archive file on disk
-<prop>entries</prop> | <type>[ArchiveEntry](ArchiveEntry.md)\[\]</type> | An array of all entries in the archive
-<prop>rootDir</prop> | <type>[ArchiveDir](ArchiveDir.md)</type> | The root directory of the archive
-<prop>format</prop> | <type>[ArchiveFormat](ArchiveFormat.md)</type> | Information about the archive's format
+<prop class="ro">filename</prop> | <type>string</type> | The full path to the archive file on disk
+<prop class="ro">entries</prop> | <type>[ArchiveEntry](ArchiveEntry.md)\[\]</type> | An array of all entries in the archive
+<prop class="ro">rootDir</prop> | <type>[ArchiveDir](ArchiveDir.md)</type> | The root directory of the archive
+<prop class="ro">format</prop> | <type>[ArchiveFormat](ArchiveFormat.md)</type> | Information about the archive's format
 
 ## Constructors
 

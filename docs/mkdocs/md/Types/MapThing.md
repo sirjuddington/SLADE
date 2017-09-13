@@ -7,10 +7,10 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>x</prop> | <type>number</type> | The X coordinate of the thing
-<prop>y</prop> | <type>number</type> | The Y coordinate of the thing
-<prop>type</prop> | <type>number</type> | The thing type
-<prop>angle</prop> | <type>number</type> | The direction the thing is facing in degrees, with 0 being east.
+<prop class="ro">x</prop> | <type>number</type> | The X coordinate of the thing
+<prop class="ro">y</prop> | <type>number</type> | The Y coordinate of the thing
+<prop class="ro">type</prop> | <type>number</type> | The thing type
+<prop class="ro">angle</prop> | <type>number</type> | The direction the thing is facing in degrees, with 0 being east.
 
 ## Constructors
 

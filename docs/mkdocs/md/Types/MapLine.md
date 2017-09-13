@@ -7,17 +7,17 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>x1</prop> | <type>number</type> | The X coordinate of the line's first vertex
-<prop>y1</prop> | <type>number</type> | The Y coordinate of the line's first vertex
-<prop>x2</prop> | <type>number</type> | The X coordinate of the line's second vertex
-<prop>y2</prop> | <type>number</type> | The Y coordinate of the line's second vertex
-<prop>vertex1</prop> | <type>[MapVertex](MapVertex.md)</type> | The line's first vertex
-<prop>vertex2</prop> | <type>[MapVertex](MapVertex.md)</type> | The line's second vertex
-<prop>side1</prop> | <type>[MapSide](MapSide.md)</type> | The line's first (front) side
-<prop>side2</prop> | <type>[MapSide](MapSide.md)</type> | The line's second (back) side
-<prop>special</prop> | <type>number</type> | The line's action special
-<prop>length</prop> | <type>number</type> | The length of the line in map units
-<prop>visibleTextures</prop> | <type>table</type> | The textures of the line that are visible.<br/>The <type>table</type> consists of the following <type>boolean</type> values: `frontUpper`, `frontMiddle`, `frontLower`, `backUpper`, `backMiddle`, `backLower`.
+<prop class="ro">x1</prop> | <type>number</type> | The X coordinate of the line's first vertex
+<prop class="ro">y1</prop> | <type>number</type> | The Y coordinate of the line's first vertex
+<prop class="ro">x2</prop> | <type>number</type> | The X coordinate of the line's second vertex
+<prop class="ro">y2</prop> | <type>number</type> | The Y coordinate of the line's second vertex
+<prop class="ro">vertex1</prop> | <type>[MapVertex](MapVertex.md)</type> | The line's first vertex
+<prop class="ro">vertex2</prop> | <type>[MapVertex](MapVertex.md)</type> | The line's second vertex
+<prop class="ro">side1</prop> | <type>[MapSide](MapSide.md)</type> | The line's first (front) side
+<prop class="ro">side2</prop> | <type>[MapSide](MapSide.md)</type> | The line's second (back) side
+<prop class="ro">special</prop> | <type>number</type> | The line's action special
+<prop class="ro">length</prop> | <type>number</type> | The length of the line in map units
+<prop class="ro">visibleTextures</prop> | <type>table</type> | The textures of the line that are visible.<br/>The <type>table</type> consists of the following <type>boolean</type> values: `frontUpper`, `frontMiddle`, `frontLower`, `backUpper`, `backMiddle`, `backLower`.
 
 ## Constructors
 

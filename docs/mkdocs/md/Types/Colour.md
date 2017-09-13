@@ -4,10 +4,10 @@ Represents an RGBA colour. Note that colour each component is 8-bit (ie. must be
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>r</prop> | <type>number</type> | Red component
-<prop>g</prop> | <type>number</type> | Green component
-<prop>b</prop> | <type>number</type> | Blue component
-<prop>a</prop> | <type>number</type> | Alpha component (transparency)
+<prop class="rw">r</prop> | <type>number</type> | Red component
+<prop class="rw">g</prop> | <type>number</type> | Green component
+<prop class="rw">b</prop> | <type>number</type> | Blue component
+<prop class="rw">a</prop> | <type>number</type> | Alpha component (transparency)
 
 ## Constructors
 

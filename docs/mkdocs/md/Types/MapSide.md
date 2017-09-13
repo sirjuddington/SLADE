@@ -7,13 +7,13 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>sector</prop> | <type>[MapSector](MapSector.md)</type> | The side's associated sector
-<prop>line</prop> | <type>[MapLine](MapLine.md)</type> | The side's parent line
-<prop>textureBottom</prop> | <type>string</type> | The side's bottom (lower) texture
-<prop>textureMiddle</prop> | <type>string</type> | The side's middle texture
-<prop>textureTop</prop> | <type>string</type> | The side's top (upper) texture
-<prop>offsetX</prop> | <type>number</type> | Texture X offset
-<prop>offsetY</prop> | <type>number</type> | Texture Y offset
+<prop class="ro">sector</prop> | <type>[MapSector](MapSector.md)</type> | The side's associated sector
+<prop class="ro">line</prop> | <type>[MapLine](MapLine.md)</type> | The side's parent line
+<prop class="ro">textureBottom</prop> | <type>string</type> | The side's bottom (lower) texture
+<prop class="ro">textureMiddle</prop> | <type>string</type> | The side's middle texture
+<prop class="ro">textureTop</prop> | <type>string</type> | The side's top (upper) texture
+<prop class="ro">offsetX</prop> | <type>number</type> | Texture X offset
+<prop class="ro">offsetY</prop> | <type>number</type> | Texture Y offset
 
 ## Constructors
 

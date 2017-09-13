@@ -4,12 +4,12 @@ The **EntryType** type contains information about an entry's type/format.
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>id</prop>        | <type>string</type> | The type id
-<prop>name</prop>      | <type>string</type> | The type name
-<prop>extension</prop> | <type>string</type> | The file extension used when saving entries of this type to a file
-<prop>formatId</prop>  | <type>string</type> | The type's data format id
-<prop>editor</prop>    | <type>string</type> | The id of the editor used to open entries of this type
-<prop>category</prop>  | <type>string</type> | The type category, used in the entry list filter
+<prop class="ro">id</prop>        | <type>string</type> | The type id
+<prop class="ro">name</prop>      | <type>string</type> | The type name
+<prop class="ro">extension</prop> | <type>string</type> | The file extension used when saving entries of this type to a file
+<prop class="ro">formatId</prop>  | <type>string</type> | The type's data format id
+<prop class="ro">editor</prop>    | <type>string</type> | The id of the editor used to open entries of this type
+<prop class="ro">category</prop>  | <type>string</type> | The type category, used in the entry list filter
 
 ## Constructors
 

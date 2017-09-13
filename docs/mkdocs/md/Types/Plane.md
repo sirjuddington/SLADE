@@ -4,10 +4,10 @@ A geometrical [Plane](https://en.wikipedia.org/wiki/Plane_(geometry)), represent
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>a</prop> | <type>number</type> | Normal X component
-<prop>b</prop> | <type>number</type> | Normal Y component
-<prop>c</prop> | <type>number</type> | Normal Z component
-<prop>d</prop> | <type>number</type> | Distance component
+<prop class="rw">a</prop> | <type>number</type> | Normal X component
+<prop class="rw">b</prop> | <type>number</type> | Normal Y component
+<prop class="rw">c</prop> | <type>number</type> | Normal Z component
+<prop class="rw">d</prop> | <type>number</type> | Distance component
 
 ## Constructors
 

@@ -5,10 +5,10 @@ Map editing context for the currently open map editor in SLADE.
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>editMode</prop>        | <type>number</type> | The current edit mode (see [Mode](#mode))
-<prop>sectorEditMode</prop>  | <type>number</type> | The current sector edit mode (see [SectorMode](#sectormode))
-<prop>gridSize</prop>        | <type>number</type> | The current grid size
-<prop>map</prop>             | <type>[Map](Map.md)</type> | The map associated with this editor
+<prop class="ro">editMode</prop>        | <type>number</type> | The current edit mode (see [Mode](#mode))
+<prop class="ro">sectorEditMode</prop>  | <type>number</type> | The current sector edit mode (see [SectorMode](#sectormode))
+<prop class="ro">gridSize</prop>        | <type>number</type> | The current grid size
+<prop class="ro">map</prop>             | <type>[Map](Map.md)</type> | The map associated with this editor
 
 ## Enumerations
 

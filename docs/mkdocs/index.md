@@ -6,5 +6,7 @@ Documentation for SLADE Lua scripting types and functions.
 
 ## Notes
 
-* All type properties are read-only unless otherwise specified
+* Type properties are shown with a prefixed symbol indicating the following:
+    * Red &#9675;: Read-only, can not be modified
+    * Green &#9679;: Can be modified
 * State is not presereved after running a script - eg. a global variable defined in a script will not be available next time a script is run

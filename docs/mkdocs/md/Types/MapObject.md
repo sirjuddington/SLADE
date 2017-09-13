@@ -18,8 +18,8 @@ The following types inherit all MapObject properties and functions:
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>index</prop>     | <type>number</type> | The object's index in the map
-<prop>typeName</prop>  | <type>string</type> | The object type name (eg. `Vertex`)
+<prop class="ro">index</prop>     | <type>number</type> | The object's index in the map
+<prop class="ro">typeName</prop>  | <type>string</type> | The object type name (eg. `Vertex`)
 
 ## Constructors
 
