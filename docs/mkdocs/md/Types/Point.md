@@ -4,8 +4,8 @@ Represents a 2D (x,y) point.
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>x</prop> | <type>number</type> | X coordinate
-<prop>y</prop> | <type>number</type> | Y coordinate
+<prop class="rw">x</prop> | <type>number</type> | X coordinate
+<prop class="rw">y</prop> | <type>number</type> | Y coordinate
 
 ## Constructors
 

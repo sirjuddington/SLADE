@@ -7,9 +7,9 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>x</prop> | <type>number</type> | The X coordinate of the vertex
-<prop>y</prop> | <type>number</type> | The Y coordinate of the vertex
-<prop>connectedLines</prop> | <type>[MapLine](MapLine.md)\[\]</type> | All lines connected to the vertex
+<prop class="ro">x</prop> | <type>number</type> | The X coordinate of the vertex
+<prop class="ro">y</prop> | <type>number</type> | The Y coordinate of the vertex
+<prop class="ro">connectedLines</prop> | <type>[MapLine](MapLine.md)\[\]</type> | All lines connected to the vertex
 
 ## Constructors
 

@@ -66,6 +66,8 @@ article code A:active {
 type,
 arg,
 prop,
+prop.ro,
+prop.rw,
 code,
 function,
 .admonition code,
@@ -107,13 +109,31 @@ type a:hover {
 }
 
 arg,
-prop {
+prop,
+prop.ro,
+prop.rw {
 	font-weight: 600;
 	color: hsl(270, 68%, 43%);
 }
 
-prop {
+prop,
+prop.ro,
+prop.rw {
 	color: hsl(170, 68%, 33%);
+}
+
+prop.ro::before {
+	content: "\25CB";
+	color: hsl(20, 68%, 33%);
+	margin-right: 0.4em;
+	font-size: 1.1em;
+}
+
+prop.rw::before {
+	content: "\25CF";
+	color: hsl(140, 68%, 33%);
+	margin-right: 0.4em;
+	font-size: 1.1em;
 }
 
 pre code,
