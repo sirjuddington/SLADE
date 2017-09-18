@@ -1677,7 +1677,8 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 			std::make_unique<MCALineSelection>(
 				App::runTimer(),
 				vec,
-				selected
+				selected,
+				item.type != ItemType::PlanLine
 		));
 	}
 
