@@ -495,7 +495,7 @@ string MapEditContext::modeString(bool plural) const
 	case Mode::Sectors:		return plural ? "Sectors" : "Sector";
 	case Mode::Things:		return plural ? "Things" : "Thing";
 	case Mode::Visual:		return "3D";
-	case Mode::Plan:		return "Planning";
+	case Mode::Plan:		return plural ? "Planning Items" : "Planning";
 	};
 
 	return plural ? "Items" : "Object";

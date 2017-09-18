@@ -229,12 +229,12 @@ void MCAThingSelection::draw()
 /* MCALineSelection::MCALineSelection
  * MCALineSelection class constructor
  *******************************************************************/
-MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool select) : MCAnimation(start)
+MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool select, bool dir_tab) : 
+	MCAnimation(start),
+	select(select),
+	fade(1.0f),
+	dir_tab(dir_tab)
 {
-	// Init variables
-	this->select = select;
-	this->fade = 1.0f;
-
 	// Go through list of lines
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
@@ -296,8 +296,11 @@ void MCALineSelection::draw()
 	{
 		glVertex2d(lines[a].tl.x, lines[a].tl.y);
 		glVertex2d(lines[a].br.x, lines[a].br.y);
-		glVertex2d(tabs[a].tl.x, tabs[a].tl.y);
-		glVertex2d(tabs[a].br.x, tabs[a].br.y);
+		if (dir_tab)
+		{
+			glVertex2d(tabs[a].tl.x, tabs[a].tl.y);
+			glVertex2d(tabs[a].br.x, tabs[a].br.y);
+		}
 	}
 	glEnd();
 }
@@ -650,12 +653,19 @@ void MCA3dFlatSelection::draw()
 /* MCAHilightFade::MCAHilightFade
  * MCAHilightFade class constructor
  *******************************************************************/
-MCAHilightFade::MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init) : MCAnimation(start)
+MCAHilightFade::MCAHilightFade(
+	long start,
+	MapObject* object,
+	MapRenderer2D* renderer,
+	float fade_init,
+	MapEditor::ItemType item_type
+) : MCAnimation(start),
+	object(object),
+	fade(fade_init),
+	init_fade(fade_init),
+	renderer(renderer),
+	item_type(item_type)
 {
-	this->object = object;
-	this->renderer = renderer;
-	this->init_fade = fade_init;
-	this->fade = fade_init;
 }
 
 /* MCAHilightFade::~MCAHilightFade
@@ -685,15 +695,20 @@ bool MCAHilightFade::update(long time)
  *******************************************************************/
 void MCAHilightFade::draw()
 {
-	switch (object->getObjType())
+	using IT = MapEditor::ItemType;
+
+	switch (item_type)
 	{
-	case MOBJ_LINE:
+	case IT::Line:
 		renderer->renderLineHilight((MapLine*)object, fade); break;
-	case MOBJ_SECTOR:
+	case IT::PlanLine:
+		renderer->renderLineHilight((MapLine*)object, fade, false); break;
+	case IT::Sector:
 		renderer->renderFlatHilight(object->getIndex(), fade); break;
-	case MOBJ_THING:
+	case IT::Thing:
 		renderer->renderThingHilight(object->getIndex(), fade); break;
-	case MOBJ_VERTEX:
+	case IT::Vertex:
+	case IT::PlanVertex:
 		renderer->renderVertexHilight((MapVertex*)object, fade); break;
 	default:
 		break;

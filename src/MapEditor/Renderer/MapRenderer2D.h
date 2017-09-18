@@ -7,6 +7,7 @@
 // Forward declarations
 class GLTexture;
 class ItemSelection;
+class MapEditContext;
 class MapLine;
 class MapSector;
 class MapThing;
@@ -110,11 +111,10 @@ public:
 	void	renderLinesVBO(bool show_direction, float alpha);
 	void	renderLinesImmediate(bool show_direction, float alpha);
 	void	renderLineHilight(int index, float fade);
-	void	renderLineHilight(MapLine* line, float fade);
+	void	renderLineHilight(MapLine* line, float fade, bool tab = true);
 	void	renderLineSelection(const ItemSelection& selection, float fade = 1.0f);
 	void	renderTaggedLines(vector<MapLine*>& lines, float fade);
 	void	renderTaggingLines(vector<MapLine*>& lines, float fade);
-	void	renderPlanningLines(float alpha = 1.0f);
 
 	// Things
 	bool	setupThingOverlay();
@@ -167,6 +167,16 @@ public:
 	void	renderFlatHilight(int index, float fade);
 	void	renderFlatSelection(const ItemSelection& selection, float fade = 1.0f);
 	void	renderTaggedFlats(vector<MapSector*>& sectors, float fade);
+
+	// Planning
+	void	setupPlanningLineRendering(float alpha = 1.0f);
+	void	renderPlanningLines(const vector<MapLine::UPtr>& lines, float alpha = 1.0f);
+	void	renderPlanningSelection(const ItemSelection& selection, MapEditContext& context, float fade = 1.0f);
+	void	renderMovingPlanningObjects(
+				const vector<MapEditor::Item>& items,
+				MapEditContext& context,
+				fpoint2_t move_vec
+			);
 
 	// Moving
 	void	renderMovingVertices(const vector<MapEditor::Item>& vertices, fpoint2_t move_vec);

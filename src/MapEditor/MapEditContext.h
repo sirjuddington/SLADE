@@ -7,6 +7,7 @@
 #include "Edit/LineDraw.h"
 #include "Edit/MoveObjects.h"
 #include "Edit/ObjectEdit.h"
+#include "Edit/Planning.h"
 #include "General/SAction.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"
@@ -88,11 +89,12 @@ public:
 	void	endTagEdit(bool accept = true);
 
 	// Editing handlers
-	MoveObjects&	moveObjects() { return move_objects_; }
-	LineDraw&		lineDraw() { return line_draw_; }
-	ObjectEdit&		objectEdit() { return object_edit_; }
-	Edit3D&			edit3D() { return edit_3d_; }
-	Edit2D&			edit2D() { return edit_2d_; }
+	MoveObjects&			moveObjects() { return move_objects_; }
+	LineDraw&				lineDraw() { return line_draw_; }
+	ObjectEdit&				objectEdit() { return object_edit_; }
+	Edit3D&					edit3D() { return edit_3d_; }
+	Edit2D&					edit2D() { return edit_2d_; }
+	MapEditor::Planning&	planning() { return planning_; }
 
 	// Editor messages
 	unsigned	numEditorMessages() const { return editor_messages_.size(); }
@@ -220,4 +222,7 @@ private:
 	SectorInfoOverlay	info_sector_;
 	ThingInfoOverlay	info_thing_;
 	InfoOverlay3D		info_3d_;
+
+	// Planning mode
+	MapEditor::Planning	planning_ = MapEditor::Planning(*this);
 };

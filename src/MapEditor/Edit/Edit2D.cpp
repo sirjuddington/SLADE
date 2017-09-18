@@ -1010,6 +1010,7 @@ void Edit2D::deleteObject() const
 	case Mode::Lines:		deleteLine(); break;
 	case Mode::Sectors:		deleteSector(); break;
 	case Mode::Things:		deleteThing(); break;
+	case Mode::Plan:		deletePlanItems(); break;
 	default: return;
 	}
 
@@ -1194,4 +1195,24 @@ void Edit2D::deleteSector() const
 
 	// Remove detached vertices
 	context_.map().removeDetachedVertices();
+}
+
+void Edit2D::deletePlanItems() const
+{
+	// Get selected planning objects
+	auto vertices = context_.selection().selectedPlanningVertices();
+	auto lines = context_.selection().selectedPlanningLines();
+
+	// Clear hilight and selection
+	context_.selection().clear();
+	context_.selection().clearHilight();
+
+	// Delete planning objects
+	for (auto vertex : vertices)
+		context_.planning().deleteVertex(vertex);
+	for (auto line : lines)
+		context_.planning().deleteLine(line);
+
+	// Remove detached planning vertices
+	context_.planning().deleteDetachedVertices();
 }

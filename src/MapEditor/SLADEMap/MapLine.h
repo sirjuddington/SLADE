@@ -115,12 +115,13 @@ public:
 	fpoint2_t	point2();
 	fseg2_t		seg();
 	double		getLength();
-    double		getAngle();
+	double		getAngle();
 	bool		doubleSector();
 	fpoint2_t	frontVector();
 	fpoint2_t	dirTabPoint(double length = 0);
 	double		distanceTo(fpoint2_t point);
 	int			needsTexture();
+	void		disconnectFromVertices();
 
 	void	clearUnneededTextures();
 	void	resetInternals();
@@ -136,6 +137,8 @@ public:
 
 		return Debuggable(S_FMT("<line %u>", index));
 	}
+
+	typedef std::unique_ptr<MapLine> UPtr;
 };
 
 #endif //__MAPLINE_H__

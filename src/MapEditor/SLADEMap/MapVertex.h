@@ -46,6 +46,9 @@ public:
 	
 	const vector<MapLine*>&	connectedLines() const { return connected_lines; }
 
+	void	move(fpoint2_t offset);
+	void	moveTo(fpoint2_t new_pos);
+
 	void	writeBackup(mobj_backup_t* backup) override;
 	void	readBackup(mobj_backup_t* backup) override;
 
@@ -56,6 +59,8 @@ public:
 
 		return Debuggable(S_FMT("<vertex %u>", index));
 	}
+
+	typedef std::unique_ptr<MapVertex> UPtr;
 
 private:
 	// Basic data

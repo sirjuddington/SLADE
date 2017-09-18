@@ -48,6 +48,7 @@ public:
 	void	deleteLine() const;
 	void	deleteThing() const;
 	void	deleteSector() const;
+	void	deletePlanItems() const;
 
 private:
 	MapEditContext&	context_;

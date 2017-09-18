@@ -31,6 +31,7 @@
 #include "MapVertex.h"
 #include "MapLine.h"
 #include "App.h"
+#include "SLADEMap.h"
 
 
 /*******************************************************************
@@ -191,6 +192,34 @@ MapLine* MapVertex::connectedLine(unsigned index)
 		return nullptr;
 
 	return connected_lines[index];
+}
+
+void MapVertex::move(fpoint2_t offset)
+{
+	setModified();
+	x += offset.x;
+	y += offset.y;
+
+	// Reset all attached lines' geometry info
+	for (auto cl : connected_lines)
+		cl->resetInternals();
+
+	if (parent_map)
+		parent_map->setGeometryUpdated();
+}
+
+void MapVertex::moveTo(fpoint2_t new_pos)
+{
+	setModified();
+	x = new_pos.x;
+	y = new_pos.y;
+
+	// Reset all attached lines' geometry info
+	for (auto cl : connected_lines)
+		cl->resetInternals();
+
+	if (parent_map)
+		parent_map->setGeometryUpdated();
 }
 
 /* MapVertex::writeBackup

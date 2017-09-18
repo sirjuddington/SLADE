@@ -95,6 +95,22 @@ bool MoveObjects::begin(fpoint2_t mouse_pos)
 			for (auto& item : items_)
 				context_.map().getSector(item.index)->getVertices(move_verts);
 		}
+
+		// Planning mode
+		else if (context_.editMode() == Mode::Plan)
+		{
+			for (auto& item : items_)
+			{
+				if (item.type == MapEditor::ItemType::PlanLine)
+				{
+					auto line = context_.planning().line(item.index);
+					move_verts.push_back(line->v1());
+					move_verts.push_back(line->v2());
+				}
+				else if (item.type == MapEditor::ItemType::PlanVertex)
+					move_verts.push_back(context_.planning().vertex(item.index));
+			}
+		}
 	}
 
 	// Filter out map objects being moved
@@ -179,6 +195,31 @@ void MoveObjects::end(bool accept)
 			context_.map().moveThing(item.index, thing->xPos() + offset_.x, thing->yPos() + offset_.y);
 		}
 		context_.endUndoRecord(true);
+	}
+	else if (context_.editMode() == Mode::Plan && accept)
+	{
+		// Get list of vertices being moved
+		vector<uint8_t> move_verts(context_.planning().vertices().size(), 0);
+		for (auto& item : items_)
+		{
+			if (item.type == MapEditor::ItemType::PlanLine)
+			{
+				auto line = context_.planning().line(item.index);
+				if (line->v1()) move_verts[line->v1()->getIndex()] = 1;
+				if (line->v2()) move_verts[line->v2()->getIndex()] = 1;
+			}
+			else if (item.type == MapEditor::ItemType::PlanVertex)
+				move_verts[item.index] = 1;
+		}
+
+		// Move vertices
+		for (auto& vertex : context_.planning().vertices())
+		{
+			if (!move_verts[vertex->getIndex()])
+				continue;
+
+			vertex->move(offset_);
+		}
 	}
 	else if (accept)
 	{

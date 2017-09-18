@@ -193,14 +193,6 @@ void SLADEMap::refreshIndices()
 	// Thing indices
 	for (unsigned a = 0; a < things_.size(); a++)
 		things_[a]->index = a;
-
-	// Planning vertices
-	for (unsigned a = 0; a < plan_vertices_.size(); a++)
-		plan_vertices_[a]->index = a;
-
-	// Planning lines
-	for (unsigned a = 0; a < plan_lines_.size(); a++)
-		plan_lines_[a]->index = a;
 }
 
 /* SLADEMap::addMapObject
@@ -2521,8 +2513,6 @@ void SLADEMap::clearMap()
 	vertices_.clear();
 	sectors_.clear();
 	things_.clear();
-	plan_vertices_.clear();
-	plan_lines_.clear();
 
 	// Clear map objects
 	for (unsigned a = 0; a < all_objects_.size(); a++)
@@ -3016,11 +3006,10 @@ bbox_t SLADEMap::getMapBBox()
 /* SLADEMap::vertexAt
  * Returns the vertex at [x,y], or NULL if none there
  *******************************************************************/
-MapVertex* SLADEMap::vertexAt(double x, double y, bool plan)
+MapVertex* SLADEMap::vertexAt(double x, double y)
 {
 	// Go through all vertices
-	auto& list = plan ? plan_vertices_ : vertices_;
-	for (auto vertex : list)
+	for (auto vertex : vertices_)
 		if (vertex->x == x && vertex->y == y)
 			return vertex;
 
@@ -3307,51 +3296,6 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 	}
 
 	return nearest;
-}
-
-MapObject* SLADEMap::nearestPlanningObject(fpoint2_t point, double min)
-{
-	double min_dist = 999999999;
-
-	// Find nearest planning vertex
-	double dist = 0;
-	MapVertex* nearest_vertex = nullptr;
-	for (auto vertex : plan_vertices_)
-	{
-		dist = point.distance_to(vertex->point());
-		if (dist <= min && dist < min_dist)
-		{
-			nearest_vertex = vertex;
-			min_dist = dist;
-		}
-	}
-
-	if (nearest_vertex)
-		return nearest_vertex;
-
-	// Find nearest planning line
-	MapLine* nearest_line = nullptr;
-	for (auto line : plan_lines_)
-	{
-		// Check with line bounding box first (since we have a minimum distance)
-		fseg2_t bbox = line->seg();
-		bbox.expand(min, min);
-		if (!bbox.contains(point))
-			continue;
-
-		// Calculate distance to line
-		dist = line->distanceTo(point);
-
-		// Check if it's nearer than the previous nearest
-		if (dist < min_dist && dist <= min)
-		{
-			nearest_vertex = nullptr;
-			nearest_line = line;
-			min_dist = dist;
-		}
-	}
-
-	return nearest_vertex ? (MapObject*)nearest_vertex : (MapObject*)nearest_line;
 }
 
 /* SLADEMap::getSectorsByTag
@@ -4116,7 +4060,7 @@ void SLADEMap::recomputeSpecials()
  * Creates a new vertex at [x,y] and returns it. Splits any lines
  * within [split_dist] from the position
  *******************************************************************/
-MapVertex* SLADEMap::createVertex(double x, double y, double split_dist, bool plan)
+MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
 {
 	// Round position to integral if fractional positions are disabled
 	if (!position_frac_)
@@ -4128,28 +4072,17 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist, bool pl
 	fpoint2_t point(x, y);
 
 	// First check that it won't overlap any other vertex
-	auto& list = plan ? plan_vertices_ : vertices_;
-	for (auto vertex : list)
-	{
+	for (auto vertex : vertices_)
 		if (vertex->x == x && vertex->y == y)
 			return vertex;
-	}
 
 	// Create the vertex
 	MapVertex* nv = new MapVertex(x, y, this);
-	if (plan)
-	{
-		nv->index = plan_vertices_.size();
-		plan_vertices_.push_back(nv);
-	}
-	else
-	{
-		nv->index = vertices_.size();
-		vertices_.push_back(nv);
-	}
+	nv->index = vertices_.size();
+	vertices_.push_back(nv);
 
 	// Check if this vertex splits any lines (if needed)
-	if (split_dist >= 0 && !plan)
+	if (split_dist >= 0)
 	{
 		unsigned nlines = lines_.size();
 		for (unsigned a = 0; a < nlines; a++)
@@ -4176,7 +4109,7 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist, bool pl
  * Creates a new line and needed vertices from [x1,y1] to [x2,y2] and
  * returns it
  *******************************************************************/
-MapLine* SLADEMap::createLine(double x1, double y1, double x2, double y2, double split_dist, bool plan)
+MapLine* SLADEMap::createLine(double x1, double y1, double x2, double y2, double split_dist)
 {
 	// Round coordinates to integral if fractional positions are disabled
 	if (!position_frac_)
@@ -4190,23 +4123,23 @@ MapLine* SLADEMap::createLine(double x1, double y1, double x2, double y2, double
 	//LOG_MESSAGE(1, "Create line (%1.2f,%1.2f) to (%1.2f,%1.2f)", x1, y1, x2, y2);
 
 	// Get vertices at points
-	MapVertex* vertex1 = vertexAt(x1, y1, plan);
-	MapVertex* vertex2 = vertexAt(x2, y2, plan);
+	MapVertex* vertex1 = vertexAt(x1, y1);
+	MapVertex* vertex2 = vertexAt(x2, y2);
 
 	// Create vertices if required
 	if (!vertex1)
-		vertex1 = createVertex(x1, y1, split_dist, plan);
+		vertex1 = createVertex(x1, y1, split_dist);
 	if (!vertex2)
-		vertex2 = createVertex(x2, y2, split_dist, plan);
+		vertex2 = createVertex(x2, y2, split_dist);
 
 	// Create line between vertices
-	return createLine(vertex1, vertex2, false, plan);
+	return createLine(vertex1, vertex2, false);
 }
 
 /* SLADEMap::createLine
  * Creates a new line between [vertex1] and [vertex2] and returns it
  *******************************************************************/
-MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force, bool plan)
+MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force)
 {
 	// Check both vertices were given
 	if (!vertex1 || vertex1->parent_map != this)
@@ -4217,8 +4150,7 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 	// Check if there is already a line along the two given vertices
 	if (!force)
 	{
-		auto& list = plan ? plan_lines_ : lines_;
-		for (auto line : list)
+		for (auto line : lines_)
 		{
 			if ((line->vertex1 == vertex1 && line->vertex2 == vertex2) ||
 					(line->vertex2 == vertex1 && line->vertex1 == vertex2))
@@ -4228,16 +4160,8 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 
 	// Create new line between vertices
 	MapLine* nl = new MapLine(vertex1, vertex2, nullptr, nullptr, this);
-	if (plan)
-	{
-		nl->index = plan_lines_.size();
-		plan_lines_.push_back(nl);
-	}
-	else
-	{
-		nl->index = lines_.size();
-		lines_.push_back(nl);
-	}
+	nl->index = lines_.size();
+	lines_.push_back(nl);
 
 	// Connect line to vertices
 	vertex1->connectLine(nl);
@@ -4322,16 +4246,7 @@ void SLADEMap::moveVertex(unsigned vertex, double nx, double ny)
 		return;
 
 	// Move the vertex
-	MapVertex* v = vertices_[vertex];
-	v->setModified();
-	v->x = nx;
-	v->y = ny;
-
-	// Reset all attached lines' geometry info
-	for (unsigned a = 0; a < v->connected_lines.size(); a++)
-		v->connected_lines[a]->resetInternals();
-
-	geometry_updated_ = App::runTimer();
+	vertices_[vertex]->moveTo({ nx, ny });
 }
 
 /* SLADEMap::mergeVertices

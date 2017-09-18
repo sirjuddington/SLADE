@@ -1600,6 +1600,7 @@
     <ClCompile Include="..\..\src\MapEditor\Edit\LineDraw.cpp" />
     <ClCompile Include="..\..\src\MapEditor\Edit\MoveObjects.cpp" />
     <ClCompile Include="..\..\src\MapEditor\Edit\ObjectEdit.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Edit\Planning.cpp" />
     <ClCompile Include="..\..\src\MapEditor\ItemSelection.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapBackupManager.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapChecks.cpp" />
@@ -2108,6 +2109,7 @@
     <ClInclude Include="..\..\src\MapEditor\Edit\LineDraw.h" />
     <ClInclude Include="..\..\src\MapEditor\Edit\MoveObjects.h" />
     <ClInclude Include="..\..\src\MapEditor\Edit\ObjectEdit.h" />
+    <ClInclude Include="..\..\src\MapEditor\Edit\Planning.h" />
     <ClInclude Include="..\..\src\MapEditor\ItemSelection.h" />
     <ClInclude Include="..\..\src\MapEditor\MapBackupManager.h" />
     <ClInclude Include="..\..\src\MapEditor\MapChecks.h" />

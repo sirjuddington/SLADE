@@ -62,6 +62,7 @@ public:
 	void	selectLinesWithin(const SLADEMap& map, const frect_t& rect);
 	void	selectSectorsWithin(const SLADEMap& map, const frect_t& rect);
 	void	selectThingsWithin(const SLADEMap& map, const frect_t& rect);
+	void	selectPlanningObjectsWithin(const frect_t& rect);
 	bool	selectWithin(const frect_t& rect, bool add);
 
 	MapVertex*	hilightedVertex() const;
@@ -75,11 +76,10 @@ public:
 	vector<MapSector*>	selectedSectors(bool try_hilight = true) const;
 	vector<MapThing*>	selectedThings(bool try_hilight = true) const;
 	vector<MapObject*>	selectedObjects(bool try_hilight = true) const;
+	vector<MapVertex*>	selectedPlanningVertices(bool try_hilight = true) const;
+	vector<MapLine*>	selectedPlanningLines(bool try_hilight = true) const;
 
 	void	migrate(MapEditor::Mode from_edit_mode, MapEditor::Mode to_edit_mode);
-
-	//void	showItem(int index);
-	//void	selectItem3d(MapEditor::Item item, int sel);
 
 private:
 	MapEditor::Item			hilight_;

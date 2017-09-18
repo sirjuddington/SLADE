@@ -277,6 +277,9 @@ void MapRenderer2D::renderVertexHilight(int index, float fade)
  *******************************************************************/
 void MapRenderer2D::renderVertexHilight(MapVertex* vertex, float fade)
 {
+	if (!vertex)
+		return;
+
 	// Reset fade if hilight animation is disabled
 	if (!map_animate_hilight)
 		fade = 1.0f;
@@ -325,8 +328,16 @@ void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float 
 
 	// Draw selected vertices
 	glBegin(GL_POINTS);
-	for (unsigned a = 0; a < selection.size(); a++)
-		glVertex2d(map->getVertex(selection[a].index)->xPos(), map->getVertex(selection[a].index)->yPos());
+	MapVertex* vertex;
+	for (auto& item : selection)
+	{
+		if (item.type == MapEditor::ItemType::Vertex)
+			vertex = map->getVertex(item.index);
+		else
+			continue;
+
+		glVertex2d(vertex->xPos(), vertex->yPos());
+	}
 	glEnd();
 
 	if (point)
@@ -516,8 +527,11 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 /* MapRenderer2D::renderLineHilight
  * Renders the line hilight overlay for [line]
  *******************************************************************/
-void MapRenderer2D::renderLineHilight(MapLine* line, float fade)
+void MapRenderer2D::renderLineHilight(MapLine* line, float fade, bool tab)
 {
+	if (!line)
+		return;
+
 	// Reset fade if hilight animation is disabled
 	if (!map_animate_hilight)
 		fade = 1.0f;
@@ -531,22 +545,21 @@ void MapRenderer2D::renderLineHilight(MapLine* line, float fade)
 	glLineWidth(line_width*ColourConfiguration::getLineHilightWidth());
 
 	// Render line
-	double x1 = line->v1()->xPos();
-	double y1 = line->v1()->yPos();
-	double x2 = line->v2()->xPos();
-	double y2 = line->v2()->yPos();
 	glBegin(GL_LINES);
-	glVertex2d(x1, y1);
-	glVertex2d(x2, y2);
+	glVertex2d(line->x1(), line->y1());
+	glVertex2d(line->x2(), line->y2());
 	glEnd();
 
 	// Direction tab
-	fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
-	fpoint2_t tab = line->dirTabPoint();
-	glBegin(GL_LINES);
-	glVertex2d(mid.x, mid.y);
-	glVertex2d(tab.x, tab.y);
-	glEnd();
+	if (tab)
+	{
+		fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
+		fpoint2_t tab = line->dirTabPoint();
+		glBegin(GL_LINES);
+		glVertex2d(mid.x, mid.y);
+		glVertex2d(tab.x, tab.y);
+		glEnd();
+	}
 }
 
 /* MapRenderer2D::renderLineSelection
@@ -574,24 +587,25 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 	MapLine* line;
 	double x1, y1, x2, y2;
 	glBegin(GL_LINES);
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto& item : selection)
 	{
-		// Get line properties
-		line = map->getLine(selection[a].index);
-		x1 = line->v1()->xPos();
-		y1 = line->v1()->yPos();
-		x2 = line->v2()->xPos();
-		y2 = line->v2()->yPos();
+		if (item.type == MapEditor::ItemType::Line)
+			line = map->getLine(item.index);
+		else
+			continue;
 
 		// Draw line
-		glVertex2d(x1, y1);
-		glVertex2d(x2, y2);
+		glVertex2d(line->x1(), line->y1());
+		glVertex2d(line->x2(), line->y2());
 
 		// Direction tab
-		fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
-		fpoint2_t tab = line->dirTabPoint();
-		glVertex2d(mid.x, mid.y);
-		glVertex2d(tab.x, tab.y);
+		if (item.type == MapEditor::ItemType::Line)
+		{
+			fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
+			fpoint2_t tab = line->dirTabPoint();
+			glVertex2d(mid.x, mid.y);
+			glVertex2d(tab.x, tab.y);
+		}
 	}
 	glEnd();
 }
@@ -696,37 +710,6 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 			glLineWidth(line_width*5);
 		}
 	}
-}
-
-void MapRenderer2D::renderPlanningLines(float alpha)
-{
-	// Set hilight colour
-	rgba_t col = ColourConfiguration::getColour("map_linedraw");
-	col.a *= alpha;
-	OpenGL::setColour(col);
-
-	// Setup rendering properties
-	glLineStipple(2, 0xAAAA);
-	glEnable(GL_LINE_STIPPLE);
-	glLineWidth(line_width*(ColourConfiguration::getLineHilightWidth()*0.5));
-
-	// Go through tagged lines
-	double x1, y1, x2, y2;
-	MapObject* object = MapEditor::editContext().selection().hilightedObject();
-	for (auto line : map->planLines())
-	{
-		// Render line
-		x1 = line->v1()->xPos();
-		y1 = line->v1()->yPos();
-		x2 = line->v2()->xPos();
-		y2 = line->v2()->yPos();
-		glBegin(GL_LINES);
-		glVertex2d(x1, y1);
-		glVertex2d(x2, y2);
-		glEnd();
-	}
-
-	glDisable(GL_LINE_STIPPLE);
 }
 
 /* MapRenderer2D::setupThingOverlay
@@ -2332,14 +2315,184 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 	}
 }
 
+void MapRenderer2D::setupPlanningLineRendering(float alpha)
+{
+	// Set colour
+	rgba_t col = ColourConfiguration::getColour("map_linedraw");
+	col.a *= alpha;
+	OpenGL::setColour(col);
+
+	// Setup rendering properties
+	glLineStipple(3, 0xAAAA);
+	glEnable(GL_LINE_STIPPLE);
+	glLineWidth(line_width*(ColourConfiguration::getLineHilightWidth()));
+}
+
+void MapRenderer2D::renderPlanningLines(const vector<MapLine::UPtr>& lines, float alpha)
+{
+	setupPlanningLineRendering(alpha);
+
+	// Go through planning lines
+	for (auto& line : lines)
+	{
+		// Render line
+		glBegin(GL_LINES);
+		glVertex2d(line->x1(), line->y1());
+		glVertex2d(line->x2(), line->y2());
+		glEnd();
+	}
+
+	glDisable(GL_LINE_STIPPLE);
+}
+
+void MapRenderer2D::renderPlanningSelection(const ItemSelection& selection, MapEditContext& context, float fade)
+{
+	// Check anything is selected
+	if (selection.size() == 0)
+		return;
+
+	// Reset fade if selection animation is disabled
+	if (!map_animate_selection)
+		fade = 1.0f;
+
+	// Set selection colour
+	rgba_t col = ColourConfiguration::getColour("map_selection");
+	col.a *= fade;
+	OpenGL::setColour(col);
+
+	// Render selected lines
+	MapLine* line;
+	glLineWidth(line_width*ColourConfiguration::getLineSelectionWidth());
+	glBegin(GL_LINES);
+	for (auto& item : selection)
+	{
+		if (item.type == MapEditor::ItemType::PlanLine)
+			line = context.planning().line(item.index);
+		else
+			continue;
+
+		// Draw line
+		glVertex2d(line->x1(), line->y1());
+		glVertex2d(line->x2(), line->y2());
+	}
+	glEnd();
+
+	// Draw selected vertices
+	MapVertex* vertex;
+	bool point = setupVertexRendering(2.8f, true);
+	glBegin(GL_POINTS);
+	for (auto& item : selection)
+	{
+		if (item.type == MapEditor::ItemType::PlanVertex)
+			vertex = context.planning().vertex(item.index);
+		else
+			continue;
+
+		glVertex2d(vertex->xPos(), vertex->yPos());
+	}
+	glEnd();
+
+	if (point)
+	{
+		glDisable(GL_POINT_SPRITE);
+		glDisable(GL_TEXTURE_2D);
+	}
+}
+
+void MapRenderer2D::renderMovingPlanningObjects(
+	const vector<MapEditor::Item>& items,
+	MapEditContext& context,
+	fpoint2_t move_vec)
+{
+	vector<uint8_t> lines_drawn(context.planning().lines().size(), 0);
+
+	// Determine what lines need drawing (and which of their vertices are being moved)
+	vector<MapVertex*> check_vertices;
+	for (auto& item : items)
+	{
+		if (item.type == MapEditor::ItemType::PlanVertex)
+			check_vertices.push_back(context.planning().vertex(item.index));
+		else if (item.type == MapEditor::ItemType::PlanLine)
+		{
+			auto line = context.planning().line(item.index);
+			check_vertices.push_back(line->v1());
+			check_vertices.push_back(line->v2());
+		}
+	}
+	for (auto vertex : check_vertices)
+		for (auto line : vertex->connectedLines())
+		{
+			if (line->v1() == vertex) lines_drawn[line->getIndex()] |= 1;
+			if (line->v2() == vertex) lines_drawn[line->getIndex()] |= 2;
+		}
+
+	// Set line colour/style
+	setupPlanningLineRendering();
+
+	// Draw any lines attached to the moving vertices
+	glBegin(GL_LINES);
+	for (auto& line : context.planning().lines())
+	{
+		// Skip if not attached to any moving vertices
+		if (lines_drawn[line->getIndex()] == 0)
+			continue;
+
+		// First vertex
+		if (lines_drawn[line->getIndex()] & 1)
+			glVertex2d(line->x1() + move_vec.x, line->y1() + move_vec.y);
+		else
+			glVertex2d(line->x1(), line->y1());
+
+		// Second vertex
+		if (lines_drawn[line->getIndex()] & 2)
+			glVertex2d(line->x2() + move_vec.x, line->y2() + move_vec.y);
+		else
+			glVertex2d(line->x2(), line->y2());
+	}
+	glEnd();
+	glDisable(GL_LINE_STIPPLE);
+
+	// Set 'moving' colour
+	OpenGL::setColour(ColourConfiguration::getColour("map_moving"));
+
+	// Draw moving line overlays
+	glLineWidth(line_width * 3);
+	glBegin(GL_LINES);
+	for (auto& item : items)
+		if (item.type == MapEditor::ItemType::PlanLine)
+		{
+			auto line = context.planning().line(item.index);
+			glVertex2d(line->x1() + move_vec.x, line->y1() + move_vec.y);
+			glVertex2d(line->x2() + move_vec.x, line->y2() + move_vec.y);
+		}
+	glEnd();
+
+	// Draw moving vertex overlays
+	bool point = setupVertexRendering(1.5f);
+	glBegin(GL_POINTS);
+	for (auto& item : items)
+		if (item.type == MapEditor::ItemType::PlanVertex)
+		{
+			auto vertex = context.planning().vertex(item.index);
+			glVertex2d(vertex->xPos() + move_vec.x, vertex->yPos() + move_vec.y);
+		}
+	glEnd();
+
+	// Clean up state
+	if (point)
+	{
+		glDisable(GL_POINT_SPRITE);
+		glDisable(GL_TEXTURE_2D);
+	}
+}
+
 /* MapRenderer2D::renderMovingVertices
  * Renders the moving overlay for vertex indices in [vertices], to
  * show movement by [move_vec]
  *******************************************************************/
 void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices, fpoint2_t move_vec)
 {
-	uint8_t* lines_drawn = new uint8_t[map->nLines()];
-	memset(lines_drawn, 0, map->nLines());
+	vector<uint8_t> lines_drawn(map->nLines(), 0);
 
 	// Determine what lines need drawing (and which of their vertices are being moved)
 	for (unsigned a = 0; a < vertices.size(); a++)
@@ -2398,7 +2551,6 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
 	glEnd();
 
 	// Clean up
-	delete[] lines_drawn;
 	if (point)
 	{
 		glDisable(GL_POINT_SPRITE);
@@ -2412,8 +2564,7 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
  *******************************************************************/
 void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, fpoint2_t move_vec)
 {
-	uint8_t* lines_drawn = new uint8_t[map->nLines()];
-	memset(lines_drawn, 0, map->nLines());
+	vector<uint8_t> lines_drawn(map->nLines(), 0);
 
 	// Determine what lines need drawing (and which of their vertices are being moved)
 	for (unsigned a = 0; a < lines.size(); a++)
@@ -2482,9 +2633,6 @@ void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, fpoi
 		glVertex2d(line->x2() + move_vec.x, line->y2() + move_vec.y);
 	}
 	glEnd();
-
-	// Clean up
-	delete[] lines_drawn;
 }
 
 /* MapRenderer2D::renderMovingSectors

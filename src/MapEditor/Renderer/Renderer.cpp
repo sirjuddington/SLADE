@@ -1004,13 +1004,14 @@ void Renderer::drawMap2d()
 
 	// --- Draw map (depending on mode) ---
 	auto mouse_state = context_.input().mouseState();
+	auto& plan_lines = context_.planning().lines();
 	OpenGL::resetBlend();
 	if (context_.editMode() == Mode::Vertices)
 	{
 		// Vertices mode
-		renderer_2d_.renderThings(fade_things_);					// Things
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_);	// Lines
-		renderer_2d_.renderPlanningLines(fade_planning_);			// Planning lines
+		renderer_2d_.renderThings(fade_things_);						// Things
+		renderer_2d_.renderLines(line_tabs_always, fade_lines_);		// Lines
+		renderer_2d_.renderPlanningLines(plan_lines, fade_planning_);	// Planning lines
 
 		// Vertices
 		if (mouse_state == Input::MouseState::Move)
@@ -1031,10 +1032,10 @@ void Renderer::drawMap2d()
 	else if (context_.editMode() == Mode::Lines)
 	{
 		// Lines mode
-		renderer_2d_.renderThings(fade_things_);			// Things
-		renderer_2d_.renderVertices(fade_vertices_);		// Vertices
-		renderer_2d_.renderPlanningLines(fade_planning_);	// Planning lines
-		renderer_2d_.renderLines(true);						// Lines
+		renderer_2d_.renderThings(fade_things_);						// Things
+		renderer_2d_.renderVertices(fade_vertices_);					// Vertices
+		renderer_2d_.renderPlanningLines(plan_lines, fade_planning_);	// Planning lines
+		renderer_2d_.renderLines(true);									// Lines
 		
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move &&
@@ -1049,10 +1050,10 @@ void Renderer::drawMap2d()
 	else if (context_.editMode() == Mode::Sectors)
 	{
 		// Sectors mode
-		renderer_2d_.renderThings(fade_things_);					// Things
-		renderer_2d_.renderVertices(fade_vertices_);				// Vertices
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_);	// Lines
-		renderer_2d_.renderPlanningLines(fade_planning_);			// Planning lines
+		renderer_2d_.renderThings(fade_things_);						// Things
+		renderer_2d_.renderVertices(fade_vertices_);					// Vertices
+		renderer_2d_.renderLines(line_tabs_always, fade_lines_);		// Lines
+		renderer_2d_.renderPlanningLines(plan_lines, fade_planning_);	// Planning lines
 
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move &&
@@ -1074,10 +1075,10 @@ void Renderer::drawMap2d()
 			force_dir = true;
 
 		// Things mode
-		renderer_2d_.renderVertices(fade_vertices_);				// Vertices
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_);	// Lines
-		renderer_2d_.renderPlanningLines(fade_planning_);			// Planning lines
-		renderer_2d_.renderThings(fade_things_, force_dir);			// Things
+		renderer_2d_.renderVertices(fade_vertices_);					// Vertices
+		renderer_2d_.renderLines(line_tabs_always, fade_lines_);		// Lines
+		renderer_2d_.renderPlanningLines(plan_lines, fade_planning_);	// Planning lines
+		renderer_2d_.renderThings(fade_things_, force_dir);				// Things
 
 		// Thing paths
 		renderer_2d_.renderPathedThings(context_.pathedThings());
@@ -1095,19 +1096,25 @@ void Renderer::drawMap2d()
 	else if (context_.editMode() == Mode::Plan)
 	{
 		// Planning mode
-		renderer_2d_.renderThings(fade_things_);					// Things
-		renderer_2d_.renderVertices(fade_vertices_);				// Vertices
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_);	// Lines
-		renderer_2d_.renderPlanningLines(fade_planning_);			// Planning lines
+		renderer_2d_.renderThings(fade_things_);						// Things
+		renderer_2d_.renderVertices(fade_vertices_);					// Vertices
+		renderer_2d_.renderLines(line_tabs_always, fade_lines_);		// Lines
+		renderer_2d_.renderPlanningLines(plan_lines, fade_planning_);	// Planning lines
+
+		// Selection if needed
+		if (mouse_state != Input::MouseState::Move &&
+			!context_.overlayActive() &&
+			mouse_state != Input::MouseState::ObjectEdit)
+			renderer_2d_.renderPlanningSelection(context_.selection(), context_, anim_flash_level_);
 
 		// Hilight if needed
 		auto hl = context_.hilightItem();
 		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive() && hl.index >= 0)
 		{
-			if (hl.type == ItemType::PlanVertex && hl.index < context_.map().planVertices().size())
-				renderer_2d_.renderVertexHilight(context_.map().planVertices()[hl.index], anim_flash_level_);
-			else if (hl.type == ItemType::PlanLine && hl.index < context_.map().planLines().size())
-				renderer_2d_.renderLineHilight(context_.map().planLines()[hl.index], anim_flash_level_);
+			if (hl.type == ItemType::PlanVertex)
+				renderer_2d_.renderVertexHilight(context_.planning().vertex(hl.index), anim_flash_level_);
+			else if (hl.type == ItemType::PlanLine)
+				renderer_2d_.renderLineHilight(context_.planning().line(hl.index), anim_flash_level_, false);
 		}
 	}
 
@@ -1217,6 +1224,9 @@ void Renderer::drawMap2d()
 			renderer_2d_.renderMovingSectors(items, offset); break;
 		case Mode::Things:
 			renderer_2d_.renderMovingThings(items, offset); break;
+		case Mode::Plan:
+			renderer_2d_.renderMovingPlanningObjects(items, context_, offset);
+			break;
 		default: break;
 		};
 	}
@@ -1652,23 +1662,34 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 		);
 	}
 
-	// 2d mode line
-	else if (item.type == ItemType::Line)
+	// 2d mode line / planning line
+	else if (item.type == ItemType::Line || item.type == ItemType::PlanLine)
 	{
 		// Get line
 		vector<MapLine*> vec;
-		vec.push_back(context_.map().getLine(item.index));
+		if (item.type == ItemType::PlanLine)
+			vec.push_back(context_.planning().line(item.index));
+		else
+			vec.push_back(context_.map().getLine(item.index));
 
 		// Start animation
-		animations_.push_back(std::make_unique<MCALineSelection>(App::runTimer(), vec, selected));
+		animations_.push_back(
+			std::make_unique<MCALineSelection>(
+				App::runTimer(),
+				vec,
+				selected
+		));
 	}
 
-	// 2d mode vertex
-	else if (item.type == ItemType::Vertex)
+	// 2d mode vertex / planning vertex
+	else if (item.type == ItemType::Vertex || item.type == ItemType::PlanVertex)
 	{
 		// Get vertex
 		vector<MapVertex*> verts;
-		verts.push_back(context_.map().getVertex(item.index));
+		if (item.type == ItemType::PlanVertex)
+			verts.push_back(context_.planning().vertex(item.index));
+		else
+			verts.push_back(context_.map().getVertex(item.index));
 
 		// Determine current vertex size
 		float vs = vertex_size;
@@ -1714,7 +1735,8 @@ void Renderer::animateHilightChange(const MapEditor::Item& old_item, MapObject* 
 				App::runTimer(),
 				old_object,
 				&renderer_2d_,
-				anim_flash_level_
+				anim_flash_level_,
+				old_item.type
 				));
 	}
 	else

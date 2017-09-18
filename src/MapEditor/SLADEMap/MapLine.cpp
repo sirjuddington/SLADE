@@ -498,11 +498,11 @@ double MapLine::getLength()
  *******************************************************************/
 double MapLine::getAngle()
 {
-    if (!vertex1 || !vertex2)
-        return -1;
-    double angle = (180.0 / M_PI) *  atan2(vertex1->yPos() - vertex2->yPos(), vertex1->xPos() - vertex2->xPos());
-    if (angle < 0) angle += 360.0;
-    return angle;
+	if (!vertex1 || !vertex2)
+		return -1;
+	double angle = (180.0 / M_PI) *  atan2(vertex1->yPos() - vertex2->yPos(), vertex1->xPos() - vertex2->xPos());
+	if (angle < 0) angle += 360.0;
+	return angle;
 }
 
 /* MapLine::doubleSector
@@ -643,6 +643,14 @@ int MapLine::needsTexture()
 		tex |= TEX_FRONT_UPPER;
 
 	return tex;
+}
+
+void MapLine::disconnectFromVertices()
+{
+	if (vertex1)
+		vertex1->disconnectLine(this);
+	if (vertex2)
+		vertex2->disconnectLine(this);
 }
 
 /* MapLine::clearUnneededTextures

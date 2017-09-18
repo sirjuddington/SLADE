@@ -288,7 +288,7 @@ void LineDraw::begin(bool shape)
 void LineDraw::end(bool apply)
 {
 	// Hide shape draw panel
-	MapEditor::showShapeDrawPanel(true);
+	MapEditor::showShapeDrawPanel(false);
 
 	// Do nothing if we don't need to create any lines
 	if (!apply || draw_points.size() <= 1)
@@ -298,11 +298,17 @@ void LineDraw::end(bool apply)
 		return;
 	}
 
-	// Begin undo level
+	// Planning mode
 	if (context.editMode() == Mode::Plan)
-		context.beginUndoRecord("Line Draw (Planning)");
-	else
-		context.beginUndoRecord("Line Draw");
+	{
+		context.planning().createLines(draw_points);
+		draw_points.clear();
+		context.setFeatureHelp({});
+		return;
+	}
+
+	// Begin undo level
+	context.beginUndoRecord("Line Draw");
 
 	// Add extra points if any lines overlap existing vertices
 	auto& map = context.map();
@@ -329,27 +335,12 @@ void LineDraw::end(bool apply)
 
 	// Create vertices
 	for (unsigned a = 0; a < draw_points.size(); a++)
-		map.createVertex(draw_points[a].x, draw_points[a].y, 1, context.editMode() == Mode::Plan);
+		map.createVertex(draw_points[a].x, draw_points[a].y, 1);
 
 	// Create lines
 	unsigned nl_start = map.nLines();
 	for (unsigned a = 0; a < draw_points.size() - 1; a++)
 	{
-		// Planning mode - just add a plan line
-		if (context.editMode() == Mode::Plan)
-		{
-			map.createLine(
-				draw_points[a].x,
-				draw_points[a].y,
-				draw_points[a + 1].x,
-				draw_points[a + 1].y,
-				1,
-				true
-			);
-			
-			continue;
-		}
-
 		// Check for intersections
 		auto intersect = map.cutLines(
 			draw_points[a].x,
@@ -402,26 +393,23 @@ void LineDraw::end(bool apply)
 		}
 	}
 
-	if (context.editMode() != Mode::Plan)
+	// Build new sectors
+	vector<MapLine*> new_lines;
+	for (unsigned a = nl_start; a < map.nLines(); a++)
+		new_lines.push_back(map.getLine(a));
+	map.correctSectors(new_lines);
+
+	// Check for and attempt to correct invalid lines
+	vector<MapLine*> invalid_lines;
+	for (unsigned a = 0; a < new_lines.size(); a++)
 	{
-		// Build new sectors
-		vector<MapLine*> new_lines;
-		for (unsigned a = nl_start; a < map.nLines(); a++)
-			new_lines.push_back(map.getLine(a));
-		map.correctSectors(new_lines);
+		if (new_lines[a]->s1())
+			continue;
 
-		// Check for and attempt to correct invalid lines
-		vector<MapLine*> invalid_lines;
-		for (unsigned a = 0; a < new_lines.size(); a++)
-		{
-			if (new_lines[a]->s1())
-				continue;
-
-			new_lines[a]->flip();
-			invalid_lines.push_back(new_lines[a]);
-		}
-		map.correctSectors(invalid_lines);
+		new_lines[a]->flip();
+		invalid_lines.push_back(new_lines[a]);
 	}
+	map.correctSectors(invalid_lines);
 
 	// End recording undo level
 	context.endUndoRecord(true);

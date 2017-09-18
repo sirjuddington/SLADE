@@ -63,6 +63,7 @@ public:
 	unsigned	getId() const { return id; }
 	string		getTypeName();
 	void		setModified();
+	void		setIndex(unsigned index) { this->index = index; }
 
 	MobjPropertyList&	props()						{ return properties; }
 	bool				hasProp(const string& key)	{ return properties[key].hasValue(); }

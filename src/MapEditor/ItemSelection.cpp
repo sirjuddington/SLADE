@@ -147,7 +147,7 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 	}
 	else if (context_->editMode() == Mode::Plan)
 	{
-		auto obj = map.nearestPlanningObject(mouse_pos, 32 / dist_scale);
+		auto obj = context_->planning().nearestObject(mouse_pos, 32 / dist_scale);
 		if (obj && obj->getObjType() == MOBJ_VERTEX)
 			hilight_ = { (int)obj->getIndex(), ItemType::PlanVertex };
 		else if (obj)
@@ -353,6 +353,26 @@ void ItemSelection::selectThingsWithin(const SLADEMap& map, const frect_t& rect)
 			selectItem({ (int)a, ItemType::Thing });
 }
 
+void ItemSelection::selectPlanningObjectsWithin(const frect_t& rect)
+{
+	// Start new change set
+	last_change_.clear();
+
+	if (!context_)
+		return;
+
+	// Select planning vertices within bounds
+	for (auto& vertex : context_->planning().vertices())
+		if (rect.contains(vertex->point()))
+			selectItem({ (int)vertex->getIndex(), ItemType::PlanVertex });
+
+	// Select planning lines within bounds
+	for (auto& line : context_->planning().lines())
+		if (rect.contains(line->v1()->point()) &&
+			rect.contains(line->v2()->point()))
+			selectItem({ (int)line->getIndex(), ItemType::PlanLine });
+}
+
 /* ItemSelection::selectWithin
  * Selects all objects within [rect]. If [add] is false, the
  * selection will be cleared first
@@ -374,6 +394,7 @@ bool ItemSelection::selectWithin(const frect_t& rect, bool add)
 	case Mode::Lines:		selectLinesWithin(context_->map(), rect); break;
 	case Mode::Sectors:		selectSectorsWithin(context_->map(), rect); break;
 	case Mode::Things:		selectThingsWithin(context_->map(), rect); break;
+	case Mode::Plan:		selectPlanningObjectsWithin(rect); break;
 	default: break;
 	}
 
@@ -449,9 +470,9 @@ MapObject* ItemSelection::hilightedObject() const
 		if (context_ && hilight_.index >= 0)
 		{
 			if (hilight_.type == ItemType::PlanLine)
-				return context_->map().planLines()[hilight_.index];
+				return context_->planning().line(hilight_.index);
 			else if (hilight_.type == ItemType::PlanVertex)
-				return context_->map().planVertices()[hilight_.index];
+				return context_->planning().vertex(hilight_.index);
 		}
 	default:
 		return nullptr;
@@ -583,6 +604,52 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 	// If no objects were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0)
 		list.push_back(context_->map().getObject(type, hilight_.index));
+
+	return list;
+}
+
+vector<MapVertex*> ItemSelection::selectedPlanningVertices(bool try_hilight) const
+{
+	if (!context_)
+		return {};
+
+	// Get selected objects
+	vector<MapVertex*> list;
+	for (auto& item : selection_)
+	{
+		if (item.type == ItemType::PlanVertex)
+			list.push_back(context_->planning().vertex(item.index));
+	}
+
+	// If no objects were selected, try the hilight
+	if (try_hilight && list.empty() && hilight_.index >= 0)
+	{
+		if (hilight_.type == ItemType::PlanVertex)
+			list.push_back(context_->planning().vertex(hilight_.index));
+	}
+
+	return list;
+}
+
+vector<MapLine*> ItemSelection::selectedPlanningLines(bool try_hilight) const
+{
+	if (!context_)
+		return {};
+
+	// Get selected objects
+	vector<MapLine*> list;
+	for (auto& item : selection_)
+	{
+		if (item.type == ItemType::PlanLine)
+			list.push_back(context_->planning().line(item.index));
+	}
+
+	// If no objects were selected, try the hilight
+	if (try_hilight && list.empty() && hilight_.index >= 0)
+	{
+		if (hilight_.type == ItemType::PlanLine)
+			list.push_back(context_->planning().line(hilight_.index));
+	}
 
 	return list;
 }

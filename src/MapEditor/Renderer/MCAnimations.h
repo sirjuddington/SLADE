@@ -31,8 +31,8 @@ public:
 	MCASelboxFader(long start, fpoint2_t tl, fpoint2_t br);
 	~MCASelboxFader();
 
-	bool update(long time);
-	void draw();
+	bool update(long time) override;
+	void draw() override;
 };
 
 class MCAThingSelection : public MCAnimation
@@ -48,8 +48,8 @@ public:
 	MCAThingSelection(long start, double x, double y, double radius, double scale_inv, bool select = true);
 	~MCAThingSelection();
 
-	bool update(long time);
-	void draw();
+	bool update(long time) override;
+	void draw() override;
 };
 
 class MapLine;
@@ -58,15 +58,16 @@ class MCALineSelection : public MCAnimation
 private:
 	vector<frect_t>	lines;
 	vector<frect_t>	tabs;
-	bool	select;
-	float	fade;
+	bool			select;
+	float			fade;
+	bool			dir_tab;
 
 public:
-	MCALineSelection(long start, vector<MapLine*>& lines, bool select = true);
+	MCALineSelection(long start, vector<MapLine*>& lines, bool select = true, bool dir_tab = true);
 	~MCALineSelection();
 
-	bool update(long time);
-	void draw();
+	bool update(long time) override;
+	void draw() override;
 };
 
 class MapVertex;
@@ -82,8 +83,8 @@ public:
 	MCAVertexSelection(long start, vector<MapVertex*>& verts, double size, bool select = true);
 	~MCAVertexSelection();
 
-	bool update(long time);
-	void draw();
+	bool update(long time) override;
+	void draw() override;
 };
 
 class Polygon2D;
@@ -98,8 +99,8 @@ public:
 	MCASectorSelection(long start, vector<Polygon2D*>& polys, bool select = true);
 	~MCASectorSelection();
 
-	bool update(long time);
-	void draw();
+	bool update(long time) override;
+	void draw() override;
 };
 
 class MCA3dWallSelection : public MCAnimation
@@ -113,8 +114,8 @@ public:
 	MCA3dWallSelection(long start, fpoint3_t points[4], bool select = true);
 	~MCA3dWallSelection();
 
-	bool update(long time);
-	void draw();
+	bool update(long time) override;
+	void draw() override;
 };
 
 class MapSector;
@@ -130,8 +131,8 @@ public:
 	MCA3dFlatSelection(long start, MapSector* sector, plane_t plane, bool select = true);
 	~MCA3dFlatSelection();
 
-	bool update(long time);
-	void draw();
+	bool update(long time) override;
+	void draw() override;
 };
 
 class MapRenderer2D;
@@ -139,28 +140,35 @@ class MapObject;
 class MCAHilightFade : public MCAnimation
 {
 private:
-	MapObject*		object;
-	float			fade;
-	float			init_fade;
-	MapRenderer2D*	renderer;
+	MapObject*			object;
+	float				fade;
+	float				init_fade;
+	MapRenderer2D*		renderer;
+	MapEditor::ItemType	item_type;
 
 public:
-	MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init);
+	MCAHilightFade(
+		long start,
+		MapObject* object,
+		MapRenderer2D* renderer,
+		float fade_init,
+		MapEditor::ItemType item_type
+	);
 	~MCAHilightFade();
 
-	bool update(long time);
-	void draw();
+	bool update(long time) override;
+	void draw() override;
 };
 
 class MapRenderer3D;
 class MCAHilightFade3D : public MCAnimation
 {
 private:
-	int						item_index;
+	int					item_index;
 	MapEditor::ItemType	item_type;
-	float					fade;
-	float					init_fade;
-	MapRenderer3D*			renderer;
+	float				fade;
+	float				init_fade;
+	MapRenderer3D*		renderer;
 
 public:
 	MCAHilightFade3D(
@@ -172,8 +180,8 @@ public:
 	);
 	~MCAHilightFade3D();
 
-	bool update(long time);
-	void draw();
+	bool update(long time) override;
+	void draw() override;
 };
 
 #endif//__MC_ANIMATIONS_H__
