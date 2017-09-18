@@ -41,7 +41,7 @@
 /* MapSide::MapSide
  * MapSide class constructor
  *******************************************************************/
-MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, parent)
+MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(Type::Side, parent)
 {
 	// Init variables
 	this->sector = sector;
@@ -56,7 +56,7 @@ MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, par
 /* MapSide::MapSide
  * MapSide class constructor
  *******************************************************************/
-MapSide::MapSide(SLADEMap* parent) : MapObject(MOBJ_SIDE, parent)
+MapSide::MapSide(SLADEMap* parent) : MapObject(Type::Side, parent)
 {
 	// Init variables
 	this->sector = nullptr;
@@ -77,15 +77,15 @@ MapSide::~MapSide()
  *******************************************************************/
 void MapSide::copy(MapObject* c)
 {
-	if (c->getObjType() != MOBJ_SIDE)
+	if (c->type() != Type::Side)
 		return;
 
 	// Update texture counts (decrement previous)
-	if (parent_map)
+	if (parent_map_)
 	{
-		parent_map->updateTexUsage(tex_lower, -1);
-		parent_map->updateTexUsage(tex_middle, -1);
-		parent_map->updateTexUsage(tex_upper, -1);
+		parent_map_->updateTexUsage(tex_lower, -1);
+		parent_map_->updateTexUsage(tex_middle, -1);
+		parent_map_->updateTexUsage(tex_upper, -1);
 	}
 
 	// Copy properties
@@ -97,11 +97,11 @@ void MapSide::copy(MapObject* c)
 	this->offset_y = side->offset_y;
 
 	// Update texture counts (increment new)
-	if (parent_map)
+	if (parent_map_)
 	{
-		parent_map->updateTexUsage(tex_lower, 1);
-		parent_map->updateTexUsage(tex_middle, 1);
-		parent_map->updateTexUsage(tex_upper, 1);
+		parent_map_->updateTexUsage(tex_lower, 1);
+		parent_map_->updateTexUsage(tex_middle, 1);
+		parent_map_->updateTexUsage(tex_upper, 1);
 	}
 
 	MapObject::copy(c);
@@ -115,7 +115,7 @@ uint8_t MapSide::getLight()
 	int light = 0;
 	bool include_sector = true;
 
-	if (parent_map->currentFormat() == MAP_UDMF &&
+	if (parent_map_->currentFormat() == MAP_UDMF &&
 		Game::configuration().featureSupported(Game::UDMFFeature::SideLighting))
 	{
 		light += intProperty("light");
@@ -139,7 +139,7 @@ uint8_t MapSide::getLight()
  *******************************************************************/
 void MapSide::changeLight(int amount)
 {
-	if (parent_map->currentFormat() == MAP_UDMF &&
+	if (parent_map_->currentFormat() == MAP_UDMF &&
 		Game::configuration().featureSupported(Game::UDMFFeature::SideLighting))
 		setIntProperty("light", intProperty("light") + amount);
 }
@@ -172,7 +172,7 @@ int MapSide::intProperty(const string& key)
 	if (key == "sector")
 	{
 		if (sector)
-			return sector->getIndex();
+			return sector->index();
 		else
 			return -1;
 	}
@@ -192,8 +192,8 @@ void MapSide::setIntProperty(const string& key, int value)
 	// Update modified time
 	setModified();
 
-	if (key == "sector" && parent_map)
-		setSector(parent_map->getSector(value));
+	if (key == "sector" && parent_map_)
+		setSector(parent_map_->getSector(value));
 	else if (key == "offsetx")
 		offset_x = value;
 	else if (key == "offsety")
@@ -227,21 +227,21 @@ void MapSide::setStringProperty(const string& key, const string& value)
 
 	if (key == "texturetop")
 	{
-		if (parent_map) parent_map->updateTexUsage(tex_upper, -1);
+		if (parent_map_) parent_map_->updateTexUsage(tex_upper, -1);
 		tex_upper = value;
-		if (parent_map) parent_map->updateTexUsage(tex_upper, 1);
+		if (parent_map_) parent_map_->updateTexUsage(tex_upper, 1);
 	}
 	else if (key == "texturemiddle")
 	{
-		if (parent_map) parent_map->updateTexUsage(tex_middle, -1);
+		if (parent_map_) parent_map_->updateTexUsage(tex_middle, -1);
 		tex_middle = value;
-		if (parent_map) parent_map->updateTexUsage(tex_middle, 1);
+		if (parent_map_) parent_map_->updateTexUsage(tex_middle, 1);
 	}
 	else if (key == "texturebottom")
 	{
-		if (parent_map) parent_map->updateTexUsage(tex_lower, -1);
+		if (parent_map_) parent_map_->updateTexUsage(tex_lower, -1);
 		tex_lower = value;
-		if (parent_map) parent_map->updateTexUsage(tex_lower, 1);
+		if (parent_map_) parent_map_->updateTexUsage(tex_lower, 1);
 	}
 	else
 		MapObject::setStringProperty(key, value);
@@ -261,11 +261,11 @@ bool MapSide::scriptCanModifyProp(const string& key)
 /* MapSide::writeBackup
  * Write all side info to a mobj_backup_t struct
  *******************************************************************/
-void MapSide::writeBackup(mobj_backup_t* backup)
+void MapSide::writeBackup(Backup* backup)
 {
 	// Sector
 	if (sector)
-		backup->props_internal["sector"] = sector->getId();
+		backup->props_internal["sector"] = sector->id();
 	else
 		backup->props_internal["sector"] = 0;
 
@@ -284,10 +284,10 @@ void MapSide::writeBackup(mobj_backup_t* backup)
 /* MapSide::readBackup
  * Reads all side info from a mobj_backup_t struct
  *******************************************************************/
-void MapSide::readBackup(mobj_backup_t* backup)
+void MapSide::readBackup(Backup* backup)
 {
 	// Sector
-	MapObject* s = parent_map->getObjectById(backup->props_internal["sector"]);
+	MapObject* s = parent_map_->getObjectById(backup->props_internal["sector"]);
 	if (s)
 	{
 		sector->disconnectSide(this);
@@ -303,9 +303,9 @@ void MapSide::readBackup(mobj_backup_t* backup)
 	}
 
 	// Update texture counts (decrement previous)
-	parent_map->updateTexUsage(tex_upper, -1);
-	parent_map->updateTexUsage(tex_middle, -1);
-	parent_map->updateTexUsage(tex_lower, -1);
+	parent_map_->updateTexUsage(tex_upper, -1);
+	parent_map_->updateTexUsage(tex_middle, -1);
+	parent_map_->updateTexUsage(tex_lower, -1);
 
 	// Textures
 	tex_upper = backup->props_internal["texturetop"].getStringValue();
@@ -313,9 +313,9 @@ void MapSide::readBackup(mobj_backup_t* backup)
 	tex_lower = backup->props_internal["texturebottom"].getStringValue();
 
 	// Update texture counts (increment new)
-	parent_map->updateTexUsage(tex_upper, 1);
-	parent_map->updateTexUsage(tex_middle, 1);
-	parent_map->updateTexUsage(tex_lower, 1);
+	parent_map_->updateTexUsage(tex_upper, 1);
+	parent_map_->updateTexUsage(tex_middle, 1);
+	parent_map_->updateTexUsage(tex_lower, 1);
 
 	// Offsets
 	offset_x = backup->props_internal["offsetx"].getIntValue();

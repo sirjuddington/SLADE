@@ -53,9 +53,19 @@ CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
  * Edit2D class constructor
  *******************************************************************/
 Edit2D::Edit2D(MapEditContext& context) :
-	context_{ context },
-	copy_line_{ nullptr, nullptr, &copy_side_front_, &copy_side_back_, nullptr }
+	context_{ context }
 {
+	copy_thing_ = std::make_unique<MapThing>();
+	copy_sector_ = std::make_unique<MapSector>();
+	copy_side_front_ = std::make_unique<MapSide>();
+	copy_side_back_ = std::make_unique<MapSide>();
+	copy_line_ = std::make_unique<MapLine>(
+		nullptr,
+		nullptr,
+		(MapSide*)copy_side_front_.get(),
+		(MapSide*)copy_side_back_.get(),
+		nullptr
+	);
 }
 
 /* Edit2D::mirror
@@ -86,13 +96,13 @@ void Edit2D::mirror(bool x_axis) const
 			// Position
 			if (x_axis)
 				context_.map().moveThing(
-					things[a]->getIndex(),
+					things[a]->index(),
 					bbox.mid_x() - (things[a]->xPos() - bbox.mid_x()),
 					things[a]->yPos()
 				);
 			else
 				context_.map().moveThing(
-					things[a]->getIndex(),
+					things[a]->index(),
 					things[a]->xPos(),
 					bbox.mid_y() - (things[a]->yPos() - bbox.mid_y())
 				);
@@ -157,7 +167,7 @@ void Edit2D::mirror(bool x_axis) const
 			if (x_axis)
 			{
 				context_.map().moveVertex(
-					vertices[a]->getIndex(),
+					vertices[a]->index(),
 					bbox.mid_x() - (vertices[a]->xPos() - bbox.mid_x()),
 					vertices[a]->yPos()
 				);
@@ -165,7 +175,7 @@ void Edit2D::mirror(bool x_axis) const
 			else
 			{
 				context_.map().moveVertex(
-					vertices[a]->getIndex(),
+					vertices[a]->index(),
 					vertices[a]->xPos(),
 					bbox.mid_y() - (vertices[a]->yPos() - bbox.mid_y())
 				);
@@ -712,9 +722,9 @@ void Edit2D::copyProperties(MapObject* object)
 	{
 		// Copy selection/hilight properties
 		if (selection.size() > 0)
-			copy_sector_.copy(context_.map().getSector(selection[0].index));
+			copy_sector_->copy(context_.map().getSector(selection[0].index));
 		else if (selection.hasHilight())
-			copy_sector_.copy(selection.hilightedSector());
+			copy_sector_->copy(selection.hilightedSector());
 
 		// Editor message
 		if (!object)
@@ -727,15 +737,15 @@ void Edit2D::copyProperties(MapObject* object)
 	else if (context_.editMode() == MapEditor::Mode::Things)
 	{
 		// Copy given object properties (if any)
-		if (object && object->getObjType() == MOBJ_THING)
-			copy_thing_.copy(object);
+		if (object && object->type() == MapObject::Type::Thing)
+			copy_thing_->copy(object);
 		else
 		{
 			// Otherwise copy selection/hilight properties
 			if (selection.size() > 0)
-				copy_thing_.copy(context_.map().getThing(selection[0].index));
+				copy_thing_->copy(context_.map().getThing(selection[0].index));
 			else if (selection.hasHilight())
-				copy_thing_.copy(selection.hilightedThing());
+				copy_thing_->copy(selection.hilightedThing());
 			else
 				return;
 		}
@@ -751,9 +761,9 @@ void Edit2D::copyProperties(MapObject* object)
 	else if (context_.editMode() == MapEditor::Mode::Lines)
 	{
 		if (selection.size() > 0)
-			copy_line_.copy(context_.map().getLine(selection[0].index));
+			copy_line_->copy(context_.map().getLine(selection[0].index));
 		else if (selection.hasHilight())
-			copy_line_.copy(selection.hilightedLine());
+			copy_line_->copy(selection.hilightedLine());
 
 		if (!object)
 			context_.addEditorMessage("Copied line properties");
@@ -781,7 +791,7 @@ void Edit2D::pasteProperties()
 		// Paste properties to selection/hilight
 		context_.beginUndoRecord("Paste Sector Properties", true, false, false);
 		for (auto sector : context_.selection().selectedSectors())
-			sector->copy(&copy_sector_);
+			sector->copy(copy_sector_.get());
 		context_.endUndoRecord();
 
 		// Editor message
@@ -802,7 +812,7 @@ void Edit2D::pasteProperties()
 			// Paste properties (but keep position)
 			double x = thing->xPos();
 			double y = thing->yPos();
-			thing->copy(&copy_thing_);
+			thing->copy(copy_thing_.get());
 			thing->setFloatProperty("x", x);
 			thing->setFloatProperty("y", y);
 		}
@@ -822,7 +832,7 @@ void Edit2D::pasteProperties()
 		// Paste properties to selection/hilight
 		context_.beginUndoRecord("Paste Line Properties", true, false, false);
 		for (auto line : context_.selection().selectedLines())
-			line->copy(&copy_line_);
+			line->copy(copy_line_.get());
 		context_.endUndoRecord();
 
 		// Editor message
@@ -923,8 +933,9 @@ void Edit2D::createThing(double x, double y) const
 	if (thing_copied_ && thing)
 	{
 		// Copy type and angle from the last copied thing
-		thing->setIntProperty("type", copy_thing_.getType());
-		thing->setIntProperty("angle", copy_thing_.getAngle());
+		auto ct = (MapThing*)copy_thing_.get();
+		thing->setIntProperty("type", ct->getType());
+		thing->setIntProperty("angle", ct->getAngle());
 	}
 
 	// End undo step
@@ -1027,7 +1038,7 @@ void Edit2D::deleteVertex() const
 	auto verts = context_.selection().selectedVertices();
 	int index = -1;
 	if (verts.size() == 1)
-		index = verts[0]->getIndex();
+		index = verts[0]->index();
 
 	// Clear hilight and selection
 	context_.selection().clear();
@@ -1059,7 +1070,7 @@ void Edit2D::deleteLine() const
 	auto lines = context_.selection().selectedLines();
 	int index = -1;
 	if (lines.size() == 1)
-		index = lines[0]->getIndex();
+		index = lines[0]->index();
 
 	// Clear hilight and selection
 	context_.selection().clear();
@@ -1091,7 +1102,7 @@ void Edit2D::deleteThing() const
 	auto things = context_.selection().selectedThings();
 	int index = -1;
 	if (things.size() == 1)
-		index = things[0]->getIndex();
+		index = things[0]->index();
 
 	// Clear hilight and selection
 	context_.selection().clear();
@@ -1120,7 +1131,7 @@ void Edit2D::deleteSector() const
 	auto sectors = context_.selection().selectedSectors();
 	int index = -1;
 	if (sectors.size() == 1)
-		index = sectors[0]->getIndex();
+		index = sectors[0]->index();
 
 	// Clear hilight and selection
 	context_.selection().clear();

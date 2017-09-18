@@ -577,20 +577,20 @@ void ObjectEditGroup::applyEdit()
 	// Get map
 	SLADEMap* map = nullptr;
 	if (!vertices.empty())
-		map = vertices[0]->map_vertex->getParentMap();
+		map = vertices[0]->map_vertex->parentMap();
 	else if (!things.empty())
-		map = things[0].map_thing->getParentMap();
+		map = things[0].map_thing->parentMap();
 	else
 		return;
 
 	// Move vertices
 	for (auto vertex : vertices)
-		map->moveVertex(vertex->map_vertex->getIndex(), vertex->position.x, vertex->position.y);
+		map->moveVertex(vertex->map_vertex->index(), vertex->position.x, vertex->position.y);
 
 	// Move things
 	for (auto& thing : things)
 	{
-		map->moveThing(thing.map_thing->getIndex(), thing.position.x, thing.position.y);
+		map->moveThing(thing.map_thing->index(), thing.position.x, thing.position.y);
 		thing.map_thing->setIntProperty("angle", thing.angle);
 	}
 

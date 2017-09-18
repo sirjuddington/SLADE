@@ -18,7 +18,7 @@ private:
 	wxPropertyGrid*			pg_properties;
 	wxPropertyGrid*			pg_props_side1;
 	wxPropertyGrid*			pg_props_side2;
-	int						last_type;
+	MapObject::Type			last_type;
 	string					last_config;
 	wxStaticText*			label_item;
 	vector<MOPGProperty*>	properties;
@@ -43,12 +43,12 @@ private:
 	MOPGProperty*	addLineFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
 	MOPGProperty*	addThingFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
 	MOPGProperty*	addTextureProperty(wxPGProperty* group, string label, string propname, int textype, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
-	void			addUDMFProperty(UDMFProperty& prop, int objtype, string basegroup = "", wxPropertyGrid* grid = nullptr);
+	void			addUDMFProperty(UDMFProperty& prop, MapObject::Type objtype, string basegroup = "", wxPropertyGrid* grid = nullptr);
 
 	bool	setBoolProperty(wxPGProperty* prop, bool value, bool force_set = false);
 
-	void	setupType(int objtype);
-	void	setupTypeUDMF(int objtype);
+	void	setupType(MapObject::Type objtype);
+	void	setupTypeUDMF(MapObject::Type objtype);
 
 public:
 	MapObjectPropsPanel(wxWindow* parent, bool no_apply = false);

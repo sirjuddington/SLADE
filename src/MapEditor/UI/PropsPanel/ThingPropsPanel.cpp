@@ -600,7 +600,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	int col = 0;
 
 	// Get all UDMF properties
-	auto& props = Game::configuration().allUDMFProperties(MOBJ_THING);
+	auto& props = Game::configuration().allUDMFProperties(MapObject::Type::Thing);
 
 	// UDMF flags
 	if (map_format == MAP_UDMF)
@@ -723,7 +723,7 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	vector<string> flags;
 	for (unsigned a = 0; a < udmf_flags_extra.size(); a++)
 	{
-		UDMFProperty* prop = Game::configuration().getUDMFProperty(udmf_flags_extra[a], MOBJ_THING);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(udmf_flags_extra[a], MapObject::Type::Thing);
 		flags.push_back(prop->name());
 	}
 

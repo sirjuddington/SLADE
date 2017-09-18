@@ -244,7 +244,7 @@ MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool sel
 		this->lines.push_back(frect_t(lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2()));
 
 		// Calculate line direction tab
-		fpoint2_t mid = lines[a]->getPoint(MOBJ_POINT_MID);
+		fpoint2_t mid = lines[a]->point();
 		fpoint2_t tab = lines[a]->dirTabPoint();
 
 		this->tabs.push_back(frect_t(mid.x, mid.y, tab.x, tab.y));
@@ -704,9 +704,9 @@ void MCAHilightFade::draw()
 	case IT::PlanLine:
 		renderer->renderLineHilight((MapLine*)object, fade, false); break;
 	case IT::Sector:
-		renderer->renderFlatHilight(object->getIndex(), fade); break;
+		renderer->renderFlatHilight(object->index(), fade); break;
 	case IT::Thing:
-		renderer->renderThingHilight(object->getIndex(), fade); break;
+		renderer->renderThingHilight(object->index(), fade); break;
 	case IT::Vertex:
 	case IT::PlanVertex:
 		renderer->renderVertexHilight((MapVertex*)object, fade); break;

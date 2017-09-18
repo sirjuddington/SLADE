@@ -82,9 +82,17 @@ ShowItemDialog::~ShowItemDialog()
 /* ShowItemDialog::getType
  * Returns the selected object type
  *******************************************************************/
-int ShowItemDialog::getType()
+MapObject::Type ShowItemDialog::getType()
 {
-	return choice_type->GetSelection() + 1;
+	switch (choice_type->GetSelection())
+	{
+	case 0: return MapObject::Type::Vertex;
+	case 1: return MapObject::Type::Line;
+	case 2: return MapObject::Type::Side;
+	case 3: return MapObject::Type::Sector;
+	case 4: return MapObject::Type::Thing;
+	default: return MapObject::Type::Unknown;
+	}
 }
 
 /* ShowItemDialog::getIndex
@@ -102,7 +110,7 @@ int ShowItemDialog::getIndex()
 /* ShowItemDialog::setType
  * Sets the object type dropdown to [type]
  *******************************************************************/
-void ShowItemDialog::setType(int type)
+void ShowItemDialog::setType(MapObject::Type type)
 {
-	choice_type->Select(type - 1);
+	choice_type->Select((int)type - 1);
 }

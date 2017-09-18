@@ -968,7 +968,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 		if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 		{
 			// Get all UDMF properties
-			auto& props = Game::configuration().allUDMFProperties(MOBJ_LINE);
+			auto& props = Game::configuration().allUDMFProperties(MapObject::Type::Line);
 
 			// Get all UDMF trigger properties
 			std::map<string, wxFlexGridSizer*> named_flexgrids;

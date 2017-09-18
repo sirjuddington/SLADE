@@ -42,7 +42,7 @@
 /* MapLine::MapLine
  * MapLine class constructor
  *******************************************************************/
-MapLine::MapLine(SLADEMap* parent) : MapObject(MOBJ_LINE, parent)
+MapLine::MapLine(SLADEMap* parent) : MapObject(Type::Line, parent)
 {
 	// Init variables
 	vertex1 = nullptr;
@@ -57,7 +57,8 @@ MapLine::MapLine(SLADEMap* parent) : MapObject(MOBJ_LINE, parent)
 /* MapLine::MapLine
  * MapLine class constructor
  *******************************************************************/
-MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent) : MapObject(MOBJ_LINE, parent)
+MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent) :
+	MapObject(Type::Line, parent)
 {
 	// Init variables
 	vertex1 = v1;
@@ -144,7 +145,7 @@ double MapLine::y2()
 int MapLine::v1Index()
 {
 	if (vertex1)
-		return vertex1->getIndex();
+		return vertex1->index();
 	else
 		return -1;
 }
@@ -155,7 +156,7 @@ int MapLine::v1Index()
 int MapLine::v2Index()
 {
 	if (vertex2)
-		return vertex2->getIndex();
+		return vertex2->index();
 	else
 		return -1;
 }
@@ -166,7 +167,7 @@ int MapLine::v2Index()
 int MapLine::s1Index()
 {
 	if (side1)
-		return side1->getIndex();
+		return side1->index();
 	else
 		return -1;
 }
@@ -177,7 +178,7 @@ int MapLine::s1Index()
 int MapLine::s2Index()
 {
 	if (side2)
-		return side2->getIndex();
+		return side2->index();
 	else
 		return -1;
 }
@@ -310,7 +311,7 @@ void MapLine::setIntProperty(const string& key, int value)
 	if (key == "v1")
 	{
 		MapVertex* vertex;
-		if ((vertex = parent_map->getVertex(value)))
+		if ((vertex = parent_map_->getVertex(value)))
 		{
 			vertex1->disconnectLine(this);
 			vertex1 = vertex;
@@ -321,7 +322,7 @@ void MapLine::setIntProperty(const string& key, int value)
 	else if (key == "v2")
 	{
 		MapVertex* vertex;
-		if ((vertex = parent_map->getVertex(value)))
+		if ((vertex = parent_map_->getVertex(value)))
 		{
 			vertex2->disconnectLine(this);
 			vertex2 = vertex;
@@ -333,15 +334,15 @@ void MapLine::setIntProperty(const string& key, int value)
 	// Sides
 	else if (key == "sidefront")
 	{
-		MapSide* side = parent_map->getSide(value);
+		MapSide* side = parent_map_->getSide(value);
 		if (side)
-			parent_map->setLineSide(this, side, true);
+			parent_map_->setLineSide(this, side, true);
 	}
 	else if (key == "sideback")
 	{
-		MapSide* side = parent_map->getSide(value);
+		MapSide* side = parent_map_->getSide(value);
 		if (side)
-			parent_map->setLineSide(this, side, false);
+			parent_map_->setLineSide(this, side, false);
 	}
 
 	// Special
@@ -428,8 +429,8 @@ bool MapLine::scriptCanModifyProp(const string& key)
  *******************************************************************/
 void MapLine::setS1(MapSide* side)
 {
-	if (!side1 && parent_map)
-		parent_map->setLineSide(this, side, true);
+	if (!side1 && parent_map_)
+		parent_map_->setLineSide(this, side, true);
 }
 
 /* MapLine::setS1
@@ -437,15 +438,15 @@ void MapLine::setS1(MapSide* side)
  *******************************************************************/
 void MapLine::setS2(MapSide* side)
 {
-	if (!side2 && parent_map)
-		parent_map->setLineSide(this, side, false);
+	if (!side2 && parent_map_)
+		parent_map_->setLineSide(this, side, false);
 }
 
 /* MapLine::getPoint
  * Returns the object point [point]. Currently for lines this is
  * always the mid point
  *******************************************************************/
-fpoint2_t MapLine::getPoint(uint8_t point)
+fpoint2_t MapLine::point(Point point)
 {
 	//if (point == MOBJ_POINT_MID || point == MOBJ_POINT_WITHIN)
 	return point1() + (point2() - point1()) * 0.5;
@@ -456,7 +457,7 @@ fpoint2_t MapLine::getPoint(uint8_t point)
  *******************************************************************/
 fpoint2_t MapLine::point1()
 {
-	return vertex1->point();
+	return vertex1->pos();
 }
 
 /* MapLine::point2
@@ -464,7 +465,7 @@ fpoint2_t MapLine::point1()
  *******************************************************************/
 fpoint2_t MapLine::point2()
 {
-	return vertex2->point();
+	return vertex2->pos();
 }
 
 /* MapLine::seg
@@ -472,7 +473,7 @@ fpoint2_t MapLine::point2()
  *******************************************************************/
 fseg2_t MapLine::seg()
 {
-	return fseg2_t(vertex1->point(), vertex2->point());
+	return fseg2_t(vertex1->pos(), vertex2->pos());
 }
 
 /* MapLine::getLength
@@ -731,26 +732,26 @@ void MapLine::flip(bool sides)
 	}
 
 	resetInternals();
-	if (parent_map)
-		parent_map->setGeometryUpdated();
+	if (parent_map_)
+		parent_map_->setGeometryUpdated();
 }
 
 /* MapLine::writeBackup
  * Write all line info to a mobj_backup_t struct
  *******************************************************************/
-void MapLine::writeBackup(mobj_backup_t* backup)
+void MapLine::writeBackup(Backup* backup)
 {
 	// Vertices
-	backup->props_internal["v1"] = vertex1->getId();
-	backup->props_internal["v2"] = vertex2->getId();
+	backup->props_internal["v1"] = vertex1->id();
+	backup->props_internal["v2"] = vertex2->id();
 
 	// Sides
 	if (side1)
-		backup->props_internal["s1"] = side1->getId();
+		backup->props_internal["s1"] = side1->id();
 	else
 		backup->props_internal["s1"] = 0;
 	if (side2)
-		backup->props_internal["s2"] = side2->getId();
+		backup->props_internal["s2"] = side2->id();
 	else
 		backup->props_internal["s2"] = 0;
 
@@ -762,11 +763,11 @@ void MapLine::writeBackup(mobj_backup_t* backup)
 /* MapLine::readBackup
  * Reads all line info from a mobj_backup_t struct
  *******************************************************************/
-void MapLine::readBackup(mobj_backup_t* backup)
+void MapLine::readBackup(Backup* backup)
 {
 	// Vertices
-	MapObject* v1 = parent_map->getObjectById(backup->props_internal["v1"]);
-	MapObject* v2 = parent_map->getObjectById(backup->props_internal["v2"]);
+	MapObject* v1 = parent_map_->getObjectById(backup->props_internal["v1"]);
+	MapObject* v2 = parent_map_->getObjectById(backup->props_internal["v2"]);
 	if (v1)
 	{
 		vertex1->disconnectLine(this);
@@ -783,8 +784,8 @@ void MapLine::readBackup(mobj_backup_t* backup)
 	}
 
 	// Sides
-	MapObject* s1 = parent_map->getObjectById(backup->props_internal["s1"]);
-	MapObject* s2 = parent_map->getObjectById(backup->props_internal["s2"]);
+	MapObject* s1 = parent_map_->getObjectById(backup->props_internal["s1"]);
+	MapObject* s2 = parent_map_->getObjectById(backup->props_internal["s2"]);
 	side1 = (MapSide*)s1;
 	side2 = (MapSide*)s2;
 	if (side1) side1->parent = this;
@@ -800,7 +801,7 @@ void MapLine::readBackup(mobj_backup_t* backup)
  *******************************************************************/
 void MapLine::copy(MapObject* c)
 {
-	if(getObjType() != c->getObjType())
+	if(type() != c->type())
 		return;
 
 	MapObject::copy(c);

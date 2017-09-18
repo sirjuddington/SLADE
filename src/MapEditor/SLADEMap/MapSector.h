@@ -106,7 +106,7 @@ public:
 	template<PlaneType p>
 	void	setPlane(plane_t plane);
 
-	fpoint2_t			getPoint(uint8_t point) override;
+	fpoint2_t			point(Point point = Point::Mid) override;
 	void				resetBBox() { bbox.reset(); }
 	bbox_t				boundingBox();
 	vector<MapSide*>&	connectedSides() { return connected_sides; }
@@ -128,14 +128,14 @@ public:
 
 	void	updateBBox();
 
-	void	writeBackup(mobj_backup_t* backup) override;
-	void	readBackup(mobj_backup_t* backup) override;
+	void	writeBackup(Backup* backup) override;
+	void	readBackup(Backup* backup) override;
 
 	operator Debuggable() const {
 		if (!this)
 			return Debuggable("<sector NULL>");
 
-		return Debuggable(S_FMT("<sector %u>", index));
+		return Debuggable(S_FMT("<sector %u>", index_));
 	}
 };
 

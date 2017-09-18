@@ -74,12 +74,12 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 
 	// Update info string
 	if (pos_frac)
-		info = S_FMT("Vertex %d: (%1.4f, %1.4f)", vertex->getIndex(), vertex->xPos(), vertex->yPos());
+		info = S_FMT("Vertex %d: (%1.4f, %1.4f)", vertex->index(), vertex->xPos(), vertex->yPos());
 	else
-		info = S_FMT("Vertex %d: (%d, %d)", vertex->getIndex(), (int)vertex->xPos(), (int)vertex->yPos());
+		info = S_FMT("Vertex %d: (%d, %d)", vertex->index(), (int)vertex->xPos(), (int)vertex->yPos());
 
 	if (Global::debug)
-		info += S_FMT(" (%d)", vertex->getId());
+		info += S_FMT(" (%d)", vertex->id());
 }
 
 /* VertexInfoOverlay::draw

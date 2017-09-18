@@ -1246,17 +1246,17 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
 		vector<MapObject*>& objects = parent->getObjects();
 		if (objects.size() == 0)
 			return false;
-		if (!objects[0]->getParentMap())
+		if (!objects[0]->parentMap())
 			return false;
 
 		// Get unused tag/id depending on object type
 		int tag = GetValue().GetInteger();
 		if (tagtype == TT_SECTORTAG)//objects[0]->getObjType() == MOBJ_SECTOR)
-			tag = objects[0]->getParentMap()->findUnusedSectorTag();
+			tag = objects[0]->parentMap()->findUnusedSectorTag();
 		else if (tagtype == TT_LINEID)//objects[0]->getObjType() == MOBJ_LINE)
-			tag = objects[0]->getParentMap()->findUnusedLineId();
+			tag = objects[0]->parentMap()->findUnusedLineId();
 		else if (tagtype == TT_THINGID)//objects[0]->getObjType() == MOBJ_THING)
-			tag = objects[0]->getParentMap()->findUnusedThingId();
+			tag = objects[0]->parentMap()->findUnusedThingId();
 
 		GetGrid()->ChangePropertyValue(this, tag);
 		return true;

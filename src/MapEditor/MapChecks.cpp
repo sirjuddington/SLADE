@@ -150,7 +150,7 @@ public:
 	string problemDesc(unsigned index) override
 	{
 		if (index < lines.size())
-			return S_FMT("Line %d missing %s", lines[index]->getIndex(), texName(parts[index]));
+			return S_FMT("Line %d missing %s", lines[index]->index(), texName(parts[index]));
 		else
 			return "No missing textures found";
 	}
@@ -304,8 +304,8 @@ public:
 		int special = mo->intProperty("special");
 		return S_FMT(
 			"%s %d: Special %d (%s) requires a tag",
-			mo->getObjType() == MOBJ_LINE ? "Line" : "Thing",
-			mo->getIndex(),
+			mo->type() == MapObject::Type::Line ? "Line" : "Thing",
+			mo->index(),
 			special,
 			Game::configuration().actionSpecial(special).name()
 		);
@@ -447,8 +447,8 @@ public:
 		int special = objects[index]->intProperty("special");
 		return S_FMT(
 			"%s %d: No object tagged %d for Special %d (%s)", 
-			objects[index]->getObjType() == MOBJ_LINE ? "Line" : "Thing",
-			objects[index]->getIndex(), 
+			objects[index]->type() == MapObject::Type::Line ? "Line" : "Thing",
+			objects[index]->index(), 
 			objects[index]->intProperty("arg0"), 
 			special, Game::configuration().actionSpecial(special).name()
 		);
@@ -557,7 +557,7 @@ public:
 			return "No intersecting lines found";
 
 		return S_FMT("Lines %d and %d are intersecting at (%1.2f, %1.2f)",
-			intersections[index].line1->getIndex(), intersections[index].line2->getIndex(),
+			intersections[index].line1->index(), intersections[index].line2->index(),
 			intersections[index].intersect_point.x, intersections[index].intersect_point.y);
 	}
 
@@ -687,7 +687,7 @@ public:
 		if (index >= overlaps.size())
 			return "No overlapping lines found";
 
-		return S_FMT("Lines %d and %d are overlapping", overlaps[index].line1->getIndex(), overlaps[index].line2->getIndex());
+		return S_FMT("Lines %d and %d are overlapping", overlaps[index].line1->index(), overlaps[index].line2->index());
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
@@ -920,7 +920,7 @@ public:
 		if (index >= overlaps.size())
 			return "No overlapping things found";
 
-		return S_FMT("Things %d and %d are overlapping", overlaps[index].thing1->getIndex(), overlaps[index].thing2->getIndex());
+		return S_FMT("Things %d and %d are overlapping", overlaps[index].thing1->index(), overlaps[index].thing2->index());
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
@@ -977,9 +977,9 @@ public:
 			return "";
 
 		if (fix_type == 0)
-			return S_FMT("Delete Thing #%d", overlaps[index].thing1->getIndex());
+			return S_FMT("Delete Thing #%d", overlaps[index].thing1->index());
 		if (fix_type == 1)
-			return S_FMT("Delete Thing #%d", overlaps[index].thing2->getIndex());
+			return S_FMT("Delete Thing #%d", overlaps[index].thing2->index());
 
 		return "";
 	}
@@ -1085,7 +1085,7 @@ public:
 		if (index >= lines.size())
 			return "No unknown wall textures found";
 
-		string line = S_FMT("Line %d has unknown ", lines[index]->getIndex());
+		string line = S_FMT("Line %d has unknown ", lines[index]->index());
 		switch (parts[index])
 		{
 		case TEX_FRONT_UPPER:
@@ -1240,9 +1240,9 @@ public:
 
 		MapSector* sector = sectors[index];
 		if (floor[index])
-			return S_FMT("Sector %d has unknown floor texture \"%s\"", sector->getIndex(), sector->getFloorTex());
+			return S_FMT("Sector %d has unknown floor texture \"%s\"", sector->index(), sector->getFloorTex());
 		else
-			return S_FMT("Sector %d has unknown ceiling texture \"%s\"", sector->getIndex(), sector->getCeilingTex());
+			return S_FMT("Sector %d has unknown ceiling texture \"%s\"", sector->index(), sector->getCeilingTex());
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
@@ -1334,7 +1334,7 @@ public:
 		if (index >= things.size())
 			return "No unknown thing types found";
 
-		return S_FMT("Thing %d has unknown type %d", things[index]->getIndex(), things[index]->getType());
+		return S_FMT("Thing %d has unknown type %d", things[index]->index(), things[index]->getType());
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
@@ -1454,7 +1454,7 @@ public:
 		if (index >= things.size())
 			return "No stuck things found";
 
-		return S_FMT("Thing %d is stuck inside line %d", things[index]->getIndex(), lines[index]->getIndex());
+		return S_FMT("Thing %d is stuck inside line %d", things[index]->index(), lines[index]->index());
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
@@ -1477,7 +1477,7 @@ public:
 			editor->beginUndoRecord("Move Thing", true, false, false);
 
 			// Move along line direction
-			map->moveThing(thing->getIndex(), np.x - (line->frontVector().x * dist), np.y - (line->frontVector().y * dist));
+			map->moveThing(thing->index(), np.x - (line->frontVector().x * dist), np.y - (line->frontVector().y * dist));
 
 			editor->endUndoRecord();
 
@@ -1573,15 +1573,15 @@ public:
 		if (invalid_refs[index].front)
 		{
 			side = "front";
-			sector = s1 ? S_FMT("%d", s1->getIndex()) : "(none)";
+			sector = s1 ? S_FMT("%d", s1->index()) : "(none)";
 		}
 		else
 		{
 			side = "back";
-			sector = s2 ? S_FMT("%d", s2->getIndex()) : "(none)";
+			sector = s2 ? S_FMT("%d", s2->index()) : "(none)";
 		}
 
-		return S_FMT("Line %d has potentially wrong %s sector %s", invalid_refs[index].line->getIndex(), side, sector);
+		return S_FMT("Line %d has potentially wrong %s sector %s", invalid_refs[index].line->index(), side, sector);
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
@@ -1596,7 +1596,7 @@ public:
 			// Set sector
 			sector_ref_t ref = invalid_refs[index];
 			if (ref.sector)
-				map->setLineSector(ref.line->getIndex(), ref.sector->getIndex(), ref.front);
+				map->setLineSector(ref.line->index(), ref.sector->index(), ref.front);
 			else
 			{
 				// Remove side if no sector
@@ -1655,7 +1655,7 @@ public:
 
 			MapSector* sector = invalid_refs[index].sector;
 			if (sector)
-				return S_FMT("Set to Sector #%d", sector->getIndex());
+				return S_FMT("Set to Sector #%d", sector->index());
 			else
 				return S_FMT("Clear Sector");
 		}
@@ -1919,8 +1919,8 @@ public:
 			return S_FMT("No unknown %s found", special ? "special" : "line type");
 
 		return S_FMT("%s %d has an unknown %s",
-			objects[index]->getObjType() == MOBJ_LINE ? "Line" : "Thing",
-			objects[index]->getIndex(), special ? "special" : "type");
+			objects[index]->type() == MapObject::Type::Line ? "Line" : "Thing",
+			objects[index]->index(), special ? "special" : "type");
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
@@ -1997,7 +1997,7 @@ public:
 		if (index >= things.size())
 			return S_FMT("No obsolete things found");
 
-		return S_FMT("Thing %d is obsolete", things[index]->getIndex());
+		return S_FMT("Thing %d is obsolete", things[index]->index());
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override

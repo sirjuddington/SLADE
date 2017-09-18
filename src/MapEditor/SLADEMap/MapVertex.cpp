@@ -41,7 +41,7 @@
 /* MapVertex::MapVertex
  * MapVertex class constructor
  *******************************************************************/
-MapVertex::MapVertex(SLADEMap* parent) : MapObject(MOBJ_VERTEX, parent)
+MapVertex::MapVertex(SLADEMap* parent) : MapObject(Type::Vertex, parent)
 {
 	// Init variables
 	this->x = 0;
@@ -51,7 +51,7 @@ MapVertex::MapVertex(SLADEMap* parent) : MapObject(MOBJ_VERTEX, parent)
 /* MapVertex::MapVertex
  * MapVertex class constructor
  *******************************************************************/
-MapVertex::MapVertex(double x, double y, SLADEMap* parent) : MapObject(MOBJ_VERTEX, parent)
+MapVertex::MapVertex(double x, double y, SLADEMap* parent) : MapObject(Type::Vertex, parent)
 {
 	// Init variables
 	this->x = x;
@@ -69,18 +69,9 @@ MapVertex::~MapVertex()
  * Returns the object point [point]. Currently for vertices this is
  * always the vertex position
  *******************************************************************/
-fpoint2_t MapVertex::getPoint(uint8_t point)
+fpoint2_t MapVertex::point(Point point)
 {
-	return this->point();
-}
-
-/* MapVertex::point
- * Returns the vertex position, more explicitly than the overridden
- * getPoint
- *******************************************************************/
-fpoint2_t MapVertex::point()
-{
-	return fpoint2_t(x, y);
+	return this->pos();
 }
 
 /* MapVertex::intProperty
@@ -204,8 +195,8 @@ void MapVertex::move(fpoint2_t offset)
 	for (auto cl : connected_lines)
 		cl->resetInternals();
 
-	if (parent_map)
-		parent_map->setGeometryUpdated();
+	if (parent_map_)
+		parent_map_->setGeometryUpdated();
 }
 
 void MapVertex::moveTo(fpoint2_t new_pos)
@@ -218,14 +209,14 @@ void MapVertex::moveTo(fpoint2_t new_pos)
 	for (auto cl : connected_lines)
 		cl->resetInternals();
 
-	if (parent_map)
-		parent_map->setGeometryUpdated();
+	if (parent_map_)
+		parent_map_->setGeometryUpdated();
 }
 
 /* MapVertex::writeBackup
  * Write all vertex info to a mobj_backup_t struct
  *******************************************************************/
-void MapVertex::writeBackup(mobj_backup_t* backup)
+void MapVertex::writeBackup(Backup* backup)
 {
 	// Position
 	backup->props_internal["x"] = x;
@@ -235,7 +226,7 @@ void MapVertex::writeBackup(mobj_backup_t* backup)
 /* MapVertex::readBackup
  * Read all vertex info from a mobj_backup_t struct
  *******************************************************************/
-void MapVertex::readBackup(mobj_backup_t* backup)
+void MapVertex::readBackup(Backup* backup)
 {
 	// Position
 	x = backup->props_internal["x"].getFloatValue();

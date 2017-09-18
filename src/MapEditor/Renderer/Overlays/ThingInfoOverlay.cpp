@@ -89,9 +89,9 @@ void ThingInfoOverlay::update(MapThing* thing)
 	auto& tt = Game::configuration().thingType(thing->getType());
 	string type = S_FMT("%s (Type %d)", tt.name(), thing->getType());
 	if (Global::debug)
-		info_text += S_FMT("Thing #%d (%d): %s\n", thing->getIndex(), thing->getId(), type);
+		info_text += S_FMT("Thing #%d (%d): %s\n", thing->index(), thing->id(), type);
 	else
-		info_text += S_FMT("Thing #%d: %s\n", thing->getIndex(), type);
+		info_text += S_FMT("Thing #%d: %s\n", thing->index(), type);
 
 	// Position
 	if (map_format != MAP_DOOM)
@@ -122,7 +122,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 
 	// Special and Args (if in hexen format or udmf with thing args)
 	if (map_format == MAP_HEXEN ||
-	        (map_format == MAP_UDMF && Game::configuration().getUDMFProperty("arg0", MOBJ_THING)))
+	        (map_format == MAP_UDMF && Game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
 	{
 		int as_id = thing->intProperty("special");
 		info_text += S_FMT("Special: %d (%s)\n", as_id, Game::configuration().actionSpecialName(as_id));

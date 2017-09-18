@@ -414,7 +414,7 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 		show_direction == lines_dirs &&
 		map->nLines() == n_lines &&
 		map->geometryUpdated() <= lines_updated &&
-		!map->modifiedSince(lines_updated, MOBJ_LINE))
+		!map->modifiedSince(lines_updated, MapObject::Type::Line))
 	{
 		glCallList(list_lines);
 		return;
@@ -455,7 +455,7 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 		// Direction tab
 		if (show_direction)
 		{
-			fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
+			fpoint2_t mid = line->point();
 			fpoint2_t tab = line->dirTabPoint();
 			glVertex2d(mid.x, mid.y);
 			glVertex2d(tab.x, tab.y);
@@ -482,7 +482,7 @@ void MapRenderer2D::renderLinesVBO(bool show_direction, float alpha)
 		show_direction != lines_dirs ||
 		map->nLines() != n_lines ||
 		map->geometryUpdated() > lines_updated ||
-		map->modifiedSince(lines_updated, MOBJ_LINE))
+		map->modifiedSince(lines_updated, MapObject::Type::Line))
 		updateLinesVBO(show_direction, alpha);
 
 	// Disable any blending
@@ -553,7 +553,7 @@ void MapRenderer2D::renderLineHilight(MapLine* line, float fade, bool tab)
 	// Direction tab
 	if (tab)
 	{
-		fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
+		fpoint2_t mid = line->point();
 		fpoint2_t tab = line->dirTabPoint();
 		glBegin(GL_LINES);
 		glVertex2d(mid.x, mid.y);
@@ -601,7 +601,7 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 		// Direction tab
 		if (item.type == MapEditor::ItemType::Line)
 		{
-			fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
+			fpoint2_t mid = line->point();
 			fpoint2_t tab = line->dirTabPoint();
 			glVertex2d(mid.x, mid.y);
 			glVertex2d(tab.x, tab.y);
@@ -644,7 +644,7 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 		glEnd();
 
 		// Direction tab
-		fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
+		fpoint2_t mid = line->point();
 		fpoint2_t tab = line->dirTabPoint();
 		glBegin(GL_LINES);
 		glVertex2d(mid.x, mid.y);
@@ -655,7 +655,14 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 		if (object && action_lines)
 		{
 			glLineWidth(line_width*1.5f);
-			Drawing::drawArrow(line->getPoint(MOBJ_POINT_WITHIN), object->getPoint(MOBJ_POINT_WITHIN), col, false, arrowhead_angle, arrowhead_length);
+			Drawing::drawArrow(
+				line->point(MapObject::Point::Within),
+				object->point(MapObject::Point::Within),
+				col,
+				false,
+				arrowhead_angle,
+				arrowhead_length
+			);
 			glLineWidth(line_width*3);
 		}
 	}
@@ -695,7 +702,7 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 		glEnd();
 
 		// Direction tab
-		fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
+		fpoint2_t mid = line->point();
 		fpoint2_t tab = line->dirTabPoint();
 		glBegin(GL_LINES);
 		glVertex2d(mid.x, mid.y);
@@ -706,7 +713,14 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 		if (object && action_lines)
 		{
 			glLineWidth(line_width*1.5f);
-			Drawing::drawArrow(object->getPoint(MOBJ_POINT_WITHIN), line->getPoint(MOBJ_POINT_WITHIN), col, false, arrowhead_angle, arrowhead_length);
+			Drawing::drawArrow(
+				object->point(MapObject::Point::Within),
+				line->point(MapObject::Point::Within),
+				col,
+				false,
+				arrowhead_angle,
+				arrowhead_length
+			);
 			glLineWidth(line_width*5);
 		}
 	}
@@ -1516,12 +1530,19 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 	MapObject* object = MapEditor::editContext().selection().hilightedObject();
 	if (object && action_lines)
 	{
-		fpoint2_t dst = object->getPoint(MOBJ_POINT_WITHIN);
+		fpoint2_t dst = object->point(MapObject::Point::Within);
 		glLineWidth(line_width*1.5f);
 		for (unsigned a = 0; a < things.size(); a++)
 		{
 			MapThing* thing = things[a];
-			Drawing::drawArrow(thing->getPoint(MOBJ_POINT_WITHIN), dst, col, false, arrowhead_angle, arrowhead_length);
+			Drawing::drawArrow(
+				thing->point(MapObject::Point::Within),
+				dst,
+				col,
+				false,
+				arrowhead_angle,
+				arrowhead_length
+			);
 		}
 	}
 }
@@ -1570,12 +1591,19 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	MapObject* object = MapEditor::editContext().selection().hilightedObject();
 	if (object && action_lines)
 	{
-		fpoint2_t src = object->getPoint(MOBJ_POINT_WITHIN);
+		fpoint2_t src = object->point(MapObject::Point::Within);
 		glLineWidth(line_width*1.5f);
 		for (unsigned a = 0; a < things.size(); a++)
 		{
 			MapThing* thing = things[a];
-			Drawing::drawArrow(src, thing->getPoint(MOBJ_POINT_WITHIN), col, false, arrowhead_angle, arrowhead_length);
+			Drawing::drawArrow(
+				src,
+				thing->point(MapObject::Point::Within),
+				col,
+				false,
+				arrowhead_angle,
+				arrowhead_length
+			);
 		}
 	}
 }
@@ -1633,8 +1661,8 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 				MapThing* first = map->getFirstThingWithId(thing->intProperty("id"));
 				if (first)
 				{
-					path.from_index = thing->getIndex();
-					path.to_index = first->getIndex();
+					path.from_index = thing->index();
+					path.to_index = first->index();
 					path.type = PATH_DRAGON;
 					thing_paths.push_back(path);
 
@@ -1666,14 +1694,14 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 								tpath_t dpath;
 								if (l1to2)
 								{
-									dpath.from_index = dragon_things[e]->getIndex();
-									dpath.to_index = dragon_things[d]->getIndex();
+									dpath.from_index = dragon_things[e]->index();
+									dpath.to_index = dragon_things[d]->index();
 									dpath.type = l2to1 ? PATH_DRAGON_BOTH : PATH_DRAGON;
 								}
 								else if (l2to1)
 								{
-									dpath.from_index = dragon_things[d]->getIndex();
-									dpath.to_index = dragon_things[e]->getIndex();
+									dpath.from_index = dragon_things[d]->index();
+									dpath.to_index = dragon_things[e]->index();
 									dpath.type = PATH_DRAGON;
 								}
 								thing_paths.push_back(dpath);
@@ -1725,14 +1753,14 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 					}
 					if (thing2->intProperty("id") == tid)
 					{
-						path.from_index = thing->getIndex();
-						path.to_index = thing2->getIndex();
+						path.from_index = thing->index();
+						path.to_index = thing2->index();
 						path.type = (tid2 == thing->intProperty("id")) ? PATH_NORMAL_BOTH : PATH_NORMAL;
 					}
 					else if (thing->intProperty("id") == tid2)
 					{
-						path.from_index = thing2->getIndex();
-						path.to_index = thing->getIndex();
+						path.from_index = thing2->index();
+						path.to_index = thing->index();
 						path.type = PATH_NORMAL;
 					}
 					thing_paths.push_back(path);
@@ -1759,8 +1787,8 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			if (!to)
 				continue;
 	
-			Drawing::drawArrow(to->getPoint(MOBJ_POINT_MID),
-				from->getPoint(MOBJ_POINT_MID),
+			Drawing::drawArrow(to->point(),
+				from->point(),
 				(thing_paths[a].type == PATH_DRAGON_BOTH || thing_paths[a].type == PATH_DRAGON) ? dragoncol : pathedcol, 
 				(thing_paths[a].type == PATH_NORMAL_BOTH || thing_paths[a].type == PATH_DRAGON_BOTH), 
 				arrowhead_angle, arrowhead_length);
@@ -2248,12 +2276,12 @@ void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fa
 	for (unsigned a = 0; a < sides_selected.size(); a++)
 	{
 		MapLine* line = sides_selected[a]->getParentLine();
-		if (lines_drawn[line->getIndex()])
+		if (lines_drawn[line->index()])
 			continue;
 
 		glVertex2d(line->v1()->xPos(), line->v1()->yPos());
 		glVertex2d(line->v2()->xPos(), line->v2()->yPos());
-		lines_drawn[line->getIndex()] = true;
+		lines_drawn[line->index()] = true;
 	}
 	glEnd();
 	delete[] lines_drawn;
@@ -2302,7 +2330,7 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 		if (object && action_lines)
 		{
 			// Skip if the tagged sector is adjacent
-			if (object->getObjType() == MOBJ_LINE)
+			if (object->type() == MapObject::Type::Line)
 			{
 				MapLine* line = (MapLine*)object;
 				if (line->frontSector() == sectors[a] || line->backSector() == sectors[a])
@@ -2310,7 +2338,14 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 			}
 
 			glLineWidth(line_width*1.5f);
-			Drawing::drawArrow(sectors[a]->getPoint(MOBJ_POINT_WITHIN), object->getPoint(MOBJ_POINT_WITHIN), col, false, arrowhead_angle, arrowhead_length);
+			Drawing::drawArrow(
+				sectors[a]->point(MapObject::Point::Within),
+				object->point(MapObject::Point::Within),
+				col,
+				false,
+				arrowhead_angle,
+				arrowhead_length
+			);
 		}
 	}
 }
@@ -2422,8 +2457,8 @@ void MapRenderer2D::renderMovingPlanningObjects(
 	for (auto vertex : check_vertices)
 		for (auto line : vertex->connectedLines())
 		{
-			if (line->v1() == vertex) lines_drawn[line->getIndex()] |= 1;
-			if (line->v2() == vertex) lines_drawn[line->getIndex()] |= 2;
+			if (line->v1() == vertex) lines_drawn[line->index()] |= 1;
+			if (line->v2() == vertex) lines_drawn[line->index()] |= 2;
 		}
 
 	// Set line colour/style
@@ -2434,17 +2469,17 @@ void MapRenderer2D::renderMovingPlanningObjects(
 	for (auto& line : context.planning().lines())
 	{
 		// Skip if not attached to any moving vertices
-		if (lines_drawn[line->getIndex()] == 0)
+		if (lines_drawn[line->index()] == 0)
 			continue;
 
 		// First vertex
-		if (lines_drawn[line->getIndex()] & 1)
+		if (lines_drawn[line->index()] & 1)
 			glVertex2d(line->x1() + move_vec.x, line->y1() + move_vec.y);
 		else
 			glVertex2d(line->x1(), line->y1());
 
 		// Second vertex
-		if (lines_drawn[line->getIndex()] & 2)
+		if (lines_drawn[line->index()] & 2)
 			glVertex2d(line->x2() + move_vec.x, line->y2() + move_vec.y);
 		else
 			glVertex2d(line->x2(), line->y2());
@@ -2502,8 +2537,8 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
 		{
 			MapLine* line = v->connectedLine(l);
 
-			if (line->v1() == v) lines_drawn[line->getIndex()] |= 1;
-			if (line->v2() == v) lines_drawn[line->getIndex()] |= 2;
+			if (line->v1() == v) lines_drawn[line->index()] |= 1;
+			if (line->v2() == v) lines_drawn[line->index()] |= 2;
 		}
 	}
 
@@ -2514,7 +2549,7 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		MapLine* line = map->getLine(a);
-		uint8_t drawn = lines_drawn[line->getIndex()];
+		uint8_t drawn = lines_drawn[line->index()];
 
 		// Skip if not attached to any moving vertices
 		if (drawn == 0)
@@ -2575,8 +2610,8 @@ void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, fpoi
 		{
 			MapLine* line = v->connectedLine(l);
 
-			if (line->v1() == v) lines_drawn[line->getIndex()] |= 1;
-			if (line->v2() == v) lines_drawn[line->getIndex()] |= 2;
+			if (line->v1() == v) lines_drawn[line->index()] |= 1;
+			if (line->v2() == v) lines_drawn[line->index()] |= 2;
 		}
 
 		// Check second vertex
@@ -2585,8 +2620,8 @@ void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, fpoi
 		{
 			MapLine* line = v->connectedLine(l);
 
-			if (line->v1() == v) lines_drawn[line->getIndex()] |= 1;
-			if (line->v2() == v) lines_drawn[line->getIndex()] |= 2;
+			if (line->v1() == v) lines_drawn[line->index()] |= 1;
+			if (line->v2() == v) lines_drawn[line->index()] |= 2;
 		}
 	}
 
@@ -2597,7 +2632,7 @@ void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, fpoi
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		MapLine* line = map->getLine(a);
-		uint8_t drawn = lines_drawn[line->getIndex()];
+		uint8_t drawn = lines_drawn[line->index()];
 
 		// Skip if not attached to any moving vertices
 		if (drawn == 0)
@@ -2649,7 +2684,7 @@ void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, 
 		// Go through connected sides
 		vector<MapSide*>& sides = map->getSector(sectors[a].index)->connectedSides();
 		for (unsigned s = 0; s < sides.size(); s++)
-			lines_moved[sides[s]->getParentLine()->getIndex()] = 1;	// Mark parent line as moved
+			lines_moved[sides[s]->getParentLine()->index()] = 1;	// Mark parent line as moved
 	}
 
 	// Build list of moving lines
@@ -2917,7 +2952,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 
 			// Draw thing depending on 'things_drawtype' cvar
 			if (thing_drawtype == TDT_SPRITE)		// Drawtype 2: Sprites
-				renderSpriteThing(x, y, angle, tt, thing->getIndex(), 1.0f);
+				renderSpriteThing(x, y, angle, tt, thing->index(), 1.0f);
 			else if (thing_drawtype == TDT_ROUND)	// Drawtype 1: Round
 				renderRoundThing(x, y, angle, tt, 1.0f);
 			else							// Drawtype 0 (or other): Square
@@ -2938,7 +2973,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 				y = things[a].position.y;
 				angle = thing->getAngle();
 
-				renderSpriteThing(x, y, angle, tt, thing->getIndex(), 1.0f, true);
+				renderSpriteThing(x, y, angle, tt, thing->index(), 1.0f, true);
 			}
 		}
 
@@ -3043,7 +3078,7 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 		// Direction tab if needed
 		if (show_direction)
 		{
-			fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
+			fpoint2_t mid = line->point();
 			fpoint2_t tab = line->dirTabPoint();
 			lines[v+2].x = mid.x;
 			lines[v+2].y = mid.y;

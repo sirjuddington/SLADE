@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MapEditor/SLADEMap/MapThing.h"
+#include "MapEditor/SLADEMap/MapObject.h"
 #include "MapEditor/MapEditor.h"
 
 class MapEditContext;
@@ -49,7 +49,7 @@ private:
 	bool							link_light_;
 	bool							link_offset_;
 	string							copy_texture_;
-	MapThing						copy_thing_;
+	MapObject::UPtr					copy_thing_;
 
 	vector<MapEditor::Item>	getAdjacent(MapEditor::Item item) const;
 

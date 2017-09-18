@@ -110,7 +110,7 @@ public:
 	void	setS1(MapSide* side);
 	void	setS2(MapSide* side);
 
-	fpoint2_t	getPoint(uint8_t point) override;
+	fpoint2_t	point(Point point = Point::Mid) override;
 	fpoint2_t	point1();
 	fpoint2_t	point2();
 	fseg2_t		seg();
@@ -127,15 +127,15 @@ public:
 	void	resetInternals();
 	void	flip(bool sides = true);
 
-	void	writeBackup(mobj_backup_t* backup) override;
-	void	readBackup(mobj_backup_t* backup) override;
+	void	writeBackup(Backup* backup) override;
+	void	readBackup(Backup* backup) override;
 	void	copy(MapObject*) override;
 
 	operator Debuggable() const {
 		if (!this)
 			return "<line NULL>";
 
-		return Debuggable(S_FMT("<line %u>", index));
+		return Debuggable(S_FMT("<line %u>", index_));
 	}
 
 	typedef std::unique_ptr<MapLine> UPtr;

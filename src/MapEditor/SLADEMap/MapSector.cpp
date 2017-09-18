@@ -48,7 +48,7 @@ const double TAU = M_PI * 2;
 /* MapSector::MapSector
  * MapSector class constructor
  *******************************************************************/
-MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
+MapSector::MapSector(SLADEMap* parent) : MapObject(Type::Sector, parent)
 {
 	// Init variables
 	this->special = 0;
@@ -62,7 +62,7 @@ MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 /* MapSector::MapSector
  * MapSector class constructor
  *******************************************************************/
-MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
+MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(Type::Sector, parent)
 {
 	// Init variables
 	this->f_tex = f_tex;
@@ -88,16 +88,16 @@ MapSector::~MapSector()
 void MapSector::copy(MapObject* s)
 {
 	// Don't copy a non-sector
-	if (s->getObjType() != MOBJ_SECTOR)
+	if (s->type() != Type::Sector)
 		return;
 
 	setModified();
 
 	// Update texture counts (decrement previous)
-	if (parent_map)
+	if (parent_map_)
 	{
-		parent_map->updateFlatUsage(f_tex, -1);
-		parent_map->updateFlatUsage(c_tex, -1);
+		parent_map_->updateFlatUsage(f_tex, -1);
+		parent_map_->updateFlatUsage(c_tex, -1);
 	}
 
 	// Basic variables
@@ -113,10 +113,10 @@ void MapSector::copy(MapObject* s)
 	plane_ceiling.set(0, 0, 1, sector->c_height);
 
 	// Update texture counts (increment new)
-	if (parent_map)
+	if (parent_map_)
 	{
-		parent_map->updateFlatUsage(f_tex, 1);
-		parent_map->updateFlatUsage(c_tex, 1);
+		parent_map_->updateFlatUsage(f_tex, 1);
+		parent_map_->updateFlatUsage(c_tex, 1);
 	}
 
 	// Other properties
@@ -173,15 +173,15 @@ void MapSector::setStringProperty(const string& key, const string& value)
 
 	if (key == "texturefloor")
 	{
-		if (parent_map) parent_map->updateFlatUsage(f_tex, -1);
+		if (parent_map_) parent_map_->updateFlatUsage(f_tex, -1);
 		f_tex = value;
-		if (parent_map) parent_map->updateFlatUsage(f_tex, 1);
+		if (parent_map_) parent_map_->updateFlatUsage(f_tex, 1);
 	}
 	else if (key == "textureceiling")
 	{
-		if (parent_map) parent_map->updateFlatUsage(c_tex, -1);
+		if (parent_map_) parent_map_->updateFlatUsage(c_tex, -1);
 		c_tex = value;
-		if (parent_map) parent_map->updateFlatUsage(c_tex, 1);
+		if (parent_map_) parent_map_->updateFlatUsage(c_tex, 1);
 	}
 	else
 		return MapObject::setStringProperty(key, value);
@@ -195,7 +195,7 @@ void MapSector::setFloatProperty(const string& key, double value)
 	using Game::UDMFFeature;
 
 	// Check if flat offset/scale/rotation is changing (if UDMF)
-	if (parent_map->currentFormat() == MAP_UDMF)
+	if (parent_map_->currentFormat() == MAP_UDMF)
 	{
 		if ((Game::configuration().featureSupported(UDMFFeature::FlatPanning) &&
 			(key == "xpanningfloor" || key == "ypanningfloor")) ||
@@ -251,9 +251,9 @@ void MapSector::setCeilingHeight(short height)
  * mid point of the sector, MOBJ_POINT_WITHIN/MOBJ_POINT_TEXT =
  * a calculated point that is within the actual sector
  *******************************************************************/
-fpoint2_t MapSector::getPoint(uint8_t point)
+fpoint2_t MapSector::point(Point point)
 {
-	if (point == MOBJ_POINT_MID)
+	if (point == Point::Mid)
 	{
 		bbox_t bbox = boundingBox();
 		return fpoint2_t(bbox.min.x + ((bbox.max.x-bbox.min.x)*0.5),
@@ -261,8 +261,8 @@ fpoint2_t MapSector::getPoint(uint8_t point)
 	}
 	else
 	{
-		if (text_point.x == 0 && text_point.y == 0 && parent_map)
-			parent_map->findSectorTextPoint(this);
+		if (text_point.x == 0 && text_point.y == 0 && parent_map_)
+			parent_map_->findSectorTextPoint(this);
 		return text_point;
 	}
 }
@@ -467,7 +467,7 @@ bool MapSector::getVertices(vector<MapObject*>& list)
 uint8_t MapSector::getLight(int where)
 {
 	// Check for UDMF + flat lighting
-	if (parent_map->currentFormat() == MAP_UDMF &&
+	if (parent_map_->currentFormat() == MAP_UDMF &&
 		Game::configuration().featureSupported(Game::UDMFFeature::FlatLighting))
 	{
 		// Get general light level
@@ -529,7 +529,7 @@ void MapSector::changeLight(int amount, int where)
 		amount = -ll;
 
 	// Check for UDMF + flat lighting independent from the sector
-	bool separate = parent_map->currentFormat() == MAP_UDMF &&
+	bool separate = parent_map_->currentFormat() == MAP_UDMF &&
 					Game::configuration().featureSupported(Game::UDMFFeature::FlatLighting);
 
 	// Change light level by amount
@@ -560,10 +560,10 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 
 	// Check for sector colour set in open script
 	// TODO: Test if this is correct behaviour
-	if (parent_map->mapSpecials()->tagColoursSet())
+	if (parent_map_->mapSpecials()->tagColoursSet())
 	{
 		rgba_t col;
-		if (parent_map->mapSpecials()->getTagColour(tag, &col))
+		if (parent_map_->mapSpecials()->getTagColour(tag, &col))
 		{
 			if (fullbright)
 				return col;
@@ -584,7 +584,7 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 	}
 
 	// Check for UDMF
-	if (parent_map->currentFormat() == MAP_UDMF &&
+	if (parent_map_->currentFormat() == MAP_UDMF &&
 		(Game::configuration().featureSupported(UDMFFeature::SectorColor) ||
 		Game::configuration().featureSupported(UDMFFeature::FlatLighting)))
 	{
@@ -665,14 +665,14 @@ rgba_t MapSector::getFogColour()
 	rgba_t color(0, 0, 0, 0);
 
 	// map specials/scripts
-	if (parent_map->mapSpecials()->tagFadeColoursSet())
+	if (parent_map_->mapSpecials()->tagFadeColoursSet())
 	{
-		if (parent_map->mapSpecials()->getTagFadeColour(tag, &color))
+		if (parent_map_->mapSpecials()->getTagFadeColour(tag, &color))
 			return color;
 	}
 
 	// udmf
-	if (parent_map->currentFormat() == MAP_UDMF &&
+	if (parent_map_->currentFormat() == MAP_UDMF &&
 		Game::configuration().featureSupported(Game::UDMFFeature::SectorFog))
 	{
 		int intcol = MapObject::intProperty("fadecolor");
@@ -719,7 +719,7 @@ void MapSector::disconnectSide(MapSide* side)
 /* MapSector::writeBackup
  * Write all sector info to a mobj_backup_t struct
  *******************************************************************/
-void MapSector::writeBackup(mobj_backup_t* backup)
+void MapSector::writeBackup(Backup* backup)
 {
 	backup->props_internal["texturefloor"] = f_tex;
 	backup->props_internal["textureceiling"] = c_tex;
@@ -733,11 +733,11 @@ void MapSector::writeBackup(mobj_backup_t* backup)
 /* MapSector::readBackup
  * Reads all sector info from a mobj_backup_t struct
  *******************************************************************/
-void MapSector::readBackup(mobj_backup_t* backup)
+void MapSector::readBackup(Backup* backup)
 {
 	// Update texture counts (decrement previous)
-	parent_map->updateFlatUsage(f_tex, -1);
-	parent_map->updateFlatUsage(c_tex, -1);
+	parent_map_->updateFlatUsage(f_tex, -1);
+	parent_map_->updateFlatUsage(c_tex, -1);
 
 	f_tex = backup->props_internal["texturefloor"].getStringValue();
 	c_tex = backup->props_internal["textureceiling"].getStringValue();
@@ -750,8 +750,8 @@ void MapSector::readBackup(mobj_backup_t* backup)
 	tag = backup->props_internal["id"].getIntValue();
 
 	// Update texture counts (increment new)
-	parent_map->updateFlatUsage(f_tex, 1);
-	parent_map->updateFlatUsage(c_tex, 1);
+	parent_map_->updateFlatUsage(f_tex, 1);
+	parent_map_->updateFlatUsage(c_tex, 1);
 
 	// Update geometry info
 	poly_needsupdate = true;

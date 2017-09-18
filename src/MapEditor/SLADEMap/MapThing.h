@@ -54,10 +54,10 @@ public:
 
 	double		xPos() { return x; }
 	double		yPos() { return y; }
+	fpoint2_t	pos() const { return { x, y }; }
 	void		setPos(double x, double y) { this->x = x; this->y = y; }
 
-	fpoint2_t	getPoint(uint8_t point) override;
-	fpoint2_t	point();
+	fpoint2_t	point(Point point = Point::Mid) override;
 
 	short	getType() const { return type; }
 	short	getAngle() const { return angle; }
@@ -71,14 +71,14 @@ public:
 
 	void	setAnglePoint(fpoint2_t point);
 
-	void	writeBackup(mobj_backup_t* backup) override;
-	void	readBackup(mobj_backup_t* backup) override;
+	void	writeBackup(Backup* backup) override;
+	void	readBackup(Backup* backup) override;
 
 	operator Debuggable() const {
 		if (!this)
 			return Debuggable("<thing NULL>");
 
-		return Debuggable(S_FMT("<thing %u>", index));
+		return Debuggable(S_FMT("<thing %u>", index_));
 	}
 };
 

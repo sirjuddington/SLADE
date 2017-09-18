@@ -58,8 +58,8 @@ public:
 	void	setStringProperty(const string& key, const string& value) override;
 	bool	scriptCanModifyProp(const string& key) override;
 
-	void	writeBackup(mobj_backup_t* backup) override;
-	void	readBackup(mobj_backup_t* backup) override;
+	void	writeBackup(Backup* backup) override;
+	void	readBackup(Backup* backup) override;
 
 private:
 	// Basic data

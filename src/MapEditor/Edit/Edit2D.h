@@ -1,11 +1,7 @@
 #pragma once
 
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapThing.h"
-#include "MapEditor/SLADEMap/MapSector.h"
-#include "MapEditor/SLADEMap/MapSide.h"
+#include "MapEditor/SLADEMap/MapObject.h"
 
-class MapObject;
 class MapEditContext;
 
 class Edit2D
@@ -54,12 +50,12 @@ private:
 	MapEditContext&	context_;
 
 	// Object properties and copy/paste
-	MapThing	copy_thing_;
-	MapSector	copy_sector_;
-	MapSide		copy_side_front_;
-	MapSide		copy_side_back_;
-	MapLine		copy_line_;
-	bool		line_copied_	= false;
-	bool		sector_copied_	= false;
-	bool		thing_copied_	= false;
+	MapObject::UPtr	copy_thing_;
+	MapObject::UPtr	copy_sector_;
+	MapObject::UPtr	copy_side_front_;
+	MapObject::UPtr	copy_side_back_;
+	MapObject::UPtr	copy_line_;
+	bool			line_copied_	= false;
+	bool			sector_copied_	= false;
+	bool			thing_copied_	= false;
 };

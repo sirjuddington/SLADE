@@ -52,6 +52,7 @@ Edit3D::Edit3D(MapEditContext& context) :
 	link_offset_{ false }
 {
 	undo_manager_ = std::make_unique<UndoManager>(&context.map());
+	copy_thing_ = std::make_unique<MapThing>();
 }
 
 /* Edit3D::selectAdjacent
@@ -355,7 +356,7 @@ void Edit3D::changeSectorHeight(int amount) const
 			auto sector = context_.map().getSide(items[a].index)->getSector();
 
 			// Check this sector's ceiling hasn't already been changed
-			int index = sector->getIndex();
+			int index = sector->index();
 			if (VECTOR_EXISTS(ceilings, index))
 				continue;
 
@@ -385,7 +386,7 @@ void Edit3D::changeSectorHeight(int amount) const
 
 			// Check this sector's ceiling hasn't already been changed
 			bool done = false;
-			int index = sector->getIndex();
+			int index = sector->index();
 			for (unsigned b = 0; b < ceilings.size(); b++)
 			{
 				if (ceilings[b] == index)
@@ -401,7 +402,7 @@ void Edit3D::changeSectorHeight(int amount) const
 			sector->setCeilingHeight(sector->getCeilingHeight() + amount);
 
 			// Set to changed
-			ceilings.push_back(sector->getIndex());
+			ceilings.push_back(sector->index());
 		}
 	}
 
@@ -791,7 +792,7 @@ void Edit3D::copy(CopyType type)
 	// Thing
 	else if (hl.type == ItemType::Thing)
 	{
-		copy_thing_.copy(map.getThing(hl.index));
+		copy_thing_->copy(map.getThing(hl.index));
 	}
 
 	// Flash
@@ -884,7 +885,7 @@ void Edit3D::paste(CopyType type)
 
 			// Type
 			if (type == CopyType::TexType)
-				thing->setIntProperty("type", copy_thing_.getType());
+				thing->setIntProperty("type", ((MapThing*)copy_thing_.get())->getType());
 		}
 	}
 
@@ -1460,15 +1461,15 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 		{
 			// Upper texture
 			if (wallMatches(side1, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallTop }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallTop }, list);
 
 			// Middle texture
 			if (wallMatches(side1, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallMiddle }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallMiddle }, list);
 
 			// Lower texture
 			if (wallMatches(side1, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallBottom }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallBottom }, list);
 		}
 
 		// Back side
@@ -1476,15 +1477,15 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 		{
 			// Upper texture
 			if (wallMatches(side2, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallTop }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallTop }, list);
 
 			// Middle texture
 			if (wallMatches(side2, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallMiddle }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallMiddle }, list);
 
 			// Lower texture
 			if (wallMatches(side2, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallBottom }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallBottom }, list);
 		}
 	}
 
@@ -1504,15 +1505,15 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 		{
 			// Upper texture
 			if (wallMatches(side1, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallTop }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallTop }, list);
 
 			// Middle texture
 			if (wallMatches(side1, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallMiddle }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallMiddle }, list);
 
 			// Lower texture
 			if (wallMatches(side1, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallBottom }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallBottom }, list);
 		}
 
 		// Back side
@@ -1520,15 +1521,15 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 		{
 			// Upper texture
 			if (wallMatches(side2, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallTop }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallTop }, list);
 
 			// Middle texture
 			if (wallMatches(side2, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallMiddle }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallMiddle }, list);
 
 			// Lower texture
 			if (wallMatches(side2, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallBottom }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallBottom }, list);
 		}
 	}
 }
@@ -1584,8 +1585,8 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 		}
 
 		// Check that planes meet
-		auto left = line->v1()->getPoint(0);
-		auto right = line->v2()->getPoint(0);
+		auto left = line->v1()->point();
+		auto right = line->v2()->point();
 
 		double this_left_z = this_plane.height_at(left);
 		double other_left_z = other_plane.height_at(left);
@@ -1601,7 +1602,7 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 		bool listed = false;
 		for (auto& i : list)
 		{
-			if (i.type == item.type && i.index == osector->getIndex())
+			if (i.type == item.type && i.index == osector->index())
 			{
 				listed = true;
 				break;
@@ -1612,7 +1613,7 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 		if (!listed)
 		{
 			list.push_back(item);
-			getAdjacentFlats({ (int)osector->getIndex(), item.type }, list);
+			getAdjacentFlats({ (int)osector->index(), item.type }, list);
 		}
 	}
 }
@@ -1625,12 +1626,12 @@ void Edit3D::doAlignX(MapSide* side, int offset, string tex, vector<MapEditor::I
 	// Check if this wall has already been processed
 	for (unsigned a = 0; a < walls_done.size(); a++)
 	{
-		if (walls_done[a].index == side->getIndex())
+		if (walls_done[a].index == side->index())
 			return;
 	}
 
 	// Add to 'done' list
-	walls_done.push_back({ (int)side->getIndex(), ItemType::WallMiddle });
+	walls_done.push_back({ (int)side->index(), ItemType::WallMiddle });
 
 	// Wrap offset
 	if (tex_width > 0)

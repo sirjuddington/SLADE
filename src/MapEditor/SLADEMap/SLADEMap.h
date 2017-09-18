@@ -72,7 +72,7 @@ public:
 	MapLine*	getLine(unsigned index) const;
 	MapSector*	getSector(unsigned index) const;
 	MapThing*	getThing(unsigned index) const;
-	MapObject*	getObject(uint8_t type, unsigned index) const;
+	MapObject*	getObject(MapObject::Type type, unsigned index) const;
 	size_t		nVertices() const { return vertices_.size(); }
 	size_t		nLines() const { return lines_.size(); }
 	size_t		nSides() const { return sides_.size(); }
@@ -91,8 +91,8 @@ public:
 	void		addMapObject(MapObject* object);
 	void		removeMapObject(MapObject* object);
 	MapObject*	getObjectById(unsigned id) { return all_objects_[id].mobj; }
-	void		getObjectIdList(uint8_t type, vector<unsigned>& list);
-	void		restoreObjectIdList(uint8_t type, vector<unsigned>& list);
+	void		getObjectIdList(MapObject::Type type, vector<unsigned>& list);
+	void		restoreObjectIdList(MapObject::Type type, vector<unsigned>& list);
 
 	void	refreshIndices();
 	bool	readMap(Archive::MapDesc map);
@@ -158,12 +158,12 @@ public:
 	// Info
 	string				getAdjacentLineTexture(MapVertex* vertex, int tex_part = 255);
 	MapSector*			getLineSideSector(MapLine* line, bool front = true);
-	vector<MapObject*>	getModifiedObjects(long since, int type = -1);
+	vector<MapObject*>	getModifiedObjects(long since, MapObject::Type type = MapObject::Type::Unknown);
 	vector<MapObject*>	getAllModifiedObjects(long since);
 	long				getLastModifiedTime();
 	bool				isModified();
 	void				setOpenedTime();
-	bool				modifiedSince(long since, int type = -1);
+	bool				modifiedSince(long since, MapObject::Type type = MapObject::Type::Unknown);
 
 	// Creation
 	MapVertex*	createVertex(double x, double y, double split_dist = -1);

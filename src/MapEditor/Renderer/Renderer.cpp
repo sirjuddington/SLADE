@@ -206,14 +206,14 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 	for (auto object : objects)
 	{
 		// Vertex
-		if (object->getObjType() == MOBJ_VERTEX)
+		if (object->type() == MapObject::Type::Vertex)
 		{
 			auto vertex = (MapVertex*)object;
 			bbox.extend(vertex->xPos(), vertex->yPos());
 		}
 
 		// Line
-		else if (object->getObjType() == MOBJ_LINE)
+		else if (object->type() == MapObject::Type::Line)
 		{
 			auto line = (MapLine*)object;
 			bbox.extend(line->v1()->xPos(), line->v1()->yPos());
@@ -221,7 +221,7 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 		}
 
 		// Sector
-		else if (object->getObjType() == MOBJ_SECTOR)
+		else if (object->type() == MapObject::Type::Sector)
 		{
 			auto sbb = ((MapSector*)object)->boundingBox();
 			if (sbb.min.x < bbox.min.x)
@@ -235,7 +235,7 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 		}
 
 		// Thing
-		else if (object->getObjType() == MOBJ_THING)
+		else if (object->type() == MapObject::Type::Thing)
 		{
 			auto thing = (MapThing*)object;
 			bbox.extend(thing->xPos(), thing->yPos());
@@ -621,7 +621,7 @@ void Renderer::drawSelectionNumbers() const
 		if ((int)a > map_max_selection_numbers)
 			break;
 
-		auto tp = selection[a]->getPoint(MOBJ_POINT_TEXT);
+		auto tp = selection[a]->point(MapObject::Point::Text);
 		tp.x = view_.screenX(tp.x);
 		tp.y = view_.screenY(tp.y);
 

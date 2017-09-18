@@ -107,11 +107,11 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		object = side;
 
 		// --- Line/side info ---
-		info.push_back(S_FMT("Line #%d", line->getIndex()));
+		info.push_back(S_FMT("Line #%d", line->index()));
 		if (side == line->s1())
-			info.push_back(S_FMT("Front Side #%d", side->getIndex()));
+			info.push_back(S_FMT("Front Side #%d", side->index()));
 		else
-			info.push_back(S_FMT("Back Side #%d", side->getIndex()));
+			info.push_back(S_FMT("Back Side #%d", side->index()));
 
 		// Relevant flags
 		string flags = "";
@@ -223,14 +223,14 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		MapSide* other_side;
 		if (side == line->s1())
 		{
-			left_point = line->v1()->getPoint(0);
-			right_point = line->v2()->getPoint(0);
+			left_point = line->v1()->point();
+			right_point = line->v2()->point();
 			other_side = line->s2();
 		}
 		else
 		{
-			left_point = line->v2()->getPoint(0);
-			right_point = line->v1()->getPoint(0);
+			left_point = line->v2()->point();
+			right_point = line->v1()->point();
 			other_side = line->s1();
 		}
 
@@ -449,7 +449,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// Args
 		if (MapEditor::editContext().mapDesc().format == MAP_HEXEN ||
 			(MapEditor::editContext().mapDesc().format == MAP_UDMF &&
-				Game::configuration().getUDMFProperty("arg0", MOBJ_THING)))
+				Game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
 		{
 			// Get thing args
 			int args[5];
@@ -509,10 +509,10 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	// Update if needed
 	if (object &&
 		(object->modifiedTime() > last_update ||									// object updated
-		(object->getObjType() == MOBJ_SIDE && (
+		(object->type() == MapObject::Type::Side && (
 			((MapSide*)object)->getParentLine()->modifiedTime() > last_update ||	// parent line updated
 			((MapSide*)object)->getSector()->modifiedTime() > last_update))))		// parent sector updated
-		update(object->getIndex(), current_type, object->getParentMap());
+		update(object->index(), current_type, object->parentMap());
 
 	// Init GL stuff
 	glLineWidth(1.0f);

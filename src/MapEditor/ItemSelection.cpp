@@ -148,10 +148,10 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 	else if (context_->editMode() == Mode::Plan)
 	{
 		auto obj = context_->planning().nearestObject(mouse_pos, 32 / dist_scale);
-		if (obj && obj->getObjType() == MOBJ_VERTEX)
-			hilight_ = { (int)obj->getIndex(), ItemType::PlanVertex };
+		if (obj && obj->type() == MapObject::Type::Vertex)
+			hilight_ = { (int)obj->index(), ItemType::PlanVertex };
 		else if (obj)
-			hilight_ = { (int)obj->getIndex(), ItemType::PlanLine };
+			hilight_ = { (int)obj->index(), ItemType::PlanLine };
 		else
 			hilight_ = { -1, ItemType::Any };
 	}
@@ -306,7 +306,7 @@ void ItemSelection::selectVerticesWithin(const SLADEMap& map, const frect_t& rec
 
 	// Select vertices within bounds
 	for (unsigned a = 0; a < map.nVertices(); a++)
-		if (rect.contains(map.getVertex(a)->point()))
+		if (rect.contains(map.getVertex(a)->pos()))
 			selectItem({ (int)a, ItemType::Vertex });
 }
 
@@ -320,8 +320,8 @@ void ItemSelection::selectLinesWithin(const SLADEMap& map, const frect_t& rect)
 
 	// Select lines within bounds
 	for (unsigned a = 0; a < map.nLines(); a++)
-		if (rect.contains(map.getLine(a)->v1()->point()) &&
-			rect.contains(map.getLine(a)->v2()->point()))
+		if (rect.contains(map.getLine(a)->v1()->pos()) &&
+			rect.contains(map.getLine(a)->v2()->pos()))
 			selectItem({ (int)a, ItemType::Line });
 }
 
@@ -363,14 +363,14 @@ void ItemSelection::selectPlanningObjectsWithin(const frect_t& rect)
 
 	// Select planning vertices within bounds
 	for (auto& vertex : context_->planning().vertices())
-		if (rect.contains(vertex->point()))
-			selectItem({ (int)vertex->getIndex(), ItemType::PlanVertex });
+		if (rect.contains(vertex->pos()))
+			selectItem({ (int)vertex->index(), ItemType::PlanVertex });
 
 	// Select planning lines within bounds
 	for (auto& line : context_->planning().lines())
-		if (rect.contains(line->v1()->point()) &&
-			rect.contains(line->v2()->point()))
-			selectItem({ (int)line->getIndex(), ItemType::PlanLine });
+		if (rect.contains(line->v1()->pos()) &&
+			rect.contains(line->v2()->pos()))
+			selectItem({ (int)line->index(), ItemType::PlanLine });
 }
 
 /* ItemSelection::selectWithin
@@ -586,13 +586,13 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 		return {};
 
 	// Get object type depending on edit mode
-	uint8_t type;
+	auto type = MapObject::Type::Unknown;
 	switch (context_->editMode())
 	{
-	case Mode::Vertices: type = MOBJ_VERTEX; break;
-	case Mode::Lines: type = MOBJ_LINE; break;
-	case Mode::Sectors: type = MOBJ_SECTOR; break;
-	case Mode::Things: type = MOBJ_THING; break;
+	case Mode::Vertices: type = MapObject::Type::Vertex; break;
+	case Mode::Lines: type = MapObject::Type::Line; break;
+	case Mode::Sectors: type = MapObject::Type::Sector; break;
+	case Mode::Things: type = MapObject::Type::Thing; break;
 	default: return {};
 	}
 
@@ -682,7 +682,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 			{
 				auto side = context_->map().getSide(item.index);
 				if (!side) continue;
-				new_selection.insert({ (int)side->getParentLine()->getIndex(), ItemType::Line });
+				new_selection.insert({ (int)side->getParentLine()->index(), ItemType::Line });
 			}
 		}
 	}
@@ -710,19 +710,19 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 				// Only select the visible areas -- i.e., the ones that need texturing
 				int textures = line->needsTexture();
 				if (front && textures & TEX_FRONT_UPPER)
-					new_selection.insert({ (int)front->getIndex(), ItemType::WallTop });
+					new_selection.insert({ (int)front->index(), ItemType::WallTop });
 				if (front && textures & TEX_FRONT_LOWER)
-					new_selection.insert({ (int)front->getIndex(), ItemType::WallBottom });
+					new_selection.insert({ (int)front->index(), ItemType::WallBottom });
 				if (back && textures & TEX_BACK_UPPER)
-					new_selection.insert({ (int)back->getIndex(), ItemType::WallTop });
+					new_selection.insert({ (int)back->index(), ItemType::WallTop });
 				if (back && textures & TEX_BACK_LOWER)
-					new_selection.insert({ (int)back->getIndex(), ItemType::WallBottom });
+					new_selection.insert({ (int)back->index(), ItemType::WallBottom });
 
 				// Also include any two-sided middle textures
 				if (front && (textures & TEX_FRONT_MIDDLE || !front->getTexMiddle().empty()))
-					new_selection.insert({ (int)front->getIndex(), ItemType::WallMiddle });
+					new_selection.insert({ (int)front->index(), ItemType::WallMiddle });
 				if (back && (textures & TEX_BACK_MIDDLE || !back->getTexMiddle().empty()))
-					new_selection.insert({ (int)back->getIndex(), ItemType::WallMiddle });
+					new_selection.insert({ (int)back->index(), ItemType::WallMiddle });
 			}
 
 			// Thing
@@ -747,7 +747,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 				vector<MapLine*> lines;
 				sector->getLines(lines);
 				for (auto line : lines)
-					new_selection.insert({ (int)line->getIndex(), ItemType::Line });
+					new_selection.insert({ (int)line->index(), ItemType::Line });
 			}
 
 			// To vertices mode
@@ -756,7 +756,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 				vector<MapVertex*> vertices;
 				sector->getVertices(vertices);
 				for (auto vertex : vertices)
-					new_selection.insert({ (int)vertex->getIndex(), ItemType::Vertex });
+					new_selection.insert({ (int)vertex->index(), ItemType::Vertex });
 			}
 
 			// To things mode
@@ -774,8 +774,8 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 		{
 			auto line = context_->map().getLine(item.index);
 			if (!line) continue;
-			new_selection.insert({ (int)line->v1()->getIndex(), ItemType::Vertex });
-			new_selection.insert({ (int)line->v2()->getIndex(), ItemType::Vertex });
+			new_selection.insert({ (int)line->v1()->index(), ItemType::Vertex });
+			new_selection.insert({ (int)line->v2()->index(), ItemType::Vertex });
 		}
 	}
 

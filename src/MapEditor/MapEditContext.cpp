@@ -880,14 +880,14 @@ void MapEditContext::tagSectorAt(double x, double y)
 			// Un-tag
 			tagged_sectors_[a] = tagged_sectors_.back();
 			tagged_sectors_.pop_back();
-			addEditorMessage(S_FMT("Untagged sector %u", sector->getIndex()));
+			addEditorMessage(S_FMT("Untagged sector %u", sector->index()));
 			return;
 		}
 	}
 
 	// Tag
 	tagged_sectors_.push_back(sector);
-	addEditorMessage(S_FMT("Tagged sector %u", sector->getIndex()));
+	addEditorMessage(S_FMT("Tagged sector %u", sector->index()));
 }
 
 // ----------------------------------------------------------------------------
@@ -1770,13 +1770,13 @@ bool MapEditContext::handleAction(string id)
 		switch (editMode())
 		{
 		case Mode::Vertices:
-			dlg.setType(MOBJ_VERTEX); break;
+			dlg.setType(MapObject::Type::Vertex); break;
 		case Mode::Lines:
-			dlg.setType(MOBJ_LINE); break;
+			dlg.setType(MapObject::Type::Line); break;
 		case Mode::Sectors:
-			dlg.setType(MOBJ_SECTOR); break;
+			dlg.setType(MapObject::Type::Sector); break;
 		case Mode::Things:
-			dlg.setType(MOBJ_THING); break;
+			dlg.setType(MapObject::Type::Thing); break;
 		default:
 			return true;
 		}
@@ -1793,15 +1793,15 @@ bool MapEditContext::handleAction(string id)
 			bool side = false;
 			switch (dlg.getType())
 			{
-			case MOBJ_VERTEX:
+			case MapObject::Type::Vertex:
 				setEditMode(Mode::Vertices); break;
-			case MOBJ_LINE:
+			case MapObject::Type::Line:
 				setEditMode(Mode::Lines); break;
-			case MOBJ_SIDE:
+			case MapObject::Type::Side:
 				setEditMode(Mode::Lines); side = true; break;
-			case MOBJ_SECTOR:
+			case MapObject::Type::Sector:
 				setEditMode(Mode::Sectors); break;
-			case MOBJ_THING:
+			case MapObject::Type::Thing:
 				setEditMode(Mode::Things); break;
 			default:
 				break;
@@ -1812,7 +1812,7 @@ bool MapEditContext::handleAction(string id)
 			{
 				MapSide* s = map_.getSide(index);
 				if (s && s->getParentLine())
-					index = s->getParentLine()->getIndex();
+					index = s->getParentLine()->index();
 				else
 					index = -1;
 			}
@@ -2116,7 +2116,7 @@ CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
 	sf::Clock clock;
 	sf::Clock totalClock;
 	SLADEMap& map = MapEditor::editContext().map();
-	mobj_backup_t* backup = new mobj_backup_t();
+	auto backup = new MapObject::Backup();
 
 	// Vertices
 	for (unsigned a = 0; a < map.nVertices(); a++)
@@ -2148,6 +2148,8 @@ CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
 	LOG_MESSAGE(1, "Things: %dms", clock.getElapsedTime().asMilliseconds());
 
 	LOG_MESSAGE(1, "Total: %dms", totalClock.getElapsedTime().asMilliseconds());
+
+	delete backup;
 }
 
 CONSOLE_COMMAND(m_vertex_attached, 1, false)
@@ -2157,7 +2159,7 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 	{
 		LOG_MESSAGE(1, "Attached lines:");
 		for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
-			LOG_MESSAGE(1, "Line #%lu", vertex->connectedLine(a)->getIndex());
+			LOG_MESSAGE(1, "Line #%lu", vertex->connectedLine(a)->index());
 	}
 }
 
@@ -2181,9 +2183,9 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 		Log::console("Object id out of range");
 	else
 	{
-		mobj_backup_t bak;
+		MapObject::Backup bak;
 		obj->backup(&bak);
-		Log::console(S_FMT("Object %d: %s #%lu", id, obj->getTypeName(), obj->getIndex()));
+		Log::console(S_FMT("Object %d: %s #%lu", id, obj->typeName(), obj->index()));
 		Log::console("Properties:");
 		Log::console(bak.properties.toString());
 		Log::console("Properties (internal):");

@@ -3,11 +3,10 @@
 #include "General/UndoRedo.h"
 
 class MapObject;
-struct mobj_backup_t;
 
 namespace MapEditor
 {
- 	// UndoStep for when a MapObject has properties changed
+	// UndoStep for when a MapObject has properties changed
 	class PropertyChangeUS : public UndoStep
 	{
 	public:
@@ -19,10 +18,10 @@ namespace MapEditor
 		bool doRedo();
 
 	private:
-		mobj_backup_t*	backup;
+		MapObject::Backup*	backup;
 	};
 
- 	// UndoStep for when a MapObject is either created or deleted
+	// UndoStep for when a MapObject is either created or deleted
 	class MapObjectCreateDeleteUS : public UndoStep
 	{
 	public:
@@ -57,6 +56,6 @@ namespace MapEditor
 		bool isOk() { return !backups.empty(); }
 
 	private:
-		vector<mobj_backup_t*>	backups;
+		vector<MapObject::Backup*>	backups;
 	};
 }

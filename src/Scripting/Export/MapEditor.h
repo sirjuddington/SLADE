@@ -7,7 +7,7 @@ void objectSetBoolProperty(MapObject& self, const string& key, bool value)
 	else
 		Log::warning(1, S_FMT(
 			"%s boolean property \"%s\" can not be modified via script",
-			CHR(self.getTypeName()),
+			CHR(self.typeName()),
 			key
 		));
 }
@@ -19,7 +19,7 @@ void objectSetIntProperty(MapObject& self, const string& key, int value)
 	else
 		Log::warning(1, S_FMT(
 			"%s integer property \"%s\" can not be modified via script",
-			CHR(self.getTypeName()),
+			CHR(self.typeName()),
 			key
 		));
 }
@@ -31,7 +31,7 @@ void objectSetFloatProperty(MapObject& self, const string& key, double value)
 	else
 		Log::warning(1, S_FMT(
 			"%s float property \"%s\" can not be modified via script",
-			CHR(self.getTypeName()),
+			CHR(self.typeName()),
 			key
 		));
 }
@@ -43,7 +43,7 @@ void objectSetStringProperty(MapObject& self, const string& key, const string& v
 	else
 		Log::warning(1, S_FMT(
 			"%s string property \"%s\" can not be modified via script",
-			CHR(self.getTypeName()),
+			CHR(self.typeName()),
 			key
 		));
 }
@@ -71,7 +71,7 @@ void selectMapObject(MapEditContext& self, MapObject* object, bool select)
 {
 	if (object)
 		self.selection().select(
-			{ (int)object->getIndex(), MapEditor::itemTypeFromObject(object) },
+			{ (int)object->index(), MapEditor::itemTypeFromObject(object) },
 			select
 		);
 }
@@ -193,10 +193,10 @@ sol::table lineVisibleTextures(MapLine& self)
 
 bool lineFlag(MapLine& self, const string& flag)
 {
-	if (Game::configuration().lineBasicFlagSet(flag, &self, self.getParentMap()->currentFormat()))
+	if (Game::configuration().lineBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;
 
-	return Game::configuration().lineFlagSet(flag, &self, self.getParentMap()->currentFormat());
+	return Game::configuration().lineFlagSet(flag, &self, self.parentMap()->currentFormat());
 }
 
 void registerMapLine(sol::state& lua)
@@ -281,10 +281,10 @@ void registerMapSector(sol::state& lua)
 
 bool thingFlag(MapThing& self, const string& flag)
 {
-	if (Game::configuration().thingBasicFlagSet(flag, &self, self.getParentMap()->currentFormat()))
+	if (Game::configuration().thingBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;
 
-	return Game::configuration().thingFlagSet(flag, &self, self.getParentMap()->currentFormat());
+	return Game::configuration().thingFlagSet(flag, &self, self.parentMap()->currentFormat());
 }
 
 void registerMapThing(sol::state& lua)
@@ -317,8 +317,8 @@ void registerMapObject(sol::state& lua)
 		"new", sol::no_constructor,
 
 		// Properties
-		"index",	sol::property(&MapObject::getIndex),
-		"typeName",	sol::property(&MapObject::getTypeName),
+		"index",	sol::property(&MapObject::index),
+		"typeName",	sol::property(&MapObject::typeName),
 		//"properties", sol::property(&MapObject::props), // Need to export MobjPropertyList first
 
 		// Functions

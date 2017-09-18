@@ -203,25 +203,25 @@ void MapChecksPanel::showCheckItem(unsigned index)
 	{
 		// Set edit mode to object type
 		MapObject* obj = check_items[index].check->getObject(check_items[index].index);
-		switch (obj->getObjType())
+		switch (obj->type())
 		{
-		case MOBJ_VERTEX:
+		case MapObject::Type::Vertex:
 			MapEditor::editContext().setEditMode(MapEditor::Mode::Vertices);
 			break;
-		case MOBJ_LINE:
+		case MapObject::Type::Line:
 			MapEditor::editContext().setEditMode(MapEditor::Mode::Lines);
 			break;
-		case MOBJ_SECTOR:
+		case MapObject::Type::Sector:
 			MapEditor::editContext().setEditMode(MapEditor::Mode::Sectors);
 			break;
-		case MOBJ_THING:
+		case MapObject::Type::Thing:
 			MapEditor::editContext().setEditMode(MapEditor::Mode::Things);
 			break;
 		default: break;
 		}
 
 		// Scroll to object
-		MapEditor::editContext().showItem(obj->getIndex());
+		MapEditor::editContext().showItem(obj->index());
 
 		// Update UI
 		btn_edit_object->Enable(true);

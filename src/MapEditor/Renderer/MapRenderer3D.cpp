@@ -222,7 +222,7 @@ MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(MapEditor::Item item)
 		return nullptr;
 
 	// Find matching quad
-	int lindex = side->getParentLine()->getIndex();
+	int lindex = side->getParentLine()->index();
 	for (unsigned a = 0; a < lines[lindex].quads.size(); a++)
 	{
 		quad_3d_t* quad = &lines[lindex].quads[a];
@@ -1871,7 +1871,7 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 			continue;
 
 		// Get parent line index
-		int line = map->getSide(selection[a].index)->getParentLine()->getIndex();
+		int line = map->getSide(selection[a].index)->getParentLine()->index();
 
 		// Get appropriate quad
 		quad_3d_t* quad = nullptr;
@@ -2460,11 +2460,11 @@ void MapRenderer3D::quickVisDiscard()
 	// Set all lines that are part of invisible sectors to invisible
 	for (unsigned a = 0; a < map->nSides(); a++)
 	{
-		dist = dist_sectors[map->getSide(a)->getSector()->getIndex()];
+		dist = dist_sectors[map->getSide(a)->getSector()->index()];
 		if (dist < 0 || (render_max_dist > 0 && dist > render_max_dist))
-			lines[map->getSide(a)->getParentLine()->getIndex()].visible = false;
+			lines[map->getSide(a)->getParentLine()->index()].visible = false;
 		else
-			lines[map->getSide(a)->getParentLine()->getIndex()].visible = true;
+			lines[map->getSide(a)->getParentLine()->index()].visible = true;
 	}
 }
 
@@ -2842,7 +2842,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 			return;
 
 		// Get parent line index
-		int line = map->getSide(hilight.index)->getParentLine()->getIndex();
+		int line = map->getSide(hilight.index)->getParentLine()->index();
 
 		// Get appropriate quad
 		quad_3d_t* quad = nullptr;

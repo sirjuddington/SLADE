@@ -190,7 +190,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 		return;
 
 	// Get parent map
-	SLADEMap* map = line->getParentMap();
+	SLADEMap* map = line->parentMap();
 
 	// Get args
 	int args[5];
@@ -217,7 +217,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 			tagged[l]->setFloatProperty("alpha", alpha);
 			tagged[l]->setStringProperty("renderstyle", type);
 
-			LOG_MESSAGE(3, S_FMT("Line %d translucent: (%d) %1.2f, %s", tagged[l]->getIndex(), args[1], alpha, CHR(type)));
+			LOG_MESSAGE(3, S_FMT("Line %d translucent: (%d) %1.2f, %s", tagged[l]->index(), args[1], alpha, CHR(type)));
 		}
 	}
 }
@@ -383,12 +383,12 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		MapSector* sector2 = line->backSector();
 		if (!sector1 || !sector2)
 		{
-			LOG_MESSAGE(1, "Ignoring Plane_Align on one-sided line %d", line->getIndex());
+			LOG_MESSAGE(1, "Ignoring Plane_Align on one-sided line %d", line->index());
 			continue;
 		}
 		if (sector1 == sector2)
 		{
-			LOG_MESSAGE(1, "Ignoring Plane_Align on line %d, which has the same sector on both sides", line->getIndex());
+			LOG_MESSAGE(1, "Ignoring Plane_Align on line %d, which has the same sector on both sides", line->index());
 			continue;
 		}
 
@@ -591,12 +591,12 @@ void MapSpecials::processEternitySlopes(SLADEMap* map)
 		MapSector* sector2 = line->backSector();
 		if(!sector1 || !sector2)
 		{
-			LOG_MESSAGE(1, "Ignoring Plane_Align on one-sided line %d", line->getIndex());
+			LOG_MESSAGE(1, "Ignoring Plane_Align on one-sided line %d", line->index());
 			continue;
 		}
 		if(sector1 == sector2)
 		{
-			LOG_MESSAGE(1, "Ignoring Plane_Align on line %d, which has the same sector on both sides", line->getIndex());
+			LOG_MESSAGE(1, "Ignoring Plane_Align on line %d, which has the same sector on both sides", line->index());
 			continue;
 		}
 
@@ -691,7 +691,7 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		this_vertex = vertices[a];
-		this_dist = line->distanceTo(this_vertex->point());
+		this_dist = line->distanceTo(this_vertex->pos());
 		if (this_dist > furthest_dist)
 		{
 			furthest_dist = this_dist;
@@ -701,7 +701,7 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 
 	if (!furthest_vertex || furthest_dist < 0.01)
 	{
-		LOG_MESSAGE(1, "Ignoring Plane_Align on line %d; sector %d has no appropriate reference vertex", line->getIndex(), target->getIndex());
+		LOG_MESSAGE(1, "Ignoring Plane_Align on line %d; sector %d has no appropriate reference vertex", line->index(), target->index());
 		return;
 	}
 
@@ -711,7 +711,7 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 	double targetz = target->getPlaneHeight<p>();
 	fpoint3_t p1(line->x1(), line->y1(), modelz);
 	fpoint3_t p2(line->x2(), line->y2(), modelz);
-	fpoint3_t p3(furthest_vertex->point(), targetz);
+	fpoint3_t p3(furthest_vertex->pos(), targetz);
 	target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 }
 
@@ -725,7 +725,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 	int lineid = thing->intProperty("arg0");
 	if (!lineid)
 	{
-		LOG_MESSAGE(1, "Ignoring line slope thing %d with no lineid argument", thing->getIndex());
+		LOG_MESSAGE(1, "Ignoring line slope thing %d with no lineid argument", thing->index());
 		return;
 	}
 
@@ -848,7 +848,7 @@ void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 		// the thing's height as absolute
 		if (MathStuff::distanceToLineFast(thing->point(), lines[a]->seg()) == 0)
 		{
-			LOG_MESSAGE(1, "Vavoom thing %d lies directly on its target line %d", thing->getIndex(), a);
+			LOG_MESSAGE(1, "Vavoom thing %d lies directly on its target line %d", thing->index(), a);
 			return;
 		}
 
@@ -861,7 +861,7 @@ void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 		return;
 	}
 
-	LOG_MESSAGE(1, "Vavoom thing %d has no matching line with first arg %d", thing->getIndex(), tid);
+	LOG_MESSAGE(1, "Vavoom thing %d has no matching line with first arg %d", thing->index(), tid);
 }
 
 /* MapSpecials::vertexHeight

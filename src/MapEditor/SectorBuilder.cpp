@@ -196,7 +196,7 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
 
 		// Get next edge
 		edge_t edge_next = nextEdge(edge, visited_lines);
-		LOG_MESSAGE(4, "Got next edge line %d, %s", edge_next.line ? edge_next.line->getIndex() : -1, edge_next.front ? "front" : "back");
+		LOG_MESSAGE(4, "Got next edge line %d, %s", edge_next.line ? edge_next.line->index() : -1, edge_next.front ? "front" : "back");
 
 		// Check if no valid next edge was found
 		if (!edge_next.line)
@@ -379,9 +379,9 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 			// shared by two lines.  Choosing the further line would mean
 			// choosing an inner edge, which is clearly wrong.
 			double line_dist = MathStuff::distanceToLineFast(
-				vertex_right->point(), line->seg());
+				vertex_right->pos(), line->seg());
 			double nearest_dist = MathStuff::distanceToLineFast(
-				vertex_right->point(), nearest->seg());
+				vertex_right->pos(), nearest->seg());
 			if (line_dist < nearest_dist)
 			{
 				min_dist = dist;
@@ -396,7 +396,7 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 
 
 	// Determine the edge side
-	double side = MathStuff::lineSide(vertex_right->point(), nearest->seg());
+	double side = MathStuff::lineSide(vertex_right->pos(), nearest->seg());
 	//LOG_DEBUG("Found next outer line", nearest, "on side", side);
 	if (side >= 0)
 		return edge_t(nearest, true);
@@ -472,7 +472,7 @@ SectorBuilder::edge_t SectorBuilder::findInnerEdge()
 	if (!eline)
 	{
 		// Discard vertex and try again
-		vertex_valid[vertex_right->getIndex()] = false;
+		vertex_valid[vertex_right->index()] = false;
 		return findInnerEdge();
 	}
 
@@ -696,7 +696,7 @@ void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
 
 	// Set sides to new sector
 	for (unsigned a = 0; a < sector_edges.size(); a++)
-		sector_edges[a].side_created = map->setLineSector(sector_edges[a].line->getIndex(), sector->getIndex(), sector_edges[a].front);
+		sector_edges[a].side_created = map->setLineSector(sector_edges[a].line->index(), sector->index(), sector_edges[a].front);
 }
 
 /* SectorBuilder::drawResult

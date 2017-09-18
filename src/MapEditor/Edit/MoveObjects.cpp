@@ -205,8 +205,8 @@ void MoveObjects::end(bool accept)
 			if (item.type == MapEditor::ItemType::PlanLine)
 			{
 				auto line = context_.planning().line(item.index);
-				if (line->v1()) move_verts[line->v1()->getIndex()] = 1;
-				if (line->v2()) move_verts[line->v2()->getIndex()] = 1;
+				if (line->v1()) move_verts[line->v1()->index()] = 1;
+				if (line->v2()) move_verts[line->v2()->index()] = 1;
 			}
 			else if (item.type == MapEditor::ItemType::PlanVertex)
 				move_verts[item.index] = 1;
@@ -215,7 +215,7 @@ void MoveObjects::end(bool accept)
 		// Move vertices
 		for (auto& vertex : context_.planning().vertices())
 		{
-			if (!move_verts[vertex->getIndex()])
+			if (!move_verts[vertex->index()])
 				continue;
 
 			vertex->move(offset_);
@@ -240,8 +240,8 @@ void MoveObjects::end(bool accept)
 			for (auto& item : items_)
 			{
 				auto line = context_.map().getLine(item.index);
-				if (line->v1()) move_verts[line->v1()->getIndex()] = 1;
-				if (line->v2()) move_verts[line->v2()->getIndex()] = 1;
+				if (line->v1()) move_verts[line->v1()->index()] = 1;
+				if (line->v2()) move_verts[line->v2()->index()] = 1;
 			}
 		}
 		else if (context_.editMode() == Mode::Sectors)
@@ -251,7 +251,7 @@ void MoveObjects::end(bool accept)
 				context_.map().getSector(item.index)->getVertices(sv);
 
 			for (auto vertex : sv)
-				move_verts[vertex->getIndex()] = 1;
+				move_verts[vertex->index()] = 1;
 		}
 
 		// Move vertices

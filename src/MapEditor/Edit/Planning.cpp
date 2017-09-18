@@ -83,7 +83,7 @@ MapObject* Planning::nearestObject(fpoint2_t point, double min)
 	MapVertex* nearest_vertex = nullptr;
 	for (auto& vertex : vertices_)
 	{
-		dist = point.distance_to(vertex->point());
+		dist = point.distance_to(vertex->pos());
 		if (dist <= min && dist < min_dist)
 		{
 			nearest_vertex = vertex.get();

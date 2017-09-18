@@ -3,6 +3,7 @@
 #define __SHOW_ITEM_DIALOG_H__
 
 #include "common.h"
+#include "MapEditor/SLADEMap/MapObject.h"
 
 class wxChoice;
 class wxTextCtrl;
@@ -16,9 +17,9 @@ public:
 	ShowItemDialog(wxWindow* parent);
 	~ShowItemDialog();
 
-	int		getType();
-	int		getIndex();
-	void	setType(int type);
+	MapObject::Type	getType();
+	int				getIndex();
+	void			setType(MapObject::Type type);
 };
 
 #endif//__SHOW_ITEM_DIALOG_H__

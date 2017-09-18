@@ -144,7 +144,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	int col = 0;
 
 	// Get all UDMF properties
-	auto& props = Game::configuration().allUDMFProperties(MOBJ_LINE);
+	auto& props = Game::configuration().allUDMFProperties(MapObject::Type::Line);
 
 	// UDMF flags
 	if (map_format == MAP_UDMF)

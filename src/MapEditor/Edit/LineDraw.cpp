@@ -73,7 +73,7 @@ bool LineDraw::addPoint(fpoint2_t point, bool nearest)
 	{
 		int vertex = context.map().nearestVertex(point);
 		if (vertex >= 0)
-			point = context.map().getVertex(vertex)->point();
+			point = context.map().getVertex(vertex)->pos();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -134,7 +134,7 @@ void LineDraw::setShapeOrigin(fpoint2_t point, bool nearest)
 	{
 		int vertex = context.map().nearestVertex(point);
 		if (vertex >= 0)
-			point = context.map().getVertex(vertex)->point();
+			point = context.map().getVertex(vertex)->pos();
 	}
 
 	// Otherwise, snap to grid if necessary

@@ -39,7 +39,7 @@
 /* MapThing::MapThing
  * MapThing class constructor
  *******************************************************************/
-MapThing::MapThing(SLADEMap* parent) : MapObject(MOBJ_THING, parent)
+MapThing::MapThing(SLADEMap* parent) : MapObject(Type::Thing, parent)
 {
 	// Init variables
 	this->x = 0;
@@ -51,7 +51,7 @@ MapThing::MapThing(SLADEMap* parent) : MapObject(MOBJ_THING, parent)
 /* MapThing::MapThing
  * MapThing class constructor
  *******************************************************************/
-MapThing::MapThing(double x, double y, short type, SLADEMap* parent) : MapObject(MOBJ_THING, parent)
+MapThing::MapThing(double x, double y, short type, SLADEMap* parent) : MapObject(Type::Thing, parent)
 {
 	// Init variables
 	this->x = x;
@@ -71,16 +71,7 @@ MapThing::~MapThing()
  * Returns the object point [point]. Currently for things this is
  * always the thing position
  *******************************************************************/
-fpoint2_t MapThing::getPoint(uint8_t point)
-{
-	return fpoint2_t(x, y);
-}
-
-/* MapThing::point
- * Returns the position of the thing, more explicitly than the
- * generic method getPoint
- *******************************************************************/
-fpoint2_t MapThing::point()
+fpoint2_t MapThing::point(Point point)
 {
 	return fpoint2_t(x, y);
 }
@@ -157,7 +148,7 @@ void MapThing::setFloatProperty(const string& key, double value)
 void MapThing::copy(MapObject* c)
 {
 	// Don't copy a non-thing
-	if (c->getObjType() != MOBJ_THING)
+	if (c->type() != Type::Thing)
 		return;
 
 	// Basic variables
@@ -208,7 +199,7 @@ void MapThing::setAnglePoint(fpoint2_t point)
 /* MapThing::writeBackup
  * Write all thing info to a mobj_backup_t struct
  *******************************************************************/
-void MapThing::writeBackup(mobj_backup_t* backup)
+void MapThing::writeBackup(Backup* backup)
 {
 	// Type
 	backup->props_internal["type"] = type;
@@ -224,7 +215,7 @@ void MapThing::writeBackup(mobj_backup_t* backup)
 /* MapThing::readBackup
  * Reads all thing info from a mobj_backup_t struct
  *******************************************************************/
-void MapThing::readBackup(mobj_backup_t* backup)
+void MapThing::readBackup(Backup* backup)
 {
 	// Type
 	type = backup->props_internal["type"].getIntValue();

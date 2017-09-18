@@ -298,8 +298,8 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 			MapSector* sec2 = context_->map().getLineSideSector(line, false);
 			int i1 = -1;
 			int i2 = -1;
-			if (sec1) i1 = sec1->getIndex();
-			if (sec2) i2 = sec2->getIndex();
+			if (sec1) i1 = sec1->index();
+			if (sec2) i2 = sec2->index();
 
 			context_->addEditorMessage(S_FMT("Front %d Back %d", i1, i2));
 		}

@@ -232,7 +232,7 @@ bool MapEditor::editObjectProperties(vector<MapObject*>& list)
 	string selsize = "";
 	string type = edit_context->modeString(false);
 	if (list.size() == 1)
-		type += S_FMT(" #%d", list[0]->getIndex());
+		type += S_FMT(" #%d", list[0]->index());
 	else if (list.size() > 1)
 		selsize = S_FMT("(%lu selected)", list.size());
 
@@ -305,19 +305,13 @@ MapEditor::ItemType MapEditor::baseItemType(const ItemType& type)
 
 MapEditor::ItemType MapEditor::itemTypeFromObject(const MapObject* object)
 {
-	switch (object->getObjType())
+	switch (object->type())
 	{
-	case MOBJ_VERTEX:
-		return ItemType::Vertex;
-	case MOBJ_LINE:
-		return ItemType::Line;
-	case MOBJ_SIDE:
-		return ItemType::Side;
-	case MOBJ_SECTOR:
-		return ItemType::Sector;
-	case MOBJ_THING:
-		return ItemType::Thing;
-	default:
-		return ItemType::Any;
+	case MapObject::Type::Vertex:	return ItemType::Vertex;
+	case MapObject::Type::Line:		return ItemType::Line;
+	case MapObject::Type::Side:		return ItemType::Side;
+	case MapObject::Type::Sector:	return ItemType::Sector;
+	case MapObject::Type::Thing:	return ItemType::Thing;
+	default:						return ItemType::Any;
 	}
 }

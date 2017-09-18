@@ -82,9 +82,9 @@ void SectorInfoOverlay::update(MapSector* sector)
 	int t = sector->intProperty("special");
 	string type = S_FMT("%s (Type %d)", Game::configuration().sectorTypeName(t), t);
 	if (Global::debug)
-		info_text += S_FMT("Sector #%d (%d): %s\n", sector->getIndex(), sector->getId(), type);
+		info_text += S_FMT("Sector #%d (%d): %s\n", sector->index(), sector->id(), type);
 	else
-		info_text += S_FMT("Sector #%d: %s\n", sector->getIndex(), type);
+		info_text += S_FMT("Sector #%d: %s\n", sector->index(), type);
 
 	// Height
 	int fh = sector->intProperty("heightfloor");

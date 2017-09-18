@@ -29,9 +29,9 @@ public:
 
 	double		xPos() const { return x; }
 	double		yPos() const { return y; }
+	fpoint2_t	pos() const { return { x, y }; }
 
-	fpoint2_t	getPoint(uint8_t point) override;
-	fpoint2_t	point();
+	fpoint2_t	point(Point point = Point::Mid) override;
 
 	int		intProperty(const string& key) override;
 	double	floatProperty(const string& key) override;
@@ -49,15 +49,15 @@ public:
 	void	move(fpoint2_t offset);
 	void	moveTo(fpoint2_t new_pos);
 
-	void	writeBackup(mobj_backup_t* backup) override;
-	void	readBackup(mobj_backup_t* backup) override;
+	void	writeBackup(Backup* backup) override;
+	void	readBackup(Backup* backup) override;
 
 	operator Debuggable() const
 	{
 		if (!this)
 			return Debuggable("<vertex NULL>");
 
-		return Debuggable(S_FMT("<vertex %u>", index));
+		return Debuggable(S_FMT("<vertex %u>", index_));
 	}
 
 	typedef std::unique_ptr<MapVertex> UPtr;
