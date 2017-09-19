@@ -139,7 +139,7 @@ void ObjectEditGroup::addThing(MapThing* thing)
 	t.position.x = thing->xPos();
 	t.position.y = thing->yPos();
 	t.old_position = t.position;
-	t.angle = thing->getAngle();
+	t.angle = thing->angle();
 	things.push_back(t);
 
 	// Update bbox
@@ -514,7 +514,7 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 		// Reset first
 		things[a].position.x = things[a].map_thing->xPos();
 		things[a].position.y = things[a].map_thing->yPos();
-		things[a].angle = things[a].map_thing->getAngle();
+		things[a].angle = things[a].map_thing->angle();
 
 		// Mirror
 		if (mirror_x)

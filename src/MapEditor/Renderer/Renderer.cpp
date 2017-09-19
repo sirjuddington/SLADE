@@ -206,14 +206,14 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 	for (auto object : objects)
 	{
 		// Vertex
-		if (object->type() == MapObject::Type::Vertex)
+		if (object->objType() == MapObject::Type::Vertex)
 		{
 			auto vertex = (MapVertex*)object;
 			bbox.extend(vertex->xPos(), vertex->yPos());
 		}
 
 		// Line
-		else if (object->type() == MapObject::Type::Line)
+		else if (object->objType() == MapObject::Type::Line)
 		{
 			auto line = (MapLine*)object;
 			bbox.extend(line->v1()->xPos(), line->v1()->yPos());
@@ -221,7 +221,7 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 		}
 
 		// Sector
-		else if (object->type() == MapObject::Type::Sector)
+		else if (object->objType() == MapObject::Type::Sector)
 		{
 			auto sbb = ((MapSector*)object)->boundingBox();
 			if (sbb.min.x < bbox.min.x)
@@ -235,7 +235,7 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 		}
 
 		// Thing
-		else if (object->type() == MapObject::Type::Thing)
+		else if (object->objType() == MapObject::Type::Thing)
 		{
 			auto thing = (MapThing*)object;
 			bbox.extend(thing->xPos(), thing->yPos());
@@ -296,10 +296,10 @@ void Renderer::setCameraThing(MapThing* thing)
 	fpoint3_t pos(thing->point(), 40);
 	int sector = context_.map().sectorAt(thing->point());
 	if (sector >= 0)
-		pos.z += context_.map().getSector(sector)->getFloorHeight();
+		pos.z += context_.map().getSector(sector)->heightFloor();
 
 	// Set camera position & direction
-	renderer_3d_.cameraSet(pos, MathStuff::vectorAngle(MathStuff::degToRad(thing->getAngle())));
+	renderer_3d_.cameraSet(pos, MathStuff::vectorAngle(MathStuff::degToRad(thing->angle())));
 }
 
 /* Renderer::cameraPos2D
@@ -1645,7 +1645,7 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 		if (!t) return;
 
 		// Get thing type
-		auto& tt = Game::configuration().thingType(t->getType());
+		auto& tt = Game::configuration().thingType(t->type());
 
 		// Start animation
 		double radius = tt.radius();

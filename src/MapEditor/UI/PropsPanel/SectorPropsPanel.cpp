@@ -464,19 +464,19 @@ void SectorPropsPanel::applyChanges()
 
 		// Floor height
 		if (!text_height_floor->GetValue().IsEmpty())
-			sector->setIntProperty("heightfloor", text_height_floor->getNumber(sector->getFloorHeight()));
+			sector->setIntProperty("heightfloor", text_height_floor->getNumber(sector->heightFloor()));
 
 		// Ceiling height
 		if (!text_height_ceiling->GetValue().IsEmpty())
-			sector->setIntProperty("heightceiling", text_height_ceiling->getNumber(sector->getCeilingHeight()));
+			sector->setIntProperty("heightceiling", text_height_ceiling->getNumber(sector->heightCeiling()));
 
 		// Light level
 		if (!text_light->GetValue().IsEmpty())
-			sector->setIntProperty("lightlevel", text_light->getNumber(sector->getLightLevel()));
+			sector->setIntProperty("lightlevel", text_light->getNumber(sector->lightLevel()));
 
 		// Tag
 		if (!text_tag->GetValue().IsEmpty())
-			sector->setIntProperty("id", text_tag->getNumber(sector->getTag()));
+			sector->setIntProperty("id", text_tag->getNumber(sector->id()));
 	}
 
 	if (mopp_all_props)

@@ -230,16 +230,16 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 		if (s1)
 		{
 			copy_sides.push_back(s1);
-			if (std::find(copy_sectors.begin(), copy_sectors.end(), s1->getSector()) == copy_sectors.end())
-				copy_sectors.push_back(s1->getSector());
+			if (std::find(copy_sectors.begin(), copy_sectors.end(), s1->sector()) == copy_sectors.end())
+				copy_sectors.push_back(s1->sector());
 		}
 
 		// Back side
 		if (s2)
 		{
 			copy_sides.push_back(s2);
-			if (std::find(copy_sectors.begin(), copy_sectors.end(), s2->getSector()) == copy_sectors.end())
-				copy_sectors.push_back(s2->getSector());
+			if (std::find(copy_sectors.begin(), copy_sectors.end(), s2->sector()) == copy_sectors.end())
+				copy_sectors.push_back(s2->sector());
 		}
 	}
 
@@ -260,7 +260,7 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 		// Set relative sector
 		for (unsigned b = 0; b < copy_sectors.size(); b++)
 		{
-			if (copy_sides[a]->getSector() == copy_sectors[b])
+			if (copy_sides[a]->sector() == copy_sectors[b])
 			{
 				copy->setSector(sectors[b]);
 				break;
@@ -399,7 +399,7 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 	for (unsigned a = 0; a < sides.size(); a++)
 	{
 		// Get relative sector
-		MapSector* sector = findInMap(sectMap, sides[a]->getSector());
+		MapSector* sector = findInMap(sectMap, sides[a]->sector());
 
 		MapSide* new_side = map->createSide(sector);
 		new_side->copy(sides[a]);

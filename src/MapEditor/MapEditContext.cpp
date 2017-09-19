@@ -388,9 +388,9 @@ bool MapEditContext::openMap(Archive::MapDesc map)
 		for (unsigned a = 0; a < this->map_.nThings(); a++)
 		{
 			MapThing* thing = this->map_.getThing(a);
-			if (thing->getType() == 32000)
+			if (thing->type() == 32000)
 				cam = thing;
-			if (thing->getType() == 1)
+			if (thing->type() == 1)
 				pstart = thing;
 
 			if (cam)
@@ -575,7 +575,7 @@ void MapEditContext::updateTagged()
 		{
 			type = SLADEMap::THINGS;
 			tag = map_.getThing(hilight_item)->intProperty("id");
-			ttype = map_.getThing(hilight_item)->getType();
+			ttype = map_.getThing(hilight_item)->type();
 		}
 		else if (edit_mode_ == Mode::Sectors)
 		{
@@ -599,8 +599,8 @@ void MapEditContext::updateTagged()
 			if (edit_mode_ == Mode::Lines)
 			{
 				MapLine* line = map_.getLine(hilight_item);
-				if (line->s2()) back = line->s2()->getSector();
-				if (line->s1()) front = line->s1()->getSector();
+				if (line->s2()) back = line->s2()->sector();
+				if (line->s1()) front = line->s1()->sector();
 				needs_tag = Game::configuration().actionSpecial(line->intProperty("special")).needsTag();
 				tag = line->intProperty("arg0");
 				arg2 = line->intProperty("arg1");
@@ -614,11 +614,11 @@ void MapEditContext::updateTagged()
 			else // edit_mode == Mode::Things
 			{
 				MapThing* thing = map_.getThing(hilight_item);
-				if (Game::configuration().thingType(thing->getType()).flags() & Game::ThingType::FLAG_SCRIPT)
+				if (Game::configuration().thingType(thing->type()).flags() & Game::ThingType::FLAG_SCRIPT)
 					needs_tag = TagType::None;
 				else
 				{
-					needs_tag = Game::configuration().thingType(thing->getType()).needsTag();
+					needs_tag = Game::configuration().thingType(thing->type()).needsTag();
 					if (needs_tag == TagType::None)
 						needs_tag = Game::configuration().actionSpecial(thing->intProperty("special")).needsTag();
 					tag = thing->intProperty("arg0");
@@ -1467,7 +1467,7 @@ void MapEditContext::swapPlayerStart3d()
 	// Find player 1 start
 	MapThing* pstart = nullptr;
 	for (int a = map_.nThings() - 1; a >= 0 ; a--)
-		if (map_.getThing(a)->getType() == 1)
+		if (map_.getThing(a)->type() == 1)
 		{
 			pstart = map_.getThing(a);
 			break;
@@ -1477,7 +1477,7 @@ void MapEditContext::swapPlayerStart3d()
 
 	// Save existing player start pos+dir
 	player_start_pos_.set(pstart->point());
-	player_start_dir_ = pstart->getAngle();
+	player_start_dir_ = pstart->angle();
 
 	fpoint2_t campos = renderer_.cameraPos2D();
 	pstart->setPos(campos.x, campos.y);
@@ -1494,7 +1494,7 @@ void MapEditContext::swapPlayerStart2d(fpoint2_t pos)
 	// Find player 1 start
 	MapThing* pstart = nullptr;
 	for (int a = map_.nThings() - 1; a >= 0; a--)
-		if (map_.getThing(a)->getType() == 1)
+		if (map_.getThing(a)->type() == 1)
 		{
 			pstart = map_.getThing(a);
 			break;
@@ -1504,7 +1504,7 @@ void MapEditContext::swapPlayerStart2d(fpoint2_t pos)
 
 	// Save existing player start pos+dir
 	player_start_pos_.set(pstart->point());
-	player_start_dir_ = pstart->getAngle();
+	player_start_dir_ = pstart->angle();
 
 	pstart->setPos(pos.x, pos.y);
 }
@@ -1519,7 +1519,7 @@ void MapEditContext::resetPlayerStart() const
 	// Find player 1 start
 	MapThing* pstart = nullptr;
 	for (int a = map_.nThings() - 1; a >= 0; a--)
-		if (map_.getThing(a)->getType() == 1)
+		if (map_.getThing(a)->type() == 1)
 		{
 			pstart = map_.getThing(a);
 			break;
@@ -1811,8 +1811,8 @@ bool MapEditContext::handleAction(string id)
 			if (side)
 			{
 				MapSide* s = map_.getSide(index);
-				if (s && s->getParentLine())
-					index = s->getParentLine()->index();
+				if (s && s->parentLine())
+					index = s->parentLine()->index();
 				else
 					index = -1;
 			}
@@ -1848,7 +1848,7 @@ bool MapEditContext::handleAction(string id)
 		fpoint3_t pos(input().mousePosMap());
 		MapSector* sector = map_.getSector(map_.sectorAt(input_.mousePosMap()));
 		if (sector)
-			pos.z = sector->getFloorHeight() + 40;
+			pos.z = sector->heightFloor() + 40;
 		renderer_.renderer3D().cameraSetPosition(pos);
 		return true;
 	}
@@ -2185,7 +2185,7 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 	{
 		MapObject::Backup bak;
 		obj->backup(&bak);
-		Log::console(S_FMT("Object %d: %s #%lu", id, obj->typeName(), obj->index()));
+		Log::console(S_FMT("Object %d: %s #%lu", id, obj->objTypeName(), obj->index()));
 		Log::console("Properties:");
 		Log::console(bak.properties.toString());
 		Log::console("Properties (internal):");

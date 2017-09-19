@@ -305,7 +305,7 @@ MapEditor::ItemType MapEditor::baseItemType(const ItemType& type)
 
 MapEditor::ItemType MapEditor::itemTypeFromObject(const MapObject* object)
 {
-	switch (object->type())
+	switch (object->objType())
 	{
 	case MapObject::Type::Vertex:	return ItemType::Vertex;
 	case MapObject::Type::Line:		return ItemType::Line;

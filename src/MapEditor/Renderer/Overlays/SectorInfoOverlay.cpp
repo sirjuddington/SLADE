@@ -82,7 +82,7 @@ void SectorInfoOverlay::update(MapSector* sector)
 	int t = sector->intProperty("special");
 	string type = S_FMT("%s (Type %d)", Game::configuration().sectorTypeName(t), t);
 	if (Global::debug)
-		info_text += S_FMT("Sector #%d (%d): %s\n", sector->index(), sector->id(), type);
+		info_text += S_FMT("Sector #%d (%d): %s\n", sector->index(), sector->objId(), type);
 	else
 		info_text += S_FMT("Sector #%d: %s\n", sector->index(), type);
 
@@ -98,8 +98,8 @@ void SectorInfoOverlay::update(MapSector* sector)
 	info_text += S_FMT("Tag: %d", sector->intProperty("id"));
 
 	// Textures
-	ftex = sector->getFloorTex();
-	ctex = sector->getCeilingTex();
+	ftex = sector->texFloor();
+	ctex = sector->texCeiling();
 
 	// Setup text box
 	text_box->setText(info_text);

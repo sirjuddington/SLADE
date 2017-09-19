@@ -86,11 +86,11 @@ void LineInfoOverlay::update(MapLine* line)
 
 	// General line info
 	if (Global::debug)
-		info_text += (S_FMT("Line #%d (%d)\n", line->index(), line->id()));
+		info_text += (S_FMT("Line #%d (%d)\n", line->index(), line->objId()));
 	else
 		info_text += (S_FMT("Line #%d\n", line->index()));
-    info_text += (S_FMT("Length: %1.2f\n", line->getLength()));
-    info_text += (S_FMT("Angle: %1.2f\n", line->getAngle()));
+	info_text += (S_FMT("Length: %1.2f\n", line->length()));
+	info_text += (S_FMT("Angle: %1.2f\n", line->angle()));
 
 	// Line special
 	int as_id = line->intProperty("special");
@@ -145,16 +145,16 @@ void LineInfoOverlay::update(MapLine* line)
 		int yoff = s->intProperty("offsety");
 		side_front.exists = true;
 		if (Global::debug)
-			side_front.info = S_FMT("Front Side #%d (%d) (Sector %d)", s->index(), s->id(), s->getSector()->index());
+			side_front.info = S_FMT("Front Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
 		else
-			side_front.info = S_FMT("Front Side #%d (Sector %d)", s->index(), s->getSector()->index());
+			side_front.info = S_FMT("Front Side #%d (Sector %d)", s->index(), s->sector()->index());
 		side_front.offsets = S_FMT("Offsets: (%d, %d)", xoff, yoff);
-		side_front.tex_upper = s->getTexUpper();
-		side_front.tex_middle = s->getTexMiddle();
-		side_front.tex_lower = s->getTexLower();
-		side_front.needs_lower = ((needed_tex & TEX_FRONT_LOWER) > 0);
-		side_front.needs_middle = ((needed_tex & TEX_FRONT_MIDDLE) > 0);
-		side_front.needs_upper = ((needed_tex & TEX_FRONT_UPPER) > 0);
+		side_front.tex_upper = s->texUpper();
+		side_front.tex_middle = s->texMiddle();
+		side_front.tex_lower = s->texLower();
+		side_front.needs_lower = ((needed_tex & MapLine::Part::FrontLower) > 0);
+		side_front.needs_middle = ((needed_tex & MapLine::Part::FrontMiddle) > 0);
+		side_front.needs_upper = ((needed_tex & MapLine::Part::FrontUpper) > 0);
 	}
 	else side_front.exists = false;
 
@@ -166,16 +166,16 @@ void LineInfoOverlay::update(MapLine* line)
 		int yoff = s->intProperty("offsety");
 		side_back.exists = true;
 		if (Global::debug)
-			side_back.info = S_FMT("Back Side #%d (%d) (Sector %d)", s->index(), s->id(), s->getSector()->index());
+			side_back.info = S_FMT("Back Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
 		else
-			side_back.info = S_FMT("Back Side #%d (Sector %d)", s->index(), s->getSector()->index());
+			side_back.info = S_FMT("Back Side #%d (Sector %d)", s->index(), s->sector()->index());
 		side_back.offsets = S_FMT("Offsets: (%d, %d)", xoff, yoff);
-		side_back.tex_upper = s->getTexUpper();
-		side_back.tex_middle = s->getTexMiddle();
-		side_back.tex_lower = s->getTexLower();
-		side_back.needs_lower = ((needed_tex & TEX_BACK_LOWER) > 0);
-		side_back.needs_middle = ((needed_tex & TEX_BACK_MIDDLE) > 0);
-		side_back.needs_upper = ((needed_tex & TEX_BACK_UPPER) > 0);
+		side_back.tex_upper = s->texUpper();
+		side_back.tex_middle = s->texMiddle();
+		side_back.tex_lower = s->texLower();
+		side_back.needs_lower = ((needed_tex & MapLine::Part::BackLower) > 0);
+		side_back.needs_middle = ((needed_tex & MapLine::Part::BackMiddle) > 0);
+		side_back.needs_upper = ((needed_tex & MapLine::Part::BackUpper) > 0);
 	}
 	else side_back.exists = false;
 }

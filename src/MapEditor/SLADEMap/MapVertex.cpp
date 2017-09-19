@@ -30,7 +30,6 @@
 #include "Main.h"
 #include "MapVertex.h"
 #include "MapLine.h"
-#include "App.h"
 #include "SLADEMap.h"
 
 
@@ -43,19 +42,15 @@
  *******************************************************************/
 MapVertex::MapVertex(SLADEMap* parent) : MapObject(Type::Vertex, parent)
 {
-	// Init variables
-	this->x = 0;
-	this->y = 0;
 }
 
 /* MapVertex::MapVertex
  * MapVertex class constructor
  *******************************************************************/
-MapVertex::MapVertex(double x, double y, SLADEMap* parent) : MapObject(Type::Vertex, parent)
+MapVertex::MapVertex(double x, double y, SLADEMap* parent) :
+	MapObject(Type::Vertex, parent),
+	position_{ x, y }
 {
-	// Init variables
-	this->x = x;
-	this->y = y;
 }
 
 /* MapVertex::~MapVertex
@@ -71,7 +66,7 @@ MapVertex::~MapVertex()
  *******************************************************************/
 fpoint2_t MapVertex::point(Point point)
 {
-	return this->pos();
+	return position_;
 }
 
 /* MapVertex::intProperty
@@ -80,9 +75,9 @@ fpoint2_t MapVertex::point(Point point)
 int MapVertex::intProperty(const string& key)
 {
 	if (key == "x")
-		return (int)x;
+		return (int)position_.x;
 	else if (key == "y")
-		return (int)y;
+		return (int)position_.y;
 	else
 		return MapObject::intProperty(key);
 }
@@ -93,9 +88,9 @@ int MapVertex::intProperty(const string& key)
 double MapVertex::floatProperty(const string& key)
 {
 	if (key == "x")
-		return x;
+		return position_.x;
 	else if (key == "y")
-		return y;
+		return position_.y;
 	else
 		return MapObject::floatProperty(key);
 }
@@ -110,15 +105,15 @@ void MapVertex::setIntProperty(const string& key, int value)
 
 	if (key == "x")
 	{
-		x = value;
-		for (unsigned a = 0; a < connected_lines.size(); a++)
-			connected_lines[a]->resetInternals();
+		position_.x = value;
+		for (unsigned a = 0; a < connected_lines_.size(); a++)
+			connected_lines_[a]->resetInternals();
 	}
 	else if (key == "y")
 	{
-		y = value;
-		for (unsigned a = 0; a < connected_lines.size(); a++)
-			connected_lines[a]->resetInternals();
+		position_.y = value;
+		for (unsigned a = 0; a < connected_lines_.size(); a++)
+			connected_lines_[a]->resetInternals();
 	}
 	else
 		return MapObject::setIntProperty(key, value);
@@ -133,9 +128,9 @@ void MapVertex::setFloatProperty(const string& key, double value)
 	setModified();
 
 	if (key == "x")
-		x = value;
+		position_.x = value;
 	else if (key == "y")
-		y = value;
+		position_.y = value;
 	else
 		return MapObject::setFloatProperty(key, value);
 }
@@ -156,7 +151,7 @@ bool MapVertex::scriptCanModifyProp(const string& key)
  *******************************************************************/
 void MapVertex::connectLine(MapLine* line)
 {
-	VECTOR_ADD_UNIQUE(connected_lines, line);
+	VECTOR_ADD_UNIQUE(connected_lines_, line);
 }
 
 /* MapVertex::disconnectLine
@@ -164,11 +159,11 @@ void MapVertex::connectLine(MapLine* line)
  *******************************************************************/
 void MapVertex::disconnectLine(MapLine* line)
 {
-	for (unsigned a = 0; a < connected_lines.size(); a++)
+	for (unsigned a = 0; a < connected_lines_.size(); a++)
 	{
-		if (connected_lines[a] == line)
+		if (connected_lines_[a] == line)
 		{
-			connected_lines.erase(connected_lines.begin() + a);
+			connected_lines_.erase(connected_lines_.begin() + a);
 			return;
 		}
 	}
@@ -179,20 +174,19 @@ void MapVertex::disconnectLine(MapLine* line)
  *******************************************************************/
 MapLine* MapVertex::connectedLine(unsigned index)
 {
-	if (index > connected_lines.size())
+	if (index > connected_lines_.size())
 		return nullptr;
 
-	return connected_lines[index];
+	return connected_lines_[index];
 }
 
 void MapVertex::move(fpoint2_t offset)
 {
 	setModified();
-	x += offset.x;
-	y += offset.y;
+	position_ = position_ + offset;
 
 	// Reset all attached lines' geometry info
-	for (auto cl : connected_lines)
+	for (auto cl : connected_lines_)
 		cl->resetInternals();
 
 	if (parent_map_)
@@ -202,11 +196,10 @@ void MapVertex::move(fpoint2_t offset)
 void MapVertex::moveTo(fpoint2_t new_pos)
 {
 	setModified();
-	x = new_pos.x;
-	y = new_pos.y;
+	position_ = new_pos;
 
 	// Reset all attached lines' geometry info
-	for (auto cl : connected_lines)
+	for (auto cl : connected_lines_)
 		cl->resetInternals();
 
 	if (parent_map_)
@@ -219,8 +212,8 @@ void MapVertex::moveTo(fpoint2_t new_pos)
 void MapVertex::writeBackup(Backup* backup)
 {
 	// Position
-	backup->props_internal["x"] = x;
-	backup->props_internal["y"] = y;
+	backup->props_internal["x"] = position_.x;
+	backup->props_internal["y"] = position_.y;
 }
 
 /* MapVertex::readBackup
@@ -229,6 +222,6 @@ void MapVertex::writeBackup(Backup* backup)
 void MapVertex::readBackup(Backup* backup)
 {
 	// Position
-	x = backup->props_internal["x"].getFloatValue();
-	y = backup->props_internal["y"].getFloatValue();
+	position_.x = backup->props_internal["x"].getFloatValue();
+	position_.y = backup->props_internal["y"].getFloatValue();
 }

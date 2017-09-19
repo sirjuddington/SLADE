@@ -41,14 +41,10 @@
 /* MapSide::MapSide
  * MapSide class constructor
  *******************************************************************/
-MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(Type::Side, parent)
+MapSide::MapSide(MapSector* sector, SLADEMap* parent) :
+	MapObject(Type::Side, parent),
+	sector_{ sector }
 {
-	// Init variables
-	this->sector = sector;
-	this->parent = nullptr;
-	this->offset_x = 0;
-	this->offset_y = 0;
-
 	// Add to parent sector
 	if (sector) sector->connectSide(this);
 }
@@ -59,10 +55,8 @@ MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(Type::Side, pa
 MapSide::MapSide(SLADEMap* parent) : MapObject(Type::Side, parent)
 {
 	// Init variables
-	this->sector = nullptr;
-	this->parent = nullptr;
-	this->offset_x = 0;
-	this->offset_y = 0;
+	this->sector_ = nullptr;
+	this->parent_line_ = nullptr;
 }
 
 /* MapSide::~MapSide
@@ -77,31 +71,30 @@ MapSide::~MapSide()
  *******************************************************************/
 void MapSide::copy(MapObject* c)
 {
-	if (c->type() != Type::Side)
+	if (c->objType() != Type::Side)
 		return;
 
 	// Update texture counts (decrement previous)
 	if (parent_map_)
 	{
-		parent_map_->updateTexUsage(tex_lower, -1);
-		parent_map_->updateTexUsage(tex_middle, -1);
-		parent_map_->updateTexUsage(tex_upper, -1);
+		parent_map_->updateTexUsage(tex_lower_, -1);
+		parent_map_->updateTexUsage(tex_middle_, -1);
+		parent_map_->updateTexUsage(tex_upper_, -1);
 	}
 
 	// Copy properties
 	MapSide* side = (MapSide*)c;
-	this->tex_lower = side->tex_lower;
-	this->tex_middle = side->tex_middle;
-	this->tex_upper = side->tex_upper;
-	this->offset_x = side->offset_x;
-	this->offset_y = side->offset_y;
+	this->tex_lower_ = side->tex_lower_;
+	this->tex_middle_ = side->tex_middle_;
+	this->tex_upper_ = side->tex_upper_;
+	this->offset_ = side->offset_;
 
 	// Update texture counts (increment new)
 	if (parent_map_)
 	{
-		parent_map_->updateTexUsage(tex_lower, 1);
-		parent_map_->updateTexUsage(tex_middle, 1);
-		parent_map_->updateTexUsage(tex_upper, 1);
+		parent_map_->updateTexUsage(tex_lower_, 1);
+		parent_map_->updateTexUsage(tex_middle_, 1);
+		parent_map_->updateTexUsage(tex_upper_, 1);
 	}
 
 	MapObject::copy(c);
@@ -110,7 +103,7 @@ void MapSide::copy(MapObject* c)
 /* MapSide::getLight
  * Returns the light level of the given side
  *******************************************************************/
-uint8_t MapSide::getLight()
+uint8_t MapSide::light()
 {
 	int light = 0;
 	bool include_sector = true;
@@ -123,8 +116,8 @@ uint8_t MapSide::getLight()
 			include_sector = false;
 	}
 
-	if (include_sector && sector)
-		light += sector->getLight(0);
+	if (include_sector && sector_)
+		light += sector_->getLight(0);
 
 	// Clamp range
 	if (light > 255)
@@ -153,14 +146,14 @@ void MapSide::setSector(MapSector* sector)
 		return;
 
 	// Remove side from current sector, if any
-	if (this->sector)
-		this->sector->disconnectSide(this);
+	if (this->sector_)
+		this->sector_->disconnectSide(this);
 
 	// Update modified time
 	setModified();
 
 	// Add side to new sector
-	this->sector = sector;
+	this->sector_ = sector;
 	sector->connectSide(this);
 }
 
@@ -171,15 +164,15 @@ int MapSide::intProperty(const string& key)
 {
 	if (key == "sector")
 	{
-		if (sector)
-			return sector->index();
+		if (sector_)
+			return sector_->index();
 		else
 			return -1;
 	}
 	else if (key == "offsetx")
-		return offset_x;
+		return offset_.x;
 	else if (key == "offsety")
-		return offset_y;
+		return offset_.y;
 	else
 		return MapObject::intProperty(key);
 }
@@ -195,9 +188,9 @@ void MapSide::setIntProperty(const string& key, int value)
 	if (key == "sector" && parent_map_)
 		setSector(parent_map_->getSector(value));
 	else if (key == "offsetx")
-		offset_x = value;
+		offset_.x = value;
 	else if (key == "offsety")
-		offset_y = value;
+		offset_.y = value;
 	else
 		MapObject::setIntProperty(key, value);
 }
@@ -208,11 +201,11 @@ void MapSide::setIntProperty(const string& key, int value)
 string MapSide::stringProperty(const string& key)
 {
 	if (key == "texturetop")
-		return tex_upper;
+		return tex_upper_;
 	else if (key == "texturemiddle")
-		return tex_middle;
+		return tex_middle_;
 	else if (key == "texturebottom")
-		return tex_lower;
+		return tex_lower_;
 	else
 		return MapObject::stringProperty(key);
 }
@@ -227,21 +220,21 @@ void MapSide::setStringProperty(const string& key, const string& value)
 
 	if (key == "texturetop")
 	{
-		if (parent_map_) parent_map_->updateTexUsage(tex_upper, -1);
-		tex_upper = value;
-		if (parent_map_) parent_map_->updateTexUsage(tex_upper, 1);
+		if (parent_map_) parent_map_->updateTexUsage(tex_upper_, -1);
+		tex_upper_ = value;
+		if (parent_map_) parent_map_->updateTexUsage(tex_upper_, 1);
 	}
 	else if (key == "texturemiddle")
 	{
-		if (parent_map_) parent_map_->updateTexUsage(tex_middle, -1);
-		tex_middle = value;
-		if (parent_map_) parent_map_->updateTexUsage(tex_middle, 1);
+		if (parent_map_) parent_map_->updateTexUsage(tex_middle_, -1);
+		tex_middle_ = value;
+		if (parent_map_) parent_map_->updateTexUsage(tex_middle_, 1);
 	}
 	else if (key == "texturebottom")
 	{
-		if (parent_map_) parent_map_->updateTexUsage(tex_lower, -1);
-		tex_lower = value;
-		if (parent_map_) parent_map_->updateTexUsage(tex_lower, 1);
+		if (parent_map_) parent_map_->updateTexUsage(tex_lower_, -1);
+		tex_lower_ = value;
+		if (parent_map_) parent_map_->updateTexUsage(tex_lower_, 1);
 	}
 	else
 		MapObject::setStringProperty(key, value);
@@ -264,19 +257,19 @@ bool MapSide::scriptCanModifyProp(const string& key)
 void MapSide::writeBackup(Backup* backup)
 {
 	// Sector
-	if (sector)
-		backup->props_internal["sector"] = sector->id();
+	if (sector_)
+		backup->props_internal["sector"] = sector_->objId();
 	else
 		backup->props_internal["sector"] = 0;
 
 	// Textures
-	backup->props_internal["texturetop"] = tex_upper;
-	backup->props_internal["texturemiddle"] = tex_middle;
-	backup->props_internal["texturebottom"] = tex_lower;
+	backup->props_internal["texturetop"] = tex_upper_;
+	backup->props_internal["texturemiddle"] = tex_middle_;
+	backup->props_internal["texturebottom"] = tex_lower_;
 
 	// Offsets
-	backup->props_internal["offsetx"] = offset_x;
-	backup->props_internal["offsety"] = offset_y;
+	backup->props_internal["offsetx"] = offset_.x;
+	backup->props_internal["offsety"] = offset_.y;
 
 	//LOG_MESSAGE(1, "Side %d backup sector #%d", id, sector->getIndex());
 }
@@ -290,34 +283,34 @@ void MapSide::readBackup(Backup* backup)
 	MapObject* s = parent_map_->getObjectById(backup->props_internal["sector"]);
 	if (s)
 	{
-		sector->disconnectSide(this);
-		sector = (MapSector*)s;
-		sector->connectSide(this);
+		sector_->disconnectSide(this);
+		sector_ = (MapSector*)s;
+		sector_->connectSide(this);
 		//LOG_MESSAGE(1, "Side %d load backup sector #%d", id, s->getIndex());
 	}
 	else
 	{
-		if (sector)
-			sector->disconnectSide(this);
-		sector = nullptr;
+		if (sector_)
+			sector_->disconnectSide(this);
+		sector_ = nullptr;
 	}
 
 	// Update texture counts (decrement previous)
-	parent_map_->updateTexUsage(tex_upper, -1);
-	parent_map_->updateTexUsage(tex_middle, -1);
-	parent_map_->updateTexUsage(tex_lower, -1);
+	parent_map_->updateTexUsage(tex_upper_, -1);
+	parent_map_->updateTexUsage(tex_middle_, -1);
+	parent_map_->updateTexUsage(tex_lower_, -1);
 
 	// Textures
-	tex_upper = backup->props_internal["texturetop"].getStringValue();
-	tex_middle = backup->props_internal["texturemiddle"].getStringValue();
-	tex_lower = backup->props_internal["texturebottom"].getStringValue();
+	tex_upper_ = backup->props_internal["texturetop"].getStringValue();
+	tex_middle_ = backup->props_internal["texturemiddle"].getStringValue();
+	tex_lower_ = backup->props_internal["texturebottom"].getStringValue();
 
 	// Update texture counts (increment new)
-	parent_map_->updateTexUsage(tex_upper, 1);
-	parent_map_->updateTexUsage(tex_middle, 1);
-	parent_map_->updateTexUsage(tex_lower, 1);
+	parent_map_->updateTexUsage(tex_upper_, 1);
+	parent_map_->updateTexUsage(tex_middle_, 1);
+	parent_map_->updateTexUsage(tex_lower_, 1);
 
 	// Offsets
-	offset_x = backup->props_internal["offsetx"].getIntValue();
-	offset_y = backup->props_internal["offsety"].getIntValue();
+	offset_.x = backup->props_internal["offsetx"].getIntValue();
+	offset_.y = backup->props_internal["offsety"].getIntValue();
 }

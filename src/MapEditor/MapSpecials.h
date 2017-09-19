@@ -24,17 +24,17 @@ class MapSpecials
 
 	void	processZDoomSlopes(SLADEMap* map);
 	void  processEternitySlopes(SLADEMap* map);
-	template<PlaneType>
+	template<MapSector::Surface>
 	void	applyPlaneAlign(MapLine* line, MapSector* sector, MapSector* model_sector);
-	template<PlaneType>
+	template<MapSector::Surface>
 	void	applyLineSlopeThing(SLADEMap* map, MapThing* thing);
-	template<PlaneType>
+	template<MapSector::Surface>
 	void	applySectorTiltThing(SLADEMap* map, MapThing* thing);
-	template<PlaneType>
+	template<MapSector::Surface>
 	void	applyVavoomSlopeThing(SLADEMap* map, MapThing* thing);
-	template<PlaneType>
+	template<MapSector::Surface>
 	double	vertexHeight(MapVertex* vertex, MapSector* sector);
-	template<PlaneType>
+	template<MapSector::Surface>
 	void	applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights);
 
 public:

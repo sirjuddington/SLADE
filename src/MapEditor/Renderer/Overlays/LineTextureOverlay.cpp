@@ -116,9 +116,9 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 		if (side1)
 		{
 			// Add textures
-			addTexture(textures[FRONT_UPPER], side1->getTexUpper());
-			addTexture(textures[FRONT_MIDDLE], side1->getTexMiddle());
-			addTexture(textures[FRONT_LOWER], side1->getTexLower());
+			addTexture(textures[FRONT_UPPER], side1->texUpper());
+			addTexture(textures[FRONT_MIDDLE], side1->texMiddle());
+			addTexture(textures[FRONT_LOWER], side1->texLower());
 
 			this->side1 = true;
 		}
@@ -128,9 +128,9 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 		if (side2)
 		{
 			// Add textures
-			addTexture(textures[BACK_UPPER], side2->getTexUpper());
-			addTexture(textures[BACK_MIDDLE], side2->getTexMiddle());
-			addTexture(textures[BACK_LOWER], side2->getTexLower());
+			addTexture(textures[BACK_UPPER], side2->texUpper());
+			addTexture(textures[BACK_MIDDLE], side2->texMiddle());
+			addTexture(textures[BACK_LOWER], side2->texLower());
 
 			this->side2 = true;
 		}

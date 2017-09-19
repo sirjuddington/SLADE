@@ -109,7 +109,7 @@ bool Polygon2D::openSector(MapSector* sector)
 	MapLine* line;
 	for (unsigned a = 0; a < sides.size(); a++)
 	{
-		line = sides[a]->getParentLine();
+		line = sides[a]->parentLine();
 
 		// Ignore this side if its parent line has the same sector on both sides
 		if (!line || line->doubleSector())
@@ -1005,7 +1005,7 @@ void PolygonSplitter::openSector(MapSector* sector)
 	MapLine* line;
 	for (unsigned a = 0; a < sides.size(); a++)
 	{
-		line = sides[a]->getParentLine();
+		line = sides[a]->parentLine();
 
 		// Ignore this side if its parent line has the same sector on both sides
 		if (!line || line->doubleSector())

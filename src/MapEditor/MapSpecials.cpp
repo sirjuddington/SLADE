@@ -185,7 +185,7 @@ void MapSpecials::processZDoomMapSpecials(SLADEMap* map)
 void MapSpecials::processZDoomLineSpecial(MapLine* line)
 {
 	// Get special
-	int special = line->getSpecial();
+	int special = line->special();
 	if (special == 0)
 		return;
 
@@ -368,15 +368,15 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 	for (unsigned a = 0; a < map->nSectors(); a++)
 	{
 		MapSector* target = map->getSector(a);
-		target->setPlane<FLOOR_PLANE>(plane_t::flat(target->getPlaneHeight<FLOOR_PLANE>()));
-		target->setPlane<CEILING_PLANE>(plane_t::flat(target->getPlaneHeight<CEILING_PLANE>()));
+		target->setPlane<MapSector::Floor>(plane_t::flat(target->planeHeight<MapSector::Floor>()));
+		target->setPlane<MapSector::Ceiling>(plane_t::flat(target->planeHeight<MapSector::Ceiling>()));
 	}
 
 	// Plane_Align (line special 181)
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		MapLine* line = map->getLine(a);
-		if (line->getSpecial() != 181)
+		if (line->special() != 181)
 			continue;
 
 		MapSector* sector1 = line->frontSector();
@@ -394,15 +394,15 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 
 		int floor_arg = line->intProperty("arg0");
 		if (floor_arg == 1)
-			applyPlaneAlign<FLOOR_PLANE>(line, sector1, sector2);
+			applyPlaneAlign<MapSector::Floor>(line, sector1, sector2);
 		else if (floor_arg == 2)
-			applyPlaneAlign<FLOOR_PLANE>(line, sector2, sector1);
+			applyPlaneAlign<MapSector::Floor>(line, sector2, sector1);
 
 		int ceiling_arg = line->intProperty("arg1");
 		if (ceiling_arg == 1)
-			applyPlaneAlign<CEILING_PLANE>(line, sector1, sector2);
+			applyPlaneAlign<MapSector::Ceiling>(line, sector1, sector2);
 		else if (ceiling_arg == 2)
-			applyPlaneAlign<CEILING_PLANE>(line, sector2, sector1);
+			applyPlaneAlign<MapSector::Ceiling>(line, sector2, sector1);
 	}
 
 	// Line slope things (9500/9501), sector tilt things (9502/9503), and
@@ -412,20 +412,20 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		MapThing* thing = map->getThing(a);
 
 		// Line slope things
-		if (thing->getType() == 9500)
-			applyLineSlopeThing<FLOOR_PLANE>(map, thing);
-		else if (thing->getType() == 9501)
-			applyLineSlopeThing<CEILING_PLANE>(map, thing);
+		if (thing->type() == 9500)
+			applyLineSlopeThing<MapSector::Floor>(map, thing);
+		else if (thing->type() == 9501)
+			applyLineSlopeThing<MapSector::Ceiling>(map, thing);
 		// Sector tilt things
-		else if (thing->getType() == 9502)
-			applySectorTiltThing<FLOOR_PLANE>(map, thing);
-		else if (thing->getType() == 9503)
-			applySectorTiltThing<CEILING_PLANE>(map, thing);
+		else if (thing->type() == 9502)
+			applySectorTiltThing<MapSector::Floor>(map, thing);
+		else if (thing->type() == 9503)
+			applySectorTiltThing<MapSector::Ceiling>(map, thing);
 		// Vavoom things
-		else if (thing->getType() == 1500)
-			applyVavoomSlopeThing<FLOOR_PLANE>(map, thing);
-		else if (thing->getType() == 1501)
-			applyVavoomSlopeThing<CEILING_PLANE>(map, thing);
+		else if (thing->type() == 1500)
+			applyVavoomSlopeThing<MapSector::Floor>(map, thing);
+		else if (thing->type() == 1501)
+			applyVavoomSlopeThing<MapSector::Ceiling>(map, thing);
 	}
 
 	// Slope copy things (9510/9511)
@@ -433,7 +433,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 	{
 		MapThing* thing = map->getThing(a);
 
-		if (thing->getType() == 9510 || thing->getType() == 9511)
+		if (thing->type() == 9510 || thing->type() == 9511)
 		{
 			int target_idx = map->sectorAt(thing->point());
 			if (target_idx < 0)
@@ -456,10 +456,10 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 				continue;
 			}
 
-			if (thing->getType() == 9510)
-				target->setFloorPlane(tagged_sectors[0]->getFloorPlane());
+			if (thing->type() == 9510)
+				target->setFloorPlane(tagged_sectors[0]->planeFloor());
 			else
-				target->setCeilingPlane(tagged_sectors[0]->getCeilingPlane());
+				target->setCeilingPlane(tagged_sectors[0]->planeCeiling());
 		}
 	}
 
@@ -472,15 +472,15 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 	for (unsigned a = 0; a < map->nThings(); a++)
 	{
 		MapThing* thing = map->getThing(a);
-		if (thing->getType() == 1504 || thing->getType() == 1505)
+		if (thing->type() == 1504 || thing->type() == 1505)
 		{
 			// TODO there could be more than one vertex at this point
 			MapVertex* vertex = map->vertexAt(thing->xPos(), thing->yPos());
 			if (vertex)
 			{
-				if (thing->getType() == 1504)
+				if (thing->type() == 1504)
 					vertex_floor_heights[vertex] = thing->floatProperty("height");
-				else if (thing->getType() == 1505)
+				else if (thing->type() == 1505)
 					vertex_ceiling_heights[vertex] = thing->floatProperty("height");
 			}
 		}
@@ -498,8 +498,8 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		if (vertices.size() != 3)
 			continue;
 
-		applyVertexHeightSlope<FLOOR_PLANE>(target, vertices, vertex_floor_heights);
-		applyVertexHeightSlope<CEILING_PLANE>(target, vertices, vertex_ceiling_heights);
+		applyVertexHeightSlope<MapSector::Floor>(target, vertices, vertex_floor_heights);
+		applyVertexHeightSlope<MapSector::Ceiling>(target, vertices, vertex_ceiling_heights);
 	}
 
 	// Plane_Copy
@@ -507,7 +507,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		MapLine* line = map->getLine(a);
-		if (line->getSpecial() != 118)
+		if (line->special() != 118)
 			continue;
 
 		int tag;
@@ -518,28 +518,28 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				front->setFloorPlane(sectors[0]->getFloorPlane());
+				front->setFloorPlane(sectors[0]->planeFloor());
 		}
 		if ((tag = line->intProperty("arg1")) && front)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				front->setCeilingPlane(sectors[0]->getCeilingPlane());
+				front->setCeilingPlane(sectors[0]->planeCeiling());
 		}
 		if ((tag = line->intProperty("arg2")) && back)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				back->setFloorPlane(sectors[0]->getFloorPlane());
+				back->setFloorPlane(sectors[0]->planeFloor());
 		}
 		if ((tag = line->intProperty("arg3")) && back)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				back->setCeilingPlane(sectors[0]->getCeilingPlane());
+				back->setCeilingPlane(sectors[0]->planeCeiling());
 		}
 
 		// The fifth "share" argument copies from one side of the line to the
@@ -549,14 +549,14 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 			int share = line->intProperty("arg4");
 
 			if ((share & 3) == 1)
-				back->setFloorPlane(front->getFloorPlane());
+				back->setFloorPlane(front->planeFloor());
 			else if ((share & 3) == 2)
-				front->setFloorPlane(back->getFloorPlane());
+				front->setFloorPlane(back->planeFloor());
 
 			if ((share & 12) == 4)
-				back->setCeilingPlane(front->getCeilingPlane());
+				back->setCeilingPlane(front->planeCeiling());
 			else if ((share & 12) == 8)
-				front->setCeilingPlane(back->getCeilingPlane());
+				front->setCeilingPlane(back->planeCeiling());
 		}
 	}
 }
@@ -576,15 +576,15 @@ void MapSpecials::processEternitySlopes(SLADEMap* map)
 	for(unsigned a = 0; a < map->nSectors(); a++)
 	{
 		MapSector* target = map->getSector(a);
-		target->setPlane<FLOOR_PLANE>(plane_t::flat(target->getPlaneHeight<FLOOR_PLANE>()));
-		target->setPlane<CEILING_PLANE>(plane_t::flat(target->getPlaneHeight<CEILING_PLANE>()));
+		target->setPlane<MapSector::Floor>(plane_t::flat(target->planeHeight<MapSector::Floor>()));
+		target->setPlane<MapSector::Ceiling>(plane_t::flat(target->planeHeight<MapSector::Ceiling>()));
 	}
 
 	// Plane_Align (line special 181)
 	for(unsigned a = 0; a < map->nLines(); a++)
 	{
 		MapLine* line = map->getLine(a);
-		if(line->getSpecial() != 181)
+		if(line->special() != 181)
 			continue;
 
 		MapSector* sector1 = line->frontSector();
@@ -602,15 +602,15 @@ void MapSpecials::processEternitySlopes(SLADEMap* map)
 
 		int floor_arg = line->intProperty("arg0");
 		if(floor_arg == 1)
-			applyPlaneAlign<FLOOR_PLANE>(line, sector1, sector2);
+			applyPlaneAlign<MapSector::Floor>(line, sector1, sector2);
 		else if(floor_arg == 2)
-			applyPlaneAlign<FLOOR_PLANE>(line, sector2, sector1);
+			applyPlaneAlign<MapSector::Floor>(line, sector2, sector1);
 
 		int ceiling_arg = line->intProperty("arg1");
 		if(ceiling_arg == 1)
-			applyPlaneAlign<CEILING_PLANE>(line, sector1, sector2);
+			applyPlaneAlign<MapSector::Ceiling>(line, sector1, sector2);
 		else if(ceiling_arg == 2)
-			applyPlaneAlign<CEILING_PLANE>(line, sector2, sector1);
+			applyPlaneAlign<MapSector::Ceiling>(line, sector2, sector1);
 	}
 
 	// Plane_Copy
@@ -618,7 +618,7 @@ void MapSpecials::processEternitySlopes(SLADEMap* map)
 	for(unsigned a = 0; a < map->nLines(); a++)
 	{
 		MapLine* line = map->getLine(a);
-		if(line->getSpecial() != 118)
+		if(line->special() != 118)
 			continue;
 
 		int tag;
@@ -629,28 +629,28 @@ void MapSpecials::processEternitySlopes(SLADEMap* map)
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if(sectors.size())
-				front->setFloorPlane(sectors[0]->getFloorPlane());
+				front->setFloorPlane(sectors[0]->planeFloor());
 		}
 		if((tag = line->intProperty("arg1")))
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if(sectors.size())
-				front->setCeilingPlane(sectors[0]->getCeilingPlane());
+				front->setCeilingPlane(sectors[0]->planeCeiling());
 		}
 		if((tag = line->intProperty("arg2")))
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if(sectors.size())
-				back->setFloorPlane(sectors[0]->getFloorPlane());
+				back->setFloorPlane(sectors[0]->planeFloor());
 		}
 		if((tag = line->intProperty("arg3")))
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if(sectors.size())
-				back->setCeilingPlane(sectors[0]->getCeilingPlane());
+				back->setCeilingPlane(sectors[0]->planeCeiling());
 		}
 
 		// The fifth "share" argument copies from one side of the line to the
@@ -660,14 +660,14 @@ void MapSpecials::processEternitySlopes(SLADEMap* map)
 			int share = line->intProperty("arg4");
 
 			if((share & 3) == 1)
-				back->setFloorPlane(front->getFloorPlane());
+				back->setFloorPlane(front->planeFloor());
 			else if((share & 3) == 2)
-				front->setFloorPlane(back->getFloorPlane());
+				front->setFloorPlane(back->planeFloor());
 
 			if((share & 12) == 4)
-				back->setCeilingPlane(front->getCeilingPlane());
+				back->setCeilingPlane(front->planeCeiling());
 			else if((share & 12) == 8)
-				front->setCeilingPlane(back->getCeilingPlane());
+				front->setCeilingPlane(back->planeCeiling());
 		}
 	}
 }
@@ -676,7 +676,7 @@ void MapSpecials::processEternitySlopes(SLADEMap* map)
 /* MapSpecials::applyPlaneAlign
  * Applies a Plane_Align special on [line], to [target] from [model]
  *******************************************************************/
-template<PlaneType p>
+template<MapSector::Surface p>
 void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model)
 {
 	vector<MapVertex*> vertices;
@@ -707,8 +707,8 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 
 	// Calculate slope plane from our three points: this line's endpoints
 	// (at the model sector's height) and the found vertex (at this sector's height).
-	double modelz = model->getPlaneHeight<p>();
-	double targetz = target->getPlaneHeight<p>();
+	double modelz = model->planeHeight<p>();
+	double targetz = target->planeHeight<p>();
 	fpoint3_t p1(line->x1(), line->y1(), modelz);
 	fpoint3_t p2(line->x2(), line->y2(), modelz);
 	fpoint3_t p3(furthest_vertex->pos(), targetz);
@@ -719,7 +719,7 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
  * Applies a line slope special on [thing], to its containing sector
  * in [map]
  *******************************************************************/
-template<PlaneType p>
+template<MapSector::Surface p>
 void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 {
 	int lineid = thing->intProperty("arg0");
@@ -758,13 +758,13 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 				return;
 			containing_sector = map->getSector(containing_sector_idx);
 			thingz = (
-				containing_sector->getPlane<p>().height_at(thing->point())
+				containing_sector->plane<p>().height_at(thing->point())
 				+ thing->floatProperty("height")
 			);
 		}
 
 		// Three points: endpoints of the line, and the thing itself
-		plane_t target_plane = target->getPlane<p>();
+		plane_t target_plane = target->plane<p>();
 		fpoint3_t p1(lines[b]->x1(), lines[b]->y1(), target_plane.height_at(lines[b]->point1()));
 		fpoint3_t p2(lines[b]->x2(), lines[b]->y2(), target_plane.height_at(lines[b]->point2()));
 		fpoint3_t p3(thing->xPos(), thing->yPos(), thingz);
@@ -776,7 +776,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
  * Applies a tilt slope special on [thing], to its containing sector
  * in [map]
  *******************************************************************/
-template<PlaneType p>
+template<MapSector::Surface p>
 void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 {
 	// TODO should this apply to /all/ sectors at this point, in the case of an
@@ -793,10 +793,10 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 		// Exact vertical tilt is nonsense
 		return;
 
-	double angle = thing->getAngle() / 360.0 * TAU;
+	double angle = thing->angle() / 360.0 * TAU;
 	double tilt = (raw_angle - 90) / 360.0 * TAU;
 	// Resulting plane goes through the position of the thing
-	double z = target->getPlaneHeight<p>() + thing->floatProperty("height");
+	double z = target->planeHeight<p>() + thing->floatProperty("height");
 	fpoint3_t point(thing->xPos(), thing->yPos(), z);
 
 	double cos_angle = cos(angle);
@@ -824,7 +824,7 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
  * Applies a vavoom slope special on [thing], to its containing
  * sector in [map]
  *******************************************************************/
-template<PlaneType p>
+template<MapSector::Surface p>
 void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 {
 	int target_idx = map->sectorAt(thing->point());
@@ -852,7 +852,7 @@ void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 			return;
 		}
 
-		short height = target->getPlaneHeight<p>();
+		short height = target->planeHeight<p>();
 		fpoint3_t p1(thing->xPos(), thing->yPos(), thing->floatProperty("height"));
 		fpoint3_t p2(lines[a]->x1(), lines[a]->y1(), height);
 		fpoint3_t p3(lines[a]->x2(), lines[a]->y2(), height);
@@ -867,23 +867,23 @@ void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 /* MapSpecials::vertexHeight
  * Returns the floor/ceiling height of [vertex] in [sector]
  *******************************************************************/
-template<PlaneType p>
+template<MapSector::Surface p>
 double MapSpecials::vertexHeight(MapVertex* vertex, MapSector* sector)
 {
 	// Return vertex height if set via UDMF property
-	string prop = (p == FLOOR_PLANE ? "zfloor" : "zceiling");
+	string prop = (p == MapSector::Floor ? "zfloor" : "zceiling");
 	if (vertex->hasProp(prop))
 		return vertex->floatProperty(prop);
 
 	// Otherwise just return sector height
-	return sector->getPlaneHeight<p>();
+	return sector->planeHeight<p>();
 }
 
 /* MapSpecials::applyVertexHeightSlope
  * Applies a slope to sector [target] based on the heights of its
  * vertices (triangular sectors only)
  *******************************************************************/
-template<PlaneType p>
+template<MapSector::Surface p>
 void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
 {
 	double z1 = heights.count(vertices[0]) ? heights[vertices[0]] : vertexHeight<p>(vertices[0], target);

@@ -86,10 +86,10 @@ void ThingInfoOverlay::update(MapThing* thing)
 	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Index + type
-	auto& tt = Game::configuration().thingType(thing->getType());
-	string type = S_FMT("%s (Type %d)", tt.name(), thing->getType());
+	auto& tt = Game::configuration().thingType(thing->type());
+	string type = S_FMT("%s (Type %d)", tt.name(), thing->type());
 	if (Global::debug)
-		info_text += S_FMT("Thing #%d (%d): %s\n", thing->index(), thing->id(), type);
+		info_text += S_FMT("Thing #%d (%d): %s\n", thing->index(), thing->objId(), type);
 	else
 		info_text += S_FMT("Thing #%d: %s\n", thing->index(), type);
 

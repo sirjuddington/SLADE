@@ -48,31 +48,21 @@ const double TAU = M_PI * 2;
 /* MapSector::MapSector
  * MapSector class constructor
  *******************************************************************/
-MapSector::MapSector(SLADEMap* parent) : MapObject(Type::Sector, parent)
+MapSector::MapSector(SLADEMap* parent) :
+	MapObject(Type::Sector, parent),
+	geometry_updated_{ App::runTimer() }
 {
-	// Init variables
-	this->special = 0;
-	this->tag = 0;
-	plane_floor.set(0, 0, 1, 0);
-	plane_ceiling.set(0, 0, 1, 0);
-	poly_needsupdate = true;
-	setGeometryUpdated();
 }
 
 /* MapSector::MapSector
  * MapSector class constructor
  *******************************************************************/
-MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(Type::Sector, parent)
+MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) :
+	MapObject(Type::Sector, parent),
+	tex_floor_{ f_tex },
+	tex_ceiling_{ c_tex },
+	geometry_updated_{ App::runTimer() }
 {
-	// Init variables
-	this->f_tex = f_tex;
-	this->c_tex = c_tex;
-	this->special = 0;
-	this->tag = 0;
-	plane_floor.set(0, 0, 1, 0);
-	plane_ceiling.set(0, 0, 1, 0);
-	poly_needsupdate = true;
-	setGeometryUpdated();
 }
 
 /* MapSector::~MapSector
@@ -88,7 +78,7 @@ MapSector::~MapSector()
 void MapSector::copy(MapObject* s)
 {
 	// Don't copy a non-sector
-	if (s->type() != Type::Sector)
+	if (s->objType() != Type::Sector)
 		return;
 
 	setModified();
@@ -96,27 +86,27 @@ void MapSector::copy(MapObject* s)
 	// Update texture counts (decrement previous)
 	if (parent_map_)
 	{
-		parent_map_->updateFlatUsage(f_tex, -1);
-		parent_map_->updateFlatUsage(c_tex, -1);
+		parent_map_->updateFlatUsage(tex_floor_, -1);
+		parent_map_->updateFlatUsage(tex_ceiling_, -1);
 	}
 
 	// Basic variables
 	MapSector* sector = (MapSector*)s;
-	this->f_tex = sector->f_tex;
-	this->c_tex = sector->c_tex;
-	this->f_height = sector->f_height;
-	this->c_height = sector->c_height;
-	this->light = sector->light;
-	this->special = sector->special;
-	this->tag = sector->tag;
-	plane_floor.set(0, 0, 1, sector->f_height);
-	plane_ceiling.set(0, 0, 1, sector->c_height);
+	this->tex_floor_ = sector->tex_floor_;
+	this->tex_ceiling_ = sector->tex_ceiling_;
+	this->height_floor_ = sector->height_floor_;
+	this->height_ceiling_ = sector->height_ceiling_;
+	this->light_ = sector->light_;
+	this->special_ = sector->special_;
+	this->id_ = sector->id_;
+	plane_floor_.set(0, 0, 1, sector->height_floor_);
+	plane_ceiling_.set(0, 0, 1, sector->height_ceiling_);
 
 	// Update texture counts (increment new)
 	if (parent_map_)
 	{
-		parent_map_->updateFlatUsage(f_tex, 1);
-		parent_map_->updateFlatUsage(c_tex, 1);
+		parent_map_->updateFlatUsage(tex_floor_, 1);
+		parent_map_->updateFlatUsage(tex_ceiling_, 1);
 	}
 
 	// Other properties
@@ -128,7 +118,7 @@ void MapSector::copy(MapObject* s)
  *******************************************************************/
 void MapSector::setGeometryUpdated()
 {
-	geometry_updated = App::runTimer();
+	geometry_updated_ = App::runTimer();
 }
 
 /* MapSector::stringProperty
@@ -137,9 +127,9 @@ void MapSector::setGeometryUpdated()
 string MapSector::stringProperty(const string& key)
 {
 	if (key == "texturefloor")
-		return f_tex;
+		return tex_floor_;
 	else if (key == "textureceiling")
-		return c_tex;
+		return tex_ceiling_;
 	else
 		return MapObject::stringProperty(key);
 }
@@ -150,15 +140,15 @@ string MapSector::stringProperty(const string& key)
 int MapSector::intProperty(const string& key)
 {
 	if (key == "heightfloor")
-		return f_height;
+		return height_floor_;
 	else if (key == "heightceiling")
-		return c_height;
+		return height_ceiling_;
 	else if (key == "lightlevel")
-		return light;
+		return light_;
 	else if (key == "special")
-		return special;
+		return special_;
 	else if (key == "id")
-		return tag;
+		return id_;
 	else
 		return MapObject::intProperty(key);
 }
@@ -173,15 +163,15 @@ void MapSector::setStringProperty(const string& key, const string& value)
 
 	if (key == "texturefloor")
 	{
-		if (parent_map_) parent_map_->updateFlatUsage(f_tex, -1);
-		f_tex = value;
-		if (parent_map_) parent_map_->updateFlatUsage(f_tex, 1);
+		if (parent_map_) parent_map_->updateFlatUsage(tex_floor_, -1);
+		tex_floor_ = value;
+		if (parent_map_) parent_map_->updateFlatUsage(tex_floor_, 1);
 	}
 	else if (key == "textureceiling")
 	{
-		if (parent_map_) parent_map_->updateFlatUsage(c_tex, -1);
-		c_tex = value;
-		if (parent_map_) parent_map_->updateFlatUsage(c_tex, 1);
+		if (parent_map_) parent_map_->updateFlatUsage(tex_ceiling_, -1);
+		tex_ceiling_ = value;
+		if (parent_map_) parent_map_->updateFlatUsage(tex_ceiling_, 1);
 	}
 	else
 		return MapObject::setStringProperty(key, value);
@@ -204,7 +194,7 @@ void MapSector::setFloatProperty(const string& key, double value)
 			 key == "xscaleceiling" || key == "yscaleceiling")) || 
 			(Game::configuration().featureSupported(UDMFFeature::FlatRotation) &&
 			(key == "rotationfloor" || key == "rotationceiling")))
-			polygon.setTexture(nullptr);	// Clear texture to force update
+			polygon_.setTexture(nullptr);	// Clear texture to force update
 	}
 
 	MapObject::setFloatProperty(key, value);
@@ -223,11 +213,11 @@ void MapSector::setIntProperty(const string& key, int value)
 	else if (key == "heightceiling")
 		setCeilingHeight(value);
 	else if (key == "lightlevel")
-		light = value;
+		light_ = value;
 	else if (key == "special")
-		special = value;
+		special_ = value;
 	else if (key == "id")
-		tag = value;
+		id_ = value;
 	else
 		MapObject::setIntProperty(key, value);
 }
@@ -235,14 +225,14 @@ void MapSector::setIntProperty(const string& key, int value)
 void MapSector::setFloorHeight(short height)
 {
 	setModified();
-	f_height = height;
+	height_floor_ = height;
 	setFloorPlane(plane_t::flat(height));
 }
 
 void MapSector::setCeilingHeight(short height)
 {
 	setModified();
-	c_height = height;
+	height_ceiling_ = height;
 	setCeilingPlane(plane_t::flat(height));
 }
 
@@ -261,9 +251,9 @@ fpoint2_t MapSector::point(Point point)
 	}
 	else
 	{
-		if (text_point.x == 0 && text_point.y == 0 && parent_map_)
+		if (text_point_.x == 0 && text_point_.y == 0 && parent_map_)
 			parent_map_->findSectorTextPoint(this);
-		return text_point;
+		return text_point_;
 	}
 }
 
@@ -273,17 +263,17 @@ fpoint2_t MapSector::point(Point point)
 void MapSector::updateBBox()
 {
 	// Reset bounding box
-	bbox.reset();
+	bbox_.reset();
 
-	for (unsigned a = 0; a < connected_sides.size(); a++)
+	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
-		MapLine* line = connected_sides[a]->getParentLine();
+		MapLine* line = connected_sides_[a]->parentLine();
 		if (!line) continue;
-		bbox.extend(line->v1()->xPos(), line->v1()->yPos());
-		bbox.extend(line->v2()->xPos(), line->v2()->yPos());
+		bbox_.extend(line->v1()->xPos(), line->v1()->yPos());
+		bbox_.extend(line->v2()->xPos(), line->v2()->yPos());
 	}
 
-	text_point.set(0, 0);
+	text_point_.set(0, 0);
 	setGeometryUpdated();
 }
 
@@ -293,10 +283,10 @@ void MapSector::updateBBox()
 bbox_t MapSector::boundingBox()
 {
 	// Update bbox if needed
-	if (!bbox.is_valid())
+	if (!bbox_.is_valid())
 		updateBBox();
 
-	return bbox;
+	return bbox_;
 }
 
 /* MapSector::getPolygon
@@ -304,13 +294,13 @@ bbox_t MapSector::boundingBox()
  *******************************************************************/
 Polygon2D* MapSector::getPolygon()
 {
-	if (poly_needsupdate)
+	if (poly_needsupdate_)
 	{
-		polygon.openSector(this);
-		poly_needsupdate = false;
+		polygon_.openSector(this);
+		poly_needsupdate_ = false;
 	}
 
-	return &polygon;
+	return &polygon_;
 }
 
 /* MapSector::isWithin
@@ -326,7 +316,7 @@ bool MapSector::isWithin(fpoint2_t point)
 	double dist;
 	double min_dist = 999999;
 	MapLine* nline = nullptr;
-	for (unsigned a = 0; a < connected_sides.size(); a++)
+	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
 		// Calculate distance to line
 		//if (connected_sides[a] == NULL) {
@@ -336,12 +326,12 @@ bool MapSector::isWithin(fpoint2_t point)
 		//	LOG_MESSAGE(3, "Warning: connected side #%i has a NULL pointer parent line!", connected_sides[a]->getIndex());
 		//	continue;
 		//}
-		dist = connected_sides[a]->getParentLine()->distanceTo(point);
+		dist = connected_sides_[a]->parentLine()->distanceTo(point);
 
 		// Check distance
 		if (dist < min_dist)
 		{
-			nline = connected_sides[a]->getParentLine();
+			nline = connected_sides_[a]->parentLine();
 			min_dist = dist;
 		}
 	}
@@ -371,26 +361,26 @@ double MapSector::distanceTo(fpoint2_t point, double maxdist)
 		maxdist = 9999999;
 
 	// Check bounding box first
-	if (!bbox.is_valid())
+	if (!bbox_.is_valid())
 		updateBBox();
 	double min_dist = 9999999;
-	double dist = MathStuff::distanceToLine(point, bbox.left_side());
+	double dist = MathStuff::distanceToLine(point, bbox_.left_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox.top_side());
+	dist = MathStuff::distanceToLine(point, bbox_.top_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox.right_side());
+	dist = MathStuff::distanceToLine(point, bbox_.right_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox.bottom_side());
+	dist = MathStuff::distanceToLine(point, bbox_.bottom_side());
 	if (dist < min_dist) min_dist = dist;
 
-	if (min_dist > maxdist && !bbox.contains(point))
+	if (min_dist > maxdist && !bbox_.contains(point))
 		return -1;
 
 	// Go through connected sides
-	for (unsigned a = 0; a < connected_sides.size(); a++)
+	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
 		// Get side parent line
-		MapLine* line = connected_sides[a]->getParentLine();
+		MapLine* line = connected_sides_[a]->parentLine();
 		if (!line) continue;
 
 		// Check distance
@@ -408,11 +398,11 @@ double MapSector::distanceTo(fpoint2_t point, double maxdist)
 bool MapSector::getLines(vector<MapLine*>& list)
 {
 	// Go through connected sides
-	for (unsigned a = 0; a < connected_sides.size(); a++)
+	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
 		// Add the side's parent line to the list if it doesn't already exist
-		if (std::find(list.begin(), list.end(), connected_sides[a]->getParentLine()) == list.end())
-			list.push_back(connected_sides[a]->getParentLine());
+		if (std::find(list.begin(), list.end(), connected_sides_[a]->parentLine()) == list.end())
+			list.push_back(connected_sides_[a]->parentLine());
 	}
 
 	return true;
@@ -425,9 +415,9 @@ bool MapSector::getVertices(vector<MapVertex*>& list)
 {
 	// Go through connected sides
 	MapLine* line;
-	for (unsigned a = 0; a < connected_sides.size(); a++)
+	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
-		line = connected_sides[a]->getParentLine();
+		line = connected_sides_[a]->parentLine();
 
 		// Add the side's parent line's vertices to the list if they doesn't already exist
 		if (line->v1() && std::find(list.begin(), list.end(), line->v1()) == list.end())
@@ -446,9 +436,9 @@ bool MapSector::getVertices(vector<MapObject*>& list)
 {
 	// Go through connected sides
 	MapLine* line;
-	for (unsigned a = 0; a < connected_sides.size(); a++)
+	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
-		line = connected_sides[a]->getParentLine();
+		line = connected_sides_[a]->parentLine();
 
 		// Add the side's parent line's vertices to the list if they doesn't already exist
 		if (line->v1() && std::find(list.begin(), list.end(), line->v1()) == list.end())
@@ -471,7 +461,7 @@ uint8_t MapSector::getLight(int where)
 		Game::configuration().featureSupported(Game::UDMFFeature::FlatLighting))
 	{
 		// Get general light level
-		int l = light;
+		int l = light_;
 
 		// Get specific light level
 		if (where == 1)
@@ -504,7 +494,7 @@ uint8_t MapSector::getLight(int where)
 	else
 	{
 		// Clamp light level
-		int l = light;
+		int l = light_;
 		if (l > 255)
 			l = 255;
 		if (l < 0)
@@ -546,7 +536,7 @@ void MapSector::changeLight(int amount, int where)
 	else
 	{
 		setModified();
-		light = ll + amount;
+		light_ = ll + amount;
 	}
 }
 
@@ -563,13 +553,13 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 	if (parent_map_->mapSpecials()->tagColoursSet())
 	{
 		rgba_t col;
-		if (parent_map_->mapSpecials()->getTagColour(tag, &col))
+		if (parent_map_->mapSpecials()->getTagColour(id_, &col))
 		{
 			if (fullbright)
 				return col;
 
 			// Get sector light level
-			int ll = light;
+			int ll = light_;
 
 			// Clamp light level
 			if (ll > 255)
@@ -604,7 +594,7 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 			return rgba_t(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255);
 
 		// Get sector light level
-		int ll = light;
+		int ll = light_;
 
 		if (Game::configuration().featureSupported(UDMFFeature::FlatLighting))
 		{
@@ -645,7 +635,7 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 		return rgba_t(255, 255, 255, 255);
 	else
 	{
-		int l = light;
+		int l = light_;
 
 		// Clamp light level
 		if (l > 255)
@@ -667,7 +657,7 @@ rgba_t MapSector::getFogColour()
 	// map specials/scripts
 	if (parent_map_->mapSpecials()->tagFadeColoursSet())
 	{
-		if (parent_map_->mapSpecials()->getTagFadeColour(tag, &color))
+		if (parent_map_->mapSpecials()->getTagFadeColour(id_, &color))
 			return color;
 	}
 
@@ -690,9 +680,9 @@ rgba_t MapSector::getFogColour()
 void MapSector::connectSide(MapSide* side)
 {
 	setModified();
-	connected_sides.push_back(side);
-	poly_needsupdate = true;
-	bbox.reset();
+	connected_sides_.push_back(side);
+	poly_needsupdate_ = true;
+	bbox_.reset();
 	setGeometryUpdated();
 }
 
@@ -702,17 +692,17 @@ void MapSector::connectSide(MapSide* side)
 void MapSector::disconnectSide(MapSide* side)
 {
 	setModified();
-	for (unsigned a = 0; a < connected_sides.size(); a++)
+	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
-		if (connected_sides[a] == side)
+		if (connected_sides_[a] == side)
 		{
-			connected_sides.erase(connected_sides.begin() + a);
+			connected_sides_.erase(connected_sides_.begin() + a);
 			break;
 		}
 	}
 
-	poly_needsupdate = true;
-	bbox.reset();
+	poly_needsupdate_ = true;
+	bbox_.reset();
 	setGeometryUpdated();
 }
 
@@ -721,13 +711,13 @@ void MapSector::disconnectSide(MapSide* side)
  *******************************************************************/
 void MapSector::writeBackup(Backup* backup)
 {
-	backup->props_internal["texturefloor"] = f_tex;
-	backup->props_internal["textureceiling"] = c_tex;
-	backup->props_internal["heightfloor"] = f_height;
-	backup->props_internal["heightceiling"] = c_height;
-	backup->props_internal["lightlevel"] = light;
-	backup->props_internal["special"] = special;
-	backup->props_internal["id"] = tag;
+	backup->props_internal["texturefloor"] = tex_floor_;
+	backup->props_internal["textureceiling"] = tex_ceiling_;
+	backup->props_internal["heightfloor"] = height_floor_;
+	backup->props_internal["heightceiling"] = height_ceiling_;
+	backup->props_internal["lightlevel"] = light_;
+	backup->props_internal["special"] = special_;
+	backup->props_internal["id"] = id_;
 }
 
 /* MapSector::readBackup
@@ -736,25 +726,25 @@ void MapSector::writeBackup(Backup* backup)
 void MapSector::readBackup(Backup* backup)
 {
 	// Update texture counts (decrement previous)
-	parent_map_->updateFlatUsage(f_tex, -1);
-	parent_map_->updateFlatUsage(c_tex, -1);
+	parent_map_->updateFlatUsage(tex_floor_, -1);
+	parent_map_->updateFlatUsage(tex_ceiling_, -1);
 
-	f_tex = backup->props_internal["texturefloor"].getStringValue();
-	c_tex = backup->props_internal["textureceiling"].getStringValue();
-	f_height = backup->props_internal["heightfloor"].getIntValue();
-	c_height = backup->props_internal["heightceiling"].getIntValue();
-	plane_floor.set(0, 0, 1, f_height);
-	plane_ceiling.set(0, 0, 1, c_height);
-	light = backup->props_internal["lightlevel"].getIntValue();
-	special = backup->props_internal["special"].getIntValue();
-	tag = backup->props_internal["id"].getIntValue();
+	tex_floor_ = backup->props_internal["texturefloor"].getStringValue();
+	tex_ceiling_ = backup->props_internal["textureceiling"].getStringValue();
+	height_floor_ = backup->props_internal["heightfloor"].getIntValue();
+	height_ceiling_ = backup->props_internal["heightceiling"].getIntValue();
+	plane_floor_.set(0, 0, 1, height_floor_);
+	plane_ceiling_.set(0, 0, 1, height_ceiling_);
+	light_ = backup->props_internal["lightlevel"].getIntValue();
+	special_ = backup->props_internal["special"].getIntValue();
+	id_ = backup->props_internal["id"].getIntValue();
 
 	// Update texture counts (increment new)
-	parent_map_->updateFlatUsage(f_tex, 1);
-	parent_map_->updateFlatUsage(c_tex, 1);
+	parent_map_->updateFlatUsage(tex_floor_, 1);
+	parent_map_->updateFlatUsage(tex_ceiling_, 1);
 
 	// Update geometry info
-	poly_needsupdate = true;
-	bbox.reset();
+	poly_needsupdate_ = true;
+	bbox_.reset();
 	setGeometryUpdated();
 }

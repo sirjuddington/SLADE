@@ -106,7 +106,7 @@ void Edit3D::changeSectorLight(int amount) const
 			// Get side
 			auto side = context_.map().getSide(items[a].index);
 			if (!side) continue;
-			auto sector = side->getSector();
+			auto sector = side->sector();
 			if (!sector) continue;
 
 			if (link_light_)
@@ -125,7 +125,7 @@ void Edit3D::changeSectorLight(int amount) const
 			}
 
 			// Check for decrease when light = 255
-			int current_light = side->getLight();
+			int current_light = side->light();
 			if (current_light == 255 && amount < -1)
 				amount++;
 
@@ -353,7 +353,7 @@ void Edit3D::changeSectorHeight(int amount) const
 			items[a].type == ItemType::WallTop)
 		{
 			// Get sector
-			auto sector = context_.map().getSide(items[a].index)->getSector();
+			auto sector = context_.map().getSide(items[a].index)->sector();
 
 			// Check this sector's ceiling hasn't already been changed
 			int index = sector->index();
@@ -375,7 +375,7 @@ void Edit3D::changeSectorHeight(int amount) const
 			auto sector = context_.map().getSector(items[a].index);
 
 			// Change height
-			sector->setFloorHeight(sector->getFloorHeight() + amount);
+			sector->setFloorHeight(sector->heightFloor() + amount);
 		}
 
 		// Ceiling
@@ -399,7 +399,7 @@ void Edit3D::changeSectorHeight(int amount) const
 				continue;
 
 			// Change height
-			sector->setCeilingHeight(sector->getCeilingHeight() + amount);
+			sector->setCeilingHeight(sector->heightCeiling() + amount);
 
 			// Set to changed
 			ceilings.push_back(sector->index());
@@ -686,7 +686,7 @@ void Edit3D::toggleUnpegged(bool lower) const
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Get line
-		auto line = context_.map().getSide(items[a].index)->getParentLine();
+		auto line = context_.map().getSide(items[a].index)->parentLine();
 		if (!line) continue;
 
 		// Skip if line already processed
@@ -778,7 +778,7 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.getSector(hl.index)->getFloorTex();
+			copy_texture_ = map.getSector(hl.index)->texFloor();
 	}
 
 	// Ceiling
@@ -786,7 +786,7 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.getSector(hl.index)->getCeilingTex();
+			copy_texture_ = map.getSector(hl.index)->texCeiling();
 	}
 
 	// Thing
@@ -885,7 +885,7 @@ void Edit3D::paste(CopyType type)
 
 			// Type
 			if (type == CopyType::TexType)
-				thing->setIntProperty("type", ((MapThing*)copy_thing_.get())->getType());
+				thing->setIntProperty("type", ((MapThing*)copy_thing_.get())->type());
 		}
 	}
 
@@ -1220,7 +1220,7 @@ void Edit3D::changeHeight(int amount) const
 
 			// Change height
 			if (sector)
-				sector->setFloorHeight(sector->getFloorHeight() + amount);
+				sector->setFloorHeight(sector->heightFloor() + amount);
 		}
 
 		// Ceiling
@@ -1231,7 +1231,7 @@ void Edit3D::changeHeight(int amount) const
 
 			// Change height
 			if (sector)
-				sector->setCeilingHeight(sector->getCeilingHeight() + amount);
+				sector->setCeilingHeight(sector->heightCeiling() + amount);
 		}
 	}
 
@@ -1266,12 +1266,12 @@ void Edit3D::changeTexture() const
 	auto& map = context_.map();
 	if (first.type == MapEditor::ItemType::Floor)
 	{
-		tex = map.getSector(first.index)->getFloorTex();
+		tex = map.getSector(first.index)->texFloor();
 		type = 1;
 	}
 	else if (first.type == MapEditor::ItemType::Ceiling)
 	{
-		tex = map.getSector(first.index)->getCeilingTex();
+		tex = map.getSector(first.index)->texCeiling();
 		type = 1;
 	}
 	else if (first.type == MapEditor::ItemType::WallBottom)
@@ -1379,24 +1379,24 @@ bool Edit3D::wallMatches(MapSide* side, ItemType part, string tex)
 	// Check for blank texture where it isn't needed
 	if (tex == "-")
 	{
-		auto line = side->getParentLine();
+		auto line = side->parentLine();
 		int needed = line->needsTexture();
 		if (side == line->s1())
 		{
-			if (part == ItemType::WallTop && (needed & TEX_FRONT_UPPER) == 0)
+			if (part == ItemType::WallTop && (needed & MapLine::Part::FrontUpper) == 0)
 				return false;
-			if (part == ItemType::WallMiddle && (needed & TEX_FRONT_MIDDLE) == 0)
+			if (part == ItemType::WallMiddle && (needed & MapLine::Part::FrontMiddle) == 0)
 				return false;
-			if (part == ItemType::WallBottom && (needed & TEX_FRONT_LOWER) == 0)
+			if (part == ItemType::WallBottom && (needed & MapLine::Part::FrontLower) == 0)
 				return false;
 		}
 		else if (side == line->s2())
 		{
-			if (part == ItemType::WallTop && (needed & TEX_BACK_UPPER) == 0)
+			if (part == ItemType::WallTop && (needed & MapLine::Part::BackUpper) == 0)
 				return false;
-			if (part == ItemType::WallMiddle && (needed & TEX_BACK_MIDDLE) == 0)
+			if (part == ItemType::WallMiddle && (needed & MapLine::Part::BackMiddle) == 0)
 				return false;
-			if (part == ItemType::WallBottom && (needed & TEX_BACK_LOWER) == 0)
+			if (part == ItemType::WallBottom && (needed & MapLine::Part::BackLower) == 0)
 				return false;
 		}
 	}
@@ -1432,7 +1432,7 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 		return;
 
 	// Get initial line
-	auto line = side->getParentLine();
+	auto line = side->parentLine();
 	if (!line)
 		return;
 
@@ -1568,20 +1568,20 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 		if (item.type == ItemType::Floor)
 		{
 			// Check sector floor texture
-			if (osector->getFloorTex() != sector->getFloorTex())
+			if (osector->texFloor() != sector->texFloor())
 				continue;
 
-			this_plane = sector->getFloorPlane();
-			other_plane = osector->getFloorPlane();
+			this_plane = sector->planeFloor();
+			other_plane = osector->planeFloor();
 		}
 		else
 		{
 			// Check sector ceiling texture
-			if (osector->getCeilingTex() != sector->getCeilingTex())
+			if (osector->texCeiling() != sector->texCeiling())
 				continue;
 
-			this_plane = sector->getCeilingPlane();
-			other_plane = osector->getCeilingPlane();
+			this_plane = sector->planeCeiling();
+			other_plane = osector->planeCeiling();
 		}
 
 		// Check that planes meet
@@ -1644,13 +1644,13 @@ void Edit3D::doAlignX(MapSide* side, int offset, string tex, vector<MapEditor::I
 	side->setIntProperty("offsetx", offset);
 
 	// Get 'next' vertex
-	auto line = side->getParentLine();
+	auto line = side->parentLine();
 	auto vertex = line->v2();
 	if (side == line->s2())
 		vertex = line->v1();
 
 	// Get integral length of line
-	int intlen = MathStuff::round(line->getLength());
+	int intlen = MathStuff::round(line->length());
 
 	// Go through connected lines
 	for (unsigned a = 0; a < vertex->nConnectedLines(); a++)

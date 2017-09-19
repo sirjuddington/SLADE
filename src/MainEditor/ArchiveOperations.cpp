@@ -445,7 +445,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	total_maps += sidedefs.size();
 
 	// Go through and add used textures to list
-	doomside_t sdef;
+	MapSide::DoomData sdef;
 	string tex_lower, tex_middle, tex_upper;
 	for (unsigned a = 0; a < sidedefs.size(); a++)
 	{
@@ -673,7 +673,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 	total_maps += sectors.size();
 
 	// Go through and add used flats to list
-	doomsector_t sec;
+	MapSector::DoomData sec;
 	string tex_floor, tex_ceil;
 	for (unsigned a = 0; a < sectors.size(); a++)
 	{
@@ -830,10 +830,10 @@ size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype)
 	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
-	size_t numthings = size / sizeof(doomthing_t);
+	size_t numthings = size / sizeof(MapThing::DoomData);
 	size_t changed = 0;
 
-	doomthing_t* things = new doomthing_t[numthings];
+	MapThing::DoomData* things = new MapThing::DoomData[numthings];
 	memcpy(things, entry->getData(), size);
 
 	// Perform replacement
@@ -858,10 +858,10 @@ size_t replaceThingsDoom64(ArchiveEntry* entry, int oldtype, int newtype)
 		return 0;
 
 	size_t size = entry->getSize();
-	size_t numthings = size / sizeof(doom64thing_t);
+	size_t numthings = size / sizeof(MapThing::Doom64Data);
 	size_t changed = 0;
 
-	doom64thing_t* things = new doom64thing_t[numthings];
+	MapThing::Doom64Data* things = new MapThing::Doom64Data[numthings];
 	memcpy(things, entry->getData(), size);
 
 	// Perform replacement
@@ -886,10 +886,10 @@ size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype)
 		return 0;
 
 	size_t size = entry->getSize();
-	size_t numthings = size / sizeof(hexenthing_t);
+	size_t numthings = size / sizeof(MapThing::HexenData);
 	size_t changed = 0;
 
-	hexenthing_t* things = new hexenthing_t[numthings];
+	MapThing::HexenData* things = new MapThing::HexenData[numthings];
 	memcpy(things, entry->getData(), size);
 
 	// Perform replacement
@@ -1104,10 +1104,10 @@ size_t replaceSpecialsDoom(ArchiveEntry* entry, int oldtype, int newtype, bool t
 	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
-	size_t numlines = size / sizeof(doomline_t);
+	size_t numlines = size / sizeof(MapLine::DoomData);
 	size_t changed = 0;
 
-	doomline_t* lines = new doomline_t[numlines];
+	MapLine::DoomData* lines = new MapLine::DoomData[numlines];
 	memcpy(lines, entry->getData(), size);
 
 	// Perform replacement
@@ -1149,9 +1149,9 @@ size_t replaceSpecialsHexen(ArchiveEntry* l_entry, ArchiveEntry* t_entry, int ol
 	if (l_entry)
 	{
 		size = l_entry->getSize();
-		size_t numlines = size / sizeof(hexenline_t);
+		size_t numlines = size / sizeof(MapLine::HexenData);
 
-		hexenline_t* lines = new hexenline_t[numlines];
+		MapLine::HexenData* lines = new MapLine::HexenData[numlines];
 		memcpy(lines, l_entry->getData(), size);
 		size_t lchanged = 0;
 
@@ -1188,9 +1188,9 @@ size_t replaceSpecialsHexen(ArchiveEntry* l_entry, ArchiveEntry* t_entry, int ol
 	if (t_entry)
 	{
 		size = t_entry->getSize();
-		size_t numthings = size / sizeof(hexenthing_t);
+		size_t numthings = size / sizeof(MapThing::HexenData);
 
-		hexenthing_t* things = new hexenthing_t[numthings];
+		MapThing::HexenData* things = new MapThing::HexenData[numthings];
 		memcpy(things, t_entry->getData(), size);
 		size_t tchanged = 0;
 
@@ -1439,11 +1439,11 @@ size_t replaceFlatsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
-	size_t numsectors = size / sizeof(doomsector_t);
+	size_t numsectors = size / sizeof(MapSector::DoomData);
 	bool fchanged, cchanged;
 	size_t changed = 0;
 
-	doomsector_t* sectors = new doomsector_t[numsectors];
+	MapSector::DoomData* sectors = new MapSector::DoomData[numsectors];
 	memcpy(sectors, entry->getData(), size);
 
 	// Perform replacement
@@ -1469,11 +1469,11 @@ size_t replaceWallsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
-	size_t numsides = size / sizeof(doomside_t);
+	size_t numsides = size / sizeof(MapSide::DoomData);
 	bool lchanged, mchanged, uchanged;
 	size_t changed = 0;
 
-	doomside_t* sides = new doomside_t[numsides];
+	MapSide::DoomData* sides = new MapSide::DoomData[numsides];
 	memcpy(sides, entry->getData(), size);
 	char compare[9]; compare[8] = 0;
 
@@ -1502,14 +1502,14 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
-	size_t numsectors = size / sizeof(doom64sector_t);
+	size_t numsectors = size / sizeof(MapSector::Doom64Data);
 	bool fchanged, cchanged;
 	size_t changed = 0;
 
 	uint16_t oldhash = theResourceManager->getTextureHash(oldtex);
 	uint16_t newhash = theResourceManager->getTextureHash(newtex);
 
-	doom64sector_t* sectors = new doom64sector_t[numsectors];
+	MapSector::Doom64Data* sectors = new MapSector::Doom64Data[numsectors];
 	memcpy(sectors, entry->getData(), size);
 
 	// Perform replacement
@@ -1541,14 +1541,14 @@ size_t replaceWallsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 	if (entry == nullptr) return 0;
 
 	size_t size = entry->getSize();
-	size_t numsides = size / sizeof(doom64side_t);
+	size_t numsides = size / sizeof(MapSide::Doom64Data);
 	bool lchanged, mchanged, uchanged;
 	size_t changed = 0;
 
 	uint16_t oldhash = theResourceManager->getTextureHash(oldtex);
 	uint16_t newhash = theResourceManager->getTextureHash(newtex);
 
-	doom64side_t* sides = new doom64side_t[numsides];
+	MapSide::Doom64Data* sides = new MapSide::Doom64Data[numsides];
 	memcpy(sides, entry->getData(), size);
 
 	// Perform replacement

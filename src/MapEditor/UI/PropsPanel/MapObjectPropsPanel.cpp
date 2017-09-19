@@ -885,9 +885,9 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 
 	// Setup property grid for the object type
 	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
-		setupTypeUDMF(objects[0]->type());
+		setupTypeUDMF(objects[0]->objType());
 	else
-		setupType(objects[0]->type());
+		setupType(objects[0]->objType());
 
 	// Find any custom properties (UDMF only)
 	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
@@ -951,7 +951,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		properties[a]->openObjects(objects);
 
 	// Handle line sides
-	if (objects[0]->type() == MapObject::Type::Line)
+	if (objects[0]->objType() == MapObject::Type::Line)
 	{
 		// Enable/disable side properties
 		wxPGProperty* prop = pg_properties->GetProperty("sidefront");

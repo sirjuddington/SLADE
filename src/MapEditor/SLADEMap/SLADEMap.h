@@ -251,11 +251,11 @@ private:
 	std::map<int, int>		usage_thing_type_;
 
 	// Doom format
-	bool	addVertex(doomvertex_t& v);
-	bool	addSide(doomside_t& s);
-	bool	addLine(doomline_t& l);
-	bool	addSector(doomsector_t& s);
-	bool	addThing(doomthing_t& t);
+	bool	addVertex(MapVertex::DoomData& v);
+	bool	addSide(MapSide::DoomData& s);
+	bool	addLine(MapLine::DoomData& l);
+	bool	addSector(MapSector::DoomData& s);
+	bool	addThing(MapThing::DoomData& t);
 
 	bool	readDoomVertexes(ArchiveEntry* entry);
 	bool	readDoomSidedefs(ArchiveEntry* entry);
@@ -270,8 +270,8 @@ private:
 	bool	writeDoomThings(ArchiveEntry* entry);
 
 	// Hexen format
-	bool	addLine(hexenline_t& l);
-	bool	addThing(hexenthing_t& t);
+	bool	addLine(MapLine::HexenData& l);
+	bool	addThing(MapThing::HexenData& t);
 
 	bool	readHexenLinedefs(ArchiveEntry* entry);
 	bool	readHexenThings(ArchiveEntry* entry);
@@ -280,11 +280,11 @@ private:
 	bool	writeHexenThings(ArchiveEntry* entry);
 
 	// Doom 64 format
-	bool	addVertex(doom64vertex_t& v);
-	bool	addSide(doom64side_t& s);
-	bool	addLine(doom64line_t& l);
-	bool	addSector(doom64sector_t& s);
-	bool	addThing(doom64thing_t& t);
+	bool	addVertex(MapVertex::Doom64Data& v);
+	bool	addSide(MapSide::Doom64Data& s);
+	bool	addLine(MapLine::Doom64Data& l);
+	bool	addSector(MapSector::Doom64Data& s);
+	bool	addThing(MapThing::Doom64Data& t);
 
 	bool	readDoom64Vertexes(ArchiveEntry* entry);
 	bool	readDoom64Sidedefs(ArchiveEntry* entry);

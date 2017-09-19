@@ -119,7 +119,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		vertices_changed = true;
 	else
 		for (unsigned a = 0; a < map->nVertices(); a++)
-			if (map->getVertex(a)->id() != vertices[a])
+			if (map->getVertex(a)->objId() != vertices[a])
 			{
 				vertices_changed = true;
 				break;
@@ -138,7 +138,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		lines_changed = true;
 	else
 		for (unsigned a = 0; a < map->nLines(); a++)
-			if (map->getLine(a)->id() != lines[a])
+			if (map->getLine(a)->objId() != lines[a])
 			{
 				lines_changed = true;
 				break;
@@ -157,7 +157,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		sides_changed = true;
 	else
 		for (unsigned a = 0; a < map->nSides(); a++)
-			if (map->getSide(a)->id() != sides[a])
+			if (map->getSide(a)->objId() != sides[a])
 			{
 				sides_changed = true;
 				break;
@@ -176,7 +176,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		sectors_changed = true;
 	else
 		for (unsigned a = 0; a < map->nSectors(); a++)
-			if (map->getSector(a)->id() != sectors[a])
+			if (map->getSector(a)->objId() != sectors[a])
 			{
 				sectors_changed = true;
 				break;
@@ -195,7 +195,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		things_changed = true;
 	else
 		for (unsigned a = 0; a < map->nThings(); a++)
-			if (map->getThing(a)->id() != things[a])
+			if (map->getThing(a)->objId() != things[a])
 			{
 				things_changed = true;
 				break;

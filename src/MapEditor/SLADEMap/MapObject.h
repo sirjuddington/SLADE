@@ -1,6 +1,4 @@
-
-#ifndef __MAP_OBJECT_H__
-#define __MAP_OBJECT_H__
+#pragma once
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wundefined-bool-conversion"
@@ -45,13 +43,13 @@ public:
 	bool operator< (const MapObject& right) const { return (index_ < right.index_); }
 	bool operator> (const MapObject& right) const { return (index_ > right.index_); }
 
-	Type		type() const { return type_; }
+	Type		objType() const { return obj_type_; }
+	unsigned	objId() const { return obj_id_; }
+	string		objTypeName() const;
 	unsigned	index();
 	SLADEMap*	parentMap() const { return parent_map_; }
 	bool		isFiltered() const { return filtered_; }
 	long		modifiedTime() const { return modified_time_; }
-	unsigned	id() const { return id_; }
-	string		typeName() const;
 	void		setModified();
 	void		setIndex(unsigned index) { this->index_ = index; }
 
@@ -82,7 +80,6 @@ public:
 	virtual void writeBackup(Backup* backup) = 0;
 	virtual void readBackup(Backup* backup) = 0;
 
-	static void resetIdCounter();
 	static long propBackupTime();
 	static void beginPropBackup(long current_time);
 	static void endPropBackup();
@@ -100,11 +97,11 @@ protected:
 	MobjPropertyList		properties_;
 	bool					filtered_		= false;
 	long					modified_time_	= 0;
-	unsigned				id_				= 0;
+	unsigned				obj_id_			= 0;
 	std::unique_ptr<Backup>	obj_backup_;
 
 private:
-	Type	type_ = Type::Unknown;
-};
+	Type	obj_type_ = Type::Unknown;
 
-#endif//__MAP_OBJECT_H__
+	static long prop_backup_time_;
+};

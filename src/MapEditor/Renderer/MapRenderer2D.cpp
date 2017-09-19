@@ -1203,7 +1203,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 					continue;
 
 				// Get thing info
-				auto& tt = Game::configuration().thingType(thing->getType());
+				auto& tt = Game::configuration().thingType(thing->type());
 				double radius = (tt.radius()+1);
 				if (tt.shrinkOnZoom()) radius = scaledRadius(radius);
 				radius *= 1.3;
@@ -1249,7 +1249,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 		thing = map->getThing(a);
 		x = thing->xPos();
 		y = thing->yPos();
-		angle = thing->getAngle();
+		angle = thing->angle();
 
 		// Set alpha
 		if (thing->isFiltered())
@@ -1258,7 +1258,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 			talpha = alpha;
 
 		// Get thing type properties from game configuration
-		auto& tt = Game::configuration().thingType(thing->getType());
+		auto& tt = Game::configuration().thingType(thing->type());
 
 		// Reset thing sprite if modified
 		if (thing->modifiedTime() > last_update && thing_sprites.size() > a)
@@ -1292,7 +1292,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 
 			// Get thing info
 			thing = map->getThing(a);
-			auto& tt = Game::configuration().thingType(thing->getType());
+			auto& tt = Game::configuration().thingType(thing->type());
 			x = thing->xPos();
 			y = thing->yPos();
 
@@ -1305,7 +1305,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 			else
 				talpha = alpha;
 
-			renderSpriteThing(x, y, thing->getAngle(), tt, a, talpha, true);
+			renderSpriteThing(x, y, thing->angle(), tt, a, talpha, true);
 		}
 	}
 
@@ -1327,7 +1327,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 				thing = map->getThing(things_arrows[a]);
 				if (arrow_colour)
 				{
-					auto& tt = Game::configuration().thingType(thing->getType());
+					auto& tt = Game::configuration().thingType(thing->type());
 					if (tt.defined())
 					{
 						acol.set(tt.colour());
@@ -1341,7 +1341,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 
 				glPushMatrix();
 				glTranslated(x, y, 0);
-				glRotated(thing->getAngle(), 0, 0, 1);
+				glRotated(thing->angle(), 0, 0, 1);
 
 				glBegin(GL_QUADS);
 				glTexCoord2f(0.0f, 1.0f);	glVertex2d(-32, -32);
@@ -1379,7 +1379,7 @@ void MapRenderer2D::renderThingHilight(int index, float fade)
 
 	// Get thing info
 	MapThing* thing = map->getThing(index);
-	auto& tt = Game::configuration().thingType(thing->getType());
+	auto& tt = Game::configuration().thingType(thing->type());
 	double x = thing->xPos();
 	double y = thing->yPos();
 
@@ -1467,7 +1467,7 @@ void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float f
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		MapThing* thing = map->getThing(selection[a].index);
-		auto& tt = Game::configuration().thingType(thing->getType());
+		auto& tt = Game::configuration().thingType(thing->type());
 		double radius = tt.radius();
 		if (tt.shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -1507,7 +1507,7 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		MapThing* thing = things[a];
-		auto& tt = Game::configuration().thingType(thing->getType());
+		auto& tt = Game::configuration().thingType(thing->type());
 		double radius = tt.radius();
 		if (tt.shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -1568,7 +1568,7 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		MapThing* thing = things[a];
-		auto& tt = Game::configuration().thingType(thing->getType());
+		auto& tt = Game::configuration().thingType(thing->type());
 		double radius = tt.radius();
 		if (tt.shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -1653,7 +1653,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			path.from_index = 0;
 			path.to_index = 0;
 			
-			auto& tt = Game::configuration().thingType(thing->getType());
+			auto& tt = Game::configuration().thingType(thing->type());
 
 			// Dragon Path
 			if (tt.flags() & Game::ThingType::FLAG_DRAGON)
@@ -1677,7 +1677,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 						int a13 = dragon_things[d]->intProperty("arg2");
 						int a14 = dragon_things[d]->intProperty("arg3");
 						int a15 = dragon_things[d]->intProperty("arg4");
-						auto& tt1 = Game::configuration().thingType(dragon_things[d]->getType());
+						auto& tt1 = Game::configuration().thingType(dragon_things[d]->type());
 						for (unsigned e = d + 1; e < dragon_things.size(); ++e)
 						{
 							int id2 = dragon_things[e]->intProperty("id");
@@ -1686,7 +1686,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 							int a23 = dragon_things[e]->intProperty("arg2");
 							int a24 = dragon_things[e]->intProperty("arg3");
 							int a25 = dragon_things[e]->intProperty("arg4");
-							auto& tt2 = Game::configuration().thingType(dragon_things[e]->getType());
+							auto& tt2 = Game::configuration().thingType(dragon_things[e]->type());
 							bool l1to2 = ((a11 == id2) || (a12 == id2) || (a13 == id2) || (a14 == id2) || (a15 == id2));
 							bool l2to1 = ((a21 == id1) || (a22 == id1) || (a23 == id1) || (a24 == id1) || (a25 == id1));
 							if (!((tt1.flags()|tt2.flags()) & Game::ThingType::FLAG_DRAGON))
@@ -1733,9 +1733,9 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			for (unsigned b = a + 1; b < things.size(); ++b)
 			{
 				MapThing* thing2 = things[b];
-				if (thing2->getType() == nexttype)
+				if (thing2->type() == nexttype)
 				{
-					auto& tt2 = Game::configuration().thingType(thing2->getType());
+					auto& tt2 = Game::configuration().thingType(thing2->type());
 					nextargs = tt2.nextArgs();
 					if (nextargs)
 					{
@@ -1869,14 +1869,14 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 				if (type <= 1)
 				{
 					tex = MapEditor::textureManager().getFlat(
-						sector->getFloorTex(),
+						sector->texFloor(),
 						Game::configuration().featureSupported(Feature::MixTexFlats)
 					);
 				}
 				else
 				{
 					tex = MapEditor::textureManager().getFlat(
-						sector->getCeilingTex(),
+						sector->texCeiling(),
 						Game::configuration().featureSupported(Feature::MixTexFlats)
 					);
 				}
@@ -2045,9 +2045,9 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 			{
 				// Get the sector texture
 				if (type <= 1)
-					tex = MapEditor::textureManager().getFlat(sector->getFloorTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
+					tex = MapEditor::textureManager().getFlat(sector->texFloor(), Game::configuration().featureSupported(Feature::MixTexFlats));
 				else
-					tex = MapEditor::textureManager().getFlat(sector->getCeilingTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
+					tex = MapEditor::textureManager().getFlat(sector->texCeiling(), Game::configuration().featureSupported(Feature::MixTexFlats));
 
 				tex_flats[a] = tex;
 			}
@@ -2257,7 +2257,7 @@ void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fa
 			glBegin(GL_LINES);
 			for (unsigned s = 0; s < sides.size(); s++)
 			{
-				MapLine* line = sides[s]->getParentLine();
+				MapLine* line = sides[s]->parentLine();
 				glVertex2d(line->v1()->xPos(), line->v1()->yPos());
 				glVertex2d(line->v2()->xPos(), line->v2()->yPos());
 			}
@@ -2275,7 +2275,7 @@ void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fa
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < sides_selected.size(); a++)
 	{
-		MapLine* line = sides_selected[a]->getParentLine();
+		MapLine* line = sides_selected[a]->parentLine();
 		if (lines_drawn[line->index()])
 			continue;
 
@@ -2330,7 +2330,7 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 		if (object && action_lines)
 		{
 			// Skip if the tagged sector is adjacent
-			if (object->type() == MapObject::Type::Line)
+			if (object->objType() == MapObject::Type::Line)
 			{
 				MapLine* line = (MapLine*)object;
 				if (line->frontSector() == sectors[a] || line->backSector() == sectors[a])
@@ -2684,7 +2684,7 @@ void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, 
 		// Go through connected sides
 		vector<MapSide*>& sides = map->getSector(sectors[a].index)->connectedSides();
 		for (unsigned s = 0; s < sides.size(); s++)
-			lines_moved[sides[s]->getParentLine()->index()] = 1;	// Mark parent line as moved
+			lines_moved[sides[s]->parentLine()->index()] = 1;	// Mark parent line as moved
 	}
 
 	// Build list of moving lines
@@ -2723,10 +2723,10 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, fp
 		thing = map->getThing(things[a].index);
 		x = thing->xPos() + move_vec.x;
 		y = thing->yPos() + move_vec.y;
-		angle = thing->getAngle();
+		angle = thing->angle();
 
 		// Get thing type properties from game configuration
-		auto& tt = Game::configuration().thingType(thing->getType());
+		auto& tt = Game::configuration().thingType(thing->type());
 
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == TDT_SPRITE)		// Drawtype 2: Sprites
@@ -2746,10 +2746,10 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, fp
 		{
 			// Get thing info
 			thing = map->getThing(things[a].index);
-			auto& tt = Game::configuration().thingType(thing->getType());
+			auto& tt = Game::configuration().thingType(thing->type());
 			x = thing->xPos() + move_vec.x;
 			y = thing->yPos() + move_vec.y;
-			angle = thing->getAngle();
+			angle = thing->angle();
 
 			renderSpriteThing(x, y, angle, tt, things[a].index, 1.0f, true);
 		}
@@ -2763,7 +2763,7 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, fp
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		thing = map->getThing(things[a].index);
-		auto& tt = Game::configuration().thingType(thing->getType());
+		auto& tt = Game::configuration().thingType(thing->type());
 		double radius = tt.radius();
 		if (tt.shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -2802,10 +2802,10 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 		thing = things[a];
 		x = thing->xPos() + pos.x;
 		y = thing->yPos() + pos.y;
-		angle = thing->getAngle();
+		angle = thing->angle();
 
 		// Get thing type properties from game configuration
-		auto& tt = Game::configuration().thingType(thing->getType());
+		auto& tt = Game::configuration().thingType(thing->type());
 
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == TDT_SPRITE)		// Drawtype 2: Sprites
@@ -2825,10 +2825,10 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 		{
 			// Get thing info
 			thing = things[a];
-			auto& tt = Game::configuration().thingType(thing->getType());
+			auto& tt = Game::configuration().thingType(thing->type());
 			x = thing->xPos() + pos.x;
 			y = thing->yPos() + pos.y;
-			angle = thing->getAngle();
+			angle = thing->angle();
 
 			renderSpriteThing(x, y, angle, tt, wxUINT32_MAX, 1.0f, true);
 		}
@@ -2842,7 +2842,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		thing = things[a];
-		auto& tt = Game::configuration().thingType(thing->getType());
+		auto& tt = Game::configuration().thingType(thing->type());
 		double radius = tt.radius();
 		if (tt.shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -2945,10 +2945,10 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 			thing = things[a].map_thing;
 			x = things[a].position.x;
 			y = things[a].position.y;
-			angle = thing->getAngle();
+			angle = thing->angle();
 
 			// Get thing type properties from game configuration
-			auto& tt = Game::configuration().thingType(thing->getType());
+			auto& tt = Game::configuration().thingType(thing->type());
 
 			// Draw thing depending on 'things_drawtype' cvar
 			if (thing_drawtype == TDT_SPRITE)		// Drawtype 2: Sprites
@@ -2968,10 +2968,10 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 			{
 				// Get thing info
 				thing = things[a].map_thing;
-				auto& tt = Game::configuration().thingType(thing->getType());
+				auto& tt = Game::configuration().thingType(thing->type());
 				x = things[a].position.x;
 				y = things[a].position.y;
-				angle = thing->getAngle();
+				angle = thing->angle();
 
 				renderSpriteThing(x, y, angle, tt, thing->index(), 1.0f, true);
 			}
@@ -2985,7 +2985,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 		for (unsigned a = 0; a < things.size(); a++)
 		{
 			thing = things[a].map_thing;
-			auto& tt = Game::configuration().thingType(thing->getType());
+			auto& tt = Game::configuration().thingType(thing->type());
 			double radius = tt.radius();
 			if (tt.shrinkOnZoom()) radius = scaledRadius(radius);
 
@@ -3192,7 +3192,7 @@ void MapRenderer2D::updateVisibility(fpoint2_t view_tl, fpoint2_t view_br)
 		y = map->getThing(a)->yPos();
 
 		// Get thing type properties from game configuration
-		auto& tt = Game::configuration().thingType(map->getThing(a)->getType());
+		auto& tt = Game::configuration().thingType(map->getThing(a)->type());
 		radius = tt.radius() * 1.3;
 
 		// Ignore if outside of screen

@@ -404,7 +404,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 
 	if (map_format == MAP_DOOM64)
 	{
-		doom64vertex_t v;
+		MapVertex::Doom64Data v;
 		while (1)
 		{
 			// Read vertex
@@ -417,7 +417,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 	}
 	else
 	{
-		doomvertex_t v;
+		MapVertex::DoomData v;
 		while (1)
 		{
 			// Read vertex
@@ -467,8 +467,8 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 		while (1)
 		{
 			// Read line
-			doomline_t l;
-			if (!mc.read(&l, sizeof(doomline_t)))
+			MapLine::DoomData l;
+			if (!mc.read(&l, sizeof(MapLine::DoomData)))
 				break;
 
 			// Check properties
@@ -488,8 +488,8 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 		while (1)
 		{
 			// Read line
-			doom64line_t l;
-			if (!mc.read(&l, sizeof(doom64line_t)))
+			MapLine::Doom64Data l;
+			if (!mc.read(&l, sizeof(MapLine::Doom64Data)))
 				break;
 
 			// Check properties
@@ -514,8 +514,8 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 		while (1)
 		{
 			// Read line
-			hexenline_t l;
-			if (!mc.read(&l, sizeof(hexenline_t)))
+			MapLine::HexenData l;
+			if (!mc.read(&l, sizeof(MapLine::HexenData)))
 				break;
 
 			// Check properties
@@ -564,22 +564,22 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 	// Read things data
 	if (map_format == MAP_DOOM)
 	{
-		doomthing_t* thng_data = (doomthing_t*)things->getData(true);
-		unsigned nt = things->getSize() / sizeof(doomthing_t);
+		MapThing::DoomData* thng_data = (MapThing::DoomData*)things->getData(true);
+		unsigned nt = things->getSize() / sizeof(MapThing::DoomData);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MAP_DOOM64)
 	{
-		doom64thing_t* thng_data = (doom64thing_t*)things->getData(true);
-		unsigned nt = things->getSize() / sizeof(doom64thing_t);
+		MapThing::Doom64Data* thng_data = (MapThing::Doom64Data*)things->getData(true);
+		unsigned nt = things->getSize() / sizeof(MapThing::Doom64Data);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MAP_HEXEN)
 	{
-		hexenthing_t* thng_data = (hexenthing_t*)things->getData(true);
-		unsigned nt = things->getSize() / sizeof(hexenthing_t);
+		MapThing::HexenData* thng_data = (MapThing::HexenData*)things->getData(true);
+		unsigned nt = things->getSize() / sizeof(MapThing::HexenData);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}

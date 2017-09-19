@@ -38,7 +38,7 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-long prop_backup_time = -1;
+long MapObject::prop_backup_time_ = -1;
 
 
 /*******************************************************************
@@ -49,7 +49,7 @@ long prop_backup_time = -1;
  * MapObject class constructor
  *******************************************************************/
 MapObject::MapObject(Type type, SLADEMap* parent) :
-	type_{ type },
+	obj_type_{ type },
 	parent_map_{ parent },
 	modified_time_{ App::runTimer() }
 {
@@ -75,9 +75,9 @@ unsigned MapObject::index()
 /* MapObject::getTypeName
  * Returns a string representation of the object type
  *******************************************************************/
-string MapObject::typeName() const
+string MapObject::objTypeName() const
 {
-	switch (type_)
+	switch (obj_type_)
 	{
 	case Type::Vertex:
 		return "Vertex";
@@ -102,7 +102,7 @@ string MapObject::typeName() const
 void MapObject::setModified()
 {
 	// Backup current properties if required
-	if (modified_time_ < prop_backup_time)
+	if (modified_time_ < prop_backup_time_)
 	{
 		obj_backup_ = std::make_unique<Backup>();
 		backup(obj_backup_.get());
@@ -120,7 +120,7 @@ void MapObject::copy(MapObject* c)
 	setModified();
 
 	// Can't copy an object of a different type
-	if (c->type_ != type_)
+	if (c->obj_type_ != obj_type_)
 		return;
 
 	// Reset properties
@@ -147,7 +147,7 @@ bool MapObject::boolProperty(const string& key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, obj_type_);
 		if (prop)
 			return prop->defaultValue().getBoolValue();
 		else
@@ -167,7 +167,7 @@ int MapObject::intProperty(const string& key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, obj_type_);
 		if (prop)
 			return prop->defaultValue().getIntValue();
 		else
@@ -187,7 +187,7 @@ double MapObject::floatProperty(const string& key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, obj_type_);
 		if (prop)
 			return prop->defaultValue().getFloatValue();
 		else
@@ -207,7 +207,7 @@ string MapObject::stringProperty(const string& key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, obj_type_);
 		if (prop)
 			return prop->defaultValue().getStringValue();
 		else
@@ -269,8 +269,8 @@ void MapObject::setStringProperty(const string& key, const string& value)
 void MapObject::backup(Backup* backup)
 {
 	// Save basic info
-	backup->id = id_;
-	backup->type = type_;
+	backup->id = obj_id_;
+	backup->type = obj_type_;
 
 	// Save general properties to list
 	properties_.copyTo(backup->properties);
@@ -285,15 +285,15 @@ void MapObject::backup(Backup* backup)
 void MapObject::loadFromBackup(Backup* backup)
 {
 	// Check type match
-	if (backup->type != type_)
+	if (backup->type != obj_type_)
 	{
-		LOG_MESSAGE(1, "loadFromBackup: Mobj type mismatch, %d != %d", type_, backup->type);
+		LOG_MESSAGE(1, "loadFromBackup: Mobj type mismatch, %d != %d", obj_type_, backup->type);
 		return;
 	}
 	// Check id match
-	if (backup->id != id_)
+	if (backup->id != obj_id_)
 	{
-		LOG_MESSAGE(1, "loadFromBackup: Mobj id mismatch, %d != %d", id_, backup->id);
+		LOG_MESSAGE(1, "loadFromBackup: Mobj id mismatch, %d != %d", obj_id_, backup->id);
 		return;
 	}
 
@@ -317,10 +317,6 @@ MapObject::Backup* MapObject::getBackup(bool remove)
 		return obj_backup_.release();
 	else
 		return obj_backup_.get();
-
-	/*auto bak = obj_backup;
-	if (remove) obj_backup = nullptr;
-	return bak;*/
 }
 
 
@@ -335,7 +331,7 @@ MapObject::Backup* MapObject::getBackup(bool remove)
  *******************************************************************/
 long MapObject::propBackupTime()
 {
-	return prop_backup_time;
+	return prop_backup_time_;
 }
 
 /* MapObject::beginPropBackup
@@ -344,7 +340,7 @@ long MapObject::propBackupTime()
  *******************************************************************/
 void MapObject::beginPropBackup(long current_time)
 {
-	prop_backup_time = current_time;
+	prop_backup_time_ = current_time;
 }
 
 /* MapObject::endPropBackup
@@ -352,7 +348,7 @@ void MapObject::beginPropBackup(long current_time)
  *******************************************************************/
 void MapObject::endPropBackup()
 {
-	prop_backup_time = -1;
+	prop_backup_time_ = -1;
 }
 
 

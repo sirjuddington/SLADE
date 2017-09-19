@@ -1903,7 +1903,7 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 {
 	// Get UDMF properties list for type
 	UDMFPropMap* map = nullptr;
-	switch (object->type())
+	switch (object->objType())
 	{
 	case MapObject::Type::Vertex:	map = &udmf_vertex_props_; break;
 	case MapObject::Type::Line:		map = &udmf_linedef_props_; break;
@@ -2260,7 +2260,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	vector<Property> prop_vals;
 
 	// Line defaults
-	if (object->type() == MapObject::Type::Line)
+	if (object->objType() == MapObject::Type::Line)
 	{
 		defaults_line_.allProperties(prop_vals);
 		defaults_line_.allPropertyNames(prop_names);
@@ -2272,7 +2272,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	}
 
 	// Side defaults
-	else if (object->type() == MapObject::Type::Side)
+	else if (object->objType() == MapObject::Type::Side)
 	{
 		defaults_side_.allProperties(prop_vals);
 		defaults_side_.allPropertyNames(prop_names);
@@ -2284,7 +2284,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	}
 
 	// Sector defaults
-	else if (object->type() == MapObject::Type::Sector)
+	else if (object->objType() == MapObject::Type::Sector)
 	{
 		defaults_sector_.allProperties(prop_vals);
 		defaults_sector_.allPropertyNames(prop_names);
@@ -2296,7 +2296,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	}
 
 	// Thing defaults
-	else if (object->type() == MapObject::Type::Thing)
+	else if (object->objType() == MapObject::Type::Thing)
 	{
 		defaults_thing_.allProperties(prop_vals);
 		defaults_thing_.allPropertyNames(prop_names);

@@ -79,7 +79,7 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 		info = S_FMT("Vertex %d: (%d, %d)", vertex->index(), (int)vertex->xPos(), (int)vertex->yPos());
 
 	if (Global::debug)
-		info += S_FMT(" (%d)", vertex->id());
+		info += S_FMT(" (%d)", vertex->objId());
 }
 
 /* VertexInfoOverlay::draw

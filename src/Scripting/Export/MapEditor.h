@@ -7,7 +7,7 @@ void objectSetBoolProperty(MapObject& self, const string& key, bool value)
 	else
 		Log::warning(1, S_FMT(
 			"%s boolean property \"%s\" can not be modified via script",
-			CHR(self.typeName()),
+			CHR(self.objTypeName()),
 			key
 		));
 }
@@ -19,7 +19,7 @@ void objectSetIntProperty(MapObject& self, const string& key, int value)
 	else
 		Log::warning(1, S_FMT(
 			"%s integer property \"%s\" can not be modified via script",
-			CHR(self.typeName()),
+			CHR(self.objTypeName()),
 			key
 		));
 }
@@ -31,7 +31,7 @@ void objectSetFloatProperty(MapObject& self, const string& key, double value)
 	else
 		Log::warning(1, S_FMT(
 			"%s float property \"%s\" can not be modified via script",
-			CHR(self.typeName()),
+			CHR(self.objTypeName()),
 			key
 		));
 }
@@ -43,7 +43,7 @@ void objectSetStringProperty(MapObject& self, const string& key, const string& v
 	else
 		Log::warning(1, S_FMT(
 			"%s string property \"%s\" can not be modified via script",
-			CHR(self.typeName()),
+			CHR(self.objTypeName()),
 			key
 		));
 }
@@ -182,12 +182,12 @@ sol::table lineVisibleTextures(MapLine& self)
 {
 	auto needs_tex = self.needsTexture();
 	return Lua::state().create_table_with(
-		"frontUpper", (needs_tex & TEX_FRONT_UPPER) != 0,
-		"frontMiddle", (needs_tex & TEX_FRONT_MIDDLE) != 0,
-		"frontLower", (needs_tex & TEX_FRONT_LOWER) != 0,
-		"backUpper", (needs_tex & TEX_BACK_UPPER) != 0,
-		"backMiddle", (needs_tex & TEX_BACK_MIDDLE) != 0,
-		"backLower", (needs_tex & TEX_BACK_LOWER) != 0
+		"frontUpper", (needs_tex & MapLine::Part::FrontUpper) != 0,
+		"frontMiddle", (needs_tex & MapLine::Part::FrontMiddle) != 0,
+		"frontLower", (needs_tex & MapLine::Part::FrontLower) != 0,
+		"backUpper", (needs_tex & MapLine::Part::BackUpper) != 0,
+		"backMiddle", (needs_tex & MapLine::Part::BackMiddle) != 0,
+		"backLower", (needs_tex & MapLine::Part::BackLower) != 0
 	);
 }
 
@@ -217,8 +217,8 @@ void registerMapLine(sol::state& lua)
 		"vertex2",			sol::property(&MapLine::v2),
 		"side1",			sol::property(&MapLine::s1),
 		"side2",			sol::property(&MapLine::s2),
-		"special",			sol::property(&MapLine::getSpecial),
-		"length",			sol::property(&MapLine::getLength),
+		"special",			sol::property(&MapLine::special),
+		"length",			sol::property(&MapLine::length),
 		"visibleTextures",	sol::property(&lineVisibleTextures),
 
 		// Functions
@@ -240,13 +240,13 @@ void registerMapSide(sol::state& lua)
 		"new", sol::no_constructor,
 
 		// Properties
-		"sector",			sol::property(&MapSide::getSector),
-		"line",				sol::property(&MapSide::getParentLine),
-		"textureBottom",	sol::property(&MapSide::getTexLower),
-		"textureMiddle",	sol::property(&MapSide::getTexMiddle),
-		"textureTop",		sol::property(&MapSide::getTexUpper),
-		"offsetX",			sol::property(&MapSide::getOffsetX),
-		"offsetY",			sol::property(&MapSide::getOffsetY)
+		"sector",			sol::property(&MapSide::sector),
+		"line",				sol::property(&MapSide::parentLine),
+		"textureBottom",	sol::property(&MapSide::texLower),
+		"textureMiddle",	sol::property(&MapSide::texMiddle),
+		"textureTop",		sol::property(&MapSide::texUpper),
+		"offsetX",			sol::property(&MapSide::offsetX),
+		"offsetY",			sol::property(&MapSide::offsetY)
 	);
 }
 
@@ -260,18 +260,18 @@ void registerMapSector(sol::state& lua)
 		"new", sol::no_constructor,
 
 		// Properties
-		"textureFloor",		sol::property(&MapSector::getFloorTex),
-		"textureCeiling",	sol::property(&MapSector::getCeilingTex),
-		"heightFloor",		sol::property(&MapSector::getFloorHeight),
-		"heightCeiling",	sol::property(&MapSector::getCeilingHeight),
-		"lightLevel",		sol::property(&MapSector::getLightLevel),
-		"special",			sol::property(&MapSector::getSpecial),
-		"id",				sol::property(&MapSector::getTag),
+		"textureFloor",		sol::property(&MapSector::texFloor),
+		"textureCeiling",	sol::property(&MapSector::texCeiling),
+		"heightFloor",		sol::property(&MapSector::heightFloor),
+		"heightCeiling",	sol::property(&MapSector::heightCeiling),
+		"lightLevel",		sol::property(&MapSector::lightLevel),
+		"special",			sol::property(&MapSector::special),
+		"id",				sol::property(&MapSector::id),
 		"connectedSides",	sol::property(&MapSector::connectedSides),
 		"colour",			sol::property(&MapSector::getColour),
 		"fogColour",		sol::property(&MapSector::getFogColour),
-		"planeFloor",		sol::property(&MapSector::getFloorPlane),
-		"planeCeiling",		sol::property(&MapSector::getCeilingPlane),
+		"planeFloor",		sol::property(&MapSector::planeFloor),
+		"planeCeiling",		sol::property(&MapSector::planeCeiling),
 		// bbox (need to export bbox_t first)
 
 		// Functions
@@ -299,8 +299,8 @@ void registerMapThing(sol::state& lua)
 		// Properties
 		"x",		sol::property(&MapThing::xPos),
 		"y",		sol::property(&MapThing::yPos),
-		"type",		sol::property(&MapThing::getType),
-		"angle",	sol::property(&MapThing::getAngle),
+		"type",		sol::property(&MapThing::type),
+		"angle",	sol::property(&MapThing::angle),
 
 		// Functions
 		"flag",				&thingFlag,
@@ -318,7 +318,7 @@ void registerMapObject(sol::state& lua)
 
 		// Properties
 		"index",	sol::property(&MapObject::index),
-		"typeName",	sol::property(&MapObject::typeName),
+		"typeName",	sol::property(&MapObject::objTypeName),
 		//"properties", sol::property(&MapObject::props), // Need to export MobjPropertyList first
 
 		// Functions

@@ -1,6 +1,4 @@
-
-#ifndef __MAPLINE_H__
-#define __MAPLINE_H__
+#pragma once
 
 #include "common.h"
 #include "MapObject.h"
@@ -9,80 +7,66 @@ class MapVertex;
 class MapSide;
 class MapSector;
 
-// Line texture ids
-enum
-{
-	TEX_FRONT_MIDDLE	= 0x01,
-	TEX_FRONT_UPPER		= 0x02,
-	TEX_FRONT_LOWER		= 0x04,
-	TEX_BACK_MIDDLE		= 0x08,
-	TEX_BACK_UPPER		= 0x10,
-	TEX_BACK_LOWER		= 0x20,
-};
-
-struct doomline_t
-{
-	uint16_t vertex1;
-	uint16_t vertex2;
-	uint16_t flags;
-	uint16_t type;
-	uint16_t sector_tag;
-	uint16_t side1;
-	uint16_t side2;
-};
-
-struct hexenline_t
-{
-	uint16_t	vertex1;
-	uint16_t	vertex2;
-	uint16_t	flags;
-	uint8_t		type;
-	uint8_t		args[5];
-	uint16_t	side1;
-	uint16_t	side2;
-};
-
-struct doom64line_t
-{
-	uint16_t vertex1;
-	uint16_t vertex2;
-	uint32_t flags;
-	uint16_t type;
-	uint16_t sector_tag;
-	uint16_t side1;
-	uint16_t side2;
-};
-
 class MapLine : public MapObject
 {
 	friend class SLADEMap;
-private:
-	// Basic data
-	MapVertex*	vertex1;
-	MapVertex*	vertex2;
-	MapSide*	side1;
-	MapSide*	side2;
-	int			special;
-	int			line_id;
-
-	// Internally used info
-	double		length;
-	double		ca;	// Used for intersection calculations
-	double		sa;	// ^^
-	fpoint2_t	front_vec;
-
 public:
+	// Line parts (textures)
+	enum Part
+	{
+		FrontMiddle	= 0x01,
+		FrontUpper	= 0x02,
+		FrontLower	= 0x04,
+		BackMiddle	= 0x08,
+		BackUpper	= 0x10,
+		BackLower	= 0x20,
+	};
+
+	struct DoomData
+	{
+		uint16_t vertex1;
+		uint16_t vertex2;
+		uint16_t flags;
+		uint16_t type;
+		uint16_t sector_tag;
+		uint16_t side1;
+		uint16_t side2;
+	};
+
+	struct HexenData
+	{
+		uint16_t	vertex1;
+		uint16_t	vertex2;
+		uint16_t	flags;
+		uint8_t		type;
+		uint8_t		args[5];
+		uint16_t	side1;
+		uint16_t	side2;
+	};
+
+	struct Doom64Data
+	{
+		uint16_t vertex1;
+		uint16_t vertex2;
+		uint32_t flags;
+		uint16_t type;
+		uint16_t sector_tag;
+		uint16_t side1;
+		uint16_t side2;
+	};
+
 	MapLine(SLADEMap* parent = nullptr);
 	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent = nullptr);
 	~MapLine();
 
-	bool	isOk() const { return vertex1 && vertex2; }
+	bool	isOk() const { return vertex1_ && vertex2_; }
 
-	MapVertex*		v1() const { return vertex1; }
-	MapVertex*		v2() const { return vertex2; }
-	MapSide*		s1() const { return side1; }
-	MapSide*		s2() const { return side2; }
-	int				getSpecial() const { return special; }
+	MapVertex*	v1() const { return vertex1_; }
+	MapVertex*	v2() const { return vertex2_; }
+	MapSide*	s1() const { return side1_; }
+	MapSide*	s2() const { return side2_; }
+	int			special() const { return special_; }
+	int			id() const { return id_; }
 
 	MapSector*	frontSector();
 	MapSector*	backSector();
@@ -114,8 +98,8 @@ public:
 	fpoint2_t	point1();
 	fpoint2_t	point2();
 	fseg2_t		seg();
-	double		getLength();
-	double		getAngle();
+	double		length();
+	double		angle();
 	bool		doubleSector();
 	fpoint2_t	frontVector();
 	fpoint2_t	dirTabPoint(double length = 0);
@@ -139,6 +123,19 @@ public:
 	}
 
 	typedef std::unique_ptr<MapLine> UPtr;
-};
 
-#endif //__MAPLINE_H__
+private:
+	// Basic data
+	MapVertex*	vertex1_	= nullptr;
+	MapVertex*	vertex2_	= nullptr;
+	MapSide*	side1_		= nullptr;
+	MapSide*	side2_		= nullptr;
+	int			special_	= 0;
+	int			id_			= 0;
+
+	// Internally used info
+	double		length_	= -1;
+	double		ca_		= 0;	// Used for intersection calculations
+	double		sa_		= 0;	// ^^
+	fpoint2_t	front_vec_;
+};

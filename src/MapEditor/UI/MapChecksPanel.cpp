@@ -203,7 +203,7 @@ void MapChecksPanel::showCheckItem(unsigned index)
 	{
 		// Set edit mode to object type
 		MapObject* obj = check_items[index].check->getObject(check_items[index].index);
-		switch (obj->type())
+		switch (obj->objType())
 		{
 		case MapObject::Type::Vertex:
 			MapEditor::editContext().setEditMode(MapEditor::Mode::Vertices);

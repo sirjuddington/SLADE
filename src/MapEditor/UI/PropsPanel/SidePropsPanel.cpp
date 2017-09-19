@@ -320,10 +320,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides)
 	// --- Textures ---
 
 	// Upper
-	string tex_upper = sides[0]->getTexUpper();
+	string tex_upper = sides[0]->texUpper();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->getTexUpper() != tex_upper)
+		if (sides[a]->texUpper() != tex_upper)
 		{
 			tex_upper = "";
 			break;
@@ -333,10 +333,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides)
 	tcb_upper->SetValue(tex_upper);
 
 	// Middle
-	string tex_middle = sides[0]->getTexMiddle();
+	string tex_middle = sides[0]->texMiddle();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->getTexMiddle() != tex_middle)
+		if (sides[a]->texMiddle() != tex_middle)
 		{
 			tex_middle = "";
 			break;
@@ -346,10 +346,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides)
 	tcb_middle->SetValue(tex_middle);
 
 	// Lower
-	string tex_lower = sides[0]->getTexLower();
+	string tex_lower = sides[0]->texLower();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->getTexLower() != tex_lower)
+		if (sides[a]->texLower() != tex_lower)
 		{
 			tex_lower = "";
 			break;
@@ -363,10 +363,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides)
 	
 	// X
 	bool multi = false;
-	int ofs = sides[0]->getOffsetX();
+	int ofs = sides[0]->offsetX();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->getOffsetX() != ofs)
+		if (sides[a]->offsetX() != ofs)
 		{
 			multi = true;
 			break;
@@ -377,10 +377,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides)
 
 	// Y
 	multi = false;
-	ofs = sides[0]->getOffsetY();
+	ofs = sides[0]->offsetY();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->getOffsetY() != ofs)
+		if (sides[a]->offsetY() != ofs)
 		{
 			multi = true;
 			break;
@@ -416,11 +416,11 @@ void SidePropsPanel::applyTo(vector<MapSide*>& sides)
 
 		// X Offset
 		if (!text_offsetx->GetValue().IsEmpty())
-			sides[a]->setIntProperty("offsetx", text_offsetx->getNumber(sides[a]->getOffsetX()));
+			sides[a]->setIntProperty("offsetx", text_offsetx->getNumber(sides[a]->offsetX()));
 
 		// Y Offset
 		if (!text_offsety->GetValue().IsEmpty())
-			sides[a]->setIntProperty("offsety", text_offsety->getNumber(sides[a]->getOffsetY()));
+			sides[a]->setIntProperty("offsety", text_offsety->getNumber(sides[a]->offsetY()));
 	}
 }
 

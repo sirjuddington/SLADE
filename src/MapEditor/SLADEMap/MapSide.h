@@ -1,53 +1,52 @@
-
-#ifndef __MAPSIDE_H__
-#define __MAPSIDE_H__
+#pragma once
 
 #include "MapObject.h"
 
 class MapSector;
 class MapLine;
 
-struct doomside_t
-{
-	short	x_offset;
-	short	y_offset;
-	char	tex_upper[8];
-	char	tex_lower[8];
-	char	tex_middle[8];
-	short	sector;
-};
-
-struct doom64side_t
-{
-	short		x_offset;
-	short		y_offset;
-	uint16_t	tex_upper;
-	uint16_t	tex_lower;
-	uint16_t	tex_middle;
-	short		sector;
-};
-
 class MapSide : public MapObject
 {
 	friend class SLADEMap;
 	friend class MapLine;
 public:
+	struct DoomData
+	{
+		short	x_offset;
+		short	y_offset;
+		char	tex_upper[8];
+		char	tex_lower[8];
+		char	tex_middle[8];
+		short	sector;
+	};
+
+	struct Doom64Data
+	{
+		short		x_offset;
+		short		y_offset;
+		uint16_t	tex_upper;
+		uint16_t	tex_lower;
+		uint16_t	tex_middle;
+		short		sector;
+	};
+
 	MapSide(MapSector* sector = nullptr, SLADEMap* parent = nullptr);
 	MapSide(SLADEMap* parent);
 	~MapSide();
 
 	void	copy(MapObject* c) override;
 
-	bool	isOk() const { return !!sector; }
+	bool	isOk() const { return !!sector_; }
 
-	MapSector*	getSector() const { return sector; }
-	MapLine*	getParentLine() const { return parent; }
-	string		getTexUpper() const { return tex_upper; }
-	string		getTexMiddle() const { return tex_middle; }
-	string		getTexLower() const { return tex_lower; }
-	short		getOffsetX() const { return offset_x; }
-	short		getOffsetY() const { return offset_y; }
-	uint8_t		getLight();
+	MapSector*	sector() const { return sector_; }
+	MapLine*	parentLine() const { return parent_line_; }
+	string		texUpper() const { return tex_upper_; }
+	string		texMiddle() const { return tex_middle_; }
+	string		texLower() const { return tex_lower_; }
+	int			offsetX() const { return offset_.x; }
+	int			offsetY() const { return offset_.y; }
+	point2_t	offset() const { return offset_; }
+	uint8_t		light();
 
 	void	setSector(MapSector* sector);
 	void	changeLight(int amount);
@@ -63,13 +62,10 @@ public:
 
 private:
 	// Basic data
-	MapSector*	sector;
-	MapLine*	parent;
-	string		tex_upper;
-	string		tex_middle;
-	string		tex_lower;
-	short		offset_x;
-	short		offset_y;
+	MapSector*	sector_			= nullptr;
+	MapLine*	parent_line_	= nullptr;
+	string		tex_upper_;
+	string		tex_middle_;
+	string		tex_lower_;
+	point2_t	offset_;
 };
-
-#endif //__MAPSIDE_H__

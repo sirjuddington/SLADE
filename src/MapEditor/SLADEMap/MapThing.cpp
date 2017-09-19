@@ -41,23 +41,16 @@
  *******************************************************************/
 MapThing::MapThing(SLADEMap* parent) : MapObject(Type::Thing, parent)
 {
-	// Init variables
-	this->x = 0;
-	this->y = 0;
-	this->type = 1;
-	this->angle = 0;
 }
 
 /* MapThing::MapThing
  * MapThing class constructor
  *******************************************************************/
-MapThing::MapThing(double x, double y, short type, SLADEMap* parent) : MapObject(Type::Thing, parent)
+MapThing::MapThing(double x, double y, short type, SLADEMap* parent) :
+	MapObject(Type::Thing, parent),
+	position_{ x, y },
+	type_{ type }
 {
-	// Init variables
-	this->x = x;
-	this->y = y;
-	this->type = type;
-	this->angle = 0;
 }
 
 /* MapThing::~MapThing
@@ -73,7 +66,7 @@ MapThing::~MapThing()
  *******************************************************************/
 fpoint2_t MapThing::point(Point point)
 {
-	return fpoint2_t(x, y);
+	return position_;
 }
 
 /* MapThing::intProperty
@@ -82,13 +75,13 @@ fpoint2_t MapThing::point(Point point)
 int MapThing::intProperty(const string& key)
 {
 	if (key == "type")
-		return type;
+		return type_;
 	else if (key == "x")
-		return (int)x;
+		return (int)position_.x;
 	else if (key == "y")
-		return (int)y;
+		return (int)position_.y;
 	else if (key == "angle")
-		return angle;
+		return angle_;
 	else
 		return MapObject::intProperty(key);
 }
@@ -99,9 +92,9 @@ int MapThing::intProperty(const string& key)
 double MapThing::floatProperty(const string& key)
 {
 	if (key == "x")
-		return x;
+		return position_.x;
 	else if (key == "y")
-		return y;
+		return position_.y;
 	else
 		return MapObject::floatProperty(key);
 }
@@ -115,13 +108,13 @@ void MapThing::setIntProperty(const string& key, int value)
 	setModified();
 
 	if (key == "type")
-		type = value;
+		type_ = value;
 	else if (key == "x")
-		x = value;
+		position_.x = value;
 	else if (key == "y")
-		y = value;
+		position_.y = value;
 	else if (key == "angle")
-		angle = value;
+		angle_ = value;
 	else
 		return MapObject::setIntProperty(key, value);
 }
@@ -135,9 +128,9 @@ void MapThing::setFloatProperty(const string& key, double value)
 	setModified();
 
 	if (key == "x")
-		x = value;
+		position_.x = value;
 	else if (key == "y")
-		y = value;
+		position_.y = value;
 	else
 		return MapObject::setFloatProperty(key, value);
 }
@@ -148,15 +141,14 @@ void MapThing::setFloatProperty(const string& key, double value)
 void MapThing::copy(MapObject* c)
 {
 	// Don't copy a non-thing
-	if (c->type() != Type::Thing)
+	if (c->objType() != Type::Thing)
 		return;
 
 	// Basic variables
 	MapThing* thing = (MapThing*)c;
-	this->x = thing->x;
-	this->y = thing->y;
-	this->type = thing->type;
-	this->angle = thing->angle;
+	this->position_ = thing->position_;
+	this->type_ = thing->type_;
+	this->angle_ = thing->angle_;
 
 	// Other properties
 	MapObject::copy(c);
@@ -168,7 +160,7 @@ void MapThing::copy(MapObject* c)
 void MapThing::setAnglePoint(fpoint2_t point)
 {
 	// Calculate direction vector
-	fpoint2_t vec(point.x - x, point.y - y);
+	fpoint2_t vec(point.x - position_.x, point.y - position_.y);
 	double mag = sqrt((vec.x * vec.x) + (vec.y * vec.y));
 	double x = vec.x / mag;
 	double y = vec.y / mag;
@@ -202,14 +194,14 @@ void MapThing::setAnglePoint(fpoint2_t point)
 void MapThing::writeBackup(Backup* backup)
 {
 	// Type
-	backup->props_internal["type"] = type;
+	backup->props_internal["type"] = type_;
 
 	// Position
-	backup->props_internal["x"] = x;
-	backup->props_internal["y"] = y;
+	backup->props_internal["x"] = position_.x;
+	backup->props_internal["y"] = position_.y;
 
 	// Angle
-	backup->props_internal["angle"] = angle;
+	backup->props_internal["angle"] = angle_;
 }
 
 /* MapThing::readBackup
@@ -218,12 +210,12 @@ void MapThing::writeBackup(Backup* backup)
 void MapThing::readBackup(Backup* backup)
 {
 	// Type
-	type = backup->props_internal["type"].getIntValue();
+	type_ = backup->props_internal["type"].getIntValue();
 
 	// Position
-	x = backup->props_internal["x"].getFloatValue();
-	y = backup->props_internal["y"].getFloatValue();
+	position_.x = backup->props_internal["x"].getFloatValue();
+	position_.y = backup->props_internal["y"].getFloatValue();
 
 	// Angle
-	angle = backup->props_internal["angle"].getIntValue();
+	angle_ = backup->props_internal["angle"].getIntValue();
 }

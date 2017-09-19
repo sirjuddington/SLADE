@@ -1,35 +1,33 @@
-
-#ifndef __MAPVERTEX_H__
-#define __MAPVERTEX_H__
+#pragma once
 
 #include "MapObject.h"
 
 class MapLine;
 
-struct doomvertex_t
-{
-	short x;
-	short y;
-};
-
-// Those are actually fixed_t
-struct doom64vertex_t
-{
-	int32_t x;
-	int32_t y;
-};
-
 class MapVertex : public MapObject
 {
 	friend class SLADEMap;
 public:
+	struct DoomData
+	{
+		short x;
+		short y;
+	};
+
+	struct Doom64Data
+	{
+		// These are actually fixed_t
+		int32_t x;
+		int32_t y;
+	};
+
 	MapVertex(SLADEMap* parent = nullptr);
 	MapVertex(double x, double y, SLADEMap* parent = nullptr);
 	~MapVertex();
 
-	double		xPos() const { return x; }
-	double		yPos() const { return y; }
-	fpoint2_t	pos() const { return { x, y }; }
+	double		xPos() const { return position_.x; }
+	double		yPos() const { return position_.y; }
+	fpoint2_t	pos() const { return position_; }
 
 	fpoint2_t	point(Point point = Point::Mid) override;
 
@@ -41,10 +39,10 @@ public:
 
 	void		connectLine(MapLine* line);
 	void		disconnectLine(MapLine* line);
-	unsigned	nConnectedLines() const { return connected_lines.size(); }
+	unsigned	nConnectedLines() const { return connected_lines_.size(); }
 	MapLine*	connectedLine(unsigned index);
 	
-	const vector<MapLine*>&	connectedLines() const { return connected_lines; }
+	const vector<MapLine*>&	connectedLines() const { return connected_lines_; }
 
 	void	move(fpoint2_t offset);
 	void	moveTo(fpoint2_t new_pos);
@@ -64,11 +62,8 @@ public:
 
 private:
 	// Basic data
-	double		x;
-	double		y;
+	fpoint2_t	position_ = { 0, 0 };
 
 	// Internal info
-	vector<MapLine*>	connected_lines;
+	vector<MapLine*>	connected_lines_;
 };
-
-#endif //__MAPVERTEX_H__

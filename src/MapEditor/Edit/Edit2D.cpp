@@ -108,7 +108,7 @@ void Edit2D::mirror(bool x_axis) const
 				);
 
 			// Direction
-			int angle = things[a]->getAngle();
+			int angle = things[a]->angle();
 			if (x_axis)
 			{
 				angle += 90;
@@ -518,14 +518,14 @@ void Edit2D::joinSectors(bool remove_lines) const
 			bool exists = false;
 			for (unsigned l = 0; l < lines.size(); l++)
 			{
-				if (side->getParentLine() == lines[l])
+				if (side->parentLine() == lines[l])
 				{
 					exists = true;
 					break;
 				}
 			}
 			if (!exists)
-				lines.push_back(side->getParentLine());
+				lines.push_back(side->parentLine());
 		}
 
 		// Delete sector
@@ -579,7 +579,7 @@ void Edit2D::changeThingType() const
 		return;
 
 	// Browse thing type
-	int newtype = MapEditor::browseThingType(selection[0]->getType(), context_.map());
+	int newtype = MapEditor::browseThingType(selection[0]->type(), context_.map());
 	if (newtype >= 0)
 	{
 		// Go through selection
@@ -737,7 +737,7 @@ void Edit2D::copyProperties(MapObject* object)
 	else if (context_.editMode() == MapEditor::Mode::Things)
 	{
 		// Copy given object properties (if any)
-		if (object && object->type() == MapObject::Type::Thing)
+		if (object && object->objType() == MapObject::Type::Thing)
 			copy_thing_->copy(object);
 		else
 		{
@@ -934,8 +934,8 @@ void Edit2D::createThing(double x, double y) const
 	{
 		// Copy type and angle from the last copied thing
 		auto ct = (MapThing*)copy_thing_.get();
-		thing->setIntProperty("type", ct->getType());
-		thing->setIntProperty("angle", ct->getAngle());
+		thing->setIntProperty("type", ct->type());
+		thing->setIntProperty("angle", ct->angle());
 	}
 
 	// End undo step
@@ -994,7 +994,7 @@ void Edit2D::createSector(double x, double y) const
 	if (!sector_copy && ok)
 	{
 		auto new_sector = map.getSector(map.nSectors() - 1);
-		if (new_sector->getCeilingTex().IsEmpty())
+		if (new_sector->texCeiling().IsEmpty())
 			Game::configuration().applyDefaults(new_sector, map.currentFormat() == MAP_UDMF);
 	}
 
@@ -1156,7 +1156,7 @@ void Edit2D::deleteSector() const
 	for (auto side : connected_sides)
 	{
 		// Before removing the side, check if we should flip the line
-		auto line = side->getParentLine();
+		auto line = side->parentLine();
 		if (side == line->s1() && line->s2())
 			line->flip();
 
@@ -1184,14 +1184,14 @@ void Edit2D::deleteSector() const
 		else
 			continue;
 
-		if (side->getTexMiddle() != "-")
+		if (side->texMiddle() != "-")
 			continue;
 
 		// Inherit textures from upper or lower
-		if (side->getTexUpper() != "-")
-			side->setStringProperty("texturemiddle", side->getTexUpper());
-		else if (side->getTexLower() != "-")
-			side->setStringProperty("texturemiddle", side->getTexLower());
+		if (side->texUpper() != "-")
+			side->setStringProperty("texturemiddle", side->texUpper());
+		else if (side->texLower() != "-")
+			side->setStringProperty("texturemiddle", side->texLower());
 
 		// Clear any existing textures, which are no longer visible
 		side->setStringProperty("texturetop", "-");

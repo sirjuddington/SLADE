@@ -4,63 +4,56 @@
 
 #include "MapObject.h"
 
-struct doomthing_t
-{
-	short	x;
-	short	y;
-	short	angle;
-	short	type;
-	short	flags;
-};
-
-struct hexenthing_t
-{
-	short	tid;
-	short	x;
-	short	y;
-	short	z;
-	short	angle;
-	short	type;
-	short	flags;
-	uint8_t	special;
-	uint8_t	args[5];
-};
-
-struct doom64thing_t
-{
-	short	x;
-	short	y;
-	short	z;
-	short	angle;
-	short	type;
-	short	flags;
-	short	tid;
-};
-
 class MapThing : public MapObject
 {
 	friend class SLADEMap;
-private:
-	// Basic data
-	short		type;
-	double		x;
-	double		y;
-	short		angle;
-
 public:
+	struct DoomData
+	{
+		short	x;
+		short	y;
+		short	angle;
+		short	type;
+		short	flags;
+	};
+
+	struct HexenData
+	{
+		short	tid;
+		short	x;
+		short	y;
+		short	z;
+		short	angle;
+		short	type;
+		short	flags;
+		uint8_t	special;
+		uint8_t	args[5];
+	};
+
+	struct Doom64Data
+	{
+		short	x;
+		short	y;
+		short	z;
+		short	angle;
+		short	type;
+		short	flags;
+		short	tid;
+	};
+
 	MapThing(SLADEMap* parent = nullptr);
 	MapThing(double x, double y, short type, SLADEMap* parent = nullptr);
 	~MapThing();
 
-	double		xPos() { return x; }
-	double		yPos() { return y; }
-	fpoint2_t	pos() const { return { x, y }; }
-	void		setPos(double x, double y) { this->x = x; this->y = y; }
+	double		xPos() const { return position_.x; }
+	double		yPos() const { return position_.y; }
+	fpoint2_t	pos() const { return position_; }
+	int			type() const { return type_; }
+	int			angle() const { return angle_; }
+
+	void		setPos(double x, double y) { position_.set(x, y); }
 
 	fpoint2_t	point(Point point = Point::Mid) override;
-
-	short	getType() const { return type; }
-	short	getAngle() const { return angle; }
 
 	int		intProperty(const string& key) override;
 	double	floatProperty(const string& key) override;
@@ -80,6 +73,12 @@ public:
 
 		return Debuggable(S_FMT("<thing %u>", index_));
 	}
+
+private:
+	// Basic data
+	int			type_		= 1;
+	fpoint2_t	position_;
+	int			angle_		= 0;
 };
 
 #endif //__MAPTHING_H__

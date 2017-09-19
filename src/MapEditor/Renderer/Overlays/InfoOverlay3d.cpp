@@ -102,7 +102,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// Get line and side
 		MapSide* side = map->getSide(item_index);
 		if (!side) return;
-		MapLine* line = side->getParentLine();
+		MapLine* line = side->parentLine();
 		if (!line) return;
 		object = side;
 
@@ -125,7 +125,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			flags.RemoveLast(2);
 		info.push_back(flags);
 
-		info.push_back(S_FMT("Length: %d", (int)line->getLength()));
+		info.push_back(S_FMT("Length: %d", (int)line->length()));
 
 		// Other potential info: special, sector#
 
@@ -234,10 +234,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			other_side = line->s1();
 		}
 
-		MapSector* this_sector = side->getSector();
+		MapSector* this_sector = side->sector();
 		MapSector* other_sector = nullptr;
 		if (other_side)
-			other_sector = other_side->getSector();
+			other_sector = other_side->sector();
 
 		double left_height, right_height;
 		if (item_type == MapEditor::ItemType::WallMiddle && other_sector)
@@ -245,10 +245,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			// A two-sided line's middle area is the smallest distance between
 			// both sides' floors and ceilings, which is more complicated with
 			// slopes.
-			plane_t floor1 = this_sector->getFloorPlane();
-			plane_t floor2 = other_sector->getFloorPlane();
-			plane_t ceiling1 = this_sector->getCeilingPlane();
-			plane_t ceiling2 = other_sector->getCeilingPlane();
+			plane_t floor1 = this_sector->planeFloor();
+			plane_t floor2 = other_sector->planeFloor();
+			plane_t ceiling1 = this_sector->planeCeiling();
+			plane_t ceiling2 = other_sector->planeCeiling();
 			left_height = min(ceiling1.height_at(left_point), ceiling2.height_at(left_point))
 			            - max(floor1.height_at(left_point), floor2.height_at(left_point));
 			right_height = min(ceiling1.height_at(right_point), ceiling2.height_at(right_point))
@@ -259,21 +259,21 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			plane_t top_plane, bottom_plane;
 			if (item_type == MapEditor::ItemType::WallMiddle)
 			{
-				top_plane = this_sector->getCeilingPlane();
-				bottom_plane = this_sector->getFloorPlane();
+				top_plane = this_sector->planeCeiling();
+				bottom_plane = this_sector->planeFloor();
 			}
 			else
 			{
 				if (!other_sector) return;
 				if (item_type == MapEditor::ItemType::WallTop)
 				{
-					top_plane = this_sector->getCeilingPlane();
-					bottom_plane = other_sector->getCeilingPlane();
+					top_plane = this_sector->planeCeiling();
+					bottom_plane = other_sector->planeCeiling();
 				}
 				else
 				{
-					top_plane = other_sector->getFloorPlane();
-					bottom_plane = this_sector->getFloorPlane();
+					top_plane = other_sector->planeFloor();
+					bottom_plane = this_sector->planeFloor();
 				}
 			}
 
@@ -287,11 +287,11 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// Texture
 		if (item_type == MapEditor::ItemType::WallBottom)
-			texname = side->getTexLower();
+			texname = side->texLower();
 		else if (item_type == MapEditor::ItemType::WallMiddle)
-			texname = side->getTexMiddle();
+			texname = side->texMiddle();
 		else
-			texname = side->getTexUpper();
+			texname = side->texUpper();
 		texture = MapEditor::textureManager().getTexture(texname, Game::configuration().featureSupported(Feature::MixTexFlats));
 	}
 
@@ -412,9 +412,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// Texture
 		if (item_type == MapEditor::ItemType::Floor)
-			texname = sector->getFloorTex();
+			texname = sector->texFloor();
 		else
-			texname = sector->getCeilingTex();
+			texname = sector->texCeiling();
 		texture = MapEditor::textureManager().getFlat(texname, Game::configuration().featureSupported(Feature::MixTexFlats));
 	}
 
@@ -440,9 +440,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 
 		// Type
-		auto& tt = Game::configuration().thingType(thing->getType());
+		auto& tt = Game::configuration().thingType(thing->type());
 		if (!tt.defined())
-			info2.push_back(S_FMT("Type: %d", thing->getType()));
+			info2.push_back(S_FMT("Type: %d", thing->type()));
 		else
 			info2.push_back(S_FMT("Type: %s", tt.name()));
 
@@ -509,9 +509,9 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	// Update if needed
 	if (object &&
 		(object->modifiedTime() > last_update ||									// object updated
-		(object->type() == MapObject::Type::Side && (
-			((MapSide*)object)->getParentLine()->modifiedTime() > last_update ||	// parent line updated
-			((MapSide*)object)->getSector()->modifiedTime() > last_update))))		// parent sector updated
+		(object->objType() == MapObject::Type::Side && (
+			((MapSide*)object)->parentLine()->modifiedTime() > last_update ||	// parent line updated
+			((MapSide*)object)->sector()->modifiedTime() > last_update))))		// parent sector updated
 		update(object->index(), current_type, object->parentMap());
 
 	// Init GL stuff

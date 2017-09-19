@@ -130,7 +130,7 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 		if (nearest.size() == 1)
 		{
 			auto t = map.getThing(nearest[0]);
-			auto& type = Game::configuration().thingType(t->getType());
+			auto& type = Game::configuration().thingType(t->type());
 			if (MathStuff::distance(mouse_pos, t->point()) <= type.radius() + (32 / dist_scale))
 				hilight_.index = nearest[0];
 		}
@@ -139,7 +139,7 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 			for (unsigned a = 0; a < nearest.size(); a++)
 			{
 				auto t = map.getThing(nearest[a]);
-				auto& type = Game::configuration().thingType(t->getType());
+				auto& type = Game::configuration().thingType(t->type());
 				if (MathStuff::distance(mouse_pos, t->point()) <= type.radius() + (32 / dist_scale))
 					hilight_.index = nearest[a];
 			}
@@ -148,7 +148,7 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 	else if (context_->editMode() == Mode::Plan)
 	{
 		auto obj = context_->planning().nearestObject(mouse_pos, 32 / dist_scale);
-		if (obj && obj->type() == MapObject::Type::Vertex)
+		if (obj && obj->objType() == MapObject::Type::Vertex)
 			hilight_ = { (int)obj->index(), ItemType::PlanVertex };
 		else if (obj)
 			hilight_ = { (int)obj->index(), ItemType::PlanLine };
@@ -682,7 +682,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 			{
 				auto side = context_->map().getSide(item.index);
 				if (!side) continue;
-				new_selection.insert({ (int)side->getParentLine()->index(), ItemType::Line });
+				new_selection.insert({ (int)side->parentLine()->index(), ItemType::Line });
 			}
 		}
 	}
@@ -709,19 +709,19 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 
 				// Only select the visible areas -- i.e., the ones that need texturing
 				int textures = line->needsTexture();
-				if (front && textures & TEX_FRONT_UPPER)
+				if (front && textures & MapLine::Part::FrontUpper)
 					new_selection.insert({ (int)front->index(), ItemType::WallTop });
-				if (front && textures & TEX_FRONT_LOWER)
+				if (front && textures & MapLine::Part::FrontLower)
 					new_selection.insert({ (int)front->index(), ItemType::WallBottom });
-				if (back && textures & TEX_BACK_UPPER)
+				if (back && textures & MapLine::Part::BackUpper)
 					new_selection.insert({ (int)back->index(), ItemType::WallTop });
-				if (back && textures & TEX_BACK_LOWER)
+				if (back && textures & MapLine::Part::BackLower)
 					new_selection.insert({ (int)back->index(), ItemType::WallBottom });
 
 				// Also include any two-sided middle textures
-				if (front && (textures & TEX_FRONT_MIDDLE || !front->getTexMiddle().empty()))
+				if (front && (textures & MapLine::Part::FrontMiddle || !front->texMiddle().empty()))
 					new_selection.insert({ (int)front->index(), ItemType::WallMiddle });
-				if (back && (textures & TEX_BACK_MIDDLE || !back->getTexMiddle().empty()))
+				if (back && (textures & MapLine::Part::BackMiddle || !back->texMiddle().empty()))
 					new_selection.insert({ (int)back->index(), ItemType::WallMiddle });
 			}
 
