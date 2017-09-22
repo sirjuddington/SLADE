@@ -710,6 +710,8 @@ void MCAHilightFade::draw()
 	case IT::Vertex:
 	case IT::PlanVertex:
 		renderer->renderVertexHilight((MapVertex*)object, fade); break;
+	case IT::PlanNote:
+		renderer->renderPlanningNoteHilight((MapEditor::PlanNote*)object, fade); break;
 	default:
 		break;
 	}

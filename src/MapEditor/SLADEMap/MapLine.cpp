@@ -1,32 +1,34 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MapLine.cpp
- * Description: MapLine class, represents a line object in a map
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    MapLine.cpp
+// Description: MapLine class, represents a line object in a map
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapLine.h"
 #include "MapSide.h"
@@ -35,20 +37,27 @@
 #include "Utility/MathStuff.h"
 
 
-/*******************************************************************
- * MAPLINE CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// MapLine Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* MapLine::MapLine
- * MapLine class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// MapLine::MapLine
+//
+// MapLine class constructor
+// ----------------------------------------------------------------------------
 MapLine::MapLine(SLADEMap* parent) : MapObject(Type::Line, parent)
 {
 }
 
-/* MapLine::MapLine
- * MapLine class constructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::MapLine
+//
+// MapLine class constructor
+// ----------------------------------------------------------------------------
 MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent) :
 	MapObject(Type::Line, parent),
 	vertex1_{ v1 },
@@ -65,16 +74,20 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMa
 	if (s2) s2->parent_line_ = this;
 }
 
-/* MapLine::~MapLine
- * MapLine class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::~MapLine
+//
+// MapLine class destructor
+// ----------------------------------------------------------------------------
 MapLine::~MapLine()
 {
 }
 
-/* MapLine::frontSector
- * Returns the sector on the front side of the line (if any)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::frontSector
+//
+// Returns the sector on the front side of the line (if any)
+// ----------------------------------------------------------------------------
 MapSector* MapLine::frontSector()
 {
 	if (side1_)
@@ -83,9 +96,11 @@ MapSector* MapLine::frontSector()
 		return nullptr;
 }
 
-/* MapLine::backSector
- * Returns the sector on the back side of the line (if any)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::backSector
+//
+// Returns the sector on the back side of the line (if any)
+// ----------------------------------------------------------------------------
 MapSector* MapLine::backSector()
 {
 	if (side2_)
@@ -94,41 +109,51 @@ MapSector* MapLine::backSector()
 		return nullptr;
 }
 
-/* MapLine::x1
- * Returns the x coordinate of the first vertex
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::x1
+//
+// Returns the x coordinate of the first vertex
+// ----------------------------------------------------------------------------
 double MapLine::x1()
 {
 	return vertex1_->xPos();
 }
 
-/* MapLine::y1
- * Returns the y coordinate of the first vertex
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::y1
+//
+// Returns the y coordinate of the first vertex
+// ----------------------------------------------------------------------------
 double MapLine::y1()
 {
 	return vertex1_->yPos();
 }
 
-/* MapLine::x2
- * Returns the x coordinate of the second vertex
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::x2
+//
+// Returns the x coordinate of the second vertex
+// ----------------------------------------------------------------------------
 double MapLine::x2()
 {
 	return vertex2_->xPos();
 }
 
-/* MapLine::y2
- * Returns the y coordinate of the second vertex
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::y2
+//
+// Returns the y coordinate of the second vertex
+// ----------------------------------------------------------------------------
 double MapLine::y2()
 {
 	return vertex2_->yPos();
 }
 
-/* MapLine::v1Index
- * Returns the index of the first vertex, or -1 if none
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::v1Index
+//
+// Returns the index of the first vertex, or -1 if none
+// ----------------------------------------------------------------------------
 int MapLine::v1Index()
 {
 	if (vertex1_)
@@ -137,9 +162,11 @@ int MapLine::v1Index()
 		return -1;
 }
 
-/* MapLine::v2Index
- * Returns the index of the second vertex, or -1 if none
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::v2Index
+//
+// Returns the index of the second vertex, or -1 if none
+// ----------------------------------------------------------------------------
 int MapLine::v2Index()
 {
 	if (vertex2_)
@@ -148,9 +175,11 @@ int MapLine::v2Index()
 		return -1;
 }
 
-/* MapLine::s1Index
- * Returns the index of the front side, or -1 if none
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::s1Index
+//
+// Returns the index of the front side, or -1 if none
+// ----------------------------------------------------------------------------
 int MapLine::s1Index()
 {
 	if (side1_)
@@ -159,9 +188,11 @@ int MapLine::s1Index()
 		return -1;
 }
 
-/* MapLine::s2Index
- * Returns the index of the back side, or -1 if none
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::s2Index
+//
+// Returns the index of the back side, or -1 if none
+// ----------------------------------------------------------------------------
 int MapLine::s2Index()
 {
 	if (side2_)
@@ -170,11 +201,13 @@ int MapLine::s2Index()
 		return -1;
 }
 
-/* MapLine::boolProperty
- * Returns the value of the boolean property matching [key]. Can be
- * prefixed with 'side1.' or 'side2.' to get bool properties from the
- * front and back sides respectively
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::boolProperty
+//
+// Returns the value of the boolean property matching [key]. Can be prefixed
+// with 'side1.' or 'side2.' to get bool properties from the front and back
+// sides respectively
+// ----------------------------------------------------------------------------
 bool MapLine::boolProperty(const string& key)
 {
 	if (key.StartsWith("side1.") && side1_)
@@ -185,11 +218,13 @@ bool MapLine::boolProperty(const string& key)
 		return MapObject::boolProperty(key);
 }
 
-/* MapLine::intProperty
- * Returns the value of the integer property matching [key]. Can be
- * prefixed with 'side1.' or 'side2.' to get int properties from the
- * front and back sides respectively
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::intProperty
+//
+// Returns the value of the integer property matching [key]. Can be prefixed
+// with 'side1.' or 'side2.' to get int properties from the front and back
+// sides respectively
+// ----------------------------------------------------------------------------
 int MapLine::intProperty(const string& key)
 {
 	if (key.StartsWith("side1.") && side1_)
@@ -212,11 +247,13 @@ int MapLine::intProperty(const string& key)
 		return MapObject::intProperty(key);
 }
 
-/* MapLine::floatProperty
- * Returns the value of the float property matching [key]. Can be
- * prefixed with 'side1.' or 'side2.' to get float properties from
- * the front and back sides respectively
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::floatProperty
+//
+// Returns the value of the float property matching [key]. Can be prefixed with
+// 'side1.' or 'side2.' to get float properties from the front and back sides
+// respectively
+// ----------------------------------------------------------------------------
 double MapLine::floatProperty(const string& key)
 {
 	if (key.StartsWith("side1.") && side1_)
@@ -227,11 +264,13 @@ double MapLine::floatProperty(const string& key)
 		return MapObject::floatProperty(key);
 }
 
-/* MapLine::stringProperty
- * Returns the value of the string property matching [key]. Can be
- * prefixed with 'side1.' or 'side2.' to get string properties from
- * the front and back sides respectively
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::stringProperty
+//
+// Returns the value of the string property matching [key]. Can be prefixed
+// with 'side1.' or 'side2.' to get string properties from the front and back
+// sides respectively
+// ----------------------------------------------------------------------------
 string MapLine::stringProperty(const string& key)
 {
 	if (key.StartsWith("side1.") && side1_)
@@ -242,11 +281,13 @@ string MapLine::stringProperty(const string& key)
 		return MapObject::stringProperty(key);
 }
 
-/* MapLine::setBoolProperty
- * Sets the boolean value of the property [key] to [value]. Can be
- * prefixed with 'side1.' or 'side2.' to set bool properties on the
- * front and back sides respectively.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::setBoolProperty
+//
+// Sets the boolean value of the property [key] to [value]. Can be prefixed
+// with 'side1.' or 'side2.' to set bool properties on the front and back sides
+// respectively.
+// ----------------------------------------------------------------------------
 void MapLine::setBoolProperty(const string& key, bool value)
 {
 	// Front side property
@@ -268,11 +309,13 @@ void MapLine::setBoolProperty(const string& key, bool value)
 		MapObject::setBoolProperty(key, value);
 }
 
-/* MapLine::setIntProperty
- * Sets the integer value of the property [key] to [value]. Can be
- * prefixed with 'side1.' or 'side2.' to set int properties on the
- * front and back sides respectively.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::setIntProperty
+//
+// Sets the integer value of the property [key] to [value]. Can be prefixed
+// with 'side1.' or 'side2.' to set int properties on the front and back sides
+// respectively.
+// ----------------------------------------------------------------------------
 void MapLine::setIntProperty(const string& key, int value)
 {
 	// Front side property
@@ -345,11 +388,13 @@ void MapLine::setIntProperty(const string& key, int value)
 		MapObject::setIntProperty(key, value);
 }
 
-/* MapLine::setFloatProperty
- * Sets the float value of the property [key] to [value]. Can be
- * prefixed with 'side1.' or 'side2.' to set float properties on the
- * front and back sides respectively.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::setFloatProperty
+//
+// Sets the float value of the property [key] to [value]. Can be prefixed with
+// 'side1.' or 'side2.' to set float properties on the front and back sides
+// respectively.
+// ----------------------------------------------------------------------------
 void MapLine::setFloatProperty(const string& key, double value)
 {
 	// Front side property
@@ -371,11 +416,13 @@ void MapLine::setFloatProperty(const string& key, double value)
 		MapObject::setFloatProperty(key, value);
 }
 
-/* MapLine::setStringProperty
- * Sets the string value of the property [key] to [value]. Can be
- * prefixed with 'side1.' or 'side2.' to set string properties on the
- * front and back sides respectively.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::setStringProperty
+//
+// Sets the string value of the property [key] to [value]. Can be prefixed with
+// 'side1.' or 'side2.' to set string properties on the front and back sides
+// respectively.
+// ----------------------------------------------------------------------------
 void MapLine::setStringProperty(const string& key, const string& value)
 {
 	// Front side property
@@ -397,9 +444,11 @@ void MapLine::setStringProperty(const string& key, const string& value)
 		MapObject::setStringProperty(key, value);
 }
 
-/* MapLine::scriptCanModifyProp
- * Returns true if the property [key] can be modified via script
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::scriptCanModifyProp
+//
+// Returns true if the property [key] can be modified via script
+// ----------------------------------------------------------------------------
 bool MapLine::scriptCanModifyProp(const string& key)
 {
 	if (key == "v1" ||
@@ -411,61 +460,75 @@ bool MapLine::scriptCanModifyProp(const string& key)
 	return true;
 }
 
-/* MapLine::setS1
- * Sets the front side of the line to [side]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::setS1
+//
+// Sets the front side of the line to [side]
+// ----------------------------------------------------------------------------
 void MapLine::setS1(MapSide* side)
 {
 	if (!side1_ && parent_map_)
 		parent_map_->setLineSide(this, side, true);
 }
 
-/* MapLine::setS1
- * Sets the back side of the line to [side]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::setS1
+//
+// Sets the back side of the line to [side]
+// ----------------------------------------------------------------------------
 void MapLine::setS2(MapSide* side)
 {
 	if (!side2_ && parent_map_)
 		parent_map_->setLineSide(this, side, false);
 }
 
-/* MapLine::getPoint
- * Returns the object point [point]. Currently for lines this is
- * always the mid point
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::point
+//
+// Returns the object point [point]. Currently for lines this is
+// always the mid point
+// ----------------------------------------------------------------------------
 fpoint2_t MapLine::point(Point point)
 {
 	//if (point == MOBJ_POINT_MID || point == MOBJ_POINT_WITHIN)
 	return point1() + (point2() - point1()) * 0.5;
 }
 
-/* MapLine::point1
- * Returns the point at the first vertex.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::point1
+//
+// Returns the point at the first vertex.
+// ----------------------------------------------------------------------------
 fpoint2_t MapLine::point1()
 {
 	return vertex1_->pos();
 }
 
-/* MapLine::point2
- * Returns the point at the second vertex.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::point2
+//
+// Returns the point at the second vertex.
+// ----------------------------------------------------------------------------
 fpoint2_t MapLine::point2()
 {
 	return vertex2_->pos();
 }
 
-/* MapLine::seg
- * Returns this line as a segment.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::seg
+//
+// Returns this line as a segment.
+// ----------------------------------------------------------------------------
 fseg2_t MapLine::seg()
 {
 	return fseg2_t(vertex1_->pos(), vertex2_->pos());
 }
 
-/* MapLine::getLength
- * Returns the length of the line
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::length
+//
+// Returns the length of the line
+// ----------------------------------------------------------------------------
 double MapLine::length()
 {
 	if (!vertex1_ || !vertex2_)
@@ -481,9 +544,12 @@ double MapLine::length()
 	return length_;
 }
 
-/* MapLine::getAngle
- * Returns the angle (in degrees) of line, east is zero, front side counter-clock wise.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::angle
+//
+// Returns the angle (in degrees) of line, east is zero, front side
+// counter-clock wise.
+// ----------------------------------------------------------------------------
 double MapLine::angle()
 {
 	if (!vertex1_ || !vertex2_)
@@ -493,9 +559,11 @@ double MapLine::angle()
 	return angle;
 }
 
-/* MapLine::doubleSector
- * Returns true if the line has the same sector on both sides
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::doubleSector
+//
+// Returns true if the line has the same sector on both sides
+// ----------------------------------------------------------------------------
 bool MapLine::doubleSector()
 {
 	// Check both sides exist
@@ -505,9 +573,11 @@ bool MapLine::doubleSector()
 	return (side1_->sector() == side2_->sector());
 }
 
-/* MapLine::frontVector
- * Returns the vector perpendicular to the front side of the line
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::frontVector
+//
+// Returns the vector perpendicular to the front side of the line
+// ----------------------------------------------------------------------------
 fpoint2_t MapLine::frontVector()
 {
 	// Check if vector needs to be recalculated
@@ -520,10 +590,12 @@ fpoint2_t MapLine::frontVector()
 	return front_vec_;
 }
 
-/* MapLine::dirTabPoint
- * Calculates and returns the end point of the 'direction tab' for
- * the line (used as a front side indicator for 2d map display)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::dirTabPoint
+//
+// Calculates and returns the end point of the 'direction tab' for
+// the line (used as a front side indicator for 2d map display)
+// ----------------------------------------------------------------------------
 fpoint2_t MapLine::dirTabPoint(double tablen)
 {
 	// Calculate midpoint
@@ -542,9 +614,11 @@ fpoint2_t MapLine::dirTabPoint(double tablen)
 	return fpoint2_t(mid.x - front_vec_.x*tablen, mid.y - front_vec_.y*tablen);
 }
 
-/* MapLine::distanceTo
- * Returns the minimum distance from the point to the line
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::distanceTo
+//
+// Returns the minimum distance from the point to the line
+// ----------------------------------------------------------------------------
 double MapLine::distanceTo(fpoint2_t point)
 {
 	// Update length data if needed
@@ -573,9 +647,11 @@ double MapLine::distanceTo(fpoint2_t point)
 // Minimum gap between planes for a texture to be considered missing
 static const float EPSILON = 0.001f;
 
-/* MapLine::needsTexture
- * Returns a flag set of any parts of the line that require a texture
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::needsTexture
+//
+// Returns a flag set of any parts of the line that require a texture
+// ----------------------------------------------------------------------------
 int MapLine::needsTexture()
 {
 	// Check line is valid
@@ -631,6 +707,11 @@ int MapLine::needsTexture()
 	return tex;
 }
 
+// ----------------------------------------------------------------------------
+// MapLine::disconnectFromVertices
+//
+// Removes the line from its vertices' connected line lists
+// ----------------------------------------------------------------------------
 void MapLine::disconnectFromVertices()
 {
 	if (vertex1_)
@@ -639,10 +720,12 @@ void MapLine::disconnectFromVertices()
 		vertex2_->disconnectLine(this);
 }
 
-/* MapLine::clearUnneededTextures
- * Clears any textures not needed on the line (eg. a front upper
- * texture that would be invisible)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::clearUnneededTextures
+//
+// Clears any textures not needed on the line (eg. a front upper
+// texture that would be invisible)
+// ----------------------------------------------------------------------------
 void MapLine::clearUnneededTextures()
 {
 	// Check needed textures
@@ -669,9 +752,11 @@ void MapLine::clearUnneededTextures()
 	}
 }
 
-/* MapLine::resetInternals
- * Resets all calculated internal values for the line and sectors
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::resetInternals
+//
+// Resets all calculated internal values for the line and sectors
+// ----------------------------------------------------------------------------
 void MapLine::resetInternals()
 {
 	// Reset line internals
@@ -695,10 +780,11 @@ void MapLine::resetInternals()
 	}
 }
 
-/* MapLine::flip
- * Flips the line. If [sides] is true front and back sides are also
- * swapped
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::flip
+//
+// Flips the line. If [sides] is true front and back sides are also swapped
+// ----------------------------------------------------------------------------
 void MapLine::flip(bool sides)
 {
 	setModified();
@@ -721,9 +807,11 @@ void MapLine::flip(bool sides)
 		parent_map_->setGeometryUpdated();
 }
 
-/* MapLine::writeBackup
- * Write all line info to a mobj_backup_t struct
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::writeBackup
+//
+// Write all line info to a mobj_backup_t struct
+// ----------------------------------------------------------------------------
 void MapLine::writeBackup(Backup* backup)
 {
 	// Vertices
@@ -745,9 +833,11 @@ void MapLine::writeBackup(Backup* backup)
 	backup->props_internal["id"] = id_;
 }
 
-/* MapLine::readBackup
- * Reads all line info from a mobj_backup_t struct
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::readBackup
+//
+// Reads all line info from a mobj_backup_t struct
+// ----------------------------------------------------------------------------
 void MapLine::readBackup(Backup* backup)
 {
 	// Vertices
@@ -781,9 +871,11 @@ void MapLine::readBackup(Backup* backup)
 	id_ = backup->props_internal["id"];
 }
 
-/* MapLine::copy
- * Copies another map object [c]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapLine::copy
+//
+// Copies another map object [c]
+// ----------------------------------------------------------------------------
 void MapLine::copy(MapObject* c)
 {
 	if(objType() != c->objType())

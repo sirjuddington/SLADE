@@ -128,6 +128,12 @@ bool MoveObjects::begin(fpoint2_t mouse_pos)
 			for (unsigned l = 0; l < vertex->nConnectedLines(); l++)
 				vertex->connectedLine(l)->filter(true);
 		}
+
+		// Filter moving plan notes
+		if (context_.editMode() == Mode::Plan)
+			for (auto& item : items_)
+				if (item.type == MapEditor::ItemType::PlanNote)
+					context_.planning().note(item.index)->filter(true);
 	}
 
 	return true;
@@ -178,10 +184,11 @@ void MoveObjects::end(bool accept)
 	using MapEditor::Mode;
 
 	// Un-filter objects
-	for (unsigned a = 0; a < context_.map().nLines(); a++)
-		context_.map().getLine(a)->filter(false);
-	for (unsigned a = 0; a < context_.map().nThings(); a++)
-		context_.map().getThing(a)->filter(false);
+	for (auto line : context_.map().lines())
+		line->filter(false);
+	for (auto thing : context_.map().things())
+		thing->filter(false);
+	context_.planning().clearFilter();
 
 	// Move depending on edit mode
 	if (context_.editMode() == Mode::Things && accept)
@@ -220,6 +227,11 @@ void MoveObjects::end(bool accept)
 
 			vertex->move(offset_);
 		}
+
+		// Move notes
+		for (auto& item : items_)
+			if (item.type == MapEditor::ItemType::PlanNote)
+				context_.planning().note(item.index)->move(offset_);
 	}
 	else if (accept)
 	{

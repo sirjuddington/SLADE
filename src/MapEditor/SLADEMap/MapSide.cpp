@@ -1,32 +1,34 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MapSide.cpp
- * Description: MapSide class, represents a line side object in a map
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    MapSide.cpp
+// Description: MapSide class, represents a line side object in a map
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "Game/Configuration.h"
 #include "MapSector.h"
@@ -34,13 +36,18 @@
 #include "SLADEMap.h"
 
 
-/*******************************************************************
- * MAPSIDE CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// MapSide Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* MapSide::MapSide
- * MapSide class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// MapSide::MapSide
+//
+// MapSide class constructor
+// ----------------------------------------------------------------------------
 MapSide::MapSide(MapSector* sector, SLADEMap* parent) :
 	MapObject(Type::Side, parent),
 	sector_{ sector }
@@ -49,9 +56,11 @@ MapSide::MapSide(MapSector* sector, SLADEMap* parent) :
 	if (sector) sector->connectSide(this);
 }
 
-/* MapSide::MapSide
- * MapSide class constructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::MapSide
+//
+// MapSide class constructor
+// ----------------------------------------------------------------------------
 MapSide::MapSide(SLADEMap* parent) : MapObject(Type::Side, parent)
 {
 	// Init variables
@@ -59,16 +68,20 @@ MapSide::MapSide(SLADEMap* parent) : MapObject(Type::Side, parent)
 	this->parent_line_ = nullptr;
 }
 
-/* MapSide::~MapSide
- * MapSide class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::~MapSide
+//
+// MapSide class destructor
+// ----------------------------------------------------------------------------
 MapSide::~MapSide()
 {
 }
 
-/* MapSide::copy
- * Copies another MapSide object [c]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::copy
+//
+// Copies another MapSide object [c]
+// ----------------------------------------------------------------------------
 void MapSide::copy(MapObject* c)
 {
 	if (c->objType() != Type::Side)
@@ -100,9 +113,11 @@ void MapSide::copy(MapObject* c)
 	MapObject::copy(c);
 }
 
-/* MapSide::getLight
- * Returns the light level of the given side
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::light
+//
+// Returns the light level of the given side
+// ----------------------------------------------------------------------------
 uint8_t MapSide::light()
 {
 	int light = 0;
@@ -127,9 +142,11 @@ uint8_t MapSide::light()
 	return light;
 }
 
-/* MapSide::changeLight
- * Change the light level of a side, if supported
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::changeLight
+//
+// Change the light level of a side, if supported
+// ----------------------------------------------------------------------------
 void MapSide::changeLight(int amount)
 {
 	if (parent_map_->currentFormat() == MAP_UDMF &&
@@ -137,9 +154,11 @@ void MapSide::changeLight(int amount)
 		setIntProperty("light", intProperty("light") + amount);
 }
 
-/* MapSide::setSector
- * Sets the side's sector to [sector]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::setSector
+//
+// Sets the side's sector to [sector]
+// ----------------------------------------------------------------------------
 void MapSide::setSector(MapSector* sector)
 {
 	if (!sector)
@@ -157,9 +176,11 @@ void MapSide::setSector(MapSector* sector)
 	sector->connectSide(this);
 }
 
-/* MapSide::intProperty
- * Returns the value of the integer property matching [key]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::intProperty
+//
+// Returns the value of the integer property matching [key]
+// ----------------------------------------------------------------------------
 int MapSide::intProperty(const string& key)
 {
 	if (key == "sector")
@@ -177,9 +198,11 @@ int MapSide::intProperty(const string& key)
 		return MapObject::intProperty(key);
 }
 
-/* MapSide::setIntProperty
- * Sets the integer value of the property [key] to [value]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::setIntProperty
+//
+// Sets the integer value of the property [key] to [value]
+// ----------------------------------------------------------------------------
 void MapSide::setIntProperty(const string& key, int value)
 {
 	// Update modified time
@@ -195,9 +218,11 @@ void MapSide::setIntProperty(const string& key, int value)
 		MapObject::setIntProperty(key, value);
 }
 
-/* MapSide::stringProperty
- * Returns the value of the string property matching [key]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::stringProperty
+//
+// Returns the value of the string property matching [key]
+// ----------------------------------------------------------------------------
 string MapSide::stringProperty(const string& key)
 {
 	if (key == "texturetop")
@@ -210,9 +235,11 @@ string MapSide::stringProperty(const string& key)
 		return MapObject::stringProperty(key);
 }
 
-/* MapSide::setStringProperty
- * Sets the string value of the property [key] to [value]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::setStringProperty
+//
+// Sets the string value of the property [key] to [value]
+// ----------------------------------------------------------------------------
 void MapSide::setStringProperty(const string& key, const string& value)
 {
 	// Update modified time
@@ -240,9 +267,11 @@ void MapSide::setStringProperty(const string& key, const string& value)
 		MapObject::setStringProperty(key, value);
 }
 
-/* MapSide::scriptCanModifyProp
- * Returns true if the property [key] can be modified via script
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::scriptCanModifyProp
+//
+// Returns true if the property [key] can be modified via script
+// ----------------------------------------------------------------------------
 bool MapSide::scriptCanModifyProp(const string& key)
 {
 	if (key == "sector")
@@ -251,9 +280,11 @@ bool MapSide::scriptCanModifyProp(const string& key)
 	return true;
 }
 
-/* MapSide::writeBackup
- * Write all side info to a mobj_backup_t struct
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::writeBackup
+//
+// Write all side info to a mobj_backup_t struct
+// ----------------------------------------------------------------------------
 void MapSide::writeBackup(Backup* backup)
 {
 	// Sector
@@ -274,9 +305,11 @@ void MapSide::writeBackup(Backup* backup)
 	//LOG_MESSAGE(1, "Side %d backup sector #%d", id, sector->getIndex());
 }
 
-/* MapSide::readBackup
- * Reads all side info from a mobj_backup_t struct
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapSide::readBackup
+//
+// Reads all side info from a mobj_backup_t struct
+// ----------------------------------------------------------------------------
 void MapSide::readBackup(Backup* backup)
 {
 	// Sector

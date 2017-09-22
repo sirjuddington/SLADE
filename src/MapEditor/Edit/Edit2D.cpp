@@ -197,6 +197,16 @@ void Edit2D::mirror(bool x_axis) const
 void Edit2D::editObjectProperties()
 {
 	auto selection = context_.selection().selectedObjects();
+	
+	// Only edit notes in planning mode
+	if (context_.editMode() == MapEditor::Mode::Plan)
+	{
+		selection.clear();
+		for (auto object : context_.selection().selectedObjects())
+			if (object->objType() == MapObject::Type::PlanNote)
+				selection.push_back(object);
+	}
+
 	if (selection.empty())
 		return;
 
@@ -892,6 +902,10 @@ void Edit2D::createObject(double x, double y)
 	// Things mode
 	else if (context_.editMode() == Mode::Things)
 		createThing(x, y);
+
+	// Planning mode
+	else if (context_.editMode() == Mode::Plan)
+		createPlanNote(x, y);
 }
 
 /* Edit2D::createVertex
@@ -1006,6 +1020,19 @@ void Edit2D::createSector(double x, double y) const
 	}
 	else
 		context_.addEditorMessage("Sector creation failed: " + builder.getError());
+}
+
+/* Edit2D::createPlanNote
+ * Creates a planning note at [x,y]
+ *******************************************************************/
+void Edit2D::createPlanNote(double x, double y) const
+{
+	// Snap coordinates to grid if necessary
+	x = context_.snapToGrid(x, false);
+	y = context_.snapToGrid(y, false);
+
+	// Create note
+	auto note = context_.planning().createNote(x, y);
 }
 
 /* Edit2D::deleteObject

@@ -12,6 +12,7 @@
 #include "UI/PropsPanel/MapObjectPropsPanel.h"
 #include "UI/SDialog.h"
 #include "UI/MapCanvas.h"
+#include "UI/PropsPanel/PlanNotePropsPanel.h"
 
 namespace MapEditor
 {
@@ -257,6 +258,8 @@ bool MapEditor::editObjectProperties(vector<MapObject*>& list)
 		sizer->Add(panel_props = new SectorPropsPanel(&dlg), 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10); break;
 	case Mode::Things:
 		sizer->Add(panel_props = new ThingPropsPanel(&dlg), 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10); break;
+	case Mode::Plan:
+		sizer->Add(panel_props = new PlanNotePropsPanel(&dlg), 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10); break;
 	default:
 		sizer->Add(panel_props = new MapObjectPropsPanel(&dlg, true), 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
 	}

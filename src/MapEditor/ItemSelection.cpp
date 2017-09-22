@@ -150,8 +150,10 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 		auto obj = context_->planning().nearestObject(mouse_pos, 32 / dist_scale);
 		if (obj && obj->objType() == MapObject::Type::Vertex)
 			hilight_ = { (int)obj->index(), ItemType::PlanVertex };
-		else if (obj)
+		else if (obj && obj->objType() == MapObject::Type::Line)
 			hilight_ = { (int)obj->index(), ItemType::PlanLine };
+		else if (obj && obj->objType() == MapObject::Type::PlanNote)
+			hilight_ = { (int)obj->index(), ItemType::PlanNote };
 		else
 			hilight_ = { -1, ItemType::Any };
 	}
@@ -371,6 +373,11 @@ void ItemSelection::selectPlanningObjectsWithin(const frect_t& rect)
 		if (rect.contains(line->v1()->pos()) &&
 			rect.contains(line->v2()->pos()))
 			selectItem({ (int)line->index(), ItemType::PlanLine });
+
+	// Select planning notes within bounds
+	for (auto& note : context_->planning().notes())
+		if (rect.contains(note->pos()))
+			selectItem({ (int)note->index(), ItemType::PlanNote });
 }
 
 /* ItemSelection::selectWithin
@@ -473,6 +480,8 @@ MapObject* ItemSelection::hilightedObject() const
 				return context_->planning().line(hilight_.index);
 			else if (hilight_.type == ItemType::PlanVertex)
 				return context_->planning().vertex(hilight_.index);
+			else if (hilight_.type == ItemType::PlanNote)
+				return context_->planning().note(hilight_.index);
 		}
 	default:
 		return nullptr;
@@ -585,7 +594,30 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 	if (!context_)
 		return {};
 
-	// Get object type depending on edit mode
+	// Planning mode
+	if (context_->editMode() == Mode::Plan)
+	{
+		// Get selected objects
+		vector<MapObject*> list;
+		for (auto& item : selection_)
+		{
+			auto object = context_->planning().object(item.type, item.index);
+			if (object)
+				list.push_back(object);
+		}
+
+		// If no objects were selected, try the hilight
+		if (try_hilight && list.empty() && hilight_.index >= 0)
+		{
+			auto object = context_->planning().object(hilight_.type, hilight_.index);
+			if (object)
+				list.push_back(object);
+		}
+
+		return list;
+	}
+	
+	// Other edit mode, get object type depending on edit mode
 	auto type = MapObject::Type::Unknown;
 	switch (context_->editMode())
 	{
@@ -649,6 +681,29 @@ vector<MapLine*> ItemSelection::selectedPlanningLines(bool try_hilight) const
 	{
 		if (hilight_.type == ItemType::PlanLine)
 			list.push_back(context_->planning().line(hilight_.index));
+	}
+
+	return list;
+}
+
+vector<MapEditor::PlanNote*> ItemSelection::selectedPlanningNotes(bool try_hilight) const
+{
+	if (!context_)
+		return {};
+
+	// Get selected objects
+	vector<MapEditor::PlanNote*> list;
+	for (auto& item : selection_)
+	{
+		if (item.type == ItemType::PlanNote)
+			list.push_back(context_->planning().note(item.index));
+	}
+
+	// If no objects were selected, try the hilight
+	if (try_hilight && list.empty() && hilight_.index >= 0)
+	{
+		if (hilight_.type == ItemType::PlanNote)
+			list.push_back(context_->planning().note(hilight_.index));
 	}
 
 	return list;

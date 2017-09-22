@@ -966,6 +966,100 @@ void Renderer::drawAnimations() const
 	}
 }
 
+namespace
+{
+	void drawNoteText(
+		const RenderView& view,
+		const MapRenderer2D& renderer,
+		PlanNote* note,
+		const rgba_t& colour,
+		TextBox* detail)
+	{
+		auto tp = note->point(MapObject::Point::Text);
+		tp.x = view.screenX(tp.x + renderer.scaledRadius(28, 28));
+		tp.y = view.screenY(tp.y);
+
+		string text = note->text().Left(50);
+		auto ts = Drawing::textExtents(text, Drawing::FONT_BOLD);
+		tp.y -= ts.y * 0.6;
+
+		// Draw text
+		frect_t rect;
+		Drawing::drawText(text, tp.x, tp.y, colour, Drawing::FONT_BOLD, Drawing::ALIGN_LEFT, &rect);
+
+		// Draw detail text
+		if (detail && !note->detail().empty())
+		{
+			detail->setText(note->detail());
+			detail->draw(tp.x, rect.bottom() + 8, colour);
+		}
+	}
+}
+
+/* Renderer::drawPlanningText
+ * Draws all text for planning mode notes
+ *******************************************************************/
+void Renderer::drawPlanningText(bool hilight)
+{
+	// Get editor message text colour
+	auto col = ColourConfiguration::getColour("map_editor_message");
+
+	// Get hilighted note index (if any)
+	int hl_index = -1;
+	if (context_.hilightItem().type == ItemType::PlanNote)
+		hl_index = context_.hilightItem().index;
+
+	// Init for text drawing
+	Drawing::enableTextStateReset(false);
+	Drawing::setTextState(true);
+	view_.setOverlayCoords(true);
+#if USE_SFML_RENDERWINDOW && ((SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2)
+	Drawing::setTextOutline(1.0f, rgba_t(0, 0, 0, 180));
+#else
+	if (context_.selection().size() <= map_max_selection_numbers * 0.5)
+		Drawing::setTextOutline(1.0f, rgba_t(0, 0, 0, 180));
+#endif
+	
+	// Draw text for non-hilighted notes
+	if (!hilight)
+	{
+		col.a = 180;
+		for (auto& note : context_.planning().notes())
+		{
+			if (note->index() == hl_index)
+				continue;
+
+			drawNoteText(view_, renderer_2d_, note.get(), col, nullptr);
+		}
+	}
+	else
+	{
+		// Draw text for hilighted note
+		Drawing::setTextOutline(1.0f, COL_BLACK);
+		col.a = 255;
+		if (hl_index >= 0)
+		{
+			auto note = context_.planning().note(hl_index);
+
+			if (!tb_note_detail_)
+				tb_note_detail_ = std::make_unique<TextBox>(
+					note->detail(),
+					Drawing::FONT_BOLDCONDENSED,
+					view_.size().x / 3
+					);
+
+			drawNoteText(view_, renderer_2d_, note, col, tb_note_detail_.get());
+		}
+	}
+
+	// Cleanup state
+	Drawing::setTextOutline(0);
+	Drawing::enableTextStateReset();
+	Drawing::setTextState(false);
+	view_.setOverlayCoords(false);
+	glDisable(GL_TEXTURE_2D);
+}
+
 /* Renderer::drawMap2d
  * Draws the 2d map
  *******************************************************************/
@@ -1004,14 +1098,13 @@ void Renderer::drawMap2d()
 
 	// --- Draw map (depending on mode) ---
 	auto mouse_state = context_.input().mouseState();
-	auto& plan_lines = context_.planning().lines();
 	OpenGL::resetBlend();
 	if (context_.editMode() == Mode::Vertices)
 	{
 		// Vertices mode
-		renderer_2d_.renderThings(fade_things_);						// Things
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_);		// Lines
-		renderer_2d_.renderPlanningLines(plan_lines, fade_planning_);	// Planning lines
+		renderer_2d_.renderThings(fade_things_);								// Things
+		renderer_2d_.renderLines(line_tabs_always, fade_lines_);				// Lines
+		renderer_2d_.renderPlanningLines(context_.planning(), fade_planning_);	// Planning lines
 
 		// Vertices
 		if (mouse_state == Input::MouseState::Move)
@@ -1032,10 +1125,10 @@ void Renderer::drawMap2d()
 	else if (context_.editMode() == Mode::Lines)
 	{
 		// Lines mode
-		renderer_2d_.renderThings(fade_things_);						// Things
-		renderer_2d_.renderVertices(fade_vertices_);					// Vertices
-		renderer_2d_.renderPlanningLines(plan_lines, fade_planning_);	// Planning lines
-		renderer_2d_.renderLines(true);									// Lines
+		renderer_2d_.renderThings(fade_things_);								// Things
+		renderer_2d_.renderVertices(fade_vertices_);							// Vertices
+		renderer_2d_.renderPlanningLines(context_.planning(), fade_planning_);	// Planning lines
+		renderer_2d_.renderLines(true);											// Lines
 		
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move &&
@@ -1050,10 +1143,10 @@ void Renderer::drawMap2d()
 	else if (context_.editMode() == Mode::Sectors)
 	{
 		// Sectors mode
-		renderer_2d_.renderThings(fade_things_);						// Things
-		renderer_2d_.renderVertices(fade_vertices_);					// Vertices
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_);		// Lines
-		renderer_2d_.renderPlanningLines(plan_lines, fade_planning_);	// Planning lines
+		renderer_2d_.renderThings(fade_things_);								// Things
+		renderer_2d_.renderVertices(fade_vertices_);							// Vertices
+		renderer_2d_.renderLines(line_tabs_always, fade_lines_);				// Lines
+		renderer_2d_.renderPlanningLines(context_.planning(), fade_planning_);	// Planning lines
 
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move &&
@@ -1075,10 +1168,10 @@ void Renderer::drawMap2d()
 			force_dir = true;
 
 		// Things mode
-		renderer_2d_.renderVertices(fade_vertices_);					// Vertices
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_);		// Lines
-		renderer_2d_.renderPlanningLines(plan_lines, fade_planning_);	// Planning lines
-		renderer_2d_.renderThings(fade_things_, force_dir);				// Things
+		renderer_2d_.renderVertices(fade_vertices_);							// Vertices
+		renderer_2d_.renderLines(line_tabs_always, fade_lines_);				// Lines
+		renderer_2d_.renderPlanningLines(context_.planning(), fade_planning_);	// Planning lines
+		renderer_2d_.renderThings(fade_things_, force_dir);						// Things
 
 		// Thing paths
 		renderer_2d_.renderPathedThings(context_.pathedThings());
@@ -1096,10 +1189,12 @@ void Renderer::drawMap2d()
 	else if (context_.editMode() == Mode::Plan)
 	{
 		// Planning mode
-		renderer_2d_.renderThings(fade_things_);						// Things
-		renderer_2d_.renderVertices(fade_vertices_);					// Vertices
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_);		// Lines
-		renderer_2d_.renderPlanningLines(plan_lines, fade_planning_);	// Planning lines
+		renderer_2d_.renderThings(fade_things_);								// Things
+		renderer_2d_.renderVertices(fade_vertices_);							// Vertices
+		renderer_2d_.renderLines(line_tabs_always, fade_lines_);				// Lines
+		drawPlanningText(false);
+		renderer_2d_.renderPlanningLines(context_.planning(), fade_planning_);	// Planning lines
+		renderer_2d_.renderPlanningNotes(context_.planning(), fade_planning_);	// Planning notes
 
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move &&
@@ -1115,6 +1210,11 @@ void Renderer::drawMap2d()
 				renderer_2d_.renderVertexHilight(context_.planning().vertex(hl.index), anim_flash_level_);
 			else if (hl.type == ItemType::PlanLine)
 				renderer_2d_.renderLineHilight(context_.planning().line(hl.index), anim_flash_level_, false);
+			else if (hl.type == ItemType::PlanNote)
+			{
+				renderer_2d_.renderPlanningNoteHilight(context_.planning().note(hl.index), anim_flash_level_);
+				drawPlanningText(true);
+			}
 		}
 	}
 
@@ -1659,6 +1759,26 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 				renderer_2d_.viewScaleInv(),
 				selected
 			)
+		);
+	}
+
+	// 2d mode planning note
+	else if (item.type == ItemType::PlanNote)
+	{
+		auto note = context_.planning().note(item.index);
+		if (!note)
+			return;
+
+		// Start animation
+		animations_.push_back(
+			std::make_unique<MCAThingSelection>(
+				App::runTimer(),
+				note->pos().x,
+				note->pos().y,
+				renderer_2d_.scaledRadius(16),
+				renderer_2d_.viewScaleInv(),
+				selected
+				)
 		);
 	}
 

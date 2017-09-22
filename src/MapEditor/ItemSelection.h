@@ -11,6 +11,8 @@ class MapThing;
 class MapVertex;
 class SLADEMap;
 
+namespace MapEditor { class PlanNote; }
+
 class ItemSelection
 {
 public:
@@ -76,8 +78,10 @@ public:
 	vector<MapSector*>	selectedSectors(bool try_hilight = true) const;
 	vector<MapThing*>	selectedThings(bool try_hilight = true) const;
 	vector<MapObject*>	selectedObjects(bool try_hilight = true) const;
-	vector<MapVertex*>	selectedPlanningVertices(bool try_hilight = true) const;
-	vector<MapLine*>	selectedPlanningLines(bool try_hilight = true) const;
+
+	vector<MapVertex*>				selectedPlanningVertices(bool try_hilight = true) const;
+	vector<MapLine*>				selectedPlanningLines(bool try_hilight = true) const;
+	vector<MapEditor::PlanNote*>	selectedPlanningNotes(bool try_hilight = true) const;
 
 	void	migrate(MapEditor::Mode from_edit_mode, MapEditor::Mode to_edit_mode);
 

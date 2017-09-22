@@ -46,6 +46,7 @@
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ShowItemDialog.h"
 #include "MapTextureManager.h"
+#include "OpenGL/Drawing.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
 #include "UndoSteps.h"

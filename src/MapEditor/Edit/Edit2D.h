@@ -39,6 +39,7 @@ public:
 	void	createVertex(double x, double y) const;
 	void	createThing(double x, double y) const;
 	void	createSector(double x, double y) const;
+	void	createPlanNote(double x, double y) const;
 	void	deleteObject() const;
 	void	deleteVertex() const;
 	void	deleteLine() const;

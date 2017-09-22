@@ -1,33 +1,35 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MapObject.cpp
- * Description: MapObject class, base class for all map object classes
- *              (MapLine, MapSector etc)
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    MapObject.cpp
+// Description: MapObject class, base class for all map object classes
+//              (MapLine, MapSector etc)
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
 #include "Game/Configuration.h"
@@ -35,19 +37,26 @@
 #include "SLADEMap.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 long MapObject::prop_backup_time_ = -1;
 
 
-/*******************************************************************
- * MAPOBJECT CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// MapObject Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* MapObject::MapObject
- * MapObject class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// MapObject::MapObject
+//
+// MapObject class constructor
+// ----------------------------------------------------------------------------
 MapObject::MapObject(Type type, SLADEMap* parent) :
 	obj_type_{ type },
 	parent_map_{ parent },
@@ -57,24 +66,30 @@ MapObject::MapObject(Type type, SLADEMap* parent) :
 		parent->addMapObject(this);
 }
 
-/* MapObject::~MapObject
- * MapObject class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::~MapObject
+//
+// MapObject class destructor
+// ----------------------------------------------------------------------------
 MapObject::~MapObject()
 {
 }
 
-/* MapObject::getIndex
- * Returns the map index of the object
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::index
+//
+// Returns the map index of the object
+// ----------------------------------------------------------------------------
 unsigned MapObject::index()
 {
 	return index_;
 }
 
-/* MapObject::getTypeName
- * Returns a string representation of the object type
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::objTypeName
+//
+// Returns a string representation of the object type
+// ----------------------------------------------------------------------------
 string MapObject::objTypeName() const
 {
 	switch (obj_type_)
@@ -94,11 +109,13 @@ string MapObject::objTypeName() const
 	}
 }
 
-/* MapObject::setModified
- * Sets the object as modified.
- * Despite the name, THIS MUST BE CALLED **BEFORE** MODIFYING THE
- * OBJECT -- this is where the backup for the undo system is made!
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::setModified
+//
+// Sets the object as modified.
+// Despite the name, THIS MUST BE CALLED **BEFORE** MODIFYING THE OBJECT --
+// this is where the backup for the undo system is made!
+// ----------------------------------------------------------------------------
 void MapObject::setModified()
 {
 	// Backup current properties if required
@@ -111,9 +128,11 @@ void MapObject::setModified()
 	modified_time_ = App::runTimer();
 }
 
-/* MapObject::copy
- * Copy properties from another MapObject [c]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::copy
+//
+// Copy properties from another MapObject [c]
+// ----------------------------------------------------------------------------
 void MapObject::copy(MapObject* c)
 {
 	// Update modified time
@@ -135,9 +154,11 @@ void MapObject::copy(MapObject* c)
 	}
 }
 
-/* MapObject::boolProperty
- * Returns the value of the boolean property matching [key]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::boolProperty
+//
+// Returns the value of the boolean property matching [key]
+// ----------------------------------------------------------------------------
 bool MapObject::boolProperty(const string& key)
 {
 	// If the property exists already, return it
@@ -155,9 +176,11 @@ bool MapObject::boolProperty(const string& key)
 	}
 }
 
-/* MapObject::intProperty
- * Returns the value of the integer property matching [key]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::intProperty
+//
+// Returns the value of the integer property matching [key]
+// ----------------------------------------------------------------------------
 int MapObject::intProperty(const string& key)
 {
 	// If the property exists already, return it
@@ -175,9 +198,11 @@ int MapObject::intProperty(const string& key)
 	}
 }
 
-/* MapObject::floatProperty
- * Returns the value of the float property matching [key]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::floatProperty
+//
+// Returns the value of the float property matching [key]
+// ----------------------------------------------------------------------------
 double MapObject::floatProperty(const string& key)
 {
 	// If the property exists already, return it
@@ -195,9 +220,11 @@ double MapObject::floatProperty(const string& key)
 	}
 }
 
-/* MapObject::stringProperty
- * Returns the value of the string property matching [key]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::stringProperty
+//
+// Returns the value of the string property matching [key]
+// ----------------------------------------------------------------------------
 string MapObject::stringProperty(const string& key)
 {
 	// If the property exists already, return it
@@ -215,9 +242,11 @@ string MapObject::stringProperty(const string& key)
 	}
 }
 
-/* MapObject::setBoolProperty
- * Sets the boolean value of the property [key] to [value]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::setBoolProperty
+//
+// Sets the boolean value of the property [key] to [value]
+// ----------------------------------------------------------------------------
 void MapObject::setBoolProperty(const string& key, bool value)
 {
 	// Update modified time
@@ -227,9 +256,11 @@ void MapObject::setBoolProperty(const string& key, bool value)
 	properties_[key] = value;
 }
 
-/* MapObject::setIntProperty
- * Sets the integer value of the property [key] to [value]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::setIntProperty
+//
+// Sets the integer value of the property [key] to [value]
+// ----------------------------------------------------------------------------
 void MapObject::setIntProperty(const string& key, int value)
 {
 	// Update modified time
@@ -239,9 +270,11 @@ void MapObject::setIntProperty(const string& key, int value)
 	properties_[key] = value;
 }
 
-/* MapObject::setFloatProperty
- * Sets the float value of the property [key] to [value]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::setFloatProperty
+//
+// Sets the float value of the property [key] to [value]
+// ----------------------------------------------------------------------------
 void MapObject::setFloatProperty(const string& key, double value)
 {
 	// Update modified time
@@ -251,9 +284,11 @@ void MapObject::setFloatProperty(const string& key, double value)
 	properties_[key] = value;
 }
 
-/* MapObject::setStringProperty
- * Sets the string value of the property [key] to [value]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::setStringProperty
+//
+// Sets the string value of the property [key] to [value]
+// ----------------------------------------------------------------------------
 void MapObject::setStringProperty(const string& key, const string& value)
 {
 	// Update modified time
@@ -263,9 +298,11 @@ void MapObject::setStringProperty(const string& key, const string& value)
 	properties_[key] = value;
 }
 
-/* MapObject::backup
- * Writes all object properties to [backup]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::backup
+//
+// Writes all object properties to [backup]
+// ----------------------------------------------------------------------------
 void MapObject::backup(Backup* backup)
 {
 	// Save basic info
@@ -279,9 +316,11 @@ void MapObject::backup(Backup* backup)
 	writeBackup(backup);
 }
 
-/* MapObject::loadFromBackup
- * Restores all object properties from [backup]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::loadFromBackup
+//
+// Restores all object properties from [backup]
+// ----------------------------------------------------------------------------
 void MapObject::loadFromBackup(Backup* backup)
 {
 	// Check type match
@@ -308,9 +347,11 @@ void MapObject::loadFromBackup(Backup* backup)
 	readBackup(backup);
 }
 
-/* MapObject::getBackup
- * Returns the backup struct for this object
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::getBackup
+//
+// Returns the backup struct for this object
+// ----------------------------------------------------------------------------
 MapObject::Backup* MapObject::getBackup(bool remove)
 {
 	if (remove)
@@ -320,43 +361,53 @@ MapObject::Backup* MapObject::getBackup(bool remove)
 }
 
 
-/*******************************************************************
- * MAPOBJECT CLASS STATIC FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// MapObject Class Static Functions
+//
+// ----------------------------------------------------------------------------
 
-/* MapObject::propBackupTime
- * Returns the property backup time (used for the undo system - if
- * an object's properties are modified, they will be backed up first
- * if they haven't since this time)
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// MapObject::propBackupTime
+//
+// Returns the property backup time (used for the undo system - if an object's
+// properties are modified, they will be backed up first if they haven't since
+// this time)
+// ----------------------------------------------------------------------------
 long MapObject::propBackupTime()
 {
 	return prop_backup_time_;
 }
 
-/* MapObject::beginPropBackup
- * Begins property backup, any time a MapObject property is changed
- * it's properties will be backed up before changing (only once)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::beginPropBackup
+//
+// Begins property backup, any time a MapObject property is changed it's
+// properties will be backed up before changing (only once)
+// ----------------------------------------------------------------------------
 void MapObject::beginPropBackup(long current_time)
 {
 	prop_backup_time_ = current_time;
 }
 
-/* MapObject::endPropBackup
- * End property backup
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::endPropBackup
+//
+// End property backup
+// ----------------------------------------------------------------------------
 void MapObject::endPropBackup()
 {
 	prop_backup_time_ = -1;
 }
 
-
-/* MapObject::multiBoolProperty
- * Checks the boolean property [prop] on all objects in [objects].
- * If all values are the same, [value] is set and returns true,
- * otherwise returns false
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::multiBoolProperty
+//
+// Checks the boolean property [prop] on all objects in [objects].
+// If all values are the same, [value] is set and returns true,
+// otherwise returns false
+// ----------------------------------------------------------------------------
 bool MapObject::multiBoolProperty(vector<MapObject*>& objects, string prop, bool& value)
 {
 	// Check objects given
@@ -377,11 +428,13 @@ bool MapObject::multiBoolProperty(vector<MapObject*>& objects, string prop, bool
 	return true;
 }
 
-/* MapObject::multiIntProperty
- * Checks the integer property [prop] on all objects in [objects].
- * If all values are the same, [value] is set and returns true,
- * otherwise returns false
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::multiIntProperty
+//
+// Checks the integer property [prop] on all objects in [objects].
+// If all values are the same, [value] is set and returns true,
+// otherwise returns false
+// ----------------------------------------------------------------------------
 bool MapObject::multiIntProperty(vector<MapObject*>& objects, string prop, int& value)
 {
 	// Check objects given
@@ -402,11 +455,13 @@ bool MapObject::multiIntProperty(vector<MapObject*>& objects, string prop, int& 
 	return true;
 }
 
-/* MapObject::multiFloatProperty
- * Checks the float property [prop] on all objects in [objects].
- * If all values are the same, [value] is set and returns true,
- * otherwise returns false
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::multiFloatProperty
+//
+// Checks the float property [prop] on all objects in [objects].
+// If all values are the same, [value] is set and returns true,
+// otherwise returns false
+// ----------------------------------------------------------------------------
 bool MapObject::multiFloatProperty(vector<MapObject*>& objects, string prop, double& value)
 {
 	// Check objects given
@@ -427,11 +482,13 @@ bool MapObject::multiFloatProperty(vector<MapObject*>& objects, string prop, dou
 	return true;
 }
 
-/* MapObject::multiStringProperty
- * Checks the string property [prop] on all objects in [objects].
- * If all values are the same, [value] is set and returns true,
- * otherwise returns false
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapObject::multiStringProperty
+//
+// Checks the string property [prop] on all objects in [objects].
+// If all values are the same, [value] is set and returns true,
+// otherwise returns false
+// ----------------------------------------------------------------------------
 bool MapObject::multiStringProperty(vector<MapObject*>& objects, string prop, string& value)
 {
 	// Check objects given

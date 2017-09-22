@@ -14,6 +14,7 @@ class MapThing;
 class ObjectEditGroup;
 class SLADEMap;
 namespace Game { class ThingType; }
+namespace MapEditor { class Planning; class PlanNote; }
 
 class MapRenderer2D
 {
@@ -117,8 +118,18 @@ public:
 	void	renderTaggingLines(vector<MapLine*>& lines, float fade);
 
 	// Things
-	bool	setupThingOverlay();
+	bool	setupThingOverlay(bool force_circle = false);
 	void	renderThingOverlay(double x, double y, double radius, bool point);
+	void	renderRoundIcon(
+				fpoint2_t pos,
+				double angle,
+				bool arrow,
+				double radius,
+				bool shrink_on_zoom,
+				rgba_t colour,
+				GLTexture* texture,
+				float alpha = 1.0f
+			);
 	void	renderRoundThing(
 				double x,
 				double y,
@@ -170,7 +181,9 @@ public:
 
 	// Planning
 	void	setupPlanningLineRendering(float alpha = 1.0f);
-	void	renderPlanningLines(const vector<MapLine::UPtr>& lines, float alpha = 1.0f);
+	void	renderPlanningLines(const MapEditor::Planning& plan, float alpha = 1.0f);
+	void	renderPlanningNotes(const MapEditor::Planning& plan, float alpha = 1.0f);
+	void	renderPlanningNoteHilight(MapEditor::PlanNote* note, float fade);
 	void	renderPlanningSelection(const ItemSelection& selection, MapEditContext& context, float fade = 1.0f);
 	void	renderMovingPlanningObjects(
 				const vector<MapEditor::Item>& items,
@@ -200,7 +213,7 @@ public:
 	void	setScale(double scale) { view_scale = scale; view_scale_inv = 1.0 / scale; }
 	void	updateVisibility(fpoint2_t view_tl, fpoint2_t view_br);
 	void	forceUpdate(float line_alpha = 1.0f);
-	double	scaledRadius(int radius);
+	double	scaledRadius(int radius, int max = 16) const;
 	bool	visOK();
 	void	clearTextureCache() { tex_flats.clear(); }
 };

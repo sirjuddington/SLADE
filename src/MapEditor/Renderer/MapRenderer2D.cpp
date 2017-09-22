@@ -729,19 +729,22 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 /* MapRenderer2D::setupThingOverlay
  * Sets up the renderer for thing overlays (point sprites, etc.)
  *******************************************************************/
-bool MapRenderer2D::setupThingOverlay()
+bool MapRenderer2D::setupThingOverlay(bool force_circle)
 {
 	// Get hilight texture
 	GLTexture* tex = MapEditor::textureManager().getEditorImage("thing/hilight");
-	if (thing_drawtype == TDT_SQUARE || thing_drawtype == TDT_SQUARESPRITE || thing_drawtype == TDT_FRAMEDSPRITE)
-		tex = MapEditor::textureManager().getEditorImage("thing/square/hilight");
-
-	// Nothing to do if thing_overlay_square is true and thing_drawtype is 1 or 2 (circles or sprites)
-	// or if the hilight circle texture isn't found for some reason
-	if (!tex || (thing_overlay_square && (thing_drawtype == TDT_ROUND || thing_drawtype == TDT_SPRITE)))
+	if (!force_circle)
 	{
-		glDisable(GL_TEXTURE_2D);
-		return false;
+		if (thing_drawtype == TDT_SQUARE || thing_drawtype == TDT_SQUARESPRITE || thing_drawtype == TDT_FRAMEDSPRITE)
+			tex = MapEditor::textureManager().getEditorImage("thing/square/hilight");
+
+		// Nothing to do if thing_overlay_square is true and thing_drawtype is 1 or 2 (circles or sprites)
+		// or if the hilight circle texture isn't found for some reason
+		if (!tex || (thing_overlay_square && (thing_drawtype == TDT_ROUND || thing_drawtype == TDT_SPRITE)))
+		{
+			glDisable(GL_TEXTURE_2D);
+			return false;
+		}
 	}
 
 	// Otherwise, we want the textured selection overlay
@@ -805,10 +808,62 @@ void MapRenderer2D::renderThingOverlay(double x, double y, double radius, bool p
 	}
 }
 
+/* MapRenderer2D::renderRoundIcon
+ * Renders a round thing icon at [pos]
+ *******************************************************************/
+void MapRenderer2D::renderRoundIcon(
+	fpoint2_t pos,
+	double angle,
+	bool arrow,
+	double radius,
+	bool shrink_on_zoom,
+	rgba_t colour,
+	GLTexture* texture,
+	float alpha)
+{
+	// Set colour
+	glColor4f(colour.fr(), colour.fg(), colour.fb(), alpha);
+
+	// Bind texture
+	if (tex_last != texture)
+	{
+		texture->bind();
+		tex_last = texture;
+	}
+
+	// Rotate if needed
+	if (arrow)
+	{
+		glPushMatrix();
+		glTranslated(pos.x, pos.y, 0);
+		glRotated(angle, 0, 0, 1);
+		pos.set(0, 0);
+	}
+	
+	// Draw thing
+	if (shrink_on_zoom) radius = scaledRadius(radius);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0f, 1.0f);	glVertex2d(pos.x - radius, pos.y - radius);
+	glTexCoord2f(0.0f, 0.0f);	glVertex2d(pos.x - radius, pos.y + radius);
+	glTexCoord2f(1.0f, 0.0f);	glVertex2d(pos.x + radius, pos.y + radius);
+	glTexCoord2f(1.0f, 1.0f);	glVertex2d(pos.x + radius, pos.y - radius);
+	glEnd();
+
+	// Restore previous matrix if rotated
+	if (arrow)
+		glPopMatrix();
+}
+
 /* MapRenderer2D::renderRoundThing
  * Renders a round thing icon at [x,y]
  *******************************************************************/
-void MapRenderer2D::renderRoundThing(double x, double y, double angle, const Game::ThingType& tt, float alpha, double radius_mult)
+void MapRenderer2D::renderRoundThing(
+	double x,
+	double y,
+	double angle,
+	const Game::ThingType& tt,
+	float alpha,
+	double radius_mult)
 {
 	// --- Determine texture to use ---
 	GLTexture* tex = nullptr;
@@ -847,6 +902,9 @@ void MapRenderer2D::renderRoundThing(double x, double y, double angle, const Gam
 		return;
 	}
 
+	renderRoundIcon({ x, y }, angle, rotate, tt.radius() * radius_mult, tt.shrinkOnZoom(), tt.colour(), tex, alpha);
+
+	/*
 	// Bind texture
 	if (tex_last != tex)
 	{
@@ -876,6 +934,7 @@ void MapRenderer2D::renderRoundThing(double x, double y, double angle, const Gam
 	// Restore previous matrix if rotated
 	if (rotate)
 		glPopMatrix();
+	*/
 }
 
 /* MapRenderer2D::renderSpriteThing
@@ -2350,26 +2409,36 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 	}
 }
 
+/* MapRenderer2D::setupPlanningLineRendering
+ * Sets up OpenGL state for rendering planning mode lines
+ *******************************************************************/
 void MapRenderer2D::setupPlanningLineRendering(float alpha)
 {
-	// Set colour
-	rgba_t col = ColourConfiguration::getColour("map_linedraw");
-	col.a *= alpha;
-	OpenGL::setColour(col);
-
 	// Setup rendering properties
 	glLineStipple(3, 0xAAAA);
 	glEnable(GL_LINE_STIPPLE);
 	glLineWidth(line_width*(ColourConfiguration::getLineHilightWidth()));
 }
 
-void MapRenderer2D::renderPlanningLines(const vector<MapLine::UPtr>& lines, float alpha)
+/* MapRenderer2D::renderPlanningLines
+ * Renders planning lines
+ *******************************************************************/
+void MapRenderer2D::renderPlanningLines(const MapEditor::Planning& plan, float alpha)
 {
+	// Setup colour
+	rgba_t col = ColourConfiguration::getColour("map_linedraw");
+	col.a *= alpha;
+	rgba_t col_filtered = col;
+	col_filtered.a *= 0.25;
+	OpenGL::setColour(col, true);
+
 	setupPlanningLineRendering(alpha);
 
 	// Go through planning lines
-	for (auto& line : lines)
+	for (auto& line : plan.lines())
 	{
+		OpenGL::setColour(line->isFiltered() ? col_filtered : col, false);
+
 		// Render line
 		glBegin(GL_LINES);
 		glVertex2d(line->x1(), line->y1());
@@ -2380,6 +2449,76 @@ void MapRenderer2D::renderPlanningLines(const vector<MapLine::UPtr>& lines, floa
 	glDisable(GL_LINE_STIPPLE);
 }
 
+/* MapRenderer2D::renderPlanningNotes
+ * Renders planning notes
+ *******************************************************************/
+void MapRenderer2D::renderPlanningNotes(const MapEditor::Planning& plan, float alpha)
+{
+	// Enable textures
+	glEnable(GL_TEXTURE_2D);
+	glColor4f(1.0f, 1.0f, 1.0f, alpha);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	tex_last = nullptr;
+
+	GLTexture* tex = nullptr;
+	for (auto& note : plan.notes())
+	{
+		tex = nullptr;
+
+		if (!note->icon().empty())
+			tex = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", note->icon()));
+		if (!tex)
+			tex = MapEditor::textureManager().getEditorImage("thing/normal_n");
+		if (!tex)
+			continue;
+
+		renderRoundIcon(
+			note->pos(),
+			0,
+			false,
+			16,
+			true,
+			note->colour(),
+			tex,
+			note->isFiltered() ? alpha * 0.25 : alpha
+		);
+	}
+
+	// Disable textures
+	glDisable(GL_TEXTURE_2D);
+}
+
+/* MapRenderer2D::renderPlanningNoteHilight
+ * Renders the currently hilighted planning note overlay
+ *******************************************************************/
+void MapRenderer2D::renderPlanningNoteHilight(MapEditor::PlanNote* note, float fade)
+{
+	// Reset fade if hilight animation is disabled
+	if (!map_animate_hilight)
+		fade = 1.0f;
+
+	// Set hilight colour
+	rgba_t col = ColourConfiguration::getColour("map_hilight");
+	col.a *= fade;
+	OpenGL::setColour(col);
+
+	// Determine radius
+	double radius = scaledRadius(28, 28);
+	radius = radius*(0.8 + (0.2*fade));
+
+	// Draw hilight
+	bool point = setupThingOverlay();
+	renderThingOverlay(note->pos().x, note->pos().y, radius, point);
+
+	// Clean up gl state
+	if (point)
+		glDisable(GL_POINT_SPRITE);
+	glDisable(GL_TEXTURE_2D);
+}
+
+/* MapRenderer2D::renderPlanningSelection
+ * Renders the selection overlay for selected planning objects
+ *******************************************************************/
 void MapRenderer2D::renderPlanningSelection(const ItemSelection& selection, MapEditContext& context, float fade)
 {
 	// Check anything is selected
@@ -2412,7 +2551,7 @@ void MapRenderer2D::renderPlanningSelection(const ItemSelection& selection, MapE
 	}
 	glEnd();
 
-	// Draw selected vertices
+	// Render selected vertices
 	MapVertex* vertex;
 	bool point = setupVertexRendering(2.8f, true);
 	glBegin(GL_POINTS);
@@ -2427,6 +2566,20 @@ void MapRenderer2D::renderPlanningSelection(const ItemSelection& selection, MapE
 	}
 	glEnd();
 
+	// Render selected notes
+	MapEditor::PlanNote* note;
+	point = setupThingOverlay(true);
+	double radius = scaledRadius(28, 28);
+	for (auto& item : selection)
+	{
+		if (item.type == MapEditor::ItemType::PlanNote)
+			note = context.planning().note(item.index);
+		else
+			continue;
+
+		renderThingOverlay(note->pos().x, note->pos().y, radius, point);
+	}
+
 	if (point)
 	{
 		glDisable(GL_POINT_SPRITE);
@@ -2434,6 +2587,9 @@ void MapRenderer2D::renderPlanningSelection(const ItemSelection& selection, MapE
 	}
 }
 
+/* MapRenderer2D::renderMovingPlanningObjects
+ * Renders the moving overlay for all currently moving planning objects
+ *******************************************************************/
 void MapRenderer2D::renderMovingPlanningObjects(
 	const vector<MapEditor::Item>& items,
 	MapEditContext& context,
@@ -2462,6 +2618,7 @@ void MapRenderer2D::renderMovingPlanningObjects(
 		}
 
 	// Set line colour/style
+	OpenGL::setColour(ColourConfiguration::getColour("map_linedraw"));
 	setupPlanningLineRendering();
 
 	// Draw any lines attached to the moving vertices
@@ -2512,6 +2669,15 @@ void MapRenderer2D::renderMovingPlanningObjects(
 			glVertex2d(vertex->xPos() + move_vec.x, vertex->yPos() + move_vec.y);
 		}
 	glEnd();
+
+	// Draw moving note overlays
+	point = setupThingOverlay(true);
+	for (auto& item : items)
+		if (item.type == MapEditor::ItemType::PlanNote)
+		{
+			auto note = context.planning().note(item.index);
+			renderThingOverlay(note->pos().x + move_vec.x, note->pos().y + move_vec.y, scaledRadius(28, 28), point);
+		}
 
 	// Clean up state
 	if (point)
@@ -3242,10 +3408,10 @@ void MapRenderer2D::forceUpdate(float line_alpha)
  * Returns [radius] scaled such that it stays the same size on screen
  * at all zoom levels
  *******************************************************************/
-double MapRenderer2D::scaledRadius(int radius)
+double MapRenderer2D::scaledRadius(int radius, int max) const
 {
-	if (radius > 16)
-		radius = 16;
+	if (radius > max)
+		radius = max;
 
 	if (view_scale > 1.0)
 		return radius * view_scale_inv;

@@ -31,6 +31,7 @@ namespace MapEditor
 		// Planning mode
 		PlanVertex,
 		PlanLine,
+		PlanNote,
 
 		Any
 	};

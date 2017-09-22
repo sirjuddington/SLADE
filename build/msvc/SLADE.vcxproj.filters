@@ -1503,6 +1503,9 @@
     <ClCompile Include="..\..\src\MapEditor\Edit\Planning.cpp">
       <Filter>Map Editor\Edit</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\PlanNotePropsPanel.cpp">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2629,6 +2632,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\Edit\Planning.h">
       <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\PlanNotePropsPanel.h">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

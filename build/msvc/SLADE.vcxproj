@@ -1646,6 +1646,7 @@
     <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\LinePropsPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\MapObjectPropsPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\MOPGProperty.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\PlanNotePropsPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\SectorPropsPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\SidePropsPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\ThingPropsPanel.cpp" />
@@ -2156,6 +2157,7 @@
     <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\LinePropsPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\MapObjectPropsPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\MOPGProperty.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\PlanNotePropsPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\PropsPanelBase.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\SectorPropsPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\SidePropsPanel.h" />
