@@ -30,7 +30,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "UI/WxStuff.h"
 #include "Icons.h"
 #include "Archive/ArchiveManager.h"
 
@@ -54,7 +53,7 @@ namespace Icons
 	vector<icon_t>	icons_general;
 	vector<icon_t>	icons_text_editor;
 	vector<icon_t>	icons_entry;
-	wxBitmap icon_empty;
+	wxBitmap		icon_empty;
 	vector<string>	iconsets_entry;
 	vector<string>	iconsets_general;
 }

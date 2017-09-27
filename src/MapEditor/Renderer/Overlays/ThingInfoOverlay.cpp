@@ -30,7 +30,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MapEditor/SLADEMap/MapThing.h"
 #include "ThingInfoOverlay.h"
 #include "Game/Configuration.h"

@@ -1,32 +1,31 @@
-
-#ifndef __INTERFACE_PREFS_PANEL_H__
-#define __INTERFACE_PREFS_PANEL_H__
+#pragma once
 
 #include "PrefsPanelBase.h"
 
 class InterfacePrefsPanel : public PrefsPanelBase
 {
-private:
-	wxCheckBox*	cb_size_as_string;
-	wxCheckBox* cb_filter_dirs;
-	wxCheckBox*	cb_list_monospace;
-	wxCheckBox*	cb_start_page;
-	wxCheckBox*	cb_context_submenus;
-	wxCheckBox*	cb_elist_bgcol;
-	wxCheckBox* cb_file_browser;
-	wxCheckBox*	cb_condensed_tabs;
-	wxCheckBox*	cb_web_dark_theme;
-	wxChoice*	choice_toolbar_size;
-	wxChoice*	choice_tab_style;
-	wxChoice*	choice_iconset_general;
-	wxChoice*	choice_iconset_entry;
-
 public:
 	InterfacePrefsPanel(wxWindow* parent);
 	~InterfacePrefsPanel();
 
-	void	init();
-	void	applyPreferences();
-};
+	void	init() override;
+	void	applyPreferences() override;
 
-#endif//__INTERFACE_PREFS_PANEL_H__
+private:
+	wxCheckBox*	cb_size_as_string_;
+	wxCheckBox* cb_filter_dirs_;
+	wxCheckBox*	cb_list_monospace_;
+	wxCheckBox*	cb_start_page_;
+	wxCheckBox*	cb_context_submenus_;
+	wxCheckBox*	cb_elist_bgcol_;
+	wxCheckBox* cb_file_browser_;
+	wxCheckBox*	cb_condensed_tabs_;
+	wxCheckBox*	cb_web_dark_theme_;
+	wxChoice*	choice_toolbar_size_;
+	wxChoice*	choice_tab_style_;
+	wxChoice*	choice_iconset_general_;
+	wxChoice*	choice_iconset_entry_;
+
+	wxPanel*	setupGeneralTab(wxWindow* stc_tabs);
+	wxPanel*	setupEntryListTab(wxWindow* stc_tabs);
+};

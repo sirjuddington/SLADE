@@ -346,7 +346,7 @@ bool App::isExiting()
 //
 // Application initialisation
 // ----------------------------------------------------------------------------
-bool App::init(vector<string>& args)
+bool App::init(vector<string>& args, double ui_scale)
 {
 	// Set locale to C so that the tokenizer will work properly
 	// even in locales where the decimal separator is a comma.
@@ -389,6 +389,9 @@ bool App::init(vector<string>& args)
 
 	// Init lua
 	Lua::init();
+
+	// Init UI
+	UI::init(ui_scale);
 
 	// Show splash screen
 	UI::showSplash("Starting up...");

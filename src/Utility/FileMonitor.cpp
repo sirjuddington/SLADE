@@ -31,7 +31,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "FileMonitor.h"
 #include "Archive/Archive.h"
 #include "Archive/Formats/WadArchive.h"

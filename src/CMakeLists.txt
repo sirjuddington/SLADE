@@ -90,7 +90,7 @@ if(APPLE)
 	set(OSX_ICON "${CMAKE_SOURCE_DIR}/SLADE-osx.icns")
 	set(OSX_PLIST "${CMAKE_SOURCE_DIR}/Info.plist")
 
-	set(SLADE_SOURCES ${SLADE_SOURCES} ${OSX_ICON} ${OSX_PLIST})
+	set(SLADE_SOURCES ${SLADE_SOURCES} ${OSX_ICON} ${OSX_PLIST} UI/FileLocationPanel.h UI/FileLocationPanel.cpp)
 
 	set_source_files_properties(${OSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif(APPLE)

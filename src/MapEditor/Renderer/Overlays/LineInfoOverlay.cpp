@@ -89,8 +89,7 @@ void LineInfoOverlay::update(MapLine* line)
 		info_text += (S_FMT("Line #%d (%d)\n", line->getIndex(), line->getId()));
 	else
 		info_text += (S_FMT("Line #%d\n", line->getIndex()));
-    info_text += (S_FMT("Length: %1.2f\n", line->getLength()));
-    info_text += (S_FMT("Angle: %1.2f\n", line->getAngle()));
+	info_text += (S_FMT("Length: %d\n", MathStuff::round(line->getLength())));
 
 	// Line special
 	int as_id = line->intProperty("special");

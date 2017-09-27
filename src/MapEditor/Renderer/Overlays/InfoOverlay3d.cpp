@@ -41,7 +41,6 @@
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
-#include "UI/WxStuff.h"
 
 
 /*******************************************************************

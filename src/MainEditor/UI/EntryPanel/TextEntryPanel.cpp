@@ -202,11 +202,7 @@ bool TextEntryPanel::saveEntry()
 	// Write raw text to the entry
 	MemChunk mc;
 	text_area_->getRawText(mc);
-	if (mc.hasData())
-		entry->importMemChunk(mc);
-	else
-		entry->clearData();
-
+	entry->importMemChunk(mc);
 	if (entry->getState() == 0)
 		entry->setState(1);
 

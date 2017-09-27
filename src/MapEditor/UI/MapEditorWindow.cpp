@@ -322,7 +322,7 @@ void MapEditorWindow::setupLayout()
 
 	// Status bar
 	CreateStatusBar(4);
-    int status_widths[4] = { -1, 240, 200, 300 };
+	int status_widths[4] = { -1, 240, 200, 160 };
 	SetStatusWidths(4, status_widths);
 
 	// -- Console Panel --
@@ -1168,20 +1168,7 @@ bool MapEditorWindow::handleAction(string id)
 	// Editor->Set Base Resource Archive
 	if (id == "mapw_setbra")
 	{
-		wxDialog dialog_ebr(this, -1, "Edit Base Resource Archives", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
-		BaseResourceArchivesPanel brap(&dialog_ebr);
-
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		sizer->Add(&brap, 1, wxEXPAND|wxALL, 4);
-
-		sizer->Add(dialog_ebr.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxDOWN, 4);
-
-		dialog_ebr.SetSizer(sizer);
-		dialog_ebr.Layout();
-		dialog_ebr.SetInitialSize(wxSize(500, 300));
-		dialog_ebr.CenterOnParent();
-		if (dialog_ebr.ShowModal() == wxID_OK)
-			App::archiveManager().openBaseResource(brap.getSelectedPath());
+		PreferencesDialog::openPreferences(this, "Base Resource Archive");
 
 		return true;
 	}

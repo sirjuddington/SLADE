@@ -3345,6 +3345,7 @@ void ArchivePanel::onEntryListFocusChange(wxListEvent& e)
 	{
 		// If one entry is selected, open it in the entry area
 		openEntry(selection[0]);
+		e.Skip();
 	}
 	else
 	{

@@ -34,6 +34,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Executables.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "UI/ResourceArchiveChooser.h"
 #include "Utility/SFileDialog.h"
@@ -61,30 +62,37 @@ CVAR(Bool, run_start_3d, false, CVAR_SAVE)
  */
 class RunConfigDialog : public wxDialog
 {
-private:
-	wxTextCtrl*	text_name;
-	wxTextCtrl*	text_params;
-	
 public:
-	RunConfigDialog(wxWindow* parent, string title, string name, string params, bool custom = true) : wxDialog(parent, -1, title)
+	RunConfigDialog(wxWindow* parent, string title, string name, string params, bool custom = true) :
+		wxDialog(parent, -1, title)
 	{
 		// Setup sizer
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
-		wxGridBagSizer* gb_sizer = new wxGridBagSizer(8, 4);
-		sizer->Add(gb_sizer, 1, wxEXPAND|wxALL, 10);
+		wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::padLarge(), UI::pad());
+		sizer->Add(gb_sizer, 1, wxEXPAND|wxALL, UI::padLarge());
 
 		// Config name
-		gb_sizer->Add(new wxStaticText(this, -1, "Config Name:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-		text_name = new wxTextCtrl(this, -1, name);
-		text_name->Enable(custom);
-		gb_sizer->Add(text_name, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
+		gb_sizer->Add(
+			new wxStaticText(this, -1, "Config Name:"),
+			wxGBPosition(0, 0),
+			wxDefaultSpan,
+			wxALIGN_CENTER_VERTICAL
+		);
+		text_name_ = new wxTextCtrl(this, -1, name);
+		text_name_->Enable(custom);
+		gb_sizer->Add(text_name_, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
 		// Config params
-		gb_sizer->Add(new wxStaticText(this, -1, "Parameters:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-		text_params = new wxTextCtrl(this, -1, params);
-		gb_sizer->Add(text_params, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
+		gb_sizer->Add(
+			new wxStaticText(this, -1, "Parameters:"),
+			wxGBPosition(1, 0),
+			wxDefaultSpan,
+			wxALIGN_CENTER_VERTICAL
+		);
+		text_params_ = new wxTextCtrl(this, -1, params);
+		gb_sizer->Add(text_params_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 
 		wxStaticText* label_help = new wxStaticText(this, -1, "");
 		gb_sizer->Add(label_help, wxGBPosition(2, 0), wxGBSpan(1, 2), wxEXPAND);
@@ -93,21 +101,28 @@ public:
 		gb_sizer->AddGrowableCol(1);
 		gb_sizer->AddGrowableRow(2);
 
-		label_help->SetLabel("%i - Base resource archive\n%r - Resource archive(s)\n%a - Current archive\n%mn - Map name\n%mw - Map number (eg. E1M1 = 1 1, MAP02 = 02)");
-		label_help->Wrap(300);
-		text_params->SetInsertionPoint(0);
+		label_help->SetLabel(
+			"%i - Base resource archive\n%r - Resource archive(s)\n%a - Current archive\n%mn - Map name\n"
+			"%mw - Map number (eg. E1M1 = 1 1, MAP02 = 02)"
+		);
+		label_help->Wrap(UI::scalePx(300));
+		text_params_->SetInsertionPoint(0);
 	}
 	~RunConfigDialog() {}
 
 	string getName()
 	{
-		return text_name->GetValue();
+		return text_name_->GetValue();
 	}
 
 	string getParams()
 	{
-		return text_params->GetValue();
+		return text_params_->GetValue();
 	}
+
+private:
+	wxTextCtrl*	text_name_;
+	wxTextCtrl*	text_params_;
 };
 
 
@@ -125,11 +140,16 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb)
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
-	sizer->Add(gb_sizer, 0, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	sizer->Add(gb_sizer, 0, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, UI::padLarge());
 
 	// Game Executable
-	gb_sizer->Add(new wxStaticText(this, -1, "Game Executable:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(this, -1, "Game Executable:"),
+		wxGBPosition(0, 0),
+		wxDefaultSpan,
+		wxALIGN_CENTER_VERTICAL
+	);
 	choice_game_exes = new wxChoice(this, -1);
 	gb_sizer->Add(choice_game_exes, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
 	btn_add_game = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
@@ -147,7 +167,12 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb)
 	gb_sizer->Add(btn_browse_exe, wxGBPosition(1, 4));
 
 	// Configuration
-	gb_sizer->Add(new wxStaticText(this, -1, "Run Configuration:"), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(this, -1, "Run Configuration:"),
+		wxGBPosition(2, 0),
+		wxDefaultSpan,
+		wxALIGN_CENTER_VERTICAL
+	);
 	choice_config = new wxChoice(this, -1);
 	gb_sizer->Add(choice_config, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND);
 	btn_edit_config = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "settings"));
@@ -160,22 +185,27 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb)
 	gb_sizer->Add(btn_remove_config, wxGBPosition(2, 4));
 
 	// Extra parameters
-	gb_sizer->Add(new wxStaticText(this, -1, "Extra Parameters:"), wxGBPosition(3, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(this, -1, "Extra Parameters:"),
+		wxGBPosition(3, 0),
+		wxDefaultSpan,
+		wxALIGN_CENTER_VERTICAL
+	);
 	text_extra_params = new wxTextCtrl(this, -1, run_last_extra);
 	gb_sizer->Add(text_extra_params, wxGBPosition(3, 1), wxGBSpan(1, 4), wxEXPAND);
 
 	// Resources
 	wxStaticBox* frame = new wxStaticBox(this, -1, "Resources");
 	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->AddSpacer(10);
-	sizer->Add(framesizer, 1, wxEXPAND|wxLEFT|wxRIGHT, 10);
+	sizer->AddSpacer(UI::padLarge());
+	sizer->Add(framesizer, 1, wxEXPAND|wxLEFT|wxRIGHT, UI::padLarge());
 	rac_resources = new ResourceArchiveChooser(this, archive);
-	framesizer->Add(rac_resources, 1, wxEXPAND|wxALL, 4);
+	framesizer->Add(rac_resources, 1, wxEXPAND|wxALL, UI::pad());
 
 	// Start from 3d mode camera
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->AddSpacer(8);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	sizer->AddSpacer(UI::padLarge());
+	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
 	cb_start_3d = new wxCheckBox(this, -1, "Start from 3D mode camera position");
 	cb_start_3d->SetValue(run_start_3d);
 	if (show_start_3d_cb)
@@ -189,7 +219,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb)
 	// Dialog buttons
 	btn_run = new wxButton(this, wxID_OK, "Run");
 	btn_run->SetDefault();
-	hbox->Add(btn_run, 0, wxEXPAND|wxRIGHT, 4);
+	hbox->Add(btn_run, 0, wxEXPAND|wxRIGHT, UI::pad());
 
 	btn_cancel = new wxButton(this, wxID_CANCEL, "Cancel");
 	hbox->Add(btn_cancel, 0, wxEXPAND);
@@ -224,7 +254,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb)
 	choice_config->Bind(wxEVT_CHOICE, &RunDialog::onChoiceConfig, this);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	SetMinSize(wxSize(500, 400));
+	SetMinSize(wxSize(UI::scalePx(500), UI::scalePx(400)));
 	Layout();
 	CenterOnParent();
 	btn_run->SetFocusFromKbd();

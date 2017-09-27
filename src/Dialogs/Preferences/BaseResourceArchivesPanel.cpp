@@ -33,8 +33,10 @@
 #include "Main.h"
 #include "BaseResourceArchivesPanel.h"
 #include "Archive/ArchiveManager.h"
+#include "General/UI.h"
+#include "UI/FileLocationPanel.h"
 #include "Utility/Parser.h"
-#include "Utility/SFileDialog.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------
@@ -59,54 +61,27 @@ EXTERN_CVAR(String, zdoom_pk3_path)
 //
 // BaseResourceArchivesPanel class constructor
 // ----------------------------------------------------------------------------
-BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent)
-	: wxPanel(parent, -1)
+BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
-	// Setup sizer
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
-
-	// Init paths list
+	// Create controls
 	list_base_archive_paths_ = new wxListBox(this, -1);
-	for (size_t a = 0; a < App::archiveManager().numBaseResourcePaths(); a++)
-		list_base_archive_paths_->Append(App::archiveManager().getBaseResourcePath(a));
-
-	// Select the currently open base archive if any
-	if (base_resource >= 0)
-		list_base_archive_paths_->Select(base_resource);
-
-	// Add paths list
-	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 1, wxEXPAND);
-	hbox->Add(list_base_archive_paths_, 1, wxEXPAND|wxALL, 4);
-
-	// Setup buttons
 	btn_add_ = new wxButton(this, -1, "Add Archive");
 	btn_remove_ = new wxButton(this, -1, "Remove Archive");
 	btn_detect_ = new wxButton(this, -1, "Detect Archives");
+	flp_zdoom_pk3_ = new FileLocationPanel(
+		this,
+		zdoom_pk3_path,
+		false,
+		"Browse ZDoom PK3",
+		"Pk3 Files (*.pk3)|*.pk3"
+	);
 
-	auto vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(btn_add_, 0, wxEXPAND|wxBOTTOM, 4);
-	vbox->Add(btn_remove_, 0, wxEXPAND|wxBOTTOM, 4);
-	vbox->Add(btn_detect_, 0, wxEXPAND|wxBOTTOM, 4);
-	hbox->Add(vbox, 0, wxEXPAND|wxALL, 4);
-
-	// ZDoom.pk3 path
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
-
-	text_zdoom_pk3_path_ = new wxTextCtrl(this, -1, zdoom_pk3_path, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
-	hbox->Add(new wxStaticText(this, -1, "ZDoom PK3 Path:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
-	hbox->Add(text_zdoom_pk3_path_, 1, wxALIGN_CENTER_VERTICAL);
-
-	btn_browse_zdoom_pk3_ = new wxButton(this, -1, "Browse");
-	hbox->Add(btn_browse_zdoom_pk3_, 0, wxEXPAND | wxLEFT, 4);
+	setupLayout();
 
 	// Bind events
 	btn_add_->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnAdd, this);
 	btn_remove_->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnRemove, this);
 	btn_detect_->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnDetect, this);
-	btn_browse_zdoom_pk3_->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnBrowseZDoomPk3, this);
 
 	// Init layout
 	Layout();
@@ -122,11 +97,34 @@ BaseResourceArchivesPanel::~BaseResourceArchivesPanel()
 }
 
 // ----------------------------------------------------------------------------
+// BaseResourceArchivesPanel::setupLayout
+//
+// Lays out the controls on the panel
+// ----------------------------------------------------------------------------
+void BaseResourceArchivesPanel::setupLayout()
+{
+	auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	SetSizer(sizer);
+
+	// Paths list + buttons
+	sizer->Add(list_base_archive_paths_, { 0, 0 }, { 4, 1 }, wxEXPAND);
+	sizer->Add(btn_add_, { 0, 1 }, { 1, 1 }, wxEXPAND);
+	sizer->Add(btn_remove_, { 1, 1 }, { 1, 1 }, wxEXPAND);
+	sizer->Add(btn_detect_, { 2, 1 }, { 1, 1 }, wxEXPAND);
+
+	// ZDoom.pk3 path
+	sizer->Add(WxUtils::createLabelHBox(this, "ZDoom PK3 Path:", flp_zdoom_pk3_), { 4, 0 }, { 1, 2 }, wxEXPAND);
+
+	sizer->AddGrowableRow(3, 1);
+	sizer->AddGrowableCol(0, 1);
+}
+
+// ----------------------------------------------------------------------------
 // BaseResourceArchivesPanel::getSelectedPath
 //
 // Returns the currently selected base resource path
 // ----------------------------------------------------------------------------
-int BaseResourceArchivesPanel::getSelectedPath()
+int BaseResourceArchivesPanel::selectedPathIndex()
 {
 	return list_base_archive_paths_->GetSelection();
 }
@@ -283,6 +281,36 @@ void BaseResourceArchivesPanel::autodetect()
 	}
 }
 
+// ----------------------------------------------------------------------------
+// BaseResourceArchivesPanel::init
+//
+// Initialises panel controls
+// ----------------------------------------------------------------------------
+void BaseResourceArchivesPanel::init()
+{
+	// Init paths list
+	list_base_archive_paths_->Clear();
+	for (size_t a = 0; a < App::archiveManager().numBaseResourcePaths(); a++)
+		list_base_archive_paths_->Append(App::archiveManager().getBaseResourcePath(a));
+
+	// Select the currently open base archive if any
+	if (base_resource >= 0)
+		list_base_archive_paths_->Select(base_resource);
+
+	flp_zdoom_pk3_->setLocation(zdoom_pk3_path);
+}
+
+// ----------------------------------------------------------------------------
+// BaseResourceArchivesPanel::applyPreferences
+//
+// Applies preferences from the panel controls
+// ----------------------------------------------------------------------------
+void BaseResourceArchivesPanel::applyPreferences()
+{
+	App::archiveManager().openBaseResource(selectedPathIndex());
+	zdoom_pk3_path = flp_zdoom_pk3_->location();
+}
+
 
 // ----------------------------------------------------------------------------
 //
@@ -355,10 +383,12 @@ void BaseResourceArchivesPanel::onBtnDetect(wxCommandEvent& e)
 // ----------------------------------------------------------------------------
 void BaseResourceArchivesPanel::onBtnBrowseZDoomPk3(wxCommandEvent& e)
 {
+	/*
 	SFileDialog::fd_info_t info;
 	if (SFileDialog::openFile(info, "Browse ZDoom PK3", "Pk3 Files (*.pk3)|*.pk3"))
 	{
 		text_zdoom_pk3_path_->SetValue(info.filenames[0]);
 		zdoom_pk3_path = info.filenames[0];
 	}
+	*/
 }

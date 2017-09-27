@@ -1,27 +1,25 @@
-
-#ifndef __COL_PREFS_PANEL_H__
-#define __COL_PREFS_PANEL_H__
+#pragma once
 
 #include "PrefsPanelBase.h"
 
 class wxPropertyGrid;
+
 class ColourPrefsPanel : public PrefsPanelBase
 {
-private:
-	wxChoice*			choice_configs;
-	wxButton*			btn_saveconfig;
-	wxPropertyGrid*		pg_colours;
-
 public:
 	ColourPrefsPanel(wxWindow* parent);
 	~ColourPrefsPanel();
 
-	void	init();
+	void	init() override;
 	void	refreshPropGrid();
-	void	applyPreferences();
+	void	applyPreferences() override;
+	string	pageTitle() override { return "Colours && Theme"; }
+
+private:
+	wxChoice*		choice_configs_;
+	wxButton*		btn_saveconfig_;
+	wxPropertyGrid*	pg_colours_;
 
 	// Events
 	void	onChoicePresetSelected(wxCommandEvent& e);
 };
-
-#endif//__COL_PREFS_PANEL_H__

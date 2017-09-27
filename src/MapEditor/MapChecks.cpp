@@ -38,7 +38,6 @@
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Dialogs/MapTextureBrowser.h"
 #include "UI/Dialogs/ThingTypeBrowser.h"
-#include "UI/WxStuff.h"
 #include "Utility/MathStuff.h"
 
 

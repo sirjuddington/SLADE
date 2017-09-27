@@ -31,6 +31,7 @@
 // ----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextEditorPrefsPanel.h"
+#include "General/UI.h"
 
 
 // ----------------------------------------------------------------------------
@@ -77,16 +78,12 @@ EXTERN_CVAR(Int, txed_show_whitespace)
 TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create main sizer
-	auto psizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(psizer);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(sizer);
 
-	// Create frame+sizer
-	auto frame = new wxStaticBox(this, -1, "Text Editor Preferences");
-	auto sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
-	auto gb_sizer = new wxGridBagSizer(4, 8);
+	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::padLarge());
 	auto row = 0;
-	sizer->Add(gb_sizer, 0, wxALL | wxEXPAND, 4);
+	sizer->Add(gb_sizer, 0, wxEXPAND);
 
 	// --- Whitespace/indentation ---
 

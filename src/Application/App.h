@@ -13,7 +13,7 @@ namespace App
 	bool			isExiting();
 	ArchiveManager&	archiveManager();
 
-	bool	init(vector<string>& args);
+	bool	init(vector<string>& args, double ui_scale = 1.);
 	void	saveConfigFile();
 	void	exit(bool save_config);
 

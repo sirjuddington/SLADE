@@ -1,22 +1,19 @@
-
-#ifndef __ADVANCED_PREFS_PANEL_H__
-#define __ADVANCED_PREFS_PANEL_H__
+#pragma once
 
 #include "PrefsPanelBase.h"
 
 class wxPropertyGrid;
+
 class AdvancedPrefsPanel : public PrefsPanelBase
 {
-private:
-	wxPropertyGrid*	pg_cvars;
-
 public:
 	AdvancedPrefsPanel(wxWindow* parent);
 	~AdvancedPrefsPanel();
 
 	void	refreshPropGrid();
-	void	init();
-	void	applyPreferences();
-};
+	void	init() override;
+	void	applyPreferences() override;
 
-#endif//__ADVANDED_PREFS_PANEL_H__
+private:
+	wxPropertyGrid*	pg_cvars_;
+};

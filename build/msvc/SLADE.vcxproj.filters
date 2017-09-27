@@ -786,9 +786,6 @@
     <ClCompile Include="..\..\src\Utility\MemChunk.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\UI\WxStuff.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utility\FileMonitor.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -1500,6 +1497,12 @@
     <ClCompile Include="..\..\src\Game\ZScript.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\UI\FileLocationPanel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\WxUtils.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -1853,9 +1856,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\General\Console\ConsoleHelpers.h">
       <Filter>General\Console</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\WxStuff.h">
-      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Application\Main.h">
       <Filter>Application</Filter>
@@ -2623,6 +2623,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Game\ZScript.h">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\FileLocationPanel.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\WxUtils.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

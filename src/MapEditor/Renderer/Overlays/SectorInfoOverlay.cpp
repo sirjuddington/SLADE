@@ -30,7 +30,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "SectorInfoOverlay.h"
 #include "MapEditor/SLADEMap/MapSector.h"
 #include "OpenGL/Drawing.h"

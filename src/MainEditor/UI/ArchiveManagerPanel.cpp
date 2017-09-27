@@ -1150,7 +1150,7 @@ void ArchiveManagerPanel::closeEntryTab(ArchiveEntry* entry) const
 }
 
 // ----------------------------------------------------------------------------
-// ArchiveManagerPanel::closeEntryTab
+// ArchiveManagerPanel::closeEntryTabs
 //
 // Closes any EntryPanel tabs for entries in [parent]
 // ----------------------------------------------------------------------------

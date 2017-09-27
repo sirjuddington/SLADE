@@ -38,6 +38,7 @@
 #include "UI/BaseResourceChooser.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
 #include "UI/ResourceArchiveChooser.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -47,12 +48,6 @@
  */
 class NewMapDialog : public wxDialog
 {
-private:
-	wxComboBox*	cbo_mapname;
-	wxChoice*	choice_mapformat;
-	wxButton*	btn_ok;
-	wxButton*	btn_cancel;
-
 public:
 	NewMapDialog(
 		wxWindow* parent,
@@ -65,8 +60,8 @@ public:
 		// Setup dialog
 		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
-		wxGridBagSizer* sizer = new wxGridBagSizer(4, 4);
-		msizer->Add(sizer, 1, wxEXPAND|wxALL, 10);
+		wxGridBagSizer* sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+		msizer->Add(sizer, 1, wxEXPAND|wxALL, UI::padLarge());
 
 		// Open selected game configuration if no map names are currently loaded
 		Game::configuration().openConfig(game, port);
@@ -136,10 +131,10 @@ public:
 
 		// Add dialog buttons
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		msizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+		msizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
 		hbox->AddStretchSpacer();
 		btn_ok = new wxButton(this, -1, "OK");
-		hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, 4);
+		hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, UI::pad());
 		btn_cancel = new wxButton(this, -1, "Cancel");
 		hbox->Add(btn_cancel, 0, wxEXPAND);
 		sizer->AddGrowableCol(1);
@@ -172,6 +167,12 @@ public:
 	{
 		EndModal(wxID_CANCEL);
 	}
+
+private:
+	wxComboBox*	cbo_mapname;
+	wxChoice*	choice_mapformat;
+	wxButton*	btn_ok;
+	wxButton*	btn_cancel;
 };
 
 
@@ -198,19 +199,19 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 	// Left side sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	mainsizer->Add(sizer, 0, wxEXPAND|wxALL, 6);
+	mainsizer->Add(sizer, 0, wxEXPAND|wxALL, UI::padLarge());
 
 	// Game configuration dropdown
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(new wxStaticText(this, -1, "Game:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	sizer->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::pad());
+	hbox->Add(new wxStaticText(this, -1, "Game:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
 	choice_game_config = new wxChoice(this, -1);
-	hbox->Add(choice_game_config, 1, wxEXPAND|wxRIGHT, 4);
+	hbox->Add(choice_game_config, 1, wxEXPAND|wxRIGHT, UI::padLarge());
 
 	// Port configuration dropdown
-	hbox->Add(new wxStaticText(this, -1, "Port:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	hbox->Add(new wxStaticText(this, -1, "Port:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
 	choice_port_config = new wxChoice(this, -1);
-	hbox->Add(choice_port_config, 1, wxEXPAND|wxRIGHT, 4);
+	hbox->Add(choice_port_config, 1, wxEXPAND);
 
 	// Populate game/port lists
 	populateGameList();
@@ -229,16 +230,16 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	{
 		frame = new wxStaticBox(this, -1, "Maps");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		sizer->Add(framesizer, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		sizer->Add(framesizer, 1, wxEXPAND|wxBOTTOM, UI::pad());
 
 		// Map list
 		list_maps = new ListView(this, -1, wxLC_SINGLE_SEL|wxLC_LIST);
 		list_maps->SetImageList(img_list, wxIMAGE_LIST_SMALL);
-		framesizer->Add(list_maps, 1, wxEXPAND|wxALL, 4);
+		framesizer->Add(list_maps, 1, wxEXPAND|wxALL, UI::pad());
 
 		// New map button
 		btn_new_map = new wxButton(this, -1, "New Map");
-		framesizer->Add(btn_new_map, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		framesizer->Add(btn_new_map, 0, wxLEFT|wxRIGHT|wxBOTTOM, UI::pad());
 	}
 	else
 	{
@@ -249,17 +250,17 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	// Resources section
 	frame = new wxStaticBox(this, -1, "Resources");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(framesizer, 1, wxEXPAND|wxBOTTOM, UI::pad());
 
 	// Base resource dropdown
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(new wxStaticText(this, -1, "Base Resource:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	framesizer->Add(hbox, 0, wxEXPAND|wxALL, UI::pad());
+	hbox->Add(new wxStaticText(this, -1, "Base Resource:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
 	choice_base_resource = new BaseResourceChooser(this);
 	hbox->Add(choice_base_resource, 1, wxEXPAND, 0);
 
 	rac_resources = new ResourceArchiveChooser(this, archive);
-	framesizer->Add(rac_resources, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	framesizer->Add(rac_resources, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, UI::pad());
 
 
 	// Right side (map preview)
@@ -267,24 +268,25 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	{
 		frame = new wxStaticBox(this, -1, "Preview");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		mainsizer->Add(framesizer, 1, wxEXPAND|wxALL, 10);
+		mainsizer->Add(framesizer, 1, wxEXPAND|wxTOP|wxRIGHT|wxBOTTOM, UI::padLarge());
 
 		// Add map preview
 		canvas_preview = new MapPreviewCanvas(this);
-		framesizer->Add(canvas_preview->toPanel(this), 1, wxEXPAND|wxALL, 4);
-		canvas_preview->SetInitialSize(wxSize(400, 400));
+		framesizer->Add(canvas_preview->toPanel(this), 1, wxEXPAND|wxALL, UI::pad());
+		int size = UI::scalePx(400);
+		canvas_preview->SetInitialSize(wxSize(size, size));
 	}
 
 
 	// Dialog buttons
-	sizer->AddSpacer(4);
+	sizer->AddSpacer(UI::pad());
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxBOTTOM, 6);
+	sizer->Add(hbox, 0, wxEXPAND);
 	hbox->AddStretchSpacer();
 	btn_ok = new wxButton(this, -1, "OK");
-	hbox->Add(btn_ok, 0, wxEXPAND|wxRIGHT, 4);
+	hbox->Add(btn_ok, 0, wxEXPAND|wxRIGHT, UI::pad());
 	btn_cancel = new wxButton(this, wxID_CANCEL, "Cancel");
-	hbox->Add(btn_cancel, 0, wxEXPAND|wxRIGHT, 4);
+	hbox->Add(btn_cancel, 0, wxEXPAND);
 
 	// Populate map list
 	populateMapList();

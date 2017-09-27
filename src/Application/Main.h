@@ -93,7 +93,6 @@ namespace Global
 	extern string version;
 	extern string sc_rev;
 	extern bool debug;
-	extern double ppi_scale;
 	extern int win_version_major;
 	extern int win_version_minor;
 };

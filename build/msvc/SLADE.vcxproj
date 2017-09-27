@@ -1677,6 +1677,7 @@
     <ClCompile Include="..\..\src\UI\ColourBox.cpp" />
     <ClCompile Include="..\..\src\UI\ConsolePanel.cpp" />
     <ClCompile Include="..\..\src\UI\DockPanel.cpp" />
+    <ClCompile Include="..\..\src\UI\FileLocationPanel.cpp" />
     <ClCompile Include="..\..\src\UI\HexEditorPanel.cpp" />
     <ClCompile Include="..\..\src\UI\Lists\ArchiveEntryList.cpp" />
     <ClCompile Include="..\..\src\UI\Lists\ListView.cpp" />
@@ -1693,7 +1694,7 @@
     <ClCompile Include="..\..\src\UI\SToolBar\SToolBarButton.cpp" />
     <ClCompile Include="..\..\src\UI\STopWindow.cpp" />
     <ClCompile Include="..\..\src\UI\UndoManagerHistoryPanel.cpp" />
-    <ClCompile Include="..\..\src\UI\WxStuff.cpp" />
+    <ClCompile Include="..\..\src\UI\WxUtils.cpp" />
     <ClCompile Include="..\..\src\Utility\CIEDeltaEquations.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
@@ -2192,6 +2193,7 @@
     <ClInclude Include="..\..\src\UI\ColourBox.h" />
     <ClInclude Include="..\..\src\UI\ConsolePanel.h" />
     <ClInclude Include="..\..\src\UI\DockPanel.h" />
+    <ClInclude Include="..\..\src\UI\FileLocationPanel.h" />
     <ClInclude Include="..\..\src\UI\HexEditorPanel.h" />
     <ClInclude Include="..\..\src\UI\Lists\ArchiveEntryList.h" />
     <ClInclude Include="..\..\src\UI\Lists\ListView.h" />
@@ -2209,7 +2211,7 @@
     <ClInclude Include="..\..\src\UI\STopWindow.h" />
     <ClInclude Include="..\..\src\UI\UndoManagerHistoryPanel.h" />
     <ClInclude Include="..\..\src\UI\WxBasicControls.h" />
-    <ClInclude Include="..\..\src\UI\WxStuff.h" />
+    <ClInclude Include="..\..\src\UI\WxUtils.h" />
     <ClInclude Include="..\..\src\Utility\CIEDeltaEquations.h" />
     <ClInclude Include="..\..\src\Utility\CodePages.h" />
     <ClInclude Include="..\..\src\Utility\Compression.h" />

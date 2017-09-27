@@ -1,23 +1,19 @@
-
-#ifndef __HUD_OFFSETS_PREFS_PANEL_H__
-#define __HUD_OFFSETS_PREFS_PANEL_H__
+#pragma once
 
 #include "PrefsPanelBase.h"
 
 class HudOffsetsPrefsPanel : public PrefsPanelBase
 {
-private:
-	wxCheckBox*	cb_hud_bob;
-	wxCheckBox*	cb_hud_center;
-	wxCheckBox*	cb_hud_statusbar;
-	wxCheckBox*	cb_hud_wide;
-
 public:
 	HudOffsetsPrefsPanel(wxWindow* parent);
 	~HudOffsetsPrefsPanel();
 
-	void	init();
-	void	applyPreferences();
-};
+	void	init() override;
+	void	applyPreferences() override;
 
-#endif//__HUD_OFFSETS_PREFS_PANEL_H__
+private:
+	wxCheckBox*	cb_hud_bob_;
+	wxCheckBox*	cb_hud_center_;
+	wxCheckBox*	cb_hud_statusbar_;
+	wxCheckBox*	cb_hud_wide_;
+};

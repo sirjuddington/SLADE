@@ -28,7 +28,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "EntryOperations.h"
 #include "General/Misc.h"
 #include "General/Console/Console.h"

@@ -30,7 +30,6 @@
 //
 // ----------------------------------------------------------------------------
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "UDMFProperty.h"
 #include "Utility/Parser.h"
 

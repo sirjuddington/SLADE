@@ -59,9 +59,9 @@ namespace Global
 {
 	string error = "";
 
-	int beta_num = 5;
+	int beta_num = 4;
 	int version_num = 3120;
-	string version = "3.1.2 Beta 5";
+	string version = "3.1.2 Beta 4";
 #ifdef GIT_DESCRIPTION
 	string sc_rev = GIT_DESCRIPTION;
 #else
@@ -74,7 +74,6 @@ namespace Global
 	bool debug = false;
 #endif
 
-	double ppi_scale = 1.0;
 	int win_version_major = 0;
 	int win_version_minor = 0;
 }
@@ -577,7 +576,7 @@ bool SLADEWxApp::OnInit()
 
 	// Calculate scaling factor (from system ppi)
 	wxMemoryDC dc;
-	Global::ppi_scale = (double)(dc.GetPPI().x) / 96.0;
+	double ui_scale = (double)(dc.GetPPI().x) / 96.0;
 
 	// Get Windows version
 #ifdef __WXMSW__
@@ -594,7 +593,7 @@ bool SLADEWxApp::OnInit()
 		args.push_back(argv[a]);
 
 	// Init application
-	if (!App::init(args))
+	if (!App::init(args, ui_scale))
 		return false;
 
 	// Check for updates

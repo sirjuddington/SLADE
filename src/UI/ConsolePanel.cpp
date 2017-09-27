@@ -35,7 +35,7 @@
 #include "General/Console/Console.h"
 #include "General/Misc.h"
 #include "TextEditor/TextStyle.h"
-#include "UI/WxStuff.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------
@@ -103,7 +103,7 @@ void ConsolePanel::initLayout()
 	Layout();
 
 	// Set console font to default+monospace
-	auto font = getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+	auto font = WxUtils::getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 	text_command_->SetFont(font);
 
 	setupTextArea();
