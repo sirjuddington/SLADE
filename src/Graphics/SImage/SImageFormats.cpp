@@ -254,12 +254,16 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	{
 		chars[i].width = wxUINT16_SWAP_ON_BE(*(uint16_t*)p);
 		// Let's increase the total width
-		width+=chars[i].width+1;
+		width += chars[i].width;
+		if (chars[1].width > 0) // Add spacing between characters
+			width++;
 		// The width information is enumerated for each character only if they are
 		// not constant width. Regardless, move the read pointer away after the last.
 		if (!(header->constantw) || (i == numchars - 1))
 			p+=2;
 	}
+
+	width--; // Remove spacing after last character
 
 	// Let's build the palette now.
 	for (size_t i = 0; i < header->palsize + 1u; ++i)
@@ -330,16 +334,17 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	clearData();
 
 	data = new uint8_t[width*height];
-	memset(data, header->palsize, width*height);
+	memset(data, 0, width*height);
 	uint8_t* d = data;
 	for (size_t i = 0; i < (unsigned)height; ++i)
 	{
+		d = data + i*width;
 		for (size_t j = 0; j < numchars; ++j)
 		{
 			if (chars[j].width)
 			{
 				memcpy(d, chars[j].data+(i*chars[j].width), chars[j].width);
-				d+=chars[j].width+1;
+				d += chars[j].width+1;
 			}
 		}
 	}
