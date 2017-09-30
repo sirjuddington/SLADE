@@ -247,8 +247,15 @@ wxArrayString WxUtils::arrayString(vector<string> vector)
 	return wxArrayString(vector.size(), vector.data());
 }
 
-void WxUtils::VerticalSizer::add(wxWindow* widget, wxSizerFlags flags)
+wxSize WxUtils::scaledSize(int x, int y)
 {
-	Add(widget, flags.Border(wxTOP, first_ ? 0 : UI::pad()));
-	first_ = false;
+	return wxSize(
+		x < 0 ? -1 : UI::scalePx(x),
+		y < 0 ? -1 : UI::scalePx(y)
+	);
+}
+
+wxRect WxUtils::scaledRect(int x, int y, int width, int height)
+{
+	return wxRect(UI::scalePx(x), UI::scalePx(y), UI::scalePx(width), UI::scalePx(height));
 }

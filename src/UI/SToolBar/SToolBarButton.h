@@ -1,27 +1,21 @@
-
-#ifndef __S_TOOL_BAR_BUTTON_H__
-#define __S_TOOL_BAR_BUTTON_H__
+#pragma once
 
 #include "common.h"
 
 class SAction;
 class SToolBarButton : public wxControl
 {
-private:
-	SAction*	action;
-	wxBitmap	icon;
-	int			state;
-	bool		show_name;
-
-	// For non-SAction buttons
-	string	action_id;
-	string	action_name;
-	string	help_text;
-
 public:
 	SToolBarButton(wxWindow* parent, string action, string icon = "", bool show_name = false);
-	SToolBarButton(wxWindow* parent, string action_id, string action_name, string icon, string help_text, bool show_name = false);
-	~SToolBarButton();
+	SToolBarButton(
+		wxWindow* parent,
+		const string& action_id,
+		const string& action_name,
+		const string& icon,
+		const string& help_text,
+		bool show_name = false
+	);
+	~SToolBarButton() {}
 
 	void setIcon(string icon);
 
@@ -31,6 +25,25 @@ public:
 	    STATE_MOUSEOVER,
 	    STATE_MOUSEDOWN,
 	};
+
+	static int pixelHeight();
+
+private:
+	SAction*	action_		= nullptr;
+	wxBitmap	icon_;
+	int			state_		= STATE_NORMAL;
+	bool		show_name_	= false;
+
+	// For non-SAction buttons
+	string	action_id_;
+	string	action_name_;
+	string	help_text_;
+
+	// Layout
+	int	pad_outer_	= 3;
+	int	pad_inner_	= 1;
+	int	icon_size_	= 16;
+	int	text_width_	= 0;
 
 	void	sendClickedEvent();
 
@@ -42,5 +55,3 @@ public:
 };
 
 wxDECLARE_EVENT(wxEVT_STOOLBAR_BUTTON_CLICKED, wxCommandEvent);
-
-#endif//__S_TOOL_BAR_BUTTON_H__

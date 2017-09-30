@@ -41,14 +41,7 @@ namespace WxUtils
 
 	wxArrayString	arrayString(vector<string> vector);
 
-	class VerticalSizer : public wxBoxSizer
-	{
-	public:
-		VerticalSizer() : wxBoxSizer(wxVERTICAL) {}
-
-		void add(wxWindow* widget, wxSizerFlags flags);
-
-	private:
-		bool first_ = true;
-	};
+	// Scaling
+	wxSize	scaledSize(int x, int y);
+	wxRect	scaledRect(int x, int y, int width, int height);
 }

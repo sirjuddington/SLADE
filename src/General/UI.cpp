@@ -101,6 +101,11 @@ void UI::setCursor(wxWindow* window, MouseCursor cursor)
 	}
 }
 
+double UI::scaleFactor()
+{
+	return scale;
+}
+
 int UI::px(Size size)
 {
 	switch (size)
