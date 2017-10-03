@@ -4,7 +4,7 @@
 
 #include "PropsPanelBase.h"
 #include "MOPGProperty.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 
 class wxPropertyGrid;
 class wxPGProperty;

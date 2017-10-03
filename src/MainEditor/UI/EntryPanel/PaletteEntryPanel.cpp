@@ -38,7 +38,7 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Canvas/PaletteCanvas.h"
-#include "UI/PaletteChooser.h"
+#include "UI/Controls/PaletteChooser.h"
 #include "Utility/SFileDialog.h"
 
 

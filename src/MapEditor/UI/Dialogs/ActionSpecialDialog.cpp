@@ -36,7 +36,7 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
-#include "UI/NumberTextCtrl.h"
+#include "UI/Controls/NumberTextCtrl.h"
 #include "SpecialPresetDialog.h"
 
 

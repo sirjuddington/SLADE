@@ -37,9 +37,9 @@
 #include "Dialogs/ExtMessageDialog.h"
 #include "General/ResourceManager.h"
 #include "General/UndoRedo.h"
-#include "UI/PaletteChooser.h"
+#include "UI/Controls/PaletteChooser.h"
 #include "UI/SAuiTabArt.h"
-#include "UI/UndoManagerHistoryPanel.h"
+#include "UI/Controls/UndoManagerHistoryPanel.h"
 
 
 /*******************************************************************

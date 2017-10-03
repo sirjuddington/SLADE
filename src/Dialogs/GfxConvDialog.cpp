@@ -40,8 +40,8 @@
 #include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "UI/Canvas/GfxCanvas.h"
-#include "UI/ColourBox.h"
-#include "UI/PaletteChooser.h"
+#include "UI/Controls/ColourBox.h"
+#include "UI/Controls/PaletteChooser.h"
 
 
 /*******************************************************************

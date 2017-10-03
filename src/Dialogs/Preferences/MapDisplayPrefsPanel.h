@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PrefsPanelBase.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 
 class STabCtrl;
 class MapDisplayPrefsPanel : public PrefsPanelBase

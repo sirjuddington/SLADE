@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "HexEntryPanel.h"
-#include "UI/HexEditorPanel.h"
+#include "UI/Controls/HexEditorPanel.h"
 
 
 /*******************************************************************

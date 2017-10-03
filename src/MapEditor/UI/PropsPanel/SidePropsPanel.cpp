@@ -37,7 +37,7 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "SidePropsPanel.h"
-#include "UI/NumberTextCtrl.h"
+#include "UI/Controls/NumberTextCtrl.h"
 
 
 /*******************************************************************

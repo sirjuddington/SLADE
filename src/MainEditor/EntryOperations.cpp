@@ -40,7 +40,7 @@
 #include "Archive/Formats/WadArchive.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
-#include "UI/PaletteChooser.h"
+#include "UI/Controls/PaletteChooser.h"
 #include "App.h"
 
 

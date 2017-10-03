@@ -45,7 +45,8 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "TextureXEditor/TextureXEditor.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------

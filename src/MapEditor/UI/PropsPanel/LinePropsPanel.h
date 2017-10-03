@@ -3,7 +3,7 @@
 #define __LINE_PROPS_PANEL_H__
 
 #include "PropsPanelBase.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 
 class MapObject;
 class MapObjectPropsPanel;

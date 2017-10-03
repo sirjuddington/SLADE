@@ -68,7 +68,7 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
-#include "UI/PaletteChooser.h"
+#include "UI/Controls/PaletteChooser.h"
 #include "Utility/SFileDialog.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "Scripting/ScriptManager.h"

@@ -8,7 +8,7 @@
 #include "Archive/Archive.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "PatchBrowser.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 
 class UndoManager;
 class TextureXEditor : public wxPanel, public Listener

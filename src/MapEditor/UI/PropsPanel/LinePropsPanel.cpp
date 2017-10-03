@@ -37,7 +37,7 @@
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
 #include "MapObjectPropsPanel.h"
 #include "SidePropsPanel.h"
-#include "UI/NumberTextCtrl.h"
+#include "UI/Controls/NumberTextCtrl.h"
 
 
 // ----------------------------------------------------------------------------

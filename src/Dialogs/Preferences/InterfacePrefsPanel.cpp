@@ -33,7 +33,7 @@
 #include "InterfacePrefsPanel.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 
 
 // ----------------------------------------------------------------------------

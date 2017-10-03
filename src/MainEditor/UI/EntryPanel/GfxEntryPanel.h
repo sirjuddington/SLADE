@@ -6,7 +6,8 @@
 #include "UI/Canvas/GfxCanvas.h"
 #include "General/SAction.h"
 #include "Graphics/Translation.h"
-#include "UI/ColourBox.h"
+
+class ColourBox;
 
 class GfxEntryPanel : public EntryPanel, public SActionHandler
 {

@@ -33,7 +33,7 @@
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Drawing.h"
-#include "UI/NumberTextCtrl.h"
+#include "UI/Controls/NumberTextCtrl.h"
 
 
 /*******************************************************************

@@ -5,7 +5,7 @@
 #include "Archive/Formats/DirArchive.h"
 #include "General/ListenerAnnouncer.h"
 #include "General/SAction.h"
-#include "UI/DockPanel.h"
+#include "UI/Controls/DockPanel.h"
 #include "UI/Lists/ListView.h"
 
 class ArchiveManagerPanel;

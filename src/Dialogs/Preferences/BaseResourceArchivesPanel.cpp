@@ -34,7 +34,7 @@
 #include "BaseResourceArchivesPanel.h"
 #include "Archive/ArchiveManager.h"
 #include "General/UI.h"
-#include "UI/FileLocationPanel.h"
+#include "UI/Controls/FileLocationPanel.h"
 #include "Utility/Parser.h"
 #include "UI/WxUtils.h"
 

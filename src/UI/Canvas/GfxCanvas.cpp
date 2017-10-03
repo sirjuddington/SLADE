@@ -35,6 +35,7 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "UI/SBrush.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -138,6 +139,9 @@ void GfxCanvas::draw()
 		int mid_y = GetSize().y / 2;
 		glTranslated(mid_x, mid_y, 0);
 	}
+
+	// Scale by UI scale
+	glScaled(UI::scaleFactor(), UI::scaleFactor(), 1.);
 
 	// Draw offset lines
 	if (view_type == GFXVIEW_SPRITE || view_type == GFXVIEW_HUD)

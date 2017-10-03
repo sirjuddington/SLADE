@@ -33,7 +33,7 @@
 #include "AudioPrefsPanel.h"
 #include "Audio/MIDIPlayer.h"
 #include "General/UI.h"
-#include "UI/FileLocationPanel.h"
+#include "UI/Controls/FileLocationPanel.h"
 
 
 // ----------------------------------------------------------------------------

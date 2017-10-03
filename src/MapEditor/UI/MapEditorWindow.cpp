@@ -52,10 +52,10 @@
 #include "MapEditor/UI/ShapeDrawPanel.h"
 #include "MapEditorWindow.h"
 #include "Scripting/ScriptManager.h"
-#include "UI/ConsolePanel.h"
+#include "UI/Controls/ConsolePanel.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
-#include "UI/UndoManagerHistoryPanel.h"
+#include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/Tokenizer.h"
 

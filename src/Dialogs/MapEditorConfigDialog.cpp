@@ -35,9 +35,9 @@
 #include "Archive/Formats/WadArchive.h"
 #include "Graphics/Icons.h"
 #include "Game/Configuration.h"
-#include "UI/BaseResourceChooser.h"
+#include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
-#include "UI/ResourceArchiveChooser.h"
+#include "UI/Controls/ResourceArchiveChooser.h"
 #include "General/UI.h"
 
 

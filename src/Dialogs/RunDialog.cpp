@@ -36,7 +36,7 @@
 #include "General/Executables.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
-#include "UI/ResourceArchiveChooser.h"
+#include "UI/Controls/ResourceArchiveChooser.h"
 #include "Utility/SFileDialog.h"
 
 #ifdef __WXOSX_MAC__

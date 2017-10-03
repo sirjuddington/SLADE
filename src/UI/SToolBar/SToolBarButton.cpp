@@ -75,7 +75,7 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, boo
 	action_name_{ action_->getText() },
 	help_text_{ action_->getHelpText() },
 	pad_outer_{ UI::scalePx(1) },
-	pad_inner_{ UI::scalePx(3) },
+	pad_inner_{ UI::scalePx(2) },
 	icon_size_{ UI::scalePx(toolbar_size) }
 {
 	// Determine width of name text if shown
@@ -144,7 +144,7 @@ SToolBarButton::SToolBarButton(
 	action_name_{ action_name },
 	help_text_{ help_text },
 	pad_outer_{ UI::scalePx(1) },
-	pad_inner_{ UI::scalePx(3) },
+	pad_inner_{ UI::scalePx(2) },
 	icon_size_{ UI::scalePx(toolbar_size) }
 {
 	// Determine width of name text if shown

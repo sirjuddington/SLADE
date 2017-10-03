@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "SAuiTabArt.h"
+#include "UI/SAuiTabArt.h"
 #include "STabCtrl.h"
 
 

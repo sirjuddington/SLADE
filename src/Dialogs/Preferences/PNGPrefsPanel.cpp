@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "PNGPrefsPanel.h"
 #include "UI/WxUtils.h"
-#include "UI/FileLocationPanel.h"
+#include "UI/Controls/FileLocationPanel.h"
 
 
 // ----------------------------------------------------------------------------

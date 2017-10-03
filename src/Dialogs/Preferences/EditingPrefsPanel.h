@@ -2,7 +2,7 @@
 
 #include "PrefsPanelBase.h"
 #include "UI/Lists/VirtualListView.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 
 class EditingPrefsPanel : public PrefsPanelBase
 {

@@ -5,7 +5,7 @@
 #include "UI/MainWindow.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "UI/ArchiveManagerPanel.h"
-#include "UI/PaletteChooser.h"
+#include "UI/Controls/PaletteChooser.h"
 #include "MapEditor/MapEditor.h"
 
 namespace MainEditor

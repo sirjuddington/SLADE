@@ -31,7 +31,7 @@
 // ----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapEditorPrefsPanel.h"
-#include "UI/NumberTextCtrl.h"
+#include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
 
 

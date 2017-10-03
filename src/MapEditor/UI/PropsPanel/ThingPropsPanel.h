@@ -5,7 +5,7 @@
 #include "common.h"
 #include "PropsPanelBase.h"
 #include "UI/Canvas/OGLCanvas.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 
 class GLTexture;
 namespace Game { class ThingType; }

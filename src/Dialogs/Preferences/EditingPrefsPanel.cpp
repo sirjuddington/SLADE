@@ -35,7 +35,7 @@
 #include "General/Executables.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 #include "Utility/SFileDialog.h"
 #include "UI/WxUtils.h"
 

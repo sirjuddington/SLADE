@@ -38,8 +38,8 @@
 #include "MapObjectPropsPanel.h"
 #include "OpenGL/Drawing.h"
 #include "SectorPropsPanel.h"
-#include "UI/NumberTextCtrl.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/NumberTextCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 
 
 /*******************************************************************

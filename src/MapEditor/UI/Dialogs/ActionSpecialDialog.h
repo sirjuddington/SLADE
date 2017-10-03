@@ -4,7 +4,7 @@
 
 #include "common.h"
 #include "UI/SDialog.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 #include "UI/WxBasicControls.h"
 
 

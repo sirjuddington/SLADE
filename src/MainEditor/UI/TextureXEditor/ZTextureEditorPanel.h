@@ -4,7 +4,7 @@
 
 #include "common.h"
 #include "TextureEditorPanel.h"
-#include "UI/ColourBox.h"
+#include "UI/Controls/ColourBox.h"
 
 class wxSpinCtrlDouble;
 class ZTextureEditorPanel : public TextureEditorPanel

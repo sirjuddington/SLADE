@@ -33,8 +33,8 @@
 #include "ACSPrefsPanel.h"
 #include "Utility/SFileDialog.h"
 #include "General/UI.h"
-#include "UI/FileLocationPanel.h"
-#include <UI/WxUtils.h>
+#include "UI/Controls/FileLocationPanel.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------

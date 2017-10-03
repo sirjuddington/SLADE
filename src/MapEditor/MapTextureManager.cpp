@@ -41,7 +41,7 @@
 #include "MapEditor.h"
 #include "MapTextureManager.h"
 #include "OpenGL/OpenGL.h"
-#include "UI/PaletteChooser.h"
+#include "UI/Controls/PaletteChooser.h"
 
 
 /*******************************************************************

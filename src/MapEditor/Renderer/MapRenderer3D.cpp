@@ -40,7 +40,7 @@
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapRenderer3D.h"
 #include "OpenGL/OpenGL.h"
-#include "UI/PaletteChooser.h"
+#include "UI/Controls/PaletteChooser.h"
 #include "Utility/MathStuff.h"
 
 
