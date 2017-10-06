@@ -255,6 +255,11 @@ wxSize WxUtils::scaledSize(int x, int y)
 	);
 }
 
+wxPoint WxUtils::scaledPoint(int x, int y)
+{
+	return wxPoint(UI::scalePx(x), UI::scalePx(y));
+}
+
 wxRect WxUtils::scaledRect(int x, int y, int width, int height)
 {
 	return wxRect(UI::scalePx(x), UI::scalePx(y), UI::scalePx(width), UI::scalePx(height));

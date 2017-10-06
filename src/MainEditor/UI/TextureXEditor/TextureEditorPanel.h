@@ -1,66 +1,24 @@
-
-#ifndef __TEXTURE_EDITOR_PANEL_H__
-#define __TEXTURE_EDITOR_PANEL_H__
+#pragma once
 
 #include "General/SAction.h"
 #include "General/ListenerAnnouncer.h"
 #include "UI/Lists/ListView.h"
-#include "UI/WxBasicControls.h"
 
 class TextureXEditor;
 class TextureXList;
 class CTextureCanvas;
 class CTexture;
 class Palette;
+class SZoomSlider;
+
 class TextureEditorPanel : public wxPanel, SActionHandler
 {
-protected:
-	TextureXEditor*	tx_editor;
-	CTexture*		tex_current;
-	bool			tex_modified;
-
-	// View controls
-	wxSlider*		slider_zoom;
-	wxStaticText*	label_current_zoom;
-	wxCheckBox*		cb_draw_outside;
-	wxCheckBox*		cb_blend_rgba;
-	wxCheckBox*		cb_tex_scale;
-	wxCheckBox*		cb_tex_arc;
-	wxStaticText*	label_viewtype;
-	wxChoice*		choice_viewtype;
-	CTextureCanvas*	tex_canvas;
-
-	// Texture controls
-	wxTextCtrl*		text_tex_name;
-	wxSpinCtrl*		spin_tex_width;
-	wxSpinCtrl*		spin_tex_height;
-	wxSpinCtrl*		spin_tex_scalex;
-	wxSpinCtrl*		spin_tex_scaley;
-	wxStaticText*	label_scaled_size;
-	wxCheckBox*		cb_tex_world_panning;
-
-	// Texture patches list + related controls
-	ListView*		list_patches;
-	wxButton*		btn_patch_add;
-	wxButton*		btn_patch_remove;
-	wxButton*		btn_patch_back;
-	wxButton*		btn_patch_forward;
-	wxButton*		btn_patch_replace;
-	wxButton*		btn_patch_duplicate;
-
-	// Patch controls
-	wxSpinCtrl*		spin_patch_left;
-	wxSpinCtrl*		spin_patch_top;
-
-	// Input
-	bool			alt_press;
-
 public:
 	TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor);
-	~TextureEditorPanel();
+	virtual ~TextureEditorPanel() {}
 
-	bool		texModified() { return tex_modified; }
-	CTexture*	getTexture() { return tex_current; }
+	bool		texModified() const { return tex_modified_; }
+	CTexture*	texture() const { return tex_current_; }
 
 	// UI Stuff
 	virtual void		setupLayout();
@@ -75,8 +33,8 @@ public:
 	void	clearTexture();
 	void	setPalette(Palette* pal);
 
-	Palette*		getPalette();
-	bool				getBlendRGBA();
+	Palette*	palette();
+	bool		blendRGBA();
 
 	// Editing
 	virtual void	addPatch();
@@ -86,13 +44,10 @@ public:
 	virtual void	replacePatch();
 	void			duplicatePatch(int xoff = 8, int yoff = 8);
 
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
-
 	// SAction handler
-	bool	handleAction(string id);
+	bool	handleAction(string id) override;
 
 	// Events
-	void	onZoomChanged(wxCommandEvent& e);
 	void	onDrawOutsideChanged(wxCommandEvent& e);
 	void	onTexCanvasMouseEvent(wxMouseEvent& e);
 	void	onTexCanvasDragEnd(wxCommandEvent& e);
@@ -116,6 +71,44 @@ public:
 	void	onContextMenu(wxCommandEvent& e);
 	void	onApplyScaleChanged(wxCommandEvent& e);
 	void	onARCChanged(wxCommandEvent& e);
-};
 
-#endif//__TEXTURE_EDITOR_PANEL_H__
+protected:
+	TextureXEditor*	tx_editor_		= nullptr;
+	CTexture*		tex_current_	= nullptr;
+	bool			tex_modified_	= false;
+
+	// View controls
+	SZoomSlider*	slider_zoom_		= nullptr;
+	wxCheckBox*		cb_draw_outside_	= nullptr;
+	wxCheckBox*		cb_blend_rgba_		= nullptr;
+	wxCheckBox*		cb_tex_scale_		= nullptr;
+	wxCheckBox*		cb_tex_arc_			= nullptr;
+	wxStaticText*	label_viewtype_		= nullptr;
+	wxChoice*		choice_viewtype_	= nullptr;
+	CTextureCanvas*	tex_canvas_			= nullptr;
+
+	// Texture controls
+	wxTextCtrl*		text_tex_name_			= nullptr;
+	wxSpinCtrl*		spin_tex_width_			= nullptr;
+	wxSpinCtrl*		spin_tex_height_		= nullptr;
+	wxSpinCtrl*		spin_tex_scalex_		= nullptr;
+	wxSpinCtrl*		spin_tex_scaley_		= nullptr;
+	wxStaticText*	label_scaled_size_		= nullptr;
+	wxCheckBox*		cb_tex_world_panning_	= nullptr;
+
+	// Texture patches list + related controls
+	ListView*	list_patches_			= nullptr;
+	wxButton*	btn_patch_add_			= nullptr;
+	wxButton*	btn_patch_remove_		= nullptr;
+	wxButton*	btn_patch_back_			= nullptr;
+	wxButton*	btn_patch_forward_		= nullptr;
+	wxButton*	btn_patch_replace_		= nullptr;
+	wxButton*	btn_patch_duplicate_	= nullptr;
+
+	// Patch controls
+	wxSpinCtrl*	spin_patch_left_	= nullptr;
+	wxSpinCtrl*	spin_patch_top_		= nullptr;
+
+	// Input
+	bool	alt_press_ = false;
+};

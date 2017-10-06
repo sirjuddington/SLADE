@@ -34,6 +34,7 @@
 #include "SZoomSlider.h"
 #include "UI/WxUtils.h"
 #include "UI/Canvas/GfxCanvas.h"
+#include "UI/Canvas/CTextureCanvas.h"
 
 
 // ----------------------------------------------------------------------------
@@ -46,26 +47,39 @@
 // ----------------------------------------------------------------------------
 // SZoomSlider::SZoomSlider
 //
-// SZoomSlider class constructor
+// SZoomSlider class constructor (linking GfxCanvas)
 // ----------------------------------------------------------------------------
 SZoomSlider::SZoomSlider(wxWindow* parent, GfxCanvas* linked_canvas) :
 	wxPanel{ parent },
 	linked_gfx_canvas_{ linked_canvas }
 {
+	setup();
+}
+
+// ----------------------------------------------------------------------------
+// SZoomSlider::SZoomSlider
+//
+// SZoomSlider class constructor (linking CTextureCanvas)
+// ----------------------------------------------------------------------------
+SZoomSlider::SZoomSlider(wxWindow* parent, CTextureCanvas* linked_canvas) :
+	wxPanel{ parent },
+	linked_texture_canvas_{ linked_canvas }
+{
+	setup();
+}
+
+void SZoomSlider::setup()
+{
 	// Create controls
-	slider_zoom_ = new wxSlider(this, -1, 100, 20, 800, wxDefaultPosition, wxSize(UI::scalePx(200), -1));
+	slider_zoom_ = new wxSlider(this, -1, 100, 20, 800, wxDefaultPosition, WxUtils::scaledSize(200, -1));
 	slider_zoom_->SetLineSize(10);
 	slider_zoom_->SetPageSize(100);
 	label_zoom_amount_ = new wxStaticText(this, -1, "100%");
 
 	// Layout
-	SetSizer(WxUtils::layoutHorizontally(
-		vector<wxObject*>{
-			WxUtils::createLabelHBox(this, "Zoom:", slider_zoom_),
-			label_zoom_amount_
-		},
-		0
-	));
+	SetSizer(new wxBoxSizer(wxHORIZONTAL));
+	GetSizer()->Add(WxUtils::createLabelHBox(this, "Zoom:", slider_zoom_), 1, wxEXPAND | wxRIGHT, UI::pad());
+	GetSizer()->Add(label_zoom_amount_, 0, wxALIGN_CENTER_VERTICAL);
 
 	// Slider change event
 	slider_zoom_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&)
@@ -73,11 +87,16 @@ SZoomSlider::SZoomSlider(wxWindow* parent, GfxCanvas* linked_canvas) :
 		// Update zoom label
 		label_zoom_amount_->SetLabel(S_FMT("%d%%", zoomPercent()));
 
-		// Zoom gfx canvas and update
+		// Zoom gfx/texture canvas and update
 		if (linked_gfx_canvas_)
 		{
 			linked_gfx_canvas_->setScale(zoomFactor());
 			linked_gfx_canvas_->Refresh();
+		}
+		if (linked_texture_canvas_)
+		{
+			linked_texture_canvas_->setScale(zoomFactor());
+			linked_texture_canvas_->redraw(false);
 		}
 	});
 }
@@ -119,5 +138,5 @@ void SZoomSlider::setZoom(int percent)
 // ----------------------------------------------------------------------------
 void SZoomSlider::setZoom(double factor)
 {
-	setZoom(factor * 100);
+	setZoom(int(factor * 100));
 }

@@ -71,6 +71,8 @@ public:
 
 	void	clear();
 	bool	createMergedLevel(UndoManager* manager, string name);
+
+	typedef std::unique_ptr<UndoManager> UPtr;
 };
 
 namespace UndoRedo

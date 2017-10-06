@@ -1,36 +1,38 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    PatchBrowser.cpp
- * Description: A specialisation of the Browser class for browsing
- *              the contents of a patch table. Splits the patches
- *              into three categories - Base, Archive and Unknown
- *              for patches existing in the base resource, the
- *              current archive, and entries not found, respectively
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    PatchBrowser.cpp
+// Description: A specialisation of the Browser class for browsing the contents
+//              of a patch table. Splits the patches into three categories -
+//              'Base', 'Archive' and 'Unknown' for patches existing in the
+//              base resource, the current archive, and entries not found,
+//              respectively
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "PatchBrowser.h"
 #include "Archive/ArchiveManager.h"
@@ -44,41 +46,38 @@
 #include "UI/Controls/PaletteChooser.h"
 
 
-/*******************************************************************
- * PATCHBROWSERITEM CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// PatchBrowserItem Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* PatchBrowserItem::PatchBrowserItem
- * PatchBrowserItem class constructor
- *******************************************************************/
-PatchBrowserItem::PatchBrowserItem(string name, Archive* archive, uint8_t type, string nspace, unsigned index) : BrowserItem(name, index, "patch")
-{
-	// Init variables
-	this->archive = archive;
-	this->type = type;
-	this->nspace = nspace;
-}
 
-/* PatchBrowserItem::~PatchBrowserItem
- * PatchBrowserItem class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// PatchBrowserItem::~PatchBrowserItem
+//
+// PatchBrowserItem class destructor
+// ----------------------------------------------------------------------------
 PatchBrowserItem::~PatchBrowserItem()
 {
+	// TODO: Why isn't this done in the BrowserItem destructor?
 	if (image) delete image;
 }
 
-/* PatchBrowserItem::loadImage
- * Loads the item's image from its associated entry (if any)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// PatchBrowserItem::loadImage
+//
+// Loads the item's image from its associated entry (if any)
+// ----------------------------------------------------------------------------
 bool PatchBrowserItem::loadImage()
 {
 	SImage img;
 
 	// Load patch image
-	if (type == 0)
+	if (type_ == 0)
 	{
 		// Find patch entry
-		ArchiveEntry* entry = theResourceManager->getPatchEntry(name, nspace, archive);
+		ArchiveEntry* entry = theResourceManager->getPatchEntry(name, nspace_, archive_);
 
 		// Load entry to image, if it exists
 		if (entry)
@@ -88,14 +87,14 @@ bool PatchBrowserItem::loadImage()
 	}
 
 	// Or, load texture image
-	if (type == 1)
+	if (type_ == 1)
 	{
 		// Find texture
-		CTexture* tex = theResourceManager->getTexture(name, archive);
+		CTexture* tex = theResourceManager->getTexture(name, archive_);
 
 		// Load texture to image, if it exists
 		if (tex)
-			tex->toImage(img, archive, parent->getPalette());
+			tex->toImage(img, archive_, parent->getPalette());
 		else
 			return false;
 	}
@@ -106,9 +105,11 @@ bool PatchBrowserItem::loadImage()
 	return image->loadImage(&img, parent->getPalette());
 }
 
-/* PatchBrowserItem::itemInfo
- * Returns a string with extra information about the patch
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// PatchBrowserItem::itemInfo
+//
+// Returns a string with extra information about the patch
+// ----------------------------------------------------------------------------
 string PatchBrowserItem::itemInfo()
 {
 	string info;
@@ -120,16 +121,16 @@ string PatchBrowserItem::itemInfo()
 		info += "Unknown size";
 
 	// Add patch type
-	if (type == 0)
+	if (type_ == 0)
 		info += ", Patch";
 	else
 		info += ", Texture";
 
 	// Add namespace if it exists
-	if (!nspace.IsEmpty())
+	if (!nspace_.IsEmpty())
 	{
 		info += ", ";
-		info += nspace.Capitalize();
+		info += nspace_.Capitalize();
 		info += " namespace";
 	}
 
@@ -137,17 +138,22 @@ string PatchBrowserItem::itemInfo()
 }
 
 
-/*******************************************************************
- * PATCHBROWSER CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// PatchBrowser Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* PatchBrowser::PatchBrowser
- * PatchBrowser class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// PatchBrowser::PatchBrowser
+//
+// PatchBrowser class constructor
+// ----------------------------------------------------------------------------
 PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent)
 {
 	// Init variables
-	this->patch_table = nullptr;
+	this->patch_table_ = nullptr;
 
 	// Init browser tree
 	items_root->addChild("IWAD");
@@ -161,16 +167,11 @@ PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent)
 	SetTitle("Browse Patches");
 }
 
-/* PatchBrowser::~PatchBrowser
- * PatchBrowser class destructor
- *******************************************************************/
-PatchBrowser::~PatchBrowser()
-{
-}
-
-/* PatchBrowser::openPatchTable
- * Opens contents of the patch table [table] for browsing
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// PatchBrowser::openPatchTable
+//
+// Opens contents of the patch table [table] for browsing
+// ----------------------------------------------------------------------------
 bool PatchBrowser::openPatchTable(PatchTable* table)
 {
 	// Check table was given
@@ -211,8 +212,8 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 	}
 
 	// Update variables
-	if (patch_table) stopListening(patch_table);
-	patch_table = table;
+	if (patch_table_) stopListening(patch_table_);
+	patch_table_ = table;
 	listenTo(table);
 
 	// Open 'all' node
@@ -224,11 +225,13 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 	return true;
 }
 
-/* PatchBrowser::openArchive
- * Opens all loaded resource patches and textures, prioritising those
- * from [archive], except for the case of composite textures, which
- * are ignored if in [archive]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// PatchBrowser::openArchive
+//
+// Opens all loaded resource patches and textures, prioritising those from
+// [archive], except for the case of composite textures, which are ignored if
+// in [archive]
+// ----------------------------------------------------------------------------
 bool PatchBrowser::openArchive(Archive* archive)
 {
 	// Check archive was given
@@ -308,10 +311,12 @@ bool PatchBrowser::openArchive(Archive* archive)
 	return true;
 }
 
-/* PatchBrowser::openTextureXList
- * Adds all textures in [texturex] to the browser, in the tree at
- * 'Textures/[parent archive filename]'
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// PatchBrowser::openTextureXList
+//
+// Adds all textures in [texturex] to the browser, in the tree at
+// 'Textures/[parent archive filename]'
+// ----------------------------------------------------------------------------
 bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 {
 	// Check tx list was given
@@ -336,10 +341,12 @@ bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 	return true;
 }
 
-/* PatchBrowser::getSelectedPatch
- * Returns the index of the currently selected patch, or -1 if none
- * are selected
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// PatchBrowser::getSelectedPatch
+//
+// Returns the index of the currently selected patch, or -1 if none are
+// selected
+// ----------------------------------------------------------------------------
 int PatchBrowser::getSelectedPatch()
 {
 	// Get selected item
@@ -351,34 +358,40 @@ int PatchBrowser::getSelectedPatch()
 		return -1;
 }
 
-/* PatchBrowser::selectPatch
- * Selects the patch at [pt_index] in the patch table
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// PatchBrowser::selectPatch
+//
+// Selects the patch at [pt_index] in the patch table
+// ----------------------------------------------------------------------------
 void PatchBrowser::selectPatch(int pt_index)
 {
 	// Can't without a patch table
-	if (!patch_table)
+	if (!patch_table_)
 		return;
 
 	// Check index
-	if (pt_index < 0 || pt_index >= (int)patch_table->nPatches())
+	if (pt_index < 0 || pt_index >= (int)patch_table_->nPatches())
 		return;
 
 	// Select by patch name
-	selectPatch(patch_table->patchName(pt_index));
+	selectPatch(patch_table_->patchName(pt_index));
 }
 
-/* PatchBrowser::selectPatch
- * Selects the patch matching [name]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// PatchBrowser::selectPatch
+//
+// Selects the patch matching [name]
+// ----------------------------------------------------------------------------
 void PatchBrowser::selectPatch(string name)
 {
 	selectItem(name);
 }
 
-/* PatchBrowser::onAnnouncement
- * Handles any announcements
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// PatchBrowser::onAnnouncement
+//
+// Handles any announcements
+// ----------------------------------------------------------------------------
 void PatchBrowser::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->getPaletteChooser())

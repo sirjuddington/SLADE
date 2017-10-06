@@ -1,21 +1,18 @@
-
-#ifndef __HEX_ENTRY_PANEL__
-#define __HEX_ENTRY_PANEL__
+#pragma once
 
 #include "EntryPanel.h"
 
 class HexEditorPanel;
+
 class HexEntryPanel : public EntryPanel
 {
-private:
-	HexEditorPanel*	hex_editor;
-
 public:
 	HexEntryPanel(wxWindow* parent);
-	~HexEntryPanel();
+	~HexEntryPanel() {}
 
-	bool	loadEntry(ArchiveEntry* entry);
-	bool	saveEntry();
+	bool	loadEntry(ArchiveEntry* entry) override;
+	bool	saveEntry() override;
+
+private:
+	HexEditorPanel*	hex_editor_ = nullptr;
 };
-
-#endif//__HEX_ENTRY_PANEL__

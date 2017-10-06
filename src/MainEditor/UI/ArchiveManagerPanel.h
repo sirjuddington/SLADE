@@ -1,6 +1,4 @@
-
-#ifndef __ARCHIVEMANAGERPANEL_H__
-#define __ARCHIVEMANAGERPANEL_H__
+#pragma once
 
 #include "Archive/Formats/DirArchive.h"
 #include "General/ListenerAnnouncer.h"
@@ -180,5 +178,3 @@ private:
 	bool				checked_dir_archive_changes_;
 	vector<Archive*>	checking_archives_;
 };
-
-#endif //__ARCHIVEMANAGERPANEL_H__

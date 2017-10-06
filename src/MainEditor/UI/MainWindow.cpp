@@ -1,32 +1,34 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MainWindow.cpp
- * Description: MainWindow class, ie the main SLADE window
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    MainWindow.cpp
+// Description: MainWindow class, ie the main SLADE window
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
 #include "SLADEWxApp.h"
@@ -51,30 +53,40 @@
 #include "ArchiveManagerPanel.h"
 #include "StartPage.h"
 #include "Scripting/ScriptManager.h"
+#include "UI/WxUtils.h"
 #ifdef USE_WEBVIEW_STARTPAGE
 #include "DocsPage.h"
 #endif
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-string main_window_layout = "";
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
+namespace
+{
+	string main_window_layout = "";
+}
 CVAR(Bool, show_start_page, true, CVAR_SAVE);
 CVAR(String, global_palette, "", CVAR_SAVE);
 CVAR(Bool, mw_maximized, true, CVAR_SAVE);
 CVAR(Bool, confirm_exit, true, CVAR_SAVE);
 
-DECLARE_APP(SLADEWxApp)
 
+// ----------------------------------------------------------------------------
+//
+// External Variables
+//
+// ----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, tabs_condensed)
 
 
-/*******************************************************************
- * MAINWINDOWDROPTARGET CLASS
- *******************************************************************
- Handles drag'n'drop of files on to the SLADE window
-*/
+// ----------------------------------------------------------------------------
+// MainWindowDropTarget Class
+//
+// Handles drag'n'drop of files on to the SLADE window
+// ----------------------------------------------------------------------------
 class MainWindowDropTarget : public wxFileDropTarget
 {
 public:
@@ -91,13 +103,18 @@ public:
 };
 
 
-/*******************************************************************
- * MAINWINDOW CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// MainWindow Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* MainWindow::MainWindow
- * MainWindow class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// MainWindow::MainWindow
+//
+// MainWindow class constructor
+// ----------------------------------------------------------------------------
 MainWindow::MainWindow()
 	: STopWindow("SLADE", "main")
 {
@@ -111,17 +128,21 @@ MainWindow::MainWindow()
 #endif
 }
 
-/* MainWindow::~MainWindow
- * MainWindow class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::~MainWindow
+//
+// MainWindow class destructor
+// ----------------------------------------------------------------------------
 MainWindow::~MainWindow()
 {
 	m_mgr->UnInit();
 }
 
-/* MainWindow::loadLayout
- * Loads the previously saved layout file for the window
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::loadLayout
+//
+// Loads the previously saved layout file for the window
+// ----------------------------------------------------------------------------
 void MainWindow::loadLayout()
 {
 	// Open layout file
@@ -146,9 +167,11 @@ void MainWindow::loadLayout()
 	}
 }
 
-/* MainWindow::saveLayout
- * Saves the current window layout to a file
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::saveLayout
+//
+// Saves the current window layout to a file
+// ----------------------------------------------------------------------------
 void MainWindow::saveLayout()
 {
 	// Open layout file
@@ -175,9 +198,11 @@ void MainWindow::saveLayout()
 	file.Close();
 }
 
-/* MainWindow::setupLayout
- * Sets up the wxWidgets window layout
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::setupLayout
+//
+// Sets up the wxWidgets window layout
+// ----------------------------------------------------------------------------
 void MainWindow::setupLayout()
 {
 	// Create the wxAUI manager & related things
@@ -219,9 +244,9 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Float();
-	p_inf.FloatingSize(600, 400);
-	p_inf.FloatingPosition(100, 100);
-	p_inf.MinSize(-1, 192);
+	p_inf.FloatingSize(WxUtils::scaledSize(600, 400));
+	p_inf.FloatingPosition(WxUtils::scaledPoint(100, 100));
+	p_inf.MinSize(WxUtils::scaledSize(-1, 192));
 	p_inf.Show(false);
 	p_inf.Caption("Console");
 	p_inf.Name("console");
@@ -234,7 +259,7 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Left();
-	p_inf.BestSize(192, 480);
+	p_inf.BestSize(WxUtils::scaledSize(192, 480));
 	p_inf.Caption("Archive Manager");
 	p_inf.Name("archive_manager");
 	p_inf.Show(true);
@@ -248,7 +273,7 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Right();
-	p_inf.BestSize(128, 480);
+	p_inf.BestSize(WxUtils::scaledSize(128, 480));
 	p_inf.Caption("Undo History");
 	p_inf.Name("undo_history");
 	p_inf.Show(false);
@@ -374,7 +399,16 @@ void MainWindow::setupLayout()
 	toolbar_->enableGroup("_entry", false);
 
 	// Add toolbar
-	m_mgr->AddPane(toolbar_, wxAuiPaneInfo().Top().CaptionVisible(false).MinSize(-1, SToolBar::getBarHeight()).Resizable(false).PaneBorder(false).Name("toolbar"));
+	m_mgr->AddPane(
+		toolbar_,
+		wxAuiPaneInfo()
+			.Top()
+			.CaptionVisible(false)
+			.MinSize(-1, SToolBar::getBarHeight())
+			.Resizable(false)
+			.PaneBorder(false)
+			.Name("toolbar")
+	);
 
 	// Populate the 'View->Toolbars' menu
 	populateToolbarsMenu();
@@ -409,20 +443,23 @@ void MainWindow::setupLayout()
 	toolbar_->SetFocus();
 }
 
-/* MainWindow::createStartPage
- * Builds the HTML start page and loads it into the html viewer
- * (start page tab)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::createStartPage
+//
+// (Re-)Creates the start page
+// ----------------------------------------------------------------------------
 void MainWindow::createStartPage(bool newtip) const
 {
 	if (start_page)
 		start_page->load(newtip);
 }
 
-/* MainWindow::exitProgram
- * Attempts to exit the program. Only fails if an unsaved archive is
- * found and the user cancels the exit
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::exitProgram
+//
+// Attempts to exit the program. Only fails if an unsaved archive is found and
+// the user cancels the exit
+// ----------------------------------------------------------------------------
 bool MainWindow::exitProgram()
 {
 	// Confirm exit
@@ -457,9 +494,11 @@ bool MainWindow::exitProgram()
 	return true;
 }
 
-/* MainWindow::startPageTabOpen
- * Returns true if the Start Page tab is currently open
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::startPageTabOpen
+//
+// Returns true if the Start Page tab is currently open
+// ----------------------------------------------------------------------------
 bool MainWindow::startPageTabOpen() const
 {
 	for (unsigned a = 0; a < stc_tabs->GetPageCount(); a++)
@@ -471,10 +510,11 @@ bool MainWindow::startPageTabOpen() const
 	return false;
 }
 
-/* MainWindow::openStartPageTab
- * Switches to the Start Page tab, or (re)creates it if it has been
- * closed
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::openStartPageTab
+//
+// Switches to the Start Page tab, or (re)creates it if it has been closed
+// ----------------------------------------------------------------------------
 void MainWindow::openStartPageTab()
 {
 	// Find existing tab
@@ -495,9 +535,11 @@ void MainWindow::openStartPageTab()
 	createStartPage();
 }
 
-/* MainWindow::openDocs
- * Opens [entry] in its own tab
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::openDocs
+//
+// Opens [entry] in its own tab
+// ----------------------------------------------------------------------------
 #ifdef USE_WEBVIEW_STARTPAGE
 void MainWindow::openDocs(string page_name)
 {
@@ -535,10 +577,12 @@ void MainWindow::openDocs(string page_name)
 }
 #endif
 
-/* MainWindow::handleAction
- * Handles the action [id]. Returns true if the action was handled,
- * false otherwise
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::handleAction
+//
+// Handles the action [id].
+// Returns true if the action was handled, false otherwise
+// ----------------------------------------------------------------------------
 bool MainWindow::handleAction(string id)
 {
 	// We're only interested in "main_" actions
@@ -673,22 +717,29 @@ bool MainWindow::handleAction(string id)
 }
 
 
-/*******************************************************************
- * MAINWINDOW EVENTS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// MainWindow Class Events
+//
+// ----------------------------------------------------------------------------
 
-/* MainWindow::onClose
- * Called when the window is closed
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// MainWindow::onClose
+//
+// Called when the window is closed
+// ----------------------------------------------------------------------------
 void MainWindow::onClose(wxCloseEvent& e)
 {
 	if (!exitProgram())
 		e.Veto();
 }
 
-/* MainWindow::onTabChanged
- * Called when the current tab is changed
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::onTabChanged
+//
+// Called when the current tab is changed
+// ----------------------------------------------------------------------------
 void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
 {
 	// Get current page
@@ -704,15 +755,17 @@ void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
 
 	// Archive tab, update undo history panel
 	else if (page->GetName() == "archive")
-		panel_undo_history->setManager(((ArchivePanel*)page)->getUndoManager());
+		panel_undo_history->setManager(((ArchivePanel*)page)->undoManager());
 
 	// Continue
 	e.Skip();
 }
 
-/* MainWindow::onSize
- * Called when the window is resized
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::onSize
+//
+// Called when the window is resized
+// ----------------------------------------------------------------------------
 void MainWindow::onSize(wxSizeEvent& e)
 {
 	// Update toolbar layout (if needed)
@@ -728,9 +781,11 @@ void MainWindow::onSize(wxSizeEvent& e)
 	e.Skip();
 }
 
-/* MainWindow::onToolBarLayoutChanged
- * Called when the toolbar layout is changed
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::onToolBarLayoutChanged
+//
+// Called when the toolbar layout is changed
+// ----------------------------------------------------------------------------
 void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 {
 	// Update toolbar size
@@ -738,9 +793,11 @@ void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 	m_mgr->Update();
 }
 
-/* MainWindow::onActivate
- * Called when the window is activated
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MainWindow::onActivate
+//
+// Called when the window is activated
+// ----------------------------------------------------------------------------
 void MainWindow::onActivate(wxActivateEvent& e)
 {
 	if (!e.GetActive() || this->IsBeingDeleted() || App::isExiting())

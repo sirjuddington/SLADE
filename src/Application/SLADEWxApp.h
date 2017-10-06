@@ -30,3 +30,5 @@ private:
 	wxSingleInstanceChecker*	single_instance_checker;
 	MainAppFileListener*		file_listener;
 };
+
+DECLARE_APP(SLADEWxApp)

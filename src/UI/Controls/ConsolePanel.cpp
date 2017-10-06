@@ -94,11 +94,12 @@ void ConsolePanel::initLayout()
 	text_log_->SetEditable(false);
 	text_log_->SetWrapMode(wxSTC_WRAP_WORD);
 	text_log_->SetSizeHints(wxSize(-1, 0));
-	vbox->Add(text_log_, 1, wxEXPAND | wxALL, 4);
+	vbox->Add(text_log_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::pad());
 
 	// Create and add the command entry textbox
 	text_command_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	vbox->Add(text_command_, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, 4);
+	vbox->AddSpacer(UI::px(UI::Size::PadMinimum));
+	vbox->Add(text_command_, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, UI::pad());
 
 	Layout();
 

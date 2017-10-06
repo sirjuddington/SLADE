@@ -4,7 +4,7 @@
 #include "Graphics/Icons.h"
 #include "MapEditor/UI/MapCanvas.h"
 
-SIconButton::SIconButton(wxWindow* parent, const string& icon, int icon_type, const string& tooltip) :
+SIconButton::SIconButton(wxWindow* parent, int icon_type, const string& icon, const string& tooltip) :
 	wxBitmapButton{ parent, -1, wxNullBitmap }
 {
 	// Create icon

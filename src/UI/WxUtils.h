@@ -43,5 +43,6 @@ namespace WxUtils
 
 	// Scaling
 	wxSize	scaledSize(int x, int y);
+	wxPoint	scaledPoint(int x, int y);
 	wxRect	scaledRect(int x, int y, int width, int height);
 }

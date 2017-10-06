@@ -183,7 +183,7 @@ SToolBarButton::SToolBarButton(
 void SToolBarButton::setIcon(string icon)
 {
 	if (!icon.IsEmpty())
-		icon_ = Icons::getIcon(Icons::GENERAL, icon, UI::scalePx(toolbar_size > 16));
+		icon_ = Icons::getIcon(Icons::GENERAL, icon, icon_size_ > 16);
 }
 
 // ----------------------------------------------------------------------------

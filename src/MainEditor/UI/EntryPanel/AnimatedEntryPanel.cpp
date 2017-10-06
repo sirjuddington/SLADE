@@ -30,10 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "AnimatedEntryPanel.h"
-#include "App.h"
 #include "Archive/Archive.h"
-#include "Archive/ArchiveManager.h"
-#include "General/Misc.h"
 #include "UI/Lists/ListView.h"
 #include "UI/SToolBar/SToolBar.h"
 
@@ -52,13 +49,13 @@ AnimatedEntryPanel::AnimatedEntryPanel(wxWindow* parent)
 	ae_modified = false;
 
 	// Setup toolbar
-	SToolBarGroup* group = new SToolBarGroup(toolbar, "Animated");
+	SToolBarGroup* group = new SToolBarGroup(toolbar_, "Animated");
 	group->addActionButton("new_anim", "New Animation", "animation_new", "Create a new animation definition", true);
-	toolbar->addGroup(group);
+	toolbar_->addGroup(group);
 
 	// Setup panel sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-	sizer_main->Add(sizer, 1, wxEXPAND, 0);
+	sizer_main_->Add(sizer, 1, wxEXPAND, 0);
 
 	// Add entry list
 	wxStaticBox* frame = new wxStaticBox(this, -1, "Animations");
@@ -185,7 +182,7 @@ bool AnimatedEntryPanel::handleAction(string id)
 bool AnimatedEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Do nothing if entry is already open
-	if (this->entry == entry && !isModified())
+	if (this->entry_ == entry && !isModified())
 		return true;
 
 	// Read ANIMATED entry into texturexlist
@@ -193,7 +190,7 @@ bool AnimatedEntryPanel::loadEntry(ArchiveEntry* entry)
 	animated.readANIMATEDData(entry);
 
 	// Update variables
-	this->entry = entry;
+	this->entry_ = entry;
 	setModified(false);
 
 	// Refresh controls
@@ -231,7 +228,7 @@ bool AnimatedEntryPanel::saveEntry()
 	}
 	anim.type = 255;
 	mc.write(&anim, 1);
-	bool success = entry->importMemChunk(mc);
+	bool success = entry_->importMemChunk(mc);
 	if (success)
 	{
 		for (uint32_t a = 0; a < animated.nEntries(); a++)
@@ -245,8 +242,8 @@ bool AnimatedEntryPanel::saveEntry()
  *******************************************************************/
 bool AnimatedEntryPanel::revertEntry()
 {
-	ArchiveEntry* reload = entry;
-	entry = nullptr;
+	ArchiveEntry* reload = entry_;
+	entry_ = nullptr;
 	return loadEntry(reload);
 }
 

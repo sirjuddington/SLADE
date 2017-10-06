@@ -1,6 +1,4 @@
-
-#ifndef __AUDIO_ENTRY_PANEL_H__
-#define __AUDIO_ENTRY_PANEL_H__
+#pragma once
 
 #include "common.h"
 #include "EntryPanel.h"
@@ -8,54 +6,55 @@
 class ModMusic;
 namespace sf { class SoundBuffer; class Sound; class Music; }
 class wxMediaCtrl;
+
 class AudioEntryPanel : public EntryPanel
 {
-private:
-	string	prevfile;
-	int		audio_type;
-	int		num_tracks;
-	int		subsong;
-	int		song_length;
-	bool	opened;
-
-	wxBitmapButton*	btn_play;
-	wxBitmapButton*	btn_pause;
-	wxBitmapButton*	btn_stop;
-	wxBitmapButton*	btn_next;
-	wxBitmapButton*	btn_prev;
-	wxSlider*		slider_seek;
-	wxSlider*		slider_volume;
-	wxTimer*		timer_seek;
-	wxMediaCtrl*	media_ctrl;
-	wxStaticText*	txt_title;
-	wxStaticText*	txt_track;
-	wxTextCtrl*		txt_info;
-
-	sf::SoundBuffer*	sound_buffer;
-	sf::Sound*			sound;
-	sf::Music*			music;
-	ModMusic*			mod;
-
-	enum
-	{
-		AUTYPE_INVALID,
-		AUTYPE_SOUND,
-		AUTYPE_MUSIC,
-		AUTYPE_MIDI,
-		AUTYPE_MEDIA,
-		AUTYPE_MOD,
-		AUTYPE_EMU,
-		AUTYPE_OPL,
-	};
-
 public:
 	AudioEntryPanel(wxWindow* parent);
 	~AudioEntryPanel();
 
-	bool	loadEntry(ArchiveEntry* entry);
-	bool	saveEntry();
-	string	statusString();
+	bool	loadEntry(ArchiveEntry* entry) override;
+	bool	saveEntry() override;
+	string	statusString() override;
 	void	setAudioDuration(int duration);
+
+private:
+	enum AudioType
+	{
+		Invalid,
+		Sound,
+		Music,
+		MIDI,
+		Media,
+		Mod,
+		Emu,
+		OPL,
+	};
+
+	string		prevfile_;
+	AudioType	audio_type_		= Invalid;
+	int			num_tracks_		= 1;
+	int			subsong_		= 0;
+	int			song_length_	= 0;
+	bool		opened_			= false;
+
+	wxBitmapButton*	btn_play_		= nullptr;
+	wxBitmapButton*	btn_pause_		= nullptr;
+	wxBitmapButton*	btn_stop_		= nullptr;
+	wxBitmapButton*	btn_next_		= nullptr;
+	wxBitmapButton*	btn_prev_		= nullptr;
+	wxSlider*		slider_seek_	= nullptr;
+	wxSlider*		slider_volume_	= nullptr;
+	wxTimer*		timer_seek_		= nullptr;
+	wxMediaCtrl*	media_ctrl_		= nullptr;
+	wxStaticText*	txt_title_		= nullptr;
+	wxStaticText*	txt_track_		= nullptr;
+	wxTextCtrl*		txt_info_		= nullptr;
+
+	std::unique_ptr<sf::SoundBuffer>	sound_buffer_;
+	std::unique_ptr<sf::Sound>			sound_;
+	std::unique_ptr<sf::Music>			music_;
+	std::unique_ptr<ModMusic>			mod_;
 
 	bool	open();
 	bool	openAudio(MemChunk& audio, string filename);
@@ -77,5 +76,3 @@ public:
 	void	onSliderSeekChanged(wxCommandEvent& e);
 	void	onSliderVolumeChanged(wxCommandEvent& e);
 };
-
-#endif//__AUDIO_ENTRY_PANEL_H__

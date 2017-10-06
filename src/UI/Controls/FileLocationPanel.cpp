@@ -66,7 +66,7 @@ FileLocationPanel::FileLocationPanel(
 	text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, wxDefaultSize, editable ? 0 : wxTE_READONLY);
 	sizer->Add(text_path_, wxSizerFlags(1).Expand());
 
-	btn_browse_ = new SIconButton(this, "open", Icons::GENERAL, browse_caption);
+	btn_browse_ = new SIconButton(this, "open", browse_caption);
 	sizer->Add(btn_browse_, wxSizerFlags(0).Expand().Border(wxLEFT, UI::px(UI::Size::PadMinimum)));
 
 	btn_browse_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e)

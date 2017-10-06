@@ -13,6 +13,8 @@ public:
 
 	bool	openEntryExternal(ArchiveEntry* entry, string editor, string category);
 
+	typedef std::unique_ptr<ExternalEditManager> UPtr;
+
 private:
 	vector<ExternalEditFileMonitor*>	file_monitors;
 

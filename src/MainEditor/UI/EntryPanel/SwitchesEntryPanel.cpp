@@ -47,13 +47,13 @@ SwitchesEntryPanel::SwitchesEntryPanel(wxWindow* parent)
 	se_modified = false;
 
 	// Setup toolbar
-	SToolBarGroup* group = new SToolBarGroup(toolbar, "Switches");
+	SToolBarGroup* group = new SToolBarGroup(toolbar_, "Switches");
 	group->addActionButton("new_switch", "New Switch", "switch_new", "Create a new switch definition", true);
-	toolbar->addGroup(group);
+	toolbar_->addGroup(group);
 
 	// Setup panel sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-	sizer_main->Add(sizer, 1, wxEXPAND, 0);
+	sizer_main_->Add(sizer, 1, wxEXPAND, 0);
 
 	// Add entry list
 	wxStaticBox* frame = new wxStaticBox(this, -1, "Switches");
@@ -163,7 +163,7 @@ bool SwitchesEntryPanel::handleAction(string id)
 bool SwitchesEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Do nothing if entry is already open
-	if (this->entry == entry && !isModified())
+	if (this->entry_ == entry && !isModified())
 		return true;
 
 	// Read SWITCHES entry into list
@@ -171,7 +171,7 @@ bool SwitchesEntryPanel::loadEntry(ArchiveEntry* entry)
 	switches.readSWITCHESData(entry);
 
 	// Update variables
-	this->entry = entry;
+	this->entry_ = entry;
 	setModified(false);
 
 	// Refresh controls
@@ -207,7 +207,7 @@ bool SwitchesEntryPanel::saveEntry()
 	}
 	memset(&swch, 0, 20);
 	mc.write(&swch, 20);
-	bool success = entry->importMemChunk(mc);
+	bool success = entry_->importMemChunk(mc);
 	if (success)
 	{
 		for (uint32_t a = 0; a < switches.nEntries(); a++)
@@ -221,8 +221,8 @@ bool SwitchesEntryPanel::saveEntry()
  *******************************************************************/
 bool SwitchesEntryPanel::revertEntry()
 {
-	ArchiveEntry* reload = entry;
-	entry = nullptr;
+	ArchiveEntry* reload = entry_;
+	entry_ = nullptr;
 	return loadEntry(reload);
 }
 
