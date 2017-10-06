@@ -78,6 +78,15 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 	wxPanel(parent, -1),
 	tx_editor_{ tx_editor }
 {
+	// Create controls
+	tex_canvas_ = new CTextureCanvas(this, -1);
+	slider_zoom_ = new SZoomSlider(this, tex_canvas_);
+	cb_tex_scale_ = new wxCheckBox(this, -1, "Apply Scale");
+	cb_tex_arc_ = new wxCheckBox(this, -1, "Aspect Ratio Correction");
+	cb_draw_outside_ = new wxCheckBox(this, -1, "Show Outside");
+	choice_viewtype_ = new wxChoice(this, -1);
+	label_viewtype_ = new wxStaticText(this, -1, "Offset Type:");
+	cb_blend_rgba_ = new wxCheckBox(this, -1, "Truecolour Preview");
 }
 
 // ----------------------------------------------------------------------------
@@ -88,69 +97,50 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 // ----------------------------------------------------------------------------
 void TextureEditorPanel::setupLayout()
 {
+	// Init controls
+	cb_tex_scale_->SetValue(false);
+	cb_tex_arc_->SetValue(tx_arc);
+	cb_draw_outside_->SetValue(true);
+	choice_viewtype_->SetSelection(0);
+	tex_canvas_->setViewType(0);
+	cb_blend_rgba_->SetValue(false);
+	choice_viewtype_->Set(vector<string>{ "None", "Sprite", "HUD" });
+
+	// Only show these on ZTextureEditorPanel
+	cb_blend_rgba_->Show(false);
+	choice_viewtype_->Show(false);
+	label_viewtype_->Show(false);
+
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
 
 	// Setup left section (view controls + texture canvas + texture controls)
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(vbox, 1, wxEXPAND|wxRIGHT, UI::pad());
+	sizer->Add(vbox, 1, wxEXPAND | wxRIGHT, UI::pad());
 
 	// Add view controls
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM | wxTOP, UI::px(UI::Size::PadMinimum));
-
-	// Zoom
-	slider_zoom_ = new SZoomSlider(this, tex_canvas_);
-	hbox->Add(slider_zoom_, 0, wxEXPAND);
-
+	hbox->Add(slider_zoom_, 0, wxEXPAND | wxRIGHT, UI::pad());
 	hbox->AddStretchSpacer();
-
-	// 'Apply Scale' checkbox
-	cb_tex_scale_ = new wxCheckBox(this, -1, "Apply Scale");
-	cb_tex_scale_->SetValue(false);
-	hbox->Add(cb_tex_scale_, 0, wxEXPAND|wxRIGHT, UI::pad());
-
-	// 'Aspect Ratio Correction' checkbox
-	cb_tex_arc_ = new wxCheckBox(this, -1, "Aspect Ratio Correction");
-	cb_tex_arc_->SetValue(tx_arc);
-	hbox->Add(cb_tex_arc_, 0, wxEXPAND|wxRIGHT, UI::pad());
-
-	// 'Show Outside' checkbox
-	cb_draw_outside_ = new wxCheckBox(this, -1, "Show Outside");
-	cb_draw_outside_->SetValue(true);
+	hbox->Add(cb_tex_scale_, 0, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(cb_tex_arc_, 0, wxEXPAND | wxRIGHT, UI::pad());
 	hbox->Add(cb_draw_outside_, 0, wxEXPAND);
 
 	// Add texture canvas
-	tex_canvas_ = new CTextureCanvas(this, -1);
-	tex_canvas_->setViewType(0);
 	vbox->Add(tex_canvas_->toPanel(this), 1, wxEXPAND);
 
 	// Add extra view controls
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM | wxTOP, UI::pad());
-
-	// Offset view type menu
-	string otypes[] = { "None", "Sprite", "HUD" };
-	choice_viewtype_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, otypes);
-	label_viewtype_ = new wxStaticText(this, -1, "Offset Type:");
 	hbox->Add(label_viewtype_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 	hbox->Add(choice_viewtype_, 0, wxEXPAND);
-	choice_viewtype_->SetSelection(0);
-	choice_viewtype_->Show(false); // Only show this on ZTextureEditorPanel
-	label_viewtype_->Show(false);
-
 	hbox->AddStretchSpacer();
-
-	// 'Truecolour Preview' checkbox
-	cb_blend_rgba_ = new wxCheckBox(this, -1, "Truecolour Preview");
-	cb_blend_rgba_->SetValue(false);
 	hbox->Add(cb_blend_rgba_, 0, wxEXPAND);
-	cb_blend_rgba_->Show(false);	// Only show this on ZTextureEditorPanel
 
 	// Add texture controls
 	vbox->Add(createTextureControls(this), 0, wxEXPAND);
-
 
 	// Setup right section (patch controls)
 	vbox = new wxBoxSizer(wxVERTICAL);
