@@ -523,7 +523,7 @@ void GfxConvDialog::getConvertOptions(SIFormat::convert_options_t& opt)
 	else if (rb_transparency_colour->GetValue())
 	{
 		opt.mask_source = SIFormat::MASK_COLOUR;
-		opt.mask_colour = colbox_transparent->getColour();
+		opt.mask_colour = colbox_transparent->colour();
 	}
 	else
 		opt.mask_source = SIFormat::MASK_BRIGHTNESS;

@@ -54,13 +54,13 @@ CVAR(String, map_tex_treespec, "type,archive,category", CVAR_SAVE)
 MapTexBrowserItem::MapTexBrowserItem(string name, int type, unsigned index) : BrowserItem(name, index)
 {
 	if (type == 0)
-		this->type = "texture";
+		this->type_ = "texture";
 	else if (type == 1)
-		this->type = "flat";
+		this->type_ = "flat";
 
 	// Check for blank texture
 	if (name == "-" && type == 0)
-		blank = true;
+		blank_ = true;
 
 	usage_count = 0;
 }
@@ -80,14 +80,14 @@ bool MapTexBrowserItem::loadImage()
 	GLTexture* tex = nullptr;
 
 	// Get texture or flat depending on type
-	if (type == "texture")
-		tex = MapEditor::textureManager().getTexture(name, false);
-	else if (type == "flat")
-		tex = MapEditor::textureManager().getFlat(name, false);
+	if (type_ == "texture")
+		tex = MapEditor::textureManager().getTexture(name_, false);
+	else if (type_ == "flat")
+		tex = MapEditor::textureManager().getFlat(name_, false);
 
 	if (tex)
 	{
-		image = tex;
+		image_ = tex;
 		return true;
 	}
 	else
@@ -102,23 +102,23 @@ string MapTexBrowserItem::itemInfo()
 	string info;
 
 	// Check for blank texture
-	if (name == "-")
+	if (name_ == "-")
 		return "No Texture";
 
 	// Add dimensions if known
-	if (image || loadImage())
-		info += S_FMT("%dx%d", image->getWidth(), image->getHeight());
+	if (image_ || loadImage())
+		info += S_FMT("%dx%d", image_->getWidth(), image_->getHeight());
 	else
 		info += "Unknown size";
 
 	// Add type
-	if (type == "texture")
+	if (type_ == "texture")
 		info += ", Texture";
 	else
 		info += ", Flat";
 
 	// Add scaling info
-	if (image->getScaleX() != 1.0 || image->getScaleY() != 1.0)
+	if (image_->getScaleX() != 1.0 || image_->getScaleY() != 1.0)
 		info += ", Scaled";
 
 	// Add usage count
@@ -140,7 +140,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	// Init variables
 	this->type = type;
 	this->map = map;
-	this->truncate_names = true;
+	this->truncate_names_ = true;
 
 	// Init sorting
 	addSortType("Usage Count");
@@ -237,7 +237,7 @@ bool sortBIUsage(BrowserItem* left, BrowserItem* right)
 {
 	// Sort alphabetically if usage counts are equal
 	if (((MapTexBrowserItem*)left)->usageCount() == ((MapTexBrowserItem*)right)->usageCount())
-		return left->getName() < right->getName();
+		return left->name() < right->name();
 	else
 		return ((MapTexBrowserItem*)left)->usageCount() > ((MapTexBrowserItem*)right)->usageCount();
 }
@@ -257,7 +257,7 @@ void MapTextureBrowser::doSort(unsigned sort_type)
 	else if (sort_type == 2)
 	{
 		updateUsage();
-		vector<BrowserItem*>& items = canvas->itemList();
+		vector<BrowserItem*>& items = canvas_->itemList();
 		std::sort(items.begin(), items.end(), sortBIUsage);
 	}
 }
@@ -270,13 +270,13 @@ void MapTextureBrowser::updateUsage()
 	if (!map)
 		return;
 
-	vector<BrowserItem*>& items = canvas->itemList();
+	vector<BrowserItem*>& items = canvas_->itemList();
 	for (unsigned i = 0; i < items.size(); i++)
 	{
 		MapTexBrowserItem* item = (MapTexBrowserItem*)items[i];
 		if (type == 0)
-			item->setUsage(map->texUsageCount(item->getName()));
+			item->setUsage(map->texUsageCount(item->name()));
 		else
-			item->setUsage(map->flatUsageCount(item->getName()));
+			item->setUsage(map->flatUsageCount(item->name()));
 	}
 }

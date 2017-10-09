@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "SCallTip.h"
 #include "TextEditor/TextLanguage.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------
@@ -182,7 +183,7 @@ void SCallTip::prevArgSet()
 void SCallTip::updateSize()
 {
 	updateBuffer();
-	SetSize(buffer_.GetWidth() + 24, buffer_.GetHeight() + 16);
+	SetSize(buffer_.GetWidth() + UI::scalePx(24), buffer_.GetHeight() + UI::scalePx(16));
 
 	// Get screen bounds and window bounds
 	int index = wxDisplay::GetFromWindow(this->GetParent());
@@ -290,7 +291,7 @@ wxRect SCallTip::drawArgs(
 		if (left > SCALLTIP_MAX_WIDTH)
 		{
 			left = args_left;
-			top = rect.GetBottom() + 2;
+			top = rect.GetBottom() + UI::scalePx(2);
 		}
 
 		// Set highlight colour if current arg
@@ -408,7 +409,7 @@ wxRect SCallTip::drawFunctionDescription(wxDC& dc, string desc, int left, int to
 			}
 		}
 
-		int bottom = rect.GetBottom() + 8;
+		int bottom = rect.GetBottom() + UI::scalePx(8);
 		for (unsigned a = 0; a < desc_lines.size(); a++)
 		{
 			drawText(dc, desc_lines[a], 0, bottom, &rect);
@@ -419,7 +420,7 @@ wxRect SCallTip::drawFunctionDescription(wxDC& dc, string desc, int left, int to
 	}
 	else
 	{
-		drawText(dc, desc, 0, rect.GetBottom() + 8, &rect);
+		drawText(dc, desc, 0, rect.GetBottom() + UI::scalePx(8), &rect);
 		if (rect.GetRight() > max_right)
 			max_right = rect.GetRight();
 	}
@@ -493,7 +494,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			dc.DrawLabel(
 				S_FMT("%d/%d", context_current_ + 1, function_->contexts().size()),
 				wxNullBitmap,
-				wxRect(rect_btn_up_.GetRight() + 4, yoff, width, 900),
+				wxRect(rect_btn_up_.GetRight() + UI::scalePx(4), yoff, width, 900),
 				wxALIGN_CENTER_HORIZONTAL);
 
 			// Down arrow
@@ -501,14 +502,14 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			dc.DrawLabel(
 				wxString::FromUTF8("\xE2\x96\xBC"),
 				wxNullBitmap,
-				wxRect(rect_btn_up_.GetRight() + width + 8, yoff, 900, 900),
+				wxRect(rect_btn_up_.GetRight() + width + UI::scalePx(8), yoff, 900, 900),
 				0,
 				-1,
 				&rect_btn_down_);
 
-			left = rect_btn_down_.GetRight() + 8;
-			rect_btn_up_.Offset(12, 8);
-			rect_btn_down_.Offset(12, 8);
+			left = rect_btn_down_.GetRight() + UI::scalePx(8);
+			rect_btn_up_.Offset(WxUtils::scaledPoint(12, 8));
+			rect_btn_down_.Offset(WxUtils::scaledPoint(12, 8));
 
 			// Draw function (current context)
 			auto rect = drawFunctionContext(dc, context_, left, yoff, wxcol_faded, bold);
@@ -518,7 +519,13 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			// Draw function description (if any)
 			if (!context_.description.empty())
 			{
-				auto rect_desc = drawFunctionDescription(dc, context_.description, left, rect.GetBottom() + 8, 0);
+				auto rect_desc = drawFunctionDescription(
+					dc,
+					context_.description,
+					left,
+					rect.GetBottom() + UI::scalePx(8),
+					0
+				);
 				max_right = std::max(max_right, rect_desc.GetRight());
 				bottom = rect_desc.GetBottom();
 			}
@@ -546,8 +553,15 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 					dc.DrawLine(xoff, bottom + 5, 2000, bottom + 5);
 				}
 
-				auto rect = drawFunctionContext(dc, context, xoff, bottom + (first ? 0 : 11), wxcol_faded, bold);
-				bottom = rect.GetBottom() + 1;
+				auto rect = drawFunctionContext(
+					dc,
+					context,
+					xoff,
+					bottom + (first ? 0 : UI::scalePx(11)),
+					wxcol_faded,
+					bold
+				);
+				bottom = rect.GetBottom() + UI::scaleFactor();
 				max_right = std::max(max_right, rect.GetRight());
 				first = false;
 			}
@@ -557,8 +571,14 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			{
 				dc.SetTextForeground(wxcol_faded);
 				wxRect rect;
-				drawText(dc, S_FMT("... %d more", function_->contexts().size() - num), xoff, bottom + 11, &rect);
-				bottom = rect.GetBottom() + 1;
+				drawText(
+					dc,
+					S_FMT("... %d more", function_->contexts().size() - num),
+					xoff,
+					bottom + UI::scalePx(11),
+					&rect
+				);
+				bottom = rect.GetBottom() + UI::scaleFactor();
 			}
 
 			if (num > 1)
@@ -566,8 +586,8 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		}
 
 		// Size buffer bitmap to fit
-		ct_size.SetWidth(max_right + 1);
-		ct_size.SetHeight(bottom + 1);
+		ct_size.SetWidth(max_right + UI::scaleFactor());
+		ct_size.SetHeight(bottom + UI::scaleFactor());
 	}
 	else
 	{
@@ -653,7 +673,7 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	// so just draw the entire calltip again in this case
 	drawCallTip(dc, 12, 8);
 #else
-	dc.DrawBitmap(buffer_, 12, 8, true);
+	dc.DrawBitmap(buffer_, UI::scalePx(12), UI::scalePx(8), true);
 #endif
 }
 

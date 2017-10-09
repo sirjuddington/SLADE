@@ -1,31 +1,26 @@
-
-#ifndef __RESOURCE_ARCHIVE_CHOOSER_H__
-#define __RESOURCE_ARCHIVE_CHOOSER_H__
-
-#include "common.h"
+#pragma once
 
 class Archive;
 class wxButton;
 class wxCheckListBox;
+
 class ResourceArchiveChooser : public wxPanel
 {
-private:
-	wxCheckListBox*		list_resources;
-	wxButton*			btn_open_resource;
-	wxButton*			btn_recent;
-	vector<Archive*>	archives;
-
 public:
 	ResourceArchiveChooser(wxWindow* parent, Archive* archive);
-	~ResourceArchiveChooser();
+	~ResourceArchiveChooser() {}
 
 	vector<Archive*>	getSelectedResourceArchives();
 	string				getSelectedResourceList();
+
+private:
+	wxCheckListBox*		list_resources_;
+	wxButton*			btn_open_resource_;
+	wxButton*			btn_recent_;
+	vector<Archive*>	archives_;
 
 	// Events
 	void	onBtnOpenResource(wxCommandEvent& e);
 	void	onBtnRecent(wxCommandEvent& e);
 	void	onResourceChecked(wxCommandEvent& e);
 };
-
-#endif//__RESOURCE_ARCHIVE_CHOOSER_H__

@@ -1,30 +1,22 @@
-
-#ifndef __HEX_EDITOR_PANEL_H__
-#define __HEX_EDITOR_PANEL_H__
-
-#include "common.h"
+#pragma once
 
 class HexTable : public wxGridTableBase
 {
-private:
-	MemChunk	data;
-	int			view_type;
-
 public:
-	HexTable();
-	~HexTable();
+	HexTable() {}
+	~HexTable() {}
 
-	MemChunk&	getData() { return data; }
+	MemChunk&	getData() { return data_; }
 
 	// Overrides
-	int		GetNumberRows();
-	int		GetNumberCols();
-	string	GetValue(int row, int col);
-	void 	SetValue(int row, int col, const string& value);
+	int		GetNumberRows() override;
+	int		GetNumberCols() override;
+	string	GetValue(int row, int col) override;
+	void 	SetValue(int row, int col, const string& value) override;
 
 	bool		loadData(MemChunk& mc);
 	uint32_t	getOffset(int row, int col);
-	void		setViewType(int type) { view_type = type; }
+	void		setViewType(int type) { view_type_ = type; }
 
 	// Get values
 	uint8_t		getUByteValue(uint32_t offset);
@@ -37,52 +29,54 @@ public:
 	int64_t		getInt64Value(uint32_t offset);
 	float		getFloatValue(uint32_t offset);
 	double		getDoubleValue(uint32_t offset);
+
+private:
+	MemChunk	data_;
+	int			view_type_ = 0;
 };
 
-class wxButton;
-class wxRadioButton;
-class wxStaticText;
 class HexEditorPanel : public wxPanel
 {
-private:
-	wxGrid*			grid_hex;
-	HexTable*		table_hex;
-	wxButton*		btn_go_to_offset;
-	wxRadioButton*	rb_view_hex;
-	wxRadioButton*	rb_view_dec;
-	wxRadioButton*	rb_view_ascii;
-
-	// Info labels
-	wxStaticText*	label_offset;
-	wxStaticText*	label_ubyte;
-	wxStaticText*	label_byte;
-	wxStaticText*	label_ascii;
-	wxStaticText*	label_ushort_le;
-	wxStaticText*	label_uint32_le;
-	wxStaticText*	label_uint64_le;
-	wxStaticText*	label_short_le;
-	wxStaticText*	label_int32_le;
-	wxStaticText*	label_int64_le;
-	wxStaticText*	label_float_le;
-	wxStaticText*	label_double_le;
-	wxStaticText*	label_ushort_be;
-	wxStaticText*	label_uint32_be;
-	wxStaticText*	label_uint64_be;
-	wxStaticText*	label_short_be;
-	wxStaticText*	label_int32_be;
-	wxStaticText*	label_int64_be;
-	wxStaticText*	label_float_be;
-	wxStaticText*	label_double_be;
-
 public:
 	HexEditorPanel(wxWindow* parent);
-	~HexEditorPanel();
+	~HexEditorPanel() {}
 
 	bool	loadData(MemChunk& mc);
 
+private:
+	wxGrid*			grid_hex_			= nullptr;
+	HexTable*		table_hex_			= nullptr;
+	wxButton*		btn_go_to_offset_	= nullptr;
+	wxRadioButton*	rb_view_hex_		= nullptr;
+	wxRadioButton*	rb_view_dec_		= nullptr;
+	wxRadioButton*	rb_view_ascii_		= nullptr;
+
+	// Info labels
+	wxStaticText*	label_offset_		= nullptr;
+	wxStaticText*	label_ubyte_		= nullptr;
+	wxStaticText*	label_byte_			= nullptr;
+	wxStaticText*	label_ascii_		= nullptr;
+	wxStaticText*	label_ushort_le_	= nullptr;
+	wxStaticText*	label_uint32_le_	= nullptr;
+	wxStaticText*	label_uint64_le_	= nullptr;
+	wxStaticText*	label_short_le_		= nullptr;
+	wxStaticText*	label_int32_le_		= nullptr;
+	wxStaticText*	label_int64_le_		= nullptr;
+	wxStaticText*	label_float_le_		= nullptr;
+	wxStaticText*	label_double_le_	= nullptr;
+	wxStaticText*	label_ushort_be_	= nullptr;
+	wxStaticText*	label_uint32_be_	= nullptr;
+	wxStaticText*	label_uint64_be_	= nullptr;
+	wxStaticText*	label_short_be_		= nullptr;
+	wxStaticText*	label_int32_be_		= nullptr;
+	wxStaticText*	label_int64_be_		= nullptr;
+	wxStaticText*	label_float_be_		= nullptr;
+	wxStaticText*	label_double_be_	= nullptr;
+
+	void	setupLayout();
+
+	// Events
 	void	onCellSelected(wxGridEvent& e);
 	void	onBtnGoToOffset(wxCommandEvent& e);
 	void	onRBViewType(wxCommandEvent& e);
 };
-
-#endif//__HEX_EDITOR_PANEL_H__

@@ -480,7 +480,7 @@ void LineTextureOverlay::browseTexture(tex_inf_t& tex, string position)
 	{
 		// Set texture
 		tex.textures.clear();
-		tex.textures.push_back(browser.getSelectedItem()->getName());
+		tex.textures.push_back(browser.getSelectedItem()->name());
 		tex.changed = true;
 		close(false);
 	}

@@ -555,7 +555,7 @@ string TextureXEditor::browsePatchEntry(string first)
 		patch_browser_->selectPatch(first);
 
 	if (patch_browser_->ShowModal() == wxID_OK && patch_browser_->getSelectedItem())
-		return patch_browser_->getSelectedItem()->getName();
+		return patch_browser_->getSelectedItem()->name();
 	else
 		return "";
 }

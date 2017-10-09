@@ -1,51 +1,61 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    STabCtrl.cpp
- * Description: A wxAuiNotebook specialisation that uses SAuiTabArt
- *              provider and has some other minor improvements
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    STabCtrl.cpp
+// Description: A wxAuiNotebook specialisation that uses SAuiTabArt provider
+//              and has some other minor improvements
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "UI/SAuiTabArt.h"
 #include "STabCtrl.h"
+#include "General/UI.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 CVAR(Bool, tabs_condensed, false, CVAR_SAVE)
 
 
-/*******************************************************************
- * STABCTRL CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// STabCtrl Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* STabCtrl::STabCtrl
- * STabCtrl class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// STabCtrl::STabCtrl
+//
+// STabCtrl class constructor
+// ----------------------------------------------------------------------------
 STabCtrl::STabCtrl(
 	wxWindow* parent,
 	bool close_buttons,
@@ -73,21 +83,16 @@ STabCtrl::STabCtrl(
 
 	// Setup tabs
 	SetArtProvider(new SAuiTabArt(close_buttons, main_tabs));
-	SetTabCtrlHeight(height);
+	SetTabCtrlHeight(UI::scalePx(height));
 }
 
-/* STabCtrl::~STabCtrl
- * STabCtrl class destructor
- *******************************************************************/
-STabCtrl::~STabCtrl()
-{
-}
-
-/* STabCtrl::DoGetBestClientSize
- * wxAuiNotebook doesn't automatically set its own minimum size to
- * the minimum size of its contents, so we have to do that for it.
- * See http://trac.wxwidgets.org/ticket/4698
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// STabCtrl::DoGetBestClientSize
+//
+// wxAuiNotebook doesn't automatically set its own minimum size to the minimum
+// size of its contents, so we have to do that for it.
+// See http://trac.wxwidgets.org/ticket/4698
+// ----------------------------------------------------------------------------
 wxSize STabCtrl::DoGetBestClientSize() const
 {
 	wxSize ret;
@@ -103,14 +108,22 @@ wxSize STabCtrl::DoGetBestClientSize() const
 }
 
 
-/*******************************************************************
- * STABCTRL CLASS STATIC FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// STabCtrl Class Static Functions
+//
+// ----------------------------------------------------------------------------
 
-/* STabCtrl::createControl
- * Creates a platform-dependant tab control (STabCtrl in Windows,
- * wxNotebook anywhere else)
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// STabCtrl::createControl
+//
+// Creates a platform-dependant tab control (STabCtrl in Windows, wxNotebook
+// anywhere else)
+// 
+// I'm using STabCtrl in Windows because the native tab control gives tab pages
+// a white background, which looks like crap
+// ----------------------------------------------------------------------------
 TabControl* STabCtrl::createControl(
 	wxWindow* parent,
 	bool close_buttons,

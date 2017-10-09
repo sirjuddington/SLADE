@@ -920,8 +920,8 @@ void TranslationEditorDialog::onRBColourSelected(wxCommandEvent& e)
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 		// Target colour gradient
-		tr->setDStart(cb_range_begin->getColour());
-		tr->setDEnd(cb_range_end->getColour());
+		tr->setDStart(cb_range_begin->colour());
+		tr->setDEnd(cb_range_end->colour());
 
 		// Update UI
 		updateListItem(index);
@@ -953,8 +953,8 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e)
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 		// Target colour gradient
-		rgba_t sc = cb_range_begin->getColour();
-		rgba_t ec = cb_range_end->getColour();
+		rgba_t sc = cb_range_begin->colour();
+		rgba_t ec = cb_range_end->colour();
 		tr->setDStart(MathStuff::clamp((double)sc.r / 127.0f, 0, 2),
 		              MathStuff::clamp((double)sc.g / 127.0f, 0, 2),
 		              MathStuff::clamp((double)sc.b / 127.0f, 0, 2));
@@ -990,7 +990,7 @@ void TranslationEditorDialog::onRBColouriseSelected(wxCommandEvent& e)
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 		// Target colour
-		tr->setColour(cb_target_tint->getColour());
+		tr->setColour(cb_target_tint->colour());
 
 		// Update UI
 		updateListItem(index);
@@ -1021,7 +1021,7 @@ void TranslationEditorDialog::onRBTintSelected(wxCommandEvent& e)
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 		// Target colour
-		tr->setColour(cb_target_tint->getColour());
+		tr->setColour(cb_target_tint->colour());
 		tr->setAmount(slider_tint->GetValue());
 
 		// Update UI
@@ -1037,7 +1037,7 @@ void TranslationEditorDialog::onRBTintSelected(wxCommandEvent& e)
 void TranslationEditorDialog::onBeginColourChanged(wxEvent& e)
 {
 	// Set start colour to selected colour
-	setStartColour(cb_range_begin->getColour());
+	setStartColour(cb_range_begin->colour());
 }
 
 /* TranslationEditorDialog::onEndColourChanged
@@ -1046,7 +1046,7 @@ void TranslationEditorDialog::onBeginColourChanged(wxEvent& e)
 void TranslationEditorDialog::onEndColourChanged(wxEvent& e)
 {
 	// Set end colour to selected colour
-	setEndColour(cb_range_end->getColour());
+	setEndColour(cb_range_end->colour());
 }
 
 /* TranslationEditorDialog::onTintColourChanged
@@ -1054,7 +1054,7 @@ void TranslationEditorDialog::onEndColourChanged(wxEvent& e)
  *******************************************************************/
 void TranslationEditorDialog::onTintColourChanged(wxEvent& e)
 {
-	setTintColour(cb_target_tint->getColour());
+	setTintColour(cb_target_tint->colour());
 }
 
 /* TranslationEditorDialog::onTintAmountChanged
@@ -1409,7 +1409,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 	gfx_preview->setPalette(pal);
 	gfx_preview->SetInitialSize(wxSize(192, 192));
 	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-	rgba_t col = cb_colour->getColour();
+	rgba_t col = cb_colour->colour();
 	gfx_preview->getImage()->colourise(col, pal);
 	gfx_preview->updateImageTexture();
 
@@ -1428,7 +1428,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 
 rgba_t GfxColouriseDialog::getColour()
 {
-	return cb_colour->getColour();
+	return cb_colour->colour();
 }
 
 void GfxColouriseDialog::setColour(string col)
@@ -1445,7 +1445,7 @@ void GfxColouriseDialog::setColour(string col)
 void GfxColouriseDialog::onColourChanged(wxEvent& e)
 {
 	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-	gfx_preview->getImage()->colourise(cb_colour->getColour(), palette);
+	gfx_preview->getImage()->colourise(cb_colour->colour(), palette);
 	gfx_preview->updateImageTexture();
 	gfx_preview->Refresh();
 }
@@ -1534,7 +1534,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal
 
 rgba_t GfxTintDialog::getColour()
 {
-	return rgba_t(cb_colour->getColour());
+	return rgba_t(cb_colour->colour());
 }
 
 float GfxTintDialog::getAmount()

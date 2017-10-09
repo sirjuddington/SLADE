@@ -1,32 +1,30 @@
-
-#ifndef __COLOURBOX_H__
-#define	__COLOURBOX_H__
+#pragma once
 
 #include "common.h"
 
 class Palette;
+
 class ColourBox : public wxPanel
 {
-private:
-	rgba_t			colour;
-	Palette*	palette;
-	bool			alpha;
-	bool			altmode;
-
 public:
-
 	ColourBox(wxWindow* parent, int id = -1, bool enable_alpha = false, bool mode = false);
 	ColourBox(wxWindow* parent, int id, rgba_t col, bool enable_alpha = false, bool mode = false);
-	~ColourBox();
+	~ColourBox() {}
 
-	rgba_t	getColour() { return colour; }
+	rgba_t	colour() { return colour_; }
 
-	void	setPalette(Palette* pal)	{ palette = pal; }
-	void	setColour(rgba_t col)			{ colour = col; Refresh(); }
+	void	setPalette(Palette* pal)	{ palette_ = pal; }
+	void	setColour(rgba_t col)		{ colour_ = col; Refresh(); }
 
 	void	popPalette();
 	void	popColourPicker();
 	void	popAlphaSlider();
+
+private:
+	rgba_t		colour_;
+	Palette*	palette_	= nullptr;
+	bool		alpha_		= false;
+	bool		altmode_	= false;
 
 	// Events
 	void	onPaint(wxPaintEvent& e);
@@ -37,5 +35,3 @@ public:
 };
 
 DECLARE_EVENT_TYPE(wxEVT_COLOURBOX_CHANGED, -1)
-
-#endif//__COLOURBOX_H__

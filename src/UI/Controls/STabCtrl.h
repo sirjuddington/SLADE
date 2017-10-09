@@ -22,7 +22,7 @@ public:
 		bool main_tabs = false,
 		bool move_tabs = false
 	);
-	~STabCtrl();
+	~STabCtrl() {}
 
 	static TabControl*	createControl(
 							wxWindow* parent,

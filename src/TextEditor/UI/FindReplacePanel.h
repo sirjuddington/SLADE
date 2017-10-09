@@ -6,7 +6,7 @@ class FindReplacePanel : public wxPanel
 {
 public:
 	FindReplacePanel(wxWindow* parent, TextEditorCtrl* text_editor);
-	~FindReplacePanel();
+	~FindReplacePanel() {}
 
 	void	setFindText(string find) const;
 	string	findText() const;

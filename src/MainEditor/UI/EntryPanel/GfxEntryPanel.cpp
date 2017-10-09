@@ -728,7 +728,7 @@ bool GfxEntryPanel::handleAction(string id)
 	{
 		editing_ = true;
 		gfx_canvas_->setEditingMode(1);
-		gfx_canvas_->setPaintColour(cb_colour_->getColour());
+		gfx_canvas_->setPaintColour(cb_colour_->colour());
 	}
 
 	// Editing - erase mode
@@ -1097,7 +1097,7 @@ bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 // ----------------------------------------------------------------------------
 void GfxEntryPanel::onPaintColourChanged(wxEvent& e)
 {
-	gfx_canvas_->setPaintColour(cb_colour_->getColour());
+	gfx_canvas_->setPaintColour(cb_colour_->colour());
 }
 
 // ----------------------------------------------------------------------------

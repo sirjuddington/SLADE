@@ -61,7 +61,7 @@
 PatchBrowserItem::~PatchBrowserItem()
 {
 	// TODO: Why isn't this done in the BrowserItem destructor?
-	if (image) delete image;
+	if (image_) delete image_;
 }
 
 // ----------------------------------------------------------------------------
@@ -77,7 +77,7 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == 0)
 	{
 		// Find patch entry
-		ArchiveEntry* entry = theResourceManager->getPatchEntry(name, nspace_, archive_);
+		ArchiveEntry* entry = theResourceManager->getPatchEntry(name_, nspace_, archive_);
 
 		// Load entry to image, if it exists
 		if (entry)
@@ -90,19 +90,19 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == 1)
 	{
 		// Find texture
-		CTexture* tex = theResourceManager->getTexture(name, archive_);
+		CTexture* tex = theResourceManager->getTexture(name_, archive_);
 
 		// Load texture to image, if it exists
 		if (tex)
-			tex->toImage(img, archive_, parent->getPalette());
+			tex->toImage(img, archive_, parent_->getPalette());
 		else
 			return false;
 	}
 
 	// Create gl texture from image
-	if (image) delete image;
-	image = new GLTexture();
-	return image->loadImage(&img, parent->getPalette());
+	if (image_) delete image_;
+	image_ = new GLTexture();
+	return image_->loadImage(&img, parent_->getPalette());
 }
 
 // ----------------------------------------------------------------------------
@@ -115,8 +115,8 @@ string PatchBrowserItem::itemInfo()
 	string info;
 
 	// Add dimensions if known
-	if (image)
-		info += S_FMT("%dx%d", image->getWidth(), image->getHeight());
+	if (image_)
+		info += S_FMT("%dx%d", image_->getWidth(), image_->getHeight());
 	else
 		info += "Unknown size";
 
@@ -156,9 +156,9 @@ PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent)
 	this->patch_table_ = nullptr;
 
 	// Init browser tree
-	items_root->addChild("IWAD");
-	items_root->addChild("Custom");
-	items_root->addChild("Unknown");
+	items_root_->addChild("IWAD");
+	items_root_->addChild("Custom");
+	items_root_->addChild("Unknown");
 
 	// Init palette chooser
 	listenTo(theMainWindow->getPaletteChooser());
@@ -217,7 +217,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 	listenTo(table);
 
 	// Open 'all' node
-	openTree(items_root);
+	openTree(items_root_);
 
 	// Update tree control
 	populateItemTree();
@@ -242,11 +242,11 @@ bool PatchBrowser::openArchive(Archive* archive)
 	clearItems();
 
 	// Init browser tree
-	items_root->addChild("Patches");
-	items_root->addChild("Graphics");
-	items_root->addChild("Textures");
-	items_root->addChild("Flats");
-	items_root->addChild("Sprites");
+	items_root_->addChild("Patches");
+	items_root_->addChild("Graphics");
+	items_root_->addChild("Textures");
+	items_root_->addChild("Flats");
+	items_root_->addChild("Sprites");
 
 	// Setup palette chooser
 	theMainWindow->getPaletteChooser()->setGlobalFromArchive(archive);
@@ -303,7 +303,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 	}
 
 	// Open 'patches' node
-	openTree((BrowserTreeNode*)items_root->getChild("Patches"));
+	openTree((BrowserTreeNode*)items_root_->getChild("Patches"));
 
 	// Update tree control
 	populateItemTree();
@@ -353,7 +353,7 @@ int PatchBrowser::getSelectedPatch()
 	PatchBrowserItem* item = (PatchBrowserItem*)getSelectedItem();
 
 	if (item)
-		return item->getIndex();
+		return item->index();
 	else
 		return -1;
 }
@@ -400,7 +400,7 @@ void PatchBrowser::onAnnouncement(Announcer* announcer, string event_name, MemCh
 	if (event_name == "main_palette_changed")
 	{
 		// Update palette
-		palette.copyPalette(theMainWindow->getPaletteChooser()->getSelectedPalette());
+		palette_.copyPalette(theMainWindow->getPaletteChooser()->getSelectedPalette());
 
 		// Reload all items
 		reloadItems();

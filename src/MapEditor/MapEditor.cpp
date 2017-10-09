@@ -196,7 +196,7 @@ string MapEditor::browseTexture(const string &init_texture, int tex_type, SLADEM
 	// Get selected texture
 	string tex;
 	if (browser.ShowModal() == wxID_OK)
-		tex = browser.getSelectedItem()->getName();
+		tex = browser.getSelectedItem()->name();
 
 	// Re-lock cursor if needed
 	if (cursor_locked)

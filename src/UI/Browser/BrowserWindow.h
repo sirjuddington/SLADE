@@ -1,6 +1,4 @@
-
-#ifndef __BROWSER_WINDOW_H__
-#define __BROWSER_WINDOW_H__
+#pragma once
 
 #include "Utility/Tree.h"
 #include "BrowserItem.h"
@@ -8,65 +6,50 @@
 #include "Graphics/Palette/Palette.h"
 #include "common.h"
 
-class BrowserTreeNode : public STreeNode
-{
-private:
-	string 					name;
-	vector<BrowserItem*>	items;
-	wxTreeListItem			tree_id;
-
-	STreeNode* createChild(string name)
-	{
-		BrowserTreeNode* node = new BrowserTreeNode();
-		node->name = name;
-		return node;
-	}
-
-public:
-	BrowserTreeNode(BrowserTreeNode* parent = nullptr);
-	~BrowserTreeNode();
-
-	string			getName() { return name; }
-	wxTreeListItem	getTreeId() { return tree_id; }
-	void			setName(string name) { this->name = name; }
-	void			setTreeId(wxTreeListItem id) { this->tree_id = id; }
-
-	void			clearItems();
-	unsigned		nItems() { return items.size(); }
-	BrowserItem*	getItem(unsigned index);
-	void			addItem(BrowserItem* item, unsigned index = 0xFFFFFFFF);
-};
-
-
 class wxChoice;
 class wxTextCtrl;
 class wxSlider;
 class wxStaticText;
+
+class BrowserTreeNode : public STreeNode
+{
+public:
+	BrowserTreeNode(BrowserTreeNode* parent = nullptr);
+	~BrowserTreeNode();
+
+	string			getName() override { return name_; }
+	wxTreeListItem	treeId() { return tree_id_; }
+	void			setName(string name) override { this->name_ = name; }
+	void			setTreeId(wxTreeListItem id) { this->tree_id_ = id; }
+
+	void			clearItems();
+	unsigned		nItems() { return items_.size(); }
+	BrowserItem*	getItem(unsigned index);
+	void			addItem(BrowserItem* item, unsigned index = 0xFFFFFFFF);
+
+private:
+	string 					name_;
+	vector<BrowserItem*>	items_;
+	wxTreeListItem			tree_id_;
+
+	STreeNode* createChild(string name) override
+	{
+		BrowserTreeNode* node = new BrowserTreeNode();
+		node->name_ = name;
+		return node;
+	}
+};
+
 class BrowserWindow : public wxDialog
 {
-private:
-	wxTreeListCtrl*		tree_items;
-	wxChoice*			choice_sort;
-	wxTextCtrl*			text_filter;
-	wxSlider*			slider_zoom;
-	wxStaticText*		label_info;
-
-protected:
-	BrowserTreeNode*		items_root;
-	wxBoxSizer*				sizer_bottom;
-	Palette				palette;
-	BrowserCanvas*			canvas;
-	vector<BrowserItem*>	items_global;
-	bool					truncate_names;
-
 public:
 	BrowserWindow(wxWindow* parent);
 	~BrowserWindow();
 
-	bool	truncateNames() { return truncate_names; }
+	bool	truncateNames() { return truncate_names_; }
 
-	Palette*	getPalette() { return &palette; }
-	void			setPalette(Palette* pal) { palette.copyPalette(pal); }
+	Palette*	getPalette() { return &palette_; }
+	void		setPalette(Palette* pal) { palette_.copyPalette(pal); }
 
 	bool			addItem(BrowserItem* item, string where = "");
 	void			addGlobalItem(BrowserItem* item);
@@ -80,7 +63,6 @@ public:
 	void			setSortType(int type);
 
 	void	openTree(BrowserTreeNode* node, bool clear = true);
-
 	void	populateItemTree(bool collapse_all = true);
 	void	addItemTree(BrowserTreeNode* node, wxTreeListItem& item);
 
@@ -89,6 +71,21 @@ public:
 	void	setItemNameType(int type);
 	void	setItemSize(int size);
 	void	setItemViewType(int type);
+
+protected:
+	BrowserTreeNode*		items_root_		= nullptr;
+	wxBoxSizer*				sizer_bottom_	= nullptr;
+	Palette					palette_;
+	BrowserCanvas*			canvas_			= nullptr;
+	vector<BrowserItem*>	items_global_;
+	bool					truncate_names_	= false;
+
+private:
+	wxTreeListCtrl*		tree_items_		= nullptr;
+	wxChoice*			choice_sort_	= nullptr;
+	wxTextCtrl*			text_filter_	= nullptr;
+	wxSlider*			slider_zoom_	= nullptr;
+	wxStaticText*		label_info_		= nullptr;
 
 	// Events
 	void	onTreeItemSelected(wxTreeListEvent& e);
@@ -99,5 +96,3 @@ public:
 	void	onCanvasSelectionChanged(wxEvent& e);
 	void	onCanvasKeyChar(wxKeyEvent& e);
 };
-
-#endif//__BROWSER_WINDOW_H__

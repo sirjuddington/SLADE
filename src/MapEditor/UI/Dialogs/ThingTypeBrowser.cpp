@@ -88,7 +88,7 @@ bool ThingBrowserItem::loadImage()
 
 	if (tex)
 	{
-		image = tex;
+		image_ = tex;
 		return true;
 	}
 	else
@@ -111,7 +111,7 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	// Add 'Details view' checkbox
 	cb_view_tiles = new wxCheckBox(this, -1, "Details view");
 	cb_view_tiles->SetValue(browser_thing_tiles);
-	sizer_bottom->Add(cb_view_tiles, 0, wxEXPAND|wxRIGHT, 4);
+	sizer_bottom_->Add(cb_view_tiles, 0, wxEXPAND|wxRIGHT, 4);
 
 	// Populate tree
 	auto& types = Game::configuration().allThingTypes();
@@ -120,14 +120,14 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	populateItemTree();
 
 	// Set browser options
-	canvas->setItemNameType(BrowserCanvas::NAMES_INDEX);
+	canvas_->setItemNameType(BrowserCanvas::NAMES_INDEX);
 	setupViewOptions();
 
 	// Select initial item if any
 	if (type >= 0)
 		selectItem(Game::configuration().thingType(type).name());
 	else
-		openTree(items_root);	// Otherwise open 'all' category
+		openTree(items_root_);	// Otherwise open 'all' category
 
 
 	// Bind events
@@ -161,8 +161,8 @@ void ThingTypeBrowser::setupViewOptions()
 		setItemViewType(BrowserCanvas::ITEMS_NORMAL);
 	}
 
-	canvas->updateLayout();
-	canvas->showSelectedItem();
+	canvas_->updateLayout();
+	canvas_->showSelectedItem();
 }
 
 /* ThingTypeBrowser::getSelectedType
@@ -173,8 +173,8 @@ int ThingTypeBrowser::getSelectedType()
 	BrowserItem* selected = getSelectedItem();
 	if (selected)
 	{
-		LOG_MESSAGE(1, "Selected item %d", selected->getIndex());
-		return selected->getIndex();
+		LOG_MESSAGE(1, "Selected item %d", selected->index());
+		return selected->index();
 	}
 	else
 		return -1;

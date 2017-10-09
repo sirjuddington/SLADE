@@ -168,7 +168,7 @@ public:
 				editor->beginUndoRecord("Change Texture", true, false, false);
 
 				// Set texture if one selected
-				string texture = browser.getSelectedItem()->getName();
+				string texture = browser.getSelectedItem()->name();
 				switch (parts[index])
 				{
 				case TEX_FRONT_UPPER:
@@ -1123,7 +1123,7 @@ public:
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
-				string texture = browser.getSelectedItem()->getName();
+				string texture = browser.getSelectedItem()->name();
 				editor->beginUndoRecord("Change Texture", true, false, false);
 				switch (parts[index])
 				{
@@ -1256,7 +1256,7 @@ public:
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
-				string texture = browser.getSelectedItem()->getName();
+				string texture = browser.getSelectedItem()->name();
 				editor->beginUndoRecord("Change Texture");
 				if (floor[index])
 					sectors[index]->setStringProperty("texturefloor", texture);
