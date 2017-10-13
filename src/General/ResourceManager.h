@@ -1,6 +1,4 @@
-
-#ifndef __RESOURCE_MANAGER_H__
-#define __RESOURCE_MANAGER_H__
+#pragma once
 
 #include "common.h"
 #include "Archive/Archive.h"
@@ -13,32 +11,32 @@ class ResourceManager;
 class Resource
 {
 	friend class ResourceManager;
-private:
-	string	type;
-
 public:
-	Resource(string type) { this->type = type; }
-	~Resource() {}
+	Resource(string type) { this->type_ = type; }
+	virtual ~Resource() {}
 
 	virtual int	length() { return 0; }
+
+private:
+	string	type_;
 };
 
 class EntryResource : public Resource
 {
 	friend class ResourceManager;
-private:
-	vector<std::weak_ptr<ArchiveEntry>>	entries;
-
 public:
-	EntryResource();
-	~EntryResource();
+	EntryResource() : Resource("entry") {}
+	virtual ~EntryResource() {}
 
 	void	add(ArchiveEntry::SPtr& entry);
 	void	remove(ArchiveEntry::SPtr& entry);
 
-	int		length();
+	int		length() override { return entries_.size(); }
 
 	ArchiveEntry*	getEntry(Archive* priority = nullptr, string nspace = "", bool ns_required = false);
+
+private:
+	vector<std::weak_ptr<ArchiveEntry>>	entries_;
 };
 
 class TextureResource : public Resource
@@ -57,16 +55,16 @@ public:
 		}
 	};
 
-	TextureResource();
-	~TextureResource();
+	TextureResource()  : Resource("texture") {}
+	virtual ~TextureResource() {}
 
 	void	add(CTexture* tex, Archive* parent);
 	void	remove(Archive* parent);
 
-	int		length();
+	int		length() override { return textures_.size(); }
 
 private:
-	vector<std::unique_ptr<Texture>>	textures;
+	vector<std::unique_ptr<Texture>>	textures_;
 };
 
 typedef std::map<string, EntryResource> EntryResourceMap;
@@ -74,27 +72,16 @@ typedef std::map<string, TextureResource> TextureResourceMap;
 
 class ResourceManager : public Listener, public Announcer
 {
-private:
-	EntryResourceMap	palettes;
-	EntryResourceMap	patches;
-	EntryResourceMap	graphics;
-	EntryResourceMap	flats;
-	EntryResourceMap	satextures;	// Stand Alone textures (e.g., between TX_ or T_ markers)
-	TextureResourceMap	textures;	// Composite textures (defined in a TEXTUREx/TEXTURES lump)
-
-	static ResourceManager*	instance;
-	static string Doom64HashTable[65536];
-
 public:
-	ResourceManager();
-	~ResourceManager();
+	ResourceManager() {}
+	~ResourceManager() {}
 
 	static ResourceManager*	getInstance()
 	{
-		if (!instance)
-			instance = new ResourceManager();
+		if (!instance_)
+			instance_ = new ResourceManager();
 
-		return instance;
+		return instance_;
 	}
 
 	void	addArchive(Archive* archive);
@@ -117,13 +104,23 @@ public:
 	ArchiveEntry*	getFlatEntry(string flat, Archive* priority = nullptr);
 	ArchiveEntry*	getTextureEntry(string texture, string nspace = "textures", Archive* priority = nullptr);
 	CTexture*		getTexture(string texture, Archive* priority = nullptr, Archive* ignore = nullptr);
-	string			getTextureName(uint16_t hash) { return Doom64HashTable[hash]; }
 	uint16_t		getTextureHash(string name);
 
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+
+	static string	getTextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
+
+private:
+	EntryResourceMap	palettes_;
+	EntryResourceMap	patches_;
+	EntryResourceMap	graphics_;
+	EntryResourceMap	flats_;
+	EntryResourceMap	satextures_;	// Stand Alone textures (e.g., between TX_ or T_ markers)
+	TextureResourceMap	textures_;		// Composite textures (defined in a TEXTUREx/TEXTURES lump)
+
+	static ResourceManager*	instance_;
+	static string			doom64_hash_table_[65536];
 };
 
 // Define for less cumbersome ResourceManager::getInstance()
 #define theResourceManager ResourceManager::getInstance()
-
-#endif//__RESOURCE_MANAGER_H__
