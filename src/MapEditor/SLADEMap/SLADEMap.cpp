@@ -1759,6 +1759,15 @@ bool SLADEMap::readUDMFMap(Archive::MapDesc map)
 		addThing(defs_things[a]);
 	}
 
+	// Keep map-scope values
+	for (auto node : defs_other)
+	{
+		if (node->nValues() > 0)
+			udmf_props_[node->getName()] = node->value();
+
+		// TODO: Unknown blocks
+	}
+
 	UI::setSplashProgressMessage("Init map data");
 
 	// Remove detached vertices
@@ -2352,6 +2361,10 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 	// Write map namespace
 	tempfile.Write("// Written by SLADE3\n");
 	tempfile.Write(S_FMT("namespace=\"%s\";\n", udmf_namespace_));
+
+	// Write map-scope props
+	tempfile.Write(udmf_props_.toString(true));
+	tempfile.Write("\n");
 
 	//sf::Clock clock;
 
