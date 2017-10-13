@@ -665,6 +665,15 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 	// Write set to file
 	string filename = App::path(S_FMT("text_styles/%s.sss", name), App::Dir::User);
 	ss_temp.writeFile(filename);
+
+	// Add new set to list
+	StyleSet::addSet(&ss_temp);
+
+	// Refresh styles list
+	wxArrayString style_sets;
+	for (unsigned a = 0; a < StyleSet::numSets(); a++)
+		style_sets.Add(StyleSet::getName(a));
+	choice_styleset->Set(style_sets);
 }
 
 /* TextStylePrefsPanel::onStyleSetSelected
