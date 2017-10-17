@@ -850,6 +850,36 @@ void StyleSet::applyCurrentToAll()
 }
 
 // ----------------------------------------------------------------------------
+// StyleSet::addSet
+//
+// Adds [set] to the list of text styles (makes a copy). If a custom set with
+// [set]'s name already exists, copy [set] to it
+// ----------------------------------------------------------------------------
+void StyleSet::addSet(StyleSet* set)
+{
+	// Find existing custom set with same name
+	for (auto s : style_sets)
+		if (s->name == set->name)
+		{
+			// Non-custom set exists, need to create a copy instead
+			if (s->built_in)
+			{
+				set->name += " (Copy)";
+				break;
+			}
+
+			// Copy set
+			s->copySet(set);
+			return;
+		}
+
+	// Not found, add new set
+	auto new_set = new StyleSet(set->name);
+	new_set->copySet(set);
+	style_sets.push_back(new_set);
+}
+
+// ----------------------------------------------------------------------------
 // StyleSet::loadResourceStyles
 //
 // Loads all text styles from the slade resource archive (slade.pk3)
@@ -884,6 +914,7 @@ bool StyleSet::loadResourceStyles()
 		for (unsigned b = 0; b  < nodes.size(); b++)
 		{
 			StyleSet* newset = new StyleSet();
+			newset->built_in = true;
 			if (newset->parseSet((ParseTreeNode*)nodes[b]))
 				style_sets.push_back(newset);
 			else
@@ -914,6 +945,7 @@ bool StyleSet::loadResourceStyles()
 		for (unsigned b = 0; b  < nodes.size(); b++)
 		{
 			StyleSet* newset = new StyleSet();
+			newset->built_in = true;
 			if (newset->parseSet((ParseTreeNode*)nodes[b]))
 				style_sets.push_back(newset);
 			else

@@ -143,6 +143,15 @@ else(APPLE)
 		install(FILES "${SLADE_OUTPUT_DIR}/slade.pk3"
 			DESTINATION share/slade3
 			)
+		
+		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/logo_icon.png"
+			DESTINATION share/icons/
+			RENAME slade.png
+			)
+
+		install(FILES "${PROJECT_SOURCE_DIR}/slade.desktop"
+			DESTINATION share/applications/
+			)
 	endif(UNIX)
 endif(APPLE)
 

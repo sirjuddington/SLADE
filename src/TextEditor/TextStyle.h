@@ -65,6 +65,7 @@ private:
 	string		name;
 	TextStyle	ts_default;
 	TextStyle	ts_selection;
+	bool		built_in = false;
 
 	vector<TextStyle*>	styles;
 	
@@ -103,6 +104,7 @@ public:
 	static void			addEditor(TextEditorCtrl* stc);
 	static void			removeEditor(TextEditorCtrl* stc);
 	static void			applyCurrentToAll();
+	static void			addSet(StyleSet* set);
 
 	static bool			loadResourceStyles();
 	static bool			loadCustomStyles();
