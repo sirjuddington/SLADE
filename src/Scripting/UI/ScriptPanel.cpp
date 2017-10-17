@@ -30,7 +30,7 @@ ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) :
 	sizer->Add(text_editor_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
 	// Find+Replace panel
-	find_replace_panel_ = new FindReplacePanel(this, text_editor_);
+	find_replace_panel_ = new FindReplacePanel(this, *text_editor_);
 	sizer->Add(find_replace_panel_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 	find_replace_panel_->Show(false);
 

@@ -111,7 +111,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	}
 
 	// Add Find+Replace panel
-	panel_fr = new FindReplacePanel(this, text_editor);
+	panel_fr = new FindReplacePanel(this, *text_editor);
 	text_editor->setFindReplacePanel(panel_fr);
 	vbox->Add(panel_fr, 0, wxEXPAND | wxALL, 4);
 	panel_fr->Hide();

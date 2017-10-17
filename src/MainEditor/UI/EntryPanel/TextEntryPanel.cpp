@@ -66,7 +66,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	sizer_main_->Add(text_area_, 1, wxEXPAND, 0);
 
 	// Create the find+replace panel
-	panel_fr_ = new FindReplacePanel(this, text_area_);
+	panel_fr_ = new FindReplacePanel(this, *text_area_);
 	text_area_->setFindReplacePanel(panel_fr_);
 	panel_fr_->Hide();
 	sizer_main_->Add(panel_fr_, 0, wxEXPAND|wxTOP, UI::padLarge());

@@ -34,6 +34,7 @@
 #include "General/KeyBind.h"
 #include "TextEditorCtrl.h"
 #include "UI/WxUtils.h"
+#include "UI/Controls/SIconButton.h"
 
 
 // ----------------------------------------------------------------------------
@@ -48,7 +49,7 @@
 //
 // FindReplacePanel class constructor
 // ----------------------------------------------------------------------------
-FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl* text_editor)
+FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor)
 	: wxPanel(parent, -1), text_editor_(text_editor)
 {
 	SetSizer(new wxBoxSizer(wxVERTICAL));
@@ -60,10 +61,12 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl* text_editor
 	text_find_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 	btn_find_next_ = new wxButton(this, -1, "Find Next");
 	btn_find_prev_ = new wxButton(this, -1, "Find Previous");
+	btn_close_ = new SIconButton(this, "close", "Close");
 	gb_sizer->Add(new wxStaticText(this, -1, "Find What:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_find_, { 0, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL|wxEXPAND);
 	gb_sizer->Add(btn_find_next_, { 0, 2 }, { 1, 1 }, wxEXPAND);
 	gb_sizer->Add(btn_find_prev_, { 0, 3 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(btn_close_, { 0, 4 }, { 1, 1 }, wxEXPAND);
 
 	// Replace
 	text_replace_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
@@ -80,17 +83,17 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl* text_editor
 	cb_match_word_start_ = new wxCheckBox(this, -1, "Match Word (Start)");
 	cb_search_regex_ = new wxCheckBox(this, -1, "Regular Expression");
 	cb_allow_escape_ = new wxCheckBox(this, -1, "Allow Backslash Expressions");
-	WxUtils::layoutHorizontally(
-		GetSizer(),
-		vector<wxObject*>{
-			cb_match_case_,
-			cb_match_word_whole_,
-			cb_match_word_start_,
-			cb_search_regex_,
-			cb_allow_escape_
-		},
-		wxSizerFlags(0).Expand()
-	);
+	auto wsizer = new wxWrapSizer(wxHORIZONTAL, wxREMOVE_LEADING_SPACES);
+	GetSizer()->Add(wsizer, 0, wxEXPAND);
+	wsizer->Add(cb_match_case_, 0, wxEXPAND);
+	wsizer->AddSpacer(UI::pad());
+	wsizer->Add(cb_match_word_whole_, 0, wxEXPAND);
+	wsizer->AddSpacer(UI::pad());
+	wsizer->Add(cb_match_word_start_, 0, wxEXPAND);
+	wsizer->AddSpacer(UI::pad());
+	wsizer->Add(cb_search_regex_, 0, wxEXPAND);
+	wsizer->AddSpacer(UI::pad());
+	wsizer->Add(cb_allow_escape_, 0, wxEXPAND);
 
 	gb_sizer->AddGrowableCol(1, 1);
 
@@ -99,40 +102,46 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl* text_editor
 	// Find Next button clicked
 	btn_find_next_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e)
 	{
-		text_editor_->findNext(findText(), findFlags());
+		text_editor_.findNext(findText(), findFlags());
 	});
 
 	// Find Previous button clicked
 	btn_find_prev_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e)
 	{
-		text_editor_->findPrev(findText(), findFlags());
+		text_editor_.findPrev(findText(), findFlags());
+	});
+
+	// Close button clicked
+	btn_close_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e)
+	{
+		text_editor_.showFindReplacePanel(false);
 	});
 
 	// Replace button clicked
 	btn_replace_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e)
 	{
-		text_editor_->replaceCurrent(findText(), replaceText(), findFlags());
+		text_editor_.replaceCurrent(findText(), replaceText(), findFlags());
 	});
 
 	// Replace All button clicked
 	btn_replace_all_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e)
 	{
-		text_editor_->replaceAll(findText(), replaceText(), findFlags());
+		text_editor_.replaceAll(findText(), replaceText(), findFlags());
 	});
 
 	// Enter pressed in find text box
 	text_find_->Bind(wxEVT_TEXT_ENTER, [&](wxCommandEvent& e)
 	{
 		if (wxGetKeyState(WXK_SHIFT))
-			text_editor_->findPrev(findText(), findFlags());
+			text_editor_.findPrev(findText(), findFlags());
 		else
-			text_editor_->findNext(findText(), findFlags());
+			text_editor_.findNext(findText(), findFlags());
 	});
 	
 	// Enter pressed in replace text box
 	text_replace_->Bind(wxEVT_TEXT_ENTER, [&](wxCommandEvent& e)
 	{
-		text_editor_->replaceCurrent(findText(), replaceText(), findFlags());
+		text_editor_.replaceCurrent(findText(), replaceText(), findFlags());
 	});
 
 	Bind(wxEVT_CHAR_HOOK, &FindReplacePanel::onKeyDown, this);
@@ -238,28 +247,28 @@ void FindReplacePanel::onKeyDown(wxKeyEvent& e)
 		// Find next
 		if (name == "ted_findnext")
 		{
-			text_editor_->findNext(findText(), findFlags());
+			text_editor_.findNext(findText(), findFlags());
 			handled = true;
 		}
 
 		// Find previous
 		else if (name == "ted_findprev")
 		{
-			text_editor_->findPrev(findText(), findFlags());
+			text_editor_.findPrev(findText(), findFlags());
 			handled = true;
 		}
 
 		// Replace next
 		else if (name == "ted_replacenext")
 		{
-			text_editor_->replaceCurrent(findText(), replaceText(), findFlags());
+			text_editor_.replaceCurrent(findText(), replaceText(), findFlags());
 			handled = true;
 		}
 
 		// Replace all
 		else if (name == "ted_replaceall")
 		{
-			text_editor_->replaceAll(findText(), replaceText(), findFlags());
+			text_editor_.replaceAll(findText(), replaceText(), findFlags());
 			handled = true;
 		}
 	}
@@ -268,7 +277,7 @@ void FindReplacePanel::onKeyDown(wxKeyEvent& e)
 	{
 		// Esc = close panel
 		if (e.GetKeyCode() == WXK_ESCAPE)
-			text_editor_->showFindReplacePanel(false);
+			text_editor_.showFindReplacePanel(false);
 		else
 			e.Skip();
 	}
