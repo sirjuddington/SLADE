@@ -45,6 +45,7 @@
 #include "UI/SToolBar/SToolBar.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------
@@ -196,7 +197,7 @@ wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const s
 // ----------------------------------------------------------------------------
 wxImageList* createTreeImageList()
 {
-	auto image_list = new wxImageList(16, 16, false, 0);
+	auto image_list = WxUtils::createSmallImageList();
 	image_list->Add(Icons::getIcon(Icons::ENTRY, "text"));
 	image_list->Add(Icons::getIcon(Icons::ENTRY, "folder"));
 	return image_list;

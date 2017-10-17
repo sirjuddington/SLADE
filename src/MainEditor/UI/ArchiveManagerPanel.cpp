@@ -410,7 +410,7 @@ void ArchiveManagerPanel::createRecentPanel()
 	vbox->Add(list_recent_, 1, wxEXPAND|wxTOP, UI::px(UI::Size::PadMinimum));
 
 	// Setup image list
-	wxImageList* list = new wxImageList(16, 16, false, 0);
+	auto list = WxUtils::createSmallImageList();
 	list->Add(Icons::getIcon(Icons::ENTRY, "archive"));
 	list->Add(Icons::getIcon(Icons::ENTRY, "wad"));
 	list->Add(Icons::getIcon(Icons::ENTRY, "zip"));

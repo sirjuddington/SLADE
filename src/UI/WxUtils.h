@@ -17,6 +17,7 @@ namespace WxUtils
 						const string& icon = wxEmptyString
 					);
 	wxFont			getMonospaceFont(wxFont base);
+	wxImageList*	createSmallImageList();
 
 	wxSizer*	createLabelHBox(wxWindow* parent, const string& label, wxWindow* widget);
 	wxSizer*	createLabelHBox(wxWindow* parent, const string& label, wxSizer* sizer);

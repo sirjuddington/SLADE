@@ -738,7 +738,7 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 	wxArrayString style_sets;
 	for (unsigned a = 0; a < StyleSet::numSets(); a++)
 		style_sets.Add(StyleSet::getName(a));
-	choice_styleset->Set(style_sets);
+	choice_styleset_->Set(style_sets);
 }
 
 // ----------------------------------------------------------------------------

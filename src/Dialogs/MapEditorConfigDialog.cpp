@@ -38,7 +38,7 @@
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
 #include "UI/Controls/ResourceArchiveChooser.h"
-#include "General/UI.h"
+#include "UI/WxUtils.h"
 
 
 /*******************************************************************
@@ -221,7 +221,7 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	wxStaticBoxSizer* framesizer;
 
 	// Setup image list
-	img_list = new wxImageList(16, 16);
+	img_list = WxUtils::createSmallImageList();
 	img_list->Add(Icons::getIcon(Icons::GENERAL, "tick"));
 	img_list->Add(Icons::getIcon(Icons::GENERAL, "close"));
 

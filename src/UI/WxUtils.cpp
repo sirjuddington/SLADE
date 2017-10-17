@@ -89,6 +89,12 @@ wxFont WxUtils::getMonospaceFont(wxFont base)
 	return font;
 }
 
+wxImageList* WxUtils::createSmallImageList()
+{
+	auto icon_size = UI::scaleFactor() > 1.25 ? 32 : 16;
+	return new wxImageList(icon_size, icon_size, false, 0);
+}
+
 // ----------------------------------------------------------------------------
 // WxUtils::createLabelHBox
 //
