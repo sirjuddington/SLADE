@@ -266,7 +266,7 @@ bool Tokenizer::advIfNC(const string& check, int inc)
 // ----------------------------------------------------------------------------
 bool Tokenizer::advIfNext(const char* check, int inc)
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return false;
 
 	if (token_next_ == check)
@@ -279,7 +279,7 @@ bool Tokenizer::advIfNext(const char* check, int inc)
 }
 bool Tokenizer::advIfNext(const string& check, int inc)
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return false;
 
 	if (token_next_ == check)
@@ -292,7 +292,7 @@ bool Tokenizer::advIfNext(const string& check, int inc)
 }
 bool Tokenizer::advIfNext(char check, int inc)
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return false;
 
 	if (token_next_ == check)
@@ -311,7 +311,7 @@ bool Tokenizer::advIfNext(char check, int inc)
 // ----------------------------------------------------------------------------
 bool Tokenizer::advIfNextNC(const char* check, int inc)
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return false;
 
 	if (S_CMPNOCASE(token_next_.text, check))
@@ -331,7 +331,7 @@ bool Tokenizer::advIfNextNC(const char* check, int inc)
 void Tokenizer::advToNextLine()
 {
 	// Ignore if we're on the last token already
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return;
 
 	// If the next token is on the next line just move to it
@@ -363,7 +363,7 @@ void Tokenizer::advToNextLine()
 void Tokenizer::advToEndOfLine()
 {
 	// Ignore if we're on the last token already
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return;
 
 	// Ignore if the next token is on the next line
@@ -493,7 +493,7 @@ string Tokenizer::getLine(bool from_start)
 bool Tokenizer::checkOrEnd(const char* check) const
 {
 	// At end, return true
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return true;
 
 	return token_current_ == check;
@@ -501,7 +501,7 @@ bool Tokenizer::checkOrEnd(const char* check) const
 bool Tokenizer::checkOrEnd(const string& check) const
 {
 	// At end, return true
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return true;
 
 	return token_current_ == check;
@@ -509,7 +509,7 @@ bool Tokenizer::checkOrEnd(const string& check) const
 bool Tokenizer::checkOrEnd(char check) const
 {
 	// At end, return true
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return true;
 
 	return token_current_ == check;
@@ -518,7 +518,7 @@ bool Tokenizer::checkOrEnd(char check) const
 bool Tokenizer::checkOrEndNC(const char* check) const
 {
 	// At end, return true
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return true;
 
 	return S_CMPNOCASE(token_current_.text, check);
@@ -531,21 +531,21 @@ bool Tokenizer::checkOrEndNC(const char* check) const
 // ----------------------------------------------------------------------------
 bool Tokenizer::checkNext(const char* check) const
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return false;
 
 	return token_next_ == check;
 }
 bool Tokenizer::checkNext(const string& check) const
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return false;
 
 	return token_next_ == check;
 }
 bool Tokenizer::checkNext(char check) const
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return false;
 
 	return token_next_ == check;
@@ -553,7 +553,7 @@ bool Tokenizer::checkNext(char check) const
 
 bool Tokenizer::checkNextNC(const char* check) const
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return false;
 
 	return S_CMPNOCASE(token_next_.text, check);
@@ -607,12 +607,12 @@ bool Tokenizer::openString(const string& text, unsigned offset, unsigned length,
 
 	// If length isn't specified or exceeds the string's length,
 	// only copy to the end of the string
-	string ascii = text.ToAscii();
+	auto ascii = text.ToAscii();
 	if (offset + length > (unsigned)ascii.length() || length == 0)
 		length = (unsigned)ascii.length() - offset;
 
 	// Copy the string portion
-	data_.assign(ascii.begin() + offset, ascii.begin() + offset + length);
+	data_.assign(ascii.data() + offset, ascii.data() + offset + length);
 
 	reset();
 
@@ -882,7 +882,10 @@ void Tokenizer::tokenizeWhitespace()
 bool Tokenizer::readNext(Token* target)
 {
 	if (data_.size() == 0 || state_.position >= state_.size)
+	{
+		if (target) target->valid = false;
 		return false;
+	}
 
 	// Process until the end of a token or the end of the data
 	state_.done = false;
@@ -921,6 +924,7 @@ bool Tokenizer::readNext(Token* target)
 		target->pos_start = state_.current_token.pos_start;
 		target->pos_end = state_.position;
 		target->length = target->pos_end - target->pos_start;
+		target->valid = true;
 
 		// Convert to lowercase if configured to and it isn't a quoted string
 		if (read_lowercase_ && !target->quoted_string)
