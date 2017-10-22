@@ -22,6 +22,7 @@ public:
 		unsigned	pos_start;
 		unsigned	pos_end;
 		unsigned	length;
+		bool		valid;
 
 		explicit	operator	string() const { return text; }
 		explicit	operator	const string() const { return text; }
@@ -136,7 +137,7 @@ public:
 
 	// General
 	bool	isSpecialCharacter(char p) const { return VECTOR_EXISTS(special_characters_, p); }
-	bool	atEnd() const { return token_current_.pos_start == token_next_.pos_start; }
+	bool	atEnd() const { return !token_next_.valid; }
 	void	reset();
 
 	// Old tokenizer interface bridge (don't use)
