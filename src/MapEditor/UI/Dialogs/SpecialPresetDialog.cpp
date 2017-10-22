@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "SpecialPresetDialog.h"
 #include "Game/Configuration.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------
@@ -95,8 +96,8 @@ public:
 
 		// 64 is an arbitrary fudge factor -- should be at least the width of a
 		// scrollbar plus the expand icons plus any extra padding
-		int min_width = textsize.GetWidth() + GetIndent() + 64;
-		wxWindowBase::SetMinSize(wxSize(min_width, 200));
+		int min_width = textsize.GetWidth() + GetIndent() + UI::scalePx(64);
+		wxWindowBase::SetMinSize(wxSize(min_width, UI::scalePx(200)));
 	}
 
 	Game::SpecialPreset selectedPreset() const
@@ -124,15 +125,15 @@ private:
 		wxDataViewItem	item;
 		Group(wxDataViewItem item, string name) : name{ name }, item{ item } {}
 	};
-	vector<Group> groups;
+	vector<Group> groups_;
 
 	wxDataViewItem getGroup(string group)
 	{
 		// Check if group was already made
-		for (unsigned a = 0; a < groups.size(); a++)
+		for (unsigned a = 0; a < groups_.size(); a++)
 		{
-			if (group == groups[a].name)
-				return groups[a].item;
+			if (group == groups_[a].name)
+				return groups_[a].item;
 		}
 
 		// Split group into subgroups
@@ -147,11 +148,11 @@ private:
 			fullpath += path[p];
 
 			bool found = false;
-			for (unsigned a = 0; a < groups.size(); a++)
+			for (unsigned a = 0; a < groups_.size(); a++)
 			{
-				if (groups[a].name == fullpath)
+				if (groups_[a].name == fullpath)
 				{
-					current = groups[a].item;
+					current = groups_[a].item;
 					found = true;
 					break;
 				}
@@ -160,7 +161,7 @@ private:
 			if (!found)
 			{
 				current = AppendContainer(current, path[p], -1, 1);
-				groups.push_back({ current, fullpath });
+				groups_.push_back({ current, fullpath });
 			}
 		}
 
@@ -201,14 +202,14 @@ SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) :
 	// Presets tree
 	tree_presets_ = new SpecialPresetTreeView(this);
 	tree_presets_->setParentDialog(this);
-	sizer->Add(tree_presets_, 1, wxALL | wxEXPAND, 10);
+	sizer->Add(tree_presets_, 1, wxALL | wxEXPAND, UI::padLarge());
 
 	// OK button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
 	hbox->AddStretchSpacer(1);
 	auto btn_ok = new wxButton(this, -1, "OK");
-	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, 4);
+	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, UI::pad());
 	btn_ok->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_OK); });
 
 	// Cancel button

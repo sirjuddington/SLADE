@@ -18,6 +18,7 @@ namespace WxUtils
 					);
 	wxFont			getMonospaceFont(wxFont base);
 	wxImageList*	createSmallImageList();
+	wxPanel*		createPadPanel(wxWindow* parent, wxWindow* control, int pad = -1);
 
 	wxSizer*	createLabelHBox(wxWindow* parent, const string& label, wxWindow* widget);
 	wxSizer*	createLabelHBox(wxWindow* parent, const string& label, wxSizer* sizer);

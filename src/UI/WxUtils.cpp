@@ -89,10 +89,33 @@ wxFont WxUtils::getMonospaceFont(wxFont base)
 	return font;
 }
 
+// ----------------------------------------------------------------------------
+// WxUtils::createSmallImageList
+//
+// Creates an image list with a DPI-scaled 'small' image size (for lists, etc.)
+// ----------------------------------------------------------------------------
 wxImageList* WxUtils::createSmallImageList()
 {
 	auto icon_size = UI::scaleFactor() > 1.25 ? 32 : 16;
 	return new wxImageList(icon_size, icon_size, false, 0);
+}
+
+// ----------------------------------------------------------------------------
+// WxUtils::createPadPanel
+//
+// Creates a wxPanel and places [control] on it, with [pad] padding around it
+// ----------------------------------------------------------------------------
+wxPanel* WxUtils::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
+{
+	if (pad < 0)
+		pad = UI::pad();
+
+	auto panel = new wxPanel(parent);
+	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
+	panel->GetSizer()->Add(control, 1, wxEXPAND | wxALL, pad);
+	control->Reparent(panel);
+
+	return panel;
 }
 
 // ----------------------------------------------------------------------------

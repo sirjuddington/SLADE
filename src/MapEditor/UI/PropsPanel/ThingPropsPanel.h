@@ -1,108 +1,105 @@
+#pragma once
 
-#ifndef __THING_PROPS_PANEL_H__
-#define __THING_PROPS_PANEL_H__
-
-#include "common.h"
 #include "PropsPanelBase.h"
 #include "UI/Canvas/OGLCanvas.h"
 #include "UI/Controls/STabCtrl.h"
 
 class GLTexture;
 namespace Game { class ThingType; }
+class NumberTextCtrl;
+class MapObjectPropsPanel;
+class ArgsPanel;
+class ActionSpecialPanel;
 
 class SpriteTexCanvas : public OGLCanvas
 {
-private:
-	GLTexture*	texture;
-	string		texname;
-	rgba_t		col;
-	bool		icon;
-
 public:
 	SpriteTexCanvas(wxWindow* parent);
-	~SpriteTexCanvas();
+	~SpriteTexCanvas() {}
 
-	string	getTexName();
+	string	texName() const { return texname_; }
 	void	setSprite(const Game::ThingType& type);
-	void	draw();
+	void	draw() override;
+
+private:
+	GLTexture*	texture_	= nullptr;
+	string		texname_;
+	rgba_t		colour_		= COL_WHITE;
+	bool		icon_		= false;
 };
 
 class ThingDirCanvas : public OGLCanvas
 {
-private:
-	int					angle;
-	vector<fpoint2_t>	dir_points;
-	rgba_t				col_bg;
-	rgba_t				col_fg;
-	int					point_hl;
-	int					point_sel;
-	long				last_check;
-
 public:
 	ThingDirCanvas(wxWindow* parent);
 	~ThingDirCanvas() {}
 
-	int		getAngle() { return angle; }
+	int		angle() const { return angle_; }
 	void	setAngle(int angle);
-	void	draw();
+	void	draw() override;
 
 	void	onMouseEvent(wxMouseEvent& e);
+	
+private:
+	int					angle_;
+	vector<fpoint2_t>	dir_points_;
+	rgba_t				col_bg_;
+	rgba_t				col_fg_;
+	int					point_hl_;
+	int					point_sel_;
+	long				last_check_;
 };
 
-class NumberTextCtrl;
+
 class AngleControl : public wxControl
 {
-private:
-	int				angle;
-	wxRadioButton*	rb_angles[8];
-	NumberTextCtrl*	text_angle;
-
 public:
 	AngleControl(wxWindow* parent);
-	~AngleControl();
+	~AngleControl() {}
 
-	int		getAngle(int base = 0);
+	int		angle(int base = 0);
 	void	setAngle(int angle);
 	void	updateAngle();
 	bool	angleSet();
+
+private:
+	int				angle_;
+	wxRadioButton*	rb_angles_[8];
+	NumberTextCtrl*	text_angle_;
 
 	void	onAngleButtonClicked(wxCommandEvent& e);
 	void	onAngleTextChanged(wxCommandEvent& e);
 };
 
-class MapObjectPropsPanel;
-class ArgsPanel;
-class ActionSpecialPanel;
+
 class ThingPropsPanel : public PropsPanelBase
 {
-private:
-	TabControl*				stc_tabs;
-	MapObjectPropsPanel*	mopp_other_props;
-	vector<wxCheckBox*>		cb_flags;
-	vector<wxCheckBox*>		cb_flags_extra;
-	ArgsPanel*				panel_args;
-	SpriteTexCanvas*		gfx_sprite;
-	wxStaticText*			label_type;
-	ActionSpecialPanel*		panel_special;
-	AngleControl*			ac_direction;
-	NumberTextCtrl*			text_id;
-	NumberTextCtrl*			text_height;
-
-	vector<string>	udmf_flags;
-	vector<string>	udmf_flags_extra;
-	int				type_current;
-
 public:
 	ThingPropsPanel(wxWindow* parent);
-	~ThingPropsPanel();
+	~ThingPropsPanel() {}
+
+	void	openObjects(vector<MapObject*>& objects) override;
+	void	applyChanges() override;
+
+private:
+	TabControl*				stc_tabs_			= nullptr;
+	MapObjectPropsPanel*	mopp_other_props_	= nullptr;
+	vector<wxCheckBox*>		cb_flags_;
+	vector<wxCheckBox*>		cb_flags_extra_;
+	ArgsPanel*				panel_args_			= nullptr;
+	SpriteTexCanvas*		gfx_sprite_			= nullptr;
+	wxStaticText*			label_type_			= nullptr;
+	ActionSpecialPanel*		panel_special_		= nullptr;
+	AngleControl*			ac_direction_		= nullptr;
+	NumberTextCtrl*			text_id_			= nullptr;
+	NumberTextCtrl*			text_height_		= nullptr;
+
+	vector<string>	udmf_flags_;
+	vector<string>	udmf_flags_extra_;
+	int				type_current_		= 0;
 
 	wxPanel*	setupGeneralTab();
 	wxPanel*	setupExtraFlagsTab();
 
-	void	openObjects(vector<MapObject*>& objects);
-	void	applyChanges();
-
 	void	onSpriteClicked(wxMouseEvent& e);
 };
-
-#endif//__THING_PROPS_PANEL_H__

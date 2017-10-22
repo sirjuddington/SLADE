@@ -1,38 +1,25 @@
+#pragma once
 
-#ifndef __ACTION_SPECIAL_DIALOG_H__
-#define __ACTION_SPECIAL_DIALOG_H__
-
-#include "common.h"
 #include "UI/SDialog.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxBasicControls.h"
 
+namespace Game { struct ArgSpec; }
+class wxFlexGridSizer;
+class ArgsControl;
+class GenLineSpecialPanel;
+class MapObject;
+class NumberTextCtrl;
 
 // A wxDataViewTreeCtrl specialisation showing the
 // action specials and groups in a tree structure
 class ActionSpecialTreeView : public wxDataViewTreeCtrl
 {
-private:
-	wxDataViewItem	root;
-	wxDataViewItem	item_none;
-	wxDialog*		parent_dialog;
-
-	// It's incredibly retarded that I actually have to do this
-	struct astv_group_t
-	{
-		string			name;
-		wxDataViewItem	item;
-		astv_group_t(wxDataViewItem i, string name) { this->item = i; this->name = name; }
-	};
-	vector<astv_group_t> groups;
-
-	wxDataViewItem	getGroup(string group);
-
 public:
 	ActionSpecialTreeView(wxWindow* parent);
-	~ActionSpecialTreeView();
+	~ActionSpecialTreeView() {}
 
-	void	setParentDialog(wxDialog* dlg) { parent_dialog = dlg; }
+	void	setParentDialog(wxDialog* dlg) { parent_dialog_ = dlg; }
 
 	int		specialNumber(wxDataViewItem item);
 	void	showSpecial(int special, bool focus = true);
@@ -40,19 +27,26 @@ public:
 
 	void	onItemEdit(wxDataViewEvent& e);
 	void	onItemActivated(wxDataViewEvent& e);
+
+private:
+	wxDataViewItem	root_;
+	wxDataViewItem	item_none_;
+	wxDialog*		parent_dialog_ = nullptr;
+
+	// It's incredibly retarded that I actually have to do this
+	struct ASTVGroup
+	{
+		string			name;
+		wxDataViewItem	item;
+		ASTVGroup(wxDataViewItem i, string name) { this->item = i; this->name = name; }
+	};
+	vector<ASTVGroup> groups_;
+
+	wxDataViewItem	getGroup(string group);
 };
 
-namespace Game { struct ArgSpec; }
-class wxFlexGridSizer;
-class ArgsControl;
 class ArgsPanel : public wxScrolled<wxPanel>
 {
-private:
-	wxFlexGridSizer*	fg_sizer;
-	ArgsControl*		control_args[5];
-	wxStaticText*		label_args[5];
-	wxStaticText*		label_args_desc[5];
-
 public:
 	ArgsPanel(wxWindow* parent);
 	~ArgsPanel() {}
@@ -61,16 +55,19 @@ public:
 	void	setValues(int args[5]);
 	int		getArgValue(int index);
 	void	onSize(wxSizeEvent& event);
+
+private:
+	wxFlexGridSizer*	fg_sizer_			= nullptr;
+	ArgsControl*		control_args_[5]	= { nullptr, nullptr, nullptr, nullptr, nullptr };
+	wxStaticText*		label_args_[5]		= { nullptr, nullptr, nullptr, nullptr, nullptr };
+	wxStaticText*		label_args_desc_[5]	= { nullptr, nullptr, nullptr, nullptr, nullptr };
 };
 
-class GenLineSpecialPanel;
-class MapObject;
-class NumberTextCtrl;
 class ActionSpecialPanel : public wxPanel
 {
 public:
 	ActionSpecialPanel(wxWindow* parent, bool trigger = true);
-	~ActionSpecialPanel();
+	~ActionSpecialPanel() {}
 
 	void	setupSpecialPanel();
 	void	setArgsPanel(ArgsPanel* panel) { panel_args_ = panel; }
@@ -111,14 +108,9 @@ private:
 
 class ActionSpecialDialog : public SDialog
 {
-private:
-	ActionSpecialPanel* panel_special;
-	ArgsPanel*			panel_args;
-	TabControl*			stc_tabs;
-
 public:
 	ActionSpecialDialog(wxWindow* parent, bool show_args = false);
-	~ActionSpecialDialog();
+	~ActionSpecialDialog() {}
 
 	void	setSpecial(int special);
 	void	setArgs(int args[5]);
@@ -126,6 +118,9 @@ public:
 	int		getArg(int index);
 	void	applyTo(vector<MapObject*>& lines, bool apply_special);
 	void	openLines(vector<MapObject*>& lines);
-};
 
-#endif//__ACTION_SPECIAL_DIALOG_H__
+private:
+	ActionSpecialPanel* panel_special_	= nullptr;
+	ArgsPanel*			panel_args_		= nullptr;
+	TabControl*			stc_tabs_		= nullptr;
+};
