@@ -34,6 +34,7 @@
 #include "General/Console/Console.h"
 #include "Utility/MathStuff.h"
 #include "General/Misc.h"
+#include "General/UI.h"
 #include "OpenGL.h"
 
 #ifdef USE_SFML_RENDERWINDOW
@@ -194,7 +195,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_normal = new FTTextureFont(entry->getData(), entry->getSize());
-		font_normal->FaceSize(gl_font_size);
+		font_normal->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_normal->Error())
@@ -210,7 +211,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_condensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_condensed->FaceSize(gl_font_size);
+		font_condensed->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_condensed->Error())
@@ -226,7 +227,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_bold = new FTTextureFont(entry->getData(), entry->getSize());
-		font_bold->FaceSize(gl_font_size);
+		font_bold->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_bold->Error())
@@ -242,7 +243,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_boldcondensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_boldcondensed->FaceSize(gl_font_size);
+		font_boldcondensed->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_boldcondensed->Error())
@@ -258,7 +259,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_mono = new FTTextureFont(entry->getData(), entry->getSize());
-		font_mono->FaceSize(gl_font_size);
+		font_mono->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_mono->Error())
@@ -274,7 +275,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_small = new FTTextureFont(entry->getData(), entry->getSize());
-		font_small->FaceSize((gl_font_size * 0.6) + 1);
+		font_small->FaceSize((UI::scalePx(gl_font_size) * 0.6) + 1);
 
 		// Check it loaded ok
 		if (font_small->Error())
@@ -335,6 +336,14 @@ FTFont* FontManager::getFont(int font)
 void Drawing::initFonts()
 {
 	theFontManager->initFonts();
+}
+
+/* Drawing::fontSize
+ * Returns the configured font size (scaled for DPI etc)
+ *******************************************************************/
+int Drawing::fontSize()
+{
+	return UI::scalePx(gl_font_size);
 }
 
 /* Drawing::drawLine
@@ -650,9 +659,9 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
-		sf_str.setCharacterSize((gl_font_size * 0.6) + 1);
+		sf_str.setCharacterSize((UI::scalePx(gl_font_size) * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(gl_font_size);
+		sf_str.setCharacterSize(UI::scalePx(gl_font_size));
 
 	// Setup alignment
 	if (alignment != ALIGN_LEFT)
@@ -736,9 +745,9 @@ fpoint2_t Drawing::textExtents(string text, int font)
 	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
-		sf_str.setCharacterSize((gl_font_size * 0.6) + 1);
+		sf_str.setCharacterSize((UI::scalePx(gl_font_size) * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(gl_font_size);
+		sf_str.setCharacterSize(UI::scalePx(gl_font_size));
 
 	// Return width and height of text
 	sf::FloatRect rect = sf_str.getGlobalBounds();

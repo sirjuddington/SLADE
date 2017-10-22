@@ -41,12 +41,6 @@
 
 
 /*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
-EXTERN_CVAR(Int, gl_font_size)
-
-
-/*******************************************************************
  * SECTORINFOOVERLAY CLASS FUNCTIONS
  *******************************************************************/
 
@@ -55,7 +49,7 @@ EXTERN_CVAR(Int, gl_font_size)
  *******************************************************************/
 SectorInfoOverlay::SectorInfoOverlay()
 {
-	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * (gl_font_size / 12.0));
+	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * (Drawing::fontSize() / 12.0));
 	last_size = 100;
 }
 
@@ -118,7 +112,7 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 	glDisable(GL_LINE_SMOOTH);
 
 	// Determine overlay height
-	double scale = (gl_font_size / 12.0);
+	double scale = (Drawing::fontSize() / 12.0);
 	text_box->setLineHeight(16 * scale);
 	if (last_size != right)
 	{
@@ -162,7 +156,7 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
  *******************************************************************/
 void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, string pos)
 {
-	double scale = (gl_font_size / 12.0);
+	double scale = (Drawing::fontSize() / 12.0);
 	int tex_box_size = 80 * scale;
 	int line_height = 16 * scale;
 

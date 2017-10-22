@@ -47,7 +47,6 @@
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, use_zeth_icons)
-EXTERN_CVAR(Int, gl_font_size)
 
 
 /*******************************************************************
@@ -520,7 +519,7 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	// Determine overlay height
 	int nlines = MAX(info.size(), info2.size());
 	if (nlines < 4) nlines = 4;
-	double scale = (gl_font_size / 12.0);
+	double scale = (Drawing::fontSize() / 12.0);
 	int line_height = 16 * scale;
 	int height = nlines * line_height + 4;
 
@@ -568,7 +567,7 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
  *******************************************************************/
 void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 {
-	double scale = (gl_font_size / 12.0);
+	double scale = (Drawing::fontSize() / 12.0);
 	int tex_box_size = 80 * scale;
 	int line_height = 16 * scale;
 
