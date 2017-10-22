@@ -8,6 +8,7 @@
 #include "General/SAction.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/WxUtils.h"
 
 ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) :
 	wxPanel(parent, -1),
@@ -20,18 +21,18 @@ ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) :
 
 	// Toolbar
 	auto toolbar = setupToolbar();
-	sizer->Add(toolbar, 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
+	sizer->Add(toolbar, 0, wxEXPAND | wxLEFT | wxRIGHT, UI::pad());
 	
 	// Text Editor
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setLanguage(TextLanguage::fromId("sladescript"));
 	if (script_)
 		text_editor_->SetText(script_->text);
-	sizer->Add(text_editor_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	sizer->Add(text_editor_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
 	// Find+Replace panel
 	find_replace_panel_ = new FindReplacePanel(this, *text_editor_);
-	sizer->Add(find_replace_panel_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	sizer->Add(find_replace_panel_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 	find_replace_panel_->Show(false);
 
 	text_editor_->setFindReplacePanel(find_replace_panel_);

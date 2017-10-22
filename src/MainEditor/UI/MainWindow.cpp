@@ -642,7 +642,7 @@ bool MainWindow::handleAction(string id)
 		wxAuiManager* m_mgr = wxAuiManager::GetManager(panel_archivemanager);
 		wxAuiPaneInfo& p_inf = m_mgr->GetPane("console");
 		p_inf.Show(!p_inf.IsShown());
-		p_inf.MinSize(200, 128);
+		p_inf.MinSize(WxUtils::scaledSize(200, 128));
 		m_mgr->Update();
 		return true;
 	}
