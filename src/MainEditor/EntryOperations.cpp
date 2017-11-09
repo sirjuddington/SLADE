@@ -28,7 +28,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "EntryOperations.h"
 #include "General/Misc.h"
 #include "General/Console/Console.h"
@@ -41,7 +40,7 @@
 #include "Archive/Formats/WadArchive.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
-#include "UI/PaletteChooser.h"
+#include "UI/Controls/PaletteChooser.h"
 #include "App.h"
 
 

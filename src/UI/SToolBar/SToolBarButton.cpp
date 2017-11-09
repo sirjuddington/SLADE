@@ -1,102 +1,113 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    SToolBarButton.cpp
- * Description: SToolBarButton class - a simple toolbar button for
- *              use on an SToolBar, can be displayed as an icon
- *              or icon + text
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    SToolBarButton.cpp
+// Description: SToolBarButton class - a simple toolbar button for use on an
+//              SToolBar, can be displayed as an icon or icon + text
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "SToolBarButton.h"
 #include "Graphics/Icons.h"
 #include "OpenGL/Drawing.h"
 #include "MainEditor/UI/MainWindow.h"
+#include "UI/WxUtils.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 CVAR(Bool, toolbar_button_flat, true, CVAR_SAVE)
 wxDEFINE_EVENT(wxEVT_STOOLBAR_BUTTON_CLICKED, wxCommandEvent);
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// External Variables
+//
+// ----------------------------------------------------------------------------
 EXTERN_CVAR(Int, toolbar_size);
 
 
-/*******************************************************************
- * STOOLBARBUTTON CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// SToolBarButton Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* SToolBarButton::SToolBarButton
- * SToolBarButton class constructor
- *******************************************************************/
-SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, bool show_name)
-	: wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton")
+
+// ----------------------------------------------------------------------------
+// SToolBarButton::SToolBarButton
+//
+// SToolBarButton class constructor
+// ----------------------------------------------------------------------------
+SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, bool show_name) :
+	wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton"),
+	action_{ SAction::fromId(action) },
+	show_name_{ show_name },
+	action_id_{ action_->getId() },
+	action_name_{ action_->getText() },
+	help_text_{ action_->getHelpText() },
+	pad_outer_{ UI::scalePx(1) },
+	pad_inner_{ UI::scalePx(2) },
+	icon_size_{ UI::scalePx(toolbar_size) }
 {
-	// Init variables
-	this->action = SAction::fromId(action);
-	this->state = STATE_NORMAL;
-	this->show_name = show_name;
-	this->action_id = this->action->getId();
-	this->action_name = this->action->getText();
-	this->help_text = this->action->getHelpText();
-
 	// Determine width of name text if shown
-	int name_width = 0;
 	if (show_name)
 	{
-		string name = this->action->getText();
+		string name = action_->getText();
 		name.Replace("&", "");
-		name_width = GetTextExtent(name).GetWidth() + 2;
+		text_width_ = GetTextExtent(name).GetWidth() + pad_inner_ * 2;
 	}
 
 	// Set size
-	int size = toolbar_size + 6;
-	SetSizeHints(size+name_width, size, size+name_width, size);
-	SetMinSize(wxSize(size+name_width, size));
-	SetSize(size+name_width, size);
+	int height = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
+	int width = height + text_width_;
+	SetSizeHints(width, height, width, height);
+	SetMinSize(wxSize(width, height));
+	SetSize(width, height);
 
 	// Load icon
 	if (icon.IsEmpty())
-		this->icon = Icons::getIcon(Icons::GENERAL, this->action->getIconName(), toolbar_size > 16);
+		icon_ = Icons::getIcon(Icons::GENERAL, action_->getIconName(), icon_size_ > 16);
 	else
-		this->icon = Icons::getIcon(Icons::GENERAL, icon, toolbar_size > 16);
+		icon_ = Icons::getIcon(Icons::GENERAL, icon, icon_size_ > 16);
 
 	// Add shortcut to help text if it exists
-	string sc = this->action->getShortcutText();
+	string sc = action_->getShortcutText();
 	if (!sc.IsEmpty())
-		help_text += S_FMT(" (Shortcut: %s)", sc);
+		help_text_ += S_FMT(" (Shortcut: %s)", sc);
 
 	// Set tooltip
 	if (!show_name)
 	{
-		string tip = this->action->getText();
+		string tip = action_->getText();
 		tip.Replace("&", "");
 		if (!sc.IsEmpty()) tip += S_FMT(" (Shortcut: %s)", sc);
 		SetToolTip(tip);
@@ -115,31 +126,39 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, boo
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBarButton::onEraseBackground, this);
 }
 
-/* SToolBarButton::SToolBarButton
- * SToolBarButton class constructor
- *******************************************************************/
-SToolBarButton::SToolBarButton(wxWindow* parent, string action_id, string action_name, string icon, string help_text, bool show_name)
-	: wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton")
+// ----------------------------------------------------------------------------
+// SToolBarButton::SToolBarButton
+//
+// SToolBarButton class constructor
+// ----------------------------------------------------------------------------
+SToolBarButton::SToolBarButton(
+	wxWindow* parent,
+	const string& action_id,
+	const string& action_name,
+	const string& icon,
+	const string& help_text,
+	bool show_name
+) : wxControl{ parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton" },
+	show_name_{ show_name },
+	action_id_{ action_id },
+	action_name_{ action_name },
+	help_text_{ help_text },
+	pad_outer_{ UI::scalePx(1) },
+	pad_inner_{ UI::scalePx(2) },
+	icon_size_{ UI::scalePx(toolbar_size) }
 {
-	// Init variables
-	this->action = nullptr;
-	this->action_id = action_id;
-	this->action_name = action_name;
-	this->help_text = help_text;
-	this->state = STATE_NORMAL;
-	this->show_name = show_name;
-
 	// Determine width of name text if shown
-	int name_width = show_name ? GetTextExtent(action_name).GetWidth() + 2 : 0;
+	text_width_ = show_name ? GetTextExtent(action_name).GetWidth() + pad_inner_ * 2 : 0;
 
 	// Set size
-	int size = toolbar_size + 6;
-	SetSizeHints(size+name_width, size, size+name_width, size);
-	SetMinSize(wxSize(size+name_width, size));
-	SetSize(size+name_width, size);
+	int height = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
+	int width = height + text_width_;
+	SetSizeHints(width, height, width, height);
+	SetMinSize(wxSize(width, height));
+	SetSize(width, height);
 
 	// Load icon
-	this->icon = Icons::getIcon(Icons::GENERAL, icon, toolbar_size > 16);
+	icon_ = Icons::getIcon(Icons::GENERAL, icon, icon_size_ > 16);
 
 	// Set tooltip
 	if (!show_name)
@@ -156,43 +175,60 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action_id, string action
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBarButton::onEraseBackground, this);
 }
 
-/* SToolBarButton::~SToolBarButton
- * SToolBarButton class destructor
- *******************************************************************/
-SToolBarButton::~SToolBarButton()
-{
-}
-
-/* SToolBarButton::setIcon
- * Allows to dynamically change the button's icon
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SToolBarButton::setIcon
+//
+// Allows to dynamically change the button's icon
+// ----------------------------------------------------------------------------
 void SToolBarButton::setIcon(string icon)
 {
 	if (!icon.IsEmpty())
-		this->icon = Icons::getIcon(Icons::GENERAL, icon, toolbar_size > 16);
+		icon_ = Icons::getIcon(Icons::GENERAL, icon, icon_size_ > 16);
 }
 
-/* SToolBarButton::sendClickedEvent
- * Sends a button clicked event
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SToolBarButton::pixelHeight
+//
+// Returns the pixel height of all SToolBarButtons
+// ----------------------------------------------------------------------------
+int SToolBarButton::pixelHeight()
+{
+	return UI::scalePx(toolbar_size + 8);
+}
+
+// ----------------------------------------------------------------------------
+// SToolBarButton::sendClickedEvent
+//
+// Sends a button clicked event
+// ----------------------------------------------------------------------------
 void SToolBarButton::sendClickedEvent()
 {
 	// Generate event
 	wxCommandEvent ev(wxEVT_STOOLBAR_BUTTON_CLICKED, GetId());
 	ev.SetEventObject(this);
-	ev.SetString(action_id);
+	ev.SetString(action_id_);
 	ProcessWindowEvent(ev);
 }
 
-/* SToolBarButton::SToolBarButton
- * Called when the button needs to be (re)drawn
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+//
+// SToolBarButton Class Events
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// SToolBarButton::onPaint
+//
+// Called when the button needs to be (re)drawn
+// ----------------------------------------------------------------------------
 void SToolBarButton::onPaint(wxPaintEvent& e)
 {
 	wxPaintDC dc(this);
 
 	// Get system colours needed
-	wxColour col_background = GetBackgroundColour();//toolbar_win10 ? *wxWHITE : Drawing::getPanelBGColour();
+	wxColour col_background = GetBackgroundColour();
 	wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 
 	// Draw background
@@ -205,19 +241,21 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		return;
 
 	// Get width of name text if shown
-	int name_width = 0;
 	int name_height = 0;
-	string name = action_name;
-	if (show_name)
+	string name = action_name_;
+	if (show_name_)
 	{
 		name.Replace("&", "");
 		wxSize name_size = GetTextExtent(name);
-		name_width = name_size.GetWidth() + 2;
 		name_height = name_size.y;
 	}
 
+	int height = icon_size_ + pad_inner_ * 2;
+	int width = height + text_width_;
+	auto scale_px = UI::scaleFactor();
+
 	// Draw toggled border/background
-	if (action && action->isChecked())
+	if (action_ && action_->isChecked())
 	{
 		// Use greyscale version of hilight colour
 		uint8_t r = col_hilight.Red();
@@ -232,25 +270,25 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 			// Draw border
 			col_trans.Set(COLWX(col_trans), 80);
 			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(Drawing::darkColour(col_toggle, 5.0f)));
-			gc->DrawRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4);
+			gc->SetPen(wxPen(Drawing::darkColour(col_toggle, 5.0f), scale_px));
+			gc->DrawRectangle(pad_outer_, pad_outer_, width, height);
 		}
 		else
 		{
 			// Draw border
 			col_trans.Set(COLWX(col_trans), 80);
 			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(col_hilight));
-			gc->DrawRoundedRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4, 2);
+			gc->SetPen(wxPen(col_hilight, scale_px));
+			gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 2 * scale_px);
 		}
 	}
 
 	// Draw border on mouseover
-	if (state == STATE_MOUSEOVER || state == STATE_MOUSEDOWN)
+	if (state_ == STATE_MOUSEOVER || state_ == STATE_MOUSEDOWN)
 	{
 		// Determine transparency level
 		int trans = 160;
-		if (state == STATE_MOUSEDOWN)
+		if (state_ == STATE_MOUSEDOWN)
 			trans = 200;
 
 		// Create semitransparent hilight colour
@@ -261,8 +299,8 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 			// Draw border
 			col_trans.Set(COLWX(col_trans), 80);
 			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(col_hilight));
-			gc->DrawRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4);
+			gc->SetPen(wxPen(col_hilight, scale_px));
+			gc->DrawRectangle(pad_outer_, pad_outer_, width, height);
 		}
 		else
 		{
@@ -270,11 +308,11 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 			col_trans.Set(COLWX(col_trans), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(col_hilight));
-			gc->DrawRoundedRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4, 2);
+			gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 2 * scale_px);
 		}
 	}
 
-	if (icon.IsOk())
+	if (icon_.IsOk())
 	{
 		// Draw disabled icon if disabled
 		if (!IsEnabled())
@@ -287,26 +325,41 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 			wxColor::MakeGrey(&r, &g, &b);
 
 			// Draw disabled icon
-			gc->DrawBitmap(icon.ConvertToDisabled(r), 3, 3, toolbar_size, toolbar_size);
+			gc->DrawBitmap(
+				icon_.ConvertToDisabled(r),
+				pad_outer_ + pad_inner_,
+				pad_outer_ + pad_inner_,
+				icon_size_,
+				icon_size_
+			);
 		}
 
 		// Otherwise draw normal icon
 		else
-			gc->DrawBitmap(icon, 3, 3, toolbar_size, toolbar_size);
+			gc->DrawBitmap(
+				icon_,
+				pad_outer_ + pad_inner_,
+				pad_outer_ + pad_inner_,
+				icon_size_,
+				icon_size_
+			);
 	}
 
-	if (show_name)
+	if (show_name_)
 	{
 		int top = ((double)GetSize().y * 0.5) - ((double)name_height * 0.5);
-		dc.DrawText(name, toolbar_size + 5, top);
+		int left = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
+		dc.DrawText(name, left, top);
 	}
 
 	delete gc;
 }
 
-/* SToolBarButton::onMouseEvent
- * Called when a mouse event happens within the control
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SToolBarButton::onMouseEvent
+//
+// Called when a mouse event happens within the control
+// ----------------------------------------------------------------------------
 void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 {
 	wxFrame* parent_window = (wxFrame*)wxGetTopLevelParent(this);
@@ -315,18 +368,18 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	if (e.GetEventType() == wxEVT_ENTER_WINDOW)
 	{
 		// Set state to mouseover
-		state = STATE_MOUSEOVER;
+		state_ = STATE_MOUSEOVER;
 
 		// Set status bar help text
 		if (parent_window && parent_window->GetStatusBar())
-			parent_window->SetStatusText(help_text);
+			parent_window->SetStatusText(help_text_);
 	}
 
 	// Mouse leave
 	if (e.GetEventType() == wxEVT_LEAVE_WINDOW)
 	{
 		// Set state to normal
-		state = STATE_NORMAL;
+		state_ = STATE_NORMAL;
 
 		// Clear status bar help text
 		if (parent_window && parent_window->GetStatusBar())
@@ -336,13 +389,13 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	// Left button down
 	if (e.GetEventType() == wxEVT_LEFT_DOWN || e.GetEventType() == wxEVT_LEFT_DCLICK)
 	{
-		state = STATE_MOUSEDOWN;
+		state_ = STATE_MOUSEDOWN;
 
-		if (action)
+		if (action_)
 		{
-			if (action->isRadio())
+			if (action_->isRadio())
 				GetParent()->Refresh();
-			SActionHandler::doAction(action->getId());
+			SActionHandler::doAction(action_->getId());
 		}
 		else
 			sendClickedEvent();
@@ -351,7 +404,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	// Left button up
 	if (e.GetEventType() == wxEVT_LEFT_UP)
 	{
-		state = STATE_MOUSEOVER;
+		state_ = STATE_MOUSEOVER;
 
 		// Clear status bar help text
 		if (parent_window && parent_window->GetStatusBar())
@@ -363,22 +416,26 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	//e.Skip();
 }
 
-/* SToolBarButton::onFocus
- * Called when the control gains or loses focus
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SToolBarButton::onFocus
+//
+// Called when the control gains or loses focus
+// ----------------------------------------------------------------------------
 void SToolBarButton::onFocus(wxFocusEvent& e)
 {
 	// Redraw
-	state = STATE_NORMAL;
+	state_ = STATE_NORMAL;
 	Update();
 	Refresh();
 
 	e.Skip();
 }
 
-/* SToolBarButton::onEraseBackground
- * Called when the background needs erasing
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SToolBarButton::onEraseBackground
+//
+// Called when the background needs erasing
+// ----------------------------------------------------------------------------
 void SToolBarButton::onEraseBackground(wxEraseEvent& e)
 {
 }

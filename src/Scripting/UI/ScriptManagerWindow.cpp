@@ -39,12 +39,13 @@
 #include "Scripting/ScriptManager.h"
 #include "ScriptManagerWindow.h"
 #include "ScriptPanel.h"
-#include "UI/ConsolePanel.h"
+#include "UI/Controls/ConsolePanel.h"
 #include "UI/SAuiTabArt.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------
@@ -75,8 +76,8 @@ public:
 		auto sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
-		auto gbsizer = new wxGridBagSizer(8, 8);
-		sizer->Add(gbsizer, 1, wxEXPAND | wxALL, 10);
+		auto gbsizer = new wxGridBagSizer(UI::pad(), UI::pad());
+		sizer->Add(gbsizer, 1, wxEXPAND | wxALL, UI::padLarge());
 		gbsizer->AddGrowableCol(1, 1);
 
 		// Script type
@@ -102,11 +103,11 @@ public:
 
 		// Dialog buttons
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, 10);
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::padLarge());
 		hbox->AddStretchSpacer(1);
 
 		// OK
-		hbox->Add(new wxButton(this, wxID_OK, "OK"), 0, wxEXPAND | wxRIGHT, 10);
+		hbox->Add(new wxButton(this, wxID_OK, "OK"), 0, wxEXPAND | wxRIGHT, UI::padLarge());
 
 		SetEscapeId(wxID_CANCEL);
 		Layout();
@@ -196,7 +197,7 @@ wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const s
 // ----------------------------------------------------------------------------
 wxImageList* createTreeImageList()
 {
-	auto image_list = new wxImageList(16, 16, false, 0);
+	auto image_list = WxUtils::createSmallImageList();
 	image_list->Add(Icons::getIcon(Icons::ENTRY, "text"));
 	image_list->Add(Icons::getIcon(Icons::ENTRY, "folder"));
 	return image_list;
@@ -262,6 +263,9 @@ void ScriptManagerWindow::loadLayout()
 
 	// Close file
 	file.Close();
+
+	// Force calculated toolbar size
+	wxAuiManager::GetManager(this)->GetPane("toolbar").MinSize(-1, SToolBar::getBarHeight());
 }
 
 // ----------------------------------------------------------------------------
@@ -313,7 +317,7 @@ void ScriptManagerWindow::setupLayout()
 	// -- Scripts Panel --
 	p_inf.DefaultPane();
 	p_inf.Left();
-	p_inf.BestSize(256, 480);
+	p_inf.BestSize(WxUtils::scaledSize(256, 480));
 	p_inf.Caption("Scripts");
 	p_inf.Name("scripts_area");
 	p_inf.Show(true);
@@ -326,9 +330,9 @@ void ScriptManagerWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Float();
-	p_inf.FloatingSize(600, 400);
+	p_inf.FloatingSize(WxUtils::scaledSize(600, 400));
 	p_inf.FloatingPosition(100, 100);
-	p_inf.MinSize(-1, 192);
+	p_inf.MinSize(WxUtils::scaledSize(-1, 192));
 	p_inf.Show(false);
 	p_inf.Caption("Console");
 	p_inf.Name("console");
@@ -511,7 +515,7 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 		panel,
 		-1,
 		wxDefaultPosition,
-		{ 200, -1 },
+		WxUtils::scaledSize(200, -1),
 		wxTR_DEFAULT_STYLE | wxTR_NO_LINES | wxTR_HIDE_ROOT | wxTR_FULL_ROW_HIGHLIGHT
 	);
 #if wxMAJOR_VERSION > 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
@@ -519,7 +523,7 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 #endif
 	tree_scripts_->SetImageList(createTreeImageList());
 	populateScriptsTree();
-	sizer->Add(tree_scripts_, 1, wxEXPAND | wxALL, 10);
+	sizer->Add(tree_scripts_, 1, wxEXPAND | wxALL, UI::pad());
 
 	return panel;
 }

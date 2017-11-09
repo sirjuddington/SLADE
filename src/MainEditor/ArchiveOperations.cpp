@@ -28,7 +28,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "ArchiveOperations.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"

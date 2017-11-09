@@ -39,12 +39,6 @@
 
 
 /*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
-EXTERN_CVAR(Int, gl_font_size)
-
-
-/*******************************************************************
  * VERTEXINFOOVERLAY CLASS FUNCTIONS
  *******************************************************************/
 
@@ -107,7 +101,7 @@ void VertexInfoOverlay::draw(int bottom, int right, float alpha)
 	bottom += 16*alpha_inv*alpha_inv;
 
 	// Draw overlay background
-	int line_height = 16 * (gl_font_size / 12.0);
+	int line_height = 16 * (Drawing::fontSize() / 12.0);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	Drawing::drawBorderedRect(0, bottom - line_height - 8, right, bottom + 2, col_bg, col_border);
 

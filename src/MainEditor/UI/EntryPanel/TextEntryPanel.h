@@ -1,10 +1,7 @@
-
-#ifndef __TEXTENTRYPANEL_H__
-#define	__TEXTENTRYPANEL_H__
+#pragma once
 
 #include "EntryPanel.h"
 #include "General/SAction.h"
-#include "MainEditor/EntryOperations.h"
 
 class TextEditorCtrl;
 class FindReplacePanel;
@@ -13,7 +10,7 @@ class TextEntryPanel : public EntryPanel, SActionHandler
 {
 public:
 	TextEntryPanel(wxWindow* parent);
-	~TextEntryPanel();
+	~TextEntryPanel() {}
 
 	bool	loadEntry(ArchiveEntry* entry) override;
 	bool	saveEntry() override;
@@ -27,19 +24,16 @@ public:
 	bool	handleAction(string id) override;
 
 private:
-	TextEditorCtrl*		text_area_;
-	FindReplacePanel*	panel_fr_;
-	wxButton*			btn_find_replace_;
-	wxChoice*			choice_text_language_;
-	wxCheckBox*			cb_wordwrap_;
-	wxButton*			btn_jump_to_;
-	wxChoice*			choice_jump_to_;
+	TextEditorCtrl*		text_area_				= nullptr;
+	FindReplacePanel*	panel_fr_				= nullptr;
+	wxButton*			btn_find_replace_		= nullptr;
+	wxChoice*			choice_text_language_	= nullptr;
+	wxCheckBox*			cb_wordwrap_			= nullptr;
+	wxButton*			btn_jump_to_			= nullptr;
+	wxChoice*			choice_jump_to_			= nullptr;
 
 	// Events
 	void	onTextModified(wxCommandEvent& e);
 	void	onChoiceLanguageChanged(wxCommandEvent& e);
 	void	onUpdateUI(wxStyledTextEvent& e);
 };
-
-
-#endif //__TEXTENTRYPANEL_H__

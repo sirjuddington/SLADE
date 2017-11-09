@@ -45,12 +45,6 @@
 
 
 /*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
-EXTERN_CVAR(Int, gl_font_size)
-
-
-/*******************************************************************
  * LINEINFOOVERLAY CLASS FUNCTIONS
  *******************************************************************/
 
@@ -59,7 +53,7 @@ EXTERN_CVAR(Int, gl_font_size)
  *******************************************************************/
 LineInfoOverlay::LineInfoOverlay()
 {
-	scale = gl_font_size / 12.0;
+	scale = Drawing::fontSize() / 12.0;
 	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * scale);
 	last_size = 100;
 }
@@ -89,8 +83,7 @@ void LineInfoOverlay::update(MapLine* line)
 		info_text += (S_FMT("Line #%d (%d)\n", line->getIndex(), line->getId()));
 	else
 		info_text += (S_FMT("Line #%d\n", line->getIndex()));
-    info_text += (S_FMT("Length: %1.2f\n", line->getLength()));
-    info_text += (S_FMT("Angle: %1.2f\n", line->getAngle()));
+	info_text += (S_FMT("Length: %d\n", MathStuff::round(line->getLength())));
 
 	// Line special
 	int as_id = line->intProperty("special");
@@ -225,7 +218,7 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 		n_side_panels++;
 
 	// Draw overlay background
-	scale = gl_font_size / 12.0;
+	scale = Drawing::fontSize() / 12.0;
 	int tex_box_size = 80 * scale;
 	int sinf_size = ((tex_box_size * 3) + 16);
 	int main_panel_end = right - (n_side_panels * (sinf_size +2));

@@ -1,6 +1,4 @@
-
-#ifndef __PREFS_PANEL_BASE_H__
-#define __PREFS_PANEL_BASE_H__
+#pragma once
 
 #include "common.h"
 #include "UI/WxBasicControls.h"
@@ -11,9 +9,9 @@ public:
 	PrefsPanelBase(wxWindow* parent) : wxPanel(parent, -1) {}
 	~PrefsPanelBase() {}
 
-	virtual void init() {}
-	virtual void applyPreferences() {}
-	virtual void showSubSection(string subsection) {}
+	virtual void	init() {}
+	virtual void	applyPreferences() {}
+	virtual void	showSubSection(string subsection) {}
+	virtual string	pageTitle() { return ""; }
+	virtual string	pageDescription() { return ""; }
 };
-
-#endif//__PREFS_PANEL_BASE_H__

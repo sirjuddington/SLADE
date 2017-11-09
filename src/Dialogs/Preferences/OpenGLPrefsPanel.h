@@ -1,25 +1,21 @@
-
-#ifndef __OPENGL_PREFS_PANEL_H__
-#define __OPENGL_PREFS_PANEL_H__
+#pragma once
 
 #include "PrefsPanelBase.h"
 
 class NumberTextCtrl;
 class OpenGLPrefsPanel : public PrefsPanelBase
 {
-private:
-	wxCheckBox*	    cb_gl_np2;
-	wxCheckBox*	    cb_gl_point_sprite;
-	wxCheckBox*     cb_gl_use_vbo;
-	NumberTextCtrl* ntc_font_size;
-	int             last_font_size;
-
 public:
 	OpenGLPrefsPanel(wxWindow* parent);
 	~OpenGLPrefsPanel();
 
-	void	init();
-	void	applyPreferences();
-};
+	void	init() override;
+	void	applyPreferences() override;
 
-#endif//__OPENGL_PREFS_PANEL_H__
+private:
+	wxCheckBox*	    cb_gl_np2_;
+	wxCheckBox*	    cb_gl_point_sprite_;
+	wxCheckBox*     cb_gl_use_vbo_;
+	NumberTextCtrl* ntc_font_size_;
+	int             last_font_size_;
+};

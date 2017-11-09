@@ -7,6 +7,7 @@
  * Web:         http://slade.mancubus.net
  * Filename:    ScriptEditorPanel.cpp
  * Description: ScriptEditorPanel class - it's the script editor
+ *              This will be replaced by the script manager eventually
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,6 +37,7 @@
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/WxUtils.h"
 
 
 /*******************************************************************
@@ -81,7 +83,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 
 	// Jump To toolbar group
 	SToolBarGroup* group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
-	choice_jump_to = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(200, -1));
+	choice_jump_to = new wxChoice(group_jump_to, -1, wxDefaultPosition, WxUtils::scaledSize(200, -1));
 	group_jump_to->addCustomControl(choice_jump_to);
 	toolbar->addGroup(group_jump_to);
 
@@ -93,7 +95,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 
 	text_editor = new TextEditorCtrl(this, -1);
 	text_editor->setJumpToControl(choice_jump_to);
-	vbox->Add(text_editor, 1, wxEXPAND|wxALL, 4);
+	vbox->Add(text_editor, 1, wxEXPAND|wxALL, UI::pad());
 
 	// Set language
 	string lang = Game::configuration().scriptLanguage();
@@ -111,15 +113,15 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	}
 
 	// Add Find+Replace panel
-	panel_fr = new FindReplacePanel(this, text_editor);
+	panel_fr = new FindReplacePanel(this, *text_editor);
 	text_editor->setFindReplacePanel(panel_fr);
-	vbox->Add(panel_fr, 0, wxEXPAND | wxALL, 4);
+	vbox->Add(panel_fr, 0, wxEXPAND | wxALL, UI::pad());
 	panel_fr->Hide();
 
 	// Add function/constants list
 	list_words = new wxTreeListCtrl(this, -1);
-	list_words->SetInitialSize(wxSize(200, -10));
-	hbox->Add(list_words, 0, wxEXPAND|wxALL, 4);
+	list_words->SetInitialSize(WxUtils::scaledSize(200, -10));
+	hbox->Add(list_words, 0, wxEXPAND|wxALL, UI::pad());
 	populateWordList();
 	list_words->Show(script_show_language_list);
 

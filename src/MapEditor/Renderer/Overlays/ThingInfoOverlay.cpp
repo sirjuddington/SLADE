@@ -30,7 +30,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MapEditor/SLADEMap/MapThing.h"
 #include "ThingInfoOverlay.h"
 #include "Game/Configuration.h"
@@ -46,7 +45,6 @@
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, use_zeth_icons)
-EXTERN_CVAR(Int, gl_font_size)
 
 
 /*******************************************************************
@@ -58,7 +56,7 @@ EXTERN_CVAR(Int, gl_font_size)
  *******************************************************************/
 ThingInfoOverlay::ThingInfoOverlay()
 {
-	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * (gl_font_size / 12.0));
+	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * (Drawing::fontSize() / 12.0));
 	last_size = 100;
 }
 
@@ -206,7 +204,7 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	Drawing::drawBorderedRect(0, bottom - height - 4, right, bottom+2, col_bg, col_border);
 
 	// Draw info text lines
-	text_box->setLineHeight(16 * (gl_font_size / 12.0));
+	text_box->setLineHeight(16 * (Drawing::fontSize() / 12.0));
 	text_box->draw(2, bottom - height, col_fg);
 
 	// Draw sprite

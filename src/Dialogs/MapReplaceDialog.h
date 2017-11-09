@@ -3,7 +3,7 @@
 #define __MAP_REPLACE_DIALOG_H__
 
 #include "common.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 #include "UI/WxBasicControls.h"
 
 

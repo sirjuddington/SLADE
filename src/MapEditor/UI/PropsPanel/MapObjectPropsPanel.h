@@ -1,72 +1,128 @@
-
-#ifndef __MAP_OBJECT_PROPS_PANEL_H__
-#define __MAP_OBJECT_PROPS_PANEL_H__
+#pragma once
 
 #include "PropsPanelBase.h"
 #include "MOPGProperty.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 
 class wxPropertyGrid;
 class wxPGProperty;
 class MapObject;
 class UDMFProperty;
 class MOPGProperty;
+
 class MapObjectPropsPanel : public PropsPanelBase
 {
+public:
+	MapObjectPropsPanel(wxWindow* parent, bool no_apply = false);
+	~MapObjectPropsPanel() {}
+
+	vector<MapObject*>&	getObjects() { return objects_; }
+	bool showAll();
+
+	void	openObject(MapObject* object);
+	void	openObjects(vector<MapObject*>& objects) override;
+	void	updateArgs(MOPGIntWithArgsProperty* source);
+	void	applyChanges() override;
+	void	clearGrid();
+	void	hideFlags(bool hide) { hide_flags_ = hide; }
+	void	hideTriggers(bool hide) { hide_triggers_ = hide; }
+	void	hideProperty(string property) { hide_props_.push_back(property); }
+	void	clearHiddenProperties() { hide_props_.clear(); }
+	bool	propHidden(string property) { return VECTOR_EXISTS(hide_props_, property); }
+
 private:
-	TabControl*				stc_sections;
-	wxPropertyGrid*			pg_properties;
-	wxPropertyGrid*			pg_props_side1;
-	wxPropertyGrid*			pg_props_side2;
-	int						last_type;
-	string					last_config;
-	wxStaticText*			label_item;
-	vector<MOPGProperty*>	properties;
-	wxPGProperty*			args[5];
-	wxButton*				btn_reset;
-	wxButton*				btn_apply;
-	wxCheckBox*				cb_show_all;
-	wxButton*				btn_add;
-	wxPGProperty*			group_custom;
-	bool					no_apply;
-	bool					udmf;
+	TabControl*				stc_sections_	= nullptr;
+	wxPropertyGrid*			pg_properties_	= nullptr;
+	wxPropertyGrid*			pg_props_side1_	= nullptr;
+	wxPropertyGrid*			pg_props_side2_	= nullptr;
+	int						last_type_		= -1;
+	string					last_config_;
+	wxStaticText*			label_item_		= nullptr;
+	vector<MOPGProperty*>	properties_;
+	wxPGProperty*			args_[5]		= { nullptr, nullptr, nullptr, nullptr, nullptr };
+	wxButton*				btn_reset_		= nullptr;
+	wxButton*				btn_apply_		= nullptr;
+	wxCheckBox*				cb_show_all_	= nullptr;
+	wxButton*				btn_add_		= nullptr;
+	wxPGProperty*			group_custom_	= nullptr;
+	bool					no_apply_		= false;
+	bool					udmf_			= false;
 
 	// Hide properties
-	bool			hide_flags;
-	bool			hide_triggers;
-	vector<string>	hide_props;
+	bool			hide_flags_		= false;
+	bool			hide_triggers_	= false;
+	vector<string>	hide_props_;
 
-	MOPGProperty*	addBoolProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
-	MOPGProperty*	addIntProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
-	MOPGProperty*	addFloatProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
-	MOPGProperty*	addStringProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
-	MOPGProperty*	addLineFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
-	MOPGProperty*	addThingFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
-	MOPGProperty*	addTextureProperty(wxPGProperty* group, string label, string propname, int textype, bool readonly = false, wxPropertyGrid* grid = nullptr, UDMFProperty* udmf_prop = nullptr);
-	void			addUDMFProperty(UDMFProperty& prop, int objtype, string basegroup = "", wxPropertyGrid* grid = nullptr);
+	MOPGProperty*	addBoolProperty(
+						wxPGProperty* group,
+						string label,
+						string propname,
+						bool readonly = false,
+						wxPropertyGrid* grid = nullptr,
+						UDMFProperty* udmf_prop = nullptr
+					);
+	MOPGProperty*	addIntProperty(
+						wxPGProperty* group,
+						string label,
+						string propname,
+						bool readonly = false,
+						wxPropertyGrid* grid = nullptr,
+						UDMFProperty* udmf_prop = nullptr
+					);
+	MOPGProperty*	addFloatProperty(
+						wxPGProperty* group,
+						string label,
+						string propname,
+						bool readonly = false,
+						wxPropertyGrid* grid = nullptr,
+						UDMFProperty* udmf_prop = nullptr
+					);
+	MOPGProperty*	addStringProperty(
+						wxPGProperty* group,
+						string label,
+						string propname,
+						bool readonly = false,
+						wxPropertyGrid* grid = nullptr,
+						UDMFProperty* udmf_prop = nullptr
+					);
+	MOPGProperty*	addLineFlagProperty(
+						wxPGProperty* group,
+						string label,
+						string propname,
+						int index,
+						bool readonly = false,
+						wxPropertyGrid* grid = nullptr,
+						UDMFProperty* udmf_prop = nullptr
+					);
+	MOPGProperty*	addThingFlagProperty(
+						wxPGProperty* group,
+						string label,
+						string propname,
+						int index,
+						bool readonly = false,
+						wxPropertyGrid* grid = nullptr,
+						UDMFProperty* udmf_prop = nullptr
+					);
+	MOPGProperty*	addTextureProperty(
+						wxPGProperty* group,
+						string label,
+						string propname,
+						int textype,
+						bool readonly = false,
+						wxPropertyGrid* grid = nullptr,
+						UDMFProperty* udmf_prop = nullptr
+					);
+	void			addUDMFProperty(
+						UDMFProperty& prop,
+						int objtype,
+						string basegroup = "",
+						wxPropertyGrid* grid = nullptr
+					);
 
 	bool	setBoolProperty(wxPGProperty* prop, bool value, bool force_set = false);
 
 	void	setupType(int objtype);
 	void	setupTypeUDMF(int objtype);
-
-public:
-	MapObjectPropsPanel(wxWindow* parent, bool no_apply = false);
-	~MapObjectPropsPanel();
-
-	vector<MapObject*>&	getObjects() { return objects; }
-	bool showAll();
-
-	void	openObject(MapObject* object);
-	void	openObjects(vector<MapObject*>& objects);
-	void	updateArgs(MOPGIntWithArgsProperty* source);
-	void	applyChanges();
-	void	clearGrid();
-	void	hideFlags(bool hide) { hide_flags = hide; }
-	void	hideTriggers(bool hide) { hide_triggers = hide; }
-	void	hideProperty(string property) { hide_props.push_back(property); }
-	void	clearHiddenProperties() { hide_props.clear(); }
-	bool	propHidden(string property) { return VECTOR_EXISTS(hide_props, property); }
 
 	// Events
 	void	onBtnApply(wxCommandEvent& e);
@@ -75,5 +131,3 @@ public:
 	void	onBtnAdd(wxCommandEvent& e);
 	void	onPropertyChanged(wxPropertyGridEvent& e);
 };
-
-#endif//__MAP_OBJECT_PROPS_PANEL_H__

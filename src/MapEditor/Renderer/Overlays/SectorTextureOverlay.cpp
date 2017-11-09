@@ -346,7 +346,7 @@ void SectorTextureOverlay::browseFloorTexture()
 	{
 		// Set texture
 		tex_floor.clear();
-		tex_floor.push_back(browser.getSelectedItem()->getName());
+		tex_floor.push_back(browser.getSelectedItem()->name());
 		close(false);
 	}
 }
@@ -370,7 +370,7 @@ void SectorTextureOverlay::browseCeilingTexture()
 	{
 		// Set texture
 		tex_ceil.clear();
-		tex_ceil.push_back(browser.getSelectedItem()->getName());
+		tex_ceil.push_back(browser.getSelectedItem()->name());
 		close(false);
 	}
 }

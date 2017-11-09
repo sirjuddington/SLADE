@@ -36,7 +36,7 @@
 #include "General/KeyBind.h"
 #include "General/SAction.h"
 #include "Graphics/Icons.h"
-#include "UI/WxStuff.h"
+#include "UI/WxUtils.h"
 #include "Utility/Parser.h"
 
 
@@ -194,7 +194,7 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override, 
 	string real_icon = (icon_override == "NO") ? icon : icon_override;
 	if (!sc.IsEmpty()) help += S_FMT(" (Shortcut: %s)", sc);
 	if (type == Type::Normal)
-		menu->Append(createMenuItem(menu, wid, item_text, help, real_icon));
+		menu->Append(WxUtils::createMenuItem(menu, wid, item_text, help, real_icon));
 	else if (type == Type::Check)
 	{
 		auto item = menu->AppendCheckItem(wid, item_text, help);

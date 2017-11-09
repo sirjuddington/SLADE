@@ -208,7 +208,7 @@ void STopWindow::removeAllCustomToolBars()
 // ----------------------------------------------------------------------------
 void STopWindow::populateToolbarsMenu() const
 {
-    while (toolbar_menu_->GetMenuItemCount())
+	while (toolbar_menu_->FindItemByPosition(0))
 		toolbar_menu_->Delete(toolbar_menu_->FindItemByPosition(0));
 
 	for (auto a = 0u; a < toolbar_->groups().size(); ++a)

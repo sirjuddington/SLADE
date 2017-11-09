@@ -34,6 +34,9 @@ namespace Drawing
 	// Initialisation
 	void initFonts();
 
+	// Info
+	int	fontSize();
+
 	// Basic drawing
 	void drawLine(fpoint2_t start, fpoint2_t end);
 	void drawLine(double x1, double y1, double x2, double y2);

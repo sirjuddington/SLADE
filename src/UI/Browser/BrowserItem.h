@@ -1,6 +1,4 @@
-
-#ifndef __BROWSER_ITEM_H__
-#define __BROWSER_ITEM_H__
+#pragma once
 
 #include "OpenGL/GLTexture.h"
 
@@ -9,26 +7,33 @@ class TextBox;
 class BrowserItem
 {
 	friend class BrowserWindow;
-protected:
-	string			type;
-	string			name;
-	unsigned		index;
-	GLTexture*		image;
-	BrowserWindow*	parent;
-	bool			blank;
-	TextBox*		text_box;
-
 public:
 	BrowserItem(string name, unsigned index = 0, string type = "item");
 	virtual ~BrowserItem();
 
-	string		getName() { return name; }
-	unsigned	getIndex() { return index; }
+	string		name() const { return name_; }
+	unsigned	index() const { return index_; }
 
 	virtual bool	loadImage();
-	void			draw(int size, int x, int y, int font, int nametype = 0, int viewtype = 0, rgba_t colour = COL_WHITE, bool text_shadow = true);
+	void			draw(
+						int size,
+						int x,
+						int y,
+						int font,
+						int nametype = 0,
+						int viewtype = 0,
+						rgba_t colour = COL_WHITE,
+						bool text_shadow = true
+					);
 	void			clearImage();
 	virtual string	itemInfo() { return ""; }
-};
 
-#endif//__BROWSER_ITEM_H__
+protected:
+	string			type_;
+	string			name_;
+	unsigned		index_		= 0;
+	GLTexture*		image_		= nullptr;
+	BrowserWindow*	parent_		= nullptr;
+	bool			blank_		= false;
+	TextBox*		text_box_	= nullptr;
+};

@@ -30,7 +30,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MCAnimations.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditor.h"

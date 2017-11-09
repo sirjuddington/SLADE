@@ -30,9 +30,9 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "UI/WxStuff.h"
 #include "Icons.h"
 #include "Archive/ArchiveManager.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -54,7 +54,7 @@ namespace Icons
 	vector<icon_t>	icons_general;
 	vector<icon_t>	icons_text_editor;
 	vector<icon_t>	icons_entry;
-	wxBitmap icon_empty;
+	wxBitmap		icon_empty;
 	vector<string>	iconsets_entry;
 	vector<string>	iconsets_general;
 }
@@ -171,6 +171,16 @@ namespace Icons
 			}
 		}
 
+		// Generate any missing large icons
+		for (unsigned a = 0; a < icons.size(); a++)
+		{
+			if (!icons[a].image_large.IsOk())
+			{
+				icons[a].image_large = icons[a].image.Copy();
+				icons[a].image_large.Rescale(32, 32, wxIMAGE_QUALITY_BICUBIC);
+			}
+		}
+
 		return true;
 	}
 }
@@ -252,6 +262,11 @@ wxBitmap Icons::getIcon(int type, string name, bool large, bool log_missing)
 		LOG_MESSAGE(2, "Icon \"%s\" does not exist", name);
 
 	return wxNullBitmap;
+}
+
+wxBitmap Icons::getIcon(int type, string name)
+{
+	return getIcon(type, name, UI::scaleFactor() > 1.25);
 }
 
 /* Icons::exportIconPNG

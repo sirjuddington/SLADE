@@ -34,6 +34,7 @@
 // ----------------------------------------------------------------------------
 #include "Main.h"
 #include "DirArchiveUpdateDialog.h"
+#include "General/UI.h"
 
 
 // ----------------------------------------------------------------------------
@@ -65,22 +66,22 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(
 		archive->filename()
 	);
 	message += "please tick the changes below that you wish to apply.";
-	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, 10);
+	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, UI::padLarge());
 	message = "Note that any unticked changes will be overwritten on disk when the directory is saved.";
-	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, 10);
+	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, UI::padLarge());
 
 	// Changes list
 	list_changes_ = new wxDataViewListCtrl(this, -1);
 	list_changes_->AppendToggleColumn("", wxDATAVIEW_CELL_ACTIVATABLE, wxDVC_DEFAULT_MINWIDTH, wxALIGN_CENTER);
 	list_changes_->AppendTextColumn("Change");
 	list_changes_->AppendTextColumn("Filename", wxDATAVIEW_CELL_INERT, -2);
-	list_changes_->SetMinSize(wxSize(0, 200));
-	sizer->Add(list_changes_, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
+	list_changes_->SetMinSize(wxSize(0, UI::scalePx(200)));
+	sizer->Add(list_changes_, 1, wxEXPAND | wxLEFT | wxRIGHT, UI::padLarge());
 
 	// OK button
 	auto btn_ok = new wxButton(this, wxID_OK, "Apply Selected Changes");
-	sizer->AddSpacer(4);
-	sizer->Add(btn_ok, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	sizer->AddSpacer(UI::pad());
+	sizer->Add(btn_ok, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
 	btn_ok->Bind(wxEVT_BUTTON, &DirArchiveUpdateDialog::onBtnOKClicked, this);
 
 	populateChangeList();

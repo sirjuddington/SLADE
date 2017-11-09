@@ -1,14 +1,10 @@
-
-#ifndef __SPLASHWINDOW_H__
-#define __SPLASHWINDOW_H__
-
-#include "common.h"
+#pragma once
 
 class SplashWindow : public wxMiniFrame
 {
 public:
 	SplashWindow();
-	~SplashWindow();
+	~SplashWindow() {}
 
 	float	getProgress() const { return progress; }
 	void	setMessage(string message);
@@ -31,11 +27,4 @@ private:
 	float		progress_indefinite_anim;
 	bool		show_progress;
 	wxStopWatch	timer;
-
-	static wxBitmap	bm_logo;
-	static int		width;
-	static int		height;
-	static bool		init_done;
 };
-
-#endif//__SPLASHWINDOW_H__

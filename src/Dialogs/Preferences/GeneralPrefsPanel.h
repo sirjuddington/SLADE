@@ -1,27 +1,23 @@
-
-#ifndef __GENERAL_PREFS_PANEL_H__
-#define __GENERAL_PREFS_PANEL_H__
+#pragma once
 
 #include "PrefsPanelBase.h"
 
 class GeneralPrefsPanel : public PrefsPanelBase
 {
-private:
-	wxCheckBox*	cb_gl_np2;
-	wxCheckBox*	cb_archive_load;
-	wxCheckBox*	cb_archive_close_tab;
-	wxCheckBox*	cb_wads_root;
-	wxCheckBox*	cb_update_check;
-	wxCheckBox* cb_update_check_beta;
-	wxCheckBox*	cb_confirm_exit;
-	wxCheckBox*	cb_backup_archives;
-
 public:
 	GeneralPrefsPanel(wxWindow* parent);
 	~GeneralPrefsPanel();
 
-	void	init();
-	void	applyPreferences();
-};
+	void	init() override;
+	void	applyPreferences() override;
 
-#endif//__GENERAL_PREFS_PANEL_H__
+private:
+	wxCheckBox*	cb_gl_np2_;
+	wxCheckBox*	cb_archive_load_;
+	wxCheckBox*	cb_archive_close_tab_;
+	wxCheckBox*	cb_wads_root_;
+	wxCheckBox*	cb_update_check_;
+	wxCheckBox* cb_update_check_beta_;
+	wxCheckBox*	cb_confirm_exit_;
+	wxCheckBox*	cb_backup_archives_;
+};

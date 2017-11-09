@@ -35,6 +35,7 @@
 #include "SToolBar.h"
 #include "SToolBarButton.h"
 #include "OpenGL/Drawing.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------
@@ -59,10 +60,11 @@ public:
 	SToolBarSeparator(wxWindow* parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 	{
 		// Set size
-		int size = toolbar_size + 6;
-		SetSizeHints(4, size, 4, size);
-		SetMinSize(wxSize(4, size));
-		SetSize(4, size);
+		int height = UI::scalePx(toolbar_size + 6);
+		int width = UI::scalePx(4);
+		SetSizeHints(width, height, width, height);
+		SetMinSize(wxSize(width, height));
+		SetSize(width, height);
 
 		// Set window name
 		SetName("tb_sep");
@@ -76,7 +78,7 @@ public:
 		wxPaintDC dc(this);
 
 		// Get system colours needed
-		wxColour col_background = GetBackgroundColour();//toolbar_win10 ? *wxWHITE : Drawing::getPanelBGColour();
+		wxColour col_background = GetBackgroundColour();
 		rgba_t bg(COLWX(col_background));
 		wxColour col_light = WXCOL(bg.amp(50, 50, 50, 0));
 		wxColour col_dark = WXCOL(bg.amp(-50, -50, -50, 0));
@@ -87,10 +89,10 @@ public:
 
 		// Draw separator lines
 		int height = (toolbar_size / 16.0) * 11;
-		dc.GradientFillLinear(wxRect(1, 0, 1, height), col_background, col_dark, wxSOUTH);
-		dc.GradientFillLinear(wxRect(1, height, 1, height), col_background, col_dark, wxNORTH);
-		dc.GradientFillLinear(wxRect(2, 0, 1, height), col_background, col_light, wxSOUTH);
-		dc.GradientFillLinear(wxRect(2, height, 1, height), col_background, col_light, wxNORTH);
+		dc.GradientFillLinear(WxUtils::scaledRect(1, 0, 1, height), col_background, col_dark, wxSOUTH);
+		dc.GradientFillLinear(WxUtils::scaledRect(1, height, 1, height), col_background, col_dark, wxNORTH);
+		dc.GradientFillLinear(WxUtils::scaledRect(2, 0, 1, height), col_background, col_light, wxSOUTH);
+		dc.GradientFillLinear(WxUtils::scaledRect(2, height, 1, height), col_background, col_light, wxNORTH);
 	}
 };
 
@@ -105,8 +107,8 @@ public:
 	SToolBarVLine(wxWindow* parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 	{
 		// Set size
-		SetMaxSize(wxSize(-1, 2));
-		SetMinSize(wxSize(-1, 2));
+		SetMaxSize(WxUtils::scaledSize(-1, 2));
+		SetMinSize(WxUtils::scaledSize(-1, 2));
 
 		// Set window name
 		SetName("tb_vline");
@@ -175,9 +177,9 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, string name, bool force_name) : w
 
 		wxStaticText* label = new wxStaticText(this, -1, S_FMT("%s:", showname));
 		label->SetForegroundColour(Drawing::getMenuTextColour());
-		sizer->AddSpacer(4);
+		sizer->AddSpacer(UI::pad());
 		sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL);
-		sizer->AddSpacer(2);
+		sizer->AddSpacer(UI::px(UI::Size::PadMinimum));
 	}
 }
 
@@ -226,7 +228,7 @@ SToolBarButton* SToolBarGroup::addActionButton(string action, string icon, bool 
 	button->SetBackgroundColour(GetBackgroundColour());
 
 	// Add it to the group
-	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL|wxALL, UI::scalePx(1));
 
 	return button;
 }
@@ -253,7 +255,7 @@ SToolBarButton* SToolBarGroup::addActionButton(
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &SToolBarGroup::onButtonClicked, this, button->GetId());
 
 	// Add it to the group
-	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL|wxALL, UI::scalePx(1));
 
 	return button;
 }
@@ -269,7 +271,7 @@ void SToolBarGroup::addCustomControl(wxWindow* control)
 	control->SetParent(this);
 
 	// Add it to the group
-	GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 1);
+	GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, UI::scalePx(1));
 }
 
 // ----------------------------------------------------------------------------
@@ -534,7 +536,7 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 
 		// Check if the group will fit
 		groups_[a]->Show();
-		if (groups_[a]->GetBestSize().x + current_width + 4 > GetSize().x && groups_line > 0)
+		if (groups_[a]->GetBestSize().x + current_width + UI::pad() > GetSize().x && groups_line > 0)
 		{
 			// The group won't fit, begin a new line
 			SToolBarVLine* vline = new SToolBarVLine(this);
@@ -554,13 +556,13 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 			SToolBarSeparator* sep = new SToolBarSeparator(this);
 			sep->SetBackgroundColour(GetBackgroundColour());
 			separators_.push_back(sep);
-			hbox->Add(sep, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 2);
-			current_width += 8;
+			hbox->Add(sep, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, UI::px(UI::Size::PadMinimum));
+			current_width += UI::pad() * 2;
 		}
 
 		// Add the group
-		hbox->Add(groups_[a], 0, wxEXPAND|wxTOP|wxBOTTOM|wxLEFT|wxRIGHT, 2);
-		current_width += groups_[a]->GetBestSize().x + 4;
+		hbox->Add(groups_[a], 0, wxEXPAND|wxTOP|wxBOTTOM|wxLEFT|wxRIGHT, UI::px(UI::Size::PadMinimum));
+		current_width += groups_[a]->GetBestSize().x + UI::pad();
 
 		groups_line++;
 	}
@@ -570,7 +572,7 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 	Refresh();
 
 	// Check if the toolbar height changed
-	int h = toolbar_size + 14;
+	int h = getBarHeight();
 	if (min_height_ != (n_rows_+1) * h)
 	{
 		// Update minimum height
@@ -657,7 +659,7 @@ int SToolBar::calculateNumRows(int width)
 			continue;
 
 		// Check if the group will fit
-		if (groups_[a]->GetBestSize().x + current_width + 4 > width && groups_line > 0)
+		if (groups_[a]->GetBestSize().x + current_width + UI::pad() > width && groups_line > 0)
 		{
 			// The group won't fit, begin a new line
 			groups_line = 0;
@@ -667,7 +669,7 @@ int SToolBar::calculateNumRows(int width)
 
 		// Add separator if needed
 		if (groups_line > 0)
-			current_width += 4;
+			current_width += UI::pad();
 
 		// Add the group
 		current_width += groups_[a]->GetBestSize().x;
@@ -852,5 +854,5 @@ void SToolBar::onEraseBackground(wxEraseEvent& e)
 // ----------------------------------------------------------------------------
 int SToolBar::getBarHeight()
 {
-	return toolbar_size + 14;
+	return UI::scalePx(toolbar_size + 14);
 }

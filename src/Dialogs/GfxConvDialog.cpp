@@ -29,19 +29,19 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "GfxConvDialog.h"
 #include "Archive/ArchiveManager.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "General/Console/Console.h"
 #include "General/Misc.h"
 #include "General/UI.h"
+#include "GfxConvDialog.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "UI/Canvas/GfxCanvas.h"
-#include "UI/ColourBox.h"
-#include "UI/PaletteChooser.h"
+#include "UI/Controls/ColourBox.h"
+#include "UI/Controls/PaletteChooser.h"
 
 
 /*******************************************************************
@@ -217,116 +217,131 @@ bool GfxConvDialog::nextItem()
  *******************************************************************/
 void GfxConvDialog::setupLayout()
 {
+	int px_inner = UI::pad();
+	int px_outer = UI::padLarge();
+	int px_pad = UI::px(UI::Size::PadMinimum);
+	int px_preview_size = UI::scalePx(192);
+
 	wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 
 	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(m_vbox, 1, wxEXPAND|wxALL, 6);
+	msizer->Add(m_vbox, 1, wxEXPAND|wxALL, px_outer);
 
 	// Add current format label
 	label_current_format = new wxStaticText(this, -1, "Current Format:");
-	m_vbox->Add(label_current_format, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxTOP, 8);
+	m_vbox->Add(label_current_format, 0, wxALIGN_CENTER_VERTICAL|wxBOTTOM, px_inner);
 
 	// Add 'Convert To' combo box
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND|wxTOP|wxLEFT|wxRIGHT, 4);
-	hbox->Add(new wxStaticText(this, -1, "Convert to:"), 0, wxALL|wxALIGN_CENTER_VERTICAL, 5);
+	m_vbox->Add(hbox, 0, wxEXPAND|wxBOTTOM, px_outer);
+	hbox->Add(new wxStaticText(this, -1, "Convert to:"), 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, px_pad);
 	combo_target_format = new wxChoice(this, -1);
-	hbox->Add(combo_target_format, 1, wxEXPAND|wxALL, 4);
+	hbox->Add(combo_target_format, 1, wxEXPAND);
 
 
 	// Add Gfx previews
-	wxStaticBox* frame = new wxStaticBox(this, -1, "Graphic");
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Colour Options");
 	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
-	m_vbox->Add(framesizer, 1, wxEXPAND|wxALL, 4);
+	m_vbox->Add(framesizer, 1, wxEXPAND|wxBOTTOM, px_outer);
 
-	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
-	framesizer->Add(vbox, 1, wxEXPAND|wxALL, 0);
+	auto gbsizer = new wxGridBagSizer(px_inner, px_inner);
+	framesizer->Add(gbsizer, 1, wxEXPAND | wxALL, px_inner);
 
-	vbox->Add(new wxStaticText(this, -1, "Current Graphic"), 0, wxEXPAND|wxLEFT|wxRIGHT, 4);
-
+	// Current
+	gbsizer->Add(new wxStaticText(this, -1, "Current Graphic"), { 0, 0 }, { 1, 1 });
 	gfx_current = new GfxCanvas(this, -1);
-	gfx_current->SetInitialSize(wxSize(192, 192));
+	gfx_current->SetInitialSize(wxSize(px_preview_size, px_preview_size));
 	gfx_current->setViewType(GFXVIEW_CENTERED);
-	vbox->Add(gfx_current->toPanel(this), 1, wxEXPAND|wxTOP|wxLEFT|wxRIGHT, 4);
-
+	gbsizer->Add(gfx_current, { 1, 0 }, { 1, 1 }, wxEXPAND);
 	pal_chooser_current = new PaletteChooser(this, -1);
 	pal_chooser_current->selectPalette(current_palette_name);
-	vbox->Add(pal_chooser_current, 0, wxEXPAND|wxALL, 4);
+	gbsizer->Add(pal_chooser_current, { 2, 0 }, { 1, 1 }, wxEXPAND);
 
-
-	vbox = new wxBoxSizer(wxVERTICAL);
-	framesizer->Add(vbox, 1, wxEXPAND|wxALL, 0);
-
-	vbox->Add(new wxStaticText(this, -1, "Converted Graphic"), 0, wxEXPAND|wxLEFT|wxRIGHT, 4);
-
+	// Converted
+	gbsizer->Add(new wxStaticText(this, -1, "Converted Graphic"), { 0, 1 }, { 1, 2 });
 	gfx_target = new GfxCanvas(this, -1);
-	gfx_target->SetInitialSize(wxSize(192, 192));
+	gfx_target->SetInitialSize(wxSize(px_preview_size, px_preview_size));
 	gfx_target->setViewType(1);
-	vbox->Add(gfx_target->toPanel(this), 1, wxEXPAND|wxTOP|wxLEFT|wxRIGHT, 4);
-
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-
+	gbsizer->Add(gfx_target, { 1, 1 }, { 1, 2 }, wxEXPAND);
 	pal_chooser_target = new PaletteChooser(this, -1);
 	pal_chooser_target->selectPalette(target_palette_name);
-	hbox->Add(pal_chooser_target, 1, wxEXPAND|wxRIGHT, 4);
-
-	btn_colorimetry_settings = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "settings"), wxDefaultPosition, wxDefaultSize);
+	gbsizer->Add(pal_chooser_target, { 2, 1 }, { 1, 1 }, wxEXPAND);
+	btn_colorimetry_settings = new wxBitmapButton(
+		this,
+		-1,
+		Icons::getIcon(Icons::GENERAL, "settings"),
+		wxDefaultPosition,
+		wxDefaultSize
+	);
 	btn_colorimetry_settings->SetToolTip("Adjust Colorimetry Settings...");
-	hbox->Add(btn_colorimetry_settings, 0, wxEXPAND, 0);
+	gbsizer->Add(btn_colorimetry_settings, { 2, 2 }, { 1, 1 }, wxALIGN_CENTER);
+	gbsizer->AddGrowableCol(0, 1);
+	gbsizer->AddGrowableCol(1, 1);
+	gbsizer->AddGrowableRow(1, 1);
 
-	vbox->Add(hbox, 0, wxEXPAND | wxALL, 4);
 
+	// Add transparency options
+	frame = new wxStaticBox(this, -1, "Transparency Options");
+	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	m_vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, px_outer);
+
+	gbsizer = new wxGridBagSizer(px_inner, px_inner);
+	framesizer->Add(gbsizer, 1, wxEXPAND | wxALL, px_inner);
 
 	// 'Enable transparency' checkbox
 	cb_enable_transparency = new wxCheckBox(this, -1, "Enable Transparency");
 	cb_enable_transparency->SetValue(true);
 	cb_enable_transparency->SetToolTip("Uncheck this to remove any existing transparency from the graphic");
-	m_vbox->AddSpacer(4);
-	m_vbox->Add(cb_enable_transparency, 0, wxEXPAND|wxALL, 4);
-
-	// Add transparency options
-	frame = new wxStaticBox(this, -1, "Transparency Options");
-	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	m_vbox->Add(framesizer, 0, wxEXPAND|wxALL, 4);
-
-	wxBoxSizer* vbox_ttypes = new wxBoxSizer(wxVERTICAL);
-	framesizer->Add(vbox_ttypes, 1, wxEXPAND|wxALL, 0);
+	gbsizer->Add(cb_enable_transparency, { 0, 0 }, { 1, 2 });
 
 	// Keep existing transparency
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox_ttypes->Add(hbox, 0, wxEXPAND|wxALL, 0);
-	rb_transparency_existing = new wxRadioButton(this, 100, "Existing w/Threshold:", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	rb_transparency_existing = new wxRadioButton(
+		this,
+		100,
+		"Existing w/Threshold:",
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxRB_GROUP
+	);
 	rb_transparency_existing->SetValue(true);
-	hbox->Add(rb_transparency_existing, 0, wxEXPAND|wxALL, 4);
+	gbsizer->Add(rb_transparency_existing, { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	// Alpha threshold
-	slider_alpha_threshold = new wxSlider(this, -1, 0, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS|wxSL_BOTTOM);
-	slider_alpha_threshold->SetToolTip("Specifies the 'cutoff' transparency level, anything above this will be fully opaque, anything equal or below will be completely transparent");
-	hbox->Add(slider_alpha_threshold, 1, wxEXPAND|wxALL, 4);
-
+	slider_alpha_threshold = new wxSlider(
+		this,
+		-1,
+		0,
+		0,
+		255,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM
+	);
+	slider_alpha_threshold->SetToolTip(
+		"Specifies the 'cutoff' transparency level, anything above this will be fully opaque, "
+		"anything equal or below will be completely transparent"
+	);
+	gbsizer->Add(slider_alpha_threshold, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Transparent colour
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox_ttypes->Add(hbox, 0, wxEXPAND|wxALL, 0);
 	rb_transparency_colour = new wxRadioButton(this, 101, "Transparent Colour:", wxDefaultPosition, wxDefaultSize, 0);
 	rb_transparency_colour->SetValue(false);
-	hbox->Add(rb_transparency_colour, 0, wxEXPAND|wxALL, 4);
+	gbsizer->Add(rb_transparency_colour, { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	colbox_transparent = new ColourBox(this, -1, false);
 	colbox_transparent->setColour(rgba_t(0, 255, 255, 255));
-	hbox->Add(colbox_transparent, 0, wxEXPAND|wxALL, 4);
-
+	gbsizer->Add(colbox_transparent, { 2, 1 }, { 1, 1 });
 
 	// From brightness
 	rb_transparency_brightness = new wxRadioButton(this, 102, "Transparency from Brightness");
 	rb_transparency_brightness->SetValue(false);
-	vbox_ttypes->Add(rb_transparency_brightness, 0, wxEXPAND|wxALL, 4);
-
+	gbsizer->Add(rb_transparency_brightness, { 3, 0 }, { 1, 2 });
+	gbsizer->AddGrowableCol(1, 1);
 
 	// Buttons
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND|wxALL, 4);
+	m_vbox->Add(hbox, 0, wxEXPAND);
 
 	btn_convert = new wxButton(this, -1, "Convert");
 	btn_convert_all = new wxButton(this, -1, "Convert All");
@@ -334,10 +349,10 @@ void GfxConvDialog::setupLayout()
 	btn_skip_all = new wxButton(this, -1, "Skip All");
 
 	hbox->AddStretchSpacer(1);
-	hbox->Add(btn_convert, 0, wxEXPAND|wxRIGHT, 4);
-	hbox->Add(btn_convert_all, 0, wxEXPAND|wxRIGHT, 4);
-	hbox->Add(btn_skip, 0, wxEXPAND|wxRIGHT, 4);
-	hbox->Add(btn_skip_all, 0, wxEXPAND, 0);
+	hbox->Add(btn_convert, 0, wxEXPAND | wxRIGHT, px_inner);
+	hbox->Add(btn_convert_all, 0, wxEXPAND | wxRIGHT, px_inner);
+	hbox->Add(btn_skip, 0, wxEXPAND | wxRIGHT, px_inner);
+	hbox->Add(btn_skip_all, 0, wxEXPAND);
 
 
 	// Bind events
@@ -508,7 +523,7 @@ void GfxConvDialog::getConvertOptions(SIFormat::convert_options_t& opt)
 	else if (rb_transparency_colour->GetValue())
 	{
 		opt.mask_source = SIFormat::MASK_COLOUR;
-		opt.mask_colour = colbox_transparent->getColour();
+		opt.mask_colour = colbox_transparent->colour();
 	}
 	else
 		opt.mask_source = SIFormat::MASK_BRIGHTNESS;

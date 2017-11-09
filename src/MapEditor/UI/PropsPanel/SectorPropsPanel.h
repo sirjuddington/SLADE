@@ -1,76 +1,74 @@
+#pragma once
 
-#ifndef __SECTOR_PROPS_PANEL_H__
-#define __SECTOR_PROPS_PANEL_H__
-
-#include "common.h"
 #include "PropsPanelBase.h"
 #include "UI/Canvas/OGLCanvas.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
 
 class GLTexture;
+class SectorSpecialPanel;
+class MapObject;
+class MapObjectPropsPanel;
+class NumberTextCtrl;
+
 class FlatTexCanvas : public OGLCanvas
 {
-private:
-	GLTexture*	texture;
-	string		texname;
-
 public:
 	FlatTexCanvas(wxWindow* parent);
-	~FlatTexCanvas();
+	~FlatTexCanvas() {}
 
-	string	getTexName();
+	string	texName() const { return texname_; }
 	void	setTexture(string texture);
-	void	draw();
+	void	draw() override;
+
+private:
+	GLTexture*	texture_ = nullptr;
+	string		texname_;
 };
 
 class FlatComboBox : public wxComboBox
 {
-private:
-	bool list_down;
-
 public:
 	FlatComboBox(wxWindow* parent);
 	~FlatComboBox() {}
+
+private:
+	bool list_down_ = false;
 
 	void onDropDown(wxCommandEvent& e);
 	void onCloseUp(wxCommandEvent& e);
 	void onKeyDown(wxKeyEvent& e);
 };
 
-class SectorSpecialPanel;
-class MapObject;
-class MapObjectPropsPanel;
-class NumberTextCtrl;
+
 class SectorPropsPanel : public PropsPanelBase
 {
-private:
-	TabControl*				stc_tabs;
-	SectorSpecialPanel*		panel_special;
-	wxCheckBox*				cb_override_special;
-	MapObjectPropsPanel*	mopp_all_props;
-	FlatTexCanvas*			gfx_floor;
-	FlatTexCanvas*			gfx_ceiling;
-	FlatComboBox*			fcb_floor;
-	FlatComboBox*			fcb_ceiling;
-	NumberTextCtrl*			text_height_floor;
-	NumberTextCtrl*			text_height_ceiling;
-	NumberTextCtrl*			text_light;
-	NumberTextCtrl*			text_tag;
-	wxButton*				btn_new_tag;
-
 public:
 	SectorPropsPanel(wxWindow* parent);
-	~SectorPropsPanel();
+	~SectorPropsPanel() {}
+
+	void		openObjects(vector<MapObject*>& objects) override;
+	void		applyChanges() override;
+
+private:
+	TabControl*				stc_tabs_				= nullptr;
+	SectorSpecialPanel*		panel_special_			= nullptr;
+	wxCheckBox*				cb_override_special_	= nullptr;
+	MapObjectPropsPanel*	mopp_all_props_			= nullptr;
+	FlatTexCanvas*			gfx_floor_				= nullptr;
+	FlatTexCanvas*			gfx_ceiling_			= nullptr;
+	FlatComboBox*			fcb_floor_				= nullptr;
+	FlatComboBox*			fcb_ceiling_			= nullptr;
+	NumberTextCtrl*			text_height_floor_		= nullptr;
+	NumberTextCtrl*			text_height_ceiling_	= nullptr;
+	NumberTextCtrl*			text_light_				= nullptr;
+	NumberTextCtrl*			text_tag_				= nullptr;
+	wxButton*				btn_new_tag_			= nullptr;
 
 	wxPanel*	setupGeneralPanel();
 	wxPanel*	setupSpecialPanel();
-	void		openObjects(vector<MapObject*>& objects);
-	void		applyChanges();
 
 	// Events
 	void	onTextureChanged(wxCommandEvent& e);
 	void	onTextureClicked(wxMouseEvent& e);
 	void	onBtnNewTag(wxCommandEvent& e);
 };
-
-#endif//__SECTOR_PROPS_PANEL_H__

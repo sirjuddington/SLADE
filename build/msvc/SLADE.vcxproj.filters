@@ -184,6 +184,9 @@
     <Filter Include="Text Editor\UI">
       <UniqueIdentifier>{9b86963f-b602-4d90-aaa9-c50bc1ae60aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Controls">
+      <UniqueIdentifier>{df7203c4-44f4-4f91-adaf-0269fe29db65}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
@@ -786,9 +789,6 @@
     <ClCompile Include="..\..\src\Utility\MemChunk.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\UI\WxStuff.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utility\FileMonitor.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -834,27 +834,6 @@
     <ClCompile Include="..\..\src\UI\Canvas\PaletteCanvas.cpp">
       <Filter>UI\Canvas</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\UI\ColourBox.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\ConsolePanel.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\DockPanel.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\HexEditorPanel.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\NumberTextCtrl.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\PaletteChooser.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\ResourceArchiveChooser.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\UI\SAuiTabArt.cpp">
       <Filter>UI</Filter>
     </ClCompile>
@@ -864,13 +843,7 @@
     <ClCompile Include="..\..\src\UI\SplashWindow.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\UI\STabCtrl.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\UI\STopWindow.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\UndoManagerHistoryPanel.cpp">
       <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Archive\Archive.cpp">
@@ -1028,9 +1001,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.cpp">
       <Filter>Main Editor\UI\Texture Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UI\BaseResourceChooser.cpp">
-      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\MapBackupManager.cpp">
       <Filter>Map Editor</Filter>
@@ -1500,6 +1470,48 @@
     <ClCompile Include="..\..\src\Game\ZScript.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\UI\WxUtils.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\BaseResourceChooser.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\ColourBox.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\FileLocationPanel.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\HexEditorPanel.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\NumberTextCtrl.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\PaletteChooser.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\ResourceArchiveChooser.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\SIconButton.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\SZoomSlider.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\UndoManagerHistoryPanel.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\ConsolePanel.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\DockPanel.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Controls\STabCtrl.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -1854,9 +1866,6 @@
     <ClInclude Include="..\..\src\General\Console\ConsoleHelpers.h">
       <Filter>General\Console</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\UI\WxStuff.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Application\Main.h">
       <Filter>Application</Filter>
     </ClInclude>
@@ -1905,27 +1914,6 @@
     <ClInclude Include="..\..\src\UI\Canvas\PaletteCanvas.h">
       <Filter>UI\Canvas</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\UI\ColourBox.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\ConsolePanel.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\DockPanel.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\HexEditorPanel.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\NumberTextCtrl.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\PaletteChooser.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\ResourceArchiveChooser.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\UI\SAuiTabArt.h">
       <Filter>UI</Filter>
     </ClInclude>
@@ -1935,13 +1923,7 @@
     <ClInclude Include="..\..\src\UI\SplashWindow.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\UI\STabCtrl.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\UI\STopWindow.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\UndoManagerHistoryPanel.h">
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFJedi.h">
@@ -2144,9 +2126,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.h">
       <Filter>Main Editor\UI\Texture Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UI\BaseResourceChooser.h">
-      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\MapBackupManager.h">
       <Filter>Map Editor</Filter>
@@ -2623,6 +2602,48 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Game\ZScript.h">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\WxUtils.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\BaseResourceChooser.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\ColourBox.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\FileLocationPanel.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\HexEditorPanel.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\NumberTextCtrl.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\PaletteChooser.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\ResourceArchiveChooser.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\SIconButton.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\SZoomSlider.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\UndoManagerHistoryPanel.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\ConsolePanel.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\DockPanel.h">
+      <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Controls\STabCtrl.h">
+      <Filter>UI\Controls</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2013,17 +2013,15 @@ CONSOLE_COMMAND(m_check, 0, true)
 	if (args.empty())
 	{
 		Log::console("Usage: m_check <check1> <check2> ...");
+
 		Log::console("Available map checks:");
-		Log::console("missing_tex: Check for missing textures");
-		Log::console("special_tags: Check for missing action special tags");
-		Log::console("intersecting_lines: Check for intersecting lines");
-		Log::console("overlapping_lines: Check for overlapping lines");
-		Log::console("overlapping_things: Check for overlapping things");
-		Log::console("unknown_textures: Check for unknown wall textures");
-		Log::console("unknown_flats: Check for unknown floor/ceiling textures");
-		Log::console("unknown_things: Check for unknown thing types");
-		Log::console("stuck_things: Check for things stuck in walls");
-		Log::console("sector_references: Check for wrong sector references");
+		for (auto a = 0; a < MapCheck::NumStandardChecks; ++a)
+			Log::console(S_FMT(
+				"%s: Check for %s",
+				CHR(MapCheck::standardCheckId((MapCheck::StandardCheck)a)),
+				CHR(MapCheck::standardCheckDesc((MapCheck::StandardCheck)a))
+			));
+
 		Log::console("all: Run all checks");
 
 		return;
@@ -2034,36 +2032,33 @@ CONSOLE_COMMAND(m_check, 0, true)
 
 	// Get checks to run
 	vector<MapCheck*> checks;
-	for (unsigned a = 0; a < args.size(); a++)
+
+	// Check for 'all'
+	bool all = false;
+	for (auto& arg : args)
+		if (S_CMPNOCASE(arg, "all"))
+		{
+			all = true;
+			break;
+		}
+
+	if (all)
 	{
-		string id = args[a].Lower();
-		unsigned n = checks.size();
-
-		if (id == "missing_tex" || id == "all")
-			checks.push_back(MapCheck::missingTextureCheck(map));
-		if (id == "special_tags" || id == "all")
-			checks.push_back(MapCheck::specialTagCheck(map));
-		if (id == "intersecting_lines" || id == "all")
-			checks.push_back(MapCheck::intersectingLineCheck(map));
-		if (id == "overlapping_lines" || id == "all")
-			checks.push_back(MapCheck::overlappingLineCheck(map));
-		if (id == "overlapping_things" || id == "all")
-			checks.push_back(MapCheck::overlappingThingCheck(map));
-		if (id == "unknown_textures" || id == "all")
-			checks.push_back(MapCheck::unknownTextureCheck(map, texman));
-		if (id == "unknown_flats" || id == "all")
-			checks.push_back(MapCheck::unknownFlatCheck(map, texman));
-		if (id == "unknown_things" || id == "all")
-			checks.push_back(MapCheck::unknownThingTypeCheck(map));
-		if (id == "stuck_things" || id == "all")
-			checks.push_back(MapCheck::stuckThingsCheck(map));
-		if (id == "sector_references" || id == "all")
-			checks.push_back(MapCheck::sectorReferenceCheck(map));
-		
-		if (n == checks.size())
-			Log::console(S_FMT("Unknown check \"%s\"", id));
+		for (auto a = 0; a < MapCheck::NumStandardChecks; ++a)
+			checks.push_back(MapCheck::standardCheck((MapCheck::StandardCheck)a, map, texman));
 	}
-
+	else
+	{
+		for (auto& arg : args)
+		{
+			auto check = MapCheck::standardCheck(arg.Lower(), map, texman);
+			if (check)
+				checks.push_back(check);
+			else
+				Log::console(S_FMT("Unknown check \"%s\"", CHR(arg)));
+		}
+	}
+	
 	// Run checks
 	for (unsigned a = 0; a < checks.size(); a++)
 	{
@@ -2083,7 +2078,6 @@ CONSOLE_COMMAND(m_check, 0, true)
 		delete checks[a];
 	}
 }
-
 
 
 

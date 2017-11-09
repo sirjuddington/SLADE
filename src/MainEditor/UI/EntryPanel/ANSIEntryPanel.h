@@ -1,23 +1,21 @@
-
-#ifndef __ANSI_ENTRY_PANEL__
-#define __ANSI_ENTRY_PANEL__
+#pragma once
 
 #include "EntryPanel.h"
 
 class ANSICanvas;
+
 class ANSIEntryPanel : public EntryPanel
 {
-private:
-	ANSICanvas*		ansi_canvas;
-	uint8_t*		ansi_chardata;
-
 public:
 	ANSIEntryPanel(wxWindow* parent);
-	~ANSIEntryPanel();
+	~ANSIEntryPanel() {}
 
-	bool	loadEntry(ArchiveEntry* entry);
-	bool	saveEntry();
-	void	drawCharacter(size_t index);
+	bool	loadEntry(ArchiveEntry* entry) override;
+	bool	saveEntry() override;
+
+	static const int DATASIZE = 4000;
+
+private:
+	ANSICanvas*		ansi_canvas_	= nullptr;
+	vector<uint8_t>	ansi_chardata_;
 };
-
-#endif//__ANSI_ENTRY_PANEL__

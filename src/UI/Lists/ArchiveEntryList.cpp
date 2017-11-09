@@ -35,6 +35,7 @@
 #include "Graphics/Icons.h"
 #include "General/ColourConfiguration.h"
 #include "General/UndoRedo.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------
@@ -99,8 +100,7 @@ EXTERN_CVAR(Bool, list_font_monospace)
 	setupColumns();
 
 	// Setup entry icons
-	wxImageList* image_list = new wxImageList(16, 16, false, 0);
-
+	auto image_list = WxUtils::createSmallImageList();
 	wxArrayString et_icon_list = EntryType::iconList();
 	for (size_t a = 0; a < et_icon_list.size(); a++)
 	{

@@ -36,8 +36,9 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
-#include "UI/NumberTextCtrl.h"
+#include "UI/Controls/NumberTextCtrl.h"
 #include "SpecialPresetDialog.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------
@@ -51,15 +52,12 @@
 //
 // ActionSpecialTreeView class constructor
 // ----------------------------------------------------------------------------
-ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeCtrl(parent, -1)
+ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) :
+	wxDataViewTreeCtrl{ parent, -1 },
+	root_{ nullptr }
 {
-	parent_dialog = nullptr;
-
-	// Create root item
-	root = wxDataViewItem(nullptr);
-
 	// Add 'None'
-	item_none = AppendItem(root, "0: None");
+	item_none_ = AppendItem(root_, "0: None");
 
 	// Computing the minimum width of the tree is slightly complicated, since
 	// wx doesn't expose it to us directly
@@ -77,7 +75,7 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 		AppendItem(getGroup(i.second.group()), label);
 		textsize.IncTo(dc.GetTextExtent(label));
 	}
-	Expand(root);
+	Expand(root_);
 
 	// Bind events
 	Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, &ActionSpecialTreeView::onItemEdit, this);
@@ -85,17 +83,8 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 
 	// 64 is an arbitrary fudge factor -- should be at least the width of a
 	// scrollbar plus the expand icons plus any extra padding
-	int min_width = textsize.GetWidth() + GetIndent() + 64;
-	SetMinSize(wxSize(min_width, 200));
-}
-
-// ----------------------------------------------------------------------------
-// ActionSpecialTreeView::~ActionSpecialTreeView
-//
-// ActionSpecialTreeView class destructor
-// ----------------------------------------------------------------------------
-ActionSpecialTreeView::~ActionSpecialTreeView()
-{
+	int min_width = textsize.GetWidth() + GetIndent() + UI::scalePx(64);
+	SetMinSize({ min_width, UI::scalePx(200) });
 }
 
 // ----------------------------------------------------------------------------
@@ -122,20 +111,20 @@ void ActionSpecialTreeView::showSpecial(int special, bool focus)
 {
 	if (special == 0)
 	{
-		EnsureVisible(item_none);
-		Select(item_none);
+		EnsureVisible(item_none_);
+		Select(item_none_);
 		if (focus)
 			SetFocus();
 		return;
 	}
 
 	// Go through item groups
-	for (unsigned a = 0; a < groups.size(); a++)
+	for (unsigned a = 0; a < groups_.size(); a++)
 	{
 		// Go through group items
-		for (int b = 0; b < GetChildCount(groups[a].item); b++)
+		for (int b = 0; b < GetChildCount(groups_[a].item); b++)
 		{
-			wxDataViewItem item = GetNthChild(groups[a].item, b);
+			wxDataViewItem item = GetNthChild(groups_[a].item, b);
 
 			// Select+show if match
 			if (specialNumber(item) == special)
@@ -172,17 +161,17 @@ int ActionSpecialTreeView::selectedSpecial()
 wxDataViewItem ActionSpecialTreeView::getGroup(string group)
 {
 	// Check if group was already made
-	for (unsigned a = 0; a < groups.size(); a++)
+	for (unsigned a = 0; a < groups_.size(); a++)
 	{
-		if (group == groups[a].name)
-			return groups[a].item;
+		if (group == groups_[a].name)
+			return groups_[a].item;
 	}
 
 	// Split group into subgroups
 	wxArrayString path = wxSplit(group, '/');
 
 	// Create group needed
-	wxDataViewItem current = root;
+	wxDataViewItem current = root_;
 	string fullpath = "";
 	for (unsigned p = 0; p < path.size(); p++)
 	{
@@ -190,11 +179,11 @@ wxDataViewItem ActionSpecialTreeView::getGroup(string group)
 		fullpath += path[p];
 
 		bool found = false;
-		for (unsigned a = 0; a < groups.size(); a++)
+		for (unsigned a = 0; a < groups_.size(); a++)
 		{
-			if (groups[a].name == fullpath)
+			if (groups_[a].name == fullpath)
 			{
-				current = groups[a].item;
+				current = groups_[a].item;
 				found = true;
 				break;
 			}
@@ -203,7 +192,7 @@ wxDataViewItem ActionSpecialTreeView::getGroup(string group)
 		if (!found)
 		{
 			current = AppendContainer(current, path[p], -1, 1);
-			groups.push_back(astv_group_t(current, fullpath));
+			groups_.push_back(ASTVGroup(current, fullpath));
 		}
 	}
 
@@ -234,8 +223,8 @@ void ActionSpecialTreeView::onItemEdit(wxDataViewEvent& e)
 // ----------------------------------------------------------------------------
 void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e)
 {
-	if (parent_dialog)
-		parent_dialog->EndModal(wxID_OK);
+	if (parent_dialog_)
+		parent_dialog_->EndModal(wxID_OK);
 }
 
 
@@ -278,7 +267,7 @@ protected:
 public:
 	ArgsTextControl(wxWindow* parent, const Game::Arg& arg, bool limit_byte) : ArgsControl(parent, arg)
 	{
-		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(40, -1));
+		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, WxUtils::scaledSize(40, -1));
 		if (limit_byte)
 			text_control->SetValidator(wxIntegerValidator<unsigned char>());
 		else
@@ -347,12 +336,12 @@ class ArgsChoiceControl : public ArgsControl
 {
 protected:
 	wxComboBox*			choice_control;
-
+	
 public:
 	ArgsChoiceControl(wxWindow* parent, const Game::Arg& arg)
 		: ArgsControl(parent, arg)
 	{
-		choice_control = new wxComboBox(this, -1, "", wxDefaultPosition, wxSize(100, -1));
+		choice_control = new wxComboBox(this, -1, "", wxDefaultPosition, WxUtils::scaledSize(100, -1));
 		choice_control->SetValidator(ComboBoxAwareIntegerValidator<unsigned char>());
 
 		for (unsigned i = 0; i < arg.custom_values.size(); i++)
@@ -585,8 +574,13 @@ public:
 					if (arg.custom_flags[ii].value & group)
 					{
 						addControl(
-							new wxRadioButton(this, -1, S_FMT("%d: %s", arg.custom_flags[ii].value, arg.custom_flags[ii].name)),
-							ii, group);
+							new wxRadioButton(
+								this,
+								-1,
+								S_FMT("%d: %s", arg.custom_flags[ii].value, arg.custom_flags[ii].name)
+							),
+							ii,
+							group);
 						flag_done[ii] = true;
 					}
 				}
@@ -662,7 +656,7 @@ public:
 
 		GetSizer()->Detach(choice_control);
 		row->Add(choice_control, wxSizerFlags(0).Expand());
-		row->AddSpacer(4);
+		row->AddSpacer(UI::pad());
 		row->Add(slider_control, wxSizerFlags(1).Align(wxALIGN_CENTER_VERTICAL));
 		GetSizer()->Add(row, wxSizerFlags(1).Expand());
 		GetSizer()->Add(speed_label, wxSizerFlags(1).Expand());
@@ -694,23 +688,23 @@ public:
 //
 // ArgsPanel class constructor
 // ----------------------------------------------------------------------------
-ArgsPanel::ArgsPanel(wxWindow* parent)
-: wxScrolled<wxPanel>(parent, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL)
+ArgsPanel::ArgsPanel(wxWindow* parent) :
+	wxScrolled<wxPanel>{ parent, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL }
 {
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Add arg controls
-	fg_sizer = new wxFlexGridSizer(2, 4, 4);
-	fg_sizer->AddGrowableCol(1);
-	sizer->Add(fg_sizer, 1, wxEXPAND|wxALL, 4);
+	fg_sizer_ = new wxFlexGridSizer(2, UI::pad(), UI::pad());
+	fg_sizer_->AddGrowableCol(1);
+	sizer->Add(fg_sizer_, 1, wxEXPAND);
 
 	for (unsigned a = 0; a < 5; a++)
 	{
-		label_args[a] = new wxStaticText(this, -1, "");
-		control_args[a] = nullptr;
-		label_args_desc[a] = new wxStaticText(this, -1, "", wxDefaultPosition, wxSize(100, -1));
+		label_args_[a] = new wxStaticText(this, -1, "");
+		control_args_[a] = nullptr;
+		label_args_desc_[a] = new wxStaticText(this, -1, "", wxDefaultPosition, WxUtils::scaledSize(100, -1));
 	}
 
 	// Set up vertical scrollbar
@@ -730,20 +724,20 @@ void ArgsPanel::setup(const Game::ArgSpec& args, bool udmf)
 
 	// Reset stuff (but preserve the values)
 	int old_values[5];
-	fg_sizer->Clear();
+	fg_sizer_->Clear();
 	for (unsigned a = 0; a < 5; a++)
 	{
-		if (control_args[a])
+		if (control_args_[a])
 		{
-			old_values[a] = control_args[a]->getArgValue();
-			control_args[a]->Destroy();
+			old_values[a] = control_args_[a]->getArgValue();
+			control_args_[a]->Destroy();
 		}
 		else
 			old_values[a] = -1;
 
-		control_args[a] = nullptr;
-		label_args[a]->SetLabelText(S_FMT("Arg %d:", a + 1));
-		label_args_desc[a]->Show(false);
+		control_args_[a] = nullptr;
+		label_args_[a]->SetLabelText(S_FMT("Arg %d:", a + 1));
+		label_args_desc_[a]->Show(false);
 	}
 
 	// Setup layout
@@ -757,32 +751,32 @@ void ArgsPanel::setup(const Game::ArgSpec& args, bool udmf)
 			has_desc = !arg.desc.IsEmpty();
 
 			if (arg.type == Arg::Type::Choice)
-				control_args[a] = new ArgsChoiceControl(this, arg);
+				control_args_[a] = new ArgsChoiceControl(this, arg);
 			else if (arg.type == Arg::Type::Flags)
-				control_args[a] = new ArgsFlagsControl(this, arg, !udmf);
+				control_args_[a] = new ArgsFlagsControl(this, arg, !udmf);
 			else if (arg.type == Arg::Type::Speed)
-				control_args[a] = new ArgsSpeedControl(this, arg);
+				control_args_[a] = new ArgsSpeedControl(this, arg);
 			else
-				control_args[a] = new ArgsTextControl(this, arg, !udmf);
+				control_args_[a] = new ArgsTextControl(this, arg, !udmf);
 		}
 		else {
-			control_args[a] = new ArgsTextControl(this, arg, !udmf);
+			control_args_[a] = new ArgsTextControl(this, arg, !udmf);
 		}
 
 		// Arg name
-		label_args[a]->SetLabelText(S_FMT("%s:", arg.name));
-		fg_sizer->Add(label_args[a], wxSizerFlags().Align(wxALIGN_TOP|wxALIGN_RIGHT).Border(wxALL, 4));
+		label_args_[a]->SetLabelText(S_FMT("%s:", arg.name));
+		fg_sizer_->Add(label_args_[a], wxSizerFlags().Align(wxALIGN_TOP|wxALIGN_RIGHT).Border(wxALL, 4));
 
 		// Arg value
-		control_args[a]->setArgValue(old_values[a]);
-		fg_sizer->Add(control_args[a], wxSizerFlags().Expand());
+		control_args_[a]->setArgValue(old_values[a]);
+		fg_sizer_->Add(control_args_[a], wxSizerFlags().Expand());
 		
 		// Arg description
 		if (has_desc)
 		{
 			// Add an empty spacer to the first column
-			fg_sizer->Add(0, 0);
-			fg_sizer->Add(label_args_desc[a], wxSizerFlags().Expand());
+			fg_sizer_->Add(0, 0);
+			fg_sizer_->Add(label_args_desc_[a], wxSizerFlags().Expand());
 		}
 	}
 
@@ -809,16 +803,16 @@ void ArgsPanel::setup(const Game::ArgSpec& args, bool udmf)
 	// Set the label text last, so very long labels will wrap naturally and not
 	// force the window to be ridiculously wide
 	Layout();
-	int available_width = fg_sizer->GetColWidths()[1];
+	int available_width = fg_sizer_->GetColWidths()[1];
 	for (int a = 0; a < args.count; a++)
 	{
 		auto& arg = args[a];
 
 		if (!arg.desc.IsEmpty())
 		{
-			label_args_desc[a]->Show(true);
-			label_args_desc[a]->SetLabelText(arg.desc);
-			label_args_desc[a]->Wrap(available_width);
+			label_args_desc_[a]->Show(true);
+			label_args_desc_[a]->SetLabelText(arg.desc);
+			label_args_desc_[a]->Wrap(available_width);
 		}
 	}
 
@@ -834,7 +828,7 @@ void ArgsPanel::setValues(int args[5])
 {
 	for (unsigned a = 0; a < 5; a++)
 	{
-		control_args[a]->setArgValue(args[a]);
+		control_args_[a]->setArgValue(args[a]);
 	}
 }
 
@@ -846,10 +840,10 @@ void ArgsPanel::setValues(int args[5])
 int ArgsPanel::getArgValue(int index)
 {
 	// Check index
-	if (index < 0 || index > 4 || !control_args[index])
+	if (index < 0 || index > 4 || !control_args_[index])
 		return -1;
 
-	return control_args[index]->getArgValue();
+	return control_args_[index]->getArgValue();
 }
 
 // ----------------------------------------------------------------------------
@@ -862,16 +856,16 @@ void ArgsPanel::onSize(wxSizeEvent& event)
 	event.Skip();
 
 	Layout();
-	if (fg_sizer->GetColWidths().size() > 1)
+	if (fg_sizer_->GetColWidths().size() > 1)
 	{
-		int available_width = fg_sizer->GetColWidths()[1];
+		int available_width = fg_sizer_->GetColWidths()[1];
 		for (int a = 0; a < 5; a++)
 		{
 			// Wrap() puts hard newlines in the label, so we need to remove them
-			wxString label = label_args_desc[a]->GetLabelText();
+			wxString label = label_args_desc_[a]->GetLabelText();
 			label.Replace("\n", " ");
-			label_args_desc[a]->SetLabelText(label);
-			label_args_desc[a]->Wrap(available_width);
+			label_args_desc_[a]->SetLabelText(label);
+			label_args_desc_[a]->Wrap(available_width);
 		}
 	}
 }
@@ -902,9 +896,9 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	{
 		// Action Special radio button
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxTOP|wxRIGHT, 4);
+		sizer->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::pad());
 		rb_special_ = new wxRadioButton(this, -1, "Action Special", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		hbox->Add(rb_special_, 0, wxEXPAND|wxRIGHT, 8);
+		hbox->Add(rb_special_, 0, wxEXPAND|wxRIGHT, UI::pad());
 
 		// Generalised Special radio button
 		rb_generalised_ = new wxRadioButton(this, -1, "Generalised Special");
@@ -921,22 +915,13 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 
 	// Action specials tree
 	setupSpecialPanel();
-	sizer->Add(panel_action_special_, 1, wxEXPAND|wxALL, 4);
+	sizer->Add(panel_action_special_, 1, wxEXPAND);
 
 	SetSizerAndFit(sizer);
 
 	// Bind events
 	tree_specials_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &ActionSpecialPanel::onSpecialSelectionChanged, this);
 	tree_specials_->Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ActionSpecialPanel::onSpecialItemActivated, this);
-}
-
-// ----------------------------------------------------------------------------
-// ActionSpecialPanel::~ActionSpecialPanel
-//
-// ActionSpecialPanel class destructor
-// ----------------------------------------------------------------------------
-ActionSpecialPanel::~ActionSpecialPanel()
-{
 }
 
 // ----------------------------------------------------------------------------
@@ -952,7 +937,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 	// Special box
 	text_special_ = new NumberTextCtrl(panel_action_special_);
-	sizer->Add(text_special_, 0, wxEXPAND|wxALL, 4);
+	sizer->Add(text_special_, 0, wxEXPAND|wxBOTTOM, UI::pad());
 	text_special_->Bind(wxEVT_TEXT, [&](wxCommandEvent &e)
 	{
 		tree_specials_->showSpecial(text_special_->getNumber(), false);
@@ -960,7 +945,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 	// Action specials tree
 	tree_specials_ = new ActionSpecialTreeView(panel_action_special_);
-	sizer->Add(tree_specials_, 1, wxEXPAND|wxALL, 4);
+	sizer->Add(tree_specials_, 1, wxEXPAND);
 
 	if (show_trigger_)
 	{
@@ -983,13 +968,13 @@ void ActionSpecialPanel::setupSpecialPanel()
 				{
 					auto frame_triggers = new wxStaticBox(panel_action_special_, -1, group);
 					auto sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
-					sizer->Add(sizer_triggers, 0, wxEXPAND|wxTOP, 4);
+					sizer->Add(sizer_triggers, 0, wxEXPAND|wxTOP, UI::pad());
 
-					frame_sizer = new wxFlexGridSizer(3);
+					frame_sizer = new wxFlexGridSizer(3, UI::pad() / 2, UI::pad());
 					frame_sizer->AddGrowableCol(0, 1);
 					frame_sizer->AddGrowableCol(1, 1);
 					frame_sizer->AddGrowableCol(2, 1);
-					sizer_triggers->Add(frame_sizer, 1, wxEXPAND|wxALL, 4);
+					sizer_triggers->Add(frame_sizer, 1, wxEXPAND|wxALL, UI::pad());
 
 					named_flexgrids.find(group)->second = frame_sizer;
 				}
@@ -1013,7 +998,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 		{
 			auto frame_trigger = new wxStaticBox(panel_action_special_, -1, "Special Trigger");
 			auto sizer_trigger = new wxStaticBoxSizer(frame_trigger, wxVERTICAL);
-			sizer->Add(sizer_trigger, 0, wxEXPAND | wxALL, 4);
+			sizer->Add(sizer_trigger, 0, wxEXPAND | wxALL, UI::pad());
 
 			// Add triggers dropdown
 			choice_trigger_ = new wxChoice(
@@ -1023,14 +1008,14 @@ void ActionSpecialPanel::setupSpecialPanel()
 				wxDefaultSize,
 				Game::configuration().allSpacTriggers()
 			);
-			sizer_trigger->Add(choice_trigger_, 0, wxEXPAND | wxALL, 4);
+			sizer_trigger->Add(choice_trigger_, 0, wxEXPAND | wxALL, UI::pad());
 
 			// Add activation-related flags
-			auto fg_sizer = new wxFlexGridSizer(3);
+			auto fg_sizer = new wxFlexGridSizer(3, UI::pad() / 2, UI::pad());
 			fg_sizer->AddGrowableCol(0, 1);
 			fg_sizer->AddGrowableCol(1, 1);
 			fg_sizer->AddGrowableCol(2, 1);
-			sizer_trigger->Add(fg_sizer, 0, wxEXPAND | wxALL, 4);
+			sizer_trigger->Add(fg_sizer, 0, wxEXPAND | wxALL, UI::pad());
 			for (unsigned a = 0; a < Game::configuration().nLineFlags(); a++)
 			{
 				if (Game::configuration().lineFlag(a).activation)
@@ -1047,7 +1032,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 		// Preset button
 		btn_preset_ = new wxButton(panel_action_special_, -1, "Preset...");
-		sizer->Add(btn_preset_, 0, wxALIGN_RIGHT | wxALL, 4);
+		sizer->Add(btn_preset_, 0, wxALIGN_RIGHT | wxTOP, UI::pad());
 		btn_preset_->Bind(wxEVT_BUTTON, &ActionSpecialPanel::onSpecialPresetClicked, this);
 	}
 
@@ -1452,52 +1437,43 @@ void ActionSpecialPanel::onSpecialPresetClicked(wxCommandEvent& e)
 //
 // ActionSpecialDialog class constructor
 // ----------------------------------------------------------------------------
-ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args)
-: SDialog(parent, "Select Action Special", "actionspecial", 400, 500)
+ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
+	SDialog{ parent, "Select Action Special", "actionspecial", 400, 500 }
 {
-	panel_args = nullptr;
+	panel_args_ = nullptr;
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// No args
 	if (MapEditor::editContext().mapDesc().format == MAP_DOOM || !show_args)
 	{
-		panel_special = new ActionSpecialPanel(this, false);
-		sizer->Add(panel_special, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+		panel_special_ = new ActionSpecialPanel(this, false);
+		sizer->Add(panel_special_, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, UI::padLarge());
 	}
 
 	// Args (use tabs)
 	else
 	{
-		stc_tabs = STabCtrl::createControl(this);
-		sizer->Add(stc_tabs, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+		stc_tabs_ = STabCtrl::createControl(this);
+		sizer->Add(stc_tabs_, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, UI::padLarge());
 
 		// Special panel
-		panel_special = new ActionSpecialPanel(stc_tabs);
-		stc_tabs->AddPage(panel_special, "Special");
+		panel_special_ = new ActionSpecialPanel(stc_tabs_);
+		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_special_), "Special");
 
 		// Args panel
-		panel_args = new ArgsPanel(stc_tabs);
-		stc_tabs->AddPage(panel_args, "Args");
-		panel_special->setArgsPanel(panel_args);
+		panel_args_ = new ArgsPanel(stc_tabs_);
+		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_args_), "Args");
+		panel_special_->setArgsPanel(panel_args_);
 	}
 
 	// Add buttons
-	sizer->AddSpacer(4);
-	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+	sizer->AddSpacer(UI::pad());
+	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, UI::padLarge());
 
 	// Init
 	SetSizerAndFit(sizer);
 	CenterOnParent();
-}
-
-// ----------------------------------------------------------------------------
-// ActionSpecialDialog::~ActionSpecialDialog
-//
-// ActionSpecialDialog class constructor
-// ----------------------------------------------------------------------------
-ActionSpecialDialog::~ActionSpecialDialog()
-{
 }
 
 // ----------------------------------------------------------------------------
@@ -1507,11 +1483,11 @@ ActionSpecialDialog::~ActionSpecialDialog()
 // ----------------------------------------------------------------------------
 void ActionSpecialDialog::setSpecial(int special)
 {
-	panel_special->setSpecial(special);
-	if (panel_args)
+	panel_special_->setSpecial(special);
+	if (panel_args_)
 	{
 		auto& args = Game::configuration().actionSpecial(special).argSpec();
-		panel_args->setup(args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
+		panel_args_->setup(args, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 	}
 }
 
@@ -1522,8 +1498,8 @@ void ActionSpecialDialog::setSpecial(int special)
 // ----------------------------------------------------------------------------
 void ActionSpecialDialog::setArgs(int args[5])
 {
-	if (panel_args)
-		panel_args->setValues(args);
+	if (panel_args_)
+		panel_args_->setValues(args);
 }
 
 // ----------------------------------------------------------------------------
@@ -1533,7 +1509,7 @@ void ActionSpecialDialog::setArgs(int args[5])
 // ----------------------------------------------------------------------------
 int ActionSpecialDialog::selectedSpecial()
 {
-	return panel_special->selectedSpecial();
+	return panel_special_->selectedSpecial();
 }
 
 // ----------------------------------------------------------------------------
@@ -1543,8 +1519,8 @@ int ActionSpecialDialog::selectedSpecial()
 // ----------------------------------------------------------------------------
 int ActionSpecialDialog::getArg(int index)
 {
-	if (panel_args)
-		return panel_args->getArgValue(index);
+	if (panel_args_)
+		return panel_args_->getArgValue(index);
 	else
 		return 0;
 }
@@ -1556,7 +1532,7 @@ int ActionSpecialDialog::getArg(int index)
 // ----------------------------------------------------------------------------
 void ActionSpecialDialog::applyTo(vector<MapObject*>& lines, bool apply_special)
 {
-	panel_special->applyTo(lines, apply_special);
+	panel_special_->applyTo(lines, apply_special);
 }
 
 // ----------------------------------------------------------------------------
@@ -1566,5 +1542,5 @@ void ActionSpecialDialog::applyTo(vector<MapObject*>& lines, bool apply_special)
 // ----------------------------------------------------------------------------
 void ActionSpecialDialog::openLines(vector<MapObject*>& lines)
 {
-	panel_special->openLines(lines);
+	panel_special_->openLines(lines);
 }

@@ -45,7 +45,8 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "TextureXEditor/TextureXEditor.h"
-#include "UI/STabCtrl.h"
+#include "UI/Controls/STabCtrl.h"
+#include "UI/WxUtils.h"
 
 
 // ----------------------------------------------------------------------------
@@ -308,8 +309,8 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 
 	// Create/setup tabs
 	stc_tabs_ = new STabCtrl(this, false);
-	stc_tabs_->SetInitialSize(wxSize(224, -1));
-	vbox->Add(stc_tabs_, 1, wxEXPAND | wxALL, 4);
+	stc_tabs_->SetInitialSize(wxSize(UI::scalePx(224), -1));
+	vbox->Add(stc_tabs_, 1, wxEXPAND | wxALL, UI::pad());
 
 	// Open archives tab
 	panel_am_ = new wxPanel(stc_tabs_);
@@ -325,12 +326,10 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	refreshRecentFileList();
 
 	// Create/setup bookmarks tab
-	wxPanel* panel_bm = new wxPanel(stc_tabs_);
-	wxBoxSizer* box_bm = new wxBoxSizer(wxVERTICAL);
-	panel_bm->SetSizer(box_bm);
-	box_bm->Add(new wxStaticText(panel_bm, -1, "Bookmarks:"), 0, wxEXPAND | wxALL, 4);
+	auto panel_bm = new wxPanel(stc_tabs_);
+	panel_bm->SetSizer(new wxBoxSizer(wxVERTICAL));
 	list_bookmarks_ = new ListView(panel_bm, -1);
-	box_bm->Add(list_bookmarks_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 4);
+	panel_bm->GetSizer()->Add(list_bookmarks_, 1, wxEXPAND|wxALL, UI::pad());
 	refreshBookmarkList();
 	stc_tabs_->AddPage(panel_bm, "Bookmarks", true);
 
@@ -339,8 +338,11 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	// adding a cvar to disable in case it still has issues
 	if (am_file_browser_tab)
 	{
-		file_browser_ = new WMFileBrowser(stc_tabs_, this, -1);
-		stc_tabs_->AddPage(file_browser_, "File Browser");
+		auto panel = new wxPanel(stc_tabs_);
+		panel->SetSizer(new wxBoxSizer(wxVERTICAL));
+		file_browser_ = new WMFileBrowser(panel, this, -1);
+		panel->GetSizer()->Add(file_browser_, 1, wxEXPAND | wxALL, UI::pad());
+		stc_tabs_->AddPage(panel, "File Browser");
 	}
 
 	// Set current tab
@@ -366,7 +368,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 
 	// Init layout
 	Layout();
-	SetInitialSize(wxSize(256, -1));
+	SetInitialSize(wxSize(UI::scalePx(256), -1));
 }
 
 // ----------------------------------------------------------------------------
@@ -390,7 +392,7 @@ void ArchiveManagerPanel::createArchivesPanel()
 	panel_archives_->SetSizer(vbox);
 	vbox->Add(new wxStaticText(panel_archives_, -1, "Open Archives:"), 0, wxEXPAND);
 	list_archives_ = new ListView(panel_archives_, -1);
-	vbox->Add(list_archives_, 1, wxEXPAND|wxTOP, 4);
+	vbox->Add(list_archives_, 1, wxEXPAND|wxTOP, UI::px(UI::Size::PadMinimum));
 }
 
 // ----------------------------------------------------------------------------
@@ -405,10 +407,10 @@ void ArchiveManagerPanel::createRecentPanel()
 	panel_rf_->SetSizer(vbox);
 	vbox->Add(new wxStaticText(panel_rf_, -1, "Recent Files:"), 0, wxEXPAND);
 	list_recent_ = new ListView(panel_rf_, -1);
-	vbox->Add(list_recent_, 1, wxEXPAND|wxTOP, 4);
+	vbox->Add(list_recent_, 1, wxEXPAND|wxTOP, UI::px(UI::Size::PadMinimum));
 
 	// Setup image list
-	wxImageList* list = new wxImageList(16, 16, false, 0);
+	auto list = WxUtils::createSmallImageList();
 	list->Add(Icons::getIcon(Icons::ENTRY, "archive"));
 	list->Add(Icons::getIcon(Icons::ENTRY, "wad"));
 	list->Add(Icons::getIcon(Icons::ENTRY, "zip"));
@@ -427,8 +429,8 @@ void ArchiveManagerPanel::layoutNormal()
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	panel_am_->SetSizer(vbox);
 
-	vbox->Add(panel_archives_, 1, wxEXPAND|wxALL, 4);
-	vbox->Add(panel_rf_, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	vbox->Add(panel_archives_, 1, wxEXPAND|wxALL, UI::pad());
+	vbox->Add(panel_rf_, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, UI::pad());
 }
 
 // ----------------------------------------------------------------------------
@@ -442,8 +444,8 @@ void ArchiveManagerPanel::layoutHorizontal()
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	panel_am_->SetSizer(hbox);
 
-	hbox->Add(panel_archives_, 1, wxEXPAND|wxALL, 4);
-	hbox->Add(panel_rf_, 1, wxEXPAND|wxTOP|wxRIGHT|wxBOTTOM, 4);
+	hbox->Add(panel_archives_, 1, wxEXPAND|wxALL, UI::pad());
+	hbox->Add(panel_rf_, 1, wxEXPAND|wxTOP|wxRIGHT|wxBOTTOM, UI::pad());
 }
 
 // ----------------------------------------------------------------------------
@@ -635,7 +637,7 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index) const
 
 		// Check for archive match
 		ArchivePanel* ap = (ArchivePanel*)stc_archives_->GetPage(a);
-		if (ap->getArchive() == archive)
+		if (ap->archive() == archive)
 		{
 			string title;
 			if (archive->isModified())
@@ -704,7 +706,7 @@ Archive* ArchiveManagerPanel::getArchive(int tab_index) const
 
 	// Get the archive associated with the tab
 	ArchivePanel* ap = (ArchivePanel*)stc_archives_->GetPage(tab_index);
-	return ap->getArchive();
+	return ap->archive();
 }
 
 // ----------------------------------------------------------------------------
@@ -737,14 +739,14 @@ Archive* ArchiveManagerPanel::currentArchive() const
 	if (page->GetName() == "archive")
 	{
 		ArchivePanel* ap = (ArchivePanel*)page;
-		return ap->getArchive();
+		return ap->archive();
 	}
 
 	// EntryPanel
 	else if (page->GetName() == "entry")
 	{
 		EntryPanel* ep = (EntryPanel*)page;
-		return ep->getEntry()->getParent();
+		return ep->entry()->getParent();
 	}
 
 	// TextureXEditor
@@ -866,7 +868,7 @@ ArchivePanel* ArchiveManagerPanel::getArchiveTab(Archive* archive) const
 
 		// Check for archive match
 		ArchivePanel* ap = (ArchivePanel*)stc_archives_->GetPage(a);
-		if (ap->getArchive() == archive)
+		if (ap->archive() == archive)
 			return ap;
 	}
 
@@ -1045,7 +1047,7 @@ bool ArchiveManagerPanel::redirectToTab(ArchiveEntry *entry) const
 
 		// Check for entry match
 		EntryPanel* ep = (EntryPanel*)stc_archives_->GetPage(a);
-		if (ep->getEntry() == entry)
+		if (ep->entry() == entry)
 		{
 			// Already open, switch to tab
 			stc_archives_->SetSelection(a);
@@ -1070,7 +1072,7 @@ bool ArchiveManagerPanel::entryIsOpenInTab(ArchiveEntry* entry) const
 
 		// Check for entry match
 		EntryPanel* ep = (EntryPanel*)stc_archives_->GetPage(a);
-		if (ep->getEntry() == entry)
+		if (ep->entry() == entry)
 			return true;
 	}
 
@@ -1098,7 +1100,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 
 	// Don't bother with the default entry panel
 	// (it's absolutely useless to open in a tab)
-	if (ep->getName() == "default")
+	if (ep->name() == "default")
 	{
 		delete ep;
 		return;
@@ -1139,7 +1141,7 @@ void ArchiveManagerPanel::closeEntryTab(ArchiveEntry* entry) const
 
 		// Check for entry parent archive match
 		EntryPanel* ep = (EntryPanel*)stc_archives_->GetPage(a);
-		if (ep->getEntry() == entry)
+		if (ep->entry() == entry)
 		{
 			// Close tab
 			ep->removeCustomMenu();
@@ -1150,7 +1152,7 @@ void ArchiveManagerPanel::closeEntryTab(ArchiveEntry* entry) const
 }
 
 // ----------------------------------------------------------------------------
-// ArchiveManagerPanel::closeEntryTab
+// ArchiveManagerPanel::closeEntryTabs
 //
 // Closes any EntryPanel tabs for entries in [parent]
 // ----------------------------------------------------------------------------
@@ -1169,7 +1171,7 @@ void ArchiveManagerPanel::closeEntryTabs(Archive* parent) const
 
 		// Check for entry parent archive match
 		EntryPanel* ep = (EntryPanel*)stc_archives_->GetPage(a);
-		if (ep->getEntry()->getParent() == parent)
+		if (ep->entry()->getParent() == parent)
 		{
 			// Close tab
 			ep->removeCustomMenu();
@@ -1436,7 +1438,7 @@ bool ArchiveManagerPanel::saveEntryChanges(Archive* archive) const
 
 		// Check for archive match
 		ArchivePanel* ap = (ArchivePanel*)stc_archives_->GetPage(a);
-		if (ap->getArchive() == archive)
+		if (ap->archive() == archive)
 		{
 			// Save entry changes
 			return ap->saveEntryChanges();
@@ -2285,7 +2287,6 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 	{
 		EntryPanel* ep = (EntryPanel*)stc_archives_->GetPage(selection);
 		ep->addCustomMenu();
-		ep->addCustomToolBar();
 	}
 
 	e.Skip();
@@ -2309,7 +2310,7 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 	if (close_archive_with_tab && isArchivePanel(tabindex))
 	{
 		ArchivePanel* ap = (ArchivePanel*)page;
-		Archive* archive = ap->getArchive();
+		Archive* archive = ap->archive();
 
 		vector<Archive*> deps = App::archiveManager().getDependentArchives(archive);
 		deps.insert(deps.begin(), archive);

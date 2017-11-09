@@ -1,88 +1,92 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    TextEntryPanel.cpp
- * Description: TextEntryPanel class. The UI for editing text entries.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    TextEntryPanel.cpp
+// Description: TextEntryPanel class. The UI for editing text entries.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
-#include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "TextEntryPanel.h"
+#include "MainEditor/EntryOperations.h"
+#include "General/UI.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-wxArrayString languages;
-
-
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// External Variables
+//
+// ----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, txed_trim_whitespace)
 
 
-/*******************************************************************
- * TEXTENTRYPANEL CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// TextEntryPanel Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* TextEntryPanel::TextEntryPanel
- * TextEntryPanel class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// TextEntryPanel::TextEntryPanel
+//
+// TextEntryPanel class constructor
+// ----------------------------------------------------------------------------
 TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	: EntryPanel(parent, "text")
 {
 	// Create the text area
 	text_area_ = new TextEditorCtrl(this, -1);
-	sizer_main->Add(text_area_, 1, wxEXPAND, 0);
+	sizer_main_->Add(text_area_, 1, wxEXPAND, 0);
 
 	// Create the find+replace panel
-	panel_fr_ = new FindReplacePanel(this, text_area_);
+	panel_fr_ = new FindReplacePanel(this, *text_area_);
 	text_area_->setFindReplacePanel(panel_fr_);
 	panel_fr_->Hide();
-	sizer_main->Add(panel_fr_, 0, wxEXPAND|wxTOP, 8);
-	sizer_main->AddSpacer(4);
+	sizer_main_->Add(panel_fr_, 0, wxEXPAND|wxTOP, UI::padLarge());
+	//sizer_main_->AddSpacer(UI::pad());
 
 	// Add 'Text Language' choice to toolbar
-	SToolBarGroup* group_language = new SToolBarGroup(toolbar, "Text Language", true);
-	languages = TextLanguage::languageNames();
+	SToolBarGroup* group_language = new SToolBarGroup(toolbar_, "Text Language", true);
+	auto languages = TextLanguage::languageNames();
 	languages.Sort();
 	languages.Insert("None", 0, 1);
 	choice_text_language_ = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
 	choice_text_language_->Select(0);
 	group_language->addCustomControl(choice_text_language_);
-	toolbar->addGroup(group_language);
+	toolbar_->addGroup(group_language);
 
 	// Add 'Jump To' choice to toolbar
-	SToolBarGroup* group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
-	choice_jump_to_ = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(200, -1));
+	SToolBarGroup* group_jump_to = new SToolBarGroup(toolbar_, "Jump To", true);
+	choice_jump_to_ = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(UI::scalePx(200), -1));
 	group_jump_to->addCustomControl(choice_jump_to_);
-	toolbar->addGroup(group_jump_to);
+	toolbar_->addGroup(group_jump_to);
 	text_area_->setJumpToControl(choice_jump_to_);
 
 	// Bind events
@@ -91,46 +95,41 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	text_area_->Bind(wxEVT_STC_UPDATEUI, &TextEntryPanel::onUpdateUI, this);
 
 	// Custom toolbar
-	custom_toolbar_actions = "arch_scripts_compileacs;arch_scripts_compilehacs";
-	toolbar->addActionGroup("Scripts", wxSplit(custom_toolbar_actions, ';'));
+	custom_toolbar_actions_ = "arch_scripts_compileacs;arch_scripts_compilehacs";
+	toolbar_->addActionGroup("Scripts", wxSplit(custom_toolbar_actions_, ';'));
 
 
 	// --- Custom menu ---
-	menu_custom = new wxMenu();
-	SAction::fromId("ptxt_find_replace")->addToMenu(menu_custom);
-	SAction::fromId("ptxt_jump_to_line")->addToMenu(menu_custom);
+	menu_custom_ = new wxMenu();
+	SAction::fromId("ptxt_find_replace")->addToMenu(menu_custom_);
+	SAction::fromId("ptxt_jump_to_line")->addToMenu(menu_custom_);
 
 	// 'Code Folding' submenu
 	wxMenu* menu_fold = new wxMenu();
-	menu_custom->AppendSubMenu(menu_fold, "Code Folding");
+	menu_custom_->AppendSubMenu(menu_fold, "Code Folding");
 	SAction::fromId("ptxt_fold_foldall")->addToMenu(menu_fold);
 	SAction::fromId("ptxt_fold_unfoldall")->addToMenu(menu_fold);
 
 	// 'Compile' submenu
 	wxMenu* menu_scripts = new wxMenu();
-	menu_custom->AppendSubMenu(menu_scripts, "Compile");
+	menu_custom_->AppendSubMenu(menu_scripts, "Compile");
 	SAction::fromId("arch_scripts_compileacs")->addToMenu(menu_scripts);
 	SAction::fromId("arch_scripts_compilehacs")->addToMenu(menu_scripts);
 
-	menu_custom->AppendSeparator();
+	menu_custom_->AppendSeparator();
 
-	SAction::fromId("ptxt_wrap")->addToMenu(menu_custom);
-	custom_menu_name = "Text";
+	SAction::fromId("ptxt_wrap")->addToMenu(menu_custom_);
+	custom_menu_name_ = "Text";
 
 
 	Layout();
 }
 
-/* TextEntryPanel::~TextEntryPanel
- * TextEntryPanel class destructor
- *******************************************************************/
-TextEntryPanel::~TextEntryPanel()
-{
-}
-
-/* TextEntryPanel::loadEntry
- * Loads an entry into the panel as text
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEntryPanel::loadEntry
+//
+// Loads an entry into the panel as text
+// ----------------------------------------------------------------------------
 bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Load entry into the text editor
@@ -168,9 +167,9 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	// Select it in the choice box
 	if (tl)
 	{
-		for (unsigned a = 0; a < languages.size(); a++)
+		for (auto a = 0u; a < choice_text_language_->GetCount(); ++a)
 		{
-			if (S_CMPNOCASE(tl->name(), languages[a]))
+			if (S_CMPNOCASE(tl->name(), choice_text_language_->GetString(a)))
 			{
 				choice_text_language_->Select(a);
 				break;
@@ -184,15 +183,17 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	text_area_->EmptyUndoBuffer();
 
 	// Update variables
-	this->entry = entry;
+	this->entry_ = entry;
 	setModified(false);
 
 	return true;
 }
 
-/* TextEntryPanel::saveEntry
- * Saves any changes to the entry
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEntryPanel::saveEntry
+//
+// Saves any changes to the entry
+// ----------------------------------------------------------------------------
 bool TextEntryPanel::saveEntry()
 {
 	// Trim whitespace
@@ -202,20 +203,16 @@ bool TextEntryPanel::saveEntry()
 	// Write raw text to the entry
 	MemChunk mc;
 	text_area_->getRawText(mc);
-	if (mc.hasData())
-		entry->importMemChunk(mc);
-	else
-		entry->clearData();
-
-	if (entry->getState() == 0)
-		entry->setState(1);
+	entry_->importMemChunk(mc);
+	if (entry_->getState() == 0)
+		entry_->setState(1);
 
 	// Re-detect entry type
-	EntryType::detectEntryType(entry);
+	EntryType::detectEntryType(entry_);
 
 	// Set text if unknown
-	if (entry->getType() == EntryType::unknownType())
-		entry->setType(EntryType::fromId("text"));
+	if (entry_->getType() == EntryType::unknownType())
+		entry_->setType(EntryType::fromId("text"));
 
 	// Update custom definitions if decorate or zscript
 	if (text_area_->language() &&
@@ -228,9 +225,11 @@ bool TextEntryPanel::saveEntry()
 	return true;
 }
 
-/* TextEntryPanel::refreshPanel
- * Updates the text editor options and redraws it
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEntryPanel::refreshPanel
+//
+// Updates the text editor options and redraws it
+// ----------------------------------------------------------------------------
 void TextEntryPanel::refreshPanel()
 {
 	// Update text editor
@@ -241,23 +240,26 @@ void TextEntryPanel::refreshPanel()
 	Update();
 }
 
-/* TextEntryPanel::closeEntry
- * Performs any actions required on closing the entry
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEntryPanel::closeEntry
+//
+// Performs any actions required on closing the entry
+// ----------------------------------------------------------------------------
 void TextEntryPanel::closeEntry()
 {
 	// Check any entry is open
-	if (!entry)
+	if (!entry_)
 		return;
 
 	// Save current caret position
-	entry->exProp("TextPosition") = text_area_->GetCurrentPos();
+	entry_->exProp("TextPosition") = text_area_->GetCurrentPos();
 }
 
-/* TextEntryPanel::statusString
- * Returns a string with extended editing/entry info for the status
- * bar
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEntryPanel::statusString
+//
+// Returns a string with extended editing/entry info for the status bar
+// ----------------------------------------------------------------------------
 string TextEntryPanel::statusString()
 {
 	// Setup status string
@@ -269,9 +271,11 @@ string TextEntryPanel::statusString()
 	return status;
 }
 
-/* TextEntryPanel::undo
- * Tells the text editor to undo
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEntryPanel::undo
+//
+// Tells the text editor to undo
+// ----------------------------------------------------------------------------
 bool TextEntryPanel::undo()
 {
 	if (text_area_->CanUndo())
@@ -285,9 +289,11 @@ bool TextEntryPanel::undo()
 	return false;
 }
 
-/* TextEntryPanel::redo
- * Tells the text editor to redo
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEntryPanel::redo
+//
+// Tells the text editor to redo
+// ----------------------------------------------------------------------------
 bool TextEntryPanel::redo()
 {
 	if (text_area_->CanRedo())
@@ -298,10 +304,12 @@ bool TextEntryPanel::redo()
 	return false;
 }
 
-/* TextEntryPanel::handleAction
- * Handles the action [id]. Returns true if the action was handled,
- * false otherwise
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEntryPanel::handleAction
+//
+// Handles the action [id].
+// Returns true if the action was handled, false otherwise
+// ----------------------------------------------------------------------------
 bool TextEntryPanel::handleAction(string id)
 {
 	// Don't handle actions if hidden
@@ -338,10 +346,10 @@ bool TextEntryPanel::handleAction(string id)
 
 	// compileACS
 	else if (id == "arch_scripts_compileacs")
-		EntryOperations::compileACS(entry, false, nullptr, nullptr);
+		EntryOperations::compileACS(entry_, false, nullptr, nullptr);
 
 	else if (id == "arch_scripts_compilehacs")
-		EntryOperations::compileACS(entry, true, nullptr, nullptr);
+		EntryOperations::compileACS(entry_, true, nullptr, nullptr);
 
 	// Not handled
 	else
@@ -351,13 +359,18 @@ bool TextEntryPanel::handleAction(string id)
 }
 
 
-/*******************************************************************
- * TEXTENTRYPANEL CLASS EVENTS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// TextEntryPanel Class Events
+//
+// ----------------------------------------------------------------------------
 
-/* TextEntryPanel::onTextModified
- * Called when the text in the TextEditor is modified
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// TextEntryPanel::onTextModified
+//
+// Called when the text in the TextEditor is modified
+// ----------------------------------------------------------------------------
 void TextEntryPanel::onTextModified(wxCommandEvent& e)
 {
 	if (!isModified() && text_area_->CanUndo())
@@ -365,9 +378,11 @@ void TextEntryPanel::onTextModified(wxCommandEvent& e)
 	e.Skip();
 }
 
-/* TextEntryPanel::onChoiceLanguageChanged
- * Called when the language in the dropdown is changed
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEntryPanel::onChoiceLanguageChanged
+//
+// Called when the language in the dropdown is changed
+// ----------------------------------------------------------------------------
 void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 {
 	int index = choice_text_language_->GetSelection();
@@ -379,14 +394,16 @@ void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 
 	// Set entry language hint
 	if (tl)
-		entry->exProp("TextLanguage") = tl->id();
+		entry_->exProp("TextLanguage") = tl->id();
 	else
-		entry->exProps().removeProperty("TextLanguage");
+		entry_->exProps().removeProperty("TextLanguage");
 }
 
-/* TextEntryPanel::onUpdateUI
- * Called when the text editor UI is updated
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// TextEntryPanel::onUpdateUI
+//
+// Called when the text editor UI is updated
+// ----------------------------------------------------------------------------
 void TextEntryPanel::onUpdateUI(wxStyledTextEvent& e)
 {
 	updateStatus();

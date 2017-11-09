@@ -33,6 +33,7 @@
 #include "App.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
+#include "General/UI.h"
 
 #ifdef USE_SFML_RENDERWINDOW
 #ifdef __WXGTK__

@@ -1,6 +1,4 @@
-
-#ifndef __ARCHIVE_ENTRY_LIST_H__
-#define __ARCHIVE_ENTRY_LIST_H__
+#pragma once
 
 #include "VirtualListView.h"
 #include "General/ListenerAnnouncer.h"
@@ -37,7 +35,7 @@ public:
 	void	setEntriesAutoUpdate(bool update) { entries_update = update; }
 
 	// Sorting
-	void		sortItems() override;
+	void	sortItems() override;
 
 	ArchiveEntry*				getEntry(int index, bool filtered = true) const;
 	int							getEntryIndex(int index, bool filtered = true);
@@ -80,5 +78,3 @@ private:
 
 	int	entrySize(long index);
 };
-
-#endif//__ARCHIVE_ENTRY_LIST_H__

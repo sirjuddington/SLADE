@@ -1078,7 +1078,7 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 		// Open map texture browser
 		MapTextureBrowser browser(MapEditor::windowWx(), textype, tex_current, &(MapEditor::editContext().map()));
 		if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
-			GetGrid()->ChangePropertyValue(this, browser.getSelectedItem()->getName());
+			GetGrid()->ChangePropertyValue(this, browser.getSelectedItem()->name());
 
 		// Refresh text
 		RefreshEditor();

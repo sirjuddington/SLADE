@@ -51,7 +51,6 @@ MapLine::MapLine(SLADEMap* parent) : MapObject(MOBJ_LINE, parent)
 	side2 = nullptr;
 	length = -1;
 	special = 0;
-	line_id = 0;
 }
 
 /* MapLine::MapLine
@@ -66,7 +65,6 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMa
 	side2 = s2;
 	length = -1;
 	special = 0;
-	line_id = 0;
 
 	// Connect to vertices
 	if (v1) v1->connectLine(this);
@@ -491,18 +489,6 @@ double MapLine::getLength()
 	}
 
 	return length;
-}
-
-/* MapLine::getAngle
- * Returns the angle (in degrees) of line, east is zero, front side counter-clock wise.
- *******************************************************************/
-double MapLine::getAngle()
-{
-    if (!vertex1 || !vertex2)
-        return -1;
-    double angle = (180.0 / M_PI) *  atan2(vertex1->yPos() - vertex2->yPos(), vertex1->xPos() - vertex2->xPos());
-    if (angle < 0) angle += 360.0;
-    return angle;
 }
 
 /* MapLine::doubleSector

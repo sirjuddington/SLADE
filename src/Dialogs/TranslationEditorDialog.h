@@ -6,7 +6,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "UI/Canvas/OGLCanvas.h"
 #include "UI/WxBasicControls.h"
-#include "UI/ColourBox.h"
+#include "UI/Controls/ColourBox.h"
 
 class GfxCanvas;
 class PaletteCanvas;

@@ -28,11 +28,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "General/UI.h"
 #include "GfxCropDialog.h"
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Drawing.h"
-#include "UI/NumberTextCtrl.h"
+#include "UI/Controls/NumberTextCtrl.h"
 
 
 /*******************************************************************
@@ -52,7 +53,8 @@ CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette* palette) :
 		crop_rect.set(0, 0, image->getWidth(), image->getHeight());
 	}
 
-	SetInitialSize(wxSize(220, 220));
+	int size = UI::scalePx(220);
+	SetInitialSize(wxSize(size, size));
 }
 
 /* CropCanvas::draw
@@ -75,8 +77,8 @@ void CropCanvas::draw()
 	double y_dim = (double)texture->getHeight();
 
 	// Get max scale for x and y (including padding)
-	double x_scale = ((double)width - 24) / x_dim;
-	double y_scale = ((double)height - 24) / y_dim;
+	double x_scale = ((double)width - UI::scalePx(24)) / x_dim;
+	double y_scale = ((double)height - UI::scalePx(24)) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
 	double scale = MIN(x_scale, y_scale);
@@ -147,30 +149,30 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(sizer, 1, wxEXPAND | wxALL, 6);
+	msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 	// Add preview
 	canvas_preview = new CropCanvas(this, image, palette);
-	sizer->Add(canvas_preview, 1, wxEXPAND | wxALL, 4);
+	sizer->Add(canvas_preview, 1, wxEXPAND | wxBOTTOM, UI::pad());
 
 	// Add crop controls
 	wxStaticBox* frame = new wxStaticBox(this, -1, "Crop Borders");
 	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxALL, 4);
+	sizer->Add(framesizer, 0, wxEXPAND | wxBOTTOM, UI::padLarge());
 
 	// Absolute
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
+	framesizer->Add(hbox, 0, wxEXPAND | wxALL, UI::pad());
 	rb_absolute = new wxRadioButton(frame, -1, "Absolute");
 	rb_absolute->SetValue(true);
-	hbox->Add(rb_absolute, 0, wxEXPAND | wxRIGHT, 4);
+	hbox->Add(rb_absolute, 0, wxEXPAND | wxRIGHT, UI::pad());
 
 	// Relative
 	rb_relative = new wxRadioButton(frame, -1, "Relative");
 	hbox->Add(rb_relative, 0, wxEXPAND);
 
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, 4);
+	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
 
 	// Left
 	gb_sizer->Add(
@@ -223,7 +225,7 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	gb_sizer->AddGrowableCol(1);
 
 	// Add buttons
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxBOTTOM, 4);
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 	// Bind events
 	text_left->Bind(wxEVT_TEXT, &GfxCropDialog::onTextChanged, this);

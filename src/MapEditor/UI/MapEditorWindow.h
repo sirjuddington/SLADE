@@ -1,6 +1,4 @@
-
-#ifndef __MAPEDITORWINDOW_H__
-#define __MAPEDITORWINDOW_H__
+#pragma once
 
 #include "General/SAction.h"
 #include "UI/STopWindow.h"
@@ -44,24 +42,24 @@ public:
 	bool		hasMapOpen(Archive* archive);
 	void		reloadScriptsMenu();
 
-	MapObjectPropsPanel*	propsPanel() { return panel_obj_props; }
-	ObjectEditPanel*		objectEditPanel() { return panel_obj_edit; }
+	MapObjectPropsPanel*	propsPanel() const { return panel_obj_props_; }
+	ObjectEditPanel*		objectEditPanel() const { return panel_obj_edit_; }
 	
 	void	showObjectEditPanel(bool show, ObjectEditGroup* group);
 	void	showShapeDrawPanel(bool show = true);
 
 	// SAction handler
-	bool	handleAction(string id);
+	bool	handleAction(string id) override;
 
 private:
-	MapCanvas*					map_canvas;
-	MapObjectPropsPanel*		panel_obj_props;
-	ScriptEditorPanel*			panel_script_editor;
-	vector<ArchiveEntry*>		map_data;
-	ObjectEditPanel*			panel_obj_edit;
-	MapChecksPanel*				panel_checks;
-	UndoManagerHistoryPanel*	panel_undo_history;
-	wxMenu*						menu_scripts_;
+	MapCanvas*					map_canvas_				= nullptr;
+	MapObjectPropsPanel*		panel_obj_props_		= nullptr;
+	ScriptEditorPanel*			panel_script_editor_	= nullptr;
+	vector<ArchiveEntry*>		map_data_;
+	ObjectEditPanel*			panel_obj_edit_			= nullptr;
+	MapChecksPanel*				panel_checks_			= nullptr;
+	UndoManagerHistoryPanel*	panel_undo_history_		= nullptr;
+	wxMenu*						menu_scripts_			= nullptr;
 
 	void	buildNodes(Archive* wad);
 	void	lockMapEntries(bool lock = true);
@@ -70,5 +68,3 @@ private:
 	void	onClose(wxCloseEvent& e);
 	void	onSize(wxSizeEvent& e);
 };
-
-#endif //__MAPEDITORWINDOW_H__
