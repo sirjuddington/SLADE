@@ -612,7 +612,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	sizer->Add(framesizer, 0, wxEXPAND|wxALL, UI::pad());
 
 	// Init flags
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad() / 2, UI::pad());
 	framesizer->Add(gb_sizer, 1, wxEXPAND|wxALL, UI::pad());
 	int row = 0;
 	int col = 0;
@@ -741,7 +741,7 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	panel->SetSizer(sizer);
 
 	// Init flags
-	wxGridBagSizer* gb_sizer_flags = new wxGridBagSizer(UI::pad(), UI::pad());
+	wxGridBagSizer* gb_sizer_flags = new wxGridBagSizer(UI::pad() / 2, UI::pad());
 	sizer->Add(gb_sizer_flags, 1, wxEXPAND|wxALL, UI::pad());
 	int row = 0;
 	int col = 0;

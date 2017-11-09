@@ -138,7 +138,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	sizer->Add(sizer_flags, 0, wxEXPAND|wxALL, UI::pad());
 
 	// Init flags
-	wxGridBagSizer* gb_sizer_flags = new wxGridBagSizer(UI::pad(), UI::pad());
+	wxGridBagSizer* gb_sizer_flags = new wxGridBagSizer(UI::pad() / 2, UI::pad());
 	sizer_flags->Add(gb_sizer_flags, 1, wxEXPAND|wxALL, UI::pad());
 	int row = 0;
 	int col = 0;

@@ -1,24 +1,16 @@
+#pragma once
 
-#ifndef __BASE_RESOURCE_CHOOSER_H__
-#define __BASE_RESOURCE_CHOOSER_H__
-
-#include "common.h"
 #include "General/ListenerAnnouncer.h"
 
 class BaseResourceChooser : public wxChoice, public Listener
 {
-private:
-	bool	load_change;
-
 public:
 	BaseResourceChooser(wxWindow* parent, bool load_change = true);
-	~BaseResourceChooser();
+	~BaseResourceChooser() {}
 
 	void	populateChoices();
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
 
-	// Events
-	void onChoiceChanged(wxCommandEvent& e);
+private:
+	bool	load_change_;
 };
-
-#endif//__BASE_RESOURCE_CHOOSER_H__

@@ -515,7 +515,7 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 		panel,
 		-1,
 		wxDefaultPosition,
-		{ 200, -1 },
+		WxUtils::scaledSize(200, -1),
 		wxTR_DEFAULT_STYLE | wxTR_NO_LINES | wxTR_HIDE_ROOT | wxTR_FULL_ROW_HIGHLIGHT
 	);
 #if wxMAJOR_VERSION > 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
@@ -523,7 +523,7 @@ wxPanel* ScriptManagerWindow::setupScriptTreePanel()
 #endif
 	tree_scripts_->SetImageList(createTreeImageList());
 	populateScriptsTree();
-	sizer->Add(tree_scripts_, 1, wxEXPAND | wxALL, 10);
+	sizer->Add(tree_scripts_, 1, wxEXPAND | wxALL, UI::pad());
 
 	return panel;
 }

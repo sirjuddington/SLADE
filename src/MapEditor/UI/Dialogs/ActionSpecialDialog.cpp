@@ -970,7 +970,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 					auto sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
 					sizer->Add(sizer_triggers, 0, wxEXPAND|wxTOP, UI::pad());
 
-					frame_sizer = new wxFlexGridSizer(3, UI::pad(), UI::pad());
+					frame_sizer = new wxFlexGridSizer(3, UI::pad() / 2, UI::pad());
 					frame_sizer->AddGrowableCol(0, 1);
 					frame_sizer->AddGrowableCol(1, 1);
 					frame_sizer->AddGrowableCol(2, 1);
@@ -1011,7 +1011,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 			sizer_trigger->Add(choice_trigger_, 0, wxEXPAND | wxALL, UI::pad());
 
 			// Add activation-related flags
-			auto fg_sizer = new wxFlexGridSizer(3, UI::pad(), UI::pad());
+			auto fg_sizer = new wxFlexGridSizer(3, UI::pad() / 2, UI::pad());
 			fg_sizer->AddGrowableCol(0, 1);
 			fg_sizer->AddGrowableCol(1, 1);
 			fg_sizer->AddGrowableCol(2, 1);

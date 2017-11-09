@@ -153,9 +153,14 @@ private:
 //
 // BrowserWindow class constructor
 // ----------------------------------------------------------------------------
-BrowserWindow::BrowserWindow(wxWindow* parent)
-	: wxDialog(parent, -1, "Browser", wxDefaultPosition, wxDefaultSize,
-		wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxMAXIMIZE_BOX)
+BrowserWindow::BrowserWindow(wxWindow* parent) :
+	wxDialog{
+		parent,
+		-1,
+		"Browser",
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER | wxMAXIMIZE_BOX }
 {
 	// Init size/pos
 	Misc::winf_t info = Misc::getWindowInfo("browser");
@@ -220,10 +225,10 @@ BrowserWindow::BrowserWindow(wxWindow* parent)
 
 	// Bottom sizer
 	sizer_bottom_ = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(sizer_bottom_, 0, wxEXPAND|wxBOTTOM, 4);
+	vbox->Add(sizer_bottom_, 0, wxEXPAND|wxBOTTOM, UI::pad());
 
 	// Buttons and info label
-	label_info_ = new wxStaticText(this, -1, "Info goes here");
+	label_info_ = new wxStaticText(this, -1, "");
 	wxSizer* buttonsizer = CreateButtonSizer(wxOK|wxCANCEL);
 	buttonsizer->Insert(0, label_info_, 1, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, UI::pad());
 

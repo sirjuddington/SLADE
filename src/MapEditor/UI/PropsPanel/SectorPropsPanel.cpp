@@ -340,7 +340,7 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 
 	// Tag
 	gb_sizer->Add(new wxStaticText(panel, -1, "Tag:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(text_tag_ = new NumberTextCtrl(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(text_tag_ = new NumberTextCtrl(panel), { 1, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(btn_new_tag_ = new wxButton(panel, -1, "New Tag"), { 1, 2 }, { 1, 1 }, wxEXPAND);
 
 	gb_sizer->AddGrowableCol(1, 1);

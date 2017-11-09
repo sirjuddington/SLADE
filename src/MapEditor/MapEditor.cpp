@@ -12,6 +12,7 @@
 #include "UI/PropsPanel/MapObjectPropsPanel.h"
 #include "UI/SDialog.h"
 #include "UI/MapCanvas.h"
+#include "UI/WxUtils.h"
 
 namespace MapEditor
 {
@@ -247,23 +248,20 @@ bool MapEditor::editObjectProperties(vector<MapObject*>& list)
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 
-	// Create properties panel
+	// Create/add properties panel
 	PropsPanelBase* panel_props = nullptr;
 	switch (edit_context->editMode())
 	{
-	case Mode::Lines:
-		sizer->Add(panel_props = new LinePropsPanel(&dlg), 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10); break;
-	case Mode::Sectors:
-		sizer->Add(panel_props = new SectorPropsPanel(&dlg), 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10); break;
-	case Mode::Things:
-		sizer->Add(panel_props = new ThingPropsPanel(&dlg), 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10); break;
-	default:
-		sizer->Add(panel_props = new MapObjectPropsPanel(&dlg, true), 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+	case Mode::Lines:	panel_props = new LinePropsPanel(&dlg); break;
+	case Mode::Sectors:	panel_props = new SectorPropsPanel(&dlg); break;
+	case Mode::Things:	panel_props = new ThingPropsPanel(&dlg); break;
+	default:			panel_props = new MapObjectPropsPanel(&dlg, true);
 	}
+	sizer->Add(panel_props, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
 
 	// Add dialog buttons
-	sizer->AddSpacer(4);
-	sizer->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	sizer->AddSpacer(UI::pad());
+	sizer->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
 
 	// Open current selection
 	panel_props->openObjects(list);

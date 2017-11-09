@@ -1294,6 +1294,7 @@ bool MapEditorWindow::handleAction(string id)
 		p_inf.Show(!p_inf.IsShown());
 		map_canvas_->SetFocus();
 
+		p_inf.MinSize(WxUtils::scaledSize(256, 256));
 		m_mgr->Update();
 		return true;
 	}
@@ -1363,7 +1364,7 @@ bool MapEditorWindow::handleAction(string id)
 			p_inf.window->SetFocus();
 		}
 
-		//p_inf.MinSize(200, 128);
+		p_inf.MinSize(panel_checks_->GetBestSize());
 		m_mgr->Update();
 		return true;
 	}
