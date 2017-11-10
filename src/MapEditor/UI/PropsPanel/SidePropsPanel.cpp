@@ -289,9 +289,9 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	gfx_middle_->Bind(wxEVT_LEFT_DOWN, &SidePropsPanel::onTextureClicked, this);
 	gfx_lower_->Bind(wxEVT_LEFT_DOWN, &SidePropsPanel::onTextureClicked, this);
 #ifdef __WXOSX__
-	tcb_upper->Bind(wxEVT_COMBOBOX, &SidePropsPanel::onTextureChanged, this);
-	tcb_middle->Bind(wxEVT_COMBOBOX, &SidePropsPanel::onTextureChanged, this);
-	tcb_lower ->Bind(wxEVT_COMBOBOX, &SidePropsPanel::onTextureChanged, this);
+	tcb_upper_->Bind(wxEVT_COMBOBOX, &SidePropsPanel::onTextureChanged, this);
+	tcb_middle_->Bind(wxEVT_COMBOBOX, &SidePropsPanel::onTextureChanged, this);
+	tcb_lower_->Bind(wxEVT_COMBOBOX, &SidePropsPanel::onTextureChanged, this);
 #endif
 }
 
