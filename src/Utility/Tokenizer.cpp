@@ -917,7 +917,12 @@ bool Tokenizer::readNext(Token* target)
 		
 		target->text.Empty();
 		for (unsigned a = state_.current_token.pos_start; a < state_.position; ++a)
+		{
+			if (state_.current_token.quoted_string && data_[a] == '\\')
+				++a;
+
 			target->text += data_[a];
+		}
 
 		target->line_no = state_.current_token.line_no;
 		target->quoted_string = state_.current_token.quoted_string;
