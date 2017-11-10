@@ -134,7 +134,7 @@ public:
 
 	Palette* getFinalPalette()
 	{
-		return &(pal_preview_->getPalette());
+		return &(pal_preview_->palette());
 	}
 
 	rgba_t getColour()
@@ -147,12 +147,12 @@ public:
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().colourise(
+		pal_preview_->palette().colourise(
 			getColour(),
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
+			pal_preview_->selectionStart(),
+			pal_preview_->selectionEnd()
 		);
-		pal_preview_->draw();
+		pal_preview_->refresh();
 	}
 
 private:
@@ -239,7 +239,7 @@ public:
 
 	Palette* getFinalPalette()
 	{
-		return &(pal_preview_->getPalette());
+		return &(pal_preview_->palette());
 	}
 
 	rgba_t getColour()
@@ -257,13 +257,13 @@ public:
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().tint(
+		pal_preview_->palette().tint(
 			getColour(),
 			getAmount(),
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
+			pal_preview_->selectionStart(),
+			pal_preview_->selectionEnd()
 		);
-		pal_preview_->draw();
+		pal_preview_->refresh();
 	}
 
 private:
@@ -380,7 +380,7 @@ public:
 
 	Palette* getFinalPalette()
 	{
-		return &(pal_preview_->getPalette());
+		return &(pal_preview_->palette());
 	}
 
 	float getHue()
@@ -402,22 +402,22 @@ public:
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().shift(
+		pal_preview_->palette().shift(
 			getHue(),
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
+			pal_preview_->selectionStart(),
+			pal_preview_->selectionEnd()
 		);
-		pal_preview_->getPalette().saturate(
+		pal_preview_->palette().saturate(
 			getSat(),
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
+			pal_preview_->selectionStart(),
+			pal_preview_->selectionEnd()
 		);
-		pal_preview_->getPalette().illuminate(
+		pal_preview_->palette().illuminate(
 			getLum(),
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
+			pal_preview_->selectionStart(),
+			pal_preview_->selectionEnd()
 		);
-		pal_preview_->draw();
+		pal_preview_->refresh();
 	}
 
 private:
@@ -482,18 +482,18 @@ public:
 
 	Palette* getFinalPalette()
 	{
-		return &(pal_preview_->getPalette());
+		return &(pal_preview_->palette());
 	}
 
 	// Re-apply the changes in selection on a fresh palette
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().invert(
-		    pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
+		pal_preview_->palette().invert(
+		    pal_preview_->selectionStart(),
+			pal_preview_->selectionEnd()
 		);
-		pal_preview_->draw();
+		pal_preview_->refresh();
 	}
 
 private:
@@ -629,7 +629,7 @@ public:
 	
 	Palette* getFinalPalette()
 	{
-		return &(pal_preview_->getPalette());
+		return &(pal_preview_->palette());
 	}
 	
 	rgba_t getStartColour()
@@ -648,12 +648,12 @@ public:
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().setGradient(
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd(),
+		pal_preview_->palette().setGradient(
+			pal_preview_->selectionStart(),
+			pal_preview_->selectionEnd(),
 			getStartColour(), getEndColour()
 		);
-		pal_preview_->draw();
+		pal_preview_->refresh();
 	}
 
 private:
@@ -681,7 +681,7 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 	// Add palette canvas
 	pal_canvas_ = new PaletteCanvas(this, -1);
 	pal_canvas_->allowSelection(1);
-	sizer_main_->Add(pal_canvas_->toPanel(this), 1, wxEXPAND, 0);
+	sizer_main_->Add(pal_canvas_/*->toPanel(this)*/, 1, wxEXPAND, 0);
 
 	// Setup custom menu
 	menu_custom_ = new wxMenu();
@@ -802,7 +802,7 @@ string PaletteEntryPanel::statusString()
 	hsl_t col2 = Misc::rgbToHsl(col);
 
 	return S_FMT("Index %i\tR %d, G %d, B %d\tH %1.3f, S %1.3f, L %1.3f",
-	             pal_canvas_->getSelectionStart(),
+	             pal_canvas_->selectionStart(),
 	             col.r, col.g, col.b, col2.h, col2.s, col2.l);
 }
 
@@ -819,7 +819,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 		return false;
 
 	// Copy palette at index into canvas
-	pal_canvas_->getPalette().copyPalette(palettes_[index]);
+	pal_canvas_->palette().copyPalette(palettes_[index]);
 
 	// Set current palette text
 	text_curpal_->SetLabel(S_FMT("%u/%lu", index+1, palettes_.size()));
@@ -1589,7 +1589,7 @@ void PaletteEntryPanel::onPalCanvasMouseEvent(wxMouseEvent& e)
 		// to make the canvas do the work.
 		// Pretend there was a left click to get the selected colour.
 		pal_canvas_->onMouseLeftDown(e);
-		int sel = pal_canvas_->getSelectionStart();
+		int sel = pal_canvas_->selectionStart();
 
 		// There actually was a colour selected
 		if (sel > -1)

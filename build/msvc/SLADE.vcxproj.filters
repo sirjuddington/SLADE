@@ -1512,6 +1512,9 @@
     <ClCompile Include="..\..\src\UI\Controls\STabCtrl.cpp">
       <Filter>UI\Controls</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\GLCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2644,6 +2647,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\UI\Controls\STabCtrl.h">
       <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\GLCanvas.h">
+      <Filter>UI\Canvas</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

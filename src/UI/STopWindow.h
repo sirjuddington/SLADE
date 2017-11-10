@@ -24,15 +24,21 @@ public:
 	void	removeAllCustomToolBars();
 	void	populateToolbarsMenu() const;
 
-	// Events
-	void	onMenu(wxCommandEvent& e);
+	// Static
+	static STopWindow* currentActive() { return current_active_window_; }
 
 protected:
 	vector<wxMenu*>	custom_menus_;
-	int				custom_menus_begin_;
-	SToolBar*		toolbar_;
+	int				custom_menus_begin_		= 0;
+	SToolBar*		toolbar_				= nullptr;
 	string			id_;
-	wxMenu*			toolbar_menu_;
-	int				toolbar_menu_wx_id_;
-	SAction*		action_toolbar_menu_;
+	wxMenu*			toolbar_menu_			= nullptr;
+	int				toolbar_menu_wx_id_		= 0;
+	SAction*		action_toolbar_menu_	= nullptr;
+
+private:
+	static STopWindow*	current_active_window_;
+
+	// Events
+	void	onMenu(wxCommandEvent& e);
 };

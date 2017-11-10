@@ -39,6 +39,14 @@
 
 // ----------------------------------------------------------------------------
 //
+// Variables
+//
+// ----------------------------------------------------------------------------
+STopWindow* STopWindow::current_active_window_ = nullptr;
+
+
+// ----------------------------------------------------------------------------
+//
 // STopWindow Class Functions
 //
 // ----------------------------------------------------------------------------
@@ -92,6 +100,11 @@ STopWindow::STopWindow(string title, string id, int x, int y, int width, int hei
 
 	// Bind events
 	Bind(wxEVT_MENU, &STopWindow::onMenu, this);
+	Bind(wxEVT_ACTIVATE, [&](wxActivateEvent& e)
+	{
+		if (e.GetActive())
+			current_active_window_ = this;
+	});
 }
 
 // ----------------------------------------------------------------------------

@@ -1,38 +1,37 @@
+#pragma once
 
-#ifndef __PALETTECANVAS_H__
-#define	__PALETTECANVAS_H__
+#include "GLCanvas.h"
+#include "Graphics/Palette/Palette.h"
 
-#include "OGLCanvas.h"
-
-class PaletteCanvas : public OGLCanvas
+class PaletteCanvas : public GLCanvas
 {
-private:
-	int		sel_begin;
-	int		sel_end;
-	bool	double_width;
-	int		allow_selection;	// 0 = no, 1 = one colour only, 2 = any (range)
-
 public:
 	PaletteCanvas(wxWindow* parent, int id);
-	~PaletteCanvas();
+	~PaletteCanvas() {}
 
-	Palette&	getPalette() { return palette; }
-	bool			doubleWidth() { return double_width; }
-	int				getSelectionStart() { return sel_begin; }
-	int				getSelectionEnd() { return sel_end; }
-	int				allowSelection() { return allow_selection; }
+	Palette&	palette() { return palette_; }
+	bool		doubleWidth() const { return double_width_; }
+	int			selectionStart() const { return sel_begin_; }
+	int			selectionEnd() const { return sel_end_; }
+	int			allowSelection() const { return allow_selection_; }
 
-	void	doubleWidth(bool dw) { double_width = dw; }
+	void	doubleWidth(bool dw) { double_width_ = dw; }
 	void	setSelection(int begin, int end = -1);
-	void	allowSelection(int sel) { allow_selection = sel; }
+	void	allowSelection(int sel) { allow_selection_ = sel; }
+	void	setPalette(Palette* pal) { palette_.copyPalette(pal); }
 
-	void	draw();
+	void	drawContent() override;
 	rgba_t	getSelectedColour();
 
 	// Events
 	void	onMouseLeftDown(wxMouseEvent& e);
 	void	onMouseRightDown(wxMouseEvent& e);
 	void	onMouseMotion(wxMouseEvent& e);
-};
 
-#endif //__PALETTECANVAS_H__
+private:
+	int		sel_begin_			= -1;
+	int		sel_end_			= -1;
+	bool	double_width_		= false;
+	int		allow_selection_	= 0;	// 0 = no, 1 = one colour only, 2 = any (range)
+	Palette	palette_;
+};

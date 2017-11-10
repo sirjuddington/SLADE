@@ -1670,6 +1670,7 @@
     <ClCompile Include="..\..\src\UI\Canvas\ANSICanvas.cpp" />
     <ClCompile Include="..\..\src\UI\Canvas\CTextureCanvas.cpp" />
     <ClCompile Include="..\..\src\UI\Canvas\GfxCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\GLCanvas.cpp" />
     <ClCompile Include="..\..\src\UI\Canvas\MapPreviewCanvas.cpp" />
     <ClCompile Include="..\..\src\UI\Canvas\OGLCanvas.cpp" />
     <ClCompile Include="..\..\src\UI\Canvas\PaletteCanvas.cpp" />
@@ -2188,6 +2189,7 @@
     <ClInclude Include="..\..\src\UI\Canvas\ANSICanvas.h" />
     <ClInclude Include="..\..\src\UI\Canvas\CTextureCanvas.h" />
     <ClInclude Include="..\..\src\UI\Canvas\GfxCanvas.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\GLCanvas.h" />
     <ClInclude Include="..\..\src\UI\Canvas\MapPreviewCanvas.h" />
     <ClInclude Include="..\..\src\UI\Canvas\OGLCanvas.h" />
     <ClInclude Include="..\..\src\UI\Canvas\PaletteCanvas.h" />

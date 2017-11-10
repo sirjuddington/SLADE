@@ -42,10 +42,8 @@ CVAR(Int, gl_depth_buffer_size, 16, CVAR_SAVE)
 
 namespace OpenGL
 {
-#ifndef USE_SFML_RENDERWINDOW
-	wxGLContext*	context = NULL;
+	wxGLContext*	context = nullptr;
 	int				wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
-#endif
 	bool			initialised = false;
 	double			version = 0;
 	unsigned		max_tex_size = 128;
@@ -61,7 +59,6 @@ namespace OpenGL
  * OPENGL NAMESPACE FUNCTIONS
  *******************************************************************/
 
-#ifndef USE_SFML_RENDERWINDOW
 /* OpenGL::getContext
  * Returns the global OpenGL context, and creates it if needed
  *******************************************************************/
@@ -81,7 +78,6 @@ wxGLContext* OpenGL::getContext(wxGLCanvas* canvas)
 
 	return context;
 }
-#endif
 
 /* OpenGL::init
  * Initialises general OpenGL variables and settings
@@ -224,7 +220,6 @@ bool OpenGL::accuracyTweak()
 	return gl_tweak_accuracy;
 }
 
-#ifndef USE_SFML_RENDERWINDOW
 /* OpenGL::getWxGLAttribs
  * Returns the GL attributes array for use with wxGLCanvas
  *******************************************************************/
@@ -235,7 +230,6 @@ int* OpenGL::getWxGLAttribs()
 
 	return wx_gl_attrib;
 }
-#endif
 
 /* OpenGL::setColour
  * Sets the colour to [col], and changes the colour blend mode if

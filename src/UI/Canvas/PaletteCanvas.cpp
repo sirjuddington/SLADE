@@ -39,56 +39,31 @@
 /* PaletteCanvas::PaletteCanvas
  * PaletteCanvas class constructor
  *******************************************************************/
-PaletteCanvas::PaletteCanvas(wxWindow* parent, int id)
-	: OGLCanvas(parent, id)
+PaletteCanvas::PaletteCanvas(wxWindow* parent, int id) :
+	GLCanvas{ parent, id }
 {
-	sel_begin = -1;
-	sel_end = -1;
-	double_width = false;
-	allow_selection = 0;
-
 	// Bind events
 	Bind(wxEVT_LEFT_DOWN,  &PaletteCanvas::onMouseLeftDown,  this);
 	Bind(wxEVT_RIGHT_DOWN, &PaletteCanvas::onMouseRightDown, this);
 	Bind(wxEVT_MOTION, &PaletteCanvas::onMouseMotion, this);
 }
 
-/* PaletteCanvas::~PaletteCanvas
- * PaletteCanvas class destructor
- *******************************************************************/
-PaletteCanvas::~PaletteCanvas()
-{
-}
-
 /* PaletteCanvas::draw
  * Draws the palette as 16x16 (or 32x8) coloured squares
  *******************************************************************/
-void PaletteCanvas::draw()
+void PaletteCanvas::drawContent()
 {
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glDisable(GL_DEPTH_TEST);
+	// Setup standard 2d view
+	setup2D();
 
 	// Clear
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
 	// Setup some variables
 	int rows = 16;
 	int cols = 16;
-	if (double_width)
+	if (double_width_)
 	{
 		rows = 8;
 		cols = 32;
@@ -104,7 +79,7 @@ void PaletteCanvas::draw()
 		for (int x = 0; x < cols; x++)
 		{
 			// Set colour
-			OpenGL::setColour(palette.colour(c));
+			OpenGL::setColour(palette_.colour(c));
 
 			// Draw square
 			glBegin(GL_QUADS);
@@ -115,7 +90,7 @@ void PaletteCanvas::draw()
 			glEnd();
 
 			// Draw selection outline if needed
-			if (c >= sel_begin && c <= sel_end)
+			if (c >= sel_begin_ && c <= sel_end_)
 			{
 				OpenGL::setColour(COL_WHITE);
 				glBegin(GL_LINES);
@@ -134,7 +109,7 @@ void PaletteCanvas::draw()
 				glEnd();
 
 				// Selection beginning
-				if (c == sel_begin)
+				if (c == sel_begin_)
 				{
 					OpenGL::setColour(COL_WHITE);
 					glBegin(GL_LINES);
@@ -150,7 +125,7 @@ void PaletteCanvas::draw()
 				}
 
 				// Selection ending
-				if (c == sel_end)
+				if (c == sel_end_)
 				{
 					OpenGL::setColour(COL_WHITE);
 					glBegin(GL_LINES);
@@ -176,9 +151,6 @@ void PaletteCanvas::draw()
 		if (c > 255)
 			break;
 	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 /* PaletteCanvas::getSelectedColour
@@ -187,8 +159,8 @@ void PaletteCanvas::draw()
  *******************************************************************/
 rgba_t PaletteCanvas::getSelectedColour()
 {
-	if (sel_begin >= 0)
-		return palette.colour(sel_begin);
+	if (sel_begin_ >= 0)
+		return palette_.colour(sel_begin_);
 	else
 		return rgba_t(0, 0, 0, 0);
 }
@@ -199,11 +171,11 @@ rgba_t PaletteCanvas::getSelectedColour()
  *******************************************************************/
 void PaletteCanvas::setSelection(int begin, int end)
 {
-	sel_begin = begin;
+	sel_begin_ = begin;
 	if (end == -1)
-		sel_end = begin;
+		sel_end_ = begin;
 	else
-		sel_end = end;
+		sel_end_ = end;
 }
 
 
@@ -217,12 +189,12 @@ void PaletteCanvas::setSelection(int begin, int end)
 void PaletteCanvas::onMouseLeftDown(wxMouseEvent& e)
 {
 	// Handle selection if needed
-	if (allow_selection > 0)
+	if (allow_selection_ > 0)
 	{
 		// Figure out what 'grid' position was clicked
 		int rows = 16;
 		int cols = 16;
-		if (double_width)
+		if (double_width_)
 		{
 			rows = 8;
 			cols = 32;
@@ -262,12 +234,12 @@ void PaletteCanvas::onMouseRightDown(wxMouseEvent& e)
 void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 {
 	// Check for dragging selection
-	if (e.LeftIsDown() && allow_selection > 1)
+	if (e.LeftIsDown() && allow_selection_ > 1)
 	{
 		// Figure out what 'grid' position the cursor is over
 		int rows = 16;
 		int cols = 16;
-		if (double_width)
+		if (double_width_)
 		{
 			rows = 8;
 			cols = 32;
@@ -282,8 +254,8 @@ void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 		if (x >= 0 && x < cols && y >= 0 && y < rows)
 		{
 			int sel = y * cols + x;
-			if (sel > sel_begin)
-				setSelection(sel_begin, sel);
+			if (sel > sel_begin_)
+				setSelection(sel_begin_, sel);
 
 			Refresh();
 		}
