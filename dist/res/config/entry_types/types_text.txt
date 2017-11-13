@@ -416,7 +416,7 @@ entry_types
 	misctext : text
 	{
 		name = "Text";
-		match_name = "extended", "copyrite", "serial", "license", "credits", "iwadinfo", "hacx-e";
+		match_name = "extended", "copyrite", "serial", "license", "credits", "hacx-e";
 	}
 
 	shaders : text
@@ -564,6 +564,13 @@ entry_types
 		name = "ZScript";
 		section = "zscript";
 		text_language = "zscript";
+	}
+
+	iwadinfo : text
+	{
+		name = "IWAD Info";
+		match_name = "iwadinfo";
+		text_language = "z_iwadinfo";
 	}
 
 	txt : text
