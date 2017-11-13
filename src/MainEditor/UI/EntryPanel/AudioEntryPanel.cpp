@@ -95,7 +95,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	}
 #else
 	// Create wxMediaCtrl
-	media_ctrl = new wxMediaCtrl(this, -1);
+	media_ctrl_ = new wxMediaCtrl(this, -1);
 #endif
 
 	// Setup sizer
