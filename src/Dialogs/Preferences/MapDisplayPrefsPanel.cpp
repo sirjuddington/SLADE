@@ -131,19 +131,19 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 
 	// Crosshair
 	choice_crosshair_ = new wxChoice(panel, -1);
-	choice_crosshair_->Set(vector<string>{ "None", "Small", "Full" });
+	choice_crosshair_->Set(WxUtils::arrayString({ "None", "Small", "Full" }));
 	gb_sizer->Add(new wxStaticText(panel, -1, "Cursor Crosshair:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_crosshair_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Texture filter
 	choice_tex_filter_ = new wxChoice(panel, -1);
-	choice_tex_filter_->Set(vector<string>{ "None", "Linear", "Linear (Mipmapped)", "None (Mipmapped)" });
+	choice_tex_filter_->Set(WxUtils::arrayString({ "None", "Linear", "Linear (Mipmapped)", "None (Mipmapped)" }));
 	gb_sizer->Add(new wxStaticText(panel, -1, "Texture Filtering:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_tex_filter_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 
 	// 64 grid
 	choice_grid_64_ = new wxChoice(panel, -1);
-	choice_grid_64_->Set(vector<string>{ "None", "Full", "Crosses" });
+	choice_grid_64_->Set(WxUtils::arrayString({ "None", "Full", "Crosses" }));
 	gb_sizer->Add(new wxStaticText(panel, -1, "64 Grid:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_grid_64_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 
@@ -198,7 +198,7 @@ void MapDisplayPrefsPanel::setupVerticesTab()
 
 	slider_vertex_size_ = new wxSlider(panel, -1, vertex_size, 2, 16, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	choice_vertices_always_ = new wxChoice(panel, -1);
-	choice_vertices_always_->Set(vector<string>{ "Hide", "Show", "Fade" });
+	choice_vertices_always_->Set(WxUtils::arrayString({ "Hide", "Show", "Fade" }));
 	cb_vertex_round_ = new wxCheckBox(panel, -1, "Round vertices");
 
 	WxUtils::layoutVertically(
@@ -270,7 +270,9 @@ void MapDisplayPrefsPanel::setupThingsTab()
 	// Thing style
 	gb_sizer->Add(new wxStaticText(panel, -1, "Thing style: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	choice_thing_drawtype_ = new wxChoice(panel, -1);
-	choice_thing_drawtype_->Set(vector<string>{ "Square", "Round", "Sprite", "Square + Sprite", "Framed Sprite" });
+	choice_thing_drawtype_->Set(
+		WxUtils::arrayString({ "Square", "Round", "Sprite", "Square + Sprite", "Framed Sprite" })
+	);
 	gb_sizer->Add(choice_thing_drawtype_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// When not in things mode
@@ -281,7 +283,7 @@ void MapDisplayPrefsPanel::setupThingsTab()
 		wxALIGN_CENTER_VERTICAL
 	);
 	choice_things_always_ = new wxChoice(panel, -1);
-	choice_things_always_->Set(vector<string>{ "Hide", "Show", "Fade" });
+	choice_things_always_->Set(WxUtils::arrayString({ "Hide", "Show", "Fade" }));
 	gb_sizer->Add(choice_things_always_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Shadow opacity

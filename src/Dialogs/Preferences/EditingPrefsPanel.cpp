@@ -267,8 +267,8 @@ wxPanel* EditingPrefsPanel::setupGeneralTab()
 	choice_dir_mod_ = new wxChoice(panel, -1);
 
 	// Populate dropdowns
-	choice_entry_mod_->Set(vector<string>{ "Don't Save", "Save", "Ask" });
-	choice_dir_mod_->Set(vector<string>{ "Ignore Changes", "Apply Changes", "Ask"});
+	choice_entry_mod_->Set(WxUtils::arrayString({ "Don't Save", "Save", "Ask" }));
+	choice_dir_mod_->Set(WxUtils::arrayString({ "Ignore Changes", "Apply Changes", "Ask"}));
 
 	// Layout
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));

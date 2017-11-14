@@ -55,7 +55,7 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Special Type
 	choice_type_ = new wxChoice(this, -1);
-	choice_type_->Set(vector<string>{ "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" });
+	choice_type_->Set(WxUtils::arrayString({ "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" }));
 	choice_type_->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoiceTypeChanged, this);
 	sizer->Add(WxUtils::createLabelHBox(this, "Type:", choice_type_), 0, wxEXPAND | wxBOTTOM, UI::pad());
 
@@ -65,7 +65,7 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	// Trigger
 	label_props_[0] = new wxStaticText(this, -1, "Trigger:", { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
 	choice_props_[0] = new wxChoice(this, -1);
-	choice_props_[0]->Set(vector<string>{
+	choice_props_[0]->Set(WxUtils::arrayString({
 		"Cross (Once)",
 		"Cross (Repeatable)",
 		"Switch (Once)",
@@ -74,7 +74,7 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 		"Shoot (Repeatable)",
 		"Door (Once)",
 		"Door (Repeatable)"
-	});
+	}));
 	choice_props_[0]->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoicePropertyChanged, this);
 
 	// Other properties

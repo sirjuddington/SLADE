@@ -104,7 +104,7 @@ void TextureEditorPanel::setupLayout()
 	choice_viewtype_->SetSelection(0);
 	tex_canvas_->setViewType(0);
 	cb_blend_rgba_->SetValue(false);
-	choice_viewtype_->Set(vector<string>{ "None", "Sprite", "HUD" });
+	choice_viewtype_->Set(WxUtils::arrayString({ "None", "Sprite", "HUD" }));
 
 	// Only show these on ZTextureEditorPanel
 	cb_blend_rgba_->Show(false);

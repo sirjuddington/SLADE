@@ -273,7 +273,7 @@ void WxUtils::layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSize
 // ----------------------------------------------------------------------------
 wxArrayString WxUtils::arrayString(vector<string> vector)
 {
-	return wxArrayString(vector.size(), vector.data());
+	return wxArrayString{ vector.size(), vector.data() };
 }
 
 wxSize WxUtils::scaledSize(int x, int y)

@@ -73,7 +73,7 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	btn_apply_ = new SIconButton(this, "tick", "Apply");
 
 	// Init controls
-	combo_rotation_->Set(vector<string>{ "0", "45", "90", "135", "180", "225", "270", "315" });
+	combo_rotation_->Set(WxUtils::arrayString({ "0", "45", "90", "135", "180", "225", "270", "315" }));
 	combo_rotation_->SetValidator(val_double);
 	btn_preview_->SetDefault();
 
