@@ -69,7 +69,7 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 	cp_colour2_ = new wxColourPickerCtrl(this, -1, *wxBLACK, wxDefaultPosition, wxDefaultSize, cp_flags);
 	choice_presets_ = new wxChoice(this, -1);
 	choice_presets_->Append(
-		vector<string>{
+		WxUtils::arrayString({
 			"Default",
 			"Black", "Black (Checkered)",
 			"Cyan", "Cyan (Checkered)",
@@ -77,11 +77,11 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 			"White", "White (Checkered)",
 			"Yellow", "Yellow (Checkered)",
 			"Vintage Id Software"
-		}
+		})
 	);
 	choice_browser_bg_ = new wxChoice(this, -1);
 	choice_browser_bg_->Append(
-		vector<string>{ "Transparent background (as above)", "System background", "Black background" }
+		WxUtils::arrayString({ "Transparent background (as above)", "System background", "Black background" })
 	);
 	cb_show_border_ = new wxCheckBox(this, -1, "Show outline around graphics and textures");
 	cb_hilight_mouseover_ = new wxCheckBox(this, -1, "Hilight graphics on mouse hover");
