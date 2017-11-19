@@ -1265,7 +1265,7 @@ void MapEditContext::updateStatusText()
 
 	if (edit_mode_ != Mode::Visual && selection_.size() > 0)
 	{
-		mode += S_FMT(" (%lu selected)", selection_.size());
+		mode += S_FMT(" (%d selected)", (int) selection_.size());
 	}
 
 	MapEditor::setStatusText(mode, 1);
