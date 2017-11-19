@@ -120,7 +120,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 
 	// Gfx (offset) type
 	string offset_types[] ={ "Auto", "Graphic", "Sprite", "HUD" };
-	choice_offset_type_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, UI::pad(), offset_types);
+	choice_offset_type_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, offset_types);
 	choice_offset_type_->SetSelection(0);
 	sizer_bottom_->Add(choice_offset_type_, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
 
