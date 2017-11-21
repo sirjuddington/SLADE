@@ -29,7 +29,7 @@ z_cvarinfo {
 		// Scopes
 		server, user,
 
-		noarchive, cheat,
+		noarchive, cheat, latch,
 
 		// Types
 		bool, color, float, int, string
@@ -227,7 +227,7 @@ z_mapinfo {
 		NoRandomPlayerclass, StatScreen_EnteringPatch, StatScreen_FinishedPatch, StatScreen_MapNameFont, NightmareFast,
 		DontCrunchCorpses, CheatKey, ForceKillScripts, MessageBoxClass, StatusBarClass, DefaultConversationMenuClass,
 		StatScreen_FinishedFont, StatScreen_EnteringFont, Dialogue, StatScreen_Single, StatScreen_Coop, StatScreen_DM,
-		BlurAmount, CorrectPrintBold,
+		BlurAmount, CorrectPrintBold, MenuSliderColor,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
