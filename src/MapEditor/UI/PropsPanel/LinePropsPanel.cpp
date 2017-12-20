@@ -72,17 +72,17 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	if (MapEditor::editContext().mapDesc().format != MAP_DOOM)
 	{
 		panel_args_ = new ArgsPanel(stc_tabs_);
-		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_args_), "Args");
+		stc_tabs_->AddPage(panel_args_, "Args");
 		panel_special_->setArgsPanel(panel_args_);
 	}
 
 	// Front side tab
 	panel_side1_ = new SidePropsPanel(stc_tabs_);
-	stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_side1_), "Front Side");
+	stc_tabs_->AddPage(panel_side1_, "Front Side");
 
 	// Back side tab
 	panel_side2_ = new SidePropsPanel(stc_tabs_);
-	stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_side2_), "Back Side");
+	stc_tabs_->AddPage(panel_side2_, "Back Side");
 
 	// All properties tab
 	mopp_all_props_ = new MapObjectPropsPanel(stc_tabs_, true);
