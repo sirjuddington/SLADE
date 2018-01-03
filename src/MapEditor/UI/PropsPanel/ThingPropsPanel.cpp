@@ -557,14 +557,14 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	// Special tab
 	if (MapEditor::editContext().mapDesc().format != MAP_DOOM)
 	{
-		panel_special_ = new ActionSpecialPanel(stc_tabs_, false);
+		panel_special_ = new ActionSpecialPanel(this, false);
 		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_special_), "Special");
 	}
 
 	// Args tab
 	if (MapEditor::editContext().mapDesc().format != MAP_DOOM)
 	{
-		panel_args_ = new ArgsPanel(stc_tabs_);
+		panel_args_ = new ArgsPanel(this);
 		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_args_), "Args");
 		if (panel_special_)
 			panel_special_->setArgsPanel(panel_args_);
