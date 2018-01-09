@@ -461,6 +461,7 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 		if (props["scale"].hasValue()) scale_.x = scale_.y = props["scale"].getFloatValue();
 		if (props["scale.x"].hasValue()) scale_.x = props["scale.x"].getFloatValue();
 		if (props["scale.y"].hasValue()) scale_.y = props["scale.y"].getFloatValue();
+		if (props["spawnceiling"].hasValue()) hanging_ = props["spawnceiling"].getBoolValue();
 	}
 }
 
