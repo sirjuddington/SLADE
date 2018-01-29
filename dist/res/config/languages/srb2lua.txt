@@ -356,7 +356,7 @@ srb2lua {
 		drawString = "fixed x, fixed y, string str, [int flags], [string alignment]";
 		patchExists = "string name";
 		cachePatch = "string name";
-		getColormap = "[string/int skin, [int color]]";
+		getColormap = "[string/int skin], [int color]";
 		stringWidth = "string string, [int flags], [string widthtype]";
 
 		// basic Lua
