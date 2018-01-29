@@ -348,14 +348,15 @@ srb2lua {
 		hud.add = "function(drawer v/[player_t stplyr]), string type)";
 
 		// technically these are a part of the video code but you can rename that whatever you want...
-		draw = "int x, int y, patch patch, [int flags], [(unimplemented) colormap]";
-		drawScaled = "fixed x, fixed y, fixed scale, patch patch, [int flags], [(unimplemented) colormap]";
+		draw = "int x, int y, patch patch, [int flags], [colormap c]";
+		drawScaled = "fixed x, fixed y, fixed scale, patch patch, [int flags], [colormap c]";
 		drawNum = "int x, int y, int num, [int flags]";
 		drawPaddedNum = "int x, int y, int num, [int digits], [int flags]";
 		drawFill = "[int x], [int y], [int w], [int h], [int color]";
 		drawString = "fixed x, fixed y, string str, [int flags], [string alignment]";
 		patchExists = "string name";
 		cachePatch = "string name";
+		getColormap = "[string/int skin, [int color]]";
 		stringWidth = "string string, [int flags], [string widthtype]";
 
 		// basic Lua
