@@ -398,11 +398,14 @@ entry_types
 	}
 
 	srb2lua : text
-	{
+    	{
 		name = "Lua Script";
+		icon = "e_lua";
+		match_extorname = 1;
+		match_ext = "lua";
 		match_name = "lua_*";
 		text_language = "srb2lua";
-	}
+   	}
 
 	// ZDaemon text lumps
 	patchinf : text
