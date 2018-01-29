@@ -165,7 +165,7 @@ srb2lua {
 		P_RandomFixed;
 		P_RandomByte;
 		P_SignedRandom;
-		P_RandomChance = "fixed p"
+		P_RandomChance = "fixed p";
 		P_RandomKey = "int a";
 		P_RandomRange = "int a, int b";
 
