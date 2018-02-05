@@ -159,7 +159,7 @@ Tokenizer::Tokenizer(int comments, const string& special_characters) :
 // ----------------------------------------------------------------------------
 const Tokenizer::Token& Tokenizer::peek() const
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return invalid_token_;
 
 	return token_next_;
@@ -172,7 +172,7 @@ const Tokenizer::Token& Tokenizer::peek() const
 // ----------------------------------------------------------------------------
 const Tokenizer::Token& Tokenizer::next()
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return invalid_token_;
 
 	token_current_ = token_next_;

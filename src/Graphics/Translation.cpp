@@ -1,39 +1,43 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    Translation.cpp
- * Description: Translation class. Encapsulates a palette translation.
- *              A translation contains one or more translation ranges,
- *              where each range has an origin palette range and some kind
- *              of target range. The target range can be another palette
- *              range, a colour gradient or a desaturated colour gradient.
- *              eg:
- *              Palette range: 0...16 -> 32...48		(in zdoom format: "0:16=32:48")
- *              Colour gradient: 0...16 -> Red...Black	(in zdoom format: "0:16=[255,0,0]:[0,0,0]")
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Translation.cpp
+// Description: Translation class. Encapsulates a palette translation.
+//              A translation contains one or more translation ranges,
+//              where each range has an origin palette range and some kind
+//              of target range. The target range can be another palette
+//              range, a colour gradient or a desaturated colour gradient.
+//              eg:
+//              Palette range: 0...16 -> 32...48
+//                  (in zdoom format: "0:16=32:48")
+//              Colour gradient: 0...16 -> Red...Black
+//                  (in zdoom format: "0:16=[255,0,0]:[0,0,0]")
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "Translation.h"
 #include "Utility/Tokenizer.h"
@@ -41,16 +45,22 @@
 #include "MainEditor/MainEditor.h"
 #include "Archive/ArchiveManager.h"
 
- /*******************************************************************
- * VARIABLES
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 EXTERN_CVAR(Float, col_greyscale_r)
 EXTERN_CVAR(Float, col_greyscale_g)
 EXTERN_CVAR(Float, col_greyscale_b)
 
-/*******************************************************************
-* CONSTANTS
-*******************************************************************/
+
+// ----------------------------------------------------------------------------
+//
+// Constants
+//
+// ----------------------------------------------------------------------------
 
 // Colours used by the "Ice" translation, based on the Hexen palette
 rgba_t IceRange[16] = 
@@ -78,35 +88,42 @@ enum SpecialBlend
 	BLEND_INVALID,
 };
 
-/*******************************************************************
- * TRANSLATION CLASS FUNCTIONS
- *******************************************************************/
 
-/* Translation::Translation
- * Translation class constructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Translation Class Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// Translation::Translation
+//
+// Translation class constructor
+// ----------------------------------------------------------------------------
 Translation::Translation() : built_in_name(""), desat_amount(0)
 {
 }
 
-/* Translation::~Translation
- * Translation class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::~Translation
+//
+// Translation class destructor
+// ----------------------------------------------------------------------------
 Translation::~Translation()
 {
-	for (unsigned a = 0; a < translations.size(); a++)
-		delete translations[a];
+	for (auto& translation : translations)
+		delete translation;
 }
 
-/* Translation::parse
- * Parses a text definition [def] (in zdoom format, detailed here:
- * http://zdoom.org/wiki/Translation)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::parse
+//
+// Parses a text definition [def] (in zdoom format, detailed here:
+// http://zdoom.org/wiki/Translation)
+// ----------------------------------------------------------------------------
 void Translation::parse(string def)
 {
-	//wxLogMessage("Parse translation \"%s\"", def);
-	//LOG_MESSAGE(1, "Parse translation \"%s\"", def);
-	
 	// Test for ZDoom built-in translation
 	string test = def.Lower();
 	string temp;
@@ -164,65 +181,67 @@ void Translation::parse(string def)
 
 	// Now we're guaranteed to have normal translation strings to parse
 	Tokenizer tz;
+	tz.setSpecialCharacters(",");
 	tz.openString(def);
-	string token = tz.getToken();
-	while (!token.IsEmpty())
-	{
-		parseRange(token);
-		tz.getToken();
-		token = tz.getToken();
-	}
-
+	parseRange(tz.current().text);
+	while (tz.advIfNext(','))
+		parseRange(tz.next().text);
 }
 
-/* Translation::parseRange
- * Parses a single translation range
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::parseRange
+//
+// Parses a single translation range
+// ----------------------------------------------------------------------------
 void Translation::parseRange(string range)
 {
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
 	tz.setSpecialCharacters("[]:%,=#@$");
 	tz.openString(range);
+	Log::debug("Processing range " + range);
 
 	// Read original range
-	uint8_t o_start, o_end;
-	o_start = tz.getInteger();
-	if (tz.peekToken() == "=") o_end = o_start;
-	else if (!tz.checkToken(":")) return;
-	else o_end = tz.getInteger();
-	if (!tz.checkToken("=")) return;
+	int o_start, o_end;
+	tz.current().toInt(o_start);
+	if (tz.advIfNext(':'))
+		tz.next().toInt(o_end);
+	else
+		o_end = o_start;
+
+	// Check for =
+	if (!tz.advIfNext('='))
+		return;
 
 	// Check for reverse origin range
-	bool reverse = (o_start > o_end);
+	const bool reverse = (o_start > o_end);
 
 	// Type of translation depends on next token
-	if (tz.peekToken() == "[")
+	if (tz.advIfNext('['))
 	{
 		// Colour translation
-		rgba_t start, end;
-
-		tz.getToken();	// Skip [
+		int sr, sg, sb, er, eg, eb;
 
 		// Read start colour
-		start.r = tz.getInteger();
-		if (!tz.checkToken(",")) return;
-		start.g = tz.getInteger();
-		if (!tz.checkToken(",")) return;
-		start.b = tz.getInteger();
+		tz.next().toInt(sr);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toInt(sg);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toInt(sb);
 
-		if (!tz.checkToken("]")) return;
-		if (!tz.checkToken(":")) return;
-		if (!tz.checkToken("[")) return;
+		// Syntax check
+		if (!tz.advIfNext(']')) return;
+		if (!tz.advIfNext(':')) return;
+		if (!tz.advIfNext('[')) return;
 
 		// Read end colour
-		end.r = tz.getInteger();
-		if (!tz.checkToken(",")) return;
-		end.g = tz.getInteger();
-		if (!tz.checkToken(",")) return;
-		end.b = tz.getInteger();
+		tz.next().toInt(er);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toInt(eg);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toInt(eb);
 
-		if (!tz.checkToken("]")) return;
+		if (!tz.advIfNext(']')) return;
 
 		// Add translation
 		TransRangeColour* tr = new TransRangeColour();
@@ -230,45 +249,45 @@ void Translation::parseRange(string range)
 		{
 			tr->o_start = o_end;
 			tr->o_end = o_start;
-			tr->d_start.set(end);
-			tr->d_end.set(start);
+			tr->d_start.set(er, eg, eb);
+			tr->d_end.set(sr, sg, sb);
 		}
 		else
 		{
 			tr->o_start = o_start;
 			tr->o_end = o_end;
-			tr->d_start.set(start);
-			tr->d_end.set(end);
+			tr->d_start.set(sr, sg, sb);
+			tr->d_end.set(er, eg, eb);
 		}
 		translations.push_back(tr);
 	}
-	else if (tz.peekToken() == "%")
+	else if (tz.advIfNext('%'))
 	{
 		// Desat colour translation
 		float sr, sg, sb, er, eg, eb;
 
-		tz.getToken();	// Skip %
-		if (!tz.checkToken("[")) return;
+		if (!tz.advIfNext('[')) return;
 
 		// Read start colour
-		sr = tz.getFloat();
-		if (!tz.checkToken(",")) return;
-		sg = tz.getFloat();
-		if (!tz.checkToken(",")) return;
-		sb = tz.getFloat();
+		tz.next().toFloat(sr);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toFloat(sg);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toFloat(sb);
 
-		if (!tz.checkToken("]")) return;
-		if (!tz.checkToken(":")) return;
-		if (!tz.checkToken("[")) return;
+		// Syntax check
+		if (!tz.advIfNext(']')) return;
+		if (!tz.advIfNext(':')) return;
+		if (!tz.advIfNext('[')) return;
 
 		// Read end colour
-		er = tz.getFloat();
-		if (!tz.checkToken(",")) return;
-		eg = tz.getFloat();
-		if (!tz.checkToken(",")) return;
-		eb = tz.getFloat();
+		tz.next().toFloat(er);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toFloat(eg);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toFloat(eb);
 
-		if (!tz.checkToken("]")) return;
+		if (!tz.advIfNext(']')) return;
 
 		// Add translation
 		TransRangeDesat* tr = new TransRangeDesat();
@@ -296,64 +315,64 @@ void Translation::parseRange(string range)
 		}
 		translations.push_back(tr);
 	}
-	else if (tz.peekToken() == "#")
+	else if (tz.advIfNext('#'))
 	{
 		// Colourise translation
-		rgba_t col;
-		tz.skipToken(); // skip #
-		if (!tz.checkToken("[")) return;
-		col.r = tz.getInteger();
-		if (!tz.checkToken(",")) return;
-		col.g = tz.getInteger();
-		if (!tz.checkToken(",")) return;
-		col.b = tz.getInteger();
-		if (!tz.checkToken("]")) return;
+		int r, g, b;
+		if (!tz.advIfNext('[')) return;
+		tz.next().toInt(r);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toInt(g);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toInt(b);
+		if (!tz.advIfNext(']')) return;
+
 		TransRangeBlend* tr = new TransRangeBlend();
 		tr->o_start = o_start;
 		tr->o_end = o_end;
-		tr->setColour(col);
+		tr->setColour(rgba_t(r, g, b));
 		translations.push_back(tr);
 	}
-	else if (tz.peekToken() == '@')
+	else if (tz.advIfNext('@'))
 	{
 		// Tint translation
-		rgba_t col;
-		uint8_t amount;
-		tz.skipToken(); // skip @
-		amount = tz.getInteger();
-		if (!tz.checkToken("[")) return;
-		col.r = tz.getInteger();
-		if (!tz.checkToken(",")) return;
-		col.g = tz.getInteger();
-		if (!tz.checkToken(",")) return;
-		col.b = tz.getInteger();
-		if (!tz.checkToken("]")) return;
+		int amount, r, g, b;
+
+		tz.next().toInt(amount);
+		if (!tz.advIfNext('[')) return;
+		tz.next().toInt(r);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toInt(g);
+		if (!tz.advIfNext(',')) return;
+		tz.next().toInt(b);
+		if (!tz.advIfNext(']')) return;
+
 		TransRangeTint* tr = new TransRangeTint();
 		tr->o_start = o_start;
 		tr->o_end = o_end;
-		tr->setColour(col);
+		tr->setColour(rgba_t(r, g, b));
 		tr->setAmount(amount);
 		translations.push_back(tr);
 	}
-	else if (tz.peekToken() == '$')
+	else if (tz.advIfNext('$'))
 	{
-		tz.skipToken();
-		string special = tz.getToken();
 		TransRangeSpecial* tr = new TransRangeSpecial();
 		tr->o_start = o_start;
 		tr->o_end = o_end;
-		tr->special = special;
+		tr->special = tz.next().text; //special;
 		translations.push_back(tr);
 	}
 	else
 	{
 		// Palette range translation
-		uint8_t d_start, d_end;
+		int d_start, d_end;
 
 		// Read range values
-		d_start = tz.getInteger();
-		if (!tz.checkToken(":")) d_end = d_start;
-		else d_end = tz.getInteger();
+		tz.next().toInt(d_start);
+		if (!tz.advIfNext(':'))
+			d_end = d_start;
+		else
+			tz.next().toInt(d_end);
 
 		// Add translation
 		TransRangePalette* tr = new TransRangePalette();
@@ -375,16 +394,17 @@ void Translation::parseRange(string range)
 	}
 }
 
-/* Translation::read
- * Read an entry as a translation table. We're only looking for 
- * translations where the original range and the target range have 
- * the same length, so the index value is only ever increased by 1. 
- * This should be enough to handle Hexen. Asymmetric translations
- * or reversed translations would need a lot more heuristics to be
- * handled appropriately. And of course, we're not handling any sort
- * of palettized translations to RGB gradients. In short, converting
- * a translation string to a translation table would be lossy.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::read
+//
+// Read an entry as a translation table. We're only looking for translations
+// where the original range and the target range have the same length, so the
+// index value is only ever increased by 1. This should be enough to handle
+// Hexen. Asymmetric translations or reversed translations would need a lot
+// more heuristics to be handled appropriately. And of course, we're not
+// handling any sort of palettized translations to RGB gradients. In short,
+// converting a translation string to a translation table would be lossy.
+// ----------------------------------------------------------------------------
 void Translation::read(const uint8_t * data)
 {
 	int i = 0;
@@ -414,10 +434,11 @@ void Translation::read(const uint8_t * data)
 	LOG_MESSAGE(3, "Translation table analyzed as " + asText());
 }
 
-/* Translation::asText
- * Returns a string representation of the translation
- * (in zdoom format)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::asText
+//
+// Returns a string representation of the translation (in zdoom format)
+// ----------------------------------------------------------------------------
 string Translation::asText()
 {
 	string ret;
@@ -425,8 +446,8 @@ string Translation::asText()
 	if (built_in_name.IsEmpty())
 	{
 		// Go through translation ranges
-		for (unsigned a = 0; a < translations.size(); a++)
-			ret += S_FMT("\"%s\", ", translations[a]->asText());	// Add range to string
+		for (auto& translation : translations)
+			ret += S_FMT("\"%s\", ", translation->asText());	// Add range to string
 
 		// If any translations were defined, remove last ", "
 		if (!ret.IsEmpty())
@@ -443,50 +464,56 @@ string Translation::asText()
 	return ret;
 }
 
-/* Translation::clear
- * Clears the translation
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::clear
+//
+// Clears the translation
+// ----------------------------------------------------------------------------
 void Translation::clear()
 {
-	for (unsigned a = 0; a < translations.size(); a++)
-		delete translations[a];
+	for (auto& translation : translations)
+		delete translation;
 	translations.clear();
 	built_in_name = "";
 	desat_amount = 0;
 }
 
-/* Translation::copy
- * Copies translation information from [copy]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::copy
+//
+// Copies translation information from [copy]
+// ----------------------------------------------------------------------------
 void Translation::copy(Translation& copy)
 {
 	// Clear current definitions
 	clear();
 
 	// Copy translations
-	for (unsigned a = 0; a < copy.translations.size(); a++)
+	for (auto& translation : copy.translations)
 	{
-		if (copy.translations[a]->type == TRANS_PALETTE)
-			translations.push_back(new TransRangePalette((TransRangePalette*)copy.translations[a]));
-		if (copy.translations[a]->type == TRANS_COLOUR)
-			translations.push_back(new TransRangeColour((TransRangeColour*)copy.translations[a]));
-		if (copy.translations[a]->type == TRANS_DESAT)
-			translations.push_back(new TransRangeDesat((TransRangeDesat*)copy.translations[a]));
-		if (copy.translations[a]->type == TRANS_BLEND)
-			translations.push_back(new TransRangeBlend((TransRangeBlend*)copy.translations[a]));
-		if (copy.translations[a]->type == TRANS_TINT)
-			translations.push_back(new TransRangeTint((TransRangeTint*)copy.translations[a]));
-		if (copy.translations[a]->type == TRANS_SPECIAL)
-			translations.push_back(new TransRangeSpecial((TransRangeSpecial*)copy.translations[a]));
+		if (translation->type == TRANS_PALETTE)
+			translations.push_back(new TransRangePalette((TransRangePalette*)translation));
+		if (translation->type == TRANS_COLOUR)
+			translations.push_back(new TransRangeColour((TransRangeColour*)translation));
+		if (translation->type == TRANS_DESAT)
+			translations.push_back(new TransRangeDesat((TransRangeDesat*)translation));
+		if (translation->type == TRANS_BLEND)
+			translations.push_back(new TransRangeBlend((TransRangeBlend*)translation));
+		if (translation->type == TRANS_TINT)
+			translations.push_back(new TransRangeTint((TransRangeTint*)translation));
+		if (translation->type == TRANS_SPECIAL)
+			translations.push_back(new TransRangeSpecial((TransRangeSpecial*)translation));
 	}
 
 	built_in_name = copy.built_in_name;
 	desat_amount = copy.desat_amount;
 }
 
-/* Translation::getRange
- * Returns the translation range at [index]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::getRange
+//
+// Returns the translation range at [index]
+// ----------------------------------------------------------------------------
 TransRange* Translation::getRange(unsigned index)
 {
 	if (index >= translations.size())
@@ -495,9 +522,11 @@ TransRange* Translation::getRange(unsigned index)
 		return translations[index];
 }
 
-/* Translation::translate
- * Apply the translation to the given color
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::translate
+//
+// Apply the translation to the given color
+// ----------------------------------------------------------------------------
 rgba_t Translation::translate(rgba_t col, Palette * pal)
 {
 	rgba_t colour(col);
@@ -507,7 +536,7 @@ rgba_t Translation::translate(rgba_t col, Palette * pal)
 
 	// Handle ZDoom's predefined texture blending:
 	// blue, gold, green, red, ice, inverse, and desaturate
-	if (built_in_name.size())
+	if (!built_in_name.empty())
 	{
 		uint8_t type = BLEND_INVALID;
 		if (S_CMPNOCASE(built_in_name, "ice"))
@@ -668,10 +697,12 @@ rgba_t Translation::translate(rgba_t col, Palette * pal)
 	return colour;
 }
 
-/* Translation::specialBlend
- * Apply one of the special colour blending modes from ZDoom:
- * Desaturate, Ice, Inverse, Blue, Gold, Green, Red.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::specialBlend
+//
+// Apply one of the special colour blending modes from ZDoom:
+// Desaturate, Ice, Inverse, Blue, Gold, Green, Red.
+// ----------------------------------------------------------------------------
 rgba_t Translation::specialBlend(rgba_t col, uint8_t type, Palette * pal)
 {
 	// Abort just in case
@@ -738,6 +769,8 @@ rgba_t Translation::specialBlend(rgba_t col, uint8_t type, Palette * pal)
 			// Hacx invulnerability
 			// starts black, ends blue
 			eb = 1.5;
+		default:
+			break;
 		}
 		// Apply new colour
 		colour.r = MIN(255, int(sr + grey*(er - sr)));
@@ -748,14 +781,15 @@ rgba_t Translation::specialBlend(rgba_t col, uint8_t type, Palette * pal)
 	return colour;
 }
 
-/* Translation::addRange
- * Adds a new translation range of [type] at [pos] in the list
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::addRange
+//
+// Adds a new translation range of [type] at [pos] in the list
+// ----------------------------------------------------------------------------
 void Translation::addRange(int type, int pos)
 {
-	TransRange* tr = nullptr;
-
 	// Create range
+	TransRange* tr;
 	switch (type)
 	{
 	case TRANS_COLOUR:
@@ -772,6 +806,7 @@ void Translation::addRange(int type, int pos)
 		break;
 	case TRANS_SPECIAL:
 		tr = new TransRangeSpecial();
+		break;
 	default:
 		tr = new TransRangePalette();
 		break;
@@ -784,9 +819,11 @@ void Translation::addRange(int type, int pos)
 		translations.insert(translations.begin() + pos, tr);
 }
 
-/* Translation::removeRange
- * Removes the translation range at [pos]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::removeRange
+//
+// Removes the translation range at [pos]
+// ----------------------------------------------------------------------------
 void Translation::removeRange(int pos)
 {
 	// Check position
@@ -798,9 +835,11 @@ void Translation::removeRange(int pos)
 	translations.erase(translations.begin() + pos);
 }
 
-/* Translation::swapRanges
- * Swaps the translation range at [pos1] with the one at [pos2]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::swapRanges
+//
+// Swaps the translation range at [pos1] with the one at [pos2]
+// ----------------------------------------------------------------------------
 void Translation::swapRanges(int pos1, int pos2)
 {
 	// Check positions
@@ -813,9 +852,11 @@ void Translation::swapRanges(int pos1, int pos2)
 	translations[pos2] = temp;
 }
 
-/* Translation::getPredefined
- * Replaces a hardcoded translation name with its transcription
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// Translation::getPredefined
+//
+// Replaces a hardcoded translation name with its transcription
+// ----------------------------------------------------------------------------
 string Translation::getPredefined(string def)
 {
 	// Some hardcoded translations from ZDoom, used in config files

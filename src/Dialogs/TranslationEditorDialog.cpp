@@ -1243,18 +1243,15 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 		// Get the selected filename
 		string filename = dialog_open.GetPath();
 
-		// Load file in a tokenizer
-		Tokenizer tz;
-		tz.openFile(dialog_open.GetPath());
+		// Load file to string
+		wxFile file;
+		string tstring;
+		if (file.Open(dialog_open.GetPath()))
+			file.ReadAll(&tstring);
 
-		// Parse translation
+		// Parse as a translation
 		Translation trans;
-		while (!tz.atEnd())
-		{
-			// Parse translation range
-			trans.parse(tz.current().text);
-			tz.adv(2); // Skip ,
-		}
+		trans.parse(tstring);
 
 		// Open it if parsed ok
 		if (trans.nRanges() > 0)
