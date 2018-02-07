@@ -40,7 +40,7 @@
 //
 // ----------------------------------------------------------------------------
 const string Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
-Tokenizer::Token Tokenizer::invalid_token_{ "", 0, false, 0, 0 };
+Tokenizer::Token Tokenizer::invalid_token_{ "", 0, false, 0, 0, 0, false };
 
 
 // ----------------------------------------------------------------------------
@@ -58,10 +58,7 @@ namespace
 	bool isWhitespace(char p)
 	{
 		// Whitespace is either a newline, tab character or space
-		if (p == '\n' || p == 13 || p == ' ' || p == '\t')
-			return true;
-		else
-			return false;
+		return p == '\n' || p == 13 || p == ' ' || p == '\t';
 	}
 }
 
@@ -372,7 +369,6 @@ void Tokenizer::advToEndOfLine()
 
 	// Otherwise skip until the next token is on the next line
 	// (or we reach the last token)
-	unsigned line = token_current_.line_no;
 	while (token_next_.pos_start > token_current_.pos_start &&
 			token_next_.line_no <= token_current_.line_no)
 		adv();
@@ -881,7 +877,7 @@ void Tokenizer::tokenizeWhitespace()
 // ----------------------------------------------------------------------------
 bool Tokenizer::readNext(Token* target)
 {
-	if (data_.size() == 0 || state_.position >= state_.size)
+	if (data_.empty() || state_.position >= state_.size)
 	{
 		if (target) target->valid = false;
 		return false;

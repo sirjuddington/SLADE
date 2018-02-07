@@ -33,7 +33,6 @@
 #include "ZScript.h"
 #include "Archive/Archive.h"
 #include "Utility/Tokenizer.h"
-#include "Utility/StringUtils.h"
 #include "Archive/ArchiveManager.h"
 
 using namespace ZScript;
@@ -79,7 +78,7 @@ namespace ZScript
 //
 // Writes a log [message] of [type] beginning with the location of [statement]
 // ----------------------------------------------------------------------------
-void logParserMessage(ParsedStatement& statement, Log::MessageType type, string message)
+void logParserMessage(ParsedStatement& statement, Log::MessageType type, const string& message)
 {
 	string location = "<unknown location>";
 	if (statement.entry)
@@ -393,7 +392,7 @@ bool Function::parse(ParsedStatement& statement)
 			override_ = true;
 			last_qualifier = index;
 		}
-		else if (index > last_qualifier + 2 && statement.tokens[index] == '(')
+		else if ((int)index > last_qualifier + 2 && statement.tokens[index] == '(')
 		{
 			name_ = statement.tokens[index - 1];
 			return_type_ = statement.tokens[index - 2];
@@ -429,7 +428,7 @@ bool Function::parse(ParsedStatement& statement)
 
 	while (statement.tokens[index] != ')' && index < statement.tokens.size())
 	{
-		parameters_.push_back({});
+		parameters_.emplace_back();
 		index = parameters_.back().parse(statement.tokens, index);
 
 		if (statement.tokens[index] == ',')
@@ -490,18 +489,18 @@ bool Function::isFunction(ParsedStatement& statement)
 
 	// Check for ( before =
 	bool special_func = false;
-	for (unsigned a = 0; a < statement.tokens.size(); a++)
+	for (auto& token : statement.tokens)
 	{
-		if (statement.tokens[a] == '=')
+		if (token == '=')
 			return false;
 
-		if (!special_func && statement.tokens[a] == '(')
+		if (!special_func && token == '(')
 			return true;
 
-		if (S_CMPNOCASE(statement.tokens[a], "deprecated") ||
-			S_CMPNOCASE(statement.tokens[a], "version"))
+		if (S_CMPNOCASE(token, "deprecated") ||
+			S_CMPNOCASE(token, "version"))
 			special_func = true;
-		else if (special_func && statement.tokens[a] == ')')
+		else if (special_func && token == ')')
 			special_func = false;
 	}
 
@@ -797,7 +796,7 @@ void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::Thin
 	// Create new type if it didn't exist
 	if (!def)
 	{
-		parsed.push_back(Game::ThingType(name_, "ZScript", name_));
+		parsed.emplace_back(name_, "ZScript", name_);
 		def = &parsed.back();
 	}
 
@@ -854,9 +853,9 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 		else if (statement.tokens[0].StartsWith(db_comment))
 		{
 			if (statement.tokens.size() > 1)
-				db_properties_.push_back({ statement.tokens[0].substr(3),  statement.tokens[1] });
+				db_properties_.emplace_back(statement.tokens[0].substr(3),  statement.tokens[1]);
 			else
-				db_properties_.push_back({ statement.tokens[0].substr(3), "true" });
+				db_properties_.emplace_back(statement.tokens[0].substr(3), "true");
 		}
 
 		// Function
@@ -891,9 +890,9 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 		if (statement.tokens[0].StartsWith(db_comment))
 		{
 			if (statement.tokens.size() > 1)
-				db_properties_.push_back({ statement.tokens[0].substr(3),  statement.tokens[1] });
+				db_properties_.emplace_back(statement.tokens[0].substr(3),  statement.tokens[1]);
 			else
-				db_properties_.push_back({ statement.tokens[0].substr(3), "true" });
+				db_properties_.emplace_back(statement.tokens[0].substr(3), "true");
 			continue;
 		}
 
@@ -1008,11 +1007,9 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 				S_CMPNOCASE(block.tokens[0], "extend") &&
 				S_CMPNOCASE(block.tokens[1], "class"))
 		{
-			bool found = false;
 			for (auto& c : classes_)
 				if (S_CMPNOCASE(c.name(), block.tokens[2]))
 				{
-					found = true;
 					c.extend(block);
 					break;
 				}
@@ -1106,6 +1103,13 @@ void Definitions::exportThingTypes(std::map<int, Game::ThingType>& types, vector
 // ----------------------------------------------------------------------------
 bool ParsedStatement::parse(Tokenizer& tz)
 {
+	// Check for unexpected token
+	if (tz.check('}'))
+	{
+		tz.adv();
+		return false;
+	}
+
 	line = tz.lineNo();
 
 	// Tokens
@@ -1130,7 +1134,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 			if (in_initializer)
 			{
 				in_initializer = false;
-				tokens.push_back("}");
+				tokens.emplace_back("}");
 				tz.adv();
 				continue;
 			}
@@ -1152,8 +1156,8 @@ bool ParsedStatement::parse(Tokenizer& tz)
 		// Array initializer: ... = { ... }
 		if (tz.current().text.Cmp("=") == 0 && tz.peek() == '{')
 		{
-			tokens.push_back("=");
-			tokens.push_back("{");
+			tokens.emplace_back("=");
+			tokens.emplace_back("{");
 			tz.adv(2);
 			in_initializer = true;
 			continue;
