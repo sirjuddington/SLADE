@@ -146,11 +146,15 @@ else(APPLE)
 		
 		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/logo_icon.png"
 			DESTINATION share/icons/
-			RENAME slade.png
+			RENAME net.mancubus.SLADE.png
 			)
 
-		install(FILES "${PROJECT_SOURCE_DIR}/slade.desktop"
+		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.desktop"
 			DESTINATION share/applications/
+			)
+
+		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.appdata.xml"
+			DESTINATION share/appdata/
 			)
 	endif(UNIX)
 endif(APPLE)
