@@ -33,7 +33,7 @@ public:
 
 	int		length() override { return entries_.size(); }
 
-	ArchiveEntry*	getEntry(Archive* priority = nullptr, string nspace = "", bool ns_required = false);
+	ArchiveEntry*	getEntry(Archive* priority = nullptr, const string& nspace = "", bool ns_required = false);
 
 private:
 	vector<std::weak_ptr<ArchiveEntry>>	entries_;
@@ -99,12 +99,12 @@ public:
 	void	getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority);
 	void	getAllFlatNames(vector<string>& list);
 
-	ArchiveEntry*	getPaletteEntry(string palette, Archive* priority = nullptr);
-	ArchiveEntry*	getPatchEntry(string patch, string nspace = "patches", Archive* priority = nullptr);
-	ArchiveEntry*	getFlatEntry(string flat, Archive* priority = nullptr);
-	ArchiveEntry*	getTextureEntry(string texture, string nspace = "textures", Archive* priority = nullptr);
-	CTexture*		getTexture(string texture, Archive* priority = nullptr, Archive* ignore = nullptr);
-	uint16_t		getTextureHash(string name);
+	ArchiveEntry*	getPaletteEntry(const string& palette, Archive* priority = nullptr);
+	ArchiveEntry*	getPatchEntry(const string& patch, const string& nspace = "patches", Archive* priority = nullptr);
+	ArchiveEntry*	getFlatEntry(const string& flat, Archive* priority = nullptr);
+	ArchiveEntry*	getTextureEntry(const string& texture, const string& nspace = "textures", Archive* priority = nullptr);
+	CTexture*		getTexture(const string& texture, Archive* priority = nullptr, Archive* ignore = nullptr);
+	uint16_t		getTextureHash(const string& name);
 
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
 

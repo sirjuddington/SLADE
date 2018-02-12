@@ -79,7 +79,7 @@ public:
 	void		setName(string name) { this->name = name; upper_name = name.Upper(); }
 	void		setLoaded(bool loaded = true) { data_loaded = loaded; }
 	void		setType(EntryType* type, int r = 0) { this->type = type; reliability = r; }
-	void		setState(uint8_t state);
+	void		setState(uint8_t state, bool silent = false);
 	void		setEncryption(int enc) { encrypted = enc; }
 	void		unloadData();
 	void		lock();

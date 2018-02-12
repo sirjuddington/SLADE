@@ -268,7 +268,7 @@ ArchiveEntry::SPtr ArchiveEntry::getShared()
 // Sets the entry's state. Won't change state if the change would be redundant
 // (eg new->modified, unmodified->unmodified)
 // ----------------------------------------------------------------------------
-void ArchiveEntry::setState(uint8_t state)
+void ArchiveEntry::setState(uint8_t state, bool silent)
 {
 	if (state_locked || (state == 0 && this->state == 0))
 		return;
@@ -282,7 +282,8 @@ void ArchiveEntry::setState(uint8_t state)
 	}
 
 	// Notify parent archive this entry has been modified
-	stateChanged();
+	if (!silent)
+		stateChanged();
 }
 
 // ----------------------------------------------------------------------------

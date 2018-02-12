@@ -8,7 +8,7 @@ class ArchiveTreeNode : public STreeNode
 	friend class Archive;
 public:
 	ArchiveTreeNode(ArchiveTreeNode* parent = nullptr, Archive* archive = nullptr);
-	~ArchiveTreeNode();
+	~ArchiveTreeNode() = default;
 
 	// Accessors
 	Archive*							archive();
@@ -23,8 +23,8 @@ public:
 	// Entry Access
 	ArchiveEntry*		entryAt(unsigned index);
 	ArchiveEntry::SPtr	sharedEntryAt(unsigned index);
-	ArchiveEntry*		entry(string name, bool cut_ext = false);
-	ArchiveEntry::SPtr	sharedEntry(string name, bool cut_ext = false);
+	ArchiveEntry*		entry(const string& name, bool cut_ext = false);
+	ArchiveEntry::SPtr	sharedEntry(const string& name, bool cut_ext = false);
 	ArchiveEntry::SPtr	sharedEntry(ArchiveEntry* entry);
 	unsigned			numEntries(bool inc_subdirs = false);
 	int					entryIndex(ArchiveEntry* entry, size_t startfrom = 0);

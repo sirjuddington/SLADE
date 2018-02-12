@@ -61,15 +61,6 @@ ArchiveTreeNode::ArchiveTreeNode(ArchiveTreeNode* parent, Archive* archive) :
 }
 
 // ----------------------------------------------------------------------------
-// ArchiveTreeNode::~ArchiveTreeNode
-//
-// ArchiveTreeNode class destructor
-// ----------------------------------------------------------------------------
-ArchiveTreeNode::~ArchiveTreeNode()
-{
-}
-
-// ----------------------------------------------------------------------------
 // ArchiveTreeNode::addChild
 //
 // Override of STreeNode::addChild to also set the child node's directory entry
@@ -125,10 +116,10 @@ int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 		return -1;
 
 	// Search for it
-	size_t size = entries_.size();
+	const size_t size = entries_.size();
 	if (entry->index_guess < startfrom || entry->index_guess >= size)
 	{
-		for (unsigned a = startfrom; a < size; a++)
+		for (auto a = startfrom; a < size; a++)
 		{
 			if (entries_[a].get() == entry)
 			{
@@ -136,8 +127,10 @@ int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 				return (int)a;
 			}
 		}
-	} else {
-		for (unsigned a = entry->index_guess; a < size; a++)
+	}
+	else
+	{
+		for (auto a = entry->index_guess; a < size; a++)
 		{
 			if (entries_[a].get() == entry)
 			{
@@ -145,7 +138,7 @@ int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 				return (int)a;
 			}
 		}
-		for (unsigned a = startfrom; a < entry->index_guess; a++)
+		for (auto a = startfrom; a < entry->index_guess; a++)
 		{
 			if (entries_[a].get() == entry)
 			{
@@ -159,19 +152,30 @@ int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 	return -1;
 }
 
+// ----------------------------------------------------------------------------
+// ArchiveTreeNode::allEntries
+//
+// Returns a flat list of all entries in this directory, including entries in
+// subdirectories (recursively)
+// ----------------------------------------------------------------------------
 vector<ArchiveEntry::SPtr> ArchiveTreeNode::allEntries()
 {
 	vector<ArchiveEntry::SPtr> entries;
-	std::function<void(vector<ArchiveEntry::SPtr>&, ArchiveTreeNode*)> f =
+
+	// Recursive lambda function to build entry list
+	std::function<void(vector<ArchiveEntry::SPtr>&, ArchiveTreeNode*)> build_list =
 	[&](vector<ArchiveEntry::SPtr>& list, ArchiveTreeNode* dir)
 	{
-		for (unsigned a = 0; a < dir->nChildren(); a++)
-			f(list, (ArchiveTreeNode*)dir->getChild(a));
+		const auto n_subdirs = dir->nChildren();
+		for (unsigned a = 0; a < n_subdirs; a++)
+			build_list(list, (ArchiveTreeNode*)dir->getChild(a));
 
 		for (auto& entry : dir->entries_)
 			list.push_back(entry);
 	};
-	f(entries, this);
+
+	build_list(entries, this);
+
 	return entries;
 }
 
@@ -211,10 +215,10 @@ ArchiveEntry::SPtr ArchiveTreeNode::sharedEntryAt(unsigned index)
 // Returns the entry matching [name] in this directory, or null if no entries
 // match
 // ----------------------------------------------------------------------------
-ArchiveEntry* ArchiveTreeNode::entry(string name, bool cut_ext)
+ArchiveEntry* ArchiveTreeNode::entry(const string& name, bool cut_ext)
 {
 	// Check name was given
-	if (name == "")
+	if (name.empty())
 		return nullptr;
 
 	// Go through entries
@@ -235,10 +239,10 @@ ArchiveEntry* ArchiveTreeNode::entry(string name, bool cut_ext)
 // Returns a shared pointer to the entry matching [name] in this directory, or
 // null if no entries match
 // ----------------------------------------------------------------------------
-ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(string name, bool cut_ext)
+ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(const string& name, bool cut_ext)
 {
 	// Check name was given
-	if (name == "")
+	if (name.empty())
 		return nullptr;
 
 	// Go through entries
@@ -282,8 +286,8 @@ unsigned ArchiveTreeNode::numEntries(bool inc_subdirs)
 	else
 	{
 		unsigned count = entries_.size();
-		for (unsigned a = 0; a < children.size(); a++)
-			count += ((ArchiveTreeNode*)children[a])->numEntries(true);
+		for (auto& subdir : children)
+			count += ((ArchiveTreeNode*)subdir)->numEntries(true);
 
 		return count;
 	}
@@ -318,7 +322,7 @@ bool ArchiveTreeNode::addEntry(ArchiveEntry* entry, unsigned index)
 		// 'Invalid' index, add to end of list
 
 		// Link entry
-		if (entries_.size() > 0)
+		if (!entries_.empty())
 		{
 			entries_.back()->next = entry;
 			entry->prev = entries_.back().get();
@@ -371,7 +375,7 @@ bool ArchiveTreeNode::addEntry(ArchiveEntry::SPtr& entry, unsigned index)
 		// 'Invalid' index, add to end of list
 
 		// Link entry
-		if (entries_.size() > 0)
+		if (!entries_.empty())
 		{
 			entries_.back()->next = entry.get();
 			entry->prev = entries_.back().get();
@@ -450,8 +454,6 @@ bool ArchiveTreeNode::swapEntries(unsigned index1, unsigned index2)
 	ArchiveEntry* entry2 = entries_[index2].get();
 
 	// Swap entries
-	//entries[index1] = entry2;
-	//entries[index2] = entry1;
 	entries_[index1].swap(entries_[index2]);
 
 	// Update links
@@ -474,8 +476,8 @@ void ArchiveTreeNode::clear()
 	entries_.clear();
 
 	// Clear subdirs
-	for (unsigned a = 0; a < children.size(); a++)
-		delete children[a];
+	for (auto& subdir : children)
+		delete subdir;
 	children.clear();
 }
 
@@ -491,12 +493,12 @@ ArchiveTreeNode* ArchiveTreeNode::clone()
 	copy->setName(dir_entry_->getName());
 
 	// Copy entries
-	for (unsigned a = 0; a < entries_.size(); a++)
-		copy->addEntry(new ArchiveEntry(*(entries_[a])));
+	for (auto& entry : entries_)
+		copy->addEntry(new ArchiveEntry(*entry));
 
 	// Copy subdirectories
-	for (unsigned a = 0; a < children.size(); a++)
-		copy->addChild(((ArchiveTreeNode*)children[a])->clone());
+	for (auto& subdir : children)
+		copy->addChild(((ArchiveTreeNode*)subdir)->clone());
 
 	return copy;
 }
@@ -517,13 +519,11 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
 	for (unsigned a = 0; a < node->numEntries(); a++)
 	{
 		if (node->entryAt(a))
-		{
-			string name = Misc::lumpNameToFileName(node->entryAt(a)->getName());
-			node->entryAt(a)->setName(name);
-		}
+			node->entryAt(a)->setName(Misc::lumpNameToFileName(node->entryAt(a)->getName()));
+
 		ArchiveEntry* nentry = new ArchiveEntry(*(node->entryAt(a)));
 		addEntry(nentry, position);
-		nentry->setState(state);
+		nentry->setState(state, true);
 
 		if (position < entries_.size())
 			position++;
@@ -534,7 +534,7 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
 	{
 		ArchiveTreeNode* child = (ArchiveTreeNode*)STreeNode::addChild(node->getChild(a)->getName());
 		child->merge((ArchiveTreeNode*)node->getChild(a));
-		child->dirEntry()->setState(state);
+		child->dirEntry()->setState(state, true);
 	}
 
 	return true;
@@ -552,32 +552,37 @@ bool ArchiveTreeNode::exportTo(string path)
 		wxMkdir(path);
 
 	// Export entries as files
-	for (unsigned a = 0; a < entries_.size(); a++)
+	for (auto& entry : entries_)
 	{
 		// Setup entry filename
-		wxFileName fn(entries_[a]->getName());
+		wxFileName fn(entry->getName());
 		fn.SetPath(path);
 
 		// Add file extension if it doesn't exist
 		if (!fn.HasExt())
-			fn.SetExt(entries_[a]->getType()->extension());
+			fn.SetExt(entry->getType()->extension());
 
 		// Do export
-		entries_[a]->exportFile(fn.GetFullPath());
+		entry->exportFile(fn.GetFullPath());
 	}
 
 	// Export subdirectories
-	for (unsigned a = 0; a < children.size(); a++)
-		((ArchiveTreeNode*)children[a])->exportTo(path + "/" + children[a]->getName());
+	for (auto& subdir : children)
+		((ArchiveTreeNode*)subdir)->exportTo(path + "/" + subdir->getName());
 
 	return true;
 }
 
+// ----------------------------------------------------------------------------
+// ArchiveTreeNode::ensureUniqueName
+//
+// Ensures [entry] has an unique name within this directory
+// ----------------------------------------------------------------------------
 void ArchiveTreeNode::ensureUniqueName(ArchiveEntry* entry)
 {
 	unsigned index = 0;
 	unsigned number = 0;
-	unsigned n_entries = entries_.size();
+	const auto n_entries = entries_.size();
 	wxFileName fn(entry->getName());
 	string name = fn.GetFullName();
 	while (index < n_entries)
