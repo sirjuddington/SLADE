@@ -826,7 +826,7 @@ void Renderer::drawObjectEdit()
 	// Bounding box
 	OpenGL::setColour(COL_WHITE);
 	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
-	auto bbox = group.getBBox();
+	auto bbox = group.bbox();
 	bbox.min.x -= 4 / view_.scale(true);
 	bbox.min.y -= 4 / view_.scale(true);
 	bbox.max.x += 4 / view_.scale(true);
@@ -838,10 +838,10 @@ void Renderer::drawObjectEdit()
 
 		// Bbox
 		fpoint2_t mid(bbox.min.x + bbox.width() * 0.5, bbox.min.y + bbox.height() * 0.5);
-		auto bl = MathStuff::rotatePoint(mid, bbox.min, group.getRotation());
-		auto tl = MathStuff::rotatePoint(mid, fpoint2_t(bbox.min.x, bbox.max.y), group.getRotation());
-		auto tr = MathStuff::rotatePoint(mid, bbox.max, group.getRotation());
-		auto br = MathStuff::rotatePoint(mid, fpoint2_t(bbox.max.x, bbox.min.y), group.getRotation());
+		auto bl = MathStuff::rotatePoint(mid, bbox.min, group.rotation());
+		auto tl = MathStuff::rotatePoint(mid, fpoint2_t(bbox.min.x, bbox.max.y), group.rotation());
+		auto tr = MathStuff::rotatePoint(mid, bbox.max, group.rotation());
+		auto br = MathStuff::rotatePoint(mid, fpoint2_t(bbox.max.x, bbox.min.y), group.rotation());
 		glLineWidth(2.0f);
 		Drawing::drawLine(tl, bl);
 		Drawing::drawLine(bl, br);

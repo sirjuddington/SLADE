@@ -2643,7 +2643,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 	// Simple test
 	vector<fpoint2_t> vertex_points;
 	group->getVerticesToDraw(vertex_points);
-	vector<ObjectEditGroup::line_t> lines;
+	vector<ObjectEditGroup::Line> lines;
 	group->getLinesToDraw(lines);
 
 	// Set 'drawing' colour
@@ -2699,7 +2699,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 	// --- Things ---
 
 	// Get things to draw
-	vector<ObjectEditGroup::thing_t> things;
+	vector<ObjectEditGroup::Thing> things;
 	group->getThingsToDraw(things);
 
 	if (!things.empty())
