@@ -38,7 +38,11 @@ MaxEmptyLinesToKeep: 10
 NamespaceIndentation: Inner
 PointerAlignment: Left
 ReflowComments: true
-SortIncludes: false
+SortIncludes: true
+IncludeCategories:
+  - Regex: 'Main.h'
+    Priority: -1
+IncludeBlocks: Preserve
 SpaceAfterCStyleCast: false
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true

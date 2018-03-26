@@ -110,6 +110,11 @@ public:
 	vector<Token>	getTokensUntilNextLine(bool from_start = false);
 	string			getLine(bool from_start = false);
 
+	// Operators
+	void operator++() { adv(); }
+	void operator++(int) { adv(); }
+	void operator+=(const int inc) { adv(inc); }
+
 	// Token Checking
 	bool	check(const char* check) const { return token_current_ == check; }
 	bool	check(const string& check) const { return token_current_ == check; }
