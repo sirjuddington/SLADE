@@ -596,7 +596,7 @@ bool MainApp::initDirectories()
 #if defined(__WXGTK__) && defined(INSTALL_PREFIX)
 	wxStandardPaths::Get().SetInstallPrefix(INSTALL_PREFIX);
 #endif//defined(__UNIX__) && defined(INSTALL_PREFIX)
-	
+
 	// Setup app dir
 	dir_app = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
 
@@ -809,8 +809,8 @@ void MainApp::initActions()
 	new SAction("txed_new_file", "New Texture from File", "tex_newfile", "Create a new texture from an image file", "kb:txed_tex_new_file");
 	new SAction("txed_rename", "Rename Texture", "tex_rename", "Rename the selected texture(s)");
 	new SAction("txed_rename_each", "Rename Each", "tex_renameeach", "Rename separately all the selected textures");
-	new SAction("txed_export", "Export Texture", "tex_export", "Create standalone images from the selected texture(s)");
-	new SAction("txed_extract", "Extract Texture", "tex_extract", "Export the selected texture(s) as PNG files");
+	new SAction("txed_export", "Patch", "tex_export", "Create standalone images from the selected texture(s)");
+	new SAction("txed_extract", "PNG File", "tex_extract", "Export the selected texture(s) as PNG files");
 	new SAction("txed_offsets", "Modify Offsets", "tex_offset", "Mass modify offsets in the selected texture(s)");
 	new SAction("txed_up", "Move Up", "up", "Move the selected texture(s) up in the list", "kb:txed_tex_up");
 	new SAction("txed_down", "Move Down", "down", "Move the selected texture(s) down in the list", "kb:txed_tex_down");
@@ -1562,7 +1562,7 @@ void MainApp::onVersionCheckCompleted(wxThreadEvent& e)
 	}
 
 	wxArrayString info = wxSplit(e.GetString(), '\n');
-	
+
 	// Check for correct info
 	if (info.size() != 5)
 	{
