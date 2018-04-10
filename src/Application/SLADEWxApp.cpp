@@ -59,9 +59,9 @@ namespace Global
 {
 	string error = "";
 
-	int beta_num = 4;
+	int beta_num = 5;
 	int version_num = 3120;
-	string version = "3.1.2 Beta 4";
+	string version = "3.1.2 Beta 5";
 #ifdef GIT_DESCRIPTION
 	string sc_rev = GIT_DESCRIPTION;
 #else
@@ -227,7 +227,10 @@ public:
 #endif
 
 		// SLADE info
-		trace = S_FMT("Version: %s\n", Global::version);
+		if (Global::sc_rev.empty())
+			trace = S_FMT("Version: %s\n", Global::version);
+		else
+			trace = S_FMT("Version: %s (%s)\n", Global::version, Global::sc_rev);
 		if (current_action.IsEmpty())
 			trace += "No current action\n";
 		else

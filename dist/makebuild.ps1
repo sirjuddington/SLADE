@@ -28,6 +28,18 @@ $buildbinaries = Read-Host
 # Build SLADE
 if ($buildbinaries.ToLower() -eq "y")
 {
+	Write-Host "`nUse git revision? (y/n) " -foregroundcolor cyan -nonewline
+	$userev = Read-Host
+
+	$rev_full = iex "git.exe rev-parse HEAD"
+	$rev_short = iex "git.exe rev-parse --short HEAD"
+	Write-Host "`nGit Rev: $rev_short"
+
+	if ($userev.ToLower() -eq "y")
+	{
+		$env:CL = "/DGIT_DESCRIPTION=`"\`"$rev_short\`"`""
+		$version = "${version}_$rev_short"
+	}
 	$devenvpath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\Common7\IDE\devenv.com"
 	& $devenvpath (resolve-path ..\build\msvc\SLADE.sln).Path /rebuild Release /project SLADE.vcxproj
 	& $devenvpath (resolve-path ..\build\msvc\SLADE.sln).Path /rebuild "Release - WinXP" /project SLADE.vcxproj
