@@ -1252,7 +1252,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	entry->exportFile(srcfile);
 
 	// Execute acc
-	string command = path_acc + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
+	string command = "\"" + path_acc + "\"" + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
 	wxArrayString output;
 	wxArrayString errout;
 	wxTheApp->SetTopWindow(parent);
