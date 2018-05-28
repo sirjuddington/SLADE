@@ -314,6 +314,7 @@ string KeyBind::keyName(int key)
 #else
 	case WXK_CONTROL:			return "control";
 #endif
+	case '\\':					return "backslash";
 	default: break;
 	};
 
