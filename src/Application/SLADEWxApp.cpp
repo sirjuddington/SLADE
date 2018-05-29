@@ -584,6 +584,8 @@ bool SLADEWxApp::OnInit()
 	// Calculate scaling factor (from system ppi)
 	wxMemoryDC dc;
 	double ui_scale = (double)(dc.GetPPI().x) / 96.0;
+	if (ui_scale < 1.)
+		ui_scale = 1.;
 #endif // __APPLE__
 
 	// Get Windows version
