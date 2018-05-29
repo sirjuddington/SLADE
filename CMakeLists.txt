@@ -27,7 +27,7 @@ set(SLADE_OUTPUT_DIR ${CMAKE_BINARY_DIR} CACHE PATH "Directory where slade will 
 
 OPTION(NO_WEBVIEW "Disable wxWebview usage (for start page and documentation)" OFF)
 OPTION(USE_SFML_RENDERWINDOW "Use SFML RenderWindow for OpenGL displays" OFF)
-OPTION(WX_GTK3 "Use GTK3 (if wx is built with it)" OFF)
+OPTION(WX_GTK3 "Use GTK3 (if wx is built with it)" ON)
 
 # c++14 is required to compile
 if(CMAKE_VERSION VERSION_LESS 3.1)
