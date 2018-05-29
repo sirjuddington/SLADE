@@ -8,6 +8,46 @@ if(NOT WX_VERSION)
 endif(NOT WX_VERSION)
 
 # wxWidgets libs
+if (WITH_WXPATH)
+    set(ENV{PATH} ${WITH_WXPATH}:$ENV{PATH})
+endif()
+unset(WITH_WXPATH CACHE)
+
+set( CL_WX_CONFIG wx-config )
+
+if (UNIX OR MINGW)
+    execute_process(COMMAND which ${CL_WX_CONFIG} OUTPUT_VARIABLE WX_TOOL OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if (NOT WX_TOOL)
+        message(FATAL_ERROR
+"\nNo functional wx_config script was found in your PATH.\nIs the wxWidgets development package installed?\nIf you built wxWidgets yourself, you can specify the path to your built wx-config executable via WITH_WXPATH\neg. -DWITH_WXPATH=\"/path/to/wx-config/\""
+             )
+    else()
+        execute_process(COMMAND sh ${WX_TOOL} --version OUTPUT_VARIABLE WX_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+        string(SUBSTRING "${WX_VERSION}" "0" "1" wxMAJOR_VERSION)
+        string(SUBSTRING "${WX_VERSION}" "2" "1" wxMINOR_VERSION)
+        string(SUBSTRING "${WX_VERSION}" "4" "1" wxRELEASE_NUMBER)
+        if ( wxMAJOR_VERSION LESS 3 )
+        message(FATAL_ERROR
+"\nBuilding SLADE requires at least wxWidgets-3.0.0"
+             )
+        endif()
+        if (MINGW)
+          execute_process(COMMAND sh ${WX_TOOL} --debug=no --rescomp OUTPUT_VARIABLE WX_RC_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+          string(REGEX REPLACE "windres" "" WX_RC_FLAGS ${WX_RC_FLAGS})
+          set (CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} ${WX_RC_FLAGS}")
+          add_definitions(-D__WXMSW__)
+        endif (MINGW)
+    endif()
+    message("-- wx-config used is: ${WX_TOOL}")
+    message("-- wxWidgets version is: ${WX_VERSION}")
+    if (NOT APPLE AND NOT MINGW)
+        # Is the wx we are using built on gtk2 or 3?
+        execute_process(COMMAND ${WX_TOOL} --selected_config OUTPUT_VARIABLE WX_GTK_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+        string(SUBSTRING "${WX_GTK_VERSION}" "3" "1" GTK_VERSION)
+        message("-- gtk version is: ${GTK_VERSION}")
+    endif()
+endif (UNIX OR MINGW)
+
 SET(WX_LIBS std aui gl stc richtext propgrid media)
 if (NO_WEBVIEW)
 	SET(WX_LIBS ${WX_LIBS} html)
