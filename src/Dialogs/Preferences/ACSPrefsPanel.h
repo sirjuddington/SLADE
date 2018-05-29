@@ -1,31 +1,31 @@
-
-#ifndef __ACS_PREFS_PANEL_H__
-#define __ACS_PREFS_PANEL_H__
+#pragma once
 
 #include "PrefsPanelBase.h"
 
 class wxListBox;
+class FileLocationPanel;
+
 class ACSPrefsPanel : public PrefsPanelBase
 {
-private:
-	wxTextCtrl*	text_accpath;
-	wxButton*	btn_browse_accpath;
-	wxButton*	btn_incpath_add;
-	wxButton*	btn_incpath_remove;
-	wxListBox*	list_inc_paths;
-	wxCheckBox*	cb_always_show_output;
-
 public:
 	ACSPrefsPanel(wxWindow* parent);
 	~ACSPrefsPanel();
 
-	void	init();
-	void	applyPreferences();
+	void	init() override;
+	void	applyPreferences() override;
+
+	string pageTitle() override { return "ACS Compiler Settings"; }
+
+private:
+	FileLocationPanel*	flp_acc_path_;
+	wxButton*			btn_incpath_add_;
+	wxButton*			btn_incpath_remove_;
+	wxListBox*			list_inc_paths_;
+	wxCheckBox*			cb_always_show_output_;
+
+	void	setupLayout();
 
 	// Events
-	void	onBtnBrowseACCPath(wxCommandEvent& e);
 	void	onBtnAddIncPath(wxCommandEvent& e);
 	void	onBtnRemoveIncPath(wxCommandEvent& e);
 };
-
-#endif//__ACS_PREFS_PANEL_H__

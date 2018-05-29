@@ -50,7 +50,7 @@ MemChunk::MemChunk(uint32_t size)
 	if (size)
 		allocData(size);
 	else
-		data = NULL;
+		data = nullptr;
 }
 
 /* MemChunk::MemChunk
@@ -60,7 +60,7 @@ MemChunk::MemChunk(const uint8_t* data, uint32_t size)
 {
 	// Init variables
 	this->cur_ptr = 0;
-	this->data = NULL;
+	this->data = nullptr;
 	this->size = size;
 
 	// Load given data
@@ -97,7 +97,7 @@ bool MemChunk::clear()
 	if (hasData())
 	{
 		delete[] data;
-		data = NULL;
+		data = nullptr;
 		size = 0;
 		cur_ptr = 0;
 		return true;
@@ -159,7 +159,7 @@ bool MemChunk::importFile(string filename, uint32_t offset, uint32_t len)
 	// Return false if file open failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("MemChunk::importFile: Unable to open file %s", filename);
+		LOG_MESSAGE(1, "MemChunk::importFile: Unable to open file %s", filename);
 		Global::error = S_FMT("Unable to open file %s", filename);
 		return false;
 	}
@@ -186,7 +186,7 @@ bool MemChunk::importFile(string filename, uint32_t offset, uint32_t len)
 			size_t count = file.Read(data, size);
 			if (count != size)
 			{
-				wxLogMessage("MemChunk::importFile: Unable to read full file %s, read %u out of %u",
+				LOG_MESSAGE(1, "MemChunk::importFile: Unable to read full file %s, read %u out of %u",
 					filename, count, size);
 				Global::error = S_FMT("Unable to read file %s", filename);
 				clear();
@@ -290,7 +290,7 @@ bool MemChunk::exportFile(string filename, uint32_t start, uint32_t size)
 	wxFile file(filename, wxFile::write);
 	if (!file.IsOpened())
 	{
-		wxLogMessage("Unable to write to file %s", filename);
+		LOG_MESSAGE(1, "Unable to write to file %s", filename);
 		Global::error = "Unable to open file for writing";
 		return false;
 	}
@@ -483,7 +483,7 @@ uint32_t MemChunk::crc()
  *******************************************************************/
 uint8_t* MemChunk::allocData(uint32_t size, bool set_data)
 {
-	uint8_t* ndata = NULL;
+	uint8_t* ndata = nullptr;
 	try
 	{
 		ndata = new uint8_t[size];
@@ -498,7 +498,7 @@ uint8_t* MemChunk::allocData(uint32_t size, bool set_data)
 			this->size = 0;
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	if (set_data)

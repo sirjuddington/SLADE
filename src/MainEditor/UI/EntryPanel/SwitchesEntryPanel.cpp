@@ -31,8 +31,6 @@
 #include "Main.h"
 #include "SwitchesEntryPanel.h"
 #include "Archive/Archive.h"
-#include "Archive/ArchiveManager.h"
-#include "General/Misc.h"
 
 
 /*******************************************************************
@@ -45,17 +43,17 @@
 SwitchesEntryPanel::SwitchesEntryPanel(wxWindow* parent)
 	: EntryPanel(parent, "switches")
 {
-	se_current = NULL;
+	se_current = nullptr;
 	se_modified = false;
 
 	// Setup toolbar
-	SToolBarGroup* group = new SToolBarGroup(toolbar, "Switches");
+	SToolBarGroup* group = new SToolBarGroup(toolbar_, "Switches");
 	group->addActionButton("new_switch", "New Switch", "switch_new", "Create a new switch definition", true);
-	toolbar->addGroup(group);
+	toolbar_->addGroup(group);
 
 	// Setup panel sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-	sizer_main->Add(sizer, 1, wxEXPAND, 0);
+	sizer_main_->Add(sizer, 1, wxEXPAND, 0);
 
 	// Add entry list
 	wxStaticBox* frame = new wxStaticBox(this, -1, "Switches");
@@ -165,7 +163,7 @@ bool SwitchesEntryPanel::handleAction(string id)
 bool SwitchesEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Do nothing if entry is already open
-	if (this->entry == entry && !isModified())
+	if (this->entry_ == entry && !isModified())
 		return true;
 
 	// Read SWITCHES entry into list
@@ -173,7 +171,7 @@ bool SwitchesEntryPanel::loadEntry(ArchiveEntry* entry)
 	switches.readSWITCHESData(entry);
 
 	// Update variables
-	this->entry = entry;
+	this->entry_ = entry;
 	setModified(false);
 
 	// Refresh controls
@@ -209,7 +207,7 @@ bool SwitchesEntryPanel::saveEntry()
 	}
 	memset(&swch, 0, 20);
 	mc.write(&swch, 20);
-	bool success = entry->importMemChunk(mc);
+	bool success = entry_->importMemChunk(mc);
 	if (success)
 	{
 		for (uint32_t a = 0; a < switches.nEntries(); a++)
@@ -223,8 +221,8 @@ bool SwitchesEntryPanel::saveEntry()
  *******************************************************************/
 bool SwitchesEntryPanel::revertEntry()
 {
-	ArchiveEntry* reload = entry;
-	entry = NULL;
+	ArchiveEntry* reload = entry_;
+	entry_ = nullptr;
 	return loadEntry(reload);
 }
 
@@ -233,7 +231,7 @@ bool SwitchesEntryPanel::revertEntry()
  *******************************************************************/
 void SwitchesEntryPanel::insertListItem(SwitchesEntry* ent, uint32_t pos)
 {
-	if (ent == NULL) return;
+	if (ent == nullptr) return;
 	string cols[] = { ent->getOff(), ent->getOn(),
 	                  ent->getType() == SWCH_COMM ? "Commercial"
 	                  : ent->getType() == SWCH_FULL ? "Registered"
@@ -249,7 +247,7 @@ void SwitchesEntryPanel::insertListItem(SwitchesEntry* ent, uint32_t pos)
  *******************************************************************/
 void SwitchesEntryPanel::updateListItem(SwitchesEntry* ent, uint32_t pos)
 {
-	if (ent == NULL) return;
+	if (ent == nullptr) return;
 	string cols[] = { ent->getOff(), ent->getOn(),
 	                  ent->getType() == SWCH_COMM ? "Commercial"
 	                  : ent->getType() == SWCH_FULL ? "Registered"
@@ -293,7 +291,7 @@ void SwitchesEntryPanel::populateEntryList()
  *******************************************************************/
 void SwitchesEntryPanel::applyChanges()
 {
-	if (se_current == NULL)
+	if (se_current == nullptr)
 		return;
 
 	list_entries->enableSizeUpdate(false);
@@ -330,7 +328,7 @@ void SwitchesEntryPanel::applyChanges()
  *******************************************************************/
 void SwitchesEntryPanel::updateControls()
 {
-	if (se_current == NULL)
+	if (se_current == nullptr)
 	{
 		text_offname->Clear();
 		text_onname->Clear();
@@ -504,7 +502,7 @@ void SwitchesEntryPanel::onListSelect(wxListEvent& e)
 	// Do nothing if multiple animations are selected
 	if (list_entries->GetSelectedItemCount() > 1)
 	{
-		se_current = NULL;
+		se_current = nullptr;
 	}
 	else
 	{
@@ -529,11 +527,11 @@ void SwitchesEntryPanel::onListRightClick(wxListEvent& e)
 {
 	// Create context menu
 	wxMenu context;
-	theApp->getAction("swch_delete")->addToMenu(&context, true);
-	theApp->getAction("swch_new")->addToMenu(&context, true);
+	SAction::fromId("swch_delete")->addToMenu(&context, true);
+	SAction::fromId("swch_new")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("swch_up")->addToMenu(&context, true);
-	theApp->getAction("swch_down")->addToMenu(&context, true);
+	SAction::fromId("swch_up")->addToMenu(&context, true);
+	SAction::fromId("swch_down")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);

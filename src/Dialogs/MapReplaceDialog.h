@@ -3,6 +3,7 @@
 #define __MAP_REPLACE_DIALOG_H__
 
 #include "common.h"
+#include "UI/Controls/STabCtrl.h"
 #include "UI/WxBasicControls.h"
 
 
@@ -58,13 +59,12 @@ public:
 	void doReplace(Archive* archive);
 };
 
-class STabCtrl;
 class MapReplaceDialog : public wxDialog
 {
 private:
 	Archive*	archive;
 
-	STabCtrl*				stc_tabs;
+	TabControl*				stc_tabs;
 	ThingTypeReplacePanel*	panel_thing;
 	SpecialReplacePanel*	panel_special;
 	TextureReplacePanel*	panel_texture;
@@ -72,7 +72,7 @@ private:
 	wxButton*				btn_done;
 
 public:
-	MapReplaceDialog(wxWindow* parent = NULL, Archive* archive = NULL);
+	MapReplaceDialog(wxWindow* parent = nullptr, Archive* archive = nullptr);
 	~MapReplaceDialog();
 
 	void	onBtnDone(wxCommandEvent& e);

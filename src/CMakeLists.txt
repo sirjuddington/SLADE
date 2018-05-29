@@ -20,10 +20,10 @@ include(${wxWidgets_USE_FILE})
 
 # SFML
 if (USE_SFML_RENDERWINDOW)
-set(SFML_FIND_COMPONENTS system audio window graphics)
+set(SFML_FIND_COMPONENTS system audio window graphics network)
 ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
 else (USE_SFML_RENDERWINDOW)
-set(SFML_FIND_COMPONENTS system audio window)
+set(SFML_FIND_COMPONENTS system audio window network)
 endif(USE_SFML_RENDERWINDOW)
 
 # Fluidsynth
@@ -91,6 +91,7 @@ file(GLOB_RECURSE SLADE_SOURCES
 	Archive/*.cpp
 	Audio/*.cpp
 	Dialogs/*.cpp
+	Game/*.cpp
 	General/*.cpp
 	Graphics/*.cpp
 	MainEditor/*.cpp
@@ -98,6 +99,8 @@ file(GLOB_RECURSE SLADE_SOURCES
 	OpenGL/*.cpp
 	UI/*.cpp
 	Utility/*.cpp
+	Scripting/*.cpp
+	TextEditor/*.cpp
 	)
 set(SLADE_HEADERS
 )
@@ -117,14 +120,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 
 # External libraries are compiled separately to enable unity builds
 add_subdirectory(External)
-
-# c++14 is required to compile
-if(CMAKE_VERSION VERSION_LESS 3.1)
-	add_compile_options(-std=c++14)
-else()
-	set(CMAKE_CXX_STANDARD 14)
-	set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-endif()
 
 add_executable(slade WIN32 MACOSX_BUNDLE
 	${SLADE_SOURCES}
@@ -157,9 +152,6 @@ endif()
 
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
 
-set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER YES)
-set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Application/Main.h)
-
 # TODO: Installation targets for APPLE
 if(APPLE)
 	set_target_properties(slade PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${OSX_PLIST})
@@ -176,8 +168,32 @@ else(APPLE)
 		install(FILES "${SLADE_OUTPUT_DIR}/slade.pk3"
 			DESTINATION share/slade3
 			)
+		
+		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/logo_icon.png"
+			DESTINATION share/icons/
+			RENAME net.mancubus.SLADE.png
+			)
+
+		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.desktop"
+			DESTINATION share/applications/
+			)
+
+		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.appdata.xml"
+			DESTINATION share/appdata/
+			)
 	endif(UNIX)
 endif(APPLE)
+
+# uninstall target
+if(NOT TARGET uninstall)
+    configure_file(
+        "${PROJECT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+        IMMEDIATE @ONLY)
+
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+endif()
 
 if (NOT NO_COTIRE)
 	set_target_properties(slade PROPERTIES

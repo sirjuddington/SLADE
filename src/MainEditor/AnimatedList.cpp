@@ -86,7 +86,7 @@ AnimatedEntry* AnimatedList::getEntry(size_t index)
 {
 	// Check index range
 	if (index > nEntries())
-		return NULL;
+		return nullptr;
 
 	return entries[index];
 }
@@ -105,7 +105,7 @@ AnimatedEntry* AnimatedList::getEntry(string name)
 	}
 
 	// No match found
-	return NULL;
+	return nullptr;
 }
 
 /* AnimatedList::clear
@@ -140,7 +140,7 @@ bool AnimatedList::readANIMATEDData(ArchiveEntry* animated)
 		// reads an entry
 		if (cursor + sizeof(animated_t) > eodata)
 		{
-			wxLogMessage("Error: ANIMATED entry is corrupt");
+			LOG_MESSAGE(1, "Error: ANIMATED entry is corrupt");
 			delete[] data;
 			return false;
 		}
@@ -160,7 +160,7 @@ bool AnimatedList::readANIMATEDData(ArchiveEntry* animated)
  *******************************************************************/
 bool AnimatedList::addEntry(AnimatedEntry* entry, size_t pos)
 {
-	if (entry == NULL)
+	if (entry == nullptr)
 		return false;
 	if (pos >= nEntries())
 	{
@@ -231,7 +231,7 @@ bool AnimatedList::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, bool
 		// reads an entry
 		if (cursor + sizeof(animated_t) > eodata)
 		{
-			wxLogMessage("Error: ANIMATED entry is corrupt");
+			LOG_MESSAGE(1, "Error: ANIMATED entry is corrupt");
 			return false;
 		}
 		animation = (animated_t*) cursor;
@@ -275,8 +275,8 @@ bool AnimatedList::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, bool
  *******************************************************************/
 bool AnimatedList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 {
-	Tokenizer tz(HCOMMENTS);
-	tz.openMem(&(entry->getMCData()), entry->getName());
+	Tokenizer tz(Tokenizer::Hash);
+	tz.openMem(entry->getMCData(), entry->getName());
 
 	string token;
 	char buffer[23];
@@ -293,13 +293,13 @@ bool AnimatedList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 				string first= tz.getToken();
 				if (last.length() > 8)
 				{
-					wxLogMessage("Error: string %s is too long for an animated %s name!",
+					LOG_MESSAGE(1, "Error: string %s is too long for an animated %s name!",
 									last, (texture ? "texture" : "flat"));
 					return false;
 				}
 				if (first.length() > 8)
 				{
-					wxLogMessage("Error: string %s is too long for an animated %s name!",
+					LOG_MESSAGE(1, "Error: string %s is too long for an animated %s name!",
 									first, (texture ? "texture" : "flat"));
 					return false;
 				}

@@ -32,6 +32,7 @@
 #include "UI/Lists/ListView.h"
 #include "Utility/Tokenizer.h"
 
+
 /*******************************************************************
  * SWITCHESENTRY CLASS FUNCTIONS
  *******************************************************************/
@@ -82,7 +83,7 @@ SwitchesEntry* SwitchesList::getEntry(size_t index)
 {
 	// Check index range
 	if (index >= nEntries())
-		return NULL;
+		return nullptr;
 
 	return entries[index];
 }
@@ -101,7 +102,7 @@ SwitchesEntry* SwitchesList::getEntry(string name)
 	}
 
 	// No match found
-	return NULL;
+	return nullptr;
 }
 
 /* SwitchesList::clear
@@ -136,7 +137,7 @@ bool SwitchesList::readSWITCHESData(ArchiveEntry* switches)
 		// reads an entry
 		if (cursor + sizeof(switches_t) > eodata)
 		{
-			wxLogMessage("Error: SWITCHES entry is corrupt");
+			LOG_MESSAGE(1, "Error: SWITCHES entry is corrupt");
 			delete[] data;
 			return false;
 		}
@@ -156,7 +157,7 @@ bool SwitchesList::readSWITCHESData(ArchiveEntry* switches)
  *******************************************************************/
 bool SwitchesList::addEntry(SwitchesEntry* entry, size_t pos)
 {
-	if (entry == NULL)
+	if (entry == nullptr)
 		return false;
 	if (pos >= nEntries())
 	{
@@ -234,7 +235,7 @@ bool SwitchesList::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, bool
 		// reads an entry
 		if (cursor + sizeof(switches_t) > eodata)
 		{
-			wxLogMessage("Error: SWITCHES entry is corrupt");
+			LOG_MESSAGE(1, "Error: SWITCHES entry is corrupt");
 			return false;
 		}
 		switches = (switches_t*) cursor;
@@ -265,8 +266,8 @@ bool SwitchesList::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, bool
  *******************************************************************/
 bool SwitchesList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 {
-	Tokenizer tz(HCOMMENTS);
-	tz.openMem(&(entry->getMCData()), entry->getName());
+	Tokenizer tz(Tokenizer::Hash);
+	tz.openMem(entry->getMCData(), entry->getName());
 
 	string token;
 	char buffer[20];
@@ -282,12 +283,12 @@ bool SwitchesList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 				string on  = tz.getToken();
 				if (off.length() > 8)
 				{
-					wxLogMessage("Error: string %s is too long for a switch name!", off);
+					LOG_MESSAGE(1, "Error: string %s is too long for a switch name!", off);
 					return false;
 				}
 				if (on.length() > 8)
 				{
-					wxLogMessage("Error: string %s is too long for a switch name!", on);
+					LOG_MESSAGE(1, "Error: string %s is too long for a switch name!", on);
 					return false;
 				}
 

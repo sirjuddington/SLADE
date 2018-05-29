@@ -2,6 +2,8 @@
 #ifndef __MC_ANIMATIONS_H__
 #define __MC_ANIMATIONS_H__
 
+#include "MapEditor/Edit/Edit3D.h"
+
 class MCAnimation
 {
 protected:
@@ -154,14 +156,20 @@ class MapRenderer3D;
 class MCAHilightFade3D : public MCAnimation
 {
 private:
-	int				item_index;
-	uint8_t			item_type;
-	float			fade;
-	float			init_fade;
-	MapRenderer3D*	renderer;
+	int						item_index;
+	MapEditor::ItemType	item_type;
+	float					fade;
+	float					init_fade;
+	MapRenderer3D*			renderer;
 
 public:
-	MCAHilightFade3D(long start, int item_index, uint8_t item_type, MapRenderer3D* renderer, float fade_init);
+	MCAHilightFade3D(
+		long start,
+		int item_index,
+		MapEditor::ItemType item_type,
+		MapRenderer3D* renderer,
+		float fade_init
+	);
 	~MCAHilightFade3D();
 
 	bool update(long time);

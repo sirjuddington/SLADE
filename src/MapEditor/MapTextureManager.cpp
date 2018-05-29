@@ -29,15 +29,19 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MapTextureManager.h"
+#include "Archive/ArchiveManager.h"
+#include "Game/Configuration.h"
+#include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
-#include "MainEditor/MainWindow.h"
-#include "Archive/ArchiveManager.h"
-#include "MapEditorWindow.h"
-#include "OpenGL/OpenGL.h"
 #include "Graphics/SImage/SImage.h"
-#include "General/Misc.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
+#include "MapEditContext.h"
+#include "MapEditor.h"
+#include "MapTextureManager.h"
+#include "OpenGL/OpenGL.h"
+#include "UI/Controls/PaletteChooser.h"
 
 
 /*******************************************************************
@@ -58,12 +62,7 @@ MapTextureManager::MapTextureManager(Archive* archive)
 	// Init variables
 	this->archive = archive;
 	editor_images_loaded = false;
-	palette = new Palette8bit();
-
-	// Listen to the various managers
-	listenTo(theResourceManager);
-	listenTo(theArchiveManager);
-	listenTo(thePaletteChooser);
+	palette = new Palette();
 }
 
 /* MapTextureManager::~MapTextureManager
@@ -73,24 +72,36 @@ MapTextureManager::~MapTextureManager()
 {
 }
 
+/* MapTextureManager::init
+ * Initialises the texture manager
+ *******************************************************************/
+void MapTextureManager::init()
+{
+	// Listen to the various managers
+	listenTo(theResourceManager);
+	listenTo(&App::archiveManager());
+	listenTo(theMainWindow->getPaletteChooser());
+	palette = getResourcePalette();
+}
+
 /* MapTextureManager::getResourcePalette
  * Returns the current resource palette (depending on open archives
  * and palette toolbar selection)
  *******************************************************************/
-Palette8bit* MapTextureManager::getResourcePalette()
+Palette* MapTextureManager::getResourcePalette()
 {
-	if (thePaletteChooser->globalSelected())
+	if (theMainWindow->getPaletteChooser()->globalSelected())
 	{
 		ArchiveEntry* entry = theResourceManager->getPaletteEntry("PLAYPAL", archive);
 
 		if (!entry)
-			return thePaletteChooser->getSelectedPalette();
+			return theMainWindow->getPaletteChooser()->getSelectedPalette();
 
 		palette->loadMem(entry->getMCData());
 		return palette;
 	}
 	else
-		return thePaletteChooser->getSelectedPalette();
+		return theMainWindow->getPaletteChooser()->getSelectedPalette();
 }
 
 /* MapTextureManager::getTexture
@@ -124,7 +135,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 		{
 			// Otherwise, reload the texture
 			if (mtex.texture != &(GLTexture::missingTex())) delete mtex.texture;
-			mtex.texture = NULL;
+			mtex.texture = nullptr;
 		}
 	}
 
@@ -134,7 +145,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	// Look for stand-alone textures first
 	ArchiveEntry* etex = theResourceManager->getTextureEntry(name, "hires", archive);
 	int textypefound = TEXTYPE_HIRES;
-	if (etex == NULL)
+	if (etex == nullptr)
 	{
 		etex = theResourceManager->getTextureEntry(name, "textures", archive);
 		textypefound = TEXTYPE_TEXTURE;
@@ -176,7 +187,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	{
 		textypefound = TEXTYPE_WALLTEXTURE;
 		SImage image;
-		if (ctex->toImage(image, archive, palette))
+		if (ctex->toImage(image, archive, palette, true))
 		{
 			mtex.texture = new GLTexture(false);
 			mtex.texture->setFilter(filter);
@@ -233,7 +244,7 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 		{
 			// Otherwise, reload the texture
 			if (mtex.texture != &(GLTexture::missingTex())) delete mtex.texture;
-			mtex.texture = NULL;
+			mtex.texture = nullptr;
 		}
 	}
 
@@ -242,9 +253,9 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 	if (!mtex.texture)
 	{
 		ArchiveEntry* entry = theResourceManager->getTextureEntry(name, "hires", archive);
-		if (entry == NULL)
+		if (entry == nullptr)
 			entry = theResourceManager->getTextureEntry(name, "flats", archive);
-		if (entry == NULL)
+		if (entry == nullptr)
 			entry = theResourceManager->getFlatEntry(name, archive);
 		if (entry)
 		{
@@ -281,7 +292,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 {
 	// Don't bother looking for nameless sprites
 	if (name.IsEmpty())
-		return NULL;
+		return nullptr;
 
 	// Get sprite matching name
 	string hashname = name.Upper();
@@ -312,7 +323,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 		{
 			// Otherwise, reload the texture
 			delete mtex.texture;
-			mtex.texture = NULL;
+			mtex.texture = nullptr;
 		}
 	}
 
@@ -338,16 +349,16 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	else  	// Try composite textures then
 	{
 		CTexture* ctex = theResourceManager->getTexture(name, archive);
-		if (ctex && ctex->toImage(image, archive, this->palette))
+		if (ctex && ctex->toImage(image, archive, this->palette, true))
 			found = true;
 	}
 
 	// We have a valid image either from an entry or a composite texture.
 	if (found)
 	{
-		Palette8bit* pal = this->palette;
+		Palette* pal = this->palette;
 		// Apply translation
-		if (!translation.IsEmpty()) image.applyTranslation(translation, pal);
+		if (!translation.IsEmpty()) image.applyTranslation(translation, pal, true);
 		// Apply palette override
 		if (!palette.IsEmpty())
 		{
@@ -393,7 +404,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /* MapTextureManager::getVerticalOffset
@@ -437,7 +448,7 @@ void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string path)
 	// Go through entries
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		ArchiveEntry* entry = dir->getEntry(a);
+		ArchiveEntry* entry = dir->entryAt(a);
 
 		// Load entry to image
 		if (image.open(entry->getMCData()))
@@ -466,13 +477,13 @@ void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string path)
 GLTexture* MapTextureManager::getEditorImage(string name)
 {
 	if (!OpenGL::isInitialised())
-		return NULL;
+		return nullptr;
 
 	// Load thing image textures if they haven't already
 	if (!editor_images_loaded)
 	{
 		// Load all thing images to textures
-		Archive* slade_pk3 = theArchiveManager->programResourceArchive();
+		Archive* slade_pk3 = App::archiveManager().programResourceArchive();
 		ArchiveTreeNode* dir = slade_pk3->getDir("images");
 		if (dir)
 			importEditorImages(editor_images, dir, "");
@@ -492,11 +503,11 @@ void MapTextureManager::refreshResources()
 	textures.clear();
 	flats.clear();
 	sprites.clear();
-	thePaletteChooser->setGlobalFromArchive(archive);
-	theMapEditor->forceRefresh(true);
+	theMainWindow->getPaletteChooser()->setGlobalFromArchive(archive);
+	MapEditor::forceRefresh(true);
 	palette = getResourcePalette();
 	buildTexInfoList();
-	//wxLogMessage("texture manager cleared");
+	//LOG_MESSAGE(1, "texture manager cleared");
 }
 
 /* MapTextureManager::buildTexInfoList
@@ -513,7 +524,7 @@ void MapTextureManager::buildTexInfoList()
 
 	// Composite textures
 	vector<TextureResource::Texture*> textures;
-	theResourceManager->getAllTextures(textures, theArchiveManager->baseResourceArchive());
+	theResourceManager->getAllTextures(textures, App::archiveManager().baseResourceArchive());
 	for (unsigned a = 0; a < textures.size(); a++)
 	{
 		CTexture * tex = &textures[a]->tex;
@@ -533,10 +544,10 @@ void MapTextureManager::buildTexInfoList()
 	}
 
 	// Texture namespace patches (TX_)
-	if (theGameConfiguration->txTextures())
+	if (Game::configuration().featureSupported(Game::Feature::TxTextures))
 	{
 		vector<ArchiveEntry*> patches;
-		theResourceManager->getAllPatchEntries(patches, NULL);
+		theResourceManager->getAllPatchEntries(patches, nullptr);
 		for (unsigned a = 0; a < patches.size(); a++)
 		{
 			if (patches[a]->isInNamespace("textures") || patches[a]->isInNamespace("hires"))
@@ -557,7 +568,7 @@ void MapTextureManager::buildTexInfoList()
 
 	// Flats
 	vector<ArchiveEntry*> flats;
-	theResourceManager->getAllFlatEntries(flats, NULL);
+	theResourceManager->getAllFlatEntries(flats, nullptr);
 	for (unsigned a = 0; a < flats.size(); a++)
 	{
 		ArchiveEntry* entry = flats[a];
@@ -590,8 +601,8 @@ void MapTextureManager::onAnnouncement(Announcer* announcer, string event_name, 
 	// Only interested in the resource manager,
 	// archive manager and palette chooser.
 	if (announcer != theResourceManager
-	        && announcer != thePaletteChooser
-	        && announcer != theArchiveManager)
+	        && announcer != theMainWindow->getPaletteChooser()
+	        && announcer != &App::archiveManager())
 		return;
 
 	// If the map's archive is being closed,
@@ -601,11 +612,11 @@ void MapTextureManager::onAnnouncement(Announcer* announcer, string event_name, 
 		event_data.seek(0, SEEK_SET);
 		int32_t ac_index;
 		event_data.read(&ac_index, 4);
-		if (theArchiveManager->getArchive(ac_index) == archive)
+		if (App::archiveManager().getArchive(ac_index) == archive)
 		{
-			theMapEditor->Hide();
-			theMapEditor->mapEditor().clearMap();
-			archive = NULL;
+			MapEditor::windowWx()->Hide();
+			MapEditor::editContext().clearMap();
+			archive = nullptr;
 		}
 	}
 

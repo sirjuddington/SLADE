@@ -41,10 +41,8 @@
 /* BZip2Archive::BZip2Archive
  * BZip2Archive class constructor
  *******************************************************************/
-BZip2Archive::BZip2Archive() : TreelessArchive(ARCHIVE_BZ2)
+BZip2Archive::BZip2Archive() : TreelessArchive("bz2")
 {
-	desc.names_extensions = true;
-	desc.supports_dirs = true;
 }
 
 /* BZip2Archive::~BZip2Archive
@@ -52,22 +50,6 @@ BZip2Archive::BZip2Archive() : TreelessArchive(ARCHIVE_BZ2)
  *******************************************************************/
 BZip2Archive::~BZip2Archive()
 {
-}
-
-/* BZip2Archive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string BZip2Archive::getFileExtensionString()
-{
-	return "BZip2 Files (*.bz2)|*.bz2";
-}
-
-/* BZip2Archive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string BZip2Archive::getFormat()
-{
-	return "archive_bz2";
 }
 
 /* BZip2Archive::open
@@ -89,7 +71,7 @@ bool BZip2Archive::open(MemChunk& mc)
 		return false;
 
 	// Build name from filename
-	string name = getFilename(false);
+	string name = filename(false);
 	wxFileName fn(name);
 	if (!fn.GetExt().CmpNoCase("tbz") || !fn.GetExt().CmpNoCase("tb2") || !fn.GetExt().CmpNoCase("tbz2"))
 		fn.SetExt("tar");
@@ -111,7 +93,7 @@ bool BZip2Archive::open(MemChunk& mc)
 		setMuted(false);
 		return false;
 	}
-	getRoot()->addEntry(entry);
+	rootDir()->addEntry(entry);
 	EntryType::detectEntryType(entry);
 	entry->setState(0);
 
@@ -156,12 +138,12 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("BZip2Archive::loadEntryData: Failed to open gzip file %s", filename);
+		LOG_MESSAGE(1, "BZip2Archive::loadEntryData: Failed to open gzip file %s", filename_);
 		return false;
 	}
 
@@ -179,12 +161,12 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
  * Returns the entry if it matches the search criteria in [options],
  * or NULL otherwise
  *******************************************************************/
-ArchiveEntry* BZip2Archive::findFirst(search_options_t& options)
+ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 {
 	// Init search variables
 	options.match_name = options.match_name.Lower();
 	ArchiveEntry* entry = getEntry(0);
-	if (entry == NULL)
+	if (entry == nullptr)
 		return entry;
 
 	// Check type
@@ -194,12 +176,12 @@ ArchiveEntry* BZip2Archive::findFirst(search_options_t& options)
 		{
 			if (!options.match_type->isThisType(entry))
 			{
-				return NULL;
+				return nullptr;
 			}
 		}
 		else if (options.match_type != entry->getType())
 		{
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -208,7 +190,7 @@ ArchiveEntry* BZip2Archive::findFirst(search_options_t& options)
 	{
 		if (!options.match_name.Matches(entry->getName().Lower()))
 		{
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -219,7 +201,7 @@ ArchiveEntry* BZip2Archive::findFirst(search_options_t& options)
 /* BZip2Archive::findLast
  * Same as findFirst since there's just one entry
  *******************************************************************/
-ArchiveEntry* BZip2Archive::findLast(search_options_t& options)
+ArchiveEntry* BZip2Archive::findLast(SearchOptions& options)
 {
 	return findFirst(options);
 }
@@ -227,7 +209,7 @@ ArchiveEntry* BZip2Archive::findLast(search_options_t& options)
 /* BZip2Archive::findAll
  * Returns all entries matching the search criteria in [options]
  *******************************************************************/
-vector<ArchiveEntry*> BZip2Archive::findAll(search_options_t& options)
+vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options)
 {
 	// Init search variables
 	options.match_name = options.match_name.Lower();

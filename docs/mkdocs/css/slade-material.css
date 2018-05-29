@@ -1,0 +1,182 @@
+
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,500,700,700i,800');
+@import url('https://fonts.googleapis.com/css?family=Fira+Mono:500,600');
+/*@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');*/
+
+li,
+p {
+	font-size: 0.97em;
+	line-height: 1.5em;
+}
+
+body, h1, h2, h3, h4, h5, h6 {
+	font-family: 'Fira Sans', 'Segoe UI', sans-serif;
+}
+
+article a {
+    font-weight: 500;
+    font-size: 0.99em;
+}
+
+strong,
+b {
+	font-size: 0.98em;
+}
+
+
+article A:link,
+article A:visited,
+article code A:link,
+article code A:visited {
+	color: hsl(220, 90%, 40%);
+}
+
+article A:hover,
+article A:active,
+article code A:hover,
+article code A:active {
+	color: hsl(40, 100%, 45%);
+}
+
+.md-header {
+	background-color: hsl(220, 27%, 57%);
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h3 code,
+.md-typeset h4,
+.md-typeset h5 {
+	color: hsl(220, 28%, 43%) !important;
+	font-weight: 600 !important;
+}
+
+.md-typeset h2,
+.md-typeset h1 {
+	border-bottom: 0.1em solid hsl(220, 35%, 90%);
+    padding-bottom: 0.2em;
+}
+
+.md-typeset hr {
+	border-top: 0.1em solid hsl(220, 35%, 90%);
+	border-bottom: none;
+}
+
+type,
+arg,
+prop,
+prop.ro,
+prop.rw,
+code,
+function,
+.admonition code,
+.md-typeset code {
+    font-family: 'Fira Mono', 'Consolas', monospace !important;
+    font-size: 0.9em;
+    background-color: inherit;
+    box-shadow: none;
+}
+
+code,
+.md-typeset code,
+.admonition code {
+	color: hsl(220, 28%, 43%);
+	border: none;
+	background-color: inherit;
+	padding: 0;
+	margin: 0;
+}
+
+code a {
+	font-weight: 600;
+}
+
+type,
+type a {
+	/*color: hsl(40, 98%, 33%) !important;*/
+	color: hsl(30, 98%, 33%) !important;
+}
+
+type a {
+	font-weight: 500;
+	text-decoration: underline;
+}
+
+type a:hover {
+	/*color: hsl(40, 100%, 45%) !important;*/
+	color: hsl(30, 100%, 45%) !important;
+}
+
+arg,
+prop,
+prop.ro,
+prop.rw {
+	font-weight: 600;
+	color: hsl(270, 68%, 43%);
+}
+
+prop,
+prop.ro,
+prop.rw {
+	color: hsl(170, 68%, 33%);
+}
+
+prop.ro::before {
+	content: "\25CB";
+	color: hsl(20, 68%, 33%);
+	margin-right: 0.4em;
+	font-size: 1.1em;
+}
+
+prop.rw::before {
+	content: "\25CF";
+	color: hsl(140, 68%, 33%);
+	margin-right: 0.4em;
+	font-size: 1.1em;
+}
+
+pre code,
+.codehilite pre {
+	font-family: 'Fira Mono', 'Consolas', monospace !important;
+	background: none repeat scroll 0 0 hsl(220, 97%, 99%) !important;
+	border: 1px solid hsl(220, 12%, 78%);
+	line-height: 1.5em !important;
+	font-size: 0.8em;
+}
+
+table thead {
+	color: hsl(220, 57%, 97%) !important;
+	background-color: hsl(220, 27%, 57%) !important;
+	font-size: 1.1em;
+}
+
+.md-typeset th {
+	background-color: inherit !important;
+	font-weight: 600;
+}
+
+.md-typeset table:not([class]) td {
+	padding: 1.0rem 1.6rem;
+}
+
+.md-typeset table:not([class]) {
+	font-size: 0.9em;
+}
+
+.codehilite pre span.c1 {
+	color: hsl(220, 30%, 60%);
+	font-style: italic;
+}
+
+params,
+listhead {
+	font-weight: 700;
+	font-size: 0.98em;
+	display: block;
+	margin-bottom: -0.9em;
+}
+
+.admonition {
+	font-size: 0.97em;
+}

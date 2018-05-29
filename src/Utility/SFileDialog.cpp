@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
+#include "App.h"
 #include "SFileDialog.h"
 
 
@@ -166,4 +166,20 @@ bool SFileDialog::saveFiles(fd_info_t& info, string caption, string extensions, 
 	}
 	else
 		return false;
+}
+
+string SFileDialog::executableExtensionString()
+{
+	if (App::platform() == App::Platform::Windows)
+		return "Executable Files (*.exe)|*.exe";
+	else
+		return "Executable Files|*.*";
+}
+
+string SFileDialog::executableFileName(const string &exe_name)
+{
+	if (App::platform() == App::Platform::Windows)
+		return exe_name + ".exe";
+	else
+		return exe_name;
 }

@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "GobArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -46,11 +46,8 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* GobArchive::GobArchive
  * GobArchive class constructor
  *******************************************************************/
-GobArchive::GobArchive() : TreelessArchive(ARCHIVE_GOB)
+GobArchive::GobArchive() : TreelessArchive("gob")
 {
-	desc.max_name_length = 12;
-	desc.names_extensions = false;
-	desc.supports_dirs = false;
 }
 
 /* GobArchive::~GobArchive
@@ -82,22 +79,6 @@ void GobArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 		return;
 
 	entry->exProp("Offset") = (int)offset;
-}
-
-/* GobArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string GobArchive::getFileExtensionString()
-{
-	return "Gob Files (*.gob)|*.gob";
-}
-
-/* GobArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string GobArchive::getFormat()
-{
-	return "archive_gob";
 }
 
 /* GobArchive::open
@@ -143,11 +124,11 @@ bool GobArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Read the directory
-	theSplashWindow->setProgressMessage("Reading gob archive data");
+	UI::setSplashProgressMessage("Reading gob archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		uint32_t offset = 0;
@@ -166,7 +147,7 @@ bool GobArchive::open(MemChunk& mc)
 		// the gobfile is invalid
 		if (offset + size > mc.getSize())
 		{
-			wxLogMessage("GobArchive::open: gob archive is invalid or corrupt");
+			LOG_MESSAGE(1, "GobArchive::open: gob archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -179,16 +160,16 @@ bool GobArchive::open(MemChunk& mc)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -217,7 +198,7 @@ bool GobArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -230,7 +211,7 @@ bool GobArchive::write(MemChunk& mc, bool update)
 {
 	// Determine directory offset & individual lump offsets
 	uint32_t dir_offset = 8;
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);
@@ -302,12 +283,12 @@ bool GobArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open gobfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("GobArchive::loadEntryData: Failed to open gobfile %s", filename);
+		LOG_MESSAGE(1, "GobArchive::loadEntryData: Failed to open gobfile %s", filename_);
 		return false;
 	}
 
@@ -330,11 +311,11 @@ ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -358,7 +339,7 @@ ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
  *******************************************************************/
 ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* GobArchive::renameEntry

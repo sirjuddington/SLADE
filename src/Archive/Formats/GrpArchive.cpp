@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "GrpArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -46,11 +46,11 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* GrpArchive::GrpArchive
  * GrpArchive class constructor
  *******************************************************************/
-GrpArchive::GrpArchive() : TreelessArchive(ARCHIVE_GRP)
+GrpArchive::GrpArchive() : TreelessArchive("grp")
 {
-	desc.max_name_length = 12;
-	desc.names_extensions = false;
-	desc.supports_dirs = false;
+	//desc.max_name_length = 12;
+	//desc.names_extensions = false;
+	//desc.supports_dirs = false;
 }
 
 /* GrpArchive::~GrpArchive
@@ -84,22 +84,6 @@ void GrpArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* GrpArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string GrpArchive::getFileExtensionString()
-{
-	return "Grp Files (*.grp)|*.grp";
-}
-
-/* GrpArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string GrpArchive::getFormat()
-{
-	return "archive_grp";
-}
-
 /* GrpArchive::open
  * Reads grp format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -126,7 +110,7 @@ bool GrpArchive::open(MemChunk& mc)
 	// Check the header
 	if (!(S_CMP(wxString::FromAscii(ken_magic), "KenSilverman")))
 	{
-		wxLogMessage("GrpArchive::openFile: File %s has invalid header", filename);
+		LOG_MESSAGE(1, "GrpArchive::openFile: File %s has invalid header", filename_);
 		Global::error = "Invalid grp header";
 		return false;
 	}
@@ -138,11 +122,11 @@ bool GrpArchive::open(MemChunk& mc)
 	uint32_t	entryoffset = 16 * (1 + num_lumps);
 
 	// Read the directory
-	theSplashWindow->setProgressMessage("Reading grp archive data");
+	UI::setSplashProgressMessage("Reading grp archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char name[13] = "";
@@ -163,7 +147,7 @@ bool GrpArchive::open(MemChunk& mc)
 		// the grpfile is invalid
 		if (offset + size > mc.getSize())
 		{
-			wxLogMessage("GrpArchive::open: grp archive is invalid or corrupt");
+			LOG_MESSAGE(1, "GrpArchive::open: grp archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -176,16 +160,16 @@ bool GrpArchive::open(MemChunk& mc)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -210,7 +194,7 @@ bool GrpArchive::open(MemChunk& mc)
 	}
 
 	// Detect maps (will detect map entry types)
-	//theSplashWindow->setProgressMessage("Detecting maps");
+	//UI::setSplashProgressMessage("Detecting maps");
 	//detectMaps();
 
 	// Setup variables
@@ -218,7 +202,7 @@ bool GrpArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -233,7 +217,7 @@ bool GrpArchive::write(MemChunk& mc, bool update)
 	mc.clear();
 	mc.seek(0, SEEK_SET);
 	mc.reSize((1 + numEntries()) * 16);
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 
 	// Write the header
 	uint32_t num_lumps = numEntries();
@@ -290,12 +274,12 @@ bool GrpArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open grpfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("GrpArchive::loadEntryData: Failed to open grpfile %s", filename);
+		LOG_MESSAGE(1, "GrpArchive::loadEntryData: Failed to open grpfile %s", filename_);
 		return false;
 	}
 
@@ -318,11 +302,11 @@ ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -346,7 +330,7 @@ ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
  *******************************************************************/
 ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* GrpArchive::renameEntry
@@ -468,11 +452,11 @@ bool GrpArchive::isGrpArchive(string filename)
  * EXTRA CONSOLE COMMANDS
  *******************************************************************/
 #include "General/Console/Console.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 
 CONSOLE_COMMAND(lookupdat, 0, false)
 {
-	ArchiveEntry* entry = theMainWindow->getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;
@@ -481,8 +465,8 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 	if (mc.getSize() == 0)
 		return;
 
-	ArchiveEntry* nentry = NULL;
-	uint32_t* data = NULL;
+	ArchiveEntry* nentry = nullptr;
+	uint32_t* data = nullptr;
 	int index = entry->getParent()->entryIndex(entry, entry->getParentDir());
 	mc.seek(0, SEEK_SET);
 
@@ -531,7 +515,7 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 
 CONSOLE_COMMAND(palettedat, 0, false)
 {
-	ArchiveEntry* entry = theMainWindow->getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;
@@ -542,8 +526,8 @@ CONSOLE_COMMAND(palettedat, 0, false)
 	if (mc.getSize() < 66306)
 		return;
 
-	ArchiveEntry* nentry = NULL;
-	uint32_t* data = NULL;
+	ArchiveEntry* nentry = nullptr;
+	uint32_t* data = nullptr;
 	int index = entry->getParent()->entryIndex(entry, entry->getParentDir());
 	mc.seek(0, SEEK_SET);
 
@@ -573,7 +557,7 @@ CONSOLE_COMMAND(palettedat, 0, false)
 
 CONSOLE_COMMAND(tablesdat, 0, false)
 {
-	ArchiveEntry* entry = theMainWindow->getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;
@@ -584,8 +568,8 @@ CONSOLE_COMMAND(tablesdat, 0, false)
 	if (mc.getSize() != 8448)
 		return;
 
-	ArchiveEntry* nentry = NULL;
-	uint32_t* data = NULL;
+	ArchiveEntry* nentry = nullptr;
+	uint32_t* data = nullptr;
 	int index = entry->getParent()->entryIndex(entry, entry->getParentDir());
 	mc.seek(5376, SEEK_SET);
 

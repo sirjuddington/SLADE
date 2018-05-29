@@ -22,6 +22,41 @@ struct doom64vertex_t
 class MapVertex : public MapObject
 {
 	friend class SLADEMap;
+public:
+	MapVertex(SLADEMap* parent = nullptr);
+	MapVertex(double x, double y, SLADEMap* parent = nullptr);
+	~MapVertex();
+
+	double		xPos() const { return x; }
+	double		yPos() const { return y; }
+
+	fpoint2_t	getPoint(uint8_t point) override;
+	fpoint2_t	point();
+
+	int		intProperty(const string& key) override;
+	double	floatProperty(const string& key) override;
+	void	setIntProperty(const string& key, int value) override;
+	void	setFloatProperty(const string& key, double value) override;
+	bool	scriptCanModifyProp(const string& key) override;
+
+	void		connectLine(MapLine* line);
+	void		disconnectLine(MapLine* line);
+	unsigned	nConnectedLines() const { return connected_lines.size(); }
+	MapLine*	connectedLine(unsigned index);
+	
+	const vector<MapLine*>&	connectedLines() const { return connected_lines; }
+
+	void	writeBackup(mobj_backup_t* backup) override;
+	void	readBackup(mobj_backup_t* backup) override;
+
+	operator Debuggable() const
+	{
+		if (!this)
+			return Debuggable("<vertex NULL>");
+
+		return Debuggable(S_FMT("<vertex %u>", index));
+	}
+
 private:
 	// Basic data
 	double		x;
@@ -29,37 +64,6 @@ private:
 
 	// Internal info
 	vector<MapLine*>	connected_lines;
-
-public:
-	MapVertex(SLADEMap* parent = NULL);
-	MapVertex(double x, double y, SLADEMap* parent = NULL);
-	~MapVertex();
-
-	double		xPos() { return x; }
-	double		yPos() { return y; }
-
-	fpoint2_t	getPoint(uint8_t point);
-	fpoint2_t	point();
-
-	int		intProperty(string key);
-	double	floatProperty(string key);
-	void	setIntProperty(string key, int value);
-	void	setFloatProperty(string key, double value);
-
-	void		connectLine(MapLine* line);
-	void		disconnectLine(MapLine* line);
-	unsigned	nConnectedLines() { return connected_lines.size(); }
-	MapLine*	connectedLine(unsigned index);
-
-	void	writeBackup(mobj_backup_t* backup);
-	void	readBackup(mobj_backup_t* backup);
-
-	operator Debuggable() const {
-		if (!this)
-			return Debuggable("<vertex NULL>");
-
-		return Debuggable(S_FMT("<vertex %u>", index));
-	}
 };
 
 #endif //__MAPVERTEX_H__

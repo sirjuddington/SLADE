@@ -1,30 +1,22 @@
-
-#ifndef __PNG_PREFS_PANEL_H__
-#define __PNG_PREFS_PANEL_H__
+#pragma once
 
 #include "PrefsPanelBase.h"
 
+class FileLocationPanel;
+
 class PNGPrefsPanel : public PrefsPanelBase
 {
-private:
-	wxTextCtrl*	text_pngoutpath;
-	wxTextCtrl*	text_pngcrushpath;
-	wxTextCtrl*	text_defloptpath;
-	wxButton*	btn_browse_pngoutpath;
-	wxButton*	btn_browse_pngcrushpath;
-	wxButton*	btn_browse_defloptpath;
-
 public:
 	PNGPrefsPanel(wxWindow* parent);
 	~PNGPrefsPanel();
 
-	void	init();
-	void	applyPreferences();
+	void	init() override;
+	void	applyPreferences() override;
 
-	// Events
-	void	onBtnBrowsePNGoutPath(wxCommandEvent& e);
-	void	onBtnBrowsePNGCrushPath(wxCommandEvent& e);
-	void	onBtnBrowseDeflOptPath(wxCommandEvent& e);
+	string pageTitle() override { return "PNG Optimization Tools"; }
+
+private:
+	FileLocationPanel*	flp_pngout_;
+	FileLocationPanel*	flp_pngcrush_;
+	FileLocationPanel*	flp_deflopt_;
 };
-
-#endif//__PNG_PREFS_PANEL_H__

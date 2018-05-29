@@ -1,37 +1,34 @@
-
-#ifndef __THING_TYPE_BROWSER_H__
-#define __THING_TYPE_BROWSER_H__
+#pragma once
 
 #include "UI/Browser/BrowserWindow.h"
 
-class ThingType;
+namespace Game { class ThingType; }
+
 class ThingBrowserItem : public BrowserItem
 {
-private:
-	ThingType*	type;
-
 public:
-	ThingBrowserItem(string name, ThingType* type, unsigned index);
-	~ThingBrowserItem();
+	ThingBrowserItem(string name, const Game::ThingType& type, unsigned index) :
+		BrowserItem{ name, index }, type_{ type } {}
+	~ThingBrowserItem() {}
 
-	bool	loadImage();
+	bool	loadImage() override;
+
+private:
+	Game::ThingType const&	type_;
 };
 
-class wxCheckBox;
 class ThingTypeBrowser : public BrowserWindow
 {
-private:
-	wxCheckBox*	cb_view_tiles;
-
 public:
 	ThingTypeBrowser(wxWindow* parent, int type = -1);
-	~ThingTypeBrowser();
+	~ThingTypeBrowser() {}
 
 	void	setupViewOptions();
 	int		getSelectedType();
 
+private:
+	wxCheckBox*	cb_view_tiles_;
+
 	// Events
 	void	onViewTilesClicked(wxCommandEvent& e);
 };
-
-#endif//__THING_TYPE_BROWSER_H__

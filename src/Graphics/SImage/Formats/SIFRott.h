@@ -168,7 +168,7 @@ protected:
 			return false;
 
 		// Build palette
-		Palette8bit palette;
+		Palette palette;
 		for (size_t c = 0; c < 256; ++c)
 		{
 			rgba_t color;

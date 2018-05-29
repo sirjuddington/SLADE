@@ -1,66 +1,78 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    SplashWindow.cpp
- * Description: The SLADE splash window. Shows the SLADE logo, a
- *              message, and an optional progress bar (with its
- *              own message)
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    SplashWindow.cpp
+// Description: The SLADE splash window. Shows the SLADE logo, a message, and
+//              an optional progress bar (with its own message)
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
-#include "SplashWindow.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Console/Console.h"
-#include "MainApp.h"
-#include "MainEditor/MainWindow.h"
-
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-SplashWindow*	SplashWindow::instance = NULL;
-wxBitmap		SplashWindow::bm_logo;
-int				SplashWindow::width = 300;
-int				SplashWindow::height = 204;
+#include "MainEditor/MainEditor.h"
+#include "SplashWindow.h"
+#include "General/UI.h"
 
 
-/*******************************************************************
- * SPLASHWINDOW CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
+namespace
+{
+	wxBitmap	bm_logo;
+	int			img_width = 300;
+	int			img_height = 204;
+	bool		init_done = false;
+}
 
-/* SplashWindow::SplashWindow
- * SplashWindow class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+//
+// SplashWindow Class Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// SplashWindow::SplashWindow
+//
+// SplashWindow class constructor
+// ----------------------------------------------------------------------------
 SplashWindow::SplashWindow()
-	: wxMiniFrame(NULL, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
+	: wxMiniFrame{ nullptr, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE }
 {
 	// Init
 	show_progress = false;
 	progress = 0.0f;
 	progress_indefinite_anim = 0.0f;
-	SetBackgroundStyle(wxBG_STYLE_PAINT);
-	SetBackgroundColour(wxColour(180, 186, 200));
+	wxMiniFrame::SetBackgroundStyle(wxBG_STYLE_PAINT);
+	wxMiniFrame::SetBackgroundColour(wxColour(180, 186, 200));
 
 	// Bind events
 	Bind(wxEVT_PAINT, &SplashWindow::onPaint, this);
@@ -69,37 +81,36 @@ SplashWindow::SplashWindow()
 	Show(false);
 }
 
-/* SplashWindow::~SplashWindow
- * SplashWindow class destructor
- *******************************************************************/
-SplashWindow::~SplashWindow()
-{
-}
-
-/* SplashWindow::setMessage
- * Changes the splash window message
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SplashWindow::setMessage
+//
+// Changes the splash window message
+// ----------------------------------------------------------------------------
 void SplashWindow::setMessage(string message)
 {
 	this->message = message;
 	forceRedraw();
 }
 
-/* SplashWindow::setProgressMessage
- * Changes the progress bar message
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SplashWindow::setProgressMessage
+//
+// Changes the progress bar message
+// ----------------------------------------------------------------------------
 void SplashWindow::setProgressMessage(string message)
 {
 	message_progress = message;
 	forceRedraw();
 }
 
-/* SplashWindow::setProgress
- * Sets the progress bar level, where 0.0f is 0% and 1.0f is 100%.
- * A negative value indicates 'indefinite' progress. It is safe to
- * call this very rapidly as it will only redraw the window once
- * every 20ms no matter how often it is called
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SplashWindow::setProgress
+//
+// Sets the progress bar level, where 0.0f is 0% and 1.0f is 100%.
+// A negative value indicates 'indefinite' progress. It is safe to call this
+// very rapidly as it will only redraw the window once every 20ms no matter how
+// often it is called
+// ----------------------------------------------------------------------------
 void SplashWindow::setProgress(float progress)
 {
 	this->progress = progress;
@@ -109,52 +120,69 @@ void SplashWindow::setProgress(float progress)
 		forceRedraw();
 }
 
-/* SplashWindow::init
- * Sets up the splash window
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SplashWindow::init
+//
+// Sets up the splash window
+// ----------------------------------------------------------------------------
 void SplashWindow::init()
 {
+	if (init_done)
+		return;
+
 	// Load logo image
-	string tempfile = appPath("temp.png", DIR_TEMP);
-	ArchiveEntry* logo = theArchiveManager->programResourceArchive()->getEntry("logo.png");
+	string tempfile = App::path("temp.png", App::Dir::Temp);
+	ArchiveEntry* logo = App::archiveManager().programResourceArchive()->getEntry("logo.png");
 	if (logo)
 	{
 		logo->exportFile(tempfile);
-		bm_logo.LoadFile(tempfile, wxBITMAP_TYPE_PNG);
+
+		wxImage img;
+		img.LoadFile(tempfile, wxBITMAP_TYPE_PNG);
+		if (UI::scaleFactor() != 1.)
+			img = img.Scale(UI::scalePx(img.GetWidth()), UI::scalePx(img.GetHeight()), wxIMAGE_QUALITY_BICUBIC);
+
+		bm_logo = wxBitmap(img);
 	}
+
+	img_width = UI::scalePx(300);
+	img_height = UI::scalePx(204);
 
 	// Clean up
 	wxRemoveFile(tempfile);
+	init_done = true;
 }
 
-/* SplashWindow::show
- * Shows the splash window with [message]. If [progress] is true, a
- * progress bar will also be shown
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SplashWindow::show
+//
+// Shows the splash window with [message].
+// If [progress] is true, a progress bar will also be shown
+// ----------------------------------------------------------------------------
 void SplashWindow::show(string message, bool progress, wxWindow* parent)
 {
 	// Setup progress bar
-	int rheight = height;
+	int rheight = img_height;
 	if (progress)
 	{
 		show_progress = true;
 		setProgress(0.0f);
-		rheight += 10;
+		rheight += UI::scalePx(10);
 	}
 	else
 		show_progress = false;
 
 	// Set parent
-	if (!parent && theApp->isInitialised())
-		SetParent(theMainWindow);
+	if (!parent && App::isInitialised())
+		SetParent(MainEditor::windowWx());
 	else
 		SetParent(parent);
 
 	// Show & init window
 #ifndef __WXGTK__
-	SetInitialSize(wxSize(width, rheight));
+	SetInitialSize({ img_width, rheight });
 #else
-	SetInitialSize(wxSize(width + 6, rheight + 6));
+	SetInitialSize({ img_width + UI::scalePx(6), rheight + UI::scalePx(6) });
 #endif
 	setMessage(message);
 	Show();
@@ -162,22 +190,23 @@ void SplashWindow::show(string message, bool progress, wxWindow* parent)
 	forceRedraw();
 }
 
-/* SplashWindow::hide
- * Hides (destroys) the splash window
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SplashWindow::hide
+//
+// Hides the splash window
+// ----------------------------------------------------------------------------
 void SplashWindow::hide()
 {
 	// Close
 	Show(false);
 	Close(true);
-
-	// Destroy instance
-	deleteInstance();
 }
 
-/* SplashWindow::forceRedraw
- * Forces the splash window to redraw itself
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SplashWindow::forceRedraw
+//
+// Forces the splash window to redraw itself
+// ----------------------------------------------------------------------------
 void SplashWindow::forceRedraw()
 {
 	Refresh();
@@ -185,13 +214,18 @@ void SplashWindow::forceRedraw()
 }
 
 
-/*******************************************************************
- * SPLASHWINDOW CLASS EVENTS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// SplashWindow Class Events
+//
+// ----------------------------------------------------------------------------
 
-/* SplashWindow::onPaint
- * Handles drawing the splash window
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// SplashWindow::onPaint
+//
+// Handles drawing the splash window
+// ----------------------------------------------------------------------------
 void SplashWindow::onPaint(wxPaintEvent& e)
 {
 	// Create device context
@@ -200,7 +234,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	// Draw border
 	dc.SetBrush(wxBrush(wxColour(180, 186, 200)));
 	dc.SetPen(wxPen(wxColour(100, 104, 116)));
-	dc.DrawRectangle(0, 0, width, height);
+	dc.DrawRectangle(0, 0, img_width, img_height);
 
 	// Draw SLADE logo
 	if (bm_logo.IsOk())
@@ -213,8 +247,8 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	// Draw version
 	string vers = "v" + Global::version;
 	wxSize text_size = dc.GetTextExtent(vers);
-	wxCoord x = width - text_size.GetWidth() - 8;
-	wxCoord y = 190 - text_size.GetHeight();
+	wxCoord x = img_width - text_size.GetWidth() - UI::scalePx(8);
+	wxCoord y = UI::scalePx(190) - text_size.GetHeight();
 	dc.DrawText(vers, x, y);
 
 	// Draw message
@@ -222,15 +256,15 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	font.SetWeight(wxFONTWEIGHT_BOLD);
 	dc.SetFont(font);
 	text_size = dc.GetTextExtent(message);
-	x = (width*0.5) - int((double)text_size.GetWidth() * 0.5);
-	y = (height-4) - text_size.GetHeight();
+	x = (img_width*0.5) - int((double)text_size.GetWidth() * 0.5);
+	y = (img_height-4) - text_size.GetHeight();
 	dc.DrawText(message, x, y);
 
 	// Draw progress bar if necessary
 	if (show_progress)
 	{
 		// Setup progress bar
-		wxRect rect_pbar(0, height-4, width, 14);
+		wxRect rect_pbar(0, img_height-UI::scalePx(4), img_width, UI::scalePx(14));
 
 		// Draw background
 		dc.SetBrush(wxBrush(wxColour(40, 40, 56)));
@@ -239,7 +273,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 		// Draw meter
 		if (progress >= 0)
 		{
-			rect_pbar.SetRight(progress * width);
+			rect_pbar.SetRight(progress * img_width);
 			rect_pbar.Deflate(1, 1);
 			dc.SetBrush(wxBrush(wxColour(100, 120, 255)));
 			dc.SetPen(*wxTRANSPARENT_PEN);
@@ -271,32 +305,11 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 		font.SetPointSize(8);
 		dc.SetFont(font);
 		text_size = dc.GetTextExtent(message_progress);
-		x = (width*0.5) - int((double)text_size.GetWidth() * 0.5);
-		y = height-4;
+		x = (img_width*0.5) - int((double)text_size.GetWidth() * 0.5);
+		y = img_height-UI::scalePx(4);
 		dc.SetTextForeground(wxColour(200, 210, 255));
 		dc.DrawText(message_progress, x, y);
 	}
 
 	timer.Start();
-}
-
-
-
-/* Console Command - "splash"
- * Shows the splash screen with the given message, or hides it if
- * no message is given
- *******************************************************************/
-CONSOLE_COMMAND (splash, 0, false)
-{
-	if (args.size() == 0)
-		theSplashWindow->hide();
-	else if (args.size() == 1)
-		theSplashWindow->show(args[0]);
-	else
-	{
-		theSplashWindow->show(args[0], true);
-		float prog = atof(CHR(args[1]));
-		theSplashWindow->setProgress(prog);
-		theSplashWindow->setProgressMessage(S_FMT("Progress %s", args[1]));
-	}
 }

@@ -34,14 +34,9 @@
 #include "Graphics/SImage/SImage.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/EntryType/EntryDataFormat.h"
-#include "Archive/Formats/WadArchive.h"
-#include "Archive/Formats/ZipArchive.h"
-#include "General/Console/Console.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
-#include "External/zlib/zlib.h"
 
 
 /*******************************************************************
@@ -87,7 +82,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 		format_hint = entry->getType()->extraProps()["image_format"].getStringValue();
 
 	// Font formats are still manually loaded for now
-	string format = entry->getType()->getFormat();
+	string format = entry->getType()->formatId();
 	if (S_CMPNOCASE(format, "font_doom_alpha"))
 		return image->loadFont0(entry->getData(), entry->getSize());
 	else if (S_CMPNOCASE(format, "font_zd_console"))
@@ -108,7 +103,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 	// they need manual loading as well rather than the SIFormat system
 	else if (S_CMPNOCASE(format, "img_jaguar_sprite"))
 	{
-		Archive* parent = entry->getParent(); if (parent == NULL) return false;
+		Archive* parent = entry->getParent(); if (parent == nullptr) return false;
 		ArchiveEntry* data = parent->getEntry(parent->entryIndex(entry) + 1);
 		if (data && S_CMPNOCASE(data->getName(), "."))
 			return image->loadJaguarSprite(entry->getData(), entry->getSize(), data->getData(), data->getSize());
@@ -116,8 +111,8 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 	}
 	else if (S_CMPNOCASE(format, "img_jaguar_texture"))
 	{
-		Archive* parent = entry->getParent(); if (parent == NULL) return false;
-		ArchiveEntry* texture1 = parent->getEntry("TEXTURE1"); if (texture1 == NULL) return false;
+		Archive* parent = entry->getParent(); if (parent == nullptr) return false;
+		ArchiveEntry* texture1 = parent->getEntry("TEXTURE1"); if (texture1 == nullptr) return false;
 		point2_t dimensions = findJaguarTextureDimensions(texture1, entry->getName(true));
 		return image->loadJaguarTexture(entry->getData(), entry->getSize(), dimensions.x, dimensions.y);
 	}
@@ -145,30 +140,30 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
  *******************************************************************/
 int	Misc::detectPaletteHack(ArchiveEntry* entry)
 {
-	if (entry == NULL || entry->getType() == NULL)
+	if (entry == nullptr || entry->getType() == nullptr)
 		return PAL_NOHACK;
-	else if (entry->getType()->getFormat() == "img_doom_arah"	&& entry->getName() == "TITLEPIC")
+	else if (entry->getType()->formatId() == "img_doom_arah"	&& entry->getName() == "TITLEPIC")
 		return PAL_ALPHAHACK;	// Doom Alpha 0.2
-	else if (entry->getType()->getFormat() == "img_doom_snea"	&& entry->getName() == "TITLEPIC")
+	else if (entry->getType()->formatId() == "img_doom_snea"	&& entry->getName() == "TITLEPIC")
 		return PAL_ALPHAHACK;	// Doom Alpha 0.4 and 0.5
-	else if (entry->getType()->getFormat() == "img_raw"			&& entry->getName() == "E2END")
+	else if (entry->getType()->formatId() == "img_raw"			&& entry->getName() == "E2END")
 		return PAL_HERETICHACK;	// Heretic
-	else if (entry->getType()->getFormat() == "img_doom_arah"	&& entry->getName() == "shadowpage")
+	else if (entry->getType()->formatId() == "img_doom_arah"	&& entry->getName() == "shadowpage")
 		return PAL_SHADOWHACK;	// Shadowcaster
-	else if (entry->getType()->getFormat() == "img_rott"		&& entry->getName() == "NICOLAS")
+	else if (entry->getType()->formatId() == "img_rott"		&& entry->getName() == "NICOLAS")
 		return PAL_ROTTNHACK;	// Rise of the Triad
-	else if (entry->getType()->getFormat() == "img_rott"		&& entry->getName() == "FINLDOOR")
+	else if (entry->getType()->formatId() == "img_rott"		&& entry->getName() == "FINLDOOR")
 		return PAL_ROTTDHACK;	// Rise of the Triad
-	else if (entry->getType()->getFormat() == "img_rott"		&& entry->getName() == "FINLFIRE")
+	else if (entry->getType()->formatId() == "img_rott"		&& entry->getName() == "FINLFIRE")
 		return PAL_ROTTFHACK;	// Rise of the Triad
-	else if ((entry->getType()->getFormat() == "img_rott"		&& entry->getName() == "AP_TITL")
-	      || (entry->getType()->getFormat() == "img_rottraw"	&& entry->getName() == "AP_WRLD"))
+	else if ((entry->getType()->formatId() == "img_rott"		&& entry->getName() == "AP_TITL")
+	      || (entry->getType()->formatId() == "img_rottraw"	&& entry->getName() == "AP_WRLD"))
 		return PAL_ROTTAHACK;	// Rise of the Triad
-	else if (entry->getType()->getFormat() == "img_wolfpic"		&& entry->getName().Matches("IDG*"))
+	else if (entry->getType()->formatId() == "img_wolfpic"		&& entry->getName().Matches("IDG*"))
 		return PAL_SODIDHACK;	// Spear of Destiny team screens
-	else if (entry->getType()->getFormat() == "img_wolfpic"		&& entry->getName().Matches("TIT*"))
+	else if (entry->getType()->formatId() == "img_wolfpic"		&& entry->getName().Matches("TIT*"))
 		return PAL_SODTITLEHACK;// Spear of Destiny title screens
-	else if (entry->getType()->getFormat() == "img_wolfpic"		&& entry->getName().Matches("END*"))
+	else if (entry->getType()->formatId() == "img_wolfpic"		&& entry->getName().Matches("END*"))
 	{
 		long endscreen;			// Spear of Destiny ending screens (extra-hacky!)
 		if (entry->getName().Right(3).ToLong(&endscreen))
@@ -185,7 +180,7 @@ int	Misc::detectPaletteHack(ArchiveEntry* entry)
  * <pal>. Returns false if PLAYPAL entry was missing or invalid,
  * true otherwise
  *******************************************************************/
-bool Misc::loadPaletteFromArchive(Palette8bit* pal, Archive* archive, int lump)
+bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 {
 	// Check parameters
 	if (!pal || !archive)
@@ -193,7 +188,7 @@ bool Misc::loadPaletteFromArchive(Palette8bit* pal, Archive* archive, int lump)
 
 	// Find PLAYPAL entry
 	bool sixbit = false;
-	ArchiveEntry* playpal = NULL;
+	ArchiveEntry* playpal = nullptr;
 	if (lump == PAL_ALPHAHACK)
 		playpal = archive->getEntry("TITLEPAL", true);
 	else if (lump == PAL_HERETICHACK)
@@ -223,10 +218,10 @@ bool Misc::loadPaletteFromArchive(Palette8bit* pal, Archive* archive, int lump)
 	if (!playpal || playpal->getSize() < 768)
 	{
 		// Search archive for any palette
-		Archive::search_options_t opt;
+		Archive::SearchOptions opt;
 
 		// Search "PLAYPAL" first
-		opt.match_type = EntryType::getType("palette");
+		opt.match_type = EntryType::fromId("palette");
 		opt.match_name = "PLAYPAL";
 		opt.search_subdirs = true;
 		playpal = archive->findFirst(opt);
@@ -729,19 +724,19 @@ void Misc::setWindowInfo(string id, int width, int height, int left, int top)
 	window_info.push_back(winf_t(id, width, height, left, top));
 }
 
-void Misc::readWindowInfo(Tokenizer* tz)
+void Misc::readWindowInfo(Tokenizer& tz)
 {
 	// Read definitions
-	string token = tz->getToken();
-	while (token != "}" && !tz->atEnd())
+	tz.advIf("{");
+	while (!tz.check("}") && !tz.atEnd())
 	{
-		string id = token;
-		int width = tz->getInteger();
-		int height = tz->getInteger();
-		int left = tz->getInteger();
-		int top = tz->getInteger();
+		string id = tz.current().text;
+		int width = tz.next().asInt();
+		int height = tz.next().asInt();
+		int left = tz.next().asInt();
+		int top = tz.next().asInt();
 		setWindowInfo(id, width, height, left, top);
-		token = tz->getToken();
+		tz.adv();
 	}
 }
 

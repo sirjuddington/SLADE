@@ -21,7 +21,7 @@ protected:
 		}
 
 		// Let's build the palette now
-		Palette8bit palette;
+		Palette palette;
 		size_t pal_offset = READ_L32(data.getData(), 36) + ((READ_L32(data.getData(), 16) >> 3) * (READ_L32(data.getData(), 20) >> 3));
 		if (data.getSize() < pal_offset + 5)
 		{
@@ -31,7 +31,7 @@ protected:
 		size_t palsize = READ_L16(data.getData(), pal_offset);
 		if (palsize == 0 || palsize > 256 || data.getSize() < (pal_offset + 2 + (palsize*3)))
 		{
-			wxLogMessage("palsize %d, paloffset %d, entry size %d", palsize, pal_offset, data.getSize());
+			LOG_MESSAGE(1, "palsize %d, paloffset %d, entry size %d", palsize, pal_offset, data.getSize());
 			Global::error = "HLT file: invalid palette size";
 			return false;
 		}
@@ -467,7 +467,7 @@ protected:
 			return false;
 
 		// Create image (swapped width/height because column-major)
-		image.create(info.height, info.width, PALMASK, NULL, index, info.numimages);
+		image.create(info.height, info.width, PALMASK, nullptr, index, info.numimages);
 
 		// Read data
 		uint8_t* img_data = imageData(image);
@@ -559,7 +559,7 @@ protected:
 			return false;
 
 		// Build palette
-		Palette8bit palette;
+		Palette palette;
 		for (size_t c = 0; c < 256; ++c)
 		{
 			rgba_t color;

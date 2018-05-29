@@ -266,4 +266,16 @@ public:
 	}
 };
 
+class SinArchiveDataFormat : public EntryDataFormat
+{
+public:
+	SinArchiveDataFormat()
+	: EntryDataFormat("archive_sin") {};
+
+	int isThisFormat(MemChunk& mc)
+	{
+		return SiNArchive::isSiNArchive(mc) ? EDF_TRUE : EDF_FALSE;
+	}
+};
+
 #endif //ARCHIVEFORMATS_H

@@ -15,7 +15,7 @@ namespace Conversions
 	bool	bloodToWav(ArchiveEntry* in, MemChunk& out);
 	bool	auSndToWav(MemChunk& in, MemChunk& out);
 	bool	musToMidi(MemChunk& in, MemChunk& out);
-	bool	zmusToMidi(MemChunk& in, MemChunk& out, int subsong = 0, int * num_tracks = NULL);
+	bool	zmusToMidi(MemChunk& in, MemChunk& out, int subsong = 0, int * num_tracks = nullptr);
 	bool	gmidToMidi(MemChunk& in, MemChunk& out);
 	bool	rmidToMidi(MemChunk& in, MemChunk& out);
 	bool	addImfHeader(MemChunk& in, MemChunk& out);

@@ -168,7 +168,7 @@ protected:
 		return readDoomFormat(image, data, 0);
 	}
 
-	virtual bool writeImage(SImage& image, MemChunk& out, Palette8bit* pal, int index)
+	virtual bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
 	{
 		// Convert image to column/post structure
 		vector<column_t> columns;
@@ -429,7 +429,7 @@ public:
 		MemChunk mc;
 		image.setXOffset(offset.x);
 		image.setYOffset(offset.y);
-		return (writeImage(image, mc, NULL, 0) && entry->importMemChunk(mc));
+		return (writeImage(image, mc, nullptr, 0) && entry->importMemChunk(mc));
 	}
 
 };

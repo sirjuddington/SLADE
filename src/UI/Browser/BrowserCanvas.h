@@ -1,35 +1,15 @@
-
-#ifndef __BROWSER_CANVAS_H__
-#define __BROWSER_CANVAS_H__
+#pragma once
 
 #include "UI/Canvas/OGLCanvas.h"
 #include "BrowserItem.h"
 
 class wxScrollBar;
+
 class BrowserCanvas : public OGLCanvas
 {
-private:
-	vector<BrowserItem*>	items;
-	vector<int>				items_filter;
-	wxScrollBar*			scrollbar;
-	string					search;
-	BrowserItem*			item_selected;
-
-	// Display
-	int	yoff;
-	int	item_border;
-	int	font;
-	int	show_names;
-	int	item_size;
-	int top_index;
-	int top_y;
-	int	item_type;
-	int	longest_text;
-	int	num_cols;
-
 public:
 	BrowserCanvas(wxWindow* parent);
-	~BrowserCanvas();
+	~BrowserCanvas() {}
 
 	enum
 	{
@@ -41,13 +21,13 @@ public:
 	    NAMES_NONE,
 	};
 
-	vector<BrowserItem*>&	itemList() { return items; }
+	vector<BrowserItem*>&	itemList() { return items_; }
 	int						getViewedIndex();
 	void					addItem(BrowserItem* item);
 	void					clearItems();
 	int						fullItemSizeX();
 	int						fullItemSizeY();
-	void					draw();
+	void					draw() override;
 	void					setScrollBar(wxScrollBar* scrollbar);
 	void					updateLayout(int viewed_item = -1);
 	BrowserItem*			getSelectedItem();
@@ -59,10 +39,10 @@ public:
 	void					showItem(int item, int where);
 	void					showSelectedItem();
 	bool					searchItemFrom(int from);
-	void					setFont(int font) { this->font = font; }
-	void					setItemNameType(int type) { this->show_names = type; }
-	void					setItemSize(int size) { this->item_size = size; }
-	void					setItemViewType(int type) { this->item_type = type; }
+	void					setFont(int font) { this->font_ = font; }
+	void					setItemNameType(int type) { this->show_names_ = type; }
+	void					setItemSize(int size) { this->item_size_ = size; }
+	void					setItemViewType(int type) { this->item_type_ = type; }
 	int						longestItemTextWidth();
 
 	// Events
@@ -75,8 +55,24 @@ public:
 	void	onMouseEvent(wxMouseEvent& e);
 	void	onKeyDown(wxKeyEvent& e);
 	void	onKeyChar(wxKeyEvent& e);
+
+private:
+	vector<BrowserItem*>	items_;
+	vector<int>				items_filter_;
+	wxScrollBar*			scrollbar_		= nullptr;
+	string					search_;
+	BrowserItem*			item_selected_	= nullptr;
+
+	// Display
+	int	yoff_			= 0;
+	int	item_border_	= 0;
+	int	font_			= 0;
+	int	show_names_		= 0;
+	int	item_size_		= 0;
+	int top_index_		= 0;
+	int top_y_			= 0;
+	int	item_type_		= 0;
+	int	num_cols_		= 0;
 };
 
 DECLARE_EVENT_TYPE(wxEVT_BROWSERCANVAS_SELECTION_CHANGED, -1)
-
-#endif//__BROWSER_CANVAS_H__

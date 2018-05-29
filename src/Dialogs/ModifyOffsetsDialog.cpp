@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ModifyOffsetsDialog.h"
-#include "General/Console/Console.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 
 
@@ -42,13 +42,13 @@
  * ModifyOffsetsDialog class constructor
  *******************************************************************/
 ModifyOffsetsDialog::ModifyOffsetsDialog()
-	:	wxDialog(NULL, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
+	:	wxDialog(nullptr, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
 {
 	// Create main sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(m_vbox, 1, wxEXPAND|wxALL, 6);
+	sizer->Add(m_vbox, 1, wxEXPAND|wxALL, UI::padLarge());
 
 	// Set dialog icon
 	wxIcon icon;
@@ -57,11 +57,11 @@ ModifyOffsetsDialog::ModifyOffsetsDialog()
 
 	// Setup layout
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND|wxALL, 4);
+	m_vbox->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::padLarge());
 
 	// 'Auto Offsets'
 	opt_auto = new wxRadioButton(this, -1, "Automatic Offsets", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-	hbox->Add(opt_auto, 1, wxEXPAND|wxALL, 4);
+	hbox->Add(opt_auto, 1, wxEXPAND|wxRIGHT, UI::pad());
 
 	string offtypes[] =
 	{
@@ -76,27 +76,28 @@ ModifyOffsetsDialog::ModifyOffsetsDialog()
 
 	combo_aligntype = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 7, offtypes);
 	combo_aligntype->Select(0);
-	hbox->Add(combo_aligntype, 0, wxEXPAND|wxALL, 4);
+	hbox->Add(combo_aligntype, 0, wxEXPAND);
 
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	m_vbox->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::padLarge());
 
 	// 'Set Offsets'
 	opt_set = new wxRadioButton(this, -1, "Set Offsets");
-	hbox->Add(opt_set, 1, wxEXPAND|wxALL, 4);
+	hbox->Add(opt_set, 1, wxEXPAND|wxRIGHT, UI::pad());
 
-	entry_xoff = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(40, -1));
-	entry_yoff = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(40, -1));
+	int width = UI::scalePx(40);
+	entry_xoff = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(width, -1));
+	entry_yoff = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(width, -1));
 	cbox_relative = new wxCheckBox(this, wxID_ANY, "Relative");
-	hbox->Add(entry_xoff, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(entry_yoff, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(cbox_relative, 0, wxEXPAND|wxALL, 4);
+	hbox->Add(entry_xoff, 0, wxEXPAND|wxRIGHT, UI::pad());
+	hbox->Add(entry_yoff, 0, wxEXPAND|wxRIGHT, UI::pad());
+	hbox->Add(cbox_relative, 0, wxEXPAND);
 	entry_xoff->Enable(false);
 	entry_yoff->Enable(false);
 	cbox_relative->Enable(false);
 
 	// Add default dialog buttons
-	m_vbox->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxALL, 4);
+	m_vbox->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND);
 
 
 	// Bind events

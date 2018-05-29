@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "SLADEMap/SLADEMap.h"
 #include "MapSpecials.h"
-#include "GameConfiguration/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "Utility/Tokenizer.h"
 #include "Utility/MathStuff.h"
 
@@ -61,11 +61,11 @@ void MapSpecials::reset()
 void MapSpecials::processMapSpecials(SLADEMap* map)
 {
 	// ZDoom
-	if (theGameConfiguration->currentPort() == "zdoom")
+	if (Game::configuration().currentPort() == "zdoom")
 		processZDoomMapSpecials(map);
-   // Eternity, currently no need for processEternityMapSpecials
-   else if (theGameConfiguration->currentPort() == "eternity")
-      processEternitySlopes(map);
+	// Eternity, currently no need for processEternityMapSpecials
+	else if (Game::configuration().currentPort() == "eternity")
+		processEternitySlopes(map);
 }
 
 /* MapSpecials::processLineSpecial
@@ -73,7 +73,7 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
  *******************************************************************/
 void MapSpecials::processLineSpecial(MapLine* line)
 {
-	if (theGameConfiguration->currentPort() == "zdoom")
+	if (Game::configuration().currentPort() == "zdoom")
 		processZDoomLineSpecial(line);
 }
 
@@ -236,37 +236,33 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 
 	Tokenizer tz;
 	tz.setSpecialCharacters(";,:|={}/()");
-	tz.openMem(entry->getData(), entry->getSize(), "ACS Scripts");
+	tz.openMem(entry->getMCData(), "ACS Scripts");
 
-	string token = tz.getToken();
-	while (!tz.isAtEnd())
+	while (!tz.atEnd())
 	{
-		if (S_CMPNOCASE(token, "script"))
+		if (tz.checkNC("script"))
 		{
 			LOG_MESSAGE(3, "script found");
 
-			tz.skipToken();	// Skip script #
-			tz.getToken(&token);
+			tz.adv(2);	// Skip script #
 
 			// Check for open script
-			if (S_CMPNOCASE(token, "OPEN"))
+			if (tz.checkNC("OPEN"))
 			{
 				LOG_MESSAGE(3, "script is OPEN");
 
 				// Skip to opening brace
-				while (token != "{")
-					tz.getToken(&token);
+				while (!tz.check("{"))
+					tz.adv();
 
 				// Parse script
-				tz.getToken(&token);
-				while (token != "}")
+				while (!tz.checkOrEnd("}"))
 				{
 					// --- Sector_SetColor ---
-					if (S_CMPNOCASE(token, "Sector_SetColor"))
+					if (tz.checkNC("Sector_SetColor"))
 					{
 						// Get parameters
-						vector<string> parameters;
-						tz.getTokensUntil(parameters, ")");
+						auto parameters = tz.getTokensUntil(")");
 
 						// Parse parameters
 						long val;
@@ -276,7 +272,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b = -1;
 						for (unsigned a = 0; a < parameters.size(); a++)
 						{
-							if (parameters[a].ToLong(&val))
+							if (parameters[a].text.ToLong(&val))
 							{
 								if (tag < 0)
 									tag = val;
@@ -304,11 +300,10 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						}
 					}
 					// --- Sector_SetFade ---
-					else if (S_CMPNOCASE(token, "Sector_SetFade"))
+					else if (tz.checkNC("Sector_SetFade"))
 					{
 						// Get parameters
-						vector<string> parameters;
-						tz.getTokensUntil(parameters, ")");
+						auto parameters = tz.getTokensUntil(")");
 
 						// Parse parameters
 						long val;
@@ -318,7 +313,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b = -1;
 						for (unsigned a = 0; a < parameters.size(); a++)
 						{
-							if (parameters[a].ToLong(&val))
+							if (parameters[a].text.ToLong(&val))
 							{
 								if (tag < 0)
 									tag = val;
@@ -346,12 +341,12 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						}
 					}
 
-					tz.getToken(&token);
+					tz.adv();
 				}
 			}
 		}
 
-		tz.getToken(&token);
+		tz.adv();
 	}
 }
 
@@ -692,7 +687,7 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 	double this_dist;
 	MapVertex* this_vertex;
 	double furthest_dist = 0.0;
-	MapVertex* furthest_vertex = NULL;
+	MapVertex* furthest_vertex = nullptr;
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		this_vertex = vertices[a];
@@ -735,7 +730,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 	}
 
 	// These are computed on first use, to avoid extra work if no lines match
-	MapSector* containing_sector = NULL;
+	MapSector* containing_sector = nullptr;
 	double thingz;
 
 	vector<MapLine*> lines;
@@ -747,7 +742,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 		// Line slope things only affect the sector on the side of the line
 		// that faces the thing
 		double side = MathStuff::lineSide(thing->point(), line->seg());
-		MapSector* target = NULL;
+		MapSector* target = nullptr;
 		if (side < 0)
 			target = line->backSector();
 		else if (side > 0)

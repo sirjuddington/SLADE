@@ -15,40 +15,8 @@ enum
 	GFXVIEW_TILED,
 };
 
-// Enumeration for brush types
-enum Brush
-{
-	SQUARE_1,
-	SQUARE_3,
-	SQUARE_5,
-	SQUARE_7,
-	SQUARE_9,
-	CIRCLE_5,
-	CIRCLE_7,
-	CIRCLE_9,
-	DIAMOND_3,
-	DIAMOND_5,
-	DIAMOND_7,
-	DIAMOND_9,
-	PATTERN_A,
-	PATTERN_B,
-	PATTERN_C,
-	PATTERN_D,
-	PATTERN_E,
-	PATTERN_F,
-	PATTERN_G,
-	PATTERN_H,
-	PATTERN_I,
-	PATTERN_J,
-	PATTERN_K,
-	PATTERN_L,
-	PATTERN_M,
-	PATTERN_N,
-	PATTERN_O,
-	NUM_BRUSHES,
-};
-
 class SImage;
+class SBrush;
 class GLTexture;
 class Translation;
 class GfxCanvas : public OGLCanvas, Listener
@@ -72,7 +40,7 @@ private:
 	Translation* translation;	// the translation to apply to pixels in editing mode 3
 	bool		drawing;		// true if a drawing operation is ongoing
 	bool*		drawing_mask;	// keeps track of which pixels were already modified in this pass
-	uint8_t		brush;			// the index of the brush used to paint the image
+	SBrush*		brush;			// the brush used to paint the image
 	point2_t	cursor_pos;		// position of cursor, relative to image
 	point2_t	prev_pos;		// previous position of cursor
 	GLTexture*	tex_brush;		// preview the effect of the brush
@@ -93,8 +61,8 @@ public:
 	void	setPaintColour(const rgba_t &col) { paint_colour.set(col); }
 	void	setEditingMode(int mode) { editing_mode = mode; }
 	void	setTranslation(Translation* tr) { translation = tr; }
-	void	setBrush(uint8_t br) { brush = br < Brush::NUM_BRUSHES ? br : 0; }
-	uint8_t	getBrush() { return brush; }
+	void	setBrush(SBrush* br) { brush = br; }
+	SBrush*	getBrush() { return brush; }
 	rgba_t	getPaintColour() { return paint_colour; }
 
 	void	draw();

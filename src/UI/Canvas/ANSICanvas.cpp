@@ -53,7 +53,7 @@ ANSICanvas::ANSICanvas(wxWindow* parent, int id)
 	: OGLCanvas(parent, id)
 {
 	// Get the all-important font data
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 	if (!res_archive)
 		return;
 	ArchiveEntry* ansi_font = res_archive->entryAtPath("vga-rom-font.16");
@@ -63,7 +63,7 @@ ANSICanvas::ANSICanvas(wxWindow* parent, int id)
 	fontdata = ansi_font->getData();
 
 	// Init variables
-	ansidata = NULL;
+	ansidata = nullptr;
 	tex_image = new GLTexture();
 	char_width = 8;
 	char_height = ansi_font->getSize()/256;

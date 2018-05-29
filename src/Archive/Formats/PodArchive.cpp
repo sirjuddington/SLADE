@@ -30,8 +30,8 @@
  *******************************************************************/
 #include "Main.h"
 #include "PodArchive.h"
-#include "UI/SplashWindow.h"
-#include "MainEditor/MainWindow.h"
+#include "General/UI.h"
+#include "MainEditor/MainEditor.h"
 #include "General/Console/Console.h"
 
 
@@ -49,10 +49,10 @@ EXTERN_CVAR(Bool, wad_force_uppercase)
 /* PodArchive::PodArchive
  * PodArchive class constructor
  *******************************************************************/
-PodArchive::PodArchive() : Archive(ARCHIVE_POD)
+PodArchive::PodArchive() : Archive("pod")
 {
 	// Blank id
-	memset(id, 0, 80);
+	memset(id_, 0, 80);
 }
 
 /* PodArchive::~PodArchive
@@ -67,24 +67,8 @@ PodArchive::~PodArchive()
  *******************************************************************/
 void PodArchive::setId(string id)
 {
-	memset(this->id, 0, 80);
-	memcpy(this->id, CHR(id), id.Length());
-}
-
-/* PodArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string PodArchive::getFileExtensionString()
-{
-	return "POD Files (*.pod)|*.pod";
-}
-
-/* PodArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string PodArchive::getFormat()
-{
-	return "archive_pod";
+	memset(id_, 0, 80);
+	memcpy(id_, CHR(id), id.Length());
 }
 
 /* PodArchive::open
@@ -103,17 +87,17 @@ bool PodArchive::open(MemChunk& mc)
 	mc.read(&num_files, 4);
 
 	// Read id
-	mc.read(id, 80);
+	mc.read(id_, 80);
 
 	// Read directory
-	file_entry_t* files = new file_entry_t[num_files];
-	mc.read(files, num_files * sizeof(file_entry_t));
+	FileEntry* files = new FileEntry[num_files];
+	mc.read(files, num_files * sizeof(FileEntry));
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
 
 	// Create entries
-	theSplashWindow->setProgressMessage("Reading pod archive data");
+	UI::setSplashProgressMessage("Reading pod archive data");
 	for (unsigned a = 0; a < num_files; a++)
 	{
 		// Get the entry name as a wxFileName (so we can break it up)
@@ -137,7 +121,7 @@ bool PodArchive::open(MemChunk& mc)
 	// Detect entry types
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (unsigned a = 0; a < all_entries.size(); a++)
 	{
 		// Skip dir/marker
@@ -148,7 +132,7 @@ bool PodArchive::open(MemChunk& mc)
 		}
 
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)all_entries.size())));
+		UI::setSplashProgress((((float)a / (float)all_entries.size())));
 
 		// Read data
 		MemChunk edata;
@@ -175,7 +159,7 @@ bool PodArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -212,11 +196,11 @@ bool PodArchive::write(MemChunk& mc, bool update)
 	mc.write(&n_entries, 4);
 
 	// Write id
-	LOG_MESSAGE(5, "id %s", id);
-	mc.write(id, 80);
+	LOG_MESSAGE(5, "id %s", id_);
+	mc.write(id_, 80);
 
 	// Write directory
-	file_entry_t fe;
+	FileEntry fe;
 	fe.offset = 4 + 80 + (n_entries * 40);
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
@@ -271,12 +255,12 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("PodArchive::loadEntryData: Failed to open file %s", filename);
+		LOG_MESSAGE(1, "PodArchive::loadEntryData: Failed to open file %s", filename_);
 		return false;
 	}
 
@@ -288,15 +272,6 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 	entry->setLoaded();
 
 	return true;
-}
-
-/* WadArchive::detectMaps
- * Searches for any maps in the archive and adds them to the map list
- *******************************************************************/
-vector<Archive::mapdesc_t> PodArchive::detectMaps()
-{
-	vector<mapdesc_t> list;
-	return list;
 }
 
 
@@ -326,15 +301,14 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 	if (mc.getSize() < 84 + (num_files * 40))
 		return false;
 
-	// Read directory
-	file_entry_t* files = new file_entry_t[num_files];
-	mc.read(files, num_files * sizeof(file_entry_t));
-
-	// Check offsets
+	// Read directory and check offsets
+	FileEntry entry;
 	for (unsigned a = 0; a < num_files; a++)
-		if (files[a].offset + files[a].size > mc.getSize())
+	{
+		mc.read(&entry, 40);
+		if (entry.offset + entry.size > mc.getSize())
 			return false;
-
+	}
 	return true;
 }
 
@@ -373,18 +347,14 @@ bool PodArchive::isPodArchive(string filename)
 		return false;
 	}
 
-	// Read directory
-	file_entry_t* files = new file_entry_t[num_files];
-	file.Read(files, num_files * sizeof(file_entry_t));
-
-	// Check offsets
+	// Read directory and check offsets
+	FileEntry entry;
 	for (unsigned a = 0; a < num_files; a++)
-		if (files[a].offset + files[a].size > file_size)
-		{
-			file.Close();
+	{
+		file.Read(&entry, 40);
+		if (entry.offset + entry.size > file_size)
 			return false;
-		}
-
+	}
 	return true;
 }
 
@@ -395,19 +365,19 @@ bool PodArchive::isPodArchive(string filename)
 
 CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
-	Archive* archive = theMainWindow->getCurrentArchive();
-	if (archive && archive->getType() == ARCHIVE_POD)
-		theConsole->logMessage(((PodArchive*)archive)->getId());
+	Archive* archive = MainEditor::currentArchive();
+	if (archive && archive->formatId() == "pod")
+		Log::console(((PodArchive*)archive)->getId());
 	else
-		theConsole->logMessage("Current tab is not a POD archive");
+		Log::console("Current tab is not a POD archive");
 
 }
 
 CONSOLE_COMMAND(pod_set_id, 1, true)
 {
-	Archive* archive = theMainWindow->getCurrentArchive();
-	if (archive && archive->getType() == ARCHIVE_POD)
+	Archive* archive = MainEditor::currentArchive();
+	if (archive && archive->formatId() == "pod")
 		((PodArchive*)archive)->setId(args[0].Truncate(80));
 	else
-		theConsole->logMessage("Current tab is not a POD archive");
+		Log::console("Current tab is not a POD archive");
 }

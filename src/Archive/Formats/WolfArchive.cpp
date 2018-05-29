@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "WolfArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 /*******************************************************************
  * ADDITIONAL FUNCTIONS
@@ -53,7 +53,7 @@ string findFileCasing(wxFileName filename)
 	wxDir dir(path);
 	if (!dir.IsOpened())
 	{
-		wxLogMessage("Error: No directory at path %s. This shouldn't happen.");
+		LOG_MESSAGE(1, "Error: No directory at path %s. This shouldn't happen.");
 		return "";
 	}
 
@@ -266,7 +266,7 @@ void ExpandWolfGraphLump (ArchiveEntry* entry, size_t lumpnum, size_t numlumps, 
 
 	if (expanded == 0 || expanded > 65000)
 	{
-		wxLogMessage("ExpandWolfGraphLump: invalid expanded size in entry %d", lumpnum);
+		LOG_MESSAGE(1, "ExpandWolfGraphLump: invalid expanded size in entry %d", lumpnum);
 		return;
 	}
 
@@ -303,7 +303,7 @@ void ExpandWolfGraphLump (ArchiveEntry* entry, size_t lumpnum, size_t numlumps, 
 		{
 			huffptr = hufftable + (nodeval - 256);
 		}
-		else wxLogMessage("ExpandWolfGraphLump: nodeval is out of control (%d) in entry %d", nodeval, lumpnum);
+		else LOG_MESSAGE(1, "ExpandWolfGraphLump: nodeval is out of control (%d) in entry %d", nodeval, lumpnum);
 	}
 
 	entry->importMem(start, expanded);
@@ -322,7 +322,7 @@ void ExpandWolfGraphLump (ArchiveEntry* entry, size_t lumpnum, size_t numlumps, 
  * WolfArchive class constructor
  *******************************************************************/
 WolfArchive::WolfArchive()
-	: TreelessArchive(ARCHIVE_WOLF)
+	: TreelessArchive("wolf")
 {
 }
 
@@ -348,23 +348,6 @@ uint32_t WolfArchive::getEntryOffset(ArchiveEntry* entry)
 void WolfArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 {
 	entry->exProp("Offset") = (int)offset;
-}
-
-
-/* WolfArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string WolfArchive::getFileExtensionString()
-{
-	return "Wolfenstein 3D Files (*.wl1; *.wl6; *.sod; *.sd?)|*.wl1;*.wl6;*.sod;*.sd1;*.sd2;*.sd3";
-}
-
-/* WolfArchive::getFormat
- * Gives the "archive_dat" string
- *******************************************************************/
-string WolfArchive::getFormat()
-{
-	return "archive_wolf";
 }
 
 /* WolfArchive::open
@@ -434,8 +417,8 @@ bool WolfArchive::open(string filename)
 	if (opened)
 	{
 		// Update variables
-		this->filename = filename;
-		this->on_disk = true;
+		this->filename_ = filename;
+		this->on_disk_ = true;
 
 		return true;
 	}
@@ -457,23 +440,23 @@ bool WolfArchive::open(MemChunk& mc)
 	mc.seek(0, SEEK_SET);
 	uint16_t num_chunks, num_lumps;
 	mc.read(&num_chunks, 2);	// Number of chunks
-	mc.read(&spritestart, 2);	// First sprite
-	mc.read(&soundstart, 2);	// First sound
+	mc.read(&spritestart_, 2);	// First sprite
+	mc.read(&soundstart_, 2);	// First sound
 	num_chunks	= wxINT16_SWAP_ON_BE(num_chunks);
-	spritestart	= wxINT16_SWAP_ON_BE(spritestart);
-	soundstart	= wxINT16_SWAP_ON_BE(soundstart);
+	spritestart_	= wxINT16_SWAP_ON_BE(spritestart_);
+	soundstart_	= wxINT16_SWAP_ON_BE(soundstart_);
 	num_lumps	= num_chunks;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
 
 	// Read the offsets
-	theSplashWindow->setProgressMessage("Reading Wolf archive data");
+	UI::setSplashProgressMessage("Reading Wolf archive data");
 	WolfHandle* pages = new WolfHandle[num_lumps];
 	for (uint32_t d = 0; d < num_chunks; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((float)d / (float)num_chunks*2.0f);
+		UI::setSplashProgress((float)d / (float)num_chunks*2.0f);
 
 		// Read offset info
 		uint32_t offset = 0;
@@ -485,7 +468,7 @@ bool WolfArchive::open(MemChunk& mc)
 		if (pages[d].offset != 0 && pages[d].offset < (unsigned)((num_lumps + 1) * 6))
 		{
 			delete[] pages;
-			wxLogMessage("WolfArchive::open: Wolf archive is invalid or corrupt");
+			LOG_MESSAGE(1, "WolfArchive::open: Wolf archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt ";
 			setMuted(false);
 			return false;
@@ -496,7 +479,7 @@ bool WolfArchive::open(MemChunk& mc)
 	for (uint32_t d = 0, l = 0; d < num_chunks; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((float)(d + num_chunks) / (float)num_chunks*2.0f);
+		UI::setSplashProgress((float)(d + num_chunks) / (float)num_chunks*2.0f);
 
 		// Read size info
 		uint16_t size = 0;
@@ -505,9 +488,9 @@ bool WolfArchive::open(MemChunk& mc)
 
 		// Wolf chunks have no names, so just give them a number
 		string name;
-		if (d < spritestart)		name = S_FMT("WAL%05d", l);
-		else if (d < soundstart)	name = S_FMT("SPR%05d", l - spritestart);
-		else						name = S_FMT("SND%05d", l - soundstart);
+		if (d < spritestart_)		name = S_FMT("WAL%05d", l);
+		else if (d < soundstart_)	name = S_FMT("SPR%05d", l - spritestart_);
+		else						name = S_FMT("SND%05d", l - soundstart_);
 
 		++l;
 
@@ -518,7 +501,7 @@ bool WolfArchive::open(MemChunk& mc)
 
 			// Digitized sounds can be made of multiple pages
 			size_t e = d;
-			if (d >= soundstart && size == 4096)
+			if (d >= soundstart_ && size == 4096)
 			{
 				size_t fullsize = 4096;
 				do
@@ -541,14 +524,14 @@ bool WolfArchive::open(MemChunk& mc)
 			d = e;
 
 			// Add to entry list
-			getRoot()->addEntry(nlump);
+			rootDir()->addEntry(nlump);
 
 			// If the lump data goes past the end of file,
 			// the data file is invalid
 			if (getEntryOffset(nlump) + size > mc.getSize())
 			{
 				delete[] pages;
-				wxLogMessage("WolfArchive::open: Wolf archive is invalid or corrupt");
+				LOG_MESSAGE(1, "WolfArchive::open: Wolf archive is invalid or corrupt");
 				Global::error = "Archive is invalid and/or corrupt";
 				setMuted(false);
 				return false;
@@ -561,11 +544,11 @@ bool WolfArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -590,7 +573,7 @@ bool WolfArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -607,13 +590,13 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 
 	// Read Wolf header file
 	uint32_t num_lumps = (head.getSize()>>2) - 1;
-	spritestart	= soundstart = num_lumps;
+	spritestart_	= soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
 
 	// Read the offsets
-	theSplashWindow->setProgressMessage("Reading Wolf archive data");
+	UI::setSplashProgressMessage("Reading Wolf archive data");
 	const uint32_t* offsets = (const uint32_t*) head.getData();
 	MemChunk edata;
 
@@ -676,7 +659,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read offset info
 		uint32_t offset = wxINT32_SWAP_ON_BE(offsets[d]);
@@ -686,7 +669,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		// the data file is invalid
 		if (offset + size > data.getSize())
 		{
-			wxLogMessage("WolfArchive::openAudio: Wolf archive is invalid or corrupt");
+			LOG_MESSAGE(1, "WolfArchive::openAudio: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
 			return false;
@@ -729,7 +712,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 
 		// Add to entry list
 		nlump->setState(0);
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Setup variables
@@ -737,7 +720,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -754,18 +737,18 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 
 	// Read Wolf header file
 	uint32_t num_lumps = (head.getSize()- 2) >> 2;
-	spritestart	= soundstart = num_lumps;
+	spritestart_	= soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
 
 	// Read the offsets
-	theSplashWindow->setProgressMessage("Reading Wolf archive data");
+	UI::setSplashProgressMessage("Reading Wolf archive data");
 	const uint32_t* offsets = (const uint32_t*) (2 + head.getData());
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read offset info
 		uint32_t offset = wxINT32_SWAP_ON_BE(offsets[d]);
@@ -775,7 +758,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		// the data file is invalid
 		if (offset + size > data.getSize())
 		{
-			wxLogMessage("WolfArchive::openMaps: Wolf archive is invalid or corrupt");
+			LOG_MESSAGE(1, "WolfArchive::openMaps: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
 			return false;
@@ -797,7 +780,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 
 		// Add map planes to entry list
 		uint32_t planeofs[3];
@@ -815,17 +798,17 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 			nlump->setLoaded(false);
 			nlump->exProp("Offset") = (int)planeofs[i];
 			nlump->setState(0);
-			getRoot()->addEntry(nlump);
+			rootDir()->addEntry(nlump);
 		}
 	}
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -850,7 +833,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -876,17 +859,17 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 
 	// Read Wolf header file
 	uint32_t num_lumps = (head.getSize() / 3) - 1;
-	spritestart	= soundstart = num_lumps;
+	spritestart_	= soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
 
 	// Read the offsets
-	theSplashWindow->setProgressMessage("Reading Wolf archive data");
+	UI::setSplashProgressMessage("Reading Wolf archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read offset info
 		uint32_t offset = READ_L24(head, (d * 3));
@@ -899,7 +882,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		// the data file is invalid
 		if (offset + size > data.getSize())
 		{
-			wxLogMessage("WolfArchive::openGraph: Wolf archive is invalid or corrupt");
+			LOG_MESSAGE(1, "WolfArchive::openGraph: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
 			return false;
@@ -930,18 +913,18 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect all entry types
 	MemChunk edata;
 	const uint16_t* pictable;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
-		//wxLogMessage("Entry %d/%d", a, numEntries());
+		//LOG_MESSAGE(1, "Entry %d/%d", a, numEntries());
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -976,7 +959,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -989,11 +972,11 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, Arch
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -1011,7 +994,7 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, Arch
  *******************************************************************/
 ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* WolfArchive::renameEntry
@@ -1050,12 +1033,12 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("WolfArchive::loadEntryData: Failed to open datfile %s", filename);
+		LOG_MESSAGE(1, "WolfArchive::loadEntryData: Failed to open datfile %s", filename_);
 		return false;
 	}
 
@@ -1249,11 +1232,11 @@ bool WolfArchive::isWolfArchive(string filename)
  * EXTRA CONSOLE COMMANDS
  *******************************************************************/
 #include "General/Console/Console.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 
 CONSOLE_COMMAND(addimfheader, 0, true)
 {
-	vector<ArchiveEntry*> entries = theMainWindow->getCurrentEntrySelection();
+	vector<ArchiveEntry*> entries = MainEditor::currentEntrySelection();
 
 	for (size_t i = 0; i < entries.size(); ++i)
 		addIMFHeader(entries[i]);

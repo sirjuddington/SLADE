@@ -40,8 +40,8 @@
 // Declare hash map class to hold EntryDataFormats
 WX_DECLARE_STRING_HASH_MAP(EntryDataFormat*, EDFMap);
 EDFMap data_formats;
-EntryDataFormat*	edf_any = NULL;
-EntryDataFormat*	edf_text = NULL;
+EntryDataFormat*	edf_any = nullptr;
+EntryDataFormat*	edf_text = nullptr;
 
 
 /*******************************************************************
@@ -130,7 +130,7 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 	p.parseText(mc);
 
 	// Get data_formats tree
-	ParseTreeNode* pt_formats = (ParseTreeNode*)(p.parseTreeRoot()->getChild("data_formats"));
+	auto pt_formats = p.parseTreeRoot()->getChildPTN("data_formats");
 
 	// Check it exists
 	if (!pt_formats)
@@ -140,7 +140,7 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 	for (unsigned a = 0; a < pt_formats->nChildren(); a++)
 	{
 		// Get child as ParseTreeNode
-		ParseTreeNode* formatnode = (ParseTreeNode*)pt_formats->getChild(a);
+		auto formatnode = pt_formats->getChildPTN(a);
 
 		// Create+add new data format
 		EntryDataFormat* edf = new EntryDataFormat(formatnode->getName().Lower());
@@ -154,7 +154,7 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 			if (parent_type != EntryType::unknownType())
 				parent_type->copyToType(ntype);
 			else
-				wxLogMessage("Warning: Entry type %s inherits from unknown type %s", ntype->getId(), typenode->getInherit());
+				LOG_MESSAGE(1, "Warning: Entry type %s inherits from unknown type %s", ntype->getId(), typenode->getInherit());
 		}
 		*/
 	}
@@ -256,6 +256,9 @@ void EntryDataFormat::initBuiltinFormats()
 	new BZip2DataFormat();
 	new TarDataFormat();
 	new DiskDataFormat();
+	new PodArchiveDataFormat();
+	new ChasmBinArchiveDataFormat();
+	new SinArchiveDataFormat();
 	new MUSDataFormat();
 	new MIDIDataFormat();
 	new XMIDataFormat();

@@ -31,7 +31,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "FileMonitor.h"
 #include "Archive/Archive.h"
 #include "Archive/Formats/WadArchive.h"
@@ -147,7 +146,7 @@ void DB2MapFileMonitor::fileModified()
 	wad->open(filename);
 
 	// Get map info for target archive
-	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	vector<Archive::MapDesc> maps = archive->detectMaps();
 	for (unsigned a = 0; a < maps.size(); a++)
 	{
 		if (S_CMPNOCASE(maps[a].name, map_name))
@@ -180,7 +179,7 @@ void DB2MapFileMonitor::fileModified()
 			unsigned index = archive->entryIndex(entry);
 			for (unsigned b = 0; b < wad->numEntries(); b++)
 			{
-				ArchiveEntry* ne = archive->addEntry(wad->getEntry(b), index, NULL, true);
+				ArchiveEntry* ne = archive->addEntry(wad->getEntry(b), index, nullptr, true);
 				if (index <= archive->numEntries()) index++;
 				ne->lock();
 			}
@@ -197,7 +196,7 @@ void DB2MapFileMonitor::fileModified()
 void DB2MapFileMonitor::processTerminated()
 {
 	// Get map info for target archive
-	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	vector<Archive::MapDesc> maps = archive->detectMaps();
 	for (unsigned a = 0; a < maps.size(); a++)
 	{
 		if (S_CMPNOCASE(maps[a].name, map_name))

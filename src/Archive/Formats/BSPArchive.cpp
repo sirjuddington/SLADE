@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "BSPArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 /*
 
@@ -53,7 +53,7 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* BSPArchive::BSPArchive
  * BSPArchive class constructor
  *******************************************************************/
-BSPArchive::BSPArchive() : Archive(ARCHIVE_BSP)
+BSPArchive::BSPArchive() : Archive("bsp")
 {
 }
 
@@ -76,22 +76,6 @@ uint32_t BSPArchive::getEntryOffset(ArchiveEntry* entry)
 	return (uint32_t)(int)entry->exProp("Offset");
 }
 
-/* BSPArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string BSPArchive::getFileExtensionString()
-{
-	return "BSP Files (*.bsp)|*.bsp";
-}
-
-/* BSPArchive::getFormat
- * Returns the string id for the pak EntryDataFormat
- *******************************************************************/
-string BSPArchive::getFormat()
-{
-	return "archive_bsp";
-}
-
 /* BSPArchive::open
  * Reads BSP format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -102,7 +86,7 @@ bool BSPArchive::open(MemChunk& mc)
 	size_t size = mc.getSize();
 	if (size < 64)
 	{
-		wxLogMessage("BSPArchive::open: Opening failed, invalid header");
+		LOG_MESSAGE(1, "BSPArchive::open: Opening failed, invalid header");
 		Global::error = "Invalid BSP header";
 		return false;
 	}
@@ -116,7 +100,7 @@ bool BSPArchive::open(MemChunk& mc)
 	version = wxINT32_SWAP_ON_BE(version);
 	if (version != 0x17 && version != 0x1D)
 	{
-		wxLogMessage("BSPArchive::open: Opening failed, unknown BSP version");
+		LOG_MESSAGE(1, "BSPArchive::open: Opening failed, unknown BSP version");
 		Global::error = "Unknown BSP version";
 		return false;
 	}
@@ -136,7 +120,7 @@ bool BSPArchive::open(MemChunk& mc)
 		// Check that content stays within bounds
 		if (wxINT32_SWAP_ON_BE(sz) + wxINT32_SWAP_ON_BE(ofs) > size)
 		{
-			wxLogMessage("BSPArchive::open: Opening failed, invalid header (data out of bounds)");
+			LOG_MESSAGE(1, "BSPArchive::open: Opening failed, invalid header (data out of bounds)");
 			Global::error = "Invalid BSP header";
 			return false;
 		}
@@ -149,7 +133,7 @@ bool BSPArchive::open(MemChunk& mc)
 			// If there are no textures, no need to bother
 			if (texsize == 0)
 			{
-				wxLogMessage("BSPArchive::open: Opening failed, no texture");
+				LOG_MESSAGE(1, "BSPArchive::open: Opening failed, no texture");
 				Global::error = "No texture content";
 				return false;
 			}
@@ -161,12 +145,12 @@ bool BSPArchive::open(MemChunk& mc)
 	mc.seek(texoffset, wxFromStart);
 	mc.read(&numtex, 4);
 	numtex = wxINT32_SWAP_ON_BE(numtex);
-	theSplashWindow->setProgressMessage("Reading BSP texture data");
+	UI::setSplashProgressMessage("Reading BSP texture data");
 
 	// Check that the offset table is within bounds
 	if (texoffset + ((numtex + 1)<<2) > size)
 	{
-		wxLogMessage("BSPArchive::open: Opening failed, miptex entry out of bounds");
+		LOG_MESSAGE(1, "BSPArchive::open: Opening failed, miptex entry out of bounds");
 		Global::error = "Out of bounds";
 		return false;
 	}
@@ -175,7 +159,7 @@ bool BSPArchive::open(MemChunk& mc)
 	for (size_t a = 0; a < numtex; ++a)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)a / (float)numtex));
+		UI::setSplashProgress(((float)a / (float)numtex));
 
 		size_t offset;
 		mc.read(&offset, 4);
@@ -249,7 +233,7 @@ bool BSPArchive::open(MemChunk& mc)
 			nlump->setState(0);
 
 			// Add to entry list
-			getRoot()->addEntry(nlump);
+			rootDir()->addEntry(nlump);
 
 			// Okay, that texture works, go back to where we were and check the next
 			mc.seek(currentpos, SEEK_SET);
@@ -258,11 +242,11 @@ bool BSPArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)numtex)));
+		UI::setSplashProgress((((float)a / (float)numtex)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -291,7 +275,7 @@ bool BSPArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -325,12 +309,12 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("BSPArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "BSPArchive::loadEntryData: Unable to open archive file %s", filename_);
 		return false;
 	}
 

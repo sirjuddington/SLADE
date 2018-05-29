@@ -105,7 +105,7 @@ ArchiveEntry* PatchTable::patchEntry(size_t index)
 {
 	// Check index
 	if (index >= patches.size())
-		return NULL;
+		return nullptr;
 
 	// Patches namespace > graphics
 	ArchiveEntry* entry = theResourceManager->getPatchEntry(patches[index].name, "patches", parent);
@@ -128,7 +128,7 @@ ArchiveEntry* PatchTable::patchEntry(string name)
 	}
 
 	// Not found
-	return NULL;
+	return nullptr;
 }
 
 /* PatchTable::patchIndex
@@ -257,7 +257,7 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 	pnames->seek(0, SEEK_SET);
 	if (!pnames->read(&n_pnames, 4))
 	{
-		wxLogMessage("Error: PNAMES lump is corrupt");
+		LOG_MESSAGE(1, "Error: PNAMES lump is corrupt");
 		return false;
 	}
 
@@ -270,7 +270,7 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 		// Try to read pname
 		if (!pnames->read(&pname, 8))
 		{
-			wxLogMessage("Error: PNAMES entry %i is corrupt", a);
+			LOG_MESSAGE(1, "Error: PNAMES entry %i is corrupt", a);
 			return false;
 		}
 

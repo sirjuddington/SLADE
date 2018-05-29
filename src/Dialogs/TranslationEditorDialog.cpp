@@ -29,9 +29,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "TranslationEditorDialog.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
 #include "UI/Canvas/GfxCanvas.h"
@@ -55,7 +57,7 @@ GradientBox::GradientBox(wxWindow* parent, int steps) : OGLCanvas(parent, -1)
 	this->steps = steps;
 
 	// Minimum height 16
-	SetInitialSize(wxSize(-1, 16));
+	SetInitialSize(wxSize(-1, UI::scalePx(16)));
 }
 
 /* GradientBox::~GradientBox
@@ -115,7 +117,7 @@ void GradientBox::draw()
 /* TranslationEditorDialog::TranslationEditorDialog
  * TranslationEditorDialog class constructor
  *******************************************************************/
-TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* pal, string title, SImage* preview_image)
+TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette* pal, string title, SImage* preview_image)
 	: wxDialog(parent, -1, title)
 {
 	// Init variables
@@ -136,8 +138,8 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 
 	// Create sizer
 	wxBoxSizer* mainsizer = new wxBoxSizer(wxVERTICAL);
-	wxGridBagSizer* sizer = new wxGridBagSizer(4, 4);
-	mainsizer->Add(sizer, 1, wxEXPAND|wxALL, 10);
+	wxGridBagSizer* sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	mainsizer->Add(sizer, 1, wxEXPAND|wxALL, UI::padLarge());
 	SetSizer(mainsizer);
 
 
@@ -149,22 +151,22 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	sizer->Add(framesizer, wxGBPosition(0, 0), wxDefaultSpan, wxEXPAND);
 
 	list_translations = new wxListBox(this, -1);
-	framesizer->Add(list_translations, 1, wxEXPAND|wxALL, 4);
+	framesizer->Add(list_translations, 1, wxEXPAND|wxALL, UI::pad());
 
 	// Add translation button
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
-	framesizer->Add(vbox, 0, wxEXPAND|wxTOP|wxBOTTOM|wxRIGHT, 4);
+	framesizer->Add(vbox, 0, wxEXPAND|wxTOP|wxBOTTOM|wxRIGHT, UI::pad());
 
 	btn_add = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
-	vbox->Add(btn_add, 0, wxEXPAND|wxBOTTOM, 4);
+	vbox->Add(btn_add, 0, wxEXPAND|wxBOTTOM, UI::pad());
 
 	// Remove translation button
 	btn_remove = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "minus"));
-	vbox->Add(btn_remove, 0, wxEXPAND|wxBOTTOM, 4);
+	vbox->Add(btn_remove, 0, wxEXPAND|wxBOTTOM, UI::pad());
 
 	// Move up button
 	btn_up = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "up"));
-	vbox->Add(btn_up, 0, wxEXPAND|wxBOTTOM, 4);
+	vbox->Add(btn_up, 0, wxEXPAND|wxBOTTOM, UI::pad());
 
 	// Move down button
 	btn_down = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "down"));
@@ -180,9 +182,9 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	pal_canvas_original = new PaletteCanvas(this, -1);
 	pal_canvas_original->doubleWidth(true);
 	pal_canvas_original->setPalette(palette);
-	pal_canvas_original->SetInitialSize(wxSize(448, 112));
+	pal_canvas_original->SetInitialSize(wxSize(UI::scalePx(448), UI::scalePx(112)));
 	pal_canvas_original->allowSelection(2);
-	framesizer->Add(pal_canvas_original->toPanel(this), 1, wxALL|wxEXPAND, 4);
+	framesizer->Add(pal_canvas_original->toPanel(this), 1, wxALL|wxEXPAND, UI::pad());
 
 
 	// --- Bottom half (translation target) ---
@@ -194,23 +196,23 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 
 	// Palette range
 	rb_type_palette = new wxRadioButton(this, -1, "Palette Range", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-	framesizer->Add(rb_type_palette, 0, wxEXPAND|wxALL, 4);
+	framesizer->Add(rb_type_palette, 0, wxEXPAND|wxALL, UI::pad());
 
 	// Colour gradient
 	rb_type_colour = new wxRadioButton(this, -1, "Colour Gradient");
-	framesizer->Add(rb_type_colour, 0, wxEXPAND|wxLEFT|wxRIGHT, 4);
+	framesizer->Add(rb_type_colour, 0, wxEXPAND|wxLEFT|wxRIGHT, UI::pad());
 
 	// Desaturated colour gradient
 	rb_type_desaturate = new wxRadioButton(this, -1, "Desaturated Colour Gradient");
-	framesizer->Add(rb_type_desaturate, 0, wxEXPAND|wxALL, 4);
+	framesizer->Add(rb_type_desaturate, 0, wxEXPAND|wxALL, UI::pad());
 
 	// Colourise range
 	rb_type_colourise = new wxRadioButton(this, -1, "Colourise Range");
-	framesizer->Add(rb_type_colourise, 0, wxEXPAND|wxLEFT|wxRIGHT, 4);
+	framesizer->Add(rb_type_colourise, 0, wxEXPAND|wxLEFT|wxRIGHT, UI::pad());
 
 	// Tint range
 	rb_type_tint = new wxRadioButton(this, -1, "Tint Range");
-	framesizer->Add(rb_type_tint, 0, wxEXPAND | wxALL, 4);
+	framesizer->Add(rb_type_tint, 0, wxEXPAND | wxALL, UI::pad());
 
 	// Target range
 	frame = new wxStaticBox(this, -1, "Target Range");
@@ -227,13 +229,13 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	pal_canvas_target = new PaletteCanvas(panel_target_palette, -1);
 	pal_canvas_target->doubleWidth(true);
 	pal_canvas_target->setPalette(palette);
-	pal_canvas_target->SetInitialSize(wxSize(448, 112));
+	pal_canvas_target->SetInitialSize(wxSize(UI::scalePx(448), UI::scalePx(112)));
 	pal_canvas_target->allowSelection(2);
 	vbox->Add(pal_canvas_target->toPanel(panel_target_palette), 1, wxEXPAND);
 
 	// Reverse origin range
 	cb_target_reverse = new wxCheckBox(panel_target_palette, -1, "Reverse Selection");
-	vbox->Add(cb_target_reverse, 0, wxTOP, 4);
+	vbox->Add(cb_target_reverse, 0, wxTOP, UI::pad());
 
 
 	// Target colour gradient panel
@@ -244,12 +246,12 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	// Start colour
 	vbox->AddStretchSpacer();
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(hbox, 0, wxEXPAND|wxBOTTOM, 4);
+	vbox->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::pad());
 
 	cb_range_begin = new ColourBox(panel_target_gradient, -1, false, true);
 	cb_range_begin->setColour(COL_BLACK);
 	cb_range_begin->setPalette(pal);
-	hbox->Add(cb_range_begin, 0, wxEXPAND|wxRIGHT, 4);
+	hbox->Add(cb_range_begin, 0, wxEXPAND|wxRIGHT, UI::pad());
 	hbox->Add(new wxStaticText(panel_target_gradient, -1, "From"), 0, wxALIGN_CENTER_VERTICAL);
 
 	// End colour
@@ -257,7 +259,7 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	cb_range_end->setColour(COL_WHITE);
 	cb_range_end->setPalette(pal);
 	hbox->AddStretchSpacer();
-	hbox->Add(new wxStaticText(panel_target_gradient, -1, "To"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	hbox->Add(new wxStaticText(panel_target_gradient, -1, "To"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
 	hbox->Add(cb_range_end, 0, wxEXPAND);
 
 	// Gradient preview
@@ -273,24 +275,24 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 
 	// Add colour chooser
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(hbox, 0, wxEXPAND|wxALL, 4);
+	vbox->Add(hbox, 0, wxEXPAND|wxALL, UI::pad());
 
 	cb_target_tint = new ColourBox(panel_target_tint, -1, false, true);
 	cb_target_tint->setColour(COL_RED);
 	cb_target_tint->setPalette(pal);
-	hbox->Add(cb_target_tint, 0, wxEXPAND|wxRIGHT, 4);
+	hbox->Add(cb_target_tint, 0, wxEXPAND|wxRIGHT, UI::pad());
 	hbox->Add(new wxStaticText(panel_target_tint, -1, "Colour"), 1, wxALIGN_CENTER_VERTICAL);
 
 	// Add 'amount' slider
 	slider_tint = new wxSlider(panel_target_tint, -1, 50, 0, 100);
 	label_tint = new wxStaticText(panel_target_tint, -1, "50%");
 	label_amount = new wxStaticText(panel_target_tint, -1, "Amount");
-	hbox->Add(label_amount, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(slider_tint, 3, wxEXPAND|wxRIGHT, 4);
+	hbox->Add(label_amount, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
+	hbox->Add(slider_tint, 3, wxEXPAND|wxRIGHT, UI::pad());
 	hbox->Add(label_tint, 0, wxALIGN_CENTER_VERTICAL);
 
 	// Show initial target panel (palette)
-	framesizer->Add(panel_target_palette, 1, wxEXPAND|wxALL, 4);
+	framesizer->Add(panel_target_palette, 1, wxEXPAND|wxALL, UI::pad());
 	panel_target_gradient->Show(false);
 	panel_target_tint->Show(false);
 
@@ -301,12 +303,12 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	// Palette preview
 	frame = new wxStaticBox(this, -1, "Resulting Palette");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	hbox->Add(framesizer, 0, wxEXPAND|wxRIGHT, 4);
+	hbox->Add(framesizer, 0, wxEXPAND|wxRIGHT, UI::pad());
 
 	pal_canvas_preview = new PaletteCanvas(this, -1);
-	pal_canvas_preview->SetInitialSize(wxSize(224, 224));
+	pal_canvas_preview->SetInitialSize(wxSize(UI::scalePx(224), UI::scalePx(224)));
 	pal_canvas_preview->setPalette(palette);
-	framesizer->Add(pal_canvas_preview->toPanel(this), 1, wxEXPAND|wxALL, 4);
+	framesizer->Add(pal_canvas_preview->toPanel(this), 1, wxEXPAND|wxALL, UI::pad());
 
 	// Image preview
 	frame = new wxStaticBox(this, -1, "Preview");
@@ -317,15 +319,15 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	gfx_preview->setPalette(palette);
 	gfx_preview->setViewType(GFXVIEW_CENTERED);
 	gfx_preview->getImage()->copyImage(&image_preview);
-	framesizer->Add(gfx_preview->toPanel(this), 1, wxEXPAND|wxALL, 4);
+	framesizer->Add(gfx_preview->toPanel(this), 1, wxEXPAND|wxALL, UI::pad());
 
 
 	// --- Translation string ---
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wxGBPosition(3, 0), wxGBSpan(1, 2), wxEXPAND|wxLEFT|wxRIGHT, 4);
+	sizer->Add(hbox, wxGBPosition(3, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	text_string = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
-	hbox->Add(new wxStaticText(this, -1, "Translation String:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	hbox->Add(new wxStaticText(this, -1, "Translation String:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
 	hbox->Add(text_string, 1, wxEXPAND);
 
 
@@ -336,19 +338,19 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	// Load button
 	btn_load = new wxButton(this, -1, "Load from File");
 	buttonsizer->InsertStretchSpacer(0);
-	buttonsizer->Insert(0, btn_load, 0, wxLEFT|wxRIGHT, 4);
+	buttonsizer->Insert(0, btn_load, 0, wxRIGHT, UI::pad());
 
 	// Save button
 	btn_save = new wxButton(this, -1, "Save to File");
-	buttonsizer->Insert(1, btn_save, 0, wxLEFT, 4);
+	buttonsizer->Insert(1, btn_save, 0, wxRIGHT, UI::pad());
 
 	// Truecolor checkbox
 	cb_truecolor = new wxCheckBox(this, -1, "Truecolor");
-	buttonsizer->Insert(2, cb_truecolor, 0, wxLEFT, 4);
+	buttonsizer->Insert(2, cb_truecolor, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
 
 	// Palette translation only
 	cb_paletteonly = new wxCheckBox(this, -1, "Palette Translation Only");
-	buttonsizer->Insert(3, cb_paletteonly, 0, wxLEFT, 4);
+	buttonsizer->Insert(3, cb_paletteonly, 0, wxALIGN_CENTER_VERTICAL);
 
 	// Bind events
 	Bind(wxEVT_SIZE, &TranslationEditorDialog::onSize, this);
@@ -500,10 +502,10 @@ void TranslationEditorDialog::openRange(int index)
 		// Update UI
 		gb_gradient->Refresh();
 	}
-	else if (tr->getType() == TRANS_COLOURISE)
+	else if (tr->getType() == TRANS_BLEND)
 	{
 		// Colourise range
-		TransRangeColourise* tcr = (TransRangeColourise*)tr;
+		TransRangeBlend* tcr = (TransRangeBlend*)tr;
 
 		// Select colourise type radiobox
 		rb_type_colourise->SetValue(true);
@@ -642,10 +644,10 @@ void TranslationEditorDialog::setTintColour(rgba_t col)
 	TransRange* tr = translation.getRange(list_translations->GetSelection());
 
 	// Check its type
-	if (tr->getType() == TRANS_COLOURISE)
+	if (tr->getType() == TRANS_BLEND)
 	{
 		// Colour range
-		TransRangeColourise* tcr = (TransRangeColourise*)tr;
+		TransRangeBlend* tcr = (TransRangeBlend*)tr;
 
 		// Set destination end colour
 		tcr->setColour(col);
@@ -918,8 +920,8 @@ void TranslationEditorDialog::onRBColourSelected(wxCommandEvent& e)
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 		// Target colour gradient
-		tr->setDStart(cb_range_begin->getColour());
-		tr->setDEnd(cb_range_end->getColour());
+		tr->setDStart(cb_range_begin->colour());
+		tr->setDEnd(cb_range_end->colour());
 
 		// Update UI
 		updateListItem(index);
@@ -951,8 +953,8 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e)
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 		// Target colour gradient
-		rgba_t sc = cb_range_begin->getColour();
-		rgba_t ec = cb_range_end->getColour();
+		rgba_t sc = cb_range_begin->colour();
+		rgba_t ec = cb_range_end->colour();
 		tr->setDStart(MathStuff::clamp((double)sc.r / 127.0f, 0, 2),
 		              MathStuff::clamp((double)sc.g / 127.0f, 0, 2),
 		              MathStuff::clamp((double)sc.b / 127.0f, 0, 2));
@@ -982,13 +984,13 @@ void TranslationEditorDialog::onRBColouriseSelected(wxCommandEvent& e)
 		translation.removeRange(index);
 
 		// Recreate it
-		translation.addRange(TRANS_COLOURISE, index);
-		TransRangeColourise* tr = (TransRangeColourise*)translation.getRange(index);
+		translation.addRange(TRANS_BLEND, index);
+		TransRangeBlend* tr = (TransRangeBlend*)translation.getRange(index);
 		// Origin range
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 		// Target colour
-		tr->setColour(cb_target_tint->getColour());
+		tr->setColour(cb_target_tint->colour());
 
 		// Update UI
 		updateListItem(index);
@@ -1019,7 +1021,7 @@ void TranslationEditorDialog::onRBTintSelected(wxCommandEvent& e)
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 		// Target colour
-		tr->setColour(cb_target_tint->getColour());
+		tr->setColour(cb_target_tint->colour());
 		tr->setAmount(slider_tint->GetValue());
 
 		// Update UI
@@ -1035,7 +1037,7 @@ void TranslationEditorDialog::onRBTintSelected(wxCommandEvent& e)
 void TranslationEditorDialog::onBeginColourChanged(wxEvent& e)
 {
 	// Set start colour to selected colour
-	setStartColour(cb_range_begin->getColour());
+	setStartColour(cb_range_begin->colour());
 }
 
 /* TranslationEditorDialog::onEndColourChanged
@@ -1044,7 +1046,7 @@ void TranslationEditorDialog::onBeginColourChanged(wxEvent& e)
 void TranslationEditorDialog::onEndColourChanged(wxEvent& e)
 {
 	// Set end colour to selected colour
-	setEndColour(cb_range_end->getColour());
+	setEndColour(cb_range_end->colour());
 }
 
 /* TranslationEditorDialog::onTintColourChanged
@@ -1052,7 +1054,7 @@ void TranslationEditorDialog::onEndColourChanged(wxEvent& e)
  *******************************************************************/
 void TranslationEditorDialog::onTintColourChanged(wxEvent& e)
 {
-	setTintColour(cb_target_tint->getColour());
+	setTintColour(cb_target_tint->colour());
 }
 
 /* TranslationEditorDialog::onTintAmountChanged
@@ -1131,7 +1133,7 @@ void TranslationEditorDialog::onBtnAdd(wxCommandEvent& e)
 	else if (rb_type_desaturate->GetValue())
 		translation.addRange(TRANS_DESAT, index);
 	else if (rb_type_colourise->GetValue())
-		translation.addRange(TRANS_COLOURISE, index);
+		translation.addRange(TRANS_BLEND, index);
 	else if (rb_type_tint->GetValue())
 		translation.addRange(TRANS_TINT, index);
 
@@ -1229,7 +1231,7 @@ void TranslationEditorDialog::onBtnDown(wxCommandEvent& e)
 void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 {
 	// Get user directory
-	string dir = appPath("translations", DIR_USER);
+	string dir = App::path("translations", App::Dir::User);
 
 	// Create open file dialog
 	wxFileDialog dialog_open(this, "Load Translation from File", dir, wxEmptyString,
@@ -1241,21 +1243,15 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 		// Get the selected filename
 		string filename = dialog_open.GetPath();
 
-		// Load file in a tokenizer
-		Tokenizer tz;
-		tz.openFile(dialog_open.GetPath());
+		// Load file to string
+		wxFile file;
+		string tstring;
+		if (file.Open(dialog_open.GetPath()))
+			file.ReadAll(&tstring);
 
-		// Parse translation
+		// Parse as a translation
 		Translation trans;
-		string token = tz.getToken();
-		while (!token.IsEmpty())
-		{
-			// Parse translation range
-			trans.parse(token);
-
-			tz.getToken();			// Skip ,
-			token = tz.getToken();
-		}
+		trans.parse(tstring);
 
 		// Open it if parsed ok
 		if (trans.nRanges() > 0)
@@ -1271,7 +1267,7 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 void TranslationEditorDialog::onBtnSave(wxCommandEvent& e)
 {
 	// If the directory doesn't exist create it
-	string dir = appPath("translations", DIR_USER);
+	string dir = App::path("translations", App::Dir::User);
 	if (!wxDirExists(dir))
 		wxMkdir(dir);
 
@@ -1370,7 +1366,7 @@ void TranslationEditorDialog::onCBPaletteOnly(wxCommandEvent& e)
 /*******************************************************************
 * GFXCOLOURISEDIALOG FUNCTIONS
 *******************************************************************/
-GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
+GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal)
 : wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
 	// Init variables
@@ -1410,7 +1406,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 	gfx_preview->setPalette(pal);
 	gfx_preview->SetInitialSize(wxSize(192, 192));
 	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-	rgba_t col = cb_colour->getColour();
+	rgba_t col = cb_colour->colour();
 	gfx_preview->getImage()->colourise(col, pal);
 	gfx_preview->updateImageTexture();
 
@@ -1429,13 +1425,13 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 
 rgba_t GfxColouriseDialog::getColour()
 {
-	return cb_colour->getColour();
+	return cb_colour->colour();
 }
 
 void GfxColouriseDialog::setColour(string col)
 {
 	wxColour colour(col);
-	rgba_t rgba = rgba_t(colour.Red(), colour.Green(), colour.Blue());
+	rgba_t rgba = rgba_t(COLWX(colour));
 	cb_colour->setColour(rgba);
 	gfx_preview->getImage()->colourise(rgba, palette);
 	gfx_preview->updateImageTexture();
@@ -1446,7 +1442,7 @@ void GfxColouriseDialog::setColour(string col)
 void GfxColouriseDialog::onColourChanged(wxEvent& e)
 {
 	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-	gfx_preview->getImage()->colourise(cb_colour->getColour(), palette);
+	gfx_preview->getImage()->colourise(cb_colour->colour(), palette);
 	gfx_preview->updateImageTexture();
 	gfx_preview->Refresh();
 }
@@ -1463,7 +1459,7 @@ void GfxColouriseDialog::onResize(wxSizeEvent& e)
 * GFXTINTDIALOG FUNCTIONS
 *******************************************************************/
 
-GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
+GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal)
 : wxDialog(parent, -1, "Tint", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
 	// Init variables
@@ -1535,7 +1531,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit*
 
 rgba_t GfxTintDialog::getColour()
 {
-	return rgba_t(cb_colour->getColour());
+	return rgba_t(cb_colour->colour());
 }
 
 float GfxTintDialog::getAmount()
@@ -1546,7 +1542,7 @@ float GfxTintDialog::getAmount()
 void GfxTintDialog::setValues(string col, int val)
 {
 	wxColour colour(col);
-	cb_colour->setColour(rgba_t(colour.Red(), colour.Green(), colour.Blue()));
+	cb_colour->setColour(rgba_t(COLWX(colour)));
 	slider_amount->SetValue(val);
 	label_amount->SetLabel(S_FMT("%d%% ", slider_amount->GetValue()));
 	gfx_preview->getImage()->tint(getColour(), getAmount(), palette);

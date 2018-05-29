@@ -63,7 +63,7 @@ CVar* get_cvar(string name)
 			return cvars[c];
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /* dump_cvars

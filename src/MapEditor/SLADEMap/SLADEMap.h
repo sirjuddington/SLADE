@@ -16,7 +16,7 @@ struct mobj_holder_t
 	MapObject*	mobj;
 	bool		in_map;
 
-	mobj_holder_t() { mobj = NULL; in_map = false; }
+	mobj_holder_t() { mobj = nullptr; in_map = false; }
 	mobj_holder_t(MapObject* mobj, bool in_map) { this->mobj = mobj; this->in_map = in_map; }
 
 	void set(MapObject* object, bool in_map)
@@ -39,100 +39,13 @@ struct mobj_cd_t
 };
 
 class ParseTreeNode;
+namespace Game { enum class TagType; }
+
 class SLADEMap
 {
-	friend class MapEditor;
-private:
-	vector<MapLine*>	lines;
-	vector<MapSide*>	sides;
-	vector<MapSector*>	sectors;
-	vector<MapVertex*>	vertices;
-	vector<MapThing*>	things;
-	string				udmf_namespace;
-	PropertyList		udmf_props;
-	bool				position_frac;
-	string				name;
-	int					current_format;
-	long				opened_time;
-	MapSpecials			map_specials;
-	int					bulk_op_level;
-	bool				specials_expired;
-
-	// UDMF Extras
-	vector<ArchiveEntry*>	udmf_extra_entries;
-
-	vector<mobj_holder_t>	all_objects;
-	vector<unsigned>		deleted_objects;
-	vector<unsigned>		created_objects;
-	vector<mobj_cd_t>		created_deleted_objects;
-
-	// The last time the map geometry was updated
-	long	geometry_updated;
-	// The last time the thing list was modified
-	long	things_updated;
-
-	// Usage counts
-	std::map<string, int>	usage_tex;
-	std::map<string, int>	usage_flat;
-	std::map<int, int>		usage_thing_type;
-
-	// Doom format
-	bool	addVertex(doomvertex_t& v);
-	bool	addSide(doomside_t& s);
-	bool	addLine(doomline_t& l);
-	bool	addSector(doomsector_t& s);
-	bool	addThing(doomthing_t& t);
-
-	bool	readDoomVertexes(ArchiveEntry* entry);
-	bool	readDoomSidedefs(ArchiveEntry* entry);
-	bool	readDoomLinedefs(ArchiveEntry* entry);
-	bool	readDoomSectors(ArchiveEntry* entry);
-	bool	readDoomThings(ArchiveEntry* entry);
-
-	bool	writeDoomVertexes(ArchiveEntry* entry);
-	bool	writeDoomSidedefs(ArchiveEntry* entry);
-	bool	writeDoomLinedefs(ArchiveEntry* entry);
-	bool	writeDoomSectors(ArchiveEntry* entry);
-	bool	writeDoomThings(ArchiveEntry* entry);
-
-	// Hexen format
-	bool	addLine(hexenline_t& l);
-	bool	addThing(hexenthing_t& t);
-
-	bool	readHexenLinedefs(ArchiveEntry* entry);
-	bool	readHexenThings(ArchiveEntry* entry);
-
-	bool	writeHexenLinedefs(ArchiveEntry* entry);
-	bool	writeHexenThings(ArchiveEntry* entry);
-
-	// Doom 64 format
-	bool	addVertex(doom64vertex_t& v);
-	bool	addSide(doom64side_t& s);
-	bool	addLine(doom64line_t& l);
-	bool	addSector(doom64sector_t& s);
-	bool	addThing(doom64thing_t& t);
-
-	bool	readDoom64Vertexes(ArchiveEntry* entry);
-	bool	readDoom64Sidedefs(ArchiveEntry* entry);
-	bool	readDoom64Linedefs(ArchiveEntry* entry);
-	bool	readDoom64Sectors(ArchiveEntry* entry);
-	bool	readDoom64Things(ArchiveEntry* entry);
-
-	bool	writeDoom64Vertexes(ArchiveEntry* entry);
-	bool	writeDoom64Sidedefs(ArchiveEntry* entry);
-	bool	writeDoom64Linedefs(ArchiveEntry* entry);
-	bool	writeDoom64Sectors(ArchiveEntry* entry);
-	bool	writeDoom64Things(ArchiveEntry* entry);
-
-	// UDMF
-	bool	addVertex(ParseTreeNode* def);
-	bool	addSide(ParseTreeNode* def);
-	bool	addLine(ParseTreeNode* def);
-	bool	addSector(ParseTreeNode* def);
-	bool	addThing(ParseTreeNode* def);
-
 public:
 	SLADEMap();
+	SLADEMap(const SLADEMap& copy) = delete;
 	~SLADEMap();
 
 	// Map entry ordering
@@ -145,46 +58,54 @@ public:
 	    SECTORS
 	};
 
-	string		mapName() { return name; }
-	string		udmfNamespace() { return udmf_namespace; }
-	int			currentFormat() { return current_format; }
-	MapVertex*	getVertex(unsigned index);
-	MapSide*	getSide(unsigned index);
-	MapLine*	getLine(unsigned index);
-	MapSector*	getSector(unsigned index);
-	MapThing*	getThing(unsigned index);
-	MapObject*	getObject(uint8_t type, unsigned index);
-	size_t		nVertices() { return vertices.size(); }
-	size_t		nLines() { return lines.size(); }
-	size_t		nSides() { return sides.size(); }
-	size_t		nSectors() { return sectors.size(); }
-	size_t		nThings() { return things.size(); }
-	long		geometryUpdated() { return geometry_updated; }
-	long		thingsUpdated() { return things_updated; }
+	string		mapName() const { return name_; }
+	string		udmfNamespace() const { return udmf_namespace_; }
+	int			currentFormat() const { return current_format_; }
+	long		geometryUpdated() const { return geometry_updated_; }
+	long		thingsUpdated() const { return things_updated_; }
 	void		setGeometryUpdated();
 	void		setThingsUpdated();
 
-	vector<ArchiveEntry*>&	udmfExtraEntries() { return udmf_extra_entries; }
+	// MapObject access
+	MapVertex*	getVertex(unsigned index) const;
+	MapSide*	getSide(unsigned index) const;
+	MapLine*	getLine(unsigned index) const;
+	MapSector*	getSector(unsigned index) const;
+	MapThing*	getThing(unsigned index) const;
+	MapObject*	getObject(uint8_t type, unsigned index) const;
+	size_t		nVertices() const { return vertices_.size(); }
+	size_t		nLines() const { return lines_.size(); }
+	size_t		nSides() const { return sides_.size(); }
+	size_t		nSectors() const { return sectors_.size(); }
+	size_t		nThings() const { return things_.size(); }
+
+	const vector<MapVertex*>&	vertices() const { return vertices_; }
+	const vector<MapLine*>&		lines() const { return lines_; }
+	const vector<MapSide*>&		sides() const { return sides_; }
+	const vector<MapSector*>&	sectors() const { return sectors_; }
+	const vector<MapThing*>&	things() const { return things_; }
+
+	vector<ArchiveEntry*>&	udmfExtraEntries() { return udmf_extra_entries_; }
 
 	// MapObject id stuff (used for undo/redo)
 	void		addMapObject(MapObject* object);
 	void		removeMapObject(MapObject* object);
-	MapObject*	getObjectById(unsigned id) { return all_objects[id].mobj; }
+	MapObject*	getObjectById(unsigned id) { return all_objects_[id].mobj; }
 	void		getObjectIdList(uint8_t type, vector<unsigned>& list);
 	void		restoreObjectIdList(uint8_t type, vector<unsigned>& list);
 
 	void	refreshIndices();
-	bool	readMap(Archive::mapdesc_t map);
+	bool	readMap(Archive::MapDesc map);
 	void	clearMap();
 
-	MapSpecials*	mapSpecials() { return &map_specials; }
+	MapSpecials*	mapSpecials() { return &map_specials_; }
 	void			recomputeSpecials();
 
 	// Map loading
-	bool	readDoomMap(Archive::mapdesc_t map);
-	bool	readHexenMap(Archive::mapdesc_t map);
-	bool	readDoom64Map(Archive::mapdesc_t map);
-	bool	readUDMFMap(Archive::mapdesc_t map);
+	bool	readDoomMap(Archive::MapDesc map);
+	bool	readHexenMap(Archive::MapDesc map);
+	bool	readDoom64Map(Archive::MapDesc map);
+	bool	readUDMFMap(Archive::MapDesc map);
 
 	// Map saving
 	bool	writeDoomMap(vector<ArchiveEntry*>& map_entries);
@@ -226,7 +147,7 @@ public:
 	void	getThingsById(int id, vector<MapThing*>& list, unsigned start = 0, int type = 0);
 	void	getLinesById(int id, vector<MapLine*>& list);
 	void	getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list);
-	void	getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype = 0);
+	void	getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype);
 	void	getPathedThings(vector<MapThing*>& list);
 	void	getDragonTargets(MapThing* first, vector<MapThing*>& list);
 	void	getTaggingLinesById(int id, int type, vector<MapLine*>& list);
@@ -287,15 +208,102 @@ public:
 	void	rebuildConnectedSides();
 
 	// Usage counts
-	void	clearTexUsage() { usage_tex.clear(); }
-	void	clearFlatUsage() { usage_flat.clear(); }
-	void	clearThingTypeUsage() { usage_thing_type.clear(); }
+	void	clearTexUsage() { usage_tex_.clear(); }
+	void	clearFlatUsage() { usage_flat_.clear(); }
+	void	clearThingTypeUsage() { usage_thing_type_.clear(); }
 	void	updateTexUsage(string tex, int adjust);
 	void	updateFlatUsage(string flat, int adjust);
 	void	updateThingTypeUsage(int type, int adjust);
 	int		texUsageCount(string tex);
 	int		flatUsageCount(string tex);
 	int		thingTypeUsageCount(int type);
+
+private:
+	vector<MapLine*>	lines_;
+	vector<MapSide*>	sides_;
+	vector<MapSector*>	sectors_;
+	vector<MapVertex*>	vertices_;
+	vector<MapThing*>	things_;
+	string				udmf_namespace_;
+	PropertyList		udmf_props_;
+	bool				position_frac_;
+	string				name_;
+	int					current_format_;
+	long				opened_time_;
+	MapSpecials			map_specials_;
+	int					bulk_op_level_;
+	bool				specials_expired_;
+
+	vector<ArchiveEntry*>	udmf_extra_entries_;	// UDMF Extras
+
+	// For undo/redo
+	vector<mobj_holder_t>	all_objects_;
+	vector<unsigned>		deleted_objects_;
+	vector<unsigned>		created_objects_;
+	vector<mobj_cd_t>		created_deleted_objects_;
+
+	long	geometry_updated_;	// The last time the map geometry was updated
+	long	things_updated_;	// The last time the thing list was modified
+
+	// Usage counts
+	std::map<string, int>	usage_tex_;
+	std::map<string, int>	usage_flat_;
+	std::map<int, int>		usage_thing_type_;
+
+	// Doom format
+	bool	addVertex(doomvertex_t& v);
+	bool	addSide(doomside_t& s);
+	bool	addLine(doomline_t& l);
+	bool	addSector(doomsector_t& s);
+	bool	addThing(doomthing_t& t);
+
+	bool	readDoomVertexes(ArchiveEntry* entry);
+	bool	readDoomSidedefs(ArchiveEntry* entry);
+	bool	readDoomLinedefs(ArchiveEntry* entry);
+	bool	readDoomSectors(ArchiveEntry* entry);
+	bool	readDoomThings(ArchiveEntry* entry);
+
+	bool	writeDoomVertexes(ArchiveEntry* entry);
+	bool	writeDoomSidedefs(ArchiveEntry* entry);
+	bool	writeDoomLinedefs(ArchiveEntry* entry);
+	bool	writeDoomSectors(ArchiveEntry* entry);
+	bool	writeDoomThings(ArchiveEntry* entry);
+
+	// Hexen format
+	bool	addLine(hexenline_t& l);
+	bool	addThing(hexenthing_t& t);
+
+	bool	readHexenLinedefs(ArchiveEntry* entry);
+	bool	readHexenThings(ArchiveEntry* entry);
+
+	bool	writeHexenLinedefs(ArchiveEntry* entry);
+	bool	writeHexenThings(ArchiveEntry* entry);
+
+	// Doom 64 format
+	bool	addVertex(doom64vertex_t& v);
+	bool	addSide(doom64side_t& s);
+	bool	addLine(doom64line_t& l);
+	bool	addSector(doom64sector_t& s);
+	bool	addThing(doom64thing_t& t);
+
+	bool	readDoom64Vertexes(ArchiveEntry* entry);
+	bool	readDoom64Sidedefs(ArchiveEntry* entry);
+	bool	readDoom64Linedefs(ArchiveEntry* entry);
+	bool	readDoom64Sectors(ArchiveEntry* entry);
+	bool	readDoom64Things(ArchiveEntry* entry);
+
+	bool	writeDoom64Vertexes(ArchiveEntry* entry);
+	bool	writeDoom64Sidedefs(ArchiveEntry* entry);
+	bool	writeDoom64Linedefs(ArchiveEntry* entry);
+	bool	writeDoom64Sectors(ArchiveEntry* entry);
+	bool	writeDoom64Things(ArchiveEntry* entry);
+
+	// UDMF
+	bool	addVertex(ParseTreeNode* def);
+	bool	addSide(ParseTreeNode* def);
+	bool	addLine(ParseTreeNode* def);
+	bool	addSector(ParseTreeNode* def);
+	bool	addThing(ParseTreeNode* def);
 };
 
 #endif //__SLADEMAP_H__

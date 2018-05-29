@@ -1,68 +1,69 @@
-
-#ifndef __GFXENTRYPANEL_H__
-#define	__GFXENTRYPANEL_H__
+#pragma once
 
 #include "EntryPanel.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "General/SAction.h"
 #include "Graphics/Translation.h"
-#include "UI/ColourBox.h"
+
+class SZoomSlider;
+class ColourBox;
 
 class GfxEntryPanel : public EntryPanel, public SActionHandler
 {
-private:
-	bool			alph;
-	bool			trns;
-	bool			image_data_modified;
-	GfxCanvas*		gfx_canvas;
-	wxSlider*		slider_zoom;
-	wxStaticText*	label_current_zoom;
-	ColourBox*		cb_colour;
-	wxChoice*		choice_offset_type;
-	wxChoice*		choice_brush;
-	wxSpinCtrl*		spin_xoffset;
-	wxSpinCtrl*		spin_yoffset;
-	wxCheckBox*		cb_tile;
-	wxCheckBox*		cb_arc;
-	wxButton*		btn_auto_offset;
-
-	wxButton*		btn_nextimg;
-	wxButton*		btn_previmg;
-	wxStaticText*	text_curimg;
-	int				cur_index;
-	Translation		prev_translation;
-	bool			offset_changing;
-	bool			editing;
-	Translation		edit_translation;
-	SToolBarButton*	button_brush;
-	wxMenu*			menu_brushes;
-
 public:
 	GfxEntryPanel(wxWindow* parent);
-	~GfxEntryPanel();
+	~GfxEntryPanel() {}
 
-	Translation&	prevTranslation() { return prev_translation; }
+	Translation&	prevTranslation() { return prev_translation_; }
 
-	bool	loadEntry(ArchiveEntry* entry); // override for EntryPanel::loadEntry
+	bool	loadEntry(ArchiveEntry* entry) override;
 	bool	loadEntry(ArchiveEntry* entry, int index);
-	bool	saveEntry();
+	bool	saveEntry() override;
 	void	setupToolbar();
 	void	fillBrushMenu(wxMenu* bm);
 	void	updateImagePalette();
 	int		detectOffsetType();
 	void	applyViewType();
 	void	refresh();
-	void	refreshPanel();
-	string	statusString();
+	void	refreshPanel() override;
+	string	statusString() override;
 	bool	extractAll();
 
-	bool	iconChanger(wxCommandEvent& e);
-
 	// SAction handler
-	bool	handleAction(string id);
-	bool	fillCustomMenu(wxMenu* custom);
+	bool	handleAction(string id) override;
+	bool	fillCustomMenu(wxMenu* custom) override;
 
-	void	onZoomChanged(wxCommandEvent& e);
+	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+
+	SImage*	getImage() const { if (gfx_canvas_) return gfx_canvas_->getImage(); else return nullptr; }
+
+private:
+	bool			alph_					= false;
+	bool			trns_					= false;
+	bool			image_data_modified_	= false;
+	int				cur_index_				= 0;
+	bool			offset_changing_		= false;
+	bool			editing_				= false;
+	Translation		prev_translation_;
+	Translation		edit_translation_;
+
+	GfxCanvas*		gfx_canvas_			= nullptr;
+	SZoomSlider*	slider_zoom_		= nullptr;
+	ColourBox*		cb_colour_			= nullptr;
+	wxChoice*		choice_offset_type_ = nullptr;
+	wxChoice*		choice_brush_		= nullptr;
+	wxSpinCtrl*		spin_xoffset_		= nullptr;
+	wxSpinCtrl*		spin_yoffset_		= nullptr;
+	wxCheckBox*		cb_tile_			= nullptr;
+	wxCheckBox*		cb_arc_				= nullptr;
+	wxButton*		btn_auto_offset_	= nullptr;
+	wxButton*		btn_nextimg_		= nullptr;
+	wxButton*		btn_previmg_		= nullptr;
+	wxStaticText*	text_curimg_		= nullptr;
+	SToolBarButton*	button_brush_		= nullptr;
+	wxMenu*			menu_brushes_		= nullptr;
+
+	// Events
 	void	onPaintColourChanged(wxEvent& e);
 	void	onXOffsetChanged(wxCommandEvent& e);
 	void	onYOffsetChanged(wxCommandEvent& e);
@@ -75,9 +76,4 @@ public:
 	void	onBtnPrevImg(wxCommandEvent& e);
 	void	onBtnAutoOffset(wxCommandEvent& e);
 	void	onColourPicked(wxEvent& e);
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
-
-	SImage*	getImage() { if (gfx_canvas) return gfx_canvas->getImage(); else return NULL; }
 };
-
-#endif //__GFXENTRYPANEL_H__

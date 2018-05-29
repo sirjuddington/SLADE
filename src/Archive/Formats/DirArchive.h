@@ -5,9 +5,7 @@
 #include "Archive/Archive.h"
 #include "common.h"
 
-typedef std::map<ArchiveEntry*, time_t> mod_times_t;
-
-struct dir_entry_change_t
+struct DirEntryChange
 {
 	enum
 	{
@@ -24,7 +22,7 @@ struct dir_entry_change_t
 	// Note that this is nonsense for deleted files
 	time_t	mtime;
 
-	dir_entry_change_t(int action = UPDATED, string file = "", string entry = "", time_t mtime = 0)
+	DirEntryChange(int action = UPDATED, string file = "", string entry = "", time_t mtime = 0)
 	{
 		this->action = action;
 		this->entry_path = entry;
@@ -33,88 +31,86 @@ struct dir_entry_change_t
 	}
 };
 
-typedef std::map<string, dir_entry_change_t> ignored_file_changes_t;
+typedef std::map<string, DirEntryChange> IgnoredFileChanges;
 
 class DirArchive : public Archive
 {
-private:
-	string				separator;
-	vector<key_value_t>	renamed_dirs;
-	mod_times_t			file_modification_times;
-	vector<string>		removed_files;
-
-	ignored_file_changes_t	ignored_file_changes;
-
 public:
 	DirArchive();
 	~DirArchive();
 
 	// Accessors
-	vector<string>	getRemovedFiles() { return removed_files; }
-	time_t			fileModificationTime(ArchiveEntry* entry) { return file_modification_times[entry]; }
-
-	// Archive type info
-	string	getFileExtensionString();
-	string	getFormat();
+	const vector<string>&	removedFiles() const { return removed_files_; }
+	time_t					fileModificationTime(ArchiveEntry* entry)
+							{ return file_modification_times_[entry]; }
 
 	// Opening
-	bool	open(string filename);		// Open from File
-	bool	open(ArchiveEntry* entry);	// Open from ArchiveEntry
-	bool	open(MemChunk& mc);			// Open from MemChunk
+	bool	open(string filename) override;		// Open from File
+	bool	open(ArchiveEntry* entry) override;	// Open from ArchiveEntry
+	bool	open(MemChunk& mc) override;		// Open from MemChunk
 
 	// Writing/Saving
-	bool	write(MemChunk& mc, bool update = true);	// Write to MemChunk
-	bool	write(string filename, bool update = true);	// Write to File
-	bool	save(string filename = "");					// Save archive
+	bool	write(MemChunk& mc, bool update = true) override;		// Write to MemChunk
+	bool	write(string filename, bool update = true) override;	// Write to File
+	bool	save(string filename = "") override;					// Save archive
 
 	// Misc
-	bool	loadEntryData(ArchiveEntry* entry);
+	bool	loadEntryData(ArchiveEntry* entry) override;
 
 	// Dir stuff
-	bool	removeDir(string path, ArchiveTreeNode* base = NULL);
-	bool	renameDir(ArchiveTreeNode* dir, string new_name);
+	bool	removeDir(string path, ArchiveTreeNode* base = nullptr) override;
+	bool	renameDir(ArchiveTreeNode* dir, string new_name) override;
 
 	// Entry addition/removal
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
-	bool			removeEntry(ArchiveEntry* entry);
-	bool			renameEntry(ArchiveEntry* entry, string name);
+	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
+	bool			removeEntry(ArchiveEntry* entry) override;
+	bool			renameEntry(ArchiveEntry* entry, string name) override;
 
 	// Detection
-	mapdesc_t			getMapInfo(ArchiveEntry* maphead);
-	vector<mapdesc_t>	detectMaps();
+	MapDesc			getMapInfo(ArchiveEntry* maphead) override;
+	vector<MapDesc>	detectMaps() override;
 
 	// Search
-	ArchiveEntry*			findFirst(search_options_t& options);
-	ArchiveEntry*			findLast(search_options_t& options);
-	vector<ArchiveEntry*>	findAll(search_options_t& options);
+	ArchiveEntry*			findFirst(SearchOptions& options) override;
+	ArchiveEntry*			findLast(SearchOptions& options) override;
+	vector<ArchiveEntry*>	findAll(SearchOptions& options) override;
 
 	// DirArchive-specific
-	void	ignoreChangedEntries(vector<dir_entry_change_t>& changes);
-	void	updateChangedEntries(vector<dir_entry_change_t>& changes);
-	bool	shouldIgnoreEntryChange(dir_entry_change_t& change);
+	void	ignoreChangedEntries(vector<DirEntryChange>& changes);
+	void	updateChangedEntries(vector<DirEntryChange>& changes);
+	bool	shouldIgnoreEntryChange(DirEntryChange& change);
+
+private:
+	string							separator_;
+	vector<key_value_t>				renamed_dirs_;
+	std::map<ArchiveEntry*, time_t>	file_modification_times_;
+	vector<string>					removed_files_;
+	IgnoredFileChanges				ignored_file_changes_;
 };
 
 class DirArchiveTraverser : public wxDirTraverser
 {
-private:
-	vector<string>&	paths;
-	vector<string>&	dirs;
-
 public:
-	DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist) : paths(pathlist), dirs(dirlist) {}
+	DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist) :
+		paths_{ pathlist },
+		dirs_{ dirlist } {}
 	~DirArchiveTraverser() {}
 
-	virtual wxDirTraverseResult OnFile(const wxString& filename)
+	wxDirTraverseResult OnFile(const wxString& filename) override
 	{
-		paths.push_back(filename);
+		paths_.push_back(filename);
 		return wxDIR_CONTINUE;
 	}
 
-	virtual wxDirTraverseResult OnDir(const wxString& dirname)
+	wxDirTraverseResult OnDir(const wxString& dirname) override
 	{
-		dirs.push_back(dirname);
+		dirs_.push_back(dirname);
 		return wxDIR_CONTINUE;
 	}
+
+private:
+	vector<string>&	paths_;
+	vector<string>&	dirs_;
 };
 
 #endif//__DIR_ARCHIVE_H__

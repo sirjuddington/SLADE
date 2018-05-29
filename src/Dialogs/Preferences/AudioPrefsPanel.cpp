@@ -1,242 +1,222 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    AudioPrefsPanel.cpp
- * Description: Panel containing Audio preference controls
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    AudioPrefsPanel.cpp
+// Description: Panel containing Audio preference controls
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "AudioPrefsPanel.h"
 #include "Audio/MIDIPlayer.h"
+#include "General/UI.h"
+#include "UI/Controls/FileLocationPanel.h"
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// External Variables
+//
+// ----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, snd_autoplay)
 EXTERN_CVAR(Bool, dmx_padding)
-#ifndef NO_FLUIDSYNTH
+EXTERN_CVAR(Int, snd_volume)
 EXTERN_CVAR(String, fs_soundfont_path)
 EXTERN_CVAR(String, dir_last)
 CVAR(String, dir_last_soundfont, "", CVAR_SAVE)
 CVAR(Bool, snd_midi_usetimidity, false, CVAR_SAVE)
-#endif
 CVAR(String, snd_timidity_path, "", CVAR_SAVE)
 CVAR(String, snd_timidity_options, "", CVAR_SAVE)
 
 
-/*******************************************************************
- * AUDIOPREFSPANEL CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// AudioPrefsPanel Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* AudioPrefsPanel::AudioPrefsPanel
- * AudioPrefsPanel class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// AudioPrefsPanel::AudioPrefsPanel
+//
+// AudioPrefsPanel class constructor
+// ----------------------------------------------------------------------------
 AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
-	// Create sizer
-	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(psizer);
+	// Create controls
+	cb_snd_autoplay_ = new wxCheckBox(this, -1, "Automatically play audio entries when opened");
+	cb_dmx_padding_ = new wxCheckBox(this, -1, "Use DMX padding when appropriate");
+	rb_fluidsynth_ = new wxRadioButton(this, -1, "Use Fluidsynth");
+	flp_soundfont_ = new FileLocationPanel(
+		this,
+		"",
+		true,
+		"Browse for MIDI Soundfont",
+		"Soundfont files (*.sf2)|*.sf2"
+	);
+	rb_timidity_ = new wxRadioButton(this, -1, "Use Timidity");
+	flp_timidity_ = new FileLocationPanel(
+		this,
+		"",
+		true,
+		"Browse for Timidity Executable",
+		SFileDialog::executableExtensionString()
+	);
+	text_timidity_options_ = new wxTextCtrl(this, -1);
+	btn_reset_player_ = new wxButton(this, -1, "Reset MIDI Player");
 
-	// Create frame+sizer
-	wxStaticBox* frame = new wxStaticBox(this, -1, "Audio Preferences");
-	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
-
-	// Autoplay
-	cb_snd_autoplay = new wxCheckBox(this, -1, "Automatically play audio entries when opened");
-	sizer->Add(cb_snd_autoplay, 0, wxEXPAND|wxALL, 4);
-
-	// DMX Padding
-	cb_dmx_padding = new wxCheckBox(this, -1, "Use DMX padding when appropriate");
-	sizer->Add(cb_dmx_padding, 0, wxEXPAND|wxALL, 4);
-
-#ifndef NO_FLUIDSYNTH
-	// MIDI Soundfont path
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(new wxStaticText(this, -1, "Location of MIDI soundfont:"), 0, wxALL, 4);
-	text_soundfont_path = new wxTextCtrl(this, -1);
-	hbox->Add(text_soundfont_path, 1, wxEXPAND|wxRIGHT, 4);
-	btn_browse_soundfont = new wxButton(this, -1, "Browse");
-	hbox->Add(btn_browse_soundfont, 0, wxEXPAND);
-	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), 0, wxEXPAND|wxALL, 8);
-
-	// Timidity checkbox
-	cb_snd_timidity = new wxCheckBox(this, -1, "Use timidity instead of fluidsynth:");
-	sizer->Add(cb_snd_timidity, 0, wxEXPAND|wxALL, 4);
-#endif
-
-	// Timidity exe path
-	wxBoxSizer* hbox2 = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(new wxStaticText(this, -1, "Location of timidity binary:"), 0, wxALL, 4);
-	text_timidity_path = new wxTextCtrl(this, -1);
-	hbox2->Add(text_timidity_path, 1, wxEXPAND|wxRIGHT, 4);
-	btn_browse_timidityexe = new wxButton(this, -1, "Browse");
-	hbox2->Add(btn_browse_timidityexe, 0, wxEXPAND);
-	sizer->Add(hbox2, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-	// Timidity options
-	wxBoxSizer* hbox3 = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(new wxStaticText(this, -1, "More timidity options:"), 0, wxALL, 4);
-	text_timidity_options = new wxTextCtrl(this, -1);
-	hbox3->Add(text_timidity_options, 1, wxEXPAND|wxRIGHT, 4);
-	sizer->Add(hbox3, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), 0, wxEXPAND | wxALL, 8);
-
-	// Reset
-	sizer->Add(new wxStaticText(this, -1, "Reset MIDI Player"), 0, wxALL, 4);
-	btn_reset_player = new wxButton(this, -1, "Reset");
-	sizer->Add(btn_reset_player, 0, wxEXPAND, 4);
+	setupLayout();
 
 	// Bind events
-#ifndef NO_FLUIDSYNTH
-	btn_browse_soundfont->Bind(wxEVT_BUTTON, &AudioPrefsPanel::onBtnBrowseSoundfont, this);
+	btn_reset_player_->Bind(wxEVT_BUTTON, &AudioPrefsPanel::onBtnResetPlayer, this);
+	rb_fluidsynth_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent& e) { updateControls(); });
+	rb_timidity_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent& e) { updateControls(); });
+
+#ifdef NO_FLUIDSYNTH
+	rb_fluidsynth_->Enable(false);
+	rb_timidity_->SetValue(true);
 #endif
-	btn_reset_player->Bind(wxEVT_BUTTON, &AudioPrefsPanel::onBtnResetPlayer, this);
-	btn_browse_timidityexe->Bind(wxEVT_BUTTON, &AudioPrefsPanel::onBtnBrowseTimidityExe, this);
 
 	Layout();
 }
 
-/* AudioPrefsPanel::~AudioPrefsPanel
- * AudioPrefsPanel class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// AudioPrefsPanel::~AudioPrefsPanel
+//
+// AudioPrefsPanel class destructor
+// ----------------------------------------------------------------------------
 AudioPrefsPanel::~AudioPrefsPanel()
 {
 }
 
-/* AudioPrefsPanel::init
- * Initialises panel controls
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// AudioPrefsPanel::init
+//
+// Initialises panel controls
+// ----------------------------------------------------------------------------
 void AudioPrefsPanel::init()
 {
-	cb_snd_autoplay->SetValue(snd_autoplay);
-#ifndef NO_FLUIDSYNTH
-	cb_snd_timidity->SetValue(snd_midi_usetimidity);
-	text_soundfont_path->SetValue(wxString(fs_soundfont_path));
-#endif
-	text_timidity_path->SetValue(wxString(snd_timidity_path));
-	text_timidity_options->SetValue(wxString(snd_timidity_options));
+	cb_snd_autoplay_->SetValue(snd_autoplay);
+	cb_dmx_padding_->SetValue(dmx_padding);
+	rb_fluidsynth_->SetValue(!snd_midi_usetimidity);
+	flp_soundfont_->setLocation(fs_soundfont_path);
+	flp_timidity_->setLocation(snd_timidity_path);
+	text_timidity_options_->SetValue(wxString(snd_timidity_options));
+
+	updateControls();
 }
 
-/* AudioPrefsPanel::applyPreferences
- * Applies preferences from the panel controls
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// AudioPrefsPanel::applyPreferences
+//
+// Applies preferences from the panel controls
+// ----------------------------------------------------------------------------
 void AudioPrefsPanel::applyPreferences()
 {
-	snd_autoplay = cb_snd_autoplay->GetValue();
-	dmx_padding = cb_dmx_padding->GetValue();
-#ifndef NO_FLUIDSYNTH
-	snd_midi_usetimidity = cb_snd_timidity->GetValue();
-	fs_soundfont_path = text_soundfont_path->GetValue();
+	snd_autoplay = cb_snd_autoplay_->GetValue();
+	dmx_padding = cb_dmx_padding_->GetValue();
+	snd_midi_usetimidity = rb_timidity_->GetValue();
+	fs_soundfont_path = flp_soundfont_->location();
 	if (!theMIDIPlayer->isSoundfontLoaded())
 		theMIDIPlayer->reloadSoundfont();
-#endif
-	snd_timidity_path = text_timidity_path->GetValue();
-	snd_timidity_options = text_timidity_options->GetValue();
+	snd_timidity_path = flp_timidity_->location();
+	snd_timidity_options = text_timidity_options_->GetValue();
 }
 
-
-/*******************************************************************
- * AUDIOPREFSPANEL CLASS EVENTS
- *******************************************************************/
-
-#ifndef NO_FLUIDSYNTH
-/* AudioPrefsPanel::onBtnBrowseSoundfont
- * Called when the browse for soundfont button is clicked
- *******************************************************************/
-void AudioPrefsPanel::onBtnBrowseSoundfont(wxCommandEvent& e)
+// ----------------------------------------------------------------------------
+// AudioPrefsPanel::setupLayout
+//
+// Lays out the controls on the panel
+// ----------------------------------------------------------------------------
+void AudioPrefsPanel::setupLayout()
 {
-#ifdef WIN32
-	char separator = ';';
-#else
-	char separator = ':';
-#endif
+	// Create sizer
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(sizer);
 
-	string dir = dir_last_soundfont;
-	if (dir_last_soundfont.value.empty() && fs_soundfont_path.value.size())
-	{
-		wxArrayString paths = wxSplit(fs_soundfont_path, separator);
-		dir = wxFileName(paths[0]).GetPath();
-	}
+	// Autoplay
+	sizer->Add(cb_snd_autoplay_, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
-	// Open file dialog
-	wxFileDialog fd(this, "Browse for MIDI Soundfont", dir, "", "Soundfont files (*.sf2)|*.sf2", wxFD_MULTIPLE);
-	if (fd.ShowModal() == wxID_OK)
-	{
-		wxArrayString paths;
-		string fullpath = "";
-		fd.GetPaths(paths);
-		for (size_t a = 0; a < paths.size(); ++a)
-			fullpath += paths[a] + separator;
-		if (paths.size())
-			fullpath.RemoveLast(1);
-		text_soundfont_path->SetValue(fullpath);
-		dir_last_soundfont = fd.GetDirectory();
-	}
+	// DMX Padding
+	sizer->Add(cb_dmx_padding_, 0, wxEXPAND);
+
+	sizer->Add(
+		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL),
+		0,
+		wxEXPAND | wxBOTTOM | wxTOP,
+		UI::padLarge()
+	);
+
+	// MIDI Playback (fluidsynth/timidity)
+	auto gbsizer = new wxGridBagSizer(UI::px(UI::Size::PadMinimum), UI::pad());
+	gbsizer->Add(new wxStaticText(this, -1, "MIDI Playback:"), { 0, 0 }, { 1, 2 }, wxEXPAND | wxBOTTOM, UI::pad());
+	gbsizer->Add(rb_fluidsynth_, { 1, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, UI::pad());
+	gbsizer->Add(new wxStaticText(this, -1, "Location of MIDI soundfont:"), { 2, 0 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(flp_soundfont_, { 3, 0 }, { 1, 1 }, wxEXPAND | wxBOTTOM, UI::pad());
+	gbsizer->Add(rb_timidity_, { 1, 1 }, { 1, 1 }, wxEXPAND | wxBOTTOM, UI::pad());
+	gbsizer->Add(new wxStaticText(this, -1, "Location of Timidity executable:"), { 2, 1 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(flp_timidity_, { 3, 1 }, { 1, 1 }, wxEXPAND | wxBOTTOM, UI::pad());
+	gbsizer->Add(new wxStaticText(this, -1, "Timidity command line options:"), { 4, 1 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(text_timidity_options_, { 5, 1 }, { 1, 1 }, wxEXPAND);
+	gbsizer->AddGrowableCol(0, 1);
+	gbsizer->AddGrowableCol(1, 1);
+	sizer->Add(gbsizer, 0, wxEXPAND | wxBOTTOM, UI::pad());
+
+	// Reset MIDI player
+	sizer->Add(btn_reset_player_, 0, wxEXPAND);
 }
-#endif
 
-/* AudioPrefsPanel::onBtnBrowseTimidityExe
- * Called when the browse for timidity exe is clicked
- *******************************************************************/
-void AudioPrefsPanel::onBtnBrowseTimidityExe(wxCommandEvent &e)
+// ----------------------------------------------------------------------------
+// AudioPrefsPanel::updateControls
+//
+// Enables/disables MIDI playback options depending on what playback method is
+// currently selected
+// ----------------------------------------------------------------------------
+void AudioPrefsPanel::updateControls() const
 {
-#ifdef WIN32
-	char separator = ';';
-#else
-	char separator = ':';
-#endif
-
-	// Open file dialog
-#ifdef WIN32
-	wxFileDialog fd(this, "Browse for Timidity binary", "", "", "*.exe", wxFD_MULTIPLE);
-#else
-	wxFileDialog fd(this, "Browse for Timidity binary", "", "", "", wxFD_MULTIPLE);
-#endif
-
-	if (fd.ShowModal() == wxID_OK)
-	{
-		wxArrayString paths;
-		string exepath = "";
-		fd.GetPaths(paths);
-		for (size_t a = 0; a < paths.size(); ++a)
-			exepath += paths[a] + separator;
-		if (paths.size())
-			exepath.RemoveLast(1);
-		text_timidity_path->SetValue(exepath);
-		snd_timidity_path = exepath;
-	}
+	flp_soundfont_->Enable(rb_fluidsynth_->GetValue());
+	flp_timidity_->Enable(rb_timidity_->GetValue());
+	text_timidity_options_->Enable(rb_timidity_->GetValue());
 }
 
-/* AudioPrefsPanel::onBtnResetPlayer
- * Called for resetting the MIDI player
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+//
+// AudioPrefsPanel Class Events
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// AudioPrefsPanel::onBtnResetPlayer
+//
+// Called for resetting the MIDI player
+// ----------------------------------------------------------------------------
 void AudioPrefsPanel::onBtnResetPlayer(wxCommandEvent& e)
 {
 	theMIDIPlayer->resetPlayer();
+	theMIDIPlayer->setVolume(snd_volume);
 }

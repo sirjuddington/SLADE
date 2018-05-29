@@ -1,0 +1,210 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<title>SLADE - It's a Doom Editor</title>
+<style type="text/css">
+
+body, table, td {
+	font-family: 'Segoe UI', 'Nimbus Sans L', 'Nimbus Sans', 'Ubuntu', sans-serif;
+	font-size: 14px;
+	background: #e0eeff;
+}
+
+table.box, td.box {
+	background-color: #FCFEFF;
+	padding-top: 0px;
+	padding-left: 0px;
+	padding-right: 4px;
+	padding-bottom: 0px;
+	border-spacing: 0px;
+}
+
+A, A:link, A:visited, A:hover, A:active {
+	font-weight: 600;
+	text-decoration: none;
+	font-size: inherit;
+	background-color: inherit;
+}
+
+A:link, A:visited {
+	color: #0055cc;
+	background-color: inherit;
+	transition: all .1s ease-in;
+}
+
+A:hover, A:active {
+	color: #99a4ff;
+	background-color: inherit;
+	transition: all .06s ease-out;
+}
+
+div.main {
+	width: 800px;
+	text-align: left;
+	/*width: 60%;*/
+}
+
+div.box, #sidebox, #recent {
+	background-color: #FCFEFF;
+	border-color: #ADBFD8;
+	border: 1px;
+	border-top-width: 0px;
+	border-bottom-width: 4px;
+	padding-top: 4px;
+	padding-bottom: 8px;
+	padding-left: 8px;
+	padding-right: 8px;
+	border-style: solid;
+	/*line-height: 1.5em;*/
+	margin-bottom: 8px;
+}
+
+#sidebox {
+	height: 72px;
+	border-color: #ADBFD8;
+}
+
+#recent {
+	/*height: 188px;*/
+	border-color: #ADBFD8;
+}
+
+div.boxhead {
+	border: 1px;
+	padding-left: 8px;
+	padding-right: 8px;
+	border-style: solid;
+	line-height: 1.5em;
+	font-weight: bold;
+	font-size: 14pt;
+	margin-bottom: 0px;
+	background-color: #7488AF;
+	color: #F2F6FF;
+	border-color: #64789F;/*#ADBFD8;*/
+}
+
+div.boxshadow {
+	background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0,0,0,0));
+	height: 6px;
+}
+
+img {
+	padding-top: 2px;
+}
+</style>
+</head>
+<body>
+<center>
+
+<img src="logo.png"/>
+
+<center>
+<div class='main'>
+
+
+<table width=100%>
+<tr><td width='25%'>
+
+<div class='boxhead'>
+Get Started
+</div>
+<div id = 'sidebox'>
+<a href="action://open">Open Archive</a><br/>
+<a href="action://newwad">Create Wad Archive</a><br/>
+<a href="action://newzip">Create Zip Archive</a><br/>
+<a href="action://newmap">Create New Map</a>
+</div>
+
+</td><td width='25%'>
+
+<div class='boxhead'>
+Links
+</div>
+<div id='sidebox'>
+<a href="http://slade.mancubus.net">SLADE Homepage</a><br/>
+<a href="http://slade.mancubus.net/index.php?page=downloads">SLADE Downloads</a><br/>
+<a href="http://slade.mancubus.net/forum">SLADE Forums</a><br/>
+<a href="http://slade.mancubus.net/index.php?page=wiki">SLADE Wiki</a>
+</div>
+
+</td><td width='50%'>
+
+<div class='boxhead'>
+Tip Of The Day <span style="float: right;"><a href="action://reloadstartpage">+</a></span>
+</div>
+<div id='sidebox'>
+#totd#
+</div>
+
+</td></tr>
+<tr><td colspan="3">
+
+<div class='boxhead'>
+Recent Files
+</div>
+<div id='recent'>
+#recent#
+</div>
+
+</td></tr>
+</table>
+
+
+<!--
+<table width=100%>
+<tr><td width='30%'>
+
+<div class='boxhead'>
+Get Started
+</div>
+<div id = 'sidebox'>
+<a href="action://open">Open Archive</a><br/>
+<a href="action://newwad">Create Wad Archive</a><br/>
+<a href="action://newzip">Create Zip Archive</a><br/>
+<a href="action://newmap">Create New Map</a>
+</div>
+
+</td><td rowspan = 2 valign=top>
+
+<div class='boxhead'>
+Recent Files
+</div>
+<div id='recent'>
+#recent#
+</div>
+
+</td></tr>
+<tr><td width='30%'>
+
+<div class='boxhead'>
+Links
+</div>
+<div id='sidebox'>
+<a href="http://slade.mancubus.net">SLADE Homepage</a><br/>
+<a href="http://slade.mancubus.net/index.php?page=downloads">SLADE Downloads</a><br/>
+<a href="http://slade.mancubus.net/forum">SLADE Forums</a><br/>
+<a href="http://slade.mancubus.net/wiki">SLADE Wiki</a>
+</div>
+
+</td></tr>
+<tr><td colspan=2>
+
+<div class='boxhead'>
+Tip Of The Day <span style="float: right;"><a href="action://reloadstartpage">+</a></span>
+</div>
+<div class='box'>
+#totd#
+</div>
+
+</td></tr>
+</table>
+-->
+
+</div>
+</center>
+
+</center>
+</body>
+</html>
+

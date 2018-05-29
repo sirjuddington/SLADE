@@ -9,7 +9,7 @@
 struct map_tex_t
 {
 	GLTexture*	texture;
-	map_tex_t() { texture = NULL; }
+	map_tex_t() { texture = nullptr; }
 	~map_tex_t() { if (texture && texture != &(GLTexture::missingTex())) delete texture; }
 };
 
@@ -34,7 +34,7 @@ struct map_texinfo_t
 
 typedef std::map<string, map_tex_t> MapTexHashMap;
 
-class Palette8bit;
+class Palette;
 class MapTextureManager : public Listener
 {
 private:
@@ -44,7 +44,7 @@ private:
 	MapTexHashMap			sprites;
 	MapTexHashMap			editor_images;
 	bool					editor_images_loaded;
-	Palette8bit*			palette;
+	Palette*			palette;
 	vector<map_texinfo_t>	tex_info;
 	vector<map_texinfo_t>	flat_info;
 
@@ -59,14 +59,15 @@ public:
 		TC_HIRES
 	};
 
-	MapTextureManager(Archive* archive = NULL);
+	MapTextureManager(Archive* archive = nullptr);
 	~MapTextureManager();
 
+	void	init();
 	void	setArchive(Archive* archive);
 	void	refreshResources();
 	void	buildTexInfoList();
 
-	Palette8bit*	getResourcePalette();
+	Palette*	getResourcePalette();
 	GLTexture*		getTexture(string name, bool mixed);
 	GLTexture*		getFlat(string name, bool mixed);
 	GLTexture*		getSprite(string name, string translation = "", string palette = "");

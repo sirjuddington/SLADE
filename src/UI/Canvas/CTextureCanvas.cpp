@@ -59,7 +59,7 @@ CTextureCanvas::CTextureCanvas(wxWindow* parent, int id)
 	hilight_patch = -1;
 	draw_outside = true;
 	dragging = false;
-	texture = NULL;
+	texture = nullptr;
 	show_grid = false;
 	blend_rgba = false;
 	view_type = 0;
@@ -128,7 +128,7 @@ void CTextureCanvas::clearTexture()
 		stopListening(texture);
 
 	// Clear texture;
-	texture = NULL;
+	texture = nullptr;
 
 	// Clear patch textures
 	clearPatchTextures();

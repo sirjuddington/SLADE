@@ -29,6 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "KeyBind.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -166,7 +167,7 @@ bool KeyBind::isPressed(string name)
 bool KeyBind::addBind(string name, keypress_t key, string desc, string group, bool ignore_shift, int priority)
 {
 	// Find keybind
-	KeyBind* bind = NULL;
+	KeyBind* bind = nullptr;
 	for (unsigned a = 0; a < keybinds.size(); a++)
 	{
 		if (keybinds[a].name == name)
@@ -505,6 +506,8 @@ void KeyBind::initBinds()
 	addBind("ted_jumptoline", keypress_t("G", KPM_CTRL), "Jump to Line", group);
 	addBind("ted_fold_foldall", keypress_t("[", KPM_CTRL|KPM_SHIFT), "Fold All", group);
 	addBind("ted_fold_unfoldall", keypress_t("]", KPM_CTRL|KPM_SHIFT), "Fold All", group);
+	addBind("ted_line_comment", keypress_t("/", KPM_CTRL), "Line Comment", group);
+	addBind("ted_block_comment", keypress_t("/", KPM_CTRL|KPM_SHIFT), "Block Comment", group);
 
 	// Texture editor (txed*)
 	group = "Texture Editor";
@@ -781,16 +784,16 @@ string KeyBind::writeBinds()
 bool KeyBind::readBinds(Tokenizer& tz)
 {
 	// Parse until ending }
-	string name = tz.getToken();
-	while (name != "}" && !tz.atEnd())
+	while (!tz.checkOrEnd("}"))
 	{
 		// Clear any current binds for the key
+		string name = tz.current().text;
 		getBind(name).keys.clear();
 
 		// Read keys
-		while (1)
+		while (true)
 		{
-			string keystr = tz.getToken();
+			string keystr = tz.next().text;
 
 			// Finish if no keys are bound
 			if (keystr == "unbound")
@@ -810,14 +813,12 @@ bool KeyBind::readBinds(Tokenizer& tz)
 			addBind(name, keypress_t(key, mods.Find('a') >= 0, mods.Find('c') >= 0, mods.Find('s') >= 0));
 
 			// Check for more keys
-			if (tz.peekToken() == ",")
-				tz.getToken();			// Skip ,
-			else
+			if (!tz.advIfNext(","))
 				break;
 		}
 
 		// Next keybind
-		name = tz.getToken();
+		tz.adv();
 	}
 
 	// Create sorted list

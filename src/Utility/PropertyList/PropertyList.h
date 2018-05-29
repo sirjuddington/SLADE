@@ -15,7 +15,7 @@ public:
 	~PropertyList();
 
 	// Operator for direct access to hash map
-	Property& operator[](string key) { return properties[key]; }
+	Property& operator[](const string& key) { return properties[key]; }
 
 	void	clear() { properties.clear(); }
 	bool	propertyExists(string key);

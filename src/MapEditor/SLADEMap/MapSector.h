@@ -65,27 +65,27 @@ private:
 	void		setGeometryUpdated();
 
 public:
-	MapSector(SLADEMap* parent = NULL);
-	MapSector(string f_tex, string c_tex, SLADEMap* parent = NULL);
+	MapSector(SLADEMap* parent = nullptr);
+	MapSector(string f_tex, string c_tex, SLADEMap* parent = nullptr);
 	~MapSector();
 
-	void	copy(MapObject* copy);
+	void	copy(MapObject* copy) override;
 
-	string		getFloorTex() { return f_tex; }
-	string		getCeilingTex() { return c_tex; }
-	short		getFloorHeight() { return f_height; }
-	short		getCeilingHeight() { return c_height; }
-	short		getLightLevel() { return light; }
-	short		getSpecial() { return special; }
-	short		getTag() { return tag; }
-	plane_t		getFloorPlane() { return plane_floor; }
-	plane_t		getCeilingPlane() { return plane_ceiling; }
+	string		getFloorTex() const { return f_tex; }
+	string		getCeilingTex() const { return c_tex; }
+	short		getFloorHeight() const { return f_height; }
+	short		getCeilingHeight() const { return c_height; }
+	short		getLightLevel() const { return light; }
+	short		getSpecial() const { return special; }
+	short		getTag() const { return tag; }
+	plane_t		getFloorPlane() const { return plane_floor; }
+	plane_t		getCeilingPlane() const { return plane_ceiling; }
 
-	string	stringProperty(string key);
-	int		intProperty(string key);
-	void	setStringProperty(string key, string value);
-	void	setFloatProperty(string key, double value);
-	void	setIntProperty(string key, int value);
+	string	stringProperty(const string& key) override;
+	int		intProperty(const string& key) override;
+	void	setStringProperty(const string& key, const string& value) override;
+	void	setFloatProperty(const string& key, double value) override;
+	void	setIntProperty(const string& key, int value) override;
 	void	setFloorHeight(short height);
 	void	setCeilingHeight(short height);
 	void	setFloorPlane(plane_t p) {
@@ -106,7 +106,7 @@ public:
 	template<PlaneType p>
 	void	setPlane(plane_t plane);
 
-	fpoint2_t			getPoint(uint8_t point);
+	fpoint2_t			getPoint(uint8_t point) override;
 	void				resetBBox() { bbox.reset(); }
 	bbox_t				boundingBox();
 	vector<MapSide*>&	connectedSides() { return connected_sides; }
@@ -121,15 +121,15 @@ public:
 	void				changeLight(int amount, int where = 0);
 	rgba_t				getColour(int where = 0, bool fullbright = false);
 	rgba_t				getFogColour();
-	long				geometryUpdatedTime() { return geometry_updated; }
+	long				geometryUpdatedTime() const { return geometry_updated; }
 
 	void	connectSide(MapSide* side);
 	void	disconnectSide(MapSide* side);
 
 	void	updateBBox();
 
-	void	writeBackup(mobj_backup_t* backup);
-	void	readBackup(mobj_backup_t* backup);
+	void	writeBackup(mobj_backup_t* backup) override;
+	void	readBackup(mobj_backup_t* backup) override;
 
 	operator Debuggable() const {
 		if (!this)

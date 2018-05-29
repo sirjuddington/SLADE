@@ -166,7 +166,7 @@ protected:
 
 		// Get image palette if it exists
 		RGBQUAD* bm_pal = FreeImage_GetPalette(bm);
-		Palette8bit palette;
+		Palette palette;
 		if (bpp == 8 && bm_pal)
 		{
 			type = PALMASK;
@@ -186,7 +186,7 @@ protected:
 		if (bm_pal)
 			image.create(width, height, type, &palette);
 		else
-			image.create(width, height, type, NULL);
+			image.create(width, height, type, nullptr);
 
 		// Load image data
 		uint8_t* img_data = imageData(image);
@@ -222,6 +222,12 @@ protected:
 		{
 			// Convert to 32bpp & flip vertically
 			FIBITMAP* rgb = FreeImage_ConvertTo32Bits(bm);
+			if (!rgb)
+			{
+				LOG_MESSAGE(1, "FreeImage_ConvertTo32Bits failed for PNG data");
+				Global::error = "Error reading PNG data";
+				return false;
+			}
 			FreeImage_FlipVertical(rgb);
 
 			// Load raw RGBA data
@@ -248,10 +254,10 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& data, Palette8bit* pal, int index)
+	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index)
 	{
 		// Variables
-		FIBITMAP*	bm = NULL;
+		FIBITMAP*	bm = nullptr;
 		uint8_t*	img_data = imageData(image);
 		uint8_t*	img_mask = imageMask(image);
 		int			type = image.getType();
@@ -280,7 +286,7 @@ protected:
 			bm = FreeImage_Allocate(width, height, 8);
 
 			// Get palette to use
-			Palette8bit usepal;
+			Palette usepal;
 			if (image.hasPalette())
 				usepal.copyPalette(&imagePalette(image));
 			else if (pal)
@@ -362,16 +368,16 @@ protected:
 		FreeImage_FlipVertical(bm);
 
 		// Write the image to a temp file
-		FreeImage_Save(FIF_PNG, bm, CHR(appPath("temp.png", DIR_TEMP)));
+		FreeImage_Save(FIF_PNG, bm, CHR(App::path("temp.png", App::Dir::Temp)));
 
 		// Load it into a memchunk
 		MemChunk png;
-		png.importFile(appPath("temp.png", DIR_TEMP));
+		png.importFile(App::path("temp.png", App::Dir::Temp));
 
 		// Check it loaded ok
 		if (png.getSize() == 0)
 		{
-			wxLogMessage("Error reading temporary file");
+			LOG_MESSAGE(1, "Error reading temporary file");
 			return false;
 		}
 
@@ -400,7 +406,7 @@ protected:
 		data.write(png_data + 33, png.getSize() - 33);
 
 		// Clean up
-		wxRemoveFile(appPath("temp.png", DIR_TEMP));
+		wxRemoveFile(App::path("temp.png", App::Dir::Temp));
 
 		// Success
 		return true;
@@ -562,6 +568,6 @@ public:
 		MemChunk mc;
 		image.setXOffset(offset.x);
 		image.setYOffset(offset.y);
-		return (writeImage(image, mc, NULL, 0) && entry->importMemChunk(mc));
+		return (writeImage(image, mc, nullptr, 0) && entry->importMemChunk(mc));
 	}
 };

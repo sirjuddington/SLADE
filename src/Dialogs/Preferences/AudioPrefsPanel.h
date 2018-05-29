@@ -1,38 +1,31 @@
-
-#ifndef __AUDIO_PREFS_PANEL_H__
-#define __AUDIO_PREFS_PANEL_H__
+#pragma once
 
 #include "PrefsPanelBase.h"
 
+class FileLocationPanel;
+
 class AudioPrefsPanel : public PrefsPanelBase
 {
-private:
-	wxCheckBox*	cb_snd_autoplay;
-	wxTextCtrl*	text_timidity_path;
-	wxTextCtrl*	text_timidity_options;
-	wxButton*	btn_browse_timidityexe;
-	wxButton*	btn_reset_player;
-
-	wxCheckBox*	cb_dmx_padding;
-#ifndef NO_FLUIDSYNTH
-	wxCheckBox*	cb_snd_timidity;
-	wxTextCtrl*	text_soundfont_path;
-	wxButton*	btn_browse_soundfont;
-#endif
-
 public:
 	AudioPrefsPanel(wxWindow* parent);
 	~AudioPrefsPanel();
 
-	void	init();
-	void	applyPreferences();
+	void	init() override;
+	void	applyPreferences() override;
+
+private:
+	wxCheckBox*			cb_snd_autoplay_;
+	wxCheckBox*			cb_dmx_padding_;
+	wxRadioButton*		rb_fluidsynth_;
+	wxRadioButton*		rb_timidity_;
+	wxTextCtrl*			text_timidity_options_;
+	wxButton*			btn_reset_player_;
+	FileLocationPanel*	flp_soundfont_;
+	FileLocationPanel*	flp_timidity_;
+
+	void	setupLayout();
+	void	updateControls() const;
 
 	// Events
-#ifndef NO_FLUIDSYNTH
-	void	onBtnBrowseSoundfont(wxCommandEvent& e);
-#endif
 	void	onBtnResetPlayer(wxCommandEvent& e);
-	void	onBtnBrowseTimidityExe(wxCommandEvent &e);
 };
-
-#endif//__AUDIO_PREFS_PANEL_H__

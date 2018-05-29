@@ -50,34 +50,35 @@ protected:
 	mobj_backup_t*		obj_backup;
 
 public:
-	MapObject(int type = MOBJ_UNKNOWN, SLADEMap* parent = NULL);
+	MapObject(int type = MOBJ_UNKNOWN, SLADEMap* parent = nullptr);
 	virtual ~MapObject();
 	bool operator< (const MapObject& right) const { return (index < right.index); }
 	bool operator> (const MapObject& right) const { return (index > right.index); }
 
-	uint8_t		getObjType() { return type; }
+	uint8_t		getObjType() const { return type; }
 	unsigned	getIndex();
-	SLADEMap*	getParentMap() { return parent_map; }
-	bool		isFiltered() { return filtered; }
-	long		modifiedTime() { return modified_time; }
-	unsigned	getId() { return id; }
+	SLADEMap*	getParentMap() const { return parent_map; }
+	bool		isFiltered() const { return filtered; }
+	long		modifiedTime() const { return modified_time; }
+	unsigned	getId() const { return id; }
 	string		getTypeName();
 	void		setModified();
 
-	MobjPropertyList&	props()				{ return properties; }
-	bool				hasProp(string key)	{ return properties[key].hasValue(); }
+	MobjPropertyList&	props()						{ return properties; }
+	bool				hasProp(const string& key)	{ return properties[key].hasValue(); }
 
 	// Generic property modification
-	virtual bool	boolProperty(string key);
-	virtual int		intProperty(string key);
-	virtual double	floatProperty(string key);
-	virtual string	stringProperty(string key);
-	virtual void	setBoolProperty(string key, bool value);
-	virtual void	setIntProperty(string key, int value);
-	virtual void	setFloatProperty(string key, double value);
-	virtual void	setStringProperty(string key, string value);
+	virtual bool	boolProperty(const string& key);
+	virtual int		intProperty(const string& key);
+	virtual double	floatProperty(const string& key);
+	virtual string	stringProperty(const string& key);
+	virtual void	setBoolProperty(const string& key, bool value);
+	virtual void	setIntProperty(const string& key, int value);
+	virtual void	setFloatProperty(const string& key, double value);
+	virtual void	setStringProperty(const string& key, const string& value);
+	virtual bool	scriptCanModifyProp(const string& key) { return true; }
 
-	virtual fpoint2_t	getPoint(uint8_t point) { return fpoint2_t(0,0); }
+	virtual fpoint2_t	getPoint(uint8_t point) { return fpoint2_t(0, 0); }
 
 	void	filter(bool f = true) { filtered = f; }
 
@@ -94,7 +95,7 @@ public:
 	static long propBackupTime();
 	static void beginPropBackup(long current_time);
 	static void endPropBackup();
-	
+
 	static bool	multiBoolProperty(vector<MapObject*>& objects, string prop, bool& value);
 	static bool multiIntProperty(vector<MapObject*>& objects, string prop, int& value);
 	static bool multiFloatProperty(vector<MapObject*>& objects, string prop, double& value);

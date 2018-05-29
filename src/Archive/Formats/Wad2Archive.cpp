@@ -31,7 +31,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Wad2Archive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -48,10 +48,10 @@ EXTERN_CVAR(Bool, wad_force_uppercase)
 /* Wad2Archive::Wad2Archive
  * Wad2Archive class constructor
  *******************************************************************/
-Wad2Archive::Wad2Archive() : TreelessArchive(ARCHIVE_WAD2)
+Wad2Archive::Wad2Archive() : TreelessArchive("wad2")
 {
 	// Init variables
-	wad3 = false;
+	wad3_ = false;
 }
 
 /* Wad2Archive::~Wad2Archive
@@ -59,22 +59,6 @@ Wad2Archive::Wad2Archive() : TreelessArchive(ARCHIVE_WAD2)
  *******************************************************************/
 Wad2Archive::~Wad2Archive()
 {
-}
-
-/* Wad2Archive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string Wad2Archive::getFileExtensionString()
-{
-	return "WAD2 Files (*.wad)|*.wad";
-}
-
-/* Wad2Archive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string Wad2Archive::getFormat()
-{
-	return "archive_wad2";
 }
 
 /* Wad2Archive::open
@@ -104,26 +88,26 @@ bool Wad2Archive::open(MemChunk& mc)
 	if (wad_type[0] != 'W' || wad_type[1] != 'A' || wad_type[2] != 'D' ||
 	        (wad_type[3] != '2' && wad_type[3] != '3'))
 	{
-		wxLogMessage("Wad2Archive::open: Invalid header");
+		LOG_MESSAGE(1, "Wad2Archive::open: Invalid header");
 		Global::error = "Invalid wad2 header";
 		return false;
 	}
 	if (wad_type[3] == '3')
-		wad3 = true;
+		wad3_ = true;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	theSplashWindow->setProgressMessage("Reading wad archive data");
+	UI::setSplashProgressMessage("Reading wad archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
-		wad2entry_t info;
+		Wad2Entry info;
 		mc.read(&info, 32);
 
 		// Byteswap values for big endian if needed
@@ -135,7 +119,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if ((unsigned)(info.offset + info.dsize) > mc.getSize())
 		{
-			wxLogMessage("Wad2Archive::open: Wad2 archive is invalid or corrupt");
+			LOG_MESSAGE(1, "Wad2Archive::open: Wad2 archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -151,16 +135,16 @@ bool Wad2Archive::open(MemChunk& mc)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 	}
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -185,7 +169,7 @@ bool Wad2Archive::open(MemChunk& mc)
 	}
 
 	// Detect maps (will detect map entry types)
-	theSplashWindow->setProgressMessage("Detecting maps");
+	UI::setSplashProgressMessage("Detecting maps");
 	detectMaps();
 
 	// Setup variables
@@ -193,7 +177,7 @@ bool Wad2Archive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -206,7 +190,7 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 {
 	// Determine directory offset & individual lump offsets
 	uint32_t dir_offset = 12;
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);
@@ -221,7 +205,7 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 
 	// Setup wad type
 	char wad_type[4] = { 'W', 'A', 'D', '2' };
-	if (wad3) wad_type[3] = '3';
+	if (wad3_) wad_type[3] = '3';
 
 	// Write the header
 	uint32_t num_lumps = numEntries();
@@ -242,7 +226,7 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 		entry = getEntry(l);
 
 		// Setup directory entry
-		wad2entry_t info;
+		Wad2Entry info;
 		memset(info.name, 0, 16);
 		memcpy(info.name, CHR(entry->getName()), entry->getName().Len());
 		info.cmprs = (bool)entry->exProp("W2Comp");
@@ -280,12 +264,12 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("Wad2Archive::loadEntryData: Failed to open wadfile %s", filename);
+		LOG_MESSAGE(1, "Wad2Archive::loadEntryData: Failed to open wadfile %s", filename_);
 		return false;
 	}
 
@@ -308,11 +292,11 @@ ArchiveEntry* Wad2Archive::addEntry(ArchiveEntry* entry, unsigned position, Arch
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)

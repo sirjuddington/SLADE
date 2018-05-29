@@ -28,6 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "ColourConfiguration.h"
 #include "Utility/Parser.h"
 #include "Archive/ArchiveManager.h"
@@ -148,69 +149,69 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 	parser.parseText(mc);
 
 	// Get 'colours' block
-	ParseTreeNode* colours = (ParseTreeNode*)parser.parseTreeRoot()->getChild("colours");
+	auto colours = parser.parseTreeRoot()->getChildPTN("colours");
 	if (colours)
 	{
 		// Read all colour definitions
 		for (unsigned a = 0; a < colours->nChildren(); a++)
 		{
-			ParseTreeNode* def = (ParseTreeNode*)colours->getChild(a);
+			auto def = colours->getChildPTN(a);
 
 			// Read properties
 			for (unsigned b = 0; b < def->nChildren(); b++)
 			{
-				ParseTreeNode* prop = (ParseTreeNode*)def->getChild(b);
+				auto prop = def->getChildPTN(b);
 				cc_col_t& col = cc_colours[def->getName()];
 				col.exists = true;
 
 				// Colour name
 				if (prop->getName() == "name")
-					col.name = prop->getStringValue();
+					col.name = prop->stringValue();
 
 				// Colour group (for config ui)
 				else if (prop->getName() == "group")
-					col.group = prop->getStringValue();
+					col.group = prop->stringValue();
 
 				// Colour
 				else if (prop->getName() == "rgb")
-					col.colour.set(prop->getIntValue(0), prop->getIntValue(1), prop->getIntValue(2));
+					col.colour.set(prop->intValue(0), prop->intValue(1), prop->intValue(2));
 
 				// Alpha
 				else if (prop->getName() == "alpha")
-					col.colour.a = prop->getIntValue();
+					col.colour.a = prop->intValue();
 
 				// Additive
 				else if (prop->getName() == "additive")
 				{
-					if (prop->getBoolValue())
+					if (prop->boolValue())
 						col.colour.blend = 1;
 					else
 						col.colour.blend = 0;
 				}
 
 				else
-					wxLogMessage("Warning: unknown colour definition property \"%s\"", prop->getName());
+					LOG_MESSAGE(1, "Warning: unknown colour definition property \"%s\"", prop->getName());
 			}
 		}
 	}
 
 	// Get 'theme' block
-	ParseTreeNode* theme = (ParseTreeNode*)parser.parseTreeRoot()->getChild("theme");
+	auto theme = parser.parseTreeRoot()->getChildPTN("theme");
 	if (theme)
 	{
 		// Read all theme definitions
 		for (unsigned a = 0; a < theme->nChildren(); a++)
 		{
-			ParseTreeNode* prop = (ParseTreeNode*)theme->getChild(a);
+			auto prop = theme->getChildPTN(a);
 
 			if (prop->getName() == "line_hilight_width")
-				line_hilight_width = prop->getFloatValue();
+				line_hilight_width = prop->floatValue();
 
 			else if (prop->getName() == "line_selection_width")
-				line_selection_width = prop->getFloatValue();
+				line_selection_width = prop->floatValue();
 
 			else if (prop->getName() == "flat_alpha")
-				flat_alpha = prop->getFloatValue();
+				flat_alpha = prop->floatValue();
 
 			else
 				LOG_MESSAGE(1, "Warning: unknown theme property \"%s\"", prop->getName());
@@ -287,10 +288,10 @@ bool ColourConfiguration::init()
 	loadDefaults();
 
 	// Check for saved colour configuration
-	if (wxFileExists(appPath("colours.cfg", DIR_USER)))
+	if (wxFileExists(App::path("colours.cfg", App::Dir::User)))
 	{
 		MemChunk ccfg;
-		ccfg.importFile(appPath("colours.cfg", DIR_USER));
+		ccfg.importFile(App::path("colours.cfg", App::Dir::User));
 		readConfiguration(ccfg);
 	}
 
@@ -303,7 +304,7 @@ bool ColourConfiguration::init()
 void ColourConfiguration::loadDefaults()
 {
 	// Read default colours
-	Archive* pres = theArchiveManager->programResourceArchive();
+	Archive* pres = App::archiveManager().programResourceArchive();
 	ArchiveEntry* entry_default_cc = pres->entryAtPath("config/colours/default.txt");
 	if (entry_default_cc)
 		readConfiguration(entry_default_cc->getMCData());
@@ -317,12 +318,12 @@ bool ColourConfiguration::readConfiguration(string name)
 	// TODO: search custom folder
 
 	// Search resource pk3
-	Archive* res = theArchiveManager->programResourceArchive();
+	Archive* res = App::archiveManager().programResourceArchive();
 	ArchiveTreeNode* dir = res->getDir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		if (S_CMPNOCASE(dir->getEntry(a)->getName(true), name))
-			return readConfiguration(dir->getEntry(a)->getMCData());
+		if (S_CMPNOCASE(dir->entryAt(a)->getName(true), name))
+			return readConfiguration(dir->entryAt(a)->getMCData());
 	}
 
 	return false;
@@ -336,10 +337,10 @@ void ColourConfiguration::getConfigurationNames(vector<string>& names)
 	// TODO: search custom folder
 
 	// Search resource pk3
-	Archive* res = theArchiveManager->programResourceArchive();
+	Archive* res = App::archiveManager().programResourceArchive();
 	ArchiveTreeNode* dir = res->getDir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
-		names.push_back(dir->getEntry(a)->getName(true));
+		names.push_back(dir->entryAt(a)->getName(true));
 }
 
 /* ColourConfiguration::getColourNames
@@ -370,9 +371,9 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		sort(list.begin(), list.end());
 
 		// Dump list to console
-		theConsole->logMessage(S_FMT("%lu Colours:", list.size()));
+		Log::console(S_FMT("%lu Colours:", list.size()));
 		for (unsigned a = 0; a < list.size(); a++)
-			theConsole->logMessage(list[a]);
+			Log::console(list[a]);
 	}
 	else
 	{
@@ -401,7 +402,7 @@ CONSOLE_COMMAND(ccfg, 1, false)
 
 		// Print colour
 		rgba_t col = ColourConfiguration::getColour(args[0]);
-		theConsole->logMessage(S_FMT("Colour \"%s\" = %d %d %d %d %d", args[0], col.r, col.g, col.b, col.a, col.blend));
+		Log::console(S_FMT("Colour \"%s\" = %d %d %d %d %d", args[0], col.r, col.g, col.b, col.a, col.blend));
 	}
 }
 

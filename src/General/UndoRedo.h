@@ -53,7 +53,7 @@ private:
 	SLADEMap*			map;
 
 public:
-	UndoManager(SLADEMap* map = NULL);
+	UndoManager(SLADEMap* map = nullptr);
 	~UndoManager();
 
 	SLADEMap*	getMap() { return map; }
@@ -71,6 +71,8 @@ public:
 
 	void	clear();
 	bool	createMergedLevel(UndoManager* manager, string name);
+
+	typedef std::unique_ptr<UndoManager> UPtr;
 };
 
 namespace UndoRedo

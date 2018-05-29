@@ -29,10 +29,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
+#include "Game/Configuration.h"
 #include "MapObject.h"
 #include "SLADEMap.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MainApp.h"
 
 
 /*******************************************************************
@@ -55,9 +55,9 @@ MapObject::MapObject(int type, SLADEMap* parent)
 	this->parent_map = parent;
 	this->index = 0;
 	this->filtered = false;
-	this->modified_time = theApp->runTimer();
+	this->modified_time = App::runTimer();
 	this->id = 0;
-	this->obj_backup = NULL;
+	this->obj_backup = nullptr;
 
 	if (parent)
 		parent->addMapObject(this);
@@ -118,7 +118,7 @@ void MapObject::setModified()
 		backup(obj_backup);
 	}
 
-	modified_time = theApp->runTimer();
+	modified_time = App::runTimer();
 }
 
 /* MapObject::copy
@@ -148,7 +148,7 @@ void MapObject::copy(MapObject* c)
 /* MapObject::boolProperty
  * Returns the value of the boolean property matching [key]
  *******************************************************************/
-bool MapObject::boolProperty(string key)
+bool MapObject::boolProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties[key].hasValue())
@@ -157,9 +157,9 @@ bool MapObject::boolProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getBoolValue();
+			return prop->defaultValue().getBoolValue();
 		else
 			return false;
 	}
@@ -168,7 +168,7 @@ bool MapObject::boolProperty(string key)
 /* MapObject::intProperty
  * Returns the value of the integer property matching [key]
  *******************************************************************/
-int MapObject::intProperty(string key)
+int MapObject::intProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties[key].hasValue())
@@ -177,9 +177,9 @@ int MapObject::intProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getIntValue();
+			return prop->defaultValue().getIntValue();
 		else
 			return 0;
 	}
@@ -188,7 +188,7 @@ int MapObject::intProperty(string key)
 /* MapObject::floatProperty
  * Returns the value of the float property matching [key]
  *******************************************************************/
-double MapObject::floatProperty(string key)
+double MapObject::floatProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties[key].hasValue())
@@ -197,9 +197,9 @@ double MapObject::floatProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getFloatValue();
+			return prop->defaultValue().getFloatValue();
 		else
 			return 0;
 	}
@@ -208,7 +208,7 @@ double MapObject::floatProperty(string key)
 /* MapObject::stringProperty
  * Returns the value of the string property matching [key]
  *******************************************************************/
-string MapObject::stringProperty(string key)
+string MapObject::stringProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties[key].hasValue())
@@ -217,9 +217,9 @@ string MapObject::stringProperty(string key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
+		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type);
 		if (prop)
-			return prop->getDefaultValue().getStringValue();
+			return prop->defaultValue().getStringValue();
 		else
 			return "";
 	}
@@ -228,7 +228,7 @@ string MapObject::stringProperty(string key)
 /* MapObject::setBoolProperty
  * Sets the boolean value of the property [key] to [value]
  *******************************************************************/
-void MapObject::setBoolProperty(string key, bool value)
+void MapObject::setBoolProperty(const string& key, bool value)
 {
 	// Update modified time
 	setModified();
@@ -240,7 +240,7 @@ void MapObject::setBoolProperty(string key, bool value)
 /* MapObject::setIntProperty
  * Sets the integer value of the property [key] to [value]
  *******************************************************************/
-void MapObject::setIntProperty(string key, int value)
+void MapObject::setIntProperty(const string& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -252,7 +252,7 @@ void MapObject::setIntProperty(string key, int value)
 /* MapObject::setFloatProperty
  * Sets the float value of the property [key] to [value]
  *******************************************************************/
-void MapObject::setFloatProperty(string key, double value)
+void MapObject::setFloatProperty(const string& key, double value)
 {
 	// Update modified time
 	setModified();
@@ -264,7 +264,7 @@ void MapObject::setFloatProperty(string key, double value)
 /* MapObject::setStringProperty
  * Sets the string value of the property [key] to [value]
  *******************************************************************/
-void MapObject::setStringProperty(string key, string value)
+void MapObject::setStringProperty(const string& key, const string& value)
 {
 	// Update modified time
 	setModified();
@@ -297,13 +297,13 @@ void MapObject::loadFromBackup(mobj_backup_t* backup)
 	// Check type match
 	if (backup->type != type)
 	{
-		wxLogMessage("loadFromBackup: Mobj type mismatch, %d != %d", type, backup->type);
+		LOG_MESSAGE(1, "loadFromBackup: Mobj type mismatch, %d != %d", type, backup->type);
 		return;
 	}
 	// Check id match
 	if (backup->id != id)
 	{
-		wxLogMessage("loadFromBackup: Mobj id mismatch, %d != %d", id, backup->id);
+		LOG_MESSAGE(1, "loadFromBackup: Mobj id mismatch, %d != %d", id, backup->id);
 		return;
 	}
 
@@ -324,7 +324,7 @@ void MapObject::loadFromBackup(mobj_backup_t* backup)
 mobj_backup_t* MapObject::getBackup(bool remove)
 {
 	mobj_backup_t* bak = obj_backup;
-	if (remove) obj_backup = NULL;
+	if (remove) obj_backup = nullptr;
 	return bak;
 }
 

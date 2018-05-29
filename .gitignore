@@ -26,6 +26,7 @@
 /dist/*.log
 /dist/*.map
 /dist/portable
+/docs/build/
 /ipch
 /src/bzip2/Release
 /src/lzma/Release
@@ -33,6 +34,8 @@
 /src/updaterevision
 /src/gitinfo.h
 /win_installer/Output
+cmake-build-debug/
+\.idea/
 
 /dist/*
 !/dist/res

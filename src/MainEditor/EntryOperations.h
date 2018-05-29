@@ -22,7 +22,7 @@ namespace EntryOperations
 	bool	createTexture(vector<ArchiveEntry*> entries);
 	bool	convertTextures(vector<ArchiveEntry*> entries);
 	bool	findTextureErrors(vector<ArchiveEntry*> entries);
-	bool	compileACS(ArchiveEntry* entry, bool hexen = false, ArchiveEntry* target = NULL, wxFrame* parent = NULL);
+	bool	compileACS(ArchiveEntry* entry, bool hexen = false, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
 	bool	exportAsPNG(ArchiveEntry* entry, string filename);
 	bool	optimizePNG(ArchiveEntry* entry);
 };

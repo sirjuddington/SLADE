@@ -1,105 +1,115 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    ColourPrefsPanel.cpp
- * Description: Panel containing colour preference controls
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ColourPrefsPanel.cpp
+// Description: Panel containing colour preference controls
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "ColourPrefsPanel.h"
 #include "General/ColourConfiguration.h"
-#include "MainEditor/MainWindow.h"
-#include "MapEditor/MapEditorWindow.h"
-#include "PreferencesDialog.h"
+#include "MainEditor/MainEditor.h"
+#include "MapEditor/MapEditor.h"
+#include "UI/WxUtils.h"
 
 
-/*******************************************************************
- * COLOURPREFSPANEL CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// ColourPrefsPanel Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* ColourPrefsPanel::ColourPrefsPanel
- * ColourPrefsPanel class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// ColourPrefsPanel::ColourPrefsPanel
+//
+// ColourPrefsPanel class constructor
+// ----------------------------------------------------------------------------
 ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(psizer);
-
-	// Create frame+sizer
-	wxStaticBox* frame = new wxStaticBox(this, -1, "Colour Preferences");
-	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(sizer);
 
 	// Configurations list
 	vector<string> cnames;
 	ColourConfiguration::getConfigurationNames(cnames);
-	choice_configs = new wxChoice(this, -1);
+	choice_configs_ = new wxChoice(this, -1);
 	for (unsigned a = 0; a < cnames.size(); a++)
-		choice_configs->Append(cnames[a]);
-
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(new wxStaticText(this, -1, "Preset:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(choice_configs, 1, wxEXPAND, 0);
+		choice_configs_->Append(cnames[a]);
+	sizer->Add(WxUtils::createLabelHBox(this, "Preset:", choice_configs_), 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 	// Create property grid
-	pg_colours = new wxPropertyGrid(this, -1, wxDefaultPosition, wxDefaultSize, wxPG_BOLD_MODIFIED|wxPG_SPLITTER_AUTO_CENTER|wxPG_TOOLTIPS);
-	sizer->Add(pg_colours, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	pg_colours_ = new wxPropertyGrid(
+		this,
+		-1,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS
+	);
+	sizer->Add(pg_colours_, 1, wxEXPAND);
 
 	// Load colour config into grid
 	refreshPropGrid();
 
 	// Bind events
-	choice_configs->Bind(wxEVT_CHOICE, &ColourPrefsPanel::onChoicePresetSelected, this);
+	choice_configs_->Bind(wxEVT_CHOICE, &ColourPrefsPanel::onChoicePresetSelected, this);
 
 	Layout();
 }
 
-/* ColourPrefsPanel::~ColourPrefsPanel
- * ColourPrefsPanel class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ColourPrefsPanel::~ColourPrefsPanel
+//
+// ColourPrefsPanel class destructor
+// ----------------------------------------------------------------------------
 ColourPrefsPanel::~ColourPrefsPanel()
 {
 }
 
-/* ColourPrefsPanel::init
- * Initialises panel controls
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ColourPrefsPanel::init
+//
+// Initialises panel controls
+// ----------------------------------------------------------------------------
 void ColourPrefsPanel::init()
 {
 	refreshPropGrid();
 }
 
-/* ColourPrefsPanel::refreshPropGrid
- * Refreshes the colour configuration wxPropertyGrid
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ColourPrefsPanel::refreshPropGrid
+//
+// Refreshes the colour configuration wxPropertyGrid
+// ----------------------------------------------------------------------------
 void ColourPrefsPanel::refreshPropGrid()
 {
 	// Clear grid
-	pg_colours->Clear();
+	pg_colours_->Clear();
 
 	// Get (sorted) list of colours
 	vector<string> colours;
@@ -110,20 +120,20 @@ void ColourPrefsPanel::refreshPropGrid()
 	for (unsigned a = 0; a < colours.size(); a++)
 	{
 		// Get colour definition
-		cc_col_t cdef = ColourConfiguration::getColDef(colours[a]);
+		auto cdef = ColourConfiguration::getColDef(colours[a]);
 
 		// Get/create group
-		wxPGProperty* group = pg_colours->GetProperty(cdef.group);
+		auto group = pg_colours_->GetProperty(cdef.group);
 		if (!group)
-			group = pg_colours->Append(new wxPropertyCategory(cdef.group));
+			group = pg_colours_->Append(new wxPropertyCategory(cdef.group));
 
 		// Add colour
-		wxPGProperty* colour = pg_colours->AppendIn(group, new wxColourProperty(cdef.name, colours[a], WXCOL(cdef.colour)));
+		auto colour = pg_colours_->AppendIn(group, new wxColourProperty(cdef.name, colours[a], WXCOL(cdef.colour)));
 
 		// Add extra colour properties
-		wxPGProperty* opacity = pg_colours->AppendIn(colour, new wxIntProperty("Opacity (0-255)", "alpha", cdef.colour.a));
-		pg_colours->AppendIn(colour, new wxBoolProperty("Additive", "additive", (cdef.colour.blend == 1)));
-		pg_colours->Collapse(colour);
+		auto opacity = pg_colours_->AppendIn(colour, new wxIntProperty("Opacity (0-255)", "alpha", cdef.colour.a));
+		pg_colours_->AppendIn(colour, new wxBoolProperty("Additive", "additive", (cdef.colour.blend == 1)));
+		pg_colours_->Collapse(colour);
 
 		// Set opacity limits
 		opacity->SetAttribute("Max", 255);
@@ -131,18 +141,35 @@ void ColourPrefsPanel::refreshPropGrid()
 	}
 
 	// Add theme options to property grid
-	wxPGProperty* g_theme = pg_colours->Append(new wxPropertyCategory("Map Editor Theme"));
-	pg_colours->AppendIn(g_theme, new wxFloatProperty("Line Hilight Width Multiplier", "line_hilight_width", ColourConfiguration::getLineHilightWidth()));
-	pg_colours->AppendIn(g_theme, new wxFloatProperty("Line Selection Width Multiplier", "line_selection_width", ColourConfiguration::getLineSelectionWidth()));
-	pg_colours->AppendIn(g_theme, new wxFloatProperty("Flat Fade", "flat_alpha", ColourConfiguration::getFlatAlpha()));
+	wxPGProperty* g_theme = pg_colours_->Append(new wxPropertyCategory("Map Editor Theme"));
+	pg_colours_->AppendIn(
+		g_theme,
+		new wxFloatProperty(
+			"Line Hilight Width Multiplier",
+			"line_hilight_width",
+			ColourConfiguration::getLineHilightWidth())
+	);
+	pg_colours_->AppendIn(
+		g_theme,
+		new wxFloatProperty(
+			"Line Selection Width Multiplier",
+			"line_selection_width",
+			ColourConfiguration::getLineSelectionWidth())
+	);
+	pg_colours_->AppendIn(
+		g_theme,
+		new wxFloatProperty("Flat Fade", "flat_alpha", ColourConfiguration::getFlatAlpha())
+	);
 
 	// Set all bool properties to use checkboxes
-	pg_colours->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
+	pg_colours_->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 }
 
-/* ColourPrefsPanel::applyPreferences
- * Applies preferences from the panel controls
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// ColourPrefsPanel::applyPreferences
+//
+// Applies preferences from the panel controls
+// ----------------------------------------------------------------------------
 void ColourPrefsPanel::applyPreferences()
 {
 	// Get list of all colours
@@ -159,13 +186,13 @@ void ColourPrefsPanel::applyPreferences()
 		cdef_path += colours[a];
 
 		// Get properties from grid
-		wxIntProperty* p_alpha = (wxIntProperty*)pg_colours->GetProperty(cdef_path + ".alpha");
-		wxBoolProperty* p_add = (wxBoolProperty*)pg_colours->GetProperty(cdef_path + ".additive");
+		wxIntProperty* p_alpha = (wxIntProperty*)pg_colours_->GetProperty(cdef_path + ".alpha");
+		wxBoolProperty* p_add = (wxBoolProperty*)pg_colours_->GetProperty(cdef_path + ".additive");
 
 		if (p_alpha && p_add)
 		{
 			// Getting the colour out of a wxColourProperty is retarded
-			wxVariant v = pg_colours->GetPropertyValue(cdef_path);
+			wxVariant v = pg_colours_->GetPropertyValue(cdef_path);
 			wxColour col;
 			col << v; // wut?
 
@@ -180,40 +207,45 @@ void ColourPrefsPanel::applyPreferences()
 				blend = 1;
 
 			// Set the colour
-			ColourConfiguration::setColour(colours[a], col.Red(), col.Green(), col.Blue(), alpha, blend);
+			ColourConfiguration::setColour(colours[a], COLWX(col), alpha, blend);
 
 			// Clear modified status
-			pg_colours->GetProperty(cdef_path)->SetModifiedStatus(false);
+			pg_colours_->GetProperty(cdef_path)->SetModifiedStatus(false);
 			p_alpha->SetModifiedStatus(false);
 			p_add->SetModifiedStatus(false);
 		}
 	}
 
-	ColourConfiguration::setLineHilightWidth((double)pg_colours->GetProperty("line_hilight_width")->GetValue());
-	pg_colours->GetProperty("line_hilight_width")->SetModifiedStatus(false);
-	ColourConfiguration::setLineSelectionWidth((double)pg_colours->GetProperty("line_selection_width")->GetValue());
-	pg_colours->GetProperty("line_selection_width")->SetModifiedStatus(false);
-	ColourConfiguration::setFlatAlpha((double)pg_colours->GetProperty("flat_alpha")->GetValue());
-	pg_colours->GetProperty("flat_alpha")->SetModifiedStatus(false);
+	ColourConfiguration::setLineHilightWidth((double)pg_colours_->GetProperty("line_hilight_width")->GetValue());
+	pg_colours_->GetProperty("line_hilight_width")->SetModifiedStatus(false);
+	ColourConfiguration::setLineSelectionWidth((double)pg_colours_->GetProperty("line_selection_width")->GetValue());
+	pg_colours_->GetProperty("line_selection_width")->SetModifiedStatus(false);
+	ColourConfiguration::setFlatAlpha((double)pg_colours_->GetProperty("flat_alpha")->GetValue());
+	pg_colours_->GetProperty("flat_alpha")->SetModifiedStatus(false);
 
-	pg_colours->Refresh();
-	pg_colours->RefreshEditor();
-	theMainWindow->Refresh();
-	theMapEditor->forceRefresh(true);
+	pg_colours_->Refresh();
+	pg_colours_->RefreshEditor();
+	MainEditor::windowWx()->Refresh();
+	MapEditor::forceRefresh(true);
 }
 
 
-/*******************************************************************
- * COLOURPREFSPANEL CLASS EVENTS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// ColourPrefsPanel Class Events
+//
+// ----------------------------------------------------------------------------
 
-/* ColourPrefsPanel::onChoicePresetSelected
- * Called when the 'preset' dropdown choice is changed
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// ColourPrefsPanel::onChoicePresetSelected
+//
+// Called when the 'preset' dropdown choice is changed
+// ----------------------------------------------------------------------------
 void ColourPrefsPanel::onChoicePresetSelected(wxCommandEvent& e)
 {
-	string config = choice_configs->GetStringSelection();
+	string config = choice_configs_->GetStringSelection();
 	ColourConfiguration::readConfiguration(config);
 	refreshPropGrid();
-	theMapEditor->forceRefresh(true);
+	MapEditor::forceRefresh(true);
 }

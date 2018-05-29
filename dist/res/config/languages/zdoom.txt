@@ -29,7 +29,7 @@ z_cvarinfo {
 		// Scopes
 		server, user,
 
-		noarchive,
+		noarchive, cheat, latch,
 
 		// Types
 		bool, color, float, int, string
@@ -66,7 +66,7 @@ z_fontdefs {
 	function_link = "http://zdoom.org/wiki/FONTDEFS";
 
 	keywords = {
-		Template, NOTRANSLATION, SPACEWIDTH, BASE, COUNT, CURSOR, FIRST
+		Template, NOTRANSLATION, SPACEWIDTH, BASE, COUNT, CURSOR, FIRST, DONTTRANSLATE
 	}
 
 	constants = {
@@ -101,7 +101,24 @@ z_gldefs {
 
 	constants = {
 		color, size, offset, subtractive, secondarySize, interval, chance, dontlightself,
-		scale, map, iwad, thiswad, disablefullbright, Texture, Shader, speed
+		scale, map, iwad, thiswad, disablefullbright, Texture, Shader, speed, attenuate
+	}
+}
+
+z_iwadinfo
+{
+	name = "ZDoom IWAD Info";
+	case_sensitive = false;
+	
+	keywords =
+	{
+		IWad, Order, Names
+	}
+
+	properties =
+	{
+		Name, Autoname, Game, Config, IWADName, Mapinfo, Compatibility, MustContain,
+		BannerColors, Required, Load
 	}
 }
 
@@ -165,7 +182,7 @@ z_mapinfo {
 	constant_link = "http://zdoom.org/wiki/MAPINFO";
 	function_link = "http://zdoom.org/wiki/MAPINFO";
 	blocks = "gameinfo", "skill", "map", "episode", "cluster", "automap", "automap_overlay",
-	         "doomednums", "spawnnums", "conversationids";
+	         "doomednums", "spawnnums", "conversationids", "damagetype";
 
 	keywords = {
 		// Generic
@@ -173,6 +190,7 @@ z_mapinfo {
 		
 		// Cluster
 		Cluster, ClusterDef, EnterText, ExitText, ExitTextIsLump, Music, Flat, Pic, Hub, 
+		AllowIntermission,
 		
 		// Episode
 		ClearEpisodes, Episode, Name, PicName, Key, Remove, NoSkillMenu, Optional, Extended,
@@ -201,28 +219,32 @@ z_mapinfo {
 		SpiderMastermindSpecial, StrictMonsterActivation, StrifeFallingDamage,
 		SuckTime, TeamDamage, TeamPlayOff, TeamPlayOn, TitlePatch, TotalInfighting,
 		Translator, UnFreezeSinglePlayerConversations, UsePlayerStartZ, VertWallShade,
-		ForceFakeContrast, PrecacheTextures, PrecacheClasses,
+		ForceFakeContrast, PrecacheTextures, PrecacheClasses, HazardColor, HazardFlash,
+		AddEventHandlers, EventHandlers, TextMusic, TextFlat, TextPic,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
+		LightAdditiveSurfaces, NoLightFade,
 
 		// Skill definitions
 		Skill, ClearSkills, AmmoFactor, DropAmmoFactor, DoubleAmmoFactor, DamageFactor, RespawnTime, RespawnLimit,
 		Aggressiveness, SpawnFilter, ACSReturn, Key, MustConfirm, Name, PlayerClassName, PicName, TextColor, EasyBossBrain,
 		FastMonsters, SlowMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain,
-		DefaultSkill, ArmorFactor, EasyKey, HealthFactor,
+		DefaultSkill, ArmorFactor, EasyKey, HealthFactor, KickbackFactor, NoMenu,
 
 		// GameInfo definitions
 		GameInfo, AddCreditPage, AddInfoPage, AddPlayerClasses, AddQuitMessages, AdvisoryTime, Border, BackpackType,
 		BorderFlat, ChatSound, CreditPage, DefaultBloodColor, DefaultBloodParticleColor, DefKickback, DrawReadThis,
-		FinaleFlat, FinaleMusic, FinalePage, InfoPage, IntermissionCounter, IntermissionMusic, MapInfo, NoLoopFinaleMusic,
+		FinaleFlat, FinaleMusic, FinalePage, InfoPage, IntermissionCounter, IntermissionMusic, NoLoopFinaleMusic,
 		PageTime, QuitSound, SkyFlatName, StatusBar, TeleFogHeight, TitleMusic, TitlePage, TitleTime, Translator,
 		WeaponSlot, ArmorIcons, DimColor, DimAmount, DefInventoryMaxAmount, DefaultRespawnTime, DefaultDropStyle, Endoom,
 		PickupColor, QuitMessages, MenuFontColor_Title, MenuFontColor_Label, MenuFontColor_Value,
 		MenuFontColor_Action, MenuFontColor_Header, MenuFontColor_Highlight, MenuFontColor_Selection, MenuBackButton,
 		PlayerClasses, PauseSign, GibFactor, CursorPic, SwapMenu, TextScreenX, TextScreenY, DefaultEndSequence, MapArrow,
 		NoRandomPlayerclass, StatScreen_EnteringPatch, StatScreen_FinishedPatch, StatScreen_MapNameFont, NightmareFast,
-		DontCrunchCorpses, CheatKey, ForceKillScripts,
+		DontCrunchCorpses, CheatKey, ForceKillScripts, MessageBoxClass, StatusBarClass, DefaultConversationMenuClass,
+		StatScreen_FinishedFont, StatScreen_EnteringFont, Dialogue, StatScreen_Single, StatScreen_Coop, StatScreen_DM,
+		BlurAmount, CorrectPrintBold, MenuSliderColor,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
@@ -236,13 +258,16 @@ z_mapinfo {
 		ThingColor_NocountMonster, TwoSidedWallColor, WallColor, XHairColor, YourColor,
 
 		// Thing editor numbers
-		DoomEdNums,
+		DoomEdNums, NoSkillFlags,
 
 		// Spawn numbers (SpawnIDs)
 		SpawnNums,
 
 		// Conversation IDs
-		ConversationIDs
+		ConversationIDs,
+
+		// Damage types
+		DamageType, Factor, ReplaceFactor, NoArmor, Obituary
 	}
 
 	constants = {
@@ -256,16 +281,17 @@ z_menudef {
 	keyword_link = "http://zdoom.org/wiki/MENUDEF";
 	constant_link = "http://zdoom.org/wiki/MENUDEF";
 	function_link = "http://zdoom.org/wiki/MENUDEF";
-	blocks = "listmenu", "optionmenu", "optionvalue", "optionstring";
+	blocks = "listmenu", "optionmenu", addoptionmenu, "optionvalue", "optionstring";
 	
 	keywords = { 
-		ListMenu, OptionMenu, OptionValue, OptionString, 
+		ListMenu, OptionMenu, AddOptionMenu, OptionValue, OptionString, 
 		DefaultListMenu, DefaultOptionMenu, OptionMenuSettings, 
 		Font, Linespacing, LabelOffset, PlayerDisplay, Position, Selector, StaticText, 
 		StaticTextSwitchable, ScrollTop, SafeCommand, ColorPicker, Class, ScreenResolution, 
 		StaticPatch, Control, Option, Slider, PatchItem, TextItem, Submenu, Command,
 		NetgameMessage, StaticPatchCentered, StaticTextCentered, MouseWindow, CenterMenu,
-		Title, PlayerNameBox, ValueText, MapControl, Else, TextField, NumberField
+		Title, PlayerNameBox, ValueText, MapControl, Else, TextField, NumberField,
+		ScaleSlider
 	}
 	
 	functions { ifgame = "game, [...]"; ifoption = "option, [...]"; }
@@ -293,7 +319,7 @@ z_modeldef {
 
 	constants = {
 		PITCHFROMMOMENTUM, IGNORETRANSLATION, INTERPOLATEDOUBLEDFRAMES, ROTATING, NOINTERPOLATION,
-		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL
+		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL, DONTCULLBACKFACES
 	}
 }
 
@@ -349,7 +375,7 @@ z_sbarinfo {
 		Resolution, StatusBar, alpha, aspectratio, drawbar, DrawGem, DrawKeyBar, DrawInventoryBar, DrawImage, DrawMugShot,
 		DrawNumber, DrawSelectedInventory, DrawShader, DrawString, DrawSwitchableImage, Else, GameMode, HasWeaponPiece,
 		IfHealth, InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, PlayerType, UsesAmmo, UsesSecondaryAmmo,
-		WeaponAmmo, mugshot, IfInvulnerable, IfWaterLevel, IfCVarInt
+		WeaponAmmo, mugshot, IfInvulnerable, IfWaterLevel, IfCVarInt, Protrusion
 	}
 
 	constants = {

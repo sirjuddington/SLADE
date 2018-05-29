@@ -1,5 +1,7 @@
 #pragma once
 
+class ArchiveEntry;
+
 namespace StringUtils
 {
 	// Static common strings
@@ -14,6 +16,15 @@ namespace StringUtils
 	static string	CARET = "^";
 	static string	ESCAPED_QUOTE_DOUBLE = "\\\"";
 	static string	ESCAPED_SLASH_BACK = "\\\\";
+	static string	CURLYBRACE_OPEN = "{";
+	static string	CURLYBRACE_CLOSE = "}";
 
 	string	escapedString(const string& str, bool swap_backslash = false);
+
+	void	processIncludes(string filename, string& out);
+	void	processIncludes(ArchiveEntry* entry, string& out, bool use_res = true);
+
+	bool	isInteger(const string& str, bool allow_hex = true);
+	bool	isHex(const string& str);
+	bool	isFloat(const string& str);
 }

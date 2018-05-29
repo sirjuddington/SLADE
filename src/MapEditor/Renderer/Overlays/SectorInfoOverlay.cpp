@@ -30,20 +30,14 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "SectorInfoOverlay.h"
 #include "MapEditor/SLADEMap/MapSector.h"
 #include "OpenGL/Drawing.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "General/ColourConfiguration.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "OpenGL/OpenGL.h"
-
-
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
-EXTERN_CVAR(Int, gl_font_size)
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
@@ -55,7 +49,7 @@ EXTERN_CVAR(Int, gl_font_size)
  *******************************************************************/
 SectorInfoOverlay::SectorInfoOverlay()
 {
-	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * (gl_font_size / 12.0));
+	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * (Drawing::fontSize() / 12.0));
 	last_size = 100;
 }
 
@@ -79,7 +73,7 @@ void SectorInfoOverlay::update(MapSector* sector)
 
 	// Info (index + type)
 	int t = sector->intProperty("special");
-	string type = S_FMT("%s (Type %d)", theGameConfiguration->sectorTypeName(t), t);
+	string type = S_FMT("%s (Type %d)", Game::configuration().sectorTypeName(t), t);
 	if (Global::debug)
 		info_text += S_FMT("Sector #%d (%d): %s\n", sector->getIndex(), sector->getId(), type);
 	else
@@ -118,7 +112,7 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 	glDisable(GL_LINE_SMOOTH);
 
 	// Determine overlay height
-	double scale = (gl_font_size / 12.0);
+	double scale = (Drawing::fontSize() / 12.0);
 	text_box->setLineHeight(16 * scale);
 	if (last_size != right)
 	{
@@ -162,7 +156,7 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
  *******************************************************************/
 void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, string pos)
 {
-	double scale = (gl_font_size / 12.0);
+	double scale = (Drawing::fontSize() / 12.0);
 	int tex_box_size = 80 * scale;
 	int line_height = 16 * scale;
 
@@ -172,7 +166,10 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	col_fg.a = col_fg.a*alpha;
 
 	// Get texture
-	GLTexture* tex = theMapEditor->textureManager().getFlat(texture, theGameConfiguration->mixTexFlats());
+	GLTexture* tex = MapEditor::textureManager().getFlat(
+		texture,
+		Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+	);
 
 	// Valid texture
 	if (texture != "-" && tex != &(GLTexture::missingTex()))
@@ -201,7 +198,7 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	else if (tex == &(GLTexture::missingTex()))
 	{
 		// Draw unknown icon
-		GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/unknown");
+		GLTexture* icon = MapEditor::textureManager().getEditorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255*alpha, 0);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);

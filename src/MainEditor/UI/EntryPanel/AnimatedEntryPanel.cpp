@@ -30,10 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "AnimatedEntryPanel.h"
-#include "MainApp.h"
 #include "Archive/Archive.h"
-#include "Archive/ArchiveManager.h"
-#include "General/Misc.h"
 #include "UI/Lists/ListView.h"
 #include "UI/SToolBar/SToolBar.h"
 
@@ -48,17 +45,17 @@
 AnimatedEntryPanel::AnimatedEntryPanel(wxWindow* parent)
 	: EntryPanel(parent, "animated")
 {
-	ae_current = NULL;
+	ae_current = nullptr;
 	ae_modified = false;
 
 	// Setup toolbar
-	SToolBarGroup* group = new SToolBarGroup(toolbar, "Animated");
+	SToolBarGroup* group = new SToolBarGroup(toolbar_, "Animated");
 	group->addActionButton("new_anim", "New Animation", "animation_new", "Create a new animation definition", true);
-	toolbar->addGroup(group);
+	toolbar_->addGroup(group);
 
 	// Setup panel sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-	sizer_main->Add(sizer, 1, wxEXPAND, 0);
+	sizer_main_->Add(sizer, 1, wxEXPAND, 0);
 
 	// Add entry list
 	wxStaticBox* frame = new wxStaticBox(this, -1, "Animations");
@@ -185,7 +182,7 @@ bool AnimatedEntryPanel::handleAction(string id)
 bool AnimatedEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Do nothing if entry is already open
-	if (this->entry == entry && !isModified())
+	if (this->entry_ == entry && !isModified())
 		return true;
 
 	// Read ANIMATED entry into texturexlist
@@ -193,7 +190,7 @@ bool AnimatedEntryPanel::loadEntry(ArchiveEntry* entry)
 	animated.readANIMATEDData(entry);
 
 	// Update variables
-	this->entry = entry;
+	this->entry_ = entry;
 	setModified(false);
 
 	// Refresh controls
@@ -231,7 +228,7 @@ bool AnimatedEntryPanel::saveEntry()
 	}
 	anim.type = 255;
 	mc.write(&anim, 1);
-	bool success = entry->importMemChunk(mc);
+	bool success = entry_->importMemChunk(mc);
 	if (success)
 	{
 		for (uint32_t a = 0; a < animated.nEntries(); a++)
@@ -245,8 +242,8 @@ bool AnimatedEntryPanel::saveEntry()
  *******************************************************************/
 bool AnimatedEntryPanel::revertEntry()
 {
-	ArchiveEntry* reload = entry;
-	entry = NULL;
+	ArchiveEntry* reload = entry_;
+	entry_ = nullptr;
 	return loadEntry(reload);
 }
 
@@ -255,7 +252,7 @@ bool AnimatedEntryPanel::revertEntry()
  *******************************************************************/
 void AnimatedEntryPanel::insertListItem(AnimatedEntry* ent, uint32_t pos)
 {
-	if (ent == NULL) return;
+	if (ent == nullptr) return;
 	string cols[] = { ent->getType() ? "Texture" : "Flat",
 	                  ent->getFirst(), ent->getLast(),
 	                  ent->getSpeed() < 65535 ? S_FMT("%d tics", ent->getSpeed()) : "Swirl",
@@ -270,7 +267,7 @@ void AnimatedEntryPanel::insertListItem(AnimatedEntry* ent, uint32_t pos)
  *******************************************************************/
 void AnimatedEntryPanel::updateListItem(AnimatedEntry* ent, uint32_t pos)
 {
-	if (ent == NULL) return;
+	if (ent == nullptr) return;
 	string cols[] = { ent->getType() ? "Texture" : "Flat",
 	                  ent->getFirst(), ent->getLast(),
 	                  ent->getSpeed() < 65535 ? S_FMT("%d tics", ent->getSpeed()) : "Swirl",
@@ -313,7 +310,7 @@ void AnimatedEntryPanel::populateEntryList()
  *******************************************************************/
 void AnimatedEntryPanel::applyChanges()
 {
-	if (ae_current == NULL)
+	if (ae_current == nullptr)
 		return;
 
 	list_entries->enableSizeUpdate(false);
@@ -351,7 +348,7 @@ void AnimatedEntryPanel::applyChanges()
  *******************************************************************/
 void AnimatedEntryPanel::updateControls()
 {
-	if (ae_current == NULL)
+	if (ae_current == nullptr)
 	{
 		text_firstname->Clear();
 		text_lastname->Clear();
@@ -538,7 +535,7 @@ void AnimatedEntryPanel::onListSelect(wxListEvent& e)
 	// Do nothing if multiple animations are selected
 	if (list_entries->GetSelectedItemCount() > 1)
 	{
-		ae_current = NULL;
+		ae_current = nullptr;
 	}
 	else
 	{
@@ -563,11 +560,11 @@ void AnimatedEntryPanel::onListRightClick(wxListEvent& e)
 {
 	// Create context menu
 	wxMenu context;
-	theApp->getAction("anim_delete")->addToMenu(&context, true);
-	theApp->getAction("anim_new")->addToMenu(&context, true);
+	SAction::fromId("anim_delete")->addToMenu(&context, true);
+	SAction::fromId("anim_new")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("anim_up")->addToMenu(&context, true);
-	theApp->getAction("anim_down")->addToMenu(&context, true);
+	SAction::fromId("anim_up")->addToMenu(&context, true);
+	SAction::fromId("anim_down")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);

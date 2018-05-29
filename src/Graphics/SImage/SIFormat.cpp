@@ -29,21 +29,22 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #undef BOOL
-#include "General/Misc.h"
-#include "Archive/EntryType/EntryType.h"
-#include "SIFormat.h"
 #include "Archive/Archive.h"
+#include "Archive/EntryType/EntryType.h"
+#include "General/Misc.h"
+#include "SIFormat.h"
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
 vector<SIFormat*>	simage_formats;
-SIFormat*			sif_raw = NULL;
-SIFormat*			sif_flat = NULL;
-SIFormat*			sif_general = NULL;
-SIFormat*			sif_unknown = NULL;
+SIFormat*			sif_raw = nullptr;
+SIFormat*			sif_flat = nullptr;
+SIFormat*			sif_general = nullptr;
+SIFormat*			sif_unknown = nullptr;
 
 
 /*******************************************************************
@@ -103,7 +104,7 @@ private:
 
 		// Check it created/read ok
 		if (!bm)
-			return NULL;
+			return nullptr;
 
 		// Get info from image
 		info.width = FreeImage_GetWidth(bm);
@@ -134,7 +135,7 @@ protected:
 
 		// Get image palette if it exists
 		RGBQUAD* bm_pal = FreeImage_GetPalette(bm);
-		Palette8bit palette;
+		Palette palette;
 		if (bm_pal)
 		{
 			int a = 0;
@@ -154,6 +155,12 @@ protected:
 
 		// Convert to 32bpp & flip vertically
 		FIBITMAP* rgba = FreeImage_ConvertTo32Bits(bm);
+		if (!rgba)
+		{
+			LOG_MESSAGE(1, "FreeImage_ConvertTo32Bits failed for image data");
+			Global::error = "Error reading PNG data";
+			return false;
+		}
 		FreeImage_FlipVertical(rgba);
 
 		// Load raw RGBA data
@@ -174,7 +181,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette8bit* pal, int index)
+	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
 	{
 		return false;
 	}
@@ -214,25 +221,27 @@ uint32_t valid_flat_size[][3] =
 	{   2,   2,	0 },	// lol Heretic F_SKY1
 	{  10,  12,	0 },	// gnum format
 	{  16,  16,	0 },	// |
+	{  32,  32,	0 },	// |
 	{  32,  64,	0 },	// Strife startup sprite
 	{  48,  48,	0 },	// |
 	{  64,  64,	1 },	// standard flat size
 	{  64,	65,	0 },	// Heretic flat size variant
 	{  64, 128,	0 },	// Hexen flat size variant
-	{  80,  50, 0 },	// SRB2 fade mask size 1
+	{  80,  50, 	0 },	// SRB2 fade mask size 1
 	{ 128, 128,	1 },	// |
-	{ 160, 100, 0 },	// SRB2 fade mask size 2
+	{ 160, 100, 	0 },	// SRB2 fade mask size 2
+	{ 256,  34,	0 },    // SRB2 colormap
 	{ 256,  66,	0 },	// Blake Stone colormap
 	{ 256, 200,	0 },	// Rise of the Triad sky
 	{ 256, 256,	1 },	// hires flat size
 	{ 320, 200,	0 },	// full screen format
 	{ 512, 512,	1 },	// hires flat size
-	{ 640, 400, 0 },	// SRB2 fade mask size 4
+	{ 640, 400, 	0 },	// SRB2 fade mask size 4
 	{1024,1024,	1 },	// hires flat size
 	{2048,2048,	1 },	// super hires flat size (SRB2)
 	{4096,4096,	1 },	// |
 };
-uint32_t	n_valid_flat_sizes = 20;
+uint32_t	n_valid_flat_sizes = 22;
 
 
 /*******************************************************************
@@ -372,7 +381,7 @@ public:
 class SIFRawFlat : public SIFRaw
 {
 protected:
-	bool writeImage(SImage& image, MemChunk& data, Palette8bit* pal, int index)
+	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index)
 	{
 		// Can't write if RGBA
 		if (image.getType() == RGBA)

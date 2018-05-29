@@ -29,12 +29,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "CTexture.h"
 #include "Archive/ArchiveManager.h"
-#include "General/ResourceManager.h"
+#include "CTexture.h"
 #include "General/Misc.h"
+#include "General/ResourceManager.h"
 #include "Graphics/SImage/SImage.h"
 #include "TextureXList.h"
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -211,7 +212,7 @@ ArchiveEntry* CTPatchEx::getPatchEntry(Archive* parent)
 		return entry;
 	}
 	// Silence warnings
-	return NULL;
+	return nullptr;
 }
 
 /* CTPatchEx::parse
@@ -221,125 +222,117 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 {
 	// Read basic info
 	this->type = type;
-	name = tz.getToken().Upper();
-	tz.skipToken();	// Skip ,
-	offset_x = tz.getInteger();
-	tz.skipToken();	// Skip ,
-	offset_y = tz.getInteger();
+	name = tz.next().text.Upper();
+	tz.adv();	// Skip ,
+	offset_x = tz.next().asInt();
+	tz.adv();	// Skip ,
+	offset_y = tz.next().asInt();
 
 	// Check if there is any extended info
-	if (tz.peekToken() == "{")
+	if (tz.advIfNext("{", 2))
 	{
-		// Skip {
-		tz.skipToken();
-
 		// Parse extended info
-		string property = tz.getToken();
-		while (property != "}")
+		while (!tz.checkOrEnd("}"))
 		{
 			// FlipX
-			if (S_CMPNOCASE(property, "FlipX"))
+			if (tz.checkNC("FlipX"))
 				flip_x = true;
 
 			// FlipY
-			if (S_CMPNOCASE(property, "FlipY"))
+			if (tz.checkNC("FlipY"))
 				flip_y = true;
 
 			// UseOffsets
-			if (S_CMPNOCASE(property, "UseOffsets"))
+			if (tz.checkNC("UseOffsets"))
 				use_offsets = true;
 
 			// Rotate
-			if (S_CMPNOCASE(property, "Rotate"))
-				rotation = tz.getInteger();
+			if (tz.checkNC("Rotate"))
+				rotation = tz.next().asInt();
 
 			// Translation
-			if (S_CMPNOCASE(property, "Translation"))
+			if (tz.checkNC("Translation"))
 			{
-				// Add first translation string
-				translation.parse(tz.getToken());
-
-				if (tz.peekToken() == "," && translation.builtInName() == "Desaturate")
+				// Build translation string
+				string translate;
+				string temp = tz.next().text;
+				if (temp.Contains("=")) temp = S_FMT("\"%s\"", temp);
+				translate += temp;
+				while (tz.checkNext(","))
 				{
-					// Desaturation, get amount
-					tz.skipToken(); // Skip ,
-					int amount = tz.getInteger();
-					LOG_MESSAGE(2, "%d", amount);
-					translation.setDesaturationAmount(amount);
+					translate += tz.next().text; // add ','
+					temp = tz.next().text;
+					if (temp.Contains("=")) temp = S_FMT("\"%s\"", temp);
+					translate += temp;
 				}
-				else
-				{
-					// Add any subsequent translations (separated by commas)
-					while (tz.peekToken() == ",")
-					{
-						tz.skipToken();	// Skip ,
-						translation.parse(tz.getToken());
-					}
-				}
-
+				// Parse whole string
+				translation.parse(translate);
 				blendtype = 1;
 			}
 
 			// Blend
-			if (S_CMPNOCASE(property, "Blend"))
+			if (tz.checkNC("Blend"))
 			{
 				double val;
 				wxColour col;
 				blendtype = 2;
 
 				// Read first value
-				string first = tz.getToken();
+				string first = tz.next().text;
 
 				// If no second value, it's just a colour string
-				if (tz.peekToken() != ",")
+				if (!tz.checkNext(","))
 				{
 					col.Set(first);
-					colour.set(col.Red(), col.Green(), col.Blue());
+					colour.set(COLWX(col));
 				}
 				else
 				{
 					// Second value could be alpha or green
-					tz.skipToken();	// Skip ,
-					double second = tz.getDouble();
+					tz.adv();	// Skip ,
+					double second = tz.next().asFloat();
 
 					// If no third value, it's an alpha value
-					if (tz.peekToken() != ",")
+					if (!tz.checkNext(","))
 					{
 						col.Set(first);
-						colour.set(col.Red(), col.Green(), col.Blue(), second*255);
+						colour.set(COLWX(col), second*255);
 						blendtype = 3;
 					}
 					else
 					{
 						// Third value exists, must be R,G,B,A format
 						// RGB are ints in the 0-255 range; A is float in the 0.0-1.0 range
-						tz.skipToken();	// Skip ,
+						tz.adv();	// Skip ,
 						first.ToDouble(&val);
 						colour.r = val;
 						colour.g = second;
-						colour.b = tz.getInteger();
-						if (tz.peekToken() != ",")
+						colour.b = tz.next().asInt();
+						if (!tz.checkNext(","))
 						{
-							wxLogMessage("Invalid TEXTURES definition, expected ',', got '%s'", tz.getToken());
+							Log::error(S_FMT(
+								"Invalid TEXTURES definition, expected ',', got '%s'",
+								tz.peek().text
+							));
 							return false;
 						}
-						tz.skipToken();	// Skip ,
-						colour.a = tz.getDouble()*255;
+						tz.adv();	// Skip ,
+						colour.a = tz.next().asFloat()*255;
 						blendtype = 3;
 					}
 				}
 			}
 
 			// Alpha
-			if (S_CMPNOCASE(property, "Alpha"))
-				alpha = tz.getFloat();
+			if (tz.checkNC("Alpha"))
+				alpha = tz.next().asFloat();
 
 			// Style
-			if (S_CMPNOCASE(property, "Style"))
-				style = tz.getToken();
+			if (tz.checkNC("Style"))
+				style = tz.next().text;
 
 			// Read next property name
-			property = tz.getToken();
+			tz.adv();
 		}
 	}
 
@@ -426,7 +419,7 @@ CTexture::CTexture(bool extended)
 	this->offset_y = 0;
 	this->type = "Texture";
 	this->state = 0;
-	this->in_list = NULL;
+	this->in_list = nullptr;
 	this->index = -1;
 }
 
@@ -514,7 +507,7 @@ CTPatch* CTexture::getPatch(size_t index)
 {
 	// Check index
 	if (index >= patches.size())
-		return NULL;
+		return nullptr;
 
 	// Return patch at index
 	return patches[index];
@@ -618,17 +611,15 @@ bool CTexture::removePatch(string patch)
 {
 	// Go through patches
 	bool removed = false;
-	vector<CTPatch*>::iterator i = patches.begin();
-	while (i != patches.end())
+	for (unsigned a = 0; a < patches.size(); a++)
 	{
-		if (S_CMP((*i)->getName(), patch))
+		if (S_CMP(patches[a]->getName(), patch))
 		{
-			delete (*i);
-			patches.erase(i);
+			delete patches[a];
+			patches.erase(patches.begin() + a);
 			removed = true;
+			a--;
 		}
-		else
-			i++;
 	}
 
 	// Cannot be a simple define anymore
@@ -720,68 +711,65 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 bool CTexture::parse(Tokenizer& tz, string type)
 {
 	// Check if optional
-	if (S_CMPNOCASE(tz.peekToken(), "optional"))
-	{
-		tz.getToken();	// Skip it
+	if (tz.advIfNext("optional"))
 		optional = true;
-	}
 
 	// Read basic info
 	this->type = type;
 	this->extended = true;
 	this->defined = false;
-	name = tz.getToken().Upper();
-	tz.skipToken();	// Skip ,
-	width = tz.getInteger();
-	tz.skipToken();	// Skip ,
-	height = tz.getInteger();
+	name = tz.next().text.Upper();
+	tz.adv();	// Skip ,
+	width = tz.next().asInt();
+	tz.adv();	// Skip ,
+	height = tz.next().asInt();
 
 	// Check for extended info
-	if (tz.peekToken() == "{")
+	if (tz.advIfNext("{", 2))
 	{
-		tz.skipToken();	// Skip {
-
 		// Read properties
-		string property = tz.getToken();
-		while (property != "}")
+		while (!tz.check("}"))
 		{
 			// Check if end of text is reached (error)
-			if (property.IsEmpty())
+			if (tz.atEnd())
 			{
-				wxLogMessage("Error parsing texture %s: End of text found, missing } perhaps?", name);
+				Log::error(S_FMT(
+					"Error parsing texture %s: End of text found, missing } perhaps?",
+					name
+				));
 				return false;
 			}
 
 			// XScale
-			if (S_CMPNOCASE(property, "XScale"))
-				scale_x = tz.getFloat();
+			if (tz.checkNC("XScale"))
+				scale_x = tz.next().asFloat();
 
 			// YScale
-			if (S_CMPNOCASE(property, "YScale"))
-				scale_y = tz.getFloat();
+			else if (tz.checkNC("YScale"))
+				scale_y = tz.next().asFloat();
 
 			// Offset
-			if (S_CMPNOCASE(property, "Offset"))
+			else if (tz.checkNC("Offset"))
 			{
-				offset_x = tz.getInteger();
+				offset_x = tz.next().asInt();
 				tz.skipToken();	// Skip ,
-				offset_y = tz.getInteger();
+				offset_y = tz.next().asInt();
 			}
 
 			// WorldPanning
-			if (S_CMPNOCASE(property, "WorldPanning"))
+			else if (tz.checkNC("WorldPanning"))
 				world_panning = true;
 
 			// NoDecals
-			if (S_CMPNOCASE(property, "NoDecals"))
+			else if (tz.checkNC("NoDecals"))
 				no_decals = true;
 
 			// NullTexture
-			if (S_CMPNOCASE(property, "NullTexture"))
+			else if (tz.checkNC("NullTexture"))
 				null_texture = true;
 
 			// Patch
-			if (S_CMPNOCASE(property, "Patch"))
+			else if (tz.checkNC("Patch"))
 			{
 				CTPatchEx* patch = new CTPatchEx();
 				patch->parse(tz);
@@ -789,7 +777,7 @@ bool CTexture::parse(Tokenizer& tz, string type)
 			}
 
 			// Graphic
-			if (S_CMPNOCASE(property, "Graphic"))
+			else if (tz.checkNC("Graphic"))
 			{
 				CTPatchEx* patch = new CTPatchEx();
 				patch->parse(tz, PTYPE_GRAPHIC);
@@ -797,7 +785,7 @@ bool CTexture::parse(Tokenizer& tz, string type)
 			}
 
 			// Read next property
-			property = tz.getToken();
+			tz.adv();
 		}
 	}
 
@@ -812,9 +800,9 @@ bool CTexture::parseDefine(Tokenizer& tz)
 	this->type = "Define";
 	this->extended = true;
 	this->defined = true;
-	name = tz.getToken().Upper();
-	def_width = tz.getInteger();
-	def_height = tz.getInteger();
+	name = tz.next().text.Upper();
+	def_width = tz.next().asInt();
+	def_height = tz.next().asInt();
 	width = def_width;
 	height = def_height;
 	ArchiveEntry* entry = theResourceManager->getPatchEntry(name);
@@ -948,7 +936,7 @@ bool CTexture::convertRegular()
  * Generates a SImage representation of this texture, using patches
  * from [parent] primarily, and the palette [pal]
  *******************************************************************/
-bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool force_rgba)
+bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_rgba)
 {
 	// Init image
 	image.clear();
@@ -994,7 +982,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool fo
 
 			// Apply translation before anything in case we're forcing rgba (can't translate rgba images)
 			if (patch->getBlendType() == 1)
-				p_img.applyTranslation(&(patch->getTranslation()), pal);
+				p_img.applyTranslation(&(patch->getTranslation()), pal, force_rgba);
 
 			// Convert to RGBA if forced
 			if (force_rgba)
@@ -1068,7 +1056,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool fo
  * Loads the image for the patch at [pindex] into [image]. Can deal
  * with textures-as-patches
  *******************************************************************/
-bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette8bit* pal)
+bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette* pal)
 {
 	// Check patch index
 	if (pindex >= patches.size())

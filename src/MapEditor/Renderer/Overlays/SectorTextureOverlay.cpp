@@ -30,13 +30,15 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
-#include "MapEditor/SLADEMap/MapSector.h"
-#include "SectorTextureOverlay.h"
-#include "OpenGL/Drawing.h"
+#include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/MapTextureManager.h"
+#include "MapEditor/SLADEMap/MapSector.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
+#include "OpenGL/Drawing.h"
+#include "SectorTextureOverlay.h"
 
 
 /*******************************************************************
@@ -165,14 +167,14 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 	glPopMatrix();
 
 	// Draw first texture
-	bool mixed = theGameConfiguration->mixTexFlats();
+	bool mixed = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
 	OpenGL::setColour(255, 255, 255, 255*alpha, 0);
-	Drawing::drawTextureWithin(theMapEditor->textureManager().getFlat(textures[0], mixed), x, y, x + size, y + size, 0, 100);
+	Drawing::drawTextureWithin(MapEditor::textureManager().getFlat(textures[0], mixed), x, y, x + size, y + size, 0, 100);
 
 	// Draw up to 4 subsequent textures (overlaid)
 	OpenGL::setColour(255, 255, 255, 127*alpha, 0);
 	for (unsigned a = 1; a < textures.size() && a < 5; a++)
-		Drawing::drawTextureWithin(theMapEditor->textureManager().getFlat(textures[a], mixed), x, y, x + size, y + size, 0, 100);
+		Drawing::drawTextureWithin(MapEditor::textureManager().getFlat(textures[a], mixed), x, y, x + size, y + size, 0, 100);
 
 	glDisable(GL_TEXTURE_2D);
 
@@ -250,7 +252,7 @@ void SectorTextureOverlay::close(bool cancel)
 	// Set textures if not cancelled
 	if (!cancel)
 	{
-		theMapEditor->mapEditor().beginUndoRecord("Change Sector Texture", true, false, false);
+		MapEditor::editContext().beginUndoRecord("Change Sector Texture", true, false, false);
 		for (unsigned a = 0; a < sectors.size(); a++)
 		{
 			if (tex_floor.size() == 1)
@@ -258,7 +260,7 @@ void SectorTextureOverlay::close(bool cancel)
 			if (tex_ceil.size() == 1)
 				sectors[a]->setStringProperty("textureceiling", tex_ceil[0]);
 		}
-		theMapEditor->mapEditor().endUndoRecord();
+		MapEditor::editContext().endUndoRecord();
 	}
 }
 
@@ -338,13 +340,13 @@ void SectorTextureOverlay::browseFloorTexture()
 		texture = tex_floor[0];
 
 	// Open texture browser
-	MapTextureBrowser browser(theMapEditor, 1, texture, &(theMapEditor->mapEditor().getMap()));
+	MapTextureBrowser browser(MapEditor::windowWx(), 1, texture, &(MapEditor::editContext().map()));
 	browser.SetTitle("Browse Floor Texture");
 	if (browser.ShowModal() == wxID_OK)
 	{
 		// Set texture
 		tex_floor.clear();
-		tex_floor.push_back(browser.getSelectedItem()->getName());
+		tex_floor.push_back(browser.getSelectedItem()->name());
 		close(false);
 	}
 }
@@ -362,13 +364,13 @@ void SectorTextureOverlay::browseCeilingTexture()
 		texture = tex_ceil[0];
 
 	// Open texture browser
-	MapTextureBrowser browser(theMapEditor, 1, texture, &(theMapEditor->mapEditor().getMap()));
+	MapTextureBrowser browser(MapEditor::windowWx(), 1, texture, &(MapEditor::editContext().map()));
 	browser.SetTitle("Browse Ceiling Texture");
 	if (browser.ShowModal() == wxID_OK)
 	{
 		// Set texture
 		tex_ceil.clear();
-		tex_ceil.push_back(browser.getSelectedItem()->getName());
+		tex_ceil.push_back(browser.getSelectedItem()->name());
 		close(false);
 	}
 }

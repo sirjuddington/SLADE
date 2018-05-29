@@ -30,18 +30,19 @@ private:
 	bool						creating;
 
 	Archive*					archive;
-	vector<Archive::mapdesc_t>	maps;
-	vector<int>					ports_list;
+	vector<Archive::MapDesc>	maps;
+	vector<string>				games_list;
+	vector<string>				ports_list;
 
 public:
-	MapEditorConfigDialog(wxWindow* parent, Archive* archive = NULL, bool show_maps = true, bool creating = false);
+	MapEditorConfigDialog(wxWindow* parent, Archive* archive = nullptr, bool show_maps = true, bool creating = false);
 	~MapEditorConfigDialog();
 
 	void				populateGameList();
 	void				populatePortList();
 	void				populateMapList();
-	Archive::mapdesc_t	selectedMap();
-	bool				configMatchesMap(Archive::mapdesc_t map);
+	Archive::MapDesc	selectedMap();
+	bool				configMatchesMap(Archive::MapDesc map);
 	string				selectedGame();
 	string				selectedPort();
 

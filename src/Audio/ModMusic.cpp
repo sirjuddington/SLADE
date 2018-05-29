@@ -48,8 +48,8 @@ bool ModMusic::init_done = false;
  *******************************************************************/
 ModMusic::ModMusic()
 {
-	dumb_module = NULL;
-	dumb_player = NULL;
+	dumb_module = nullptr;
+	dumb_player = nullptr;
 }
 
 /* ModMusic::~ModMusic
@@ -74,7 +74,7 @@ bool ModMusic::openFromFile(const std::string& filename)
 
 	// Load module file
 	dumb_module = dumb_load_any(filename.c_str(), 0, 0);
-	if (dumb_module != NULL)
+	if (dumb_module != nullptr)
 	{
 		initialize(2, 44100);
 		return true;
@@ -100,7 +100,7 @@ bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
 
 	// Load module file
 	dumb_module = dumb_read_any(dumbfile_open_memory((const char*)data, size), 0, 0);
-	if (dumb_module != NULL)
+	if (dumb_module != nullptr)
 	{
 		initialize(2, 44100);
 		return true;
@@ -125,15 +125,15 @@ sf::Time ModMusic::getDuration() const
  *******************************************************************/
 void ModMusic::close()
 {
-	if (dumb_player != NULL)
+	if (dumb_player != nullptr)
 	{
 		duh_end_sigrenderer(dumb_player);
-		dumb_player = NULL;
+		dumb_player = nullptr;
 	}
-	if (dumb_module != NULL)
+	if (dumb_module != nullptr)
 	{
 		unload_duh(dumb_module);
-		dumb_module = NULL;
+		dumb_module = nullptr;
 	}
 }
 

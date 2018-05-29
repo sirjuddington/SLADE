@@ -1,6 +1,4 @@
-
-#ifndef __PALETTEENTRYPANEL_H__
-#define	__PALETTEENTRYPANEL_H__
+#pragma once
 
 #include "EntryPanel.h"
 #include "General/SAction.h"
@@ -18,29 +16,20 @@
  *   beta version which used a green colormap for the light amp visors).
  */
 class PaletteCanvas;
-class Palette8bit;
+class Palette;
 class ArchiveEntry;
+
 class PaletteEntryPanel : public EntryPanel, public SActionHandler
 {
-private:
-	PaletteCanvas*			pal_canvas;
-	vector<Palette8bit*>	palettes;
-	uint32_t				cur_palette;
-
-	wxStaticText*			text_curpal;
-
-	// A helper for generatePalettes() which has no reason to be called outside
-	void					generatePalette(int r, int g, int b, int shift, int steps);
-
 public:
 	PaletteEntryPanel(wxWindow* parent);
 	~PaletteEntryPanel();
 
-	bool	loadEntry(ArchiveEntry* entry);
-	bool	saveEntry();
-	string	statusString();
-	void	refreshPanel();
-	void	toolbarButtonClick(string action_id);
+	bool	loadEntry(ArchiveEntry* entry) override;
+	bool	saveEntry() override;
+	string	statusString() override;
+	void	refreshPanel() override;
+	void	toolbarButtonClick(string action_id) override;
 
 	bool	showPalette(uint32_t index);
 	bool	addCustomPalette();
@@ -65,11 +54,18 @@ public:
 	void	analysePalettes();
 
 	// SAction handler
-	bool	handleAction(string id);
-	bool	fillCustomMenu(wxMenu* custom);
+	bool	handleAction(string id) override;
+	bool	fillCustomMenu(wxMenu* custom) override;
+
+private:
+	PaletteCanvas*		pal_canvas_		= nullptr;
+	vector<Palette*>	palettes_;
+	uint32_t			cur_palette_	= 1;
+	wxStaticText*		text_curpal_	= nullptr;
+
+	// A helper for generatePalettes() which has no reason to be called outside
+	void	generatePalette(int r, int g, int b, int shift, int steps);
 
 	// Events
 	void	onPalCanvasMouseEvent(wxMouseEvent& e);
 };
-
-#endif //__PALETTEENTRYPANEL_H__

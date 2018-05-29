@@ -1,46 +1,44 @@
-
-#ifndef __LINE_PROPS_PANEL_H__
-#define __LINE_PROPS_PANEL_H__
+#pragma once
 
 #include "PropsPanelBase.h"
+#include "UI/Controls/STabCtrl.h"
 
-class STabCtrl;
 class MapObject;
 class MapObjectPropsPanel;
 class ActionSpecialPanel;
 class ArgsPanel;
 class SidePropsPanel;
 class NumberTextCtrl;
+
 class LinePropsPanel : public PropsPanelBase
 {
-private:
-	STabCtrl*				stc_tabs;
-	vector<wxCheckBox*>		cb_flags;
-	MapObjectPropsPanel*	mopp_all_props;
-	wxCheckBox*				cb_override_special;
-	ActionSpecialPanel*		panel_special;
-	ArgsPanel*				panel_args;
-	SidePropsPanel*			panel_side1;
-	SidePropsPanel*			panel_side2;
-	NumberTextCtrl*			text_tag;
-	wxButton*				btn_new_tag;
-	NumberTextCtrl*			text_id;
-	wxButton*				btn_new_id;
-
-	vector<string>	udmf_flags;
-
 public:
 	LinePropsPanel(wxWindow* parent);
 	~LinePropsPanel();
 
 	wxPanel*	setupGeneralTab();
 	wxPanel*	setupSpecialTab();
-	void		openObjects(vector<MapObject*>& objects);
-	void		applyChanges();
+	void		openObjects(vector<MapObject*>& objects) override;
+	void		applyChanges() override;
 
-	void	onOverrideSpecialChecked(wxCommandEvent& e);
-	void	onBtnNewTag(wxCommandEvent& e);
-	void	onBtnNewId(wxCommandEvent& e);
+private:
+	TabControl*				stc_tabs_				= nullptr;
+	MapObjectPropsPanel*	mopp_all_props_			= nullptr;
+	wxCheckBox*				cb_override_special_	= nullptr;
+	ActionSpecialPanel*		panel_special_			= nullptr;
+	ArgsPanel*				panel_args_				= nullptr;
+	SidePropsPanel*			panel_side1_			= nullptr;
+	SidePropsPanel*			panel_side2_			= nullptr;
+	NumberTextCtrl*			text_tag_				= nullptr;
+	wxButton*				btn_new_tag_			= nullptr;
+	NumberTextCtrl*			text_id_				= nullptr;
+	wxButton*				btn_new_id_				= nullptr;
+
+	struct FlagHolder
+	{
+		wxCheckBox*	check_box;
+		int			index;
+		string		udmf;
+	};
+	vector<FlagHolder>	flags_;
 };
-
-#endif//__LINE_PROPS_PANEL_H__

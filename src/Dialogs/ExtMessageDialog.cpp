@@ -31,6 +31,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ExtMessageDialog.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -40,7 +41,8 @@
 /* ExtMessageDialog::ExtMessageDialog
  * ExtMessageDialog class constructor
  *******************************************************************/
-ExtMessageDialog::ExtMessageDialog(wxWindow* parent, string caption) : wxDialog(parent, -1, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+ExtMessageDialog::ExtMessageDialog(wxWindow* parent, string caption) :
+	wxDialog(parent, -1, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
 	// Create and set sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -48,17 +50,22 @@ ExtMessageDialog::ExtMessageDialog(wxWindow* parent, string caption) : wxDialog(
 
 	// Add message label
 	label_message = new wxStaticText(this, -1, "", wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
-	sizer->Add(label_message, 0, wxEXPAND|wxALL, 10);
+	sizer->Add(label_message, 0, wxEXPAND | wxALL, UI::pad());
 
 	// Add extended text box
-	text_ext = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY);
+	text_ext = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
 	text_ext->SetFont(wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-	sizer->Add(text_ext, 1, wxEXPAND|wxALL, 10);
+	sizer->Add(text_ext, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
-	// Add buttons
-	sizer->Add(CreateStdDialogButtonSizer(wxOK), 0, wxEXPAND|wxALL, 10);
+	// Add OK button
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	hbox->AddStretchSpacer(1);
+	auto btn_ok = new wxButton(this, wxID_OK, "OK");
+	hbox->Add(btn_ok);
 
-	SetInitialSize(wxSize(500, 500));
+	int size = UI::scalePx(500);
+	SetInitialSize(wxSize(size, size));
 
 	// Bind events
 	Bind(wxEVT_SIZE, &ExtMessageDialog::onSize, this);

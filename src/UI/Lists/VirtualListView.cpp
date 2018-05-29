@@ -34,7 +34,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "VirtualListView.h"
-#include "UI/WxStuff.h"
+#include "UI/WxUtils.h"
 #ifdef __WXMSW__
 #include <CommCtrl.h>
 #endif
@@ -45,7 +45,7 @@
  *******************************************************************/
 wxDEFINE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
 CVAR(Bool, list_font_monospace, false, CVAR_SAVE)
-VirtualListView* VirtualListView::lv_current = NULL;
+VirtualListView* VirtualListView::lv_current = nullptr;
 int vlv_chars[] =
 {
 	'.', ',', '_', '-', '+', '=', '`', '~',
@@ -83,7 +83,7 @@ VirtualListView::VirtualListView(wxWindow* parent)
 
 	// Set monospace font if configured
 	font_normal = new wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
-	font_monospace = new wxFont(getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+	font_monospace = new wxFont(WxUtils::getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
 	if (list_font_monospace)
 		item_attr->SetFont(*font_monospace);
 
@@ -98,7 +98,8 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	Bind(wxEVT_LIST_END_LABEL_EDIT, &VirtualListView::onLabelEditEnd, this);
 	Bind(wxEVT_LIST_COL_CLICK, &VirtualListView::onColumnLeftClick, this);
 #ifdef __WXGTK__
-	Bind(wxEVT_LIST_ITEM_SELECTED, &VirtualListView::onItemSelected, this);
+	// Not sure if this is needed any more - causes duplicate selection events in linux
+	//Bind(wxEVT_LIST_ITEM_SELECTED, &VirtualListView::onItemSelected, this);
 #endif
 }
 

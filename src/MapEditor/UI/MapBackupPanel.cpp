@@ -1,103 +1,104 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MapBackupPanel.cpp
- * Description: User interface for selecting a map backup to restore
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         https://slade.mancubus.net
+// Filename:    MapBackupPanel.cpp
+// Description: User interface for selecting a map backup to restore
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
+#include "App.h"
 #include "MapBackupPanel.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
+#include "UI/Lists/ListView.h"
+#include "UI/WxUtils.h"
 
 
-/*******************************************************************
- * MAPBACKUPPANEL CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// MapBackupPanel Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* MapBackupPanel::MapBackupPanel
- * MapBackupPanel class constructor
- *******************************************************************/
-MapBackupPanel::MapBackupPanel(wxWindow* parent) : wxPanel(parent, -1)
+
+// ----------------------------------------------------------------------------
+// MapBackupPanel::MapBackupPanel
+//
+// MapBackupPanel class constructor
+// ----------------------------------------------------------------------------
+MapBackupPanel::MapBackupPanel(wxWindow* parent) :
+	wxPanel{ parent, -1 },
+	archive_backups_{ new ZipArchive() }
 {
-	// Init variables
-	archive_backups = new ZipArchive();
-	dir_current = NULL;
-	archive_mapdata = NULL;
-
 	// Setup Sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
 
 	// Backups list
-	sizer->Add(list_backups = new ListView(this, -1), 0, wxEXPAND|wxALL, 4);
+	sizer->Add(list_backups_ = new ListView(this, -1), 0, wxEXPAND|wxRIGHT, UI::pad());
 
 	// Map preview
-	sizer->Add(canvas_map = new MapPreviewCanvas(this), 1, wxEXPAND|wxTOP|wxBOTTOM|wxRIGHT, 4);
+	sizer->Add(canvas_map_ = new MapPreviewCanvas(this), 1, wxEXPAND);
 
 	// Bind events
-	list_backups->Bind(wxEVT_LIST_ITEM_SELECTED, &MapBackupPanel::onBackupListChanged, this);
+	list_backups_->Bind(wxEVT_LIST_ITEM_SELECTED, [&](wxListEvent&) { updateMapPreview(); });
 
 	Layout();
 }
 
-/* MapBackupPanel::~MapBackupPanel
- * MapBackupPanel class destructor
- *******************************************************************/
-MapBackupPanel::~MapBackupPanel()
-{
-	delete archive_backups;
-}
-
-/* MapBackupPanel::loadBackups
- * Opens the map backup file for [map_name] in [archive_name] and
- * populates the list
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapBackupPanel::loadBackups
+//
+// Opens the map backup file for [map_name] in [archive_name] and populates the
+// list
+// ----------------------------------------------------------------------------
 bool MapBackupPanel::loadBackups(string archive_name, string map_name)
 {
 	// Open backup file
 	archive_name.Replace(".", "_");
-	string backup_file = appPath("backups", DIR_USER) + "/" + archive_name + "_backup.zip";
-	if (!archive_backups->open(backup_file))
+	string backup_file = App::path("backups", App::Dir::User) + "/" + archive_name + "_backup.zip";
+	if (!archive_backups_->open(backup_file))
 		return false;
 
 	// Get backup dir for map
-	dir_current = archive_backups->getDir(map_name);
-	if (dir_current == archive_backups->getRoot() || !dir_current)
+	dir_current_ = archive_backups_->getDir(map_name);
+	if (dir_current_ == archive_backups_->rootDir() || !dir_current_)
 		return false;
 
 	// Populate backups list
-	list_backups->ClearAll();
-	list_backups->AppendColumn("Backup Date");
-	list_backups->AppendColumn("Time");
+	list_backups_->ClearAll();
+	list_backups_->AppendColumn("Backup Date");
+	list_backups_->AppendColumn("Time");
 
 	int index = 0;
-	for (int a = dir_current->nChildren() - 1; a >= 0; a--)
+	for (int a = dir_current_->nChildren() - 1; a >= 0; a--)
 	{
-		string timestamp = dir_current->getChild(a)->getName();
+		string timestamp = dir_current_->getChild(a)->getName();
 		wxArrayString cols;
 
 		// Date
@@ -108,51 +109,40 @@ bool MapBackupPanel::loadBackups(string archive_name, string map_name)
 		cols.Add(time.Left(2) + ":" + time.Mid(2, 2) + ":" + time.Right(2));
 
 		// Add to list
-		list_backups->addItem(index++, cols);
+		list_backups_->addItem(index++, cols);
 	}
 
-	if (list_backups->GetItemCount() > 0)
-		list_backups->selectItem(0);
+	if (list_backups_->GetItemCount() > 0)
+		list_backups_->selectItem(0);
 
 	return true;
 }
 
-/* MapBackupPanel::updateMapPreview
- * Updates the map preview with the currently selected backup
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// MapBackupPanel::updateMapPreview
+//
+// Updates the map preview with the currently selected backup
+// ----------------------------------------------------------------------------
 void MapBackupPanel::updateMapPreview()
 {
 	// Clear current preview
-	canvas_map->clearMap();
+	canvas_map_->clearMap();
 
 	// Check for selection
-	if (list_backups->selectedItems().IsEmpty())
+	if (list_backups_->selectedItems().IsEmpty())
 		return;
-	int selection = (list_backups->GetItemCount()-1) - list_backups->selectedItems()[0];
+	int selection = (list_backups_->GetItemCount()-1) - list_backups_->selectedItems()[0];
 
 	// Load map data to temporary wad
-	if (archive_mapdata)
-		delete archive_mapdata;
-	archive_mapdata = new WadArchive();
-	ArchiveTreeNode* dir = (ArchiveTreeNode*)dir_current->getChild(selection);
+	if (archive_mapdata_)
+		delete archive_mapdata_;
+	archive_mapdata_ = new WadArchive();
+	ArchiveTreeNode* dir = (ArchiveTreeNode*)dir_current_->getChild(selection);
 	for (unsigned a = 0; a < dir->numEntries(); a++)
-		archive_mapdata->addEntry(dir->getEntry(a), "", true);
+		archive_mapdata_->addEntry(dir->entryAt(a), "", true);
 
 	// Open map preview
-	vector<Archive::mapdesc_t> maps = archive_mapdata->detectMaps();
+	vector<Archive::MapDesc> maps = archive_mapdata_->detectMaps();
 	if (!maps.empty())
-		canvas_map->openMap(maps[0]);
-}
-
-
-/*******************************************************************
- * MAPBACKUPPANEL CLASS EVENTS
- *******************************************************************/
-
-/* MapBackupPanel::onBackupListChanged
- * Called when the selection changes on the backup list
- *******************************************************************/
-void MapBackupPanel::onBackupListChanged(wxListEvent& e)
-{
-	updateMapPreview();
+		canvas_map_->openMap(maps[0]);
 }
