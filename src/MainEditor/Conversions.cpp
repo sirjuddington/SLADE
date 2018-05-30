@@ -333,7 +333,7 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 		}
 	}
 
-	// Convert A-law or µ-law to 8-bit linear
+	// Convert A-law or Âµ-law to 8-bit linear
 	if (wavfmt == WAV_ALAW || wavfmt == WAV_ULAW)
 	{
 		for (size_t i = 0; i < chunk.size; ++i)
@@ -952,7 +952,7 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 			Global::error = "Invalid Doom PC Speaker Sound";
 			return false;
 		}
-		if (header.samples > (in.getSize() - 4) || header.samples <= 4)  	// Check for sane values
+		if (header.samples > (in.getSize() - 4) || header.samples < 4)  	// Check for sane values
 		{
 			Global::error = "Invalid Doom PC Speaker Sound";
 			return false;
@@ -1248,7 +1248,7 @@ int16_t Conversions::AlawToLinear(uint8_t alaw)
 }
 
  /* Conversions::mulawToLinear
-  * Converts a 8-bit µ-law sample to 16-bit signed linear PCM
+  * Converts a 8-bit Âµ-law sample to 16-bit signed linear PCM
   *******************************************************************/
 int16_t Conversions::mulawToLinear(uint8_t ulaw)
 {

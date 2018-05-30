@@ -222,6 +222,12 @@ protected:
 		{
 			// Convert to 32bpp & flip vertically
 			FIBITMAP* rgb = FreeImage_ConvertTo32Bits(bm);
+			if (!rgb)
+			{
+				LOG_MESSAGE(1, "FreeImage_ConvertTo32Bits failed for PNG data");
+				Global::error = "Error reading PNG data";
+				return false;
+			}
 			FreeImage_FlipVertical(rgb);
 
 			// Load raw RGBA data
