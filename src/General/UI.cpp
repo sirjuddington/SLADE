@@ -36,7 +36,10 @@ void UI::init(double scale)
 	px_pad        = 12 * scale;
 	px_pad_min    = 3 * scale;
 	px_splitter   = 10 * scale;
-	px_spin_width = 64 * scale;
+	if (App::platform() == App::Platform::Linux)
+		px_spin_width = -1;
+	else
+		px_spin_width = 64 * scale;
 }
 
 void UI::enableSplash(bool enable)
