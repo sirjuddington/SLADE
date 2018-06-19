@@ -168,8 +168,8 @@ wxThread::ExitCode JumpToCalculator::Entry()
 // ----------------------------------------------------------------------------
 TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	wxStyledTextCtrl(parent, id),
-	timer_update_(this),
-	lexer_{ std::make_unique<Lexer>() }
+	lexer_{ std::make_unique<Lexer>() },
+	timer_update_(this)
 {
 	// Init variables
 	language_ = nullptr;
