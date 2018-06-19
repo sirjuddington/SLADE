@@ -3544,11 +3544,15 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, i
 			case TagType::Patrol:
 				path_type = 9047;
 			case TagType::Interpolation:
+			{
 				path_type = 9075;
 
 				tid = things_[a]->intProperty("id");
 				auto& tt = Game::configuration().thingType(things_[a]->getType());
 				fits = ((path_type == ttype) && (IDEQ(tid)) && (tt.needsTag() == needs_tag));
+			}
+				break;
+			default:
 				break;
 			}
 			if (fits) list.push_back(things_[a]);

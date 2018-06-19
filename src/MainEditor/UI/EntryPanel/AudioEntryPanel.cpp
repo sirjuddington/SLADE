@@ -573,6 +573,8 @@ void AudioEntryPanel::startStream()
 		theMIDIPlayer->play(); break;
 	case Media:
 		if (media_ctrl_) media_ctrl_->Play(); break;
+	default:
+		break;
 	}
 }
 
@@ -595,6 +597,8 @@ void AudioEntryPanel::stopStream()
 		theMIDIPlayer->pause();	break;
 	case Media:
 		if (media_ctrl_) media_ctrl_->Pause(); break;
+	default:
+		break;
 	}
 }
 
@@ -618,6 +622,8 @@ void AudioEntryPanel::resetStream()
 		theMIDIPlayer->stop(); break;
 	case Media:
 		if (media_ctrl_) media_ctrl_->Stop(); break;
+	default:
+		break;
 	}
 }
 
@@ -693,6 +699,8 @@ bool AudioEntryPanel::updateInfo()
 		}
 		info += theOPLPlayer->getInfo();
 		break;*/
+	default:
+		break;
 	}
 	txt_info_->SetValue(info);
 	if (info.length())
@@ -817,6 +825,8 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 		pos = theMIDIPlayer->getPosition(); break;
 	case Media:
 		if (media_ctrl_) pos = media_ctrl_->Tell(); break;
+	default:
+		break;
 	}
 
 	// Set slider
@@ -855,6 +865,8 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 		theMIDIPlayer->setPosition(slider_seek_->GetValue()); break;
 	case Media:
 		if (media_ctrl_) media_ctrl_->Seek(slider_seek_->GetValue()); break;
+	default:
+		break;
 	}
 }
 
@@ -879,5 +891,7 @@ void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 		if (media_ctrl_) media_ctrl_->SetVolume(snd_volume*0.01); break;
 	case Mod:
 		mod_->setVolume(snd_volume); break;
+	default:
+		break;
 	}
 }
