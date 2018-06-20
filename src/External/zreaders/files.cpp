@@ -45,18 +45,18 @@
 //==========================================================================
 
 FileReader::FileReader ()
-: File(NULL), Length(0), StartPos(0), CloseOnDestruct(false), Status(0), Message("OK")
+: Status(0), Message("OK"), File(NULL), Length(0), StartPos(0), CloseOnDestruct(false)
 {
 }
 
 FileReader::FileReader (const FileReader &other, long length)
-: File(other.File), Length(length), CloseOnDestruct(false), Status(other.Status), Message(other.Message)
+: Status(other.Status), Message(other.Message), File(other.File), Length(length), CloseOnDestruct(false)
 {
 	FilePos = StartPos = ftell (other.File);
 }
 
 FileReader::FileReader (const char *filename)
-: File(NULL), Length(0), StartPos(0), FilePos(0), CloseOnDestruct(false), Status(0), Message("OK")
+: Status(0), Message("OK"), File(NULL), Length(0), StartPos(0), FilePos(0), CloseOnDestruct(false)
 {
 	if (!Open(filename))
 	{
@@ -66,13 +66,13 @@ FileReader::FileReader (const char *filename)
 }
 
 FileReader::FileReader (FILE *file)
-: File(file), Length(0), StartPos(0), FilePos(0), CloseOnDestruct(false), Status(0), Message("OK")
+: Status(0), Message("OK"), File(file), Length(0), StartPos(0), FilePos(0), CloseOnDestruct(false)
 {
 	Length = CalcFileLen();
 }
 
 FileReader::FileReader (FILE *file, long length)
-: File(file), Length(length), CloseOnDestruct(true), Status(0), Message("OK")
+: Status(0), Message("OK"), File(file), Length(length), CloseOnDestruct(true)
 {
 	FilePos = StartPos = ftell (file);
 }

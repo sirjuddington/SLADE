@@ -16,7 +16,7 @@ public:
 	void OnFatalException() override;
 
 #ifdef __APPLE__
-	virtual void MacOpenFile(const wxString &fileName);
+	virtual void MacOpenFile(const wxString &fileName) override;
 #endif // __APPLE__
 
 	bool	singleInstanceCheck();

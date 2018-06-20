@@ -598,7 +598,7 @@ bool EntryOperations::modifyalPhChunk(ArchiveEntry* entry, bool value)
 
 		// Create new alPh chunk
 		uint32_t csize = wxUINT32_SWAP_ON_LE(0);
-		alph_chunk_t gc = { 'a', 'l', 'P', 'h' };
+        alph_chunk_t gc = { {'a', 'l', 'P', 'h'} };
 		uint32_t dcrc = wxUINT32_SWAP_ON_LE(Misc::crc((uint8_t*)&gc, 4));
 
 		// Create alPh chunk
@@ -721,7 +721,7 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value)
 
 		// Create new tRNS chunk
 		uint32_t csize = wxUINT32_SWAP_ON_LE(1);
-		trans_chunk_t gc = { 't', 'R', 'N', 'S', '\0' };
+        trans_chunk_t gc = { {'t', 'R', 'N', 'S', '\0'} };
 		uint32_t dcrc = wxUINT32_SWAP_ON_LE(Misc::crc((uint8_t*)&gc, 5));
 
 		// Write tRNS chunk

@@ -56,8 +56,8 @@ class ExternalEditFileMonitor : public FileMonitor, Listener
 public:
 	ExternalEditFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
 		: FileMonitor("", false),
-		manager(manager),
-		entry(entry)
+		entry(entry),
+		manager(manager)
 	{
 		// Listen to entry parent archive
 		listenTo(entry->getParent());

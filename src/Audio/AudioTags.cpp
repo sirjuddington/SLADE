@@ -408,7 +408,7 @@ string ParseID3v2Tag(MemChunk& mc, size_t start)
 		// Process only text frames that aren't empty
 		// Also skip flags, not gonna bother with encryption or compression
 		if ((mc[s] == 'T' || (mc[s] == 'C' && mc[s+1] == 'O' && mc[s+2] == 'M'))
-			&& tsize > 0 && (v22 || mc[s+8] == 0 && mc[s+9] == 0))
+			&& tsize > 0 && (v22 || (mc[s+8] == 0 && mc[s+9] == 0)))
 		{
 			string content;
 

@@ -720,6 +720,8 @@ void MapEditContext::updateTagged()
 				case TagType::Interpolation:
 					if (tid) map_.getThingsById(tid, tagged_things_, 0, 9075);
 					break;
+				default:
+					break;
 				}
 			}
 		}
