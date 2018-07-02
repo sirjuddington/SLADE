@@ -204,7 +204,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 				// Add browser item
 				string fpName = fpFlats[a].path + fpFlats[a].name + "." + fpFlats[a].extension;
 				fpName.Remove(0, 1); // Remove leading slash
-				addItem(new MapTexBrowserItem(fpName, 0, fpFlats[a].index),
+				addItem(new MapTexBrowserItem(fpName, 1, fpFlats[a].index),
 					determineTexturePath(fpFlats[a].archive, fpFlats[a].category, "Textures (Full Path)", fpFlats[a].path));
 			}
 		}
