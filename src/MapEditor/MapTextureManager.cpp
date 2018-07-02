@@ -554,14 +554,17 @@ void MapTextureManager::buildTexInfoList()
 			{
 				// Determine texture path if it's in a pk3
 				string path = patches[a]->getPath();
+				string extn = patches[a]->getType()->extension();
+				/*
 				if (path.StartsWith("/textures/"))
 					path.Remove(0, 9);
 				else if (path.StartsWith("/hires/"))
 					path.Remove(0, 6);
 				else
 					path = "";
+				*/
 
-				tex_info.push_back(map_texinfo_t(patches[a]->getName(true), TC_TX, patches[a]->getParent(), path));
+				tex_info.push_back(map_texinfo_t(patches[a]->getName(true), TC_TX, patches[a]->getParent(), path, 0, extn));
 			}
 		}
 	}
@@ -575,12 +578,15 @@ void MapTextureManager::buildTexInfoList()
 
 		// Determine flat path if it's in a pk3
 		string path = entry->getPath();
+		string extn = entry->getType()->extension();
+		/*
 		if (path.StartsWith("/flats/") || path.StartsWith("/hires/"))
 			path.Remove(0, 6);
 		else
 			path = "";
+		*/
 
-		flat_info.push_back(map_texinfo_t(entry->getName(true), TC_NONE, flats[a]->getParent(), path));
+		flat_info.push_back(map_texinfo_t(entry->getName(true), TC_NONE, flats[a]->getParent(), path, 0, extn));
 	}
 }
 
