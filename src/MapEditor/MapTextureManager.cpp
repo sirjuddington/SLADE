@@ -554,7 +554,7 @@ void MapTextureManager::buildTexInfoList()
 			{
 				// Determine texture path if it's in a pk3
 				string path = patches[a]->getPath();
-				string extn = patches[a]->getType()->extension();
+				string extn = patches[a]->getName(false).AfterLast('.');
 				/*
 				if (path.StartsWith("/textures/"))
 					path.Remove(0, 9);
