@@ -187,7 +187,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		vector<map_texinfo_t>& fpTextures = MapEditor::textureManager().getAllTexturesInfo();
 		for (unsigned a = 0; a < fpTextures.size(); a++)
 		{
-			if (fpTextures[a].path.Length() > 0) {
+			if (!fpTextures[a].path.IsEmpty() && fpTextures[a].path.Cmp("/") != 0) {
 				// Add browser item
 				string fpName = fpTextures[a].path + fpTextures[a].name + "." + fpTextures[a].extension;
 				fpName.Remove(0, 1); // Remove leading slash
@@ -200,7 +200,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		vector<map_texinfo_t>& fpFlats = MapEditor::textureManager().getAllFlatsInfo();
 		for (unsigned a = 0; a < fpFlats.size(); a++)
 		{
-			if (fpFlats[a].path.Length() > 0) {
+			if (!fpFlats[a].path.IsEmpty() && fpFlats[a].path.Cmp("/") != 0) {
 				// Add browser item
 				string fpName = fpFlats[a].path + fpFlats[a].name + "." + fpFlats[a].extension;
 				fpName.Remove(0, 1); // Remove leading slash
