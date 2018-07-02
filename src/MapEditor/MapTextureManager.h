@@ -21,14 +21,16 @@ struct map_texinfo_t
 	string			path;
 	unsigned		index;
 	Archive*		archive;
+	string			extension;
 
-	map_texinfo_t(string name, uint8_t category, Archive* archive, string path = "", unsigned index = 0)
+	map_texinfo_t(string name, uint8_t category, Archive* archive, string path = "", unsigned index = 0, string extension = "")
 	{
 		this->name = name;
 		this->category = category;
 		this->archive = archive;
 		this->path = path;
 		this->index = index;
+		this->extension = extension;
 	}
 };
 
@@ -73,7 +75,7 @@ public:
 	GLTexture*		getSprite(string name, string translation = "", string palette = "");
 	GLTexture*		getEditorImage(string name);
 	int				getVerticalOffset(string name);
-	
+
 	vector<map_texinfo_t>&	getAllTexturesInfo() { return tex_info; }
 	vector<map_texinfo_t>&	getAllFlatsInfo() { return flat_info; }
 

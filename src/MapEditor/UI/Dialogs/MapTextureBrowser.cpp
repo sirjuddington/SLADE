@@ -180,6 +180,36 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		}
 	}
 
+	// Full path textures
+	if (Game::configuration().featureSupported(Game::Feature::LongNames))
+	{
+		// Textures
+		vector<map_texinfo_t>& fpTextures = MapEditor::textureManager().getAllTexturesInfo();
+		for (unsigned a = 0; a < fpTextures.size(); a++)
+		{
+			if (fpTextures[a].path.Length() > 0) {
+				// Add browser item
+				string fpName = fpTextures[a].path + fpTextures[a].name + "." + fpTextures[a].extension;
+				fpName.Remove(0, 1); // Remove leading slash
+				addItem(new MapTexBrowserItem(fpName, 0, fpTextures[a].index),
+					determineTexturePath(fpTextures[a].archive, fpTextures[a].category, "Textures (Full Path)", fpTextures[a].path));
+			}
+		}
+
+		// Flats
+		vector<map_texinfo_t>& fpFlats = MapEditor::textureManager().getAllFlatsInfo();
+		for (unsigned a = 0; a < fpFlats.size(); a++)
+		{
+			if (fpFlats[a].path.Length() > 0) {
+				// Add browser item
+				string fpName = fpFlats[a].path + fpFlats[a].name + "." + fpFlats[a].extension;
+				fpName.Remove(0, 1); // Remove leading slash
+				addItem(new MapTexBrowserItem(fpName, 0, fpFlats[a].index),
+					determineTexturePath(fpFlats[a].archive, fpFlats[a].category, "Textures (Full Path)", fpFlats[a].path));
+			}
+		}
+	}
+
 	populateItemTree(false);
 
 	// Select initial texture (if any)
