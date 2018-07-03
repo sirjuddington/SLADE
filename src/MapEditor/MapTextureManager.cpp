@@ -530,22 +530,22 @@ void MapTextureManager::buildTexInfoList()
 		CTexture * tex = &textures[a]->tex;
 		Archive* parent = textures[a]->parent;
 
-		string shortName = tex->getName().Truncate(8);
+		//string shortName = tex->getName().Truncate(8);
 		string longName = tex->getName();
 		string path = longName.BeforeLast('/');
 
 		if (tex->isExtended())
 		{
 			if (S_CMPNOCASE(tex->getType(), "texture") || S_CMPNOCASE(tex->getType(), "walltexture"))
-				tex_info.push_back(map_texinfo_t(shortName, TC_TEXTURES, parent, path, tex->getIndex(), longName));
+				tex_info.push_back(map_texinfo_t(longName, TC_TEXTURES, parent, path, tex->getIndex(), longName));
 			else if (S_CMPNOCASE(tex->getType(), "define"))
-				tex_info.push_back(map_texinfo_t(shortName, TC_HIRES, parent, path, tex->getIndex(), longName));
+				tex_info.push_back(map_texinfo_t(longName, TC_HIRES, parent, path, tex->getIndex(), longName));
 			else if (S_CMPNOCASE(tex->getType(), "flat"))
-				flat_info.push_back(map_texinfo_t(shortName, TC_TEXTURES, parent, path, tex->getIndex(), longName));
+				flat_info.push_back(map_texinfo_t(longName, TC_TEXTURES, parent, path, tex->getIndex(), longName));
 			// Ignore graphics, patches and sprites
 		}
 		else
-			tex_info.push_back(map_texinfo_t(shortName, TC_TEXTUREX, parent, path, tex->getIndex() + 1, longName));
+			tex_info.push_back(map_texinfo_t(longName, TC_TEXTUREX, parent, path, tex->getIndex() + 1, longName));
 	}
 
 	// Texture namespace patches (TX_)
