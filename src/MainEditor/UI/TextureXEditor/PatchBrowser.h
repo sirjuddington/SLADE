@@ -45,6 +45,8 @@ public:
 	void	selectPatch(int pt_index);
 	void	selectPatch(string name);
 
+	bool fullPath; // Texture definition format supports full path texture and/or patch names
+
 private:
 	PatchTable*	patch_table_;
 

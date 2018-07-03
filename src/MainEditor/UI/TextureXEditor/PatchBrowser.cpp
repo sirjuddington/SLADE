@@ -18,7 +18,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -150,7 +150,7 @@ string PatchBrowserItem::itemInfo()
 //
 // PatchBrowser class constructor
 // ----------------------------------------------------------------------------
-PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent)
+PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent), fullPath(false)
 {
 	// Init variables
 	this->patch_table_ = nullptr;
@@ -258,6 +258,50 @@ bool PatchBrowser::openArchive(Archive* archive)
 	// Add flats, too
 	theResourceManager->getAllFlatEntries(patches, archive);
 
+	// Determine whether one or more patches exists in a treeful archive
+	if (fullPath)
+	{
+		bool bPatches = false, bGraphics = false, bTextures = false, bFlats = false, bSprites = false;
+		for (unsigned a = 0; a < patches.size(); a++)
+		{
+			if (patches[a]->getParent()->isTreeless()) continue;
+
+			string ns = patches[a]->getParent()->detectNamespace(patches[a]);
+			if (ns == "patches")
+			{
+				if (bPatches) continue;
+				bPatches = true;
+				items_root_->addChild("Patches (Full Path)");
+			}
+			else if (ns == "flats")
+			{
+				if (bFlats) continue;
+				bFlats = true;
+				items_root_->addChild("Flats (Full Path)");
+			}
+			else if (ns == "sprites")
+			{
+				if (bSprites) continue;
+				bSprites = true;
+				items_root_->addChild("Sprites (Full Path)");
+			}
+			else if (ns == "textures")
+			{
+				if (bTextures) continue;
+				bTextures = true;
+				items_root_->addChild("Textures (Full Path)");
+			}
+			else
+			{
+				if (bGraphics) continue;
+				bGraphics = true;
+				items_root_->addChild("Graphics (Full Path)");
+			}
+			// This just adds the lists, so that they can be populated later.
+			if (bPatches && bGraphics && bTextures && bFlats && bSprites) break;
+		}
+	}
+
 	// Go through the list
 	for (unsigned a = 0; a < patches.size(); a++)
 	{
@@ -284,6 +328,13 @@ bool PatchBrowser::openArchive(Archive* archive)
 		// Add it
 		PatchBrowserItem* item = new PatchBrowserItem(entry->getName(true).Truncate(8).Upper(), archive, 0, ns);
 		addItem(item, nspace + "/" + arch);
+
+		if (fullPath && !entry->getParent()->isTreeless())
+		{
+			item = new PatchBrowserItem(entry->getPath(true).Mid(1), archive, 0, ns);
+			string fnspace = nspace + " (Full Path)";
+			addItem(item, fnspace + "/" + arch);
+		}
 	}
 
 	// Get list of all available textures (that aren't in the given archive)

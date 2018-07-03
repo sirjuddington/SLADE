@@ -15,7 +15,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -276,7 +276,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 	EntryType* type = entry->getType();
 
 	// Get resource name (extension cut, uppercase)
-	string name = entry->getUpperNameNoExt();
+	string name = entry->getUpperNameNoExt().Truncate(8);
 	// Talon1024 - Get resource path (uppercase, without leading slash)
 	string path = entry->getPath(true).Upper().Mid(1);
 
@@ -299,21 +299,18 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 			return;
 
 		// Check for patch entry
-		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches"))
+		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches") ||
+		        entry->isInNamespace("sprites"))
 		{
 			patches_[name].add(entry);
-			/*
-			if (name.Length() > 8) patches[name.Left(8)].add(entry);
 			if (!entry->getParent()->isTreeless())
-				patches[path].add(entry);
-			*/
+				patches_[path].add(entry);
 		}
 
 		// Check for flat entry
 		if (type->id() == "gfx_flat" || entry->isInNamespace("flats"))
 		{
 			flats_[name].add(entry);
-			// if (name.Length() > 8) flats[name.Left(8)].add(entry);
 			if (!entry->getParent()->isTreeless())
 				flats_[path].add(entry);
 		}
@@ -322,7 +319,6 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		if (entry->isInNamespace("textures") || entry->isInNamespace("hires"))
 		{
 			satextures_[name].add(entry);
-			// if (name.Length() > 8) satextures[name.Left(8)].add(entry);
 			if (!entry->getParent()->isTreeless())
 				satextures_[path].add(entry);
 
@@ -378,7 +374,7 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
 		return;
 
 	// Get resource name (extension cut, uppercase)
-	string name = entry->getUpperNameNoExt();
+	string name = entry->getUpperNameNoExt().Truncate(8);
 	string path = entry->getPath(true).Upper().Mid(1);
 
 	// Remove from palettes
@@ -386,6 +382,7 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
 
 	// Remove from patches
 	patches_[name].remove(entry);
+	patches_[path].remove(entry);
 
 	// Remove from flats
 	flats_[name].remove(entry);
