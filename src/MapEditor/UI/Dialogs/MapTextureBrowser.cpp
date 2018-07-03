@@ -158,7 +158,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
 			// Add browser item
-			addItem(new MapTexBrowserItem(textures[a].name, 0, textures[a].index),
+			addItem(new MapTexBrowserItem(textures[a].shortName, 0, textures[a].index),
 				determineTexturePath(textures[a].archive, textures[a].category, "Textures", textures[a].path));
 		}
 	}
@@ -174,9 +174,9 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 
 			// Add browser item
 			if (flats[a].category == MapTextureManager::TC_TEXTURES)
-				addItem(new MapTexBrowserItem(flats[a].name, 0, flats[a].index), path);
+				addItem(new MapTexBrowserItem(flats[a].shortName, 0, flats[a].index), path);
 			else
-				addItem(new MapTexBrowserItem(flats[a].name, 1, flats[a].index), path);
+				addItem(new MapTexBrowserItem(flats[a].shortName, 1, flats[a].index), path);
 		}
 	}
 
@@ -189,9 +189,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		{
 			if (!fpTextures[a].path.IsEmpty() && fpTextures[a].path.Cmp("/") != 0) {
 				// Add browser item
-				string fpName = fpTextures[a].path + fpTextures[a].name + "." + fpTextures[a].extension;
-				fpName.Remove(0, 1); // Remove leading slash
-				addItem(new MapTexBrowserItem(fpName, 0, fpTextures[a].index),
+				addItem(new MapTexBrowserItem(fpTextures[a].longName, 0, fpTextures[a].index),
 					determineTexturePath(fpTextures[a].archive, fpTextures[a].category, "Textures (Full Path)", fpTextures[a].path));
 			}
 		}
@@ -202,9 +200,8 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		{
 			if (!fpFlats[a].path.IsEmpty() && fpFlats[a].path.Cmp("/") != 0) {
 				// Add browser item
-				string fpName = fpFlats[a].path + fpFlats[a].name + "." + fpFlats[a].extension;
-				fpName.Remove(0, 1); // Remove leading slash
-				addItem(new MapTexBrowserItem(fpName, 1, fpFlats[a].index),
+				//fpName.Remove(0, 1); // Remove leading slash
+				addItem(new MapTexBrowserItem(fpFlats[a].longName, 1, fpFlats[a].index),
 					determineTexturePath(fpFlats[a].archive, fpFlats[a].category, "Textures (Full Path)", fpFlats[a].path));
 			}
 		}

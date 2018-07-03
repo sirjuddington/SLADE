@@ -106,14 +106,22 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 		if (sel_type > 0)
 		{
 			vector<map_texinfo_t>& ti = MapEditor::textureManager().getAllTexturesInfo();
-			for (unsigned a = 0; a < ti.size(); a++)
-				tex_names.push_back(ti[a].name);
+			for (unsigned a = 0; a < ti.size(); a++) {
+				tex_names.push_back(ti[a].shortName);
+				if (Game::configuration().featureSupported(Game::Feature::LongNames)) {
+					tex_names.push_back(ti[a].longName);
+				}
+			}
 		}
 		if (sel_type == 0 || sel_type == 2)
 		{
 			vector<map_texinfo_t>& ti = MapEditor::textureManager().getAllFlatsInfo();
-			for (unsigned a = 0; a < ti.size(); a++)
-				tex_names.push_back(ti[a].name);
+			for (unsigned a = 0; a < ti.size(); a++) {
+				tex_names.push_back(ti[a].shortName);
+				if (Game::configuration().featureSupported(Game::Feature::LongNames)) {
+					tex_names.push_back(ti[a].longName);
+				}
+			}
 		}
 		std::sort(tex_names.begin(), tex_names.end());
 

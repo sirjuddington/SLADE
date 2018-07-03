@@ -529,18 +529,23 @@ void MapTextureManager::buildTexInfoList()
 	{
 		CTexture * tex = &textures[a]->tex;
 		Archive* parent = textures[a]->parent;
+
+		string shortName = tex->getName().Truncate(8);
+		string longName = tex->getName();
+		string path = longName.BeforeLast('/');
+
 		if (tex->isExtended())
 		{
 			if (S_CMPNOCASE(tex->getType(), "texture") || S_CMPNOCASE(tex->getType(), "walltexture"))
-				tex_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTURES, parent));
+				tex_info.push_back(map_texinfo_t(shortName, TC_TEXTURES, parent, path, tex->getIndex(), longName));
 			else if (S_CMPNOCASE(tex->getType(), "define"))
-				tex_info.push_back(map_texinfo_t(tex->getName(), TC_HIRES, parent));
+				tex_info.push_back(map_texinfo_t(shortName, TC_HIRES, parent, path, tex->getIndex(), longName));
 			else if (S_CMPNOCASE(tex->getType(), "flat"))
-				flat_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTURES, parent));
+				flat_info.push_back(map_texinfo_t(shortName, TC_TEXTURES, parent, path, tex->getIndex(), longName));
 			// Ignore graphics, patches and sprites
 		}
 		else
-			tex_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTUREX, parent, "", tex->getIndex() + 1));
+			tex_info.push_back(map_texinfo_t(shortName, TC_TEXTUREX, parent, path, tex->getIndex() + 1, longName));
 	}
 
 	// Texture namespace patches (TX_)
@@ -553,8 +558,9 @@ void MapTextureManager::buildTexInfoList()
 			if (patches[a]->isInNamespace("textures") || patches[a]->isInNamespace("hires"))
 			{
 				// Determine texture path if it's in a pk3
-				string path = patches[a]->getPath();
-				string extn = patches[a]->getName(false).AfterLast('.');
+				string longName = patches[a]->getPath(true).Remove(0, 1);
+				string shortName = patches[a]->getName(true).Truncate(8);
+				string path = patches[a]->getPath(false);
 				/*
 				if (path.StartsWith("/textures/"))
 					path.Remove(0, 9);
@@ -564,7 +570,7 @@ void MapTextureManager::buildTexInfoList()
 					path = "";
 				*/
 
-				tex_info.push_back(map_texinfo_t(patches[a]->getName(true), TC_TX, patches[a]->getParent(), path, 0, extn));
+				tex_info.push_back(map_texinfo_t(shortName, TC_TX, patches[a]->getParent(), path, 0, longName));
 			}
 		}
 	}
@@ -577,8 +583,9 @@ void MapTextureManager::buildTexInfoList()
 		ArchiveEntry* entry = flats[a];
 
 		// Determine flat path if it's in a pk3
-		string path = entry->getPath();
-		string extn = entry->getType()->extension();
+		string longName = entry->getPath(true).Remove(0, 1);
+		string shortName = entry->getName(true).Truncate(8);
+		string path = entry->getPath(false);
 		/*
 		if (path.StartsWith("/flats/") || path.StartsWith("/hires/"))
 			path.Remove(0, 6);
@@ -586,7 +593,7 @@ void MapTextureManager::buildTexInfoList()
 			path = "";
 		*/
 
-		flat_info.push_back(map_texinfo_t(entry->getName(true), TC_NONE, flats[a]->getParent(), path, 0, extn));
+		flat_info.push_back(map_texinfo_t(shortName, TC_NONE, flats[a]->getParent(), path, 0, longName));
 	}
 }
 
