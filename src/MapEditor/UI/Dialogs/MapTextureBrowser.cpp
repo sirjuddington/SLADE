@@ -187,7 +187,9 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		vector<map_texinfo_t>& fpTextures = MapEditor::textureManager().getAllTexturesInfo();
 		for (unsigned a = 0; a < fpTextures.size(); a++)
 		{
-			if (!fpTextures[a].path.IsEmpty() && fpTextures[a].path.Cmp("/") != 0) {
+			if (fpTextures[a].category != MapTextureManager::TC_TEXTURES &&
+					fpTextures[a].category != MapTextureManager::TC_HIRES &&
+					!fpTextures[a].path.IsEmpty() && fpTextures[a].path.Cmp("/") != 0) {
 				// Add browser item
 				addItem(new MapTexBrowserItem(fpTextures[a].longName, 0, fpTextures[a].index),
 					determineTexturePath(fpTextures[a].archive, fpTextures[a].category, "Textures (Full Path)", fpTextures[a].path));
