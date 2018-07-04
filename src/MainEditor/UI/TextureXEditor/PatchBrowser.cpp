@@ -346,11 +346,14 @@ bool PatchBrowser::openArchive(Archive* archive)
 	{
 		TextureResource::Texture* res = textures[a];
 
-		// Create browser item
-		PatchBrowserItem* item = new PatchBrowserItem(res->tex.getName(), res->parent, 1);
+		if (fullPath || res->tex.getName().Len() <= 8)
+		{
+			// Create browser item
+			PatchBrowserItem* item = new PatchBrowserItem(res->tex.getName(), res->parent, 1);
 
-		// Add to textures node (under parent archive name)
-		addItem(item, "Textures/" + res->parent->filename(false));
+			// Add to textures node (under parent archive name)
+			addItem(item, "Textures/" + res->parent->filename(false));
+		}
 	}
 
 	// Open 'patches' node

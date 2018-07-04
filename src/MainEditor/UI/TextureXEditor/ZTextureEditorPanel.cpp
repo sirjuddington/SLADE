@@ -73,7 +73,7 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 
 	// Name
 	text_tex_name_ = new wxTextCtrl(panel, -1);
-	text_tex_name_->SetMaxLength(8);
+	text_tex_name_->SetMaxLength(0);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Name:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
