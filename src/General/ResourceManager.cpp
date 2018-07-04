@@ -304,7 +304,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		{
 			patches_[name].add(entry);
 			if (!entry->getParent()->isTreeless())
-				patches_[path].add(entry);
+				patches_fp_[path].add(entry);
 		}
 
 		// Check for flat entry
@@ -312,7 +312,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		{
 			flats_[name].add(entry);
 			if (!entry->getParent()->isTreeless())
-				flats_[path].add(entry);
+				flats_fp_[path].add(entry);
 		}
 
 		// Check for stand-alone texture entry
@@ -320,7 +320,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		{
 			satextures_[name].add(entry);
 			if (!entry->getParent()->isTreeless())
-				satextures_[path].add(entry);
+				satextures_fp_[path].add(entry);
 
 			// Add name to hash table
 			ResourceManager::doom64_hash_table_[getTextureHash(name)] = name;
@@ -382,15 +382,15 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
 
 	// Remove from patches
 	patches_[name].remove(entry);
-	patches_[path].remove(entry);
+	patches_fp_[path].remove(entry);
 
 	// Remove from flats
 	flats_[name].remove(entry);
-	flats_[path].remove(entry);
+	flats_fp_[path].remove(entry);
 
 	// Remove from stand-alone textures
 	satextures_[name].remove(entry);
-	satextures_[path].remove(entry);
+	satextures_fp_[path].remove(entry);
 
 	// Check for TEXTUREx entry
 	int txentry = 0;
@@ -552,7 +552,15 @@ ArchiveEntry* ResourceManager::getPatchEntry(const string& patch, const string& 
 	if (!nspace.CmpNoCase("textures"))
 		return getTextureEntry(patch, "textures", priority);
 
-	return patches_[patch.Upper()].getEntry(priority, nspace, true);
+	ArchiveEntry* entry = patches_[patch.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	entry = patches_fp_[patch.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -565,11 +573,17 @@ ArchiveEntry* ResourceManager::getFlatEntry(const string& flat, Archive* priorit
 {
 	// Check resource with matching name exists
 	EntryResource& res = flats_[flat.Upper()];
-	if (res.entries_.empty())
-		return nullptr;
 
 	// Return most relevant entry
-	return res.getEntry(priority);
+	ArchiveEntry* entry = res.getEntry(priority);
+	if (entry)
+		return entry;
+
+	entry = flats_fp_[flat.Upper()].getEntry(priority, "flats", true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -580,7 +594,15 @@ ArchiveEntry* ResourceManager::getFlatEntry(const string& flat, Archive* priorit
 // ----------------------------------------------------------------------------
 ArchiveEntry* ResourceManager::getTextureEntry(const string& texture, const string& nspace, Archive* priority)
 {
-	return satextures_[texture.Upper()].getEntry(priority, nspace, true);
+	ArchiveEntry* entry = satextures_[texture.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	entry = satextures_fp_[texture.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
 // ----------------------------------------------------------------------------
