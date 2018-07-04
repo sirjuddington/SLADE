@@ -108,7 +108,8 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 			vector<map_texinfo_t>& ti = MapEditor::textureManager().getAllTexturesInfo();
 			for (unsigned a = 0; a < ti.size(); a++) {
 				tex_names.push_back(ti[a].shortName);
-				if (Game::configuration().featureSupported(Game::Feature::LongNames)) {
+				if (Game::configuration().featureSupported(Game::Feature::LongNames) &&
+						ti[a].shortName.CmpNoCase(ti[a].longName) != 0) {
 					tex_names.push_back(ti[a].longName);
 				}
 			}
@@ -118,7 +119,8 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 			vector<map_texinfo_t>& ti = MapEditor::textureManager().getAllFlatsInfo();
 			for (unsigned a = 0; a < ti.size(); a++) {
 				tex_names.push_back(ti[a].shortName);
-				if (Game::configuration().featureSupported(Game::Feature::LongNames)) {
+				if (Game::configuration().featureSupported(Game::Feature::LongNames) &&
+						ti[a].shortName.CmpNoCase(ti[a].longName) != 0) {
 					tex_names.push_back(ti[a].longName);
 				}
 			}
