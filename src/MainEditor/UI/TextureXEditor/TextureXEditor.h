@@ -33,6 +33,7 @@ public:
 	void	redo();
 
 	// Editing
+	void	setFullPath(bool enabled = false);
 	bool	removePatch(unsigned index, bool delete_entry = false);
 	int		browsePatchTable(string first = "");
 	string	browsePatchEntry(string first = "");

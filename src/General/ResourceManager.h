@@ -113,9 +113,12 @@ public:
 private:
 	EntryResourceMap	palettes_;
 	EntryResourceMap	patches_;
+	EntryResourceMap	patches_fp_; // Full path
 	EntryResourceMap	graphics_;
 	EntryResourceMap	flats_;
+	EntryResourceMap	flats_fp_; // Full path
 	EntryResourceMap	satextures_;	// Stand Alone textures (e.g., between TX_ or T_ markers)
+	EntryResourceMap	satextures_fp_; // Full path
 	TextureResourceMap	textures_;		// Composite textures (defined in a TEXTUREx/TEXTURES lump)
 
 	static ResourceManager*	instance_;
