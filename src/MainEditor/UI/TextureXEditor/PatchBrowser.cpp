@@ -256,7 +256,18 @@ bool PatchBrowser::openArchive(Archive* archive)
 	theResourceManager->getAllPatchEntries(patches, archive);
 
 	// Add flats, too
-	theResourceManager->getAllFlatEntries(patches, archive);
+	{
+		vector<ArchiveEntry*> flats;
+		theResourceManager->getAllFlatEntries(flats, archive);
+		for (unsigned a = 0; a < flats.size(); a++)
+		{
+			if (flats[a]->isInNamespace("flats") && flats[a]->getParent()->isTreeless())
+			{
+				patches.push_back(flats[a]);
+			}
+		}
+		flats.clear();
+	}
 
 	// Determine whether one or more patches exists in a treeful archive
 	if (fullPath)
