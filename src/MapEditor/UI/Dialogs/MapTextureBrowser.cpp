@@ -149,6 +149,8 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	// Set window title
 	SetTitle("Browse Map Textures");
 
+	int mapFormat = map->currentFormat();
+
 	// Textures
 	if (type == 0 || Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 	{
@@ -157,6 +159,11 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllTexturesInfo();
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
+			if (textures[a].shortName.Len() > 8 && mapFormat != MAP_UDMF)
+			{
+				// Only UDMF supports texture/flat names longer than 8 characters
+				continue;
+			}
 			// Add browser item
 			addItem(new MapTexBrowserItem(textures[a].shortName, 0, textures[a].index),
 				determineTexturePath(textures[a].archive, textures[a].category, "Textures", textures[a].path));
@@ -169,6 +176,11 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		vector<map_texinfo_t>& flats = MapEditor::textureManager().getAllFlatsInfo();
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
+			if (flats[a].shortName.Len() > 8 && mapFormat != MAP_UDMF)
+			{
+				// Only UDMF supports texture/flat names longer than 8 characters
+				continue;
+			}
 			// Determine tree path
 			string path = determineTexturePath(flats[a].archive, flats[a].category, "Flats", flats[a].path);
 
@@ -181,7 +193,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	}
 
 	// Full path textures
-	if (Game::configuration().featureSupported(Game::Feature::LongNames))
+	if (mapFormat == MAP_UDMF)
 	{
 		// Textures
 		vector<map_texinfo_t>& fpTextures = MapEditor::textureManager().getAllTexturesInfo();
