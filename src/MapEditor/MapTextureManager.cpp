@@ -559,7 +559,7 @@ void MapTextureManager::buildTexInfoList()
 			{
 				// Determine texture path if it's in a pk3
 				string longName = patches[a]->getPath(true).Remove(0, 1);
-				string shortName = patches[a]->getName(true).Truncate(8);
+				string shortName = patches[a]->getName(true).Truncate(8).Upper();
 				string path = patches[a]->getPath(false);
 				/*
 				if (path.StartsWith("/textures/"))
@@ -584,7 +584,7 @@ void MapTextureManager::buildTexInfoList()
 
 		// Determine flat path if it's in a pk3
 		string longName = entry->getPath(true).Remove(0, 1);
-		string shortName = entry->getName(true).Truncate(8);
+		string shortName = entry->getName(true).Truncate(8).Upper();
 		string path = entry->getPath(false);
 		/*
 		if (path.StartsWith("/flats/") || path.StartsWith("/hires/"))
