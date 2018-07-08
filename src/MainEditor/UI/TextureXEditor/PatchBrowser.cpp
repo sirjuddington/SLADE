@@ -253,12 +253,12 @@ bool PatchBrowser::openArchive(Archive* archive)
 
 	// Get a list of all available patch entries
 	vector<ArchiveEntry*> patches;
-	theResourceManager->getAllPatchEntries(patches, archive);
+	theResourceManager->getAllPatchEntries(patches, archive, fullPath);
 
 	// Add flats, too
 	{
 		vector<ArchiveEntry*> flats;
-		theResourceManager->getAllFlatEntries(flats, archive);
+		theResourceManager->getAllFlatEntries(flats, archive, fullPath);
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
 			if (flats[a]->isInNamespace("flats") && flats[a]->getParent()->isTreeless())
@@ -313,6 +313,8 @@ bool PatchBrowser::openArchive(Archive* archive)
 		}
 	}
 
+	vector<string> usednames;
+
 	// Go through the list
 	for (unsigned a = 0; a < patches.size(); a++)
 	{
@@ -336,16 +338,34 @@ bool PatchBrowser::openArchive(Archive* archive)
 		if (entry->getParent())
 			arch = entry->getParent()->filename(false);
 
-		// Add it
-		PatchBrowserItem* item = new PatchBrowserItem(entry->getName(true).Truncate(8).Upper(), archive, 0, ns);
-		addItem(item, nspace + "/" + arch);
+		PatchBrowserItem *item;
 
+		// Add it
 		if (fullPath && !entry->getParent()->isTreeless())
 		{
 			item = new PatchBrowserItem(entry->getPath(true).Mid(1), archive, 0, ns);
 			string fnspace = nspace + " (Full Path)";
 			addItem(item, fnspace + "/" + arch);
 		}
+
+		string name = entry->getName(true).Truncate(8).Upper();
+
+		bool duplicate = false;
+		for (auto ustr = usednames.begin(); ustr != usednames.end(); ustr++)
+		{
+			if (ustr->Cmp(name) == 0)
+			{
+				duplicate = true;
+				break;
+			}
+		}
+
+		if (duplicate)
+			continue;
+
+		item = new PatchBrowserItem(name, archive, 0, ns);
+		addItem(item, nspace + "/" + arch);
+		usednames.push_back(name);
 	}
 
 	// Get list of all available textures (that aren't in the given archive)

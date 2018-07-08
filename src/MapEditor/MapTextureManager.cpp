@@ -552,23 +552,15 @@ void MapTextureManager::buildTexInfoList()
 	if (Game::configuration().featureSupported(Game::Feature::TxTextures))
 	{
 		vector<ArchiveEntry*> patches;
-		theResourceManager->getAllPatchEntries(patches, nullptr);
+		theResourceManager->getAllPatchEntries(patches, nullptr, Game::configuration().featureSupported(Game::Feature::LongNames));
 		for (unsigned a = 0; a < patches.size(); a++)
 		{
 			if (patches[a]->isInNamespace("textures") || patches[a]->isInNamespace("hires"))
 			{
 				// Determine texture path if it's in a pk3
 				string longName = patches[a]->getPath(true).Remove(0, 1);
-				string shortName = patches[a]->getName(true).Truncate(8).Upper();
+				string shortName = patches[a]->getName(true).Upper().Truncate(8);
 				string path = patches[a]->getPath(false);
-				/*
-				if (path.StartsWith("/textures/"))
-					path.Remove(0, 9);
-				else if (path.StartsWith("/hires/"))
-					path.Remove(0, 6);
-				else
-					path = "";
-				*/
 
 				tex_info.push_back(map_texinfo_t(shortName, TC_TX, patches[a]->getParent(), path, 0, longName));
 			}
@@ -577,21 +569,15 @@ void MapTextureManager::buildTexInfoList()
 
 	// Flats
 	vector<ArchiveEntry*> flats;
-	theResourceManager->getAllFlatEntries(flats, nullptr);
+	theResourceManager->getAllFlatEntries(flats, nullptr, Game::configuration().featureSupported(Game::Feature::LongNames));
 	for (unsigned a = 0; a < flats.size(); a++)
 	{
 		ArchiveEntry* entry = flats[a];
 
 		// Determine flat path if it's in a pk3
 		string longName = entry->getPath(true).Remove(0, 1);
-		string shortName = entry->getName(true).Truncate(8).Upper();
+		string shortName = entry->getName(true).Upper().Truncate(8);
 		string path = entry->getPath(false);
-		/*
-		if (path.StartsWith("/flats/") || path.StartsWith("/hires/"))
-			path.Remove(0, 6);
-		else
-			path = "";
-		*/
 
 		flat_info.push_back(map_texinfo_t(shortName, TC_NONE, flats[a]->getParent(), path, 0, longName));
 	}

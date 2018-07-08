@@ -159,11 +159,25 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllTexturesInfo();
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
-			if (textures[a].shortName.Len() > 8 && mapFormat != MAP_UDMF)
+			if (mapFormat != MAP_UDMF && textures[a].shortName.Len() > 8)
 			{
 				// Only UDMF supports texture/flat names longer than 8 characters
 				continue;
 			}
+
+			// Don't add two textures with the same name
+			bool dontAdd = false;
+			for (unsigned b = 0; b < textures.size(); b++)
+			{
+				if (textures[b].shortName.Cmp(textures[a].shortName) == 0 && b > a)
+				{
+					dontAdd = true;
+					break;
+				}
+			}
+
+			if (dontAdd)
+				continue;
 			// Add browser item
 			addItem(new MapTexBrowserItem(textures[a].shortName, 0, textures[a].index),
 				determineTexturePath(textures[a].archive, textures[a].category, "Textures", textures[a].path));
@@ -176,11 +190,26 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		vector<map_texinfo_t>& flats = MapEditor::textureManager().getAllFlatsInfo();
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
-			if (flats[a].shortName.Len() > 8 && mapFormat != MAP_UDMF)
+			if (mapFormat != MAP_UDMF && flats[a].shortName.Len() > 8)
 			{
 				// Only UDMF supports texture/flat names longer than 8 characters
 				continue;
 			}
+
+			// Don't add two flats with the same name
+			bool dontAdd = false;
+			for (unsigned b = 0; b < flats.size(); b++)
+			{
+				if (flats[b].shortName.Cmp(flats[a].shortName) == 0 && b > a)
+				{
+					dontAdd = true;
+					break;
+				}
+			}
+
+			if (dontAdd)
+				continue;
+
 			// Determine tree path
 			string path = determineTexturePath(flats[a].archive, flats[a].category, "Flats", flats[a].path);
 

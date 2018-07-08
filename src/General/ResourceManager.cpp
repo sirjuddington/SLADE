@@ -276,6 +276,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 	EntryType* type = entry->getType();
 
 	// Get resource name (extension cut, uppercase)
+	string lname = entry->getUpperNameNoExt();
 	string name = entry->getUpperNameNoExt().Truncate(8);
 	// Talon1024 - Get resource path (uppercase, without leading slash)
 	string path = entry->getPath(true).Upper().Mid(1);
@@ -298,21 +299,45 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		        !entry->isInNamespace("flats"))
 			return;
 
+		bool addToFpOnly = true;
+
 		// Check for patch entry
 		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches") ||
 		        entry->isInNamespace("sprites"))
 		{
-			patches_[name].add(entry);
+			if (patches_[name].length() == 0)
+			{
+				patches_[name].add(entry);
+				addToFpOnly = false;
+			}
 			if (!entry->getParent()->isTreeless())
+			{
+				if (lname.Len() > 8 && addToFpOnly)
+				{
+					patches_fp_only_[path].add(entry);
+				}
 				patches_fp_[path].add(entry);
+			}
 		}
+
+		addToFpOnly = true;
 
 		// Check for flat entry
 		if (type->id() == "gfx_flat" || entry->isInNamespace("flats"))
 		{
-			flats_[name].add(entry);
+			if (flats_[name].length() == 0)
+			{
+				flats_[name].add(entry);
+				addToFpOnly = false;
+			}
 			if (!entry->getParent()->isTreeless())
+			{
 				flats_fp_[path].add(entry);
+				if (lname.Len() > 8 && addToFpOnly)
+				{
+					flats_fp_only_[path].add(entry);
+				}
+			}
 		}
 
 		// Check for stand-alone texture entry
@@ -320,7 +345,9 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		{
 			satextures_[name].add(entry);
 			if (!entry->getParent()->isTreeless())
+			{
 				satextures_fp_[path].add(entry);
+			}
 
 			// Add name to hash table
 			ResourceManager::doom64_hash_table_[getTextureHash(name)] = name;
@@ -383,10 +410,12 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
 	// Remove from patches
 	patches_[name].remove(entry);
 	patches_fp_[path].remove(entry);
+	patches_fp_only_[path].remove(entry);
 
 	// Remove from flats
 	flats_[name].remove(entry);
 	flats_fp_[path].remove(entry);
+	flats_fp_only_[path].remove(entry);
 
 	// Remove from stand-alone textures
 	satextures_[name].remove(entry);
@@ -434,9 +463,19 @@ void ResourceManager::listAllPatches()
 //
 // Adds all current patch entries to [list]
 // ----------------------------------------------------------------------------
-void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority)
+void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
 {
 	for (auto& i : patches_)
+	{
+		auto entry = i.second.getEntry(priority);
+		if (entry)
+			list.push_back(entry);
+	}
+
+	if (!fullPath)
+		return;
+
+	for (auto& i : patches_fp_only_)
 	{
 		auto entry = i.second.getEntry(priority);
 		if (entry)
@@ -502,9 +541,19 @@ void ResourceManager::getAllTextureNames(vector<string>& list)
 //
 // Adds all current flat entries to [list]
 // ----------------------------------------------------------------------------
-void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority)
+void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
 {
 	for (auto& i : flats_)
+	{
+		auto entry = i.second.getEntry(priority);
+		if (entry)
+			list.push_back(entry);
+	}
+
+	if (!fullPath)
+		return;
+
+	for (auto& i : flats_fp_only_)
 	{
 		auto entry = i.second.getEntry(priority);
 		if (entry)

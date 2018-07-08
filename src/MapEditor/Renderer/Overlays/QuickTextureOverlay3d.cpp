@@ -105,33 +105,64 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 
 		// Get all available texture names (sorted alphabetically)
 		vector<string> tex_names;
+
 		if (sel_type > 0)
 		{
 			vector<map_texinfo_t>& ti = MapEditor::textureManager().getAllTexturesInfo();
-			for (unsigned a = 0; a < ti.size(); a++) {
-				if (mapFormat == MAP_UDMF || ti[a].shortName.Len() <= 8)
+			for (unsigned a = 0; a < ti.size(); a++)
+			{
+
+				bool skip = false;
+				for (auto n = tex_names.begin(); n < tex_names.end(); n++)
 				{
-					tex_names.push_back(ti[a].shortName);
+					if (n->Cmp(ti[a].shortName) == 0)
+					{
+						skip = true;
+						break;
+					}
 				}
 
 				if (mapFormat == MAP_UDMF && ti[a].shortName.CmpNoCase(ti[a].longName) != 0)
 				{
 					tex_names.push_back(ti[a].longName);
+				}
+
+				if (skip)
+					continue;
+
+				if (mapFormat == MAP_UDMF || ti[a].shortName.Len() <= 8)
+				{
+					tex_names.push_back(ti[a].shortName);
 				}
 			}
 		}
 		if (sel_type == 0 || sel_type == 2)
 		{
 			vector<map_texinfo_t>& ti = MapEditor::textureManager().getAllFlatsInfo();
-			for (unsigned a = 0; a < ti.size(); a++) {
-				if (mapFormat == MAP_UDMF || ti[a].shortName.Len() <= 8)
+			for (unsigned a = 0; a < ti.size(); a++)
+			{
+
+				bool skip = false;
+				for (auto n = tex_names.begin(); n < tex_names.end(); n++)
 				{
-					tex_names.push_back(ti[a].shortName);
+					if (n->Cmp(ti[a].shortName) == 0)
+					{
+						skip = true;
+						break;
+					}
 				}
 
 				if (mapFormat == MAP_UDMF && ti[a].shortName.CmpNoCase(ti[a].longName) != 0)
 				{
 					tex_names.push_back(ti[a].longName);
+				}
+
+				if (skip)
+					continue;
+
+				if (mapFormat == MAP_UDMF || ti[a].shortName.Len() <= 8)
+				{
+					tex_names.push_back(ti[a].shortName);
 				}
 			}
 		}
