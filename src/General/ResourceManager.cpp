@@ -312,11 +312,11 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 			}
 			if (!entry->getParent()->isTreeless())
 			{
-				if (lname.Len() > 8 && addToFpOnly)
+				patches_fp_[path].add(entry);
+				if ((lname.Len() > 8 || patches_[name].length() > 0) && addToFpOnly)
 				{
 					patches_fp_only_[path].add(entry);
 				}
-				patches_fp_[path].add(entry);
 			}
 		}
 
@@ -333,7 +333,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 			if (!entry->getParent()->isTreeless())
 			{
 				flats_fp_[path].add(entry);
-				if (lname.Len() > 8 && addToFpOnly)
+				if ((lname.Len() > 8 || flats_[name].length() > 0) && addToFpOnly)
 				{
 					flats_fp_only_[path].add(entry);
 				}
