@@ -122,7 +122,9 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 					}
 				}
 
-				if (mapFormat == MAP_UDMF && ti[a].shortName.CmpNoCase(ti[a].longName) != 0)
+				if (mapFormat == MAP_UDMF &&
+					Game::configuration().featureSupported(Game::Feature::LongNames) &&
+					ti[a].shortName.CmpNoCase(ti[a].longName) != 0)
 				{
 					tex_names.push_back(ti[a].longName);
 				}
@@ -152,7 +154,9 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 					}
 				}
 
-				if (mapFormat == MAP_UDMF && ti[a].shortName.CmpNoCase(ti[a].longName) != 0)
+				if (mapFormat == MAP_UDMF &&
+					Game::configuration().featureSupported(Game::Feature::LongNames) &&
+					ti[a].shortName.CmpNoCase(ti[a].longName) != 0)
 				{
 					tex_names.push_back(ti[a].longName);
 				}
