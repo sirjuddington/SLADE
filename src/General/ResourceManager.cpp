@@ -98,9 +98,10 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const string& nspace, b
 		return nullptr;
 
 	ArchiveEntry::SPtr best;
-	auto i = entries_.begin();
-	while (i != entries_.end())
+	auto i = entries_.end();
+	while (i != entries_.begin())
 	{
+		--i;
 		// Check if expired
 		if (i->expired())
 		{
@@ -109,7 +110,6 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const string& nspace, b
 		}
 
 		auto entry = i->lock();
-		++i;
 
 		if (!best)
 			best = entry;
@@ -307,9 +307,9 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		{
 			if (patches_[name].length() == 0)
 			{
-				patches_[name].add(entry);
 				addToFpOnly = false;
 			}
+			patches_[name].add(entry);
 			if (!entry->getParent()->isTreeless())
 			{
 				patches_fp_[path].add(entry);
@@ -327,9 +327,9 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		{
 			if (flats_[name].length() == 0)
 			{
-				flats_[name].add(entry);
 				addToFpOnly = false;
 			}
+			flats_[name].add(entry);
 			if (!entry->getParent()->isTreeless())
 			{
 				flats_fp_[path].add(entry);
