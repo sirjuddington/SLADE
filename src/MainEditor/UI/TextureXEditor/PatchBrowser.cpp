@@ -234,6 +234,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 // ----------------------------------------------------------------------------
 bool PatchBrowser::openArchive(Archive* archive)
 {
+	this->truncate_names_ = fullPath;
 	// Check archive was given
 	if (!archive)
 		return false;
