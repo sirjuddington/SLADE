@@ -15,7 +15,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -435,7 +435,7 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	list_textures_ = new TextureXListView(this, &texturex_);
 	framesizer->Add(list_textures_, 1, wxEXPAND | wxALL, UI::pad());
 	sizer->Add(framesizer, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, UI::pad());
-	
+
 	// Texture list filter
 	text_filter_ = new wxTextCtrl(this, -1);
 	btn_clear_filter_ = new SIconButton(this, "close", "Clear Filter");
@@ -664,7 +664,10 @@ void TextureXPanel::newTexture()
 		return;
 
 	// Process name
-	name = name.Upper().Truncate(8);
+	if (texturex_.getFormat() != TXF_TEXTURES)
+	{
+		name = name.Upper().Truncate(8);
+	}
 
 	// Create new texture
 	CTexture* tex = new CTexture();

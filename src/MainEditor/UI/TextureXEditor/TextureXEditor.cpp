@@ -484,11 +484,6 @@ void TextureXEditor::showTextureMenu(bool show)
 		theMainWindow->removeCustomMenu(menu_texture_);
 }
 
-void TextureXEditor::setFullPath(bool enabled)
-{
-	patch_browser_->fullPath = enabled;
-}
-
 // ----------------------------------------------------------------------------
 // TextureXEditor::removePatch
 //
