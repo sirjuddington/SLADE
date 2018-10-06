@@ -87,7 +87,6 @@ namespace
 	};
 }
 CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
-CVAR(Int, map_bg_ms, 15, CVAR_SAVE)
 CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
 
 
@@ -286,13 +285,17 @@ void MapEditContext::lockMouse(bool lock)
 // ----------------------------------------------------------------------------
 bool MapEditContext::update(long frametime)
 {
+	// Force an update if animations are active
+	if (renderer_.animationsActive() || selection_.hasHilight())
+		next_frame_length_ = 2;
+
 	// Ignore if we aren't ready to update
 	if (frametime < next_frame_length_)
 		return false;
 
-	// Set initial time (ms) until next update
-	// This will be set lower if animations are active
-	next_frame_length_ = overlayActive() ? 2 : map_bg_ms;
+	// Wait until user input opens the overlay again
+	if (!overlayActive())
+		next_frame_length_ = LONG_MAX;
 
 	// Get frame time multiplier
 	double mult = (double)frametime / 10.0f;
@@ -362,8 +365,6 @@ bool MapEditContext::update(long frametime)
 
 	// Update animations
 	renderer_.updateAnimations(mult);
-	if (renderer_.animationsActive())
-		next_frame_length_ = 2;
 
 	return true;
 }
@@ -528,17 +529,7 @@ void MapEditContext::setCursor(UI::MouseCursor cursor) const
 // ----------------------------------------------------------------------------
 void MapEditContext::forceRefreshRenderer()
 {
-	// Update 3d mode info overlay if needed
-	if (edit_mode_ == Mode::Visual)
-	{
-		auto hl = renderer_.renderer3D().determineHilight();
-		info_3d_.update(hl.index, hl.type, &map_);
-	}
-
-	if (!canvas_->setActive())
-		return;
-
-	renderer_.forceUpdate();
+	next_frame_length_ = 2;
 }
 
 // ----------------------------------------------------------------------------

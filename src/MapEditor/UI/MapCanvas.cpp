@@ -38,6 +38,7 @@
 
 using MapEditor::Mode;
 
+CVAR(Int, map_bg_ms, 15, CVAR_SAVE)
 
 /*******************************************************************
  * MAPCANVAS CLASS FUNCTIONS
@@ -84,7 +85,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	Bind(wxEVT_IDLE, &MapCanvas::onIdle, this);
 #endif
 
-	timer.Start(10, true);
+	timer.Start(map_bg_ms, true);
 }
 
 /* MapCanvas::~MapCanvas
@@ -504,7 +505,7 @@ void MapCanvas::onRTimer(wxTimerEvent& e)
 		Refresh();
 	}
 
-	timer.Start(-1, true);
+	timer.Start(map_bg_ms, true);
 }
 
 /* MapCanvas::onFocus
