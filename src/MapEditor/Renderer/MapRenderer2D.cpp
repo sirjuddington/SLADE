@@ -212,10 +212,17 @@ void MapRenderer2D::renderVertices(float alpha)
  *******************************************************************/
 void MapRenderer2D::renderVerticesImmediate()
 {
-	if (list_vertices > 0 && map->nVertices() == n_vertices && map->geometryUpdated() <= vertices_updated)
+	if (list_vertices > 0 &&
+		map->nVertices() == n_vertices &&
+		map->geometryUpdated() <= vertices_updated &&
+		!map->modifiedSince(vertices_updated, MOBJ_VERTEX))
 		glCallList(list_vertices);
 	else
 	{
+		// Rebuild display list
+		if (list_vertices > 0)
+			glDeleteLists(list_vertices, 1);
+
 		list_vertices = glGenLists(1);
 		glNewList(list_vertices, GL_COMPILE_AND_EXECUTE);
 
