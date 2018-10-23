@@ -1101,6 +1101,12 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 	// Load entry to image if valid
 	if (entry)
 		return Misc::loadImageFromEntry(&image, entry);
-	else
-		return false;
+
+	// Maybe it's a texture?
+	entry = theResourceManager->getTextureEntry(patch->getName(), "", parent);
+
+	if (entry)
+		return Misc::loadImageFromEntry(&image, entry);
+
+	return false;
 }
