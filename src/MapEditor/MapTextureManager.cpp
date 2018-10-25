@@ -529,58 +529,57 @@ void MapTextureManager::buildTexInfoList()
 	{
 		CTexture * tex = &textures[a]->tex;
 		Archive* parent = textures[a]->parent;
+
+		//string shortName = tex->getName().Truncate(8);
+		string longName = tex->getName();
+		string path = longName.BeforeLast('/');
+
 		if (tex->isExtended())
 		{
 			if (S_CMPNOCASE(tex->getType(), "texture") || S_CMPNOCASE(tex->getType(), "walltexture"))
-				tex_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTURES, parent));
+				tex_info.push_back(map_texinfo_t(longName, TC_TEXTURES, parent, path, tex->getIndex(), longName));
 			else if (S_CMPNOCASE(tex->getType(), "define"))
-				tex_info.push_back(map_texinfo_t(tex->getName(), TC_HIRES, parent));
+				tex_info.push_back(map_texinfo_t(longName, TC_HIRES, parent, path, tex->getIndex(), longName));
 			else if (S_CMPNOCASE(tex->getType(), "flat"))
-				flat_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTURES, parent));
+				flat_info.push_back(map_texinfo_t(longName, TC_TEXTURES, parent, path, tex->getIndex(), longName));
 			// Ignore graphics, patches and sprites
 		}
 		else
-			tex_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTUREX, parent, "", tex->getIndex() + 1));
+			tex_info.push_back(map_texinfo_t(longName, TC_TEXTUREX, parent, path, tex->getIndex() + 1, longName));
 	}
 
 	// Texture namespace patches (TX_)
 	if (Game::configuration().featureSupported(Game::Feature::TxTextures))
 	{
 		vector<ArchiveEntry*> patches;
-		theResourceManager->getAllPatchEntries(patches, nullptr);
+		theResourceManager->getAllPatchEntries(patches, nullptr, Game::configuration().featureSupported(Game::Feature::LongNames));
 		for (unsigned a = 0; a < patches.size(); a++)
 		{
 			if (patches[a]->isInNamespace("textures") || patches[a]->isInNamespace("hires"))
 			{
 				// Determine texture path if it's in a pk3
-				string path = patches[a]->getPath();
-				if (path.StartsWith("/textures/"))
-					path.Remove(0, 9);
-				else if (path.StartsWith("/hires/"))
-					path.Remove(0, 6);
-				else
-					path = "";
+				string longName = patches[a]->getPath(true).Remove(0, 1);
+				string shortName = patches[a]->getName(true).Upper().Truncate(8);
+				string path = patches[a]->getPath(false);
 
-				tex_info.push_back(map_texinfo_t(patches[a]->getName(true), TC_TX, patches[a]->getParent(), path));
+				tex_info.push_back(map_texinfo_t(shortName, TC_TX, patches[a]->getParent(), path, 0, longName));
 			}
 		}
 	}
 
 	// Flats
 	vector<ArchiveEntry*> flats;
-	theResourceManager->getAllFlatEntries(flats, nullptr);
+	theResourceManager->getAllFlatEntries(flats, nullptr, Game::configuration().featureSupported(Game::Feature::LongNames));
 	for (unsigned a = 0; a < flats.size(); a++)
 	{
 		ArchiveEntry* entry = flats[a];
 
 		// Determine flat path if it's in a pk3
-		string path = entry->getPath();
-		if (path.StartsWith("/flats/") || path.StartsWith("/hires/"))
-			path.Remove(0, 6);
-		else
-			path = "";
+		string longName = entry->getPath(true).Remove(0, 1);
+		string shortName = entry->getName(true).Upper().Truncate(8);
+		string path = entry->getPath(false);
 
-		flat_info.push_back(map_texinfo_t(entry->getName(true), TC_NONE, flats[a]->getParent(), path));
+		flat_info.push_back(map_texinfo_t(shortName, TC_NONE, flats[a]->getParent(), path, 0, longName));
 	}
 }
 

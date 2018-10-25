@@ -14,7 +14,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -50,7 +50,7 @@ namespace
 {
 	// Hack to stop the drag event being erroneously triggered when
 	// double-clicking a patch in the patch browser to select it
-	bool hack_nodrag = false;	
+	bool hack_nodrag = false;
 }
 
 
@@ -226,7 +226,7 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(spin_tex_scaley_, { 1, 4 }, { 1, 1 });
 	gb_sizer->Add(label_scaled_size_, { 1, 5 }, { 1, 0 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(cb_tex_world_panning_, { 1, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
-	
+
 
 	// Bind events
 	spin_tex_scalex_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexScaleXChanged, this);
@@ -534,6 +534,7 @@ void TextureEditorPanel::addPatch()
 		return;
 
 	// Browse for patch
+	tx_editor_->setFullPath(false);
 	int patch = tx_editor_->browsePatchTable();
 	if (patch >= 0)
 	{
@@ -679,6 +680,7 @@ void TextureEditorPanel::replacePatch()
 	string pname = tex_canvas_->getTexture()->getPatch(selection[0])->getName();
 
 	// Browse for patch
+	tx_editor_->setFullPath(false);
 	int patch = tx_editor_->browsePatchTable(pname);
 	if (patch >= 0)
 	{

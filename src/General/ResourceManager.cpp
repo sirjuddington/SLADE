@@ -15,7 +15,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -98,9 +98,10 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const string& nspace, b
 		return nullptr;
 
 	ArchiveEntry::SPtr best;
-	auto i = entries_.begin();
-	while (i != entries_.end())
+	auto i = entries_.end();
+	while (i != entries_.begin())
 	{
+		--i;
 		// Check if expired
 		if (i->expired())
 		{
@@ -109,7 +110,6 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const string& nspace, b
 		}
 
 		auto entry = i->lock();
-		++i;
 
 		if (!best)
 			best = entry;
@@ -276,7 +276,8 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 	EntryType* type = entry->getType();
 
 	// Get resource name (extension cut, uppercase)
-	string name = entry->getUpperNameNoExt();
+	string lname = entry->getUpperNameNoExt();
+	string name = entry->getUpperNameNoExt().Truncate(8);
 	// Talon1024 - Get resource path (uppercase, without leading slash)
 	string path = entry->getPath(true).Upper().Mid(1);
 
@@ -298,33 +299,55 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		        !entry->isInNamespace("flats"))
 			return;
 
+		bool addToFpOnly = true;
+
 		// Check for patch entry
-		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches"))
+		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches") ||
+		        entry->isInNamespace("sprites"))
 		{
+			if (patches_[name].length() == 0)
+			{
+				addToFpOnly = false;
+			}
 			patches_[name].add(entry);
-			/*
-			if (name.Length() > 8) patches[name.Left(8)].add(entry);
 			if (!entry->getParent()->isTreeless())
-				patches[path].add(entry);
-			*/
+			{
+				patches_fp_[path].add(entry);
+				if ((lname.Len() > 8 || patches_[name].length() > 0) && addToFpOnly)
+				{
+					patches_fp_only_[path].add(entry);
+				}
+			}
 		}
+
+		addToFpOnly = true;
 
 		// Check for flat entry
 		if (type->id() == "gfx_flat" || entry->isInNamespace("flats"))
 		{
+			if (flats_[name].length() == 0)
+			{
+				addToFpOnly = false;
+			}
 			flats_[name].add(entry);
-			// if (name.Length() > 8) flats[name.Left(8)].add(entry);
 			if (!entry->getParent()->isTreeless())
-				flats_[path].add(entry);
+			{
+				flats_fp_[path].add(entry);
+				if ((lname.Len() > 8 || flats_[name].length() > 0) && addToFpOnly)
+				{
+					flats_fp_only_[path].add(entry);
+				}
+			}
 		}
 
 		// Check for stand-alone texture entry
 		if (entry->isInNamespace("textures") || entry->isInNamespace("hires"))
 		{
 			satextures_[name].add(entry);
-			// if (name.Length() > 8) satextures[name.Left(8)].add(entry);
 			if (!entry->getParent()->isTreeless())
-				satextures_[path].add(entry);
+			{
+				satextures_fp_[path].add(entry);
+			}
 
 			// Add name to hash table
 			ResourceManager::doom64_hash_table_[getTextureHash(name)] = name;
@@ -378,7 +401,7 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
 		return;
 
 	// Get resource name (extension cut, uppercase)
-	string name = entry->getUpperNameNoExt();
+	string name = entry->getUpperNameNoExt().Truncate(8);
 	string path = entry->getPath(true).Upper().Mid(1);
 
 	// Remove from palettes
@@ -386,14 +409,17 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
 
 	// Remove from patches
 	patches_[name].remove(entry);
+	patches_fp_[path].remove(entry);
+	patches_fp_only_[path].remove(entry);
 
 	// Remove from flats
 	flats_[name].remove(entry);
-	flats_[path].remove(entry);
+	flats_fp_[path].remove(entry);
+	flats_fp_only_[path].remove(entry);
 
 	// Remove from stand-alone textures
 	satextures_[name].remove(entry);
-	satextures_[path].remove(entry);
+	satextures_fp_[path].remove(entry);
 
 	// Check for TEXTUREx entry
 	int txentry = 0;
@@ -437,9 +463,19 @@ void ResourceManager::listAllPatches()
 //
 // Adds all current patch entries to [list]
 // ----------------------------------------------------------------------------
-void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority)
+void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
 {
 	for (auto& i : patches_)
+	{
+		auto entry = i.second.getEntry(priority);
+		if (entry)
+			list.push_back(entry);
+	}
+
+	if (!fullPath)
+		return;
+
+	for (auto& i : patches_fp_only_)
 	{
 		auto entry = i.second.getEntry(priority);
 		if (entry)
@@ -505,9 +541,19 @@ void ResourceManager::getAllTextureNames(vector<string>& list)
 //
 // Adds all current flat entries to [list]
 // ----------------------------------------------------------------------------
-void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority)
+void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
 {
 	for (auto& i : flats_)
+	{
+		auto entry = i.second.getEntry(priority);
+		if (entry)
+			list.push_back(entry);
+	}
+
+	if (!fullPath)
+		return;
+
+	for (auto& i : flats_fp_only_)
 	{
 		auto entry = i.second.getEntry(priority);
 		if (entry)
@@ -555,7 +601,15 @@ ArchiveEntry* ResourceManager::getPatchEntry(const string& patch, const string& 
 	if (!nspace.CmpNoCase("textures"))
 		return getTextureEntry(patch, "textures", priority);
 
-	return patches_[patch.Upper()].getEntry(priority, nspace, true);
+	ArchiveEntry* entry = patches_[patch.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	entry = patches_fp_[patch.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -568,11 +622,17 @@ ArchiveEntry* ResourceManager::getFlatEntry(const string& flat, Archive* priorit
 {
 	// Check resource with matching name exists
 	EntryResource& res = flats_[flat.Upper()];
-	if (res.entries_.empty())
-		return nullptr;
 
 	// Return most relevant entry
-	return res.getEntry(priority);
+	ArchiveEntry* entry = res.getEntry(priority);
+	if (entry)
+		return entry;
+
+	entry = flats_fp_[flat.Upper()].getEntry(priority, "flats", true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -583,7 +643,15 @@ ArchiveEntry* ResourceManager::getFlatEntry(const string& flat, Archive* priorit
 // ----------------------------------------------------------------------------
 ArchiveEntry* ResourceManager::getTextureEntry(const string& texture, const string& nspace, Archive* priority)
 {
-	return satextures_[texture.Upper()].getEntry(priority, nspace, true);
+	ArchiveEntry* entry = satextures_[texture.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	entry = satextures_fp_[texture.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
 // ----------------------------------------------------------------------------

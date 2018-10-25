@@ -15,7 +15,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -73,7 +73,7 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 
 	// Name
 	text_tex_name_ = new wxTextCtrl(panel, -1);
-	text_tex_name_->SetMaxLength(8);
+	text_tex_name_->SetMaxLength(0);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Name:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
@@ -114,7 +114,7 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(new wxStaticText(panel, -1, "Scale:"), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_scalex_, { 2, 1 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_scaley_, { 2, 2 }, { 1, 1 });
-	
+
 	// Scaled size
 	label_scaled_size_ = new wxStaticText(panel, -1, "Scaled Size: N/A");
 	gb_sizer->Add(label_scaled_size_, { 3, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
@@ -283,7 +283,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	spin_patch_top_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Y Position:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_patch_top_, { 1, 1 }, { 1, 1 }, wxEXPAND);
-	
+
 	// Use Offsets
 	cb_useofs_ = new wxCheckBox(panel, -1, "Use Source Gfx Offsets");
 	gb_sizer->Add(cb_useofs_, { 2, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
@@ -514,6 +514,7 @@ void ZTextureEditorPanel::addPatch()
 		return;
 
 	// Browse for patch
+	tx_editor_->setFullPath(true);
 	string patch = tx_editor_->browsePatchEntry();
 	if (!patch.IsEmpty())
 	{
@@ -544,6 +545,7 @@ void ZTextureEditorPanel::replacePatch()
 		return;
 
 	// Browse for patch
+	tx_editor_->setFullPath(true);
 	string patch = tx_editor_->browsePatchEntry();
 	if (!patch.IsEmpty())
 	{

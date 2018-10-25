@@ -149,6 +149,8 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	// Set window title
 	SetTitle("Browse Map Textures");
 
+	int mapFormat = map->currentFormat();
+
 	// Textures
 	if (type == 0 || Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 	{
@@ -157,8 +159,29 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllTexturesInfo();
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
+			if ((mapFormat != MAP_UDMF ||
+				!Game::configuration().featureSupported(Game::Feature::LongNames)) &&
+				textures[a].shortName.Len() > 8)
+			{
+				// Only UDMF supports texture/flat names longer than 8 characters
+				continue;
+			}
+
+			// Don't add two textures with the same name
+			bool dontAdd = false;
+			for (unsigned b = 0; b < textures.size(); b++)
+			{
+				if (textures[b].shortName.Cmp(textures[a].shortName) == 0 && b > a)
+				{
+					dontAdd = true;
+					break;
+				}
+			}
+
+			if (dontAdd)
+				continue;
 			// Add browser item
-			addItem(new MapTexBrowserItem(textures[a].name, 0, textures[a].index),
+			addItem(new MapTexBrowserItem(textures[a].shortName, 0, textures[a].index),
 				determineTexturePath(textures[a].archive, textures[a].category, "Textures", textures[a].path));
 		}
 	}
@@ -169,14 +192,66 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		vector<map_texinfo_t>& flats = MapEditor::textureManager().getAllFlatsInfo();
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
+			if ((mapFormat != MAP_UDMF ||
+				!Game::configuration().featureSupported(Game::Feature::LongNames)) &&
+				flats[a].shortName.Len() > 8)
+			{
+				// Only UDMF supports texture/flat names longer than 8 characters
+				continue;
+			}
+
+			// Don't add two flats with the same name
+			bool dontAdd = false;
+			for (unsigned b = 0; b < flats.size(); b++)
+			{
+				if (flats[b].shortName.Cmp(flats[a].shortName) == 0 && b > a)
+				{
+					dontAdd = true;
+					break;
+				}
+			}
+
+			if (dontAdd)
+				continue;
+
 			// Determine tree path
 			string path = determineTexturePath(flats[a].archive, flats[a].category, "Flats", flats[a].path);
 
 			// Add browser item
 			if (flats[a].category == MapTextureManager::TC_TEXTURES)
-				addItem(new MapTexBrowserItem(flats[a].name, 0, flats[a].index), path);
+				addItem(new MapTexBrowserItem(flats[a].shortName, 0, flats[a].index), path);
 			else
-				addItem(new MapTexBrowserItem(flats[a].name, 1, flats[a].index), path);
+				addItem(new MapTexBrowserItem(flats[a].shortName, 1, flats[a].index), path);
+		}
+	}
+
+	// Full path textures
+	if (mapFormat == MAP_UDMF &&
+		Game::configuration().featureSupported(Game::Feature::LongNames))
+	{
+		// Textures
+		vector<map_texinfo_t>& fpTextures = MapEditor::textureManager().getAllTexturesInfo();
+		for (unsigned a = 0; a < fpTextures.size(); a++)
+		{
+			if (fpTextures[a].category != MapTextureManager::TC_TEXTURES &&
+					fpTextures[a].category != MapTextureManager::TC_HIRES &&
+					!fpTextures[a].path.IsEmpty() && fpTextures[a].path.Cmp("/") != 0) {
+				// Add browser item
+				addItem(new MapTexBrowserItem(fpTextures[a].longName, 0, fpTextures[a].index),
+					determineTexturePath(fpTextures[a].archive, fpTextures[a].category, "Textures (Full Path)", fpTextures[a].path));
+			}
+		}
+
+		// Flats
+		vector<map_texinfo_t>& fpFlats = MapEditor::textureManager().getAllFlatsInfo();
+		for (unsigned a = 0; a < fpFlats.size(); a++)
+		{
+			if (!fpFlats[a].path.IsEmpty() && fpFlats[a].path.Cmp("/") != 0) {
+				// Add browser item
+				//fpName.Remove(0, 1); // Remove leading slash
+				addItem(new MapTexBrowserItem(fpFlats[a].longName, 1, fpFlats[a].index),
+					determineTexturePath(fpFlats[a].archive, fpFlats[a].category, "Textures (Full Path)", fpFlats[a].path));
+			}
 		}
 	}
 
