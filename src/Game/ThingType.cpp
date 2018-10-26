@@ -437,7 +437,7 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 		};
 
 		int color = props["color"].getIntValue();
-		if (color < db2_colours.size())
+		if (color < (int)db2_colours.size())
 			colour_ = db2_colours[color];
 	}
 

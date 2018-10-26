@@ -390,7 +390,7 @@ bool DataEntryTable::InsertRows(size_t pos, size_t num)
 
 	// Update modified cells
 	for (unsigned a = 0; a < cells_modified_.size(); a++)
-		if (cells_modified_[a].x >= pos)
+		if (cells_modified_[a].x >= (int)pos)
 			cells_modified_[a].x += num;
 
 	// Send message to grid

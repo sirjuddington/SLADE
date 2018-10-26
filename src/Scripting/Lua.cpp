@@ -407,7 +407,7 @@ void Lua::setCurrentWindow(wxWindow* window)
 CONSOLE_COMMAND(script, 1, true)
 {
 	string script = args[0];
-	for (int a = 1; a < args.size(); a++)
+	for (unsigned a = 1; a < args.size(); a++)
 		script += " " + args[a];
 
 	Lua::run(script);

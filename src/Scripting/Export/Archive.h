@@ -2,7 +2,7 @@
 vector<Archive*> allArchives(bool resources_only)
 {
 	vector<Archive*> list;
-	for (unsigned a = 0; a < App::archiveManager().numArchives(); a++)
+	for (int a = 0; a < App::archiveManager().numArchives(); a++)
 	{
 		Archive* archive = App::archiveManager().getArchive(a);
 

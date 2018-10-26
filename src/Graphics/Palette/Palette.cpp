@@ -75,7 +75,7 @@ Palette::Palette(unsigned size) :
 	index_trans_{ -1 }
 {
 	// Init palette (to greyscale)
-	for (int a = 0; a < size; a++)
+	for (unsigned a = 0; a < size; a++)
 	{
 		double mult = (double)a / (double)size;
 		colours_[a].set(mult * 255, mult * 255, mult * 255, 255, -1, a);
