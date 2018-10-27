@@ -40,6 +40,32 @@
 
 using MapEditor::ItemType;
 
+// -----------------------------------------------------------------------------
+// Helper functions
+// -----------------------------------------------------------------------------
+static void lookup3DFloor(MapEditor::Item &first, bool &floor, MapSector *&sector, SLADEMap &map)
+{
+	floor = first.type == MapEditor::ItemType::Floor;
+	sector = map.getSector(first.index);
+	int floor_idx = first.extra_floor_index;
+	if (floor_idx >= 0 && floor_idx < sector->extra_floors.size())
+	{
+		MapSector* control_sector = map.getSector(
+			sector->extra_floors[floor_idx].control_sector_index);
+		if (control_sector)
+		{
+			sector = control_sector;
+			// Floor/ceiling are reversed in a 3D floor
+			floor = !floor;
+		}
+	}
+}
+
+static void lookup3DFloor(MapEditor::Item &first, MapSector *&sector, SLADEMap &map)
+{
+	bool floor;
+	lookup3DFloor(first, floor, sector, map);
+}
 
 // -----------------------------------------------------------------------------
 //
@@ -143,6 +169,7 @@ void Edit3D::changeSectorLight(int amount) const
 		{
 			// Get sector
 			auto s     = context_.map().sector(items[a].index);
+			lookup3DFloor(items[a], s, context_.map());
 			int  where = 0;
 			if (items[a].type == ItemType::Floor && !link_light_)
 				where = 1;
@@ -267,6 +294,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		else
 		{
 			MapSector* sector = context_.map().sector(items[a].index);
+			lookup3DFloor(items[a], sector, context_.map());
 
 			if (Game::configuration().featureSupported(Game::UDMFFeature::FlatPanning))
 			{
@@ -1253,14 +1281,12 @@ void Edit3D::changeTexture() const
 	int    type  = 0;
 	auto&  first = selection[0];
 	auto&  map   = context_.map();
-	if (first.type == MapEditor::ItemType::Floor)
+	if (first.type == MapEditor::ItemType::Floor || first.type == MapEditor::ItemType::Ceiling)
 	{
-		tex  = map.sector(first.index)->floor().texture;
-		type = 1;
-	}
-	else if (first.type == MapEditor::ItemType::Ceiling)
-	{
-		tex  = map.sector(first.index)->ceiling().texture;
+		MapSector *sector;
+		bool floor;
+		lookup3DFloor(first, floor, sector, map);
+		tex = floor ? sector->floor().texture : sector->ceiling().texture;
 		type = 1;
 	}
 	else if (first.type == MapEditor::ItemType::WallBottom)
@@ -1288,19 +1314,23 @@ void Edit3D::changeTexture() const
 			{
 				for (unsigned a = 0; a < selection.size(); a++)
 				{
-					if (selection[a].type == MapEditor::ItemType::Floor)
-						map.sector(selection[a].index)->setStringProperty("texturefloor", tex);
-					else if (selection[a].type == MapEditor::ItemType::Ceiling)
-						map.sector(selection[a].index)->setStringProperty("textureceiling", tex);
+					MapSector *sector;
+					bool floor;
+					lookup3DFloor(selection[a], floor, sector, map);
+					if (selection[a].type == MapEditor::ItemType::Floor || selection[a].type == MapEditor::ItemType::Ceiling) {
+						sector->setStringProperty(floor ? "texturefloor" : "textureceiling", tex);
+					}
 				}
 			}
 			else if (hl.index >= 0)
 			{
 				// Hilight if no selection
-				if (hl.type == MapEditor::ItemType::Floor)
-					map.sector(hl.index)->setStringProperty("texturefloor", tex);
-				else if (hl.type == MapEditor::ItemType::Ceiling)
-					map.sector(hl.index)->setStringProperty("textureceiling", tex);
+				MapSector *sector;
+				bool floor;
+				lookup3DFloor(hl, floor, sector, map);
+				if (hl.type == MapEditor::ItemType::Floor || hl.type == MapEditor::ItemType::Ceiling) {
+					sector->setStringProperty(floor ? "texturefloor" : "textureceiling", tex);
+				}
 			}
 		}
 
