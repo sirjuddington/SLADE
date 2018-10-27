@@ -2628,7 +2628,6 @@ bool SLADEMap::removeVertex(unsigned index, bool merge_lines)
 	removeMapObject(vertices_[index]);
 	vertices_[index] = vertices_.back();
 	vertices_[index]->index = index;
-	//vertices[index]->modified_time = App::runTimer();
 	vertices_.pop_back();
 
 	geometry_updated_ = App::runTimer();
@@ -2729,7 +2728,13 @@ bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 		{
 			if (sides_[index]->sector->connected_sides[a] == sides_[index])
 			{
-				sides_[index]->sector->connected_sides.erase(sides_[index]->sector->connected_sides.begin() + a);
+				auto sector = sides_[index]->sector;
+				sector->connected_sides.erase(sides_[index]->sector->connected_sides.begin() + a);
+
+				// Remove sector if all its sides are gone
+				if (sector->connected_sides.empty())
+					removeSector(sector);
+
 				break;
 			}
 		}
@@ -2744,7 +2749,6 @@ bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 	removeMapObject(sides_[index]);
 	sides_[index] = sides_.back();
 	sides_[index]->index = index;
-	//sides[index]->modified_time = App::runTimer();
 	sides_.pop_back();
 
 	return true;
