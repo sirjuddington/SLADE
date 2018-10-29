@@ -227,7 +227,7 @@ MapRenderer3D::Quad* MapRenderer3D::getQuad(MapEditor::Item item)
 		return nullptr;
 
 	// Get side
-	MapSide* side = map_->side(item.index);
+	MapSide* side = item.real_index >= 0 ? map_->side(item.real_index) : map_->side(item.index);
 	if (!side)
 		return nullptr;
 
@@ -242,6 +242,11 @@ MapRenderer3D::Quad* MapRenderer3D::getQuad(MapEditor::Item item)
 			continue;
 		if (side == side->parentLine()->s2() && (quad->flags & BACK) == 0)
 			continue;
+
+		// Check 3D floor
+
+		if(quad->control_line >= 0 && quad->control_line != item.index)
+			return quad;
 
 		// Check part
 		if (item.type == MapEditor::ItemType::WallBottom)
@@ -259,6 +264,11 @@ MapRenderer3D::Quad* MapRenderer3D::getQuad(MapEditor::Item item)
 			if ((quad->flags & UPPER) == 0 && (quad->flags & LOWER) == 0)
 				return quad;
 		}
+		/*if (item.type == MapEditor::ItemType::Wall3DFloor)
+		{
+			if(quad->control_line >= 0 && quad->control_line == item.control_line)
+				return quad;
+		}*/
 	}
 
 	// Not found
@@ -2253,11 +2263,15 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 	{
 		// Ignore if not a wall selection
 		if (selection[a].type != MapEditor::ItemType::WallBottom && selection[a].type != MapEditor::ItemType::WallMiddle
-			&& selection[a].type != MapEditor::ItemType::WallTop)
+			&& selection[a].type != MapEditor::ItemType::WallTop/* &&
+				selection[a].type != MapEditor::ItemType::Wall3DFloor*/)
 			continue;
 
 		// Get side
-		MapSide* side = map_->side(selection[a].index);
+
+		bool is3DFloor = selection[a].real_index >= 0;
+		MapSide* side = is3DFloor ? map_->side(selection[a].real_index) : map_->side(selection[a].index);
+
 		if (!side)
 			continue;
 
@@ -2275,7 +2289,12 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 				continue;
 
 			// Check quad is correct part
-			if (lines_[line].quads[q].flags & UPPER)
+			if (is3DFloor && selection[a].real_index == lines_[line].quads[q].control_side)
+			{
+				quad = &lines_[line].quads[q];
+				break;
+			}
+			else if (lines_[line].quads[q].flags & UPPER)
 			{
 				if (selection[a].type == MapEditor::ItemType::WallTop)
 				{
@@ -2295,7 +2314,12 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 			{
 				quad = &lines_[line].quads[q];
 				break;
-			}
+			}/*
+			else if (selection[a].type == MapEditor::ItemType::Wall3DFloor && selection[a].control_line == lines[line].quads[a].control_line)
+			{
+				quad = &lines[line].quads[a];
+				break;
+			}*/
 		}
 
 		if (!quad)
@@ -3232,11 +3256,15 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	OpenGL::setColour(col_hilight);
 
 	// Quad hilight
-	if (hilight.type == MapEditor::ItemType::WallBottom || hilight.type == MapEditor::ItemType::WallMiddle
-		|| hilight.type == MapEditor::ItemType::WallTop)
+	if (hilight.type == MapEditor::ItemType::WallBottom ||
+	    hilight.type == MapEditor::ItemType::WallMiddle ||
+	    hilight.type == MapEditor::ItemType::WallTop /*||
+		hilight.type == MapEditor::ItemType::Wall3DFloor*/)
 	{
 		// Get side
-		MapSide* side = map_->side(hilight.index);
+		bool is3DFloor = hilight.real_index >= 0;
+		// std::cout << is3DFloor << std::endl;
+		MapSide* side = is3DFloor ? map_->side(hilight.real_index) : map_->side(hilight.index);
 		if (!side)
 			return;
 
@@ -3252,7 +3280,12 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 				continue;
 
 			// Check quad is correct part
-			if (lines_[line].quads[a].flags & UPPER)
+			if (is3DFloor && hilight.real_index == lines_[line].quads[a].control_side)
+			{
+				quad = &lines_[line].quads[a];
+				break;
+			}
+			else if (lines_[line].quads[a].flags & UPPER)
 			{
 				if (hilight.type == MapEditor::ItemType::WallTop)
 				{
@@ -3272,7 +3305,12 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 			{
 				quad = &lines_[line].quads[a];
 				break;
-			}
+			}/*
+			else if (hilight.type == MapEditor::ItemType::Wall3DFloor && hilight.control_line == lines[line].quads[a].control_line)
+			{
+				quad = &lines[line].quads[a];
+				break;
+			}*/
 		}
 
 		if (!quad)

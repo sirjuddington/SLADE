@@ -12,7 +12,7 @@ public:
 	InfoOverlay3D();
 	~InfoOverlay3D();
 
-	void update(int item_index, MapEditor::ItemType item_type, int extra_floor_index, SLADEMap* map);
+	void update(MapEditor::Item item, SLADEMap* map);
 	void draw(int bottom, int right, int middle, float alpha = 1.0f);
 	void drawTexture(float alpha, int x, int y);
 	void reset()
@@ -26,6 +26,7 @@ private:
 	vector<string>      info2_;
 	MapEditor::ItemType current_type_;
 	int                 current_floor_index_;
+	MapEditor::Item     current_item_; // TODO
 	string              texname_;
 	GLTexture*          texture_;
 	bool                thing_icon_;

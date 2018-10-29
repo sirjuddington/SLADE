@@ -54,12 +54,16 @@ public:
 		GLTexture* texture;
 		uint8_t    flags;
 		float      alpha;
+		int        control_line;
+		int        control_side;
 
 		Quad()
 		{
 			colour.set(255, 255, 255, 255, 0);
-			texture = nullptr;
-			flags   = 0;
+			texture      = nullptr;
+			flags        = 0;
+			control_line = -1;
+			control_side = -1;
 		}
 	};
 	struct Line

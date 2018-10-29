@@ -80,10 +80,14 @@ InfoOverlay3D::~InfoOverlay3D() {}
 // -----------------------------------------------------------------------------
 // Updates the info text for the object of [item_type] at [item_index] in [map]
 // -----------------------------------------------------------------------------
-void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, int extra_floor_index, SLADEMap* map)
+void InfoOverlay3D::update(MapEditor::Item item, SLADEMap* map)
 {
 	using Game::Feature;
 	using Game::UDMFFeature;
+
+	int item_index = item.index;
+	MapEditor::ItemType item_type = item.type;
+	int extra_floor_index = item.extra_floor_index;
 
 	// Clear current info
 	info_.clear();
@@ -92,28 +96,40 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, int ex
 	// Setup variables
 	current_type_        = item_type;
 	current_floor_index_ = extra_floor_index;
+	current_item_        = item;
 	texname_             = "";
 	texture_             = nullptr;
 	thing_icon_          = false;
 	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Wall
-	if (item_type == MapEditor::ItemType::WallBottom || item_type == MapEditor::ItemType::WallMiddle
-		|| item_type == MapEditor::ItemType::WallTop)
+	if (item_type == MapEditor::ItemType::WallBottom ||
+		item_type == MapEditor::ItemType::WallMiddle ||
+		item_type == MapEditor::ItemType::WallTop/* ||
+		item_type == MapEditor::ItemType::Wall3DFloor*/)
 	{
 		// Get line and side
 		MapSide* side = map->side(item_index);
 		if (!side)
 			return;
 		MapLine* line = side->parentLine();
-		if (!line)
-			return;
+		if (!line) return;
+		MapLine* line3d = nullptr;
+		/*if (item_type == MapEditor::ItemType::Wall3DFloor) {
+			line3d = line;
+			line = map->getLine(item.control_line);
+			side = line->s1();
+		}*/
 		object_ = side;
 
 		// TODO 3d floors
 
 		// --- Line/side info ---
-		info_.push_back(S_FMT("Line #%d", line->index()));
+		if(item.real_index >= 0) {
+			info_.push_back(S_FMT("3D floor line #%d on line #%d", line->index(), map->side(item.real_index)->parentLine()->index()));
+		} else {
+			info_.push_back(S_FMT("Line #%d", line->index()));
+		}
 		if (side == line->s1())
 			info_.push_back(S_FMT("Front Side #%d", side->index()));
 		else
@@ -143,8 +159,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, int ex
 			info2_.push_back("Lower Texture");
 		else if (item_type == MapEditor::ItemType::WallMiddle)
 			info2_.push_back("Middle Texture");
-		else
+		else if (item_type == MapEditor::ItemType::WallTop)
 			info2_.push_back("Upper Texture");
+		/*else if (item_type == MapEditor::ItemType::Wall3DFloor)
+			info2.push_back("3D Floor Texture"); // TODO: determine*/
 
 		// Offsets
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
@@ -244,7 +262,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, int ex
 			other_sector = other_side->sector();
 
 		double left_height, right_height;
-		if (item_type == MapEditor::ItemType::WallMiddle && other_sector)
+		if ((item_type == MapEditor::ItemType::WallMiddle/* || item_type == MapEditor::ItemType::Wall3DFloor*/) && other_sector)
 		{
 			// A two-sided line's middle area is the smallest distance between
 			// both sides' floors and ceilings, which is more complicated with
@@ -261,7 +279,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, int ex
 		else
 		{
 			Plane top_plane, bottom_plane;
-			if (item_type == MapEditor::ItemType::WallMiddle)
+			if (item_type == MapEditor::ItemType::WallMiddle/* || item_type == MapEditor::ItemType::Wall3DFloor*/)
 			{
 				top_plane    = this_sector->ceiling().plane;
 				bottom_plane = this_sector->floor().plane;
@@ -295,8 +313,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, int ex
 			texname_ = side->texLower();
 		else if (item_type == MapEditor::ItemType::WallMiddle)
 			texname_ = side->texMiddle();
-		else
+		else if (item_type == MapEditor::ItemType::WallTop)
 			texname_ = side->texUpper();
+		/*else if (item_type == MapEditor::ItemType::Wall3DFloor)
+			texname = side->getTexMiddle(); // TODO: Upper/lower flags*/
 		texture_ =
 			MapEditor::textureManager().texture(texname_, Game::configuration().featureSupported(Feature::MixTexFlats));
 	}
@@ -538,7 +558,7 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 		(object_->objType() == MapObject::Type::Side && (
 			((MapSide*)object_)->parentLine()->modifiedTime() > last_update_ ||	// parent line updated
 			((MapSide*)object_)->sector()->modifiedTime() > last_update_))))		// parent sector updated
-		update(object_->index(), current_type_, current_floor_index_, object_->parentMap());
+		update(current_item_, object_->parentMap());
 
 	// Init GL stuff
 	glLineWidth(1.0f);

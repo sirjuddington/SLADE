@@ -46,11 +46,11 @@ using MapEditor::ItemType;
 inline void Edit3D::lookup3DFloor(MapEditor::Item &first, bool &floor, MapSector *&sector, SLADEMap &map) const
 {
 	floor = first.type == MapEditor::ItemType::Floor;
-	sector = map.getSector(first.index);
+	sector = map.sector(first.index);
 	int floor_idx = first.extra_floor_index;
 	if (floor_idx >= 0 && floor_idx < sector->extra_floors.size())
 	{
-		MapSector* control_sector = map.getSector(
+		MapSector* control_sector = map.sector(
 			sector->extra_floors[floor_idx].control_sector_index);
 		if (control_sector)
 		{
@@ -244,7 +244,6 @@ void Edit3D::changeOffset(int amount, bool x) const
 		if (items[a].type >= ItemType::WallTop && items[a].type <= ItemType::WallBottom)
 		{
 			MapSide* side = context_.map().side(items[a].index);
-
 			// If offsets are linked, just change the whole side offset
 			if (link_offset_)
 			{
@@ -1135,9 +1134,13 @@ void Edit3D::changeScale(double amount, bool x) const
 		{
 			auto sector = context_.map().sector(items[a].index);
 
+			bool floor = items[a].type == ItemType::Floor;
+
+			lookup3DFloor(items[a], floor, sector, context_.map());
+
 			// Build property string
 			string prop = x ? "xscale" : "yscale";
-			prop += (items[a].type == ItemType::Floor) ? "floor" : "ceiling";
+			prop += floor ? "floor" : "ceiling";
 
 			// Set
 			double scale = sector->floatProperty(prop);
