@@ -180,6 +180,11 @@ void Log::message(MessageType type, const char* text)
 		sf::err() << log.back().formattedMessageLine() << "\n";
 }
 
+void Log::message(MessageType type, const wxString& text)
+{
+	message(type, CHR(text));
+}
+
 // ----------------------------------------------------------------------------
 // Log::since
 //
@@ -206,6 +211,11 @@ void Log::debug(int level, const char* text)
 		message(MessageType::Debug, level, text);
 }
 
+void Log::debug(int level, const wxString& text)
+{
+	debug(level, CHR(text));
+}
+
 // ----------------------------------------------------------------------------
 // Log::debug
 //
@@ -215,6 +225,11 @@ void Log::debug(const char* text)
 {
 	if (Global::debug)
 		message(MessageType::Debug, text);
+}
+
+void Log::debug(const wxString& text)
+{
+	debug(CHR(text));
 }
 
 // ----------------------------------------------------------------------------
@@ -233,4 +248,9 @@ void Log::message(MessageType type, int level, const char* text)
 	// Write to log file
 	if (log_file.is_open() && type != MessageType::Console)
 		sf::err() << log.back().formattedMessageLine() << "\n";
+}
+
+void Log::message(MessageType type, int level, const wxString& text)
+{
+	message(type, level, CHR(text));
 }

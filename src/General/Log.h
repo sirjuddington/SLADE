@@ -29,24 +29,35 @@ namespace Log
 
 	void	init();
 
-	void	message(MessageType type, int level, const char* text);
-	void	message(MessageType type, const char* text);
+	void message(MessageType type, int level, const char* text);
+	void message(MessageType type, int level, const wxString& text);
+	void message(MessageType type, const char* text);
+	void message(MessageType type, const wxString& text);
 
 	vector<Message*>	since(time_t time, MessageType type = MessageType::Any);
 
 	inline void	info(int level, const char* text) { message(MessageType::Info, level, text); }
+	inline void	info(int level, const wxString& text) { message(MessageType::Info, level, text); }
 	inline void	info(const char* text) { message(MessageType::Info, text); }
+	inline void	info(const wxString& text) { message(MessageType::Info, text); }
 
 	inline void	warning(int level, const char* text) { message(MessageType::Warning, level, text); }
+	inline void	warning(int level, const wxString& text) { message(MessageType::Warning, level, text); }
 	inline void	warning(const char* text) { message(MessageType::Warning, text); }
+	inline void	warning(const wxString& text) { message(MessageType::Warning, text); }
 
 	inline void	error(int level, const char* text) { message(MessageType::Error, level, text); }
+	inline void	error(int level, const wxString& text) { message(MessageType::Error, level, text); }
 	inline void	error(const char* text) { message(MessageType::Error, text); }
+	inline void	error(const wxString& text) { message(MessageType::Error, text); }
 
-	void	debug(int level, const char* text);
-	void	debug(const char* text);
+	void debug(int level, const char* text);
+	void debug(int level, const wxString& text);
+	void debug(const char* text);
+	void debug(const wxString& text);
 
 	inline void	console(const char* text) { message(MessageType::Console, text); }
+	inline void	console(const wxString& text) { message(MessageType::Console, text); }
 }
 
 // Try to avoid using these and use Log::message/error/warning with S_FMT instead
