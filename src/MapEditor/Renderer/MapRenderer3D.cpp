@@ -1135,8 +1135,14 @@ void MapRenderer3D::renderFlat(Flat* flat)
 			}
 		}
 
+		if(flat->flags & DRAWBOTH)
+			glDisable(GL_CULL_FACE);
+
 		// Render
 		flat->sector->polygon()->renderVBO(flat->vbo_offset);
+
+		if(flat->flags & DRAWBOTH)
+			glEnable(GL_CULL_FACE);
 	}
 	else
 	{
@@ -1154,8 +1160,15 @@ void MapRenderer3D::renderFlat(Flat* flat)
 			glTranslated(0, 0, flat->sector->floor().height);
 		}
 
+
+		if(flat->flags & DRAWBOTH)
+			glDisable(GL_CULL_FACE);
+
 		// Render
 		flat->sector->polygon()->render();
+
+		if(flat->flags & DRAWBOTH)
+			glEnable(GL_CULL_FACE);
 
 		glPopMatrix();
 	}
@@ -2055,7 +2068,6 @@ void MapRenderer3D::updateLine(unsigned index)
 			xoff = yoff = 0;
 			sx = sy = 1;
 
-			// TODO there's a flag for showing on both sides
 			// TODO missing texture check should look for this!
 			string texname;
 			// Not documented, but in practice, when both flags are set, upper wins
@@ -2091,6 +2103,11 @@ void MapRenderer3D::updateLine(unsigned index)
 				sx,
 				sy);
 			quad.flags |= MIDTEX;
+			if (extra.draw_inside) {
+				quad.flags |= DRAWBOTH;
+			}
+			quad.control_line = extra.control_line_index;
+			quad.control_side = control_line->s1()->index();
 			// TODO other flags?
 			// TODO probably need to remember which extra-floor this came from
 			// too, which is slightly more complicated since it might be the
@@ -2134,6 +2151,11 @@ void MapRenderer3D::renderQuad(MapRenderer3D::Quad* quad, float alpha)
 	// Setup fog
 	setFog(quad->fogcolour, quad->light);
 
+	// Setup DRAWBOTH
+	if (quad->flags & DRAWBOTH) {
+		glDisable(GL_CULL_FACE);
+	}
+
 	// Draw quad
 	glBegin(GL_QUADS);
 	glTexCoord2f(quad->points[0].tx, quad->points[0].ty);
@@ -2154,6 +2176,9 @@ void MapRenderer3D::renderQuad(MapRenderer3D::Quad* quad, float alpha)
 		else if (quad->flags & MIDTEX)
 			glAlphaFunc(GL_GREATER, 0.0f);
 	}
+
+	if (quad->flags & DRAWBOTH)
+		glEnable(GL_CULL_FACE);
 }
 
 // -----------------------------------------------------------------------------
@@ -2958,10 +2983,13 @@ void MapRenderer3D::checkVisibleQuads()
 		{
 			// Check we're on the right side of the quad
 			quad = &(lines_[a].quads[q]);
-			if (MathStuff::lineSide(
-					cam_position_.get2d(),
-					Seg2f(quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y))
-				< 0)
+			if (!(quad->flags & DRAWBOTH) &&
+			    MathStuff::lineSide(
+			    		cam_position_.get2d(),
+			    		Seg2f(quad->points[0].x,
+			    				quad->points[0].y,
+			    				quad->points[2].x,
+			    				quad->points[2].y)) < 0)
 				continue;
 
 			quads_[n_quads_] = quad;
@@ -3048,13 +3076,13 @@ void MapRenderer3D::checkVisibleFlats()
 			flats_[flat_idx++] = &flat;
 
 			// For two-sided flats, update which plane is currently visible
-			if (flat.flags & DRAWBOTH)
+			/*if (flat.flags & DRAWBOTH)
 			{
 				if (cam_position_.z < flat.plane.height_at(cam_position_.x, cam_position_.y))
 					flat.flags |= CEIL;
 				else
 					flat.flags &= ~CEIL;
-			}
+			}*/
 		}
 	}
 }
@@ -3100,7 +3128,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			quad = &lines_[a].quads[q];
 
 			// Check side of camera
-			if (MathStuff::lineSide(
+			if (!(quad->flags & DRAWBOTH) && MathStuff::lineSide(
 					cam_position_.get2d(),
 					Seg2f(quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y))
 				< 0)
@@ -3156,10 +3184,12 @@ MapEditor::Item MapRenderer3D::determineHilight()
 
 			// Check if on the correct side of the plane
 			double flat_z = sector_flats_[a][b].plane.height_at(cam_position_.x, cam_position_.y);
-			if (flat.flags & CEIL && cam_position_.z >= flat_z)
-				continue;
-			if (!(flat.flags & CEIL) && cam_position_.z <= flat_z)
-				continue;
+			if(!(flat.flags & DRAWBOTH)) {
+				if (flat.flags & CEIL && cam_position_.z >= flat_z)
+					continue;
+				if (!(flat.flags & CEIL) && cam_position_.z <= flat_z)
+					continue;
+			}
 
 			// Check if intersection is within sector
 			if (!map_->sector(a)->isWithin((cam_position_ + cam_dir3d_ * dist).get2d()))
@@ -3348,7 +3378,6 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		if (hilight.extra_floor_index >= 0 && hilight.extra_floor_index < sector->extra_floors.size())
 		{
 			ExFloorType& extra = sector->extra_floors[hilight.extra_floor_index];
-
 
 			// Planes are reversed for a 3D floor
 			// TODO the DRAWBOTH hack makes the type wrong when you're inside

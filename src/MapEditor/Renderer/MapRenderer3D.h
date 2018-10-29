@@ -23,7 +23,8 @@ public:
 		TRANSADD = 2,
 
 		// Quad/flat flags
-		SKY = 4,
+		SKY      = 4,
+		DRAWBOTH = 128,
 
 		// Quad flags
 		BACK   = 8,
@@ -32,8 +33,8 @@ public:
 		MIDTEX = 64,
 
 		// Flat flags
-		CEIL     = 8,
-		DRAWBOTH = 16,
+		CEIL = 8,
+
 
 		// Thing flags
 		ICON  = 4,
