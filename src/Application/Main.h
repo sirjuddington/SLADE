@@ -191,7 +191,7 @@ inline void LOG_DEBUG(
 	message << a11.get() << " ";
 	message << a12.get();
 	message.Trim();
-	Log::debug(S_FMT("%s", message));
+	Log::debug(0, S_FMT("%s", message));
 }
 
 #define LOG_DEBUG_VAR(name) LOG_DEBUG(#name ": ", name)

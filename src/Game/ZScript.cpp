@@ -204,7 +204,7 @@ bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, co
 void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 {
 	Tokenizer tz;
-	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.");
+	tz.setSpecialCharacters(CHR(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?."));
 	tz.enableDecorate(true);
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
 	tz.openMem(entry->getMCData(), "ZScript");

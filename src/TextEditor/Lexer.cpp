@@ -293,6 +293,20 @@ bool Lexer::processUnknown(LexerState& state)
 			break;
 		}
 
+		// Start of block comment
+		else if (checkToken(state, state.position, comment_begin))
+		{
+			state.state = State::Comment;
+			state.position += comment_begin.size();
+			state.length = comment_begin.size();
+			if (fold_comments_)
+			{
+				state.fold_increment++;
+				state.has_word = true;
+			}
+			break;
+		}
+
 		// Start of doc line comment
 		else if (checkToken(state, state.position, comment_doc))
 		{
@@ -309,20 +323,6 @@ bool Lexer::processUnknown(LexerState& state)
 			state.editor->SetStyling(u_length, Style::Default);
 			state.editor->SetStyling((state.end - state.position) + 1, Style::Comment);
 			return true;
-		}
-
-		// Start of block comment
-		else if (checkToken(state, state.position, comment_begin))
-		{
-			state.state = State::Comment;
-			state.position += comment_begin.size();
-			state.length = comment_begin.size();
-			if (fold_comments_)
-			{
-				state.fold_increment++;
-				state.has_word = true;
-			}
-			break;
 		}
 
 		// Whitespace
