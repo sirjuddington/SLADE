@@ -32,8 +32,9 @@ public:
 		LOWER  = 32,
 		MIDTEX = 64,
 
-		// Flat flags
-		CEIL = 8,
+	    // Flat flags
+	    CEIL	 = 8,
+		FLATFLIP = 16,
 
 
 		// Thing flags

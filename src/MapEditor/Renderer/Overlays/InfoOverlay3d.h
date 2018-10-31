@@ -25,8 +25,7 @@ private:
 	vector<string>      info_;
 	vector<string>      info2_;
 	MapEditor::ItemType current_type_;
-	int                 current_floor_index_;
-	MapEditor::Item     current_item_; // TODO
+	MapEditor::Item     current_item_;
 	string              texname_;
 	GLTexture*          texture_;
 	bool                thing_icon_;

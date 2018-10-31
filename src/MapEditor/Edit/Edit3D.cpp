@@ -41,33 +41,6 @@
 using MapEditor::ItemType;
 
 // -----------------------------------------------------------------------------
-// Helper functions
-// -----------------------------------------------------------------------------
-inline void Edit3D::lookup3DFloor(MapEditor::Item &first, bool &floor, MapSector *&sector, SLADEMap &map) const
-{
-	floor = first.type == MapEditor::ItemType::Floor;
-	sector = map.sector(first.index);
-	int floor_idx = first.extra_floor_index;
-	if (floor_idx >= 0 && floor_idx < sector->extra_floors.size())
-	{
-		MapSector* control_sector = map.sector(
-			sector->extra_floors[floor_idx].control_sector_index);
-		if (control_sector)
-		{
-			sector = control_sector;
-			// Floor/ceiling are reversed in a 3D floor
-			floor = !floor;
-		}
-	}
-}
-
-inline void Edit3D::lookup3DFloor(MapEditor::Item &first, MapSector *&sector, SLADEMap &map) const
-{
-	bool floor;
-	lookup3DFloor(first, floor, sector, map);
-}
-
-// -----------------------------------------------------------------------------
 //
 // Edit3D Class Functions
 //
@@ -169,7 +142,6 @@ void Edit3D::changeSectorLight(int amount) const
 		{
 			// Get sector
 			auto s     = context_.map().sector(items[a].index);
-			lookup3DFloor(items[a], s, context_.map());
 			int  where = 0;
 			if (items[a].type == ItemType::Floor && !link_light_)
 				where = 1;
@@ -293,7 +265,6 @@ void Edit3D::changeOffset(int amount, bool x) const
 		else
 		{
 			MapSector* sector = context_.map().sector(items[a].index);
-			lookup3DFloor(items[a], sector, context_.map());
 
 			if (Game::configuration().featureSupported(Game::UDMFFeature::FlatPanning))
 			{
@@ -385,8 +356,6 @@ void Edit3D::changeSectorHeight(int amount) const
 			// Get sector
 			auto sector = context_.map().side(items[a].index)->sector();
 
-			// TODO 3d floors -- should this still use this same logic, or move the entire floor...?
-
 			// Check this sector's ceiling hasn't already been changed
 			int index = sector->index();
 			if (VECTOR_EXISTS(ceilings, index))
@@ -408,20 +377,11 @@ void Edit3D::changeSectorHeight(int amount) const
 			// Get sector
 			MapSector* sector = context_.map().sector(items[a].index);
 
-			// If this is a 3D floor, change the control sector instead
-			int floor_idx = items[a].extra_floor_index;
-			if (floor_idx >= 0 && floor_idx < sector->extra_floors.size())
-			{
-				MapSector* control_sector = context_.map().sector(
-						sector->extra_floors[floor_idx].control_sector_index);
-				if (control_sector)
-				{
-					sector = control_sector;
-					// Floor/ceiling are reversed in a 3D floor
-					floor = !floor;
-				}
-			}
+			// Check this sector's ceiling hasn't already been changed
 
+
+			// Change height
+			// sector->setCeilingHeight(sector->getCeilingHeight() + amount);
 			if (floor)
 			{
 				// Change height
@@ -1136,8 +1096,6 @@ void Edit3D::changeScale(double amount, bool x) const
 
 			bool floor = items[a].type == ItemType::Floor;
 
-			lookup3DFloor(items[a], floor, sector, context_.map());
-
 			// Build property string
 			string prop = x ? "xscale" : "yscale";
 			prop += floor ? "floor" : "ceiling";
@@ -1288,7 +1246,6 @@ void Edit3D::changeTexture() const
 	{
 		MapSector *sector;
 		bool floor;
-		lookup3DFloor(first, floor, sector, map);
 		tex = floor ? sector->floor().texture : sector->ceiling().texture;
 		type = 1;
 	}
@@ -1319,7 +1276,6 @@ void Edit3D::changeTexture() const
 				{
 					MapSector *sector;
 					bool floor;
-					lookup3DFloor(selection[a], floor, sector, map);
 					if (selection[a].type == MapEditor::ItemType::Floor || selection[a].type == MapEditor::ItemType::Ceiling) {
 						sector->setStringProperty(floor ? "texturefloor" : "textureceiling", tex);
 					}
@@ -1330,7 +1286,6 @@ void Edit3D::changeTexture() const
 				// Hilight if no selection
 				MapSector *sector;
 				bool floor;
-				lookup3DFloor(hl, floor, sector, map);
 				if (hl.type == MapEditor::ItemType::Floor || hl.type == MapEditor::ItemType::Ceiling) {
 					sector->setStringProperty(floor ? "texturefloor" : "textureceiling", tex);
 				}

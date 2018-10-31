@@ -87,19 +87,17 @@ void InfoOverlay3D::update(MapEditor::Item item, SLADEMap* map)
 
 	int item_index = item.index;
 	MapEditor::ItemType item_type = item.type;
-	int extra_floor_index = item.extra_floor_index;
 
 	// Clear current info
 	info_.clear();
 	info2_.clear();
 
 	// Setup variables
-	current_type_        = item_type;
-	current_floor_index_ = extra_floor_index;
-	current_item_        = item;
-	texname_             = "";
-	texture_             = nullptr;
-	thing_icon_          = false;
+	current_type_  = item_type;
+	current_item_  = item;
+	texname_       = "";
+	texture_       = nullptr;
+	thing_icon_    = false;
 	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Wall
@@ -336,13 +334,6 @@ void InfoOverlay3D::update(MapEditor::Item item, SLADEMap* map)
 		// For a 3D floor, use the control sector for most properties
 		// TODO this is already duplicated elsewhere that examines a highlight; maybe need a map method?
 		MapSector* sector = real_sector;
-		if (extra_floor_index >= 0 && extra_floor_index < real_sector->extra_floors.size())
-		{
-			sector = map->sector(real_sector->extra_floors[extra_floor_index].control_sector_index);
-			if (!sector)
-				return;
-			floor = !floor;
-		}
 
 		// Get basic info
 		int fheight = sector->intProperty("heightfloor");
@@ -385,7 +376,7 @@ void InfoOverlay3D::update(MapEditor::Item item, SLADEMap* map)
 			// Get extra light info
 			int  fl  = 0;
 			bool abs = false;
-			if (item_type == MapEditor::ItemType::Floor)
+			if (floor)
 			{
 				fl  = sector->intProperty("lightfloor");
 				abs = sector->boolProperty("lightfloorabsolute");
@@ -419,9 +410,10 @@ void InfoOverlay3D::update(MapEditor::Item item, SLADEMap* map)
 		{
 			// Offsets
 			double xoff, yoff;
-			if (floor)
+			xoff = yoff = 0.0;
+			if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
 			{
-				if (item_type == MapEditor::ItemType::Floor)
+				if (floor)
 				{
 					xoff = sector->floatProperty("xpanningfloor");
 					yoff = sector->floatProperty("ypanningfloor");
@@ -439,7 +431,7 @@ void InfoOverlay3D::update(MapEditor::Item item, SLADEMap* map)
 			xscale = yscale = 1.0;
 			if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 			{
-				if (item_type == MapEditor::ItemType::Floor)
+				if (floor)
 				{
 					xscale = sector->floatProperty("xscalefloor");
 					yscale = sector->floatProperty("yscalefloor");
@@ -553,12 +545,16 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 		return;
 
 	// Update if needed
-	if (object_ &&
-		(object_->modifiedTime() > last_update_ ||									// object_ updated
-		(object_->objType() == MapObject::Type::Side && (
-			((MapSide*)object_)->parentLine()->modifiedTime() > last_update_ ||	// parent line updated
-			((MapSide*)object_)->sector()->modifiedTime() > last_update_))))		// parent sector updated
-		update(current_item_, object_->parentMap());
+	if (object_
+		&& (object_->modifiedTime() > last_update_ || // object_ updated
+			(object_->objType() == MapObject::Type::Side
+			 && (((MapSide*)object_)->parentLine()->modifiedTime() > last_update_ || // parent line updated
+				 ((MapSide*)object_)->sector()->modifiedTime() > last_update_))))    // parent sector updated
+	{
+		MapEditor::Item newitem(object_->index(), current_type_);
+		newitem.real_index = current_item_.real_index;
+		update(newitem, object_->parentMap());
+	}
 
 	// Init GL stuff
 	glLineWidth(1.0f);

@@ -1012,7 +1012,7 @@ void MapRenderer3D::updateSectorFlats(unsigned index)
 		// TODO are the light levels of the inside and outside different?  christ
 		// TODO shouldn't this be 1?
 		xf_floor.light = sector->lightAt(1, a);
-		xf_floor.flags = CEIL;
+		xf_floor.flags = FLATFLIP;
 		if (extra.draw_inside)
 			xf_floor.flags |= DRAWBOTH;
 		xf_floor.plane      = extra.floor_plane;
@@ -1032,7 +1032,7 @@ void MapRenderer3D::updateSectorFlats(unsigned index)
 		xf_ceiling.fogcolour = control_sector->fogColour();
 		// TODO this probably comes from the control sector, unless there's a flag, yadda...
 		xf_ceiling.light = sector->lightAt(2, a);
-		xf_ceiling.flags = 0;
+		xf_ceiling.flags = CEIL | FLATFLIP;
 		if (extra.draw_inside)
 			xf_ceiling.flags |= DRAWBOTH;
 		xf_ceiling.plane      = extra.ceiling_plane;
@@ -1116,24 +1116,17 @@ void MapRenderer3D::renderFlat(Flat* flat)
 		// Setup for floor or ceiling
 		if (flat->flags & CEIL)
 		{
-			if (flat_last_ != 2)
-			{
-				glCullFace(GL_BACK);
-				glBindBuffer(GL_ARRAY_BUFFER, vbo_flats_);
-				Polygon2D::setupVBOPointers();
-				flat_last_ = 2;
-			}
+			glCullFace((flat->flags & FLATFLIP) ? GL_FRONT : GL_BACK);
+			flat_last_ = 2;
 		}
 		else
 		{
-			if (flat_last_ != 1)
-			{
-				glCullFace(GL_FRONT);
-				glBindBuffer(GL_ARRAY_BUFFER, vbo_flats_);
-				Polygon2D::setupVBOPointers();
-				flat_last_ = 1;
-			}
+			glCullFace((flat->flags & FLATFLIP) ? GL_BACK : GL_FRONT);
+			flat_last_ = 1;
 		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_flats_);
+		Polygon2D::setupVBOPointers();
 
 		if(flat->flags & DRAWBOTH)
 			glDisable(GL_CULL_FACE);
@@ -1151,12 +1144,12 @@ void MapRenderer3D::renderFlat(Flat* flat)
 		// Setup for floor or ceiling
 		if (flat->flags & CEIL)
 		{
-			glCullFace(GL_BACK);
+			glCullFace((flat->flags & FLATFLIP) ? GL_FRONT : GL_BACK);
 			glTranslated(0, 0, flat->sector->ceiling().height);
 		}
 		else
 		{
-			glCullFace(GL_FRONT);
+			glCullFace((flat->flags & FLATFLIP) ? GL_BACK : GL_FRONT);
 			glTranslated(0, 0, flat->sector->floor().height);
 		}
 
@@ -1271,36 +1264,37 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 	// Go through selection
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		const MapEditor::Item& hilight = selection[a];
 		// TODO this code is awfully similar to the renderHilight code
 		// Ignore if not a sector hilight
 		if (selection[a].type != MapEditor::ItemType::Ceiling && selection[a].type != MapEditor::ItemType::Floor)
 			continue;
 
 		// Get sector
-		MapSector* sector = map_->sector(selection[a].index);
+		bool is3DFloor = hilight.real_index >= 0;
+		MapSector* sector = is3DFloor ? map_->sector(hilight.real_index) : map_->sector(selection[a].index);
 		if (!sector)
 			return;
 
 		// Get plane
 		Plane plane;
-		if (selection[a].extra_floor_index >= 0 && selection[a].extra_floor_index < sector->extra_floors.size())
+		if(is3DFloor)
 		{
-			ExFloorType& extra          = sector->extra_floors[selection[a].extra_floor_index];
-			MapSector*   control_sector = map_->sector(extra.control_sector_index);
-			if (!control_sector)
-				return;
-
-			// Planes are reversed for a 3D floor
-			// TODO the DRAWBOTH hack makes the type wrong when you're inside
-			// TODO not true for vavoom
-			if (selection[a].type == MapEditor::ItemType::Floor)
-				plane = control_sector->ceiling().plane;
-			else
-				plane = control_sector->floor().plane;
+			for(int i = 0; i < sector->extra_floors.size(); i++)
+			{
+				if(sector->extra_floors[i].control_sector_index == hilight.index)
+				{
+					ExFloorType& extra = sector->extra_floors[i];
+					if (hilight.type == MapEditor::ItemType::Floor)
+						plane = extra.floor_plane;
+					else
+						plane = extra.ceiling_plane;
+				}
+			}
 		}
 		else
 		{
-			if (selection[a].type == MapEditor::ItemType::Floor)
+			if (hilight.type == MapEditor::ItemType::Floor)
 				plane = sector->floor().plane;
 			else
 				plane = sector->ceiling().plane;
@@ -2067,7 +2061,7 @@ void MapRenderer3D::updateLine(unsigned index)
 			xoff = control_line->s1()->getOffsetX();
 			yoff = control_line->s1()->getOffsetY();
 			sx = sy = 1;
-			if (map->currentFormat() == MAP_UDMF)
+			if (map_->currentFormat() == MAP_UDMF)
 				_apply_zdoom_per_section_offsets(control_line->s1(), "mid", &xoff, &yoff, &sx, &sy);
 
 			// TODO missing texture check should look for this!
@@ -2962,6 +2956,14 @@ void MapRenderer3D::checkVisibleQuads()
 				|| lines_[a].updated_time < line->frontSector()->modifiedTime()
 				|| lines_[a].updated_time < line->frontSector()->geometryUpdatedTime())
 				update = true;
+			MapSector *sector = line->frontSector();
+			for(int i = 0; i < sector->extra_floors.size(); i++) {
+				MapLine* control_line = map_->getLine(sector->extra_floors[i].control_line_index);
+				if (lines_[a].updated_time < control_line->s1()->modifiedTime() ||
+			        lines_[a].updated_time < control_line->frontSector()->modifiedTime() ||
+			        lines_[a].updated_time < control_line->frontSector()->geometryUpdatedTime())
+				update = true;
+			}
 		}
 		if (!update && line->s2())
 		{
@@ -2970,6 +2972,15 @@ void MapRenderer3D::checkVisibleQuads()
 				|| lines_[a].updated_time < line->backSector()->modifiedTime()
 				|| lines_[a].updated_time < line->backSector()->geometryUpdatedTime())
 				update = true;
+
+			MapSector *sector = line->frontSector();
+			for(int i = 0; i < sector->extra_floors.size(); i++) {
+				MapLine* control_line = map_->getLine(sector->extra_floors[i].control_line_index);
+				if (lines_[a].updated_time < control_line->s1()->modifiedTime() ||
+			        lines_[a].updated_time < control_line->frontSector()->modifiedTime() ||
+			        lines_[a].updated_time < control_line->frontSector()->geometryUpdatedTime())
+				update = true;
+			}
 		}
 		if (update)
 		{
@@ -3187,20 +3198,33 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			// Check if on the correct side of the plane
 			double flat_z = sector_flats_[a][b].plane.height_at(cam_position_.x, cam_position_.y);
 			if(!(flat.flags & DRAWBOTH)) {
-				if (flat.flags & CEIL && cam_position_.z >= flat_z)
-					continue;
-				if (!(flat.flags & CEIL) && cam_position_.z <= flat_z)
-					continue;
+				if(flat.flags & FLATFLIP) {
+					if (flat.flags & CEIL && cam_position_.z <= flat_z)
+						continue;
+					if (!(flat.flags & CEIL) && cam_position_.z >= flat_z)
+						continue;
+				} else {
+					if (flat.flags & CEIL && cam_position_.z >= flat_z)
+						continue;
+					if (!(flat.flags & CEIL) && cam_position_.z <= flat_z)
+						continue;
+				}
 			}
 
 			// Check if intersection is within sector
 			if (!map_->sector(a)->isWithin((cam_position_ + cam_dir3d_ * dist).get2d()))
 				continue;
 
-			// TODO not good enough; needs to indicate which 3d floor as well
-			current.index = a;
-			min_dist      = dist;
-			if (sector_flats_[a][b].flags & CEIL)
+			if(flat.extra_floor_index < 0)
+				current.index = a;
+			else
+			{
+				current.index = flat.control_sector->getIndex();
+				current.real_index = a;
+			}
+
+			min_dist = dist;
+			if (flat.flags & CEIL)
 				current.type = MapEditor::ItemType::Ceiling;
 			else
 				current.type = MapEditor::ItemType::Floor;
@@ -3371,26 +3395,24 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	if (hilight.type == MapEditor::ItemType::Floor || hilight.type == MapEditor::ItemType::Ceiling)
 	{
 		// Get sector
-		MapSector* sector = map_->sector(hilight.index);
+		bool is3DFloor = hilight.real_index >= 0;
+		MapSector* sector = is3DFloor ? map_->getSector(hilight.real_index) : map_->sector(hilight.index);
 		if (!sector)
 			return;
 
 		// Get plane
 		Plane plane;
-		if (hilight.extra_floor_index >= 0 && hilight.extra_floor_index < sector->extra_floors.size())
-		{
-			ExFloorType& extra = sector->extra_floors[hilight.extra_floor_index];
-
-			// Planes are reversed for a 3D floor
-			// TODO the DRAWBOTH hack makes the type wrong when you're inside
-			// TODO not true for vavoom
-			if (hilight.type == MapEditor::ItemType::Floor)
-				plane = extra.ceiling_plane;
-			else
-				plane = extra.floor_plane;
-		}
-		else
-		{
+		if(is3DFloor) {
+			for(int i = 0; i < sector->extra_floors.size(); i++) {
+				if(sector->extra_floors[i].control_sector_index == hilight.index) {
+					ExFloorType& extra = sector->extra_floors[i];
+					if (hilight.type == MapEditor::ItemType::Floor)
+						plane = extra.floor_plane;
+					else
+						plane = extra.ceiling_plane;
+				}
+			}
+		} else {
 			if (hilight.type == MapEditor::ItemType::Floor)
 				plane = sector->floor().plane;
 			else
