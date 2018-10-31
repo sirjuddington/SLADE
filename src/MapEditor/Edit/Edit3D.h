@@ -55,6 +55,7 @@ public:
 	void changeScale(double amount, bool x) const;
 	void changeHeight(int amount) const;
 	void changeTexture() const;
+	void deleteTexture() const;
 
 private:
 	MapEditContext&              context_;

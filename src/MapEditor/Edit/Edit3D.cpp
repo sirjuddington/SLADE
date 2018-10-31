@@ -1098,7 +1098,7 @@ void Edit3D::changeScale(double amount, bool x) const
 
 			// Build property string
 			string prop = x ? "xscale" : "yscale";
-			prop += floor ? "floor" : "ceiling";
+			prop += (items[a].type == ItemType::Floor) ? "floor" : "ceiling";
 
 			// Set
 			double scale = sector->floatProperty(prop);
@@ -1227,6 +1227,26 @@ void Edit3D::changeHeight(int amount) const
 }
 
 // -----------------------------------------------------------------------------
+// Clear the texture property
+// -----------------------------------------------------------------------------
+void Edit3D::deleteTexture() const
+{
+	auto& map = context_.map();
+	for(auto &item : context_.selection().selectionOrHilight()) {
+		if (item.type == MapEditor::ItemType::Floor)
+			map.getSector(item.index)->setStringProperty("texturefloor", "-");
+		else if (item.type == MapEditor::ItemType::Ceiling)
+			map.getSector(item.index)->setStringProperty("textureceiling", "-");
+		else if (item.type == MapEditor::ItemType::WallBottom)
+			map.getSide(item.index)->setStringProperty("texturebottom", "-");
+		else if (item.type == MapEditor::ItemType::WallMiddle)
+			map.getSide(item.index)->setStringProperty("texturemiddle", "-");
+		else if (item.type == MapEditor::ItemType::WallTop)
+			map.getSide(item.index)->setStringProperty("texturetop", "-");
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Opens the texture browser for the currently selected 3d mode walls and/or
 // floors
 // -----------------------------------------------------------------------------
@@ -1242,11 +1262,14 @@ void Edit3D::changeTexture() const
 	int    type  = 0;
 	auto&  first = selection[0];
 	auto&  map   = context_.map();
-	if (first.type == MapEditor::ItemType::Floor || first.type == MapEditor::ItemType::Ceiling)
+	if (first.type == MapEditor::ItemType::Floor)
 	{
-		MapSector *sector;
-		bool floor;
-		tex = floor ? sector->floor().texture : sector->ceiling().texture;
+		tex = map.getSector(first.index)->floor().texture;
+		type = 1;
+	}
+	else if (first.type == MapEditor::ItemType::Ceiling)
+	{
+		tex = map.getSector(first.index)->ceiling().texture;
 		type = 1;
 	}
 	else if (first.type == MapEditor::ItemType::WallBottom)
@@ -1274,21 +1297,19 @@ void Edit3D::changeTexture() const
 			{
 				for (unsigned a = 0; a < selection.size(); a++)
 				{
-					MapSector *sector;
-					bool floor;
-					if (selection[a].type == MapEditor::ItemType::Floor || selection[a].type == MapEditor::ItemType::Ceiling) {
-						sector->setStringProperty(floor ? "texturefloor" : "textureceiling", tex);
-					}
+					if (selection[a].type == MapEditor::ItemType::Floor)
+						map.getSector(selection[a].index)->setStringProperty("texturefloor", tex);
+					else if (selection[a].type == MapEditor::ItemType::Ceiling)
+						map.getSector(selection[a].index)->setStringProperty("textureceiling", tex);
 				}
 			}
 			else if (hl.index >= 0)
 			{
 				// Hilight if no selection
-				MapSector *sector;
-				bool floor;
-				if (hl.type == MapEditor::ItemType::Floor || hl.type == MapEditor::ItemType::Ceiling) {
-					sector->setStringProperty(floor ? "texturefloor" : "textureceiling", tex);
-				}
+				if (hl.type == MapEditor::ItemType::Floor)
+					map.getSector(hl.index)->setStringProperty("texturefloor", tex);
+				else if (hl.type == MapEditor::ItemType::Ceiling)
+					map.getSector(hl.index)->setStringProperty("textureceiling", tex);
 			}
 		}
 
