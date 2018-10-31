@@ -1018,6 +1018,10 @@ void MapRenderer3D::updateSectorFlats(unsigned index)
 		xf_floor.plane      = extra.floor_plane;
 		xf_floor.base_alpha = extra.alpha;
 
+		if (extra.additiveTransparency()) {
+			xf_floor.flags |= TRANSADD;
+		}
+
 		// Top plane (defined by the ceiling of the control sector, but acts
 		// like a floor)
 		Flat& xf_ceiling             = sector_flats_[index][2 * (a + 1) + 1];
@@ -1037,6 +1041,10 @@ void MapRenderer3D::updateSectorFlats(unsigned index)
 			xf_ceiling.flags |= DRAWBOTH;
 		xf_ceiling.plane      = extra.ceiling_plane;
 		xf_ceiling.base_alpha = extra.alpha;
+
+		if (extra.additiveTransparency()) {
+			xf_ceiling.flags |= TRANSADD;
+		}
 	}
 
 	// Finish up
@@ -1103,6 +1111,11 @@ void MapRenderer3D::renderFlat(Flat* flat)
 		alpha = 0;
 		glDisable(GL_ALPHA_TEST);
 	}
+
+	if (flat->flags & TRANSADD)
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	else
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Setup colour/light
 	setLight(flat->colour, flat->light, alpha);
@@ -2101,6 +2114,9 @@ void MapRenderer3D::updateLine(unsigned index)
 			quad.flags |= MIDTEX;
 			if (extra.draw_inside) {
 				quad.flags |= DRAWBOTH;
+			}
+			if (extra.additiveTransparency()) {
+				quad.flags |= TRANSADD;
 			}
 			quad.control_line = extra.control_line_index;
 			quad.control_side = control_line->s1()->index();
