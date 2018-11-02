@@ -4693,7 +4693,11 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	// Merge vertices
 	vector<MapVertex*> merged_vertices;
 	for (unsigned a = 0; a < vertices.size(); a++)
-		VECTOR_ADD_UNIQUE(merged_vertices, mergeVerticesPoint(vertices[a]->x, vertices[a]->y));
+	{
+		auto v = mergeVerticesPoint(vertices[a]->x, vertices[a]->y);
+		if (v)
+			VECTOR_ADD_UNIQUE(merged_vertices, v);
+	}
 
 	// Get all connected lines
 	vector<MapLine*> connected_lines;

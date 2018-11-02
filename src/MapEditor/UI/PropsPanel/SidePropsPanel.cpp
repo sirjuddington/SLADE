@@ -487,6 +487,6 @@ void SidePropsPanel::onTextureClicked(wxMouseEvent& e)
 
 	// Browse
 	MapTextureBrowser browser(this, 0, stc->texName(), &(MapEditor::editContext().map()));
-	if (browser.ShowModal() == wxID_OK)
+	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
 		tcb->SetValue(browser.getSelectedItem()->name());
 }

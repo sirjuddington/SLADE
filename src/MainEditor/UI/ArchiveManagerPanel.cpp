@@ -2108,8 +2108,18 @@ void ArchiveManagerPanel::deleteSelectedBookmarks() const
 // ----------------------------------------------------------------------------
 void ArchiveManagerPanel::goToBookmark(long index) const
 {
+	// Get first selected bookmark if no index given
+	if (index < 0)
+	{
+		auto selected = list_bookmarks_->selectedItems();
+		if (selected.empty())
+			return;
+
+		index = selected[0];
+	}
+
 	// Get the selected bookmark entry
-	ArchiveEntry* bookmark = App::archiveManager().getBookmark(list_bookmarks_->selectedItems()[0]);
+	ArchiveEntry* bookmark = App::archiveManager().getBookmark(index);
 
 	// Check it's valid
 	if (!bookmark)

@@ -233,7 +233,7 @@ void ResourceManager::removeArchive(Archive* archive)
 	vector<ArchiveEntry::SPtr> entries;
 	archive->getEntryTreeAsList(entries);
 	for (auto& entry : entries)
-		removeEntry(entry);
+		removeEntry(entry, false, true);
 
 	// Announce resource update
 	announce("resources_updated");
@@ -263,7 +263,7 @@ uint16_t ResourceManager::getTextureHash(const string& name)
 //
 // Adds an entry to be managed
 // ----------------------------------------------------------------------------
-void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
+void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 {
 	if (!entry.get())
 		return;
@@ -280,6 +280,9 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 	string name = entry->getUpperNameNoExt().Truncate(8);
 	// Talon1024 - Get resource path (uppercase, without leading slash)
 	string path = entry->getPath(true).Upper().Mid(1);
+
+	if (log)
+		Log::debug(S_FMT("Adding entry %s to resource manager", path));
 
 	// Check for palette entry
 	if (type->id() == "palette")
@@ -390,12 +393,21 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 	}
 }
 
+void removeEntryFromMap(EntryResourceMap& map, const string& name, ArchiveEntry::SPtr& entry, bool full_check)
+{
+	if (full_check)
+		for (auto& i : map)
+			i.second.remove(entry);
+	else
+		map[name].remove(entry);
+}
+
 // ----------------------------------------------------------------------------
 // ResourceManager::removeEntry
 //
 // Removes a managed entry
 // ----------------------------------------------------------------------------
-void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
+void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full_check)
 {
 	if (!entry.get())
 		return;
@@ -404,22 +416,25 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
 	string name = entry->getUpperNameNoExt().Truncate(8);
 	string path = entry->getPath(true).Upper().Mid(1);
 
+	if (log)
+		Log::debug(S_FMT("Removing entry %s from resource manager", path));
+
 	// Remove from palettes
-	palettes_[name].remove(entry);
+	removeEntryFromMap(palettes_, name, entry, full_check);
 
 	// Remove from patches
-	patches_[name].remove(entry);
-	patches_fp_[path].remove(entry);
-	patches_fp_only_[path].remove(entry);
+	removeEntryFromMap(patches_, name, entry, full_check);
+	removeEntryFromMap(patches_fp_, path, entry, full_check);
+	removeEntryFromMap(patches_fp_only_, path, entry, full_check);
 
 	// Remove from flats
-	flats_[name].remove(entry);
-	flats_fp_[path].remove(entry);
-	flats_fp_only_[path].remove(entry);
+	removeEntryFromMap(flats_, name, entry, full_check);
+	removeEntryFromMap(flats_fp_, path, entry, full_check);
+	removeEntryFromMap(flats_fp_only_, path, entry, full_check);
 
 	// Remove from stand-alone textures
-	satextures_[name].remove(entry);
-	satextures_fp_[path].remove(entry);
+	removeEntryFromMap(satextures_, name, entry, full_check);
+	removeEntryFromMap(satextures_fp_, path, entry, full_check);
 
 	// Check for TEXTUREx entry
 	int txentry = 0;
@@ -712,8 +727,8 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
 		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
 		auto esp = entry->getParent()->entryAtPathShared(entry->getPath(true));
-		removeEntry(esp);
-		addEntry(esp);
+		removeEntry(esp, true);
+		addEntry(esp, true);
 		announce("resources_updated");
 	}
 
@@ -724,7 +739,7 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 		event_data.read(&ptr, sizeof(wxUIntPtr), sizeof(int));
 		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
 		auto esp = entry->getParent()->entryAtPathShared(entry->getPath(true));
-		removeEntry(esp);
+		removeEntry(esp, true);
 		announce("resources_updated");
 	}
 
@@ -735,7 +750,7 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
 		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
 		auto esp = entry->getParent()->entryAtPathShared(entry->getPath(true));
-		addEntry(esp);
+		addEntry(esp, true);
 		announce("resources_updated");
 	}
 }

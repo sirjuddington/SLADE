@@ -831,7 +831,7 @@ string Audio::getID3Tag(MemChunk& mc)
 	// Check for empty wasted space at the beginning, since it's apparently
 	// quite popular in MP3s to start with a useless blank frame.
 	size_t s = 0;
-	if (mc[0] == 0)
+	if (mc.getSize() > 0 && mc[0] == 0)
 	{
 		// Completely arbitrary limit to how long to seek for data.
 		size_t limit = MIN(1200, mc.getSize()/16);

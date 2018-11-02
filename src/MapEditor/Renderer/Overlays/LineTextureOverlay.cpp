@@ -155,28 +155,28 @@ void LineTextureOverlay::close(bool cancel)
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
 			// Front Upper
-			if (textures[FRONT_UPPER].changed)
+			if (textures[FRONT_UPPER].changed && !textures[FRONT_UPPER].textures.empty())
 				lines[a]->setStringProperty("side1.texturetop", textures[FRONT_UPPER].textures[0]);
 
 			// Front Middle
-			if (textures[FRONT_MIDDLE].changed)
+			if (textures[FRONT_MIDDLE].changed && !textures[FRONT_MIDDLE].textures.empty())
 				lines[a]->setStringProperty("side1.texturemiddle", textures[FRONT_MIDDLE].textures[0]);
 
 			// Front Lower
-			if (textures[FRONT_LOWER].changed)
+			if (textures[FRONT_LOWER].changed && !textures[FRONT_LOWER].textures.empty())
 				lines[a]->setStringProperty("side1.texturebottom", textures[FRONT_LOWER].textures[0]);
 
 
 			// Back Upper
-			if (textures[BACK_UPPER].changed)
+			if (textures[BACK_UPPER].changed && !textures[BACK_UPPER].textures.empty())
 				lines[a]->setStringProperty("side2.texturetop", textures[BACK_UPPER].textures[0]);
 
 			// Back Middle
-			if (textures[BACK_MIDDLE].changed)
+			if (textures[BACK_MIDDLE].changed && !textures[BACK_MIDDLE].textures.empty())
 				lines[a]->setStringProperty("side2.texturemiddle", textures[BACK_MIDDLE].textures[0]);
 
 			// Back Lower
-			if (textures[BACK_LOWER].changed)
+			if (textures[BACK_LOWER].changed && !textures[BACK_LOWER].textures.empty())
 				lines[a]->setStringProperty("side2.texturebottom", textures[BACK_LOWER].textures[0]);
 		}
 
@@ -476,7 +476,7 @@ void LineTextureOverlay::browseTexture(tex_inf_t& tex, string position)
 	// Open texture browser
 	MapTextureBrowser browser(MapEditor::windowWx(), 0, texture, &(MapEditor::editContext().map()));
 	browser.SetTitle(S_FMT("Browse %s Texture", position));
-	if (browser.ShowModal() == wxID_OK)
+	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
 	{
 		// Set texture
 		tex.textures.clear();

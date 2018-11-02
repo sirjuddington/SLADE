@@ -87,8 +87,8 @@ public:
 	void	addArchive(Archive* archive);
 	void	removeArchive(Archive* archive);
 
-	void	addEntry(ArchiveEntry::SPtr& entry);
-	void	removeEntry(ArchiveEntry::SPtr& entry);
+	void	addEntry(ArchiveEntry::SPtr& entry, bool log = false);
+	void	removeEntry(ArchiveEntry::SPtr& entry, bool log = false, bool full_check = false);
 
 	void	listAllPatches();
 	void	getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);

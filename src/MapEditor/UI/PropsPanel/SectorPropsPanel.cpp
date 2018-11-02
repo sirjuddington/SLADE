@@ -554,7 +554,7 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 
 	// Browse
 	MapTextureBrowser browser(this, 1, tc->texName(), &(MapEditor::editContext().map()));
-	if (browser.ShowModal() == wxID_OK)
+	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
 		cb->SetValue(browser.getSelectedItem()->name());
 }
 
