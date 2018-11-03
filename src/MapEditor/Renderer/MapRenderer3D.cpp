@@ -2071,8 +2071,8 @@ void MapRenderer3D::updateLine(unsigned index)
 			MapSector* control_sector = map_->sector(extra.control_sector_index);
 			MapLine*   control_line   = map_->line(extra.control_line_index);
 
-			xoff = control_line->s1()->getOffsetX();
-			yoff = control_line->s1()->getOffsetY();
+			xoff = control_line->s1()->getOffsetX() + line->s1()->getOffsetX();
+			yoff = control_line->s1()->getOffsetY() + line->s1()->getOffsetY();
 			sx = sy = 1;
 			if (map_->currentFormat() == MAP_UDMF)
 				_apply_zdoom_per_section_offsets(control_line->s1(), "mid", &xoff, &yoff, &sx, &sy);
