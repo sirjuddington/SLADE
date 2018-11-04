@@ -316,10 +316,16 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 		functions_.push_back(TLFunction(name));
 		func = &functions_.back();
 	}
-
 	// Clear the function if we're replacing it
 	else if (replace)
-		func->clear();
+	{
+		if (!context.empty()) {
+			func->clear();
+		}
+		else {
+			func->clearContexts();
+		}
+	}
 
 	// Add the context
 	func->addContext(context, args, desc);
@@ -578,7 +584,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 	// Open the given text data
 	if (!tz.openMem(mc, source))
 	{
-		LOG_MESSAGE(1, "Unable to open file");
+		Log::warning(1, S_FMT("Warning: Unable to open %s", source));
 		return false;
 	}
 
@@ -602,7 +608,12 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			if (inherit)
 				inherit->copyTo(lang);
 			else
-				LOG_MESSAGE(1, "Warning: Language %s inherits from undefined language %s", node->getName(), node->inherit());
+				Log::warning(
+					1,
+					S_FMT("Warning: Language %s inherits from undefined language %s",
+						  node->getName(),
+						  node->inherit())
+				);
 		}
 
 		// Parse language info
