@@ -43,6 +43,7 @@ public:
 	void	addContext(const string& context, const ZScript::Function& func, bool custom);
 
 	void	clear() { name_.clear(); contexts_.clear(); }
+	void    clearContexts() { contexts_.clear();}
 	void	clearCustomContexts();
 
 	bool	hasContext(const string& name);
