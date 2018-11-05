@@ -46,7 +46,7 @@ public:
 		void 	toInt(int& val) const { val = wxAtoi(text); }
 		void 	toBool(bool& val) const;
 		void 	toFloat(double& val) const { val = wxAtof(text); }
-		void	toFloat(float& val) const { val = wxAtof(text); }
+		void	toFloat(float& val) const { val = (float) wxAtof(text); }
 	};
 
 	struct TokenizeState
@@ -61,7 +61,7 @@ public:
 
 		State		state = State::Unknown;
 		unsigned	position = 0;
-		unsigned	size = 0;
+		size_t	    size = 0;
 		unsigned	current_line = 1;
 		unsigned	comment_type = 0;
 		Token		current_token;
@@ -92,16 +92,16 @@ public:
 
 	// Token Iterating
 	const Token&	next();
-	void			adv(int inc = 1);
-	bool			advIf(const char* check, int inc = 1);
-	bool			advIf(const string& check, int inc = 1);
-	bool			advIf(char check, int inc = 1);
-	bool			advIfNC(const char* check, int inc = 1);
-	bool			advIfNC(const string& check, int inc = 1);
-	bool			advIfNext(const char* check, int inc = 1);
-	bool			advIfNext(const string& check, int inc = 1);
-	bool			advIfNext(char check, int inc = 1);
-	bool			advIfNextNC(const char* check, int inc = 1);
+	void			adv(size_t inc = 1);
+	bool			advIf(const char* check, size_t inc = 1);
+	bool			advIf(const string& check, size_t inc = 1);
+	bool			advIf(char check, size_t inc = 1);
+	bool			advIfNC(const char* check, size_t inc = 1);
+	bool			advIfNC(const string& check, size_t inc = 1);
+	bool			advIfNext(const char* check, size_t inc = 1);
+	bool			advIfNext(const string& check, size_t inc = 1);
+	bool			advIfNext(char check, size_t inc = 1);
+	bool			advIfNextNC(const char* check, size_t inc = 1);
 	void			advToNextLine();
 	void			advToEndOfLine();
 	void 			skipSection(const char* begin, const char* end, bool allow_quoted = false);
@@ -113,7 +113,7 @@ public:
 	// Operators
 	void operator++() { adv(); }
 	void operator++(int) { adv(); }
-	void operator+=(const int inc) { adv(inc); }
+	void operator+=(const size_t inc) { adv(inc); }
 
 	// Token Checking
 	bool	check(const char* check) const { return token_current_ == check; }
@@ -130,14 +130,14 @@ public:
 	bool	checkNextNC(const char* check) const;
 
 	// Load Data
-	bool	openFile(const string& filename, unsigned offset = 0, unsigned length = 0);
+	bool	openFile(const string& filename, size_t offset = 0, size_t length = 0);
 	bool	openString(
-				const string& text,
-				unsigned offset = 0,
-				unsigned length = 0,
-				const string& source = "unknown"
+				const  string& text,
+				size_t offset = 0,
+				size_t length = 0,
+				const  string& source = "unknown"
 			);
-	bool	openMem(const char* mem, unsigned length, const string& source);
+	bool	openMem(const char* mem, size_t length, const string& source);
 	bool	openMem(const MemChunk& mc, const string& source);
 
 	// General
