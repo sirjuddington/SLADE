@@ -527,7 +527,8 @@ void Palette::copyPalette(Palette* copy)
 	if (!copy)
 		return;
 
-	for (int a = 0; a < 256; a++)
+	unsigned n_copy = std::min(colours_.size(), copy->colours_.size());
+	for (unsigned a = 0; a < n_copy; a++)
 		setColour(a, copy->colour(a));
 
 	index_trans_ = copy->transIndex();

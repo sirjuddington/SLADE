@@ -187,7 +187,7 @@ void Tokenizer::adv(size_t inc)
 	if (inc <= 0)
 		return;
 
-	for (int a = 0; a < inc - 1; a++)
+	for (size_t a = 0; a < inc - 1; a++)
 		readNext();
 
 	token_current_ = token_next_;

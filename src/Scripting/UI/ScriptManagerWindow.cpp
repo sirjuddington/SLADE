@@ -614,7 +614,7 @@ void ScriptManagerWindow::populateScriptsTree()
 ScriptPanel* ScriptManagerWindow::currentPage() const
 {
 	auto page = tabs_scripts_->GetCurrentPage();
-	if (page->GetName() == "script")
+	if (page && page->GetName() == "script")
 		return (ScriptPanel*)page;
 
 	return nullptr;

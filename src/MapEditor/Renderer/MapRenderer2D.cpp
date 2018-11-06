@@ -327,7 +327,13 @@ void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float 
 	// Draw selected vertices
 	glBegin(GL_POINTS);
 	for (unsigned a = 0; a < selection.size(); a++)
-		glVertex2d(map->getVertex(selection[a].index)->xPos(), map->getVertex(selection[a].index)->yPos());
+	{
+		auto v = map->getVertex(selection[a].index);
+		if (!v)
+			continue;
+
+		glVertex2d(v->xPos(), v->yPos());
+	}
 	glEnd();
 
 	if (point)
@@ -571,8 +577,11 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		// Get line properties
 		line = map->getLine(selection[a].index);
+		if (!line)
+			continue;
+
+		// Get line properties
 		x1 = line->v1()->xPos();
 		y1 = line->v1()->yPos();
 		x2 = line->v2()->xPos();
@@ -1434,6 +1443,9 @@ void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float f
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		MapThing* thing = map->getThing(selection[a].index);
+		if (!thing)
+			continue;
+
 		auto& tt = Game::configuration().thingType(thing->getType());
 		double radius = tt.radius();
 		if (tt.shrinkOnZoom()) radius = scaledRadius(radius);
@@ -2191,14 +2203,18 @@ void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fa
 		if (vis_s[selection[a].index] > 0 && vis_s[selection[a].index] != VIS_SMALL)
 			continue;
 
+		auto sector = map->getSector(selection[a].index);
+		if (!sector)
+			continue;
+
 		// Get the sector's polygon
-		Polygon2D* poly = map->getSector(selection[a].index)->getPolygon();
-		vector<MapSide*>& sides = map->getSector(selection[a].index)->connectedSides();
+		Polygon2D* poly = sector->getPolygon();
+		vector<MapSide*>& sides = sector->connectedSides();
 
 		if (poly->hasPolygon())
 		{
 			if (sector_selected_fill)
-				map->getSector(selection[a].index)->getPolygon()->render();
+				sector->getPolygon()->render();
 
 			for (unsigned s = 0; s < sides.size(); s++)
 				sides_selected.push_back(sides[s]);
