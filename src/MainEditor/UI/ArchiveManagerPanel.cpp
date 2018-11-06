@@ -2132,7 +2132,7 @@ void ArchiveManagerPanel::goToBookmark(long index) const
 	wxWindow* tab = stc_archives_->GetPage(stc_archives_->GetSelection());
 
 	// Check it's an archive panel
-	if (!(S_CMP(tab->GetName(), "archive")))
+	if (!tab || !(S_CMP(tab->GetName(), "archive")))
 		return;
 
 	// Finally, open the entry
