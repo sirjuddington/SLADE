@@ -2,8 +2,7 @@
 #ifndef __S_AUI_TAB_ART_H__
 #define __S_AUI_TAB_ART_H__
 
-#include <wx/aui/auibook.h>
-#include <wx/aui/dockart.h>
+#include "common.h"
 
 class wxAuiCommandCapture : public wxEvtHandler
 {
@@ -16,7 +15,8 @@ public:
 		return m_last_id;
 	}
 
-	bool ProcessEvent(wxEvent& evt) {
+	bool ProcessEvent(wxEvent& evt) override
+	{
 		if (evt.GetEventType() == wxEVT_MENU) {
 			m_last_id = evt.GetId();
 			return true;
@@ -38,20 +38,18 @@ public:
 	SAuiTabArt(bool close_buttons = false, bool main_tabs = false);
 	virtual ~SAuiTabArt();
 
-	//wxBitmap bitmapFromBits(const unsigned char bits[], int w, int h, const wxColour& color);
-
-	wxAuiTabArt* Clone();
-	void SetSelectedFont(const wxFont& font);
+	wxAuiTabArt* Clone() override;
+	void SetSelectedFont(const wxFont& font) override;
 
 	void DrawBorder(
 		wxDC& dc,
 		wxWindow* wnd,
-		const wxRect& rect);
+		const wxRect& rect) override;
 
 	void DrawBackground(
 		wxDC& dc,
 		wxWindow* wnd,
-		const wxRect& rect);
+		const wxRect& rect) override;
 
 	void DrawTab(wxDC& dc,
 		wxWindow* wnd,
@@ -60,7 +58,7 @@ public:
 		int closeButtonState,
 		wxRect* outTabRect,
 		wxRect* outButtonRect,
-		int* xExtent);
+		int* xExtent) override;
 
 	wxSize GetTabSize(
 		wxDC& dc,
@@ -69,14 +67,16 @@ public:
 		const wxBitmap& bitmap,
 		bool active,
 		int closeButtonState,
-		int* xExtent);
+		int* xExtent) override;
 
-	int GetIndentSize() { return 2; }
+	int GetIndentSize() override { return 2; }
 
 protected:
-	bool m_closeButtons;
-	wxColour m_inactiveTabColour;
-	bool m_mainTabs;
+	bool		close_buttons_;
+	wxColour	inactive_tab_colour_;
+	bool		main_tabs_;
+	int			padding_;
+	wxBitmap	close_bitmap_white_;
 };
 
 class SAuiDockArt : public wxAuiDefaultDockArt
@@ -93,14 +93,14 @@ public:
 		wxWindow *window,
 		const wxString& text,
 		const wxRect& rect,
-		wxAuiPaneInfo& pane);
+		wxAuiPaneInfo& pane) override;
 
 	void DrawPaneButton(wxDC& dc,
 		wxWindow *window,
 		int button,
 		int buttonState,
 		const wxRect& rect,
-		wxAuiPaneInfo& pane);
+		wxAuiPaneInfo& pane) override;
 };
 
 #endif//__S_AUI_TAB_ART_H__

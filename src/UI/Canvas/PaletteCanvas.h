@@ -16,7 +16,7 @@ public:
 	PaletteCanvas(wxWindow* parent, int id);
 	~PaletteCanvas();
 
-	Palette8bit&	getPalette() { return palette; }
+	Palette&	getPalette() { return palette; }
 	bool			doubleWidth() { return double_width; }
 	int				getSelectionStart() { return sel_begin; }
 	int				getSelectionEnd() { return sel_end; }

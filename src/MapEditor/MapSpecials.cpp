@@ -6,7 +6,7 @@
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
  * Filename:    MapSpecials.cpp
- * Description: Various functions for processing map specials and
+ * Description: Various functions for processing map specials andit
  *              scripts, mostly for visual effects (transparency,
  *              colours, slopes, etc.)
  *
@@ -32,11 +32,10 @@
 #include "Main.h"
 #include "SLADEMap/SLADEMap.h"
 #include "MapSpecials.h"
-#include "GameConfiguration/GameConfiguration.h"
+#include "Game/Configuration.h"
 #include "Utility/Tokenizer.h"
 #include "Utility/MathStuff.h"
-#include <wx/colour.h>
-#include <cmath>
+
 
 
 // Number of radians in the unit circle
@@ -62,8 +61,11 @@ void MapSpecials::reset()
 void MapSpecials::processMapSpecials(SLADEMap* map)
 {
 	// ZDoom
-	if (theGameConfiguration->currentPort() == "zdoom")
+	if (Game::configuration().currentPort() == "zdoom")
 		processZDoomMapSpecials(map);
+	// Eternity, currently no need for processEternityMapSpecials
+	else if (Game::configuration().currentPort() == "eternity")
+		processEternitySlopes(map);
 }
 
 /* MapSpecials::processLineSpecial
@@ -71,7 +73,7 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
  *******************************************************************/
 void MapSpecials::processLineSpecial(MapLine* line)
 {
-	if (theGameConfiguration->currentPort() == "zdoom")
+	if (Game::configuration().currentPort() == "zdoom")
 		processZDoomLineSpecial(line);
 }
 
@@ -234,37 +236,33 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 
 	Tokenizer tz;
 	tz.setSpecialCharacters(";,:|={}/()");
-	tz.openMem(entry->getData(), entry->getSize(), "ACS Scripts");
+	tz.openMem(entry->getMCData(), "ACS Scripts");
 
-	string token = tz.getToken();
-	while (!tz.isAtEnd())
+	while (!tz.atEnd())
 	{
-		if (S_CMPNOCASE(token, "script"))
+		if (tz.checkNC("script"))
 		{
 			LOG_MESSAGE(3, "script found");
 
-			tz.skipToken();	// Skip script #
-			tz.getToken(&token);
+			tz.adv(2);	// Skip script #
 
 			// Check for open script
-			if (S_CMPNOCASE(token, "OPEN"))
+			if (tz.checkNC("OPEN"))
 			{
 				LOG_MESSAGE(3, "script is OPEN");
 
 				// Skip to opening brace
-				while (token != "{")
-					tz.getToken(&token);
+				while (!tz.check("{"))
+					tz.adv();
 
 				// Parse script
-				tz.getToken(&token);
-				while (token != "}")
+				while (!tz.checkOrEnd("}"))
 				{
 					// --- Sector_SetColor ---
-					if (S_CMPNOCASE(token, "Sector_SetColor"))
+					if (tz.checkNC("Sector_SetColor"))
 					{
 						// Get parameters
-						vector<string> parameters;
-						tz.getTokensUntil(parameters, ")");
+						auto parameters = tz.getTokensUntil(")");
 
 						// Parse parameters
 						long val;
@@ -274,7 +272,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b = -1;
 						for (unsigned a = 0; a < parameters.size(); a++)
 						{
-							if (parameters[a].ToLong(&val))
+							if (parameters[a].text.ToLong(&val))
 							{
 								if (tag < 0)
 									tag = val;
@@ -302,11 +300,10 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						}
 					}
 					// --- Sector_SetFade ---
-					else if (S_CMPNOCASE(token, "Sector_SetFade"))
+					else if (tz.checkNC("Sector_SetFade"))
 					{
 						// Get parameters
-						vector<string> parameters;
-						tz.getTokensUntil(parameters, ")");
+						auto parameters = tz.getTokensUntil(")");
 
 						// Parse parameters
 						long val;
@@ -316,7 +313,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						int b = -1;
 						for (unsigned a = 0; a < parameters.size(); a++)
 						{
-							if (parameters[a].ToLong(&val))
+							if (parameters[a].text.ToLong(&val))
 							{
 								if (tag < 0)
 									tag = val;
@@ -344,12 +341,12 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						}
 					}
 
-					tz.getToken(&token);
+					tz.adv();
 				}
 			}
 		}
 
-		tz.getToken(&token);
+		tz.adv();
 	}
 }
 
@@ -516,28 +513,28 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		int tag;
 		MapSector* front = line->frontSector();
 		MapSector* back = line->backSector();
-		if ((tag = line->intProperty("arg0")))
+		if ((tag = line->intProperty("arg0")) && front)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
 				front->setFloorPlane(sectors[0]->getFloorPlane());
 		}
-		if ((tag = line->intProperty("arg1")))
+		if ((tag = line->intProperty("arg1")) && front)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
 				front->setCeilingPlane(sectors[0]->getCeilingPlane());
 		}
-		if ((tag = line->intProperty("arg2")))
+		if ((tag = line->intProperty("arg2")) && back)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
 				back->setFloorPlane(sectors[0]->getFloorPlane());
 		}
-		if ((tag = line->intProperty("arg3")))
+		if ((tag = line->intProperty("arg3")) && back)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
@@ -564,6 +561,118 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 	}
 }
 
+/* MapSpecials::processEternitySlopes
+* Process Eternity slope specials
+*******************************************************************/
+void MapSpecials::processEternitySlopes(SLADEMap* map)
+{
+	// Eternity plans on having a few slope mechanisms,
+	// which must be evaluated in a specific order.
+	//  - Plane_Align, in line order
+	//  - vertex triangle slopes, in sector order (wip)
+	//  - Plane_Copy, in line order
+
+	// First things first: reset every sector to flat planes
+	for(unsigned a = 0; a < map->nSectors(); a++)
+	{
+		MapSector* target = map->getSector(a);
+		target->setPlane<FLOOR_PLANE>(plane_t::flat(target->getPlaneHeight<FLOOR_PLANE>()));
+		target->setPlane<CEILING_PLANE>(plane_t::flat(target->getPlaneHeight<CEILING_PLANE>()));
+	}
+
+	// Plane_Align (line special 181)
+	for(unsigned a = 0; a < map->nLines(); a++)
+	{
+		MapLine* line = map->getLine(a);
+		if(line->getSpecial() != 181)
+			continue;
+
+		MapSector* sector1 = line->frontSector();
+		MapSector* sector2 = line->backSector();
+		if(!sector1 || !sector2)
+		{
+			LOG_MESSAGE(1, "Ignoring Plane_Align on one-sided line %d", line->getIndex());
+			continue;
+		}
+		if(sector1 == sector2)
+		{
+			LOG_MESSAGE(1, "Ignoring Plane_Align on line %d, which has the same sector on both sides", line->getIndex());
+			continue;
+		}
+
+		int floor_arg = line->intProperty("arg0");
+		if(floor_arg == 1)
+			applyPlaneAlign<FLOOR_PLANE>(line, sector1, sector2);
+		else if(floor_arg == 2)
+			applyPlaneAlign<FLOOR_PLANE>(line, sector2, sector1);
+
+		int ceiling_arg = line->intProperty("arg1");
+		if(ceiling_arg == 1)
+			applyPlaneAlign<CEILING_PLANE>(line, sector1, sector2);
+		else if(ceiling_arg == 2)
+			applyPlaneAlign<CEILING_PLANE>(line, sector2, sector1);
+	}
+
+	// Plane_Copy
+	vector<MapSector*> sectors;
+	for(unsigned a = 0; a < map->nLines(); a++)
+	{
+		MapLine* line = map->getLine(a);
+		if(line->getSpecial() != 118)
+			continue;
+
+		int tag;
+		MapSector* front = line->frontSector();
+		MapSector* back = line->backSector();
+		if((tag = line->intProperty("arg0")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if(sectors.size())
+				front->setFloorPlane(sectors[0]->getFloorPlane());
+		}
+		if((tag = line->intProperty("arg1")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if(sectors.size())
+				front->setCeilingPlane(sectors[0]->getCeilingPlane());
+		}
+		if((tag = line->intProperty("arg2")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if(sectors.size())
+				back->setFloorPlane(sectors[0]->getFloorPlane());
+		}
+		if((tag = line->intProperty("arg3")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if(sectors.size())
+				back->setCeilingPlane(sectors[0]->getCeilingPlane());
+		}
+
+		// The fifth "share" argument copies from one side of the line to the
+		// other
+		if(front && back)
+		{
+			int share = line->intProperty("arg4");
+
+			if((share & 3) == 1)
+				back->setFloorPlane(front->getFloorPlane());
+			else if((share & 3) == 2)
+				front->setFloorPlane(back->getFloorPlane());
+
+			if((share & 12) == 4)
+				back->setCeilingPlane(front->getCeilingPlane());
+			else if((share & 12) == 8)
+				front->setCeilingPlane(back->getCeilingPlane());
+		}
+	}
+}
+
+
 /* MapSpecials::applyPlaneAlign
  * Applies a Plane_Align special on [line], to [target] from [model]
  *******************************************************************/
@@ -578,7 +687,7 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 	double this_dist;
 	MapVertex* this_vertex;
 	double furthest_dist = 0.0;
-	MapVertex* furthest_vertex = NULL;
+	MapVertex* furthest_vertex = nullptr;
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		this_vertex = vertices[a];
@@ -607,7 +716,7 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 }
 
 /* MapSpecials::applyLineSlopeThing
- * Applies a line slope special on [thing], to it's containing sector
+ * Applies a line slope special on [thing], to its containing sector
  * in [map]
  *******************************************************************/
 template<PlaneType p>
@@ -621,7 +730,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 	}
 
 	// These are computed on first use, to avoid extra work if no lines match
-	MapSector* containing_sector = NULL;
+	MapSector* containing_sector = nullptr;
 	double thingz;
 
 	vector<MapLine*> lines;
@@ -633,7 +742,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 		// Line slope things only affect the sector on the side of the line
 		// that faces the thing
 		double side = MathStuff::lineSide(thing->point(), line->seg());
-		MapSector* target = NULL;
+		MapSector* target = nullptr;
 		if (side < 0)
 			target = line->backSector();
 		else if (side > 0)
@@ -664,7 +773,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 }
 
 /* MapSpecials::applyLineSlopeThing
- * Applies a tilt slope special on [thing], to it's containing sector
+ * Applies a tilt slope special on [thing], to its containing sector
  * in [map]
  *******************************************************************/
 template<PlaneType p>
@@ -712,7 +821,7 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 }
 
 /* MapSpecials::applyVavoomSlopeThing
- * Applies a vavoom slope special on [thing], to it's containing
+ * Applies a vavoom slope special on [thing], to its containing
  * sector in [map]
  *******************************************************************/
 template<PlaneType p>

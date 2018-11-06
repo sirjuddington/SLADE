@@ -1,65 +1,61 @@
+#pragma once
 
-#ifndef __SIDE_PROPS_PANEL_H__
-#define __SIDE_PROPS_PANEL_H__
-
+#include "common.h"
 #include "UI/Canvas/OGLCanvas.h"
-#include <wx/combobox.h>
-#include <wx/panel.h>
 
 class GLTexture;
+class MapSide;
+class NumberTextCtrl;
+
 class SideTexCanvas : public OGLCanvas
 {
-private:
-	GLTexture*	texture;
-	string		texname;
-
 public:
 	SideTexCanvas(wxWindow* parent);
-	~SideTexCanvas();
+	~SideTexCanvas() {}
 
-	string	getTexName();
+	string	texName() const { return texname_; }
 	void	setTexture(string texture);
-	void	draw();
+	void	draw() override;
+
+private:
+	GLTexture*	texture_ = nullptr;
+	string		texname_;
 };
 
 class TextureComboBox : public wxComboBox
 {
-private:
-	bool list_down;
-
 public:
 	TextureComboBox(wxWindow* parent);
 	~TextureComboBox() {}
+
+private:
+	bool list_down_;
 
 	void onDropDown(wxCommandEvent& e);
 	void onCloseUp(wxCommandEvent& e);
 	void onKeyDown(wxKeyEvent& e);
 };
 
-class MapSide;
-class NumberTextCtrl;
 class SidePropsPanel : public wxPanel
 {
-private:
-	SideTexCanvas*		gfx_lower;
-	SideTexCanvas*		gfx_middle;
-	SideTexCanvas*		gfx_upper;
-	TextureComboBox*	tcb_lower;
-	TextureComboBox*	tcb_middle;
-	TextureComboBox*	tcb_upper;
-	NumberTextCtrl*		text_offsetx;
-	NumberTextCtrl*		text_offsety;
-
 public:
 	SidePropsPanel(wxWindow* parent);
-	~SidePropsPanel();
+	~SidePropsPanel() {}
 
 	void	openSides(vector<MapSide*>& sides);
 	void	applyTo(vector<MapSide*>& sides);
+
+private:
+	SideTexCanvas*		gfx_lower_;
+	SideTexCanvas*		gfx_middle_;
+	SideTexCanvas*		gfx_upper_;
+	TextureComboBox*	tcb_lower_;
+	TextureComboBox*	tcb_middle_;
+	TextureComboBox*	tcb_upper_;
+	NumberTextCtrl*		text_offsetx_;
+	NumberTextCtrl*		text_offsety_;
 
 	// Events
 	void	onTextureChanged(wxCommandEvent& e);
 	void	onTextureClicked(wxMouseEvent& e);
 };
-
-#endif//__SIDE_PROPS_PANEL_H__

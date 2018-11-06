@@ -7,6 +7,7 @@
  * Web:         http://slade.mancubus.net
  * Filename:    ScriptEditorPanel.cpp
  * Description: ScriptEditorPanel class - it's the script editor
+ *              This will be replaced by the script manager eventually
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,21 +29,28 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "ScriptEditorPanel.h"
-#include "Archive/Archive.h"
+#include "Game/Configuration.h"
 #include "MainEditor/EntryOperations.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "ScriptEditorPanel.h"
+#include "TextEditor/UI/FindReplacePanel.h"
+#include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/SToolBar/SToolBar.h"
-#include <wx/dataview.h>
-#include <wx/sizer.h>
-#include <wx/treelist.h>
+#include "UI/WxUtils.h"
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
 CVAR(Bool, script_show_language_list, true, CVAR_SAVE)
+CVAR(Bool, script_word_wrap, false, CVAR_SAVE)
+
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Bool, txed_trim_whitespace)
 
 
 /*******************************************************************
@@ -70,36 +78,50 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	wxArrayString actions;
 	actions.Add("mapw_script_save");
 	actions.Add("mapw_script_compile");
-	actions.Add("mapw_script_jumpto");
 	actions.Add("mapw_script_togglelanguage");
 	toolbar->addActionGroup("Scripts", actions);
+
+	// Jump To toolbar group
+	SToolBarGroup* group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
+	choice_jump_to = new wxChoice(group_jump_to, -1, wxDefaultPosition, WxUtils::scaledSize(200, -1));
+	group_jump_to->addCustomControl(choice_jump_to);
+	toolbar->addGroup(group_jump_to);
 
 	// Add text editor
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 1, wxEXPAND);
+	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	hbox->Add(vbox, 1, wxEXPAND);
 
-	text_editor = new TextEditor(this, -1);
-	hbox->Add(text_editor, 1, wxEXPAND|wxALL, 4);
+	text_editor = new TextEditorCtrl(this, -1);
+	text_editor->setJumpToControl(choice_jump_to);
+	vbox->Add(text_editor, 1, wxEXPAND|wxALL, UI::pad());
 
 	// Set language
-	string lang = theGameConfiguration->scriptLanguage();
+	string lang = Game::configuration().scriptLanguage();
 	if (S_CMPNOCASE(lang, "acs_hexen"))
 	{
-		text_editor->setLanguage(TextLanguage::getLanguage("acs"));
+		text_editor->setLanguage(TextLanguage::fromId("acs"));
 		entry_script->setName("SCRIPTS");
 		entry_compiled->setName("BEHAVIOR");
 	}
 	else if (S_CMPNOCASE(lang, "acs_zdoom"))
 	{
-		text_editor->setLanguage(TextLanguage::getLanguage("acs_z"));
+		text_editor->setLanguage(TextLanguage::fromId("acs_z"));
 		entry_script->setName("SCRIPTS");
 		entry_compiled->setName("BEHAVIOR");
 	}
 
+	// Add Find+Replace panel
+	panel_fr = new FindReplacePanel(this, *text_editor);
+	text_editor->setFindReplacePanel(panel_fr);
+	vbox->Add(panel_fr, 0, wxEXPAND | wxALL, UI::pad());
+	panel_fr->Hide();
+
 	// Add function/constants list
 	list_words = new wxTreeListCtrl(this, -1);
-	list_words->SetInitialSize(wxSize(200, -10));
-	hbox->Add(list_words, 0, wxEXPAND|wxALL, 4);
+	list_words->SetInitialSize(WxUtils::scaledSize(200, -10));
+	hbox->Add(list_words, 0, wxEXPAND|wxALL, UI::pad());
 	populateWordList();
 	list_words->Show(script_show_language_list);
 
@@ -131,16 +153,23 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 	if (compiled) entry_compiled->importEntry(compiled);
 
 	// Process ACS open scripts
-	string lang = theGameConfiguration->scriptLanguage();
+	string lang = Game::configuration().scriptLanguage();
 	if (entry_script->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
-		SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-		map->mapSpecials()->processACSScripts(entry_script);
-		map->mapSpecials()->updateTaggedSectors(map);
+		auto& map = MapEditor::editContext().map();
+		map.mapSpecials()->processACSScripts(entry_script);
+		map.mapSpecials()->updateTaggedSectors(&map);
 	}
 
 	// Load script text
-	return text_editor->loadEntry(entry_script);
+	bool ok = text_editor->loadEntry(entry_script);
+	if (ok)
+	{
+		text_editor->updateJumpToList();
+		return true;
+	}
+	else
+		return false;
 }
 
 /* ScriptEditorPanel::populateWordList
@@ -155,9 +184,9 @@ void ScriptEditorPanel::populateWordList()
 	list_words->AppendColumn("Language");
 
 	// Get functions and constants
-	TextLanguage* tl = TextLanguage::getLanguage("acs_z");
-	wxArrayString functions = tl->getFunctionsSorted();
-	wxArrayString constants = tl->getConstantsSorted();
+	TextLanguage* tl = TextLanguage::fromId("acs_z");
+	wxArrayString functions = tl->functionsSorted();
+	wxArrayString constants = tl->wordListSorted(TextLanguage::WordType::Constant);
 
 	// Add functions to list
 	wxTreeListItem item = list_words->AppendItem(list_words->GetRootItem(), "Functions");
@@ -179,18 +208,30 @@ void ScriptEditorPanel::populateWordList()
  *******************************************************************/
 void ScriptEditorPanel::saveScripts()
 {
+	// Trim whitespace
+	if (txed_trim_whitespace)
+		text_editor->trimWhitespace();
+
 	// Write text to entry
 	wxCharBuffer buf = text_editor->GetText().mb_str();
 	entry_script->importMem(buf, buf.length());
 
 	// Process ACS open scripts
-	string lang = theGameConfiguration->scriptLanguage();
+	string lang = Game::configuration().scriptLanguage();
 	if (entry_script->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
-		SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+		SLADEMap* map = &(MapEditor::editContext().map());
 		map->mapSpecials()->processACSScripts(entry_script);
 		map->mapSpecials()->updateTaggedSectors(map);
 	}
+}
+
+/* ScriptEditorPanel::updateUI
+ * Update script editor UI
+ *******************************************************************/
+void ScriptEditorPanel::updateUI()
+{
+	text_editor->updateJumpToList();
 }
 
 /* ScriptEditorPanel::handleAction
@@ -206,25 +247,20 @@ bool ScriptEditorPanel::handleAction(string name)
 		saveScripts();
 
 		// Compile depending on language
-		string lang = theGameConfiguration->scriptLanguage();
+		string lang = Game::configuration().scriptLanguage();
 		if (lang == "acs_hexen")
-			EntryOperations::compileACS(entry_script, true, entry_compiled, theMapEditor);
+			EntryOperations::compileACS(entry_script, true, entry_compiled, (wxFrame*)MapEditor::windowWx());
 		else if (lang == "acs_zdoom")
-			EntryOperations::compileACS(entry_script, false, entry_compiled, theMapEditor);
+			EntryOperations::compileACS(entry_script, false, entry_compiled, (wxFrame*)MapEditor::windowWx());
 	}
 
 	// Save Script
 	else if (name == "mapw_script_save")
 		saveScripts();
 
-	// Jump To
-	else if (name == "mapw_script_jumpto")
-		text_editor->openJumpToDialog();
-
 	// Toggle language list
 	else if (name == "mapw_script_togglelanguage")
 	{
-		script_show_language_list = !script_show_language_list;
 		list_words->Show(script_show_language_list);
 		Layout();
 		Refresh();
@@ -252,7 +288,7 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 	string word = list_words->GetItemText(item);
 
 	// Get language
-	TextLanguage* language = text_editor->getLanguage();
+	TextLanguage* language = text_editor->language();
 	if (!language)
 		return;
 
@@ -269,7 +305,7 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 	int pos = text_editor->GetCurrentPos();
 	if (language->isFunction(word))
 	{
-		TLFunction* func = language->getFunction(word);
+		TLFunction* func = language->function(word);
 
 		// Add function + ()
 		word += "()";

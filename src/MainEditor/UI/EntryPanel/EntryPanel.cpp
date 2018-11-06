@@ -1,147 +1,150 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    EntryPanel.cpp
- * Description: EntryPanel class. Different UI panels for editing
- *              different entry types extend from this class.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    EntryPanel.cpp
+// Description: EntryPanel class. Different UI panels for editing different
+//              entry types extend from this class.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "EntryPanel.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/ArchivePanel.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
-#include <wx/statbox.h>
-#include <wx/msgdlg.h>
+#include "General/UI.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Variables
+//
+// ----------------------------------------------------------------------------
 CVAR(Bool, confirm_entry_revert, true, CVAR_SAVE)
 
 
-/*******************************************************************
- * ENTRYPANEL CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// EntryPanel Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* EntryPanel::EntryPanel
- * EntryPanel class constructor
- *******************************************************************/
-EntryPanel::EntryPanel(wxWindow* parent, string id)
-	: wxPanel(parent, -1)
+
+// ----------------------------------------------------------------------------
+// EntryPanel::EntryPanel
+//
+// EntryPanel class constructor
+// ----------------------------------------------------------------------------
+EntryPanel::EntryPanel(wxWindow* parent, string id) :
+	wxPanel(parent, -1),
+	id_{ id }
 {
-	// Init variables
-	modified = false;
-	entry = NULL;
-	this->id = id;
-	menu_custom = NULL;
-	undo_manager = NULL;
-
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Create & set sizer & border
-	frame = new wxStaticBox(this, -1, "Entry Contents");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 1, wxEXPAND|wxALL, 4);
+	frame_ = new wxStaticBox(this, -1, "Entry Contents");
+	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame_, wxVERTICAL);
+	sizer->Add(framesizer, 1, wxEXPAND | wxALL, UI::pad());
 	Show(false);
 
 	// Add toolbar
-	toolbar = new SToolBar(this);
-	toolbar->drawBorder(false);
-	framesizer->Add(toolbar, 0, wxEXPAND|wxLEFT|wxRIGHT, 4);
-	framesizer->AddSpacer(2);
+	toolbar_ = new SToolBar(this);
+	toolbar_->drawBorder(false);
+	framesizer->Add(toolbar_, 0, wxEXPAND | wxLEFT | wxRIGHT, UI::pad());
+	framesizer->AddSpacer(UI::px(UI::Size::PadMinimum));
 
 	// Default entry toolbar group
-	SToolBarGroup* tb_group = new SToolBarGroup(toolbar, "Entry");
-	stb_save = tb_group->addActionButton("save", "Save", "save", "Save any changes made to the entry", true);
-	stb_revert = tb_group->addActionButton("revert", "Revert", "revert", "Revert any changes made to the entry", true);
-	toolbar->addGroup(tb_group);
-	toolbar->enableGroup("Entry", false);
+	SToolBarGroup* tb_group = new SToolBarGroup(toolbar_, "Entry");
+	stb_save_ = tb_group->addActionButton("save", "Save", "save", "Save any changes made to the entry", true);
+	stb_revert_ = tb_group->addActionButton("revert", "Revert", "revert", "Revert any changes made to the entry", true);
+	toolbar_->addGroup(tb_group);
+	toolbar_->enableGroup("Entry", false);
 
 	// Setup sizer positions
-	sizer_top = new wxBoxSizer(wxHORIZONTAL);
-	sizer_bottom = new wxBoxSizer(wxHORIZONTAL);
-	sizer_main = new wxBoxSizer(wxVERTICAL);
-	framesizer->Add(sizer_top, 0, wxEXPAND|wxALL, 4);
-	framesizer->Add(sizer_main, 1, wxEXPAND|wxLEFT|wxRIGHT, 4);
-	framesizer->Add(sizer_bottom, 0, wxEXPAND|wxALL, 4);
+	sizer_bottom_ = new wxBoxSizer(wxHORIZONTAL);
+	sizer_main_ = new wxBoxSizer(wxVERTICAL);
+	framesizer->Add(sizer_main_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	framesizer->Add(sizer_bottom_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
 	// Bind button events
-	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &EntryPanel::onToolbarButton, this, toolbar->GetId());
+	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &EntryPanel::onToolbarButton, this, toolbar_->GetId());
 }
 
-/* EntryPanel::~EntryPanel
- * EntryPanel class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::~EntryPanel
+//
+// EntryPanel class destructor
+// ----------------------------------------------------------------------------
 EntryPanel::~EntryPanel()
 {
 	removeCustomMenu();
-	removeCustomToolBar();
 }
 
-/* EntryPanel::setModified
- * Sets the modified flag. If the entry is locked modified will
- * always be false
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::setModified
+//
+// Sets the modified flag. If the entry is locked modified will always be false
+// ----------------------------------------------------------------------------
 void EntryPanel::setModified(bool c)
 {
-	bool mod = modified;
-
-	if (!entry)
+	if (!entry_)
 	{
-		modified = c;
+		modified_ = c;
 		return;
 	}
 	else
 	{
-		if (entry->isLocked())
-			modified = false;
+		if (entry_->isLocked())
+			modified_ = false;
 		else
-			modified = c;
+			modified_ = c;
 	}
 
-	if (mod != modified)
+	if (stb_save_ && stb_save_->IsEnabled() != modified_)
 	{
-		toolbar->enableGroup("Entry", modified);
+		toolbar_->enableGroup("Entry", modified_);
 		callRefresh();
 	}
 }
 
-/* EntryPanel::openEntry
- * 'Opens' the given entry (sets the frame label then loads it)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::openEntry
+//
+// 'Opens' the given entry (sets the frame label then loads it)
+// ----------------------------------------------------------------------------
 bool EntryPanel::openEntry(ArchiveEntry* entry)
 {
 	// Check entry was given
 	if (!entry)
 	{
-		entry_data.clear();
-		this->entry = NULL;
+		entry_data_.clear();
+		this->entry_ = nullptr;
 		return false;
 	}
 
@@ -149,15 +152,15 @@ bool EntryPanel::openEntry(ArchiveEntry* entry)
 	setModified(false);
 
 	// Copy current entry content
-	entry_data.clear();
-	entry_data.importMem(entry->getData(true), entry->getSize());
+	entry_data_.clear();
+	entry_data_.importMem(entry->getData(true), entry->getSize());
 
 	// Load the entry
 	if (loadEntry(entry))
 	{
-		this->entry = entry;
+		this->entry_ = entry;
 		updateStatus();
-		toolbar->updateLayout(true);
+		toolbar_->updateLayout(true);
 		Layout();
 		return true;
 	}
@@ -169,34 +172,39 @@ bool EntryPanel::openEntry(ArchiveEntry* entry)
 	}
 }
 
-/* EntryPanel::loadEntry
- * Loads an entry into the entry panel (does nothing here, to be
- * overridden by child classes)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::loadEntry
+//
+// Loads an entry into the entry panel (does nothing here, to be overridden by
+// child classes)
+// ----------------------------------------------------------------------------
 bool EntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	Global::error = "Cannot open an entry with the base EntryPanel class";
 	return false;
 }
 
-/* EntryPanel::saveEntry
- * Saves the entrypanel content to the entry (does nothing here, to
- * be overridden by child classes)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::saveEntry
+//
+// Saves the entrypanel content to the entry (does nothing here, to be
+// overridden by child classes)
+// ----------------------------------------------------------------------------
 bool EntryPanel::saveEntry()
 {
 	Global::error = "Cannot save an entry with the base EntryPanel class";
 	return false;
 }
 
-/* EntryPanel::revertEntry
- * Reverts any changes made to the entry since it was loaded into
- * the EntryPanel. Returns false if no changes have been made or
- * if the entry data wasn't saved
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::revertEntry
+//
+// Reverts any changes made to the entry since it was loaded into the editor.
+// Returns false if no changes have been made or if the entry data wasn't saved
+// ----------------------------------------------------------------------------
 bool EntryPanel::revertEntry(bool confirm)
 {
-	if (modified && entry_data.hasData())
+	if (modified_ && entry_data_.hasData())
 	{
 		bool ok = true;
 
@@ -207,11 +215,11 @@ bool EntryPanel::revertEntry(bool confirm)
 
 		if (ok)
 		{
-			uint8_t state = entry->getState();
-			entry->importMemChunk(entry_data);
-			entry->setState(state);
-			EntryType::detectEntryType(entry);
-			loadEntry(entry);
+			uint8_t state = entry_->getState();
+			entry_->importMemChunk(entry_data_);
+			entry_->setState(state);
+			EntryType::detectEntryType(entry_);
+			loadEntry(entry_);
 		}
 
 		return true;
@@ -220,150 +228,113 @@ bool EntryPanel::revertEntry(bool confirm)
 	return false;
 }
 
-/* EntryPanel::refreshPanel
- * Redraws the panel
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::refreshPanel
+//
+// Redraws the panel
+// ----------------------------------------------------------------------------
 void EntryPanel::refreshPanel()
 {
 	Update();
 	Refresh();
 }
 
-/* EntryPanel::closeEntry
- * 'Closes' the current entry - clean up, save extra info, etc
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::closeEntry
+//
+// 'Closes' the current entry - clean up, save extra info, etc
+// ----------------------------------------------------------------------------
 void EntryPanel::closeEntry()
 {
+	entry_data_.clear();
+	this->entry_ = nullptr;
 }
 
-/* EntryPanel::updateStatus
- * Updates the main window status bar with info about the current
- * entry
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::updateStatus
+//
+// Updates the main window status bar with info about the current entry
+// ----------------------------------------------------------------------------
 void EntryPanel::updateStatus()
 {
 	// Basic info
-	if (entry)
-		theMainWindow->SetStatusText(S_FMT("%d: %s, %d bytes, %s", 
-		entry->getParentDir()->entryIndex(entry), entry->getName(), entry->getSize(), entry->getType()->getName()), 1);
+	if (entry_)
+	{
+		string text = S_FMT(
+			"%d: %s, %d bytes, %s",
+			entry_->getParentDir()->entryIndex(entry_),
+			entry_->getName(),
+			entry_->getSize(),
+			entry_->getType()->name()
+		);
+
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, text, 1);
+	}
 	else
-		theMainWindow->SetStatusText("", 1);
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, "", 1);
 
 	// Extended info
-	theMainWindow->SetStatusText(statusString(), 2);
+	theMainWindow->CallAfter(&MainWindow::SetStatusText, statusString(), 2);
 }
 
-/* EntryPanel::addCustomMenu
- * Adds this EntryPanel's custom menu to the main window menubar
- * (if it exists)
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::addCustomMenu
+//
+// Adds this EntryPanel's custom menu to the main window menubar (if it exists)
+// ----------------------------------------------------------------------------
 void EntryPanel::addCustomMenu()
 {
-	if (menu_custom)
-		theMainWindow->addCustomMenu(menu_custom, custom_menu_name);
+	if (menu_custom_)
+		theMainWindow->addCustomMenu(menu_custom_, custom_menu_name_);
 }
 
-/* EntryPanel::removeCustomMenu
- * Removes this EntryPanel's custom menu from the main window menubar
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::removeCustomMenu
+//
+// Removes this EntryPanel's custom menu from the main window menubar
+// ----------------------------------------------------------------------------
 void EntryPanel::removeCustomMenu()
 {
-	theMainWindow->removeCustomMenu(menu_custom);
+	theMainWindow->removeCustomMenu(menu_custom_);
 }
 
-/* EntryPanel::addCustonToolBar
- * Adds this EntryPanel's custom toolbar group to the main window
- * toolbar
- *******************************************************************/
-void EntryPanel::addCustomToolBar()
-{
-	// Check any custom actions exist
-	if (custom_toolbar_actions.IsEmpty())
-		return;
-
-	// Split list of toolbar actions
-	//wxArrayString actions = wxSplit(custom_toolbar_actions, ';');
-
-	// Add to main window
-	//theMainWindow->addCustomToolBar("Current Entry", actions);
-}
-
-/* EntryPanel::removeCustomMenu
- * Removes this EntryPanel's custom toolbar group from the main
- * window toolbar
- *******************************************************************/
-void EntryPanel::removeCustomToolBar()
-{
-	theMainWindow->removeCustomToolBar("Current Entry");
-}
-
-/* EntryPanel::isActivePanel
- * Returns true if the entry panel is the Archive Manager Panel's
- * current area. This is needed because the wx function IsShown()
- * is not enough, it will return true if the panel is shown on any
- * tab, even if it is not on the one that is selected...
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::isActivePanel
+//
+// Returns true if the entry panel is the Archive Manager Panel's current area.
+// This is needed because the wx function IsShown() is not enough, it will
+// return true if the panel is shown on any tab, even if it is not on the one
+// that is selected...
+// ----------------------------------------------------------------------------
 bool EntryPanel::isActivePanel()
 {
-	return (IsShown() && theActivePanel == this);
+	return (IsShown() && MainEditor::currentEntryPanel() == this);
 }
 
-/* EntryPanel::updateToolbar
- * Updates the toolbar layout
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::updateToolbar
+//
+// Updates the toolbar layout
+// ----------------------------------------------------------------------------
 void EntryPanel::updateToolbar()
 {
-	toolbar->updateLayout(true);
+	toolbar_->updateLayout(true);
 	Layout();
 }
 
-/*******************************************************************
- * ENTRYPANEL CLASS EVENTS
- *******************************************************************/
 
-/* EntryPanel::onBtnSave
- * Called when the 'Save Changes' button is clicked
- *******************************************************************/
-void EntryPanel::onBtnSave(wxCommandEvent& e)
-{
-	if (modified)
-	{
-		if (undo_manager)
-		{
-			undo_manager->beginRecord("Save Entry Modifications");
-			undo_manager->recordUndoStep(new EntryDataUS(entry));
-		}
+// ----------------------------------------------------------------------------
+//
+// EntryPanel Class Events
+//
+// ----------------------------------------------------------------------------
 
-		if (saveEntry())
-		{
-			modified = false;
-			if (undo_manager)
-				undo_manager->endRecord(true);
-		}
-		else if (undo_manager)
-			undo_manager->endRecord(false);
-	}
-}
 
-/* EntryPanel::onBtnRevert
- * Called when the 'Revert Changes' button is clicked
- *******************************************************************/
-void EntryPanel::onBtnRevert(wxCommandEvent& e)
-{
-	revertEntry();
-}
-
-/* EntryPanel::onBtnEditExt
- * Called when the 'Edit Externally' button is clicked
- *******************************************************************/
-void EntryPanel::onBtnEditExt(wxCommandEvent& e)
-{
-	wxLogMessage("External edit not implemented");
-}
-
-/* EntryPanel::onToolbarButton
- * Called when a button on the toolbar is clicked
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// EntryPanel::onToolbarButton
+//
+// Called when a button on the toolbar is clicked
+// ----------------------------------------------------------------------------
 void EntryPanel::onToolbarButton(wxCommandEvent& e)
 {
 	string button = e.GetString();
@@ -371,30 +342,28 @@ void EntryPanel::onToolbarButton(wxCommandEvent& e)
 	// Save
 	if (button == "save")
 	{
-		if (modified)
+		if (modified_)
 		{
-			if (undo_manager)
+			if (undo_manager_)
 			{
-				undo_manager->beginRecord("Save Entry Modifications");
-				undo_manager->recordUndoStep(new EntryDataUS(entry));
+				undo_manager_->beginRecord("Save Entry Modifications");
+				undo_manager_->recordUndoStep(new EntryDataUS(entry_));
 			}
 
 			if (saveEntry())
 			{
-				modified = false;
-				if (undo_manager)
-					undo_manager->endRecord(true);
+				modified_ = false;
+				if (undo_manager_)
+					undo_manager_->endRecord(true);
 			}
-			else if (undo_manager)
-				undo_manager->endRecord(false);
+			else if (undo_manager_)
+				undo_manager_->endRecord(false);
 		}
 	}
 
 	// Revert
 	else if (button == "revert")
-	{
 		revertEntry();
-	}
 
 	else
 		toolbarButtonClick(button);

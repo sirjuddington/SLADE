@@ -29,12 +29,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MapTextureBrowser.h"
+#include "Game/Configuration.h"
 #include "General/ResourceManager.h"
-#include "Graphics/CTexture/CTexture.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/MapTextureManager.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
+#include "MapTextureBrowser.h"
 
 
 /*******************************************************************
@@ -54,13 +54,13 @@ CVAR(String, map_tex_treespec, "type,archive,category", CVAR_SAVE)
 MapTexBrowserItem::MapTexBrowserItem(string name, int type, unsigned index) : BrowserItem(name, index)
 {
 	if (type == 0)
-		this->type = "texture";
+		this->type_ = "texture";
 	else if (type == 1)
-		this->type = "flat";
+		this->type_ = "flat";
 
 	// Check for blank texture
 	if (name == "-" && type == 0)
-		blank = true;
+		blank_ = true;
 
 	usage_count = 0;
 }
@@ -77,17 +77,17 @@ MapTexBrowserItem::~MapTexBrowserItem()
  *******************************************************************/
 bool MapTexBrowserItem::loadImage()
 {
-	GLTexture* tex = NULL;
+	GLTexture* tex = nullptr;
 
 	// Get texture or flat depending on type
-	if (type == "texture")
-		tex = theMapEditor->textureManager().getTexture(name, false);
-	else if (type == "flat")
-		tex = theMapEditor->textureManager().getFlat(name, false);
+	if (type_ == "texture")
+		tex = MapEditor::textureManager().getTexture(name_, false);
+	else if (type_ == "flat")
+		tex = MapEditor::textureManager().getFlat(name_, false);
 
 	if (tex)
 	{
-		image = tex;
+		image_ = tex;
 		return true;
 	}
 	else
@@ -102,23 +102,23 @@ string MapTexBrowserItem::itemInfo()
 	string info;
 
 	// Check for blank texture
-	if (name == "-")
+	if (name_ == "-")
 		return "No Texture";
 
 	// Add dimensions if known
-	if (image || loadImage())
-		info += S_FMT("%dx%d", image->getWidth(), image->getHeight());
+	if (image_ || loadImage())
+		info += S_FMT("%dx%d", image_->getWidth(), image_->getHeight());
 	else
 		info += "Unknown size";
 
 	// Add type
-	if (type == "texture")
+	if (type_ == "texture")
 		info += ", Texture";
 	else
 		info += ", Flat";
 
 	// Add scaling info
-	if (image->getScaleX() != 1.0 || image->getScaleY() != 1.0)
+	if (image_->getScaleX() != 1.0 || image_->getScaleY() != 1.0)
 		info += ", Scaled";
 
 	// Add usage count
@@ -140,7 +140,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	// Init variables
 	this->type = type;
 	this->map = map;
-	this->truncate_names = true;
+	this->truncate_names_ = true;
 
 	// Init sorting
 	addSortType("Usage Count");
@@ -149,34 +149,109 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	// Set window title
 	SetTitle("Browse Map Textures");
 
+	int mapFormat = map->currentFormat();
+
 	// Textures
-	if (type == 0 || theGameConfiguration->mixTexFlats())
+	if (type == 0 || Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 	{
 		addGlobalItem(new MapTexBrowserItem("-", 0, 0));
 
-		vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllTexturesInfo();
+		vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllTexturesInfo();
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
+			if ((mapFormat != MAP_UDMF ||
+				!Game::configuration().featureSupported(Game::Feature::LongNames)) &&
+				textures[a].shortName.Len() > 8)
+			{
+				// Only UDMF supports texture/flat names longer than 8 characters
+				continue;
+			}
+
+			// Don't add two textures with the same name
+			bool dontAdd = false;
+			for (unsigned b = 0; b < textures.size(); b++)
+			{
+				if (textures[b].shortName.Cmp(textures[a].shortName) == 0 && b > a)
+				{
+					dontAdd = true;
+					break;
+				}
+			}
+
+			if (dontAdd)
+				continue;
 			// Add browser item
-			addItem(new MapTexBrowserItem(textures[a].name, 0, textures[a].index),
+			addItem(new MapTexBrowserItem(textures[a].shortName, 0, textures[a].index),
 				determineTexturePath(textures[a].archive, textures[a].category, "Textures", textures[a].path));
 		}
 	}
 
 	// Flats
-	if (type == 1 || theGameConfiguration->mixTexFlats())
+	if (type == 1 || Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 	{
-		vector<map_texinfo_t>& flats = theMapEditor->textureManager().getAllFlatsInfo();
+		vector<map_texinfo_t>& flats = MapEditor::textureManager().getAllFlatsInfo();
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
+			if ((mapFormat != MAP_UDMF ||
+				!Game::configuration().featureSupported(Game::Feature::LongNames)) &&
+				flats[a].shortName.Len() > 8)
+			{
+				// Only UDMF supports texture/flat names longer than 8 characters
+				continue;
+			}
+
+			// Don't add two flats with the same name
+			bool dontAdd = false;
+			for (unsigned b = 0; b < flats.size(); b++)
+			{
+				if (flats[b].shortName.Cmp(flats[a].shortName) == 0 && b > a)
+				{
+					dontAdd = true;
+					break;
+				}
+			}
+
+			if (dontAdd)
+				continue;
+
 			// Determine tree path
 			string path = determineTexturePath(flats[a].archive, flats[a].category, "Flats", flats[a].path);
 
 			// Add browser item
 			if (flats[a].category == MapTextureManager::TC_TEXTURES)
-				addItem(new MapTexBrowserItem(flats[a].name, 0, flats[a].index), path);
+				addItem(new MapTexBrowserItem(flats[a].shortName, 0, flats[a].index), path);
 			else
-				addItem(new MapTexBrowserItem(flats[a].name, 1, flats[a].index), path);
+				addItem(new MapTexBrowserItem(flats[a].shortName, 1, flats[a].index), path);
+		}
+	}
+
+	// Full path textures
+	if (mapFormat == MAP_UDMF &&
+		Game::configuration().featureSupported(Game::Feature::LongNames))
+	{
+		// Textures
+		vector<map_texinfo_t>& fpTextures = MapEditor::textureManager().getAllTexturesInfo();
+		for (unsigned a = 0; a < fpTextures.size(); a++)
+		{
+			if (fpTextures[a].category != MapTextureManager::TC_TEXTURES &&
+					fpTextures[a].category != MapTextureManager::TC_HIRES &&
+					!fpTextures[a].path.IsEmpty() && fpTextures[a].path.Cmp("/") != 0) {
+				// Add browser item
+				addItem(new MapTexBrowserItem(fpTextures[a].longName, 0, fpTextures[a].index),
+					determineTexturePath(fpTextures[a].archive, fpTextures[a].category, "Textures (Full Path)", fpTextures[a].path));
+			}
+		}
+
+		// Flats
+		vector<map_texinfo_t>& fpFlats = MapEditor::textureManager().getAllFlatsInfo();
+		for (unsigned a = 0; a < fpFlats.size(); a++)
+		{
+			if (!fpFlats[a].path.IsEmpty() && fpFlats[a].path.Cmp("/") != 0) {
+				// Add browser item
+				//fpName.Remove(0, 1); // Remove leading slash
+				addItem(new MapTexBrowserItem(fpFlats[a].longName, 1, fpFlats[a].index),
+					determineTexturePath(fpFlats[a].archive, fpFlats[a].category, "Textures (Full Path)", fpFlats[a].path));
+			}
 		}
 	}
 
@@ -203,7 +278,7 @@ string MapTextureBrowser::determineTexturePath(Archive* archive, uint8_t categor
 	for (unsigned b = 0; b < tree_spec.size(); b++)
 	{
 		if (tree_spec[b] == "archive")
-			ret += archive->getFilename(false);
+			ret += archive->filename(false);
 		else if (tree_spec[b] == "type")
 			ret += type;
 		else if (tree_spec[b] == "category")
@@ -237,7 +312,7 @@ bool sortBIUsage(BrowserItem* left, BrowserItem* right)
 {
 	// Sort alphabetically if usage counts are equal
 	if (((MapTexBrowserItem*)left)->usageCount() == ((MapTexBrowserItem*)right)->usageCount())
-		return left->getName() < right->getName();
+		return left->name() < right->name();
 	else
 		return ((MapTexBrowserItem*)left)->usageCount() > ((MapTexBrowserItem*)right)->usageCount();
 }
@@ -257,7 +332,7 @@ void MapTextureBrowser::doSort(unsigned sort_type)
 	else if (sort_type == 2)
 	{
 		updateUsage();
-		vector<BrowserItem*>& items = canvas->itemList();
+		vector<BrowserItem*>& items = canvas_->itemList();
 		std::sort(items.begin(), items.end(), sortBIUsage);
 	}
 }
@@ -267,16 +342,16 @@ void MapTextureBrowser::doSort(unsigned sort_type)
  *******************************************************************/
 void MapTextureBrowser::updateUsage()
 {
-	vector<BrowserItem*>& items = canvas->itemList();
+	if (!map)
+		return;
+
+	vector<BrowserItem*>& items = canvas_->itemList();
 	for (unsigned i = 0; i < items.size(); i++)
 	{
 		MapTexBrowserItem* item = (MapTexBrowserItem*)items[i];
 		if (type == 0)
-			item->setUsage(map->texUsageCount(item->getName()));
+			item->setUsage(map->texUsageCount(item->name()));
 		else
-			item->setUsage(map->flatUsageCount(item->getName()));
+			item->setUsage(map->flatUsageCount(item->name()));
 	}
-
-	if (!map)
-		return;
 }

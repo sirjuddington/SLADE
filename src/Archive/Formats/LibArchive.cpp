@@ -29,9 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "LibArchive.h"
-#include "UI/SplashWindow.h"
-#include <wx/log.h>
-#include <wx/filename.h>
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -46,11 +44,8 @@
  * LibArchive class constructor
  *******************************************************************/
 LibArchive::LibArchive()
-	: TreelessArchive(ARCHIVE_LIB)
+	: TreelessArchive("lib")
 {
-	desc.max_name_length = 12;
-	desc.names_extensions = false;
-	desc.supports_dirs = false;
 }
 
 /* LibArchive::~LibArchive
@@ -85,22 +80,6 @@ void LibArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* LibArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string LibArchive::getFileExtensionString()
-{
-	return "Shadowcaster Lib Files (*.lib)|*.lib";
-}
-
-/* LibArchive::getFormat
- * Gives the "archive_lib" string
- *******************************************************************/
-string LibArchive::getFormat()
-{
-	return "archive_lib";
-}
-
 /* LibArchive::open
  * Reads wad format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -123,11 +102,11 @@ bool LibArchive::open(MemChunk& mc)
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	theSplashWindow->setProgressMessage("Reading lib archive data");
+	UI::setSplashProgressMessage("Reading lib archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char myname[13] = "";
@@ -147,7 +126,7 @@ bool LibArchive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if (offset + size > dir_offset)
 		{
-			wxLogMessage("LibArchive::open: Lib archive is invalid or corrupt");
+			LOG_MESSAGE(1, "LibArchive::open: Lib archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -160,17 +139,17 @@ bool LibArchive::open(MemChunk& mc)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 		//entries.push_back(nlump);
 	}
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -191,7 +170,7 @@ bool LibArchive::open(MemChunk& mc)
 	}
 
 	// Detect maps (will detect map entry types)
-	theSplashWindow->setProgressMessage("Detecting maps");
+	UI::setSplashProgressMessage("Detecting maps");
 	detectMaps();
 
 	// Setup variables
@@ -199,7 +178,7 @@ bool LibArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -217,7 +196,7 @@ bool LibArchive::write(MemChunk& mc, bool update)
 
 	uint16_t num_files = numEntries();
 	uint32_t dir_offset = 0;
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint16_t l = 0; l < num_files; l++)
 	{
 		entry = getEntry(l);
@@ -286,12 +265,12 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("LibArchive::loadEntryData: Failed to open libfile %s", filename);
+		LOG_MESSAGE(1, "LibArchive::loadEntryData: Failed to open libfile %s", filename_);
 		return false;
 	}
 
@@ -314,11 +293,11 @@ ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -341,7 +320,7 @@ ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
  *******************************************************************/
 ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* LibArchive::renameEntry

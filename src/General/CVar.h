@@ -35,7 +35,7 @@ public:
 	string		name;
 	CVar*		next;
 
-	CVar() { next = NULL; }
+	CVar() { next = nullptr; }
 	virtual ~CVar() {}
 
 	virtual CVarValue GetValue() { CVarValue val; val.Int = 0; return val; }

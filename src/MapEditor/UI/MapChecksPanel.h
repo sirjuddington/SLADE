@@ -1,58 +1,51 @@
+#pragma once
 
-#ifndef __MAP_CHECKS_DIALOG_H__
-#define __MAP_CHECKS_DIALOG_H__
-
-#include "UI/WxBasicControls.h"
-#include <wx/panel.h>
+#include "UI/Controls/DockPanel.h"
 
 class SLADEMap;
 class MapCheck;
 class wxListBox;
-class MapChecksPanel : public wxPanel
+
+class MapChecksPanel : public DockPanel
 {
-private:
-	SLADEMap*					map;
-	vector<MapCheck*>	active_checks;
-
-	wxCheckBox*		cb_missing_tex;
-	wxCheckBox*		cb_special_tags;
-	wxCheckBox*		cb_intersecting;
-	wxCheckBox*		cb_overlapping;
-	wxCheckBox*		cb_unknown_tex;
-	wxCheckBox*		cb_unknown_flats;
-	wxCheckBox*		cb_unknown_things;
-	wxCheckBox*		cb_overlapping_things;
-	wxCheckBox*		cb_stuck_things;
-	wxCheckBox*		cb_sector_refs;
-	wxCheckBox*		cb_invalid_lines;
-	wxListBox*		lb_errors;
-	wxButton*		btn_check;
-	wxStaticText*	label_status;
-	wxButton*		btn_fix1;
-	wxButton*		btn_fix2;
-	wxButton*		btn_edit_object;
-	wxButton*		btn_export;
-
-	struct check_item_t
-	{
-		MapCheck* check;
-		unsigned index;
-		check_item_t(MapCheck* check, unsigned index)
-		{
-			this->check = check;
-			this->index = index;
-		}
-	};
-	vector<check_item_t>	check_items;
-
 public:
 	MapChecksPanel(wxWindow* parent, SLADEMap* map);
-	~MapChecksPanel();
+	~MapChecksPanel() {}
 
 	void	updateStatusText(string text);
 	void	showCheckItem(unsigned index);
 	void	refreshList();
 	void	reset();
+
+	// DockPanel overrides
+	void	layoutNormal() override { layoutHorizontal(); }
+	void	layoutVertical() override;
+	void	layoutHorizontal() override;
+
+private:
+	SLADEMap*			map_			= nullptr;
+	vector<MapCheck*>	active_checks_;
+
+	wxCheckListBox*	clb_active_checks_	= nullptr;
+	wxListBox*		lb_errors_			= nullptr;
+	wxButton*		btn_check_			= nullptr;
+	wxStaticText*	label_status_		= nullptr;
+	wxButton*		btn_fix1_			= nullptr;
+	wxButton*		btn_fix2_			= nullptr;
+	wxButton*		btn_edit_object_	= nullptr;
+	wxButton*		btn_export_			= nullptr;
+
+	struct CheckItem
+	{
+		MapCheck* check;
+		unsigned index;
+		CheckItem(MapCheck* check, unsigned index)
+		{
+			this->check = check;
+			this->index = index;
+		}
+	};
+	vector<CheckItem>	check_items_;
 
 	// Events
 	void	onBtnCheck(wxCommandEvent& e);
@@ -62,5 +55,3 @@ public:
 	void	onBtnEditObject(wxCommandEvent& e);
 	void	onBtnExport(wxCommandEvent& e);
 };
-
-#endif//__MAP_CHECKS_DIALOG_H__

@@ -19,7 +19,6 @@ protected:
 	{
 		// Init variables
 		const uint8_t* gfx_data = data.getData();
-		uint32_t* col_offsets = NULL;
 		int width = 0;
 		int height = 0;
 		int offset_x = 0;
@@ -49,7 +48,7 @@ protected:
 		image.create(width, height, PALMASK);
 
 		// Read column offsets
-		col_offsets = new uint32_t[width];
+		vector<uint32_t> col_offsets(width);
 		if (version > 0)
 		{
 			uint16_t* c_ofs = (uint16_t*)((uint8_t*)gfx_data + hdr_size);
@@ -68,6 +67,30 @@ protected:
 		memset(img_data, 0, width * height);	// Set colour to palette index 0
 		uint8_t* img_mask = imageMask(image);
 		memset(img_mask, 0, width * height);	// Set mask to fully transparent
+
+		// Check for the Pleiades hack:
+		// Roger Ritenour's pleiades.wad for ZDoom uses 256-tall sky textures, 
+		// and since the patch format uses 8-bit values for the length of a column,
+		// the 256 height overflows to 0. To detect this situation, we check if
+		// every column represents precisely 261 bytes, in other words just enough
+		// for a single post of 256 pixels.
+		bool pleiadeshack = false;
+		if (height == 256)
+		{
+			pleiadeshack = true;
+			for (int c = 1; c < width; ++c)
+			{
+				if (col_offsets[c] - col_offsets[c - 1] != 261)
+				{
+					pleiadeshack = false;
+					break;
+				}
+			}
+			if (data.getSize() - col_offsets[width - 1] != 261)
+				pleiadeshack = false;
+		}
+
+		// Load data
 		for (int c = 0; c < width; c++)
 		{
 			// Get current column offset (byteswap if needed)
@@ -99,10 +122,14 @@ protected:
 
 				// Get no. of pixels
 				bits++;
-				uint8_t n_pix = *bits;
+				uint16_t n_pix = *bits;
+
+				// If this is a Pleiades sky, the height is 256.
+				if (pleiadeshack)
+					n_pix = 256;
 
 				if (version == 0) bits++; // Skip buffer
-				for (uint8_t p = 0; p < n_pix; p++)
+				for (uint16_t p = 0; p < n_pix; p++)
 				{
 					// Get pixel position
 					bits++;
@@ -133,9 +160,6 @@ protected:
 		image.setXOffset(offset_x);
 		image.setYOffset(offset_y);
 
-		// Clean up
-		delete[] col_offsets;
-
 		return true;
 	}
 
@@ -144,7 +168,7 @@ protected:
 		return readDoomFormat(image, data, 0);
 	}
 
-	virtual bool writeImage(SImage& image, MemChunk& out, Palette8bit* pal, int index)
+	virtual bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
 	{
 		// Convert image to column/post structure
 		vector<column_t> columns;
@@ -165,8 +189,24 @@ protected:
 			uint8_t row_off = 0;
 			for (int r = 0; r < image.getHeight(); r++)
 			{
+				// For vanilla-compatible dimensions, use a split at 128 to prevent tiling.
+				if (image.getHeight() < 256)
+				{
+					if (row_off == 128)
+					{
+						// Finish current post if any
+						if (ispost)
+						{
+							col.posts.push_back(post);
+							post.pixels.clear();
+							ispost = false;
+						}
+					}
+				}
+
+				// Taller images cannot be expressed without tall patch support.
 				// If we're at offset 254, create a dummy post for tall doom gfx support
-				if (row_off == 254)
+				else if (row_off == 254)
 				{
 					// Finish current post if any
 					if (ispost)
@@ -189,7 +229,7 @@ protected:
 				}
 
 				// If the current pixel is not transparent, add it to the current post
-				if (mask[offset] > 0)
+				if (!mask || mask[offset] > 0)
 				{
 					// If we're not currently building a post, begin one and set its offset
 					if (!ispost)
@@ -389,7 +429,7 @@ public:
 		MemChunk mc;
 		image.setXOffset(offset.x);
 		image.setYOffset(offset.y);
-		return (writeImage(image, mc, NULL, 0) && entry->importMemChunk(mc));
+		return (writeImage(image, mc, nullptr, 0) && entry->importMemChunk(mc));
 	}
 
 };

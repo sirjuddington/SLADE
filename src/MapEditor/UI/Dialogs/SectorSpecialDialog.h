@@ -1,44 +1,36 @@
-
-#ifndef __SECTOR_SPECIAL_DIALOG_H__
-#define __SECTOR_SPECIAL_DIALOG_H__
+#pragma once
 
 #include "UI/SDialog.h"
 #include "UI/Lists/ListView.h"
-#include "UI/WxBasicControls.h"
 
 class SectorSpecialPanel : public wxPanel
 {
-private:
-	ListView*		lv_specials;
-	wxChoice*		choice_damage;
-	wxCheckBox*		cb_secret;
-	wxCheckBox*		cb_friction;
-	wxCheckBox*		cb_pushpull;
-
 public:
 	SectorSpecialPanel(wxWindow* parent);
-	~SectorSpecialPanel();
+	~SectorSpecialPanel() {}
 
-	ListView*	getSpecialsList() { return lv_specials; }
+	ListView*	getSpecialsList() const { return lv_specials_; }
 
 	void	setup(int special);
 	int		getSelectedSpecial();
+
+private:
+	ListView*		lv_specials_	= nullptr;
+	wxChoice*		choice_damage_	= nullptr;
+	wxCheckBox*		cb_secret_		= nullptr;
+	wxCheckBox*		cb_friction_	= nullptr;
+	wxCheckBox*		cb_pushpull_	= nullptr;
 };
 
 class SectorSpecialDialog : public SDialog
 {
-private:
-	SectorSpecialPanel*	panel_special;
-
 public:
 	SectorSpecialDialog(wxWindow* parent);
-	~SectorSpecialDialog();
+	~SectorSpecialDialog() {}
 
-	void	setup(int special);
-	int		getSelectedSpecial();
+	void	setup(int special) const { panel_special_->setup(special); }
+	int		getSelectedSpecial() const { return panel_special_->getSelectedSpecial(); }
 
-	// Events
-	void	onSpecialsListViewItemActivated(wxListEvent& e);
+private:
+	SectorSpecialPanel*	panel_special_;
 };
-
-#endif//__SECTOR_SPECIAL_DIALOG_H__

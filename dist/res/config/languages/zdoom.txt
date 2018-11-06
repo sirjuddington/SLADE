@@ -105,6 +105,23 @@ z_gldefs {
 	}
 }
 
+z_iwadinfo
+{
+	name = "ZDoom IWAD Info";
+	case_sensitive = false;
+	
+	keywords =
+	{
+		IWad, Order, Names
+	}
+
+	properties =
+	{
+		Name, Autoname, Game, Config, IWADName, Mapinfo, Compatibility, MustContain,
+		BannerColors, Required, Load
+	}
+}
+
 z_keyconf {
 	name = "ZDoom KeyConf";
 	case_sensitive = false;
@@ -277,7 +294,7 @@ z_menudef {
 		ScaleSlider
 	}
 	
-	functions { ifgame = "games ..."; ifoption = "options ..."; }
+	functions { ifgame = "game, [...]"; ifoption = "option, [...]"; }
 	
 	constants = { 
 		doom, heretic, hexen, strife, chex, readthis, swapmenu, windows, unix, mac,

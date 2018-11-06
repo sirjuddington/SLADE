@@ -9,7 +9,6 @@ class wxFrame;
 class ModifyOffsetsDialog;
 namespace EntryOperations
 {
-	bool	openExternal(ArchiveEntry* entry);
 	bool	openMapDB2(ArchiveEntry* entry);
 	bool	gfxConvert(ArchiveEntry* entry, string target_format, SIFormat::convert_options_t opt, int target_colformat = -1);
 	bool	modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog* dialog);
@@ -23,7 +22,7 @@ namespace EntryOperations
 	bool	createTexture(vector<ArchiveEntry*> entries);
 	bool	convertTextures(vector<ArchiveEntry*> entries);
 	bool	findTextureErrors(vector<ArchiveEntry*> entries);
-	bool	compileACS(ArchiveEntry* entry, bool hexen = false, ArchiveEntry* target = NULL, wxFrame* parent = NULL);
+	bool	compileACS(ArchiveEntry* entry, bool hexen = false, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
 	bool	exportAsPNG(ArchiveEntry* entry, string filename);
 	bool	optimizePNG(ArchiveEntry* entry);
 };

@@ -1,71 +1,23 @@
-
-#ifndef __ARCHIVEPANEL_H__
-#define __ARCHIVEPANEL_H__
-
-//#include "Archive/Archive.h"
-//#include "EntryPanel/EntryPanel.h"
-//#include "General/ListenerAnnouncer.h"
-//#include "UI/Lists/ArchiveEntryList.h"
-//#include "MainApp.h"
-//#include "General/UndoRedo.h"
-//#include <wx/textctrl.h>
-//#include <wx/choice.h>
+#pragma once
 
 #include "General/ListenerAnnouncer.h"
 #include "General/UndoRedo.h"
 #include "General/SAction.h"
 #include "UI/Lists/ArchiveEntryList.h"
-#include "UI/WxBasicControls.h"
-#include <wx/panel.h>
+#include "MainEditor/ExternalEditManager.h"
 
 class wxStaticText;
 class wxBitmapButton;
 class EntryPanel;
+
 class ArchivePanel : public wxPanel, public Listener, SActionHandler
 {
-protected:
-	Archive*			archive;
-	ArchiveEntryList*	entry_list;
-	wxTextCtrl*			text_filter;
-	wxButton*			btn_clear_filter;
-	wxChoice*			choice_category;
-	wxStaticText*		label_path;
-	wxBitmapButton*		btn_updir;
-	wxSizer*			sizer_path_controls;
-	UndoManager*		undo_manager;
-	bool				ignore_focus_change;
-
-	// Entry panels
-	EntryPanel*	cur_area;
-	EntryPanel*	entry_area;
-	EntryPanel*	default_area;
-	EntryPanel*	text_area;
-	EntryPanel*	ansi_area;
-	EntryPanel*	gfx_area;
-	EntryPanel*	pal_area;
-	EntryPanel* texturex_area;
-	EntryPanel* animated_area;
-	EntryPanel* switches_area;
-	EntryPanel* pnames_area;
-	EntryPanel* hex_area;
-	EntryPanel* map_area;
-	EntryPanel* audio_area;
-	EntryPanel* data_area;
-
-	enum NewEntries
-	{
-	    ENTRY_EMPTY = 0,
-	    ENTRY_PALETTE,
-	    ENTRY_ANIMATED,
-	    ENTRY_SWITCHES,
-	};
-
 public:
 	ArchivePanel(wxWindow* parent, Archive* archive);
-	~ArchivePanel();
+	virtual ~ArchivePanel() {}
 
-	Archive*		getArchive() { return archive; }
-	UndoManager*	getUndoManager() { return undo_manager; }
+	Archive*		archive() const { return archive_; }
+	UndoManager*	undoManager() const { return undo_manager_.get(); }
 	bool			saveEntryChanges();
 	void			addMenus();
 	void			removeMenus();
@@ -102,6 +54,7 @@ public:
 	bool	copyEntry();
 	bool	cutEntry();
 	bool	pasteEntry();
+	bool	openEntryExternal();
 
 	// Other entry actions
 	bool	gfxConvert();
@@ -111,7 +64,7 @@ public:
 	bool	gfxModifyOffsets();
 	bool	gfxExportPNG();
 	bool	swanConvert();
-	bool	basConvert(bool animdefs=false);
+	bool	basConvert(bool animdefs = false);
 	bool	palConvert();
 	bool	reloadCurrentPanel();
 	bool	wavDSndConvert();
@@ -125,7 +78,7 @@ public:
 	bool	crc32();
 
 	// Needed for some console commands
-	EntryPanel* 			currentArea() { return cur_area;}
+	EntryPanel* 			currentArea() { return cur_area_; }
 	ArchiveEntry*			currentEntry();
 	vector<ArchiveEntry*>	currentEntries();
 	ArchiveTreeNode*		currentDir();
@@ -137,18 +90,63 @@ public:
 	bool	openEntryAsHex(ArchiveEntry* entry);
 	bool	showEntryPanel(EntryPanel* new_area, bool ask_save = true);
 	void	focusOnEntry(ArchiveEntry* entry);
-	void	focusEntryList() { entry_list->SetFocus(); }
+	void	focusEntryList() { entry_list_->SetFocus(); }
 	void	refreshPanel();
 	void	closeCurrentEntry();
+	wxMenu*	createEntryOpenMenu(string category);
 
 	// SAction handler
-	bool	handleAction(string id);
+	bool	handleAction(string id) override;
 
 	// Listener
-	virtual void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
 
 	// Static functions
 	static EntryPanel*	createPanelForEntry(ArchiveEntry* entry, wxWindow* parent);
+
+protected:
+	Archive*			archive_				= nullptr;
+	UndoManager::UPtr	undo_manager_;
+	bool				ignore_focus_change_	= false;
+
+	// External edit stuff
+	ExternalEditManager::UPtr	ee_manager_;
+	string						current_external_exe_category_;
+	vector<string>				current_external_exes_;
+
+	// Controls
+	ArchiveEntryList*	entry_list_				= nullptr;
+	wxTextCtrl*			text_filter_			= nullptr;
+	wxButton*			btn_clear_filter_		= nullptr;
+	wxChoice*			choice_category_		= nullptr;
+	wxStaticText*		label_path_				= nullptr;
+	wxBitmapButton*		btn_updir_				= nullptr;
+	wxSizer*			sizer_path_controls_	= nullptr;
+
+	// Entry panels
+	EntryPanel*	cur_area_		= nullptr;
+	EntryPanel*	entry_area_		= nullptr;
+	EntryPanel*	default_area_	= nullptr;
+	EntryPanel*	text_area_		= nullptr;
+	EntryPanel*	ansi_area_		= nullptr;
+	EntryPanel*	gfx_area_		= nullptr;
+	EntryPanel*	pal_area_		= nullptr;
+	EntryPanel* texturex_area_	= nullptr;
+	EntryPanel* animated_area_	= nullptr;
+	EntryPanel* switches_area_	= nullptr;
+	EntryPanel* pnames_area_	= nullptr;
+	EntryPanel* hex_area_		= nullptr;
+	EntryPanel* map_area_		= nullptr;
+	EntryPanel* audio_area_		= nullptr;
+	EntryPanel* data_area_		= nullptr;
+
+	enum NewEntries
+	{
+		ENTRY_EMPTY = 0,
+		ENTRY_PALETTE,
+		ENTRY_ANIMATED,
+		ENTRY_SWITCHES,
+	};
 
 	// Events
 	void			onEntryListSelectionChange(wxCommandEvent& e);
@@ -168,32 +166,30 @@ public:
 
 class EntryDataUS : public UndoStep
 {
-private:
-	MemChunk	data;
-	string		path;
-	unsigned	index;
-	Archive*	archive;
-
 public:
-	EntryDataUS(ArchiveEntry* entry)
+	EntryDataUS(ArchiveEntry* entry) :
+		path_{ entry->getPath() },
+		index_{ (unsigned)entry->getParentDir()->entryIndex(entry) },
+		archive_{ entry->getParent() }
 	{
-		archive = entry->getParent();
-		path = entry->getPath();
-		index = entry->getParentDir()->entryIndex(entry);
-		data.importMem(entry->getData(), entry->getSize());
+		data_.importMem(entry->getData(), entry->getSize());
 	}
 
 	bool swapData();
 
-	bool doUndo()
+	bool doUndo() override
 	{
 		return swapData();
 	}
 
-	bool doRedo()
+	bool doRedo() override
 	{
 		return swapData();
 	}
+
+private:
+	MemChunk	data_;
+	string		path_;
+	unsigned	index_;
+	Archive*	archive_;
 };
-
-#endif //__ARCHIVEPANEL_H__

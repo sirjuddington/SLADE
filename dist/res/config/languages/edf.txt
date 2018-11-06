@@ -147,23 +147,23 @@ edf : cstyle {
 
 	functions {
 		// EDF "preprocessor" functions
-		ifgametype		= "game name";
-		ifngametype		= "game name";
-		ifdisabled		= "game name";
-		ifenabled		= "game name";
-		ifenabledany	= "game name[, other game names ...]";
-		ifdisabledany	= "game name[, other game names ...]";
+		ifgametype		= "game_name";
+		ifngametype		= "game_name";
+		ifdisabled		= "game_name";
+		ifenabled		= "game_name";
+		ifenabledany	= "game_name, [...]";
+		ifdisabledany	= "game_name, [...]";
 		endif;
-		enable			= "game name";
-		disable			= "game name";
-		lumpinclude		= "lump name";
-		stdinclude		= "lump name";
-		userinclude		= "lump name";
-		include			= "lump name";
-		include_prev	= "lump name";
-		bexinclude		= "lump name";
+		enable			= "game_name";
+		disable			= "game_name";
+		lumpinclude		= "lump_name";
+		stdinclude		= "lump_name";
+		userinclude		= "lump_name";
+		include			= "lump_name";
+		include_prev	= "lump_name";
+		bexinclude		= "lump_name";
 		bexoverride;
-		includeifenabled= "lump name, game name";
+		includeifenabled= "lump_name, game_name";
 
 
 		// Action functions
@@ -190,18 +190,20 @@ edf : cstyle {
 		A_Detonate;
 		
 		// Counter action functions
-		A_HealthJump = "state, comparison, value OR counter";
-		A_CounterJump = "state, comparison, value OR counter, counter";
-		A_CounterSwitch = "counter, first frame, number of frames";
+		A_HealthJump = "state, comparison, value_or_counter";
+		A_CounterJump = "state, comparison, value_or_counter, counter";
+		A_CounterJumpEx = "state, comparison, valcounter, counter";
+		A_CounterSwitch = "counter, first_frame, number_of_frames";
+		A_CounterSwitchEx = "counternum, state, state, ...";
 		A_SetCounter = "counter, value, operation";
 		A_CounterOp = "operand, operand, counter, operation";
 		A_CopyCounter = "source, destination";
-		A_WeaponCtrJump = "state, comparison, value OR counter, counter, psprite";
-		A_WeaponCtrSwitch = "counter, first frame, number of frames, psprite";
+		A_WeaponCtrJump = "state, comparison, value_or_counter, counter, psprite";
+		A_WeaponCtrSwitch = "counter, first_frame, number_of_frames, psprite";
 		A_WeaponSetCtr = "counter, value, operation";
 		A_WeaponCtrOp = "operand, operand, counter, operation";
 		A_WeaponCopyCtr = "source, destination";
-		A_CheckReloadEx = "state, test, value OR counter, psprite";
+		A_CheckReloadEx = "state, test, value_or_counter, psprite";
 		
 		// Doom action functions
 		A_PosAttack;
@@ -251,9 +253,9 @@ edf : cstyle {
 		A_SpawnSound;
 		
 		// Heretic action functions
-		A_SpawnGlitter = "dehacked number, z momentum";
+		A_SpawnGlitter = "dehacked_number, z_momentum";
 		A_AccelGlitter;
-		A_SpawnAbove = "dehacked number, state, z offset";
+		A_SpawnAbove = "dehacked_number, state, z_offset";
 		A_MummyAttack;
 		A_MummyAttack2;
 		A_MummySoul;
@@ -311,38 +313,38 @@ edf : cstyle {
 		A_Spawn;
 		A_Turn;
 		A_Face;
-		A_Scratch = "keyword, value, sound";
+		A_Scratch = "keyword, value, sound, mod";
 		A_PlaySound;
 		A_RandomJump;
 		A_LineEffect;
-		A_SetFlags = "field, OR value";
-		A_UnSetFlags = "field, NOT AND value";
-		A_StartScript = "script number, VM keyword, param 1, param 2, param 3";
+		A_SetFlags = "field, OR_value";
+		A_UnSetFlags = "field, NOT_AND_value";
+		A_StartScript = "script_number, VM_keyword, param_1, param_2, param_3";
 		A_FaceMoveDir;
-		A_GenRefire = "stop state, chance";
+		A_GenRefire = "stop_state, chance";
 		A_GenTracer;
 		A_SetTics = "amount, randomizer, toggle";
-		A_MissileAttack = "missile type, keyword, Z offset, angle[, melee state]";
-		A_MissileSpread = "missile type, amount, Z offset, sweep[, melee state]";
-		A_BulletAttack = "sound, keyword, amount, damage factor, damage modulus";
-		A_ThingSummon = "type, distance, Z offset, keyword, keyword";
+		A_MissileAttack = "missile_type, keyword, z_offset, angle, [melee_state]";
+		A_MissileSpread = "missile_type, amount, z_offset, sweep, [melee_state]";
+		A_BulletAttack = "sound, keyword, amount, damage_factor, damage_modulus";
+		A_ThingSummon = "type, distance, z_offset, keyword, keyword";
 		A_KillChildren;
 		A_AproxDistance = "dest";
-		A_ShowMessage = "message number, keyword";
+		A_ShowMessage = "message_number, keyword";
 		A_AmbientThinker;
 		A_SteamSpawn = "type, range_horiz, angle_vert, range_vert, speed";
 		A_TargetJump = "state";
-		A_EjectCasing = "front distance, center dist, Z offset, casing type";
-		A_CasingThrust = "horiz force, vert force";
+		A_EjectCasing = "front_distance, center_dist, z_offset, casing_type";
+		A_CasingThrust = "horiz_force, vert_force";
 		
 		// DECORATE-inspired action functions
 		A_AlertMonsters;
 		A_CheckPlayerDone = "state";
 		A_ClearSkin;
-		A_DetonateEx = "damage, radius, hurt self?, alert?, full damage radius";
+		A_DetonateEx = "damage, radius, hurt_self?, alert?, full_damage_radius";
 		A_FadeIn = "step";
 		A_FadeOut = "step";
-		A_Jump = "chance, state[, more states...]";
+		A_Jump = "chance, state, [...]";
 		A_JumpIfNoAmmo = "state";
 		A_JumpIfTargetInLOS = "statenum, fov, proj_target";
 		A_SetTranslucent = "alpha, mode";

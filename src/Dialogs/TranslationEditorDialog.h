@@ -6,12 +6,11 @@
 #include "Graphics/SImage/SImage.h"
 #include "UI/Canvas/OGLCanvas.h"
 #include "UI/WxBasicControls.h"
-#include <wx/clrpicker.h>
-#include <wx/dialog.h>
+#include "UI/Controls/ColourBox.h"
 
 class GfxCanvas;
 class PaletteCanvas;
-class Palette8bit;
+class Palette;
 class GradientBox : public OGLCanvas
 {
 private:
@@ -36,7 +35,7 @@ class wxPanel;
 class TranslationEditorDialog : public wxDialog
 {
 private:
-	Palette8bit*	palette;
+	Palette*	palette;
 	Translation		translation;
 	SImage			image_preview;
 
@@ -51,6 +50,8 @@ private:
 	wxRadioButton*	rb_type_palette;
 	wxRadioButton*	rb_type_colour;
 	wxRadioButton*	rb_type_desaturate;
+	wxRadioButton*	rb_type_colourise;
+	wxRadioButton*	rb_type_tint;
 	wxTextCtrl*		text_string;
 
 	// Paletted target range
@@ -59,20 +60,28 @@ private:
 	wxCheckBox*		cb_target_reverse;
 
 	// Colour gradient target range
-	wxPanel*			panel_target_gradient;
-	wxColourPickerCtrl*	cp_range_begin;
-	wxColourPickerCtrl*	cp_range_end;
-	GradientBox*		gb_gradient;
+	wxPanel*		panel_target_gradient;
+	ColourBox*		cb_range_begin;
+	ColourBox*		cb_range_end;
+	GradientBox*	gb_gradient;
+
+	// Colourise/tint target range
+	wxPanel*		panel_target_tint;
+	ColourBox*		cb_target_tint;
+	wxSlider*		slider_tint;
+	wxStaticText*	label_tint;
+	wxStaticText*	label_amount;
 
 	// Preview
-	PaletteCanvas*		pal_canvas_preview;
-	GfxCanvas*			gfx_preview;
+	PaletteCanvas*	pal_canvas_preview;
+	GfxCanvas*		gfx_preview;
 
 	// Truecolor
-	wxCheckBox*			cb_truecolor;
+	wxCheckBox*		cb_truecolor;
+	wxCheckBox*		cb_paletteonly;
 
 public:
-	TranslationEditorDialog(wxWindow* parent, Palette8bit* pal, string title = "Edit Translation", SImage* preview_image = NULL);
+	TranslationEditorDialog(wxWindow* parent, Palette* pal, string title = "Edit Translation", SImage* preview_image = nullptr);
 	~TranslationEditorDialog();
 
 	Translation&	getTranslation() { return translation; }
@@ -83,8 +92,11 @@ public:
 	void	updateListItem(int index);
 	void	setStartColour(rgba_t col);
 	void	setEndColour(rgba_t col);
+	void	setTintColour(rgba_t col);
+	void	setTintAmount(int amount);
 	void	showPaletteTarget();
 	void	showGradientTarget();
+	void	showTintTarget(bool tint);
 	void	updatePreviews();
 
 	// Events
@@ -93,10 +105,14 @@ public:
 	void	onRBPaletteSelected(wxCommandEvent& e);
 	void	onRBColourSelected(wxCommandEvent& e);
 	void	onRBDesaturateSelected(wxCommandEvent& e);
-	void	onBeginColourChanged(wxColourPickerEvent& e);
-	void	onEndColourChanged(wxColourPickerEvent& e);
+	void	onRBColouriseSelected(wxCommandEvent& e);
+	void	onRBTintSelected(wxCommandEvent& e);
+	void	onBeginColourChanged(wxEvent& e);
+	void	onEndColourChanged(wxEvent& e);
+	void	onTintColourChanged(wxEvent& e);
 	void	onPalOriginLeftUp(wxMouseEvent& e);
 	void	onPalTargetLeftUp(wxMouseEvent& e);
+	void	onTintAmountChanged(wxCommandEvent& e);
 	void	onBtnRemove(wxCommandEvent& e);
 	void	onBtnAdd(wxCommandEvent& e);
 	void	onBtnUp(wxCommandEvent& e);
@@ -106,6 +122,7 @@ public:
 	void	onGfxPreviewMouseMotion(wxMouseEvent& e);
 	void	onCBTargetReverse(wxCommandEvent& e);
 	void	onCBTruecolor(wxCommandEvent& e);
+	void	onCBPaletteOnly(wxCommandEvent& e);
 };
 
 
@@ -120,14 +137,14 @@ class GfxColouriseDialog : public wxDialog
 private:
 	GfxCanvas*			gfx_preview;
 	ArchiveEntry*		entry;
-	Palette8bit*		palette;
-	wxColourPickerCtrl*	cp_colour;
+	Palette*		palette;
+	ColourBox*			cb_colour;
 
 public:
-	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal);
+	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
 	rgba_t getColour();
 	void setColour(string col);
-	void onColourChanged(wxColourPickerEvent& e);
+	void onColourChanged(wxEvent& e);
 	void onResize(wxSizeEvent& e);
 };
 
@@ -143,17 +160,17 @@ class GfxTintDialog : public wxDialog
 private:
 	GfxCanvas*			gfx_preview;
 	ArchiveEntry*		entry;
-	Palette8bit*		palette;
-	wxColourPickerCtrl*	cp_colour;
+	Palette*		palette;
+	ColourBox*			cb_colour;
 	wxSlider*			slider_amount;
 	wxStaticText*		label_amount;
 
 public:
-	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal);
+	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
 	rgba_t getColour();
 	float getAmount();
 	void setValues(string col, int val);
-	void onColourChanged(wxColourPickerEvent& e);
+	void onColourChanged(wxEvent& e);
 	void onAmountChanged(wxCommandEvent& e);
 	void onResize(wxSizeEvent& e);
 };

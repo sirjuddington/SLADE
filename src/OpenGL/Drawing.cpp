@@ -34,8 +34,8 @@
 #include "General/Console/Console.h"
 #include "Utility/MathStuff.h"
 #include "General/Misc.h"
+#include "General/UI.h"
 #include "OpenGL.h"
-#include <wx/settings.h>
 
 #ifdef USE_SFML_RENDERWINDOW
 #include <SFML/Graphics.hpp>
@@ -62,7 +62,7 @@ CVAR(Int, gl_font_size, 12, CVAR_SAVE)
 namespace Drawing
 {
 #ifdef USE_SFML_RENDERWINDOW
-	sf::RenderWindow*	render_target = NULL;
+	sf::RenderWindow*	render_target = nullptr;
 	bool				text_state_reset = true;
 #endif
 	double				text_outline_width = 0;
@@ -134,7 +134,7 @@ public:
 
 };
 #define theFontManager FontManager::getInstance()
-FontManager* FontManager::instance = NULL;
+FontManager* FontManager::instance = nullptr;
 
 
 /*******************************************************************
@@ -152,23 +152,23 @@ int FontManager::initFonts()
 	int ret = 0;
 
 	// Normal
-	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
+	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry) ++ret, font_normal.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Condensed
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
 	if (entry) ++ret, font_condensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
 	if (entry) ++ret, font_bold.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Condensed Bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
 	if (entry) ++ret, font_boldcondensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Monospace
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
 	if (entry) ++ret, font_small.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	return ret;
@@ -191,11 +191,11 @@ int FontManager::initFonts()
 	if (font_small)			{ delete font_small;			font_small = NULL;			}
 
 	// Normal
-	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
+	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
 	{
 		font_normal = new FTTextureFont(entry->getData(), entry->getSize());
-		font_normal->FaceSize(gl_font_size);
+		font_normal->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_normal->Error())
@@ -207,11 +207,11 @@ int FontManager::initFonts()
 	}
 
 	// Condensed
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
 	if (entry)
 	{
 		font_condensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_condensed->FaceSize(gl_font_size);
+		font_condensed->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_condensed->Error())
@@ -223,11 +223,11 @@ int FontManager::initFonts()
 	}
 
 	// Bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
 	if (entry)
 	{
 		font_bold = new FTTextureFont(entry->getData(), entry->getSize());
-		font_bold->FaceSize(gl_font_size);
+		font_bold->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_bold->Error())
@@ -239,11 +239,11 @@ int FontManager::initFonts()
 	}
 
 	// Condensed bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
 	if (entry)
 	{
 		font_boldcondensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_boldcondensed->FaceSize(gl_font_size);
+		font_boldcondensed->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_boldcondensed->Error())
@@ -255,11 +255,11 @@ int FontManager::initFonts()
 	}
 
 	// Monospace
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
 	if (entry)
 	{
 		font_mono = new FTTextureFont(entry->getData(), entry->getSize());
-		font_mono->FaceSize(gl_font_size);
+		font_mono->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_mono->Error())
@@ -271,11 +271,11 @@ int FontManager::initFonts()
 	}
 
 	// Small
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
 	{
 		font_small = new FTTextureFont(entry->getData(), entry->getSize());
-		font_small->FaceSize((gl_font_size * 0.6) + 1);
+		font_small->FaceSize((UI::scalePx(gl_font_size) * 0.6) + 1);
 
 		// Check it loaded ok
 		if (font_small->Error())
@@ -306,7 +306,7 @@ sf::Font* FontManager::getFont(int font)
 	case Drawing::FONT_SMALL:			return &font_small;
 	default:							return &font_normal;
 	};
-	return NULL;
+	return nullptr;
 }
 #else // USE_SFML_RENDERWINDOW
 FTFont* FontManager::getFont(int font)
@@ -336,6 +336,14 @@ FTFont* FontManager::getFont(int font)
 void Drawing::initFonts()
 {
 	theFontManager->initFonts();
+}
+
+/* Drawing::fontSize
+ * Returns the configured font size (scaled for DPI etc)
+ *******************************************************************/
+int Drawing::fontSize()
+{
+	return UI::scalePx(gl_font_size);
 }
 
 /* Drawing::drawLine
@@ -644,16 +652,16 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 {
 	// Setup SFML string
 	sf::Text sf_str;
-	sf_str.setString(CHR(text));
+	sf_str.setString(UTF8(text));
 	sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
 
 	// Set font
 	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
-		sf_str.setCharacterSize((gl_font_size * 0.6) + 1);
+		sf_str.setCharacterSize((UI::scalePx(gl_font_size) * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(gl_font_size);
+		sf_str.setCharacterSize(UI::scalePx(gl_font_size));
 
 	// Setup alignment
 	if (alignment != ALIGN_LEFT)
@@ -737,9 +745,9 @@ fpoint2_t Drawing::textExtents(string text, int font)
 	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
-		sf_str.setCharacterSize((gl_font_size * 0.6) + 1);
+		sf_str.setCharacterSize((UI::scalePx(gl_font_size) * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(gl_font_size);
+		sf_str.setCharacterSize(UI::scalePx(gl_font_size));
 
 	// Return width and height of text
 	sf::FloatRect rect = sf_str.getGlobalBounds();
@@ -987,7 +995,7 @@ wxColour Drawing::lightColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	hsl_t hsl = Misc::rgbToHsl(rgba_t(colour.Red(), colour.Green(), colour.Blue()));
+	hsl_t hsl = Misc::rgbToHsl(rgba_t(COLWX(colour)));
 
 	// Increase luminance
 	hsl.l += (float)((percent * 5.0)/100.0);
@@ -1005,7 +1013,7 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	hsl_t hsl = Misc::rgbToHsl(rgba_t(colour.Red(), colour.Green(), colour.Blue()));
+	hsl_t hsl = Misc::rgbToHsl(rgba_t(COLWX(colour)));
 
 	// Decrease luminance
 	hsl.l -= (float)((percent * 5.0)/100.0);
@@ -1162,7 +1170,7 @@ void TextBox::draw(int x, int y, rgba_t colour, int alignment)
 
 /*
 CONSOLE_COMMAND(d_testfont, 1) {
-	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath(S_FMT("fonts/%s.ttf", args[0]));
+	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath(S_FMT("fonts/%s.ttf", args[0]));
 	if (entry) {
 		if (Drawing::font_condensed) {
 			delete Drawing::font_condensed;

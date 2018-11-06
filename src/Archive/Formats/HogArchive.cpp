@@ -30,15 +30,76 @@
  *******************************************************************/
 #include "Main.h"
 #include "HogArchive.h"
-#include "UI/SplashWindow.h"
-#include <wx/filename.h>
+#include "General/UI.h"
 
 
 /*******************************************************************
  * EXTERNAL VARIABLES
  *******************************************************************/
-EXTERN_CVAR(Bool, wad_force_uppercase)
 EXTERN_CVAR(Bool, archive_load_data)
+
+
+/*******************************************************************
+ * HOGARCHIVE HELPER FUNCTIONS
+ *******************************************************************/
+
+/* DecodeTXB
+ * TXB files are text files with a bit shift xor cipher. It makes an exception
+ * for the newline character probably so that standard string functions will
+ * continue to work. As an extension we also except the encoded version of 0xA
+ * in order to produce a lossless conversion. This allows us to semi-effectively
+ * handle this at the archive level instead of as a filter at the text editor.
+ *******************************************************************/
+void DecodeTXB(MemChunk &mc)
+{
+	const uint8_t* data = mc.getData();
+	const uint8_t* const dataend = data + mc.getSize();
+	uint8_t* odata = new uint8_t[mc.getSize()];
+	uint8_t* const ostart = odata;
+	while (data != dataend)
+	{
+		if (*data != 0xA && *data != 0x8F)
+		{
+			*odata++ = (((*data&0x3F)<<2)|((*data&0xC0)>>6))^0xA7;
+			++data;
+		}
+		else
+			*odata++ = *data++;
+	}
+	mc.importMem(ostart, mc.getSize());
+	delete[] ostart;
+}
+
+/* EncodeTXB
+ * Opposite of DecodeTXB. Caller should delete[] returned pointer.
+ *******************************************************************/
+uint8_t* EncodeTXB(MemChunk &mc)
+{
+	const uint8_t* data = mc.getData();
+	const uint8_t* const dataend = data + mc.getSize();
+	uint8_t* odata = new uint8_t[mc.getSize()];
+	uint8_t* const ostart = odata;
+	while (data != dataend)
+	{
+		if (*data != 0xA && *data != 0x8F)
+		{
+			*odata++ = (((*data&0x3)<<6)|((*data&0xFC)>>2))^0xE9;
+			++data;
+		}
+		else
+			*odata++ = *data++;
+	}
+	return ostart;
+}
+
+/* ShouldEncodeTXB
+ * Determines by filename being *.txb or *.ctb if we should encode.
+ *******************************************************************/
+bool ShouldEncodeTXB(string name)
+{
+	return name.Right(4).CmpNoCase(".txb") == 0 ||
+		name.Right(4).CmpNoCase(".ctb") == 0;
+}
 
 /*******************************************************************
  * HOGARCHIVE CLASS FUNCTIONS
@@ -47,11 +108,11 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* HogArchive::HogArchive
  * HogArchive class constructor
  *******************************************************************/
-HogArchive::HogArchive() : TreelessArchive(ARCHIVE_HOG)
+HogArchive::HogArchive() : TreelessArchive("hog")
 {
-	desc.max_name_length = 13;
-	desc.names_extensions = false;
-	desc.supports_dirs = false;
+	//desc.max_name_length = 13;
+	//desc.names_extensions = false;
+	//desc.supports_dirs = false;
 }
 
 /* HogArchive::~HogArchive
@@ -85,22 +146,6 @@ void HogArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* HogArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string HogArchive::getFileExtensionString()
-{
-	return "Hog Files (*.hog)|*.hog";
-}
-
-/* HogArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string HogArchive::getFormat()
-{
-	return "archive_hog";
-}
-
 /* HogArchive::open
  * Reads hog format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -124,19 +169,19 @@ bool HogArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Iterate through files to see if the size seems okay
-	theSplashWindow->setProgressMessage("Reading hog archive data");
+	UI::setSplashProgressMessage("Reading hog archive data");
 	size_t iter_offset = 3;
 	uint32_t num_lumps = 0;
 	while (iter_offset < archive_size)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)iter_offset / (float)archive_size));
+		UI::setSplashProgress(((float)iter_offset / (float)archive_size));
 
 		// If the lump data goes past the end of the file,
 		// the hogfile is invalid
 		if (iter_offset + 17 > archive_size)
 		{
-			wxLogMessage("HogArchive::open: hog archive is invalid or corrupt");
+			LOG_MESSAGE(1, "HogArchive::open: hog archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -157,8 +202,14 @@ bool HogArchive::open(MemChunk& mc)
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(0);
 
+		// Handle txb/ctb as archive level encryption. This is not strictly
+		// correct, but since we're not making a proper Descent editor this
+		// prevents needless complication on loading text data.
+		if (ShouldEncodeTXB(nlump->getName()))
+			nlump->setEncryption(ENC_TXB);
+
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 
 		// Update entry size to compute next offset
 		iter_offset = offset + size;
@@ -166,11 +217,11 @@ bool HogArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -180,6 +231,8 @@ bool HogArchive::open(MemChunk& mc)
 		{
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			if (entry->isEncrypted() == ENC_TXB)
+				DecodeTXB(edata);
 			entry->importMemChunk(edata);
 		}
 
@@ -199,7 +252,7 @@ bool HogArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -212,7 +265,7 @@ bool HogArchive::write(MemChunk& mc, bool update)
 {
 	// Determine individual lump offsets
 	uint32_t offset = 3;
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		offset += 17;
@@ -235,13 +288,6 @@ bool HogArchive::write(MemChunk& mc, bool update)
 	char header[3] = { 'D', 'H', 'F' };
 	mc.write(header, 3);
 
-	// Write the lumps
-	for (uint32_t l = 0; l < numEntries(); l++)
-	{
-		entry = getEntry(l);
-		mc.write(entry->getData(), entry->getSize());
-	}
-
 	// Write the directory
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
@@ -254,7 +300,14 @@ bool HogArchive::write(MemChunk& mc, bool update)
 
 		mc.write(name, 13);
 		mc.write(&size, 4);
-		mc.write(entry->getData(), entry->getSize());
+		if (entry->isEncrypted() == ENC_TXB)
+		{
+			uint8_t *data = EncodeTXB(entry->getMCData());
+			mc.write(data, entry->getSize());
+			delete[] data;
+		}
+		else
+			mc.write(entry->getData(), entry->getSize());
 	}
 
 	return true;
@@ -279,12 +332,12 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open hogfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("HogArchive::loadEntryData: Failed to open hogfile %s", filename);
+		LOG_MESSAGE(1, "HogArchive::loadEntryData: Failed to open hogfile %s", filename_);
 		return false;
 	}
 
@@ -307,11 +360,11 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -319,7 +372,6 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 
 	// Process name (must be 12 characters max)
 	string name = entry->getName().Truncate(12);
-	if (wad_force_uppercase) name.MakeUpper();
 
 	// Set new hog-friendly name
 	entry->setName(name);
@@ -335,7 +387,10 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
  *******************************************************************/
 ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	if (ShouldEncodeTXB(entry->getName()))
+		entry->setEncryption(ENC_TXB);
+
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* HogArchive::renameEntry
@@ -351,7 +406,12 @@ bool HogArchive::renameEntry(ArchiveEntry* entry, string name)
 
 	// Process name (must be 12 characters max)
 	name.Truncate(12);
-	if (wad_force_uppercase) name.MakeUpper();
+
+	// Update encode status
+	if (ShouldEncodeTXB(name))
+		entry->setEncryption(ENC_TXB);
+	else
+		entry->setEncryption(ENC_NONE);
 
 	// Do default rename
 	return Archive::renameEntry(entry, name);

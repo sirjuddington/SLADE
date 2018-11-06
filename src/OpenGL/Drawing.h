@@ -6,7 +6,7 @@
 #include <SFML/Graphics.hpp>
 #endif
 
-#include <wx/colour.h>
+#include "common.h"
 
 #include "Utility/Structs.h"
 
@@ -34,6 +34,9 @@ namespace Drawing
 	// Initialisation
 	void initFonts();
 
+	// Info
+	int	fontSize();
+
 	// Basic drawing
 	void drawLine(fpoint2_t start, fpoint2_t end);
 	void drawLine(double x1, double y1, double x2, double y2);
@@ -53,7 +56,7 @@ namespace Drawing
 	void	drawTextureWithin(GLTexture* tex, double x1, double y1, double x2, double y2, double padding, double max_scale = 1);
 
 	// Text drawing
-	void drawText(string text, int x = 0, int y = 0, rgba_t colour = COL_WHITE, int font = FONT_NORMAL, int alignment = ALIGN_LEFT, frect_t* bounds = NULL);
+	void drawText(string text, int x = 0, int y = 0, rgba_t colour = COL_WHITE, int font = FONT_NORMAL, int alignment = ALIGN_LEFT, frect_t* bounds = nullptr);
 	fpoint2_t textExtents(string text, int font = FONT_NORMAL);
 	void enableTextStateReset(bool enable = true);
 	void setTextState(bool set = true);

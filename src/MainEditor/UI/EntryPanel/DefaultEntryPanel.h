@@ -1,35 +1,31 @@
-
-#ifndef __DEFAULT_ENTRY_PANEL_H__
-#define __DEFAULT_ENTRY_PANEL_H__
+#pragma once
 
 #include "EntryPanel.h"
 
 class DefaultEntryPanel : public EntryPanel
 {
-private:
-	vector<ArchiveEntry*>	entries;
-
-	wxStaticText*	label_type;
-	wxStaticText*	label_size;
-	wxStaticText*	label_index;
-
-	// Actions
-	wxStaticBox*	frame_actions;
-	wxButton*		btn_gfx_convert;
-	wxButton*		btn_gfx_modify_offsets;
-	wxButton*		btn_texture_edit;
-
 public:
 	DefaultEntryPanel(wxWindow* parent);
-	~DefaultEntryPanel();
+	~DefaultEntryPanel() {}
 
-	bool	loadEntry(ArchiveEntry* entry);
+	bool	loadEntry(ArchiveEntry* entry) override;
 	bool	loadEntries(vector<ArchiveEntry*>& entries);
-	bool	saveEntry();
+	bool	saveEntry() override;
 
 	void	onBtnGfxConvert(wxCommandEvent& e);
 	void	onBtnGfxModifyOffsets(wxCommandEvent& e);
 	void	onBtnTextureEdit(wxCommandEvent& e);
-};
 
-#endif//__DEFAULT_ENTRY_PANEL_H__
+private:
+	vector<ArchiveEntry*>	entries_;
+
+	wxStaticText*	label_type_		= nullptr;
+	wxStaticText*	label_size_		= nullptr;
+	wxStaticText*	label_index_	= nullptr;
+
+	// Actions
+	wxStaticBox*	frame_actions_			= nullptr;
+	wxButton*		btn_gfx_convert_		= nullptr;
+	wxButton*		btn_gfx_modify_offsets_	= nullptr;
+	wxButton*		btn_texture_edit_		= nullptr;
+};

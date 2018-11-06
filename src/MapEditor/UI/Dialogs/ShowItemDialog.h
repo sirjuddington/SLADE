@@ -1,24 +1,21 @@
+#pragma once
 
-#ifndef __SHOW_ITEM_DIALOG_H__
-#define __SHOW_ITEM_DIALOG_H__
-
-#include <wx/dialog.h>
+#include "common.h"
 
 class wxChoice;
 class wxTextCtrl;
+
 class ShowItemDialog : public wxDialog
 {
-private:
-	wxChoice*	choice_type;
-	wxTextCtrl*	text_index;
-
 public:
 	ShowItemDialog(wxWindow* parent);
-	~ShowItemDialog();
+	~ShowItemDialog() {}
 
-	int		getType();
-	int		getIndex();
-	void	setType(int type);
+	int		getType() const;
+	int		getIndex() const;
+	void	setType(int type) const;
+
+private:
+	wxChoice*	choice_type_;
+	wxTextCtrl*	text_index_;
 };
-
-#endif//__SHOW_ITEM_DIALOG_H__

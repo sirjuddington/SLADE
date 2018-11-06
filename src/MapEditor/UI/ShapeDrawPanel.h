@@ -1,33 +1,20 @@
-
-#ifndef __SHAPE_DRAW_PANEL_H__
-#define __SHAPE_DRAW_PANEL_H__
-
-#include "UI/WxBasicControls.h"
-#include <wx/panel.h>
+#pragma once
 
 class wxBoxSizer;
+
 class ShapeDrawPanel : public wxPanel
 {
-private:
-	wxChoice*	choice_shape;
-	wxCheckBox*	cb_centered;
-	wxCheckBox*	cb_lockratio;
-	wxBoxSizer*	sizer_main;
-
-	wxSpinCtrl*		spin_sides;
-	wxPanel*		panel_sides;
-
 public:
 	ShapeDrawPanel(wxWindow* parent);
-	~ShapeDrawPanel();
+	~ShapeDrawPanel() {}
 
 	void	showShapeOptions(int shape);
 
-	// Events
-	void	onShapeChanged(wxCommandEvent& e);
-	void	onCenteredChecked(wxCommandEvent& e);
-	void	onLockRatioChecked(wxCommandEvent& e);
-	void	onSidesChanged(wxCommandEvent& e);
+private:
+	wxChoice*	choice_shape_	= nullptr;
+	wxCheckBox*	cb_centered_	= nullptr;
+	wxCheckBox*	cb_lockratio_	= nullptr;
+	wxBoxSizer*	sizer_main_		= nullptr;
+	wxSpinCtrl*	spin_sides_		= nullptr;
+	wxPanel*	panel_sides_	= nullptr;
 };
-
-#endif//__SHAPE_DRAW_PANEL_H__

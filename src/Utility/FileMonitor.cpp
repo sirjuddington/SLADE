@@ -31,7 +31,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "FileMonitor.h"
 #include "Archive/Archive.h"
 #include "Archive/Formats/WadArchive.h"
@@ -44,17 +43,20 @@
 /* FileMonitor::FileMonitor
  * FileMonitor class constructor
  *******************************************************************/
-FileMonitor::FileMonitor(string filename)
+FileMonitor::FileMonitor(string filename, bool start)
 {
 	// Init variables
 	this->filename = filename;
-	file_modified = wxFileModificationTime(filename);
 
 	// Create process
 	process = new wxProcess(this);
 
 	// Start timer (updates every 1 sec)
-	Start(1000);
+	if (start)
+	{
+		file_modified = wxFileModificationTime(filename);
+		Start(1000);
+	}
 
 	// Bind events
 	Bind(wxEVT_END_PROCESS, &FileMonitor::onEndProcess, this);
@@ -90,6 +92,15 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 {
 	// Call any custom code for when the external process terminates
 	processTerminated();
+
+	// Check if the file has been modified since last update
+	time_t modified = wxFileModificationTime(filename);
+	if (modified > file_modified)
+	{
+		// Modified, update modification time and run any custom code
+		file_modified = modified;
+		fileModified();
+	}
 
 	// Delete this FileMonitor (its job is done)
 	delete this;
@@ -135,7 +146,7 @@ void DB2MapFileMonitor::fileModified()
 	wad->open(filename);
 
 	// Get map info for target archive
-	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	vector<Archive::MapDesc> maps = archive->detectMaps();
 	for (unsigned a = 0; a < maps.size(); a++)
 	{
 		if (S_CMPNOCASE(maps[a].name, map_name))
@@ -168,7 +179,7 @@ void DB2MapFileMonitor::fileModified()
 			unsigned index = archive->entryIndex(entry);
 			for (unsigned b = 0; b < wad->numEntries(); b++)
 			{
-				ArchiveEntry* ne = archive->addEntry(wad->getEntry(b), index, NULL, true);
+				ArchiveEntry* ne = archive->addEntry(wad->getEntry(b), index, nullptr, true);
 				if (index <= archive->numEntries()) index++;
 				ne->lock();
 			}
@@ -185,7 +196,7 @@ void DB2MapFileMonitor::fileModified()
 void DB2MapFileMonitor::processTerminated()
 {
 	// Get map info for target archive
-	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	vector<Archive::MapDesc> maps = archive->detectMaps();
 	for (unsigned a = 0; a < maps.size(); a++)
 	{
 		if (S_CMPNOCASE(maps[a].name, map_name))

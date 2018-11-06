@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "KeyBind.h"
-#include <wx/event.h>
+#include "Utility/Tokenizer.h"
 
 
 /*******************************************************************
@@ -167,7 +167,7 @@ bool KeyBind::isPressed(string name)
 bool KeyBind::addBind(string name, keypress_t key, string desc, string group, bool ignore_shift, int priority)
 {
 	// Find keybind
-	KeyBind* bind = NULL;
+	KeyBind* bind = nullptr;
 	for (unsigned a = 0; a < keybinds.size(); a++)
 	{
 		if (keybinds[a].name == name)
@@ -314,6 +314,7 @@ string KeyBind::keyName(int key)
 #else
 	case WXK_CONTROL:			return "control";
 #endif
+	case '\\':					return "backslash";
 	default: break;
 	};
 
@@ -500,7 +501,14 @@ void KeyBind::initBinds()
 	addBind("ted_calltip", keypress_t("space", KPM_CTRL|KPM_SHIFT), "Open CallTip", group);
 	addBind("ted_findreplace", keypress_t("F", KPM_CTRL), "Find/Replace", group);
 	addBind("ted_findnext", keypress_t("f3"), "Find next", group);
-	addBind("ted_jumpto", keypress_t("J", KPM_CTRL), "Jump to", group);
+	addBind("ted_findprev", keypress_t("f3", KPM_SHIFT), "Find previous", group);
+	addBind("ted_replacenext", keypress_t("R", KPM_ALT), "Replace next", group);
+	addBind("ted_replaceall", keypress_t("R", KPM_ALT|KPM_SHIFT), "Replace all", group);
+	addBind("ted_jumptoline", keypress_t("G", KPM_CTRL), "Jump to Line", group);
+	addBind("ted_fold_foldall", keypress_t("[", KPM_CTRL|KPM_SHIFT), "Fold All", group);
+	addBind("ted_fold_unfoldall", keypress_t("]", KPM_CTRL|KPM_SHIFT), "Fold All", group);
+	addBind("ted_line_comment", keypress_t("/", KPM_CTRL), "Line Comment", group);
+	addBind("ted_block_comment", keypress_t("/", KPM_CTRL|KPM_SHIFT), "Block Comment", group);
 
 	// Texture editor (txed*)
 	group = "Texture Editor";
@@ -624,9 +632,14 @@ void KeyBind::initBinds()
 	addBind("me3d_copy_tex_type", keypress_t("C", KPM_CTRL), "Copy texture or thing type", group);
 	addBind("me3d_copy_tex_type", keypress_t("mouse3"));
 	addBind("me3d_paste_tex_type", keypress_t("V", KPM_CTRL), "Paste texture or thing type", group);
-	addBind("me3d_paste_tex_type", keypress_t("mouse3", KPM_SHIFT));
+	addBind("me3d_paste_tex_type", keypress_t("mouse3", KPM_CTRL));
+	addBind("me3d_paste_tex_adj", keypress_t("mouse3", KPM_SHIFT), "Flood-fill texture", group);
 	addBind("me3d_toggle_info", keypress_t("I"), "Toggle information overlay", group);
 	addBind("me3d_quick_texture", keypress_t("T", KPM_CTRL), "Quick Texture", group);
+	addBind("me3d_generic_up8", keypress_t("mwheelup", KPM_CTRL), "Raise target 8", group);
+	addBind("me3d_generic_up", keypress_t("mwheelup", KPM_CTRL|KPM_SHIFT), "Raise target 1", group);
+	addBind("me3d_generic_down8", keypress_t("mwheeldown", KPM_CTRL), "Lower target 8", group);
+	addBind("me3d_generic_down", keypress_t("mwheeldown", KPM_CTRL|KPM_SHIFT), "Lower target 1", group);
 
 	// Map Editor 3D Camera (me3d_camera*)
 	group = "Map Editor 3D Mode Camera";
@@ -772,16 +785,16 @@ string KeyBind::writeBinds()
 bool KeyBind::readBinds(Tokenizer& tz)
 {
 	// Parse until ending }
-	string name = tz.getToken();
-	while (name != "}" && !tz.atEnd())
+	while (!tz.checkOrEnd("}"))
 	{
 		// Clear any current binds for the key
+		string name = tz.current().text;
 		getBind(name).keys.clear();
 
 		// Read keys
-		while (1)
+		while (true)
 		{
-			string keystr = tz.getToken();
+			string keystr = tz.next().text;
 
 			// Finish if no keys are bound
 			if (keystr == "unbound")
@@ -801,14 +814,12 @@ bool KeyBind::readBinds(Tokenizer& tz)
 			addBind(name, keypress_t(key, mods.Find('a') >= 0, mods.Find('c') >= 0, mods.Find('s') >= 0));
 
 			// Check for more keys
-			if (tz.peekToken() == ",")
-				tz.getToken();			// Skip ,
-			else
+			if (!tz.advIfNext(","))
 				break;
 		}
 
 		// Next keybind
-		name = tz.getToken();
+		tz.adv();
 	}
 
 	// Create sorted list

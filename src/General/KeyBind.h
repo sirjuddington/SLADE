@@ -2,11 +2,11 @@
 #ifndef __KEYBIND_H__
 #define __KEYBIND_H__
 
-#include "Utility/Tokenizer.h"
-
 #define KPM_CTRL	0x01
 #define KPM_ALT		0x02
 #define KPM_SHIFT	0x04
+
+class Tokenizer;
 
 struct keypress_t
 {
@@ -123,7 +123,7 @@ class KeyBindHandler
 {
 public:
 	KeyBindHandler();
-	~KeyBindHandler();
+	virtual ~KeyBindHandler();
 
 	virtual void onKeyBindPress(string name) {}
 	virtual void onKeyBindRelease(string name) {}

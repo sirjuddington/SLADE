@@ -15,7 +15,7 @@ entry_types
 	texturex
 	{
 		name = "TEXTUREx";
-		match_name = "TEXTURE1", "TEXTURE2", "TEXTURES";
+		match_name = "TEXTURE1", "TEXTURE2", "TEXTURE3", "TEXTURES";
 		format = "texturex";
 		icon = "e_texturex";
 		extra = textures;

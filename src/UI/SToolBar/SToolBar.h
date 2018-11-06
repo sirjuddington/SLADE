@@ -1,23 +1,17 @@
+#pragma once
 
-#ifndef __S_TOOL_BAR_H__
-#define __S_TOOL_BAR_H__
-
-#include <wx/panel.h>
+#include "common.h"
 
 class SToolBarButton;
 class SToolBar;
 class SToolBarGroup : public wxPanel
 {
-private:
-	string	name;
-	bool	hidden;
-
 public:
 	SToolBarGroup(SToolBar* parent, string name, bool force_name = false);
 	~SToolBarGroup();
 
-	string	getName() { return name; }
-	bool	isHidden() { return hidden; }
+	string	name() const { return name_; }
+	bool	hidden() const { return hidden_; }
 	void	hide(bool hide = true);
 	void	redraw();
 
@@ -26,33 +20,48 @@ public:
 	void			addCustomControl(wxWindow* control);
 
 	void	onButtonClicked(wxCommandEvent& e);
+
+private:
+	string	name_;
+	bool	hidden_;
 };
 
 class SToolBar : public wxPanel
 {
-private:
-	vector<SToolBarGroup*>	groups;
-	vector<wxWindow*>		separators;
-	vector<wxWindow*>		vlines;
-	int						min_height;
-	int						n_rows;
-	bool					draw_border;
-	bool					main_toolbar;
-
 public:
 	SToolBar(wxWindow* parent, bool main_toolbar = false);
 	~SToolBar();
 
-	int		minHeight() { return min_height; }
-	void	addGroup(SToolBarGroup* group);
-	void	deleteGroup(string name);
-	void	deleteCustomGroups();
-	void	addActionGroup(string name, wxArrayString actions);
+	const vector<SToolBarGroup*>&	groups() const { return groups_; }
+	int								minHeight() const { return min_height_; }
+	bool							mainToolbar() const { return main_toolbar_; }
+
+	SToolBarGroup*	group(const string& name);
+	void			addGroup(SToolBarGroup* group);
+	void			deleteGroup(string name);
+	void			deleteCustomGroups();
+	void			addActionGroup(string name, wxArrayString actions);
+	void			enableGroup(string name, bool enable = true);
+	void			populateGroupsMenu(wxMenu* menu, int start_id = 0);
+	void			enableContextMenu(bool enable = true) { enable_context_menu_ = enable; }
+
 	void	updateLayout(bool force = false, bool generate_event = true);
-	void	enableGroup(string name, bool enable = true);
 	int		calculateNumRows(int width);
-	void	drawBorder(bool draw = true) { draw_border = draw; }
-	bool	mainToolbar() { return main_toolbar; }
+
+	void	drawBorder(bool draw = true) { draw_border_ = draw; }
+
+	// Static
+	static int	getBarHeight();
+
+private:
+	vector<SToolBarGroup*>	groups_;
+	vector<wxWindow*>		separators_;
+	vector<wxWindow*>		vlines_;
+	int						min_height_;
+	int						n_rows_;
+	bool					draw_border_;
+	bool					main_toolbar_;
+	bool					enable_context_menu_;
 
 	// Events
 	void	onSize(wxSizeEvent& e);
@@ -62,11 +71,6 @@ public:
 	void	onContextMenu(wxCommandEvent& e);
 	void	onButtonClick(wxCommandEvent& e);
 	void	onEraseBackground(wxEraseEvent& e);
-
-	// Static
-	static int	getBarHeight();
 };
 
 DECLARE_EVENT_TYPE(wxEVT_STOOLBAR_LAYOUT_UPDATED, -1)
-
-#endif//__S_TOOL_BAR_H__

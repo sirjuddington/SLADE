@@ -76,7 +76,7 @@ wxGLContext* OpenGL::getContext(wxGLCanvas* canvas)
 			init();
 		}
 		else
-			wxLogMessage("Can't create global GL context, wxGLCanvas is hidden");
+			LOG_MESSAGE(1, "Can't create global GL context, wxGLCanvas is hidden");
 	}
 
 	return context;
@@ -91,7 +91,7 @@ bool OpenGL::init()
 	if (initialised)
 		return true;
 
-	wxLogMessage("Initialising OpenGL...");
+	LOG_MESSAGE(1, "Initialising OpenGL...");
 
 	// Get OpenGL info
 	info.vendor = wxString::From8BitData((const char*)glGetString(GL_VENDOR));
@@ -103,31 +103,31 @@ bool OpenGL::init()
 	string temp = info.version;
 	temp.Truncate(3);
 	temp.ToDouble(&version);
-	wxLogMessage("OpenGL Version: %1.1f", version);
+	LOG_MESSAGE(1, "OpenGL Version: %1.1f", version);
 
 	// Get max texture size
 	GLint val = 0;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &val);
 	max_tex_size = val;
-	wxLogMessage("Max Texture Size: %dx%d", max_tex_size, max_tex_size);
+	LOG_MESSAGE(1, "Max Texture Size: %dx%d", max_tex_size, max_tex_size);
 
 	// Initialise GLEW
 	glewInit();
 
 	// Test extensions
-	wxLogMessage("Checking extensions...");
+	LOG_MESSAGE(1, "Checking extensions...");
 	if (GLEW_ARB_vertex_buffer_object)
-		wxLogMessage("Vertex Buffer Objects supported");
+		LOG_MESSAGE(1, "Vertex Buffer Objects supported");
 	else
-		wxLogMessage("Vertex Buffer Objects not supported");
+		LOG_MESSAGE(1, "Vertex Buffer Objects not supported");
 	if (GLEW_ARB_point_sprite)
-		wxLogMessage("Point Sprites supported");
+		LOG_MESSAGE(1, "Point Sprites supported");
 	else
-		wxLogMessage("Point Sprites not supported");
+		LOG_MESSAGE(1, "Point Sprites not supported");
 	if (GLEW_ARB_framebuffer_object)
-		wxLogMessage("Framebuffer Objects supported");
+		LOG_MESSAGE(1, "Framebuffer Objects supported");
 	else
-		wxLogMessage("Framebuffer Objects not supported");
+		LOG_MESSAGE(1, "Framebuffer Objects not supported");
 
 	initialised = true;
 	return true;
@@ -192,7 +192,7 @@ float OpenGL::maxPointSize()
 		GLfloat sizes[2];
 		glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, sizes);
 		max_point_size = sizes[1];
-		//wxLogMessage("Max GL point size %1.2f", max_point_size);
+		//LOG_MESSAGE(1, "Max GL point size %1.2f", max_point_size);
 	}
 
 	return max_point_size;
@@ -237,31 +237,6 @@ int* OpenGL::getWxGLAttribs()
 }
 #endif
 
-#ifdef _MSC_VER
-
-/* OpenGL::setColour
- * Sets the colour to [col], and changes the colour blend mode if
- * needed and [set_blend] is true
- *******************************************************************/
-void OpenGL::setColour(rgba_t& col, bool set_blend)
-{
-	// Colour
-	glColor4ub(col.r, col.g, col.b, col.a);
-
-	// Blend
-	if (set_blend && col.blend != last_blend)
-	{
-		if (col.blend == BLEND_NORMAL)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (col.blend == BLEND_ADDITIVE)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-		last_blend = col.blend;
-	}
-}
-
-#else
-
 /* OpenGL::setColour
  * Sets the colour to [col], and changes the colour blend mode if
  * needed and [set_blend] is true
@@ -282,8 +257,6 @@ void OpenGL::setColour(rgba_t col, bool set_blend)
 		last_blend = col.blend;
 	}
 }
-
-#endif//_MSC_VER
 
 /* OpenGL::setColour
  * Sets the colour to [r,g,b,a], and changes the colour blend mode to

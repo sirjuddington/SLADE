@@ -34,15 +34,8 @@
  *******************************************************************/
 #include "Main.h"
 #include "DiskArchive.h"
-#include "UI/SplashWindow.h"
-#include <wx/filename.h>
+#include "General/UI.h"
 
-struct diskentry_t
-{
-	char name[64];
-	size_t offset;
-	size_t length;
-};
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -57,11 +50,11 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* DiskArchive::DiskArchive
  * DiskArchive class constructor
  *******************************************************************/
-DiskArchive::DiskArchive() : Archive(ARCHIVE_DISK)
+DiskArchive::DiskArchive() : Archive("disk")
 {
-	desc.max_name_length = 64;
-	desc.names_extensions = true;
-	desc.supports_dirs = true;
+	//desc.max_name_length = 64;
+	//desc.names_extensions = true;
+	//desc.supports_dirs = true;
 }
 
 /* DiskArchive::~DiskArchive
@@ -69,22 +62,6 @@ DiskArchive::DiskArchive() : Archive(ARCHIVE_DISK)
  *******************************************************************/
 DiskArchive::~DiskArchive()
 {
-}
-
-/* DiskArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string DiskArchive::getFileExtensionString()
-{
-	return "Nerve Disk Files (*.disk)|*.disk";
-}
-
-/* DiskArchive::getFormat
- * Returns the string id for the disk EntryDataFormat
- *******************************************************************/
-string DiskArchive::getFormat()
-{
-	return "archive_disk";
 }
 
 /* DiskArchive::open
@@ -114,14 +91,14 @@ bool DiskArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Read the directory
-	theSplashWindow->setProgressMessage("Reading disk archive data");
+	UI::setSplashProgressMessage("Reading disk archive data");
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_entries));
+		UI::setSplashProgress(((float)d / (float)num_entries));
 
 		// Read entry info
-		diskentry_t dent;
+		DiskEntry dent;
 		mc.read(&dent, 72);
 
 		// Byteswap if needed
@@ -134,7 +111,7 @@ bool DiskArchive::open(MemChunk& mc)
 		// Check offset+size
 		if (dent.offset + dent.length > mcsize)
 		{
-			wxLogMessage("DiskArchive::open: Disk archive is invalid or corrupt (entry goes past end of file)");
+			LOG_MESSAGE(1, "DiskArchive::open: Disk archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -163,11 +140,11 @@ bool DiskArchive::open(MemChunk& mc)
 	MemChunk edata;
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_entries)));
+		UI::setSplashProgress((((float)a / (float)num_entries)));
 
 		// Get entry
 		ArchiveEntry* entry = all_entries[a];
@@ -196,7 +173,7 @@ bool DiskArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -258,7 +235,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		// The leading "GAME:\" part of the name means there is only 58 usable characters for path
 		if (name.Len() > 58)
 		{
-			wxLogMessage("Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name);
+			LOG_MESSAGE(1, "Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name);
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 57)
@@ -269,7 +246,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		}
 		name = "GAME:" + name;
 
-		diskentry_t dent;
+		DiskEntry dent;
 
 		// Write entry name
 		// The names field are padded with FD for doom.disk, FE for doom2.disk. No idea whether
@@ -328,12 +305,12 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("DiskArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "DiskArchive::loadEntryData: Unable to open archive file %s", filename_);
 		return false;
 	}
 
@@ -377,7 +354,7 @@ bool DiskArchive::isDiskArchive(MemChunk& mc)
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Read entry info
-		diskentry_t entry;
+		DiskEntry entry;
 		mc.read(&entry, 72);
 
 		// Byteswap if needed
@@ -432,7 +409,7 @@ bool DiskArchive::isDiskArchive(string filename)
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Read entry info
-		diskentry_t entry;
+		DiskEntry entry;
 		file.Read(&entry, 72);
 
 		// Byteswap if needed

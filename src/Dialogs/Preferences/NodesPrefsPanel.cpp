@@ -1,75 +1,67 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    NodesPrefsPanel.cpp
- * Description: Panel containing nodebuilder preference controls
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    NodesPrefsPanel.cpp
+// Description: Panel containing nodebuilder preference controls
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "NodesPrefsPanel.h"
 #include "MapEditor/NodeBuilders.h"
 #include "Utility/SFileDialog.h"
-#include <wx/button.h>
-#include <wx/checklst.h>
-#include <wx/choice.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
+#include "UI/WxUtils.h"
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// External Variables
+//
+// ----------------------------------------------------------------------------
 EXTERN_CVAR(String, nodebuilder_id)
 EXTERN_CVAR(String, nodebuilder_options)
 
 
-/*******************************************************************
- * NODESPREFSPANEL CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// NodesPrefsPanel Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* NodesPrefsPanel::NodesPrefsPanel
- * NodesPrefsPanel class constructor
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// NodesPrefsPanel::NodesPrefsPanel
+//
+// NodesPrefsPanel class constructor
+// ----------------------------------------------------------------------------
 NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(psizer);
-
-	// Create frame+sizer
-	wxSizer* sizer;
-	if (useframe)
-	{
-		wxStaticBox* frame = new wxStaticBox(this, -1, "Node Builder Preferences");
-		sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
-	}
-	else
-		sizer = psizer;
+	auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	SetSizer(sizer);
 
 	// Nodebuilder list
 	wxArrayString builders;
@@ -80,47 +72,49 @@ NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBa
 		if (nodebuilder_id == NodeBuilders::getBuilder(a).id)
 			sel = a;
 	}
-	choice_nodebuilder = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, builders);
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(new wxStaticText(this, -1, "Node Builder:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
-	hbox->Add(choice_nodebuilder, 1, wxEXPAND);
+	choice_nodebuilder_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, builders);
+	sizer->Add(new wxStaticText(this, -1, "Node Builder:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(choice_nodebuilder_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Nodebuilder path text
-	text_path = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(new wxStaticText(this, -1, "Path:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
-	hbox->Add(text_path, 1, wxEXPAND|wxRIGHT, 4);
+	text_path_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+	sizer->Add(new wxStaticText(this, -1, "Path:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(text_path_, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Browse nodebuilder path button
-	btn_browse_path = new wxButton(this, -1, "Browse");
-	hbox->Add(btn_browse_path, 0, wxEXPAND);
+	btn_browse_path_ = new wxButton(this, -1, "Browse");
+	sizer->Add(btn_browse_path_, { 1, 2 }, { 1, 1 }, wxEXPAND);
 
 	// Nodebuilder options
-	sizer->Add(new wxStaticText(this, -1, "Options:"), 0, wxLEFT|wxRIGHT, 4);
-	clb_options = new wxCheckListBox(this, -1, wxDefaultPosition, wxDefaultSize);
-	sizer->Add(clb_options, 1, wxEXPAND|wxALL, 4);
+	clb_options_ = new wxCheckListBox(this, -1, wxDefaultPosition, wxDefaultSize);
+	sizer->Add(WxUtils::createLabelVBox(this, "Options:", clb_options_), { 2, 0 }, { 1, 3 }, wxEXPAND);
+
+	sizer->AddGrowableCol(1, 1);
+	sizer->AddGrowableRow(2, 1);
 
 	// Bind events
-	choice_nodebuilder->Bind(wxEVT_CHOICE, &NodesPrefsPanel::onChoiceBuilderChanged, this);
-	btn_browse_path->Bind(wxEVT_BUTTON, &NodesPrefsPanel::onBtnBrowse, this);
+	choice_nodebuilder_->Bind(wxEVT_CHOICE, &NodesPrefsPanel::onChoiceBuilderChanged, this);
+	btn_browse_path_->Bind(wxEVT_BUTTON, &NodesPrefsPanel::onBtnBrowse, this);
 
 	// Init
-	choice_nodebuilder->Select(sel);
+	choice_nodebuilder_->Select(sel);
 	populateOptions(nodebuilder_options);
 }
 
-/* NodesPrefsPanel::~NodesPrefsPanel
- * NodesPrefsPanel class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// NodesPrefsPanel::~NodesPrefsPanel
+//
+// NodesPrefsPanel class destructor
+// ----------------------------------------------------------------------------
 NodesPrefsPanel::~NodesPrefsPanel()
 {
 }
 
-/* NodesPrefsPanel::init
- * Initialises panel controls
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// NodesPrefsPanel::init
+//
+// Initialises panel controls
+// ----------------------------------------------------------------------------
 void NodesPrefsPanel::init()
 {
 	unsigned sel = 0;
@@ -132,49 +126,53 @@ void NodesPrefsPanel::init()
 			break;
 		}
 	}
-	choice_nodebuilder->Select(sel);
+	choice_nodebuilder_->Select(sel);
 	populateOptions(nodebuilder_options);
 }
 
-/* NodesPrefsPanel::populateOptions
- * Populates the options CheckListBox with options for the currently
- * selected node builder
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// NodesPrefsPanel::populateOptions
+//
+// Populates the options CheckListBox with options for the currently selected
+// node builder
+// ----------------------------------------------------------------------------
 void NodesPrefsPanel::populateOptions(string options)
 {
 	// Get current builder
-	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder->GetSelection());
-	btn_browse_path->Enable(builder.id != "none");
+	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
+	btn_browse_path_->Enable(builder.id != "none");
 
 	// Set builder path
-	text_path->SetValue(builder.path);
+	text_path_->SetValue(builder.path);
 
 	// Clear current options
-	clb_options->Clear();
+	clb_options_->Clear();
 
 	// Add builder options
 	for (unsigned a = 0; a < builder.option_desc.size(); a++)
 	{
-		clb_options->Append(builder.option_desc[a]);
+		clb_options_->Append(builder.option_desc[a]);
 		if (!options.IsEmpty() && options.Contains(S_FMT(" %s ", builder.options[a])))
-			clb_options->Check(a);
+			clb_options_->Check(a);
 	}
 }
 
-/* NodesPrefsPanel::applyPreferences
- * Applies preferences from the panel controls
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// NodesPrefsPanel::applyPreferences
+//
+// Applies preferences from the panel controls
+// ----------------------------------------------------------------------------
 void NodesPrefsPanel::applyPreferences()
 {
 	// Set nodebuilder
-	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder->GetSelection());
+	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
 	nodebuilder_id = builder.id;
 
 	// Set options string
 	string opt = " ";
-	for (unsigned a = 0; a < clb_options->GetCount(); a++)
+	for (unsigned a = 0; a < clb_options_->GetCount(); a++)
 	{
-		if (clb_options->IsChecked(a))
+		if (clb_options_->IsChecked(a))
 		{
 			opt += builder.options[a];
 			opt += " ";
@@ -184,24 +182,31 @@ void NodesPrefsPanel::applyPreferences()
 }
 
 
-/*******************************************************************
- * NODESPREFSPANEL CLASS EVENTS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// NodesPrefsPanel Class Events
+//
+// ----------------------------------------------------------------------------
 
-/* NodesPrefsPanel::onChoiceBuilderChanged
- * Called when the node builder dropdown is changed
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// NodesPrefsPanel::onChoiceBuilderChanged
+//
+// Called when the node builder dropdown is changed
+// ----------------------------------------------------------------------------
 void NodesPrefsPanel::onChoiceBuilderChanged(wxCommandEvent& e)
 {
 	populateOptions("");
 }
 
-/* NodesPrefsPanel::onBtnBrowse
- * Called when the browse path button is clicked
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// NodesPrefsPanel::onBtnBrowse
+//
+// Called when the browse path button is clicked
+// ----------------------------------------------------------------------------
 void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 {
-	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder->GetSelection());
+	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
 
 	// Setup extension
 #ifdef __WXMSW__
@@ -217,5 +222,5 @@ void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 
 	// Set builder path
 	builder.path = info.filenames[0];
-	text_path->SetValue(info.filenames[0]);
+	text_path_->SetValue(info.filenames[0]);
 }

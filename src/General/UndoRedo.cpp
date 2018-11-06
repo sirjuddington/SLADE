@@ -34,7 +34,7 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-UndoManager*	current_undo_manager = NULL;
+UndoManager*	current_undo_manager = nullptr;
 
 
 /*******************************************************************
@@ -146,8 +146,9 @@ void UndoLevel::createMerged(vector<UndoLevel*>& levels)
 UndoManager::UndoManager(SLADEMap* map)
 {
 	// Init variables
-	current_level = NULL;
+	current_level = nullptr;
 	current_level_index = -1;
+	reset_point         = -1;
 	undo_running = false;
 	this->map = map;
 }
@@ -178,7 +179,7 @@ void UndoManager::beginRecord(string name)
 		endRecord(true);
 
 	// Begin new UndoLevel
-	//wxLogMessage("Recording undo level \"%s\"", name);
+	//LOG_MESSAGE(1, "Recording undo level \"%s\"", name);
 	current_level = new UndoLevel(name);
 }
 
@@ -194,28 +195,28 @@ void UndoManager::endRecord(bool success)
 	// If failed, delete current undo level
 	if (!success)
 	{
-		//wxLogMessage("Recording undo level \"%s\" failed", current_level->getName());
+		//LOG_MESSAGE(1, "Recording undo level \"%s\" failed", current_level->getName());
 		delete current_level;
-		current_level = NULL;
+		current_level = nullptr;
 		return;
 	}
 
 	// Remove any undo levels after the current
 	while ((int)undo_levels.size() - 1 > current_level_index)
 	{
-		//wxLogMessage("Removing undo level \"%s\"", undo_levels.back()->getName());
+		//LOG_MESSAGE(1, "Removing undo level \"%s\"", undo_levels.back()->getName());
 		delete undo_levels.back();
 		undo_levels.pop_back();
 	}
 
 	// Add current level to levels
-	//wxLogMessage("Recording undo level \"%s\" succeeded", current_level->getName());
+	//LOG_MESSAGE(1, "Recording undo level \"%s\" succeeded", current_level->getName());
 	undo_levels.push_back(current_level);
-	current_level = NULL;
+	current_level = nullptr;
 	current_level_index = undo_levels.size() - 1;
 
 	// Clear current undo manager
-	current_undo_manager = NULL;
+	current_undo_manager = nullptr;
 
 	announce("level_recorded");
 }
@@ -225,7 +226,7 @@ void UndoManager::endRecord(bool success)
  *******************************************************************/
 bool UndoManager::currentlyRecording()
 {
-	return (current_level != NULL);
+	return (current_level != nullptr);
 }
 
 /* UndoManager::recordUndoStep
@@ -269,7 +270,7 @@ string UndoManager::undo()
 	if (!level->doUndo())
 		LOG_MESSAGE(3, "Undo operation \"%s\" failed", level->getName());
 	undo_running = false;
-	current_undo_manager = NULL;
+	current_undo_manager = nullptr;
 	current_level_index--;
 
 	announce("undo");
@@ -297,7 +298,7 @@ string UndoManager::redo()
 	UndoLevel* level = undo_levels[current_level_index];
 	level->doRedo();
 	undo_running = false;
-	current_undo_manager = NULL;
+	current_undo_manager = nullptr;
 
 	announce("redo");
 
@@ -313,6 +314,18 @@ void UndoManager::getAllLevels(vector<string>& list)
 		list.push_back(undo_levels[a]->getName());
 }
 
+void UndoManager::clearToResetPoint()
+{
+	while (current_level_index > reset_point)
+	{
+		undo_levels.pop_back();
+		current_level_index--;
+	}
+
+	current_level = nullptr;
+	undo_running  = false;
+}
+
 /* UndoManager::clear
  * Clears all undo levels and resets variables
  *******************************************************************/
@@ -324,7 +337,7 @@ void UndoManager::clear()
 
 	// Reset
 	undo_levels.clear();
-	current_level = NULL;
+	current_level = nullptr;
 	current_level_index = -1;
 	undo_running = false;
 }
@@ -344,7 +357,7 @@ bool UndoManager::createMergedLevel(UndoManager* manager, string name)
 
 	// Add undo level
 	undo_levels.push_back(merged);
-	current_level = NULL;
+	current_level = nullptr;
 	current_level_index = undo_levels.size() - 1;
 
 	return true;
@@ -384,5 +397,5 @@ SLADEMap* UndoRedo::currentMap()
 	if (current_undo_manager)
 		return current_undo_manager->getMap();
 	else
-		return NULL;
+		return nullptr;
 }

@@ -1,4 +1,4 @@
-#include <wx/hashmap.h>
+#include "common.h"
 #include "SLADEMap/MapLine.h"
 #include "SLADEMap/MapSector.h"
 #include "SLADEMap/MapThing.h"
@@ -23,6 +23,7 @@ class MapSpecials
 	vector<sector_colour_t> sector_fadecolours;
 
 	void	processZDoomSlopes(SLADEMap* map);
+	void  processEternitySlopes(SLADEMap* map);
 	template<PlaneType>
 	void	applyPlaneAlign(MapLine* line, MapSector* sector, MapSector* model_sector);
 	template<PlaneType>

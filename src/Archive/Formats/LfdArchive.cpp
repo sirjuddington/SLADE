@@ -30,8 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "LfdArchive.h"
-#include "UI/SplashWindow.h"
-#include <wx/filename.h>
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -47,11 +46,8 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* LfdArchive::LfdArchive
  * LfdArchive class constructor
  *******************************************************************/
-LfdArchive::LfdArchive() : TreelessArchive(ARCHIVE_LFD)
+LfdArchive::LfdArchive() : TreelessArchive("lfd")
 {
-	desc.max_name_length = 8;
-	desc.names_extensions = false;
-	desc.supports_dirs = false;
 }
 
 /* LfdArchive::~LfdArchive
@@ -83,22 +79,6 @@ void LfdArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 		return;
 
 	entry->exProp("Offset") = (int)offset;
-}
-
-/* LfdArchive::getFileExtensionString
- * Gets the wxWidgets file dialog filter string for the archive type
- *******************************************************************/
-string LfdArchive::getFileExtensionString()
-{
-	return "Lfd Files (*.lfd)|*.lfd";
-}
-
-/* LfdArchive::getFormat
- * Returns the EntryDataFormat id of this archive type
- *******************************************************************/
-string LfdArchive::getFormat()
-{
-	return "archive_lfd";
 }
 
 /* LfdArchive::open
@@ -136,13 +116,13 @@ bool LfdArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Read each entry
-	theSplashWindow->setProgressMessage("Reading lfd archive data");
+	UI::setSplashProgressMessage("Reading lfd archive data");
 	size_t offset = dir_len + 16;
 	size_t size = mc.getSize();
 	for (uint32_t d = 0; offset < size; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		uint32_t length = 0;
@@ -164,7 +144,7 @@ bool LfdArchive::open(MemChunk& mc)
 		// the gobfile is invalid
 		if (offset + length > size)
 		{
-			wxLogMessage("LfdArchive::open: lfd archive is invalid or corrupt");
+			LOG_MESSAGE(1, "LfdArchive::open: lfd archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -179,7 +159,7 @@ bool LfdArchive::open(MemChunk& mc)
 		nlump->setState(0);
 
 		// Add to entry list
-		getRoot()->addEntry(nlump);
+		rootDir()->addEntry(nlump);
 
 		// Move to next entry
 		offset += length;
@@ -187,15 +167,15 @@ bool LfdArchive::open(MemChunk& mc)
 	}
 
 	if (num_lumps != numEntries())
-		wxLogMessage("Warning: computed %i lumps, but actually %i entries", num_lumps, numEntries());
+		LOG_MESSAGE(1, "Warning: computed %i lumps, but actually %i entries", num_lumps, numEntries());
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -224,7 +204,7 @@ bool LfdArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -238,7 +218,7 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 	// Determine total size
 	uint32_t dir_size = (numEntries() + 1)<<4;
 	uint32_t total_size = dir_size;
-	ArchiveEntry* entry = NULL;
+	ArchiveEntry* entry = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);
@@ -327,12 +307,12 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open lfdfile
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("LfdArchive::loadEntryData: Failed to open lfdfile %s", filename);
+		LOG_MESSAGE(1, "LfdArchive::loadEntryData: Failed to open lfdfile %s", filename_);
 		return false;
 	}
 
@@ -355,11 +335,11 @@ ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 {
 	// Check entry
 	if (!entry)
-		return NULL;
+		return nullptr;
 
 	// Check if read-only
 	if (isReadOnly())
-		return NULL;
+		return nullptr;
 
 	// Copy if necessary
 	if (copy)
@@ -383,7 +363,7 @@ ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
  *******************************************************************/
 ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 /* LfdArchive::renameEntry

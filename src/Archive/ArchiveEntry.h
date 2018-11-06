@@ -14,6 +14,7 @@ enum EncryptionModes
 	ENC_JAGUAR,
 	ENC_BLOOD,
 	ENC_SCRLE0,
+	ENC_TXB,
 };
 
 class ArchiveEntry
@@ -23,6 +24,7 @@ class ArchiveEntry
 private:
 	// Entry Info
 	string				name;
+	string				upper_name;
 	uint32_t			size;
 	MemChunk			data;
 	EntryType*			type;
@@ -42,19 +44,26 @@ private:
 	ArchiveEntry*	prev;
 
 public:
+	typedef	std::unique_ptr<ArchiveEntry>	UPtr;
+	typedef	std::shared_ptr<ArchiveEntry>	SPtr;
+	typedef std::weak_ptr<ArchiveEntry>		WPtr;
+
+	// Constructor/Destructor
 	ArchiveEntry(string name = "", uint32_t size = 0);
 	ArchiveEntry(ArchiveEntry& copy);
 	~ArchiveEntry();
 
 	// Accessors
-	string				getName(bool cut_ext = false);
+	string				getName(bool cut_ext = false) const;
+	string				getUpperName();
+	string				getUpperNameNoExt();
 	uint32_t			getSize()			{ if (data_loaded) return data.getSize(); else return size; }
 	MemChunk&			getMCData(bool allow_load = true);
 	const uint8_t*		getData(bool allow_load = true);
 	ArchiveTreeNode*	getParentDir()		{ return parent; }
 	Archive*			getParent();
 	Archive*			getTopParent();
-	string				getPath(bool name = false);
+	string				getPath(bool name = false) const;
 	EntryType*			getType()			{ return type; }
 	PropertyList&		exProps()			{ return ex_props; }
 	Property&			exProp(string key)	{ return ex_props[key]; }
@@ -64,12 +73,13 @@ public:
 	int					isEncrypted()		{ return encrypted; }
 	ArchiveEntry*		nextEntry()			{ return next; }
 	ArchiveEntry*		prevEntry()			{ return prev; }
+	SPtr				getShared();
 
 	// Modifiers (won't change entry state, except setState of course :P)
-	void		setName(string name) { this->name = name; }
+	void		setName(string name) { this->name = name; upper_name = name.Upper(); }
 	void		setLoaded(bool loaded = true) { data_loaded = loaded; }
 	void		setType(EntryType* type, int r = 0) { this->type = type; reliability = r; }
-	void		setState(uint8_t state);
+	void		setState(uint8_t state, bool silent = false);
 	void		setEncryption(int enc) { encrypted = enc; }
 	void		unloadData();
 	void		lock();
@@ -101,12 +111,15 @@ public:
 	uint32_t	currentPos() { return data.currentPos(); }
 
 	// Misc
-	string	getSizeString();
-	string	getTypeString() { if (type) return type->getName(); else return "Unknown"; }
-	void	stateChanged();
-	void	setExtensionByType();
-	int		getTypeReliability() { return (type ? (getType()->getReliability() * reliability / 255) : 0); }
-	bool	isInNamespace(string ns);
+	string			getSizeString();
+	string			getTypeString() { if (type) return type->name(); else return "Unknown"; }
+	void			stateChanged();
+	void			setExtensionByType();
+	int				getTypeReliability() { return (type ? (getType()->reliability() * reliability / 255) : 0); }
+	bool			isInNamespace(string ns);
+	ArchiveEntry*	relativeEntry(const string& path, bool allow_absolute_path = true) const;
+
+	size_t	index_guess; // for speed
 };
 
 #endif//__ARCHIVEENTRY_H__

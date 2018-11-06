@@ -2,8 +2,8 @@
 #ifndef __UNDO_REDO_H__
 #define __UNDO_REDO_H__
 
+#include "common.h"
 #include "General/ListenerAnnouncer.h"
-#include <wx/datetime.h>
 
 class UndoStep
 {
@@ -49,11 +49,12 @@ private:
 	vector<UndoLevel*>	undo_levels;
 	UndoLevel*			current_level;
 	int					current_level_index;
+	int                 reset_point;
 	bool				undo_running;
 	SLADEMap*			map;
 
 public:
-	UndoManager(SLADEMap* map = NULL);
+	UndoManager(SLADEMap* map = nullptr);
 	~UndoManager();
 
 	SLADEMap*	getMap() { return map; }
@@ -68,9 +69,13 @@ public:
 	bool	recordUndoStep(UndoStep* step);
 	string	undo();
 	string	redo();
+	void    setResetPoint() { reset_point = current_level_index; }
+	void    clearToResetPoint();
 
 	void	clear();
 	bool	createMergedLevel(UndoManager* manager, string name);
+
+	typedef std::unique_ptr<UndoManager> UPtr;
 };
 
 namespace UndoRedo

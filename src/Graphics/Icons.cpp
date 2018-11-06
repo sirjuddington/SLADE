@@ -29,9 +29,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
+#include "App.h"
 #include "Icons.h"
 #include "Archive/ArchiveManager.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -53,7 +54,7 @@ namespace Icons
 	vector<icon_t>	icons_general;
 	vector<icon_t>	icons_text_editor;
 	vector<icon_t>	icons_entry;
-	wxBitmap icon_empty;
+	wxBitmap		icon_empty;
 	vector<string>	iconsets_entry;
 	vector<string>	iconsets_general;
 }
@@ -99,12 +100,12 @@ namespace Icons
 			dir = (ArchiveTreeNode*)dir->getChild(icon_set_dir);
 
 		vector<icon_t>& icons = iconList(type);
-		string tempfile = appPath("sladetemp", DIR_TEMP);
+		string tempfile = App::path("sladetemp", App::Dir::Temp);
 
 		// Go through each entry in the directory
 		for (size_t a = 0; a < dir->numEntries(false); a++)
 		{
-			ArchiveEntry* entry = dir->getEntry(a);
+			ArchiveEntry* entry = dir->entryAt(a);
 
 			// Ignore anything not png format
 			if (!entry->getName().EndsWith("png"))
@@ -132,7 +133,7 @@ namespace Icons
 		{
 			for (size_t a = 0; a < dir_large->numEntries(false); a++)
 			{
-				ArchiveEntry* entry = dir_large->getEntry(a);
+				ArchiveEntry* entry = dir_large->entryAt(a);
 
 				// Ignore anything not png format
 				if (!entry->getName().EndsWith("png"))
@@ -170,6 +171,16 @@ namespace Icons
 			}
 		}
 
+		// Generate any missing large icons
+		for (unsigned a = 0; a < icons.size(); a++)
+		{
+			if (!icons[a].image_large.IsOk())
+			{
+				icons[a].image_large = icons[a].image.Copy();
+				icons[a].image_large.Rescale(32, 32, wxIMAGE_QUALITY_BICUBIC);
+			}
+		}
+
 		return true;
 	}
 }
@@ -179,10 +190,10 @@ namespace Icons
  *******************************************************************/
 bool Icons::loadIcons()
 {
-	string tempfile = appPath("sladetemp", DIR_TEMP);
+	string tempfile = App::path("sladetemp", App::Dir::Temp);
 
 	// Get slade.pk3
-	Archive* res_archive = theArchiveManager->programResourceArchive();
+	Archive* res_archive = App::archiveManager().programResourceArchive();
 
 	// Do nothing if it doesn't exist
 	if (!res_archive)
@@ -206,14 +217,32 @@ bool Icons::loadIcons()
 }
 
 /* Icons::getIcon
- * Returns the icon matching <name> as a wxBitmap (for toolbars etc),
- * or an empty bitmap if no icon matching <name> was found
+ * Returns the icon matching [name] of [type] as a wxBitmap (for
+ * toolbars etc), or an empty bitmap if no icon was found. If [type]
+ * is less than 0, try all icon types. If [log_missing] is true, log
+ * an error message if the icon was not found
  *******************************************************************/
-wxBitmap Icons::getIcon(int type, string name, bool large)
+wxBitmap Icons::getIcon(int type, string name, bool large, bool log_missing)
 {
+	// Check all types if [type] is < 0
+	if (type < 0)
+	{
+		wxBitmap icon = getIcon(GENERAL, name, large, false);
+		if (!icon.IsOk())
+			icon = getIcon(ENTRY, name, large, false);
+		if (!icon.IsOk())
+			icon = getIcon(TEXT_EDITOR, name, large, false);
+
+		if (!icon.IsOk() && log_missing)
+			LOG_MESSAGE(2, "Icon \"%s\" does not exist", name);
+
+		return icon;
+	}
+
 	vector<icon_t>& icons = iconList(type);
 
-	for (size_t a = 0; a < icons.size(); a++)
+	size_t icons_size = icons.size();
+	for (size_t a = 0; a < icons_size; a++)
 	{
 		if (icons[a].name.Cmp(name) == 0)
 		{
@@ -229,8 +258,15 @@ wxBitmap Icons::getIcon(int type, string name, bool large)
 		}
 	}
 
-	wxLogMessage("Icon \"%s\" does not exist", name);
+	if (log_missing)
+		LOG_MESSAGE(2, "Icon \"%s\" does not exist", name);
+
 	return wxNullBitmap;
+}
+
+wxBitmap Icons::getIcon(int type, string name)
+{
+	return getIcon(type, name, UI::scaleFactor() > 1.25);
 }
 
 /* Icons::exportIconPNG

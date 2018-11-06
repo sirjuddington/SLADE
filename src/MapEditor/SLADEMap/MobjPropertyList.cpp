@@ -29,6 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "MobjPropertyList.h"
+#include "Utility/StringUtils.h"
 
 
 /*******************************************************************
@@ -124,7 +125,10 @@ string MobjPropertyList::toString(bool condensed)
 		string val = properties[a].value.getStringValue();
 
 		if (properties[a].value.getType() == PROP_STRING)
+		{
+			val = StringUtils::escapedString(val);
 			val = "\"" + val + "\"";
+		}
 
 		if (condensed)
 			ret += key + "=" + val + ";\n";

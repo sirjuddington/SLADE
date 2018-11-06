@@ -1,40 +1,33 @@
-
-#ifndef __OBJECT_EDIT_PANEL_H__
-#define __OBJECT_EDIT_PANEL_H__
-
-#include <wx/panel.h>
-#include "UI/WxBasicControls.h"
+#pragma once
 
 class ObjectEditGroup;
+
 class ObjectEditPanel : public wxPanel
 {
-private:
-	wxTextCtrl*	text_xoff;
-	wxTextCtrl*	text_yoff;
-	wxTextCtrl*	text_scalex;
-	wxTextCtrl*	text_scaley;
-	wxComboBox*	combo_rotation;
-	wxButton*	btn_preview;
-	wxButton*	btn_apply;
-	wxButton*	btn_cancel;
-	wxCheckBox*	cb_mirror_x;
-	wxCheckBox*	cb_mirror_y;
-
-	double	old_x;
-	double	old_y;
-	double	old_width;
-	double	old_height;
-
 public:
 	ObjectEditPanel(wxWindow* parent);
-	~ObjectEditPanel();
+	~ObjectEditPanel() {}
 
 	void	init(ObjectEditGroup* group);
-	void	update(ObjectEditGroup* group, bool lock_rotation = false);
+	void	update(ObjectEditGroup* group, bool lock_rotation = false) const;
 
+private:
+	wxTextCtrl*	text_xoff_		= nullptr;
+	wxTextCtrl*	text_yoff_		= nullptr;
+	wxTextCtrl*	text_scalex_	= nullptr;
+	wxTextCtrl*	text_scaley_	= nullptr;
+	wxComboBox*	combo_rotation_	= nullptr;
+	wxButton*	btn_preview_	= nullptr;
+	wxButton*	btn_apply_		= nullptr;
+	wxButton*	btn_cancel_		= nullptr;
+	wxCheckBox*	cb_mirror_x_	= nullptr;
+	wxCheckBox*	cb_mirror_y_	= nullptr;
+
+	double	old_x_		= 0;
+	double	old_y_		= 0;
+	double	old_width_	= 0;
+	double	old_height_	= 0;
+
+	void	setupLayout();
 	void	onBtnPreviewClicked(wxCommandEvent& e);
-	void	onBtnApplyClicked(wxCommandEvent& e);
-	void	onBtnCancelClicked(wxCommandEvent& e);
 };
-
-#endif//__OBJECT_EDIT_PANEL_H__

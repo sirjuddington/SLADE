@@ -4,78 +4,63 @@
 
 #include "Archive/Archive.h"
 
-// Struct to hold namespace info
-struct wad_ns_pair_t
-{
-	ArchiveEntry*	start;	// eg. P_START
-	size_t			start_index;
-	ArchiveEntry*	end;	// eg. P_END
-	size_t			end_index;
-	string			name;	// eg. "P" (since P or PP is a special case will be set to "patches")
-
-	wad_ns_pair_t(ArchiveEntry* start, ArchiveEntry* end)
-	{
-		this->start = start;
-		this->end = end;
-	}
-};
-
 class WadArchive : public TreelessArchive
 {
-private:
-	bool					iwad;
-	vector<wad_ns_pair_t>	namespaces;
-
 public:
 	WadArchive();
 	~WadArchive();
 
 	// Wad specific
-	bool		isIWAD() { return iwad; }
-	bool		isWritable();
+	bool		isIWAD() const { return iwad_; }
+	bool		isWritable() override;
 	uint32_t	getEntryOffset(ArchiveEntry* entry);
 	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
 	void		updateNamespaces();
 
-	// Archive type info
-	string	getFileExtensionString();
-	string	getFormat();
-
 	// Opening
-	bool	open(MemChunk& mc);			// Open from MemChunk
+	bool	open(MemChunk& mc) override;
 
 	// Writing/Saving
-	bool	write(MemChunk& mc, bool update = true);	// Write to MemChunk
-	bool	write(string filename, bool update = true);	// Write to File
+	bool	write(MemChunk& mc, bool update = true) override;		// Write to MemChunk
+	bool	write(string filename, bool update = true) override;	// Write to File
 
 	// Misc
-	bool		loadEntryData(ArchiveEntry* entry);
+	bool	loadEntryData(ArchiveEntry* entry) override;
 
 	// Entry addition/removal
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false);
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
-	bool			removeEntry(ArchiveEntry* entry, bool delete_entry = true);
+	ArchiveEntry*	addEntry(
+						ArchiveEntry* entry,
+						unsigned position = 0xFFFFFFFF,
+						ArchiveTreeNode* dir = nullptr,
+						bool copy = false
+					) override;
+	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
+	bool			removeEntry(ArchiveEntry* entry) override;
 
 	// Entry modification
 	string	processEntryName(string name);
-	bool	renameEntry(ArchiveEntry* entry, string name);
+	bool	renameEntry(ArchiveEntry* entry, string name) override;
 
 	// Entry moving
-	bool	swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2);
-	bool	moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL);
+	bool	swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override;
+	bool	moveEntry(
+				ArchiveEntry* entry,
+				unsigned position = 0xFFFFFFFF,
+				ArchiveTreeNode* dir = nullptr
+			) override;
 
 	// Detection
-	mapdesc_t			getMapInfo(ArchiveEntry* maphead);
-	vector<mapdesc_t>	detectMaps();
-	string				detectNamespace(ArchiveEntry* entry);
-	string				detectNamespace(size_t index, ArchiveTreeNode * dir = NULL);
-	void				detectIncludes();
-	bool				hasFlatHack();
+	MapDesc			getMapInfo(ArchiveEntry* maphead) override;
+	vector<MapDesc>	detectMaps() override;
+	string			detectNamespace(ArchiveEntry* entry) override;
+	string			detectNamespace(size_t index, ArchiveTreeNode * dir = nullptr) override;
+	void			detectIncludes();
+	bool			hasFlatHack() override;
 
 	// Search
-	ArchiveEntry*			findFirst(search_options_t& options);
-	ArchiveEntry*			findLast(search_options_t& options);
-	vector<ArchiveEntry*>	findAll(search_options_t& options);
+	ArchiveEntry*			findFirst(SearchOptions& options) override;
+	ArchiveEntry*			findLast(SearchOptions& options) override;
+	vector<ArchiveEntry*>	findAll(SearchOptions& options) override;
 
 	// Static functions
 	static bool isWadArchive(MemChunk& mc);
@@ -89,41 +74,33 @@ public:
 		for (size_t a = 0; a < entries.size(); a++)
 		{
 			// Add each entry to the wad archive
-			wad.addEntry(entries[a], entries.size(), NULL, true);
+			wad.addEntry(entries[a], entries.size(), nullptr, true);
 		}
 
 		return wad.save(filename);
 	}
 
 	friend class WadJArchive;
-};
 
-enum MapLumpNames
-{
-	LUMP_THINGS,
-	LUMP_VERTEXES,
-	LUMP_LINEDEFS,
-	LUMP_SIDEDEFS,
-	LUMP_SECTORS,
-	LUMP_SEGS,
-	LUMP_SSECTORS,
-	LUMP_NODES,
-	LUMP_BLOCKMAP,
-	LUMP_REJECT,
-	LUMP_SCRIPTS,
-	LUMP_BEHAVIOR,
-	LUMP_LEAFS,
-	LUMP_LIGHTS,
-	LUMP_MACROS,
-	LUMP_GL_HEADER,
-	LUMP_GL_VERT,
-	LUMP_GL_SEGS,
-	LUMP_GL_SSECT,
-	LUMP_GL_NODES,
-	LUMP_GL_PVS,
-	LUMP_TEXTMAP,
-	LUMP_ZNODES,
-	NUMMAPLUMPS
+private:
+	// Struct to hold namespace info
+	struct NSPair
+	{
+		ArchiveEntry*	start;	// eg. P_START
+		size_t			start_index;
+		ArchiveEntry*	end;	// eg. P_END
+		size_t			end_index;
+		string			name;	// eg. "P" (since P or PP is a special case will be set to "patches")
+
+		NSPair(ArchiveEntry* start, ArchiveEntry* end)
+		{
+			this->start = start;
+			this->end = end;
+		}
+	};
+
+	bool				iwad_;
+	vector<NSPair>	namespaces_;
 };
 
 #endif//__WADARCHIVE_H__

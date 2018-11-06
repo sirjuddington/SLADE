@@ -2,8 +2,8 @@
 #ifndef __FILE_MONITOR_H__
 #define __FILE_MONITOR_H__
 
-#include <wx/timer.h>
-#include <wx/process.h>
+#include "common.h"
+#include "General/ListenerAnnouncer.h"
 
 class FileMonitor : public wxTimer
 {
@@ -15,8 +15,8 @@ protected:
 	time_t	file_modified;
 
 public:
-	FileMonitor(string filename);
-	~FileMonitor();
+	FileMonitor(string filename, bool start = true);
+	virtual ~FileMonitor();
 
 	wxProcess*	getProcess() { return process; }
 	string		getFilename() { return filename; }

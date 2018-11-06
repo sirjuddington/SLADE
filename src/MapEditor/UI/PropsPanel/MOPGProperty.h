@@ -2,10 +2,9 @@
 #ifndef __MOPG_PROPERTY_H__
 #define __MOPG_PROPERTY_H__
 
-#include <wx/propgrid/propgrid.h>
-#include <wx/propgrid/advprops.h>
+#include "common.h"
 
-#include "MapEditor/GameConfiguration/Args.h"
+#include "Game/Args.h"
 
 class MapObject;
 class MapObjectPropsPanel;
@@ -20,7 +19,7 @@ protected:
 	string					propname;
 
 public:
-	MOPGProperty() { noupdate = false; udmf_prop = NULL; }
+	MOPGProperty() { noupdate = false; udmf_prop = nullptr; }
 	~MOPGProperty() {}
 
 	enum
@@ -101,7 +100,7 @@ public:
 class MOPGIntWithArgsProperty : public MOPGIntProperty
 {
 protected:
-	virtual const argspec_t getArgspec() = 0;
+	virtual const Game::ArgSpec& getArgspec() = 0;
 
 public:
 	MOPGIntWithArgsProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
@@ -117,7 +116,7 @@ public:
 class MOPGActionSpecialProperty : public MOPGIntWithArgsProperty
 {
 protected:
-	const argspec_t getArgspec();
+	const Game::ArgSpec& getArgspec();
 
 public:
 	MOPGActionSpecialProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL)
@@ -133,7 +132,7 @@ public:
 class MOPGThingTypeProperty : public MOPGIntWithArgsProperty
 {
 protected:
-	const argspec_t getArgspec();
+	const Game::ArgSpec& getArgspec();
 
 public:
 	MOPGThingTypeProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL)

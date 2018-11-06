@@ -28,10 +28,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MapSide.h"
+#include "Game/Configuration.h"
 #include "MapSector.h"
+#include "MapSide.h"
 #include "SLADEMap.h"
-#include "MainApp.h"
 
 
 /*******************************************************************
@@ -45,7 +45,7 @@ MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, par
 {
 	// Init variables
 	this->sector = sector;
-	this->parent = NULL;
+	this->parent = nullptr;
 	this->offset_x = 0;
 	this->offset_y = 0;
 
@@ -59,8 +59,8 @@ MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, par
 MapSide::MapSide(SLADEMap* parent) : MapObject(MOBJ_SIDE, parent)
 {
 	// Init variables
-	this->sector = NULL;
-	this->parent = NULL;
+	this->sector = nullptr;
+	this->parent = nullptr;
 	this->offset_x = 0;
 	this->offset_y = 0;
 }
@@ -115,7 +115,8 @@ uint8_t MapSide::getLight()
 	int light = 0;
 	bool include_sector = true;
 
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		Game::configuration().featureSupported(Game::UDMFFeature::SideLighting))
 	{
 		light += intProperty("light");
 		if (boolProperty("lightabsolute"))
@@ -138,7 +139,8 @@ uint8_t MapSide::getLight()
  *******************************************************************/
 void MapSide::changeLight(int amount)
 {
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		Game::configuration().featureSupported(Game::UDMFFeature::SideLighting))
 		setIntProperty("light", intProperty("light") + amount);
 }
 
@@ -165,7 +167,7 @@ void MapSide::setSector(MapSector* sector)
 /* MapSide::intProperty
  * Returns the value of the integer property matching [key]
  *******************************************************************/
-int MapSide::intProperty(string key)
+int MapSide::intProperty(const string& key)
 {
 	if (key == "sector")
 	{
@@ -185,7 +187,7 @@ int MapSide::intProperty(string key)
 /* MapSide::setIntProperty
  * Sets the integer value of the property [key] to [value]
  *******************************************************************/
-void MapSide::setIntProperty(string key, int value)
+void MapSide::setIntProperty(const string& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -203,7 +205,7 @@ void MapSide::setIntProperty(string key, int value)
 /* MapSide::stringProperty
  * Returns the value of the string property matching [key]
  *******************************************************************/
-string MapSide::stringProperty(string key)
+string MapSide::stringProperty(const string& key)
 {
 	if (key == "texturetop")
 		return tex_upper;
@@ -218,7 +220,7 @@ string MapSide::stringProperty(string key)
 /* MapSide::setStringProperty
  * Sets the string value of the property [key] to [value]
  *******************************************************************/
-void MapSide::setStringProperty(string key, string value)
+void MapSide::setStringProperty(const string& key, const string& value)
 {
 	// Update modified time
 	setModified();
@@ -245,6 +247,17 @@ void MapSide::setStringProperty(string key, string value)
 		MapObject::setStringProperty(key, value);
 }
 
+/* MapSide::scriptCanModifyProp
+ * Returns true if the property [key] can be modified via script
+ *******************************************************************/
+bool MapSide::scriptCanModifyProp(const string& key)
+{
+	if (key == "sector")
+		return false;
+
+	return true;
+}
+
 /* MapSide::writeBackup
  * Write all side info to a mobj_backup_t struct
  *******************************************************************/
@@ -265,7 +278,7 @@ void MapSide::writeBackup(mobj_backup_t* backup)
 	backup->props_internal["offsetx"] = offset_x;
 	backup->props_internal["offsety"] = offset_y;
 
-	//wxLogMessage("Side %d backup sector #%d", id, sector->getIndex());
+	//LOG_MESSAGE(1, "Side %d backup sector #%d", id, sector->getIndex());
 }
 
 /* MapSide::readBackup
@@ -280,13 +293,13 @@ void MapSide::readBackup(mobj_backup_t* backup)
 		sector->disconnectSide(this);
 		sector = (MapSector*)s;
 		sector->connectSide(this);
-		//wxLogMessage("Side %d load backup sector #%d", id, s->getIndex());
+		//LOG_MESSAGE(1, "Side %d load backup sector #%d", id, s->getIndex());
 	}
 	else
 	{
 		if (sector)
 			sector->disconnectSide(this);
-		sector = NULL;
+		sector = nullptr;
 	}
 
 	// Update texture counts (decrement previous)

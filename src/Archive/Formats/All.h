@@ -21,3 +21,4 @@
 #include "DiskArchive.h"
 #include "PodArchive.h"
 #include "ChasmBinArchive.h"
+#include "SiNArchive.h"

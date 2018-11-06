@@ -1,33 +1,26 @@
-
-#ifndef __MAP_BACKUP_PANEL_H__
-#define __MAP_BACKUP_PANEL_H__
-
-#include "UI/Lists/ListView.h"
-#include <wx/panel.h>
+#pragma once
 
 class MapPreviewCanvas;
 class Archive;
 class ZipArchive;
 class ArchiveTreeNode;
+class ListView;
+
 class MapBackupPanel : public wxPanel
 {
-private:
-	MapPreviewCanvas*	canvas_map;
-	ListView*			list_backups;
-	ZipArchive*			archive_backups;
-	Archive*			archive_mapdata;
-	ArchiveTreeNode*	dir_current;
-
 public:
 	MapBackupPanel(wxWindow* parent);
-	~MapBackupPanel();
+	~MapBackupPanel() {}
 
-	Archive*	getSelectedMapData() { return archive_mapdata; }
+	Archive*	getSelectedMapData() { return archive_mapdata_; }
 
 	bool	loadBackups(string archive_name, string map_name);
 	void	updateMapPreview();
 
-	void	onBackupListChanged(wxListEvent& e);
+private:
+	MapPreviewCanvas*			canvas_map_			= nullptr;
+	ListView*					list_backups_		= nullptr;
+	std::unique_ptr<ZipArchive>	archive_backups_;
+	Archive*					archive_mapdata_	= nullptr;
+	ArchiveTreeNode*			dir_current_		= nullptr;
 };
-
-#endif//__MAP_BACKUP_PANEL_H__

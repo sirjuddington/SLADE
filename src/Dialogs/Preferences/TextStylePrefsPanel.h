@@ -1,34 +1,14 @@
+#pragma once
 
-#ifndef __TEXT_STYLE_PREFS_PANEL_H__
-#define __TEXT_STYLE_PREFS_PANEL_H__
-
+#include "common.h"
 #include "PrefsPanelBase.h"
-#include "UI/TextEditor/TextStyle.h"
-#include <wx/clrpicker.h>
-#include <wx/fontpicker.h>
+#include "TextEditor/TextStyle.h"
 
 class wxListBox;
+class TextLanguage;
+
 class TextStylePrefsPanel : public PrefsPanelBase
 {
-private:
-	bool				init_done;
-	wxChoice*			choice_styleset;
-	wxButton*			btn_savestyleset;
-	wxListBox*			list_styles;
-	StyleSet			ss_current;
-	TextStyle*			ts_current;
-
-	wxColourPickerCtrl*	cp_foreground;
-	wxColourPickerCtrl*	cp_background;
-	wxFontPickerCtrl*	fp_font;
-	wxCheckBox*			cb_override_font_face;
-	wxCheckBox*			cb_override_font_size;
-	wxCheckBox*			cb_override_font_bold;
-	wxCheckBox*			cb_override_font_italic;
-	wxCheckBox*			cb_override_font_underlined;
-	wxCheckBox*			cb_override_foreground;
-	wxCheckBox*			cb_override_background;
-
 public:
 	TextStylePrefsPanel(wxWindow* parent);
 	~TextStylePrefsPanel();
@@ -42,9 +22,38 @@ public:
 	void	updateFontUnderlined();
 	void	updateForeground();
 	void	updateBackground();
+	void	updatePreview();
 
-	void	init();
-	void	applyPreferences();
+	void	init() override;
+	void	applyPreferences() override;
+
+	string pageTitle() override { return "Text Editor Fonts && Colours"; }
+
+private:
+	bool				init_done_;
+	wxChoice*			choice_styleset_;
+	wxButton*			btn_savestyleset_;
+	wxListBox*			list_styles_;
+	StyleSet			ss_current_;
+	TextStyle*			ts_current_;
+	wxCheckBox*			cb_font_override_;
+	wxFontPickerCtrl*	fp_font_override_;
+
+	wxColourPickerCtrl*	cp_foreground_;
+	wxColourPickerCtrl*	cp_background_;
+	wxFontPickerCtrl*	fp_font_;
+	wxCheckBox*			cb_override_font_face_;
+	wxCheckBox*			cb_override_font_size_;
+	wxCheckBox*			cb_override_font_bold_;
+	wxCheckBox*			cb_override_font_italic_;
+	wxCheckBox*			cb_override_font_underlined_;
+	wxCheckBox*			cb_override_foreground_;
+	wxCheckBox*			cb_override_background_;
+
+	TextLanguage*		language_preview_;
+	TextEditorCtrl*		te_preview_;
+
+	wxPanel*	createStylePanel();
 
 	// Events
 	void	onStyleSelected(wxCommandEvent& e);
@@ -60,6 +69,6 @@ public:
 	void	onBackgroundChanged(wxColourPickerEvent& e);
 	void	onBtnSaveStyleSet(wxCommandEvent& e);
 	void	onStyleSetSelected(wxCommandEvent& e);
+	void	onCBOverrideFont(wxCommandEvent& e);
+	void	onFontOverrideChanged(wxFontPickerEvent& e);
 };
-
-#endif//__TEXT_STYLE_PREFS_PANEL_H__

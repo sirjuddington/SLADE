@@ -2,8 +2,8 @@
 #ifndef __PROPERTY_LIST_H__
 #define __PROPERTY_LIST_H__
 
+#include "common.h"
 #include "Property.h"
-#include <map>
 
 class PropertyList
 {
@@ -15,7 +15,7 @@ public:
 	~PropertyList();
 
 	// Operator for direct access to hash map
-	Property& operator[](string key) { return properties[key]; }
+	Property& operator[](const string& key) { return properties[key]; }
 
 	void	clear() { properties.clear(); }
 	bool	propertyExists(string key);

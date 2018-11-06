@@ -1,14 +1,16 @@
 #ifndef FILES_H
 #define FILES_H
 
-#include <stdio.h>
-#include "../zlib/zlib.h"
-#include "../bzip2/bzlib.h"
-#include "../lzma/C/LzmaDec.h"
 #include "Main.h"
 #include "Utility/MemChunk.h"
 #include "templates.h"
 #include "tarray.h"
+#include <stdio.h>
+#include "../zlib/zlib.h"
+#include "../bzip2/bzlib.h"
+#include "../lzma/C/LzmaDec.h"
+
+#undef Status
 
 #if defined(_MSC_VER) || defined(__WATCOMC__)
 #define STACK_ARGS __cdecl

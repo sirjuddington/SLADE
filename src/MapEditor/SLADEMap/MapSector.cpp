@@ -32,13 +32,10 @@
 #include "MapLine.h"
 #include "MapSide.h"
 #include "MapVertex.h"
-#include "MainApp.h"
+#include "App.h"
 #include "SLADEMap.h"
 #include "Utility/MathStuff.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include <wx/colour.h>
-#include <cmath>
-
+#include "Game/Configuration.h"
 
 // Number of radians in the unit circle
 const double TAU = M_PI * 2;
@@ -131,13 +128,13 @@ void MapSector::copy(MapObject* s)
  *******************************************************************/
 void MapSector::setGeometryUpdated()
 {
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 }
 
 /* MapSector::stringProperty
  * Returns the value of the string property matching [key]
  *******************************************************************/
-string MapSector::stringProperty(string key)
+string MapSector::stringProperty(const string& key)
 {
 	if (key == "texturefloor")
 		return f_tex;
@@ -150,7 +147,7 @@ string MapSector::stringProperty(string key)
 /* MapSector::intProperty
  * Returns the value of the integer property matching [key]
  *******************************************************************/
-int MapSector::intProperty(string key)
+int MapSector::intProperty(const string& key)
 {
 	if (key == "heightfloor")
 		return f_height;
@@ -169,7 +166,7 @@ int MapSector::intProperty(string key)
 /* MapSector::setStringProperty
  * Sets the string value of the property [key] to [value]
  *******************************************************************/
-void MapSector::setStringProperty(string key, string value)
+void MapSector::setStringProperty(const string& key, const string& value)
 {
 	// Update modified time
 	setModified();
@@ -193,17 +190,21 @@ void MapSector::setStringProperty(string key, string value)
 /* MapSector::setFloatProperty
  * Sets the float value of the property [key] to [value]
  *******************************************************************/
-void MapSector::setFloatProperty(string key, double value)
+void MapSector::setFloatProperty(const string& key, double value)
 {
-	// Check if flat offset/scale/rotation is changing (if UDMF + ZDoom)
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	using Game::UDMFFeature;
+
+	// Check if flat offset/scale/rotation is changing (if UDMF)
+	if (parent_map->currentFormat() == MAP_UDMF)
 	{
-		if (key == "xpanningfloor" || key == "ypanningfloor" ||
-		        key == "xpanningceiling" || key == "ypanningceiling" ||
-		        key == "xscalefloor" || key == "yscalefloor" ||
-		        key == "xscaleceiling" || key == "yscaleceiling" ||
-		        key == "rotationfloor" || key == "rotationceiling")
-			polygon.setTexture(NULL);	// Clear texture to force update
+		if ((Game::configuration().featureSupported(UDMFFeature::FlatPanning) &&
+			(key == "xpanningfloor" || key == "ypanningfloor")) ||
+			(Game::configuration().featureSupported(UDMFFeature::FlatScaling) &&
+			(key == "xscalefloor" || key == "yscalefloor" ||
+			 key == "xscaleceiling" || key == "yscaleceiling")) || 
+			(Game::configuration().featureSupported(UDMFFeature::FlatRotation) &&
+			(key == "rotationfloor" || key == "rotationceiling")))
+			polygon.setTexture(nullptr);	// Clear texture to force update
 	}
 
 	MapObject::setFloatProperty(key, value);
@@ -212,7 +213,7 @@ void MapSector::setFloatProperty(string key, double value)
 /* MapSector::setIntProperty
  * Sets the integer value of the property [key] to [value]
  *******************************************************************/
-void MapSector::setIntProperty(string key, int value)
+void MapSector::setIntProperty(const string& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -324,7 +325,7 @@ bool MapSector::isWithin(fpoint2_t point)
 	// Find nearest line in the sector
 	double dist;
 	double min_dist = 999999;
-	MapLine* nline = NULL;
+	MapLine* nline = nullptr;
 	for (unsigned a = 0; a < connected_sides.size(); a++)
 	{
 		// Calculate distance to line
@@ -465,8 +466,9 @@ bool MapSector::getVertices(vector<MapObject*>& list)
  *******************************************************************/
 uint8_t MapSector::getLight(int where)
 {
-	// Check for UDMF+ZDoom namespace
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	// Check for UDMF + flat lighting
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		Game::configuration().featureSupported(Game::UDMFFeature::FlatLighting))
 	{
 		// Get general light level
 		int l = light;
@@ -526,10 +528,9 @@ void MapSector::changeLight(int amount, int where)
 	else if (ll + amount < 0)
 		amount = -ll;
 
-	// Check for UDMF+ZDoom namespace
-	bool separate = false;
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
-		separate = true;
+	// Check for UDMF + flat lighting independent from the sector
+	bool separate = parent_map->currentFormat() == MAP_UDMF &&
+					Game::configuration().featureSupported(Game::UDMFFeature::FlatLighting);
 
 	// Change light level by amount
 	if (where == 1 && separate)
@@ -555,6 +556,8 @@ void MapSector::changeLight(int amount, int where)
  *******************************************************************/
 rgba_t MapSector::getColour(int where, bool fullbright)
 {
+	using Game::UDMFFeature;
+
 	// Check for sector colour set in open script
 	// TODO: Test if this is correct behaviour
 	if (parent_map->mapSpecials()->tagColoursSet())
@@ -580,12 +583,21 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 		}
 	}
 
-	// Check for UDMF+ZDoom namespace
-	if ((parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom")))
+	// Check for UDMF
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		(Game::configuration().featureSupported(UDMFFeature::SectorColor) ||
+		Game::configuration().featureSupported(UDMFFeature::FlatLighting)))
 	{
 		// Get sector light colour
-		int intcol = MapObject::intProperty("lightcolor");
-		wxColour wxcol(intcol);
+		wxColour wxcol;
+		if(Game::configuration().featureSupported(UDMFFeature::SectorColor))
+		{
+			int intcol = MapObject::intProperty("lightcolor");
+			wxcol = wxColour(intcol);
+		}
+		else
+			wxcol = wxColour(255, 255, 255, 255);
+		
 
 		// Ignore light level if fullbright
 		if (fullbright)
@@ -594,24 +606,27 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 		// Get sector light level
 		int ll = light;
 
-		// Get specific light level
-		if (where == 1)
+		if (Game::configuration().featureSupported(UDMFFeature::FlatLighting))
 		{
-			// Floor
-			int fl = MapObject::intProperty("lightfloor");
-			if (boolProperty("lightfloorabsolute"))
-				ll = fl;
-			else
-				ll += fl;
-		}
-		else if (where == 2)
-		{
-			// Ceiling
-			int cl = MapObject::intProperty("lightceiling");
-			if (boolProperty("lightceilingabsolute"))
-				ll = cl;
-			else
-				ll += cl;
+			// Get specific light level
+			if(where == 1)
+			{
+				// Floor
+				int fl = MapObject::intProperty("lightfloor");
+				if(boolProperty("lightfloorabsolute"))
+					ll = fl;
+				else
+					ll += fl;
+			}
+			else if(where == 2)
+			{
+				// Ceiling
+				int cl = MapObject::intProperty("lightceiling");
+				if(boolProperty("lightceilingabsolute"))
+					ll = cl;
+				else
+					ll += cl;
+			}
 		}
 
 		// Clamp light level
@@ -657,7 +672,8 @@ rgba_t MapSector::getFogColour()
 	}
 
 	// udmf
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		Game::configuration().featureSupported(Game::UDMFFeature::SectorFog))
 	{
 		int intcol = MapObject::intProperty("fadecolor");
 
@@ -727,6 +743,8 @@ void MapSector::readBackup(mobj_backup_t* backup)
 	c_tex = backup->props_internal["textureceiling"].getStringValue();
 	f_height = backup->props_internal["heightfloor"].getIntValue();
 	c_height = backup->props_internal["heightceiling"].getIntValue();
+	plane_floor.set(0, 0, 1, f_height);
+	plane_ceiling.set(0, 0, 1, c_height);
 	light = backup->props_internal["lightlevel"].getIntValue();
 	special = backup->props_internal["special"].getIntValue();
 	tag = backup->props_internal["id"].getIntValue();

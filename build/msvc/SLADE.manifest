@@ -16,10 +16,23 @@
     </application>
   </compatibility>
 
+  <asmv3:application  xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" >
+    <asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
+      <dpiAware>true</dpiAware>
+    </asmv3:windowsSettings>
+  </asmv3:application>
+
   <assemblyIdentity type="win32"
                     name="SampleCode.GetWindowsVersionInfo"
                     version="1.0.0.0"
                     processorArchitecture="x86"
                     publicKeyToken="0000000000000000"
   />
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">  
+    <security>  
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">  
+        <requestedExecutionLevel level="asInvoker" uiAccess="false"/>  
+      </requestedPrivileges>  
+    </security>  
+  </trustInfo> 
 </assembly>

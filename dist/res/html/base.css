@@ -1,0 +1,582 @@
+
+/* ------------ Fonts ------------ */
+/*@import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,500,700,700i,800');
+@import url('https://fonts.googleapis.com/css?family=Fira+Mono:500,700');
+@import url('http://fonts.googleapis.com/css?family=Gloria+Hallelujah');
+@import url('http://fonts.googleapis.com/css?family=Squada+One');*/
+
+
+/* ----------- General ----------- */
+
+body,
+table,
+td,
+th,
+div,
+a {
+	font-family: 'Fira Sans', sans-serif;
+	font-size: 1.0em;
+	margin: 0px;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+}
+
+table,
+td,
+th {
+	border: 0px;
+	padding: 0px;
+	margin: 0px;
+}
+
+.body-content {
+	width: 51em;
+	margin-bottom: 20px;
+	margin-left: auto;
+	margin-right: auto;
+	background: inherit;
+}
+
+img {
+	max-width: 762px;
+	margin-top: 8px;
+	margin-bottom: 8px;
+}
+
+strong,
+b {
+	font-weight: 700;
+}
+
+li {
+	padding-top: 0.1em;
+	padding-bottom: 0.1em;
+}
+
+
+/* ------------ Links ------------ */
+
+A,
+A:link,
+A:visited,
+A:hover,
+A:active {
+	font-weight: 500;
+	text-decoration: none;
+	font-size: inherit;
+	background-color: inherit;
+}
+
+A:link,
+A:visited {
+	background-color: inherit;
+	transition: all .1s ease-in;
+}
+
+A:hover,
+A:active {
+	background-color: inherit;
+	transition: all .08s ease-out;
+}
+
+
+/* ------------ Boxes ------------ */
+
+#title,
+.back,
+#back,
+div.news_title,
+div.news_byline,
+div.news_comments,
+div.news_postbody {
+	padding-top: 4px;
+	padding-bottom: 4px;
+	padding-left: 8px;
+	padding-right: 8px;
+	margin-bottom: 30px;
+	line-height: 1.5em;
+	border-radius: 3px;
+	font-size: 0.97em;
+}
+
+.back,
+#back,
+div.wikifooter {
+	padding: 16px;
+}
+
+
+/* Box Title */
+
+#title,
+div.news_title,
+#date {
+	font-weight: 900;
+	font-size: 1.3em;
+	border-width: 1px;
+	border-bottom-width: 1px;
+	margin-bottom: 16px;
+	padding-top: 0.4em;
+	padding-bottom: 0.3em;
+	padding-left: 16px;
+	padding-right: 16px;
+	position: relative;
+	margin-left: -16px;
+	margin-right: -16px;
+	margin-top: -16px;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+
+/* News page box title */
+
+div.news_title {
+	margin-bottom: 0;
+}
+
+#date,
+div.news_byline {
+	border-top: 0px;
+	border-bottom: 0px;
+	margin-bottom: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	font-size: 0.7em;
+	font-weight: 500;
+	text-align: right;
+	right: 25px;
+	padding-right: 16px;
+}
+
+#title {
+	position: relative;
+}
+
+#date {
+	position: absolute;
+	top: 8px;
+	right: 0px;
+	margin-right: 0;
+	margin-top: 0;
+}
+
+
+/* News page box content */
+
+div.news_postbody {
+	border: 0;
+	padding: 0;
+	padding-top: 16px;
+}
+
+div.news_byline {
+	height: 0px;
+}
+
+div.news_comments {
+	border-top: 0px;
+	padding: 0;
+	margin: 0;
+	text-align: right;
+	font-size: 0.7em;
+	position: relative;
+	border: 0;
+	height: 0;
+	top: -1.5em;
+}
+
+span.news_authorname {
+	visibility: hidden;
+}
+
+span.news_time {
+	position: relative;
+	top: -30px;
+	right: -16px;
+}
+
+
+/* Code box */
+
+div.codeheader {
+	display: none;
+}
+
+.bbc_code,
+#code,
+div.code,
+div.newspost blockquote {
+	display: block;
+	line-height: 1.5em;
+	max-height: 24em;
+	overflow: auto;
+	margin: 0px;
+	margin-top: 0px;
+}
+
+.bbc_code,
+#code,
+div.code {
+	font-family: 'Fira Mono';
+	font-size: 0.75em;
+	padding: 3px 1em;
+	width: 740px;
+}
+
+div.newspost blockquote {
+	font-size: 0.92em;
+	padding: 0 1em;
+	border-radius: 3px;
+	max-height: 30em;
+}
+
+blockquote ul {
+	margin-left: 0em;
+	padding-left: 2em;
+}
+blockquote ul ul {
+	padding-left: 1.5em;
+}
+
+
+/* Menu item boxes */
+
+a.menu2,
+a.menu-hover2,
+a.menul,
+a.menul-hover,
+a.menur,
+a.menur-hover,
+a.menu-current,
+a.menul-current,
+a.menur-current {
+	border-left: 0px;
+	border-bottom: 5px;
+	border-top: 0px;
+	border-right: 0px;
+	padding-left: 1.4em;
+	padding-right: 1.4em;
+	padding-top: 0.5em;
+	padding-bottom: 0.3em;
+	border-style: solid;
+	vertical-align: middle;
+	margin: 0px;
+	margin-top: -8px;
+	text-align: center;
+	text-transform: uppercase;
+	font-family: 'Squada One';
+	font-size: 1.3em;
+	font-weight: 400;
+	display: inline-block;
+	transition: background-color .2s, border-color .2s, color .2s, text-shadow .2s ease-in;
+}
+
+a.menul-hover,
+a.menur-hover,
+a.menu-hover2 {
+	border-bottom-width: 5px;
+	transition: background-color .1s, border-color .1s, color .1s, text-shadow .1s ease-out;
+}
+
+a.menul,
+a.menul-hover,
+a.menul-current {
+	border-left-width: 0px;
+	border-bottom-left-radius: 5px;
+	padding-left: 1.5em;
+}
+
+a.menur,
+a.menur-hover,
+a.menur-current {
+	border-right-width: 0px;
+	border-bottom-right-radius: 5px;
+	padding-right: 1.5em;
+}
+
+a.menur-current,
+a.menul-current,
+a.menu-current {
+	border-bottom-width: 4px;
+	margin-bottom: 1px;
+	border-left-width: 1px;
+	border-right-width: 1px;
+}
+
+
+/* --------- Page Header --------- */
+
+div.header {
+	width: 100%;
+	height: 64px;
+}
+
+div.headershadow {
+	width: 100%;
+	height: 8px;
+	bottom: 0;
+	margin: 0;
+	z-index: -1;
+}
+
+table.hidden {
+	height: 64px;
+}
+
+td.title1 {
+	/* SLADE */
+	font-family: 'Squada One';
+	font-weight: bolder;
+	font-size: 70px;
+	line-height: 58px;
+	vertical-align: bottom;
+	text-align: left;
+	cursor: default;
+}
+
+td.title2 {
+	/* 3 */
+	background-size: 64px;
+	background-repeat: no-repeat;
+	width: 40%;
+	font-family: 'Squada One';
+	font-weight: bolder;
+	font-size: 40px;
+	line-height: 38px;
+	vertical-align: bottom;
+	text-align: left;
+	padding-left: 2px;
+	cursor: default;
+}
+
+td.title3 {
+	/* It's a Doom Editor */
+	width: 400px;
+	font-family: 'Gloria Hallelujah';
+	font-weight: bold;
+	font-size: 24px;
+	line-height: 32px;
+	vertical-align: bottom;
+	text-align: right;
+	cursor: default;
+}
+
+
+/* Page Title */
+
+div#pagetitle {
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 16px;
+	margin-top: 32px;
+	text-align: center;
+	font-size: 1.75em;
+	line-height: 1.25em;
+	font-weight: 900;
+	border-style: solid;
+	border-width: 1px;
+	border-bottom-width: 4px;
+	padding-bottom: 0.08em;
+}
+
+
+/* --------- Inner Tables --------- */
+
+table.inner,
+table.wiki {
+	margin: 0px;
+	padding: 0px;
+	border-spacing: 0px;
+	border-top-width: 0px;
+	border-left-width: 0px;
+	border-style: solid;
+}
+
+td.inner,
+th.inner,
+th.innertop,
+table.wiki th,
+table.wiki td,
+th.innertopright {
+	margin: 0px;
+	padding: 0.5em 0.7em;
+	text-align: left;
+	border-bottom-width: 0px;
+	border-right-width: 0px;
+	border-style: solid;
+	vertical-align: top;
+}
+
+th.inner,
+table.wiki th {
+	border-bottom-width: 2px;
+}
+
+table.wiki {
+	border-right-width: 0px;
+	border-bottom-width: 0px;
+	margin-bottom: 16px;
+	table-layout: fixed;
+	width: 100%
+}
+
+table.wiki td,
+table.wiki th {
+	padding-left: 8px;
+	padding-right: 8px;
+	border-right-width: 0px;
+}
+
+th.innertopright {
+	text-align: right;
+}
+
+
+/* ------------- Wiki ------------- */
+
+div.wiki#back {
+	padding-top: 1px;
+	padding-bottom: 1px;
+	overflow: hidden;
+	text-align: left;
+}
+
+div.wiki#title {
+	margin-top: -1px;
+}
+
+div.wiki strong {
+	font-weight: 600;
+}
+
+div.wiki hr {
+	border-bottom: 0;
+	border-left: 0;
+	border-right: 0;
+	border-top: solid 1px;
+}
+
+code {
+	font-family: 'Fira Mono';
+	font-size: 0.8em;
+	line-height: 1.5em;
+	border: 1px solid;
+	padding: 1px 3px;
+	padding-bottom: 0px;
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 3px;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+}
+
+table.wiki td code {
+	line-height: 1.8em;
+}
+
+h4 {
+	font-size: 1.1em;
+	margin-bottom: 0px;
+	font-weight: 600;
+}
+
+h5 {
+	font-size: 1.02em;
+	margin-bottom: 0px;
+	font-weight: 600;
+}
+
+h3,
+h2,
+h1 {
+	font-size: 1.2em;
+	padding-bottom: 4px;
+	margin-bottom: 8px;
+}
+
+h2,
+h1 {
+	margin-top: 24px;
+	border-style: solid;
+	border-width: 0px;
+	border-bottom-width: 1px;
+}
+
+pre code {
+	display: block;
+	font-family: 'Fira Mono';
+	font-size: 9pt;
+	line-height: 1.5em;
+	max-height: 24em;
+	overflow: auto;
+	padding: 3px 1em;
+	padding-top: 5px;
+	width: 730px;
+	margin: auto;
+	margin-top: 0px;
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+}
+
+ul {
+	margin-top: 8px;
+}
+
+ul ul {
+	margin-top: 0px;
+}
+
+div.wikifooter {
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 20px;
+	margin-top: 20px;
+	text-align: center;
+	line-height: 36px;
+	padding: 0;
+	border-radius: 0.15em;
+}
+
+div.wikifooter a {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+
+div.footer-pad {
+	height: 100%;
+}
+
+div#topbuffer {
+	margin-top: 32px;
+}
+
+div.wiki blockquote {
+	border-style: solid;
+	border-width: 0px;
+	border-left-width: 6px;
+	display: block;
+	line-height: 1.5em;
+	width: 720px;
+	padding-left: 16px;
+	padding-right: 16px;
+	margin: auto;
+	padding-bottom: 0px;
+	padding-top: 0px;
+	font-size: 0.95em;
+	text-align: justify;
+}
+
+img.inline {
+	margin: 0px;
+}
+
+hidewebsite {
+	display: none;
+}

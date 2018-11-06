@@ -1,0 +1,25 @@
+
+zscript
+{
+	name = "ZDoom ZScript";
+	keyword_link = "http://zdoom.org/wiki/Special:Search/%s";
+	constant_link = "http://zdoom.org/wiki/Special:Search/%s";
+	function_link = "http://zdoom.org/wiki/%s";
+	case_sensitive = false;
+	blocks = "class", "struct", "enum";
+
+	keywords =
+	{
+		// General keywords
+		class, default, private, static, native, return, if, else, for, while, do, break, continue,
+		deprecated, state, null, readonly, true, false, struct, extend, clearscope, vararg, ui, play,
+		virtual, virtualscope, meta, Property, version, in, out, states, action, override, super, is,
+		let, const, replaces, protected, self, abstract, enum
+	}
+
+	types =
+	{
+		object, vector2, vector3, name, string, color, sound, void, double, bool, int, float,
+		uint8, uint16, uint, int8, int16, TextureID, SpriteID, Array, voidptr, short
+	}
+}

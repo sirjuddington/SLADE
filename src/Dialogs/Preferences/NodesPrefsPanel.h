@@ -1,29 +1,27 @@
-
-#ifndef __NODES_PREFS_PANEL_H__
-#define __NODES_PREFS_PANEL_H__
+#pragma once
 
 #include "PrefsPanelBase.h"
 
 class wxCheckListBox;
 class NodesPrefsPanel : public PrefsPanelBase
 {
-private:
-	wxChoice*		choice_nodebuilder;
-	wxButton*		btn_browse_path;
-	wxTextCtrl*		text_path;
-	wxCheckListBox*	clb_options;
-
 public:
 	NodesPrefsPanel(wxWindow* parent, bool frame = true);
 	~NodesPrefsPanel();
 
-	void	init();
+	void	init() override;
 	void	populateOptions(string options);
-	void	applyPreferences();
+	void	applyPreferences() override;
+
+	string pageTitle() override { return "Node Builders"; }
+
+private:
+	wxChoice*		choice_nodebuilder_;
+	wxButton*		btn_browse_path_;
+	wxTextCtrl*		text_path_;
+	wxCheckListBox*	clb_options_;
 
 	// Events
 	void	onChoiceBuilderChanged(wxCommandEvent& e);
 	void	onBtnBrowse(wxCommandEvent& e);
 };
-
-#endif//__NODES_PREFS_PANEL_H__

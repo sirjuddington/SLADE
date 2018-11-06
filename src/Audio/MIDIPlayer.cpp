@@ -30,17 +30,17 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "MIDIPlayer.h"
-#include <wx/stdpaths.h>
-#include <wx/filename.h>
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-MIDIPlayer*	MIDIPlayer::instance = NULL;
+MIDIPlayer*	MIDIPlayer::instance = nullptr;
 CVAR(String, fs_soundfont_path, "", CVAR_SAVE);
 CVAR(String, fs_driver, "", CVAR_SAVE);
+
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -55,6 +55,7 @@ EXTERN_CVAR(Bool, snd_midi_usetimidity)
 #define usetimidity true
 #endif
 
+
 /*******************************************************************
  * MIDIPLAYER FLUIDSYNTH IMPLEMENTATION
  *******************************************************************/
@@ -67,7 +68,7 @@ MIDIPlayer::MIDIPlayer()
 	// Init variables
 	fs_initialised = false;
 	fs_soundfont_ids.clear();
-	program = NULL;
+	program = nullptr;
 	file = "";
 
 #ifndef NO_FLUIDSYNTH
@@ -83,7 +84,7 @@ MIDIPlayer::MIDIPlayer()
 #ifdef __WXGTK__
 		fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2:/usr/share/sounds/sf2/FluidR3_GS.sf2";
 #else // __WXGTK__
-		wxLogMessage("Warning: No fluidsynth soundfont set, MIDI playback will not work");
+		LOG_MESSAGE(1, "Warning: No fluidsynth soundfont set, MIDI playback will not work");
 #endif // __WXGTK__
 	}
 
@@ -92,7 +93,7 @@ MIDIPlayer::MIDIPlayer()
 	reloadSoundfont();
 
 	if (!fs_player || !fs_adriver)
-		wxLogMessage("Warning: Failed to initialise FluidSynth, MIDI playback disabled");
+		LOG_MESSAGE(1, "Warning: Failed to initialise FluidSynth, MIDI playback disabled");
 #endif // NO_FLUIDSYNTH
 }
 
@@ -235,7 +236,7 @@ bool MIDIPlayer::openFile(string filename)
 
 	// Delete+Recreate player
 	delete_fluid_player(fs_player);
-	fs_player = NULL;
+	fs_player = nullptr;
 	fs_player = new_fluid_player(fs_synth);
 
 	// Open midi
@@ -262,7 +263,7 @@ bool MIDIPlayer::openData(MemChunk &mc)
 
 	if (usetimidity)
 	{
-		wxFileName path(appPath("slade-timidity.mid", DIR_TEMP));
+		wxFileName path(App::path("slade-timidity.mid", App::Dir::Temp));
 		file = path.GetFullPath();
 		mc.exportFile(file);
 		return true;
@@ -275,7 +276,7 @@ bool MIDIPlayer::openData(MemChunk &mc)
 
 		// Delete+Recreate player
 		delete_fluid_player(fs_player);
-		fs_player = NULL;
+		fs_player = nullptr;
 		fs_player = new_fluid_player(fs_synth);
 
 		if (fs_player)
@@ -288,7 +289,7 @@ bool MIDIPlayer::openData(MemChunk &mc)
 			return false;
 	}
 #endif // NO_FLUIDSYNTH
-	return true;
+	return false;
 }
 
 /* MIDIPlayer::play
@@ -302,7 +303,8 @@ bool MIDIPlayer::play()
 	if (usetimidity)
 	{
 		string commandline = snd_timidity_path + " " + file + " " + snd_timidity_options;
-		program = wxProcess::Open(commandline);
+		if (!(program = wxProcess::Open(commandline)))
+			return false;
 
 		int pid = program->GetPid();
 		return program->Exists(pid);

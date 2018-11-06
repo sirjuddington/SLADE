@@ -30,14 +30,15 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
+#include "Game/Configuration.h"
+#include "General/ColourConfiguration.h"
 #include "LineTextureOverlay.h"
+#include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapTextureManager.h"
 #include "MapEditor/SLADEMap/MapLine.h"
 #include "MapEditor/SLADEMap/MapSide.h"
-#include "General/ColourConfiguration.h"
-#include "OpenGL/Drawing.h"
-#include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
+#include "OpenGL/Drawing.h"
 
 
 /*******************************************************************
@@ -148,38 +149,38 @@ void LineTextureOverlay::close(bool cancel)
 	// Apply texture changes if not cancelled
 	if (!cancel)
 	{
-		theMapEditor->mapEditor().beginUndoRecord("Change Line Texture", true, false, false);
+		MapEditor::editContext().beginUndoRecord("Change Line Texture", true, false, false);
 
 		// Go through lines
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
 			// Front Upper
-			if (textures[FRONT_UPPER].changed)
+			if (textures[FRONT_UPPER].changed && !textures[FRONT_UPPER].textures.empty())
 				lines[a]->setStringProperty("side1.texturetop", textures[FRONT_UPPER].textures[0]);
 
 			// Front Middle
-			if (textures[FRONT_MIDDLE].changed)
+			if (textures[FRONT_MIDDLE].changed && !textures[FRONT_MIDDLE].textures.empty())
 				lines[a]->setStringProperty("side1.texturemiddle", textures[FRONT_MIDDLE].textures[0]);
 
 			// Front Lower
-			if (textures[FRONT_LOWER].changed)
+			if (textures[FRONT_LOWER].changed && !textures[FRONT_LOWER].textures.empty())
 				lines[a]->setStringProperty("side1.texturebottom", textures[FRONT_LOWER].textures[0]);
 
 
 			// Back Upper
-			if (textures[BACK_UPPER].changed)
+			if (textures[BACK_UPPER].changed && !textures[BACK_UPPER].textures.empty())
 				lines[a]->setStringProperty("side2.texturetop", textures[BACK_UPPER].textures[0]);
 
 			// Back Middle
-			if (textures[BACK_MIDDLE].changed)
+			if (textures[BACK_MIDDLE].changed && !textures[BACK_MIDDLE].textures.empty())
 				lines[a]->setStringProperty("side2.texturemiddle", textures[BACK_MIDDLE].textures[0]);
 
 			// Back Lower
-			if (textures[BACK_LOWER].changed)
+			if (textures[BACK_LOWER].changed && !textures[BACK_LOWER].textures.empty())
 				lines[a]->setStringProperty("side2.texturebottom", textures[BACK_LOWER].textures[0]);
 		}
 
-		theMapEditor->mapEditor().endUndoRecord();
+		MapEditor::editContext().endUndoRecord();
 	}
 
 	// Deactivate
@@ -313,12 +314,15 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 	GLTexture::bgTex().draw2dTiled(size, size);
 	glPopMatrix();
 
-	GLTexture* tex_first = NULL;
+	GLTexture* tex_first = nullptr;
 	if (tex.textures.size() > 0)
 	{
 		// Draw first texture
 		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
-		tex_first = theMapEditor->textureManager().getTexture(tex.textures[0], theGameConfiguration->mixTexFlats());
+		tex_first = MapEditor::textureManager().getTexture(
+			tex.textures[0],
+			Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+		);
 		Drawing::drawTextureWithin(tex_first, tex.position.x - halfsize, tex.position.y - halfsize,
 		                           tex.position.x + halfsize, tex.position.y + halfsize, 0, 2);
 
@@ -326,9 +330,20 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 		OpenGL::setColour(255, 255, 255, 127*alpha, 0);
 		for (unsigned a = 1; a < tex.textures.size() && a < 5; a++)
 		{
-			Drawing::drawTextureWithin(theMapEditor->textureManager().getTexture(tex.textures[a], theGameConfiguration->mixTexFlats()),
-			                           tex.position.x - halfsize, tex.position.y - halfsize,
-			                           tex.position.x + halfsize, tex.position.y + halfsize, 0, 2);
+			auto gl_tex = MapEditor::textureManager().getTexture(
+				tex.textures[a],
+				Game::configuration().featureSupported(Game::Feature::MixTexFlats)
+			);
+
+			Drawing::drawTextureWithin(
+				gl_tex,
+				tex.position.x - halfsize,
+				tex.position.y - halfsize,
+				tex.position.x + halfsize,
+				tex.position.y + halfsize,
+				0,
+				2
+			);
 		}
 	}
 
@@ -459,13 +474,13 @@ void LineTextureOverlay::browseTexture(tex_inf_t& tex, string position)
 		texture = "-";
 
 	// Open texture browser
-	MapTextureBrowser browser(theMapEditor, 0, texture, &(theMapEditor->mapEditor().getMap()));
+	MapTextureBrowser browser(MapEditor::windowWx(), 0, texture, &(MapEditor::editContext().map()));
 	browser.SetTitle(S_FMT("Browse %s Texture", position));
-	if (browser.ShowModal() == wxID_OK)
+	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
 	{
 		// Set texture
 		tex.textures.clear();
-		tex.textures.push_back(browser.getSelectedItem()->getName());
+		tex.textures.push_back(browser.getSelectedItem()->name());
 		tex.changed = true;
 		close(false);
 	}

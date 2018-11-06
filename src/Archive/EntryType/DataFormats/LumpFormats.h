@@ -56,7 +56,7 @@ public:
 			// The last entry can be incomplete, as it may stop right
 			// after the declaration of its type. So if the size is not
 			// a perfect multiple, then the last entry is incomplete.
-			size_t lastentry = (mc.getSize()%numentries ? numentries : numentries - 1);
+			size_t lastentry = ((mc.getSize()%numentries) ? numentries : numentries - 1);
 
 			// Check that the last entry ends on an ANIM_STOP type
 			if (mc[lastentry*sizeof(animated_t)] == ANIM_STOP)

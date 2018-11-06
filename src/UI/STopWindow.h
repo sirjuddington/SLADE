@@ -1,19 +1,13 @@
+#pragma once
 
-#ifndef __S_TOP_WINDOW_H__
-#define __S_TOP_WINDOW_H__
+#include "common.h"
 
-#include <wx/frame.h>
-
+class SAction;
 class SToolBar;
 class wxMenu;
+
 class STopWindow : public wxFrame
 {
-protected:
-	vector<wxMenu*>	custom_menus;
-	int				custom_menus_begin;
-	SToolBar*		toolbar;
-	string			id;
-
 public:
 	STopWindow(string title, string id, int xpos = 0, int ypos = 0, int width = 1024, int height = 768);
 	~STopWindow();
@@ -28,10 +22,17 @@ public:
 	void	addCustomToolBar(string name, wxArrayString actions);
 	void	removeCustomToolBar(string name);
 	void	removeAllCustomToolBars();
+	void	populateToolbarsMenu() const;
 
 	// Events
-	void	onSize(wxSizeEvent& e);
-	void	onMove(wxMoveEvent& e);
-};
+	void	onMenu(wxCommandEvent& e);
 
-#endif//__S_TOP_WINDOW_H__
+protected:
+	vector<wxMenu*>	custom_menus_;
+	int				custom_menus_begin_;
+	SToolBar*		toolbar_;
+	string			id_;
+	wxMenu*			toolbar_menu_;
+	int				toolbar_menu_wx_id_;
+	SAction*		action_toolbar_menu_;
+};

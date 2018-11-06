@@ -1,21 +1,18 @@
+#pragma once
 
-#ifndef __INPUT_PREFS_PANEL_H__
-#define __INPUT_PREFS_PANEL_H__
-
+#include "common.h"
 #include "PrefsPanelBase.h"
 #include "General/KeyBind.h"
-#include <wx/textctrl.h>
-#include <wx/treelist.h>
 
 class InputKeyCtrl : public wxTextCtrl
 {
-private:
-	keypress_t key;
-
 public:
 	InputKeyCtrl(wxWindow* parent, keypress_t init);
 
-	keypress_t	getKey() { return key; }
+	keypress_t	key() const { return key_; }
+
+private:
+	keypress_t key_;
 
 	// Events
 	void	onKeyDown(wxKeyEvent& e);
@@ -25,13 +22,6 @@ public:
 
 class InputPrefsPanel : public PrefsPanelBase
 {
-private:
-	wxTreeListCtrl*	list_binds;
-	wxButton*		btn_add;
-	wxButton*		btn_remove;
-	wxButton*		btn_change;
-	wxButton*		btn_defaults;
-
 public:
 	InputPrefsPanel(wxWindow* parent);
 	~InputPrefsPanel();
@@ -43,8 +33,17 @@ public:
 	void			addKey();
 	void			removeKey(wxTreeListItem item);
 
-	void			init();
-	void			applyPreferences();
+	void			init() override;
+	void			applyPreferences() override;
+
+	string pageTitle() override { return "Keyboard Shortcuts"; }
+
+private:
+	wxTreeListCtrl*	list_binds_;
+	wxButton*		btn_add_;
+	wxButton*		btn_remove_;
+	wxButton*		btn_change_;
+	wxButton*		btn_defaults_;
 
 	// Events
 	void	onSize(wxSizeEvent& e);
@@ -56,5 +55,3 @@ public:
 	void	onBtnDefaults(wxCommandEvent& e);
 	void	onListKeyDown(wxKeyEvent& e);
 };
-
-#endif//__INPUT_PREFS_PANEL_H__

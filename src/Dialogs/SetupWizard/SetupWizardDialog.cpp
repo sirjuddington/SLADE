@@ -1,53 +1,64 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    SetupWizardDialog.cpp
- * Description: Setup wizard dialog that is shown on the first run
- *              to set up important editing preferences and settings
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    SetupWizardDialog.cpp
+// Description: Setup wizard dialog that is shown on the first run to set up
+//              important editing preferences and settings
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
-#include "SetupWizardDialog.h"
 #include "BaseResourceWizardPage.h"
-#include "NodeBuildersWizardPage.h"
-#include "TempFolderWizardPage.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
-#include <wx/button.h>
-#include <wx/icon.h>
-#include <wx/sizer.h>
-#include <wx/stattext.h>
+#include "NodeBuildersWizardPage.h"
+#include "SetupWizardDialog.h"
+#include "TempFolderWizardPage.h"
 
 
-/*******************************************************************
- * SETUPWIZARDDIALOG CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// SetupWizardDialog Class Functions
+//
+// ----------------------------------------------------------------------------
 
-/* SetupWizardDialog::SetupWizardDialog
- * SetupWizardDialog class constructor
- *******************************************************************/
-SetupWizardDialog::SetupWizardDialog(wxWindow* parent) : wxDialog(parent, -1, "First Time SLADE Setup", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+
+// ----------------------------------------------------------------------------
+// SetupWizardDialog::SetupWizardDialog
+//
+// SetupWizardDialog class constructor
+// ----------------------------------------------------------------------------
+SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
+	wxDialog(
+		parent,
+		-1,
+		"First Time SLADE Setup",
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
 	// Create pages
 	pages.push_back(new TempFolderWizardPage(this));
@@ -68,7 +79,7 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) : wxDialog(parent, -1, "F
 	SetIcon(icon);
 
 	// Setup layout
-	SetInitialSize(wxSize(600, 500));
+	SetInitialSize(wxSize(UI::scalePx(600), UI::scalePx(500)));
 	Layout();
 	Fit();
 	SetMinSize(GetBestSize());
@@ -81,42 +92,55 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) : wxDialog(parent, -1, "F
 	btn_prev->Bind(wxEVT_BUTTON, &SetupWizardDialog::onBtnPrev, this);
 }
 
-/* SetupWizardDialog::~SetupWizardDialog
- * SetupWizardDialog class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SetupWizardDialog::~SetupWizardDialog
+//
+// SetupWizardDialog class destructor
+// ----------------------------------------------------------------------------
 SetupWizardDialog::~SetupWizardDialog()
 {
 }
 
-/* SetupWizardDialog::setupLayout
- * Sets up the dialog layout
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SetupWizardDialog::setupLayout
+//
+// Sets up the dialog layout
+// ----------------------------------------------------------------------------
 void SetupWizardDialog::setupLayout()
 {
+	auto pad_xl = UI::scalePx(16);
+
 	// Setup main sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Page title
-	label_page_title = new wxStaticText(this, -1, pages[0]->getTitle(), wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
+	label_page_title = new wxStaticText(
+		this,
+		-1,
+		pages[0]->getTitle(),
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxST_NO_AUTORESIZE
+	);
 	label_page_title->SetFont(label_page_title->GetFont().MakeLarger().MakeBold());
-	sizer->Add(label_page_title, 0, wxEXPAND|wxALL, 16);
+	sizer->Add(label_page_title, 0, wxEXPAND|wxALL, pad_xl);
 
 	// Page description
 	label_page_description = new wxStaticText(this, -1, "");
-	sizer->Add(label_page_description, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 16);
+	sizer->Add(label_page_description, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, pad_xl);
 
 	// Main page area
-	sizer->Add(pages[0], 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 16);
+	sizer->Add(pages[0], 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, pad_xl);
 
 	// Bottom buttons
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	hbox->AddStretchSpacer();
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 16);
+	sizer->Add(hbox, 0, wxEXPAND|wxALL, pad_xl);
 
 	// Previous button
 	btn_prev = new wxButton(this, -1, "Previous");
-	hbox->Add(btn_prev, 0, wxEXPAND|wxRIGHT, 4);
+	hbox->Add(btn_prev, 0, wxEXPAND|wxRIGHT, UI::pad());
 
 	// Next button
 	btn_next = new wxButton(this, -1, "Next");
@@ -125,9 +149,11 @@ void SetupWizardDialog::setupLayout()
 	btn_prev->Enable(false);
 }
 
-/* SetupWizardDialog::showPage
- * Shows the wizard page at [index]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SetupWizardDialog::showPage
+//
+// Shows the wizard page at [index]
+// ----------------------------------------------------------------------------
 void SetupWizardDialog::showPage(unsigned index)
 {
 	// Check index
@@ -165,13 +191,18 @@ void SetupWizardDialog::showPage(unsigned index)
 }
 
 
-/*******************************************************************
- * SETUPWIZARDDIALOG CLASS EVENTS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// SetupWizardDialog Class Events
+//
+// ----------------------------------------------------------------------------
 
-/* SetupWizardDialog::onBtnNext
- * Called when the 'Next' button is clicked
- *******************************************************************/
+
+// ----------------------------------------------------------------------------
+// SetupWizardDialog::onBtnNext
+//
+// Called when the 'Next' button is clicked
+// ----------------------------------------------------------------------------
 void SetupWizardDialog::onBtnNext(wxCommandEvent& e)
 {
 	if (pages[current_page]->canGoNext())
@@ -189,9 +220,11 @@ void SetupWizardDialog::onBtnNext(wxCommandEvent& e)
 	}
 }
 
-/* SetupWizardDialog::onBtnPrev
- * Called when the 'Previous' button is clicked
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SetupWizardDialog::onBtnPrev
+//
+// Called when the 'Previous' button is clicked
+// ----------------------------------------------------------------------------
 void SetupWizardDialog::onBtnPrev(wxCommandEvent& e)
 {
 	showPage(current_page - 1);

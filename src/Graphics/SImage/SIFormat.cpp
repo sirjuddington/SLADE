@@ -29,22 +29,22 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #undef BOOL
-#include <FreeImage.h>
-#include "General/Misc.h"
-#include "Archive/EntryType/EntryType.h"
-#include "SIFormat.h"
 #include "Archive/Archive.h"
+#include "Archive/EntryType/EntryType.h"
+#include "General/Misc.h"
+#include "SIFormat.h"
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
 vector<SIFormat*>	simage_formats;
-SIFormat*			sif_raw = NULL;
-SIFormat*			sif_flat = NULL;
-SIFormat*			sif_general = NULL;
-SIFormat*			sif_unknown = NULL;
+SIFormat*			sif_raw = nullptr;
+SIFormat*			sif_flat = nullptr;
+SIFormat*			sif_general = nullptr;
+SIFormat*			sif_unknown = nullptr;
 
 
 /*******************************************************************
@@ -104,7 +104,7 @@ private:
 
 		// Check it created/read ok
 		if (!bm)
-			return NULL;
+			return nullptr;
 
 		// Get info from image
 		info.width = FreeImage_GetWidth(bm);
@@ -135,7 +135,7 @@ protected:
 
 		// Get image palette if it exists
 		RGBQUAD* bm_pal = FreeImage_GetPalette(bm);
-		Palette8bit palette;
+		Palette palette;
 		if (bm_pal)
 		{
 			int a = 0;
@@ -155,6 +155,12 @@ protected:
 
 		// Convert to 32bpp & flip vertically
 		FIBITMAP* rgba = FreeImage_ConvertTo32Bits(bm);
+		if (!rgba)
+		{
+			LOG_MESSAGE(1, "FreeImage_ConvertTo32Bits failed for image data");
+			Global::error = "Error reading PNG data";
+			return false;
+		}
 		FreeImage_FlipVertical(rgba);
 
 		// Load raw RGBA data
@@ -175,7 +181,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette8bit* pal, int index)
+	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
 	{
 		return false;
 	}
@@ -375,7 +381,7 @@ public:
 class SIFRawFlat : public SIFRaw
 {
 protected:
-	bool writeImage(SImage& image, MemChunk& data, Palette8bit* pal, int index)
+	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index)
 	{
 		// Can't write if RGBA
 		if (image.getType() == RGBA)
@@ -405,14 +411,19 @@ public:
 		// If it's the correct size and colour format, it's writable
 		int width = image.getWidth();
 		int height = image.getHeight();
+
+		// Shouldn't happen but...
+		if (width < 0 || height < 0)
+			return NOTWRITABLE;
+
 		if (image.getType() == PALMASK &&
 		        validSize(image.getWidth(), image.getHeight()))
 			return WRITABLE;
 
 		// Otherwise, check if it can be cropped to a valid size
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
-			if (width >= valid_flat_size[a][0] && height >= valid_flat_size[a][1] &&
-				valid_flat_size[a][2] == 1 || gfx_extraconv)
+			if (((unsigned)width >= valid_flat_size[a][0] && (unsigned)height >= valid_flat_size[a][1] &&
+				valid_flat_size[a][2] == 1) || gfx_extraconv)
 					return CONVERTIBLE;
 
 		return NOTWRITABLE;

@@ -1,57 +1,81 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    DocsPage.cpp
- * Description: A simple panel containing navigation buttons and a
- *              browser window to browse the SLADE documentation
- *              (GitHub wiki). Only available when compiled with
- *              wxWebView enabled
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    DocsPage.cpp
+// Description: A simple panel containing navigation buttons and a browser
+//              window to browse the SLADE documentation (GitHub wiki).
+//              Only available when compiled with wxWebView enabled
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// ----------------------------------------------------------------------------
 
 #ifdef USE_WEBVIEW_STARTPAGE // Only available using wxWebView
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Includes
+//
+// ----------------------------------------------------------------------------
 #include "Main.h"
 #include "DocsPage.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
-#include <wx/webview.h>
-#include <wx/sizer.h>
+#include "common.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-static const string docs_url = "http://slade.mancubus.net/embedwiki.php";
+// ----------------------------------------------------------------------------
+//
+// External Variables
+//
+// ----------------------------------------------------------------------------
+EXTERN_CVAR(Bool, web_dark_theme)
 
 
-/*******************************************************************
- * DOCSPAGE CLASS FUNCTIONS
- *******************************************************************/
+// ----------------------------------------------------------------------------
+//
+// Local Functions
+//
+// ----------------------------------------------------------------------------
+namespace
+{
+	string docsUrl()
+	{
+		static const string docs_url =		"http://slade.mancubus.net/embedwiki.php";
+		static const string docs_url_dark =	"http://slade.mancubus.net/embedwiki-dark.php";
 
-/* DocsPage::DocsPage
- * DocsPage class constructor
- *******************************************************************/
+		return web_dark_theme ? docs_url_dark : docs_url;
+	}
+}
+
+
+// ----------------------------------------------------------------------------
+//
+// DocsPage Class Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// DocsPage::DocsPage
+//
+// DocsPage class constructor
+// ----------------------------------------------------------------------------
 DocsPage::DocsPage(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Setup sizer
@@ -84,7 +108,7 @@ DocsPage::DocsPage(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Load initial docs page
 	wv_browser->ClearHistory();
-	wv_browser->LoadURL(docs_url);
+	wv_browser->LoadURL(docsUrl());
 
 	// Bind button events
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &DocsPage::onToolbarButton, this, toolbar->GetId());
@@ -92,16 +116,20 @@ DocsPage::DocsPage(wxWindow* parent) : wxPanel(parent, -1)
 	wv_browser->Bind(wxEVT_WEBVIEW_LOADED, &DocsPage::onNavigationDone, this);
 }
 
-/* DocsPage::~DocsPage
- * DocsPage class destructor
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// DocsPage::~DocsPage
+//
+// DocsPage class destructor
+// ----------------------------------------------------------------------------
 DocsPage::~DocsPage()
 {
 }
 
-/* DocsPage::updateNavButtons
- * Enables/disables the navigation buttons
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// DocsPage::updateNavButtons
+//
+// Enables/disables the navigation buttons
+// ----------------------------------------------------------------------------
 void DocsPage::updateNavButtons()
 {
 	tb_back->Enable(wv_browser->CanGoBack());
@@ -115,19 +143,21 @@ void DocsPage::updateNavButtons()
 		LOG_MESSAGE(0, "Can Go Forward");*/
 }
 
-/* DocsPage::openPage
- * Loads the wiki page [page_name]
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// DocsPage::openPage
+//
+// Loads the wiki page [page_name]
+// ----------------------------------------------------------------------------
 void DocsPage::openPage(string page_name)
 {
-	wv_browser->LoadURL(docs_url + "?page=" + page_name);
+	wv_browser->LoadURL(docsUrl() + "?page=" + page_name);
 }
 
-
-
-/* DocsPage::onToolbarButton
- * Called when a toolbar button is clicked
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// DocsPage::onToolbarButton
+//
+// Called when a toolbar button is clicked
+// ----------------------------------------------------------------------------
 void DocsPage::onToolbarButton(wxCommandEvent& e)
 {
 	string button = e.GetString();
@@ -142,15 +172,15 @@ void DocsPage::onToolbarButton(wxCommandEvent& e)
 
 	// Home
 	else if (button == "home")
-		wv_browser->LoadURL(docs_url);
+		wv_browser->LoadURL(docsUrl());
 
 	// Tutorials
 	else if (button == "tutorials")
-		wv_browser->LoadURL(docs_url + "?page=Tutorials");
+		wv_browser->LoadURL(docsUrl() + "?page=Tutorials");
 
 	// Index
 	else if (button == "index")
-		wv_browser->LoadURL(docs_url + "?page=Wiki-Index");
+		wv_browser->LoadURL(docsUrl() + "?page=Wiki-Index");
 
 	// Edit
 	else if (button == "edit")
@@ -167,25 +197,29 @@ void DocsPage::onToolbarButton(wxCommandEvent& e)
 	updateNavButtons();
 }
 
-/* DocsPage::onHTMLLinkClicked
- * Called when a link is clicked in the browser
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// DocsPage::onHTMLLinkClicked
+//
+// Called when a link is clicked in the browser
+// ----------------------------------------------------------------------------
 void DocsPage::onHTMLLinkClicked(wxEvent& e)
 {
 	wxWebViewEvent& ev = (wxWebViewEvent&)e;
 	string href = ev.GetURL();
 
 	// Open external links externally
-	if (!href.StartsWith(docs_url))
+	if (!href.StartsWith(docsUrl()))
 	{
 		wxLaunchDefaultBrowser(href);
 		ev.Veto();
 	}
 }
 
-/* DocsPage::onNavigationDone
- * Called when a page finishes loading in the browser
- *******************************************************************/
+// ----------------------------------------------------------------------------
+// DocsPage::onNavigationDone
+//
+// Called when a page finishes loading in the browser
+// ----------------------------------------------------------------------------
 void DocsPage::onNavigationDone(wxEvent& e)
 {
 	updateNavButtons();

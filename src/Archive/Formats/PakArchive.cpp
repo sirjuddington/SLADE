@@ -29,8 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "PakArchive.h"
-#include "UI/SplashWindow.h"
-#include <wx/filename.h>
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -46,10 +45,8 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* PakArchive::PakArchive
  * PakArchive class constructor
  *******************************************************************/
-PakArchive::PakArchive() : Archive(ARCHIVE_PAK)
+PakArchive::PakArchive() : Archive("pak")
 {
-	desc.max_name_length = 56;
-	desc.supports_dirs = true;
 }
 
 /* PakArchive::~PakArchive
@@ -57,22 +54,6 @@ PakArchive::PakArchive() : Archive(ARCHIVE_PAK)
  *******************************************************************/
 PakArchive::~PakArchive()
 {
-}
-
-/* PakArchive::getFileExtensionString
- * Returns the file extension string to use in the file open dialog
- *******************************************************************/
-string PakArchive::getFileExtensionString()
-{
-	return "Pak Files (*.pak)|*.pak";
-}
-
-/* PakArchive::getFormat
- * Returns the string id for the pak EntryDataFormat
- *******************************************************************/
-string PakArchive::getFormat()
-{
-	return "archive_pak";
 }
 
 /* PakArchive::open
@@ -97,7 +78,7 @@ bool PakArchive::open(MemChunk& mc)
 	// Check it
 	if (pack[0] != 'P' || pack[1] != 'A' || pack[2] != 'C' || pack[3] != 'K')
 	{
-		wxLogMessage("PakArchive::open: Opening failed, invalid header");
+		LOG_MESSAGE(1, "PakArchive::open: Opening failed, invalid header");
 		Global::error = "Invalid pak header";
 		return false;
 	}
@@ -108,11 +89,11 @@ bool PakArchive::open(MemChunk& mc)
 	// Read the directory
 	size_t num_entries = dir_size / 64;
 	mc.seek(dir_offset, SEEK_SET);
-	theSplashWindow->setProgressMessage("Reading pak archive data");
+	UI::setSplashProgressMessage("Reading pak archive data");
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_entries));
+		UI::setSplashProgress(((float)d / (float)num_entries));
 
 		// Read entry info
 		char name[56];
@@ -129,7 +110,7 @@ bool PakArchive::open(MemChunk& mc)
 		// Check offset+size
 		if ((unsigned)(offset + size) > mc.getSize())
 		{
-			wxLogMessage("PakArchive::open: Pak archive is invalid or corrupt (entry goes past end of file)");
+			LOG_MESSAGE(1, "PakArchive::open: Pak archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -155,11 +136,11 @@ bool PakArchive::open(MemChunk& mc)
 	MemChunk edata;
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_entries)));
+		UI::setSplashProgress((((float)a / (float)num_entries)));
 
 		// Get entry
 		ArchiveEntry* entry = all_entries[a];
@@ -188,7 +169,7 @@ bool PakArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -251,7 +232,7 @@ bool PakArchive::write(MemChunk& mc, bool update)
 		name.Remove(0, 1);	// Remove leading /
 		if (name.Len() > 56)
 		{
-			wxLogMessage("Warning: Entry %s path is too long (> 56 characters), putting it in the root directory", name);
+			LOG_MESSAGE(1, "Warning: Entry %s path is too long (> 56 characters), putting it in the root directory", name);
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 56)
@@ -309,12 +290,12 @@ bool PakArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(filename);
+	wxFile file(filename_);
 
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("PakArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "PakArchive::loadEntryData: Unable to open archive file %s", filename_);
 		return false;
 	}
 
