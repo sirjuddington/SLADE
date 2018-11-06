@@ -596,9 +596,15 @@ void TextureXPanel::applyChanges()
 {
 	if (texture_editor_->texModified() && tex_current_)
 	{
+		// Clear undo levels for individual edits to the current texture
+		undo_manager_->clearToResetPoint();
+
+		// Create single 'modify texture' undo level
 		undo_manager_->beginRecord("Modify Texture");
 		undo_manager_->recordUndoStep(new TextureModificationUS(this, tex_current_));
 		undo_manager_->endRecord(true);
+
+		undo_manager_->setResetPoint();
 
 		tex_current_->copyTexture(texture_editor_->texture());
 		tex_current_->setState(1);
@@ -1549,6 +1555,7 @@ void TextureXPanel::onTextureListSelect(wxListEvent& e)
 	if (list_textures_->GetSelectedItemCount() > 1)
 	{
 		tex_current_ = nullptr;
+		undo_manager_->setResetPoint();
 		texture_editor_->openTexture(tex_current_, &texturex_);
 		return;
 	}
@@ -1560,6 +1567,7 @@ void TextureXPanel::onTextureListSelect(wxListEvent& e)
 	applyChanges();
 
 	// Open texture in editor
+	undo_manager_->setResetPoint();
 	texture_editor_->openTexture(tex, &texturex_);
 
 	// Set current texture

@@ -148,6 +148,7 @@ UndoManager::UndoManager(SLADEMap* map)
 	// Init variables
 	current_level = nullptr;
 	current_level_index = -1;
+	reset_point         = -1;
 	undo_running = false;
 	this->map = map;
 }
@@ -311,6 +312,18 @@ void UndoManager::getAllLevels(vector<string>& list)
 {
 	for (unsigned a = 0; a < undo_levels.size(); a++)
 		list.push_back(undo_levels[a]->getName());
+}
+
+void UndoManager::clearToResetPoint()
+{
+	while (current_level_index > reset_point)
+	{
+		undo_levels.pop_back();
+		current_level_index--;
+	}
+
+	current_level = nullptr;
+	undo_running  = false;
 }
 
 /* UndoManager::clear
