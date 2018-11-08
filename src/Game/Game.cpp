@@ -468,15 +468,24 @@ void Game::init()
 
 			// ZScript
 			auto zscript_entry = zdoom_pk3.entryAtPath("zscript.txt");
-			zscript_base.parseZScript(zscript_entry);
 
-			auto lang = TextLanguage::fromId("zscript");
-			if (lang)
-				lang->loadZScript(zscript_base);
+			if(!zscript_entry)
+			{
+				// Bail out if no entry is found.
+				Log::warning(1, "Could not find \'zscript.txt\' in " + zdoom_pk3_path);
+			}
+			else
+			{
+				zscript_base.parseZScript(zscript_entry);
 
-			// MapInfo
-			auto mapinfo_entry = zdoom_pk3.entryAtPath("zmapinfo.txt");
-			config_current.parseMapInfo(&zdoom_pk3);
+				auto lang = TextLanguage::fromId("zscript");
+				if (lang)
+					lang->loadZScript(zscript_base);
+
+				// MapInfo
+				auto mapinfo_entry = zdoom_pk3.entryAtPath("zmapinfo.txt");
+				config_current.parseMapInfo(&zdoom_pk3);
+			}
 		});
 		thread.detach();
 	}

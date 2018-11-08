@@ -951,7 +951,7 @@ bool MapEditorWindow::saveMap()
 			map.head->getTopParent()->filename(false),
 			map.head->getName(true)
 		))
-		LOG_MESSAGE(1, "Warning: Failed to backup map data");
+		Log::warning(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
 	for (unsigned a = 1; a < wad->numEntries(); a++)
