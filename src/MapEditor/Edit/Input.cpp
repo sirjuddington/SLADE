@@ -818,18 +818,9 @@ void Input::handleKeyBind2d(const string& name)
 			// Editor message and toolbar update
 			switch (flat_drawtype)
 			{
-			case 0:
-				context_.addEditorMessage("Flats: None");
-				SAction::fromId("mapw_flat_none")->setChecked();
-				break;
-			case 1:
-				context_.addEditorMessage("Flats: Untextured");
-				SAction::fromId("mapw_flat_untextured")->setChecked();
-				break;
-			case 2:
-				context_.addEditorMessage("Flats: Textured");
-				SAction::fromId("mapw_flat_textured")->setChecked();
-				break;
+			case 0: SAction::fromId("mapw_flat_none")->setChecked(); break;
+			case 1: SAction::fromId("mapw_flat_untextured")->setChecked(); break;
+			case 2: SAction::fromId("mapw_flat_textured")->setChecked(); break;
 			default: break;
 			};
 
