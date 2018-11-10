@@ -183,7 +183,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 
 	// Try composite textures then
 	CTexture* ctex = theResourceManager->getTexture(name, archive);
-	if (ctex && (!mtex.texture || textypefound == TEXTYPE_FLAT))
+	if (ctex) // Composite textures take precedence over the textures directory
 	{
 		textypefound = TEXTYPE_WALLTEXTURE;
 		SImage image;
@@ -245,6 +245,25 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 			// Otherwise, reload the texture
 			if (mtex.texture != &(GLTexture::missingTex())) delete mtex.texture;
 			mtex.texture = nullptr;
+		}
+	}
+
+	if (mixed)
+	{
+		CTexture* ctex = theResourceManager->getTexture(name, archive);
+		if (ctex && ctex->isExtended() && ctex->getType() != "WallTexture")
+		{
+			SImage image;
+			if (ctex->toImage(image, archive, palette, true))
+			{
+				mtex.texture = new GLTexture(false);
+				mtex.texture->setFilter(filter);
+				mtex.texture->loadImage(&image, palette);
+				double sx = ctex->getScaleX(); if (sx == 0) sx = 1.0;
+				double sy = ctex->getScaleY(); if (sy == 0) sy = 1.0;
+				mtex.texture->setScale(1.0/sx, 1.0/sy);
+				return mtex.texture;
+			}
 		}
 	}
 
