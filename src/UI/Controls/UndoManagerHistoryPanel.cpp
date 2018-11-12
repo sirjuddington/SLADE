@@ -75,12 +75,12 @@ string UndoListView::getItemText(long item, long column, long index) const
 	{
 		if (column == 0)
 		{
-			string name = manager_->undoLevel(item)->getName();
-			return S_FMT("%d. %s", item + 1, name);
+			string name = manager_->undoLevel((unsigned) item)->getName();
+			return S_FMT("%lu. %s", item + 1, name);
 		}
 		else
 		{
-			return manager_->undoLevel(item)->getTimeStamp(false, true);
+			return manager_->undoLevel((unsigned) item)->getTimeStamp(false, true);
 		}
 	}
 	else
@@ -216,7 +216,7 @@ void UndoManagerHistoryPanel::setManager(UndoManager* manager)
 // ----------------------------------------------------------------------------
 void UndoManagerHistoryPanel::onItemRightClick(wxCommandEvent& e)
 {
-	int index = list_levels_->getFocus();
+	long index = list_levels_->getFocus();
 	//wxMessageBox(S_FMT("Item %d", index));
 
 	wxMenu context;
@@ -238,7 +238,7 @@ void UndoManagerHistoryPanel::onItemRightClick(wxCommandEvent& e)
 // ----------------------------------------------------------------------------
 void UndoManagerHistoryPanel::onMenu(wxCommandEvent& e)
 {
-	int index = list_levels_->getFocus();
+	long index = list_levels_->getFocus();
 
 	if (index <= manager_->getCurrentIndex())
 	{

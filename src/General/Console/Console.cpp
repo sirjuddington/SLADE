@@ -252,7 +252,7 @@ CONSOLE_COMMAND (cmdlist, 0, true)
 	{
 		ConsoleCommand& cmd = App::console()->command(a);
 		if (cmd.showInList() || Global::debug)
-			Log::console(S_FMT("\"%s\" (%d args)", cmd.getName(), cmd.minArgs()));
+			Log::console(S_FMT("\"%s\" (%lu args)", cmd.getName(), cmd.minArgs()));
 	}
 }
 

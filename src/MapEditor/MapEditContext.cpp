@@ -1678,7 +1678,7 @@ bool MapEditContext::handleAction(string id)
 	else if (id == "mapw_flat_none")
 	{
 		flat_drawtype = 0;
-		addEditorMessage("Flats type: None");
+		addEditorMessage("Flats: None");
 		updateStatusText();
 		forceRefreshRenderer();
 		return true;
@@ -1688,7 +1688,7 @@ bool MapEditContext::handleAction(string id)
 	else if (id == "mapw_flat_untextured")
 	{
 		flat_drawtype = 1;
-		addEditorMessage("Flats type: Untextured");
+		addEditorMessage("Flats: Untextured");
 		updateStatusText();
 		forceRefreshRenderer();
 		return true;
@@ -1698,7 +1698,7 @@ bool MapEditContext::handleAction(string id)
 	else if (id == "mapw_flat_textured")
 	{
 		flat_drawtype = 2;
-		addEditorMessage("Flats type: Textured");
+		addEditorMessage("Flats: Textured");
 		updateStatusText();
 		forceRefreshRenderer();
 		return true;
