@@ -83,6 +83,7 @@ public:
 	// Comments
 	void	lineComment();
 	void 	blockComment();
+	void 	cycleComments();
 
 private:
 	TextLanguage*			language_;
@@ -111,6 +112,12 @@ private:
 	int			ct_argset_;
 	int			ct_start_;
 	bool		ct_dwell_;
+
+	// Default comment strings
+
+	string	default_line_comment_;
+	string	default_begin_comment_;
+	string	default_end_comment_;
 
 	// Events
 	void	onKeyDown(wxKeyEvent& e);

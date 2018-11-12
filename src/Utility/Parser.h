@@ -27,9 +27,10 @@ public:
 	const string&			type() const { return type_; }
 	const vector<Property>&	values() const { return values_; }
 
-	unsigned		nValues() const { return values_.size(); }
+	size_t			nValues() const { return values_.size(); }
 	Property		value(unsigned index = 0);
 	string			stringValue(unsigned index = 0);
+	vector<string>	stringValues();
 	int				intValue(unsigned index = 0);
 	bool			boolValue(unsigned index = 0);
 	double			floatValue(unsigned index = 0);
@@ -83,8 +84,8 @@ public:
 
 	void	setCaseSensitive(bool cs) { case_sensitive_ = cs; }
 
-	bool	parseText(MemChunk& mc, string source = "memory chunk", bool debug = false);
-	bool	parseText(string& text, string source = "string", bool debug = false);
+	bool	parseText(MemChunk& mc, string source = "memory chunk");
+	bool	parseText(string& text, string source = "string");
 	void	define(const string& def) { defines_.push_back(def.Lower()); }
 	bool	defined(const string& def) { return VECTOR_EXISTS(defines_, def.Lower()); }
 

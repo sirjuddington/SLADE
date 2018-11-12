@@ -1,9 +1,9 @@
 
 srb2lua {
 	name = "SRB2 Lua Script";
-	comment_begin = "/*", "--[[";
-	comment_end = "*/", "]]";
-	comment_line = "//", "--";
+	comment_begin = "--[[", "/*";
+	comment_end =  "]]", "*/";
+	comment_line = "--", "//";
 	case_sensitive = true;
 
 	keywords = {
