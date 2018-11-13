@@ -1,89 +1,95 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2017 Simon Judd
- * 
- * ChasmBinArchive code copyright (C) 2015 Alexey Lysiuk
- * alexey.lysiuk@gmail.com
- *
- * Email:       sirjuddington@gmail.com
- * Filename:    ChasmBinArchive.cpp
- * Description: ChasmBinArchive, archive class to handle 
- *              Chasm: The Rift bin file format
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ChasmBinArchive.cpp
+// Description: ChasmBinArchive, archive class to handle Chasm: The Rift bin
+//              file format
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ChasmBinArchive.h"
 #include "General/UI.h"
 
 
-/*******************************************************************
- * CONSTANTS
- *******************************************************************/
-static const uint32_t HEADER_SIZE = 4 + 2;				// magic + number of entries
-static const uint32_t NAME_SIZE = 1 + 12;				// length + characters
-static const uint32_t ENTRY_SIZE = NAME_SIZE + 4 + 4;	// name + size + offset
-static const uint16_t MAX_ENTRY_COUNT = 2048;			// the same for Demo and Full versions
+// -----------------------------------------------------------------------------
+//
+// Constants
+//
+// -----------------------------------------------------------------------------
+static const uint32_t HEADER_SIZE     = 4 + 2;             // magic + number of entries
+static const uint32_t NAME_SIZE       = 1 + 12;            // length + characters
+static const uint32_t ENTRY_SIZE      = NAME_SIZE + 4 + 4; // name + size + offset
+static const uint16_t MAX_ENTRY_COUNT = 2048;              // the same for Demo and Full versions
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, archive_load_data)
 
 
-/*******************************************************************
- * CHASMBINARCHIVE CLASS FUNCTIONS
- *******************************************************************/
-
-/* ChasmBinArchive::ChasmBinArchive
- * ChasmBinArchive class constructor
- *******************************************************************/
-ChasmBinArchive::ChasmBinArchive()
-: Archive("chasm_bin")
+namespace
 {
-}
-
-static void FixBrokenWave(ArchiveEntry* const entry)
+// -----------------------------------------------------------------------------
+// Fixes broken wav data
+// -----------------------------------------------------------------------------
+void fixBrokenWave(ArchiveEntry* const entry)
 {
 	static const uint32_t MIN_WAVE_SIZE = 44;
 
-	if ("snd_wav" != entry->getType()->formatId()
-		|| entry->getSize() < MIN_WAVE_SIZE)
-	{
+	if ("snd_wav" != entry->getType()->formatId() || entry->getSize() < MIN_WAVE_SIZE)
 		return;
-	}
 
 	// Some wave files have an incorrect size of the format chunk
 	uint32_t* const format_size = reinterpret_cast<uint32_t*>(&entry->getMCData()[0x10]);
 	if (0x12 == *format_size)
-	{
 		*format_size = 0x10;
-	}
 }
+} // namespace
 
-/* ChasmBinArchive::open
- * Reads Chasm bin format data from a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+//
+// ChasmBinArchive Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// ChasmBinArchive class constructor
+// -----------------------------------------------------------------------------
+ChasmBinArchive::ChasmBinArchive() : Archive("chasm_bin") {}
+
+// -----------------------------------------------------------------------------
+// Reads Chasm bin format data from a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool ChasmBinArchive::open(MemChunk& mc)
 {
 	// Check given data is valid
@@ -96,10 +102,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	char magic[4] = {};
 	mc.read(magic, sizeof magic);
 
-	if (   magic[0] != 'C'
-		|| magic[1] != 'S'
-		|| magic[2] != 'i'
-		|| magic[3] != 'd')
+	if (magic[0] != 'C' || magic[1] != 'S' || magic[2] != 'i' || magic[3] != 'd')
 	{
 		LOG_MESSAGE(1, "ChasmBinArchive::open: Opening failed, invalid header");
 		Global::error = "Invalid Chasm bin header";
@@ -148,7 +151,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 
 		// Create entry
 		ArchiveEntry* const entry = new ArchiveEntry(name, size);
-		entry->exProp("Offset") = static_cast<int>(offset);
+		entry->exProp("Offset")   = static_cast<int>(offset);
 		entry->setLoaded(false);
 		entry->setState(0);
 
@@ -181,7 +184,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 
 		// Detect entry type
 		EntryType::detectEntryType(entry);
-		FixBrokenWave(entry);
+		fixBrokenWave(entry);
 
 		// Unload entry data if needed
 		if (!archive_load_data)
@@ -203,10 +206,10 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	return true;
 }
 
-/* ChasmBinArchive::write
- * Writes Chasm bin archive to a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes Chasm bin archive to a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool ChasmBinArchive::write(MemChunk& mc, bool update)
 {
 	// Clear current data
@@ -252,7 +255,7 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		string name = entry->getName();
+		string  name        = entry->getName();
 		uint8_t name_length = static_cast<uint8_t>(name.Length());
 
 		if (name_length > NAME_SIZE - 1)
@@ -292,10 +295,10 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 	return true;
 }
 
-/* ChasmBinArchive::loadEntryData
- * Loads an entry's data from Chasm bin file
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads an entry's data from Chasm bin file
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 {
 	// Check entry is ok
@@ -332,13 +335,16 @@ bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 	return true;
 }
 
-/*******************************************************************
- * ChasmBinArchive CLASS STATIC FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// ChasmBinArchive Class Static Functions
+//
+// -----------------------------------------------------------------------------
 
-/* ChasmBinArchive::isChasmBinArchive
- * Checks if the given data is a valid Chasm bin archive
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Checks if the given data is a valid Chasm bin archive
+// -----------------------------------------------------------------------------
 bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
 {
 	// Check given data is valid
@@ -351,10 +357,7 @@ bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
 	char magic[4] = {};
 	mc.read(magic, sizeof magic);
 
-	if (   magic[0] != 'C'
-		|| magic[1] != 'S'
-		|| magic[2] != 'i'
-		|| magic[3] != 'd')
+	if (magic[0] != 'C' || magic[1] != 'S' || magic[2] != 'i' || magic[3] != 'd')
 	{
 		return false;
 	}
@@ -363,13 +366,12 @@ bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
 	mc.read(&num_entries, sizeof num_entries);
 	num_entries = wxUINT16_SWAP_ON_BE(num_entries);
 
-	return num_entries > MAX_ENTRY_COUNT
-		|| (HEADER_SIZE + ENTRY_SIZE * MAX_ENTRY_COUNT) <= mc.getSize();
+	return num_entries > MAX_ENTRY_COUNT || (HEADER_SIZE + ENTRY_SIZE * MAX_ENTRY_COUNT) <= mc.getSize();
 }
 
-/* ChasmBinArchive::isChasmBinArchive
- * Checks if the file at [filename] is a valid Chasm bin archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the file at [filename] is a valid Chasm bin archive
+// -----------------------------------------------------------------------------
 bool ChasmBinArchive::isChasmBinArchive(string filename)
 {
 	// Open file for reading
@@ -385,10 +387,7 @@ bool ChasmBinArchive::isChasmBinArchive(string filename)
 	char magic[4] = {};
 	file.Read(magic, sizeof magic);
 
-	if (   magic[0] != 'C'
-		|| magic[1] != 'S'
-		|| magic[2] != 'i'
-		|| magic[3] != 'd')
+	if (magic[0] != 'C' || magic[1] != 'S' || magic[2] != 'i' || magic[3] != 'd')
 	{
 		return false;
 	}
@@ -398,5 +397,5 @@ bool ChasmBinArchive::isChasmBinArchive(string filename)
 	num_entries = wxUINT16_SWAP_ON_BE(num_entries);
 
 	return num_entries > MAX_ENTRY_COUNT
-		|| (HEADER_SIZE + ENTRY_SIZE * MAX_ENTRY_COUNT) <= static_cast<uint32_t>(file.Length());
+		   || (HEADER_SIZE + ENTRY_SIZE * MAX_ENTRY_COUNT) <= static_cast<uint32_t>(file.Length());
 }

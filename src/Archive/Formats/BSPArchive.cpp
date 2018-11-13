@@ -1,72 +1,75 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    BSPArchive.cpp
- * Description: BSPArchive, archive class to handle the textures
- *              from the Quake 1 BSP format (but not the rest)
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    BSPArchive.cpp
+// Description: BSPArchive, archive class to handle the textures from the
+//              Quake 1 BSP format (but not the rest)
+//
+// The only thing interesting in Quake BSP files is the texture collection.
+// Quake 1 is the only game of the series to hold texture definitions in it,
+// so even if the BSP formats of the other Quake engine/Source engine games
+// are saner, it's not interesting for something that isn't a level editor
+// for these games.
+//
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "BSPArchive.h"
 #include "General/UI.h"
 
-/*
 
-The only thing interesting in Quake BSP files is the texture collection.
-Quake 1 is the only game of the series to hold texture definitions in it,
-so even if the BSP formats of the other Quake engine/Source engine games
-are saner, it's not interesting for something that isn't a level editor
-for these games.
-*/
-
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, archive_load_data)
 
-/*******************************************************************
- * BSPARCHIVE CLASS FUNCTIONS
- *******************************************************************/
 
-/* BSPArchive::BSPArchive
- * BSPArchive class constructor
- *******************************************************************/
-BSPArchive::BSPArchive() : Archive("bsp")
-{
-}
+// -----------------------------------------------------------------------------
+//
+// BSPArchive Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* BSPArchive::~BSPArchive
- * BSPArchive class destructor
- *******************************************************************/
-BSPArchive::~BSPArchive()
-{
-}
 
-/* WadArchive::getEntryOffset
- * Returns the file byte offset for [entry]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// BSPArchive class constructor
+// -----------------------------------------------------------------------------
+BSPArchive::BSPArchive() : Archive("bsp") {}
+
+// -----------------------------------------------------------------------------
+// BSPArchive class destructor
+// -----------------------------------------------------------------------------
+BSPArchive::~BSPArchive() {}
+
+// -----------------------------------------------------------------------------
+// Returns the file byte offset for [entry]
+// -----------------------------------------------------------------------------
 uint32_t BSPArchive::getEntryOffset(ArchiveEntry* entry)
 {
 	// Check entry
@@ -76,10 +79,10 @@ uint32_t BSPArchive::getEntryOffset(ArchiveEntry* entry)
 	return (uint32_t)(int)entry->exProp("Offset");
 }
 
-/* BSPArchive::open
- * Reads BSP format data from a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads BSP format data from a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool BSPArchive::open(MemChunk& mc)
 {
 	// If size is less than 64, there's not even enough room for a full header
@@ -128,7 +131,7 @@ bool BSPArchive::open(MemChunk& mc)
 		if (a == 2)
 		{
 			texoffset = wxINT32_SWAP_ON_BE(ofs);
-			texsize = wxINT32_SWAP_ON_BE(sz);
+			texsize   = wxINT32_SWAP_ON_BE(sz);
 
 			// If there are no textures, no need to bother
 			if (texsize == 0)
@@ -148,7 +151,7 @@ bool BSPArchive::open(MemChunk& mc)
 	UI::setSplashProgressMessage("Reading BSP texture data");
 
 	// Check that the offset table is within bounds
-	if (texoffset + ((numtex + 1)<<2) > size)
+	if (texoffset + ((numtex + 1) << 2) > size)
 	{
 		LOG_MESSAGE(1, "BSPArchive::open: Opening failed, miptex entry out of bounds");
 		Global::error = "Out of bounds";
@@ -168,7 +171,6 @@ bool BSPArchive::open(MemChunk& mc)
 		// Skip entries with an offset of -1. (No, I don't know why they are included at all.)
 		if (offset != 0xFFFFFFFF)
 		{
-
 			// A texture header takes 40 bytes (16 bytes for name, 6 int32 for records),
 			// and offsets are measured from the start of the miptex lump.
 			if (offset + texoffset + 40 > size)
@@ -179,7 +181,7 @@ bool BSPArchive::open(MemChunk& mc)
 
 			// Move to texture header
 			mc.seek(texoffset + offset, SEEK_SET);
-			char name[17];
+			char     name[17];
 			uint32_t width, height, offset1, offset2, offset4, offset8;
 			mc.read(name, 16);
 			mc.read(&width, 4);
@@ -190,12 +192,12 @@ bool BSPArchive::open(MemChunk& mc)
 			mc.read(&offset8, 4);
 
 			// Byteswap values for big endian if needed
-			width	= wxINT32_SWAP_ON_BE(width);
-			height	= wxINT32_SWAP_ON_BE(height);
-			offset1	= wxINT32_SWAP_ON_BE(offset1);
-			offset2	= wxINT32_SWAP_ON_BE(offset2);
-			offset4	= wxINT32_SWAP_ON_BE(offset4);
-			offset8	= wxINT32_SWAP_ON_BE(offset8);
+			width   = wxINT32_SWAP_ON_BE(width);
+			height  = wxINT32_SWAP_ON_BE(height);
+			offset1 = wxINT32_SWAP_ON_BE(offset1);
+			offset2 = wxINT32_SWAP_ON_BE(offset2);
+			offset4 = wxINT32_SWAP_ON_BE(offset4);
+			offset8 = wxINT32_SWAP_ON_BE(offset8);
 
 
 			// Cap texture name if needed and clean out garbage characters
@@ -280,20 +282,20 @@ bool BSPArchive::open(MemChunk& mc)
 	return true;
 }
 
-/* BSPArchive::write
- * Writes the BSP archive to a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes the BSP archive to a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool BSPArchive::write(MemChunk& mc, bool update)
 {
 	Global::error = "Sorry, not implemented";
 	return false;
 }
 
-/* BSPArchive::loadEntryData
- * Loads an entry's data from the pak file
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads an entry's data from the pak file
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 {
 	// Check entry is ok
@@ -329,13 +331,16 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 }
 
 
-/*******************************************************************
- * BSPARCHIVE CLASS STATIC FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// BSPArchive Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* BSPArchive::isBSPArchive
- * Checks if the given data is a valid Quake BSP archive
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Checks if the given data is a valid Quake BSP archive
+// -----------------------------------------------------------------------------
 bool BSPArchive::isBSPArchive(MemChunk& mc)
 {
 	// If size is less than 64, there's not even enough room for a full header
@@ -369,7 +374,7 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 		if (a == 2)
 		{
 			texoffset = wxINT32_SWAP_ON_BE(ofs);
-			texsize = wxINT32_SWAP_ON_BE(sz);
+			texsize   = wxINT32_SWAP_ON_BE(sz);
 
 			// If there are no textures, no need to bother
 			if (texsize == 0)
@@ -384,7 +389,7 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 	numtex = wxINT32_SWAP_ON_BE(numtex);
 
 	// Check that the offset table is within bounds
-	if (texoffset + ((numtex + 1)<<2) > size)
+	if (texoffset + ((numtex + 1) << 2) > size)
 		return false;
 
 	// Check that each texture is within bounds
@@ -401,13 +406,12 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 
 		if (offset != 0xFFFFFFFF)
 		{
-
 			// Keep track of where we are now to return to it later.
 			size_t currentpos = mc.currentPos();
 
 			// Move to texture header
 			mc.seek(texoffset + offset, SEEK_SET);
-			char name[16];
+			char     name[16];
 			uint32_t width, height, offset1, offset2, offset4, offset8;
 			mc.read(name, 16);
 			mc.read(&width, 4);
@@ -418,12 +422,12 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 			mc.read(&offset8, 4);
 
 			// Byteswap values for big endian if needed
-			width	= wxINT32_SWAP_ON_BE(width);
-			height	= wxINT32_SWAP_ON_BE(height);
-			offset1	= wxINT32_SWAP_ON_BE(offset1);
-			offset2	= wxINT32_SWAP_ON_BE(offset2);
-			offset4	= wxINT32_SWAP_ON_BE(offset4);
-			offset8	= wxINT32_SWAP_ON_BE(offset8);
+			width   = wxINT32_SWAP_ON_BE(width);
+			height  = wxINT32_SWAP_ON_BE(height);
+			offset1 = wxINT32_SWAP_ON_BE(offset1);
+			offset2 = wxINT32_SWAP_ON_BE(offset2);
+			offset4 = wxINT32_SWAP_ON_BE(offset4);
+			offset8 = wxINT32_SWAP_ON_BE(offset8);
 
 			// Dimensions must be multiples of 8 but cannot be null
 			if (width % 8 | height % 8 || width == 0 || height == 0)
@@ -431,10 +435,14 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 
 			// Check that texture data is within bounds
 			uint32_t texsize = width * height;
-			if (texoffset + offset + offset1 + texsize > size)			return false;
-			if (texoffset + offset + offset2 + (texsize >> 2) > size)	return false;
-			if (texoffset + offset + offset4 + (texsize >> 4) > size)	return false;
-			if (texoffset + offset + offset8 + (texsize >> 6) > size)	return false;
+			if (texoffset + offset + offset1 + texsize > size)
+				return false;
+			if (texoffset + offset + offset2 + (texsize >> 2) > size)
+				return false;
+			if (texoffset + offset + offset4 + (texsize >> 4) > size)
+				return false;
+			if (texoffset + offset + offset8 + (texsize >> 6) > size)
+				return false;
 
 			// Okay, that texture works, go back to where we were and check the next
 			mc.seek(currentpos, SEEK_SET);
@@ -445,9 +453,9 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 	return true;
 }
 
-/* BSPArchive::isBSPArchive
- * Checks if the file at [filename] is a valid Quake BSP archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the file at [filename] is a valid Quake BSP archive
+// -----------------------------------------------------------------------------
 bool BSPArchive::isBSPArchive(string filename)
 {
 	// Open file for reading
@@ -488,7 +496,7 @@ bool BSPArchive::isBSPArchive(string filename)
 		if (a == 2)
 		{
 			texoffset = wxINT32_SWAP_ON_BE(ofs);
-			texsize = wxINT32_SWAP_ON_BE(sz);
+			texsize   = wxINT32_SWAP_ON_BE(sz);
 		}
 	}
 
@@ -499,7 +507,7 @@ bool BSPArchive::isBSPArchive(string filename)
 	numtex = wxINT32_SWAP_ON_BE(numtex);
 
 	// Check that the offset table is within bounds
-	if (texoffset + ((numtex + 1)<<2) > size)
+	if (texoffset + ((numtex + 1) << 2) > size)
 		return false;
 
 	// Check that each texture is within bounds
@@ -518,7 +526,7 @@ bool BSPArchive::isBSPArchive(string filename)
 
 		// Move to texture header
 		file.Seek(texoffset + offset, wxFromStart);
-		char name[16];
+		char     name[16];
 		uint32_t width, height, offset1, offset2, offset4, offset8;
 		file.Read(name, 16);
 		file.Read(&width, 4);
@@ -529,12 +537,12 @@ bool BSPArchive::isBSPArchive(string filename)
 		file.Read(&offset8, 4);
 
 		// Byteswap values for big endian if needed
-		width	= wxINT32_SWAP_ON_BE(width);
-		height	= wxINT32_SWAP_ON_BE(height);
-		offset1	= wxINT32_SWAP_ON_BE(offset1);
-		offset2	= wxINT32_SWAP_ON_BE(offset2);
-		offset4	= wxINT32_SWAP_ON_BE(offset4);
-		offset8	= wxINT32_SWAP_ON_BE(offset8);
+		width   = wxINT32_SWAP_ON_BE(width);
+		height  = wxINT32_SWAP_ON_BE(height);
+		offset1 = wxINT32_SWAP_ON_BE(offset1);
+		offset2 = wxINT32_SWAP_ON_BE(offset2);
+		offset4 = wxINT32_SWAP_ON_BE(offset4);
+		offset8 = wxINT32_SWAP_ON_BE(offset8);
 
 		// Dimensions must be multiples of 8 but cannot be null
 		if (width % 8 | height % 8 || width == 0 || height == 0)

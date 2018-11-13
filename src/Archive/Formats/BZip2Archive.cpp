@@ -1,61 +1,62 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    BZip2Archive.cpp
- * Description: BZip2Archive, archive class to handle BZip2 files
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    BZip2Archive.cpp
+// Description: BZip2Archive, archive class to handle BZip2 files
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "BZip2Archive.h"
+#include "General/Misc.h"
 #include "UI/SplashWindow.h"
 #include "Utility/Compression.h"
-#include "General/Misc.h"
 
 
-/*******************************************************************
- * BZIP2ARCHIVE CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// BZip2Archive Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* BZip2Archive::BZip2Archive
- * BZip2Archive class constructor
- *******************************************************************/
-BZip2Archive::BZip2Archive() : TreelessArchive("bz2")
-{
-}
 
-/* BZip2Archive::~BZip2Archive
- * BZip2Archive class destructor
- *******************************************************************/
-BZip2Archive::~BZip2Archive()
-{
-}
+// -----------------------------------------------------------------------------
+// BZip2Archive class constructor
+// -----------------------------------------------------------------------------
+BZip2Archive::BZip2Archive() : TreelessArchive("bz2") {}
 
-/* BZip2Archive::open
- * Reads bzip2 format data from a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// BZip2Archive class destructor
+// -----------------------------------------------------------------------------
+BZip2Archive::~BZip2Archive() {}
+
+// -----------------------------------------------------------------------------
+// Reads bzip2 format data from a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool BZip2Archive::open(MemChunk& mc)
 {
 	size_t size = mc.getSize();
@@ -71,7 +72,7 @@ bool BZip2Archive::open(MemChunk& mc)
 		return false;
 
 	// Build name from filename
-	string name = filename(false);
+	string     name = filename(false);
 	wxFileName fn(name);
 	if (!fn.GetExt().CmpNoCase("tbz") || !fn.GetExt().CmpNoCase("tb2") || !fn.GetExt().CmpNoCase("tbz2"))
 		fn.SetExt("tar");
@@ -82,7 +83,7 @@ bool BZip2Archive::open(MemChunk& mc)
 	// Let's create the entry
 	setMuted(true);
 	ArchiveEntry* entry = new ArchiveEntry(name, size);
-	MemChunk xdata;
+	MemChunk      xdata;
 	if (Compression::BZip2Decompress(mc, xdata))
 	{
 		entry->importMemChunk(xdata);
@@ -105,10 +106,10 @@ bool BZip2Archive::open(MemChunk& mc)
 	return true;
 }
 
-/* BZip2Archive::write
- * Writes the BZip2 archive to a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes the BZip2 archive to a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool BZip2Archive::write(MemChunk& mc, bool update)
 {
 	if (numEntries() == 1)
@@ -118,10 +119,10 @@ bool BZip2Archive::write(MemChunk& mc, bool update)
 	return false;
 }
 
-/* BZip2Archive::loadEntryData
- * Loads an entry's data from the BZip2 file
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads an entry's data from the BZip2 file
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 {
 	return false;
@@ -157,14 +158,14 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 	return true;
 }
 
-/* BZip2Archive::findFirst
- * Returns the entry if it matches the search criteria in [options],
- * or NULL otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the entry if it matches the search criteria in [options],
+// or null otherwise
+// -----------------------------------------------------------------------------
 ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	options.match_name = options.match_name.Lower();
+	options.match_name  = options.match_name.Lower();
 	ArchiveEntry* entry = getEntry(0);
 	if (entry == nullptr)
 		return entry;
@@ -198,17 +199,17 @@ ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 	return entry;
 }
 
-/* BZip2Archive::findLast
- * Same as findFirst since there's just one entry
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Same as findFirst since there's just one entry
+// -----------------------------------------------------------------------------
 ArchiveEntry* BZip2Archive::findLast(SearchOptions& options)
 {
 	return findFirst(options);
 }
 
-/* BZip2Archive::findAll
- * Returns all entries matching the search criteria in [options]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns all entries matching the search criteria in [options]
+// -----------------------------------------------------------------------------
 vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options)
 {
 	// Init search variables
@@ -220,10 +221,16 @@ vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options)
 }
 
 
+// -----------------------------------------------------------------------------
+//
+// BZip2Archive Class Static Functions
+//
+// -----------------------------------------------------------------------------
 
-/* BZip2Archive::isBZip2Archive
- * Checks if the given data is a valid BZip2 archive
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Checks if the given data is a valid BZip2 archive
+// -----------------------------------------------------------------------------
 bool BZip2Archive::isBZip2Archive(MemChunk& mc)
 {
 	size_t size = mc.getSize();
@@ -241,9 +248,9 @@ bool BZip2Archive::isBZip2Archive(MemChunk& mc)
 	return false;
 }
 
-/* BZip2Archive::isBZip2Archive
- * Checks if the file at [filename] is a valid BZip2 archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the file at [filename] is a valid BZip2 archive
+// -----------------------------------------------------------------------------
 bool BZip2Archive::isBZip2Archive(string filename)
 {
 	// Open file for reading

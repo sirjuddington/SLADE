@@ -1,13 +1,13 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    App.cpp
-// Description: The App namespace, with various general application
-//              related functions
+// Description: The App namespace, with various general application related
+//              functions
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -22,14 +22,14 @@
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
@@ -55,13 +55,14 @@
 #include "TextEditor/TextStyle.h"
 #include "UI/SBrush.h"
 #include "Utility/Tokenizer.h"
+#include "SLADEWxApp.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace App
 {
 wxStopWatch     timer;
@@ -92,20 +93,18 @@ CVAR(String, temp_location_custom, "", CVAR_SAVE)
 CVAR(Bool, setup_wizard_run, false, CVAR_SAVE)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // App Namespace Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace App
 {
-// ----------------------------------------------------------------------------
-// initDirectories
-//
+// -----------------------------------------------------------------------------
 // Checks for and creates necessary application directories. Returns true
 // if all directories existed and were created successfully if needed,
 // false otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool initDirectories()
 {
 	// If we're passed in a INSTALL_PREFIX (from CMAKE_INSTALL_PREFIX),
@@ -154,11 +153,9 @@ bool initDirectories()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// readConfigFile
-//
+// -----------------------------------------------------------------------------
 // Reads and parses the SLADE configuration file
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void readConfigFile()
 {
 	// Open SLADE.cfg
@@ -243,6 +240,9 @@ void readConfigFile()
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Processes command line [args]
+// -----------------------------------------------------------------------------
 vector<string> processCommandLine(vector<string>& args)
 {
 	vector<string> to_open;
@@ -274,71 +274,57 @@ vector<string> processCommandLine(vector<string>& args)
 }
 } // namespace App
 
-// ----------------------------------------------------------------------------
-// App::isInitialised
-//
+// -----------------------------------------------------------------------------
 // Returns true if the application has been initialised
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool App::isInitialised()
 {
 	return init_ok;
 }
 
-// ----------------------------------------------------------------------------
-// App::console
-//
+// -----------------------------------------------------------------------------
 // Returns the global Console
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 Console* App::console()
 {
 	return &console_main;
 }
 
-// ----------------------------------------------------------------------------
-// App::paletteManager
-//
+// -----------------------------------------------------------------------------
 // Returns the Palette Manager
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 PaletteManager* App::paletteManager()
 {
 	return &palette_manager;
 }
 
-// ----------------------------------------------------------------------------
-// App::archiveManager
-//
+// -----------------------------------------------------------------------------
 // Returns the Archive Manager
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ArchiveManager& App::archiveManager()
 {
 	return archive_manager;
 }
 
-// ----------------------------------------------------------------------------
-// App::runTimer
-//
+// -----------------------------------------------------------------------------
 // Returns the number of ms elapsed since the application was started
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 long App::runTimer()
 {
 	return timer.Time();
 }
 
-// ----------------------------------------------------------------------------
-// App::isExiting
-//
+// -----------------------------------------------------------------------------
 // Returns true if the application is exiting
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool App::isExiting()
 {
 	return exiting;
 }
 
-// ----------------------------------------------------------------------------
-// App::init
-//
+// -----------------------------------------------------------------------------
 // Application initialisation
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool App::init(vector<string>& args, double ui_scale)
 {
 	// Get the id of the current thread (should be the main one)
@@ -478,11 +464,9 @@ bool App::init(vector<string>& args, double ui_scale)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// App::saveConfigFile
-//
+// -----------------------------------------------------------------------------
 // Saves the SLADE configuration file
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void App::saveConfigFile()
 {
 	// Open SLADE.cfg for writing text
@@ -544,12 +528,10 @@ void App::saveConfigFile()
 	file.Write("\n// End Configuration File\n\n");
 }
 
-// ----------------------------------------------------------------------------
-// App::exit
-//
-// Application exit, shuts down and cleans everything up. If [save_config] is
-// true, saves all configuration related files
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Application exit, shuts down and cleans everything up.
+// If [save_config] is true, saves all configuration related files
+// -----------------------------------------------------------------------------
 void App::exit(bool save_config)
 {
 	exiting = true;
@@ -608,15 +590,14 @@ void App::exit(bool save_config)
 	wxTheApp->Exit();
 }
 
-// ----------------------------------------------------------------------------
-// App::path
+// -----------------------------------------------------------------------------
+// Prepends an application-related path to a [filename]
 //
-// Prepends an application-related path to a filename,
 // App::Dir::Data: SLADE application data directory (for SLADE.pk3)
 // App::Dir::User: User configuration and resources directory
 // App::Dir::Executable: Directory of the SLADE executable
 // App::Dir::Temp: Temporary files directory
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string App::path(string filename, Dir dir)
 {
 	if (dir == Dir::Data)

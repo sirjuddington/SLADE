@@ -1,50 +1,55 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MIDIPlayer.cpp
- * Description: MIDIPlayer class, a singleton class that handles
- *              playback of MIDI files. Can only play one MIDI at a
- *              time
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    AudioTags.cpp
+// Description: MIDIPlayer class, a singleton class that handles playback of
+//              MIDI files. Can only play one MIDI at a time
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "MIDIPlayer.h"
+#include "App.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-MIDIPlayer*	MIDIPlayer::instance = nullptr;
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+MIDIPlayer* MIDIPlayer::instance_ = nullptr;
 CVAR(String, fs_soundfont_path, "", CVAR_SAVE);
 CVAR(String, fs_driver, "", CVAR_SAVE);
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, snd_volume)
 EXTERN_CVAR(String, snd_timidity_path)
 EXTERN_CVAR(String, snd_timidity_options)
@@ -56,20 +61,23 @@ EXTERN_CVAR(Bool, snd_midi_usetimidity)
 #endif
 
 
-/*******************************************************************
- * MIDIPLAYER FLUIDSYNTH IMPLEMENTATION
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// MIDIPlayer Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* MIDIPlayer::MIDIPlayer
- * MIDIPlayer class constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// MIDIPlayer class constructor
+// -----------------------------------------------------------------------------
 MIDIPlayer::MIDIPlayer()
 {
 	// Init variables
-	fs_initialised = false;
-	fs_soundfont_ids.clear();
-	program = nullptr;
-	file = "";
+	fs_initialised_ = false;
+	fs_soundfont_ids_.clear();
+	program_ = nullptr;
+	file_    = "";
 
 #ifndef NO_FLUIDSYNTH
 	// Set fluidsynth driver to alsa in linux (no idea why it defaults to jack)
@@ -83,7 +91,7 @@ MIDIPlayer::MIDIPlayer()
 	{
 #ifdef __WXGTK__
 		fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2:/usr/share/sounds/sf2/FluidR3_GS.sf2";
-#else // __WXGTK__
+#else  // __WXGTK__
 		LOG_MESSAGE(1, "Warning: No fluidsynth soundfont set, MIDI playback will not work");
 #endif // __WXGTK__
 	}
@@ -92,37 +100,37 @@ MIDIPlayer::MIDIPlayer()
 	initFluidsynth();
 	reloadSoundfont();
 
-	if (!fs_player || !fs_adriver)
+	if (!fs_player_ || !fs_adriver_)
 		LOG_MESSAGE(1, "Warning: Failed to initialise FluidSynth, MIDI playback disabled");
 #endif // NO_FLUIDSYNTH
 }
 
-/* MIDIPlayer::~MIDIPlayer
- * MIDIPlayer class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// MIDIPlayer class destructor
+// -----------------------------------------------------------------------------
 MIDIPlayer::~MIDIPlayer()
 {
 	stop();
 
-	if (program)
-		delete program;
+	if (program_)
+		delete program_;
 #ifndef NO_FLUIDSYNTH
-	delete_fluid_audio_driver(fs_adriver);
-	delete_fluid_player(fs_player);
-	delete_fluid_synth(fs_synth);
-	delete_fluid_settings(fs_settings);
+	delete_fluid_audio_driver(fs_adriver_);
+	delete_fluid_player(fs_player_);
+	delete_fluid_synth(fs_synth_);
+	delete_fluid_settings(fs_settings_);
 #endif
 }
 
-/* MIDIPlayer::isReady
- * Returns true if the MIDIPlayer is ready to play some MIDI
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if the MIDIPlayer is ready to play some MIDI
+// -----------------------------------------------------------------------------
 bool MIDIPlayer::isReady()
 {
 	if (usetimidity)
 		return !snd_timidity_path.value.IsEmpty();
 #ifndef NO_FLUIDSYNTH
-	return fs_initialised && fs_soundfont_ids.size() > 0;
+	return fs_initialised_ && fs_soundfont_ids_.size() > 0;
 #endif
 	return false;
 }
@@ -131,45 +139,45 @@ void MIDIPlayer::resetPlayer()
 {
 	stop();
 
-	if (instance)
-		delete instance;
+	if (instance_)
+		delete instance_;
 
-	instance = new MIDIPlayer();
+	instance_ = new MIDIPlayer();
 }
 
 
-/* MIDIPlayer::initFluidsynth
- * Initialises fluidsynth
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Initialises fluidsynth
+// -----------------------------------------------------------------------------
 bool MIDIPlayer::initFluidsynth()
 {
 	// Don't re-init
-	if (fs_initialised)
+	if (fs_initialised_)
 		return true;
 
 #ifndef NO_FLUIDSYNTH
 	// Init fluidsynth settings
-	fs_settings = new_fluid_settings();
+	fs_settings_ = new_fluid_settings();
 	if (fs_driver != "")
-		fluid_settings_setstr(fs_settings, "audio.driver", wxString(fs_driver).ToAscii());
+		fluid_settings_setstr(fs_settings_, "audio.driver", wxString(fs_driver).ToAscii());
 
 	// Create fluidsynth objects
-	fs_synth = new_fluid_synth(fs_settings);
-	fs_player = new_fluid_player(fs_synth);
-	fs_adriver = new_fluid_audio_driver(fs_settings, fs_synth);
+	fs_synth_   = new_fluid_synth(fs_settings_);
+	fs_player_  = new_fluid_player(fs_synth_);
+	fs_adriver_ = new_fluid_audio_driver(fs_settings_, fs_synth_);
 
 	// Check init succeeded
-	if (fs_synth)
+	if (fs_synth_)
 	{
-		if (fs_adriver)
+		if (fs_adriver_)
 		{
 			setVolume(snd_volume);
-			fs_initialised = true;
+			fs_initialised_ = true;
 			return true;
 		}
 
 		// Driver creation unsuccessful
-		delete_fluid_synth(fs_synth);
+		delete_fluid_synth(fs_synth_);
 		return false;
 	}
 #endif
@@ -178,14 +186,14 @@ bool MIDIPlayer::initFluidsynth()
 	return false;
 }
 
-/* MIDIPlayer::reloadSoundfont
- * Reloads the current soundfont
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reloads the current soundfont
+// -----------------------------------------------------------------------------
 bool MIDIPlayer::reloadSoundfont()
 {
 #ifndef NO_FLUIDSYNTH
 	// Can't do anything if fluidsynth isn't initialised for whatever reason
-	if (!fs_initialised)
+	if (!fs_initialised_)
 		return false;
 
 #ifdef WIN32
@@ -195,23 +203,23 @@ bool MIDIPlayer::reloadSoundfont()
 #endif
 
 	// Unload any current soundfont
-	for (int a = fs_soundfont_ids.size() - 1; a >= 0; --a)
+	for (int a = fs_soundfont_ids_.size() - 1; a >= 0; --a)
 	{
-		if (fs_soundfont_ids[a] != FLUID_FAILED)
-			fluid_synth_sfunload(fs_synth, fs_soundfont_ids[a], 1);
-		fs_soundfont_ids.pop_back();
+		if (fs_soundfont_ids_[a] != FLUID_FAILED)
+			fluid_synth_sfunload(fs_synth_, fs_soundfont_ids_[a], 1);
+		fs_soundfont_ids_.pop_back();
 	}
 
 	// Load soundfonts
-	wxArrayString paths = wxSplit(fs_soundfont_path, separator);
-	bool retval = false;
+	wxArrayString paths  = wxSplit(fs_soundfont_path, separator);
+	bool          retval = false;
 	for (int a = paths.size() - 1; a >= 0; --a)
 	{
 		string path = paths[a];
 		if (path.size())
 		{
-			int fs_id = fluid_synth_sfload(fs_synth, CHR(path), 1);
-			fs_soundfont_ids.push_back(fs_id);
+			int fs_id = fluid_synth_sfload(fs_synth_, CHR(path), 1);
+			fs_soundfont_ids_.push_back(fs_id);
 			if (fs_id != FLUID_FAILED)
 				retval = true;
 		}
@@ -223,26 +231,26 @@ bool MIDIPlayer::reloadSoundfont()
 #endif
 }
 
-/* MIDIPlayer::openFile
- * Opens the MIDI file at [filename] for playback. Returns true if
- * successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Opens the MIDI file at [filename] for playback.
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool MIDIPlayer::openFile(string filename)
 {
-	file = filename;
+	file_ = filename;
 #ifndef NO_FLUIDSYNTH
-	if (!fs_initialised)
+	if (!fs_initialised_)
 		return false;
 
 	// Delete+Recreate player
-	delete_fluid_player(fs_player);
-	fs_player = nullptr;
-	fs_player = new_fluid_player(fs_synth);
+	delete_fluid_player(fs_player_);
+	fs_player_ = nullptr;
+	fs_player_ = new_fluid_player(fs_synth_);
 
 	// Open midi
-	if (fs_player)
+	if (fs_player_)
 	{
-		fluid_player_add(fs_player, CHR(filename));
+		fluid_player_add(fs_player_, CHR(filename));
 		return true;
 	}
 	else
@@ -251,38 +259,38 @@ bool MIDIPlayer::openFile(string filename)
 	return true;
 }
 
-/* MIDIPlayer::openData
- * Opens the MIDI data contained in [mc] for playback. Returns true if
- * successful, false otherwise
- *******************************************************************/
-bool MIDIPlayer::openData(MemChunk &mc)
+// -----------------------------------------------------------------------------
+// Opens the MIDI data contained in [mc] for playback.
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
+bool MIDIPlayer::openData(MemChunk& mc)
 {
 	// Open midi
 	mc.seek(0, SEEK_SET);
-	data.importMem(mc.getData(), mc.getSize());
+	data_.importMem(mc.getData(), mc.getSize());
 
 	if (usetimidity)
 	{
 		wxFileName path(App::path("slade-timidity.mid", App::Dir::Temp));
-		file = path.GetFullPath();
-		mc.exportFile(file);
+		file_ = path.GetFullPath();
+		mc.exportFile(file_);
 		return true;
 	}
 #ifndef NO_FLUIDSYNTH
 	else
 	{
-		if (!fs_initialised)
+		if (!fs_initialised_)
 			return false;
 
 		// Delete+Recreate player
-		delete_fluid_player(fs_player);
-		fs_player = nullptr;
-		fs_player = new_fluid_player(fs_synth);
+		delete_fluid_player(fs_player_);
+		fs_player_ = nullptr;
+		fs_player_ = new_fluid_player(fs_synth_);
 
-		if (fs_player)
+		if (fs_player_)
 		{
-			//fluid_player_set_loop(fs_player, -1);
-			fluid_player_add_mem(fs_player, mc.getData(), mc.getSize());
+			// fluid_player_set_loop(fs_player, -1);
+			fluid_player_add_mem(fs_player_, mc.getData(), mc.getSize());
 			return true;
 		}
 		else
@@ -292,37 +300,37 @@ bool MIDIPlayer::openData(MemChunk &mc)
 	return false;
 }
 
-/* MIDIPlayer::play
- * Begins playback of the currently loaded MIDI stream. Returns true
- * if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Begins playback of the currently loaded MIDI stream.
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool MIDIPlayer::play()
 {
 	stop();
-	timer.restart();
+	timer_.restart();
 	if (usetimidity)
 	{
-		string commandline = snd_timidity_path + " " + file + " " + snd_timidity_options;
-		if (!(program = wxProcess::Open(commandline)))
+		string commandline = snd_timidity_path + " " + file_ + " " + snd_timidity_options;
+		if (!(program_ = wxProcess::Open(commandline)))
 			return false;
 
-		int pid = program->GetPid();
-		return program->Exists(pid);
+		int pid = program_->GetPid();
+		return program_->Exists(pid);
 	}
 #ifndef NO_FLUIDSYNTH
 	else
 	{
-		if (!fs_initialised)
+		if (!fs_initialised_)
 			return false;
 
-		return (fluid_player_play(fs_player) == FLUID_OK);
+		return (fluid_player_play(fs_player_) == FLUID_OK);
 	}
 #endif // NO_FLUIDSYNTH
 }
 
-/* MIDIPlayer::pause
- * Pauses playback of the currently loaded MIDI stream
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Pauses playback of the currently loaded MIDI stream
+// -----------------------------------------------------------------------------
 bool MIDIPlayer::pause()
 {
 	if (!isReady())
@@ -331,47 +339,47 @@ bool MIDIPlayer::pause()
 	return stop();
 }
 
-/* MIDIPlayer::stop
- * Stops playback of the currently loaded MIDI stream
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Stops playback of the currently loaded MIDI stream
+// -----------------------------------------------------------------------------
 bool MIDIPlayer::stop()
 {
 	bool stopped = false;
-	if (program)
+	if (program_)
 	{
-		int pid = program->GetPid();
+		int pid = program_->GetPid();
 		if (isPlaying())
 #ifdef WIN32
-			program->Kill(pid, wxSIGKILL, wxKILL_CHILDREN);
+			program_->Kill(pid, wxSIGKILL, wxKILL_CHILDREN);
 #else
-			program->Kill(pid);
+			program_->Kill(pid);
 #endif
-		stopped = !(program->Exists(pid));
+		stopped = !(program_->Exists(pid));
 	}
 #ifndef NO_FLUIDSYNTH
-	if (fs_initialised)
+	if (fs_initialised_)
 	{
-		fluid_player_stop(fs_player);
-		fluid_synth_system_reset(fs_synth);
+		fluid_player_stop(fs_player_);
+		fluid_synth_system_reset(fs_synth_);
 		stopped = true;
 	}
 #endif // NO_FLUIDSYNTH
 	return stopped;
 }
 
-/* MIDIPlayer::isPlaying
- * Returns true if the MIDI stream is currently playing, false if not
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if the MIDI stream is currently playing, false if not
+// -----------------------------------------------------------------------------
 bool MIDIPlayer::isPlaying()
 {
 	if (usetimidity)
 	{
-		if (!program)
+		if (!program_)
 			return false;
 
-		int pid = program->GetPid();
+		int pid = program_->GetPid();
 		// also ignore zero pid
-		if (!pid || !program->Exists(pid))
+		if (!pid || !program_->Exists(pid))
 			return false;
 
 		return true;
@@ -379,87 +387,87 @@ bool MIDIPlayer::isPlaying()
 #ifndef NO_FLUIDSYNTH
 	else
 	{
-		if (!fs_initialised)
+		if (!fs_initialised_)
 			return false;
 
-		return (fluid_player_get_status(fs_player) == FLUID_PLAYER_PLAYING);
+		return (fluid_player_get_status(fs_player_) == FLUID_PLAYER_PLAYING);
 	}
 #endif // NO_FLUISYNTH
 	return false;
 }
 
-/* MIDIPlayer::getPosition
- * Returns the current position of the playing MIDI stream
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the current position of the playing MIDI stream
+// -----------------------------------------------------------------------------
 int MIDIPlayer::getPosition()
 {
 	// We cannot query this information from fluidsynth or timidity,
 	// se we cheat by querying our own timer
-	return timer.getElapsedTime().asMilliseconds();
+	return timer_.getElapsedTime().asMilliseconds();
 }
 
-/* MIDIPlayer::setPosition
- * Seeks to [pos] in the currently loaded MIDI stream
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Seeks to [pos] in the currently loaded MIDI stream
+// -----------------------------------------------------------------------------
 bool MIDIPlayer::setPosition(int pos)
 {
 	// Cannot currently seek in fluidsynth or timidity
 	return false;
 }
 
-/* MIDIPlayer::getLength
- * Returns the length (or maximum position) of the currently loaded
- * MIDI stream, in milliseconds.
- * MIDI time division is the number of pulses per quarter note, aka
- * PPQN, or clock tick per beat; but it doesn't tell us how long a
- * beat or a tick lasts. To know that we also need to know the tempo
- * which is a meta event and therefore optional. The tempo tells us
- * how many microseconds there are in a quarter note, so from that
- * and the PPQN we can compute how many microseconds a time division
- * lasts.
- * tempo / time_div = microseconds per tick
- * time_div / tempo = ticks per microsecond
- * We can also theoretically get the BPM this way, but in most game
- * midi files this value will be kinda meaningless since conversion
- * between variant formats can squeeze or stretch notes to fit a set
- * PPQN, so ticks per microseconds will generally be more accurate.
- * 60000000 / tempo = BPM
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the length (or maximum position) of the currently loaded MIDI stream,
+// in milliseconds.
+//
+// MIDI time division is the number of pulses per quarter note, aka PPQN, or
+// clock tick per beat; but it doesn't tell us how long a beat or a tick lasts.
+// To know that we also need to know the tempo which is a meta event and
+// therefore optional. The tempo tells us how many microseconds there are in a
+// quarter note, so from that and the PPQN we can compute how many microseconds
+// a time division lasts.
+// tempo / time_div = microseconds per tick
+// time_div / tempo = ticks per microsecond
+// We can also theoretically get the BPM this way, but in most game midi files
+// this value will be kinda meaningless since conversion between variant formats
+// can squeeze or stretch notes to fit a set PPQN, so ticks per microseconds
+// will generally be more accurate.
+// 60000000 / tempo = BPM
+// -----------------------------------------------------------------------------
 int MIDIPlayer::getLength()
 {
-	size_t microseconds = 0;
-	size_t pos = 0;
-	size_t end = data.getSize();
-	size_t track_counter = 0;
-	uint16_t num_tracks = 0;
-	uint16_t format = 0;
-	uint16_t time_div = 0;
-	int tempo = 500000; // Default value to assume if there are no tempo change event
-	bool smpte = false;
+	size_t   microseconds  = 0;
+	size_t   pos           = 0;
+	size_t   end           = data_.getSize();
+	size_t   track_counter = 0;
+	uint16_t num_tracks    = 0;
+	uint16_t format        = 0;
+	uint16_t time_div      = 0;
+	int      tempo         = 500000; // Default value to assume if there are no tempo change event
+	bool     smpte         = false;
 
 	while (pos + 8 < end)
 	{
-		size_t chunk_name = READ_B32(data, pos);
-		size_t chunk_size = READ_B32(data, pos+4);
+		size_t chunk_name = READ_B32(data_, pos);
+		size_t chunk_size = READ_B32(data_, pos + 4);
 		pos += 8;
-		size_t chunk_end = pos + chunk_size;
+		size_t  chunk_end      = pos + chunk_size;
 		uint8_t running_status = 0;
-		if (chunk_name == (size_t)(('M'<<24)|('T'<<16)|('h'<<8)|'d')) // MThd
+		if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
 		{
-			format = READ_B16(data, pos);
-			num_tracks = READ_B16(data, pos + 2);
-			time_div = READ_B16(data, pos + 4);
-			if (data[pos + 4] & 0x80)
+			format     = READ_B16(data_, pos);
+			num_tracks = READ_B16(data_, pos + 2);
+			time_div   = READ_B16(data_, pos + 4);
+			if (data_[pos + 4] & 0x80)
 			{
-				smpte = true;
-				time_div = (256 - data[pos + 4]) * data[pos + 5];
+				smpte    = true;
+				time_div = (256 - data_[pos + 4]) * data_[pos + 5];
 			}
 			if (time_div == 0) // Not a valid MIDI file
 				return 0;
 		}
-		else if (chunk_name == (size_t)(('M'<<24)|('T'<<16)|('r'<<8)|'k')) // MTrk
+		else if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
 		{
-			size_t tpos = pos;
+			size_t tpos        = pos;
 			size_t tracklength = 0;
 			while (tpos + 4 < chunk_end)
 			{
@@ -467,18 +475,20 @@ int MIDIPlayer::getLength()
 				size_t dtime = 0;
 				for (int a = 0; a < 4; ++a)
 				{
-					dtime = (dtime<<7) + (data[tpos] & 0x7F);
-					if ((data[tpos++] & 0x80) != 0x80)
+					dtime = (dtime << 7) + (data_[tpos] & 0x7F);
+					if ((data_[tpos++] & 0x80) != 0x80)
 						break;
 				}
 				// Compute length in microseconds
-				if (smpte) tracklength += dtime * time_div;
-				else tracklength += dtime * tempo / time_div;
+				if (smpte)
+					tracklength += dtime * time_div;
+				else
+					tracklength += dtime * tempo / time_div;
 
 				// Update status
 				uint8_t evtype = 0;
-				uint8_t status = data[tpos++];
-				size_t evsize = 0;
+				uint8_t status = data_[tpos++];
+				size_t  evsize = 0;
 				if (status < 0x80)
 				{
 					evtype = status;
@@ -487,7 +497,7 @@ int MIDIPlayer::getLength()
 				else
 				{
 					running_status = status;
-					evtype = data[tpos++];
+					evtype         = data_[tpos++];
 				}
 				// Handle meta events
 				if (status == 0xFF)
@@ -495,38 +505,38 @@ int MIDIPlayer::getLength()
 					evsize = 0;
 					for (int a = 0; a < 4; ++a)
 					{
-						evsize = (evsize<<7) + (data[tpos]&0x7F);
-						if ((data[tpos++] & 0x80) != 0x80)
+						evsize = (evsize << 7) + (data_[tpos] & 0x7F);
+						if ((data_[tpos++] & 0x80) != 0x80)
 							break;
 					}
 
 					// Tempo event is important
 					if (evtype == 0x51)
-						tempo = READ_B24(data, tpos);
+						tempo = READ_B24(data_, tpos);
 
 					tpos += evsize;
 				}
 				// Handle other events. Program change and channel aftertouch
 				// have only one parameter, other non-meta events have two.
 				// Sysex events have variable length
-				else switch (status & 0xF0)
-				{
-					case 0xC0:	// Program Change
-					case 0xD0:	// Channel Aftertouch
+				else
+					switch (status & 0xF0)
+					{
+					case 0xC0: // Program Change
+					case 0xD0: // Channel Aftertouch
 						break;
-					case 0xF0:	// Sysex events
+					case 0xF0: // Sysex events
 						evsize = 0;
 						for (int a = 0; a < 4; ++a)
 						{
-							evsize = (evsize<<7) + (data[tpos]&0x7F);
-							if ((data[tpos++] & 0x80) != 0x80)
+							evsize = (evsize << 7) + (data_[tpos] & 0x7F);
+							if ((data_[tpos++] & 0x80) != 0x80)
 								break;
 						}
 						tpos += evsize;
 						break;
-					default:
-						tpos++;	// Skip next parameter
-				}
+					default: tpos++; // Skip next parameter
+					}
 			}
 			// Is this the longest track yet?
 			// [TODO] MIDI Format 2 has different songs on different tracks
@@ -539,63 +549,65 @@ int MIDIPlayer::getLength()
 	return (int)(microseconds / 1000);
 }
 
-/* MIDIPlayer::setVolume
- * Sets the volume of the midi player
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the volume of the midi player
+// -----------------------------------------------------------------------------
 bool MIDIPlayer::setVolume(int volume)
 {
 	if (!isReady())
 		return false;
 
 	// Clamp volume
-	if (volume > 100) volume = 100;
-	if (volume < 0) volume = 0;
+	if (volume > 100)
+		volume = 100;
+	if (volume < 0)
+		volume = 0;
 
 #ifndef NO_FLUIDSYNTH
-	fluid_synth_set_gain(fs_synth, volume*0.01f);
+	fluid_synth_set_gain(fs_synth_, volume * 0.01f);
 #endif // NO_FLUIDSYNTH
 
 	return true;
 }
 
-/* MIDIPlayer::getInfo
- * Parses the MIDI data to find text events, and return a string
- * where they are each on a separate line. MIDI text events include:
- * Text event (FF 01)
- * Copyright notice (FF 02)
- * Track title (FF 03)
- * Instrument name (FF 04)
- * Lyrics (FF 05)
- * Marker (FF 06)
- * Cue point (FF 07)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Parses the MIDI data to find text events, and return a string where they are
+// each on a separate line. MIDI text events include:
+// Text event (FF 01)
+// Copyright notice (FF 02)
+// Track title (FF 03)
+// Instrument name (FF 04)
+// Lyrics (FF 05)
+// Marker (FF 06)
+// Cue point (FF 07)
+// -----------------------------------------------------------------------------
 string MIDIPlayer::getInfo()
 {
-	string ret = wxEmptyString;
-	size_t pos = 0;
-	size_t end = data.getSize();
-	size_t track_counter = 0;
-	uint16_t num_tracks = 0;
-	uint16_t format = 0;
+	string   ret           = wxEmptyString;
+	size_t   pos           = 0;
+	size_t   end           = data_.getSize();
+	size_t   track_counter = 0;
+	uint16_t num_tracks    = 0;
+	uint16_t format        = 0;
 
 	while (pos + 8 < end)
 	{
-		size_t chunk_name = READ_B32(data, pos);
-		size_t chunk_size = READ_B32(data, pos+4);
+		size_t chunk_name = READ_B32(data_, pos);
+		size_t chunk_size = READ_B32(data_, pos + 4);
 		pos += 8;
-		size_t chunk_end = pos + chunk_size;
+		size_t  chunk_end      = pos + chunk_size;
 		uint8_t running_status = 0;
-		if (chunk_name == (size_t)(('M'<<24)|('T'<<16)|('h'<<8)|'d')) // MThd
+		if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
 		{
-			format = READ_B16(data, pos);
-			num_tracks = READ_B16(data, pos + 2);
-			uint16_t time_div = READ_B16(data, pos + 4);
+			format            = READ_B16(data_, pos);
+			num_tracks        = READ_B16(data_, pos + 2);
+			uint16_t time_div = READ_B16(data_, pos + 4);
 			if (format == 0)
 				ret += S_FMT("MIDI format 0 with time division %u\n", time_div);
-			else ret += S_FMT("MIDI format %u with %u tracks and time division %u\n", 
-				format, num_tracks, time_div);
+			else
+				ret += S_FMT("MIDI format %u with %u tracks and time division %u\n", format, num_tracks, time_div);
 		}
-		else if (chunk_name == (size_t)(('M'<<24)|('T'<<16)|('r'<<8)|'k')) // MTrk
+		else if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
 		{
 			if (format == 2)
 				ret += S_FMT("\nTrack %u/%u\n", ++track_counter, num_tracks);
@@ -604,13 +616,13 @@ string MIDIPlayer::getInfo()
 			{
 				// Skip past delta time
 				for (int a = 0; a < 4; ++a)
-					if ((data[tpos++] & 0x80) != 0x80)
+					if ((data_[tpos++] & 0x80) != 0x80)
 						break;
 
 				// Update status
 				uint8_t evtype = 0;
-				uint8_t status = data[tpos++];
-				size_t evsize = 0;
+				uint8_t status = data_[tpos++];
+				size_t  evsize = 0;
 				if (status < 0x80)
 				{
 					evtype = status;
@@ -619,7 +631,7 @@ string MIDIPlayer::getInfo()
 				else
 				{
 					running_status = status;
-					evtype = data[tpos++];
+					evtype         = data_[tpos++];
 				}
 				// Handle meta events
 				if (status == 0xFF)
@@ -627,14 +639,14 @@ string MIDIPlayer::getInfo()
 					evsize = 0;
 					for (int a = 0; a < 4; ++a)
 					{
-						evsize = (evsize<<7) + (data[tpos]&0x7F);
-						if ((data[tpos++] & 0x80) != 0x80)
+						evsize = (evsize << 7) + (data_[tpos] & 0x7F);
+						if ((data_[tpos++] & 0x80) != 0x80)
 							break;
 					}
 
 					string tmp = wxEmptyString;
 					if (evtype > 0 && evtype < 8 && evsize)
-						tmp.Append((const char*)(&data[tpos]), evsize);
+						tmp.Append((const char*)(&data_[tpos]), evsize);
 
 					switch (evtype)
 					{
@@ -652,24 +664,24 @@ string MIDIPlayer::getInfo()
 				// Handle other events. Program change and channel aftertouch
 				// have only one parameter, other non-meta events have two.
 				// Sysex events have variable length
-				else switch (status & 0xF0)
-				{
-					case 0xC0:	// Program Change
-					case 0xD0:	// Channel Aftertouch
+				else
+					switch (status & 0xF0)
+					{
+					case 0xC0: // Program Change
+					case 0xD0: // Channel Aftertouch
 						break;
-					case 0xF0:	// Sysex events
+					case 0xF0: // Sysex events
 						evsize = 0;
 						for (int a = 0; a < 4; ++a)
 						{
-							evsize = (evsize<<7) + (data[tpos]&0x7F);
-							if ((data[tpos++] & 0x80) != 0x80)
+							evsize = (evsize << 7) + (data_[tpos] & 0x7F);
+							if ((data_[tpos++] & 0x80) != 0x80)
 								break;
 						}
 						tpos += evsize;
 						break;
-					default:
-						tpos++;	// Skip next parameter
-				}
+					default: tpos++; // Skip next parameter
+					}
 			}
 		}
 		pos = chunk_end;

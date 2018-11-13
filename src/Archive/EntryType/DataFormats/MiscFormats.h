@@ -1,10 +1,9 @@
-#ifndef MISCFORMATS_H
-#define MISCFORMATS_H
+#pragma once
 
 class RLE0DataFormat : public EntryDataFormat
 {
 public:
-	RLE0DataFormat() : EntryDataFormat("misc_rle0") {};
+	RLE0DataFormat() : EntryDataFormat("misc_rle0") {}
 	~RLE0DataFormat() {}
 
 	int isThisFormat(MemChunk& mc)
@@ -20,5 +19,3 @@ public:
 		return EDF_FALSE;
 	}
 };
-
-#endif //MISCFORMATS_H

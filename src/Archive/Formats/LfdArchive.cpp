@@ -1,65 +1,69 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    LfdArchive.cpp
- * Description: LfdArchive, archive class to handle LFD archives
- *              from Star Wars: Dark Forces
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    LfdArchive.cpp
+// Description: LfdArchive, archive class to handle LFD archives from
+//              Star Wars: Dark Forces
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "LfdArchive.h"
 #include "General/UI.h"
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, wad_force_uppercase)
 EXTERN_CVAR(Bool, archive_load_data)
 
-/*******************************************************************
- * LFDARCHIVE CLASS FUNCTIONS
- *******************************************************************/
 
-/* LfdArchive::LfdArchive
- * LfdArchive class constructor
- *******************************************************************/
-LfdArchive::LfdArchive() : TreelessArchive("lfd")
-{
-}
+// -----------------------------------------------------------------------------
+//
+// LfdArchive Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* LfdArchive::~LfdArchive
- * LfdArchive class destructor
- *******************************************************************/
-LfdArchive::~LfdArchive()
-{
-}
 
-/* LfdArchive::getEntryOffset
- * Returns the file byte offset for [entry]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// LfdArchive class constructor
+// -----------------------------------------------------------------------------
+LfdArchive::LfdArchive() : TreelessArchive("lfd") {}
+
+// -----------------------------------------------------------------------------
+// LfdArchive class destructor
+// -----------------------------------------------------------------------------
+LfdArchive::~LfdArchive() {}
+
+// -----------------------------------------------------------------------------
+// Returns the file byte offset for [entry]
+// -----------------------------------------------------------------------------
 uint32_t LfdArchive::getEntryOffset(ArchiveEntry* entry)
 {
 	// Check entry
@@ -69,9 +73,9 @@ uint32_t LfdArchive::getEntryOffset(ArchiveEntry* entry)
 	return (uint32_t)(int)entry->exProp("Offset");
 }
 
-/* LfdArchive::setEntryOffset
- * Sets the file byte offset for [entry]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the file byte offset for [entry]
+// -----------------------------------------------------------------------------
 void LfdArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 {
 	// Check entry
@@ -81,10 +85,10 @@ void LfdArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* LfdArchive::open
- * Reads lfd format data from a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads lfd format data from a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool LfdArchive::open(MemChunk& mc)
 {
 	// Check data was given
@@ -118,21 +122,22 @@ bool LfdArchive::open(MemChunk& mc)
 	// Read each entry
 	UI::setSplashProgressMessage("Reading lfd archive data");
 	size_t offset = dir_len + 16;
-	size_t size = mc.getSize();
+	size_t size   = mc.getSize();
 	for (uint32_t d = 0; offset < size; d++)
 	{
 		// Update splash window progress
 		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
-		uint32_t length = 0;
-		char type[5] = "";
-		char name[9] = "";
+		uint32_t length  = 0;
+		char     type[5] = "";
+		char     name[9] = "";
 
-		mc.read(type, 4);		// Type
-		mc.read(name, 8);		// Name
-		mc.read(&length, 4);	// Size
-		name[8] = '\0'; type[4] = 0;
+		mc.read(type, 4);    // Type
+		mc.read(name, 8);    // Name
+		mc.read(&length, 4); // Size
+		name[8] = '\0';
+		type[4] = 0;
 
 		// Move past the header
 		offset += 16;
@@ -209,16 +214,16 @@ bool LfdArchive::open(MemChunk& mc)
 	return true;
 }
 
-/* LfdArchive::write
- * Writes the lfd archive to a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes the lfd archive to a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool LfdArchive::write(MemChunk& mc, bool update)
 {
 	// Determine total size
-	uint32_t dir_size = (numEntries() + 1)<<4;
-	uint32_t total_size = dir_size;
-	ArchiveEntry* entry = nullptr;
+	uint32_t      dir_size   = (numEntries() + 1) << 4;
+	uint32_t      total_size = dir_size;
+	ArchiveEntry* entry      = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);
@@ -238,20 +243,22 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 	mc.reSize(total_size);
 
 	// Variables
-	char type[5] = "RMAP";
-	char name[9] = "resource";
-	size_t size = wxINT32_SWAP_ON_BE(numEntries()<<4);
+	char   type[5] = "RMAP";
+	char   name[9] = "resource";
+	size_t size    = wxINT32_SWAP_ON_BE(numEntries() << 4);
 
 
 	// Write the resource map first
 	mc.write(type, 4);
 	mc.write(name, 8);
-	mc.write(&size,4);
+	mc.write(&size, 4);
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);
-		for (int t = 0; t < 5; ++t) type[t] = 0;
-		for (int n = 0; n < 9; ++n) name[n] = 0;
+		for (int t = 0; t < 5; ++t)
+			type[t] = 0;
+		for (int n = 0; n < 9; ++n)
+			name[n] = 0;
 		size = wxINT32_SWAP_ON_BE(entry->getSize());
 		wxFileName fn(entry->getName());
 
@@ -262,15 +269,17 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 
 		mc.write(type, 4);
 		mc.write(name, 8);
-		mc.write(&size,4);
+		mc.write(&size, 4);
 	}
 
 	// Write the lumps
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);
-		for (int t = 0; t < 5; ++t) type[t] = 0;
-		for (int n = 0; n < 9; ++n) name[n] = 0;
+		for (int t = 0; t < 5; ++t)
+			type[t] = 0;
+		for (int n = 0; n < 9; ++n)
+			name[n] = 0;
 		size = wxINT32_SWAP_ON_BE(entry->getSize());
 		wxFileName fn(entry->getName());
 
@@ -281,17 +290,17 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 
 		mc.write(type, 4);
 		mc.write(name, 8);
-		mc.write(&size,4);
+		mc.write(&size, 4);
 		mc.write(entry->getData(), entry->getSize());
 	}
 
 	return true;
 }
 
-/* LfdArchive::loadEntryData
- * Loads an entry's data from the lfdfile
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads an entry's data from the lfdfile
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 {
 	// Check the entry is valid and part of this archive
@@ -326,11 +335,11 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 	return true;
 }
 
-/* LfdArchive::addEntry
- * Override of Archive::addEntry to force entry addition to the root
- * directory, update namespaces if needed and rename the entry if
- * necessary to be lfd-friendly (13 characters max with extension)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Override of Archive::addEntry to force entry addition to the root directory,
+// update namespaces if needed and rename the entry if necessary to be
+// lfd-friendly (13 characters max with extension)
+// -----------------------------------------------------------------------------
 ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
 {
 	// Check entry
@@ -347,7 +356,8 @@ ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 
 	// Process name (must be 13 characters max)
 	string name = entry->getName().Truncate(13);
-	if (wad_force_uppercase) name.MakeUpper();
+	if (wad_force_uppercase)
+		name.MakeUpper();
 
 	// Set new lfd-friendly name
 	entry->setName(name);
@@ -358,19 +368,18 @@ ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 	return entry;
 }
 
-/* LfdArchive::addEntry
- * Since lfd files have no namespaces, just call the other function.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Since lfd files have no namespaces, just call the other function.
+// -----------------------------------------------------------------------------
 ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
-/* LfdArchive::renameEntry
- * Override of Archive::renameEntry to update namespaces if needed
- * and rename the entry if necessary to be lfd-friendly (twelve
- * characters max)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Override of Archive::renameEntry to update namespaces if needed and rename
+// the entry if necessary to be lfd-friendly (twelve characters max)
+// -----------------------------------------------------------------------------
 bool LfdArchive::renameEntry(ArchiveEntry* entry, string name)
 {
 	// Check entry
@@ -379,15 +388,16 @@ bool LfdArchive::renameEntry(ArchiveEntry* entry, string name)
 
 	// Process name (must be 13 characters max)
 	name.Truncate(13);
-	if (wad_force_uppercase) name.MakeUpper();
+	if (wad_force_uppercase)
+		name.MakeUpper();
 
 	// Do default rename
 	return Archive::renameEntry(entry, name);
 }
 
-/* LfdArchive::isLfdArchive
- * Checks if the given data is a valid Dark Forces lfd archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the given data is a valid Dark Forces lfd archive
+// -----------------------------------------------------------------------------
 bool LfdArchive::isLfdArchive(MemChunk& mc)
 {
 	// Check size
@@ -403,13 +413,20 @@ bool LfdArchive::isLfdArchive(MemChunk& mc)
 	mc.seek(12, SEEK_SET);
 	mc.read(&dir_offset, 4);
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset) + 16;
-	if (dir_offset % 16) return false;
-	char type1[5]; char type2[5];
-	char name1[9]; char name2[9];
-	uint32_t len1; uint32_t len2;
-	mc.read(type1, 4); type1[4] = 0;
-	mc.read(name1, 8); name1[8] = 0;
-	mc.read(&len1, 4); len1 = wxINT32_SWAP_ON_BE(len1);
+	if (dir_offset % 16)
+		return false;
+	char     type1[5];
+	char     type2[5];
+	char     name1[9];
+	char     name2[9];
+	uint32_t len1;
+	uint32_t len2;
+	mc.read(type1, 4);
+	type1[4] = 0;
+	mc.read(name1, 8);
+	name1[8] = 0;
+	mc.read(&len1, 4);
+	len1 = wxINT32_SWAP_ON_BE(len1);
 
 	// Check size
 	if ((unsigned)mc.getSize() < (dir_offset + 16 + len1))
@@ -417,9 +434,12 @@ bool LfdArchive::isLfdArchive(MemChunk& mc)
 
 	// Compare
 	mc.seek(dir_offset, SEEK_SET);
-	mc.read(type2, 4); type2[4] = 0;
-	mc.read(name2, 8); name2[8] = 0;
-	mc.read(&len2, 4); len2 = wxINT32_SWAP_ON_BE(len2);
+	mc.read(type2, 4);
+	type2[4] = 0;
+	mc.read(name2, 8);
+	name2[8] = 0;
+	mc.read(&len2, 4);
+	len2 = wxINT32_SWAP_ON_BE(len2);
 
 	if (strcmp(type1, type2) || strcmp(name1, name2) || len1 != len2)
 		return false;
@@ -428,9 +448,9 @@ bool LfdArchive::isLfdArchive(MemChunk& mc)
 	return true;
 }
 
-/* LfdArchive::isLfdArchive
- * Checks if the file at [filename] is a valid Dark Forces lfd archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the file at [filename] is a valid Dark Forces lfd archive
+// -----------------------------------------------------------------------------
 bool LfdArchive::isLfdArchive(string filename)
 {
 	// Open file for reading
@@ -457,13 +477,20 @@ bool LfdArchive::isLfdArchive(string filename)
 	file.Seek(12, wxFromStart);
 	file.Read(&dir_offset, 4);
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset) + 16;
-	if (dir_offset % 16) return false;
-	char type1[5]; char type2[5];
-	char name1[9]; char name2[9];
-	uint32_t len1; uint32_t len2;
-	file.Read(type1, 4); type1[4] = 0;
-	file.Read(name1, 8); name1[8] = 0;
-	file.Read(&len1, 4); len1 = wxINT32_SWAP_ON_BE(len1);
+	if (dir_offset % 16)
+		return false;
+	char     type1[5];
+	char     type2[5];
+	char     name1[9];
+	char     name2[9];
+	uint32_t len1;
+	uint32_t len2;
+	file.Read(type1, 4);
+	type1[4] = 0;
+	file.Read(name1, 8);
+	name1[8] = 0;
+	file.Read(&len1, 4);
+	len1 = wxINT32_SWAP_ON_BE(len1);
 
 	// Check size
 	if ((unsigned)file.Length() < (dir_offset + 16 + len1))
@@ -471,9 +498,12 @@ bool LfdArchive::isLfdArchive(string filename)
 
 	// Compare
 	file.Seek(dir_offset, wxFromStart);
-	file.Read(type2, 4); type2[4] = 0;
-	file.Read(name2, 8); name2[8] = 0;
-	file.Read(&len2, 4); len2 = wxINT32_SWAP_ON_BE(len2);
+	file.Read(type2, 4);
+	type2[4] = 0;
+	file.Read(name2, 8);
+	name2[8] = 0;
+	file.Read(&len2, 4);
+	len2 = wxINT32_SWAP_ON_BE(len2);
 
 	if (strcmp(type1, type2) || strcmp(name1, name2) || len1 != len2)
 		return false;
@@ -481,4 +511,3 @@ bool LfdArchive::isLfdArchive(string filename)
 	// If it's passed to here it's probably a lfd file
 	return true;
 }
-

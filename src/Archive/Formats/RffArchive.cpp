@@ -1,30 +1,31 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    RffArchive.cpp
- * Description: RffArchive, archive class to handle Blood's
- *              encrypted RFF archives
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    RffArchive.cpp
+// Description: RffArchive, archive class to handle Blood's encrypted RFF
+//              archives
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
 /*
-** Part of this file have been taken or adapted from ZDoom's rff_file.cpp.
+** Parts of this file have been taken or adapted from ZDoom's rff_file.cpp.
 **
 **---------------------------------------------------------------------------
 ** Copyright 1998-2009 Randy Heit
@@ -59,74 +60,83 @@
 */
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "RffArchive.h"
 #include "General/UI.h"
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, wad_force_uppercase)
 EXTERN_CVAR(Bool, archive_load_data)
 
-/*******************************************************************
- * RFFARCHIVE HELPER FUNCTIONS AND STRUCTS
- *******************************************************************/
 
-/* BloodCrypt
- * From ZDoom: decrypts RFF data
- *******************************************************************/
-void BloodCrypt (void* data, int key, int len)
+// -----------------------------------------------------------------------------
+//
+// Functions & Structs
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// From ZDoom: store lump data. We need it because of the encryption
+// -----------------------------------------------------------------------------
+struct RFFLump
+{
+	uint32_t DontKnow1[4];
+	uint32_t FilePos;
+	uint32_t Size;
+	uint32_t DontKnow2;
+	uint32_t Time;
+	uint8_t  Flags;
+	char     Extension[3];
+	char     Name[8];
+	uint32_t IndexNum; // Used by .sfx, possibly others
+};
+
+// -----------------------------------------------------------------------------
+// From ZDoom: decrypts RFF data
+// -----------------------------------------------------------------------------
+void BloodCrypt(void* data, int key, int len)
 {
 	int p = (uint8_t)key, i;
 
 	for (i = 0; i < len; ++i)
 	{
-		((uint8_t*)data)[i] ^= (unsigned char)(p+(i>>1));
+		((uint8_t*)data)[i] ^= (unsigned char)(p + (i >> 1));
 	}
 }
+} // namespace
 
-/* RFFLump struct
- * From ZDoom: store lump data. We need it because of the encryption
- *******************************************************************/
-struct RFFLump
-{
-	uint32_t	DontKnow1[4];
-	uint32_t	FilePos;
-	uint32_t	Size;
-	uint32_t	DontKnow2;
-	uint32_t	Time;
-	uint8_t		Flags;
-	char		Extension[3];
-	char		Name[8];
-	uint32_t	IndexNum;	// Used by .sfx, possibly others
-};
 
-/*******************************************************************
- * RFFARCHIVE CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// RffArchive Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* RffArchive::RffArchive
- * RffArchive class constructor
- *******************************************************************/
-RffArchive::RffArchive() : TreelessArchive("rff")
-{
-}
 
-/* RffArchive::~RffArchive
- * RffArchive class destructor
- *******************************************************************/
-RffArchive::~RffArchive()
-{
-}
+// -----------------------------------------------------------------------------
+// RffArchive class constructor
+// -----------------------------------------------------------------------------
+RffArchive::RffArchive() : TreelessArchive("rff") {}
 
-/* RffArchive::getEntryOffset
- * Returns the file byte offset for [entry]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// RffArchive class destructor
+// -----------------------------------------------------------------------------
+RffArchive::~RffArchive() {}
+
+// -----------------------------------------------------------------------------
+// Returns the file byte offset for [entry]
+// -----------------------------------------------------------------------------
 uint32_t RffArchive::getEntryOffset(ArchiveEntry* entry)
 {
 	// Check entry
@@ -136,9 +146,9 @@ uint32_t RffArchive::getEntryOffset(ArchiveEntry* entry)
 	return (uint32_t)(int)entry->exProp("Offset");
 }
 
-/* RffArchive::setEntryOffset
- * Sets the file byte offset for [entry]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the file byte offset for [entry]
+// -----------------------------------------------------------------------------
 void RffArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 {
 	// Check entry
@@ -148,10 +158,10 @@ void RffArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* RffArchive::open
- * Reads grp format data from a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads grp format data from a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool RffArchive::open(MemChunk& mc)
 {
 	// Check data was given
@@ -159,19 +169,19 @@ bool RffArchive::open(MemChunk& mc)
 		return false;
 
 	// Read grp header
-	uint8_t magic[4];
+	uint8_t  magic[4];
 	uint32_t version, dir_offset, num_lumps;
 
 	mc.seek(0, SEEK_SET);
-	mc.read(magic, 4);			// Should be "RFF\x18"
-	mc.read(&version, 4);		// 0x01 0x03 \x00 \x00
-	mc.read(&dir_offset, 4);	// Offset to directory
-	mc.read(&num_lumps, 4);		// No. of lumps in rff
+	mc.read(magic, 4);       // Should be "RFF\x18"
+	mc.read(&version, 4);    // 0x01 0x03 \x00 \x00
+	mc.read(&dir_offset, 4); // Offset to directory
+	mc.read(&num_lumps, 4);  // No. of lumps in rff
 
 	// Byteswap values for big endian if needed
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
-	num_lumps = wxINT32_SWAP_ON_BE(num_lumps);
-	version = wxINT32_SWAP_ON_BE(version);
+	num_lumps  = wxINT32_SWAP_ON_BE(num_lumps);
+	version    = wxINT32_SWAP_ON_BE(version);
 
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
@@ -188,27 +198,28 @@ bool RffArchive::open(MemChunk& mc)
 	RFFLump* lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
 	UI::setSplashProgressMessage("Reading rff archive data");
-	mc.read (lumps, num_lumps * sizeof(RFFLump));
-	BloodCrypt (lumps, dir_offset, num_lumps * sizeof(RFFLump));
+	mc.read(lumps, num_lumps * sizeof(RFFLump));
+	BloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
 		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
-		char name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		uint32_t offset = wxINT32_SWAP_ON_BE(lumps[d].FilePos);
-		uint32_t size = wxINT32_SWAP_ON_BE(lumps[d].Size);
+		char     name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		uint32_t offset   = wxINT32_SWAP_ON_BE(lumps[d].FilePos);
+		uint32_t size     = wxINT32_SWAP_ON_BE(lumps[d].Size);
 
 		// Reconstruct name
 		int i, j = 0;
 		for (i = 0; i < 8; ++i)
 		{
-			if (lumps[d].Name[i] == 0) break;
+			if (lumps[d].Name[i] == 0)
+				break;
 			name[i] = lumps[d].Name[i];
 		}
 		for (name[i++] = '.'; j < 3; ++j)
-			name[i+j] = lumps[d].Extension[j];
+			name[i + j] = lumps[d].Extension[j];
 
 		// If the lump data goes past the end of the file,
 		// the rfffile is invalid
@@ -278,10 +289,6 @@ bool RffArchive::open(MemChunk& mc)
 		entry->setState(0);
 	}
 
-	// Detect maps (will detect map entry types)
-	//UI::setSplashProgressMessage("Detecting maps");
-	//detectMaps();
-
 	// Setup variables
 	setMuted(false);
 	setModified(false);
@@ -292,20 +299,20 @@ bool RffArchive::open(MemChunk& mc)
 	return true;
 }
 
-/* RffArchive::write
- * Writes the rff archive to a MemChunk
- * Not implemented because of encrypted directory and unknown stuff.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes the rff archive to a MemChunk
+// Not implemented because of encrypted directory and unknown stuff.
+// -----------------------------------------------------------------------------
 bool RffArchive::write(MemChunk& mc, bool update)
 {
 	LOG_MESSAGE(1, "Saving RFF files is not implemented because the format is not entirely known.");
 	return false;
 }
 
-/* RffArchive::loadEntryData
- * Loads an entry's data from the grpfile
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads an entry's data from the grpfile
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool RffArchive::loadEntryData(ArchiveEntry* entry)
 {
 	// Check the entry is valid and part of this archive
@@ -340,11 +347,11 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry)
 	return true;
 }
 
-/* RffArchive::addEntry
- * Override of Archive::addEntry to force entry addition to the root
- * directory, update namespaces if needed and rename the entry if
- * necessary to be rff-friendly  (12 characters max with extension)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Override of Archive::addEntry to force entry addition to the root directory,
+// update namespaces if needed and rename the entry if necessary to be
+// rff-friendly (12 characters max with extension)
+// -----------------------------------------------------------------------------
 ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
 {
 	// Check entry
@@ -361,7 +368,8 @@ ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 
 	// Process name (must be 12 characters max)
 	string name = entry->getName().Truncate(12);
-	if (wad_force_uppercase) name.MakeUpper();
+	if (wad_force_uppercase)
+		name.MakeUpper();
 
 	// Set new grp-friendly name
 	entry->setName(name);
@@ -372,19 +380,18 @@ ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 	return entry;
 }
 
-/* RffArchive::addEntry
- * Since RFF files have no namespaces, just call the other function.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Since RFF files have no namespaces, just call the other function.
+// -----------------------------------------------------------------------------
 ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
-/* RffArchive::renameEntry
- * Override of Archive::renameEntry to update namespaces if needed
- * and rename the entry if necessary to be grp-friendly (twelve
- * characters max)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Override of Archive::renameEntry to update namespaces if needed and rename
+// the entry if necessary to be grp-friendly (twelve characters max)
+// -----------------------------------------------------------------------------
 bool RffArchive::renameEntry(ArchiveEntry* entry, string name)
 {
 	// Check entry
@@ -393,15 +400,16 @@ bool RffArchive::renameEntry(ArchiveEntry* entry, string name)
 
 	// Process name (must be 12 characters max)
 	name.Truncate(12);
-	if (wad_force_uppercase) name.MakeUpper();
+	if (wad_force_uppercase)
+		name.MakeUpper();
 
 	// Do default rename
 	return Archive::renameEntry(entry, name);
 }
 
-/* RffArchive::isRffArchive
- * Checks if the given data is a valid Duke Nukem 3D grp archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the given data is a valid Duke Nukem 3D grp archive
+// -----------------------------------------------------------------------------
 bool RffArchive::isRffArchive(MemChunk& mc)
 {
 	// Check size
@@ -409,19 +417,19 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 		return false;
 
 	// Read grp header
-	uint8_t magic[4];
+	uint8_t  magic[4];
 	uint32_t version, dir_offset, num_lumps;
 
 	mc.seek(0, SEEK_SET);
-	mc.read(magic, 4);			// Should be "RFF\x18"
-	mc.read(&version, 4);		// 0x01 0x03 \x00 \x00
-	mc.read(&dir_offset, 4);	// Offset to directory
-	mc.read(&num_lumps, 4);		// No. of lumps in rff
+	mc.read(magic, 4);       // Should be "RFF\x18"
+	mc.read(&version, 4);    // 0x01 0x03 \x00 \x00
+	mc.read(&dir_offset, 4); // Offset to directory
+	mc.read(&num_lumps, 4);  // No. of lumps in rff
 
 	// Byteswap values for big endian if needed
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
-	num_lumps = wxINT32_SWAP_ON_BE(num_lumps);
-	version = wxINT32_SWAP_ON_BE(version);
+	num_lumps  = wxINT32_SWAP_ON_BE(num_lumps);
+	version    = wxINT32_SWAP_ON_BE(version);
 
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
@@ -432,10 +440,10 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 	RFFLump* lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
 	UI::setSplashProgressMessage("Reading rff archive data");
-	mc.read (lumps, num_lumps * sizeof(RFFLump));
-	BloodCrypt (lumps, dir_offset, num_lumps * sizeof(RFFLump));
+	mc.read(lumps, num_lumps * sizeof(RFFLump));
+	BloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);
-	uint32_t size = 0;
+	uint32_t size      = 0;
 	for (uint32_t a = 0; a < num_lumps; ++a)
 	{
 		totalsize += lumps[a].Size;
@@ -449,9 +457,9 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 	return true;
 }
 
-/* RffArchive::isRffArchive
- * Checks if the file at [filename] is a valid DN3D grp archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the file at [filename] is a valid DN3D grp archive
+// -----------------------------------------------------------------------------
 bool RffArchive::isRffArchive(string filename)
 {
 	// Open file for reading
@@ -466,19 +474,19 @@ bool RffArchive::isRffArchive(string filename)
 		return false;
 
 	// Read grp header
-	uint8_t magic[4];
+	uint8_t  magic[4];
 	uint32_t version, dir_offset, num_lumps;
 
 	file.Seek(0, wxFromStart);
-	file.Read(magic, 4);			// Should be "RFF\x18"
-	file.Read(&version, 4);		// 0x01 0x03 \x00 \x00
-	file.Read(&dir_offset, 4);	// Offset to directory
-	file.Read(&num_lumps, 4);		// No. of lumps in rff
+	file.Read(magic, 4);       // Should be "RFF\x18"
+	file.Read(&version, 4);    // 0x01 0x03 \x00 \x00
+	file.Read(&dir_offset, 4); // Offset to directory
+	file.Read(&num_lumps, 4);  // No. of lumps in rff
 
 	// Byteswap values for big endian if needed
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
-	num_lumps = wxINT32_SWAP_ON_BE(num_lumps);
-	version = wxINT32_SWAP_ON_BE(version);
+	num_lumps  = wxINT32_SWAP_ON_BE(num_lumps);
+	version    = wxINT32_SWAP_ON_BE(version);
 
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
@@ -490,9 +498,9 @@ bool RffArchive::isRffArchive(string filename)
 	file.Seek(dir_offset, wxFromStart);
 	UI::setSplashProgressMessage("Reading rff archive data");
 	file.Read(lumps, num_lumps * sizeof(RFFLump));
-	BloodCrypt (lumps, dir_offset, num_lumps * sizeof(RFFLump));
+	BloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);
-	uint32_t size = 0;
+	uint32_t size      = 0;
 	for (uint32_t a = 0; a < num_lumps; ++a)
 	{
 		totalsize += lumps[a].Size;

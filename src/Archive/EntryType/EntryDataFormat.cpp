@@ -1,32 +1,34 @@
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    EntryDataFormat.cpp
- * Description: Entry data format detection system, still fairly
- *              unfinished but good enough for now
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    EntryDataFormat.cpp
+// Description: Entry data format detection system
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "EntryDataFormat.h"
 #include "Archive/Formats/All.h"
@@ -34,9 +36,11 @@
 #include "Utility/Parser.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 // Declare hash map class to hold EntryDataFormats
 WX_DECLARE_STRING_HASH_MAP(EntryDataFormat*, EDFMap);
 EDFMap data_formats;
@@ -44,57 +48,63 @@ EntryDataFormat*	edf_any = nullptr;
 EntryDataFormat*	edf_text = nullptr;
 
 
-/*******************************************************************
- * ENTRYDATAFORMAT CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// EntryDataFormat Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* EntryDataFormat::EntryDataFormat
- * EntryDataFormat class constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// EntryDataFormat class constructor
+// -----------------------------------------------------------------------------
 EntryDataFormat::EntryDataFormat(string id)
 {
 	// Init variables
-	size_min = 0;
-	this->id = id;
+	size_min_ = 0;
+	this->id_ = id;
 
 	// Add to hash map
 	data_formats[id] = this;
 }
 
-/* EntryDataFormat::~EntryDataFormat
- * EntryDataFormat class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// EntryDataFormat class destructor
+// -----------------------------------------------------------------------------
 EntryDataFormat::~EntryDataFormat()
 {
 }
 
-/* EntryDataFormat::isThisFormat
- * To be overridden by specific data types, returns true if the data
- * in [mc] matches the data format
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// To be overridden by specific data types, returns true if the data in [mc]
+// matches the data format
+// -----------------------------------------------------------------------------
 int EntryDataFormat::isThisFormat(MemChunk& mc)
 {
 	return EDF_TRUE;
 }
 
-/* EntryDataFormat::copyToFormat
- * Copies data format properties to [target]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Copies data format properties to [target]
+// -----------------------------------------------------------------------------
 void EntryDataFormat::copyToFormat(EntryDataFormat& target)
 {
-	target.patterns = patterns;
-	target.size_min = size_min;
+	target.patterns_ = patterns_;
+	target.size_min_ = size_min_;
 }
 
 
-/*******************************************************************
- * ENTRYDATAFORMAT STATIC FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// EntryDataFormat Static Functions
+//
+// -----------------------------------------------------------------------------
 
-/* EntryDataFormat::getFormat
- * Returns the entry data format matching [id], or the 'any' type
- * if no match found
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Returns the entry data format matching [id], or the 'any' type if no match
+// found
+// -----------------------------------------------------------------------------
 EntryDataFormat* EntryDataFormat::getFormat(string id)
 {
 	EDFMap::iterator i = data_formats.find(id);
@@ -104,25 +114,25 @@ EntryDataFormat* EntryDataFormat::getFormat(string id)
 		return i->second;
 }
 
-/* EntryDataFormat::anyFormat
- * Returns the 'any' data format
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the 'any' data format
+// -----------------------------------------------------------------------------
 EntryDataFormat* EntryDataFormat::anyFormat()
 {
 	return edf_any;
 }
 
-/* EntryDataFormat::textFormat
- * Returns the 'text' data format
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the 'text' data format
+// -----------------------------------------------------------------------------
 EntryDataFormat* EntryDataFormat::textFormat()
 {
 	return edf_text;
 }
 
-/* EntryDataFormat::readDataFormatDefinition
- * Parses a user data format definition (unimplemented, currently)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Parses a user data format definition (unimplemented, currently)
+// -----------------------------------------------------------------------------
 bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 {
 	// Parse the definition
@@ -180,10 +190,10 @@ public:
 #include "DataFormats/MiscFormats.h"
 #include "DataFormats/ModelFormats.h"
 
-/* EntryDataFormat::initBuiltinFormats
- * Initialises all built-in data formats (this is currently all
- * formats, as externally defined formats are not implemented yet)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Initialises all built-in data formats (this is currently all formats, as
+// externally defined formats are not implemented yet)
+// -----------------------------------------------------------------------------
 void EntryDataFormat::initBuiltinFormats()
 {
 	// Create the 'any' format
@@ -342,4 +352,3 @@ void EntryDataFormat::initBuiltinFormats()
 	// Another dummy for the generic text format
 	edf_text = new EntryDataFormat("text");
 }
-

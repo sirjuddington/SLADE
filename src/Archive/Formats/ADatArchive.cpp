@@ -1,33 +1,34 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    ADatArchive.cpp
- * Description: ADatArchive, archive class to handle the Anachronox
- *              dat format
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ADatArchive.cpp
+// Description: ADatArchive, archive class to handle the Anachronox dat format
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ADatArchive.h"
 #include "General/Misc.h"
@@ -35,41 +36,43 @@
 #include "Utility/Compression.h"
 
 
-/*******************************************************************
- * CONSTANTS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Constants
+//
+// -----------------------------------------------------------------------------
 #define DIRENTRY 144
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, archive_load_data)
 
 
-/*******************************************************************
- * ADATARCHIVE CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// ADatArchive Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* ADatArchive::ADatArchive
- * ADatArchive class constructor
- *******************************************************************/
-ADatArchive::ADatArchive() : Archive("adat")
-{
-	//desc.supports_dirs = true;
-	//desc.max_name_length = 128;
-}
 
-/* ADatArchive::~ADatArchive
- * ADatArchive class destructor
- *******************************************************************/
-ADatArchive::~ADatArchive()
-{
-}
+// -----------------------------------------------------------------------------
+// ADatArchive class constructor
+// -----------------------------------------------------------------------------
+ADatArchive::ADatArchive() : Archive("adat") {}
 
-/* ADatArchive::open
- * Reads dat format data from a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// ADatArchive class destructor
+// -----------------------------------------------------------------------------
+ADatArchive::~ADatArchive() {}
+
+// -----------------------------------------------------------------------------
+// Reads dat format data from a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool ADatArchive::open(MemChunk& mc)
 {
 	// Check given data is valid
@@ -110,7 +113,7 @@ bool ADatArchive::open(MemChunk& mc)
 		long offset;
 		long decsize;
 		long compsize;
-		long whatever;			// No idea what this could be
+		long whatever; // No idea what this could be
 		mc.read(name, 128);
 		mc.read(&offset, 4);
 		mc.read(&decsize, 4);
@@ -118,8 +121,8 @@ bool ADatArchive::open(MemChunk& mc)
 		mc.read(&whatever, 4);
 
 		// Byteswap if needed
-		offset = wxINT32_SWAP_ON_BE(offset);
-		decsize = wxINT32_SWAP_ON_BE(decsize);
+		offset   = wxINT32_SWAP_ON_BE(offset);
+		decsize  = wxINT32_SWAP_ON_BE(decsize);
 		compsize = wxINT32_SWAP_ON_BE(compsize);
 
 		// Check offset+size
@@ -138,8 +141,8 @@ bool ADatArchive::open(MemChunk& mc)
 		ArchiveTreeNode* dir = createDir(fn.GetPath(true, wxPATH_UNIX));
 
 		// Create entry
-		ArchiveEntry* entry = new ArchiveEntry(fn.GetFullName(), compsize);
-		entry->exProp("Offset") = (int)offset;
+		ArchiveEntry* entry       = new ArchiveEntry(fn.GetFullName(), compsize);
+		entry->exProp("Offset")   = (int)offset;
 		entry->exProp("FullSize") = (int)decsize;
 		entry->setLoaded(false);
 		entry->setState(0);
@@ -149,7 +152,7 @@ bool ADatArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	MemChunk edata;
+	MemChunk              edata;
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
 	UI::setSplashProgressMessage("Detecting entry types");
@@ -197,10 +200,10 @@ bool ADatArchive::open(MemChunk& mc)
 	return true;
 }
 
-/* ADatArchive::write
- * Writes the dat archive to a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes the dat archive to a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool ADatArchive::write(MemChunk& mc, bool update)
 {
 	// Clear current data
@@ -213,10 +216,10 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 	getEntryTreeAsList(entries);
 
 	// Write header
-	long dir_offset = wxINT32_SWAP_ON_BE(16);
-	long dir_size = wxINT32_SWAP_ON_BE(0);
-	char pack[4] = { 'A', 'D', 'A', 'T' };
-	uint32_t version = wxINT32_SWAP_ON_BE(9);
+	long     dir_offset = wxINT32_SWAP_ON_BE(16);
+	long     dir_size   = wxINT32_SWAP_ON_BE(0);
+	char     pack[4]    = { 'A', 'D', 'A', 'T' };
+	uint32_t version    = wxINT32_SWAP_ON_BE(9);
 	mc.seek(0, SEEK_SET);
 	mc.write(pack, 4);
 	mc.write(&dir_offset, 4);
@@ -256,10 +259,11 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 
 		// Check entry name
 		string name = entries[a]->getPath(true);
-		name.Remove(0, 1);	// Remove leading /
+		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 128)
 		{
-			LOG_MESSAGE(1, "Warning: Entry %s path is too long (> 128 characters), putting it in the root directory", name);
+			LOG_MESSAGE(
+				1, "Warning: Entry %s path is too long (> 128 characters), putting it in the root directory", name);
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 128)
@@ -299,7 +303,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 
 	// Write directory
 	dir_offset = wxINT32_SWAP_ON_BE(mc.currentPos());
-	dir_size = wxINT32_SWAP_ON_BE(directory.getSize());
+	dir_size   = wxINT32_SWAP_ON_BE(directory.getSize());
 	mc.write(directory.getData(), directory.getSize());
 
 	// Update directory offset and size in header
@@ -311,10 +315,10 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 	return true;
 }
 
-/* ADatArchive::write
- * Writes the dat archive to a file
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes the dat archive to a file
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool ADatArchive::write(string filename, bool update)
 {
 	// Write to a MemChunk, then export it to a file
@@ -325,10 +329,10 @@ bool ADatArchive::write(string filename, bool update)
 		return false;
 }
 
-/* ADatArchive::loadEntryData
- * Loads an entry's data from the dat file
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads an entry's data from the dat file
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 {
 	// Check entry is ok
@@ -363,13 +367,16 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 	return true;
 }
 
-/*******************************************************************
- * ADATARCHIVE CLASS STATIC FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// ADatArchive Class Static Functions
+//
+// -----------------------------------------------------------------------------
 
-/* ADatArchive::isADatArchive
- * Checks if the given data is a valid Anachronox dat archive
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Checks if the given data is a valid Anachronox dat archive
+// -----------------------------------------------------------------------------
 bool ADatArchive::isADatArchive(MemChunk& mc)
 {
 	// Check it opened ok
@@ -388,7 +395,7 @@ bool ADatArchive::isADatArchive(MemChunk& mc)
 	mc.read(&version, 4);
 
 	// Byteswap values for big endian if needed
-	dir_size = wxINT32_SWAP_ON_BE(dir_size);
+	dir_size   = wxINT32_SWAP_ON_BE(dir_size);
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check version
@@ -407,9 +414,9 @@ bool ADatArchive::isADatArchive(MemChunk& mc)
 	return true;
 }
 
-/* ADatArchive::isADatArchive
- * Checks if the file at [filename] is a valid Anachronox dat archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the file at [filename] is a valid Anachronox dat archive
+// -----------------------------------------------------------------------------
 bool ADatArchive::isADatArchive(string filename)
 {
 	// Open file for reading
@@ -431,7 +438,7 @@ bool ADatArchive::isADatArchive(string filename)
 	file.Read(&version, 4);
 
 	// Byteswap values for big endian if needed
-	dir_size = wxINT32_SWAP_ON_BE(dir_size);
+	dir_size   = wxINT32_SWAP_ON_BE(dir_size);
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check version

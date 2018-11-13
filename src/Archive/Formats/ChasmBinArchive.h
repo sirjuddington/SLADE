@@ -1,6 +1,4 @@
-
-#ifndef __CHASM_BIN_ARCHIVE_H__
-#define __CHASM_BIN_ARCHIVE_H__
+#pragma once
 
 #include "Archive/Archive.h"
 
@@ -20,5 +18,3 @@ public:
 	static bool isChasmBinArchive(MemChunk& mc);
 	static bool isChasmBinArchive(string filename);
 };
-
-#endif // __CHASM_BIN_ARCHIVE_H__

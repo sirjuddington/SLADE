@@ -1,65 +1,69 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    GobArchive.cpp
- * Description: GobArchive, archive class to handle GOB archives
- *              from Star Wars: Dark Forces
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    GobArchive.cpp
+// Description: GobArchive, archive class to handle GOB archives from
+//              Star Wars: Dark Forces
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GobArchive.h"
 #include "General/UI.h"
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, wad_force_uppercase)
 EXTERN_CVAR(Bool, archive_load_data)
 
-/*******************************************************************
- * GOBARCHIVE CLASS FUNCTIONS
- *******************************************************************/
 
-/* GobArchive::GobArchive
- * GobArchive class constructor
- *******************************************************************/
-GobArchive::GobArchive() : TreelessArchive("gob")
-{
-}
+// -----------------------------------------------------------------------------
+//
+// GobArchive Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* GobArchive::~GobArchive
- * GobArchive class destructor
- *******************************************************************/
-GobArchive::~GobArchive()
-{
-}
 
-/* GobArchive::getEntryOffset
- * Returns the file byte offset for [entry]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// GobArchive class constructor
+// -----------------------------------------------------------------------------
+GobArchive::GobArchive() : TreelessArchive("gob") {}
+
+// -----------------------------------------------------------------------------
+// GobArchive class destructor
+// -----------------------------------------------------------------------------
+GobArchive::~GobArchive() {}
+
+// -----------------------------------------------------------------------------
+// Returns the file byte offset for [entry]
+// -----------------------------------------------------------------------------
 uint32_t GobArchive::getEntryOffset(ArchiveEntry* entry)
 {
 	// Check entry
@@ -69,9 +73,9 @@ uint32_t GobArchive::getEntryOffset(ArchiveEntry* entry)
 	return (uint32_t)(int)entry->exProp("Offset");
 }
 
-/* GobArchive::setEntryOffset
- * Sets the file byte offset for [entry]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the file byte offset for [entry]
+// -----------------------------------------------------------------------------
 void GobArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 {
 	// Check entry
@@ -81,10 +85,10 @@ void GobArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* GobArchive::open
- * Reads gob format data from a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads gob format data from a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool GobArchive::open(MemChunk& mc)
 {
 	// Check data was given
@@ -131,13 +135,13 @@ bool GobArchive::open(MemChunk& mc)
 		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
-		uint32_t offset = 0;
-		uint32_t size = 0;
-		char name[13] = "";
+		uint32_t offset   = 0;
+		uint32_t size     = 0;
+		char     name[13] = "";
 
-		mc.read(&offset, 4);	// Offset
-		mc.read(&size, 4);		// Size
-		mc.read(name, 13);		// Name
+		mc.read(&offset, 4); // Offset
+		mc.read(&size, 4);   // Size
+		mc.read(name, 13);   // Name
 		name[12] = '\0';
 
 		// Byteswap values for big endian if needed
@@ -203,15 +207,15 @@ bool GobArchive::open(MemChunk& mc)
 	return true;
 }
 
-/* GobArchive::write
- * Writes the gob archive to a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes the gob archive to a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool GobArchive::write(MemChunk& mc, bool update)
 {
 	// Determine directory offset & individual lump offsets
-	uint32_t dir_offset = 8;
-	ArchiveEntry* entry = nullptr;
+	uint32_t      dir_offset = 8;
+	ArchiveEntry* entry      = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = getEntry(l);
@@ -226,8 +230,8 @@ bool GobArchive::write(MemChunk& mc, bool update)
 
 	// Write the header
 	uint32_t num_lumps = wxINT32_SWAP_ON_BE(numEntries());
-	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
-	char header[4] = { 'G', 'O', 'B', 0xA };
+	dir_offset         = wxINT32_SWAP_ON_BE(dir_offset);
+	char header[4]     = { 'G', 'O', 'B', 0xA };
 	mc.write(header, 4);
 	mc.write(&dir_offset, 4);
 
@@ -242,10 +246,10 @@ bool GobArchive::write(MemChunk& mc, bool update)
 	mc.write(&num_lumps, 4);
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
-		entry = getEntry(l);
+		entry         = getEntry(l);
 		char name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		long offset = wxINT32_SWAP_ON_BE(getEntryOffset(entry));
-		long size = wxINT32_SWAP_ON_BE(entry->getSize());
+		long offset   = wxINT32_SWAP_ON_BE(getEntryOffset(entry));
+		long size     = wxINT32_SWAP_ON_BE(entry->getSize());
 
 		for (size_t c = 0; c < entry->getName().length() && c < 13; c++)
 			name[c] = entry->getName()[c];
@@ -264,10 +268,10 @@ bool GobArchive::write(MemChunk& mc, bool update)
 	return true;
 }
 
-/* GobArchive::loadEntryData
- * Loads an entry's data from the gobfile
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads an entry's data from the gobfile
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool GobArchive::loadEntryData(ArchiveEntry* entry)
 {
 	// Check the entry is valid and part of this archive
@@ -302,11 +306,11 @@ bool GobArchive::loadEntryData(ArchiveEntry* entry)
 	return true;
 }
 
-/* GobArchive::addEntry
- * Override of Archive::addEntry to force entry addition to the root
- * directory, update namespaces if needed and rename the entry if
- * necessary to be gob-friendly (12 characters max with extension)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Override of Archive::addEntry to force entry addition to the root directory,
+// update namespaces if needed and rename the entry if necessary to be
+// gob-friendly (12 characters max with extension)
+// -----------------------------------------------------------------------------
 ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
 {
 	// Check entry
@@ -323,7 +327,8 @@ ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 
 	// Process name (must be 12 characters max)
 	string name = entry->getName().Truncate(12);
-	if (wad_force_uppercase) name.MakeUpper();
+	if (wad_force_uppercase)
+		name.MakeUpper();
 
 	// Set new gob-friendly name
 	entry->setName(name);
@@ -334,19 +339,18 @@ ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 	return entry;
 }
 
-/* GobArchive::addEntry
- * Since gob files have no namespaces, just call the other function.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Since gob files have no namespaces, just call the other function.
+// -----------------------------------------------------------------------------
 ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
-/* GobArchive::renameEntry
- * Override of Archive::renameEntry to update namespaces if needed
- * and rename the entry if necessary to be gob-friendly (twelve
- * characters max)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Override of Archive::renameEntry to update namespaces if needed and rename
+// the entry if necessary to be gob-friendly (twelve characters max)
+// -----------------------------------------------------------------------------
 bool GobArchive::renameEntry(ArchiveEntry* entry, string name)
 {
 	// Check entry
@@ -355,15 +359,16 @@ bool GobArchive::renameEntry(ArchiveEntry* entry, string name)
 
 	// Process name (must be 12 characters max)
 	name.Truncate(12);
-	if (wad_force_uppercase) name.MakeUpper();
+	if (wad_force_uppercase)
+		name.MakeUpper();
 
 	// Do default rename
 	return Archive::renameEntry(entry, name);
 }
 
-/* GobArchive::isGobArchive
- * Checks if the given data is a valid Dark Forces gob archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the given data is a valid Dark Forces gob archive
+// -----------------------------------------------------------------------------
 bool GobArchive::isGobArchive(MemChunk& mc)
 {
 	// Check size
@@ -399,9 +404,9 @@ bool GobArchive::isGobArchive(MemChunk& mc)
 	return true;
 }
 
-/* GobArchive::isGobArchive
- * Checks if the file at [filename] is a valid Dark Forces gob archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the file at [filename] is a valid Dark Forces gob archive
+// -----------------------------------------------------------------------------
 bool GobArchive::isGobArchive(string filename)
 {
 	// Open file for reading
@@ -447,4 +452,3 @@ bool GobArchive::isGobArchive(string filename)
 	// If it's passed to here it's probably a gob file
 	return true;
 }
-

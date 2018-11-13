@@ -1,6 +1,4 @@
-
-#ifndef __BSP_ARCHIVE_H__
-#define __BSP_ARCHIVE_H__
+#pragma once
 
 #include "Archive/Archive.h"
 
@@ -11,16 +9,14 @@ public:
 	~BSPArchive();
 
 	// Opening/writing
-	bool	open(MemChunk& mc) override;						// Open from MemChunk
-	bool	write(MemChunk& mc, bool update = true) override;	// Write to MemChunk
+	bool open(MemChunk& mc) override;                      // Open from MemChunk
+	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
 
 	// Misc
-	bool		loadEntryData(ArchiveEntry* entry) override;
-	uint32_t	getEntryOffset(ArchiveEntry* entry);
+	bool     loadEntryData(ArchiveEntry* entry) override;
+	uint32_t getEntryOffset(ArchiveEntry* entry);
 
 	// Static functions
 	static bool isBSPArchive(MemChunk& mc);
 	static bool isBSPArchive(string filename);
 };
-
-#endif//__BSP_ARCHIVE_H__

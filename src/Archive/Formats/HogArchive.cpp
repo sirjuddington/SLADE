@@ -1,66 +1,73 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    HogArchive.cpp
- * Description: HogArchive, archive class to handle HOG archives
- *              from Descent and Descent II.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    HogArchive.cpp
+// Description: HogArchive, archive class to handle HOG archives from Descent
+//              and Descent II.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HogArchive.h"
 #include "General/UI.h"
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, archive_load_data)
 
 
-/*******************************************************************
- * HOGARCHIVE HELPER FUNCTIONS
- *******************************************************************/
-
-/* DecodeTXB
- * TXB files are text files with a bit shift xor cipher. It makes an exception
- * for the newline character probably so that standard string functions will
- * continue to work. As an extension we also except the encoded version of 0xA
- * in order to produce a lossless conversion. This allows us to semi-effectively
- * handle this at the archive level instead of as a filter at the text editor.
- *******************************************************************/
-void DecodeTXB(MemChunk &mc)
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
 {
-	const uint8_t* data = mc.getData();
+// -----------------------------------------------------------------------------
+// TXB files are text files with a bit shift xor cipher. It makes an exception
+// for the newline character probably so that standard string functions will
+// continue to work. As an extension we also except the encoded version of 0xA
+// in order to produce a lossless conversion. This allows us to semi-effectively
+// handle this at the archive level instead of as a filter at the text editor.
+// -----------------------------------------------------------------------------
+void DecodeTXB(MemChunk& mc)
+{
+	const uint8_t*       data    = mc.getData();
 	const uint8_t* const dataend = data + mc.getSize();
-	uint8_t* odata = new uint8_t[mc.getSize()];
-	uint8_t* const ostart = odata;
+	uint8_t*             odata   = new uint8_t[mc.getSize()];
+	uint8_t* const       ostart  = odata;
 	while (data != dataend)
 	{
 		if (*data != 0xA && *data != 0x8F)
 		{
-			*odata++ = (((*data&0x3F)<<2)|((*data&0xC0)>>6))^0xA7;
+			*odata++ = (((*data & 0x3F) << 2) | ((*data & 0xC0) >> 6)) ^ 0xA7;
 			++data;
 		}
 		else
@@ -70,20 +77,20 @@ void DecodeTXB(MemChunk &mc)
 	delete[] ostart;
 }
 
-/* EncodeTXB
- * Opposite of DecodeTXB. Caller should delete[] returned pointer.
- *******************************************************************/
-uint8_t* EncodeTXB(MemChunk &mc)
+// -----------------------------------------------------------------------------
+// Opposite of DecodeTXB. Caller should delete[] returned pointer.
+// -----------------------------------------------------------------------------
+uint8_t* EncodeTXB(MemChunk& mc)
 {
-	const uint8_t* data = mc.getData();
+	const uint8_t*       data    = mc.getData();
 	const uint8_t* const dataend = data + mc.getSize();
-	uint8_t* odata = new uint8_t[mc.getSize()];
-	uint8_t* const ostart = odata;
+	uint8_t*             odata   = new uint8_t[mc.getSize()];
+	uint8_t* const       ostart  = odata;
 	while (data != dataend)
 	{
 		if (*data != 0xA && *data != 0x8F)
 		{
-			*odata++ = (((*data&0x3)<<6)|((*data&0xFC)>>2))^0xE9;
+			*odata++ = (((*data & 0x3) << 6) | ((*data & 0xFC) >> 2)) ^ 0xE9;
 			++data;
 		}
 		else
@@ -92,39 +99,36 @@ uint8_t* EncodeTXB(MemChunk &mc)
 	return ostart;
 }
 
-/* ShouldEncodeTXB
- * Determines by filename being *.txb or *.ctb if we should encode.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Determines by filename being *.txb or *.ctb if we should encode.
+// -----------------------------------------------------------------------------
 bool ShouldEncodeTXB(string name)
 {
-	return name.Right(4).CmpNoCase(".txb") == 0 ||
-		name.Right(4).CmpNoCase(".ctb") == 0;
+	return name.Right(4).CmpNoCase(".txb") == 0 || name.Right(4).CmpNoCase(".ctb") == 0;
 }
+} // namespace
 
-/*******************************************************************
- * HOGARCHIVE CLASS FUNCTIONS
- *******************************************************************/
 
-/* HogArchive::HogArchive
- * HogArchive class constructor
- *******************************************************************/
-HogArchive::HogArchive() : TreelessArchive("hog")
-{
-	//desc.max_name_length = 13;
-	//desc.names_extensions = false;
-	//desc.supports_dirs = false;
-}
+// -----------------------------------------------------------------------------
+//
+// HogArchive Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* HogArchive::~HogArchive
- * HogArchive class destructor
- *******************************************************************/
-HogArchive::~HogArchive()
-{
-}
 
-/* HogArchive::getEntryOffset
- * Returns the file byte offset for [entry]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// HogArchive class constructor
+// -----------------------------------------------------------------------------
+HogArchive::HogArchive() : TreelessArchive("hog") {}
+
+// -----------------------------------------------------------------------------
+// HogArchive class destructor
+// -----------------------------------------------------------------------------
+HogArchive::~HogArchive() {}
+
+// -----------------------------------------------------------------------------
+// Returns the file byte offset for [entry]
+// -----------------------------------------------------------------------------
 uint32_t HogArchive::getEntryOffset(ArchiveEntry* entry)
 {
 	// Check entry
@@ -134,9 +138,9 @@ uint32_t HogArchive::getEntryOffset(ArchiveEntry* entry)
 	return (uint32_t)(int)entry->exProp("Offset");
 }
 
-/* HogArchive::setEntryOffset
- * Sets the file byte offset for [entry]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the file byte offset for [entry]
+// -----------------------------------------------------------------------------
 void HogArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 {
 	// Check entry
@@ -146,10 +150,10 @@ void HogArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 	entry->exProp("Offset") = (int)offset;
 }
 
-/* HogArchive::open
- * Reads hog format data from a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads hog format data from a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool HogArchive::open(MemChunk& mc)
 {
 	// Check data was given
@@ -170,8 +174,8 @@ bool HogArchive::open(MemChunk& mc)
 
 	// Iterate through files to see if the size seems okay
 	UI::setSplashProgressMessage("Reading hog archive data");
-	size_t iter_offset = 3;
-	uint32_t num_lumps = 0;
+	size_t   iter_offset = 3;
+	uint32_t num_lumps   = 0;
 	while (iter_offset < archive_size)
 	{
 		// Update splash window progress
@@ -189,9 +193,9 @@ bool HogArchive::open(MemChunk& mc)
 
 		// Setup variables
 		num_lumps++;
-		size_t offset = iter_offset + 17;
-		size_t size = READ_L32(mc, iter_offset + 13);
-		char name[14] = "";
+		size_t offset   = iter_offset + 17;
+		size_t size     = READ_L32(mc, iter_offset + 13);
+		char   name[14] = "";
 		mc.seek(iter_offset, SEEK_SET);
 		mc.read(name, 13);
 		name[13] = 0;
@@ -257,15 +261,15 @@ bool HogArchive::open(MemChunk& mc)
 	return true;
 }
 
-/* HogArchive::write
- * Writes the hog archive to a MemChunk
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes the hog archive to a MemChunk
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool HogArchive::write(MemChunk& mc, bool update)
 {
 	// Determine individual lump offsets
-	uint32_t offset = 3;
-	ArchiveEntry* entry = nullptr;
+	uint32_t      offset = 3;
+	ArchiveEntry* entry  = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		offset += 17;
@@ -291,9 +295,9 @@ bool HogArchive::write(MemChunk& mc, bool update)
 	// Write the directory
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
-		entry = getEntry(l);
+		entry         = getEntry(l);
 		char name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		long size = wxINT32_SWAP_ON_BE(entry->getSize());
+		long size     = wxINT32_SWAP_ON_BE(entry->getSize());
 
 		for (size_t c = 0; c < entry->getName().length() && c < 13; c++)
 			name[c] = entry->getName()[c];
@@ -302,7 +306,7 @@ bool HogArchive::write(MemChunk& mc, bool update)
 		mc.write(&size, 4);
 		if (entry->isEncrypted() == ENC_TXB)
 		{
-			uint8_t *data = EncodeTXB(entry->getMCData());
+			uint8_t* data = EncodeTXB(entry->getMCData());
 			mc.write(data, entry->getSize());
 			delete[] data;
 		}
@@ -313,10 +317,10 @@ bool HogArchive::write(MemChunk& mc, bool update)
 	return true;
 }
 
-/* HogArchive::loadEntryData
- * Loads an entry's data from the hogfile
- * Returns true if successful, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads an entry's data from the hogfile
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool HogArchive::loadEntryData(ArchiveEntry* entry)
 {
 	// Check the entry is valid and part of this archive
@@ -351,11 +355,11 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry)
 	return true;
 }
 
-/* HogArchive::addEntry
- * Override of Archive::addEntry to force entry addition to the root
- * directory, update namespaces if needed and rename the entry if
- * necessary to be hog-friendly (12 characters max with extension)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Override of Archive::addEntry to force entry addition to the root directory,
+// update namespaces if needed and rename the entry if necessary to be
+// hog-friendly (12 characters max with extension)
+// -----------------------------------------------------------------------------
 ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
 {
 	// Check entry
@@ -382,9 +386,9 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 	return entry;
 }
 
-/* HogArchive::addEntry
- * Since hog files have no namespaces, just call the other function.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Since hog files have no namespaces, just call the other function.
+// -----------------------------------------------------------------------------
 ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
 	if (ShouldEncodeTXB(entry->getName()))
@@ -393,11 +397,10 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
-/* HogArchive::renameEntry
- * Override of Archive::renameEntry to update namespaces if needed
- * and rename the entry if necessary to be hog-friendly (twelve
- * characters max)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Override of Archive::renameEntry to update namespaces if needed and rename
+// the entry if necessary to be hog-friendly (twelve characters max)
+// -----------------------------------------------------------------------------
 bool HogArchive::renameEntry(ArchiveEntry* entry, string name)
 {
 	// Check entry
@@ -417,9 +420,9 @@ bool HogArchive::renameEntry(ArchiveEntry* entry, string name)
 	return Archive::renameEntry(entry, name);
 }
 
-/* HogArchive::isHogArchive
- * Checks if the given data is a valid Descent hog archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the given data is a valid Descent hog archive
+// -----------------------------------------------------------------------------
 bool HogArchive::isHogArchive(MemChunk& mc)
 {
 	// Check size
@@ -446,9 +449,9 @@ bool HogArchive::isHogArchive(MemChunk& mc)
 	return (offset == size);
 }
 
-/* HogArchive::isHogArchive
- * Checks if the file at [filename] is a valid Descent hog archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Checks if the file at [filename] is a valid Descent hog archive
+// -----------------------------------------------------------------------------
 bool HogArchive::isHogArchive(string filename)
 {
 	// Open file for reading
@@ -487,4 +490,3 @@ bool HogArchive::isHogArchive(string filename)
 	// We should end on at exactly the end of the file
 	return (offset == size);
 }
-
