@@ -529,6 +529,7 @@ void MapEditContext::setCursor(UI::MouseCursor cursor) const
 // ----------------------------------------------------------------------------
 void MapEditContext::forceRefreshRenderer()
 {
+	renderer_.forceUpdate();
 	next_frame_length_ = 2;
 }
 
