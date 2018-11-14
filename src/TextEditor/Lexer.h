@@ -55,17 +55,18 @@ protected:
 		Whitespace,
 	};
 
-	vector<char>	word_chars_;
-	vector<char>	operator_chars_;
-	vector<char>	whitespace_chars_;
-	TextLanguage*	language_;
-	wxRegEx			re_int1_;
-	wxRegEx			re_int2_;
-	wxRegEx			re_int3_;
-	wxRegEx			re_float_;
-	bool			fold_comments_;
-	bool			fold_preprocessor_;
-	char			preprocessor_char_;
+	vector<unsigned char>	word_chars_;
+	vector<unsigned char>	operator_chars_;
+	vector<unsigned char>	whitespace_chars_;
+	TextLanguage*			language_;
+	wxRegEx					re_int1_;
+	wxRegEx					re_int2_;
+	wxRegEx					re_int3_;
+	wxRegEx					re_float_;
+	bool					fold_comments_;
+	bool					fold_preprocessor_;
+	char					preprocessor_char_;
+	int						curr_comment_idx_;
 
 	struct WLIndex
 	{
@@ -76,12 +77,14 @@ protected:
 
 	struct LineInfo
 	{
-		bool	commented;
+		int 	comment_idx;
 		int		fold_increment;
 		bool	has_word;
-		LineInfo() : commented{ false }, fold_increment{ 0 }, has_word{ false } {}
+		LineInfo() : comment_idx { -1 },
+					 fold_increment { 0 },
+					 has_word { false } {}
 	};
-	std::map<int, LineInfo>	lines_;
+	std::map<int, LineInfo> lines_;
 
 	struct LexerState
 	{
@@ -89,7 +92,7 @@ protected:
 		int				end;
 		int				line;
 		State			state;
-		int				length;
+		size_t			length;
 		int				fold_increment;
 		bool			has_word;
 		TextEditorCtrl*	editor;
@@ -104,6 +107,9 @@ protected:
 
 	virtual void	styleWord(LexerState& state, string word);
 	bool			checkToken(LexerState& state, int pos, string& token);
+	bool			checkToken(LexerState &state, int pos,
+							   vector<string> &tokens,
+							   int *found_idx = nullptr);
 };
 
 class ZScriptLexer : public Lexer
