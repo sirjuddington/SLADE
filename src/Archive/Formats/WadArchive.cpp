@@ -35,7 +35,7 @@
 #include "General/UI.h"
 #include "Utility/Tokenizer.h"
 
-bool JaguarDecode(MemChunk& mc);
+bool JaguarDecode(MemChunk& mc) { return false; };
 
 // -----------------------------------------------------------------------------
 //
@@ -230,7 +230,7 @@ void WadArchive::updateNamespaces()
 				}
 			}
 			// Flat hack: closing the flat namespace without opening it
-			if (found == false && ns_name == "f")
+			if (!found && ns_name == "f")
 			{
 				NSPair ns(rootDir()->entryAt(0), entry);
 				ns.start_index = 0;
