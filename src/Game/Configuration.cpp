@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -16,78 +16,70 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Configuration.h"
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
-#include "Configuration.h"
-#include "General/Console/Console.h"
+#include "Decorate.h"
 #include "GenLineSpecial.h"
+#include "General/Console/Console.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
-#include "Decorate.h"
 #include "ZScript.h"
 
 using namespace Game;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(String, game_configuration)
 EXTERN_CVAR(String, port_configuration)
 CVAR(Bool, debug_configuration, false, CVAR_SAVE)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Configuration Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// Configuration::Configuration
-//
+// -----------------------------------------------------------------------------
 // Configuration class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 Configuration::Configuration()
 {
 	setDefaults();
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::~Configuration
-//
+// -----------------------------------------------------------------------------
 // Configuration class destructor
-// ----------------------------------------------------------------------------
-Configuration::~Configuration()
-{
-}
+// -----------------------------------------------------------------------------
+Configuration::~Configuration() {}
 
-// ----------------------------------------------------------------------------
-// Configuration::setDefaults
-//
+// -----------------------------------------------------------------------------
 // Resets all game configuration values to defaults
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::setDefaults()
 {
 	udmf_namespace_ = "";
@@ -96,7 +88,7 @@ void Configuration::setDefaults()
 	defaults_sector_.clear();
 	defaults_thing_.clear();
 	maps_.clear();
-	sky_flat_ = "F_SKY1";
+	sky_flat_        = "F_SKY1";
 	script_language_ = "";
 	light_levels_.clear();
 	for (int a = 0; a < 4; a++)
@@ -107,21 +99,17 @@ void Configuration::setDefaults()
 	special_presets_.clear();
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::udmfNamespace
-//
+// -----------------------------------------------------------------------------
 // Returns the UDMF namespace for the game configuration
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string Configuration::udmfNamespace()
 {
 	return udmf_namespace_.Lower();
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::lightLevelInterval
-//
+// -----------------------------------------------------------------------------
 // Returns the light level interval for the game configuration
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int Configuration::lightLevelInterval()
 {
 	if (light_levels_.size() == 0)
@@ -130,11 +118,9 @@ int Configuration::lightLevelInterval()
 		return light_levels_[1];
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::mapName
-//
+// -----------------------------------------------------------------------------
 // Returns the map name at [index] for the game configuration
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string Configuration::mapName(unsigned index)
 {
 	// Check index
@@ -144,11 +130,9 @@ string Configuration::mapName(unsigned index)
 	return maps_[index].mapname;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::mapInfo
-//
+// -----------------------------------------------------------------------------
 // Returns map info for the map matching [name]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 gc_mapinfo_t Configuration::mapInfo(string name)
 {
 	for (unsigned a = 0; a < maps_.size(); a++)
@@ -163,24 +147,19 @@ gc_mapinfo_t Configuration::mapInfo(string name)
 		return gc_mapinfo_t();
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::readActionSpecials
-//
+// -----------------------------------------------------------------------------
 // Reads action special definitions from a parsed tree [node], using
 // [group_defaults] for default values
-// ----------------------------------------------------------------------------
-void Configuration::readActionSpecials(
-	ParseTreeNode* node,
-	Arg::SpecialMap& shared_args,
-	ActionSpecial* group_defaults)
+// -----------------------------------------------------------------------------
+void Configuration::readActionSpecials(ParseTreeNode* node, Arg::SpecialMap& shared_args, ActionSpecial* group_defaults)
 {
 	// Check if we're clearing all existing specials
 	if (node->getChild("clearexisting"))
 		action_specials_.clear();
 
 	// Determine current 'group'
-	ParseTreeNode* group = node;
-	string groupname = "";
+	ParseTreeNode* group     = node;
+	string         groupname = "";
 	while (true)
 	{
 		if (!group || group->getName() == "action_specials")
@@ -193,11 +172,12 @@ void Configuration::readActionSpecials(
 		}
 	}
 	if (groupname.EndsWith("/"))
-		groupname.RemoveLast();	// Remove last '/'
+		groupname.RemoveLast(); // Remove last '/'
 
 	// --- Set up group default properties ---
 	ActionSpecial as_defaults;
-	if (group_defaults) as_defaults = *group_defaults;
+	if (group_defaults)
+		as_defaults = *group_defaults;
 	as_defaults.parse(node, &shared_args);
 
 	// --- Go through all child nodes ---
@@ -221,7 +201,7 @@ void Configuration::readActionSpecials(
 			child->getName().ToLong(&special);
 
 			// Reset the action special (in case it's being redefined for whatever reason)
-			//action_specials_[special].reset();
+			// action_specials_[special].reset();
 
 			// Apply group defaults
 			action_specials_[special] = as_defaults;
@@ -234,12 +214,10 @@ void Configuration::readActionSpecials(
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::readThingTypes
-//
+// -----------------------------------------------------------------------------
 // Reads thing type definitions from a parsed tree [node], using
 // [group_defaults] for default values
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_defaults)
 {
 	// Check if we're clearing all existing specials
@@ -247,8 +225,8 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 		thing_types_.clear();
 
 	// --- Determine current 'group' ---
-	ParseTreeNode* group = node;
-	string groupname = "";
+	ParseTreeNode* group     = node;
+	string         groupname = "";
 	while (true)
 	{
 		if (!group || group->getName() == "thing_types")
@@ -261,7 +239,7 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 		}
 	}
 	if (groupname.EndsWith("/"))
-		groupname.RemoveLast();	// Remove last '/'
+		groupname.RemoveLast(); // Remove last '/'
 
 
 	// --- Set up group default properties ---
@@ -307,11 +285,9 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::readUDMFProperties
-//
+// -----------------------------------------------------------------------------
 // Reads UDMF property definitions from a parsed tree [node] into [plist]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 {
 	// Read block properties
@@ -342,13 +318,11 @@ void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::readGameSection
-//
+// -----------------------------------------------------------------------------
 // Reads a game or port definition from a parsed tree [node]. If [port_section]
 // is true it is a port definition
-// ----------------------------------------------------------------------------
-#define READ_BOOL(obj, field)	else if (S_CMPNOCASE(node->getName(), #field)) obj = node->boolValue()
+// -----------------------------------------------------------------------------
+#define READ_BOOL(obj, field) else if (S_CMPNOCASE(node->getName(), #field)) obj = node->boolValue()
 void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 {
 	for (unsigned a = 0; a < node_game->nChildren(); a++)
@@ -424,21 +398,24 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 		else if (S_CMPNOCASE(node->getName(), "long_names"))
 			supported_features_[Feature::LongNames] = node->boolValue();
 
-		READ_BOOL(udmf_features_[UDMFFeature::Slopes], udmf_slopes); // UDMF slopes
-		READ_BOOL(udmf_features_[UDMFFeature::FlatLighting], udmf_flat_lighting); // UDMF flat lighting
-		READ_BOOL(udmf_features_[UDMFFeature::FlatPanning], udmf_flat_panning); // UDMF flat panning
-		READ_BOOL(udmf_features_[UDMFFeature::FlatRotation], udmf_flat_rotation); // UDMF flat rotation
-		READ_BOOL(udmf_features_[UDMFFeature::FlatScaling], udmf_flat_scaling); // UDMF flat scaling
+		READ_BOOL(udmf_features_[UDMFFeature::Slopes], udmf_slopes);                      // UDMF slopes
+		READ_BOOL(udmf_features_[UDMFFeature::FlatLighting], udmf_flat_lighting);         // UDMF flat lighting
+		READ_BOOL(udmf_features_[UDMFFeature::FlatPanning], udmf_flat_panning);           // UDMF flat panning
+		READ_BOOL(udmf_features_[UDMFFeature::FlatRotation], udmf_flat_rotation);         // UDMF flat rotation
+		READ_BOOL(udmf_features_[UDMFFeature::FlatScaling], udmf_flat_scaling);           // UDMF flat scaling
 		READ_BOOL(udmf_features_[UDMFFeature::LineTransparency], udmf_line_transparency); // UDMF line transparency
-		READ_BOOL(udmf_features_[UDMFFeature::SectorColor], udmf_sector_color); // UDMF sector color
-		READ_BOOL(udmf_features_[UDMFFeature::SectorFog], udmf_sector_fog); // UDMF sector fog
-		READ_BOOL(udmf_features_[UDMFFeature::SideLighting], udmf_side_lighting); // UDMF per-sidedef lighting
-		READ_BOOL(udmf_features_[UDMFFeature::SideMidtexWrapping], udmf_side_midtex_wrapping); // UDMF per-sidetex midtex wrapping
+		READ_BOOL(udmf_features_[UDMFFeature::SectorColor], udmf_sector_color);           // UDMF sector color
+		READ_BOOL(udmf_features_[UDMFFeature::SectorFog], udmf_sector_fog);               // UDMF sector fog
+		READ_BOOL(udmf_features_[UDMFFeature::SideLighting], udmf_side_lighting);         // UDMF per-sidedef lighting
+		READ_BOOL(
+			udmf_features_[UDMFFeature::SideMidtexWrapping],
+			udmf_side_midtex_wrapping);                                         // UDMF per-sidetex midtex wrapping
 		READ_BOOL(udmf_features_[UDMFFeature::SideScaling], udmf_side_scaling); // UDMF per-sidedef scaling
 		READ_BOOL(udmf_features_[UDMFFeature::TextureScaling], udmf_texture_scaling); // UDMF per-texture scaling
 		READ_BOOL(udmf_features_[UDMFFeature::TextureOffsets], udmf_texture_offsets); // UDMF per-texture offsets
-		READ_BOOL(udmf_features_[UDMFFeature::ThingScaling], udmf_thing_scaling); // UDMF per-thing scaling
-		READ_BOOL(udmf_features_[UDMFFeature::ThingRotation], udmf_thing_rotation); // UDMF per-thing pitch and yaw rotation
+		READ_BOOL(udmf_features_[UDMFFeature::ThingScaling], udmf_thing_scaling);     // UDMF per-thing scaling
+		READ_BOOL(
+			udmf_features_[UDMFFeature::ThingRotation], udmf_thing_rotation); // UDMF per-thing pitch and yaw rotation
 
 		// Defaults section
 		else if (S_CMPNOCASE(node->getName(), "defaults"))
@@ -456,7 +433,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 						auto def = block->getChildPTN(c);
 						if (S_CMPNOCASE(def->type(), "udmf"))
 							defaults_line_udmf_[def->getName()] = def->value();
-						else	
+						else
 							defaults_line_[def->getName()] = def->value();
 					}
 				}
@@ -543,11 +520,9 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::readConfiguration
-//
+// -----------------------------------------------------------------------------
 // Reads a full game configuration from [cfg]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::readConfiguration(string& cfg, string source, uint8_t format, bool ignore_game, bool clear)
 {
 	// Clear current configuration
@@ -571,11 +546,11 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 	Parser parser;
 	switch (format)
 	{
-	case MAP_DOOM:		parser.define("MAP_DOOM");		break;
-	case MAP_HEXEN:		parser.define("MAP_HEXEN");		break;
-	case MAP_DOOM64:	parser.define("MAP_DOOM64");	break;
-	case MAP_UDMF:		parser.define("MAP_UDMF");		break;
-	default:			parser.define("MAP_UNKNOWN");	break;
+	case MAP_DOOM: parser.define("MAP_DOOM"); break;
+	case MAP_HEXEN: parser.define("MAP_HEXEN"); break;
+	case MAP_DOOM64: parser.define("MAP_DOOM64"); break;
+	case MAP_UDMF: parser.define("MAP_UDMF"); break;
+	default: parser.define("MAP_UNKNOWN"); break;
 	}
 	parser.parseText(cfg, source);
 
@@ -655,8 +630,8 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 					continue;
 
 				unsigned long flag_val;
-				string flag_name, flag_udmf;
-				bool activation = false;
+				string        flag_name, flag_udmf;
+				bool          activation = false;
 
 				if (value->nValues() == 0)
 				{
@@ -692,7 +667,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 				{
 					if (flags_line_[f].flag == flag_val)
 					{
-						exists = true;
+						exists              = true;
 						flags_line_[f].name = flag_name;
 						break;
 					}
@@ -715,7 +690,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 				if (!(S_CMPNOCASE(value->type(), "trigger")))
 					continue;
 
-				long flag_val;
+				long   flag_val;
 				string flag_name, flag_udmf;
 
 				if (value->nValues() == 0)
@@ -750,7 +725,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 				{
 					if (triggers_line_[f].flag == flag_val)
 					{
-						exists = true;
+						exists                 = true;
 						triggers_line_[f].name = flag_name;
 						break;
 					}
@@ -773,7 +748,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 				if (!(S_CMPNOCASE(value->type(), "flag")))
 					continue;
 
-				long flag_val;
+				long   flag_val;
 				string flag_name, flag_udmf;
 
 				if (value->nValues() == 0)
@@ -808,7 +783,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 				{
 					if (flags_thing_[f].flag == flag_val)
 					{
-						exists = true;
+						exists               = true;
 						flags_thing_[f].name = flag_name;
 						break;
 					}
@@ -845,23 +820,28 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		{
 			// Parse vertex block properties (if any)
 			auto block = node->getChildPTN("vertex");
-			if (block) readUDMFProperties(block, udmf_vertex_props_);
+			if (block)
+				readUDMFProperties(block, udmf_vertex_props_);
 
 			// Parse linedef block properties (if any)
 			block = node->getChildPTN("linedef");
-			if (block) readUDMFProperties(block, udmf_linedef_props_);
+			if (block)
+				readUDMFProperties(block, udmf_linedef_props_);
 
 			// Parse sidedef block properties (if any)
 			block = node->getChildPTN("sidedef");
-			if (block) readUDMFProperties(block, udmf_sidedef_props_);
+			if (block)
+				readUDMFProperties(block, udmf_sidedef_props_);
 
 			// Parse sector block properties (if any)
 			block = node->getChildPTN("sector");
-			if (block) readUDMFProperties(block, udmf_sector_props_);
+			if (block)
+				readUDMFProperties(block, udmf_sector_props_);
 
 			// Parse thing block properties (if any)
 			block = node->getChildPTN("thing");
-			if (block) readUDMFProperties(block, udmf_thing_props_);
+			if (block)
+				readUDMFProperties(block, udmf_thing_props_);
 		}
 
 		// Special Presets section
@@ -886,12 +866,10 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::openConfig
-//
+// -----------------------------------------------------------------------------
 // Opens the full game configuration [game]+[port], either from the user dir or
 // program resource
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::openConfig(string game, string port, uint8_t format)
 {
 	string full_config;
@@ -915,9 +893,9 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 		else
 		{
 			// Config is in program resource
-			string epath = S_FMT("config/games/%s.cfg", game_config.filename);
-			Archive* archive = App::archiveManager().programResourceArchive();
-			ArchiveEntry* entry = archive->entryAtPath(epath);
+			string        epath   = S_FMT("config/games/%s.cfg", game_config.filename);
+			Archive*      archive = App::archiveManager().programResourceArchive();
+			ArchiveEntry* entry   = archive->entryAtPath(epath);
 			if (entry)
 				StringUtils::processIncludes(entry, full_config);
 		}
@@ -947,9 +925,9 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 			else
 			{
 				// Config is in program resource
-				string epath = S_FMT("config/ports/%s.cfg", conf.filename);
-				Archive* archive = App::archiveManager().programResourceArchive();
-				ArchiveEntry* entry = archive->entryAtPath(epath);
+				string        epath   = S_FMT("config/ports/%s.cfg", conf.filename);
+				Archive*      archive = App::archiveManager().programResourceArchive();
+				ArchiveEntry* entry   = archive->entryAtPath(epath);
 				if (entry)
 					StringUtils::processIncludes(entry, full_config);
 			}
@@ -967,8 +945,8 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 	bool ok = true;
 	if (readConfiguration(full_config, "full.cfg", format))
 	{
-		current_game_ = game;
-		current_port_ = port;
+		current_game_      = game;
+		current_port_      = port;
 		game_configuration = game;
 		port_configuration = port;
 		LOG_MESSAGE(1, "Read game configuration \"%s\" + \"%s\"", current_game_, current_port_);
@@ -981,7 +959,7 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 
 	// Read any embedded configurations in resource archives
 	Archive::SearchOptions opt;
-	opt.match_name = "sladecfg";
+	opt.match_name                    = "sladecfg";
 	vector<ArchiveEntry*> cfg_entries = App::archiveManager().findAllResourceEntries(opt);
 	for (unsigned a = 0; a < cfg_entries.size(); a++)
 	{
@@ -999,11 +977,9 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 	return ok;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::actionSpecial
-//
+// -----------------------------------------------------------------------------
 // Returns the action special definition for [id]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const ActionSpecial& Configuration::actionSpecial(unsigned id)
 {
 	auto& as = action_specials_[id];
@@ -1025,11 +1001,9 @@ const ActionSpecial& Configuration::actionSpecial(unsigned id)
 	return ActionSpecial::unknown();
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::actionSpecialName
-//
+// -----------------------------------------------------------------------------
 // Returns the action special name for [special], if any
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string Configuration::actionSpecialName(int special)
 {
 	// Check special id is valid
@@ -1046,11 +1020,9 @@ string Configuration::actionSpecialName(int special)
 		return "Unknown";
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::thingType
-//
+// -----------------------------------------------------------------------------
 // Returns the thing type definition for [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const ThingType& Configuration::thingType(unsigned type)
 {
 	auto& ttype = thing_types_[type];
@@ -1060,21 +1032,17 @@ const ThingType& Configuration::thingType(unsigned type)
 		return ThingType::unknown();
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::thingTypeGroupDefaults
-//
+// -----------------------------------------------------------------------------
 // Returns the default ThingType properties for [group]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const ThingType& Configuration::thingTypeGroupDefaults(const string& group)
 {
 	return tt_group_defaults_[group];
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::thingFlag
-//
+// -----------------------------------------------------------------------------
 // Returns the name of the thing flag at [index]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string Configuration::thingFlag(unsigned index)
 {
 	// Check index
@@ -1084,11 +1052,9 @@ string Configuration::thingFlag(unsigned index)
 	return flags_thing_[index].name;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::thingFlagSet
-//
+// -----------------------------------------------------------------------------
 // Returns true if the flag at [index] is set for [thing]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::thingFlagSet(unsigned index, MapThing* thing)
 {
 	// Check index
@@ -1103,11 +1069,9 @@ bool Configuration::thingFlagSet(unsigned index, MapThing* thing)
 		return false;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::thingFlagSet
-//
+// -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] is set for [thing]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::thingFlagSet(string flag, MapThing* thing, int map_format)
 {
 	// If UDMF, just get the bool value
@@ -1127,11 +1091,9 @@ bool Configuration::thingFlagSet(string flag, MapThing* thing, int map_format)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::thingBasicFlagSet
-//
+// -----------------------------------------------------------------------------
 // Returns true if the basic flag matching [flag] is set for [thing]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::thingBasicFlagSet(string flag, MapThing* thing, int map_format)
 {
 	// If UDMF, just get the bool value
@@ -1207,11 +1169,9 @@ bool Configuration::thingBasicFlagSet(string flag, MapThing* thing, int map_form
 	return thingFlagSet(flag, thing, map_format);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::thingFlagsString
-//
+// -----------------------------------------------------------------------------
 // Returns a string of all thing flags set in [flags]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string Configuration::thingFlagsString(int flags)
 {
 	// Check against all flags
@@ -1235,12 +1195,9 @@ string Configuration::thingFlagsString(int flags)
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::setThingFlag
-//
-// Sets thing flag at [index] for [thing]. If [set] is false, the flag is
-// unset
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Sets thing flag at [index] for [thing]. If [set] is false, the flag is unset
+// -----------------------------------------------------------------------------
 void Configuration::setThingFlag(unsigned index, MapThing* thing, bool set)
 {
 	// Check index
@@ -1258,12 +1215,10 @@ void Configuration::setThingFlag(unsigned index, MapThing* thing, bool set)
 	thing->setIntProperty("flags", flags);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::setThingFlag
-//
-// Sets thing flag matching [flag] (UDMF name) for [thing]. If [set] is false,
-// the flag is unset
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Sets thing flag matching [flag] (UDMF name) for [thing].
+// If [set] is false, the flag is unset
+// -----------------------------------------------------------------------------
 void Configuration::setThingFlag(string flag, MapThing* thing, int map_format, bool set)
 {
 	// If UDMF, just set the bool value
@@ -1301,12 +1256,10 @@ void Configuration::setThingFlag(string flag, MapThing* thing, int map_format, b
 	thing->setIntProperty("flags", flags);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::setThingBasicFlag
-//
-// Sets thing basic flag matching [flag] for [thing]. If [set] is false, the
-// flag is unset
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Sets thing basic flag matching [flag] for [thing].
+// If [set] is false, the flag is unset
+// -----------------------------------------------------------------------------
 void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_format, bool set)
 {
 	// If UDMF, just set the bool value
@@ -1344,7 +1297,7 @@ void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_form
 		else
 		{
 			flag_val = 16;
-			set = !set;
+			set      = !set;
 		}
 	}
 	else if (flag == "coop")
@@ -1356,7 +1309,7 @@ void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_form
 		else if (supported_features_[Feature::Boom])
 		{
 			flag_val = 64;
-			set = !set;
+			set      = !set;
 		}
 		// Multiplayer
 		else
@@ -1371,7 +1324,7 @@ void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_form
 		else if (supported_features_[Feature::Boom])
 		{
 			flag_val = 32;
-			set = !set;
+			set      = !set;
 		}
 		// Multiplayer
 		else
@@ -1415,21 +1368,17 @@ void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_form
 	thingFlagSet(flag, thing, map_format);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::parseDecorateDefs
-//
+// -----------------------------------------------------------------------------
 // Parses all DECORATE thing definitions in [archive]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::parseDecorateDefs(Archive* archive)
 {
 	return Game::readDecorateDefs(archive, thing_types_, parsed_types_);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::clearDecorateDefs
-//
+// -----------------------------------------------------------------------------
 // Removes any thing definitions parsed from DECORATE entries
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::clearDecorateDefs()
 {
 	for (auto def : thing_types_)
@@ -1437,32 +1386,28 @@ void Configuration::clearDecorateDefs()
 			def.second.define(-1, "", "");
 }
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Configuration::importZScriptDefs
 //
 // Imports parsed classes from ZScript [defs] as thing types
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::importZScriptDefs(ZScript::Definitions& defs)
 {
 	defs.exportThingTypes(thing_types_, parsed_types_);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::parseMapInfo
-//
+// -----------------------------------------------------------------------------
 // Parses all *MAPINFO definitions in [archive]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::parseMapInfo(Archive* archive)
 {
 	return map_info_.readMapInfo(archive);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::linkDoomEdNums
-//
-// Attempts to find editor numbers in *MAPINFO for parsed DECORATE/ZScript
-// types that were not given one along with their definition
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Attempts to find editor numbers in *MAPINFO for parsed DECORATE/ZScript types
+// that were not given one along with their definition
+// -----------------------------------------------------------------------------
 void Configuration::linkDoomEdNums()
 {
 	for (auto& parsed : parsed_types_)
@@ -1480,11 +1425,9 @@ void Configuration::linkDoomEdNums()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::lineFlag
-//
+// -----------------------------------------------------------------------------
 // Returns the name of the line flag at [index]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const Configuration::Flag& Configuration::lineFlag(unsigned index)
 {
 	// Check index
@@ -1495,11 +1438,9 @@ const Configuration::Flag& Configuration::lineFlag(unsigned index)
 	return flags_line_[index];
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::lineFlagSet
-//
+// -----------------------------------------------------------------------------
 // Returns true if the flag at [index] is set for [line]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::lineFlagSet(unsigned index, MapLine* line)
 {
 	// Check index
@@ -1514,11 +1455,9 @@ bool Configuration::lineFlagSet(unsigned index, MapLine* line)
 		return false;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::lineFlagSet
-//
+// -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] (UDMF name) is set for [line]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::lineFlagSet(string flag, MapLine* line, int map_format)
 {
 	// If UDMF, just get the bool value
@@ -1538,13 +1477,11 @@ bool Configuration::lineFlagSet(string flag, MapLine* line, int map_format)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::lineBasicFlagSet
-//
+// -----------------------------------------------------------------------------
 // Returns true if the basic flag matching [flag] (UDMF name) is set for [line]
 // 'Basic' flags are flags that are available in some way or another in all
 // game configurations
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::lineBasicFlagSet(string flag, MapLine* line, int map_format)
 {
 	// If UDMF, just get the bool value
@@ -1574,11 +1511,9 @@ bool Configuration::lineBasicFlagSet(string flag, MapLine* line, int map_format)
 	return lineFlagSet(flag, line, map_format);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::lineFlagsString
-//
+// -----------------------------------------------------------------------------
 // Returns a string containing all flags set on [line]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string Configuration::lineFlagsString(MapLine* line)
 {
 	if (!line)
@@ -1609,11 +1544,9 @@ string Configuration::lineFlagsString(MapLine* line)
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::setLineFlag
-//
+// -----------------------------------------------------------------------------
 // Sets line flag at [index] for [line]. If [set] is false, the flag is unset
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::setLineFlag(unsigned index, MapLine* line, bool set)
 {
 	// Check index
@@ -1631,12 +1564,10 @@ void Configuration::setLineFlag(unsigned index, MapLine* line, bool set)
 	line->setIntProperty("flags", flags);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::setLineFlag
-//
-// Sets line flag matching [flag] (UDMF name) for [line]. If [set] is false,
-// the flag is unset
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Sets line flag matching [flag] (UDMF name) for [line].
+// If [set] is false, the flag is unset
+// -----------------------------------------------------------------------------
 void Configuration::setLineFlag(string flag, MapLine* line, int map_format, bool set)
 {
 	// If UDMF, just set the bool value
@@ -1674,12 +1605,10 @@ void Configuration::setLineFlag(string flag, MapLine* line, int map_format, bool
 	line->setIntProperty("flags", flags);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::setLineBasicFlag
-//
-// Sets line basic flag [flag] (UDMF name) for [line]. If [set] is false, the
-// flag is unset
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Sets line basic flag [flag] (UDMF name) for [line].
+// If [set] is false, the flag is unset
+// -----------------------------------------------------------------------------
 void Configuration::setLineBasicFlag(string flag, MapLine* line, int map_format, bool set)
 {
 	// If UDMF, just set the bool value
@@ -1691,7 +1620,7 @@ void Configuration::setLineBasicFlag(string flag, MapLine* line, int map_format,
 
 	// Get current flags
 	unsigned long flags = line->intProperty("flags");
-	unsigned long fval = 0;
+	unsigned long fval  = 0;
 
 	// Impassable
 	if (flag == "blocking")
@@ -1713,19 +1642,18 @@ void Configuration::setLineBasicFlag(string flag, MapLine* line, int map_format,
 	if (fval)
 	{
 		if (set)
-			line->setIntProperty("flags", flags|fval);
+			line->setIntProperty("flags", flags | fval);
 		else
 			line->setIntProperty("flags", flags & ~fval);
 	}
 	// Not basic
-	else setLineFlag(flag, line, map_format, set);
+	else
+		setLineFlag(flag, line, map_format, set);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::spacTriggerString
-//
+// -----------------------------------------------------------------------------
 // Returns the hexen SPAC trigger for [line] as a string
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string Configuration::spacTriggerString(MapLine* line, int map_format)
 {
 	if (!line)
@@ -1753,7 +1681,7 @@ string Configuration::spacTriggerString(MapLine* line, int map_format)
 	{
 		// Go through all line UDMF properties
 		string trigger = "";
-		auto& props = allUDMFProperties(MOBJ_LINE);
+		auto&  props   = allUDMFProperties(MOBJ_LINE);
 		for (auto& prop : props)
 		{
 			// Check for trigger property
@@ -1781,11 +1709,9 @@ string Configuration::spacTriggerString(MapLine* line, int map_format)
 	return "Unknown";
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::spacTriggerIndexHexen
-//
+// -----------------------------------------------------------------------------
 // Returns the hexen SPAC trigger index for [line]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int Configuration::spacTriggerIndexHexen(MapLine* line)
 {
 	// Get raw flags
@@ -1804,11 +1730,9 @@ int Configuration::spacTriggerIndexHexen(MapLine* line)
 	return 0;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::allSpacTriggers
-//
+// -----------------------------------------------------------------------------
 // Returns a list of all defined SPAC triggers
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxArrayString Configuration::allSpacTriggers()
 {
 	wxArrayString ret;
@@ -1819,11 +1743,9 @@ wxArrayString Configuration::allSpacTriggers()
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::setLineSpacTrigger
-//
+// -----------------------------------------------------------------------------
 // Sets the SPAC trigger for [line] to the trigger at [index]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::setLineSpacTrigger(unsigned index, MapLine* line)
 {
 	// Check index
@@ -1845,6 +1767,9 @@ void Configuration::setLineSpacTrigger(unsigned index, MapLine* line)
 	line->setIntProperty("flags", flags);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the UDMF name for the SPAC trigger at [index]
+// -----------------------------------------------------------------------------
 string Configuration::spacTriggerUDMFName(unsigned trigger_index)
 {
 	// Check index
@@ -1854,12 +1779,9 @@ string Configuration::spacTriggerUDMFName(unsigned trigger_index)
 	return triggers_line_[trigger_index].udmf;
 }
 
-
-// ----------------------------------------------------------------------------
-// Configuration::getUDMFProperty
-//
+// -----------------------------------------------------------------------------
 // Returns the UDMF property definition matching [name] for MapObject [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 UDMFProperty* Configuration::getUDMFProperty(string name, int type)
 {
 	if (type == MOBJ_VERTEX)
@@ -1876,11 +1798,9 @@ UDMFProperty* Configuration::getUDMFProperty(string name, int type)
 		return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::allUDMFProperties
-//
+// -----------------------------------------------------------------------------
 // Returns all defined UDMF properties for MapObject type [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 UDMFPropMap& Configuration::allUDMFProperties(int type)
 {
 	static UDMFPropMap map_invalid_type;
@@ -1900,17 +1820,15 @@ UDMFPropMap& Configuration::allUDMFProperties(int type)
 	return map_invalid_type;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::cleanObjectUDMFProperties
-//
+// -----------------------------------------------------------------------------
 // Removes any UDMF properties in [object] that have default values
 // (so they are not written to the UDMF map unnecessarily)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::cleanObjectUDMFProps(MapObject* object)
 {
 	// Get UDMF properties list for type
-	UDMFPropMap* map = nullptr;
-	int type = object->getObjType();
+	UDMFPropMap* map  = nullptr;
+	int          type = object->getObjType();
 	if (type == MOBJ_VERTEX)
 		map = &udmf_vertex_props_;
 	else if (type == MOBJ_LINE)
@@ -1955,12 +1873,10 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::sectorTypeName
-//
+// -----------------------------------------------------------------------------
 // Returns the name for sector type value [type], taking generalised types into
 // account
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string Configuration::sectorTypeName(int type)
 {
 	// Check for zero type
@@ -2019,11 +1935,9 @@ string Configuration::sectorTypeName(int type)
 	return name;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::sectorTypeByName
-//
+// -----------------------------------------------------------------------------
 // Returns the sector type value matching [name]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int Configuration::sectorTypeByName(string name)
 {
 	for (auto& i : sector_types_)
@@ -2033,12 +1947,10 @@ int Configuration::sectorTypeByName(string name)
 	return 0;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::baseSectorType
-//
+// -----------------------------------------------------------------------------
 // Returns the 'base' sector type for value [type]
 // (strips generalised flags/type)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int Configuration::baseSectorType(int type)
 {
 	// No type
@@ -2053,11 +1965,9 @@ int Configuration::baseSectorType(int type)
 	return type;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::sectorBoomDamage
-//
+// -----------------------------------------------------------------------------
 // Returns the generalised 'damage' flag for [type]: 0=none, 1=5%, 2=10% 3=20%
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int Configuration::sectorBoomDamage(int type)
 {
 	if (!supportsSectorFlags())
@@ -2067,7 +1977,7 @@ int Configuration::sectorBoomDamage(int type)
 	if (type == 0)
 		return 0;
 
-	int low_bit = boom_sector_flag_start_ << 0;
+	int low_bit  = boom_sector_flag_start_ << 0;
 	int high_bit = boom_sector_flag_start_ << 1;
 
 	if ((type & (low_bit | high_bit)) == (low_bit | high_bit))
@@ -2081,11 +1991,9 @@ int Configuration::sectorBoomDamage(int type)
 	return 0;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::sectorBoomSecret
-//
+// -----------------------------------------------------------------------------
 // Returns true if the generalised 'secret' flag is set for [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::sectorBoomSecret(int type)
 {
 	if (!supportsSectorFlags())
@@ -2102,11 +2010,9 @@ bool Configuration::sectorBoomSecret(int type)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::sectorBoomFriction
-//
+// -----------------------------------------------------------------------------
 // Returns true if the generalised 'friction' flag is set for [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::sectorBoomFriction(int type)
 {
 	if (!supportsSectorFlags())
@@ -2123,11 +2029,9 @@ bool Configuration::sectorBoomFriction(int type)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::sectorBoomPushPull
-//
+// -----------------------------------------------------------------------------
 // Returns true if the generalised 'pusher/puller' flag is set for [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::sectorBoomPushPull(int type)
 {
 	if (!supportsSectorFlags())
@@ -2144,11 +2048,9 @@ bool Configuration::sectorBoomPushPull(int type)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::boomSectorType
-//
+// -----------------------------------------------------------------------------
 // Returns the generalised boom sector type built from parameters
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int Configuration::boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull)
 {
 	int fulltype = base;
@@ -2171,103 +2073,73 @@ int Configuration::boomSectorType(int base, int damage, bool secret, bool fricti
 	return fulltype;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::getDefaultString
-//
+// -----------------------------------------------------------------------------
 // Returns the default string value for [property] of MapObject type [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string Configuration::getDefaultString(int type, string property)
 {
 	switch (type)
 	{
-	case MOBJ_LINE:
-		return defaults_line_[property].getStringValue(); break;
-	case MOBJ_SIDE:
-		return defaults_side_[property].getStringValue(); break;
-	case MOBJ_SECTOR:
-		return defaults_sector_[property].getStringValue(); break;
-	case MOBJ_THING:
-		return defaults_thing_[property].getStringValue(); break;
-	default:
-		return "";
+	case MOBJ_LINE: return defaults_line_[property].getStringValue(); break;
+	case MOBJ_SIDE: return defaults_side_[property].getStringValue(); break;
+	case MOBJ_SECTOR: return defaults_sector_[property].getStringValue(); break;
+	case MOBJ_THING: return defaults_thing_[property].getStringValue(); break;
+	default: return "";
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::getDefaultInt
-//
+// -----------------------------------------------------------------------------
 // Returns the default int value for [property] of MapObject type [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int Configuration::getDefaultInt(int type, string property)
 {
 	switch (type)
 	{
-	case MOBJ_LINE:
-		return defaults_line_[property].getIntValue(); break;
-	case MOBJ_SIDE:
-		return defaults_side_[property].getIntValue(); break;
-	case MOBJ_SECTOR:
-		return defaults_sector_[property].getIntValue(); break;
-	case MOBJ_THING:
-		return defaults_thing_[property].getIntValue(); break;
-	default:
-		return 0;
+	case MOBJ_LINE: return defaults_line_[property].getIntValue(); break;
+	case MOBJ_SIDE: return defaults_side_[property].getIntValue(); break;
+	case MOBJ_SECTOR: return defaults_sector_[property].getIntValue(); break;
+	case MOBJ_THING: return defaults_thing_[property].getIntValue(); break;
+	default: return 0;
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::getDefaultFloat
-//
+// -----------------------------------------------------------------------------
 // Returns the default float value for [property] of MapObject type [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 double Configuration::getDefaultFloat(int type, string property)
 {
 	switch (type)
 	{
-	case MOBJ_LINE:
-		return defaults_line_[property].getFloatValue(); break;
-	case MOBJ_SIDE:
-		return defaults_side_[property].getFloatValue(); break;
-	case MOBJ_SECTOR:
-		return defaults_sector_[property].getFloatValue(); break;
-	case MOBJ_THING:
-		return defaults_thing_[property].getFloatValue(); break;
-	default:
-		return 0;
+	case MOBJ_LINE: return defaults_line_[property].getFloatValue(); break;
+	case MOBJ_SIDE: return defaults_side_[property].getFloatValue(); break;
+	case MOBJ_SECTOR: return defaults_sector_[property].getFloatValue(); break;
+	case MOBJ_THING: return defaults_thing_[property].getFloatValue(); break;
+	default: return 0;
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::getDefaultBool
-//
+// -----------------------------------------------------------------------------
 // Returns the default boolean value for [property] of MapObject type [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Configuration::getDefaultBool(int type, string property)
 {
 	switch (type)
 	{
-	case MOBJ_LINE:
-		return defaults_line_[property].getBoolValue(); break;
-	case MOBJ_SIDE:
-		return defaults_side_[property].getBoolValue(); break;
-	case MOBJ_SECTOR:
-		return defaults_sector_[property].getBoolValue(); break;
-	case MOBJ_THING:
-		return defaults_thing_[property].getBoolValue(); break;
-	default:
-		return false;
+	case MOBJ_LINE: return defaults_line_[property].getBoolValue(); break;
+	case MOBJ_SIDE: return defaults_side_[property].getBoolValue(); break;
+	case MOBJ_SECTOR: return defaults_sector_[property].getBoolValue(); break;
+	case MOBJ_THING: return defaults_thing_[property].getBoolValue(); break;
+	default: return false;
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::applyDefaults
-//
+// -----------------------------------------------------------------------------
 // Apply defined default values to [object]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::applyDefaults(MapObject* object, bool udmf)
 {
 	// Get all defaults for the object type
-	vector<string> prop_names;
+	vector<string>   prop_names;
 	vector<Property> prop_vals;
 
 	// Line defaults
@@ -2333,11 +2205,9 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::setLightLevelInterval
-//
+// -----------------------------------------------------------------------------
 // Builds the array of valid light levels from [interval]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::setLightLevelInterval(int interval)
 {
 	// Clear current
@@ -2353,12 +2223,10 @@ void Configuration::setLightLevelInterval(int interval)
 	light_levels_.push_back(255);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::upLightLevel
-//
+// -----------------------------------------------------------------------------
 // Returns [light_level] incremented to the next 'valid' light level
 // (defined by the game light interval)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int Configuration::upLightLevel(int light_level)
 {
 	// No defined levels
@@ -2367,19 +2235,17 @@ int Configuration::upLightLevel(int light_level)
 
 	for (int a = 0; a < (int)light_levels_.size() - 1; a++)
 	{
-		if (light_level >= light_levels_[a] && light_level < light_levels_[a+1])
-			return light_levels_[a+1];
+		if (light_level >= light_levels_[a] && light_level < light_levels_[a + 1])
+			return light_levels_[a + 1];
 	}
 
 	return light_levels_.back();
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::downLightLevel
-//
+// -----------------------------------------------------------------------------
 // Returns [light_level] decremented to the next 'valid' light level
 // (defined by the game light interval)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int Configuration::downLightLevel(int light_level)
 {
 	// No defined levels
@@ -2388,30 +2254,26 @@ int Configuration::downLightLevel(int light_level)
 
 	for (int a = 0; a < (int)light_levels_.size() - 1; a++)
 	{
-		if (light_level > light_levels_[a] && light_level <= light_levels_[a+1])
+		if (light_level > light_levels_[a] && light_level <= light_levels_[a + 1])
 			return light_levels_[a];
 	}
 
 	return 0;
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::dumpActionSpecials
-//
+// -----------------------------------------------------------------------------
 // Dumps all defined action specials to the log
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::dumpActionSpecials()
 {
 	for (auto& i : action_specials_)
-		//if (i.second.defined())
-			LOG_MESSAGE(1, "Action special %d = %s", i.first, i.second.stringDesc());
+		// if (i.second.defined())
+		LOG_MESSAGE(1, "Action special %d = %s", i.first, i.second.stringDesc());
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::dumpThingTypes
-//
+// -----------------------------------------------------------------------------
 // Dumps all defined thing types to the log
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::dumpThingTypes()
 {
 	for (auto& i : thing_types_)
@@ -2419,11 +2281,9 @@ void Configuration::dumpThingTypes()
 			LOG_MESSAGE(1, "Thing type %d = %s", i.first, i.second.stringDesc());
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::dumpValidMapNames
-//
+// -----------------------------------------------------------------------------
 // Dumps all defined map names to the log
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::dumpValidMapNames()
 {
 	LOG_MESSAGE(1, "Valid Map Names:");
@@ -2431,11 +2291,9 @@ void Configuration::dumpValidMapNames()
 		Log::info(maps_[a].mapname);
 }
 
-// ----------------------------------------------------------------------------
-// Configuration::dumpUDMFProperties
-//
+// -----------------------------------------------------------------------------
 // Dumps all defined UDMF properties to the log
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Configuration::dumpUDMFProperties()
 {
 	// Vertex
@@ -2465,11 +2323,11 @@ void Configuration::dumpUDMFProperties()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Console Commands
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 CONSOLE_COMMAND(testgc, 0, false)
 {

@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,49 +14,47 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ThingType.h"
-#include "Utility/Parser.h"
 #include "Game/Configuration.h"
+#include "Utility/Parser.h"
 
 using namespace Game;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ThingType ThingType::unknown_;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ThingType Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ThingType::ThingType
-//
+// -----------------------------------------------------------------------------
 // ThingType class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ThingType::ThingType(const string& name, const string& group, const string& class_name) :
 	name_{ name },
 	group_{ group },
@@ -80,7 +78,7 @@ ThingType::ThingType(const string& name, const string& group, const string& clas
 	class_name_{ class_name }
 {
 	// Init args
-	args_.count = 0;
+	args_.count   = 0;
 	args_[0].name = "Arg1";
 	args_[1].name = "Arg2";
 	args_[2].name = "Arg3";
@@ -88,103 +86,95 @@ ThingType::ThingType(const string& name, const string& group, const string& clas
 	args_[4].name = "Arg5";
 }
 
-// ----------------------------------------------------------------------------
-// ThingType::copy
-//
+// -----------------------------------------------------------------------------
 // Copies all properties from [copy]
 // (excludes definition variables like name, number, etc.)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ThingType::copy(const ThingType& copy)
 {
-	angled_ = copy.angled_;
-	hanging_ = copy.hanging_;
-	shrink_ = copy.shrink_;
-	colour_ = copy.colour_;
-	radius_ = copy.radius_;
-	height_ = copy.height_;
-	scale_ = copy.scale_;
-	fullbright_ = copy.fullbright_;
-	decoration_ = copy.decoration_;
-	decorate_ = copy.decorate_;
-	solid_ = copy.solid_;
-	zeth_icon_ = copy.zeth_icon_;
-	next_type_ = copy.next_type_;
-	next_args_ = copy.next_args_;
-	flags_ = copy.flags_;
-	tagged_ = copy.tagged_;
-	args_ = copy.args_;
-	sprite_ = copy.sprite_;
-	icon_ = copy.icon_;
+	angled_      = copy.angled_;
+	hanging_     = copy.hanging_;
+	shrink_      = copy.shrink_;
+	colour_      = copy.colour_;
+	radius_      = copy.radius_;
+	height_      = copy.height_;
+	scale_       = copy.scale_;
+	fullbright_  = copy.fullbright_;
+	decoration_  = copy.decoration_;
+	decorate_    = copy.decorate_;
+	solid_       = copy.solid_;
+	zeth_icon_   = copy.zeth_icon_;
+	next_type_   = copy.next_type_;
+	next_args_   = copy.next_args_;
+	flags_       = copy.flags_;
+	tagged_      = copy.tagged_;
+	args_        = copy.args_;
+	sprite_      = copy.sprite_;
+	icon_        = copy.icon_;
 	translation_ = copy.translation_;
-	palette_ = copy.palette_;
+	palette_     = copy.palette_;
 }
 
-// ----------------------------------------------------------------------------
-// ThingType::define
-//
+// -----------------------------------------------------------------------------
 // Defines this thing type's [number], [name] and [group]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ThingType::define(int number, const string& name, const string& group)
 {
 	number_ = number;
-	name_ = name;
-	group_ = group;
+	name_   = name;
+	group_  = group;
 }
 
-// ----------------------------------------------------------------------------
-// ThingType::reset
-//
+// -----------------------------------------------------------------------------
 // Resets all values to defaults
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ThingType::reset()
 {
 	// Reset variables
-	name_ = "Unknown";
-	group_ = "";
-	sprite_ = "";
-	icon_ = "";
+	name_        = "Unknown";
+	group_       = "";
+	sprite_      = "";
+	icon_        = "";
 	translation_ = "";
-	palette_ = "";
-	angled_ = true;
-	hanging_ = false;
-	shrink_ = false;
-	colour_ = COL_WHITE;
-	radius_ = 20;
-	height_ = -1;
-	scale_ = { 1.0, 1.0 };
-	fullbright_ = false;
-	decoration_ = false;
-	solid_ = false;
-	zeth_icon_ = -1;
-	next_type_ = 0;
-	next_args_ = 0;
-	flags_ = 0;
-	tagged_ = TagType::None;
+	palette_     = "";
+	angled_      = true;
+	hanging_     = false;
+	shrink_      = false;
+	colour_      = COL_WHITE;
+	radius_      = 20;
+	height_      = -1;
+	scale_       = { 1.0, 1.0 };
+	fullbright_  = false;
+	decoration_  = false;
+	solid_       = false;
+	zeth_icon_   = -1;
+	next_type_   = 0;
+	next_args_   = 0;
+	flags_       = 0;
+	tagged_      = TagType::None;
 
 	// Reset args
 	args_.count = 0;
 	for (unsigned a = 0; a < 5; a++)
 	{
-		args_[a].name = S_FMT("Arg%d", a+1);
+		args_[a].name = S_FMT("Arg%d", a + 1);
 		args_[a].type = Arg::Type::Number;
 		args_[a].custom_flags.clear();
 		args_[a].custom_values.clear();
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ThingType::parse
-//
+// -----------------------------------------------------------------------------
 // Reads an thing type definition from a parsed tree [node]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ThingType::parse(ParseTreeNode* node)
 {
 	// Go through all child nodes/values
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto child = node->getChildPTN(a);
-		string name = child->getName();
-		int arg = -1;
+		auto   child = node->getChildPTN(a);
+		string name  = child->getName();
+		int    arg   = -1;
 
 		// Name
 		if (S_CMPNOCASE(name, "name"))
@@ -222,7 +212,7 @@ void ThingType::parse(ParseTreeNode* node)
 		else if (S_CMPNOCASE(name, "scale"))
 		{
 			float s = child->floatValue();
-			scale_ = { s, s };
+			scale_  = { s, s };
 		}
 
 		// ScaleX
@@ -269,8 +259,7 @@ void ThingType::parse(ParseTreeNode* node)
 			do
 			{
 				translation_ += child->stringValue(v++);
-			}
-			while ((v < child->nValues()) && ((translation_ += "\", \""), true));
+			} while ((v < child->nValues()) && ((translation_ += "\", \""), true));
 			translation_ += "\"";
 		}
 
@@ -326,7 +315,8 @@ void ThingType::parse(ParseTreeNode* node)
 				args_[arg].name = child->stringValue();
 
 				// Set description (if specified)
-				if (child->nValues() > 1) args_[arg].desc = child->stringValue(1);
+				if (child->nValues() > 1)
+					args_[arg].desc = child->stringValue(1);
 			}
 			else
 			{
@@ -334,16 +324,19 @@ void ThingType::parse(ParseTreeNode* node)
 
 				// Name
 				auto val = child->getChildPTN("name");
-				if (val) args_[arg].name = val->stringValue();
+				if (val)
+					args_[arg].name = val->stringValue();
 
 				// Description
 				val = child->getChildPTN("desc");
-				if (val) args_[arg].desc = val->stringValue();
+				if (val)
+					args_[arg].desc = val->stringValue();
 
 				// Type
 				val = child->getChildPTN("type");
 				string atype;
-				if (val) atype = val->stringValue();
+				if (val)
+					atype = val->stringValue();
 				if (S_CMPNOCASE(atype, "yesno"))
 					args_[arg].type = Arg::Type::YesNo;
 				else if (S_CMPNOCASE(atype, "noyes"))
@@ -357,33 +350,37 @@ void ThingType::parse(ParseTreeNode* node)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ThingType::stringDesc
-//
+// -----------------------------------------------------------------------------
 // Returns the thing type info as a string
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string ThingType::stringDesc() const
 {
 	// Init return string
-	string ret = S_FMT("\"%s\" in group \"%s\", colour %d,%d,%d, radius %d", name_, group_, colour_.r, colour_.g, colour_.b, radius_);
+	string ret = S_FMT(
+		"\"%s\" in group \"%s\", colour %d,%d,%d, radius %d", name_, group_, colour_.r, colour_.g, colour_.b, radius_);
 
 	// Add any extra info
-	if (!sprite_.IsEmpty()) ret += S_FMT(", sprite \"%s\"", sprite_);
-	if (!angled_) ret += ", angle hidden";
-	if (hanging_) ret += ", hanging";
-	if (fullbright_) ret += ", fullbright";
-	if (decoration_) ret += ", decoration";
-	if (decorate_) ret += ", defined in DECORATE";
+	if (!sprite_.IsEmpty())
+		ret += S_FMT(", sprite \"%s\"", sprite_);
+	if (!angled_)
+		ret += ", angle hidden";
+	if (hanging_)
+		ret += ", hanging";
+	if (fullbright_)
+		ret += ", fullbright";
+	if (decoration_)
+		ret += ", decoration";
+	if (decorate_)
+		ret += ", defined in DECORATE";
 
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// ThingType::loadProps
-//
-// Reads type properties from [props] and marks as a decorate type if
-// [decorate] is true. If [zscript] is true, support zscript-only properties
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Reads type properties from [props] and marks as a decorate type if [decorate]
+// is true.
+// If [zscript] is true, support zscript-only properties
+// -----------------------------------------------------------------------------
 void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 {
 	// Set decorate flag
@@ -412,28 +409,27 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	else if (props["color"].hasValue())
 	{
 		// Translate DB2 color indices to RGB values
-		static vector<rgba_t> db2_colours
-		{
-			{ 0x69, 0x69, 0x69, 0xFF },   // DimGray		ARGB value of #FF696969
-			{ 0x41, 0x69, 0xE1, 0xFF },   // RoyalBlue		ARGB value of #FF4169E1
-			{ 0x22, 0x8B, 0x22, 0xFF },   // ForestGreen	ARGB value of #FF228B22
-			{ 0x20, 0xB2, 0xAA, 0xFF },   // LightSeaGreen	ARGB value of #FF20B2AA
-			{ 0xB2, 0x22, 0x22, 0xFF },   // Firebrick		ARGB value of #FFB22222
-			{ 0x94, 0x00, 0xD3, 0xFF },   // DarkViolet		ARGB value of #FF9400D3
-			{ 0xB8, 0x86, 0x0B, 0xFF },   // DarkGoldenrod	ARGB value of #FFB8860B
-			{ 0xC0, 0xC0, 0xC0, 0xFF },   // Silver			ARGB value of #FFC0C0C0
-			{ 0x80, 0x80, 0x80, 0xFF },   // Gray			ARGB value of #FF808080
-			{ 0x00, 0xBF, 0xFF, 0xFF },   // DeepSkyBlue	ARGB value of #FF00BFFF
-			{ 0x32, 0xCD, 0x32, 0xFF },   // LimeGreen		ARGB value of #FF32CD32
-			{ 0xAF, 0xEE, 0xEE, 0xFF },   // PaleTurquoise	ARGB value of #FFAFEEEE
-			{ 0xFF, 0x63, 0x47, 0xFF },   // Tomato			ARGB value of #FFFF6347
-			{ 0xEE, 0x82, 0xEE, 0xFF },   // Violet			ARGB value of #FFEE82EE
-			{ 0xFF, 0xFF, 0x00, 0xFF },   // Yellow			ARGB value of #FFFFFF00
-			{ 0xF5, 0xF5, 0xF5, 0xFF },   // WhiteSmoke		ARGB value of #FFF5F5F5
-			{ 0xFF, 0xB6, 0xC1, 0xFF },   // LightPink		ARGB value of #FFFFB6C1
-			{ 0xFF, 0x8C, 0x00, 0xFF },   // DarkOrange		ARGB value of #FFFF8C00
-			{ 0xBD, 0xB7, 0x6B, 0xFF },   // DarkKhaki		ARGB value of #FFBDB76B
-			{ 0xDA, 0xA5, 0x20, 0xFF },   // Goldenrod		ARGB value of #FFDAA520
+		static vector<rgba_t> db2_colours{
+			{ 0x69, 0x69, 0x69, 0xFF }, // DimGray			ARGB value of #FF696969
+			{ 0x41, 0x69, 0xE1, 0xFF }, // RoyalBlue		ARGB value of #FF4169E1
+			{ 0x22, 0x8B, 0x22, 0xFF }, // ForestGreen		ARGB value of #FF228B22
+			{ 0x20, 0xB2, 0xAA, 0xFF }, // LightSeaGreen	ARGB value of #FF20B2AA
+			{ 0xB2, 0x22, 0x22, 0xFF }, // Firebrick		ARGB value of #FFB22222
+			{ 0x94, 0x00, 0xD3, 0xFF }, // DarkViolet		ARGB value of #FF9400D3
+			{ 0xB8, 0x86, 0x0B, 0xFF }, // DarkGoldenrod	ARGB value of #FFB8860B
+			{ 0xC0, 0xC0, 0xC0, 0xFF }, // Silver			ARGB value of #FFC0C0C0
+			{ 0x80, 0x80, 0x80, 0xFF }, // Gray				ARGB value of #FF808080
+			{ 0x00, 0xBF, 0xFF, 0xFF }, // DeepSkyBlue		ARGB value of #FF00BFFF
+			{ 0x32, 0xCD, 0x32, 0xFF }, // LimeGreen		ARGB value of #FF32CD32
+			{ 0xAF, 0xEE, 0xEE, 0xFF }, // PaleTurquoise	ARGB value of #FFAFEEEE
+			{ 0xFF, 0x63, 0x47, 0xFF }, // Tomato			ARGB value of #FFFF6347
+			{ 0xEE, 0x82, 0xEE, 0xFF }, // Violet			ARGB value of #FFEE82EE
+			{ 0xFF, 0xFF, 0x00, 0xFF }, // Yellow			ARGB value of #FFFFFF00
+			{ 0xF5, 0xF5, 0xF5, 0xFF }, // WhiteSmoke		ARGB value of #FFF5F5F5
+			{ 0xFF, 0xB6, 0xC1, 0xFF }, // LightPink		ARGB value of #FFFFB6C1
+			{ 0xFF, 0x8C, 0x00, 0xFF }, // DarkOrange		ARGB value of #FFFF8C00
+			{ 0xBD, 0xB7, 0x6B, 0xFF }, // DarkKhaki		ARGB value of #FFBDB76B
+			{ 0xDA, 0xA5, 0x20, 0xFF }, // Goldenrod		ARGB value of #FFDAA520
 		};
 
 		int color = props["color"].getIntValue();
@@ -442,44 +438,58 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	}
 
 	// Other props
-	if (props["radius"].hasValue()) radius_ = props["radius"].getIntValue();
-	if (props["height"].hasValue()) height_ = props["height"].getIntValue();
-	if (props["scalex"].hasValue()) scale_.x = props["scalex"].getFloatValue();
-	if (props["scaley"].hasValue()) scale_.y = props["scaley"].getFloatValue();
-	if (props["hanging"].hasValue()) hanging_ = props["hanging"].getBoolValue();
-	if (props["angled"].hasValue()) angled_ = props["angled"].getBoolValue();
-	if (props["bright"].hasValue()) fullbright_ = props["bright"].getBoolValue();
-	if (props["decoration"].hasValue()) decoration_ = props["decoration"].getBoolValue();
-	if (props["icon"].hasValue()) icon_ = props["icon"].getStringValue();
-	if (props["translation"].hasValue()) translation_ = props["translation"].getStringValue();
-	if (props["solid"].hasValue()) solid_ = props["solid"].getBoolValue();
-	if (props["obsolete"].hasValue()) flags_ |= FLAG_OBSOLETE;
+	if (props["radius"].hasValue())
+		radius_ = props["radius"].getIntValue();
+	if (props["height"].hasValue())
+		height_ = props["height"].getIntValue();
+	if (props["scalex"].hasValue())
+		scale_.x = props["scalex"].getFloatValue();
+	if (props["scaley"].hasValue())
+		scale_.y = props["scaley"].getFloatValue();
+	if (props["hanging"].hasValue())
+		hanging_ = props["hanging"].getBoolValue();
+	if (props["angled"].hasValue())
+		angled_ = props["angled"].getBoolValue();
+	if (props["bright"].hasValue())
+		fullbright_ = props["bright"].getBoolValue();
+	if (props["decoration"].hasValue())
+		decoration_ = props["decoration"].getBoolValue();
+	if (props["icon"].hasValue())
+		icon_ = props["icon"].getStringValue();
+	if (props["translation"].hasValue())
+		translation_ = props["translation"].getStringValue();
+	if (props["solid"].hasValue())
+		solid_ = props["solid"].getBoolValue();
+	if (props["obsolete"].hasValue())
+		flags_ |= FLAG_OBSOLETE;
 
 	// ZScript-only props
 	if (zscript)
 	{
-		if (props["scale"].hasValue()) scale_.x = scale_.y = props["scale"].getFloatValue();
-		if (props["scale.x"].hasValue()) scale_.x = props["scale.x"].getFloatValue();
-		if (props["scale.y"].hasValue()) scale_.y = props["scale.y"].getFloatValue();
-		if (props["spawnceiling"].hasValue()) hanging_ = props["spawnceiling"].getBoolValue();
+		if (props["scale"].hasValue())
+			scale_.x = scale_.y = props["scale"].getFloatValue();
+		if (props["scale.x"].hasValue())
+			scale_.x = props["scale.x"].getFloatValue();
+		if (props["scale.y"].hasValue())
+			scale_.y = props["scale.y"].getFloatValue();
+		if (props["spawnceiling"].hasValue())
+			hanging_ = props["spawnceiling"].getBoolValue();
 	}
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ThingType Class Static Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ThingType::initGlobal
-//
+// -----------------------------------------------------------------------------
 // Initialises global (static) ThingType objects
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ThingType::initGlobal()
 {
 	unknown_.shrink_ = true;
-	unknown_.icon_ = "unknown";
+	unknown_.icon_   = "unknown";
 }

@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,38 +14,36 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "UDMFProperty.h"
 #include "Utility/Parser.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // UDMFProperty Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// UDMFProperty::UDMFProperty
-//
+// -----------------------------------------------------------------------------
 // UDMFProperty class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 UDMFProperty::UDMFProperty() :
 	type_{ Type::Unknown },
 	flag_{ false },
@@ -56,24 +54,18 @@ UDMFProperty::UDMFProperty() :
 {
 }
 
-// ----------------------------------------------------------------------------
-// UDMFProperty::~UDMFProperty
-//
+// -----------------------------------------------------------------------------
 // UDMFProperty class destructor
-// ----------------------------------------------------------------------------
-UDMFProperty::~UDMFProperty()
-{
-}
+// -----------------------------------------------------------------------------
+UDMFProperty::~UDMFProperty() {}
 
-// ----------------------------------------------------------------------------
-// UDMFProperty::parse
-//
+// -----------------------------------------------------------------------------
 // Reads a UDMF property definition from a parsed tree [node]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void UDMFProperty::parse(ParseTreeNode* node, string group)
 {
 	// Set group and property name
-	this->group_ = group;
+	this->group_    = group;
 	this->property_ = node->getName();
 
 	// Check for basic definition
@@ -126,18 +118,18 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 		{
 			switch (type_)
 			{
-			case Type::Boolean: 			default_value_ = prop->boolValue(); break;
-			case Type::Int:				default_value_ = prop->intValue(); break;
-			case Type::Float:			default_value_ = prop->floatValue(); break;
-			case Type::String:			default_value_ = prop->stringValue(); break;
-			case Type::ActionSpecial:	default_value_ = prop->intValue(); break;
-			case Type::SectorSpecial:	default_value_ = prop->intValue(); break;
-			case Type::ThingType:		default_value_ = prop->intValue(); break;
-			case Type::Angle:			default_value_ = prop->intValue(); break;
-			case Type::TextureWall:		default_value_ = prop->stringValue(); break;
-			case Type::TextureFlat:		default_value_ = prop->stringValue(); break;
-			case Type::ID:				default_value_ = prop->intValue(); break;
-			default:					default_value_ = prop->stringValue(); break;
+			case Type::Boolean: default_value_ = prop->boolValue(); break;
+			case Type::Int: default_value_ = prop->intValue(); break;
+			case Type::Float: default_value_ = prop->floatValue(); break;
+			case Type::String: default_value_ = prop->stringValue(); break;
+			case Type::ActionSpecial: default_value_ = prop->intValue(); break;
+			case Type::SectorSpecial: default_value_ = prop->intValue(); break;
+			case Type::ThingType: default_value_ = prop->intValue(); break;
+			case Type::Angle: default_value_ = prop->intValue(); break;
+			case Type::TextureWall: default_value_ = prop->stringValue(); break;
+			case Type::TextureFlat: default_value_ = prop->stringValue(); break;
+			case Type::ID: default_value_ = prop->intValue(); break;
+			default: default_value_ = prop->stringValue(); break;
 			}
 
 			// Not sure why I have to do this here, but for whatever reason prop->getIntValue() doesn't work
@@ -193,11 +185,9 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// UDMFProperty::getStringRep
-//
+// -----------------------------------------------------------------------------
 // Returns a string representation of the UDMF property definition
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string UDMFProperty::getStringRep()
 {
 	string ret = S_FMT("Property \"%s\": name = \"%s\", group = \"%s\"", property_, name_, group_);
@@ -228,11 +218,9 @@ string UDMFProperty::getStringRep()
 			else
 				ret += ", default = false";
 		}
-		else if (type_ == Type::Int ||
-				type_ == Type::ActionSpecial ||
-				type_ == Type::SectorSpecial ||
-				type_ == Type::ThingType ||
-				type_ == Type::Colour)
+		else if (
+			type_ == Type::Int || type_ == Type::ActionSpecial || type_ == Type::SectorSpecial
+			|| type_ == Type::ThingType || type_ == Type::Colour)
 			ret += S_FMT(", default = %d", default_value_.getIntValue());
 		else if (type_ == Type::Float)
 			ret += S_FMT(", default = %1.2f", (double)default_value_);

@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -15,27 +15,27 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Game.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "Configuration.h"
-#include "Game.h"
 #include "TextEditor/TextLanguage.h"
 #include "Utility/Parser.h"
 #include "ZScript.h"
@@ -44,33 +44,33 @@
 using namespace Game;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace Game
 {
-	Configuration				config_current;
-	std::map<string, GameDef>	game_defs;
-	GameDef						game_def_unknown;
-	std::map<string, PortDef>	port_defs;
-	PortDef						port_def_unknown;
-	ZScript::Definitions		zscript_base;
-	ZScript::Definitions		zscript_custom;
-	std::unique_ptr<Listener>	listener;
-}
+Configuration             config_current;
+std::map<string, GameDef> game_defs;
+GameDef                   game_def_unknown;
+std::map<string, PortDef> port_defs;
+PortDef                   port_def_unknown;
+ZScript::Definitions      zscript_base;
+ZScript::Definitions      zscript_custom;
+std::unique_ptr<Listener> listener;
+} // namespace Game
 CVAR(String, game_configuration, "", CVAR_SAVE)
 CVAR(String, port_configuration, "", CVAR_SAVE)
 CVAR(String, zdoom_pk3_path, "", CVAR_SAVE)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // GameListener Class
 //
 // A Listener to handle custom definition updates resulting from archives being
 // opened or closed, since Game isn't a class
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace Game
 {
 class GameListener : public Listener
@@ -91,21 +91,19 @@ public:
 		}
 	}
 };
-}
+} // namespace Game
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // GameDef Struct Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// GameDef::parse
-//
+// -----------------------------------------------------------------------------
 // Parses the basic game definition in [mc]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool GameDef::parse(MemChunk& mc)
 {
 	// Parse configuration
@@ -161,11 +159,9 @@ bool GameDef::parse(MemChunk& mc)
 	return (node_game != nullptr);
 }
 
-// ----------------------------------------------------------------------------
-// GameDef::supportsFilter
-//
+// -----------------------------------------------------------------------------
 // Checks if this game supports [filter]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool GameDef::supportsFilter(const string& filter) const
 {
 	for (auto& f : filters)
@@ -176,18 +172,16 @@ bool GameDef::supportsFilter(const string& filter) const
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // PortDef Struct Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// PortDef::parse
-//
+// -----------------------------------------------------------------------------
 // Parses the basic port definition in [mc]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PortDef::parse(MemChunk& mc)
 {
 	// Parse configuration
@@ -245,29 +239,25 @@ bool PortDef::parse(MemChunk& mc)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Game Namespace Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// Game::configuration
-//
+// -----------------------------------------------------------------------------
 // Returns the currently loaded game configuration
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 Configuration& Game::configuration()
 {
 	return config_current;
 }
 
-// ----------------------------------------------------------------------------
-// Game::updateCustomDefinitions
-//
+// -----------------------------------------------------------------------------
 // Clears and re-parses custom definitions in all open archives
 // (DECORATE, *MAPINFO, ZScript etc.)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Game::updateCustomDefinitions()
 {
 	// Clear out all existing custom definitions
@@ -316,51 +306,46 @@ void Game::updateCustomDefinitions()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Game::parseTagged
-//
+// -----------------------------------------------------------------------------
 // Returns the tagged type of the parsed tree node [tagged]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TagType Game::parseTagged(ParseTreeNode* tagged)
 {
-	static std::map<string, TagType> tag_type_map
-	{
-		{ "no",										TagType::None },
-		{ "sector",									TagType::Sector },
-		{ "line",									TagType::Line },
-		{ "lineid",									TagType::LineId },
-		{ "lineid_hi5",								TagType::LineIdHi5 },
-		{ "thing",									TagType::Thing },
-		{ "sector_back",							TagType::Back },
-		{ "sector_or_back",							TagType::SectorOrBack },
-		{ "sector_and_back",						TagType::SectorAndBack },
-		{ "line_negative",							TagType::LineNegative },
-		{ "ex_1thing_2sector",						TagType::Thing1Sector2 },
-		{ "ex_1thing_3sector",						TagType::Thing1Sector3 },
-		{ "ex_1thing_2thing",						TagType::Thing1Thing2 },
-		{ "ex_1thing_4thing",						TagType::Thing1Thing4 },
-		{ "ex_1thing_2thing_3thing",				TagType::Thing1Thing2Thing3 },
-		{ "ex_1sector_2thing_3thing_5thing",		TagType::Sector1Thing2Thing3Thing5 },
-		{ "ex_1lineid_2line",						TagType::LineId1Line2 },
-		{ "ex_4thing",								TagType::Thing4 },
-		{ "ex_5thing",								TagType::Thing5 },
-		{ "ex_1line_2sector",						TagType::Line1Sector2 },
-		{ "ex_1sector_2sector",						TagType::Sector1Sector2 },
-		{ "ex_1sector_2sector_3sector_4_sector",	TagType::Sector1Sector2Sector3Sector4 },
-		{ "ex_sector_2is3_line",					TagType::Sector2Is3Line },
-		{ "ex_1sector_2thing",						TagType::Sector1Thing2 },
-		{ "patrol",									TagType::Patrol },
-		{ "interpolation",							TagType::Interpolation }
+	static std::map<string, TagType> tag_type_map{
+		{ "no", TagType::None },
+		{ "sector", TagType::Sector },
+		{ "line", TagType::Line },
+		{ "lineid", TagType::LineId },
+		{ "lineid_hi5", TagType::LineIdHi5 },
+		{ "thing", TagType::Thing },
+		{ "sector_back", TagType::Back },
+		{ "sector_or_back", TagType::SectorOrBack },
+		{ "sector_and_back", TagType::SectorAndBack },
+		{ "line_negative", TagType::LineNegative },
+		{ "ex_1thing_2sector", TagType::Thing1Sector2 },
+		{ "ex_1thing_3sector", TagType::Thing1Sector3 },
+		{ "ex_1thing_2thing", TagType::Thing1Thing2 },
+		{ "ex_1thing_4thing", TagType::Thing1Thing4 },
+		{ "ex_1thing_2thing_3thing", TagType::Thing1Thing2Thing3 },
+		{ "ex_1sector_2thing_3thing_5thing", TagType::Sector1Thing2Thing3Thing5 },
+		{ "ex_1lineid_2line", TagType::LineId1Line2 },
+		{ "ex_4thing", TagType::Thing4 },
+		{ "ex_5thing", TagType::Thing5 },
+		{ "ex_1line_2sector", TagType::Line1Sector2 },
+		{ "ex_1sector_2sector", TagType::Sector1Sector2 },
+		{ "ex_1sector_2sector_3sector_4_sector", TagType::Sector1Sector2Sector3Sector4 },
+		{ "ex_sector_2is3_line", TagType::Sector2Is3Line },
+		{ "ex_1sector_2thing", TagType::Sector1Thing2 },
+		{ "patrol", TagType::Patrol },
+		{ "interpolation", TagType::Interpolation }
 	};
 
 	return tag_type_map[tagged->stringValue().MakeLower()];
 }
 
-// ----------------------------------------------------------------------------
-// Game::init
-//
+// -----------------------------------------------------------------------------
 // Game related initialisation (read basic definitions, etc.)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Game::init()
 {
 	// Init static ThingTypes
@@ -382,8 +367,8 @@ void Game::init()
 		GameDef gdef;
 		if (gdef.parse(mc))
 		{
-			gdef.filename = wxFileName(allfiles[a]).GetName();
-			gdef.user = true;
+			gdef.filename        = wxFileName(allfiles[a]).GetName();
+			gdef.user            = true;
 			game_defs[gdef.name] = gdef;
 		}
 	}
@@ -401,8 +386,8 @@ void Game::init()
 		PortDef pdef;
 		if (pdef.parse(mc))
 		{
-			pdef.filename = wxFileName(allfiles[a]).GetName();
-			pdef.user = true;
+			pdef.filename        = wxFileName(allfiles[a]).GetName();
+			pdef.user            = true;
 			port_defs[pdef.name] = pdef;
 		}
 	}
@@ -416,13 +401,13 @@ void Game::init()
 			// Read config info
 			GameDef conf;
 			if (!conf.parse(entry.get()->getMCData()))
-				continue;	// Ignore if invalid
+				continue; // Ignore if invalid
 
 			// Add to list if it doesn't already exist
 			if (game_defs.find(conf.name) == game_defs.end())
 			{
-				conf.filename = entry.get()->getName(true);
-				conf.user = false;
+				conf.filename        = entry.get()->getName(true);
+				conf.user            = false;
 				game_defs[conf.name] = conf;
 			}
 		}
@@ -437,13 +422,13 @@ void Game::init()
 			// Read config info
 			PortDef conf;
 			if (!conf.parse(entry.get()->getMCData()))
-				continue;	// Ignore if invalid
+				continue; // Ignore if invalid
 
 			// Add to list if it doesn't already exist
 			if (port_defs.find(conf.name) == port_defs.end())
 			{
-				conf.filename = entry.get()->getName(true);
-				conf.user = false;
+				conf.filename        = entry.get()->getName(true);
+				conf.user            = false;
 				port_defs[conf.name] = conf;
 			}
 		}
@@ -460,8 +445,7 @@ void Game::init()
 	// Load zdoom.pk3 stuff
 	if (wxFileExists(zdoom_pk3_path))
 	{
-		std::thread thread([=]()
-		{
+		std::thread thread([=]() {
 			ZipArchive zdoom_pk3;
 			if (!zdoom_pk3.open(zdoom_pk3_path))
 				return;
@@ -469,7 +453,7 @@ void Game::init()
 			// ZScript
 			auto zscript_entry = zdoom_pk3.entryAtPath("zscript.txt");
 
-			if(!zscript_entry)
+			if (!zscript_entry)
 			{
 				// Bail out if no entry is found.
 				Log::warning(1, "Could not find \'zscript.txt\' in " + zdoom_pk3_path);
@@ -494,51 +478,41 @@ void Game::init()
 	listener = std::make_unique<GameListener>();
 }
 
-// ----------------------------------------------------------------------------
-// Game::gameDefs
-//
+// -----------------------------------------------------------------------------
 // Returns a vector of all basic game definitions
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const std::map<string, GameDef>& Game::gameDefs()
 {
 	return game_defs;
 }
 
-// ----------------------------------------------------------------------------
-// Game::gameDef
-//
+// -----------------------------------------------------------------------------
 // Returns the basic game configuration matching [id]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const GameDef& Game::gameDef(const string& id)
 {
 	return game_defs.empty() ? game_def_unknown : game_defs[id];
 }
 
-// ----------------------------------------------------------------------------
-// Game::portDefs
-//
+// -----------------------------------------------------------------------------
 // Returns a vector of all basic port definitions
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const std::map<string, PortDef>& Game::portDefs()
 {
 	return port_defs;
 }
 
-// ----------------------------------------------------------------------------
-// Game::portDef
-//
+// -----------------------------------------------------------------------------
 // Returns the basic port configuration matching [id]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const PortDef& Game::portDef(const string& id)
 {
 	return port_defs.empty() ? port_def_unknown : port_defs[id];
 }
 
-// ----------------------------------------------------------------------------
-// Game::mapFormatSupported
-//
+// -----------------------------------------------------------------------------
 // Checks if the combination of [game] and [port] supports the map [format]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Game::mapFormatSupported(int format, const string& game, const string& port)
 {
 	if (format < 0 || format >= MAP_UNKNOWN)

@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,51 +14,49 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ActionSpecial.h"
-#include "Utility/Parser.h"
 #include "Configuration.h"
+#include "Utility/Parser.h"
 
 using namespace Game;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ActionSpecial ActionSpecial::unknown_;
 ActionSpecial ActionSpecial::gen_switched_;
 ActionSpecial ActionSpecial::gen_manual_;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ActionSpecial Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ActionSpecial::ActionSpecial
-//
+// -----------------------------------------------------------------------------
 // ActionSpecial class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ActionSpecial::ActionSpecial(string name, string group) :
 	name_{ name },
 	group_{ group },
@@ -67,16 +65,14 @@ ActionSpecial::ActionSpecial(string name, string group) :
 {
 }
 
-// ----------------------------------------------------------------------------
-// ActionSpecial::reset
-//
+// -----------------------------------------------------------------------------
 // Resets all values to defaults
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ActionSpecial::reset()
 {
 	// Reset variables
-	name_ = "Unknown";
-	group_ = "";
+	name_   = "Unknown";
+	group_  = "";
 	tagged_ = TagType::None;
 	number_ = -1;
 
@@ -91,11 +87,9 @@ void ActionSpecial::reset()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ActionSpecial::parse
-//
+// -----------------------------------------------------------------------------
 // Reads an action special definition from a parsed tree [node]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 {
 	// Check for simple definition
@@ -108,9 +102,9 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 	// Go through all child nodes/values
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto child = node->getChildPTN(a);
-		string name = child->getName();
-		int argn = -1;
+		auto   child = node->getChildPTN(a);
+		string name  = child->getName();
+		int    argn  = -1;
 
 		// Name
 		if (S_CMPNOCASE(name, "name"))
@@ -144,11 +138,9 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ActionSpecial::stringDesc
-//
+// -----------------------------------------------------------------------------
 // Returns the action special info as a string
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string ActionSpecial::stringDesc() const
 {
 	// Init string
@@ -185,11 +177,14 @@ string ActionSpecial::stringDesc() const
 	return ret;
 }
 
+// -----------------------------------------------------------------------------
+// Initialises the global (static) action special types
+// -----------------------------------------------------------------------------
 void Game::ActionSpecial::initGlobal()
 {
-	gen_switched_.name_ = "Boom Generalized Switched Special";
+	gen_switched_.name_   = "Boom Generalized Switched Special";
 	gen_switched_.tagged_ = TagType::Sector;
 
-	gen_manual_.name_ = "Boom Generalized Manual Special";
+	gen_manual_.name_   = "Boom Generalized Manual Special";
 	gen_manual_.tagged_ = TagType::Back;
 }

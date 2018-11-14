@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,59 +14,57 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "SpecialPreset.h"
+#include "App.h"
 #include "Utility/Parser.h"
 
 using namespace Game;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace Game
 {
-	vector<SpecialPreset>	custom_presets;
+vector<SpecialPreset> custom_presets;
 }
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SpecialPreset Struct Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SpecialPreset::parse
-//
+// -----------------------------------------------------------------------------
 // Reads a special preset definition from a parsed tree [node]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SpecialPreset::parse(ParseTreeNode* node)
 {
 	name = node->getName();
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto child = node->getChildPTN(a);
-		string name = child->getName();
+		auto   child = node->getChildPTN(a);
+		string name  = child->getName();
 
 		// Group
 		if (S_CMPNOCASE(child->getName(), "group"))
@@ -95,24 +93,22 @@ void SpecialPreset::parse(ParseTreeNode* node)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// SpecialPreset::write
-//
+// -----------------------------------------------------------------------------
 // Writes the special preset to a new 'preset' ParseTreeNode under [parent] and
 // returns it
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 {
 	auto node = new ParseTreeNode(parent, nullptr, nullptr, "preset");
 	node->setName(name);
-	
+
 	// Group
 	string ex_group = group;
 	if (ex_group.StartsWith("Custom/"))
 		ex_group = ex_group.Remove(0, 7);
 	if (ex_group != "Custom")
 		node->addChildPTN("group")->addStringValue(ex_group);
-	
+
 	// Special
 	node->addChildPTN("special")->addIntValue(special);
 
@@ -120,7 +116,7 @@ ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 	for (unsigned a = 0; a < 5; a++)
 		if (args[a] != 0)
 			node->addChildPTN(S_FMT("arg%d", a + 1))->addIntValue(args[a]);
-	
+
 	// Flags
 	auto node_flags = node->addChildPTN("flags");
 	for (auto& flag : flags)
@@ -130,29 +126,26 @@ ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Game Namespace Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// Game::customSpecialPresets
-//
+// -----------------------------------------------------------------------------
 // Returns all loaded custom special presets
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const vector<SpecialPreset>& Game::customSpecialPresets()
 {
 	return custom_presets;
 }
 
-// ----------------------------------------------------------------------------
-// Game::loadCustomSpecialPresets
-//
+// -----------------------------------------------------------------------------
 // Loads user defined (custom) special presets from special_presets.cfg in the
-// user data directory. Returns true on success or false if loading failed
-// ----------------------------------------------------------------------------
+// user data directory.
+// Returns true on success or false if loading failed
+// -----------------------------------------------------------------------------
 bool Game::loadCustomSpecialPresets()
 {
 	// Check file exists
@@ -193,12 +186,11 @@ bool Game::loadCustomSpecialPresets()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// Game::saveCustomSpecialPresets
-//
+// -----------------------------------------------------------------------------
 // Saves all user defined (custom) special presets to special_presets.cfg in
-// the user data directory. Returns true on success or false if writing failed
-// ----------------------------------------------------------------------------
+// the user data directory.
+// Returns true on success or false if writing failed
+// -----------------------------------------------------------------------------
 bool Game::saveCustomSpecialPresets()
 {
 	if (custom_presets.empty())

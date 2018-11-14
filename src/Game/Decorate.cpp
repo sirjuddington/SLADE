@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,25 +14,25 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Decorate.h"
 #include "Archive/Archive.h"
 #include "Configuration.h"
-#include "Decorate.h"
 #include "Game.h"
 #include "ThingType.h"
 #include "Utility/StringUtils.h"
@@ -41,34 +41,31 @@
 using namespace Game;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace
 {
-	EntryType* etype_decorate = nullptr;
+EntryType* etype_decorate = nullptr;
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
-// Local Functions
+// Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace
 {
-
-// ----------------------------------------------------------------------------
-// parseStates
-//
+// -----------------------------------------------------------------------------
 // Parses a DECORATE 'States' block
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void parseStates(Tokenizer& tz, PropertyList& props)
 {
-	vector<string> states;
-	string state_first;
+	vector<string>           states;
+	string                   state_first;
 	std::map<string, string> state_sprites;
 
 	while (!tz.atEnd())
@@ -87,7 +84,7 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 
 			tz.adv();
 		}
-		
+
 		// First token after a state label, should be a base sprite
 		else if (!states.empty())
 		{
@@ -136,14 +133,14 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 
 
 
-	//int lastpriority = 0;
-	//int priority = 0;
-	//int statecounter = 0;
-	//string laststate;
-	//string spritestate;
+	// int lastpriority = 0;
+	// int priority = 0;
+	// int statecounter = 0;
+	// string laststate;
+	// string spritestate;
 
-	//string token = tz.next().text;
-	//while (token != "}")
+	// string token = tz.next().text;
+	// while (token != "}")
 	//{
 	//	// Idle, See, Inactive, Spawn, and finally first defined
 	//	if (priority < StateSprites::Idle)
@@ -177,7 +174,7 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 	//		}
 	//		string sf = tz.next().text; // Sprite frame(s)
 	//		int mypriority = 0;
-	//		// If the same state is given several names, 
+	//		// If the same state is given several names,
 	//		// don't read the next name as a sprite name!
 	//		// If "::" is encountered, it's a scope operator.
 	//		if ((!sf.Cmp(":")) && tz.peek().text.Cmp(":"))
@@ -237,26 +234,21 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 	//}
 }
 
-// ----------------------------------------------------------------------------
-// parseDecorateActor
-//
+// -----------------------------------------------------------------------------
 // Parses a DECORATE 'actor' definition
-// ----------------------------------------------------------------------------
-void parseDecorateActor(
-	Tokenizer& tz,
-	std::map<int, ThingType>& types,
-	vector<ThingType >& parsed)
+// -----------------------------------------------------------------------------
+void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<ThingType>& parsed)
 {
 	// Get actor name
-	string name = tz.next().text;
+	string name       = tz.next().text;
 	string actor_name = name;
 	string parent;
 
 	// Check for inheritance
-	//string next = tz.peekToken();
+	// string next = tz.peekToken();
 	if (tz.advIfNext(":"))
 		parent = tz.next().text;
-		
+
 	// Check for replaces
 	if (tz.checkNextNC("replaces"))
 		tz.adv(2); // Skip 'replaces' and actor
@@ -271,13 +263,13 @@ void parseDecorateActor(
 		ednum = -1;
 	else
 		tz.next().toInt(ednum);
-		
+
 	PropertyList found_props;
-	bool available = false;
-	bool filters_present = false;
-	bool sprite_given = false;
-	bool title_given = false;
-	string group;
+	bool         available       = false;
+	bool         filters_present = false;
+	bool         sprite_given    = false;
+	bool         title_given     = false;
+	string       group;
 
 	// Skip "native" keyword if present
 	tz.advIfNextNC("native");
@@ -297,7 +289,7 @@ void parseDecorateActor(
 			// Title
 			else if (tz.checkNC("//$Title"))
 			{
-				name = tz.getLine();
+				name        = tz.getLine();
 				title_given = true;
 				continue;
 			}
@@ -325,7 +317,7 @@ void parseDecorateActor(
 			else if (tz.checkNC("//$EditorSprite") || tz.checkNC("//$Sprite"))
 			{
 				found_props["sprite"] = tz.next().text;
-				sprite_given = true;
+				sprite_given          = true;
 			}
 
 			// Radius
@@ -353,8 +345,8 @@ void parseDecorateActor(
 			// Monster
 			else if (tz.checkNC("monster"))
 			{
-				found_props["solid"] = true;		// Solid
-				found_props["decoration"] = false;	// Not a decoration
+				found_props["solid"]      = true;  // Solid
+				found_props["decoration"] = false; // Not a decoration
 			}
 
 			// Hanging
@@ -429,7 +421,7 @@ void parseDecorateActor(
 	else
 		LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", name);
 
-	// Ignore actors filtered for other games, 
+	// Ignore actors filtered for other games,
 	// and actors with a negative or null type
 	if (available || !filters_present)
 	{
@@ -480,53 +472,47 @@ void parseDecorateActor(
 	}
 }
 
-// ----------------------------------------------------------------------------
-// parseDecorateOld
-//
+// -----------------------------------------------------------------------------
 // Parses an old-style (non-actor) DECORATE definition
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 {
-	string name, sprite, group;
-	bool spritefound = false;
-	char frame;
-	bool framefound = false;
-	int type = -1;
+	string       name, sprite, group;
+	bool         spritefound = false;
+	char         frame;
+	bool         framefound = false;
+	int          type       = -1;
 	PropertyList found_props;
 	if (tz.checkNext("{"))
 		name = tz.current().text;
 	// DamageTypes aren't old DECORATE format, but we handle them here to skip over them
-	else if (
-		tz.checkNC("pickup") ||
-		tz.checkNC("breakable") ||
-		tz.checkNC("projectile") ||
-		tz.checkNC("damagetype"))
+	else if (tz.checkNC("pickup") || tz.checkNC("breakable") || tz.checkNC("projectile") || tz.checkNC("damagetype"))
 	{
 		group = tz.current().text;
-		name = tz.next().text;
+		name  = tz.next().text;
 	}
-	tz.adv();	// skip '{'
+	tz.adv(); // skip '{'
 	do
 	{
 		tz.adv();
 
-		//if (S_CMPNOCASE(token, "DoomEdNum"))
+		// if (S_CMPNOCASE(token, "DoomEdNum"))
 		if (tz.checkNC("doomednum"))
 		{
-			//tz.getInteger(&type);
+			// tz.getInteger(&type);
 			type = tz.next().asInt();
 		}
-		//else if (S_CMPNOCASE(token, "Sprite"))
+		// else if (S_CMPNOCASE(token, "Sprite"))
 		else if (tz.checkNC("sprite"))
 		{
-			sprite = tz.next().text;
+			sprite      = tz.next().text;
 			spritefound = true;
 		}
-		//else if (S_CMPNOCASE(token, "Frames"))
+		// else if (S_CMPNOCASE(token, "Frames"))
 		else if (tz.checkNC("frames"))
 		{
-			string frames = tz.next().text;
-			unsigned pos = 0;
+			string   frames = tz.next().text;
+			unsigned pos    = 0;
 			if (frames.length() > 0)
 			{
 				if ((frames[0] < 'a' || frames[0] > 'z') && (frames[0] < 'A' || frames[0] > ']'))
@@ -540,7 +526,7 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 			}
 			if (pos < frames.length())
 			{
-				frame = frames[pos];
+				frame      = frames[pos];
 				framefound = true;
 			}
 		}
@@ -577,11 +563,9 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		LOG_MESSAGE(3, "Not adding %s %s, no editor number", group.length() ? group : "decoration", name);
 }
 
-// ----------------------------------------------------------------------------
-// parseDecorateEntry
-//
+// -----------------------------------------------------------------------------
 // Parses all DECORATE thing definitions in [entry] and adds them to [types]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, vector<ThingType>& parsed)
 {
 	// Init tokenizer
@@ -601,14 +585,12 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 			// Check #include path could be resolved
 			if (!inc_entry)
 			{
-				Log::warning(
-					S_FMT(
-						"Warning parsing DECORATE entry %s: "
-						"Unable to find #included entry \"%s\" at line %d, skipping",
-						CHR(entry->getName()),
-						CHR(tz.current().text),
-						tz.current().line_no
-				));
+				Log::warning(S_FMT(
+					"Warning parsing DECORATE entry %s: "
+					"Unable to find #included entry \"%s\" at line %d, skipping",
+					CHR(entry->getName()),
+					CHR(tz.current().text),
+					tz.current().line_no));
 			}
 			else
 				parseDecorateEntry(inc_entry, types, parsed);
@@ -620,7 +602,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 		else if (tz.checkNC("actor"))
 			parseDecorateActor(tz, types, parsed);
 		else
-			parseDecorateOld(tz, types);	// Old DECORATE definitions might be found
+			parseDecorateOld(tz, types); // Old DECORATE definitions might be found
 
 		tz.advIf("}");
 	}
@@ -633,18 +615,16 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 } // namespace
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Game Namespace Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// Game::readDecorateDefs
-//
+// -----------------------------------------------------------------------------
 // Parses all DECORATE thing definitions in [archive] and adds them to [types]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, vector<ThingType>& parsed)
 {
 	if (!archive)
@@ -652,8 +632,8 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, v
 
 	// Get base decorate file
 	Archive::SearchOptions opt;
-	opt.match_name = "decorate";
-	opt.ignore_ext = true;
+	opt.match_name                         = "decorate";
+	opt.ignore_ext                         = true;
 	vector<ArchiveEntry*> decorate_entries = archive->findAll(opt);
 	if (decorate_entries.empty())
 		return false;
@@ -673,6 +653,12 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, v
 }
 
 
+// -----------------------------------------------------------------------------
+//
+// Console Commands
+//
+// -----------------------------------------------------------------------------
+
 
 #include "General/Console/Console.h"
 #include "MainEditor/MainEditor.h"
@@ -683,7 +669,7 @@ CONSOLE_COMMAND(test_decorate, 0, false)
 		return;
 
 	std::map<int, Game::ThingType> types;
-	vector<ThingType> parsed;
+	vector<ThingType>              parsed;
 
 	if (args.size() == 0)
 		Game::readDecorateDefs(archive, types, parsed);
