@@ -114,10 +114,9 @@ private:
 	bool		ct_dwell_;
 
 	// Default comment strings
-
-	string	default_line_comment_;
-	string	default_begin_comment_;
-	string	default_end_comment_;
+	const string	default_line_comment_  = "//";
+	const string	default_begin_comment_ = "/*";
+	const string	default_end_comment_   = "*/";
 
 	// Events
 	void	onKeyDown(wxKeyEvent& e);

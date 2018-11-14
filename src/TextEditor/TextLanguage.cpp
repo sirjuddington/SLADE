@@ -215,6 +215,9 @@ bool TLFunction::hasContext(const string& name)
 // ----------------------------------------------------------------------------
 TextLanguage::TextLanguage(string id) :
 	prefered_comments_ { 0 },
+	line_comment_l_ {{"//"}},
+	comment_begin_l_{{"/*"}},
+	comment_end_l_{{"*/"}},
 	preprocessor_{ "#" },
 	block_begin_{ "{" },
 	block_end_{ "}" }

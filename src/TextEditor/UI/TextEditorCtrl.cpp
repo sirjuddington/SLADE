@@ -186,9 +186,6 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	update_jump_to_ = false;
 	update_word_match_ = false;
 	last_modified_ = App::runTimer();
-	default_line_comment_ = "//";
-	default_begin_comment_ = "/*";
-	default_end_comment_ = "*/";
 
 	// Line numbers by default
 	SetMarginType(0, wxSTC_MARGIN_NUMBER);
