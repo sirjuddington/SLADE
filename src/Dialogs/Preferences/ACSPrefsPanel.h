@@ -11,21 +11,21 @@ public:
 	ACSPrefsPanel(wxWindow* parent);
 	~ACSPrefsPanel();
 
-	void	init() override;
-	void	applyPreferences() override;
+	void init() override;
+	void applyPreferences() override;
 
 	string pageTitle() override { return "ACS Compiler Settings"; }
 
 private:
-	FileLocationPanel*	flp_acc_path_;
-	wxButton*			btn_incpath_add_;
-	wxButton*			btn_incpath_remove_;
-	wxListBox*			list_inc_paths_;
-	wxCheckBox*			cb_always_show_output_;
+	FileLocationPanel* flp_acc_path_;
+	wxButton*          btn_incpath_add_;
+	wxButton*          btn_incpath_remove_;
+	wxListBox*         list_inc_paths_;
+	wxCheckBox*        cb_always_show_output_;
 
-	void	setupLayout();
+	void setupLayout();
 
 	// Events
-	void	onBtnAddIncPath(wxCommandEvent& e);
-	void	onBtnRemoveIncPath(wxCommandEvent& e);
+	void onBtnAddIncPath(wxCommandEvent& e);
+	void onBtnRemoveIncPath(wxCommandEvent& e);
 };

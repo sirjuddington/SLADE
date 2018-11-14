@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,31 +14,31 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GeneralPrefsPanel.h"
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, close_archive_with_tab)
 EXTERN_CVAR(Bool, archive_load_data)
 EXTERN_CVAR(Bool, auto_open_wads_root)
@@ -48,54 +48,42 @@ EXTERN_CVAR(Bool, confirm_exit)
 EXTERN_CVAR(Bool, backup_archives)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // GeneralPrefsPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// GeneralPrefsPanel::GeneralPrefsPanel
-//
+// -----------------------------------------------------------------------------
 // GeneralPrefsPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create + Layout controls
-	SetSizer(
-		WxUtils::layoutVertically({
-			cb_archive_load_ = new wxCheckBox(this, -1, "Load all archive entry data to memory when opened"),
-			cb_archive_close_tab_ = new wxCheckBox(this, -1, "Close archive when its tab is closed"),
-			cb_wads_root_ = new wxCheckBox(this, -1, "Auto open nested wad archives"),
+	SetSizer(WxUtils::layoutVertically(
+		{ cb_archive_load_      = new wxCheckBox(this, -1, "Load all archive entry data to memory when opened"),
+		  cb_archive_close_tab_ = new wxCheckBox(this, -1, "Close archive when its tab is closed"),
+		  cb_wads_root_         = new wxCheckBox(this, -1, "Auto open nested wad archives"),
 #ifdef __WXMSW__
-			cb_update_check_ = new wxCheckBox(this, -1, "Check for updates on startup"),
-			cb_update_check_beta_ = new wxCheckBox(this, -1, "Include beta versions when checking for updates"),
+		  cb_update_check_      = new wxCheckBox(this, -1, "Check for updates on startup"),
+		  cb_update_check_beta_ = new wxCheckBox(this, -1, "Include beta versions when checking for updates"),
 #endif
-			cb_confirm_exit_ = new wxCheckBox(this, -1, "Show confirmation dialog on exit"),
-			cb_backup_archives_ = new wxCheckBox(this, -1, "Back up archives")
-		})
-	);
+		  cb_confirm_exit_    = new wxCheckBox(this, -1, "Show confirmation dialog on exit"),
+		  cb_backup_archives_ = new wxCheckBox(this, -1, "Back up archives") }));
 
 	cb_wads_root_->SetToolTip(
-		"When opening a zip or folder archive, automatically open all wad entries in the root directory"
-	);
+		"When opening a zip or folder archive, automatically open all wad entries in the root directory");
 }
 
-// ----------------------------------------------------------------------------
-// GeneralPrefsPanel::~GeneralPrefsPanel
-//
+// -----------------------------------------------------------------------------
 // GeneralPrefsPanel class destructor
-// ----------------------------------------------------------------------------
-GeneralPrefsPanel::~GeneralPrefsPanel()
-{
-}
+// -----------------------------------------------------------------------------
+GeneralPrefsPanel::~GeneralPrefsPanel() {}
 
-// ----------------------------------------------------------------------------
-// GeneralPrefsPanel::init
-//
+// -----------------------------------------------------------------------------
 // Initialises panel controls
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GeneralPrefsPanel::init()
 {
 	cb_archive_load_->SetValue(archive_load_data);
@@ -109,20 +97,18 @@ void GeneralPrefsPanel::init()
 	cb_backup_archives_->SetValue(backup_archives);
 }
 
-// ----------------------------------------------------------------------------
-// GeneralPrefsPanel::applyPreferences
-//
+// -----------------------------------------------------------------------------
 // Applies preference values from the controls to CVARs
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GeneralPrefsPanel::applyPreferences()
 {
-	archive_load_data = cb_archive_load_->GetValue();
+	archive_load_data      = cb_archive_load_->GetValue();
 	close_archive_with_tab = cb_archive_close_tab_->GetValue();
-	auto_open_wads_root = cb_wads_root_->GetValue();
+	auto_open_wads_root    = cb_wads_root_->GetValue();
 #ifdef __WXMSW__
-	update_check = cb_update_check_->GetValue();
+	update_check      = cb_update_check_->GetValue();
 	update_check_beta = cb_update_check_beta_->GetValue();
 #endif
-	confirm_exit = cb_confirm_exit_->GetValue();
+	confirm_exit    = cb_confirm_exit_->GetValue();
 	backup_archives = cb_backup_archives_->GetValue();
 }

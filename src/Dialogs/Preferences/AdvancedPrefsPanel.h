@@ -10,10 +10,10 @@ public:
 	AdvancedPrefsPanel(wxWindow* parent);
 	~AdvancedPrefsPanel();
 
-	void	refreshPropGrid();
-	void	init() override;
-	void	applyPreferences() override;
+	void refreshPropGrid();
+	void init() override;
+	void applyPreferences() override;
 
 private:
-	wxPropertyGrid*	pg_cvars_;
+	wxPropertyGrid* pg_cvars_;
 };

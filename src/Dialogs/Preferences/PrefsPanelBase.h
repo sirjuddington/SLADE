@@ -1,17 +1,14 @@
 #pragma once
 
-#include "common.h"
-#include "UI/WxBasicControls.h"
-
 class PrefsPanelBase : public wxPanel
 {
 public:
 	PrefsPanelBase(wxWindow* parent) : wxPanel(parent, -1) {}
 	~PrefsPanelBase() {}
 
-	virtual void	init() {}
-	virtual void	applyPreferences() {}
-	virtual void	showSubSection(string subsection) {}
-	virtual string	pageTitle() { return ""; }
-	virtual string	pageDescription() { return ""; }
+	virtual void   init() {}
+	virtual void   applyPreferences() {}
+	virtual void   showSubSection(string subsection) {}
+	virtual string pageTitle() { return ""; }
+	virtual string pageDescription() { return ""; }
 };

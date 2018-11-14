@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,31 +14,31 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextEditorPrefsPanel.h"
 #include "General/UI.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, txed_tab_width)
 EXTERN_CVAR(Bool, txed_auto_indent)
 EXTERN_CVAR(Bool, txed_syntax_hilight)
@@ -63,18 +63,16 @@ EXTERN_CVAR(Bool, txed_tab_spaces)
 EXTERN_CVAR(Int, txed_show_whitespace)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextEditorPrefsPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextEditorPrefsPanel::TextEditorPrefsPanel
-//
+// -----------------------------------------------------------------------------
 // TextEditorPrefsPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create main sizer
@@ -82,7 +80,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	SetSizer(sizer);
 
 	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::padLarge());
-	auto row = 0;
+	auto row      = 0;
 	sizer->Add(gb_sizer, 0, wxEXPAND);
 
 	// --- Whitespace/indentation ---
@@ -97,8 +95,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
 		1,
 		100,
-		txed_tab_width
-	);
+		txed_tab_width);
 	gb_sizer->Add(new wxStaticText(this, -1, "Indentation Width: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tab_width_, { row, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
@@ -120,9 +117,8 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 		{ ++row, 0 },
 		{ 1, 4 },
 		wxEXPAND | wxTOP | wxBOTTOM,
-		8
-	);
-	
+		8);
+
 	// --- Display ---
 
 	// Right margin
@@ -135,14 +131,9 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
 		0,
 		1000,
-		txed_edge_column
-	);
+		txed_edge_column);
 	gb_sizer->Add(
-		new wxStaticText(this, -1, "Right Margin at Column: "),
-		{ ++row, 0 },
-		{ 1, 1 },
-		wxALIGN_CENTER_VERTICAL
-	);
+		new wxStaticText(this, -1, "Right Margin at Column: "), { ++row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_right_margin_, { row, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Indentation guides
@@ -155,13 +146,8 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 
 	// Hilight current line
 	string hl_line_choices[] = { "Off", "Background", "Background+Underline" };
-	choice_line_hilight_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, hl_line_choices);
-	gb_sizer->Add(
-		new wxStaticText(this, -1, "Current Line Hilight: "),
-		{ row, 2 },
-		{ 1, 1 },
-		wxALIGN_CENTER_VERTICAL
-	);
+	choice_line_hilight_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, hl_line_choices);
+	gb_sizer->Add(new wxStaticText(this, -1, "Current Line Hilight: "), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_line_hilight_, { row, 3 }, { 1, 1 }, wxEXPAND);
 
 	// Brace matching
@@ -178,32 +164,20 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
 		0,
 		10,
-		txed_edge_column
-	);
-	gb_sizer->Add(
-		new wxStaticText(this, -1, "Extra Line Spacing: "),
-		{ row, 2 },
-		{ 1, 1 },
-		wxALIGN_CENTER_VERTICAL
-	);
+		txed_edge_column);
+	gb_sizer->Add(new wxStaticText(this, -1, "Extra Line Spacing: "), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_line_spacing_, { row, 3 }, { 1, 1 }, wxEXPAND);
 
 	// Word matching
 	cb_match_cursor_word_ = new wxCheckBox(this, -1, "Hilight Matching Words");
 	cb_match_cursor_word_->SetToolTip(
-		"When enabled, any words matching the word at the current cursor position or selection will be hilighted"
-	);
+		"When enabled, any words matching the word at the current cursor position or selection will be hilighted");
 	gb_sizer->Add(cb_match_cursor_word_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Show whitespace
 	string show_ws_choices[] = { "Off", "After Indentation Only", "Always" };
-	choice_show_whitespace_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, show_ws_choices);
-	gb_sizer->Add(
-		new wxStaticText(this, -1, "Show Whitespace: "),
-		{ row, 2 },
-		{ 1, 1 },
-		wxALIGN_CENTER_VERTICAL
-	);
+	choice_show_whitespace_  = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, show_ws_choices);
+	gb_sizer->Add(new wxStaticText(this, -1, "Show Whitespace: "), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_show_whitespace_, { row, 3 }, { 1, 1 }, wxEXPAND);
 
 	// Separator
@@ -212,8 +186,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 		{ ++row, 0 },
 		{ 1, 4 },
 		wxEXPAND | wxTOP | wxBOTTOM,
-		8
-	);
+		8);
 
 	// --- Calltips ---
 
@@ -244,8 +217,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 		{ ++row, 0 },
 		{ 1, 4 },
 		wxEXPAND | wxTOP | wxBOTTOM,
-		8
-	);
+		8);
 
 	// --- Folding ---
 
@@ -270,20 +242,14 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	gb_sizer->AddGrowableCol(2, 1);
 }
 
-// ----------------------------------------------------------------------------
-// TextEditorPrefsPanel::~TextEditorPrefsPanel
-//
+// -----------------------------------------------------------------------------
 // TextEditorPrefsPanel class destructor
-// ----------------------------------------------------------------------------
-TextEditorPrefsPanel::~TextEditorPrefsPanel()
-{
-}
+// -----------------------------------------------------------------------------
+TextEditorPrefsPanel::~TextEditorPrefsPanel() {}
 
-// ----------------------------------------------------------------------------
-// TextEditorPrefsPanel::init
-//
+// -----------------------------------------------------------------------------
 // Initialises panel controls
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextEditorPrefsPanel::init()
 {
 	cb_auto_indent_->SetValue(txed_auto_indent);
@@ -309,32 +275,30 @@ void TextEditorPrefsPanel::init()
 	choice_show_whitespace_->SetSelection(txed_show_whitespace);
 }
 
-// ----------------------------------------------------------------------------
-// TextEditorPrefsPanel::applyPreferences
-//
+// -----------------------------------------------------------------------------
 // Applies preference values from the controls to CVARs
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextEditorPrefsPanel::applyPreferences()
 {
-	txed_auto_indent = cb_auto_indent_->GetValue();
-	txed_trim_whitespace = cb_trim_whitespace_->GetValue();
-	txed_syntax_hilight = cb_syntax_hilight_->GetValue();
-	txed_indent_guides = cb_indent_guides_->GetValue();
-	txed_brace_match = cb_brace_match_->GetValue();
-	txed_match_cursor_word = cb_match_cursor_word_->GetValue();
-	txed_tab_width = spin_tab_width_->GetValue();
-	txed_edge_column = spin_right_margin_->GetValue();
-	txed_calltips_mouse = cb_calltips_mouse_->GetValue();
-	txed_calltips_parenthesis = cb_calltips_parenthesis_->GetValue();
-	txed_calltips_colourise = cb_calltips_colourise_->GetValue();
+	txed_auto_indent           = cb_auto_indent_->GetValue();
+	txed_trim_whitespace       = cb_trim_whitespace_->GetValue();
+	txed_syntax_hilight        = cb_syntax_hilight_->GetValue();
+	txed_indent_guides         = cb_indent_guides_->GetValue();
+	txed_brace_match           = cb_brace_match_->GetValue();
+	txed_match_cursor_word     = cb_match_cursor_word_->GetValue();
+	txed_tab_width             = spin_tab_width_->GetValue();
+	txed_edge_column           = spin_right_margin_->GetValue();
+	txed_calltips_mouse        = cb_calltips_mouse_->GetValue();
+	txed_calltips_parenthesis  = cb_calltips_parenthesis_->GetValue();
+	txed_calltips_colourise    = cb_calltips_colourise_->GetValue();
 	txed_calltips_dim_optional = cb_calltips_dim_optional_->GetValue();
-	txed_calltips_use_font = cb_calltips_use_font_->GetValue();
-	txed_fold_enable = cb_fold_enable_->GetValue();
-	txed_fold_comments = cb_fold_comments_->GetValue();
-	txed_fold_preprocessor = cb_fold_preprocessor_->GetValue();
-	txed_fold_lines = cb_fold_lines_->GetValue();
-	txed_hilight_current_line = choice_line_hilight_->GetSelection();
-	txed_line_extra_height = spin_line_spacing_->GetValue();
-	txed_tab_spaces = cb_tab_spaces_->GetValue();
-	txed_show_whitespace = choice_show_whitespace_->GetSelection();
+	txed_calltips_use_font     = cb_calltips_use_font_->GetValue();
+	txed_fold_enable           = cb_fold_enable_->GetValue();
+	txed_fold_comments         = cb_fold_comments_->GetValue();
+	txed_fold_preprocessor     = cb_fold_preprocessor_->GetValue();
+	txed_fold_lines            = cb_fold_lines_->GetValue();
+	txed_hilight_current_line  = choice_line_hilight_->GetSelection();
+	txed_line_extra_height     = spin_line_spacing_->GetValue();
+	txed_tab_spaces            = cb_tab_spaces_->GetValue();
+	txed_show_whitespace       = choice_show_whitespace_->GetSelection();
 }

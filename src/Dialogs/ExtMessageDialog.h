@@ -1,25 +1,18 @@
-
-#ifndef __EXT_MESSAGE_DIALOG_H__
-#define __EXT_MESSAGE_DIALOG_H__
-
-#include "common.h"
-#include "UI/WxBasicControls.h"
+#pragma once
 
 class ExtMessageDialog : public wxDialog
 {
-private:
-	wxStaticText*	label_message;
-	wxTextCtrl*		text_ext;
-
 public:
 	ExtMessageDialog(wxWindow* parent, string caption);
 	~ExtMessageDialog();
 
-	void	setMessage(string message);
-	void	setExt(string text);
+	void setMessage(string message);
+	void setExt(string text);
+
+private:
+	wxStaticText* label_message_;
+	wxTextCtrl*   text_ext_;
 
 	// Events
-	void	onSize(wxSizeEvent& e);
+	void onSize(wxSizeEvent& e);
 };
-
-#endif//__EXT_MESSAGE_DIALOG_H__

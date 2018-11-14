@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -15,37 +15,35 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "AdvancedPrefsPanel.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // AdvancedPrefsPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// AdvancedPrefsPanel::AdvancedPrefsPanel
-//
+// -----------------------------------------------------------------------------
 // AdvancedPrefsPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 AdvancedPrefsPanel::AdvancedPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
@@ -58,8 +56,7 @@ AdvancedPrefsPanel::AdvancedPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 		-1,
 		wxDefaultPosition,
 		wxDefaultSize,
-		wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS | wxPG_HIDE_MARGIN
-	);
+		wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS | wxPG_HIDE_MARGIN);
 	sizer->Add(pg_cvars_, 1, wxEXPAND);
 
 	// Init property grid
@@ -68,30 +65,22 @@ AdvancedPrefsPanel::AdvancedPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 	Layout();
 }
 
-// ----------------------------------------------------------------------------
-// AdvancedPrefsPanel::~AdvancedPrefsPanel
-//
+// -----------------------------------------------------------------------------
 // AdvancedPrefsPanel class destructor
-// ----------------------------------------------------------------------------
-AdvancedPrefsPanel::~AdvancedPrefsPanel()
-{
-}
+// -----------------------------------------------------------------------------
+AdvancedPrefsPanel::~AdvancedPrefsPanel() {}
 
-// ----------------------------------------------------------------------------
-// AdvancedPrefsPanel::init
-//
+// -----------------------------------------------------------------------------
 // Initialises panel controls
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AdvancedPrefsPanel::init()
 {
 	refreshPropGrid();
 }
 
-// ----------------------------------------------------------------------------
-// AdvancedPrefsPanel::refreshPropGrid
-//
+// -----------------------------------------------------------------------------
 // Refreshes the cvars wxPropertyGrid
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AdvancedPrefsPanel::refreshPropGrid()
 {
 	// Clear
@@ -122,11 +111,9 @@ void AdvancedPrefsPanel::refreshPropGrid()
 	pg_cvars_->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 }
 
-// ----------------------------------------------------------------------------
-// AdvancedPrefsPanel::applyPreferences
-//
+// -----------------------------------------------------------------------------
 // Applies preferences from the panel controls
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AdvancedPrefsPanel::applyPreferences()
 {
 	// Get list of cvars
@@ -157,13 +144,13 @@ void AdvancedPrefsPanel::applyPreferences()
 		// Read value from grid depending on type
 		wxVariant value = pg_cvars_->GetPropertyValue(cvars[a]);
 		if (cvar->type == CVAR_INTEGER)
-			*((CIntCVar*) cvar) = value.GetInteger();
+			*((CIntCVar*)cvar) = value.GetInteger();
 		else if (cvar->type == CVAR_BOOLEAN)
-			*((CBoolCVar*) cvar) = value.GetBool();
+			*((CBoolCVar*)cvar) = value.GetBool();
 		else if (cvar->type == CVAR_FLOAT)
-			*((CFloatCVar*) cvar) = value.GetDouble();
+			*((CFloatCVar*)cvar) = value.GetDouble();
 		else if (cvar->type == CVAR_STRING)
-			*((CStringCVar*) cvar) = value.GetString();
+			*((CStringCVar*)cvar) = value.GetString();
 
 		pg_cvars_->GetProperty(cvars[a])->SetModifiedStatus(false);
 		pg_cvars_->Refresh();

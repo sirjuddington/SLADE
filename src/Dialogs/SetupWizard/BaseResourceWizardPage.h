@@ -1,15 +1,10 @@
-
-#ifndef __BASE_RESOURCE_WIZARD_PAGE_H__
-#define __BASE_RESOURCE_WIZARD_PAGE_H__
+#pragma once
 
 #include "WizardPageBase.h"
 
 class BaseResourceArchivesPanel;
 class BaseResourceWizardPage : public WizardPageBase
 {
-private:
-	BaseResourceArchivesPanel*	bra_panel;
-
 public:
 	BaseResourceWizardPage(wxWindow* parent);
 	~BaseResourceWizardPage();
@@ -18,6 +13,7 @@ public:
 	void	applyChanges();
 	string	getTitle() { return "Base Resource Archives"; }
 	string	getDescription();
-};
 
-#endif//__BASE_RESOURCE_WIZARD_PAGE_H__
+private:
+	BaseResourceArchivesPanel* bra_panel_;
+};

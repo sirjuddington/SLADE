@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,32 +14,32 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Map3DPrefsPanel.h"
 #include "General/UI.h"
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Float, render_max_dist)
 EXTERN_CVAR(Float, render_max_thing_dist)
 EXTERN_CVAR(Bool, render_max_dist_adaptive)
@@ -50,18 +50,16 @@ EXTERN_CVAR(Bool, mlook_invert_y)
 EXTERN_CVAR(Bool, render_shade_orthogonal_lines)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Map3DPrefsPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// Map3DPrefsPanel::Map3DPrefsPanel
-//
+// -----------------------------------------------------------------------------
 // Map3DPrefsPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
@@ -108,22 +106,18 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
 		10,
 		100,
-		30
-	);
+		30);
 	hbox->Add(spin_adaptive_fps_, 0, wxEXPAND);
 
 	psizer->Add(new wxStaticLine(this, -1), 0, wxEXPAND | wxTOP | wxBOTTOM, UI::padLarge());
 
 	WxUtils::layoutVertically(
 		psizer,
-		{
-			cb_render_sky_ = new wxCheckBox(this, -1, "Render sky preview"),
-			cb_show_distance_ = new wxCheckBox(this, -1, "Show distance under crosshair"),
-			cb_invert_y_ = new wxCheckBox(this, -1, "Invert mouse Y axis"),
-			cb_shade_orthogonal_ = new wxCheckBox(this, -1, "Shade orthogonal lines")
-		},
-		wxSizerFlags(0).Expand()
-	);
+		{ cb_render_sky_       = new wxCheckBox(this, -1, "Render sky preview"),
+		  cb_show_distance_    = new wxCheckBox(this, -1, "Show distance under crosshair"),
+		  cb_invert_y_         = new wxCheckBox(this, -1, "Invert mouse Y axis"),
+		  cb_shade_orthogonal_ = new wxCheckBox(this, -1, "Shade orthogonal lines") },
+		wxSizerFlags(0).Expand());
 
 	// Bind events
 	slider_max_render_dist_->Bind(wxEVT_SLIDER, &Map3DPrefsPanel::onSliderMaxRenderDistChanged, this);
@@ -132,20 +126,14 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_distance_unlimited_->Bind(wxEVT_CHECKBOX, &Map3DPrefsPanel::onCBDistUnlimitedChanged, this);
 }
 
-// ----------------------------------------------------------------------------
-// Map3DPrefsPanel::~Map3DPrefsPanel
-//
+// -----------------------------------------------------------------------------
 // Map3DPrefsPanel class destructor
-// ----------------------------------------------------------------------------
-Map3DPrefsPanel::~Map3DPrefsPanel()
-{
-}
+// -----------------------------------------------------------------------------
+Map3DPrefsPanel::~Map3DPrefsPanel() {}
 
-// ----------------------------------------------------------------------------
-// Map3DPrefsPanel::init
-//
+// -----------------------------------------------------------------------------
 // Initialises panel controls
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Map3DPrefsPanel::init()
 {
 	if (render_max_dist < 0)
@@ -168,7 +156,7 @@ void Map3DPrefsPanel::init()
 	}
 
 	cb_render_dist_adaptive_->SetValue(render_max_dist_adaptive);
-	int fps = 1.0 / (render_adaptive_ms/1000.0);
+	int fps = 1.0 / (render_adaptive_ms / 1000.0);
 	spin_adaptive_fps_->SetValue(fps);
 	cb_render_sky_->SetValue(render_3d_sky);
 	cb_show_distance_->SetValue(camera_3d_show_distance);
@@ -178,11 +166,9 @@ void Map3DPrefsPanel::init()
 	updateDistanceControls();
 }
 
-// ----------------------------------------------------------------------------
-// Map3DPrefsPanel::updateDistanceControls
-//
+// -----------------------------------------------------------------------------
 // Updates render distance controls (value labels, locking, etc.)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Map3DPrefsPanel::updateDistanceControls()
 {
 	// Render distance
@@ -211,11 +197,9 @@ void Map3DPrefsPanel::updateDistanceControls()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Map3DPrefsPanel::applyPreferences
-//
+// -----------------------------------------------------------------------------
 // Applies preference values from the controls to CVARs
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Map3DPrefsPanel::applyPreferences()
 {
 	// Max render distance
@@ -232,28 +216,26 @@ void Map3DPrefsPanel::applyPreferences()
 
 	// Adaptive fps
 	render_max_dist_adaptive = cb_render_dist_adaptive_->GetValue();
-	render_adaptive_ms = 1000 / spin_adaptive_fps_->GetValue();
+	render_adaptive_ms       = 1000 / spin_adaptive_fps_->GetValue();
 
 	// Other
-	render_3d_sky = cb_render_sky_->GetValue();
-	camera_3d_show_distance = cb_show_distance_->GetValue();
-	mlook_invert_y = cb_invert_y_->GetValue();
+	render_3d_sky                 = cb_render_sky_->GetValue();
+	camera_3d_show_distance       = cb_show_distance_->GetValue();
+	mlook_invert_y                = cb_invert_y_->GetValue();
 	render_shade_orthogonal_lines = cb_shade_orthogonal_->GetValue();
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Map3DPrefsPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// Map3DPrefsPanel::onSliderMaxRenderDistChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the render distance slider is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Map3DPrefsPanel::onSliderMaxRenderDistChanged(wxCommandEvent& e)
 {
 	if (cb_max_thing_dist_lock_->GetValue())
@@ -262,31 +244,25 @@ void Map3DPrefsPanel::onSliderMaxRenderDistChanged(wxCommandEvent& e)
 	updateDistanceControls();
 }
 
-// ----------------------------------------------------------------------------
-// Map3DPrefsPanel::onSliderMaxThingDistChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the thing render distance slider is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Map3DPrefsPanel::onSliderMaxThingDistChanged(wxCommandEvent& e)
 {
 	updateDistanceControls();
 }
 
-// ----------------------------------------------------------------------------
-// Map3DPrefsPanel::onCBDistUnlimitedChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Unlimited' render distance checkbox is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Map3DPrefsPanel::onCBDistUnlimitedChanged(wxCommandEvent& e)
 {
 	updateDistanceControls();
 }
 
-// ----------------------------------------------------------------------------
-// Map3DPrefsPanel::onCBLockThingDistChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Lock' thing render distance checkbox is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Map3DPrefsPanel::onCBLockThingDistChanged(wxCommandEvent& e)
 {
 	updateDistanceControls();
