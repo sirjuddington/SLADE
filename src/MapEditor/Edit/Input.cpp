@@ -356,7 +356,7 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 
 	// Any other mouse button (let keybind system handle it)
 	else
-		KeyBind::keyPressed(keypress_t(mouseButtonKBName(button), alt_down_, ctrl_down_, shift_down_));
+		KeyBind::keyPressed(Keypress(mouseButtonKBName(button), alt_down_, ctrl_down_, shift_down_));
 
 	return true;
 }
@@ -447,7 +447,7 @@ void Input::mouseWheel(bool up, double amount)
 
 	if (up)
 	{
-		KeyBind::keyPressed(keypress_t("mwheelup", alt_down_, ctrl_down_, shift_down_));
+		KeyBind::keyPressed(Keypress("mwheelup", alt_down_, ctrl_down_, shift_down_));
 
 		// Send to overlay if active
 		if (context_.overlayActive())
@@ -457,7 +457,7 @@ void Input::mouseWheel(bool up, double amount)
 	}
 	else
 	{
-		KeyBind::keyPressed(keypress_t("mwheeldown", alt_down_, ctrl_down_, shift_down_));
+		KeyBind::keyPressed(Keypress("mwheeldown", alt_down_, ctrl_down_, shift_down_));
 
 		// Send to overlay if active
 		if (context_.overlayActive())

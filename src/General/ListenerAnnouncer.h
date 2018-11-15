@@ -1,34 +1,28 @@
-
-#ifndef __LISTENERANNOUNCER_H__
-#define __LISTENERANNOUNCER_H__
+#pragma once
 
 class Announcer;
 
 class Listener
 {
-private:
-	vector<Announcer*>	announcers;
-	bool				deaf;
-
 public:
 	Listener();
 	virtual ~Listener();
 
-	void listenTo(Announcer* a);
-	void stopListening(Announcer* a);
-	void clearAnnouncers() { announcers.clear(); }
+	void         listenTo(Announcer* a);
+	void         stopListening(Announcer* a);
+	void         clearAnnouncers() { announcers_.clear(); }
 	virtual void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 
-	bool	isDeaf() { return deaf; }
-	void	setDeaf(bool d) { deaf = d; }
+	bool isDeaf() { return deaf_; }
+	void setDeaf(bool d) { deaf_ = d; }
+
+private:
+	vector<Announcer*> announcers_;
+	bool               deaf_;
 };
 
 class Announcer
 {
-private:
-	vector<Listener*>	listeners;
-	bool				muted;
-
 public:
 	Announcer();
 	virtual ~Announcer();
@@ -38,8 +32,10 @@ public:
 	void announce(string event_name, MemChunk& event_data);
 	void announce(string event_name);
 
-	bool	isMuted() { return muted; }
-	void	setMuted(bool m) { muted = m; }
-};
+	bool isMuted() { return muted_; }
+	void setMuted(bool m) { muted_ = m; }
 
-#endif //__LISTENERANNOUNCER_H__
+private:
+	vector<Listener*> listeners_;
+	bool              muted_;
+};

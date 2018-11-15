@@ -1,159 +1,164 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    ListenerAnnouncer.cpp
- * Description: Listener/Announcer system classes. Mainly used for
- *              communication between underlying classes (archives, etc)
- *              and UI elements, without them needing to know about
- *              eachother.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ListenerAnnouncer.cpp
+// Description: Listener/Announcer system classes. Mainly used for communication
+//              between underlying classes (archives, etc) and UI elements,
+//              without them needing to know about eachother.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "General/ListenerAnnouncer.h"
 
 
-/*******************************************************************
- * LISTENER CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Listener Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* Listener::Listener
- * Listener class constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Listener class constructor
+// -----------------------------------------------------------------------------
 Listener::Listener()
 {
-	deaf = false;
+	deaf_ = false;
 }
 
-/* Listener::~Listener
- * Listener class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Listener class destructor
+// -----------------------------------------------------------------------------
 Listener::~Listener()
 {
-	for (size_t a = 0; a < announcers.size(); a++)
-		announcers[a]->removeListener(this);
+	for (size_t a = 0; a < announcers_.size(); a++)
+		announcers_[a]->removeListener(this);
 }
 
-/* Listener::listenTo
- * Subscribes this listener to an announcer
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Subscribes this listener to an announcer
+// -----------------------------------------------------------------------------
 void Listener::listenTo(Announcer* a)
 {
 	a->addListener(this);
-	announcers.push_back(a);
+	announcers_.push_back(a);
 }
 
-/* Listener::stopListening
- * 'Unsubscribes' this listener from an announcer
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// 'Unsubscribes' this listener from an announcer
+// -----------------------------------------------------------------------------
 void Listener::stopListening(Announcer* a)
 {
-	for (size_t i = 0; i < announcers.size(); i++)
+	for (size_t i = 0; i < announcers_.size(); i++)
 	{
-		if (announcers[i] == a)
+		if (announcers_[i] == a)
 		{
-			announcers.erase(announcers.begin() + i);
+			announcers_.erase(announcers_.begin() + i);
 			return;
 		}
 	}
 }
 
-/* Listener::onAnnouncement
- * Called when an announcer that this listener is listening to
- * announces an event. Does nothing by default, is to be overridden
- * by whatever class inherits from Listener
- *******************************************************************/
-void Listener::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
-{
-}
+// -----------------------------------------------------------------------------
+// Called when an announcer that this listener is listening to announces an
+// event. Does nothing by default, is to be overridden by whatever class
+// inherits from Listener
+// -----------------------------------------------------------------------------
+void Listener::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) {}
 
 
-/*******************************************************************
- * ANNOUNCER CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Announcer Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* Announcer::Announcer
- * Announcer class constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Announcer class constructor
+// -----------------------------------------------------------------------------
 Announcer::Announcer()
 {
-	muted = false;
+	muted_ = false;
 }
 
-/* Announcer::~Announcer
- * Announcer class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Announcer class destructor
+// -----------------------------------------------------------------------------
 Announcer::~Announcer()
 {
-	for (size_t a = 0; a < listeners.size(); a++)
-		listeners[a]->stopListening(this);
+	for (size_t a = 0; a < listeners_.size(); a++)
+		listeners_[a]->stopListening(this);
 }
 
-/* Announcer::addListener
- * Adds a listener to the list
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds a listener to the list
+// -----------------------------------------------------------------------------
 void Announcer::addListener(Listener* l)
 {
-	listeners.push_back(l);
+	listeners_.push_back(l);
 }
 
-/* Announcer::removeListener
- * Removes a listener from the list
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Removes a listener from the list
+// -----------------------------------------------------------------------------
 void Announcer::removeListener(Listener* l)
 {
-	for (size_t a = 0; a < listeners.size(); a++)
+	for (size_t a = 0; a < listeners_.size(); a++)
 	{
-		if (listeners[a] == l)
+		if (listeners_[a] == l)
 		{
-			listeners.erase(listeners.begin() + a);
+			listeners_.erase(listeners_.begin() + a);
 			return;
 		}
 	}
 }
 
-/* Announcer::announce
- * 'Announces' an event to all listeners currently in the listeners
- * list, ie all Listeners that are 'listening' to this announcer.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// 'Announces' an event to all listeners currently in the listeners list,
+// ie all Listeners that are 'listening' to this announcer.
+// -----------------------------------------------------------------------------
 void Announcer::announce(string event_name, MemChunk& event_data)
 {
 	if (isMuted())
 		return;
 
-	for (size_t a = 0; a < listeners.size(); a++)
+	for (size_t a = 0; a < listeners_.size(); a++)
 	{
-		if (!listeners[a]->isDeaf())
-			listeners[a]->onAnnouncement(this, event_name, event_data);
+		if (!listeners_[a]->isDeaf())
+			listeners_[a]->onAnnouncement(this, event_name, event_data);
 	}
 }
 
-/* Announcer::announce
- * 'Announces' an event to all listeners currently in the listeners
- * list, ie all Listeners that are 'listening' to this announcer.
- * For announcements that don't require any extra data
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// 'Announces' an event to all listeners currently in the listeners list,
+// ie all Listeners that are 'listening' to this announcer.
+// For announcements that don't require any extra data
+// -----------------------------------------------------------------------------
 void Announcer::announce(string event_name)
 {
 	MemChunk mc;

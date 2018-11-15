@@ -1,6 +1,4 @@
-
-#ifndef __CLIPBOARD_H__
-#define	__CLIPBOARD_H__
+#pragma once
 
 #include "Archive/Archive.h"
 #include "Utility/Structs.h"
@@ -18,41 +16,41 @@ enum ClipboardType
 
 class ClipboardItem
 {
-private:
-	int			type;
-
 public:
 	ClipboardItem(int type = CLIPBOARD_UNKNOWN);
 	~ClipboardItem();
 
-	int	getType() { return type; }
+	int getType() { return type_; }
+
+private:
+	int type_;
 };
 
 class EntryTreeClipboardItem : public ClipboardItem
 {
-private:
-	ArchiveTreeNode*	tree;
-
 public:
 	EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, vector<ArchiveTreeNode*>& dirs);
 	~EntryTreeClipboardItem();
 
-	ArchiveTreeNode*	getTree() { return tree; }
+	ArchiveTreeNode* getTree() { return tree_; }
+
+private:
+	ArchiveTreeNode* tree_;
 };
 
 class CTexture;
 class TextureClipboardItem : public ClipboardItem
 {
-private:
-	CTexture*				texture;
-	vector<ArchiveEntry*>	patch_entries;
-
 public:
 	TextureClipboardItem(CTexture* texture, Archive* parent);
 	~TextureClipboardItem();
 
-	CTexture*		getTexture() { return texture; }
-	ArchiveEntry*	getPatchEntry(string patch);
+	CTexture*     getTexture() { return texture_; }
+	ArchiveEntry* getPatchEntry(string patch);
+
+private:
+	CTexture*             texture_;
+	vector<ArchiveEntry*> patch_entries_;
 };
 
 class MapVertex;
@@ -62,54 +60,50 @@ class MapSector;
 class SLADEMap;
 class MapArchClipboardItem : public ClipboardItem
 {
-private:
-	vector<MapVertex*>	vertices;
-	vector<MapSide*>	sides;
-	vector<MapLine*>	lines;
-	vector<MapSector*>	sectors;
-	fpoint2_t			midpoint;
-
 public:
 	MapArchClipboardItem();
 	~MapArchClipboardItem();
 
-	void	addLines(vector<MapLine*> lines);
-	string	getInfo();
+	void               addLines(vector<MapLine*> lines);
+	string             getInfo();
 	vector<MapVertex*> pasteToMap(SLADEMap* map, fpoint2_t position);
-	void	getLines(vector<MapLine*>& list);
-	fpoint2_t getMidpoint() { return midpoint; }
+	void               getLines(vector<MapLine*>& list);
+	fpoint2_t          getMidpoint() { return midpoint_; }
+
+private:
+	vector<MapVertex*> vertices_;
+	vector<MapSide*>   sides_;
+	vector<MapLine*>   lines_;
+	vector<MapSector*> sectors_;
+	fpoint2_t          midpoint_;
 };
 
 class MapThing;
 class MapThingsClipboardItem : public ClipboardItem
 {
-private:
-	vector<MapThing*>	things;
-	fpoint2_t			midpoint;
-
 public:
 	MapThingsClipboardItem();
 	~MapThingsClipboardItem();
 
-	void		addThings(vector<MapThing*>& things);
-	string		getInfo();
-	void		pasteToMap(SLADEMap* map, fpoint2_t position);
-	void		getThings(vector<MapThing*>& list);
-	fpoint2_t	getMidpoint() { return midpoint; }
+	void      addThings(vector<MapThing*>& things);
+	string    getInfo();
+	void      pasteToMap(SLADEMap* map, fpoint2_t position);
+	void      getThings(vector<MapThing*>& list);
+	fpoint2_t getMidpoint() { return midpoint_; }
+
+private:
+	vector<MapThing*> things_;
+	fpoint2_t         midpoint_;
 };
 
 class Clipboard
 {
-private:
-	vector<ClipboardItem*>	items;
-	static Clipboard*		instance;
-
 public:
 	Clipboard();
 	~Clipboard();
 
 	// Singleton implementation
-	static Clipboard*	getInstance()
+	static Clipboard* getInstance()
 	{
 		if (!instance)
 			instance = new Clipboard();
@@ -117,15 +111,17 @@ public:
 		return instance;
 	}
 
-	uint32_t		nItems() { return items.size(); }
-	ClipboardItem*	getItem(uint32_t index);
-	bool			addItem(ClipboardItem* item);
-	bool			addItems(vector<ClipboardItem*>& items);
+	uint32_t       nItems() { return items_.size(); }
+	ClipboardItem* getItem(uint32_t index);
+	bool           addItem(ClipboardItem* item);
+	bool           addItems(vector<ClipboardItem*>& items);
 
-	void	clear();
+	void clear();
+
+private:
+	vector<ClipboardItem*> items_;
+	static Clipboard*      instance;
 };
-
-#endif//__CLIPBOARD_H__
 
 // Define for less cumbersome ClipBoard::getInstance()
 #define theClipboard Clipboard::getInstance()

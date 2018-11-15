@@ -1965,7 +1965,7 @@ bool ArchiveManagerPanel::handleAction(string id)
 	else if (id == "aman_recent")
 	{
 		// Get recent file index
-		unsigned index = wx_id_offset;
+		unsigned index = wx_id_offset_;
 
 		// Open it
 		openFile(App::archiveManager().recentFile(index));

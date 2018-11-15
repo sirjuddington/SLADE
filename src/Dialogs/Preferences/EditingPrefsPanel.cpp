@@ -91,7 +91,7 @@ public:
 	}
 
 private:
-	vector<Executables::external_exe_t> exes_;
+	vector<Executables::ExternalExe> exes_;
 };
 
 
@@ -409,7 +409,7 @@ void EditingPrefsPanel::onExternalExeActivated(wxListEvent& e)
 {
 	string                      name     = lv_ext_editors_->GetItemText(e.GetIndex());
 	string                      category = choice_category_->GetStringSelection();
-	Executables::external_exe_t exe      = Executables::getExternalExe(name, category);
+	Executables::ExternalExe exe      = Executables::getExternalExe(name, category);
 
 	ExternalEditorDialog dlg(this, false, name, exe.path);
 	while (dlg.ShowModal() == wxID_OK)

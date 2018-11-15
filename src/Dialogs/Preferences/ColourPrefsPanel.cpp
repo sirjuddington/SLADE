@@ -153,7 +153,7 @@ void ColourPrefsPanel::applyPreferences()
 	for (unsigned a = 0; a < colours.size(); a++)
 	{
 		// Get colour definition
-		cc_col_t cdef = ColourConfiguration::getColDef(colours[a]);
+		auto cdef = ColourConfiguration::getColDef(colours[a]);
 
 		string cdef_path = cdef.group;
 		cdef_path += ".";

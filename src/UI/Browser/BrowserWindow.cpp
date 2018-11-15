@@ -163,7 +163,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent) :
 		wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER | wxMAXIMIZE_BOX }
 {
 	// Init size/pos
-	Misc::winf_t info = Misc::getWindowInfo("browser");
+	Misc::WindowInfo info = Misc::getWindowInfo("browser");
 	if (!info.id.IsEmpty())
 	{
 		SetClientSize(info.width, info.height);

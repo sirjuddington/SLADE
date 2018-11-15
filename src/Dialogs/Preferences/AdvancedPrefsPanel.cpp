@@ -88,13 +88,13 @@ void AdvancedPrefsPanel::refreshPropGrid()
 
 	// Get list of cvars
 	vector<string> cvars;
-	get_cvar_list(cvars);
+	getCVarList(cvars);
 	std::sort(cvars.begin(), cvars.end());
 
 	for (unsigned a = 0; a < cvars.size(); a++)
 	{
 		// Get cvar
-		CVar* cvar = get_cvar(cvars[a]);
+		CVar* cvar = getCVar(cvars[a]);
 
 		// Add to grid depending on type
 		if (cvar->type == CVAR_BOOLEAN)
@@ -118,12 +118,12 @@ void AdvancedPrefsPanel::applyPreferences()
 {
 	// Get list of cvars
 	vector<string> cvars;
-	get_cvar_list(cvars);
+	getCVarList(cvars);
 
 	for (unsigned a = 0; a < cvars.size(); a++)
 	{
 		// Get cvar
-		CVar* cvar = get_cvar(cvars[a]);
+		CVar* cvar = getCVar(cvars[a]);
 
 		// Check if cvar value was even modified
 		if (!pg_cvars_->GetProperty(cvars[a])->HasFlag(wxPG_PROP_MODIFIED))

@@ -1921,7 +1921,7 @@ bool ArchivePanel::openEntryExternal()
 		// Open entry in selected external editor
 		bool ok = ee_manager_->openEntryExternal(
 			entry,
-			current_external_exes_[wx_id_offset],
+			current_external_exes_[wx_id_offset_],
 			current_external_exe_category_
 		);
 
@@ -3094,7 +3094,7 @@ wxMenu* ArchivePanel::createEntryOpenMenu(string category)
 	menu_open->AppendSeparator();
 
 	// External editors
-	vector<Executables::external_exe_t> external = Executables::getExternalExes(category);
+	vector<Executables::ExternalExe> external = Executables::getExternalExes(category);
 	SAction* a_open_ext = SAction::fromId("arch_entry_openext");
 	unsigned num = MIN(external.size(), 20);
 	for (unsigned a = 0; a < num; a++)
@@ -3199,7 +3199,7 @@ bool ArchivePanel::handleAction(string id)
 
 	// Archive->Scripts->...
 	else if (id == "arch_script")
-		ScriptManager::runArchiveScript(archive_, wx_id_offset);
+		ScriptManager::runArchiveScript(archive_, wx_id_offset_);
 
 
 	// ------------------------------------------------------------------------
@@ -3279,7 +3279,7 @@ bool ArchivePanel::handleAction(string id)
 
 	// Entry->Run Script
 	else if (id == "arch_entry_script")
-		ScriptManager::runEntryScript(entry_list_->getSelectedEntries(), wx_id_offset, MainEditor::windowWx());
+		ScriptManager::runEntryScript(entry_list_->getSelectedEntries(), wx_id_offset_, MainEditor::windowWx());
 
 
 	// Context menu actions

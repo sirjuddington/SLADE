@@ -87,11 +87,11 @@ public:
 	CVarValue GetValue() { CVarValue val; val.Float = value; return val; }
 };
 
-void dump_cvars();
-void save_cvars(wxFile& file);
-void read_cvar(string name, string value);
-CVar* get_cvar(string name);
-void get_cvar_list(vector<string>& list);
+void dumpCVars();
+void saveCVars(wxFile& file);
+void readCVar(string name, string value);
+CVar* getCVar(string name);
+void getCVarList(vector<string>& list);
 
 class CStringCVar : public CVar
 {

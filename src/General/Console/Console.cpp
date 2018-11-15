@@ -1,73 +1,74 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    Console.cpp
- * Description: The SLADE Console implementation
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Console.cpp
+// Description: The SLADE Console implementation
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "Console.h"
-#include "Utility/Tokenizer.h"
+#include "App.h"
 #include "General/CVar.h"
 #include "MainEditor/MainEditor.h"
+#include "Utility/Tokenizer.h"
 
 
-/*******************************************************************
- * CONSOLE CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Console Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* Console::Console
- * Console class constructor
- *******************************************************************/
-Console::Console()
-{
-}
 
-/* Console::!Console
- * Console class destructor
- *******************************************************************/
-Console::~Console()
-{
-}
+// -----------------------------------------------------------------------------
+// Console class constructor
+// -----------------------------------------------------------------------------
+Console::Console() {}
 
-/* Console::addCommand
- * Adds a ConsoleCommand to the Console
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Console class destructor
+// -----------------------------------------------------------------------------
+Console::~Console() {}
+
+// -----------------------------------------------------------------------------
+// Adds a ConsoleCommand to the Console
+// -----------------------------------------------------------------------------
 void Console::addCommand(ConsoleCommand& c)
 {
 	// Add the command to the list
-	commands.push_back(c);
+	commands_.push_back(c);
 
 	// Sort the commands alphabetically by name (so the cmdlist command output looks nice :P)
-	sort(commands.begin(), commands.end());
+	sort(commands_.begin(), commands_.end());
 }
 
-/* Console::execute
- * Attempts to execute the command line given
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Attempts to execute the command line given
+// -----------------------------------------------------------------------------
 void Console::execute(string command)
 {
 	LOG_MESSAGE(1, "> %s", command);
@@ -77,7 +78,7 @@ void Console::execute(string command)
 		return;
 
 	// Add the command to the log
-	cmd_log.insert(cmd_log.begin(), command);
+	cmd_log_.insert(cmd_log_.begin(), command);
 
 	// Tokenize the command string
 	Tokenizer tz;
@@ -92,18 +93,18 @@ void Console::execute(string command)
 		args.push_back(tz.next().text);
 
 	// Check that it is a valid command
-	for (size_t a = 0; a < commands.size(); a++)
+	for (size_t a = 0; a < commands_.size(); a++)
 	{
 		// Found it, execute and return
-		if (commands[a].getName() == cmd_name)
+		if (commands_[a].getName() == cmd_name)
 		{
-			commands[a].execute(args);
+			commands_[a].execute(args);
 			return;
 		}
 	}
 
 	// Check if it is a cvar
-	CVar* cvar = get_cvar(cmd_name);
+	CVar* cvar = getCVar(cmd_name);
 	if (cvar)
 	{
 		// Arg(s) given, set cvar value
@@ -161,90 +162,101 @@ void Console::execute(string command)
 	Log::console(S_FMT("Unknown command: \"%s\"", cmd_name));
 }
 
-/* Console::lastCommand
- * Returns the last command sent to the console
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the last command sent to the console
+// -----------------------------------------------------------------------------
 string Console::lastCommand()
 {
 	// Init blank string
 	string lastCmd = "";
 
 	// Get last command if any exist
-	if (cmd_log.size() > 0)
-		lastCmd = cmd_log.back();
+	if (cmd_log_.size() > 0)
+		lastCmd = cmd_log_.back();
 
 	return lastCmd;
 }
 
-/* Console::prevCommand
- * Returns the previous command at [index] from the last entered (ie,
- * index=0 will be the directly previous command)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the previous command at [index] from the last entered
+// (ie, index=0 will be the directly previous command)
+// -----------------------------------------------------------------------------
 string Console::prevCommand(int index)
 {
 	// Check index
-	if (index < 0 || (unsigned)index >= cmd_log.size())
+	if (index < 0 || (unsigned)index >= cmd_log_.size())
 		return "";
 
-	return cmd_log[index];
+	return cmd_log_[index];
 }
 
-/* Console::command
- * Returns the ConsoleCommand at the specified index
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the ConsoleCommand at the specified index
+// -----------------------------------------------------------------------------
 ConsoleCommand& Console::command(size_t index)
 {
-	if (index < commands.size())
-		return commands[index];
+	if (index < commands_.size())
+		return commands_[index];
 	else
-		return commands[0]; // Return first console command on invalid index
+		return commands_[0]; // Return first console command on invalid index
 }
 
-/* ConsoleCommand::ConsoleCommand
- * ConsoleCommand class constructor
- *******************************************************************/
-ConsoleCommand::ConsoleCommand(string name, void(*commandFunc)(vector<string>), int min_args = 0, bool show_in_list)
+
+// -----------------------------------------------------------------------------
+//
+// ConsoleCommand Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// ConsoleCommand class constructor
+// -----------------------------------------------------------------------------
+ConsoleCommand::ConsoleCommand(string name, void (*command_func)(vector<string>), int min_args = 0, bool show_in_list)
 {
 	// Init variables
-	this->name = name;
-	this->commandFunc = commandFunc;
-	this->min_args = min_args;
-	this->show_in_list = show_in_list;
+	name_         = name;
+	command_func_ = command_func;
+	min_args_     = min_args;
+	show_in_list_ = show_in_list;
 
 	// Add this command to the console
 	App::console()->addCommand(*this);
 }
 
-/* ConsoleCommand::execute
- * Executes the console command
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Executes the console command
+// -----------------------------------------------------------------------------
 void ConsoleCommand::execute(vector<string> args)
 {
 	// Only execute if we have the minimum args specified
-	if (args.size() >= min_args)
-		commandFunc(args);
+	if (args.size() >= min_args_)
+		command_func_(args);
 	else
-		Log::console(S_FMT("Missing command arguments, type \"cmdhelp %s\" for more information", name));
+		Log::console(S_FMT("Missing command arguments, type \"cmdhelp %s\" for more information", name_));
 }
 
 
-/*******************************************************************
- * CONSOLE COMMANDS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Console Commands
+//
+// -----------------------------------------------------------------------------
 
-/* Console Command - "echo"
- * A simple command to print the first given argument to the console.
- * Subsequent arguments are ignored.
- *******************************************************************/
-CONSOLE_COMMAND (echo, 1, true)
+
+// -----------------------------------------------------------------------------
+// A simple command to print the first given argument to the console.
+// Subsequent arguments are ignored.
+// -----------------------------------------------------------------------------
+CONSOLE_COMMAND(echo, 1, true)
 {
 	Log::console(args[0]);
 }
 
-/* Console Command - "cmdlist"
- * Lists all valid console commands
- *******************************************************************/
-CONSOLE_COMMAND (cmdlist, 0, true)
+// -----------------------------------------------------------------------------
+// Lists all valid console commands
+// -----------------------------------------------------------------------------
+CONSOLE_COMMAND(cmdlist, 0, true)
 {
 	Log::console(S_FMT("%d Valid Commands:", App::console()->numCommands()));
 
@@ -256,14 +268,14 @@ CONSOLE_COMMAND (cmdlist, 0, true)
 	}
 }
 
-/* Console Command - "cvarlist"
- * Lists all cvars
- *******************************************************************/
-CONSOLE_COMMAND (cvarlist, 0, true)
+// -----------------------------------------------------------------------------
+// Lists all cvars
+// -----------------------------------------------------------------------------
+CONSOLE_COMMAND(cvarlist, 0, true)
 {
 	// Get sorted list of cvars
 	vector<string> list;
-	get_cvar_list(list);
+	getCVarList(list);
 	sort(list.begin(), list.end());
 
 	Log::console(S_FMT("%lu CVars:", list.size()));
@@ -273,9 +285,9 @@ CONSOLE_COMMAND (cvarlist, 0, true)
 		Log::console(list[a]);
 }
 
-/* Console Command - "cmdhelp"
-* Opens the wiki page for a console command
-*******************************************************************/
+// -----------------------------------------------------------------------------
+// Opens the wiki page for a console command
+// -----------------------------------------------------------------------------
 CONSOLE_COMMAND(cmdhelp, 1, true)
 {
 	// Check command exists
@@ -297,7 +309,11 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 	Log::console(S_FMT("No command \"%s\" exists", args[0]));
 }
 
-CONSOLE_COMMAND (testmatch, 0, false)
+
+
+
+
+CONSOLE_COMMAND(testmatch, 0, false)
 {
 	bool match = args[0].Matches(args[1]);
 	if (match)

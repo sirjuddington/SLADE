@@ -6,12 +6,12 @@
 class InputKeyCtrl : public wxTextCtrl
 {
 public:
-	InputKeyCtrl(wxWindow* parent, keypress_t init);
+	InputKeyCtrl(wxWindow* parent, Keypress init);
 
-	keypress_t key() const { return key_; }
+	Keypress key() const { return key_; }
 
 private:
-	keypress_t key_;
+	Keypress key_;
 
 	// Events
 	void onKeyDown(wxKeyEvent& e);

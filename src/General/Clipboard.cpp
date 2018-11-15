@@ -1,98 +1,106 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    Clipboard.cpp
- * Description: The SLADE Clipboard implementation
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Clipboard.cpp
+// Description: The SLADE Clipboard implementation
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "Clipboard.h"
-#include "Graphics/CTexture/CTexture.h"
+#include "App.h"
 #include "Game/Configuration.h"
+#include "Graphics/CTexture/CTexture.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/SectorBuilder.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 Clipboard* Clipboard::instance = NULL;
 
 
-/*******************************************************************
- * CLIPBOARDITEM CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// ClipboardItem Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* ClipboardItem::ClipboardItem
- * ClipboardItem class constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// ClipboardItem class constructor
+// -----------------------------------------------------------------------------
 ClipboardItem::ClipboardItem(int type)
 {
-	this->type = type;
+	this->type_ = type;
 }
 
-/* ClipboardItem::~ClipboardItem
- * ClipboardItem class destructor
- *******************************************************************/
-ClipboardItem::~ClipboardItem()
-{
-}
+// -----------------------------------------------------------------------------
+// ClipboardItem class destructor
+// -----------------------------------------------------------------------------
+ClipboardItem::~ClipboardItem() {}
 
 
-/*******************************************************************
- * ENTRYTREECLIPBOARDITEM CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// EntryTreeClipboardItem Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* EntryTreeClipboardItem::EntryTreeClipboardItem
- * EntryTreeClipboardItem class constructor
- *******************************************************************/
-EntryTreeClipboardItem::EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, vector<ArchiveTreeNode*>& dirs)
-	: ClipboardItem(CLIPBOARD_ENTRY_TREE)
+
+// -----------------------------------------------------------------------------
+// EntryTreeClipboardItem class constructor
+// -----------------------------------------------------------------------------
+EntryTreeClipboardItem::EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, vector<ArchiveTreeNode*>& dirs) :
+	ClipboardItem(CLIPBOARD_ENTRY_TREE)
 {
 	// Create tree
-	tree = new ArchiveTreeNode();
+	tree_ = new ArchiveTreeNode();
 
 	// Copy entries
 	for (unsigned a = 0; a < entries.size(); a++)
-		tree->addEntry(new ArchiveEntry(*(entries[a])));
+		tree_->addEntry(new ArchiveEntry(*(entries[a])));
 
 	// Copy entries to system clipboard
 	// (exports them as temp files and adds the paths to the clipboard)
 	if (wxTheClipboard->Open())
 	{
 		wxTheClipboard->Clear();
-		wxFileDataObject* file = new wxFileDataObject();
-		string tmp_directory = App::path("", App::Dir::Temp); // cache temp directory
-		string file_dot = ".";
+		wxFileDataObject* file          = new wxFileDataObject();
+		string            tmp_directory = App::path("", App::Dir::Temp); // cache temp directory
+		string            file_dot      = ".";
 		for (unsigned a = 0; a < entries.size(); a++)
 		{
 			// Export to file
 			string filename = tmp_directory + entries[a]->getName(true) + file_dot + entries[a]->getType()->extension();
-			//string filename = entries[a]->getName(true) + "." + entries[a]->getType()->getExtension();
-			//filename = App::path(filename, App::Dir::Temp);
+			// string filename = entries[a]->getName(true) + "." + entries[a]->getType()->getExtension();
+			// filename = App::path(filename, App::Dir::Temp);
 			entries[a]->exportFile(filename);
 
 			// Add to clipboard
@@ -104,31 +112,35 @@ EntryTreeClipboardItem::EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, v
 
 	// Copy dirs
 	for (unsigned a = 0; a < dirs.size(); a++)
-		tree->addChild(dirs[a]->clone());
+		tree_->addChild(dirs[a]->clone());
 }
 
-/* EntryTreeClipboardItem::~EntryTreeClipboardItem
- * EntryTreeClipboardItem class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// EntryTreeClipboardItem class destructor
+// -----------------------------------------------------------------------------
 EntryTreeClipboardItem::~EntryTreeClipboardItem()
 {
-	if (tree)
-		delete tree;
+	if (tree_)
+		delete tree_;
 }
 
 
-/*******************************************************************
- * TEXTURECLIPBOARDITEM CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// TextureClipboardItem Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* TextureClipboardItem::TextureClipboardItem
- * TextureClipboardItem class constructor
- *******************************************************************/
-TextureClipboardItem::TextureClipboardItem(CTexture* texture, Archive* parent) : ClipboardItem(CLIPBOARD_COMPOSITE_TEXTURE)
+
+// -----------------------------------------------------------------------------
+// TextureClipboardItem class constructor
+// -----------------------------------------------------------------------------
+TextureClipboardItem::TextureClipboardItem(CTexture* texture, Archive* parent) :
+	ClipboardItem(CLIPBOARD_COMPOSITE_TEXTURE)
 {
 	// Create/copy texture
-	this->texture = new CTexture();
-	this->texture->copyTexture(texture);
+	this->texture_ = new CTexture();
+	this->texture_->copyTexture(texture);
 
 	// Copy patch entries if possible
 	for (unsigned a = 0; a < texture->nPatches(); a++)
@@ -142,46 +154,47 @@ TextureClipboardItem::TextureClipboardItem(CTexture* texture, Archive* parent) :
 
 		// Don't copy patch if it has been already
 		bool there = false;
-		for (unsigned b = 0; b < patch_entries.size(); b++)
+		for (unsigned b = 0; b < patch_entries_.size(); b++)
 		{
-			if (patch_entries[b]->getName() == entry->getName())
+			if (patch_entries_[b]->getName() == entry->getName())
 			{
 				there = true;
 				break;
 			}
 		}
-		if (there) continue;
+		if (there)
+			continue;
 
 		// Copy patch entry
 		if (entry)
-			patch_entries.push_back(new ArchiveEntry(*entry));
+			patch_entries_.push_back(new ArchiveEntry(*entry));
 	}
 }
 
-/* TextureClipboardItem::~TextureClipboardItem
- * TextureClipboardItem class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// TextureClipboardItem class destructor
+// -----------------------------------------------------------------------------
 TextureClipboardItem::~TextureClipboardItem()
 {
 	// Clean up
-	delete texture;
-	for (unsigned a = 0; a < patch_entries.size(); a++)
+	delete texture_;
+	for (unsigned a = 0; a < patch_entries_.size(); a++)
 	{
-		if (patch_entries[a])
-			delete patch_entries[a];
+		if (patch_entries_[a])
+			delete patch_entries_[a];
 	}
 }
 
-/* TextureClipboardItem::getPatchEntry
- * Returns the entry copy for the patch at [index] in the texture
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the entry copy for the patch at [index] in the texture
+// -----------------------------------------------------------------------------
 ArchiveEntry* TextureClipboardItem::getPatchEntry(string patch)
 {
 	// Find copied patch entry with matching name
-	for (unsigned a = 0; a < patch_entries.size(); a++)
+	for (unsigned a = 0; a < patch_entries_.size(); a++)
 	{
-		if (S_CMPNOCASE(patch_entries[a]->getName(true).Truncate(8), patch))
-			return patch_entries[a];
+		if (S_CMPNOCASE(patch_entries_[a]->getName(true).Truncate(8), patch))
+			return patch_entries_[a];
 	}
 
 	// Not found
@@ -189,38 +202,39 @@ ArchiveEntry* TextureClipboardItem::getPatchEntry(string patch)
 }
 
 
-/*******************************************************************
- * MAPARCHCLIPBOARDITEM CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// MapArchClipboardItem Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* MapArchClipboardItem::MapArchClipboardItem
- * MapArchClipboardItem class constructor
- *******************************************************************/
-MapArchClipboardItem::MapArchClipboardItem() : ClipboardItem(CLIPBOARD_MAP_ARCH)
-{
-}
 
-/* MapArchClipboardItem::~MapArchClipboardItem
- * MapArchClipboardItem class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// MapArchClipboardItem class constructor
+// -----------------------------------------------------------------------------
+MapArchClipboardItem::MapArchClipboardItem() : ClipboardItem(CLIPBOARD_MAP_ARCH) {}
+
+// -----------------------------------------------------------------------------
+// MapArchClipboardItem class destructor
+// -----------------------------------------------------------------------------
 MapArchClipboardItem::~MapArchClipboardItem()
 {
-	for (unsigned a = 0; a < vertices.size(); a++)
-		delete vertices[a];
-	for (unsigned a = 0; a < lines.size(); a++)
-		delete lines[a];
-	for (unsigned a = 0; a < sectors.size(); a++)
-		delete sectors[a];
+	for (unsigned a = 0; a < vertices_.size(); a++)
+		delete vertices_[a];
+	for (unsigned a = 0; a < lines_.size(); a++)
+		delete lines_[a];
+	for (unsigned a = 0; a < sectors_.size(); a++)
+		delete sectors_[a];
 }
 
-/* MapArchClipboardItem::addLines
- * Copies [lines] and all related map structures
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Copies [lines] and all related map structures
+// -----------------------------------------------------------------------------
 void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 {
 	// Get sectors and sides to copy
 	vector<MapSector*> copy_sectors;
-	vector<MapSide*> copy_sides;
+	vector<MapSide*>   copy_sides;
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		MapSide* s1 = lines[a]->s1();
@@ -248,7 +262,7 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 	{
 		MapSector* copy = new MapSector(NULL);
 		copy->copy(copy_sectors[a]);
-		sectors.push_back(copy);
+		sectors_.push_back(copy);
 	}
 
 	// Copy sides
@@ -262,19 +276,19 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 		{
 			if (copy_sides[a]->getSector() == copy_sectors[b])
 			{
-				copy->setSector(sectors[b]);
+				copy->setSector(sectors_[b]);
 				break;
 			}
 		}
 
-		sides.push_back(copy);
+		sides_.push_back(copy);
 	}
 
 	// Get vertices to copy (and determine midpoint)
-	double min_x = 9999999;
-	double max_x = -9999999;
-	double min_y = 9999999;
-	double max_y = -9999999;
+	double             min_x = 9999999;
+	double             max_x = -9999999;
+	double             min_y = 9999999;
+	double             max_y = -9999999;
 	vector<MapVertex*> copy_verts;
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
@@ -288,47 +302,55 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 			copy_verts.push_back(v2);
 
 		// Update min/max
-		if (v1->xPos() < min_x) min_x = v1->xPos();
-		if (v1->xPos() > max_x) max_x = v1->xPos();
-		if (v1->yPos() < min_y) min_y = v1->yPos();
-		if (v1->yPos() > max_y) max_y = v1->yPos();
-		if (v2->xPos() < min_x) min_x = v2->xPos();
-		if (v2->xPos() > max_x) max_x = v2->xPos();
-		if (v2->yPos() < min_y) min_y = v2->yPos();
-		if (v2->yPos() > max_y) max_y = v2->yPos();
+		if (v1->xPos() < min_x)
+			min_x = v1->xPos();
+		if (v1->xPos() > max_x)
+			max_x = v1->xPos();
+		if (v1->yPos() < min_y)
+			min_y = v1->yPos();
+		if (v1->yPos() > max_y)
+			max_y = v1->yPos();
+		if (v2->xPos() < min_x)
+			min_x = v2->xPos();
+		if (v2->xPos() > max_x)
+			max_x = v2->xPos();
+		if (v2->yPos() < min_y)
+			min_y = v2->yPos();
+		if (v2->yPos() > max_y)
+			max_y = v2->yPos();
 	}
 
 	// Determine midpoint
 	double mid_x = min_x + ((max_x - min_x) * 0.5);
 	double mid_y = min_y + ((max_y - min_y) * 0.5);
-	this->midpoint.set(mid_x, mid_y);
+	this->midpoint_.set(mid_x, mid_y);
 
 	// Copy vertices
 	for (unsigned a = 0; a < copy_verts.size(); a++)
 	{
 		MapVertex* copy = new MapVertex(copy_verts[a]->xPos() - mid_x, copy_verts[a]->yPos() - mid_y);
 		copy->copy(copy_verts[a]);
-		vertices.push_back(copy);
+		vertices_.push_back(copy);
 	}
 
 	// Copy lines
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		// Get relative sides
-		MapSide* s1 = NULL;
-		MapSide* s2 = NULL;
-		bool s1_found = false;
-		bool s2_found = !(lines[a]->s2());
+		MapSide* s1       = NULL;
+		MapSide* s2       = NULL;
+		bool     s1_found = false;
+		bool     s2_found = !(lines[a]->s2());
 		for (unsigned b = 0; b < copy_sides.size(); b++)
 		{
 			if (lines[a]->s1() == copy_sides[b])
 			{
-				s1 = sides[b];
+				s1       = sides_[b];
 				s1_found = true;
 			}
 			if (lines[a]->s2() == copy_sides[b])
 			{
-				s2 = sides[b];
+				s2       = sides_[b];
 				s2_found = true;
 			}
 
@@ -342,9 +364,9 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 		for (unsigned b = 0; b < copy_verts.size(); b++)
 		{
 			if (lines[a]->v1() == copy_verts[b])
-				v1 = vertices[b];
+				v1 = vertices_[b];
 			if (lines[a]->v2() == copy_verts[b])
-				v2 = vertices[b];
+				v2 = vertices_[b];
 
 			if (v1 && v2)
 				break;
@@ -353,66 +375,70 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 		// Copy line
 		MapLine* copy = new MapLine(v1, v2, s1, s2);
 		copy->copy(lines[a]);
-		this->lines.push_back(copy);
+		this->lines_.push_back(copy);
 	}
 }
 
-/* MapArchClipboardItem::getInfo
- * Returns a string with info on what items are copied
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns a string with info on what items are copied
+// -----------------------------------------------------------------------------
 string MapArchClipboardItem::getInfo()
 {
-	return S_FMT("%lu Vertices, %lu Lines, %lu Sides and %lu Sectors",
-	             vertices.size(), lines.size(), sides.size(), sectors.size());
+	return S_FMT(
+		"%lu Vertices, %lu Lines, %lu Sides and %lu Sectors",
+		vertices_.size(),
+		lines_.size(),
+		sides_.size(),
+		sectors_.size());
 }
 
-/* MapArchClipboardItem::pasteToMap
- * Pastes copied architecture to [map] at [position]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Pastes copied architecture to [map] at [position]
+// -----------------------------------------------------------------------------
 vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position)
 {
 	std::map<MapVertex*, MapVertex*> vertMap;
 	std::map<MapSector*, MapSector*> sectMap;
-	std::map<MapSide*, MapSide*> sideMap;
+	std::map<MapSide*, MapSide*>     sideMap;
 	// Not used yet...
 	// std::map<MapLine*, MapLine*> lineMap;
 
 	// Add vertices
 	vector<MapVertex*> new_verts;
-	for (unsigned a = 0; a < vertices.size(); a++)
+	for (unsigned a = 0; a < vertices_.size(); a++)
 	{
-		new_verts.push_back(map->createVertex(position.x + vertices[a]->xPos(), position.y + vertices[a]->yPos()));
-		new_verts.back()->copy(vertices[a]);
-		vertMap[vertices[a]] = new_verts.back();
+		new_verts.push_back(map->createVertex(position.x + vertices_[a]->xPos(), position.y + vertices_[a]->yPos()));
+		new_verts.back()->copy(vertices_[a]);
+		vertMap[vertices_[a]] = new_verts.back();
 	}
 
 	// Add sectors
-	for (unsigned a = 0; a < sectors.size(); a++)
+	for (unsigned a = 0; a < sectors_.size(); a++)
 	{
 		MapSector* new_sector = map->createSector();
-		new_sector->copy(sectors[a]);
-		sectMap[sectors[a]] = new_sector;
+		new_sector->copy(sectors_[a]);
+		sectMap[sectors_[a]] = new_sector;
 	}
 
 	// Add sides
 	int first_new_side = map->nSides();
-	for (unsigned a = 0; a < sides.size(); a++)
+	for (unsigned a = 0; a < sides_.size(); a++)
 	{
 		// Get relative sector
-		MapSector* sector = findInMap(sectMap, sides[a]->getSector());
+		MapSector* sector = findInMap(sectMap, sides_[a]->getSector());
 
 		MapSide* new_side = map->createSide(sector);
-		new_side->copy(sides[a]);
-		sideMap[sides[a]] = new_side;
+		new_side->copy(sides_[a]);
+		sideMap[sides_[a]] = new_side;
 	}
 
 	// Add lines
 	int first_new_line = map->nLines();
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (unsigned a = 0; a < lines_.size(); a++)
 	{
 		// Get relative vertices
-		MapVertex* v1 = findInMap(vertMap, lines[a]->v1());
-		MapVertex* v2 = findInMap(vertMap, lines[a]->v2());
+		MapVertex* v1 = findInMap(vertMap, lines_[a]->v1());
+		MapVertex* v2 = findInMap(vertMap, lines_[a]->v2());
 
 		if (!v1)
 		{
@@ -425,11 +451,11 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 		}
 
 		MapLine* newline = map->createLine(v1, v2, true);
-		newline->copy(lines[a]);
+		newline->copy(lines_[a]);
 
 		// Set relative sides
-		MapSide* newS1 = findInMap(sideMap, lines[a]->s1());
-		MapSide* newS2 = findInMap(sideMap, lines[a]->s2());
+		MapSide* newS1 = findInMap(sideMap, lines_[a]->s1());
+		MapSide* newS2 = findInMap(sideMap, lines_[a]->s2());
 		if (newS1)
 			newline->setS1(newS1);
 		if (newS2)
@@ -437,18 +463,8 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 
 		// Set important flags (needed when copying from Doom/Hexen format to UDMF)
 		// Won't be needed when proper map format conversion stuff is implemented
-		Game::configuration().setLineBasicFlag(
-			"twosided",
-			newline,
-			map->currentFormat(),
-			(newS1 && newS2)
-		);
-		Game::configuration().setLineBasicFlag(
-			"blocking",
-			newline,
-			map->currentFormat(),
-			!newS2
-		);
+		Game::configuration().setLineBasicFlag("twosided", newline, map->currentFormat(), (newS1 && newS2));
+		Game::configuration().setLineBasicFlag("blocking", newline, map->currentFormat(), !newS2);
 	}
 
 	// TODO:
@@ -457,7 +473,7 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 
 	//// Fix sector references
 	//// TODO: figure out what lines are 'outside' on copy, only fix said lines
-	//for (unsigned a = first_new_line; a < map->nLines(); a++)
+	// for (unsigned a = first_new_line; a < map->nLines(); a++)
 	//{
 	//	MapLine* line = map->getLine(a);
 	//	MapSector* sec1 = map->getLineSideSector(line, true);
@@ -473,39 +489,40 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 	return new_verts;
 }
 
-/* MapArchClipboardItem::getLines
- * Adds all copied lines to [list]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds all copied lines to [list]
+// -----------------------------------------------------------------------------
 void MapArchClipboardItem::getLines(vector<MapLine*>& list)
 {
-	for (unsigned a = 0; a < lines.size(); a++)
-		list.push_back(lines[a]);
+	for (unsigned a = 0; a < lines_.size(); a++)
+		list.push_back(lines_[a]);
 }
 
 
-/*******************************************************************
- * MAPTHINGSCLIPBOARDITEM CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// MapThingsClipboardItem Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* MapThingsClipboardItem::MapThingsClipboardItem
- * MapThingsClipboardItem class constructor
- *******************************************************************/
-MapThingsClipboardItem::MapThingsClipboardItem() : ClipboardItem(CLIPBOARD_MAP_THINGS)
-{
-}
 
-/* MapThingsClipboardItem::~MapThingsClipboardItem
- * MapThingsClipboardItem class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// MapThingsClipboardItem class constructor
+// -----------------------------------------------------------------------------
+MapThingsClipboardItem::MapThingsClipboardItem() : ClipboardItem(CLIPBOARD_MAP_THINGS) {}
+
+// -----------------------------------------------------------------------------
+// MapThingsClipboardItem class destructor
+// -----------------------------------------------------------------------------
 MapThingsClipboardItem::~MapThingsClipboardItem()
 {
-	for (unsigned a = 0; a < things.size(); a++)
-		delete things[a];
+	for (unsigned a = 0; a < things_.size(); a++)
+		delete things_[a];
 }
 
-/* MapThingsClipboardItem::addThings
- * Copies [things]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Copies [things]
+// -----------------------------------------------------------------------------
 void MapThingsClipboardItem::addThings(vector<MapThing*>& things)
 {
 	// Copy things
@@ -517,105 +534,110 @@ void MapThingsClipboardItem::addThings(vector<MapThing*>& things)
 	{
 		MapThing* copy_thing = new MapThing();
 		copy_thing->copy(things[a]);
-		this->things.push_back(copy_thing);
+		this->things_.push_back(copy_thing);
 
-		if (things[a]->xPos() < min_x) min_x = things[a]->xPos();
-		if (things[a]->yPos() < min_y) min_y = things[a]->yPos();
-		if (things[a]->xPos() > max_x) max_x = things[a]->xPos();
-		if (things[a]->yPos() > max_y) max_y = things[a]->yPos();
+		if (things[a]->xPos() < min_x)
+			min_x = things[a]->xPos();
+		if (things[a]->yPos() < min_y)
+			min_y = things[a]->yPos();
+		if (things[a]->xPos() > max_x)
+			max_x = things[a]->xPos();
+		if (things[a]->yPos() > max_y)
+			max_y = things[a]->yPos();
 	}
 
 	// Get midpoint
 	double mid_x = min_x + ((max_x - min_x) * 0.5);
 	double mid_y = min_y + ((max_y - min_y) * 0.5);
-	this->midpoint.set(mid_x, mid_y);
+	this->midpoint_.set(mid_x, mid_y);
 
 	// Adjust thing positions
-	for (unsigned a = 0; a < this->things.size(); a++)
+	for (unsigned a = 0; a < this->things_.size(); a++)
 	{
-		MapThing* thing = this->things[a];
+		MapThing* thing = this->things_[a];
 		thing->setPos(thing->xPos() - mid_x, thing->yPos() - mid_y);
 	}
 }
 
-/* MapThingsClipboardItem::getInfo
- * Returns a string with info on what items are copied
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns a string with info on what items are copied
+// -----------------------------------------------------------------------------
 string MapThingsClipboardItem::getInfo()
 {
-	return S_FMT("%lu Things", things.size());
+	return S_FMT("%lu Things", things_.size());
 }
 
-/* MapThingsClipboardItem::pasteToMap
- * Pastes copied things to [map] at [position]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Pastes copied things to [map] at [position]
+// -----------------------------------------------------------------------------
 void MapThingsClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position)
 {
-	for (unsigned a = 0; a < things.size(); a++)
+	for (unsigned a = 0; a < things_.size(); a++)
 	{
 		MapThing* newthing = map->createThing(0, 0);
-		newthing->copy(things[a]);
-		newthing->setPos(position.x + things[a]->xPos(), position.y + things[a]->yPos());
+		newthing->copy(things_[a]);
+		newthing->setPos(position.x + things_[a]->xPos(), position.y + things_[a]->yPos());
 	}
 }
 
-/* MapThingsClipboardItem::getLines
- * Adds all copied things to [list]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds all copied things to [list]
+// -----------------------------------------------------------------------------
 void MapThingsClipboardItem::getThings(vector<MapThing*>& list)
 {
-	for (unsigned a = 0; a < things.size(); a++)
+	for (unsigned a = 0; a < things_.size(); a++)
 	{
-		list.push_back(things[a]);
+		list.push_back(things_[a]);
 	}
 }
 
 
-/*******************************************************************
- * CLIPBOARD CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Clipboard Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* Clipboard::Clipboard
- * Clipboard class constructor
- *******************************************************************/
-Clipboard::Clipboard()
-{
-}
 
-/* Clipboard::~Clipboard
- * Clipboard class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Clipboard class constructor
+// -----------------------------------------------------------------------------
+Clipboard::Clipboard() {}
+
+// -----------------------------------------------------------------------------
+// Clipboard class destructor
+// -----------------------------------------------------------------------------
 Clipboard::~Clipboard()
 {
-	for (uint32_t a = 0; a < items.size(); a++)
-		delete items[a];
+	for (uint32_t a = 0; a < items_.size(); a++)
+		delete items_[a];
 }
 
-/* Clipboard::getItem
- * Returns the item at index or NULL if index is out of bounds
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the item at index or null if index is out of bounds
+// -----------------------------------------------------------------------------
 ClipboardItem* Clipboard::getItem(uint32_t index)
 {
-	if (index >= items.size())
+	if (index >= items_.size())
 		return NULL;
 	else
-		return items[index];
+		return items_[index];
 }
 
-/* Clipboard::clear
- * Clears all clipboard items
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Clears all clipboard items
+// -----------------------------------------------------------------------------
 void Clipboard::clear()
 {
-	for (uint32_t a = 0; a < items.size(); a++)
-		delete items[a];
+	for (uint32_t a = 0; a < items_.size(); a++)
+		delete items_[a];
 
-	items.clear();
+	items_.clear();
 }
 
-/* Clipboard::addItem
- * Adds an item to the clipboard. Returns false if item is invalid
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds an item to the clipboard. Returns false if item is invalid
+// -----------------------------------------------------------------------------
 bool Clipboard::addItem(ClipboardItem* item)
 {
 	// Clear current clipboard contents
@@ -624,13 +646,13 @@ bool Clipboard::addItem(ClipboardItem* item)
 	if (!item)
 		return false;
 
-	items.push_back(item);
+	items_.push_back(item);
 	return true;
 }
 
-/* Clipboard::addItems
- * Adds multiple items to the clipboard
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds multiple items to the clipboard
+// -----------------------------------------------------------------------------
 bool Clipboard::addItems(vector<ClipboardItem*>& items)
 {
 	// Clear current clipboard contents
@@ -639,7 +661,7 @@ bool Clipboard::addItems(vector<ClipboardItem*>& items)
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		if (items[a])
-			this->items.push_back(items[a]);
+			this->items_.push_back(items[a]);
 	}
 
 	return true;

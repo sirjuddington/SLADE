@@ -1,83 +1,91 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    ColourConfiguration.cpp
- * Description: Functions for handling colour configurations
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ColourConfiguration.cpp
+// Description: Functions for handling colour configurations
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "ColourConfiguration.h"
-#include "Utility/Parser.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Console/Console.h"
+#include "Utility/Parser.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-typedef std::map<string, cc_col_t> ColourHashMap;
-ColourHashMap	cc_colours;
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 namespace ColourConfiguration
 {
-	double	line_hilight_width;
-	double	line_selection_width;
-	double	flat_alpha;
-}
+typedef std::map<string, Colour> ColourHashMap;
+
+double        line_hilight_width;
+double        line_selection_width;
+double        flat_alpha;
+ColourHashMap cc_colours;
+} // namespace ColourConfiguration
 
 
-/*******************************************************************
- * COLOURCONFIGURATION NAMESPACE FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// ColourConfiguration Namespace Functions
+//
+// -----------------------------------------------------------------------------
 
-/* ColourConfiguration::getColour
- * Returns the colour [name]
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Returns the colour [name]
+// -----------------------------------------------------------------------------
 rgba_t ColourConfiguration::getColour(string name)
 {
-	cc_col_t& col = cc_colours[name];
+	Colour& col = cc_colours[name];
 	if (col.exists)
 		return col.colour;
 	else
 		return COL_WHITE;
 }
 
-/* ColourConfiguration::getColDef
- * Returns the colour definition [name]
- *******************************************************************/
-cc_col_t ColourConfiguration::getColDef(string name)
+// -----------------------------------------------------------------------------
+// Returns the colour definition [name]
+// -----------------------------------------------------------------------------
+ColourConfiguration::Colour ColourConfiguration::getColDef(string name)
 {
 	return cc_colours[name];
 }
 
-/* ColourConfiguration::setColour
- * Sets the colour definition [name]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the colour definition [name]
+// -----------------------------------------------------------------------------
 void ColourConfiguration::setColour(string name, int red, int green, int blue, int alpha, int blend)
 {
-	cc_col_t& col = cc_colours[name];
+	Colour& col = cc_colours[name];
 	if (red >= 0)
 		col.colour.r = red;
 	if (green >= 0)
@@ -91,57 +99,57 @@ void ColourConfiguration::setColour(string name, int red, int green, int blue, i
 	col.exists = true;
 }
 
-/* ColourConfiguration::getLineHilightWidth
- * Returns the line hilight width multiplier
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the line hilight width multiplier
+// -----------------------------------------------------------------------------
 double ColourConfiguration::getLineHilightWidth()
 {
 	return line_hilight_width;
 }
 
-/* ColourConfiguration::getLineSelectionWidth
- * Returns the line selection width multiplier
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the line selection width multiplier
+// -----------------------------------------------------------------------------
 double ColourConfiguration::getLineSelectionWidth()
 {
 	return line_selection_width;
 }
 
-/* ColourConfiguration::getFlatAlpha
- * Returns the flat alpha multiplier
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the flat alpha multiplier
+// -----------------------------------------------------------------------------
 double ColourConfiguration::getFlatAlpha()
 {
 	return flat_alpha;
 }
 
-/* ColourConfiguration::setLineHilightWidth
- * Sets the line hilight width multiplier
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the line hilight width multiplier
+// -----------------------------------------------------------------------------
 void ColourConfiguration::setLineHilightWidth(double mult)
 {
 	line_hilight_width = mult;
 }
 
-/* ColourConfiguration::setLineSelectionWidth
- * Sets the line selection width multiplier
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the line selection width multiplier
+// -----------------------------------------------------------------------------
 void ColourConfiguration::setLineSelectionWidth(double mult)
 {
 	line_selection_width = mult;
 }
 
-/* ColourConfiguration::setFlatAlpha
- * Sets the flat alpha multiplier
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the flat alpha multiplier
+// -----------------------------------------------------------------------------
 void ColourConfiguration::setFlatAlpha(double alpha)
 {
 	flat_alpha = alpha;
 }
 
-/* ColourConfiguration::readConfiguration
- * Reads a colour configuration from text data [mc]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads a colour configuration from text data [mc]
+// -----------------------------------------------------------------------------
 bool ColourConfiguration::readConfiguration(MemChunk& mc)
 {
 	// Parse text
@@ -160,9 +168,9 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 			// Read properties
 			for (unsigned b = 0; b < def->nChildren(); b++)
 			{
-				auto prop = def->getChildPTN(b);
-				cc_col_t& col = cc_colours[def->getName()];
-				col.exists = true;
+				auto    prop = def->getChildPTN(b);
+				Colour& col  = cc_colours[def->getName()];
+				col.exists   = true;
 
 				// Colour name
 				if (prop->getName() == "name")
@@ -221,9 +229,9 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 	return true;
 }
 
-/* ColourConfiguration::writeConfiguration
- * Writes the current colour configuration to text data [mc]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes the current colour configuration to text data [mc]
+// -----------------------------------------------------------------------------
 bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 {
 	string cfgstring = "colours\n{\n";
@@ -234,7 +242,7 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 	while (i != cc_colours.end())
 	{
 		// Skip if it doesn't 'exist'
-		cc_col_t cc = i->second;
+		Colour cc = i->second;
 		if (!cc.exists)
 		{
 			i++;
@@ -279,9 +287,9 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 	return true;
 }
 
-/* ColourConfiguration::init
- * Initialises the colour configuration
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Initialises the colour configuration
+// -----------------------------------------------------------------------------
 bool ColourConfiguration::init()
 {
 	// Load default configuration
@@ -298,27 +306,27 @@ bool ColourConfiguration::init()
 	return true;
 }
 
-/* ColourConfiguration::loadDefaults
- * Sets all colours in the current configuration to default
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets all colours in the current configuration to default
+// -----------------------------------------------------------------------------
 void ColourConfiguration::loadDefaults()
 {
 	// Read default colours
-	Archive* pres = App::archiveManager().programResourceArchive();
+	Archive*      pres             = App::archiveManager().programResourceArchive();
 	ArchiveEntry* entry_default_cc = pres->entryAtPath("config/colours/default.txt");
 	if (entry_default_cc)
 		readConfiguration(entry_default_cc->getMCData());
 }
 
-/* ColourConfiguration::readConfiguration
- * Reads saved colour configuration [name]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads saved colour configuration [name]
+// -----------------------------------------------------------------------------
 bool ColourConfiguration::readConfiguration(string name)
 {
 	// TODO: search custom folder
 
 	// Search resource pk3
-	Archive* res = App::archiveManager().programResourceArchive();
+	Archive*         res = App::archiveManager().programResourceArchive();
 	ArchiveTreeNode* dir = res->getDir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
@@ -329,23 +337,23 @@ bool ColourConfiguration::readConfiguration(string name)
 	return false;
 }
 
-/* ColourConfiguration::getConfigurationNames
- * Adds all available colour configuration names to [names]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds all available colour configuration names to [names]
+// -----------------------------------------------------------------------------
 void ColourConfiguration::getConfigurationNames(vector<string>& names)
 {
 	// TODO: search custom folder
 
 	// Search resource pk3
-	Archive* res = App::archiveManager().programResourceArchive();
+	Archive*         res = App::archiveManager().programResourceArchive();
 	ArchiveTreeNode* dir = res->getDir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 		names.push_back(dir->entryAt(a)->getName(true));
 }
 
-/* ColourConfiguration::getColourNames
- * Adds all colour names to [list]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds all colour names to [list]
+// -----------------------------------------------------------------------------
 void ColourConfiguration::getColourNames(vector<string>& list)
 {
 	ColourHashMap::iterator i = cc_colours.begin();
@@ -357,9 +365,12 @@ void ColourConfiguration::getColourNames(vector<string>& list)
 }
 
 
-/*******************************************************************
- * CONSOLE COMMANDS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Console Commands
+//
+// -----------------------------------------------------------------------------
+
 CONSOLE_COMMAND(ccfg, 1, false)
 {
 	// Check for 'list'

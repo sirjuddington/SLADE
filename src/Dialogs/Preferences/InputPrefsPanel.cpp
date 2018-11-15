@@ -45,10 +45,10 @@
 class BindListItemData : public wxClientData
 {
 public:
-	keypress_t key;
+	Keypress key;
 	KeyBind*   bind;
 
-	BindListItemData(keypress_t key, KeyBind* bind = nullptr) : key{ key }, bind{ bind } {}
+	BindListItemData(Keypress key, KeyBind* bind = nullptr) : key{ key }, bind{ bind } {}
 };
 
 
@@ -62,12 +62,12 @@ public:
 // -----------------------------------------------------------------------------
 // InputKeyCtrl class constructor
 // -----------------------------------------------------------------------------
-InputKeyCtrl::InputKeyCtrl(wxWindow* parent, keypress_t init) :
+InputKeyCtrl::InputKeyCtrl(wxWindow* parent, Keypress init) :
 	wxTextCtrl(parent, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_TAB | wxTE_PROCESS_ENTER),
 	key_{ init }
 {
 	// Set initial value
-	wxTextCtrl::SetValue(init.as_string());
+	wxTextCtrl::SetValue(init.asString());
 
 	// Bind events
 	Bind(wxEVT_KEY_DOWN, &InputKeyCtrl::onKeyDown, this);
@@ -93,7 +93,7 @@ void InputKeyCtrl::onKeyDown(wxKeyEvent& e)
 	}
 
 	key_ = KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers());
-	SetValue(key_.as_string());
+	SetValue(key_.asString());
 }
 
 // -----------------------------------------------------------------------------
@@ -125,7 +125,7 @@ void InputKeyCtrl::onMouseDown(wxMouseEvent& e)
 	key_.alt   = e.AltDown();
 	key_.ctrl  = e.CmdDown();
 	key_.shift = e.ShiftDown();
-	SetValue(key_.as_string());
+	SetValue(key_.asString());
 }
 
 // -----------------------------------------------------------------------------
@@ -134,7 +134,7 @@ void InputKeyCtrl::onMouseDown(wxMouseEvent& e)
 void InputKeyCtrl::onEnter(wxCommandEvent& e)
 {
 	key_.key = "return";
-	SetValue(key_.as_string());
+	SetValue(key_.asString());
 }
 
 
@@ -275,7 +275,7 @@ void InputPrefsPanel::updateBindsList()
 
 		// Set item text if key data exists
 		if (bind)
-			list_binds_->SetItemText(item, 1, bind->key.as_string());
+			list_binds_->SetItemText(item, 1, bind->key.asString());
 
 		// Next item
 		item = list_binds_->GetNextItem(item);
@@ -320,7 +320,7 @@ void InputPrefsPanel::changeKey(wxTreeListItem item)
 	{
 		// Set keybind if not cancelled
 		bind->key = key_ctrl->key();
-		list_binds_->SetItemText(item, 1, bind->key.as_string());
+		list_binds_->SetItemText(item, 1, bind->key.asString());
 	}
 }
 
@@ -342,7 +342,7 @@ void InputPrefsPanel::addKey()
 		item = list_binds_->GetItemParent(item);
 
 	// Add new keybind item
-	wxTreeListItem n = list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(keypress_t()));
+	wxTreeListItem n = list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(Keypress()));
 	changeKey(n);
 
 	// Delete item if no key was chosen (or dialog cancelled)
@@ -352,7 +352,7 @@ void InputPrefsPanel::addKey()
 	else
 	{
 		// Otherwise update the new keybind text
-		list_binds_->SetItemText(n, 1, bind->key.as_string());
+		list_binds_->SetItemText(n, 1, bind->key.asString());
 	}
 }
 

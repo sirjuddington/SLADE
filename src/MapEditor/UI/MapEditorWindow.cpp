@@ -1428,7 +1428,7 @@ bool MapEditorWindow::handleAction(string id)
 	// Tools->Run Script
 	else if (id == "mapw_script")
 	{
-		ScriptManager::runMapScript(&MapEditor::editContext().map(), wx_id_offset, this);
+		ScriptManager::runMapScript(&MapEditor::editContext().map(), wx_id_offset_, this);
 		return true;
 	}
 

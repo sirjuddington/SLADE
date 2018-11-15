@@ -1,6 +1,4 @@
-
-#ifndef __CONSOLEHELPERS_H__
-#define	__CONSOLEHELPERS_H__
+#pragma once
 
 // No #includes, they're a headache
 class Archive;
@@ -10,9 +8,7 @@ class GfxEntryPanel;
 // Console helpers
 namespace CH
 {
-	Archive*		getCurrentArchive();
-	ArchivePanel*	getCurrentArchivePanel();
-	GfxEntryPanel*	getCurrentGfxPanel();
-}
-
-#endif // __CONSOLEHELPERS_H__
+Archive*       getCurrentArchive();
+ArchivePanel*  getCurrentArchivePanel();
+GfxEntryPanel* getCurrentGfxPanel();
+} // namespace CH

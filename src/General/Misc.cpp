@@ -1,65 +1,71 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    Misc.cpp
- * Description: Misc functions that don't necessarily belong
- *              anywhere else (generally stuff that involves multiple
- *              unrelated classes)
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Misc.cpp
+// Description: Misc functions that don't necessarily belong anywhere else
+//              (generally stuff that involves multiple unrelated classes)
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "General/Misc.h"
-#include "Graphics/SImage/SImage.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Graphics/SImage/SIFormat.h"
+#include "Graphics/SImage/SImage.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 CVAR(Bool, size_as_string, true, CVAR_SAVE)
 CVAR(Bool, percent_encoding, false, CVAR_SAVE)
 EXTERN_CVAR(Float, col_cie_tristim_x)
 EXTERN_CVAR(Float, col_cie_tristim_z)
 namespace Misc
 {
-	vector<winf_t>	window_info;
+vector<WindowInfo> window_info;
 }
 
 
-/*******************************************************************
- * FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Misc Namespace Functions
+//
+// -----------------------------------------------------------------------------
 
-/* Misc::loadImageFromEntry
- * Loads an image from <entry> into <image>. Returns false if the
- * given entry wasn't a valid image, true otherwise
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Loads an image from [entry] into [image].
+// Returns false if the given entry wasn't a valid image, true otherwise
+// -----------------------------------------------------------------------------
 bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 {
 	if (!entry)
@@ -103,16 +109,23 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 	// they need manual loading as well rather than the SIFormat system
 	else if (S_CMPNOCASE(format, "img_jaguar_sprite"))
 	{
-		Archive* parent = entry->getParent(); if (parent == nullptr) return false;
+		Archive* parent = entry->getParent();
+		if (parent == nullptr)
+			return false;
 		ArchiveEntry* data = parent->getEntry(parent->entryIndex(entry) + 1);
 		if (data && S_CMPNOCASE(data->getName(), "."))
 			return image->loadJaguarSprite(entry->getData(), entry->getSize(), data->getData(), data->getSize());
-		else return false;
+		else
+			return false;
 	}
 	else if (S_CMPNOCASE(format, "img_jaguar_texture"))
 	{
-		Archive* parent = entry->getParent(); if (parent == nullptr) return false;
-		ArchiveEntry* texture1 = parent->getEntry("TEXTURE1"); if (texture1 == nullptr) return false;
+		Archive* parent = entry->getParent();
+		if (parent == nullptr)
+			return false;
+		ArchiveEntry* texture1 = parent->getEntry("TEXTURE1");
+		if (texture1 == nullptr)
+			return false;
 		point2_t dimensions = findJaguarTextureDimensions(texture1, entry->getName(true));
 		return image->loadJaguarTexture(entry->getData(), entry->getSize(), dimensions.x, dimensions.y);
 	}
@@ -134,38 +147,39 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 	return false;
 }
 
-/* Misc::detectPaletteHack
- * Detects the few known cases where a picture does not use PLAYPAL
- * as its default palette.
- *******************************************************************/
-int	Misc::detectPaletteHack(ArchiveEntry* entry)
+// -----------------------------------------------------------------------------
+// Detects the few known cases where a picture does not use PLAYPAL as its
+// default palette.
+// -----------------------------------------------------------------------------
+int Misc::detectPaletteHack(ArchiveEntry* entry)
 {
 	if (entry == nullptr || entry->getType() == nullptr)
 		return PAL_NOHACK;
-	else if (entry->getType()->formatId() == "img_doom_arah"	&& entry->getName() == "TITLEPIC")
-		return PAL_ALPHAHACK;	// Doom Alpha 0.2
-	else if (entry->getType()->formatId() == "img_doom_snea"	&& entry->getName() == "TITLEPIC")
-		return PAL_ALPHAHACK;	// Doom Alpha 0.4 and 0.5
-	else if (entry->getType()->formatId() == "img_raw"			&& entry->getName() == "E2END")
-		return PAL_HERETICHACK;	// Heretic
-	else if (entry->getType()->formatId() == "img_doom_arah"	&& entry->getName() == "shadowpage")
-		return PAL_SHADOWHACK;	// Shadowcaster
-	else if (entry->getType()->formatId() == "img_rott"		&& entry->getName() == "NICOLAS")
-		return PAL_ROTTNHACK;	// Rise of the Triad
-	else if (entry->getType()->formatId() == "img_rott"		&& entry->getName() == "FINLDOOR")
-		return PAL_ROTTDHACK;	// Rise of the Triad
-	else if (entry->getType()->formatId() == "img_rott"		&& entry->getName() == "FINLFIRE")
-		return PAL_ROTTFHACK;	// Rise of the Triad
-	else if ((entry->getType()->formatId() == "img_rott"		&& entry->getName() == "AP_TITL")
-	      || (entry->getType()->formatId() == "img_rottraw"	&& entry->getName() == "AP_WRLD"))
-		return PAL_ROTTAHACK;	// Rise of the Triad
-	else if (entry->getType()->formatId() == "img_wolfpic"		&& entry->getName().Matches("IDG*"))
-		return PAL_SODIDHACK;	// Spear of Destiny team screens
-	else if (entry->getType()->formatId() == "img_wolfpic"		&& entry->getName().Matches("TIT*"))
-		return PAL_SODTITLEHACK;// Spear of Destiny title screens
-	else if (entry->getType()->formatId() == "img_wolfpic"		&& entry->getName().Matches("END*"))
+	else if (entry->getType()->formatId() == "img_doom_arah" && entry->getName() == "TITLEPIC")
+		return PAL_ALPHAHACK; // Doom Alpha 0.2
+	else if (entry->getType()->formatId() == "img_doom_snea" && entry->getName() == "TITLEPIC")
+		return PAL_ALPHAHACK; // Doom Alpha 0.4 and 0.5
+	else if (entry->getType()->formatId() == "img_raw" && entry->getName() == "E2END")
+		return PAL_HERETICHACK; // Heretic
+	else if (entry->getType()->formatId() == "img_doom_arah" && entry->getName() == "shadowpage")
+		return PAL_SHADOWHACK; // Shadowcaster
+	else if (entry->getType()->formatId() == "img_rott" && entry->getName() == "NICOLAS")
+		return PAL_ROTTNHACK; // Rise of the Triad
+	else if (entry->getType()->formatId() == "img_rott" && entry->getName() == "FINLDOOR")
+		return PAL_ROTTDHACK; // Rise of the Triad
+	else if (entry->getType()->formatId() == "img_rott" && entry->getName() == "FINLFIRE")
+		return PAL_ROTTFHACK; // Rise of the Triad
+	else if (
+		(entry->getType()->formatId() == "img_rott" && entry->getName() == "AP_TITL")
+		|| (entry->getType()->formatId() == "img_rottraw" && entry->getName() == "AP_WRLD"))
+		return PAL_ROTTAHACK; // Rise of the Triad
+	else if (entry->getType()->formatId() == "img_wolfpic" && entry->getName().Matches("IDG*"))
+		return PAL_SODIDHACK; // Spear of Destiny team screens
+	else if (entry->getType()->formatId() == "img_wolfpic" && entry->getName().Matches("TIT*"))
+		return PAL_SODTITLEHACK; // Spear of Destiny title screens
+	else if (entry->getType()->formatId() == "img_wolfpic" && entry->getName().Matches("END*"))
 	{
-		long endscreen;			// Spear of Destiny ending screens (extra-hacky!)
+		long endscreen; // Spear of Destiny ending screens (extra-hacky!)
 		if (entry->getName().Right(3).ToLong(&endscreen))
 			return PAL_SODENDHACK + endscreen - 81;
 	}
@@ -174,12 +188,10 @@ int	Misc::detectPaletteHack(ArchiveEntry* entry)
 	return PAL_NOHACK;
 }
 
-
-/* Misc::loadPaletteFromArchive
- * Writes palette information from the PLAYPAL entry in <archive> to
- * <pal>. Returns false if PLAYPAL entry was missing or invalid,
- * true otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes palette information from the PLAYPAL entry in [archive] to [pal].
+// Returns false if PLAYPAL entry was missing or invalid, true otherwise
+// -----------------------------------------------------------------------------
 bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 {
 	// Check parameters
@@ -187,7 +199,7 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 		return false;
 
 	// Find PLAYPAL entry
-	bool sixbit = false;
+	bool          sixbit  = false;
 	ArchiveEntry* playpal = nullptr;
 	if (lump == PAL_ALPHAHACK)
 		playpal = archive->getEntry("TITLEPAL", true);
@@ -212,8 +224,8 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 		int endscreen = lump - PAL_SODENDHACK;
 		endscreen += 154;
 		string palname = S_FMT("PAL%05d", endscreen);
-		playpal = archive->getEntry(palname, true);
-		sixbit = true;
+		playpal        = archive->getEntry(palname, true);
+		sixbit         = true;
 	}
 	if (!playpal || playpal->getSize() < 768)
 	{
@@ -221,16 +233,16 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 		Archive::SearchOptions opt;
 
 		// Search "PLAYPAL" first
-		opt.match_type = EntryType::fromId("palette");
-		opt.match_name = "PLAYPAL";
+		opt.match_type     = EntryType::fromId("palette");
+		opt.match_name     = "PLAYPAL";
 		opt.search_subdirs = true;
-		playpal = archive->findFirst(opt);
+		playpal            = archive->findFirst(opt);
 
 		// Otherwise any palette will do
 		if (!playpal)
 		{
 			opt.match_name = "";
-			playpal = archive->findFirst(opt);
+			playpal        = archive->findFirst(opt);
 		}
 	}
 	if (!playpal || playpal->getSize() < 768)
@@ -241,16 +253,17 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 		return false;
 
 	// Check it is the correct size
-	if (playpal->getSize() < 256*3)
+	if (playpal->getSize() < 256 * 3)
 		return false;
 
 	// Read palette colours
 	const uint8_t* playpal_dat = playpal->getData(true);
-	uint8_t max = 0;
+	uint8_t        max         = 0;
 	for (int a = 0; a < 768; ++a)
 		if (playpal_dat[a] > max)
 			max = playpal_dat[a];
-	if (max < 64) sixbit = true;
+	if (max < 64)
+		sixbit = true;
 
 	int c = 0;
 	for (int a = 0; a < 256; ++a)
@@ -260,59 +273,60 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 		uint8_t b = playpal_dat[c++];
 		if (sixbit)
 		{
-			r = (r<<2) | (r>>4);
-			g = (g<<2) | (g>>4);
-			b = (b<<2) | (b>>4);
+			r = (r << 2) | (r >> 4);
+			g = (g << 2) | (g >> 4);
+			b = (b << 2) | (b >> 4);
 		}
-		pal->setColour(a, rgba_t(r, g,  b, 255));
+		pal->setColour(a, rgba_t(r, g, b, 255));
 	}
 
 	return true;
 }
 
-/* Misc::sizeAsString
- * Converts <size> to a string representing it as a 'bytes' size, ie
- * "1.24kb", "4.00mb". Sizes under 1kb aren't given an appendage
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Converts [size] to a string representing it as a 'bytes' size, ie "1.24kb",
+// "4.00mb". Sizes under 1kb aren't given an appendage
+// -----------------------------------------------------------------------------
 string Misc::sizeAsString(uint32_t size)
 {
 	if (size < 1024 || !size_as_string)
 	{
 		return S_FMT("%d", size);
 	}
-	else if (size < 1024*1024)
+	else if (size < 1024 * 1024)
 	{
 		double kb = (double)size / 1024;
 		return S_FMT("%1.2fkb", kb);
 	}
 	else
 	{
-		double mb = (double)size / (1024*1024);
+		double mb = (double)size / (1024 * 1024);
 		return S_FMT("%1.2fmb", mb);
 	}
 }
 
-/* Misc::lumpNameToFileName
- * Sanitizes a wad lump name for exporting as a file name.
- * ZDoom merely substitutes \ to ^, but Doomsday requires
- * percent encoding of every non-alphanumeric character.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sanitizes a wad lump name for exporting as a file name.
+// ZDoom merely substitutes \ to ^, but Doomsday requires percent encoding of
+// every non-alphanumeric character.
+// -----------------------------------------------------------------------------
 string Misc::lumpNameToFileName(string lump)
 {
 	if (percent_encoding)
 	{
 		// Doomsday: everything but [a-zA-Z0-9._ ~-]
 		string file;
-		int chr;
+		int    chr;
 		for (size_t a = 0; a < lump.Len(); ++a)
 		{
 			chr = lump[a];
-			if ((chr < 'a' || chr > 'z') && (chr < 'A' || chr > 'Z') && (chr < '0' || chr > '9')
-			        && chr != '-' && chr != '.' && chr != '_' && chr != '~')
+			if ((chr < 'a' || chr > 'z') && (chr < 'A' || chr > 'Z') && (chr < '0' || chr > '9') && chr != '-'
+				&& chr != '.' && chr != '_' && chr != '~')
 			{
 				file += S_FMT("%%%02X", chr);
 			}
-			else file += S_FMT("%c", chr);
+			else
+				file += S_FMT("%c", chr);
 		}
 		return file;
 	}
@@ -325,9 +339,9 @@ string Misc::lumpNameToFileName(string lump)
 	return lump;
 }
 
-/* Misc::fileNameToLumpName
- * Turns a file name into a lump name
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Turns a file name into a lump name
+// -----------------------------------------------------------------------------
 string Misc::fileNameToLumpName(string file)
 {
 	if (percent_encoding)
@@ -335,15 +349,17 @@ string Misc::fileNameToLumpName(string file)
 		string lump;
 		for (size_t a = 0; a < file.Len(); ++a)
 		{
-			if (file[a] == '%' && file.Len() > a+2)
+			if (file[a] == '%' && file.Len() > a + 2)
 			{
-				string code = file.Mid(a+1, 2);
+				string        code = file.Mid(a + 1, 2);
 				unsigned long percent;
-				if (!code.ToULong(&percent, 16)) percent = 0;
+				if (!code.ToULong(&percent, 16))
+					percent = 0;
 				lump += S_FMT("%c", percent);
-				a+=2;
+				a += 2;
 			}
-			else lump += S_FMT("%c", file[a]);
+			else
+				lump += S_FMT("%c", file[a]);
 		}
 		return lump;
 	}
@@ -355,9 +371,9 @@ string Misc::fileNameToLumpName(string file)
 	return file;
 }
 
-/* Misc::massRenameFilter
- * Creates a mass rename filter string from [names]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Creates a mass rename filter string from [names]
+// -----------------------------------------------------------------------------
 string Misc::massRenameFilter(wxArrayString& names)
 {
 	// Check any names were given
@@ -390,10 +406,10 @@ string Misc::massRenameFilter(wxArrayString& names)
 	return filter;
 }
 
-/* Misc::doMassRename
- * Performs a mass rename on [names] using the filter [name_filter].
- * Any * in the filter means that character should not be changed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Performs a mass rename on [names] using the filter [name_filter].
+// Any * in the filter means that character should not be changed
+// -----------------------------------------------------------------------------
 void Misc::doMassRename(wxArrayString& names, string name_filter)
 {
 	// Go through names
@@ -402,7 +418,7 @@ void Misc::doMassRename(wxArrayString& names, string name_filter)
 		string& name = names[a];
 
 		// If this name is shorter than the filter string, extend it with spaces
-		//while (name.size() < name_filter.size())
+		// while (name.size() < name_filter.size())
 		//	name += " ";
 
 		// If the filter string is shorter than the name, just truncate the name
@@ -414,7 +430,7 @@ void Misc::doMassRename(wxArrayString& names, string name_filter)
 		{
 			// Check character
 			if (name_filter[c] == '*')
-				continue;					// Skip if *
+				continue; // Skip if *
 			else
 			{
 				// First check that we aren't past the end of the name
@@ -432,12 +448,12 @@ void Misc::doMassRename(wxArrayString& names, string name_filter)
 	}
 }
 
-/* Misc::rgbToHsl
- * Converts a colour from RGB to HSL colourspace
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Converts a colour from RGB to HSL colourspace
+// -----------------------------------------------------------------------------
 hsl_t Misc::rgbToHsl(double r, double g, double b)
 {
-	hsl_t ret;
+	hsl_t  ret;
 	double v_min = MIN(r, MIN(g, b));
 	double v_max = MAX(r, MAX(g, b));
 	double delta = v_max - v_min;
@@ -446,7 +462,7 @@ hsl_t Misc::rgbToHsl(double r, double g, double b)
 	ret.l = (v_max + v_min) * 0.5;
 
 	if (delta == 0)
-		ret.h = ret.s = 0;		// Grey (r==g==b)
+		ret.h = ret.s = 0; // Grey (r==g==b)
 	else
 	{
 		// Determine S
@@ -476,9 +492,9 @@ hsl_t Misc::rgbToHsl(rgba_t rgba)
 	return Misc::rgbToHsl(rgba.dr(), rgba.dg(), rgba.db());
 }
 
-/* Misc::hslToRgb
- * Converts a colour from HSL to RGB colourspace
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Converts a colour from HSL to RGB colourspace
+// -----------------------------------------------------------------------------
 rgba_t Misc::hslToRgb(double h, double s, double l)
 {
 	rgba_t ret(0, 0, 0, 255, -1);
@@ -486,36 +502,60 @@ rgba_t Misc::hslToRgb(double h, double s, double l)
 	// No saturation means grey
 	if (s == 0.)
 	{
-		ret.r = ret.g = ret.b = (uint8_t) (255. * l);
+		ret.r = ret.g = ret.b = (uint8_t)(255. * l);
 		return ret;
 	}
 
 	// Find the rough values at given H with mid L and max S.
-	double hue = (6. * h);
-	uint8_t sector = (uint8_t) hue;
-	double factor = hue - sector;
-	double dr, dg, db;
+	double  hue    = (6. * h);
+	uint8_t sector = (uint8_t)hue;
+	double  factor = hue - sector;
+	double  dr, dg, db;
 	switch (sector)
 	{
 		// RGB 0xFF0000 to 0xFFFF00, increasingly green
-	case 0: dr = 1.; dg = factor; db = 0.; break;
+	case 0:
+		dr = 1.;
+		dg = factor;
+		db = 0.;
+		break;
 		// RGB 0xFFFF00 to 0x00FF00, decreasingly red
-	case 1: dr = 1. - factor; dg = 1.; db = 0.; break;
+	case 1:
+		dr = 1. - factor;
+		dg = 1.;
+		db = 0.;
+		break;
 		// RGB 0x00FF00 to 0x00FFFF, increasingly blue
-	case 2: dr = 0.; dg = 1.; db = factor; break;
+	case 2:
+		dr = 0.;
+		dg = 1.;
+		db = factor;
+		break;
 		// RGB 0x00FFFF to 0x0000FF, decreasingly green
-	case 3: dr = 0.; dg = 1. - factor; db = 1.; break;
+	case 3:
+		dr = 0.;
+		dg = 1. - factor;
+		db = 1.;
+		break;
 		// RGB 0x0000FF to 0xFF00FF, increasingly red
-	case 4: dr = factor; dg = 0.; db = 1.; break;
+	case 4:
+		dr = factor;
+		dg = 0.;
+		db = 1.;
+		break;
 		// RGB 0xFF00FF to 0xFF0000, decreasingly blue
-	case 5: dr = 1.; dg = 0.; db = 1. - factor; break;
+	case 5:
+		dr = 1.;
+		dg = 0.;
+		db = 1. - factor;
+		break;
 	}
 
 	// Now apply desaturation
 	double ds = (1. - s) * 0.5;
-	dr = ds + (dr * s);
-	dg = ds + (dg * s);
-	db = ds + (db * s);
+	dr        = ds + (dr * s);
+	dg        = ds + (dg * s);
+	db        = ds + (db * s);
 
 	// Finally apply luminosity
 	double dl = l * 2.;
@@ -524,28 +564,43 @@ rgba_t Misc::hslToRgb(double h, double s, double l)
 	{
 		// Make brighter
 		sl = dl - 1.;
-		sr = sl * (1. - dr); dr += sr;
-		sg = sl * (1. - dg); dg += sg;
-		sb = sl * (1. - db); db += sb;
+		sr = sl * (1. - dr);
+		dr += sr;
+		sg = sl * (1. - dg);
+		dg += sg;
+		sb = sl * (1. - db);
+		db += sb;
 	}
 	else if (dl < 1.)
 	{
 		// Make darker
 		sl = 1. - dl;
-		sr = sl * dr; dr -= sr;
-		sg = sl * dg; dg -= sg;
-		sb = sl * db; db -= sb;
+		sr = sl * dr;
+		dr -= sr;
+		sg = sl * dg;
+		dg -= sg;
+		sb = sl * db;
+		db -= sb;
 	}
 
 	// Clamping (shouldn't actually be needed)
-	if (dr > 1.) dr = 1.; if (dr < 0.) dr = 0.;
-	if (dg > 1.) dg = 1.; if (dg < 0.) dg = 0.;
-	if (db > 1.) db = 1.; if (db < 0.) db = 0.;
+	if (dr > 1.)
+		dr = 1.;
+	if (dr < 0.)
+		dr = 0.;
+	if (dg > 1.)
+		dg = 1.;
+	if (dg < 0.)
+		dg = 0.;
+	if (db > 1.)
+		db = 1.;
+	if (db < 0.)
+		db = 0.;
 
 	// Now convert from 0f--1f to 0i--255i, rounding up
-	ret.r = (uint8_t) (dr * 255. + 0.499999999);
-	ret.g = (uint8_t) (dg * 255. + 0.499999999);
-	ret.b = (uint8_t) (db * 255. + 0.499999999);
+	ret.r = (uint8_t)(dr * 255. + 0.499999999);
+	ret.g = (uint8_t)(dg * 255. + 0.499999999);
+	ret.b = (uint8_t)(db * 255. + 0.499999999);
 
 	return ret;
 }
@@ -554,16 +609,16 @@ rgba_t Misc::hslToRgb(hsl_t hsl)
 	return Misc::hslToRgb(hsl.h, hsl.s, hsl.l);
 }
 
-/* Misc::rgbToLab
- * Converts a colour from RGB to CIE-L*a*b colourspace
- * Conversion formulas lazily taken from easyrgb.com.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Converts a colour from RGB to CIE-L*a*b colourspace.
+// Conversion formulas lazily taken from easyrgb.com
+// -----------------------------------------------------------------------------
 #define NORMALIZERGB(a) a = 100 * ((a > 0.04045) ? (pow(((a + 0.055) / 1.055), 2.4)) : (a / 12.92))
-#define NORMALIZEXYZ(a) a = ((a > 0.008856) ? (pow(a, (1.0/3.0))) : ((7.787*a)+(16.0/116.0)))
+#define NORMALIZEXYZ(a) a = ((a > 0.008856) ? (pow(a, (1.0 / 3.0))) : ((7.787 * a) + (16.0 / 116.0)))
 lab_t Misc::rgbToLab(double r, double g, double b)
 {
 	double x, y, z;
-	lab_t ret;
+	lab_t  ret;
 
 	// Step #1: convert RGB to CIE-XYZ
 	NORMALIZERGB(r);
@@ -571,7 +626,7 @@ lab_t Misc::rgbToLab(double r, double g, double b)
 	NORMALIZERGB(b);
 
 	x = (r * 0.4124 + g * 0.3576 + b * 0.1805) / col_cie_tristim_x;
-	y = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 100.000;			// y is always 100.00
+	y = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 100.000; // y is always 100.00
 	z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / col_cie_tristim_z;
 
 	// Step #2: convert xyz to lab
@@ -604,11 +659,11 @@ int crc_table_computed = 0;
 void make_crc_table(void)
 {
 	uint32_t c;
-	int n, k;
+	int      n, k;
 
 	for (n = 0; n < 256; n++)
 	{
-		c = (uint32_t) n;
+		c = (uint32_t)n;
 
 		for (k = 0; k < 8; k++)
 		{
@@ -648,11 +703,11 @@ uint32_t Misc::crc(const uint8_t* buf, uint32_t len)
 }
 
 
-/* Misc::findJaguarTextureDimensions
- * Find the given name in a texture lump and returns a point2_t
- * which contains the dimensions. In case the texture is not found,
- * the dimensions returned are null.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Find the given name in a texture lump and returns a point2_t which contains
+// the dimensions.
+// In case the texture is not found, the dimensions returned are null
+// -----------------------------------------------------------------------------
 point2_t Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
 {
 	point2_t dimensions;
@@ -663,8 +718,8 @@ point2_t Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
 	if (entry->getSize() < 40)
 		return dimensions;
 
-	const uint8_t* data = entry->getData();
-	size_t numtex = READ_L32(data, 0);
+	const uint8_t* data   = entry->getData();
+	size_t         numtex = READ_L32(data, 0);
 
 	// 4 bytes for the offset, plus 32 byte for the texture definition itself
 	// so a total of 36 bytes per texture; plus four for the texture count
@@ -676,11 +731,12 @@ point2_t Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
 	if (offset != 4 * numtex + 4)
 		return dimensions;
 
-	char texture[9]; texture[8] = 0;
+	char texture[9];
+	texture[8] = 0;
 
-	for (size_t t = 0; t < numtex; ++t, offset+=32)
+	for (size_t t = 0; t < numtex; ++t, offset += 32)
 	{
-		memcpy(texture, data+offset, 8);
+		memcpy(texture, data + offset, 8);
 		if (S_CMPNOCASE(name, texture))
 		{
 			// We have our texture! Let's get the width and heigth and get out of here
@@ -693,7 +749,10 @@ point2_t Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
 	return dimensions;
 }
 
-Misc::winf_t Misc::getWindowInfo(string id)
+// -----------------------------------------------------------------------------
+// Gets the saved window info for [id]
+// -----------------------------------------------------------------------------
+Misc::WindowInfo Misc::getWindowInfo(string id)
 {
 	for (unsigned a = 0; a < window_info.size(); a++)
 	{
@@ -701,9 +760,12 @@ Misc::winf_t Misc::getWindowInfo(string id)
 			return window_info[a];
 	}
 
-	return winf_t("", -1, -1, -1, -1);
+	return WindowInfo("", -1, -1, -1, -1);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the saved window info for [id]
+// -----------------------------------------------------------------------------
 void Misc::setWindowInfo(string id, int width, int height, int left, int top)
 {
 	if (id.IsEmpty())
@@ -713,35 +775,51 @@ void Misc::setWindowInfo(string id, int width, int height, int left, int top)
 	{
 		if (window_info[a].id == id)
 		{
-			if (width >= -1)	window_info[a].width = width;
-			if (height >= -1)	window_info[a].height = height;
-			if (left >= -1)		window_info[a].left = left;
-			if (top >= -1)		window_info[a].top = top;
+			if (width >= -1)
+				window_info[a].width = width;
+			if (height >= -1)
+				window_info[a].height = height;
+			if (left >= -1)
+				window_info[a].left = left;
+			if (top >= -1)
+				window_info[a].top = top;
 			return;
 		}
 	}
 
-	window_info.push_back(winf_t(id, width, height, left, top));
+	window_info.push_back(WindowInfo(id, width, height, left, top));
 }
 
+// -----------------------------------------------------------------------------
+// Reads saved window info from tokenizer [tz]
+// -----------------------------------------------------------------------------
 void Misc::readWindowInfo(Tokenizer& tz)
 {
 	// Read definitions
 	tz.advIf("{");
 	while (!tz.check("}") && !tz.atEnd())
 	{
-		string id = tz.current().text;
-		int width = tz.next().asInt();
-		int height = tz.next().asInt();
-		int left = tz.next().asInt();
-		int top = tz.next().asInt();
+		string id     = tz.current().text;
+		int    width  = tz.next().asInt();
+		int    height = tz.next().asInt();
+		int    left   = tz.next().asInt();
+		int    top    = tz.next().asInt();
 		setWindowInfo(id, width, height, left, top);
 		tz.adv();
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Writes all saved window info to [file]
+// -----------------------------------------------------------------------------
 void Misc::writeWindowInfo(wxFile& file)
 {
 	for (unsigned a = 0; a < window_info.size(); a++)
-		file.Write(S_FMT("\t%s %d %d %d %d\n", window_info[a].id, window_info[a].width, window_info[a].height, window_info[a].left, window_info[a].top));
+		file.Write(S_FMT(
+			"\t%s %d %d %d %d\n",
+			window_info[a].id,
+			window_info[a].width,
+			window_info[a].height,
+			window_info[a].left,
+			window_info[a].top));
 }
