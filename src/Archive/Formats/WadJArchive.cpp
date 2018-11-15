@@ -48,82 +48,6 @@ extern string map_lumps[];
 
 // -----------------------------------------------------------------------------
 //
-// Functions
-//
-// -----------------------------------------------------------------------------
-namespace
-{
-// Taken and adapted from Jaguar Doom source code
-#define LENSHIFT 4 /* this must be log2(LOOKAHEAD_SIZE) */
-bool jaguarDecode(MemChunk& mc)
-{
-	bool     okay      = false;
-	uint8_t  getidbyte = 0;
-	int      len;
-	int      pos;
-	int      i;
-	uint8_t* source;
-
-	// Get data
-	size_t         isize  = mc.getSize();
-	const uint8_t* istart = mc.getData();
-	const uint8_t* input  = istart;
-	const uint8_t* iend   = input + isize;
-
-	// It seems that encoded lumps are given their actual uncompressed size in the directory.
-	uint8_t* ostart = new uint8_t[isize + 1];
-	uint8_t* output = ostart;
-	uint8_t* oend   = output + isize + 1;
-	uint8_t  idbyte = 0;
-
-	size_t length = 0;
-
-	while ((input < iend) && (output < oend))
-	{
-		/* get a new idbyte if necessary */
-		if (!getidbyte)
-			idbyte = *input++;
-		getidbyte = (getidbyte + 1) & 7;
-
-		if (idbyte & 1)
-		{
-			/* decompress */
-			pos    = *input++ << LENSHIFT;
-			pos    = pos | (*input >> LENSHIFT);
-			source = output - pos - 1;
-			len    = (*input++ & 0xf) + 1;
-			if (len == 1)
-			{
-				okay = true;
-				break;
-			}
-			length += len;
-			if (output + len > oend)
-				break;
-
-			for (i = 0; i < len; i++)
-				*output++ = *source++;
-		}
-		else
-		{
-			length++;
-			*output++ = *input++;
-		}
-		idbyte = idbyte >> 1;
-	}
-	// Finalize stuff
-	size_t osize = output - ostart;
-	// LOG_MESSAGE(1, "Input size = %d, used input = %d, computed length = %d, output size = %d", isize, input - istart,
-	// length, osize);
-	mc.importMem(ostart, osize);
-	delete[] ostart;
-	return okay;
-}
-} // namespace
-
-
-// -----------------------------------------------------------------------------
-//
 // WadJArchive Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -480,4 +404,74 @@ bool WadJArchive::isWadJArchive(string filename)
 
 	// If it's passed to here it's probably a wad file
 	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Decodes encoded data in [mc]
+// Taken and adapted from Jaguar Doom source code
+// -----------------------------------------------------------------------------
+#define LENSHIFT 4 /* this must be log2(LOOKAHEAD_SIZE) */
+bool WadJArchive::jaguarDecode(MemChunk& mc)
+{
+	bool     okay      = false;
+	uint8_t  getidbyte = 0;
+	int      len;
+	int      pos;
+	int      i;
+	uint8_t* source;
+
+	// Get data
+	size_t         isize  = mc.getSize();
+	const uint8_t* istart = mc.getData();
+	const uint8_t* input  = istart;
+	const uint8_t* iend   = input + isize;
+
+	// It seems that encoded lumps are given their actual uncompressed size in the directory.
+	uint8_t* ostart = new uint8_t[isize + 1];
+	uint8_t* output = ostart;
+	uint8_t* oend   = output + isize + 1;
+	uint8_t  idbyte = 0;
+
+	size_t length = 0;
+
+	while ((input < iend) && (output < oend))
+	{
+		/* get a new idbyte if necessary */
+		if (!getidbyte)
+			idbyte = *input++;
+		getidbyte = (getidbyte + 1) & 7;
+
+		if (idbyte & 1)
+		{
+			/* decompress */
+			pos    = *input++ << LENSHIFT;
+			pos    = pos | (*input >> LENSHIFT);
+			source = output - pos - 1;
+			len    = (*input++ & 0xf) + 1;
+			if (len == 1)
+			{
+				okay = true;
+				break;
+			}
+			length += len;
+			if (output + len > oend)
+				break;
+
+			for (i = 0; i < len; i++)
+				*output++ = *source++;
+		}
+		else
+		{
+			length++;
+			*output++ = *input++;
+		}
+		idbyte = idbyte >> 1;
+	}
+	// Finalize stuff
+	size_t osize = output - ostart;
+	// LOG_MESSAGE(1, "Input size = %d, used input = %d, computed length = %d, output size = %d", isize, input - istart,
+	// length, osize);
+	mc.importMem(ostart, osize);
+	delete[] ostart;
+	return okay;
 }

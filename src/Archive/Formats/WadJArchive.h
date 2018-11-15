@@ -19,6 +19,8 @@ public:
 	static bool isWadJArchive(MemChunk& mc);
 	static bool isWadJArchive(string filename);
 
+	static bool jaguarDecode(MemChunk& mc);
+
 private:
 	vector<ArchiveEntry*> entries_;
 	char                  wad_type_[4];

@@ -34,8 +34,8 @@
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Utility/Tokenizer.h"
+#include "WadJArchive.h"
 
-bool JaguarDecode(MemChunk& mc);
 
 // -----------------------------------------------------------------------------
 //
@@ -472,7 +472,7 @@ bool WadArchive::open(MemChunk& mc)
 				if (entry->exProps().propertyExists("FullSize")
 					&& (unsigned)(int)(entry->exProp("FullSize")) > entry->getSize())
 					edata.reSize((int)(entry->exProp("FullSize")), true);
-				if (!JaguarDecode(edata))
+				if (!WadJArchive::jaguarDecode(edata))
 					LOG_MESSAGE(
 						1,
 						"%i: %s (following %s), did not decode properly",
