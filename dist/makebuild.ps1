@@ -1,4 +1,4 @@
-$version = "3120_b5"
+$version = "3120"
 $rev_short = Invoke-Expression "git.exe rev-parse --short HEAD"
 
 # Check for 7-zip install
@@ -59,6 +59,7 @@ Write-Host "Done" -foregroundcolor green
 Write-Host "`nCopying SLADE files..." -foregroundcolor yellow
 Copy-Item (resolve-path ".\FreeImage.dll")      "$releasedir" -Force
 Copy-Item (resolve-path ".\libfluidsynth.dll")  "$releasedir" -Force
+Copy-Item (resolve-path ".\openal32.dll")       "$releasedir" -Force
 Copy-Item (resolve-path ".\SLADE.exe")          "$releasedir" -Force
 Copy-Item (resolve-path ".\SLADE.pdb")          "$releasedir" -Force
 Copy-Item (resolve-path ".\WinXP\SLADE.exe")    "$releasedir\XP" -Force
