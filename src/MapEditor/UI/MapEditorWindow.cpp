@@ -1218,7 +1218,7 @@ bool MapEditorWindow::handleAction(string id)
 			Archive* a = mdesc_current.head->getParent();
 			if (a && save_archive_with_map) a->save();
 		}
-
+		MapEditor::editContext().renderer().forceUpdate();
 		return true;
 	}
 
@@ -1226,6 +1226,7 @@ bool MapEditorWindow::handleAction(string id)
 	if (id == "mapw_saveas")
 	{
 		saveMapAs();
+		MapEditor::editContext().renderer().forceUpdate();
 		return true;
 	}
 
