@@ -233,7 +233,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 		// surfaces drawn as well
 		// TODO this does something different with vavoom
 		extra_floor.draw_inside = (type_flags & 4 || (type_flags & 3) == 2);
-		extra_floor.flags = flags;
+		extra_floor.flags       = flags;
 
 		// TODO only gzdoom supports slopes here.
 		// TODO this should probably happen live instead of being copied, if
@@ -241,7 +241,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 		// Guessing a bit here, but I suspect ZDoom sorts floors in order of
 		// the control sector's plain ceiling height
 		extra_floor.effective_height = control_sector->ceiling().height;
-		extra_floor.ceiling_plane = control_sector->ceiling().plane;
+		extra_floor.ceiling_plane    = control_sector->ceiling().plane;
 		if (extra_floor.ceilingOnly())
 			extra_floor.floor_plane = extra_floor.ceiling_plane;
 		else
@@ -267,7 +267,11 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 			if (control_sector->modifiedTime() > sectors[a]->modifiedTime())
 				sectors[a]->setModified();
 		}
-		LOG_MESSAGE(4, "adding a 3d floor controlled by sector %d to %lu sectors", extra_floor.control_sector_index, sectors.size());
+		LOG_MESSAGE(
+			4,
+			"adding a 3d floor controlled by sector %d to %lu sectors",
+			extra_floor.control_sector_index,
+			sectors.size());
 	}
 
 	// --- TranslucentLine ---

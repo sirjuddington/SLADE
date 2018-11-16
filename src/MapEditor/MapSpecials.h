@@ -3,6 +3,7 @@
 #include "SLADEMap/MapLine.h"
 #include "SLADEMap/MapSector.h"
 #include "SLADEMap/MapThing.h"
+#include "common.h"
 
 class SLADEMap;
 class ArchiveEntry;
@@ -14,7 +15,7 @@ class MapSpecials
 public:
 	void reset();
 
-	void	processMapSpecials(SLADEMap* map);
+	void processMapSpecials(SLADEMap* map);
 
 	bool tagColour(int tag, ColRGBA* colour);
 	bool tagFadeColour(int tag, ColRGBA* colour);

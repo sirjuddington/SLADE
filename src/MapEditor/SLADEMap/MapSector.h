@@ -60,25 +60,25 @@ public:
 		SWIMMABLE = 2,
 		NONSOLID  = 3,
 
-		DISABLE_LIGHTING = 1,
-		LIGHTING_INSIDE_ONLY = 2,
-		INNER_FOG_EFFECT = 4,
-		FLAT_AT_CEILING = 8,
-		USE_UPPER_TEXTURE = 16,
-		USE_LOWER_TEXTURE = 32,
+		DISABLE_LIGHTING      = 1,
+		LIGHTING_INSIDE_ONLY  = 2,
+		INNER_FOG_EFFECT      = 4,
+		FLAT_AT_CEILING       = 8,
+		USE_UPPER_TEXTURE     = 16,
+		USE_LOWER_TEXTURE     = 32,
 		ADDITIVE_TRANSPARENCY = 64,
 	};
 
-	Plane  floor_plane;
-	Plane  ceiling_plane;
-	short    effective_height;
-	short    floor_light;
-	short    ceiling_light;
-	unsigned control_sector_index;
-	unsigned control_line_index;
-	int floor_type;
-	float alpha;
-	bool draw_inside;
+	Plane         floor_plane;
+	Plane         ceiling_plane;
+	short         effective_height;
+	short         floor_light;
+	short         ceiling_light;
+	unsigned      control_sector_index;
+	unsigned      control_line_index;
+	int           floor_type;
+	float         alpha;
+	bool          draw_inside;
 	unsigned char flags;
 
 	bool disableLighting() { return flags & ExFloorType::DISABLE_LIGHTING; }

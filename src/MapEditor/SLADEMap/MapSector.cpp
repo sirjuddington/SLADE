@@ -113,13 +113,13 @@ void MapSector::copy(MapObject* s)
 
 	// Basic variables
 	MapSector* sector = (MapSector*)s;
-	floor_.texture    = sector->floor_.texture;
-	ceiling_.texture  = sector->ceiling_.texture;
-	floor_.height     = sector->floor_.height;
-	ceiling_.height   = sector->ceiling_.height;
-	light_            = sector->light_;
-	special_          = sector->special_;
-	id_               = sector->id_;
+	floor_.texture   = sector->floor_.texture;
+	ceiling_.texture = sector->ceiling_.texture;
+	floor_.height    = sector->floor_.height;
+	ceiling_.height  = sector->ceiling_.height;
+	light_           = sector->light_;
+	special_         = sector->special_;
+	id_              = sector->id_;
 	floor_.plane.set(0, 0, 1, sector->floor_.height);
 	ceiling_.plane.set(0, 0, 1, sector->ceiling_.height);
 
@@ -392,7 +392,7 @@ bool MapSector::isWithin(Vec2f point)
 		//	continue;
 		//} else if (connected_sides[a]->getParentLine() == NULL) {
 		//	LOG_MESSAGE(3, "Warning: connected side #%i has a NULL pointer parent line!",
-		// connected_sides[a]->getIndex()); 	continue;
+		//connected_sides[a]->getIndex()); 	continue;
 		//}
 		dist = connected_sides_[a]->parentLine()->distanceTo(point);
 
@@ -543,9 +543,8 @@ uint8_t MapSector::lightAt(int where, int extra_floor_index)
 		else if (where == 1 && floor_gap < 0)
 			floor_gap = extra_floors.size() - 1;
 		MapSector* control_sector = this;
-		if (floor_gap >= 0 && floor_gap < extra_floors.size() &&
-			!extra_floors[floor_gap].disableLighting() &&
-			!extra_floors[floor_gap].lightingInsideOnly())
+		if (floor_gap >= 0 && floor_gap < extra_floors.size() && !extra_floors[floor_gap].disableLighting()
+			&& !extra_floors[floor_gap].lightingInsideOnly())
 		{
 			control_sector = parent_map_->sector(extra_floors[floor_gap].control_sector_index);
 		}
@@ -753,8 +752,7 @@ ColRGBA MapSector::fogColour()
 	}
 
 	// udmf
-	if (parent_map_->currentFormat() == MAP_UDMF
-		&& Game::configuration().featureSupported(Game::UDMFFeature::SectorFog))
+	if (parent_map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(Game::UDMFFeature::SectorFog))
 	{
 		int intcol = MapObject::intProperty("fadecolor");
 
@@ -820,15 +818,15 @@ void MapSector::readBackup(Backup* backup)
 	parent_map_->updateFlatUsage(floor_.texture, -1);
 	parent_map_->updateFlatUsage(ceiling_.texture, -1);
 
-	floor_.texture   = backup->props_internal["texturefloor"].stringValue();
-	ceiling_.texture = backup->props_internal["textureceiling"].stringValue();
+	floor_.texture    = backup->props_internal["texturefloor"].stringValue();
+	ceiling_.texture    = backup->props_internal["textureceiling"].stringValue();
 	floor_.height    = backup->props_internal["heightfloor"].intValue();
 	ceiling_.height  = backup->props_internal["heightceiling"].intValue();
 	floor_.plane.set(0, 0, 1, floor_.height);
 	ceiling_.plane.set(0, 0, 1, ceiling_.height);
 	light_   = backup->props_internal["lightlevel"].intValue();
 	special_ = backup->props_internal["special"].intValue();
-	id_      = backup->props_internal["id"].intValue();
+	id_     = backup->props_internal["id"].intValue();
 
 	// Update texture counts (increment new)
 	parent_map_->updateFlatUsage(floor_.texture, 1);
