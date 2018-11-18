@@ -90,7 +90,7 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "palette_colourise"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::General, "palette_colourise"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -177,7 +177,7 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "palette_tint"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::General, "palette_tint"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -295,7 +295,7 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "palette_tweak"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::General, "palette_tweak"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -447,7 +447,7 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "palette_invert"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::General, "palette_invert"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -523,7 +523,7 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::ENTRY, "palette"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::Entry, "palette"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -580,7 +580,7 @@ public:
 	{		
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "palette_gradient"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::General, "palette_gradient"));
 		SetIcon(icon);
 		
 		// Setup main sizer

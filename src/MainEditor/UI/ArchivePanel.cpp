@@ -213,7 +213,7 @@ public:
 
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::ENTRY, "palette"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::Entry, "palette"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -394,7 +394,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	sizer_path_controls_->Add(label_path_, 1, wxRIGHT|wxALIGN_CENTER_VERTICAL, UI::pad());
 
 	// 'Up' button
-	btn_updir_ = new SIconButton(this, Icons::ENTRY, "upfolder");
+	btn_updir_ = new SIconButton(this, Icons::Entry, "upfolder");
 	btn_updir_->Enable(false);
 	sizer_path_controls_->Add(btn_updir_, 0, wxEXPAND);
 
@@ -3680,7 +3680,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	//SAction::fromId("arch_entry_crc32")->addToMenu(&context, true);
 
 	// Add 'Open In' menu
-	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(Icons::getIcon(Icons::GENERAL, "open"));
+	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(Icons::getIcon(Icons::General, "open"));
 
 	// Add custom menu items
 	wxMenu* custom;

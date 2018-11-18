@@ -1,36 +1,38 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    CTexture.cpp
- * Description: C(omposite)Texture class, represents a composite
- *              texture as described in TEXTUREx entries
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    CTexture.cpp
+// Description: C(omposite)Texture class, represents a composite texture as
+//              described in TEXTUREx entries
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Archive/ArchiveManager.h"
 #include "CTexture.h"
+#include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "Graphics/SImage/SImage.h"
@@ -38,195 +40,202 @@
 #include "Utility/Tokenizer.h"
 
 
-/*******************************************************************
- * CTPATCH CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// CTPatch Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* CTPatch::CTPatch
- * CTPatch class default constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// CTPatch class default constructor
+// -----------------------------------------------------------------------------
 CTPatch::CTPatch()
 {
-	this->offset_x = 0;
-	this->offset_y = 0;
+	offset_x_ = 0;
+	offset_y_ = 0;
 }
 
-/* CTPatch::CTPatch
- * CTPatch class constructor w/initial values
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// CTPatch class constructor w/initial values
+// -----------------------------------------------------------------------------
 CTPatch::CTPatch(string name, int16_t offset_x, int16_t offset_y)
 {
-	this->name = name;
-	this->offset_x = offset_x;
-	this->offset_y = offset_y;
+	name_     = name;
+	offset_x_ = offset_x;
+	offset_y_ = offset_y;
 }
 
-/* CTPatch::CTPatch
- * CTPatch class constructor copying another CTPatch
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// CTPatch class constructor copying another CTPatch
+// -----------------------------------------------------------------------------
 CTPatch::CTPatch(CTPatch* copy)
 {
 	if (copy)
 	{
-		name = copy->name;
-		offset_x = copy->offset_x;
-		offset_y = copy->offset_y;
+		name_     = copy->name_;
+		offset_x_ = copy->offset_x_;
+		offset_y_ = copy->offset_y_;
 	}
 }
 
-/* CTPatch::~CTPatch
- * CTPatch class destructor
- *******************************************************************/
-CTPatch::~CTPatch()
-{
-}
+// -----------------------------------------------------------------------------
+// CTPatch class destructor
+// -----------------------------------------------------------------------------
+CTPatch::~CTPatch() {}
 
-/* CTPatch::getPatchEntry
- * Returns the entry (if any) associated with this patch via the
- * resource manager. Entries in [parent] will be prioritised over
- * entries in any other open archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the entry (if any) associated with this patch via the resource
+// manager. Entries in [parent] will be prioritised over entries in any other
+// open archive
+// -----------------------------------------------------------------------------
 ArchiveEntry* CTPatch::getPatchEntry(Archive* parent)
 {
 	// Default patches should be in patches namespace
-	ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "patches", parent);
+	ArchiveEntry* entry = theResourceManager->getPatchEntry(name_, "patches", parent);
 
 	// Not found in patches, check in graphics namespace
-	if (!entry) entry = theResourceManager->getPatchEntry(name, "graphics", parent);
+	if (!entry)
+		entry = theResourceManager->getPatchEntry(name_, "graphics", parent);
 
 	// Not found in patches, check in stand-alone texture namespace
-	if (!entry) entry = theResourceManager->getPatchEntry(name, "textures", parent);
+	if (!entry)
+		entry = theResourceManager->getPatchEntry(name_, "textures", parent);
 
 	return entry;
 }
 
 
-/*******************************************************************
- * CTPATCHEX CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// CTPatchEx Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* CTPatchEx::CTPatchEx
- * CTPatchEx class default constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// CTPatchEx class default constructor
+// -----------------------------------------------------------------------------
 CTPatchEx::CTPatchEx()
 {
-	flip_x = false;
-	flip_y = false;
-	use_offsets = false;
-	rotation = 0;
-	alpha = 1.0f;
-	style = "Copy";
-	blendtype = 0;
-	type = PTYPE_PATCH;
+	flip_x_      = false;
+	flip_y_      = false;
+	use_offsets_ = false;
+	rotation_    = 0;
+	alpha_       = 1.0f;
+	style_       = "Copy";
+	blendtype_   = 0;
+	type_        = Type::Patch;
 }
 
-/* CTPatchEx::CTPatchEx
- * CTPatchEx class constructor w/basic initial values
- *******************************************************************/
-CTPatchEx::CTPatchEx(string name, int16_t offset_x, int16_t offset_y, uint8_t type)
-	: CTPatch(name, offset_x, offset_y)
+// -----------------------------------------------------------------------------
+// CTPatchEx class constructor w/basic initial values
+// -----------------------------------------------------------------------------
+CTPatchEx::CTPatchEx(string name, int16_t offset_x, int16_t offset_y, Type type) : CTPatch(name, offset_x, offset_y)
 {
-	flip_x = false;
-	flip_y = false;
-	use_offsets = false;
-	rotation = 0;
-	alpha = 1.0f;
-	style = "Copy";
-	blendtype = 0;
-	this->type = type;
+	flip_x_      = false;
+	flip_y_      = false;
+	use_offsets_ = false;
+	rotation_    = 0;
+	alpha_       = 1.0f;
+	style_       = "Copy";
+	blendtype_   = 0;
+	type_        = type;
 }
 
-/* CTPatchEx::CTPatchEx
- * CTPatchEx class constructor copying a regular CTPatch
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// CTPatchEx class constructor copying a regular CTPatch
+// -----------------------------------------------------------------------------
 CTPatchEx::CTPatchEx(CTPatch* copy)
 {
 	if (copy)
 	{
-		flip_x = false;
-		flip_y = false;
-		use_offsets = false;
-		rotation = 0;
-		alpha = 1.0f;
-		style = "Copy";
-		blendtype = 0;
-		offset_x = copy->xOffset();
-		offset_y = copy->yOffset();
-		name = copy->getName();
-		type = PTYPE_PATCH;
+		flip_x_      = false;
+		flip_y_      = false;
+		use_offsets_ = false;
+		rotation_    = 0;
+		alpha_       = 1.0f;
+		style_       = "Copy";
+		blendtype_   = 0;
+		offset_x_    = copy->xOffset();
+		offset_y_    = copy->yOffset();
+		name_        = copy->getName();
+		type_        = Type::Patch;
 	}
 }
 
-/* CTPatchEx::CTPatchEx
- * CTPatchEx class constructor copying another CTPatchEx
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// CTPatchEx class constructor copying another CTPatchEx
+// -----------------------------------------------------------------------------
 CTPatchEx::CTPatchEx(CTPatchEx* copy)
 {
 	if (copy)
 	{
-		flip_x = copy->flip_x;
-		flip_y = copy->flip_y;
-		use_offsets = copy->useOffsets();
-		rotation = copy->rotation;
-		alpha = copy->alpha;
-		style = copy->style;
-		blendtype = copy->blendtype;
-		colour = copy->colour;
-		offset_x = copy->offset_x;
-		offset_y = copy->offset_y;
-		name = copy->name;
-		type = copy->type;
-		translation.copy(copy->translation);
+		flip_x_      = copy->flip_x_;
+		flip_y_      = copy->flip_y_;
+		use_offsets_ = copy->useOffsets();
+		rotation_    = copy->rotation_;
+		alpha_       = copy->alpha_;
+		style_       = copy->style_;
+		blendtype_   = copy->blendtype_;
+		colour_      = copy->colour_;
+		offset_x_    = copy->offset_x_;
+		offset_y_    = copy->offset_y_;
+		name_        = copy->name_;
+		type_        = copy->type_;
+		translation_.copy(copy->translation_);
 	}
 }
 
-/* CTPatchEx::~CTPatchEx
- * CTPatchEx class destructor
- *******************************************************************/
-CTPatchEx::~CTPatchEx()
-{
-}
+// -----------------------------------------------------------------------------
+// CTPatchEx class destructor
+// -----------------------------------------------------------------------------
+CTPatchEx::~CTPatchEx() {}
 
-/* CTPatchEx::getPatchEntry
- * Returns the entry (if any) associated with this patch via the
- * resource manager. Entries in [parent] will be prioritised over
- * entries in any other open archive
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the entry (if any) associated with this patch via the resource
+// manager. Entries in [parent] will be prioritised over entries in any other
+// open archive
+// -----------------------------------------------------------------------------
 ArchiveEntry* CTPatchEx::getPatchEntry(Archive* parent)
 {
 	// 'Patch' type: patches > graphics
-	if (type == PTYPE_PATCH)
+	if (type_ == Type::Patch)
 	{
-		ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "patches", parent);
-		if (!entry) entry = theResourceManager->getFlatEntry(name, parent);
-		if (!entry) entry = theResourceManager->getPatchEntry(name, "graphics", parent);
+		ArchiveEntry* entry = theResourceManager->getPatchEntry(name_, "patches", parent);
+		if (!entry)
+			entry = theResourceManager->getFlatEntry(name_, parent);
+		if (!entry)
+			entry = theResourceManager->getPatchEntry(name_, "graphics", parent);
 		return entry;
 	}
 
 	// 'Graphic' type: graphics > patches
-	if (type == PTYPE_GRAPHIC)
+	if (type_ == Type::Graphic)
 	{
-		ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "graphics", parent);
-		if (!entry) entry = theResourceManager->getPatchEntry(name, "patches", parent);
-		if (!entry) entry = theResourceManager->getFlatEntry(name, parent);
+		ArchiveEntry* entry = theResourceManager->getPatchEntry(name_, "graphics", parent);
+		if (!entry)
+			entry = theResourceManager->getPatchEntry(name_, "patches", parent);
+		if (!entry)
+			entry = theResourceManager->getFlatEntry(name_, parent);
 		return entry;
 	}
 	// Silence warnings
 	return nullptr;
 }
 
-/* CTPatchEx::parse
- * Parses a ZDoom TEXTURES format patch definition
- *******************************************************************/
-bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
+// -----------------------------------------------------------------------------
+// Parses a ZDoom TEXTURES format patch definition
+// -----------------------------------------------------------------------------
+bool CTPatchEx::parse(Tokenizer& tz, Type type)
 {
 	// Read basic info
-	this->type = type;
-	name = tz.next().text.Upper();
-	tz.adv();	// Skip ,
-	offset_x = tz.next().asInt();
-	tz.adv();	// Skip ,
-	offset_y = tz.next().asInt();
+	type_ = type;
+	name_ = tz.next().text.Upper();
+	tz.adv(); // Skip ,
+	offset_x_ = tz.next().asInt();
+	tz.adv(); // Skip ,
+	offset_y_ = tz.next().asInt();
 
 	// Check if there is any extended info
 	if (tz.advIfNext("{", 2))
@@ -236,19 +245,19 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 		{
 			// FlipX
 			if (tz.checkNC("FlipX"))
-				flip_x = true;
+				flip_x_ = true;
 
 			// FlipY
 			if (tz.checkNC("FlipY"))
-				flip_y = true;
+				flip_y_ = true;
 
 			// UseOffsets
 			if (tz.checkNC("UseOffsets"))
-				use_offsets = true;
+				use_offsets_ = true;
 
 			// Rotate
 			if (tz.checkNC("Rotate"))
-				rotation = tz.next().asInt();
+				rotation_ = tz.next().asInt();
 
 			// Translation
 			if (tz.checkNC("Translation"))
@@ -256,26 +265,28 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 				// Build translation string
 				string translate;
 				string temp = tz.next().text;
-				if (temp.Contains("=")) temp = S_FMT("\"%s\"", temp);
+				if (temp.Contains("="))
+					temp = S_FMT("\"%s\"", temp);
 				translate += temp;
 				while (tz.checkNext(","))
 				{
 					translate += tz.next().text; // add ','
 					temp = tz.next().text;
-					if (temp.Contains("=")) temp = S_FMT("\"%s\"", temp);
+					if (temp.Contains("="))
+						temp = S_FMT("\"%s\"", temp);
 					translate += temp;
 				}
 				// Parse whole string
-				translation.parse(translate);
-				blendtype = 1;
+				translation_.parse(translate);
+				blendtype_ = 1;
 			}
 
 			// Blend
 			if (tz.checkNC("Blend"))
 			{
-				double val;
+				double   val;
 				wxColour col;
-				blendtype = 2;
+				blendtype_ = 2;
 
 				// Read first value
 				string first = tz.next().text;
@@ -284,52 +295,49 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 				if (!tz.checkNext(","))
 				{
 					col.Set(first);
-					colour.set(COLWX(col));
+					colour_.set(COLWX(col));
 				}
 				else
 				{
 					// Second value could be alpha or green
-					tz.adv();	// Skip ,
+					tz.adv(); // Skip ,
 					double second = tz.next().asFloat();
 
 					// If no third value, it's an alpha value
 					if (!tz.checkNext(","))
 					{
 						col.Set(first);
-						colour.set(COLWX(col), second*255);
-						blendtype = 3;
+						colour_.set(COLWX(col), second * 255);
+						blendtype_ = 3;
 					}
 					else
 					{
 						// Third value exists, must be R,G,B,A format
 						// RGB are ints in the 0-255 range; A is float in the 0.0-1.0 range
-						tz.adv();	// Skip ,
+						tz.adv(); // Skip ,
 						first.ToDouble(&val);
-						colour.r = val;
-						colour.g = second;
-						colour.b = tz.next().asInt();
+						colour_.r = val;
+						colour_.g = second;
+						colour_.b = tz.next().asInt();
 						if (!tz.checkNext(","))
 						{
-							Log::error(S_FMT(
-								"Invalid TEXTURES definition, expected ',', got '%s'",
-								tz.peek().text
-							));
+							Log::error(S_FMT("Invalid TEXTURES definition, expected ',', got '%s'", tz.peek().text));
 							return false;
 						}
-						tz.adv();	// Skip ,
-						colour.a = tz.next().asFloat()*255;
-						blendtype = 3;
+						tz.adv(); // Skip ,
+						colour_.a  = tz.next().asFloat() * 255;
+						blendtype_ = 3;
 					}
 				}
 			}
 
 			// Alpha
 			if (tz.checkNC("Alpha"))
-				alpha = tz.next().asFloat();
+				alpha_ = tz.next().asFloat();
 
 			// Style
 			if (tz.checkNC("Style"))
-				style = tz.next().text;
+				style_ = tz.next().text;
 
 			// Read next property name
 			tz.adv();
@@ -339,52 +347,53 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 	return true;
 }
 
-/* CTPatchEx::asText
- * Returns a text representation of the patch in ZDoom TEXTURES
- * format
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns a text representation of the patch in ZDoom TEXTURES format
+// -----------------------------------------------------------------------------
 string CTPatchEx::asText()
 {
 	// Init text string
 	string typestring = "Patch";
-	if (type == PTYPE_GRAPHIC) typestring = "Graphic";
-	string text = S_FMT("\t%s \"%s\", %d, %d\n", typestring, name, offset_x, offset_y);
+	if (type_ == Type::Graphic)
+		typestring = "Graphic";
+	string text = S_FMT("\t%s \"%s\", %d, %d\n", typestring, name_, offset_x_, offset_y_);
 
 	// Check if we need to write any extra properties
-	if (!flip_x && !flip_y && !use_offsets && rotation == 0 && blendtype == 0 && alpha == 1.0f && S_CMPNOCASE(style, "Copy"))
+	if (!flip_x_ && !flip_y_ && !use_offsets_ && rotation_ == 0 && blendtype_ == 0 && alpha_ == 1.0f
+		&& S_CMPNOCASE(style_, "Copy"))
 		return text;
 	else
 		text += "\t{\n";
 
 	// Write patch properties
-	if (flip_x)
+	if (flip_x_)
 		text += "\t\tFlipX\n";
-	if (flip_y)
+	if (flip_y_)
 		text += "\t\tFlipY\n";
-	if (use_offsets)
+	if (use_offsets_)
 		text += "\t\tUseOffsets\n";
-	if (rotation != 0)
-		text += S_FMT("\t\tRotate %d\n", rotation);
-	if (blendtype == 1 && !translation.isEmpty())
+	if (rotation_ != 0)
+		text += S_FMT("\t\tRotate %d\n", rotation_);
+	if (blendtype_ == 1 && !translation_.isEmpty())
 	{
 		text += "\t\tTranslation ";
-		text += translation.asText();
+		text += translation_.asText();
 		text += "\n";
 	}
-	if (blendtype >= 2)
+	if (blendtype_ >= 2)
 	{
-		wxColour col(colour.r, colour.g, colour.b);
+		wxColour col(colour_.r, colour_.g, colour_.b);
 		text += S_FMT("\t\tBlend \"%s\"", col.GetAsString(wxC2S_HTML_SYNTAX));
 
-		if (blendtype == 3)
-			text += S_FMT(", %1.1f\n", (double)colour.a / 255.0);
+		if (blendtype_ == 3)
+			text += S_FMT(", %1.1f\n", (double)colour_.a / 255.0);
 		else
 			text += "\n";
 	}
-	if (alpha < 1.0f)
-		text += S_FMT("\t\tAlpha %1.2f\n", alpha);
-	if (!(S_CMPNOCASE(style, "Copy")))
-		text += S_FMT("\t\tStyle %s\n", style);
+	if (alpha_ < 1.0f)
+		text += S_FMT("\t\tAlpha %1.2f\n", alpha_);
+	if (!(S_CMPNOCASE(style_, "Copy")))
+		text += S_FMT("\t\tStyle %s\n", style_);
 
 	// Write ending
 	text += "\t}\n";
@@ -393,50 +402,53 @@ string CTPatchEx::asText()
 }
 
 
-/*******************************************************************
- * CTEXTURE CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// CTexture Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* CTexture::CTexture
- * CTexture class constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// CTexture class constructor
+// -----------------------------------------------------------------------------
 CTexture::CTexture(bool extended)
 {
-	this->width = 0;
-	this->height = 0;
-	this->def_width = 0;
-	this->def_height = 0;
-	this->name = "";
-	this->scale_x = 1.0;
-	this->scale_y = 1.0;
-	this->world_panning = false;
-	this->extended = extended;
-	this->defined = false;
-	this->optional = false;
-	this->no_decals = false;
-	this->null_texture = false;
-	this->offset_x = 0;
-	this->offset_y = 0;
-	this->type = "Texture";
-	this->state = 0;
-	this->in_list = nullptr;
-	this->index = -1;
+	width_         = 0;
+	height_        = 0;
+	def_width_     = 0;
+	def_height_    = 0;
+	name_          = "";
+	scale_x_       = 1.0;
+	scale_y_       = 1.0;
+	world_panning_ = false;
+	extended_      = extended;
+	defined_       = false;
+	optional_      = false;
+	no_decals_     = false;
+	null_texture_  = false;
+	offset_x_      = 0;
+	offset_y_      = 0;
+	type_          = "Texture";
+	state_         = 0;
+	in_list_       = nullptr;
+	index_         = -1;
 }
 
-/* CTexture::~CTexture
- * CTexture class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// CTexture class destructor
+// -----------------------------------------------------------------------------
 CTexture::~CTexture()
 {
-	for (unsigned a = 0; a < patches.size(); a++)
-		delete patches[a];
+	for (unsigned a = 0; a < patches_.size(); a++)
+		delete patches_[a];
 }
 
-/* CTexture::copyTexture
- * Copies the texture [tex] to this texture. If [keep_type] is true,
- * the current texture type (extended/regular) will be kept,
- * otherwise it will be converted to the type of [tex]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Copies the texture [tex] to this texture.
+// If [keep_type] is true, the current texture type (extended/regular) will be
+// kept, otherwise it will be converted to the type of [tex]
+// -----------------------------------------------------------------------------
 void CTexture::copyTexture(CTexture* tex, bool keep_type)
 {
 	// Check texture was given
@@ -447,40 +459,40 @@ void CTexture::copyTexture(CTexture* tex, bool keep_type)
 	clear();
 
 	// Copy texture info
-	this->name = tex->name;
-	this->width = tex->width;
-	this->height = tex->height;
-	this->def_width = tex->def_width;
-	this->def_height = tex->def_height;
-	this->scale_x = tex->scale_x;
-	this->scale_y = tex->scale_y;
-	this->world_panning = tex->world_panning;
+	name_          = tex->name_;
+	width_         = tex->width_;
+	height_        = tex->height_;
+	def_width_     = tex->def_width_;
+	def_height_    = tex->def_height_;
+	scale_x_       = tex->scale_x_;
+	scale_y_       = tex->scale_y_;
+	world_panning_ = tex->world_panning_;
 	if (!keep_type)
 	{
-		this->extended = tex->extended;
-		this->defined = tex->defined;
+		extended_ = tex->extended_;
+		defined_  = tex->defined_;
 	}
-	this->optional = tex->optional;
-	this->no_decals = tex->no_decals;
-	this->null_texture = tex->null_texture;
-	this->offset_x = tex->offset_x;
-	this->offset_y = tex->offset_y;
-	this->type = tex->type;
+	optional_     = tex->optional_;
+	no_decals_    = tex->no_decals_;
+	null_texture_ = tex->null_texture_;
+	offset_x_     = tex->offset_x_;
+	offset_y_     = tex->offset_y_;
+	type_         = tex->type_;
 
 	// Update scaling
-	if (extended)
+	if (extended_)
 	{
-		if (scale_x == 0)
-			scale_x = 1;
-		if (scale_y == 0)
-			scale_y = 1;
+		if (scale_x_ == 0)
+			scale_x_ = 1;
+		if (scale_y_ == 0)
+			scale_y_ = 1;
 	}
-	else if (!extended && tex->extended)
+	else if (!extended_ && tex->extended_)
 	{
-		if (scale_x == 1)
-			scale_x = 0;
-		if (scale_y == 1)
-			scale_y = 0;
+		if (scale_x_ == 1)
+			scale_x_ = 0;
+		if (scale_y_ == 1)
+			scale_y_ = 0;
 	}
 
 	// Copy patches
@@ -488,91 +500,91 @@ void CTexture::copyTexture(CTexture* tex, bool keep_type)
 	{
 		CTPatch* patch = tex->getPatch(a);
 
-		if (extended)
+		if (extended_)
 		{
-			if (tex->extended)
-				patches.push_back(new CTPatchEx((CTPatchEx*)patch));
+			if (tex->extended_)
+				patches_.push_back(new CTPatchEx((CTPatchEx*)patch));
 			else
-				patches.push_back(new CTPatchEx(patch));
+				patches_.push_back(new CTPatchEx(patch));
 		}
 		else
 			addPatch(patch->getName(), patch->xOffset(), patch->yOffset());
 	}
 }
 
-/* CTexture::getPatch
- * Returns the patch at [index], or NULL if [index] is out of bounds
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the patch at [index], or NULL if [index] is out of bounds
+// -----------------------------------------------------------------------------
 CTPatch* CTexture::getPatch(size_t index)
 {
 	// Check index
-	if (index >= patches.size())
+	if (index >= patches_.size())
 		return nullptr;
 
 	// Return patch at index
-	return patches[index];
+	return patches_[index];
 }
 
-/* CTexture::getIndex
- * Returns the index of this texture within its parent list
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the index of this texture within its parent list
+// -----------------------------------------------------------------------------
 int CTexture::getIndex()
 {
 	// Check if a parent TextureXList exists
-	if (!in_list)
-		return index;
+	if (!in_list_)
+		return index_;
 
 	// Find this texture in the parent list
-	return in_list->textureIndex(this->getName());
+	return in_list_->textureIndex(this->getName());
 }
 
-/* CTexture::clear
- * Clears all texture data
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Clears all texture data
+// -----------------------------------------------------------------------------
 void CTexture::clear()
 {
-	this->name = "";
-	this->width = 0;
-	this->height = 0;
-	this->def_width = 0;
-	this->def_height = 0;
-	this->scale_x = 1.0;
-	this->scale_y = 1.0;
-	this->defined = false;
-	this->world_panning = false;
-	this->optional = false;
-	this->no_decals = false;
-	this->null_texture = false;
-	this->offset_x = 0;
-	this->offset_y = 0;
+	name_          = "";
+	width_         = 0;
+	height_        = 0;
+	def_width_     = 0;
+	def_height_    = 0;
+	scale_x_       = 1.0;
+	scale_y_       = 1.0;
+	defined_       = false;
+	world_panning_ = false;
+	optional_      = false;
+	no_decals_     = false;
+	null_texture_  = false;
+	offset_x_      = 0;
+	offset_y_      = 0;
 
 	// Clear patches
-	this->patches.clear();
-	for (unsigned a = 0; a < patches.size(); a++)
-		delete patches[a];
+	patches_.clear();
+	for (unsigned a = 0; a < patches_.size(); a++)
+		delete patches_[a];
 }
 
-/* CTexture::addPatch
- * Adds a patch to the texture with the given attributes, at [index].
- * If [index] is -1, the patch is added to the end of the list.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds a patch to the texture with the given attributes, at [index].
+// If [index] is -1, the patch is added to the end of the list.
+// -----------------------------------------------------------------------------
 bool CTexture::addPatch(string patch, int16_t offset_x, int16_t offset_y, int index)
 {
 	// Create new patch
 	CTPatch* np;
-	if (extended)
+	if (extended_)
 		np = new CTPatchEx(patch, offset_x, offset_y);
 	else
 		np = new CTPatch(patch, offset_x, offset_y);
 
 	// Add it either after [index] or at the end
-	if (index >= 0 && (unsigned) index < patches.size())
-		patches.insert(patches.begin() + index, np);
+	if (index >= 0 && (unsigned)index < patches_.size())
+		patches_.insert(patches_.begin() + index, np);
 	else
-		patches.push_back(np);
+		patches_.push_back(np);
 
 	// Cannot be a simple define anymore
-	this->defined = false;
+	this->defined_ = false;
 
 	// Announce
 	announce("patches_modified");
@@ -580,22 +592,22 @@ bool CTexture::addPatch(string patch, int16_t offset_x, int16_t offset_y, int in
 	return true;
 }
 
-/* CTexture::removePatch
- * Removes the patch at [index]. Returns false if [index] is invalid,
- * true otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Removes the patch at [index].
+// Returns false if [index] is invalid, true otherwise
+// -----------------------------------------------------------------------------
 bool CTexture::removePatch(size_t index)
 {
 	// Check index
-	if (index >= patches.size())
+	if (index >= patches_.size())
 		return false;
 
 	// Remove the patch
-	delete patches[index];
-	patches.erase(patches.begin() + index);
+	delete patches_[index];
+	patches_.erase(patches_.begin() + index);
 
 	// Cannot be a simple define anymore
-	this->defined = false;
+	this->defined_ = false;
 
 	// Announce
 	announce("patches_modified");
@@ -603,27 +615,27 @@ bool CTexture::removePatch(size_t index)
 	return true;
 }
 
-/* CTexture::removePatch
- * Removes all instances of [patch] from the texture. Returns true if
- * any were removed, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Removes all instances of [patch] from the texture.
+// Returns true if any were removed, false otherwise
+// -----------------------------------------------------------------------------
 bool CTexture::removePatch(string patch)
 {
 	// Go through patches
 	bool removed = false;
-	for (unsigned a = 0; a < patches.size(); a++)
+	for (unsigned a = 0; a < patches_.size(); a++)
 	{
-		if (S_CMP(patches[a]->getName(), patch))
+		if (S_CMP(patches_[a]->getName(), patch))
 		{
-			delete patches[a];
-			patches.erase(patches.begin() + a);
+			delete patches_[a];
+			patches_.erase(patches_.begin() + a);
 			removed = true;
 			a--;
 		}
 	}
 
 	// Cannot be a simple define anymore
-	this->defined = false;
+	this->defined_ = false;
 
 	if (removed)
 		announce("patches_modified");
@@ -631,19 +643,19 @@ bool CTexture::removePatch(string patch)
 	return removed;
 }
 
-/* CTexture::replacePatch
- * Replaces the patch at [index] with [newpatch], and updates its
- * associated ArchiveEntry with [newentry]. Returns false if [index]
- * is out of bounds, true otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Replaces the patch at [index] with [newpatch], and updates its associated
+// ArchiveEntry with [newentry].
+// Returns false if [index] is out of bounds, true otherwise
+// -----------------------------------------------------------------------------
 bool CTexture::replacePatch(size_t index, string newpatch)
 {
 	// Check index
-	if (index >= patches.size())
+	if (index >= patches_.size())
 		return false;
 
 	// Replace patch at [index] with new
-	patches[index]->setName(newpatch);
+	patches_[index]->setName(newpatch);
 
 	// Announce
 	announce("patches_modified");
@@ -651,32 +663,32 @@ bool CTexture::replacePatch(size_t index, string newpatch)
 	return true;
 }
 
-/* CTexture::duplicatePatch
- * Duplicates the patch at [index], placing the duplicated patch
- * at [offset_x],[offset_y] from the original. Returns false if
- * [index] is out of bounds, true otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Duplicates the patch at [index], placing the duplicated patch at
+// [offset_x],[offset_y] from the original.
+// Returns false if [index] is out of bounds, true otherwise
+// -----------------------------------------------------------------------------
 bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y)
 {
 	// Check index
-	if (index >= patches.size())
+	if (index >= patches_.size())
 		return false;
 
 	// Get patch info
-	CTPatch* dp = patches[index];
+	CTPatch* dp = patches_[index];
 
 	// Add duplicate patch
-	if (extended)
-		patches.insert(patches.begin() + index, new CTPatchEx((CTPatchEx*)patches[index]));
+	if (extended_)
+		patches_.insert(patches_.begin() + index, new CTPatchEx((CTPatchEx*)patches_[index]));
 	else
-		patches.insert(patches.begin() + index, new CTPatch(patches[index]));
+		patches_.insert(patches_.begin() + index, new CTPatch(patches_[index]));
 
 	// Offset patch by given amount
-	patches[index+1]->setOffsetX(dp->xOffset() + offset_x);
-	patches[index+1]->setOffsetY(dp->yOffset() + offset_y);
+	patches_[index + 1]->setOffsetX(dp->xOffset() + offset_x);
+	patches_[index + 1]->setOffsetY(dp->yOffset() + offset_y);
 
 	// Cannot be a simple define anymore
-	this->defined = false;
+	this->defined_ = false;
 
 	// Announce
 	announce("patches_modified");
@@ -684,20 +696,20 @@ bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y)
 	return true;
 }
 
-/* CTexture::swapPatches
- * Swaps the patches at [p1] and [p2]. Returns false if either index
- * is invalid, true otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Swaps the patches at [p1] and [p2].
+// Returns false if either index is invalid, true otherwise
+// -----------------------------------------------------------------------------
 bool CTexture::swapPatches(size_t p1, size_t p2)
 {
 	// Check patch indices are correct
-	if (p1 >= patches.size() || p2 >= patches.size())
+	if (p1 >= patches_.size() || p2 >= patches_.size())
 		return false;
 
 	// Swap the patches
-	CTPatch* temp = patches[p1];
-	patches[p1] = patches[p2];
-	patches[p2] = temp;
+	CTPatch* temp = patches_[p1];
+	patches_[p1]  = patches_[p2];
+	patches_[p2]  = temp;
 
 	// Announce
 	announce("patches_modified");
@@ -705,24 +717,24 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 	return true;
 }
 
-/* CTexture::parse
- * Parses a TEXTURES format texture definition
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Parses a TEXTURES format texture definition
+// -----------------------------------------------------------------------------
 bool CTexture::parse(Tokenizer& tz, string type)
 {
 	// Check if optional
 	if (tz.advIfNext("optional"))
-		optional = true;
+		optional_ = true;
 
 	// Read basic info
-	this->type = type;
-	this->extended = true;
-	this->defined = false;
-	name = tz.next().text.Upper();
-	tz.adv();	// Skip ,
-	width = tz.next().asInt();
-	tz.adv();	// Skip ,
-	height = tz.next().asInt();
+	type_     = type;
+	extended_ = true;
+	defined_  = false;
+	name_     = tz.next().text.Upper();
+	tz.adv(); // Skip ,
+	width_ = tz.next().asInt();
+	tz.adv(); // Skip ,
+	height_ = tz.next().asInt();
 
 	// Check for extended info
 	if (tz.advIfNext("{", 2))
@@ -733,55 +745,52 @@ bool CTexture::parse(Tokenizer& tz, string type)
 			// Check if end of text is reached (error)
 			if (tz.atEnd())
 			{
-				Log::error(S_FMT(
-					"Error parsing texture %s: End of text found, missing } perhaps?",
-					name
-				));
+				Log::error(S_FMT("Error parsing texture %s: End of text found, missing } perhaps?", name_));
 				return false;
 			}
 
 			// XScale
 			if (tz.checkNC("XScale"))
-				scale_x = tz.next().asFloat();
+				scale_x_ = tz.next().asFloat();
 
 			// YScale
 			else if (tz.checkNC("YScale"))
-				scale_y = tz.next().asFloat();
+				scale_y_ = tz.next().asFloat();
 
 			// Offset
 			else if (tz.checkNC("Offset"))
 			{
-				offset_x = tz.next().asInt();
-				tz.skipToken();	// Skip ,
-				offset_y = tz.next().asInt();
+				offset_x_ = tz.next().asInt();
+				tz.skipToken(); // Skip ,
+				offset_y_ = tz.next().asInt();
 			}
 
 			// WorldPanning
 			else if (tz.checkNC("WorldPanning"))
-				world_panning = true;
+				world_panning_ = true;
 
 			// NoDecals
 			else if (tz.checkNC("NoDecals"))
-				no_decals = true;
+				no_decals_ = true;
 
 			// NullTexture
 			else if (tz.checkNC("NullTexture"))
-				null_texture = true;
+				null_texture_ = true;
 
 			// Patch
 			else if (tz.checkNC("Patch"))
 			{
 				CTPatchEx* patch = new CTPatchEx();
 				patch->parse(tz);
-				patches.push_back(patch);
+				patches_.push_back(patch);
 			}
 
 			// Graphic
 			else if (tz.checkNC("Graphic"))
 			{
 				CTPatchEx* patch = new CTPatchEx();
-				patch->parse(tz, PTYPE_GRAPHIC);
-				patches.push_back(patch);
+				patch->parse(tz, CTPatchEx::Type::Graphic);
+				patches_.push_back(patch);
 			}
 
 			// Read next property
@@ -792,74 +801,73 @@ bool CTexture::parse(Tokenizer& tz, string type)
 	return true;
 }
 
-/* CTexture::parseDefine
- * Parses a HIRESTEX define block
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Parses a HIRESTEX define block
+// -----------------------------------------------------------------------------
 bool CTexture::parseDefine(Tokenizer& tz)
 {
-	this->type = "Define";
-	this->extended = true;
-	this->defined = true;
-	name = tz.next().text.Upper();
-	def_width = tz.next().asInt();
-	def_height = tz.next().asInt();
-	width = def_width;
-	height = def_height;
-	ArchiveEntry* entry = theResourceManager->getPatchEntry(name);
+	type_               = "Define";
+	extended_           = true;
+	defined_            = true;
+	name_               = tz.next().text.Upper();
+	def_width_          = tz.next().asInt();
+	def_height_         = tz.next().asInt();
+	width_              = def_width_;
+	height_             = def_height_;
+	ArchiveEntry* entry = theResourceManager->getPatchEntry(name_);
 	if (entry)
 	{
 		SImage image;
 		if (image.open(entry->getMCData()))
 		{
-			width = image.getWidth();
-			height = image.getHeight();
-			scale_x = (double)width / (double)def_width;
-			scale_y = (double)height / (double)def_height;
+			width_   = image.getWidth();
+			height_  = image.getHeight();
+			scale_x_ = (double)width_ / (double)def_width_;
+			scale_y_ = (double)height_ / (double)def_height_;
 		}
 	}
-	CTPatchEx* patch = new CTPatchEx(name);
-	patches.push_back(patch);
+	CTPatchEx* patch = new CTPatchEx(name_);
+	patches_.push_back(patch);
 	return true;
 }
 
-/* CTexture::asText
- * Returns a string representation of the texture, in ZDoom TEXTURES
- * format
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns a string representation of the texture, in ZDoom TEXTURES format
+// -----------------------------------------------------------------------------
 string CTexture::asText()
 {
 	// Can't write non-extended texture as text
-	if (!extended)
+	if (!extended_)
 		return "";
 
 	// Define block
-	if (defined)
-		return S_FMT("define \"%s\" %d %d\n", name, def_width, def_height);
+	if (defined_)
+		return S_FMT("define \"%s\" %d %d\n", name_, def_width_, def_height_);
 
 	// Init text string
 	string text;
-	if (optional)
-		text = S_FMT("%s Optional \"%s\", %d, %d\n{\n", type, name, width, height);
+	if (optional_)
+		text = S_FMT("%s Optional \"%s\", %d, %d\n{\n", type_, name_, width_, height_);
 	else
-		text = S_FMT("%s \"%s\", %d, %d\n{\n", type, name, width, height);
+		text = S_FMT("%s \"%s\", %d, %d\n{\n", type_, name_, width_, height_);
 
 	// Write texture properties
-	if (scale_x != 1.0)
-		text += S_FMT("\tXScale %1.3f\n", scale_x);
-	if (scale_y != 1.0)
-		text += S_FMT("\tYScale %1.3f\n", scale_y);
-	if (offset_x != 0 || offset_y != 0)
-		text += S_FMT("\tOffset %d, %d\n", offset_x, offset_y);
-	if (world_panning)
+	if (scale_x_ != 1.0)
+		text += S_FMT("\tXScale %1.3f\n", scale_x_);
+	if (scale_y_ != 1.0)
+		text += S_FMT("\tYScale %1.3f\n", scale_y_);
+	if (offset_x_ != 0 || offset_y_ != 0)
+		text += S_FMT("\tOffset %d, %d\n", offset_x_, offset_y_);
+	if (world_panning_)
 		text += "\tWorldPanning\n";
-	if (no_decals)
+	if (no_decals_)
 		text += "\tNoDecals\n";
-	if (null_texture)
+	if (null_texture_)
 		text += "\tNullTexture\n";
 
 	// Write patches
-	for (unsigned a = 0; a < patches.size(); a++)
-		text += ((CTPatchEx*)patches[a])->asText();
+	for (unsigned a = 0; a < patches_.size(); a++)
+		text += ((CTPatchEx*)patches_[a])->asText();
 
 	// Write ending
 	text += "}\n\n";
@@ -867,105 +875,107 @@ string CTexture::asText()
 	return text;
 }
 
-/* CTexture::convertExtended
- * Converts the texture to 'extended' (ZDoom TEXTURES) format
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Converts the texture to 'extended' (ZDoom TEXTURES) format
+// -----------------------------------------------------------------------------
 bool CTexture::convertExtended()
 {
 	// Simple conversion system for defines
-	if (defined)
-		defined = false;
+	if (defined_)
+		defined_ = false;
 
 	// Don't convert if already extended
-	if (extended)
+	if (extended_)
 		return true;
 
 	// Convert scale if needed
-	if (scale_x == 0) scale_x = 1;
-	if (scale_y == 0) scale_y = 1;
+	if (scale_x_ == 0)
+		scale_x_ = 1;
+	if (scale_y_ == 0)
+		scale_y_ = 1;
 
 	// Convert all patches over to extended format
-	for (unsigned a = 0; a < patches.size(); a++)
+	for (unsigned a = 0; a < patches_.size(); a++)
 	{
-		CTPatchEx* expatch = new CTPatchEx(patches[a]);
-		delete patches[a];
-		patches[a] = expatch;
+		CTPatchEx* expatch = new CTPatchEx(patches_[a]);
+		delete patches_[a];
+		patches_[a] = expatch;
 	}
 
 	// Set extended flag
-	extended = true;
+	extended_ = true;
 
 	return true;
 }
 
-/* CTexture::convertRegular
- * Converts the texture to 'regular' (TEXTURE1/2) format
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Converts the texture to 'regular' (TEXTURE1/2) format
+// -----------------------------------------------------------------------------
 bool CTexture::convertRegular()
 {
 	// Don't convert if already regular
-	if (!extended)
+	if (!extended_)
 		return true;
 
 	// Convert scale
-	if (scale_x == 1)
-		scale_x = 0;
+	if (scale_x_ == 1)
+		scale_x_ = 0;
 	else
-		scale_x *= 8;
-	if (scale_y == 1)
-		scale_y = 0;
+		scale_x_ *= 8;
+	if (scale_y_ == 1)
+		scale_y_ = 0;
 	else
-		scale_y *= 8;
+		scale_y_ *= 8;
 
 	// Convert all patches over to normal format
-	for (unsigned a = 0; a < patches.size(); a++)
+	for (unsigned a = 0; a < patches_.size(); a++)
 	{
-		CTPatch* npatch = new CTPatch(patches[a]->getName(), patches[a]->xOffset(), patches[a]->yOffset());
-		delete patches[a];
-		patches[a] = npatch;
+		CTPatch* npatch = new CTPatch(patches_[a]->getName(), patches_[a]->xOffset(), patches_[a]->yOffset());
+		delete patches_[a];
+		patches_[a] = npatch;
 	}
 
 	// Unset extended flag
-	extended = false;
-	defined = false;
+	extended_ = false;
+	defined_  = false;
 
 	return true;
 }
 
-/* CTexture::toImage
- * Generates a SImage representation of this texture, using patches
- * from [parent] primarily, and the palette [pal]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Generates a SImage representation of this texture, using patches from
+// [parent] primarily, and the palette [pal]
+// -----------------------------------------------------------------------------
 bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_rgba)
 {
 	// Init image
 	image.clear();
-	image.resize(width, height);
+	image.resize(width_, height_);
 
 	// Add patches
-	SImage p_img(PALMASK);
+	SImage         p_img(PALMASK);
 	si_drawprops_t dp;
 	dp.src_alpha = false;
-	if (defined)
+	if (defined_)
 	{
-		CTPatchEx* patch = (CTPatchEx*)patches[0];
+		CTPatchEx* patch = (CTPatchEx*)patches_[0];
 		if (!loadPatchImage(0, p_img, parent, pal))
 			return false;
-		width = p_img.getWidth();
-		height = p_img.getHeight();
-		image.resize(width, height);
-		scale_x = (double)width / (double)def_width;
-		scale_y = (double)height / (double)def_height;
+		width_  = p_img.getWidth();
+		height_ = p_img.getHeight();
+		image.resize(width_, height_);
+		scale_x_ = (double)width_ / (double)def_width_;
+		scale_y_ = (double)height_ / (double)def_height_;
 		image.drawImage(p_img, 0, 0, dp, pal, pal);
 	}
-	else if (extended)
+	else if (extended_)
 	{
 		// Extended texture
 
 		// Add each patch to image
-		for (unsigned a = 0; a < patches.size(); a++)
+		for (unsigned a = 0; a < patches_.size(); a++)
 		{
-			CTPatchEx* patch = (CTPatchEx*)patches[a];
+			CTPatchEx* patch = (CTPatchEx*)patches_[a];
 
 			// Load patch entry
 			if (!loadPatchImage(a, p_img, parent, pal))
@@ -997,8 +1007,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 				p_img.rotate(patch->getRotation());
 
 			// Setup transparency blending
-			dp.blend = NORMAL;
-			dp.alpha = 1.0f;
+			dp.blend     = NORMAL;
+			dp.alpha     = 1.0f;
 			dp.src_alpha = false;
 			if (patch->getStyle() == "CopyAlpha" || patch->getStyle() == "Overlay")
 				dp.src_alpha = true;
@@ -1041,9 +1051,9 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 		// Normal texture
 
 		// Add each patch to image
-		for (unsigned a = 0; a < patches.size(); a++)
+		for (unsigned a = 0; a < patches_.size(); a++)
 		{
-			CTPatch* patch = patches[a];
+			CTPatch* patch = patches_[a];
 			if (Misc::loadImageFromEntry(&p_img, patch->getPatchEntry(parent)))
 				image.drawImage(p_img, patch->xOffset(), patch->yOffset(), dp, pal, pal);
 		}
@@ -1052,31 +1062,31 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 	return true;
 }
 
-/* CTexture::loadPatchImage
- * Loads the image for the patch at [pindex] into [image]. Can deal
- * with textures-as-patches
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads the image for the patch at [pindex] into [image].
+// Can deal with textures-as-patches
+// -----------------------------------------------------------------------------
 bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette* pal)
 {
 	// Check patch index
-	if (pindex >= patches.size())
+	if (pindex >= patches_.size())
 		return false;
 
-	CTPatch* patch = patches[pindex];
+	CTPatch* patch = patches_[pindex];
 
 	// If the texture is extended, search for textures-as-patches first
 	// (as long as the patch name is different from this texture's name)
-	if (extended && !(S_CMPNOCASE(patch->getName(), name)))
+	if (extended_ && !(S_CMPNOCASE(patch->getName(), name_)))
 	{
 		// Search the texture list we're in first
-		if (in_list)
+		if (in_list_)
 		{
-			for (unsigned a = 0; a < in_list->nTextures(); a++)
+			for (unsigned a = 0; a < in_list_->nTextures(); a++)
 			{
-				CTexture* tex = in_list->getTexture(a);
+				CTexture* tex = in_list_->getTexture(a);
 
 				// Don't look past this texture in the list
-				if (tex->getName() == name)
+				if (tex->getName() == name_)
 					break;
 
 				// Check for name match

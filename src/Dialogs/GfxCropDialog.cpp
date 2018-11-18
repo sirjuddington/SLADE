@@ -149,7 +149,7 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "settings"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "settings"));
 	SetIcon(icon);
 
 	// Setup main sizer

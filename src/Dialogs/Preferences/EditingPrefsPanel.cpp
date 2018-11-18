@@ -121,7 +121,7 @@ public:
 		gb_sizer->Add(new wxStaticText(this, -1, "Path:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, wxSize(UI::scalePx(300), -1));
 		gb_sizer->Add(text_path_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
-		btn_browse_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "open"));
+		btn_browse_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "open"));
 		gb_sizer->Add(btn_browse_, wxGBPosition(1, 2), wxDefaultSpan);
 
 		// Ok/Cancel
@@ -272,9 +272,9 @@ wxPanel* EditingPrefsPanel::setupExternalTab()
 	auto categories  = EntryType::allCategories();
 	choice_category_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, categories.size(), &categories[0]);
 	lv_ext_editors_  = new ExternalEditorList(panel);
-	btn_add_exe_     = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "plus"));
+	btn_add_exe_     = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::General, "plus"));
 	btn_add_exe_->SetToolTip("Add External Editor");
-	btn_remove_exe_ = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "minus"));
+	btn_remove_exe_ = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::General, "minus"));
 	btn_remove_exe_->SetToolTip("Remove Selected External Editors");
 
 	// Layout

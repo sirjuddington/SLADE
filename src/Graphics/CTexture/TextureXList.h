@@ -1,71 +1,67 @@
-
-#ifndef __TEXTUREXLIST_H__
-#define __TEXTUREXLIST_H__
+#pragma once
 
 #include "Archive/ArchiveEntry.h"
 #include "CTexture.h"
 #include "PatchTable.h"
 
-// Enum for different texturex formats
-enum TextureXFormat
-{
-	TXF_NORMAL,
-	TXF_STRIFE11,
-	TXF_NAMELESS,
-	TXF_TEXTURES,
-	TXF_JAGUAR,
-};
-
-// Texture flags
-#define TX_WORLDPANNING	0x8000
-
-// TEXTUREx texture patch
-struct tx_patch_t
-{
-	int16_t		left;
-	int16_t		top;
-	uint16_t	patch;
-};
-
 class TextureXList
 {
-private:
-	vector<CTexture*>	textures;
-	uint8_t				txformat;
-	CTexture			tex_invalid;
-
 public:
+	// TEXTUREx texture patch
+	struct Patch
+	{
+		int16_t  left;
+		int16_t  top;
+		uint16_t patch;
+	};
+
+	// Enum for different texturex formats
+	enum class Format
+	{
+		Normal,
+		Strife11,
+		Nameless,
+		Textures,
+		Jaguar,
+	};
+
+	enum Flags
+	{
+		WorldPanning = 0x8000
+	};
+
 	TextureXList();
 	~TextureXList();
 
-	uint32_t	nTextures() { return textures.size(); }
+	uint32_t nTextures() { return textures_.size(); }
 
-	CTexture*	getTexture(size_t index);
-	CTexture*	getTexture(string name);
-	uint8_t		getFormat() { return txformat; }
-	int			textureIndex(string name);
+	CTexture* getTexture(size_t index);
+	CTexture* getTexture(string name);
+	Format    getFormat() { return txformat_; }
+	string    getTextureXFormatString();
+	int       textureIndex(string name);
 
-	void	setFormat(uint8_t format) { txformat = format; }
+	void setFormat(Format format) { txformat_ = format; }
 
-	void		addTexture(CTexture* tex, int position = -1);
-	CTexture*	removeTexture(unsigned index, bool delete_texture = true);
-	void		swapTextures(unsigned index1, unsigned index2);
-	CTexture*	replaceTexture(unsigned index, CTexture* replacement);
+	void      addTexture(CTexture* tex, int position = -1);
+	CTexture* removeTexture(unsigned index, bool delete_texture = true);
+	void      swapTextures(unsigned index1, unsigned index2);
+	CTexture* replaceTexture(unsigned index, CTexture* replacement);
 
-	void	clear(bool clear_patches = false);
-	void	removePatch(string patch);
+	void clear(bool clear_patches = false);
+	void removePatch(string patch);
 
-	bool	readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table, bool add = false);
-	bool	writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table);
+	bool readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table, bool add = false);
+	bool writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table);
 
-	bool	readTEXTURESData(ArchiveEntry* textures);
-	bool	writeTEXTURESData(ArchiveEntry* textures);
+	bool readTEXTURESData(ArchiveEntry* textures);
+	bool writeTEXTURESData(ArchiveEntry* textures);
 
-	bool	convertToTEXTURES();
+	bool convertToTEXTURES();
+	bool findErrors();
 
-	bool	findErrors();
-
-	string	getTextureXFormatString();
+private:
+	vector<CTexture*> textures_;
+	Format            txformat_;
+	CTexture          tex_invalid_;
 };
-
-#endif//__TEXTUREXLIST_H__

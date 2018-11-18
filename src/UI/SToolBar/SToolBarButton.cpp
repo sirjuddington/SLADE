@@ -95,9 +95,9 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, boo
 
 	// Load icon
 	if (icon.IsEmpty())
-		icon_ = Icons::getIcon(Icons::GENERAL, action_->getIconName(), icon_size_ > 16);
+		icon_ = Icons::getIcon(Icons::General, action_->getIconName(), icon_size_ > 16);
 	else
-		icon_ = Icons::getIcon(Icons::GENERAL, icon, icon_size_ > 16);
+		icon_ = Icons::getIcon(Icons::General, icon, icon_size_ > 16);
 
 	// Add shortcut to help text if it exists
 	string sc = action_->getShortcutText();
@@ -158,7 +158,7 @@ SToolBarButton::SToolBarButton(
 	SetSize(width, height);
 
 	// Load icon
-	icon_ = Icons::getIcon(Icons::GENERAL, icon, icon_size_ > 16);
+	icon_ = Icons::getIcon(Icons::General, icon, icon_size_ > 16);
 
 	// Set tooltip
 	if (!show_name)
@@ -183,7 +183,7 @@ SToolBarButton::SToolBarButton(
 void SToolBarButton::setIcon(string icon)
 {
 	if (!icon.IsEmpty())
-		icon_ = Icons::getIcon(Icons::GENERAL, icon, icon_size_ > 16);
+		icon_ = Icons::getIcon(Icons::General, icon, icon_size_ > 16);
 }
 
 // ----------------------------------------------------------------------------

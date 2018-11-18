@@ -109,16 +109,16 @@ public:
 
 	~CreateTextureXDialog() {}
 
-	int	getSelectedFormat()
+	TextureXList::Format getSelectedFormat()
 	{
 		if (rb_format_doom_->GetValue())
-			return TXF_NORMAL;
+			return TextureXList::Format::Normal;
 		else if (rb_format_strife_->GetValue())
-			return TXF_STRIFE11;
+			return TextureXList::Format::Strife11;
 		else if (rb_format_textures_->GetValue())
-			return TXF_TEXTURES;
+			return TextureXList::Format::Textures;
 		else
-			return -1;
+			return TextureXList::Format::Normal;
 	}
 
 	bool createNewSelected()
@@ -616,7 +616,7 @@ bool TextureXEditor::checkTextures()
 	for (unsigned a = 0; a < patch_table_.nPatches(); a++)
 	{
 		// Check patch entry is valid
-		patch_t& patch = patch_table_.patch(a);
+		auto& patch = patch_table_.patch(a);
 		ArchiveEntry* entry = theResourceManager->getPatchEntry(patch.name, "patches", archive_);
 
 		if (!entry)
@@ -820,6 +820,8 @@ void TextureXEditor::onShow(wxShowEvent& e)
 // ----------------------------------------------------------------------------
 bool TextureXEditor::setupTextureEntries(Archive* archive)
 {
+	using Format = TextureXList::Format;
+
 	// Check any archive was given
 	if (!archive)
 		return false;
@@ -873,10 +875,10 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 					// User selected to create a new TEXTUREx list
 					ArchiveEntry* texturex = nullptr;
 
-					int format = ctxd.getSelectedFormat();
+					auto format = ctxd.getSelectedFormat();
 
 					// Doom or Strife TEXTUREx
-					if (ctxd.getSelectedFormat() == TXF_NORMAL || ctxd.getSelectedFormat() == TXF_STRIFE11)
+					if (ctxd.getSelectedFormat() == Format::Normal || ctxd.getSelectedFormat() == Format::Strife11)
 					{
 						// Create texture list
 						TextureXList txlist;
@@ -915,11 +917,11 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 						texturex->setType(EntryType::fromId("texturex"));
 						texturex->setExtensionByType();
 					}
-					else if (ctxd.getSelectedFormat() == TXF_TEXTURES)
+					else if (ctxd.getSelectedFormat() == Format::Textures)
 					{
 						// Create texture list
 						TextureXList txlist;
-						txlist.setFormat(TXF_TEXTURES);
+						txlist.setFormat(Format::Textures);
 
 						// Add empty TEXTURES entry to archive
 						texturex = archive->addNewEntry("TEXTURES");

@@ -411,10 +411,10 @@ void ArchiveManagerPanel::createRecentPanel()
 
 	// Setup image list
 	auto list = WxUtils::createSmallImageList();
-	list->Add(Icons::getIcon(Icons::ENTRY, "archive"));
-	list->Add(Icons::getIcon(Icons::ENTRY, "wad"));
-	list->Add(Icons::getIcon(Icons::ENTRY, "zip"));
-	list->Add(Icons::getIcon(Icons::ENTRY, "folder"));
+	list->Add(Icons::getIcon(Icons::Entry, "archive"));
+	list->Add(Icons::getIcon(Icons::Entry, "wad"));
+	list->Add(Icons::getIcon(Icons::Entry, "zip"));
+	list->Add(Icons::getIcon(Icons::Entry, "folder"));
 	list_recent_->SetImageList(list, wxIMAGE_LIST_SMALL);
 }
 
@@ -911,7 +911,7 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 		wp->SetName("archive");
 		stc_archives_->AddPage(wp, archive->filename(false), false);
 		stc_archives_->SetSelection(stc_archives_->GetPageCount() - 1);
-		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, icon));
+		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::Entry, icon));
 		wp->addMenus();
 		wp->Show(true);
 		wp->SetFocus();
@@ -974,7 +974,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 		}
 
 		stc_archives_->AddPage(txed, S_FMT("Texture Editor (%s)", archive->filename(false)), true);
-		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, "texturex"));
+		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::Entry, "texturex"));
 		txed->SetName("texture");
 		txed->setSelection(entry);
 		txed->Show(true);
@@ -1108,7 +1108,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 
 	// Create new tab for the EntryPanel
 	stc_archives_->AddPage(ep, S_FMT("%s/%s", entry->getParent()->filename(false), entry->getName()), true);
-	stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, entry->getType()->icon()));
+	stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::Entry, entry->getType()->icon()));
 	ep->SetName("entry");
 	ep->Show(true);
 	ep->addCustomMenu();

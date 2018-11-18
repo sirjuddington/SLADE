@@ -72,7 +72,7 @@ GfxConvDialog::GfxConvDialog(wxWindow* parent) : SDialog(parent, "Graphic Format
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "convert"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "convert"));
 	SetIcon(icon);
 
 	setupLayout();
@@ -281,7 +281,7 @@ void GfxConvDialog::setupLayout()
 	pal_chooser_target->selectPalette(target_palette_name);
 	gbsizer->Add(pal_chooser_target, { 2, 1 }, { 1, 1 }, wxEXPAND);
 	btn_colorimetry_settings =
-		new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "settings"), wxDefaultPosition, wxDefaultSize);
+		new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "settings"), wxDefaultPosition, wxDefaultSize);
 	btn_colorimetry_settings->SetToolTip("Adjust Colorimetry Settings...");
 	gbsizer->Add(btn_colorimetry_settings, { 2, 2 }, { 1, 1 }, wxALIGN_CENTER);
 	gbsizer->AddGrowableCol(0, 1);
@@ -446,7 +446,7 @@ void GfxConvDialog::updatePreviewGfx()
 	// --- Apply image conversion to target preview ---
 
 	// Get conversion options
-	SIFormat::convert_options_t opt;
+	SIFormat::ConvertOptions opt;
 	getConvertOptions(opt);
 
 	// Do conversion
@@ -504,7 +504,7 @@ void GfxConvDialog::updateControls()
 // -----------------------------------------------------------------------------
 // Writes the state of the conversion option controls to [opt]
 // -----------------------------------------------------------------------------
-void GfxConvDialog::getConvertOptions(SIFormat::convert_options_t& opt)
+void GfxConvDialog::getConvertOptions(SIFormat::ConvertOptions& opt)
 {
 	// Set transparency options
 	opt.transparency = cb_enable_transparency->GetValue();

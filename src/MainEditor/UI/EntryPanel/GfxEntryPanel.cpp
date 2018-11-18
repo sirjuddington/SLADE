@@ -76,8 +76,8 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	: EntryPanel(parent, "gfx")
 {
 	// Init variables
-	prev_translation_.addRange(TRANS_PALETTE, 0);
-	edit_translation_.addRange(TRANS_PALETTE, 0);
+	prev_translation_.addRange(TransRange::Palette, 0);
+	edit_translation_.addRange(TransRange::Palette, 0);
 
 	// Add gfx canvas
 	gfx_canvas_ = new GfxCanvas(this, -1);
@@ -272,7 +272,7 @@ bool GfxEntryPanel::saveEntry()
 			// Convert image if necessary (using default options)
 			if (writable == SIFormat::CONVERTIBLE)
 			{
-				format->convertWritable(*image, SIFormat::convert_options_t());
+				format->convertWritable(*image, SIFormat::ConvertOptions());
 				LOG_MESSAGE(1, "Image converted for writing");
 			}
 

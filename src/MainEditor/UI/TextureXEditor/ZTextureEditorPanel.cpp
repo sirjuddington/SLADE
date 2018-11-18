@@ -1104,7 +1104,7 @@ void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 
 	// Add palette range if no translation ranges exist
 	if (trans.nRanges() == 0)
-		trans.addRange(TRANS_PALETTE, 0);
+		trans.addRange(TransRange::Palette, 0);
 
 	// Create patch image
 	SImage image(PALMASK);

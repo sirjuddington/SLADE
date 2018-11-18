@@ -83,7 +83,7 @@ public:
 		bool              force_rgba = false);
 	void updatePreviewGfx();
 	void updateControls();
-	void getConvertOptions(SIFormat::convert_options_t& opt);
+	void getConvertOptions(SIFormat::ConvertOptions& opt);
 
 	bool      itemModified(int index);
 	SImage*   getItemImage(int index);

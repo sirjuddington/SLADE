@@ -188,7 +188,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 	for (unsigned a = 0; a < table->nPatches(); a++)
 	{
 		// Get patch
-		patch_t& patch = table->patch(a);
+		auto& patch = table->patch(a);
 
 		// Init position to add
 		string whereis = "Unknown";

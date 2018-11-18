@@ -98,7 +98,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 	vector<ArchiveEntry*> to_remove;
 	for (unsigned a = 0; a < ptable.nPatches(); a++)
 	{
-		patch_t& p = ptable.patch(a);
+		auto& p = ptable.patch(a);
 
 		// Check if used in any texture
 		if (p.used_in.size() == 0)

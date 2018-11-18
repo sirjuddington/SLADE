@@ -212,11 +212,11 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override, int wx_i
 	// Append this action to the toolbar
 	int wid = wx_id_ + wx_id_offset;
 	if (type_ == Type::Normal)
-		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::GENERAL, useicon), helptext_);
+		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::General, useicon), helptext_);
 	else if (type_ == Type::Check)
-		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::GENERAL, useicon), helptext_, wxITEM_CHECK);
+		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::General, useicon), helptext_, wxITEM_CHECK);
 	else if (type_ == Type::Radio)
-		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::GENERAL, useicon), helptext_, wxITEM_RADIO);
+		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::General, useicon), helptext_, wxITEM_RADIO);
 
 	return true;
 }
@@ -239,11 +239,11 @@ bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override, int wx_id_o
 	// Append this action to the toolbar
 	int wid = wx_id_ + wx_id_offset;
 	if (type_ == Type::Normal)
-		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext_);
+		toolbar->AddTool(wid, "", Icons::getIcon(Icons::General, useicon), helptext_);
 	else if (type_ == Type::Check)
-		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext_, wxITEM_CHECK);
+		toolbar->AddTool(wid, "", Icons::getIcon(Icons::General, useicon), helptext_, wxITEM_CHECK);
 	else if (type_ == Type::Radio)
-		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext_, wxITEM_RADIO);
+		toolbar->AddTool(wid, "", Icons::getIcon(Icons::General, useicon), helptext_, wxITEM_RADIO);
 
 	return true;
 }

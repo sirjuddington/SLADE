@@ -102,7 +102,7 @@ string PatchTableListView::getItemText(long item, long column, long index) const
 		return "INVALID INDEX";
 
 	// Get associated patch
-	patch_t& patch = patch_table_->patch(index);
+	auto& patch = patch_table_->patch(index);
 
 	if (column == 0)						// Index column
 		return S_FMT("%04d", index);
@@ -186,8 +186,8 @@ void PatchTableListView::onAnnouncement(Announcer* announcer, string event_name,
 // ----------------------------------------------------------------------------
 bool PatchTableListView::usageSort(long left, long right)
 {
-	patch_t& p1 = ((PatchTableListView*)lv_current)->patchTable()->patch(left);
-	patch_t& p2 = ((PatchTableListView*)lv_current)->patchTable()->patch(right);
+	auto& p1 = ((PatchTableListView*)lv_current)->patchTable()->patch(left);
+	auto& p2 = ((PatchTableListView*)lv_current)->patchTable()->patch(right);
 
 	if (p1.used_in.size() == p2.used_in.size())
 		return left < right;
@@ -422,7 +422,7 @@ void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 	for (int a = selection.size() - 1; a >= 0; a--)
 	{
 		// Check if patch is currently in use
-		patch_t& patch = patch_table_->patch(selection[a]);
+		auto& patch = patch_table_->patch(selection[a]);
 		if (patch.used_in.size() > 0)
 		{
 			// In use, ask if it's ok to remove the patch
@@ -475,7 +475,7 @@ void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 	// Go through patch list selection
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		patch_t& patch = patch_table_->patch(selection[a]);
+		auto& patch = patch_table_->patch(selection[a]);
 
 		// Prompt for new patch name
 		string newname = wxGetTextFromUser("Enter new patch entry name:", "Change Patch", patch.name, this);
@@ -502,7 +502,7 @@ void PatchTablePanel::updateDisplay()
 
 	// Get selected patch
 	int index = list_patches_->getItemIndex(list_patches_->getLastSelected());
-	patch_t& patch = patch_table_->patch(index);
+	auto& patch = patch_table_->patch(index);
 
 	// Load the image
 	ArchiveEntry* entry = patch_table_->patchEntry(index);

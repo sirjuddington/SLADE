@@ -144,11 +144,11 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 
 	// Look for stand-alone textures first
 	ArchiveEntry* etex = theResourceManager->getTextureEntry(name, "hires", archive);
-	int textypefound = TEXTYPE_HIRES;
+	auto textypefound = CTexture::Type::HiRes;
 	if (etex == nullptr)
 	{
 		etex = theResourceManager->getTextureEntry(name, "textures", archive);
-		textypefound = TEXTYPE_TEXTURE;
+		textypefound = CTexture::Type::Texture;
 	}
 	if (etex)
 	{
@@ -161,7 +161,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 			mtex.texture->loadImage(&image, palette);
 
 			// Handle hires texture scale
-			if (textypefound == TEXTYPE_HIRES)
+			if (textypefound == CTexture::Type::HiRes)
 			{
 				ArchiveEntry* ref = theResourceManager->getTextureEntry(name, "textures", archive);
 				if (ref)
@@ -185,7 +185,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	CTexture* ctex = theResourceManager->getTexture(name, archive);
 	if (ctex) // Composite textures take precedence over the textures directory
 	{
-		textypefound = TEXTYPE_WALLTEXTURE;
+		textypefound = CTexture::Type::WallTexture;
 		SImage image;
 		if (ctex->toImage(image, archive, palette, true))
 		{

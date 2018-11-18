@@ -139,7 +139,7 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette* pal,
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "remap"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "remap"));
 	SetIcon(icon);
 
 	// Create sizer
@@ -163,19 +163,19 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette* pal,
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	framesizer->Add(vbox, 0, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT, UI::pad());
 
-	btn_add_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
+	btn_add_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "plus"));
 	vbox->Add(btn_add_, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 	// Remove translation button
-	btn_remove_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "minus"));
+	btn_remove_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "minus"));
 	vbox->Add(btn_remove_, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 	// Move up button
-	btn_up_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "up"));
+	btn_up_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "up"));
 	vbox->Add(btn_up_, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 	// Move down button
-	btn_down_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "down"));
+	btn_down_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "down"));
 	vbox->Add(btn_down_, 0, wxEXPAND);
 
 
@@ -437,7 +437,7 @@ void TranslationEditorDialog::openRange(int index)
 	pal_canvas_original_->Refresh();
 
 	// Check translation range type
-	if (tr->getType() == TRANS_PALETTE)
+	if (tr->getType() == TransRange::Palette)
 	{
 		// Palette range
 		TransRangePalette* tpr = (TransRangePalette*)tr;
@@ -459,7 +459,7 @@ void TranslationEditorDialog::openRange(int index)
 		}
 		pal_canvas_target_->Refresh();
 	}
-	else if (tr->getType() == TRANS_COLOUR)
+	else if (tr->getType() == TransRange::Colour)
 	{
 		// Colour gradient
 		TransRangeColour* tcr = (TransRangeColour*)tr;
@@ -479,7 +479,7 @@ void TranslationEditorDialog::openRange(int index)
 		// Update UI
 		gb_gradient_->Refresh();
 	}
-	else if (tr->getType() == TRANS_DESAT)
+	else if (tr->getType() == TransRange::Desat)
 	{
 		// Desaturated colour gradient
 		TransRangeDesat* tdr = (TransRangeDesat*)tr;
@@ -506,7 +506,7 @@ void TranslationEditorDialog::openRange(int index)
 		// Update UI
 		gb_gradient_->Refresh();
 	}
-	else if (tr->getType() == TRANS_BLEND)
+	else if (tr->getType() == TransRange::Blend)
 	{
 		// Colourise range
 		TransRangeBlend* tcr = (TransRangeBlend*)tr;
@@ -518,7 +518,7 @@ void TranslationEditorDialog::openRange(int index)
 		// Set colour
 		cb_target_tint_->setColour(tcr->getColour());
 	}
-	else if (tr->getType() == TRANS_TINT)
+	else if (tr->getType() == TransRange::Tint)
 	{
 		// Tint range
 		TransRangeTint* ttr = (TransRangeTint*)tr;
@@ -566,7 +566,7 @@ void TranslationEditorDialog::setStartColour(rgba_t col)
 	TransRange* tr = translation_.getRange(list_translations_->GetSelection());
 
 	// Check its type
-	if (tr->getType() == TRANS_COLOUR)
+	if (tr->getType() == TransRange::Colour)
 	{
 		// Colour range
 		TransRangeColour* tcr = (TransRangeColour*)tr;
@@ -574,7 +574,7 @@ void TranslationEditorDialog::setStartColour(rgba_t col)
 		// Set destination start colour
 		tcr->setDStart(col);
 	}
-	else if (tr->getType() == TRANS_DESAT)
+	else if (tr->getType() == TransRange::Desat)
 	{
 		// Desaturated colour range
 		TransRangeDesat* tdr = (TransRangeDesat*)tr;
@@ -606,7 +606,7 @@ void TranslationEditorDialog::setEndColour(rgba_t col)
 	TransRange* tr = translation_.getRange(list_translations_->GetSelection());
 
 	// Check its type
-	if (tr->getType() == TRANS_COLOUR)
+	if (tr->getType() == TransRange::Colour)
 	{
 		// Colour range
 		TransRangeColour* tcr = (TransRangeColour*)tr;
@@ -614,7 +614,7 @@ void TranslationEditorDialog::setEndColour(rgba_t col)
 		// Set destination end colour
 		tcr->setDEnd(col);
 	}
-	else if (tr->getType() == TRANS_DESAT)
+	else if (tr->getType() == TransRange::Desat)
 	{
 		// Desaturated colour range
 		TransRangeDesat* tdr = (TransRangeDesat*)tr;
@@ -646,7 +646,7 @@ void TranslationEditorDialog::setTintColour(rgba_t col)
 	TransRange* tr = translation_.getRange(list_translations_->GetSelection());
 
 	// Check its type
-	if (tr->getType() == TRANS_BLEND)
+	if (tr->getType() == TransRange::Blend)
 	{
 		// Colour range
 		TransRangeBlend* tcr = (TransRangeBlend*)tr;
@@ -654,7 +654,7 @@ void TranslationEditorDialog::setTintColour(rgba_t col)
 		// Set destination end colour
 		tcr->setColour(col);
 	}
-	else if (tr->getType() == TRANS_TINT)
+	else if (tr->getType() == TransRange::Tint)
 	{
 		// Desaturated colour range
 		TransRangeTint* ttr = (TransRangeTint*)tr;
@@ -677,7 +677,7 @@ void TranslationEditorDialog::setTintAmount(int amount)
 	TransRange* tr = translation_.getRange(list_translations_->GetSelection());
 
 	// Check its type
-	if (tr->getType() == TRANS_TINT)
+	if (tr->getType() == TransRange::Tint)
 
 	{
 		// Desaturated colour range
@@ -878,7 +878,7 @@ void TranslationEditorDialog::onRBPaletteSelected(wxCommandEvent& e)
 		translation_.removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TRANS_PALETTE, index);
+		translation_.addRange(TransRange::Palette, index);
 		TransRangePalette* tr = (TransRangePalette*)translation_.getRange(index);
 		// Origin range
 		tr->setOStart(pal_canvas_original_->getSelectionStart());
@@ -918,7 +918,7 @@ void TranslationEditorDialog::onRBColourSelected(wxCommandEvent& e)
 		translation_.removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TRANS_COLOUR, index);
+		translation_.addRange(TransRange::Colour, index);
 		TransRangeColour* tr = (TransRangeColour*)translation_.getRange(index);
 		// Origin range
 		tr->setOStart(pal_canvas_original_->getSelectionStart());
@@ -951,7 +951,7 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e)
 		translation_.removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TRANS_DESAT, index);
+		translation_.addRange(TransRange::Desat, index);
 		TransRangeDesat* tr = (TransRangeDesat*)translation_.getRange(index);
 		// Origin range
 		tr->setOStart(pal_canvas_original_->getSelectionStart());
@@ -990,7 +990,7 @@ void TranslationEditorDialog::onRBColouriseSelected(wxCommandEvent& e)
 		translation_.removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TRANS_BLEND, index);
+		translation_.addRange(TransRange::Blend, index);
 		TransRangeBlend* tr = (TransRangeBlend*)translation_.getRange(index);
 		// Origin range
 		tr->setOStart(pal_canvas_original_->getSelectionStart());
@@ -1021,7 +1021,7 @@ void TranslationEditorDialog::onRBTintSelected(wxCommandEvent& e)
 		translation_.removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TRANS_TINT, index);
+		translation_.addRange(TransRange::Tint, index);
 		TransRangeTint* tr = (TransRangeTint*)translation_.getRange(index);
 		// Origin range
 		tr->setOStart(pal_canvas_original_->getSelectionStart());
@@ -1103,7 +1103,7 @@ void TranslationEditorDialog::onPalTargetLeftUp(wxMouseEvent& e)
 	TransRange* tr = translation_.getRange(list_translations_->GetSelection());
 
 	// Update its target range if it's a palette translation
-	if (tr && tr->getType() == TRANS_PALETTE)
+	if (tr && tr->getType() == TransRange::Palette)
 	{
 		TransRangePalette* tpr = (TransRangePalette*)tr;
 		if (cb_target_reverse_->GetValue())
@@ -1133,15 +1133,15 @@ void TranslationEditorDialog::onBtnAdd(wxCommandEvent& e)
 
 	// Add new range to translation depending on current type selection
 	if (rb_type_palette_->GetValue())
-		translation_.addRange(TRANS_PALETTE, index);
+		translation_.addRange(TransRange::Palette, index);
 	else if (rb_type_colour_->GetValue())
-		translation_.addRange(TRANS_COLOUR, index);
+		translation_.addRange(TransRange::Colour, index);
 	else if (rb_type_desaturate_->GetValue())
-		translation_.addRange(TRANS_DESAT, index);
+		translation_.addRange(TransRange::Desat, index);
 	else if (rb_type_colourise_->GetValue())
-		translation_.addRange(TRANS_BLEND, index);
+		translation_.addRange(TransRange::Blend, index);
 	else if (rb_type_tint_->GetValue())
-		translation_.addRange(TRANS_TINT, index);
+		translation_.addRange(TransRange::Tint, index);
 
 	// Add it to the list
 	list_translations_->Insert(translation_.getRange(index)->asText(), index);
@@ -1345,7 +1345,7 @@ void TranslationEditorDialog::onCBTargetReverse(wxCommandEvent& e)
 	TransRange* tr = translation_.getRange(list_translations_->GetSelection());
 
 	// Update its target range if it's a palette translation
-	if (tr && tr->getType() == TRANS_PALETTE)
+	if (tr && tr->getType() == TransRange::Palette)
 	{
 		TransRangePalette* tpr = (TransRangePalette*)tr;
 		if (cb_target_reverse_->GetValue())
@@ -1398,7 +1398,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "colourise"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "colourise"));
 	SetIcon(icon);
 
 	// Setup main sizer
@@ -1494,7 +1494,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "tint"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "tint"));
 	SetIcon(icon);
 
 	// Setup main sizer

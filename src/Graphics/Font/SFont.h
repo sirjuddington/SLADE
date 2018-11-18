@@ -1,59 +1,58 @@
-
-#ifndef __SFONT_H__
-#define __SFONT_H__
+#pragma once
 
 #include "OpenGL/GLTexture.h"
-
-// Some defines
-#define	SF_ALIGN_LEFT	0
-#define SF_ALIGN_RIGHT	1
-#define SF_ALIGN_CENTER	2
 
 class SFontChar
 {
 	friend class SFont;
-private:
-	uint16_t	width;
-	uint16_t	height;
-	rect_t		tex_bounds;
 
 public:
 	SFontChar();
 	~SFontChar();
+
+private:
+	uint16_t width_;
+	uint16_t height_;
+	rect_t   tex_bounds_;
 };
 
 class SFont
 {
-private:
-	SFontChar*	characters[256];
-	GLTexture	texture;
-	int			line_height;
-	int			spacing;
-
-	// Global fonts
-	static SFont	font_vga;
-	static SFont	font_slade;
-
 public:
+	enum class Align
+	{
+		Left,
+		Right,
+		Center
+	};
+
 	SFont();
 	~SFont();
 
-	int		lineHeight() { return line_height; }
+	int lineHeight() { return line_height_; }
 
 	// Font reading
-	bool	loadFont0(MemChunk& mc);
-	bool	loadFont1(MemChunk& mc);
-	bool	loadFont2(MemChunk& mc);
-	bool	loadFontM(MemChunk& mc);
-	bool	loadBMF(MemChunk& mc);
+	bool loadFont0(MemChunk& mc);
+	bool loadFont1(MemChunk& mc);
+	bool loadFont2(MemChunk& mc);
+	bool loadFontM(MemChunk& mc);
+	bool loadBMF(MemChunk& mc);
 
 	// Rendering
-	void	drawCharacter(char c, rgba_t colour = COL_WHITE);
-	void	drawString(string str, rgba_t colour = COL_WHITE, uint8_t align = SF_ALIGN_LEFT);
+	void drawCharacter(char c, rgba_t colour = COL_WHITE);
+	void drawString(string str, rgba_t colour = COL_WHITE, Align align = Align::Left);
 
 	// Static
-	static SFont&	vgaFont();
-	static SFont&	sladeFont();
-};
+	static SFont& vgaFont();
+	static SFont& sladeFont();
 
-#endif//__SFONT_H__
+private:
+	SFontChar* characters_[256];
+	GLTexture  texture_;
+	int        line_height_;
+	int        spacing_;
+
+	// Global fonts
+	static SFont font_vga_;
+	static SFont font_slade_;
+};

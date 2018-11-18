@@ -1,35 +1,102 @@
 
 class SIFDoomGfx : public SIFormat
 {
-private:
-	// Doom Gfx format structs
-	struct post_t
+public:
+	SIFDoomGfx(string id = "doom") : SIFormat(id)
 	{
-		uint8_t			row_off;
-		vector<uint8_t>	pixels;
-	};
+		name_        = "Doom Gfx";
+		extension_   = "lmp";
+		reliability_ = 230;
+	}
 
-	struct column_t
+	~SIFDoomGfx() {}
+
+	virtual bool isThisFormat(MemChunk& mc)
 	{
-		vector<post_t> posts;
-	};
+		if (EntryDataFormat::getFormat("img_doom")->isThisFormat(mc))
+			return true;
+		else
+			return false;
+	}
+
+	virtual SImage::info_t getInfo(MemChunk& mc, int index)
+	{
+		SImage::info_t info;
+
+		// Read header
+		patch_header_t hdr;
+		mc.read(&hdr, 8, 0);
+
+		// Setup info
+		info.width       = hdr.width;
+		info.height      = hdr.height;
+		info.offset_x    = hdr.left;
+		info.offset_y    = hdr.top;
+		info.colformat   = PALMASK;
+		info.has_palette = false;
+		info.format      = id_;
+
+		return info;
+	}
+
+	virtual int canWrite(SImage& image)
+	{
+		// Must be converted to paletted to be written
+		if (image.getType() == PALMASK)
+			return WRITABLE;
+		else
+			return CONVERTIBLE;
+	}
+
+	virtual bool canWriteType(SIType type)
+	{
+		// Doom format gfx can only be written as paletted
+		if (type == PALMASK)
+			return true;
+		else
+			return false;
+	}
+
+	virtual bool convertWritable(SImage& image, ConvertOptions opt)
+	{
+		// Do mask conversion
+		if (!opt.transparency)
+			image.fillAlpha(255);
+		else if (opt.mask_source == MASK_COLOUR)
+			image.maskFromColour(opt.mask_colour, opt.pal_target);
+		else if (opt.mask_source == MASK_ALPHA)
+			image.cutoffMask(opt.alpha_threshold);
+
+		// Convert to paletted
+		image.convertPaletted(opt.pal_target, opt.pal_current);
+
+		return true;
+	}
+
+	virtual bool writeOffset(SImage& image, ArchiveEntry* entry, point2_t offset)
+	{
+		MemChunk mc;
+		image.setXOffset(offset.x);
+		image.setYOffset(offset.y);
+		return (writeImage(image, mc, nullptr, 0) && entry->importMemChunk(mc));
+	}
 
 protected:
 	bool readDoomFormat(SImage& image, MemChunk& data, int version)
 	{
 		// Init variables
 		const uint8_t* gfx_data = data.getData();
-		int width = 0;
-		int height = 0;
-		int offset_x = 0;
-		int offset_y = 0;
+		int            width    = 0;
+		int            height   = 0;
+		int            offset_x = 0;
+		int            offset_y = 0;
 
 		// Read header
 		uint8_t hdr_size = 0;
 		if (version > 1)
 		{
-			width = gfx_data[0];
-			height = gfx_data[1];
+			width    = gfx_data[0];
+			height   = gfx_data[1];
 			offset_x = (int8_t)gfx_data[2];
 			offset_y = (int8_t)gfx_data[3];
 			hdr_size = 4;
@@ -37,11 +104,11 @@ protected:
 		else
 		{
 			patch_header_t* header = (patch_header_t*)gfx_data;
-			width = wxINT16_SWAP_ON_BE(header->width);
-			height = wxINT16_SWAP_ON_BE(header->height);
-			offset_x = wxINT16_SWAP_ON_BE(header->left);
-			offset_y = wxINT16_SWAP_ON_BE(header->top);
-			hdr_size = 8;
+			width                  = wxINT16_SWAP_ON_BE(header->width);
+			height                 = wxINT16_SWAP_ON_BE(header->height);
+			offset_x               = wxINT16_SWAP_ON_BE(header->left);
+			offset_y               = wxINT16_SWAP_ON_BE(header->top);
+			hdr_size               = 8;
 		}
 
 		// Create image
@@ -64,12 +131,12 @@ protected:
 
 		// Load data
 		uint8_t* img_data = imageData(image);
-		memset(img_data, 0, width * height);	// Set colour to palette index 0
+		memset(img_data, 0, width * height); // Set colour to palette index 0
 		uint8_t* img_mask = imageMask(image);
-		memset(img_mask, 0, width * height);	// Set mask to fully transparent
+		memset(img_mask, 0, width * height); // Set mask to fully transparent
 
 		// Check for the Pleiades hack:
-		// Roger Ritenour's pleiades.wad for ZDoom uses 256-tall sky textures, 
+		// Roger Ritenour's pleiades.wad for ZDoom uses 256-tall sky textures,
 		// and since the patch format uses 8-bit values for the length of a column,
 		// the 256 height overflows to 0. To detect this situation, we check if
 		// every column represents precisely 261 bytes, in other words just enough
@@ -94,7 +161,7 @@ protected:
 		for (int c = 0; c < width; c++)
 		{
 			// Get current column offset (byteswap if needed)
-			uint32_t col_offset = col_offsets[c];//wxUINT32_SWAP_ON_BE(col_offsets[c]);
+			uint32_t col_offset = col_offsets[c]; // wxUINT32_SWAP_ON_BE(col_offsets[c]);
 
 			// Check column offset is valid
 			if (col_offset >= data.getSize())
@@ -128,15 +195,16 @@ protected:
 				if (pleiadeshack)
 					n_pix = 256;
 
-				if (version == 0) bits++; // Skip buffer
+				if (version == 0)
+					bits++; // Skip buffer
 				for (uint16_t p = 0; p < n_pix; p++)
 				{
 					// Get pixel position
 					bits++;
-					int pos = ((top + p)*width + c);
+					int pos = ((top + p) * width + c);
 
 					// Stop if we're outside the image
-					if (pos >= width*height)
+					if (pos >= width * height)
 						break;
 
 					// Stop if for some reason we're outside the gfx data
@@ -151,8 +219,9 @@ protected:
 					img_data[pos] = *bits;
 					img_mask[pos] = 255;
 				}
-				if (version == 0) bits++; // Skip buffer
-				bits++; // Go to next row offset
+				if (version == 0)
+					bits++; // Skip buffer
+				bits++;     // Go to next row offset
 			}
 		}
 
@@ -163,29 +232,26 @@ protected:
 		return true;
 	}
 
-	virtual bool readImage(SImage& image, MemChunk& data, int index)
-	{
-		return readDoomFormat(image, data, 0);
-	}
+	virtual bool readImage(SImage& image, MemChunk& data, int index) { return readDoomFormat(image, data, 0); }
 
 	virtual bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
 	{
 		// Convert image to column/post structure
-		vector<column_t> columns;
-		uint8_t* data = imageData(image);
-		uint8_t* mask = imageMask(image);
+		vector<Column> columns;
+		uint8_t*       data = imageData(image);
+		uint8_t*       mask = imageMask(image);
 
 		// Go through columns
 		uint32_t offset = 0;
 		for (int c = 0; c < image.getWidth(); c++)
 		{
-			column_t col;
-			post_t post;
-			post.row_off = 0;
-			bool ispost = false;
-			bool first_254 = true;	// First 254 pixels should use absolute offsets
+			Column col;
+			Post   post;
+			post.row_off   = 0;
+			bool ispost    = false;
+			bool first_254 = true; // First 254 pixels should use absolute offsets
 
-			offset = c;
+			offset          = c;
 			uint8_t row_off = 0;
 			for (int r = 0; r < image.getHeight(); r++)
 			{
@@ -225,7 +291,7 @@ protected:
 
 					// Clear post
 					row_off = 0;
-					ispost = false;
+					ispost  = false;
 				}
 
 				// If the current pixel is not transparent, add it to the current post
@@ -279,15 +345,15 @@ protected:
 
 		// Setup header
 		patch_header_t header;
-		header.top = image.offset().y;
-		header.left = image.offset().x;
-		header.width = image.getWidth();
+		header.top    = image.offset().y;
+		header.left   = image.offset().x;
+		header.width  = image.getWidth();
 		header.height = image.getHeight();
 
 		// Byteswap header values if needed
-		header.top = wxINT16_SWAP_ON_BE(header.top);
-		header.left = wxINT16_SWAP_ON_BE(header.left);
-		header.width = wxINT16_SWAP_ON_BE(header.width);
+		header.top    = wxINT16_SWAP_ON_BE(header.top);
+		header.left   = wxINT16_SWAP_ON_BE(header.left);
+		header.width  = wxINT16_SWAP_ON_BE(header.width);
 		header.height = wxINT16_SWAP_ON_BE(header.height);
 
 		// Write it
@@ -352,101 +418,27 @@ protected:
 		return true;
 	}
 
-public:
-	SIFDoomGfx(string id = "doom") : SIFormat(id)
+private:
+	// Doom Gfx format structs
+	struct Post
 	{
-		this->name = "Doom Gfx";
-		this->extension = "lmp";
-		this->reliability = 230;
-	}
+		uint8_t         row_off;
+		vector<uint8_t> pixels;
+	};
 
-	~SIFDoomGfx() {}
-
-	virtual bool isThisFormat(MemChunk& mc)
+	struct Column
 	{
-		if (EntryDataFormat::getFormat("img_doom")->isThisFormat(mc))
-			return true;
-		else
-			return false;
-	}
-
-	virtual SImage::info_t getInfo(MemChunk& mc, int index)
-	{
-		SImage::info_t info;
-
-		// Read header
-		patch_header_t hdr;
-		mc.read(&hdr, 8, 0);
-
-		// Setup info
-		info.width = hdr.width;
-		info.height = hdr.height;
-		info.offset_x = hdr.left;
-		info.offset_y = hdr.top;
-		info.colformat = PALMASK;
-		info.has_palette = false;
-		info.format = id;
-
-		return info;
-	}
-
-	virtual int canWrite(SImage& image)
-	{
-		// Must be converted to paletted to be written
-		if (image.getType() == PALMASK)
-			return WRITABLE;
-		else
-			return CONVERTIBLE;
-	}
-
-	virtual bool canWriteType(SIType type)
-	{
-		// Doom format gfx can only be written as paletted
-		if (type == PALMASK)
-			return true;
-		else
-			return false;
-	}
-
-	virtual bool convertWritable(SImage& image, convert_options_t opt)
-	{
-		// Do mask conversion
-		if (!opt.transparency)
-			image.fillAlpha(255);
-		else if (opt.mask_source == MASK_COLOUR)
-			image.maskFromColour(opt.mask_colour, opt.pal_target);
-		else if (opt.mask_source == MASK_ALPHA)
-			image.cutoffMask(opt.alpha_threshold);
-
-		// Convert to paletted
-		image.convertPaletted(opt.pal_target, opt.pal_current);
-
-		return true;
-	}
-
-	virtual bool writeOffset(SImage& image, ArchiveEntry* entry, point2_t offset)
-	{
-		MemChunk mc;
-		image.setXOffset(offset.x);
-		image.setYOffset(offset.y);
-		return (writeImage(image, mc, nullptr, 0) && entry->importMemChunk(mc));
-	}
-
+		vector<Post> posts;
+	};
 };
 
 class SIFDoomBetaGfx : public SIFDoomGfx
 {
-protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
-	{
-		return readDoomFormat(image, data, 1);
-	}
-
 public:
 	SIFDoomBetaGfx() : SIFDoomGfx("doom_beta")
 	{
-		this->name = "Doom Gfx (Beta)";
-		this->reliability = 160;
+		this->name_        = "Doom Gfx (Beta)";
+		this->reliability_ = 160;
 	}
 	~SIFDoomBetaGfx();
 
@@ -461,29 +453,26 @@ public:
 	SImage::info_t getInfo(MemChunk& mc, int index)
 	{
 		SImage::info_t info = SIFDoomGfx::getInfo(mc, index);
-		info.format = id;
+		info.format         = id_;
 		return info;
 	}
 
 	// Cannot write this format
-	int		canWrite(SImage& image) { return NOTWRITABLE; }
-	bool	canWriteType(SIType type) { return false; }
-	bool	convertWritable(SImage& image, convert_options_t opt) { return false; }
+	int  canWrite(SImage& image) { return NOTWRITABLE; }
+	bool canWriteType(SIType type) { return false; }
+	bool convertWritable(SImage& image, ConvertOptions opt) { return false; }
+
+protected:
+	bool readImage(SImage& image, MemChunk& data, int index) { return readDoomFormat(image, data, 1); }
 };
 
 class SIFDoomAlphaGfx : public SIFDoomGfx
 {
-protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
-	{
-		return readDoomFormat(image, data, 2);
-	}
-
 public:
 	SIFDoomAlphaGfx() : SIFDoomGfx("doom_alpha")
 	{
-		this->name = "Doom Gfx (Alpha)";
-		this->reliability = 100;
+		this->name_        = "Doom Gfx (Alpha)";
+		this->reliability_ = 100;
 	}
 	~SIFDoomAlphaGfx();
 
@@ -500,63 +489,33 @@ public:
 		SImage::info_t info;
 
 		// Setup info
-		info.width = mc[0];
-		info.height = mc[1];
-		info.offset_x = mc[2];
-		info.offset_y = mc[3];
+		info.width     = mc[0];
+		info.height    = mc[1];
+		info.offset_x  = mc[2];
+		info.offset_y  = mc[3];
 		info.colformat = PALMASK;
-		info.format = id;
+		info.format    = id_;
 
 		return info;
 	}
 
 	// Cannot write this format
-	int		canWrite(SImage& image) { return NOTWRITABLE; }
-	bool	canWriteType(SIType type) { return false; }
-	bool	convertWritable(SImage& image, convert_options_t opt) { return false; }
+	int  canWrite(SImage& image) { return NOTWRITABLE; }
+	bool canWriteType(SIType type) { return false; }
+	bool convertWritable(SImage& image, ConvertOptions opt) { return false; }
+
+protected:
+	bool readImage(SImage& image, MemChunk& data, int index) { return readDoomFormat(image, data, 2); }
 };
 
 class SIFDoomArah : public SIFormat
 {
-protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
-	{
-		// Setup variables
-		patch_header_t header;
-		data.read(&header, 8, 0);
-		int width = wxINT16_SWAP_ON_BE(header.width);
-		int height = wxINT16_SWAP_ON_BE(header.height);
-		int offset_x = wxINT16_SWAP_ON_BE(header.left);
-		int offset_y = wxINT16_SWAP_ON_BE(header.top);
-
-		// Create image
-		image.create(width, height, PALMASK);
-		uint8_t* img_data = imageData(image);
-		uint8_t* img_mask = imageMask(image);
-
-		// Read raw pixel data
-		data.read(img_data, width*height, 8);
-
-		// Create mask (all opaque)
-		memset(img_mask, 255, width*height);
-
-		// Mark as transparent all pixels that are index 255
-		for (size_t  i = 0; i < (unsigned)(width*height); ++i)
-			if (img_data[i] == 255) img_mask[i] = 0;
-
-		// Setup other image properties
-		image.setXOffset(offset_x);
-		image.setYOffset(offset_y);
-
-		return true;
-	}
-
 public:
 	SIFDoomArah() : SIFormat("doom_arah")
 	{
-		name = "Doom Arah";
-		extension = "lmp";
-		reliability = 100;
+		name_        = "Doom Arah";
+		extension_   = "lmp";
+		reliability_ = 100;
 	}
 	~SIFDoomArah() {}
 
@@ -577,69 +536,58 @@ public:
 		mc.read(&header, 8, 0);
 
 		// Set info
-		info.width = wxINT16_SWAP_ON_BE(header.width);
-		info.height = wxINT16_SWAP_ON_BE(header.height);
-		info.offset_x = wxINT16_SWAP_ON_BE(header.left);
-		info.offset_y = wxINT16_SWAP_ON_BE(header.top);
+		info.width     = wxINT16_SWAP_ON_BE(header.width);
+		info.height    = wxINT16_SWAP_ON_BE(header.height);
+		info.offset_x  = wxINT16_SWAP_ON_BE(header.left);
+		info.offset_y  = wxINT16_SWAP_ON_BE(header.top);
 		info.colformat = PALMASK;
-		info.format = id;
+		info.format    = id_;
 
 		return info;
+	}
+
+protected:
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
+		// Setup variables
+		patch_header_t header;
+		data.read(&header, 8, 0);
+		int width    = wxINT16_SWAP_ON_BE(header.width);
+		int height   = wxINT16_SWAP_ON_BE(header.height);
+		int offset_x = wxINT16_SWAP_ON_BE(header.left);
+		int offset_y = wxINT16_SWAP_ON_BE(header.top);
+
+		// Create image
+		image.create(width, height, PALMASK);
+		uint8_t* img_data = imageData(image);
+		uint8_t* img_mask = imageMask(image);
+
+		// Read raw pixel data
+		data.read(img_data, width * height, 8);
+
+		// Create mask (all opaque)
+		memset(img_mask, 255, width * height);
+
+		// Mark as transparent all pixels that are index 255
+		for (size_t i = 0; i < (unsigned)(width * height); ++i)
+			if (img_data[i] == 255)
+				img_mask[i] = 0;
+
+		// Setup other image properties
+		image.setXOffset(offset_x);
+		image.setYOffset(offset_y);
+
+		return true;
 	}
 };
 
 class SIFDoomSnea : public SIFormat
 {
-protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
-	{
-		// Check/setup size
-		uint8_t qwidth = data[0];
-		int width = qwidth * 4;
-		int height = data[1];
-
-		// The TITLEPIC in the Doom Press-Release Beta has
-		// two extraneous null bytes at the end for padding.
-		int size = data.getSize();
-		if (size == width * height + 4)
-			size -= 2;
-
-		if (size != 2 + width * height)
-			return false;
-
-		// Create image
-		image.create(width, height, PALMASK);
-
-		// Read raw pixel data
-		uint8_t* img_data = imageData(image);
-
-		const uint8_t* entryend = data.getData() + size;
-		const uint8_t* pixel = data.getData() + 2;
-		uint8_t* dataend = img_data + size - 2;
-		uint8_t* brush = img_data;
-
-		// Algorithm taken from DeuTex.
-		// I do not pretend to understand it,
-		// but my own attempt didn't work.
-		while (pixel < entryend)
-		{
-			*brush = *pixel++;
-			brush += 4;
-			if (brush >= dataend)
-				brush -= size - 3;
-		}
-
-		// Create mask (all opaque)
-		image.fillAlpha(255);
-
-		return true;
-	}
-
 public:
 	SIFDoomSnea() : SIFormat("doom_snea")
 	{
-		name = "Doom Snea";
-		extension = "lmp";
+		name_      = "Doom Snea";
+		extension_ = "lmp";
 	};
 	~SIFDoomSnea() {}
 
@@ -657,57 +605,69 @@ public:
 
 		// Get image info
 		uint8_t qwidth = mc[0];
-		info.width = qwidth * 4;
-		info.height = mc[1];
+		info.width     = qwidth * 4;
+		info.height    = mc[1];
 		info.colformat = PALMASK;
-		info.format = id;
+		info.format    = id_;
 
 		return info;
+	}
+
+protected:
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
+		// Check/setup size
+		uint8_t qwidth = data[0];
+		int     width  = qwidth * 4;
+		int     height = data[1];
+
+		// The TITLEPIC in the Doom Press-Release Beta has
+		// two extraneous null bytes at the end for padding.
+		int size = data.getSize();
+		if (size == width * height + 4)
+			size -= 2;
+
+		if (size != 2 + width * height)
+			return false;
+
+		// Create image
+		image.create(width, height, PALMASK);
+
+		// Read raw pixel data
+		uint8_t* img_data = imageData(image);
+
+		const uint8_t* entryend = data.getData() + size;
+		const uint8_t* pixel    = data.getData() + 2;
+		uint8_t*       dataend  = img_data + size - 2;
+		uint8_t*       brush    = img_data;
+
+		// Algorithm taken from DeuTex.
+		// I do not pretend to understand it,
+		// but my own attempt didn't work.
+		while (pixel < entryend)
+		{
+			*brush = *pixel++;
+			brush += 4;
+			if (brush >= dataend)
+				brush -= size - 3;
+		}
+
+		// Create mask (all opaque)
+		image.fillAlpha(255);
+
+		return true;
 	}
 };
 
 
 class SIFDoomPSX : public SIFormat
 {
-protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
-	{
-		// Setup variables
-		psxpic_header_t header;
-		data.read(&header, 8, 0);
-		int width = wxINT16_SWAP_ON_BE(header.width);
-		int height = wxINT16_SWAP_ON_BE(header.height);
-		int offset_x = wxINT16_SWAP_ON_BE(header.left);
-		int offset_y = wxINT16_SWAP_ON_BE(header.top);
-
-		// Create image
-		image.create(width, height, PALMASK);
-		uint8_t* img_data = imageData(image);
-		uint8_t* img_mask = imageMask(image);
-
-		// Read raw pixel data
-		data.read(img_data, width*height, 8);
-
-		// Create mask (all opaque)
-		memset(img_mask, 255, width*height);
-
-		// Mark as transparent all pixels that are index 0
-		for (size_t  i = 0; i < (unsigned)(width*height); ++i)
-			if (img_data[i] == 0) img_mask[i] = 0;
-
-		// Setup other image properties
-		image.setXOffset(offset_x);
-		image.setYOffset(offset_y);
-
-		return true;
-	}
-
 public:
 	SIFDoomPSX() : SIFormat("doom_psx")
 	{
-		name = "Doom PSX";
-		extension = "lmp";
-		reliability = 100;
+		name_        = "Doom PSX";
+		extension_   = "lmp";
+		reliability_ = 100;
 	}
 	~SIFDoomPSX() {}
 
@@ -728,70 +688,59 @@ public:
 		mc.read(&header, 8, 0);
 
 		// Set info
-		info.width = wxINT16_SWAP_ON_BE(header.width);
-		info.height = wxINT16_SWAP_ON_BE(header.height);
-		info.offset_x = wxINT16_SWAP_ON_BE(header.left);
-		info.offset_y = wxINT16_SWAP_ON_BE(header.top);
+		info.width     = wxINT16_SWAP_ON_BE(header.width);
+		info.height    = wxINT16_SWAP_ON_BE(header.height);
+		info.offset_x  = wxINT16_SWAP_ON_BE(header.left);
+		info.offset_y  = wxINT16_SWAP_ON_BE(header.top);
 		info.colformat = PALMASK;
-		info.format = id;
+		info.format    = id_;
 
 		return info;
 	}
-};
 
-class SIFDoomJaguar : public SIFormat
-{
 protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Setup variables
-		jagpic_header_t header;
-		data.read(&header, 16, 0);
-		int width = wxINT16_SWAP_ON_LE(header.width);
-		int height = wxINT16_SWAP_ON_LE(header.height);
-		int depth = wxINT16_SWAP_ON_LE(header.depth);
-		int shift = wxINT16_SWAP_ON_LE(header.palshift);
+		psxpic_header_t header;
+		data.read(&header, 8, 0);
+		int width    = wxINT16_SWAP_ON_BE(header.width);
+		int height   = wxINT16_SWAP_ON_BE(header.height);
+		int offset_x = wxINT16_SWAP_ON_BE(header.left);
+		int offset_y = wxINT16_SWAP_ON_BE(header.top);
 
 		// Create image
 		image.create(width, height, PALMASK);
 		uint8_t* img_data = imageData(image);
 		uint8_t* img_mask = imageMask(image);
 
-		// Create mask (all opaque)
-		image.fillAlpha(255);
-
 		// Read raw pixel data
-		if (depth == 3)
-		{
-			data.read(img_data, width*height);
-		}
-		else if (depth == 2)
-		{
-			if (shift == 0) shift = 40;
-			for (int p = 0; p < width*height/2; ++p)
-			{
-				img_data[p*2] = ((data[16+p] & 0xF0)>>4) + (shift<<1);
-				img_data[p*2+1] = (data[16+p] & 0x0F)    + (shift<<1);
-			}
-		}
-		else return false;
+		data.read(img_data, width * height, 8);
 
-		// Mark palette index 0 as transparent
-		for (int p = 0; p < width*height; ++p)
-		{
-			if (img_data[p] == 0)
-				img_mask[p] = 0;
-		}
+		// Create mask (all opaque)
+		memset(img_mask, 255, width * height);
+
+		// Mark as transparent all pixels that are index 0
+		for (size_t i = 0; i < (unsigned)(width * height); ++i)
+			if (img_data[i] == 0)
+				img_mask[i] = 0;
+
+		// Setup other image properties
+		image.setXOffset(offset_x);
+		image.setYOffset(offset_y);
 
 		return true;
 	}
+};
 
+class SIFDoomJaguar : public SIFormat
+{
 public:
 	SIFDoomJaguar() : SIFormat("doom_jaguar")
 	{
-		name = "Doom Jaguar";
-		extension = "lmp";
-		reliability = 85;
+		name_        = "Doom Jaguar";
+		extension_   = "lmp";
+		reliability_ = 85;
 	}
 	~SIFDoomJaguar() {}
 
@@ -812,14 +761,60 @@ public:
 		mc.read(&header, 16, 0);
 
 		// Set info
-		info.width = wxINT16_SWAP_ON_LE(header.width);
-		info.height = wxINT16_SWAP_ON_LE(header.height);
-		info.offset_x = 0;
-		info.offset_y = 0;
+		info.width     = wxINT16_SWAP_ON_LE(header.width);
+		info.height    = wxINT16_SWAP_ON_LE(header.height);
+		info.offset_x  = 0;
+		info.offset_y  = 0;
 		info.colformat = PALMASK;
-		info.format = id;
+		info.format    = id_;
 
 		return info;
 	}
-};
 
+protected:
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
+		// Setup variables
+		jagpic_header_t header;
+		data.read(&header, 16, 0);
+		int width  = wxINT16_SWAP_ON_LE(header.width);
+		int height = wxINT16_SWAP_ON_LE(header.height);
+		int depth  = wxINT16_SWAP_ON_LE(header.depth);
+		int shift  = wxINT16_SWAP_ON_LE(header.palshift);
+
+		// Create image
+		image.create(width, height, PALMASK);
+		uint8_t* img_data = imageData(image);
+		uint8_t* img_mask = imageMask(image);
+
+		// Create mask (all opaque)
+		image.fillAlpha(255);
+
+		// Read raw pixel data
+		if (depth == 3)
+		{
+			data.read(img_data, width * height);
+		}
+		else if (depth == 2)
+		{
+			if (shift == 0)
+				shift = 40;
+			for (int p = 0; p < width * height / 2; ++p)
+			{
+				img_data[p * 2]     = ((data[16 + p] & 0xF0) >> 4) + (shift << 1);
+				img_data[p * 2 + 1] = (data[16 + p] & 0x0F) + (shift << 1);
+			}
+		}
+		else
+			return false;
+
+		// Mark palette index 0 as transparent
+		for (int p = 0; p < width * height; ++p)
+		{
+			if (img_data[p] == 0)
+				img_mask[p] = 0;
+		}
+
+		return true;
+	}
+};

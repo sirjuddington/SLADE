@@ -104,8 +104,8 @@ EXTERN_CVAR(Bool, list_font_monospace)
 	wxArrayString et_icon_list = EntryType::iconList();
 	for (size_t a = 0; a < et_icon_list.size(); a++)
 	{
-		if (image_list->Add(Icons::getIcon(Icons::ENTRY, et_icon_list[a])) < 0)
-			image_list->Add(Icons::getIcon(Icons::ENTRY, "default"));
+		if (image_list->Add(Icons::getIcon(Icons::Entry, et_icon_list[a])) < 0)
+			image_list->Add(Icons::getIcon(Icons::Entry, "default"));
 	}
 
 	SetImageList(image_list, wxIMAGE_LIST_SMALL);

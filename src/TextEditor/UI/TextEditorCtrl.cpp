@@ -198,9 +198,9 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	SetMarginWidth(2, 4);
 
 	// Register icons for autocompletion list
-	RegisterImage(1, Icons::getIcon(Icons::TEXT_EDITOR, "key"));
-	RegisterImage(2, Icons::getIcon(Icons::TEXT_EDITOR, "const"));
-	RegisterImage(3, Icons::getIcon(Icons::TEXT_EDITOR, "func"));
+	RegisterImage(1, Icons::getIcon(Icons::TextEditor, "key"));
+	RegisterImage(2, Icons::getIcon(Icons::TextEditor, "const"));
+	RegisterImage(3, Icons::getIcon(Icons::TextEditor, "func"));
 
 	// Init w/no language
 	setLanguage(nullptr);

@@ -231,7 +231,7 @@ void MainWindow::setupLayout()
 	if (show_start_page)
 	{
 		stc_tabs->AddPage(start_page, "Start Page");
-		stc_tabs->SetPageBitmap(0, Icons::getIcon(Icons::GENERAL, "logo"));
+		stc_tabs->SetPageBitmap(0, Icons::getIcon(Icons::General, "logo"));
 		start_page->init();
 		createStartPage();
 	}
@@ -531,7 +531,7 @@ void MainWindow::openStartPageTab()
 	start_page = new SStartPage(stc_tabs);
 	start_page->init();
 	stc_tabs->AddPage(start_page, "Start Page");
-	stc_tabs->SetPageBitmap(0, Icons::getIcon(Icons::GENERAL, "logo"));
+	stc_tabs->SetPageBitmap(0, Icons::getIcon(Icons::General, "logo"));
 	createStartPage();
 }
 
@@ -564,7 +564,7 @@ void MainWindow::openDocs(string page_name)
 
 		// Add tab
 		stc_tabs->AddPage(docs_page, "Documentation", true, -1);
-		stc_tabs->SetPageBitmap(stc_tabs->GetPageCount() - 1, Icons::getIcon(Icons::GENERAL, "wiki"));
+		stc_tabs->SetPageBitmap(stc_tabs->GetPageCount() - 1, Icons::getIcon(Icons::General, "wiki"));
 	}
 
 	// Load specified page, if any

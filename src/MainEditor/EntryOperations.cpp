@@ -106,7 +106,7 @@ struct chunk_size_t
  * colour format if possible. Returns false if the conversion failed,
  * true otherwise
  *******************************************************************/
-bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFormat::convert_options_t opt, int target_colformat)
+bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFormat::ConvertOptions opt, int target_colformat)
 {
 	// Init variables
 	SImage image;
@@ -1061,7 +1061,7 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 		ntex->setHeight(image.getHeight());
 
 		// Setup texture scale
-		if (tx.getFormat() == TXF_TEXTURES)
+		if (tx.getFormat() == TextureXList::Format::Textures)
 			ntex->setScale(1, 1);
 		else
 			ntex->setScale(0, 0);

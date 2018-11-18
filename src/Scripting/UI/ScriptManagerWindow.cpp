@@ -198,8 +198,8 @@ wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const s
 wxImageList* createTreeImageList()
 {
 	auto image_list = WxUtils::createSmallImageList();
-	image_list->Add(Icons::getIcon(Icons::ENTRY, "text"));
-	image_list->Add(Icons::getIcon(Icons::ENTRY, "folder"));
+	image_list->Add(Icons::getIcon(Icons::Entry, "text"));
+	image_list->Add(Icons::getIcon(Icons::Entry, "folder"));
 	return image_list;
 }
 
@@ -683,7 +683,7 @@ void ScriptManagerWindow::showDocs(string url)
 			}
 		});
 		
-		tabs_scripts_->AddPage(webview_docs_, "Scripting Documentation", true, Icons::getIcon(Icons::GENERAL, "wiki"));
+		tabs_scripts_->AddPage(webview_docs_, "Scripting Documentation", true, Icons::getIcon(Icons::General, "wiki"));
 	}
 
 	// Load page if set
@@ -717,7 +717,7 @@ void ScriptManagerWindow::openScriptTab(ScriptManager::Script* script) const
 		new ScriptPanel(tabs_scripts_, script),
 		script->name.empty() ? "UNSAVED" : script->name,
 		true,
-		Icons::getIcon(Icons::ENTRY, "text")
+		Icons::getIcon(Icons::Entry, "text")
 	);
 }
 
