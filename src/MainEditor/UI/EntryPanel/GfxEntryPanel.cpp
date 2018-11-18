@@ -262,7 +262,7 @@ bool GfxEntryPanel::saveEntry()
 
 		string error = "";
 		ok = false;
-		int writable = format ? SIFormat::NOTWRITABLE : format->canWrite(*image);
+		int writable = format ? format->canWrite(*image) : SIFormat::NOTWRITABLE ;
 		if (format == SIFormat::unknownFormat())
 			error = "Image is of unknown format";
 		else if (writable == SIFormat::NOTWRITABLE)
