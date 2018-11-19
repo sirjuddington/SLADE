@@ -1660,7 +1660,7 @@ void PaletteEntryPanel::analysePalettes()
 		minR = minG = minB = 256;
 		wrongcount = 0;
 #else
-	report += S_FMT("Changes between %u palettes compared to the first:\n\n", palettes.size());
+	report += S_FMT("Changes between %lu palettes compared to the first:\n\n", palettes.size());
 	for (size_t i = 1; i < palettes.size(); ++i)
 	{
 		for (int j = 0; j < 256; ++j)
