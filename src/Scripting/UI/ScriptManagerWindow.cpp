@@ -308,8 +308,8 @@ void ScriptManagerWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Set icon
-	auto icon_filename = App::path("slade.ico", App::Dir::Temp);
-	App::archiveManager().programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
+	auto icon_filename = App::path(App::getIcon(), App::Dir::Temp);
+	App::archiveManager().programResourceArchive()->getEntry(App::getIcon())->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
 

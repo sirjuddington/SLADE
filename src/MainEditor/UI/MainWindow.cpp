@@ -211,8 +211,8 @@ void MainWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Set icon
-	string icon_filename = App::path("slade.ico", App::Dir::Temp);
-	App::archiveManager().programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
+	string icon_filename = App::path(App::getIcon(), App::Dir::Temp);
+	App::archiveManager().programResourceArchive()->getEntry(App::getIcon())->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
 
@@ -681,8 +681,8 @@ bool MainWindow::handleAction(string id)
 		info.SetDescription("It's a Doom Editor");
 
 		// Set icon
-		string icon_filename = App::path("slade.ico", App::Dir::Temp);
-		App::archiveManager().programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
+		string icon_filename = App::path(App::getIcon(), App::Dir::Temp);
+		App::archiveManager().programResourceArchive()->getEntry(App::getIcon())->exportFile(icon_filename);
 		info.SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 		wxRemoveFile(icon_filename);
 
