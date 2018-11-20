@@ -1134,12 +1134,6 @@
     <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.cpp">
       <Filter>Map Editor\Renderer\Overlays</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MainEditor\AnimatedList.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
@@ -2265,13 +2259,7 @@
     <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.h">
       <Filter>Map Editor\Renderer\Overlays</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MainEditor\AnimatedList.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\BinaryControlLump.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MainEditor\SwitchesList.h">
       <Filter>Main Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\UI\WxBasicControls.h">

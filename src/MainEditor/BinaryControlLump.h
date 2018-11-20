@@ -1,8 +1,6 @@
-/* Various little structures for binary control lumps. */
-#ifndef BINARYCONTROLLUMPS_H
-#define	BINARYCONTROLLUMPS_H
+#pragma once
 
-#include "Archive/ArchiveEntry.h"
+/* Various little structures for binary control lumps. */
 
 // If the compiler pads the structures, this completely breaks parsing.
 #pragma pack(1)
@@ -21,7 +19,7 @@ enum AnimatedType
 };
 
 // The format of an entry in an ANIMATED lump
-struct animated_t
+struct AnimatedEntry
 {
 	uint8_t		type;		// flat or texture, with or without decals
 	char		last [9];	// first name in the animation
@@ -42,7 +40,7 @@ enum SwitchesType
 	SWCH_OOPS = wxINT16_SWAP_ON_BE(4),
 };
 
-struct switches_t
+struct SwitchesEntry
 {
 	char		off[9];
 	char		on[9];
@@ -51,4 +49,3 @@ struct switches_t
 
 // Can restore default packing now
 #pragma pack()
-#endif //BINARYCONTROLLUMPS_H

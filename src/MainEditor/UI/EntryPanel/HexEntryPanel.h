@@ -10,9 +10,9 @@ public:
 	HexEntryPanel(wxWindow* parent);
 	~HexEntryPanel() {}
 
-	bool	loadEntry(ArchiveEntry* entry) override;
-	bool	saveEntry() override;
+	bool loadEntry(ArchiveEntry* entry) override;
+	bool saveEntry() override;
 
 private:
-	HexEditorPanel*	hex_editor_ = nullptr;
+	HexEditorPanel* hex_editor_ = nullptr;
 };

@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,52 +14,49 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "TextEntryPanel.h"
 #include "Game/Configuration.h"
+#include "General/UI.h"
+#include "MainEditor/EntryOperations.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
-#include "TextEntryPanel.h"
-#include "MainEditor/EntryOperations.h"
-#include "General/UI.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, txed_trim_whitespace)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextEntryPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::TextEntryPanel
-//
+// -----------------------------------------------------------------------------
 // TextEntryPanel class constructor
-// ----------------------------------------------------------------------------
-TextEntryPanel::TextEntryPanel(wxWindow* parent)
-	: EntryPanel(parent, "text")
+// -----------------------------------------------------------------------------
+TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 {
 	// Create the text area
 	text_area_ = new TextEditorCtrl(this, -1);
@@ -69,12 +66,12 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	panel_fr_ = new FindReplacePanel(this, *text_area_);
 	text_area_->setFindReplacePanel(panel_fr_);
 	panel_fr_->Hide();
-	sizer_main_->Add(panel_fr_, 0, wxEXPAND|wxTOP, UI::padLarge());
-	//sizer_main_->AddSpacer(UI::pad());
+	sizer_main_->Add(panel_fr_, 0, wxEXPAND | wxTOP, UI::padLarge());
+	// sizer_main_->AddSpacer(UI::pad());
 
 	// Add 'Text Language' choice to toolbar
 	SToolBarGroup* group_language = new SToolBarGroup(toolbar_, "Text Language", true);
-	auto languages = TextLanguage::languageNames();
+	auto           languages      = TextLanguage::languageNames();
 	languages.Sort();
 	languages.Insert("None", 0, 1);
 	choice_text_language_ = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
@@ -84,7 +81,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 
 	// Add 'Jump To' choice to toolbar
 	SToolBarGroup* group_jump_to = new SToolBarGroup(toolbar_, "Jump To", true);
-	choice_jump_to_ = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(UI::scalePx(200), -1));
+	choice_jump_to_              = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(UI::scalePx(200), -1));
 	group_jump_to->addCustomControl(choice_jump_to_);
 	toolbar_->addGroup(group_jump_to);
 	text_area_->setJumpToControl(choice_jump_to_);
@@ -125,11 +122,9 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	Layout();
 }
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::loadEntry
-//
+// -----------------------------------------------------------------------------
 // Loads an entry into the panel as text
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Load entry into the text editor
@@ -151,14 +146,14 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	if (entry->exProps().propertyExists("TextLanguage"))
 	{
 		string lang_id = entry->exProp("TextLanguage");
-		tl = TextLanguage::fromId(lang_id);
+		tl             = TextLanguage::fromId(lang_id);
 	}
 
 	// Or, from entry type
 	if (!tl && entry->getType()->extraProps().propertyExists("text_language"))
 	{
 		string lang_id = entry->getType()->extraProps()["text_language"];
-		tl = TextLanguage::fromId(lang_id);
+		tl             = TextLanguage::fromId(lang_id);
 	}
 
 	// Load language
@@ -189,11 +184,9 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::saveEntry
-//
+// -----------------------------------------------------------------------------
 // Saves any changes to the entry
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextEntryPanel::saveEntry()
 {
 	// Trim whitespace
@@ -215,8 +208,8 @@ bool TextEntryPanel::saveEntry()
 		entry_->setType(EntryType::fromId("text"));
 
 	// Update custom definitions if decorate or zscript
-	if (text_area_->language() &&
-		(text_area_->language()->id() == "decorate" || text_area_->language()->id() == "zscript"))
+	if (text_area_->language()
+		&& (text_area_->language()->id() == "decorate" || text_area_->language()->id() == "zscript"))
 		Game::updateCustomDefinitions();
 
 	// Update variables
@@ -225,11 +218,9 @@ bool TextEntryPanel::saveEntry()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::refreshPanel
-//
+// -----------------------------------------------------------------------------
 // Updates the text editor options and redraws it
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextEntryPanel::refreshPanel()
 {
 	// Update text editor
@@ -240,11 +231,9 @@ void TextEntryPanel::refreshPanel()
 	Update();
 }
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::closeEntry
-//
+// -----------------------------------------------------------------------------
 // Performs any actions required on closing the entry
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextEntryPanel::closeEntry()
 {
 	// Check any entry is open
@@ -255,27 +244,23 @@ void TextEntryPanel::closeEntry()
 	entry_->exProp("TextPosition") = text_area_->GetCurrentPos();
 }
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::statusString
-//
+// -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string TextEntryPanel::statusString()
 {
 	// Setup status string
-	int line = text_area_->GetCurrentLine()+1;
-	int pos = text_area_->GetCurrentPos();
-	int col = text_area_->GetColumn(pos)+1;
+	int    line   = text_area_->GetCurrentLine() + 1;
+	int    pos    = text_area_->GetCurrentPos();
+	int    col    = text_area_->GetColumn(pos) + 1;
 	string status = S_FMT("Ln %d, Col %d, Pos %d", line, col, pos);
 
 	return status;
 }
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::undo
-//
+// -----------------------------------------------------------------------------
 // Tells the text editor to undo
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextEntryPanel::undo()
 {
 	if (text_area_->CanUndo())
@@ -289,11 +274,9 @@ bool TextEntryPanel::undo()
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::redo
-//
+// -----------------------------------------------------------------------------
 // Tells the text editor to redo
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextEntryPanel::redo()
 {
 	if (text_area_->CanRedo())
@@ -304,12 +287,10 @@ bool TextEntryPanel::redo()
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::handleAction
-//
+// -----------------------------------------------------------------------------
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextEntryPanel::handleAction(string id)
 {
 	// Don't handle actions if hidden
@@ -328,7 +309,7 @@ bool TextEntryPanel::handleAction(string id)
 	else if (id == "ptxt_wrap")
 	{
 		SAction* action = SAction::fromId("ptxt_wrap");
-		bool m = isModified();
+		bool     m      = isModified();
 		if (action->isChecked())
 			text_area_->SetWrapMode(wxSTC_WRAP_WORD);
 		else
@@ -359,18 +340,16 @@ bool TextEntryPanel::handleAction(string id)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextEntryPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::onTextModified
-//
+// -----------------------------------------------------------------------------
 // Called when the text in the TextEditor is modified
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextEntryPanel::onTextModified(wxCommandEvent& e)
 {
 	if (!isModified() && text_area_->CanUndo())
@@ -378,11 +357,9 @@ void TextEntryPanel::onTextModified(wxCommandEvent& e)
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::onChoiceLanguageChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the language in the dropdown is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 {
 	int index = choice_text_language_->GetSelection();
@@ -399,11 +376,9 @@ void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 		entry_->exProps().removeProperty("TextLanguage");
 }
 
-// ----------------------------------------------------------------------------
-// TextEntryPanel::onUpdateUI
-//
+// -----------------------------------------------------------------------------
 // Called when the text editor UI is updated
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextEntryPanel::onUpdateUI(wxStyledTextEvent& e)
 {
 	updateStatus();

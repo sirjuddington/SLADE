@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -21,19 +21,19 @@
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "TextureEditorPanel.h"
 #include "General/KeyBind.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/Icons.h"
-#include "TextureEditorPanel.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Controls/SIconButton.h"
@@ -41,60 +41,58 @@
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace
 {
-	// Hack to stop the drag event being erroneously triggered when
-	// double-clicking a patch in the patch browser to select it
-	bool hack_nodrag = false;
-}
+// Hack to stop the drag event being erroneously triggered when
+// double-clicking a patch in the patch browser to select it
+bool hack_nodrag = false;
+} // namespace
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, tx_arc)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextureEditorPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // TextureEditorPanel::TextureEditorPanel
 //
 // TextureEditorPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor) :
 	wxPanel(parent, -1),
 	tx_editor_{ tx_editor }
 {
 	// Create controls
-	tex_canvas_ = new CTextureCanvas(this, -1);
-	slider_zoom_ = new SZoomSlider(this, tex_canvas_);
-	cb_tex_scale_ = new wxCheckBox(this, -1, "Apply Scale");
-	cb_tex_arc_ = new wxCheckBox(this, -1, "Aspect Ratio Correction");
+	tex_canvas_      = new CTextureCanvas(this, -1);
+	slider_zoom_     = new SZoomSlider(this, tex_canvas_);
+	cb_tex_scale_    = new wxCheckBox(this, -1, "Apply Scale");
+	cb_tex_arc_      = new wxCheckBox(this, -1, "Aspect Ratio Correction");
 	cb_draw_outside_ = new wxCheckBox(this, -1, "Show Outside");
 	choice_viewtype_ = new wxChoice(this, -1);
-	label_viewtype_ = new wxStaticText(this, -1, "Offset Type:");
-	cb_blend_rgba_ = new wxCheckBox(this, -1, "Truecolour Preview");
+	label_viewtype_  = new wxStaticText(this, -1, "Offset Type:");
+	cb_blend_rgba_   = new wxCheckBox(this, -1, "Truecolour Preview");
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::setupLayout
-//
+// -----------------------------------------------------------------------------
 // Initialises the panel layout (must be called after the constructor to work
 // correctly for ZTextureEditorPanel)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::setupLayout()
 {
 	// Init controls
@@ -183,23 +181,21 @@ void TextureEditorPanel::setupLayout()
 	Layout();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::createTextureControls
-//
+// -----------------------------------------------------------------------------
 // Creates/sets up a panel with controls to edit texture properties
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 {
 	// Create controls
-	const auto spinsize = wxSize{ UI::px(UI::Size::SpinCtrlWidth), -1 };
+	const auto spinsize  = wxSize{ UI::px(UI::Size::SpinCtrlWidth), -1 };
 	const auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	wxPanel* panel = new wxPanel(parent, -1);
-	text_tex_name_ = new wxTextCtrl(panel, -1);
+	wxPanel*   panel     = new wxPanel(parent, -1);
+	text_tex_name_       = new wxTextCtrl(panel, -1);
 	text_tex_name_->SetMaxLength(8);
-	spin_tex_width_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
-	spin_tex_height_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
-	spin_tex_scalex_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
-	spin_tex_scaley_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
+	spin_tex_width_    = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
+	spin_tex_height_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
+	spin_tex_scalex_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
+	spin_tex_scaley_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
 	label_scaled_size_ = new wxStaticText(panel, -1, "Scaled Size: N/A");
 	cb_tex_world_panning_ = new wxCheckBox(panel, -1, "World Panning");
 
@@ -208,7 +204,7 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	panel->SetSizer(sizer);
 
 	// "Texture Properties" frame
-	wxStaticBox* frame = new wxStaticBox(panel, -1, "Texture Properties");
+	wxStaticBox*      frame      = new wxStaticBox(panel, -1, "Texture Properties");
 	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 1, wxEXPAND);
 
@@ -236,11 +232,9 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	return panel;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::updateTextureControls
-//
+// -----------------------------------------------------------------------------
 // Updates all texture editing controls with values from the texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::updateTextureControls()
 {
 	// Check texture is open
@@ -251,19 +245,17 @@ void TextureEditorPanel::updateTextureControls()
 	text_tex_name_->SetValue(tex_current_->getName());
 	spin_tex_width_->SetValue(tex_current_->getWidth());
 	spin_tex_height_->SetValue(tex_current_->getHeight());
-	spin_tex_scalex_->SetValue(tex_current_->getScaleX()*8);
-	spin_tex_scaley_->SetValue(tex_current_->getScaleY()*8);
+	spin_tex_scalex_->SetValue(tex_current_->getScaleX() * 8);
+	spin_tex_scaley_->SetValue(tex_current_->getScaleY() * 8);
 	cb_tex_world_panning_->SetValue(tex_current_->worldPanning());
 	updateTextureScaleLabel();
 	tex_modified_ = modified;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::updateTextureScaleLabel
-//
+// -----------------------------------------------------------------------------
 // Updates the 'Scaled Size' label according to the current texture's
 // dimensions and scale
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::updateTextureScaleLabel()
 {
 	// Check texture is open
@@ -284,11 +276,9 @@ void TextureEditorPanel::updateTextureScaleLabel()
 	label_scaled_size_->SetLabel(S_FMT("Scaled Size: %dx%d", scaled_x, scaled_y));
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::createPatchControls
-//
+// -----------------------------------------------------------------------------
 // Creates/sets up a panel with controls to edit a texture's patches
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 {
 	wxPanel* panel = new wxPanel(parent, -1);
@@ -298,19 +288,19 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	panel->SetSizer(sizer);
 
 	// -- Texture Patches frame --
-	wxStaticBox* frame = new wxStaticBox(panel, -1, "Patches");
+	wxStaticBox*      frame      = new wxStaticBox(panel, -1, "Patches");
 	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
-	sizer->Add(framesizer, 0, wxEXPAND|wxBOTTOM, UI::pad());
+	sizer->Add(framesizer, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 	// Add patches list
 	list_patches_ = new ListView(panel, -1);
 	list_patches_->enableSizeUpdate(false);
 	list_patches_->SetInitialSize(WxUtils::scaledSize(100, -1));
-	framesizer->Add(list_patches_, 1, wxEXPAND|wxALL, UI::pad());
+	framesizer->Add(list_patches_, 1, wxEXPAND | wxALL, UI::pad());
 
 	// Add patch buttons
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
-	framesizer->Add(vbox, 0, wxEXPAND|wxTOP|wxRIGHT|wxBOTTOM, UI::pad());
+	framesizer->Add(vbox, 0, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, UI::pad());
 
 	// 'Add' button
 	btn_patch_add_ = new SIconButton(panel, "patch_add", "Add new patch to texture");
@@ -339,34 +329,32 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 
 
 	// -- Patch Properties frame --
-	frame = new wxStaticBox(panel, -1, "Patch Properties");
+	frame      = new wxStaticBox(panel, -1, "Patch Properties");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 1, wxEXPAND);
 
 	// X Position
-	const auto spinsize = wxSize{ UI::px(UI::Size::SpinCtrlWidth), -1 };
-	const auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(hbox, 0, wxEXPAND|wxALL, UI::pad());
+	const auto  spinsize  = wxSize{ UI::px(UI::Size::SpinCtrlWidth), -1 };
+	const auto  spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
+	wxBoxSizer* hbox      = new wxBoxSizer(wxHORIZONTAL);
+	framesizer->Add(hbox, 0, wxEXPAND | wxALL, UI::pad());
 	spin_patch_left_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, "X Position:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
+	hbox->Add(new wxStaticText(panel, -1, "X Position:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 	hbox->Add(spin_patch_left_, 1);
 
 	// Y Position
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, UI::pad());
+	framesizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 	spin_patch_top_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, "Y Position:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
+	hbox->Add(new wxStaticText(panel, -1, "Y Position:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 	hbox->Add(spin_patch_top_, 1);
 
 	return panel;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::populatePatchList
-//
+// -----------------------------------------------------------------------------
 // Populates the patch list with all patches present in the texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::populatePatchList()
 {
 	// Clear current list
@@ -389,12 +377,10 @@ void TextureEditorPanel::populatePatchList()
 	list_patches_->GetParent()->Layout();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::updatePatchControls
-//
+// -----------------------------------------------------------------------------
 // Updates all patch editing controls with values from the currently selected
 // patch. Behaves differently depending on the number of patches selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::updatePatchControls()
 {
 	// Get selected patches
@@ -434,11 +420,9 @@ void TextureEditorPanel::updatePatchControls()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::openTexture
-//
+// -----------------------------------------------------------------------------
 // Loads a TEXTUREX format texture into the editor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureEditorPanel::openTexture(CTexture* tex, TextureXList* list)
 {
 	// Check texture was given
@@ -467,11 +451,9 @@ bool TextureEditorPanel::openTexture(CTexture* tex, TextureXList* list)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::clearTexture
-//
+// -----------------------------------------------------------------------------
 // Clears the current texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::clearTexture()
 {
 	// Clear texture
@@ -480,7 +462,7 @@ void TextureEditorPanel::clearTexture()
 	tex_canvas_->clearTexture();
 
 	// Update variables
-	tex_current_ = nullptr;
+	tex_current_  = nullptr;
 	tex_modified_ = false;
 
 	// Set control values
@@ -489,11 +471,9 @@ void TextureEditorPanel::clearTexture()
 	updatePatchControls();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::setPalette
-//
+// -----------------------------------------------------------------------------
 // Sets the texture canvas' palette and refreshes it
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::setPalette(Palette* pal)
 {
 	tex_canvas_->setPalette(pal);
@@ -501,32 +481,26 @@ void TextureEditorPanel::setPalette(Palette* pal)
 	tex_canvas_->Refresh();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::getPalette
-//
+// -----------------------------------------------------------------------------
 // Returns the texture canvas' palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 Palette* TextureEditorPanel::palette()
 {
 	return tex_canvas_->getPalette();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::getPalette
-//
+// -----------------------------------------------------------------------------
 // Returns true if the texture uses RGBA blending
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureEditorPanel::blendRGBA()
 {
 	return tex_canvas_->getBlendRGBA();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::addPatch
-//
+// -----------------------------------------------------------------------------
 // Prompts the user to select a patch from the patch table to be added to the
 // current texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::addPatch()
 {
 	// Do nothing if patch list is empty
@@ -549,22 +523,20 @@ void TextureEditorPanel::addPatch()
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::removePatch
-//
+// -----------------------------------------------------------------------------
 // Removes selected patch(es) from the current texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::removePatch()
 {
 	// Get selection
 	wxArrayInt selection = list_patches_->selectedItems();
 
 	// Do nothing if no patches are selected
-	if (selection.size() == 0 )
+	if (selection.size() == 0)
 		return;
 
 	// Remove each selected patch
-	for (int a = selection.size()-1; a >= 0; a--)
+	for (int a = selection.size() - 1; a >= 0; a--)
 	{
 		int index = selection[a];
 		// Remove patch from texture
@@ -581,11 +553,9 @@ void TextureEditorPanel::removePatch()
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::patchBack
-//
+// -----------------------------------------------------------------------------
 // Moves selected patch(es) 'back' in the current texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::patchBack()
 {
 	// Get selected patch(es)
@@ -621,11 +591,9 @@ void TextureEditorPanel::patchBack()
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::patchForward
-//
+// -----------------------------------------------------------------------------
 // Moves selected patch(es) 'forward' in the current texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::patchForward()
 {
 	// Get selected patch(es)
@@ -636,7 +604,7 @@ void TextureEditorPanel::patchForward()
 		return;
 
 	// Do nothing if last patch is selected
-	if (selection.back() == list_patches_->GetItemCount()-1)
+	if (selection.back() == list_patches_->GetItemCount() - 1)
 		return;
 
 	// Go through selection from bottom up
@@ -661,12 +629,10 @@ void TextureEditorPanel::patchForward()
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::replacePatch
-//
+// -----------------------------------------------------------------------------
 // Prompts the user to select a patch from the patch table to replace selected
 // patch(es) with
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::replacePatch()
 {
 	// Get selection
@@ -702,12 +668,10 @@ void TextureEditorPanel::replacePatch()
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::duplicatePatch
-//
+// -----------------------------------------------------------------------------
 // Duplicates selected patch(es) in the current texture (each duplication is
 // placed 8 units right+down from its original patch)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::duplicatePatch(int xoff, int yoff)
 {
 	// Get selection
@@ -718,7 +682,7 @@ void TextureEditorPanel::duplicatePatch(int xoff, int yoff)
 		return;
 
 	// Go through selection backwards
-	for (int a = selection.size()-1; a >= 0; a--)
+	for (int a = selection.size() - 1; a >= 0; a--)
 	{
 		// Duplicate selected patch
 		tex_current_->duplicatePatch(selection[a], xoff, yoff);
@@ -741,12 +705,10 @@ void TextureEditorPanel::duplicatePatch(int xoff, int yoff)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::handleAction
-//
+// -----------------------------------------------------------------------------
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureEditorPanel::handleAction(string id)
 {
 	// Don't handle actions if hidden
@@ -790,18 +752,16 @@ bool TextureEditorPanel::handleAction(string id)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextureEditorPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onDrawOutsideChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'show outside' checkbox is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onDrawOutsideChanged(wxCommandEvent& e)
 {
 	// Set texture canvas 'show outside' option depending on checkbox value
@@ -811,11 +771,9 @@ void TextureEditorPanel::onDrawOutsideChanged(wxCommandEvent& e)
 	tex_canvas_->redraw(false);
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onTexCanvasMouseEvent
-//
+// -----------------------------------------------------------------------------
 // Called on any mouse event within the texture canvas
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 {
 	// Get mouse position relative to texture
@@ -904,8 +862,9 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 			if (list_patches_->GetSelectedItemCount() > 0)
 			{
 				// Get drag amount according to texture
-				point2_t tex_cur = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
-				point2_t tex_prev = tex_canvas_->screenToTexPosition(tex_canvas_->getMousePrevPos().x, tex_canvas_->getMousePrevPos().y);
+				point2_t tex_cur  = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
+				point2_t tex_prev = tex_canvas_->screenToTexPosition(
+					tex_canvas_->getMousePrevPos().x, tex_canvas_->getMousePrevPos().y);
 				point2_t diff = tex_cur - tex_prev;
 
 				// Move any selected patches
@@ -913,7 +872,8 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				for (size_t a = 0; a < selected_patches.size(); a++)
 				{
 					CTPatch* patch = tex_current_->getPatch(selected_patches[a]);
-					if (!patch) continue;
+					if (!patch)
+						continue;
 					int16_t cx = patch->xOffset();
 					int16_t cy = patch->yOffset();
 					patch->setOffsetX(cx + diff.x);
@@ -928,8 +888,9 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 			else if (tex_current_ && tex_current_->isExtended() && tex_canvas_->getViewType() > 0)
 			{
 				// Get drag amount according to texture
-				point2_t tex_cur = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
-				point2_t tex_prev = tex_canvas_->screenToTexPosition(tex_canvas_->getMousePrevPos().x, tex_canvas_->getMousePrevPos().y);
+				point2_t tex_cur  = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
+				point2_t tex_prev = tex_canvas_->screenToTexPosition(
+					tex_canvas_->getMousePrevPos().x, tex_canvas_->getMousePrevPos().y);
 				point2_t diff = tex_cur - tex_prev;
 
 				// Modify offsets
@@ -946,11 +907,9 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onTexCanvasDragEnd
-//
+// -----------------------------------------------------------------------------
 // Called when a mouse drag action ends on the texture canvas
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onTexCanvasDragEnd(wxCommandEvent& e)
 {
 	// If patch dragging ended (left button)
@@ -961,11 +920,9 @@ void TextureEditorPanel::onTexCanvasDragEnd(wxCommandEvent& e)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onTexCanvasKeyDown
-//
+// -----------------------------------------------------------------------------
 // Called when a key is pressed within the texture canvas
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 {
 	// Check if keypress matches any keybinds
@@ -976,9 +933,9 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		alt_press_ = true;
 
 	// Go through matching binds
-	int x_movement = 0;
-	int y_movement = 0;
-	bool handled = false;
+	int  x_movement = 0;
+	int  y_movement = 0;
+	bool handled    = false;
 	for (unsigned a = 0; a < binds.size(); a++)
 	{
 		string name = binds[a];
@@ -1066,7 +1023,8 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		for (size_t a = 0; a < selected_patches.size(); a++)
 		{
 			CTPatch* patch = tex_current_->getPatch(selected_patches[a]);
-			if (!patch) continue;
+			if (!patch)
+				continue;
 			int16_t cx = patch->xOffset();
 			int16_t cy = patch->yOffset();
 			patch->setOffsetX(cx + x_movement);
@@ -1085,11 +1043,9 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onTexNameChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the texture name entry box is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onTexNameChanged(wxCommandEvent& e)
 {
 	// Change texture name
@@ -1099,11 +1055,9 @@ void TextureEditorPanel::onTexNameChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onTexWidthChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the texture width spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onTexWidthChanged(wxCommandEvent& e)
 {
 	// Set texture's width
@@ -1117,11 +1071,9 @@ void TextureEditorPanel::onTexWidthChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onTexHeightChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the texture height spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onTexHeightChanged(wxCommandEvent& e)
 {
 	// Set texture's height
@@ -1135,11 +1087,9 @@ void TextureEditorPanel::onTexHeightChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onTexScaleXChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the texture x scale spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onTexScaleXChanged(wxCommandEvent& e)
 {
 	// Set texture's x scale
@@ -1152,11 +1102,9 @@ void TextureEditorPanel::onTexScaleXChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onTexScaleYChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the texture y scale spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onTexScaleYChanged(wxCommandEvent& e)
 {
 	// Set texture's y scale
@@ -1169,11 +1117,9 @@ void TextureEditorPanel::onTexScaleYChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onTexWorldPanningChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the texture world panning checkbox is toggled
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onTexWorldPanningChanged(wxCommandEvent& e)
 {
 	// Set texture world panning flag
@@ -1183,11 +1129,9 @@ void TextureEditorPanel::onTexWorldPanningChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onPatchListSelect
-//
+// -----------------------------------------------------------------------------
 // Called when a patch is selected on the patch list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onPatchListSelect(wxListEvent& e)
 {
 	// Select the patch on the texture canvas
@@ -1198,11 +1142,9 @@ void TextureEditorPanel::onPatchListSelect(wxListEvent& e)
 	updatePatchControls();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onPatchListDeSelect
-//
+// -----------------------------------------------------------------------------
 // Called when a patch is deselected on the patch list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onPatchListDeSelect(wxListEvent& e)
 {
 	// Deselect the patch on the texture canvas
@@ -1213,71 +1155,57 @@ void TextureEditorPanel::onPatchListDeSelect(wxListEvent& e)
 	updatePatchControls();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onBtnPatchAdd
-//
+// -----------------------------------------------------------------------------
 // Called when the 'add patch' button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onBtnPatchAdd(wxCommandEvent& e)
 {
 	addPatch();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onBtnPatchRemove
-//
+// -----------------------------------------------------------------------------
 // Called when the 'remove patch' button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onBtnPatchRemove(wxCommandEvent& e)
 {
 	removePatch();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onBtnPatchBack
-//
+// -----------------------------------------------------------------------------
 // Called when the 'send patch back' button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onBtnPatchBack(wxCommandEvent& e)
 {
 	patchBack();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onBtnPatchForward
-//
+// -----------------------------------------------------------------------------
 // Called when the 'bring patch forward' button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onBtnPatchForward(wxCommandEvent& e)
 {
 	patchForward();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onBtnPatchReplace
-//
+// -----------------------------------------------------------------------------
 // Called when the 'replace patch' button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onBtnPatchReplace(wxCommandEvent& e)
 {
 	replacePatch();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onBtnPatchDuplicate
-//
+// -----------------------------------------------------------------------------
 // Called when the 'duplicate patch' button is pressed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onBtnPatchDuplicate(wxCommandEvent& e)
 {
 	duplicatePatch();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onPatchPositionXChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the patch x position spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onPatchPositionXChanged(wxCommandEvent& e)
 {
 	// If anything other than 1 patch is selected, do nothing (shouldn't happen anyway)
@@ -1286,7 +1214,8 @@ void TextureEditorPanel::onPatchPositionXChanged(wxCommandEvent& e)
 
 	// Get selected patch
 	CTPatch* patch = tex_current_->getPatch(list_patches_->selectedItems()[0]);
-	if (!patch) return;
+	if (!patch)
+		return;
 
 	// Set patch x offset
 	patch->setOffsetX(spin_patch_left_->GetValue());
@@ -1297,11 +1226,9 @@ void TextureEditorPanel::onPatchPositionXChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onPatchPositionYChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the patch y position spin control is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onPatchPositionYChanged(wxCommandEvent& e)
 {
 	// If anything other than 1 patch is selected, do nothing (shouldn't happen anyway)
@@ -1310,7 +1237,8 @@ void TextureEditorPanel::onPatchPositionYChanged(wxCommandEvent& e)
 
 	// Get selected patch
 	CTPatch* patch = tex_current_->getPatch(list_patches_->selectedItems()[0]);
-	if (!patch) return;
+	if (!patch)
+		return;
 
 	// Set patch y offset
 	patch->setOffsetY(spin_patch_top_->GetValue());
@@ -1321,22 +1249,18 @@ void TextureEditorPanel::onPatchPositionYChanged(wxCommandEvent& e)
 	tex_modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onApplyScaleChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Apply Scale' checkbox is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onApplyScaleChanged(wxCommandEvent& e)
 {
 	tex_canvas_->applyTexScale(cb_tex_scale_->GetValue());
 	tex_canvas_->redraw();
 }
 
-// ----------------------------------------------------------------------------
-// TextureEditorPanel::onARCChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Aspect Ratio Correction' checkbox is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureEditorPanel::onARCChanged(wxCommandEvent& e)
 {
 	tx_arc = cb_tex_arc_->IsChecked();

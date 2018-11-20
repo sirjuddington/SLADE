@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -22,35 +22,35 @@
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
-#include "MainEditor/MainEditor.h"
-#include "MainEditor/UI/MainWindow.h"
 #include "TextureXEditor.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Dialogs/ExtMessageDialog.h"
 #include "General/ResourceManager.h"
 #include "General/UndoRedo.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // CreateTextureXDialog Class
 //
 // A simple dialog that provides options to create new (empty) texture
 // definitions or import them from the base resource archive.
 // Also has options for the desired texture format (doom, strife or TEXTURES)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class CreateTextureXDialog : public wxDialog
 {
 public:
@@ -61,43 +61,36 @@ public:
 		SetSizer(m_vbox);
 
 		// --- Format options ---
-		wxStaticBox* frame = new wxStaticBox(this, -1, "Format");
+		wxStaticBox*      frame      = new wxStaticBox(this, -1, "Format");
 		wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		m_vbox->Add(framesizer, 0, wxEXPAND|wxALL, UI::pad());
+		m_vbox->Add(framesizer, 0, wxEXPAND | wxALL, UI::pad());
 
 		// Doom format
-		rb_format_doom_ = new wxRadioButton(
-			this,
-			-1,
-			"Doom (TEXTURE1 + PNAMES)",
-			wxDefaultPosition,
-			wxDefaultSize,
-			wxRB_GROUP
-		);
-		rb_format_strife_ = new wxRadioButton(this, -1, "Strife (TEXTURE1 + PNAMES)");
+		rb_format_doom_ =
+			new wxRadioButton(this, -1, "Doom (TEXTURE1 + PNAMES)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+		rb_format_strife_   = new wxRadioButton(this, -1, "Strife (TEXTURE1 + PNAMES)");
 		rb_format_textures_ = new wxRadioButton(this, -1, "ZDoom (TEXTURES)");
 		WxUtils::layoutVertically(
 			framesizer,
 			{ rb_format_doom_, rb_format_strife_, rb_format_textures_ },
-			wxSizerFlags(1).Expand().Border(wxALL, UI::pad())
-		);
+			wxSizerFlags(1).Expand().Border(wxALL, UI::pad()));
 
 
 		// --- Source options ---
-		frame = new wxStaticBox(this, -1, "Source");
+		frame      = new wxStaticBox(this, -1, "Source");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		m_vbox->Add(framesizer, 0, wxEXPAND|wxALL, UI::pad());
+		m_vbox->Add(framesizer, 0, wxEXPAND | wxALL, UI::pad());
 
 		// New list
 		rb_new_ = new wxRadioButton(this, -1, "Create New (Empty)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		framesizer->Add(rb_new_, 0, wxEXPAND|wxALL, UI::pad());
+		framesizer->Add(rb_new_, 0, wxEXPAND | wxALL, UI::pad());
 
 		// Import from Base Resource Archive
 		rb_import_bra_ = new wxRadioButton(this, -1, "Import from Base Resource Archive:");
 		framesizer->Add(rb_import_bra_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
 		// Add buttons
-		m_vbox->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxALL, UI::pad());
+		m_vbox->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, UI::pad());
 
 		// Bind events
 		rb_new_->Bind(wxEVT_RADIOBUTTON, &CreateTextureXDialog::onRadioNewSelected, this);
@@ -121,10 +114,7 @@ public:
 			return TextureXList::Format::Normal;
 	}
 
-	bool createNewSelected()
-	{
-		return rb_new_->GetValue();
-	}
+	bool createNewSelected() { return rb_new_->GetValue(); }
 
 	void onRadioNewSelected(wxCommandEvent& e)
 	{
@@ -144,28 +134,26 @@ public:
 	}
 
 private:
-	wxRadioButton*	rb_format_doom_;
-	wxRadioButton*	rb_format_strife_;
-	wxRadioButton*	rb_format_textures_;
+	wxRadioButton* rb_format_doom_;
+	wxRadioButton* rb_format_strife_;
+	wxRadioButton* rb_format_textures_;
 
-	wxRadioButton*	rb_new_;
-	wxRadioButton*	rb_import_bra_;
-	wxRadioButton*	rb_import_archive_;
+	wxRadioButton* rb_new_;
+	wxRadioButton* rb_import_bra_;
+	wxRadioButton* rb_import_archive_;
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextureXEditor Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::TextureXEditor
-//
+// -----------------------------------------------------------------------------
 // TextureXEditor class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Init variables
@@ -213,7 +201,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Add tabs
 	tabs_ = STabCtrl::createControl(this);
-	sizer->Add(tabs_, 1, wxEXPAND|wxALL, UI::pad());
+	sizer->Add(tabs_, 1, wxEXPAND | wxALL, UI::pad());
 
 	// Bind events
 	Bind(wxEVT_SHOW, &TextureXEditor::onShow, this);
@@ -233,11 +221,9 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	Show();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::~TextureXEditor
-//
+// -----------------------------------------------------------------------------
 // TextureXEditor class destructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextureXEditor::~TextureXEditor()
 {
 	if (pnames_)
@@ -247,13 +233,11 @@ TextureXEditor::~TextureXEditor()
 	delete undo_manager_;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::openArchive
-//
+// -----------------------------------------------------------------------------
 // Opens an archive to manage. Opens all texture related entries in the archive
 // and sorts a bunch of stuff out. If no texture related entries exist in the
 // archive, give the user options to create or import them
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureXEditor::openArchive(Archive* archive)
 {
 	// Check any archive was given
@@ -266,10 +250,10 @@ bool TextureXEditor::openArchive(Archive* archive)
 
 	// Search archive for any texture-related entries
 	Archive::SearchOptions options;
-	options.match_type = EntryType::fromId("texturex");
-	vector<ArchiveEntry*> tx_entries = archive->findAll(options);	// Find all TEXTUREx entries
-	options.match_type = EntryType::fromId("pnames");
-	ArchiveEntry* entry_pnames = archive->findLast(options);		// Find last PNAMES entry
+	options.match_type               = EntryType::fromId("texturex");
+	vector<ArchiveEntry*> tx_entries = archive->findAll(options); // Find all TEXTUREx entries
+	options.match_type               = EntryType::fromId("pnames");
+	ArchiveEntry* entry_pnames       = archive->findLast(options); // Find last PNAMES entry
 
 	// If any TEXTURE1/2 entries were found, setup patch table stuff
 	if (tx_entries.size() > 0)
@@ -281,10 +265,10 @@ bool TextureXEditor::openArchive(Archive* archive)
 		{
 			Archive::SearchOptions options;
 			options.match_type = EntryType::fromId("pnames");
-			entry_pnames = App::archiveManager().findResourceEntry(options, archive);
+			entry_pnames       = App::archiveManager().findResourceEntry(options, archive);
 		}
 		else
-			pnames_ = entry_pnames;	// If PNAMES was found in the archive,
+			pnames_ = entry_pnames; // If PNAMES was found in the archive,
 									// set the class variable so it is written to if modified
 
 		// If no PNAMES entry is found at all, show an error and abort
@@ -333,7 +317,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 	}
 
 	// Search archive for TEXTURES entries
-	options.match_type = EntryType::fromId("zdtextures");
+	options.match_type                = EntryType::fromId("zdtextures");
 	vector<ArchiveEntry*> ztx_entries = archive->findAll(options);
 
 	// Open texture editor tabs
@@ -366,7 +350,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 	tabs_->Refresh();
 
 	// Update variables
-	this->archive_ = archive;
+	this->archive_   = archive;
 	pnames_modified_ = false;
 
 	// Lock pnames entry if it exists
@@ -385,11 +369,9 @@ bool TextureXEditor::openArchive(Archive* archive)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::updateTexturePalette
-//
+// -----------------------------------------------------------------------------
 // Sets the texture panels' palettes to what is selected in the palette chooser
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXEditor::updateTexturePalette()
 {
 	// Get palette
@@ -401,11 +383,9 @@ void TextureXEditor::updateTexturePalette()
 	patch_browser_->setPalette(pal);
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::saveChanges
-//
+// -----------------------------------------------------------------------------
 // Saves changes to all open TEXTUREx and PNAMES entries
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXEditor::saveChanges()
 {
 	// Check for problems
@@ -423,12 +403,12 @@ void TextureXEditor::saveChanges()
 		{
 			// If no PNAMES entry exists in the archive, create one
 			int index = archive_->entryIndex(texture_editors_.back()->txEntry()) + 1;
-			pnames_ = archive_->addNewEntry("PNAMES", index);
+			pnames_   = archive_->addNewEntry("PNAMES", index);
 			pnames_->setType(EntryType::fromId("pnames"));
 			pnames_->setExtensionByType();
 		}
 
-		pnames_->unlock();	// Have to unlock it to write
+		pnames_->unlock(); // Have to unlock it to write
 		patch_table_.writePNAMES(pnames_);
 		pnames_->lock();
 
@@ -436,12 +416,10 @@ void TextureXEditor::saveChanges()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::close
-//
+// -----------------------------------------------------------------------------
 // 'Closes' the texture editor, prompting the user to save any unsaved changes.
 // Returns false if the close operation should be cancelled, true otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureXEditor::close()
 {
 	// Check if any texture lists are modified
@@ -460,22 +438,20 @@ bool TextureXEditor::close()
 	// Ask to save changes
 	if (modified)
 	{
-		wxMessageDialog md(this, "Save changes to texture entries?", "Unsaved Changes", wxYES_NO|wxCANCEL);
-		int result = md.ShowModal();
+		wxMessageDialog md(this, "Save changes to texture entries?", "Unsaved Changes", wxYES_NO | wxCANCEL);
+		int             result = md.ShowModal();
 		if (result == wxID_YES)
-			saveChanges();	// User selected to save
+			saveChanges(); // User selected to save
 		else if (result == wxID_CANCEL)
-			return false;	// User selected cancel, don't close the archive
+			return false; // User selected cancel, don't close the archive
 	}
 
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::showTextureMenu
-//
+// -----------------------------------------------------------------------------
 // Shows or hides the custom 'Texture' menu
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXEditor::showTextureMenu(bool show)
 {
 	if (show)
@@ -484,16 +460,14 @@ void TextureXEditor::showTextureMenu(bool show)
 		theMainWindow->removeCustomMenu(menu_texture_);
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::removePatch
-//
+// -----------------------------------------------------------------------------
 // Removes the patch at [index] on the patch table from any textures that
 // contain it (and from the patch table itself)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
 {
 	// Get patch we're removing
-	auto& p = patch_table_.patch(index);
+	auto&  p    = patch_table_.patch(index);
 	string name = p.name;
 
 	// Update TEXTUREx lists
@@ -511,12 +485,10 @@ bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::browsePatch
-//
+// -----------------------------------------------------------------------------
 // Opens the patch table in the patch browser.
 // Returns the selected patch index, or -1 if no patch was selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int TextureXEditor::browsePatchTable(string first)
 {
 	// Select initial patch if specified
@@ -529,12 +501,10 @@ int TextureXEditor::browsePatchTable(string first)
 		return -1;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::browsePatchEntry
-//
+// -----------------------------------------------------------------------------
 // Opens resource patch entries in the patch browser.
 // Returns the selected patch name, or "" if no patch was selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string TextureXEditor::browsePatchEntry(string first)
 {
 	// Update patch browser if necessary
@@ -560,12 +530,10 @@ string TextureXEditor::browsePatchEntry(string first)
 		return "";
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::checkTextures
-//
+// -----------------------------------------------------------------------------
 // Checks all texture definitions for problems and alerts the user if any are
 // found. Returns true if any problems were found, false otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureXEditor::checkTextures()
 {
 	string problems = wxEmptyString;
@@ -587,13 +555,12 @@ bool TextureXEditor::checkTextures()
 				{
 					ArchiveEntry* pentry = theResourceManager->getPatchEntry(tex->getPatch(p)->getName());
 					ArchiveEntry* fentry = theResourceManager->getFlatEntry(tex->getPatch(p)->getName());
-					CTexture* ptex = theResourceManager->getTexture(tex->getPatch(p)->getName());
+					CTexture*     ptex   = theResourceManager->getTexture(tex->getPatch(p)->getName());
 					if (!pentry && !fentry && !ptex)
 						problems += S_FMT(
 							"Texture %s contains invalid/unknown patch %s\n",
 							tex->getName(),
-							tex->getPatch(p)->getName()
-						);
+							tex->getPatch(p)->getName());
 				}
 			}
 			else
@@ -605,8 +572,7 @@ bool TextureXEditor::checkTextures()
 						problems += S_FMT(
 							"Texture %s contains invalid/unknown patch %s\n",
 							tex->getName(),
-							tex->getPatch(p)->getName()
-						);
+							tex->getPatch(p)->getName());
 				}
 			}
 		}
@@ -616,7 +582,7 @@ bool TextureXEditor::checkTextures()
 	for (unsigned a = 0; a < patch_table_.nPatches(); a++)
 	{
 		// Check patch entry is valid
-		auto& patch = patch_table_.patch(a);
+		auto&         patch = patch_table_.patch(a);
 		ArchiveEntry* entry = theResourceManager->getPatchEntry(patch.name, "patches", archive_);
 
 		if (!entry)
@@ -635,8 +601,7 @@ bool TextureXEditor::checkTextures()
 					"Patch %s is of type \"%s\", which is not a valid gfx format for patches. "
 					"Convert it to either Doom Gfx or PNG\n",
 					patch.name,
-					type->name()
-				);
+					type->name());
 		}
 	}
 
@@ -654,12 +619,10 @@ bool TextureXEditor::checkTextures()
 		return false;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::setSelection
-//
+// -----------------------------------------------------------------------------
 // Sets the active tab to be the one corresponding to the given entry index or
 // entry.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXEditor::setSelection(size_t index)
 {
 	if (index < tabs_->GetPageCount() && index != tabs_->GetSelection())
@@ -686,11 +649,9 @@ void TextureXEditor::setSelection(ArchiveEntry* entry)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::updateMenuStatus
-//
+// -----------------------------------------------------------------------------
 // Checks if the Texture menu needs to be displayed or not
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXEditor::updateMenuStatus()
 {
 	if (tabs_->GetSelection() < 0)
@@ -713,11 +674,9 @@ void TextureXEditor::updateMenuStatus()
 	showTextureMenu(tex);
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::undo
-//
+// -----------------------------------------------------------------------------
 // Performs an undo operation
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXEditor::undo()
 {
 	string action = undo_manager_->undo();
@@ -728,11 +687,9 @@ void TextureXEditor::undo()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::redo
-//
+// -----------------------------------------------------------------------------
 // Performs an redo operation
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXEditor::redo()
 {
 	string action = undo_manager_->redo();
@@ -743,11 +700,9 @@ void TextureXEditor::redo()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::onAnnouncement
-//
+// -----------------------------------------------------------------------------
 // Handles any announcements from the current texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXEditor::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
 	if (announcer == theMainWindow->getPaletteChooser() && event_name == "main_palette_changed")
@@ -769,28 +724,24 @@ void TextureXEditor::onAnnouncement(Announcer* announcer, string event_name, Mem
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextureXEditor Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::onSaveClicked
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Save Changes' button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXEditor::onSaveClicked(wxCommandEvent& e)
 {
 	saveChanges();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::onShow
-//
+// -----------------------------------------------------------------------------
 // Called when the panel is shown or hidden
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXEditor::onShow(wxShowEvent& e)
 {
 	if (!e.IsShown())
@@ -804,20 +755,18 @@ void TextureXEditor::onShow(wxShowEvent& e)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextureXEditor Class Static Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextureXEditor::setupTextureEntries
-//
+// -----------------------------------------------------------------------------
 // Static function to check if an archive has sufficient texture related
 // entries, and if not, prompts the user to either create or import them.
 // Returns true if the entries exist, false otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureXEditor::setupTextureEntries(Archive* archive)
 {
 	using Format = TextureXList::Format;
@@ -828,8 +777,8 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 
 	// Search archive for any ZDoom TEXTURES entries
 	Archive::SearchOptions options;
-	options.match_type = EntryType::fromId("zdtextures");
-	ArchiveEntry* entry_tx = archive->findFirst(options);	// Find any TEXTURES entry
+	options.match_type     = EntryType::fromId("zdtextures");
+	ArchiveEntry* entry_tx = archive->findFirst(options); // Find any TEXTURES entry
 
 	// If it's found, we're done
 	if (entry_tx)
@@ -837,10 +786,10 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 
 
 	// Search archive for any texture-related entries
-	options.match_type = EntryType::fromId("texturex");
-	entry_tx = archive->findFirst(options);						// Find any TEXTUREx entry
-	options.match_type = EntryType::fromId("pnames");
-	ArchiveEntry* entry_pnames = archive->findFirst(options);	// Find any PNAMES entry
+	options.match_type         = EntryType::fromId("texturex");
+	entry_tx                   = archive->findFirst(options); // Find any TEXTUREx entry
+	options.match_type         = EntryType::fromId("pnames");
+	ArchiveEntry* entry_pnames = archive->findFirst(options); // Find any PNAMES entry
 
 	// If both exist, we're done
 	if (entry_tx && entry_pnames)
@@ -857,8 +806,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 			"The archive does not contain any texture definitions (TEXTURE1/2 or TEXTURES). "
 			"Do you wish to create or import a texture definition list?",
 			"No Texture Definitions Found",
-			wxYES_NO
-		);
+			wxYES_NO);
 
 		if (dlg.ShowModal() == wxID_YES)
 		{
@@ -889,7 +837,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 
 						// Create dummy patch
 						auto dpatch = App::archiveManager().programResourceArchive()->entryAtPath("s3dummy.lmp");
-						dpatch = archive->addEntry(dpatch, "patches", true);
+						dpatch      = archive->addEntry(dpatch, "patches", true);
 						ptt.addPatch("S3DUMMY");
 
 						// Create dummy texture
@@ -942,19 +890,16 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 					if (!bra)
 					{
 						wxMessageBox(
-							"No Base Resource Archive is opened, please select/open one",
-							"Error",
-							wxICON_ERROR
-						);
+							"No Base Resource Archive is opened, please select/open one", "Error", wxICON_ERROR);
 						continue;
 					}
 
 					// Find all relevant entries in the base resource archive
 					Archive::SearchOptions options;
-					options.match_type = EntryType::fromId("texturex");
-					vector<ArchiveEntry*> import_tx = bra->findAll(options);	// Find all TEXTUREx entries
-					options.match_type = EntryType::fromId("pnames");
-					ArchiveEntry* import_pnames = bra->findLast(options);		// Find last PNAMES entry
+					options.match_type              = EntryType::fromId("texturex");
+					vector<ArchiveEntry*> import_tx = bra->findAll(options); // Find all TEXTUREx entries
+					options.match_type              = EntryType::fromId("pnames");
+					ArchiveEntry* import_pnames     = bra->findLast(options); // Find last PNAMES entry
 
 					// Check enough entries exist
 					if (import_tx.size() == 0 || !import_pnames)
@@ -963,8 +908,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 							"The selected Base Resource Archive does not contain "
 							"sufficient texture definition entries",
 							"Error",
-							wxICON_ERROR
-						);
+							wxICON_ERROR);
 						continue;
 					}
 
@@ -991,7 +935,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 		// 'No' clicked
 		return false;
 	}
-	else  	// TEXTUREx entry exists
+	else // TEXTUREx entry exists
 	{
 		// TODO: Probably a better idea here to get the user to select an archive to import the patch table from
 		// If no PNAMES entry was found, search resource archives
@@ -999,7 +943,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 		{
 			Archive::SearchOptions options;
 			options.match_type = EntryType::fromId("pnames");
-			entry_pnames = App::archiveManager().findResourceEntry(options, archive);
+			entry_pnames       = App::archiveManager().findResourceEntry(options, archive);
 		}
 
 		// If no PNAMES entry is found at all, show an error and abort

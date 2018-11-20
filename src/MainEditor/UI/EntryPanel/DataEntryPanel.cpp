@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -22,14 +22,14 @@
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DataEntryPanel.h"
 #include "General/ColourConfiguration.h"
@@ -38,18 +38,16 @@
 #include "MainEditor/MainEditor.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // DataEntryTable Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::GetNumberRows
-//
+// -----------------------------------------------------------------------------
 // Returns the number of rows contained in the data
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int DataEntryTable::GetNumberRows()
 {
 	if (row_stride_ == 0)
@@ -58,21 +56,17 @@ int DataEntryTable::GetNumberRows()
 		return ((data_stop_ ? data_stop_ : data_.getSize()) - data_start_) / row_stride_;
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::GetNumberCols
-//
+// -----------------------------------------------------------------------------
 // Returns the number of columns for the current data type
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int DataEntryTable::GetNumberCols()
 {
 	return columns_.size();
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::GetValue
-//
+// -----------------------------------------------------------------------------
 // Returns the string value for the cell at [row,col]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string DataEntryTable::GetValue(int row, int col)
 {
 	if (!data_.seek(data_start_ + ((row * row_stride_) + columns_[col].row_offset), 0))
@@ -190,11 +184,9 @@ string DataEntryTable::GetValue(int row, int col)
 	return "UNKNOWN TYPE";
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::SetValue
-//
+// -----------------------------------------------------------------------------
 // Sets the value for the cell at [row,col] to [value]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryTable::SetValue(int row, int col, const string& value)
 {
 	// Seek to data position
@@ -286,11 +278,9 @@ void DataEntryTable::SetValue(int row, int col, const string& value)
 	parent_->setDataModified(true);
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::GetColLabelValue
-//
+// -----------------------------------------------------------------------------
 // Returns the header label text for column [col]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string DataEntryTable::GetColLabelValue(int col)
 {
 	if ((unsigned)col < columns_.size())
@@ -299,21 +289,17 @@ string DataEntryTable::GetColLabelValue(int col)
 	return S_FMT("Column%d", col);
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::GetRowLabelValue
-//
+// -----------------------------------------------------------------------------
 // Returns the header label text for [row]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string DataEntryTable::GetRowLabelValue(int row)
 {
 	return row_prefix_ + S_FMT("%d", row_first_ + row);
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::DeleteRows
-//
+// -----------------------------------------------------------------------------
 // Deletes [num] rows, starting at [pos]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool DataEntryTable::DeleteRows(size_t pos, size_t num)
 {
 	// Copy existing data
@@ -356,11 +342,9 @@ bool DataEntryTable::DeleteRows(size_t pos, size_t num)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::InsertRows
-//
+// -----------------------------------------------------------------------------
 // Inserts [num] blank rows beginning at [pos]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool DataEntryTable::InsertRows(size_t pos, size_t num)
 {
 	// Copy existing data
@@ -400,11 +384,9 @@ bool DataEntryTable::InsertRows(size_t pos, size_t num)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::GetAttr
-//
+// -----------------------------------------------------------------------------
 // Returns the (display) attributes for the cell at [row,col]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttrKind kind)
 {
 	wxGridCellAttr* attr = new wxGridCellAttr();
@@ -437,11 +419,9 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 	return attr;
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::setupDataStructure
-//
+// -----------------------------------------------------------------------------
 // Determines the data structure (columns etc.) for [entry]'s type
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 {
 	// Clear existing
@@ -824,11 +804,9 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::copyRows
-//
+// -----------------------------------------------------------------------------
 // Copies [num] rows' data beginning from [row]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryTable::copyRows(int row, int num, bool add)
 {
 	if (!add)
@@ -837,11 +815,9 @@ void DataEntryTable::copyRows(int row, int num, bool add)
 	data_clipboard_.write(data_.getData() + data_start_ + (row * row_stride_), num * row_stride_);
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryTable::pasteRows
-//
+// -----------------------------------------------------------------------------
 // Inserts any previously copied rows at [row]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryTable::pasteRows(int row)
 {
 	// Ignore if no copied data
@@ -879,18 +855,16 @@ void DataEntryTable::pasteRows(int row)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // DataEntryPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::DataEntryPanel
-//
+// -----------------------------------------------------------------------------
 // DataEntryPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), table_data_{ new DataEntryTable(this) }
 {
 	// Cell value combo box
@@ -920,11 +894,9 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), t
 	combo_cell_value_->Bind(wxEVT_TEXT_ENTER, &DataEntryPanel::onComboCellValueSet, this);
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::loadEntry
-//
+// -----------------------------------------------------------------------------
 // Loads data from [entry] into the panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Load data table
@@ -946,11 +918,9 @@ bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::saveEntry
-//
+// -----------------------------------------------------------------------------
 // Saves any changes to the entry
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool DataEntryPanel::saveEntry()
 {
 	entry_->importMemChunk(table_data_->getData());
@@ -958,11 +928,9 @@ bool DataEntryPanel::saveEntry()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::deleteRow
-//
+// -----------------------------------------------------------------------------
 // Deletes currently selected row(s)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryPanel::deleteRow()
 {
 	// Get selected rows
@@ -995,11 +963,9 @@ void DataEntryPanel::deleteRow()
 	setModified(true);
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::addRow
-//
+// -----------------------------------------------------------------------------
 // Adds an empty row at the current selection cursor position
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryPanel::addRow()
 {
 	auto row = grid_data_->GetGridCursorRow();
@@ -1010,11 +976,9 @@ void DataEntryPanel::addRow()
 	setModified(true);
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::copyRow
-//
+// -----------------------------------------------------------------------------
 // Copies data from the currently selected row(s)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryPanel::copyRow(bool cut)
 {
 	// Get selected rows
@@ -1063,11 +1027,9 @@ void DataEntryPanel::copyRow(bool cut)
 	setModified(true);
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::pasteRow
-//
+// -----------------------------------------------------------------------------
 // Pastes previously copied row data at the current cursor position
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryPanel::pasteRow()
 {
 	table_data_->pasteRows(grid_data_->GetGridCursorRow());
@@ -1077,12 +1039,10 @@ void DataEntryPanel::pasteRow()
 	setModified(true);
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::changeValue
-//
+// -----------------------------------------------------------------------------
 // Shows a dialog to change the value of currently selected cells
 // (single-column selection only)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryPanel::changeValue()
 {
 	// Get selection
@@ -1139,11 +1099,9 @@ void DataEntryPanel::changeValue()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::handleAction
-//
+// -----------------------------------------------------------------------------
 // Handles any SAction messages (from the panel toolbar)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool DataEntryPanel::handleAction(string action_id)
 {
 	if (action_id == "data_add_row")
@@ -1164,12 +1122,10 @@ bool DataEntryPanel::handleAction(string action_id)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::getColWithSelection
-//
+// -----------------------------------------------------------------------------
 // Returns the column of the current selection (-1 if selection spans multiple
 // columns)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int DataEntryPanel::getColWithSelection()
 {
 	vector<point2_t> selection = getSelection();
@@ -1189,11 +1145,9 @@ int DataEntryPanel::getColWithSelection()
 	return col;
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::getSelection
-//
+// -----------------------------------------------------------------------------
 // Gets the positions of the currently selected cells
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 vector<point2_t> DataEntryPanel::getSelection()
 {
 	vector<point2_t> selection;
@@ -1218,18 +1172,16 @@ vector<point2_t> DataEntryPanel::getSelection()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // DataEntryPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::onKeyDown
-//
+// -----------------------------------------------------------------------------
 // Called when a key is pressed in the panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryPanel::onKeyDown(wxKeyEvent& e)
 {
 	// Cut
@@ -1248,11 +1200,9 @@ void DataEntryPanel::onKeyDown(wxKeyEvent& e)
 		e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::onGridRightClick
-//
+// -----------------------------------------------------------------------------
 // Called when the right mouse button is clicked on the grid
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 {
 	// Check if only one column is selected
@@ -1274,11 +1224,9 @@ void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 	PopupMenu(&menu);
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::onGridCursorChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the grid cursor changes cell
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryPanel::onGridCursorChanged(wxGridEvent& e)
 {
 	combo_cell_value_->Clear();
@@ -1289,12 +1237,10 @@ void DataEntryPanel::onGridCursorChanged(wxGridEvent& e)
 	combo_cell_value_->SetValue(grid_data_->GetCellValue(e.GetRow(), e.GetCol()));
 }
 
-// ----------------------------------------------------------------------------
-// DataEntryPanel::onComboCellValueSet
-//
+// -----------------------------------------------------------------------------
 // Called when the cell value combo is changed (enter pressed or an option
 // selected from the dropdown)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DataEntryPanel::onComboCellValueSet(wxCommandEvent& e)
 {
 	int row = grid_data_->GetGridCursorRow();

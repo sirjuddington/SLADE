@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -1551,13 +1551,11 @@
     <ClCompile Include="..\..\src\Graphics\SImage\SImage.cpp" />
     <ClCompile Include="..\..\src\Graphics\SImage\SImageFormats.cpp" />
     <ClCompile Include="..\..\src\Graphics\Translation.cpp" />
-    <ClCompile Include="..\..\src\MainEditor\AnimatedList.cpp" />
     <ClCompile Include="..\..\src\MainEditor\ArchiveOperations.cpp" />
     <ClCompile Include="..\..\src\MainEditor\Conversions.cpp" />
     <ClCompile Include="..\..\src\MainEditor\EntryOperations.cpp" />
     <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp" />
     <ClCompile Include="..\..\src\MainEditor\MainEditor.cpp" />
-    <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\ArchivePanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\DocsPage.cpp">
@@ -2074,14 +2072,12 @@
     <ClInclude Include="..\..\src\Graphics\SImage\SIFormat.h" />
     <ClInclude Include="..\..\src\Graphics\SImage\SImage.h" />
     <ClInclude Include="..\..\src\Graphics\Translation.h" />
-    <ClInclude Include="..\..\src\MainEditor\AnimatedList.h" />
     <ClInclude Include="..\..\src\MainEditor\ArchiveOperations.h" />
     <ClInclude Include="..\..\src\MainEditor\BinaryControlLump.h" />
     <ClInclude Include="..\..\src\MainEditor\Conversions.h" />
     <ClInclude Include="..\..\src\MainEditor\EntryOperations.h" />
     <ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h" />
     <ClInclude Include="..\..\src\MainEditor\MainEditor.h" />
-    <ClInclude Include="..\..\src\MainEditor\SwitchesList.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\ArchivePanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\DocsPage.h" />

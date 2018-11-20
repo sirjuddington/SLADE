@@ -49,16 +49,16 @@ public:
 
 	int isThisFormat(MemChunk& mc)
 	{
-		if (mc.getSize() > sizeof(animated_t))
+		if (mc.getSize() > sizeof(AnimatedEntry))
 		{
-			size_t numentries = mc.getSize() / sizeof(animated_t);
+			size_t numentries = mc.getSize() / sizeof(AnimatedEntry);
 			// The last entry can be incomplete, as it may stop right
 			// after the declaration of its type. So if the size is not
 			// a perfect multiple, then the last entry is incomplete.
 			size_t lastentry = ((mc.getSize() % numentries) ? numentries : numentries - 1);
 
 			// Check that the last entry ends on an ANIM_STOP type
-			if (mc[lastentry * sizeof(animated_t)] == ANIM_STOP)
+			if (mc[lastentry * sizeof(AnimatedEntry)] == ANIM_STOP)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -73,12 +73,12 @@ public:
 
 	int isThisFormat(MemChunk& mc)
 	{
-		if (mc.getSize() > sizeof(switches_t))
+		if (mc.getSize() > sizeof(SwitchesEntry))
 		{
-			size_t numentries = mc.getSize() / sizeof(switches_t);
+			size_t numentries = mc.getSize() / sizeof(SwitchesEntry);
 
 			// Check that the last entry ends on a SWCH_STOP type
-			if (READ_L16(mc, (numentries * sizeof(switches_t) - 2)) == SWCH_STOP)
+			if (READ_L16(mc, (numentries * sizeof(SwitchesEntry) - 2)) == SWCH_STOP)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;

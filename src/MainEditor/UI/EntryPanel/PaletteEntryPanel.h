@@ -25,47 +25,47 @@ public:
 	PaletteEntryPanel(wxWindow* parent);
 	~PaletteEntryPanel();
 
-	bool	loadEntry(ArchiveEntry* entry) override;
-	bool	saveEntry() override;
-	string	statusString() override;
-	void	refreshPanel() override;
-	void	toolbarButtonClick(string action_id) override;
+	bool   loadEntry(ArchiveEntry* entry) override;
+	bool   saveEntry() override;
+	string statusString() override;
+	void   refreshPanel() override;
+	void   toolbarButtonClick(string action_id) override;
 
-	bool	showPalette(uint32_t index);
-	bool	addCustomPalette();
-	bool	exportAs();
-	bool	importFrom();
+	bool showPalette(uint32_t index);
+	bool addCustomPalette();
+	bool exportAs();
+	bool importFrom();
 
 	// Palette manipulation functions
-	bool	generateColormaps();
-	bool	generatePalettes();
-	bool	clearOne();
-	bool	clearOthers();
-	bool	duplicate();
-	bool	move(bool infront = false);
-	bool	tint();
-	bool	colourise();
-	bool	tweak();
-	bool	invert();
-	bool    gradient();
-	bool	testPalette();
+	bool generateColormaps();
+	bool generatePalettes();
+	bool clearOne();
+	bool clearOthers();
+	bool duplicate();
+	bool move(bool infront = false);
+	bool tint();
+	bool colourise();
+	bool tweak();
+	bool invert();
+	bool gradient();
+	bool testPalette();
 
 	// Temporary analysis tool to help reverse engineer stuff
-	void	analysePalettes();
+	void analysePalettes();
 
 	// SAction handler
-	bool	handleAction(string id) override;
-	bool	fillCustomMenu(wxMenu* custom) override;
+	bool handleAction(string id) override;
+	bool fillCustomMenu(wxMenu* custom) override;
 
 private:
-	PaletteCanvas*		pal_canvas_		= nullptr;
-	vector<Palette*>	palettes_;
-	uint32_t			cur_palette_	= 1;
-	wxStaticText*		text_curpal_	= nullptr;
+	PaletteCanvas*   pal_canvas_ = nullptr;
+	vector<Palette*> palettes_;
+	uint32_t         cur_palette_ = 1;
+	wxStaticText*    text_curpal_ = nullptr;
 
 	// A helper for generatePalettes() which has no reason to be called outside
-	void	generatePalette(int r, int g, int b, int shift, int steps);
+	void generatePalette(int r, int g, int b, int shift, int steps);
 
 	// Events
-	void	onPalCanvasMouseEvent(wxMouseEvent& e);
+	void onPalCanvasMouseEvent(wxMouseEvent& e);
 };

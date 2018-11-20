@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -15,22 +15,23 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "PaletteEntryPanel.h"
 #include "App.h"
 #include "Archive/Archive.h"
 #include "General/Misc.h"
@@ -40,52 +41,48 @@
 #include "Graphics/SImage/SIFormat.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "PaletteEntryPanel.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "Utility/SFileDialog.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 CVAR(Float, col_greyscale_r, 0.299, CVAR_SAVE)
 CVAR(Float, col_greyscale_g, 0.587, CVAR_SAVE)
 CVAR(Float, col_greyscale_b, 0.114, CVAR_SAVE)
 
 namespace
 {
-	string extensions =
-		"Raw Palette (*.pal)|*.pal|"
-		"PNG File (*.png)|*.png|"
-		"CSV Palette (*.csv)|*.csv|"
-		"JASC Palette (*.pal)|*.pal|"
-		"GIMP Palette (*.gpl)|*.gpl";
+string extensions =
+	"Raw Palette (*.pal)|*.pal|"
+	"PNG File (*.png)|*.png|"
+	"CSV Palette (*.csv)|*.csv|"
+	"JASC Palette (*.pal)|*.pal|"
+	"GIMP Palette (*.gpl)|*.gpl";
 
-	vector<Palette::Format> pal_formats =
-	{
-		Palette::Format::Raw,
-		Palette::Format::Image,
-		Palette::Format::CSV,
-		Palette::Format::JASC,
-		Palette::Format::GIMP
-	};
-}
+vector<Palette::Format> pal_formats = { Palette::Format::Raw,
+										Palette::Format::Image,
+										Palette::Format::CSV,
+										Palette::Format::JASC,
+										Palette::Format::GIMP };
+} // namespace
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // PaletteColouriseDialog Class
 //
 // A simple dialog for the 'Colourise' function, allows the user to select a
 // colour and shows a preview of the colourised palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class PaletteColouriseDialog : public wxDialog
 {
 public:
 	PaletteColouriseDialog(wxWindow* parent, Palette* pal) :
-		wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER),
+		wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
 		// Set dialog icon
@@ -97,22 +94,22 @@ public:
 		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND|wxALL, UI::padLarge());
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 		// Add colour chooser
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 		cp_colour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 		hbox->Add(cp_colour_, 0, wxEXPAND);
 
 		// Add preview
 		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND|wxBOTTOM, UI::pad());
+		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
 		pal_preview_->allowSelection(2);
@@ -132,10 +129,7 @@ public:
 		CenterOnParent();
 	}
 
-	Palette* getFinalPalette()
-	{
-		return &(pal_preview_->getPalette());
-	}
+	Palette* getFinalPalette() { return &(pal_preview_->getPalette()); }
 
 	rgba_t getColour()
 	{
@@ -148,31 +142,28 @@ public:
 	{
 		pal_preview_->setPalette(palette_);
 		pal_preview_->getPalette().colourise(
-			getColour(),
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
-		);
+			getColour(), pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
 		pal_preview_->draw();
 	}
 
 private:
-	PaletteCanvas*		pal_preview_;
-	Palette*			palette_;
-	wxColourPickerCtrl*	cp_colour_;
+	PaletteCanvas*      pal_preview_;
+	Palette*            palette_;
+	wxColourPickerCtrl* cp_colour_;
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // PaletteTintDialog Class
 //
 // A simple dialog for the 'Tint' function, allows the user to select tint
 // colour+amount and shows a preview of the tinted palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class PaletteTintDialog : public wxDialog
 {
 public:
 	PaletteTintDialog(wxWindow* parent, Palette* pal) :
-		wxDialog(parent, -1, "Tint", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER),
+		wxDialog(parent, -1, "Tint", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
 		// Set dialog icon
@@ -184,32 +175,32 @@ public:
 		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND|wxALL, UI::padLarge());
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 		// Add colour chooser
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 		cp_colour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 		hbox->Add(cp_colour_, 0, wxALIGN_CENTER_VERTICAL);
 
 		// Add 'amount' slider
 		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 		slider_amount_ = new wxSlider(this, -1, 50, 0, 100);
-		label_amount_ = new wxStaticText(this, -1, "100%");
-		hbox->Add(new wxStaticText(this, -1, "Amount:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
-		hbox->Add(slider_amount_, 1, wxEXPAND|wxRIGHT, UI::pad());
+		label_amount_  = new wxStaticText(this, -1, "100%");
+		hbox->Add(new wxStaticText(this, -1, "Amount:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(slider_amount_, 1, wxEXPAND | wxRIGHT, UI::pad());
 		hbox->Add(label_amount_, 0, wxALIGN_CENTER_VERTICAL);
 
 		// Add preview
 		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND|wxBOTTOM, UI::pad());
+		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
 		pal_preview_->allowSelection(2);
@@ -221,8 +212,7 @@ public:
 
 		// Bind events
 		cp_colour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
-		slider_amount_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&)
-		{
+		slider_amount_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
 			redraw();
 			label_amount_->SetLabel(S_FMT("%d%% ", slider_amount_->GetValue()));
 		});
@@ -237,10 +227,7 @@ public:
 		label_amount_->SetLabel("50% ");
 	}
 
-	Palette* getFinalPalette()
-	{
-		return &(pal_preview_->getPalette());
-	}
+	Palette* getFinalPalette() { return &(pal_preview_->getPalette()); }
 
 	rgba_t getColour()
 	{
@@ -248,34 +235,27 @@ public:
 		return rgba_t(COLWX(col));
 	}
 
-	float getAmount()
-	{
-		return (float)slider_amount_->GetValue()*0.01f;
-	}
+	float getAmount() { return (float)slider_amount_->GetValue() * 0.01f; }
 
 	// Re-apply the changes in selection, colour and amount on a fresh palette
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
 		pal_preview_->getPalette().tint(
-			getColour(),
-			getAmount(),
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
-		);
+			getColour(), getAmount(), pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
 		pal_preview_->draw();
 	}
 
 private:
-	PaletteCanvas*		pal_preview_;
-	Palette*			palette_;
-	wxColourPickerCtrl*	cp_colour_;
-	wxSlider*			slider_amount_;
-	wxStaticText*		label_amount_;
+	PaletteCanvas*      pal_preview_;
+	Palette*            palette_;
+	wxColourPickerCtrl* cp_colour_;
+	wxSlider*           slider_amount_;
+	wxStaticText*       label_amount_;
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // PaletteColourTweakDialog Class
 //
 // A simple dialog for the 'Tweak Colours' function, allows the user to select
@@ -285,12 +265,18 @@ private:
 // TODO: More features? Maybe merge Tint, Invert and Colourise with it, add an
 // "Apply Change" button so that it isn't needed anymore to click "OK" and
 // close it after each change, etc.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class PaletteColourTweakDialog : public wxDialog
 {
 public:
 	PaletteColourTweakDialog(wxWindow* parent, Palette* pal) :
-		wxDialog(parent, -1, "Tweak Colours", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER),
+		wxDialog(
+			parent,
+			-1,
+			"Tweak Colours",
+			wxDefaultPosition,
+			wxDefaultSize,
+			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
 		// Set dialog icon
@@ -302,44 +288,44 @@ public:
 		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND|wxALL, UI::padLarge());
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 		// Add 'hue shift' slider
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 		slider_hue_ = new wxSlider(this, -1, 0, 0, 500);
-		label_hue_ = new wxStaticText(this, -1, "0.000");
-		hbox->Add(new wxStaticText(this, -1, "Hue Shift:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
-		hbox->Add(slider_hue_, 1, wxEXPAND|wxRIGHT, UI::pad());
+		label_hue_  = new wxStaticText(this, -1, "0.000");
+		hbox->Add(new wxStaticText(this, -1, "Hue Shift:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(slider_hue_, 1, wxEXPAND | wxRIGHT, UI::pad());
 		hbox->Add(label_hue_, 0, wxALIGN_CENTER_VERTICAL);
 
 		// Add 'Saturation' slider
 		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 		slider_sat_ = new wxSlider(this, -1, 100, 0, 200);
-		label_sat_ = new wxStaticText(this, -1, "100%");
-		hbox->Add(new wxStaticText(this, -1, "Saturation:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
-		hbox->Add(slider_sat_, 1, wxEXPAND|wxRIGHT, UI::pad());
+		label_sat_  = new wxStaticText(this, -1, "100%");
+		hbox->Add(new wxStaticText(this, -1, "Saturation:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(slider_sat_, 1, wxEXPAND | wxRIGHT, UI::pad());
 		hbox->Add(label_sat_, 0, wxALIGN_CENTER_VERTICAL);
 
 		// Add 'Luminosity' slider
 		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 		slider_lum_ = new wxSlider(this, -1, 100, 0, 200);
-		label_lum_ = new wxStaticText(this, -1, "100%");
-		hbox->Add(new wxStaticText(this, -1, "Luminosity:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
-		hbox->Add(slider_lum_, 1, wxEXPAND|wxRIGHT, UI::pad());
+		label_lum_  = new wxStaticText(this, -1, "100%");
+		hbox->Add(new wxStaticText(this, -1, "Luminosity:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(slider_lum_, 1, wxEXPAND | wxRIGHT, UI::pad());
 		hbox->Add(label_lum_, 0, wxALIGN_CENTER_VERTICAL);
 
 		// Add preview
 		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND|wxBOTTOM, UI::pad());
+		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
 		pal_preview_->allowSelection(2);
@@ -350,18 +336,15 @@ public:
 		Layout();
 
 		// Bind events
-		slider_hue_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&)
-		{
+		slider_hue_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
 			redraw();
 			label_hue_->SetLabel(S_FMT("%1.3f", getHue()));
 		});
-		slider_sat_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&)
-		{
+		slider_sat_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
 			redraw();
 			label_sat_->SetLabel(S_FMT("%d%%", slider_sat_->GetValue()));
 		});
-		slider_lum_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&)
-		{
+		slider_lum_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
 			redraw();
 			label_lum_->SetLabel(S_FMT("%d%%", slider_lum_->GetValue()));
 		});
@@ -378,71 +361,49 @@ public:
 		label_lum_->SetLabel("100% ");
 	}
 
-	Palette* getFinalPalette()
-	{
-		return &(pal_preview_->getPalette());
-	}
+	Palette* getFinalPalette() { return &(pal_preview_->getPalette()); }
 
-	float getHue()
-	{
-		return (float)slider_hue_->GetValue()*0.002f;
-	}
+	float getHue() { return (float)slider_hue_->GetValue() * 0.002f; }
 
-	float getSat()
-	{
-		return (float)slider_sat_->GetValue()*0.01f;
-	}
+	float getSat() { return (float)slider_sat_->GetValue() * 0.01f; }
 
-	float getLum()
-	{
-		return (float)slider_lum_->GetValue()*0.01f;
-	}
+	float getLum() { return (float)slider_lum_->GetValue() * 0.01f; }
 
 	// Re-apply the changes in selection, hue, saturation and luminosity on a fresh palette
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().shift(
-			getHue(),
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
-		);
+		pal_preview_->getPalette().shift(getHue(), pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
 		pal_preview_->getPalette().saturate(
-			getSat(),
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
-		);
+			getSat(), pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
 		pal_preview_->getPalette().illuminate(
-			getLum(),
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
-		);
+			getLum(), pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
 		pal_preview_->draw();
 	}
 
 private:
-	PaletteCanvas*	pal_preview_;
-	Palette*		palette_;
-	wxSlider*		slider_hue_;
-	wxSlider*		slider_sat_;
-	wxSlider*		slider_lum_;
-	wxStaticText*	label_hue_;
-	wxStaticText*	label_sat_;
-	wxStaticText*	label_lum_;
+	PaletteCanvas* pal_preview_;
+	Palette*       palette_;
+	wxSlider*      slider_hue_;
+	wxSlider*      slider_sat_;
+	wxSlider*      slider_lum_;
+	wxStaticText*  label_hue_;
+	wxStaticText*  label_sat_;
+	wxStaticText*  label_lum_;
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // PaletteInvertDialog Class
 //
 // A simple dialog for the 'Invert' function, allows the user to invert the
 // colours and shows a preview of the inverted palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class PaletteInvertDialog : public wxDialog
 {
 public:
 	PaletteInvertDialog(wxWindow* parent, Palette* pal) :
-		wxDialog(parent, -1, "Invert", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER),
+		wxDialog(parent, -1, "Invert", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
 		// Set dialog icon
@@ -454,14 +415,14 @@ public:
 		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND|wxALL, UI::padLarge());
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 		// Add preview
 		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND|wxBOTTOM, UI::pad());
+		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
 		pal_preview_->allowSelection(2);
@@ -480,35 +441,29 @@ public:
 		CenterOnParent();
 	}
 
-	Palette* getFinalPalette()
-	{
-		return &(pal_preview_->getPalette());
-	}
+	Palette* getFinalPalette() { return &(pal_preview_->getPalette()); }
 
 	// Re-apply the changes in selection on a fresh palette
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().invert(
-		    pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd()
-		);
+		pal_preview_->getPalette().invert(pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
 		pal_preview_->draw();
 	}
 
 private:
-	PaletteCanvas*	pal_preview_;
-	Palette*		palette_;
+	PaletteCanvas* pal_preview_;
+	Palette*       palette_;
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // GeneratePalettesDialog Class
 //
 // A simple dialog for the 'Generate Palettes' function, allows to choose
 // between generating the 14 palettes appropriate for Doom, Heretic and Strife,
 // or the 28 palettes appropriate for Hexen.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class GeneratePalettesDialog : public wxDialog
 {
 public:
@@ -519,7 +474,7 @@ public:
 			"Generate Palettes",
 			wxDefaultPosition,
 			wxDefaultSize,
-			wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 	{
 		// Set dialog icon
 		wxIcon icon;
@@ -530,15 +485,15 @@ public:
 		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND|wxALL, UI::padLarge());
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 		// Add buttons
 		rb_doom_ = new wxRadioButton(this, -1, "Doom (14 Palettes)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		sizer->Add(rb_doom_, 0, wxEXPAND|wxBOTTOM, UI::pad());
+		sizer->Add(rb_doom_, 0, wxEXPAND | wxBOTTOM, UI::pad());
 		rb_hexen_ = new wxRadioButton(this, -1, "Hexen (28 Palettes)");
 		sizer->Add(rb_hexen_, 0, wxEXPAND);
 
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Init layout
 		Layout();
@@ -553,129 +508,121 @@ public:
 	{
 		if (rb_doom_->GetValue())
 			return 1;
-		if  (rb_hexen_->GetValue())
+		if (rb_hexen_->GetValue())
 			return 2;
 
 		return 0;
 	}
 
 private:
-	wxRadioButton*	rb_doom_;
-	wxRadioButton*	rb_hexen_;
+	wxRadioButton* rb_doom_;
+	wxRadioButton* rb_hexen_;
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // PaletteGradientDialog Class
 //
 // A dialog for the 'Gradient' function, allows the user to create a gradient
 // between two colours, and apply it to a range of indexes in the palette.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class PaletteGradientDialog : public wxDialog
 {
 public:
 	PaletteGradientDialog(wxWindow* parent, Palette* pal) :
-		wxDialog(parent, -1, "Gradient", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER),
+		wxDialog(parent, -1, "Gradient", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
-	{		
+	{
 		// Set dialog icon
 		wxIcon icon;
 		icon.CopyFromBitmap(Icons::getIcon(Icons::General, "palette_gradient"));
 		SetIcon(icon);
-		
+
 		// Setup main sizer
 		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND|wxALL, UI::padLarge());
-		
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+
 		// Add colour choosers
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxBOTTOM, UI::pad());
-		
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
+
 		cp_startcolour_ = new wxColourPickerCtrl(this, -1, wxColour(0, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, "Start Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "Start Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 		hbox->Add(cp_startcolour_, 0, wxEXPAND);
-		
+
 		cp_endcolour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 255, 255));
-		hbox->Add(new wxStaticText(this, -1, "End Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "End Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 		hbox->Add(cp_endcolour_, 0, wxEXPAND);
-		
+
 		// Add preview
 		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND|wxBOTTOM, UI::pad());
-		
+		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
+
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND);
-		
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
+
 		// Setup preview
 		pal_preview_->allowSelection(2);
 		pal_preview_->SetInitialSize(wxSize(UI::scalePx(384), UI::scalePx(384)));
 		redraw();
-		
+
 		// Init layout
 		Layout();
-		
+
 		// Bind events
 		cp_startcolour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
 		cp_endcolour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
 		pal_preview_->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent&) { redraw(); });
-		
+
 		// Setup dialog size
 		SetInitialSize(wxSize(-1, -1));
 		SetMinSize(GetSize());
 		CenterOnParent();
 	}
-	
-	Palette* getFinalPalette()
-	{
-		return &(pal_preview_->getPalette());
-	}
-	
+
+	Palette* getFinalPalette() { return &(pal_preview_->getPalette()); }
+
 	rgba_t getStartColour()
 	{
 		wxColour col = cp_startcolour_->GetColour();
 		return rgba_t(COLWX(col));
 	}
-	
+
 	rgba_t getEndColour()
 	{
 		wxColour col = cp_endcolour_->GetColour();
 		return rgba_t(COLWX(col));
 	}
-	
+
 	// Re-apply the changes in selection and colour on a fresh palette
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
 		pal_preview_->getPalette().setGradient(
-			pal_preview_->getSelectionStart(),
-			pal_preview_->getSelectionEnd(),
-			getStartColour(), getEndColour()
-		);
+			pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd(), getStartColour(), getEndColour());
 		pal_preview_->draw();
 	}
 
 private:
-	PaletteCanvas*		pal_preview_;
-	Palette*			palette_;
-	wxColourPickerCtrl*	cp_startcolour_;
-	wxColourPickerCtrl*	cp_endcolour_;
+	PaletteCanvas*      pal_preview_;
+	Palette*            palette_;
+	wxColourPickerCtrl* cp_startcolour_;
+	wxColourPickerCtrl* cp_endcolour_;
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // PaletteEntryPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::PaletteEntryPanel
-//
+// -----------------------------------------------------------------------------
 // PaletteEntryPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "palette")
 {
 	// Add palette canvas
@@ -717,22 +664,18 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 	Layout();
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::~PaletteEntryPanel
-//
+// -----------------------------------------------------------------------------
 // PaletteEntryPanel class destructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 PaletteEntryPanel::~PaletteEntryPanel()
 {
 	for (size_t a = 0; a < palettes_.size(); a++)
 		delete palettes_[a];
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::loadEntry
-//
+// -----------------------------------------------------------------------------
 // Reads all palettes in the PLAYPAL entry and shows the first one
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Clear any existing palettes
@@ -768,11 +711,9 @@ bool PaletteEntryPanel::loadEntry(ArchiveEntry* entry)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::saveEntry
-//
+// -----------------------------------------------------------------------------
 // Writes all loaded palettes in the palette entry
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::saveEntry()
 {
 	MemChunk full;
@@ -790,28 +731,30 @@ bool PaletteEntryPanel::saveEntry()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::statusString
-//
+// -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string PaletteEntryPanel::statusString()
 {
 	// Get current colour
-	rgba_t col = pal_canvas_->getSelectedColour();
-	hsl_t col2 = Misc::rgbToHsl(col);
+	rgba_t col  = pal_canvas_->getSelectedColour();
+	hsl_t  col2 = Misc::rgbToHsl(col);
 
-	return S_FMT("Index %i\tR %d, G %d, B %d\tH %1.3f, S %1.3f, L %1.3f",
-	             pal_canvas_->getSelectionStart(),
-	             col.r, col.g, col.b, col2.h, col2.s, col2.l);
+	return S_FMT(
+		"Index %i\tR %d, G %d, B %d\tH %1.3f, S %1.3f, L %1.3f",
+		pal_canvas_->getSelectionStart(),
+		col.r,
+		col.g,
+		col.b,
+		col2.h,
+		col2.s,
+		col2.l);
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::showPalette
-//
+// -----------------------------------------------------------------------------
 // Shows the palette at [index].
 // Returns false if [index] is out of bounds, true otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::showPalette(uint32_t index)
 {
 	// Check index range
@@ -822,7 +765,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 	pal_canvas_->getPalette().copyPalette(palettes_[index]);
 
 	// Set current palette text
-	text_curpal_->SetLabel(S_FMT("%u/%lu", index+1, palettes_.size()));
+	text_curpal_->SetLabel(S_FMT("%u/%lu", index + 1, palettes_.size()));
 
 	// Refresh
 	Layout();
@@ -833,17 +776,15 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::refreshPanel
-//
+// -----------------------------------------------------------------------------
 // Redraws the panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PaletteEntryPanel::refreshPanel()
 {
 	if (entry_)
 	{
 		uint32_t our_palette = cur_palette_;
-		//loadEntry(entry);
+		// loadEntry(entry);
 		if (our_palette > 0 && our_palette < palettes_.size())
 			showPalette(our_palette);
 	}
@@ -851,11 +792,9 @@ void PaletteEntryPanel::refreshPanel()
 	Refresh();
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::toolbarButtonClick
-//
+// -----------------------------------------------------------------------------
 // Called when a (EntryPanel) toolbar button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PaletteEntryPanel::toolbarButtonClick(string action_id)
 {
 	// Prev. palette
@@ -877,12 +816,10 @@ void PaletteEntryPanel::toolbarButtonClick(string action_id)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::addCustomPalette
-//
+// -----------------------------------------------------------------------------
 // Adds the current palette to the custom user palettes folder, so it can be
 // selected via the palette selector
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::addCustomPalette()
 {
 	// Get name to export as
@@ -903,12 +840,10 @@ bool PaletteEntryPanel::addCustomPalette()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::testPalette
-//
+// -----------------------------------------------------------------------------
 // A "lite" version of addCustomPalette, which does not add to the palette
 // folder so the palette is only available for the current session.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::testPalette()
 {
 	// Get name to export as
@@ -924,11 +859,9 @@ bool PaletteEntryPanel::testPalette()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::exportAs
-//
+// -----------------------------------------------------------------------------
 // Exports the current palette to a file, in the selected format
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::exportAs()
 {
 	// Run save file dialog
@@ -939,11 +872,9 @@ bool PaletteEntryPanel::exportAs()
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::importFrom
-//
+// -----------------------------------------------------------------------------
 // Imports the selected file in the current palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::importFrom()
 {
 	bool ret = false;
@@ -965,11 +896,9 @@ bool PaletteEntryPanel::importFrom()
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::clearOne
-//
+// -----------------------------------------------------------------------------
 // Deletes the current palette from the list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::clearOne()
 {
 	// Always keep at least one palette
@@ -991,11 +920,9 @@ bool PaletteEntryPanel::clearOne()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::clearOne
-//
+// -----------------------------------------------------------------------------
 // Deletes all palettes except the current one from the list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::clearOthers()
 {
 	// Nothing to do if there's already only one
@@ -1009,7 +936,7 @@ bool PaletteEntryPanel::clearOthers()
 	if (cur_palette_ != 0)
 	{
 		palettes_[cur_palette_] = palettes_[0];
-		palettes_[0] = pal;
+		palettes_[0]            = pal;
 	}
 
 	// Delete all palettes after the first
@@ -1028,11 +955,9 @@ bool PaletteEntryPanel::clearOthers()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::duplicate
-//
+// -----------------------------------------------------------------------------
 // Make a copy of the current palette and add it to the list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::duplicate()
 {
 	Palette* newpalette = new Palette;
@@ -1048,11 +973,9 @@ bool PaletteEntryPanel::duplicate()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::move
-//
+// -----------------------------------------------------------------------------
 // Shifts the current palette's position in the list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::move(bool infront)
 {
 	// Avoid invalid moves
@@ -1063,17 +986,19 @@ bool PaletteEntryPanel::move(bool infront)
 	{
 		if (newpos == 0)
 			newpos = palettes_.size() - 1;
-		else --newpos;
+		else
+			--newpos;
 	}
 	else /* behind*/
 	{
 		if (newpos + 1 == palettes_.size())
 			newpos = 0;
-		else ++newpos;
+		else
+			++newpos;
 	}
-	Palette* tmp = palettes_[cur_palette_];
+	Palette* tmp            = palettes_[cur_palette_];
 	palettes_[cur_palette_] = palettes_[newpos];
-	palettes_[newpos] = tmp;
+	palettes_[newpos]       = tmp;
 
 	// Refresh the display to show the updated amount of palettes
 	cur_palette_ = newpos;
@@ -1082,15 +1007,14 @@ bool PaletteEntryPanel::move(bool infront)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::tint
-//
+// -----------------------------------------------------------------------------
 // Tints the colours of the current palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::tint()
 {
 	Palette* pal = new Palette;
-	if (pal == nullptr) return false;
+	if (pal == nullptr)
+		return false;
 	pal->copyPalette(palettes_[cur_palette_]);
 	PaletteTintDialog ptd(theMainWindow, pal);
 	if (ptd.ShowModal() == wxID_OK)
@@ -1103,15 +1027,14 @@ bool PaletteEntryPanel::tint()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::colourise
-//
+// -----------------------------------------------------------------------------
 // Colourises the colours of the current palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::colourise()
 {
 	Palette* pal = new Palette;
-	if (pal == nullptr) return false;
+	if (pal == nullptr)
+		return false;
 	pal->copyPalette(palettes_[cur_palette_]);
 	PaletteColouriseDialog pcd(theMainWindow, pal);
 	if (pcd.ShowModal() == wxID_OK)
@@ -1124,15 +1047,14 @@ bool PaletteEntryPanel::colourise()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::tweak
-//
+// -----------------------------------------------------------------------------
 // Tweaks the colours of the current palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::tweak()
 {
 	Palette* pal = new Palette;
-	if (pal == nullptr) return false;
+	if (pal == nullptr)
+		return false;
 	pal->copyPalette(palettes_[cur_palette_]);
 	PaletteColourTweakDialog pctd(theMainWindow, pal);
 	if (pctd.ShowModal() == wxID_OK)
@@ -1145,15 +1067,14 @@ bool PaletteEntryPanel::tweak()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::invert
-//
+// -----------------------------------------------------------------------------
 // Inverts the colours of the current palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::invert()
 {
 	Palette* pal = new Palette;
-	if (pal == nullptr) return false;
+	if (pal == nullptr)
+		return false;
 	pal->copyPalette(palettes_[cur_palette_]);
 	PaletteInvertDialog pid(theMainWindow, pal);
 	if (pid.ShowModal() == wxID_OK)
@@ -1166,15 +1087,14 @@ bool PaletteEntryPanel::invert()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::gradient
-//
+// -----------------------------------------------------------------------------
 // Applies a gradient to the palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::gradient()
 {
 	Palette* pal = new Palette;
-	if (pal == nullptr) return false;
+	if (pal == nullptr)
+		return false;
 	pal->copyPalette(palettes_[cur_palette_]);
 	PaletteGradientDialog pgd(theMainWindow, pal);
 	if (pgd.ShowModal() == wxID_OK)
@@ -1187,31 +1107,29 @@ bool PaletteEntryPanel::gradient()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::generateColormaps
-//
+// -----------------------------------------------------------------------------
 // Generates a COLORMAP lump from the current palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #define GREENMAP 255
 #define GRAYMAP 32
-#define DIMINISH(color, level) color = (uint8_t)((((float)color)*(32.0-level)+16.0)/32.0)
+#define DIMINISH(color, level) color = (uint8_t)((((float)color) * (32.0 - level) + 16.0) / 32.0)
 bool PaletteEntryPanel::generateColormaps()
 {
-	if (!entry_ || !entry_->getParent() || ! palettes_[0])
+	if (!entry_ || !entry_->getParent() || !palettes_[0])
 		return false;
 
 	MemChunk mc;
-	SImage img;
+	SImage   img;
 	MemChunk imc;
-	mc.reSize(34*256);
+	mc.reSize(34 * 256);
 	mc.seek(0, SEEK_SET);
-	imc.reSize(34*256*4);
+	imc.reSize(34 * 256 * 4);
 	imc.seek(0, SEEK_SET);
 	uint8_t rgba[4];
 	rgba[3] = 255;
 
 	rgba_t rgb;
-	float grey;
+	float  grey;
 	// Generate 34 maps: the first 32 for diminishing light levels,
 	// the 33th for the inverted grey map used by invulnerability.
 	// The 34th colormap remains empty and black.
@@ -1237,22 +1155,26 @@ bool PaletteEntryPanel::generateColormaps()
 			else if (l == GRAYMAP)
 			{
 				// Generate inverse map
-				grey = ((float)rgb.r/256.0 * col_greyscale_r) + ((float)rgb.g/256.0 * col_greyscale_g) + ((float)rgb.b/256.0 * col_greyscale_b);
+				grey = ((float)rgb.r / 256.0 * col_greyscale_r) + ((float)rgb.g / 256.0 * col_greyscale_g)
+					   + ((float)rgb.b / 256.0 * col_greyscale_b);
 				grey = 1.0 - grey;
 				// Clamp value: with Id Software's values, the sum is greater than 1.0 (0.299+0.587+0.144=1.030)
-				// This means the negation above can give a negative value (for example, with RGB values of 247 or more),
-				// which will not be converted correctly to unsigned 8-bit int in the rgba_t struct.
-				if (grey < 0.0) grey = 0;
-				rgb.r = rgb.g = rgb.b = grey*255;
+				// This means the negation above can give a negative value (for example, with RGB values of 247 or
+				// more), which will not be converted correctly to unsigned 8-bit int in the rgba_t struct.
+				if (grey < 0.0)
+					grey = 0;
+				rgb.r = rgb.g = rgb.b = grey * 255;
 			}
 			else
 			{
 				// Fill with 0
 				rgb = palettes_[0]->colour(0);
 			}
-			rgba[0] = rgb.r; rgba[1] = rgb.g; rgba[2] = rgb.b;
+			rgba[0] = rgb.r;
+			rgba[1] = rgb.g;
+			rgba[2] = rgb.b;
 			imc.write(&rgba, 4);
-			mc[(256*l)+c] = palettes_[0]->nearestColour(rgb);
+			mc[(256 * l) + c] = palettes_[0]->nearestColour(rgb);
 		}
 	}
 #if 0
@@ -1273,12 +1195,12 @@ bool PaletteEntryPanel::generateColormaps()
 #endif
 	// Now override or create new entry
 	ArchiveEntry* colormap;
-	colormap = entry_->getParent()->getEntry("COLORMAP", true);
+	colormap         = entry_->getParent()->getEntry("COLORMAP", true);
 	bool preexisting = colormap != nullptr;
 	if (!colormap)
 	{
 		// We need to create this entry
-		colormap = new ArchiveEntry("COLORMAP.lmp", 34*256);
+		colormap = new ArchiveEntry("COLORMAP.lmp", 34 * 256);
 	}
 	if (!colormap)
 		return false;
@@ -1291,16 +1213,15 @@ bool PaletteEntryPanel::generateColormaps()
 }
 #undef DIMINISH
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::generatePalette
-//
+// -----------------------------------------------------------------------------
 // Just a helper for generatePalettes to make the code less redundant
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PaletteEntryPanel::generatePalette(int r, int g, int b, int shift, int steps)
 {
 	// Create a new palette
 	Palette* pal = new Palette;
-	if (pal == nullptr) return;
+	if (pal == nullptr)
+		return;
 
 	// Seed it with the basic palette
 	pal->copyPalette(palettes_[0]);
@@ -1312,11 +1233,9 @@ void PaletteEntryPanel::generatePalette(int r, int g, int b, int shift, int step
 	palettes_.push_back(pal);
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::generatePalettes
-//
+// -----------------------------------------------------------------------------
 // Generates the full complement of palettes needed by the game
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::generatePalettes()
 {
 	GeneratePalettesDialog gpd(theMainWindow);
@@ -1324,7 +1243,8 @@ bool PaletteEntryPanel::generatePalettes()
 	{
 		// Get choice
 		int choice = gpd.getChoice();
-		if (choice == 0) return false;
+		if (choice == 0)
+			return false;
 
 		// Make sure the current palette is the only one
 		clearOthers();
@@ -1346,7 +1266,6 @@ bool PaletteEntryPanel::generatePalettes()
 
 			// Write RADIATIONPAL with its oversaturated green
 			generatePalette(0, 256, 0, 1, 8);
-
 		}
 		else
 		{
@@ -1378,12 +1297,10 @@ bool PaletteEntryPanel::generatePalettes()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::handleAction
-//
+// -----------------------------------------------------------------------------
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::handleAction(string id)
 {
 	// Ignore if hidden
@@ -1463,7 +1380,7 @@ bool PaletteEntryPanel::handleAction(string id)
 		invert();
 		return true;
 	}
-	
+
 	// Gradient
 	else if (id == "ppal_gradient")
 	{
@@ -1516,14 +1433,12 @@ bool PaletteEntryPanel::handleAction(string id)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::fillCustomMenu
-//
+// -----------------------------------------------------------------------------
 // Fills the given menu with the panel's custom actions. Used by both the
 // constructor to create the main window's custom menu, and
 // ArchivePanel::onEntryListRightClick to fill the context menu with
 // context-appropriate stuff
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PaletteEntryPanel::fillCustomMenu(wxMenu* custom)
 {
 	SAction::fromId("ppal_addcustom")->addToMenu(custom);
@@ -1545,26 +1460,24 @@ bool PaletteEntryPanel::fillCustomMenu(wxMenu* custom)
 	custom->AppendSeparator();
 	SAction::fromId("ppal_moveup")->addToMenu(custom);
 	SAction::fromId("ppal_movedown")->addToMenu(custom);
-//	custom->AppendSeparator();
-//	SAction::fromId("ppal_report")->addToMenu(custom);
+	//	custom->AppendSeparator();
+	//	SAction::fromId("ppal_report")->addToMenu(custom);
 
 	return true;
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // PaletteEntryPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// PaletteEntryPanel::onPalCanvasMouseEvent
-//
+// -----------------------------------------------------------------------------
 // Called when a mouse event happens within the palette canvas (eg. button
 // clicked, pointer moved, etc)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PaletteEntryPanel::onPalCanvasMouseEvent(wxMouseEvent& e)
 {
 	// Update colour info label with selected colour (if any)
@@ -1621,17 +1534,6 @@ void PaletteEntryPanel::onPalCanvasMouseEvent(wxMouseEvent& e)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 //  Just some reverse-engineering stuff.
 #define GPALCOMPANALYSIS
 #define PALETTECHECK 1
@@ -1658,7 +1560,7 @@ void PaletteEntryPanel::analysePalettes()
 		devR = devG = devB = 0;
 		maxR = maxG = maxB = -1;
 		minR = minG = minB = 256;
-		wrongcount = 0;
+		wrongcount         = 0;
 #else
 	report += S_FMT("Changes between %u palettes compared to the first:\n\n", palettes.size());
 	for (size_t i = 1; i < palettes.size(); ++i)
@@ -1674,7 +1576,7 @@ void PaletteEntryPanel::analysePalettes()
 			hsl_t  ref2 = Misc::rgbToHsl(ref1);
 			hsl_t  cmp2 = Misc::rgbToHsl(cmp1);
 #ifdef GPALCOMPANALYSIS
-			int r, g, b;
+			int    r, g, b;
 			double h, s, l;
 			r = cmp1.r - ref1.r;
 			g = cmp1.g - ref1.g;
@@ -1685,37 +1587,82 @@ void PaletteEntryPanel::analysePalettes()
 			devR += r;
 			devG += g;
 			devB += b;
-			if (r > maxR) maxR = r; if (r < minR) minR = r;
-			if (g > maxG) maxG = g; if (g < minG) minG = g;
-			if (b > maxB) maxB = b; if (b < minB) minB = b;
+			if (r > maxR)
+				maxR = r;
+			if (r < minR)
+				minR = r;
+			if (g > maxG)
+				maxG = g;
+			if (g < minG)
+				minG = g;
+			if (b > maxB)
+				maxB = b;
+			if (b < minB)
+				minB = b;
 			if (r | g | b)
 			{
 				++wrongcount;
-				report += S_FMT("Index %003u: [%003i %003i %003i | %1.3f %1.3f %1.3f]->[%003i %003i %003i | %1.3f %1.3f %1.3f]\t\tR %+003i\tG %+003i\tB %+003i\t\t\tH %+1.3f\tS %+1.3f\tL %+1.3f\n",
-				                c,
-				                ref1.r, ref1.g, ref1.b, ref2.h, ref2.s, ref2.l,
-				                cmp1.r, cmp1.g, cmp1.b, cmp2.h, cmp2.s, cmp2.l,
-				                r, g, b, h, s, l);
+				report += S_FMT(
+					"Index %003u: [%003i %003i %003i | %1.3f %1.3f %1.3f]->[%003i %003i %003i | %1.3f %1.3f "
+					"%1.3f]\t\tR %+003i\tG %+003i\tB %+003i\t\t\tH %+1.3f\tS %+1.3f\tL %+1.3f\n",
+					c,
+					ref1.r,
+					ref1.g,
+					ref1.b,
+					ref2.h,
+					ref2.s,
+					ref2.l,
+					cmp1.r,
+					cmp1.g,
+					cmp1.b,
+					cmp2.h,
+					cmp2.s,
+					cmp2.l,
+					r,
+					g,
+					b,
+					h,
+					s,
+					l);
 			}
 #else
 			if (reds[ref1.r] != cmp1.r && reds[ref1.r] != 999)
-				DPrintf("Discrepency for red channel at index %i, value %i: %d vs. %d set before",
-				        c, ref1.r, cmp1.r, reds[ref1.r]);
+				DPrintf(
+					"Discrepency for red channel at index %i, value %i: %d vs. %d set before",
+					c,
+					ref1.r,
+					cmp1.r,
+					reds[ref1.r]);
 			if (greens[ref1.g] != cmp1.g && greens[ref1.g] != 999)
-				DPrintf("Discrepency for green channel at index %i, value %i: %d vs. %d set before",
-				        c, ref1.g, cmp1.g, greens[ref1.g]);
+				DPrintf(
+					"Discrepency for green channel at index %i, value %i: %d vs. %d set before",
+					c,
+					ref1.g,
+					cmp1.g,
+					greens[ref1.g]);
 			if (blues[ref1.b] != cmp1.b && blues[ref1.b] != 999)
-				DPrintf("Discrepency for blue channel at index %i, value %i: %d vs. %d set before",
-				        c, ref1.b, cmp1.b, blues[ref1.b]);
-			reds[ref1.r] = cmp1.r;
+				DPrintf(
+					"Discrepency for blue channel at index %i, value %i: %d vs. %d set before",
+					c,
+					ref1.b,
+					cmp1.b,
+					blues[ref1.b]);
+			reds[ref1.r]   = cmp1.r;
 			greens[ref1.g] = cmp1.g;
-			blues[ref1.b] = cmp1.b;
+			blues[ref1.b]  = cmp1.b;
 #endif
 		}
 #ifdef GPALCOMPANALYSIS
 		report += S_FMT("Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, entry_->getName(true));
-		report += S_FMT("Min R %+003i Min G %+003i Min B %+003i Max R %+003i Max G %+003i Max B %+003i \nError count: %i\n",
-		                minR, minG, minB, maxR, maxG, maxB, wrongcount);
+		report += S_FMT(
+			"Min R %+003i Min G %+003i Min B %+003i Max R %+003i Max G %+003i Max B %+003i \nError count: %i\n",
+			minR,
+			minG,
+			minB,
+			maxR,
+			maxG,
+			maxB,
+			wrongcount);
 #else
 		report += "Shift table for existing channel values:\n|  I  |  R  |  G  |  B  |\n";
 		for (size_t i = 0; i < 256; ++i)
@@ -1728,5 +1675,4 @@ void PaletteEntryPanel::analysePalettes()
 	}
 
 	LOG_MESSAGE(1, report);
-
 }

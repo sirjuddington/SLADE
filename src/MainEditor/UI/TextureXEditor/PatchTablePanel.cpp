@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,63 +14,61 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PatchTablePanel.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
+#include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/PaletteChooser.h"
-#include "UI/WxUtils.h"
 #include "UI/Controls/SIconButton.h"
-#include "Graphics/Icons.h"
 #include "UI/Controls/SZoomSlider.h"
+#include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(String, dir_last)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // PatchTableListView Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// PatchTableListView::PatchTableListView
-//
+// -----------------------------------------------------------------------------
 // PatchTableListView class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table) : VirtualListView(parent)
 {
 	// Init Variables
-	this->patch_table_ = patch_table;
+	patch_table_ = patch_table;
 	listenTo(patch_table);
 
 	// Add columns
@@ -86,11 +84,9 @@ PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table
 	listenTo(&App::archiveManager());
 }
 
-// ----------------------------------------------------------------------------
-// PatchTableListView::getItemText
-//
+// -----------------------------------------------------------------------------
 // Returns the string for [item] at [column]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string PatchTableListView::getItemText(long item, long column, long index) const
 {
 	// Check patch table exists
@@ -104,13 +100,13 @@ string PatchTableListView::getItemText(long item, long column, long index) const
 	// Get associated patch
 	auto& patch = patch_table_->patch(index);
 
-	if (column == 0)						// Index column
+	if (column == 0) // Index column
 		return S_FMT("%04d", index);
-	else if (column == 1)					// Name column
+	else if (column == 1) // Name column
 		return patch.name;
-	else if (column == 2)					// Usage count column
+	else if (column == 2) // Usage count column
 		return S_FMT("%lu", patch.used_in.size());
-	else if (column == 3)  					// Archive column
+	else if (column == 3) // Archive column
 	{
 		// Get patch entry
 		ArchiveEntry* entry = patch_table_->patchEntry(index);
@@ -121,27 +117,23 @@ string PatchTableListView::getItemText(long item, long column, long index) const
 		else
 			return "(!) NOT FOUND";
 	}
-	else									// Invalid column
+	else // Invalid column
 		return "INVALID COLUMN";
 }
 
-// ----------------------------------------------------------------------------
-// PatchTableListView::updateItemAttr
-//
+// -----------------------------------------------------------------------------
 // Updates the item attributes for [item] (red text if patch entry not found,
 // default otherwise)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTableListView::updateItemAttr(long item, long column, long index) const
 {
 	// Just set normal text colour
 	item_attr->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
 }
 
-// ----------------------------------------------------------------------------
-// PatchTableListView::updateList
-//
+// -----------------------------------------------------------------------------
 // Updates + refreshes the patch list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTableListView::updateList(bool clear)
 {
 	if (clear)
@@ -164,11 +156,9 @@ void PatchTableListView::updateList(bool clear)
 	Refresh();
 }
 
-// ----------------------------------------------------------------------------
-// PatchTableListView::onAnnouncement
-//
+// -----------------------------------------------------------------------------
 // Handles announcements from the panel's PatchTable
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTableListView::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
 	// Just refresh on any event from the patch table
@@ -179,11 +169,9 @@ void PatchTableListView::onAnnouncement(Announcer* announcer, string event_name,
 		updateList();
 }
 
-// ----------------------------------------------------------------------------
-// PatchTableListView::usageSort
-//
+// -----------------------------------------------------------------------------
 // Returns true if patch at index [left] is used less than [right]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PatchTableListView::usageSort(long left, long right)
 {
 	auto& p1 = ((PatchTableListView*)lv_current)->patchTable()->patch(left);
@@ -192,16 +180,13 @@ bool PatchTableListView::usageSort(long left, long right)
 	if (p1.used_in.size() == p2.used_in.size())
 		return left < right;
 	else
-		return lv_current->sortDescend() ?
-			p2.used_in.size() < p1.used_in.size() :
-			p1.used_in.size() < p2.used_in.size();
+		return lv_current->sortDescend() ? p2.used_in.size() < p1.used_in.size() :
+										   p1.used_in.size() < p2.used_in.size();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXListView::sortItems
-//
+// -----------------------------------------------------------------------------
 // Sorts the list items depending on the current sorting column
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTableListView::sortItems()
 {
 	lv_current = this;
@@ -212,18 +197,16 @@ void PatchTableListView::sortItems()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // PatchTablePanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// PatchTablePanel::PatchTablePanel
-//
+// -----------------------------------------------------------------------------
 // PatchTablePanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor) :
 	wxPanel(parent, -1),
 	patch_table_{ patch_table },
@@ -231,20 +214,14 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 {
 	// Create controls
 	list_patches_ = new PatchTableListView(this, patch_table);
-	list_patches_->setSearchColumn(1);	// Want to search by patch name not index
-	btn_add_patch_ = new SIconButton(this, "patch_add", "Add Patch");
+	list_patches_->setSearchColumn(1); // Want to search by patch name not index
+	btn_add_patch_       = new SIconButton(this, "patch_add", "Add Patch");
 	btn_patch_from_file_ = new SIconButton(this, "patch_add", "Add Patch from File"); // TODO: Icon
-	btn_remove_patch_ = new SIconButton(this, "patch_remove", "Remove Patch");
-	btn_change_patch_ = new SIconButton(this, "patch_replace", "Change Patch");
-	label_dimensions_ = new wxStaticText(this, -1, "Size: N/A");
-	label_textures_ = new wxStaticText(
-		this,
-		-1,
-		"In Textures: -",
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxST_ELLIPSIZE_END
-	);
+	btn_remove_patch_    = new SIconButton(this, "patch_remove", "Remove Patch");
+	btn_change_patch_    = new SIconButton(this, "patch_replace", "Change Patch");
+	label_dimensions_    = new wxStaticText(this, -1, "Size: N/A");
+	label_textures_ =
+		new wxStaticText(this, -1, "In Textures: -", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
 	patch_canvas_ = new GfxCanvas(this, -1);
 	patch_canvas_->setViewType(GFXVIEW_CENTERED);
 	patch_canvas_->allowDrag(true);
@@ -264,34 +241,26 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	listenTo(theMainWindow->getPaletteChooser());
 }
 
-// ----------------------------------------------------------------------------
-// PatchTablePanel::setupLayout
-//
+// -----------------------------------------------------------------------------
 // Lays out controls on the panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTablePanel::setupLayout()
 {
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
 
 	// Patches List + actions
-	auto frame = new wxStaticBox(this, -1, "Patch List (PNAMES)");
+	auto frame      = new wxStaticBox(this, -1, "Patch List (PNAMES)");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxALL, UI::pad());
 	framesizer->Add(list_patches_, 1, wxEXPAND | wxALL, UI::pad());
 	WxUtils::layoutHorizontally(
 		framesizer,
-		vector<wxObject*>{
-			btn_add_patch_,
-			btn_patch_from_file_,
-			btn_remove_patch_,
-			btn_change_patch_
-		},
-		wxSizerFlags(0).Border(wxLEFT | wxRIGHT | wxBOTTOM, UI::pad())
-	);
+		vector<wxObject*>{ btn_add_patch_, btn_patch_from_file_, btn_remove_patch_, btn_change_patch_ },
+		wxSizerFlags(0).Border(wxLEFT | wxRIGHT | wxBOTTOM, UI::pad()));
 
 	// Patch preview & info
-	frame = new wxStaticBox(this, -1, "Patch Preview && Info");
+	frame      = new wxStaticBox(this, -1, "Patch Preview && Info");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, UI::pad());
 	framesizer->Add(slider_zoom_, 0, wxALL, UI::pad());
@@ -301,18 +270,16 @@ void PatchTablePanel::setupLayout()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // PatchTablePanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// PatchTablePanel::onBtnAddPatch
-//
+// -----------------------------------------------------------------------------
 // Called when the 'New Patch' button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTablePanel::onBtnAddPatch(wxCommandEvent& e)
 {
 	// Prompt for new patch name
@@ -330,11 +297,9 @@ void PatchTablePanel::onBtnAddPatch(wxCommandEvent& e)
 	parent_->pnamesModified(true);
 }
 
-// ----------------------------------------------------------------------------
-// PatchTablePanel::onBtnPatchFromFile
-//
+// -----------------------------------------------------------------------------
 // Called when the 'New Patch from File' button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 {
 	// Get all entry types
@@ -353,8 +318,14 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 	}
 
 	// Create open file dialog
-	wxFileDialog dialog_open(this, "Choose file(s) to open", dir_last, wxEmptyString,
-	                         ext_filter, wxFD_OPEN|wxFD_MULTIPLE|wxFD_FILE_MUST_EXIST, wxDefaultPosition);
+	wxFileDialog dialog_open(
+		this,
+		"Choose file(s) to open",
+		dir_last,
+		wxEmptyString,
+		ext_filter,
+		wxFD_OPEN | wxFD_MULTIPLE | wxFD_FILE_MUST_EXIST,
+		wxDefaultPosition);
 
 	// Run the dialog & check that the user didn't cancel
 	if (dialog_open.ShowModal() == wxID_OK)
@@ -385,7 +356,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 
 			// Ask for name for patch
 			wxFileName fn(files[a]);
-			string name = fn.GetName().Upper().Truncate(8);
+			string     name = fn.GetName().Upper().Truncate(8);
 			name = wxGetTextFromUser(S_FMT("Enter a patch name for %s:", fn.GetFullName()), "New Patch", name);
 			name = name.Truncate(8);
 
@@ -404,11 +375,9 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// PatchTablePanel::onBtnRemovePatch
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Remove Patch' button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 {
 	// Check anything is selected
@@ -430,12 +399,10 @@ void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 				S_FMT(
 					"The patch \"%s\" is currently used by %lu texture(s), are you sure you wish to remove it?",
 					patch.name,
-					patch.used_in.size()
-				),
+					patch.used_in.size()),
 				"Confirm Remove Patch",
-				wxYES_NO|wxCANCEL|wxICON_QUESTION,
-				this
-			);
+				wxYES_NO | wxCANCEL | wxICON_QUESTION,
+				this);
 			if (answer == wxYES)
 			{
 				// Answered yes, remove the patch
@@ -460,11 +427,9 @@ void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 	parent_->pnamesModified(true);
 }
 
-// ----------------------------------------------------------------------------
-// PatchTablePanel::onBtnChangePatch
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Change Patch' button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 {
 	// Check anything is selected
@@ -490,18 +455,16 @@ void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// PatchTablePanel::updateDisplay
-//
+// -----------------------------------------------------------------------------
 // Called when a different patch or palette is selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTablePanel::updateDisplay()
 {
 	// TODO: Separate palette changed and patch changed without breaking default
 	// palette display; optimize label_textures display
 
 	// Get selected patch
-	int index = list_patches_->getItemIndex(list_patches_->getLastSelected());
+	int   index = list_patches_->getItemIndex(list_patches_->getLastSelected());
 	auto& patch = patch_table_->patch(index);
 
 	// Load the image
@@ -511,8 +474,7 @@ void PatchTablePanel::updateDisplay()
 		theMainWindow->getPaletteChooser()->setGlobalFromArchive(entry->getParent());
 		patch_canvas_->setPalette(theMainWindow->getPaletteChooser()->getSelectedPalette());
 		label_dimensions_->SetLabel(
-			S_FMT("Size: %d x %d", patch_canvas_->getImage()->getWidth(), patch_canvas_->getImage()->getHeight())
-		);
+			S_FMT("Size: %d x %d", patch_canvas_->getImage()->getWidth(), patch_canvas_->getImage()->getHeight()));
 	}
 	else
 	{
@@ -525,8 +487,8 @@ void PatchTablePanel::updateDisplay()
 	if (patch.used_in.size() > 0)
 	{
 		string alltextures = "";
-		int count = 0;
-		string previous = "";
+		int    count       = 0;
+		string previous    = "";
 		for (size_t a = 0; a < patch.used_in.size(); ++a)
 		{
 			string current = patch.used_in[a];
@@ -574,11 +536,9 @@ void PatchTablePanel::updateDisplay()
 	Layout();
 }
 
-// ----------------------------------------------------------------------------
-// PatchTablePanel::onDisplayChanged
-//
+// -----------------------------------------------------------------------------
 // Called when a different patch or palette is selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTablePanel::onDisplayChanged(wxCommandEvent& e)
 {
 	// TODO: Separate palette changed and patch changed without breaking
@@ -586,18 +546,14 @@ void PatchTablePanel::onDisplayChanged(wxCommandEvent& e)
 	updateDisplay();
 }
 
-// ----------------------------------------------------------------------------
-// PatchTablePanel::onAnnouncement
-//
+// -----------------------------------------------------------------------------
 // Handles any announcements
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void PatchTablePanel::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->getPaletteChooser())
 		return;
 
 	if (event_name == "main_palette_changed")
-	{
 		updateDisplay();
-	}
 }

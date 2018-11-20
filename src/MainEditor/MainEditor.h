@@ -10,27 +10,27 @@ class wxWindow;
 
 namespace MainEditor
 {
-	bool	init();
+bool init();
 
-	MainWindow*				window();
-	wxWindow*				windowWx();
-	Archive*				currentArchive();
-	ArchiveEntry*			currentEntry();
-	vector<ArchiveEntry*>	currentEntrySelection();
-	Palette*			currentPalette(ArchiveEntry* entry = nullptr);
-	EntryPanel*				currentEntryPanel();
+MainWindow*           window();
+wxWindow*             windowWx();
+Archive*              currentArchive();
+ArchiveEntry*         currentEntry();
+vector<ArchiveEntry*> currentEntrySelection();
+Palette*              currentPalette(ArchiveEntry* entry = nullptr);
+EntryPanel*           currentEntryPanel();
 
-	void	openTextureEditor(Archive* archive, ArchiveEntry* entry = nullptr);
-	void	openMapEditor(Archive* archive);
-	void	openArchiveTab(Archive* archive);
-	void	openEntry(ArchiveEntry* entry);
+void openTextureEditor(Archive* archive, ArchiveEntry* entry = nullptr);
+void openMapEditor(Archive* archive);
+void openArchiveTab(Archive* archive);
+void openEntry(ArchiveEntry* entry);
 
-	void	setGlobalPaletteFromArchive(Archive* archive);
+void setGlobalPaletteFromArchive(Archive* archive);
 
 #ifdef USE_WEBVIEW_STARTPAGE
-	void	openDocs(string page_name = "");
+void openDocs(string page_name = "");
 #endif
-};
+}; // namespace MainEditor
 
 // Define for less cumbersome MainEditor::window()
 #define theMainWindow MainEditor::window()

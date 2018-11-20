@@ -1,61 +1,61 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    ExternalEditManager.cpp
- * Description: ExternalEditManager class, keeps track of all
- *              entries currently being edited externally for a
- *              single ArchivePanel. Also contains some FileMonitor
- *              subclasses for handling export/import of various
- *              entry types (conversions, etc.)
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ExternalEditManager.cpp
+// Description: ExternalEditManager class, keeps track of all entries currently
+//              being edited externally for a single ArchivePanel. Also contains
+//              some FileMonitor subclasses for handling export/import of
+//              various entry types (conversions, etc.)
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "ExternalEditManager.h"
+#include "App.h"
 #include "Archive/Archive.h"
 #include "Conversions.h"
 #include "EntryOperations.h"
-#include "General/Misc.h"
 #include "General/Executables.h"
-#include "Graphics/SImage/SImage.h"
+#include "General/Misc.h"
 #include "Graphics/SImage/SIFormat.h"
+#include "Graphics/SImage/SImage.h"
 #include "MainEditor.h"
 #include "Utility/FileMonitor.h"
 
 
-/*******************************************************************
- * EXTERNALEDITFILEMONITOR CLASS
- *******************************************************************
- * FileMonitor subclass to handle exporting, monitoring and
- * re-importing an entry
- */
+// -----------------------------------------------------------------------------
+// ExternalEditFileMonitor Class
+//
+// FileMonitor subclass to handle exporting, monitoring and reimporting an entry
+// -----------------------------------------------------------------------------
 class ExternalEditFileMonitor : public FileMonitor, Listener
 {
 public:
-	ExternalEditFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
-		: FileMonitor("", false),
+	ExternalEditFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) :
+		FileMonitor("", false),
 		entry(entry),
 		manager(manager)
 	{
@@ -64,18 +64,12 @@ public:
 		listenTo(archive);
 	}
 
-	virtual ~ExternalEditFileMonitor()
-	{
-		manager->monitorStopped(this);
-	}
+	virtual ~ExternalEditFileMonitor() { manager->monitorStopped(this); }
 
-	ArchiveEntry*	getEntry() { return entry; }
-	void			fileModified() { updateEntry(); }
+	ArchiveEntry* getEntry() { return entry; }
+	void          fileModified() { updateEntry(); }
 
-	virtual void updateEntry()
-	{
-		entry->importFile(filename);
-	}
+	virtual void updateEntry() { entry->importFile(filename); }
 
 	virtual bool exportEntry()
 	{
@@ -87,7 +81,7 @@ public:
 		bool ok = entry->exportFile(fn.GetFullPath());
 		if (ok)
 		{
-			filename = fn.GetFullPath();
+			filename      = fn.GetFullPath();
 			file_modified = wxFileModificationTime(filename);
 			Start(1000);
 		}
@@ -107,7 +101,7 @@ public:
 		// Entry removed
 		if (event_name == "entry_removed")
 		{
-			int index;
+			int       index;
 			wxUIntPtr ptr;
 			event_data.read(&index, sizeof(int));
 			event_data.read(&ptr, sizeof(wxUIntPtr));
@@ -120,23 +114,24 @@ public:
 	}
 
 protected:
-	ArchiveEntry*			entry;
-	Archive*                archive;
-	ExternalEditManager*	manager;
-	string					gfx_format;
+	ArchiveEntry*        entry;
+	Archive*             archive;
+	ExternalEditManager* manager;
+	string               gfx_format;
 };
 
 
-/*******************************************************************
- * GFXEXTERNALFILEMONITOR CLASS
- *******************************************************************
- * ExternalEditFileMonitor subclass to handle gfx entries
- */
+// -----------------------------------------------------------------------------
+// GfxExternalFileMonitor Class
+//
+// ExternalEditFileMonitor subclass to handle gfx entries
+// -----------------------------------------------------------------------------
 class GfxExternalFileMonitor : public ExternalEditFileMonitor
 {
 public:
-	GfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
-		: ExternalEditFileMonitor(entry, manager) {}
+	GfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) : ExternalEditFileMonitor(entry, manager)
+	{
+	}
 	virtual ~GfxExternalFileMonitor() {}
 
 	void updateEntry()
@@ -184,11 +179,11 @@ public:
 
 		// Set export info
 		gfx_format = image.getFormat()->getId();
-		offsets = image.offset();
+		offsets    = image.offset();
 		palette.copyPalette(MainEditor::currentPalette(entry));
 
 		// Write png data
-		MemChunk png;
+		MemChunk  png;
 		SIFormat* fmt_png = SIFormat::getFormat("png");
 		if (!fmt_png->saveImage(image, png, &palette))
 		{
@@ -209,22 +204,23 @@ public:
 	}
 
 private:
-	string		gfx_format;
-	point2_t	offsets;
-	Palette	palette;
+	string   gfx_format;
+	point2_t offsets;
+	Palette  palette;
 };
 
 
-/*******************************************************************
- * MIDIEXTERNALFILEMONITOR CLASS
- *******************************************************************
- * ExternalEditFileMonitor subclass to handle MIDI entries
- */
+// -----------------------------------------------------------------------------
+// MIDIExternalFileMonitor Class
+//
+// ExternalEditFileMonitor subclass to handle MIDI entries
+// -----------------------------------------------------------------------------
 class MIDIExternalFileMonitor : public ExternalEditFileMonitor
 {
 public:
-	MIDIExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
-		: ExternalEditFileMonitor(entry, manager) {}
+	MIDIExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) : ExternalEditFileMonitor(entry, manager)
+	{
+	}
 	virtual ~MIDIExternalFileMonitor() {}
 
 	void updateEntry()
@@ -246,8 +242,9 @@ public:
 			Conversions::musToMidi(entry->getMCData(), convdata);
 
 		// HMI/HMP/XMI
-		else if (entry->getType()->formatId() == "midi_xmi" || 
-			entry->getType()->formatId() == "midi_hmi" || entry->getType()->formatId() == "midi_hmp")
+		else if (
+			entry->getType()->formatId() == "midi_xmi" || entry->getType()->formatId() == "midi_hmi"
+			|| entry->getType()->formatId() == "midi_hmp")
 			Conversions::zmusToMidi(entry->getMCData(), convdata, 0);
 
 		// GMID
@@ -274,30 +271,29 @@ public:
 
 	static bool canHandleEntry(ArchiveEntry* entry)
 	{
-		if (entry->getType()->formatId() == "midi" ||
-			entry->getType()->formatId() == "midi_mus" ||
-			entry->getType()->formatId() == "midi_xmi" ||
-			entry->getType()->formatId() == "midi_hmi" ||
-			entry->getType()->formatId() == "midi_hmp" ||
-			entry->getType()->formatId() == "midi_gmid"
-			)
+		if (entry->getType()->formatId() == "midi" || entry->getType()->formatId() == "midi_mus"
+			|| entry->getType()->formatId() == "midi_xmi" || entry->getType()->formatId() == "midi_hmi"
+			|| entry->getType()->formatId() == "midi_hmp" || entry->getType()->formatId() == "midi_gmid")
 			return true;
-		
+
 		return false;
 	}
 };
 
 
-/*******************************************************************
- * SFXEXTERNALFILEMONITOR CLASS
- *******************************************************************
- * ExternalEditFileMonitor subclass to handle sfx entries
- */
+// -----------------------------------------------------------------------------
+// SfxExternalFileMonitor Class
+//
+// ExternalEditFileMonitor subclass to handle sfx entries
+// -----------------------------------------------------------------------------
 class SfxExternalFileMonitor : public ExternalEditFileMonitor
 {
 public:
-	SfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
-		: ExternalEditFileMonitor(entry, manager), doom_sound(true) {}
+	SfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) :
+		ExternalEditFileMonitor(entry, manager),
+		doom_sound(true)
+	{
+	}
 	virtual ~SfxExternalFileMonitor() {}
 
 	void updateEntry()
@@ -329,8 +325,7 @@ public:
 		MemChunk convdata;
 
 		// Doom Sound
-		if (entry->getType()->formatId() == "snd_doom" ||
-			entry->getType()->formatId() == "snd_doom_mac")
+		if (entry->getType()->formatId() == "snd_doom" || entry->getType()->formatId() == "snd_doom_mac")
 			Conversions::doomSndToWav(entry->getMCData(), convdata);
 
 		// Doom PC Speaker Sound
@@ -377,52 +372,49 @@ public:
 
 	static bool canHandleEntry(ArchiveEntry* entry)
 	{
-		if (entry->getType()->formatId() == "snd_doom" ||
-			entry->getType()->formatId() == "snd_doom_mac" ||
-			entry->getType()->formatId() == "snd_speaker" ||
-			entry->getType()->formatId() == "snd_audiot" ||
-			entry->getType()->formatId() == "snd_wolf" ||
-			entry->getType()->formatId() == "snd_voc" ||
-			entry->getType()->formatId() == "snd_jaguar" ||
-			entry->getType()->formatId() == "snd_bloodsfx")
+		if (entry->getType()->formatId() == "snd_doom" || entry->getType()->formatId() == "snd_doom_mac"
+			|| entry->getType()->formatId() == "snd_speaker" || entry->getType()->formatId() == "snd_audiot"
+			|| entry->getType()->formatId() == "snd_wolf" || entry->getType()->formatId() == "snd_voc"
+			|| entry->getType()->formatId() == "snd_jaguar" || entry->getType()->formatId() == "snd_bloodsfx")
 			return true;
 
 		return false;
 	}
 
 private:
-	bool	doom_sound;
+	bool doom_sound;
 };
 
 
-/*******************************************************************
- * EXTERNALEDITMANAGER CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// ExternalEditManager Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* ExternalEditManager::ExternalEditManager
- * ExternalEditManager class constructor
- *******************************************************************/
-ExternalEditManager::ExternalEditManager()
-{
-}
 
-/* ExternalEditManager::~ExternalEditManager
- * ExternalEditManager class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// ExternalEditManager class constructor
+// -----------------------------------------------------------------------------
+ExternalEditManager::ExternalEditManager() {}
+
+// -----------------------------------------------------------------------------
+// ExternalEditManager class destructor
+// -----------------------------------------------------------------------------
 ExternalEditManager::~ExternalEditManager()
 {
-	for (unsigned a = 0; a < file_monitors.size(); a++)
-		delete file_monitors[a];
+	for (unsigned a = 0; a < file_monitors_.size(); a++)
+		delete file_monitors_[a];
 }
 
-/* ExternalEditManager::openEntryExternal
- * Opens [entry] for external editing with [editor] for [category]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Opens [entry] for external editing with [editor] for [category]
+// -----------------------------------------------------------------------------
 bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, string category)
 {
 	// Check the entry isn't already opened externally
-	for (unsigned a = 0; a < file_monitors.size(); a++)
-		if (file_monitors[a]->getEntry() == entry)
+	for (unsigned a = 0; a < file_monitors_.size(); a++)
+		if (file_monitors_[a]->getEntry() == entry)
 		{
 			LOG_MESSAGE(1, "Entry %s is already open in an external editor", entry->getName());
 			return true;
@@ -466,7 +458,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 
 	// Run external editor
 	string command = S_FMT("\"%s\" \"%s\"", exe_path, monitor->getFilename());
-	long success = wxExecute(command, wxEXEC_ASYNC, monitor->getProcess());
+	long   success = wxExecute(command, wxEXEC_ASYNC, monitor->getProcess());
 	if (success == 0)
 	{
 		Global::error = S_FMT("Failed to launch %s", editor);
@@ -475,16 +467,16 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 	}
 
 	// Add to list of file monitors for tracking
-	file_monitors.push_back(monitor);
+	file_monitors_.push_back(monitor);
 
 	return true;
 }
 
-/* ExternalEditManager::monitorStopped
- * Called when a FileMonitor is stopped/deleted
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when a FileMonitor is stopped/deleted
+// -----------------------------------------------------------------------------
 void ExternalEditManager::monitorStopped(ExternalEditFileMonitor* monitor)
 {
-	if (VECTOR_EXISTS(file_monitors, monitor))
-		VECTOR_REMOVE(file_monitors, monitor);
+	if (VECTOR_EXISTS(file_monitors_, monitor))
+		VECTOR_REMOVE(file_monitors_, monitor);
 }

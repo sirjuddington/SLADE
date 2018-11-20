@@ -11,15 +11,15 @@ public:
 	MapEntryPanel(wxWindow* parent);
 	~MapEntryPanel() {}
 
-	bool	loadEntry(ArchiveEntry* entry) override;
-	bool	saveEntry() override;
-	bool	createImage();
-	void	toolbarButtonClick(string action_id) override;
+	bool loadEntry(ArchiveEntry* entry) override;
+	bool saveEntry() override;
+	bool createImage();
+	void toolbarButtonClick(string action_id) override;
 
 private:
-	MapPreviewCanvas*	map_canvas_		= nullptr;
-	wxCheckBox*			cb_show_things_	= nullptr;
-	wxStaticText*		label_stats_	= nullptr;
+	MapPreviewCanvas* map_canvas_     = nullptr;
+	wxCheckBox*       cb_show_things_ = nullptr;
+	wxStaticText*     label_stats_    = nullptr;
 
-	void	onCBShowThings(wxCommandEvent& e);
+	void onCBShowThings(wxCommandEvent& e);
 };

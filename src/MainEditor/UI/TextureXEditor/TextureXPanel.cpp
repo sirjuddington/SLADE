@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -22,14 +22,14 @@
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextureXPanel.h"
 #include "App.h"
@@ -51,11 +51,11 @@
 #include "ZTextureEditorPanel.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(Bool, wad_force_uppercase)
 
@@ -66,21 +66,19 @@ bool TxListIsTextures(TextureXList& tx)
 {
 	return tx.getFormat() == TextureXList::Format::Textures;
 }
-}
+} // namespace
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextureXListView Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextureXListView::TextureXListView
-//
+// -----------------------------------------------------------------------------
 // TextureXListView class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextureXListView::TextureXListView(wxWindow* parent, TextureXList* texturex) :
 	VirtualListView{ parent },
 	texturex_{ texturex }
@@ -93,11 +91,9 @@ TextureXListView::TextureXListView(wxWindow* parent, TextureXList* texturex) :
 	updateList();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXListView::getItemText
-//
+// -----------------------------------------------------------------------------
 // Returns the string for [item] at [column]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string TextureXListView::getItemText(long item, long column, long index) const
 {
 	// Check texture list exists
@@ -121,12 +117,10 @@ string TextureXListView::getItemText(long item, long column, long index) const
 		return "INVALID COLUMN";
 }
 
-// ----------------------------------------------------------------------------
-// TextureXListView::updateItemAttr
-//
+// -----------------------------------------------------------------------------
 // Called when widget requests the attributes
 // (text colour / background colour / font) for [item]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXListView::updateItemAttr(long item, long column, long index) const
 {
 	// Check texture list exists
@@ -156,11 +150,9 @@ void TextureXListView::updateItemAttr(long item, long column, long index) const
 	};
 }
 
-// ----------------------------------------------------------------------------
-// TextureXListView::updateList
-//
+// -----------------------------------------------------------------------------
 // Clears the list if [clear] is true, and refreshes it
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXListView::updateList(bool clear)
 {
 	if (clear)
@@ -184,11 +176,9 @@ void TextureXListView::updateList(bool clear)
 	Refresh();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXListView::sizeSort
-//
+// -----------------------------------------------------------------------------
 // Returns true if texture at index [left] is smaller than [right]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureXListView::sizeSort(long left, long right)
 {
 	CTexture* tl = ((TextureXListView*)lv_current)->txList()->getTexture(left);
@@ -202,11 +192,9 @@ bool TextureXListView::sizeSort(long left, long right)
 		return lv_current->sortDescend() ? s1 > s2 : s2 > s1;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXListView::sortItems
-//
+// -----------------------------------------------------------------------------
 // Sorts the list items depending on the current sorting column
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXListView::sortItems()
 {
 	lv_current = this;
@@ -216,11 +204,9 @@ void TextureXListView::sortItems()
 		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
 }
 
-// ----------------------------------------------------------------------------
-// TextureXListView::applyFilter
-//
+// -----------------------------------------------------------------------------
 // Filters items by the current filter text string
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXListView::applyFilter()
 {
 	// Show all if no filter
@@ -266,11 +252,11 @@ void TextureXListView::applyFilter()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Undo Steps
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 class TextureSwapUS : public UndoStep
 {
@@ -291,7 +277,6 @@ public:
 	}
 
 	bool doUndo() override { return doSwap(); }
-
 	bool doRedo() override { return doSwap(); }
 
 private:
@@ -307,7 +292,7 @@ public:
 		tx_panel_(tx_panel),
 		created_(created)
 	{
-		tex_removed_ = created ? NULL : texture;
+		tex_removed_ = created ? nullptr : texture;
 		index_       = tx_panel->txList().textureIndex(texture->getName());
 	}
 
@@ -394,18 +379,16 @@ private:
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextureXPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::TextureXPanel
-//
+// -----------------------------------------------------------------------------
 // TextureXPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	wxPanel{ parent, -1 },
 	tx_editor_{ &tx_editor },
@@ -470,22 +453,18 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	btn_clear_filter_->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnClearFitler, this);
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::~TextureXPanel
-//
+// -----------------------------------------------------------------------------
 // TextureXPanel class destructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextureXPanel::~TextureXPanel()
 {
 	if (tx_entry_)
 		tx_entry_->unlock();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::openTEXTUREX
-//
+// -----------------------------------------------------------------------------
 // Loads a TEXTUREx or TEXTURES format texture list into the editor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 {
 	// Open texture list (check format)
@@ -536,11 +515,9 @@ bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::saveTEXTUREX
-//
+// -----------------------------------------------------------------------------
 // Saves a TEXTUREX format texture list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureXPanel::saveTEXTUREX()
 {
 	// Save any changes to current texture
@@ -569,21 +546,17 @@ bool TextureXPanel::saveTEXTUREX()
 	return ok;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::setPalette
-//
+// -----------------------------------------------------------------------------
 // Sets the texture editor's palette
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::setPalette(Palette* pal)
 {
 	texture_editor_->setPalette(pal);
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::applyChanges
-//
+// -----------------------------------------------------------------------------
 // Applies changes to the current texture, if any
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::applyChanges()
 {
 	if (texture_editor_->texModified() && tex_current_)
@@ -607,12 +580,10 @@ void TextureXPanel::applyChanges()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::newTextureFromPatch
-//
+// -----------------------------------------------------------------------------
 // Creates a new texture called [name] from [patch]. The new texture will be
 // set to the dimensions of the patch, with the patch added at 0,0
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 CTexture* TextureXPanel::newTextureFromPatch(string name, string patch)
 {
 	// Create new texture
@@ -647,11 +618,9 @@ CTexture* TextureXPanel::newTextureFromPatch(string name, string patch)
 	return tex;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::newTexture
-//
+// -----------------------------------------------------------------------------
 // Creates a new, empty texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::newTexture()
 {
 	// Prompt for new texture name
@@ -708,11 +677,9 @@ void TextureXPanel::newTexture()
 	modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::newTextureFromPatch
-//
+// -----------------------------------------------------------------------------
 // Creates a new texture from an existing patch
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::newTextureFromPatch()
 {
 	// Browse for patch
@@ -761,12 +728,10 @@ void TextureXPanel::newTextureFromPatch()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::newTextureFromFile
-//
-// Creates a new texture from an image file. The file will be imported and
-// added to the patch table if needed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Creates a new texture from an image file. The file will be imported and added
+// to the patch table if needed
+// -----------------------------------------------------------------------------
 void TextureXPanel::newTextureFromFile()
 {
 	// Get all entry types
@@ -865,11 +830,9 @@ void TextureXPanel::newTextureFromFile()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::removeTexture
-//
+// -----------------------------------------------------------------------------
 // Removes any selected textures
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::removeTexture()
 {
 	// Get selected textures
@@ -905,11 +868,9 @@ void TextureXPanel::removeTexture()
 	modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::moveUp
-//
+// -----------------------------------------------------------------------------
 // Moves all selected textures up
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::moveUp()
 {
 	// Get selected textures
@@ -947,11 +908,9 @@ void TextureXPanel::moveUp()
 	modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::moveDown
-//
+// -----------------------------------------------------------------------------
 // Moves all selected textures down
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::moveDown()
 {
 	// Get selected textures
@@ -989,11 +948,9 @@ void TextureXPanel::moveDown()
 	modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::sort
-//
+// -----------------------------------------------------------------------------
 // Sorts all selected textures
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::sort()
 {
 	// Get selected textures
@@ -1060,11 +1017,9 @@ void TextureXPanel::sort()
 	modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::copy
-//
+// -----------------------------------------------------------------------------
 // Copies any selected textures to the clipboard
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::copy()
 {
 	// Get selected textures
@@ -1083,11 +1038,9 @@ void TextureXPanel::copy()
 	theClipboard->addItems(copy_items);
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::paste
-//
+// -----------------------------------------------------------------------------
 // Pastes any textures on the clipboard after the last selected texture
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::paste()
 {
 	// Check there is anything on the clipboard
@@ -1166,11 +1119,9 @@ void TextureXPanel::paste()
 	modified_ = true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::renameTexture
-//
+// -----------------------------------------------------------------------------
 // Create standalone image entries of any selected textures
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::renameTexture(bool each)
 {
 	// Get selected textures
@@ -1241,11 +1192,9 @@ void TextureXPanel::renameTexture(bool each)
 	Refresh();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::exportTexture
-//
+// -----------------------------------------------------------------------------
 // Create standalone image entries of any selected textures
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::exportTexture()
 {
 	// Get selected textures
@@ -1308,12 +1257,10 @@ void TextureXPanel::exportTexture()
 	UI::hideSplash();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::exportAsPNG
-//
+// -----------------------------------------------------------------------------
 // Converts [texture] to a PNG image (if possible) and saves the PNG data to a
 // file [filename]. Does not alter the texture data itself
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_rgba)
 {
 	// Check entry was given
@@ -1341,11 +1288,9 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 	return png.exportFile(filename);
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::extractTexture
-//
+// -----------------------------------------------------------------------------
 // Create standalone image entries of any selected textures
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::extractTexture()
 {
 	// Get selected textures
@@ -1427,11 +1372,9 @@ void TextureXPanel::extractTexture()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::modifyOffsets
-//
+// -----------------------------------------------------------------------------
 // Changes the offsets for each selected texture. Only for ZDoom!
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureXPanel::modifyOffsets()
 {
 	if (!tx_entry_)
@@ -1478,32 +1421,26 @@ bool TextureXPanel::modifyOffsets()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::onUndo
-//
+// -----------------------------------------------------------------------------
 // Called when an action is undone
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::onUndo(string action)
 {
 	list_textures_->updateList();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::onRedo
-//
+// -----------------------------------------------------------------------------
 // Called when an action is redone
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::onRedo(string action)
 {
 	list_textures_->updateList();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::handleAction
-//
+// -----------------------------------------------------------------------------
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextureXPanel::handleAction(string id)
 {
 	// Don't handle if hidden
@@ -1555,18 +1492,16 @@ bool TextureXPanel::handleAction(string id)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextureXPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::onTextureListSelect
-//
+// -----------------------------------------------------------------------------
 // Called when an item on the texture list is selected
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::onTextureListSelect(wxListEvent& e)
 {
 	// Do nothing if multiple textures are selected
@@ -1592,11 +1527,9 @@ void TextureXPanel::onTextureListSelect(wxListEvent& e)
 	tex_current_ = tex;
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::onTextureListRightClick
-//
+// -----------------------------------------------------------------------------
 // Called when an item on the texture list is right clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::onTextureListRightClick(wxListEvent& e)
 {
 	// Create context menu
@@ -1625,11 +1558,9 @@ void TextureXPanel::onTextureListRightClick(wxListEvent& e)
 	PopupMenu(&context);
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::onTextureListKeyDown
-//
+// -----------------------------------------------------------------------------
 // Called when a key is pressed in the texture list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::onTextureListKeyDown(wxKeyEvent& e)
 {
 	// Check if keypress matches any keybinds
@@ -1709,11 +1640,9 @@ void TextureXPanel::onTextureListKeyDown(wxKeyEvent& e)
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::onTextFilterChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the filter text is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::onTextFilterChanged(wxCommandEvent& e)
 {
 	// Filter the entry list
@@ -1722,11 +1651,9 @@ void TextureXPanel::onTextFilterChanged(wxCommandEvent& e)
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// TextureXPanel::onBtnClearFitler
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Clear Filter' button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureXPanel::onBtnClearFitler(wxCommandEvent& e)
 {
 	text_filter_->SetValue(wxEmptyString);
