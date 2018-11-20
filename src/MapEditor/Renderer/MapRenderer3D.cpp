@@ -1289,9 +1289,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_mid"))
-				sx = 1.0 / line->s1()->floatProperty("scalex_mid");
+				sx *= 1.0 / line->s1()->floatProperty("scalex_mid");
 			if (line->s1()->hasProp("scaley_mid"))
-				sy = 1.0 / line->s1()->floatProperty("scaley_mid");
+				sy *= 1.0 / line->s1()->floatProperty("scaley_mid");
 		}
 		if (!quad.texture->worldPanning()) {
 			xoff *= sx;
@@ -1383,9 +1383,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_bottom"))
-				sx = 1.0 / line->s1()->floatProperty("scalex_bottom");
+				sx *= 1.0 / line->s1()->floatProperty("scalex_bottom");
 			if (line->s1()->hasProp("scaley_bottom"))
-				sy = 1.0 / line->s1()->floatProperty("scaley_bottom");
+				sy *= 1.0 / line->s1()->floatProperty("scaley_bottom");
 		}
 		if (!quad.texture->worldPanning()) {
 			xoff *= sx;
@@ -1516,9 +1516,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_top"))
-				sx = 1.0 / line->s1()->floatProperty("scalex_top");
+				sx *= 1.0 / line->s1()->floatProperty("scalex_top");
 			if (line->s1()->hasProp("scaley_top"))
-				sy = 1.0 / line->s1()->floatProperty("scaley_top");
+				sy *= 1.0 / line->s1()->floatProperty("scaley_top");
 		}
 		if (!quad.texture->worldPanning()) {
 			xoff *= sx;
@@ -1563,9 +1563,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_bottom"))
-				sx = 1.0 / line->s2()->floatProperty("scalex_bottom");
+				sx *= 1.0 / line->s2()->floatProperty("scalex_bottom");
 			if (line->s2()->hasProp("scaley_bottom"))
-				sy = 1.0 / line->s2()->floatProperty("scaley_bottom");
+				sy *= 1.0 / line->s2()->floatProperty("scaley_bottom");
 		}
 		if (!quad.texture->worldPanning()) {
 			xoff *= sx;
@@ -1616,9 +1616,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_mid"))
-				sx = 1.0 / line->s2()->floatProperty("scalex_mid");
+				sx *= 1.0 / line->s2()->floatProperty("scalex_mid");
 			if (line->s2()->hasProp("scaley_mid"))
-				sy = 1.0 / line->s2()->floatProperty("scaley_mid");
+				sy *= 1.0 / line->s2()->floatProperty("scaley_mid");
 		}
 		if (!quad.texture->worldPanning()) {
 			xoff *= sx;
@@ -1696,9 +1696,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_top"))
-				sx = 1.0 / line->s2()->floatProperty("scalex_top");
+				sx *= 1.0 / line->s2()->floatProperty("scalex_top");
 			if (line->s2()->hasProp("scaley_top"))
-				sy = 1.0 / line->s2()->floatProperty("scaley_top");
+				sy *= 1.0 / line->s2()->floatProperty("scaley_top");
 		}
 		if (!quad.texture->worldPanning()) {
 			xoff *= sx;
