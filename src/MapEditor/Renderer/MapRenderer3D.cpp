@@ -1181,7 +1181,7 @@ void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int lengt
 	double y2 = o_top + height;
 	if (pegbottom)
 	{
-		y2 = o_top + quad->texture->getHeight();
+		y2 = o_top + quad->texture->getHeight() * sy;
 		y1 = y2 - height;
 	}
 
