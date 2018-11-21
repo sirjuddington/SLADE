@@ -79,7 +79,7 @@ TLFunction::~TLFunction()
 //
 // Returns the arg set [index], or an empty string if [index] is out of bounds
 // ----------------------------------------------------------------------------
-TLFunction::Context TLFunction::context(unsigned index) const
+TLFunction::Context TLFunction::context(unsigned long index) const
 {
 	// Check index
 	if (index >= contexts_.size())
@@ -428,20 +428,20 @@ string TextLanguage::autocompletionList(string start, bool include_custom)
 	{
 		for (auto& word : word_lists_[type].list)
 			if (word.Lower().StartsWith(start))
-				list.Add(word + S_FMT("?%d", type + 1));
+				list.Add(S_FMT("%s?%d", word, type + 1));
 
 		if (!include_custom)
 			continue;
 
 		for (auto& word : word_lists_custom_[type].list)
 			if (word.Lower().StartsWith(start))
-				list.Add(word + S_FMT("?%d", type + 1));
+				list.Add(S_FMT("%s?%d", word, type + 1));
 	}
 
 	// Add functions
 	for (auto& func : functions_)
 		if (func.name().Lower().StartsWith(start))
-			list.Add(func.name() + "?3");
+			list.Add(S_FMT("%s%s", func.name(), "?3"));
 
 	// Sort the list
 	list.Sort();

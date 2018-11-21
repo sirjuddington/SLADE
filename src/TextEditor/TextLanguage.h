@@ -31,7 +31,7 @@ public:
 
 	const string&			name() const { return name_; }
 	const vector<Context>&	contexts() const { return contexts_; }
-	Context					context(unsigned index) const;
+	Context					context(unsigned long index) const;
 
 	void	setName(string name) { this->name_ = name; }
 	void	addContext(

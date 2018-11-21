@@ -31,7 +31,6 @@
 // ----------------------------------------------------------------------------
 #include "Main.h"
 #include "SCallTip.h"
-#include "TextEditor/TextLanguage.h"
 #include "UI/WxUtils.h"
 
 
@@ -121,7 +120,7 @@ void SCallTip::setFont(string face, int size)
 //
 // Opens and displays the context [index] from the current function
 // ----------------------------------------------------------------------------
-void SCallTip::loadContext(int index)
+void SCallTip::loadContext(unsigned long index)
 {
 	context_ = function_->context(index);
 
@@ -156,8 +155,7 @@ void SCallTip::openFunction(TLFunction* function, int arg)
 // ----------------------------------------------------------------------------
 void SCallTip::nextArgSet()
 {
-	context_current_++;
-	if (context_current_ >= (int)function_->contexts().size())
+	if (++context_current_ >= function_->contexts().size())
 		context_current_ = 0;
 	loadContext(context_current_);
 }
@@ -169,9 +167,10 @@ void SCallTip::nextArgSet()
 // ----------------------------------------------------------------------------
 void SCallTip::prevArgSet()
 {
-	context_current_--;
-	if (context_current_ < 0)
+	if (context_current_ == 0)
 		context_current_ = function_->contexts().size() - 1;
+	else
+		--context_current_;
 	loadContext(context_current_);
 }
 
@@ -186,7 +185,7 @@ void SCallTip::updateSize()
 	SetSize(buffer_.GetWidth() + UI::scalePx(24), buffer_.GetHeight() + UI::scalePx(16));
 
 	// Get screen bounds and window bounds
-	int index = wxDisplay::GetFromWindow(this->GetParent());
+	unsigned index = (unsigned) wxDisplay::GetFromWindow(this->GetParent());
 	wxDisplay display(index);
 	wxRect screen_area = display.GetClientArea();
 	wxRect ct_area = GetScreenRect();
@@ -259,7 +258,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 
 	// Draw opening bracket
 	dc.SetTextForeground(wxcol_fg);
-	left = drawText(dc, "(", left, top, &rect);
+	left = drawText(dc, " (", left, top, &rect);
 
 	return { { rect_left, top }, rect.GetBottomRight() };
 }
@@ -374,7 +373,7 @@ wxRect SCallTip::drawFunctionContext(
 // Draws function description text [desc] at [left,top].
 // Returns a rect of the bounds of the drawn text
 // ----------------------------------------------------------------------------
-wxRect SCallTip::drawFunctionDescription(wxDC& dc, string desc, int left, int top, int max_width)
+wxRect SCallTip::drawFunctionDescription(wxDC& dc, string desc, int left, int top)
 {
 	wxFont italic = font_.Italic();
 	wxRect rect(left, top, 0, 0);
@@ -443,9 +442,9 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 	rgba_t faded;
 	if (txed_calltips_dim_optional)
 		faded = rgba_t(
-			col_fg_.r * 0.5 + col_bg_.r * 0.5,
-			col_fg_.g * 0.5 + col_bg_.g * 0.5,
-			col_fg_.b * 0.5 + col_bg_.b * 0.5
+				(uint8_t) round((col_fg_.r + col_bg_.r) * 0.5),
+				(uint8_t) round((col_fg_.g + col_bg_.g) * 0.5),
+				(uint8_t) round((col_fg_.b + col_bg_.b) * 0.5)
 		);
 	else
 		faded = col_fg_;
@@ -492,7 +491,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			int width = dc.GetTextExtent("X/X").x;
 			dc.SetTextForeground(wxcol_fg);
 			dc.DrawLabel(
-				S_FMT("%d/%d", context_current_ + 1, function_->contexts().size()),
+				S_FMT("%lu/%lu", context_current_ + 1, function_->contexts().size()),
 				wxNullBitmap,
 				wxRect(rect_btn_up_.GetRight() + UI::scalePx(4), yoff, width, 900),
 				wxALIGN_CENTER_HORIZONTAL);
@@ -542,7 +541,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 				col_sep = WXCOL(col_bg_.amp(-30, -30, -30, 0));
 
 			bool first = true;
-			auto num = std::min<unsigned>(function_->contexts().size(), 12u);
+			auto num = std::min<unsigned long>(function_->contexts().size(), 12u);
 			for (auto a = 0u; a < num; a++)
 			{
 				auto& context = function_->contexts()[a];
@@ -561,7 +560,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 					wxcol_faded,
 					bold
 				);
-				bottom = rect.GetBottom() + UI::scaleFactor();
+				bottom = (int) round(rect.GetBottom() + UI::scaleFactor());
 				max_right = std::max(max_right, rect.GetRight());
 				first = false;
 			}
@@ -573,12 +572,12 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 				wxRect rect;
 				drawText(
 					dc,
-					S_FMT("... %d more", function_->contexts().size() - num),
+					S_FMT("... %lu more", function_->contexts().size() - num),
 					xoff,
 					bottom + UI::scalePx(11),
 					&rect
 				);
-				bottom = rect.GetBottom() + UI::scaleFactor();
+				bottom = (int) round(rect.GetBottom() + UI::scaleFactor());
 			}
 
 			if (num > 1)
@@ -586,8 +585,8 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		}
 
 		// Size buffer bitmap to fit
-		ct_size.SetWidth(max_right + UI::scaleFactor());
-		ct_size.SetHeight(bottom + UI::scaleFactor());
+		ct_size.SetWidth((int) round(max_right + UI::scaleFactor()));
+		ct_size.SetHeight((int) round(bottom + UI::scaleFactor()));
 	}
 	else
 	{
@@ -752,7 +751,7 @@ void SCallTip::onShow(wxShowEvent& e)
 	{
 		// Get screen bounds and window bounds
 		int index = wxDisplay::GetFromWindow(this->GetParent());
-		wxDisplay display(index);
+		wxDisplay display((unsigned) index);
 		wxRect screen_area = display.GetClientArea();
 		wxRect ct_area = GetScreenRect();
 
