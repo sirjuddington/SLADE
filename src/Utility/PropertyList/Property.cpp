@@ -277,7 +277,7 @@ string Property::getStringValue(bool warn_wrong_type) const
 	else if (type == PROP_INT)
 		return S_FMT("%d", value.Integer);
 	else if (type == PROP_UINT)
-		return S_FMT("%d", value.Unsigned);
+		return S_FMT("%u", value.Unsigned);
 	else if (type == PROP_BOOL)
 	{
 		if (value.Boolean)

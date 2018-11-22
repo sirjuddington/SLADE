@@ -549,7 +549,7 @@ void ParseTreeNode::write(string& out, int indent) const
 			case PROP_FLOAT:
 				out += S_FMT("%1.3f", value.getFloatValue()); break;
 			case PROP_UINT:
-				out += S_FMT("%d", value.getUnsignedValue()); break;
+				out += S_FMT("%u", value.getUnsignedValue()); break;
 			default:
 				out += S_FMT("\"%s\"", value.getStringValue()); break;
 			}

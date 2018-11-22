@@ -174,6 +174,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 						h = image.getHeight();
 						sw = imgref.getWidth();
 						sh = imgref.getHeight();
+						mtex.texture->setWorldPanning(true);
 						mtex.texture->setScale((double)sw/(double)w, (double)sh/(double)h);
 					}
 				}
@@ -194,6 +195,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 			mtex.texture->loadImage(&image, palette);
 			double sx = ctex->getScaleX(); if (sx == 0) sx = 1.0;
 			double sy = ctex->getScaleY(); if (sy == 0) sy = 1.0;
+			mtex.texture->setWorldPanning(ctex->worldPanning());
 			mtex.texture->setScale(1.0/sx, 1.0/sy);
 		}
 	}
@@ -262,6 +264,7 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 				double sx = ctex->getScaleX(); if (sx == 0) sx = 1.0;
 				double sy = ctex->getScaleY(); if (sy == 0) sy = 1.0;
 				mtex.texture->setScale(1.0/sx, 1.0/sy);
+				mtex.texture->setWorldPanning(ctex->worldPanning());
 				return mtex.texture;
 			}
 		}
