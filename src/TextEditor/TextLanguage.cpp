@@ -127,9 +127,10 @@ void TLFunction::addContext(
 	const string& context,
 	const string& args,
 	const string& return_type,
-	const string& description)
+	string        description,
+	const string& deprecated_f)
 {
-	contexts_.push_back(Context{ context, {}, return_type, description, "" });
+	contexts_.push_back(Context{ context, {}, return_type, description, "", "", "" });
 	auto& ctx = contexts_.back();
 
 	// Parse args
@@ -157,6 +158,38 @@ void TLFunction::addContext(
 
 		tz.adv();
 	}
+
+	if (!deprecated_f.empty())
+	{
+		// Parse deprecated string
+		tz.openString(deprecated_f);
+
+		for (unsigned t = 0; t < 2; t++)
+		{
+			while (tz.check(","))
+				tz.adv();
+
+			bool is_replacement = true;
+			for (unsigned c = 0; c < tz.current().text.size(); c++)
+			{
+				char chr = tz.current().text[c];
+				if (isdigit(chr) || chr == '.')
+				{
+					is_replacement = false;
+					break;
+				}
+			}
+
+			if (is_replacement)
+				ctx.deprecated_f = tz.current().text;
+			else
+				ctx.deprecated_v = tz.current().text;
+
+			if (tz.atEnd())
+				break;
+			tz.adv();
+		}
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -164,22 +197,32 @@ void TLFunction::addContext(
 //
 // Adds a [context] of the function from a parsed ZScript function [func]
 // ----------------------------------------------------------------------------
-void TLFunction::addContext(const string& context, const ZScript::Function& func, bool custom)
+void TLFunction::addContext(
+	const string&            context,
+	const ZScript::Function& func,
+	bool                     custom,
+	string                   desc,
+	string                   dep_f)
 {
 	contexts_.push_back(Context{ context, {} });
 	auto& ctx = contexts_.back();
 
-	ctx.return_type = func.returnType();
-	ctx.deprecated = func.deprecated();
-	ctx.custom = custom;
+	ctx.return_type  = func.returnType();
+	ctx.description  = desc;
+	ctx.deprecated_v = func.deprecated();
+	ctx.deprecated_f = dep_f;
+	ctx.custom       = custom;
 
 	if (func.isVirtual())
 		ctx.qualifiers += "virtual ";
 	if (func.native())
 		ctx.qualifiers += "native ";
 
-	for (auto& p : func.parameters())
-		ctx.params.push_back({ p.type, p.name, p.default_value, !p.default_value.empty() });
+	if (func.parameters().empty())
+		ctx.params.push_back({ "void", "", "", false });
+	else
+		for (auto& p : func.parameters())
+			ctx.params.push_back({ p.type, p.name, p.default_value, !p.default_value.empty() });
 }
 
 void TLFunction::clearCustomContexts()
@@ -298,7 +341,13 @@ void TextLanguage::addWord(WordType type, string keyword, bool custom)
 // [args] will be added to it as a new arg set, otherwise a new function will
 // be added
 // ----------------------------------------------------------------------------
-void TextLanguage::addFunction(string name, string args, string desc, bool replace, string return_type)
+void TextLanguage::addFunction(
+	string name,
+	string args,
+	string desc,
+	string deprecated,
+	bool   replace,
+	string return_type)
 {
 	// Split out context from name
 	string context;
@@ -330,7 +379,7 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 	}
 
 	// Add the context
-	func->addContext(context, args, desc);
+	func->addContext(context, args, return_type, desc, deprecated);
 }
 
 // ----------------------------------------------------------------------------
@@ -365,7 +414,12 @@ void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
 
 			// Add the context
 			if (!func->hasContext(c.name()))
-				func->addContext(c.name(), f, custom);
+				func->addContext(
+					c.name(),
+					f,
+					custom,
+					zfuncs_ex_props_[func->name()].description,
+					zfuncs_ex_props_[func->name()].deprecated_f);
 		}
 	}
 }
@@ -804,47 +858,89 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			// Functions
 			else if (S_CMPNOCASE(child->getName(), "functions"))
 			{
-				// Go through children (functions)
-				for (unsigned f = 0; f < child->nChildren(); f++)
+				bool lang_has_void = lang->isWord(Keyword, "void") || lang->isWord(Type, "void");
+				if (lang->id_ != "zscript")
 				{
-					auto child_func = child->getChildPTN(f);
-
-					// Simple definition
-					if (child_func->nChildren() == 0)
+					// Go through children (functions)
+					for (unsigned f = 0; f < child->nChildren(); f++)
 					{
-						// Add function
-						lang->addFunction(
-							child_func->getName(),
-							child_func->stringValue(0),
-							"",
-							!child_func->getName().Contains("."),
-							child_func->type());
+						auto   child_func = child->getChildPTN(f);
+						string params;
 
-						// Add args
-						for (unsigned v = 1; v < child_func->nValues(); v++)
-							lang->addFunction(child_func->getName(), child_func->stringValue(v));
-					}
-
-					// Full definition
-					else
-					{
-						string name = child_func->getName();
-						string desc = "";
-						vector<string> args;
-						for (unsigned p = 0; p < child_func->nChildren(); p++)
+						// Simple definition
+						if (child_func->nChildren() == 0)
 						{
-							auto child_prop = child_func->getChildPTN(p);
-							if (child_prop->getName() == "args")
+							if (child_func->stringValue(0).empty())
 							{
-								for (unsigned v = 0; v < child_prop->nValues(); v++)
-									args.push_back(child_prop->stringValue(v));
+								if (lang_has_void)
+									params = "void";
+								else
+									params = "";
 							}
-							else if (child_prop->getName() == "description")
-								desc = child_prop->stringValue();
+							else
+							{
+								params = child_func->stringValue(0);
+							}
+
+							// Add function
+							lang->addFunction(
+								child_func->getName(),
+								params,
+								"",
+								"",
+								!child_func->getName().Contains("."),
+								child_func->type());
+
+							// Add args
+							for (unsigned v = 1; v < child_func->nValues(); v++)
+								lang->addFunction(child_func->getName(), child_func->stringValue(v));
 						}
 
-						for (unsigned as = 0; as < args.size(); as++)
-							lang->addFunction(name, args[as], desc, as == 0, child_func->type());
+						// Full definition
+						else
+						{
+							string         name = child_func->getName();
+							vector<string> args;
+							string         desc       = "";
+							string         deprecated = "";
+							for (unsigned p = 0; p < child_func->nChildren(); p++)
+							{
+								auto child_prop = child_func->getChildPTN(p);
+								if (child_prop->getName() == "args")
+								{
+									for (unsigned v = 0; v < child_prop->nValues(); v++)
+										args.push_back(child_prop->stringValue(v));
+								}
+								else if (child_prop->getName() == "description")
+									desc = child_prop->stringValue();
+								else if (child_prop->getName() == "deprecated")
+									deprecated = child_prop->stringValue();
+							}
+
+							if (args.empty() && lang_has_void)
+								args.push_back("void");
+
+							for (unsigned as = 0; as < args.size(); as++)
+								lang->addFunction(name, args[as], desc, deprecated, as == 0, child_func->type());
+						}
+					}
+				}
+				// ZScript function info which cannot be parsed from (g)zdoom.pk3
+				else
+				{
+					zfunc_ex_prop ex_prop;
+					for (unsigned f = 0; f < child->nChildren(); f++)
+					{
+						auto child_func = child->getChildPTN(f);
+						for (unsigned p = 0; p < child_func->nChildren(); ++p)
+						{
+							auto child_prop = child_func->getChildPTN(p);
+							if (child_prop->getName() == "description")
+								ex_prop.description = child_prop->stringValue();
+							else if (child_prop->getName() == "deprecated_f")
+								ex_prop.deprecated_f = child_prop->stringValue();
+						}
+						lang->zfuncs_ex_props_.emplace(child_func->getName(), ex_prop);
 					}
 				}
 			}
