@@ -37,14 +37,14 @@ private:
 	rgba_t			col_keyword_;
 	int				arg_current_;
 	bool			switch_contexts_;
-	int				context_current_;
+	unsigned long	context_current_;
 	wxRect			rect_btn_up_;
 	wxRect			rect_btn_down_;
 	int				btn_mouse_over_;
 	wxBitmap		buffer_;
 	wxFont			font_;
 
-	void	loadContext(int index);
+	void	loadContext(unsigned long index);
 	void	updateSize();
 
 	int		drawText(wxDC& dc, string text, int left, int top, wxRect* bounds);
@@ -58,7 +58,7 @@ private:
 				wxColour& col_faded,
 				wxFont& bold
 			);
-	wxRect	drawFunctionDescription(wxDC& dc, string desc, int left, int top, int max_width);
+	wxRect	drawFunctionDescription(wxDC& dc, string desc, int left, int top);
 	wxSize	drawCallTip(wxDC& dc, int xoff = 0, int yoff = 0);
 	void	updateBuffer();
 

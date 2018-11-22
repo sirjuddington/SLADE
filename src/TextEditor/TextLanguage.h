@@ -22,7 +22,8 @@ public:
 		string				return_type;
 		string				description;
 		string				qualifiers;
-		string				deprecated;
+		string				deprecated_v;
+		string				deprecated_f;
 		bool				custom;
 	};
 
@@ -31,16 +32,21 @@ public:
 
 	const string&			name() const { return name_; }
 	const vector<Context>&	contexts() const { return contexts_; }
-	Context					context(unsigned index) const;
+	Context					context(unsigned long index) const;
 
-	void	setName(string name) { this->name_ = name; }
-	void	addContext(
-				const string& context,
-				const string& args,
-				const string& return_type = "void",
-				const string& description = ""
-			);
-	void	addContext(const string& context, const ZScript::Function& func, bool custom);
+	void setName(string name) { this->name_ = name; }
+	void addContext(
+		const string& context,
+		const string& args,
+		const string& return_type,
+		string        description,
+		const string& deprecated_f);
+	void addContext(
+		const string&            context,
+		const ZScript::Function& func,
+		bool                     custom,
+		string                   desc,
+		const string             dep_f);
 
 	void	clear() { name_.clear(); contexts_.clear(); }
 	void    clearContexts() { contexts_.clear();}
@@ -103,6 +109,7 @@ public:
 	void		addFunction(string name,
 							string args,
 							string desc = "",
+							string deprecated = "",
 							bool replace = false,
 							string return_type = "");
 	void	loadZScript(ZScript::Definitions& defs, bool custom = false);
@@ -171,4 +178,13 @@ private:
 	bool				f_lower_;
 	bool				f_caps_;
 	string				f_lookup_url_;
+
+	// Zscript function properties which cannot be parsed from (g)zdoom.pk3
+	struct zfunc_ex_prop
+	{
+		string description;
+		string deprecated_f;
+	};
+
+	std::map<string, zfunc_ex_prop> zfuncs_ex_props_;
 };

@@ -1,5 +1,6 @@
 
-acs : cstyle {
+acs : cstyle
+{
 	name = "ACS (Hexen)";
 	case_sensitive = false;
 	keyword_link = "http://zdoom.org/wiki/Special:Search/%s";
@@ -7,11 +8,13 @@ acs : cstyle {
 	function_link = "http://zdoom.org/wiki/%s";
 	blocks = "Script", "function";
 
-	keywords = {
+	keywords =
+	{
 		open, restart, script, special, str, suspend, terminate, world, 
 	}
 
-	constants = {
+	constants =
+	{
 		// General
 		TRUE, FALSE, ON, OFF, YES, NO,
 
@@ -49,7 +52,8 @@ acs : cstyle {
 		T_CENTAUR_MASH, T_THRUSTSPIKEUP, T_THRUSTSPIKEDOWN, T_FLESH_DRIP1, T_FLESH_DRIP2, T_SPARK_DRIP
 	}
 
-	functions {
+	functions
+	{
 		ACS_Execute = "script, map, arg1, arg2, arg3";
 		ACS_LockedExecute = "script, map, arg1, arg2, lock";
 		ACS_Suspend = "script, map";
@@ -152,12 +156,14 @@ acs : cstyle {
 	}
 }
 
-acs_z : acs {
+acs_z : acs
+{
 	name = "ACS (ZDoom)";
 	case_sensitive = false;
 	blocks = "Script", "Function:1";
 
-	keywords = {
+	keywords =
+	{
 		function, enter, respawn, death, lightning, unloading, disconnect, kill,
 		fixed, global, net, import, libdefine, library, nocompact, nowadauthor,
 		EncryptStrings, static, wadauthor, region, endregion,
@@ -166,7 +172,8 @@ acs_z : acs {
 		BlueReturn, RedReturn, WhiteReturn, Pickup, ClientSide
 	}
 
-	constants = {
+	constants =
+	{
 		TRUE, FALSE, ON, OFF, YES, NO, 
 
 		LINE_FRONT, LINE_BACK, SIDE_FRONT, SIDE_BACK, 
@@ -957,7 +964,13 @@ acs_z : acs {
 		GetPlayerLivesLeft = "int player";
 		GetTeamProperty = "int team, int property";
 		IncrementDBEntry = "unknown parameters list";
-		IsMultiplayer;
+
+		int IsMultiplayer
+		{
+		    description = "Checks if the game is currently a multiplayer game.";
+		    deprecated = "GameType";
+		}
+
 		IsNetworkGame;
 		IsOneFlagCTF;
 		KickFromGame = "int player, str reason";
