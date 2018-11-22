@@ -853,7 +853,7 @@ void TextEditorCtrl::showCalltip(int position)
 		call_tip_->setKeywordColour(ss_current->getStyle("keyword")->getForeground());
 	}
 	if (txed_calltips_use_font)
-		call_tip_->setFont(ss_current->getDefaultFontFace(), ss_current->getDefaultFontSize() * 0.9);
+		call_tip_->setFont(ss_current->getDefaultFontFace(), (int) round(ss_current->getDefaultFontSize() * 0.9));
 	else
 		call_tip_->setFont("", 0);
 
@@ -1325,7 +1325,7 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 			if (language_)
 			{
 				autocomp_list_ = language_->autocompletionList(word);
-				AutoCompShow(word.size(), autocomp_list_);
+				AutoCompShow((int) word.size(), autocomp_list_);
 			}
 
 			handled = true;
