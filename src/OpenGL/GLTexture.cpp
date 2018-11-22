@@ -57,6 +57,7 @@ GLTexture::GLTexture(bool allow_split)
 	this->tiling = true;
 	this->scale_x = 1.0;
 	this->scale_y = 1.0;
+	this->world_panning = false;
 }
 
 /* GLTexture::~GLTexture
