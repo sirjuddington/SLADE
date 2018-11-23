@@ -2,6 +2,7 @@
 
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/MapThing.h"
+#include "MapEditor/SLADEMap/MapSector.h"
 
 class MapEditContext;
 class MapSide;
@@ -72,4 +73,8 @@ private:
 
 	// Helper for autoAlignX3d
 	static void doAlignX(MapSide* side, int offset, string tex, vector<MapEditor::Item>& walls_done, int tex_width);
+
+	// Helper for changeTexture
+	inline void lookup3DFloor(MapEditor::Item &first, bool &floor, MapSector *&sector, SLADEMap &map) const;
+	inline void lookup3DFloor(MapEditor::Item &first, MapSector *&sector, SLADEMap &map) const;
 };

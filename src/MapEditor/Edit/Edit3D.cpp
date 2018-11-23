@@ -43,7 +43,7 @@ using MapEditor::ItemType;
 // -----------------------------------------------------------------------------
 // Helper functions
 // -----------------------------------------------------------------------------
-static void lookup3DFloor(MapEditor::Item &first, bool &floor, MapSector *&sector, SLADEMap &map)
+inline void Edit3D::lookup3DFloor(MapEditor::Item &first, bool &floor, MapSector *&sector, SLADEMap &map) const
 {
 	floor = first.type == MapEditor::ItemType::Floor;
 	sector = map.getSector(first.index);
@@ -61,7 +61,7 @@ static void lookup3DFloor(MapEditor::Item &first, bool &floor, MapSector *&secto
 	}
 }
 
-static void lookup3DFloor(MapEditor::Item &first, MapSector *&sector, SLADEMap &map)
+inline void Edit3D::lookup3DFloor(MapEditor::Item &first, MapSector *&sector, SLADEMap &map) const
 {
 	bool floor;
 	lookup3DFloor(first, floor, sector, map);
