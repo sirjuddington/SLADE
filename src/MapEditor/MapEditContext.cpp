@@ -52,6 +52,7 @@
 
 using MapEditor::Mode;
 using MapEditor::SectorMode;
+using MapEditor::Input;
 
 
 // ----------------------------------------------------------------------------
@@ -1372,6 +1373,10 @@ void MapEditContext::recordPropertyChangeUndoStep(MapObject* object)
 // ----------------------------------------------------------------------------
 void MapEditContext::doUndo()
 {
+	// Don't undo if the input state isn't normal
+	if (input_.mouseState() != Input::MouseState::Normal)
+		return;
+
 	// Clear selection first, since part of it may become invalid
 	selection_.clear();
 
@@ -1404,6 +1409,10 @@ void MapEditContext::doUndo()
 // ----------------------------------------------------------------------------
 void MapEditContext::doRedo()
 {
+	// Don't redo if the input state isn't normal
+	if (input_.mouseState() != Input::MouseState::Normal)
+		return;
+
 	// Clear selection first, since part of it may become invalid
 	selection_.clear();
 
