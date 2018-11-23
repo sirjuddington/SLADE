@@ -3202,8 +3202,5 @@ double MapRenderer2D::scaledRadius(int radius)
 // -----------------------------------------------------------------------------
 bool MapRenderer2D::visOK()
 {
-	if (map_->nSectors() != vis_s_.size() || map_->nThings() != vis_t_.size())
-		return false;
-	else
-		return true;
+	return !(map_->nSectors() != vis_s_.size() || map_->nThings() != vis_t_.size());
 }

@@ -2071,8 +2071,8 @@ void MapRenderer3D::updateLine(unsigned index)
 			MapSector* control_sector = map_->sector(extra.control_sector_index);
 			MapLine*   control_line   = map_->line(extra.control_line_index);
 
-			xoff = control_line->s1()->getOffsetX() + line->s1()->getOffsetX();
-			yoff = control_line->s1()->getOffsetY() + line->s1()->getOffsetY();
+			xoff = control_line->s1()->offsetX() + line->s1()->offsetX();
+			yoff = control_line->s1()->offsetY() + line->s1()->offsetY();
 			sx = sy = 1;
 			if (map_->currentFormat() == MAP_UDMF)
 				_apply_zdoom_per_section_offsets(control_line->s1(), "mid", &xoff, &yoff, &sx, &sy);
@@ -2974,7 +2974,7 @@ void MapRenderer3D::checkVisibleQuads()
 				update = true;
 			MapSector *sector = line->frontSector();
 			for(int i = 0; i < sector->extra_floors.size(); i++) {
-				MapLine* control_line = map_->getLine(sector->extra_floors[i].control_line_index);
+				MapLine* control_line = map_->line(sector->extra_floors[i].control_line_index);
 				if (lines_[a].updated_time < control_line->s1()->modifiedTime() ||
 			        lines_[a].updated_time < control_line->frontSector()->modifiedTime() ||
 			        lines_[a].updated_time < control_line->frontSector()->geometryUpdatedTime())
@@ -2991,7 +2991,7 @@ void MapRenderer3D::checkVisibleQuads()
 
 			MapSector *sector = line->frontSector();
 			for(int i = 0; i < sector->extra_floors.size(); i++) {
-				MapLine* control_line = map_->getLine(sector->extra_floors[i].control_line_index);
+				MapLine* control_line = map_->line(sector->extra_floors[i].control_line_index);
 				if (lines_[a].updated_time < control_line->s1()->modifiedTime() ||
 			        lines_[a].updated_time < control_line->frontSector()->modifiedTime() ||
 			        lines_[a].updated_time < control_line->frontSector()->geometryUpdatedTime())
@@ -3235,7 +3235,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 				current.index = a;
 			else
 			{
-				current.index = flat.control_sector->getIndex();
+				current.index = flat.control_sector->index();
 				current.real_index = a;
 			}
 
@@ -3412,7 +3412,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	{
 		// Get sector
 		bool is3DFloor = hilight.real_index >= 0;
-		MapSector* sector = is3DFloor ? map_->getSector(hilight.real_index) : map_->sector(hilight.index);
+		MapSector* sector = is3DFloor ? map_->sector(hilight.real_index) : map_->sector(hilight.index);
 		if (!sector)
 			return;
 

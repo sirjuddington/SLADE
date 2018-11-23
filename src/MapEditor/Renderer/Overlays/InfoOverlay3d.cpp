@@ -112,12 +112,14 @@ void InfoOverlay3D::update(MapEditor::Item item, SLADEMap* map)
 			return;
 		MapLine* line = side->parentLine();
 		if (!line) return;
+		/*
 		MapLine* line3d = nullptr;
-		/*if (item_type == MapEditor::ItemType::Wall3DFloor) {
+		if (item_type == MapEditor::ItemType::Wall3DFloor) {
 			line3d = line;
 			line = map->getLine(item.control_line);
 			side = line->s1();
-		}*/
+		}
+		*/
 		object_ = side;
 
 		// TODO 3d floors
