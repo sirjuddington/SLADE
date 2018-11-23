@@ -94,7 +94,8 @@ Renderer::Renderer(MapEditContext& context) :
 	anim_flash_inc_{true},
 	anim_info_fade_{0},
 	anim_overlay_fade_{0},
-	anim_help_fade_{0}
+	anim_help_fade_{0},
+	cursor_zoom_disabled_{false}
 {
 }
 
@@ -180,6 +181,9 @@ void Renderer::zoom(double amount, bool toward_cursor)
  *******************************************************************/
 void Renderer::viewFitToMap(bool snap)
 {
+	// Disable zooming towards cursor until zoom animation is done
+	cursor_zoom_disabled_ = true;
+
 	// Fit the view to the map bbox
 	view_.fitTo(context_.map().getMapBBox());
 
@@ -199,6 +203,9 @@ void Renderer::viewFitToMap(bool snap)
  *******************************************************************/
 void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 {
+	// Disable zooming towards cursor until zoom animation is done
+	cursor_zoom_disabled_ = true;
+
 	// Determine bbox of all given object(s)
 	bbox_t bbox;
 	for (auto object : objects)
@@ -260,8 +267,11 @@ double Renderer::interpolateView(bool smooth, double view_speed, double mult)
 	{
 		auto mouse_pos = fpoint2_t{ context_.input().mousePos() };
 
-		if (!view_.interpolate(mult * view_speed, &mouse_pos))
+		if (!view_.interpolate(mult * view_speed, cursor_zoom_disabled_ ? nullptr : &mouse_pos))
+		{
+			cursor_zoom_disabled_ = false;
 			anim_view_speed = 0.05;
+		}
 		else
 		{
 			anim_view_speed += 0.05*mult;
