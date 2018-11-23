@@ -48,6 +48,10 @@ if (UNIX OR MINGW)
     endif()
 endif (UNIX OR MINGW)
 
+if (WX_GTK3)
+	set(wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
+endif (WX_GTK3)
+
 SET(WX_LIBS std aui gl stc richtext propgrid media)
 if (NO_WEBVIEW)
 	SET(WX_LIBS ${WX_LIBS} html)
