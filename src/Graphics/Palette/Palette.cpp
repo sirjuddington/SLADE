@@ -75,7 +75,7 @@ Palette::Palette(unsigned size) :
 	index_trans_{ -1 }
 {
 	// Init palette (to greyscale)
-	for (int a = 0; a < size; a++)
+	for (unsigned a = 0; a < size; a++)
 	{
 		double mult = (double)a / (double)size;
 		colours_[a].set(mult * 255, mult * 255, mult * 255, 255, -1, a);
@@ -527,7 +527,8 @@ void Palette::copyPalette(Palette* copy)
 	if (!copy)
 		return;
 
-	for (int a = 0; a < 256; a++)
+	unsigned n_copy = std::min(colours_.size(), copy->colours_.size());
+	for (unsigned a = 0; a < n_copy; a++)
 		setColour(a, copy->colour(a));
 
 	index_trans_ = copy->transIndex();

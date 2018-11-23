@@ -1247,9 +1247,6 @@ bool Archive::renameEntry(ArchiveEntry* entry, string name)
 	// Rename the entry
 	entry->rename(name);
 
-	// Announce modification
-	entryStateChanged(entry);
-
 	return true;
 }
 

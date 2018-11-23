@@ -314,6 +314,7 @@ string KeyBind::keyName(int key)
 #else
 	case WXK_CONTROL:			return "control";
 #endif
+	case '\\':					return "backslash";
 	default: break;
 	};
 
@@ -508,6 +509,7 @@ void KeyBind::initBinds()
 	addBind("ted_fold_unfoldall", keypress_t("]", KPM_CTRL|KPM_SHIFT), "Fold All", group);
 	addBind("ted_line_comment", keypress_t("/", KPM_CTRL), "Line Comment", group);
 	addBind("ted_block_comment", keypress_t("/", KPM_CTRL|KPM_SHIFT), "Block Comment", group);
+	addBind("ted_cycle_comments", keypress_t("/", KPM_ALT), "Cycle Comments", group);
 
 	// Texture editor (txed*)
 	group = "Texture Editor";

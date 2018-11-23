@@ -16,19 +16,16 @@ struct map_tex_t
 class Archive;
 struct map_texinfo_t
 {
-	string			name;
+	string			shortName;
 	uint8_t			category;
+	Archive*		archive;
 	string			path;
 	unsigned		index;
-	Archive*		archive;
+	string			longName;
 
-	map_texinfo_t(string name, uint8_t category, Archive* archive, string path = "", unsigned index = 0)
+	map_texinfo_t(string shortName, uint8_t category, Archive* archive, string path, unsigned index = 0, string longName = "")
+	: shortName(shortName), category(category), archive(archive), path(path), index(index), longName(longName)
 	{
-		this->name = name;
-		this->category = category;
-		this->archive = archive;
-		this->path = path;
-		this->index = index;
 	}
 };
 
@@ -73,7 +70,7 @@ public:
 	GLTexture*		getSprite(string name, string translation = "", string palette = "");
 	GLTexture*		getEditorImage(string name);
 	int				getVerticalOffset(string name);
-	
+
 	vector<map_texinfo_t>&	getAllTexturesInfo() { return tex_info; }
 	vector<map_texinfo_t>&	getAllFlatsInfo() { return flat_info; }
 

@@ -3,18 +3,12 @@ project(Slade3)
 
 if(COMMAND cmake_policy)
 	cmake_policy( SET CMP0012 NEW )
-endif(COMMAND cmake_policy)
-
-if(COMMAND cmake_policy)
 	cmake_policy( SET CMP0003 NEW )
-endif(COMMAND cmake_policy)
-
-if(COMMAND cmake_policy)
 	cmake_policy( SET CMP0005 NEW )
-endif(COMMAND cmake_policy)
-
-if(COMMAND cmake_policy)
 	cmake_policy( SET CMP0011 NEW )
+	if (POLICY CMP0072)
+	cmake_policy( SET CMP0072 NEW )
+	endif(POLICY CMP0072)
 endif(COMMAND cmake_policy)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)

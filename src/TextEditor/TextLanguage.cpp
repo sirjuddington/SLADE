@@ -214,9 +214,10 @@ bool TLFunction::hasContext(const string& name)
 // TextLanguage class constructor
 // ----------------------------------------------------------------------------
 TextLanguage::TextLanguage(string id) :
-	line_comment_{ "//" },
-	comment_begin_{ "/*" },
-	comment_end_{ "*/" },
+	prefered_comments_ { 0 },
+	line_comment_l_ {{"//"}},
+	comment_begin_l_{{"/*"}},
+	comment_end_l_{{"*/"}},
 	preprocessor_{ "#" },
 	block_begin_{ "{" },
 	block_end_{ "}" }
@@ -252,9 +253,10 @@ TextLanguage::~TextLanguage()
 void TextLanguage::copyTo(TextLanguage* copy)
 {
 	// Copy general attributes
-	copy->line_comment_ = line_comment_;
-	copy->comment_begin_ = comment_begin_;
-	copy->comment_end_ = comment_end_;
+	copy->prefered_comments_ = prefered_comments_;
+	copy->line_comment_l_ = line_comment_l_;
+	copy->comment_begin_l_ = comment_begin_l_;
+	copy->comment_end_l_ = comment_end_l_;
 	copy->preprocessor_ = preprocessor_;
 	copy->case_sensitive_ = case_sensitive_;
 	copy->f_lookup_url_ = f_lookup_url_;
@@ -316,10 +318,16 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 		functions_.push_back(TLFunction(name));
 		func = &functions_.back();
 	}
-
 	// Clear the function if we're replacing it
 	else if (replace)
-		func->clear();
+	{
+		if (!context.empty()) {
+			func->clear();
+		}
+		else {
+			func->clearContexts();
+		}
+	}
 
 	// Add the context
 	func->addContext(context, args, desc);
@@ -578,7 +586,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 	// Open the given text data
 	if (!tz.openMem(mc, source))
 	{
-		LOG_MESSAGE(1, "Unable to open file");
+		Log::warning(1, S_FMT("Warning: Unable to open %s", source));
 		return false;
 	}
 
@@ -602,7 +610,12 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			if (inherit)
 				inherit->copyTo(lang);
 			else
-				LOG_MESSAGE(1, "Warning: Language %s inherits from undefined language %s", node->getName(), node->inherit());
+				Log::warning(
+					1,
+					S_FMT("Warning: Language %s inherits from undefined language %s",
+						  node->getName(),
+						  node->inherit())
+				);
 		}
 
 		// Parse language info
@@ -616,15 +629,21 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 
 			// Comment begin
 			else if (S_CMPNOCASE(child->getName(), "comment_begin"))
-				lang->setCommentBegin(child->stringValue());
+			{
+				lang->setCommentBeginList(child->stringValues());
+			}
 
 			// Comment end
 			else if (S_CMPNOCASE(child->getName(), "comment_end"))
-				lang->setCommentEnd(child->stringValue());
+			{
+				lang->setCommentEndList(child->stringValues());
+			}
 
 			// Line comment
 			else if (S_CMPNOCASE(child->getName(), "comment_line"))
-				lang->setLineComment(child->stringValue());
+			{
+				lang->setLineCommentList(child->stringValues());
+			}
 
 			// Preprocessor
 			else if (S_CMPNOCASE(child->getName(), "preprocessor"))

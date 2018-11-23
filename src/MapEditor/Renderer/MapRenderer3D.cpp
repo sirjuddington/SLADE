@@ -1181,12 +1181,10 @@ void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int lengt
 	double y2 = o_top + height;
 	if (pegbottom)
 	{
-		y2 = o_top + quad->texture->getHeight();
+		y2 = o_top + quad->texture->getHeight() * sy;
 		y1 = y2 - height;
 	}
 
-	sx *= quad->texture->getScaleX();
-	sy *= quad->texture->getScaleY();
 	double x_mult = 1.0 / (quad->texture->getWidth() * sx);
 	double y_mult = 1.0 / (quad->texture->getHeight() * sy);
 
@@ -1228,7 +1226,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	int map_format = MapEditor::editContext().mapDesc().format;
 	bool upeg = Game::configuration().lineBasicFlagSet("dontpegtop", line, map_format);
 	bool lpeg = Game::configuration().lineBasicFlagSet("dontpegbottom", line, map_format);
-	double xoff, yoff, sx, sy;
+	double xoff, yoff, sx, sy, lsx, lsy;
 	bool mixed = Game::configuration().featureSupported(Feature::MixTexFlats);
 	lines[index].line = line;
 	double alpha = 1.0;
@@ -1268,6 +1266,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// --- One-sided line ---
+	lsx = 1;
+	lsy = 1;
 	int length = MathStuff::round(line->getLength());
 	if (line->s1() && !line->s2())
 	{
@@ -1285,23 +1285,30 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		sx = sy = 1;
+		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexMiddle(), mixed);
+		sx = quad.texture->getScaleX();
+		sy = quad.texture->getScaleY();
 		if (Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_mid"))
-				sx = 1.0 / line->s1()->floatProperty("scalex_mid");
+				lsx = 1.0 / line->s1()->floatProperty("scalex_mid");
 			if (line->s1()->hasProp("scaley_mid"))
-				sy = 1.0 / line->s1()->floatProperty("scaley_mid");
+				lsy = 1.0 / line->s1()->floatProperty("scaley_mid");
 		}
-		xoff *= sx;
-		yoff *= sy;
+		if (!quad.texture->worldPanning()) {
+			xoff *= sx;
+			yoff *= sy;
+		}
+		sx *= lsx;
+		sy *= lsy;
+		xoff *= lsx;
+		yoff *= lsy;
 
 		// Create quad
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), cp1, fp1);
 		quad.colour = colour1;
 		quad.fogcolour = fogcolour1;
 		quad.light = light1;
-		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexMiddle(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, floor1, lpeg, sx, sy);
 
 		// Add middle quad and finish
@@ -1359,6 +1366,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Front lower
+	lsx = 1;
+	lsy = 1;
 	if (f2h1 > f1h1 || f2h2 > f1h2)
 	{
 		quad_3d_t quad;
@@ -1376,16 +1385,24 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		sx = sy = 1;
+		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexLower(), mixed);
+		sx = quad.texture->getScaleX();
+		sy = quad.texture->getScaleY();
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_bottom"))
-				sx = 1.0 / line->s1()->floatProperty("scalex_bottom");
+				lsx = 1.0 / line->s1()->floatProperty("scalex_bottom");
 			if (line->s1()->hasProp("scaley_bottom"))
-				sy = 1.0 / line->s1()->floatProperty("scaley_bottom");
+				lsy = 1.0 / line->s1()->floatProperty("scaley_bottom");
 		}
-		xoff *= sx;
-		yoff *= sy;
+		if (!quad.texture->worldPanning()) {
+			xoff *= sx;
+			yoff *= sy;
+		}
+		sx *= lsx;
+		sy *= lsy;
+		xoff *= lsx;
+		yoff *= lsy;
 
 		if (lpeg)	// Lower unpegged
 			yoff += (ceiling1 - floor2);
@@ -1395,7 +1412,6 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour1;
 		quad.fogcolour = fogcolour1;
 		quad.light = light1;
-		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexLower(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, floor2, floor1, false, sx, sy);
 		// No, the sky hack is only for ceilings!
 		// if (S_CMPNOCASE(sky_flat, line->backSector()->getFloorTex())) quad.flags |= SKY;
@@ -1406,6 +1422,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Front middle
+	lsx = 1;
+	lsy = 1;
 	string midtex1 = line->stringProperty("side1.texturemiddle");
 	if (!midtex1.IsEmpty() && midtex1 != hidden_tex && show_midtex)
 	{
@@ -1427,16 +1445,23 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		sx = sy = 1;
+		sx = quad.texture->getScaleX();
+		sy = quad.texture->getScaleY();
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_mid"))
-				sx = 1.0 / line->s1()->floatProperty("scalex_mid");
+				lsx = 1.0 / line->s1()->floatProperty("scalex_mid");
 			if (line->s1()->hasProp("scaley_mid"))
-				sy = 1.0 / line->s1()->floatProperty("scaley_mid");
+				lsy = 1.0 / line->s1()->floatProperty("scaley_mid");
 		}
-		xoff *= sx;
-		yoff *= sy;
+		if (!quad.texture->worldPanning()) {
+			xoff *= sx;
+			yoff *= sy;
+		}
+		sx *= lsx;
+		sy *= lsy;
+		xoff *= lsx;
+		yoff *= lsy;
 
 		// Setup quad coordinates
 		double top, bottom;
@@ -1486,6 +1511,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Front upper
+	lsx = 1;
+	lsy = 1;
 	if (c1h1 > c2h1 || c1h2 > c2h2)
 	{
 		quad_3d_t quad;
@@ -1503,23 +1530,30 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		sx = sy = 1;
+		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexUpper(), mixed);
+		sx = quad.texture->getScaleX();
+		sy = quad.texture->getScaleY();
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_top"))
-				sx = 1.0 / line->s1()->floatProperty("scalex_top");
+				lsx = 1.0 / line->s1()->floatProperty("scalex_top");
 			if (line->s1()->hasProp("scaley_top"))
-				sy = 1.0 / line->s1()->floatProperty("scaley_top");
+				lsy = 1.0 / line->s1()->floatProperty("scaley_top");
 		}
-		xoff *= sx;
-		yoff *= sy;
+		if (!quad.texture->worldPanning()) {
+			xoff *= sx;
+			yoff *= sy;
+		}
+		sx *= lsx;
+		sy *= lsy;
+		xoff *= lsx;
+		yoff *= lsy;
 
 		// Create quad
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), cp1, cp2);
 		quad.colour = colour1;
 		quad.fogcolour = fogcolour1;
 		quad.light = light1;
-		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexUpper(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, ceiling2, !upeg, sx, sy);
 		// Sky hack only applies if both sectors have a sky ceiling
 		if (S_CMPNOCASE(sky_flat, line->frontSector()->getCeilingTex()) && S_CMPNOCASE(sky_flat, line->backSector()->getCeilingTex())) quad.flags |= SKY;
@@ -1530,6 +1564,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Back lower
+	lsx = 1;
+	lsy = 1;
 	if (f1h1 > f2h1 || f1h2 > f2h2)
 	{
 		quad_3d_t quad;
@@ -1547,16 +1583,24 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		sx = sy = 1;
+		quad.texture = MapEditor::textureManager().getTexture(line->s2()->getTexLower(), mixed);
+		sx = quad.texture->getScaleX();
+		sy = quad.texture->getScaleY();
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_bottom"))
-				sx = 1.0 / line->s2()->floatProperty("scalex_bottom");
+				lsx = 1.0 / line->s2()->floatProperty("scalex_bottom");
 			if (line->s2()->hasProp("scaley_bottom"))
-				sy = 1.0 / line->s2()->floatProperty("scaley_bottom");
+				lsy = 1.0 / line->s2()->floatProperty("scaley_bottom");
 		}
-		xoff *= sx;
-		yoff *= sy;
+		if (!quad.texture->worldPanning()) {
+			xoff *= sx;
+			yoff *= sy;
+		}
+		sx *= lsx;
+		sy *= lsy;
+		xoff *= lsx;
+		yoff *= lsy;
 
 		if (lpeg)	// Lower unpegged
 			yoff += (ceiling2 - floor1);
@@ -1566,7 +1610,6 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour2;
 		quad.fogcolour = fogcolour2;
 		quad.light = light2;
-		quad.texture = MapEditor::textureManager().getTexture(line->s2()->getTexLower(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, floor1, floor2, false, sx, sy);
 		if (S_CMPNOCASE(sky_flat, line->frontSector()->getFloorTex())) quad.flags |= SKY;
 		quad.flags |= BACK;
@@ -1577,6 +1620,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Back middle
+	lsx = 1;
+	lsy = 1;
 	string midtex2 = line->stringProperty("side2.texturemiddle");
 	if (!midtex2.IsEmpty() && midtex2 != hidden_tex && show_midtex)
 	{
@@ -1598,16 +1643,23 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		sx = sy = 1;
+		sx = quad.texture->getScaleX();
+		sy = quad.texture->getScaleY();
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_mid"))
-				sx = 1.0 / line->s2()->floatProperty("scalex_mid");
+				lsx = 1.0 / line->s2()->floatProperty("scalex_mid");
 			if (line->s2()->hasProp("scaley_mid"))
-				sy = 1.0 / line->s2()->floatProperty("scaley_mid");
+				lsy = 1.0 / line->s2()->floatProperty("scaley_mid");
 		}
-		xoff *= sx;
-		yoff *= sy;
+		if (!quad.texture->worldPanning()) {
+			xoff *= sx;
+			yoff *= sy;
+		}
+		sx *= lsx;
+		sy *= lsy;
+		xoff *= lsx;
+		yoff *= lsy;
 
 		// Setup quad coordinates
 		double top, bottom;
@@ -1657,6 +1709,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Back upper
+	lsx = 1;
+	lsy = 1;
 	if (c2h1 > c1h1 || c2h2 > c1h2)
 	{
 		quad_3d_t quad;
@@ -1674,23 +1728,30 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		sx = sy = 1;
+		quad.texture = MapEditor::textureManager().getTexture(line->s2()->getTexUpper(), mixed);
+		sx = quad.texture->getScaleX();
+		sy = quad.texture->getScaleY();
 		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_top"))
-				sx = 1.0 / line->s2()->floatProperty("scalex_top");
+				lsx = 1.0 / line->s2()->floatProperty("scalex_top");
 			if (line->s2()->hasProp("scaley_top"))
-				sy = 1.0 / line->s2()->floatProperty("scaley_top");
+				lsy = 1.0 / line->s2()->floatProperty("scaley_top");
 		}
-		xoff *= sx;
-		yoff *= sy;
+		if (!quad.texture->worldPanning()) {
+			xoff *= sx;
+			yoff *= sy;
+		}
+		sx *= lsx;
+		sy *= lsy;
+		xoff *= lsx;
+		yoff *= lsy;
 
 		// Create quad
 		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), cp2, cp1);
 		quad.colour = colour2;
 		quad.fogcolour = fogcolour2;
 		quad.light = light2;
-		quad.texture = MapEditor::textureManager().getTexture(line->s2()->getTexUpper(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling2, ceiling1, !upeg, sx, sy);
 		if (S_CMPNOCASE(sky_flat, line->frontSector()->getCeilingTex())) quad.flags |= SKY;
 		quad.flags |= BACK;
@@ -1699,7 +1760,6 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Add quad
 		lines[index].quads.push_back(quad);
 	}
-
 
 	// Finished
 	lines[index].updated_time = App::runTimer();

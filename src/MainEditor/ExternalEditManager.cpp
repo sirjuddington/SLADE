@@ -56,11 +56,12 @@ class ExternalEditFileMonitor : public FileMonitor, Listener
 public:
 	ExternalEditFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
 		: FileMonitor("", false),
-		manager(manager),
-		entry(entry)
+		entry(entry),
+		manager(manager)
 	{
 		// Listen to entry parent archive
-		listenTo(entry->getParent());
+		archive = entry->getParent();
+		listenTo(archive);
 	}
 
 	virtual ~ExternalEditFileMonitor()
@@ -98,7 +99,7 @@ public:
 
 	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 	{
-		if (announcer != entry->getParent())
+		if (announcer != archive)
 			return;
 
 		bool finished = false;
@@ -120,6 +121,7 @@ public:
 
 protected:
 	ArchiveEntry*			entry;
+	Archive*                archive;
 	ExternalEditManager*	manager;
 	string					gfx_format;
 };

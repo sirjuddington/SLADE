@@ -168,8 +168,8 @@ wxThread::ExitCode JumpToCalculator::Entry()
 // ----------------------------------------------------------------------------
 TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	wxStyledTextCtrl(parent, id),
-	timer_update_(this),
-	lexer_{ std::make_unique<Lexer>() }
+	lexer_{ std::make_unique<Lexer>() },
+	timer_update_(this)
 {
 	// Init variables
 	language_ = nullptr;
@@ -475,7 +475,7 @@ void TextEditorCtrl::getRawText(MemChunk& mc)
 {
 	mc.clear();
 	string text = GetText();
-	bool result = mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
+	mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
 }
 
 // ----------------------------------------------------------------------------
@@ -1147,10 +1147,12 @@ void TextEditorCtrl::lineComment()
 	string space, empty, comment, commentSpace;
 	space = wxString::FromUTF8(" ");
 	empty = wxString::FromUTF8("");
+
 	if(language_)
 		comment = language_->lineComment();
 	else
-		comment = wxString::FromUTF8("//");
+		comment = default_line_comment_;
+
 	commentSpace = comment + space;
 
 	int selectionStart, selectionEnd;
@@ -1170,12 +1172,12 @@ void TextEditorCtrl::lineComment()
 	BeginUndoAction();
 	for (int line = firstLine; line <= lastLine; ++line)
 	{
-		string lineText = GetTextRange(GetLineIndentPosition(line), GetLineEndPosition(line));
+		string lineText = GetTextRange(PositionFromLine(line), GetLineEndPosition(line));
 
-		SetTargetStart(GetLineIndentPosition(line));
+		SetTargetStart(PositionFromLine(line));
 		SetTargetEnd(GetLineEndPosition(line));
 
-		if (lineText.Find(commentSpace) != wxNOT_FOUND)
+		if (lineText.StartsWith(commentSpace))
 		{
 			if (line == firstLine)
 				selectionStartOffs -= commentSpace.Len();
@@ -1184,7 +1186,7 @@ void TextEditorCtrl::lineComment()
 			lineText.Replace(commentSpace, empty, false);
 			ReplaceTarget(lineText);
 		}
-		else if (lineText.Find(comment) != wxNOT_FOUND)
+		else if (lineText.StartsWith(comment))
 		{
 			if (line == firstLine)
 				selectionStartOffs -= comment.Len();
@@ -1193,7 +1195,7 @@ void TextEditorCtrl::lineComment()
 			lineText.Replace(comment, empty, false);
 			ReplaceTarget(lineText);
 		}
-		else if (lineText.Trim(true).Len() != 0)
+		else if (lineText.Trim().Len() != 0)
 		{
 			if (line == firstLine)
 				selectionStartOffs += commentSpace.Len();
@@ -1205,10 +1207,7 @@ void TextEditorCtrl::lineComment()
 	EndUndoAction();
 
 	if (singleLine)
-	{
-		LineDown();
-		GotoPos(GetLineIndentPosition(GetCurrentLine()));
-	}
+		GotoPos(selectionStart + selectionEndOffs);
 	else
 		SetSelection(selectionStart + selectionStartOffs, selectionEnd + selectionEndOffs);
 }
@@ -1225,12 +1224,12 @@ void TextEditorCtrl::blockComment()
 	if(language_)
 	{
 		commentBegin = language_->commentBegin();
-		commentEnd = language_->commentEnd();
+		commentEnd   = language_->commentEnd();
 	}
 	else
 	{
-		commentBegin = wxString::FromUTF8("/*");
-		commentEnd = wxString::FromUTF8("*/");
+		commentBegin = default_begin_comment_;
+		commentEnd   = default_end_comment_;
 	}
 
 	size_t commentBeginLen, commentEndLen;
@@ -1247,7 +1246,7 @@ void TextEditorCtrl::blockComment()
 
 	string textString = GetRange(selectionStart, selectionEnd);
 
-	if (!textString.StartsWith(commentBegin, nullptr) && !textString.EndsWith(commentEnd, nullptr))
+	if (!textString.StartsWith(commentBegin) && !textString.EndsWith(commentEnd))
 	{
 		commentBegin = commentBegin.append(space);
 		commentEnd = commentEnd.Prepend(space);
@@ -1255,11 +1254,11 @@ void TextEditorCtrl::blockComment()
 		ReplaceTarget(textString.Prepend(commentBegin).append(commentEnd));
 		selectionEnd += (int)(commentBegin.Len() + commentEnd.Len());
 	}
-	else if (textString.StartsWith(commentBegin, nullptr) && textString.EndsWith(commentEnd, nullptr))
+	else if (textString.StartsWith(commentBegin) && textString.EndsWith(commentEnd))
 	{
-		if (textString.StartsWith(commentBegin.append(space), nullptr))
+		if (textString.StartsWith(commentBegin.append(space)))
 			commentBeginLen = commentBegin.Len();
-		if (textString.EndsWith(commentEnd.Prepend(space), nullptr))
+		if (textString.EndsWith(commentEnd.Prepend(space)))
 			commentEndLen = commentEnd.Len();
 
 		ReplaceTarget(textString.Remove(0, commentBeginLen).RemoveLast(commentEndLen));
@@ -1269,6 +1268,22 @@ void TextEditorCtrl::blockComment()
 	SetSelection(selectionStart, selectionEnd);
 }
 
+// ----------------------------------------------------------------------------
+// TextEditorCtrl::cycleComments
+//
+// Switch the prefered comment style to next style available.
+// ----------------------------------------------------------------------------
+void TextEditorCtrl::cycleComments()
+{
+	if (!language_)
+		return;
+
+	// For now, we assume all comment types have the same number of styles.
+	size_t total_styles = language_->lineCommentL().size();
+	unsigned next_style = language_->getPreferedComments() + 1;
+	next_style =  next_style >= total_styles ? 0 : next_style;
+	language_->setPreferedComments(next_style);
+}
 
 // ----------------------------------------------------------------------------
 //
@@ -1390,6 +1405,12 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 		else if (name == "ted_block_comment")
 		{
 			blockComment();
+			handled = true;
+		}
+
+		else if (name == "ted_cycle_comments")
+		{
+			cycleComments();
 			handled = true;
 		}
 	}

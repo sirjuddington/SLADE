@@ -84,7 +84,7 @@ void logParserMessage(ParsedStatement& statement, Log::MessageType type, const s
 	if (statement.entry)
 		location = statement.entry->getPath(true);
 
-	Log::message(type, S_FMT("%s:%d: %s", CHR(location), statement.line, CHR(message)));
+	Log::message(type, S_FMT("%s:%u: %s", CHR(location), statement.line, CHR(message)));
 }
 
 // ----------------------------------------------------------------------------
@@ -204,7 +204,7 @@ bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, co
 void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 {
 	Tokenizer tz;
-	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.");
+	tz.setSpecialCharacters(CHR(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?."));
 	tz.enableDecorate(true);
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
 	tz.openMem(entry->getMCData(), "ZScript");
@@ -226,7 +226,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 					Log::warning(
 						S_FMT(
 							"Warning parsing ZScript entry %s: "
-							"Unable to find #included entry \"%s\" at line %d, skipping",
+							"Unable to find #included entry \"%s\" at line %u, skipping",
 							CHR(entry->getName()),
 							CHR(tz.current().text),
 							tz.current().line_no
@@ -590,7 +590,7 @@ bool StateTable::parse(ParsedStatement& states)
 			logParserMessage(
 				statement,
 				Log::MessageType::Warning,
-				S_FMT("Failed to parse states block beginning on line %d", states.line)
+				S_FMT("Failed to parse states block beginning on line %u", states.line)
 			);
 			continue;
 		}
@@ -969,7 +969,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 	auto start = App::runTimer();
 	vector<ParsedStatement> parsed;
 	parseBlocks(entry, parsed);
-	Log::debug(2, S_FMT("parseBlocks: %dms", App::runTimer() - start));
+	Log::debug(2, S_FMT("parseBlocks: %ldms", App::runTimer() - start));
 	start = App::runTimer();
 
 	for (auto& block : parsed)
@@ -1027,7 +1027,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 		}
 	}
 
-	Log::debug(2, S_FMT("ZScript: %dms", App::runTimer() - start));
+	Log::debug(2, S_FMT("ZScript: %ldms", App::runTimer() - start));
 
 	return true;
 }
@@ -1145,7 +1145,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 
 		if (tz.atEnd())
 		{
-			Log::debug(S_FMT("Failed parsing zscript statement/block beginning line %d", line));
+			Log::debug(S_FMT("Failed parsing zscript statement/block beginning line %u", line));
 			return false;
 		}
 
@@ -1175,7 +1175,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 
 		if (tz.atEnd())
 		{
-			Log::debug(S_FMT("Failed parsing zscript statement/block beginning line %d", line));
+			Log::debug(S_FMT("Failed parsing zscript statement/block beginning line %u", line));
 			return false;
 		}
 
@@ -1272,5 +1272,5 @@ CONSOLE_COMMAND(test_parseblocks, 1, false)
 		parseBlocks(entry, parsed);
 		parsed.clear();
 	}
-	Log::console(S_FMT("Took %dms", App::runTimer() - start));
+	Log::console(S_FMT("Took %ldms", App::runTimer() - start));
 }

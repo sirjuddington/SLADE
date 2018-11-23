@@ -14,7 +14,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -177,15 +177,24 @@ void TextureComboBox::onDropDown(wxCommandEvent& e)
 	string text = GetValue().Upper();
 	if (text == "-")
 		text = "";
-	
+
 	// Populate dropdown with matching texture names
 	vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllTexturesInfo();
 	wxArrayString list;
 	list.Add("-");
 	for (unsigned a = 0; a < textures.size(); a++)
 	{
-		if (textures[a].name.StartsWith(text))
-			list.Add(textures[a].name);
+		if (textures[a].shortName.StartsWith(text))
+		{
+			list.Add(textures[a].shortName);
+		}
+		if (Game::configuration().featureSupported(Game::Feature::LongNames))
+		{
+			if (textures[a].longName.StartsWith(text))
+			{
+				list.Add(textures[a].longName);
+			}
+		}
 	}
 	Set(list);	// Why does this clear the text box also?
 	SetValue(text);
@@ -243,7 +252,7 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	// --- Textures ---
 	wxStaticBoxSizer* sizer_tex = new wxStaticBoxSizer(wxVERTICAL, this, "Textures");
 	sizer->Add(sizer_tex, 0, wxEXPAND);
-	
+
 	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 	sizer_tex->Add(gb_sizer, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, UI::pad());
 
@@ -348,7 +357,7 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides)
 
 
 	// --- Offsets ---
-	
+
 	// X
 	bool multi = false;
 	int ofs = sides[0]->getOffsetX();
@@ -478,6 +487,6 @@ void SidePropsPanel::onTextureClicked(wxMouseEvent& e)
 
 	// Browse
 	MapTextureBrowser browser(this, 0, stc->texName(), &(MapEditor::editContext().map()));
-	if (browser.ShowModal() == wxID_OK)
+	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
 		tcb->SetValue(browser.getSelectedItem()->name());
 }

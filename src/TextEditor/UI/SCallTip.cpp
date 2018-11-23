@@ -492,7 +492,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			int width = dc.GetTextExtent("X/X").x;
 			dc.SetTextForeground(wxcol_fg);
 			dc.DrawLabel(
-				S_FMT("%d/%d", context_current_ + 1, function_->contexts().size()),
+				S_FMT("%d/%lu", context_current_ + 1, function_->contexts().size()),
 				wxNullBitmap,
 				wxRect(rect_btn_up_.GetRight() + UI::scalePx(4), yoff, width, 900),
 				wxALIGN_CENTER_HORIZONTAL);
@@ -573,7 +573,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 				wxRect rect;
 				drawText(
 					dc,
-					S_FMT("... %d more", function_->contexts().size() - num),
+					S_FMT("... %lu more", function_->contexts().size() - num),
 					xoff,
 					bottom + UI::scalePx(11),
 					&rect

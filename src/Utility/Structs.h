@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <math.h>
+#include <cmath>
 using std::min;
 using std::max;
 
@@ -69,12 +69,12 @@ struct fpoint2_t
 
 	double magnitude()
 	{
-		return sqrt((x * x) + (y * y));
+		return (double) sqrt((long double) (x * x + y * y));
 	}
 
 	fpoint2_t normalized()
 	{
-		float mag = magnitude();
+		double mag = magnitude();
 		if (mag == 0.0f)
 			return fpoint2_t(0.0f, 0.0f);
 		else
@@ -101,7 +101,7 @@ struct fpoint2_t
 		double dist_x = point.x - x;
 		double dist_y = point.y - y;
 
-		return sqrt((dist_x * dist_x) + (dist_y * dist_y));
+		return (double) sqrt((long double) (dist_x * dist_x + dist_y * dist_y));
 	}
 
 	// aka "Manhattan" distance -- just the sum of the vertical and horizontal
@@ -175,7 +175,7 @@ struct fpoint3_t
 
 	double magnitude()
 	{
-		return sqrt((x * x) + (y * y) + (z * z));
+		return (double) sqrt((long double) (x * x + y * y + z * z));
 	}
 
 	double dot(fpoint3_t vec)
@@ -211,7 +211,7 @@ struct fpoint3_t
 		double dist_y = point.y - y;
 		double dist_z = point.z - z;
 
-		return sqrt((dist_x * dist_x) + (dist_y * dist_y) + (dist_z * dist_z));
+		return (double) sqrt((long double) (dist_x * dist_x + dist_y * dist_y + dist_z * dist_z));
 	}
 
 	fpoint3_t operator+(fpoint3_t point)
@@ -372,7 +372,7 @@ struct rgba_t
 	// Returns a copy of this colour as greyscale (using 'common' component coefficients)
 	rgba_t greyscale()
 	{
-		uint8_t l = r*0.3+g*0.59+b*0.11;
+		uint8_t l = (uint8_t) round(r*0.3+g*0.59+b*0.11);
 		return rgba_t(l, l, l, a, blend);
 	}
 };
@@ -523,7 +523,7 @@ struct rect_t
 		double dist_x = x2() - x1();
 		double dist_y = y2() - y1();
 
-		return sqrt(dist_x * dist_x + dist_y * dist_y);
+		return (double) sqrt((long double) (dist_x * dist_x + dist_y * dist_y));
 	}
 
 	bool contains(point2_t point)
@@ -664,7 +664,7 @@ struct frect_t
 		double dist_x = x2() - x1();
 		double dist_y = y2() - y1();
 
-		return sqrt(dist_x * dist_x + dist_y * dist_y);
+		return (double) sqrt((long double) (dist_x * dist_x + dist_y * dist_y));
 	}
 
 	bool contains(fpoint2_t point) const

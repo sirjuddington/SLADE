@@ -110,8 +110,8 @@ bool Tokenizer::Token::isFloat() const
 bool Tokenizer::Token::asBool() const
 {
 	return !(S_CMPNOCASE(text, "false") ||
-			S_CMPNOCASE(text, "no") ||
-			S_CMPNOCASE(text, "0"));
+			 S_CMPNOCASE(text, "no") ||
+			 S_CMPNOCASE(text, "0"));
 }
 
 // ----------------------------------------------------------------------------
@@ -182,12 +182,12 @@ const Tokenizer::Token& Tokenizer::next()
 //
 // Advances [inc] tokens
 // ----------------------------------------------------------------------------
-void Tokenizer::adv(int inc)
+void Tokenizer::adv(size_t inc)
 {
 	if (inc <= 0)
 		return;
 
-	for (int a = 0; a < inc - 1; a++)
+	for (size_t a = 0; a < inc - 1; a++)
 		readNext();
 
 	token_current_ = token_next_;
@@ -199,7 +199,7 @@ void Tokenizer::adv(int inc)
 //
 // Advances [inc] tokens if the current token matches [check]
 // ----------------------------------------------------------------------------
-bool Tokenizer::advIf(const char* check, int inc)
+bool Tokenizer::advIf(const char* check, size_t inc)
 {
 	if (token_current_ == check)
 	{
@@ -209,7 +209,7 @@ bool Tokenizer::advIf(const char* check, int inc)
 
 	return false;
 }
-bool Tokenizer::advIf(const string& check, int inc)
+bool Tokenizer::advIf(const string& check, size_t inc)
 {
 	if (token_current_ == check)
 	{
@@ -219,7 +219,7 @@ bool Tokenizer::advIf(const string& check, int inc)
 
 	return false;
 }
-bool Tokenizer::advIf(char check, int inc)
+bool Tokenizer::advIf(char check, size_t inc)
 {
 	if (token_current_ == check)
 	{
@@ -235,7 +235,7 @@ bool Tokenizer::advIf(char check, int inc)
 //
 // Advances [inc] tokens if the current token matches [check] (Case-Insensitive)
 // ----------------------------------------------------------------------------
-bool Tokenizer::advIfNC(const char* check, int inc)
+bool Tokenizer::advIfNC(const char* check, size_t inc)
 {
 	if (S_CMPNOCASE(token_current_.text, check))
 	{
@@ -245,7 +245,7 @@ bool Tokenizer::advIfNC(const char* check, int inc)
 
 	return false;
 }
-bool Tokenizer::advIfNC(const string& check, int inc)
+bool Tokenizer::advIfNC(const string& check, size_t inc)
 {
 	if (S_CMPNOCASE(token_current_.text, check))
 	{
@@ -261,7 +261,7 @@ bool Tokenizer::advIfNC(const string& check, int inc)
 //
 // Advances [inc] tokens if the next token matches [check]
 // ----------------------------------------------------------------------------
-bool Tokenizer::advIfNext(const char* check, int inc)
+bool Tokenizer::advIfNext(const char* check, size_t inc)
 {
 	if (!token_next_.valid)
 		return false;
@@ -274,7 +274,7 @@ bool Tokenizer::advIfNext(const char* check, int inc)
 
 	return false;
 }
-bool Tokenizer::advIfNext(const string& check, int inc)
+bool Tokenizer::advIfNext(const string& check, size_t inc)
 {
 	if (!token_next_.valid)
 		return false;
@@ -287,7 +287,7 @@ bool Tokenizer::advIfNext(const string& check, int inc)
 
 	return false;
 }
-bool Tokenizer::advIfNext(char check, int inc)
+bool Tokenizer::advIfNext(char check, size_t inc)
 {
 	if (!token_next_.valid)
 		return false;
@@ -306,7 +306,7 @@ bool Tokenizer::advIfNext(char check, int inc)
 //
 // Advances [inc] tokens if the next token matches [check] (Case-Insensitive)
 // ----------------------------------------------------------------------------
-bool Tokenizer::advIfNextNC(const char* check, int inc)
+bool Tokenizer::advIfNextNC(const char* check, size_t inc)
 {
 	if (!token_next_.valid)
 		return false;
@@ -561,7 +561,7 @@ bool Tokenizer::checkNextNC(const char* check) const
 // Opens text from a file [filename], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the file
 // ----------------------------------------------------------------------------
-bool Tokenizer::openFile(const string& filename, unsigned offset, unsigned length)
+bool Tokenizer::openFile(const string& filename, size_t offset, size_t length)
 {
 	// Open the file
 	wxFile file(filename);
@@ -579,12 +579,12 @@ bool Tokenizer::openFile(const string& filename, unsigned offset, unsigned lengt
 	// If length isn't specified or exceeds the file length,
 	// only read to the end of the file
 	if (offset + length > file.Length() || length == 0)
-		length = file.Length() - offset;
+		length = (size_t) file.Length() - offset;
 
 	// Read the file portion
-	data_.resize(length, 0);
+	data_.resize((size_t) length, 0);
 	file.Seek(offset, wxFromStart);
-	file.Read(data_.data(), length);
+	file.Read(data_.data(), (size_t) length);
 
 	reset();
 
@@ -597,15 +597,15 @@ bool Tokenizer::openFile(const string& filename, unsigned offset, unsigned lengt
 // Opens text from a string [text], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the string
 // ----------------------------------------------------------------------------
-bool Tokenizer::openString(const string& text, unsigned offset, unsigned length, const string& source)
+bool Tokenizer::openString(const string& text, size_t offset, size_t length, const string& source)
 {
 	source_ = source;
 
 	// If length isn't specified or exceeds the string's length,
 	// only copy to the end of the string
 	auto ascii = text.ToAscii();
-	if (offset + length > (unsigned)ascii.length() || length == 0)
-		length = (unsigned)ascii.length() - offset;
+	if (offset + length > ascii.length() || length == 0)
+		length = ascii.length() - offset;
 
 	// Copy the string portion
 	data_.assign(ascii.data() + offset, ascii.data() + offset + length);
@@ -620,7 +620,7 @@ bool Tokenizer::openString(const string& text, unsigned offset, unsigned length,
 //
 // Opens text from memory [mem], reading [length] bytes
 // ----------------------------------------------------------------------------
-bool Tokenizer::openMem(const char* mem, unsigned length, const string& source)
+bool Tokenizer::openMem(const char* mem, size_t length, const string& source)
 {
 	source_ = source;
 	data_.assign(mem, mem + length);
@@ -888,7 +888,8 @@ bool Tokenizer::readNext(Token* target)
 	while (state_.position < state_.size && !state_.done)
 	{
 		// Check for newline
-		if (data_[state_.position] == '\n')
+		if (data_[state_.position] == '\n' &&
+			state_.state != TokenizeState::State::Token)
 			++state_.current_line;
 
 		// Process current character depending on state
@@ -898,7 +899,6 @@ bool Tokenizer::readNext(Token* target)
 		case TokenizeState::State::Whitespace:	tokenizeWhitespace(); break;
 		case TokenizeState::State::Token:		tokenizeToken(); break;
 		case TokenizeState::State::Comment:		tokenizeComment(); break;
-		default: ++state_.position; break;
 		}
 	}
 

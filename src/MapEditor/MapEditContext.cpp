@@ -52,6 +52,7 @@
 
 using MapEditor::Mode;
 using MapEditor::SectorMode;
+using MapEditor::Input;
 
 
 // ----------------------------------------------------------------------------
@@ -87,7 +88,6 @@ namespace
 	};
 }
 CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
-CVAR(Int, map_bg_ms, 15, CVAR_SAVE)
 CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
 
 
@@ -181,7 +181,6 @@ void MapEditContext::setEditMode(Mode mode)
 	case Mode::Sectors:	addEditorMessage("Sectors mode (Normal)"); break;
 	case Mode::Things:	addEditorMessage("Things mode"); break;
 	case Mode::Visual:		addEditorMessage("3d mode"); break;
-	default: break;
 	};
 
 	if (edit_mode_ != Mode::Visual)
@@ -250,6 +249,7 @@ void MapEditContext::setSectorEditMode(SectorMode mode)
 		addEditorMessage("Sectors mode (Ceilings)");
 
 	updateStatusText();
+	forceRefreshRenderer();
 }
 
 // ----------------------------------------------------------------------------
@@ -286,13 +286,13 @@ void MapEditContext::lockMouse(bool lock)
 // ----------------------------------------------------------------------------
 bool MapEditContext::update(long frametime)
 {
+	// Force an update if animations are active
+	if (renderer_.animationsActive() || selection_.hasHilight())
+		next_frame_length_ = 2;
+
 	// Ignore if we aren't ready to update
 	if (frametime < next_frame_length_)
 		return false;
-
-	// Set initial time (ms) until next update
-	// This will be set lower if animations are active
-	next_frame_length_ = overlayActive() ? 2 : map_bg_ms;
 
 	// Get frame time multiplier
 	double mult = (double)frametime / 10.0f;
@@ -362,8 +362,6 @@ bool MapEditContext::update(long frametime)
 
 	// Update animations
 	renderer_.updateAnimations(mult);
-	if (renderer_.animationsActive())
-		next_frame_length_ = 2;
 
 	return true;
 }
@@ -528,17 +526,7 @@ void MapEditContext::setCursor(UI::MouseCursor cursor) const
 // ----------------------------------------------------------------------------
 void MapEditContext::forceRefreshRenderer()
 {
-	// Update 3d mode info overlay if needed
-	if (edit_mode_ == Mode::Visual)
-	{
-		auto hl = renderer_.renderer3D().determineHilight();
-		info_3d_.update(hl.index, hl.type, &map_);
-	}
-
-	if (!canvas_->setActive())
-		return;
-
-	renderer_.forceUpdate();
+	next_frame_length_ = 2;
 }
 
 // ----------------------------------------------------------------------------
@@ -719,6 +707,8 @@ void MapEditContext::updateTagged()
 					break;
 				case TagType::Interpolation:
 					if (tid) map_.getThingsById(tid, tagged_things_, 0, 9075);
+					break;
+				default:
 					break;
 				}
 			}
@@ -1265,7 +1255,7 @@ void MapEditContext::updateStatusText()
 
 	if (edit_mode_ != Mode::Visual && selection_.size() > 0)
 	{
-		mode += S_FMT(" (%d selected)", (int) selection_.size());
+		mode += S_FMT(" (%lu selected)", (int) selection_.size());
 	}
 
 	MapEditor::setStatusText(mode, 1);
@@ -1383,6 +1373,10 @@ void MapEditContext::recordPropertyChangeUndoStep(MapObject* object)
 // ----------------------------------------------------------------------------
 void MapEditContext::doUndo()
 {
+	// Don't undo if the input state isn't normal
+	if (input_.mouseState() != Input::MouseState::Normal)
+		return;
+
 	// Clear selection first, since part of it may become invalid
 	selection_.clear();
 
@@ -1415,6 +1409,10 @@ void MapEditContext::doUndo()
 // ----------------------------------------------------------------------------
 void MapEditContext::doRedo()
 {
+	// Don't redo if the input state isn't normal
+	if (input_.mouseState() != Input::MouseState::Normal)
+		return;
+
 	// Clear selection first, since part of it may become invalid
 	selection_.clear();
 
@@ -1685,6 +1683,9 @@ bool MapEditContext::handleAction(string id)
 	else if (id == "mapw_flat_none")
 	{
 		flat_drawtype = 0;
+		addEditorMessage("Flats: None");
+		updateStatusText();
+		forceRefreshRenderer();
 		return true;
 	}
 
@@ -1692,6 +1693,9 @@ bool MapEditContext::handleAction(string id)
 	else if (id == "mapw_flat_untextured")
 	{
 		flat_drawtype = 1;
+		addEditorMessage("Flats: Untextured");
+		updateStatusText();
+		forceRefreshRenderer();
 		return true;
 	}
 
@@ -1699,6 +1703,9 @@ bool MapEditContext::handleAction(string id)
 	else if (id == "mapw_flat_textured")
 	{
 		flat_drawtype = 2;
+		addEditorMessage("Flats: Textured");
+		updateStatusText();
+		forceRefreshRenderer();
 		return true;
 	}
 

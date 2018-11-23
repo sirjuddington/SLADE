@@ -408,7 +408,7 @@ string ParseID3v2Tag(MemChunk& mc, size_t start)
 		// Process only text frames that aren't empty
 		// Also skip flags, not gonna bother with encryption or compression
 		if ((mc[s] == 'T' || (mc[s] == 'C' && mc[s+1] == 'O' && mc[s+2] == 'M'))
-			&& tsize > 0 && (v22 || mc[s+8] == 0 && mc[s+9] == 0))
+			&& tsize > 0 && (v22 || (mc[s+8] == 0 && mc[s+9] == 0)))
 		{
 			string content;
 
@@ -831,7 +831,7 @@ string Audio::getID3Tag(MemChunk& mc)
 	// Check for empty wasted space at the beginning, since it's apparently
 	// quite popular in MP3s to start with a useless blank frame.
 	size_t s = 0;
-	if (mc[0] == 0)
+	if (mc.getSize() > 0 && mc[0] == 0)
 	{
 		// Completely arbitrary limit to how long to seek for data.
 		size_t limit = MIN(1200, mc.getSize()/16);

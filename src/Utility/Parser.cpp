@@ -103,6 +103,21 @@ string ParseTreeNode::stringValue(unsigned index)
 }
 
 // ----------------------------------------------------------------------------
+// ParseTreeNode::stringValues
+//
+// Returns the node's values as a string vector.
+// ----------------------------------------------------------------------------
+vector<string> ParseTreeNode::stringValues()
+{
+	vector<string> string_values;
+	for (unsigned idx = 0; idx < values_.size(); ++idx)
+	{
+		string_values.push_back(values_[idx].getStringValue());
+	}
+	return string_values;
+}
+
+// ----------------------------------------------------------------------------
 // ParseTreeNode::intValue
 //
 // Returns the node's value at [index] as an integer. If [index] is out of
@@ -318,7 +333,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 		{
 			double val;
 			token.text.ToDouble(&val);
-			value = (double)val;
+			value = val;
 		}
 		else						// Unknown, just treat as string
 			value = token.text;
@@ -534,7 +549,7 @@ void ParseTreeNode::write(string& out, int indent) const
 			case PROP_FLOAT:
 				out += S_FMT("%1.3f", value.getFloatValue()); break;
 			case PROP_UINT:
-				out += S_FMT("%d", value.getUnsignedValue()); break;
+				out += S_FMT("%u", value.getUnsignedValue()); break;
 			default:
 				out += S_FMT("\"%s\"", value.getStringValue()); break;
 			}
@@ -620,7 +635,7 @@ Parser::~Parser()
 // 		</base>
 // 	</root>
 // ----------------------------------------------------------------------------
-bool Parser::parseText(MemChunk& mc, string source, bool debug)
+bool Parser::parseText(MemChunk& mc, string source)
 {
 	Tokenizer tz;
 
@@ -635,7 +650,7 @@ bool Parser::parseText(MemChunk& mc, string source, bool debug)
 	// Do parsing
 	return pt_root_->parse(tz);
 }
-bool Parser::parseText(string& text, string source, bool debug)
+bool Parser::parseText(string& text, string source)
 {
 	Tokenizer tz;
 

@@ -1136,8 +1136,6 @@ void Edit2D::deleteSector() const
 		for (unsigned s = 0; s < sector->connectedSides().size(); s++)
 			connected_sides.push_back(sector->connectedSides()[s]);
 		sector->getLines(connected_lines);
-
-		context_.map().removeSector(sector);
 	}
 
 	// Remove all connected sides

@@ -1452,7 +1452,9 @@ bool ArchivePanel::sort()
 		bool ns_changed = false;
 		int mapindex = isInMap(selection[i], maps);
 		string mapname;
-		ArchiveEntry * entry = entry_list_->getEntry(selection[i]);
+		ArchiveEntry* entry = entry_list_->getEntry(selection[i]);
+		if (!entry)
+			continue;
 
 		// Ignore subdirectories
 		if (entry->getType() == EntryType::folderType())
@@ -4142,6 +4144,8 @@ bool EntryDataUS::swapData()
 	{
 		// Get entry
 		ArchiveEntry* entry = dir->entryAt(index_);
+		if (!entry)
+			return false;
 
 		// Backup data
 		MemChunk temp_data;

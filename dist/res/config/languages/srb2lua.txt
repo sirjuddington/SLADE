@@ -1,9 +1,9 @@
 
 srb2lua {
 	name = "SRB2 Lua Script";
-	comment_begin = "/*", "--[[";
-	comment_end = "*/", "]]";
-	comment_line = "//", "--";
+	comment_begin = "--[[", "/*";
+	comment_end =  "]]", "*/";
+	comment_line = "--", "//";
 	case_sensitive = true;
 
 	keywords = {
@@ -13,7 +13,7 @@ srb2lua {
 	}
 
 	constants = {
-		// userdata types		
+		// userdata types
 		valid,
 
 		sprnames,
@@ -32,7 +32,7 @@ srb2lua {
 		sectors,
 		sidenum,
 		hudinfo,
-		
+
 		// console variable flags
 		CV_OnOff,
 		CV_YesNo,
@@ -50,8 +50,8 @@ srb2lua {
 	 	CV_NOSHOWHELP,
 		CV_HIDEN,
 		CV_HIDDEN,
-		CV_CHEAT,		
-		
+		CV_CHEAT,
+
 		// integer type limits
 		INT8_MIN,
 		INT16_MIN,
@@ -62,7 +62,7 @@ srb2lua {
 		UINT8_MAX,
 		UINT16_MAX,
 		UINT32_MAX,
-		
+
 		// angles
 		ANG1,
 		ANG2,
@@ -95,7 +95,7 @@ srb2lua {
 		ANGLE_315,
 		ANGLE_337h,
 		ANGLE_MAX,
-		
+
 		// misc
 		FRACUNIT,
 		FRACBITS,
@@ -113,7 +113,7 @@ srb2lua {
 		ONFLOORZ,
 		ONCEILINGZ,
 
-		// translucency levels 
+		// translucency levels
 		TR_TRANS10,
 		TR_TRANS20,
 		TR_TRANS30,
@@ -124,7 +124,7 @@ srb2lua {
 		TR_TRANS80,
 		TR_TRANS90,
 		NUMTRANSMAPS
-		
+
 	}
 
 	functions {
@@ -345,6 +345,7 @@ srb2lua {
 
 		hud.enable = "string huditem";
 		hud.disable = "string huditem";
+		hud.enabled = "string huditem";
 		hud.add = "function(drawer v/[player_t stplyr]), string type)";
 
 		// technically these are a part of the video code but you can rename that whatever you want...
@@ -358,6 +359,7 @@ srb2lua {
 		cachePatch = "string name";
 		getColormap = "[string/int skin], [int color]";
 		stringWidth = "string string, [int flags], [string widthtype]";
+		getLocalTransFlag;
 
 		// basic Lua
 		assert = "boolean assert, [string errormsg]";

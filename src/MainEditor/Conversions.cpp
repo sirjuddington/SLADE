@@ -200,7 +200,7 @@ bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out)
 	// Setup main header
 	char wid[4] = { 'R', 'I', 'F', 'F' };
 	memcpy(&whdr.id, &wid, 4);
-	whdr.size = wdhdr.size + fmtchunk.header.size + 8;
+	whdr.size = wdhdr.size + fmtchunk.header.size + 20;
 
 	// Write chunks
 	out.write(&whdr, 8);
@@ -540,7 +540,7 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 	// Setup main header
 	char wid[4] = { 'R', 'I', 'F', 'F' };
 	memcpy(&whdr.id, &wid, 4);
-	whdr.size = wdhdr.size + fmtchunk.header.size + 8;
+	whdr.size = wdhdr.size + fmtchunk.header.size + 20;
 
 	// Write chunks
 	out.write(&whdr, 8);
@@ -637,7 +637,7 @@ bool Conversions::bloodToWav(ArchiveEntry* in, MemChunk& out)
 	// Setup main header
 	char wid[4] = { 'R', 'I', 'F', 'F' };
 	memcpy(&whdr.id, &wid, 4);
-	whdr.size = wdhdr.size + fmtchunk.header.size + 8;
+	whdr.size = wdhdr.size + fmtchunk.header.size + 20;
 
 	// Write chunks
 	out.write(&whdr, 8);
@@ -684,7 +684,7 @@ bool Conversions::wolfSndToWav(MemChunk& in, MemChunk& out)
 	// Setup main header
 	char wid[4] = { 'R', 'I', 'F', 'F' };
 	memcpy(&whdr.id, &wid, 4);
-	whdr.size = wdhdr.size + fmtchunk.header.size + 8;
+	whdr.size = wdhdr.size + fmtchunk.header.size + 20;
 
 	// Write chunks
 	out.write(&whdr, 8);
@@ -753,7 +753,7 @@ bool Conversions::jagSndToWav(MemChunk& in, MemChunk& out)
 	// Setup main header
 	char wid[4] = { 'R', 'I', 'F', 'F' };
 	memcpy(&whdr.id, &wid, 4);
-	whdr.size = wdhdr.size + fmtchunk.header.size + 8;
+	whdr.size = wdhdr.size + fmtchunk.header.size + 20;
 
 	// Write chunks
 	out.write(&whdr, 8);
@@ -1029,7 +1029,7 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 	// Setup main header
 	char wid[4] = { 'R', 'I', 'F', 'F' };
 	memcpy(&whdr.id, &wid, 4);
-	whdr.size = wdhdr.size + fmtchunk.header.size + 8;
+	whdr.size = wdhdr.size + fmtchunk.header.size + 20;
 
 	// Write chunks
 	out.write(&whdr, 8);
@@ -1141,7 +1141,7 @@ bool Conversions::auSndToWav(MemChunk& in, MemChunk& out)
 	// Setup main header
 	char wid[4] = { 'R', 'I', 'F', 'F' };
 	memcpy(&whdr.id, &wid, 4);
-	whdr.size = wdhdr.size + fmtchunk.header.size + 8;
+	whdr.size = wdhdr.size + fmtchunk.header.size + 20;
 
 	// Write chunks
 	out.write(&whdr, 8);

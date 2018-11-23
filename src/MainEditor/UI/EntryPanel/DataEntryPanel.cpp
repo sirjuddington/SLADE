@@ -15,7 +15,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -33,9 +33,9 @@
 #include "Main.h"
 #include "DataEntryPanel.h"
 #include "General/ColourConfiguration.h"
+#include "General/UI.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainEditor.h"
-#include "General/UI.h"
 
 
 // ----------------------------------------------------------------------------
@@ -107,7 +107,7 @@ string DataEntryTable::GetValue(int row, int col)
 		}
 		return "INVALID SIZE";
 	}
-	
+
 	// Unsigned integer column
 	else if (columns_[col].type == IntUnsigned)
 	{
@@ -145,7 +145,7 @@ string DataEntryTable::GetValue(int row, int col)
 		{
 			int32_t val;
 			data_.read(&val, 4);
-			return S_FMT("%1.3f", (double)val/65536.0);
+			return S_FMT("%1.3f", (double)val / 65536.0);
 		}
 		return "INVALID SIZE";
 	}
@@ -186,7 +186,7 @@ string DataEntryTable::GetValue(int row, int col)
 		}
 		return S_FMT("%d: %s", value, columns_[col].getCustomValue(value));
 	}
-	
+
 	return "UNKNOWN TYPE";
 }
 
@@ -263,7 +263,7 @@ void DataEntryTable::SetValue(int row, int col, const string& value)
 	else if (columns_[col].type == String)
 	{
 		vector<char> str(columns_[col].size, 0);
-		unsigned minsize = MIN(columns_[col].size, value.size());
+		unsigned     minsize = MIN(columns_[col].size, value.size());
 		for (unsigned a = 0; a < minsize; a++)
 			str[a] = value[a];
 		data_.write(str.data(), columns_[col].size);
@@ -322,7 +322,7 @@ bool DataEntryTable::DeleteRows(size_t pos, size_t num)
 
 	// Write new data (excluding deleted rows)
 	unsigned start = data_start_ + (row_stride_ * pos);
-	unsigned end = data_start_ + (row_stride_ * (pos + num));
+	unsigned end   = data_start_ + (row_stride_ * (pos + num));
 	data_.clear();
 	data_.write(copy.getData(), start);
 	data_.write(copy.getData() + end, copy.getSize() - end);
@@ -390,7 +390,7 @@ bool DataEntryTable::InsertRows(size_t pos, size_t num)
 
 	// Update modified cells
 	for (unsigned a = 0; a < cells_modified_.size(); a++)
-		if (cells_modified_[a].x >= pos)
+		if (cells_modified_[a].x >= (int)pos)
 			cells_modified_[a].x += num;
 
 	// Send message to grid
@@ -452,8 +452,8 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	columns_.clear();
 	row_stride_ = 0;
 	data_start_ = 0;
-	data_stop_ = 0;
-	row_first_ = 0;
+	data_stop_  = 0;
+	row_first_  = 0;
 	row_prefix_ = "";
 
 	if (!entry)
@@ -746,7 +746,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns_.push_back(Column("Backdrop", String, 8, 48));
 		columns_.push_back(Column("Dialogue Text", String, 320, 56));
 		unsigned offset = 320 + 56;
-		row_stride_ = 1516;
+		row_stride_     = 1516;
 
 		/*//Teaser version:
 		columns.push_back(Column("Speaker ID", IntUnsigned, 4, 0));
@@ -774,7 +774,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns_.push_back(Column(S_FMT("Response %d: Fail Text", a), String, 80, offset + 148));
 			offset += 228;
 		}
-
 	}
 
 	// GENMIDI
@@ -806,18 +805,17 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		}
 		row_stride_ = 36;
 		data_start_ = 8;
-		data_stop_ = 6308;
+		data_stop_  = 6308;
 
 		// There are instrument names in a second table; unfortunately retrieving them would be hard
 		// (there are 6300 bytes of offset between both, plus an additional row stride of 32 bytes).
 		// Commenting out all the above code and uncommenting the one below allows to see the names.
 		// However seeing the values is probably more generally useful, the names are standard GM.
-		/* 
+		/*
 		columns.push_back(Column("Instrument Name", String, 32, 0));
 		row_stride = 32;
 		data_start = 6308;
 		*/
-
 	}
 
 	if (columns_.empty())
@@ -893,17 +891,17 @@ void DataEntryTable::pasteRows(int row)
 //
 // DataEntryPanel class constructor
 // ----------------------------------------------------------------------------
-DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data")
+DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), table_data_{ new DataEntryTable(this) }
 {
 	// Cell value combo box
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	sizer_main_->Add(vbox, 1, wxEXPAND);
 	combo_cell_value_ = new wxComboBox(this, -1, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxTE_PROCESS_ENTER);
-	vbox->Add(combo_cell_value_, 0, wxEXPAND|wxBOTTOM, UI::pad());
+	vbox->Add(combo_cell_value_, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 	// Create grid
 	grid_data_ = new wxGrid(this, -1);
-	vbox->Add(grid_data_, 1, wxEXPAND|wxBOTTOM, UI::pad());
+	vbox->Add(grid_data_, 1, wxEXPAND | wxBOTTOM, UI::pad());
 
 	// Add actions to toolbar
 	wxArrayString actions;
@@ -930,8 +928,8 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data")
 bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Load data table
-	if (!table_data_)
-		table_data_ = new DataEntryTable(this);
+	// if (!table_data_)
+	//	table_data_ = new DataEntryTable(this);
 	table_data_->setupDataStructure(entry);
 	grid_data_->ClearGrid();
 	grid_data_->SetTable(table_data_);
@@ -991,7 +989,7 @@ void DataEntryPanel::deleteRow()
 	}
 
 	// Update grid
-	//grid_data->UpdateDimensions();
+	// grid_data->UpdateDimensions();
 	grid_data_->ClearSelection();
 	grid_data_->ForceRefresh();
 	setModified(true);
@@ -1006,7 +1004,7 @@ void DataEntryPanel::addRow()
 {
 	auto row = grid_data_->GetGridCursorRow();
 	grid_data_->InsertRows(row < 0 ? 0 : row, 1);
-	//grid_data->UpdateDimensions();
+	// grid_data->UpdateDimensions();
 	grid_data_->ClearSelection();
 	grid_data_->ForceRefresh();
 	setModified(true);
@@ -1059,7 +1057,7 @@ void DataEntryPanel::copyRow(bool cut)
 	}
 
 	// Update grid
-	//grid_data->UpdateDimensions();
+	// grid_data->UpdateDimensions();
 	grid_data_->ClearSelection();
 	grid_data_->ForceRefresh();
 	setModified(true);
@@ -1073,7 +1071,7 @@ void DataEntryPanel::copyRow(bool cut)
 void DataEntryPanel::pasteRow()
 {
 	table_data_->pasteRows(grid_data_->GetGridCursorRow());
-	//grid_data->UpdateDimensions();
+	// grid_data->UpdateDimensions();
 	grid_data_->ClearSelection();
 	grid_data_->ForceRefresh();
 	setModified(true);
@@ -1107,7 +1105,7 @@ void DataEntryPanel::changeValue()
 	// Create dialog
 	wxDialog dlg(MainEditor::windowWx(), -1, "Change Value");
 
-	auto ci = table_data_->getColumnInfo(selection[0].y);
+	auto          ci = table_data_->getColumnInfo(selection[0].y);
 	wxArrayString choices;
 	for (unsigned a = 0; a < ci.custom_values.size(); a++)
 		choices.Add(S_FMT("%d: %s", ci.custom_values[a].first, ci.custom_values[a].second));
@@ -1115,8 +1113,8 @@ void DataEntryPanel::changeValue()
 
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(vbox);
-	vbox->Add(combo, 0, wxEXPAND|wxALL, 10);
-	vbox->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxALL, 10);
+	vbox->Add(combo, 0, wxEXPAND | wxALL, 10);
+	vbox->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, 10);
 
 	// Show dialog
 	dlg.Fit();
@@ -1125,7 +1123,7 @@ void DataEntryPanel::changeValue()
 	{
 		// Get entered value
 		string val = combo->GetValue();
-		long lval;
+		long   lval;
 		if (!val.ToLong(&lval))
 		{
 			// Invalid number, check for option value

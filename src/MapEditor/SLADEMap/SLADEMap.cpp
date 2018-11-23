@@ -2628,7 +2628,6 @@ bool SLADEMap::removeVertex(unsigned index, bool merge_lines)
 	removeMapObject(vertices_[index]);
 	vertices_[index] = vertices_.back();
 	vertices_[index]->index = index;
-	//vertices[index]->modified_time = App::runTimer();
 	vertices_.pop_back();
 
 	geometry_updated_ = App::runTimer();
@@ -2729,7 +2728,13 @@ bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 		{
 			if (sides_[index]->sector->connected_sides[a] == sides_[index])
 			{
-				sides_[index]->sector->connected_sides.erase(sides_[index]->sector->connected_sides.begin() + a);
+				auto sector = sides_[index]->sector;
+				sector->connected_sides.erase(sides_[index]->sector->connected_sides.begin() + a);
+
+				// Remove sector if all its sides are gone
+				if (sector->connected_sides.empty())
+					removeSector(sector);
+
 				break;
 			}
 		}
@@ -2744,7 +2749,6 @@ bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 	removeMapObject(sides_[index]);
 	sides_[index] = sides_.back();
 	sides_[index]->index = index;
-	//sides[index]->modified_time = App::runTimer();
 	sides_.pop_back();
 
 	return true;
@@ -3544,11 +3548,15 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, i
 			case TagType::Patrol:
 				path_type = 9047;
 			case TagType::Interpolation:
+			{
 				path_type = 9075;
 
 				tid = things_[a]->intProperty("id");
 				auto& tt = Game::configuration().thingType(things_[a]->getType());
 				fits = ((path_type == ttype) && (IDEQ(tid)) && (tt.needsTag() == needs_tag));
+			}
+				break;
+			default:
 				break;
 			}
 			if (fits) list.push_back(things_[a]);
@@ -4685,7 +4693,11 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	// Merge vertices
 	vector<MapVertex*> merged_vertices;
 	for (unsigned a = 0; a < vertices.size(); a++)
-		VECTOR_ADD_UNIQUE(merged_vertices, mergeVerticesPoint(vertices[a]->x, vertices[a]->y));
+	{
+		auto v = mergeVerticesPoint(vertices[a]->x, vertices[a]->y);
+		if (v)
+			VECTOR_ADD_UNIQUE(merged_vertices, v);
+	}
 
 	// Get all connected lines
 	vector<MapLine*> connected_lines;

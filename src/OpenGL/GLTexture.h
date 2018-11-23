@@ -24,6 +24,7 @@ private:
 	bool				tiling;
 	double				scale_x;
 	double				scale_y;
+	bool 				world_panning;
 
 	// Some generic/global textures
 	static GLTexture	tex_background;	// Checkerboard background texture
@@ -56,7 +57,9 @@ public:
 	double		getScaleY() { return scale_y; }
 	bool		isTiling() { return tiling; }
 	unsigned	glId() { if (!tex.empty()) return tex[0].id; else return 0; }
+	bool		worldPanning() { return world_panning; }
 
+	void		setWorldPanning(bool wp) { world_panning = wp; }
 	void		setFilter(int filter) { this->filter = filter; }
 	void		setTiling(bool tiling) { this->tiling = tiling; }
 	void		setScale(double sx, double sy) { this->scale_x = sx; this->scale_y = sy; }

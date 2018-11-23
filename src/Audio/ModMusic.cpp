@@ -103,6 +103,7 @@ bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
 	if (dumb_module != nullptr)
 	{
 		initialize(2, 44100);
+		dumb_player = duh_start_sigrenderer(dumb_module, 0, 2, 0);
 		return true;
 	}
 	else

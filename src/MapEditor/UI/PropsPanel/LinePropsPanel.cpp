@@ -140,8 +140,8 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	// Init flags
 	wxGridBagSizer* gb_sizer_flags = new wxGridBagSizer(UI::pad() / 2, UI::pad());
 	sizer_flags->Add(gb_sizer_flags, 1, wxEXPAND|wxALL, UI::pad());
-	int row = 0;
-	int col = 0;
+	unsigned row = 0;
+	unsigned col = 0;
 
 	// Get all UDMF properties
 	auto& props = Game::configuration().allUDMFProperties(MOBJ_LINE);
@@ -156,7 +156,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 				flags_udmf.push_back(i.second);
 
 		// Add flag checkboxes
-		int flag_mid = flags_udmf.size() / 3;
+		unsigned flag_mid = flags_udmf.size() / 3;
 		if (flags_udmf.size() % 3 == 0) flag_mid--;
 		for (unsigned a = 0; a < flags_udmf.size(); a++)
 		{
@@ -183,9 +183,9 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	else
 	{
 		// Add flag checkboxes
-		int flag_mid = Game::configuration().nLineFlags() / 3;
+		unsigned flag_mid = Game::configuration().nLineFlags() / 3;
 		if (Game::configuration().nLineFlags() % 3 == 0) flag_mid--;
-		for (int a = 0; a < Game::configuration().nLineFlags(); a++)
+		for (unsigned a = 0; a < Game::configuration().nLineFlags(); a++)
 		{
 			if (Game::configuration().lineFlag(a).activation)
 				continue;

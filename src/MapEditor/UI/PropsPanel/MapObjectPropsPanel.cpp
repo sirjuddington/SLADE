@@ -626,7 +626,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 			wxPGProperty* g_flags = pg_properties_->Append(new wxPropertyCategory("Flags"));
 
 			// Add flags
-			for (int a = 0; a < Game::configuration().nLineFlags(); a++)
+			for (unsigned a = 0; a < Game::configuration().nLineFlags(); a++)
 				addLineFlagProperty(g_flags, Game::configuration().lineFlag(a).name, S_FMT("flag%u", a), a);
 		}
 

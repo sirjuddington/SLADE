@@ -168,9 +168,9 @@ class EntryDataUS : public UndoStep
 {
 public:
 	EntryDataUS(ArchiveEntry* entry) :
-		archive_{ entry->getParent() },
 		path_{ entry->getPath() },
-		index_{ (unsigned)entry->getParentDir()->entryIndex(entry) }
+		index_{ (unsigned)entry->getParentDir()->entryIndex(entry) },
+		archive_{ entry->getParent() }
 	{
 		data_.importMem(entry->getData(), entry->getSize());
 	}

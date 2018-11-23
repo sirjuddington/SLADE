@@ -2108,8 +2108,18 @@ void ArchiveManagerPanel::deleteSelectedBookmarks() const
 // ----------------------------------------------------------------------------
 void ArchiveManagerPanel::goToBookmark(long index) const
 {
+	// Get first selected bookmark if no index given
+	if (index < 0)
+	{
+		auto selected = list_bookmarks_->selectedItems();
+		if (selected.empty())
+			return;
+
+		index = selected[0];
+	}
+
 	// Get the selected bookmark entry
-	ArchiveEntry* bookmark = App::archiveManager().getBookmark(list_bookmarks_->selectedItems()[0]);
+	ArchiveEntry* bookmark = App::archiveManager().getBookmark(index);
 
 	// Check it's valid
 	if (!bookmark)
@@ -2122,7 +2132,7 @@ void ArchiveManagerPanel::goToBookmark(long index) const
 	wxWindow* tab = stc_archives_->GetPage(stc_archives_->GetSelection());
 
 	// Check it's an archive panel
-	if (!(S_CMP(tab->GetName(), "archive")))
+	if (!tab || !(S_CMP(tab->GetName(), "archive")))
 		return;
 
 	// Finally, open the entry

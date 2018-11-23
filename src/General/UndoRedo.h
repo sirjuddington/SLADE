@@ -49,6 +49,7 @@ private:
 	vector<UndoLevel*>	undo_levels;
 	UndoLevel*			current_level;
 	int					current_level_index;
+	int                 reset_point;
 	bool				undo_running;
 	SLADEMap*			map;
 
@@ -68,6 +69,8 @@ public:
 	bool	recordUndoStep(UndoStep* step);
 	string	undo();
 	string	redo();
+	void    setResetPoint() { reset_point = current_level_index; }
+	void    clearToResetPoint();
 
 	void	clear();
 	bool	createMergedLevel(UndoManager* manager, string name);

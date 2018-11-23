@@ -15,7 +15,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -98,9 +98,10 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const string& nspace, b
 		return nullptr;
 
 	ArchiveEntry::SPtr best;
-	auto i = entries_.begin();
-	while (i != entries_.end())
+	auto i = entries_.end();
+	while (i != entries_.begin())
 	{
+		--i;
 		// Check if expired
 		if (i->expired())
 		{
@@ -109,7 +110,6 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const string& nspace, b
 		}
 
 		auto entry = i->lock();
-		++i;
 
 		if (!best)
 			best = entry;
@@ -233,7 +233,7 @@ void ResourceManager::removeArchive(Archive* archive)
 	vector<ArchiveEntry::SPtr> entries;
 	archive->getEntryTreeAsList(entries);
 	for (auto& entry : entries)
-		removeEntry(entry);
+		removeEntry(entry, false, true);
 
 	// Announce resource update
 	announce("resources_updated");
@@ -263,7 +263,7 @@ uint16_t ResourceManager::getTextureHash(const string& name)
 //
 // Adds an entry to be managed
 // ----------------------------------------------------------------------------
-void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
+void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 {
 	if (!entry.get())
 		return;
@@ -276,9 +276,13 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 	EntryType* type = entry->getType();
 
 	// Get resource name (extension cut, uppercase)
-	string name = entry->getUpperNameNoExt();
+	string lname = entry->getUpperNameNoExt();
+	string name = entry->getUpperNameNoExt().Truncate(8);
 	// Talon1024 - Get resource path (uppercase, without leading slash)
 	string path = entry->getPath(true).Upper().Mid(1);
+
+	if (log)
+		Log::debug(S_FMT("Adding entry %s to resource manager", path));
 
 	// Check for palette entry
 	if (type->id() == "palette")
@@ -298,33 +302,55 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		        !entry->isInNamespace("flats"))
 			return;
 
+		bool addToFpOnly = true;
+
 		// Check for patch entry
-		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches"))
+		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches") ||
+		        entry->isInNamespace("sprites"))
 		{
+			if (patches_[name].length() == 0)
+			{
+				addToFpOnly = false;
+			}
 			patches_[name].add(entry);
-			/*
-			if (name.Length() > 8) patches[name.Left(8)].add(entry);
 			if (!entry->getParent()->isTreeless())
-				patches[path].add(entry);
-			*/
+			{
+				patches_fp_[path].add(entry);
+				if ((lname.Len() > 8 || patches_[name].length() > 0) && addToFpOnly)
+				{
+					patches_fp_only_[path].add(entry);
+				}
+			}
 		}
+
+		addToFpOnly = true;
 
 		// Check for flat entry
 		if (type->id() == "gfx_flat" || entry->isInNamespace("flats"))
 		{
+			if (flats_[name].length() == 0)
+			{
+				addToFpOnly = false;
+			}
 			flats_[name].add(entry);
-			// if (name.Length() > 8) flats[name.Left(8)].add(entry);
 			if (!entry->getParent()->isTreeless())
-				flats_[path].add(entry);
+			{
+				flats_fp_[path].add(entry);
+				if ((lname.Len() > 8 || flats_[name].length() > 0) && addToFpOnly)
+				{
+					flats_fp_only_[path].add(entry);
+				}
+			}
 		}
 
 		// Check for stand-alone texture entry
 		if (entry->isInNamespace("textures") || entry->isInNamespace("hires"))
 		{
 			satextures_[name].add(entry);
-			// if (name.Length() > 8) satextures[name.Left(8)].add(entry);
 			if (!entry->getParent()->isTreeless())
-				satextures_[path].add(entry);
+			{
+				satextures_fp_[path].add(entry);
+			}
 
 			// Add name to hash table
 			ResourceManager::doom64_hash_table_[getTextureHash(name)] = name;
@@ -367,33 +393,48 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 	}
 }
 
+void removeEntryFromMap(EntryResourceMap& map, const string& name, ArchiveEntry::SPtr& entry, bool full_check)
+{
+	if (full_check)
+		for (auto& i : map)
+			i.second.remove(entry);
+	else
+		map[name].remove(entry);
+}
+
 // ----------------------------------------------------------------------------
 // ResourceManager::removeEntry
 //
 // Removes a managed entry
 // ----------------------------------------------------------------------------
-void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
+void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full_check)
 {
 	if (!entry.get())
 		return;
 
 	// Get resource name (extension cut, uppercase)
-	string name = entry->getUpperNameNoExt();
+	string name = entry->getUpperNameNoExt().Truncate(8);
 	string path = entry->getPath(true).Upper().Mid(1);
 
+	if (log)
+		Log::debug(S_FMT("Removing entry %s from resource manager", path));
+
 	// Remove from palettes
-	palettes_[name].remove(entry);
+	removeEntryFromMap(palettes_, name, entry, full_check);
 
 	// Remove from patches
-	patches_[name].remove(entry);
+	removeEntryFromMap(patches_, name, entry, full_check);
+	removeEntryFromMap(patches_fp_, path, entry, full_check);
+	removeEntryFromMap(patches_fp_only_, path, entry, full_check);
 
 	// Remove from flats
-	flats_[name].remove(entry);
-	flats_[path].remove(entry);
+	removeEntryFromMap(flats_, name, entry, full_check);
+	removeEntryFromMap(flats_fp_, path, entry, full_check);
+	removeEntryFromMap(flats_fp_only_, path, entry, full_check);
 
 	// Remove from stand-alone textures
-	satextures_[name].remove(entry);
-	satextures_[path].remove(entry);
+	removeEntryFromMap(satextures_, name, entry, full_check);
+	removeEntryFromMap(satextures_fp_, path, entry, full_check);
 
 	// Check for TEXTUREx entry
 	int txentry = 0;
@@ -437,9 +478,19 @@ void ResourceManager::listAllPatches()
 //
 // Adds all current patch entries to [list]
 // ----------------------------------------------------------------------------
-void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority)
+void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
 {
 	for (auto& i : patches_)
+	{
+		auto entry = i.second.getEntry(priority);
+		if (entry)
+			list.push_back(entry);
+	}
+
+	if (!fullPath)
+		return;
+
+	for (auto& i : patches_fp_only_)
 	{
 		auto entry = i.second.getEntry(priority);
 		if (entry)
@@ -505,9 +556,19 @@ void ResourceManager::getAllTextureNames(vector<string>& list)
 //
 // Adds all current flat entries to [list]
 // ----------------------------------------------------------------------------
-void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority)
+void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
 {
 	for (auto& i : flats_)
+	{
+		auto entry = i.second.getEntry(priority);
+		if (entry)
+			list.push_back(entry);
+	}
+
+	if (!fullPath)
+		return;
+
+	for (auto& i : flats_fp_only_)
 	{
 		auto entry = i.second.getEntry(priority);
 		if (entry)
@@ -555,7 +616,15 @@ ArchiveEntry* ResourceManager::getPatchEntry(const string& patch, const string& 
 	if (!nspace.CmpNoCase("textures"))
 		return getTextureEntry(patch, "textures", priority);
 
-	return patches_[patch.Upper()].getEntry(priority, nspace, true);
+	ArchiveEntry* entry = patches_[patch.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	entry = patches_fp_[patch.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -568,11 +637,17 @@ ArchiveEntry* ResourceManager::getFlatEntry(const string& flat, Archive* priorit
 {
 	// Check resource with matching name exists
 	EntryResource& res = flats_[flat.Upper()];
-	if (res.entries_.empty())
-		return nullptr;
 
 	// Return most relevant entry
-	return res.getEntry(priority);
+	ArchiveEntry* entry = res.getEntry(priority);
+	if (entry)
+		return entry;
+
+	entry = flats_fp_[flat.Upper()].getEntry(priority, "flats", true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -583,7 +658,15 @@ ArchiveEntry* ResourceManager::getFlatEntry(const string& flat, Archive* priorit
 // ----------------------------------------------------------------------------
 ArchiveEntry* ResourceManager::getTextureEntry(const string& texture, const string& nspace, Archive* priority)
 {
-	return satextures_[texture.Upper()].getEntry(priority, nspace, true);
+	ArchiveEntry* entry = satextures_[texture.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	entry = satextures_fp_[texture.Upper()].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -644,8 +727,8 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
 		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
 		auto esp = entry->getParent()->entryAtPathShared(entry->getPath(true));
-		removeEntry(esp);
-		addEntry(esp);
+		removeEntry(esp, true);
+		addEntry(esp, true);
 		announce("resources_updated");
 	}
 
@@ -656,7 +739,7 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 		event_data.read(&ptr, sizeof(wxUIntPtr), sizeof(int));
 		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
 		auto esp = entry->getParent()->entryAtPathShared(entry->getPath(true));
-		removeEntry(esp);
+		removeEntry(esp, true);
 		announce("resources_updated");
 	}
 
@@ -667,7 +750,7 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
 		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
 		auto esp = entry->getParent()->entryAtPathShared(entry->getPath(true));
-		addEntry(esp);
+		addEntry(esp, true);
 		announce("resources_updated");
 	}
 }

@@ -484,7 +484,7 @@ void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 		"Text Files (*.txt)|*.txt",
 		MapEditor::windowWx(), map_name + "-Problems"))
 	{
-		string text = S_FMT("%d problems found in map %s:\n\n", check_items_.size(), CHR(map_name));
+		string text = S_FMT("%lu problems found in map %s:\n\n", check_items_.size(), CHR(map_name));
 		for (unsigned a = 0; a < check_items_.size(); a++)
 			text += check_items_[a].check->problemDesc(check_items_[a].index) + "\n";
 		wxFile file;

@@ -87,16 +87,16 @@ public:
 	void	addArchive(Archive* archive);
 	void	removeArchive(Archive* archive);
 
-	void	addEntry(ArchiveEntry::SPtr& entry);
-	void	removeEntry(ArchiveEntry::SPtr& entry);
+	void	addEntry(ArchiveEntry::SPtr& entry, bool log = false);
+	void	removeEntry(ArchiveEntry::SPtr& entry, bool log = false, bool full_check = false);
 
 	void	listAllPatches();
-	void	getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority);
+	void	getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
 
 	void	getAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore = nullptr);
 	void	getAllTextureNames(vector<string>& list);
 
-	void	getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority);
+	void	getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
 	void	getAllFlatNames(vector<string>& list);
 
 	ArchiveEntry*	getPaletteEntry(const string& palette, Archive* priority = nullptr);
@@ -113,9 +113,15 @@ public:
 private:
 	EntryResourceMap	palettes_;
 	EntryResourceMap	patches_;
+	EntryResourceMap	patches_fp_; // Full path
+	EntryResourceMap	patches_fp_only_; // Patches that can only be used by their full path name
 	EntryResourceMap	graphics_;
 	EntryResourceMap	flats_;
+	EntryResourceMap	flats_fp_;
+	EntryResourceMap	flats_fp_only_;
 	EntryResourceMap	satextures_;	// Stand Alone textures (e.g., between TX_ or T_ markers)
+	EntryResourceMap	satextures_fp_;
+	//EntryResourceMap	satextures_fp_only_; // Probably not needed
 	TextureResourceMap	textures_;		// Composite textures (defined in a TEXTUREx/TEXTURES lump)
 
 	static ResourceManager*	instance_;

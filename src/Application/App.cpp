@@ -686,6 +686,11 @@ bool App::useSFMLRenderWindow()
 #endif
 }
 
+const string App::getIcon()
+{
+	return "slade.ico";
+}
+
 std::thread::id App::mainThreadId()
 {
 	return main_thread_id;

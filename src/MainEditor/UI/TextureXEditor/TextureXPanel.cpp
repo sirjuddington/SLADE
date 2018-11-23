@@ -15,7 +15,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -435,7 +435,7 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	list_textures_ = new TextureXListView(this, &texturex_);
 	framesizer->Add(list_textures_, 1, wxEXPAND | wxALL, UI::pad());
 	sizer->Add(framesizer, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, UI::pad());
-	
+
 	// Texture list filter
 	text_filter_ = new wxTextCtrl(this, -1);
 	btn_clear_filter_ = new SIconButton(this, "close", "Clear Filter");
@@ -596,9 +596,15 @@ void TextureXPanel::applyChanges()
 {
 	if (texture_editor_->texModified() && tex_current_)
 	{
+		// Clear undo levels for individual edits to the current texture
+		undo_manager_->clearToResetPoint();
+
+		// Create single 'modify texture' undo level
 		undo_manager_->beginRecord("Modify Texture");
 		undo_manager_->recordUndoStep(new TextureModificationUS(this, tex_current_));
 		undo_manager_->endRecord(true);
+
+		undo_manager_->setResetPoint();
 
 		tex_current_->copyTexture(texture_editor_->texture());
 		tex_current_->setState(1);
@@ -664,7 +670,10 @@ void TextureXPanel::newTexture()
 		return;
 
 	// Process name
-	name = name.Upper().Truncate(8);
+	if (texturex_.getFormat() != TXF_TEXTURES)
+	{
+		name = name.Upper().Truncate(8);
+	}
 
 	// Create new texture
 	CTexture* tex = new CTexture();
@@ -1546,6 +1555,7 @@ void TextureXPanel::onTextureListSelect(wxListEvent& e)
 	if (list_textures_->GetSelectedItemCount() > 1)
 	{
 		tex_current_ = nullptr;
+		undo_manager_->setResetPoint();
 		texture_editor_->openTexture(tex_current_, &texturex_);
 		return;
 	}
@@ -1557,6 +1567,7 @@ void TextureXPanel::onTextureListSelect(wxListEvent& e)
 	applyChanges();
 
 	// Open texture in editor
+	undo_manager_->setResetPoint();
 	texture_editor_->openTexture(tex, &texturex_);
 
 	// Set current texture

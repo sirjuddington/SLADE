@@ -69,6 +69,7 @@ namespace MapEditor
 		float	anim_info_fade_;
 		float	anim_overlay_fade_;
 		float	anim_help_fade_;
+		bool    cursor_zoom_disabled_;
 
 
 		// Drawing

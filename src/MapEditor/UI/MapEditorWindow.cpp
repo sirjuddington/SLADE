@@ -103,8 +103,8 @@ MapEditorWindow::MapEditorWindow() :
 	custom_menus_begin_ = 2;
 
 	// Set icon
-	string icon_filename = App::path("slade.ico", App::Dir::Temp);
-	App::archiveManager().programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
+	string icon_filename = App::path(App::getIcon(), App::Dir::Temp);
+	App::archiveManager().programResourceArchive()->getEntry(App::getIcon())->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
 
@@ -353,7 +353,7 @@ void MapEditorWindow::setupLayout()
 
 	// Status bar
 	CreateStatusBar(4);
-	int status_widths[4] = { -1, UI::scalePx(240), UI::scalePx(200), UI::scalePx(160) };
+	int status_widths[4] = { -1, UI::scalePx(240), UI::scalePx(240), UI::scalePx(240) };
 	SetStatusWidths(4, status_widths);
 
 	// -- Console Panel --
@@ -951,7 +951,7 @@ bool MapEditorWindow::saveMap()
 			map.head->getTopParent()->filename(false),
 			map.head->getName(true)
 		))
-		LOG_MESSAGE(1, "Warning: Failed to backup map data");
+		Log::warning(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
 	for (unsigned a = 1; a < wad->numEntries(); a++)
@@ -1218,7 +1218,7 @@ bool MapEditorWindow::handleAction(string id)
 			Archive* a = mdesc_current.head->getParent();
 			if (a && save_archive_with_map) a->save();
 		}
-
+		MapEditor::editContext().renderer().forceUpdate();
 		return true;
 	}
 
@@ -1226,6 +1226,7 @@ bool MapEditorWindow::handleAction(string id)
 	if (id == "mapw_saveas")
 	{
 		saveMapAs();
+		MapEditor::editContext().renderer().forceUpdate();
 		return true;
 	}
 

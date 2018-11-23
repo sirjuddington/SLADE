@@ -141,7 +141,7 @@ namespace Game
 		void	linkDoomEdNums();
 
 		// Line flags
-		int			nLineFlags() const { return flags_line_.size(); }
+		unsigned	nLineFlags() const { return flags_line_.size(); }
 		const Flag&	lineFlag(unsigned flag_index);
 		bool		lineFlagSet(unsigned flag_index, MapLine* line);
 		bool		lineFlagSet(string udmf_name, MapLine* line, int map_format);

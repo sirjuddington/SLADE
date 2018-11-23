@@ -14,7 +14,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -177,15 +177,24 @@ void FlatComboBox::onDropDown(wxCommandEvent& e)
 {
 	// Get current value
 	string text = GetValue().Upper();
-	
+
 	// Populate dropdown with matching flat names
 	vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllFlatsInfo();
 	wxArrayString list;
 	list.Add("-");
 	for (unsigned a = 0; a < textures.size(); a++)
 	{
-		if (textures[a].name.StartsWith(text))
-			list.Add(textures[a].name);
+		if (textures[a].shortName.StartsWith(text))
+		{
+			list.Add(textures[a].shortName);
+		}
+		if (Game::configuration().featureSupported(Game::Feature::LongNames))
+		{
+			if (textures[a].longName.StartsWith(text))
+			{
+				list.Add(textures[a].longName);
+			}
+		}
 	}
 	Set(list);	// Why does this clear the text box also?
 	SetValue(text);
@@ -249,7 +258,7 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	stc_tabs_->AddPage(setupSpecialPanel(), "Special");
 
 	// Other Properties tab
-	
+
 	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 	{
 		mopp_all_props_ = new MapObjectPropsPanel(stc_tabs_, true);
@@ -419,7 +428,7 @@ void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 	// Floor height
 	if (MapObject::multiIntProperty(objects, "heightfloor", ival))
 		text_height_floor_->SetValue(S_FMT("%d", ival));
-	
+
 	// Ceiling height
 	if (MapObject::multiIntProperty(objects, "heightceiling", ival))
 		text_height_ceiling_->SetValue(S_FMT("%d", ival));
@@ -545,7 +554,7 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 
 	// Browse
 	MapTextureBrowser browser(this, 1, tc->texName(), &(MapEditor::editContext().map()));
-	if (browser.ShowModal() == wxID_OK)
+	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
 		cb->SetValue(browser.getSelectedItem()->name());
 }
 
