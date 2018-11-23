@@ -52,6 +52,7 @@
 
 using MapEditor::Mode;
 using MapEditor::SectorMode;
+using MapEditor::Input;
 
 
 // ----------------------------------------------------------------------------
@@ -292,10 +293,6 @@ bool MapEditContext::update(long frametime)
 	// Ignore if we aren't ready to update
 	if (frametime < next_frame_length_)
 		return false;
-
-	// Wait until user input opens the overlay again
-	if (!overlayActive())
-		next_frame_length_ = LONG_MAX;
 
 	// Get frame time multiplier
 	double mult = (double)frametime / 10.0f;
@@ -1376,6 +1373,10 @@ void MapEditContext::recordPropertyChangeUndoStep(MapObject* object)
 // ----------------------------------------------------------------------------
 void MapEditContext::doUndo()
 {
+	// Don't undo if the input state isn't normal
+	if (input_.mouseState() != Input::MouseState::Normal)
+		return;
+
 	// Clear selection first, since part of it may become invalid
 	selection_.clear();
 
@@ -1408,6 +1409,10 @@ void MapEditContext::doUndo()
 // ----------------------------------------------------------------------------
 void MapEditContext::doRedo()
 {
+	// Don't redo if the input state isn't normal
+	if (input_.mouseState() != Input::MouseState::Normal)
+		return;
+
 	// Clear selection first, since part of it may become invalid
 	selection_.clear();
 
