@@ -1227,26 +1227,6 @@ void Edit3D::changeHeight(int amount) const
 }
 
 // -----------------------------------------------------------------------------
-// Clear the texture property
-// -----------------------------------------------------------------------------
-void Edit3D::deleteTexture() const
-{
-	auto& map = context_.map();
-	for(auto &item : context_.selection().selectionOrHilight()) {
-		if (item.type == MapEditor::ItemType::Floor)
-			map.getSector(item.index)->setStringProperty("texturefloor", "-");
-		else if (item.type == MapEditor::ItemType::Ceiling)
-			map.getSector(item.index)->setStringProperty("textureceiling", "-");
-		else if (item.type == MapEditor::ItemType::WallBottom)
-			map.getSide(item.index)->setStringProperty("texturebottom", "-");
-		else if (item.type == MapEditor::ItemType::WallMiddle)
-			map.getSide(item.index)->setStringProperty("texturemiddle", "-");
-		else if (item.type == MapEditor::ItemType::WallTop)
-			map.getSide(item.index)->setStringProperty("texturetop", "-");
-	}
-}
-
-// -----------------------------------------------------------------------------
 // Opens the texture browser for the currently selected 3d mode walls and/or
 // floors
 // -----------------------------------------------------------------------------
@@ -1343,6 +1323,26 @@ void Edit3D::changeTexture() const
 
 		// End undo level
 		context_.endUndoRecord();
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Clear the texture property
+// -----------------------------------------------------------------------------
+void Edit3D::deleteTexture() const
+{
+	auto& map = context_.map();
+	for(auto &item : context_.selection().selectionOrHilight()) {
+		if (item.type == MapEditor::ItemType::Floor)
+			map.getSector(item.index)->setStringProperty("texturefloor", "-");
+		else if (item.type == MapEditor::ItemType::Ceiling)
+			map.getSector(item.index)->setStringProperty("textureceiling", "-");
+		else if (item.type == MapEditor::ItemType::WallBottom)
+			map.getSide(item.index)->setStringProperty("texturebottom", "-");
+		else if (item.type == MapEditor::ItemType::WallMiddle)
+			map.getSide(item.index)->setStringProperty("texturemiddle", "-");
+		else if (item.type == MapEditor::ItemType::WallTop)
+			map.getSide(item.index)->setStringProperty("texturetop", "-");
 	}
 }
 
