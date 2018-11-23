@@ -293,10 +293,6 @@ bool MapEditContext::update(long frametime)
 	if (frametime < next_frame_length_)
 		return false;
 
-	// Wait until user input opens the overlay again
-	if (!overlayActive())
-		next_frame_length_ = LONG_MAX;
-
 	// Get frame time multiplier
 	double mult = (double)frametime / 10.0f;
 
