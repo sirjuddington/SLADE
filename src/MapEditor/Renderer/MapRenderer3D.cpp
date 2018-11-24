@@ -232,10 +232,11 @@ MapRenderer3D::Quad* MapRenderer3D::getQuad(MapEditor::Item item)
 		return nullptr;
 
 	// Find matching quad
-	int lindex = side->parentLine()->index();
-	for (unsigned a = 0; a < lines_[lindex].quads.size(); a++)
+	int line = side->parentLine()->index();
+
+	for (unsigned a = 0; a < lines_[line].quads.size(); a++)
 	{
-		Quad* quad = &lines_[lindex].quads[a];
+		Quad* quad = &lines_[line].quads[a];
 
 		// Check side
 		if (side == side->parentLine()->s1() && quad->flags & BACK)
@@ -244,9 +245,14 @@ MapRenderer3D::Quad* MapRenderer3D::getQuad(MapEditor::Item item)
 			continue;
 
 		// Check 3D floor
-
-		if(quad->control_line >= 0 && quad->control_line != item.index)
-			return quad;
+		if (item.real_index >= 0)
+		{
+			for (unsigned m = a; m < lines_[line].quads.size(); m++)
+			{
+				if (lines_[line].quads[m].control_line == item.control_line)
+					return &lines_[line].quads[m];
+			}
+		}
 
 		// Check part
 		if (item.type == MapEditor::ItemType::WallBottom)
@@ -264,11 +270,6 @@ MapRenderer3D::Quad* MapRenderer3D::getQuad(MapEditor::Item item)
 			if ((quad->flags & UPPER) == 0 && (quad->flags & LOWER) == 0)
 				return quad;
 		}
-		/*if (item.type == MapEditor::ItemType::Wall3DFloor)
-		{
-			if(quad->control_line >= 0 && quad->control_line == item.control_line)
-				return quad;
-		}*/
 	}
 
 	// Not found
@@ -284,14 +285,15 @@ MapRenderer3D::Flat* MapRenderer3D::getFlat(MapEditor::Item item)
 	if ((unsigned)item.index >= sector_flats_.size())
 		return nullptr;
 
-	// TODO 3dfloors
+	int index = (item.real_index == -1) ? item.index : item.real_index;
+
 	// Floor
 	if (item.type == MapEditor::ItemType::Floor)
-		return &sector_flats_[item.index][0];
+		return &sector_flats_[index][0];
 
 	// Ceiling
 	else if (item.type == MapEditor::ItemType::Ceiling)
-		return &sector_flats_[item.index][1];
+		return &sector_flats_[index][1];
 
 	// Wrong type
 	else
@@ -1494,7 +1496,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	Plane   cp1        = line->frontSector()->ceiling().plane;
 	ColRGBA colour1    = line->frontSector()->colourAt(0, true);
 	ColRGBA fogcolour1 = line->frontSector()->fogColour();
-	int     light1     = line->s1()->light();
+	uint8_t light1     = line->s1()->light();
 	int     xoff1      = line->s1()->offsetX();
 	int     yoff1      = line->s1()->offsetY();
 
@@ -1503,19 +1505,19 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Increase light level for N/S facing lines
 		if (line->x1() == line->x2())
 		{
-			colour1.r = MathStuff::clamp(colour1.r + line_shading, 0, 255);
-			colour1.g = MathStuff::clamp(colour1.g + line_shading, 0, 255);
-			colour1.b = MathStuff::clamp(colour1.b + line_shading, 0, 255);
-			light1    = MathStuff::clamp(light1 + line_shading, 0, 255);
+			colour1.r = (uint8_t) round(MathStuff::clamp(colour1.r + line_shading, 0, 255));
+			colour1.g = (uint8_t) round(MathStuff::clamp(colour1.g + line_shading, 0, 255));
+			colour1.b = (uint8_t) round(MathStuff::clamp(colour1.b + line_shading, 0, 255));
+			light1    = (uint8_t) round(MathStuff::clamp(light1 + line_shading, 0, 255));
 		}
 
 		// Decrease light level for E/W facing lines
 		if (line->y1() == line->y2())
 		{
-			colour1.r = MathStuff::clamp(colour1.r - 16, 0, 255);
-			colour1.g = MathStuff::clamp(colour1.g - 16, 0, 255);
-			colour1.b = MathStuff::clamp(colour1.b - 16, 0, 255);
-			light1    = MathStuff::clamp(light1 - 16, 0, 255);
+			colour1.r = (uint8_t) round(MathStuff::clamp(colour1.r - 16, 0, 255));
+			colour1.g = (uint8_t) round(MathStuff::clamp(colour1.g - 16, 0, 255));
+			colour1.b = (uint8_t) round(MathStuff::clamp(colour1.b - 16, 0, 255));
+			light1    = (uint8_t) round(MathStuff::clamp(light1 - 16, 0, 255));
 		}
 	}
 
@@ -1584,7 +1586,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	Plane   cp2         = line->backSector()->ceiling().plane;
 	ColRGBA colour2     = line->backSector()->colourAt(0, true);
 	ColRGBA fogcolour2  = line->backSector()->fogColour();
-	int     light2      = line->s2()->light();
+	uint8_t light2      = line->s2()->light();
 	int     xoff2       = line->s2()->offsetX();
 	int     yoff2       = line->s2()->offsetY();
 	int     lowceil     = min(ceiling1, ceiling2);
@@ -1607,19 +1609,19 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Increase light level for N/S facing lines
 		if (line->x1() == line->x2())
 		{
-			colour2.r = MathStuff::clamp(colour2.r + line_shading, 0, 255);
-			colour2.g = MathStuff::clamp(colour2.g + line_shading, 0, 255);
-			colour2.b = MathStuff::clamp(colour2.b + line_shading, 0, 255);
-			light2    = MathStuff::clamp(light2 + line_shading, 0, 255);
+			colour2.r = (uint8_t) round(MathStuff::clamp(colour2.r + line_shading, 0, 255));
+			colour2.g = (uint8_t) round(MathStuff::clamp(colour2.g + line_shading, 0, 255));
+			colour2.b = (uint8_t) round(MathStuff::clamp(colour2.b + line_shading, 0, 255));
+			light2    = (uint8_t) round(MathStuff::clamp(light2 + line_shading, 0, 255));
 		}
 
 		// Decrease light level for E/W facing lines
 		if (line->y1() == line->y2())
 		{
-			colour2.r = MathStuff::clamp(colour2.r - 16, 0, 255);
-			colour2.g = MathStuff::clamp(colour2.g - 16, 0, 255);
-			colour2.b = MathStuff::clamp(colour2.b - 16, 0, 255);
-			light2    = MathStuff::clamp(light2 - 16, 0, 255);
+			colour2.r = (uint8_t) round(MathStuff::clamp(colour2.r - 16, 0, 255));
+			colour2.g = (uint8_t) round(MathStuff::clamp(colour2.g - 16, 0, 255));
+			colour2.b = (uint8_t) round(MathStuff::clamp(colour2.b - 16, 0, 255));
+			light2    = (uint8_t) round(MathStuff::clamp(light2 - 16, 0, 255));
 		}
 	}
 
@@ -2325,11 +2327,17 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 			if (map_->line(line)->s2() == side && (lines_[line].quads[q].flags & BACK) == 0)
 				continue;
 
-			// Check quad is correct part
-			if (is3DFloor && selection[a].real_index == lines_[line].quads[q].control_side)
+			// Check every quad in this line
+			if (is3DFloor)
 			{
-				quad = &lines_[line].quads[q];
-				break;
+				for (unsigned m = q; m < lines_[line].quads.size(); m++)
+				{
+					if (selection[a].control_line == lines_[line].quads[m].control_line)
+					{
+						quad = &lines_[line].quads[m];
+						break;
+					}
+				}
 			}
 			else if (lines_[line].quads[q].flags & UPPER)
 			{
@@ -3183,7 +3191,12 @@ MapEditor::Item MapRenderer3D::determineHilight()
 					current.index = line->s1Index();
 
 				// Side part
-				if (quad->flags & UPPER)
+				if (quad->control_side >= 0) {
+					current.type = MapEditor::ItemType::WallMiddle;
+					current.real_index = current.index;
+					current.control_line = quad->control_line;
+					current.index = quad->control_side;
+				} else if (quad->flags & UPPER)
 					current.type = MapEditor::ItemType::WallTop;
 				else if (quad->flags & LOWER)
 					current.type = MapEditor::ItemType::WallBottom;
@@ -3352,10 +3365,16 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 				continue;
 
 			// Check quad is correct part
-			if (is3DFloor && hilight.real_index == lines_[line].quads[a].control_side)
+			if (is3DFloor)
 			{
-				quad = &lines_[line].quads[a];
-				break;
+				for (unsigned m = a; m < lines_[line].quads.size(); m++)
+				{
+					if (hilight.control_line == lines_[line].quads[a].control_line)
+					{
+						quad = &lines_[line].quads[a];
+						break;
+					}
+				}
 			}
 			else if (lines_[line].quads[a].flags & UPPER)
 			{
@@ -3377,12 +3396,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 			{
 				quad = &lines_[line].quads[a];
 				break;
-			}/*
-			else if (hilight.type == MapEditor::ItemType::Wall3DFloor && hilight.control_line == lines[line].quads[a].control_line)
-			{
-				quad = &lines[line].quads[a];
-				break;
-			}*/
+			}
 		}
 
 		if (!quad)
@@ -3418,9 +3432,12 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 
 		// Get plane
 		Plane plane;
-		if(is3DFloor) {
-			for(int i = 0; i < sector->extra_floors.size(); i++) {
-				if(sector->extra_floors[i].control_sector_index == hilight.index) {
+		if(is3DFloor)
+		{
+			for(int i = 0; i < sector->extra_floors.size(); i++)
+			{
+				if(sector->extra_floors[i].control_sector_index == hilight.index)
+				{
 					ExFloorType& extra = sector->extra_floors[i];
 					if (hilight.type == MapEditor::ItemType::Floor)
 						plane = extra.floor_plane;
@@ -3428,7 +3445,9 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 						plane = extra.ceiling_plane;
 				}
 			}
-		} else {
+		}
+		else
+		{
 			if (hilight.type == MapEditor::ItemType::Floor)
 				plane = sector->floor().plane;
 			else
