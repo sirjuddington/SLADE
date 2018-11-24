@@ -1489,7 +1489,7 @@ void TextureXPanel::onRedo(string action)
 bool TextureXPanel::handleAction(string id)
 {
 	// Don't handle if hidden
-	wxNotebook* parent = dynamic_cast<wxNotebook*>(GetParent());
+	TabControl* parent = dynamic_cast<TabControl*>(GetParent());
 	if (parent->GetCurrentPage() != this)
 		return false;
 
