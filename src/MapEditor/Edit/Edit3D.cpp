@@ -212,15 +212,16 @@ void Edit3D::changeOffset(int amount, bool x) const
 	bool        changed = false;
 	for (unsigned a = 0; a < items.size(); a++)
 	{
+		int index = items[a].real_index >= 0 ? items[a].real_index : items[a].index;
 		// Wall
 		if (items[a].type >= ItemType::WallTop && items[a].type <= ItemType::WallBottom)
 		{
-			MapSide* side = context_.map().side(items[a].index);
+			MapSide* side = context_.map().side(index);
 			// If offsets are linked, just change the whole side offset
 			if (link_offset_)
 			{
 				// Check we haven't processed this side already
-				if (VECTOR_EXISTS(done, items[a].index))
+				if (VECTOR_EXISTS(done, index))
 					continue;
 
 				// Change the appropriate offset
@@ -236,7 +237,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 				}
 
 				// Add to done list
-				done.push_back(items[a].index);
+				done.push_back(index);
 			}
 
 			// Unlinked offsets
