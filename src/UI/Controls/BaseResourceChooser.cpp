@@ -58,7 +58,7 @@ EXTERN_CVAR(Int, base_resource)
 // BaseResourceChooser class constructor
 // ----------------------------------------------------------------------------
 BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change) :
-	wxChoice{ parent, -1, wxDefaultPosition, WxUtils::scaledSize(128, -1) },
+	wxChoice{ parent, -1 },
 	load_change_{ load_change }
 {
 	// Populate
@@ -74,6 +74,9 @@ BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change) :
 		if (load_change_)
 			App::archiveManager().openBaseResource(GetSelection() - 1);
 	});
+
+	if (App::platform() != App::Platform::Linux)
+		SetMinSize(WxUtils::scaledSize(128, -1));
 }
 
 // ----------------------------------------------------------------------------
