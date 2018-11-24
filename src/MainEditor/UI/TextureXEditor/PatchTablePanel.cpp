@@ -105,7 +105,7 @@ string PatchTableListView::getItemText(long item, long column, long index) const
 	patch_t& patch = patch_table_->patch(index);
 
 	if (column == 0)						// Index column
-		return S_FMT("%04d", index);
+		return S_FMT("%04ld", index);
 	else if (column == 1)					// Name column
 		return patch.name;
 	else if (column == 2)					// Usage count column

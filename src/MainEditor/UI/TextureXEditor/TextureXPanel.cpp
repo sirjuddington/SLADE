@@ -1489,7 +1489,8 @@ void TextureXPanel::onRedo(string action)
 bool TextureXPanel::handleAction(string id)
 {
 	// Don't handle if hidden
-	if (!tx_editor_->IsShown() || !IsShown())
+	wxNotebook* parent = dynamic_cast<wxNotebook*>(GetParent());
+	if (parent->GetCurrentPage() != this)
 		return false;
 
 	// Only interested in "txed_" events
