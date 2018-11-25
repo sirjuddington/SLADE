@@ -50,13 +50,19 @@ AdvancedPrefsPanel::AdvancedPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
+	const wxColour& inactiveTextColour =
+		wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
+
 	// Add property grid
 	pg_cvars_ = new wxPropertyGrid(
 		this,
 		-1,
 		wxDefaultPosition,
 		wxDefaultSize,
-		wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS | wxPG_HIDE_MARGIN);
+		wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS | wxPG_HIDE_MARGIN
+	);
+	pg_cvars_->SetCaptionTextColour(inactiveTextColour);
+	pg_cvars_->SetCellDisabledTextColour(inactiveTextColour);
 	sizer->Add(pg_cvars_, 1, wxEXPAND);
 
 	// Init property grid

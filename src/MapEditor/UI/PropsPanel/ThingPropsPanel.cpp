@@ -150,7 +150,7 @@ void SpriteTexCanvas::draw()
 //
 // An OpenGL canvas that shows a direction and circles for each of the 8
 // 'standard' directions, clicking within one of the circles will set the
-// direction (currently unused)
+// direction
 // ----------------------------------------------------------------------------
 
 
@@ -159,13 +159,13 @@ void SpriteTexCanvas::draw()
 //
 // ThingDirCanvas class constructor
 // ----------------------------------------------------------------------------
-ThingDirCanvas::ThingDirCanvas(wxWindow* parent) : OGLCanvas(parent, -1, true, 15)
+ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, true, 15)
 {
 	// Init variables
-	angle_ = 0;
 	point_hl_ = -1;
 	last_check_ = 0;
 	point_sel_ = -1;
+	parent_ = parent;
 
 	// Get system panel background colour
 	wxColour bgcolwx = Drawing::getPanelBGColour();
@@ -189,14 +189,15 @@ ThingDirCanvas::ThingDirCanvas(wxWindow* parent) : OGLCanvas(parent, -1, true, 1
 	Bind(wxEVT_LEFT_DOWN, &ThingDirCanvas::onMouseEvent, this);
 
 	// Fixed size
-	SetInitialSize(wxSize(128, 128));
-	SetMaxSize(wxSize(128, 128));
+	auto size = UI::scalePx(128);
+	SetInitialSize(wxSize(size, size));
+	SetMaxSize(wxSize(size, size));
 }
 
 // ----------------------------------------------------------------------------
 // ThingDirCanvas::setAngle
 //
-// Sets the angle to display
+// Sets the selected angle point based on [angle]
 // ----------------------------------------------------------------------------
 void ThingDirCanvas::setAngle(int angle)
 {
@@ -205,9 +206,6 @@ void ThingDirCanvas::setAngle(int angle)
 		angle -= 360;
 	while (angle < 0)
 		angle += 360;
-
-	// Set angle
-	this->angle_ = angle;
 
 	// Set selected dir point (if any)
 	if (!dir_points_.empty())
@@ -252,6 +250,7 @@ void ThingDirCanvas::draw()
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 	// Draw angle ring
+	glDisable(GL_TEXTURE_2D);
 	glLineWidth(1.5f);
 	glEnable(GL_LINE_SMOOTH);
 	rgba_t col_faded(col_bg_.r * 0.6 + col_fg_.r * 0.4,
@@ -268,8 +267,11 @@ void ThingDirCanvas::draw()
 
 	// Draw angle arrow
 	glLineWidth(2.0f);
-	fpoint2_t tip = MathStuff::rotatePoint(fpoint2_t(0, 0), fpoint2_t(0.8, 0), -angle_);
-	Drawing::drawArrow(tip, fpoint2_t(0, 0), col_fg_, false, 1.2, 0.2);
+	if (parent_->angleSet())
+	{
+		fpoint2_t tip = MathStuff::rotatePoint(fpoint2_t(0, 0), fpoint2_t(0.8, 0), -parent_->angle());
+		Drawing::drawArrow(tip, fpoint2_t(0, 0), col_fg_, false, 1.2, 0.2);
+	}
 
 	// Draw hover point
 	glPointSize(8.0f);
@@ -283,7 +285,7 @@ void ThingDirCanvas::draw()
 	}
 
 	// Draw selected point
-	if (point_sel_ >= 0 && point_sel_ < (int)dir_points_.size())
+	if (parent_->angleSet() && point_sel_ >= 0 && point_sel_ < (int)dir_points_.size())
 	{
 		OpenGL::setColour(col_fg_);
 		glBegin(GL_POINTS);
@@ -313,6 +315,7 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 	// Motion
 	if (e.Moving())
 	{
+		auto last_point = point_hl_;
 		if (App::runTimer() > last_check_ + 15)
 		{
 			// Get cursor position in canvas coordinates
@@ -335,11 +338,17 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 
 			last_check_ = App::runTimer();
 		}
+
+		if (last_point != point_hl_)
+			Refresh();
 	}
 
 	// Leaving
 	else if (e.Leaving())
+	{
 		point_hl_ = -1;
+		Refresh();
+	}
 
 	// Left click
 	else if (e.LeftDown())
@@ -347,18 +356,22 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 		if (point_hl_ >= 0)
 		{
 			point_sel_ = point_hl_;
+			int angle = 0;
 			switch (point_sel_)
 			{
-			case 6: angle_ = 0; break;
-			case 7: angle_ = 45; break;
-			case 0: angle_ = 90; break;
-			case 1: angle_ = 135; break;
-			case 2: angle_ = 180; break;
-			case 3: angle_ = 225; break;
-			case 4: angle_ = 270; break;
-			case 5: angle_ = 315; break;
-			default: angle_ = 0; break;
+			case 6: angle = 0; break;
+			case 7: angle = 45; break;
+			case 0: angle = 90; break;
+			case 1: angle = 135; break;
+			case 2: angle = 180; break;
+			case 3: angle = 225; break;
+			case 4: angle = 270; break;
+			case 5: angle = 315; break;
+			default: angle = 0; break;
 			}
+
+			parent_->setAngle(angle, false);
+			Refresh();
 		}
 	}
 
@@ -383,40 +396,15 @@ AngleControl::AngleControl(wxWindow* parent) : wxControl(parent, -1, wxDefaultPo
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	// Setup visual angle panel
-	wxPanel* panel = new wxPanel(this, -1);
-	sizer->Add(panel, 1, wxEXPAND|wxALL, UI::pad());
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	panel->SetSizer(gb_sizer);
-
-	// Fixed size
-	panel->SetInitialSize(WxUtils::scaledSize(140, 140));
-	panel->SetMaxSize(WxUtils::scaledSize(140, 140));
-
-	// Angle buttons
-	for (auto a = 0u; a < 8; ++a)
-		rb_angles_[a] = new wxRadioButton(panel, -1, "");
-	gb_sizer->Add(rb_angles_[0], { 2, 4 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT);		// East
-	gb_sizer->Add(rb_angles_[1], { 1, 3 }, { 1, 1 }, wxALIGN_TOP|wxALIGN_RIGHT);				// NorthEast
-	gb_sizer->Add(rb_angles_[2], { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_HORIZONTAL|wxALIGN_BOTTOM);	// North
-	gb_sizer->Add(rb_angles_[3], { 1, 1 }, { 1, 1 }, wxALIGN_TOP|wxALIGN_LEFT);					// NorthWest
-	gb_sizer->Add(rb_angles_[4], { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT);	// West
-	gb_sizer->Add(rb_angles_[5], { 3, 1 }, { 1, 1 }, wxALIGN_BOTTOM|wxALIGN_LEFT);				// SouthWest
-	gb_sizer->Add(rb_angles_[6], { 4, 2 }, { 1, 1 }, wxALIGN_CENTER_HORIZONTAL|wxALIGN_TOP);	// South
-	gb_sizer->Add(rb_angles_[7], { 3, 3 }, { 1, 1 }, wxALIGN_BOTTOM | wxALIGN_RIGHT);			// SouthEast
-	for (unsigned a = 0; a < 5; a++)
-	{
-		gb_sizer->AddGrowableCol(a, 1);
-		gb_sizer->AddGrowableRow(a, 1);
-	}
+	// Angle visual control
+	sizer->Add(dc_angle_ = new ThingDirCanvas(this), 1, wxEXPAND|wxALL, UI::pad());
 
 	// Angle text box
 	text_angle_ = new NumberTextCtrl(this);
 	sizer->Add(text_angle_, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, UI::pad());
 
 	// Bind events
-	for (unsigned a = 0; a < 8; a++)
-		rb_angles_[a]->Bind(wxEVT_RADIOBUTTON, &AngleControl::onAngleButtonClicked, this);
+	text_angle_->Bind(wxEVT_TEXT, &AngleControl::onAngleTextChanged, this);
 }
 
 // ----------------------------------------------------------------------------
@@ -434,39 +422,24 @@ int AngleControl::angle(int base)
 //
 // Sets the angle to display
 // ----------------------------------------------------------------------------
-void AngleControl::setAngle(int angle)
+void AngleControl::setAngle(int angle, bool update_visual)
 {
-	this->angle_ = angle;
+	angle_ = angle;
 	text_angle_->setNumber(angle);
-	updateAngle();
+
+	if (update_visual)
+		updateAngle();
 }
 
 // ----------------------------------------------------------------------------
 // AngleControl::updateAngle
 //
-// Updates the visual angle buttons
+// Updates the visual angle control
 // ----------------------------------------------------------------------------
 void AngleControl::updateAngle()
 {
-	// Set angle button
-	for (unsigned a = 0; a < 8; a++)
-		rb_angles_[a]->SetValue(false);
-
-	if (angleSet())
-	{
-		switch (angle_)
-		{
-		case 0:		rb_angles_[0]->SetValue(true); break;
-		case 45:	rb_angles_[1]->SetValue(true); break;
-		case 90:	rb_angles_[2]->SetValue(true); break;
-		case 135:	rb_angles_[3]->SetValue(true); break;
-		case 180:	rb_angles_[4]->SetValue(true); break;
-		case 225:	rb_angles_[5]->SetValue(true); break;
-		case 270:	rb_angles_[6]->SetValue(true); break;
-		case 315:	rb_angles_[7]->SetValue(true); break;
-		default:	break;
-		}
-	}
+	dc_angle_->setAngle(angle_);
+	dc_angle_->Refresh();
 }
 
 // ----------------------------------------------------------------------------
@@ -488,39 +461,13 @@ bool AngleControl::angleSet()
 
 
 // ----------------------------------------------------------------------------
-// AngleControl::onAngleButtonClicked
-//
-// Called when an angle radio button is clicked
-// ----------------------------------------------------------------------------
-void AngleControl::onAngleButtonClicked(wxCommandEvent& e)
-{
-	// Set angle text
-	if (e.GetEventObject() == rb_angles_[0])
-		text_angle_->setNumber(0);
-	else if (e.GetEventObject() == rb_angles_[1])
-		text_angle_->setNumber(45);
-	else if (e.GetEventObject() == rb_angles_[2])
-		text_angle_->setNumber(90);
-	else if (e.GetEventObject() == rb_angles_[3])
-		text_angle_->setNumber(135);
-	else if (e.GetEventObject() == rb_angles_[4])
-		text_angle_->setNumber(180);
-	else if (e.GetEventObject() == rb_angles_[5])
-		text_angle_->setNumber(225);
-	else if (e.GetEventObject() == rb_angles_[6])
-		text_angle_->setNumber(270);
-	else if (e.GetEventObject() == rb_angles_[7])
-		text_angle_->setNumber(315);
-}
-
-// ----------------------------------------------------------------------------
 // AngleControl::onAngleTextChanged
 //
 // Called when the angle text box is changed
 // ----------------------------------------------------------------------------
 void AngleControl::onAngleTextChanged(wxCommandEvent& e)
 {
-	this->angle_ = text_angle_->getNumber();
+	angle_ = text_angle_->getNumber();
 	updateAngle();
 }
 

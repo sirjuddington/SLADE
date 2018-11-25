@@ -28,20 +28,20 @@ private:
 	bool		icon_		= false;
 };
 
+class AngleControl;
 class ThingDirCanvas : public OGLCanvas
 {
 public:
-	ThingDirCanvas(wxWindow* parent);
+	ThingDirCanvas(AngleControl* parent);
 	~ThingDirCanvas() {}
 
-	int		angle() const { return angle_; }
 	void	setAngle(int angle);
 	void	draw() override;
 
 	void	onMouseEvent(wxMouseEvent& e);
 	
 private:
-	int					angle_;
+	AngleControl*		parent_;
 	vector<fpoint2_t>	dir_points_;
 	rgba_t				col_bg_;
 	rgba_t				col_fg_;
@@ -58,16 +58,15 @@ public:
 	~AngleControl() {}
 
 	int		angle(int base = 0);
-	void	setAngle(int angle);
+	void	setAngle(int angle, bool update_visual = true);
 	void	updateAngle();
 	bool	angleSet();
 
 private:
 	int				angle_;
-	wxRadioButton*	rb_angles_[8];
+	ThingDirCanvas*	dc_angle_;
 	NumberTextCtrl*	text_angle_;
 
-	void	onAngleButtonClicked(wxCommandEvent& e);
 	void	onAngleTextChanged(wxCommandEvent& e);
 };
 

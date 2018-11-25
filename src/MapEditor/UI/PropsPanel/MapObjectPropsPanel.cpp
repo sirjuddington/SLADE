@@ -79,6 +79,9 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	stc_sections_ = STabCtrl::createControl(this);
 	sizer->Add(stc_sections_, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, UI::pad());
 
+	const wxColour& inactiveTextColour =
+		wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
+
 	// Add main property grid
 	pg_properties_ = new wxPropertyGrid(
 		stc_sections_,
@@ -87,6 +90,8 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 		wxDefaultSize,
 		wxPG_TOOLTIPS|wxPG_SPLITTER_AUTO_CENTER
 	);
+	pg_properties_->SetCaptionTextColour(inactiveTextColour);
+	pg_properties_->SetCellDisabledTextColour(inactiveTextColour);
 	stc_sections_->AddPage(pg_properties_, "Properties");
 
 	// Create side property grids
@@ -97,6 +102,8 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 		wxDefaultSize,
 		wxPG_TOOLTIPS|wxPG_SPLITTER_AUTO_CENTER
 	);
+	pg_props_side1_->SetCaptionTextColour(inactiveTextColour);
+	pg_props_side1_->SetCellDisabledTextColour(inactiveTextColour);
 	pg_props_side2_ = new wxPropertyGrid(
 		stc_sections_,
 		-1,
@@ -104,6 +111,8 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 		wxDefaultSize,
 		wxPG_TOOLTIPS|wxPG_SPLITTER_AUTO_CENTER
 	);
+	pg_props_side2_->SetCaptionTextColour(inactiveTextColour);
+	pg_props_side2_->SetCellDisabledTextColour(inactiveTextColour);
 
 	// Add buttons
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
