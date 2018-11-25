@@ -93,6 +93,7 @@ wxSizer* createTitleSizer(wxWindow* parent, const string& title, const string& d
 	auto title_label = new wxStaticText(parent, -1, title);
 	auto font = title_label->GetFont();
 	title_label->SetFont(font.MakeLarger().MakeLarger().MakeBold());
+	title_label->SetMinSize(wxSize(-1, title_label->GetTextExtent("Wy").y));
 	sizer->Add(title_label, 0, wxEXPAND);
 
 	// Description
