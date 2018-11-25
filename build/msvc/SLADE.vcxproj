@@ -1565,7 +1565,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\AnimatedEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\ANSIEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\AudioEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\DataEntryPanel.cpp" />
@@ -1575,7 +1574,6 @@
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\HexEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\MapEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\MainWindow.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\StartPage.cpp" />
@@ -2081,7 +2079,6 @@
     <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\ArchivePanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\DocsPage.h" />
-    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\AnimatedEntryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\ANSIEntryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\AudioEntryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\DataEntryPanel.h" />
@@ -2091,7 +2088,6 @@
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\HexEntryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\MapEntryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.h" />
-    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\MainWindow.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\StartPage.h" />

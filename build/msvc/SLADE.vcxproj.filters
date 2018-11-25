@@ -948,9 +948,6 @@
     <ClCompile Include="..\..\src\MainEditor\UI\DocsPage.cpp">
       <Filter>Main Editor\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\AnimatedEntryPanel.cpp">
-      <Filter>Main Editor\UI\EntryPanel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\ANSIEntryPanel.cpp">
       <Filter>Main Editor\UI\EntryPanel</Filter>
     </ClCompile>
@@ -976,9 +973,6 @@
       <Filter>Main Editor\UI\EntryPanel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.cpp">
-      <Filter>Main Editor\UI\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.cpp">
       <Filter>Main Editor\UI\EntryPanel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.cpp">
@@ -2067,9 +2061,6 @@
     <ClInclude Include="..\..\src\MainEditor\UI\DocsPage.h">
       <Filter>Main Editor\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\AnimatedEntryPanel.h">
-      <Filter>Main Editor\UI\EntryPanel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\ANSIEntryPanel.h">
       <Filter>Main Editor\UI\EntryPanel</Filter>
     </ClInclude>
@@ -2095,9 +2086,6 @@
       <Filter>Main Editor\UI\EntryPanel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.h">
-      <Filter>Main Editor\UI\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.h">
       <Filter>Main Editor\UI\EntryPanel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.h">
