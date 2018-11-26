@@ -1087,8 +1087,8 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 	}
 
 	// Read samples
-	uint8_t* osamples = new uint8_t[numsamples];
-	uint8_t* nsamples = new uint8_t[numsamples * FACTOR];
+	auto* osamples = new uint8_t[numsamples];
+	auto* nsamples = new uint8_t[(uint8_t) round(numsamples * FACTOR)];
 	in.read(osamples, numsamples);
 
 	int      sign      = -1;
