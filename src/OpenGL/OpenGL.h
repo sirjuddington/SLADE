@@ -13,8 +13,8 @@
 #include <OpenGL/glu.h>
 #else
 // Unix GL headers
-#include <GL/gl.h>
 #include <GL/glew.h>
+#include <GL/gl.h>
 #include <GL/glu.h>
 #endif
 

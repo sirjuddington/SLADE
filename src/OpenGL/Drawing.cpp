@@ -377,7 +377,7 @@ sf::Font* FontManager::getFont(Drawing::Font font)
 	return nullptr;
 }
 #else  // USE_SFML_RENDERWINDOW
-FTFont* FontManager::getFont(int font)
+FTFont* FontManager::getFont(Drawing::Font font)
 {
 	switch (font)
 	{
@@ -847,7 +847,7 @@ fpoint2_t Drawing::textExtents(string text, Font font)
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int alignment, frect_t* bounds)
+void Drawing::drawText(string text, int x, int y, rgba_t colour, Font font, Align alignment, frect_t* bounds)
 {
 	// Get desired font
 	FTFont* ftgl_font = theFontManager->getFont(font);
@@ -862,9 +862,9 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	int ypos = y;
 	float width = bbox.Upper().X() - bbox.Lower().X();
 	float height = ftgl_font->LineHeight();
-	if (alignment != ALIGN_LEFT)
+	if (alignment != Align::Left)
 	{
-		if (alignment == ALIGN_CENTER)
+		if (alignment == Align::Center)
 			xpos -= MathStuff::round(width * 0.5);
 		else
 			xpos -= width;
@@ -904,7 +904,7 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-fpoint2_t Drawing::textExtents(string text, int font)
+fpoint2_t Drawing::textExtents(string text, Font font)
 {
 	// Get desired font
 	FTFont* ftgl_font = theFontManager->getFont(font);
