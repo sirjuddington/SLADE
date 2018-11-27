@@ -12,15 +12,15 @@ public:
 	MapBackupPanel(wxWindow* parent);
 	~MapBackupPanel() {}
 
-	Archive*	getSelectedMapData() { return archive_mapdata_; }
+	Archive* getSelectedMapData() { return archive_mapdata_; }
 
-	bool	loadBackups(string archive_name, string map_name);
-	void	updateMapPreview();
+	bool loadBackups(string archive_name, string map_name);
+	void updateMapPreview();
 
 private:
-	MapPreviewCanvas*			canvas_map_			= nullptr;
-	ListView*					list_backups_		= nullptr;
-	std::unique_ptr<ZipArchive>	archive_backups_;
-	Archive*					archive_mapdata_	= nullptr;
-	ArchiveTreeNode*			dir_current_		= nullptr;
+	MapPreviewCanvas*           canvas_map_   = nullptr;
+	ListView*                   list_backups_ = nullptr;
+	std::unique_ptr<ZipArchive> archive_backups_;
+	Archive*                    archive_mapdata_ = nullptr;
+	ArchiveTreeNode*            dir_current_     = nullptr;
 };

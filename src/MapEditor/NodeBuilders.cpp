@@ -1,70 +1,77 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    NodeBuilders.cpp
- * Description: NodeBuilders namespace - functions for handling
- *              node builder definitions
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    NodeBuilders.cpp
+// Description: NodeBuilders namespace - functions for handling node builder
+//              definitions
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Archive/ArchiveManager.h"
 #include "NodeBuilders.h"
+#include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 namespace NodeBuilders
 {
-	vector<builder_t>	builders;
-	builder_t			invalid;
-	builder_t			none;
-	string				custom;
-	vector<string>		builder_paths;
-}
+vector<Builder> builders;
+Builder         invalid;
+Builder         none;
+string          custom;
+vector<string>  builder_paths;
+} // namespace NodeBuilders
 
 
-/*******************************************************************
- * NODEBUILDERS NAMESPACE FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// NodeBuilders Namespace Functions
+//
+// -----------------------------------------------------------------------------
 
-/* NodeBuilders::init
- * Loads all node builder definitions from the program resource
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Loads all node builder definitions from the program resource
+// -----------------------------------------------------------------------------
 void NodeBuilders::init()
 {
 	// Init default builders
 	invalid.id = "invalid";
-	none.id = "none";
-	none.name = "Don't Build Nodes";
+	none.id    = "none";
+	none.name  = "Don't Build Nodes";
 	builders.push_back(none);
 
 	// Get nodebuilders configuration from slade.pk3
-	Archive* archive = App::archiveManager().programResourceArchive();
-	ArchiveEntry* config = archive->entryAtPath("config/nodebuilders.cfg");
+	Archive*      archive = App::archiveManager().programResourceArchive();
+	ArchiveEntry* config  = archive->entryAtPath("config/nodebuilders.cfg");
 	if (!config)
 		return;
 
@@ -83,7 +90,7 @@ void NodeBuilders::init()
 		auto n_builder = root->getChildPTN(a);
 
 		// Parse builder block
-		builder_t builder;
+		Builder builder;
 		builder.id = n_builder->getName();
 		for (unsigned b = 0; b < n_builder->nChildren(); b++)
 		{
@@ -112,22 +119,22 @@ void NodeBuilders::init()
 	}
 
 	// Set builder paths
-	for (unsigned a = 0; a < builder_paths.size(); a+=2)
-		getBuilder(builder_paths[a]).path = builder_paths[a+1];
+	for (unsigned a = 0; a < builder_paths.size(); a += 2)
+		getBuilder(builder_paths[a]).path = builder_paths[a + 1];
 }
 
-/* NodeBuilders::addBUilderPath
- * Adds [path] for [builder]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds [path] for [builder]
+// -----------------------------------------------------------------------------
 void NodeBuilders::addBuilderPath(string builder, string path)
 {
 	builder_paths.push_back(builder);
 	builder_paths.push_back(path);
 }
 
-/* NodeBuilders::saveBuilderPaths
- * Writes builder paths to [file]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes builder paths to [file]
+// -----------------------------------------------------------------------------
 void NodeBuilders::saveBuilderPaths(wxFile& file)
 {
 	file.Write("nodebuilder_paths\n{\n");
@@ -140,18 +147,18 @@ void NodeBuilders::saveBuilderPaths(wxFile& file)
 	file.Write("}\n");
 }
 
-/* NodeBuilders::nNodeBuilders
- * Returns the number of node builders defined
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the number of node builders defined
+// -----------------------------------------------------------------------------
 unsigned NodeBuilders::nNodeBuilders()
 {
 	return builders.size();
 }
 
-/* NodeBuilders::getBuilder
- * Returns the node builder definition matching [id]
- *******************************************************************/
-NodeBuilders::builder_t& NodeBuilders::getBuilder(string id)
+// -----------------------------------------------------------------------------
+// Returns the node builder definition matching [id]
+// -----------------------------------------------------------------------------
+NodeBuilders::Builder& NodeBuilders::getBuilder(string id)
 {
 	for (unsigned a = 0; a < builders.size(); a++)
 	{
@@ -162,10 +169,10 @@ NodeBuilders::builder_t& NodeBuilders::getBuilder(string id)
 	return invalid;
 }
 
-/* NodeBuilders::getBuilder
- * Returns the node builder definition at [index]
- *******************************************************************/
-NodeBuilders::builder_t& NodeBuilders::getBuilder(unsigned index)
+// -----------------------------------------------------------------------------
+// Returns the node builder definition at [index]
+// -----------------------------------------------------------------------------
+NodeBuilders::Builder& NodeBuilders::getBuilder(unsigned index)
 {
 	// Check index
 	if (index >= builders.size())

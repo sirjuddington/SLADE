@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -15,51 +15,49 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "ThingTypeBrowser.h"
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "OpenGL/Drawing.h"
-#include "ThingTypeBrowser.h"
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 CVAR(Bool, browser_thing_tiles, true, CVAR_SAVE)
 CVAR(Bool, use_zeth_icons, false, CVAR_SAVE)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ThingBrowserItem Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ThingBrowserItem::loadImage
-//
+// -----------------------------------------------------------------------------
 // Loads the item image
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool ThingBrowserItem::loadImage()
 {
 	// Get sprite
@@ -90,18 +88,16 @@ bool ThingBrowserItem::loadImage()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ThingTypeBrowser Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ThingTypeBrowser::ThingTypeBrowser
-//
+// -----------------------------------------------------------------------------
 // ThingTypeBrowser class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(parent)
 {
 	// Set window title
@@ -110,7 +106,7 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	// Add 'Details view' checkbox
 	cb_view_tiles_ = new wxCheckBox(this, -1, "Details view");
 	cb_view_tiles_->SetValue(browser_thing_tiles);
-	sizer_bottom_->Add(cb_view_tiles_, 0, wxEXPAND|wxRIGHT, UI::pad());
+	sizer_bottom_->Add(cb_view_tiles_, 0, wxEXPAND | wxRIGHT, UI::pad());
 
 	// Populate tree
 	auto& types = Game::configuration().allThingTypes();
@@ -126,7 +122,7 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	if (type >= 0)
 		selectItem(Game::configuration().thingType(type).name());
 	else
-		openTree(items_root_);	// Otherwise open 'all' category
+		openTree(items_root_); // Otherwise open 'all' category
 
 
 	// Bind events
@@ -135,11 +131,9 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	Layout();
 }
 
-// ----------------------------------------------------------------------------
-// ThingTypeBrowser::setupViewOptions
-//
+// -----------------------------------------------------------------------------
 // Sets up appropriate browser view options
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ThingTypeBrowser::setupViewOptions()
 {
 	if (browser_thing_tiles)
@@ -159,11 +153,9 @@ void ThingTypeBrowser::setupViewOptions()
 	canvas_->showSelectedItem();
 }
 
-// ----------------------------------------------------------------------------
-// ThingTypeBrowser::getSelectedType
-//
+// -----------------------------------------------------------------------------
 // Returns the currently selected thing type
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int ThingTypeBrowser::getSelectedType()
 {
 	BrowserItem* selected = getSelectedItem();
@@ -177,18 +169,16 @@ int ThingTypeBrowser::getSelectedType()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ThingTypeBrowser Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ThingTypeBrowser::onViewTilesClicked
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Details View' checkbox is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ThingTypeBrowser::onViewTilesClicked(wxCommandEvent& e)
 {
 	browser_thing_tiles = cb_view_tiles_->GetValue();

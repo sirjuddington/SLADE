@@ -1681,7 +1681,7 @@ string Configuration::spacTriggerString(MapLine* line, int map_format)
 	{
 		// Go through all line UDMF properties
 		string trigger = "";
-		auto&  props   = allUDMFProperties(MOBJ_LINE);
+		auto&  props   = allUDMFProperties(MapObject::Type::Line);
 		for (auto& prop : props)
 		{
 			// Check for trigger property
@@ -1782,17 +1782,19 @@ string Configuration::spacTriggerUDMFName(unsigned trigger_index)
 // -----------------------------------------------------------------------------
 // Returns the UDMF property definition matching [name] for MapObject [type]
 // -----------------------------------------------------------------------------
-UDMFProperty* Configuration::getUDMFProperty(string name, int type)
+UDMFProperty* Configuration::getUDMFProperty(string name, MapObject::Type type)
 {
-	if (type == MOBJ_VERTEX)
+	using Type = MapObject::Type;
+
+	if (type == Type::Vertex)
 		return &udmf_vertex_props_[name];
-	else if (type == MOBJ_LINE)
+	else if (type == Type::Line)
 		return &udmf_linedef_props_[name];
-	else if (type == MOBJ_SIDE)
+	else if (type == Type::Side)
 		return &udmf_sidedef_props_[name];
-	else if (type == MOBJ_SECTOR)
+	else if (type == Type::Sector)
 		return &udmf_sector_props_[name];
-	else if (type == MOBJ_THING)
+	else if (type == Type::Thing)
 		return &udmf_thing_props_[name];
 	else
 		return nullptr;
@@ -1801,23 +1803,19 @@ UDMFProperty* Configuration::getUDMFProperty(string name, int type)
 // -----------------------------------------------------------------------------
 // Returns all defined UDMF properties for MapObject type [type]
 // -----------------------------------------------------------------------------
-UDMFPropMap& Configuration::allUDMFProperties(int type)
+UDMFPropMap& Configuration::allUDMFProperties(MapObject::Type type)
 {
 	static UDMFPropMap map_invalid_type;
 
-	// Build list depending on type
-	if (type == MOBJ_VERTEX)
-		return udmf_vertex_props_;
-	else if (type == MOBJ_LINE)
-		return udmf_linedef_props_;
-	else if (type == MOBJ_SIDE)
-		return udmf_sidedef_props_;
-	else if (type == MOBJ_SECTOR)
-		return udmf_sector_props_;
-	else if (type == MOBJ_THING)
-		return udmf_thing_props_;
-
-	return map_invalid_type;
+	switch (type)
+	{
+	case MapObject::Type::Vertex: return udmf_vertex_props_;
+	case MapObject::Type::Line: return udmf_linedef_props_;
+	case MapObject::Type::Side: udmf_sidedef_props_;
+	case MapObject::Type::Sector: udmf_sector_props_;
+	case MapObject::Type::Thing: udmf_thing_props_;
+	default: return map_invalid_type;
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1828,16 +1826,16 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 {
 	// Get UDMF properties list for type
 	UDMFPropMap* map  = nullptr;
-	int          type = object->getObjType();
-	if (type == MOBJ_VERTEX)
+	auto         type = object->getObjType();
+	if (type == MapObject::Type::Vertex)
 		map = &udmf_vertex_props_;
-	else if (type == MOBJ_LINE)
+	else if (type == MapObject::Type::Line)
 		map = &udmf_linedef_props_;
-	else if (type == MOBJ_SIDE)
+	else if (type == MapObject::Type::Side)
 		map = &udmf_sidedef_props_;
-	else if (type == MOBJ_SECTOR)
+	else if (type == MapObject::Type::Sector)
 		map = &udmf_sector_props_;
-	else if (type == MOBJ_THING)
+	else if (type == MapObject::Type::Thing)
 		map = &udmf_thing_props_;
 	else
 		return;
@@ -2076,14 +2074,14 @@ int Configuration::boomSectorType(int base, int damage, bool secret, bool fricti
 // -----------------------------------------------------------------------------
 // Returns the default string value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-string Configuration::getDefaultString(int type, string property)
+string Configuration::getDefaultString(MapObject::Type type, string property)
 {
 	switch (type)
 	{
-	case MOBJ_LINE: return defaults_line_[property].getStringValue(); break;
-	case MOBJ_SIDE: return defaults_side_[property].getStringValue(); break;
-	case MOBJ_SECTOR: return defaults_sector_[property].getStringValue(); break;
-	case MOBJ_THING: return defaults_thing_[property].getStringValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].getStringValue(); break;
+	case MapObject::Type::Side: return defaults_side_[property].getStringValue(); break;
+	case MapObject::Type::Sector: return defaults_sector_[property].getStringValue(); break;
+	case MapObject::Type::Thing: return defaults_thing_[property].getStringValue(); break;
 	default: return "";
 	}
 }
@@ -2091,14 +2089,14 @@ string Configuration::getDefaultString(int type, string property)
 // -----------------------------------------------------------------------------
 // Returns the default int value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-int Configuration::getDefaultInt(int type, string property)
+int Configuration::getDefaultInt(MapObject::Type type, string property)
 {
 	switch (type)
 	{
-	case MOBJ_LINE: return defaults_line_[property].getIntValue(); break;
-	case MOBJ_SIDE: return defaults_side_[property].getIntValue(); break;
-	case MOBJ_SECTOR: return defaults_sector_[property].getIntValue(); break;
-	case MOBJ_THING: return defaults_thing_[property].getIntValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].getIntValue(); break;
+	case MapObject::Type::Side: return defaults_side_[property].getIntValue(); break;
+	case MapObject::Type::Sector: return defaults_sector_[property].getIntValue(); break;
+	case MapObject::Type::Thing: return defaults_thing_[property].getIntValue(); break;
 	default: return 0;
 	}
 }
@@ -2106,14 +2104,14 @@ int Configuration::getDefaultInt(int type, string property)
 // -----------------------------------------------------------------------------
 // Returns the default float value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-double Configuration::getDefaultFloat(int type, string property)
+double Configuration::getDefaultFloat(MapObject::Type type, string property)
 {
 	switch (type)
 	{
-	case MOBJ_LINE: return defaults_line_[property].getFloatValue(); break;
-	case MOBJ_SIDE: return defaults_side_[property].getFloatValue(); break;
-	case MOBJ_SECTOR: return defaults_sector_[property].getFloatValue(); break;
-	case MOBJ_THING: return defaults_thing_[property].getFloatValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].getFloatValue(); break;
+	case MapObject::Type::Side: return defaults_side_[property].getFloatValue(); break;
+	case MapObject::Type::Sector: return defaults_sector_[property].getFloatValue(); break;
+	case MapObject::Type::Thing: return defaults_thing_[property].getFloatValue(); break;
 	default: return 0;
 	}
 }
@@ -2121,14 +2119,14 @@ double Configuration::getDefaultFloat(int type, string property)
 // -----------------------------------------------------------------------------
 // Returns the default boolean value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-bool Configuration::getDefaultBool(int type, string property)
+bool Configuration::getDefaultBool(MapObject::Type type, string property)
 {
 	switch (type)
 	{
-	case MOBJ_LINE: return defaults_line_[property].getBoolValue(); break;
-	case MOBJ_SIDE: return defaults_side_[property].getBoolValue(); break;
-	case MOBJ_SECTOR: return defaults_sector_[property].getBoolValue(); break;
-	case MOBJ_THING: return defaults_thing_[property].getBoolValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].getBoolValue(); break;
+	case MapObject::Type::Side: return defaults_side_[property].getBoolValue(); break;
+	case MapObject::Type::Sector: return defaults_sector_[property].getBoolValue(); break;
+	case MapObject::Type::Thing: return defaults_thing_[property].getBoolValue(); break;
 	default: return false;
 	}
 }
@@ -2143,7 +2141,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	vector<Property> prop_vals;
 
 	// Line defaults
-	if (object->getObjType() == MOBJ_LINE)
+	if (object->getObjType() == MapObject::Type::Line)
 	{
 		defaults_line_.allProperties(prop_vals);
 		defaults_line_.allPropertyNames(prop_names);
@@ -2155,7 +2153,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	}
 
 	// Side defaults
-	else if (object->getObjType() == MOBJ_SIDE)
+	else if (object->getObjType() == MapObject::Type::Side)
 	{
 		defaults_side_.allProperties(prop_vals);
 		defaults_side_.allPropertyNames(prop_names);
@@ -2167,7 +2165,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	}
 
 	// Sector defaults
-	else if (object->getObjType() == MOBJ_SECTOR)
+	else if (object->getObjType() == MapObject::Type::Sector)
 	{
 		defaults_sector_.allProperties(prop_vals);
 		defaults_sector_.allPropertyNames(prop_names);
@@ -2179,7 +2177,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	}
 
 	// Thing defaults
-	else if (object->getObjType() == MOBJ_THING)
+	else if (object->getObjType() == MapObject::Type::Thing)
 	{
 		defaults_thing_.allProperties(prop_vals);
 		defaults_thing_.allPropertyNames(prop_names);

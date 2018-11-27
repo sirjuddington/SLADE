@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -15,24 +15,24 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Game/Configuration.h"
 #include "LinePropsPanel.h"
+#include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
 #include "MapObjectPropsPanel.h"
@@ -41,18 +41,16 @@
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // LinePropsPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// LinePropsPanel::LinePropsPanel
-//
+// -----------------------------------------------------------------------------
 // LinePropsPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 {
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -103,31 +101,25 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	stc_tabs_->AddPage(mopp_all_props_, "Other Properties");
 
 	// Bind events
-	cb_override_special_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e)
-	{
-		panel_special_->Enable(cb_override_special_->IsChecked());
-	});
+	cb_override_special_->Bind(
+		wxEVT_CHECKBOX, [&](wxCommandEvent& e) { panel_special_->Enable(cb_override_special_->IsChecked()); });
 }
 
-// ----------------------------------------------------------------------------
-// LinePropsPanel::~LinePropsPanel
-//
+// -----------------------------------------------------------------------------
 // LinePropsPanel class destructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 LinePropsPanel::~LinePropsPanel()
 {
 	mopp_all_props_->clearGrid();
 }
 
-// ----------------------------------------------------------------------------
-// LinePropsPanel::setupGeneralTab
-//
+// -----------------------------------------------------------------------------
 // Creates and sets up the 'General' properties tab panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* LinePropsPanel::setupGeneralTab()
 {
 	wxPanel* panel_flags = new wxPanel(stc_tabs_, -1);
-	int map_format = MapEditor::editContext().mapDesc().format;
+	int      map_format  = MapEditor::editContext().mapDesc().format;
 
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -135,16 +127,16 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 
 	// Flags
 	wxStaticBoxSizer* sizer_flags = new wxStaticBoxSizer(wxVERTICAL, panel_flags, "Flags");
-	sizer->Add(sizer_flags, 0, wxEXPAND|wxALL, UI::pad());
+	sizer->Add(sizer_flags, 0, wxEXPAND | wxALL, UI::pad());
 
 	// Init flags
 	wxGridBagSizer* gb_sizer_flags = new wxGridBagSizer(UI::pad() / 2, UI::pad());
-	sizer_flags->Add(gb_sizer_flags, 1, wxEXPAND|wxALL, UI::pad());
+	sizer_flags->Add(gb_sizer_flags, 1, wxEXPAND | wxALL, UI::pad());
 	unsigned row = 0;
 	unsigned col = 0;
 
 	// Get all UDMF properties
-	auto& props = Game::configuration().allUDMFProperties(MOBJ_LINE);
+	auto& props = Game::configuration().allUDMFProperties(MapObject::Type::Line);
 
 	// UDMF flags
 	if (map_format == MAP_UDMF)
@@ -157,17 +149,12 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 
 		// Add flag checkboxes
 		unsigned flag_mid = flags_udmf.size() / 3;
-		if (flags_udmf.size() % 3 == 0) flag_mid--;
+		if (flags_udmf.size() % 3 == 0)
+			flag_mid--;
 		for (unsigned a = 0; a < flags_udmf.size(); a++)
 		{
-			auto cb_flag = new wxCheckBox(
-				panel_flags,
-				-1,
-				flags_udmf[a].name(),
-				wxDefaultPosition,
-				wxDefaultSize,
-				wxCHK_3STATE
-			);
+			auto cb_flag =
+				new wxCheckBox(panel_flags, -1, flags_udmf[a].name(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
 			gb_sizer_flags->Add(cb_flag, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
 			flags_.push_back({ cb_flag, (int)a, flags_udmf[a].propName() });
 
@@ -184,7 +171,8 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	{
 		// Add flag checkboxes
 		unsigned flag_mid = Game::configuration().nLineFlags() / 3;
-		if (Game::configuration().nLineFlags() % 3 == 0) flag_mid--;
+		if (Game::configuration().nLineFlags() % 3 == 0)
+			flag_mid--;
 		for (unsigned a = 0; a < Game::configuration().nLineFlags(); a++)
 		{
 			if (Game::configuration().lineFlag(a).activation)
@@ -196,8 +184,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 				Game::configuration().lineFlag(a).name,
 				wxDefaultPosition,
 				wxDefaultSize,
-				wxCHK_3STATE
-			);
+				wxCHK_3STATE);
 			gb_sizer_flags->Add(cb_flag, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
 			flags_.push_back({ cb_flag, (int)a, wxEmptyString });
 
@@ -219,14 +206,13 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
-		hbox->Add(new wxStaticText(panel_flags, -1, "Sector Tag:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
-		hbox->Add(text_tag_ = new NumberTextCtrl(panel_flags), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(panel_flags, -1, "Sector Tag:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(text_tag_ = new NumberTextCtrl(panel_flags), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 		btn_new_tag_ = new wxButton(panel_flags, -1, "New Tag");
 		hbox->Add(btn_new_tag_, 0, wxEXPAND);
 
 		// Bind event
-		btn_new_tag_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, [&](wxCommandEvent& e)
-		{
+		btn_new_tag_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, [&](wxCommandEvent& e) {
 			text_tag_->setNumber(MapEditor::editContext().map().findUnusedSectorTag());
 		});
 	}
@@ -237,13 +223,12 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
-		hbox->Add(new wxStaticText(panel_flags, -1, "Line ID:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
-		hbox->Add(text_id_ = new NumberTextCtrl(panel_flags), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(panel_flags, -1, "Line ID:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(text_id_ = new NumberTextCtrl(panel_flags), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 		hbox->Add(btn_new_id_ = new wxButton(panel_flags, -1, "New ID"), 0, wxEXPAND);
 
 		// Bind event
-		btn_new_id_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, [&](wxCommandEvent& e)
-		{
+		btn_new_id_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, [&](wxCommandEvent& e) {
 			text_id_->setNumber(MapEditor::editContext().map().findUnusedLineId());
 		});
 	}
@@ -251,11 +236,9 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	return panel_flags;
 }
 
-// ----------------------------------------------------------------------------
-// LinePropsPanel::setupSpecialTab
-//
+// -----------------------------------------------------------------------------
 // Creates and sets up the 'Special' properties tab
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* LinePropsPanel::setupSpecialTab()
 {
 	wxPanel* panel = new wxPanel(stc_tabs_, -1);
@@ -266,23 +249,20 @@ wxPanel* LinePropsPanel::setupSpecialTab()
 
 	// Action special panel
 	panel_special_ = new ActionSpecialPanel(panel);
-	sizer->Add(panel_special_, 1, wxEXPAND|wxALL, UI::pad());
+	sizer->Add(panel_special_, 1, wxEXPAND | wxALL, UI::pad());
 
 	// 'Override Special' checkbox
 	cb_override_special_ = new wxCheckBox(panel, -1, "Override Action Special");
 	cb_override_special_->SetToolTip(
-		"Differing action specials detected, tick this to set the action special for all selected lines"
-	);
-	sizer->Add(cb_override_special_, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, UI::pad());
+		"Differing action specials detected, tick this to set the action special for all selected lines");
+	sizer->Add(cb_override_special_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
 	return panel;
 }
 
-// ----------------------------------------------------------------------------
-// LinePropsPanel::openLines
-//
+// -----------------------------------------------------------------------------
 // Loads values from all lines/sides in [lines]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 {
 	if (lines.empty())
@@ -312,9 +292,8 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 			// Go through subsequent lines
 			for (unsigned b = 1; b < lines.size(); b++)
 			{
-				// Check for mismatch			
-				if (flag.check_box->GetValue() !=
-					Game::configuration().lineFlagSet(flag.index, (MapLine*)lines[b]))
+				// Check for mismatch
+				if (flag.check_box->GetValue() != Game::configuration().lineFlagSet(flag.index, (MapLine*)lines[b]))
 				{
 					// Set undefined
 					flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
@@ -403,11 +382,9 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 	Refresh();
 }
 
-// ----------------------------------------------------------------------------
-// LinePropsPanel::applyChanges
-//
+// -----------------------------------------------------------------------------
 // Applies values to [lines]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void LinePropsPanel::applyChanges()
 {
 	int map_format = MapEditor::editContext().mapDesc().format;
@@ -428,10 +405,7 @@ void LinePropsPanel::applyChanges()
 			// Other
 			for (auto& flag : flags_)
 				if (flag.check_box->Get3StateValue() != wxCHK_UNDETERMINED)
-					Game::configuration().setLineFlag(
-						flag.index, (MapLine*)objects_[l],
-						flag.check_box->GetValue()
-					);
+					Game::configuration().setLineFlag(flag.index, (MapLine*)objects_[l], flag.check_box->GetValue());
 		}
 
 		// Sector tag

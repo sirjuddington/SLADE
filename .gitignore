@@ -13,6 +13,7 @@
 *.ipch
 *.pch
 *.user
+*.tmp
 /*.ncb
 /.vscode/*
 /release

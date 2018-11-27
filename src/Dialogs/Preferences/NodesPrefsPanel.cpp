@@ -129,7 +129,7 @@ void NodesPrefsPanel::init()
 void NodesPrefsPanel::populateOptions(string options)
 {
 	// Get current builder
-	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
+	NodeBuilders::Builder& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
 	btn_browse_path_->Enable(builder.id != "none");
 
 	// Set builder path
@@ -153,8 +153,8 @@ void NodesPrefsPanel::populateOptions(string options)
 void NodesPrefsPanel::applyPreferences()
 {
 	// Set nodebuilder
-	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
-	nodebuilder_id                   = builder.id;
+	NodeBuilders::Builder& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
+	nodebuilder_id                 = builder.id;
 
 	// Set options string
 	string opt = " ";
@@ -190,7 +190,7 @@ void NodesPrefsPanel::onChoiceBuilderChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 {
-	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
+	NodeBuilders::Builder& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
 
 	// Setup extension
 #ifdef __WXMSW__

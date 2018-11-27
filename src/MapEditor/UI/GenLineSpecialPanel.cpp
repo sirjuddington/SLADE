@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,39 +14,37 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Game/GenLineSpecial.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
+#include "Game/GenLineSpecial.h"
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // GenLineSpecialPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::GenLineSpecialPanel
-//
+// -----------------------------------------------------------------------------
 // GenLineSpecialPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// --- Setup layout ---
@@ -63,18 +61,16 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	sizer->Add(gb_sizer_, 1, wxEXPAND);
 
 	// Trigger
-	label_props_[0] = new wxStaticText(this, -1, "Trigger:", { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
+	label_props_[0]  = new wxStaticText(this, -1, "Trigger:", { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
 	choice_props_[0] = new wxChoice(this, -1);
-	choice_props_[0]->Set(WxUtils::arrayString({
-		"Cross (Once)",
-		"Cross (Repeatable)",
-		"Switch (Once)",
-		"Switch (Repeatable)",
-		"Shoot (Once)",
-		"Shoot (Repeatable)",
-		"Door (Once)",
-		"Door (Repeatable)"
-	}));
+	choice_props_[0]->Set(WxUtils::arrayString({ "Cross (Once)",
+												 "Cross (Repeatable)",
+												 "Switch (Once)",
+												 "Switch (Repeatable)",
+												 "Shoot (Once)",
+												 "Shoot (Repeatable)",
+												 "Door (Once)",
+												 "Door (Repeatable)" }));
 	choice_props_[0]->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoicePropertyChanged, this);
 
 	// Other properties
@@ -93,11 +89,9 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	setupForType(0);
 }
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::setupForType
-//
+// -----------------------------------------------------------------------------
 // Sets up generalised properties for special type [type]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GenLineSpecialPanel::setupForType(int type)
 {
 	// Clear properties
@@ -380,11 +374,9 @@ void GenLineSpecialPanel::setupForType(int type)
 	Update();
 }
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::setProp
-//
+// -----------------------------------------------------------------------------
 // Sets the generalised property at [index] to [value]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GenLineSpecialPanel::setProp(int prop, int value)
 {
 	if (prop < 0 || prop > 6)
@@ -423,12 +415,10 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::loadSpecial
-//
+// -----------------------------------------------------------------------------
 // Opens boom generalised line special [special], setting up controls as
 // necessary
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool GenLineSpecialPanel::loadSpecial(int special)
 {
 	// Get special info
@@ -455,11 +445,9 @@ bool GenLineSpecialPanel::loadSpecial(int special)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::getSpecial
-//
+// -----------------------------------------------------------------------------
 // Returns the currently selected special
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int GenLineSpecialPanel::getSpecial()
 {
 	int props[7];
@@ -469,31 +457,27 @@ int GenLineSpecialPanel::getSpecial()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // GenLineSpecialPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::onChoiceTypeChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the special type dropdown is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GenLineSpecialPanel::onChoiceTypeChanged(wxCommandEvent& e)
 {
 	setupForType(choice_type_->GetSelection());
 }
 
-// ----------------------------------------------------------------------------
-// GenLineSpecialPanel::onChoicePropertyChanged
-//
+// -----------------------------------------------------------------------------
 // Called when a property dropdown is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void GenLineSpecialPanel::onChoicePropertyChanged(wxCommandEvent& e)
 {
-	int type = choice_type_->GetSelection();
+	int       type           = choice_type_->GetSelection();
 	wxChoice* choice_changed = (wxChoice*)e.GetEventObject();
 
 	// Floor

@@ -1,7 +1,6 @@
+#pragma once
 
-#ifndef __MAP_TEXTURE_BROWSER_H__
-#define __MAP_TEXTURE_BROWSER_H__
-
+#include "MapEditor/MapTextureManager.h"
 #include "UI/Browser/BrowserWindow.h"
 
 class SLADEMap;
@@ -9,32 +8,30 @@ class Archive;
 
 class MapTexBrowserItem : public BrowserItem
 {
-private:
-	int	usage_count;
-
 public:
 	MapTexBrowserItem(string name, int type, unsigned index = 0);
 	~MapTexBrowserItem();
 
-	bool	loadImage();
-	string	itemInfo();
-	int		usageCount() { return usage_count; }
-	void	setUsage(int count) { usage_count = count; }
+	bool   loadImage();
+	string itemInfo();
+	int    usageCount() { return usage_count_; }
+	void   setUsage(int count) { usage_count_ = count; }
+
+private:
+	int usage_count_;
 };
 
 class MapTextureBrowser : public BrowserWindow
 {
-private:
-	int			type;
-	SLADEMap*	map;
-
 public:
 	MapTextureBrowser(wxWindow* parent, int type = 0, string texture = "", SLADEMap* map = nullptr);
 	~MapTextureBrowser();
 
-	string	determineTexturePath(Archive* archive, uint8_t category, string type, string path);
-	void	doSort(unsigned sort_type);
-	void	updateUsage();
-};
+	string determineTexturePath(Archive* archive, MapTextureManager::Category category, string type, string path);
+	void   doSort(unsigned sort_type);
+	void   updateUsage();
 
-#endif//__MAP_TEXTURE_BROWSER_H__
+private:
+	int       type_;
+	SLADEMap* map_;
+};

@@ -12,5 +12,5 @@ public:
 	virtual void applyChanges() {}
 
 protected:
-	vector<MapObject*>	objects_;
+	vector<MapObject*> objects_;
 };

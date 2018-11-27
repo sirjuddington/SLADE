@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -16,29 +16,29 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "MapEditContext.h"
 #include "App.h"
 #include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/Console/Console.h"
 #include "General/UndoRedo.h"
 #include "MapChecks.h"
-#include "MapEditContext.h"
 #include "MapEditor/Renderer/Overlays/LineTextureOverlay.h"
 #include "MapEditor/Renderer/Overlays/QuickTextureOverlay3d.h"
 #include "MapEditor/Renderer/Overlays/SectorTextureOverlay.h"
@@ -50,86 +50,56 @@
 #include "UI/MapEditorWindow.h"
 #include "UndoSteps.h"
 
+using MapEditor::Input;
 using MapEditor::Mode;
 using MapEditor::SectorMode;
-using MapEditor::Input;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace
 {
-	double grid_sizes[] =
-	{
-		0.05,
-		0.1,
-		0.25,
-		0.5,
-		1,
-		2,
-		4,
-		8,
-		16,
-		32,
-		64,
-		128,
-		256,
-		512,
-		1024,
-		2048,
-		4096,
-		8192,
-		16384,
-		32768,
-		65536
-	};
+double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5,  1,    2,    4,    8,     16,    32,   64,
+						128,  256, 512,  1024, 2048, 4096, 8192, 16384, 32768, 65536 };
 }
 CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
 CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, flat_drawtype)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // MapEditContext Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// MapEditContext::MapEditContext
-//
+// -----------------------------------------------------------------------------
 // MapEditContext class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 MapEditContext::MapEditContext()
 {
 	undo_manager_ = std::make_unique<UndoManager>(&map_);
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::~MapEditContext
-//
+// -----------------------------------------------------------------------------
 // MapEditContext class destructor
-// ----------------------------------------------------------------------------
-MapEditContext::~MapEditContext()
-{
-}
+// -----------------------------------------------------------------------------
+MapEditContext::~MapEditContext() {}
 
-// ----------------------------------------------------------------------------
-// MapEditContext::setEditMode
-//
+// -----------------------------------------------------------------------------
 // Changes the current edit mode to [mode]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::setEditMode(Mode mode)
 {
 	// Check if we are changing to the same mode
@@ -160,7 +130,7 @@ void MapEditContext::setEditMode(Mode mode)
 	edit_mode_prev_ = edit_mode_;
 
 	// Set edit mode
-	edit_mode_ = mode;
+	edit_mode_   = mode;
 	sector_mode_ = SectorMode::Both;
 
 	// Clear hilight and selection stuff
@@ -177,10 +147,10 @@ void MapEditContext::setEditMode(Mode mode)
 	switch (edit_mode_)
 	{
 	case Mode::Vertices: addEditorMessage("Vertices mode"); break;
-	case Mode::Lines:	addEditorMessage("Lines mode"); break;
-	case Mode::Sectors:	addEditorMessage("Sectors mode (Normal)"); break;
-	case Mode::Things:	addEditorMessage("Things mode"); break;
-	case Mode::Visual:		addEditorMessage("3d mode"); break;
+	case Mode::Lines: addEditorMessage("Lines mode"); break;
+	case Mode::Sectors: addEditorMessage("Sectors mode (Normal)"); break;
+	case Mode::Things: addEditorMessage("Things mode"); break;
+	case Mode::Visual: addEditorMessage("3d mode"); break;
 	};
 
 	if (edit_mode_ != Mode::Visual)
@@ -191,7 +161,8 @@ void MapEditContext::setEditMode(Mode mode)
 	lockMouse(false);
 
 	// Update toolbar
-	if (mode != edit_mode_prev_) MapEditor::window()->removeAllCustomToolBars();
+	if (mode != edit_mode_prev_)
+		MapEditor::window()->removeAllCustomToolBars();
 	if (mode == Mode::Vertices)
 		SAction::fromId("mapw_mode_vertices")->setChecked();
 	else if (mode == Mode::Lines)
@@ -230,11 +201,9 @@ void MapEditContext::setEditMode(Mode mode)
 	MapEditor::window()->refreshToolBar();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::setSectorEditMode
-//
+// -----------------------------------------------------------------------------
 // Changes the current sector edit mode to [mode]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::setSectorEditMode(SectorMode mode)
 {
 	// Set sector mode
@@ -252,38 +221,32 @@ void MapEditContext::setSectorEditMode(SectorMode mode)
 	forceRefreshRenderer();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::cycleSectorEditMode
-//
+// -----------------------------------------------------------------------------
 // Cycles to the next sector edit mode. Both -> Floors -> Ceilings
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::cycleSectorEditMode()
 {
 	switch (sector_mode_)
 	{
-		case SectorMode::Both: setSectorEditMode(SectorMode::Floor); break;
-		case SectorMode::Floor: setSectorEditMode(SectorMode::Ceiling); break;
-		default: setSectorEditMode(SectorMode::Both);
+	case SectorMode::Both: setSectorEditMode(SectorMode::Floor); break;
+	case SectorMode::Floor: setSectorEditMode(SectorMode::Ceiling); break;
+	default: setSectorEditMode(SectorMode::Both);
 	}
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::lockMouse
-//
+// -----------------------------------------------------------------------------
 // Locks/unlocks the mouse cursor. A locked cursor is invisible and will be
 // moved to the center of the canvas every frame
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::lockMouse(bool lock)
 {
 	mouse_locked_ = lock;
 	canvas_->lockMouse(lock);
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::update
-//
+// -----------------------------------------------------------------------------
 // Updates the current map editor state (hilight, animations, etc.)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool MapEditContext::update(long frametime)
 {
 	// Force an update if animations are active
@@ -307,13 +270,13 @@ bool MapEditContext::update(long frametime)
 		// Update status bar
 		auto pos = renderer_.renderer3D().camPosition();
 		MapEditor::setStatusText(S_FMT("Position: (%d, %d, %d)", (int)pos.x, (int)pos.y, (int)pos.z), 3);
-		
+
 		// Update hilight
 		MapEditor::Item hl{ -1, MapEditor::ItemType::Any };
 		if (!selection_.hilightLocked())
 		{
 			auto old_hl = selection_.hilight();
-			hl = renderer_.renderer3D().determineHilight();
+			hl          = renderer_.renderer3D().determineHilight();
 			if (selection_.setHilight(hl))
 			{
 				// Update 3d info overlay
@@ -336,7 +299,7 @@ bool MapEditContext::update(long frametime)
 	{
 		// Update hilight if needed
 		auto prev_hl = selection_.hilight();
-		if (input_.mouseState() == MapEditor::Input::MouseState::Normal/* && !mouse_movebegin*/)
+		if (input_.mouseState() == MapEditor::Input::MouseState::Normal /* && !mouse_movebegin*/)
 		{
 			auto old_hl = selection_.hilightedObject();
 			if (selection_.updateHilight(input_.mousePosMap(), renderer_.view().scale()) && hilight_smooth)
@@ -366,11 +329,9 @@ bool MapEditContext::update(long frametime)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::openMap
-//
+// -----------------------------------------------------------------------------
 // Opens [map]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool MapEditContext::openMap(Archive::MapDesc map)
 {
 	LOG_MESSAGE(1, "Opening map %s", map.name);
@@ -380,7 +341,7 @@ bool MapEditContext::openMap(Archive::MapDesc map)
 	// Find camera thing
 	if (canvas_)
 	{
-		MapThing* cam = nullptr;
+		MapThing* cam    = nullptr;
 		MapThing* pstart = nullptr;
 		for (unsigned a = 0; a < this->map_.nThings(); a++)
 		{
@@ -415,11 +376,9 @@ bool MapEditContext::openMap(Archive::MapDesc map)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::clearMap
-//
+// -----------------------------------------------------------------------------
 // Clears and resets the map
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::clearMap()
 {
 	// Clear selection
@@ -443,13 +402,11 @@ void MapEditContext::clearMap()
 	map_.clearMap();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::showItem
-//
+// -----------------------------------------------------------------------------
 // Moves and zooms the view to show the object at [index], depending on the
 // current edit mode. If [index] is negative, show the current selection or
 // hilight instead
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::showItem(int index)
 {
 	// Show current selection/hilight if index is not specified
@@ -460,14 +417,26 @@ void MapEditContext::showItem(int index)
 	}
 
 	selection_.clear();
-	int max;
+	int                 max;
 	MapEditor::ItemType type;
 	switch (edit_mode_)
 	{
-	case Mode::Vertices: type = MapEditor::ItemType::Vertex; max = map_.nVertices(); break;
-	case Mode::Lines: type = MapEditor::ItemType::Line; max = map_.nLines(); break;
-	case Mode::Sectors: type = MapEditor::ItemType::Sector; max = map_.nSectors(); break;
-	case Mode::Things: type = MapEditor::ItemType::Thing; max = map_.nThings(); break;
+	case Mode::Vertices:
+		type = MapEditor::ItemType::Vertex;
+		max  = map_.nVertices();
+		break;
+	case Mode::Lines:
+		type = MapEditor::ItemType::Line;
+		max  = map_.nLines();
+		break;
+	case Mode::Sectors:
+		type = MapEditor::ItemType::Sector;
+		max  = map_.nSectors();
+		break;
+	case Mode::Things:
+		type = MapEditor::ItemType::Thing;
+		max  = map_.nThings();
+		break;
 	default: return;
 	}
 
@@ -478,30 +447,26 @@ void MapEditContext::showItem(int index)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::getModeString
-//
+// -----------------------------------------------------------------------------
 // Returns a string representation of the current edit mode
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string MapEditContext::modeString(bool plural) const
 {
 	switch (edit_mode_)
 	{
-	case Mode::Vertices:	return plural ? "Vertices" : "Vertex";
-	case Mode::Lines:		return plural ? "Lines" : "Line";
-	case Mode::Sectors:		return plural ? "Sectors" : "Sector";
-	case Mode::Things:		return plural ? "Things" : "Thing";
-	case Mode::Visual:		return "3D";
+	case Mode::Vertices: return plural ? "Vertices" : "Vertex";
+	case Mode::Lines: return plural ? "Lines" : "Line";
+	case Mode::Sectors: return plural ? "Sectors" : "Sector";
+	case Mode::Things: return plural ? "Things" : "Thing";
+	case Mode::Visual: return "3D";
 	};
 
 	return plural ? "Items" : "Object";
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::updateThingLists
-//
+// -----------------------------------------------------------------------------
 // Rebuilds thing info lists (pathed things, etc.)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::updateThingLists()
 {
 	pathed_things_.clear();
@@ -509,31 +474,25 @@ void MapEditContext::updateThingLists()
 	map_.setThingsUpdated();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::setCursor
-//
+// -----------------------------------------------------------------------------
 // Sets the cursor on the canvas to [cursor]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::setCursor(UI::MouseCursor cursor) const
 {
 	UI::setCursor(canvas_, cursor);
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::forceRefreshRenderer
-//
+// -----------------------------------------------------------------------------
 // Forces a full refresh of the 2d/3d renderers
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::forceRefreshRenderer()
 {
 	next_frame_length_ = 2;
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::updateTagged
-//
+// -----------------------------------------------------------------------------
 // Rebuilds tagged object lists based on the current hilight
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::updateTagged()
 {
 	using Game::TagType;
@@ -555,18 +514,18 @@ void MapEditContext::updateTagged()
 		if (edit_mode_ == Mode::Lines)
 		{
 			type = SLADEMap::LINEDEFS;
-			tag = map_.getLine(hilight_item)->intProperty("id");
+			tag  = map_.getLine(hilight_item)->intProperty("id");
 		}
 		else if (edit_mode_ == Mode::Things)
 		{
-			type = SLADEMap::THINGS;
-			tag = map_.getThing(hilight_item)->intProperty("id");
+			type  = SLADEMap::THINGS;
+			tag   = map_.getThing(hilight_item)->intProperty("id");
 			ttype = map_.getThing(hilight_item)->getType();
 		}
 		else if (edit_mode_ == Mode::Sectors)
 		{
 			type = SLADEMap::SECTORS;
-			tag = map_.getSector(hilight_item)->intProperty("id");
+			tag  = map_.getSector(hilight_item)->intProperty("id");
 		}
 		if (tag)
 		{
@@ -577,23 +536,25 @@ void MapEditContext::updateTagged()
 		// Gather affected objects
 		if (edit_mode_ == Mode::Lines || edit_mode_ == Mode::Things)
 		{
-			MapSector* back = nullptr;
+			MapSector* back  = nullptr;
 			MapSector* front = nullptr;
-			int tag, arg2, arg3, arg4, arg5, tid;
-			auto needs_tag = TagType::None;
+			int        tag, arg2, arg3, arg4, arg5, tid;
+			auto       needs_tag = TagType::None;
 			// Line specials have front and possibly back sectors
 			if (edit_mode_ == Mode::Lines)
 			{
 				MapLine* line = map_.getLine(hilight_item);
-				if (line->s2()) back = line->s2()->getSector();
-				if (line->s1()) front = line->s1()->getSector();
+				if (line->s2())
+					back = line->s2()->getSector();
+				if (line->s1())
+					front = line->s1()->getSector();
 				needs_tag = Game::configuration().actionSpecial(line->intProperty("special")).needsTag();
-				tag = line->intProperty("arg0");
-				arg2 = line->intProperty("arg1");
-				arg3 = line->intProperty("arg2");
-				arg4 = line->intProperty("arg3");
-				arg5 = line->intProperty("arg4");
-				tid = 0;
+				tag       = line->intProperty("arg0");
+				arg2      = line->intProperty("arg1");
+				arg3      = line->intProperty("arg2");
+				arg4      = line->intProperty("arg3");
+				arg5      = line->intProperty("arg4");
+				tid       = 0;
 
 				// Hexen and UDMF things can have specials too
 			}
@@ -607,12 +568,12 @@ void MapEditContext::updateTagged()
 					needs_tag = Game::configuration().thingType(thing->getType()).needsTag();
 					if (needs_tag == TagType::None)
 						needs_tag = Game::configuration().actionSpecial(thing->intProperty("special")).needsTag();
-					tag = thing->intProperty("arg0");
+					tag  = thing->intProperty("arg0");
 					arg2 = thing->intProperty("arg1");
 					arg3 = thing->intProperty("arg2");
 					arg4 = thing->intProperty("arg3");
 					arg5 = thing->intProperty("arg4");
-					tid = thing->intProperty("id");
+					tid  = thing->intProperty("id");
 				}
 			}
 
@@ -651,8 +612,9 @@ void MapEditContext::updateTagged()
 				case TagType::Sector1Thing2:
 				{
 					int thingtag = (needs_tag == TagType::Sector1Thing2) ? arg2 : tag;
-					int sectag = (needs_tag == TagType::Sector1Thing2) ? tag :
-								 (needs_tag == TagType::Thing1Sector2) ? arg2 : arg3;
+					int sectag   = (needs_tag == TagType::Sector1Thing2) ?
+									 tag :
+									 (needs_tag == TagType::Thing1Sector2) ? arg2 : arg3;
 					if ((thingtag | sectag) == 0)
 						break;
 					else if (thingtag == 0)
@@ -661,66 +623,83 @@ void MapEditContext::updateTagged()
 						map_.getThingsById(thingtag, tagged_things_);
 					else // neither thingtag nor sectag are 0
 						map_.getThingsByIdInSectorTag(thingtag, sectag, tagged_things_);
-				}	break;
+				}
+				break;
 				case TagType::Thing1Thing2Thing3:
-					if (arg3) map_.getThingsById(arg3, tagged_things_);
+					if (arg3)
+						map_.getThingsById(arg3, tagged_things_);
 				case TagType::Thing1Thing2:
-					if (arg2) map_.getThingsById(arg2, tagged_things_);
+					if (arg2)
+						map_.getThingsById(arg2, tagged_things_);
 				case TagType::Thing1Thing4:
-					if (tag ) map_.getThingsById(tag, tagged_things_);
+					if (tag)
+						map_.getThingsById(tag, tagged_things_);
 				case TagType::Thing4:
 					if (needs_tag == TagType::Thing1Thing4 || needs_tag == TagType::Thing4)
-						if (arg4) map_.getThingsById(arg4, tagged_things_);
+						if (arg4)
+							map_.getThingsById(arg4, tagged_things_);
 					break;
 				case TagType::Thing5:
-					if (arg5) map_.getThingsById(arg5, tagged_things_);
+					if (arg5)
+						map_.getThingsById(arg5, tagged_things_);
 					break;
 				case TagType::LineNegative:
-					if (tag ) map_.getLinesById(abs(tag), tagged_lines_);
+					if (tag)
+						map_.getLinesById(abs(tag), tagged_lines_);
 					break;
 				case TagType::LineId1Line2:
-					if (arg2) map_.getLinesById(arg2, tagged_lines_);
+					if (arg2)
+						map_.getLinesById(arg2, tagged_lines_);
 					break;
 				case TagType::Line1Sector2:
-					if (tag ) map_.getLinesById(tag, tagged_lines_);
-					if (arg2) map_.getSectorsByTag(arg2, tagged_sectors_);
+					if (tag)
+						map_.getLinesById(tag, tagged_lines_);
+					if (arg2)
+						map_.getSectorsByTag(arg2, tagged_sectors_);
 					break;
 				case TagType::Sector1Thing2Thing3Thing5:
-					if (arg5) map_.getThingsById(arg5, tagged_things_);
-					if (arg3) map_.getThingsById(arg3, tagged_things_);
+					if (arg5)
+						map_.getThingsById(arg5, tagged_things_);
+					if (arg3)
+						map_.getThingsById(arg3, tagged_things_);
 				case TagType::Sector1Sector2Sector3Sector4:
-					if (arg4) map_.getSectorsByTag(arg4, tagged_sectors_);
-					if (arg3) map_.getSectorsByTag(arg3, tagged_sectors_);
+					if (arg4)
+						map_.getSectorsByTag(arg4, tagged_sectors_);
+					if (arg3)
+						map_.getSectorsByTag(arg3, tagged_sectors_);
 				case TagType::Sector1Sector2:
-					if (arg2) map_.getSectorsByTag(arg2, tagged_sectors_);
-					if (tag ) map_.getSectorsByTag(tag , tagged_sectors_);
+					if (arg2)
+						map_.getSectorsByTag(arg2, tagged_sectors_);
+					if (tag)
+						map_.getSectorsByTag(tag, tagged_sectors_);
 					break;
 				case TagType::Sector2Is3Line:
 					if (tag)
 					{
-						if (arg2 == 3) map_.getLinesById(tag, tagged_lines_);
-						else map_.getSectorsByTag(tag, tagged_sectors_);
+						if (arg2 == 3)
+							map_.getLinesById(tag, tagged_lines_);
+						else
+							map_.getSectorsByTag(tag, tagged_sectors_);
 					}
 					break;
 				case TagType::Patrol:
-					if (tid) map_.getThingsById(tid, tagged_things_, 0, 9047);
+					if (tid)
+						map_.getThingsById(tid, tagged_things_, 0, 9047);
 					break;
 				case TagType::Interpolation:
-					if (tid) map_.getThingsById(tid, tagged_things_, 0, 9075);
+					if (tid)
+						map_.getThingsById(tid, tagged_things_, 0, 9075);
 					break;
-				default:
-					break;
+				default: break;
 				}
 			}
 		}
 	}
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::selectionUpdated
-//
+// -----------------------------------------------------------------------------
 // Called when the selection is updated, updates the properties panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::selectionUpdated()
 {
 	// Open selected objects in properties panel
@@ -734,21 +713,17 @@ void MapEditContext::selectionUpdated()
 	updateStatusText();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::gridSize
-//
+// -----------------------------------------------------------------------------
 // Returns the current grid size
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 double MapEditContext::gridSize()
 {
 	return grid_sizes[grid_size_];
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::incrementGrid
-//
+// -----------------------------------------------------------------------------
 // Increments the grid size
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::incrementGrid()
 {
 	grid_size_++;
@@ -759,11 +734,9 @@ void MapEditContext::incrementGrid()
 	updateStatusText();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::decrementGrid
-//
+// -----------------------------------------------------------------------------
 // Decrements the grid size
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::decrementGrid()
 {
 	grid_size_--;
@@ -775,12 +748,10 @@ void MapEditContext::decrementGrid()
 	updateStatusText();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::snapToGrid
-//
+// -----------------------------------------------------------------------------
 // Returns the nearest grid point to [position], unless snap to grid is
 // disabled. If [force] is true, grid snap setting is ignored
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 double MapEditContext::snapToGrid(double position, bool force)
 {
 	if (!force && !grid_snap_)
@@ -794,25 +765,21 @@ double MapEditContext::snapToGrid(double position, bool force)
 	return ceil(position / gridSize() - 0.5) * gridSize();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::relativeSnapToGrid
-//
+// -----------------------------------------------------------------------------
 // Used for pasting. Given an [origin] point and the current [mouse_pos], snaps
 // in such a way that the mouse is a number of grid units away from the origin.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 fpoint2_t MapEditContext::relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos)
 {
 	fpoint2_t delta = mouse_pos - origin;
-	delta.x = snapToGrid(delta.x, false);
-	delta.y = snapToGrid(delta.y, false);
+	delta.x         = snapToGrid(delta.x, false);
+	delta.y         = snapToGrid(delta.y, false);
 	return origin + delta;
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::beginTagEdit
-//
+// -----------------------------------------------------------------------------
 // Begins a tag edit operation
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int MapEditContext::beginTagEdit()
 {
 	// Check lines mode
@@ -845,12 +812,10 @@ int MapEditContext::beginTagEdit()
 	return 1;
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::tagSectorAt
-//
+// -----------------------------------------------------------------------------
 // Applies the current tag edit tag to the sector at [x,y], or clears the
 // sector tag if it is already the same
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::tagSectorAt(double x, double y)
 {
 	fpoint2_t point(x, y);
@@ -878,11 +843,9 @@ void MapEditContext::tagSectorAt(double x, double y)
 	addEditorMessage(S_FMT("Tagged sector %u", sector->getIndex()));
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::endTagEdit
-//
+// -----------------------------------------------------------------------------
 // Ends the tag edit operation and applies changes if [accept] is true
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::endTagEdit(bool accept)
 {
 	// Get selected lines
@@ -928,11 +891,9 @@ void MapEditContext::endTagEdit(bool accept)
 	setFeatureHelp({});
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::getEditorMessage
-//
+// -----------------------------------------------------------------------------
 // Returns the current editor message at [index]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string MapEditContext::editorMessage(int index)
 {
 	// Check index
@@ -942,11 +903,9 @@ string MapEditContext::editorMessage(int index)
 	return editor_messages_[index].message;
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::getEditorMessageTime
-//
+// -----------------------------------------------------------------------------
 // Returns the amount of time the editor message at [index] has been active
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 long MapEditContext::editorMessageTime(int index)
 {
 	// Check index
@@ -956,11 +915,9 @@ long MapEditContext::editorMessageTime(int index)
 	return App::runTimer() - editor_messages_[index].act_time;
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::addEditorMessage
-//
+// -----------------------------------------------------------------------------
 // Adds an editor message, removing the oldest if needed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::addEditorMessage(string message)
 {
 	// Remove oldest message if there are too many active
@@ -969,16 +926,14 @@ void MapEditContext::addEditorMessage(string message)
 
 	// Add message to list
 	EditorMessage msg;
-	msg.message = message;
+	msg.message  = message;
 	msg.act_time = App::runTimer();
 	editor_messages_.push_back(msg);
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::setFeatureHelp
-//
+// -----------------------------------------------------------------------------
 // Sets the feature help text to display [lines]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::setFeatureHelp(const vector<string>& lines)
 {
 	feature_help_lines_.clear();
@@ -989,11 +944,9 @@ void MapEditContext::setFeatureHelp(const vector<string>& lines)
 		Log::debug(l);
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::handleKeyBind
-//
+// -----------------------------------------------------------------------------
 // Handles the keybind [key]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 {
 	// --- General keybinds ---
@@ -1059,28 +1012,46 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 	if (key.StartsWith("me2d_sector") && edit_mode_ == Mode::Sectors)
 	{
 		// Height changes
-		if		(key == "me2d_sector_floor_up8")	edit_2d_.changeSectorHeight(8, true, false);
-		else if (key == "me2d_sector_floor_up")		edit_2d_.changeSectorHeight(1, true, false);
-		else if (key == "me2d_sector_floor_down8")	edit_2d_.changeSectorHeight(-8, true, false);
-		else if (key == "me2d_sector_floor_down")	edit_2d_.changeSectorHeight(-1, true, false);
-		else if (key == "me2d_sector_ceil_up8")		edit_2d_.changeSectorHeight(8, false, true);
-		else if (key == "me2d_sector_ceil_up")		edit_2d_.changeSectorHeight(1, false, true);
-		else if (key == "me2d_sector_ceil_down8")	edit_2d_.changeSectorHeight(-8, false, true);
-		else if (key == "me2d_sector_ceil_down")	edit_2d_.changeSectorHeight(-1, false, true);
-		else if (key == "me2d_sector_height_up8")	edit_2d_.changeSectorHeight(8, true, true);
-		else if (key == "me2d_sector_height_up")	edit_2d_.changeSectorHeight(1, true, true);
-		else if (key == "me2d_sector_height_down8")	edit_2d_.changeSectorHeight(-8, true, true);
-		else if (key == "me2d_sector_height_down")	edit_2d_.changeSectorHeight(-1, true, true);
+		if (key == "me2d_sector_floor_up8")
+			edit_2d_.changeSectorHeight(8, true, false);
+		else if (key == "me2d_sector_floor_up")
+			edit_2d_.changeSectorHeight(1, true, false);
+		else if (key == "me2d_sector_floor_down8")
+			edit_2d_.changeSectorHeight(-8, true, false);
+		else if (key == "me2d_sector_floor_down")
+			edit_2d_.changeSectorHeight(-1, true, false);
+		else if (key == "me2d_sector_ceil_up8")
+			edit_2d_.changeSectorHeight(8, false, true);
+		else if (key == "me2d_sector_ceil_up")
+			edit_2d_.changeSectorHeight(1, false, true);
+		else if (key == "me2d_sector_ceil_down8")
+			edit_2d_.changeSectorHeight(-8, false, true);
+		else if (key == "me2d_sector_ceil_down")
+			edit_2d_.changeSectorHeight(-1, false, true);
+		else if (key == "me2d_sector_height_up8")
+			edit_2d_.changeSectorHeight(8, true, true);
+		else if (key == "me2d_sector_height_up")
+			edit_2d_.changeSectorHeight(1, true, true);
+		else if (key == "me2d_sector_height_down8")
+			edit_2d_.changeSectorHeight(-8, true, true);
+		else if (key == "me2d_sector_height_down")
+			edit_2d_.changeSectorHeight(-1, true, true);
 
 		// Light changes
-		else if (key == "me2d_sector_light_up16")	edit_2d_.changeSectorLight(true, false);
-		else if (key == "me2d_sector_light_up")		edit_2d_.changeSectorLight(true, true);
-		else if (key == "me2d_sector_light_down16")	edit_2d_.changeSectorLight(false, false);
-		else if (key == "me2d_sector_light_down")	edit_2d_.changeSectorLight(false, true);
+		else if (key == "me2d_sector_light_up16")
+			edit_2d_.changeSectorLight(true, false);
+		else if (key == "me2d_sector_light_up")
+			edit_2d_.changeSectorLight(true, true);
+		else if (key == "me2d_sector_light_down16")
+			edit_2d_.changeSectorLight(false, false);
+		else if (key == "me2d_sector_light_down")
+			edit_2d_.changeSectorLight(false, true);
 
 		// Join
-		else if (key == "me2d_sector_join")			edit_2d_.joinSectors(true);
-		else if (key == "me2d_sector_join_keep")	edit_2d_.joinSectors(false);
+		else if (key == "me2d_sector_join")
+			edit_2d_.joinSectors(true);
+		else if (key == "me2d_sector_join_keep")
+			edit_2d_.joinSectors(false);
 
 		else
 			return false;
@@ -1128,53 +1099,88 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 		}
 
 		// Copy/paste
-		else if (key == "me3d_copy_tex_type")	edit_3d_.copy(Edit3D::CopyType::TexType);
-		else if (key == "me3d_paste_tex_type")	edit_3d_.paste(Edit3D::CopyType::TexType);
-		else if (key == "me3d_paste_tex_adj")	edit_3d_.floodFill(Edit3D::CopyType::TexType);
+		else if (key == "me3d_copy_tex_type")
+			edit_3d_.copy(Edit3D::CopyType::TexType);
+		else if (key == "me3d_paste_tex_type")
+			edit_3d_.paste(Edit3D::CopyType::TexType);
+		else if (key == "me3d_paste_tex_adj")
+			edit_3d_.floodFill(Edit3D::CopyType::TexType);
 
 		// Light changes
-		else if	(key == "me3d_light_up16")		edit_3d_.changeSectorLight(16);
-		else if (key == "me3d_light_up")		edit_3d_.changeSectorLight(1);
-		else if (key == "me3d_light_down16")	edit_3d_.changeSectorLight(-16);
-		else if (key == "me3d_light_down")		edit_3d_.changeSectorLight(-1);
+		else if (key == "me3d_light_up16")
+			edit_3d_.changeSectorLight(16);
+		else if (key == "me3d_light_up")
+			edit_3d_.changeSectorLight(1);
+		else if (key == "me3d_light_down16")
+			edit_3d_.changeSectorLight(-16);
+		else if (key == "me3d_light_down")
+			edit_3d_.changeSectorLight(-1);
 
 		// Wall/Flat offset changes
-		else if	(key == "me3d_xoff_up8")	edit_3d_.changeOffset(8, true);
-		else if	(key == "me3d_xoff_up")		edit_3d_.changeOffset(1, true);
-		else if	(key == "me3d_xoff_down8")	edit_3d_.changeOffset(-8, true);
-		else if	(key == "me3d_xoff_down")	edit_3d_.changeOffset(-1, true);
-		else if	(key == "me3d_yoff_up8")	edit_3d_.changeOffset(8, false);
-		else if	(key == "me3d_yoff_up")		edit_3d_.changeOffset(1, false);
-		else if	(key == "me3d_yoff_down8")	edit_3d_.changeOffset(-8, false);
-		else if	(key == "me3d_yoff_down")	edit_3d_.changeOffset(-1, false);
+		else if (key == "me3d_xoff_up8")
+			edit_3d_.changeOffset(8, true);
+		else if (key == "me3d_xoff_up")
+			edit_3d_.changeOffset(1, true);
+		else if (key == "me3d_xoff_down8")
+			edit_3d_.changeOffset(-8, true);
+		else if (key == "me3d_xoff_down")
+			edit_3d_.changeOffset(-1, true);
+		else if (key == "me3d_yoff_up8")
+			edit_3d_.changeOffset(8, false);
+		else if (key == "me3d_yoff_up")
+			edit_3d_.changeOffset(1, false);
+		else if (key == "me3d_yoff_down8")
+			edit_3d_.changeOffset(-8, false);
+		else if (key == "me3d_yoff_down")
+			edit_3d_.changeOffset(-1, false);
 
 		// Height changes
-		else if	(key == "me3d_flat_height_up8")		edit_3d_.changeSectorHeight(8);
-		else if	(key == "me3d_flat_height_up")		edit_3d_.changeSectorHeight(1);
-		else if	(key == "me3d_flat_height_down8")	edit_3d_.changeSectorHeight(-8);
-		else if	(key == "me3d_flat_height_down")	edit_3d_.changeSectorHeight(-1);
+		else if (key == "me3d_flat_height_up8")
+			edit_3d_.changeSectorHeight(8);
+		else if (key == "me3d_flat_height_up")
+			edit_3d_.changeSectorHeight(1);
+		else if (key == "me3d_flat_height_down8")
+			edit_3d_.changeSectorHeight(-8);
+		else if (key == "me3d_flat_height_down")
+			edit_3d_.changeSectorHeight(-1);
 
 		// Thing height changes
-		else if (key == "me3d_thing_up")	edit_3d_.changeThingZ(1);
-		else if (key == "me3d_thing_up8")	edit_3d_.changeThingZ(8);
-		else if (key == "me3d_thing_down")	edit_3d_.changeThingZ(-1);
-		else if (key == "me3d_thing_down8")	edit_3d_.changeThingZ(-8);
+		else if (key == "me3d_thing_up")
+			edit_3d_.changeThingZ(1);
+		else if (key == "me3d_thing_up8")
+			edit_3d_.changeThingZ(8);
+		else if (key == "me3d_thing_down")
+			edit_3d_.changeThingZ(-1);
+		else if (key == "me3d_thing_down8")
+			edit_3d_.changeThingZ(-8);
 
 		// Generic height change
-		else if (key == "me3d_generic_up8")		edit_3d_.changeHeight(8);
-		else if (key == "me3d_generic_up")		edit_3d_.changeHeight(1);
-		else if (key == "me3d_generic_down8")	edit_3d_.changeHeight(-8);
-		else if (key == "me3d_generic_down")	edit_3d_.changeHeight(-1);
+		else if (key == "me3d_generic_up8")
+			edit_3d_.changeHeight(8);
+		else if (key == "me3d_generic_up")
+			edit_3d_.changeHeight(1);
+		else if (key == "me3d_generic_down8")
+			edit_3d_.changeHeight(-8);
+		else if (key == "me3d_generic_down")
+			edit_3d_.changeHeight(-1);
 
 		// Wall/Flat scale changes
-		else if (key == "me3d_scalex_up_l" && is_udmf)		edit_3d_.changeScale(1, true);
-		else if (key == "me3d_scalex_up_s" && is_udmf)		edit_3d_.changeScale(0.1, true);
-		else if (key == "me3d_scalex_down_l" && is_udmf)	edit_3d_.changeScale(-1, true);
-		else if (key == "me3d_scalex_down_s" && is_udmf)	edit_3d_.changeScale(-0.1, true);
-		else if (key == "me3d_scaley_up_l" && is_udmf)		edit_3d_.changeScale(1, false);
-		else if (key == "me3d_scaley_up_s" && is_udmf)		edit_3d_.changeScale(0.1, false);
-		else if (key == "me3d_scaley_down_l" && is_udmf)	edit_3d_.changeScale(-1, false);
-		else if (key == "me3d_scaley_down_s" && is_udmf)	edit_3d_.changeScale(-0.1, false);
+		else if (key == "me3d_scalex_up_l" && is_udmf)
+			edit_3d_.changeScale(1, true);
+		else if (key == "me3d_scalex_up_s" && is_udmf)
+			edit_3d_.changeScale(0.1, true);
+		else if (key == "me3d_scalex_down_l" && is_udmf)
+			edit_3d_.changeScale(-1, true);
+		else if (key == "me3d_scalex_down_s" && is_udmf)
+			edit_3d_.changeScale(-0.1, true);
+		else if (key == "me3d_scaley_up_l" && is_udmf)
+			edit_3d_.changeScale(1, false);
+		else if (key == "me3d_scaley_up_s" && is_udmf)
+			edit_3d_.changeScale(0.1, false);
+		else if (key == "me3d_scaley_down_l" && is_udmf)
+			edit_3d_.changeScale(-1, false);
+		else if (key == "me3d_scaley_down_s" && is_udmf)
+			edit_3d_.changeScale(-0.1, false);
 
 		// Auto-align
 		else if (key == "me3d_wall_autoalign_x")
@@ -1205,12 +1211,10 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::updateDisplay
-//
+// -----------------------------------------------------------------------------
 // Updates the map object properties panel and current info overlay from the
 // current hilight/selection
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::updateDisplay()
 {
 	// Update map object properties panel
@@ -1225,11 +1229,9 @@ void MapEditContext::updateDisplay()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::updateStatusText
-//
+// -----------------------------------------------------------------------------
 // Updates the window status bar text (mode, grid, etc.)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::updateStatusText()
 {
 	// Edit mode
@@ -1255,7 +1257,7 @@ void MapEditContext::updateStatusText()
 
 	if (edit_mode_ != Mode::Visual && selection_.size() > 0)
 	{
-		mode += S_FMT(" (%lu selected)", (int) selection_.size());
+		mode += S_FMT(" (%lu selected)", (int)selection_.size());
 	}
 
 	MapEditor::setStatusText(mode, 1);
@@ -1275,13 +1277,11 @@ void MapEditContext::updateStatusText()
 	MapEditor::setStatusText(grid, 2);
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::beginUndoRecord
-//
+// -----------------------------------------------------------------------------
 // Begins recording undo level [name]. [mod] is true if the operation about to
 // begin will modify object properties, [create/del] are true if it will create
 // or delete objects
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::beginUndoRecord(string name, bool mod, bool create, bool del)
 {
 	// Setup
@@ -1289,8 +1289,8 @@ void MapEditContext::beginUndoRecord(string name, bool mod, bool create, bool de
 	if (manager->currentlyRecording())
 		return;
 	undo_modified_ = mod;
-	undo_deleted_ = del;
-	undo_created_ = create;
+	undo_deleted_  = del;
+	undo_created_  = create;
 
 	// Begin recording
 	manager->beginRecord(name);
@@ -1307,14 +1307,12 @@ void MapEditContext::beginUndoRecord(string name, bool mod, bool create, bool de
 	last_undo_level_ = "";
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::beginUndoRecordLocked
-//
+// -----------------------------------------------------------------------------
 // Same as beginUndoRecord, except that subsequent calls to this will not
 // record another undo level if [name] is the same as last (used for repeated
 // operations like offset changes etc. so that 5 offset changes to the same
 // object only create 1 undo level)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::beginUndoRecordLocked(string name, bool mod, bool create, bool del)
 {
 	if (name != last_undo_level_)
@@ -1324,11 +1322,9 @@ void MapEditContext::beginUndoRecordLocked(string name, bool mod, bool create, b
 	}
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::endUndoRecord
-//
+// -----------------------------------------------------------------------------
 // Finish recording undo level. Discarded if [success] is false
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::endUndoRecord(bool success)
 {
 	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
@@ -1337,7 +1333,7 @@ void MapEditContext::endUndoRecord(bool success)
 	{
 		// Record necessary undo steps
 		MapObject::beginPropBackup(-1);
-		bool modified = false;
+		bool modified        = false;
 		bool created_deleted = false;
 		if (undo_modified_)
 			modified = manager->recordUndoStep(new MapEditor::MultiMapObjectPropertyChangeUS());
@@ -1355,22 +1351,18 @@ void MapEditContext::endUndoRecord(bool success)
 	map_.recomputeSpecials();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::recordPropertyChangeUndoStep
-//
+// -----------------------------------------------------------------------------
 // Records an object property change undo step for [object]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::recordPropertyChangeUndoStep(MapObject* object)
 {
 	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
 	manager->recordUndoStep(new MapEditor::PropertyChangeUS(object));
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::doUndo
-//
+// -----------------------------------------------------------------------------
 // Undoes the current undo level
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::doUndo()
 {
 	// Don't undo if the input state isn't normal
@@ -1381,9 +1373,9 @@ void MapEditContext::doUndo()
 	selection_.clear();
 
 	// Undo
-	int time = App::runTimer() - 1;
-	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
-	string undo_name = manager->undo();
+	int          time      = App::runTimer() - 1;
+	UndoManager* manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
+	string       undo_name = manager->undo();
 
 	// Editor message
 	if (undo_name != "")
@@ -1391,7 +1383,7 @@ void MapEditContext::doUndo()
 		addEditorMessage(S_FMT("Undo: %s", undo_name));
 
 		// Refresh stuff
-		//updateTagged();
+		// updateTagged();
 		map_.rebuildConnectedLines();
 		map_.rebuildConnectedSides();
 		map_.setGeometryUpdated();
@@ -1402,11 +1394,9 @@ void MapEditContext::doUndo()
 	map_.recomputeSpecials();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::doRedo
-//
+// -----------------------------------------------------------------------------
 // Redoes the next undo level
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::doRedo()
 {
 	// Don't redo if the input state isn't normal
@@ -1417,9 +1407,9 @@ void MapEditContext::doRedo()
 	selection_.clear();
 
 	// Redo
-	int time = App::runTimer() - 1;
-	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
-	string undo_name = manager->redo();
+	int          time      = App::runTimer() - 1;
+	UndoManager* manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
+	string       undo_name = manager->redo();
 
 	// Editor message
 	if (undo_name != "")
@@ -1427,7 +1417,7 @@ void MapEditContext::doRedo()
 		addEditorMessage(S_FMT("Redo: %s", undo_name));
 
 		// Refresh stuff
-		//updateTagged();
+		// updateTagged();
 		map_.rebuildConnectedLines();
 		map_.rebuildConnectedSides();
 		map_.setGeometryUpdated();
@@ -1438,11 +1428,9 @@ void MapEditContext::doRedo()
 	map_.recomputeSpecials();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::overlayActive
-//
+// -----------------------------------------------------------------------------
 // Returns true if a fullscreen overlay is currently active
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool MapEditContext::overlayActive()
 {
 	if (!overlay_current_)
@@ -1451,17 +1439,15 @@ bool MapEditContext::overlayActive()
 		return overlay_current_->isActive();
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::swapPlayerStart3d
-//
+// -----------------------------------------------------------------------------
 // Moves the player 1 start thing to the current position and direction of the
 // 3d mode camera
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::swapPlayerStart3d()
 {
 	// Find player 1 start
 	MapThing* pstart = nullptr;
-	for (int a = map_.nThings() - 1; a >= 0 ; a--)
+	for (int a = map_.nThings() - 1; a >= 0; a--)
 		if (map_.getThing(a)->getType() == 1)
 		{
 			pstart = map_.getThing(a);
@@ -1479,11 +1465,9 @@ void MapEditContext::swapPlayerStart3d()
 	pstart->setAnglePoint(campos + renderer_.cameraDir2D());
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::swapPlayerStart2d
-//
+// -----------------------------------------------------------------------------
 // Moves the player 1 start thing to [pos]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::swapPlayerStart2d(fpoint2_t pos)
 {
 	// Find player 1 start
@@ -1504,11 +1488,9 @@ void MapEditContext::swapPlayerStart2d(fpoint2_t pos)
 	pstart->setPos(pos.x, pos.y);
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::resetPlayerStart
-//
+// -----------------------------------------------------------------------------
 // Resets the player 1 start thing to its original position
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::resetPlayerStart() const
 {
 	// Find player 1 start
@@ -1526,22 +1508,18 @@ void MapEditContext::resetPlayerStart() const
 	pstart->setIntProperty("angle", player_start_dir_);
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::openSectorTextureOverlay
-//
+// -----------------------------------------------------------------------------
 // Opens the sector texture selection overlay
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::openSectorTextureOverlay(vector<MapSector*>& sectors)
 {
 	overlay_current_ = std::make_unique<SectorTextureOverlay>();
 	((SectorTextureOverlay*)overlay_current_.get())->openSectors(sectors);
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::openQuickTextureOverlay
-//
+// -----------------------------------------------------------------------------
 // Opens the quick texture selection (3d mode) overlay
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::openQuickTextureOverlay()
 {
 	if (QuickTextureOverlay3d::ok(selection_))
@@ -1554,11 +1532,9 @@ void MapEditContext::openQuickTextureOverlay()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::openLineTextureOverlay
-//
+// -----------------------------------------------------------------------------
 // Opens the line texture selection overlay
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::openLineTextureOverlay()
 {
 	// Get selection
@@ -1572,62 +1548,49 @@ void MapEditContext::openLineTextureOverlay()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::closeCurrentOverlay
-//
+// -----------------------------------------------------------------------------
 // Closes the current fullscreen overlay
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::closeCurrentOverlay(bool cancel) const
 {
 	if (overlay_current_ && overlay_current_->isActive())
 		overlay_current_->close(cancel);
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::updateInfoOverlay
-//
+// -----------------------------------------------------------------------------
 // Updates the current info overlay, depending on edit mode
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::updateInfoOverlay()
 {
 	// Update info overlay depending on edit mode
 	switch (edit_mode_)
 	{
-	case Mode::Vertices:	info_vertex_.update(selection_.hilightedVertex()); break;
-	case Mode::Lines:		info_line_.update(selection_.hilightedLine()); break;
-	case Mode::Sectors:		info_sector_.update(selection_.hilightedSector()); break;
-	case Mode::Things:		info_thing_.update(selection_.hilightedThing()); break;
+	case Mode::Vertices: info_vertex_.update(selection_.hilightedVertex()); break;
+	case Mode::Lines: info_line_.update(selection_.hilightedLine()); break;
+	case Mode::Sectors: info_sector_.update(selection_.hilightedSector()); break;
+	case Mode::Things: info_thing_.update(selection_.hilightedThing()); break;
 	default: break;
 	}
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::drawInfoOverlay
-//
+// -----------------------------------------------------------------------------
 // Draws the current info overlay
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MapEditContext::drawInfoOverlay(const point2_t& size, float alpha)
 {
 	switch (edit_mode_)
 	{
-	case Mode::Vertices:
-		info_vertex_.draw(size.y, size.x, alpha); return;
-	case Mode::Lines:
-		info_line_.draw(size.y, size.x, alpha); return;
-	case Mode::Sectors:
-		info_sector_.draw(size.y, size.x, alpha); return;
-	case Mode::Things:
-		info_thing_.draw(size.y, size.x, alpha); return;
-	case Mode::Visual:
-		info_3d_.draw(size.y, size.x, size.x * 0.5, alpha); return;
+	case Mode::Vertices: info_vertex_.draw(size.y, size.x, alpha); return;
+	case Mode::Lines: info_line_.draw(size.y, size.x, alpha); return;
+	case Mode::Sectors: info_sector_.draw(size.y, size.x, alpha); return;
+	case Mode::Things: info_thing_.draw(size.y, size.x, alpha); return;
+	case Mode::Visual: info_3d_.draw(size.y, size.x, size.x * 0.5, alpha); return;
 	}
 }
 
-// ----------------------------------------------------------------------------
-// MapEditContext::handleAction
-//
+// -----------------------------------------------------------------------------
 // Handles an SAction [id]. Returns true if the action was handled here
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool MapEditContext::handleAction(string id)
 {
 	using namespace MapEditor;
@@ -1765,16 +1728,11 @@ bool MapEditContext::handleAction(string id)
 		ShowItemDialog dlg(MapEditor::windowWx());
 		switch (editMode())
 		{
-		case Mode::Vertices:
-			dlg.setType(MOBJ_VERTEX); break;
-		case Mode::Lines:
-			dlg.setType(MOBJ_LINE); break;
-		case Mode::Sectors:
-			dlg.setType(MOBJ_SECTOR); break;
-		case Mode::Things:
-			dlg.setType(MOBJ_THING); break;
-		default:
-			return true;
+		case Mode::Vertices: dlg.setType(MapObject::Type::Vertex); break;
+		case Mode::Lines: dlg.setType(MapObject::Type::Line); break;
+		case Mode::Sectors: dlg.setType(MapObject::Type::Sector); break;
+		case Mode::Things: dlg.setType(MapObject::Type::Thing); break;
+		default: return true;
 		}
 
 		// Show dialog
@@ -1789,18 +1747,15 @@ bool MapEditContext::handleAction(string id)
 			bool side = false;
 			switch (dlg.getType())
 			{
-			case MOBJ_VERTEX:
-				setEditMode(Mode::Vertices); break;
-			case MOBJ_LINE:
-				setEditMode(Mode::Lines); break;
-			case MOBJ_SIDE:
-				setEditMode(Mode::Lines); side = true; break;
-			case MOBJ_SECTOR:
-				setEditMode(Mode::Sectors); break;
-			case MOBJ_THING:
-				setEditMode(Mode::Things); break;
-			default:
+			case MapObject::Type::Vertex: setEditMode(Mode::Vertices); break;
+			case MapObject::Type::Line: setEditMode(Mode::Lines); break;
+			case MapObject::Type::Side:
+				setEditMode(Mode::Lines);
+				side = true;
 				break;
+			case MapObject::Type::Sector: setEditMode(Mode::Sectors); break;
+			case MapObject::Type::Thing: setEditMode(Mode::Things); break;
+			default: break;
 			}
 
 			// If side, get its parent line
@@ -1841,7 +1796,7 @@ bool MapEditContext::handleAction(string id)
 	// Move 3d mode camera
 	else if (id == "mapw_camera_set")
 	{
-		fpoint3_t pos(input().mousePosMap());
+		fpoint3_t  pos(input().mousePosMap());
 		MapSector* sector = map_.getSector(map_.sectorAt(input_.mousePosMap()));
 		if (sector)
 			pos.z = sector->getFloorHeight() + 40;
@@ -1904,12 +1859,10 @@ bool MapEditContext::handleAction(string id)
 			// Setup help text
 			string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
 			string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
-			setFeatureHelp({
-				"Tag Edit",
-				S_FMT("%s = Accept", key_accept),
-				S_FMT("%s = Cancel", key_cancel),
-				"Left Click = Toggle tagged sector"
-			});
+			setFeatureHelp({ "Tag Edit",
+							 S_FMT("%s = Accept", key_accept),
+							 S_FMT("%s = Cancel", key_cancel),
+							 "Left Click = Toggle tagged sector" });
 		}
 
 		return true;
@@ -2003,11 +1956,11 @@ bool MapEditContext::handleAction(string id)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Console Commands
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 CONSOLE_COMMAND(m_show_item, 1, true)
 {
@@ -2026,15 +1979,14 @@ CONSOLE_COMMAND(m_check, 0, true)
 			Log::console(S_FMT(
 				"%s: Check for %s",
 				CHR(MapCheck::standardCheckId((MapCheck::StandardCheck)a)),
-				CHR(MapCheck::standardCheckDesc((MapCheck::StandardCheck)a))
-			));
+				CHR(MapCheck::standardCheckDesc((MapCheck::StandardCheck)a))));
 
 		Log::console("all: Run all checks");
 
 		return;
 	}
 
-	auto map = &(MapEditor::editContext().map());
+	auto map    = &(MapEditor::editContext().map());
 	auto texman = &(MapEditor::textureManager());
 
 	// Get checks to run
@@ -2065,7 +2017,7 @@ CONSOLE_COMMAND(m_check, 0, true)
 				Log::console(S_FMT("Unknown check \"%s\"", CHR(arg)));
 		}
 	}
-	
+
 	// Run checks
 	for (unsigned a = 0; a < checks.size(); a++)
 	{
@@ -2105,8 +2057,8 @@ CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
 {
 	sf::Clock clock;
 	sf::Clock totalClock;
-	SLADEMap& map = MapEditor::editContext().map();
-	mobj_backup_t* backup = new mobj_backup_t();
+	SLADEMap& map    = MapEditor::editContext().map();
+	auto      backup = new MapObject::Backup();
 
 	// Vertices
 	for (unsigned a = 0; a < map.nVertices(); a++)
@@ -2153,8 +2105,8 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 
 CONSOLE_COMMAND(m_n_polys, 0, false)
 {
-	SLADEMap& map = MapEditor::editContext().map();
-	int npoly = 0;
+	SLADEMap& map   = MapEditor::editContext().map();
+	int       npoly = 0;
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		npoly += map.getSector(a)->getPolygon()->nSubPolys();
 
@@ -2171,7 +2123,7 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 		Log::console("Object id out of range");
 	else
 	{
-		mobj_backup_t bak;
+		MapObject::Backup bak;
 		obj->backup(&bak);
 		Log::console(S_FMT("Object %d: %s #%lu", id, obj->getTypeName(), obj->getIndex()));
 		Log::console("Properties:");
@@ -2181,7 +2133,7 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 	}
 }
 
-//CONSOLE_COMMAND(m_test_save, 1, false) {
+// CONSOLE_COMMAND(m_test_save, 1, false) {
 //	vector<ArchiveEntry*> entries;
 //	theMapEditor->MapEditContext().getMap().writeDoomMap(entries);
 //	WadArchive temp;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common.h"
 #include "UI/Canvas/OGLCanvas.h"
 
 class GLTexture;
@@ -13,13 +12,13 @@ public:
 	SideTexCanvas(wxWindow* parent);
 	~SideTexCanvas() {}
 
-	string	texName() const { return texname_; }
-	void	setTexture(string texture);
-	void	draw() override;
+	string texName() const { return texname_; }
+	void   setTexture(string texture);
+	void   draw() override;
 
 private:
-	GLTexture*	texture_ = nullptr;
-	string		texname_;
+	GLTexture* texture_ = nullptr;
+	string     texname_;
 };
 
 class TextureComboBox : public wxComboBox
@@ -42,20 +41,20 @@ public:
 	SidePropsPanel(wxWindow* parent);
 	~SidePropsPanel() {}
 
-	void	openSides(vector<MapSide*>& sides);
-	void	applyTo(vector<MapSide*>& sides);
+	void openSides(vector<MapSide*>& sides);
+	void applyTo(vector<MapSide*>& sides);
 
 private:
-	SideTexCanvas*		gfx_lower_;
-	SideTexCanvas*		gfx_middle_;
-	SideTexCanvas*		gfx_upper_;
-	TextureComboBox*	tcb_lower_;
-	TextureComboBox*	tcb_middle_;
-	TextureComboBox*	tcb_upper_;
-	NumberTextCtrl*		text_offsetx_;
-	NumberTextCtrl*		text_offsety_;
+	SideTexCanvas*   gfx_lower_;
+	SideTexCanvas*   gfx_middle_;
+	SideTexCanvas*   gfx_upper_;
+	TextureComboBox* tcb_lower_;
+	TextureComboBox* tcb_middle_;
+	TextureComboBox* tcb_upper_;
+	NumberTextCtrl*  text_offsetx_;
+	NumberTextCtrl*  text_offsety_;
 
 	// Events
-	void	onTextureChanged(wxCommandEvent& e);
-	void	onTextureClicked(wxMouseEvent& e);
+	void onTextureChanged(wxCommandEvent& e);
+	void onTextureClicked(wxMouseEvent& e);
 };

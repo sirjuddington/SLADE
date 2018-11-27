@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -16,44 +16,52 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ShowItemDialog.h"
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+namespace
+{
+vector<MapObject::Type> obj_types{ MapObject::Type::Vertex,
+								   MapObject::Type::Line,
+								   MapObject::Type::Side,
+								   MapObject::Type::Sector,
+								   MapObject::Type::Thing };
+}
+
+
+// -----------------------------------------------------------------------------
 //
 // ShowItemDialog Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ShowItemDialog::ShowItemDialog
-//
+// -----------------------------------------------------------------------------
 // ShowItemDialog class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show Item")
 {
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-	wxGridBagSizer*	gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 	sizer->Add(gb_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
 
 	// Object type
@@ -80,21 +88,17 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 	text_index_->SetFocusFromKbd();
 }
 
-// ----------------------------------------------------------------------------
-// ShowItemDialog::getType
-//
+// -----------------------------------------------------------------------------
 // Returns the selected object type
-// ----------------------------------------------------------------------------
-int ShowItemDialog::getType() const
+// -----------------------------------------------------------------------------
+MapObject::Type ShowItemDialog::getType() const
 {
-	return choice_type_->GetSelection() + 1;
+	return obj_types[choice_type_->GetSelection()];
 }
 
-// ----------------------------------------------------------------------------
-// ShowItemDialog::getIndex
-//
+// -----------------------------------------------------------------------------
 // Returns the entered index, or -1 if invalid
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int ShowItemDialog::getIndex() const
 {
 	long value;
@@ -104,12 +108,13 @@ int ShowItemDialog::getIndex() const
 		return -1;
 }
 
-// ----------------------------------------------------------------------------
-// ShowItemDialog::setType
-//
+// -----------------------------------------------------------------------------
 // Sets the object type dropdown to [type]
-// ----------------------------------------------------------------------------
-void ShowItemDialog::setType(int type) const
+// -----------------------------------------------------------------------------
+void ShowItemDialog::setType(MapObject::Type type) const
 {
-	choice_type_->Select(type - 1);
+	for (unsigned a = 0; a < obj_types.size(); ++a)
+		if (obj_types[a] == type)
+			choice_type_->Select(a);
+	// choice_type_->Select(type - 1);
 }

@@ -1,25 +1,22 @@
-
-#ifndef __SECTOR_INFO_OVERLAY_H__
-#define __SECTOR_INFO_OVERLAY_H__
+#pragma once
 
 class MapSector;
 class TextBox;
 
 class SectorInfoOverlay
 {
-private:
-	TextBox*	text_box;
-	string		ftex;
-	string		ctex;
-	int			last_size;
-
 public:
 	SectorInfoOverlay();
 	~SectorInfoOverlay();
 
-	void	update(MapSector* sector);
-	void	draw(int bottom, int right, float alpha = 1.0f);
-	void	drawTexture(float alpha, int x, int y, string texture, string pos = "Upper");
-};
+	void update(MapSector* sector);
+	void draw(int bottom, int right, float alpha = 1.0f);
 
-#endif//__SECTOR_INFO_OVERLAY_H__
+private:
+	TextBox* text_box_;
+	string   ftex_;
+	string   ctex_;
+	int      last_size_;
+
+	void drawTexture(float alpha, int x, int y, string texture, string pos = "Upper");
+};

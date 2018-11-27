@@ -2,6 +2,7 @@
 
 #include "ActionSpecial.h"
 #include "Game.h"
+#include "MapEditor/SLADEMap/MapObject.h"
 #include "MapInfo.h"
 #include "SpecialPreset.h"
 #include "ThingType.h"
@@ -13,7 +14,6 @@ class ArchiveEntry;
 class Archive;
 class MapLine;
 class MapThing;
-class MapObject;
 namespace ZScript
 {
 class Definitions;
@@ -157,8 +157,8 @@ public:
 	string        spacTriggerUDMFName(unsigned trigger_index);
 
 	// UDMF properties
-	UDMFProperty* getUDMFProperty(string name, int type);
-	UDMFPropMap&  allUDMFProperties(int type);
+	UDMFProperty* getUDMFProperty(string name, MapObject::Type type);
+	UDMFPropMap&  allUDMFProperties(MapObject::Type type);
 	void          cleanObjectUDMFProps(MapObject* object);
 
 	// Sector types
@@ -172,10 +172,10 @@ public:
 	int    boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull);
 
 	// Defaults
-	string getDefaultString(int type, string property);
-	int    getDefaultInt(int type, string property);
-	double getDefaultFloat(int type, string property);
-	bool   getDefaultBool(int type, string property);
+	string getDefaultString(MapObject::Type type, string property);
+	int    getDefaultInt(MapObject::Type type, string property);
+	double getDefaultFloat(MapObject::Type type, string property);
+	bool   getDefaultBool(MapObject::Type type, string property);
 	void   applyDefaults(MapObject* object, bool udmf = false);
 
 	// Special Presets

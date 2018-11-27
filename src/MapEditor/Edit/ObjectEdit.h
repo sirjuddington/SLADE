@@ -66,14 +66,14 @@ public:
 
 private:
 	vector<Vertex::UPtr> vertices_;
-	vector<Line>    lines_;
-	vector<Thing>   things_;
-	bbox_t          bbox_;          // Current
-	bbox_t          old_bbox_;      // Before drag operation
-	bbox_t          original_bbox_; // From first init
-	fpoint2_t       offset_prev_ = { 0, 0 };
-	double          rotation_    = 0;
-	bool            mirrored_    = false;
+	vector<Line>         lines_;
+	vector<Thing>        things_;
+	bbox_t               bbox_;          // Current
+	bbox_t               old_bbox_;      // Before drag operation
+	bbox_t               original_bbox_; // From first init
+	fpoint2_t            offset_prev_ = { 0, 0 };
+	double               rotation_    = 0;
+	bool                 mirrored_    = false;
 };
 
 #undef None

@@ -1,8 +1,5 @@
+#pragma once
 
-#ifndef __SCRIPT_EDITOR_PANEL_H__
-#define __SCRIPT_EDITOR_PANEL_H__
-
-#include "common.h"
 #include "General/SAction.h"
 
 class ArchiveEntry;
@@ -12,24 +9,12 @@ class FindReplacePanel;
 
 class ScriptEditorPanel : public wxPanel, SActionHandler
 {
-private:
-	string			script_text;
-	ArchiveEntry*	entry_script;
-	ArchiveEntry*	entry_compiled;
-
-	TextEditorCtrl*		text_editor;
-	wxButton*			btn_save;
-	wxButton*			btn_compile;
-	wxTreeListCtrl*		list_words;
-	FindReplacePanel*	panel_fr;
-	wxChoice*			choice_jump_to;
-
 public:
 	ScriptEditorPanel(wxWindow* parent);
 	~ScriptEditorPanel();
 
-	ArchiveEntry*	scriptEntry() { return entry_script; }
-	ArchiveEntry*	compiledEntry() { return entry_compiled; }
+	ArchiveEntry*	scriptEntry() { return entry_script_; }
+	ArchiveEntry*	compiledEntry() { return entry_compiled_; }
 
 	bool	openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = nullptr);
 	void	populateWordList();
@@ -38,7 +23,17 @@ public:
 
 	bool	handleAction(string name);
 
+private:
+	string        script_text_;
+	ArchiveEntry* entry_script_;
+	ArchiveEntry* entry_compiled_;
+
+	TextEditorCtrl*   text_editor_;
+	wxButton*         btn_save_;
+	wxButton*         btn_compile_;
+	wxTreeListCtrl*   list_words_;
+	FindReplacePanel* panel_fr_;
+	wxChoice*         choice_jump_to_;
+
 	void	onWordListActivate(wxCommandEvent& e);
 };
-
-#endif//__SCRIPT_EDITOR_PANEL_H__

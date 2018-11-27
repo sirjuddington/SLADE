@@ -1,21 +1,19 @@
-
-#ifndef __MOBJ_PROPERTY_LIST_H__
-#define __MOBJ_PROPERTY_LIST_H__
+#pragma once
 
 #include "Utility/PropertyList/Property.h"
 
 class MobjPropertyList
 {
 public:
-	struct prop_t
+	struct Prop
 	{
-		string		name;
-		Property	value;
+		string   name;
+		Property value;
 
-		prop_t(string name) { this->name = name; }
-		prop_t(string name, Property value)
+		Prop(string name) { this->name = name; }
+		Prop(string name, Property value)
 		{
-			this->name = name;
+			this->name  = name;
 			this->value = value;
 		}
 	};
@@ -26,29 +24,27 @@ public:
 	// Operator for direct access to hash map
 	Property& operator[](string key)
 	{
-		for (unsigned a = 0; a < properties.size(); ++a)
+		for (unsigned a = 0; a < properties_.size(); ++a)
 		{
-			if (properties[a].name == key)
-				return properties[a].value;
+			if (properties_[a].name == key)
+				return properties_[a].value;
 		}
 
-		properties.push_back(prop_t(key));
-		return properties.back().value;
+		properties_.push_back(Prop(key));
+		return properties_.back().value;
 	}
 
-	vector<prop_t>&	allProperties() { return properties; }
+	vector<Prop>& allProperties() { return properties_; }
 
-	void	clear() { properties.clear(); }
-	bool	propertyExists(string key);
-	bool	removeProperty(string key);
-	void	copyTo(MobjPropertyList& list);
-	void	addFlag(string key);
-	bool	isEmpty() { return properties.empty(); }
+	void clear() { properties_.clear(); }
+	bool propertyExists(string key);
+	bool removeProperty(string key);
+	void copyTo(MobjPropertyList& list);
+	void addFlag(string key);
+	bool isEmpty() { return properties_.empty(); }
 
-	string	toString(bool condensed = false);
+	string toString(bool condensed = false);
 
 private:
-	vector<prop_t>	properties;
+	vector<Prop> properties_;
 };
-
-#endif//__MOBJ_PROPERTY_LIST_H__

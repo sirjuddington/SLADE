@@ -182,12 +182,12 @@ sol::table lineVisibleTextures(MapLine& self)
 {
 	auto needs_tex = self.needsTexture();
 	return Lua::state().create_table_with(
-		"frontUpper", (needs_tex & TEX_FRONT_UPPER) != 0,
-		"frontMiddle", (needs_tex & TEX_FRONT_MIDDLE) != 0,
-		"frontLower", (needs_tex & TEX_FRONT_LOWER) != 0,
-		"backUpper", (needs_tex & TEX_BACK_UPPER) != 0,
-		"backMiddle", (needs_tex & TEX_BACK_MIDDLE) != 0,
-		"backLower", (needs_tex & TEX_BACK_LOWER) != 0
+		"frontUpper", (needs_tex & MapLine::Part::FrontUpper) != 0,
+		"frontMiddle", (needs_tex & MapLine::Part::FrontMiddle) != 0,
+		"frontLower", (needs_tex & MapLine::Part::FrontLower) != 0,
+		"backUpper", (needs_tex & MapLine::Part::BackUpper) != 0,
+		"backMiddle", (needs_tex & MapLine::Part::BackMiddle) != 0,
+		"backLower", (needs_tex & MapLine::Part::BackLower) != 0
 	);
 }
 

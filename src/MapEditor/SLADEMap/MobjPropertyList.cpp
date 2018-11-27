@@ -1,83 +1,84 @@
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MobjPropertyList.cpp
- * Description: A special version of the PropertyList class that
- *              uses a vector rather than a map to store properties
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    MobjPropertyList.cpp
+// Description: A special version of the PropertyList class that uses a vector
+//              rather than a map to store properties
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MobjPropertyList.h"
 #include "Utility/StringUtils.h"
 
 
-/*******************************************************************
- * MOBJPROPERTYLIST CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// MobjPropertyList Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* MobjPropertyList::MobjPropertyList
- * MobjPropertyList class constructor
- *******************************************************************/
-MobjPropertyList::MobjPropertyList()
-{
-}
 
-/* MobjPropertyList::~MobjPropertyList
- * MobjPropertyList class destructor
- *******************************************************************/
-MobjPropertyList::~MobjPropertyList()
-{
-}
+// -----------------------------------------------------------------------------
+// MobjPropertyList class constructor
+// -----------------------------------------------------------------------------
+MobjPropertyList::MobjPropertyList() {}
 
-/* MobjPropertyList::propertyExists
- * Returns true if a property with the given name exists, false
- * otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// MobjPropertyList class destructor
+// -----------------------------------------------------------------------------
+MobjPropertyList::~MobjPropertyList() {}
+
+// -----------------------------------------------------------------------------
+// Returns true if a property with the given name exists, false otherwise
+// -----------------------------------------------------------------------------
 bool MobjPropertyList::propertyExists(string key)
 {
-	for (unsigned a = 0; a < properties.size(); ++a)
+	for (unsigned a = 0; a < properties_.size(); ++a)
 	{
-		if (properties[a].name == key)
+		if (properties_[a].name == key)
 			return true;
 	}
 
 	return false;
 }
 
-/* MobjPropertyList::removeProperty
- * Removes a property value, returns true if [key] was removed
- * or false if key didn't exist
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Removes a property value, returns true if [key] was removed or false if key
+// didn't exist
+// -----------------------------------------------------------------------------
 bool MobjPropertyList::removeProperty(string key)
 {
-	//return properties.erase(key) > 0;
-	for (unsigned a = 0; a < properties.size(); ++a)
+	// return properties.erase(key) > 0;
+	for (unsigned a = 0; a < properties_.size(); ++a)
 	{
-		if (properties[a].name == key)
+		if (properties_[a].name == key)
 		{
-			properties[a] = properties.back();
-			properties.pop_back();
+			properties_[a] = properties_.back();
+			properties_.pop_back();
 			return true;
 		}
 	}
@@ -85,46 +86,46 @@ bool MobjPropertyList::removeProperty(string key)
 	return false;
 }
 
-/* MobjPropertyList::copyTo
- * Copies all properties to [list]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Copies all properties to [list]
+// -----------------------------------------------------------------------------
 void MobjPropertyList::copyTo(MobjPropertyList& list)
 {
 	// Clear given list
 	list.clear();
 
-	for (unsigned a = 0; a < properties.size(); ++a)
-		list.properties.push_back(prop_t(properties[a].name, properties[a].value));
+	for (unsigned a = 0; a < properties_.size(); ++a)
+		list.properties_.push_back(Prop(properties_[a].name, properties_[a].value));
 }
 
-/* MobjPropertyList::addFlag
- * Adds a 'flag' property [key]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds a 'flag' property [key]
+// -----------------------------------------------------------------------------
 void MobjPropertyList::addFlag(string key)
 {
 	Property flag;
-	properties.push_back(prop_t(key, flag));
+	properties_.push_back(Prop(key, flag));
 }
 
-/* MobjPropertyList::toString
- * Returns a string representation of the property list
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns a string representation of the property list
+// -----------------------------------------------------------------------------
 string MobjPropertyList::toString(bool condensed)
 {
 	// Init return string
 	string ret = wxEmptyString;
 
-	for (unsigned a = 0; a < properties.size(); ++a)
+	for (unsigned a = 0; a < properties_.size(); ++a)
 	{
 		// Skip if no value
-		if (!properties[a].value.hasValue())
+		if (!properties_[a].value.hasValue())
 			continue;
 
 		// Add "key = value;\n" to the return string
-		string key = properties[a].name;
-		string val = properties[a].value.getStringValue();
+		string key = properties_[a].name;
+		string val = properties_[a].value.getStringValue();
 
-		if (properties[a].value.getType() == PROP_STRING)
+		if (properties_[a].value.getType() == PROP_STRING)
 		{
 			val = StringUtils::escapedString(val);
 			val = "\"" + val + "\"";

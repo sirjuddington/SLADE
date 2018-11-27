@@ -1,33 +1,34 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    Edit2D.cpp
- * Description: Map Editor 2D modes (vertices/lines/etc) editing
- *              functionality
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Edit2D.cpp
+// Description: Map Editor 2D modes (vertices/lines/etc) editing functionality
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Edit2D.h"
 #include "Game/Configuration.h"
@@ -38,30 +39,34 @@
 #include "Utility/MathStuff.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 CVAR(Bool, map_merge_lines_on_delete_vertex, false, CVAR_SAVE)
 CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
 
 
-/*******************************************************************
- * EDIT2D CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Edit2D Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* Edit2D::Edit2D
- * Edit2D class constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Edit2D class constructor
+// -----------------------------------------------------------------------------
 Edit2D::Edit2D(MapEditContext& context) :
 	context_{ context },
 	copy_line_{ nullptr, nullptr, &copy_side_front_, &copy_side_back_, nullptr }
 {
 }
 
-/* Edit2D::mirror
- * Mirror selected objects horizontally or vertically depending on
- * [x_axis]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Mirror selected objects horizontally or vertically depending on [x_axis]
+// -----------------------------------------------------------------------------
 void Edit2D::mirror(bool x_axis) const
 {
 	using MapEditor::Mode;
@@ -86,16 +91,10 @@ void Edit2D::mirror(bool x_axis) const
 			// Position
 			if (x_axis)
 				context_.map().moveThing(
-					things[a]->getIndex(),
-					bbox.mid_x() - (things[a]->xPos() - bbox.mid_x()),
-					things[a]->yPos()
-				);
+					things[a]->getIndex(), bbox.mid_x() - (things[a]->xPos() - bbox.mid_x()), things[a]->yPos());
 			else
 				context_.map().moveThing(
-					things[a]->getIndex(),
-					things[a]->xPos(),
-					bbox.mid_y() - (things[a]->yPos() - bbox.mid_y())
-				);
+					things[a]->getIndex(), things[a]->xPos(), bbox.mid_y() - (things[a]->yPos() - bbox.mid_y()));
 
 			// Direction
 			int angle = things[a]->getAngle();
@@ -122,7 +121,7 @@ void Edit2D::mirror(bool x_axis) const
 
 		// Get vertices to mirror
 		vector<MapVertex*> vertices;
-		vector<MapLine*> lines;
+		vector<MapLine*>   lines;
 		if (context_.editMode() == Mode::Vertices)
 			vertices = context_.selection().selectedVertices();
 		else if (context_.editMode() == Mode::Lines)
@@ -157,18 +156,12 @@ void Edit2D::mirror(bool x_axis) const
 			if (x_axis)
 			{
 				context_.map().moveVertex(
-					vertices[a]->getIndex(),
-					bbox.mid_x() - (vertices[a]->xPos() - bbox.mid_x()),
-					vertices[a]->yPos()
-				);
+					vertices[a]->getIndex(), bbox.mid_x() - (vertices[a]->xPos() - bbox.mid_x()), vertices[a]->yPos());
 			}
 			else
 			{
 				context_.map().moveVertex(
-					vertices[a]->getIndex(),
-					vertices[a]->xPos(),
-					bbox.mid_y() - (vertices[a]->yPos() - bbox.mid_y())
-				);
+					vertices[a]->getIndex(), vertices[a]->xPos(), bbox.mid_y() - (vertices[a]->yPos() - bbox.mid_y()));
 			}
 		}
 
@@ -180,10 +173,10 @@ void Edit2D::mirror(bool x_axis) const
 	}
 }
 
-/* Edit2D::editObjectProperties
- * Opens a dialog containing a MapObjectPropsPanel to edit properties
- * for all selected (or hilighted) objects
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Opens a dialog containing a MapObjectPropsPanel to edit properties for all
+// selected (or hilighted) objects
+// -----------------------------------------------------------------------------
 void Edit2D::editObjectProperties()
 {
 	auto selection = context_.selection().selectedObjects();
@@ -209,16 +202,16 @@ void Edit2D::editObjectProperties()
 	context_.endUndoRecord(done);
 }
 
-/* Edit2D::splitLine
- * Splits the line closest to [x,y] at the closest point on the line
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Splits the line closest to [x,y] at the closest point on the line
+// -----------------------------------------------------------------------------
 void Edit2D::splitLine(double x, double y, double min_dist) const
 {
 	fpoint2_t point(x, y);
 
 	// Get the closest line
-	int lindex = context_.map().nearestLine(point, min_dist);
-	auto line = context_.map().getLine(lindex);
+	int  lindex = context_.map().nearestLine(point, min_dist);
+	auto line   = context_.map().getLine(lindex);
 
 	// Do nothing if no line is close enough
 	if (!line)
@@ -240,9 +233,9 @@ void Edit2D::splitLine(double x, double y, double min_dist) const
 	context_.endUndoRecord();
 }
 
-/* Edit2D::flipLines
- * Flips all selected lines, and sides if [sides] is true
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Flips all selected lines, and sides if [sides] is true
+// -----------------------------------------------------------------------------
 void Edit2D::flipLines(bool sides) const
 {
 	// Get selected/hilighted line(s)
@@ -263,9 +256,9 @@ void Edit2D::flipLines(bool sides) const
 	context_.updateDisplay();
 }
 
-/* Edit2D::correctLineSectors
- * Attempts to correct sector references on all selected lines
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Attempts to correct sector references on all selected lines
+// -----------------------------------------------------------------------------
 void Edit2D::correctLineSectors() const
 {
 	// Get selected/hilighted line(s)
@@ -292,10 +285,9 @@ void Edit2D::correctLineSectors() const
 	}
 }
 
-/* Edit2D::changeSectorHeight
- * Changes floor and/or ceiling heights on all selected sectors by
- * [amount]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Changes floor and/or ceiling heights on all selected sectors by [amount]
+// -----------------------------------------------------------------------------
 void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 {
 	// Do nothing if not in sectors mode
@@ -351,7 +343,7 @@ void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 	string inc = "increased";
 	if (amount < 0)
 	{
-		inc = "decreased";
+		inc    = "decreased";
 		amount = -amount;
 	}
 	context_.addEditorMessage(S_FMT("%s height %s by %d", what, inc, amount));
@@ -360,10 +352,10 @@ void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 	context_.updateDisplay();
 }
 
-/* Edit2D::changeSectorLight
- * Changes the light level for all selected sectors, increments if
- * [up] is true, decrements otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Changes the light level for all selected sectors.
+// Increments if [up] is true, decrements otherwise
+// -----------------------------------------------------------------------------
 void Edit2D::changeSectorLight(bool up, bool fine) const
 {
 	// Do nothing if not in sectors mode
@@ -398,7 +390,7 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 	context_.endUndoRecord();
 
 	// Add editor message
-	//auto dir = up ? "increased" : "decreased";
+	// auto dir = up ? "increased" : "decreased";
 	int amount = fine ? 1 : Game::configuration().lightLevelInterval();
 	context_.addEditorMessage(S_FMT("Light level %s by %d", up ? "increased" : "decreased", amount));
 
@@ -406,11 +398,11 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 	context_.updateDisplay();
 }
 
-/* Edit2D::changeSectorTexture
- * Depending on the current sector edit mode, either opens the
- * sector texture overlay (normal) or browses for the ceiling or
- * floor texture (ceiling/floor edit mode)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Depending on the current sector edit mode, either opens the sector texture
+// overlay (normal) or browses for the ceiling or floor texture (ceiling/floor
+// edit mode)
+// -----------------------------------------------------------------------------
 void Edit2D::changeSectorTexture() const
 {
 	using MapEditor::SectorMode;
@@ -424,15 +416,15 @@ void Edit2D::changeSectorTexture() const
 	string texture, browser_title, undo_name;
 	if (context_.sectorEditMode() == SectorMode::Floor)
 	{
-		texture = selection[0]->stringProperty("texturefloor");
+		texture       = selection[0]->stringProperty("texturefloor");
 		browser_title = "Browse Floor Texture";
-		undo_name = "Change Floor Texture";
+		undo_name     = "Change Floor Texture";
 	}
 	else if (context_.sectorEditMode() == SectorMode::Ceiling)
 	{
-		texture = selection[0]->stringProperty("textureceiling");
+		texture       = selection[0]->stringProperty("textureceiling");
 		browser_title = "Browse Ceiling Texture";
-		undo_name = "Change Ceiling Texture";
+		undo_name     = "Change Ceiling Texture";
 	}
 	else
 	{
@@ -465,11 +457,10 @@ void Edit2D::changeSectorTexture() const
 	context_.renderer().renderer2D().clearTextureCache();
 }
 
-/* Edit2D::joinSectors
- * Joins all selected sectors. If [remove_lines] is true, all
- * resulting lines with both sides set to the joined sector are
- * removed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Joins all selected sectors. If [remove_lines] is true, all resulting lines
+// with both sides set to the joined sector are removed
+// -----------------------------------------------------------------------------
 void Edit2D::joinSectors(bool remove_lines) const
 {
 	// Check edit mode
@@ -523,7 +514,7 @@ void Edit2D::joinSectors(bool remove_lines) const
 	}
 
 	// Remove any changed lines that now have the target sector on both sides (if needed)
-	int nlines = 0;
+	int                nlines = 0;
 	vector<MapVertex*> verts;
 	if (remove_lines)
 	{
@@ -556,9 +547,9 @@ void Edit2D::joinSectors(bool remove_lines) const
 		context_.addEditorMessage(S_FMT("Joined %lu Sectors (removed %d Lines)", sectors.size(), nlines));
 }
 
-/* Edit2D::changeThingType
- * Opens the thing type browser for the currently selected thing(s)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Opens the thing type browser for the currently selected thing(s)
+// -----------------------------------------------------------------------------
 void Edit2D::changeThingType() const
 {
 	// Get selected things (if any)
@@ -590,9 +581,9 @@ void Edit2D::changeThingType() const
 	}
 }
 
-/* Edit2D::thingQuickAngle
- * Sets the angle of all selected things to face toward [mouse_pos]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the angle of all selected things to face toward [mouse_pos]
+// -----------------------------------------------------------------------------
 void Edit2D::thingQuickAngle(fpoint2_t mouse_pos) const
 {
 	// Do nothing if not in things mode
@@ -603,9 +594,9 @@ void Edit2D::thingQuickAngle(fpoint2_t mouse_pos) const
 		thing->setAnglePoint(mouse_pos);
 }
 
-/* Edit2D::copy
- * Copies all selected objects
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Copies all selected objects
+// -----------------------------------------------------------------------------
 void Edit2D::copy() const
 {
 	using MapEditor::Mode;
@@ -614,7 +605,7 @@ void Edit2D::copy() const
 	// Can't copy/paste vertices (no point)
 	if (mode == Mode::Vertices)
 	{
-		//addEditorMessage("Copy/Paste not supported for vertices");
+		// addEditorMessage("Copy/Paste not supported for vertices");
 		return;
 	}
 
@@ -659,9 +650,9 @@ void Edit2D::copy() const
 	}
 }
 
-/* Edit2D::paste
- * Pastes previously copied objects at [mouse_pos]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Pastes previously copied objects at [mouse_pos]
+// -----------------------------------------------------------------------------
 void Edit2D::paste(fpoint2_t mouse_pos) const
 {
 	// Go through clipboard items
@@ -674,7 +665,7 @@ void Edit2D::paste(fpoint2_t mouse_pos) const
 			auto clip = (MapArchClipboardItem*)theClipboard->getItem(a);
 			// Snap the geometry in such a way that it stays in the same
 			// position relative to the grid
-			auto pos = context_.relativeSnapToGrid(clip->getMidpoint(), mouse_pos);
+			auto pos       = context_.relativeSnapToGrid(clip->getMidpoint(), mouse_pos);
 			auto new_verts = clip->pasteToMap(&context_.map(), pos);
 			context_.map().mergeArch(new_verts);
 			context_.addEditorMessage(S_FMT("Pasted %s", clip->getInfo()));
@@ -696,9 +687,9 @@ void Edit2D::paste(fpoint2_t mouse_pos) const
 	}
 }
 
-/* Edit2D::copyProperties
- * Copies the properties from [object] to be used for paste/create
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Copies the properties from [object] to be used for paste/create
+// -----------------------------------------------------------------------------
 void Edit2D::copyProperties(MapObject* object)
 {
 	auto selection = context_.selection();
@@ -727,7 +718,7 @@ void Edit2D::copyProperties(MapObject* object)
 	else if (context_.editMode() == MapEditor::Mode::Things)
 	{
 		// Copy given object properties (if any)
-		if (object && object->getObjType() == MOBJ_THING)
+		if (object && object->getObjType() == MapObject::Type::Thing)
 			copy_thing_.copy(object);
 		else
 		{
@@ -762,9 +753,9 @@ void Edit2D::copyProperties(MapObject* object)
 	}
 }
 
-/* Edit2D::pasteProperties
- * Pastes previously copied properties to all selected objects
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Pastes previously copied properties to all selected objects
+// -----------------------------------------------------------------------------
 void Edit2D::pasteProperties()
 {
 	// Do nothing if no selection or hilight
@@ -833,9 +824,9 @@ void Edit2D::pasteProperties()
 	context_.updateDisplay();
 }
 
-/* Edit2D::createObject
- * Creates an object (depending on edit mode) at [x,y]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Creates an object (depending on edit mode) at [x,y]
+// -----------------------------------------------------------------------------
 void Edit2D::createObject(double x, double y)
 {
 	using MapEditor::Mode;
@@ -884,9 +875,9 @@ void Edit2D::createObject(double x, double y)
 		createThing(x, y);
 }
 
-/* Edit2D::createVertex
- * Creates a new vertex at [x,y]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Creates a new vertex at [x,y]
+// -----------------------------------------------------------------------------
 void Edit2D::createVertex(double x, double y) const
 {
 	// Snap coordinates to grid if necessary
@@ -903,9 +894,9 @@ void Edit2D::createVertex(double x, double y) const
 		context_.addEditorMessage(S_FMT("Created vertex at (%d, %d)", (int)vertex->xPos(), (int)vertex->yPos()));
 }
 
-/* Edit2D::createThing
- * Creates a new thing at [x,y]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Creates a new thing at [x,y]
+// -----------------------------------------------------------------------------
 void Edit2D::createThing(double x, double y) const
 {
 	// Snap coordinates to grid if necessary
@@ -935,17 +926,17 @@ void Edit2D::createThing(double x, double y) const
 		context_.addEditorMessage(S_FMT("Created thing at (%d, %d)", (int)thing->xPos(), (int)thing->yPos()));
 }
 
-/* Edit2D::createSector
- * Creates a new sector at [x,y]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Creates a new sector at [x,y]
+// -----------------------------------------------------------------------------
 void Edit2D::createSector(double x, double y) const
 {
 	fpoint2_t point(x, y);
-	auto& map = context_.map();
+	auto&     map = context_.map();
 
 	// Find nearest line
-	int nearest = map.nearestLine(point, 99999999);
-	auto line = map.getLine(nearest);
+	int  nearest = map.nearestLine(point, 99999999);
+	auto line    = map.getLine(nearest);
 	if (!line)
 		return;
 
@@ -959,7 +950,7 @@ void Edit2D::createSector(double x, double y) const
 
 	// Run sector builder
 	SectorBuilder builder;
-	bool ok;
+	bool          ok;
 	if (side >= 0)
 		ok = builder.traceSector(&map, line, true);
 	else
@@ -997,19 +988,19 @@ void Edit2D::createSector(double x, double y) const
 		context_.addEditorMessage("Sector creation failed: " + builder.getError());
 }
 
-/* Edit2D::deleteObject
- * Deletes all selected objects, depending on edit mode
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Deletes all selected objects, depending on edit mode
+// -----------------------------------------------------------------------------
 void Edit2D::deleteObject() const
 {
 	using MapEditor::Mode;
 
 	switch (context_.editMode())
 	{
-	case Mode::Vertices:	deleteVertex(); break;
-	case Mode::Lines:		deleteLine(); break;
-	case Mode::Sectors:		deleteSector(); break;
-	case Mode::Things:		deleteThing(); break;
+	case Mode::Vertices: deleteVertex(); break;
+	case Mode::Lines: deleteLine(); break;
+	case Mode::Sectors: deleteSector(); break;
+	case Mode::Things: deleteThing(); break;
 	default: return;
 	}
 
@@ -1017,14 +1008,14 @@ void Edit2D::deleteObject() const
 	context_.endUndoRecord(true);
 }
 
-/* Edit2D::deleteVertex
- * Deletes all selected vertices
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Deletes all selected vertices
+// -----------------------------------------------------------------------------
 void Edit2D::deleteVertex() const
 {
 	// Get selected vertices
 	auto verts = context_.selection().selectedVertices();
-	int index = -1;
+	int  index = -1;
 	if (verts.size() == 1)
 		index = verts[0]->getIndex();
 
@@ -1049,14 +1040,14 @@ void Edit2D::deleteVertex() const
 		context_.addEditorMessage(S_FMT("Deleted %lu vertices", verts.size()));
 }
 
-/* Edit2D::deleteLine
- * Deletes all selected lines
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Deletes all selected lines
+// -----------------------------------------------------------------------------
 void Edit2D::deleteLine() const
 {
 	// Get selected lines
 	auto lines = context_.selection().selectedLines();
-	int index = -1;
+	int  index = -1;
 	if (lines.size() == 1)
 		index = lines[0]->getIndex();
 
@@ -1081,14 +1072,14 @@ void Edit2D::deleteLine() const
 		context_.addEditorMessage(S_FMT("Deleted %lu lines", lines.size()));
 }
 
-/* Edit2D::deleteThing
- * Deletes all selected things
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Deletes all selected things
+// -----------------------------------------------------------------------------
 void Edit2D::deleteThing() const
 {
 	// Get selected things
 	auto things = context_.selection().selectedThings();
-	int index = -1;
+	int  index  = -1;
 	if (things.size() == 1)
 		index = things[0]->getIndex();
 
@@ -1110,14 +1101,14 @@ void Edit2D::deleteThing() const
 		context_.addEditorMessage(S_FMT("Deleted %lu things", things.size()));
 }
 
-/* Edit2D::deleteSector
- * Deletes all selected sectors
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Deletes all selected sectors
+// -----------------------------------------------------------------------------
 void Edit2D::deleteSector() const
 {
 	// Get selected sectors
 	auto sectors = context_.selection().selectedSectors();
-	int index = -1;
+	int  index   = -1;
 	if (sectors.size() == 1)
 		index = sectors[0]->getIndex();
 

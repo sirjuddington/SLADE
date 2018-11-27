@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "MapEditor/SLADEMap/MapObject.h"
 
 class wxChoice;
 class wxTextCtrl;
@@ -11,11 +11,11 @@ public:
 	ShowItemDialog(wxWindow* parent);
 	~ShowItemDialog() {}
 
-	int		getType() const;
-	int		getIndex() const;
-	void	setType(int type) const;
+	MapObject::Type getType() const;
+	int             getIndex() const;
+	void            setType(MapObject::Type type) const;
 
 private:
-	wxChoice*	choice_type_;
-	wxTextCtrl*	text_index_;
+	wxChoice*   choice_type_;
+	wxTextCtrl* text_index_;
 };

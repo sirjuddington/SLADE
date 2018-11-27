@@ -1,38 +1,40 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    Input.cpp
- * Description: Input class - handles input for the map editor
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Input.cpp
+// Description: Input class - handles input for the map editor
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Input.h"
 #include "App.h"
 #include "General/Clipboard.h"
 #include "General/KeyBind.h"
 #include "General/UI.h"
-#include "Input.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/UI/MapEditorWindow.h"
@@ -41,16 +43,20 @@
 using namespace MapEditor;
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 CVAR(Bool, property_edit_dclick, true, CVAR_SAVE)
 CVAR(Bool, selection_clear_click, false, CVAR_SAVE)
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, flat_drawtype)
 EXTERN_CVAR(Bool, map_show_selection_numbers)
 EXTERN_CVAR(Float, render_3d_brightness)
@@ -61,20 +67,21 @@ EXTERN_CVAR(Int, render_3d_hilight)
 EXTERN_CVAR(Bool, info_overlay_3d)
 
 
-/*******************************************************************
- * INPUT CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Input Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* Input::Input
- * Input class constructor
- *******************************************************************/
-Input::Input(MapEditContext& context) : context_{ context }
-{
-}
 
-/* Input::mouseMove
- * Handles mouse movement to [new_x],[new_y] on the map editor view
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Input class constructor
+// -----------------------------------------------------------------------------
+Input::Input(MapEditContext& context) : context_{ context } {}
+
+// -----------------------------------------------------------------------------
+// Handles mouse movement to [new_x],[new_y] on the map editor view
+// -----------------------------------------------------------------------------
 bool Input::mouseMove(int new_x, int new_y)
 {
 	context_.forceRefreshRenderer();
@@ -90,7 +97,7 @@ bool Input::mouseMove(int new_x, int new_y)
 		context_.renderer().pan(mouse_pos_.x - new_x, -(mouse_pos_.y - new_y), true);
 
 	// Update mouse variables
-	mouse_pos_ = { new_x, new_y };
+	mouse_pos_     = { new_x, new_y };
 	mouse_pos_map_ = context_.renderer().view().mapPos(mouse_pos_);
 
 	// Update coordinates on status bar
@@ -146,8 +153,7 @@ bool Input::mouseMove(int new_x, int new_y)
 						context_.objectEdit().stateLeft(false),
 						context_.objectEdit().stateTop(false),
 						context_.objectEdit().stateRight(false),
-						context_.objectEdit().stateBottom(false)
-					);
+						context_.objectEdit().stateBottom(false));
 					MapEditor::window()->objectEditPanel()->update(&group);
 				}
 			}
@@ -159,19 +165,19 @@ bool Input::mouseMove(int new_x, int new_y)
 	}
 
 	// Check if we want to start a selection box
-	if (mouse_drag_ == DragType::Selection &&
-		fpoint2_t(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 16)
+	if (mouse_drag_ == DragType::Selection
+		&& fpoint2_t(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 16)
 	{
 		mouse_state_ = MouseState::Selection;
-		mouse_drag_ = DragType::None;
+		mouse_drag_  = DragType::None;
 	}
 
 	// Check if we want to start moving
-	if (mouse_drag_ == DragType::Move &&
-		fpoint2_t(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 4)
+	if (mouse_drag_ == DragType::Move
+		&& fpoint2_t(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 4)
 	{
 		mouse_state_ = MouseState::Move;
-		mouse_drag_ = DragType::None;
+		mouse_drag_  = DragType::None;
 		context_.moveObjects().begin(mouse_down_pos_map_);
 		context_.renderer().renderer2D().forceUpdate();
 	}
@@ -187,10 +193,10 @@ bool Input::mouseMove(int new_x, int new_y)
 	return true;
 }
 
-/* Input::mouseDown
- * Handles mouse [button] press on the map editor view. If
- * [double_click] is true, this is a double-click event
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Handles mouse [button] press on the map editor view.
+// If [double_click] is true, this is a double-click event
+// -----------------------------------------------------------------------------
 bool Input::mouseDown(MouseButton button, bool double_click)
 {
 	context_.forceRefreshRenderer();
@@ -199,10 +205,10 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
 
 	// Update mouse variables
-	mouse_down_pos_ = mouse_pos_;
-	mouse_down_pos_map_ = mouse_pos_map_;
+	mouse_down_pos_            = mouse_pos_;
+	mouse_down_pos_map_        = mouse_pos_map_;
 	mouse_button_down_[button] = true;
-	mouse_drag_ = DragType::None;
+	mouse_drag_                = DragType::None;
 
 	// Check if a full screen overlay is active
 	if (context_.overlayActive())
@@ -361,9 +367,9 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 	return true;
 }
 
-/* Input::mouseUp
- * Handles mouse [button] release on the map editor view
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Handles mouse [button] release on the map editor view
+// -----------------------------------------------------------------------------
 bool Input::mouseUp(MouseButton button)
 {
 	// Update mouse variables
@@ -387,29 +393,22 @@ bool Input::mouseUp(MouseButton button)
 
 			// Select
 			context_.selection().selectWithin(
-				{
-					min(mouse_down_pos_map_.x, mouse_pos_map_.x),
-					min(mouse_down_pos_map_.y, mouse_pos_map_.y),
-					max(mouse_down_pos_map_.x, mouse_pos_map_.x),
-					max(mouse_down_pos_map_.y, mouse_pos_map_.y)
-				},
-				shift_down_
-			);
+				{ min(mouse_down_pos_map_.x, mouse_pos_map_.x),
+				  min(mouse_down_pos_map_.y, mouse_pos_map_.y),
+				  max(mouse_down_pos_map_.x, mouse_pos_map_.x),
+				  max(mouse_down_pos_map_.y, mouse_pos_map_.y) },
+				shift_down_);
 
 			// Begin selection box fade animation
 			context_.renderer().addAnimation(
-				std::make_unique<MCASelboxFader>(
-					App::runTimer(),
-					mouse_down_pos_map_,
-					mouse_pos_map_
-					));
+				std::make_unique<MCASelboxFader>(App::runTimer(), mouse_down_pos_map_, mouse_pos_map_));
 		}
 
 		// If we're in object edit mode
 		if (mouse_state_ == MouseState::ObjectEdit)
 			context_.objectEdit().group().resetPositions();
 	}
-	
+
 	// Right button
 	else if (button == Right)
 	{
@@ -437,9 +436,9 @@ bool Input::mouseUp(MouseButton button)
 	return true;
 }
 
-/* Input::mouseWheel
- * Handles mouse wheel movement depending on [up]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Handles mouse wheel movement depending on [up]
+// -----------------------------------------------------------------------------
 void Input::mouseWheel(bool up, double amount)
 {
 	context_.forceRefreshRenderer();
@@ -467,9 +466,9 @@ void Input::mouseWheel(bool up, double amount)
 	}
 }
 
-/* Input::mouseLeave
- * Handles the mouse pointer leaving the map editor view
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Handles the mouse pointer leaving the map editor view
+// -----------------------------------------------------------------------------
 void Input::mouseLeave()
 {
 	// Stop panning
@@ -480,22 +479,17 @@ void Input::mouseLeave()
 	}
 }
 
-/* Input::updateKeyModifiersWx
- * Updates key modifier variables based on a wxWidgets key modifier
- * bit field
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Updates key modifier variables based on a wxWidgets key modifier bit field
+// -----------------------------------------------------------------------------
 void Input::updateKeyModifiersWx(int modifiers)
 {
-	updateKeyModifiers(
-		(modifiers & wxMOD_SHIFT) > 0,
-		(modifiers & wxMOD_CONTROL) > 0,
-		(modifiers & wxMOD_ALT) > 0
-	);
+	updateKeyModifiers((modifiers & wxMOD_SHIFT) > 0, (modifiers & wxMOD_CONTROL) > 0, (modifiers & wxMOD_ALT) > 0);
 }
 
-/* Input::keyDown
- * Handles [key] being pressed in the map editor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Handles [key] being pressed in the map editor
+// -----------------------------------------------------------------------------
 bool Input::keyDown(const string& key) const
 {
 	context_.forceRefreshRenderer();
@@ -507,9 +501,9 @@ bool Input::keyDown(const string& key) const
 	return KeyBind::keyPressed({ key, alt_down_, ctrl_down_, shift_down_ });
 }
 
-/* Input::keyUp
- * Handles [key] being released in the map editor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Handles [key] being released in the map editor
+// -----------------------------------------------------------------------------
 bool Input::keyUp(const string& key) const
 {
 	context_.forceRefreshRenderer();
@@ -517,9 +511,9 @@ bool Input::keyUp(const string& key) const
 	return KeyBind::keyReleased(key);
 }
 
-/* Input::onKeyBindPress
- * Called when the key bind [name] is pressed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the key bind [name] is pressed
+// -----------------------------------------------------------------------------
 void Input::onKeyBindPress(string name)
 {
 	context_.forceRefreshRenderer();
@@ -572,9 +566,9 @@ void Input::onKeyBindPress(string name)
 	}
 }
 
-/* Input::onKeyBindRelease
- * Called when the key bind [name] is released
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the key bind [name] is released
+// -----------------------------------------------------------------------------
 void Input::onKeyBindRelease(string name)
 {
 	context_.forceRefreshRenderer();
@@ -594,10 +588,10 @@ void Input::onKeyBindRelease(string name)
 	}
 }
 
-/* Input::handleKeyBind2dView
- * Handles 2d mode view-related keybinds (can generally be used no
- * matter the current editor state)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Handles 2d mode view-related keybinds
+// (can generally be used no matter the current editor state)
+// -----------------------------------------------------------------------------
 void Input::handleKeyBind2dView(const string& name)
 {
 	// Pan left
@@ -644,7 +638,7 @@ void Input::handleKeyBind2dView(const string& name)
 	else if (name == "me2d_pan_view")
 	{
 		mouse_down_pos_ = mouse_pos_;
-		panning_ = true;
+		panning_        = true;
 		if (mouse_state_ == MouseState::Normal)
 			context_.selection().clearHilight();
 		context_.setCursor(UI::MouseCursor::Move);
@@ -659,9 +653,9 @@ void Input::handleKeyBind2dView(const string& name)
 		context_.decrementGrid();
 }
 
-/* Input::handleKeyBind2d
- * Handles 2d mode key binds
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Handles 2d mode key binds
+// -----------------------------------------------------------------------------
 void Input::handleKeyBind2d(const string& name)
 {
 	// --- Line Drawing ---
@@ -843,11 +837,7 @@ void Input::handleKeyBind2d(const string& name)
 
 		// Split line
 		else if (name == "me2d_split_line")
-			context_.edit2D().splitLine(
-				mouse_pos_map_.x,
-				mouse_pos_map_.y,
-				16 / context_.renderer().view().scale()
-			);
+			context_.edit2D().splitLine(mouse_pos_map_.x, mouse_pos_map_.y, 16 / context_.renderer().view().scale());
 
 		// Begin line drawing
 		else if (name == "me2d_begin_linedraw")
@@ -889,8 +879,8 @@ void Input::handleKeyBind2d(const string& name)
 			ClipboardItem* item = nullptr;
 			for (unsigned a = 0; a < theClipboard->nItems(); a++)
 			{
-				if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_ARCH ||
-					theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_THINGS)
+				if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_ARCH
+					|| theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_THINGS)
 				{
 					item = theClipboard->getItem(a);
 					break;
@@ -949,12 +939,10 @@ void Input::handleKeyBind2d(const string& name)
 					// Setup help text
 					string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
 					string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
-					context_.setFeatureHelp({
-						"Tag Edit",
-						S_FMT("%s = Accept", key_accept),
-						S_FMT("%s = Cancel", key_cancel),
-						"Left Click = Toggle tagged sector"
-					});
+					context_.setFeatureHelp({ "Tag Edit",
+											  S_FMT("%s = Accept", key_accept),
+											  S_FMT("%s = Cancel", key_cancel),
+											  "Left Click = Toggle tagged sector" });
 				}
 			}
 		}
@@ -991,9 +979,9 @@ void Input::handleKeyBind2d(const string& name)
 	}
 }
 
-/* Input::handleKeyBind3d
- * Handles 3d mode key binds
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Handles 3d mode key binds
+// -----------------------------------------------------------------------------
 void Input::handleKeyBind3d(const string& name) const
 {
 	// Escape from 3D mode
@@ -1111,16 +1099,15 @@ void Input::handleKeyBind3d(const string& name) const
 		context_.handleKeyBind(name, mouse_pos_map_);
 }
 
-/* Input::updateCamera3d
- * Updates the 3d mode camera depending on what keybinds are
- * currently pressed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Updates the 3d mode camera depending on what keybinds are currently pressed
+// -----------------------------------------------------------------------------
 bool Input::updateCamera3d(double mult) const
 {
 	// --- Check for held-down keys ---
-	bool moving = false;
-	double speed = shift_down_ ? mult * 8 : mult * 4;
-	auto& r3d = context_.renderer().renderer3D();
+	bool   moving = false;
+	double speed  = shift_down_ ? mult * 8 : mult * 4;
+	auto&  r3d    = context_.renderer().renderer3D();
 
 	// Camera forward
 	if (KeyBind::isPressed("me3d_camera_forward"))
@@ -1185,18 +1172,18 @@ bool Input::updateCamera3d(double mult) const
 	return moving;
 }
 
-/* Input::mouseButtonKBName
- * Returns the KeyBind name for the given mouse [button]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the KeyBind name for the given mouse [button]
+// -----------------------------------------------------------------------------
 string Input::mouseButtonKBName(MouseButton button)
 {
 	switch (button)
 	{
-	case Left:		return "mouse1";
-	case Right:		return "mouse2";
-	case Middle:	return "mouse3";
-	case Mouse4:	return "mouse4";
-	case Mouse5:	return "mouse5";
-	default:		return S_FMT("mouse%d", button);
+	case Left: return "mouse1";
+	case Right: return "mouse2";
+	case Middle: return "mouse3";
+	case Mouse4: return "mouse4";
+	case Mouse5: return "mouse5";
+	default: return S_FMT("mouse%d", button);
 	}
 }

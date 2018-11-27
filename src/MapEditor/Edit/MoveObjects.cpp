@@ -1,60 +1,65 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MoveObjects.cpp
- * Description: MoveObjects class - handles object moving operations
- *              in the map editor
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    MoveObjects.cpp
+// Description: MoveObjects class - handles object moving operations in the map
+//              editor
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "MoveObjects.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UndoSteps.h"
-#include "MoveObjects.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE)
 CVAR(Bool, selection_clear_move, true, CVAR_SAVE)
 
 
-/*******************************************************************
- * MOVEOBJECTS CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// MoveObjects Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* MoveObjects::MoveObjects
- * MoveObjects class constructor
- *******************************************************************/
-MoveObjects::MoveObjects(MapEditContext& context) : context_{ context }
-{
-}
 
-/* MoveObjects::begin
- * Begins a move operation, starting from [mouse_pos]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// MoveObjects class constructor
+// -----------------------------------------------------------------------------
+MoveObjects::MoveObjects(MapEditContext& context) : context_{ context } {}
+
+// -----------------------------------------------------------------------------
+// Begins a move operation, starting from [mouse_pos]
+// -----------------------------------------------------------------------------
 bool MoveObjects::begin(fpoint2_t mouse_pos)
 {
 	using MapEditor::Mode;
@@ -65,7 +70,7 @@ bool MoveObjects::begin(fpoint2_t mouse_pos)
 
 	// Begin move operation
 	origin_ = mouse_pos;
-	items_ = context_.selection().selectionOrHilight();
+	items_  = context_.selection().selectionOrHilight();
 
 	// Get list of vertices being moved (if any)
 	vector<MapVertex*> move_verts;
@@ -117,10 +122,9 @@ bool MoveObjects::begin(fpoint2_t mouse_pos)
 	return true;
 }
 
-/* MoveObjects::update
- * Updates the current move operation
- * (moving from start to [mouse_pos])
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Updates the current move operation (moving from start to [mouse_pos])
+// -----------------------------------------------------------------------------
 void MoveObjects::update(fpoint2_t mouse_pos)
 {
 	using MapEditor::Mode;
@@ -136,27 +140,23 @@ void MoveObjects::update(fpoint2_t mouse_pos)
 		if (context_.editMode() == Mode::Vertices)
 			offset_.set(
 				nx - context_.map().getVertex(items_[0].index)->xPos(),
-				ny - context_.map().getVertex(items_[0].index)->yPos()
-			);
+				ny - context_.map().getVertex(items_[0].index)->yPos());
 		else if (context_.editMode() == Mode::Things)
 			offset_.set(
 				nx - context_.map().getThing(items_[0].index)->xPos(),
-				ny - context_.map().getThing(items_[0].index)->yPos()
-			);
+				ny - context_.map().getThing(items_[0].index)->yPos());
 
 		return;
 	}
 
 	// Update move vector
 	offset_.set(
-		context_.snapToGrid(mouse_pos.x - origin_.x, false),
-		context_.snapToGrid(mouse_pos.y - origin_.y, false)
-	);
+		context_.snapToGrid(mouse_pos.x - origin_.x, false), context_.snapToGrid(mouse_pos.y - origin_.y, false));
 }
 
-/* MoveObjects::end
- * Ends a move operation and applies change if [accept] is true
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Ends a move operation and applies change if [accept] is true
+// -----------------------------------------------------------------------------
 void MoveObjects::end(bool accept)
 {
 	using MapEditor::Mode;
@@ -199,8 +199,10 @@ void MoveObjects::end(bool accept)
 			for (auto& item : items_)
 			{
 				auto line = context_.map().getLine(item.index);
-				if (line->v1()) move_verts[line->v1()->getIndex()] = 1;
-				if (line->v2()) move_verts[line->v2()->getIndex()] = 1;
+				if (line->v1())
+					move_verts[line->v1()->getIndex()] = 1;
+				if (line->v2())
+					move_verts[line->v2()->getIndex()] = 1;
 			}
 		}
 		else if (context_.editMode() == Mode::Sectors)
@@ -221,10 +223,7 @@ void MoveObjects::end(bool accept)
 				continue;
 
 			context_.map().moveVertex(
-				a,
-				context_.map().getVertex(a)->xPos() + offset_.x,
-				context_.map().getVertex(a)->yPos() + offset_.y
-			);
+				a, context_.map().getVertex(a)->xPos() + offset_.x, context_.map().getVertex(a)->yPos() + offset_.y);
 
 			moved_verts.push_back(context_.map().getVertex(a));
 		}

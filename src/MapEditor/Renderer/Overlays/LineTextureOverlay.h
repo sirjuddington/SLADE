@@ -1,32 +1,51 @@
-
-#ifndef __LINE_TEXTURE_OVERLAY_H__
-#define __LINE_TEXTURE_OVERLAY_H__
+#pragma once
 
 #include "MCOverlay.h"
 
 class MapLine;
 class MapSide;
+
 class LineTextureOverlay : public MCOverlay
 {
+public:
+	LineTextureOverlay();
+	~LineTextureOverlay();
+
+	void openLines(vector<MapLine*>& list);
+	void close(bool cancel);
+	void update(long frametime);
+
+	// Drawing
+	void updateLayout(int width, int height);
+	void draw(int width, int height, float fade);
+
+	// Input
+	void mouseMotion(int x, int y);
+	void mouseLeftClick();
+	void mouseRightClick();
+	void keyDown(string key);
+
 private:
-	vector<MapLine*>	lines;
-	int					selected_side;
+	vector<MapLine*> lines;
+	int              selected_side;
 
-	struct tex_inf_t
+	struct TexInfo
 	{
-		point2_t		position;
-		bool			hover;
-		vector<string>	textures;
-		bool			changed;
+		point2_t       position;
+		bool           hover;
+		vector<string> textures;
+		bool           changed;
 
-		tex_inf_t() { hover = false; changed = false; }
+		TexInfo()
+		{
+			hover   = false;
+			changed = false;
+		}
 
 		void checkHover(int x, int y, int halfsize)
 		{
-			if (x >= position.x - halfsize &&
-			        x <= position.x + halfsize &&
-			        y >= position.y - halfsize &&
-			        y <= position.y + halfsize)
+			if (x >= position.x - halfsize && x <= position.x + halfsize && y >= position.y - halfsize
+				&& y <= position.y + halfsize)
 				hover = true;
 			else
 				hover = false;
@@ -36,45 +55,24 @@ private:
 	// Texture info
 	enum
 	{
-	    FRONT_UPPER = 0,
-	    FRONT_MIDDLE,
-	    FRONT_LOWER,
-	    BACK_UPPER,
-	    BACK_MIDDLE,
-	    BACK_LOWER,
+		FrontUpper = 0,
+		FrontMiddle,
+		FrontLower,
+		BackUpper,
+		BackMiddle,
+		BackLower,
 	};
-	tex_inf_t	textures[6];
-	bool		side1;
-	bool		side2;
+	TexInfo textures_[6];
+	bool    side1_;
+	bool    side2_;
 
 	// Drawing info
-	int	tex_size;
-	int	last_width;
-	int	last_height;
+	int tex_size_;
+	int last_width_;
+	int last_height_;
 
 	// Helper functions
-	void	addTexture(tex_inf_t& inf, string texture);
-
-public:
-	LineTextureOverlay();
-	~LineTextureOverlay();
-
-	void	openLines(vector<MapLine*>& list);
-	void	close(bool cancel);
-	void	update(long frametime);
-
-	// Drawing
-	void	updateLayout(int width, int height);
-	void	draw(int width, int height, float fade);
-	void	drawTexture(float alpha, int size, tex_inf_t& tex, string position);
-
-	// Input
-	void	mouseMotion(int x, int y);
-	void	mouseLeftClick();
-	void	mouseRightClick();
-	void	keyDown(string key);
-
-	void	browseTexture(tex_inf_t& tex, string position);
+	void addTexture(TexInfo& inf, string texture);
+	void drawTexture(float alpha, int size, TexInfo& tex, string position);
+	void browseTexture(TexInfo& tex, string position);
 };
-
-#endif//__LINE_TEXTURE_OVERLAY_H__
