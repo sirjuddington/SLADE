@@ -96,8 +96,8 @@ void SectorInfoOverlay::update(MapSector* sector)
 	info_text += S_FMT("Tag: %d", sector->intProperty("id"));
 
 	// Textures
-	ftex_ = sector->getFloorTex();
-	ctex_ = sector->getCeilingTex();
+	ftex_ = sector->floor().texture;
+	ctex_ = sector->ceiling().texture;
 
 	// Setup text box
 	text_box_->setText(info_text);

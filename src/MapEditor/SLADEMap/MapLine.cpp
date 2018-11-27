@@ -597,10 +597,10 @@ int MapLine::needsTexture()
 		return Part::FrontMiddle;
 
 	// Get sector planes
-	plane_t floor_front   = frontSector()->getFloorPlane();
-	plane_t ceiling_front = frontSector()->getCeilingPlane();
-	plane_t floor_back    = backSector()->getFloorPlane();
-	plane_t ceiling_back  = backSector()->getCeilingPlane();
+	plane_t floor_front   = frontSector()->floor().plane;
+	plane_t ceiling_front = frontSector()->ceiling().plane;
+	plane_t floor_back    = backSector()->floor().plane;
+	plane_t ceiling_back  = backSector()->ceiling().plane;
 
 	double front_height, back_height;
 

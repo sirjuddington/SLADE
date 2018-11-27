@@ -1799,7 +1799,7 @@ bool MapEditContext::handleAction(string id)
 		fpoint3_t  pos(input().mousePosMap());
 		MapSector* sector = map_.getSector(map_.sectorAt(input_.mousePosMap()));
 		if (sector)
-			pos.z = sector->getFloorHeight() + 40;
+			pos.z = sector->floor().plane.height_at(pos.x, pos.y) + 40;
 		renderer_.renderer3D().cameraSetPosition(pos);
 		return true;
 	}

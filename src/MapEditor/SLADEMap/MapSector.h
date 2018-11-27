@@ -19,6 +19,13 @@ public:
 		Ceiling
 	};
 
+	struct Surface
+	{
+		string  texture;
+		int     height = 0;
+		plane_t plane  = { 0., 0., 1., 0. };
+	};
+
 	struct DoomData
 	{
 		short f_height;
@@ -48,39 +55,29 @@ public:
 
 	void copy(MapObject* copy) override;
 
-	string  getFloorTex() const { return f_tex_; }
-	string  getCeilingTex() const { return c_tex_; }
-	short   getFloorHeight() const { return f_height_; }
-	short   getCeilingHeight() const { return c_height_; }
-	short   getLightLevel() const { return light_; }
-	short   getSpecial() const { return special_; }
-	short   getTag() const { return tag_; }
-	plane_t getFloorPlane() const { return plane_floor_; }
-	plane_t getCeilingPlane() const { return plane_ceiling_; }
+	const Surface& floor() const { return floor_; }
+	const Surface& ceiling() const { return ceiling_; }
+	short          getLightLevel() const { return light_; }
+	short          getSpecial() const { return special_; }
+	short          getTag() const { return id_; }
 
 	string stringProperty(const string& key) override;
 	int    intProperty(const string& key) override;
-	void   setStringProperty(const string& key, const string& value) override;
-	void   setFloatProperty(const string& key, double value) override;
-	void   setIntProperty(const string& key, int value) override;
-	void   setFloorHeight(short height);
-	void   setCeilingHeight(short height);
-	void   setFloorPlane(plane_t p)
-	{
-		if (plane_floor_ != p)
-			setGeometryUpdated();
-		plane_floor_ = p;
-	}
-	void setCeilingPlane(plane_t p)
-	{
-		if (plane_ceiling_ != p)
-			setGeometryUpdated();
-		plane_ceiling_ = p;
-	}
+
+	void setStringProperty(const string& key, const string& value) override;
+	void setFloatProperty(const string& key, double value) override;
+	void setIntProperty(const string& key, int value) override;
+
+	void setFloorTexture(const string& tex);
+	void setCeilingTexture(const string& tex);
+	void setFloorHeight(short height);
+	void setCeilingHeight(short height);
+	void setFloorPlane(const plane_t& p);
+	void setCeilingPlane(const plane_t& p);
 
 	template<SurfaceType p> short   getPlaneHeight();
 	template<SurfaceType p> plane_t getPlane();
-	template<SurfaceType p> void    setPlane(plane_t plane);
+	template<SurfaceType p> void    setPlane(const plane_t& plane);
 
 	fpoint2_t         getPoint(Point point) override;
 	void              resetBBox() { bbox_.reset(); }
@@ -117,13 +114,11 @@ public:
 
 private:
 	// Basic data
-	string f_tex_;
-	string c_tex_;
-	short  f_height_;
-	short  c_height_;
-	short  light_;
-	short  special_;
-	short  tag_;
+	Surface floor_;
+	Surface ceiling_;
+	short   light_   = 0;
+	short   special_ = 0;
+	short   id_      = 0;
 
 	// Internal info
 	vector<MapSide*> connected_sides_;
@@ -132,8 +127,6 @@ private:
 	bool             poly_needsupdate_;
 	long             geometry_updated_;
 	fpoint2_t        text_point_;
-	plane_t          plane_floor_;
-	plane_t          plane_ceiling_;
 
 	void setGeometryUpdated();
 };
@@ -141,25 +134,25 @@ private:
 // Note: these MUST be inline, or the linker will complain
 template<> inline short MapSector::getPlaneHeight<MapSector::Floor>()
 {
-	return getFloorHeight();
+	return floor_.height;
 }
 template<> inline short MapSector::getPlaneHeight<MapSector::Ceiling>()
 {
-	return getCeilingHeight();
+	return ceiling_.height;
 }
 template<> inline plane_t MapSector::getPlane<MapSector::Floor>()
 {
-	return getFloorPlane();
+	return floor_.plane;
 }
 template<> inline plane_t MapSector::getPlane<MapSector::Ceiling>()
 {
-	return getCeilingPlane();
+	return ceiling_.plane;
 }
-template<> inline void MapSector::setPlane<MapSector::Floor>(plane_t plane)
+template<> inline void MapSector::setPlane<MapSector::Floor>(const plane_t& plane)
 {
 	setFloorPlane(plane);
 }
-template<> inline void MapSector::setPlane<MapSector::Ceiling>(plane_t plane)
+template<> inline void MapSector::setPlane<MapSector::Ceiling>(const plane_t& plane)
 {
 	setCeilingPlane(plane);
 }

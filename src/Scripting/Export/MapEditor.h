@@ -260,18 +260,18 @@ void registerMapSector(sol::state& lua)
 		"new", sol::no_constructor,
 
 		// Properties
-		"textureFloor",		sol::property(&MapSector::getFloorTex),
-		"textureCeiling",	sol::property(&MapSector::getCeilingTex),
-		"heightFloor",		sol::property(&MapSector::getFloorHeight),
-		"heightCeiling",	sol::property(&MapSector::getCeilingHeight),
+		"textureFloor",		sol::property([](MapSector& self) { return self.floor().texture; }),
+		"textureCeiling",	sol::property([](MapSector& self) { return self.ceiling().texture; }),
+		"heightFloor",		sol::property([](MapSector& self) { return self.floor().height; }),
+		"heightCeiling",	sol::property([](MapSector& self) { return self.ceiling().height; }),
 		"lightLevel",		sol::property(&MapSector::getLightLevel),
 		"special",			sol::property(&MapSector::getSpecial),
 		"id",				sol::property(&MapSector::getTag),
 		"connectedSides",	sol::property(&MapSector::connectedSides),
 		"colour",			sol::property(&MapSector::getColour),
 		"fogColour",		sol::property(&MapSector::getFogColour),
-		"planeFloor",		sol::property(&MapSector::getFloorPlane),
-		"planeCeiling",		sol::property(&MapSector::getCeilingPlane),
+		"planeFloor",		sol::property([](MapSector& self) { return self.floor().plane; }),
+		"planeCeiling",		sol::property([](MapSector& self) { return self.ceiling().plane; }),
 		// bbox (need to export bbox_t first)
 
 		// Functions

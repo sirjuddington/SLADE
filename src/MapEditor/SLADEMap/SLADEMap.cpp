@@ -611,11 +611,11 @@ bool SLADEMap::addSector(MapSector::DoomData& s)
 	ns->setCeilingHeight(s.c_height);
 	ns->light_   = s.light;
 	ns->special_ = s.special;
-	ns->tag_     = s.tag;
+	ns->id_      = s.tag;
 
 	// Update texture counts
-	usage_flat_[ns->f_tex_.Upper()] += 1;
-	usage_flat_[ns->c_tex_.Upper()] += 1;
+	usage_flat_[ns->floor_.texture.Upper()] += 1;
+	usage_flat_[ns->ceiling_.texture.Upper()] += 1;
 
 	// Add sector
 	sectors_.push_back(ns);
@@ -637,7 +637,7 @@ bool SLADEMap::addSector(MapSector::Doom64Data& s)
 	ns->setCeilingHeight(s.c_height);
 	ns->light_                       = 255;
 	ns->special_                     = s.special;
-	ns->tag_                         = s.tag;
+	ns->id_                          = s.tag;
 	ns->properties_["flags"]         = s.flags;
 	ns->properties_["color_things"]  = s.color[0];
 	ns->properties_["color_floor"]   = s.color[1];
@@ -646,8 +646,8 @@ bool SLADEMap::addSector(MapSector::Doom64Data& s)
 	ns->properties_["color_lower"]   = s.color[4];
 
 	// Update texture counts
-	usage_flat_[ns->f_tex_.Upper()] += 1;
-	usage_flat_[ns->c_tex_.Upper()] += 1;
+	usage_flat_[ns->floor_.texture.Upper()] += 1;
+	usage_flat_[ns->ceiling_.texture.Upper()] += 1;
 
 	// Add sector
 	sectors_.push_back(ns);
@@ -1586,15 +1586,15 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 
 	// Create new sector
 	MapSector* ns = new MapSector(prop_ftex->stringValue(), prop_ctex->stringValue(), this);
-	usage_flat_[ns->f_tex_.Upper()] += 1;
-	usage_flat_[ns->c_tex_.Upper()] += 1;
+	usage_flat_[ns->floor_.texture.Upper()] += 1;
+	usage_flat_[ns->ceiling_.texture.Upper()] += 1;
 
 	// Set defaults
 	ns->setFloorHeight(0);
 	ns->setCeilingHeight(0);
 	ns->light_   = 160;
 	ns->special_ = 0;
-	ns->tag_     = 0;
+	ns->id_      = 0;
 
 	// Add extra sector info
 	ParseTreeNode* prop = nullptr;
@@ -1615,7 +1615,7 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 		else if (S_CMPNOCASE(prop->getName(), "special"))
 			ns->special_ = prop->intValue();
 		else if (S_CMPNOCASE(prop->getName(), "id"))
-			ns->tag_ = prop->intValue();
+			ns->id_ = prop->intValue();
 		else
 			ns->properties_[prop->getName()] = prop->value();
 	}
@@ -1931,17 +1931,17 @@ bool SLADEMap::writeDoomSectors(ArchiveEntry* entry)
 		memset(&sector, 0, 26);
 
 		// Height
-		sector.f_height = sectors_[a]->f_height_;
-		sector.c_height = sectors_[a]->c_height_;
+		sector.f_height = sectors_[a]->floor_.height;
+		sector.c_height = sectors_[a]->ceiling_.height;
 
 		// Textures
-		memcpy(sector.f_tex, CHR(sectors_[a]->f_tex_), sectors_[a]->f_tex_.Length());
-		memcpy(sector.c_tex, CHR(sectors_[a]->c_tex_), sectors_[a]->c_tex_.Length());
+		memcpy(sector.f_tex, CHR(sectors_[a]->floor_.texture), sectors_[a]->floor_.texture.Length());
+		memcpy(sector.c_tex, CHR(sectors_[a]->ceiling_.texture), sectors_[a]->ceiling_.texture.Length());
 
 		// Properties
 		sector.light   = sectors_[a]->light_;
 		sector.special = sectors_[a]->special_;
-		sector.tag     = sectors_[a]->tag_;
+		sector.tag     = sectors_[a]->id_;
 
 		entry->write(&sector, 26);
 	}
@@ -2267,8 +2267,8 @@ bool SLADEMap::writeDoom64Sectors(ArchiveEntry* entry)
 		memset(&sector, 0, sizeof(MapSector::Doom64Data));
 
 		// Height
-		sector.f_height = sectors_[a]->f_height_;
-		sector.c_height = sectors_[a]->c_height_;
+		sector.f_height = sectors_[a]->floor_.height;
+		sector.c_height = sectors_[a]->ceiling_.height;
 
 		// Textures
 		sector.f_tex = theResourceManager->getTextureHash(sectors_[a]->stringProperty("texturefloor"));
@@ -2284,7 +2284,7 @@ bool SLADEMap::writeDoom64Sectors(ArchiveEntry* entry)
 		// Properties
 		sector.special = sectors_[a]->special_;
 		sector.flags   = sectors_[a]->intProperty("flags");
-		sector.tag     = sectors_[a]->tag_;
+		sector.tag     = sectors_[a]->id_;
 
 		entry->write(&sector, sizeof(MapSector::Doom64Data));
 	}
@@ -2506,17 +2506,20 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def = S_FMT("sector//#%u\n{\n", a);
 
 		// Basic properties
-		object_def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";\n", sectors_[a]->f_tex_, sectors_[a]->c_tex_);
-		if (sectors_[a]->f_height_ != 0)
-			object_def += S_FMT("heightfloor=%d;\n", sectors_[a]->f_height_);
-		if (sectors_[a]->c_height_ != 0)
-			object_def += S_FMT("heightceiling=%d;\n", sectors_[a]->c_height_);
+		object_def += S_FMT(
+			"texturefloor=\"%s\";\ntextureceiling=\"%s\";\n",
+			sectors_[a]->floor_.texture,
+			sectors_[a]->ceiling_.texture);
+		if (sectors_[a]->floor_.height != 0)
+			object_def += S_FMT("heightfloor=%d;\n", sectors_[a]->floor_.height);
+		if (sectors_[a]->ceiling_.height != 0)
+			object_def += S_FMT("heightceiling=%d;\n", sectors_[a]->ceiling_.height);
 		if (sectors_[a]->light_ != 160)
 			object_def += S_FMT("lightlevel=%d;\n", sectors_[a]->light_);
 		if (sectors_[a]->special_ != 0)
 			object_def += S_FMT("special=%d;\n", sectors_[a]->special_);
-		if (sectors_[a]->tag_ != 0)
-			object_def += S_FMT("id=%d;\n", sectors_[a]->tag_);
+		if (sectors_[a]->id_ != 0)
+			object_def += S_FMT("id=%d;\n", sectors_[a]->id_);
 
 		// Other properties
 		if (!sectors_[a]->properties_.isEmpty())
@@ -2806,8 +2809,8 @@ bool SLADEMap::removeSector(unsigned index)
 	//	sectors[index]->connected_sides[a]->sector = NULL;
 
 	// Update texture usage
-	usage_flat_[sectors_[index]->f_tex_.Upper()] -= 1;
-	usage_flat_[sectors_[index]->c_tex_.Upper()] -= 1;
+	usage_flat_[sectors_[index]->floor_.texture.Upper()] -= 1;
+	usage_flat_[sectors_[index]->ceiling_.texture.Upper()] -= 1;
 
 	// Remove the sector
 	removeMapObject(sectors_[index]);
@@ -3358,7 +3361,7 @@ void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 	// Find sectors with matching tag
 	for (unsigned a = 0; a < sectors_.size(); a++)
 	{
-		if (sectors_[a]->tag_ == tag)
+		if (sectors_[a]->id_ == tag)
 			list.push_back(sectors_[a]);
 	}
 }
@@ -3413,7 +3416,7 @@ void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list
 		if (things_[a]->intProperty("id") == id)
 		{
 			int si = sectorAt(things_[a]->point());
-			if (si > -1 && (unsigned)si < sectors_.size() && sectors_[si]->tag_ == tag)
+			if (si > -1 && (unsigned)si < sectors_.size() && sectors_[si]->id_ == tag)
 			{
 				list.push_back(things_[a]);
 			}
@@ -3686,7 +3689,7 @@ int SLADEMap::findUnusedSectorTag()
 	int tag = 1;
 	for (unsigned a = 0; a < sectors_.size(); a++)
 	{
-		if (sectors_[a]->tag_ == tag)
+		if (sectors_[a]->id_ == tag)
 		{
 			tag++;
 			a = 0;
@@ -5122,7 +5125,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 	for (unsigned a = ns_start; a < sectors_.size(); a++)
 	{
 		// Skip if sector already has properties
-		if (!sectors_[a]->getCeilingTex().IsEmpty())
+		if (!sectors_[a]->ceiling_.texture.IsEmpty())
 			continue;
 
 		// Copy from adjacent sector if any

@@ -112,7 +112,7 @@ void registerMiscTypes(sol::state& lua)
 		"d", &plane_t::d,
 
 		// Functions
-		"heightAt", sol::resolve<double(fpoint2_t)>(&plane_t::height_at)
+		"heightAt", sol::resolve<double(fpoint2_t) const>(&plane_t::height_at)
 	);
 }
 

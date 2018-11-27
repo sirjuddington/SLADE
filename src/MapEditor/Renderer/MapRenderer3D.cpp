@@ -416,8 +416,8 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 
 	// Get target height
 	int view_height = (map_->currentFormat() == MAP_DOOM64) ? 56 : 41;
-	int fheight     = map_->getSector(sector)->getFloorPlane().height_at(cam_position_.get2d()) + view_height;
-	int cheight     = map_->getSector(sector)->getCeilingPlane().height_at(cam_position_.get2d());
+	int fheight     = map_->getSector(sector)->floor().plane.height_at(cam_position_.get2d()) + view_height;
+	int cheight     = map_->getSector(sector)->ceiling().plane.height_at(cam_position_.get2d());
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
@@ -931,13 +931,13 @@ void MapRenderer3D::updateSector(unsigned index)
 	MapSector* sector      = map_->getSector(index);
 	floors_[index].sector  = sector;
 	floors_[index].texture = MapEditor::textureManager().getFlat(
-		sector->getFloorTex(), Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+		sector->floor().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 	floors_[index].colour    = sector->getColour(1, true);
 	floors_[index].fogcolour = sector->getFogColour();
 	floors_[index].light     = sector->getLight(1);
 	floors_[index].flags     = 0;
-	floors_[index].plane     = sector->getFloorPlane();
-	if (S_CMPNOCASE(sector->getFloorTex(), Game::configuration().skyFlat()))
+	floors_[index].plane     = sector->floor().plane;
+	if (S_CMPNOCASE(sector->floor().texture, Game::configuration().skyFlat()))
 		floors_[index].flags |= SKY;
 
 	// Update floor VBO
@@ -953,13 +953,13 @@ void MapRenderer3D::updateSector(unsigned index)
 	// Update ceiling
 	ceilings_[index].sector  = sector;
 	ceilings_[index].texture = MapEditor::textureManager().getFlat(
-		sector->getCeilingTex(), Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+		sector->ceiling().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 	ceilings_[index].colour    = sector->getColour(2, true);
 	ceilings_[index].fogcolour = sector->getFogColour();
 	ceilings_[index].light     = sector->getLight(2);
 	ceilings_[index].flags     = CEIL;
-	ceilings_[index].plane     = sector->getCeilingPlane();
-	if (S_CMPNOCASE(sector->getCeilingTex(), Game::configuration().skyFlat()))
+	ceilings_[index].plane     = sector->ceiling().plane;
+	if (S_CMPNOCASE(sector->ceiling().texture, Game::configuration().skyFlat()))
 		ceilings_[index].flags |= SKY;
 
 	// Update ceiling VBO
@@ -1041,12 +1041,12 @@ void MapRenderer3D::renderFlat(Flat* flat)
 		if (flat->flags & CEIL)
 		{
 			glCullFace(GL_BACK);
-			glTranslated(0, 0, flat->sector->getCeilingHeight());
+			glTranslated(0, 0, flat->sector->ceiling().height);
 		}
 		else
 		{
 			glCullFace(GL_FRONT);
-			glTranslated(0, 0, flat->sector->getFloorHeight());
+			glTranslated(0, 0, flat->sector->floor().height);
 		}
 
 		// Render
@@ -1148,9 +1148,9 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 		// Get plane
 		plane_t plane;
 		if (selection[a].type == MapEditor::ItemType::Floor)
-			plane = sector->getFloorPlane();
+			plane = sector->floor().plane;
 		else
-			plane = sector->getCeilingPlane();
+			plane = sector->ceiling().plane;
 
 		// Draw sector outline
 		vector<MapLine*> lines;
@@ -1307,10 +1307,10 @@ void MapRenderer3D::updateLine(unsigned index)
 		alpha = line->floatProperty("alpha");
 
 	// Get first side info
-	int     floor1     = line->frontSector()->getFloorHeight();
-	int     ceiling1   = line->frontSector()->getCeilingHeight();
-	plane_t fp1        = line->frontSector()->getFloorPlane();
-	plane_t cp1        = line->frontSector()->getCeilingPlane();
+	int     floor1     = line->frontSector()->floor().height;
+	int     ceiling1   = line->frontSector()->ceiling().height;
+	plane_t fp1        = line->frontSector()->floor().plane;
+	plane_t cp1        = line->frontSector()->ceiling().plane;
 	rgba_t  colour1    = line->frontSector()->getColour(0, true);
 	rgba_t  fogcolour1 = line->frontSector()->getFogColour();
 	int     light1     = line->s1()->getLight();
@@ -1394,10 +1394,10 @@ void MapRenderer3D::updateLine(unsigned index)
 	// --- Two-sided line ---
 
 	// Get second side info
-	int     floor2      = line->backSector()->getFloorHeight();
-	int     ceiling2    = line->backSector()->getCeilingHeight();
-	plane_t fp2         = line->backSector()->getFloorPlane();
-	plane_t cp2         = line->backSector()->getCeilingPlane();
+	int     floor2      = line->backSector()->floor().height;
+	int     ceiling2    = line->backSector()->ceiling().height;
+	plane_t fp2         = line->backSector()->floor().plane;
+	plane_t cp2         = line->backSector()->ceiling().plane;
 	rgba_t  colour2     = line->backSector()->getColour(0, true);
 	rgba_t  fogcolour2  = line->backSector()->getFogColour();
 	int     light2      = line->s2()->getLight();
@@ -1489,7 +1489,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.light     = light1;
 		setupQuadTexCoords(&quad, length, xoff, yoff, floor2, floor1, false, sx, sy);
 		// No, the sky hack is only for ceilings!
-		// if (S_CMPNOCASE(sky_flat, line->backSector()->getFloorTex())) quad.flags |= SKY;
+		// if (S_CMPNOCASE(sky_flat, line->backSector()->floor().texture)) quad.flags |= SKY;
 		quad.flags |= LOWER;
 
 		// Add quad
@@ -1634,8 +1634,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.light     = light1;
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, ceiling2, !upeg, sx, sy);
 		// Sky hack only applies if both sectors have a sky ceiling
-		if (S_CMPNOCASE(sky_flat, line->frontSector()->getCeilingTex())
-			&& S_CMPNOCASE(sky_flat, line->backSector()->getCeilingTex()))
+		if (S_CMPNOCASE(sky_flat, line->frontSector()->ceiling().texture)
+			&& S_CMPNOCASE(sky_flat, line->backSector()->ceiling().texture))
 			quad.flags |= SKY;
 		quad.flags |= UPPER;
 
@@ -1692,7 +1692,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.fogcolour = fogcolour2;
 		quad.light     = light2;
 		setupQuadTexCoords(&quad, length, xoff, yoff, floor1, floor2, false, sx, sy);
-		if (S_CMPNOCASE(sky_flat, line->frontSector()->getFloorTex()))
+		if (S_CMPNOCASE(sky_flat, line->frontSector()->floor().texture))
 			quad.flags |= SKY;
 		quad.flags |= BACK;
 		quad.flags |= LOWER;
@@ -1839,7 +1839,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.fogcolour = fogcolour2;
 		quad.light     = light2;
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling2, ceiling1, !upeg, sx, sy);
-		if (S_CMPNOCASE(sky_flat, line->frontSector()->getCeilingTex()))
+		if (S_CMPNOCASE(sky_flat, line->frontSector()->ceiling().texture))
 			quad.flags |= SKY;
 		quad.flags |= BACK;
 		quad.flags |= UPPER;
@@ -2123,13 +2123,13 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		float zheight = thing->floatProperty("height");
 		if (things_[index].type->hanging())
 		{
-			sheight = things_[index].sector->getCeilingPlane().height_at(thing->xPos(), thing->yPos());
+			sheight = things_[index].sector->ceiling().plane.height_at(thing->xPos(), thing->yPos());
 			sheight -= theight;
 			zheight = -zheight;
 		}
 		else
 		{
-			sheight = things_[index].sector->getFloorPlane().height_at(thing->xPos(), thing->yPos());
+			sheight = things_[index].sector->floor().plane.height_at(thing->xPos(), thing->yPos());
 		}
 
 		// Set height
@@ -3066,9 +3066,9 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		// Get plane
 		plane_t plane;
 		if (hilight.type == MapEditor::ItemType::Floor)
-			plane = sector->getFloorPlane();
+			plane = sector->floor().plane;
 		else
-			plane = sector->getCeilingPlane();
+			plane = sector->ceiling().plane;
 
 		// Render sector outline
 		vector<MapLine*> lines;

@@ -471,9 +471,9 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 			}
 
 			if (thing->getType() == 9510)
-				target->setFloorPlane(tagged_sectors[0]->getFloorPlane());
+				target->setFloorPlane(tagged_sectors[0]->floor().plane);
 			else
-				target->setCeilingPlane(tagged_sectors[0]->getCeilingPlane());
+				target->setCeilingPlane(tagged_sectors[0]->ceiling().plane);
 		}
 	}
 
@@ -532,28 +532,28 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				front->setFloorPlane(sectors[0]->getFloorPlane());
+				front->setFloorPlane(sectors[0]->floor().plane);
 		}
 		if ((tag = line->intProperty("arg1")) && front)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				front->setCeilingPlane(sectors[0]->getCeilingPlane());
+				front->setCeilingPlane(sectors[0]->ceiling().plane);
 		}
 		if ((tag = line->intProperty("arg2")) && back)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				back->setFloorPlane(sectors[0]->getFloorPlane());
+				back->setFloorPlane(sectors[0]->floor().plane);
 		}
 		if ((tag = line->intProperty("arg3")) && back)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				back->setCeilingPlane(sectors[0]->getCeilingPlane());
+				back->setCeilingPlane(sectors[0]->ceiling().plane);
 		}
 
 		// The fifth "share" argument copies from one side of the line to the
@@ -563,14 +563,14 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 			int share = line->intProperty("arg4");
 
 			if ((share & 3) == 1)
-				back->setFloorPlane(front->getFloorPlane());
+				back->setFloorPlane(front->floor().plane);
 			else if ((share & 3) == 2)
-				front->setFloorPlane(back->getFloorPlane());
+				front->setFloorPlane(back->floor().plane);
 
 			if ((share & 12) == 4)
-				back->setCeilingPlane(front->getCeilingPlane());
+				back->setCeilingPlane(front->ceiling().plane);
 			else if ((share & 12) == 8)
-				front->setCeilingPlane(back->getCeilingPlane());
+				front->setCeilingPlane(back->ceiling().plane);
 		}
 	}
 }
@@ -644,28 +644,28 @@ void MapSpecials::processEternitySlopes(SLADEMap* map)
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				front->setFloorPlane(sectors[0]->getFloorPlane());
+				front->setFloorPlane(sectors[0]->floor().plane);
 		}
 		if ((tag = line->intProperty("arg1")))
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				front->setCeilingPlane(sectors[0]->getCeilingPlane());
+				front->setCeilingPlane(sectors[0]->ceiling().plane);
 		}
 		if ((tag = line->intProperty("arg2")))
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				back->setFloorPlane(sectors[0]->getFloorPlane());
+				back->setFloorPlane(sectors[0]->floor().plane);
 		}
 		if ((tag = line->intProperty("arg3")))
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
-				back->setCeilingPlane(sectors[0]->getCeilingPlane());
+				back->setCeilingPlane(sectors[0]->ceiling().plane);
 		}
 
 		// The fifth "share" argument copies from one side of the line to the
@@ -675,14 +675,14 @@ void MapSpecials::processEternitySlopes(SLADEMap* map)
 			int share = line->intProperty("arg4");
 
 			if ((share & 3) == 1)
-				back->setFloorPlane(front->getFloorPlane());
+				back->setFloorPlane(front->floor().plane);
 			else if ((share & 3) == 2)
-				front->setFloorPlane(back->getFloorPlane());
+				front->setFloorPlane(back->floor().plane);
 
 			if ((share & 12) == 4)
-				back->setCeilingPlane(front->getCeilingPlane());
+				back->setCeilingPlane(front->ceiling().plane);
 			else if ((share & 12) == 8)
-				front->setCeilingPlane(back->getCeilingPlane());
+				front->setCeilingPlane(back->ceiling().plane);
 		}
 	}
 }

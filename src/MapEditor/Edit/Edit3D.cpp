@@ -378,7 +378,7 @@ void Edit3D::changeSectorHeight(int amount) const
 			auto sector = context_.map().getSector(items[a].index);
 
 			// Change height
-			sector->setFloorHeight(sector->getFloorHeight() + amount);
+			sector->setFloorHeight(sector->floor().height + amount);
 		}
 
 		// Ceiling
@@ -402,7 +402,7 @@ void Edit3D::changeSectorHeight(int amount) const
 				continue;
 
 			// Change height
-			sector->setCeilingHeight(sector->getCeilingHeight() + amount);
+			sector->setCeilingHeight(sector->ceiling().height + amount);
 
 			// Set to changed
 			ceilings.push_back(sector->getIndex());
@@ -761,7 +761,7 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.getSector(hl.index)->getFloorTex();
+			copy_texture_ = map.getSector(hl.index)->floor().texture;
 	}
 
 	// Ceiling
@@ -769,7 +769,7 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.getSector(hl.index)->getCeilingTex();
+			copy_texture_ = map.getSector(hl.index)->ceiling().texture;
 	}
 
 	// Thing
@@ -1201,7 +1201,7 @@ void Edit3D::changeHeight(int amount) const
 
 			// Change height
 			if (sector)
-				sector->setFloorHeight(sector->getFloorHeight() + amount);
+				sector->setFloorHeight(sector->floor().height + amount);
 		}
 
 		// Ceiling
@@ -1212,7 +1212,7 @@ void Edit3D::changeHeight(int amount) const
 
 			// Change height
 			if (sector)
-				sector->setCeilingHeight(sector->getCeilingHeight() + amount);
+				sector->setCeilingHeight(sector->ceiling().height + amount);
 		}
 	}
 
@@ -1247,12 +1247,12 @@ void Edit3D::changeTexture() const
 	auto&  map   = context_.map();
 	if (first.type == MapEditor::ItemType::Floor)
 	{
-		tex  = map.getSector(first.index)->getFloorTex();
+		tex  = map.getSector(first.index)->floor().texture;
 		type = 1;
 	}
 	else if (first.type == MapEditor::ItemType::Ceiling)
 	{
-		tex  = map.getSector(first.index)->getCeilingTex();
+		tex  = map.getSector(first.index)->ceiling().texture;
 		type = 1;
 	}
 	else if (first.type == MapEditor::ItemType::WallBottom)
@@ -1550,20 +1550,20 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 		if (item.type == ItemType::Floor)
 		{
 			// Check sector floor texture
-			if (osector->getFloorTex() != sector->getFloorTex())
+			if (osector->floor().texture != sector->floor().texture)
 				continue;
 
-			this_plane  = sector->getFloorPlane();
-			other_plane = osector->getFloorPlane();
+			this_plane  = sector->floor().plane;
+			other_plane = osector->floor().plane;
 		}
 		else
 		{
 			// Check sector ceiling texture
-			if (osector->getCeilingTex() != sector->getCeilingTex())
+			if (osector->ceiling().texture != sector->ceiling().texture)
 				continue;
 
-			this_plane  = sector->getCeilingPlane();
-			other_plane = osector->getCeilingPlane();
+			this_plane  = sector->ceiling().plane;
+			other_plane = osector->ceiling().plane;
 		}
 
 		// Check that planes meet

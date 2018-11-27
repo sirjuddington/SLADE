@@ -1939,12 +1939,12 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 				if (type <= 1)
 				{
 					tex = MapEditor::textureManager().getFlat(
-						sector->getFloorTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
+						sector->floor().texture, Game::configuration().featureSupported(Feature::MixTexFlats));
 				}
 				else
 				{
 					tex = MapEditor::textureManager().getFlat(
-						sector->getCeilingTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
+						sector->ceiling().texture, Game::configuration().featureSupported(Feature::MixTexFlats));
 				}
 
 				tex_flats_[a] = tex;
@@ -2113,10 +2113,10 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 				// Get the sector texture
 				if (type <= 1)
 					tex = MapEditor::textureManager().getFlat(
-						sector->getFloorTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
+						sector->floor().texture, Game::configuration().featureSupported(Feature::MixTexFlats));
 				else
 					tex = MapEditor::textureManager().getFlat(
-						sector->getCeilingTex(), Game::configuration().featureSupported(Feature::MixTexFlats));
+						sector->ceiling().texture, Game::configuration().featureSupported(Feature::MixTexFlats));
 
 				tex_flats_[a] = tex;
 			}

@@ -248,10 +248,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			// A two-sided line's middle area is the smallest distance between
 			// both sides' floors and ceilings, which is more complicated with
 			// slopes.
-			plane_t floor1   = this_sector->getFloorPlane();
-			plane_t floor2   = other_sector->getFloorPlane();
-			plane_t ceiling1 = this_sector->getCeilingPlane();
-			plane_t ceiling2 = other_sector->getCeilingPlane();
+			plane_t floor1   = this_sector->floor().plane;
+			plane_t floor2   = other_sector->floor().plane;
+			plane_t ceiling1 = this_sector->ceiling().plane;
+			plane_t ceiling2 = other_sector->ceiling().plane;
 			left_height      = min(ceiling1.height_at(left_point), ceiling2.height_at(left_point))
 						  - max(floor1.height_at(left_point), floor2.height_at(left_point));
 			right_height = min(ceiling1.height_at(right_point), ceiling2.height_at(right_point))
@@ -262,8 +262,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			plane_t top_plane, bottom_plane;
 			if (item_type == MapEditor::ItemType::WallMiddle)
 			{
-				top_plane    = this_sector->getCeilingPlane();
-				bottom_plane = this_sector->getFloorPlane();
+				top_plane    = this_sector->ceiling().plane;
+				bottom_plane = this_sector->floor().plane;
 			}
 			else
 			{
@@ -271,13 +271,13 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 					return;
 				if (item_type == MapEditor::ItemType::WallTop)
 				{
-					top_plane    = this_sector->getCeilingPlane();
-					bottom_plane = other_sector->getCeilingPlane();
+					top_plane    = this_sector->ceiling().plane;
+					bottom_plane = other_sector->ceiling().plane;
 				}
 				else
 				{
-					top_plane    = other_sector->getFloorPlane();
-					bottom_plane = this_sector->getFloorPlane();
+					top_plane    = other_sector->floor().plane;
+					bottom_plane = this_sector->floor().plane;
 				}
 			}
 
@@ -418,9 +418,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// Texture
 		if (item_type == MapEditor::ItemType::Floor)
-			texname_ = sector->getFloorTex();
+			texname_ = sector->floor().texture;
 		else
-			texname_ = sector->getCeilingTex();
+			texname_ = sector->ceiling().texture;
 		texture_ =
 			MapEditor::textureManager().getFlat(texname_, Game::configuration().featureSupported(Feature::MixTexFlats));
 	}

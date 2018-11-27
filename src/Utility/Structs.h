@@ -710,7 +710,7 @@ struct plane_t
 		this->d = d;
 	}
 
-	fpoint3_t normal()
+	fpoint3_t normal() const
 	{
 		fpoint3_t norm(a, b, c);
 		norm.normalize();
@@ -727,11 +727,11 @@ struct plane_t
 		d = d / mag;
 	}
 
-	double height_at(fpoint2_t point)
+	double height_at(fpoint2_t point) const
 	{
 		return height_at(point.x, point.y);
 	}
-	double height_at(double x, double y)
+	double height_at(double x, double y) const
 	{
 		return ((-a * x) + (-b * y) + d) / c;
 	}

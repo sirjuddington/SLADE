@@ -974,7 +974,7 @@ void Edit2D::createSector(double x, double y) const
 	if (!sector_copy && ok)
 	{
 		auto new_sector = map.getSector(map.nSectors() - 1);
-		if (new_sector->getCeilingTex().IsEmpty())
+		if (new_sector->ceiling().texture.IsEmpty())
 			Game::configuration().applyDefaults(new_sector, map.currentFormat() == MAP_UDMF);
 	}
 

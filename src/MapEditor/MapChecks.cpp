@@ -98,8 +98,8 @@ public:
 
 			// Detect if sky hack might apply
 			bool sky_hack = false;
-			if (side1 && S_CMPNOCASE(sky_flat, side1->getSector()->getCeilingTex()) && side2
-				&& S_CMPNOCASE(sky_flat, side2->getSector()->getCeilingTex()))
+			if (side1 && S_CMPNOCASE(sky_flat, side1->getSector()->ceiling().texture) && side2
+				&& S_CMPNOCASE(sky_flat, side2->getSector()->ceiling().texture))
 				sky_hack = true;
 
 			// Check for missing textures (front side)
@@ -1187,14 +1187,14 @@ public:
 		for (unsigned a = 0; a < map_->nSectors(); a++)
 		{
 			// Check floor texture
-			if (texman_->getFlat(map_->getSector(a)->getFloorTex(), mixed) == &(GLTexture::missingTex()))
+			if (texman_->getFlat(map_->getSector(a)->floor().texture, mixed) == &(GLTexture::missingTex()))
 			{
 				sectors_.push_back(map_->getSector(a));
 				floor_.push_back(true);
 			}
 
 			// Check ceiling texture
-			if (texman_->getFlat(map_->getSector(a)->getCeilingTex(), mixed) == &(GLTexture::missingTex()))
+			if (texman_->getFlat(map_->getSector(a)->ceiling().texture, mixed) == &(GLTexture::missingTex()))
 			{
 				sectors_.push_back(map_->getSector(a));
 				floor_.push_back(false);
@@ -1211,9 +1211,9 @@ public:
 
 		MapSector* sector = sectors_[index];
 		if (floor_[index])
-			return S_FMT("Sector %d has unknown floor texture \"%s\"", sector->getIndex(), sector->getFloorTex());
+			return S_FMT("Sector %d has unknown floor texture \"%s\"", sector->getIndex(), sector->floor().texture);
 		else
-			return S_FMT("Sector %d has unknown ceiling texture \"%s\"", sector->getIndex(), sector->getCeilingTex());
+			return S_FMT("Sector %d has unknown ceiling texture \"%s\"", sector->getIndex(), sector->ceiling().texture);
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override

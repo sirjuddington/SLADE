@@ -312,7 +312,7 @@ void Renderer::setCameraThing(MapThing* thing)
 	fpoint3_t pos(thing->point(), 40);
 	int       sector = context_.map().sectorAt(thing->point());
 	if (sector >= 0)
-		pos.z += context_.map().getSector(sector)->getFloorHeight();
+		pos.z += context_.map().getSector(sector)->floor().plane.height_at(pos.x, pos.y);
 
 	// Set camera position & direction
 	renderer_3d_.cameraSet(pos, MathStuff::vectorAngle(MathStuff::degToRad(thing->getAngle())));

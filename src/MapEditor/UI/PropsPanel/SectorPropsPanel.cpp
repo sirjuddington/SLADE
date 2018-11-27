@@ -452,11 +452,11 @@ void SectorPropsPanel::applyChanges()
 
 		// Floor height
 		if (!text_height_floor_->GetValue().IsEmpty())
-			sector->setIntProperty("heightfloor", text_height_floor_->getNumber(sector->getFloorHeight()));
+			sector->setIntProperty("heightfloor", text_height_floor_->getNumber(sector->floor().height));
 
 		// Ceiling height
 		if (!text_height_ceiling_->GetValue().IsEmpty())
-			sector->setIntProperty("heightceiling", text_height_ceiling_->getNumber(sector->getCeilingHeight()));
+			sector->setIntProperty("heightceiling", text_height_ceiling_->getNumber(sector->ceiling().height));
 
 		// Light level
 		if (!text_light_->GetValue().IsEmpty())
