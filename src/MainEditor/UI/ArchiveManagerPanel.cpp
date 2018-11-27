@@ -1283,6 +1283,13 @@ bool ArchiveManagerPanel::undo() const
 		return true;
 	}
 
+	// Entry panel
+	else if (S_CMPNOCASE(page_current->GetName(), "entry"))
+	{
+		((EntryPanel*)page_current)->undo();
+		return true;
+	}
+
 	return false;
 }
 
@@ -1308,6 +1315,13 @@ bool ArchiveManagerPanel::redo() const
 	else if (S_CMPNOCASE(page_current->GetName(), "texture"))
 	{
 		((TextureXEditor*)page_current)->redo();
+		return true;
+	}
+
+	// Entry panel
+	else if (S_CMPNOCASE(page_current->GetName(), "entry"))
+	{
+		((EntryPanel*)page_current)->redo();
 		return true;
 	}
 
