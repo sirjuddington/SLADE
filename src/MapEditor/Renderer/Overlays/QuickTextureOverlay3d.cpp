@@ -340,8 +340,8 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 		x,
 		bottom + 2,
 		rgba_t(brightness * 255, brightness * 255, brightness * 255, brightness * 255 * fade),
-		index == current_index_ ? Drawing::FONT_BOLD : Drawing::FONT_NORMAL,
-		Drawing::ALIGN_CENTER);
+		index == current_index_ ? Drawing::Font::Bold : Drawing::Font::Normal,
+		Drawing::Align::Center);
 
 	// Draw texture
 	frect_t rect = Drawing::fitTextureWithin(

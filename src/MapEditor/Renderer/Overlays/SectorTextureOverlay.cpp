@@ -112,8 +112,8 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 			width * 0.5,
 			height * 0.5,
 			COL_WHITE,
-			0,
-			Drawing::ALIGN_CENTER);
+			Drawing::Font::Normal,
+			Drawing::Align::Center);
 		return;
 	}
 
@@ -159,15 +159,15 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 		middlex_ - border_ - tex_size_ * 0.5,
 		middley_ - tex_size_ * 0.5 - 18,
 		col_fg,
-		Drawing::FONT_BOLD,
-		Drawing::ALIGN_CENTER);
+		Drawing::Font::Bold,
+		Drawing::Align::Center);
 	Drawing::drawText(
 		ftex,
 		middlex_ - border_ - tex_size_ * 0.5,
 		middley_ + tex_size_ * 0.5 + 2,
 		col_fg,
-		Drawing::FONT_BOLD,
-		Drawing::ALIGN_CENTER);
+		Drawing::Font::Bold,
+		Drawing::Align::Center);
 
 	// Ceiling texture
 	drawTexture(
@@ -182,15 +182,15 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 		middlex_ + border_ + tex_size_ * 0.5,
 		middley_ - tex_size_ * 0.5 - 18,
 		col_fg,
-		Drawing::FONT_BOLD,
-		Drawing::ALIGN_CENTER);
+		Drawing::Font::Bold,
+		Drawing::Align::Center);
 	Drawing::drawText(
 		ctex,
 		middlex_ + border_ + tex_size_ * 0.5,
 		middley_ + tex_size_ * 0.5 + 2,
 		col_fg,
-		Drawing::FONT_BOLD,
-		Drawing::ALIGN_CENTER);
+		Drawing::Font::Bold,
+		Drawing::Align::Center);
 }
 
 // -----------------------------------------------------------------------------

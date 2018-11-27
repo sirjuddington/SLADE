@@ -232,7 +232,7 @@ public:
 		trace_ += "\n";
 
 		// System info
-		OpenGL::gl_info_t gl_info = OpenGL::getInfo();
+		OpenGL::Info gl_info = OpenGL::getInfo();
 		trace_ += "Operating System: " + wxGetOsDescription() + "\n";
 		trace_ += "Graphics Vendor: " + gl_info.vendor + "\n";
 		trace_ += "Graphics Hardware: " + gl_info.renderer + "\n";

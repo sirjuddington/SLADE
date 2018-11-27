@@ -119,15 +119,15 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	Texture& mtex = textures_[name.Upper()];
 
 	// Get desired filter type
-	int filter = 1;
+	auto filter = GLTexture::Filter::Linear;
 	if (map_tex_filter == 0)
-		filter = GLTexture::NEAREST_LINEAR_MIN;
+		filter = GLTexture::Filter::NearestLinearMin;
 	else if (map_tex_filter == 1)
-		filter = GLTexture::LINEAR;
+		filter = GLTexture::Filter::Linear;
 	else if (map_tex_filter == 2)
-		filter = GLTexture::LINEAR_MIPMAP;
+		filter = GLTexture::Filter::LinearMipmap;
 	else if (map_tex_filter == 3)
-		filter = GLTexture::NEAREST_MIPMAP;
+		filter = GLTexture::Filter::NearestMipmap;
 
 	// If the texture is loaded
 	if (mtex.texture)
@@ -234,15 +234,15 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 	Texture& mtex = flats_[name.Upper()];
 
 	// Get desired filter type
-	int filter = 1;
+	auto filter = GLTexture::Filter::Linear;
 	if (map_tex_filter == 0)
-		filter = GLTexture::NEAREST_LINEAR_MIN;
+		filter = GLTexture::Filter::NearestLinearMin;
 	else if (map_tex_filter == 1)
-		filter = GLTexture::LINEAR;
+		filter = GLTexture::Filter::Linear;
 	else if (map_tex_filter == 2)
-		filter = GLTexture::LINEAR_MIPMAP;
+		filter = GLTexture::Filter::LinearMipmap;
 	else if (map_tex_filter == 3)
-		filter = GLTexture::NEAREST_MIPMAP;
+		filter = GLTexture::Filter::NearestMipmap;
 
 	// If the texture is loaded
 	if (mtex.texture)
@@ -338,15 +338,15 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	Texture& mtex = sprites_[hashname];
 
 	// Get desired filter type
-	int filter = 1;
+	auto filter = GLTexture::Filter::Linear;
 	if (map_tex_filter == 0)
-		filter = GLTexture::NEAREST_LINEAR_MIN;
+		filter = GLTexture::Filter::NearestLinearMin;
 	else if (map_tex_filter == 1)
-		filter = GLTexture::LINEAR;
+		filter = GLTexture::Filter::Linear;
 	else if (map_tex_filter == 2)
-		filter = GLTexture::LINEAR;
+		filter = GLTexture::Filter::Linear;
 	else if (map_tex_filter == 3)
-		filter = GLTexture::NEAREST_MIPMAP;
+		filter = GLTexture::Filter::NearestMipmap;
 
 	// If the texture is loaded
 	if (mtex.texture)
@@ -501,7 +501,7 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* 
 			LOG_MESSAGE(4, "Loading editor texture %s", name);
 			Texture& mtex = map[name];
 			mtex.texture  = new GLTexture(false);
-			mtex.texture->setFilter(GLTexture::MIPMAP);
+			mtex.texture->setFilter(GLTexture::Filter::Mipmap);
 			mtex.texture->loadImage(&image);
 		}
 	}

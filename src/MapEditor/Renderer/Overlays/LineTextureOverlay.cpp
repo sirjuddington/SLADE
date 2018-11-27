@@ -369,8 +369,8 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 		tex.position.x,
 		tex.position.y - halfsize - 18,
 		col_fg,
-		Drawing::FONT_BOLD,
-		Drawing::ALIGN_CENTER);
+		Drawing::Font::Bold,
+		Drawing::Align::Center);
 
 	// Determine texture name text
 	string str_texture;
@@ -383,7 +383,12 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 
 	// Draw texture name
 	Drawing::drawText(
-		str_texture, tex.position.x, tex.position.y + halfsize + 2, col_fg, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		str_texture,
+		tex.position.x,
+		tex.position.y + halfsize + 2,
+		col_fg,
+		Drawing::Font::Bold,
+		Drawing::Align::Center);
 }
 
 // -----------------------------------------------------------------------------

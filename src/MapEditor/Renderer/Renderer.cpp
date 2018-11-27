@@ -555,7 +555,7 @@ void Renderer::drawEditorMessages() const
 
 		// Draw message
 		Drawing::setTextOutline(1.0f, col_bg);
-		Drawing::drawText(context_.editorMessage(a), 0, yoff, col, Drawing::FONT_BOLD);
+		Drawing::drawText(context_.editorMessage(a), 0, yoff, col, Drawing::Font::Bold);
 
 		yoff += 16;
 	}
@@ -581,7 +581,7 @@ void Renderer::drawFeatureHelpText() const
 	col.a          = col.a * anim_help_fade_;
 	col_bg.a       = col_bg.a * anim_help_fade_;
 	Drawing::setTextOutline(1.0f, col_bg);
-	Drawing::drawText(help_lines[0], view_.size().x - 2, 2, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT, &bounds);
+	Drawing::drawText(help_lines[0], view_.size().x - 2, 2, col, Drawing::Font::Bold, Drawing::Align::Right, &bounds);
 
 	// Draw underline
 	glDisable(GL_TEXTURE_2D);
@@ -601,7 +601,7 @@ void Renderer::drawFeatureHelpText() const
 	Drawing::enableTextStateReset(false);
 	for (unsigned a = 1; a < help_lines.size(); a++)
 	{
-		Drawing::drawText(help_lines[a], view_.size().x - 2, yoff, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(help_lines[a], view_.size().x - 2, yoff, col, Drawing::Font::Bold, Drawing::Align::Right);
 		yoff += 16;
 	}
 	Drawing::setTextOutline(0);
@@ -643,7 +643,7 @@ void Renderer::drawSelectionNumbers() const
 		tp.y    = view_.screenY(tp.y);
 
 		text    = S_FMT("%d", a + 1);
-		auto ts = Drawing::textExtents(text, Drawing::FONT_BOLD);
+		auto ts = Drawing::textExtents(text, Drawing::Font::Bold);
 		tp.x -= ts.x * 0.5;
 		tp.y -= ts.y * 0.5;
 
@@ -654,7 +654,7 @@ void Renderer::drawSelectionNumbers() const
 		}
 
 		// Draw text
-		Drawing::drawText(S_FMT("%d", a + 1), tp.x, tp.y, col, Drawing::FONT_BOLD);
+		Drawing::drawText(S_FMT("%d", a + 1), tp.x, tp.y, col, Drawing::Font::Bold);
 	}
 	Drawing::setTextOutline(0);
 	Drawing::enableTextStateReset();
@@ -712,7 +712,7 @@ void Renderer::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col) const
 
 	// Draw text
 	Drawing::drawText(
-		length, view_.screenX(tp.x), view_.screenY(tp.y) - hh, col, Drawing::FONT_NORMAL, Drawing::ALIGN_CENTER);
+		length, view_.screenX(tp.x), view_.screenY(tp.y) - hh, col, Drawing::Font::Normal, Drawing::Align::Center);
 	glDisable(GL_TEXTURE_2D);
 }
 
@@ -935,7 +935,7 @@ void Renderer::drawObjectEdit()
 		int       y      = view_.mapY(mid.y) - 8;
 		view_.setOverlayCoords(true);
 		Drawing::setTextOutline(1.0f, COL_BLACK);
-		Drawing::drawText(S_FMT("%d", length), x, y, COL_WHITE, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::drawText(S_FMT("%d", length), x, y, COL_WHITE, Drawing::Font::Bold, Drawing::Align::Center);
 		Drawing::setTextOutline(0);
 		view_.setOverlayCoords(false);
 		glDisable(GL_TEXTURE_2D);
@@ -1301,7 +1301,7 @@ void Renderer::draw()
 				midx + 5,
 				midy + 5,
 				rgba_t(255, 255, 255, 200),
-				Drawing::FONT_SMALL);
+				Drawing::Font::Small);
 		}
 	}
 

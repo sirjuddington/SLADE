@@ -723,7 +723,7 @@ void MapPreviewCanvas::draw()
 		{
 			image.open(entry->getMCData());
 			tex_thing = new GLTexture(false);
-			tex_thing->setFilter(GLTexture::MIPMAP);
+			tex_thing->setFilter(GLTexture::Filter::Mipmap);
 			tex_thing->loadImage(&image);
 		}
 		else

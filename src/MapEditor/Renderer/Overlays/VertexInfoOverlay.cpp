@@ -109,7 +109,7 @@ void VertexInfoOverlay::draw(int bottom, int right, float alpha)
 	Drawing::drawBorderedRect(0, bottom - line_height - 8, right, bottom + 2, col_bg, col_border);
 
 	// Draw text
-	Drawing::drawText(info_, 2, bottom - line_height - 4, col_fg, Drawing::FONT_CONDENSED);
+	Drawing::drawText(info_, 2, bottom - line_height - 4, col_fg, Drawing::Font::Condensed);
 
 	// Done
 	glEnable(GL_LINE_SMOOTH);

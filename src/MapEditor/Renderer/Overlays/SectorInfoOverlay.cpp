@@ -54,7 +54,7 @@
 // -----------------------------------------------------------------------------
 SectorInfoOverlay::SectorInfoOverlay()
 {
-	text_box_  = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * (Drawing::fontSize() / 12.0));
+	text_box_  = new TextBox("", Drawing::Font::Condensed, 100, 16 * (Drawing::fontSize() / 12.0));
 	last_size_ = 100;
 }
 
@@ -217,5 +217,5 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	texture.Prepend(":");
 	texture.Prepend(pos);
 	Drawing::drawText(
-		texture, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
+		texture, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::Font::Condensed, Drawing::Align::Center);
 }

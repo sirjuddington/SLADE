@@ -86,7 +86,7 @@ bool BrowserItem::loadImage()
 // Draws the item in a [size]x[size] box, keeping the correct aspect ratio of
 // it's image
 // ----------------------------------------------------------------------------
-void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewtype, rgba_t colour, bool text_shadow)
+void BrowserItem::draw(int size, int x, int y, Drawing::Font font, int nametype, int viewtype, rgba_t colour, bool text_shadow)
 {
 	// Determine item name string (for normal viewtype)
 	string draw_name = "";
@@ -106,8 +106,8 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 	if (viewtype == 0)
 	{
 		if (text_shadow)
-			Drawing::drawText(draw_name, x+(size*0.5+1), y+size+5, COL_BLACK, font, Drawing::ALIGN_CENTER);
-		Drawing::drawText(draw_name, x+(size*0.5), y+size+4, colour, font, Drawing::ALIGN_CENTER);
+			Drawing::drawText(draw_name, x+(size*0.5+1), y+size+5, COL_BLACK, font, Drawing::Align::Center);
+		Drawing::drawText(draw_name, x+(size*0.5), y+size+4, colour, font, Drawing::Align::Center);
 	}
 	else if (viewtype == 1)
 	{

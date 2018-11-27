@@ -65,7 +65,7 @@ BrowserCanvas::BrowserCanvas(wxWindow* parent) :
 	item_selected_{ nullptr },
 	yoff_{ 0 },
 	item_border_{ UI::scalePx(8) },
-	font_{ Drawing::FONT_BOLD },
+	font_{ Drawing::Font::Bold },
 	show_names_{ NAMES_NORMAL },
 	item_size_{ -1 },
 	item_type_{ ITEMS_NORMAL },

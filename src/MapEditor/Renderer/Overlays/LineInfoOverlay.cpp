@@ -59,7 +59,7 @@
 LineInfoOverlay::LineInfoOverlay()
 {
 	scale_     = Drawing::fontSize() / 12.0;
-	text_box_  = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * scale_);
+	text_box_  = new TextBox("", Drawing::Font::Condensed, 100, 16 * scale_);
 	last_size_ = 100;
 }
 
@@ -273,10 +273,10 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, Side& side, i
 	col_fg.a      = col_fg.a * alpha;
 
 	// Index and sector index
-	Drawing::drawText(side.info, xstart + 4, bottom - (32 * scale_), col_fg, Drawing::FONT_CONDENSED);
+	Drawing::drawText(side.info, xstart + 4, bottom - (32 * scale_), col_fg, Drawing::Font::Condensed);
 
 	// Texture offsets
-	Drawing::drawText(side.offsets, xstart + 4, bottom - (16 * scale_), col_fg, Drawing::FONT_CONDENSED);
+	Drawing::drawText(side.offsets, xstart + 4, bottom - (16 * scale_), col_fg, Drawing::Font::Condensed);
 
 	// Textures
 	int tex_box_size = 80 * scale_;
@@ -365,5 +365,5 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	texture.Prepend(":");
 	texture.Prepend(pos);
 	Drawing::drawText(
-		texture, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
+		texture, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::Font::Condensed, Drawing::Align::Center);
 }

@@ -62,7 +62,7 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 // -----------------------------------------------------------------------------
 ThingInfoOverlay::ThingInfoOverlay()
 {
-	text_box_  = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * (Drawing::fontSize() / 12.0));
+	text_box_  = new TextBox("", Drawing::Font::Condensed, 100, 16 * (Drawing::fontSize() / 12.0));
 	last_size_ = 100;
 }
 

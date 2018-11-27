@@ -138,13 +138,13 @@ void ThingTypeBrowser::setupViewOptions()
 {
 	if (browser_thing_tiles)
 	{
-		setFont(Drawing::FONT_CONDENSED);
+		setFont(Drawing::Font::Condensed);
 		setItemSize(48);
 		setItemViewType(BrowserCanvas::ITEMS_TILES);
 	}
 	else
 	{
-		setFont(Drawing::FONT_BOLD);
+		setFont(Drawing::Font::Bold);
 		setItemSize(80);
 		setItemViewType(BrowserCanvas::ITEMS_NORMAL);
 	}

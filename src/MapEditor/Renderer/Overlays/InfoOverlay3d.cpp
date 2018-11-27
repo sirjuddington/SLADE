@@ -556,7 +556,7 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	for (unsigned a = 0; a < info_.size(); a++)
 	{
 		Drawing::drawText(
-			info_[a], middle - (40 * scale) - 4, bottom - y, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_RIGHT);
+			info_[a], middle - (40 * scale) - 4, bottom - y, col_fg, Drawing::Font::Condensed, Drawing::Align::Right);
 		y -= line_height;
 	}
 
@@ -564,7 +564,7 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	y = height;
 	for (unsigned a = 0; a < info2_.size(); a++)
 	{
-		Drawing::drawText(info2_[a], middle + (40 * scale) + 4, bottom - y, col_fg, Drawing::FONT_CONDENSED);
+		Drawing::drawText(info2_[a], middle + (40 * scale) + 4, bottom - y, col_fg, Drawing::Font::Condensed);
 		y -= line_height;
 	}
 
@@ -639,5 +639,5 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 	if (texname_.Length() > 8)
 		texname_ = texname_.Truncate(8) + "...";
 	Drawing::drawText(
-		texname_, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
+		texname_, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::Font::Condensed, Drawing::Align::Center);
 }
