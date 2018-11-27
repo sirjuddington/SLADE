@@ -2,34 +2,36 @@
 
 class SLADEMap;
 class wxWindow;
-namespace sol { class state; }
+namespace sol
+{
+class state;
+}
 
 namespace Lua
 {
-	bool	init();
-	void	close();
+bool init();
+void close();
 
-	struct Error
-	{
-		string	type;
-		string	message;
-		int		line_no;
-	};
-	Error&	error();
-	void	showErrorDialog(
-		wxWindow* parent = nullptr,
-		const string& title = "Script Error",
-		const string& message = "An error occurred running the script, see details below"
-	);
+struct Error
+{
+	string type;
+	string message;
+	int    line_no;
+};
+Error& error();
+void   showErrorDialog(
+	  wxWindow*     parent  = nullptr,
+	  const string& title   = "Script Error",
+	  const string& message = "An error occurred running the script, see details below");
 
-	bool	run(string program);
-	bool	runFile(string filename);
-	bool	runArchiveScript(const string& script, Archive* archive);
-	bool	runEntryScript(const string& script, vector<ArchiveEntry*> entries);
-	bool	runMapScript(const string& script, SLADEMap* map);
+bool run(string program);
+bool runFile(string filename);
+bool runArchiveScript(const string& script, Archive* archive);
+bool runEntryScript(const string& script, vector<ArchiveEntry*> entries);
+bool runMapScript(const string& script, SLADEMap* map);
 
-	sol::state&	state();
+sol::state& state();
 
-	wxWindow*	currentWindow();
-	void		setCurrentWindow(wxWindow* window);
-}
+wxWindow* currentWindow();
+void      setCurrentWindow(wxWindow* window);
+} // namespace Lua
