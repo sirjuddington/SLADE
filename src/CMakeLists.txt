@@ -16,7 +16,11 @@ unset(WITH_WXPATH CACHE)
 set( CL_WX_CONFIG wx-config )
 
 if (UNIX OR MINGW)
-    execute_process(COMMAND which ${CL_WX_CONFIG} OUTPUT_VARIABLE WX_TOOL OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT wxWidgets_CONFIG_EXECUTABLE)
+        execute_process(COMMAND which ${CL_WX_CONFIG} OUTPUT_VARIABLE WX_TOOL OUTPUT_STRIP_TRAILING_WHITESPACE)
+    else()
+        set(WX_TOOL ${wxWidgets_CONFIG_EXECUTABLE})
+    endif()
     if (NOT WX_TOOL)
         message(FATAL_ERROR
 "\nNo functional wx_config script was found in your PATH.\nIs the wxWidgets development package installed?\nIf you built wxWidgets yourself, you can specify the path to your built wx-config executable via WITH_WXPATH\neg. -DWITH_WXPATH=\"/path/to/wx-config/\""
