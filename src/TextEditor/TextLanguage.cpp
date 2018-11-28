@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -17,68 +17,57 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextLanguage.h"
-#include "Utility/Tokenizer.h"
-#include "Utility/Parser.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/ZScript.h"
+#include "Utility/Parser.h"
+#include "Utility/Tokenizer.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
-vector<TextLanguage*>	text_languages;
+// -----------------------------------------------------------------------------
+vector<TextLanguage*> text_languages;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TLFunction Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TLFunction::TLFunction
-//
+// -----------------------------------------------------------------------------
 // TLFunction class constructor
-// ----------------------------------------------------------------------------
-TLFunction::TLFunction(string name) :
-	name_{ name }
-{
-}
+// -----------------------------------------------------------------------------
+TLFunction::TLFunction(string name) : name_{ name } {}
 
-// ----------------------------------------------------------------------------
-// TLFunction::~TLFunction
-//
+// -----------------------------------------------------------------------------
 // TLFunction class destructor
-// ----------------------------------------------------------------------------
-TLFunction::~TLFunction()
-{
-}
+// -----------------------------------------------------------------------------
+TLFunction::~TLFunction() {}
 
-// ----------------------------------------------------------------------------
-// TLFunction::getArgSet
-//
+// -----------------------------------------------------------------------------
 // Returns the arg set [index], or an empty string if [index] is out of bounds
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TLFunction::Context TLFunction::context(unsigned long index) const
 {
 	// Check index
@@ -88,11 +77,9 @@ TLFunction::Context TLFunction::context(unsigned long index) const
 	return contexts_[index];
 }
 
-// ----------------------------------------------------------------------------
-// TLFunction::Parameter::parse
-//
+// -----------------------------------------------------------------------------
 // Parses a function parameter from a list of tokens
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TLFunction::Parameter::parse(vector<string>& tokens)
 {
 	// Optional
@@ -118,11 +105,9 @@ void TLFunction::Parameter::parse(vector<string>& tokens)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TLFunction::addContext
-//
+// -----------------------------------------------------------------------------
 // Adds a [context] of the function
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TLFunction::addContext(
 	const string& context,
 	const string& args,
@@ -192,11 +177,9 @@ void TLFunction::addContext(
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TLFunction::addContext
-//
+// -----------------------------------------------------------------------------
 // Adds a [context] of the function from a parsed ZScript function [func]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TLFunction::addContext(
 	const string&            context,
 	const ZScript::Function& func,
@@ -225,6 +208,9 @@ void TLFunction::addContext(
 			ctx.params.push_back({ p.type, p.name, p.default_value, !p.default_value.empty() });
 }
 
+// -----------------------------------------------------------------------------
+// Clears any custom contextx for the function
+// -----------------------------------------------------------------------------
 void TLFunction::clearCustomContexts()
 {
 	for (auto i = contexts_.begin(); i != contexts_.end();)
@@ -234,6 +220,9 @@ void TLFunction::clearCustomContexts()
 			++i;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if the function has a context matching [name]
+// -----------------------------------------------------------------------------
 bool TLFunction::hasContext(const string& name)
 {
 	for (auto& c : contexts_)
@@ -244,23 +233,21 @@ bool TLFunction::hasContext(const string& name)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextLanguage Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextLanguage::TextLanguage
-//
+// -----------------------------------------------------------------------------
 // TextLanguage class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextLanguage::TextLanguage(string id) :
-	prefered_comments_ { 0 },
-	line_comment_l_ {{"//"}},
-	comment_begin_l_{{"/*"}},
-	comment_end_l_{{"*/"}},
+	prefered_comments_{ 0 },
+	line_comment_l_{ { "//" } },
+	comment_begin_l_{ { "/*" } },
+	comment_end_l_{ { "*/" } },
 	preprocessor_{ "#" },
 	block_begin_{ "{" },
 	block_end_{ "}" }
@@ -272,11 +259,9 @@ TextLanguage::TextLanguage(string id) :
 	text_languages.push_back(this);
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::~TextLanguage
-//
+// -----------------------------------------------------------------------------
 // TextLanguage class destructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextLanguage::~TextLanguage()
 {
 	// Remove from languages list
@@ -288,24 +273,22 @@ TextLanguage::~TextLanguage()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::copyTo
-//
+// -----------------------------------------------------------------------------
 // Copies all language info to [copy]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextLanguage::copyTo(TextLanguage* copy)
 {
 	// Copy general attributes
 	copy->prefered_comments_ = prefered_comments_;
-	copy->line_comment_l_ = line_comment_l_;
-	copy->comment_begin_l_ = comment_begin_l_;
-	copy->comment_end_l_ = comment_end_l_;
-	copy->preprocessor_ = preprocessor_;
-	copy->case_sensitive_ = case_sensitive_;
-	copy->f_lookup_url_ = f_lookup_url_;
-	copy->doc_comment_ = doc_comment_;
-	copy->block_begin_ = block_begin_;
-	copy->block_end_ = block_end_;
+	copy->line_comment_l_    = line_comment_l_;
+	copy->comment_begin_l_   = comment_begin_l_;
+	copy->comment_end_l_     = comment_end_l_;
+	copy->preprocessor_      = preprocessor_;
+	copy->case_sensitive_    = case_sensitive_;
+	copy->f_lookup_url_      = f_lookup_url_;
+	copy->doc_comment_       = doc_comment_;
+	copy->block_begin_       = block_begin_;
+	copy->block_end_         = block_end_;
 
 	// Copy word lists
 	for (unsigned a = 0; a < 4; a++)
@@ -315,17 +298,15 @@ void TextLanguage::copyTo(TextLanguage* copy)
 	copy->functions_ = functions_;
 
 	// Copy preprocessor/word block begin/end
-	copy->pp_block_begin_ = pp_block_begin_;
-	copy->pp_block_end_ = pp_block_end_;
+	copy->pp_block_begin_   = pp_block_begin_;
+	copy->pp_block_end_     = pp_block_end_;
 	copy->word_block_begin_ = word_block_begin_;
-	copy->word_block_end_ = word_block_end_;
+	copy->word_block_end_   = word_block_end_;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::addWord
-//
+// -----------------------------------------------------------------------------
 // Adds a new word of [type] to the language, if it doesn't exist already
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextLanguage::addWord(WordType type, string keyword, bool custom)
 {
 	// Add only if it doesn't already exist
@@ -334,13 +315,11 @@ void TextLanguage::addWord(WordType type, string keyword, bool custom)
 		list.push_back(keyword);
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::addFunction
-//
+// -----------------------------------------------------------------------------
 // Adds a function arg set to the language. If the function [name] exists,
 // [args] will be added to it as a new arg set, otherwise a new function will
 // be added
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextLanguage::addFunction(
 	string name,
 	string args,
@@ -355,7 +334,7 @@ void TextLanguage::addFunction(
 	{
 		string fname;
 		context = name.BeforeFirst('.', &fname);
-		name = fname;
+		name    = fname;
 	}
 
 	// Check if the function exists
@@ -370,10 +349,12 @@ void TextLanguage::addFunction(
 	// Clear the function if we're replacing it
 	else if (replace)
 	{
-		if (!context.empty()) {
+		if (!context.empty())
+		{
 			func->clear();
 		}
-		else {
+		else
+		{
 			func->clearContexts();
 		}
 	}
@@ -382,11 +363,9 @@ void TextLanguage::addFunction(
 	func->addContext(context, args, return_type, desc, deprecated);
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::loadZScript
-//
+// -----------------------------------------------------------------------------
 // Loads types (classes) and functions from parsed ZScript definitions [defs]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
 {
 	// Classes
@@ -424,12 +403,10 @@ void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::getWordList
-//
+// -----------------------------------------------------------------------------
 // Returns a string of all words of [type] in the language, separated by
 // spaces, which can be sent directly to scintilla for syntax hilighting
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string TextLanguage::wordList(WordType type, bool include_custom)
 {
 	// Init return string
@@ -447,12 +424,10 @@ string TextLanguage::wordList(WordType type, bool include_custom)
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::getFunctionsList
-//
+// -----------------------------------------------------------------------------
 // Returns a string of all functions in the language, separated by spaces,
 // which can be sent directly to scintilla for syntax hilighting
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string TextLanguage::functionsList()
 {
 	// Init return string
@@ -465,12 +440,10 @@ string TextLanguage::functionsList()
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::getAutocompletionList
-//
+// -----------------------------------------------------------------------------
 // Returns a string containing all words and functions that can be used
 // directly in scintilla for an autocompletion list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string TextLanguage::autocompletionList(string start, bool include_custom)
 {
 	// Firstly, add all functions and word lists to a wxArrayString
@@ -508,11 +481,9 @@ string TextLanguage::autocompletionList(string start, bool include_custom)
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::getWordListSorted
-//
+// -----------------------------------------------------------------------------
 // Returns a sorted wxArrayString of all words of [type] in the language
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxArrayString TextLanguage::wordListSorted(WordType type, bool include_custom)
 {
 	// Get list
@@ -530,11 +501,9 @@ wxArrayString TextLanguage::wordListSorted(WordType type, bool include_custom)
 	return list;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::getFunctionsSorted
-//
+// -----------------------------------------------------------------------------
 // Returns a sorted wxArrayString of all functions in the language
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxArrayString TextLanguage::functionsSorted()
 {
 	// Get list
@@ -548,11 +517,9 @@ wxArrayString TextLanguage::functionsSorted()
 	return list;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::isWord
-//
+// -----------------------------------------------------------------------------
 // Returns true if [word] is a [type] word in this language, false otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextLanguage::isWord(WordType type, string word)
 {
 	for (auto& w : word_lists_[type].list)
@@ -562,11 +529,9 @@ bool TextLanguage::isWord(WordType type, string word)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::isFunction
-//
+// -----------------------------------------------------------------------------
 // Returns true if [word] is a function in this language, false otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextLanguage::isFunction(string word)
 {
 	for (auto& func : functions_)
@@ -576,12 +541,10 @@ bool TextLanguage::isFunction(string word)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::getFunction
-//
+// -----------------------------------------------------------------------------
 // Returns the function definition matching [name], or NULL if no matching
 // function exists
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TLFunction* TextLanguage::function(string name)
 {
 	// Find function matching [name]
@@ -602,6 +565,9 @@ TLFunction* TextLanguage::function(string name)
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Clears all custom definitions in the language
+// -----------------------------------------------------------------------------
 void TextLanguage::clearCustomDefs()
 {
 	for (auto i = functions_.begin(); i != functions_.end();)
@@ -620,19 +586,17 @@ void TextLanguage::clearCustomDefs()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextLanguage Static Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextLanguage::readLanguageDefinition
-//
+// -----------------------------------------------------------------------------
 // Reads in a text definition of a language. See slade.pk3 for
 // formatting examples
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 {
 	Tokenizer tz;
@@ -666,10 +630,8 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			else
 				Log::warning(
 					1,
-					S_FMT("Warning: Language %s inherits from undefined language %s",
-						  node->getName(),
-						  node->inherit())
-				);
+					S_FMT(
+						"Warning: Language %s inherits from undefined language %s", node->getName(), node->inherit()));
 		}
 
 		// Parse language info
@@ -928,7 +890,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 				// ZScript function info which cannot be parsed from (g)zdoom.pk3
 				else
 				{
-					zfunc_ex_prop ex_prop;
+					ZFuncExProp ex_prop;
 					for (unsigned f = 0; f < child->nChildren(); f++)
 					{
 						auto child_func = child->getChildPTN(f);
@@ -950,11 +912,9 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::loadLanguages
-//
+// -----------------------------------------------------------------------------
 // Loads all text language definitions from slade.pk3
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextLanguage::loadLanguages()
 {
 	// Get slade resource archive
@@ -974,19 +934,15 @@ bool TextLanguage::loadLanguages()
 		}
 		else
 			Log::warning(
-				1,
-				"Warning: 'config/languages' not found in slade.pk3, no builtin text language definitions loaded"
-			);
+				1, "Warning: 'config/languages' not found in slade.pk3, no builtin text language definitions loaded");
 	}
 
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::getLanguage
-//
+// -----------------------------------------------------------------------------
 // Returns the language definition matching [id], or NULL if no match found
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextLanguage* TextLanguage::fromId(string id)
 {
 	// Find text language matching [id]
@@ -1000,12 +956,10 @@ TextLanguage* TextLanguage::fromId(string id)
 	return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::getLanguage
-//
+// -----------------------------------------------------------------------------
 // Returns the language definition at [index], or NULL if [index] is out of
 // bounds
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextLanguage* TextLanguage::fromIndex(unsigned index)
 {
 	// Check index
@@ -1015,11 +969,9 @@ TextLanguage* TextLanguage::fromIndex(unsigned index)
 	return text_languages[index];
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::getLanguageByName
-//
+// -----------------------------------------------------------------------------
 // Returns the language definition matching [name], or NULL if no match found
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextLanguage* TextLanguage::fromName(string name)
 {
 	// Find text language matching [name]
@@ -1033,11 +985,9 @@ TextLanguage* TextLanguage::fromName(string name)
 	return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// TextLanguage::getLanguageNames
-//
+// -----------------------------------------------------------------------------
 // Returns a list of all language names
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxArrayString TextLanguage::languageNames()
 {
 	wxArrayString ret;

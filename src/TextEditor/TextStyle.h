@@ -1,113 +1,116 @@
+#pragma once
 
-#ifndef __TEXT_STYLE_H__
-#define __TEXT_STYLE_H__
-
-#include "common.h"
 #include "Utility/Parser.h"
 
 class TextEditorCtrl;
 class TextStyle
 {
 	friend class StyleSet;
-private:
-	string			name;
-	string			description;
-	vector<int>		wx_styles;
-
-	string	font;
-	int		size;
-	rgba_t	foreground;
-	bool	fg_defined;
-	rgba_t	background;
-	bool	bg_defined;
-	int		bold;
-	int		italic;
-	int		underlined;
 
 public:
 	TextStyle(string name, string description, int style_id = -1);
 	~TextStyle();
 
-	void	addWxStyleId(int style);
+	void addWxStyleId(int style);
 
-	string	getDescription() { return description; }
-	string	getFontFace() { return font; }
-	int		getFontSize() { return size; }
-	bool	hasForeground() { return fg_defined; }
-	bool	hasBackground() { return bg_defined; }
-	int		getBold() { return bold; }
-	int		getItalic() { return italic; }
-	int		getUnderlined() { return underlined; }
+	string getDescription() { return description_; }
+	string getFontFace() { return font_; }
+	int    getFontSize() { return size_; }
+	bool   hasForeground() { return fg_defined_; }
+	bool   hasBackground() { return bg_defined_; }
+	int    getBold() { return bold_; }
+	int    getItalic() { return italic_; }
+	int    getUnderlined() { return underlined_; }
 
-	void	setFontFace(string font) { this->font = font; }
-	void	setFontSize(int size) { this->size = size; }
-	void	setBold(int bold) { this->bold = bold; }
-	void	setItalic(int italic) { this->italic = italic; }
-	void	setUnderlined(int underlined) { this->underlined = underlined; }
-	void	setForeground(rgba_t col) { foreground.set(col); fg_defined = true; }
-	void	clearForeground() { fg_defined = false; }
-	void	setBackground(rgba_t col) { background.set(col); bg_defined = true; }
-	void	clearBackground() { bg_defined = false; }
+	void setFontFace(string font) { this->font_ = font; }
+	void setFontSize(int size) { this->size_ = size; }
+	void setBold(int bold) { this->bold_ = bold; }
+	void setItalic(int italic) { this->italic_ = italic; }
+	void setUnderlined(int underlined) { this->underlined_ = underlined; }
+	void setForeground(rgba_t col)
+	{
+		foreground_.set(col);
+		fg_defined_ = true;
+	}
+	void clearForeground() { fg_defined_ = false; }
+	void setBackground(rgba_t col)
+	{
+		background_.set(col);
+		bg_defined_ = true;
+	}
+	void clearBackground() { bg_defined_ = false; }
 
-	wxFont	getFont();
-	rgba_t	getForeground() { return foreground; }
-	rgba_t	getBackground() { return background; }
+	wxFont getFont();
+	rgba_t getForeground() { return foreground_; }
+	rgba_t getBackground() { return background_; }
 
-	bool	parse(ParseTreeNode* node);
-	void	applyTo(wxStyledTextCtrl* stc);
-	bool	copyStyle(TextStyle* copy);
-	string	getDefinition(unsigned tabs = 0);
+	bool   parse(ParseTreeNode* node);
+	void   applyTo(wxStyledTextCtrl* stc);
+	bool   copyStyle(TextStyle* copy);
+	string getDefinition(unsigned tabs = 0);
+
+private:
+	string      name_;
+	string      description_;
+	vector<int> wx_styles_;
+
+	string font_;
+	int    size_;
+	rgba_t foreground_;
+	bool   fg_defined_;
+	rgba_t background_;
+	bool   bg_defined_;
+	int    bold_;
+	int    italic_;
+	int    underlined_;
 };
 
 class StyleSet
 {
-private:
-	string		name;
-	TextStyle	ts_default;
-	TextStyle	ts_selection;
-	bool		built_in = false;
-
-	vector<TextStyle*>	styles;
-	
-	static vector<TextEditorCtrl*>	editors;
-
 public:
 	StyleSet(string name = "Unnamed Style");
 	~StyleSet();
 
-	string		getName() { return name; }
-	unsigned	nStyles() { return styles.size(); }
+	string   getName() { return name_; }
+	unsigned nStyles() { return styles_.size(); }
 
-	bool		parseSet(ParseTreeNode* root);
-	void		applyTo(TextEditorCtrl* stc);
-	void		applyToWx(wxStyledTextCtrl* stc);
-	bool		copySet(StyleSet* copy);
-	TextStyle*	getStyle(string name);
-	TextStyle*	getStyle(unsigned index);
-	bool		writeFile(string filename);
+	bool       parseSet(ParseTreeNode* root);
+	void       applyTo(TextEditorCtrl* stc);
+	void       applyToWx(wxStyledTextCtrl* stc);
+	bool       copySet(StyleSet* copy);
+	TextStyle* getStyle(string name);
+	TextStyle* getStyle(unsigned index);
+	bool       writeFile(string filename);
 
-	rgba_t	getStyleForeground(string style);
-	rgba_t	getStyleBackground(string style);
-	string	getDefaultFontFace();
-	int		getDefaultFontSize();
+	rgba_t getStyleForeground(string style);
+	rgba_t getStyleBackground(string style);
+	string getDefaultFontFace();
+	int    getDefaultFontSize();
 
 	// Static functions for styleset management
-	static void			initCurrent();
-	static void			saveCurrent();
-	static StyleSet*	currentSet();
-	static bool			loadSet(string name);
-	static bool			loadSet(unsigned index);
-	static void			applyCurrent(TextEditorCtrl* stc);
-	static string		getName(unsigned index);
-	static unsigned		numSets();
-	static StyleSet*	getSet(unsigned index);
-	static void			addEditor(TextEditorCtrl* stc);
-	static void			removeEditor(TextEditorCtrl* stc);
-	static void			applyCurrentToAll();
-	static void			addSet(StyleSet* set);
+	static void      initCurrent();
+	static void      saveCurrent();
+	static StyleSet* currentSet();
+	static bool      loadSet(string name);
+	static bool      loadSet(unsigned index);
+	static void      applyCurrent(TextEditorCtrl* stc);
+	static string    getName(unsigned index);
+	static unsigned  numSets();
+	static StyleSet* getSet(unsigned index);
+	static void      addEditor(TextEditorCtrl* stc);
+	static void      removeEditor(TextEditorCtrl* stc);
+	static void      applyCurrentToAll();
+	static void      addSet(StyleSet* set);
 
-	static bool			loadResourceStyles();
-	static bool			loadCustomStyles();
+	static bool loadResourceStyles();
+	static bool loadCustomStyles();
+
+private:
+	string             name_;
+	TextStyle          ts_default_;
+	TextStyle          ts_selection_;
+	bool               built_in_ = false;
+	vector<TextStyle*> styles_;
+
+	static vector<TextEditorCtrl*> editors;
 };
-
-#endif//__TEXT_STYLE_H__

@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -18,98 +18,88 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
-#include "UI/TextEditorCtrl.h"
 #include "TextStyle.h"
-#include "Lexer.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Lexer.h"
+#include "UI/TextEditorCtrl.h"
 #include "Utility/Parser.h"
 #include "Utility/Tokenizer.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 CVAR(String, txed_override_font, "", CVAR_SAVE)
 CVAR(Int, txed_override_font_size, 0, CVAR_SAVE)
-vector<StyleSet*>		style_sets;
-StyleSet*				ss_current = nullptr;
-vector<TextEditorCtrl*>	StyleSet::editors;
+vector<StyleSet*>       style_sets;
+StyleSet*               ss_current = nullptr;
+vector<TextEditorCtrl*> StyleSet::editors;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextStyle Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextStyle::TextStyle
-//
+// -----------------------------------------------------------------------------
 // TextStyle class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextStyle::TextStyle(string name, string description, int style_id)
 {
 	// Init variables
-	this->name = name;
-	this->description = description;
+	this->name_        = name;
+	this->description_ = description;
 	if (style_id >= 0)
-		wx_styles.push_back(style_id);
+		wx_styles_.push_back(style_id);
 
 	// Default (undefined) values
-	font = "";
-	size = -1;
-	fg_defined = false;
-	bg_defined = false;
-	bold = -1;
-	italic = -1;
-	underlined = -1;
+	font_       = "";
+	size_       = -1;
+	fg_defined_ = false;
+	bg_defined_ = false;
+	bold_       = -1;
+	italic_     = -1;
+	underlined_ = -1;
 }
 
-// ----------------------------------------------------------------------------
-// TextStyle::~TextStyle
-//
+// -----------------------------------------------------------------------------
 // TextStyle class destructor
-// ----------------------------------------------------------------------------
-TextStyle::~TextStyle()
-{
-}
+// -----------------------------------------------------------------------------
+TextStyle::~TextStyle() {}
 
-// ----------------------------------------------------------------------------
-// TextStyle::addWxStyleId
-//
+// -----------------------------------------------------------------------------
 // Adds a wxSTC style id to the list (used for applying style to the
 // wxStyledTextCtrl, in case this style replaces multiple)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextStyle::addWxStyleId(int style)
 {
-	wx_styles.push_back(style);
+	wx_styles_.push_back(style);
 }
 
-// ----------------------------------------------------------------------------
-// TextStyle::parse
-//
+// -----------------------------------------------------------------------------
 // Reads text style information from a parse tree
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextStyle::parse(ParseTreeNode* node)
 {
 	// Check any info was given
@@ -119,254 +109,251 @@ bool TextStyle::parse(ParseTreeNode* node)
 	// Go through info nodes
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto child = node->getChildPTN(a);
-		string name = child->getName();
+		auto   child = node->getChildPTN(a);
+		string name  = child->getName();
 
 		// Font name
 		if (S_CMPNOCASE(name, "font"))
-			font = child->stringValue();
+			font_ = child->stringValue();
 
 		// Font size
 		if (S_CMPNOCASE(name, "size"))
-			size = child->intValue();
+			size_ = child->intValue();
 
 		// Foreground colour
 		if (S_CMPNOCASE(name, "foreground"))
 		{
-			foreground.set(child->intValue(0), child->intValue(1), child->intValue(2), 255);
-			fg_defined = true;
+			foreground_.set(child->intValue(0), child->intValue(1), child->intValue(2), 255);
+			fg_defined_ = true;
 		}
 
 		// Background colour
 		if (S_CMPNOCASE(name, "background"))
 		{
-			background.set(child->intValue(0), child->intValue(1), child->intValue(2), 255);
-			bg_defined = true;
+			background_.set(child->intValue(0), child->intValue(1), child->intValue(2), 255);
+			bg_defined_ = true;
 		}
 
 		// Bold
 		if (S_CMPNOCASE(name, "bold"))
-			bold = (int)child->boolValue();
+			bold_ = (int)child->boolValue();
 
 		// Italic
 		if (S_CMPNOCASE(name, "italic"))
-			italic = (int)child->boolValue();
+			italic_ = (int)child->boolValue();
 
 		// Underlined
 		if (S_CMPNOCASE(name, "underlined"))
-			underlined = (int)child->boolValue();
+			underlined_ = (int)child->boolValue();
 	}
 
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextStyle::applyTo
-//
+// -----------------------------------------------------------------------------
 // Applies the style settings to the scintilla text control [stc]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextStyle::applyTo(wxStyledTextCtrl* stc)
 {
-	for (unsigned a = 0; a < wx_styles.size(); a++)
+	for (unsigned a = 0; a < wx_styles_.size(); a++)
 	{
 		// Set font face
 		if (txed_override_font != "")
-			stc->StyleSetFaceName(wx_styles[a], txed_override_font);
-		else if (!font.IsEmpty())
-			stc->StyleSetFaceName(wx_styles[a], font);
+			stc->StyleSetFaceName(wx_styles_[a], txed_override_font);
+		else if (!font_.IsEmpty())
+			stc->StyleSetFaceName(wx_styles_[a], font_);
 
 		// Set font size
 		if (txed_override_font_size > 0)
-			stc->StyleSetSize(wx_styles[a], txed_override_font_size);
-		else if (size > 0)
-			stc->StyleSetSize(wx_styles[a], size);
+			stc->StyleSetSize(wx_styles_[a], txed_override_font_size);
+		else if (size_ > 0)
+			stc->StyleSetSize(wx_styles_[a], size_);
 
 		// Set foreground
-		if (fg_defined)
-			stc->StyleSetForeground(wx_styles[a], WXCOL(foreground));
+		if (fg_defined_)
+			stc->StyleSetForeground(wx_styles_[a], WXCOL(foreground_));
 
 		// Set background
-		if (bg_defined)
-			stc->StyleSetBackground(wx_styles[a], WXCOL(background));
+		if (bg_defined_)
+			stc->StyleSetBackground(wx_styles_[a], WXCOL(background_));
 
 		// Set bold
-		if (bold > 0)
-			stc->StyleSetBold(wx_styles[a], true);
-		else if (bold == 0)
-			stc->StyleSetBold(wx_styles[a], false);
+		if (bold_ > 0)
+			stc->StyleSetBold(wx_styles_[a], true);
+		else if (bold_ == 0)
+			stc->StyleSetBold(wx_styles_[a], false);
 
 		// Set italic
-		if (italic > 0)
-			stc->StyleSetItalic(wx_styles[a], true);
-		else if (italic == 0)
-			stc->StyleSetItalic(wx_styles[a], false);
+		if (italic_ > 0)
+			stc->StyleSetItalic(wx_styles_[a], true);
+		else if (italic_ == 0)
+			stc->StyleSetItalic(wx_styles_[a], false);
 
 		// Set underlined
-		if (underlined > 0)
-			stc->StyleSetUnderline(wx_styles[a], true);
-		else if (underlined == 0)
-			stc->StyleSetUnderline(wx_styles[a], false);
+		if (underlined_ > 0)
+			stc->StyleSetUnderline(wx_styles_[a], true);
+		else if (underlined_ == 0)
+			stc->StyleSetUnderline(wx_styles_[a], false);
 	}
 }
 
-// ----------------------------------------------------------------------------
-// TextStyle::copyStyle
-//
+// -----------------------------------------------------------------------------
 // Copies style info from [copy]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool TextStyle::copyStyle(TextStyle* copy)
 {
 	if (!copy)
 		return false;
 
 	// Copy data straight
-	font = copy->font;
-	size = copy->size;
-	foreground = copy->foreground;
-	fg_defined = copy->fg_defined;
-	background = copy->background;
-	bg_defined = copy->bg_defined;
-	bold = copy->bold;
-	italic = copy->italic;
-	underlined = copy->underlined;
+	font_       = copy->font_;
+	size_       = copy->size_;
+	foreground_ = copy->foreground_;
+	fg_defined_ = copy->fg_defined_;
+	background_ = copy->background_;
+	bg_defined_ = copy->bg_defined_;
+	bold_       = copy->bold_;
+	italic_     = copy->italic_;
+	underlined_ = copy->underlined_;
 
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// TextStyle::getDefinition
-//
+// -----------------------------------------------------------------------------
 // Returns a formatted string defining this style
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string TextStyle::getDefinition(unsigned tabs)
 {
 	string ret = "";
 
 	// Write font
-	if (!font.IsEmpty())
+	if (!font_.IsEmpty())
 	{
-		for (unsigned t = 0; t < tabs; t++) ret += "\t";
-		ret += S_FMT("font = \"%s\";\n", font);
+		for (unsigned t = 0; t < tabs; t++)
+			ret += "\t";
+		ret += S_FMT("font = \"%s\";\n", font_);
 	}
 
 	// Write size
-	if (size >= 0)
+	if (size_ >= 0)
 	{
-		for (unsigned t = 0; t < tabs; t++) ret += "\t";
-		ret += S_FMT("size = %d;\n", size);
+		for (unsigned t = 0; t < tabs; t++)
+			ret += "\t";
+		ret += S_FMT("size = %d;\n", size_);
 	}
 
 	// Write foreground
-	if (fg_defined)
+	if (fg_defined_)
 	{
-		for (unsigned t = 0; t < tabs; t++) ret += "\t";
-		ret += S_FMT("foreground = %d, %d, %d;\n", foreground.r, foreground.g, foreground.b);
+		for (unsigned t = 0; t < tabs; t++)
+			ret += "\t";
+		ret += S_FMT("foreground = %d, %d, %d;\n", foreground_.r, foreground_.g, foreground_.b);
 	}
 
 	// Write background
-	if (bg_defined)
+	if (bg_defined_)
 	{
-		for (unsigned t = 0; t < tabs; t++) ret += "\t";
-		ret += S_FMT("background = %d, %d, %d;\n", background.r, background.g, background.b);
+		for (unsigned t = 0; t < tabs; t++)
+			ret += "\t";
+		ret += S_FMT("background = %d, %d, %d;\n", background_.r, background_.g, background_.b);
 	}
 
 	// Write bold
-	if (bold >= 0)
+	if (bold_ >= 0)
 	{
-		for (unsigned t = 0; t < tabs; t++) ret += "\t";
-		ret += S_FMT("bold = %d;\n", bold);
+		for (unsigned t = 0; t < tabs; t++)
+			ret += "\t";
+		ret += S_FMT("bold = %d;\n", bold_);
 	}
 
 	// Write italic
-	if (italic >= 0)
+	if (italic_ >= 0)
 	{
-		for (unsigned t = 0; t < tabs; t++) ret += "\t";
-		ret += S_FMT("italic = %d;\n", italic);
+		for (unsigned t = 0; t < tabs; t++)
+			ret += "\t";
+		ret += S_FMT("italic = %d;\n", italic_);
 	}
 
 	// Write underlined
-	if (underlined >= 0)
+	if (underlined_ >= 0)
 	{
-		for (unsigned t = 0; t < tabs; t++) ret += "\t";
-		ret += S_FMT("underlined = %d;\n", underlined);
+		for (unsigned t = 0; t < tabs; t++)
+			ret += "\t";
+		ret += S_FMT("underlined = %d;\n", underlined_);
 	}
 
 	return ret;
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // StyleSet Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// StyleSet::StyleSet
-//
+// -----------------------------------------------------------------------------
 // StyleSet class constructor
-// ----------------------------------------------------------------------------
-StyleSet::StyleSet(string name) : ts_default("default", "Default", wxSTC_STYLE_DEFAULT), ts_selection("selection", "Selected Text")
+// -----------------------------------------------------------------------------
+StyleSet::StyleSet(string name) :
+	ts_default_("default", "Default", wxSTC_STYLE_DEFAULT),
+	ts_selection_("selection", "Selected Text")
 {
 	// Init default style
 	wxFont f(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-	ts_default.font = f.GetFaceName();
-	ts_default.size = 10;
-	ts_default.foreground.set(0, 0, 0, 255);
-	ts_default.fg_defined = true;
-	ts_default.background.set(255, 255, 255, 255);
-	ts_default.bg_defined = true;
-	ts_default.bold = 0;
-	ts_default.italic = 0;
-	ts_default.underlined = 0;
-	ts_selection.bg_defined = true;
-	ts_selection.background.set(150, 150, 150, 255);
-	ts_selection.fg_defined = false;
+	ts_default_.font_ = f.GetFaceName();
+	ts_default_.size_ = 10;
+	ts_default_.foreground_.set(0, 0, 0, 255);
+	ts_default_.fg_defined_ = true;
+	ts_default_.background_.set(255, 255, 255, 255);
+	ts_default_.bg_defined_   = true;
+	ts_default_.bold_         = 0;
+	ts_default_.italic_       = 0;
+	ts_default_.underlined_   = 0;
+	ts_selection_.bg_defined_ = true;
+	ts_selection_.background_.set(150, 150, 150, 255);
+	ts_selection_.fg_defined_ = false;
 
 	// Init name
-	this->name = name;
+	this->name_ = name;
 
 	// Init styles
-	styles.push_back(new TextStyle("preprocessor",	"Preprocessor",		Lexer::Style::Preprocessor));
-	styles.push_back(new TextStyle("comment",		"Comment",			Lexer::Style::Comment));
-	styles.push_back(new TextStyle("comment_doc",	"Comment (Doc)",	Lexer::Style::CommentDoc));
-	styles.push_back(new TextStyle("string",		"String",			Lexer::Style::String));
-	styles.push_back(new TextStyle("character",		"Character",		Lexer::Style::Char));
-	styles.push_back(new TextStyle("keyword",		"Keyword",			Lexer::Style::Keyword));
-	styles.push_back(new TextStyle("constant",		"Constant",			Lexer::Style::Constant));
-	styles.push_back(new TextStyle("type",			"Type",				Lexer::Style::Type));
-	styles.push_back(new TextStyle("property",		"Property",			Lexer::Style::Property));
-	styles.push_back(new TextStyle("function",		"Function",			Lexer::Style::Function));
-	styles.push_back(new TextStyle("number",		"Number",			Lexer::Style::Number));
-	styles.push_back(new TextStyle("operator",		"Operator",			Lexer::Style::Operator));
-	styles.push_back(new TextStyle("bracematch",	"Brace Match",		wxSTC_STYLE_BRACELIGHT));
-	styles.push_back(new TextStyle("bracebad",		"Brace Mismatch",	wxSTC_STYLE_BRACEBAD));
-	styles.push_back(new TextStyle("linenum",		"Line Numbers",		wxSTC_STYLE_LINENUMBER));
-	styles.push_back(new TextStyle("calltip",		"Call Tip",			wxSTC_STYLE_CALLTIP));
-	styles.push_back(new TextStyle("calltip_hl",	"Call Tip Highlight"));
-	styles.push_back(new TextStyle("foldmargin",	"Code Folding Margin"));
-	styles.push_back(new TextStyle("guides",		"Indent/Right Margin Guide"));
-	styles.push_back(new TextStyle("wordmatch",		"Word Match"));
-	styles.push_back(new TextStyle("current_line",	"Current Line"));
+	styles_.push_back(new TextStyle("preprocessor", "Preprocessor", Lexer::Style::Preprocessor));
+	styles_.push_back(new TextStyle("comment", "Comment", Lexer::Style::Comment));
+	styles_.push_back(new TextStyle("comment_doc", "Comment (Doc)", Lexer::Style::CommentDoc));
+	styles_.push_back(new TextStyle("string", "String", Lexer::Style::String));
+	styles_.push_back(new TextStyle("character", "Character", Lexer::Style::Char));
+	styles_.push_back(new TextStyle("keyword", "Keyword", Lexer::Style::Keyword));
+	styles_.push_back(new TextStyle("constant", "Constant", Lexer::Style::Constant));
+	styles_.push_back(new TextStyle("type", "Type", Lexer::Style::Type));
+	styles_.push_back(new TextStyle("property", "Property", Lexer::Style::Property));
+	styles_.push_back(new TextStyle("function", "Function", Lexer::Style::Function));
+	styles_.push_back(new TextStyle("number", "Number", Lexer::Style::Number));
+	styles_.push_back(new TextStyle("operator", "Operator", Lexer::Style::Operator));
+	styles_.push_back(new TextStyle("bracematch", "Brace Match", wxSTC_STYLE_BRACELIGHT));
+	styles_.push_back(new TextStyle("bracebad", "Brace Mismatch", wxSTC_STYLE_BRACEBAD));
+	styles_.push_back(new TextStyle("linenum", "Line Numbers", wxSTC_STYLE_LINENUMBER));
+	styles_.push_back(new TextStyle("calltip", "Call Tip", wxSTC_STYLE_CALLTIP));
+	styles_.push_back(new TextStyle("calltip_hl", "Call Tip Highlight"));
+	styles_.push_back(new TextStyle("foldmargin", "Code Folding Margin"));
+	styles_.push_back(new TextStyle("guides", "Indent/Right Margin Guide"));
+	styles_.push_back(new TextStyle("wordmatch", "Word Match"));
+	styles_.push_back(new TextStyle("current_line", "Current Line"));
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::~StyleSet
-//
+// -----------------------------------------------------------------------------
 // StyleSet class destructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 StyleSet::~StyleSet()
 {
-	for (unsigned a = 0; a < styles.size(); a++)
-		delete styles[a];
+	for (unsigned a = 0; a < styles_.size(); a++)
+		delete styles_[a];
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::parseSet
-//
+// -----------------------------------------------------------------------------
 // Reads style set info from a parse tree
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool StyleSet::parseSet(ParseTreeNode* root)
 {
 	if (!root)
@@ -375,55 +362,55 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 	// Get name
 	auto node = root->getChildPTN("name");
 	if (node)
-		name = node->stringValue();
+		name_ = node->stringValue();
 
 	// Parse styles
-	ts_default.parse(root->getChildPTN("default"));			// Default style
-	ts_selection.parse(root->getChildPTN("selection"));		// Selection style
-	for (unsigned a = 0; a < styles.size(); a++)			// Other styles
+	ts_default_.parse(root->getChildPTN("default"));     // Default style
+	ts_selection_.parse(root->getChildPTN("selection")); // Selection style
+	for (unsigned a = 0; a < styles_.size(); a++)        // Other styles
 	{
-		if (ParseTreeNode* node = root->getChildPTN(styles[a]->name))
-			styles[a]->parse(node);
+		if (ParseTreeNode* node = root->getChildPTN(styles_[a]->name_))
+			styles_[a]->parse(node);
 		else
 		{
-			if (styles[a]->name == "foldmargin")
+			if (styles_[a]->name_ == "foldmargin")
 			{
 				// No 'foldmargin' style defined, copy it from line numbers style
-				styles[a]->foreground = getStyleForeground("linenum");
-				styles[a]->background = getStyleBackground("linenum");
-				styles[a]->fg_defined = true;
-				styles[a]->bg_defined = true;
+				styles_[a]->foreground_ = getStyleForeground("linenum");
+				styles_[a]->background_ = getStyleBackground("linenum");
+				styles_[a]->fg_defined_ = true;
+				styles_[a]->bg_defined_ = true;
 			}
-			else if (styles[a]->name == "guides")
+			else if (styles_[a]->name_ == "guides")
 			{
 				// No 'guides' style defined, use the default foreground colour
-				styles[a]->foreground = ts_default.getForeground();
-				styles[a]->fg_defined = true;
+				styles_[a]->foreground_ = ts_default_.getForeground();
+				styles_[a]->fg_defined_ = true;
 			}
-			else if (styles[a]->name == "type" || styles[a]->name == "property")
+			else if (styles_[a]->name_ == "type" || styles_[a]->name_ == "property")
 			{
 				// No 'type' or 'property' style defined, copy it from keyword style
-				styles[a]->copyStyle(getStyle("keyword"));
+				styles_[a]->copyStyle(getStyle("keyword"));
 			}
-			else if (styles[a]->name == "comment_doc")
+			else if (styles_[a]->name_ == "comment_doc")
 			{
 				// No 'comment_doc' style defined, copy it from comment style
-				styles[a]->copyStyle(getStyle("comment"));
+				styles_[a]->copyStyle(getStyle("comment"));
 			}
-			else if (styles[a]->name == "current_line")
+			else if (styles_[a]->name_ == "current_line")
 			{
 				// No 'currentline' style defined, use the default background and darken/lighten it a little
 				int fgm = -20;
 				int bgm = -10;
-				if (ts_default.background.greyscale().r < 100)
+				if (ts_default_.background_.greyscale().r < 100)
 				{
 					fgm = 30;
 					bgm = 15;
 				}
-				styles[a]->foreground = ts_default.getBackground().amp(fgm, fgm, fgm, 0);
-				styles[a]->fg_defined = true;
-				styles[a]->background = ts_default.getBackground().amp(bgm, bgm, bgm, 0);
-				styles[a]->bg_defined = true;
+				styles_[a]->foreground_ = ts_default_.getBackground().amp(fgm, fgm, fgm, 0);
+				styles_[a]->fg_defined_ = true;
+				styles_[a]->background_ = ts_default_.getBackground().amp(bgm, bgm, bgm, 0);
+				styles_[a]->bg_defined_ = true;
 			}
 		}
 	}
@@ -431,12 +418,10 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::applyTo
-//
+// -----------------------------------------------------------------------------
 // Applies all the styles in this set to the text styles in scintilla text
 // control [stc]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void StyleSet::applyTo(TextEditorCtrl* stc)
 {
 	applyToWx(stc);
@@ -448,29 +433,29 @@ void StyleSet::applyTo(TextEditorCtrl* stc)
 void StyleSet::applyToWx(wxStyledTextCtrl* stc)
 {
 	// Set default style
-	ts_default.applyTo(stc);
+	ts_default_.applyTo(stc);
 
 	// Apply default style to all
 	stc->StyleClearAll();
 
 	// Apply other styles
-	for (unsigned a = 0; a < styles.size(); a++)
-		styles[a]->applyTo(stc);
+	for (unsigned a = 0; a < styles_.size(); a++)
+		styles_[a]->applyTo(stc);
 
 	// Set selection background if customised
-	if (ts_selection.hasBackground())
-		stc->SetSelBackground(true, WXCOL(ts_selection.background));
+	if (ts_selection_.hasBackground())
+		stc->SetSelBackground(true, WXCOL(ts_selection_.background_));
 	else
 		stc->SetSelBackground(false, wxColour("red"));
 
 	// Set selection foreground if customised
-	if (ts_selection.hasForeground())
-		stc->SetSelForeground(true, WXCOL(ts_selection.foreground));
+	if (ts_selection_.hasForeground())
+		stc->SetSelForeground(true, WXCOL(ts_selection_.foreground_));
 	else
 		stc->SetSelForeground(false, wxColour("red"));
 
 	// Set caret colour to text foreground colour
-	stc->SetCaretForeground(WXCOL(ts_default.foreground));
+	stc->SetCaretForeground(WXCOL(ts_default_.foreground_));
 
 	// Set indent and right margin line colour
 	stc->SetEdgeColour(WXCOL(getStyle("guides")->getForeground()));
@@ -484,57 +469,45 @@ void StyleSet::applyToWx(wxStyledTextCtrl* stc)
 	// Set current line colour
 	stc->SetCaretLineBackground(WXCOL(getStyleBackground("current_line")));
 	stc->MarkerDefine(
-		1,
-		wxSTC_MARK_BACKGROUND,
-		WXCOL(getStyleBackground("current_line")),
-		WXCOL(getStyleBackground("current_line"))
-	);
+		1, wxSTC_MARK_BACKGROUND, WXCOL(getStyleBackground("current_line")), WXCOL(getStyleBackground("current_line")));
 	stc->MarkerDefine(
-		2,
-		wxSTC_MARK_UNDERLINE,
-		WXCOL(getStyleForeground("current_line")),
-		WXCOL(getStyleForeground("current_line"))
-	);
+		2, wxSTC_MARK_UNDERLINE, WXCOL(getStyleForeground("current_line")), WXCOL(getStyleForeground("current_line")));
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::copySet
-//
+// -----------------------------------------------------------------------------
 // Copies all styles in [copy] to this set
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool StyleSet::copySet(StyleSet* copy)
 {
 	if (!copy)
 		return false;
 
 	// Copy all styles
-	ts_default.copyStyle(&(copy->ts_default));
-	ts_selection.copyStyle(&(copy->ts_selection));
-	for (unsigned a = 0; a < copy->styles.size(); a++)
-		styles[a]->copyStyle(copy->styles[a]);
+	ts_default_.copyStyle(&(copy->ts_default_));
+	ts_selection_.copyStyle(&(copy->ts_selection_));
+	for (unsigned a = 0; a < copy->styles_.size(); a++)
+		styles_[a]->copyStyle(copy->styles_[a]);
 
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::getStyle
-//
+// -----------------------------------------------------------------------------
 // Returns the text style associated with [name] (these are hard coded), or
 // nullptr if [name] was invalid
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextStyle* StyleSet::getStyle(string name)
 {
 	// Return style matching name given
 	if (S_CMPNOCASE(name, "default"))
-		return &ts_default;
+		return &ts_default_;
 	else if (S_CMPNOCASE(name, "selection"))
-		return &ts_selection;
+		return &ts_selection_;
 	else
 	{
-		for (unsigned a = 0; a < styles.size(); a++)
+		for (unsigned a = 0; a < styles_.size(); a++)
 		{
-			if (styles[a]->name == name)
-				return styles[a];
+			if (styles_[a]->name_ == name)
+				return styles_[a];
 		}
 	}
 
@@ -542,24 +515,20 @@ TextStyle* StyleSet::getStyle(string name)
 	return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::getStyle
-//
+// -----------------------------------------------------------------------------
 // Returns the extra text style at [index]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TextStyle* StyleSet::getStyle(unsigned index)
 {
-	if (index < styles.size())
-		return styles[index];
+	if (index < styles_.size())
+		return styles_[index];
 	else
 		return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::writeFile
-//
+// -----------------------------------------------------------------------------
 // Writes this style set as a text definition to a file [filename]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool StyleSet::writeFile(string filename)
 {
 	// Open file for writing
@@ -572,23 +541,23 @@ bool StyleSet::writeFile(string filename)
 	file.Write("styleset {\n");
 
 	// Name
-	file.Write(S_FMT("\tname = \"%s\";\n\n", name));
+	file.Write(S_FMT("\tname = \"%s\";\n\n", name_));
 
 	// Default style
 	file.Write("\tdefault {\n");
-	file.Write(ts_default.getDefinition(2));
+	file.Write(ts_default_.getDefinition(2));
 	file.Write("\t}\n\n");
 
 	// Selection style
 	file.Write("\tselection {\n");
-	file.Write(ts_selection.getDefinition(2));
+	file.Write(ts_selection_.getDefinition(2));
 	file.Write("\t}\n\n");
 
 	// Other styles
-	for (unsigned a = 0; a < styles.size(); a++)
+	for (unsigned a = 0; a < styles_.size(); a++)
 	{
-		file.Write(S_FMT("\t%s {\n", styles[a]->name));
-		file.Write(styles[a]->getDefinition(2));
+		file.Write(S_FMT("\t%s {\n", styles_[a]->name_));
+		file.Write(styles_[a]->getDefinition(2));
 		file.Write("\t}\n\n");
 	}
 
@@ -601,41 +570,35 @@ bool StyleSet::writeFile(string filename)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::getStyleForeground
-//
+// -----------------------------------------------------------------------------
 // Returns the foreground colour of [style], or the default style's foreground
 // colour if it is not set
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 rgba_t StyleSet::getStyleForeground(string style)
 {
 	TextStyle* s = getStyle(style);
 	if (s && s->hasForeground())
 		return s->getForeground();
 	else
-		return ts_default.getForeground();
+		return ts_default_.getForeground();
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::getStyleBackground
-//
+// -----------------------------------------------------------------------------
 // Returns the background colour of [style], or the default style's background
 // colour if it is not set
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 rgba_t StyleSet::getStyleBackground(string style)
 {
 	TextStyle* s = getStyle(style);
 	if (s && s->hasBackground())
 		return s->getBackground();
 	else
-		return ts_default.getBackground();
+		return ts_default_.getBackground();
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::getDefaultFontFace
-//
+// -----------------------------------------------------------------------------
 // Returns the default style font face
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string StyleSet::getDefaultFontFace()
 {
 	if (txed_override_font != "")
@@ -644,11 +607,9 @@ string StyleSet::getDefaultFontFace()
 		return getStyle("default")->getFontFace();
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::getDefaultFontSize
-//
+// -----------------------------------------------------------------------------
 // Returns the default style font size
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int StyleSet::getDefaultFontSize()
 {
 	if (txed_override_font != "" && txed_override_font_size > 0)
@@ -658,24 +619,22 @@ int StyleSet::getDefaultFontSize()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // StyleSet Class Static Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// StyleSet::initCurrent
-//
+// -----------------------------------------------------------------------------
 // Initialises the 'current' style set from the previously saved 'current.sss'
 // file, or uses the default set if the file does not exist
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void StyleSet::initCurrent()
 {
 	// Create 'current' styleset
-	ss_current = new StyleSet();
-	ss_current->name = "<current styleset>";
+	ss_current        = new StyleSet();
+	ss_current->name_ = "<current styleset>";
 
 	// First up, check if "<userdir>/current.sss" exists
 	string path = App::path("current.sss", App::Dir::User);
@@ -705,11 +664,9 @@ void StyleSet::initCurrent()
 		ss_current->copySet(style_sets[0]);
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::saveCurrent
-//
+// -----------------------------------------------------------------------------
 // Writes the current style set to the 'current.sss' file
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void StyleSet::saveCurrent()
 {
 	if (!ss_current)
@@ -718,11 +675,9 @@ void StyleSet::saveCurrent()
 	ss_current->writeFile(App::path("current.sss", App::Dir::User));
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::currentSet
-//
+// -----------------------------------------------------------------------------
 // Returns the current style set
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 StyleSet* StyleSet::currentSet()
 {
 	if (!ss_current)
@@ -731,18 +686,16 @@ StyleSet* StyleSet::currentSet()
 	return ss_current;
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::loadSet
-//
+// -----------------------------------------------------------------------------
 // Loads the style set matching [name] to the current style set.
 // Returns false if no match was found, true otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool StyleSet::loadSet(string name)
 {
 	// Search for set matching name
 	for (unsigned a = 0; a < style_sets.size(); a++)
 	{
-		if (S_CMPNOCASE(style_sets[a]->name, name))
+		if (S_CMPNOCASE(style_sets[a]->name_, name))
 		{
 			ss_current->copySet(style_sets[a]);
 			return true;
@@ -752,12 +705,10 @@ bool StyleSet::loadSet(string name)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::loadSet
-//
+// -----------------------------------------------------------------------------
 // Loads the style set at [index] to the current style set.
 // Returns false if [index] was out of bounds, true otherwise
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool StyleSet::loadSet(unsigned index)
 {
 	// Check index
@@ -769,46 +720,38 @@ bool StyleSet::loadSet(unsigned index)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::applyCurrent
-//
+// -----------------------------------------------------------------------------
 // Applies the current style set to the scintilla text control [stc]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void StyleSet::applyCurrent(TextEditorCtrl* stc)
 {
 	currentSet()->applyTo(stc);
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::getName
-//
+// -----------------------------------------------------------------------------
 // Returns the name of the style set at [index], or an empty string if [index]
 // is out of bounds
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string StyleSet::getName(unsigned index)
 {
 	// Check index
 	if (index >= style_sets.size())
 		return "";
 
-	return style_sets[index]->name;
+	return style_sets[index]->name_;
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::numSets
-//
+// -----------------------------------------------------------------------------
 // Returns the number of loaded style sets
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 unsigned StyleSet::numSets()
 {
 	return style_sets.size();
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::getSet
-//
+// -----------------------------------------------------------------------------
 // Returns the style set at [index], or nullptr if [index] is out of bounds
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 StyleSet* StyleSet::getSet(unsigned index)
 {
 	// Check index
@@ -818,53 +761,45 @@ StyleSet* StyleSet::getSet(unsigned index)
 	return style_sets[index];
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::addEditor
-//
+// -----------------------------------------------------------------------------
 // Adds [stc] to the current list of text editors
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void StyleSet::addEditor(TextEditorCtrl* stc)
 {
 	editors.push_back(stc);
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::removeEditor
-//
+// -----------------------------------------------------------------------------
 // Removes [stc] from the current list of text editors
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void StyleSet::removeEditor(TextEditorCtrl* stc)
 {
 	VECTOR_REMOVE(editors, stc);
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::applyCurrentToAll
-//
+// -----------------------------------------------------------------------------
 // Applies the current style set to all text editors in the list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void StyleSet::applyCurrentToAll()
 {
 	for (unsigned a = 0; a < editors.size(); a++)
 		applyCurrent(editors[a]);
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::addSet
-//
+// -----------------------------------------------------------------------------
 // Adds [set] to the list of text styles (makes a copy). If a custom set with
 // [set]'s name already exists, copy [set] to it
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void StyleSet::addSet(StyleSet* set)
 {
 	// Find existing custom set with same name
 	for (auto s : style_sets)
-		if (s->name == set->name)
+		if (s->name_ == set->name_)
 		{
 			// Non-custom set exists, need to create a copy instead
-			if (s->built_in)
+			if (s->built_in_)
 			{
-				set->name += " (Copy)";
+				set->name_ += " (Copy)";
 				break;
 			}
 
@@ -874,16 +809,14 @@ void StyleSet::addSet(StyleSet* set)
 		}
 
 	// Not found, add new set
-	auto new_set = new StyleSet(set->name);
+	auto new_set = new StyleSet(set->name_);
 	new_set->copySet(set);
 	style_sets.push_back(new_set);
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::loadResourceStyles
-//
+// -----------------------------------------------------------------------------
 // Loads all text styles from the slade resource archive (slade.pk3)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool StyleSet::loadResourceStyles()
 {
 	// Get 'config/text_styles' directory in slade.pk3
@@ -911,10 +844,10 @@ bool StyleSet::loadResourceStyles()
 
 		// Read any styleset definitions
 		vector<STreeNode*> nodes = root.getChildren("styleset");
-		for (unsigned b = 0; b  < nodes.size(); b++)
+		for (unsigned b = 0; b < nodes.size(); b++)
 		{
-			StyleSet* newset = new StyleSet();
-			newset->built_in = true;
+			StyleSet* newset  = new StyleSet();
+			newset->built_in_ = true;
 			if (newset->parseSet((ParseTreeNode*)nodes[b]))
 				style_sets.push_back(newset);
 			else
@@ -942,10 +875,10 @@ bool StyleSet::loadResourceStyles()
 
 		// Read any styleset definitions
 		vector<STreeNode*> nodes = root.getChildren("styleset");
-		for (unsigned b = 0; b  < nodes.size(); b++)
+		for (unsigned b = 0; b < nodes.size(); b++)
 		{
-			StyleSet* newset = new StyleSet();
-			newset->built_in = true;
+			StyleSet* newset  = new StyleSet();
+			newset->built_in_ = true;
 			if (newset->parseSet((ParseTreeNode*)nodes[b]))
 				style_sets.push_back(newset);
 			else
@@ -956,11 +889,9 @@ bool StyleSet::loadResourceStyles()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// StyleSet::loadCustomStyles
-//
+// -----------------------------------------------------------------------------
 // Loads all text styles from the user text style directory
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool StyleSet::loadCustomStyles()
 {
 	// If the custom stylesets directory doesn't exist, create it
@@ -973,7 +904,7 @@ bool StyleSet::loadCustomStyles()
 
 	// Go through each file in the directory
 	string filename = wxEmptyString;
-	bool files = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
+	bool   files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
 	while (files)
 	{
 		// Read file into tokenizer
@@ -987,7 +918,7 @@ bool StyleSet::loadCustomStyles()
 
 		// Read any styleset definitions
 		vector<STreeNode*> nodes = root.getChildren("styleset");
-		for (unsigned b = 0; b  < nodes.size(); b++)
+		for (unsigned b = 0; b < nodes.size(); b++)
 		{
 			StyleSet* newset = new StyleSet();
 			if (newset->parseSet((ParseTreeNode*)nodes[b]))
