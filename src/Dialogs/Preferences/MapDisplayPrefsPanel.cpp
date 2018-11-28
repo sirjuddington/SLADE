@@ -70,6 +70,7 @@ EXTERN_CVAR(Int, map_tex_filter)
 EXTERN_CVAR(Bool, use_zeth_icons)
 EXTERN_CVAR(Int, halo_width)
 EXTERN_CVAR(Int, grid_64_style)
+EXTERN_CVAR(Bool, grid_show_origin)
 
 
 // ----------------------------------------------------------------------------
@@ -150,6 +151,10 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 	// Dashed grid
 	cb_grid_dashed_ = new wxCheckBox(panel, -1, "Dashed grid");
 	gb_sizer->Add(cb_grid_dashed_, { row++, 0 }, { 1, 2 }, wxEXPAND);
+
+	// Hilight origin on grid
+	cb_grid_show_origin_ = new wxCheckBox(panel, -1, "Hilight origin (0,0) on grid");
+	gb_sizer->Add(cb_grid_show_origin_, { row++, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Always show line direction tabs
 	cb_line_tabs_always_ = new wxCheckBox(panel, -1, "Always show line direction tabs");
@@ -421,6 +426,7 @@ void MapDisplayPrefsPanel::init()
 	cb_use_zeth_icons_->SetValue(use_zeth_icons);
 	slider_halo_width_->SetValue(halo_width);
 	choice_grid_64_->SetSelection(grid_64_style);
+	cb_grid_show_origin_->SetValue(grid_show_origin);
 }
 
 // ----------------------------------------------------------------------------
@@ -460,4 +466,5 @@ void MapDisplayPrefsPanel::applyPreferences()
 	use_zeth_icons = cb_use_zeth_icons_->GetValue();
 	halo_width = slider_halo_width_->GetValue();
 	grid_64_style = choice_grid_64_->GetSelection();
+	grid_show_origin = cb_grid_show_origin_->GetValue();
 }

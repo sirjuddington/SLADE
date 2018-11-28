@@ -25,6 +25,7 @@ private:
 
 	wxCheckBox*	cb_grid_dashed_;
 	wxChoice*	choice_grid_64_;
+	wxCheckBox* cb_grid_show_origin_;
 	wxCheckBox*	cb_animate_hilight_;
 	wxCheckBox*	cb_animate_selection_;
 	wxCheckBox*	cb_animate_tagged_;
