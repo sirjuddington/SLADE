@@ -58,6 +58,7 @@ CVAR(Bool, flat_fade, 1, CVAR_SAVE)
 CVAR(Bool, line_fade, 0, CVAR_SAVE)
 CVAR(Bool, grid_dashed, false, CVAR_SAVE)
 CVAR(Int, grid_64_style, 1, CVAR_SAVE)
+CVAR(Bool, grid_show_origin, true, CVAR_SAVE)
 CVAR(Bool, scroll_smooth, true, CVAR_SAVE)
 CVAR(Bool, map_showfps, false, CVAR_SAVE)
 CVAR(Bool, camera_3d_gravity, true, CVAR_SAVE)
@@ -387,6 +388,23 @@ void Renderer::drawGrid() const
 			glVertex2d(end_x, y);
 			glEnd();
 		}
+	}
+
+	// Draw origin grid lines
+	if (grid_show_origin)
+	{
+		glEnable(GL_LINE_SMOOTH);
+		glLineWidth(3.0f);
+
+		glBegin(GL_LINES);
+		glVertex2d(0, start_y);
+		glVertex2d(0, end_y);
+		glVertex2d(start_x, 0);
+		glVertex2d(end_x, 0);
+		glEnd();
+
+		glDisable(GL_LINE_SMOOTH);
+		glLineWidth(1.0f);
 	}
 
 	// Disable dashed lines if 64 grid is set to crosses
