@@ -1,51 +1,12 @@
+#pragma once
 
-#ifndef __MAP_PREVIEW_CANVAS_H__
-#define __MAP_PREVIEW_CANVAS_H__
-
-#include "OGLCanvas.h"
 #include "Archive/Archive.h"
-
-// Structs for basic map features
-struct mep_vertex_t
-{
-	double x;
-	double y;
-	mep_vertex_t(double x, double y) { this->x = x; this->y = y; }
-};
-
-struct mep_line_t
-{
-	unsigned	v1;
-	unsigned	v2;
-	bool		twosided;
-	bool		special;
-	bool		macro;
-	bool		segment;
-	mep_line_t(unsigned v1, unsigned v2) { this->v1 = v1; this->v2 = v2; }
-};
-
-struct mep_thing_t
-{
-	double	x;
-	double	y;
-};
+#include "OGLCanvas.h"
 
 class GLTexture;
+
 class MapPreviewCanvas : public OGLCanvas
 {
-private:
-	vector<mep_vertex_t>	verts;
-	vector<mep_line_t>		lines;
-	vector<mep_thing_t>		things;
-	unsigned				n_sides;
-	unsigned				n_sectors;
-	double					zoom;
-	double					offset_x;
-	double					offset_y;
-	Archive*				temp_archive;
-	GLTexture*				tex_thing;
-	bool					tex_loaded;
-
 public:
 	MapPreviewCanvas(wxWindow* parent);
 	~MapPreviewCanvas();
@@ -62,13 +23,57 @@ public:
 	void draw();
 	void createImage(ArchiveEntry& ae, int width, int height);
 
-	unsigned	nVertices();
-	unsigned	nSides();
-	unsigned	nLines();
-	unsigned	nSectors();
-	unsigned	nThings();
-	unsigned	getWidth();
-	unsigned	getHeight();
-};
+	unsigned nVertices();
+	unsigned nSides();
+	unsigned nLines();
+	unsigned nSectors();
+	unsigned nThings();
+	unsigned getWidth();
+	unsigned getHeight();
 
-#endif//__MAP_PREVIEW_CANVAS_H__
+private:
+	// Structs for basic map features
+	struct Vertex
+	{
+		double x;
+		double y;
+		Vertex(double x, double y)
+		{
+			this->x = x;
+			this->y = y;
+		}
+	};
+
+	struct Line
+	{
+		unsigned v1;
+		unsigned v2;
+		bool     twosided;
+		bool     special;
+		bool     macro;
+		bool     segment;
+		Line(unsigned v1, unsigned v2)
+		{
+			this->v1 = v1;
+			this->v2 = v2;
+		}
+	};
+
+	struct Thing
+	{
+		double x;
+		double y;
+	};
+
+	vector<Vertex> verts_;
+	vector<Line>   lines_;
+	vector<Thing>  things_;
+	unsigned       n_sides_;
+	unsigned       n_sectors_;
+	double         zoom_;
+	double         offset_x_;
+	double         offset_y_;
+	Archive*       temp_archive_;
+	GLTexture*     tex_thing_;
+	bool           tex_loaded_;
+};

@@ -100,7 +100,7 @@ void TextureEditorPanel::setupLayout()
 	cb_tex_arc_->SetValue(tx_arc);
 	cb_draw_outside_->SetValue(true);
 	choice_viewtype_->SetSelection(0);
-	tex_canvas_->setViewType(0);
+	tex_canvas_->setViewType(CTextureCanvas::View::Normal);
 	cb_blend_rgba_->SetValue(false);
 	choice_viewtype_->Set(WxUtils::arrayString({ "None", "Sprite", "HUD" }));
 
@@ -885,7 +885,9 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				tex_canvas_->showGrid(true);
 				tex_canvas_->redraw(false);
 			}
-			else if (tex_current_ && tex_current_->isExtended() && tex_canvas_->getViewType() > 0)
+			else if (
+				tex_current_ && tex_current_->isExtended()
+				&& tex_canvas_->getViewType() != CTextureCanvas::View::Normal)
 			{
 				// Get drag amount according to texture
 				point2_t tex_cur  = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());

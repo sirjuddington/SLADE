@@ -128,7 +128,7 @@ string PatchTableListView::getItemText(long item, long column, long index) const
 void PatchTableListView::updateItemAttr(long item, long column, long index) const
 {
 	// Just set normal text colour
-	item_attr->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
+	item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
 }
 
 // -----------------------------------------------------------------------------
@@ -140,13 +140,13 @@ void PatchTableListView::updateList(bool clear)
 		ClearAll();
 
 	// Set list size
-	items.clear();
+	items_.clear();
 	if (patch_table_)
 	{
 		size_t count = patch_table_->nPatches();
 		SetItemCount(count);
 		for (unsigned a = 0; a < count; a++)
-			items.push_back(a);
+			items_.push_back(a);
 	}
 	else
 		SetItemCount(0);
@@ -190,10 +190,10 @@ bool PatchTableListView::usageSort(long left, long right)
 void PatchTableListView::sortItems()
 {
 	lv_current = this;
-	if (sort_column == 2)
-		std::sort(items.begin(), items.end(), &PatchTableListView::usageSort);
+	if (sort_column_ == 2)
+		std::sort(items_.begin(), items_.end(), &PatchTableListView::usageSort);
 	else
-		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
+		std::sort(items_.begin(), items_.end(), &VirtualListView::defaultSort);
 }
 
 
@@ -223,7 +223,7 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	label_textures_ =
 		new wxStaticText(this, -1, "In Textures: -", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
 	patch_canvas_ = new GfxCanvas(this, -1);
-	patch_canvas_->setViewType(GFXVIEW_CENTERED);
+	patch_canvas_->setViewType(GfxCanvas::View::Centered);
 	patch_canvas_->allowDrag(true);
 	patch_canvas_->allowScroll(true);
 	slider_zoom_ = new SZoomSlider(this, patch_canvas_);

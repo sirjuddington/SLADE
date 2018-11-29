@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -14,47 +14,44 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "ConsolePanel.h"
+#include "App.h"
 #include "General/Console/Console.h"
 #include "General/Misc.h"
 #include "TextEditor/TextStyle.h"
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ConsolePanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::ConsolePanel
-//
+// -----------------------------------------------------------------------------
 // ConsolePanel class constructor
-// ----------------------------------------------------------------------------
-ConsolePanel::ConsolePanel(wxWindow* parent, int id)
-	: wxPanel(parent, id)
+// -----------------------------------------------------------------------------
+ConsolePanel::ConsolePanel(wxWindow* parent, int id) : wxPanel(parent, id)
 {
 	// Init variables
-	cmd_log_index_ = 0;
+	cmd_log_index_      = 0;
 	next_message_index_ = 0;
 
 	// Setup layout
@@ -65,24 +62,18 @@ ConsolePanel::ConsolePanel(wxWindow* parent, int id)
 	text_command_->Bind(wxEVT_KEY_DOWN, &ConsolePanel::onCommandKeyDown, this);
 
 	// Start update timer
-	timer_update_.Bind(wxEVT_TIMER, [&](wxTimerEvent&){ update(); });
+	timer_update_.Bind(wxEVT_TIMER, [&](wxTimerEvent&) { update(); });
 	timer_update_.Start(100);
 }
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::~ConsolePanel
-//
+// -----------------------------------------------------------------------------
 // ConsolePanel class destructor
-// ----------------------------------------------------------------------------
-ConsolePanel::~ConsolePanel()
-{
-}
+// -----------------------------------------------------------------------------
+ConsolePanel::~ConsolePanel() {}
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::initLayout
-//
+// -----------------------------------------------------------------------------
 // Sets up the panel layout
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ConsolePanel::initLayout()
 {
 	// Create and set the sizer for the panel
@@ -110,11 +101,9 @@ void ConsolePanel::initLayout()
 	setupTextArea();
 }
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::setupTextArea
-//
+// -----------------------------------------------------------------------------
 // Sets up the log history text control
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ConsolePanel::setupTextArea() const
 {
 	// Style
@@ -127,19 +116,19 @@ void ConsolePanel::setupTextArea() const
 
 	// Message type colours
 	auto hsl = Misc::rgbToHsl(StyleSet::currentSet()->getStyleForeground("default"));
-	if (hsl.l > 0.8) hsl.l = 0.8;
-	if (hsl.l < 0.2) hsl.l = 0.2;
+	if (hsl.l > 0.8)
+		hsl.l = 0.8;
+	if (hsl.l < 0.2)
+		hsl.l = 0.2;
 	text_log_->StyleSetForeground(200, WXCOL(Misc::hslToRgb(0.99, 1., hsl.l)));
 	text_log_->StyleSetForeground(201, WXCOL(Misc::hslToRgb(0.1, 1., hsl.l)));
 	text_log_->StyleSetForeground(202, WXCOL(Misc::hslToRgb(0.5, 0.8, hsl.l)));
 	text_log_->StyleSetForeground(203, WXCOL(Misc::hslToRgb(hsl.h, hsl.s, 0.5)));
 }
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::update
-//
+// -----------------------------------------------------------------------------
 // Update the log text with any new log messages
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ConsolePanel::update()
 {
 	setupTextArea();
@@ -169,14 +158,10 @@ void ConsolePanel::update()
 		text_log_->StartStyling(text_log_->GetLineEndPosition(a) - text_log_->GetLineLength(a), 0);
 		switch (log[a].type)
 		{
-		case Log::MessageType::Error:
-			text_log_->SetStyling(text_log_->GetLineLength(a), 200); break;
-		case Log::MessageType::Warning:
-			text_log_->SetStyling(text_log_->GetLineLength(a), 201); break;
-		case Log::MessageType::Script:
-			text_log_->SetStyling(text_log_->GetLineLength(a), 202); break;
-		case Log::MessageType::Debug:
-			text_log_->SetStyling(text_log_->GetLineLength(a), 203); break;
+		case Log::MessageType::Error: text_log_->SetStyling(text_log_->GetLineLength(a), 200); break;
+		case Log::MessageType::Warning: text_log_->SetStyling(text_log_->GetLineLength(a), 201); break;
+		case Log::MessageType::Script: text_log_->SetStyling(text_log_->GetLineLength(a), 202); break;
+		case Log::MessageType::Debug: text_log_->SetStyling(text_log_->GetLineLength(a), 203); break;
 		default: break;
 		}
 	}
@@ -190,18 +175,16 @@ void ConsolePanel::update()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ConsolePanel Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::onCommandEnter
-//
+// -----------------------------------------------------------------------------
 // Called when the enter key is pressed in the command text box
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ConsolePanel::onCommandEnter(wxCommandEvent& e)
 {
 	App::console()->execute(e.GetString());
@@ -210,18 +193,16 @@ void ConsolePanel::onCommandEnter(wxCommandEvent& e)
 	cmd_log_index_ = 0;
 }
 
-// ----------------------------------------------------------------------------
-// ConsolePanel::onCommandKeyDown
-//
+// -----------------------------------------------------------------------------
 // Called when a key is pressed in the command text box
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ConsolePanel::onCommandKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_UP)
 	{
 		text_command_->SetValue(App::console()->prevCommand(cmd_log_index_));
 		text_command_->SetInsertionPointEnd();
-		if (cmd_log_index_ < App::console()->numPrevCommands()-1)
+		if (cmd_log_index_ < App::console()->numPrevCommands() - 1)
 			cmd_log_index_++;
 	}
 	else if (e.GetKeyCode() == WXK_DOWN)

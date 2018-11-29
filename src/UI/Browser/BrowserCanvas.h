@@ -1,10 +1,10 @@
 #pragma once
 
-#include "BrowserItem.h"
 #include "OpenGL/Drawing.h"
 #include "UI/Canvas/OGLCanvas.h"
 
 class wxScrollBar;
+class BrowserItem;
 
 class BrowserCanvas : public OGLCanvas
 {
@@ -12,14 +12,17 @@ public:
 	BrowserCanvas(wxWindow* parent);
 	~BrowserCanvas() {}
 
-	enum
+	enum class ItemView
 	{
-		ITEMS_NORMAL = 0,
-		ITEMS_TILES  = 1,
+		Normal,
+		Tiles
+	};
 
-		NAMES_NORMAL = 0,
-		NAMES_INDEX,
-		NAMES_NONE,
+	enum class NameType
+	{
+		Normal,
+		Index,
+		None
 	};
 
 	vector<BrowserItem*>& itemList() { return items_; }
@@ -41,9 +44,9 @@ public:
 	void                  showSelectedItem();
 	bool                  searchItemFrom(int from);
 	void                  setFont(Drawing::Font font) { this->font_ = font; }
-	void                  setItemNameType(int type) { this->show_names_ = type; }
+	void                  setItemNameType(NameType type) { this->show_names_ = type; }
 	void                  setItemSize(int size) { this->item_size_ = size; }
-	void                  setItemViewType(int type) { this->item_type_ = type; }
+	void                  setItemViewType(ItemView type) { this->item_type_ = type; }
 	int                   longestItemTextWidth();
 
 	// Events
@@ -68,11 +71,11 @@ private:
 	int           yoff_        = 0;
 	int           item_border_ = 0;
 	Drawing::Font font_        = Drawing::Font::Normal;
-	int           show_names_  = 0;
+	NameType      show_names_  = NameType::Normal;
 	int           item_size_   = 0;
 	int           top_index_   = 0;
 	int           top_y_       = 0;
-	int           item_type_   = 0;
+	ItemView      item_type_   = ItemView::Normal;
 	int           num_cols_    = 0;
 };
 

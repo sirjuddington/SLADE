@@ -536,15 +536,16 @@ void ArchiveManagerPanel::updateOpenListItem(int index) const
 	list_archives_->setItemText(index, 1, fn.GetPath());
 
 	// Set item status colour
+	using Status = ListView::ItemStatus;
 	if (archive->canSave())
 	{
 		if (archive->isModified())
-			list_archives_->setItemStatus(index, LV_STATUS_MODIFIED);
+			list_archives_->setItemStatus(index, Status::Modified);
 		else
-			list_archives_->setItemStatus(index, LV_STATUS_NORMAL);
+			list_archives_->setItemStatus(index, Status::Normal);
 	}
 	else
-		list_archives_->setItemStatus(index, LV_STATUS_NEW);
+		list_archives_->setItemStatus(index, Status::New);
 }
 
 // -----------------------------------------------------------------------------
@@ -1941,15 +1942,16 @@ void ArchiveManagerPanel::updateBookmarkListItem(int index) const
 	list_bookmarks_->setItemText(index, 1, entry->getParent()->filename());
 
 	// Set item status colour
+	using Status = ListView::ItemStatus;
 	if (entry->isLocked())
-		list_bookmarks_->setItemStatus(index, LV_STATUS_LOCKED);
+		list_bookmarks_->setItemStatus(index, Status::Locked);
 	else
 		switch (entry->getState())
 		{
-		case 0: list_bookmarks_->setItemStatus(index, LV_STATUS_NORMAL); break;
-		case 1: list_bookmarks_->setItemStatus(index, LV_STATUS_MODIFIED); break;
-		case 2: list_bookmarks_->setItemStatus(index, LV_STATUS_NEW); break;
-		default: list_bookmarks_->setItemStatus(index, LV_STATUS_ERROR); break;
+		case 0: list_bookmarks_->setItemStatus(index, Status::Normal); break;
+		case 1: list_bookmarks_->setItemStatus(index, Status::Modified); break;
+		case 2: list_bookmarks_->setItemStatus(index, Status::New); break;
+		default: list_bookmarks_->setItemStatus(index, Status::Error); break;
 		}
 }
 

@@ -44,6 +44,19 @@
 
 // -----------------------------------------------------------------------------
 //
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+CTextureCanvas::View view_types[] = { CTextureCanvas::View::Normal,
+									  CTextureCanvas::View::Sprite,
+									  CTextureCanvas::View::HUD };
+}
+
+
+// -----------------------------------------------------------------------------
+//
 // ZTextureEditorPanel Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -580,7 +593,7 @@ void ZTextureEditorPanel::onCBBlendRGBAChanged(wxCommandEvent& e)
 void ZTextureEditorPanel::onChoiceViewTypeSelected(wxCommandEvent& e)
 {
 	// Set offset type
-	tex_canvas_->setViewType(choice_viewtype_->GetSelection());
+	tex_canvas_->setViewType(view_types[choice_viewtype_->GetSelection()]);
 
 	// Update UI
 	tex_canvas_->redraw(false);

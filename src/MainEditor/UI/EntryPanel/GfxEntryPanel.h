@@ -16,18 +16,18 @@ public:
 
 	Translation& prevTranslation() { return prev_translation_; }
 
-	bool   loadEntry(ArchiveEntry* entry) override;
-	bool   loadEntry(ArchiveEntry* entry, int index);
-	bool   saveEntry() override;
-	void   setupToolbar();
-	void   fillBrushMenu(wxMenu* bm);
-	void   updateImagePalette();
-	int    detectOffsetType();
-	void   applyViewType();
-	void   refresh();
-	void   refreshPanel() override;
-	string statusString() override;
-	bool   extractAll();
+	bool            loadEntry(ArchiveEntry* entry) override;
+	bool            loadEntry(ArchiveEntry* entry, int index);
+	bool            saveEntry() override;
+	void            setupToolbar();
+	void            fillBrushMenu(wxMenu* bm);
+	void            updateImagePalette();
+	GfxCanvas::View detectOffsetType();
+	void            applyViewType();
+	void            refresh();
+	void            refreshPanel() override;
+	string          statusString() override;
+	bool            extractAll();
 
 	// SAction handler
 	bool handleAction(string id) override;

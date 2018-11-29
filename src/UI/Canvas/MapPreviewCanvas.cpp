@@ -1,33 +1,35 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MapPreviewCanvas.cpp
- * Description: OpenGL Canvas that shows a basic map preview, can
- *              also save the preview to an image
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    MapPreviewCanvas.cpp
+// Description: OpenGL Canvas that shows a basic map preview, can also save the
+//              preview to an image
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapPreviewCanvas.h"
 #include "Archive/ArchiveManager.h"
@@ -42,74 +44,80 @@
 #include "Utility/Tokenizer.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 CVAR(Float, map_image_thickness, 1.5, CVAR_SAVE)
 CVAR(Bool, map_view_things, true, CVAR_SAVE)
 
 
-/*******************************************************************
- * MAPPREVIEWCANVAS CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// MapPreviewCanvas Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* MapPreviewCanvas::MapPreviewCanvas
- * MapPreviewCanvas class constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// MapPreviewCanvas class constructor
+// -----------------------------------------------------------------------------
 MapPreviewCanvas::MapPreviewCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 {
-	zoom = 1;
-	offset_x = 0;
-	offset_y = 0;
-	temp_archive = nullptr;
-	tex_thing = nullptr;
-	tex_loaded = false;
-	n_sides = 0;
-	n_sectors = 0;
+	zoom_         = 1;
+	offset_x_     = 0;
+	offset_y_     = 0;
+	temp_archive_ = nullptr;
+	tex_thing_    = nullptr;
+	tex_loaded_   = false;
+	n_sides_      = 0;
+	n_sectors_    = 0;
 }
 
-/* MapPreviewCanvas::~MapPreviewCanvas
- * MapPreviewCanvas class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// MapPreviewCanvas class destructor
+// -----------------------------------------------------------------------------
 MapPreviewCanvas::~MapPreviewCanvas()
 {
-	if (tex_thing) delete tex_thing;
+	if (tex_thing_)
+		delete tex_thing_;
 }
 
-/* MapPreviewCanvas::addVertex
- * Adds a vertex to the map data
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds a vertex to the map data
+// -----------------------------------------------------------------------------
 void MapPreviewCanvas::addVertex(double x, double y)
 {
-	verts.push_back(mep_vertex_t(x, y));
+	verts_.push_back(Vertex(x, y));
 }
 
-/* MapPreviewCanvas::addLine
- * Adds a line to the map data
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds a line to the map data
+// -----------------------------------------------------------------------------
 void MapPreviewCanvas::addLine(unsigned v1, unsigned v2, bool twosided, bool special, bool macro)
 {
-	mep_line_t line(v1, v2);
+	Line line(v1, v2);
 	line.twosided = twosided;
-	line.special = special;
-	line.macro = macro;
-	lines.push_back(line);
+	line.special  = special;
+	line.macro    = macro;
+	lines_.push_back(line);
 }
 
-/* MapPreviewCanvas::addThing
- * Adds a thing to the map data
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds a thing to the map data
+// -----------------------------------------------------------------------------
 void MapPreviewCanvas::addThing(double x, double y)
 {
-	mep_thing_t thing;
+	Thing thing;
 	thing.x = x;
 	thing.y = y;
-	things.push_back(thing);
+	things_.push_back(thing);
 }
 
-/* MapPreviewCanvas::openMap
- * Opens a map from a mapdesc_t
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Opens a map from a mapdesc_t
+// -----------------------------------------------------------------------------
 bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 {
 	// All errors = invalid map
@@ -122,15 +130,15 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		map_archive = true;
 
 		// Attempt to open entry as wad archive
-		temp_archive = new WadArchive();
-		if (!temp_archive->open(map.head))
+		temp_archive_ = new WadArchive();
+		if (!temp_archive_->open(map.head))
 		{
-			delete temp_archive;
+			delete temp_archive_;
 			return false;
 		}
 
 		// Detect maps
-		vector<Archive::MapDesc> maps = temp_archive->detectMaps();
+		vector<Archive::MapDesc> maps = temp_archive_->detectMaps();
 
 		// Set map if there are any in the archive
 		if (maps.size() > 0)
@@ -160,43 +168,48 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		tz.openMem(udmfdata->getMCData(), map.head->getName());
 
 		// Get first token
-		string token = tz.getToken();
+		string token       = tz.getToken();
 		size_t vertcounter = 0, linecounter = 0, thingcounter = 0;
 		while (!token.IsEmpty())
 		{
 			if (!token.CmpNoCase("namespace"))
 			{
 				//  skip till we reach the ';'
-				do { token = tz.getToken(); }
-				while (token.Cmp(";"));
+				do
+				{
+					token = tz.getToken();
+				} while (token.Cmp(";"));
 			}
 			else if (!token.CmpNoCase("vertex"))
 			{
 				// Get X and Y properties
-				bool gotx = false;
-				bool goty = false;
-				double x = 0.;
-				double y = 0.;
+				bool   gotx = false;
+				bool   goty = false;
+				double x    = 0.;
+				double y    = 0.;
 				do
 				{
 					token = tz.getToken();
 					if (!token.CmpNoCase("x") || !token.CmpNoCase("y"))
 					{
 						bool isx = !token.CmpNoCase("x");
-						token = tz.getToken();
+						token    = tz.getToken();
 						if (token.Cmp("="))
 						{
 							LOG_MESSAGE(1, "Bad syntax for vertex %i in UDMF map data", vertcounter);
 							return false;
 						}
-						if (isx) x = tz.getDouble(), gotx = true;
-						else y = tz.getDouble(), goty = true;
+						if (isx)
+							x = tz.getDouble(), gotx = true;
+						else
+							y = tz.getDouble(), goty = true;
 						// skip to end of declaration after each key
-						do { token = tz.getToken(); }
-						while (token.Cmp(";"));
+						do
+						{
+							token = tz.getToken();
+						} while (token.Cmp(";"));
 					}
-				}
-				while (token.Cmp("}"));
+				} while (token.Cmp("}"));
 				if (gotx && goty)
 					addVertex(x, y);
 				else
@@ -208,9 +221,9 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 			}
 			else if (!token.CmpNoCase("linedef"))
 			{
-				bool special = false;
-				bool twosided = false;
-				bool gotv1 = false, gotv2 = false;
+				bool   special  = false;
+				bool   twosided = false;
+				bool   gotv1 = false, gotv2 = false;
 				size_t v1 = 0, v2 = 0;
 				do
 				{
@@ -218,34 +231,41 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 					if (!token.CmpNoCase("v1") || !token.CmpNoCase("v2"))
 					{
 						bool isv1 = !token.CmpNoCase("v1");
-						token = tz.getToken();
+						token     = tz.getToken();
 						if (token.Cmp("="))
 						{
 							LOG_MESSAGE(1, "Bad syntax for linedef %i in UDMF map data", linecounter);
 							return false;
 						}
-						if (isv1) v1 = tz.getInteger(), gotv1 = true;
-						else v2 = tz.getInteger(), gotv2 = true;
+						if (isv1)
+							v1 = tz.getInteger(), gotv1 = true;
+						else
+							v2 = tz.getInteger(), gotv2 = true;
 						// skip to end of declaration after each key
-						do { token = tz.getToken(); }
-						while (token.Cmp(";"));
+						do
+						{
+							token = tz.getToken();
+						} while (token.Cmp(";"));
 					}
 					else if (!token.CmpNoCase("special"))
 					{
 						special = true;
 						// skip to end of declaration after each key
-						do { token = tz.getToken(); }
-						while (token.Cmp(";"));
+						do
+						{
+							token = tz.getToken();
+						} while (token.Cmp(";"));
 					}
 					else if (!token.CmpNoCase("sideback"))
 					{
 						twosided = true;
 						// skip to end of declaration after each key
-						do { token = tz.getToken(); }
-						while (token.Cmp(";"));
+						do
+						{
+							token = tz.getToken();
+						} while (token.Cmp(";"));
 					}
-				}
-				while (token.Cmp("}"));
+				} while (token.Cmp("}"));
 				if (gotv1 && gotv2)
 					addLine(v1, v2, twosided, special);
 				else
@@ -258,26 +278,31 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 			else if (S_CMPNOCASE(token, "thing"))
 			{
 				// Get X and Y properties
-				bool gotx = false;
-				bool goty = false;
-				double x = 0.;
-				double y = 0.;
+				bool   gotx = false;
+				bool   goty = false;
+				double x    = 0.;
+				double y    = 0.;
 				do
 				{
 					token = tz.getToken();
 					if (!token.CmpNoCase("x") || !token.CmpNoCase("y"))
 					{
 						bool isx = !token.CmpNoCase("x");
-						token = tz.getToken();
+						token    = tz.getToken();
 						if (token.Cmp("="))
 						{
 							LOG_MESSAGE(1, "Bad syntax for thing %i in UDMF map data", vertcounter);
 							return false;
 						}
-						if (isx) x = tz.getDouble(), gotx = true;
-						else y = tz.getDouble(), goty = true;
+						if (isx)
+							x = tz.getDouble(), gotx = true;
+						else
+							y = tz.getDouble(), goty = true;
 						// skip to end of declaration after each key
-						do { token = tz.getToken(); } while (token.Cmp(";"));
+						do
+						{
+							token = tz.getToken();
+						} while (token.Cmp(";"));
 					}
 				} while (token.Cmp("}"));
 				if (gotx && goty)
@@ -293,14 +318,16 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 			{
 				// Check for side or sector definition (increase counts)
 				if (S_CMPNOCASE(token, "sidedef"))
-					n_sides++;
+					n_sides_++;
 				else if (S_CMPNOCASE(token, "sector"))
-					n_sectors++;
+					n_sectors_++;
 
 				// map preview ignores sidedefs, sectors, comments,
 				// unknown fields, etc. so skip to end of block
-				do { token = tz.getToken(); }
-				while (token.Cmp("}") && !token.empty());
+				do
+				{
+					token = tz.getToken();
+				} while (token.Cmp("}") && !token.empty());
 			}
 			// Iterate to next token
 			token = tz.getToken();
@@ -324,7 +351,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 
 		// Read sides & sectors (count only)
 		ArchiveEntry* sidedefs = nullptr;
-		ArchiveEntry* sectors = nullptr;
+		ArchiveEntry* sectors  = nullptr;
 		while (map.head)
 		{
 			// Check entry type
@@ -344,15 +371,15 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 			// Doom64 map
 			if (map.format != MAP_DOOM64)
 			{
-				n_sides = sidedefs->getSize() / 30;
-				n_sectors = sectors->getSize() / 26;
+				n_sides_   = sidedefs->getSize() / 30;
+				n_sectors_ = sectors->getSize() / 26;
 			}
 
 			// Doom/Hexen map
 			else
 			{
-				n_sides = sidedefs->getSize() / 12;
-				n_sectors = sectors->getSize() / 16;
+				n_sides_   = sidedefs->getSize() / 12;
+				n_sectors_ = sectors->getSize() / 16;
 			}
 		}
 	}
@@ -360,9 +387,9 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	// Clean up
 	if (map_archive)
 	{
-		temp_archive->close();
-		delete temp_archive;
-		temp_archive = nullptr;
+		temp_archive_->close();
+		delete temp_archive_;
+		temp_archive_ = nullptr;
 	}
 
 	// Refresh map
@@ -371,9 +398,9 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	return true;
 }
 
-/* MapPreviewCanvas::readVertices
- * Reads non-UDMF vertex data
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads non-UDMF vertex data
+// -----------------------------------------------------------------------------
 bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
 {
 	// Find VERTEXES entry
@@ -412,7 +439,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 				break;
 
 			// Add vertex
-			addVertex((double)v.x/65536, (double)v.y/65536);
+			addVertex((double)v.x / 65536, (double)v.y / 65536);
 		}
 	}
 	else
@@ -432,9 +459,9 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 	return true;
 }
 
-/* MapPreviewCanvas::readLines
- * Reads non-UDMF line data
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads non-UDMF line data
+// -----------------------------------------------------------------------------
 bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
 {
 	// Find LINEDEFS entry
@@ -472,7 +499,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 				break;
 
 			// Check properties
-			bool special = false;
+			bool special  = false;
 			bool twosided = false;
 			if (l.side2 != 0xFFFF)
 				twosided = true;
@@ -493,16 +520,17 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 				break;
 
 			// Check properties
-			bool macro = false;
-			bool special = false;
+			bool macro    = false;
+			bool special  = false;
 			bool twosided = false;
-			if (l.side2  != 0xFFFF)
+			if (l.side2 != 0xFFFF)
 				twosided = true;
 			if (l.type > 0)
 			{
 				if (l.type & 0x100)
 					macro = true;
-				else special = true;
+				else
+					special = true;
 			}
 
 			// Add line
@@ -519,7 +547,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 				break;
 
 			// Check properties
-			bool special = false;
+			bool special  = false;
 			bool twosided = false;
 			if (l.side2 != 0xFFFF)
 				twosided = true;
@@ -534,9 +562,9 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 	return true;
 }
 
-/* MapPreviewCanvas::readThings
- * Reads non-UDMF thing data
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads non-UDMF thing data
+// -----------------------------------------------------------------------------
 bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
 {
 	// Find THINGS entry
@@ -565,21 +593,21 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 	if (map_format == MAP_DOOM)
 	{
 		MapThing::DoomData* thng_data = (MapThing::DoomData*)things->getData(true);
-		unsigned nt = things->getSize() / sizeof(MapThing::DoomData);
+		unsigned            nt        = things->getSize() / sizeof(MapThing::DoomData);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MAP_DOOM64)
 	{
 		MapThing::Doom64Data* thng_data = (MapThing::Doom64Data*)things->getData(true);
-		unsigned nt = things->getSize() / sizeof(MapThing::Doom64Data);
+		unsigned              nt        = things->getSize() / sizeof(MapThing::Doom64Data);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MAP_HEXEN)
 	{
 		MapThing::HexenData* thng_data = (MapThing::HexenData*)things->getData(true);
-		unsigned nt = things->getSize() / sizeof(MapThing::HexenData);
+		unsigned             nt        = things->getSize() / sizeof(MapThing::HexenData);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
@@ -587,63 +615,63 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 	return true;
 }
 
-/* MapPreviewCanvas::clearMap
- * Clears map data
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Clears map data
+// -----------------------------------------------------------------------------
 void MapPreviewCanvas::clearMap()
 {
-	verts.clear();
-	lines.clear();
-	things.clear();
-	n_sides = 0;
-	n_sectors = 0;
+	verts_.clear();
+	lines_.clear();
+	things_.clear();
+	n_sides_   = 0;
+	n_sectors_ = 0;
 }
 
-/* MapPreviewCanvas::showMap
- * Adjusts zoom and offset to show the whole map
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adjusts zoom and offset to show the whole map
+// -----------------------------------------------------------------------------
 void MapPreviewCanvas::showMap()
 {
 	// Find extents of map
-	mep_vertex_t m_min(999999.0, 999999.0);
-	mep_vertex_t m_max(-999999.0, -999999.0);
-	for (unsigned a = 0; a < verts.size(); a++)
+	Vertex m_min(999999.0, 999999.0);
+	Vertex m_max(-999999.0, -999999.0);
+	for (unsigned a = 0; a < verts_.size(); a++)
 	{
-		if (verts[a].x < m_min.x)
-			m_min.x = verts[a].x;
-		if (verts[a].x > m_max.x)
-			m_max.x = verts[a].x;
-		if (verts[a].y < m_min.y)
-			m_min.y = verts[a].y;
-		if (verts[a].y > m_max.y)
-			m_max.y = verts[a].y;
+		if (verts_[a].x < m_min.x)
+			m_min.x = verts_[a].x;
+		if (verts_[a].x > m_max.x)
+			m_max.x = verts_[a].x;
+		if (verts_[a].y < m_min.y)
+			m_min.y = verts_[a].y;
+		if (verts_[a].y > m_max.y)
+			m_max.y = verts_[a].y;
 	}
 
 	// Offset to center of map
-	double width = m_max.x - m_min.x;
+	double width  = m_max.x - m_min.x;
 	double height = m_max.y - m_min.y;
-	offset_x = m_min.x + (width * 0.5);
-	offset_y = m_min.y + (height * 0.5);
+	offset_x_     = m_min.x + (width * 0.5);
+	offset_y_     = m_min.y + (height * 0.5);
 
 	// Zoom to fit whole map
 	double x_scale = ((double)GetClientSize().x) / width;
 	double y_scale = ((double)GetClientSize().y) / height;
-	zoom = MIN(x_scale, y_scale);
-	zoom *= 0.95;
+	zoom_          = MIN(x_scale, y_scale);
+	zoom_ *= 0.95;
 }
 
-/* MapPreviewCanvas::draw
- * Draws the map
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Draws the map
+// -----------------------------------------------------------------------------
 void MapPreviewCanvas::draw()
 {
 	// Setup colours
-	rgba_t col_view_background = ColourConfiguration::getColour("map_view_background");
-	rgba_t col_view_line_1s = ColourConfiguration::getColour("map_view_line_1s");
-	rgba_t col_view_line_2s = ColourConfiguration::getColour("map_view_line_2s");
+	rgba_t col_view_background   = ColourConfiguration::getColour("map_view_background");
+	rgba_t col_view_line_1s      = ColourConfiguration::getColour("map_view_line_1s");
+	rgba_t col_view_line_2s      = ColourConfiguration::getColour("map_view_line_2s");
 	rgba_t col_view_line_special = ColourConfiguration::getColour("map_view_line_special");
-	rgba_t col_view_line_macro = ColourConfiguration::getColour("map_view_line_macro");
-	rgba_t col_view_thing = ColourConfiguration::getColour("map_view_thing");
+	rgba_t col_view_line_macro   = ColourConfiguration::getColour("map_view_line_macro");
+	rgba_t col_view_thing        = ColourConfiguration::getColour("map_view_thing");
 
 	// Setup the viewport
 	glViewport(0, 0, GetSize().x, GetSize().y);
@@ -657,9 +685,12 @@ void MapPreviewCanvas::draw()
 	glLoadIdentity();
 
 	// Clear
-	glClearColor(((double)col_view_background.r)/255.f, ((double)col_view_background.g)/255.f,
-	             ((double)col_view_background.b)/255.f, ((double)col_view_background.a)/255.f);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glClearColor(
+		((double)col_view_background.r) / 255.f,
+		((double)col_view_background.g) / 255.f,
+		((double)col_view_background.b) / 255.f,
+		((double)col_view_background.a) / 255.f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
 	if (OpenGL::accuracyTweak())
@@ -672,10 +703,10 @@ void MapPreviewCanvas::draw()
 	glTranslated(GetSize().x * 0.5, GetSize().y * 0.5, 0);
 
 	// Zoom
-	glScaled(zoom, zoom, 1);
+	glScaled(zoom_, zoom_, 1);
 
 	// Translate to offset
-	glTranslated(-offset_x, -offset_y, 0);
+	glTranslated(-offset_x_, -offset_y_, 0);
 
 	// Setup drawing
 	glDisable(GL_TEXTURE_2D);
@@ -684,17 +715,17 @@ void MapPreviewCanvas::draw()
 	glEnable(GL_LINE_SMOOTH);
 
 	// Draw lines
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (unsigned a = 0; a < lines_.size(); a++)
 	{
-		mep_line_t line = lines[a];
+		Line line = lines_[a];
 
 		// Check ends
-		if (line.v1 >= verts.size() || line.v2 >= verts.size())
+		if (line.v1 >= verts_.size() || line.v2 >= verts_.size())
 			continue;
 
 		// Get vertices
-		mep_vertex_t v1 = verts[lines[a].v1];
-		mep_vertex_t v2 = verts[lines[a].v2];
+		Vertex v1 = verts_[lines_[a].v1];
+		Vertex v2 = verts_[lines_[a].v2];
 
 		// Set colour
 		if (line.special)
@@ -714,42 +745,46 @@ void MapPreviewCanvas::draw()
 	}
 
 	// Load thing texture if needed
-	if (!tex_loaded)
+	if (!tex_loaded_)
 	{
 		// Load thing texture
-		SImage image;
+		SImage        image;
 		ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("images/thing/normal_n.png");
 		if (entry)
 		{
 			image.open(entry->getMCData());
-			tex_thing = new GLTexture(false);
-			tex_thing->setFilter(GLTexture::Filter::Mipmap);
-			tex_thing->loadImage(&image);
+			tex_thing_ = new GLTexture(false);
+			tex_thing_->setFilter(GLTexture::Filter::Mipmap);
+			tex_thing_->loadImage(&image);
 		}
 		else
-			tex_thing = nullptr;
+			tex_thing_ = nullptr;
 
-		tex_loaded = true;
+		tex_loaded_ = true;
 	}
 
 	// Draw things
 	if (map_view_things)
 	{
 		OpenGL::setColour(col_view_thing);
-		if (tex_thing)
+		if (tex_thing_)
 		{
 			double radius = 20;
 			glEnable(GL_TEXTURE_2D);
-			tex_thing->bind();
-			for (unsigned a = 0; a < things.size(); a++)
+			tex_thing_->bind();
+			for (unsigned a = 0; a < things_.size(); a++)
 			{
 				glPushMatrix();
-				glTranslated(things[a].x, things[a].y, 0);
+				glTranslated(things_[a].x, things_[a].y, 0);
 				glBegin(GL_QUADS);
-				glTexCoord2f(0.0f, 0.0f);	glVertex2d(-radius, -radius);
-				glTexCoord2f(0.0f, 1.0f);	glVertex2d(-radius, radius);
-				glTexCoord2f(1.0f, 1.0f);	glVertex2d(radius, radius);
-				glTexCoord2f(1.0f, 0.0f);	glVertex2d(radius, -radius);
+				glTexCoord2f(0.0f, 0.0f);
+				glVertex2d(-radius, -radius);
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex2d(-radius, radius);
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex2d(radius, radius);
+				glTexCoord2f(1.0f, 0.0f);
+				glVertex2d(radius, -radius);
 				glEnd();
 				glPopMatrix();
 			}
@@ -759,8 +794,8 @@ void MapPreviewCanvas::draw()
 			glEnable(GL_POINT_SMOOTH);
 			glPointSize(8.0f);
 			glBegin(GL_POINTS);
-			for (unsigned a = 0; a < things.size(); a++)
-				glVertex2d(things[a].x, things[a].y);
+			for (unsigned a = 0; a < things_.size(); a++)
+				glVertex2d(things_[a].x, things_[a].y);
 			glEnd();
 		}
 	}
@@ -773,44 +808,45 @@ void MapPreviewCanvas::draw()
 }
 
 
-/* MapPreviewCanvas::createImage
- * Draws the map in an image
- * TODO: Factorize code with normal draw() and showMap() functions.
- * TODO: Find a way to generate an arbitrary-sized image through
- * tiled rendering.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Draws the map in an image
+// TODO: Factorize code with normal draw() and showMap() functions.
+// TODO: Find a way to generate an arbitrary-sized image through tiled rendering
+// -----------------------------------------------------------------------------
 void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 {
 	// Find extents of map
-	mep_vertex_t m_min(999999.0, 999999.0);
-	mep_vertex_t m_max(-999999.0, -999999.0);
-	for (unsigned a = 0; a < verts.size(); a++)
+	Vertex m_min(999999.0, 999999.0);
+	Vertex m_max(-999999.0, -999999.0);
+	for (unsigned a = 0; a < verts_.size(); a++)
 	{
-		if (verts[a].x < m_min.x)
-			m_min.x = verts[a].x;
-		if (verts[a].x > m_max.x)
-			m_max.x = verts[a].x;
-		if (verts[a].y < m_min.y)
-			m_min.y = verts[a].y;
-		if (verts[a].y > m_max.y)
-			m_max.y = verts[a].y;
+		if (verts_[a].x < m_min.x)
+			m_min.x = verts_[a].x;
+		if (verts_[a].x > m_max.x)
+			m_max.x = verts_[a].x;
+		if (verts_[a].y < m_min.y)
+			m_min.y = verts_[a].y;
+		if (verts_[a].y > m_max.y)
+			m_max.y = verts_[a].y;
 	}
-	double mapwidth = m_max.x - m_min.x;
+	double mapwidth  = m_max.x - m_min.x;
 	double mapheight = m_max.y - m_min.y;
 
-	if (width == 0) width = -5;
-	if (height == 0) height = -5;
+	if (width == 0)
+		width = -5;
+	if (height == 0)
+		height = -5;
 	if (width < 0)
 		width = mapwidth / abs(width);
 	if (height < 0)
 		height = mapheight / abs(height);
 
 	// Setup colours
-	rgba_t col_save_background = ColourConfiguration::getColour("map_image_background");
-	rgba_t col_save_line_1s = ColourConfiguration::getColour("map_image_line_1s");
-	rgba_t col_save_line_2s = ColourConfiguration::getColour("map_image_line_2s");
+	rgba_t col_save_background   = ColourConfiguration::getColour("map_image_background");
+	rgba_t col_save_line_1s      = ColourConfiguration::getColour("map_image_line_1s");
+	rgba_t col_save_line_2s      = ColourConfiguration::getColour("map_image_line_2s");
 	rgba_t col_save_line_special = ColourConfiguration::getColour("map_image_line_special");
-	rgba_t col_save_line_macro = ColourConfiguration::getColour("map_image_line_macro");
+	rgba_t col_save_line_macro   = ColourConfiguration::getColour("map_image_line_macro");
 
 	// Setup OpenGL rigmarole
 	GLuint texID, fboID;
@@ -840,9 +876,12 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	glLoadIdentity();
 
 	// Clear
-	glClearColor(((double)col_save_background.r)/255.f, ((double)col_save_background.g)/255.f,
-	             ((double)col_save_background.b)/255.f, ((double)col_save_background.a)/255.f);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glClearColor(
+		((double)col_save_background.r) / 255.f,
+		((double)col_save_background.g) / 255.f,
+		((double)col_save_background.b) / 255.f,
+		((double)col_save_background.a) / 255.f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
 	if (OpenGL::accuracyTweak())
@@ -850,23 +889,23 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 
 	// Zoom/offset to show full map
 	// Offset to center of map
-	offset_x = m_min.x + (mapwidth * 0.5);
-	offset_y = m_min.y + (mapheight * 0.5);
+	offset_x_ = m_min.x + (mapwidth * 0.5);
+	offset_y_ = m_min.y + (mapheight * 0.5);
 
 	// Zoom to fit whole map
 	double x_scale = ((double)width) / mapwidth;
 	double y_scale = ((double)height) / mapheight;
-	zoom = MIN(x_scale, y_scale);
-	zoom *= 0.95;
+	zoom_          = MIN(x_scale, y_scale);
+	zoom_ *= 0.95;
 
 	// Translate to middle of canvas
-	glTranslated(width>>1, height>>1, 0);
+	glTranslated(width >> 1, height >> 1, 0);
 
 	// Zoom
-	glScaled(zoom, zoom, 1);
+	glScaled(zoom_, zoom_, 1);
 
 	// Translate to offset
-	glTranslated(-offset_x, -offset_y, 0);
+	glTranslated(-offset_x_, -offset_y_, 0);
 
 	// Setup drawing
 	glDisable(GL_TEXTURE_2D);
@@ -875,20 +914,20 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	glEnable(GL_LINE_SMOOTH);
 
 	// Draw 2s lines
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (unsigned a = 0; a < lines_.size(); a++)
 	{
-		mep_line_t line = lines[a];
+		Line line = lines_[a];
 
 		if (!line.twosided)
 			continue;
 
 		// Check ends
-		if (line.v1 >= verts.size() || line.v2 >= verts.size())
+		if (line.v1 >= verts_.size() || line.v2 >= verts_.size())
 			continue;
 
 		// Get vertices
-		mep_vertex_t v1 = verts[lines[a].v1];
-		mep_vertex_t v2 = verts[lines[a].v2];
+		Vertex v1 = verts_[lines_[a].v1];
+		Vertex v2 = verts_[lines_[a].v2];
 
 		// Set colour
 		if (line.special)
@@ -908,20 +947,20 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	}
 
 	// Draw 1s lines
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (unsigned a = 0; a < lines_.size(); a++)
 	{
-		mep_line_t line = lines[a];
+		Line line = lines_[a];
 
 		if (line.twosided)
 			continue;
 
 		// Check ends
-		if (line.v1 >= verts.size() || line.v2 >= verts.size())
+		if (line.v1 >= verts_.size() || line.v2 >= verts_.size())
 			continue;
 
 		// Get vertices
-		mep_vertex_t v1 = verts[lines[a].v1];
-		mep_vertex_t v2 = verts[lines[a].v2];
+		Vertex v1 = verts_[lines_[a].v1];
+		Vertex v2 = verts_[lines_[a].v2];
 
 		// Set colour
 		if (line.special)
@@ -947,8 +986,8 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	if (GLEW_ARB_framebuffer_object)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDeleteTextures( 1, &texID );
-		glDeleteFramebuffersEXT( 1, &fboID );
+		glDeleteTextures(1, &texID);
+		glDeleteFramebuffersEXT(1, &fboID);
 	}
 	SImage img;
 	img.setImageData(ImageBuffer, width, height, RGBA);
@@ -958,19 +997,19 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	ae.importMemChunk(mc);
 }
 
-/* MapPreviewCanvas::nVertices
- * Returns the number of (attached) vertices in the map
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the number of (attached) vertices in the map
+// -----------------------------------------------------------------------------
 unsigned MapPreviewCanvas::nVertices()
 {
 	// Get list of used vertices
 	vector<bool> v_used;
-	for (unsigned a = 0; a < verts.size(); a++)
+	for (unsigned a = 0; a < verts_.size(); a++)
 		v_used.push_back(false);
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (unsigned a = 0; a < lines_.size(); a++)
 	{
-		v_used[lines[a].v1] = true;
-		v_used[lines[a].v2] = true;
+		v_used[lines_[a].v1] = true;
+		v_used[lines_[a].v2] = true;
 	}
 
 	// Get count of used vertices
@@ -984,71 +1023,71 @@ unsigned MapPreviewCanvas::nVertices()
 	return count;
 }
 
-/* MapPreviewCanvas::nSides
- * Returns the number of sides in the map
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the number of sides in the map
+// -----------------------------------------------------------------------------
 unsigned MapPreviewCanvas::nSides()
 {
-	return n_sides;
+	return n_sides_;
 }
 
-/* MapPreviewCanvas::nLines
- * Returns the number of lines in the map
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the number of lines in the map
+// -----------------------------------------------------------------------------
 unsigned MapPreviewCanvas::nLines()
 {
-	return lines.size();
+	return lines_.size();
 }
 
-/* MapPreviewCanvas::nSectors
- * Returns the number of sectors in the map
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the number of sectors in the map
+// -----------------------------------------------------------------------------
 unsigned MapPreviewCanvas::nSectors()
 {
-	return n_sectors;
+	return n_sectors_;
 }
 
-/* MapPreviewCanvas::nThings
- * Returns the number of things in the map
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the number of things in the map
+// -----------------------------------------------------------------------------
 unsigned MapPreviewCanvas::nThings()
 {
-	return things.size();
+	return things_.size();
 }
 
-/* MapPreviewCanvas::getWidth
- * Returns the width (in map units) of the map
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the width (in map units) of the map
+// -----------------------------------------------------------------------------
 unsigned MapPreviewCanvas::getWidth()
 {
 	int min_x = wxINT32_MAX;
 	int max_x = wxINT32_MIN;
 
-	for (unsigned a = 0; a < verts.size(); a++)
+	for (unsigned a = 0; a < verts_.size(); a++)
 	{
-		if (verts[a].x < min_x)
-			min_x = verts[a].x;
-		if (verts[a].x > max_x)
-			max_x = verts[a].x;
+		if (verts_[a].x < min_x)
+			min_x = verts_[a].x;
+		if (verts_[a].x > max_x)
+			max_x = verts_[a].x;
 	}
 
 	return max_x - min_x;
 }
 
-/* MapPreviewCanvas::getHeight
- * Returns the height (in map units) of the map
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the height (in map units) of the map
+// -----------------------------------------------------------------------------
 unsigned MapPreviewCanvas::getHeight()
 {
 	int min_y = wxINT32_MAX;
 	int max_y = wxINT32_MIN;
 
-	for (unsigned a = 0; a < verts.size(); a++)
+	for (unsigned a = 0; a < verts_.size(); a++)
 	{
-		if (verts[a].y < min_y)
-			min_y = verts[a].y;
-		if (verts[a].y > max_y)
-			max_y = verts[a].y;
+		if (verts_[a].y < min_y)
+			min_y = verts_[a].y;
+		if (verts_[a].y > max_y)
+			max_y = verts_[a].y;
 	}
 
 	return max_y - min_y;

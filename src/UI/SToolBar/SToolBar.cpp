@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -16,44 +16,44 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SToolBar.h"
-#include "SToolBarButton.h"
 #include "OpenGL/Drawing.h"
+#include "SToolBarButton.h"
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 CVAR(Bool, show_toolbar_names, false, CVAR_SAVE)
 CVAR(String, toolbars_hidden, "", CVAR_SAVE)
 CVAR(Int, toolbar_size, 16, CVAR_SAVE)
 DEFINE_EVENT_TYPE(wxEVT_STOOLBAR_LAYOUT_UPDATED)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SToolBarSeparator Class
 //
 // Simple control to use as a separator between toolbar groups
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class SToolBarSeparator : public wxControl
 {
 public:
@@ -61,7 +61,7 @@ public:
 	{
 		// Set size
 		int height = UI::scalePx(toolbar_size + 6);
-		int width = UI::scalePx(4);
+		int width  = UI::scalePx(4);
 		SetSizeHints(width, height, width, height);
 		SetMinSize(wxSize(width, height));
 		SetSize(width, height);
@@ -79,9 +79,9 @@ public:
 
 		// Get system colours needed
 		wxColour col_background = GetBackgroundColour();
-		rgba_t bg(COLWX(col_background));
+		rgba_t   bg(COLWX(col_background));
 		wxColour col_light = WXCOL(bg.amp(50, 50, 50, 0));
-		wxColour col_dark = WXCOL(bg.amp(-50, -50, -50, 0));
+		wxColour col_dark  = WXCOL(bg.amp(-50, -50, -50, 0));
 
 		// Draw background
 		dc.SetBackground(wxBrush(col_background));
@@ -96,11 +96,11 @@ public:
 	}
 };
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SToolBarVLine Class
 //
 // Used as a separator between toolbar rows
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class SToolBarVLine : public wxControl
 {
 public:
@@ -113,7 +113,7 @@ public:
 		// Set window name
 		SetName("tb_vline");
 
-		//if (toolbar_win10)
+		// if (toolbar_win10)
 		//	SetBackgroundColour(*wxWHITE);
 
 		// Bind events
@@ -125,30 +125,29 @@ public:
 		wxPaintDC dc(this);
 
 		// Get system colours needed
-		wxColour col_background = GetBackgroundColour();//toolbar_win10 ? *wxWHITE : Drawing::getPanelBGColour();
-		wxColour col_light = Drawing::lightColour(col_background, 1.5f);
-		wxColour col_dark = Drawing::darkColour(col_background, 1.5f);
+		wxColour col_background = GetBackgroundColour(); // toolbar_win10 ? *wxWHITE : Drawing::getPanelBGColour();
+		wxColour col_light      = Drawing::lightColour(col_background, 1.5f);
+		wxColour col_dark       = Drawing::darkColour(col_background, 1.5f);
 
 		// Draw lines
-		//dc.SetPen(wxPen(col_dark));
-		//dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
-		//dc.SetPen(wxPen(col_light));
-		//dc.DrawLine(wxPoint(0, 1), wxPoint(GetSize().x+1, 1));
+		// dc.SetPen(wxPen(col_dark));
+		// dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
+		// dc.SetPen(wxPen(col_light));
+		// dc.DrawLine(wxPoint(0, 1), wxPoint(GetSize().x+1, 1));
 	}
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SToolBarGroup Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------
-// SToolBarGroup::SToolBarGroup
-//
+
+// -----------------------------------------------------------------------------
 // SToolBarGroup class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 SToolBarGroup::SToolBarGroup(SToolBar* parent, string name, bool force_name) : wxPanel(parent, -1)
 {
 	// Init variables
@@ -183,20 +182,14 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, string name, bool force_name) : w
 	}
 }
 
-// ----------------------------------------------------------------------------
-// SToolBarGroup::~SToolBarGroup
-//
+// -----------------------------------------------------------------------------
 // SToolBarGroup class destructor
-// ----------------------------------------------------------------------------
-SToolBarGroup::~SToolBarGroup()
-{
-}
+// -----------------------------------------------------------------------------
+SToolBarGroup::~SToolBarGroup() {}
 
-// ----------------------------------------------------------------------------
-// SToolBarGroup::hide
-//
+// -----------------------------------------------------------------------------
 // Hides the group if [hide] is true, otherwise shows it
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBarGroup::hide(bool hide)
 {
 	// Update variables
@@ -212,12 +205,10 @@ void SToolBarGroup::hide(bool hide)
 	toolbars_hidden = tb_hidden;
 }
 
-// ----------------------------------------------------------------------------
-// SToolBarGroup::addActionButton
-//
+// -----------------------------------------------------------------------------
 // Adds a toolbar button to the group for [action]. If [icon] is empty, the
 // action's icon is used
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 SToolBarButton* SToolBarGroup::addActionButton(string action, string icon, bool show_name)
 {
 	// Get sizer
@@ -228,23 +219,21 @@ SToolBarButton* SToolBarGroup::addActionButton(string action, string icon, bool 
 	button->SetBackgroundColour(GetBackgroundColour());
 
 	// Add it to the group
-	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL|wxALL, UI::scalePx(1));
+	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, UI::scalePx(1));
 
 	return button;
 }
 
-// ----------------------------------------------------------------------------
-// SToolBarGroup::addActionButton
-//
+// -----------------------------------------------------------------------------
 // Adds a toolbar button to the group for [action_id]. [action_name], [icon]
 // and [help_text] can be defined to override the defaults of the action
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 SToolBarButton* SToolBarGroup::addActionButton(
 	string action_id,
 	string action_name,
 	string icon,
 	string help_text,
-	bool show_name)
+	bool   show_name)
 {
 	// Get sizer
 	wxSizer* sizer = GetSizer();
@@ -255,30 +244,26 @@ SToolBarButton* SToolBarGroup::addActionButton(
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &SToolBarGroup::onButtonClicked, this, button->GetId());
 
 	// Add it to the group
-	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL|wxALL, UI::scalePx(1));
+	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, UI::scalePx(1));
 
 	return button;
 }
 
-// ----------------------------------------------------------------------------
-// SToolBarGroup::addCustomControl
-//
+// -----------------------------------------------------------------------------
 // Adds a control to the group
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBarGroup::addCustomControl(wxWindow* control)
 {
 	// Set the control's parent to this panel
 	control->SetParent(this);
 
 	// Add it to the group
-	GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, UI::scalePx(1));
+	GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, UI::scalePx(1));
 }
 
-// ----------------------------------------------------------------------------
-// SToolBarGroup::redraw
-//
+// -----------------------------------------------------------------------------
 // Redraws all controls in the group
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBarGroup::redraw()
 {
 	wxWindowList children = GetChildren();
@@ -289,11 +274,9 @@ void SToolBarGroup::redraw()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// SToolBarGroup::onButtonClicked
-//
+// -----------------------------------------------------------------------------
 // Called when a toolbar button within the group is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBarGroup::onButtonClicked(wxCommandEvent& e)
 {
 	// No idea why the event doesn't propagate as it's supposed to,
@@ -305,15 +288,15 @@ void SToolBarGroup::onButtonClicked(wxCommandEvent& e)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // STBSizer Class
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class STBSizer : public wxWrapSizer
 {
 public:
-	STBSizer() : wxWrapSizer(wxHORIZONTAL, wxEXTEND_LAST_ON_EACH_LINE|wxREMOVE_LEADING_SPACES) {}
+	STBSizer() : wxWrapSizer(wxHORIZONTAL, wxEXTEND_LAST_ON_EACH_LINE | wxREMOVE_LEADING_SPACES) {}
 	~STBSizer() {}
 
 protected:
@@ -330,25 +313,23 @@ protected:
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SToolBar Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SToolBar::SToolBar
-//
+// -----------------------------------------------------------------------------
 // SToolBar class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 SToolBar::SToolBar(wxWindow* parent, bool main_toolbar) : wxPanel(parent, -1)
 {
 	// Init variables
-	min_height_ = 0;
-	n_rows_ = 0;
-	draw_border_ = true;
-	this->main_toolbar_ = main_toolbar;
+	min_height_          = 0;
+	n_rows_              = 0;
+	draw_border_         = true;
+	this->main_toolbar_  = main_toolbar;
 	enable_context_menu_ = false;
 
 	// Enable double buffering to avoid flickering
@@ -362,10 +343,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar) : wxPanel(parent, -1)
 
 	// Set background colour
 	wxPanel::SetBackgroundColour(
-		(main_toolbar && Global::win_version_major >= 10) ?
-			wxColor(250, 250, 250) :
-			Drawing::getPanelBGColour()
-	);
+		(main_toolbar && Global::win_version_major >= 10) ? wxColor(250, 250, 250) : Drawing::getPanelBGColour());
 
 	// Create sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -381,20 +359,14 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar) : wxPanel(parent, -1)
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBar::onEraseBackground, this);
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::~SToolBar
-//
+// -----------------------------------------------------------------------------
 // SToolBar class destructor
-// ----------------------------------------------------------------------------
-SToolBar::~SToolBar()
-{
-}
+// -----------------------------------------------------------------------------
+SToolBar::~SToolBar() {}
 
-// ----------------------------------------------------------------------------
-// SToolBar::addGroup
-//
+// -----------------------------------------------------------------------------
 // Adds [group] to the toolbar
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::addGroup(SToolBarGroup* group)
 {
 	// Set the group's parent
@@ -412,11 +384,9 @@ void SToolBar::addGroup(SToolBarGroup* group)
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &SToolBar::onButtonClick, this, group->GetId());
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::deleteGroup
-//
+// -----------------------------------------------------------------------------
 // Removes the group matching [name] from the toolbar
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::deleteGroup(string name)
 {
 	// Do nothing if no name specified
@@ -439,11 +409,9 @@ void SToolBar::deleteGroup(string name)
 	updateLayout(true);
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::deleteCustomGroups
-//
+// -----------------------------------------------------------------------------
 // Removes any 'custom' groups from the toolbar (name starting with '_')
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::deleteCustomGroups()
 {
 	// Go through groups
@@ -465,12 +433,10 @@ void SToolBar::deleteCustomGroups()
 		updateLayout(true);
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::addActionGroup
-//
+// -----------------------------------------------------------------------------
 // Adds a new group [name] to the toolbar, containing toolbar buttons for each
 // action in [actions]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::addActionGroup(string name, wxArrayString actions)
 {
 	// Do nothing if no actions were given
@@ -489,11 +455,9 @@ void SToolBar::addActionGroup(string name, wxArrayString actions)
 	updateLayout(true);
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::updateLayout
-//
+// -----------------------------------------------------------------------------
 // Recalculates the toolbar layout
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::updateLayout(bool force, bool generate_event)
 {
 	// Check if we need to update at all
@@ -523,8 +487,8 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 
 	// Go through all groups
 	int current_width = 0;
-	int groups_line = 0;
-	n_rows_ = 0;
+	int groups_line   = 0;
+	n_rows_           = 0;
 	for (unsigned a = 0; a < groups_.size(); a++)
 	{
 		// Skip if group is hidden
@@ -545,7 +509,7 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 
 			hbox = new wxBoxSizer(wxHORIZONTAL);
 			sizer->Add(hbox, 0);
-			groups_line = 0;
+			groups_line   = 0;
 			current_width = 0;
 			n_rows_++;
 		}
@@ -556,12 +520,12 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 			SToolBarSeparator* sep = new SToolBarSeparator(this);
 			sep->SetBackgroundColour(GetBackgroundColour());
 			separators_.push_back(sep);
-			hbox->Add(sep, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, UI::px(UI::Size::PadMinimum));
+			hbox->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, UI::px(UI::Size::PadMinimum));
 			current_width += UI::pad() * 2;
 		}
 
 		// Add the group
-		hbox->Add(groups_[a], 0, wxEXPAND|wxTOP|wxBOTTOM|wxLEFT|wxRIGHT, UI::px(UI::Size::PadMinimum));
+		hbox->Add(groups_[a], 0, wxEXPAND | wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, UI::px(UI::Size::PadMinimum));
 		current_width += groups_[a]->GetBestSize().x + UI::pad();
 
 		groups_line++;
@@ -573,10 +537,10 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 
 	// Check if the toolbar height changed
 	int h = getBarHeight();
-	if (min_height_ != (n_rows_+1) * h)
+	if (min_height_ != (n_rows_ + 1) * h)
 	{
 		// Update minimum height
-		min_height_ = (n_rows_+1) * h;
+		min_height_ = (n_rows_ + 1) * h;
 
 		// Generate layout update event
 		if (generate_event)
@@ -588,11 +552,9 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::enableGroup
-//
+// -----------------------------------------------------------------------------
 // Enables or disables toolbar group [name]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::enableGroup(string name, bool enable)
 {
 	// Go through toolbar groups
@@ -616,12 +578,10 @@ void SToolBar::enableGroup(string name, bool enable)
 	Refresh();
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::populateGroupsMenu
-//
+// -----------------------------------------------------------------------------
 // Populates [menu] with items to toggle each toolbar group and an item to
 // toggle the 'show_toolbar_names' option
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::populateGroupsMenu(wxMenu* menu, int start_id)
 {
 	for (unsigned a = 0; a < groups_.size(); a++)
@@ -636,22 +596,19 @@ void SToolBar::populateGroupsMenu(wxMenu* menu, int start_id)
 	wxMenuItem* item = menu->AppendCheckItem(
 		start_id + groups_.size(),
 		"Show group names",
-		"Show names of toolbar groups (requires program restart to take effect)"
-	);
+		"Show names of toolbar groups (requires program restart to take effect)");
 	item->Check(show_toolbar_names);
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::calculateNumRows
-//
+// -----------------------------------------------------------------------------
 // Calculates the number of toolbar rows to fit within [width]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int SToolBar::calculateNumRows(int width)
 {
 	// Go through all groups
 	int current_width = 0;
-	int groups_line = 0;
-	int rows = 0;
+	int groups_line   = 0;
+	int rows          = 0;
 	for (unsigned a = 0; a < groups_.size(); a++)
 	{
 		// Skip if group is hidden
@@ -662,7 +619,7 @@ int SToolBar::calculateNumRows(int width)
 		if (groups_[a]->GetBestSize().x + current_width + UI::pad() > width && groups_line > 0)
 		{
 			// The group won't fit, begin a new line
-			groups_line = 0;
+			groups_line   = 0;
 			current_width = 0;
 			rows++;
 		}
@@ -679,11 +636,9 @@ int SToolBar::calculateNumRows(int width)
 	return rows;
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::group
-//
+// -----------------------------------------------------------------------------
 // Returns the SToolBarGroup matching [name], or nullptr if not found
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 SToolBarGroup* SToolBar::group(const string& name)
 {
 	for (auto group : groups_)
@@ -694,18 +649,16 @@ SToolBarGroup* SToolBar::group(const string& name)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SToolBar Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SToolBar::onSize
-//
+// -----------------------------------------------------------------------------
 // Called when the toolbar is resized
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::onSize(wxSizeEvent& e)
 {
 	// Update layout
@@ -718,20 +671,18 @@ void SToolBar::onSize(wxSizeEvent& e)
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::onPaint
-//
+// -----------------------------------------------------------------------------
 // Called when the toolbar needs to be drawn
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::onPaint(wxPaintEvent& e)
 {
 	wxPaintDC dc(this);
 
 	// Get system colours needed
 	wxColour col_background = GetBackgroundColour();
-	wxColour col_light = Drawing::lightColour(col_background, 1.5f);
-	//wxColour col_dark = win10_theme ? *wxWHITE : Drawing::darkColour(col_background, 1.5f);
-	
+	wxColour col_light      = Drawing::lightColour(col_background, 1.5f);
+	// wxColour col_dark = win10_theme ? *wxWHITE : Drawing::darkColour(col_background, 1.5f);
+
 	// Draw background
 	dc.SetBackground(wxBrush(col_background));
 	dc.Clear();
@@ -739,20 +690,18 @@ void SToolBar::onPaint(wxPaintEvent& e)
 	if (draw_border_)
 	{
 		// Draw top
-		//dc.SetPen(wxPen(wxColor(220, 220, 220)));// col_light));
-		//dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
+		// dc.SetPen(wxPen(wxColor(220, 220, 220)));// col_light));
+		// dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
 
 		// Draw bottom
-		//dc.SetPen(wxPen(col_dark));
-		//dc.DrawLine(wxPoint(0, GetSize().y-1), wxPoint(GetSize().x+1, GetSize().y-1));
+		// dc.SetPen(wxPen(col_dark));
+		// dc.DrawLine(wxPoint(0, GetSize().y-1), wxPoint(GetSize().x+1, GetSize().y-1));
 	}
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::onFocus
-//
+// -----------------------------------------------------------------------------
 // Called when the toolbar receives or loses focus
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::onFocus(wxFocusEvent& e)
 {
 	// Redraw
@@ -762,11 +711,9 @@ void SToolBar::onFocus(wxFocusEvent& e)
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::onMouseEvent
-//
+// -----------------------------------------------------------------------------
 // Called when a mouse event is raised for the control
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::onMouseEvent(wxMouseEvent& e)
 {
 	// Right click
@@ -790,11 +737,9 @@ void SToolBar::onMouseEvent(wxMouseEvent& e)
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::onContextMenu
-//
+// -----------------------------------------------------------------------------
 // Called when a toolbar context menu item is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::onContextMenu(wxCommandEvent& e)
 {
 	// Check index
@@ -816,11 +761,9 @@ void SToolBar::onContextMenu(wxCommandEvent& e)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::onButtonClick
-//
+// -----------------------------------------------------------------------------
 // Called when a toolbar button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SToolBar::onButtonClick(wxCommandEvent& e)
 {
 	// See SToolBarGroup::onButtonClicked
@@ -830,28 +773,22 @@ void SToolBar::onButtonClick(wxCommandEvent& e)
 	ProcessWindowEvent(ev);
 }
 
-// ----------------------------------------------------------------------------
-// SToolBar::onEraseBackground
-//
+// -----------------------------------------------------------------------------
 // Called when the background of the toolbar needs erasing
-// ----------------------------------------------------------------------------
-void SToolBar::onEraseBackground(wxEraseEvent& e)
-{
-}
+// -----------------------------------------------------------------------------
+void SToolBar::onEraseBackground(wxEraseEvent& e) {}
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SToolBar Class Static Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SToolBar::getBarHeight
-//
+// -----------------------------------------------------------------------------
 // Returns the height for all toolbars
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int SToolBar::getBarHeight()
 {
 	return UI::scalePx(toolbar_size + 14);

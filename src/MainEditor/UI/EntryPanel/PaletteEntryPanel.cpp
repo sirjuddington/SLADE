@@ -112,7 +112,7 @@ public:
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
-		pal_preview_->allowSelection(2);
+		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
 		pal_preview_->SetInitialSize(wxSize(UI::scalePx(384), UI::scalePx(384)));
 		redraw();
 
@@ -203,7 +203,7 @@ public:
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
-		pal_preview_->allowSelection(2);
+		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
 		pal_preview_->SetInitialSize(wxSize(UI::scalePx(384), UI::scalePx(384)));
 		redraw();
 
@@ -328,7 +328,7 @@ public:
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
-		pal_preview_->allowSelection(2);
+		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
 		pal_preview_->SetInitialSize(wxSize(UI::scalePx(384), UI::scalePx(384)));
 		redraw();
 
@@ -425,7 +425,7 @@ public:
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
-		pal_preview_->allowSelection(2);
+		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
 		pal_preview_->SetInitialSize(wxSize(UI::scalePx(384), UI::scalePx(384)));
 		redraw();
 
@@ -564,7 +564,7 @@ public:
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
-		pal_preview_->allowSelection(2);
+		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
 		pal_preview_->SetInitialSize(wxSize(UI::scalePx(384), UI::scalePx(384)));
 		redraw();
 
@@ -627,7 +627,7 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 {
 	// Add palette canvas
 	pal_canvas_ = new PaletteCanvas(this, -1);
-	pal_canvas_->allowSelection(1);
+	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
 	sizer_main_->Add(pal_canvas_->toPanel(this), 1, wxEXPAND, 0);
 
 	// Setup custom menu

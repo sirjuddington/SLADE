@@ -1,52 +1,56 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    NumberTextCtrl.cpp
- * Description: NumberTextCtrl class, simple text box that only
- *              allows entry of an integer, with an optional '++' or
- *              '--' in front to signify an increment/decrement
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    NumberTextCtrl.cpp
+// Description: NumberTextCtrl class, simple text box that only allows entry of
+//              an integer, with an optional '++' or '--' in front to signify an
+//              increment/decrement
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "NumberTextCtrl.h"
 
 
-/*******************************************************************
- * NUMBERTEXTCTRL CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// NumberTextCtrl Class Functions
+//
+// -----------------------------------------------------------------------------
 
 // TODO this class could possibly be replaced by a validator on a regular
 // wxTextCtrl
 
-/* NumberTextCtrl::NumberTextCtrl
- * NumberTextCtrl class constructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// NumberTextCtrl class constructor
+// -----------------------------------------------------------------------------
 NumberTextCtrl::NumberTextCtrl(wxWindow* parent, bool allow_decimal) : wxTextCtrl(parent, -1)
 {
-	last_point = 0;
-	this->allow_decimal = allow_decimal;
+	last_point_          = 0;
+	this->allow_decimal_ = allow_decimal;
 
 	SetToolTip("Use ++, --, *, / to make relative changes, e.g., ++16 to increase by 16");
 
@@ -55,10 +59,11 @@ NumberTextCtrl::NumberTextCtrl(wxWindow* parent, bool allow_decimal) : wxTextCtr
 	Bind(wxEVT_TEXT, &NumberTextCtrl::onChanged, this);
 }
 
-/* NumberTextCtrl::getNumber
- * Returns the number currently entered. If it's an incrememt or
- * decrement, returns [base] incremented/decremented by the number
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the number currently entered.
+// If it's an incrememt or decrement, returns [base] incremented/decremented by
+// the number
+// -----------------------------------------------------------------------------
 int NumberTextCtrl::getNumber(int base)
 {
 	string val = GetValue();
@@ -86,14 +91,15 @@ int NumberTextCtrl::getNumber(int base)
 		return lval;
 }
 
-/* NumberTextCtrl::getDecNumber
- * Returns the number currently entered. If it's an incrememt or
- * decrement, returns [base] incremented/decremented by the number
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the number currently entered.
+// If it's an incrememt or decrement, returns [base] incremented/decremented by
+// the number
+// -----------------------------------------------------------------------------
 double NumberTextCtrl::getDecNumber(double base)
 {
 	// If decimals aren't allowed just return truncated integral value
-	if (!allow_decimal)
+	if (!allow_decimal_)
 		return getNumber(base);
 
 	string val = GetValue();
@@ -117,62 +123,65 @@ double NumberTextCtrl::getDecNumber(double base)
 		return dval;
 }
 
-/* NumberTextCtrl::isIncrement
- * Returns true if the entered value is an increment
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if the entered value is an increment
+// -----------------------------------------------------------------------------
 bool NumberTextCtrl::isIncrement()
 {
 	return GetValue().StartsWith("++");
 }
 
-/* NumberTextCtrl::isDecrement
- * Returns true if the entered value is a decrement
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if the entered value is a decrement
+// -----------------------------------------------------------------------------
 bool NumberTextCtrl::isDecrement()
 {
 	return GetValue().StartsWith("--");
 }
 
-/* NumberTextCtrl::isFactor
- * Returns true if the entered value is an increment
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if the entered value is an increment
+// -----------------------------------------------------------------------------
 bool NumberTextCtrl::isFactor()
 {
 	return GetValue().StartsWith("*");
 }
 
-/* NumberTextCtrl::isDivisor
- * Returns true if the entered value is a decrement
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if the entered value is a decrement
+// -----------------------------------------------------------------------------
 bool NumberTextCtrl::isDivisor()
 {
 	return GetValue().StartsWith("/");
 }
 
-/* NumberTextCtrl::setNumber
- * Sets the text control value to [num]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the text control value to [num]
+// -----------------------------------------------------------------------------
 void NumberTextCtrl::setNumber(int num)
 {
 	ChangeValue(S_FMT("%d", num));
 }
 
-/* NumberTextCtrl::setDecNumber
- * Sets the text control (decimal) value to [num]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the text control (decimal) value to [num]
+// -----------------------------------------------------------------------------
 void NumberTextCtrl::setDecNumber(double num)
 {
 	ChangeValue(S_FMT("%1.3f", num));
 }
 
 
-/*******************************************************************
- * NUMBERTEXTCTRL CLASS EVENTS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// NumberTextCtrl Class Events
+//
+// -----------------------------------------------------------------------------
 
-/* NumberTextCtrl::onChar
- * Called when a character is entered into the control
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Called when a character is entered into the control
+// -----------------------------------------------------------------------------
 void NumberTextCtrl::onChar(wxKeyEvent& e)
 {
 	// Don't try to validate non-printable characters
@@ -189,29 +198,29 @@ void NumberTextCtrl::onChar(wxKeyEvent& e)
 		valid = true;
 	if (key == '-' || key == '+' || key == '*' || key == '/')
 		valid = true;
-	if (allow_decimal && key == '.')
+	if (allow_decimal_ && key == '.')
 		valid = true;
 
 	if (valid)
 		wxTextCtrl::OnChar(e);
 }
 
-/* NumberTextCtrl::onChanged
- * Called when the value is changed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the value is changed
+// -----------------------------------------------------------------------------
 void NumberTextCtrl::onChanged(wxCommandEvent& e)
 {
 	string new_value = GetValue();
 
 	// Check if valid
 	// Can begin with '+', '++', '-' or '--', rest has to be numeric
-	bool num = false;
-	bool valid = true;
-	int plus = 0;
-	int minus = 0;
-	int splat = 0;
-	int slash = 0;
-	int decimal = 0;
+	bool num     = false;
+	bool valid   = true;
+	int  plus    = 0;
+	int  minus   = 0;
+	int  splat   = 0;
+	int  slash   = 0;
+	int  decimal = 0;
 	for (unsigned a = 0; a < new_value.size(); a++)
 	{
 		// Check for number
@@ -290,13 +299,13 @@ void NumberTextCtrl::onChanged(wxCommandEvent& e)
 	// If invalid revert to previous value
 	if (!valid)
 	{
-		ChangeValue(last_value);
-		SetInsertionPoint(last_point);
+		ChangeValue(last_value_);
+		SetInsertionPoint(last_point_);
 	}
 	else
 	{
-		last_value = new_value;
-		last_point = GetInsertionPoint();
+		last_value_ = new_value;
+		last_point_ = GetInsertionPoint();
 		e.Skip();
 	}
 }

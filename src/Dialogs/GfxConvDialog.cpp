@@ -265,7 +265,7 @@ void GfxConvDialog::setupLayout()
 	gbsizer->Add(new wxStaticText(this, -1, "Current Graphic"), { 0, 0 }, { 1, 1 });
 	gfx_current = new GfxCanvas(this, -1);
 	gfx_current->SetInitialSize(wxSize(px_preview_size, px_preview_size));
-	gfx_current->setViewType(GFXVIEW_CENTERED);
+	gfx_current->setViewType(GfxCanvas::View::Centered);
 	gbsizer->Add(gfx_current, { 1, 0 }, { 1, 1 }, wxEXPAND);
 	pal_chooser_current = new PaletteChooser(this, -1);
 	pal_chooser_current->selectPalette(current_palette_name);
@@ -275,7 +275,7 @@ void GfxConvDialog::setupLayout()
 	gbsizer->Add(new wxStaticText(this, -1, "Converted Graphic"), { 0, 1 }, { 1, 2 });
 	gfx_target = new GfxCanvas(this, -1);
 	gfx_target->SetInitialSize(wxSize(px_preview_size, px_preview_size));
-	gfx_target->setViewType(1);
+	gfx_target->setViewType(GfxCanvas::View::Centered);
 	gbsizer->Add(gfx_target, { 1, 1 }, { 1, 2 }, wxEXPAND);
 	pal_chooser_target = new PaletteChooser(this, -1);
 	pal_chooser_target->selectPalette(target_palette_name);

@@ -79,7 +79,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 	// Add gfx canvas
 	gfx_canvas_ = new GfxCanvas(this, -1);
 	sizer_main_->Add(gfx_canvas_->toPanel(this), 1, wxEXPAND, 0);
-	gfx_canvas_->setViewType(GFXVIEW_DEFAULT);
+	gfx_canvas_->setViewType(GfxCanvas::View::Default);
 	gfx_canvas_->allowDrag(true);
 	gfx_canvas_->allowScroll(true);
 	gfx_canvas_->setPalette(MainEditor::currentPalette());
@@ -505,7 +505,7 @@ void GfxEntryPanel::refresh()
 	applyViewType();
 
 	// Reset display offsets in graphics mode
-	if (gfx_canvas_->getViewType() != GFXVIEW_SPRITE)
+	if (gfx_canvas_->getViewType() != GfxCanvas::View::Sprite)
 		gfx_canvas_->resetOffsets();
 
 	// Setup custom menu
@@ -570,24 +570,24 @@ void GfxEntryPanel::updateImagePalette()
 // -----------------------------------------------------------------------------
 // Detects the offset view type of the current entry
 // -----------------------------------------------------------------------------
-int GfxEntryPanel::detectOffsetType()
+GfxCanvas::View GfxEntryPanel::detectOffsetType()
 {
 	if (!entry_)
-		return GFXVIEW_DEFAULT;
+		return GfxCanvas::View::Default;
 
 	if (!entry_->getParent())
-		return GFXVIEW_DEFAULT;
+		return GfxCanvas::View::Default;
 
 	// Check what section of the archive the entry is in -- only PNGs or images
 	// in the sprites section can be HUD or sprite
 	bool is_sprite = ("sprites" == entry_->getParent()->detectNamespace(entry_));
 	bool is_png    = ("img_png" == entry_->getType()->formatId());
 	if (!is_sprite && !is_png)
-		return GFXVIEW_DEFAULT;
+		return GfxCanvas::View::Default;
 
 	SImage* img = getImage();
 	if (is_png && img->offset().x == 0 && img->offset().y == 0)
-		return GFXVIEW_DEFAULT;
+		return GfxCanvas::View::Default;
 
 	int width        = img->getWidth();
 	int height       = img->getHeight();
@@ -630,9 +630,9 @@ int GfxEntryPanel::detectOffsetType()
 
 	// Sprites are more common than HUD, so in case of a tie, sprite wins
 	if (sprite_penalty > hud_penalty)
-		return GFXVIEW_HUD;
+		return GfxCanvas::View::HUD;
 	else
-		return GFXVIEW_SPRITE;
+		return GfxCanvas::View::Sprite;
 }
 
 // -----------------------------------------------------------------------------
@@ -643,7 +643,7 @@ void GfxEntryPanel::applyViewType()
 {
 	// Tile checkbox overrides offset type selection
 	if (cb_tile_->IsChecked())
-		gfx_canvas_->setViewType(GFXVIEW_TILED);
+		gfx_canvas_->setViewType(GfxCanvas::View::Tiled);
 	else
 	{
 		// Set gfx canvas view type depending on the offset combobox selection
@@ -651,9 +651,9 @@ void GfxEntryPanel::applyViewType()
 		switch (sel)
 		{
 		case 0: gfx_canvas_->setViewType(detectOffsetType()); break;
-		case 1: gfx_canvas_->setViewType(GFXVIEW_DEFAULT); break;
-		case 2: gfx_canvas_->setViewType(GFXVIEW_SPRITE); break;
-		case 3: gfx_canvas_->setViewType(GFXVIEW_HUD); break;
+		case 1: gfx_canvas_->setViewType(GfxCanvas::View::Default); break;
+		case 2: gfx_canvas_->setViewType(GfxCanvas::View::Sprite); break;
+		case 3: gfx_canvas_->setViewType(GfxCanvas::View::HUD); break;
 		}
 	}
 
@@ -686,14 +686,14 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_drag")
 	{
 		editing_ = false;
-		gfx_canvas_->setEditingMode(0);
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::None);
 	}
 
 	// Editing - draw mode
 	else if (id == "pgfx_draw")
 	{
 		editing_ = true;
-		gfx_canvas_->setEditingMode(1);
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Paint);
 		gfx_canvas_->setPaintColour(cb_colour_->colour());
 	}
 
@@ -701,14 +701,14 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_erase")
 	{
 		editing_ = true;
-		gfx_canvas_->setEditingMode(2);
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Erase);
 	}
 
 	// Editing - translate mode
 	else if (id == "pgfx_magic")
 	{
 		editing_ = true;
-		gfx_canvas_->setEditingMode(3);
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Translate);
 	}
 
 	// Editing - set translation

@@ -135,7 +135,7 @@ void TextureXListView::updateItemAttr(long item, long column, long index) const
 	CTexture* tex = texturex_->getTexture(index);
 
 	// Init attributes
-	item_attr->SetTextColour(WXCOL(ColourConfiguration::getColour("error")));
+	item_attr_->SetTextColour(WXCOL(ColourConfiguration::getColour("error")));
 
 	// If texture doesn't exist, return error colour
 	if (!tex)
@@ -144,9 +144,9 @@ void TextureXListView::updateItemAttr(long item, long column, long index) const
 	// Set colour depending on entry state
 	switch (tex->getState())
 	{
-	case 1: item_attr->SetTextColour(WXCOL(ColourConfiguration::getColour("modified"))); break;
-	case 2: item_attr->SetTextColour(WXCOL(ColourConfiguration::getColour("new"))); break;
-	default: item_attr->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
+	case 1: item_attr_->SetTextColour(WXCOL(ColourConfiguration::getColour("modified"))); break;
+	case 2: item_attr_->SetTextColour(WXCOL(ColourConfiguration::getColour("new"))); break;
+	default: item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
 	};
 }
 
@@ -159,14 +159,14 @@ void TextureXListView::updateList(bool clear)
 		ClearAll();
 
 	// Set list size
-	items.clear();
+	items_.clear();
 	if (texturex_)
 	{
 		unsigned count = texturex_->nTextures();
 		for (unsigned a = 0; a < count; a++)
-			items.push_back(a);
+			items_.push_back(a);
 		applyFilter();
-		SetItemCount(items.size());
+		SetItemCount(items_.size());
 	}
 	else
 		SetItemCount(0);
@@ -198,10 +198,10 @@ bool TextureXListView::sizeSort(long left, long right)
 void TextureXListView::sortItems()
 {
 	lv_current = this;
-	if (sort_column == 1)
-		std::sort(items.begin(), items.end(), &TextureXListView::sizeSort);
+	if (sort_column_ == 1)
+		std::sort(items_.begin(), items_.end(), &TextureXListView::sizeSort);
 	else
-		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
+		std::sort(items_.begin(), items_.end(), &VirtualListView::defaultSort);
 }
 
 // -----------------------------------------------------------------------------
@@ -210,11 +210,11 @@ void TextureXListView::sortItems()
 void TextureXListView::applyFilter()
 {
 	// Show all if no filter
-	if (filter_text.IsEmpty())
+	if (filter_text_.IsEmpty())
 		return;
 
 	// Split filter by ,
-	wxArrayString terms = wxSplit(filter_text, ',');
+	wxArrayString terms = wxSplit(filter_text_, ',');
 
 	// Process filter strings
 	for (auto& term : terms)
@@ -228,9 +228,9 @@ void TextureXListView::applyFilter()
 	}
 
 	// Go through filtered list
-	for (unsigned a = 0; a < items.size(); a++)
+	for (unsigned a = 0; a < items_.size(); a++)
 	{
-		auto tex = texturex_->getTexture(items[a]);
+		auto tex = texturex_->getTexture(items_[a]);
 
 		// Check for name match with filter
 		bool match = false;
@@ -246,7 +246,7 @@ void TextureXListView::applyFilter()
 			continue;
 
 		// No match, remove from filtered list
-		items.erase(items.begin() + a);
+		items_.erase(items_.begin() + a);
 		a--;
 	}
 }

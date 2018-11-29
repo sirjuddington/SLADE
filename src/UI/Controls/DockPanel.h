@@ -1,16 +1,14 @@
 #pragma once
 
-#include "common.h"
-
 class DockPanel : public wxPanel
 {
 public:
 	DockPanel(wxWindow* parent);
 	~DockPanel() {}
 
-	virtual void	layoutNormal() {}
-	virtual void	layoutVertical() { layoutNormal(); }
-	virtual void	layoutHorizontal() { layoutNormal(); }
+	virtual void layoutNormal() {}
+	virtual void layoutVertical() { layoutNormal(); }
+	virtual void layoutHorizontal() { layoutNormal(); }
 
 protected:
 	enum class Orient
@@ -19,5 +17,5 @@ protected:
 		Horizontal,
 		Vertical
 	};
-	Orient	current_layout_;
+	Orient current_layout_;
 };

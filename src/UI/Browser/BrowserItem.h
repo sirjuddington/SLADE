@@ -1,10 +1,13 @@
 #pragma once
 
+#include "BrowserCanvas.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 
 class BrowserWindow;
 class TextBox;
+class BrowserCanvas;
+
 class BrowserItem
 {
 	friend class BrowserWindow;
@@ -18,14 +21,14 @@ public:
 
 	virtual bool loadImage();
 	void         draw(
-				int           size,
-				int           x,
-				int           y,
-				Drawing::Font font,
-				int           nametype    = 0,
-				int           viewtype    = 0,
-				rgba_t        colour      = COL_WHITE,
-				bool          text_shadow = true);
+				int                     size,
+				int                     x,
+				int                     y,
+				Drawing::Font           font,
+				BrowserCanvas::NameType nametype    = BrowserCanvas::NameType::Normal,
+				BrowserCanvas::ItemView viewtype    = BrowserCanvas::ItemView::Normal,
+				rgba_t                  colour      = COL_WHITE,
+				bool                    text_shadow = true);
 	void           clearImage();
 	virtual string itemInfo() { return ""; }
 

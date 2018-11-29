@@ -189,7 +189,7 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette* pal,
 	pal_canvas_original_->doubleWidth(true);
 	pal_canvas_original_->setPalette(palette_);
 	pal_canvas_original_->SetInitialSize(wxSize(UI::scalePx(448), UI::scalePx(112)));
-	pal_canvas_original_->allowSelection(2);
+	pal_canvas_original_->setSelectionType(PaletteCanvas::SelectionType::Range);
 	framesizer->Add(pal_canvas_original_->toPanel(this), 1, wxALL | wxEXPAND, UI::pad());
 
 
@@ -236,7 +236,7 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette* pal,
 	pal_canvas_target_->doubleWidth(true);
 	pal_canvas_target_->setPalette(palette_);
 	pal_canvas_target_->SetInitialSize(wxSize(UI::scalePx(448), UI::scalePx(112)));
-	pal_canvas_target_->allowSelection(2);
+	pal_canvas_target_->setSelectionType(PaletteCanvas::SelectionType::Range);
 	vbox->Add(pal_canvas_target_->toPanel(panel_target_palette_), 1, wxEXPAND);
 
 	// Reverse origin range
@@ -323,7 +323,7 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette* pal,
 
 	gfx_preview_ = new GfxCanvas(this, -1);
 	gfx_preview_->setPalette(palette_);
-	gfx_preview_->setViewType(GFXVIEW_CENTERED);
+	gfx_preview_->setViewType(GfxCanvas::View::Centered);
 	gfx_preview_->getImage()->copyImage(&image_preview_);
 	framesizer->Add(gfx_preview_->toPanel(this), 1, wxEXPAND | wxALL, UI::pad());
 
@@ -1425,7 +1425,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxBOTTOM, 4);
 
 	// Setup preview
-	gfx_preview_->setViewType(GFXVIEW_CENTERED);
+	gfx_preview_->setViewType(GfxCanvas::View::Centered);
 	gfx_preview_->setPalette(pal);
 	gfx_preview_->SetInitialSize(wxSize(192, 192));
 	Misc::loadImageFromEntry(gfx_preview_->getImage(), entry);
@@ -1531,7 +1531,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal
 	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxBOTTOM, 4);
 
 	// Setup preview
-	gfx_preview_->setViewType(GFXVIEW_CENTERED);
+	gfx_preview_->setViewType(GfxCanvas::View::Centered);
 	gfx_preview_->setPalette(pal);
 	gfx_preview_->SetInitialSize(wxSize(256, 256));
 	Misc::loadImageFromEntry(gfx_preview_->getImage(), entry);

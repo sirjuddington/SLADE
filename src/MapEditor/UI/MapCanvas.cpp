@@ -65,7 +65,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 {
 	// Init variables
 	context_->setCanvas(this);
-	last_time = 0;
+	last_time_ = 0;
 
 #ifdef USE_SFML_RENDERWINDOW
 	setVerticalSyncEnabled(false);
@@ -97,7 +97,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	Bind(wxEVT_IDLE, &MapCanvas::onIdle, this);
 #endif
 
-	timer.Start(map_bg_ms, true);
+	timer_.Start(map_bg_ms, true);
 }
 
 // -----------------------------------------------------------------------------
@@ -489,11 +489,11 @@ void MapCanvas::onIdle(wxIdleEvent& e)
 	mouseLook3d();
 
 	// Get time since last redraw
-	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time;
+	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time_;
 
 	if (context_->update(frametime))
 	{
-		last_time = (sf_clock_.getElapsedTime().asMilliseconds());
+		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
 		Refresh();
 	}
 }
@@ -507,15 +507,15 @@ void MapCanvas::onRTimer(wxTimerEvent& e)
 	mouseLook3d();
 
 	// Get time since last redraw
-	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time;
+	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time_;
 
 	if (context_->update(frametime))
 	{
-		last_time = (sf_clock_.getElapsedTime().asMilliseconds());
+		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
 		Refresh();
 	}
 
-	timer.Start(map_bg_ms, true);
+	timer_.Start(map_bg_ms, true);
 }
 
 // -----------------------------------------------------------------------------

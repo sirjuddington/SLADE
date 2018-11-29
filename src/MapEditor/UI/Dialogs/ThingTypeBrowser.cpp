@@ -115,7 +115,7 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	populateItemTree();
 
 	// Set browser options
-	canvas_->setItemNameType(BrowserCanvas::NAMES_INDEX);
+	canvas_->setItemNameType(BrowserCanvas::NameType::Index);
 	setupViewOptions();
 
 	// Select initial item if any
@@ -140,13 +140,13 @@ void ThingTypeBrowser::setupViewOptions()
 	{
 		setFont(Drawing::Font::Condensed);
 		setItemSize(48);
-		setItemViewType(BrowserCanvas::ITEMS_TILES);
+		setItemViewType(BrowserCanvas::ItemView::Tiles);
 	}
 	else
 	{
 		setFont(Drawing::Font::Bold);
 		setItemSize(80);
-		setItemViewType(BrowserCanvas::ITEMS_NORMAL);
+		setItemViewType(BrowserCanvas::ItemView::Normal);
 	}
 
 	canvas_->updateLayout();

@@ -4,7 +4,6 @@
 #include "BrowserItem.h"
 #include "Graphics/Palette/Palette.h"
 #include "Utility/Tree.h"
-#include "common.h"
 
 namespace Drawing
 {
@@ -72,9 +71,9 @@ public:
 
 	// Canvas display options
 	void setFont(Drawing::Font font);
-	void setItemNameType(int type);
+	void setItemNameType(BrowserCanvas::NameType type);
 	void setItemSize(int size);
-	void setItemViewType(int type);
+	void setItemViewType(BrowserCanvas::ItemView type);
 
 protected:
 	BrowserTreeNode*     items_root_   = nullptr;

@@ -1,93 +1,100 @@
 ﻿
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    VirtualListView.cpp
- * Description: A 'virtual' list control that makes use of the
- *              wxListCtrl::wxLC_VIRTUAL style. With this, the list
- *              works differently to the normal list view. Rather
- *              than containing specific items, the virtual list
- *              uses virtual functions to get item details from an
- *              external source.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    VirtualListView.cpp
+// Description: A 'virtual' list control that makes use of the
+//              wxListCtrl::wxLC_VIRTUAL style. With this, the list works
+//              differently to the normal list view. Rather than containing
+//              specific items, the virtual list uses virtual functions to get
+//              item details from an external source.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "VirtualListView.h"
 #include "UI/WxUtils.h"
 #ifdef __WXMSW__
 #include <CommCtrl.h>
 #endif
-#include "common.h"
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 wxDEFINE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
 CVAR(Bool, list_font_monospace, false, CVAR_SAVE)
 VirtualListView* VirtualListView::lv_current = nullptr;
-int vlv_chars[] =
+namespace
 {
-	'.', ',', '_', '-', '+', '=', '`', '~',
-	'!', '@', '#', '$', '(', ')', '[', ']',
-	'{', '}', ':', ';', '/', '\\', '<', '>',
-	'?', '^', '&', '\'', '\"',
+int              vlv_chars[]                 = {
+    '.', ',', '_', '-', '+', '=', '`',  '~', '!', '@', '#', '$', '(',  ')',  '[',
+    ']', '{', '}', ':', ';', '/', '\\', '<', '>', '?', '^', '&', '\'', '\"',
 };
 int n_vlv_chars = 30;
+}
 
 
-/*******************************************************************
- * VIRTUALLISTVIEW CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// VirtualListView Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* VirtualListView::VirtualListView
- * VirtualListView class constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// VirtualListView class constructor
+// -----------------------------------------------------------------------------
 VirtualListView::VirtualListView(wxWindow* parent)
 #ifdef __WXMSW__
-	: wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_VIRTUAL|wxLC_EDIT_LABELS)
+	:
+	wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL | wxLC_EDIT_LABELS)
 {
 #else
-	: wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_VIRTUAL)
+	:
+	wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL)
 {
 #endif
-	item_attr = new wxListItemAttr();
-	last_focus = 0;
-	col_search = 0;
-	filter_text = "";
-	sort_column = -1;
-	filter_column = -1;
-	sort_descend = false;
-	selection_updating = false;
-	memset(cols_editable, 0, 100);
+	item_attr_          = new wxListItemAttr();
+	last_focus_         = 0;
+	col_search_         = 0;
+	filter_text_        = "";
+	sort_column_        = -1;
+	filter_column_      = -1;
+	sort_descend_       = false;
+	selection_updating_ = false;
+	memset(cols_editable_, 0, 100);
 
 	// Set monospace font if configured
-	font_normal = new wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
-	font_monospace = new wxFont(WxUtils::getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+	font_normal_    = new wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+	font_monospace_ = new wxFont(WxUtils::getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
 	if (list_font_monospace)
-		item_attr->SetFont(*font_monospace);
+		item_attr_->SetFont(*font_monospace_);
 
-	// Bind events
+		// Bind events
 #ifndef __WXMSW__
 	Bind(wxEVT_KEY_DOWN, &VirtualListView::onKeyDown, this);
 #endif
@@ -99,34 +106,34 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	Bind(wxEVT_LIST_COL_CLICK, &VirtualListView::onColumnLeftClick, this);
 #ifdef __WXGTK__
 	// Not sure if this is needed any more - causes duplicate selection events in linux
-	//Bind(wxEVT_LIST_ITEM_SELECTED, &VirtualListView::onItemSelected, this);
+	// Bind(wxEVT_LIST_ITEM_SELECTED, &VirtualListView::onItemSelected, this);
 #endif
 }
 
-/* VirtualListView::~VirtualListView
- * VirtualListView class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// VirtualListView class destructor
+// -----------------------------------------------------------------------------
 VirtualListView::~VirtualListView()
 {
-	delete item_attr;
-	delete font_monospace;
-	delete font_normal;
+	delete item_attr_;
+	delete font_monospace_;
+	delete font_normal_;
 }
 
-/* VirtualListView::sendSelectionChangedEvent
- * Creates and sends an EVT_VLV_SELECTION_CHANGED wxwidgets event
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Creates and sends an EVT_VLV_SELECTION_CHANGED wxwidgets event
+// -----------------------------------------------------------------------------
 void VirtualListView::sendSelectionChangedEvent()
 {
 	wxCommandEvent evt(EVT_VLV_SELECTION_CHANGED, GetId());
 	ProcessWindowEvent(evt);
-	selection_updating = false;
+	selection_updating_ = false;
 }
 
-/* VirtualListView::updateWidth
- * Updates the list's minimum requested width to allow the
- * widget to be shown with no horizontal scrollbar
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Updates the list's minimum requested width to allow the widget to be shown
+// with no horizontal scrollbar
+// -----------------------------------------------------------------------------
 void VirtualListView::updateWidth()
 {
 	// Get total column width
@@ -141,9 +148,9 @@ void VirtualListView::updateWidth()
 	SetSizeHints(width, -1);
 }
 
-/* VirtualListView::selectItem
- * Selects (or deselects) [item], depending on [select]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Selects (or deselects) [item], depending on [select]
+// -----------------------------------------------------------------------------
 void VirtualListView::selectItem(long item, bool select)
 {
 	// Check item id is in range
@@ -157,21 +164,23 @@ void VirtualListView::selectItem(long item, bool select)
 		SetItemState(item, 0x0000, wxLIST_STATE_SELECTED);
 }
 
-/* VirtualListView::selectItems
- * Selects/deselects all items within the range [start]->[end],
- * depending on [select]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Selects/deselects all items within the range [start]->[end], depending on
+// [select]
+// -----------------------------------------------------------------------------
 void VirtualListView::selectItems(long start, long end, bool select)
 {
 	// Check/correct indices
 	if (start > end)
 	{
 		long temp = start;
-		start = end;
-		end = temp;
+		start     = end;
+		end       = temp;
 	}
-	if (start < 0) start = 0;
-	if (end >= GetItemCount()) end = GetItemCount() - 1;
+	if (start < 0)
+		start = 0;
+	if (end >= GetItemCount())
+		end = GetItemCount() - 1;
 
 	// Go through range
 	for (long a = start; a <= end; a++)
@@ -184,9 +193,9 @@ void VirtualListView::selectItems(long start, long end, bool select)
 	}
 }
 
-/* VirtualListView::selectAll
- * Selects all list items
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Selects all list items
+// -----------------------------------------------------------------------------
 void VirtualListView::selectAll()
 {
 	int itemcount = GetItemCount();
@@ -196,20 +205,21 @@ void VirtualListView::selectAll()
 	sendSelectionChangedEvent();
 }
 
-/* VirtualListView::clearSelection
- * Deselects all list items
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Deselects all list items
+// -----------------------------------------------------------------------------
 void VirtualListView::clearSelection()
 {
 	int itemcount = GetItemCount();
 	for (int a = 0; a < itemcount; a++)
-		SetItemState(a, 0x0000, wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+		SetItemState(a, 0x0000, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED);
 }
 
-/* VirtualListView::getSelection
- * Returns a list of all selected item indices. If [item_indices] is
- * true, the returned indices will have sorting and filtering applied
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns a list of all selected item indices.
+// If [item_indices] is true, the returned indices will have sorting and
+// filtering applied
+// -----------------------------------------------------------------------------
 vector<long> VirtualListView::getSelection(bool item_indices)
 {
 	// Init return array
@@ -233,17 +243,17 @@ vector<long> VirtualListView::getSelection(bool item_indices)
 	return ret;
 }
 
-/* VirtualListView::getFirstSelected
- * Returns the first selected item index
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the first selected item index
+// -----------------------------------------------------------------------------
 long VirtualListView::getFirstSelected()
 {
 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 }
 
-/* VirtualListView::getLastSelected
- * Returns the last selected item index
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the last selected item index
+// -----------------------------------------------------------------------------
 long VirtualListView::getLastSelected()
 {
 	// Go through all items
@@ -264,9 +274,9 @@ long VirtualListView::getLastSelected()
 	return item;
 }
 
-/* VirtualListView::focusItem
- * Sets the focus of [item]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the focus of [item]
+// -----------------------------------------------------------------------------
 void VirtualListView::focusItem(long item, bool focus)
 {
 	// Check item id is in range
@@ -277,83 +287,85 @@ void VirtualListView::focusItem(long item, bool focus)
 	if (focus)
 	{
 		SetItemState(item, 0xFFFF, wxLIST_STATE_FOCUSED);
-		last_focus = item;
+		last_focus_ = item;
 	}
 	else
 		SetItemState(item, 0x0000, wxLIST_STATE_FOCUSED);
 }
 
-/* VirtualListView::getFocus
- * Returns the index of the currently focused item
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the index of the currently focused item
+// -----------------------------------------------------------------------------
 long VirtualListView::getFocus()
 {
 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
 }
 
-/* VirtualListView::defaultSort
- * Default sorting calculation, sorts by index if there is no sorted
- * column, otherwise sorts by the column item text > index
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Default sorting calculation, sorts by index if there is no sorted column,
+// otherwise sorts by the column item text > index
+// -----------------------------------------------------------------------------
 bool VirtualListView::defaultSort(long left, long right)
 {
 	// No sort column, just sort by index
-	if (lv_current->sort_column < 0)
-		return lv_current->sort_descend ? right < left : left < right;
+	if (lv_current->sort_column_ < 0)
+		return lv_current->sort_descend_ ? right < left : left < right;
 
 	// Sort by column text > index
 	else
 	{
-		int result = lv_current->getItemText(left, lv_current->sort_column, left).Lower().compare(lv_current->getItemText(right, lv_current->sort_column, right).Lower());
+		int result = lv_current->getItemText(left, lv_current->sort_column_, left)
+						 .Lower()
+						 .compare(lv_current->getItemText(right, lv_current->sort_column_, right).Lower());
 		if (result == 0)
 			return left < right;
 		else
-			return lv_current->sort_descend ? result > 0 : result < 0;
+			return lv_current->sort_descend_ ? result > 0 : result < 0;
 	}
 }
 
-/* VirtualListView::getItemIndex
- * Returns the filtered index of the list item at [item]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the filtered index of the list item at [item]
+// -----------------------------------------------------------------------------
 long VirtualListView::getItemIndex(long item) const
 {
-	if (item < 0 || item >= (long)items.size())
+	if (item < 0 || item >= (long)items_.size())
 		return item;
 	else
-		return items[item];
+		return items_[item];
 }
 
-/* VirtualListView::updateList
- * Updates the list item count and refreshes it
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Updates the list item count and refreshes it
+// -----------------------------------------------------------------------------
 void VirtualListView::updateList(bool clear)
 {
 	// Update list
-	if (!items.empty())
-		SetItemCount(items.size());
+	if (!items_.empty())
+		SetItemCount(items_.size());
 
 	Refresh();
 }
 
-/* VirtualListView::sortItems
- * Sorts the list items depending on the current sorting column
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sorts the list items depending on the current sorting column
+// -----------------------------------------------------------------------------
 void VirtualListView::sortItems()
 {
 	lv_current = this;
-	std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
+	std::sort(items_.begin(), items_.end(), &VirtualListView::defaultSort);
 }
 
-/* VirtualListView::setColumnHeaderArrow
- * Sets the sorting arrow indicator on [column], [arrow] can be 0
- * (none), 1 (up) or 2 (down)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the sorting arrow indicator on [column], [arrow] can be 0 (none), 1 (up)
+// or 2 (down)
+// -----------------------------------------------------------------------------
 void VirtualListView::setColumnHeaderArrow(long column, int arrow)
 {
 	// Win32 implementation
 #ifdef __WXMSW__
-	HWND hwnd = ListView_GetHeader((HWND)GetHandle());
-	HDITEM header ={ 0 };
+	HWND   hwnd   = ListView_GetHeader((HWND)GetHandle());
+	HDITEM header = { 0 };
 	if (hwnd)
 	{
 		header.mask = HDI_FORMAT;
@@ -361,11 +373,11 @@ void VirtualListView::setColumnHeaderArrow(long column, int arrow)
 		if (Header_GetItem(hwnd, column, &header))
 		{
 			if (arrow == 2)
-				header.fmt = (header.fmt & ~HDF_SORTUP)|HDF_SORTDOWN;
+				header.fmt = (header.fmt & ~HDF_SORTUP) | HDF_SORTDOWN;
 			else if (arrow == 1)
-				header.fmt = (header.fmt & ~HDF_SORTDOWN)|HDF_SORTUP;
+				header.fmt = (header.fmt & ~HDF_SORTDOWN) | HDF_SORTUP;
 			else
-				header.fmt = header.fmt & ~(HDF_SORTDOWN|HDF_SORTUP);
+				header.fmt = header.fmt & ~(HDF_SORTDOWN | HDF_SORTUP);
 
 			Header_SetItem(hwnd, column, &header);
 		}
@@ -373,9 +385,9 @@ void VirtualListView::setColumnHeaderArrow(long column, int arrow)
 #endif
 }
 
-/* VirtualListView::focusOnIndex
- * Selects an entry by its given index and makes sure it is visible
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Selects an entry by its given index and makes sure it is visible
+// -----------------------------------------------------------------------------
 void VirtualListView::focusOnIndex(long index)
 {
 	if (index < GetItemCount())
@@ -388,19 +400,19 @@ void VirtualListView::focusOnIndex(long index)
 	}
 }
 
-/* VirtualListView::lookForSearchEntryFrom
- * Used by VirtualListView::onKeyChar, returns true if an entry
- * matching search is found, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Used by VirtualListView::onKeyChar, returns true if an entry matching search
+// is found, false otherwise
+// -----------------------------------------------------------------------------
 bool VirtualListView::lookForSearchEntryFrom(long focus)
 {
-	long index = focus;
-	bool looped = false;
+	long index    = focus;
+	bool looped   = false;
 	bool gotmatch = false;
 	while ((!looped && index < GetItemCount()) || (looped && index < focus))
 	{
-		string name = getItemText(index, col_search, items[index]);
-		if (name.Upper().StartsWith(search))
+		string name = getItemText(index, col_search_, items_[index]);
+		if (name.Upper().StartsWith(search_))
 		{
 			// Matches, update selection+focus
 			focusOnIndex(index);
@@ -412,7 +424,7 @@ bool VirtualListView::lookForSearchEntryFrom(long focus)
 		if (++index == GetItemCount() && !looped)
 		{
 			looped = true;
-			index = 0;
+			index  = 0;
 		}
 	}
 	// Didn't get any match
@@ -420,13 +432,16 @@ bool VirtualListView::lookForSearchEntryFrom(long focus)
 }
 
 
-/*******************************************************************
- * VIRTUALLISTVIEW CLASS EVENTS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// VirtualListView Class Events
+//
+// -----------------------------------------------------------------------------
 
-/* VirtualListView::onColumnResize
- * Called when a column is resized
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Called when a column is resized
+// -----------------------------------------------------------------------------
 void VirtualListView::onColumnResize(wxListEvent& e)
 {
 	// Update width etc
@@ -435,9 +450,9 @@ void VirtualListView::onColumnResize(wxListEvent& e)
 		GetParent()->Layout();
 }
 
-/* VirtualListView::onMouseLeftDown
- * Called when the list is left clicked
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the list is left clicked
+// -----------------------------------------------------------------------------
 void VirtualListView::onMouseLeftDown(wxMouseEvent& e)
 {
 #ifndef __WXMSW__
@@ -449,15 +464,16 @@ void VirtualListView::onMouseLeftDown(wxMouseEvent& e)
 	}
 
 	// Get item at click position
-	int flags = 0;
-	long item = this->HitTest(wxPoint(e.GetX(), e.GetY()), flags);
+	int  flags = 0;
+	long item  = this->HitTest(wxPoint(e.GetX(), e.GetY()), flags);
 	if (flags & wxLIST_HITTEST_ONITEM)
 	{
 		if (e.GetModifiers() == wxMOD_SHIFT)
 		{
 			// Shift+left click: Add all items between the focused item and the item that was clicked to the selection
 			long focus = getFocus();
-			if (focus < 0) focus = last_focus;		// If no current focus, go with last focused item
+			if (focus < 0)
+				focus = last_focus; // If no current focus, go with last focused item
 			selectItems(item, focus);
 			focusItem(item);
 			sendSelectionChangedEvent();
@@ -483,14 +499,14 @@ void VirtualListView::onMouseLeftDown(wxMouseEvent& e)
 		search = "";
 	}
 #else
-	search = "";
+	search_ = "";
 	e.Skip();
 #endif
 }
 
-/* VirtualListView::onKeyDown
- * Called when a key is pressed within the list
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when a key is pressed within the list
+// -----------------------------------------------------------------------------
 void VirtualListView::onKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_UP)
@@ -498,79 +514,83 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 		if (e.GetModifiers() == wxMOD_SHIFT)
 		{
 			long focus = getFocus();
-			if (focus < 0) focus = last_focus;		// If no current focus, go with last focused item
+			if (focus < 0)
+				focus = last_focus_; // If no current focus, go with last focused item
 			if (focus > 0)
 			{
 				focusItem(focus, false);
-				selectItem(focus-1);
-				focusItem(focus-1);
-				EnsureVisible(focus-1);
+				selectItem(focus - 1);
+				focusItem(focus - 1);
+				EnsureVisible(focus - 1);
 				sendSelectionChangedEvent();
 			}
 		}
 		else if (e.GetModifiers() == wxMOD_NONE)
 		{
 			long focus = getFocus();
-			if (focus < 0) focus = last_focus;		// If no current focus, go with last focused item
+			if (focus < 0)
+				focus = last_focus_; // If no current focus, go with last focused item
 			if (focus > 0)
 			{
 				clearSelection();
 				focusItem(focus, false);
-				selectItem(focus-1);
-				focusItem(focus-1);
-				EnsureVisible(focus-1);
+				selectItem(focus - 1);
+				focusItem(focus - 1);
+				EnsureVisible(focus - 1);
 				sendSelectionChangedEvent();
 			}
 		}
-		search = "";
+		search_ = "";
 	}
 	else if (e.GetKeyCode() == WXK_DOWN)
 	{
 		if (e.GetModifiers() == wxMOD_SHIFT)
 		{
 			long focus = getFocus();
-			if (focus < 0) focus = last_focus;		// If no current focus, go with last focused item
+			if (focus < 0)
+				focus = last_focus_; // If no current focus, go with last focused item
 			if (focus < GetItemCount() - 1)
 			{
 				focusItem(focus, false);
-				selectItem(focus+1);
-				focusItem(focus+1);
-				EnsureVisible(focus+1);
+				selectItem(focus + 1);
+				focusItem(focus + 1);
+				EnsureVisible(focus + 1);
 				sendSelectionChangedEvent();
 			}
 		}
 		else if (e.GetModifiers() == wxMOD_NONE)
 		{
 			long focus = getFocus();
-			if (focus < 0) focus = last_focus;		// If no current focus, go with last focused item
+			if (focus < 0)
+				focus = last_focus_; // If no current focus, go with last focused item
 			if (focus < GetItemCount() - 1)
 			{
 				clearSelection();
 				focusItem(focus, false);
-				selectItem(focus+1);
-				focusItem(focus+1);
-				EnsureVisible(focus+1);
+				selectItem(focus + 1);
+				focusItem(focus + 1);
+				EnsureVisible(focus + 1);
 				sendSelectionChangedEvent();
 			}
 		}
-		search = "";
+		search_ = "";
 	}
 	else
 		e.Skip();
 }
 
-/* VirtualListView::onKeyChar
- * Called when a 'character' key is pressed within the list
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when a 'character' key is pressed within the list
+// -----------------------------------------------------------------------------
 void VirtualListView::onKeyChar(wxKeyEvent& e)
 {
 	// Check the key pressed is actually a character (a-z, 0-9 etc)
 	bool isRealChar = false;
-	if (e.GetKeyCode() >= 'a' && e.GetKeyCode() <= 'z')			// Lowercase
+	if (e.GetKeyCode() >= 'a' && e.GetKeyCode() <= 'z') // Lowercase
 		isRealChar = true;
-	else if (e.GetKeyCode() >= 'A' && e.GetKeyCode() <= 'Z')	// Uppercase
+	else if (e.GetKeyCode() >= 'A' && e.GetKeyCode() <= 'Z') // Uppercase
 		isRealChar = true;
-	else if (e.GetKeyCode() >= '0' && e.GetKeyCode() <= '9')	// Number
+	else if (e.GetKeyCode() >= '0' && e.GetKeyCode() <= '9') // Number
 		isRealChar = true;
 	else
 	{
@@ -588,92 +608,92 @@ void VirtualListView::onKeyChar(wxKeyEvent& e)
 	{
 		// Get currently focused item (or first if nothing is focused)
 		long focus = getFocus();
-		if (focus < 0) focus = 0;
+		if (focus < 0)
+			focus = 0;
 
 		// Build search string
-		search += e.GetKeyCode();
-		search.MakeUpper();
+		search_ += e.GetKeyCode();
+		search_.MakeUpper();
 
 		// Search for match from the current focus, and if failed
 		// start a new search from after the current focus.
 		if (!lookForSearchEntryFrom(focus))
 		{
-			search = S_FMT("%c", e.GetKeyCode());
-			search.MakeUpper();
-			lookForSearchEntryFrom(focus+1);
+			search_ = S_FMT("%c", e.GetKeyCode());
+			search_.MakeUpper();
+			lookForSearchEntryFrom(focus + 1);
 		}
 	}
 	else
 	{
-		search = "";
+		search_ = "";
 #ifdef __WXGTK__
 		e.Skip();
 #else
 		// Only want to do default action on navigation key
-		if (e.GetKeyCode() == WXK_UP || e.GetKeyCode() == WXK_DOWN ||
-		        e.GetKeyCode() == WXK_PAGEUP || e.GetKeyCode() == WXK_PAGEDOWN ||
-		        e.GetKeyCode() == WXK_HOME || e.GetKeyCode() == WXK_END ||
-		        e.GetKeyCode() == WXK_TAB)
+		if (e.GetKeyCode() == WXK_UP || e.GetKeyCode() == WXK_DOWN || e.GetKeyCode() == WXK_PAGEUP
+			|| e.GetKeyCode() == WXK_PAGEDOWN || e.GetKeyCode() == WXK_HOME || e.GetKeyCode() == WXK_END
+			|| e.GetKeyCode() == WXK_TAB)
 			e.Skip();
 #endif
 	}
 }
 
-/* VirtualListView::onLabelEditBegin
- * Called when an item label is clicked twice to edit it
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when an item label is clicked twice to edit it
+// -----------------------------------------------------------------------------
 void VirtualListView::onLabelEditBegin(wxListEvent& e)
 {
 	// For now we'll enable it if editing column 0 is allowed
-	if (!cols_editable[0])
+	if (!cols_editable_[0])
 		e.Veto();
 	else
 		e.Skip();
 }
 
-/* VirtualListView::onLabelEditEnd
- * Called when an item label edit event finishes
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when an item label edit event finishes
+// -----------------------------------------------------------------------------
 void VirtualListView::onLabelEditEnd(wxListEvent& e)
 {
 	if (!e.IsEditCancelled())
 		labelEdited(e.GetColumn(), e.GetIndex(), e.GetLabel());
 }
 
-/* VirtualListView::onColumnLeftClick
- * Called when a column header is clicked
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when a column header is clicked
+// -----------------------------------------------------------------------------
 void VirtualListView::onColumnLeftClick(wxListEvent& e)
 {
 	// Clear current sorting arrow
-	setColumnHeaderArrow(sort_column, 0);
+	setColumnHeaderArrow(sort_column_, 0);
 
 	// Current sorting column clicked
-	if (sort_column == e.GetColumn())
+	if (sort_column_ == e.GetColumn())
 	{
-		if (sort_descend)
+		if (sort_descend_)
 		{
-			sort_column = -1;
-			sort_descend = false;
+			sort_column_  = -1;
+			sort_descend_ = false;
 		}
 		else
-			sort_descend = true;
+			sort_descend_ = true;
 	}
 
 	// Different sorting column clicked
 	else
 	{
-		sort_column = e.GetColumn();
-		sort_descend = false;
+		sort_column_  = e.GetColumn();
+		sort_descend_ = false;
 	}
 
 	// Set new sorting arrow
-	if (sort_column >= 0)
-		setColumnHeaderArrow(sort_column, sort_descend ? 2 : 1);
+	if (sort_column_ >= 0)
+		setColumnHeaderArrow(sort_column_, sort_descend_ ? 2 : 1);
 
-	if (sort_column >= 0)
+	if (sort_column_ >= 0)
 	{
-		LOG_MESSAGE(2, "Sort column %d (%s)", sort_column, sort_descend ? "descending" : "ascending");
+		LOG_MESSAGE(2, "Sort column %d (%s)", sort_column_, sort_descend_ ? "descending" : "ascending");
 	}
 	else
 	{
@@ -683,14 +703,14 @@ void VirtualListView::onColumnLeftClick(wxListEvent& e)
 	updateList();
 }
 
-/* VirtualListView::onItemSelected
- * Called when an item in the list is selected
- *******************************************************************/
-void VirtualListView::onItemSelected(wxListEvent &e)
+// -----------------------------------------------------------------------------
+// Called when an item in the list is selected
+// -----------------------------------------------------------------------------
+void VirtualListView::onItemSelected(wxListEvent& e)
 {
-	if (!selection_updating)
+	if (!selection_updating_)
 	{
-		selection_updating = true;
+		selection_updating_ = true;
 		CallAfter(&VirtualListView::sendSelectionChangedEvent);
 	}
 }

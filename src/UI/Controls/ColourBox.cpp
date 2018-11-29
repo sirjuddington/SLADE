@@ -1,5 +1,5 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
 //
@@ -19,21 +19,21 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ColourBox.h"
 #include "Dialogs/PaletteDialog.h"
@@ -41,26 +41,24 @@
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 DEFINE_EVENT_TYPE(wxEVT_COLOURBOX_CHANGED)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ColourBox Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ColourBox::ColourBox
-//
+// -----------------------------------------------------------------------------
 // ColourBox class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
 	wxPanel{ parent, id, wxDefaultPosition, WxUtils::scaledSize(32, 22), wxNO_BORDER },
 	colour_{ COL_BLACK },
@@ -74,11 +72,9 @@ ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
 	Bind(wxEVT_RIGHT_DOWN, &ColourBox::onMouseRightDown, this);
 }
 
-// ----------------------------------------------------------------------------
-// ColourBox::ColourBox
-//
+// -----------------------------------------------------------------------------
 // Alternate ColourBox class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ColourBox::ColourBox(wxWindow* parent, int id, rgba_t col, bool enable_alpha, bool mode) :
 	wxPanel{ parent, id, wxDefaultPosition, WxUtils::scaledSize(32, 22), wxNO_BORDER },
 	colour_{ col },
@@ -92,11 +88,9 @@ ColourBox::ColourBox(wxWindow* parent, int id, rgba_t col, bool enable_alpha, bo
 	Bind(wxEVT_RIGHT_DOWN, &ColourBox::onMouseRightDown, this);
 }
 
-// ----------------------------------------------------------------------------
-// ColourBox::sendChangeEvent
-//
+// -----------------------------------------------------------------------------
 // Generates and sends a wxEVT_COLOURBOX_CHANGED event
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ColourBox::sendChangeEvent()
 {
 	wxCommandEvent e(wxEVT_COLOURBOX_CHANGED, GetId());
@@ -104,12 +98,10 @@ void ColourBox::sendChangeEvent()
 	GetEventHandler()->ProcessEvent(e);
 }
 
-// ----------------------------------------------------------------------------
-// ColourBox::PopPalette
-//
+// -----------------------------------------------------------------------------
 // Pops up a palette dialog if palette data is available, and sends a change
 // event after a colour is selected.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ColourBox::popPalette()
 {
 	if (palette_)
@@ -128,27 +120,25 @@ void ColourBox::popPalette()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ColourBox::PopColourPicker
-//
+// -----------------------------------------------------------------------------
 // Pops up a standard colour picker dialog, and sends a change event  after a
 // colour is selected.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ColourBox::popColourPicker()
 {
 	wxColour col = wxGetColourFromUser(GetParent(), wxColour(colour_.r, colour_.g, colour_.b));
 
 	if (col.Ok())
 	{
-		colour_.r = col.Red();
-		colour_.g = col.Green();
-		colour_.b = col.Blue();
+		colour_.r     = col.Red();
+		colour_.g     = col.Green();
+		colour_.b     = col.Blue();
 		colour_.index = -1;
 
 		if (palette_)
 		{
 			int16_t index = palette_->nearestColour(colour_);
-			rgba_t pcol = palette_->colour(index);
+			rgba_t  pcol  = palette_->colour(index);
 			if (pcol.equals(colour_))
 				colour_.index = index;
 		}
@@ -157,12 +147,10 @@ void ColourBox::popColourPicker()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ColourBox::PopAlphaSlider
-//
+// -----------------------------------------------------------------------------
 // Pops up an alpha slider control if alpha is enabled, and sends a change
 // event after a value is selected.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ColourBox::popAlphaSlider()
 {
 	// Do nothing if alpha disabled
@@ -170,7 +158,7 @@ void ColourBox::popAlphaSlider()
 		return;
 
 	// Popup a dialog with a slider control for alpha
-	wxDialog dlg(nullptr, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
+	wxDialog    dlg(nullptr, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
 	wxBoxSizer* box = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(box);
 	wxSlider* slider = new wxSlider(&dlg, -1, colour_.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
@@ -187,18 +175,16 @@ void ColourBox::popAlphaSlider()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ColourBox Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ColourBox::onPaint
-//
+// -----------------------------------------------------------------------------
 // Called when the colour box needs to be (re)drawn
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ColourBox::onPaint(wxPaintEvent& e)
 {
 	wxPaintDC dc(this);
@@ -208,9 +194,9 @@ void ColourBox::onPaint(wxPaintEvent& e)
 
 	if (alpha_)
 	{
-		int a_height = UI::scalePx(4);
+		int a_height       = UI::scalePx(4);
 		int a_border_width = (int)UI::scaleFactor();
-		int a_point = colour_.fa() * (GetClientSize().x - (2 * a_border_width));
+		int a_point        = colour_.fa() * (GetClientSize().x - (2 * a_border_width));
 
 		dc.SetBrush(wxBrush(wxColour(0, 0, 0)));
 		dc.DrawRectangle(0, 0, GetClientSize().x, a_height);
@@ -221,11 +207,9 @@ void ColourBox::onPaint(wxPaintEvent& e)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ColourBox::onMouseLeftDown
-//
-// Called when the colour box is left clicked. 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Called when the colour box is left clicked.
+// -----------------------------------------------------------------------------
 void ColourBox::onMouseLeftDown(wxMouseEvent& e)
 {
 	if (!palette_ || altmode_)
@@ -234,11 +218,9 @@ void ColourBox::onMouseLeftDown(wxMouseEvent& e)
 		popPalette();
 }
 
-// ----------------------------------------------------------------------------
-// ColourBox::onMouseRightDown
-//
-// Called when the colour box is right clicked. 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Called when the colour box is right clicked.
+// -----------------------------------------------------------------------------
 void ColourBox::onMouseRightDown(wxMouseEvent& e)
 {
 	if (altmode_ && palette_)

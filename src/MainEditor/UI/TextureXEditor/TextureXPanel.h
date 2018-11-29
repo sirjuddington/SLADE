@@ -21,7 +21,7 @@ public:
 	void        sortItems() override;
 	void        setFilter(string filter)
 	{
-		filter_text = filter;
+		filter_text_ = filter;
 		updateList();
 	}
 	void applyFilter() override;

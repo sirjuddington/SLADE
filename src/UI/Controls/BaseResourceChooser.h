@@ -8,9 +8,9 @@ public:
 	BaseResourceChooser(wxWindow* parent, bool load_change = true);
 	~BaseResourceChooser() {}
 
-	void	populateChoices();
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void populateChoices();
+	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
 
 private:
-	bool	load_change_;
+	bool load_change_;
 };
