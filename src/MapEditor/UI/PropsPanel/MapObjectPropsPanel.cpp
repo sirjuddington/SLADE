@@ -994,7 +994,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 					// Add property
 					switch (objprops[b].value.getType())
 					{
-					case Property::Type::Bool:
+					case Property::Type::Boolean:
 						addBoolProperty(group_custom_, objprops[b].name, objprops[b].name);
 						break;
 					case Property::Type::Int: addIntProperty(group_custom_, objprops[b].name, objprops[b].name); break;

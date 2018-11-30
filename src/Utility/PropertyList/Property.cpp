@@ -52,7 +52,7 @@ Property::Property(Type type)
 	this->has_value_ = false;
 
 	// Set default value depending on type
-	if (type == Type::Bool)
+	if (type == Type::Boolean)
 		value_.Boolean = false;
 	else if (type == Type::Int)
 		value_.Integer = 0;
@@ -67,7 +67,7 @@ Property::Property(Type type)
 	else
 	{
 		// Invalid type given, default to boolean
-		this->type_    = Type::Bool;
+		this->type_    = Type::Boolean;
 		value_.Boolean = true;
 	}
 }
@@ -89,7 +89,7 @@ Property::Property(const Property& copy)
 Property::Property(bool value)
 {
 	// Init boolean property
-	this->type_          = Type::Bool;
+	this->type_          = Type::Boolean;
 	this->value_.Boolean = value;
 	this->has_value_     = true;
 }
@@ -159,11 +159,11 @@ bool Property::getBoolValue(bool warn_wrong_type) const
 		return false;
 
 	// Write warning to log if needed
-	if (warn_wrong_type && type_ != Type::Bool)
+	if (warn_wrong_type && type_ != Type::Boolean)
 		LOG_MESSAGE(1, "Warning: Requested Boolean value of a %s Property", typeString());
 
 	// Return value (convert if needed)
-	if (type_ == Type::Bool)
+	if (type_ == Type::Boolean)
 		return value_.Boolean;
 	else if (type_ == Type::Int)
 		return !!value_.Integer;
@@ -208,7 +208,7 @@ int Property::getIntValue(bool warn_wrong_type) const
 		return value_.Integer;
 	else if (type_ == Type::UInt)
 		return (int)value_.Unsigned;
-	else if (type_ == Type::Bool)
+	else if (type_ == Type::Boolean)
 		return (int)value_.Boolean;
 	else if (type_ == Type::Float)
 		return (int)value_.Floating;
@@ -241,7 +241,7 @@ double Property::getFloatValue(bool warn_wrong_type) const
 	// Return value (convert if needed)
 	if (type_ == Type::Float)
 		return value_.Floating;
-	else if (type_ == Type::Bool)
+	else if (type_ == Type::Boolean)
 		return (double)value_.Boolean;
 	else if (type_ == Type::Int)
 		return (double)value_.Integer;
@@ -280,7 +280,7 @@ string Property::getStringValue(bool warn_wrong_type) const
 		return S_FMT("%d", value_.Integer);
 	else if (type_ == Type::UInt)
 		return S_FMT("%u", value_.Unsigned);
-	else if (type_ == Type::Bool)
+	else if (type_ == Type::Boolean)
 	{
 		if (value_.Boolean)
 			return "true";
@@ -316,7 +316,7 @@ unsigned Property::getUnsignedValue(bool warn_wrong_type) const
 	// Return value (convert if needed)
 	if (type_ == Type::Int)
 		return value_.Integer;
-	else if (type_ == Type::Bool)
+	else if (type_ == Type::Boolean)
 		return (int)value_.Boolean;
 	else if (type_ == Type::Float)
 		return (int)value_.Floating;
@@ -335,8 +335,8 @@ unsigned Property::getUnsignedValue(bool warn_wrong_type) const
 void Property::setValue(bool val)
 {
 	// Change type if necessary
-	if (type_ != Type::Bool)
-		changeType(Type::Bool);
+	if (type_ != Type::Boolean)
+		changeType(Type::Boolean);
 
 	// Set value
 	value_.Boolean = val;
@@ -417,7 +417,7 @@ void Property::changeType(Type newtype)
 	type_ = newtype;
 
 	// Update value
-	if (type_ == Type::Bool)
+	if (type_ == Type::Boolean)
 		value_.Boolean = true;
 	else if (type_ == Type::Int)
 		value_.Integer = 0;
@@ -438,7 +438,7 @@ string Property::typeString() const
 {
 	switch (type_)
 	{
-	case Type::Bool: return "Boolean";
+	case Type::Boolean: return "Boolean";
 	case Type::Int: return "Integer";
 	case Type::Float: return "Float";
 	case Type::String: return "String";

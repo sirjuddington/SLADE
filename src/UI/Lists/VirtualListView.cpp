@@ -473,7 +473,7 @@ void VirtualListView::onMouseLeftDown(wxMouseEvent& e)
 			// Shift+left click: Add all items between the focused item and the item that was clicked to the selection
 			long focus = getFocus();
 			if (focus < 0)
-				focus = last_focus; // If no current focus, go with last focused item
+				focus = last_focus_; // If no current focus, go with last focused item
 			selectItems(item, focus);
 			focusItem(item);
 			sendSelectionChangedEvent();
@@ -496,7 +496,7 @@ void VirtualListView::onMouseLeftDown(wxMouseEvent& e)
 			e.Skip();
 		}
 
-		search = "";
+		search_ = "";
 	}
 #else
 	search_ = "";

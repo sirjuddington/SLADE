@@ -1848,7 +1848,7 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 			continue;
 
 		// Remove the property from the object if it is the default value
-		if (i.second.defaultValue().getType() == Property::Type::Bool)
+		if (i.second.defaultValue().getType() == Property::Type::Boolean)
 		{
 			if (i.second.defaultValue().getBoolValue() == object->boolProperty(i.first))
 				object->props().removeProperty(i.first);
@@ -2191,7 +2191,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	// Apply defaults to object
 	for (unsigned a = 0; a < prop_names.size(); a++)
 	{
-		if (prop_vals[a].getType() == Property::Type::Bool)
+		if (prop_vals[a].getType() == Property::Type::Boolean)
 			object->setBoolProperty(prop_names[a], prop_vals[a].getBoolValue());
 		else if (prop_vals[a].getType() == Property::Type::Int)
 			object->setIntProperty(prop_names[a], prop_vals[a].getIntValue());
