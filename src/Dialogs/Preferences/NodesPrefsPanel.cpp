@@ -200,7 +200,7 @@ void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 #endif
 
 	// Browse for exe
-	SFileDialog::fd_info_t info;
+	SFileDialog::FDInfo info;
 	if (!SFileDialog::openFile(info, "Browse for Nodebuilder Executable", ext, this))
 		return;
 

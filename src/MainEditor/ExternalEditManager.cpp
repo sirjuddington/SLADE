@@ -69,7 +69,7 @@ public:
 	ArchiveEntry* getEntry() { return entry; }
 	void          fileModified() { updateEntry(); }
 
-	virtual void updateEntry() { entry->importFile(filename); }
+	virtual void updateEntry() { entry->importFile(filename_); }
 
 	virtual bool exportEntry()
 	{
@@ -81,8 +81,8 @@ public:
 		bool ok = entry->exportFile(fn.GetFullPath());
 		if (ok)
 		{
-			filename      = fn.GetFullPath();
-			file_modified = wxFileModificationTime(filename);
+			filename_      = fn.GetFullPath();
+			file_modified_ = wxFileModificationTime(filename_);
 			Start(1000);
 		}
 		else
@@ -138,7 +138,7 @@ public:
 	{
 		// Read file
 		MemChunk data;
-		data.importFile(filename);
+		data.importFile(filename_);
 
 		// Read image
 		SImage image;
@@ -192,10 +192,10 @@ public:
 		}
 
 		// Export file and start monitoring if successful
-		filename = fn.GetFullPath();
-		if (png.exportFile(filename))
+		filename_ = fn.GetFullPath();
+		if (png.exportFile(filename_))
 		{
-			file_modified = wxFileModificationTime(filename);
+			file_modified_ = wxFileModificationTime(filename_);
 			Start(1000);
 			return true;
 		}
@@ -226,7 +226,7 @@ public:
 	void updateEntry()
 	{
 		// Can't convert back, just import the MIDI
-		entry->importFile(filename);
+		entry->importFile(filename_);
 	}
 
 	bool exportEntry()
@@ -258,10 +258,10 @@ public:
 		}
 
 		// Export file and start monitoring if successful
-		filename = fn.GetFullPath();
-		if (convdata.exportFile(filename))
+		filename_ = fn.GetFullPath();
+		if (convdata.exportFile(filename_))
 		{
-			file_modified = wxFileModificationTime(filename);
+			file_modified_ = wxFileModificationTime(filename_);
 			Start(1000);
 			return true;
 		}
@@ -302,7 +302,7 @@ public:
 		if (doom_sound)
 		{
 			MemChunk in, out;
-			in.importFile(filename);
+			in.importFile(filename_);
 			if (Conversions::wavToDoomSnd(in, out))
 			{
 				// Import converted data to entry if successful
@@ -313,7 +313,7 @@ public:
 
 		// Just import wav to entry if conversion to doom sound
 		// failed or the entry was not a convertable type
-		entry->importFile(filename);
+		entry->importFile(filename_);
 	}
 
 	bool exportEntry()
@@ -359,10 +359,10 @@ public:
 		}
 
 		// Export file and start monitoring if successful
-		filename = fn.GetFullPath();
-		if (convdata.exportFile(filename))
+		filename_ = fn.GetFullPath();
+		if (convdata.exportFile(filename_))
 		{
-			file_modified = wxFileModificationTime(filename);
+			file_modified_ = wxFileModificationTime(filename_);
 			Start(1000);
 			return true;
 		}

@@ -950,7 +950,7 @@ bool MapEditorWindow::saveMapAs()
 	auto& mdesc_current = MapEditor::editContext().mapDesc();
 
 	// Show dialog
-	SFileDialog::fd_info_t info;
+	SFileDialog::FDInfo info;
 	if (!SFileDialog::saveFile(info, "Save Map As", "Wad Archives (*.wad)|*.wad", this))
 		return false;
 

@@ -47,7 +47,7 @@ using SurfaceType = MapSector::SurfaceType;
 // -----------------------------------------------------------------------------
 namespace
 {
-const double TAU = PI * 2; // Number of radians in the unit circle
+const double TAU = MathStuff::PI * 2; // Number of radians in the unit circle
 } // namespace
 
 

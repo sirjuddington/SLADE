@@ -1848,22 +1848,22 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 			continue;
 
 		// Remove the property from the object if it is the default value
-		if (i.second.defaultValue().getType() == PROP_BOOL)
+		if (i.second.defaultValue().getType() == Property::Type::Bool)
 		{
 			if (i.second.defaultValue().getBoolValue() == object->boolProperty(i.first))
 				object->props().removeProperty(i.first);
 		}
-		else if (i.second.defaultValue().getType() == PROP_INT)
+		else if (i.second.defaultValue().getType() == Property::Type::Int)
 		{
 			if (i.second.defaultValue().getIntValue() == object->intProperty(i.first))
 				object->props().removeProperty(i.first);
 		}
-		else if (i.second.defaultValue().getType() == PROP_FLOAT)
+		else if (i.second.defaultValue().getType() == Property::Type::Float)
 		{
 			if (i.second.defaultValue().getFloatValue() == object->floatProperty(i.first))
 				object->props().removeProperty(i.first);
 		}
-		else if (i.second.defaultValue().getType() == PROP_STRING)
+		else if (i.second.defaultValue().getType() == Property::Type::String)
 		{
 			if (i.second.defaultValue().getStringValue() == object->stringProperty(i.first))
 				object->props().removeProperty(i.first);
@@ -2191,13 +2191,13 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	// Apply defaults to object
 	for (unsigned a = 0; a < prop_names.size(); a++)
 	{
-		if (prop_vals[a].getType() == PROP_BOOL)
+		if (prop_vals[a].getType() == Property::Type::Bool)
 			object->setBoolProperty(prop_names[a], prop_vals[a].getBoolValue());
-		else if (prop_vals[a].getType() == PROP_INT)
+		else if (prop_vals[a].getType() == Property::Type::Int)
 			object->setIntProperty(prop_names[a], prop_vals[a].getIntValue());
-		else if (prop_vals[a].getType() == PROP_FLOAT)
+		else if (prop_vals[a].getType() == Property::Type::Float)
 			object->setFloatProperty(prop_names[a], prop_vals[a].getFloatValue());
-		else if (prop_vals[a].getType() == PROP_STRING)
+		else if (prop_vals[a].getType() == Property::Type::String)
 			object->setStringProperty(prop_names[a], prop_vals[a].getStringValue());
 		LOG_MESSAGE(3, "Applied default property %s = %s", prop_names[a], prop_vals[a].getStringValue());
 	}

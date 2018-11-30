@@ -865,7 +865,7 @@ bool PaletteEntryPanel::testPalette()
 bool PaletteEntryPanel::exportAs()
 {
 	// Run save file dialog
-	SFileDialog::fd_info_t info;
+	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(info, "Export Palette As", extensions, this))
 		return palettes_[cur_palette_]->saveFile(info.filenames[0], pal_formats[info.ext_index]);
 
@@ -880,7 +880,7 @@ bool PaletteEntryPanel::importFrom()
 	bool ret = false;
 
 	// Run open file dialog
-	SFileDialog::fd_info_t info;
+	SFileDialog::FDInfo info;
 	if (SFileDialog::openFile(info, "Import Palette As", extensions, this))
 	{
 		// Load palette

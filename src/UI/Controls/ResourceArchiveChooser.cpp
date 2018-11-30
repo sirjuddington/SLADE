@@ -129,7 +129,7 @@ string ResourceArchiveChooser::getSelectedResourceList()
 // -----------------------------------------------------------------------------
 void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 {
-	SFileDialog::fd_info_t info;
+	SFileDialog::FDInfo info;
 	if (SFileDialog::openFile(info, "Open Resource Archive", App::archiveManager().getArchiveExtensionsString(), this))
 	{
 		UI::showSplash("Opening Resource Archive", true);

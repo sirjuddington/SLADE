@@ -355,7 +355,7 @@ void MapRenderer3D::cameraPitch(double amount)
 	cam_pitch_ += amount;
 
 	// Clamp
-	double rad90 = PI * 0.5;
+	double rad90 = MathStuff::PI * 0.5;
 	if (cam_pitch_ > rad90)
 		cam_pitch_ = rad90;
 	if (cam_pitch_ < -rad90)

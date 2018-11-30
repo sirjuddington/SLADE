@@ -125,7 +125,7 @@ string MobjPropertyList::toString(bool condensed)
 		string key = properties_[a].name;
 		string val = properties_[a].value.getStringValue();
 
-		if (properties_[a].value.getType() == PROP_STRING)
+		if (properties_[a].value.getType() == Property::Type::String)
 		{
 			val = StringUtils::escapedString(val);
 			val = "\"" + val + "\"";

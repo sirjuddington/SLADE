@@ -629,7 +629,7 @@ bool ArchivePanel::saveAs()
 		return false;
 
 	// Do save dialog
-	SFileDialog::fd_info_t info;
+	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(
 			info, "Save Archive " + archive_->filename(false) + " As", archive_->fileExtensionString(), this))
 	{
@@ -783,7 +783,7 @@ bool ArchivePanel::newDirectory()
 bool ArchivePanel::importFiles()
 {
 	// Run open files dialog
-	SFileDialog::fd_info_t info;
+	SFileDialog::FDInfo info;
 	if (SFileDialog::openFiles(info, "Choose files to import", "Any File (*.*)|*.*", this))
 	{
 		// Get the entry index of the last selected list item
@@ -875,7 +875,7 @@ bool ArchivePanel::buildArchive()
 	ZipArchive zip;
 
 	// Create dialog
-	SFileDialog::fd_info_t info;
+	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(info, "Build archive", zip.fileExtensionString(), this))
 	{
 		UI::showSplash(string("Building ") + info.filenames[0], true);
@@ -1622,7 +1622,7 @@ bool ArchivePanel::importEntry()
 	for (auto& entry : selection)
 	{
 		// Run open file dialog
-		SFileDialog::fd_info_t info;
+		SFileDialog::FDInfo info;
 		if (SFileDialog::openFile(info, "Import Entry \"" + entry->getName() + "\"", "Any File (*.*)|*.*", this))
 		{
 			// Preserve gfx offset if needed
@@ -1723,7 +1723,7 @@ bool ArchivePanel::exportEntry()
 			fn.SetExt(selection[0]->getType()->extension());
 
 		// Run save file dialog
-		SFileDialog::fd_info_t info;
+		SFileDialog::FDInfo info;
 		if (SFileDialog::saveFile(
 				info, "Export Entry \"" + selection[0]->getName() + "\"", "Any File (*.*)|*.*", this, fn.GetFullName()))
 			selection[0]->exportFile(info.filenames[0]); // Export entry if ok was clicked
@@ -1731,7 +1731,7 @@ bool ArchivePanel::exportEntry()
 	else
 	{
 		// Run save files dialog
-		SFileDialog::fd_info_t info;
+		SFileDialog::FDInfo info;
 		if (SFileDialog::saveFiles(info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*.*", this))
 		{
 			// Go through the selected entries
@@ -2161,7 +2161,7 @@ bool ArchivePanel::gfxExportPNG()
 		fn.SetExt("png");
 
 		// Run save file dialog
-		SFileDialog::fd_info_t info;
+		SFileDialog::FDInfo info;
 		if (SFileDialog::saveFile(
 				info,
 				"Export Entry \"" + selection[0]->getName() + "\" as PNG",
@@ -2182,7 +2182,7 @@ bool ArchivePanel::gfxExportPNG()
 	else
 	{
 		// Run save files dialog
-		SFileDialog::fd_info_t info;
+		SFileDialog::FDInfo info;
 		if (SFileDialog::saveFiles(
 				info, "Export Entries as PNG (Filename will be ignored)", "PNG Files (*.png)|*.png", this))
 		{

@@ -359,7 +359,7 @@ void BaseResourceArchivesPanel::onBtnDetect(wxCommandEvent& e)
 void BaseResourceArchivesPanel::onBtnBrowseZDoomPk3(wxCommandEvent& e)
 {
 	/*
-	SFileDialog::fd_info_t info;
+	SFileDialog::FDInfo info;
 	if (SFileDialog::openFile(info, "Browse ZDoom PK3", "Pk3 Files (*.pk3)|*.pk3"))
 	{
 		text_zdoom_pk3_path_->SetValue(info.filenames[0]);

@@ -75,8 +75,8 @@ void ArchiveTreeNode::addChild(STreeNode* child)
 // -----------------------------------------------------------------------------
 Archive* ArchiveTreeNode::archive()
 {
-	if (parent)
-		return ((ArchiveTreeNode*)parent)->archive();
+	if (parent_)
+		return ((ArchiveTreeNode*)parent_)->archive();
 	else
 		return archive_;
 }
@@ -259,7 +259,7 @@ unsigned ArchiveTreeNode::numEntries(bool inc_subdirs)
 	else
 	{
 		unsigned count = entries_.size();
-		for (auto& subdir : children)
+		for (auto& subdir : children_)
 			count += ((ArchiveTreeNode*)subdir)->numEntries(true);
 
 		return count;
@@ -441,9 +441,9 @@ void ArchiveTreeNode::clear()
 	entries_.clear();
 
 	// Clear subdirs
-	for (auto& subdir : children)
+	for (auto& subdir : children_)
 		delete subdir;
-	children.clear();
+	children_.clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -460,7 +460,7 @@ ArchiveTreeNode* ArchiveTreeNode::clone()
 		copy->addEntry(new ArchiveEntry(*entry));
 
 	// Copy subdirectories
-	for (auto& subdir : children)
+	for (auto& subdir : children_)
 		copy->addChild(((ArchiveTreeNode*)subdir)->clone());
 
 	return copy;
@@ -526,7 +526,7 @@ bool ArchiveTreeNode::exportTo(string path)
 	}
 
 	// Export subdirectories
-	for (auto& subdir : children)
+	for (auto& subdir : children_)
 		((ArchiveTreeNode*)subdir)->exportTo(path + "/" + subdir->getName());
 
 	return true;

@@ -68,7 +68,7 @@ FileLocationPanel::FileLocationPanel(
 	sizer->Add(btn_browse_, wxSizerFlags(0).Expand().Border(wxLEFT, UI::px(UI::Size::PadMinimum)));
 
 	btn_browse_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) {
-		SFileDialog::fd_info_t inf;
+		SFileDialog::FDInfo inf;
 		if (SFileDialog::openFile(inf, browse_caption_, browse_extensions_, this, browse_default_filename_))
 		{
 			text_path_->SetValue(inf.filenames[0]);

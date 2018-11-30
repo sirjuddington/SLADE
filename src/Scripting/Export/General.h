@@ -42,7 +42,7 @@ bool promptYesNo(const string& title, const string& message)
 // Browse for a single file
 string browseFile(const string& title, const string& extensions, const string& filename)
 {
-	SFileDialog::fd_info_t inf;
+	SFileDialog::FDInfo inf;
 	SFileDialog::openFile(inf, title, extensions, Lua::currentWindow(), filename);
 	return inf.filenames.empty() ? "" : inf.filenames[0];
 }
@@ -50,7 +50,7 @@ string browseFile(const string& title, const string& extensions, const string& f
 // Browse for multiple files
 vector<string> browseFiles(const string& title, const string& extensions)
 {
-	SFileDialog::fd_info_t inf;
+	SFileDialog::FDInfo inf;
 	vector<string>         filenames;
 	if (SFileDialog::openFiles(inf, title, extensions, Lua::currentWindow()))
 		filenames.assign(inf.filenames.begin(), inf.filenames.end());

@@ -1,46 +1,40 @@
+#pragma once
 
-#ifndef __FILE_MONITOR_H__
-#define __FILE_MONITOR_H__
-
-#include "common.h"
-#include "General/ListenerAnnouncer.h"
+class Archive;
 
 class FileMonitor : public wxTimer
 {
-private:
-	wxProcess*	process;
-
-protected:
-	string	filename;
-	time_t	file_modified;
-
 public:
 	FileMonitor(string filename, bool start = true);
 	virtual ~FileMonitor();
 
-	wxProcess*	getProcess() { return process; }
-	string		getFilename() { return filename; }
+	wxProcess* getProcess() { return process_; }
+	string     getFilename() { return filename_; }
 
-	virtual void	fileModified() {}
-	virtual void	processTerminated() {}
+	virtual void fileModified() {}
+	virtual void processTerminated() {}
 
-	void	Notify();
-	void	onEndProcess(wxProcessEvent& e);
+	void Notify();
+	void onEndProcess(wxProcessEvent& e);
+
+protected:
+	string filename_;
+	time_t file_modified_;
+
+private:
+	wxProcess* process_;
 };
 
-class Archive;
 class DB2MapFileMonitor : public FileMonitor
 {
-private:
-	Archive*	archive;
-	string		map_name;
-
 public:
 	DB2MapFileMonitor(string filename, Archive* archive, string map_name);
 	~DB2MapFileMonitor();
 
-	void	fileModified();
-	void	processTerminated();
-};
+	void fileModified();
+	void processTerminated();
 
-#endif//__FILE_MONITOR_H__
+private:
+	Archive* archive_;
+	string   map_name_;
+};

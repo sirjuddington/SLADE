@@ -1322,7 +1322,7 @@ void TextureXPanel::extractTexture()
 		fn.SetExt("png");
 
 		// Run save file dialog
-		SFileDialog::fd_info_t info;
+		SFileDialog::FDInfo info;
 		if (SFileDialog::saveFile(
 				info,
 				"Export Texture \"" + selection[0]->getName() + "\" as PNG",
@@ -1343,7 +1343,7 @@ void TextureXPanel::extractTexture()
 	else
 	{
 		// Run save files dialog
-		SFileDialog::fd_info_t info;
+		SFileDialog::FDInfo info;
 		if (SFileDialog::saveFiles(
 				info, "Export Textures as PNG (Filename will be ignored)", "PNG Files (*.png)|*.png", this))
 		{

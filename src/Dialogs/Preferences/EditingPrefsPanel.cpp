@@ -157,7 +157,7 @@ private:
 
 	void browse()
 	{
-		SFileDialog::fd_info_t info;
+		SFileDialog::FDInfo info;
 #ifdef WIN32
 		if (SFileDialog::openFile(info, "Browse for External Editor", "Executable Files (*.exe)|*.exe", this))
 #else

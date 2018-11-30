@@ -1,96 +1,100 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    STree.cpp
- * Description: STreeNode class, a generic container representing a
- *              'node' in a tree structure, where each 'node' has a
- *              name, child nodes and can be subclassed to hold
- *              different data
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2017 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Tree.cpp
+// Description: STreeNode class, a generic container representing a 'node' in a
+//              tree structure, where each 'node' has a name, child nodes and
+//              can be subclassed to hold different data
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Tree.h"
 
 
-/*******************************************************************
- * STREENODE CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// STreeNode Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* STreeNode::STreeNode
- * STreeNode class constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// STreeNode class constructor
+// -----------------------------------------------------------------------------
 STreeNode::STreeNode(STreeNode* parent)
 {
 	if (parent)
 		parent->addChild(this);
 	else
-		this->parent = nullptr;
+		this->parent_ = nullptr;
 
 	// Disallow duplicate child names by default
-	allow_dup_child = false;
+	allow_dup_child_ = false;
 }
 
-/* STreeNode::~STreeNode
- * STreeNode class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// STreeNode class destructor
+// -----------------------------------------------------------------------------
 STreeNode::~STreeNode()
 {
 	// Delete children
-	for (unsigned a = 0; a < children.size(); a++)
-		delete children[a];
+	for (unsigned a = 0; a < children_.size(); a++)
+		delete children_[a];
 }
 
-/* STreeNode::getPath
- * Returns the 'path' to this node, ie, the names of all its parent
- * nodes each separated by a / (including the name of this node)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the 'path' to this node, ie, the names of all its parent nodes each
+// separated by a / (including the name of this node)
+// -----------------------------------------------------------------------------
 string STreeNode::getPath()
 {
-	if (!parent)
+	if (!parent_)
 		return getName() + "/";
 	else
-		return parent->getPath() + getName() + "/";
+		return parent_->getPath() + getName() + "/";
 }
 
-/* STreeNode::getChild
- * Returns the child node at [index], or NULL if index is invalid
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the child node at [index], or NULL if index is invalid
+// -----------------------------------------------------------------------------
 STreeNode* STreeNode::getChild(unsigned index)
 {
 	// Check index
-	if (index >= children.size())
+	if (index >= children_.size())
 		return nullptr;
 
-	return children[index];
+	return children_[index];
 }
 
-/* STreeNode::getChild
- * Returns the child node matching [name]. Can also find deeper
- * child nodes if a path is given in [name]. Returns NULL if no
- * match is found
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the child node matching [name].
+// Can also find deeper child nodes if a path is given in [name].
+// Returns null if no match is found
+// -----------------------------------------------------------------------------
 STreeNode* STreeNode::getChild(string name)
 {
 	// Check name was given
@@ -108,10 +112,10 @@ STreeNode* STreeNode::getChild(string name)
 	if (fn.GetDirCount() == 0)
 	{
 		// Find child of this node
-		for (unsigned a = 0; a < children.size(); a++)
+		for (unsigned a = 0; a < children_.size(); a++)
 		{
-			if (S_CMPNOCASE(name, children[a]->getName()))
-				return children[a];
+			if (S_CMPNOCASE(name, children_[a]->getName()))
+				return children_[a];
 		}
 
 		// Child not found
@@ -131,14 +135,14 @@ STreeNode* STreeNode::getChild(string name)
 			return child->getChild(fn.GetFullPath(wxPATH_UNIX));
 		}
 		else
-			return nullptr;	// Child doesn't exist
+			return nullptr; // Child doesn't exist
 	}
 }
 
-/* STreeNode::getChildren
- * Returns a list of all the node's children matching [name]. Also
- * handles paths as per getChild
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns a list of all the node's children matching [name].
+// Also handles paths as per getChild
+// -----------------------------------------------------------------------------
 vector<STreeNode*> STreeNode::getChildren(string name)
 {
 	// Init return vector
@@ -159,10 +163,10 @@ vector<STreeNode*> STreeNode::getChildren(string name)
 	if (fn.GetDirCount() == 0)
 	{
 		// Find child of this node
-		for (unsigned a = 0; a < children.size(); a++)
+		for (unsigned a = 0; a < children_.size(); a++)
 		{
-			if (S_CMPNOCASE(name, children[a]->getName()))
-				ret.push_back(children[a]);
+			if (S_CMPNOCASE(name, children_[a]->getName()))
+				ret.push_back(children_[a]);
 		}
 	}
 	else
@@ -183,19 +187,19 @@ vector<STreeNode*> STreeNode::getChildren(string name)
 	return ret;
 }
 
-/* STreeNode::addChild
- * Adds [child] to this node
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Adds [child] to this node
+// -----------------------------------------------------------------------------
 void STreeNode::addChild(STreeNode* child)
 {
-	children.push_back(child);
-	child->parent = this;
+	children_.push_back(child);
+	child->parent_ = this;
 }
 
-/* STreeNode::addChild
- * Creates a new child node matching [name] and adds it to the node's
- * children. Also works recursively if a path is given
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Creates a new child node matching [name] and adds it to the node's children.
+// Also works recursively if a path is given
+// -----------------------------------------------------------------------------
 STreeNode* STreeNode::addChild(string name)
 {
 	// Check name was given
@@ -215,7 +219,7 @@ STreeNode* STreeNode::addChild(string name)
 		// If child name duplication is disallowed,
 		// check if a child with this name exists
 		STreeNode* child = nullptr;
-		if (!allow_dup_child)
+		if (!allow_dup_child_)
 			child = getChild(name);
 
 		// If it doesn't exist, create it
@@ -227,7 +231,6 @@ STreeNode* STreeNode::addChild(string name)
 
 		// Return the created child
 		return child;
-
 	}
 	else
 	{
@@ -237,7 +240,7 @@ STreeNode* STreeNode::addChild(string name)
 		// If child name duplication is disallowed,
 		// check if a child with this name exists
 		STreeNode* child = nullptr;
-		if (!allow_dup_child)
+		if (!allow_dup_child_)
 			child = getChild(dir);
 
 		// If it doesn't exist, create it
@@ -253,22 +256,22 @@ STreeNode* STreeNode::addChild(string name)
 	}
 }
 
-/* STreeNode::removeChild
- * Removes [child] from this node's children. Returns false if
- * [child] is not a child node, true otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Removes [child] from this node's children.
+// Returns false if [child] is not a child node, true otherwise
+// -----------------------------------------------------------------------------
 bool STreeNode::removeChild(STreeNode* child)
 {
 	// Find child node
-	for (unsigned a = 0; a < children.size(); a++)
+	for (unsigned a = 0; a < children_.size(); a++)
 	{
-		if (children[a] == child)
+		if (children_[a] == child)
 		{
 			// Reset child's parent
-			children[a]->parent = nullptr;
+			children_[a]->parent_ = nullptr;
 
 			// Remove child from list
-			children.erase(children.begin() + a);
+			children_.erase(children_.begin() + a);
 
 			return true;
 		}

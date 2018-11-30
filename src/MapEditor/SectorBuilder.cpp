@@ -113,7 +113,7 @@ SectorBuilder::Edge SectorBuilder::nextEdge(SectorBuilder::Edge edge, MapLineSet
 	}
 
 	// Find next connected line with the lowest angle
-	double min_angle = 2 * PI;
+	double min_angle = 2 * MathStuff::PI;
 	Edge   next;
 	for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
 	{

@@ -73,7 +73,7 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 	update_texture_ = false;
 	image_hilight_  = false;
 	drag_pos_.set(0, 0);
-	drag_origin_.set(POINT_OUTSIDE);
+	drag_origin_.set(point2_t::outside());
 	allow_drag_   = false;
 	allow_scroll_ = false;
 	editing_mode_ = EditMode::None;
@@ -83,8 +83,8 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 	drawing_mask_ = nullptr;
 	brush_        = nullptr;
 	tex_brush_    = new GLTexture();
-	cursor_pos_.set(POINT_OUTSIDE);
-	prev_pos_.set(POINT_OUTSIDE);
+	cursor_pos_.set(point2_t::outside());
+	prev_pos_.set(point2_t::outside());
 
 	// Listen to the image for changes
 	listenTo(image_);
@@ -275,7 +275,7 @@ void GfxCanvas::drawImage()
 		tex_image_->draw2d();
 	}
 	// Draw brush shadow when in editing mode
-	if (editing_mode_ != EditMode::None && cursor_pos_ != POINT_OUTSIDE)
+	if (editing_mode_ != EditMode::None && cursor_pos_ != point2_t::outside())
 	{
 		OpenGL::setColour(255, 255, 255, 160, 0);
 		tex_brush_->draw2d();
@@ -349,7 +349,7 @@ bool GfxCanvas::onImage(int x, int y)
 		return false;
 
 	// No need to duplicate the imageCoords code.
-	return imageCoords(x, y) != POINT_OUTSIDE;
+	return imageCoords(x, y) != point2_t::outside();
 }
 
 // -----------------------------------------------------------------------------
@@ -402,7 +402,7 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 		return point2_t(xpos * image_->getWidth(), ypos * image_->getHeight());
 	}
 	else
-		return POINT_OUTSIDE;
+		return point2_t::outside();
 }
 
 // -----------------------------------------------------------------------------
@@ -428,7 +428,7 @@ void GfxCanvas::endOffsetDrag()
 	}
 
 	// Stop drag
-	drag_origin_.set(POINT_OUTSIDE);
+	drag_origin_.set(point2_t::outside());
 }
 
 // -----------------------------------------------------------------------------

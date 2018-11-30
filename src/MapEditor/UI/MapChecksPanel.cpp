@@ -430,7 +430,7 @@ void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
 void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 {
 	string                 map_name = MapEditor::editContext().mapDesc().name;
-	SFileDialog::fd_info_t info;
+	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(
 			info,
 			"Export Map Check Results",
