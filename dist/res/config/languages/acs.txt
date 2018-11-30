@@ -973,8 +973,18 @@ acs_z : acs {
 		RedTeamScore;
 		RequestScriptPuke = "int script, int arg0, int arg1, int arg2";
 		ResetMap;
+		SetActivatorToPlayer
+		{
+			args = "int playernumber";
+			description = "A replacement solution for AAPTR_PLAYERx that works with all 64 players instead of only 8"
+		}
 		SetDBEntry = "str table, str variable, int value";
 		SetDBEntryString = "unknown parameters list";
+		SetDeadSpectator
+		{
+			args = "int playernumber, int deadspectator";
+			description = "Turn alive players into dead spectators (deadspectator == 1) and revive dead spectators (deadspectator == 0)"
+		}
 		SetPlayerLivesLeft = "int player, int amount";
 		SinglePlayer;
 		SortDBEntries = "unknown parameters list";
