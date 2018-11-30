@@ -634,6 +634,14 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 				// Hexen
 				if (map_format == MAP_HEXEN)
 					end = archive_->addNewEntry("BEHAVIOR");
+
+				// Doom64
+				if (map_format == MAP_DOOM64)
+				{
+					archive_->addNewEntry("LEAFS");
+					archive_->addNewEntry("LIGHTS");
+					end = archive_->addNewEntry("MACROS");
+				}
 			}
 
 			// Refresh map list
