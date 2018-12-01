@@ -282,7 +282,7 @@ bool MapEditContext::update(long frametime)
 				// Update 3d info overlay
 				if (info_overlay_3d && hl.index >= 0)
 				{
-					info_3d_.update(hl.index, hl.type, &map_);
+					info_3d_.update(hl, &map_);
 					info_showing_ = true;
 				}
 				else
@@ -1106,6 +1106,9 @@ bool MapEditContext::handleKeyBind(string key, Vec2f position)
 		else if (key == "me3d_paste_tex_adj")
 			edit_3d_.floodFill(Edit3D::CopyType::TexType);
 
+		// Delete texture
+		else if (key == "me3d_delete_texture")  edit_3d_.deleteTexture();
+
 		// Light changes
 		else if (key == "me3d_light_up16")
 			edit_3d_.changeSectorLight(16);
@@ -1257,7 +1260,7 @@ void MapEditContext::updateStatusText()
 
 	if (edit_mode_ != Mode::Visual && selection_.size() > 0)
 	{
-		mode += S_FMT(" (%lu selected)", (int)selection_.size());
+		mode += S_FMT(" (%lu selected)", selection_.size());
 	}
 
 	MapEditor::setStatusText(mode, 1);
@@ -1267,7 +1270,7 @@ void MapEditContext::updateStatusText()
 	if (gridSize() < 1)
 		grid = S_FMT("Grid: %1.2fx%1.2f", gridSize(), gridSize());
 	else
-		grid = S_FMT("Grid: %dx%d", (int)gridSize(), (int)gridSize());
+		grid = S_FMT("Grid: %dx%d", (int) round(gridSize()), (int) round(gridSize()));
 
 	if (grid_snap_)
 		grid += " (Snapping ON)";
@@ -1373,7 +1376,7 @@ void MapEditContext::doUndo()
 	selection_.clear();
 
 	// Undo
-	int          time      = App::runTimer() - 1;
+	long         time      = App::runTimer() - 1;
 	UndoManager* manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
 	string       undo_name = manager->undo();
 

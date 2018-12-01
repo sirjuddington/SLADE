@@ -51,22 +51,36 @@ struct Item
 {
 	int      index;
 	ItemType type;
+	int      real_index;
+	int      control_line;
 
-	Item(int index = -1, ItemType type = ItemType::Any) : index{ index }, type{ type } {}
+	Item(int index = -1, ItemType type = ItemType::Any) : index{ index }, type{ type }, real_index{ -1 }, control_line { -1 } {}
 
 	// Comparison operators
 	bool operator<(const Item& other) const
 	{
 		if (this->type == other.type)
-			return this->index < other.index;
+		{
+			if (this->index == other.index)
+				return this->real_index < other.real_index;
+			else
+				return this->index < other.index;
+		}
 		else
+		{
 			return this->type < other.type;
-	}
-	bool operator==(const Item& other) const
-	{
-		return index == other.index && (type == ItemType::Any || type == other.type);
-	}
-	bool operator!=(const Item& other) const { return !(*this == other); }
+		}
+		}
+
+		bool operator==(const Item& other) const
+		{
+			return index == other.index && (type == ItemType::Any || type == other.type) && this->real_index == other.real_index;
+		}
+
+		bool operator!=(const Item& other) const
+		{
+			return !(*this == other);
+		}
 
 	// Conversion operators
 	explicit operator int() const { return index; }

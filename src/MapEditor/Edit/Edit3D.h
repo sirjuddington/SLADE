@@ -2,6 +2,7 @@
 
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/MapThing.h"
+#include "MapEditor/SLADEMap/MapSector.h"
 
 class MapEditContext;
 class MapSide;
@@ -54,6 +55,7 @@ public:
 	void changeScale(double amount, bool x) const;
 	void changeHeight(int amount) const;
 	void changeTexture() const;
+	void deleteTexture() const;
 
 private:
 	MapEditContext&              context_;

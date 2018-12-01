@@ -23,7 +23,8 @@ public:
 		TRANSADD = 2,
 
 		// Quad/flat flags
-		SKY = 4,
+		SKY      = 4,
+		DRAWBOTH = 128,
 
 		// Quad flags
 		BACK   = 8,
@@ -31,8 +32,10 @@ public:
 		LOWER  = 32,
 		MIDTEX = 64,
 
-		// Flat flags
-		CEIL = 8,
+	    // Flat flags
+	    CEIL	 = 8,
+		FLATFLIP = 16,
+
 
 		// Thing flags
 		ICON  = 4,
@@ -53,12 +56,16 @@ public:
 		GLTexture* texture;
 		uint8_t    flags;
 		float      alpha;
+		int        control_line;
+		int        control_side;
 
 		Quad()
 		{
 			colour.set(255, 255, 255, 255, 0);
-			texture = nullptr;
-			flags   = 0;
+			texture      = nullptr;
+			flags        = 0;
+			control_line = -1;
+			control_side = -1;
 		}
 	};
 	struct Line
@@ -102,9 +109,13 @@ public:
 		ColRGBA    fogcolour;
 		GLTexture* texture;
 		Plane      plane;
+		float      base_alpha;
 		float      alpha;
 		MapSector* sector;
+		MapSector* control_sector;
+		int        extra_floor_index;
 		long       updated_time;
+		unsigned   vbo_offset;
 
 		Flat()
 		{
@@ -112,6 +123,7 @@ public:
 			texture      = nullptr;
 			updated_time = 0;
 			flags        = 0;
+			base_alpha   = 1.0f;
 			alpha        = 1.0f;
 			sector       = nullptr;
 		}
@@ -135,6 +147,7 @@ public:
 
 	Quad* getQuad(MapEditor::Item item);
 	Flat* getFlat(MapEditor::Item item);
+	vector<vector<Flat>>* getSectorFlats() { return &sector_flats_; };
 
 	// Camera
 	void cameraMove(double distance, bool z = true);
@@ -168,15 +181,18 @@ public:
 	void renderSky();
 
 	// Flats
-	void updateFlatTexCoords(unsigned index, bool floor);
+	void updateFlatTexCoords(unsigned index, unsigned flat_index);
 	void updateSector(unsigned index);
+	void updateSectorFlats(unsigned index);
+	void updateSectorVBOs(unsigned index);
+	bool isSectorStale(unsigned index);
 	void renderFlat(Flat* flat);
 	void renderFlats();
 	void renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// Walls
-	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, double top, double bottom);
-	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, Plane top, Plane bottom);
+	void setupQuad(Quad* quad, Seg2f seg, double top, double bottom);
+	void setupQuad(Quad* quad, Seg2f seg, Plane top, Plane bottom);
 	void setupQuadTexCoords(
 		Quad*  quad,
 		int    length,
@@ -242,17 +258,15 @@ private:
 	int    item_dist_;
 
 	// Map Structures
-	vector<Line>  lines_;
-	Quad**        quads_;
-	vector<Quad*> quads_transparent_;
-	vector<Thing> things_;
-	vector<Flat>  floors_;
-	vector<Flat>  ceilings_;
-	Flat**        flats_;
+	vector<Line>          lines_;
+	Quad**                quads_;
+	vector<Quad*>         quads_transparent_;
+	vector<Thing>         things_;
+	vector<vector<Flat>>  sector_flats_;
+	Flat**                flats_;
 
 	// VBOs
-	unsigned vbo_floors_;
-	unsigned vbo_ceilings_;
+	unsigned vbo_flats_;
 	unsigned vbo_walls_;
 
 	// Sky

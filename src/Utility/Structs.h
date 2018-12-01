@@ -631,6 +631,11 @@ struct Rectf
 		br.set(rect.br);
 	}
 
+	Rectf flip()
+	{
+		return Rectf(br, tl);
+	}
+
 	double x1() const { return tl.x; }
 	double y1() const { return tl.y; }
 	double x2() const { return br.x; }

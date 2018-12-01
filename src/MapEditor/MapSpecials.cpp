@@ -38,6 +38,7 @@
 #include "Utility/Tokenizer.h"
 
 using SurfaceType = MapSector::SurfaceType;
+using ExFloorType = MapSector::ExFloorType;
 
 
 // -----------------------------------------------------------------------------
@@ -78,15 +79,6 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
 	// Eternity, currently no need for processEternityMapSpecials
 	else if (Game::configuration().currentPort() == "eternity")
 		processEternitySlopes(map);
-}
-
-// -----------------------------------------------------------------------------
-// Process a line's special, depending on the current game/port
-// -----------------------------------------------------------------------------
-void MapSpecials::processLineSpecial(MapLine* line)
-{
-	if (Game::configuration().currentPort() == "zdoom")
-		processZDoomLineSpecial(line);
 }
 
 // -----------------------------------------------------------------------------
@@ -183,17 +175,30 @@ void MapSpecials::updateTaggedSectors(SLADEMap* map)
 // -----------------------------------------------------------------------------
 void MapSpecials::processZDoomMapSpecials(SLADEMap* map)
 {
+	// All slope specials, which must be done in a particular order
+	processZDoomSlopes(map);
+
+	// Clear out all 3D floors, or every call to this function will create
+	// duplicates!
+	// TODO this isn't a very good solution, but we don't have incremental
+	// updates yet
+	for (unsigned a = 0; a < map->nSectors(); a++)
+		map->sector(a)->extra_floors.clear();
+
 	// Line specials
 	for (unsigned a = 0; a < map->nLines(); a++)
 		processZDoomLineSpecial(map->line(a));
-
-	// All slope specials, which must be done in a particular order
-	processZDoomSlopes(map);
 }
 
 // -----------------------------------------------------------------------------
 // Process ZDoom line special
 // -----------------------------------------------------------------------------
+static bool _sort_extra_floors(ExFloorType& a, ExFloorType& b)
+{
+	// Sort extra floors from top down
+	return b.effective_height < a.effective_height;
+}
+
 void MapSpecials::processZDoomLineSpecial(MapLine* line)
 {
 	// Get special
@@ -209,8 +214,68 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 	for (unsigned arg = 0; arg < 5; arg++)
 		args[arg] = line->intProperty(S_FMT("arg%d", arg));
 
+	// --- Sector_Set3dFloor
+	if (special == 160)
+	{
+		MapSector* control_sector = line->frontSector();
+		if (!control_sector) return;
+
+		int sector_tag = args[0];
+		int type_flags = args[1];
+		int flags      = args[2];
+		int alpha      = args[3];
+
+		float falpha = alpha / 255.0f;
+
+		ExFloorType extra_floor;
+
+		// Liquids (swimmable, type 2) and floors with flag 4 have their inner
+		// surfaces drawn as well
+		// TODO this does something different with vavoom
+		extra_floor.draw_inside = (type_flags & 4 || (type_flags & 3) == 2);
+		extra_floor.flags       = flags;
+
+		// TODO only gzdoom supports slopes here.
+		// TODO this should probably happen live instead of being copied, if
+		// we're moving towards purely live updates here
+		// Guessing a bit here, but I suspect ZDoom sorts floors in order of
+		// the control sector's plain ceiling height
+		extra_floor.effective_height = control_sector->ceiling().height;
+		extra_floor.ceiling_plane    = control_sector->ceiling().plane;
+		if (extra_floor.ceilingOnly())
+			extra_floor.floor_plane = extra_floor.ceiling_plane;
+		else
+			extra_floor.floor_plane = control_sector->floor().plane;
+
+		extra_floor.control_sector_index = control_sector->index();
+		extra_floor.control_line_index   = line->index();
+		extra_floor.floor_type           = type_flags & 0x3;
+
+		extra_floor.alpha = falpha;
+
+		vector<MapSector*> sectors;
+		map->putSectorsWithTag(sector_tag, sectors);
+		for (unsigned a = 0; a < sectors.size(); a++)
+		{
+			sectors[a]->extra_floors.push_back(extra_floor);
+			std::sort(sectors[a]->extra_floors.begin(), sectors[a]->extra_floors.end(), _sort_extra_floors);
+
+			// Mark the target sector as updated if the control sector has
+			// been; this is a sort of very rudimentary dependency graph
+			if (control_sector->geometryUpdatedTime() > sectors[a]->geometryUpdatedTime())
+				sectors[a]->setGeometryUpdated();
+			if (control_sector->modifiedTime() > sectors[a]->modifiedTime())
+				sectors[a]->setModified();
+		}
+		LOG_MESSAGE(
+			4,
+			"adding a 3d floor controlled by sector %d to %lu sectors",
+			extra_floor.control_sector_index,
+			sectors.size());
+	}
+
 	// --- TranslucentLine ---
-	if (special == 208)
+	else if (special == 208)
 	{
 		// Get tagged lines
 		vector<MapLine*> tagged;
@@ -744,7 +809,7 @@ template<SurfaceType p> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 
 	// These are computed on first use, to avoid extra work if no lines match
 	MapSector* containing_sector = nullptr;
-	double     thingz;
+	double     thingz            = 0;
 
 	vector<MapLine*> lines;
 	map->putLinesWithId(lineid, lines);

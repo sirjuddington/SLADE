@@ -401,12 +401,9 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	// Warn
 	if (wavbps > 1 || wavfmt != WAV_PCM || fmtchunk.channels == 2)
 	{
-		if (!(wxMessageBox(
-				  S_FMT(
-					  "Warning: conversion will result in loss of metadata and audio quality. Do you wish to proceed?"),
-				  "Conversion warning",
-				  wxOK | wxCANCEL)
-			  == wxOK))
+		if (wxMessageBox(
+				S_FMT("Warning: conversion will result in loss of metadata and audio quality. Do you wish to proceed?"),
+				"Conversion warning", wxOK | wxCANCEL) != wxOK)
 		{
 			Global::error = "Conversion aborted by user";
 			return false;
@@ -622,6 +619,7 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 			datasize += blocksize - 12;
 			break;
 		}
+		// TODO: Default case unhandled
 		i += blocksize;
 	}
 	wdhdr.size = datasize;
@@ -1242,6 +1240,7 @@ bool Conversions::auSndToWav(MemChunk& in, MemChunk& out)
 				samples[i * 4 + 1] = swapval;
 				break;
 			}
+			// TODO: Default case unhandled.
 		}
 	}
 

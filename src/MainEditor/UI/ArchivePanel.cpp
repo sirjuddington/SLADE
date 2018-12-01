@@ -676,7 +676,7 @@ bool ArchivePanel::newEntry(int type)
 
 	// Check for \ character (e.g., from Arch-Viles graphics). They have to be kept.
 	if (archive_->formatId() == "wad" && name.length() <= 8
-		&& (name.find('\\') != wxNOT_FOUND || name.find('/') != wxNOT_FOUND))
+		&& (name.find((wchar_t) '\\') != wxNOT_FOUND || name.find('/') != wxNOT_FOUND))
 	{ // Don't process as a file name // Remove any path from the name, if any (for now) else {
 		wxFileName fn(name);
 		name = fn.GetFullName();
@@ -740,7 +740,7 @@ bool ArchivePanel::newEntry(int type)
 	}
 
 	// Return whether the entry was created ok
-	return !!new_entry;
+	return new_entry != nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -770,7 +770,7 @@ bool ArchivePanel::newDirectory()
 	// Add the directory to the archive
 	undo_manager_->beginRecord("Create Directory");
 	ArchiveTreeNode* dir = archive_->createDir(name, entry_list_->currentDir());
-	undo_manager_->endRecord(!!dir);
+	undo_manager_->endRecord(dir != nullptr);
 
 	// Return whether the directory was created ok
 	return !!dir;
