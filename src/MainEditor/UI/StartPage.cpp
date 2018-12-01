@@ -291,7 +291,7 @@ void SStartPage::load(bool new_tip)
 	}
 
 	// Get html as string
-	string html = wxString::FromAscii((const char*)(entry_html->getData()), entry_html->getSize());
+	string html = wxString::FromAscii((const char*)(entry_html->rawData()), entry_html->size());
 
 	// Generate tip of the day string
 	string tip;

@@ -471,7 +471,7 @@ void VirtualListView::onMouseLeftDown(wxMouseEvent& e)
 		if (e.GetModifiers() == wxMOD_SHIFT)
 		{
 			// Shift+left click: Add all items between the focused item and the item that was clicked to the selection
-			long focus = getFocus();
+			long focus = focusedIndex();
 			if (focus < 0)
 				focus = last_focus_; // If no current focus, go with last focused item
 			selectItems(item, focus);
