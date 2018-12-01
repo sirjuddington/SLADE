@@ -32,7 +32,7 @@ public:
 	void renderVertexSelection(const ItemSelection& selection, float fade = 1.0f);
 
 	// Lines
-	rgba_t lineColour(MapLine* line, bool ignore_filter = false);
+	ColRGBA lineColour(MapLine* line, bool ignore_filter = false);
 	void   renderLines(bool show_direction, float alpha = 1.0f);
 	void   renderLinesVBO(bool show_direction, float alpha);
 	void   renderLinesImmediate(bool show_direction, float alpha);
@@ -93,13 +93,13 @@ public:
 	void renderTaggedFlats(vector<MapSector*>& sectors, float fade);
 
 	// Moving
-	void renderMovingVertices(const vector<MapEditor::Item>& vertices, fpoint2_t move_vec);
-	void renderMovingLines(const vector<MapEditor::Item>& lines, fpoint2_t move_vec);
-	void renderMovingSectors(const vector<MapEditor::Item>& sectors, fpoint2_t move_vec);
-	void renderMovingThings(const vector<MapEditor::Item>& things, fpoint2_t move_vec);
+	void renderMovingVertices(const vector<MapEditor::Item>& vertices, Vec2f move_vec);
+	void renderMovingLines(const vector<MapEditor::Item>& lines, Vec2f move_vec);
+	void renderMovingSectors(const vector<MapEditor::Item>& sectors, Vec2f move_vec);
+	void renderMovingThings(const vector<MapEditor::Item>& things, Vec2f move_vec);
 
 	// Paste
-	void renderPasteThings(vector<MapThing*>& things, fpoint2_t pos);
+	void renderPasteThings(vector<MapThing*>& things, Vec2f pos);
 
 	// Object Edit
 	void renderObjectEditGroup(ObjectEditGroup* group);
@@ -115,7 +115,7 @@ public:
 		view_scale_     = scale;
 		view_scale_inv_ = 1.0 / scale;
 	}
-	void   updateVisibility(fpoint2_t view_tl, fpoint2_t view_br);
+	void   updateVisibility(Vec2f view_tl, Vec2f view_br);
 	void   forceUpdate(float line_alpha = 1.0f);
 	double scaledRadius(int radius);
 	bool   visOK();

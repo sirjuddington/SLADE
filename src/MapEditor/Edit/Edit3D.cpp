@@ -1546,7 +1546,7 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 			continue;
 
 		// Check for match
-		plane_t this_plane, other_plane;
+		Plane this_plane, other_plane;
 		if (item.type == ItemType::Floor)
 		{
 			// Check sector floor texture

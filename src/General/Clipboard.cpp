@@ -395,7 +395,7 @@ string MapArchClipboardItem::info()
 // -----------------------------------------------------------------------------
 // Pastes copied architecture to [map] at [position]
 // -----------------------------------------------------------------------------
-vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position)
+vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, Vec2f position)
 {
 	std::map<MapVertex*, MapVertex*> vertMap;
 	std::map<MapSector*, MapSector*> sectMap;
@@ -570,7 +570,7 @@ string MapThingsClipboardItem::info()
 // -----------------------------------------------------------------------------
 // Pastes copied things to [map] at [position]
 // -----------------------------------------------------------------------------
-void MapThingsClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position)
+void MapThingsClipboardItem::pasteToMap(SLADEMap* map, Vec2f position)
 {
 	for (unsigned a = 0; a < things_.size(); a++)
 	{

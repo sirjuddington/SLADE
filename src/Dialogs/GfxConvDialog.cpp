@@ -323,7 +323,7 @@ void GfxConvDialog::setupLayout()
 	gbsizer->Add(rb_transparency_colour_, { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	colbox_transparent_ = new ColourBox(this, -1, false);
-	colbox_transparent_->setColour(rgba_t(0, 255, 255, 255));
+	colbox_transparent_->setColour(ColRGBA(0, 255, 255, 255));
 	gbsizer->Add(colbox_transparent_, { 2, 1 }, { 1, 1 });
 
 	// From brightness
@@ -733,12 +733,12 @@ void GfxConvDialog::onTransColourChanged(wxEvent& e)
 void GfxConvDialog::onPreviewCurrentMouseDown(wxMouseEvent& e)
 {
 	// Get image coordinates of the point clicked
-	point2_t imgcoord = gfx_current_->imageCoords(e.GetX(), e.GetY());
+	Vec2i imgcoord = gfx_current_->imageCoords(e.GetX(), e.GetY());
 	if (imgcoord.x < 0)
 		return;
 
 	// Get the colour at that point
-	rgba_t col = gfx_current_->getImage()->pixelAt(imgcoord.x, imgcoord.y, gfx_current_->palette());
+	ColRGBA col = gfx_current_->getImage()->pixelAt(imgcoord.x, imgcoord.y, gfx_current_->palette());
 
 	// Set the background colour
 	colbox_transparent_->setColour(col);

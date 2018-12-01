@@ -23,9 +23,9 @@ public:
 		SImage::info_t info;
 
 		// Read header
-		const rottpatch_header_t* header = (const rottpatch_header_t*)mc.data();
-		info.width                       = wxINT16_SWAP_ON_BE(header->width);
-		info.height                      = wxINT16_SWAP_ON_BE(header->height);
+		const Graphics::ROTTPatchHeader* header = (const Graphics::ROTTPatchHeader*)mc.data();
+		info.width                              = wxINT16_SWAP_ON_BE(header->width);
+		info.height                             = wxINT16_SWAP_ON_BE(header->height);
 		info.offset_x = wxINT16_SWAP_ON_BE(header->left) + (wxINT16_SWAP_ON_BE(header->origsize) / 2);
 		info.offset_y = wxINT16_SWAP_ON_BE(header->top) + wxINT16_SWAP_ON_BE(header->origsize);
 
@@ -43,11 +43,11 @@ protected:
 		SImage::info_t info = this->info(data, 0);
 
 		// Setup variables
-		size_t hdr_size   = sizeof(rottpatch_header_t);
+		size_t hdr_size   = sizeof(Graphics::ROTTPatchHeader);
 		short  translevel = 255;
 		if (mask)
 		{
-			translevel = READ_L16(data, hdr_size);
+			translevel = data.readL16(hdr_size);
 			hdr_size += 2;
 		}
 
@@ -173,8 +173,8 @@ public:
 		SImage::info_t info;
 
 		// Setup info
-		info.width       = READ_L16(mc.data(), 0);
-		info.height      = READ_L16(mc.data(), 2);
+		info.width       = mc.readL16(0);
+		info.height      = mc.readL16(2);
 		info.colformat   = PALMASK;
 		info.has_palette = true;
 		info.format      = id_;
@@ -196,7 +196,7 @@ protected:
 		Palette palette;
 		for (size_t c = 0; c < 256; ++c)
 		{
-			rgba_t color;
+			ColRGBA color;
 			color.r = data[(c * 3) + 4];
 			color.g = data[(c * 3) + 5];
 			color.b = data[(c * 3) + 6];
@@ -270,11 +270,11 @@ public:
 		SImage::info_t info;
 
 		// Read header
-		const patch_header_t* header = (const patch_header_t*)mc.data();
-		info.width                   = wxINT16_SWAP_ON_BE(header->width);
-		info.height                  = wxINT16_SWAP_ON_BE(header->height);
-		info.offset_x                = wxINT16_SWAP_ON_BE(header->left);
-		info.offset_y                = wxINT16_SWAP_ON_BE(header->top);
+		auto header   = (const Graphics::PatchHeader*)mc.data();
+		info.width    = wxINT16_SWAP_ON_BE(header->width);
+		info.height   = wxINT16_SWAP_ON_BE(header->height);
+		info.offset_x = wxINT16_SWAP_ON_BE(header->left);
+		info.offset_y = wxINT16_SWAP_ON_BE(header->top);
 
 		// Set other info
 		info.colformat = PALMASK;

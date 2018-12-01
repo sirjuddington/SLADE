@@ -8,10 +8,10 @@ struct Colour
 	bool   custom = false;
 	string name;
 	string group;
-	rgba_t colour;
+	ColRGBA colour;
 };
 
-rgba_t colour(string name);
+ColRGBA colour(string name);
 Colour colDef(string name);
 void   setColour(string name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);
 

@@ -2859,7 +2859,7 @@ bool SLADEMap::removeThing(unsigned index)
 // Returns the index of the vertex closest to the point, or -1 if none found.
 // Igonres any vertices further away than [min]
 // -----------------------------------------------------------------------------
-int SLADEMap::nearestVertex(fpoint2_t point, double min)
+int SLADEMap::nearestVertex(Vec2f point, double min)
 {
 	// Go through vertices
 	double     min_dist = 999999999;
@@ -2898,7 +2898,7 @@ int SLADEMap::nearestVertex(fpoint2_t point, double min)
 // Returns the index of the line closest to the point, or -1 if none is found.
 // Ignores lines further away than [mindist]
 // -----------------------------------------------------------------------------
-int SLADEMap::nearestLine(fpoint2_t point, double mindist)
+int SLADEMap::nearestLine(Vec2f point, double mindist)
 {
 	// Go through lines
 	double   min_dist = mindist;
@@ -2910,7 +2910,7 @@ int SLADEMap::nearestLine(fpoint2_t point, double mindist)
 		l = lines_[a];
 
 		// Check with line bounding box first (since we have a minimum distance)
-		fseg2_t bbox = l->seg();
+		Seg2f bbox = l->seg();
 		bbox.expand(mindist, mindist);
 		if (!bbox.contains(point))
 			continue;
@@ -2933,7 +2933,7 @@ int SLADEMap::nearestLine(fpoint2_t point, double mindist)
 // Returns the index of the thing closest to the point, or -1 if none found.
 // Igonres any thing further away than [min]
 // -----------------------------------------------------------------------------
-int SLADEMap::nearestThing(fpoint2_t point, double min)
+int SLADEMap::nearestThing(Vec2f point, double min)
 {
 	// Go through things
 	double    min_dist = 999999999;
@@ -2972,7 +2972,7 @@ int SLADEMap::nearestThing(fpoint2_t point, double min)
 // Same as nearestThing, but returns a list of indices for the case where there
 // are multiple things at the same point
 // -----------------------------------------------------------------------------
-vector<int> SLADEMap::nearestThingMulti(fpoint2_t point)
+vector<int> SLADEMap::nearestThingMulti(Vec2f point)
 {
 	// Go through things
 	vector<int> ret;
@@ -3004,7 +3004,7 @@ vector<int> SLADEMap::nearestThingMulti(fpoint2_t point)
 // Returns the index of the sector at the given point, or -1 if not within a
 // sector
 // -----------------------------------------------------------------------------
-int SLADEMap::sectorAt(fpoint2_t point)
+int SLADEMap::sectorAt(Vec2f point)
 {
 	// Go through sectors
 	for (unsigned a = 0; a < sectors_.size(); a++)
@@ -3021,9 +3021,9 @@ int SLADEMap::sectorAt(fpoint2_t point)
 // -----------------------------------------------------------------------------
 // Returns a bounding box for the entire map
 // -----------------------------------------------------------------------------
-bbox_t SLADEMap::bounds()
+BBox SLADEMap::bounds()
 {
-	bbox_t bbox;
+	BBox bbox;
 
 	// Return invalid bbox if no sectors
 	if (sectors_.size() == 0)
@@ -3035,7 +3035,7 @@ bbox_t SLADEMap::bounds()
 	bbox = sectors_[0]->boundingBox();
 	for (unsigned a = 1; a < sectors_.size(); a++)
 	{
-		bbox_t sbb = sectors_[a]->boundingBox();
+		BBox sbb = sectors_[a]->boundingBox();
 		if (sbb.min.x < bbox.min.x)
 			bbox.min.x = sbb.min.x;
 		if (sbb.min.y < bbox.min.y)
@@ -3066,19 +3066,19 @@ MapVertex* SLADEMap::vertexAt(double x, double y)
 }
 
 // Sorting functions for SLADEMap::cutLines
-bool sortVPosXAsc(const fpoint2_t& left, const fpoint2_t& right)
+bool sortVPosXAsc(const Vec2f& left, const Vec2f& right)
 {
 	return left.x < right.x;
 }
-bool sortVPosXDesc(const fpoint2_t& left, const fpoint2_t& right)
+bool sortVPosXDesc(const Vec2f& left, const Vec2f& right)
 {
 	return left.x > right.x;
 }
-bool sortVPosYAsc(const fpoint2_t& left, const fpoint2_t& right)
+bool sortVPosYAsc(const Vec2f& left, const Vec2f& right)
 {
 	return left.y < right.y;
 }
-bool sortVPosYDesc(const fpoint2_t& left, const fpoint2_t& right)
+bool sortVPosYDesc(const Vec2f& left, const Vec2f& right)
 {
 	return left.y > right.y;
 }
@@ -3088,12 +3088,12 @@ bool sortVPosYDesc(const fpoint2_t& left, const fpoint2_t& right)
 // crosses any existing lines on the map.
 // The list is sorted along the direction of the 'cutting' line
 // -----------------------------------------------------------------------------
-vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
+vector<Vec2f> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 {
-	fseg2_t cutter(x1, y1, x2, y2);
+	Seg2f cutter(x1, y1, x2, y2);
 	// Init
-	vector<fpoint2_t> intersect_points;
-	fpoint2_t         intersection;
+	vector<Vec2f> intersect_points;
+	Vec2f         intersection;
 
 	// Go through map lines
 	for (unsigned a = 0; a < lines_.size(); a++)
@@ -3144,7 +3144,7 @@ vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 {
-	fseg2_t seg(x1, y1, x2, y2);
+	Seg2f seg(x1, y1, x2, y2);
 
 	// Go through vertices
 	MapVertex* cv       = nullptr;
@@ -3152,7 +3152,7 @@ MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 	for (unsigned a = 0; a < vertices_.size(); a++)
 	{
 		MapVertex* vertex = vertices_[a];
-		fpoint2_t  point  = vertex->point();
+		Vec2f  point  = vertex->point();
 
 		// Skip if outside line bbox
 		if (!seg.contains(point))
@@ -3220,7 +3220,7 @@ void SLADEMap::updateGeometryInfo(long modified_time)
 // -----------------------------------------------------------------------------
 bool SLADEMap::linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y)
 {
-	fpoint2_t intersection;
+	Vec2f intersection;
 	bool      res = MathStuff::linesIntersect(line1->seg(), line2->seg(), intersection);
 	x             = intersection.x;
 	y             = intersection.y;
@@ -3262,8 +3262,8 @@ void SLADEMap::findSectorTextPoint(MapSector* sector)
 	}
 
 	// Calculate ray
-	fpoint2_t r_o = mid_side->parent_->getPoint(MapObject::Point::Mid);
-	fpoint2_t r_d = mid_side->parent_->frontVector();
+	Vec2f r_o = mid_side->parent_->getPoint(MapObject::Point::Mid);
+	Vec2f r_d = mid_side->parent_->frontVector();
 	if (mid_side == mid_side->parent_->side1_)
 		r_d.set(-r_d.x, -r_d.y);
 
@@ -3318,8 +3318,8 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 
 	// Get nearest line intersecting with line vector
 	MapLine*  nearest = nullptr;
-	fpoint2_t mid     = line->getPoint(MapObject::Point::Mid);
-	fpoint2_t vec     = line->frontVector();
+	Vec2f mid     = line->getPoint(MapObject::Point::Mid);
+	Vec2f vec     = line->frontVector();
 	if (front)
 	{
 		vec.x = -vec.x;
@@ -3842,8 +3842,8 @@ string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part)
 MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 {
 	// Get mid and direction points
-	fpoint2_t mid = line->getPoint(MapObject::Point::Mid);
-	fpoint2_t dir = line->frontVector();
+	Vec2f mid = line->getPoint(MapObject::Point::Mid);
+	Vec2f dir = line->frontVector();
 	if (front)
 		dir = mid - dir;
 	else
@@ -4105,7 +4105,7 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
 		y = MathStuff::round(y);
 	}
 
-	fpoint2_t point(x, y);
+	Vec2f point(x, y);
 
 	// First check that it won't overlap any other vertex
 	for (unsigned a = 0; a < vertices_.size(); a++)
@@ -4561,8 +4561,8 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 // -----------------------------------------------------------------------------
 void SLADEMap::splitLinesByLine(MapLine* split_line)
 {
-	fpoint2_t intersection;
-	fseg2_t   split_segment = split_line->seg();
+	Vec2f intersection;
+	Seg2f   split_segment = split_line->seg();
 
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
@@ -4743,7 +4743,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	}
 
 	// Split lines (by lines)
-	fseg2_t seg1;
+	Seg2f seg1;
 	for (unsigned a = 0; a < connected_lines_.size(); a++)
 	{
 		MapLine* line1 = connected_lines_[a];
@@ -4760,7 +4760,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				continue;
 
 			// Check for intersection
-			fpoint2_t intersection;
+			Vec2f intersection;
 			if (MathStuff::linesIntersect(seg1, line2->seg(), intersection))
 			{
 				// Create split vertex
@@ -4961,7 +4961,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		else
 		{
 			edges.push_back(Edge(lines[a], true));
-			fpoint2_t mid = lines[a]->getPoint(MapObject::Point::Mid);
+			Vec2f mid = lines[a]->getPoint(MapObject::Point::Mid);
 			if (sectorAt(mid) >= 0)
 				edges.push_back(Edge(lines[a], false));
 		}

@@ -622,7 +622,7 @@ private:
 	{
 		MapLine*  line1;
 		MapLine*  line2;
-		fpoint2_t intersect_point;
+		Vec2f intersect_point;
 
 		Intersection(MapLine* line1, MapLine* line2, double x, double y)
 		{
@@ -1388,7 +1388,7 @@ public:
 				continue;
 
 			radius = tt.radius() - 1;
-			frect_t bbox(thing->xPos(), thing->yPos(), radius * 2, radius * 2, 1);
+			Rectf bbox(thing->xPos(), thing->yPos(), radius * 2, radius * 2, 1);
 
 			// Go through lines
 			for (unsigned b = 0; b < check_lines.size(); b++)
@@ -1427,11 +1427,11 @@ public:
 			MapLine*  line  = lines_[index];
 
 			// Get nearest line point to thing
-			fpoint2_t np = MathStuff::closestPointOnLine(thing->point(), line->seg());
+			Vec2f np = MathStuff::closestPointOnLine(thing->point(), line->seg());
 
 			// Get distance to move
 			double r    = Game::configuration().thingType(thing->type()).radius();
-			double dist = MathStuff::distance(fpoint2_t(), fpoint2_t(r, r));
+			double dist = MathStuff::distance(Vec2f(), Vec2f(r, r));
 
 			editor->beginUndoRecord("Move Thing", true, false, false);
 
@@ -1672,7 +1672,7 @@ public:
 			// Create sector
 			else if (fix_type == 1)
 			{
-				fpoint2_t pos = line->dirTabPoint(0.1);
+				Vec2f pos = line->dirTabPoint(0.1);
 				editor->edit2D().createSector(pos.x, pos.y);
 				doCheck();
 				return true;
@@ -1691,7 +1691,7 @@ public:
 			// Create sector
 			else if (fix_type == 1)
 			{
-				fpoint2_t pos = line->dirTabPoint(0.1);
+				Vec2f pos = line->dirTabPoint(0.1);
 				editor->edit2D().createSector(pos.x, pos.y);
 				doCheck();
 				return true;

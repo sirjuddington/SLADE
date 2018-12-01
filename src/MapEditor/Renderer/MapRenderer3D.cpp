@@ -143,7 +143,7 @@ MapRenderer3D::~MapRenderer3D()
 bool MapRenderer3D::init()
 {
 	// Init camera
-	bbox_t bbox = map_->bounds();
+	BBox bbox = map_->bounds();
 	cam_position_.set(
 		bbox.min.x + ((bbox.max.x - bbox.min.x) * 0.5), bbox.min.y + ((bbox.max.y - bbox.min.y) * 0.5), 64);
 	cam_direction_.set(0, 1);
@@ -317,8 +317,8 @@ void MapRenderer3D::cameraMove(double distance, bool z)
 void MapRenderer3D::cameraTurn(double angle)
 {
 	// Find rotated view point
-	fpoint2_t cp2d(cam_position_.x, cam_position_.y);
-	fpoint2_t nd = MathStuff::rotatePoint(cp2d, cp2d + cam_direction_, angle);
+	Vec2f cp2d(cam_position_.x, cam_position_.y);
+	Vec2f nd = MathStuff::rotatePoint(cp2d, cp2d + cam_direction_, angle);
 
 	// Update direction
 	cam_direction_.x = nd.x - cam_position_.x;
@@ -374,18 +374,18 @@ void MapRenderer3D::cameraUpdateVectors()
 	cam_direction_.normalize();
 
 	// Calculate strafe vector
-	cam_strafe_ = fpoint3_t(cam_direction_, 0).cross(fpoint3_t(0, 0, 1));
+	cam_strafe_ = Vec3f(cam_direction_, 0).cross(Vec3f(0, 0, 1));
 	cam_strafe_.normalize();
 
 	// Calculate 3d direction vector
-	cam_dir3d_ = MathStuff::rotateVector3D(fpoint3_t(cam_direction_, 0), cam_strafe_, cam_pitch_);
+	cam_dir3d_ = MathStuff::rotateVector3D(Vec3f(cam_direction_, 0), cam_strafe_, cam_pitch_);
 	cam_dir3d_.normalize();
 }
 
 // -----------------------------------------------------------------------------
 // Sets the camera position to [position], facing [direction]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::cameraSet(fpoint3_t position, fpoint2_t direction)
+void MapRenderer3D::cameraSet(Vec3f position, Vec2f direction)
 {
 	// Set camera position/direction
 	cam_position_  = position;
@@ -399,7 +399,7 @@ void MapRenderer3D::cameraSet(fpoint3_t position, fpoint2_t direction)
 // -----------------------------------------------------------------------------
 // Moves the camera to [position]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::cameraSetPosition(fpoint3_t position)
+void MapRenderer3D::cameraSetPosition(Vec3f position)
 {
 	cam_position_ = position;
 }
@@ -472,7 +472,7 @@ void MapRenderer3D::setupView(int width, int height)
 	glLoadIdentity();
 
 	// Calculate up vector
-	fpoint3_t up = cam_strafe_.cross(cam_dir3d_).normalized();
+	Vec3f up = cam_strafe_.cross(cam_dir3d_).normalized();
 
 	// Setup camera view
 	gluLookAt(
@@ -491,7 +491,7 @@ void MapRenderer3D::setupView(int width, int height)
 // Sets the OpenGL colour for rendering an object using [colour] and [light]
 // level
 // -----------------------------------------------------------------------------
-void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha)
+void MapRenderer3D::setLight(ColRGBA& colour, uint8_t light, float alpha)
 {
 	// Force 255 light in fullbright mode
 	if (fullbright_)
@@ -511,7 +511,7 @@ void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha)
 // -----------------------------------------------------------------------------
 // Sets the OpenGL fog for rendering an object using [fogcol]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::setFog(rgba_t& fogcol, uint8_t light)
+void MapRenderer3D::setFog(ColRGBA& fogcol, uint8_t light)
 {
 	if (!fog_)
 		return;
@@ -769,9 +769,9 @@ void MapRenderer3D::renderSky()
 		if (skycol_top_.a == 0)
 		{
 			int theight = sky->height() * 0.4;
-			skycol_top_ = sky->averageColour(rect_t(0, 0, sky->width(), theight));
+			skycol_top_ = sky->averageColour(Recti(0, 0, sky->width(), theight));
 			skycol_bottom_ =
-				sky->averageColour(rect_t(0, sky->height() - theight, sky->width(), sky->height()));
+				sky->averageColour(Recti(0, sky->height() - theight, sky->width(), sky->height()));
 		}
 
 		// Render top cap
@@ -1127,10 +1127,10 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 	glEnable(GL_CULL_FACE);
 
 	// Setup colour
-	rgba_t col1 = ColourConfiguration::colour("map_3d_selection");
+	ColRGBA col1 = ColourConfiguration::colour("map_3d_selection");
 	col1.a *= alpha;
 	OpenGL::setColour(col1);
-	rgba_t col2 = col1;
+	ColRGBA col2 = col1;
 	col2.a *= 0.5;
 
 	// Go through selection
@@ -1146,7 +1146,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 			return;
 
 		// Get plane
-		plane_t plane;
+		Plane plane;
 		if (selection[a].type == MapEditor::ItemType::Floor)
 			plane = sector->floor().plane;
 		else
@@ -1210,8 +1210,8 @@ void MapRenderer3D::setupQuad(
 	double               y1,
 	double               x2,
 	double               y2,
-	plane_t              top,
-	plane_t              bottom)
+	Plane              top,
+	Plane              bottom)
 {
 	// Left
 	quad->points[0].x = quad->points[1].x = x1;
@@ -1309,10 +1309,10 @@ void MapRenderer3D::updateLine(unsigned index)
 	// Get first side info
 	int     floor1     = line->frontSector()->floor().height;
 	int     ceiling1   = line->frontSector()->ceiling().height;
-	plane_t fp1        = line->frontSector()->floor().plane;
-	plane_t cp1        = line->frontSector()->ceiling().plane;
-	rgba_t  colour1    = line->frontSector()->colourAt(0, true);
-	rgba_t  fogcolour1 = line->frontSector()->fogColour();
+	Plane fp1        = line->frontSector()->floor().plane;
+	Plane cp1        = line->frontSector()->ceiling().plane;
+	ColRGBA  colour1    = line->frontSector()->colourAt(0, true);
+	ColRGBA  fogcolour1 = line->frontSector()->fogColour();
 	int     light1     = line->s1()->light();
 	int     xoff1      = line->s1()->offsetX();
 	int     yoff1      = line->s1()->offsetY();
@@ -1396,10 +1396,10 @@ void MapRenderer3D::updateLine(unsigned index)
 	// Get second side info
 	int     floor2      = line->backSector()->floor().height;
 	int     ceiling2    = line->backSector()->ceiling().height;
-	plane_t fp2         = line->backSector()->floor().plane;
-	plane_t cp2         = line->backSector()->ceiling().plane;
-	rgba_t  colour2     = line->backSector()->colourAt(0, true);
-	rgba_t  fogcolour2  = line->backSector()->fogColour();
+	Plane fp2         = line->backSector()->floor().plane;
+	Plane cp2         = line->backSector()->ceiling().plane;
+	ColRGBA  colour2     = line->backSector()->colourAt(0, true);
+	ColRGBA  fogcolour2  = line->backSector()->fogColour();
 	int     light2      = line->s2()->light();
 	int     xoff2       = line->s2()->offsetX();
 	int     yoff2       = line->s2()->offsetY();
@@ -2001,10 +2001,10 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 	glCullFace(GL_BACK);
 
 	// Setup colour
-	rgba_t col1 = ColourConfiguration::colour("map_3d_selection");
+	ColRGBA col1 = ColourConfiguration::colour("map_3d_selection");
 	col1.a *= alpha;
 	OpenGL::setColour(col1);
-	rgba_t col2 = col1;
+	ColRGBA col2 = col1;
 	col2.a *= 0.5;
 
 	// Go through selection
@@ -2162,11 +2162,11 @@ void MapRenderer3D::renderThings()
 	double mdist = render_max_thing_dist;
 	if (mdist <= 0 || mdist > render_max_dist)
 		mdist = render_max_dist;
-	rgba_t   col;
+	ColRGBA   col;
 	uint8_t  light;
 	float    x1, y1, x2, y2;
 	unsigned update = 0;
-	fseg2_t  strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2f  strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 	for (unsigned a = 0; a < map_->nThings(); a++)
 	{
 		MapThing* thing  = map_->thing(a);
@@ -2250,7 +2250,7 @@ void MapRenderer3D::renderThings()
 				col.set(things_[a].sector->colourAt(0, true));
 		}
 		setLight(col, light, calcDistFade(dist, mdist));
-		rgba_t fogcol = rgba_t(0, 0, 0, 0);
+		ColRGBA fogcol = ColRGBA(0, 0, 0, 0);
 		if (things_[a].sector)
 			fogcol = things_[a].sector->fogColour();
 
@@ -2299,7 +2299,7 @@ void MapRenderer3D::renderThings()
 			// Fill
 			glColor4f(col.fr(), col.fg(), col.fb(), 0.21f);
 			uint8_t light2  = 255;
-			rgba_t  fogcol2 = rgba_t(0, 0, 0, 0);
+			ColRGBA  fogcol2 = ColRGBA(0, 0, 0, 0);
 			if (things_[a].sector)
 			{
 				light2  = things_[a].sector->lightAt();
@@ -2410,10 +2410,10 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 	glEnable(GL_LINE_SMOOTH);
 
 	// Setup colour
-	rgba_t col1 = ColourConfiguration::colour("map_3d_selection");
+	ColRGBA col1 = ColourConfiguration::colour("map_3d_selection");
 	col1.a *= alpha;
 	OpenGL::setColour(col1);
-	rgba_t col2 = col1;
+	ColRGBA col2 = col1;
 	col2.a *= 0.5;
 
 	// Go through selection
@@ -2425,7 +2425,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 			continue;
 
 		// Get thing
-		fpoint2_t strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
+		Vec2f strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
 		MapThing* thing = map_->thing(selection[a].index);
 		if (!thing)
 			return;
@@ -2564,13 +2564,13 @@ void MapRenderer3D::quickVisDiscard()
 		dist_sectors_.resize(map_->nSectors());
 
 	// Go through all sectors
-	fpoint2_t cam = cam_position_.get2d();
+	Vec2f cam = cam_position_.get2d();
 	double    min_dist, dist;
-	fseg2_t   strafe(cam, cam + cam_strafe_.get2d());
+	Seg2f   strafe(cam, cam + cam_strafe_.get2d());
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Get sector bbox
-		bbox_t bbox = map_->sector(a)->boundingBox();
+		BBox bbox = map_->sector(a)->boundingBox();
 
 		// Init to visible
 		dist_sectors_[a] = 0.0f;
@@ -2583,9 +2583,9 @@ void MapRenderer3D::quickVisDiscard()
 		if (cam_pitch_ > -0.9 && cam_pitch_ < 0.9)
 		{
 			if (MathStuff::lineSide(bbox.min, strafe) > 0
-				&& MathStuff::lineSide(fpoint2_t(bbox.max.x, bbox.min.y), strafe) > 0
+				&& MathStuff::lineSide(Vec2f(bbox.max.x, bbox.min.y), strafe) > 0
 				&& MathStuff::lineSide(bbox.max, strafe) > 0
-				&& MathStuff::lineSide(fpoint2_t(bbox.min.x, bbox.max.y), strafe) > 0)
+				&& MathStuff::lineSide(Vec2f(bbox.min.x, bbox.max.y), strafe) > 0)
 			{
 				// Behind camera, invisible
 				dist_sectors_[a] = -1.0f;
@@ -2597,16 +2597,16 @@ void MapRenderer3D::quickVisDiscard()
 		if (render_max_dist > 0)
 		{
 			min_dist = 9999999;
-			dist     = MathStuff::distanceToLine(cam, bbox.left_side());
+			dist     = MathStuff::distanceToLine(cam, bbox.leftSide());
 			if (dist < min_dist)
 				min_dist = dist;
-			dist = MathStuff::distanceToLine(cam, bbox.top_side());
+			dist = MathStuff::distanceToLine(cam, bbox.topSide());
 			if (dist < min_dist)
 				min_dist = dist;
-			dist = MathStuff::distanceToLine(cam, bbox.right_side());
+			dist = MathStuff::distanceToLine(cam, bbox.rightSide());
 			if (dist < min_dist)
 				min_dist = dist;
-			dist = MathStuff::distanceToLine(cam, bbox.bottom_side());
+			dist = MathStuff::distanceToLine(cam, bbox.bottomSide());
 			if (dist < min_dist)
 				min_dist = dist;
 
@@ -2655,7 +2655,7 @@ void MapRenderer3D::checkVisibleQuads()
 	n_quads_         = 0;
 	unsigned updates = 0;
 	bool     update  = false;
-	fseg2_t  strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2f  strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
 		line = map_->line(a);
@@ -2715,7 +2715,7 @@ void MapRenderer3D::checkVisibleQuads()
 			quad = &(lines_[a].quads[q]);
 			if (MathStuff::lineSide(
 					cam_position_.get2d(),
-					fseg2_t(quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y))
+					Seg2f(quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y))
 				< 0)
 				continue;
 
@@ -2739,7 +2739,7 @@ void MapRenderer3D::checkVisibleFlats()
 	MapSector* sector;
 	n_flats_ = 0;
 	float     alpha;
-	fpoint2_t cam = cam_position_.get2d();
+	Vec2f cam = cam_position_.get2d();
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		sector = map_->sector(a);
@@ -2796,7 +2796,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 	// Init
 	double          min_dist = 9999999;
 	MapEditor::Item current;
-	fseg2_t         strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2f         strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 
 	// Check for required map structures
 	if (!map_ || lines_.size() != map_->nLines() || floors_.size() != map_->nSectors()
@@ -2823,7 +2823,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			continue;
 
 		// Find quad intersect if any
-		fpoint3_t intersection = cam_position_ + cam_dir3d_ * dist;
+		Vec3f intersection = cam_position_ + cam_dir3d_ * dist;
 		for (unsigned q = 0; q < lines_[a].quads.size(); q++)
 		{
 			quad = &lines_[a].quads[q];
@@ -2831,15 +2831,15 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			// Check side of camera
 			if (MathStuff::lineSide(
 					cam_position_.get2d(),
-					fseg2_t(quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y))
+					Seg2f(quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y))
 				< 0)
 				continue;
 
 			// Check intersection height
 			// Need to handle slopes by finding the floor and ceiling height of
 			// the quad at the intersection point
-			fpoint2_t seg_left  = fpoint2_t(quad->points[1].x, quad->points[1].y);
-			fpoint2_t seg_right = fpoint2_t(quad->points[2].x, quad->points[2].y);
+			Vec2f seg_left  = Vec2f(quad->points[1].x, quad->points[1].y);
+			Vec2f seg_right = Vec2f(quad->points[2].x, quad->points[2].y);
 			double    dist_along_segment =
 				(intersection.get2d() - seg_left).magnitude() / (seg_right - seg_left).magnitude();
 			double top    = quad->points[0].z + (quad->points[3].z - quad->points[0].z) * dist_along_segment;
@@ -2985,7 +2985,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	glDisable(GL_FOG);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_LINE_SMOOTH);
-	rgba_t col_hilight = ColourConfiguration::colour("map_3d_hilight");
+	ColRGBA col_hilight = ColourConfiguration::colour("map_3d_hilight");
 	col_hilight.a *= alpha;
 	OpenGL::setColour(col_hilight);
 
@@ -3064,7 +3064,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 			return;
 
 		// Get plane
-		plane_t plane;
+		Plane plane;
 		if (hilight.type == MapEditor::ItemType::Floor)
 			plane = sector->floor().plane;
 		else
@@ -3099,7 +3099,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	if (hilight.type == MapEditor::ItemType::Thing)
 	{
 		// Get thing
-		fpoint2_t strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
+		Vec2f strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
 		MapThing* thing = map_->thing(hilight.index);
 		if (!thing)
 			return;

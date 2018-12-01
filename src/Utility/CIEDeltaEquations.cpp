@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2017 Simon Judd
@@ -82,7 +81,7 @@ CVAR(Float, col_cie_tristim_z, 108.82, CVAR_SAVE) // to illuminant D65 and 2� 
 // The oldest and simplest formula, merely the geometric distance between two
 // points in the colorspace.
 // -----------------------------------------------------------------------------
-double CIE::CIE76(lab_t& col1, lab_t& col2)
+double CIE::CIE76(ColLAB& col1, ColLAB& col2)
 {
 	double dl = col1.l - col2.l;
 	double da = col1.a - col2.a;
@@ -95,7 +94,7 @@ double CIE::CIE76(lab_t& col1, lab_t& col2)
 // This one starts to become complicated as it transforms the Lab colorspace
 // into an LCh colorspace to try to be more accurate.
 // -----------------------------------------------------------------------------
-double CIE::CIE94(lab_t& col1, lab_t& col2)
+double CIE::CIE94(ColLAB& col1, ColLAB& col2)
 {
 	double dl = col1.l - col2.l;
 	double da = col1.a - col2.a;
@@ -118,8 +117,12 @@ double CIE::CIE94(lab_t& col1, lab_t& col2)
 // Adds hue rotation and multiple compensations.
 // But it really is a lot better than CIE94 for color matching.
 // -----------------------------------------------------------------------------
-double CIE::CIEDE2000(lab_t& col1, lab_t& col2)
+double CIE::CIEDE2000(ColLAB& col1, ColLAB& col2)
 {
+	constexpr double doublePi = 2.0 * MathStuff::PI;
+	constexpr double pi6      = MathStuff::PI / 6.0;
+	constexpr double pi30     = MathStuff::PI / 30.0;
+
 	// Compute chroma values
 	double c1   = sqrt(col1.a * col1.a + col1.b * col1.b);
 	double c2   = sqrt(col2.a * col2.a + col2.b * col2.b);
@@ -138,7 +141,6 @@ double CIE::CIEDE2000(lab_t& col1, lab_t& col2)
 	double cp2 = sqrt(ap2 * ap2 + col2.b * col2.b);
 
 	// Compute h'1 and h'2
-	constexpr double doublePi = 2.0 * MathStuff::PI;
 	double hp1 = 0;
 	if (col1.b != ap1 || ap1 != 0)
 	{
@@ -193,8 +195,6 @@ double CIE::CIEDE2000(lab_t& col1, lab_t& col2)
 	}
 
 	// Compute T
-	constexpr double pi6 = MathStuff::PI / 6.0;
-	constexpr double pi30 = MathStuff::PI / 30.0;
 	double t = 1.0 - 0.17 * cos(hpavg - pi6) + 0.24 * cos(hpavg * 2.0) + 0.32 * cos(hpavg * 3.0 + pi30)
 			   - 0.20 * cos(hpavg * 4.0 - (21.0 * MathStuff::PI / 60.0));
 
@@ -225,9 +225,6 @@ double CIE::CIEDE2000(lab_t& col1, lab_t& col2)
 	double d3 = dhp / (col_cie_kh * sh);
 	return d1 * d1 + d2 * d2 + d3 * d3 + rt * d2 * d3;
 }
-
-
-
 
 
 #ifdef DEBUGCIEDE2000

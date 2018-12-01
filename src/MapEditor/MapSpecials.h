@@ -17,8 +17,8 @@ public:
 	void processMapSpecials(SLADEMap* map);
 	void processLineSpecial(MapLine* line);
 
-	bool tagColour(int tag, rgba_t* colour);
-	bool tagFadeColour(int tag, rgba_t* colour);
+	bool tagColour(int tag, ColRGBA* colour);
+	bool tagFadeColour(int tag, ColRGBA* colour);
 	bool tagColoursSet();
 	bool tagFadeColoursSet();
 	void updateTaggedSectors(SLADEMap* map);
@@ -34,7 +34,7 @@ private:
 	struct SectorColour
 	{
 		int    tag;
-		rgba_t colour;
+		ColRGBA colour;
 	};
 
 	vector<SectorColour> sector_colours_;

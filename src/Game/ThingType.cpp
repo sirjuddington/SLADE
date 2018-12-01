@@ -409,7 +409,7 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	else if (props["color"].hasValue())
 	{
 		// Translate DB2 color indices to RGB values
-		static vector<rgba_t> db2_colours{
+		static vector<ColRGBA> db2_colours{
 			{ 0x69, 0x69, 0x69, 0xFF }, // DimGray			ARGB value of #FF696969
 			{ 0x41, 0x69, 0xE1, 0xFF }, // RoyalBlue		ARGB value of #FF4169E1
 			{ 0x22, 0x8B, 0x22, 0xFF }, // ForestGreen		ARGB value of #FF228B22

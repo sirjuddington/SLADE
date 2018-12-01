@@ -116,14 +116,14 @@ ModifyOffsetsDialog::~ModifyOffsetsDialog() {}
 // -----------------------------------------------------------------------------
 // Returns the offsets that have been entered
 // -----------------------------------------------------------------------------
-point2_t ModifyOffsetsDialog::offset()
+Vec2i ModifyOffsetsDialog::offset()
 {
 	long x = 0;
 	long y = 0;
 	entry_xoff_->GetValue().ToLong(&x);
 	entry_yoff_->GetValue().ToLong(&y);
 
-	return point2_t(x, y);
+	return Vec2i(x, y);
 }
 
 // -----------------------------------------------------------------------------
@@ -183,10 +183,10 @@ bool ModifyOffsetsDialog::yOffChange()
 // [xoff,yoff] and size [width,height], based on the currently selected options
 // in the dialog
 // -----------------------------------------------------------------------------
-point2_t ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, int height)
+Vec2i ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, int height)
 {
 	int      type = alignType();
-	point2_t ofs  = offset();
+	Vec2i ofs  = offset();
 	int      x    = xoff;
 	int      y    = yoff;
 
@@ -262,7 +262,7 @@ point2_t ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, in
 		}
 	}
 
-	return point2_t(x, y);
+	return Vec2i(x, y);
 }
 
 

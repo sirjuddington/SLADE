@@ -272,7 +272,7 @@ void DataEntryTable::SetValue(int row, int col, const string& value)
 		}
 	}
 	if (set)
-		cells_modified_.push_back(point2_t(row, col));
+		cells_modified_.push_back(Vec2i(row, col));
 
 	// Set entry modified
 	parent_->setDataModified(true);
@@ -325,7 +325,7 @@ bool DataEntryTable::DeleteRows(size_t pos, size_t num)
 	rows_new_ = new_rows_new;
 
 	// Update modified cells
-	vector<point2_t> new_cells_modified;
+	vector<Vec2i> new_cells_modified;
 	for (unsigned a = 0; a < cells_modified_.size(); a++)
 	{
 		if ((unsigned)cells_modified_[a].x >= pos + num)
@@ -1046,7 +1046,7 @@ void DataEntryPanel::pasteRow()
 void DataEntryPanel::changeValue()
 {
 	// Get selection
-	vector<point2_t> selection = this->selection();
+	vector<Vec2i> selection = this->selection();
 
 	// Determine common value (if any)
 	string initial_val;
@@ -1143,9 +1143,9 @@ int DataEntryPanel::getColWithSelection()
 // -----------------------------------------------------------------------------
 // Gets the positions of the currently selected cells
 // -----------------------------------------------------------------------------
-vector<point2_t> DataEntryPanel::selection()
+vector<Vec2i> DataEntryPanel::selection()
 {
-	vector<point2_t> selection;
+	vector<Vec2i> selection;
 
 	// Just go through entire grid
 	int rows = table_data_->GetNumberRows();
@@ -1155,13 +1155,13 @@ vector<point2_t> DataEntryPanel::selection()
 		for (int c = 0; c < cols; c++)
 		{
 			if (grid_data_->IsInSelection(r, c))
-				selection.push_back(point2_t(r, c));
+				selection.push_back(Vec2i(r, c));
 		}
 	}
 
 	// If no selection, add current cursor cell
 	if (selection.empty())
-		selection.push_back(point2_t(grid_data_->GetGridCursorRow(), grid_data_->GetGridCursorCol()));
+		selection.push_back(Vec2i(grid_data_->GetGridCursorRow(), grid_data_->GetGridCursorCol()));
 
 	return selection;
 }

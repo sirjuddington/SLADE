@@ -13,7 +13,7 @@ public:
 private:
 	uint16_t width_;
 	uint16_t height_;
-	rect_t   tex_bounds_;
+	Recti   tex_bounds_;
 };
 
 class SFont
@@ -39,8 +39,8 @@ public:
 	bool loadBMF(MemChunk& mc);
 
 	// Rendering
-	void drawCharacter(char c, rgba_t colour = COL_WHITE);
-	void drawString(string str, rgba_t colour = COL_WHITE, Align align = Align::Left);
+	void drawCharacter(char c, ColRGBA colour = COL_WHITE);
+	void drawString(string str, ColRGBA colour = COL_WHITE, Align align = Align::Left);
 
 	// Static
 	static SFont& vgaFont();

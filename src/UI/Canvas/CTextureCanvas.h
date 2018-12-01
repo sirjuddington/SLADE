@@ -27,7 +27,7 @@ public:
 	void      setScale(double scale) { this->scale_ = scale; }
 	void      setViewType(View type) { this->view_type_ = type; }
 	void      drawOutside(bool draw = true) { draw_outside_ = draw; }
-	point2_t  mousePrevPos() { return mouse_prev_; }
+	Vec2i  mousePrevPos() { return mouse_prev_; }
 	bool      isDragging() { return dragging_; }
 	bool      showGrid() { return show_grid_; }
 	void      showGrid(bool show = true) { show_grid_ = show; }
@@ -53,8 +53,8 @@ public:
 	void resetOffsets() { offset_.x = offset_.y = 0; }
 	void redraw(bool update_tex = false);
 
-	point2_t screenToTexPosition(int x, int y);
-	point2_t texToScreenPosition(int x, int y);
+	Vec2i screenToTexPosition(int x, int y);
+	Vec2i texToScreenPosition(int x, int y);
 	int      patchAt(int x, int y);
 
 	bool swapPatches(size_t p1, size_t p2);
@@ -68,8 +68,8 @@ private:
 	GLTexture          tex_preview_;
 	vector<bool>       selected_patches_;
 	int                hilight_patch_;
-	fpoint2_t          offset_;
-	point2_t           mouse_prev_;
+	Vec2f          offset_;
+	Vec2i           mouse_prev_;
 	double             scale_;
 	bool               draw_outside_;
 	bool               dragging_;

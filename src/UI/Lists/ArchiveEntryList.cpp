@@ -225,10 +225,10 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 		item_attr_->SetFont(list_font_monospace ? *font_monospace_ : *font_normal_);
 
 	// Set background colour defined in entry type (if any)
-	rgba_t col = entry->type()->colour();
+	ColRGBA col = entry->type()->colour();
 	if ((col.r != 255 || col.g != 255 || col.b != 255) && elist_type_bgcol)
 	{
-		rgba_t bcol;
+		ColRGBA bcol;
 
 		bcol.r = (col.r * elist_type_bgcol_intensity) + (col_bg.Red() * (1.0 - elist_type_bgcol_intensity));
 		bcol.g = (col.g * elist_type_bgcol_intensity) + (col_bg.Green() * (1.0 - elist_type_bgcol_intensity));

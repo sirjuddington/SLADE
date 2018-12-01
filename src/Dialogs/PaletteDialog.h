@@ -8,7 +8,7 @@ public:
 	PaletteDialog(Palette* palette);
 	~PaletteDialog();
 
-	rgba_t selectedColour();
+	ColRGBA selectedColour();
 
 private:
 	PaletteCanvas* pal_canvas_;

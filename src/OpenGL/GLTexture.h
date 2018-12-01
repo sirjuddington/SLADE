@@ -49,13 +49,13 @@ public:
 	bool loadRawData(const uint8_t* data, uint32_t width, uint32_t height);
 
 	bool clear();
-	bool genChequeredTexture(uint8_t block_size, rgba_t col1, rgba_t col2);
+	bool genChequeredTexture(uint8_t block_size, ColRGBA col1, ColRGBA col2);
 
 	bool bind();
 	bool draw2d(double x = 0, double y = 0, bool flipx = false, bool flipy = false);
 	bool draw2dTiled(uint32_t width, uint32_t height);
 
-	rgba_t averageColour(rect_t area);
+	ColRGBA averageColour(Recti area);
 
 	static GLTexture& bgTex();
 	static GLTexture& missingTex();
@@ -86,5 +86,5 @@ private:
 
 	// Stuff used internally
 	bool loadData(const uint8_t* data, uint32_t width, uint32_t height, bool add = false);
-	bool loadImagePortion(SImage* image, rect_t rect, Palette* pal = nullptr, bool add = false);
+	bool loadImagePortion(SImage* image, Recti rect, Palette* pal = nullptr, bool add = false);
 };

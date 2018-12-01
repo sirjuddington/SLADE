@@ -180,7 +180,7 @@ public:
 				 || (mc[0] == 'G' && mc[1] == 'M' && mc[2] == 'D' && mc[3] == ' ')
 				 || (mc[0] == 'A' && mc[1] == 'D' && mc[2] == 'L' && mc[3] == ' ')
 				 || (mc[0] == 'R' && mc[1] == 'O' && mc[2] == 'L' && mc[3] == ' '))
-				&& ((READ_B32(mc, 4) + 8) == mc.size()))
+				&& (mc.readB32(4) + 8 == mc.size()))
 				return EDF_TRUE;
 		}
 
@@ -202,8 +202,8 @@ public:
 			// Check for RIFF RMID header
 			if (mc[0] == 'R' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == 'F' && mc[8] == 'R' && mc[9] == 'M'
 				&& mc[10] == 'I' && mc[11] == 'D' && mc[12] == 'd' && mc[13] == 'a' && mc[14] == 't' && mc[15] == 'a'
-				&& mc[20] == 'M' && mc[21] == 'T' && mc[22] == 'h' && mc[23] == 'd'
-				&& (READ_L32(mc, 4) + 8 == mc.size()) && (READ_L32(mc, 16) < READ_L32(mc, 4)))
+				&& mc[20] == 'M' && mc[21] == 'T' && mc[22] == 'h' && mc[23] == 'd' && (mc.readL32(4) + 8 == mc.size())
+				&& (mc.readL32(16) < mc.readL32(4)))
 				return EDF_TRUE;
 		}
 
@@ -371,7 +371,7 @@ public:
 			int ret = EDF_MAYBE;
 
 			// Check data size info
-			size_t datasize = READ_L16(mc, 0);
+			size_t datasize = mc.readL16(0);
 			if (datasize > size || (datasize != 0 && datasize + 92 < size))
 				return EDF_FALSE;
 
@@ -382,7 +382,7 @@ public:
 			enough         = MIN(enough, 160u + tofs);
 
 			// First index command is usually writing 0 on register 0
-			if (READ_L16(mc, tofs) != 0)
+			if (mc.readL16(tofs) != 0)
 				ret = EDF_UNLIKELY;
 
 			// Check data: uint8_t register, uint8_t data, uint16_t delay
@@ -434,8 +434,8 @@ public:
 			if (mc[0] == 'D' && mc[1] == 'B' && mc[2] == 'R' && mc[3] == 'A' && mc[4] == 'W' && mc[5] == 'O'
 				&& mc[6] == 'P' && mc[7] == 'L')
 			{
-				uint16_t v1 = READ_L16(mc, 8);
-				uint16_t v2 = READ_L16(mc, 10);
+				uint16_t v1 = mc.readL16(8);
+				uint16_t v2 = mc.readL16(10);
 				if ((v1 == 2 && v2 == 0) || v2 == 1)
 					return EDF_TRUE;
 			}
@@ -535,9 +535,9 @@ public:
 		if (mc.size() > 28)
 		{
 			// Check header
-			uint32_t samples = READ_B32(mc, 0);
-			uint32_t loopstr = READ_B32(mc, 4);
-			uint32_t loopend = READ_B32(mc, 8);
+			uint32_t samples = mc.readB32(0);
+			uint32_t loopstr = mc.readB32(4);
+			uint32_t loopend = mc.readB32(8);
 
 			if ((samples == (mc.size() - 28) && samples > 4) &&
 				// Normal sounds typically have loopstart = 0, loopend = samples
@@ -570,7 +570,7 @@ public:
 			// Next is the number of samples (LE uint16_t), and
 			// each sample is a single byte, so the size can be
 			// checked easily.
-			if (mc.size() == 4 + READ_L16(mc, 2))
+			if (mc.size() == 4 + mc.readL16(2))
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -612,7 +612,7 @@ int RiffWavFormat(MemChunk& mc)
 			{
 				if (fmts) // already found, there can be only one
 					return -1;
-				format = READ_L16(mc, (ncoffs + 8));
+				format = mc.readL16((ncoffs + 8));
 				fmts   = ncoffs;
 			}
 			else if (mc[ncoffs + 0] == 'd' && mc[ncoffs + 1] == 'a' && mc[ncoffs + 2] == 't' && mc[ncoffs + 3] == 'a')
@@ -624,7 +624,7 @@ int RiffWavFormat(MemChunk& mc)
 				if (fmts)
 					break;
 			}
-			ncoffs += 8 + READ_L32(mc, (ncoffs + 4));
+			ncoffs += 8 + mc.readL32((ncoffs + 4));
 			if (ncoffs % 2)
 				ncoffs++;
 		}
@@ -773,7 +773,7 @@ public:
 			// Check for header, see specs at http://wiki.multimedia.cx/index.php?title=Creative_Voice
 			if (mc[19] == 26 && mc[20] == 26 && mc[21] == 0)
 			{
-				uint16_t version  = READ_L16(mc, 22);
+				uint16_t version  = mc.readL16(22);
 				uint16_t validity = ~version + 0x1234;
 				if ((mc[24] + (mc[25] << 8)) == validity)
 				{
@@ -808,7 +808,7 @@ public:
 		size_t size = mc.size();
 		if (size > 8)
 		{
-			size_t nsamples = READ_L32(mc, 0);
+			size_t nsamples = mc.readL32(0);
 			if (size < (nsamples + 9) && size < 1024 && size > (nsamples + 6) && mc[nsamples + 6] == 0)
 				return EDF_TRUE;
 			// Hack #1: last PC sound in Wolf3D/Spear carries a Muse end marker
@@ -838,7 +838,7 @@ public:
 			// Octave block value must be less than 8, sustain shouldn't be null
 			if (mc[22] > 7 || (mc[12] | mc[13]) == 0)
 				return EDF_FALSE;
-			size_t nsamples = READ_L32(mc, 0);
+			size_t nsamples = mc.readL32(0);
 			if (size >= (nsamples + 24) && (mc[size - 1] == 0))
 				return EDF_TRUE;
 			// Hack #1: last Adlib sound in Wolf3D/Spear carries a Muse end marker
@@ -899,17 +899,17 @@ public:
 			// Check for signature
 			if (mc[0] != '.' || mc[1] != 's' || mc[2] != 'n' || mc[3] != 'd')
 				return EDF_FALSE;
-			size_t offset   = READ_B32(mc, 4);
-			size_t datasize = READ_B32(mc, 8);
+			size_t offset   = mc.readB32(4);
+			size_t datasize = mc.readB32(8);
 			if (offset < 24 || offset + datasize > mc.size())
 				return EDF_FALSE;
-			size_t format = READ_B32(mc, 12);
+			size_t format = mc.readB32(12);
 			if (format < 2 || format > 7)
 				return EDF_FALSE;
-			size_t samplerate = READ_B32(mc, 16);
+			size_t samplerate = mc.readB32(16);
 			if (samplerate < 8000 || samplerate > 96000)
 				return EDF_FALSE;
-			size_t channels = READ_B32(mc, 20);
+			size_t channels = mc.readB32(20);
 			if (channels == 0 || channels > 2)
 				return EDF_FALSE;
 			return EDF_TRUE;
@@ -936,7 +936,7 @@ public:
 			if (mc[0] == 'F' && mc[1] == 'O' && mc[2] == 'R' && mc[3] == 'M' && mc[8] == 'A' && mc[9] == 'I'
 				&& mc[10] == 'F' && (mc[11] == 'F' || mc[11] == 'C'))
 			{
-				size_t size = READ_B32(mc, 4) + 8;
+				size_t size = mc.readB32(4) + 8;
 				if (debugaiff)
 					LOG_MESSAGE(1, "size %d", size);
 				if (size > mc.size())
@@ -956,7 +956,7 @@ public:
 						comm_found = true;
 					else if (mc[s + 0] == 'S' && mc[s + 1] == 'S' && mc[s + 2] == 'N' && mc[s + 3] == 'D')
 						ssnd_found = true;
-					s += 8 + READ_B32(mc, s + 4);
+					s += 8 + mc.readB32(s + 4);
 					if (s % 2)
 						++s;
 					if (debugaiff)
@@ -1179,7 +1179,7 @@ public:
 		if (mc.size() > 64)
 		{
 			// Check for GZip header first
-			if (READ_B32(mc, 0) == GZIP_SIGNATURE)
+			if (mc.readB32(0) == GZIP_SIGNATURE)
 			{
 				// Extract, then check for vgm signature
 				MemChunk tmp;

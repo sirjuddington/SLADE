@@ -162,7 +162,7 @@ bool SFont::loadFontM(MemChunk& mc)
 			for (unsigned p = 0; p < charwidth; ++p)
 			{
 				val = ((mc[i] >> (7 - p)) & 1) * 255;
-				image.setPixel(xoff + p, yoff + row, rgba_t(val, val, val, val));
+				image.setPixel(xoff + p, yoff + row, ColRGBA(val, val, val, val));
 			}
 			i++;
 		}
@@ -195,7 +195,7 @@ bool SFont::loadBMF(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Draws the character [c] with the font, in [colour]
 // -----------------------------------------------------------------------------
-void SFont::drawCharacter(char c, rgba_t colour)
+void SFont::drawCharacter(char c, ColRGBA colour)
 {
 	// Bind texture
 	if (!texture_.bind())
@@ -210,7 +210,7 @@ void SFont::drawCharacter(char c, rgba_t colour)
 		return;
 
 	// Draw it
-	frect_t tex_rect;
+	Rectf tex_rect;
 	tex_rect.tl.set(
 		(double)ch->tex_bounds_.x1() / (double)texture_.width(),
 		(double)ch->tex_bounds_.y1() / (double)texture_.height());
@@ -232,7 +232,7 @@ void SFont::drawCharacter(char c, rgba_t colour)
 // -----------------------------------------------------------------------------
 // Draws the string [srt] with the font, in [colour] with [align]ment
 // -----------------------------------------------------------------------------
-void SFont::drawString(string str, rgba_t colour, SFont::Align align)
+void SFont::drawString(string str, ColRGBA colour, SFont::Align align)
 {
 	// Bind texture
 	if (!texture_.bind())
@@ -275,7 +275,7 @@ void SFont::drawString(string str, rgba_t colour, SFont::Align align)
 		}
 
 		// Draw it
-		frect_t tex_rect;
+		Rectf tex_rect;
 		tex_rect.tl.set(
 			(double)ch->tex_bounds_.x1() / (double)texture_.width(),
 			(double)ch->tex_bounds_.y1() / (double)texture_.height());

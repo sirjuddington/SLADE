@@ -190,7 +190,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 				++x, ++y;
 
 			// Get color from image
-			rgba_t col = image.pixelAt(x, y);
+			ColRGBA col = image.pixelAt(x, y);
 			col.index  = a;
 
 			// Validate color cell
@@ -250,7 +250,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 		}
 		// Now, parse
 		string s1, s2, s3;
-		rgba_t col(0, 0, 0, 255, -1);
+		ColRGBA col(0, 0, 0, 255, -1);
 		int    c = 0;
 		do
 		{
@@ -438,7 +438,7 @@ bool Palette::loadFile(const string& filename, Format format)
 // -----------------------------------------------------------------------------
 // Sets the colour at [index]
 // -----------------------------------------------------------------------------
-void Palette::setColour(uint8_t index, rgba_t col)
+void Palette::setColour(uint8_t index, ColRGBA col)
 {
 	colours_[index].set(col);
 	colours_[index].index = index;
@@ -479,9 +479,9 @@ void Palette::setColourB(uint8_t index, uint8_t val)
 // -----------------------------------------------------------------------------
 // Creates a gradient between two colous along a specified index range
 // -----------------------------------------------------------------------------
-void Palette::setGradient(uint8_t startIndex, uint8_t endIndex, rgba_t startCol, rgba_t endCol)
+void Palette::setGradient(uint8_t startIndex, uint8_t endIndex, ColRGBA startCol, ColRGBA endCol)
 {
-	rgba_t gradCol = rgba_t();
+	ColRGBA gradCol = ColRGBA();
 	int    range   = endIndex - startIndex;
 
 	float r_range = endCol.fr() - startCol.fr();
@@ -530,7 +530,7 @@ void Palette::copyPalette(Palette* copy)
 // Returns the index of the colour in the palette matching [colour], or -1 if
 // no match is found
 // -----------------------------------------------------------------------------
-short Palette::findColour(rgba_t colour)
+short Palette::findColour(ColRGBA colour)
 {
 	for (int a = 0; a < 256; a++)
 	{
@@ -546,7 +546,7 @@ short Palette::findColour(rgba_t colour)
 // palette colour at [index], using the colour matching method specified in
 // [match]
 // -----------------------------------------------------------------------------
-double Palette::colourDiff(rgba_t& rgb, hsl_t& hsl, lab_t& lab, int index, ColourMatch match)
+double Palette::colourDiff(ColRGBA& rgb, ColHSL& hsl, ColLAB& lab, int index, ColourMatch match)
 {
 	double d1, d2, d3;
 	switch (match)
@@ -588,12 +588,12 @@ double Palette::colourDiff(rgba_t& rgb, hsl_t& hsl, lab_t& lab, int index, Colou
 // -----------------------------------------------------------------------------
 // Returns the index of the closest colour in the palette to [colour]
 // -----------------------------------------------------------------------------
-short Palette::nearestColour(rgba_t colour, ColourMatch match)
+short Palette::nearestColour(ColRGBA colour, ColourMatch match)
 {
 	double min_d = 999999;
 	short  index = 0;
-	hsl_t  chsl  = Misc::rgbToHsl(colour);
-	lab_t  clab  = Misc::rgbToLab(colour);
+	ColHSL  chsl  = Misc::rgbToHsl(colour);
+	ColLAB  clab  = Misc::rgbToLab(colour);
 
 	// Be nice if there was an easier way to convert from int -> enum class,
 	// but then that's kind of the point of them I guess
@@ -627,8 +627,8 @@ short Palette::nearestColour(rgba_t colour, ColourMatch match)
 // -----------------------------------------------------------------------------
 size_t Palette::countColours()
 {
-	rgba_t* usedcolours = new rgba_t[256];
-	memset(usedcolours, 0, 256 * sizeof(rgba_t));
+	ColRGBA* usedcolours = new ColRGBA[256];
+	memset(usedcolours, 0, 256 * sizeof(ColRGBA));
 	size_t used = 0;
 
 	for (int a = 0; a < 256; a++)
@@ -673,7 +673,7 @@ void Palette::applyTranslation(Translation* trans)
 // -----------------------------------------------------------------------------
 // Colourises the palette to [colour]
 // -----------------------------------------------------------------------------
-void Palette::colourise(rgba_t colour, int start, int end)
+void Palette::colourise(ColRGBA colour, int start, int end)
 {
 	// Handle default values: a range of (-1, -1) means the entire palette
 	if (start < 0 || start > 255)
@@ -684,7 +684,7 @@ void Palette::colourise(rgba_t colour, int start, int end)
 	// Colourise all colours in the range
 	for (int i = start; i <= end; ++i)
 	{
-		rgba_t ncol(colours_[i].r, colours_[i].g, colours_[i].b, colours_[i].a, colours_[i].blend);
+		ColRGBA ncol(colours_[i].r, colours_[i].g, colours_[i].b, colours_[i].a, colours_[i].blend);
 		double grey = (ncol.r * col_greyscale_r + ncol.g * col_greyscale_g + ncol.b * col_greyscale_b) / 255.0f;
 		if (grey > 1.0)
 			grey = 1.0;
@@ -698,7 +698,7 @@ void Palette::colourise(rgba_t colour, int start, int end)
 // -----------------------------------------------------------------------------
 // Tints the palette to [colour] by [amount]
 // -----------------------------------------------------------------------------
-void Palette::tint(rgba_t colour, float amount, int start, int end)
+void Palette::tint(ColRGBA colour, float amount, int start, int end)
 {
 	// Handle default values: a range of (-1, -1) means the entire palette
 	if (start < 0 || start > 255)
@@ -720,7 +720,7 @@ void Palette::tint(rgba_t colour, float amount, int start, int end)
 		// it's possible for 0xFFFFFF shifting to 0xFF0000 to become 0xFExxxx...
 		// I'll leave this working exactly the same as the SImage function for now.
 		float  round_delta = /*roundup ? 0.4999999 :*/ 0.0;
-		rgba_t ncol(
+		ColRGBA ncol(
 			colours_[i].r * inv_amt + colour.r * amount + round_delta,
 			colours_[i].g * inv_amt + colour.g * amount + round_delta,
 			colours_[i].b * inv_amt + colour.b * amount + round_delta,
@@ -761,7 +761,7 @@ void Palette::idtint(int r, int g, int b, int shift, int steps)
 		else if (fb > 255)
 			fb = 255;
 		// Set the result in the palette
-		rgba_t col(fr, fg, fb, colours_[i].a, colours_[i].blend, i);
+		ColRGBA col(fr, fg, fb, colours_[i].a, colours_[i].blend, i);
 		setColour(i, col);
 	}
 }

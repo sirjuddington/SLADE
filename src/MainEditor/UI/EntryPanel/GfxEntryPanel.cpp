@@ -843,7 +843,7 @@ bool GfxEntryPanel::handleAction(string id)
 			Refresh();
 			setModified();
 		}
-		rgba_t gcdcol = gcd.colour();
+		ColRGBA gcdcol = gcd.colour();
 		last_colour   = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
 	}
 
@@ -869,7 +869,7 @@ bool GfxEntryPanel::handleAction(string id)
 			Refresh();
 			setModified();
 		}
-		rgba_t gtdcol    = gtd.colour();
+		ColRGBA gtdcol    = gtd.colour();
 		last_tint_colour = S_FMT("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
 		last_tint_amount = (int)(gtd.amount() * 100.0);
 	}
@@ -1192,7 +1192,7 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		// Calculate new offsets
-		point2_t offsets = dlg.calculateOffsets(
+		Vec2i offsets = dlg.calculateOffsets(
 			spin_xoffset_->GetValue(),
 			spin_yoffset_->GetValue(),
 			gfx_canvas_->getImage()->width(),

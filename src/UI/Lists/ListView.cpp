@@ -151,7 +151,7 @@ bool ListView::deleteItems(wxArrayInt items)
 // -----------------------------------------------------------------------------
 // Calculates the 'disabled' item colour based on the list text and bg colours
 // -----------------------------------------------------------------------------
-rgba_t ListView::disabledColour()
+ColRGBA ListView::disabledColour()
 {
 	wxColour fg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
 	wxColour bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
@@ -159,7 +159,7 @@ rgba_t ListView::disabledColour()
 	int red   = fg.Red() * 0.5 + bg.Red() * 0.5;
 	int green = fg.Green() * 0.5 + bg.Green() * 0.5;
 	int blue  = fg.Blue() * 0.5 + bg.Blue() * 0.5;
-	return rgba_t(red, green, blue);
+	return ColRGBA(red, green, blue);
 }
 
 // -----------------------------------------------------------------------------

@@ -54,7 +54,7 @@ public:
 	bool isSelected(const MapEditor::Item& item) const { return VECTOR_EXISTS(selection_, item); }
 	bool isHilighted(const MapEditor::Item& item) const { return item == hilight_; }
 
-	bool updateHilight(fpoint2_t mouse_pos, double dist_scale);
+	bool updateHilight(Vec2f mouse_pos, double dist_scale);
 	void clear();
 
 	void select(const MapEditor::Item& item, bool select = true, bool new_change = true);
@@ -62,11 +62,11 @@ public:
 	void deSelect(const MapEditor::Item& item, bool new_change = true) { select(item, false, new_change); }
 	void selectAll();
 	bool toggleCurrent(bool clear_none = true);
-	void selectVerticesWithin(const SLADEMap& map, const frect_t& rect);
-	void selectLinesWithin(const SLADEMap& map, const frect_t& rect);
-	void selectSectorsWithin(const SLADEMap& map, const frect_t& rect);
-	void selectThingsWithin(const SLADEMap& map, const frect_t& rect);
-	bool selectWithin(const frect_t& rect, bool add);
+	void selectVerticesWithin(const SLADEMap& map, const Rectf& rect);
+	void selectLinesWithin(const SLADEMap& map, const Rectf& rect);
+	void selectSectorsWithin(const SLADEMap& map, const Rectf& rect);
+	void selectThingsWithin(const SLADEMap& map, const Rectf& rect);
+	bool selectWithin(const Rectf& rect, bool add);
 
 	MapVertex* hilightedVertex() const;
 	MapLine*   hilightedLine() const;

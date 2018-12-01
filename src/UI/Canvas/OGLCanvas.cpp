@@ -208,7 +208,7 @@ void OGLCanvas::drawCheckeredBackground()
 	GLTexture::bgTex().bind();
 
 	// Draw background
-	frect_t rect(0, 0, GetSize().x, GetSize().y);
+	Rectf rect(0, 0, GetSize().x, GetSize().y);
 	OpenGL::setColour(COL_WHITE);
 	glBegin(GL_QUADS);
 	glTexCoord2d(rect.x1() * 0.0625, rect.y1() * 0.0625);

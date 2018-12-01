@@ -99,9 +99,9 @@ void ObjectEditPanel::init(ObjectEditGroup* group)
 		return;
 
 	// Set initial values from group
-	bbox_t bbox = group->bbox();
-	old_x_      = bbox.mid_x();
-	old_y_      = bbox.mid_y();
+	BBox bbox = group->bbox();
+	old_x_      = bbox.midX();
+	old_y_      = bbox.midY();
 	old_width_  = bbox.width();
 	old_height_ = bbox.height();
 
@@ -118,9 +118,9 @@ void ObjectEditPanel::init(ObjectEditGroup* group)
 // -----------------------------------------------------------------------------
 void ObjectEditPanel::update(ObjectEditGroup* group, bool lock_rotation) const
 {
-	bbox_t bbox   = group->bbox();
-	int    xoff   = bbox.mid_x() - old_x_;
-	int    yoff   = bbox.mid_y() - old_y_;
+	BBox bbox   = group->bbox();
+	int    xoff   = bbox.midX() - old_x_;
+	int    yoff   = bbox.midY() - old_y_;
 	double xscale = bbox.width() / old_width_;
 	double yscale = bbox.height() / old_height_;
 

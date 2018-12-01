@@ -60,7 +60,7 @@ MoveObjects::MoveObjects(MapEditContext& context) : context_{ context } {}
 // -----------------------------------------------------------------------------
 // Begins a move operation, starting from [mouse_pos]
 // -----------------------------------------------------------------------------
-bool MoveObjects::begin(fpoint2_t mouse_pos)
+bool MoveObjects::begin(Vec2f mouse_pos)
 {
 	using MapEditor::Mode;
 
@@ -125,7 +125,7 @@ bool MoveObjects::begin(fpoint2_t mouse_pos)
 // -----------------------------------------------------------------------------
 // Updates the current move operation (moving from start to [mouse_pos])
 // -----------------------------------------------------------------------------
-void MoveObjects::update(fpoint2_t mouse_pos)
+void MoveObjects::update(Vec2f mouse_pos)
 {
 	using MapEditor::Mode;
 

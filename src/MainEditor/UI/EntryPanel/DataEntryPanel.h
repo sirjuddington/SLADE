@@ -80,7 +80,7 @@ private:
 	string           row_prefix_;
 	DataEntryPanel*  parent_ = nullptr;
 	MemChunk         data_clipboard_;
-	vector<point2_t> cells_modified_;
+	vector<Vec2i> cells_modified_;
 	vector<int>      rows_new_;
 };
 
@@ -102,7 +102,7 @@ public:
 	bool handleAction(string id) override;
 	int  getColWithSelection();
 
-	vector<point2_t> selection();
+	vector<Vec2i> selection();
 
 private:
 	wxGrid*         grid_data_        = nullptr;

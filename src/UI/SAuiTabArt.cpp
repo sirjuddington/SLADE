@@ -562,7 +562,7 @@ void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, 
 	// dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
 
 	wxColor sepCol;
-	int     l = rgba_t(COLWX(caption_back_colour_)).greyscale().r;
+	int     l = ColRGBA(COLWX(caption_back_colour_)).greyscale().r;
 	if (l < 100)
 		sepCol = Drawing::lightColour(caption_back_colour_, 2.0f);
 	else

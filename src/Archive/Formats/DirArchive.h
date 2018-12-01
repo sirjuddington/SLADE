@@ -79,7 +79,7 @@ public:
 
 private:
 	string                          separator_;
-	vector<key_value_t>             renamed_dirs_;
+	vector<StringPair>             renamed_dirs_;
 	std::map<ArchiveEntry*, time_t> file_modification_times_;
 	vector<string>                  removed_files_;
 	IgnoredFileChanges              ignored_file_changes_;

@@ -19,7 +19,7 @@ private:
 	SImage*  image_; // The cursor graphic
 	string   name_;
 	string   icon_;
-	point2_t center_;
+	Vec2i center_;
 };
 
 class SBrushManager

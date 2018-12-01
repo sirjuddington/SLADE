@@ -60,11 +60,11 @@ CVAR(Int, shapedraw_sides, 16, CVAR_SAVE)
 // -----------------------------------------------------------------------------
 // Returns the line drawing point at [index]
 // -----------------------------------------------------------------------------
-fpoint2_t LineDraw::point(unsigned index)
+Vec2f LineDraw::point(unsigned index)
 {
 	// Check index
 	if (index >= draw_points_.size())
-		return fpoint2_t(0, 0);
+		return Vec2f(0, 0);
 
 	return draw_points_[index];
 }
@@ -73,7 +73,7 @@ fpoint2_t LineDraw::point(unsigned index)
 // Adds a line drawing point at [point], or at the nearest vertex to [point] if
 // [nearest] is true
 // -----------------------------------------------------------------------------
-bool LineDraw::addPoint(fpoint2_t point, bool nearest)
+bool LineDraw::addPoint(Vec2f point, bool nearest)
 {
 	// Snap to nearest vertex if necessary
 	if (nearest)
@@ -134,7 +134,7 @@ void LineDraw::removePoint()
 // Sets the shape drawing origin to [point], or the nearest vertex to [point] if
 // [nearest] is true
 // -----------------------------------------------------------------------------
-void LineDraw::setShapeOrigin(fpoint2_t point, bool nearest)
+void LineDraw::setShapeOrigin(Vec2f point, bool nearest)
 {
 	// Snap to nearest vertex if necessary
 	if (nearest)
@@ -158,7 +158,7 @@ void LineDraw::setShapeOrigin(fpoint2_t point, bool nearest)
 // Builds the current shape as line drawing points using the shape draw origin
 // and [point] for the size
 // -----------------------------------------------------------------------------
-void LineDraw::updateShape(fpoint2_t point)
+void LineDraw::updateShape(Vec2f point)
 {
 	// Clear line draw points
 	draw_points_.clear();
@@ -171,7 +171,7 @@ void LineDraw::updateShape(fpoint2_t point)
 	}
 
 	// Lock width:height at 1:1 if needed
-	fpoint2_t origin = draw_origin_;
+	Vec2f origin = draw_origin_;
 	double    width  = fabs(point.x - origin.x);
 	double    height = fabs(point.y - origin.y);
 	if (shapedraw_lockratio)
@@ -201,26 +201,26 @@ void LineDraw::updateShape(fpoint2_t point)
 	}
 
 	// Get box from tl->br
-	fpoint2_t tl(min(origin.x, point.x), min(origin.y, point.y));
-	fpoint2_t br(max(origin.x, point.x), max(origin.y, point.y));
+	Vec2f tl(min(origin.x, point.x), min(origin.y, point.y));
+	Vec2f br(max(origin.x, point.x), max(origin.y, point.y));
 	width  = br.x - tl.x;
 	height = br.y - tl.y;
 
 	// Rectangle
 	if (shapedraw_shape == 0)
 	{
-		draw_points_.push_back(fpoint2_t(tl.x, tl.y));
-		draw_points_.push_back(fpoint2_t(tl.x, br.y));
-		draw_points_.push_back(fpoint2_t(br.x, br.y));
-		draw_points_.push_back(fpoint2_t(br.x, tl.y));
-		draw_points_.push_back(fpoint2_t(tl.x, tl.y));
+		draw_points_.push_back(Vec2f(tl.x, tl.y));
+		draw_points_.push_back(Vec2f(tl.x, br.y));
+		draw_points_.push_back(Vec2f(br.x, br.y));
+		draw_points_.push_back(Vec2f(br.x, tl.y));
+		draw_points_.push_back(Vec2f(tl.x, tl.y));
 	}
 
 	// Ellipse
 	else if (shapedraw_shape == 1)
 	{
 		// Get midpoint
-		fpoint2_t mid;
+		Vec2f mid;
 		mid.x = tl.x + ((br.x - tl.x) * 0.5);
 		mid.y = tl.y + ((br.y - tl.y) * 0.5);
 
@@ -230,11 +230,11 @@ void LineDraw::updateShape(fpoint2_t point)
 
 		// Add ellipse points
 		double    rot = 0;
-		fpoint2_t start;
+		Vec2f start;
 		for (int a = 0; a < shapedraw_sides; a++)
 		{
 			// Calculate point (rounded)
-			fpoint2_t p(MathStuff::round(mid.x + sin(rot) * width), MathStuff::round(mid.y - cos(rot) * height));
+			Vec2f p(MathStuff::round(mid.x + sin(rot) * width), MathStuff::round(mid.y - cos(rot) * height));
 
 			// Add point
 			draw_points_.push_back(p);
@@ -308,7 +308,7 @@ void LineDraw::end(bool apply)
 			map.lineCrossVertex(draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y);
 		while (v)
 		{
-			draw_points_.insert(draw_points_.begin() + a + 1, fpoint2_t(v->xPos(), v->yPos()));
+			draw_points_.insert(draw_points_.begin() + a + 1, Vec2f(v->xPos(), v->yPos()));
 			a++;
 			v = map.lineCrossVertex(draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y);
 		}

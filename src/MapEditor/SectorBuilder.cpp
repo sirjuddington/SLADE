@@ -144,9 +144,9 @@ SectorBuilder::Edge SectorBuilder::nextEdge(SectorBuilder::Edge edge, MapLineSet
 
 		// Determine angle between lines
 		double angle = MathStuff::angle2DRad(
-			fpoint2_t(vertex_prev->xPos(), vertex_prev->yPos()),
-			fpoint2_t(vertex->xPos(), vertex->yPos()),
-			fpoint2_t(vertex_next->xPos(), vertex_next->yPos()));
+			Vec2f(vertex_prev->xPos(), vertex_prev->yPos()),
+			Vec2f(vertex->xPos(), vertex->yPos()),
+			Vec2f(vertex_next->xPos(), vertex_next->yPos()));
 
 		// Check if minimum angle
 		if (angle < min_angle)
@@ -247,7 +247,7 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
 // -----------------------------------------------------------------------------
 int SectorBuilder::nearestEdge(double x, double y)
 {
-	fpoint2_t point(x, y);
+	Vec2f point(x, y);
 
 	// Init variables
 	double min_dist = 99999999;
@@ -277,10 +277,10 @@ int SectorBuilder::nearestEdge(double x, double y)
 // -----------------------------------------------------------------------------
 bool SectorBuilder::pointWithinOutline(double x, double y)
 {
-	fpoint2_t point(x, y);
+	Vec2f point(x, y);
 
 	// Check with bounding box
-	if (!o_bbox_.point_within(x, y))
+	if (!o_bbox_.pointWithin(x, y))
 	{
 		// If the point is not within the bbox and the outline is clockwise,
 		// it can't be within the outline
@@ -458,9 +458,9 @@ SectorBuilder::Edge SectorBuilder::findInnerEdge()
 
 		// Determine angle
 		double angle = MathStuff::angle2DRad(
-			fpoint2_t(vertex_right_->xPos() + 32, vertex_right_->yPos()),
-			fpoint2_t(vertex_right_->xPos(), vertex_right_->yPos()),
-			fpoint2_t(opposite->xPos(), opposite->yPos()));
+			Vec2f(vertex_right_->xPos() + 32, vertex_right_->yPos()),
+			Vec2f(vertex_right_->xPos(), vertex_right_->yPos()),
+			Vec2f(opposite->xPos(), opposite->yPos()));
 
 		// Check if minimum
 		if (angle < min_angle)

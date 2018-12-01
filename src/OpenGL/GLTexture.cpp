@@ -272,7 +272,7 @@ bool GLTexture::loadImage(SImage* image, Palette* pal)
 			while (left < image->width())
 			{
 				// Load 128x128 portion of image
-				loadImagePortion(image, rect_t(left, top, left + 128, top + 128), pal, true);
+				loadImagePortion(image, Recti(left, top, left + 128, top + 128), pal, true);
 
 				// Move right 128px
 				left += 128;
@@ -294,7 +294,7 @@ bool GLTexture::loadImage(SImage* image, Palette* pal)
 // -----------------------------------------------------------------------------
 // Loads a portion of a SImage to the texture.
 // -----------------------------------------------------------------------------
-bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette* pal, bool add)
+bool GLTexture::loadImagePortion(SImage* image, Recti rect, Palette* pal, bool add)
 {
 	// Check image was given
 	if (!image)
@@ -391,7 +391,7 @@ bool GLTexture::clear()
 // Generates a chequered pattern, with each square being [size] and alternating
 // between [col1] and [col2]
 // -----------------------------------------------------------------------------
-bool GLTexture::genChequeredTexture(uint8_t block_size, rgba_t col1, rgba_t col2)
+bool GLTexture::genChequeredTexture(uint8_t block_size, ColRGBA col1, ColRGBA col2)
 {
 	// Check given block size and change if necessary
 	for (uint8_t s = 1; s <= 64; s *= 2)
@@ -631,7 +631,7 @@ bool GLTexture::draw2dTiled(uint32_t width, uint32_t height)
 // -----------------------------------------------------------------------------
 // Returns the average colour of the texture
 // -----------------------------------------------------------------------------
-rgba_t GLTexture::averageColour(rect_t area)
+ColRGBA GLTexture::averageColour(Recti area)
 {
 	// Check texture is loaded
 	if (!loaded_ || tex_.empty())
@@ -680,7 +680,7 @@ rgba_t GLTexture::averageColour(rect_t area)
 	delete[] pixels;
 
 	// Return average colour
-	return rgba_t(red / npix, green / npix, blue / npix, 255);
+	return ColRGBA(red / npix, green / npix, blue / npix, 255);
 }
 
 
@@ -700,7 +700,7 @@ GLTexture& GLTexture::bgTex()
 	{
 		wxColour col1(bgtx_colour1);
 		wxColour col2(bgtx_colour2);
-		tex_background_.genChequeredTexture(8, rgba_t(COLWX(col1), 255), rgba_t(COLWX(col2), 255));
+		tex_background_.genChequeredTexture(8, ColRGBA(COLWX(col1), 255), ColRGBA(COLWX(col2), 255));
 	}
 	return tex_background_;
 }
@@ -711,7 +711,7 @@ GLTexture& GLTexture::bgTex()
 GLTexture& GLTexture::missingTex()
 {
 	if (!tex_missing_.isLoaded())
-		tex_missing_.genChequeredTexture(8, rgba_t(0, 0, 0), rgba_t(255, 0, 0));
+		tex_missing_.genChequeredTexture(8, ColRGBA(0, 0, 0), ColRGBA(255, 0, 0));
 	return tex_missing_;
 }
 

@@ -52,7 +52,7 @@ public:
 	bool         flipY() { return flip_y_; }
 	bool         useOffsets() { return use_offsets_; }
 	int16_t      rotation() { return rotation_; }
-	rgba_t       colour() { return colour_; }
+	ColRGBA       colour() { return colour_; }
 	float        alpha() { return alpha_; }
 	string       style() { return style_; }
 	uint8_t      blendType() { return blendtype_; }
@@ -79,7 +79,7 @@ private:
 	bool        use_offsets_;
 	int16_t     rotation_;
 	Translation translation_;
-	rgba_t      colour_;
+	ColRGBA      colour_;
 	float       alpha_;
 	string      style_;
 	uint8_t     blendtype_; // 0=none, 1=translation, 2=blend, 3=tint

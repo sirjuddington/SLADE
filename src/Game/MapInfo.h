@@ -23,8 +23,8 @@ public:
 		bool   sky_double;
 		bool   sky_force_no_stretch;
 		bool   sky_stretch;
-		rgba_t fade;
-		rgba_t fade_outside; // OutsideFog
+		ColRGBA fade;
+		ColRGBA fade_outside; // OutsideFog
 		string music;
 		bool   lighting_smooth;
 		int    lighting_wallshade_v;
@@ -91,7 +91,7 @@ public:
 
 	// General parsing helpers
 	bool checkEqualsToken(Tokenizer& tz, const string& parsing) const;
-	bool strToCol(const string& str, rgba_t& col);
+	bool strToCol(const string& str, ColRGBA& col);
 
 	// ZDoom MAPINFO parsing
 	bool parseZMapInfo(ArchiveEntry* entry);

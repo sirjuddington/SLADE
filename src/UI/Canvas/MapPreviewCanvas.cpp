@@ -666,12 +666,12 @@ void MapPreviewCanvas::showMap()
 void MapPreviewCanvas::draw()
 {
 	// Setup colours
-	rgba_t col_view_background   = ColourConfiguration::colour("map_view_background");
-	rgba_t col_view_line_1s      = ColourConfiguration::colour("map_view_line_1s");
-	rgba_t col_view_line_2s      = ColourConfiguration::colour("map_view_line_2s");
-	rgba_t col_view_line_special = ColourConfiguration::colour("map_view_line_special");
-	rgba_t col_view_line_macro   = ColourConfiguration::colour("map_view_line_macro");
-	rgba_t col_view_thing        = ColourConfiguration::colour("map_view_thing");
+	ColRGBA col_view_background   = ColourConfiguration::colour("map_view_background");
+	ColRGBA col_view_line_1s      = ColourConfiguration::colour("map_view_line_1s");
+	ColRGBA col_view_line_2s      = ColourConfiguration::colour("map_view_line_2s");
+	ColRGBA col_view_line_special = ColourConfiguration::colour("map_view_line_special");
+	ColRGBA col_view_line_macro   = ColourConfiguration::colour("map_view_line_macro");
+	ColRGBA col_view_thing        = ColourConfiguration::colour("map_view_thing");
 
 	// Setup the viewport
 	glViewport(0, 0, GetSize().x, GetSize().y);
@@ -842,11 +842,11 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 		height = mapheight / abs(height);
 
 	// Setup colours
-	rgba_t col_save_background   = ColourConfiguration::colour("map_image_background");
-	rgba_t col_save_line_1s      = ColourConfiguration::colour("map_image_line_1s");
-	rgba_t col_save_line_2s      = ColourConfiguration::colour("map_image_line_2s");
-	rgba_t col_save_line_special = ColourConfiguration::colour("map_image_line_special");
-	rgba_t col_save_line_macro   = ColourConfiguration::colour("map_image_line_macro");
+	ColRGBA col_save_background   = ColourConfiguration::colour("map_image_background");
+	ColRGBA col_save_line_1s      = ColourConfiguration::colour("map_image_line_1s");
+	ColRGBA col_save_line_2s      = ColourConfiguration::colour("map_image_line_2s");
+	ColRGBA col_save_line_special = ColourConfiguration::colour("map_image_line_special");
+	ColRGBA col_save_line_macro   = ColourConfiguration::colour("map_image_line_macro");
 
 	// Setup OpenGL rigmarole
 	GLuint texID, fboID;

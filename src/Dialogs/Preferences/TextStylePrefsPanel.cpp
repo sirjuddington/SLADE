@@ -338,7 +338,7 @@ void TextStylePrefsPanel::updateStyleControls()
 	font.SetUnderlined(underlined);
 
 	// Foreground
-	rgba_t col_foreground;
+	ColRGBA col_foreground;
 	if (ts_current_->hasForeground())
 		col_foreground.set(ts_current_->foreground());
 	else
@@ -349,7 +349,7 @@ void TextStylePrefsPanel::updateStyleControls()
 	cp_foreground_->SetColour(WXCOL(col_foreground));
 
 	// Background
-	rgba_t col_background;
+	ColRGBA col_background;
 	if (ts_current_->hasBackground())
 		col_background.set(ts_current_->background());
 	else
@@ -445,7 +445,7 @@ void TextStylePrefsPanel::updateForeground()
 	if (cb_override_foreground_->GetValue())
 	{
 		wxColour wxc = cp_foreground_->GetColour();
-		ts_current_->setForeground(rgba_t(COLWX(wxc), 255));
+		ts_current_->setForeground(ColRGBA(COLWX(wxc), 255));
 	}
 	else
 	{
@@ -461,7 +461,7 @@ void TextStylePrefsPanel::updateBackground()
 	if (cb_override_background_->GetValue())
 	{
 		wxColour wxc = cp_background_->GetColour();
-		ts_current_->setBackground(rgba_t(COLWX(wxc), 255));
+		ts_current_->setBackground(ColRGBA(COLWX(wxc), 255));
 	}
 	else
 	{

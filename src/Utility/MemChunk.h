@@ -42,6 +42,20 @@ public:
 	bool     fillData(uint8_t val);
 	uint32_t crc();
 
+	// Platform-independent functions to read values in little (L##) or big (B##) endian
+	uint16_t readL16(unsigned i) { return data_[i] + (data_[i + 1] << 8); }
+	uint32_t readL24(unsigned i) { return data_[i] + (data_[i + 1] << 8) + (data_[i + 2] << 16); }
+	uint32_t readL32(unsigned i)
+	{
+		return (data_[i] + (data_[i + 1] << 8) + (data_[i + 2] << 16) + (data_[i + 3] << 24));
+	}
+	uint16_t readB16(unsigned i) { return data_[i + 1] + (data_[i] << 8); }
+	uint32_t readB24(unsigned i) { return data_[i + 2] + (data_[i + 1] << 8) + (data_[i] << 16); }
+	uint32_t readB32(unsigned i)
+	{
+		return data_[i + 3] + (data_[i + 2] << 8) + (data_[i + 1] << 16) + (data_[i] << 24);
+	}
+
 protected:
 	uint8_t* data_;
 	uint32_t cur_ptr_;

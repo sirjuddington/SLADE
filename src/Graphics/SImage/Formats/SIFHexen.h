@@ -82,7 +82,7 @@ protected:
 			uint32_t quad;
 		};
 		color.rgbReserved = 0;
-		rgba_t colour(0, 0, 0, 0, -1);
+		ColRGBA colour(0, 0, 0, 0, -1);
 
 		// Initialize the bitmap palette.
 		for (int i = 0; i < 16; ++i)

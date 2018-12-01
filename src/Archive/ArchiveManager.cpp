@@ -779,12 +779,12 @@ string ArchiveManager::getArchiveExtensionsString() const
 	{
 		for (auto ext : fmt.extensions)
 		{
-			string ext_case = S_FMT("*.%s;", ext.key.Lower());
-			ext_case += S_FMT("*.%s;", ext.key.Upper());
-			ext_case += S_FMT("*.%s", ext.key.Capitalize());
+			string ext_case = S_FMT("*.%s;", ext.first.Lower());
+			ext_case += S_FMT("*.%s;", ext.first.Upper());
+			ext_case += S_FMT("*.%s", ext.first.Capitalize());
 
 			ext_all += S_FMT("%s;", ext_case);
-			ext_strings.push_back(S_FMT("%s files (*.%s)|%s", ext.value, ext.key, ext_case));
+			ext_strings.push_back(S_FMT("%s files (*.%s)|%s", ext.second, ext.first, ext_case));
 		}
 	}
 

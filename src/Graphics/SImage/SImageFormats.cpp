@@ -36,6 +36,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SImage.h"
+#include "Utility/Memory.h"
 #undef BOOL
 #include "General/Misc.h"
 #include "SIFormat.h"
@@ -70,7 +71,7 @@ bool SImage::loadFont0(const uint8_t* gfx_data, int size)
 		return false;
 
 	offset_x_ = offset_y_ = 0;
-	height_               = READ_L16(gfx_data, 0);
+	height_               = Memory::readL16(gfx_data, 0);
 
 	size_t datasize = size - 0x302;
 	if (datasize % height_)
@@ -278,7 +279,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	// Let's build the palette now.
 	for (size_t i = 0; i < header->palsize + 1u; ++i)
 	{
-		rgba_t color;
+		ColRGBA color;
 		color.r = *p++;
 		color.g = *p++;
 		color.b = *p++;
@@ -468,12 +469,12 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 
 	// Setup palette -- it's a 6-bit palette (63 max) so we have to convert it to 8-bit.
 	// Palette index 0 is used as the transparent color and not described at all.
-	palette_.setColour(0, rgba_t(0, 0, 0, 0));
+	palette_.setColour(0, ColRGBA(0, 0, 0, 0));
 	for (size_t i = 0; i < mf.pal_size; ++i)
 	{
 		palette_.setColour(
 			i + 1,
-			rgba_t(
+			ColRGBA(
 				(ofs[(i * 3)] << 2) + (ofs[(i * 3)] >> 4),
 				(ofs[(i * 3) + 1] << 2) + (ofs[(i * 3)] >> 4),
 				(ofs[(i * 3) + 2] << 2) + (ofs[(i * 3) + 2] >> 4),
@@ -493,7 +494,7 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 		mf.info = (char*)ofs + 1;
 	}
 	ofs += mf.info_size + 1;
-	mf.num_chars = READ_L16(ofs, 0);
+	mf.num_chars = Memory::readL16(ofs, 0);
 	if (mf.num_chars == 0)
 		return false;
 
@@ -650,7 +651,7 @@ bool SImage::loadWolfFont(const uint8_t* gfx_data, int size)
 		return false;
 
 	offset_x_ = offset_y_ = 0;
-	height_               = READ_L16(gfx_data, 0);
+	height_               = Memory::readL16(gfx_data, 0);
 
 	size_t datasize = size - 0x302;
 	if (datasize % height_)
@@ -683,7 +684,7 @@ bool SImage::loadWolfFont(const uint8_t* gfx_data, int size)
 		w = gfx_data[c + 0x202]; // Get this character's width
 		if (!w)
 			continue;
-		size_t o = READ_L16(gfx_data, ((c << 1) + 2));
+		size_t o = Memory::readL16(gfx_data, ((c << 1) + 2));
 		for (size_t i = 0; i < w * height_; ++i)
 		{
 			// Compute source and destination offsets
@@ -791,12 +792,12 @@ bool SImage::loadJediFONT(const uint8_t* gfx_data, int size)
 	if (size < 16)
 		return false;
 
-	int numchr = READ_L16(gfx_data, 2);
+	int numchr = Memory::readL16(gfx_data, 2);
 
 	// Setup variables
 	offset_x_ = offset_y_ = 0;
-	height_               = READ_L16(gfx_data, 6) * numchr;
-	width_                = READ_L16(gfx_data, 4);
+	height_               = Memory::readL16(gfx_data, 6) * numchr;
+	width_                = Memory::readL16(gfx_data, 4);
 	has_palette_          = false;
 	type_                 = PALMASK;
 	format_               = nullptr;
@@ -827,9 +828,9 @@ bool SImage::loadJediFONT(const uint8_t* gfx_data, int size)
 			switch (bpc)
 			{
 			case 1: mask_[(i * width_) + p] = ((gfx_data[o + i] >> (7 - p)) & 1) * 255; break;
-			case 2: mask_[(i * width_) + p] = ((READ_B16(gfx_data, o + (i * 2)) >> (15 - p)) & 1) * 255; break;
-			case 3: mask_[(i * width_) + p] = ((READ_B24(gfx_data, o + (i * 3)) >> (23 - p)) & 1) * 255; break;
-			case 4: mask_[(i * width_) + p] = ((READ_B32(gfx_data, o + (i * 4)) >> (31 - p)) & 1) * 255; break;
+			case 2: mask_[(i * width_) + p] = ((Memory::readB16(gfx_data, o + (i * 2)) >> (15 - p)) & 1) * 255; break;
+			case 3: mask_[(i * width_) + p] = ((Memory::readB24(gfx_data, o + (i * 3)) >> (23 - p)) & 1) * 255; break;
+			case 4: mask_[(i * width_) + p] = ((Memory::readB32(gfx_data, o + (i * 4)) >> (31 - p)) & 1) * 255; break;
 			default:
 				clearData();
 				Global::error = "Jedi FONT: Weird word width";
@@ -858,10 +859,10 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 
 	// Setup variables
 	int16_t ofsx, ofsy;
-	width_       = READ_B16(header, 0);
-	height_      = READ_B16(header, 2);
-	ofsx         = READ_B16(header, 4);
-	ofsy         = READ_B16(header, 6);
+	width_       = Memory::readB16(header, 0);
+	height_      = Memory::readB16(header, 2);
+	ofsx         = Memory::readB16(header, 4);
+	ofsy         = Memory::readB16(header, 6);
 	offset_x_    = ofsx;
 	offset_y_    = ofsy;
 	has_palette_ = false;
@@ -887,7 +888,7 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 	vector<uint16_t> col_offsets(width_);
 	for (int w = 0; w < width_; ++w)
 	{
-		col_offsets[w] = READ_B16(header, 8 + 2 * w);
+		col_offsets[w] = Memory::readB16(header, 8 + 2 * w);
 	}
 	if (hdr_size < (4 + col_offsets[width_ - 1]))
 	{
@@ -903,11 +904,11 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 	{
 		int post_p = col_offsets[w];
 		// Process all posts in the column
-		while (READ_B16(header, post_p) != 0xFFFF)
+		while (Memory::readB16(header, post_p) != 0xFFFF)
 		{
 			int top     = header[post_p];
 			int len     = header[post_p + 1];
-			int pixel_p = READ_B16(header, post_p + 2);
+			int pixel_p = Memory::readB16(header, post_p + 2);
 			if (pixel_p + len > size)
 			{
 				Global::error =

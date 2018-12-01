@@ -271,7 +271,7 @@ void MapSector::setFloorHeight(short height)
 {
 	setModified();
 	floor_.height = height;
-	setFloorPlane(plane_t::flat(height));
+	setFloorPlane(Plane::flat(height));
 }
 
 // -----------------------------------------------------------------------------
@@ -281,13 +281,13 @@ void MapSector::setCeilingHeight(short height)
 {
 	setModified();
 	ceiling_.height = height;
-	setCeilingPlane(plane_t::flat(height));
+	setCeilingPlane(Plane::flat(height));
 }
 
 // -----------------------------------------------------------------------------
 // Sets the floor plane to [p]
 // -----------------------------------------------------------------------------
-void MapSector::setFloorPlane(const plane_t& p)
+void MapSector::setFloorPlane(const Plane& p)
 {
 	if (floor_.plane != p)
 		setGeometryUpdated();
@@ -297,7 +297,7 @@ void MapSector::setFloorPlane(const plane_t& p)
 // -----------------------------------------------------------------------------
 // Sets the ceiling plane to [p]
 // -----------------------------------------------------------------------------
-void MapSector::setCeilingPlane(const plane_t& p)
+void MapSector::setCeilingPlane(const Plane& p)
 {
 	if (ceiling_.plane != p)
 		setGeometryUpdated();
@@ -309,12 +309,12 @@ void MapSector::setCeilingPlane(const plane_t& p)
 // Mid = the absolute mid point of the sector,
 // Within/Text = a calculated point that is within the actual sector
 // -----------------------------------------------------------------------------
-fpoint2_t MapSector::getPoint(Point point)
+Vec2f MapSector::getPoint(Point point)
 {
 	if (point == Point::Mid)
 	{
-		bbox_t bbox = boundingBox();
-		return fpoint2_t(
+		BBox bbox = boundingBox();
+		return Vec2f(
 			bbox.min.x + ((bbox.max.x - bbox.min.x) * 0.5), bbox.min.y + ((bbox.max.y - bbox.min.y) * 0.5));
 	}
 	else
@@ -349,10 +349,10 @@ void MapSector::updateBBox()
 // -----------------------------------------------------------------------------
 // Returns the sector bounding box
 // -----------------------------------------------------------------------------
-bbox_t MapSector::boundingBox()
+BBox MapSector::boundingBox()
 {
 	// Update bbox if needed
-	if (!bbox_.is_valid())
+	if (!bbox_.isValid())
 		updateBBox();
 
 	return bbox_;
@@ -375,7 +375,7 @@ Polygon2D* MapSector::polygon()
 // -----------------------------------------------------------------------------
 // Returns true if the point is inside the sector
 // -----------------------------------------------------------------------------
-bool MapSector::isWithin(fpoint2_t point)
+bool MapSector::isWithin(Vec2f point)
 {
 	// Check with bbox first
 	if (!boundingBox().contains(point))
@@ -422,26 +422,26 @@ bool MapSector::isWithin(fpoint2_t point)
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the closest line in the sector
 // -----------------------------------------------------------------------------
-double MapSector::distanceTo(fpoint2_t point, double maxdist)
+double MapSector::distanceTo(Vec2f point, double maxdist)
 {
 	// Init
 	if (maxdist < 0)
 		maxdist = 9999999;
 
 	// Check bounding box first
-	if (!bbox_.is_valid())
+	if (!bbox_.isValid())
 		updateBBox();
 	double min_dist = 9999999;
-	double dist     = MathStuff::distanceToLine(point, bbox_.left_side());
+	double dist     = MathStuff::distanceToLine(point, bbox_.leftSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox_.top_side());
+	dist = MathStuff::distanceToLine(point, bbox_.topSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox_.right_side());
+	dist = MathStuff::distanceToLine(point, bbox_.rightSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox_.bottom_side());
+	dist = MathStuff::distanceToLine(point, bbox_.bottomSide());
 	if (dist < min_dist)
 		min_dist = dist;
 
@@ -616,7 +616,7 @@ void MapSector::changeLight(int amount, int where)
 // Returns the colour of the sector at [where] - 1 = floor, 2 = ceiling.
 // If [fullbright] is true, light level is ignored
 // -----------------------------------------------------------------------------
-rgba_t MapSector::colourAt(int where, bool fullbright)
+ColRGBA MapSector::colourAt(int where, bool fullbright)
 {
 	using Game::UDMFFeature;
 
@@ -624,7 +624,7 @@ rgba_t MapSector::colourAt(int where, bool fullbright)
 	// TODO: Test if this is correct behaviour
 	if (parent_map_->mapSpecials()->tagColoursSet())
 	{
-		rgba_t col;
+		ColRGBA col;
 		if (parent_map_->mapSpecials()->tagColour(id_, &col))
 		{
 			if (fullbright)
@@ -663,7 +663,7 @@ rgba_t MapSector::colourAt(int where, bool fullbright)
 
 		// Ignore light level if fullbright
 		if (fullbright)
-			return rgba_t(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255);
+			return ColRGBA(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255);
 
 		// Get sector light level
 		int ll = light_;
@@ -699,12 +699,12 @@ rgba_t MapSector::colourAt(int where, bool fullbright)
 
 		// Calculate and return the colour
 		float lightmult = (float)ll / 255.0f;
-		return rgba_t(wxcol.Blue() * lightmult, wxcol.Green() * lightmult, wxcol.Red() * lightmult, 255);
+		return ColRGBA(wxcol.Blue() * lightmult, wxcol.Green() * lightmult, wxcol.Red() * lightmult, 255);
 	}
 
 	// Other format, simply return the light level
 	if (fullbright)
-		return rgba_t(255, 255, 255, 255);
+		return ColRGBA(255, 255, 255, 255);
 	else
 	{
 		int l = light_;
@@ -715,16 +715,16 @@ rgba_t MapSector::colourAt(int where, bool fullbright)
 		if (l < 0)
 			l = 0;
 
-		return rgba_t(l, l, l, 255);
+		return ColRGBA(l, l, l, 255);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Returns the fog colour of the sector
 // -----------------------------------------------------------------------------
-rgba_t MapSector::fogColour()
+ColRGBA MapSector::fogColour()
 {
-	rgba_t color(0, 0, 0, 0);
+	ColRGBA color(0, 0, 0, 0);
 
 	// map specials/scripts
 	if (parent_map_->mapSpecials()->tagFadeColoursSet())
@@ -740,7 +740,7 @@ rgba_t MapSector::fogColour()
 		int intcol = MapObject::intProperty("fadecolor");
 
 		wxColour wxcol(intcol);
-		color = rgba_t(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 0);
+		color = ColRGBA(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 0);
 	}
 	return color;
 }

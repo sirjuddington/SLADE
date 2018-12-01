@@ -23,7 +23,7 @@ public:
 	{
 		string  texture;
 		int     height = 0;
-		plane_t plane  = { 0., 0., 1., 0. };
+		Plane plane  = { 0., 0., 1., 0. };
 	};
 
 	struct DoomData
@@ -72,28 +72,28 @@ public:
 	void setCeilingTexture(const string& tex);
 	void setFloorHeight(short height);
 	void setCeilingHeight(short height);
-	void setFloorPlane(const plane_t& p);
-	void setCeilingPlane(const plane_t& p);
+	void setFloorPlane(const Plane& p);
+	void setCeilingPlane(const Plane& p);
 
 	template<SurfaceType p> short   planeHeight();
-	template<SurfaceType p> plane_t plane();
-	template<SurfaceType p> void    setPlane(const plane_t& plane);
+	template<SurfaceType p> Plane plane();
+	template<SurfaceType p> void    setPlane(const Plane& plane);
 
-	fpoint2_t         getPoint(Point point) override;
+	Vec2f         getPoint(Point point) override;
 	void              resetBBox() { bbox_.reset(); }
-	bbox_t            boundingBox();
+	BBox            boundingBox();
 	vector<MapSide*>& connectedSides() { return connected_sides_; }
 	void              resetPolygon() { poly_needsupdate_ = true; }
 	Polygon2D*        polygon();
-	bool              isWithin(fpoint2_t point);
-	double            distanceTo(fpoint2_t point, double maxdist = -1);
+	bool              isWithin(Vec2f point);
+	double            distanceTo(Vec2f point, double maxdist = -1);
 	bool              putLines(vector<MapLine*>& list);
 	bool              putVertices(vector<MapVertex*>& list);
 	bool              putVertices(vector<MapObject*>& list);
 	uint8_t           lightAt(int where = 0);
 	void              changeLight(int amount, int where = 0);
-	rgba_t            colourAt(int where = 0, bool fullbright = false);
-	rgba_t            fogColour();
+	ColRGBA            colourAt(int where = 0, bool fullbright = false);
+	ColRGBA            fogColour();
 	long              geometryUpdatedTime() const { return geometry_updated_; }
 
 	void connectSide(MapSide* side);
@@ -122,11 +122,11 @@ private:
 
 	// Internal info
 	vector<MapSide*> connected_sides_;
-	bbox_t           bbox_;
+	BBox           bbox_;
 	Polygon2D        polygon_;
 	bool             poly_needsupdate_;
 	long             geometry_updated_;
-	fpoint2_t        text_point_;
+	Vec2f        text_point_;
 
 	void setGeometryUpdated();
 };
@@ -140,19 +140,19 @@ template<> inline short MapSector::planeHeight<MapSector::Ceiling>()
 {
 	return ceiling_.height;
 }
-template<> inline plane_t MapSector::plane<MapSector::Floor>()
+template<> inline Plane MapSector::plane<MapSector::Floor>()
 {
 	return floor_.plane;
 }
-template<> inline plane_t MapSector::plane<MapSector::Ceiling>()
+template<> inline Plane MapSector::plane<MapSector::Ceiling>()
 {
 	return ceiling_.plane;
 }
-template<> inline void MapSector::setPlane<MapSector::Floor>(const plane_t& plane)
+template<> inline void MapSector::setPlane<MapSector::Floor>(const Plane& plane)
 {
 	setFloorPlane(plane);
 }
-template<> inline void MapSector::setPlane<MapSector::Ceiling>(const plane_t& plane)
+template<> inline void MapSector::setPlane<MapSector::Ceiling>(const Plane& plane)
 {
 	setCeilingPlane(plane);
 }

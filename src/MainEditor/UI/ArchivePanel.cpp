@@ -1626,7 +1626,7 @@ bool ArchivePanel::importEntry()
 		if (SFileDialog::openFile(info, "Import Entry \"" + entry->name() + "\"", "Any File (*.*)|*.*", this))
 		{
 			// Preserve gfx offset if needed
-			point2_t offset;
+			Vec2i offset;
 			if (!entry->type()->editor().Cmp("gfx"))
 			{
 				// We have an image
@@ -1650,8 +1650,8 @@ bool ArchivePanel::importEntry()
 				SImage si;
 				si.open(entry->data());
 
-				point2_t noffset = si.offset();
-				bool     ok      = true;
+				Vec2i noffset = si.offset();
+				bool  ok      = true;
 				// Don't bother if the same offsets are reimported
 				if (offset == noffset)
 					ok = false;
@@ -2046,8 +2046,8 @@ bool ArchivePanel::gfxColourise()
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
-	rgba_t gcdcol = gcd.colour();
-	last_colour   = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
+	ColRGBA gcdcol = gcd.colour();
+	last_colour    = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
 	MainEditor::currentEntryPanel()->callRefresh();
 
 	return true;
@@ -2102,7 +2102,7 @@ bool ArchivePanel::gfxTint()
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
-	rgba_t gtdcol    = gtd.colour();
+	ColRGBA gtdcol   = gtd.colour();
 	last_tint_colour = S_FMT("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
 	last_tint_amount = (int)(gtd.amount() * 100.0f);
 	MainEditor::currentEntryPanel()->callRefresh();
@@ -2540,8 +2540,7 @@ bool ArchivePanel::musMidiConvert()
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Convert MUS -> MIDI if the entry is a MIDI-like format
-		if (selection[a]->type()->formatId().StartsWith("midi_")
-			&& selection[a]->type()->formatId() != "midi_smf")
+		if (selection[a]->type()->formatId().StartsWith("midi_") && selection[a]->type()->formatId() != "midi_smf")
 		{
 			MemChunk midi;
 			undo_manager_->recordUndoStep(new EntryDataUS(selection[a])); // Create undo step
@@ -2551,9 +2550,9 @@ bool ArchivePanel::musMidiConvert()
 				Conversions::gmidToMidi(selection[a]->data(), midi); // Convert
 			else
 				Conversions::zmusToMidi(selection[a]->data(), midi); // Convert
-			selection[a]->importMemChunk(midi);                           // Load midi data
-			EntryType::detectEntryType(selection[a]);                     // Update entry type
-			selection[a]->setExtensionByType();                           // Update extension if necessary
+			selection[a]->importMemChunk(midi);                      // Load midi data
+			EntryType::detectEntryType(selection[a]);                // Update entry type
+			selection[a]->setExtensionByType();                      // Update extension if necessary
 		}
 	}
 	entry_list_->setEntriesAutoUpdate(true);
@@ -4060,13 +4059,13 @@ CONSOLE_COMMAND(palconv64, 0, false)
 	if (meep)
 	{
 		// Get the entry index of the last selected list item
-		ArchiveEntry*  pal    = meep->currentEntry();
-		const uint8_t* source = pal->rawData(true);
-		uint8_t*       dest   = new uint8_t[(pal->size() / 2) * 3];
+		ArchiveEntry* pal    = meep->currentEntry();
+		auto&         source = pal->data(true);
+		uint8_t*      dest   = new uint8_t[(pal->size() / 2) * 3];
 		for (size_t i = 0; i < pal->size() / 2; ++i)
 		{
 			uint8_t  r, g, b;
-			uint16_t col      = READ_B16(source, 2 * i);
+			uint16_t col      = source.readB16(2 * i);
 			r                 = (col & 0xF800) >> 8;
 			g                 = (col & 0x07C0) >> 3;
 			b                 = (col & 0x003E) << 2;
@@ -4086,14 +4085,14 @@ CONSOLE_COMMAND(palconvpsx, 0, false)
 	if (meep)
 	{
 		// Get the entry index of the last selected list item
-		ArchiveEntry*  pal    = meep->currentEntry();
-		const uint8_t* source = pal->rawData(true);
-		uint8_t*       dest   = new uint8_t[(pal->size() / 2) * 3];
+		ArchiveEntry* pal    = meep->currentEntry();
+		auto&         source = pal->data(true);
+		uint8_t*      dest   = new uint8_t[(pal->size() / 2) * 3];
 		for (size_t i = 0; i < pal->size() / 2; ++i)
 		{
 			// A1 B5 G5 R5, LE
 			uint8_t  a, r, g, b;
-			uint16_t col      = READ_L16(source, 2 * i);
+			uint16_t col      = source.readL16(2 * i);
 			a                 = (col & 0x8000) >> 15;
 			b                 = (col & 0x7C00) >> 10;
 			g                 = (col & 0x03E0) >> 5;

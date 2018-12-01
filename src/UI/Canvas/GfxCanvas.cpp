@@ -73,7 +73,7 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 	update_texture_ = false;
 	image_hilight_  = false;
 	drag_pos_.set(0, 0);
-	drag_origin_.set(point2_t::outside());
+	drag_origin_.set(Vec2i::outside());
 	allow_drag_   = false;
 	allow_scroll_ = false;
 	editing_mode_ = EditMode::None;
@@ -83,8 +83,8 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 	drawing_mask_ = nullptr;
 	brush_        = nullptr;
 	tex_brush_    = new GLTexture();
-	cursor_pos_.set(point2_t::outside());
-	prev_pos_.set(point2_t::outside());
+	cursor_pos_.set(Vec2i::outside());
+	prev_pos_.set(Vec2i::outside());
 
 	// Listen to the image for changes
 	listenTo(image_);
@@ -264,7 +264,7 @@ void GfxCanvas::drawImage()
 	else // Dragging
 	{
 		// Draw the original
-		OpenGL::setColour(rgba_t(0, 0, 0, 180, 0));
+		OpenGL::setColour(ColRGBA(0, 0, 0, 180, 0));
 		tex_image_->draw2d();
 
 		// Draw the dragged image
@@ -275,7 +275,7 @@ void GfxCanvas::drawImage()
 		tex_image_->draw2d();
 	}
 	// Draw brush shadow when in editing mode
-	if (editing_mode_ != EditMode::None && cursor_pos_ != point2_t::outside())
+	if (editing_mode_ != EditMode::None && cursor_pos_ != Vec2i::outside())
 	{
 		OpenGL::setColour(255, 255, 255, 160, 0);
 		tex_brush_->draw2d();
@@ -349,14 +349,14 @@ bool GfxCanvas::onImage(int x, int y)
 		return false;
 
 	// No need to duplicate the imageCoords code.
-	return imageCoords(x, y) != point2_t::outside();
+	return imageCoords(x, y) != Vec2i::outside();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the image coordinates at [x,y] in screen coordinates, or [-1, -1] if
 // not on the image
 // -----------------------------------------------------------------------------
-point2_t GfxCanvas::imageCoords(int x, int y)
+Vec2i GfxCanvas::imageCoords(int x, int y)
 {
 	// Determine top-left coordinates of image in screen coords
 	double left   = GetSize().x * 0.5 + offset_.x;
@@ -399,10 +399,10 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 		double xpos = double(x - left) / w;
 		double ypos = double(y - top) / h;
 
-		return point2_t(xpos * image_->width(), ypos * image_->height());
+		return Vec2i(xpos * image_->width(), ypos * image_->height());
 	}
 	else
-		return point2_t::outside();
+		return Vec2i::outside();
 }
 
 // -----------------------------------------------------------------------------
@@ -428,7 +428,7 @@ void GfxCanvas::endOffsetDrag()
 	}
 
 	// Stop drag
-	drag_origin_.set(point2_t::outside());
+	drag_origin_.set(Vec2i::outside());
 }
 
 // -----------------------------------------------------------------------------
@@ -458,9 +458,9 @@ void GfxCanvas::paintPixel(int x, int y)
 	{
 		if (translation_ != nullptr)
 		{
-			rgba_t  ocol  = image_->pixelAt(x, y, palette());
+			ColRGBA  ocol  = image_->pixelAt(x, y, palette());
 			uint8_t alpha = ocol.a;
-			rgba_t  ncol  = (translation_->translate(ocol, palette()));
+			ColRGBA  ncol  = (translation_->translate(ocol, palette()));
 			ncol.a        = alpha;
 			if (!ocol.equals(ncol, false, true))
 				painted = image_->setPixel(x, y, ncol);
@@ -487,7 +487,7 @@ void GfxCanvas::brushCanvas(int x, int y)
 {
 	if (brush_ == nullptr)
 		return;
-	point2_t coord = imageCoords(x, y);
+	Vec2i coord = imageCoords(x, y);
 	for (int i = -4; i < 5; ++i)
 		for (int j = -4; j < 5; ++j)
 			if (brush_->pixel(i, j))
@@ -500,7 +500,7 @@ void GfxCanvas::brushCanvas(int x, int y)
 void GfxCanvas::pickColour(int x, int y)
 {
 	// Get the pixel
-	point2_t coord = imageCoords(x, y);
+	Vec2i coord = imageCoords(x, y);
 
 	// Pick its colour
 	paint_colour_ = image_->pixelAt(coord.x, coord.y, palette());
@@ -526,7 +526,7 @@ void GfxCanvas::generateBrushShadow()
 		for (int j = -4; j < 5; ++j)
 			if (brush_->pixel(i, j))
 			{
-				rgba_t col = paint_colour_;
+				ColRGBA col = paint_colour_;
 				if (editing_mode_ == EditMode::Translate && translation_)
 					col = translation_->translate(
 						image_->pixelAt(cursor_pos_.x + i, cursor_pos_.y + j, palette()), palette());
@@ -675,7 +675,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	}
 	else if (e.MiddleIsDown())
 	{
-		offset_ = offset_ + point2_t(e.GetPosition().x - mouse_prev_.x, e.GetPosition().y - mouse_prev_.y);
+		offset_ = offset_ + Vec2i(e.GetPosition().x - mouse_prev_.x, e.GetPosition().y - mouse_prev_.y);
 		refresh = true;
 	}
 	// Right mouse down

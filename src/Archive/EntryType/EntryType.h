@@ -21,7 +21,7 @@ public:
 	int           index() const { return index_; }
 	uint8_t       reliability() const { return reliability_; }
 	PropertyList& extraProps() { return extra_; }
-	rgba_t        colour() const { return colour_; }
+	ColRGBA        colour() const { return colour_; }
 
 	// Misc
 	void   addToList();
@@ -54,7 +54,7 @@ private:
 	string  editor_;    // The in-program editor to use (hardcoded ids, see *EntryPanel constructors)
 	string  category_;  // The type 'category', used for type filtering
 	int     index_;
-	rgba_t  colour_;
+	ColRGBA  colour_;
 	bool    detectable_;  // False only for special types that should be set not detected
 	uint8_t reliability_; // How 'reliable' this type's detection is. A higher value means it's less likely this
 						  // type can be detected erroneously. 0-255 (default is 255)

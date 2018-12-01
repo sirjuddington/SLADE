@@ -66,16 +66,16 @@ public:
 
 	void               addLines(vector<MapLine*> lines);
 	string             info();
-	vector<MapVertex*> pasteToMap(SLADEMap* map, fpoint2_t position);
+	vector<MapVertex*> pasteToMap(SLADEMap* map, Vec2f position);
 	void               putLines(vector<MapLine*>& list);
-	fpoint2_t          midpoint() { return midpoint_; }
+	Vec2f          midpoint() { return midpoint_; }
 
 private:
 	vector<MapVertex*> vertices_;
 	vector<MapSide*>   sides_;
 	vector<MapLine*>   lines_;
 	vector<MapSector*> sectors_;
-	fpoint2_t          midpoint_;
+	Vec2f          midpoint_;
 };
 
 class MapThing;
@@ -87,13 +87,13 @@ public:
 
 	void      addThings(vector<MapThing*>& things);
 	string    info();
-	void      pasteToMap(SLADEMap* map, fpoint2_t position);
+	void      pasteToMap(SLADEMap* map, Vec2f position);
 	void      putThings(vector<MapThing*>& list);
-	fpoint2_t midpoint() { return midpoint_; }
+	Vec2f midpoint() { return midpoint_; }
 
 private:
 	vector<MapThing*> things_;
-	fpoint2_t         midpoint_;
+	Vec2f         midpoint_;
 };
 
 class Clipboard

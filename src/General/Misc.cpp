@@ -126,7 +126,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 		ArchiveEntry* texture1 = parent->entry("TEXTURE1");
 		if (texture1 == nullptr)
 			return false;
-		point2_t dimensions = findJaguarTextureDimensions(texture1, entry->name(true));
+		Vec2i dimensions = findJaguarTextureDimensions(texture1, entry->name(true));
 		return image->loadJaguarTexture(entry->rawData(), entry->size(), dimensions.x, dimensions.y);
 	}
 
@@ -277,7 +277,7 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 			g = (g << 2) | (g >> 4);
 			b = (b << 2) | (b >> 4);
 		}
-		pal->setColour(a, rgba_t(r, g, b, 255));
+		pal->setColour(a, ColRGBA(r, g, b, 255));
 	}
 
 	return true;
@@ -451,9 +451,9 @@ void Misc::doMassRename(wxArrayString& names, string name_filter)
 // -----------------------------------------------------------------------------
 // Converts a colour from RGB to HSL colourspace
 // -----------------------------------------------------------------------------
-hsl_t Misc::rgbToHsl(double r, double g, double b)
+ColHSL Misc::rgbToHsl(double r, double g, double b)
 {
-	hsl_t  ret;
+	ColHSL ret;
 	double v_min = MIN(r, MIN(g, b));
 	double v_max = MAX(r, MAX(g, b));
 	double delta = v_max - v_min;
@@ -487,7 +487,7 @@ hsl_t Misc::rgbToHsl(double r, double g, double b)
 
 	return ret;
 }
-hsl_t Misc::rgbToHsl(rgba_t rgba)
+ColHSL Misc::rgbToHsl(ColRGBA rgba)
 {
 	return Misc::rgbToHsl(rgba.dr(), rgba.dg(), rgba.db());
 }
@@ -495,9 +495,9 @@ hsl_t Misc::rgbToHsl(rgba_t rgba)
 // -----------------------------------------------------------------------------
 // Converts a colour from HSL to RGB colourspace
 // -----------------------------------------------------------------------------
-rgba_t Misc::hslToRgb(double h, double s, double l)
+ColRGBA Misc::hslToRgb(double h, double s, double l)
 {
-	rgba_t ret(0, 0, 0, 255, -1);
+	ColRGBA ret(0, 0, 0, 255, -1);
 
 	// No saturation means grey
 	if (s == 0.)
@@ -604,7 +604,7 @@ rgba_t Misc::hslToRgb(double h, double s, double l)
 
 	return ret;
 }
-rgba_t Misc::hslToRgb(hsl_t hsl)
+ColRGBA Misc::hslToRgb(ColHSL hsl)
 {
 	return Misc::hslToRgb(hsl.h, hsl.s, hsl.l);
 }
@@ -615,10 +615,10 @@ rgba_t Misc::hslToRgb(hsl_t hsl)
 // -----------------------------------------------------------------------------
 #define NORMALIZERGB(a) a = 100 * ((a > 0.04045) ? (pow(((a + 0.055) / 1.055), 2.4)) : (a / 12.92))
 #define NORMALIZEXYZ(a) a = ((a > 0.008856) ? (pow(a, (1.0 / 3.0))) : ((7.787 * a) + (16.0 / 116.0)))
-lab_t Misc::rgbToLab(double r, double g, double b)
+ColLAB Misc::rgbToLab(double r, double g, double b)
 {
 	double x, y, z;
-	lab_t  ret;
+	ColLAB ret;
 
 	// Step #1: convert RGB to CIE-XYZ
 	NORMALIZERGB(r);
@@ -640,7 +640,7 @@ lab_t Misc::rgbToLab(double r, double g, double b)
 
 	return ret;
 }
-lab_t Misc::rgbToLab(rgba_t rgba)
+ColLAB Misc::rgbToLab(ColRGBA rgba)
 {
 	return Misc::rgbToLab(rgba.dr(), rgba.dg(), rgba.db());
 }
@@ -708,9 +708,9 @@ uint32_t Misc::crc(const uint8_t* buf, uint32_t len)
 // the dimensions.
 // In case the texture is not found, the dimensions returned are null
 // -----------------------------------------------------------------------------
-point2_t Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
+Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
 {
-	point2_t dimensions;
+	Vec2i dimensions;
 	dimensions.x = 0;
 	dimensions.y = 0;
 
@@ -718,8 +718,8 @@ point2_t Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
 	if (entry->size() < 40)
 		return dimensions;
 
-	const uint8_t* data   = entry->rawData();
-	size_t         numtex = READ_L32(data, 0);
+	auto&  data   = entry->data();
+	size_t numtex = data.readL32(0);
 
 	// 4 bytes for the offset, plus 32 byte for the texture definition itself
 	// so a total of 36 bytes per texture; plus four for the texture count
@@ -727,7 +727,7 @@ point2_t Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
 		return dimensions;
 
 	// Check that the offset to the first texture comes right after the offset block
-	int offset = READ_L32(data, 4);
+	int offset = data.readL32(4);
 	if (offset != 4 * numtex + 4)
 		return dimensions;
 
@@ -736,12 +736,12 @@ point2_t Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
 
 	for (size_t t = 0; t < numtex; ++t, offset += 32)
 	{
-		memcpy(texture, data + offset, 8);
+		memcpy(texture, data.data() + offset, 8);
 		if (S_CMPNOCASE(name, texture))
 		{
 			// We have our texture! Let's get the width and heigth and get out of here
-			dimensions.x = READ_L16(data, offset + 12);
-			dimensions.y = READ_L16(data, offset + 14);
+			dimensions.x = data.readL16(offset + 12);
+			dimensions.y = data.readL16(offset + 14);
 			return dimensions;
 		}
 	}

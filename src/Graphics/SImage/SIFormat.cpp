@@ -152,7 +152,7 @@ protected:
 			if (b > 256)
 				b = 256;
 			for (; a < b; a++)
-				palette.setColour(a, rgba_t(bm_pal[a].rgbRed, bm_pal[a].rgbGreen, bm_pal[a].rgbBlue, 255));
+				palette.setColour(a, ColRGBA(bm_pal[a].rgbRed, bm_pal[a].rgbGreen, bm_pal[a].rgbBlue, 255));
 		}
 
 		// Create image

@@ -94,8 +94,8 @@ void SectorTextureOverlay::update(long frametime)
 void SectorTextureOverlay::draw(int width, int height, float fade)
 {
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::colour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
+	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_bg.a *= fade;
 	col_fg.a *= fade;
 
@@ -199,9 +199,9 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover)
 {
 	// Get colours
-	rgba_t col_bg  = ColourConfiguration::colour("map_overlay_background");
-	rgba_t col_fg  = ColourConfiguration::colour("map_overlay_foreground");
-	rgba_t col_sel = ColourConfiguration::colour("map_hilight");
+	ColRGBA col_bg  = ColourConfiguration::colour("map_overlay_background");
+	ColRGBA col_fg  = ColourConfiguration::colour("map_overlay_foreground");
+	ColRGBA col_sel = ColourConfiguration::colour("map_hilight");
 	col_fg.a       = col_fg.a * alpha;
 
 	// Draw background

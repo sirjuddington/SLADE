@@ -208,7 +208,7 @@ void MapRenderer2D::renderVertices(float alpha)
 	bool point = setupVertexRendering(1.0f);
 
 	// Set to vertex colour
-	rgba_t col = ColourConfiguration::colour("map_vertex");
+	ColRGBA col = ColourConfiguration::colour("map_vertex");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(col.fr(), col.fg(), col.fb(), col.fa() * alpha);
 
@@ -298,7 +298,7 @@ void MapRenderer2D::renderVertexHilight(int index, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	rgba_t col = ColourConfiguration::colour("map_hilight");
+	ColRGBA col = ColourConfiguration::colour("map_hilight");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -331,7 +331,7 @@ void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float 
 		fade = 1.0f;
 
 	// Set selection colour
-	rgba_t col = ColourConfiguration::colour("map_selection");
+	ColRGBA col = ColourConfiguration::colour("map_selection");
 	col.a      = 255; //*= fade;
 	OpenGL::setColour(col);
 
@@ -360,9 +360,9 @@ void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float 
 // -----------------------------------------------------------------------------
 // Returns the colour for [line]
 // -----------------------------------------------------------------------------
-rgba_t MapRenderer2D::lineColour(MapLine* line, bool ignore_filter)
+ColRGBA MapRenderer2D::lineColour(MapLine* line, bool ignore_filter)
 {
-	rgba_t col;
+	ColRGBA col;
 
 	if (line)
 	{
@@ -436,7 +436,7 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 	glNewList(list_lines_, GL_COMPILE_AND_EXECUTE);
 
 	// Draw all lines
-	rgba_t   col;
+	ColRGBA   col;
 	MapLine* line = nullptr;
 	double   x1, y1, x2, y2;
 	glBegin(GL_LINES);
@@ -462,8 +462,8 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 		// Direction tab
 		if (show_direction)
 		{
-			fpoint2_t mid = line->getPoint(MapObject::Point::Mid);
-			fpoint2_t tab = line->dirTabPoint();
+			Vec2f mid = line->getPoint(MapObject::Point::Mid);
+			Vec2f tab = line->dirTabPoint();
 			glVertex2d(mid.x, mid.y);
 			glVertex2d(tab.x, tab.y);
 		}
@@ -531,7 +531,7 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	rgba_t col = ColourConfiguration::colour("map_hilight");
+	ColRGBA col = ColourConfiguration::colour("map_hilight");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -550,8 +550,8 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 	glEnd();
 
 	// Direction tab
-	fpoint2_t mid = line->getPoint(MapObject::Point::Mid);
-	fpoint2_t tab = line->dirTabPoint();
+	Vec2f mid = line->getPoint(MapObject::Point::Mid);
+	Vec2f tab = line->dirTabPoint();
 	glBegin(GL_LINES);
 	glVertex2d(mid.x, mid.y);
 	glVertex2d(tab.x, tab.y);
@@ -572,7 +572,7 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 		fade = 1.0f;
 
 	// Set selection colour
-	rgba_t col = ColourConfiguration::colour("map_selection");
+	ColRGBA col = ColourConfiguration::colour("map_selection");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -600,8 +600,8 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 		glVertex2d(x2, y2);
 
 		// Direction tab
-		fpoint2_t mid = line->getPoint(MapObject::Point::Mid);
-		fpoint2_t tab = line->dirTabPoint();
+		Vec2f mid = line->getPoint(MapObject::Point::Mid);
+		Vec2f tab = line->dirTabPoint();
 		glVertex2d(mid.x, mid.y);
 		glVertex2d(tab.x, tab.y);
 	}
@@ -618,7 +618,7 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	rgba_t col = ColourConfiguration::colour("map_tagged");
+	ColRGBA col = ColourConfiguration::colour("map_tagged");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -642,8 +642,8 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 		glEnd();
 
 		// Direction tab
-		fpoint2_t mid = line->getPoint(MapObject::Point::Mid);
-		fpoint2_t tab = line->dirTabPoint();
+		Vec2f mid = line->getPoint(MapObject::Point::Mid);
+		Vec2f tab = line->dirTabPoint();
 		glBegin(GL_LINES);
 		glVertex2d(mid.x, mid.y);
 		glVertex2d(tab.x, tab.y);
@@ -675,7 +675,7 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	rgba_t col = ColourConfiguration::colour("map_tagging");
+	ColRGBA col = ColourConfiguration::colour("map_tagging");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -699,8 +699,8 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 		glEnd();
 
 		// Direction tab
-		fpoint2_t mid = line->getPoint(MapObject::Point::Mid);
-		fpoint2_t tab = line->dirTabPoint();
+		Vec2f mid = line->getPoint(MapObject::Point::Mid);
+		Vec2f tab = line->dirTabPoint();
 		glBegin(GL_LINES);
 		glVertex2d(mid.x, mid.y);
 		glVertex2d(tab.x, tab.y);
@@ -1376,7 +1376,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 	// Draw any thing direction arrows needed
 	if (things_arrows.size() > 0)
 	{
-		rgba_t acol = COL_WHITE;
+		ColRGBA acol = COL_WHITE;
 		acol.a      = 255 * alpha * arrow_alpha;
 		OpenGL::setColour(acol);
 		// glColor4f(1.0f, 1.0f, 1.0f, alpha * arrow_alpha);
@@ -1442,7 +1442,7 @@ void MapRenderer2D::renderThingHilight(int index, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	rgba_t col = ColourConfiguration::colour("map_hilight");
+	ColRGBA col = ColourConfiguration::colour("map_hilight");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -1530,7 +1530,7 @@ void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float f
 		fade = 1.0f;
 
 	// Set selection colour
-	rgba_t col = ColourConfiguration::colour("map_selection");
+	ColRGBA col = ColourConfiguration::colour("map_selection");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -1574,7 +1574,7 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	rgba_t col = ColourConfiguration::colour("map_tagged");
+	ColRGBA col = ColourConfiguration::colour("map_tagged");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -1609,7 +1609,7 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 	MapObject* object = MapEditor::editContext().selection().hilightedObject();
 	if (object && action_lines)
 	{
-		fpoint2_t dst = object->getPoint(MapObject::Point::Within);
+		Vec2f dst = object->getPoint(MapObject::Point::Within);
 		glLineWidth(line_width * 1.5f);
 		for (unsigned a = 0; a < things.size(); a++)
 		{
@@ -1630,7 +1630,7 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	rgba_t col = ColourConfiguration::colour("map_tagging");
+	ColRGBA col = ColourConfiguration::colour("map_tagging");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -1665,7 +1665,7 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	MapObject* object = MapEditor::editContext().selection().hilightedObject();
 	if (object && action_lines)
 	{
-		fpoint2_t src = object->getPoint(MapObject::Point::Within);
+		Vec2f src = object->getPoint(MapObject::Point::Within);
 		glLineWidth(line_width * 1.5f);
 		for (unsigned a = 0; a < things.size(); a++)
 		{
@@ -1705,9 +1705,9 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 
 	// Get colours
 	wxColour col(arrow_pathed_color);
-	rgba_t   pathedcol(COLWX(col), col.Alpha());
+	ColRGBA   pathedcol(COLWX(col), col.Alpha());
 	col.Set(arrow_dragon_color);
-	rgba_t dragoncol(COLWX(col), col.Alpha());
+	ColRGBA dragoncol(COLWX(col), col.Alpha());
 
 	if (update)
 	{
@@ -2021,7 +2021,7 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 		// Render the polygon
 		if (!flat_ignore_light)
 		{
-			rgba_t col = sector->colourAt(type);
+			ColRGBA col = sector->colourAt(type);
 			col.ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
 			glColor4f(col.fr(), col.fg(), col.fb(), alpha);
 		}
@@ -2204,7 +2204,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		// Render the polygon
 		if (!flat_ignore_light)
 		{
-			rgba_t col = sector->colourAt(type);
+			ColRGBA col = sector->colourAt(type);
 			col.ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
 			glColor4f(col.fr(), col.fg(), col.fb(), alpha);
 		}
@@ -2233,7 +2233,7 @@ void MapRenderer2D::renderFlatHilight(int index, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	rgba_t col = ColourConfiguration::colour("map_hilight");
+	ColRGBA col = ColourConfiguration::colour("map_hilight");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -2295,7 +2295,7 @@ void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fa
 		fade = 1.0f;
 
 	// Set selection colour
-	rgba_t col = ColourConfiguration::colour("map_selection");
+	ColRGBA col = ColourConfiguration::colour("map_selection");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -2371,7 +2371,7 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 		fade = 1.0f;
 
 	// Set colour
-	rgba_t col = ColourConfiguration::colour("map_tagged");
+	ColRGBA col = ColourConfiguration::colour("map_tagged");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -2428,7 +2428,7 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 // Renders the moving overlay for vertex indices in [vertices], to show movement
 // by [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices, fpoint2_t move_vec)
+void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices, Vec2f move_vec)
 {
 	uint8_t* lines_drawn = new uint8_t[map_->nLines()];
 	memset(lines_drawn, 0, map_->nLines());
@@ -2505,7 +2505,7 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
 // Renders the moving overlay for line indices in [lines], to show movement by
 // [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, fpoint2_t move_vec)
+void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, Vec2f move_vec)
 {
 	uint8_t* lines_drawn = new uint8_t[map_->nLines()];
 	memset(lines_drawn, 0, map_->nLines());
@@ -2590,7 +2590,7 @@ void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, fpoi
 // Renders the moving overlay for sector indices in [sectors], to show movement
 // by [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, fpoint2_t move_vec)
+void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, Vec2f move_vec)
 {
 	// Determine what lines are being moved
 	uint8_t* lines_moved = new uint8_t[map_->nLines()];
@@ -2622,7 +2622,7 @@ void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, 
 // Renders the moving overlay for thing indices in [things], to show movement by
 // [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, fpoint2_t move_vec)
+void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, Vec2f move_vec)
 {
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -2709,7 +2709,7 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, fp
 // -----------------------------------------------------------------------------
 // Renders pasting overlay for [things] at [pos]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
+void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, Vec2f pos)
 {
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -2799,7 +2799,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 {
 	// Simple test
-	vector<fpoint2_t> vertex_points;
+	vector<Vec2f> vertex_points;
 	group->putVerticesToDraw(vertex_points);
 	vector<ObjectEditGroup::Line> lines;
 	group->putLinesToDraw(lines);
@@ -2994,7 +2994,7 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 	int      nverts = map_->nLines() * vpl;
 	GLVert*  lines  = new GLVert[nverts];
 	unsigned v      = 0;
-	rgba_t   col;
+	ColRGBA   col;
 	float    alpha;
 	for (unsigned a = 0; a < map_->nLines(); a++)
 	{
@@ -3019,8 +3019,8 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 		// Direction tab if needed
 		if (show_direction)
 		{
-			fpoint2_t mid  = line->getPoint(MapObject::Point::Mid);
-			fpoint2_t tab  = line->dirTabPoint();
+			Vec2f mid  = line->getPoint(MapObject::Point::Mid);
+			Vec2f tab  = line->dirTabPoint();
 			lines[v + 2].x = mid.x;
 			lines[v + 2].y = mid.y;
 			lines[v + 3].x = tab.x;
@@ -3090,7 +3090,7 @@ void MapRenderer2D::updateFlatsVBO()
 // -----------------------------------------------------------------------------
 // Updates map object visibility info depending on the current view
 // -----------------------------------------------------------------------------
-void MapRenderer2D::updateVisibility(fpoint2_t view_tl, fpoint2_t view_br)
+void MapRenderer2D::updateVisibility(Vec2f view_tl, Vec2f view_br)
 {
 	// Sector visibility
 	if (map_->nSectors() != vis_s_.size())
@@ -3103,7 +3103,7 @@ void MapRenderer2D::updateVisibility(fpoint2_t view_tl, fpoint2_t view_br)
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Check against sector bounding box
-		bbox_t bbox = map_->sector(a)->boundingBox();
+		BBox bbox = map_->sector(a)->boundingBox();
 		vis_s_[a]   = 0;
 		if (bbox.max.x < view_tl.x)
 			vis_s_[a] = VIS_LEFT;

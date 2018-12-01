@@ -47,8 +47,8 @@ public:
 	struct Quad
 	{
 		GLVertex   points[4];
-		rgba_t     colour;
-		rgba_t     fogcolour;
+		ColRGBA     colour;
+		ColRGBA     fogcolour;
 		uint8_t    light;
 		GLTexture* texture;
 		uint8_t    flags;
@@ -98,10 +98,10 @@ public:
 	{
 		uint8_t    flags;
 		uint8_t    light;
-		rgba_t     colour;
-		rgba_t     fogcolour;
+		ColRGBA     colour;
+		ColRGBA     fogcolour;
 		GLTexture* texture;
-		plane_t    plane;
+		Plane    plane;
 		float      alpha;
 		MapSector* sector;
 		long       updated_time;
@@ -143,19 +143,19 @@ public:
 	void cameraStrafe(double distance);
 	void cameraPitch(double amount);
 	void cameraUpdateVectors();
-	void cameraSet(fpoint3_t position, fpoint2_t direction);
-	void cameraSetPosition(fpoint3_t position);
+	void cameraSet(Vec3f position, Vec2f direction);
+	void cameraSetPosition(Vec3f position);
 	void cameraApplyGravity(double mult);
 	void cameraLook(double xrel, double yrel);
 
 	double    camPitch() { return cam_pitch_; }
-	fpoint3_t camPosition() { return cam_position_; }
-	fpoint2_t camDirection() { return cam_direction_; }
+	Vec3f camPosition() { return cam_position_; }
+	Vec2f camDirection() { return cam_direction_; }
 
 	// -- Rendering --
 	void setupView(int width, int height);
-	void setLight(rgba_t& colour, uint8_t light, float alpha = 1.0f);
-	void setFog(rgba_t& fogcol, uint8_t light);
+	void setLight(ColRGBA& colour, uint8_t light, float alpha = 1.0f);
+	void setFog(ColRGBA& fogcol, uint8_t light);
 	void renderMap();
 	void renderSkySlice(
 		float top,
@@ -176,7 +176,7 @@ public:
 
 	// Walls
 	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, double top, double bottom);
-	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, plane_t top, plane_t bottom);
+	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, Plane top, Plane bottom);
 	void setupQuadTexCoords(
 		Quad*  quad,
 		int    length,
@@ -225,19 +225,19 @@ private:
 	int        flat_last_;
 	bool       render_hilight_;
 	bool       render_selection_;
-	rgba_t     fog_colour_last_;
+	ColRGBA     fog_colour_last_;
 	float      fog_depth_last_;
 
 	// Visibility
 	vector<float> dist_sectors_;
 
 	// Camera
-	fpoint3_t cam_position_;
-	fpoint2_t cam_direction_;
+	Vec3f cam_position_;
+	Vec2f cam_direction_;
 	double    cam_pitch_;
 	double    cam_angle_;
-	fpoint3_t cam_dir3d_;
-	fpoint3_t cam_strafe_;
+	Vec3f cam_dir3d_;
+	Vec3f cam_strafe_;
 	double    gravity_;
 	int       item_dist_;
 
@@ -264,7 +264,7 @@ private:
 	};
 	string    skytex1_;
 	string    skytex2_;
-	rgba_t    skycol_top_;
-	rgba_t    skycol_bottom_;
-	fpoint2_t sky_circle_[32];
+	ColRGBA    skycol_top_;
+	ColRGBA    skycol_bottom_;
+	Vec2f sky_circle_[32];
 };

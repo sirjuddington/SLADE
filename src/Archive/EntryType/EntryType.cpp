@@ -492,7 +492,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 			else if (S_CMPNOCASE(fieldnode->name(), "colour")) // Colour
 			{
 				if (fieldnode->nValues() >= 3)
-					ntype->colour_ = rgba_t(fieldnode->intValue(0), fieldnode->intValue(1), fieldnode->intValue(2));
+					ntype->colour_ = ColRGBA(fieldnode->intValue(0), fieldnode->intValue(1), fieldnode->intValue(2));
 				else
 					LOG_MESSAGE(1, "Not enough colour components defined for entry type %s", ntype->id());
 			}
@@ -545,7 +545,7 @@ bool EntryType::loadEntryTypes()
 	etype_map.name_       = "Map Marker";
 	etype_map.category_   = "Maps"; // Should appear with maps
 	etype_map.detectable_ = false;
-	etype_map.colour_     = rgba_t(0, 255, 0);
+	etype_map.colour_     = ColRGBA(0, 255, 0);
 	etype_map.addToList();
 
 	// -------- READ BUILT-IN TYPES ---------

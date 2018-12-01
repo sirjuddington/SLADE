@@ -52,8 +52,8 @@ public:
 		this->y_ = y;
 	}
 
-	fpoint2_t getPoint(Point point) override;
-	fpoint2_t point();
+	Vec2f getPoint(Point point) override;
+	Vec2f point();
 
 	short type() const { return type_; }
 	short angle() const { return angle_; }
@@ -65,7 +65,7 @@ public:
 
 	void copy(MapObject* c) override;
 
-	void setAnglePoint(fpoint2_t point);
+	void setAnglePoint(Vec2f point);
 
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;

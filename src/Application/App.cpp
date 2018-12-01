@@ -49,13 +49,13 @@
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/NodeBuilders.h"
 #include "OpenGL/Drawing.h"
+#include "SLADEWxApp.h"
 #include "Scripting/Lua.h"
 #include "Scripting/ScriptManager.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
 #include "UI/SBrush.h"
 #include "Utility/Tokenizer.h"
-#include "SLADEWxApp.h"
 
 
 // -----------------------------------------------------------------------------

@@ -291,7 +291,7 @@ void CTextureCanvas::drawTexture()
 	}
 
 	// Calculate top-left position of texture (for glScissor, since it ignores the current translation/scale)
-	point2_t screen_tl = texToScreenPosition(0, 0);
+	Vec2i screen_tl = texToScreenPosition(0, 0);
 	int      left      = screen_tl.x;
 	int      top       = screen_tl.y;
 
@@ -478,7 +478,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 	bool   flipy        = false;
 	double alpha        = 1.0;
 	bool   shade_select = true;
-	rgba_t col          = COL_WHITE;
+	ColRGBA col          = COL_WHITE;
 	if (texture_->isExtended())
 	{
 		// Get extended patch
@@ -669,11 +669,11 @@ void CTextureCanvas::redraw(bool update_texture)
 // Convert from [x,y] from the top left of the canvas to coordinates relative to
 // the top left of the texture
 // -----------------------------------------------------------------------------
-point2_t CTextureCanvas::screenToTexPosition(int x, int y)
+Vec2i CTextureCanvas::screenToTexPosition(int x, int y)
 {
 	// Check a texture is open
 	if (!texture_)
-		return point2_t(0, 0);
+		return Vec2i(0, 0);
 
 	// Get texture scale
 	double scalex = 1;
@@ -713,14 +713,14 @@ point2_t CTextureCanvas::screenToTexPosition(int x, int y)
 		top -= 100 * yscale;
 	}
 
-	return point2_t(double(x - left) / scale_ * scalex, double(y - top) / yscale * scaley);
+	return Vec2i(double(x - left) / scale_ * scalex, double(y - top) / yscale * scaley);
 }
 
 // -----------------------------------------------------------------------------
 // Convert from [x,y] from the top left of the texture to coordinates relative
 // to the top left of the canvas
 // -----------------------------------------------------------------------------
-point2_t CTextureCanvas::texToScreenPosition(int x, int y)
+Vec2i CTextureCanvas::texToScreenPosition(int x, int y)
 {
 	// Get texture scale
 	double tscalex = 1;
@@ -758,7 +758,7 @@ point2_t CTextureCanvas::texToScreenPosition(int x, int y)
 		top += (100 * yscale);
 	}
 
-	return point2_t(left, top);
+	return Vec2i(left, top);
 }
 
 // -----------------------------------------------------------------------------
@@ -855,7 +855,7 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 		// Pan if middle button is down
 		if (e.MiddleIsDown())
 		{
-			offset_   = offset_ + point2_t(e.GetPosition().x - mouse_prev_.x, e.GetPosition().y - mouse_prev_.y);
+			offset_   = offset_ + Vec2i(e.GetPosition().x - mouse_prev_.x, e.GetPosition().y - mouse_prev_.y);
 			refresh   = true;
 			dragging_ = true;
 		}
@@ -863,7 +863,7 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 			dragging_ = true;
 
 		// Check if patch hilight changes
-		point2_t pos   = screenToTexPosition(e.GetX(), e.GetY());
+		Vec2i pos   = screenToTexPosition(e.GetX(), e.GetY());
 		int      patch = patchAt(pos.x, pos.y);
 		if (hilight_patch_ != patch)
 		{

@@ -187,12 +187,12 @@ void PaletteCanvas::draw()
 // Returns the currently selected colour, or a completely black + transparent
 // colour if nothing is selected
 // -----------------------------------------------------------------------------
-rgba_t PaletteCanvas::selectedColour()
+ColRGBA PaletteCanvas::selectedColour()
 {
 	if (sel_begin_ >= 0)
 		return palette_.colour(sel_begin_);
 	else
-		return rgba_t(0, 0, 0, 0);
+		return ColRGBA(0, 0, 0, 0);
 }
 
 // -----------------------------------------------------------------------------

@@ -14,15 +14,15 @@ public:
 	GradientBox(wxWindow* parent, int steps = -1);
 	~GradientBox();
 
-	void setStartCol(rgba_t col) { col_start_.set(col.r, col.g, col.b, 255); }
-	void setEndCol(rgba_t col) { col_end_.set(col.r, col.g, col.b, 255); }
+	void setStartCol(ColRGBA col) { col_start_.set(col.r, col.g, col.b, 255); }
+	void setEndCol(ColRGBA col) { col_end_.set(col.r, col.g, col.b, 255); }
 	void setSteps(int steps) { this->steps_ = steps; }
 
 	void draw();
 
 private:
-	rgba_t col_start_;
-	rgba_t col_end_;
+	ColRGBA col_start_;
+	ColRGBA col_end_;
 	int    steps_;
 };
 
@@ -45,9 +45,9 @@ public:
 	void openTranslation(Translation& trans);
 	void openRange(int index);
 	void updateListItem(int index);
-	void setStartColour(rgba_t col);
-	void setEndColour(rgba_t col);
-	void setTintColour(rgba_t col);
+	void setStartColour(ColRGBA col);
+	void setEndColour(ColRGBA col);
+	void setTintColour(ColRGBA col);
 	void setTintAmount(int amount);
 	void showPaletteTarget();
 	void showGradientTarget();
@@ -139,7 +139,7 @@ class GfxColouriseDialog : public wxDialog
 public:
 	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
 
-	rgba_t colour();
+	ColRGBA colour();
 	void   setColour(string col);
 
 private:
@@ -165,7 +165,7 @@ class GfxTintDialog : public wxDialog
 public:
 	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
 
-	rgba_t colour();
+	ColRGBA colour();
 	float  amount();
 	void   setValues(string col, int val);
 

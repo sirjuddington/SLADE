@@ -23,8 +23,8 @@ public:
 		SImage::info_t info;
 
 		// Get image info
-		info.width     = READ_L32(mc.data(), 16) >> index;
-		info.height    = READ_L32(mc.data(), 20) >> index;
+		info.width     = mc.readL32(16) >> index;
+		info.height    = mc.readL32(20) >> index;
 		info.numimages = 4;
 		info.colformat = PALMASK;
 		info.format    = id_;
@@ -44,7 +44,7 @@ protected:
 			index = info.numimages + index;
 
 		// Determine data offset
-		size_t data_offset = READ_L32(data.data(), 24 + (index << 2));
+		size_t data_offset = data.readL32(24 + (index << 2));
 		if (!info.width || !info.height || !data_offset || data.size() < data_offset + (info.width * info.height))
 		{
 			Global::error = "HLT file: invalid data for mip level";
@@ -54,13 +54,13 @@ protected:
 		// Let's build the palette now
 		Palette palette;
 		size_t  pal_offset =
-			READ_L32(data.data(), 36) + ((READ_L32(data.data(), 16) >> 3) * (READ_L32(data.data(), 20) >> 3));
+			data.readL32(36) + ((data.readL32(16) >> 3) * (data.readL32(20) >> 3));
 		if (data.size() < pal_offset + 5)
 		{
 			Global::error = "HLT file: invalid palette offset";
 			return false;
 		}
-		size_t palsize = READ_L16(data.data(), pal_offset);
+		size_t palsize = data.readL16(pal_offset);
 		if (palsize == 0 || palsize > 256 || data.size() < (pal_offset + 2 + (palsize * 3)))
 		{
 			LOG_MESSAGE(1, "palsize %d, paloffset %d, entry size %d", palsize, pal_offset, data.size());
@@ -69,7 +69,7 @@ protected:
 		}
 		for (size_t c = 0; c < palsize; ++c)
 		{
-			rgba_t color;
+			ColRGBA color;
 			color.r = data[(c * 3) + pal_offset + 2];
 			color.g = data[(c * 3) + pal_offset + 3];
 			color.b = data[(c * 3) + pal_offset + 4];
@@ -112,7 +112,7 @@ public:
 		SImage::info_t info;
 
 		// Get image width
-		info.width = READ_L16(mc, 2);
+		info.width = mc.readL16(2);
 
 		if (info.width == 0)
 			return info;
@@ -123,7 +123,7 @@ public:
 			int pos = (j << 1) + 4;
 			if (pos + 2 >= size)
 				return info;
-			int colstart = READ_L16(mc, pos);
+			int colstart = mc.readL16(pos);
 
 			// Columns with a null offset are skipped
 			if (colstart == 0)
@@ -169,7 +169,7 @@ protected:
 		uint8_t* img_mask = imageMask(image);
 		for (int h = 0, i = 4; h < info.width; ++h, i += 2)
 		{
-			int colstart = READ_L16(data, i);
+			int colstart = data.readL16(i);
 			if (colstart)
 			{
 				int start       = data[colstart];
@@ -222,7 +222,7 @@ public:
 		SImage::info_t info;
 
 		// Read header
-		patch_header_t header;
+		Graphics::PatchHeader header;
 		mc.read(&header, 8, 0);
 
 		// Set info
@@ -240,7 +240,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Setup variables
-		patch_header_t header;
+		Graphics::PatchHeader header;
 		data.read(&header, 8, 0);
 		int width    = wxINT16_SWAP_ON_BE(header.width);
 		int height   = wxINT16_SWAP_ON_BE(header.height);
@@ -367,8 +367,8 @@ public:
 		SImage::info_t info;
 
 		// Get image info
-		info.width     = READ_L16(mc.data(), 0);
-		info.height    = READ_L16(mc.data(), 2);
+		info.width     = mc.readL16(0);
+		info.height    = mc.readL16(2);
 		info.colformat = PALMASK;
 		info.format    = id_;
 
@@ -491,8 +491,8 @@ private:
 			// We can skip these steps if looking at the first tile in the ART file.
 			for (int i = 0; i < index; ++i)
 			{
-				int width  = READ_L16(mc.data(), (x_offs + (i << 1)));
-				int height = READ_L16(mc.data(), (y_offs + (i << 1)));
+				int width  = mc.readL16((x_offs + (i << 1)));
+				int height = mc.readL16((y_offs + (i << 1)));
 				datastart += (width * height);
 			}
 
@@ -505,8 +505,8 @@ private:
 			return 0;
 
 		// Get width and height of tile
-		info.width  = READ_L16(mc.data(), x_offs);
-		info.height = READ_L16(mc.data(), y_offs);
+		info.width  = mc.readL16(x_offs);
+		info.height = mc.readL16(y_offs);
 
 		// Setup remaining info
 		info.colformat = PALMASK;
@@ -568,7 +568,7 @@ protected:
 		Palette palette;
 		for (size_t c = 0; c < 256; ++c)
 		{
-			rgba_t color;
+			ColRGBA color;
 			color.r = data[(c * 3) + 0x104];
 			color.g = data[(c * 3) + 0x105];
 			color.b = data[(c * 3) + 0x106];
@@ -594,19 +594,19 @@ private:
 
 		// Determine total number of images
 		int i = 9;
-		while ((i < 25) && (READ_L32(mc, (i << 2)) != 0))
+		while ((i < 25) && (mc.readL32((i << 2)) != 0))
 			++i;
 		info.numimages = i - 9;
 
 		// Set other info
-		info.width       = READ_L32(mc, ((index + 9) << 2));
-		info.height      = READ_L32(mc, ((index + 25) << 2));
+		info.width       = mc.readL32(((index + 9) << 2));
+		info.height      = mc.readL32(((index + 25) << 2));
 		info.colformat   = PALMASK;
 		info.has_palette = true;
 		info.format      = id_;
 
 		// Return offset to mip level
-		return READ_L32(mc, ((index + 41) << 2));
+		return mc.readL32(((index + 41) << 2));
 	}
 };
 
@@ -668,18 +668,18 @@ private:
 
 		// Determine total number of images
 		int i = 129;
-		while ((i < 145) && (READ_L32(mc, (i << 2)) != 0))
+		while ((i < 145) && (mc.readL32((i << 2)) != 0))
 			++i;
 		info.numimages = i - 129;
 
 		// Set other info
-		info.width     = READ_L32(mc, ((index + 129) << 2));
-		info.height    = READ_L32(mc, ((index + 145) << 2));
+		info.width     = mc.readL32(((index + 129) << 2));
+		info.height    = mc.readL32(((index + 145) << 2));
 		info.colformat = RGBA;
 		info.format    = id_;
 
 		// Return offset to mip level
-		return READ_L32(mc, ((index + 161) << 2));
+		return mc.readL32(((index + 161) << 2));
 	}
 };
 
@@ -707,8 +707,8 @@ public:
 		SImage::info_t info;
 
 		// Read dimensions
-		info.width  = READ_L16(mc.data(), 0);
-		info.height = READ_L16(mc.data(), 2);
+		info.width  = mc.readL16(0);
+		info.height = mc.readL16(2);
 
 		// Setup other info
 		info.colformat = PALMASK;

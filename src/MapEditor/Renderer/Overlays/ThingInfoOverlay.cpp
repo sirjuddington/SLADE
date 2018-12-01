@@ -200,11 +200,11 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	bottom += height * alpha_inv * alpha_inv;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::colour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
+	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 	col_bg.a      = col_bg.a * alpha;
-	rgba_t col_border(0, 0, 0, 140);
+	ColRGBA col_border(0, 0, 0, 140);
 
 	// Draw overlay background
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

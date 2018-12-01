@@ -54,7 +54,7 @@ public:
 	bool hasPolygon() { return !subpolys_.empty(); }
 	int  vboUpdate() { return vbo_update_; }
 	void setZ(float z);
-	void setZ(plane_t plane);
+	void setZ(Plane plane);
 
 	unsigned nSubPolys() { return subpolys_.size(); }
 	void     addSubPoly();
@@ -148,12 +148,12 @@ private:
 			ok      = true;
 		}
 
-		operator fpoint2_t() const { return fpoint2_t(x, y); }
+		operator Vec2f() const { return Vec2f(x, y); }
 	};
 	struct Outline
 	{
 		vector<int> edges;
-		bbox_t      bbox;
+		BBox      bbox;
 		bool        clockwise;
 		bool        convex;
 	};

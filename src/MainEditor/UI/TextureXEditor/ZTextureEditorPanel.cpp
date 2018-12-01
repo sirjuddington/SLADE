@@ -980,7 +980,7 @@ void ZTextureEditorPanel::onPatchColourChanged(wxEvent& e)
 		CTPatchEx* patch = (CTPatchEx*)tex_current_->patch(list_patches_->selectedItems()[a]);
 		if (patch)
 		{
-			rgba_t col = cb_blend_col_->colour();
+			ColRGBA col = cb_blend_col_->colour();
 			patch->setColour(col.r, col.g, col.b, spin_tint_amount_->GetValue() * 255);
 		}
 	}
@@ -1006,7 +1006,7 @@ void ZTextureEditorPanel::onPatchTintAmountChanged(wxCommandEvent& e)
 		CTPatchEx* patch = (CTPatchEx*)tex_current_->patch(list_patches_->selectedItems()[a]);
 		if (patch)
 		{
-			rgba_t col = cb_blend_col_->colour();
+			ColRGBA col = cb_blend_col_->colour();
 			patch->setColour(col.r, col.g, col.b, spin_tint_amount_->GetValue() * 255);
 		}
 	}

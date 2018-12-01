@@ -27,7 +27,7 @@ public:
 private:
 	GLTexture* texture_ = nullptr;
 	string     texname_;
-	rgba_t     colour_ = COL_WHITE;
+	ColRGBA     colour_ = COL_WHITE;
 	bool       icon_   = false;
 };
 
@@ -45,9 +45,9 @@ public:
 
 private:
 	AngleControl*     parent_;
-	vector<fpoint2_t> dir_points_;
-	rgba_t            col_bg_;
-	rgba_t            col_fg_;
+	vector<Vec2f> dir_points_;
+	ColRGBA            col_bg_;
+	ColRGBA            col_fg_;
 	int               point_hl_;
 	int               point_sel_;
 	long              last_check_;

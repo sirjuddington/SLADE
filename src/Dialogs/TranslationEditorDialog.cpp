@@ -489,7 +489,7 @@ void TranslationEditorDialog::openRange(int index)
 		showGradientTarget();
 
 		// Set beginning colour
-		rgba_t col;
+		ColRGBA col;
 		col.r = MathStuff::clamp(tdr->dSr() * 128, 0, 255);
 		col.g = MathStuff::clamp(tdr->dSg() * 128, 0, 255);
 		col.b = MathStuff::clamp(tdr->dSb() * 128, 0, 255);
@@ -560,7 +560,7 @@ void TranslationEditorDialog::updateListItem(int index)
 // -----------------------------------------------------------------------------
 // Sets the current translation range's destination starting colour to [col]
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::setStartColour(rgba_t col)
+void TranslationEditorDialog::setStartColour(ColRGBA col)
 {
 	// Get currently selected translation range
 	TransRange* tr = translation_.range(list_translations_->GetSelection());
@@ -600,7 +600,7 @@ void TranslationEditorDialog::setStartColour(rgba_t col)
 // -----------------------------------------------------------------------------
 // Sets the current translation range's destination ending colour to [col]
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::setEndColour(rgba_t col)
+void TranslationEditorDialog::setEndColour(ColRGBA col)
 {
 	// Get currently selected translation range
 	TransRange* tr = translation_.range(list_translations_->GetSelection());
@@ -640,7 +640,7 @@ void TranslationEditorDialog::setEndColour(rgba_t col)
 // -----------------------------------------------------------------------------
 // Sets the current translation range's tint colour to [col]
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::setTintColour(rgba_t col)
+void TranslationEditorDialog::setTintColour(ColRGBA col)
 {
 	// Get currently selected translation range
 	TransRange* tr = translation_.range(list_translations_->GetSelection());
@@ -957,8 +957,8 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e)
 		tr->setOStart(pal_canvas_original_->selectionStart());
 		tr->setOEnd(pal_canvas_original_->selectionEnd());
 		// Target colour gradient
-		rgba_t sc = cb_range_begin_->colour();
-		rgba_t ec = cb_range_end_->colour();
+		ColRGBA sc = cb_range_begin_->colour();
+		ColRGBA ec = cb_range_end_->colour();
 		tr->setDStart(
 			MathStuff::clamp((double)sc.r / 127.0f, 0, 2),
 			MathStuff::clamp((double)sc.g / 127.0f, 0, 2),
@@ -1316,7 +1316,7 @@ void TranslationEditorDialog::onBtnSave(wxCommandEvent& e)
 void TranslationEditorDialog::onGfxPreviewMouseMotion(wxMouseEvent& e)
 {
 	// Get the image coordinates at the mouse pointer
-	point2_t pos = gfx_preview_->imageCoords(e.GetX(), e.GetY() - 2);
+	Vec2i pos = gfx_preview_->imageCoords(e.GetX(), e.GetY() - 2);
 
 	int index = pal_canvas_preview_->selectionStart();
 
@@ -1429,7 +1429,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 	gfx_preview_->setPalette(pal);
 	gfx_preview_->SetInitialSize(wxSize(192, 192));
 	Misc::loadImageFromEntry(gfx_preview_->getImage(), entry);
-	rgba_t col = cb_colour_->colour();
+	ColRGBA col = cb_colour_->colour();
 	gfx_preview_->getImage()->colourise(col, pal);
 	gfx_preview_->updateImageTexture();
 
@@ -1446,7 +1446,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 	CenterOnParent();
 }
 
-rgba_t GfxColouriseDialog::colour()
+ColRGBA GfxColouriseDialog::colour()
 {
 	return cb_colour_->colour();
 }
@@ -1454,7 +1454,7 @@ rgba_t GfxColouriseDialog::colour()
 void GfxColouriseDialog::setColour(string col)
 {
 	wxColour colour(col);
-	rgba_t   rgba = rgba_t(COLWX(colour));
+	ColRGBA   rgba = ColRGBA(COLWX(colour));
 	cb_colour_->setColour(rgba);
 	gfx_preview_->getImage()->colourise(rgba, palette_);
 	gfx_preview_->updateImageTexture();
@@ -1555,9 +1555,9 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal
 	label_amount_->SetLabel("50% ");
 }
 
-rgba_t GfxTintDialog::colour()
+ColRGBA GfxTintDialog::colour()
 {
-	return rgba_t(cb_colour_->colour());
+	return ColRGBA(cb_colour_->colour());
 }
 
 float GfxTintDialog::amount()
@@ -1568,7 +1568,7 @@ float GfxTintDialog::amount()
 void GfxTintDialog::setValues(string col, int val)
 {
 	wxColour wxcol(col);
-	cb_colour_->setColour(rgba_t(COLWX(wxcol)));
+	cb_colour_->setColour(ColRGBA(COLWX(wxcol)));
 	slider_amount_->SetValue(val);
 	label_amount_->SetLabel(S_FMT("%d%% ", slider_amount_->GetValue()));
 	gfx_preview_->getImage()->tint(colour(), amount(), palette_);

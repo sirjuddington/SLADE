@@ -61,6 +61,6 @@ private:
 	// Current outline
 	vector<Edge> o_edges_;
 	bool         o_clockwise_;
-	bbox_t       o_bbox_;
+	BBox       o_bbox_;
 	MapVertex*   vertex_right_;
 };

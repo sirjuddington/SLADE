@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Graphics/GameFormats.h"
+
 class PNGDataFormat : public EntryDataFormat
 {
 public:
@@ -36,12 +38,12 @@ public:
 			if (mc[0] == 'B' && mc[1] == 'M')
 			{
 				// Check for DIB header, should be one of the following: 12, 40, 52, 56, 64, 108 or 124
-				size_t dibhdrsz = READ_L32(mc, 14);
+				size_t dibhdrsz = mc.readL32(14);
 				if (dibhdrsz != 12 && dibhdrsz != 40 && dibhdrsz != 52 && dibhdrsz != 56 && dibhdrsz != 64
 					&& dibhdrsz != 108 && dibhdrsz != 124)
 					return EDF_FALSE;
 				// Normally, file size is a DWORD at offset 2, and offsets 6 to 9 should be zero.
-				if (READ_L32(mc, 2) == mc.size() && READ_L32(mc, 6) == 0)
+				if (mc.readL32(2) == mc.size() && mc.readL32(6) == 0)
 					return EDF_TRUE;
 				// But I have found exceptions so I must allow some leeway here.
 				else if (mc.size() > 12 + dibhdrsz)
@@ -134,10 +136,10 @@ public:
 				return EDF_FALSE;
 		// Min/Max fields
 		int16_t offsx, offsy, limx, limy, width, height;
-		offsx  = (int16_t)READ_L16(mc, 4);
-		offsy  = (int16_t)READ_L16(mc, 6);
-		limx   = (int16_t)READ_L16(mc, 8);
-		limy   = (int16_t)READ_L16(mc, 10);
+		offsx  = (int16_t)mc.readL16(4);
+		offsy  = (int16_t)mc.readL16(6);
+		limx   = (int16_t)mc.readL16(8);
+		limy   = (int16_t)mc.readL16(10);
 		width  = 1 + limx - offsx;
 		height = 1 + limy - offsy;
 		// Compute number of bytes needed per scanline, and account for possible padding
@@ -145,7 +147,7 @@ public:
 		if (bnpsl % 2)
 			bnpsl++;
 		// Bytes per scanline field is always an even number and should correspond to guessed value
-		int16_t bpsl = (int16_t)READ_L16(mc, 66);
+		int16_t bpsl = (int16_t)mc.readL16(66);
 		if (bpsl % 2 || bpsl != bnpsl)
 			return EDF_FALSE;
 		// Passed all tests, so this seems to be a valid PCX
@@ -167,8 +169,8 @@ public:
 
 		// Check dimensions, both ZDoom and Vavoom refuse to load TGA
 		// with image sizes greater than 2048 so let's use that as well
-		uint16_t width  = READ_L16(mc, 12);
-		uint16_t height = READ_L16(mc, 14);
+		uint16_t width  = mc.readL16(12);
+		uint16_t height = mc.readL16(14);
 		if (width > 2048 || height > 2048)
 			return EDF_FALSE;
 
@@ -186,7 +188,7 @@ public:
 			return EDF_FALSE;
 
 		// If there is no colormap, then colormap info must be null
-		if (mc[1] == 0 && (READ_L32(mc, 3) != 0 || mc[7] != 0))
+		if (mc[1] == 0 && (mc.readL32(3) != 0 || mc[7] != 0))
 			return EDF_FALSE;
 
 		// Bits per pixel can be 8, 15, 16, 24 or 32
@@ -289,7 +291,7 @@ public:
 					(mc[8] == 'A' && mc[9] == 'C' && mc[10] == 'B' && mc[11] == 'M') || // Amiga Continuous Bitmap
 					(mc[8] == 'P' && mc[9] == 'B' && mc[10] == 'M' && mc[11] == ' ')))  // Deluxe Paint PC Bitmap
 			{
-				size_t chunksize = 8 + READ_B32(mc, 4);
+				size_t chunksize = 8 + mc.readB32(4);
 				if (chunksize != mc.size())
 					return EDF_FALSE;
 				return EDF_TRUE;
@@ -311,24 +313,24 @@ public:
 		const uint8_t* data = mc.data();
 
 		// Check size
-		if (mc.size() > sizeof(patch_header_t))
+		if (mc.size() > sizeof(Graphics::PatchHeader))
 		{
-			const patch_header_t* header = (const patch_header_t*)data;
+			const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
 				&& header->top > -2000 && header->top < 2000 && header->left > -2000 && header->left < 2000)
 			{
-				uint32_t* col_offsets = (uint32_t*)((const uint8_t*)data + sizeof(patch_header_t));
+				uint32_t* col_offsets = (uint32_t*)((const uint8_t*)data + sizeof(Graphics::PatchHeader));
 
 				// Check there is room for needed column pointers
-				if (mc.size() < sizeof(patch_header_t) + (header->width * sizeof(uint32_t)))
+				if (mc.size() < sizeof(Graphics::PatchHeader) + (header->width * sizeof(uint32_t)))
 					return EDF_FALSE;
 
 				// Check column pointers are within range
 				for (int a = 0; a < header->width; a++)
 				{
-					if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(patch_header_t))
+					if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(Graphics::PatchHeader))
 						return EDF_FALSE;
 				}
 
@@ -336,7 +338,7 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels  = (header->height + 2 + header->height % 2) / 2;
 				int maxcolsize = sizeof(uint32_t) + (numpixels * 5) + 1;
-				if (mc.size() > (sizeof(patch_header_t) + (header->width * maxcolsize)))
+				if (mc.size() > (sizeof(Graphics::PatchHeader) + (header->width * maxcolsize)))
 				{
 					return EDF_UNLIKELY; // This may still be good anyway
 				}
@@ -358,36 +360,33 @@ public:
 
 	int isThisFormat(MemChunk& mc)
 	{
-		// Get entry data
-		const uint8_t* data = mc.data();
-
 		// Check size
-		if (mc.size() > sizeof(oldpatch_header_t))
+		if (mc.size() > sizeof(Graphics::OldPatchHeader))
 		{
 			// Check that it ends on a FF byte
 			if (mc[mc.size() - 1] != 0xFF)
 				return EDF_FALSE;
 
-			const oldpatch_header_t* header = (const oldpatch_header_t*)data;
+			const Graphics::OldPatchHeader* header = (const Graphics::OldPatchHeader*)mc.data();
 
 			// Check header values are 'sane'
 			if (header->width > 0 && header->height > 0)
 			{
 				// Check there is room for needed column pointers
-				if (mc.size() < sizeof(oldpatch_header_t) + (header->width * sizeof(uint16_t)))
+				if (mc.size() < sizeof(Graphics::OldPatchHeader) + (header->width * sizeof(uint16_t)))
 					return EDF_FALSE;
 
 				uint16_t col_offsets[255]; // Old format headers do not allow dimensions greater than 255.
 				for (uint16_t a = 0; a < header->width; a++)
 				{
-					col_offsets[a] = READ_L16(data, (sizeof(oldpatch_header_t) + a * sizeof(uint16_t)));
+					col_offsets[a] = mc.readL16((sizeof(Graphics::OldPatchHeader) + a * sizeof(uint16_t)));
 				}
 
 
 				// Check column pointers are within range
 				for (int a = 0; a < header->width; a++)
 				{
-					if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(oldpatch_header_t))
+					if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(Graphics::OldPatchHeader))
 						return EDF_FALSE;
 				}
 
@@ -395,7 +394,7 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels  = (header->height + 2 + header->height % 2) / 2;
 				int maxcolsize = sizeof(uint16_t) + (numpixels * 3) + 1;
-				if (mc.size() > (sizeof(oldpatch_header_t) + (header->width * maxcolsize)))
+				if (mc.size() > (sizeof(Graphics::OldPatchHeader) + (header->width * maxcolsize)))
 				{
 					return EDF_FALSE;
 				}
@@ -418,7 +417,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.size() <= sizeof(patch_header_t))
+		if (mc.size() <= sizeof(Graphics::PatchHeader))
 			return EDF_FALSE;
 
 		const uint8_t* data = mc.data();
@@ -438,22 +437,22 @@ public:
 			}
 		}
 
-		const patch_header_t* header = (const patch_header_t*)data;
+		const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
 
 		// Check header values are 'sane'
 		if (header->height > 0 && header->height < 256 && header->width > 0 && header->width < 384 && header->top > -200
 			&& header->top < 200 && header->left > -200 && header->left < 200)
 		{
-			uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(patch_header_t));
+			uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(Graphics::PatchHeader));
 
 			// Check there is room for needed column pointers
-			if (mc.size() < sizeof(patch_header_t) + (header->width * sizeof(uint16_t)))
+			if (mc.size() < sizeof(Graphics::PatchHeader) + (header->width * sizeof(uint16_t)))
 				return EDF_FALSE;
 
 			// Check column pointers are within range
 			for (int a = 0; a < header->width; a++)
 			{
-				if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(patch_header_t))
+				if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(Graphics::PatchHeader))
 					return EDF_FALSE;
 			}
 
@@ -461,7 +460,7 @@ public:
 			// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 			int numpixels  = (header->height + 2 + header->height % 2) / 2;
 			int maxcolsize = sizeof(uint16_t) + (numpixels * 3) + 1;
-			if (mc.size() > (sizeof(patch_header_t) + (header->width * maxcolsize)))
+			if (mc.size() > (sizeof(Graphics::PatchHeader) + (header->width * maxcolsize)))
 			{
 				return EDF_FALSE;
 			}
@@ -526,11 +525,11 @@ public:
 	 */
 	int isThisFormat(MemChunk& mc)
 	{
-		if (mc.size() < sizeof(patch_header_t))
+		if (mc.size() < sizeof(Graphics::PatchHeader))
 			return EDF_FALSE;
 
-		const uint8_t*        data   = mc.data();
-		const patch_header_t* header = (const patch_header_t*)data;
+		const uint8_t*               data   = mc.data();
+		const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -538,7 +537,7 @@ public:
 			return EDF_FALSE;
 
 		// Check the size matches
-		if (mc.size() != (sizeof(patch_header_t) + (header->width * header->height)))
+		if (mc.size() != (sizeof(Graphics::PatchHeader) + (header->width * header->height)))
 			return EDF_FALSE;
 
 		return EDF_TRUE;
@@ -555,12 +554,12 @@ public:
 	 */
 	int isThisFormat(MemChunk& mc)
 	{
-		if (mc.size() < sizeof(jagpic_header_t))
+		if (mc.size() < sizeof(Graphics::JagPicHeader))
 			return EDF_FALSE;
 
-		const uint8_t*         data   = mc.data();
-		const jagpic_header_t* header = (const jagpic_header_t*)data;
-		int                    width, height, depth, size;
+		const uint8_t*                data   = mc.data();
+		const Graphics::JagPicHeader* header = (const Graphics::JagPicHeader*)data;
+		int                           width, height, depth, size;
 		width  = wxINT16_SWAP_ON_LE(header->width);
 		height = wxINT16_SWAP_ON_LE(header->height);
 		depth  = wxINT16_SWAP_ON_LE(header->depth);
@@ -573,7 +572,7 @@ public:
 		size = width * height;
 		if (depth == 2)
 			size >>= 1;
-		if (mc.size() < (sizeof(jagpic_header_t) + size))
+		if (mc.size() < (sizeof(Graphics::JagPicHeader) + size))
 			return EDF_FALSE;
 
 		return EDF_TRUE;
@@ -623,10 +622,10 @@ public:
 			return EDF_FALSE;
 
 		// Validate content
-		size_t width    = READ_B16(mc, 0);
-		size_t height   = READ_B16(mc, 2);
-		int    offset_x = READ_B16(mc, 4);
-		int    offset_y = READ_B16(mc, 6);
+		size_t width    = mc.readB16(0);
+		size_t height   = mc.readB16(2);
+		int    offset_x = mc.readB16(4);
+		int    offset_y = mc.readB16(6);
 
 		// width and height should not be 0
 		if ((width == 0) || (height == 0))
@@ -637,7 +636,7 @@ public:
 			return EDF_FALSE;
 		uint16_t* col_offsets = new uint16_t[width];
 		for (size_t w = 0; w < width; ++w)
-			col_offsets[w] = READ_B16(mc, 8 + 2 * w);
+			col_offsets[w] = mc.readB16(8 + 2 * w);
 
 		const int result = size < unsigned(4 + col_offsets[width - 1]) ?
 							   EDF_FALSE :
@@ -657,11 +656,11 @@ public:
 
 	int isThisFormat(MemChunk& mc)
 	{
-		if (mc.size() < sizeof(psxpic_header_t))
+		if (mc.size() < sizeof(Graphics::PSXPicHeader))
 			return EDF_FALSE;
 
-		const uint8_t*         data   = mc.data();
-		const psxpic_header_t* header = (const psxpic_header_t*)data;
+		const uint8_t*                data   = mc.data();
+		const Graphics::PSXPicHeader* header = (const Graphics::PSXPicHeader*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -669,7 +668,7 @@ public:
 			return EDF_FALSE;
 
 		// Check the size matches
-		size_t rawsize = (sizeof(psxpic_header_t) + (header->width * header->height));
+		size_t rawsize = (sizeof(Graphics::PSXPicHeader) + (header->width * header->height));
 		if (mc.size() < rawsize || mc.size() >= rawsize + 4)
 			return EDF_FALSE;
 
@@ -688,11 +687,11 @@ public:
 		// A format created by Randy Heit and used by some crosshairs in ZDoom.
 		uint32_t size = mc.size();
 
-		if (size < sizeof(imgz_header_t))
+		if (size < sizeof(Graphics::IMGZHeader))
 			return EDF_FALSE;
 
-		const uint8_t*       data   = mc.data();
-		const imgz_header_t* header = (const imgz_header_t*)data;
+		const uint8_t*              data   = mc.data();
+		const Graphics::IMGZHeader* header = (const Graphics::IMGZHeader*)data;
 
 		// Check signature
 		if (header->magic[0] != 'I' || header->magic[1] != 'M' || header->magic[2] != 'G' || header->magic[3] != 'Z')
@@ -731,8 +730,8 @@ public:
 		if (mc[3] > 4)
 			return EDF_FALSE;
 		uint8_t  bpp    = (mc[3] ? mc[3] : 1);
-		uint16_t width  = READ_L16(mc, 0);
-		uint16_t height = READ_L16(mc, 4);
+		uint16_t width  = mc.readL16(0);
+		uint16_t height = mc.readL16(4);
 		if (size != (8 + width * height * bpp))
 			return EDF_FALSE;
 		return EDF_TRUE;
@@ -756,16 +755,16 @@ public:
 		if (mc[0] != 'I' || mc[1] != 'D' || mc[2] != 'S' || mc[3] != 'P')
 			return EDF_FALSE;
 		// Check special values, version must be 1 and type must be between 0 and 4
-		if (READ_L32(mc, 4) != 1 || READ_L32(mc, 8) > 4)
+		if (mc.readL32(4) != 1 || mc.readL32(8) > 4)
 			return EDF_FALSE;
 		// Check maximum image size
-		uint32_t width  = READ_L32(mc, 16);
-		uint32_t height = READ_L32(mc, 20);
+		uint32_t width  = mc.readL32(16);
+		uint32_t height = mc.readL32(20);
 		if (width == 0 || height == 0)
 			return EDF_FALSE;
 
 		// Check amount of frames
-		uint32_t nframes = READ_L32(mc, 24);
+		uint32_t nframes = mc.readL32(24);
 		if (nframes == 0)
 			return EDF_FALSE;
 
@@ -773,16 +772,16 @@ public:
 		uint32_t offset = 36; // Offset to start of first frame
 		for (size_t a = 0; a < nframes; ++a)
 		{
-			if (READ_L32(mc, offset) != 0)
+			if (mc.readL32(offset) != 0)
 			{
 				// We have a frame with a group of picture
-				uint32_t grpsz = READ_L32(mc, offset + 4);
+				uint32_t grpsz = mc.readL32(offset + 4);
 				// Move to end of group header
 				offset += (grpsz + 2) << 2;
 				for (size_t b = 0; b < grpsz; ++b)
 				{
-					uint32_t pw = READ_L32(mc, offset + 8);
-					uint32_t ph = READ_L32(mc, offset + 12);
+					uint32_t pw = mc.readL32(offset + 8);
+					uint32_t ph = mc.readL32(offset + 12);
 					if (pw > width || ph > height)
 						return EDF_FALSE;
 					// Move to end of picture data
@@ -797,8 +796,8 @@ public:
 			{
 				// We have a frame with a single picture
 				offset += 4;
-				uint32_t pw = READ_L32(mc, offset + 8);
-				uint32_t ph = READ_L32(mc, offset + 12);
+				uint32_t pw = mc.readL32(offset + 8);
+				uint32_t ph = mc.readL32(offset + 12);
 				if (pw > width || ph > height)
 					return EDF_FALSE;
 				// Move to end of picture data
@@ -826,13 +825,13 @@ public:
 		if (size < 125)
 			return EDF_FALSE;
 
-		size_t width  = READ_L32(mc, 16);
-		size_t height = READ_L32(mc, 20);
+		size_t width  = mc.readL32(16);
+		size_t height = mc.readL32(20);
 		if (!width || !height || width % 8 || height % 8)
 			return EDF_FALSE;
 		for (int m = 0; m < 4; ++m)
 		{
-			size_t offset = READ_L32(mc, (24 + (m << 2)));
+			size_t offset = mc.readL32((24 + (m << 2)));
 			if (!offset || size < offset + ((width >> m) * (height >> m)))
 				return EDF_FALSE;
 		}
@@ -867,13 +866,13 @@ public:
 				return false;
 			}
 		}
-		size_t width  = READ_L32(mc, 32);
-		size_t height = READ_L32(mc, 36);
+		size_t width  = mc.readL32(32);
+		size_t height = mc.readL32(36);
 		if (!width || !height || width % 8 || height % 8)
 			return EDF_FALSE;
 		for (int m = 0; m < 4; ++m)
 		{
-			size_t offset = READ_L32(mc, (40 + (m << 2)));
+			size_t offset = mc.readL32((40 + (m << 2)));
 			if (width >> m == 0 && height >> m == 0 && offset == 0)
 				break;
 			else if (!offset || size < offset + ((width >> m) * (height >> m)))
@@ -895,11 +894,11 @@ public:
 		// If those were static functions, then I could
 		// just do this instead of such copypasta:
 		//	return DoomArahDataFormat::isThisFormat(mc);
-		if (mc.size() < sizeof(patch_header_t))
+		if (mc.size() < sizeof(Graphics::PatchHeader))
 			return EDF_FALSE;
 
-		const uint8_t*        data   = mc.data();
-		const patch_header_t* header = (const patch_header_t*)data;
+		const uint8_t*               data   = mc.data();
+		const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -907,7 +906,7 @@ public:
 			return EDF_FALSE;
 
 		// Check the size matches
-		if (mc.size() != (sizeof(patch_header_t) + (header->width * header->height)))
+		if (mc.size() != (sizeof(Graphics::PatchHeader) + (header->width * header->height)))
 			return EDF_FALSE;
 
 		return EDF_TRUE;
@@ -925,7 +924,7 @@ public:
 		int size = mc.size();
 		if (size < 4)
 			return EDF_FALSE;
-		int width = READ_L16(mc, 2);
+		int width = mc.readL16(2);
 		if (width <= 0 || width > (signed)(size / 4))
 			return EDF_FALSE;
 		int height = 0;
@@ -936,7 +935,7 @@ public:
 			int pos = (j << 1) + 4;
 			if (pos + 2 >= size)
 				return EDF_FALSE;
-			int offstart = READ_L16(mc, pos);
+			int offstart = mc.readL16(pos);
 			if (offstart == 0)
 				continue;
 			if (offstart < 0 || size < offstart + 2 || offstart < (width * 2 + 4))
@@ -997,8 +996,8 @@ public:
 		size_t size = mc.size();
 		if (size < 4)
 			return EDF_FALSE;
-		size_t width  = READ_L16(mc, 0);
-		size_t height = READ_L16(mc, 2);
+		size_t width  = mc.readL16(0);
+		size_t height = mc.readL16(2);
 		if ((width | height) == 0)
 			return EDF_FALSE;
 		size_t pixels = width * height;
@@ -1017,11 +1016,11 @@ public:
 		size_t size = mc.size();
 		if (size < 16)
 			return EDF_FALSE;
-		uint32_t version = READ_L32(mc, 0);
+		uint32_t version = mc.readL32(0);
 		if (version != 1)
 			return EDF_FALSE;
-		uint32_t firsttile = READ_L32(mc, 8);
-		uint32_t lasttile  = READ_L16(mc, 12);
+		uint32_t firsttile = mc.readL32(8);
+		uint32_t lasttile  = mc.readL16(12);
 		uint32_t tilecount = 1 + lasttile - firsttile;
 		size_t   datastart = (16 + (tilecount * 8));
 		if (size < datastart)
@@ -1052,14 +1051,14 @@ public:
 		size_t size = mc.size();
 		if (size < 1040)
 			return EDF_FALSE;
-		uint32_t version = READ_L32(mc, 0);
+		uint32_t version = mc.readL32(0);
 		if (version != 2)
 			return EDF_FALSE;
 		for (int m = 0; m < 16; ++m)
 		{
-			size_t width  = READ_L32(mc, (36 + (m << 2)));
-			size_t height = READ_L32(mc, (100 + (m << 2)));
-			size_t offset = READ_L32(mc, (164 + (m << 2)));
+			size_t width  = mc.readL32((36 + (m << 2)));
+			size_t height = mc.readL32((100 + (m << 2)));
+			size_t offset = mc.readL32((164 + (m << 2)));
 			if (width == 0 && height == 0 && offset == 0)
 				break;
 			else if (
@@ -1084,14 +1083,14 @@ public:
 		size_t size = mc.size();
 		if (size < 1040)
 			return EDF_FALSE;
-		uint32_t version = READ_L32(mc, 0);
+		uint32_t version = mc.readL32(0);
 		if (version != 4)
 			return EDF_FALSE;
 		for (int m = 0; m < 16; ++m)
 		{
-			size_t width  = READ_L32(mc, (516 + (m << 2)));
-			size_t height = READ_L32(mc, (580 + (m << 2)));
-			size_t offset = READ_L32(mc, (644 + (m << 2)));
+			size_t width  = mc.readL32((516 + (m << 2)));
+			size_t height = mc.readL32((580 + (m << 2)));
+			size_t offset = mc.readL32((644 + (m << 2)));
 			if (width == 0 && height == 0 && offset == 0)
 				break;
 			else if (
@@ -1116,13 +1115,13 @@ public:
 		size_t size = mc.size();
 		if (size < 812)
 			return EDF_FALSE;
-		size_t width  = READ_L32(mc, 16);
-		size_t height = READ_L32(mc, 20);
+		size_t width  = mc.readL32(16);
+		size_t height = mc.readL32(20);
 		if (!width || !height || width % 8 || height % 8)
 			return EDF_FALSE;
 		for (int m = 0; m < 4; ++m)
 		{
-			size_t offset = READ_L32(mc, (24 + (m << 2)));
+			size_t offset = mc.readL32((24 + (m << 2)));
 			if (width >> m == 0 && height >> m == 0 && offset == 0)
 				break;
 			else if (!offset || size < offset + ((width >> m) * (height >> m)))
@@ -1130,10 +1129,10 @@ public:
 		}
 		width >>= 3;
 		height >>= 3;
-		size_t offset = READ_L32(mc, 36) + (width * height);
+		size_t offset = mc.readL32(36) + (width * height);
 		if (size < offset + 5)
 			return EDF_FALSE;
-		size_t palsize = READ_L16(mc, offset);
+		size_t palsize = mc.readL16(offset);
 		if (size < offset + 2 + (3 * palsize))
 			return EDF_FALSE;
 		return EDF_TRUE;
@@ -1151,25 +1150,25 @@ public:
 		const uint8_t* data = mc.data();
 
 		// Check size
-		if (mc.size() > sizeof(rottpatch_header_t))
+		if (mc.size() > sizeof(Graphics::ROTTPatchHeader))
 		{
-			const rottpatch_header_t* header = (const rottpatch_header_t*)data;
+			const Graphics::ROTTPatchHeader* header = (const Graphics::ROTTPatchHeader*)data;
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
 				&& header->top > -2000 && header->top < 2000 && header->left > -2000 && header->left < 2000)
 			{
-				uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(rottpatch_header_t));
+				uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(Graphics::ROTTPatchHeader));
 
 				// Check there is room for needed column pointers
-				if (mc.size() < sizeof(rottpatch_header_t) + (header->width * sizeof(uint16_t)))
+				if (mc.size() < sizeof(Graphics::ROTTPatchHeader) + (header->width * sizeof(uint16_t)))
 					return EDF_FALSE;
 
 				// Check column pointers are within range
 				for (int a = 0; a < header->width; a++)
 				{
 					if (col_offsets[a] > mc.size()
-						|| col_offsets[a] < (header->width << 1) + sizeof(rottpatch_header_t))
+						|| col_offsets[a] < (header->width << 1) + sizeof(Graphics::ROTTPatchHeader))
 						return EDF_FALSE;
 				}
 
@@ -1177,7 +1176,7 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels  = (header->height + 2 + header->height % 2) / 2;
 				int maxcolsize = sizeof(uint32_t) + (numpixels * 3) + 1;
-				if (mc.size() > (2 + sizeof(rottpatch_header_t) + (header->width * maxcolsize)))
+				if (mc.size() > (2 + sizeof(Graphics::ROTTPatchHeader) + (header->width * maxcolsize)))
 				{
 					return EDF_UNLIKELY; // This may still be good anyway
 				}
@@ -1201,25 +1200,25 @@ public:
 		const uint8_t* data = mc.data();
 
 		// Check size
-		if (mc.size() > sizeof(rottpatch_header_t))
+		if (mc.size() > sizeof(Graphics::ROTTPatchHeader))
 		{
-			const rottpatch_header_t* header = (const rottpatch_header_t*)data;
+			const Graphics::ROTTPatchHeader* header = (const Graphics::ROTTPatchHeader*)data;
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
 				&& header->top > -2000 && header->top < 2000 && header->left > -2000 && header->left < 2000)
 			{
-				uint16_t* col_offsets = (uint16_t*)(2 + (const uint8_t*)data + sizeof(rottpatch_header_t));
+				uint16_t* col_offsets = (uint16_t*)(2 + (const uint8_t*)data + sizeof(Graphics::ROTTPatchHeader));
 
 				// Check there is room for needed column pointers
-				if (mc.size() < 2 + sizeof(rottpatch_header_t) + (header->width * sizeof(uint16_t)))
+				if (mc.size() < 2 + sizeof(Graphics::ROTTPatchHeader) + (header->width * sizeof(uint16_t)))
 					return EDF_FALSE;
 
 				// Check column pointers are within range
 				for (int a = 0; a < header->width; a++)
 				{
 					if (col_offsets[a] > mc.size()
-						|| col_offsets[a] < (header->width << 1) + sizeof(rottpatch_header_t))
+						|| col_offsets[a] < (header->width << 1) + sizeof(Graphics::ROTTPatchHeader))
 						return EDF_FALSE;
 				}
 
@@ -1227,7 +1226,7 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels  = (header->height + 2 + header->height % 2) / 2;
 				int maxcolsize = sizeof(uint32_t) + (numpixels * 3) + 1;
-				if (mc.size() > (2 + sizeof(rottpatch_header_t) + (header->width * maxcolsize)))
+				if (mc.size() > (2 + sizeof(Graphics::ROTTPatchHeader) + (header->width * maxcolsize)))
 				{
 					return EDF_UNLIKELY; // This may still be good anyway
 				}
@@ -1275,11 +1274,11 @@ public:
 	 */
 	int isThisFormat(MemChunk& mc)
 	{
-		if (mc.size() < sizeof(patch_header_t))
+		if (mc.size() < sizeof(Graphics::PatchHeader))
 			return EDF_FALSE;
 
-		const uint8_t*        data   = mc.data();
-		const patch_header_t* header = (const patch_header_t*)data;
+		const uint8_t*               data   = mc.data();
+		const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -1287,7 +1286,7 @@ public:
 			return EDF_FALSE;
 
 		// Check the size matches
-		if (mc.size() != (sizeof(patch_header_t) + (header->width * header->height)))
+		if (mc.size() != (sizeof(Graphics::PatchHeader) + (header->width * header->height)))
 			return EDF_FALSE;
 
 		return EDF_TRUE;
@@ -1326,7 +1325,7 @@ public:
 		size_t size = mc.size();
 		if (size < 4)
 			return EDF_FALSE;
-		if ((4 + (READ_L16(mc, 0) * READ_L16(mc, 2))) != mc.size())
+		if ((4 + (mc.readL16(0) * mc.readL16(2))) != mc.size())
 			return EDF_FALSE;
 
 		return EDF_TRUE;
@@ -1365,8 +1364,8 @@ public:
 		size_t size = mc.size();
 		if (size > 32)
 		{
-			if (mc[0] == 'B' && mc[1] == 'M' && mc[2] == ' ' && mc[3] == 0x1E && READ_L16(mc, 4) != 0
-				&& READ_L16(mc, 6) != 0 && mc[14] < 3 && mc[15] == 0)
+			if (mc[0] == 'B' && mc[1] == 'M' && mc[2] == ' ' && mc[3] == 0x1E && mc.readL16(4) != 0
+				&& mc.readL16(6) != 0 && mc[14] < 3 && mc[15] == 0)
 			{
 				// Check that padding is left alone
 				for (int i = 20; i < 32; ++i)
@@ -1408,7 +1407,7 @@ public:
 				// Check size if compressed:
 				if (mc[40] == 1)
 				{
-					if (READ_L32(mc, 44) != size - 32)
+					if (mc.readL32(44) != size - 32)
 						return EDF_FALSE;
 					// Check some padding
 					for (int i = 41; i < 44; ++i)
@@ -1631,17 +1630,17 @@ public:
 		{
 			// Numchar should be greater than 0, width should be multiple of 8,
 			// height should be greater than 0, padding should be null.
-			if (READ_L16(mc, 2) >= 0 && (READ_L16(mc, 4) % 8) == 0 && READ_L16(mc, 6) >= 0 && READ_L16(mc, 10) == 0)
+			if (mc.readL16(2) >= 0 && (mc.readL16(4) % 8) == 0 && mc.readL16(6) >= 0 && mc.readL16(10) == 0)
 			{
-				size_t numchr = READ_L16(mc, 2);
+				size_t numchr = mc.readL16(2);
 				if (size < 16 + numchr)
 					return EDF_FALSE;
 				// Also check that character width never exceeds max width.
 				for (size_t i = 12; i < 12 + numchr; ++i)
-					if (mc[i] > READ_L16(mc, 4))
+					if (mc[i] > mc.readL16(4))
 						return EDF_FALSE;
 				// Check that there are enough data to cover all characters and the header
-				size_t neededbytes = 12 + numchr + ((numchr * READ_L16(mc, 6)) * (READ_L16(mc, 4) >> 3));
+				size_t neededbytes = 12 + numchr + ((numchr * mc.readL16(6)) * (mc.readL16(4) >> 3));
 				if (size != neededbytes)
 					return EDF_FALSE;
 				// Probably okay

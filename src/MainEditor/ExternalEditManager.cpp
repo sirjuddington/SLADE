@@ -205,7 +205,7 @@ public:
 
 private:
 	string   gfx_format;
-	point2_t offsets;
+	Vec2i offsets;
 	Palette  palette;
 };
 

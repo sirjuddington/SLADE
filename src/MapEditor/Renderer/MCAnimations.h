@@ -34,15 +34,15 @@ protected:
 class MCASelboxFader : public MCAnimation
 {
 public:
-	MCASelboxFader(long start, fpoint2_t tl, fpoint2_t br);
+	MCASelboxFader(long start, Vec2f tl, Vec2f br);
 	~MCASelboxFader();
 
 	bool update(long time);
 	void draw();
 
 private:
-	fpoint2_t tl_;
-	fpoint2_t br_;
+	Vec2f tl_;
+	Vec2f br_;
 	float     fade_;
 };
 
@@ -75,8 +75,8 @@ public:
 	void draw();
 
 private:
-	vector<frect_t> lines_;
-	vector<frect_t> tabs_;
+	vector<Rectf> lines_;
+	vector<Rectf> tabs_;
 	bool            select_;
 	float           fade_;
 };
@@ -92,7 +92,7 @@ public:
 	void draw();
 
 private:
-	vector<fpoint2_t> vertices_;
+	vector<Vec2f> vertices_;
 	double            size_;
 	bool              select_;
 	float             fade_;
@@ -118,14 +118,14 @@ private:
 class MCA3dWallSelection : public MCAnimation
 {
 public:
-	MCA3dWallSelection(long start, fpoint3_t points[4], bool select = true);
+	MCA3dWallSelection(long start, Vec3f points[4], bool select = true);
 	~MCA3dWallSelection();
 
 	bool update(long time);
 	void draw();
 
 private:
-	fpoint3_t points_[4];
+	Vec3f points_[4];
 	bool      select_;
 	float     fade_;
 };
@@ -134,7 +134,7 @@ private:
 class MCA3dFlatSelection : public MCAnimation
 {
 public:
-	MCA3dFlatSelection(long start, MapSector* sector, plane_t plane, bool select = true);
+	MCA3dFlatSelection(long start, MapSector* sector, Plane plane, bool select = true);
 	~MCA3dFlatSelection();
 
 	bool update(long time);
@@ -142,7 +142,7 @@ public:
 
 private:
 	MapSector* sector_;
-	plane_t    plane_;
+	Plane    plane_;
 	bool       select_;
 	float      fade_;
 };

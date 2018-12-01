@@ -769,9 +769,9 @@ double MapEditContext::snapToGrid(double position, bool force)
 // Used for pasting. Given an [origin] point and the current [mouse_pos], snaps
 // in such a way that the mouse is a number of grid units away from the origin.
 // -----------------------------------------------------------------------------
-fpoint2_t MapEditContext::relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos)
+Vec2f MapEditContext::relativeSnapToGrid(Vec2f origin, Vec2f mouse_pos)
 {
-	fpoint2_t delta = mouse_pos - origin;
+	Vec2f delta = mouse_pos - origin;
 	delta.x         = snapToGrid(delta.x, false);
 	delta.y         = snapToGrid(delta.y, false);
 	return origin + delta;
@@ -818,7 +818,7 @@ int MapEditContext::beginTagEdit()
 // -----------------------------------------------------------------------------
 void MapEditContext::tagSectorAt(double x, double y)
 {
-	fpoint2_t point(x, y);
+	Vec2f point(x, y);
 
 	int index = map_.sectorAt(point);
 	if (index < 0)
@@ -947,7 +947,7 @@ void MapEditContext::setFeatureHelp(const vector<string>& lines)
 // -----------------------------------------------------------------------------
 // Handles the keybind [key]
 // -----------------------------------------------------------------------------
-bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
+bool MapEditContext::handleKeyBind(string key, Vec2f position)
 {
 	// --- General keybinds ---
 
@@ -1460,7 +1460,7 @@ void MapEditContext::swapPlayerStart3d()
 	player_start_pos_.set(pstart->point());
 	player_start_dir_ = pstart->angle();
 
-	fpoint2_t campos = renderer_.cameraPos2D();
+	Vec2f campos = renderer_.cameraPos2D();
 	pstart->setPos(campos.x, campos.y);
 	pstart->setAnglePoint(campos + renderer_.cameraDir2D());
 }
@@ -1468,7 +1468,7 @@ void MapEditContext::swapPlayerStart3d()
 // -----------------------------------------------------------------------------
 // Moves the player 1 start thing to [pos]
 // -----------------------------------------------------------------------------
-void MapEditContext::swapPlayerStart2d(fpoint2_t pos)
+void MapEditContext::swapPlayerStart2d(Vec2f pos)
 {
 	// Find player 1 start
 	MapThing* pstart = nullptr;
@@ -1576,7 +1576,7 @@ void MapEditContext::updateInfoOverlay()
 // -----------------------------------------------------------------------------
 // Draws the current info overlay
 // -----------------------------------------------------------------------------
-void MapEditContext::drawInfoOverlay(const point2_t& size, float alpha)
+void MapEditContext::drawInfoOverlay(const Vec2i& size, float alpha)
 {
 	switch (edit_mode_)
 	{
@@ -1796,7 +1796,7 @@ bool MapEditContext::handleAction(string id)
 	// Move 3d mode camera
 	else if (id == "mapw_camera_set")
 	{
-		fpoint3_t  pos(input().mousePosMap());
+		Vec3f  pos(input().mousePosMap());
 		MapSector* sector = map_.sector(map_.sectorAt(input_.mousePosMap()));
 		if (sector)
 			pos.z = sector->floor().plane.height_at(pos.x, pos.y) + 40;

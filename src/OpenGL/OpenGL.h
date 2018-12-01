@@ -54,7 +54,7 @@ bool     accuracyTweak();
 #ifndef USE_SFML_RENDERWINDOW
 int* getWxGLAttribs();
 #endif
-void setColour(rgba_t col, bool set_blend = true);
+void setColour(ColRGBA col, bool set_blend = true);
 void setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, int8_t blend = BLEND_IGNORE);
 void setBlend(int blend);
 void resetBlend();

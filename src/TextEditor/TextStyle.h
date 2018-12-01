@@ -27,13 +27,13 @@ public:
 	void setBold(int bold) { this->bold_ = bold; }
 	void setItalic(int italic) { this->italic_ = italic; }
 	void setUnderlined(int underlined) { this->underlined_ = underlined; }
-	void setForeground(rgba_t col)
+	void setForeground(ColRGBA col)
 	{
 		foreground_.set(col);
 		fg_defined_ = true;
 	}
 	void clearForeground() { fg_defined_ = false; }
-	void setBackground(rgba_t col)
+	void setBackground(ColRGBA col)
 	{
 		background_.set(col);
 		bg_defined_ = true;
@@ -41,8 +41,8 @@ public:
 	void clearBackground() { bg_defined_ = false; }
 
 	wxFont font();
-	rgba_t foreground() { return foreground_; }
-	rgba_t background() { return background_; }
+	ColRGBA foreground() { return foreground_; }
+	ColRGBA background() { return background_; }
 
 	bool   parse(ParseTreeNode* node);
 	void   applyTo(wxStyledTextCtrl* stc);
@@ -56,9 +56,9 @@ private:
 
 	string font_;
 	int    size_;
-	rgba_t foreground_;
+	ColRGBA foreground_;
 	bool   fg_defined_;
-	rgba_t background_;
+	ColRGBA background_;
 	bool   bg_defined_;
 	int    bold_;
 	int    italic_;
@@ -82,8 +82,8 @@ public:
 	TextStyle* style(unsigned index);
 	bool       writeFile(string filename);
 
-	rgba_t styleForeground(string style);
-	rgba_t styleBackground(string style);
+	ColRGBA styleForeground(string style);
+	ColRGBA styleBackground(string style);
 	string defaultFontFace();
 	int    defaultFontSize();
 

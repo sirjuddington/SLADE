@@ -72,7 +72,7 @@ sf::RenderWindow* render_target    = nullptr;
 bool              text_state_reset = true;
 #endif
 double text_outline_width  = 0;
-rgba_t text_outline_colour = COL_BLACK;
+ColRGBA text_outline_colour = COL_BLACK;
 }; // namespace Drawing
 
 
@@ -420,7 +420,7 @@ int Drawing::fontSize()
 // -----------------------------------------------------------------------------
 // Draws a line from [start] to [end]
 // -----------------------------------------------------------------------------
-void Drawing::drawLine(fpoint2_t start, fpoint2_t end)
+void Drawing::drawLine(Vec2f start, Vec2f end)
 {
 	glBegin(GL_LINES);
 	glVertex2d(start.x, start.y);
@@ -442,7 +442,7 @@ void Drawing::drawLine(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a line from [start] to [end]
 // -----------------------------------------------------------------------------
-void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double tab_max)
+void Drawing::drawLineTabbed(Vec2f start, Vec2f end, double tab, double tab_max)
 {
 	// Draw line
 	glBegin(GL_LINES);
@@ -451,7 +451,7 @@ void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double 
 	glEnd();
 
 	// Calculate midpoint
-	fpoint2_t mid;
+	Vec2f mid;
 	mid.x = start.x + ((end.x - start.x) * 0.5);
 	mid.y = start.y + ((end.y - start.y) * 0.5);
 
@@ -463,7 +463,7 @@ void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double 
 		tablen = 2;
 
 	// Calculate tab endpoint
-	fpoint2_t invdir(-(end.y - start.y), end.x - start.x);
+	Vec2f invdir(-(end.y - start.y), end.x - start.x);
 	invdir.normalize();
 
 	// Draw tab
@@ -477,10 +477,10 @@ void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double 
 // Draws a line from [p1] to [p2] with an arrowhead at the [p1] end.
 // If [twoway] is true, an arrowhead is also drawn at the [p2] end
 // -----------------------------------------------------------------------------
-void Drawing::drawArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway, double ah_angle, double ah_length)
+void Drawing::drawArrow(Vec2f p1, Vec2f p2, ColRGBA color, bool twoway, double ah_angle, double ah_length)
 {
-	fpoint2_t a1l, a1r, a2l, a2r;
-	fpoint2_t vector = p1 - p2;
+	Vec2f a1l, a1r, a2l, a2r;
+	Vec2f vector = p1 - p2;
 	double    angle  = atan2(-vector.y, vector.x);
 	a1l = a1r = p1;
 	a1l.x += ah_length * sin(angle - ah_angle);
@@ -522,7 +522,7 @@ void Drawing::drawArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway, d
 // -----------------------------------------------------------------------------
 // Draws a rectangle from [tl] to [br]
 // -----------------------------------------------------------------------------
-void Drawing::drawRect(fpoint2_t tl, fpoint2_t br)
+void Drawing::drawRect(Vec2f tl, Vec2f br)
 {
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(tl.x, tl.y);
@@ -548,7 +548,7 @@ void Drawing::drawRect(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle from [tl] to [br]
 // -----------------------------------------------------------------------------
-void Drawing::drawFilledRect(fpoint2_t tl, fpoint2_t br)
+void Drawing::drawFilledRect(Vec2f tl, Vec2f br)
 {
 	glBegin(GL_QUADS);
 	glVertex2d(tl.x, tl.y);
@@ -574,7 +574,7 @@ void Drawing::drawFilledRect(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
 // -----------------------------------------------------------------------------
-void Drawing::drawBorderedRect(fpoint2_t tl, fpoint2_t br, rgba_t colour, rgba_t border_colour)
+void Drawing::drawBorderedRect(Vec2f tl, Vec2f br, ColRGBA colour, ColRGBA border_colour)
 {
 	drawBorderedRect(tl.x, tl.y, br.x, br.y, colour, border_colour);
 }
@@ -582,7 +582,7 @@ void Drawing::drawBorderedRect(fpoint2_t tl, fpoint2_t br, rgba_t colour, rgba_t
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
 // -----------------------------------------------------------------------------
-void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, rgba_t colour, rgba_t border_colour)
+void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, ColRGBA colour, ColRGBA border_colour)
 {
 	// Rect
 	OpenGL::setColour(colour, false);
@@ -606,7 +606,7 @@ void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, rgba_
 // -----------------------------------------------------------------------------
 // Draws an ellipse at [mid]
 // -----------------------------------------------------------------------------
-void Drawing::drawEllipse(fpoint2_t mid, double radius_x, double radius_y, int sides, rgba_t colour)
+void Drawing::drawEllipse(Vec2f mid, double radius_x, double radius_y, int sides, ColRGBA colour)
 {
 	// Set colour
 	OpenGL::setColour(colour, false);
@@ -625,7 +625,7 @@ void Drawing::drawEllipse(fpoint2_t mid, double radius_x, double radius_y, int s
 // -----------------------------------------------------------------------------
 // Draws a filled ellipse at [mid]
 // -----------------------------------------------------------------------------
-void Drawing::drawFilledEllipse(fpoint2_t mid, double radius_x, double radius_y, int sides, rgba_t colour)
+void Drawing::drawFilledEllipse(Vec2f mid, double radius_x, double radius_y, int sides, ColRGBA colour)
 {
 	// Set colour
 	OpenGL::setColour(colour, false);
@@ -648,7 +648,7 @@ void Drawing::drawFilledEllipse(fpoint2_t mid, double radius_x, double radius_y,
 // If [upscale] is true the texture will be zoomed to fit the rectangle.
 // Returns the resulting texture rectangle coordinates
 // -----------------------------------------------------------------------------
-frect_t Drawing::fitTextureWithin(
+Rectf Drawing::fitTextureWithin(
 	GLTexture* tex,
 	double     x1,
 	double     y1,
@@ -659,7 +659,7 @@ frect_t Drawing::fitTextureWithin(
 {
 	// Ignore null texture
 	if (!tex)
-		return frect_t();
+		return Rectf();
 
 	double width  = x2 - x1;
 	double height = y2 - y1;
@@ -680,7 +680,7 @@ frect_t Drawing::fitTextureWithin(
 		scale = max_scale;
 
 	// Return the fitted rectangle
-	return frect_t(
+	return Rectf(
 		x1 + width * 0.5 - (scale * tex->width() * 0.5),
 		y1 + height * 0.5 - (scale * tex->height() * 0.5),
 		x1 + width * 0.5 + (scale * tex->width() * 0.5),
@@ -742,7 +742,7 @@ void Drawing::drawTextureWithin(
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(string text, int x, int y, rgba_t colour, Font font, Align alignment, frect_t* bounds)
+void Drawing::drawText(string text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectf* bounds)
 {
 	// Setup SFML string
 	sf::Text sf_str;
@@ -817,7 +817,7 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, Font font, Alig
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-fpoint2_t Drawing::textExtents(string text, Font font)
+Vec2f Drawing::textExtents(string text, Font font)
 {
 	// Setup SFML string
 	sf::Text sf_str;
@@ -833,7 +833,7 @@ fpoint2_t Drawing::textExtents(string text, Font font)
 
 	// Return width and height of text
 	sf::FloatRect rect = sf_str.getGlobalBounds();
-	return fpoint2_t(rect.width, rect.height);
+	return Vec2f(rect.width, rect.height);
 }
 
 #else
@@ -847,7 +847,7 @@ fpoint2_t Drawing::textExtents(string text, Font font)
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(string text, int x, int y, rgba_t colour, Font font, Align alignment, frect_t* bounds)
+void Drawing::drawText(string text, int x, int y, ColRGBA colour, Font font, Align alignment, frect_t* bounds)
 {
 	// Get desired font
 	FTFont* ftgl_font = theFontManager->getFont(font);
@@ -966,7 +966,7 @@ void Drawing::setTextState(bool set)
 // -----------------------------------------------------------------------------
 // Sets the [thickness] and [colour] of the outline to use when drawing text
 // -----------------------------------------------------------------------------
-void Drawing::setTextOutline(double thickness, rgba_t colour)
+void Drawing::setTextOutline(double thickness, ColRGBA colour)
 {
 	text_outline_width  = thickness;
 	text_outline_colour = colour;
@@ -1079,14 +1079,14 @@ wxColour Drawing::lightColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	hsl_t hsl = Misc::rgbToHsl(rgba_t(COLWX(colour)));
+	ColHSL hsl = Misc::rgbToHsl(ColRGBA(COLWX(colour)));
 
 	// Increase luminance
 	hsl.l += (float)((percent * 5.0) / 100.0);
 	if (hsl.l > 1.0)
 		hsl.l = 1.0;
 
-	rgba_t rgb = Misc::hslToRgb(hsl);
+	ColRGBA rgb = Misc::hslToRgb(hsl);
 	return wxColour(rgb.r, rgb.g, rgb.b);
 }
 
@@ -1098,14 +1098,14 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	hsl_t hsl = Misc::rgbToHsl(rgba_t(COLWX(colour)));
+	ColHSL hsl = Misc::rgbToHsl(ColRGBA(COLWX(colour)));
 
 	// Decrease luminance
 	hsl.l -= (float)((percent * 5.0) / 100.0);
 	if (hsl.l < 0)
 		hsl.l = 0;
 
-	rgba_t rgb = Misc::hslToRgb(hsl);
+	ColRGBA rgb = Misc::hslToRgb(hsl);
 	return wxColour(rgb.r, rgb.g, rgb.b);
 }
 
@@ -1239,9 +1239,9 @@ void TextBox::setSize(int width)
 // -----------------------------------------------------------------------------
 // Draws the text box
 // -----------------------------------------------------------------------------
-void TextBox::draw(int x, int y, rgba_t colour, Drawing::Align alignment)
+void TextBox::draw(int x, int y, ColRGBA colour, Drawing::Align alignment)
 {
-	frect_t b;
+	Rectf b;
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
 	for (unsigned a = 0; a < lines_.size(); a++)

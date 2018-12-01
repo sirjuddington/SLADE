@@ -2026,6 +2026,7 @@
     <ClInclude Include="..\..\src\Graphics\CTexture\PatchTable.h" />
     <ClInclude Include="..\..\src\Graphics\CTexture\TextureXList.h" />
     <ClInclude Include="..\..\src\Graphics\Font\SFont.h" />
+    <ClInclude Include="..\..\src\Graphics\GameFormats.h" />
     <ClInclude Include="..\..\src\Graphics\Icons.h" />
     <ClInclude Include="..\..\src\Graphics\Palette\Palette.h" />
     <ClInclude Include="..\..\src\Graphics\Palette\PaletteManager.h" />
@@ -2214,6 +2215,7 @@
     <ClInclude Include="..\..\src\Utility\FileMonitor.h" />
     <ClInclude Include="..\..\src\Utility\MathStuff.h" />
     <ClInclude Include="..\..\src\Utility\MemChunk.h" />
+    <ClInclude Include="..\..\src\Utility\Memory.h" />
     <ClInclude Include="..\..\src\Utility\Parser.h" />
     <ClInclude Include="..\..\src\Utility\Polygon2D.h" />
     <ClInclude Include="..\..\src\Utility\PropertyList\Property.h" />

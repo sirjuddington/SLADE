@@ -66,7 +66,7 @@ public:
 	virtual void   setStringProperty(const string& key, const string& value);
 	virtual bool   scriptCanModifyProp(const string& key) { return true; }
 
-	virtual fpoint2_t getPoint(Point point) { return fpoint2_t(0, 0); }
+	virtual Vec2f getPoint(Point point) { return Vec2f(0, 0); }
 
 	void filter(bool f = true) { filtered_ = f; }
 

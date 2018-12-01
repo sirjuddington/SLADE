@@ -216,7 +216,7 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 	cursor_zoom_disabled_ = true;
 
 	// Determine bbox of all given object(s)
-	bbox_t bbox;
+	BBox bbox;
 	for (auto object : objects)
 	{
 		// Vertex
@@ -274,7 +274,7 @@ double Renderer::interpolateView(bool smooth, double view_speed, double mult)
 	auto anim_view_speed = view_speed;
 	if (smooth)
 	{
-		auto mouse_pos = fpoint2_t{ context_.input().mousePos() };
+		auto mouse_pos = Vec2f{ context_.input().mousePos() };
 
 		if (!view_.interpolate(mult * view_speed, cursor_zoom_disabled_ ? nullptr : &mouse_pos))
 		{
@@ -310,7 +310,7 @@ bool Renderer::viewIsInterpolated() const
 void Renderer::setCameraThing(MapThing* thing)
 {
 	// Determine position
-	fpoint3_t pos(thing->point(), 40);
+	Vec3f pos(thing->point(), 40);
 	int       sector = context_.map().sectorAt(thing->point());
 	if (sector >= 0)
 		pos.z += context_.map().sector(sector)->floor().plane.height_at(pos.x, pos.y);
@@ -322,7 +322,7 @@ void Renderer::setCameraThing(MapThing* thing)
 // -----------------------------------------------------------------------------
 // Returns the current 3d mode camera position in 2d
 // -----------------------------------------------------------------------------
-fpoint2_t Renderer::cameraPos2D()
+Vec2f Renderer::cameraPos2D()
 {
 	return { renderer_3d_.camPosition().x, renderer_3d_.camPosition().y };
 }
@@ -330,7 +330,7 @@ fpoint2_t Renderer::cameraPos2D()
 // -----------------------------------------------------------------------------
 // Returns the current 3d mode camera direction in 2d (no pitch)
 // -----------------------------------------------------------------------------
-fpoint2_t Renderer::cameraDir2D()
+Vec2f Renderer::cameraDir2D()
 {
 	return renderer_3d_.camDirection();
 }
@@ -593,7 +593,7 @@ void Renderer::drawFeatureHelpText() const
 		return;
 
 	// Draw title
-	frect_t bounds;
+	Rectf bounds;
 	auto    col    = ColourConfiguration::colour("map_editor_message");
 	auto    col_bg = ColourConfiguration::colour("map_editor_message_outline");
 	col.a          = col.a * anim_help_fade_;
@@ -711,18 +711,18 @@ void Renderer::drawThingQuickAngleLines() const
 // -----------------------------------------------------------------------------
 // Draws text showing the length from [p1] to [p2]
 // -----------------------------------------------------------------------------
-void Renderer::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col) const
+void Renderer::drawLineLength(Vec2f p1, Vec2f p2, ColRGBA col) const
 {
 	// Determine distance in screen scale
 	double tdist = 20 / view_.scale(true);
 
 	// Determine line midpoint and front vector
-	fpoint2_t mid(p1.x + (p2.x - p1.x) * 0.5, p1.y + (p2.y - p1.y) * 0.5);
-	fpoint2_t vec(-(p2.y - p1.y), p2.x - p1.x);
+	Vec2f mid(p1.x + (p2.x - p1.x) * 0.5, p1.y + (p2.y - p1.y) * 0.5);
+	Vec2f vec(-(p2.y - p1.y), p2.x - p1.x);
 	vec.normalize();
 
 	// Determine point to place the text
-	fpoint2_t tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
+	Vec2f tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
 
 	// Determine text half-height for vertical alignment
 	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1, p2)));
@@ -869,11 +869,11 @@ void Renderer::drawObjectEdit()
 		// Rotate
 
 		// Bbox
-		fpoint2_t mid(bbox.min.x + bbox.width() * 0.5, bbox.min.y + bbox.height() * 0.5);
+		Vec2f mid(bbox.min.x + bbox.width() * 0.5, bbox.min.y + bbox.height() * 0.5);
 		auto      bl = MathStuff::rotatePoint(mid, bbox.min, group.rotation());
-		auto      tl = MathStuff::rotatePoint(mid, fpoint2_t(bbox.min.x, bbox.max.y), group.rotation());
+		auto      tl = MathStuff::rotatePoint(mid, Vec2f(bbox.min.x, bbox.max.y), group.rotation());
 		auto      tr = MathStuff::rotatePoint(mid, bbox.max, group.rotation());
-		auto      br = MathStuff::rotatePoint(mid, fpoint2_t(bbox.max.x, bbox.min.y), group.rotation());
+		auto      br = MathStuff::rotatePoint(mid, Vec2f(bbox.max.x, bbox.min.y), group.rotation());
 		glLineWidth(2.0f);
 		Drawing::drawLine(tl, bl);
 		Drawing::drawLine(bl, br);
@@ -944,10 +944,10 @@ void Renderer::drawObjectEdit()
 	}
 
 	// Line length
-	fpoint2_t nl_v1, nl_v2;
+	Vec2f nl_v1, nl_v2;
 	if (group.nearestLineEndpoints(view_.mapPos(context_.input().mousePos()), 128 / view_.scale(), nl_v1, nl_v2))
 	{
-		fpoint2_t mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
+		Vec2f mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
 		int       length = MathStuff::distance(nl_v1, nl_v2);
 		int       x      = view_.mapX(mid.x);
 		int       y      = view_.mapY(mid.y) - 8;
@@ -1232,7 +1232,7 @@ void Renderer::draw()
 	glViewport(0, 0, view_.size().x, view_.size().y);
 
 	// Setup GL state
-	rgba_t col_bg = ColourConfiguration::colour("map_background");
+	ColRGBA col_bg = ColourConfiguration::colour("map_background");
 	glClearColor(col_bg.fr(), col_bg.fg(), col_bg.fb(), 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -1272,7 +1272,7 @@ void Renderer::draw()
 	if (context_.editMode() == Mode::Visual)
 	{
 		// Get crosshair colour
-		rgba_t col = ColourConfiguration::colour("map_3d_crosshair");
+		ColRGBA col = ColourConfiguration::colour("map_3d_crosshair");
 		OpenGL::setColour(col);
 
 		glDisable(GL_TEXTURE_2D);
@@ -1318,7 +1318,7 @@ void Renderer::draw()
 				S_FMT("%d", renderer_3d_.itemDistance()),
 				midx + 5,
 				midy + 5,
-				rgba_t(255, 255, 255, 200),
+				ColRGBA(255, 255, 255, 200),
 				Drawing::Font::Small);
 		}
 	}
@@ -1624,7 +1624,7 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 		if (quad)
 		{
 			// Get quad points
-			fpoint3_t points[4];
+			Vec3f points[4];
 			for (unsigned a = 0; a < 4; a++)
 				points[a].set(quad->points[a].x, quad->points[a].y, quad->points[a].z);
 

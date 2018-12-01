@@ -14,7 +14,7 @@ public:
 
 		// Not the best test in the world. But a text-based texture lump ought
 		// to fail it every time; as it would be interpreted as too high a number.
-		uint32_t ntex = READ_L32(mc, 0);
+		uint32_t ntex = mc.readL32(0);
 		if ((int32_t)ntex < 0)
 			return EDF_FALSE;
 		if (mc.size() < (ntex * 24))
@@ -32,7 +32,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// It's a pretty simple format alright
-		uint32_t number = READ_L32(mc, 0);
+		uint32_t number = mc.readL32(0);
 		if ((int32_t)number < 0)
 			return EDF_FALSE;
 		if (mc.size() != (4 + number * 8))
@@ -78,7 +78,7 @@ public:
 			size_t numentries = mc.size() / sizeof(SwitchesEntry);
 
 			// Check that the last entry ends on a SWCH_STOP type
-			if (READ_L16(mc, (numentries * sizeof(SwitchesEntry) - 2)) == SWCH_STOP)
+			if (mc.readL16((numentries * sizeof(SwitchesEntry) - 2)) == SWCH_STOP)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -213,7 +213,7 @@ public:
 			// Check for ACS header
 			if (mc[0] == 'A' && mc[1] == 'C' && mc[2] == 'S' && mc[3] == 0)
 			{
-				uint32_t diroffs = READ_L32(mc, 4);
+				uint32_t diroffs = mc.readL32(4);
 				if (diroffs > mc.size())
 					return EDF_FALSE;
 				else if (
@@ -248,7 +248,7 @@ public:
 				}
 				else if (mc[3] == 0)
 				{
-					uint32_t diroffs = READ_L32(mc, 4);
+					uint32_t diroffs = mc.readL32(4);
 					if (diroffs > mc.size())
 						return EDF_FALSE;
 					else if (
@@ -285,7 +285,7 @@ public:
 				}
 				else if (mc[3] == 0)
 				{
-					uint32_t diroffs = READ_L32(mc, 4);
+					uint32_t diroffs = mc.readL32(4);
 					if (diroffs > mc.size())
 						return EDF_FALSE;
 					else if (

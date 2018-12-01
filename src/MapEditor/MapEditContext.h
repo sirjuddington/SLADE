@@ -83,7 +83,7 @@ public:
 	void      incrementGrid();
 	void      decrementGrid();
 	double    snapToGrid(double position, bool force = true);
-	fpoint2_t relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos);
+	Vec2f relativeSnapToGrid(Vec2f origin, Vec2f mouse_pos);
 
 	// Tag edit
 	int  beginTagEdit();
@@ -125,16 +125,16 @@ public:
 	void       openLineTextureOverlay();
 	bool       infoOverlayActive() const { return info_showing_; }
 	void       updateInfoOverlay();
-	void       drawInfoOverlay(const point2_t& size, float alpha);
+	void       drawInfoOverlay(const Vec2i& size, float alpha);
 
 	// Player start swapping
 	void swapPlayerStart3d();
-	void swapPlayerStart2d(fpoint2_t pos);
+	void swapPlayerStart2d(Vec2f pos);
 	void resetPlayerStart() const;
 
 	// Misc
 	string modeString(bool plural = true) const;
-	bool   handleKeyBind(string key, fpoint2_t position);
+	bool   handleKeyBind(string key, Vec2f position);
 	void   updateDisplay();
 	void   updateStatusText();
 	void   updateThingLists();
@@ -204,7 +204,7 @@ private:
 	vector<string> feature_help_lines_;
 
 	// Player start swap
-	fpoint2_t player_start_pos_;
+	Vec2f player_start_pos_;
 	int       player_start_dir_ = 0;
 
 	// Renderer

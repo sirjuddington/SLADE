@@ -19,7 +19,7 @@ public:
 		Palette* pal_current;
 		Palette* pal_target;
 		int      mask_source;
-		rgba_t   mask_colour;
+		ColRGBA   mask_colour;
 		uint8_t  alpha_threshold;
 		bool     transparency;
 		int      col_format;
@@ -80,7 +80,7 @@ public:
 	virtual int  canWrite(SImage& image) { return NOTWRITABLE; }
 	virtual bool canWriteType(SIType type) { return false; }
 	virtual bool convertWritable(SImage& image, ConvertOptions opt) { return false; }
-	virtual bool writeOffset(SImage& image, ArchiveEntry* entry, point2_t offset) { return false; }
+	virtual bool writeOffset(SImage& image, ArchiveEntry* entry, Vec2i offset) { return false; }
 
 	bool saveImage(SImage& image, MemChunk& out, Palette* pal = nullptr, int index = 0)
 	{

@@ -85,10 +85,10 @@ public:
 	int       size() { return numimages_; }
 	bool      hasPalette() { return has_palette_; }
 	Palette*  palette() { return &palette_; }
-	point2_t  offset() { return point2_t(offset_x_, offset_y_); }
+	Vec2i  offset() { return Vec2i(offset_x_, offset_y_); }
 	unsigned  stride();
 	uint8_t   bpp();
-	rgba_t    pixelAt(unsigned x, unsigned y, Palette* pal = nullptr);
+	ColRGBA    pixelAt(unsigned x, unsigned y, Palette* pal = nullptr);
 	uint8_t   pixelIndexAt(unsigned x, unsigned y);
 	SIFormat* format() { return format_; }
 	info_t    info();
@@ -132,12 +132,12 @@ public:
 	bool convertRGBA(Palette* pal = nullptr);
 	bool convertPaletted(Palette* pal_target, Palette* pal_current = nullptr);
 	bool convertAlphaMap(int alpha_source = BRIGHTNESS, Palette* pal = nullptr);
-	bool maskFromColour(rgba_t colour, Palette* pal = nullptr);
+	bool maskFromColour(ColRGBA colour, Palette* pal = nullptr);
 	bool maskFromBrightness(Palette* pal = nullptr);
 	bool cutoffMask(uint8_t threshold);
 
 	// Image modification
-	bool setPixel(int x, int y, rgba_t colour, Palette* pal = nullptr);
+	bool setPixel(int x, int y, ColRGBA colour, Palette* pal = nullptr);
 	bool setPixel(int x, int y, uint8_t pal_index, uint8_t alpha = 255);
 	bool imgconv();
 	bool rotate(int angle);
@@ -147,7 +147,7 @@ public:
 	bool setImageData(uint8_t* ndata, int nwidth, int nheight, SIType ntype);
 	bool applyTranslation(Translation* tr, Palette* pal = nullptr, bool truecolor = false);
 	bool applyTranslation(string tr, Palette* pal = nullptr, bool truecolor = false);
-	bool drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, Palette* pal);
+	bool drawPixel(int x, int y, ColRGBA colour, si_drawprops_t& properties, Palette* pal);
 	bool drawImage(
 		SImage&         img,
 		int             x,
@@ -155,8 +155,8 @@ public:
 		si_drawprops_t& properties,
 		Palette*        pal_src  = nullptr,
 		Palette*        pal_dest = nullptr);
-	bool colourise(rgba_t colour, Palette* pal = nullptr, int start = -1, int stop = -1);
-	bool tint(rgba_t colour, float amount, Palette* pal = nullptr, int start = -1, int stop = -1);
+	bool colourise(ColRGBA colour, Palette* pal = nullptr, int start = -1, int stop = -1);
+	bool tint(ColRGBA colour, float amount, Palette* pal = nullptr, int start = -1, int stop = -1);
 	bool adjust();
 	bool mirrorpad();
 

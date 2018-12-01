@@ -71,7 +71,7 @@ MapVertex::~MapVertex() {}
 // Returns the object point [point].
 // Currently for vertices this is always the vertex position
 // -----------------------------------------------------------------------------
-fpoint2_t MapVertex::getPoint(Point point)
+Vec2f MapVertex::getPoint(Point point)
 {
 	return this->point();
 }
@@ -79,9 +79,9 @@ fpoint2_t MapVertex::getPoint(Point point)
 // -----------------------------------------------------------------------------
 // Returns the vertex position, more explicitly than the overridden getPoint
 // -----------------------------------------------------------------------------
-fpoint2_t MapVertex::point()
+Vec2f MapVertex::point()
 {
-	return fpoint2_t(x_, y_);
+	return Vec2f(x_, y_);
 }
 
 // -----------------------------------------------------------------------------

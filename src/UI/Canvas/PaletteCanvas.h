@@ -26,7 +26,7 @@ public:
 	void setSelectionType(SelectionType sel) { allow_selection_ = sel; }
 
 	void   draw();
-	rgba_t selectedColour();
+	ColRGBA selectedColour();
 
 	// Events
 	void onMouseLeftDown(wxMouseEvent& e);

@@ -574,7 +574,7 @@ bool StyleSet::writeFile(string filename)
 // Returns the foreground colour of [style], or the default style's foreground
 // colour if it is not set
 // -----------------------------------------------------------------------------
-rgba_t StyleSet::styleForeground(string style)
+ColRGBA StyleSet::styleForeground(string style)
 {
 	TextStyle* s = this->style(style);
 	if (s && s->hasForeground())
@@ -587,7 +587,7 @@ rgba_t StyleSet::styleForeground(string style)
 // Returns the background colour of [style], or the default style's background
 // colour if it is not set
 // -----------------------------------------------------------------------------
-rgba_t StyleSet::styleBackground(string style)
+ColRGBA StyleSet::styleBackground(string style)
 {
 	TextStyle* s = this->style(style);
 	if (s && s->hasBackground())

@@ -114,7 +114,7 @@ bool SImage::putRGBAData(MemChunk& mc, Palette* pal)
 		for (int a = 0; a < width_ * height_; a++)
 		{
 			// Get colour
-			rgba_t col = pal->colour(data_[a]);
+			ColRGBA col = pal->colour(data_[a]);
 
 			// Set alpha
 			if (mask_)
@@ -133,7 +133,7 @@ bool SImage::putRGBAData(MemChunk& mc, Palette* pal)
 	else if (type_ == ALPHAMAP)
 	{
 		uint8_t rgba[4];
-		rgba_t  col;
+		ColRGBA  col;
 		for (int a = 0; a < width_ * height_; a++)
 		{
 			// Get pixel as colour (greyscale)
@@ -191,7 +191,7 @@ bool SImage::putRGBData(MemChunk& mc, Palette* pal)
 		// Alpha map, convert to RGB
 
 		uint8_t rgba[4];
-		rgba_t  col;
+		ColRGBA  col;
 		for (int a = 0; a < width_ * height_; a++)
 		{
 			// Get pixel as colour (greyscale)
@@ -286,17 +286,17 @@ SImage::info_t SImage::info()
 // Returns the colour of the pixel at [x,y] in the image, or black+invisible if
 // out of range
 // -----------------------------------------------------------------------------
-rgba_t SImage::pixelAt(unsigned x, unsigned y, Palette* pal)
+ColRGBA SImage::pixelAt(unsigned x, unsigned y, Palette* pal)
 {
 	// Get pixel index
 	unsigned index = y * stride() + x * bpp();
 
 	// Check it
 	if (index >= unsigned(width_ * height_ * bpp()))
-		return rgba_t(0, 0, 0, 0);
+		return ColRGBA(0, 0, 0, 0);
 
 	// Get colour at pixel
-	rgba_t col;
+	ColRGBA col;
 	if (type_ == RGBA)
 	{
 		col.r = data_[index];
@@ -732,7 +732,7 @@ bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 	// Do conversion
 	data_      = new uint8_t[width_ * height_];
 	unsigned i = 0;
-	rgba_t   col;
+	ColRGBA   col;
 	for (int a = 0; a < width_ * height_; a++)
 	{
 		col.r    = rgba_data[i++];
@@ -794,7 +794,7 @@ bool SImage::convertAlphaMap(int alpha_source, Palette* pal)
 // Changes the mask/alpha channel so that pixels that match [colour] are fully
 // transparent, and all other pixels fully opaque
 // -----------------------------------------------------------------------------
-bool SImage::maskFromColour(rgba_t colour, Palette* pal)
+bool SImage::maskFromColour(ColRGBA colour, Palette* pal)
 {
 	if (type_ == PALMASK)
 	{
@@ -817,7 +817,7 @@ bool SImage::maskFromColour(rgba_t colour, Palette* pal)
 		uint32_t c = 0;
 		for (int a = 0; a < width_ * height_; a++)
 		{
-			rgba_t pix_col(data_[c], data_[c + 1], data_[c + 2], 255);
+			ColRGBA pix_col(data_[c], data_[c + 1], data_[c + 2], 255);
 
 			if (pix_col.equals(colour))
 				data_[c + 3] = 0;
@@ -853,7 +853,7 @@ bool SImage::maskFromBrightness(Palette* pal)
 		for (int a = 0; a < width_ * height_; a++)
 		{
 			// Set mask from pixel colour brightness value
-			rgba_t col = pal->colour(data_[a]);
+			ColRGBA col = pal->colour(data_[a]);
 			mask_[a]   = ((double)col.r * 0.3) + ((double)col.g * 0.59) + ((double)col.b * 0.11);
 		}
 	}
@@ -931,7 +931,7 @@ bool SImage::cutoffMask(uint8_t threshold)
 // Sets the pixel at [x],[y] to [colour].
 // Returns false if the position is out of range, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::setPixel(int x, int y, rgba_t colour, Palette* pal)
+bool SImage::setPixel(int x, int y, ColRGBA colour, Palette* pal)
 {
 	// Check position
 	if (x < 0 || x >= width_ || y < 0 || y >= height_)
@@ -946,7 +946,7 @@ bool SImage::setPixel(int x, int y, rgba_t colour, Palette* pal)
 		if (has_palette_ || !pal)
 			pal = &palette_;
 
-		// Get color index to use (the rgba_t's index if defined, nearest colour otherwise)
+		// Get color index to use (the ColRGBA's index if defined, nearest colour otherwise)
 		uint8_t index = (colour.index == -1) ? pal->nearestColour(colour) : colour.index;
 
 		data_[y * width_ + x] = index;
@@ -980,7 +980,7 @@ bool SImage::setPixel(int x, int y, uint8_t pal_index, uint8_t alpha)
 	if (type_ == RGBA)
 	{
 		// Set the pixel
-		rgba_t col = palette_.colour(pal_index);
+		ColRGBA col = palette_.colour(pal_index);
 		col.a      = alpha;
 		col.write(data_ + (y * (width_ * 4) + (x * 4)));
 	}
@@ -1386,7 +1386,7 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 		if (mask_ && mask_[p] == 0)
 			continue;
 
-		rgba_t col;
+		ColRGBA col;
 		int    q = p * bpp;
 		if (type_ == PALMASK)
 			col.set(pal->colour(data_[p]));
@@ -1441,7 +1441,7 @@ bool SImage::applyTranslation(string tr, Palette* pal, bool truecolor)
 // If the image is paletted, the resulting pixel colour is converted to its
 // nearest match in [pal]
 // -----------------------------------------------------------------------------
-bool SImage::drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, Palette* pal)
+bool SImage::drawPixel(int x, int y, ColRGBA colour, si_drawprops_t& properties, Palette* pal)
 {
 	// Check valid coords
 	if (x < 0 || y < 0 || x >= width_ || y >= height_)
@@ -1479,7 +1479,7 @@ bool SImage::drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, 
 	}
 
 	// Not-so-simple case, do full processing
-	rgba_t d_colour;
+	ColRGBA d_colour;
 	if (type_ == PALMASK)
 		d_colour = pal->colour(data_[p]);
 	else
@@ -1607,7 +1607,7 @@ bool SImage::drawImage(
 			// Draw pixel
 			if (img.type_ == PALMASK)
 			{
-				rgba_t col = pal_src->colour(img.data_[sp]);
+				ColRGBA col = pal_src->colour(img.data_[sp]);
 				col.a      = img.mask_[sp];
 				drawPixel(x, y, col, properties, pal_dest);
 			}
@@ -1615,12 +1615,12 @@ bool SImage::drawImage(
 				drawPixel(
 					x,
 					y,
-					rgba_t(img.data_[sp], img.data_[sp + 1], img.data_[sp + 2], img.data_[sp + 3]),
+					ColRGBA(img.data_[sp], img.data_[sp + 1], img.data_[sp + 2], img.data_[sp + 3]),
 					properties,
 					pal_dest);
 			else if (img.type_ == ALPHAMAP)
 				drawPixel(
-					x, y, rgba_t(img.data_[sp], img.data_[sp], img.data_[sp], img.data_[sp]), properties, pal_dest);
+					x, y, ColRGBA(img.data_[sp], img.data_[sp], img.data_[sp], img.data_[sp]), properties, pal_dest);
 
 			// Go to next source pixel
 			sp += s_bpp;
@@ -1635,7 +1635,7 @@ bool SImage::drawImage(
 // If the image is paletted, each pixel will be set to its nearest matching
 // colour in [pal]
 // -----------------------------------------------------------------------------
-bool SImage::colourise(rgba_t colour, Palette* pal, int start, int stop)
+bool SImage::colourise(ColRGBA colour, Palette* pal, int start, int stop)
 {
 	// Can't do this with alpha maps
 	if (type_ == ALPHAMAP)
@@ -1647,7 +1647,7 @@ bool SImage::colourise(rgba_t colour, Palette* pal, int start, int stop)
 
 	// Go through all pixels
 	uint8_t bpp = this->bpp();
-	rgba_t  col;
+	ColRGBA  col;
 	for (int a = 0; a < width_ * height_ * bpp; a += bpp)
 	{
 		// Skip colors out of range if desired
@@ -1686,7 +1686,7 @@ bool SImage::colourise(rgba_t colour, Palette* pal, int start, int stop)
 // If the image is paletted, each pixel will be set to its nearest matching
 // colour in [pal]
 // -----------------------------------------------------------------------------
-bool SImage::tint(rgba_t colour, float amount, Palette* pal, int start, int stop)
+bool SImage::tint(ColRGBA colour, float amount, Palette* pal, int start, int stop)
 {
 	// Can't do this with alpha maps
 	if (type_ == ALPHAMAP)
@@ -1698,7 +1698,7 @@ bool SImage::tint(rgba_t colour, float amount, Palette* pal, int start, int stop
 
 	// Go through all pixels
 	uint8_t bpp = this->bpp();
-	rgba_t  col;
+	ColRGBA  col;
 	for (int a = 0; a < width_ * height_ * bpp; a += bpp)
 	{
 		// Skip colors out of range if desired

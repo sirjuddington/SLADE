@@ -113,7 +113,7 @@ bool ItemSelection::setHilight(int index)
 // Hilights the map object closest to [mouse_pos], and updates anything needed
 // if the hilight is changed
 // -----------------------------------------------------------------------------
-bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
+bool ItemSelection::updateHilight(Vec2f mouse_pos, double dist_scale)
 {
 	// Do nothing if hilight is locked or we have no context
 	if (hilight_lock_ || !context_)
@@ -293,7 +293,7 @@ bool ItemSelection::toggleCurrent(bool clear_none)
 // -----------------------------------------------------------------------------
 // Selects all vertices in [map] that are within [rect]
 // -----------------------------------------------------------------------------
-void ItemSelection::selectVerticesWithin(const SLADEMap& map, const frect_t& rect)
+void ItemSelection::selectVerticesWithin(const SLADEMap& map, const Rectf& rect)
 {
 	// Start new change set
 	last_change_.clear();
@@ -307,7 +307,7 @@ void ItemSelection::selectVerticesWithin(const SLADEMap& map, const frect_t& rec
 // -----------------------------------------------------------------------------
 // Selects all lines in [map] that are within [rect]
 // -----------------------------------------------------------------------------
-void ItemSelection::selectLinesWithin(const SLADEMap& map, const frect_t& rect)
+void ItemSelection::selectLinesWithin(const SLADEMap& map, const Rectf& rect)
 {
 	// Start new change set
 	last_change_.clear();
@@ -321,21 +321,21 @@ void ItemSelection::selectLinesWithin(const SLADEMap& map, const frect_t& rect)
 // -----------------------------------------------------------------------------
 // Selects all sectors in [map] that are within [rect]
 // -----------------------------------------------------------------------------
-void ItemSelection::selectSectorsWithin(const SLADEMap& map, const frect_t& rect)
+void ItemSelection::selectSectorsWithin(const SLADEMap& map, const Rectf& rect)
 {
 	// Start new change set
 	last_change_.clear();
 
 	// Select sectors within bounds
 	for (unsigned a = 0; a < map.nSectors(); a++)
-		if (map.sector(a)->boundingBox().is_within(rect.tl, rect.br))
+		if (map.sector(a)->boundingBox().isWithin(rect.tl, rect.br))
 			selectItem({ (int)a, ItemType::Sector });
 }
 
 // -----------------------------------------------------------------------------
 // Selects all things in [map] that are within [rect]
 // -----------------------------------------------------------------------------
-void ItemSelection::selectThingsWithin(const SLADEMap& map, const frect_t& rect)
+void ItemSelection::selectThingsWithin(const SLADEMap& map, const Rectf& rect)
 {
 	// Start new change set
 	last_change_.clear();
@@ -350,7 +350,7 @@ void ItemSelection::selectThingsWithin(const SLADEMap& map, const frect_t& rect)
 // Selects all objects within [rect].
 // If [add] is false, the selection will be cleared first
 // -----------------------------------------------------------------------------
-bool ItemSelection::selectWithin(const frect_t& rect, bool add)
+bool ItemSelection::selectWithin(const Rectf& rect, bool add)
 {
 	// Do nothing if no context
 	if (!context_)

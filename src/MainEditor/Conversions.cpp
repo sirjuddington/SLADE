@@ -372,7 +372,7 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	{
 		if (in[ofs] == 'f' && in[ofs + 1] == 'm' && in[ofs + 2] == 't' && in[ofs + 3] == ' ')
 			break;
-		ofs += 8 + READ_L32(in, (ofs + 4));
+		ofs += 8 + in.readL32((ofs + 4));
 	}
 
 	// Read fmt chunk
@@ -386,7 +386,7 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	in.read(&fmtchunk, sizeof(WavFmtChunk));
 
 	// Get format
-	uint8_t wavfmt = fmtchunk.tag == 0xFFFE ? READ_L32(in, ofs + 32) : fmtchunk.tag;
+	uint8_t wavfmt = fmtchunk.tag == 0xFFFE ? in.readL32(ofs + 32) : fmtchunk.tag;
 	// Get byte per samples (from bits per sample)
 	uint8_t wavbps = fmtchunk.bps / 8;
 
@@ -419,7 +419,7 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	{
 		if (in[ofs] == 'd' && in[ofs + 1] == 'a' && in[ofs + 2] == 't' && in[ofs + 3] == 'a')
 			break;
-		ofs += 8 + READ_L32(in, (ofs + 4));
+		ofs += 8 + in.readL32((ofs + 4));
 	}
 
 	// Read data
@@ -529,7 +529,7 @@ bool Conversions::zmusToMidi(MemChunk& in, MemChunk& out, int subsong, int* num_
 bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 {
 	if (in.size() < 26 || in[19] != 26 || in[20] != 26 || in[21] != 0
-		|| (0x1234 + ~(READ_L16(in, 22)) != (READ_L16(in, 24))))
+		|| (0x1234 + ~(in.readL16(22)) != (in.readL16(24))))
 	{
 		Global::error = "Invalid VOC";
 		return false;
@@ -549,7 +549,7 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 	{
 		// Parses through blocks
 		uint8_t blocktype = in[i];
-		size_t  blocksize = (i + 4 < e) ? READ_L24(in, i + 1) : 0x1000000;
+		size_t  blocksize = (i + 4 < e) ? in.readL24(i + 1) : 0x1000000;
 		i += 4;
 		if (i + blocksize > e && i < e && blocktype != 0)
 		{
@@ -599,25 +599,25 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 			}
 			else
 			{
-				fmtchunk.samplerate = 256000000 / ((in[i + 3] + 1) * (65536 - READ_L16(in, i)));
+				fmtchunk.samplerate = 256000000 / ((in[i + 3] + 1) * (65536 - in.readL16(i)));
 				fmtchunk.channels   = in[i + 3] + 1;
 				fmtchunk.tag        = 1;
 				codec               = in[i + 2];
 			}
 			break;
 		case 9: // Sound data in new format
-			if (codec >= 0 && codec != READ_L16(in, i + 6))
+			if (codec >= 0 && codec != in.readL16(i + 6))
 			{
 				Global::error = "VOC files with different codecs are not supported";
 				return false;
 			}
 			else if (codec == -1)
 			{
-				fmtchunk.samplerate = READ_L32(in, i);
+				fmtchunk.samplerate = in.readL32(i);
 				fmtchunk.bps        = in[i + 4];
 				fmtchunk.channels   = in[i + 5];
 				fmtchunk.tag        = 1;
-				codec               = READ_L16(in, i + 6);
+				codec               = in.readL16(i + 6);
 			}
 			datasize += blocksize - 12;
 			break;
@@ -677,7 +677,7 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 	{
 		// Parses through blocks again
 		uint8_t blocktype = in[i];
-		size_t  blocksize = READ_L24(in, i + 1);
+		size_t  blocksize = in.readL24(i + 1);
 		i += 4;
 		switch (blocktype)
 		{
@@ -901,7 +901,7 @@ bool Conversions::gmidToMidi(MemChunk& in, MemChunk& out)
 	size_t size = in.size();
 	if (size < 16)
 		return false;
-	if (in[0] != 'M' && in[1] != 'I' && in[2] != 'D' && in[3] != 'I' && ((READ_B32(in, 4) + 8) != size))
+	if (in[0] != 'M' && in[1] != 'I' && in[2] != 'D' && in[3] != 'I' && ((in.readB32(4) + 8) != size))
 		return false;
 
 	size_t offset   = 8;
@@ -914,7 +914,7 @@ bool Conversions::gmidToMidi(MemChunk& in, MemChunk& out)
 		if (in[offset] == 'M' && in[offset + 1] == 'T' && in[offset + 2] == 'h' && in[offset + 3] == 'd')
 			notfound = false;
 		else
-			offset += (READ_B32(in, offset + 4) + 8);
+			offset += (in.readB32(offset + 4) + 8);
 	}
 
 	// Write the rest of the file
@@ -933,7 +933,7 @@ bool Conversions::rmidToMidi(MemChunk& in, MemChunk& out)
 	size_t size = in.size();
 	if (size < 36)
 		return false;
-	if (in[0] != 'R' && in[1] != 'I' && in[2] != 'F' && in[3] != 'F' && ((READ_L32(in, 4) + 8) != size))
+	if (in[0] != 'R' && in[1] != 'I' && in[2] != 'F' && in[3] != 'F' && ((in.readL32(4) + 8) != size))
 		return false;
 
 	size_t offset   = 12;
@@ -948,11 +948,11 @@ bool Conversions::rmidToMidi(MemChunk& in, MemChunk& out)
 			&& in[offset + 8] == 'M' && in[offset + 9] == 'T' && in[offset + 10] == 'h' && in[offset + 11] == 'd')
 		{
 			notfound = false;
-			datasize = READ_L32(in, offset + 4);
+			datasize = in.readL32(offset + 4);
 			offset += 8;
 		}
 		else
-			offset += (READ_L32(in, offset + 4) + 8);
+			offset += (in.readL32(offset + 4) + 8);
 	}
 
 	// Write the rest of the file
@@ -1028,7 +1028,7 @@ bool Conversions::addImfHeader(MemChunk& in, MemChunk& out)
 bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 {
 	static const double   ORIG_RATE     = 140.0;
-	static const double   FACTOR        = 315; // 315*140 = 44100
+	static const int      FACTOR        = 315; // 315*140 = 44100
 	static const double   FREQ          = 1193181.0;
 	static const double   RATE          = (ORIG_RATE * FACTOR);
 	static const int      PC_VOLUME     = 20;
@@ -1062,7 +1062,7 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 	// Format checks
 	if (audioT)
 	{
-		numsamples = READ_L32(in, 0);
+		numsamples = in.readL32(0);
 		uint16_t priority;
 		in.read(&priority, 2);
 		if (in.size() < 6 + numsamples)
@@ -1088,7 +1088,7 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 
 	// Read samples
 	auto* osamples = new uint8_t[numsamples];
-	auto* nsamples = new uint8_t[(uint8_t) round(numsamples * FACTOR)];
+	auto* nsamples = new uint8_t[numsamples * FACTOR];
 	in.read(osamples, numsamples);
 
 	int      sign      = -1;

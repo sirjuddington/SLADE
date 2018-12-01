@@ -30,7 +30,7 @@ public:
 
 	const string&  name() const { return name_; }
 	const string&  group() const { return group_; }
-	rgba_t         colour() const { return colour_; }
+	ColRGBA         colour() const { return colour_; }
 	int            radius() const { return radius_; }
 	int            height() const { return height_; }
 	float          scaleX() const { return scale_.x; }
@@ -71,10 +71,10 @@ public:
 private:
 	string    name_;
 	string    group_;
-	rgba_t    colour_;
+	ColRGBA    colour_;
 	int       radius_;
 	int       height_;
-	fpoint2_t scale_;
+	Vec2f scale_;
 	bool      angled_;
 	bool      hanging_;
 	bool      shrink_;

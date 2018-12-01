@@ -777,7 +777,7 @@ void TextureEditorPanel::onDrawOutsideChanged(wxCommandEvent& e)
 void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 {
 	// Get mouse position relative to texture
-	point2_t pos = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
+	Vec2i pos = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
 
 	// Get patch that the mouse is over (if any)
 	int patch = tex_canvas_->patchAt(pos.x, pos.y);
@@ -862,10 +862,10 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 			if (list_patches_->GetSelectedItemCount() > 0)
 			{
 				// Get drag amount according to texture
-				point2_t tex_cur  = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
-				point2_t tex_prev = tex_canvas_->screenToTexPosition(
+				Vec2i tex_cur  = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
+				Vec2i tex_prev = tex_canvas_->screenToTexPosition(
 					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
-				point2_t diff = tex_cur - tex_prev;
+				Vec2i diff = tex_cur - tex_prev;
 
 				// Move any selected patches
 				wxArrayInt selected_patches = list_patches_->selectedItems();
@@ -890,10 +890,10 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				&& tex_canvas_->viewType() != CTextureCanvas::View::Normal)
 			{
 				// Get drag amount according to texture
-				point2_t tex_cur  = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
-				point2_t tex_prev = tex_canvas_->screenToTexPosition(
+				Vec2i tex_cur  = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
+				Vec2i tex_prev = tex_canvas_->screenToTexPosition(
 					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
-				point2_t diff = tex_cur - tex_prev;
+				Vec2i diff = tex_cur - tex_prev;
 
 				// Modify offsets
 				tex_current_->setOffsetX(tex_current_->offsetX() - diff.x);

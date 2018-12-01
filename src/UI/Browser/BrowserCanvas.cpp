@@ -164,7 +164,7 @@ void BrowserCanvas::draw()
 	glLoadIdentity();
 
 	// Setup colours
-	rgba_t col_bg, col_text;
+	ColRGBA col_bg, col_text;
 	bool   text_shadow = true;
 	if (browser_bg_type == 1)
 	{
@@ -177,7 +177,7 @@ void BrowserCanvas::draw()
 		col_text.set(COLWX(textcol));
 
 		// Check text colour brightness, if it's dark don't draw text shadow
-		rgba_t col_temp = col_text;
+		ColRGBA col_temp = col_text;
 		wxColor::MakeGrey(&col_temp.r, &col_temp.g, &col_temp.b);
 		if (col_temp.r < 60)
 			text_shadow = false;

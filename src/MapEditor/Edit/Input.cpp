@@ -166,7 +166,7 @@ bool Input::mouseMove(int new_x, int new_y)
 
 	// Check if we want to start a selection box
 	if (mouse_drag_ == DragType::Selection
-		&& fpoint2_t(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 16)
+		&& Vec2f(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 16)
 	{
 		mouse_state_ = MouseState::Selection;
 		mouse_drag_  = DragType::None;
@@ -174,7 +174,7 @@ bool Input::mouseMove(int new_x, int new_y)
 
 	// Check if we want to start moving
 	if (mouse_drag_ == DragType::Move
-		&& fpoint2_t(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 4)
+		&& Vec2f(mouse_pos_.x - mouse_down_pos_.x, mouse_pos_.y - mouse_down_pos_.y).magnitude() > 4)
 	{
 		mouse_state_ = MouseState::Move;
 		mouse_drag_  = DragType::None;

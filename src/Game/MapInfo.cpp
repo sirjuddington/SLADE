@@ -156,7 +156,7 @@ bool MapInfo::checkEqualsToken(Tokenizer& tz, const string& parsing) const
 // Converts a text colour definition [str] to a colour struct [col].
 // Returns false if the given definition was invalid
 // -----------------------------------------------------------------------------
-bool MapInfo::strToCol(const string& str, rgba_t& col)
+bool MapInfo::strToCol(const string& str, ColRGBA& col)
 {
 	wxColor wxcol;
 	if (!wxcol.Set(str))

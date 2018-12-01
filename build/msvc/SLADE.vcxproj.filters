@@ -2621,6 +2621,12 @@
     <ClInclude Include="..\..\src\UI\Controls\STabCtrl.h">
       <Filter>UI\Controls</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\GameFormats.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Memory.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />

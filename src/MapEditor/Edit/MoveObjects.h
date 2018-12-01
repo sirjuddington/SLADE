@@ -10,16 +10,16 @@ public:
 	MoveObjects(MapEditContext& context);
 
 	const vector<MapEditor::Item>& items() const { return items_; }
-	fpoint2_t                      offset() { return offset_; }
+	Vec2f                      offset() { return offset_; }
 
-	bool begin(fpoint2_t mouse_pos);
-	void update(fpoint2_t mouse_pos);
+	bool begin(Vec2f mouse_pos);
+	void update(Vec2f mouse_pos);
 	void end(bool accept = true);
 
 private:
 	MapEditContext&         context_;
-	fpoint2_t               origin_;
-	fpoint2_t               offset_;
+	Vec2f               origin_;
+	Vec2f               offset_;
 	vector<MapEditor::Item> items_;
 	MapEditor::Item         item_closest_ = 0;
 };

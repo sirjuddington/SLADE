@@ -45,10 +45,10 @@ public:
 
 	bool       panning() const { return panning_; }
 	MouseState mouseState() const { return mouse_state_; }
-	point2_t   mousePos() const { return mouse_pos_; }
-	fpoint2_t  mousePosMap() const { return mouse_pos_map_; }
-	point2_t   mouseDownPos() const { return mouse_down_pos_; }
-	fpoint2_t  mouseDownPosMap() const { return mouse_down_pos_map_; }
+	Vec2i   mousePos() const { return mouse_pos_; }
+	Vec2f  mousePosMap() const { return mouse_pos_map_; }
+	Vec2i   mouseDownPos() const { return mouse_down_pos_; }
+	Vec2f  mouseDownPosMap() const { return mouse_down_pos_map_; }
 	bool       shiftDown() const { return shift_down_; }
 	bool       ctrlDown() const { return ctrl_down_; }
 	bool       altDown() const { return alt_down_; }
@@ -88,10 +88,10 @@ private:
 	// Mouse
 	MouseState mouse_state_          = MouseState::Normal;
 	bool       mouse_button_down_[5] = { false, false, false, false, false };
-	point2_t   mouse_pos_            = { 0, 0 };
-	fpoint2_t  mouse_pos_map_        = { 0, 0 };
-	point2_t   mouse_down_pos_       = { -1, -1 };
-	fpoint2_t  mouse_down_pos_map_   = { -1, -1 };
+	Vec2i   mouse_pos_            = { 0, 0 };
+	Vec2f  mouse_pos_map_        = { 0, 0 };
+	Vec2i   mouse_down_pos_       = { -1, -1 };
+	Vec2f  mouse_down_pos_map_   = { -1, -1 };
 	DragType   mouse_drag_           = DragType::None;
 	double     mouse_wheel_speed_    = 0;
 	bool       panning_              = false;

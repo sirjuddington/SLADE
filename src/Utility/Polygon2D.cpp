@@ -79,7 +79,7 @@ void Polygon2D::setZ(float z)
 	}
 }
 
-void Polygon2D::setZ(plane_t plane)
+void Polygon2D::setZ(Plane plane)
 {
 	// Go through all sub-polys
 	for (unsigned a = 0; a < subpolys_.size(); a++)
@@ -200,7 +200,7 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 			// Apply rotation if any
 			if (rotation != 0)
 			{
-				fpoint2_t np = MathStuff::rotatePoint(fpoint2_t(0, 0), fpoint2_t(x, y), rotation);
+				Vec2f np = MathStuff::rotatePoint(Vec2f(0, 0), Vec2f(x, y), rotation);
 				x            = np.x;
 				y            = np.y;
 			}
@@ -420,7 +420,7 @@ int PolygonSplitter::findNextEdge(int edge, bool ignore_done, bool only_convex, 
 
 		// Determine angle between edges
 		double angle = MathStuff::angle2DRad(
-			fpoint2_t(v1.x, v1.y), fpoint2_t(v2.x, v2.y), fpoint2_t(vertices_[out.v2].x, vertices_[out.v2].y));
+			Vec2f(v1.x, v1.y), Vec2f(v2.x, v2.y), Vec2f(vertices_[out.v2].x, vertices_[out.v2].y));
 		if (angle < min_angle)
 		{
 			min_angle = angle;
@@ -751,7 +751,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	int    closest  = -1;
 	for (unsigned a = 0; a < vertices_.size(); a++)
 	{
-		if (MathStuff::lineSide(vertices_[a], fseg2_t(vertices_[v1], vertices_[v2])) > 0 && vertices_[a].ok)
+		if (MathStuff::lineSide(vertices_[a], Seg2f(vertices_[v1], vertices_[v2])) > 0 && vertices_[a].ok)
 		{
 			vertices_[a].distance = MathStuff::distance(vertices_[v2], vertices_[a]);
 			if (vertices_[a].distance < min_dist)
@@ -771,7 +771,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	// See if we can split to here without crossing anything
 	// (this will be the case most of the time)
 	bool      intersect = false;
-	fpoint2_t pointi;
+	Vec2f pointi;
 	for (unsigned a = 0; a < edges_.size(); a++)
 	{
 		// Ignore edge if adjacent to the vertices we are looking at
@@ -781,8 +781,8 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 
 		// Intersection test
 		if (MathStuff::linesIntersect(
-				fseg2_t(vertices_[v2], vertices_[closest]),
-				fseg2_t(vertices_[edges_[a].v1], vertices_[edges_[a].v2]),
+				Seg2f(vertices_[v2], vertices_[closest]),
+				Seg2f(vertices_[edges_[a].v1], vertices_[edges_[a].v2]),
 				pointi))
 		{
 			intersect = true;
@@ -829,7 +829,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 
 			// Intersection test
 			if (MathStuff::linesIntersect(
-					fseg2_t(vertices_[v2], vert), fseg2_t(vertices_[edges_[a].v1], vertices_[edges_[a].v2]), pointi))
+					Seg2f(vertices_[v2], vert), Seg2f(vertices_[edges_[a].v1], vertices_[edges_[a].v2]), pointi))
 			{
 				intersect = true;
 				break;
@@ -947,8 +947,8 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		{
 			if (b == a)
 				continue;
-			bbox_t& bb1 = polygon_outlines_[a].bbox;
-			bbox_t& bb2 = polygon_outlines_[b].bbox;
+			BBox& bb1 = polygon_outlines_[a].bbox;
+			BBox& bb2 = polygon_outlines_[b].bbox;
 			if (!(bb2.min.x > bb1.max.x || bb2.max.x < bb1.min.x || bb2.min.y > bb1.max.y || bb2.max.y < bb1.min.y))
 			{
 				separate = false;

@@ -84,7 +84,7 @@ PaletteDialog::~PaletteDialog()
 // -----------------------------------------------------------------------------
 // Returns the currently selected coloir on the palette canvas
 // -----------------------------------------------------------------------------
-rgba_t PaletteDialog::selectedColour()
+ColRGBA PaletteDialog::selectedColour()
 {
 	return pal_canvas_->selectedColour();
 }

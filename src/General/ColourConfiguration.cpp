@@ -63,7 +63,7 @@ ColourHashMap cc_colours;
 // -----------------------------------------------------------------------------
 // Returns the colour [name]
 // -----------------------------------------------------------------------------
-rgba_t ColourConfiguration::colour(string name)
+ColRGBA ColourConfiguration::colour(string name)
 {
 	Colour& col = cc_colours[name];
 	if (col.exists)
@@ -412,7 +412,7 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		}
 
 		// Print colour
-		rgba_t col = ColourConfiguration::colour(args[0]);
+		ColRGBA col = ColourConfiguration::colour(args[0]);
 		Log::console(S_FMT("Colour \"%s\" = %d %d %d %d %d", args[0], col.r, col.g, col.b, col.a, col.blend));
 	}
 }

@@ -101,7 +101,7 @@ int MathStuff::round(double val)
 // -----------------------------------------------------------------------------
 // Returns the distance between [p1] and [p2]
 // -----------------------------------------------------------------------------
-double MathStuff::distance(fpoint2_t p1, fpoint2_t p2)
+double MathStuff::distance(Vec2f p1, Vec2f p2)
 {
 	return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
 }
@@ -109,7 +109,7 @@ double MathStuff::distance(fpoint2_t p1, fpoint2_t p2)
 // -----------------------------------------------------------------------------
 // Returns the distance between [p1] and [p2]
 // -----------------------------------------------------------------------------
-double MathStuff::distance3d(fpoint3_t p1, fpoint3_t p2)
+double MathStuff::distance3d(Vec3f p1, Vec3f p2)
 {
 	return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y) + (p2.z - p1.z) * (p2.z - p1.z));
 }
@@ -118,7 +118,7 @@ double MathStuff::distance3d(fpoint3_t p1, fpoint3_t p2)
 // Returns the side of the [line] that the [point] lies on.
 // Positive is front, negative is back, zero is on the line
 // -----------------------------------------------------------------------------
-double MathStuff::lineSide(fpoint2_t point, fseg2_t line)
+double MathStuff::lineSide(Vec2f point, Seg2f line)
 {
 	return (point.x - line.x1()) * line.height() - (point.y - line.y1()) * line.width();
 }
@@ -126,7 +126,7 @@ double MathStuff::lineSide(fpoint2_t point, fseg2_t line)
 // -----------------------------------------------------------------------------
 // Returns the point on the given [line] that's closest to the given [point]
 // -----------------------------------------------------------------------------
-fpoint2_t MathStuff::closestPointOnLine(fpoint2_t point, fseg2_t line)
+Vec2f MathStuff::closestPointOnLine(Vec2f point, Seg2f line)
 {
 	// Get line length
 	double len = line.length();
@@ -146,16 +146,16 @@ fpoint2_t MathStuff::closestPointOnLine(fpoint2_t point, fseg2_t line)
 	}
 
 	// Return intersection point
-	return fpoint2_t(line.x1() + u * line.width(), line.y1() + u * line.height());
+	return Vec2f(line.x1() + u * line.width(), line.y1() + u * line.height());
 }
 
 // -----------------------------------------------------------------------------
 // Returns the shortest distance between the given [point] and [line]
 // -----------------------------------------------------------------------------
-double MathStuff::distanceToLine(fpoint2_t point, fseg2_t line)
+double MathStuff::distanceToLine(Vec2f point, Seg2f line)
 {
 	// Calculate intersection point
-	fpoint2_t i = closestPointOnLine(point, line);
+	Vec2f i = closestPointOnLine(point, line);
 
 	// Return distance between intersection and point
 	// which is the shortest distance to the line
@@ -167,10 +167,10 @@ double MathStuff::distanceToLine(fpoint2_t point, fseg2_t line)
 // The distance returned isn't the real distance, but can be used to find the
 // closest line to the point
 // -----------------------------------------------------------------------------
-double MathStuff::distanceToLineFast(fpoint2_t point, fseg2_t line)
+double MathStuff::distanceToLineFast(Vec2f point, Seg2f line)
 {
 	// Calculate intersection point
-	fpoint2_t i = closestPointOnLine(point, line);
+	Vec2f i = closestPointOnLine(point, line);
 
 	// Return fast distance between intersection and point
 	// which is the shortest distance to the line
@@ -181,7 +181,7 @@ double MathStuff::distanceToLineFast(fpoint2_t point, fseg2_t line)
 // Checks for an intersection between two lines [l1] and [l2].
 // Returns true if they intersect and sets [out] to the intersection point
 // -----------------------------------------------------------------------------
-bool MathStuff::linesIntersect(fseg2_t l1, fseg2_t l2, fpoint2_t& out)
+bool MathStuff::linesIntersect(Seg2f l1, Seg2f l2, Vec2f& out)
 {
 	// First, simple check for two parallel horizontal or vertical lines
 	if ((l1.x1() == l1.x2() && l2.x1() == l2.x2()) || (l1.y1() == l1.y2() && l2.y1() == l2.y2()))
@@ -248,7 +248,7 @@ bool MathStuff::linesIntersect(fseg2_t l1, fseg2_t l2, fpoint2_t& out)
 // Returns the distance between the ray [r1 -> r2] and the line segment
 // [s1 -> s2]
 // -----------------------------------------------------------------------------
-double MathStuff::distanceRayLine(fpoint2_t r1, fpoint2_t r2, fpoint2_t s1, fpoint2_t s2)
+double MathStuff::distanceRayLine(Vec2f r1, Vec2f r2, Vec2f s1, Vec2f s2)
 {
 	// Calculate the intersection distance from the ray
 	double u_ray = ((s2.x - s1.x) * (r1.y - s1.y) - (s2.y - s1.y) * (r1.x - s1.x))
@@ -268,12 +268,12 @@ double MathStuff::distanceRayLine(fpoint2_t r1, fpoint2_t r2, fpoint2_t s1, fpoi
 // -----------------------------------------------------------------------------
 // Returns the angle between the 2d points [p1], [p2] and [p3]
 // -----------------------------------------------------------------------------
-double MathStuff::angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3)
+double MathStuff::angle2DRad(Vec2f p1, Vec2f p2, Vec2f p3)
 {
 	// From: http://stackoverflow.com/questions/3486172/angle-between-3-points
 	// modified not to bother converting to degrees
-	fpoint2_t ab(p2.x - p1.x, p2.y - p1.y);
-	fpoint2_t cb(p2.x - p3.x, p2.y - p3.y);
+	Vec2f ab(p2.x - p1.x, p2.y - p1.y);
+	Vec2f cb(p2.x - p3.x, p2.y - p3.y);
 
 	// dot product
 	double dot = (ab.x * cb.x + ab.y * cb.y);
@@ -318,7 +318,7 @@ double MathStuff::angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3)
 // Rotates [point] around [origin] by [angle] and returns the newly rotated
 // point
 // -----------------------------------------------------------------------------
-fpoint2_t MathStuff::rotatePoint(fpoint2_t origin, fpoint2_t point, double angle)
+Vec2f MathStuff::rotatePoint(Vec2f origin, Vec2f point, double angle)
 {
 	// Translate to origin
 	double x = point.x - origin.x;
@@ -331,16 +331,16 @@ fpoint2_t MathStuff::rotatePoint(fpoint2_t origin, fpoint2_t point, double angle
 	double ny   = srot * x + crot * y;
 
 	// Return rotated point
-	return fpoint2_t(nx + origin.x, ny + origin.y);
+	return Vec2f(nx + origin.x, ny + origin.y);
 }
 
 // -----------------------------------------------------------------------------
 // Rotates [vector] around [axis] by [angle] and returns the resulting rotated
 // vector
 // -----------------------------------------------------------------------------
-fpoint3_t MathStuff::rotateVector3D(fpoint3_t vector, fpoint3_t axis, double angle)
+Vec3f MathStuff::rotateVector3D(Vec3f vector, Vec3f axis, double angle)
 {
-	fpoint3_t rvec;
+	Vec3f rvec;
 
 	// Calculate the sine and cosine of the angle once
 	float crot = (float)cos(angle);
@@ -383,17 +383,17 @@ double MathStuff::radToDeg(double angle)
 // -----------------------------------------------------------------------------
 // Converts [angle] from degrees to radians
 // -----------------------------------------------------------------------------
-fpoint2_t MathStuff::vectorAngle(double angle_rad)
+Vec2f MathStuff::vectorAngle(double angle_rad)
 {
-	return fpoint2_t(cos(-angle_rad), -sin(-angle_rad));
+	return Vec2f(cos(-angle_rad), -sin(-angle_rad));
 }
 
 // -----------------------------------------------------------------------------
 // Returns the distance along the ray [r_o -> r_v] to [plane]
 // -----------------------------------------------------------------------------
-double MathStuff::distanceRayPlane(fpoint3_t r_o, fpoint3_t r_v, plane_t plane)
+double MathStuff::distanceRayPlane(Vec3f r_o, Vec3f r_v, Plane plane)
 {
-	fpoint3_t p_normal = plane.normal();
+	Vec3f p_normal = plane.normal();
 	double    cos_a    = r_v.dot(p_normal);
 
 	// parallel to the plane (alpha=90)
@@ -407,7 +407,7 @@ double MathStuff::distanceRayPlane(fpoint3_t r_o, fpoint3_t r_v, plane_t plane)
 // Returns true if the given [box] intersects with the given [line].
 // Taken from http://stackoverflow.com/a/100165
 // -----------------------------------------------------------------------------
-bool MathStuff::boxLineIntersect(frect_t box, fseg2_t line)
+bool MathStuff::boxLineIntersect(Rectf box, Seg2f line)
 {
 	// Find min and max X for the segment
 	double minX = line.x1();
@@ -463,16 +463,16 @@ bool MathStuff::boxLineIntersect(frect_t box, fseg2_t line)
 // -----------------------------------------------------------------------------
 // Calculates a plane from the given points [p1,p2,p3]
 // -----------------------------------------------------------------------------
-plane_t MathStuff::planeFromTriangle(fpoint3_t p1, fpoint3_t p2, fpoint3_t p3)
+Plane MathStuff::planeFromTriangle(Vec3f p1, Vec3f p2, Vec3f p3)
 {
-	fpoint3_t v1 = p3 - p1;
-	fpoint3_t v2 = p2 - p1;
+	Vec3f v1 = p3 - p1;
+	Vec3f v2 = p2 - p1;
 	v1.normalize();
 	v2.normalize();
-	fpoint3_t normal = v1.cross(v2);
+	Vec3f normal = v1.cross(v2);
 	normal.normalize();
 
-	plane_t plane;
+	Plane plane;
 	plane.a = normal.x;
 	plane.b = normal.y;
 	plane.c = normal.z;
@@ -492,6 +492,6 @@ CONSOLE_COMMAND(angle2d, 6, false)
 	}
 
 	double ang =
-		MathStuff::angle2DRad(fpoint2_t(vals[0], vals[1]), fpoint2_t(vals[2], vals[3]), fpoint2_t(vals[4], vals[5]));
+		MathStuff::angle2DRad(Vec2f(vals[0], vals[1]), Vec2f(vals[2], vals[3]), Vec2f(vals[4], vals[5]));
 	LOG_MESSAGE(1, "Angle = %1.4f", ang);
 }

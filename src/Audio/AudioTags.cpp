@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "AudioTags.h"
+#include "Utility/Memory.h"
 
 
 // -----------------------------------------------------------------------------
@@ -299,6 +300,7 @@ static const char * const speaker_pos[] =
 };
 // clang-format on
 
+
 string BuildID3v2GenreString(string content)
 {
 	string genre = "";
@@ -418,7 +420,7 @@ string ParseID3v2Tag(MemChunk& mc, size_t start)
 	// Iterate through frames. The minimal size of a frame is 1 byte of data.
 	while (s + step + 1 < end)
 	{
-		size_t fsize = v22 ? READ_B24(mc, s + 3) : READ_B32(mc, s + 4);
+		size_t fsize = v22 ? mc.readB24(s + 3) : mc.readB32(s + 4);
 
 		// One byte for encoding
 		size_t tsize = fsize - 1;
@@ -433,7 +435,7 @@ string ParseID3v2Tag(MemChunk& mc, size_t start)
 			// First step: retrieve the text (UTF-16 massively sucks)
 			char* buffer = new char[fsize];
 			mc.read(buffer, tsize, s + step + 1);
-			size_t frame = v22 ? READ_B24(mc, s) : READ_B32(mc, s);
+			size_t frame = v22 ? mc.readB24(s) : mc.readB32(s);
 
 			bool   bomle = true;
 			size_t bom   = 0;
@@ -472,9 +474,9 @@ string ParseID3v2Tag(MemChunk& mc, size_t start)
 				for (size_t i = 0; i < u16c; ++i)
 				{
 					if (bomle)
-						wchars[i] = (wchar_t)READ_L16(buffer, bom + 2 * i);
+						wchars[i] = (wchar_t)Memory::readL16((const uint8_t*)buffer, bom + 2 * i);
 					else
-						wchars[i] = (wchar_t)READ_B16(buffer, bom + 2 * i);
+						wchars[i] = (wchar_t)Memory::readB16((const uint8_t*)buffer, bom + 2 * i);
 				}
 				content = string(wchars, u16c);
 				delete[] wchars;
@@ -601,18 +603,18 @@ string ParseVorbisComment(MemChunk& mc, size_t start)
 
 	if (start + 10 > end)
 		return ret + "\nInvalid Vorbis comment segment (A)\n";
-	size_t strlen = READ_L32(mc, start);
+	size_t strlen = mc.readL32(start);
 	if (start + 10 + strlen > end)
 		return ret + "\nInvalid Vorbis comment segment (B)\n";
 
 	string vendor = string::FromUTF8(data + start + 4, strlen);
 
-	size_t numcomments = READ_L32(mc, start + 4 + strlen);
+	size_t numcomments = mc.readL32(start + 4 + strlen);
 	size_t s           = start + 8 + strlen;
 
 	for (size_t i = 0; i < numcomments && s + 6 < end; ++i)
 	{
-		strlen = READ_L32(mc, s);
+		strlen = mc.readL32(s);
 		if (s + strlen + 4 > end)
 			return ret + "\nInvalid Vorbis comment segment (C)\n";
 		ret += string::FromUTF8(data + s + 4, strlen);
@@ -775,7 +777,7 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const wav_chunk
 				{
 					size_t cueofs        = 8 + (const char*)cue - data;
 					size_t cuesize       = wxUINT32_SWAP_ON_BE(cue->size);
-					size_t numcuepoints  = READ_L32(udata, cueofs);
+					size_t numcuepoints  = Memory::readL32(udata, cueofs);
 					bool*  alreadylisted = new bool[numcuepoints];
 					memset(alreadylisted, false, numcuepoints * sizeof(bool));
 					if (cuesize >= 4 + numcuepoints * sizeof(wav_cue_t))
@@ -788,7 +790,7 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const wav_chunk
 							const wav_chunk_t* note  = (const wav_chunk_t*)(data + ioffset);
 							size_t             isize = wxUINT32_SWAP_ON_BE(note->size);
 							ioffset += 8;
-							size_t cuepoint = READ_L32(udata, ioffset);
+							size_t cuepoint = Memory::readL32(udata, ioffset);
 							int    cpindex  = -1;
 							for (size_t i = 0; i < numcuepoints; ++i)
 							{
@@ -822,7 +824,7 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const wav_chunk
 								liststr += S_FMT(
 									"Cue point %d: sample length %d, purpose %s\n",
 									cuepoint,
-									READ_L32(udata, (ioffset + 4)),
+									Memory::readL32(udata, (ioffset + 4)),
 									string::From8BitData(data + ioffset + 8, 4));
 							}
 							else if (
@@ -895,8 +897,8 @@ string Audio::getID3Tag(MemChunk& mc)
 	// the MP3 codec, but that means the metadata format is different, so
 	// call the RIFF-WAVE metadata function instead. We might end up finding
 	// an ID3 tag anyway, provided it's nicely embedded in an "id3 " chunk.
-	if (mc.size() > 64 && mc[0] == 'R' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == 'F' && mc[8] == 'W'
-		&& mc[9] == 'A' && mc[10] == 'V' && mc[11] == 'E')
+	if (mc.size() > 64 && mc[0] == 'R' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == 'F' && mc[8] == 'W' && mc[9] == 'A'
+		&& mc[10] == 'V' && mc[11] == 'E')
 		return getWavInfo(mc);
 
 	string ret;
@@ -1010,7 +1012,7 @@ string Audio::getFlacComments(MemChunk& mc)
 	while (s + 4 < mc.size())
 	{
 		// Last three bytes are big-endian value for size of metadata
-		size_t blocksize = READ_B24(mc, s + 1);
+		size_t blocksize = mc.readB24(s + 1);
 
 		// First byte contains block type and "last block" flag (128)
 		// Type 4 is the VORBIS_COMMENT type
@@ -1055,7 +1057,7 @@ string Audio::getITComments(MemChunk& mc)
 		ret += S_FMT("\n%d instruments:\n", wxUINT16_SWAP_ON_BE(head->insnum));
 	for (size_t i = 0; i < wxUINT16_SWAP_ON_BE(head->insnum); ++i)
 	{
-		size_t ofs = READ_L32(data, (offset + (i << 2)));
+		size_t ofs = Memory::readL32((const uint8_t*)data, (offset + (i << 2)));
 		if (ofs > offset && ofs + 60 < mc.size() && data[ofs] == 'I' && data[ofs + 1] == 'M' && data[ofs + 2] == 'P'
 			&& data[ofs + 3] == 'I')
 		{
@@ -1081,7 +1083,7 @@ string Audio::getITComments(MemChunk& mc)
 	for (size_t i = 0; i < wxUINT16_SWAP_ON_BE(head->smpnum); ++i)
 	{
 		size_t pos = offset + (i << 2);
-		size_t ofs = READ_L32(mc, pos);
+		size_t ofs = mc.readL32(pos);
 		if (ofs > offset && ofs + 60 < mc.size() && data[ofs] == 'I' && data[ofs + 1] == 'M' && data[ofs + 2] == 'P'
 			&& data[ofs + 3] == 'S')
 		{
@@ -1144,7 +1146,7 @@ string Audio::getS3MComments(MemChunk& mc)
 	s += wxUINT16_SWAP_ON_BE(head->ordnum);
 	for (size_t i = 0; i < wxUINT16_SWAP_ON_BE(head->insnum); ++i)
 	{
-		size_t t = (READ_L16(mc, (s + 2 * i))) << 4;
+		size_t t = (mc.readL16((s + 2 * i))) << 4;
 		if (t + 80 > mc.size())
 			return ret;
 		const s3msample_t* sample  = (const s3msample_t*)(data + t);
@@ -1183,7 +1185,7 @@ string Audio::getXMComments(MemChunk& mc)
 	{
 		if (s + 9 < mc.size())
 		{
-			size_t patsize = READ_L32(mc, s) + READ_L16(mc, s + 7);
+			size_t patsize = mc.readL32(s) + mc.readL16(s + 7);
 			s += patsize;
 		}
 		else
@@ -1197,7 +1199,7 @@ string Audio::getXMComments(MemChunk& mc)
 	{
 		if (s + 29 < mc.size())
 		{
-			size_t instsize = READ_L32(mc, s);
+			size_t instsize = mc.readL32(s);
 			if (instsize < 33)
 				return ret;
 			// To keep only valid strings, we trim whitespace and then print the string into itself.
@@ -1208,18 +1210,18 @@ string Audio::getXMComments(MemChunk& mc)
 			comment = S_FMT("%s", comment);
 			if (comment.length())
 				ret += S_FMT("%i: %s\n", i, comment);
-			size_t samples = READ_L16(mc, s + 27);
+			size_t samples = mc.readL16(s + 27);
 
 			if (samples > 0 && s + instsize < mc.size())
 			{
-				size_t shsz = READ_L32(mc, s + 29);
+				size_t shsz = mc.readL32(s + 29);
 				if (shsz < 40)
 					return ret;
 				s += instsize;
 				size_t samplesize = 0;
 				for (size_t j = 0; j < samples && s + shsz < mc.size(); ++j)
 				{
-					size_t smsz = READ_L32(mc, s);
+					size_t smsz = mc.readL32(s);
 					comment     = string::From8BitData(data + s + 18, 22);
 					comment.Trim();
 					comment = S_FMT("%s", comment);
@@ -1242,10 +1244,10 @@ string Audio::getXMComments(MemChunk& mc)
 
 string Audio::getSunInfo(MemChunk& mc)
 {
-	size_t datasize   = READ_B32(mc, 8);
-	size_t codec      = READ_B32(mc, 12);
-	size_t samplerate = READ_B32(mc, 16);
-	size_t channels   = READ_B32(mc, 20);
+	size_t datasize   = mc.readB32(8);
+	size_t codec      = mc.readB32(12);
+	size_t samplerate = mc.readB32(16);
+	size_t channels   = mc.readB32(20);
 
 	string format = "Format: ";
 	switch (codec)
@@ -1289,7 +1291,7 @@ string Audio::getVocInfo(MemChunk& mc)
 	{
 		// Parses through blocks
 		uint8_t blocktype = mc[i];
-		size_t  blocksize = READ_L24(mc, i + 1);
+		size_t  blocksize = mc.readL24(i + 1);
 		i += 4;
 		if (i + blocksize > e && blocktype != 0)
 		{
@@ -1331,22 +1333,22 @@ string Audio::getVocInfo(MemChunk& mc)
 			}
 			else
 			{
-				fmtchunk.samplerate = 256000000 / ((mc[i + 3] + 1) * (65536 - READ_L16(mc, i)));
+				fmtchunk.samplerate = 256000000 / ((mc[i + 3] + 1) * (65536 - mc.readL16(i)));
 				fmtchunk.channels   = mc[i + 3] + 1;
 				fmtchunk.tag        = 1;
 				codec               = mc[i + 2];
 			}
 			break;
 		case 9: // Sound data in new format
-			if (codec >= 0 && codec != READ_L16(mc, i + 6))
+			if (codec >= 0 && codec != mc.readL16(i + 6))
 				return "Invalid sound: VOC files with different codecs are not supported";
 			else if (codec == -1)
 			{
-				fmtchunk.samplerate = READ_L32(mc, i);
+				fmtchunk.samplerate = mc.readL32(i);
 				fmtchunk.bps        = mc[i + 4];
 				fmtchunk.channels   = mc[i + 5];
 				fmtchunk.tag        = 1;
-				codec               = READ_L16(mc, i + 6);
+				codec               = mc.readL16(i + 6);
 			}
 			datasize += blocksize - 12;
 			break;
@@ -1461,7 +1463,7 @@ string Audio::getWavInfo(MemChunk& mc)
 	if (fact && wxUINT32_SWAP_ON_BE(fact->size) >= 4 && tag != 1)
 	{
 		size_t offset = (const uint8_t*)fact - udata + 8;
-		samples       = READ_L32(udata, offset);
+		samples       = Memory::readL32(udata, offset);
 	}
 	size_t bps = wxUINT16_SWAP_ON_BE(fmt->bps);
 	if (tag == 65534 && bps != 0)

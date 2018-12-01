@@ -224,12 +224,12 @@ void ObjectEditGroup::resetPositions()
 // and sets [v1]/[v2] to the line vertices.
 // Returns true if a line was found within the distance specified
 // -----------------------------------------------------------------------------
-bool ObjectEditGroup::nearestLineEndpoints(fpoint2_t pos, double min, fpoint2_t& v1, fpoint2_t& v2)
+bool ObjectEditGroup::nearestLineEndpoints(Vec2f pos, double min, Vec2f& v1, Vec2f& v2)
 {
 	double min_dist = min;
 	for (auto& line : lines_)
 	{
-		double d = MathStuff::distanceToLineFast(pos, fseg2_t(line.v1->position, line.v2->position));
+		double d = MathStuff::distanceToLineFast(pos, Seg2f(line.v1->position, line.v2->position));
 
 		if (d < min_dist)
 		{
@@ -245,7 +245,7 @@ bool ObjectEditGroup::nearestLineEndpoints(fpoint2_t pos, double min, fpoint2_t&
 // -----------------------------------------------------------------------------
 // Fills [list] with the positions of all group vertices
 // -----------------------------------------------------------------------------
-void ObjectEditGroup::putVerticesToDraw(vector<fpoint2_t>& list)
+void ObjectEditGroup::putVerticesToDraw(vector<Vec2f>& list)
 {
 	for (auto& vertex : vertices_)
 		if (!vertex->ignored)
@@ -398,10 +398,10 @@ void ObjectEditGroup::doScale(double xoff, double yoff, bool left, bool top, boo
 // This is used when rotating via the mouse ([p1] is the drag origin and [p2]
 // is the current point)
 // -----------------------------------------------------------------------------
-void ObjectEditGroup::doRotate(fpoint2_t p1, fpoint2_t p2, bool lock45)
+void ObjectEditGroup::doRotate(Vec2f p1, Vec2f p2, bool lock45)
 {
 	// Get midpoint
-	fpoint2_t mid(old_bbox_.min.x + old_bbox_.width() * 0.5, old_bbox_.min.y + old_bbox_.height() * 0.5);
+	Vec2f mid(old_bbox_.min.x + old_bbox_.width() * 0.5, old_bbox_.min.y + old_bbox_.height() * 0.5);
 
 	// Determine angle
 	double angle = MathStuff::angle2DRad(p1, mid, p2);
@@ -472,13 +472,13 @@ void ObjectEditGroup::doAll(
 
 		// Mirror
 		if (mirror_x)
-			vertex->position.x = original_bbox_.mid_x() - (vertex->position.x - original_bbox_.mid_x());
+			vertex->position.x = original_bbox_.midX() - (vertex->position.x - original_bbox_.midX());
 		if (mirror_y)
-			vertex->position.y = original_bbox_.mid_y() - (vertex->position.y - original_bbox_.mid_y());
+			vertex->position.y = original_bbox_.midY() - (vertex->position.y - original_bbox_.midY());
 
 		// Scale
-		vertex->position.x = original_bbox_.mid_x() + (vertex->position.x - original_bbox_.mid_x()) * xscale;
-		vertex->position.y = original_bbox_.mid_y() + (vertex->position.y - original_bbox_.mid_y()) * yscale;
+		vertex->position.x = original_bbox_.midX() + (vertex->position.x - original_bbox_.midX()) * xscale;
+		vertex->position.y = original_bbox_.midY() + (vertex->position.y - original_bbox_.midY()) * yscale;
 
 		// Move
 		vertex->position.x += xoff;
@@ -503,7 +503,7 @@ void ObjectEditGroup::doAll(
 		// Mirror
 		if (mirror_x)
 		{
-			thing.position.x = original_bbox_.mid_x() - (thing.position.x - original_bbox_.mid_x());
+			thing.position.x = original_bbox_.midX() - (thing.position.x - original_bbox_.midX());
 			thing.angle += 90;
 			thing.angle = 360 - thing.angle;
 			thing.angle -= 90;
@@ -512,7 +512,7 @@ void ObjectEditGroup::doAll(
 		}
 		if (mirror_y)
 		{
-			thing.position.y = original_bbox_.mid_y() - (thing.position.y - original_bbox_.mid_y());
+			thing.position.y = original_bbox_.midY() - (thing.position.y - original_bbox_.midY());
 			thing.angle      = 360 - thing.angle;
 			while (thing.angle < 0)
 				thing.angle += 360;

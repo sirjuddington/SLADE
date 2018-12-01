@@ -81,7 +81,7 @@ void Edit2D::mirror(bool x_axis) const
 		auto things = context_.selection().selectedThings();
 
 		// Get midpoint
-		bbox_t bbox;
+		BBox bbox;
 		for (unsigned a = 0; a < things.size(); a++)
 			bbox.extend(things[a]->xPos(), things[a]->yPos());
 
@@ -91,10 +91,10 @@ void Edit2D::mirror(bool x_axis) const
 			// Position
 			if (x_axis)
 				context_.map().moveThing(
-					things[a]->index(), bbox.mid_x() - (things[a]->xPos() - bbox.mid_x()), things[a]->yPos());
+					things[a]->index(), bbox.midX() - (things[a]->xPos() - bbox.midX()), things[a]->yPos());
 			else
 				context_.map().moveThing(
-					things[a]->index(), things[a]->xPos(), bbox.mid_y() - (things[a]->yPos() - bbox.mid_y()));
+					things[a]->index(), things[a]->xPos(), bbox.midY() - (things[a]->yPos() - bbox.midY()));
 
 			// Direction
 			int angle = things[a]->angle();
@@ -145,7 +145,7 @@ void Edit2D::mirror(bool x_axis) const
 		}
 
 		// Get midpoint
-		bbox_t bbox;
+		BBox bbox;
 		for (unsigned a = 0; a < vertices.size(); a++)
 			bbox.extend(vertices[a]->xPos(), vertices[a]->yPos());
 
@@ -156,12 +156,12 @@ void Edit2D::mirror(bool x_axis) const
 			if (x_axis)
 			{
 				context_.map().moveVertex(
-					vertices[a]->index(), bbox.mid_x() - (vertices[a]->xPos() - bbox.mid_x()), vertices[a]->yPos());
+					vertices[a]->index(), bbox.midX() - (vertices[a]->xPos() - bbox.midX()), vertices[a]->yPos());
 			}
 			else
 			{
 				context_.map().moveVertex(
-					vertices[a]->index(), vertices[a]->xPos(), bbox.mid_y() - (vertices[a]->yPos() - bbox.mid_y()));
+					vertices[a]->index(), vertices[a]->xPos(), bbox.midY() - (vertices[a]->yPos() - bbox.midY()));
 			}
 		}
 
@@ -207,7 +207,7 @@ void Edit2D::editObjectProperties()
 // -----------------------------------------------------------------------------
 void Edit2D::splitLine(double x, double y, double min_dist) const
 {
-	fpoint2_t point(x, y);
+	Vec2f point(x, y);
 
 	// Get the closest line
 	int  lindex = context_.map().nearestLine(point, min_dist);
@@ -584,7 +584,7 @@ void Edit2D::changeThingType() const
 // -----------------------------------------------------------------------------
 // Sets the angle of all selected things to face toward [mouse_pos]
 // -----------------------------------------------------------------------------
-void Edit2D::thingQuickAngle(fpoint2_t mouse_pos) const
+void Edit2D::thingQuickAngle(Vec2f mouse_pos) const
 {
 	// Do nothing if not in things mode
 	if (context_.editMode() != MapEditor::Mode::Things)
@@ -653,7 +653,7 @@ void Edit2D::copy() const
 // -----------------------------------------------------------------------------
 // Pastes previously copied objects at [mouse_pos]
 // -----------------------------------------------------------------------------
-void Edit2D::paste(fpoint2_t mouse_pos) const
+void Edit2D::paste(Vec2f mouse_pos) const
 {
 	// Go through clipboard items
 	for (unsigned a = 0; a < theClipboard->nItems(); a++)
@@ -931,7 +931,7 @@ void Edit2D::createThing(double x, double y) const
 // -----------------------------------------------------------------------------
 void Edit2D::createSector(double x, double y) const
 {
-	fpoint2_t point(x, y);
+	Vec2f point(x, y);
 	auto&     map = context_.map();
 
 	// Find nearest line

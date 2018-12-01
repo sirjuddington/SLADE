@@ -86,7 +86,7 @@ void RenderView::zoom(double amount)
 // -----------------------------------------------------------------------------
 // Zooms the view by [amount] towards [point]
 // -----------------------------------------------------------------------------
-void RenderView::zoomToward(double amount, const fpoint2_t point)
+void RenderView::zoomToward(double amount, const Vec2f point)
 {
 	// Get current [point] in map coordinates
 	auto orig_point = mapPos(point);
@@ -111,7 +111,7 @@ void RenderView::zoomToward(double amount, const fpoint2_t point)
 // -----------------------------------------------------------------------------
 // Zooms and offsets the view such that [bbox] fits within the current view size
 // -----------------------------------------------------------------------------
-void RenderView::fitTo(bbox_t bbox)
+void RenderView::fitTo(BBox bbox)
 {
 	// Reset zoom and set offsets to the middle of the map
 	scale_    = 2;
@@ -138,7 +138,7 @@ void RenderView::fitTo(bbox_t bbox)
 // If [towards] is not nullptr, the scale interpolation will also interpolate
 // offsets towards [towards]
 // -----------------------------------------------------------------------------
-bool RenderView::interpolate(double mult, const fpoint2_t* towards)
+bool RenderView::interpolate(double mult, const Vec2f* towards)
 {
 	bool interpolating = false;
 
@@ -230,7 +230,7 @@ double RenderView::mapY(double screen_y, bool inter) const
 // Translates a position on the screen to the corresponding position on the map
 // itself
 // -----------------------------------------------------------------------------
-fpoint2_t RenderView::mapPos(const fpoint2_t& screen_pos, bool inter) const
+Vec2f RenderView::mapPos(const Vec2f& screen_pos, bool inter) const
 {
 	return { mapX(screen_pos.x, inter), mapY(screen_pos.y, inter) };
 }

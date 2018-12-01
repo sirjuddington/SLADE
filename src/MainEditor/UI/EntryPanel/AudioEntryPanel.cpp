@@ -610,18 +610,18 @@ bool AudioEntryPanel::updateInfo()
 	case Media:
 		if (entry_->type() == EntryType::fromId("snd_doom"))
 		{
-			size_t samplerate = READ_L16(mc, 2);
-			size_t samples    = READ_L16(mc, 4);
+			size_t samplerate = mc.readL16(2);
+			size_t samples    = mc.readL16(4);
 			info += S_FMT("%lu samples at %lu Hz", (unsigned long)samples, (unsigned long)samplerate);
 		}
 		else if (entry_->type() == EntryType::fromId("snd_speaker"))
 		{
-			size_t samples = READ_L16(mc, 2);
+			size_t samples = mc.readL16(2);
 			info += S_FMT("%lu samples", (unsigned long)samples);
 		}
 		else if (entry_->type() == EntryType::fromId("snd_audiot"))
 		{
-			size_t samples = READ_L16(mc, 0);
+			size_t samples = mc.readL16(0);
 			info += S_FMT("%lu samples", (unsigned long)samples);
 		}
 		else if (entry_->type() == EntryType::fromId("snd_sun"))

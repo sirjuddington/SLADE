@@ -29,8 +29,8 @@ public:
 	double xPos() const { return x_; }
 	double yPos() const { return y_; }
 
-	fpoint2_t getPoint(Point point) override;
-	fpoint2_t point();
+	Vec2f getPoint(Point point) override;
+	Vec2f point();
 
 	int    intProperty(const string& key) override;
 	double floatProperty(const string& key) override;

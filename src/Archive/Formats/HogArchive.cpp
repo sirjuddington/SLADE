@@ -194,7 +194,7 @@ bool HogArchive::open(MemChunk& mc)
 		// Setup variables
 		num_lumps++;
 		size_t offset   = iter_offset + 17;
-		size_t size     = READ_L32(mc, iter_offset + 13);
+		size_t size     = mc.readL32(iter_offset + 13);
 		char   name[14] = "";
 		mc.seek(iter_offset, SEEK_SET);
 		mc.read(name, 13);
@@ -442,7 +442,7 @@ bool HogArchive::isHogArchive(MemChunk& mc)
 		if (offset + 17 > size)
 			return false;
 		// Read entry size to compute next offset
-		offset += 17 + READ_L32(mc, offset + 13);
+		offset += 17 + mc.readL32(offset + 13);
 	}
 
 	// We should end on at exactly the end of the file

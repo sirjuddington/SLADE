@@ -357,9 +357,9 @@ bool DirArchive::renameDir(ArchiveTreeNode* dir, string new_name)
 	string path = dir->parent()->path();
 	if (separator_ != "/")
 		path.Replace("/", separator_);
-	key_value_t rename(path + dir->name(), path + new_name);
+	StringPair rename(path + dir->name(), path + new_name);
 	renamed_dirs_.push_back(rename);
-	LOG_MESSAGE(2, "RENAME %s to %s", rename.key, rename.value);
+	LOG_MESSAGE(2, "RENAME %s to %s", rename.first, rename.second);
 
 	return Archive::renameDir(dir, new_name);
 }

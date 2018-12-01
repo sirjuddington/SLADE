@@ -6,13 +6,13 @@ class ColourBox : public wxPanel
 {
 public:
 	ColourBox(wxWindow* parent, int id = -1, bool enable_alpha = false, bool mode = false);
-	ColourBox(wxWindow* parent, int id, rgba_t col, bool enable_alpha = false, bool mode = false);
+	ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha = false, bool mode = false);
 	~ColourBox() {}
 
-	rgba_t colour() { return colour_; }
+	ColRGBA colour() { return colour_; }
 
 	void setPalette(Palette* pal) { palette_ = pal; }
-	void setColour(rgba_t col)
+	void setColour(ColRGBA col)
 	{
 		colour_ = col;
 		Refresh();
@@ -23,7 +23,7 @@ public:
 	void popAlphaSlider();
 
 private:
-	rgba_t   colour_;
+	ColRGBA   colour_;
 	Palette* palette_ = nullptr;
 	bool     alpha_   = false;
 	bool     altmode_ = false;

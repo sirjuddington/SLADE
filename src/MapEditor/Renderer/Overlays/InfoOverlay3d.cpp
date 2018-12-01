@@ -222,7 +222,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// Height of this section of the wall
 		// TODO this is wrong in the case of slopes, but slope support only
 		// exists in the 3.1.1 branch
-		fpoint2_t left_point, right_point;
+		Vec2f left_point, right_point;
 		MapSide*  other_side;
 		if (side == line->s1())
 		{
@@ -248,10 +248,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			// A two-sided line's middle area is the smallest distance between
 			// both sides' floors and ceilings, which is more complicated with
 			// slopes.
-			plane_t floor1   = this_sector->floor().plane;
-			plane_t floor2   = other_sector->floor().plane;
-			plane_t ceiling1 = this_sector->ceiling().plane;
-			plane_t ceiling2 = other_sector->ceiling().plane;
+			Plane floor1   = this_sector->floor().plane;
+			Plane floor2   = other_sector->floor().plane;
+			Plane ceiling1 = this_sector->ceiling().plane;
+			Plane ceiling2 = other_sector->ceiling().plane;
 			left_height      = min(ceiling1.height_at(left_point), ceiling2.height_at(left_point))
 						  - max(floor1.height_at(left_point), floor2.height_at(left_point));
 			right_height = min(ceiling1.height_at(right_point), ceiling2.height_at(right_point))
@@ -259,7 +259,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		}
 		else
 		{
-			plane_t top_plane, bottom_plane;
+			Plane top_plane, bottom_plane;
 			if (item_type == MapEditor::ItemType::WallMiddle)
 			{
 				top_plane    = this_sector->ceiling().plane;
@@ -326,7 +326,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		/*
 		if (Game::configuration().udmfNamespace() == "zdoom") {
 			// Sector colour
-			rgba_t col = sector->getColour(0, true);
+			ColRGBA col = sector->getColour(0, true);
 			info.push_back(S_FMT("Colour: R%d, G%d, B%d", col.r, col.g, col.b));
 		}
 		*/
@@ -536,11 +536,11 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	int    height      = nlines * line_height + 4;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::colour("map_3d_overlay_background");
-	rgba_t col_fg = ColourConfiguration::colour("map_3d_overlay_foreground");
+	ColRGBA col_bg = ColourConfiguration::colour("map_3d_overlay_background");
+	ColRGBA col_fg = ColourConfiguration::colour("map_3d_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 	col_bg.a      = col_bg.a * alpha;
-	rgba_t col_border(0, 0, 0, 140);
+	ColRGBA col_border(0, 0, 0, 140);
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;
@@ -585,8 +585,8 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 	int    line_height  = 16 * scale;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::colour("map_3d_overlay_background");
-	rgba_t col_fg = ColourConfiguration::colour("map_3d_overlay_foreground");
+	ColRGBA col_bg = ColourConfiguration::colour("map_3d_overlay_background");
+	ColRGBA col_fg = ColourConfiguration::colour("map_3d_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 
 	// Check texture exists

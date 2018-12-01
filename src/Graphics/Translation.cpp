@@ -63,11 +63,11 @@ EXTERN_CVAR(Float, col_greyscale_b)
 // -----------------------------------------------------------------------------
 
 // Colours used by the "Ice" translation, based on the Hexen palette
-rgba_t IceRange[16] = {
-	rgba_t(10, 8, 18),     rgba_t(15, 15, 26),    rgba_t(20, 16, 36),    rgba_t(30, 26, 46),
-	rgba_t(40, 36, 57),    rgba_t(50, 46, 67),    rgba_t(59, 57, 78),    rgba_t(69, 67, 88),
-	rgba_t(79, 77, 99),    rgba_t(89, 87, 109),   rgba_t(99, 97, 120),   rgba_t(109, 107, 130),
-	rgba_t(118, 118, 141), rgba_t(128, 128, 151), rgba_t(138, 138, 162), rgba_t(148, 148, 172),
+ColRGBA IceRange[16] = {
+	ColRGBA(10, 8, 18),     ColRGBA(15, 15, 26),    ColRGBA(20, 16, 36),    ColRGBA(30, 26, 46),
+	ColRGBA(40, 36, 57),    ColRGBA(50, 46, 67),    ColRGBA(59, 57, 78),    ColRGBA(69, 67, 88),
+	ColRGBA(79, 77, 99),    ColRGBA(89, 87, 109),   ColRGBA(99, 97, 120),   ColRGBA(109, 107, 130),
+	ColRGBA(118, 118, 141), ColRGBA(128, 128, 151), ColRGBA(138, 138, 162), ColRGBA(148, 148, 172),
 };
 
 enum SpecialBlend
@@ -337,7 +337,7 @@ void Translation::parseRange(string range)
 		TransRangeBlend* tr = new TransRangeBlend();
 		tr->o_start_        = o_start;
 		tr->o_end_          = o_end;
-		tr->setColour(rgba_t(r, g, b));
+		tr->setColour(ColRGBA(r, g, b));
 		translations_.push_back(tr);
 	}
 	else if (tz.advIfNext('@'))
@@ -361,7 +361,7 @@ void Translation::parseRange(string range)
 		TransRangeTint* tr = new TransRangeTint();
 		tr->o_start_       = o_start;
 		tr->o_end_         = o_end;
-		tr->setColour(rgba_t(r, g, b));
+		tr->setColour(ColRGBA(r, g, b));
 		tr->setAmount(amount);
 		translations_.push_back(tr);
 	}
@@ -528,9 +528,9 @@ TransRange* Translation::range(unsigned index)
 // -----------------------------------------------------------------------------
 // Apply the translation to the given color
 // -----------------------------------------------------------------------------
-rgba_t Translation::translate(rgba_t col, Palette* pal)
+ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 {
-	rgba_t colour(col);
+	ColRGBA colour(col);
 	colour.blend = -1;
 	if (pal == nullptr)
 		pal = MainEditor::currentPalette();
@@ -589,7 +589,7 @@ rgba_t Translation::translate(rgba_t col, Palette* pal)
 			uint8_t di = tp->dStart() + range_frac * (tp->dEnd() - tp->dStart());
 
 			// Apply new colour
-			rgba_t c     = pal->colour(di);
+			ColRGBA c     = pal->colour(di);
 			colour.r     = c.r;
 			colour.g     = c.g;
 			colour.b     = c.b;
@@ -620,7 +620,7 @@ rgba_t Translation::translate(rgba_t col, Palette* pal)
 			TransRangeDesat* td = (TransRangeDesat*)r;
 
 			// Get greyscale colour
-			rgba_t gcol = pal->colour(i);
+			ColRGBA gcol = pal->colour(i);
 			float  grey = (gcol.r * 0.3f + gcol.g * 0.59f + gcol.b * 0.11f) / 255.0f;
 
 			// Apply new colour
@@ -636,7 +636,7 @@ rgba_t Translation::translate(rgba_t col, Palette* pal)
 			TransRangeBlend* tc = (TransRangeBlend*)r;
 
 			// Get colours
-			rgba_t blend = tc->colour();
+			ColRGBA blend = tc->colour();
 
 			// Colourise
 			float grey = (col.r * col_greyscale_r + col.g * col_greyscale_g + col.b * col_greyscale_b) / 255.0f;
@@ -656,7 +656,7 @@ rgba_t Translation::translate(rgba_t col, Palette* pal)
 			TransRangeTint* tt = (TransRangeTint*)r;
 
 			// Get colours
-			rgba_t tint = tt->colour();
+			ColRGBA tint = tt->colour();
 
 			// Colourise
 			float amount  = tt->amount() * 0.01f;
@@ -705,13 +705,13 @@ rgba_t Translation::translate(rgba_t col, Palette* pal)
 // Apply one of the special colour blending modes from ZDoom:
 // Desaturate, Ice, Inverse, Blue, Gold, Green, Red.
 // -----------------------------------------------------------------------------
-rgba_t Translation::specialBlend(rgba_t col, uint8_t type, Palette* pal)
+ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 {
 	// Abort just in case
 	if (type == SpecialBlend::BLEND_INVALID)
 		return col;
 
-	rgba_t colour = col;
+	ColRGBA colour = col;
 
 	// Get greyscale using ZDoom formula
 	float grey = (col.r * 77 + col.g * 143 + col.b * 37) / 256.f;
@@ -722,7 +722,7 @@ rgba_t Translation::specialBlend(rgba_t col, uint8_t type, Palette* pal)
 	{
 		// Determine destination palette index in IceRange
 		uint8_t di   = MIN(((int)grey >> 4), 15);
-		rgba_t  c    = IceRange[di];
+		ColRGBA  c    = IceRange[di];
 		colour.r     = c.r;
 		colour.g     = c.g;
 		colour.b     = c.b;

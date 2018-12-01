@@ -100,9 +100,9 @@ void UndoListView::updateItemAttr(long item, long column, long index) const
 	item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
 
 	if (item == manager_->currentIndex())
-		item_attr_->SetTextColour(WXCOL(rgba_t(0, 170, 0)));
+		item_attr_->SetTextColour(WXCOL(ColRGBA(0, 170, 0)));
 	else if (item > manager_->currentIndex())
-		item_attr_->SetTextColour(WXCOL(rgba_t(150, 150, 150)));
+		item_attr_->SetTextColour(WXCOL(ColRGBA(150, 150, 150)));
 }
 
 // -----------------------------------------------------------------------------

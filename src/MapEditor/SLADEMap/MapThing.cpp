@@ -74,18 +74,18 @@ MapThing::~MapThing() {}
 // Returns the object point [point].
 // Currently for things this is always the thing position
 // -----------------------------------------------------------------------------
-fpoint2_t MapThing::getPoint(Point point)
+Vec2f MapThing::getPoint(Point point)
 {
-	return fpoint2_t(x_, y_);
+	return Vec2f(x_, y_);
 }
 
 // -----------------------------------------------------------------------------
 // Returns the position of the thing, more explicitly than the generic method
 // getPoint
 // -----------------------------------------------------------------------------
-fpoint2_t MapThing::point()
+Vec2f MapThing::point()
 {
-	return fpoint2_t(x_, y_);
+	return Vec2f(x_, y_);
 }
 
 // -----------------------------------------------------------------------------
@@ -177,10 +177,10 @@ void MapThing::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 // Sets the angle of the thing to be facing towards [point]
 // -----------------------------------------------------------------------------
-void MapThing::setAnglePoint(fpoint2_t point)
+void MapThing::setAnglePoint(Vec2f point)
 {
 	// Calculate direction vector
-	fpoint2_t vec(point.x - x_, point.y - y_);
+	Vec2f vec(point.x - x_, point.y - y_);
 	double    mag = sqrt((vec.x * vec.x) + (vec.y * vec.y));
 	double    x   = vec.x / mag;
 	double    y   = vec.y / mag;

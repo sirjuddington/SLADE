@@ -131,10 +131,10 @@ public:
 
 	Palette* getFinalPalette() { return &(pal_preview_->palette()); }
 
-	rgba_t getColour()
+	ColRGBA getColour()
 	{
 		wxColour col = cp_colour_->GetColour();
-		return rgba_t(COLWX(col));
+		return ColRGBA(COLWX(col));
 	}
 
 	// Re-apply the changes in selection and colour on a fresh palette
@@ -229,10 +229,10 @@ public:
 
 	Palette* getFinalPalette() { return &(pal_preview_->palette()); }
 
-	rgba_t getColour()
+	ColRGBA getColour()
 	{
 		wxColour col = cp_colour_->GetColour();
-		return rgba_t(COLWX(col));
+		return ColRGBA(COLWX(col));
 	}
 
 	float getAmount() { return (float)slider_amount_->GetValue() * 0.01f; }
@@ -584,16 +584,16 @@ public:
 
 	Palette* getFinalPalette() { return &(pal_preview_->palette()); }
 
-	rgba_t getStartColour()
+	ColRGBA getStartColour()
 	{
 		wxColour col = cp_startcolour_->GetColour();
-		return rgba_t(COLWX(col));
+		return ColRGBA(COLWX(col));
 	}
 
-	rgba_t getEndColour()
+	ColRGBA getEndColour()
 	{
 		wxColour col = cp_endcolour_->GetColour();
-		return rgba_t(COLWX(col));
+		return ColRGBA(COLWX(col));
 	}
 
 	// Re-apply the changes in selection and colour on a fresh palette
@@ -737,8 +737,8 @@ bool PaletteEntryPanel::saveEntry()
 string PaletteEntryPanel::statusString()
 {
 	// Get current colour
-	rgba_t col  = pal_canvas_->selectedColour();
-	hsl_t  col2 = Misc::rgbToHsl(col);
+	ColRGBA col  = pal_canvas_->selectedColour();
+	ColHSL  col2 = Misc::rgbToHsl(col);
 
 	return S_FMT(
 		"Index %i\tR %d, G %d, B %d\tH %1.3f, S %1.3f, L %1.3f",
@@ -1128,7 +1128,7 @@ bool PaletteEntryPanel::generateColormaps()
 	uint8_t rgba[4];
 	rgba[3] = 255;
 
-	rgba_t rgb;
+	ColRGBA rgb;
 	float  grey;
 	// Generate 34 maps: the first 32 for diminishing light levels,
 	// the 33th for the inverted grey map used by invulnerability.
@@ -1160,7 +1160,7 @@ bool PaletteEntryPanel::generateColormaps()
 				grey = 1.0 - grey;
 				// Clamp value: with Id Software's values, the sum is greater than 1.0 (0.299+0.587+0.144=1.030)
 				// This means the negation above can give a negative value (for example, with RGB values of 247 or
-				// more), which will not be converted correctly to unsigned 8-bit int in the rgba_t struct.
+				// more), which will not be converted correctly to unsigned 8-bit int in the ColRGBA struct.
 				if (grey < 0.0)
 					grey = 0;
 				rgb.r = rgb.g = rgb.b = grey * 255;
@@ -1507,7 +1507,7 @@ void PaletteEntryPanel::onPalCanvasMouseEvent(wxMouseEvent& e)
 		// There actually was a colour selected
 		if (sel > -1)
 		{
-			rgba_t col = pal_canvas_->selectedColour();
+			ColRGBA col = pal_canvas_->selectedColour();
 			// Open a colour dialog
 			wxColour cd = wxGetColourFromUser(GetParent(), WXCOL(col));
 
@@ -1571,10 +1571,10 @@ void PaletteEntryPanel::analysePalettes()
 		report += S_FMT("\n==============\n= Palette %02u =\n==============\n", i);
 		for (size_t c = 0; c < 256; ++c)
 		{
-			rgba_t ref1 = palettes_[0]->colour(c);
-			rgba_t cmp1 = palettes_[i]->colour(c);
-			hsl_t  ref2 = Misc::rgbToHsl(ref1);
-			hsl_t  cmp2 = Misc::rgbToHsl(cmp1);
+			ColRGBA ref1 = palettes_[0]->colour(c);
+			ColRGBA cmp1 = palettes_[i]->colour(c);
+			ColHSL  ref2 = Misc::rgbToHsl(ref1);
+			ColHSL  cmp2 = Misc::rgbToHsl(cmp1);
 #ifdef GPALCOMPANALYSIS
 			int    r, g, b;
 			double h, s, l;

@@ -30,11 +30,11 @@ public:
 
 	// Things
 	void changeThingType() const;
-	void thingQuickAngle(fpoint2_t mouse_pos) const;
+	void thingQuickAngle(Vec2f mouse_pos) const;
 
 	// Copy / Paste
 	void copy() const;
-	void paste(fpoint2_t mouse_pos) const;
+	void paste(Vec2f mouse_pos) const;
 	void copyProperties(MapObject* object = nullptr);
 	void pasteProperties();
 

@@ -339,12 +339,12 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 		textures_[index].name,
 		x,
 		bottom + 2,
-		rgba_t(brightness * 255, brightness * 255, brightness * 255, brightness * 255 * fade),
+		ColRGBA(brightness * 255, brightness * 255, brightness * 255, brightness * 255 * fade),
 		index == current_index_ ? Drawing::Font::Bold : Drawing::Font::Normal,
 		Drawing::Align::Center);
 
 	// Draw texture
-	frect_t rect = Drawing::fitTextureWithin(
+	Rectf rect = Drawing::fitTextureWithin(
 		textures_[index].texture, x - 48 * size, bottom - (96 * size), x + 48 * size, bottom, 0, 2);
 	glColor4f(brightness, brightness, brightness, brightness * fade);
 	textures_[index].texture->bind();

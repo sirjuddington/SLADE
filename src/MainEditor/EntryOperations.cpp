@@ -41,10 +41,12 @@
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "General/Console/Console.h"
 #include "General/Misc.h"
+#include "Graphics/GameFormats.h"
 #include "MainEditor/MainEditor.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/TextureXEditor/TextureXEditor.h"
 #include "Utility/FileMonitor.h"
+#include "Utility/Memory.h"
 #include "Utility/Tokenizer.h"
 
 
@@ -188,10 +190,7 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
 	{
 		LOG_MESSAGE(
-			1,
-			"Entry \"%s\" is of type \"%s\" which does not support offsets",
-			entry->name(),
-			entry->type()->name());
+			1, "Entry \"%s\" is of type \"%s\" which does not support offsets", entry->name(), entry->type()->name());
 		return false;
 	}
 
@@ -200,12 +199,12 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 	if (entryformat == "img_doom" || entryformat == "img_doom_beta" || entryformat == "image_doom_arah")
 	{
 		// Get patch header
-		patch_header_t header;
+		Graphics::PatchHeader header;
 		entry->seek(0, SEEK_SET);
 		entry->read(&header, 8);
 
 		// Calculate new offsets
-		point2_t offsets = dialog->calculateOffsets(header.left, header.top, header.width, header.height);
+		Vec2i offsets = dialog->calculateOffsets(header.left, header.top, header.width, header.height);
 
 		// Apply new offsets
 		header.left = wxINT16_SWAP_ON_BE((int16_t)offsets.x);
@@ -221,11 +220,11 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 	{
 		// Get patch header
 		entry->seek(0, SEEK_SET);
-		oldpatch_header_t header;
+		Graphics::OldPatchHeader header;
 		entry->read(&header, 4);
 
 		// Calculate new offsets
-		point2_t offsets = dialog->calculateOffsets(header.left, header.top, header.width, header.height);
+		Vec2i offsets = dialog->calculateOffsets(header.left, header.top, header.width, header.height);
 
 		// Apply new offsets
 		header.left = (int8_t)offsets.x;
@@ -267,9 +266,9 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 		}
 
 		// Calculate new offsets
-		point2_t offsets = dialog->calculateOffsets(xoff, yoff, w, h);
-		xoff             = offsets.x;
-		yoff             = offsets.y;
+		Vec2i offsets = dialog->calculateOffsets(xoff, yoff, w, h);
+		xoff          = offsets.x;
+		yoff          = offsets.y;
 
 		// Create new grAb chunk
 		uint32_t  csize = wxUINT32_SWAP_ON_LE(8);
@@ -341,10 +340,7 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
 	{
 		LOG_MESSAGE(
-			1,
-			"Entry \"%s\" is of type \"%s\" which does not support offsets",
-			entry->name(),
-			entry->type()->name());
+			1, "Entry \"%s\" is of type \"%s\" which does not support offsets", entry->name(), entry->type()->name());
 		return false;
 	}
 
@@ -353,7 +349,7 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 	if (entryformat == "img_doom" || entryformat == "img_doom_beta" || entryformat == "image_doom_arah")
 	{
 		// Get patch header
-		patch_header_t header;
+		Graphics::PatchHeader header;
 		entry->seek(0, SEEK_SET);
 		entry->read(&header, 8);
 
@@ -371,7 +367,7 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 	{
 		// Get patch header
 		entry->seek(0, SEEK_SET);
-		oldpatch_header_t header;
+		Graphics::OldPatchHeader header;
 		entry->read(&header, 4);
 
 		// Apply new offsets
@@ -493,8 +489,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 		return false;
 
 	// Export the map to a temp .wad file
-	string filename =
-		App::path(entry->parent()->filename(false) + "-" + entry->name(true) + ".wad", App::Dir::Temp);
+	string filename = App::path(entry->parent()->filename(false) + "-" + entry->name(true) + ".wad", App::Dir::Temp);
 	filename.Replace("/", "-");
 	if (map.archive)
 	{
@@ -702,7 +697,7 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value)
 		{
 			trns_start       = a - 4;
 			TransChunk* trns = (TransChunk*)(data + a);
-			trns_size        = 12 + READ_B32(data, a - 4);
+			trns_size        = 12 + Memory::readB32(data, a - 4);
 		}
 
 		// Stop when we get to the 'IDAT' chunk
@@ -853,7 +848,7 @@ bool EntryOperations::gettRNSChunk(ArchiveEntry* entry)
 // Tell whether a PNG entry has a grAb chunk or not and loads the offset values
 // in the given references
 // -----------------------------------------------------------------------------
-bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, point2_t& offsets)
+bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, Vec2i& offsets)
 {
 	if (!entry || !entry->type())
 		return false;
@@ -872,8 +867,8 @@ bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, point2_t& offsets)
 		// Check for 'grAb' header
 		if (data[a] == 'g' && data[a + 1] == 'r' && data[a + 2] == 'A' && data[a + 3] == 'b')
 		{
-			offsets.x = READ_B32(data, a + 4);
-			offsets.y = READ_B32(data, a + 8);
+			offsets.x = Memory::readB32(data, a + 4);
+			offsets.y = Memory::readB32(data, a + 8);
 			return true;
 		}
 
@@ -1464,7 +1459,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	}
 
 	// Save special chunks
-	point2_t      offsets;
+	Vec2i         offsets;
 	bool          alphchunk     = getalPhChunk(entry);
 	bool          grabchunk     = readgrAbChunk(entry, offsets);
 	string        errormessages = "";
@@ -1885,8 +1880,8 @@ void fixpngsrc(ArchiveEntry* entry)
 	memcpy(data, source, entry->size());
 
 	// Last check that it's a PNG
-	uint32_t header1 = READ_B32(data, 0);
-	uint32_t header2 = READ_B32(data, 4);
+	uint32_t header1 = Memory::readB32(data, 0);
+	uint32_t header2 = Memory::readB32(data, 4);
 	if (header1 != 0x89504E47 || header2 != 0x0D0A1A0A)
 		return;
 
@@ -1901,7 +1896,7 @@ void fixpngsrc(ArchiveEntry* entry)
 			delete[] data;
 			return;
 		}
-		uint32_t chsz = READ_B32(data, pointer);
+		uint32_t chsz = Memory::readB32(data, pointer);
 		if (pointer + 12 + chsz > entry->size())
 		{
 			LOG_MESSAGE(1, "Entry %s cannot be repaired.", entry->name());
@@ -1909,7 +1904,7 @@ void fixpngsrc(ArchiveEntry* entry)
 			return;
 		}
 		uint32_t crc = Misc::crc(data + pointer + 4, 4 + chsz);
-		if (crc != READ_B32(data, pointer + 8 + chsz))
+		if (crc != Memory::readB32(data, pointer + 8 + chsz))
 		{
 			LOG_MESSAGE(
 				1,

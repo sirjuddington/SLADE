@@ -6,13 +6,13 @@ public:
 	ModifyOffsetsDialog();
 	~ModifyOffsetsDialog();
 
-	point2_t offset();
+	Vec2i offset();
 	int      alignType();
 	bool     autoOffset();
 	bool     relativeOffset();
 	bool     xOffChange();
 	bool     yOffChange();
-	point2_t calculateOffsets(int xoff, int yoff, int width, int height);
+	Vec2i calculateOffsets(int xoff, int yoff, int width, int height);
 
 private:
 	wxChoice* combo_aligntype_;

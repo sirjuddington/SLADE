@@ -85,11 +85,11 @@ public:
 		d_end_.set(copy->d_end_);
 	}
 
-	rgba_t dStart() { return d_start_; }
-	rgba_t dEnd() { return d_end_; }
+	ColRGBA dStart() { return d_start_; }
+	ColRGBA dEnd() { return d_end_; }
 
-	void setDStart(rgba_t col) { d_start_.set(col); }
-	void setDEnd(rgba_t col) { d_end_.set(col); }
+	void setDStart(ColRGBA col) { d_start_.set(col); }
+	void setDEnd(ColRGBA col) { d_end_.set(col); }
 
 	string asText()
 	{
@@ -106,7 +106,7 @@ public:
 	}
 
 private:
-	rgba_t d_start_, d_end_;
+	ColRGBA d_start_, d_end_;
 };
 
 class TransRangeDesat : public TransRange
@@ -173,13 +173,13 @@ public:
 		col_      = copy->col_;
 	}
 
-	rgba_t colour() { return col_; }
-	void   setColour(rgba_t c) { col_ = c; }
+	ColRGBA colour() { return col_; }
+	void   setColour(ColRGBA c) { col_ = c; }
 
 	string asText() { return S_FMT("%d:%d=#[%d,%d,%d]", o_start_, o_end_, col_.r, col_.g, col_.b); }
 
 private:
-	rgba_t col_;
+	ColRGBA col_;
 };
 
 class TransRangeTint : public TransRange
@@ -199,15 +199,15 @@ public:
 		amount_   = copy->amount_;
 	}
 
-	rgba_t  colour() { return col_; }
+	ColRGBA  colour() { return col_; }
 	uint8_t amount() { return amount_; }
-	void    setColour(rgba_t c) { col_ = c; }
+	void    setColour(ColRGBA c) { col_ = c; }
 	void    setAmount(uint8_t a) { amount_ = a; }
 
 	string asText() { return S_FMT("%d:%d=@%d[%d,%d,%d]", o_start_, o_end_, amount_, col_.r, col_.g, col_.b); }
 
 private:
-	rgba_t  col_;
+	ColRGBA  col_;
 	uint8_t amount_;
 };
 
@@ -252,8 +252,8 @@ public:
 	string      builtInName() { return built_in_name_; }
 	void        setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
 
-	rgba_t translate(rgba_t col, Palette* pal = nullptr);
-	rgba_t specialBlend(rgba_t col, uint8_t type, Palette* pal = nullptr);
+	ColRGBA translate(ColRGBA col, Palette* pal = nullptr);
+	ColRGBA specialBlend(ColRGBA col, uint8_t type, Palette* pal = nullptr);
 
 	void addRange(int type, int pos);
 	void removeRange(int pos);

@@ -9,12 +9,12 @@ using std::min;
 // with some useful functions for each of them
 
 // point2_t: A 2d coordinate
-struct point2_t
+struct Vec2i
 {
 	int x, y;
 
-	point2_t() { x = y = 0; }
-	point2_t(int X, int Y)
+	Vec2i() { x = y = 0; }
+	Vec2i(int X, int Y)
 	{
 		x = X;
 		y = Y;
@@ -25,40 +25,40 @@ struct point2_t
 		x = X;
 		y = Y;
 	}
-	void set(point2_t p)
+	void set(Vec2i p)
 	{
 		x = p.x;
 		y = p.y;
 	}
 
-	point2_t operator+(point2_t point) { return point2_t(point.x + x, point.y + y); }
-	point2_t operator-(point2_t point) { return point2_t(x - point.x, y - point.y); }
-	point2_t operator*(double num) { return point2_t((int)((double)x * num), (int)((double)y * num)); }
-	point2_t operator/(double num)
+	Vec2i operator+(Vec2i point) { return Vec2i(point.x + x, point.y + y); }
+	Vec2i operator-(Vec2i point) { return Vec2i(x - point.x, y - point.y); }
+	Vec2i operator*(double num) { return Vec2i((int)((double)x * num), (int)((double)y * num)); }
+	Vec2i operator/(double num)
 	{
 		if (num == 0)
-			return point2_t(0, 0);
+			return Vec2i(0, 0);
 		else
-			return point2_t((int)((double)x / num), (int)((double)y / num));
+			return Vec2i((int)((double)x / num), (int)((double)y / num));
 	}
-	bool operator==(point2_t rhs) { return (x == rhs.x && y == rhs.y); }
-	bool operator!=(point2_t rhs) { return (x != rhs.x || y != rhs.y); }
+	bool operator==(Vec2i rhs) { return (x == rhs.x && y == rhs.y); }
+	bool operator!=(Vec2i rhs) { return (x != rhs.x || y != rhs.y); }
 
-	static point2_t outside() { return { -1, -1 }; }
+	static Vec2i outside() { return { -1, -1 }; }
 };
 
 // fpoint2_t: A 2d coordinate (or vector) with floating-point precision
-struct fpoint2_t
+struct Vec2f
 {
 	double x, y;
 
-	fpoint2_t() { x = y = 0.0f; }
-	fpoint2_t(double X, double Y)
+	Vec2f() { x = y = 0.0f; }
+	Vec2f(double X, double Y)
 	{
 		x = X;
 		y = Y;
 	}
-	fpoint2_t(point2_t p)
+	Vec2f(Vec2i p)
 	{
 		x = p.x;
 		y = p.y;
@@ -69,12 +69,12 @@ struct fpoint2_t
 		x = X;
 		y = Y;
 	}
-	void set(fpoint2_t p)
+	void set(Vec2f p)
 	{
 		x = p.x;
 		y = p.y;
 	}
-	void set(point2_t p)
+	void set(Vec2i p)
 	{
 		x = p.x;
 		y = p.y;
@@ -82,13 +82,13 @@ struct fpoint2_t
 
 	double magnitude() { return (double)sqrt((long double)(x * x + y * y)); }
 
-	fpoint2_t normalized()
+	Vec2f normalized()
 	{
 		double mag = magnitude();
 		if (mag == 0.0f)
-			return fpoint2_t(0.0f, 0.0f);
+			return Vec2f(0.0f, 0.0f);
 		else
-			return fpoint2_t(x / mag, y / mag);
+			return Vec2f(x / mag, y / mag);
 	}
 
 	void normalize()
@@ -106,7 +106,7 @@ struct fpoint2_t
 		}
 	}
 
-	double distance_to(fpoint2_t point)
+	double distance_to(Vec2f point)
 	{
 		double dist_x = point.x - x;
 		double dist_y = point.y - y;
@@ -116,7 +116,7 @@ struct fpoint2_t
 
 	// aka "Manhattan" distance -- just the sum of the vertical and horizontal
 	// distance, and an upper bound on the true distance
-	double taxicab_distance_to(fpoint2_t point)
+	double taxicab_distance_to(Vec2f point)
 	{
 		double dist;
 		if (point.x < x)
@@ -131,37 +131,37 @@ struct fpoint2_t
 		return dist;
 	}
 
-	double dot(fpoint2_t vec) { return x * vec.x + y * vec.y; }
-	double cross(fpoint2_t p2) { return (x * p2.y) - (y * p2.x); }
+	double dot(Vec2f vec) { return x * vec.x + y * vec.y; }
+	double cross(Vec2f p2) { return (x * p2.y) - (y * p2.x); }
 
-	fpoint2_t operator+(fpoint2_t point) { return fpoint2_t(point.x + x, point.y + y); }
-	fpoint2_t operator-(fpoint2_t point) { return fpoint2_t(x - point.x, y - point.y); }
-	fpoint2_t operator*(double num) { return fpoint2_t(x * num, y * num); }
-	fpoint2_t operator/(double num)
+	Vec2f operator+(Vec2f point) { return Vec2f(point.x + x, point.y + y); }
+	Vec2f operator-(Vec2f point) { return Vec2f(x - point.x, y - point.y); }
+	Vec2f operator*(double num) { return Vec2f(x * num, y * num); }
+	Vec2f operator/(double num)
 	{
 		if (num == 0.0f)
-			return fpoint2_t(0.0f, 0.0f);
+			return Vec2f(0.0f, 0.0f);
 		else
-			return fpoint2_t(x / num, y / num);
+			return Vec2f(x / num, y / num);
 	}
-	bool operator==(fpoint2_t rhs) { return (x == rhs.x && y == rhs.y); }
-	bool operator!=(fpoint2_t rhs) { return (x != rhs.x || y != rhs.y); }
+	bool operator==(Vec2f rhs) { return (x == rhs.x && y == rhs.y); }
+	bool operator!=(Vec2f rhs) { return (x != rhs.x || y != rhs.y); }
 };
 
 
 // fpoint3_t: A 3d coordinate (or vector) with floating-point precision
-struct fpoint3_t
+struct Vec3f
 {
 	double x, y, z;
 
-	fpoint3_t() { x = y = z = 0; }
-	fpoint3_t(double X, double Y, double Z)
+	Vec3f() { x = y = z = 0; }
+	Vec3f(double X, double Y, double Z)
 	{
 		x = X;
 		y = Y;
 		z = Z;
 	}
-	fpoint3_t(fpoint2_t p, double Z = 0)
+	Vec3f(Vec2f p, double Z = 0)
 	{
 		x = p.x;
 		y = p.y;
@@ -174,7 +174,7 @@ struct fpoint3_t
 		y = Y;
 		z = Z;
 	}
-	void set(fpoint3_t p)
+	void set(Vec3f p)
 	{
 		x = p.x;
 		y = p.y;
@@ -182,15 +182,15 @@ struct fpoint3_t
 	}
 
 	double magnitude() { return (double)sqrt((long double)(x * x + y * y + z * z)); }
-	double dot(fpoint3_t vec) { return x * vec.x + y * vec.y + z * vec.z; }
+	double dot(Vec3f vec) { return x * vec.x + y * vec.y + z * vec.z; }
 
-	fpoint3_t normalized()
+	Vec3f normalized()
 	{
 		double mag = magnitude();
 		if (mag == 0)
-			return fpoint3_t(0, 0, 0);
+			return Vec3f(0, 0, 0);
 		else
-			return fpoint3_t(x / mag, y / mag, z / mag);
+			return Vec3f(x / mag, y / mag, z / mag);
 	}
 
 	void normalize()
@@ -206,7 +206,7 @@ struct fpoint3_t
 		}
 	}
 
-	double distance_to(fpoint3_t point)
+	double distance_to(Vec3f point)
 	{
 		double dist_x = point.x - x;
 		double dist_y = point.y - y;
@@ -215,20 +215,20 @@ struct fpoint3_t
 		return (double)sqrt((long double)(dist_x * dist_x + dist_y * dist_y + dist_z * dist_z));
 	}
 
-	fpoint3_t operator+(fpoint3_t point) { return fpoint3_t(point.x + x, point.y + y, point.z + z); }
-	fpoint3_t operator-(fpoint3_t point) { return fpoint3_t(x - point.x, y - point.y, z - point.z); }
-	fpoint3_t operator*(double num) { return fpoint3_t(x * num, y * num, z * num); }
-	fpoint3_t operator/(double num)
+	Vec3f operator+(Vec3f point) { return Vec3f(point.x + x, point.y + y, point.z + z); }
+	Vec3f operator-(Vec3f point) { return Vec3f(x - point.x, y - point.y, z - point.z); }
+	Vec3f operator*(double num) { return Vec3f(x * num, y * num, z * num); }
+	Vec3f operator/(double num)
 	{
 		if (num == 0)
-			return fpoint3_t(0, 0, 0);
+			return Vec3f(0, 0, 0);
 		else
-			return fpoint3_t(x / num, y / num, z / num);
+			return Vec3f(x / num, y / num, z / num);
 	}
 
-	fpoint3_t cross(fpoint3_t p2)
+	Vec3f cross(Vec3f p2)
 	{
-		fpoint3_t cross_product;
+		Vec3f cross_product;
 
 		cross_product.x = ((y * p2.z) - (z * p2.y));
 		cross_product.y = ((z * p2.x) - (x * p2.z));
@@ -237,19 +237,19 @@ struct fpoint3_t
 		return cross_product;
 	}
 
-	fpoint2_t get2d() { return fpoint2_t(x, y); }
+	Vec2f get2d() { return Vec2f(x, y); }
 };
 
 
-// rgba_t: A 32-bit colour definition
-struct rgba_t
+// ColRGBA: A 32-bit colour definition
+struct ColRGBA
 {
 	uint8_t r, g, b, a;
 	int16_t index; // -1=not indexed
 	char    blend; // 0=normal, 1=additive
 
 	// Constructors
-	rgba_t()
+	ColRGBA()
 	{
 		r     = 0;
 		g     = 0;
@@ -259,7 +259,7 @@ struct rgba_t
 		index = -1;
 	}
 
-	rgba_t(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1, int16_t INDEX = -1)
+	ColRGBA(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1, int16_t INDEX = -1)
 	{
 		r     = R;
 		g     = G;
@@ -280,7 +280,7 @@ struct rgba_t
 		index = INDEX;
 	}
 
-	void set(rgba_t colour)
+	void set(ColRGBA colour)
 	{
 		r     = colour.r;
 		g     = colour.g;
@@ -300,7 +300,7 @@ struct rgba_t
 	double db() { return (double)b / 255.0; }
 	double da() { return (double)a / 255.0; }
 
-	bool equals(rgba_t rhs, bool alpha = false, bool index = false)
+	bool equals(ColRGBA rhs, bool alpha = false, bool index = false)
 	{
 		bool col_equal = (r == rhs.r && g == rhs.g && b == rhs.b);
 
@@ -313,7 +313,7 @@ struct rgba_t
 	}
 
 	// Amplify/fade colour components by given amounts
-	rgba_t amp(int R, int G, int B, int A)
+	ColRGBA amp(int R, int G, int B, int A)
 	{
 		int nr = r + R;
 		int ng = g + G;
@@ -337,11 +337,11 @@ struct rgba_t
 		if (na < 0)
 			na = 0;
 
-		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1);
+		return ColRGBA((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1);
 	}
 
 	// Amplify/fade colour components by factors
-	rgba_t ampf(float fr, float fg, float fb, float fa)
+	ColRGBA ampf(float fr, float fg, float fb, float fa)
 	{
 		int nr = (int)(r * fr);
 		int ng = (int)(g * fg);
@@ -365,7 +365,7 @@ struct rgba_t
 		if (na < 0)
 			na = 0;
 
-		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1);
+		return ColRGBA((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1);
 	}
 
 	void write(uint8_t* ptr)
@@ -380,34 +380,34 @@ struct rgba_t
 	}
 
 	// Returns a copy of this colour as greyscale (using 'common' component coefficients)
-	rgba_t greyscale()
+	ColRGBA greyscale()
 	{
 		uint8_t l = (uint8_t)round(r * 0.3 + g * 0.59 + b * 0.11);
-		return rgba_t(l, l, l, a, blend);
+		return ColRGBA(l, l, l, a, blend);
 	}
 };
 
 // Some basic colours
-#define COL_WHITE rgba_t(255, 255, 255, 255, 0)
-#define COL_BLACK rgba_t(0, 0, 0, 255, 0)
-#define COL_RED rgba_t(255, 0, 0, 255, 0)
-#define COL_GREEN rgba_t(0, 255, 0, 255, 0)
-#define COL_BLUE rgba_t(0, 0, 255, 255, 0)
-#define COL_YELLOW rgba_t(255, 255, 0, 255, 0)
-#define COL_PURPLE rgba_t(255, 0, 255, 255, 0)
-#define COL_CYAN rgba_t(0, 255, 255, 255, 0)
+#define COL_WHITE ColRGBA(255, 255, 255, 255, 0)
+#define COL_BLACK ColRGBA(0, 0, 0, 255, 0)
+#define COL_RED ColRGBA(255, 0, 0, 255, 0)
+#define COL_GREEN ColRGBA(0, 255, 0, 255, 0)
+#define COL_BLUE ColRGBA(0, 0, 255, 255, 0)
+#define COL_YELLOW ColRGBA(255, 255, 0, 255, 0)
+#define COL_PURPLE ColRGBA(255, 0, 255, 255, 0)
+#define COL_CYAN ColRGBA(0, 255, 255, 255, 0)
 
-// Convert rgba_t to wxColor
+// Convert ColRGBA to wxColor
 #define WXCOL(rgba) wxColor(rgba.r, rgba.g, rgba.b, rgba.a)
 #define COLWX(wxcol) wxcol.Red(), wxcol.Green(), wxcol.Blue()
 
-// hsl_t: Represents a colour in HSL format, generally used for calculations
-struct hsl_t
+// ColHSL: Represents a colour in HSL format, generally used for calculations
+struct ColHSL
 {
 	double h, s, l;
 
-	hsl_t() { h = s = l = 0; }
-	hsl_t(double h, double s, double l)
+	ColHSL() { h = s = l = 0; }
+	ColHSL(double h, double s, double l)
 	{
 		this->h = h;
 		this->s = s;
@@ -415,13 +415,13 @@ struct hsl_t
 	}
 };
 
-// lab_t: Represents a colour in CIE-L*a*b format, generally used for calculations
-struct lab_t
+// ColLAB: Represents a colour in CIE-L*a*b format, generally used for calculations
+struct ColLAB
 {
 	double l, a, b;
 
-	lab_t() { l = a = b = 0; }
-	lab_t(double l, double a, double b)
+	ColLAB() { l = a = b = 0; }
+	ColLAB(double l, double a, double b)
 	{
 		this->l = l;
 		this->a = a;
@@ -429,31 +429,31 @@ struct lab_t
 	}
 };
 
-// rect_t: A rectangle (int points)
-struct rect_t
+// Recti: A rectangle (int points)
+struct Recti
 {
-	point2_t tl, br;
+	Vec2i tl, br;
 
 	// Constructors
-	rect_t()
+	Recti()
 	{
 		tl.set(0, 0);
 		br.set(0, 0);
 	}
 
-	rect_t(point2_t TL, point2_t BR)
+	Recti(Vec2i TL, Vec2i BR)
 	{
 		tl.set(TL);
 		br.set(BR);
 	}
 
-	rect_t(int x1, int y1, int x2, int y2)
+	Recti(int x1, int y1, int x2, int y2)
 	{
 		tl.set(x1, y1);
 		br.set(x2, y2);
 	}
 
-	rect_t(int x, int y, int width, int height, int align)
+	Recti(int x, int y, int width, int height, int align)
 	{
 		// Top-left
 		if (align == 0)
@@ -471,7 +471,7 @@ struct rect_t
 	}
 
 	// Functions
-	void set(point2_t TL, point2_t BR)
+	void set(Vec2i TL, Vec2i BR)
 	{
 		tl.set(TL);
 		br.set(BR);
@@ -483,7 +483,7 @@ struct rect_t
 		br.set(x2, y2);
 	}
 
-	void set(rect_t rect)
+	void set(Recti rect)
 	{
 		tl.set(rect.tl);
 		br.set(rect.br);
@@ -505,7 +505,7 @@ struct rect_t
 	int awidth() { return max(br.x, tl.x) - min(tl.x, br.x); }
 	int aheight() { return max(br.y, tl.y) - min(tl.y, br.y); }
 
-	point2_t middle() { return point2_t(left() + (awidth() / 2), top() + (aheight() / 2)); }
+	Vec2i middle() { return Vec2i(left() + (awidth() / 2), top() + (aheight() / 2)); }
 
 	void expand(int x, int y)
 	{
@@ -540,50 +540,50 @@ struct rect_t
 		return (double)sqrt((long double)(dist_x * dist_x + dist_y * dist_y));
 	}
 
-	bool contains(point2_t point)
+	bool contains(Vec2i point)
 	{
 		return (point.x >= left() && point.x <= right() && point.y >= top() && point.y <= bottom());
 	}
 };
 
 
-// frect_t: A rectangle (float points)
-struct frect_t
+// Rectf: A rectangle (float points)
+struct Rectf
 {
-	fpoint2_t tl, br;
+	Vec2f tl, br;
 
 	// Constructors
-	frect_t()
+	Rectf()
 	{
 		tl.set(0, 0);
 		br.set(0, 0);
 	}
 
-	frect_t(rect_t rect)
+	Rectf(Recti rect)
 	{
 		tl.set(rect.tl);
 		br.set(rect.br);
 	}
 
-	frect_t(fpoint2_t TL, fpoint2_t BR)
+	Rectf(Vec2f TL, Vec2f BR)
 	{
 		tl.set(TL);
 		br.set(BR);
 	}
 
-	frect_t(point2_t TL, point2_t BR)
+	Rectf(Vec2i TL, Vec2i BR)
 	{
 		tl.set(TL);
 		br.set(BR);
 	}
 
-	frect_t(double x1, double y1, double x2, double y2)
+	Rectf(double x1, double y1, double x2, double y2)
 	{
 		tl.set(x1, y1);
 		br.set(x2, y2);
 	}
 
-	frect_t(double x, double y, double width, double height, int align)
+	Rectf(double x, double y, double width, double height, int align)
 	{
 		// Top-left
 		if (align == 0)
@@ -601,19 +601,19 @@ struct frect_t
 	}
 
 	// Functions
-	void set(rect_t rect)
+	void set(Recti rect)
 	{
 		tl.set(rect.tl);
 		br.set(rect.br);
 	}
 
-	void set(fpoint2_t TL, fpoint2_t BR)
+	void set(Vec2f TL, Vec2f BR)
 	{
 		tl.set(TL);
 		br.set(BR);
 	}
 
-	void set(point2_t TL, point2_t BR)
+	void set(Vec2i TL, Vec2i BR)
 	{
 		tl.set(TL);
 		br.set(BR);
@@ -625,18 +625,18 @@ struct frect_t
 		br.set(x2, y2);
 	}
 
-	void set(frect_t rect)
+	void set(Rectf rect)
 	{
 		tl.set(rect.tl);
 		br.set(rect.br);
 	}
 
-	double    x1() const { return tl.x; }
-	double    y1() const { return tl.y; }
-	double    x2() const { return br.x; }
-	double    y2() const { return br.y; }
-	fpoint2_t p1() const { return tl; }
-	fpoint2_t p2() const { return br; }
+	double x1() const { return tl.x; }
+	double y1() const { return tl.y; }
+	double x2() const { return br.x; }
+	double y2() const { return br.y; }
+	Vec2f  p1() const { return tl; }
+	Vec2f  p2() const { return br; }
 
 	double left() const { return min(tl.x, br.x); }
 	double top() const { return min(tl.y, br.y); }
@@ -649,7 +649,7 @@ struct frect_t
 	double awidth() const { return max(br.x, tl.x) - min(tl.x, br.x); }
 	double aheight() const { return max(br.y, tl.y) - min(tl.y, br.y); }
 
-	fpoint2_t middle() { return fpoint2_t(left() + (awidth() / 2), top() + (aheight() / 2)); }
+	Vec2f middle() { return Vec2f(left() + (awidth() / 2), top() + (aheight() / 2)); }
 
 	void expand(double x, double y)
 	{
@@ -684,30 +684,30 @@ struct frect_t
 		return (double)sqrt((long double)(dist_x * dist_x + dist_y * dist_y));
 	}
 
-	bool contains(fpoint2_t point) const
+	bool contains(Vec2f point) const
 	{
 		return (point.x >= left() && point.x <= right() && point.y >= top() && point.y <= bottom());
 	}
 };
 // Rectangle is not really any different from a 2D segment, but using it to
 // mean that can be confusing, so here's an alias.
-typedef frect_t fseg2_t;
+typedef Rectf Seg2f;
 
 
-// plane_t: A 3d plane
-struct plane_t
+// Plane: A 3d plane
+struct Plane
 {
 	double a, b, c, d;
 
-	plane_t() : a(0.0), b(0.0), c(0.0), d(0.0) {}
-	plane_t(double a, double b, double c, double d) : a(a), b(b), c(c), d(d) {}
+	Plane() : a(0.0), b(0.0), c(0.0), d(0.0) {}
+	Plane(double a, double b, double c, double d) : a(a), b(b), c(c), d(d) {}
 
 	/** Construct a flat plane (perpendicular to the z axis) at the given height.
 	 */
-	static plane_t flat(float height) { return plane_t(0.0, 0.0, 1.0, height); }
+	static Plane flat(float height) { return Plane(0.0, 0.0, 1.0, height); }
 
-	bool operator==(const plane_t& rhs) const { return a == rhs.a && b == rhs.b && c == rhs.c && d == rhs.d; }
-	bool operator!=(const plane_t& rhs) const { return !(*this == rhs); }
+	bool operator==(const Plane& rhs) const { return a == rhs.a && b == rhs.b && c == rhs.c && d == rhs.d; }
+	bool operator!=(const Plane& rhs) const { return !(*this == rhs); }
 
 	void set(double a, double b, double c, double d)
 	{
@@ -717,35 +717,35 @@ struct plane_t
 		this->d = d;
 	}
 
-	fpoint3_t normal() const
+	Vec3f normal() const
 	{
-		fpoint3_t norm(a, b, c);
+		Vec3f norm(a, b, c);
 		norm.normalize();
 		return norm;
 	}
 
 	void normalize()
 	{
-		fpoint3_t vec(a, b, c);
-		double    mag = vec.magnitude();
-		a             = a / mag;
-		b             = b / mag;
-		c             = c / mag;
-		d             = d / mag;
+		Vec3f  vec(a, b, c);
+		double mag = vec.magnitude();
+		a          = a / mag;
+		b          = b / mag;
+		c          = c / mag;
+		d          = d / mag;
 	}
 
-	double height_at(fpoint2_t point) const { return height_at(point.x, point.y); }
+	double height_at(Vec2f point) const { return height_at(point.x, point.y); }
 	double height_at(double x, double y) const { return ((-a * x) + (-b * y) + d) / c; }
 };
 
 
-// bbox_t: A simple bounding box with related functions
-struct bbox_t
+// BBox: A simple bounding box with related functions
+struct BBox
 {
-	fpoint2_t min;
-	fpoint2_t max;
+	Vec2f min;
+	Vec2f max;
 
-	bbox_t() { reset(); }
+	BBox() { reset(); }
 
 	void reset()
 	{
@@ -774,108 +774,28 @@ struct bbox_t
 			max.y = y;
 	}
 
-	bool point_within(double x, double y) { return (x >= min.x && x <= max.x && y >= min.y && y <= max.y); }
-	bool contains(fpoint2_t point) { return point_within(point.x, point.y); }
-	bool is_within(fpoint2_t bmin, fpoint2_t bmax)
+	bool pointWithin(double x, double y) { return (x >= min.x && x <= max.x && y >= min.y && y <= max.y); }
+	bool contains(Vec2f point) { return pointWithin(point.x, point.y); }
+	bool isWithin(Vec2f bmin, Vec2f bmax)
 	{
 		return (min.x >= bmin.x && max.x <= bmax.x && min.y >= bmin.y && max.y <= bmax.y);
 	}
 
-	bool is_valid() { return ((max.x - min.x > 0) && (max.y - min.y) > 0); }
+	bool isValid() { return ((max.x - min.x > 0) && (max.y - min.y) > 0); }
 
-	fpoint2_t size() { return fpoint2_t(max.x - min.x, max.y - min.y); }
-	double    width() { return max.x - min.x; }
-	double    height() { return max.y - min.y; }
+	Vec2f  size() { return Vec2f(max.x - min.x, max.y - min.y); }
+	double width() { return max.x - min.x; }
+	double height() { return max.y - min.y; }
 
-	fpoint2_t mid() { return fpoint2_t(mid_x(), mid_y()); }
-	double    mid_x() { return min.x + ((max.x - min.x) * 0.5); }
-	double    mid_y() { return min.y + ((max.y - min.y) * 0.5); }
+	Vec2f  mid() { return Vec2f(midX(), midY()); }
+	double midX() { return min.x + ((max.x - min.x) * 0.5); }
+	double midY() { return min.y + ((max.y - min.y) * 0.5); }
 
-	fseg2_t left_side() { return fseg2_t(min.x, min.y, min.x, max.y); }
-	fseg2_t right_side() { return fseg2_t(max.x, min.y, max.x, max.y); }
-	fseg2_t bottom_side() { return fseg2_t(min.x, max.y, max.x, max.y); }
-	fseg2_t top_side() { return fseg2_t(min.x, min.y, max.x, min.y); }
+	Seg2f leftSide() { return Seg2f(min.x, min.y, min.x, max.y); }
+	Seg2f rightSide() { return Seg2f(max.x, min.y, max.x, max.y); }
+	Seg2f bottomSide() { return Seg2f(min.x, max.y, max.x, max.y); }
+	Seg2f topSide() { return Seg2f(min.x, min.y, max.x, min.y); }
 };
 
-// key_value_t: Simple key-value pair (string-string)
-struct key_value_t
-{
-	string key;
-	string value;
-
-	key_value_t(string key, string value = "")
-	{
-		this->key   = key;
-		this->value = value;
-	}
-};
-
-
-// patch_header_t: The header of a Doom-format gfx image
-struct patch_header_t
-{
-	short width;
-	short height;
-	short left;
-	short top;
-};
-
-// oldpatch_header_t: The header of an alpha/beta Doom-format gfx image
-struct oldpatch_header_t
-{
-	uint8_t width;
-	uint8_t height;
-	int8_t  left;
-	int8_t  top;
-};
-
-// jagpic_header_t: The header of a Jaguar Doom-format gfx image
-struct jagpic_header_t
-{
-	short width;
-	short height;
-	short depth;
-	short palshift;
-	char  padding[8];
-};
-
-// psxpic_header_t: The header of a PSX Doom-format gfx image
-struct psxpic_header_t
-{
-	short left;
-	short top;
-	short width;
-	short height;
-};
-
-// rottpatch_header_t: The header of a rott-format gfx image
-struct rottpatch_header_t
-{
-	short origsize;
-	short width;
-	short height;
-	short left;
-	short top;
-	// short	translevel; // Not all of them have that
-};
-
-// imgz_header: The header of a ZDoom imgz image
-struct imgz_header_t
-{
-	uint8_t  magic[4];
-	uint16_t width;
-	uint16_t height;
-	int16_t  left;
-	int16_t  top;
-	uint8_t  compression;
-	uint8_t  reserved[11];
-};
-
-
-// Platform-independent macros to read values from 8-bit arrays or MemChunks
-#define READ_L16(a, i) (a[i] + (a[i + 1] << 8))
-#define READ_L24(a, i) (a[i] + (a[i + 1] << 8) + (a[i + 2] << 16))
-#define READ_L32(a, i) (a[i] + (a[i + 1] << 8) + (a[i + 2] << 16) + (a[i + 3] << 24))
-#define READ_B16(a, i) (a[i + 1] + (a[i] << 8))
-#define READ_B24(a, i) (a[i + 2] + (a[i + 1] << 8) + (a[i] << 16))
-#define READ_B32(a, i) (a[i + 3] + (a[i + 2] << 8) + (a[i + 1] << 16) + (a[i] << 24))
+// Formerly key_value_t
+typedef std::pair<string, string> StringPair;

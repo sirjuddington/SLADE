@@ -12,7 +12,7 @@ struct GameExe
 	string              name;
 	string              exe_name;
 	string              path;
-	vector<key_value_t> configs;
+	vector<StringPair> configs;
 	bool                custom;
 	vector<bool>        configs_custom;
 };

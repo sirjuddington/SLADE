@@ -368,12 +368,12 @@ string Archive::fileExtensionString() const
 		vector<string> ext_strings;
 		for (auto ext : fmt.extensions)
 		{
-			string ext_case = S_FMT("*.%s;", CHR(ext.key.Lower()));
-			ext_case += S_FMT("*.%s;", CHR(ext.key.Upper()));
-			ext_case += S_FMT("*.%s", CHR(ext.key.Capitalize()));
+			string ext_case = S_FMT("*.%s;", CHR(ext.first.Lower()));
+			ext_case += S_FMT("*.%s;", CHR(ext.first.Upper()));
+			ext_case += S_FMT("*.%s", CHR(ext.first.Capitalize()));
 
 			ext_all += S_FMT("%s;", CHR(ext_case));
-			ext_strings.push_back(S_FMT("%s File (*.%s)|%s", CHR(ext.value), CHR(ext.key), CHR(ext_case)));
+			ext_strings.push_back(S_FMT("%s File (*.%s)|%s", CHR(ext.second), CHR(ext.first), CHR(ext_case)));
 		}
 
 		ext_all.RemoveLast(1);
@@ -387,11 +387,11 @@ string Archive::fileExtensionString() const
 	if (fmt.extensions.size() == 1)
 	{
 		auto&  ext      = fmt.extensions[0];
-		string ext_case = S_FMT("*.%s;", CHR(ext.key.Lower()));
-		ext_case += S_FMT("*.%s;", CHR(ext.key.Upper()));
-		ext_case += S_FMT("*.%s", CHR(ext.key.Capitalize()));
+		string ext_case = S_FMT("*.%s;", CHR(ext.first.Lower()));
+		ext_case += S_FMT("*.%s;", CHR(ext.first.Upper()));
+		ext_case += S_FMT("*.%s", CHR(ext.first.Capitalize()));
 
-		return S_FMT("%s File (*.%s)|%s", CHR(ext.value), CHR(ext.key), CHR(ext_case));
+		return S_FMT("%s File (*.%s)|%s", CHR(ext.second), CHR(ext.first), CHR(ext_case));
 	}
 
 	// No extension (probably unknown type)
@@ -1705,7 +1705,7 @@ bool Archive::loadFormats(MemChunk& mc)
 			LOG_MESSAGE(3, "  Max entry name length: %d", fmt.max_name_length);
 		}
 		for (auto ext : fmt.extensions)
-			LOG_MESSAGE(3, "  Extension \"%s\" = \"%s\"", ext.key, ext.value);
+			LOG_MESSAGE(3, "  Extension \"%s\" = \"%s\"", ext.first, ext.second);
 
 		formats.push_back(fmt);
 	}

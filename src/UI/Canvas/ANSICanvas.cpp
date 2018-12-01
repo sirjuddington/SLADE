@@ -100,7 +100,7 @@ void ANSICanvas::writeRGBAData(uint8_t* dest)
 	for (size_t i = 0; i < width_ * height_; ++i)
 	{
 		size_t j    = i << 2;
-		rgba_t c    = CodePages::ansiColor(picdata_[i]);
+		ColRGBA c    = CodePages::ansiColor(picdata_[i]);
 		dest[j + 0] = c.r;
 		dest[j + 1] = c.g;
 		dest[j + 2] = c.b;

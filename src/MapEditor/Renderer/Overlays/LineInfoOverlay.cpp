@@ -209,11 +209,11 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	int height = text_box_->height() + 4;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::colour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
+	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 	col_bg.a      = col_bg.a * alpha;
-	rgba_t col_border(0, 0, 0, 140);
+	ColRGBA col_border(0, 0, 0, 140);
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;
@@ -269,7 +269,7 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 void LineInfoOverlay::drawSide(int bottom, int right, float alpha, Side& side, int xstart)
 {
 	// Get colours
-	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 
 	// Index and sector index
@@ -301,7 +301,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	int  line_height  = 16 * scale_;
 
 	// Get colours
-	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 
 	// Get texture

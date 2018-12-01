@@ -100,14 +100,14 @@ public:
 	bool removeThing(unsigned index);
 
 	// Geometry
-	int               nearestVertex(fpoint2_t point, double min = 64);
-	int               nearestLine(fpoint2_t point, double min = 64);
-	int               nearestThing(fpoint2_t point, double min = 64);
-	vector<int>       nearestThingMulti(fpoint2_t point);
-	int               sectorAt(fpoint2_t point);
-	bbox_t            bounds();
+	int               nearestVertex(Vec2f point, double min = 64);
+	int               nearestLine(Vec2f point, double min = 64);
+	int               nearestThing(Vec2f point, double min = 64);
+	vector<int>       nearestThingMulti(Vec2f point);
+	int               sectorAt(Vec2f point);
+	BBox            bounds();
 	MapVertex*        vertexAt(double x, double y);
-	vector<fpoint2_t> cutLines(double x1, double y1, double x2, double y2);
+	vector<Vec2f> cutLines(double x1, double y1, double x2, double y2);
 	MapVertex*        lineCrossVertex(double x1, double y1, double x2, double y2);
 	void              updateGeometryInfo(long modified_time);
 	bool              linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y);

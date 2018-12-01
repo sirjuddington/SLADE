@@ -450,7 +450,7 @@ void MapLine::setS2(MapSide* side)
 // Returns the object point [point].
 // Currently for lines this is always the mid point
 // -----------------------------------------------------------------------------
-fpoint2_t MapLine::getPoint(Point point)
+Vec2f MapLine::getPoint(Point point)
 {
 	// if (point == MOBJ_POINT_MID || point == MOBJ_POINT_WITHIN)
 	return point1() + (point2() - point1()) * 0.5;
@@ -459,7 +459,7 @@ fpoint2_t MapLine::getPoint(Point point)
 // -----------------------------------------------------------------------------
 // Returns the point at the first vertex.
 // -----------------------------------------------------------------------------
-fpoint2_t MapLine::point1()
+Vec2f MapLine::point1()
 {
 	return vertex1_->point();
 }
@@ -467,7 +467,7 @@ fpoint2_t MapLine::point1()
 // -----------------------------------------------------------------------------
 // Returns the point at the second vertex.
 // -----------------------------------------------------------------------------
-fpoint2_t MapLine::point2()
+Vec2f MapLine::point2()
 {
 	return vertex2_->point();
 }
@@ -475,9 +475,9 @@ fpoint2_t MapLine::point2()
 // -----------------------------------------------------------------------------
 // Returns this line as a segment.
 // -----------------------------------------------------------------------------
-fseg2_t MapLine::seg()
+Seg2f MapLine::seg()
 {
-	return fseg2_t(vertex1_->point(), vertex2_->point());
+	return Seg2f(vertex1_->point(), vertex2_->point());
 }
 
 // -----------------------------------------------------------------------------
@@ -513,7 +513,7 @@ bool MapLine::doubleSector()
 // -----------------------------------------------------------------------------
 // Returns the vector perpendicular to the front side of the line
 // -----------------------------------------------------------------------------
-fpoint2_t MapLine::frontVector()
+Vec2f MapLine::frontVector()
 {
 	// Check if vector needs to be recalculated
 	if (front_vec_.x == 0 && front_vec_.y == 0)
@@ -529,10 +529,10 @@ fpoint2_t MapLine::frontVector()
 // Calculates and returns the end point of the 'direction tab' for the line
 // (used as a front side indicator for 2d map display)
 // -----------------------------------------------------------------------------
-fpoint2_t MapLine::dirTabPoint(double tablen)
+Vec2f MapLine::dirTabPoint(double tablen)
 {
 	// Calculate midpoint
-	fpoint2_t mid(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
+	Vec2f mid(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
 
 	// Calculate tab length
 	if (tablen == 0)
@@ -547,13 +547,13 @@ fpoint2_t MapLine::dirTabPoint(double tablen)
 	// Calculate tab endpoint
 	if (front_vec_.x == 0 && front_vec_.y == 0)
 		frontVector();
-	return fpoint2_t(mid.x - front_vec_.x * tablen, mid.y - front_vec_.y * tablen);
+	return Vec2f(mid.x - front_vec_.x * tablen, mid.y - front_vec_.y * tablen);
 }
 
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the line
 // -----------------------------------------------------------------------------
-double MapLine::distanceTo(fpoint2_t point)
+double MapLine::distanceTo(Vec2f point)
 {
 	// Update length data if needed
 	if (length_ < 0)
@@ -597,10 +597,10 @@ int MapLine::needsTexture()
 		return Part::FrontMiddle;
 
 	// Get sector planes
-	plane_t floor_front   = frontSector()->floor().plane;
-	plane_t ceiling_front = frontSector()->ceiling().plane;
-	plane_t floor_back    = backSector()->floor().plane;
-	plane_t ceiling_back  = backSector()->ceiling().plane;
+	Plane floor_front   = frontSector()->floor().plane;
+	Plane ceiling_front = frontSector()->ceiling().plane;
+	Plane floor_back    = backSector()->floor().plane;
+	Plane ceiling_back  = backSector()->ceiling().plane;
 
 	double front_height, back_height;
 

@@ -26,7 +26,7 @@ public:
 
 	bool deleteItems(wxArrayInt items);
 
-	rgba_t disabledColour();
+	ColRGBA disabledColour();
 	bool   setItemStatus(int item, ItemStatus status);
 	bool   setItemText(int item, int column, string text);
 

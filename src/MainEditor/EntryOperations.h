@@ -15,7 +15,7 @@ bool modifyalPhChunk(ArchiveEntry* entry, bool value);
 bool modifytRNSChunk(ArchiveEntry* entry, bool value);
 bool getalPhChunk(ArchiveEntry* entry);
 bool gettRNSChunk(ArchiveEntry* entry);
-bool readgrAbChunk(ArchiveEntry* entry, point2_t& offsets);
+bool readgrAbChunk(ArchiveEntry* entry, Vec2i& offsets);
 bool addToPatchTable(vector<ArchiveEntry*> entries);
 bool createTexture(vector<ArchiveEntry*> entries);
 bool convertTextures(vector<ArchiveEntry*> entries);

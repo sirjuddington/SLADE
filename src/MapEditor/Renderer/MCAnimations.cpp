@@ -65,7 +65,7 @@ EXTERN_CVAR(Bool, sector_selected_fill)
 // -----------------------------------------------------------------------------
 // MCASelboxFader class constructor
 // -----------------------------------------------------------------------------
-MCASelboxFader::MCASelboxFader(long start, fpoint2_t tl, fpoint2_t br) : MCAnimation(start)
+MCASelboxFader::MCASelboxFader(long start, Vec2f tl, Vec2f br) : MCAnimation(start)
 {
 	// Init variables
 	this->tl_ = tl;
@@ -100,7 +100,7 @@ void MCASelboxFader::draw()
 {
 	glDisable(GL_TEXTURE_2D);
 
-	rgba_t col;
+	ColRGBA col;
 
 	// Outline
 	col.set(ColourConfiguration::colour("map_selbox_outline"));
@@ -179,7 +179,7 @@ bool MCAThingSelection::update(long time)
 void MCAThingSelection::draw()
 {
 	// Setup colour
-	rgba_t col;
+	ColRGBA col;
 	if (select_)
 		col.set(255, 255, 255, 255 * fade_, 1);
 	else
@@ -250,13 +250,13 @@ MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool sel
 			continue;
 
 		// Add line
-		this->lines_.push_back(frect_t(lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2()));
+		this->lines_.push_back(Rectf(lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2()));
 
 		// Calculate line direction tab
-		fpoint2_t mid = lines[a]->getPoint(MapObject::Point::Mid);
-		fpoint2_t tab = lines[a]->dirTabPoint();
+		Vec2f mid = lines[a]->getPoint(MapObject::Point::Mid);
+		Vec2f tab = lines[a]->dirTabPoint();
 
-		this->tabs_.push_back(frect_t(mid.x, mid.y, tab.x, tab.y));
+		this->tabs_.push_back(Rectf(mid.x, mid.y, tab.x, tab.y));
 	}
 }
 
@@ -286,7 +286,7 @@ bool MCALineSelection::update(long time)
 void MCALineSelection::draw()
 {
 	// Setup colour
-	rgba_t col;
+	ColRGBA col;
 	if (select_)
 		col.set(255, 255, 255, 255 * fade_, 1);
 	else
@@ -333,7 +333,7 @@ MCAVertexSelection::MCAVertexSelection(long start, vector<MapVertex*>& verts, do
 	{
 		if (!verts[a])
 			continue;
-		vertices_.push_back(fpoint2_t(verts[a]->xPos(), verts[a]->yPos()));
+		vertices_.push_back(Vec2f(verts[a]->xPos(), verts[a]->yPos()));
 	}
 
 	if (!select)
@@ -366,7 +366,7 @@ bool MCAVertexSelection::update(long time)
 void MCAVertexSelection::draw()
 {
 	// Setup colour
-	rgba_t col;
+	ColRGBA col;
 	if (select_)
 		col.set(255, 255, 255, 255 * fade_, 1);
 	else
@@ -489,7 +489,7 @@ void MCASectorSelection::draw()
 		return;
 
 	// Setup colour
-	rgba_t col;
+	ColRGBA col;
 	if (select_)
 		col.set(255, 255, 255, 180 * fade_, 1);
 	else
@@ -515,7 +515,7 @@ void MCASectorSelection::draw()
 // -----------------------------------------------------------------------------
 // MCA3dWallSelection class constructor
 // -----------------------------------------------------------------------------
-MCA3dWallSelection::MCA3dWallSelection(long start, fpoint3_t points[4], bool select) : MCAnimation(start, true)
+MCA3dWallSelection::MCA3dWallSelection(long start, Vec3f points[4], bool select) : MCAnimation(start, true)
 {
 	// Init variables
 	this->select_    = select;
@@ -552,7 +552,7 @@ bool MCA3dWallSelection::update(long time)
 void MCA3dWallSelection::draw()
 {
 	// Setup colour
-	rgba_t col;
+	ColRGBA col;
 	if (select_)
 		col.set(255, 255, 255, 90 * fade_, 1);
 	else
@@ -590,7 +590,7 @@ void MCA3dWallSelection::draw()
 // -----------------------------------------------------------------------------
 // MCA3dFlatSelection class constructor
 // -----------------------------------------------------------------------------
-MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, plane_t plane, bool select) :
+MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, Plane plane, bool select) :
 	MCAnimation(start, true)
 {
 	// Init variables
@@ -629,7 +629,7 @@ void MCA3dFlatSelection::draw()
 		return;
 
 	// Setup colour
-	rgba_t col;
+	ColRGBA col;
 	if (select_)
 		col.set(255, 255, 255, 60 * fade_, 1);
 	else

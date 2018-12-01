@@ -157,7 +157,7 @@ string searchIMFName(MemChunk& mc)
 	string fullname = "";
 	if (mc.size() >= 88u)
 	{
-		uint16_t nameOffset = READ_L16(mc, 0) + 4u;
+		uint16_t nameOffset = mc.readL16(0) + 4u;
 		// Shareware stubs
 		if (nameOffset == 4)
 		{
@@ -821,12 +821,12 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		// Add map planes to entry list
 		uint32_t planeofs[3];
 		uint16_t planelen[3];
-		planeofs[0] = READ_L32(data, offset);
-		planeofs[1] = READ_L32(data, offset + 4);
-		planeofs[2] = READ_L32(data, offset + 8);
-		planelen[0] = READ_L16(data, offset + 12);
-		planelen[1] = READ_L16(data, offset + 14);
-		planelen[2] = READ_L16(data, offset + 16);
+		planeofs[0] = data.readL32(offset);
+		planeofs[1] = data.readL32(offset + 4);
+		planeofs[2] = data.readL32(offset + 8);
+		planelen[0] = data.readL16(offset + 12);
+		planelen[1] = data.readL16(offset + 14);
+		planelen[2] = data.readL16(offset + 16);
 		for (int i = 0; i < 3; ++i)
 		{
 			name  = S_FMT("PLANE%d", i);
@@ -909,10 +909,10 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read offset info
-		uint32_t offset = READ_L24(head, (d * 3));
+		uint32_t offset = head.readL24((d * 3));
 
 		// Compute size from next offset
-		uint32_t size = /*((d == num_lumps - 1) ? data.getSize() - offset :*/ (READ_L24(head, ((d + 1) * 3)) - offset);
+		uint32_t size = /*((d == num_lumps - 1) ? data.getSize() - offset :*/ (head.readL24(((d + 1) * 3)) - offset);
 
 		// If the lump data goes before the end of the directory,
 		// the data file is invalid

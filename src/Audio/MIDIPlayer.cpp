@@ -447,16 +447,16 @@ int MIDIPlayer::length()
 
 	while (pos + 8 < end)
 	{
-		size_t chunk_name = READ_B32(data_, pos);
-		size_t chunk_size = READ_B32(data_, pos + 4);
+		size_t chunk_name = data_.readB32(pos);
+		size_t chunk_size = data_.readB32(pos + 4);
 		pos += 8;
 		size_t  chunk_end      = pos + chunk_size;
 		uint8_t running_status = 0;
 		if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
 		{
-			format     = READ_B16(data_, pos);
-			num_tracks = READ_B16(data_, pos + 2);
-			time_div   = READ_B16(data_, pos + 4);
+			format     = data_.readB16(pos);
+			num_tracks = data_.readB16(pos + 2);
+			time_div   = data_.readB16(pos + 4);
 			if (data_[pos + 4] & 0x80)
 			{
 				smpte    = true;
@@ -512,7 +512,7 @@ int MIDIPlayer::length()
 
 					// Tempo event is important
 					if (evtype == 0x51)
-						tempo = READ_B24(data_, tpos);
+						tempo = data_.readB24(tpos);
 
 					tpos += evsize;
 				}
@@ -592,16 +592,16 @@ string MIDIPlayer::info()
 
 	while (pos + 8 < end)
 	{
-		size_t chunk_name = READ_B32(data_, pos);
-		size_t chunk_size = READ_B32(data_, pos + 4);
+		size_t chunk_name = data_.readB32(pos);
+		size_t chunk_size = data_.readB32(pos + 4);
 		pos += 8;
 		size_t  chunk_end      = pos + chunk_size;
 		uint8_t running_status = 0;
 		if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
 		{
-			format            = READ_B16(data_, pos);
-			num_tracks        = READ_B16(data_, pos + 2);
-			uint16_t time_div = READ_B16(data_, pos + 4);
+			format            = data_.readB16(pos);
+			num_tracks        = data_.readB16(pos + 2);
+			uint16_t time_div = data_.readB16(pos + 4);
 			if (format == 0)
 				ret += S_FMT("MIDI format 0 with time division %u\n", time_div);
 			else

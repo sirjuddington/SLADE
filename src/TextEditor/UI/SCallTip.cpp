@@ -455,9 +455,9 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 	wxFont bold = font_.Bold();
 
 	// Setup faded text colour
-	rgba_t faded;
+	ColRGBA faded;
 	if (txed_calltips_dim_optional)
-		faded = rgba_t(
+		faded = ColRGBA(
 			(uint8_t)round((col_fg_.r + col_bg_.r) * 0.5),
 			(uint8_t)round((col_fg_.g + col_bg_.g) * 0.5),
 			(uint8_t)round((col_fg_.b + col_bg_.b) * 0.5));
@@ -630,14 +630,14 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	wxColour border, border2;
 	if (col_bg_.greyscale().r < 128)
 	{
-		rgba_t c = col_bg_.amp(50, 50, 50, 0);
+		ColRGBA c = col_bg_.amp(50, 50, 50, 0);
 		border   = WXCOL(c);
 		c        = col_bg_.amp(20, 20, 20, 0);
 		border2  = WXCOL(c);
 	}
 	else
 	{
-		rgba_t c = col_bg_.amp(-50, -50, -50, 0);
+		ColRGBA c = col_bg_.amp(-50, -50, -50, 0);
 		border   = WXCOL(c);
 		c        = col_bg_.amp(-20, -20, -20, 0);
 		border2  = WXCOL(c);

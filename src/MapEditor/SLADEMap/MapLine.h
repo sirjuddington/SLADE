@@ -92,15 +92,15 @@ public:
 	void setS1(MapSide* side);
 	void setS2(MapSide* side);
 
-	fpoint2_t getPoint(Point point) override;
-	fpoint2_t point1();
-	fpoint2_t point2();
-	fseg2_t   seg();
+	Vec2f getPoint(Point point) override;
+	Vec2f point1();
+	Vec2f point2();
+	Seg2f   seg();
 	double    length();
 	bool      doubleSector();
-	fpoint2_t frontVector();
-	fpoint2_t dirTabPoint(double length = 0);
-	double    distanceTo(fpoint2_t point);
+	Vec2f frontVector();
+	Vec2f dirTabPoint(double length = 0);
+	double    distanceTo(Vec2f point);
 	int       needsTexture();
 
 	void clearUnneededTextures();
@@ -132,5 +132,5 @@ private:
 	double    length_;
 	double    ca_; // Used for intersection calculations
 	double    sa_; // ^^
-	fpoint2_t front_vec_;
+	Vec2f front_vec_;
 };

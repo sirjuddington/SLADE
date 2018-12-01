@@ -12,14 +12,14 @@ class CropCanvas : public OGLCanvas
 public:
 	CropCanvas(wxWindow* parent, SImage* image, Palette* palette);
 
-	rect_t cropRect() { return crop_rect_; }
-	void   setCropRect(rect_t& rect) { crop_rect_.set(rect); }
+	Recti cropRect() { return crop_rect_; }
+	void   setCropRect(Recti& rect) { crop_rect_.set(rect); }
 
 	void draw() override;
 
 private:
 	std::unique_ptr<GLTexture> texture_;
-	rect_t                     crop_rect_;
+	Recti                     crop_rect_;
 };
 
 class GfxCropDialog : public wxDialog
@@ -28,7 +28,7 @@ public:
 	GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette);
 	~GfxCropDialog() {}
 
-	rect_t cropRect() { return crop_rect_; }
+	Recti cropRect() { return crop_rect_; }
 	void   updatePreview();
 
 private:
@@ -42,7 +42,7 @@ private:
 
 	int    max_width_;
 	int    max_height_;
-	rect_t crop_rect_;
+	Recti crop_rect_;
 
 	void updateValues();
 	void setLeft();

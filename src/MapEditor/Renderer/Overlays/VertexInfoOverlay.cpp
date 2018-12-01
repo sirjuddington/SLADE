@@ -93,11 +93,11 @@ void VertexInfoOverlay::draw(int bottom, int right, float alpha)
 	glDisable(GL_LINE_SMOOTH);
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::colour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
+	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 	col_bg.a      = col_bg.a * alpha;
-	rgba_t col_border(0, 0, 0, 140);
+	ColRGBA col_border(0, 0, 0, 140);
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;

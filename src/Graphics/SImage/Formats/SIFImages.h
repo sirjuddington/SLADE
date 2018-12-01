@@ -232,7 +232,7 @@ public:
 		return true;
 	}
 
-	virtual bool writeOffset(SImage& image, ArchiveEntry* entry, point2_t offset)
+	virtual bool writeOffset(SImage& image, ArchiveEntry* entry, Vec2i offset)
 	{
 		MemChunk mc;
 		image.setXOffset(offset.x);
@@ -309,7 +309,7 @@ protected:
 			if (b > 256)
 				b = 256;
 			for (; a < b; a++)
-				palette.setColour(a, rgba_t(bm_pal[a].rgbRed, bm_pal[a].rgbGreen, bm_pal[a].rgbBlue, 255));
+				palette.setColour(a, ColRGBA(bm_pal[a].rgbRed, bm_pal[a].rgbGreen, bm_pal[a].rgbBlue, 255));
 		}
 
 		// If it's a ZDoom alpha map

@@ -171,7 +171,7 @@ ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, tru
 	double rot = 0;
 	for (int a = 0; a < 8; a++)
 	{
-		dir_points_.push_back(fpoint2_t(sin(rot), 0 - cos(rot)));
+		dir_points_.push_back(Vec2f(sin(rot), 0 - cos(rot)));
 		rot -= (3.1415926535897932384626433832795 * 2) / 8.0;
 	}
 
@@ -241,9 +241,9 @@ void ThingDirCanvas::draw()
 	glDisable(GL_TEXTURE_2D);
 	glLineWidth(1.5f);
 	glEnable(GL_LINE_SMOOTH);
-	rgba_t col_faded(
+	ColRGBA col_faded(
 		col_bg_.r * 0.6 + col_fg_.r * 0.4, col_bg_.g * 0.6 + col_fg_.g * 0.4, col_bg_.b * 0.6 + col_fg_.b * 0.4);
-	Drawing::drawEllipse(fpoint2_t(0, 0), 1, 1, 48, col_faded);
+	Drawing::drawEllipse(Vec2f(0, 0), 1, 1, 48, col_faded);
 
 	// Draw dir points
 	for (unsigned a = 0; a < dir_points_.size(); a++)
@@ -256,8 +256,8 @@ void ThingDirCanvas::draw()
 	glLineWidth(2.0f);
 	if (parent_->angleSet())
 	{
-		fpoint2_t tip = MathStuff::rotatePoint(fpoint2_t(0, 0), fpoint2_t(0.8, 0), -parent_->angle());
-		Drawing::drawArrow(tip, fpoint2_t(0, 0), col_fg_, false, 1.2, 0.2);
+		Vec2f tip = MathStuff::rotatePoint(Vec2f(0, 0), Vec2f(0.8, 0), -parent_->angle());
+		Drawing::drawArrow(tip, Vec2f(0, 0), col_fg_, false, 1.2, 0.2);
 	}
 
 	// Draw hover point
@@ -306,7 +306,7 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 			// Get cursor position in canvas coordinates
 			double    x = -1.2 + ((double)e.GetX() / (double)GetSize().x) * 2.4;
 			double    y = -1.2 + ((double)e.GetY() / (double)GetSize().y) * 2.4;
-			fpoint2_t cursor_pos(x, y);
+			Vec2f cursor_pos(x, y);
 
 			// Find closest dir point to cursor
 			point_hl_       = -1;

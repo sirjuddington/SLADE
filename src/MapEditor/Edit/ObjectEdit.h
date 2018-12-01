@@ -12,8 +12,8 @@ class ObjectEditGroup
 public:
 	struct Vertex
 	{
-		fpoint2_t  position;
-		fpoint2_t  old_position;
+		Vec2f  position;
+		Vec2f  old_position;
 		MapVertex* map_vertex;
 		bool       ignored;
 
@@ -31,13 +31,13 @@ public:
 
 	struct Thing
 	{
-		fpoint2_t position;
-		fpoint2_t old_position;
+		Vec2f position;
+		Vec2f old_position;
 		MapThing* map_thing;
 		int       angle;
 	};
 
-	bbox_t bbox() const { return bbox_; }
+	BBox bbox() const { return bbox_; }
 	double rotation() const { return rotation_; }
 
 	void    addVertex(MapVertex* vertex, bool ignored = false);
@@ -49,18 +49,18 @@ public:
 	void    filterObjects(bool filter);
 	void    resetPositions();
 	bool    empty() const { return vertices_.empty() && things_.empty(); }
-	bool    nearestLineEndpoints(fpoint2_t pos, double min, fpoint2_t& v1, fpoint2_t& v2);
+	bool    nearestLineEndpoints(Vec2f pos, double min, Vec2f& v1, Vec2f& v2);
 	void    putMapVertices(vector<MapVertex*>& list);
 
 	// Drawing
-	void putVerticesToDraw(vector<fpoint2_t>& list);
+	void putVerticesToDraw(vector<Vec2f>& list);
 	void putLinesToDraw(vector<Line>& list);
 	void putThingsToDraw(vector<Thing>& list);
 
 	// Modification
 	void doMove(double xoff, double yoff);
 	void doScale(double xoff, double yoff, bool left, bool top, bool right, bool bottom);
-	void doRotate(fpoint2_t p1, fpoint2_t p2, bool lock45);
+	void doRotate(Vec2f p1, Vec2f p2, bool lock45);
 	void doAll(double xoff, double yoff, double xscale, double yscale, double rotation, bool mirror_x, bool mirror_y);
 	void applyEdit();
 
@@ -68,10 +68,10 @@ private:
 	vector<Vertex::UPtr> vertices_;
 	vector<Line>         lines_;
 	vector<Thing>        things_;
-	bbox_t               bbox_;          // Current
-	bbox_t               old_bbox_;      // Before drag operation
-	bbox_t               original_bbox_; // From first init
-	fpoint2_t            offset_prev_ = { 0, 0 };
+	BBox               bbox_;          // Current
+	BBox               old_bbox_;      // Before drag operation
+	BBox               original_bbox_; // From first init
+	Vec2f            offset_prev_ = { 0, 0 };
 	double               rotation_    = 0;
 	bool                 mirrored_    = false;
 };

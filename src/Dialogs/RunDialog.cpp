@@ -313,7 +313,7 @@ void RunDialog::openGameExe(unsigned index)
 	if (exe)
 	{
 		for (unsigned a = 0; a < exe->configs.size(); a++)
-			choice_config_->AppendString(exe->configs[a].key);
+			choice_config_->AppendString(exe->configs[a].first);
 
 		text_exe_path_->SetValue(exe->path);
 		btn_remove_game_->Enable(exe->custom);
@@ -349,7 +349,7 @@ string RunDialog::selectedCommandLine(Archive* archive, string map_name, string 
 		if (cfg < exe->configs.size())
 		{
 			path += " ";
-			path += exe->configs[cfg].value;
+			path += exe->configs[cfg].second;
 		}
 
 		// IWAD
@@ -509,9 +509,9 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 		return;
 
 	Executables::GameExe* exe         = Executables::gameExe(choice_game_exes_->GetSelection());
-	string                   init_params = "";
+	string                init_params = "";
 	if (choice_config_->GetSelection() >= 0)
-		init_params = exe->configs[choice_config_->GetSelection()].value;
+		init_params = exe->configs[choice_config_->GetSelection()].second;
 
 	RunConfigDialog dlg(this, S_FMT("Add Run Config for %s", exe->name), "", init_params);
 	if (dlg.ShowModal() == wxID_OK)
@@ -536,17 +536,17 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 		return;
 
 	Executables::GameExe* exe    = Executables::gameExe(choice_game_exes_->GetSelection());
-	int                      index  = choice_config_->GetSelection();
-	string                   name   = exe->configs[index].key;
-	string                   params = exe->configs[index].value;
-	bool                     custom = exe->configs_custom[index];
+	int                   index  = choice_config_->GetSelection();
+	string                name   = exe->configs[index].first;
+	string                params = exe->configs[index].second;
+	bool                  custom = exe->configs_custom[index];
 
 	RunConfigDialog dlg(this, "Edit Run Config", name, params, custom);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		string name               = dlg.getName().IsEmpty() ? exe->configs[index].key : dlg.getName();
-		exe->configs[index].key   = name;
-		exe->configs[index].value = dlg.getParams();
+		string name                = dlg.getName().IsEmpty() ? exe->configs[index].first : dlg.getName();
+		exe->configs[index].first  = name;
+		exe->configs[index].second = dlg.getParams();
 		choice_config_->SetString(index, name);
 	}
 }

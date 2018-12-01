@@ -12,7 +12,7 @@ struct ArchiveFormat
 	bool                names_extensions;
 	int                 max_name_length;
 	string              entry_format;
-	vector<key_value_t> extensions;
+	vector<StringPair> extensions;
 
 	ArchiveFormat(string id) :
 		id{ id },

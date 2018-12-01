@@ -69,50 +69,50 @@ bool showArchive(Archive* archive)
 
 void registerMiscTypes(sol::state& lua)
 {
-	lua.new_simple_usertype<fpoint2_t>(
+	lua.new_simple_usertype<Vec2f>(
 		"Point",
 
-		sol::constructors<fpoint2_t(), fpoint2_t(double, double)>(),
+		sol::constructors<Vec2f(), Vec2f(double, double)>(),
 
 		// Properties
 		"x",
-		&fpoint2_t::x,
+		&Vec2f::x,
 		"y",
-		&fpoint2_t::y);
+		&Vec2f::y);
 
-	lua.new_simple_usertype<rgba_t>(
+	lua.new_simple_usertype<ColRGBA>(
 		"Colour",
 
-		sol::constructors<rgba_t(), rgba_t(uint8_t, uint8_t, uint8_t), rgba_t(uint8_t, uint8_t, uint8_t, uint8_t)>(),
+		sol::constructors<ColRGBA(), ColRGBA(uint8_t, uint8_t, uint8_t), ColRGBA(uint8_t, uint8_t, uint8_t, uint8_t)>(),
 
 		// Properties
 		"r",
-		&rgba_t::r,
+		&ColRGBA::r,
 		"g",
-		&rgba_t::g,
+		&ColRGBA::g,
 		"b",
-		&rgba_t::b,
+		&ColRGBA::b,
 		"a",
-		&rgba_t::a);
+		&ColRGBA::a);
 
-	lua.new_simple_usertype<plane_t>(
+	lua.new_simple_usertype<Plane>(
 		"Plane",
 
-		sol::constructors<plane_t(), plane_t(double, double, double, double)>(),
+		sol::constructors<Plane(), Plane(double, double, double, double)>(),
 
 		// Properties
 		"a",
-		&plane_t::a,
+		&Plane::a,
 		"b",
-		&plane_t::b,
+		&Plane::b,
 		"c",
-		&plane_t::c,
+		&Plane::c,
 		"d",
-		&plane_t::d,
+		&Plane::d,
 
 		// Functions
 		"heightAt",
-		sol::resolve<double(fpoint2_t) const>(&plane_t::height_at));
+		sol::resolve<double(Vec2f) const>(&Plane::height_at));
 }
 
 void registerAppNamespace(sol::state& lua)

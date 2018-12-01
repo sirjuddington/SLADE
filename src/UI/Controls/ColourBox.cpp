@@ -75,7 +75,7 @@ ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
 // -----------------------------------------------------------------------------
 // Alternate ColourBox class constructor
 // -----------------------------------------------------------------------------
-ColourBox::ColourBox(wxWindow* parent, int id, rgba_t col, bool enable_alpha, bool mode) :
+ColourBox::ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha, bool mode) :
 	wxPanel{ parent, id, wxDefaultPosition, WxUtils::scaledSize(32, 22), wxNO_BORDER },
 	colour_{ col },
 	palette_{ nullptr },
@@ -109,7 +109,7 @@ void ColourBox::popPalette()
 		PaletteDialog pd(palette_);
 		if (pd.ShowModal() == wxID_OK)
 		{
-			rgba_t col = pd.selectedColour();
+			ColRGBA col = pd.selectedColour();
 			if (col.a > 0)
 			{
 				colour_ = col;
@@ -138,7 +138,7 @@ void ColourBox::popColourPicker()
 		if (palette_)
 		{
 			int16_t index = palette_->nearestColour(colour_);
-			rgba_t  pcol  = palette_->colour(index);
+			ColRGBA  pcol  = palette_->colour(index);
 			if (pcol.equals(colour_))
 				colour_.index = index;
 		}

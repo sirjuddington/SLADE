@@ -46,7 +46,7 @@
 namespace Executables
 {
 vector<GameExe>     game_exes;
-vector<key_value_t> exe_paths;
+vector<StringPair>  exe_paths;
 vector<ExternalExe> external_exes;
 } // namespace Executables
 
@@ -131,7 +131,7 @@ string Executables::writeExecutables()
 
 		// Configs
 		for (auto& config : exe.configs)
-			ret += S_FMT("\t\tconfig \"%s\" = \"%s\";\n", config.key, StringUtils::escapedString(config.value));
+			ret += S_FMT("\t\tconfig \"%s\" = \"%s\";\n", config.first, StringUtils::escapedString(config.second));
 
 		ret += "\t}\n\n";
 	}
@@ -237,17 +237,17 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 			bool found = false;
 			for (unsigned c = 0; c < exe->configs.size(); c++)
 			{
-				if (exe->configs[c].key == prop->name())
+				if (exe->configs[c].first == prop->name())
 				{
-					exe->configs[c].value = prop->stringValue();
-					found                 = true;
+					exe->configs[c].second = prop->stringValue();
+					found                  = true;
 				}
 			}
 
 			// Create if new
 			if (!found)
 			{
-				exe->configs.push_back(key_value_t(prop->name(), prop->stringValue()));
+				exe->configs.push_back(StringPair(prop->name(), prop->stringValue()));
 				exe->configs_custom.push_back(custom);
 			}
 		}
@@ -263,8 +263,8 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 
 	// Set path if loaded
 	for (auto& path : exe_paths)
-		if (path.key == exe->id)
-			exe->path = path.value;
+		if (path.first == exe->id)
+			exe->path = path.second;
 }
 
 // -----------------------------------------------------------------------------
@@ -308,7 +308,7 @@ void Executables::addGameExeConfig(unsigned exe_index, string config_name, strin
 	if (exe_index >= game_exes.size())
 		return;
 
-	game_exes[exe_index].configs.push_back(key_value_t(config_name, config_params));
+	game_exes[exe_index].configs.push_back(StringPair(config_name, config_params));
 	game_exes[exe_index].configs_custom.push_back(custom);
 }
 

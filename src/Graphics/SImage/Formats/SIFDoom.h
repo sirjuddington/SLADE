@@ -1,4 +1,6 @@
 
+#include "Graphics/GameFormats.h"
+
 class SIFDoomGfx : public SIFormat
 {
 public:
@@ -24,7 +26,7 @@ public:
 		SImage::info_t info;
 
 		// Read header
-		patch_header_t hdr;
+		Graphics::PatchHeader hdr;
 		mc.read(&hdr, 8, 0);
 
 		// Setup info
@@ -73,7 +75,7 @@ public:
 		return true;
 	}
 
-	virtual bool writeOffset(SImage& image, ArchiveEntry* entry, point2_t offset)
+	virtual bool writeOffset(SImage& image, ArchiveEntry* entry, Vec2i offset)
 	{
 		MemChunk mc;
 		image.setXOffset(offset.x);
@@ -103,12 +105,12 @@ protected:
 		}
 		else
 		{
-			patch_header_t* header = (patch_header_t*)gfx_data;
-			width                  = wxINT16_SWAP_ON_BE(header->width);
-			height                 = wxINT16_SWAP_ON_BE(header->height);
-			offset_x               = wxINT16_SWAP_ON_BE(header->left);
-			offset_y               = wxINT16_SWAP_ON_BE(header->top);
-			hdr_size               = 8;
+			Graphics::PatchHeader* header = (Graphics::PatchHeader*)gfx_data;
+			width                         = wxINT16_SWAP_ON_BE(header->width);
+			height                        = wxINT16_SWAP_ON_BE(header->height);
+			offset_x                      = wxINT16_SWAP_ON_BE(header->left);
+			offset_y                      = wxINT16_SWAP_ON_BE(header->top);
+			hdr_size                      = 8;
 		}
 
 		// Create image
@@ -344,7 +346,7 @@ protected:
 		out.seek(0, SEEK_SET);
 
 		// Setup header
-		patch_header_t header;
+		Graphics::PatchHeader header;
 		header.top    = image.offset().y;
 		header.left   = image.offset().x;
 		header.width  = image.width();
@@ -532,7 +534,7 @@ public:
 		SImage::info_t info;
 
 		// Read header
-		patch_header_t header;
+		Graphics::PatchHeader header;
 		mc.read(&header, 8, 0);
 
 		// Set info
@@ -550,7 +552,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Setup variables
-		patch_header_t header;
+		Graphics::PatchHeader header;
 		data.read(&header, 8, 0);
 		int width    = wxINT16_SWAP_ON_BE(header.width);
 		int height   = wxINT16_SWAP_ON_BE(header.height);
@@ -684,7 +686,7 @@ public:
 		SImage::info_t info;
 
 		// Read header
-		patch_header_t header;
+		Graphics::PatchHeader header;
 		mc.read(&header, 8, 0);
 
 		// Set info
@@ -702,7 +704,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Setup variables
-		psxpic_header_t header;
+		Graphics::PSXPicHeader header;
 		data.read(&header, 8, 0);
 		int width    = wxINT16_SWAP_ON_BE(header.width);
 		int height   = wxINT16_SWAP_ON_BE(header.height);
@@ -757,7 +759,7 @@ public:
 		SImage::info_t info;
 
 		// Read header
-		jagpic_header_t header;
+		Graphics::JagPicHeader header;
 		mc.read(&header, 16, 0);
 
 		// Set info
@@ -775,7 +777,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Setup variables
-		jagpic_header_t header;
+		Graphics::JagPicHeader header;
 		data.read(&header, 16, 0);
 		int width  = wxINT16_SWAP_ON_LE(header.width);
 		int height = wxINT16_SWAP_ON_LE(header.height);
