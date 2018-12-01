@@ -256,7 +256,7 @@ int FontManager::initFonts()
 	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
 	{
-		font_normal = new FTTextureFont(entry->getData(), entry->getSize());
+		font_normal = new FTTextureFont(entry->rawData(), entry->size());
 		font_normal->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
@@ -273,7 +273,7 @@ int FontManager::initFonts()
 	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
 	if (entry)
 	{
-		font_condensed = new FTTextureFont(entry->getData(), entry->getSize());
+		font_condensed = new FTTextureFont(entry->rawData(), entry->size());
 		font_condensed->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
@@ -290,7 +290,7 @@ int FontManager::initFonts()
 	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
 	if (entry)
 	{
-		font_bold = new FTTextureFont(entry->getData(), entry->getSize());
+		font_bold = new FTTextureFont(entry->rawData(), entry->size());
 		font_bold->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
@@ -307,7 +307,7 @@ int FontManager::initFonts()
 	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
 	if (entry)
 	{
-		font_boldcondensed = new FTTextureFont(entry->getData(), entry->getSize());
+		font_boldcondensed = new FTTextureFont(entry->rawData(), entry->size());
 		font_boldcondensed->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
@@ -324,7 +324,7 @@ int FontManager::initFonts()
 	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
 	if (entry)
 	{
-		font_mono = new FTTextureFont(entry->getData(), entry->getSize());
+		font_mono = new FTTextureFont(entry->rawData(), entry->size());
 		font_mono->FaceSize(UI::scalePx(gl_font_size));
 
 		// Check it loaded ok
@@ -341,7 +341,7 @@ int FontManager::initFonts()
 	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
 	{
-		font_small = new FTTextureFont(entry->getData(), entry->getSize());
+		font_small = new FTTextureFont(entry->rawData(), entry->size());
 		font_small->FaceSize((UI::scalePx(gl_font_size) * 0.6) + 1);
 
 		// Check it loaded ok
@@ -847,7 +847,7 @@ Vec2f Drawing::textExtents(string text, Font font)
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(string text, int x, int y, ColRGBA colour, Font font, Align alignment, frect_t* bounds)
+void Drawing::drawText(string text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectf* bounds)
 {
 	// Get desired font
 	FTFont* ftgl_font = theFontManager->getFont(font);
@@ -904,18 +904,18 @@ void Drawing::drawText(string text, int x, int y, ColRGBA colour, Font font, Ali
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-fpoint2_t Drawing::textExtents(string text, Font font)
+Vec2f Drawing::textExtents(string text, Font font)
 {
 	// Get desired font
 	FTFont* ftgl_font = theFontManager->getFont(font);
 
 	// If FTGL font is invalid, return empty
 	if (!ftgl_font)
-		return fpoint2_t(0, 0);
+		return Vec2f(0, 0);
 
 	// Return width and height of text
 	FTBBox bbox = ftgl_font->BBox(CHR(text), -1);
-	return fpoint2_t(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
+	return Vec2f(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
 }
 
 #endif
