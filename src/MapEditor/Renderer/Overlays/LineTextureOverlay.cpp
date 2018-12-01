@@ -302,7 +302,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 	ColRGBA col_bg  = ColourConfiguration::colour("map_overlay_background");
 	ColRGBA col_fg  = ColourConfiguration::colour("map_overlay_foreground");
 	ColRGBA col_sel = ColourConfiguration::colour("map_hilight");
-	col_fg.a       = col_fg.a * alpha;
+	col_fg.a        = col_fg.a * alpha;
 
 	// Draw background
 	int halfsize = size * 0.5;

@@ -12,8 +12,8 @@ class ObjectEditGroup
 public:
 	struct Vertex
 	{
-		Vec2f  position;
-		Vec2f  old_position;
+		Vec2f      position;
+		Vec2f      old_position;
 		MapVertex* map_vertex;
 		bool       ignored;
 
@@ -31,13 +31,13 @@ public:
 
 	struct Thing
 	{
-		Vec2f position;
-		Vec2f old_position;
+		Vec2f     position;
+		Vec2f     old_position;
 		MapThing* map_thing;
 		int       angle;
 	};
 
-	BBox bbox() const { return bbox_; }
+	BBox   bbox() const { return bbox_; }
 	double rotation() const { return rotation_; }
 
 	void    addVertex(MapVertex* vertex, bool ignored = false);
@@ -68,10 +68,10 @@ private:
 	vector<Vertex::UPtr> vertices_;
 	vector<Line>         lines_;
 	vector<Thing>        things_;
-	BBox               bbox_;          // Current
-	BBox               old_bbox_;      // Before drag operation
-	BBox               original_bbox_; // From first init
-	Vec2f            offset_prev_ = { 0, 0 };
+	BBox                 bbox_;          // Current
+	BBox                 old_bbox_;      // Before drag operation
+	BBox                 original_bbox_; // From first init
+	Vec2f                offset_prev_ = { 0, 0 };
 	double               rotation_    = 0;
 	bool                 mirrored_    = false;
 };

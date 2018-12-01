@@ -620,9 +620,9 @@ public:
 private:
 	struct Intersection
 	{
-		MapLine*  line1;
-		MapLine*  line2;
-		Vec2f intersect_point;
+		MapLine* line1;
+		MapLine* line2;
+		Vec2f    intersect_point;
 
 		Intersection(MapLine* line1, MapLine* line2, double x, double y)
 		{
@@ -910,9 +910,7 @@ public:
 			return "No overlapping things found";
 
 		return S_FMT(
-			"Things %d and %d are overlapping",
-			overlaps_[index].thing1->index(),
-			overlaps_[index].thing2->index());
+			"Things %d and %d are overlapping", overlaps_[index].thing1->index(), overlaps_[index].thing2->index());
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override

@@ -29,7 +29,7 @@ public:
 	~Palette();
 
 	ColRGBA colour(uint8_t index) { return colours_[index]; }
-	short  transIndex() { return index_trans_; }
+	short   transIndex() { return index_trans_; }
 
 	bool loadMem(MemChunk& mc);
 	bool loadMem(const uint8_t* data, uint32_t size);
@@ -69,7 +69,7 @@ private:
 	vector<ColRGBA> colours_;
 	vector<ColHSL>  colours_hsl_;
 	vector<ColLAB>  colours_lab_;
-	short          index_trans_;
+	short           index_trans_;
 
 	double colourDiff(ColRGBA& rgb, ColHSL& hsl, ColLAB& lab, int index, ColourMatch match);
 };

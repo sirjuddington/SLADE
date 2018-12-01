@@ -185,10 +185,10 @@ bool ModifyOffsetsDialog::yOffChange()
 // -----------------------------------------------------------------------------
 Vec2i ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, int height)
 {
-	int      type = alignType();
+	int   type = alignType();
 	Vec2i ofs  = offset();
-	int      x    = xoff;
-	int      y    = yoff;
+	int   x    = xoff;
+	int   y    = yoff;
 
 	if (type >= 0)
 	{

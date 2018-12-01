@@ -11,20 +11,20 @@
 
 enum AnimatedType
 {
-	ANIM_FLAT = 0,
+	ANIM_FLAT    = 0,
 	ANIM_TEXTURE = 1,
-	ANIM_MASK = 1,
-	ANIM_DECALS = 2, // ZDoom uses bit 1 to flag whether decals are allowed.
-	ANIM_STOP = 255,
+	ANIM_MASK    = 1,
+	ANIM_DECALS  = 2, // ZDoom uses bit 1 to flag whether decals are allowed.
+	ANIM_STOP    = 255,
 };
 
 // The format of an entry in an ANIMATED lump
 struct AnimatedEntry
 {
-	uint8_t		type;		// flat or texture, with or without decals
-	char		last [9];	// first name in the animation
-	char		first[9];	// last name in the animation
-	uint32_t	speed;		// amount of tics between two frames
+	uint8_t  type;     // flat or texture, with or without decals
+	char     last[9];  // first name in the animation
+	char     first[9]; // last name in the animation
+	uint32_t speed;    // amount of tics between two frames
 };
 
 /*******************************************************************
@@ -42,9 +42,9 @@ enum SwitchesType
 
 struct SwitchesEntry
 {
-	char		off[9];
-	char		on[9];
-	uint16_t	type;
+	char     off[9];
+	char     on[9];
+	uint16_t type;
 };
 
 // Can restore default packing now

@@ -19,7 +19,7 @@ public:
 		Palette* pal_current;
 		Palette* pal_target;
 		int      mask_source;
-		ColRGBA   mask_colour;
+		ColRGBA  mask_colour;
 		uint8_t  alpha_threshold;
 		bool     transparency;
 		int      col_format;

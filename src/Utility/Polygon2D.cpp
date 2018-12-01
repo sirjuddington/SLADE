@@ -201,8 +201,8 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 			if (rotation != 0)
 			{
 				Vec2f np = MathStuff::rotatePoint(Vec2f(0, 0), Vec2f(x, y), rotation);
-				x            = np.x;
-				y            = np.y;
+				x        = np.x;
+				y        = np.y;
 			}
 
 			x = (scale_x * offset_x) + x;
@@ -770,7 +770,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 
 	// See if we can split to here without crossing anything
 	// (this will be the case most of the time)
-	bool      intersect = false;
+	bool  intersect = false;
 	Vec2f pointi;
 	for (unsigned a = 0; a < edges_.size(); a++)
 	{

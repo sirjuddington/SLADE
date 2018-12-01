@@ -134,7 +134,7 @@ private:
 	uint8_t pal_convert_type_; // 0=nearest colour, 1=keep indices
 	uint8_t alpha_threshold_;
 	bool    keep_trans_;
-	ColRGBA  colour_trans_;
+	ColRGBA colour_trans_;
 
 	bool nextItem();
 

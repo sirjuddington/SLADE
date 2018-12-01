@@ -1,6 +1,8 @@
 #pragma once
 
 // OpenGL
+// glew.h needs to be #included before gl/glu headers
+// clang-format off
 #ifdef __WXMSW__
 // Windows GL headers
 #include "External/glew/glew.h" // Use built-in GLEW so we don't need any extra dlls
@@ -17,6 +19,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #endif
+// clang-format on
 
 #ifndef USE_SFML_RENDERWINDOW
 #include <wx/glcanvas.h>

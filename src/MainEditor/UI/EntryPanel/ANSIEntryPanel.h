@@ -10,12 +10,12 @@ public:
 	ANSIEntryPanel(wxWindow* parent);
 	~ANSIEntryPanel() {}
 
-	bool	loadEntry(ArchiveEntry* entry) override;
-	bool	saveEntry() override;
+	bool loadEntry(ArchiveEntry* entry) override;
+	bool saveEntry() override;
 
 	static const int DATASIZE = 4000;
 
 private:
-	ANSICanvas*		ansi_canvas_	= nullptr;
-	vector<uint8_t>	ansi_chardata_;
+	ANSICanvas*     ansi_canvas_ = nullptr;
+	vector<uint8_t> ansi_chardata_;
 };

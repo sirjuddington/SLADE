@@ -629,8 +629,8 @@ bool SLADEMap::addSector(MapSector::Doom64Data& s)
 {
 	// Create sector
 	// We need to retrieve the texture name from the hash value
-	MapSector* ns =
-		new MapSector(theResourceManager->doom64TextureName(s.f_tex), theResourceManager->doom64TextureName(s.c_tex), this);
+	MapSector* ns = new MapSector(
+		theResourceManager->doom64TextureName(s.f_tex), theResourceManager->doom64TextureName(s.c_tex), this);
 
 	// Setup sector properties
 	ns->setFloorHeight(s.f_height);
@@ -3152,7 +3152,7 @@ MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 	for (unsigned a = 0; a < vertices_.size(); a++)
 	{
 		MapVertex* vertex = vertices_[a];
-		Vec2f  point  = vertex->point();
+		Vec2f      point  = vertex->point();
 
 		// Skip if outside line bbox
 		if (!seg.contains(point))
@@ -3221,9 +3221,9 @@ void SLADEMap::updateGeometryInfo(long modified_time)
 bool SLADEMap::linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y)
 {
 	Vec2f intersection;
-	bool      res = MathStuff::linesIntersect(line1->seg(), line2->seg(), intersection);
-	x             = intersection.x;
-	y             = intersection.y;
+	bool  res = MathStuff::linesIntersect(line1->seg(), line2->seg(), intersection);
+	x         = intersection.x;
+	y         = intersection.y;
 	return res;
 }
 
@@ -3317,9 +3317,9 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 	sector->putLines(lines);
 
 	// Get nearest line intersecting with line vector
-	MapLine*  nearest = nullptr;
-	Vec2f mid     = line->getPoint(MapObject::Point::Mid);
-	Vec2f vec     = line->frontVector();
+	MapLine* nearest = nullptr;
+	Vec2f    mid     = line->getPoint(MapObject::Point::Mid);
+	Vec2f    vec     = line->frontVector();
 	if (front)
 	{
 		vec.x = -vec.x;
@@ -4562,7 +4562,7 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 void SLADEMap::splitLinesByLine(MapLine* split_line)
 {
 	Vec2f intersection;
-	Seg2f   split_segment = split_line->seg();
+	Seg2f split_segment = split_line->seg();
 
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
@@ -4856,6 +4856,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			MapSector* s1 = getLineSideSector(connected_lines_[a], true);
 			MapSector* s2 = getLineSideSector(connected_lines_[a], false);
 			
+
 
 
 			if (s1)

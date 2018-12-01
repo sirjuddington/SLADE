@@ -171,9 +171,9 @@ void LineDraw::updateShape(Vec2f point)
 	}
 
 	// Lock width:height at 1:1 if needed
-	Vec2f origin = draw_origin_;
-	double    width  = fabs(point.x - origin.x);
-	double    height = fabs(point.y - origin.y);
+	Vec2f  origin = draw_origin_;
+	double width  = fabs(point.x - origin.x);
+	double height = fabs(point.y - origin.y);
 	if (shapedraw_lockratio)
 	{
 		if (width < height)
@@ -229,8 +229,8 @@ void LineDraw::updateShape(Vec2f point)
 		height *= 0.5;
 
 		// Add ellipse points
-		double    rot = 0;
-		Vec2f start;
+		double rot = 0;
+		Vec2f  start;
 		for (int a = 0; a < shapedraw_sides; a++)
 		{
 			// Calculate point (rounded)

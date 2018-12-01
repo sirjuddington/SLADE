@@ -13,8 +13,7 @@ public:
 		UInt
 	};
 
-	union Value
-	{
+	union Value {
 		bool     Boolean;
 		int      Integer;
 		double   Floating;

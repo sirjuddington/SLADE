@@ -13,7 +13,7 @@ public:
 private:
 	uint16_t width_;
 	uint16_t height_;
-	Recti   tex_bounds_;
+	Recti    tex_bounds_;
 };
 
 class SFont

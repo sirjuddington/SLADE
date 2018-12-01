@@ -768,10 +768,9 @@ void MapRenderer3D::renderSky()
 		// Get average colour if needed
 		if (skycol_top_.a == 0)
 		{
-			int theight = sky->height() * 0.4;
-			skycol_top_ = sky->averageColour(Recti(0, 0, sky->width(), theight));
-			skycol_bottom_ =
-				sky->averageColour(Recti(0, sky->height() - theight, sky->width(), sky->height()));
+			int theight    = sky->height() * 0.4;
+			skycol_top_    = sky->averageColour(Recti(0, 0, sky->width(), theight));
+			skycol_bottom_ = sky->averageColour(Recti(0, sky->height() - theight, sky->width(), sky->height()));
 		}
 
 		// Render top cap
@@ -1210,8 +1209,8 @@ void MapRenderer3D::setupQuad(
 	double               y1,
 	double               x2,
 	double               y2,
-	Plane              top,
-	Plane              bottom)
+	Plane                top,
+	Plane                bottom)
 {
 	// Left
 	quad->points[0].x = quad->points[1].x = x1;
@@ -1309,10 +1308,10 @@ void MapRenderer3D::updateLine(unsigned index)
 	// Get first side info
 	int     floor1     = line->frontSector()->floor().height;
 	int     ceiling1   = line->frontSector()->ceiling().height;
-	Plane fp1        = line->frontSector()->floor().plane;
-	Plane cp1        = line->frontSector()->ceiling().plane;
-	ColRGBA  colour1    = line->frontSector()->colourAt(0, true);
-	ColRGBA  fogcolour1 = line->frontSector()->fogColour();
+	Plane   fp1        = line->frontSector()->floor().plane;
+	Plane   cp1        = line->frontSector()->ceiling().plane;
+	ColRGBA colour1    = line->frontSector()->colourAt(0, true);
+	ColRGBA fogcolour1 = line->frontSector()->fogColour();
 	int     light1     = line->s1()->light();
 	int     xoff1      = line->s1()->offsetX();
 	int     yoff1      = line->s1()->offsetY();
@@ -1396,10 +1395,10 @@ void MapRenderer3D::updateLine(unsigned index)
 	// Get second side info
 	int     floor2      = line->backSector()->floor().height;
 	int     ceiling2    = line->backSector()->ceiling().height;
-	Plane fp2         = line->backSector()->floor().plane;
-	Plane cp2         = line->backSector()->ceiling().plane;
-	ColRGBA  colour2     = line->backSector()->colourAt(0, true);
-	ColRGBA  fogcolour2  = line->backSector()->fogColour();
+	Plane   fp2         = line->backSector()->floor().plane;
+	Plane   cp2         = line->backSector()->ceiling().plane;
+	ColRGBA colour2     = line->backSector()->colourAt(0, true);
+	ColRGBA fogcolour2  = line->backSector()->fogColour();
 	int     light2      = line->s2()->light();
 	int     xoff2       = line->s2()->offsetX();
 	int     yoff2       = line->s2()->offsetY();
@@ -2098,8 +2097,8 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		// Sprite not found, try an icon
 		if (use_zeth_icons && things_[index].type->zethIcon() >= 0)
 		{
-			things_[index].sprite = MapEditor::textureManager().editorImage(
-				S_FMT("zethicons/zeth%02d", things_[index].type->zethIcon()));
+			things_[index].sprite =
+				MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", things_[index].type->zethIcon()));
 			things_[index].flags |= ZETH;
 		}
 		if (!things_[index].sprite)
@@ -2162,11 +2161,11 @@ void MapRenderer3D::renderThings()
 	double mdist = render_max_thing_dist;
 	if (mdist <= 0 || mdist > render_max_dist)
 		mdist = render_max_dist;
-	ColRGBA   col;
+	ColRGBA  col;
 	uint8_t  light;
 	float    x1, y1, x2, y2;
 	unsigned update = 0;
-	Seg2f  strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2f    strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 	for (unsigned a = 0; a < map_->nThings(); a++)
 	{
 		MapThing* thing  = map_->thing(a);
@@ -2299,7 +2298,7 @@ void MapRenderer3D::renderThings()
 			// Fill
 			glColor4f(col.fr(), col.fg(), col.fb(), 0.21f);
 			uint8_t light2  = 255;
-			ColRGBA  fogcol2 = ColRGBA(0, 0, 0, 0);
+			ColRGBA fogcol2 = ColRGBA(0, 0, 0, 0);
 			if (things_[a].sector)
 			{
 				light2  = things_[a].sector->lightAt();
@@ -2425,7 +2424,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 			continue;
 
 		// Get thing
-		Vec2f strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
+		Vec2f     strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
 		MapThing* thing = map_->thing(selection[a].index);
 		if (!thing)
 			return;
@@ -2564,9 +2563,9 @@ void MapRenderer3D::quickVisDiscard()
 		dist_sectors_.resize(map_->nSectors());
 
 	// Go through all sectors
-	Vec2f cam = cam_position_.get2d();
-	double    min_dist, dist;
-	Seg2f   strafe(cam, cam + cam_strafe_.get2d());
+	Vec2f  cam = cam_position_.get2d();
+	double min_dist, dist;
+	Seg2f  strafe(cam, cam + cam_strafe_.get2d());
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Get sector bbox
@@ -2655,7 +2654,7 @@ void MapRenderer3D::checkVisibleQuads()
 	n_quads_         = 0;
 	unsigned updates = 0;
 	bool     update  = false;
-	Seg2f  strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2f    strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
 		line = map_->line(a);
@@ -2738,7 +2737,7 @@ void MapRenderer3D::checkVisibleFlats()
 	// Go through sectors
 	MapSector* sector;
 	n_flats_ = 0;
-	float     alpha;
+	float alpha;
 	Vec2f cam = cam_position_.get2d();
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
@@ -2796,7 +2795,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 	// Init
 	double          min_dist = 9999999;
 	MapEditor::Item current;
-	Seg2f         strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2f           strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 
 	// Check for required map structures
 	if (!map_ || lines_.size() != map_->nLines() || floors_.size() != map_->nSectors()
@@ -2838,9 +2837,9 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			// Check intersection height
 			// Need to handle slopes by finding the floor and ceiling height of
 			// the quad at the intersection point
-			Vec2f seg_left  = Vec2f(quad->points[1].x, quad->points[1].y);
-			Vec2f seg_right = Vec2f(quad->points[2].x, quad->points[2].y);
-			double    dist_along_segment =
+			Vec2f  seg_left  = Vec2f(quad->points[1].x, quad->points[1].y);
+			Vec2f  seg_right = Vec2f(quad->points[2].x, quad->points[2].y);
+			double dist_along_segment =
 				(intersection.get2d() - seg_left).magnitude() / (seg_right - seg_left).magnitude();
 			double top    = quad->points[0].z + (quad->points[3].z - quad->points[0].z) * dist_along_segment;
 			double bottom = quad->points[1].z + (quad->points[2].z - quad->points[1].z) * dist_along_segment;
@@ -3099,7 +3098,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	if (hilight.type == MapEditor::ItemType::Thing)
 	{
 		// Get thing
-		Vec2f strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
+		Vec2f     strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
 		MapThing* thing = map_->thing(hilight.index);
 		if (!thing)
 			return;

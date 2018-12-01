@@ -43,9 +43,9 @@
 // -----------------------------------------------------------------------------
 // Declare hash map class to hold EntryDataFormats
 WX_DECLARE_STRING_HASH_MAP(EntryDataFormat*, EDFMap);
-EDFMap data_formats;
-EntryDataFormat*	edf_any = nullptr;
-EntryDataFormat*	edf_text = nullptr;
+EDFMap           data_formats;
+EntryDataFormat* edf_any  = nullptr;
+EntryDataFormat* edf_text = nullptr;
 
 
 // -----------------------------------------------------------------------------
@@ -71,9 +71,7 @@ EntryDataFormat::EntryDataFormat(string id)
 // -----------------------------------------------------------------------------
 // EntryDataFormat class destructor
 // -----------------------------------------------------------------------------
-EntryDataFormat::~EntryDataFormat()
-{
-}
+EntryDataFormat::~EntryDataFormat() {}
 
 // -----------------------------------------------------------------------------
 // To be overridden by specific data types, returns true if the data in [mc]
@@ -164,7 +162,8 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 			if (parent_type != EntryType::unknownType())
 				parent_type->copyToType(ntype);
 			else
-				LOG_MESSAGE(1, "Warning: Entry type %s inherits from unknown type %s", ntype->getId(), typenode->getInherit());
+				LOG_MESSAGE(1, "Warning: Entry type %s inherits from unknown type %s", ntype->getId(),
+		typenode->getInherit());
 		}
 		*/
 	}
@@ -244,8 +243,8 @@ void EntryDataFormat::initBuiltinFormats()
 	new JediWAXFormat();
 	new JediFNTFormat();
 	new JediFONTFormat();
-	//new JediDELTFormat();
-	//new JediANIMFormat();
+	// new JediDELTFormat();
+	// new JediANIMFormat();
 	new WadDataFormat();
 	new ZipDataFormat();
 	new LibDataFormat();

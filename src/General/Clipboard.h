@@ -68,14 +68,14 @@ public:
 	string             info();
 	vector<MapVertex*> pasteToMap(SLADEMap* map, Vec2f position);
 	void               putLines(vector<MapLine*>& list);
-	Vec2f          midpoint() { return midpoint_; }
+	Vec2f              midpoint() { return midpoint_; }
 
 private:
 	vector<MapVertex*> vertices_;
 	vector<MapSide*>   sides_;
 	vector<MapLine*>   lines_;
 	vector<MapSector*> sectors_;
-	Vec2f          midpoint_;
+	Vec2f              midpoint_;
 };
 
 class MapThing;
@@ -85,15 +85,15 @@ public:
 	MapThingsClipboardItem();
 	~MapThingsClipboardItem();
 
-	void      addThings(vector<MapThing*>& things);
-	string    info();
-	void      pasteToMap(SLADEMap* map, Vec2f position);
-	void      putThings(vector<MapThing*>& list);
-	Vec2f midpoint() { return midpoint_; }
+	void   addThings(vector<MapThing*>& things);
+	string info();
+	void   pasteToMap(SLADEMap* map, Vec2f position);
+	void   putThings(vector<MapThing*>& list);
+	Vec2f  midpoint() { return midpoint_; }
 
 private:
 	vector<MapThing*> things_;
-	Vec2f         midpoint_;
+	Vec2f             midpoint_;
 };
 
 class Clipboard

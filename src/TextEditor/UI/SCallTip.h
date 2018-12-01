@@ -32,12 +32,12 @@ private:
 	TLFunction*         function_;
 	TLFunction::Context context_;
 
-	ColRGBA        col_bg_;
-	ColRGBA        col_fg_;
-	ColRGBA        col_fg_hl;
-	ColRGBA        col_func_;
-	ColRGBA        col_type_;
-	ColRGBA        col_keyword_;
+	ColRGBA       col_bg_;
+	ColRGBA       col_fg_;
+	ColRGBA       col_fg_hl;
+	ColRGBA       col_func_;
+	ColRGBA       col_type_;
+	ColRGBA       col_keyword_;
 	int           arg_current_;
 	bool          switch_contexts_;
 	unsigned long context_current_;

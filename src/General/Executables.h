@@ -8,13 +8,13 @@ namespace Executables
 {
 struct GameExe
 {
-	string              id;
-	string              name;
-	string              exe_name;
-	string              path;
+	string             id;
+	string             name;
+	string             exe_name;
+	string             path;
 	vector<StringPair> configs;
-	bool                custom;
-	vector<bool>        configs_custom;
+	bool               custom;
+	vector<bool>       configs_custom;
 };
 
 struct ExternalExe

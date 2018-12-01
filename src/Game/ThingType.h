@@ -30,7 +30,7 @@ public:
 
 	const string&  name() const { return name_; }
 	const string&  group() const { return group_; }
-	ColRGBA         colour() const { return colour_; }
+	ColRGBA        colour() const { return colour_; }
 	int            radius() const { return radius_; }
 	int            height() const { return height_; }
 	float          scaleX() const { return scale_.x; }
@@ -69,31 +69,31 @@ public:
 	static void             initGlobal();
 
 private:
-	string    name_;
-	string    group_;
-	ColRGBA    colour_;
-	int       radius_;
-	int       height_;
-	Vec2f scale_;
-	bool      angled_;
-	bool      hanging_;
-	bool      shrink_;
-	bool      fullbright_;
-	bool      decoration_;
-	int       zeth_icon_;
-	string    sprite_;
-	string    icon_;
-	string    translation_;
-	string    palette_;
-	ArgSpec   args_;
-	bool      decorate_;
-	bool      solid_;
-	int       next_type_;
-	int       next_args_;
-	int       flags_;
-	TagType   tagged_;
-	int       number_;
-	string    class_name_;
+	string  name_;
+	string  group_;
+	ColRGBA colour_;
+	int     radius_;
+	int     height_;
+	Vec2f   scale_;
+	bool    angled_;
+	bool    hanging_;
+	bool    shrink_;
+	bool    fullbright_;
+	bool    decoration_;
+	int     zeth_icon_;
+	string  sprite_;
+	string  icon_;
+	string  translation_;
+	string  palette_;
+	ArgSpec args_;
+	bool    decorate_;
+	bool    solid_;
+	int     next_type_;
+	int     next_args_;
+	int     flags_;
+	TagType tagged_;
+	int     number_;
+	string  class_name_;
 
 	static ThingType unknown_;
 };

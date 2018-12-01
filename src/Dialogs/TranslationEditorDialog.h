@@ -23,7 +23,7 @@ public:
 private:
 	ColRGBA col_start_;
 	ColRGBA col_end_;
-	int    steps_;
+	int     steps_;
 };
 
 class ArchiveEntry;
@@ -140,7 +140,7 @@ public:
 	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
 
 	ColRGBA colour();
-	void   setColour(string col);
+	void    setColour(string col);
 
 private:
 	GfxCanvas*    gfx_preview_;
@@ -166,8 +166,8 @@ public:
 	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
 
 	ColRGBA colour();
-	float  amount();
-	void   setValues(string col, int val);
+	float   amount();
+	void    setValues(string col, int val);
 
 private:
 	GfxCanvas*    gfx_preview_;

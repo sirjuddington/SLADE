@@ -66,7 +66,7 @@ MapObject::MapObject(Type type, SLADEMap* parent)
 	this->index_         = 0;
 	this->filtered_      = false;
 	this->modified_time_ = App::runTimer();
-	this->obj_id_            = 0;
+	this->obj_id_        = 0;
 	this->obj_backup_    = nullptr;
 
 	if (parent)

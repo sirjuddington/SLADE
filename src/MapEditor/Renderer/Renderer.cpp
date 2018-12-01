@@ -311,7 +311,7 @@ void Renderer::setCameraThing(MapThing* thing)
 {
 	// Determine position
 	Vec3f pos(thing->point(), 40);
-	int       sector = context_.map().sectorAt(thing->point());
+	int   sector = context_.map().sectorAt(thing->point());
 	if (sector >= 0)
 		pos.z += context_.map().sector(sector)->floor().plane.height_at(pos.x, pos.y);
 
@@ -594,10 +594,10 @@ void Renderer::drawFeatureHelpText() const
 
 	// Draw title
 	Rectf bounds;
-	auto    col    = ColourConfiguration::colour("map_editor_message");
-	auto    col_bg = ColourConfiguration::colour("map_editor_message_outline");
-	col.a          = col.a * anim_help_fade_;
-	col_bg.a       = col_bg.a * anim_help_fade_;
+	auto  col    = ColourConfiguration::colour("map_editor_message");
+	auto  col_bg = ColourConfiguration::colour("map_editor_message_outline");
+	col.a        = col.a * anim_help_fade_;
+	col_bg.a     = col_bg.a * anim_help_fade_;
 	Drawing::setTextOutline(1.0f, col_bg);
 	Drawing::drawText(help_lines[0], view_.size().x - 2, 2, col, Drawing::Font::Bold, Drawing::Align::Right, &bounds);
 
@@ -870,10 +870,10 @@ void Renderer::drawObjectEdit()
 
 		// Bbox
 		Vec2f mid(bbox.min.x + bbox.width() * 0.5, bbox.min.y + bbox.height() * 0.5);
-		auto      bl = MathStuff::rotatePoint(mid, bbox.min, group.rotation());
-		auto      tl = MathStuff::rotatePoint(mid, Vec2f(bbox.min.x, bbox.max.y), group.rotation());
-		auto      tr = MathStuff::rotatePoint(mid, bbox.max, group.rotation());
-		auto      br = MathStuff::rotatePoint(mid, Vec2f(bbox.max.x, bbox.min.y), group.rotation());
+		auto  bl = MathStuff::rotatePoint(mid, bbox.min, group.rotation());
+		auto  tl = MathStuff::rotatePoint(mid, Vec2f(bbox.min.x, bbox.max.y), group.rotation());
+		auto  tr = MathStuff::rotatePoint(mid, bbox.max, group.rotation());
+		auto  br = MathStuff::rotatePoint(mid, Vec2f(bbox.max.x, bbox.min.y), group.rotation());
 		glLineWidth(2.0f);
 		Drawing::drawLine(tl, bl);
 		Drawing::drawLine(bl, br);
@@ -948,9 +948,9 @@ void Renderer::drawObjectEdit()
 	if (group.nearestLineEndpoints(view_.mapPos(context_.input().mousePos()), 128 / view_.scale(), nl_v1, nl_v2))
 	{
 		Vec2f mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
-		int       length = MathStuff::distance(nl_v1, nl_v2);
-		int       x      = view_.mapX(mid.x);
-		int       y      = view_.mapY(mid.y) - 8;
+		int   length = MathStuff::distance(nl_v1, nl_v2);
+		int   x      = view_.mapX(mid.x);
+		int   y      = view_.mapY(mid.y) - 8;
 		view_.setOverlayCoords(true);
 		Drawing::setTextOutline(1.0f, COL_BLACK);
 		Drawing::drawText(S_FMT("%d", length), x, y, COL_WHITE, Drawing::Font::Bold, Drawing::Align::Center);

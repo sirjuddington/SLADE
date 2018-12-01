@@ -71,10 +71,7 @@ protected:
 	// Virtual wxListCtrl overrides
 	virtual string OnGetItemText(long item, long column) const { return itemText(item, column, itemIndex(item)); }
 	virtual int    OnGetItemImage(long item) const { return itemIcon(item, 0, itemIndex(item)); }
-	virtual int    OnGetItemColumnImage(long item, long column) const
-	{
-		return itemIcon(item, column, itemIndex(item));
-	}
+	virtual int OnGetItemColumnImage(long item, long column) const { return itemIcon(item, column, itemIndex(item)); }
 	virtual wxListItemAttr* OnGetItemAttr(long item) const
 	{
 		updateItemAttr(item, 0, itemIndex(item));

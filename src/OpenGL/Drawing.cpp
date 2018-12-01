@@ -71,7 +71,7 @@ namespace Drawing
 sf::RenderWindow* render_target    = nullptr;
 bool              text_state_reset = true;
 #endif
-double text_outline_width  = 0;
+double  text_outline_width  = 0;
 ColRGBA text_outline_colour = COL_BLACK;
 }; // namespace Drawing
 
@@ -479,9 +479,9 @@ void Drawing::drawLineTabbed(Vec2f start, Vec2f end, double tab, double tab_max)
 // -----------------------------------------------------------------------------
 void Drawing::drawArrow(Vec2f p1, Vec2f p2, ColRGBA color, bool twoway, double ah_angle, double ah_length)
 {
-	Vec2f a1l, a1r, a2l, a2r;
-	Vec2f vector = p1 - p2;
-	double    angle  = atan2(-vector.y, vector.x);
+	Vec2f  a1l, a1r, a2l, a2r;
+	Vec2f  vector = p1 - p2;
+	double angle  = atan2(-vector.y, vector.x);
 	a1l = a1r = p1;
 	a1l.x += ah_length * sin(angle - ah_angle);
 	a1l.y += ah_length * cos(angle - ah_angle);

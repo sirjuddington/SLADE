@@ -79,7 +79,7 @@ public:
 
 		// Get system colours needed
 		wxColour col_background = GetBackgroundColour();
-		ColRGBA   bg(COLWX(col_background));
+		ColRGBA  bg(COLWX(col_background));
 		wxColour col_light = WXCOL(bg.amp(50, 50, 50, 0));
 		wxColour col_dark  = WXCOL(bg.amp(-50, -50, -50, 0));
 

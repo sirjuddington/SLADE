@@ -30,13 +30,13 @@ string   sizeAsString(uint32_t size);
 string   lumpNameToFileName(string lump);
 string   fileNameToLumpName(string file);
 uint32_t crc(const uint8_t* buf, uint32_t len);
-ColHSL    rgbToHsl(double r, double g, double b);
-ColRGBA   hslToRgb(double h, double s, double t);
-ColLAB    rgbToLab(double r, double g, double b);
-ColHSL    rgbToHsl(ColRGBA rgba);
-ColRGBA   hslToRgb(ColHSL hsl);
-ColLAB    rgbToLab(ColRGBA);
-Vec2i findJaguarTextureDimensions(ArchiveEntry* entry, string name);
+ColHSL   rgbToHsl(double r, double g, double b);
+ColRGBA  hslToRgb(double h, double s, double t);
+ColLAB   rgbToLab(double r, double g, double b);
+ColHSL   rgbToHsl(ColRGBA rgba);
+ColRGBA  hslToRgb(ColHSL hsl);
+ColLAB   rgbToLab(ColRGBA);
+Vec2i    findJaguarTextureDimensions(ArchiveEntry* entry, string name);
 
 // Mass Rename
 string massRenameFilter(wxArrayString& names);

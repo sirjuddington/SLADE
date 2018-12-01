@@ -100,20 +100,20 @@ public:
 	bool removeThing(unsigned index);
 
 	// Geometry
-	int               nearestVertex(Vec2f point, double min = 64);
-	int               nearestLine(Vec2f point, double min = 64);
-	int               nearestThing(Vec2f point, double min = 64);
-	vector<int>       nearestThingMulti(Vec2f point);
-	int               sectorAt(Vec2f point);
-	BBox            bounds();
-	MapVertex*        vertexAt(double x, double y);
+	int           nearestVertex(Vec2f point, double min = 64);
+	int           nearestLine(Vec2f point, double min = 64);
+	int           nearestThing(Vec2f point, double min = 64);
+	vector<int>   nearestThingMulti(Vec2f point);
+	int           sectorAt(Vec2f point);
+	BBox          bounds();
+	MapVertex*    vertexAt(double x, double y);
 	vector<Vec2f> cutLines(double x1, double y1, double x2, double y2);
-	MapVertex*        lineCrossVertex(double x1, double y1, double x2, double y2);
-	void              updateGeometryInfo(long modified_time);
-	bool              linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y);
-	void              findSectorTextPoint(MapSector* sector);
-	void              initSectorPolygons();
-	MapLine*          lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y);
+	MapVertex*    lineCrossVertex(double x1, double y1, double x2, double y2);
+	void          updateGeometryInfo(long modified_time);
+	bool          linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y);
+	void          findSectorTextPoint(MapSector* sector);
+	void          initSectorPolygons();
+	MapLine*      lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y);
 
 	// Tags/Ids
 	MapThing* findFirstThingWithId(int id);

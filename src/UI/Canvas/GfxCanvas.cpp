@@ -458,9 +458,9 @@ void GfxCanvas::paintPixel(int x, int y)
 	{
 		if (translation_ != nullptr)
 		{
-			ColRGBA  ocol  = image_->pixelAt(x, y, palette());
+			ColRGBA ocol  = image_->pixelAt(x, y, palette());
 			uint8_t alpha = ocol.a;
-			ColRGBA  ncol  = (translation_->translate(ocol, palette()));
+			ColRGBA ncol  = (translation_->translate(ocol, palette()));
 			ncol.a        = alpha;
 			if (!ocol.equals(ncol, false, true))
 				painted = image_->setPixel(x, y, ncol);

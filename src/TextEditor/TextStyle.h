@@ -40,7 +40,7 @@ public:
 	}
 	void clearBackground() { bg_defined_ = false; }
 
-	wxFont font();
+	wxFont  font();
 	ColRGBA foreground() { return foreground_; }
 	ColRGBA background() { return background_; }
 
@@ -54,15 +54,15 @@ private:
 	string      description_;
 	vector<int> wx_styles_;
 
-	string font_;
-	int    size_;
+	string  font_;
+	int     size_;
 	ColRGBA foreground_;
-	bool   fg_defined_;
+	bool    fg_defined_;
 	ColRGBA background_;
-	bool   bg_defined_;
-	int    bold_;
-	int    italic_;
-	int    underlined_;
+	bool    bg_defined_;
+	int     bold_;
+	int     italic_;
+	int     underlined_;
 };
 
 class StyleSet
@@ -84,8 +84,8 @@ public:
 
 	ColRGBA styleForeground(string style);
 	ColRGBA styleBackground(string style);
-	string defaultFontFace();
-	int    defaultFontSize();
+	string  defaultFontFace();
+	int     defaultFontSize();
 
 	// Static functions for styleset management
 	static void      initCurrent();

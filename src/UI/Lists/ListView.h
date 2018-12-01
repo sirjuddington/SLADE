@@ -27,8 +27,8 @@ public:
 	bool deleteItems(wxArrayInt items);
 
 	ColRGBA disabledColour();
-	bool   setItemStatus(int item, ItemStatus status);
-	bool   setItemText(int item, int column, string text);
+	bool    setItemStatus(int item, ItemStatus status);
+	bool    setItemText(int item, int column, string text);
 
 	void clearSelection();
 	bool selectItem(int item, bool focus = true);

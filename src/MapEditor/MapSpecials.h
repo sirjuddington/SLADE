@@ -33,7 +33,7 @@ public:
 private:
 	struct SectorColour
 	{
-		int    tag;
+		int     tag;
 		ColRGBA colour;
 	};
 

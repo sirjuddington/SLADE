@@ -15,7 +15,7 @@ public:
 	bool allowDup() { return allow_dup_child_; }
 
 	STreeNode*     parent() { return parent_; }
-	virtual string name()            = 0;
+	virtual string name()               = 0;
 	virtual void   setName(string name) = 0;
 	virtual string path();
 

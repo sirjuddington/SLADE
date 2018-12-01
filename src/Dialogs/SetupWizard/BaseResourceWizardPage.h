@@ -9,10 +9,10 @@ public:
 	BaseResourceWizardPage(wxWindow* parent);
 	~BaseResourceWizardPage();
 
-	bool	canGoNext();
-	void	applyChanges();
-	string	title() { return "Base Resource Archives"; }
-	string	description();
+	bool   canGoNext();
+	void   applyChanges();
+	string title() { return "Base Resource Archives"; }
+	string description();
 
 private:
 	BaseResourceArchivesPanel* bra_panel_;

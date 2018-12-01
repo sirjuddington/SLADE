@@ -721,8 +721,8 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 void MapEditorWindow::buildNodes(Archive* wad)
 {
 	NodeBuilders::Builder builder;
-	string                  command;
-	string                  options;
+	string                command;
+	string                options;
 
 	// Save wad to disk
 	string filename = App::path("sladetemp.wad", App::Dir::Temp);

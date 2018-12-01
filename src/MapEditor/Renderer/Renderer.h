@@ -33,7 +33,7 @@ public:
 	bool   viewIsInterpolated() const;
 
 	// 3d Mode
-	void      setCameraThing(MapThing* thing);
+	void  setCameraThing(MapThing* thing);
 	Vec2f cameraPos2D();
 	Vec2f cameraDir2D();
 

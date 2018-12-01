@@ -379,7 +379,7 @@ void ArchiveEntryList::updateList(bool clear)
 void ArchiveEntryList::filterList(string filter, string category)
 {
 	// Update variables
-	filter_text_      = filter;
+	filter_text_     = filter;
 	filter_category_ = category;
 
 	// Save current selection

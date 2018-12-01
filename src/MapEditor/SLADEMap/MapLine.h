@@ -92,16 +92,16 @@ public:
 	void setS1(MapSide* side);
 	void setS2(MapSide* side);
 
-	Vec2f getPoint(Point point) override;
-	Vec2f point1();
-	Vec2f point2();
-	Seg2f   seg();
-	double    length();
-	bool      doubleSector();
-	Vec2f frontVector();
-	Vec2f dirTabPoint(double length = 0);
-	double    distanceTo(Vec2f point);
-	int       needsTexture();
+	Vec2f  getPoint(Point point) override;
+	Vec2f  point1();
+	Vec2f  point2();
+	Seg2f  seg();
+	double length();
+	bool   doubleSector();
+	Vec2f  frontVector();
+	Vec2f  dirTabPoint(double length = 0);
+	double distanceTo(Vec2f point);
+	int    needsTexture();
 
 	void clearUnneededTextures();
 	void resetInternals();
@@ -129,8 +129,8 @@ private:
 	int        line_id_;
 
 	// Internally used info
-	double    length_;
-	double    ca_; // Used for intersection calculations
-	double    sa_; // ^^
-	Vec2f front_vec_;
+	double length_;
+	double ca_; // Used for intersection calculations
+	double sa_; // ^^
+	Vec2f  front_vec_;
 };

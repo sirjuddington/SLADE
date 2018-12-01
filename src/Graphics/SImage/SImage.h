@@ -85,10 +85,10 @@ public:
 	int       size() { return numimages_; }
 	bool      hasPalette() { return has_palette_; }
 	Palette*  palette() { return &palette_; }
-	Vec2i  offset() { return Vec2i(offset_x_, offset_y_); }
+	Vec2i     offset() { return Vec2i(offset_x_, offset_y_); }
 	unsigned  stride();
 	uint8_t   bpp();
-	ColRGBA    pixelAt(unsigned x, unsigned y, Palette* pal = nullptr);
+	ColRGBA   pixelAt(unsigned x, unsigned y, Palette* pal = nullptr);
 	uint8_t   pixelIndexAt(unsigned x, unsigned y);
 	SIFormat* format() { return format_; }
 	info_t    info();

@@ -21,9 +21,9 @@ public:
 
 	struct Surface
 	{
-		string  texture;
-		int     height = 0;
-		Plane plane  = { 0., 0., 1., 0. };
+		string texture;
+		int    height = 0;
+		Plane  plane  = { 0., 0., 1., 0. };
 	};
 
 	struct DoomData
@@ -75,13 +75,13 @@ public:
 	void setFloorPlane(const Plane& p);
 	void setCeilingPlane(const Plane& p);
 
-	template<SurfaceType p> short   planeHeight();
+	template<SurfaceType p> short planeHeight();
 	template<SurfaceType p> Plane plane();
-	template<SurfaceType p> void    setPlane(const Plane& plane);
+	template<SurfaceType p> void  setPlane(const Plane& plane);
 
-	Vec2f         getPoint(Point point) override;
+	Vec2f             getPoint(Point point) override;
 	void              resetBBox() { bbox_.reset(); }
-	BBox            boundingBox();
+	BBox              boundingBox();
 	vector<MapSide*>& connectedSides() { return connected_sides_; }
 	void              resetPolygon() { poly_needsupdate_ = true; }
 	Polygon2D*        polygon();
@@ -92,8 +92,8 @@ public:
 	bool              putVertices(vector<MapObject*>& list);
 	uint8_t           lightAt(int where = 0);
 	void              changeLight(int amount, int where = 0);
-	ColRGBA            colourAt(int where = 0, bool fullbright = false);
-	ColRGBA            fogColour();
+	ColRGBA           colourAt(int where = 0, bool fullbright = false);
+	ColRGBA           fogColour();
 	long              geometryUpdatedTime() const { return geometry_updated_; }
 
 	void connectSide(MapSide* side);
@@ -122,11 +122,11 @@ private:
 
 	// Internal info
 	vector<MapSide*> connected_sides_;
-	BBox           bbox_;
+	BBox             bbox_;
 	Polygon2D        polygon_;
 	bool             poly_needsupdate_;
 	long             geometry_updated_;
-	Vec2f        text_point_;
+	Vec2f            text_point_;
 
 	void setGeometryUpdated();
 };

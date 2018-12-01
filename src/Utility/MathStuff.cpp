@@ -393,8 +393,8 @@ Vec2f MathStuff::vectorAngle(double angle_rad)
 // -----------------------------------------------------------------------------
 double MathStuff::distanceRayPlane(Vec3f r_o, Vec3f r_v, Plane plane)
 {
-	Vec3f p_normal = plane.normal();
-	double    cos_a    = r_v.dot(p_normal);
+	Vec3f  p_normal = plane.normal();
+	double cos_a    = r_v.dot(p_normal);
 
 	// parallel to the plane (alpha=90)
 	if (cos_a == 0)
@@ -491,7 +491,6 @@ CONSOLE_COMMAND(angle2d, 6, false)
 		args[a].ToDouble(&vals[a]);
 	}
 
-	double ang =
-		MathStuff::angle2DRad(Vec2f(vals[0], vals[1]), Vec2f(vals[2], vals[3]), Vec2f(vals[4], vals[5]));
+	double ang = MathStuff::angle2DRad(Vec2f(vals[0], vals[1]), Vec2f(vals[2], vals[3]), Vec2f(vals[4], vals[5]));
 	LOG_MESSAGE(1, "Angle = %1.4f", ang);
 }

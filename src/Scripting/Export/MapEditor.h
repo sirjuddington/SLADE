@@ -5,8 +5,7 @@ void objectSetBoolProperty(MapObject& self, const string& key, bool value)
 	if (self.scriptCanModifyProp(key))
 		self.setBoolProperty(key, value);
 	else
-		Log::warning(
-			1, S_FMT("%s boolean property \"%s\" can not be modified via script", CHR(self.typeName()), key));
+		Log::warning(1, S_FMT("%s boolean property \"%s\" can not be modified via script", CHR(self.typeName()), key));
 }
 
 void objectSetIntProperty(MapObject& self, const string& key, int value)
@@ -14,8 +13,7 @@ void objectSetIntProperty(MapObject& self, const string& key, int value)
 	if (self.scriptCanModifyProp(key))
 		self.setIntProperty(key, value);
 	else
-		Log::warning(
-			1, S_FMT("%s integer property \"%s\" can not be modified via script", CHR(self.typeName()), key));
+		Log::warning(1, S_FMT("%s integer property \"%s\" can not be modified via script", CHR(self.typeName()), key));
 }
 
 void objectSetFloatProperty(MapObject& self, const string& key, double value)
@@ -31,8 +29,7 @@ void objectSetStringProperty(MapObject& self, const string& key, const string& v
 	if (self.scriptCanModifyProp(key))
 		self.setStringProperty(key, value);
 	else
-		Log::warning(
-			1, S_FMT("%s string property \"%s\" can not be modified via script", CHR(self.typeName()), key));
+		Log::warning(1, S_FMT("%s string property \"%s\" can not be modified via script", CHR(self.typeName()), key));
 }
 
 void registerSLADEMap(sol::state& lua)

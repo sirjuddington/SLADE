@@ -100,22 +100,22 @@ public:
 
 	void copyTo(TextLanguage* copy);
 
-	void     setName(string name) { this->name_ = name; }
-	void     setPreferedComments(unsigned index) { prefered_comments_ = index; }
-	void     setLineCommentList(vector<string> token) { line_comment_l_ = token; };
-	void     setCommentBeginList(vector<string> token) { comment_begin_l_ = token; };
-	void     setCommentEndList(vector<string> token) { comment_end_l_ = token; };
-	void     setPreprocessor(string token) { preprocessor_ = token; }
-	void     setDocComment(string token) { doc_comment_ = token; }
-	void     setCaseSensitive(bool cs) { case_sensitive_ = cs; }
-	void     addWord(WordType type, string word, bool custom = false);
-	void     addFunction(
-			string name,
-			string args,
-			string desc        = "",
-			string deprecated  = "",
-			bool   replace     = false,
-			string return_type = "");
+	void setName(string name) { this->name_ = name; }
+	void setPreferedComments(unsigned index) { prefered_comments_ = index; }
+	void setLineCommentList(vector<string> token) { line_comment_l_ = token; };
+	void setCommentBeginList(vector<string> token) { comment_begin_l_ = token; };
+	void setCommentEndList(vector<string> token) { comment_end_l_ = token; };
+	void setPreprocessor(string token) { preprocessor_ = token; }
+	void setDocComment(string token) { doc_comment_ = token; }
+	void setCaseSensitive(bool cs) { case_sensitive_ = cs; }
+	void addWord(WordType type, string word, bool custom = false);
+	void addFunction(
+		string name,
+		string args,
+		string desc        = "",
+		string deprecated  = "",
+		bool   replace     = false,
+		string return_type = "");
 	void loadZScript(ZScript::Definitions& defs, bool custom = false);
 
 	string wordList(WordType type, bool include_custom = true);

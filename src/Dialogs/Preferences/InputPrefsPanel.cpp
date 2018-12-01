@@ -46,7 +46,7 @@ class BindListItemData : public wxClientData
 {
 public:
 	Keypress key;
-	KeyBind*   bind;
+	KeyBind* bind;
 
 	BindListItemData(Keypress key, KeyBind* bind = nullptr) : key{ key }, bind{ bind } {}
 };

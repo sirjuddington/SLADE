@@ -202,7 +202,7 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 	ColRGBA col_bg  = ColourConfiguration::colour("map_overlay_background");
 	ColRGBA col_fg  = ColourConfiguration::colour("map_overlay_foreground");
 	ColRGBA col_sel = ColourConfiguration::colour("map_hilight");
-	col_fg.a       = col_fg.a * alpha;
+	col_fg.a        = col_fg.a * alpha;
 
 	// Draw background
 	glEnable(GL_TEXTURE_2D);
@@ -215,8 +215,7 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 	// Draw first texture
 	bool mixed = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
 	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
-	Drawing::drawTextureWithin(
-		MapEditor::textureManager().flat(textures[0], mixed), x, y, x + size, y + size, 0, 100);
+	Drawing::drawTextureWithin(MapEditor::textureManager().flat(textures[0], mixed), x, y, x + size, y + size, 0, 100);
 
 	// Draw up to 4 subsequent textures (overlaid)
 	OpenGL::setColour(255, 255, 255, 127 * alpha, 0);

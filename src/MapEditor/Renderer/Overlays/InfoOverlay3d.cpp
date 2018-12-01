@@ -222,8 +222,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// Height of this section of the wall
 		// TODO this is wrong in the case of slopes, but slope support only
 		// exists in the 3.1.1 branch
-		Vec2f left_point, right_point;
-		MapSide*  other_side;
+		Vec2f    left_point, right_point;
+		MapSide* other_side;
 		if (side == line->s1())
 		{
 			left_point  = line->v1()->point();
@@ -252,7 +252,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			Plane floor2   = other_sector->floor().plane;
 			Plane ceiling1 = this_sector->ceiling().plane;
 			Plane ceiling2 = other_sector->ceiling().plane;
-			left_height      = min(ceiling1.height_at(left_point), ceiling2.height_at(left_point))
+			left_height    = min(ceiling1.height_at(left_point), ceiling2.height_at(left_point))
 						  - max(floor1.height_at(left_point), floor2.height_at(left_point));
 			right_height = min(ceiling1.height_at(right_point), ceiling2.height_at(right_point))
 						   - max(floor1.height_at(right_point), floor2.height_at(right_point));
@@ -296,8 +296,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			texname_ = side->texMiddle();
 		else
 			texname_ = side->texUpper();
-		texture_ = MapEditor::textureManager().texture(
-			texname_, Game::configuration().featureSupported(Feature::MixTexFlats));
+		texture_ =
+			MapEditor::textureManager().texture(texname_, Game::configuration().featureSupported(Feature::MixTexFlats));
 	}
 
 
@@ -538,8 +538,8 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	// Get colours
 	ColRGBA col_bg = ColourConfiguration::colour("map_3d_overlay_background");
 	ColRGBA col_fg = ColourConfiguration::colour("map_3d_overlay_foreground");
-	col_fg.a      = col_fg.a * alpha;
-	col_bg.a      = col_bg.a * alpha;
+	col_fg.a       = col_fg.a * alpha;
+	col_bg.a       = col_bg.a * alpha;
 	ColRGBA col_border(0, 0, 0, 140);
 
 	// Slide in/out animation
@@ -587,7 +587,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 	// Get colours
 	ColRGBA col_bg = ColourConfiguration::colour("map_3d_overlay_background");
 	ColRGBA col_fg = ColourConfiguration::colour("map_3d_overlay_foreground");
-	col_fg.a      = col_fg.a * alpha;
+	col_fg.a       = col_fg.a * alpha;
 
 	// Check texture exists
 	if (texture_)

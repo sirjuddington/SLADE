@@ -31,7 +31,7 @@ private:
 
 	struct TexInfo
 	{
-		Vec2i       position;
+		Vec2i          position;
 		bool           hover;
 		vector<string> textures;
 		bool           changed;

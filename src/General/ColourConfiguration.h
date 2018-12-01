@@ -4,16 +4,16 @@ namespace ColourConfiguration
 {
 struct Colour
 {
-	bool   exists = false;
-	bool   custom = false;
-	string name;
-	string group;
+	bool    exists = false;
+	bool    custom = false;
+	string  name;
+	string  group;
 	ColRGBA colour;
 };
 
 ColRGBA colour(string name);
-Colour colDef(string name);
-void   setColour(string name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);
+Colour  colDef(string name);
+void    setColour(string name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);
 
 double lineHilightWidth();
 double lineSelectionWidth();

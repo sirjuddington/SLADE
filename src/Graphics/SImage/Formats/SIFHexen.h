@@ -114,10 +114,10 @@ protected:
 		const uint8_t *src1, *src2, *src3, *src4;
 		size_t         plane_size = width / 8 * height;
 
-		src1 = data.data() + 48; // 80: 10000000	08: 00001000
-		src2 = src1 + plane_size;   // 40: 01000000 04: 00000100
-		src3 = src2 + plane_size;   // 20: 00100000 02: 00000010
-		src4 = src3 + plane_size;   // 10: 00010000 01: 00000001
+		src1 = data.data() + 48;  // 80: 10000000	08: 00001000
+		src2 = src1 + plane_size; // 40: 01000000 04: 00000100
+		src3 = src2 + plane_size; // 20: 00100000 02: 00000010
+		src4 = src3 + plane_size; // 10: 00010000 01: 00000001
 
 		for (y = height; y > 0; --y)
 		{
@@ -292,8 +292,7 @@ public:
 			return NOTWRITABLE;
 		// Can write paletted images of size 4x16 or 16x23
 		if (image.type() == PALMASK
-			&& ((image.width() == 4 && image.height() == 16)
-				|| (image.width() == 16 && image.height() == 23)))
+			&& ((image.width() == 4 && image.height() == 16) || (image.width() == 16 && image.height() == 23)))
 			return WRITABLE;
 		// If it wouldn't work, it wouldn't work
 		return NOTWRITABLE;
@@ -361,8 +360,7 @@ protected:
 		}
 
 		// Check image size
-		if (!((image.width() == 4 && image.height() == 16)
-			  || (image.width() == 16 && image.height() == 23)))
+		if (!((image.width() == 4 && image.height() == 16) || (image.width() == 16 && image.height() == 23)))
 		{
 			LOG_MESSAGE(1, "No point in converting to 4-bit format, image isn't a valid Hexen size (4x16 or 16x23)");
 			return false;

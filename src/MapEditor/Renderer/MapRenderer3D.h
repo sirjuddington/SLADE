@@ -47,8 +47,8 @@ public:
 	struct Quad
 	{
 		GLVertex   points[4];
-		ColRGBA     colour;
-		ColRGBA     fogcolour;
+		ColRGBA    colour;
+		ColRGBA    fogcolour;
 		uint8_t    light;
 		GLTexture* texture;
 		uint8_t    flags;
@@ -98,10 +98,10 @@ public:
 	{
 		uint8_t    flags;
 		uint8_t    light;
-		ColRGBA     colour;
-		ColRGBA     fogcolour;
+		ColRGBA    colour;
+		ColRGBA    fogcolour;
 		GLTexture* texture;
-		Plane    plane;
+		Plane      plane;
 		float      alpha;
 		MapSector* sector;
 		long       updated_time;
@@ -148,9 +148,9 @@ public:
 	void cameraApplyGravity(double mult);
 	void cameraLook(double xrel, double yrel);
 
-	double    camPitch() { return cam_pitch_; }
-	Vec3f camPosition() { return cam_position_; }
-	Vec2f camDirection() { return cam_direction_; }
+	double camPitch() { return cam_pitch_; }
+	Vec3f  camPosition() { return cam_position_; }
+	Vec2f  camDirection() { return cam_direction_; }
 
 	// -- Rendering --
 	void setupView(int width, int height);
@@ -225,21 +225,21 @@ private:
 	int        flat_last_;
 	bool       render_hilight_;
 	bool       render_selection_;
-	ColRGBA     fog_colour_last_;
+	ColRGBA    fog_colour_last_;
 	float      fog_depth_last_;
 
 	// Visibility
 	vector<float> dist_sectors_;
 
 	// Camera
-	Vec3f cam_position_;
-	Vec2f cam_direction_;
-	double    cam_pitch_;
-	double    cam_angle_;
-	Vec3f cam_dir3d_;
-	Vec3f cam_strafe_;
-	double    gravity_;
-	int       item_dist_;
+	Vec3f  cam_position_;
+	Vec2f  cam_direction_;
+	double cam_pitch_;
+	double cam_angle_;
+	Vec3f  cam_dir3d_;
+	Vec3f  cam_strafe_;
+	double gravity_;
+	int    item_dist_;
 
 	// Map Structures
 	vector<Line>  lines_;
@@ -262,9 +262,9 @@ private:
 		float tx, ty;
 		float alpha;
 	};
-	string    skytex1_;
-	string    skytex2_;
-	ColRGBA    skycol_top_;
-	ColRGBA    skycol_bottom_;
-	Vec2f sky_circle_[32];
+	string  skytex1_;
+	string  skytex2_;
+	ColRGBA skycol_top_;
+	ColRGBA skycol_bottom_;
+	Vec2f   sky_circle_[32];
 };

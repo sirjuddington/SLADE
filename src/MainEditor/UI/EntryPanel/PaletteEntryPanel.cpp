@@ -141,8 +141,7 @@ public:
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->palette().colourise(
-			getColour(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->palette().colourise(getColour(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
 		pal_preview_->draw();
 	}
 
@@ -374,10 +373,8 @@ public:
 	{
 		pal_preview_->setPalette(palette_);
 		pal_preview_->palette().shift(getHue(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->palette().saturate(
-			getSat(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->palette().illuminate(
-			getLum(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->palette().saturate(getSat(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->palette().illuminate(getLum(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
 		pal_preview_->draw();
 	}
 
@@ -1129,7 +1126,7 @@ bool PaletteEntryPanel::generateColormaps()
 	rgba[3] = 255;
 
 	ColRGBA rgb;
-	float  grey;
+	float   grey;
 	// Generate 34 maps: the first 32 for diminishing light levels,
 	// the 33th for the inverted grey map used by invulnerability.
 	// The 34th colormap remains empty and black.

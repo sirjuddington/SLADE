@@ -61,17 +61,11 @@ ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 		choice_configs_->Append(cnames[a]);
 	sizer->Add(WxUtils::createLabelHBox(this, "Preset:", choice_configs_), 0, wxEXPAND | wxBOTTOM, UI::pad());
 
-	const wxColour& inactiveTextColour =
-		wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
+	const wxColour& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
 
 	// Create property grid
 	pg_colours_ = new wxPropertyGrid(
-		this,
-		-1,
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS
-	);
+		this, -1, wxDefaultPosition, wxDefaultSize, wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS);
 	pg_colours_->SetCaptionTextColour(inactiveTextColour);
 	pg_colours_->SetCellDisabledTextColour(inactiveTextColour);
 	sizer->Add(pg_colours_, 1, wxEXPAND);

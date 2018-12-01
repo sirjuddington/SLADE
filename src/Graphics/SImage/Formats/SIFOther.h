@@ -53,8 +53,7 @@ protected:
 
 		// Let's build the palette now
 		Palette palette;
-		size_t  pal_offset =
-			data.readL32(36) + ((data.readL32(16) >> 3) * (data.readL32(20) >> 3));
+		size_t  pal_offset = data.readL32(36) + ((data.readL32(16) >> 3) * (data.readL32(20) >> 3));
 		if (data.size() < pal_offset + 5)
 		{
 			Global::error = "HLT file: invalid palette offset";

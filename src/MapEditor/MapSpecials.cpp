@@ -229,8 +229,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 			tagged[l]->setFloatProperty("alpha", alpha);
 			tagged[l]->setStringProperty("renderstyle", type);
 
-			LOG_MESSAGE(
-				3, S_FMT("Line %d translucent: (%d) %1.2f, %s", tagged[l]->index(), args[1], alpha, CHR(type)));
+			LOG_MESSAGE(3, S_FMT("Line %d translucent: (%d) %1.2f, %s", tagged[l]->index(), args[1], alpha, CHR(type)));
 		}
 	}
 }
@@ -400,8 +399,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		}
 		if (sector1 == sector2)
 		{
-			LOG_MESSAGE(
-				1, "Ignoring Plane_Align on line %d, which has the same sector on both sides", line->index());
+			LOG_MESSAGE(1, "Ignoring Plane_Align on line %d, which has the same sector on both sides", line->index());
 			continue;
 		}
 
@@ -610,8 +608,7 @@ void MapSpecials::processEternitySlopes(SLADEMap* map)
 		}
 		if (sector1 == sector2)
 		{
-			LOG_MESSAGE(
-				1, "Ignoring Plane_Align on line %d, which has the same sector on both sides", line->index());
+			LOG_MESSAGE(1, "Ignoring Plane_Align on line %d, which has the same sector on both sides", line->index());
 			continue;
 		}
 
@@ -725,11 +722,11 @@ template<SurfaceType p> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 
 	// Calculate slope plane from our three points: this line's endpoints
 	// (at the model sector's height) and the found vertex (at this sector's height).
-	double    modelz  = model->planeHeight<p>();
-	double    targetz = target->planeHeight<p>();
-	Vec3f p1(line->x1(), line->y1(), modelz);
-	Vec3f p2(line->x2(), line->y2(), modelz);
-	Vec3f p3(furthest_vertex->point(), targetz);
+	double modelz  = model->planeHeight<p>();
+	double targetz = target->planeHeight<p>();
+	Vec3f  p1(line->x1(), line->y1(), modelz);
+	Vec3f  p2(line->x2(), line->y2(), modelz);
+	Vec3f  p3(furthest_vertex->point(), targetz);
 	target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 }
 
@@ -777,7 +774,7 @@ template<SurfaceType p> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 		}
 
 		// Three points: endpoints of the line, and the thing itself
-		Plane   target_plane = target->plane<p>();
+		Plane target_plane = target->plane<p>();
 		Vec3f p1(lines[b]->x1(), lines[b]->y1(), target_plane.height_at(lines[b]->point1()));
 		Vec3f p2(lines[b]->x2(), lines[b]->y2(), target_plane.height_at(lines[b]->point2()));
 		Vec3f p3(thing->xPos(), thing->yPos(), thingz);
@@ -807,8 +804,8 @@ template<SurfaceType p> void MapSpecials::applySectorTiltThing(SLADEMap* map, Ma
 	double angle = thing->angle() / 360.0 * TAU;
 	double tilt  = (raw_angle - 90) / 360.0 * TAU;
 	// Resulting plane goes through the position of the thing
-	double    z = target->planeHeight<p>() + thing->floatProperty("height");
-	Vec3f point(thing->xPos(), thing->yPos(), z);
+	double z = target->planeHeight<p>() + thing->floatProperty("height");
+	Vec3f  point(thing->xPos(), thing->yPos(), z);
 
 	double cos_angle = cos(angle);
 	double sin_angle = sin(angle);
@@ -861,7 +858,7 @@ template<SurfaceType p> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 			return;
 		}
 
-		short     height = target->planeHeight<p>();
+		short height = target->planeHeight<p>();
 		Vec3f p1(thing->xPos(), thing->yPos(), thing->floatProperty("height"));
 		Vec3f p2(lines[a]->x1(), lines[a]->y1(), height);
 		Vec3f p3(lines[a]->x2(), lines[a]->y2(), height);

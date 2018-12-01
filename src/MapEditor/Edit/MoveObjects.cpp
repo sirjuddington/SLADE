@@ -143,8 +143,7 @@ void MoveObjects::update(Vec2f mouse_pos)
 				ny - context_.map().vertex(items_[0].index)->yPos());
 		else if (context_.editMode() == Mode::Things)
 			offset_.set(
-				nx - context_.map().thing(items_[0].index)->xPos(),
-				ny - context_.map().thing(items_[0].index)->yPos());
+				nx - context_.map().thing(items_[0].index)->xPos(), ny - context_.map().thing(items_[0].index)->yPos());
 
 		return;
 	}

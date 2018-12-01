@@ -27,7 +27,7 @@ public:
 private:
 	GLTexture* texture_ = nullptr;
 	string     texname_;
-	ColRGBA     colour_ = COL_WHITE;
+	ColRGBA    colour_ = COL_WHITE;
 	bool       icon_   = false;
 };
 
@@ -44,13 +44,13 @@ public:
 	void onMouseEvent(wxMouseEvent& e);
 
 private:
-	AngleControl*     parent_;
+	AngleControl* parent_;
 	vector<Vec2f> dir_points_;
-	ColRGBA            col_bg_;
-	ColRGBA            col_fg_;
-	int               point_hl_;
-	int               point_sel_;
-	long              last_check_;
+	ColRGBA       col_bg_;
+	ColRGBA       col_fg_;
+	int           point_hl_;
+	int           point_sel_;
+	long          last_check_;
 };
 
 

@@ -83,7 +83,7 @@ void BrowserItem::draw(
 	Drawing::Font font,
 	NameType      nametype,
 	ItemView      viewtype,
-	ColRGBA        colour,
+	ColRGBA       colour,
 	bool          text_shadow)
 {
 	// Determine item name string (for normal viewtype)

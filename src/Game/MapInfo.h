@@ -12,24 +12,24 @@ class MapInfo
 public:
 	struct Map
 	{
-		string name;
-		bool   lookup_name;
-		string entry_name;
-		int    level_num;
-		string sky1;
-		float  sky1_scroll_speed;
-		string sky2;
-		float  sky2_scroll_speed;
-		bool   sky_double;
-		bool   sky_force_no_stretch;
-		bool   sky_stretch;
+		string  name;
+		bool    lookup_name;
+		string  entry_name;
+		int     level_num;
+		string  sky1;
+		float   sky1_scroll_speed;
+		string  sky2;
+		float   sky2_scroll_speed;
+		bool    sky_double;
+		bool    sky_force_no_stretch;
+		bool    sky_stretch;
 		ColRGBA fade;
 		ColRGBA fade_outside; // OutsideFog
-		string music;
-		bool   lighting_smooth;
-		int    lighting_wallshade_v;
-		int    lighting_wallshade_h;
-		bool   force_fake_contrast;
+		string  music;
+		bool    lighting_smooth;
+		int     lighting_wallshade_v;
+		int     lighting_wallshade_h;
+		bool    force_fake_contrast;
 
 		// GZDoom
 		int fog_density;
@@ -71,7 +71,7 @@ public:
 		Universal
 	};
 
-	MapInfo() = default;
+	MapInfo()  = default;
 	~MapInfo() = default;
 
 	void clear(bool maps = true, bool editor_nums = true);

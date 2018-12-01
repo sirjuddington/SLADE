@@ -631,16 +631,16 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	if (col_bg_.greyscale().r < 128)
 	{
 		ColRGBA c = col_bg_.amp(50, 50, 50, 0);
-		border   = WXCOL(c);
-		c        = col_bg_.amp(20, 20, 20, 0);
-		border2  = WXCOL(c);
+		border    = WXCOL(c);
+		c         = col_bg_.amp(20, 20, 20, 0);
+		border2   = WXCOL(c);
 	}
 	else
 	{
 		ColRGBA c = col_bg_.amp(-50, -50, -50, 0);
-		border   = WXCOL(c);
-		c        = col_bg_.amp(-20, -20, -20, 0);
-		border2  = WXCOL(c);
+		border    = WXCOL(c);
+		c         = col_bg_.amp(-20, -20, -20, 0);
+		border2   = WXCOL(c);
 	}
 
 	// Draw background

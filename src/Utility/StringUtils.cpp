@@ -174,10 +174,7 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 			if (!done)
 				Log::info(
 					1,
-					S_FMT(
-						"Error: Attempting to #include nonexistant entry \"%s\" from entry %s",
-						name,
-						entry->name()));
+					S_FMT("Error: Attempting to #include nonexistant entry \"%s\" from entry %s", name, entry->name()));
 		}
 		else
 			out.Append(line + "\n");

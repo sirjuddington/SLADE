@@ -143,8 +143,7 @@ void LineInfoOverlay::update(MapLine* line)
 		int yoff           = s->intProperty("offsety");
 		side_front_.exists = true;
 		if (Global::debug)
-			side_front_.info =
-				S_FMT("Front Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
+			side_front_.info = S_FMT("Front Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
 		else
 			side_front_.info = S_FMT("Front Side #%d (Sector %d)", s->index(), s->sector()->index());
 		side_front_.offsets      = S_FMT("Offsets: (%d, %d)", xoff, yoff);
@@ -166,8 +165,7 @@ void LineInfoOverlay::update(MapLine* line)
 		int yoff          = s->intProperty("offsety");
 		side_back_.exists = true;
 		if (Global::debug)
-			side_back_.info =
-				S_FMT("Back Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
+			side_back_.info = S_FMT("Back Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
 		else
 			side_back_.info = S_FMT("Back Side #%d (Sector %d)", s->index(), s->sector()->index());
 		side_back_.offsets      = S_FMT("Offsets: (%d, %d)", xoff, yoff);
@@ -211,8 +209,8 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	// Get colours
 	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
 	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
-	col_fg.a      = col_fg.a * alpha;
-	col_bg.a      = col_bg.a * alpha;
+	col_fg.a       = col_fg.a * alpha;
+	col_bg.a       = col_bg.a * alpha;
 	ColRGBA col_border(0, 0, 0, 140);
 
 	// Slide in/out animation
@@ -270,7 +268,7 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, Side& side, i
 {
 	// Get colours
 	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
-	col_fg.a      = col_fg.a * alpha;
+	col_fg.a       = col_fg.a * alpha;
 
 	// Index and sector index
 	Drawing::drawText(side.info, xstart + 4, bottom - (32 * scale_), col_fg, Drawing::Font::Condensed);
@@ -302,7 +300,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 
 	// Get colours
 	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
-	col_fg.a      = col_fg.a * alpha;
+	col_fg.a       = col_fg.a * alpha;
 
 	// Get texture
 	GLTexture* tex = MapEditor::textureManager().texture(

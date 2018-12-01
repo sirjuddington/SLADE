@@ -191,7 +191,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 
 			// Get color from image
 			ColRGBA col = image.pixelAt(x, y);
-			col.index  = a;
+			col.index   = a;
 
 			// Validate color cell
 			for (int b = x; b < (x + (cell > 3 ? cell - 1 : cell)); ++b)
@@ -249,9 +249,9 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			}
 		}
 		// Now, parse
-		string s1, s2, s3;
+		string  s1, s2, s3;
 		ColRGBA col(0, 0, 0, 255, -1);
-		int    c = 0;
+		int     c = 0;
 		do
 		{
 			// Get the first token. If it begins with #, it's a comment in GIMP. Ignore.
@@ -482,7 +482,7 @@ void Palette::setColourB(uint8_t index, uint8_t val)
 void Palette::setGradient(uint8_t startIndex, uint8_t endIndex, ColRGBA startCol, ColRGBA endCol)
 {
 	ColRGBA gradCol = ColRGBA();
-	int    range   = endIndex - startIndex;
+	int     range   = endIndex - startIndex;
 
 	float r_range = endCol.fr() - startCol.fr();
 	float g_range = endCol.fg() - startCol.fg();
@@ -592,8 +592,8 @@ short Palette::nearestColour(ColRGBA colour, ColourMatch match)
 {
 	double min_d = 999999;
 	short  index = 0;
-	ColHSL  chsl  = Misc::rgbToHsl(colour);
-	ColLAB  clab  = Misc::rgbToLab(colour);
+	ColHSL chsl  = Misc::rgbToHsl(colour);
+	ColLAB clab  = Misc::rgbToLab(colour);
 
 	// Be nice if there was an easier way to convert from int -> enum class,
 	// but then that's kind of the point of them I guess
@@ -685,7 +685,7 @@ void Palette::colourise(ColRGBA colour, int start, int end)
 	for (int i = start; i <= end; ++i)
 	{
 		ColRGBA ncol(colours_[i].r, colours_[i].g, colours_[i].b, colours_[i].a, colours_[i].blend);
-		double grey = (ncol.r * col_greyscale_r + ncol.g * col_greyscale_g + ncol.b * col_greyscale_b) / 255.0f;
+		double  grey = (ncol.r * col_greyscale_r + ncol.g * col_greyscale_g + ncol.b * col_greyscale_b) / 255.0f;
 		if (grey > 1.0)
 			grey = 1.0;
 		ncol.r = (uint8_t)(colour.r * grey);
@@ -719,7 +719,7 @@ void Palette::tint(ColRGBA colour, float amount, int start, int end)
 		// Might want to do something about the precision loss here and elsewhere:
 		// it's possible for 0xFFFFFF shifting to 0xFF0000 to become 0xFExxxx...
 		// I'll leave this working exactly the same as the SImage function for now.
-		float  round_delta = /*roundup ? 0.4999999 :*/ 0.0;
+		float   round_delta = /*roundup ? 0.4999999 :*/ 0.0;
 		ColRGBA ncol(
 			colours_[i].r * inv_amt + colour.r * amount + round_delta,
 			colours_[i].g * inv_amt + colour.g * amount + round_delta,

@@ -14,8 +14,8 @@ public:
 
 	explicit LineDraw(MapEditContext& context) : context_(context) {}
 
-	State                    state() const { return state_current_; }
-	unsigned                 nPoints() const { return draw_points_.size(); }
+	State                state() const { return state_current_; }
+	unsigned             nPoints() const { return draw_points_.size(); }
 	Vec2f                point(unsigned index);
 	const vector<Vec2f>& points() const { return draw_points_; }
 
@@ -29,8 +29,8 @@ public:
 	void end(bool apply = true);
 
 private:
-	vector<Vec2f> draw_points_;
-	Vec2f         draw_origin_;
-	MapEditContext&   context_;
-	State             state_current_;
+	vector<Vec2f>   draw_points_;
+	Vec2f           draw_origin_;
+	MapEditContext& context_;
+	State           state_current_;
 };

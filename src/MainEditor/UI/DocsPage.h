@@ -12,8 +12,8 @@ public:
 	DocsPage(wxWindow* parent);
 	~DocsPage();
 
-	void	updateNavButtons();
-	void	openPage(string page_name);
+	void updateNavButtons();
+	void openPage(string page_name);
 
 private:
 	wxWebView*      wv_browser_;
@@ -23,7 +23,7 @@ private:
 	SToolBarButton* tb_forward_;
 
 	// Events
-	void	onToolbarButton(wxCommandEvent& e);
-	void	onHTMLLinkClicked(wxEvent& e);
-	void	onNavigationDone(wxEvent& e);
+	void onToolbarButton(wxCommandEvent& e);
+	void onHTMLLinkClicked(wxEvent& e);
+	void onNavigationDone(wxEvent& e);
 };

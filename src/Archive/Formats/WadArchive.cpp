@@ -1128,9 +1128,9 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 			{
 				// Get map info
 				MapDesc md;
-				md.head = header_entry;            // Header lump
+				md.head = header_entry;         // Header lump
 				md.name = header_entry->name(); // Map title
-				md.end  = lastentryismapentry ?    // End lump
+				md.end  = lastentryismapentry ? // End lump
 							 entry :
 							 entry->prevEntry();
 

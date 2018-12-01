@@ -45,7 +45,7 @@ public:
 	void    setTranslation(Translation* tr) { translation_ = tr; }
 	void    setBrush(SBrush* br) { brush_ = br; }
 	SBrush* brush() { return brush_; }
-	ColRGBA  paintColour() { return paint_colour_; }
+	ColRGBA paintColour() { return paint_colour_; }
 
 	void draw();
 	void drawImage();
@@ -60,7 +60,7 @@ public:
 	void zoomToFit(bool mag = true, float padding = 0.0f);
 	void resetOffsets() { offset_.x = offset_.y = 0; }
 
-	bool     onImage(int x, int y);
+	bool  onImage(int x, int y);
 	Vec2i imageCoords(int x, int y);
 
 	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
@@ -69,24 +69,24 @@ private:
 	SImage*      image_;
 	View         view_type_;
 	double       scale_;
-	Vec2f    offset_; // panning offsets (not image offsets)
+	Vec2f        offset_; // panning offsets (not image offsets)
 	GLTexture*   tex_image_;
 	bool         update_texture_;
 	bool         image_hilight_;
 	bool         image_split_;
 	bool         allow_drag_;
 	bool         allow_scroll_;
-	Vec2i     drag_pos_;
-	Vec2i     drag_origin_;
-	Vec2i     mouse_prev_;
+	Vec2i        drag_pos_;
+	Vec2i        drag_origin_;
+	Vec2i        mouse_prev_;
 	EditMode     editing_mode_;
-	ColRGBA       paint_colour_; // the colour to apply to pixels in editing mode 1
+	ColRGBA      paint_colour_; // the colour to apply to pixels in editing mode 1
 	Translation* translation_;  // the translation to apply to pixels in editing mode 3
 	bool         drawing_;      // true if a drawing operation is ongoing
 	bool*        drawing_mask_; // keeps track of which pixels were already modified in this pass
 	SBrush*      brush_;        // the brush used to paint the image
-	Vec2i     cursor_pos_;   // position of cursor, relative to image
-	Vec2i     prev_pos_;     // previous position of cursor
+	Vec2i        cursor_pos_;   // position of cursor, relative to image
+	Vec2i        prev_pos_;     // previous position of cursor
 	GLTexture*   tex_brush_;    // preview the effect of the brush
 
 	// Events

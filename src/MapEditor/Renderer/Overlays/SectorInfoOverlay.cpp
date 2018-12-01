@@ -133,8 +133,8 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 	// Get colours
 	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
 	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
-	col_fg.a      = col_fg.a * alpha;
-	col_bg.a      = col_bg.a * alpha;
+	col_fg.a       = col_fg.a * alpha;
+	col_bg.a       = col_bg.a * alpha;
 	ColRGBA col_border(0, 0, 0, 140);
 
 	// Draw overlay background
@@ -169,11 +169,11 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	// Get colours
 	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
 	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
-	col_fg.a      = col_fg.a * alpha;
+	col_fg.a       = col_fg.a * alpha;
 
 	// Get texture
-	GLTexture* tex = MapEditor::textureManager().flat(
-		texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+	GLTexture* tex =
+		MapEditor::textureManager().flat(texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 
 	// Valid texture
 	if (texture != "-" && tex != &(GLTexture::missingTex()))

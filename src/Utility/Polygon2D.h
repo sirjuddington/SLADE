@@ -153,7 +153,7 @@ private:
 	struct Outline
 	{
 		vector<int> edges;
-		BBox      bbox;
+		BBox        bbox;
 		bool        clockwise;
 		bool        convex;
 	};

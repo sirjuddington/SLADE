@@ -33,13 +33,13 @@ public:
 
 	// Lines
 	ColRGBA lineColour(MapLine* line, bool ignore_filter = false);
-	void   renderLines(bool show_direction, float alpha = 1.0f);
-	void   renderLinesVBO(bool show_direction, float alpha);
-	void   renderLinesImmediate(bool show_direction, float alpha);
-	void   renderLineHilight(int index, float fade);
-	void   renderLineSelection(const ItemSelection& selection, float fade = 1.0f);
-	void   renderTaggedLines(vector<MapLine*>& lines, float fade);
-	void   renderTaggingLines(vector<MapLine*>& lines, float fade);
+	void    renderLines(bool show_direction, float alpha = 1.0f);
+	void    renderLinesVBO(bool show_direction, float alpha);
+	void    renderLinesImmediate(bool show_direction, float alpha);
+	void    renderLineHilight(int index, float fade);
+	void    renderLineSelection(const ItemSelection& selection, float fade = 1.0f);
+	void    renderTaggedLines(vector<MapLine*>& lines, float fade);
+	void    renderTaggingLines(vector<MapLine*>& lines, float fade);
 
 	// Things
 	enum ThingDrawType

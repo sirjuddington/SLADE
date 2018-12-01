@@ -23,7 +23,7 @@ public:
 	void popAlphaSlider();
 
 private:
-	ColRGBA   colour_;
+	ColRGBA  colour_;
 	Palette* palette_ = nullptr;
 	bool     alpha_   = false;
 	bool     altmode_ = false;

@@ -51,7 +51,7 @@ string browseFile(const string& title, const string& extensions, const string& f
 vector<string> browseFiles(const string& title, const string& extensions)
 {
 	SFileDialog::FDInfo inf;
-	vector<string>         filenames;
+	vector<string>      filenames;
 	if (SFileDialog::openFiles(inf, title, extensions, Lua::currentWindow()))
 		filenames.assign(inf.filenames.begin(), inf.filenames.end());
 	return filenames;

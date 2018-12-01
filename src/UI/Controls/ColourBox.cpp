@@ -138,7 +138,7 @@ void ColourBox::popColourPicker()
 		if (palette_)
 		{
 			int16_t index = palette_->nearestColour(colour_);
-			ColRGBA  pcol  = palette_->colour(index);
+			ColRGBA pcol  = palette_->colour(index);
 			if (pcol.equals(colour_))
 				colour_.index = index;
 		}

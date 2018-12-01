@@ -37,12 +37,12 @@ void drawLine(Vec2f start, Vec2f end);
 void drawLine(double x1, double y1, double x2, double y2);
 void drawLineTabbed(Vec2f start, Vec2f end, double tab = 0.1, double tab_max = 16);
 void drawArrow(
-	Vec2f p1,
-	Vec2f p2,
-	ColRGBA    color            = COL_WHITE,
-	bool      twoway           = false,
-	double    arrowhead_angle  = 0.7854f,
-	double    arrowhead_length = 25.f);
+	Vec2f   p1,
+	Vec2f   p2,
+	ColRGBA color            = COL_WHITE,
+	bool    twoway           = false,
+	double  arrowhead_angle  = 0.7854f,
+	double  arrowhead_length = 25.f);
 void drawRect(Vec2f tl, Vec2f br);
 void drawRect(double x1, double y1, double x2, double y2);
 void drawFilledRect(Vec2f tl, Vec2f br);
@@ -72,17 +72,17 @@ void drawTextureWithin(
 
 // Text drawing
 void drawText(
-	string   text,
-	int      x         = 0,
-	int      y         = 0,
-	ColRGBA   colour    = COL_WHITE,
-	Font     font      = Font::Normal,
-	Align    alignment = Align::Left,
-	Rectf* bounds    = nullptr);
+	string  text,
+	int     x         = 0,
+	int     y         = 0,
+	ColRGBA colour    = COL_WHITE,
+	Font    font      = Font::Normal,
+	Align   alignment = Align::Left,
+	Rectf*  bounds    = nullptr);
 Vec2f textExtents(string text, Font font = Font::Normal);
-void      enableTextStateReset(bool enable = true);
-void      setTextState(bool set = true);
-void      setTextOutline(double thickness, ColRGBA colour = COL_BLACK);
+void  enableTextStateReset(bool enable = true);
+void  setTextState(bool set = true);
+void  setTextOutline(double thickness, ColRGBA colour = COL_BLACK);
 
 // Specific
 void drawHud();

@@ -630,8 +630,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			else
 				Log::warning(
 					1,
-					S_FMT(
-						"Warning: Language %s inherits from undefined language %s", node->name(), node->inherit()));
+					S_FMT("Warning: Language %s inherits from undefined language %s", node->name(), node->inherit()));
 		}
 
 		// Parse language info

@@ -318,8 +318,7 @@ bool GLTexture::loadImagePortion(SImage* image, Recti rect, Palette* pal, bool a
 	portion.fillData(0);
 
 	// Read portion of image if rect isn't completely outside the image
-	if (!(rect.left() >= image->width() || rect.right() < 0 || rect.top() >= image->height()
-		  || rect.bottom() < 0))
+	if (!(rect.left() >= image->width() || rect.right() < 0 || rect.top() >= image->height() || rect.bottom() < 0))
 	{
 		// Determine start of each row to read
 		uint32_t row_start = 0;

@@ -71,6 +71,7 @@ private:
 class TransRangeColour : public TransRange
 {
 	friend class Translation;
+
 public:
 	TransRangeColour() : TransRange(Colour)
 	{
@@ -112,6 +113,7 @@ private:
 class TransRangeDesat : public TransRange
 {
 	friend class Translation;
+
 public:
 	TransRangeDesat() : TransRange(Desat)
 	{
@@ -122,12 +124,12 @@ public:
 	{
 		o_start_ = copy->o_start_;
 		o_end_   = copy->o_end_;
-		d_sr_     = copy->d_sr_;
-		d_sg_     = copy->d_sg_;
-		d_sb_     = copy->d_sb_;
-		d_er_     = copy->d_er_;
-		d_eg_     = copy->d_eg_;
-		d_eb_     = copy->d_eb_;
+		d_sr_    = copy->d_sr_;
+		d_sg_    = copy->d_sg_;
+		d_sb_    = copy->d_sb_;
+		d_er_    = copy->d_er_;
+		d_eg_    = copy->d_eg_;
+		d_eb_    = copy->d_eb_;
 	}
 
 	float dSr() { return d_sr_; }
@@ -153,7 +155,15 @@ public:
 	string asText()
 	{
 		return S_FMT(
-			"%d:%d=%%[%1.2f,%1.2f,%1.2f]:[%1.2f,%1.2f,%1.2f]", o_start_, o_end_, d_sr_, d_sg_, d_sb_, d_er_, d_eg_, d_eb_);
+			"%d:%d=%%[%1.2f,%1.2f,%1.2f]:[%1.2f,%1.2f,%1.2f]",
+			o_start_,
+			o_end_,
+			d_sr_,
+			d_sg_,
+			d_sb_,
+			d_er_,
+			d_eg_,
+			d_eb_);
 	}
 
 private:
@@ -164,17 +174,18 @@ private:
 class TransRangeBlend : public TransRange
 {
 	friend class Translation;
+
 public:
 	TransRangeBlend() : TransRange(Blend) { col_ = COL_RED; }
 	TransRangeBlend(TransRangeBlend* copy) : TransRange(Blend)
 	{
 		o_start_ = copy->o_start_;
 		o_end_   = copy->o_end_;
-		col_      = copy->col_;
+		col_     = copy->col_;
 	}
 
 	ColRGBA colour() { return col_; }
-	void   setColour(ColRGBA c) { col_ = c; }
+	void    setColour(ColRGBA c) { col_ = c; }
 
 	string asText() { return S_FMT("%d:%d=#[%d,%d,%d]", o_start_, o_end_, col_.r, col_.g, col_.b); }
 
@@ -185,6 +196,7 @@ private:
 class TransRangeTint : public TransRange
 {
 	friend class Translation;
+
 public:
 	TransRangeTint() : TransRange(Tint)
 	{
@@ -195,11 +207,11 @@ public:
 	{
 		o_start_ = copy->o_start_;
 		o_end_   = copy->o_end_;
-		col_      = copy->col_;
-		amount_   = copy->amount_;
+		col_     = copy->col_;
+		amount_  = copy->amount_;
 	}
 
-	ColRGBA  colour() { return col_; }
+	ColRGBA colour() { return col_; }
 	uint8_t amount() { return amount_; }
 	void    setColour(ColRGBA c) { col_ = c; }
 	void    setAmount(uint8_t a) { amount_ = a; }
@@ -207,20 +219,21 @@ public:
 	string asText() { return S_FMT("%d:%d=@%d[%d,%d,%d]", o_start_, o_end_, amount_, col_.r, col_.g, col_.b); }
 
 private:
-	ColRGBA  col_;
+	ColRGBA col_;
 	uint8_t amount_;
 };
 
 class TransRangeSpecial : public TransRange
 {
 	friend class Translation;
+
 public:
 	TransRangeSpecial() : TransRange(Special) { special_ = ""; }
 	TransRangeSpecial(TransRangeSpecial* copy) : TransRange(Special)
 	{
 		o_start_ = copy->o_start_;
 		o_end_   = copy->o_end_;
-		special_  = copy->special_;
+		special_ = copy->special_;
 	}
 
 	string special() { return special_; }

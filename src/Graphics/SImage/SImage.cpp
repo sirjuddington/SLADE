@@ -133,7 +133,7 @@ bool SImage::putRGBAData(MemChunk& mc, Palette* pal)
 	else if (type_ == ALPHAMAP)
 	{
 		uint8_t rgba[4];
-		ColRGBA  col;
+		ColRGBA col;
 		for (int a = 0; a < width_ * height_; a++)
 		{
 			// Get pixel as colour (greyscale)
@@ -191,7 +191,7 @@ bool SImage::putRGBData(MemChunk& mc, Palette* pal)
 		// Alpha map, convert to RGB
 
 		uint8_t rgba[4];
-		ColRGBA  col;
+		ColRGBA col;
 		for (int a = 0; a < width_ * height_; a++)
 		{
 			// Get pixel as colour (greyscale)
@@ -278,8 +278,7 @@ SImage::info_t SImage::info()
 	inf.offset_y    = offset_y_;
 	inf.has_palette = has_palette_;
 
-	return inf
-	;
+	return inf;
 }
 
 // -----------------------------------------------------------------------------
@@ -732,7 +731,7 @@ bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 	// Do conversion
 	data_      = new uint8_t[width_ * height_];
 	unsigned i = 0;
-	ColRGBA   col;
+	ColRGBA  col;
 	for (int a = 0; a < width_ * height_; a++)
 	{
 		col.r    = rgba_data[i++];
@@ -854,7 +853,7 @@ bool SImage::maskFromBrightness(Palette* pal)
 		{
 			// Set mask from pixel colour brightness value
 			ColRGBA col = pal->colour(data_[a]);
-			mask_[a]   = ((double)col.r * 0.3) + ((double)col.g * 0.59) + ((double)col.b * 0.11);
+			mask_[a]    = ((double)col.r * 0.3) + ((double)col.g * 0.59) + ((double)col.b * 0.11);
 		}
 	}
 	else if (type_ == RGBA)
@@ -981,7 +980,7 @@ bool SImage::setPixel(int x, int y, uint8_t pal_index, uint8_t alpha)
 	{
 		// Set the pixel
 		ColRGBA col = palette_.colour(pal_index);
-		col.a      = alpha;
+		col.a       = alpha;
 		col.write(data_ + (y * (width_ * 4) + (x * 4)));
 	}
 
@@ -1387,7 +1386,7 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 			continue;
 
 		ColRGBA col;
-		int    q = p * bpp;
+		int     q = p * bpp;
 		if (type_ == PALMASK)
 			col.set(pal->colour(data_[p]));
 		else if (type_ == RGBA)
@@ -1608,7 +1607,7 @@ bool SImage::drawImage(
 			if (img.type_ == PALMASK)
 			{
 				ColRGBA col = pal_src->colour(img.data_[sp]);
-				col.a      = img.mask_[sp];
+				col.a       = img.mask_[sp];
 				drawPixel(x, y, col, properties, pal_dest);
 			}
 			else if (img.type_ == RGBA)
@@ -1647,7 +1646,7 @@ bool SImage::colourise(ColRGBA colour, Palette* pal, int start, int stop)
 
 	// Go through all pixels
 	uint8_t bpp = this->bpp();
-	ColRGBA  col;
+	ColRGBA col;
 	for (int a = 0; a < width_ * height_ * bpp; a += bpp)
 	{
 		// Skip colors out of range if desired
@@ -1698,7 +1697,7 @@ bool SImage::tint(ColRGBA colour, float amount, Palette* pal, int start, int sto
 
 	// Go through all pixels
 	uint8_t bpp = this->bpp();
-	ColRGBA  col;
+	ColRGBA col;
 	for (int a = 0; a < width_ * height_ * bpp; a += bpp)
 	{
 		// Skip colors out of range if desired

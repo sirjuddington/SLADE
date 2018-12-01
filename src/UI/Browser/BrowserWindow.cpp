@@ -553,7 +553,7 @@ void BrowserWindow::addItemTree(BrowserTreeNode* node, wxTreeListItem& item)
 	{
 		// Add tree item
 		BrowserTreeNode* child = (BrowserTreeNode*)node->child(a);
-		wxTreeListItem   i = tree_items_->AppendItem(item, child->name(), -1, -1, new BrowserTreeItemData(child));
+		wxTreeListItem   i     = tree_items_->AppendItem(item, child->name(), -1, -1, new BrowserTreeItemData(child));
 		child->setTreeId(i);
 
 		// Add children

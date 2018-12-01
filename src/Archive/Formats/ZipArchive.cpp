@@ -355,8 +355,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Check that the entry belongs to this archive
 	if (entry->parent() != this)
 	{
-		LOG_MESSAGE(
-			1, "ZipArchive::loadEntryData: Entry %s attempting to load data from wrong parent!", entry->name());
+		LOG_MESSAGE(1, "ZipArchive::loadEntryData: Entry %s attempting to load data from wrong parent!", entry->name());
 		return false;
 	}
 

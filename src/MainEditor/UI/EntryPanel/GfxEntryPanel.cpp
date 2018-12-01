@@ -844,7 +844,7 @@ bool GfxEntryPanel::handleAction(string id)
 			setModified();
 		}
 		ColRGBA gcdcol = gcd.colour();
-		last_colour   = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
+		last_colour    = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
 	}
 
 	// Tint
@@ -869,7 +869,7 @@ bool GfxEntryPanel::handleAction(string id)
 			Refresh();
 			setModified();
 		}
-		ColRGBA gtdcol    = gtd.colour();
+		ColRGBA gtdcol   = gtd.colour();
 		last_tint_colour = S_FMT("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
 		last_tint_amount = (int)(gtd.amount() * 100.0);
 	}

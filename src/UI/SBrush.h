@@ -16,10 +16,10 @@ public:
 	uint8_t pixel(int x, int y);
 
 private:
-	SImage*  image_; // The cursor graphic
-	string   name_;
-	string   icon_;
-	Vec2i center_;
+	SImage* image_; // The cursor graphic
+	string  name_;
+	string  icon_;
+	Vec2i   center_;
 };
 
 class SBrushManager

@@ -13,15 +13,15 @@ public:
 	ScriptEditorPanel(wxWindow* parent);
 	~ScriptEditorPanel();
 
-	ArchiveEntry*	scriptEntry() { return entry_script_; }
-	ArchiveEntry*	compiledEntry() { return entry_compiled_; }
+	ArchiveEntry* scriptEntry() { return entry_script_; }
+	ArchiveEntry* compiledEntry() { return entry_compiled_; }
 
-	bool	openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = nullptr);
-	void	populateWordList();
-	void	saveScripts();
-	void	updateUI();
+	bool openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = nullptr);
+	void populateWordList();
+	void saveScripts();
+	void updateUI();
 
-	bool	handleAction(string name);
+	bool handleAction(string name);
 
 private:
 	string        script_text_;
@@ -35,5 +35,5 @@ private:
 	FindReplacePanel* panel_fr_;
 	wxChoice*         choice_jump_to_;
 
-	void	onWordListActivate(wxCommandEvent& e);
+	void onWordListActivate(wxCommandEvent& e);
 };

@@ -180,10 +180,10 @@ void MapThing::copy(MapObject* c)
 void MapThing::setAnglePoint(Vec2f point)
 {
 	// Calculate direction vector
-	Vec2f vec(point.x - x_, point.y - y_);
-	double    mag = sqrt((vec.x * vec.x) + (vec.y * vec.y));
-	double    x   = vec.x / mag;
-	double    y   = vec.y / mag;
+	Vec2f  vec(point.x - x_, point.y - y_);
+	double mag = sqrt((vec.x * vec.x) + (vec.y * vec.y));
+	double x   = vec.x / mag;
+	double y   = vec.y / mag;
 
 	// Determine angle
 	int angle = 0;

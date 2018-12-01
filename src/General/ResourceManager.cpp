@@ -128,8 +128,7 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const string& nspace, b
 		}
 
 		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-		if (App::archiveManager().archiveIndex(best->parent())
-			<= App::archiveManager().archiveIndex(entry->parent()))
+		if (App::archiveManager().archiveIndex(best->parent()) <= App::archiveManager().archiveIndex(entry->parent()))
 			best = entry;
 	}
 

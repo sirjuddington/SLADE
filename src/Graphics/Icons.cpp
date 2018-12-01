@@ -129,7 +129,7 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 
 		// Create / setup icon
 		Icon n_icon;
-		n_icon.image.LoadFile(tempfile);              // Load image from temp file
+		n_icon.image.LoadFile(tempfile);           // Load image from temp file
 		n_icon.name           = entry->name(true); // Set icon name
 		n_icon.resource_entry = entry;
 
@@ -171,7 +171,7 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 			if (!found)
 			{
 				Icon n_icon;
-				n_icon.image_large.LoadFile(tempfile);        // Load image from temp file
+				n_icon.image_large.LoadFile(tempfile);     // Load image from temp file
 				n_icon.name           = entry->name(true); // Set icon name
 				n_icon.resource_entry = entry;
 

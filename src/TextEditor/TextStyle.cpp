@@ -367,7 +367,7 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 	// Parse styles
 	ts_default_.parse(root->childPTN("default"));     // Default style
 	ts_selection_.parse(root->childPTN("selection")); // Selection style
-	for (unsigned a = 0; a < styles_.size(); a++)        // Other styles
+	for (unsigned a = 0; a < styles_.size(); a++)     // Other styles
 	{
 		if (ParseTreeNode* node = root->childPTN(styles_[a]->name_))
 			styles_[a]->parse(node);

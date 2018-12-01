@@ -589,7 +589,7 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 			uint8_t di = tp->dStart() + range_frac * (tp->dEnd() - tp->dStart());
 
 			// Apply new colour
-			ColRGBA c     = pal->colour(di);
+			ColRGBA c    = pal->colour(di);
 			colour.r     = c.r;
 			colour.g     = c.g;
 			colour.b     = c.b;
@@ -621,7 +621,7 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 
 			// Get greyscale colour
 			ColRGBA gcol = pal->colour(i);
-			float  grey = (gcol.r * 0.3f + gcol.g * 0.59f + gcol.b * 0.11f) / 255.0f;
+			float   grey = (gcol.r * 0.3f + gcol.g * 0.59f + gcol.b * 0.11f) / 255.0f;
 
 			// Apply new colour
 			colour.r     = MIN(255, int((td->dSr() + grey * (td->dEr() - td->dSr())) * 255.0f));
@@ -722,7 +722,7 @@ ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 	{
 		// Determine destination palette index in IceRange
 		uint8_t di   = MIN(((int)grey >> 4), 15);
-		ColRGBA  c    = IceRange[di];
+		ColRGBA c    = IceRange[di];
 		colour.r     = c.r;
 		colour.g     = c.g;
 		colour.b     = c.b;

@@ -772,8 +772,8 @@ double MapEditContext::snapToGrid(double position, bool force)
 Vec2f MapEditContext::relativeSnapToGrid(Vec2f origin, Vec2f mouse_pos)
 {
 	Vec2f delta = mouse_pos - origin;
-	delta.x         = snapToGrid(delta.x, false);
-	delta.y         = snapToGrid(delta.y, false);
+	delta.x     = snapToGrid(delta.x, false);
+	delta.y     = snapToGrid(delta.y, false);
 	return origin + delta;
 }
 
@@ -1796,7 +1796,7 @@ bool MapEditContext::handleAction(string id)
 	// Move 3d mode camera
 	else if (id == "mapw_camera_set")
 	{
-		Vec3f  pos(input().mousePosMap());
+		Vec3f      pos(input().mousePosMap());
 		MapSector* sector = map_.sector(map_.sectorAt(input_.mousePosMap()));
 		if (sector)
 			pos.z = sector->floor().plane.height_at(pos.x, pos.y) + 40;

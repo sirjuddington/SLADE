@@ -165,7 +165,7 @@ void BrowserCanvas::draw()
 
 	// Setup colours
 	ColRGBA col_bg, col_text;
-	bool   text_shadow = true;
+	bool    text_shadow = true;
 	if (browser_bg_type == 1)
 	{
 		// Get system panel background colour

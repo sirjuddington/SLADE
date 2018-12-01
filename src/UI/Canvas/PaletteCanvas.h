@@ -25,7 +25,7 @@ public:
 	void setSelection(int begin, int end = -1);
 	void setSelectionType(SelectionType sel) { allow_selection_ = sel; }
 
-	void   draw();
+	void    draw();
 	ColRGBA selectedColour();
 
 	// Events

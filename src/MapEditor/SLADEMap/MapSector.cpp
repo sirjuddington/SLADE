@@ -314,8 +314,7 @@ Vec2f MapSector::getPoint(Point point)
 	if (point == Point::Mid)
 	{
 		BBox bbox = boundingBox();
-		return Vec2f(
-			bbox.min.x + ((bbox.max.x - bbox.min.x) * 0.5), bbox.min.y + ((bbox.max.y - bbox.min.y) * 0.5));
+		return Vec2f(bbox.min.x + ((bbox.max.x - bbox.min.x) * 0.5), bbox.min.y + ((bbox.max.y - bbox.min.y) * 0.5));
 	}
 	else
 	{

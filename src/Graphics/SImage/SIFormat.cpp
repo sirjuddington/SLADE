@@ -466,8 +466,8 @@ public:
 
 			// If the flat will fit within this size, crop to the previous size
 			// (this works because flat sizes list is in size-order)
-			if (image.width() <= (int)valid_flat_size[a][0] && image.height() <= (int)valid_flat_size[a][1]
-				&& width > 0 && height > 0)
+			if (image.width() <= (int)valid_flat_size[a][0] && image.height() <= (int)valid_flat_size[a][1] && width > 0
+				&& height > 0)
 			{
 				image.crop(0, 0, width, height);
 				return true;

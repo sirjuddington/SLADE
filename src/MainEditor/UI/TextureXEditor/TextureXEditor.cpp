@@ -557,10 +557,8 @@ bool TextureXEditor::checkTextures()
 					ArchiveEntry* fentry = theResourceManager->getFlatEntry(tex->patch(p)->name());
 					CTexture*     ptex   = theResourceManager->getTexture(tex->patch(p)->name());
 					if (!pentry && !fentry && !ptex)
-						problems += S_FMT(
-							"Texture %s contains invalid/unknown patch %s\n",
-							tex->name(),
-							tex->patch(p)->name());
+						problems +=
+							S_FMT("Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
 				}
 			}
 			else
@@ -569,10 +567,8 @@ bool TextureXEditor::checkTextures()
 				for (unsigned p = 0; p < tex->nPatches(); p++)
 				{
 					if (patch_table_.patchIndex(tex->patch(p)->name()) == -1)
-						problems += S_FMT(
-							"Texture %s contains invalid/unknown patch %s\n",
-							tex->name(),
-							tex->patch(p)->name());
+						problems +=
+							S_FMT("Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
 				}
 			}
 		}

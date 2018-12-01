@@ -1405,8 +1405,7 @@ bool TextureXPanel::modifyOffsets()
 		}
 
 		// Calculate and apply new offsets
-		Vec2i offsets =
-			mod.calculateOffsets(ctex->offsetX(), ctex->offsetY(), ctex->width(), ctex->height());
+		Vec2i offsets = mod.calculateOffsets(ctex->offsetX(), ctex->offsetY(), ctex->width(), ctex->height());
 		ctex->setOffsetX(offsets.x);
 		ctex->setOffsetY(offsets.y);
 

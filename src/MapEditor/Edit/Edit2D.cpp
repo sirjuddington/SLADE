@@ -932,7 +932,7 @@ void Edit2D::createThing(double x, double y) const
 void Edit2D::createSector(double x, double y) const
 {
 	Vec2f point(x, y);
-	auto&     map = context_.map();
+	auto& map = context_.map();
 
 	// Find nearest line
 	int  nearest = map.nearestLine(point, 99999999);

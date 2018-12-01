@@ -43,7 +43,7 @@ public:
 private:
 	Vec2f tl_;
 	Vec2f br_;
-	float     fade_;
+	float fade_;
 };
 
 // Selection/deselection animation for things
@@ -77,8 +77,8 @@ public:
 private:
 	vector<Rectf> lines_;
 	vector<Rectf> tabs_;
-	bool            select_;
-	float           fade_;
+	bool          select_;
+	float         fade_;
 };
 
 // Selection/deselection animation for vertices
@@ -93,9 +93,9 @@ public:
 
 private:
 	vector<Vec2f> vertices_;
-	double            size_;
-	bool              select_;
-	float             fade_;
+	double        size_;
+	bool          select_;
+	float         fade_;
 };
 
 // Selection/deselection animation for sectors
@@ -126,8 +126,8 @@ public:
 
 private:
 	Vec3f points_[4];
-	bool      select_;
-	float     fade_;
+	bool  select_;
+	float fade_;
 };
 
 // Selection/deselection animation for 3d mode flats
@@ -142,7 +142,7 @@ public:
 
 private:
 	MapSector* sector_;
-	Plane    plane_;
+	Plane      plane_;
 	bool       select_;
 	float      fade_;
 };

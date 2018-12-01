@@ -407,9 +407,9 @@ void EditingPrefsPanel::onBtnRemoveClicked(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void EditingPrefsPanel::onExternalExeActivated(wxListEvent& e)
 {
-	string                      name     = lv_ext_editors_->GetItemText(e.GetIndex());
-	string                      category = choice_category_->GetStringSelection();
-	Executables::ExternalExe exe      = Executables::externalExe(name, category);
+	string name     = lv_ext_editors_->GetItemText(e.GetIndex());
+	string category = choice_category_->GetStringSelection();
+	auto   exe      = Executables::externalExe(name, category);
 
 	ExternalEditorDialog dlg(this, false, name, exe.path);
 	while (dlg.ShowModal() == wxID_OK)

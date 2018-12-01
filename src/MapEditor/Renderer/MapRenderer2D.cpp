@@ -332,7 +332,7 @@ void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float 
 
 	// Set selection colour
 	ColRGBA col = ColourConfiguration::colour("map_selection");
-	col.a      = 255; //*= fade;
+	col.a       = 255; //*= fade;
 	OpenGL::setColour(col);
 
 	// Setup rendering properties
@@ -436,7 +436,7 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 	glNewList(list_lines_, GL_COMPILE_AND_EXECUTE);
 
 	// Draw all lines
-	ColRGBA   col;
+	ColRGBA  col;
 	MapLine* line = nullptr;
 	double   x1, y1, x2, y2;
 	glBegin(GL_LINES);
@@ -1377,7 +1377,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 	if (things_arrows.size() > 0)
 	{
 		ColRGBA acol = COL_WHITE;
-		acol.a      = 255 * alpha * arrow_alpha;
+		acol.a       = 255 * alpha * arrow_alpha;
 		OpenGL::setColour(acol);
 		// glColor4f(1.0f, 1.0f, 1.0f, alpha * arrow_alpha);
 		GLTexture* tex_arrow = MapEditor::textureManager().editorImage("arrow");
@@ -1705,7 +1705,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 
 	// Get colours
 	wxColour col(arrow_pathed_color);
-	ColRGBA   pathedcol(COLWX(col), col.Alpha());
+	ColRGBA  pathedcol(COLWX(col), col.Alpha());
 	col.Set(arrow_dragon_color);
 	ColRGBA dragoncol(COLWX(col), col.Alpha());
 
@@ -2487,8 +2487,7 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		glVertex2d(
-			map_->vertex(vertices[a].index)->xPos() + move_vec.x,
-			map_->vertex(vertices[a].index)->yPos() + move_vec.y);
+			map_->vertex(vertices[a].index)->xPos() + move_vec.x, map_->vertex(vertices[a].index)->yPos() + move_vec.y);
 	}
 	glEnd();
 
@@ -2994,7 +2993,7 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 	int      nverts = map_->nLines() * vpl;
 	GLVert*  lines  = new GLVert[nverts];
 	unsigned v      = 0;
-	ColRGBA   col;
+	ColRGBA  col;
 	float    alpha;
 	for (unsigned a = 0; a < map_->nLines(); a++)
 	{
@@ -3019,8 +3018,8 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 		// Direction tab if needed
 		if (show_direction)
 		{
-			Vec2f mid  = line->getPoint(MapObject::Point::Mid);
-			Vec2f tab  = line->dirTabPoint();
+			Vec2f mid      = line->getPoint(MapObject::Point::Mid);
+			Vec2f tab      = line->dirTabPoint();
 			lines[v + 2].x = mid.x;
 			lines[v + 2].y = mid.y;
 			lines[v + 3].x = tab.x;
@@ -3104,7 +3103,7 @@ void MapRenderer2D::updateVisibility(Vec2f view_tl, Vec2f view_br)
 	{
 		// Check against sector bounding box
 		BBox bbox = map_->sector(a)->boundingBox();
-		vis_s_[a]   = 0;
+		vis_s_[a] = 0;
 		if (bbox.max.x < view_tl.x)
 			vis_s_[a] = VIS_LEFT;
 		if (bbox.max.y < view_tl.y)

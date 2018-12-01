@@ -13,13 +13,13 @@ public:
 	CropCanvas(wxWindow* parent, SImage* image, Palette* palette);
 
 	Recti cropRect() { return crop_rect_; }
-	void   setCropRect(Recti& rect) { crop_rect_.set(rect); }
+	void  setCropRect(Recti& rect) { crop_rect_.set(rect); }
 
 	void draw() override;
 
 private:
 	std::unique_ptr<GLTexture> texture_;
-	Recti                     crop_rect_;
+	Recti                      crop_rect_;
 };
 
 class GfxCropDialog : public wxDialog
@@ -29,7 +29,7 @@ public:
 	~GfxCropDialog() {}
 
 	Recti cropRect() { return crop_rect_; }
-	void   updatePreview();
+	void  updatePreview();
 
 private:
 	CropCanvas*     canvas_preview_;
@@ -40,8 +40,8 @@ private:
 	wxRadioButton*  rb_absolute_;
 	wxRadioButton*  rb_relative_;
 
-	int    max_width_;
-	int    max_height_;
+	int   max_width_;
+	int   max_height_;
 	Recti crop_rect_;
 
 	void updateValues();

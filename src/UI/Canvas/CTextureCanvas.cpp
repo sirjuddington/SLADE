@@ -292,8 +292,8 @@ void CTextureCanvas::drawTexture()
 
 	// Calculate top-left position of texture (for glScissor, since it ignores the current translation/scale)
 	Vec2i screen_tl = texToScreenPosition(0, 0);
-	int      left      = screen_tl.x;
-	int      top       = screen_tl.y;
+	int   left      = screen_tl.x;
+	int   top       = screen_tl.y;
 
 	// Translate by offsets if needed
 	if (view_type_ == View::Normal) // No offsets
@@ -325,10 +325,7 @@ void CTextureCanvas::drawTexture()
 	{
 		glEnable(GL_SCISSOR_TEST);
 		glScissor(
-			left,
-			top,
-			texture_->width() * scale_ * (1.0 / tscalex),
-			texture_->height() * yscale * (1.0 / tscaley));
+			left, top, texture_->width() * scale_ * (1.0 / tscalex), texture_->height() * yscale * (1.0 / tscaley));
 		for (uint32_t a = 0; a < texture_->nPatches(); a++)
 			drawPatch(a);
 		glDisable(GL_SCISSOR_TEST);
@@ -417,8 +414,7 @@ void CTextureCanvas::drawTexture()
 			glBegin(GL_LINE_LOOP);
 			glVertex2i(patch->xOffset(), patch->yOffset());
 			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_texture->width());
-			glVertex2i(
-				patch->xOffset() + (int)patch_texture->height(), patch->yOffset() + (int)patch_texture->width());
+			glVertex2i(patch->xOffset() + (int)patch_texture->height(), patch->yOffset() + (int)patch_texture->width());
 			glVertex2i(patch->xOffset() + (int)patch_texture->height(), patch->yOffset());
 			glEnd();
 		}
@@ -428,8 +424,7 @@ void CTextureCanvas::drawTexture()
 			glBegin(GL_LINE_LOOP);
 			glVertex2i(patch->xOffset(), patch->yOffset());
 			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_texture->height());
-			glVertex2i(
-				patch->xOffset() + (int)patch_texture->width(), patch->yOffset() + (int)patch_texture->height());
+			glVertex2i(patch->xOffset() + (int)patch_texture->width(), patch->yOffset() + (int)patch_texture->height());
 			glVertex2i(patch->xOffset() + (int)patch_texture->width(), patch->yOffset());
 			glEnd();
 		}
@@ -474,10 +469,10 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Setup extended features
-	bool   flipx        = false;
-	bool   flipy        = false;
-	double alpha        = 1.0;
-	bool   shade_select = true;
+	bool    flipx        = false;
+	bool    flipy        = false;
+	double  alpha        = 1.0;
+	bool    shade_select = true;
 	ColRGBA col          = COL_WHITE;
 	if (texture_->isExtended())
 	{
@@ -864,7 +859,7 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 
 		// Check if patch hilight changes
 		Vec2i pos   = screenToTexPosition(e.GetX(), e.GetY());
-		int      patch = patchAt(pos.x, pos.y);
+		int   patch = patchAt(pos.x, pos.y);
 		if (hilight_patch_ != patch)
 		{
 			hilight_patch_ = patch;

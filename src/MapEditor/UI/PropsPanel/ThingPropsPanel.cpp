@@ -304,9 +304,9 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 		if (App::runTimer() > last_check_ + 15)
 		{
 			// Get cursor position in canvas coordinates
-			double    x = -1.2 + ((double)e.GetX() / (double)GetSize().x) * 2.4;
-			double    y = -1.2 + ((double)e.GetY() / (double)GetSize().y) * 2.4;
-			Vec2f cursor_pos(x, y);
+			double x = -1.2 + ((double)e.GetX() / (double)GetSize().x) * 2.4;
+			double y = -1.2 + ((double)e.GetY() / (double)GetSize().y) * 2.4;
+			Vec2f  cursor_pos(x, y);
 
 			// Find closest dir point to cursor
 			point_hl_       = -1;

@@ -1454,7 +1454,7 @@ ColRGBA GfxColouriseDialog::colour()
 void GfxColouriseDialog::setColour(string col)
 {
 	wxColour colour(col);
-	ColRGBA   rgba = ColRGBA(COLWX(colour));
+	ColRGBA  rgba = ColRGBA(COLWX(colour));
 	cb_colour_->setColour(rgba);
 	gfx_preview_->getImage()->colourise(rgba, palette_);
 	gfx_preview_->updateImageTexture();

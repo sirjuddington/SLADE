@@ -6,12 +6,12 @@
 
 struct ArchiveFormat
 {
-	string              id;
-	string              name;
-	bool                supports_dirs;
-	bool                names_extensions;
-	int                 max_name_length;
-	string              entry_format;
+	string             id;
+	string             name;
+	bool               supports_dirs;
+	bool               names_extensions;
+	int                max_name_length;
+	string             entry_format;
 	vector<StringPair> extensions;
 
 	ArchiveFormat(string id) :

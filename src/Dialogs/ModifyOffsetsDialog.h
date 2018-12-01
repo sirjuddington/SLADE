@@ -7,11 +7,11 @@ public:
 	~ModifyOffsetsDialog();
 
 	Vec2i offset();
-	int      alignType();
-	bool     autoOffset();
-	bool     relativeOffset();
-	bool     xOffChange();
-	bool     yOffChange();
+	int   alignType();
+	bool  autoOffset();
+	bool  relativeOffset();
+	bool  xOffChange();
+	bool  yOffChange();
 	Vec2i calculateOffsets(int xoff, int yoff, int width, int height);
 
 private:

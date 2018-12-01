@@ -204,9 +204,9 @@ public:
 	}
 
 private:
-	string   gfx_format;
-	Vec2i offsets;
-	Palette  palette;
+	string  gfx_format;
+	Vec2i   offsets;
+	Palette palette;
 };
 
 

@@ -71,17 +71,17 @@ public:
 	void      pasteRows(int row);
 
 private:
-	MemChunk         data_;
-	vector<Column>   columns_;
-	unsigned         row_stride_ = 0;
-	unsigned         data_start_ = 0;
-	unsigned         data_stop_  = 0;
-	int              row_first_  = 0;
-	string           row_prefix_;
-	DataEntryPanel*  parent_ = nullptr;
-	MemChunk         data_clipboard_;
-	vector<Vec2i> cells_modified_;
-	vector<int>      rows_new_;
+	MemChunk        data_;
+	vector<Column>  columns_;
+	unsigned        row_stride_ = 0;
+	unsigned        data_start_ = 0;
+	unsigned        data_stop_  = 0;
+	int             row_first_  = 0;
+	string          row_prefix_;
+	DataEntryPanel* parent_ = nullptr;
+	MemChunk        data_clipboard_;
+	vector<Vec2i>   cells_modified_;
+	vector<int>     rows_new_;
 };
 
 class DataEntryPanel : public EntryPanel, SActionHandler

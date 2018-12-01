@@ -46,7 +46,7 @@ public:
 			Category category,
 			Archive* archive,
 			string   path,
-			unsigned index    = 0,
+			unsigned index     = 0,
 			string   long_name = "") :
 			short_name(short_name),
 			category(category),

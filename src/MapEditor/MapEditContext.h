@@ -80,10 +80,10 @@ public:
 	void selectionUpdated();
 
 	// Grid
-	void      incrementGrid();
-	void      decrementGrid();
-	double    snapToGrid(double position, bool force = true);
-	Vec2f relativeSnapToGrid(Vec2f origin, Vec2f mouse_pos);
+	void   incrementGrid();
+	void   decrementGrid();
+	double snapToGrid(double position, bool force = true);
+	Vec2f  relativeSnapToGrid(Vec2f origin, Vec2f mouse_pos);
 
 	// Tag edit
 	int  beginTagEdit();
@@ -205,7 +205,7 @@ private:
 
 	// Player start swap
 	Vec2f player_start_pos_;
-	int       player_start_dir_ = 0;
+	int   player_start_dir_ = 0;
 
 	// Renderer
 	MapEditor::Renderer renderer_ = MapEditor::Renderer(*this);
