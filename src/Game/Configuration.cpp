@@ -544,10 +544,10 @@ bool Configuration::readConfiguration(string& cfg, string source, MapFormat form
 	Parser parser;
 	switch (format)
 	{
-	case MAP_DOOM: parser.define("MAP_DOOM"); break;
-	case MAP_HEXEN: parser.define("MAP_HEXEN"); break;
-	case MAP_DOOM64: parser.define("MAP_DOOM64"); break;
-	case MAP_UDMF: parser.define("MAP_UDMF"); break;
+	case MapFormat::Doom: parser.define("MAP_DOOM"); break;
+	case MapFormat::Hexen: parser.define("MAP_HEXEN"); break;
+	case MapFormat::Doom64: parser.define("MAP_DOOM64"); break;
+	case MapFormat::UDMF: parser.define("MAP_UDMF"); break;
 	default: parser.define("MAP_UNKNOWN"); break;
 	}
 	parser.parseText(cfg, source);
