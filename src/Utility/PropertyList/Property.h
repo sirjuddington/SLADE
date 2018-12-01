@@ -5,7 +5,7 @@ class Property
 public:
 	enum class Type
 	{
-		Bool,
+		Boolean,
 		Int,
 		Float,
 		String,
@@ -13,14 +13,15 @@ public:
 		UInt
 	};
 
-	union Value {
+	union Value
+	{
 		bool     Boolean;
 		int      Integer;
 		double   Floating;
 		unsigned Unsigned;
 	};
 
-	Property(Type type = Type::Bool); // Default property type is bool
+	Property(Type type = Type::Boolean); // Default property type is bool
 	Property(const Property& copy);
 	Property(bool value);
 	Property(int value);
