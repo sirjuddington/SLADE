@@ -550,7 +550,7 @@ void Edit3D::resetOffsets() const
 		}
 
 		// Reset scaling
-		if (context_.mapDesc().format == MAP_UDMF
+		if (context_.mapDesc().format == MapFormat::UDMF
 			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (walls[a].type == ItemType::WallTop)
@@ -572,7 +572,7 @@ void Edit3D::resetOffsets() const
 	}
 
 	// Go through flats
-	if (context_.mapDesc().format == MAP_UDMF)
+	if (context_.mapDesc().format == MapFormat::UDMF)
 	{
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
@@ -603,7 +603,7 @@ void Edit3D::resetOffsets() const
 	}
 
 	// Go through things
-	if (context_.mapDesc().format != MAP_DOOM)
+	if (context_.mapDesc().format != MapFormat::Doom)
 	{
 		for (unsigned a = 0; a < things.size(); ++a)
 		{
@@ -612,7 +612,7 @@ void Edit3D::resetOffsets() const
 				continue;
 
 			// Reset height
-			if (context_.mapDesc().format != MAP_UDMF)
+			if (context_.mapDesc().format != MapFormat::UDMF)
 				thing->setIntProperty("height", 0);
 			else
 			{
@@ -638,7 +638,7 @@ void Edit3D::resetOffsets() const
 	context_.endUndoRecord();
 
 	// Editor message
-	if (context_.mapDesc().format == MAP_UDMF
+	if (context_.mapDesc().format == MapFormat::UDMF
 		&& (Game::configuration().featureSupported(UDMFFeature::FlatScaling)
 			|| Game::configuration().featureSupported(UDMFFeature::SideScaling)
 			|| Game::configuration().featureSupported(UDMFFeature::TextureScaling)))
@@ -990,7 +990,7 @@ void Edit3D::floodFill(CopyType type)
 void Edit3D::changeThingZ(int amount) const
 {
 	// Ignore for doom format
-	if (context_.map().currentFormat() == MAP_DOOM)
+	if (context_.map().currentFormat() == MapFormat::Doom)
 		return;
 
 	// Go through 3d selection
@@ -1131,13 +1131,13 @@ void Edit3D::changeHeight(int amount) const
 	auto&                   map          = context_.map();
 	if (selection_3d.empty() && hilight_3d.index >= 0)
 	{
-		if (hilight_3d.type != ItemType::Thing || map.currentFormat() != MAP_DOOM)
+		if (hilight_3d.type != ItemType::Thing || map.currentFormat() != MapFormat::Doom)
 			items.push_back(hilight_3d);
 	}
 	else
 		for (unsigned a = 0; a < selection_3d.size(); a++)
 		{
-			if (selection_3d[a].type != ItemType::Thing || map.currentFormat() != MAP_DOOM)
+			if (selection_3d[a].type != ItemType::Thing || map.currentFormat() != MapFormat::Doom)
 				items.push_back(selection_3d[a]);
 		}
 	if (items.empty())

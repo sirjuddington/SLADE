@@ -473,14 +473,14 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 		stc_tabs_->AddPage(setupExtraFlagsTab(), "Extra Flags");
 
 	// Special tab
-	if (MapEditor::editContext().mapDesc().format != MAP_DOOM)
+	if (MapEditor::editContext().mapDesc().format != MapFormat::Doom)
 	{
 		panel_special_ = new ActionSpecialPanel(this, false);
 		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_special_), "Special");
 	}
 
 	// Args tab
-	if (MapEditor::editContext().mapDesc().format != MAP_DOOM)
+	if (MapEditor::editContext().mapDesc().format != MapFormat::Doom)
 	{
 		panel_args_ = new ArgsPanel(this);
 		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_args_), "Args");
@@ -513,7 +513,7 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 // -----------------------------------------------------------------------------
 wxPanel* ThingPropsPanel::setupGeneralTab()
 {
-	int map_format = MapEditor::editContext().mapDesc().format;
+	auto map_format = MapEditor::editContext().mapDesc().format;
 
 	// Create panel
 	wxPanel* panel = new wxPanel(stc_tabs_, -1);
@@ -537,7 +537,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	auto& props = Game::configuration().allUDMFProperties(MapObject::Type::Thing);
 
 	// UDMF flags
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 	{
 		// Get all udmf flag properties
 		vector<string> flags;
@@ -619,7 +619,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	// ac_direction->SetBackgroundColour(stc_tabs->GetThemeBackgroundColour());
 #endif
 
-	if (map_format != MAP_DOOM)
+	if (map_format != MapFormat::Doom)
 	{
 		// Id
 		gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
@@ -630,7 +630,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 		// Z Height
 		gb_sizer->Add(new wxStaticText(panel, -1, "Z Height:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 		gb_sizer->Add(text_height_ = new NumberTextCtrl(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
-		if (map_format == MAP_UDMF)
+		if (map_format == MapFormat::UDMF)
 			text_height_->allowDecimal(true);
 
 		gb_sizer->AddGrowableCol(1, 1);
@@ -697,12 +697,12 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	if (objects.empty())
 		return;
 
-	int    map_format = MapEditor::editContext().mapDesc().format;
+	auto   map_format = MapEditor::editContext().mapDesc().format;
 	int    ival;
 	double fval;
 
 	// Load flags
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 	{
 		bool val = false;
 		for (unsigned a = 0; a < udmf_flags_.size(); a++)
@@ -753,18 +753,18 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Args
-	if (map_format == MAP_HEXEN || map_format == MAP_UDMF)
+	if (map_format == MapFormat::Hexen || map_format == MapFormat::UDMF)
 	{
 		// Setup
 		if (ival > 0)
 		{
 			auto& as = Game::configuration().actionSpecial(ival).argSpec();
-			panel_args_->setup(as, (map_format == MAP_UDMF));
+			panel_args_->setup(as, (map_format == MapFormat::UDMF));
 		}
 		else
 		{
 			auto& as = Game::configuration().thingType(type_current_).argSpec();
-			panel_args_->setup(as, (map_format == MAP_UDMF));
+			panel_args_->setup(as, (map_format == MapFormat::UDMF));
 		}
 
 		// Load values
@@ -779,13 +779,13 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		ac_direction_->setAngle(ival);
 
 	// Id
-	if (map_format != MAP_DOOM && MapObject::multiIntProperty(objects, "id", ival))
+	if (map_format != MapFormat::Doom && MapObject::multiIntProperty(objects, "id", ival))
 		text_id_->setNumber(ival);
 
 	// Z Height
-	if (map_format == MAP_HEXEN && MapObject::multiIntProperty(objects, "height", ival))
+	if (map_format == MapFormat::Hexen && MapObject::multiIntProperty(objects, "height", ival))
 		text_height_->setNumber(ival);
-	else if (map_format == MAP_UDMF && MapObject::multiFloatProperty(objects, "height", fval))
+	else if (map_format == MapFormat::UDMF && MapObject::multiFloatProperty(objects, "height", fval))
 		text_height_->setDecNumber(fval);
 
 	// Load other properties
@@ -806,7 +806,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 void ThingPropsPanel::applyChanges()
 {
-	int map_format = MapEditor::editContext().mapDesc().format;
+	auto map_format = MapEditor::editContext().mapDesc().format;
 
 	// Apply general properties
 	for (unsigned a = 0; a < objects_.size(); a++)
@@ -849,7 +849,7 @@ void ThingPropsPanel::applyChanges()
 		if (ac_direction_->angleSet())
 			objects_[a]->setIntProperty("angle", ac_direction_->angle(objects_[a]->intProperty("angle")));
 
-		if (map_format != MAP_DOOM)
+		if (map_format != MapFormat::Doom)
 		{
 			// ID
 			if (!text_id_->GetValue().IsEmpty())
@@ -858,7 +858,7 @@ void ThingPropsPanel::applyChanges()
 			// Z Height
 			if (!text_height_->GetValue().IsEmpty())
 			{
-				if (map_format == MAP_UDMF)
+				if (map_format == MapFormat::UDMF)
 					objects_[a]->setFloatProperty(
 						"height", text_height_->decNumber(objects_[a]->floatProperty("height")));
 				else
@@ -902,7 +902,7 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 		if (panel_args_)
 		{
 			auto& as = tt.argSpec();
-			panel_args_->setup(as, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
+			panel_args_->setup(as, (MapEditor::editContext().mapDesc().format == MapFormat::UDMF));
 		}
 
 		// Update layout

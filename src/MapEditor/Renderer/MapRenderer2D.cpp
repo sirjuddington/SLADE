@@ -1979,7 +1979,7 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 			double sy  = tex->scaleY();
 			double rot = 0;
 			// Check for various UDMF extensions
-			if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
+			if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 			{
 				// Floor
 				if (type <= 1)
@@ -2137,7 +2137,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 			double sy  = tex->scaleY();
 			double rot = 0;
 			// Check for various UDMF extensions
-			if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
+			if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 			{
 				// Floor
 				if (type <= 1)

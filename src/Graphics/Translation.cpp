@@ -147,7 +147,7 @@ void Translation::parse(string def)
 	else if (test.StartsWith("desaturate,", &temp))
 	{
 		built_in_name_ = "Desaturate";
-		desat_amount_  = MAX(MIN(atoi(CHR(temp)), 31), 1);
+		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(atoi(CHR(temp)), 31), 1);
 		return;
 	}
 
@@ -624,9 +624,9 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 			float   grey = (gcol.r * 0.3f + gcol.g * 0.59f + gcol.b * 0.11f) / 255.0f;
 
 			// Apply new colour
-			colour.r     = MIN(255, int((td->dSr() + grey * (td->dEr() - td->dSr())) * 255.0f));
-			colour.g     = MIN(255, int((td->dSg() + grey * (td->dEg() - td->dSg())) * 255.0f));
-			colour.b     = MIN(255, int((td->dSb() + grey * (td->dEb() - td->dSb())) * 255.0f));
+			colour.r     = std::min<uint8_t>(255, int((td->dSr() + grey * (td->dEr() - td->dSr())) * 255.0f));
+			colour.g     = std::min<uint8_t>(255, int((td->dSg() + grey * (td->dEg() - td->dSg())) * 255.0f));
+			colour.b     = std::min<uint8_t>(255, int((td->dSb() + grey * (td->dEb() - td->dSb())) * 255.0f));
 			colour.index = pal->nearestColour(colour);
 		}
 
@@ -721,7 +721,7 @@ ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 	if (type == BLEND_ICE)
 	{
 		// Determine destination palette index in IceRange
-		uint8_t di   = MIN(((int)grey >> 4), 15);
+		uint8_t di   = std::min<uint8_t>(((int)grey >> 4), 15);
 		ColRGBA c    = IceRange[di];
 		colour.r     = c.r;
 		colour.g     = c.g;
@@ -734,9 +734,9 @@ ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 	{
 		float amount = type - 1; // get value between 0 and 30
 
-		colour.r     = MIN(255, int((colour.r * (31 - amount) + grey * amount) / 31));
-		colour.g     = MIN(255, int((colour.g * (31 - amount) + grey * amount) / 31));
-		colour.b     = MIN(255, int((colour.b * (31 - amount) + grey * amount) / 31));
+		colour.r     = std::min<uint8_t>(255, int((colour.r * (31 - amount) + grey * amount) / 31));
+		colour.g     = std::min<uint8_t>(255, int((colour.g * (31 - amount) + grey * amount) / 31));
+		colour.b     = std::min<uint8_t>(255, int((colour.b * (31 - amount) + grey * amount) / 31));
 		colour.index = pal->nearestColour(colour);
 	}
 	// All others are essentially preset desaturated translations
@@ -777,9 +777,9 @@ ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 		default: break;
 		}
 		// Apply new colour
-		colour.r     = MIN(255, int(sr + grey * (er - sr)));
-		colour.g     = MIN(255, int(sg + grey * (eg - sg)));
-		colour.b     = MIN(255, int(sb + grey * (eb - sb)));
+		colour.r     = std::min<uint8_t>(255, int(sr + grey * (er - sr)));
+		colour.g     = std::min<uint8_t>(255, int(sg + grey * (eg - sg)));
+		colour.b     = std::min<uint8_t>(255, int(sb + grey * (eb - sb)));
 		colour.index = pal->nearestColour(colour);
 	}
 	return colour;

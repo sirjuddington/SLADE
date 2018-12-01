@@ -924,7 +924,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 		// Get map info
 		map.head   = maphead;
 		map.name   = maphead->name();
-		map.format = MAP_UDMF;
+		map.format = MapFormat::UDMF;
 
 		// All entries until we find ENDMAP
 		ArchiveEntry* entry = maphead->nextEntry();
@@ -1018,13 +1018,13 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 
 	// If BEHAVIOR lump exists, it's a hexen format map
 	if (existing_map_lumps[LUMP_BEHAVIOR])
-		map.format = MAP_HEXEN;
+		map.format = MapFormat::Hexen;
 	// If LEAFS, LIGHTS and MACROS exist, it's a doom 64 format map
 	else if (existing_map_lumps[LUMP_LEAFS] && existing_map_lumps[LUMP_LIGHTS] && existing_map_lumps[LUMP_MACROS])
-		map.format = MAP_DOOM64;
+		map.format = MapFormat::Doom64;
 	// Otherwise it's doom format
 	else
-		map.format = MAP_DOOM;
+		map.format = MapFormat::Doom;
 
 	return map;
 }
@@ -1136,15 +1136,15 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 
 				// If BEHAVIOR lump exists, it's a hexen format map
 				if (existing_map_lumps[LUMP_BEHAVIOR])
-					md.format = MAP_HEXEN;
+					md.format = MapFormat::Hexen;
 				// If LEAFS, LIGHTS and MACROS exist, it's a doom 64 format map
 				else if (
 					existing_map_lumps[LUMP_LEAFS] && existing_map_lumps[LUMP_LIGHTS]
 					&& existing_map_lumps[LUMP_MACROS])
-					md.format = MAP_DOOM64;
+					md.format = MapFormat::Doom64;
 				// Otherwise it's doom format
 				else
-					md.format = MAP_DOOM;
+					md.format = MapFormat::Doom;
 
 				// Add map info to the maps list
 				maps.push_back(md);
@@ -1185,11 +1185,11 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 	for (unsigned a = 0; a < maps.size(); a++)
 	{
 		string format;
-		if (maps[a].format == MAP_DOOM)
+		if (maps[a].format == MapFormat::Doom)
 			format = "doom";
-		else if (maps[a].format == MAP_DOOM64)
+		else if (maps[a].format == MapFormat::Doom64)
 			format = "doom64";
-		else if (maps[a].format == MAP_HEXEN)
+		else if (maps[a].format == MapFormat::Hexen)
 			format = "hexen";
 		else
 			format = "udmf";

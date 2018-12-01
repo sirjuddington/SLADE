@@ -2,6 +2,7 @@
 
 #include "ArchiveEntry.h"
 #include "ArchiveTreeNode.h"
+#include "General/Defs.h"
 #include "General/ListenerAnnouncer.h"
 
 struct ArchiveFormat
@@ -32,7 +33,7 @@ public:
 		string        name;
 		ArchiveEntry* head;
 		ArchiveEntry* end;
-		uint8_t       format;  // See MapTypes enum
+		MapFormat     format;  // See MapTypes enum
 		bool          archive; // True if head is an archive (for maps in zips)
 
 		vector<ArchiveEntry*> unk; // Unknown map lumps (must be preserved for UDMF compliance)
@@ -41,7 +42,7 @@ public:
 		{
 			head = end = nullptr;
 			archive    = false;
-			format     = MAP_UNKNOWN;
+			format     = MapFormat::Unknown;
 		}
 	};
 

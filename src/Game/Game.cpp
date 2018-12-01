@@ -138,13 +138,13 @@ bool GameDef::parse(MemChunk& mc)
 			for (unsigned a = 0; a < node_maps->nValues(); a++)
 			{
 				if (S_CMPNOCASE(node_maps->stringValue(a), "doom"))
-					supported_formats[MAP_DOOM] = true;
+					supported_formats[MapFormat::Doom] = true;
 				else if (S_CMPNOCASE(node_maps->stringValue(a), "hexen"))
-					supported_formats[MAP_HEXEN] = true;
+					supported_formats[MapFormat::Hexen] = true;
 				else if (S_CMPNOCASE(node_maps->stringValue(a), "doom64"))
-					supported_formats[MAP_DOOM64] = true;
+					supported_formats[MapFormat::Doom64] = true;
 				else if (S_CMPNOCASE(node_maps->stringValue(a), "udmf"))
-					supported_formats[MAP_UDMF] = true;
+					supported_formats[MapFormat::UDMF] = true;
 			}
 		}
 		// Filters
@@ -224,13 +224,13 @@ bool PortDef::parse(MemChunk& mc)
 			for (unsigned a = 0; a < node_maps->nValues(); a++)
 			{
 				if (S_CMPNOCASE(node_maps->stringValue(a), "doom"))
-					supported_formats[MAP_DOOM] = true;
+					supported_formats[MapFormat::Doom] = true;
 				else if (S_CMPNOCASE(node_maps->stringValue(a), "hexen"))
-					supported_formats[MAP_HEXEN] = true;
+					supported_formats[MapFormat::Hexen] = true;
 				else if (S_CMPNOCASE(node_maps->stringValue(a), "doom64"))
-					supported_formats[MAP_DOOM64] = true;
+					supported_formats[MapFormat::Doom64] = true;
 				else if (S_CMPNOCASE(node_maps->stringValue(a), "udmf"))
-					supported_formats[MAP_UDMF] = true;
+					supported_formats[MapFormat::UDMF] = true;
 			}
 		}
 	}
@@ -513,9 +513,9 @@ const PortDef& Game::portDef(const string& id)
 // -----------------------------------------------------------------------------
 // Checks if the combination of [game] and [port] supports the map [format]
 // -----------------------------------------------------------------------------
-bool Game::mapFormatSupported(int format, const string& game, const string& port)
+bool Game::mapFormatSupported(MapFormat format, const string& game, const string& port)
 {
-	if (format < 0 || format >= MAP_UNKNOWN)
+	if (format == MapFormat::Unknown)
 		return false;
 
 	if (!port.empty())
@@ -708,7 +708,7 @@ namespace
 				}
 			}
 			// Read configuration
-			if (i > 0 && configuration().openConfig(games[i], i < 4 ? "zdoom" : "eternity", MAP_DOOM))
+			if (i > 0 && configuration().openConfig(games[i], i < 4 ? "zdoom" : "eternity", MapFormat::Doom))
 			{
 				for (size_t z = 0; z < lines.size(); ++z)
 				{
@@ -720,7 +720,7 @@ namespace
 				}
 			}
 			// Convert special names to numbers
-			configuration().openConfig("doom2", "zdoom", MAP_HEXEN);
+			configuration().openConfig("doom2", "zdoom", MapFormat::Hexen);
 			for (auto& l : lines)
 			{
 				for (auto& i : configuration().allActionSpecials())

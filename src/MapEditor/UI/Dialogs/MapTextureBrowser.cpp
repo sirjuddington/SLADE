@@ -157,7 +157,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	// Set window title
 	SetTitle("Browse Map Textures");
 
-	int mapFormat = map->currentFormat();
+	auto mapFormat = map->currentFormat();
 
 	// Textures
 	if (type == 0 || Game::configuration().featureSupported(Game::Feature::MixTexFlats))
@@ -167,7 +167,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		auto& textures = MapEditor::textureManager().allTexturesInfo();
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
-			if ((mapFormat != MAP_UDMF || !Game::configuration().featureSupported(Game::Feature::LongNames))
+			if ((mapFormat != MapFormat::UDMF || !Game::configuration().featureSupported(Game::Feature::LongNames))
 				&& textures[a].short_name.Len() > 8)
 			{
 				// Only UDMF supports texture/flat names longer than 8 characters
@@ -200,7 +200,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		auto& flats = MapEditor::textureManager().allFlatsInfo();
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
-			if ((mapFormat != MAP_UDMF || !Game::configuration().featureSupported(Game::Feature::LongNames))
+			if ((mapFormat != MapFormat::UDMF || !Game::configuration().featureSupported(Game::Feature::LongNames))
 				&& flats[a].short_name.Len() > 8)
 			{
 				// Only UDMF supports texture/flat names longer than 8 characters
@@ -233,7 +233,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	}
 
 	// Full path textures
-	if (mapFormat == MAP_UDMF && Game::configuration().featureSupported(Game::Feature::LongNames))
+	if (mapFormat == MapFormat::UDMF && Game::configuration().featureSupported(Game::Feature::LongNames))
 	{
 		// Textures
 		auto& fpTextures = MapEditor::textureManager().allTexturesInfo();

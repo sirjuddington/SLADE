@@ -910,7 +910,7 @@ void Edit2D::createThing(double x, double y) const
 	auto thing = context_.map().createThing(x, y);
 
 	// Setup properties
-	Game::configuration().applyDefaults(thing, context_.map().currentFormat() == MAP_UDMF);
+	Game::configuration().applyDefaults(thing, context_.map().currentFormat() == MapFormat::UDMF);
 	if (thing_copied_ && thing)
 	{
 		// Copy type and angle from the last copied thing
@@ -975,7 +975,7 @@ void Edit2D::createSector(double x, double y) const
 	{
 		auto new_sector = map.sector(map.nSectors() - 1);
 		if (new_sector->ceiling().texture.IsEmpty())
-			Game::configuration().applyDefaults(new_sector, map.currentFormat() == MAP_UDMF);
+			Game::configuration().applyDefaults(new_sector, map.currentFormat() == MapFormat::UDMF);
 	}
 
 	// Editor message

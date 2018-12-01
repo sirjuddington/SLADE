@@ -255,7 +255,7 @@ void DataEntryTable::SetValue(int row, int col, const string& value)
 	else if (columns_[col].type == String)
 	{
 		vector<char> str(columns_[col].size, 0);
-		unsigned     minsize = MIN(columns_[col].size, value.size());
+		unsigned     minsize = std::min<unsigned>(columns_[col].size, value.size());
 		for (unsigned a = 0; a < minsize; a++)
 			str[a] = value[a];
 		data_.write(str.data(), columns_[col].size);

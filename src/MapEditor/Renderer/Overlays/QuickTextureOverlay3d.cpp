@@ -105,7 +105,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 		else if (sel[initial].type == MapEditor::ItemType::WallBottom)
 			tex_init = editor->map().side(sel[initial].index)->stringProperty("texturebottom");
 
-		int mapFormat = editor->map().currentFormat();
+		auto map_format = editor->map().currentFormat();
 
 		// Get all available texture names (sorted alphabetically)
 		vector<string> tex_names;
@@ -125,7 +125,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 					}
 				}
 
-				if (mapFormat == MAP_UDMF && Game::configuration().featureSupported(Game::Feature::LongNames)
+				if (map_format == MapFormat::UDMF && Game::configuration().featureSupported(Game::Feature::LongNames)
 					&& ti[a].short_name.CmpNoCase(ti[a].long_name) != 0)
 				{
 					tex_names.push_back(ti[a].long_name);
@@ -134,7 +134,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 				if (skip)
 					continue;
 
-				if (mapFormat == MAP_UDMF || ti[a].short_name.Len() <= 8)
+				if (map_format == MapFormat::UDMF || ti[a].short_name.Len() <= 8)
 				{
 					tex_names.push_back(ti[a].short_name);
 				}
@@ -155,7 +155,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 					}
 				}
 
-				if (mapFormat == MAP_UDMF && Game::configuration().featureSupported(Game::Feature::LongNames)
+				if (map_format == MapFormat::UDMF && Game::configuration().featureSupported(Game::Feature::LongNames)
 					&& ti[a].short_name.CmpNoCase(ti[a].long_name) != 0)
 				{
 					tex_names.push_back(ti[a].long_name);
@@ -164,7 +164,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 				if (skip)
 					continue;
 
-				if (mapFormat == MAP_UDMF || ti[a].short_name.Len() <= 8)
+				if (map_format == MapFormat::UDMF || ti[a].short_name.Len() <= 8)
 				{
 					tex_names.push_back(ti[a].short_name);
 				}

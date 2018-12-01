@@ -740,7 +740,7 @@ void MapEditContext::incrementGrid()
 void MapEditContext::decrementGrid()
 {
 	grid_size_--;
-	int mingrid = (map_.currentFormat() == MAP_UDMF) ? 0 : 4;
+	int mingrid = (map_.currentFormat() == MapFormat::UDMF) ? 0 : 4;
 	if (grid_size_ < mingrid)
 		grid_size_ = mingrid;
 
@@ -756,7 +756,7 @@ double MapEditContext::snapToGrid(double position, bool force)
 {
 	if (!force && !grid_snap_)
 	{
-		if (map_.currentFormat() == MAP_UDMF)
+		if (map_.currentFormat() == MapFormat::UDMF)
 			return position;
 		else
 			return ceil(position - 0.5);
@@ -1061,7 +1061,7 @@ bool MapEditContext::handleKeyBind(string key, Vec2f position)
 	else if (key.StartsWith("me3d_") && edit_mode_ == Mode::Visual)
 	{
 		// Check is UDMF
-		bool is_udmf = map_.currentFormat() == MAP_UDMF;
+		bool is_udmf = map_.currentFormat() == MapFormat::UDMF;
 
 		// Clear selection
 		if (key == "me3d_clear_selection")

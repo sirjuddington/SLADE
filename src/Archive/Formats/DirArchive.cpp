@@ -469,8 +469,8 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 			continue;
 
 		// Detect map format (probably kinda slow but whatever, no better way to do it really)
-		int      format  = MAP_UNKNOWN;
-		Archive* tempwad = new WadArchive();
+		MapFormat format  = MapFormat::Unknown;
+		Archive*  tempwad = new WadArchive();
 		tempwad->open(entry);
 		vector<MapDesc> emaps = tempwad->detectMaps();
 		if (emaps.size() > 0)

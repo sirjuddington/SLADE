@@ -2012,6 +2012,7 @@
     <ClInclude Include="..\..\src\External\glew\glxew.h" />
     <ClInclude Include="..\..\src\External\glew\wglew.h" />
     <ClInclude Include="..\..\src\General\CVar.h" />
+    <ClInclude Include="..\..\src\General\Defs.h" />
     <ClInclude Include="..\..\src\General\Executables.h" />
     <ClInclude Include="..\..\src\General\KeyBind.h" />
     <ClInclude Include="..\..\src\General\ListenerAnnouncer.h" />

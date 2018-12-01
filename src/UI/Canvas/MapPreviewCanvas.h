@@ -15,9 +15,9 @@ public:
 	void addLine(unsigned v1, unsigned v2, bool twosided, bool special, bool macro = false);
 	void addThing(double x, double y);
 	bool openMap(Archive::MapDesc map);
-	bool readVertices(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format);
-	bool readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format);
-	bool readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format);
+	bool readVertices(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format);
+	bool readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format);
+	bool readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format);
 	void clearMap();
 	void showMap();
 	void draw();

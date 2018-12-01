@@ -509,7 +509,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 		return;
 
 	// Get map format
-	int map_format = MapEditor::editContext().mapDesc().format;
+	auto map_format = MapEditor::editContext().mapDesc().format;
 
 	// Clear property grid
 	clearGrid();
@@ -568,7 +568,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 			pg_properties_->AppendIn(g_special, prop_as);
 
 			// Add args (hexen)
-			if (map_format == MAP_HEXEN)
+			if (map_format == MapFormat::Hexen)
 			{
 				for (unsigned a = 0; a < 5; a++)
 				{
@@ -589,7 +589,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 			}
 
 			// Add SPAC
-			if (map_format == MAP_HEXEN)
+			if (map_format == MapFormat::Hexen)
 			{
 				MOPGSPACTriggerProperty* prop_spac = new MOPGSPACTriggerProperty("Trigger", "spac");
 				prop_spac->setParent(this);
@@ -727,7 +727,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 		addIntProperty(g_basic, "Y Position", "y");
 
 		// Add z height
-		if (map_format != MAP_DOOM && !propHidden("height"))
+		if (map_format != MapFormat::Doom && !propHidden("height"))
 			addIntProperty(g_basic, "Z Height", "height");
 
 		// Add angle
@@ -749,7 +749,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 		}
 
 		// Add id
-		if (map_format != MAP_DOOM && !propHidden("id"))
+		if (map_format != MapFormat::Doom && !propHidden("id"))
 		{
 			MOPGTagProperty* prop_id = new MOPGTagProperty(MOPGTagProperty::IdType::Thing, "ID", "id");
 			prop_id->setParent(this);
@@ -757,7 +757,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 			pg_properties_->AppendIn(g_basic, prop_id);
 		}
 
-		if (map_format == MAP_HEXEN && !propHidden("special"))
+		if (map_format == MapFormat::Hexen && !propHidden("special"))
 		{
 			// Add 'Scripting Special' group
 			wxPGProperty* g_special = pg_properties_->Append(new wxPropertyCategory("Scripting Special"));
@@ -946,13 +946,13 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		pg_properties_->EnableProperty(pg_properties_->GetGrid()->GetRoot());
 
 	// Setup property grid for the object type
-	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
+	if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 		setupTypeUDMF(objects[0]->objType());
 	else
 		setupType(objects[0]->objType());
 
 	// Find any custom properties (UDMF only)
-	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
+	if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 	{
 		for (unsigned a = 0; a < objects.size(); a++)
 		{

@@ -18,10 +18,6 @@ enum class TagType;
 class SLADEMap
 {
 public:
-	SLADEMap();
-	SLADEMap(const SLADEMap& copy) = delete;
-	~SLADEMap();
-
 	// Map entry ordering
 	enum MapEntries
 	{
@@ -32,13 +28,17 @@ public:
 		SECTORS
 	};
 
-	string mapName() const { return name_; }
-	string udmfNamespace() const { return udmf_namespace_; }
-	int    currentFormat() const { return current_format_; }
-	long   geometryUpdated() const { return geometry_updated_; }
-	long   thingsUpdated() const { return things_updated_; }
-	void   setGeometryUpdated();
-	void   setThingsUpdated();
+	SLADEMap();
+	SLADEMap(const SLADEMap& copy) = delete;
+	~SLADEMap();
+
+	string    mapName() const { return name_; }
+	string    udmfNamespace() const { return udmf_namespace_; }
+	MapFormat currentFormat() const { return current_format_; }
+	long      geometryUpdated() const { return geometry_updated_; }
+	long      thingsUpdated() const { return things_updated_; }
+	void      setGeometryUpdated();
+	void      setThingsUpdated();
 
 	// MapObject access
 	MapVertex* vertex(unsigned index) const;
@@ -237,7 +237,7 @@ private:
 	PropertyList       udmf_props_;
 	bool               position_frac_;
 	string             name_;
-	int                current_format_;
+	MapFormat          current_format_;
 	long               opened_time_;
 	MapSpecials        map_specials_;
 	int                bulk_op_level_;

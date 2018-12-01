@@ -738,7 +738,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		return;
 
 	// Switch to ZDBSP if UDMF
-	if (MapEditor::editContext().mapDesc().format == MAP_UDMF && nodebuilder_id != "zdbsp")
+	if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF && nodebuilder_id != "zdbsp")
 	{
 		wxMessageBox("Nodebuilder switched to ZDBSP for UDMF format", "Save Map", wxICON_INFORMATION);
 		builder = NodeBuilders::builder("zdbsp");
@@ -801,11 +801,11 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 	// Get map data entries
 	vector<ArchiveEntry*> new_map_data;
 	SLADEMap&             map = MapEditor::editContext().map();
-	if (mdesc_current.format == MAP_DOOM)
+	if (mdesc_current.format == MapFormat::Doom)
 		map.writeDoomMap(new_map_data);
-	else if (mdesc_current.format == MAP_HEXEN)
+	else if (mdesc_current.format == MapFormat::Hexen)
 		map.writeHexenMap(new_map_data);
-	else if (mdesc_current.format == MAP_UDMF)
+	else if (mdesc_current.format == MapFormat::UDMF)
 	{
 		ArchiveEntry* udmf = new ArchiveEntry("TEXTMAP");
 		map.writeUDMFMap(udmf);
@@ -819,9 +819,9 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 	if (Game::configuration().scriptLanguage() == "acs_hexen" || Game::configuration().scriptLanguage() == "acs_zdoom")
 		acs = true;
 	// Force ACS on for Hexen map format, and off for Doom map format
-	if (mdesc_current.format == MAP_DOOM)
+	if (mdesc_current.format == MapFormat::Doom)
 		acs = false;
-	if (mdesc_current.format == MAP_HEXEN)
+	if (mdesc_current.format == MapFormat::Hexen)
 		acs = true;
 	bool dialogue = false;
 	if (Game::configuration().scriptLanguage() == "usdf" || Game::configuration().scriptLanguage() == "zsdf")
@@ -841,7 +841,7 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 		wad->addEntry(panel_script_editor_->compiledEntry(), "", true);
 	if (acs && panel_script_editor_->scriptEntry()->size() > 0) // SCRIPTS (if any)
 		wad->addEntry(panel_script_editor_->scriptEntry(), "", true);
-	if (mdesc_current.format == MAP_UDMF)
+	if (mdesc_current.format == MapFormat::UDMF)
 	{
 		// Add extra UDMF entries
 		for (unsigned a = 0; a < map.udmfExtraEntries().size(); a++)
@@ -958,7 +958,7 @@ bool MapEditorWindow::saveMapAs()
 	WadArchive    wad;
 	ArchiveEntry* head = wad.addNewEntry(mdesc_current.name);
 	ArchiveEntry* end  = nullptr;
-	if (mdesc_current.format == MAP_UDMF)
+	if (mdesc_current.format == MapFormat::UDMF)
 	{
 		wad.addNewEntry("TEXTMAP");
 		end = wad.addNewEntry("ENDMAP");

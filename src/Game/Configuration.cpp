@@ -91,8 +91,7 @@ void Configuration::setDefaults()
 	sky_flat_        = "F_SKY1";
 	script_language_ = "";
 	light_levels_.clear();
-	for (int a = 0; a < 4; a++)
-		map_formats_[a] = false;
+	map_formats_.clear();
 	boom_sector_flag_start_ = 0;
 	supported_features_.clear();
 	udmf_features_.clear();
@@ -337,27 +336,26 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 		else if (S_CMPNOCASE(node->name(), "map_formats"))
 		{
 			// Reset supported formats
-			for (unsigned f = 0; f < 4; f++)
-				map_formats_[f] = false;
+			map_formats_.clear();
 
 			// Go through values
 			for (unsigned v = 0; v < node->nValues(); v++)
 			{
 				if (S_CMPNOCASE(node->stringValue(v), "doom"))
 				{
-					map_formats_[MAP_DOOM] = true;
+					map_formats_[MapFormat::Doom] = true;
 				}
 				else if (S_CMPNOCASE(node->stringValue(v), "hexen"))
 				{
-					map_formats_[MAP_HEXEN] = true;
+					map_formats_[MapFormat::Hexen] = true;
 				}
 				else if (S_CMPNOCASE(node->stringValue(v), "doom64"))
 				{
-					map_formats_[MAP_DOOM64] = true;
+					map_formats_[MapFormat::Doom64] = true;
 				}
 				else if (S_CMPNOCASE(node->stringValue(v), "udmf"))
 				{
-					map_formats_[MAP_UDMF] = true;
+					map_formats_[MapFormat::UDMF] = true;
 				}
 				else
 					LOG_MESSAGE(1, "Warning: Unknown/unsupported map format \"%s\"", node->stringValue(v));
@@ -523,7 +521,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 // -----------------------------------------------------------------------------
 // Reads a full game configuration from [cfg]
 // -----------------------------------------------------------------------------
-bool Configuration::readConfiguration(string& cfg, string source, uint8_t format, bool ignore_game, bool clear)
+bool Configuration::readConfiguration(string& cfg, string source, MapFormat format, bool ignore_game, bool clear)
 {
 	// Clear current configuration
 	if (clear)
@@ -870,7 +868,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 // Opens the full game configuration [game]+[port], either from the user dir or
 // program resource
 // -----------------------------------------------------------------------------
-bool Configuration::openConfig(string game, string port, uint8_t format)
+bool Configuration::openConfig(string game, string port, MapFormat format)
 {
 	string full_config;
 
@@ -1072,10 +1070,10 @@ bool Configuration::thingFlagSet(unsigned index, MapThing* thing)
 // -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] is set for [thing]
 // -----------------------------------------------------------------------------
-bool Configuration::thingFlagSet(string flag, MapThing* thing, int map_format)
+bool Configuration::thingFlagSet(string flag, MapThing* thing, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 		return thing->boolProperty(flag);
 
 	// Get current flags
@@ -1094,17 +1092,17 @@ bool Configuration::thingFlagSet(string flag, MapThing* thing, int map_format)
 // -----------------------------------------------------------------------------
 // Returns true if the basic flag matching [flag] is set for [thing]
 // -----------------------------------------------------------------------------
-bool Configuration::thingBasicFlagSet(string flag, MapThing* thing, int map_format)
+bool Configuration::thingBasicFlagSet(string flag, MapThing* thing, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 		return thing->boolProperty(flag);
 
 	// Get current flags
 	unsigned long flags = thing->intProperty("flags");
 
 	// Hexen-style flags in Hexen-format maps
-	bool hexen = map_format == MAP_HEXEN;
+	bool hexen = map_format == MapFormat::Hexen;
 
 	// Easy Skill
 	if (flag == "skill2" || flag == "skill1")
@@ -1219,10 +1217,10 @@ void Configuration::setThingFlag(unsigned index, MapThing* thing, bool set)
 // Sets thing flag matching [flag] (UDMF name) for [thing].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setThingFlag(string flag, MapThing* thing, int map_format, bool set)
+void Configuration::setThingFlag(string flag, MapThing* thing, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 	{
 		thing->setBoolProperty(flag, set);
 		return;
@@ -1260,10 +1258,10 @@ void Configuration::setThingFlag(string flag, MapThing* thing, int map_format, b
 // Sets thing basic flag matching [flag] for [thing].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setThingBasicFlag(string flag, MapThing* thing, int map_format, bool set)
+void Configuration::setThingBasicFlag(string flag, MapThing* thing, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 	{
 		thing->setBoolProperty(flag, set);
 		return;
@@ -1458,10 +1456,10 @@ bool Configuration::lineFlagSet(unsigned index, MapLine* line)
 // -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] (UDMF name) is set for [line]
 // -----------------------------------------------------------------------------
-bool Configuration::lineFlagSet(string flag, MapLine* line, int map_format)
+bool Configuration::lineFlagSet(string flag, MapLine* line, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 		return line->boolProperty(flag);
 
 	// Get current flags
@@ -1482,10 +1480,10 @@ bool Configuration::lineFlagSet(string flag, MapLine* line, int map_format)
 // 'Basic' flags are flags that are available in some way or another in all
 // game configurations
 // -----------------------------------------------------------------------------
-bool Configuration::lineBasicFlagSet(string flag, MapLine* line, int map_format)
+bool Configuration::lineBasicFlagSet(string flag, MapLine* line, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 		return line->boolProperty(flag);
 
 	// Get current flags
@@ -1568,10 +1566,10 @@ void Configuration::setLineFlag(unsigned index, MapLine* line, bool set)
 // Sets line flag matching [flag] (UDMF name) for [line].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setLineFlag(string flag, MapLine* line, int map_format, bool set)
+void Configuration::setLineFlag(string flag, MapLine* line, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 	{
 		line->setBoolProperty(flag, set);
 		return;
@@ -1609,10 +1607,10 @@ void Configuration::setLineFlag(string flag, MapLine* line, int map_format, bool
 // Sets line basic flag [flag] (UDMF name) for [line].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setLineBasicFlag(string flag, MapLine* line, int map_format, bool set)
+void Configuration::setLineBasicFlag(string flag, MapLine* line, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 	{
 		line->setBoolProperty(flag, set);
 		return;
@@ -1654,13 +1652,13 @@ void Configuration::setLineBasicFlag(string flag, MapLine* line, int map_format,
 // -----------------------------------------------------------------------------
 // Returns the hexen SPAC trigger for [line] as a string
 // -----------------------------------------------------------------------------
-string Configuration::spacTriggerString(MapLine* line, int map_format)
+string Configuration::spacTriggerString(MapLine* line, MapFormat map_format)
 {
 	if (!line)
 		return "None";
 
 	// Hexen format
-	if (map_format == MAP_HEXEN)
+	if (map_format == MapFormat::Hexen)
 	{
 		// Get raw flags
 		int flags = line->intProperty("flags");
@@ -1677,7 +1675,7 @@ string Configuration::spacTriggerString(MapLine* line, int map_format)
 	}
 
 	// UDMF format
-	else if (map_format == MAP_UDMF)
+	else if (map_format == MapFormat::UDMF)
 	{
 		// Go through all line UDMF properties
 		string trigger = "";

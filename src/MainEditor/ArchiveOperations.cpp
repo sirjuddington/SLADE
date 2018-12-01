@@ -950,7 +950,8 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 			// Find the map entry to modify
 			ArchiveEntry* mapentry = maps[a].head;
 			ArchiveEntry* things   = nullptr;
-			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN)
+			if (maps[a].format == MapFormat::Doom || maps[a].format == MapFormat::Doom64
+				|| maps[a].format == MapFormat::Hexen)
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
@@ -962,7 +963,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 					mapentry = mapentry->nextEntry();
 				}
 			}
-			else if (maps[a].format == MAP_UDMF)
+			else if (maps[a].format == MapFormat::UDMF)
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
@@ -980,10 +981,10 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 			{
 				switch (maps[a].format)
 				{
-				case MAP_DOOM: achanged = replaceThingsDoom(things, oldtype, newtype); break;
-				case MAP_HEXEN: achanged = replaceThingsHexen(things, oldtype, newtype); break;
-				case MAP_DOOM64: achanged = replaceThingsDoom64(things, oldtype, newtype); break;
-				case MAP_UDMF: achanged = replaceThingsUDMF(things, oldtype, newtype); break;
+				case MapFormat::Doom: achanged = replaceThingsDoom(things, oldtype, newtype); break;
+				case MapFormat::Hexen: achanged = replaceThingsHexen(things, oldtype, newtype); break;
+				case MapFormat::Doom64: achanged = replaceThingsDoom64(things, oldtype, newtype); break;
+				case MapFormat::UDMF: achanged = replaceThingsUDMF(things, oldtype, newtype); break;
 				default: LOG_MESSAGE(1, "Unknown map format for " + maps[a].head->name()); break;
 				}
 			}
@@ -1343,7 +1344,8 @@ size_t ArchiveOperations::replaceSpecials(
 			ArchiveEntry* mapentry = maps[a].head;
 			ArchiveEntry* t_entry  = nullptr;
 			ArchiveEntry* l_entry  = nullptr;
-			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN)
+			if (maps[a].format == MapFormat::Doom || maps[a].format == MapFormat::Doom64
+				|| maps[a].format == MapFormat::Hexen)
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
@@ -1362,7 +1364,7 @@ size_t ArchiveOperations::replaceSpecials(
 					mapentry = mapentry->nextEntry();
 				}
 			}
-			else if (maps[a].format == MAP_UDMF)
+			else if (maps[a].format == MapFormat::UDMF)
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
@@ -1380,12 +1382,12 @@ size_t ArchiveOperations::replaceSpecials(
 			{
 				switch (maps[a].format)
 				{
-				case MAP_DOOM:
+				case MapFormat::Doom:
 					if (arg1 || arg2 || arg3 || arg4) // Do nothing if Hexen specials are being modified
 						break;
 					achanged = replaceSpecialsDoom(l_entry, oldtype, newtype, arg0, oldarg0, newarg0);
 					break;
-				case MAP_HEXEN:
+				case MapFormat::Hexen:
 					if (oldtype > 255 || newtype > 255) // Do nothing if Doom specials are being modified
 						break;
 					achanged = replaceSpecialsHexen(
@@ -1409,12 +1411,12 @@ size_t ArchiveOperations::replaceSpecials(
 						newarg3,
 						newarg4);
 					break;
-				case MAP_DOOM64:
+				case MapFormat::Doom64:
 					if (arg1 || arg2 || arg3 || arg4) // Do nothing if Hexen specials are being modified
 						break;
 					achanged = replaceSpecialsDoom64(l_entry, oldtype, newtype, arg0, oldarg0, newarg0);
 					break;
-				case MAP_UDMF:
+				case MapFormat::UDMF:
 					achanged = replaceSpecialsUDMF(
 						l_entry,
 						oldtype,
@@ -1757,7 +1759,8 @@ size_t ArchiveOperations::replaceTextures(
 			ArchiveEntry* mapentry = maps[a].head;
 			ArchiveEntry* sectors  = nullptr;
 			ArchiveEntry* sides    = nullptr;
-			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN)
+			if (maps[a].format == MapFormat::Doom || maps[a].format == MapFormat::Doom64
+				|| maps[a].format == MapFormat::Hexen)
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
@@ -1776,7 +1779,7 @@ size_t ArchiveOperations::replaceTextures(
 					mapentry = mapentry->nextEntry();
 				}
 			}
-			else if (maps[a].format == MAP_UDMF)
+			else if (maps[a].format == MapFormat::UDMF)
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
@@ -1794,22 +1797,22 @@ size_t ArchiveOperations::replaceTextures(
 			{
 				switch (maps[a].format)
 				{
-				case MAP_DOOM:
-				case MAP_HEXEN:
+				case MapFormat::Doom:
+				case MapFormat::Hexen:
 					achanged = 0;
 					if (sectors)
 						achanged += replaceFlatsDoomHexen(sectors, oldtex, newtex, floor, ceiling);
 					if (sides)
 						achanged += replaceWallsDoomHexen(sides, oldtex, newtex, lower, middle, upper);
 					break;
-				case MAP_DOOM64:
+				case MapFormat::Doom64:
 					achanged = 0;
 					if (sectors)
 						achanged += replaceFlatsDoom64(sectors, oldtex, newtex, floor, ceiling);
 					if (sides)
 						achanged += replaceWallsDoom64(sides, oldtex, newtex, lower, middle, upper);
 					break;
-				case MAP_UDMF:
+				case MapFormat::UDMF:
 					achanged = replaceTexturesUDMF(sectors, oldtex, newtex, floor, ceiling, lower, middle, upper);
 					break;
 				default: LOG_MESSAGE(1, "Unknown map format for " + maps[a].head->name()); break;

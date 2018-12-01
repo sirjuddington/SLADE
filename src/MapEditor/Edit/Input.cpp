@@ -104,7 +104,7 @@ bool Input::mouseMove(int new_x, int new_y)
 	double mx = context_.snapToGrid(mouse_pos_map_.x, false);
 	double my = context_.snapToGrid(mouse_pos_map_.y, false);
 	string status_text;
-	if (context_.mapDesc().format == MAP_UDMF)
+	if (context_.mapDesc().format == MapFormat::UDMF)
 		status_text = S_FMT("Position: (%1.3f, %1.3f)", mx, my);
 	else
 		status_text = S_FMT("Position: (%d, %d)", (int)mx, (int)my);

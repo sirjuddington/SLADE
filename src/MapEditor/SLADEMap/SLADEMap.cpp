@@ -362,13 +362,13 @@ bool SLADEMap::readMap(Archive::MapDesc map)
 	bool ok = false;
 	if (omap.head)
 	{
-		if (omap.format == MAP_DOOM)
+		if (omap.format == MapFormat::Doom)
 			ok = readDoomMap(omap);
-		else if (omap.format == MAP_HEXEN)
+		else if (omap.format == MapFormat::Hexen)
 			ok = readHexenMap(omap);
-		else if (omap.format == MAP_DOOM64)
+		else if (omap.format == MapFormat::Doom64)
 			ok = readDoom64Map(omap);
-		else if (omap.format == MAP_UDMF)
+		else if (omap.format == MapFormat::UDMF)
 			ok = readUDMFMap(omap);
 	}
 	else
@@ -385,7 +385,7 @@ bool SLADEMap::readMap(Archive::MapDesc map)
 	{
 		current_format_ = map.format;
 		// When creating a new map, retrieve UDMF namespace information from the configuration
-		if (map.format == MAP_UDMF && udmf_namespace_.IsEmpty())
+		if (map.format == MapFormat::UDMF && udmf_namespace_.IsEmpty())
 			udmf_namespace_ = Game::configuration().udmfNamespace();
 	}
 
@@ -3725,7 +3725,7 @@ int SLADEMap::findUnusedLineId()
 	int tag = 1;
 
 	// UDMF (id property)
-	if (current_format_ == MAP_UDMF)
+	if (current_format_ == MapFormat::UDMF)
 	{
 		for (unsigned a = 0; a < lines_.size(); a++)
 		{
@@ -3738,7 +3738,7 @@ int SLADEMap::findUnusedLineId()
 	}
 
 	// Hexen (special 121 arg0)
-	else if (current_format_ == MAP_HEXEN)
+	else if (current_format_ == MapFormat::Hexen)
 	{
 		for (unsigned a = 0; a < lines_.size(); a++)
 		{
@@ -3751,7 +3751,7 @@ int SLADEMap::findUnusedLineId()
 	}
 
 	// Boom (sector tag (arg0))
-	else if (current_format_ == MAP_DOOM && Game::configuration().featureSupported(Game::Feature::Boom))
+	else if (current_format_ == MapFormat::Doom && Game::configuration().featureSupported(Game::Feature::Boom))
 	{
 		for (unsigned a = 0; a < lines_.size(); a++)
 		{
@@ -4859,6 +4859,8 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 
 
 
+
+
 			if (s1)
 				setLineSector(connected_lines_[a]->index, s1->index, true);
 			else
@@ -5137,7 +5139,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		}
 
 		// Otherwise, use defaults from game configuration
-		Game::configuration().applyDefaults(sectors_[a], current_format_ == MAP_UDMF);
+		Game::configuration().applyDefaults(sectors_[a], current_format_ == MapFormat::UDMF);
 	}
 
 	// Update line textures
@@ -5296,7 +5298,7 @@ int SLADEMap::removeInvalidSides()
 bool SLADEMap::convertToHexen()
 {
 	// Already hexen format
-	if (current_format_ == MAP_HEXEN)
+	if (current_format_ == MapFormat::Hexen)
 		return true;
 	return false;
 }
@@ -5307,10 +5309,10 @@ bool SLADEMap::convertToHexen()
 bool SLADEMap::convertToUDMF()
 {
 	// Already UDMF format
-	if (current_format_ == MAP_UDMF)
+	if (current_format_ == MapFormat::UDMF)
 		return true;
 
-	if (current_format_ == MAP_HEXEN)
+	if (current_format_ == MapFormat::Hexen)
 	{
 		// Handle special cases for conversion from Hexen format
 		for (unsigned a = 0; a < lines_.size(); a++)
@@ -5410,7 +5412,7 @@ bool SLADEMap::convertToUDMF()
 		return false;
 
 	// Set format
-	current_format_ = MAP_UDMF;
+	current_format_ = MapFormat::UDMF;
 	return true;
 }
 

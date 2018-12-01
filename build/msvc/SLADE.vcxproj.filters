@@ -2627,6 +2627,9 @@
     <ClInclude Include="..\..\src\Utility\Memory.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\General\Defs.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />

@@ -1298,8 +1298,8 @@ bool SImage::resize(int nwidth, int nheight)
 
 	// Write new image data
 	unsigned offset = 0;
-	unsigned rowlen = MIN(width_, nwidth) * bpp;
-	unsigned nrows  = MIN(height_, nheight);
+	unsigned rowlen = std::min<unsigned>(width_, nwidth) * bpp;
+	unsigned nrows  = std::min<unsigned>(height_, nheight);
 	for (unsigned y = 0; y < nrows; y++)
 	{
 		// Copy data row

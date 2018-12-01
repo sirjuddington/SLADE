@@ -280,7 +280,7 @@ public:
 				objects_.push_back(map_->line(a));
 		}
 		// Hexen and UDMF allow specials on things
-		if (map_->currentFormat() == MAP_HEXEN || map_->currentFormat() == MAP_UDMF)
+		if (map_->currentFormat() == MapFormat::Hexen || map_->currentFormat() == MapFormat::UDMF)
 		{
 			for (unsigned a = 0; a < map_->nThings(); ++a)
 			{
@@ -368,7 +368,7 @@ public:
 
 		unsigned nlines  = map_->nLines();
 		unsigned nthings = 0;
-		if (map_->currentFormat() == MAP_HEXEN || map_->currentFormat() == MAP_UDMF)
+		if (map_->currentFormat() == MapFormat::Hexen || map_->currentFormat() == MapFormat::UDMF)
 			nthings = map_->nThings();
 		for (unsigned a = 0; a < (nlines + nthings); a++)
 		{
@@ -770,10 +770,11 @@ public:
 				continue;
 
 			// Go through uncompared things
-			int  map_format = map_->currentFormat();
-			bool udmf_zdoom = (map_format == MAP_UDMF && S_CMPNOCASE(Game::configuration().udmfNamespace(), "zdoom"));
+			auto map_format = map_->currentFormat();
+			bool udmf_zdoom =
+				(map_format == MapFormat::UDMF && S_CMPNOCASE(Game::configuration().udmfNamespace(), "zdoom"));
 			bool udmf_eternity =
-				(map_format == MAP_UDMF && S_CMPNOCASE(Game::configuration().udmfNamespace(), "eternity"));
+				(map_format == MapFormat::UDMF && S_CMPNOCASE(Game::configuration().udmfNamespace(), "eternity"));
 			int min_skill = udmf_zdoom || udmf_eternity ? 1 : 2;
 			int max_skill = udmf_zdoom ? 17 : 5;
 			int max_class = udmf_zdoom ? 17 : 4;
@@ -1828,7 +1829,7 @@ public:
 				objects_.push_back(map_->line(a));
 		}
 		// In Hexen or UDMF, go through map things too since they too can have specials
-		if (map_->currentFormat() == MAP_HEXEN || map_->currentFormat() == MAP_UDMF)
+		if (map_->currentFormat() == MapFormat::Hexen || map_->currentFormat() == MapFormat::UDMF)
 		{
 			for (unsigned a = 0; a < map_->nThings(); ++a)
 			{
@@ -1849,7 +1850,7 @@ public:
 
 	string problemDesc(unsigned index) override
 	{
-		bool special = (map_->currentFormat() == MAP_HEXEN || map_->currentFormat() == MAP_UDMF);
+		bool special = (map_->currentFormat() == MapFormat::Hexen || map_->currentFormat() == MapFormat::UDMF);
 		if (index >= objects_.size())
 			return S_FMT("No unknown %s found", special ? "special" : "line type");
 
@@ -1925,7 +1926,7 @@ public:
 
 	string problemDesc(unsigned index) override
 	{
-		bool special = (map_->currentFormat() == MAP_HEXEN || map_->currentFormat() == MAP_UDMF);
+		bool special = (map_->currentFormat() == MapFormat::Hexen || map_->currentFormat() == MapFormat::UDMF);
 		if (index >= things_.size())
 			return S_FMT("No obsolete things found");
 

@@ -2958,9 +2958,9 @@ wxMenu* ArchivePanel::createEntryOpenMenu(string category)
 	menu_open->AppendSeparator();
 
 	// External editors
-	vector<Executables::ExternalExe> external   = Executables::externalExes(category);
-	SAction*                         a_open_ext = SAction::fromId("arch_entry_openext");
-	unsigned                         num        = MIN(external.size(), 20);
+	auto     external   = Executables::externalExes(category);
+	auto     a_open_ext = SAction::fromId("arch_entry_openext");
+	unsigned num        = std::min<unsigned>(external.size(), 20);
 	for (unsigned a = 0; a < num; a++)
 	{
 		a_open_ext->addToMenu(menu_open, "With " + external[a].name, "NO", a);

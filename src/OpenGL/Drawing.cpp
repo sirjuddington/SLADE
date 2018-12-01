@@ -673,7 +673,7 @@ Rectf Drawing::fitTextureWithin(
 	double y_scale = ((double)width - padding) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
-	double scale = MIN(x_scale, y_scale);
+	double scale = std::min<double>(x_scale, y_scale);
 
 	// Clamp scale to maximum desired scale
 	if (scale > max_scale)
@@ -717,7 +717,7 @@ void Drawing::drawTextureWithin(
 	double y_scale = ((double)height - padding) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
-	double scale = MIN(x_scale, y_scale);
+	double scale = std::min<double>(x_scale, y_scale);
 
 	// Clamp scale to maximum desired scale
 	if (scale > max_scale)

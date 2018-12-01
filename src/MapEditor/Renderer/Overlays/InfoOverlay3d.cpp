@@ -90,11 +90,11 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 	info2_.clear();
 
 	// Setup variables
-	current_type_  = item_type;
-	texname_       = "";
-	texture_       = nullptr;
-	thing_icon_    = false;
-	int map_format = MapEditor::editContext().mapDesc().format;
+	current_type_   = item_type;
+	texname_        = "";
+	texture_        = nullptr;
+	thing_icon_     = false;
+	auto map_format = MapEditor::editContext().mapDesc().format;
 
 	// Wall
 	if (item_type == MapEditor::ItemType::WallBottom || item_type == MapEditor::ItemType::WallMiddle
@@ -144,7 +144,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			info2_.push_back("Upper Texture");
 
 		// Offsets
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
+		if (map->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// Get x offset info
 			int    xoff      = side->intProperty("offsetx");
@@ -193,7 +194,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		}
 
 		// UDMF extras
-		if (map->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
+		if (map->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			// Scale
 			double xscale, yscale;
@@ -377,7 +379,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			info2_.push_back(S_FMT("Light: %d", light));
 
 		// UDMF extras
-		if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
+		if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 		{
 			// Offsets
 			double xoff, yoff;
@@ -440,8 +442,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		info_.push_back(S_FMT("Thing #%d", item_index));
 
 		// Position
-		if (MapEditor::editContext().mapDesc().format == MAP_HEXEN
-			|| MapEditor::editContext().mapDesc().format == MAP_UDMF)
+		if (MapEditor::editContext().mapDesc().format == MapFormat::Hexen
+			|| MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 			info_.push_back(S_FMT(
 				"Position: %d, %d, %d", (int)thing->xPos(), (int)thing->yPos(), (int)thing->floatProperty("height")));
 		else
@@ -456,8 +458,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			info2_.push_back(S_FMT("Type: %s", tt.name()));
 
 		// Args
-		if (MapEditor::editContext().mapDesc().format == MAP_HEXEN
-			|| (MapEditor::editContext().mapDesc().format == MAP_UDMF
+		if (MapEditor::editContext().mapDesc().format == MapFormat::Hexen
+			|| (MapEditor::editContext().mapDesc().format == MapFormat::UDMF
 				&& Game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
 		{
 			// Get thing args
@@ -528,7 +530,7 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	glDisable(GL_LINE_SMOOTH);
 
 	// Determine overlay height
-	int nlines = MAX(info_.size(), info2_.size());
+	int nlines = std::max<int>(info_.size(), info2_.size());
 	if (nlines < 4)
 		nlines = 4;
 	double scale       = (Drawing::fontSize() / 12.0);

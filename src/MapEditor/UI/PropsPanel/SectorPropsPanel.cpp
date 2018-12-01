@@ -241,7 +241,7 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 
 	// Other Properties tab
 
-	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
+	if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 	{
 		mopp_all_props_ = new MapObjectPropsPanel(stc_tabs_, true);
 		mopp_all_props_->hideProperty("texturefloor");

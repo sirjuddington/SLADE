@@ -485,7 +485,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	Archive::MapDesc map = entry->parent()->mapDesc(entry);
 
 	// Check valid map
-	if (map.format == MAP_UNKNOWN)
+	if (map.format == MapFormat::Unknown)
 		return false;
 
 	// Export the map to a temp .wad file
@@ -1792,12 +1792,12 @@ bool EntryOperations::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata, b
 				buffer[0] = texture;
 
 				// Write last texture name
-				limit = MIN(8, last.length());
+				limit = std::min<int>(8, last.length());
 				for (int a = 0; a < limit; ++a)
 					buffer[1 + a] = last[a];
 
 				// Write first texture name
-				limit = MIN(8, first.length());
+				limit = std::min<int>(8, first.length());
 				for (int a = 0; a < limit; ++a)
 					buffer[10 + a] = first[a];
 
@@ -1842,12 +1842,12 @@ bool EntryOperations::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata, b
 				memset(buffer, 0, 20);
 
 				// Write off texture name
-				limit = MIN(8, off.length());
+				limit = std::min<int>(8, off.length());
 				for (int a = 0; a < limit; ++a)
 					buffer[0 + a] = off[a];
 
 				// Write first texture name
-				limit = MIN(8, on.length());
+				limit = std::min<int>(8, on.length());
 				for (int a = 0; a < limit; ++a)
 					buffer[9 + a] = on[a];
 

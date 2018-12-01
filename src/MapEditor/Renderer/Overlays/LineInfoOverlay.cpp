@@ -81,7 +81,7 @@ void LineInfoOverlay::update(MapLine* line)
 
 	// info.clear();
 	string info_text;
-	int    map_format = MapEditor::editContext().mapDesc().format;
+	auto   map_format = MapEditor::editContext().mapDesc().format;
 
 	// General line info
 	if (Global::debug)
@@ -101,11 +101,11 @@ void LineInfoOverlay::update(MapLine* line)
 		info_text += (S_FMT("Special: %d (%s)\n", as_id, Game::configuration().actionSpecialName(as_id)));
 
 	// Line trigger
-	if (map_format == MAP_HEXEN || map_format == MAP_UDMF)
+	if (map_format == MapFormat::Hexen || map_format == MapFormat::UDMF)
 		info_text += (S_FMT("Trigger: %s\n", Game::configuration().spacTriggerString(line, map_format)));
 
 	// Line args (or sector tag)
-	if (map_format == MAP_HEXEN || map_format == MAP_UDMF)
+	if (map_format == MapFormat::Hexen || map_format == MapFormat::UDMF)
 	{
 		int args[5];
 		args[0] = line->intProperty("arg0");
@@ -126,7 +126,7 @@ void LineInfoOverlay::update(MapLine* line)
 		info_text += (S_FMT("Sector Tag: %d", line->intProperty("arg0")));
 
 	// Line flags
-	if (map_format != MAP_UDMF)
+	if (map_format != MapFormat::UDMF)
 		info_text += (S_FMT("\nFlags: %s", Game::configuration().lineFlagsString(line)));
 
 	// Setup text box

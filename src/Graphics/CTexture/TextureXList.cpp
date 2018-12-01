@@ -882,8 +882,8 @@ bool TextureXList::findErrors()
 				{
 					SImage img;
 					img.open(patch->data());
-					size_t start = MAX(0, textures_[a]->patches_[i]->xOffset());
-					size_t end   = MIN(textures_[a]->width(), img.width() + start);
+					size_t start = std::max<size_t>(0, textures_[a]->patches_[i]->xOffset());
+					size_t end   = std::min<size_t>(textures_[a]->width(), img.width() + start);
 					for (size_t c = start; c < end; ++c)
 						columns[c] = true;
 				}

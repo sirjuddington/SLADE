@@ -1,5 +1,6 @@
 #pragma once
 
+enum class MapFormat;
 class ParseTreeNode;
 
 namespace Game
@@ -9,19 +10,14 @@ class Configuration;
 // Structs
 struct GameDef
 {
-	string         name;
-	string         title;
-	string         filename;
-	bool           supported_formats[4];
-	bool           user;
-	vector<string> filters;
+	string                    name;
+	string                    title;
+	string                    filename;
+	std::map<MapFormat, bool> supported_formats;
+	bool                      user;
+	vector<string>            filters;
 
-	GameDef(const string& def_name = "Unknown") :
-		name{ def_name },
-		supported_formats{ false, false, false, false },
-		user{ true }
-	{
-	}
+	GameDef(const string& def_name = "Unknown") : name{ def_name }, user{ true } {}
 
 	bool operator>(const GameDef& right) const { return title > right.title; }
 	bool operator<(const GameDef& right) const { return title < right.title; }
@@ -31,19 +27,14 @@ struct GameDef
 };
 struct PortDef
 {
-	string         name;
-	string         title;
-	string         filename;
-	bool           supported_formats[4];
-	vector<string> supported_games;
-	bool           user;
+	string                    name;
+	string                    title;
+	string                    filename;
+	std::map<MapFormat, bool> supported_formats;
+	vector<string>            supported_games;
+	bool                      user;
 
-	PortDef(const string& def_name = "Unknown") :
-		name{ def_name },
-		supported_formats{ false, false, false, false },
-		user{ true }
-	{
-	}
+	PortDef(const string& def_name = "Unknown") : name{ def_name }, user{ true } {}
 
 	bool operator>(const PortDef& right) const { return title > right.title; }
 	bool operator<(const PortDef& right) const { return title < right.title; }
@@ -97,7 +88,7 @@ const GameDef&                   gameDef(const string& id);
 const std::map<string, PortDef>& portDefs();
 const PortDef&                   portDef(const string& id);
 
-bool mapFormatSupported(int format, const string& game, const string& port = "");
+bool mapFormatSupported(MapFormat format, const string& game, const string& port = "");
 
 // Full Game Configuration
 Configuration& configuration();

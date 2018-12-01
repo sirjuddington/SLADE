@@ -148,7 +148,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	}
 
 	// Parse UDMF map
-	if (map.format == MAP_UDMF)
+	if (map.format == MapFormat::UDMF)
 	{
 		ArchiveEntry* udmfdata = nullptr;
 		for (ArchiveEntry* mapentry = map.head; mapentry != map.end; mapentry = mapentry->nextEntry())
@@ -335,7 +335,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	}
 
 	// Non-UDMF map
-	if (map.format != MAP_UDMF)
+	if (map.format != MapFormat::UDMF)
 	{
 		// Read vertices (required)
 		if (!readVertices(map.head, map.end, map.format))
@@ -346,7 +346,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 			return false;
 
 		// Read things
-		if (map.format != MAP_UDMF)
+		if (map.format != MapFormat::UDMF)
 			readThings(map.head, map.end, map.format);
 
 		// Read sides & sectors (count only)
@@ -369,7 +369,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		if (sidedefs && sectors)
 		{
 			// Doom64 map
-			if (map.format != MAP_DOOM64)
+			if (map.format != MapFormat::Doom64)
 			{
 				n_sides_   = sidedefs->size() / 30;
 				n_sectors_ = sectors->size() / 26;
@@ -401,7 +401,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 // -----------------------------------------------------------------------------
 // Reads non-UDMF vertex data
 // -----------------------------------------------------------------------------
-bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
+bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format)
 {
 	// Find VERTEXES entry
 	ArchiveEntry* vertexes = nullptr;
@@ -429,7 +429,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 	MemChunk& mc = vertexes->data();
 	mc.seek(0, SEEK_SET);
 
-	if (map_format == MAP_DOOM64)
+	if (map_format == MapFormat::Doom64)
 	{
 		MapVertex::Doom64Data v;
 		while (1)
@@ -462,7 +462,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 // -----------------------------------------------------------------------------
 // Reads non-UDMF line data
 // -----------------------------------------------------------------------------
-bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
+bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format)
 {
 	// Find LINEDEFS entry
 	ArchiveEntry* linedefs = nullptr;
@@ -489,7 +489,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 	// Read line data
 	MemChunk& mc = linedefs->data();
 	mc.seek(0, SEEK_SET);
-	if (map_format == MAP_DOOM)
+	if (map_format == MapFormat::Doom)
 	{
 		while (1)
 		{
@@ -510,7 +510,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 			addLine(l.vertex1, l.vertex2, twosided, special);
 		}
 	}
-	else if (map_format == MAP_DOOM64)
+	else if (map_format == MapFormat::Doom64)
 	{
 		while (1)
 		{
@@ -537,7 +537,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 			addLine(l.vertex1, l.vertex2, twosided, special, macro);
 		}
 	}
-	else if (map_format == MAP_HEXEN)
+	else if (map_format == MapFormat::Hexen)
 	{
 		while (1)
 		{
@@ -565,7 +565,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 // -----------------------------------------------------------------------------
 // Reads non-UDMF thing data
 // -----------------------------------------------------------------------------
-bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
+bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format)
 {
 	// Find THINGS entry
 	ArchiveEntry* things = nullptr;
@@ -590,21 +590,21 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 		return false;
 
 	// Read things data
-	if (map_format == MAP_DOOM)
+	if (map_format == MapFormat::Doom)
 	{
 		MapThing::DoomData* thng_data = (MapThing::DoomData*)things->rawData(true);
 		unsigned            nt        = things->size() / sizeof(MapThing::DoomData);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
-	else if (map_format == MAP_DOOM64)
+	else if (map_format == MapFormat::Doom64)
 	{
 		MapThing::Doom64Data* thng_data = (MapThing::Doom64Data*)things->rawData(true);
 		unsigned              nt        = things->size() / sizeof(MapThing::Doom64Data);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
-	else if (map_format == MAP_HEXEN)
+	else if (map_format == MapFormat::Hexen)
 	{
 		MapThing::HexenData* thng_data = (MapThing::HexenData*)things->rawData(true);
 		unsigned             nt        = things->size() / sizeof(MapThing::HexenData);
@@ -656,7 +656,7 @@ void MapPreviewCanvas::showMap()
 	// Zoom to fit whole map
 	double x_scale = ((double)GetClientSize().x) / width;
 	double y_scale = ((double)GetClientSize().y) / height;
-	zoom_          = MIN(x_scale, y_scale);
+	zoom_          = std::min<double>(x_scale, y_scale);
 	zoom_ *= 0.95;
 }
 
@@ -895,7 +895,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	// Zoom to fit whole map
 	double x_scale = ((double)width) / mapwidth;
 	double y_scale = ((double)height) / mapheight;
-	zoom_          = MIN(x_scale, y_scale);
+	zoom_          = std::min<double>(x_scale, y_scale);
 	zoom_ *= 0.95;
 
 	// Translate to middle of canvas

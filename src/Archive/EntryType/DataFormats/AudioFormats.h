@@ -11,7 +11,7 @@ size_t checkForTags(MemChunk& mc)
 	// quite popular in MP3s to start with a useless blank frame.
 	size_t s = 0;
 	// Completely arbitrary limit to how long to seek for data.
-	size_t limit = MIN(1200, mc.size() / 16);
+	size_t limit = std::min<size_t>(1200, mc.size() / 16);
 	if (mc[0] == 0)
 	{
 		while ((s < limit) && (mc[s] == 0))
@@ -379,7 +379,7 @@ public:
 			// So we have a type-dependent offset here
 			uint8_t tofs   = datasize ? 2 : 0;
 			size_t  enough = datasize ? datasize : size;
-			enough         = MIN(enough, 160u + tofs);
+			enough         = std::min<size_t>(enough, 160u + tofs);
 
 			// First index command is usually writing 0 on register 0
 			if (mc.readL16(tofs) != 0)

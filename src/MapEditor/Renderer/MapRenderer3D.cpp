@@ -415,7 +415,7 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 		return;
 
 	// Get target height
-	int view_height = (map_->currentFormat() == MAP_DOOM64) ? 56 : 41;
+	int view_height = (map_->currentFormat() == MapFormat::Doom64) ? 56 : 41;
 	int fheight     = map_->sector(sector)->floor().plane.height_at(cam_position_.get2d()) + view_height;
 	int cheight     = map_->sector(sector)->ceiling().plane.height_at(cam_position_.get2d());
 	if (fheight > cheight - 4)
@@ -870,7 +870,7 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 	double rot = 0;
 
 	// Check for UDMF + panning/scaling/rotation
-	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
+	if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 	{
 		if (floor)
 		{
@@ -1295,7 +1295,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	map_->mapSpecials()->processLineSpecial(line);
 
 	// Get relevant line info
-	int    map_format = MapEditor::editContext().mapDesc().format;
+	auto   map_format = MapEditor::editContext().mapDesc().format;
 	bool   upeg       = Game::configuration().lineBasicFlagSet("dontpegtop", line, map_format);
 	bool   lpeg       = Game::configuration().lineBasicFlagSet("dontpegbottom", line, map_format);
 	double xoff, yoff, sx, sy, lsx, lsy;
@@ -1348,7 +1348,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			if (line->s1()->hasProp("offsetx_mid"))
 				xoff += line->s1()->floatProperty("offsetx_mid");
@@ -1405,8 +1406,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	int     lowceil     = min(ceiling1, ceiling2);
 	int     highfloor   = max(floor1, floor2);
 	string  sky_flat    = Game::configuration().skyFlat();
-	string  hidden_tex  = map_->currentFormat() == MAP_DOOM64 ? "?" : "-";
-	bool    show_midtex = (map_->currentFormat() != MAP_DOOM64) || (line->intProperty("flags") & 512);
+	string  hidden_tex  = map_->currentFormat() == MapFormat::Doom64 ? "?" : "-";
+	bool    show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->intProperty("flags") & 512);
 	// Heights at both endpoints, for both planes, on both sides
 	double f1h1 = fp1.height_at(line->x1(), line->y1());
 	double f1h2 = fp1.height_at(line->x2(), line->y2());
@@ -1448,7 +1449,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_bottom"))
@@ -1461,7 +1463,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.texture = MapEditor::textureManager().texture(line->s1()->texLower(), mixed);
 		sx           = quad.texture->scaleX();
 		sy           = quad.texture->scaleY();
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_bottom"))
 				lsx = 1.0 / line->s1()->floatProperty("scalex_bottom");
@@ -1510,7 +1513,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		xoff        = xoff1;
 		yoff        = yoff1;
 		double ytex = 0;
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			if (line->s1()->hasProp("offsetx_mid"))
 				xoff += line->s1()->floatProperty("offsetx_mid");
@@ -1521,7 +1525,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Texture scale
 		sx = quad.texture->scaleX();
 		sy = quad.texture->scaleY();
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_mid"))
 				lsx = 1.0 / line->s1()->floatProperty("scalex_mid");
@@ -1540,8 +1545,8 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Setup quad coordinates
 		double top, bottom;
-		if ((map_->currentFormat() == MAP_DOOM64)
-			|| ((map_->currentFormat() == MAP_UDMF
+		if ((map_->currentFormat() == MapFormat::Doom64)
+			|| ((map_->currentFormat() == MapFormat::UDMF
 				 && Game::configuration().featureSupported(UDMFFeature::SideMidtexWrapping)
 				 && line->boolProperty("wrapmidtex"))))
 		{
@@ -1596,7 +1601,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_top"))
@@ -1609,7 +1615,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.texture = MapEditor::textureManager().texture(line->s1()->texUpper(), mixed);
 		sx           = quad.texture->scaleX();
 		sy           = quad.texture->scaleY();
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_top"))
 				lsx = 1.0 / line->s1()->floatProperty("scalex_top");
@@ -1652,7 +1659,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_bottom"))
@@ -1665,7 +1673,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.texture = MapEditor::textureManager().texture(line->s2()->texLower(), mixed);
 		sx           = quad.texture->scaleX();
 		sy           = quad.texture->scaleY();
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_bottom"))
 				lsx = 1.0 / line->s2()->floatProperty("scalex_bottom");
@@ -1715,7 +1724,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		xoff        = xoff2;
 		yoff        = yoff2;
 		double ytex = 0;
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			if (line->s2()->hasProp("offsetx_mid"))
 				xoff += line->s2()->floatProperty("offsetx_mid");
@@ -1726,7 +1736,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Texture scale
 		sx = quad.texture->scaleX();
 		sy = quad.texture->scaleY();
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_mid"))
 				lsx = 1.0 / line->s2()->floatProperty("scalex_mid");
@@ -1745,8 +1756,8 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Setup quad coordinates
 		double top, bottom;
-		if ((map_->currentFormat() == MAP_DOOM64)
-			|| (map_->currentFormat() == MAP_UDMF
+		if ((map_->currentFormat() == MapFormat::Doom64)
+			|| (map_->currentFormat() == MapFormat::UDMF
 				&& Game::configuration().featureSupported(UDMFFeature::SideMidtexWrapping)
 				&& line->boolProperty("wrapmidtex")))
 		{
@@ -1802,7 +1813,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_top"))
@@ -1815,7 +1827,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.texture = MapEditor::textureManager().texture(line->s2()->texUpper(), mixed);
 		sx           = quad.texture->scaleX();
 		sy           = quad.texture->scaleY();
-		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
+		if (map_->currentFormat() == MapFormat::UDMF
+			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_top"))
 				lsx = 1.0 / line->s2()->floatProperty("scalex_top");

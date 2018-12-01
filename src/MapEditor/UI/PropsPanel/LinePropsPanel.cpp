@@ -67,7 +67,7 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	stc_tabs_->AddPage(setupSpecialTab(), "Special");
 
 	// Args tab
-	if (MapEditor::editContext().mapDesc().format != MAP_DOOM)
+	if (MapEditor::editContext().mapDesc().format != MapFormat::Doom)
 	{
 		panel_args_ = new ArgsPanel(this);
 		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_args_), "Args");
@@ -119,7 +119,7 @@ LinePropsPanel::~LinePropsPanel()
 wxPanel* LinePropsPanel::setupGeneralTab()
 {
 	wxPanel* panel_flags = new wxPanel(stc_tabs_, -1);
-	int      map_format  = MapEditor::editContext().mapDesc().format;
+	auto     map_format  = MapEditor::editContext().mapDesc().format;
 
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -139,7 +139,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	auto& props = Game::configuration().allUDMFProperties(MapObject::Type::Line);
 
 	// UDMF flags
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 	{
 		// Get all udmf flag properties
 		vector<UDMFProperty> flags_udmf;
@@ -201,7 +201,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	gb_sizer_flags->AddGrowableCol(2, 1);
 
 	// Sector tag
-	if (map_format == MAP_DOOM)
+	if (map_format == MapFormat::Doom)
 	{
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
@@ -218,7 +218,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	}
 
 	// Id
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 	{
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
@@ -268,10 +268,10 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 	if (lines.empty())
 		return;
 
-	int map_format = MapEditor::editContext().mapDesc().format;
+	auto map_format = MapEditor::editContext().mapDesc().format;
 
 	// Load flags
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 	{
 		bool val = false;
 		for (unsigned a = 0; a < flags_.size(); a++)
@@ -330,7 +330,7 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 	}
 
 	// Sector tag
-	if (map_format == MAP_DOOM)
+	if (map_format == MapFormat::Doom)
 	{
 		int tag = -1;
 		if (MapObject::multiIntProperty(lines, "arg0", tag))
@@ -338,7 +338,7 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 	}
 
 	// Line ID
-	if (map_format == MAP_UDMF)
+	if (map_format == MapFormat::UDMF)
 	{
 		int id = -1;
 		if (MapObject::multiIntProperty(lines, "id", id))
@@ -387,13 +387,13 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 // -----------------------------------------------------------------------------
 void LinePropsPanel::applyChanges()
 {
-	int map_format = MapEditor::editContext().mapDesc().format;
+	auto map_format = MapEditor::editContext().mapDesc().format;
 
 	// Apply general properties
 	for (unsigned l = 0; l < objects_.size(); l++)
 	{
 		// Flags
-		if (map_format == MAP_UDMF)
+		if (map_format == MapFormat::UDMF)
 		{
 			// UDMF
 			for (auto& flag : flags_)
@@ -409,11 +409,11 @@ void LinePropsPanel::applyChanges()
 		}
 
 		// Sector tag
-		if (map_format == MAP_DOOM && !text_tag_->IsEmpty())
+		if (map_format == MapFormat::Doom && !text_tag_->IsEmpty())
 			objects_[l]->setIntProperty("arg0", text_tag_->number(objects_[l]->intProperty("arg0")));
 
 		// Line ID
-		if (map_format == MAP_UDMF && !text_id_->IsEmpty())
+		if (map_format == MapFormat::UDMF && !text_id_->IsEmpty())
 			objects_[l]->setIntProperty("id", text_id_->number(objects_[l]->intProperty("id")));
 	}
 

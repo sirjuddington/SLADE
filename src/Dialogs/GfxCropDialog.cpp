@@ -85,7 +85,7 @@ void CropCanvas::draw()
 	double y_scale = ((double)height - UI::scalePx(24)) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
-	double scale = MIN(x_scale, y_scale);
+	double scale = std::min<double>(x_scale, y_scale);
 
 	glPushMatrix();
 	glTranslated(width * 0.5, height * 0.5, 0); // Translate to middle of area

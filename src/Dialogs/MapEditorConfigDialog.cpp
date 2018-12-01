@@ -37,10 +37,31 @@
 #include "Archive/Formats/WadArchive.h"
 #include "Game/Configuration.h"
 #include "Graphics/Icons.h"
+#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Controls/ResourceArchiveChooser.h"
 #include "UI/WxUtils.h"
+
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+struct MapFormatDef
+{
+	MapFormat format;
+	string    name;
+	string    abbreviation;
+};
+MapFormatDef map_formats[] = { { MapFormat::Doom, "Doom", "D" },
+							   { MapFormat::Hexen, "Hexen", "H" },
+							   { MapFormat::Doom64, "Doom64", "64" },
+							   { MapFormat::UDMF, "UDMF", "U" } };
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -115,15 +136,15 @@ public:
 		sizer->Add(choice_mapformat_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 
 		// Add possible map formats to the combo box
-		uint8_t default_format = MAP_UNKNOWN;
+		MapFormat default_format = MapFormat::Unknown;
 		if (!maps.empty())
 			default_format = maps[0].format;
-		for (uint8_t map_type = 0; map_type < MAP_UNKNOWN; map_type++)
+		for (auto mf : map_formats)
 		{
-			if (Game::mapFormatSupported(map_type, game, port))
+			if (Game::mapFormatSupported(mf.format, game, port))
 			{
-				choice_mapformat_->Append(MAP_TYPE_NAMES[map_type]);
-				if (map_type == default_format)
+				choice_mapformat_->Append(mf.name);
+				if (mf.format == default_format)
 					choice_mapformat_->SetSelection(choice_mapformat_->GetCount() - 1);
 			}
 		}
@@ -404,15 +425,10 @@ void MapEditorConfigDialog::populateMapList()
 	for (unsigned a = 0; a < maps_.size(); a++)
 	{
 		// Setup format string
-		string fmt = "D";
-		if (maps_[a].format == MAP_DOOM64)
-			fmt = "64";
-		else if (maps_[a].format == MAP_HEXEN)
-			fmt = "H";
-		else if (maps_[a].format == MAP_UDMF)
-			fmt = "U";
-		else if (maps_[a].format == MAP_UNKNOWN)
-			fmt = "?";
+		string fmt = "?";
+		for (auto mf : map_formats)
+			if (mf.format == maps_[a].format)
+				fmt = mf.abbreviation;
 
 		// Create list item
 		wxListItem li;
@@ -458,11 +474,11 @@ Archive::MapDesc MapEditorConfigDialog::selectedMap()
 			mdesc.name = dlg.getMapName();
 
 			// Get selected map format
-			int map_format = MAP_DOOM;
-			for (uint8_t map_type = 0; map_type < MAP_UNKNOWN; map_type++)
-				if (dlg.getMapFormat() == MAP_TYPE_NAMES[map_type])
+			MapFormat map_format = MapFormat::Doom;
+			for (auto mf : map_formats)
+				if (dlg.getMapFormat() == mf.name)
 				{
-					map_format = map_type;
+					map_format = mf.format;
 					break;
 				}
 			mdesc.format = map_format;
@@ -601,11 +617,11 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 		}
 
 		// Get selected map format
-		int map_format = MAP_DOOM;
-		for (uint8_t map_type = 0; map_type < MAP_UNKNOWN; map_type++)
-			if (dlg.getMapFormat() == MAP_TYPE_NAMES[map_type])
+		auto map_format = MapFormat::Doom;
+		for (auto& mf : map_formats)
+			if (dlg.getMapFormat() == mf.name)
 			{
-				map_format = map_type;
+				map_format = mf.format;
 				break;
 			}
 
@@ -616,7 +632,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			ArchiveEntry* head = archive_->addNewEntry(mapname);
 			ArchiveEntry* end  = nullptr;
 
-			if (map_format == MAP_UDMF)
+			if (map_format == MapFormat::UDMF)
 			{
 				// UDMF
 				archive_->addNewEntry("TEXTMAP");
@@ -632,11 +648,11 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 				end = archive_->addNewEntry("SECTORS");
 
 				// Hexen
-				if (map_format == MAP_HEXEN)
+				if (map_format == MapFormat::Hexen)
 					end = archive_->addNewEntry("BEHAVIOR");
 
 				// Doom64
-				if (map_format == MAP_DOOM64)
+				if (map_format == MapFormat::Doom64)
 				{
 					archive_->addNewEntry("LEAFS");
 					archive_->addNewEntry("LIGHTS");
@@ -657,7 +673,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			ArchiveEntry* head = wad->addNewEntry(mapname);
 			ArchiveEntry* end  = nullptr;
 
-			if (map_format == MAP_UDMF)
+			if (map_format == MapFormat::UDMF)
 			{
 				// UDMF
 				wad->addNewEntry("TEXTMAP");
@@ -673,10 +689,10 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 				end = wad->addNewEntry("SECTORS");
 
 				// Hexen
-				if (map_format == MAP_HEXEN)
+				if (map_format == MapFormat::Hexen)
 					end = wad->addNewEntry("BEHAVIOR");
 				// Doom 64
-				else if (map_format == MAP_DOOM64)
+				else if (map_format == MapFormat::Doom64)
 				{
 					wad->addNewEntry("LIGHTS");
 					end = wad->addNewEntry("MACROS");

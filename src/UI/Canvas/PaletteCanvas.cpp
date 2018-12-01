@@ -97,7 +97,7 @@ void PaletteCanvas::draw()
 	}
 	int x_size = (GetSize().x) / cols;
 	int y_size = (GetSize().y) / rows;
-	int size   = MIN(x_size, y_size);
+	int size   = std::min<int>(x_size, y_size);
 
 	// Draw palette
 	int c = 0;
@@ -233,7 +233,7 @@ void PaletteCanvas::onMouseLeftDown(wxMouseEvent& e)
 		}
 		int x_size = (GetSize().x) / cols;
 		int y_size = (GetSize().y) / rows;
-		int size   = MIN(x_size, y_size);
+		int size   = std::min<int>(x_size, y_size);
 		int x      = e.GetX() / size;
 		int y      = e.GetY() / size;
 
@@ -278,7 +278,7 @@ void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 		}
 		int x_size = (GetSize().x) / cols;
 		int y_size = (GetSize().y) / rows;
-		int size   = MIN(x_size, y_size);
+		int size   = std::min<int>(x_size, y_size);
 		int x      = e.GetX() / size;
 		int y      = e.GetY() / size;
 

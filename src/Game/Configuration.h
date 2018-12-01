@@ -2,6 +2,7 @@
 
 #include "ActionSpecial.h"
 #include "Game.h"
+#include "General/Defs.h"
 #include "MapEditor/SLADEMap/MapObject.h"
 #include "MapInfo.h"
 #include "SpecialPreset.h"
@@ -100,12 +101,12 @@ public:
 	void readUDMFProperties(ParseTreeNode* node, UDMFPropMap& plist);
 	void readGameSection(ParseTreeNode* node_game, bool port_section = false);
 	bool readConfiguration(
-		string& cfg,
-		string  source      = "",
-		uint8_t format      = MAP_UNKNOWN,
-		bool    ignore_game = false,
-		bool    clear       = true);
-	bool openConfig(string game, string port = "", uint8_t format = MAP_UNKNOWN);
+		string&   cfg,
+		string    source      = "",
+		MapFormat format      = MapFormat::Unknown,
+		bool      ignore_game = false,
+		bool      clear       = true);
+	bool openConfig(string game, string port = "", MapFormat format = MapFormat::Unknown);
 
 	// Action specials
 	const ActionSpecial& actionSpecial(unsigned id);
@@ -119,12 +120,12 @@ public:
 	int    nThingFlags() const { return flags_thing_.size(); }
 	string thingFlag(unsigned flag_index);
 	bool   thingFlagSet(unsigned flag_index, MapThing* thing);
-	bool   thingFlagSet(string udmf_name, MapThing* thing, int map_format);
-	bool   thingBasicFlagSet(string flag, MapThing* line, int map_format);
+	bool   thingFlagSet(string udmf_name, MapThing* thing, MapFormat map_format);
+	bool   thingBasicFlagSet(string flag, MapThing* line, MapFormat map_format);
 	string thingFlagsString(int flags);
 	void   setThingFlag(unsigned flag_index, MapThing* thing, bool set = true);
-	void   setThingFlag(string udmf_name, MapThing* thing, int map_format, bool set = true);
-	void   setThingBasicFlag(string flag, MapThing* line, int map_format, bool set = true);
+	void   setThingFlag(string udmf_name, MapThing* thing, MapFormat map_format, bool set = true);
+	void   setThingBasicFlag(string flag, MapThing* line, MapFormat map_format, bool set = true);
 
 	// DECORATE
 	bool parseDecorateDefs(Archive* archive);
@@ -142,15 +143,15 @@ public:
 	unsigned    nLineFlags() const { return flags_line_.size(); }
 	const Flag& lineFlag(unsigned flag_index);
 	bool        lineFlagSet(unsigned flag_index, MapLine* line);
-	bool        lineFlagSet(string udmf_name, MapLine* line, int map_format);
-	bool        lineBasicFlagSet(string flag, MapLine* line, int map_format);
+	bool        lineFlagSet(string udmf_name, MapLine* line, MapFormat map_format);
+	bool        lineBasicFlagSet(string flag, MapLine* line, MapFormat map_format);
 	string      lineFlagsString(MapLine* line);
 	void        setLineFlag(unsigned flag_index, MapLine* line, bool set = true);
-	void        setLineFlag(string udmf_name, MapLine* line, int map_format, bool set = true);
-	void        setLineBasicFlag(string flag, MapLine* line, int map_format, bool set = true);
+	void        setLineFlag(string udmf_name, MapLine* line, MapFormat map_format, bool set = true);
+	void        setLineBasicFlag(string flag, MapLine* line, MapFormat map_format, bool set = true);
 
 	// Line action (SPAC) triggers
-	string        spacTriggerString(MapLine* line, int map_format);
+	string        spacTriggerString(MapLine* line, MapFormat map_format);
 	int           spacTriggerIndexHexen(MapLine* line);
 	wxArrayString allSpacTriggers();
 	void          setLineSpacTrigger(unsigned trigger_index, MapLine* line);
@@ -193,14 +194,14 @@ public:
 	void dumpUDMFProperties();
 
 private:
-	string      current_game_;           // Current game name
-	string      current_port_;           // Current port name (empty if none)
-	bool        map_formats_[4];         // Supported map formats
-	string      udmf_namespace_;         // Namespace to use for UDMF
-	int         boom_sector_flag_start_; // Beginning of Boom sector flags
-	string      sky_flat_;               // Sky flat for 3d mode
-	string      script_language_;        // Scripting language (should be extended to allow multiple)
-	vector<int> light_levels_;           // Light levels for up/down light in editor
+	string                    current_game_;           // Current game name
+	string                    current_port_;           // Current port name (empty if none)
+	std::map<MapFormat, bool> map_formats_;            // Supported map formats
+	string                    udmf_namespace_;         // Namespace to use for UDMF
+	int                       boom_sector_flag_start_; // Beginning of Boom sector flags
+	string                    sky_flat_;               // Sky flat for 3d mode
+	string                    script_language_;        // Scripting language (should be extended to allow multiple)
+	vector<int>               light_levels_;           // Light levels for up/down light in editor
 
 	// Action specials
 	std::map<int, ActionSpecial> action_specials_;

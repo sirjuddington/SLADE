@@ -454,8 +454,8 @@ void Misc::doMassRename(wxArrayString& names, string name_filter)
 ColHSL Misc::rgbToHsl(double r, double g, double b)
 {
 	ColHSL ret;
-	double v_min = MIN(r, MIN(g, b));
-	double v_max = MAX(r, MAX(g, b));
+	double v_min = std::min<double>(r, std::min<double>(g, b));
+	double v_max = std::max<double>(r, std::max<double>(g, b));
 	double delta = v_max - v_min;
 
 	// Determine V
