@@ -807,8 +807,8 @@ void TranslationEditorDialog::updatePreviews()
 	if (cb_paletteonly_->GetValue())
 	{
 		// Create a palette image
-		SImage img(PALMASK);
-		img.create(256, 1, PALMASK, palette_);
+		SImage img(SImage::Type::PalMask);
+		img.create(256, 1, SImage::Type::PalMask, palette_);
 		for (int i = 0; i < 256; ++i)
 			img.setPixel(i, 0, i);
 		// Apply translation to image

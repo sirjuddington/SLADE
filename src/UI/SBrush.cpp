@@ -75,7 +75,7 @@ SBrush::SBrush(string name)
 		LOG_MESSAGE(2, "couldn't load image data for icons/general/%s.png", icon_);
 		return;
 	}
-	image_->convertAlphaMap(SImage::ALPHA);
+	image_->convertAlphaMap(SImage::AlphaSource::Alpha);
 	center_.x = image_->width() >> 1;
 	center_.y = image_->height() >> 1;
 

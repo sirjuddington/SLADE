@@ -19,14 +19,14 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Set info (always the same)
 		info.width       = 640;
 		info.height      = 480;
-		info.colformat   = PALMASK;
+		info.colformat   = SImage::Type::PalMask;
 		info.has_palette = true;
 		info.format      = id_;
 
@@ -34,24 +34,24 @@ public:
 	}
 
 
-	int canWrite(SImage& image)
+	Writable canWrite(SImage& image)
 	{
 		if (!gfx_extraconv)
-			return NOTWRITABLE;
+			return Writable::No;
 		// Can write paletted images of size 640x480
-		if (image.width() == 640 && image.height() == 480 && image.type() == PALMASK)
-			return WRITABLE;
+		if (image.width() == 640 && image.height() == 480 && image.type() == SImage::Type::PalMask)
+			return Writable::Yes;
 		// Otherwise it's possible to convert the image as long as it's at least 640x480
 		else if (image.width() >= 640 && image.height() >= 480)
-			return CONVERTIBLE;
+			return Writable::Convert;
 		// If it wouldn't work, it wouldn't work
-		return NOTWRITABLE;
+		return Writable::No;
 	}
 
-	bool canWriteType(SIType type)
+	bool canWriteType(SImage::Type type)
 	{
 		// Only writable as paletted
-		if (type == PALMASK)
+		if (type == SImage::Type::PalMask)
 			return true;
 		else
 			return false;
@@ -104,7 +104,7 @@ protected:
 		}
 
 		// Prepare image data and mask (opaque)
-		image.create(640, 480, PALMASK, &palette);
+		image.create(640, 480, SImage::Type::PalMask, &palette);
 		uint8_t* img_data = imageData(image);
 		uint8_t* img_mask = imageMask(image);
 		memset(img_mask, 0xFF, width * height);
@@ -151,7 +151,7 @@ protected:
 			return false;
 
 		// Check if data is paletted
-		if (image.type() != PALMASK)
+		if (image.type() != SImage::Type::PalMask)
 		{
 			LOG_MESSAGE(1, "Cannot convert truecolour image to planar format - convert to 16-colour first.");
 			return false;
@@ -263,9 +263,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Check size
 		if (mc.size() == 32)
@@ -280,28 +280,28 @@ public:
 		}
 
 		// Set other info
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = "4bit";
 
 		return info;
 	}
 
-	int canWrite(SImage& image)
+	Writable canWrite(SImage& image)
 	{
 		if (!gfx_extraconv)
-			return NOTWRITABLE;
+			return Writable::No;
 		// Can write paletted images of size 4x16 or 16x23
-		if (image.type() == PALMASK
+		if (image.type() == SImage::Type::PalMask
 			&& ((image.width() == 4 && image.height() == 16) || (image.width() == 16 && image.height() == 23)))
-			return WRITABLE;
+			return Writable::Yes;
 		// If it wouldn't work, it wouldn't work
-		return NOTWRITABLE;
+		return Writable::No;
 	}
 
-	bool canWriteType(SIType type)
+	bool canWriteType(SImage::Type type)
 	{
 		// Only writable as paletted
-		if (type == PALMASK)
+		if (type == SImage::Type::PalMask)
 			return true;
 		else
 			return false;
@@ -326,7 +326,7 @@ protected:
 		else
 			return false;
 
-		image.create(width, height, PALMASK);
+		image.create(width, height, SImage::Type::PalMask);
 		uint8_t* img_data = imageData(image);
 		uint8_t* img_mask = imageMask(image);
 		memset(img_mask, 0xFF, width * height);
@@ -347,7 +347,7 @@ protected:
 			return false;
 
 		// Check if data is paletted
-		if (image.type() != PALMASK)
+		if (image.type() != SImage::Type::PalMask)
 		{
 			LOG_MESSAGE(1, "Cannot convert truecolour image to 4-bit format - convert to 16-colour first.");
 			return false;

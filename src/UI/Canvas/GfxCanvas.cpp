@@ -521,7 +521,7 @@ void GfxCanvas::generateBrushShadow()
 
 	// Generate image
 	SImage img;
-	img.create(image_->width(), image_->height(), SIType::RGBA);
+	img.create(image_->width(), image_->height(), SImage::Type::RGBA);
 	for (int i = -4; i < 5; ++i)
 		for (int j = -4; j < 5; ++j)
 			if (brush_->pixel(i, j))

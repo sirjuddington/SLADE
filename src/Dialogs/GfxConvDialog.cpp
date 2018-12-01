@@ -137,17 +137,17 @@ bool GfxConvDialog::nextItem()
 	for (unsigned a = 0; a < all_formats.size(); a++)
 	{
 		// Check if the image can be written to this format
-		if (all_formats[a]->canWrite(items_[current_item_].image))
+		if (all_formats[a]->canWrite(items_[current_item_].image) != SIFormat::Writable::No)
 		{
 			// Add conversion formats depending on what colour types this image format can handle
-			if (all_formats[a]->canWriteType(PALMASK))
+			if (all_formats[a]->canWriteType(SImage::Type::PalMask))
 			{
 				// Add format
-				conv_formats_.push_back(ConvFormat(all_formats[a], PALMASK));
+				conv_formats_.push_back(ConvFormat(all_formats[a], SImage::Type::PalMask));
 				combo_target_format_->Append(all_formats[a]->name() + " (Paletted)");
 
 				// Check for match with current format
-				if (current_format_.format == all_formats[a] && current_format_.coltype == PALMASK)
+				if (current_format_.format == all_formats[a] && current_format_.coltype == SImage::Type::PalMask)
 					current_index = conv_formats_.size() - 1;
 
 				// Default format is 'doom gfx'
@@ -155,25 +155,25 @@ bool GfxConvDialog::nextItem()
 					default_index = conv_formats_.size() - 1;
 			}
 
-			if (all_formats[a]->canWriteType(RGBA))
+			if (all_formats[a]->canWriteType(SImage::Type::RGBA))
 			{
 				// Add format
-				conv_formats_.push_back(ConvFormat(all_formats[a], RGBA));
+				conv_formats_.push_back(ConvFormat(all_formats[a], SImage::Type::RGBA));
 				combo_target_format_->Append(all_formats[a]->name() + " (Truecolour)");
 
 				// Check for match with current format
-				if (current_format_.format == all_formats[a] && current_format_.coltype == RGBA)
+				if (current_format_.format == all_formats[a] && current_format_.coltype == SImage::Type::RGBA)
 					current_index = conv_formats_.size() - 1;
 			}
 
-			if (all_formats[a]->canWriteType(ALPHAMAP))
+			if (all_formats[a]->canWriteType(SImage::Type::AlphaMap))
 			{
 				// Add format
-				conv_formats_.push_back(ConvFormat(all_formats[a], ALPHAMAP));
+				conv_formats_.push_back(ConvFormat(all_formats[a], SImage::Type::AlphaMap));
 				combo_target_format_->Append(all_formats[a]->name() + " (Alpha Map)");
 
 				// Check for match with current format
-				if (current_format_.format == all_formats[a] && current_format_.coltype == ALPHAMAP)
+				if (current_format_.format == all_formats[a] && current_format_.coltype == SImage::Type::AlphaMap)
 					current_index = conv_formats_.size() - 1;
 			}
 		}
@@ -203,9 +203,9 @@ bool GfxConvDialog::nextItem()
 	}
 	else
 		fmt_string += "Texture";
-	if (items_[current_item_].image.type() == RGBA)
+	if (items_[current_item_].image.type() == SImage::Type::RGBA)
 		fmt_string += " (Truecolour)";
-	else if (items_[current_item_].image.type() == PALMASK)
+	else if (items_[current_item_].image.type() == SImage::Type::PalMask)
 	{
 		fmt_string += " (Paletted - ";
 		if (items_[current_item_].image.hasPalette())
@@ -213,7 +213,7 @@ bool GfxConvDialog::nextItem()
 		else
 			fmt_string += "Externally)";
 	}
-	else if (items_[current_item_].image.type() == ALPHAMAP)
+	else if (items_[current_item_].image.type() == SImage::Type::AlphaMap)
 		fmt_string += " (Alpha Map)";
 	label_current_format_->SetLabel(fmt_string);
 
@@ -471,8 +471,8 @@ void GfxConvDialog::updateControls()
 		return;
 
 	// Set colourbox palette if source image has one
-	SIType coltype = gfx_current_->getImage()->type();
-	if (coltype == PALMASK)
+	SImage::Type coltype = gfx_current_->getImage()->type();
+	if (coltype == SImage::Type::PalMask)
 	{
 		colbox_transparent_->setPalette(gfx_current_->palette());
 	}
@@ -483,7 +483,7 @@ void GfxConvDialog::updateControls()
 	if (cb_enable_transparency_->GetValue())
 	{
 		// Disable/enable alpha threshold slider as needed
-		if (coltype == RGBA || coltype == ALPHAMAP)
+		if (coltype == SImage::Type::RGBA || coltype == SImage::Type::AlphaMap)
 			slider_alpha_threshold_->Enable(true);
 		else
 			slider_alpha_threshold_->Enable(false);
@@ -510,16 +510,16 @@ void GfxConvDialog::convertOptions(SIFormat::ConvertOptions& opt)
 	opt.transparency = cb_enable_transparency_->GetValue();
 	if (rb_transparency_existing_->GetValue())
 	{
-		opt.mask_source     = SIFormat::MASK_ALPHA;
+		opt.mask_source     = SIFormat::Mask::Alpha;
 		opt.alpha_threshold = slider_alpha_threshold_->GetValue();
 	}
 	else if (rb_transparency_colour_->GetValue())
 	{
-		opt.mask_source = SIFormat::MASK_COLOUR;
+		opt.mask_source = SIFormat::Mask::Colour;
 		opt.mask_colour = colbox_transparent_->colour();
 	}
 	else
-		opt.mask_source = SIFormat::MASK_BRIGHTNESS;
+		opt.mask_source = SIFormat::Mask::Brightness;
 
 	// Set conversion palettes
 	// opt.pal_current = gfx_current->getPalette();

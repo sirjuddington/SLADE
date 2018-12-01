@@ -7,29 +7,29 @@ class SIFormat
 {
 public:
 	// Conversion options stuff
-	enum
+	enum class Mask
 	{
-		MASK_NONE = 0,
-		MASK_COLOUR,
-		MASK_ALPHA,
-		MASK_BRIGHTNESS,
+		None = 0,
+		Colour,
+		Alpha,
+		Brightness,
 	};
 	struct ConvertOptions
 	{
-		Palette* pal_current;
-		Palette* pal_target;
-		int      mask_source;
-		ColRGBA  mask_colour;
-		uint8_t  alpha_threshold;
-		bool     transparency;
-		int      col_format;
+		Palette*     pal_current;
+		Palette*     pal_target;
+		Mask         mask_source;
+		ColRGBA      mask_colour;
+		uint8_t      alpha_threshold;
+		bool         transparency;
+		SImage::Type col_format;
 
 		ConvertOptions()
 		{
 			pal_current = pal_target = nullptr;
-			mask_source              = MASK_ALPHA;
+			mask_source              = Mask::Alpha;
 			transparency             = true;
-			col_format               = -1;
+			col_format               = SImage::Type::Unknown;
 			alpha_threshold          = 0;
 		}
 	};
@@ -44,7 +44,7 @@ public:
 	virtual bool isThisFormat(MemChunk& mc) = 0;
 
 	// Reading
-	virtual SImage::info_t info(MemChunk& mc, int index = 0) = 0;
+	virtual SImage::Info info(MemChunk& mc, int index = 0) = 0;
 
 	bool loadImage(SImage& image, MemChunk& data, int index = 0)
 	{
@@ -71,16 +71,16 @@ public:
 	}
 
 	// Writing
-	enum
+	enum class Writable
 	{
-		NOTWRITABLE, // Format cannot be written
-		WRITABLE,    // Format can be written
-		CONVERTIBLE, // Format can be written but a conversion is required
+		No,      // Format cannot be written
+		Yes,     // Format can be written
+		Convert, // Format can be written but a conversion is required
 	};
-	virtual int  canWrite(SImage& image) { return NOTWRITABLE; }
-	virtual bool canWriteType(SIType type) { return false; }
-	virtual bool convertWritable(SImage& image, ConvertOptions opt) { return false; }
-	virtual bool writeOffset(SImage& image, ArchiveEntry* entry, Vec2i offset) { return false; }
+	virtual Writable canWrite(SImage& image) { return Writable::No; }
+	virtual bool     canWriteType(SImage::Type type) { return false; }
+	virtual bool     convertWritable(SImage& image, ConvertOptions opt) { return false; }
+	virtual bool     writeOffset(SImage& image, ArchiveEntry* entry, Vec2i offset) { return false; }
 
 	bool saveImage(SImage& image, MemChunk& out, Palette* pal = nullptr, int index = 0)
 	{

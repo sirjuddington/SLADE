@@ -127,7 +127,7 @@ bool EntryOperations::gfxConvert(
 	ArchiveEntry*            entry,
 	string                   target_format,
 	SIFormat::ConvertOptions opt,
-	int                      target_colformat)
+	SImage::Type             target_colformat)
 {
 	// Init variables
 	SImage image;
@@ -138,11 +138,11 @@ bool EntryOperations::gfxConvert(
 		return false;
 
 	// Check format and target colour type are compatible
-	if (target_colformat >= 0 && !fmt->canWriteType((SIType)target_colformat))
+	if (target_colformat != SImage::Type::Unknown && !fmt->canWriteType((SImage::Type)target_colformat))
 	{
-		if (target_colformat == RGBA)
+		if (target_colformat == SImage::Type::RGBA)
 			LOG_MESSAGE(1, "Format \"%s\" cannot be written as RGBA data", fmt->name());
-		else if (target_colformat == PALMASK)
+		else if (target_colformat == SImage::Type::PalMask)
 			LOG_MESSAGE(1, "Format \"%s\" cannot be written as paletted data", fmt->name());
 
 		return false;
@@ -152,19 +152,19 @@ bool EntryOperations::gfxConvert(
 	Misc::loadImageFromEntry(&image, entry);
 
 	// Check if we can write the image to the target format
-	int writable = fmt->canWrite(image);
-	if (writable == SIFormat::NOTWRITABLE)
+	auto writable = fmt->canWrite(image);
+	if (writable == SIFormat::Writable::No)
 	{
 		LOG_MESSAGE(1, "Entry \"%s\" could not be converted to target format \"%s\"", entry->name(), fmt->name());
 		return false;
 	}
-	else if (writable == SIFormat::CONVERTIBLE)
+	else if (writable == SIFormat::Writable::Convert)
 		fmt->convertWritable(image, opt);
 
 	// Now we apply the target colour format (if any)
-	if (target_colformat == PALMASK)
+	if (target_colformat == SImage::Type::PalMask)
 		image.convertPaletted(opt.pal_target, opt.pal_current);
-	else if (target_colformat == RGBA)
+	else if (target_colformat == SImage::Type::RGBA)
 		image.convertRGBA(opt.pal_current);
 
 	// Finally, write new image data back to the entry

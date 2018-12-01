@@ -81,7 +81,7 @@ bool SImage::loadFont0(const uint8_t* gfx_data, int size)
 
 	clearData();
 	has_palette_ = false;
-	type_        = PALMASK;
+	type_        = Type::PalMask;
 	format_      = nullptr;
 
 	// Technically each character is its own image, though.
@@ -142,7 +142,7 @@ bool SImage::loadFont1(const uint8_t* gfx_data, int size)
 	// Setup variables
 	offset_x_ = offset_y_ = 0;
 	has_palette_          = false;
-	type_                 = PALMASK;
+	type_                 = Type::PalMask;
 
 	// Technically each character is its own image, though.
 	numimages_ = 1;
@@ -234,7 +234,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	// Initializes some stuff
 	offset_x_ = offset_y_ = 0;
 	has_palette_          = true;
-	type_                 = PALMASK;
+	type_                 = Type::PalMask;
 	format_               = nullptr;
 
 	// Technically each character is its own image, though.
@@ -457,7 +457,7 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 
 	// Clean up old data and set up variables
 	clearData();
-	type_        = PALMASK;
+	type_        = Type::PalMask;
 	has_palette_ = true;
 	format_      = nullptr;
 
@@ -596,7 +596,7 @@ bool SImage::loadFontM(const uint8_t* gfx_data, int size)
 	// Setup variables
 	offset_x_ = offset_y_ = 0;
 	has_palette_          = false;
-	type_                 = PALMASK;
+	type_                 = Type::PalMask;
 	format_               = nullptr;
 
 	size_t charwidth  = 8;
@@ -661,7 +661,7 @@ bool SImage::loadWolfFont(const uint8_t* gfx_data, int size)
 
 	clearData();
 	has_palette_ = false;
-	type_        = PALMASK;
+	type_        = Type::PalMask;
 	format_      = nullptr;
 
 	// Technically each character is its own image, though.
@@ -742,7 +742,7 @@ bool SImage::loadJediFNT(const uint8_t* gfx_data, int size)
 
 	clearData();
 	has_palette_ = false;
-	type_        = PALMASK;
+	type_        = Type::PalMask;
 	format_      = nullptr;
 
 	// Technically each character is its own image, though.
@@ -799,7 +799,7 @@ bool SImage::loadJediFONT(const uint8_t* gfx_data, int size)
 	height_               = Memory::readL16(gfx_data, 6) * numchr;
 	width_                = Memory::readL16(gfx_data, 4);
 	has_palette_          = false;
-	type_                 = PALMASK;
+	type_                 = Type::PalMask;
 	format_               = nullptr;
 
 	// reset data
@@ -866,7 +866,7 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 	offset_x_    = ofsx;
 	offset_y_    = ofsy;
 	has_palette_ = false;
-	type_        = PALMASK;
+	type_        = Type::PalMask;
 	format_      = nullptr;
 	numimages_   = 1;
 	imgindex_    = 0;
@@ -950,7 +950,7 @@ bool SImage::loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, i
 	width_                = i_height; // Format is column-major
 	height_               = i_width;  // We'll rotate them afterwards
 	has_palette_          = false;
-	type_                 = PALMASK;
+	type_                 = Type::PalMask;
 	format_               = nullptr;
 	numimages_            = 1;
 	imgindex_             = 0;

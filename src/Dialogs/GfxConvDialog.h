@@ -61,10 +61,10 @@ public:
 private:
 	struct ConvFormat
 	{
-		SIFormat* format;
-		int       coltype;
+		SIFormat*    format;
+		SImage::Type coltype;
 
-		ConvFormat(SIFormat* format = nullptr, int coltype = RGBA)
+		ConvFormat(SIFormat* format = nullptr, SImage::Type coltype = SImage::Type::RGBA)
 		{
 			this->format  = format;
 			this->coltype = coltype;

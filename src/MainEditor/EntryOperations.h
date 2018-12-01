@@ -8,7 +8,11 @@ class ModifyOffsetsDialog;
 namespace EntryOperations
 {
 bool openMapDB2(ArchiveEntry* entry);
-bool gfxConvert(ArchiveEntry* entry, string target_format, SIFormat::ConvertOptions opt, int target_colformat = -1);
+bool gfxConvert(
+	ArchiveEntry*            entry,
+	string                   target_format,
+	SIFormat::ConvertOptions opt,
+	SImage::Type             target_colformat = SImage::Type::Unknown);
 bool modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog* dialog);
 bool setGfxOffsets(ArchiveEntry* entry, int x, int y);
 bool modifyalPhChunk(ArchiveEntry* entry, bool value);

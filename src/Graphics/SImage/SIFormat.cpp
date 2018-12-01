@@ -87,8 +87,8 @@ public:
 	SIFUnknown() : SIFormat("unknown") { reliability_ = 0; }
 	~SIFUnknown() {}
 
-	bool           isThisFormat(MemChunk& mc) { return false; }
-	SImage::info_t info(MemChunk& mc, int index) { return SImage::info_t(); }
+	bool         isThisFormat(MemChunk& mc) { return false; }
+	SImage::Info info(MemChunk& mc, int index) { return SImage::Info(); }
 };
 
 
@@ -119,9 +119,9 @@ public:
 			return true;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		getFIInfo(mc, info);
 
@@ -132,8 +132,8 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info;
-		FIBITMAP*      bm = getFIInfo(data, info);
+		SImage::Info info;
+		FIBITMAP*    bm = getFIInfo(data, info);
 
 		// Check it created/read ok
 		if (!bm)
@@ -193,7 +193,7 @@ protected:
 	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) { return false; }
 
 private:
-	FIBITMAP* getFIInfo(MemChunk& data, SImage::info_t& info)
+	FIBITMAP* getFIInfo(MemChunk& data, SImage::Info& info)
 	{
 		// Get FreeImage bitmap info from entry data
 		FIMEMORY*         mem = FreeImage_OpenMemory((BYTE*)data.data(), data.size());
@@ -208,7 +208,7 @@ private:
 		// Get info from image
 		info.width     = FreeImage_GetWidth(bm);
 		info.height    = FreeImage_GetHeight(bm);
-		info.colformat = RGBA; // Generic images always converted to RGBA on loading
+		info.colformat = SImage::Type::RGBA; // Generic images always converted to RGBA on loading
 		info.format    = id_;
 
 		// Check if palette supplied
@@ -299,10 +299,10 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get info
-		SImage::info_t inf = info(data, index);
+		SImage::Info inf = info(data, index);
 
 		// Create image from data
-		image.create(inf.width, inf.height, PALMASK);
+		image.create(inf.width, inf.height, SImage::Type::PalMask);
 		data.read(imageData(image), inf.width * inf.height, 0);
 		image.fillAlpha(255);
 
@@ -323,10 +323,10 @@ public:
 		return validSize(mc.size());
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
-		unsigned       size = mc.size();
+		SImage::Info info;
+		unsigned     size = mc.size();
 
 		// Determine dimensions
 		bool valid_size = false;
@@ -362,16 +362,16 @@ public:
 		}
 
 		// Setup other info
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = "raw";
 
 		return info;
 	}
 
-	bool canWriteType(SIType type)
+	bool canWriteType(SImage::Type type)
 	{
 		// Raw format only supports paletted images
-		if (type == PALMASK)
+		if (type == SImage::Type::PalMask)
 			return true;
 		else
 			return false;
@@ -390,7 +390,7 @@ protected:
 	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index)
 	{
 		// Can't write if RGBA
-		if (image.type() == RGBA)
+		if (image.type() == SImage::Type::RGBA)
 			return false;
 
 		// Check size
@@ -412,7 +412,7 @@ public:
 	}
 	~SIFRawFlat() {}
 
-	int canWrite(SImage& image)
+	Writable canWrite(SImage& image)
 	{
 		// If it's the correct size and colour format, it's writable
 		int width  = image.width();
@@ -420,19 +420,19 @@ public:
 
 		// Shouldn't happen but...
 		if (width < 0 || height < 0)
-			return NOTWRITABLE;
+			return Writable::No;
 
-		if (image.type() == PALMASK && validSize(image.width(), image.height()))
-			return WRITABLE;
+		if (image.type() == SImage::Type::PalMask && validSize(image.width(), image.height()))
+			return Writable::Yes;
 
 		// Otherwise, check if it can be cropped to a valid size
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
 			if (((unsigned)width >= valid_flat_size[a][0] && (unsigned)height >= valid_flat_size[a][1]
 				 && valid_flat_size[a][2] == 1)
 				|| gfx_extraconv)
-				return CONVERTIBLE;
+				return Writable::Convert;
 
-		return NOTWRITABLE;
+		return Writable::No;
 	}
 
 	bool convertWritable(SImage& image, ConvertOptions opt)

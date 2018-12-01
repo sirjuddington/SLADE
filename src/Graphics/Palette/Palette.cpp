@@ -355,7 +355,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, const string& name)
 		SImage image;
 
 		// Generate palette image
-		image.create(128, 128, PALMASK, this);
+		image.create(128, 128, SImage::Type::PalMask, this);
 		unsigned xoff = 0;
 		unsigned yoff = 0;
 		for (unsigned a = 0; a < 256; a++)

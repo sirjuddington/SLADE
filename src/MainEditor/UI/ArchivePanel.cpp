@@ -1945,7 +1945,7 @@ bool ArchivePanel::gfxRemap()
 	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Create preview image (just use first selected entry)
-	SImage image(PALMASK);
+	SImage image(SImage::Type::PalMask);
 	Misc::loadImageFromEntry(&image, selection[0]);
 
 	// Create translation editor dialog

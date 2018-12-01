@@ -17,9 +17,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Get width & height
 		Graphics::IMGZHeader* header = (Graphics::IMGZHeader*)mc.data();
@@ -27,7 +27,7 @@ public:
 		info.height                  = wxINT16_SWAP_ON_BE(header->height);
 
 		// Other image info
-		info.colformat = ALPHAMAP;
+		info.colformat = SImage::Type::AlphaMap;
 		info.format    = "imgz";
 
 		return info;
@@ -46,7 +46,7 @@ protected:
 		offset_y    = wxINT16_SWAP_ON_BE(header->top);
 
 		// Create image
-		image.create(width, height, ALPHAMAP);
+		image.create(width, height, SImage::Type::AlphaMap);
 		uint8_t* img_data = imageData(image);
 
 		if (!header->compression)

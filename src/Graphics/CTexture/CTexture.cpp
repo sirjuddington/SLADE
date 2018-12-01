@@ -953,8 +953,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 	image.resize(width_, height_);
 
 	// Add patches
-	SImage         p_img(PALMASK);
-	si_drawprops_t dp;
+	SImage            p_img(SImage::Type::PalMask);
+	SImage::DrawProps dp;
 	dp.src_alpha = false;
 	if (defined_)
 	{
@@ -1007,7 +1007,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 				p_img.rotate(patch->rotation());
 
 			// Setup transparency blending
-			dp.blend     = NORMAL;
+			dp.blend     = SImage::BlendType::Normal;
 			dp.alpha     = 1.0f;
 			dp.src_alpha = false;
 			if (patch->style() == "CopyAlpha" || patch->style() == "Overlay")
@@ -1016,22 +1016,22 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 				dp.alpha = patch->alpha();
 			else if (patch->style() == "Add")
 			{
-				dp.blend = ADD;
+				dp.blend = SImage::BlendType::Add;
 				dp.alpha = patch->alpha();
 			}
 			else if (patch->style() == "Subtract")
 			{
-				dp.blend = SUBTRACT;
+				dp.blend = SImage::BlendType::Subtract;
 				dp.alpha = patch->alpha();
 			}
 			else if (patch->style() == "ReverseSubtract")
 			{
-				dp.blend = REVERSE_SUBTRACT;
+				dp.blend = SImage::BlendType::ReverseSubtract;
 				dp.alpha = patch->alpha();
 			}
 			else if (patch->style() == "Modulate")
 			{
-				dp.blend = MODULATE;
+				dp.blend = SImage::BlendType::Modulate;
 				dp.alpha = patch->alpha();
 			}
 

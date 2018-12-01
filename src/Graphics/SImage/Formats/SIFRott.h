@@ -18,9 +18,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Read header
 		const Graphics::ROTTPatchHeader* header = (const Graphics::ROTTPatchHeader*)mc.data();
@@ -30,7 +30,7 @@ public:
 		info.offset_y = wxINT16_SWAP_ON_BE(header->top) + wxINT16_SWAP_ON_BE(header->origsize);
 
 		// Setup other info
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -40,7 +40,7 @@ protected:
 	bool readRottGfx(SImage& image, MemChunk& data, bool mask)
 	{
 		// Get image info
-		SImage::info_t info = this->info(data, 0);
+		SImage::Info info = this->info(data, 0);
 
 		// Setup variables
 		size_t hdr_size   = sizeof(Graphics::ROTTPatchHeader);
@@ -168,14 +168,14 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Setup info
 		info.width       = mc.readL16(0);
 		info.height      = mc.readL16(2);
-		info.colformat   = PALMASK;
+		info.colformat   = SImage::Type::PalMask;
 		info.has_palette = true;
 		info.format      = id_;
 
@@ -186,7 +186,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = this->info(data, index);
+		SImage::Info info = this->info(data, index);
 
 		// ROTT source code says: "LIMITATIONS - Only works with 320x200!!!"
 		if (info.width != 320 || info.height != 200)
@@ -265,9 +265,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Read header
 		auto header   = (const Graphics::PatchHeader*)mc.data();
@@ -277,7 +277,7 @@ public:
 		info.offset_y = wxINT16_SWAP_ON_BE(header->top);
 
 		// Set other info
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -287,10 +287,10 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = this->info(data, index);
+		SImage::Info info = this->info(data, index);
 
 		// Create image (swapped width/height because column-major)
-		image.create(info.height, info.width, PALMASK);
+		image.create(info.height, info.width, SImage::Type::PalMask);
 		image.fillAlpha(255);
 
 		// Read raw pixel data
@@ -323,16 +323,16 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Read dimensions
 		info.width  = mc[0] * 4;
 		info.height = mc[1];
 
 		// Setup other info
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -342,7 +342,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = this->info(data, index);
+		SImage::Info info = this->info(data, index);
 
 		// Check data
 		if (data.size() != 4 + info.width * info.height)
@@ -398,16 +398,16 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Always the same thing
 		info.width     = mc.size() == 4096 ? 64 : 256;
 		info.height    = mc.size() == 4096 ? 64 : 200;
 		info.offset_x  = 0;
 		info.offset_y  = 0;
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -417,10 +417,10 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = this->info(data, index);
+		SImage::Info info = this->info(data, index);
 
 		// Create image (swapped width/height because column-major)
-		image.create(info.height, info.width, PALMASK);
+		image.create(info.height, info.width, SImage::Type::PalMask);
 		image.fillAlpha(255);
 
 		// Read raw pixel data

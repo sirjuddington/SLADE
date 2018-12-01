@@ -21,9 +21,9 @@ public:
 			return false;
 	}
 
-	virtual SImage::info_t info(MemChunk& mc, int index)
+	virtual SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Read header
 		Graphics::PatchHeader hdr;
@@ -34,26 +34,26 @@ public:
 		info.height      = hdr.height;
 		info.offset_x    = hdr.left;
 		info.offset_y    = hdr.top;
-		info.colformat   = PALMASK;
+		info.colformat   = SImage::Type::PalMask;
 		info.has_palette = false;
 		info.format      = id_;
 
 		return info;
 	}
 
-	virtual int canWrite(SImage& image)
+	virtual Writable canWrite(SImage& image)
 	{
 		// Must be converted to paletted to be written
-		if (image.type() == PALMASK)
-			return WRITABLE;
+		if (image.type() == SImage::Type::PalMask)
+			return Writable::Yes;
 		else
-			return CONVERTIBLE;
+			return Writable::Convert;
 	}
 
-	virtual bool canWriteType(SIType type)
+	virtual bool canWriteType(SImage::Type type)
 	{
 		// Doom format gfx can only be written as paletted
-		if (type == PALMASK)
+		if (type == SImage::Type::PalMask)
 			return true;
 		else
 			return false;
@@ -64,9 +64,9 @@ public:
 		// Do mask conversion
 		if (!opt.transparency)
 			image.fillAlpha(255);
-		else if (opt.mask_source == MASK_COLOUR)
+		else if (opt.mask_source == Mask::Colour)
 			image.maskFromColour(opt.mask_colour, opt.pal_target);
-		else if (opt.mask_source == MASK_ALPHA)
+		else if (opt.mask_source == Mask::Alpha)
 			image.cutoffMask(opt.alpha_threshold);
 
 		// Convert to paletted
@@ -114,7 +114,7 @@ protected:
 		}
 
 		// Create image
-		image.create(width, height, PALMASK);
+		image.create(width, height, SImage::Type::PalMask);
 
 		// Read column offsets
 		vector<uint32_t> col_offsets(width);
@@ -452,17 +452,17 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info = SIFDoomGfx::info(mc, index);
-		info.format         = id_;
+		SImage::Info info = SIFDoomGfx::info(mc, index);
+		info.format       = id_;
 		return info;
 	}
 
 	// Cannot write this format
-	int  canWrite(SImage& image) { return NOTWRITABLE; }
-	bool canWriteType(SIType type) { return false; }
-	bool convertWritable(SImage& image, ConvertOptions opt) { return false; }
+	Writable canWrite(SImage& image) { return Writable::No; }
+	bool     canWriteType(SImage::Type type) { return false; }
+	bool     convertWritable(SImage& image, ConvertOptions opt) { return false; }
 
 protected:
 	bool readImage(SImage& image, MemChunk& data, int index) { return readDoomFormat(image, data, 1); }
@@ -486,25 +486,25 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Setup info
 		info.width     = mc[0];
 		info.height    = mc[1];
 		info.offset_x  = mc[2];
 		info.offset_y  = mc[3];
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
 	}
 
 	// Cannot write this format
-	int  canWrite(SImage& image) { return NOTWRITABLE; }
-	bool canWriteType(SIType type) { return false; }
-	bool convertWritable(SImage& image, ConvertOptions opt) { return false; }
+	Writable canWrite(SImage& image) { return Writable::No; }
+	bool     canWriteType(SImage::Type type) { return false; }
+	bool     convertWritable(SImage& image, ConvertOptions opt) { return false; }
 
 protected:
 	bool readImage(SImage& image, MemChunk& data, int index) { return readDoomFormat(image, data, 2); }
@@ -529,9 +529,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Read header
 		Graphics::PatchHeader header;
@@ -542,7 +542,7 @@ public:
 		info.height    = wxINT16_SWAP_ON_BE(header.height);
 		info.offset_x  = wxINT16_SWAP_ON_BE(header.left);
 		info.offset_y  = wxINT16_SWAP_ON_BE(header.top);
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -560,7 +560,7 @@ protected:
 		int offset_y = wxINT16_SWAP_ON_BE(header.top);
 
 		// Create image
-		image.create(width, height, PALMASK);
+		image.create(width, height, SImage::Type::PalMask);
 		uint8_t* img_data = imageData(image);
 		uint8_t* img_mask = imageMask(image);
 
@@ -601,15 +601,15 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Get image info
 		uint8_t qwidth = mc[0];
 		info.width     = qwidth * 4;
 		info.height    = mc[1];
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -633,7 +633,7 @@ protected:
 			return false;
 
 		// Create image
-		image.create(width, height, PALMASK);
+		image.create(width, height, SImage::Type::PalMask);
 
 		// Read raw pixel data
 		uint8_t* img_data = imageData(image);
@@ -681,9 +681,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Read header
 		Graphics::PatchHeader header;
@@ -694,7 +694,7 @@ public:
 		info.height    = wxINT16_SWAP_ON_BE(header.height);
 		info.offset_x  = wxINT16_SWAP_ON_BE(header.left);
 		info.offset_y  = wxINT16_SWAP_ON_BE(header.top);
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -712,7 +712,7 @@ protected:
 		int offset_y = wxINT16_SWAP_ON_BE(header.top);
 
 		// Create image
-		image.create(width, height, PALMASK);
+		image.create(width, height, SImage::Type::PalMask);
 		uint8_t* img_data = imageData(image);
 		uint8_t* img_mask = imageMask(image);
 
@@ -754,9 +754,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Read header
 		Graphics::JagPicHeader header;
@@ -767,7 +767,7 @@ public:
 		info.height    = wxINT16_SWAP_ON_LE(header.height);
 		info.offset_x  = 0;
 		info.offset_y  = 0;
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -785,7 +785,7 @@ protected:
 		int shift  = wxINT16_SWAP_ON_LE(header.palshift);
 
 		// Create image
-		image.create(width, height, PALMASK);
+		image.create(width, height, SImage::Type::PalMask);
 		uint8_t* img_data = imageData(image);
 		uint8_t* img_mask = imageMask(image);
 

@@ -107,9 +107,9 @@ public:
 		return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t inf;
+		SImage::Info inf;
 		inf.format = "png";
 		inf.width  = 0;
 		inf.height = 0;
@@ -132,12 +132,12 @@ public:
 			bpp        = ihdr.bpp;
 			if (ihdr.coltype == 3 && ihdr.bpp == 8)
 			{
-				// Only 8bpp 'indexed' pngs are counted as PALMASK for now, all others will be converted to RGBA
-				inf.colformat   = PALMASK;
+				// Only 8bpp 'indexed' pngs are counted as PalMask for now, all others will be converted to RGBA
+				inf.colformat   = SImage::Type::PalMask;
 				inf.has_palette = true;
 			}
 			else
-				inf.colformat = RGBA;
+				inf.colformat = SImage::Type::RGBA;
 		}
 
 		// Look for other info chunks (grAb or alPh)
@@ -147,7 +147,7 @@ public:
 
 			// Set format to alpha map if alPh present (and 8bpp)
 			if (bpp == 8 && chunk.getName() == "alPh")
-				inf.colformat = ALPHAMAP;
+				inf.colformat = SImage::Type::AlphaMap;
 
 			// Set offsets if grAb present
 			else if (chunk.getName() == "grAb")
@@ -168,13 +168,13 @@ public:
 		return inf;
 	}
 
-	int canWrite(SImage& image)
+	Writable canWrite(SImage& image)
 	{
 		// PNG format is always writable
-		return WRITABLE;
+		return Writable::Yes;
 	}
 
-	bool canWriteType(SIType type)
+	bool canWriteType(SImage::Type type)
 	{
 		// PNG format is always writable
 		return true;
@@ -185,12 +185,12 @@ public:
 		// Just convert to requested colour type
 
 		// Paletted
-		if (opt.col_format == PALMASK)
+		if (opt.col_format == SImage::Type::PalMask)
 		{
 			// Convert mask
-			if (opt.mask_source == MASK_ALPHA)
+			if (opt.mask_source == Mask::Alpha)
 				image.cutoffMask(opt.alpha_threshold);
-			else if (opt.mask_source == MASK_COLOUR)
+			else if (opt.mask_source == Mask::Colour)
 				image.maskFromColour(opt.mask_colour, opt.pal_current);
 			else
 				image.fillAlpha(255);
@@ -200,29 +200,29 @@ public:
 		}
 
 		// RGBA
-		else if (opt.col_format == RGBA)
+		else if (opt.col_format == SImage::Type::RGBA)
 		{
 			image.convertRGBA(opt.pal_current);
 
 			// Convert alpha channel
-			if (opt.mask_source == MASK_COLOUR)
+			if (opt.mask_source == Mask::Colour)
 				image.maskFromColour(opt.mask_colour, opt.pal_current);
-			else if (opt.mask_source == MASK_BRIGHTNESS)
+			else if (opt.mask_source == Mask::Brightness)
 				image.maskFromBrightness(opt.pal_current);
 		}
 
 		// Alpha Map
-		else if (opt.col_format == ALPHAMAP)
+		else if (opt.col_format == SImage::Type::AlphaMap)
 		{
-			if (opt.mask_source == SIFormat::MASK_ALPHA)
-				image.convertAlphaMap(SImage::ALPHA, opt.pal_current);
-			else if (opt.mask_source == SIFormat::MASK_COLOUR)
+			if (opt.mask_source == Mask::Alpha)
+				image.convertAlphaMap(SImage::AlphaSource::Alpha, opt.pal_current);
+			else if (opt.mask_source == Mask::Colour)
 			{
 				image.maskFromColour(opt.mask_colour, opt.pal_current);
-				image.convertAlphaMap(SImage::ALPHA, opt.pal_current);
+				image.convertAlphaMap(SImage::AlphaSource::Alpha, opt.pal_current);
 			}
 			else
-				image.convertAlphaMap(SImage::BRIGHTNESS, opt.pal_current);
+				image.convertAlphaMap(SImage::AlphaSource::Brightness, opt.pal_current);
 		}
 
 		// If transparency is disabled
@@ -257,10 +257,10 @@ protected:
 		}
 
 		// Get image info
-		int    width  = FreeImage_GetWidth(bm);
-		int    height = FreeImage_GetHeight(bm);
-		int    bpp    = FreeImage_GetBPP(bm);
-		SIType type   = RGBA;
+		int          width  = FreeImage_GetWidth(bm);
+		int          height = FreeImage_GetHeight(bm);
+		int          bpp    = FreeImage_GetBPP(bm);
+		SImage::Type type   = SImage::Type::RGBA;
 
 		// Read extra info from various PNG chunks
 		int32_t xoff       = 0;
@@ -303,7 +303,7 @@ protected:
 		Palette  palette;
 		if (bpp == 8 && bm_pal)
 		{
-			type  = PALMASK;
+			type  = SImage::Type::PalMask;
 			int a = 0;
 			int b = FreeImage_GetColorsUsed(bm);
 			if (b > 256)
@@ -314,7 +314,7 @@ protected:
 
 		// If it's a ZDoom alpha map
 		if (alPh_chunk && bpp == 8)
-			type = ALPHAMAP;
+			type = SImage::Type::AlphaMap;
 
 		// Create image
 		if (bm_pal)
@@ -324,7 +324,7 @@ protected:
 
 		// Load image data
 		uint8_t* img_data = imageData(image);
-		if (type == PALMASK || type == ALPHAMAP)
+		if (type == SImage::Type::PalMask || type == SImage::Type::AlphaMap)
 		{
 			// Flip vertically
 			FreeImage_FlipVertical(bm);
@@ -339,7 +339,7 @@ protected:
 			}
 
 			// Set mask
-			if (type == PALMASK)
+			if (type == SImage::Type::PalMask)
 			{
 				uint8_t* mask       = imageMask(image);
 				uint8_t* alphatable = FreeImage_GetTransparencyTable(bm);
@@ -352,7 +352,7 @@ protected:
 					image.fillAlpha(255);
 			}
 		}
-		else if (type == RGBA)
+		else if (type == SImage::Type::RGBA)
 		{
 			// Convert to 32bpp & flip vertically
 			FIBITMAP* rgb = FreeImage_ConvertTo32Bits(bm);
@@ -394,11 +394,11 @@ protected:
 		FIBITMAP* bm       = nullptr;
 		uint8_t*  img_data = imageData(image);
 		uint8_t*  img_mask = imageMask(image);
-		int       type     = image.type();
+		auto      type     = image.type();
 		int       width    = image.width();
 		int       height   = image.height();
 
-		if (type == RGBA)
+		if (type == SImage::Type::RGBA)
 		{
 			// Init 32bpp FIBITMAP
 			bm = FreeImage_Allocate(width, height, 32, 0x0000FF00, 0x00FF0000, 0x000000FF);
@@ -414,7 +414,7 @@ protected:
 				bits[c++] = img_data[a + 3];
 			}
 		}
-		else if (type == PALMASK)
+		else if (type == SImage::Type::PalMask)
 		{
 			// Init 8bpp FIBITMAP
 			bm = FreeImage_Allocate(width, height, 8);
@@ -474,7 +474,7 @@ protected:
 				memcpy(scanline, img_data + (row * width), width);
 			}
 		}
-		else if (type == ALPHAMAP)
+		else if (type == SImage::Type::AlphaMap)
 		{
 			// Init 8bpp FIBITMAP
 			bm = FreeImage_Allocate(width, height, 8);
@@ -531,7 +531,7 @@ protected:
 		}
 
 		// Create alPh chunk if it's an alpha map
-		if (type == ALPHAMAP)
+		if (type == SImage::Type::AlphaMap)
 		{
 			PNGChunk alPh("alPh");
 			alPh.write(data);

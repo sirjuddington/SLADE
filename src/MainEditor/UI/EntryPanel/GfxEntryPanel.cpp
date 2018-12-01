@@ -251,17 +251,17 @@ bool GfxEntryPanel::saveEntry()
 	{
 		SIFormat* format = image->format();
 
-		string error = "";
-		ok           = false;
-		int writable = format ? format->canWrite(*image) : SIFormat::NOTWRITABLE;
+		string error  = "";
+		ok            = false;
+		auto writable = format ? format->canWrite(*image) : SIFormat::Writable::No;
 		if (format == SIFormat::unknownFormat())
 			error = "Image is of unknown format";
-		else if (writable == SIFormat::NOTWRITABLE)
+		else if (writable == SIFormat::Writable::No)
 			error = S_FMT("Writing unsupported for format \"%s\"", format->name());
 		else
 		{
 			// Convert image if necessary (using default options)
-			if (writable == SIFormat::CONVERTIBLE)
+			if (writable == SIFormat::Writable::Convert)
 			{
 				format->convertWritable(*image, SIFormat::ConvertOptions());
 				LOG_MESSAGE(1, "Image converted for writing");
@@ -509,7 +509,7 @@ void GfxEntryPanel::refresh()
 		gfx_canvas_->resetOffsets();
 
 	// Setup custom menu
-	if (image()->type() == RGBA)
+	if (image()->type() == SImage::Type::RGBA)
 		menu_custom_->Enable(MENU_GFXEP_TRANSLATE, false);
 	else
 		menu_custom_->Enable(MENU_GFXEP_TRANSLATE, true);
@@ -528,7 +528,7 @@ string GfxEntryPanel::statusString()
 	string  status = S_FMT("%dx%d", image->width(), image->height());
 
 	// Colour format
-	if (image->type() == RGBA)
+	if (image->type() == SImage::Type::RGBA)
 		status += ", 32bpp";
 	else
 		status += ", 8bpp";

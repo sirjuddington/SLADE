@@ -17,21 +17,21 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Get image properties
 		info.width  = wxINT16_SWAP_ON_BE(*(const uint16_t*)(mc.data()));
 		info.height = wxINT16_SWAP_ON_BE(*(const uint16_t*)(mc.data() + 4));
 
 		// Determine colour type
-		info.colformat = RGBA;
+		info.colformat = SImage::Type::RGBA;
 		uint8_t mode   = mc[3];
 		if (mode == Palette || mode == Alpha)
-			info.colformat = PALMASK;
+			info.colformat = SImage::Type::PalMask;
 		else if (mode == Intensity)
-			info.colformat = ALPHAMAP;
+			info.colformat = SImage::Type::AlphaMap;
 
 		info.format = id_;
 
@@ -47,11 +47,11 @@ protected:
 		uint8_t mode   = data[3];
 
 		// Determine image type
-		SIType type = RGBA;
+		SImage::Type type = SImage::Type::RGBA;
 		if (mode == Palette || mode == Alpha)
-			type = PALMASK;
+			type = SImage::Type::PalMask;
 		else if (mode == Intensity)
-			type = ALPHAMAP;
+			type = SImage::Type::AlphaMap;
 
 		// Create image
 		image.create(width, height, type);
@@ -146,10 +146,10 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
 		// Get image info
-		SImage::info_t info;
+		SImage::Info info;
 		sprInfo(mc, index, info);
 
 		return info;
@@ -159,15 +159,15 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info;
-		unsigned       imgofs = sprInfo(data, index, info);
+		SImage::Info info;
+		unsigned     imgofs = sprInfo(data, index, info);
 
 		// Check data is valid
 		if (imgofs == 0)
 			return false;
 
 		// Create image
-		image.create(info.width, info.height, PALMASK, nullptr, index, info.numimages);
+		image.create(info.width, info.height, SImage::Type::PalMask, nullptr, index, info.numimages);
 		image.setXOffset(info.offset_x);
 		image.setYOffset(info.offset_y);
 
@@ -186,7 +186,7 @@ protected:
 	}
 
 private:
-	unsigned sprInfo(MemChunk& mc, int index, SImage::info_t& info)
+	unsigned sprInfo(MemChunk& mc, int index, SImage::Info& info)
 	{
 		// Setup variables
 		uint32_t maxheight = mc.readL32(16);
@@ -262,7 +262,7 @@ private:
 		info.offset_x += info.width;
 
 		// Setup other info
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.numimages = numimages;
 		info.format    = id_;
 
@@ -289,13 +289,13 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Setup variables
 		info.numimages = 4;
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.width     = mc.readL32(16);
 		info.height    = mc.readL32(20);
 		info.format    = id_;
@@ -319,13 +319,13 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = this->info(data, index);
+		SImage::Info info = this->info(data, index);
 
 		// Find offset
 		uint32_t imgofs = data.readL32(24 + (index << 2));
 
 		// Create image
-		image.create(info.width, info.height, (SIType)info.colformat, nullptr, index, info.numimages);
+		image.create(info.width, info.height, (SImage::Type)info.colformat, nullptr, index, info.numimages);
 		image.fillAlpha(255);
 
 		// Load image data
@@ -356,12 +356,12 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Get image info
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.numimages = 4;
 		info.width     = mc.readL32(32) >> index;
 		info.height    = mc.readL32(36) >> index;
@@ -374,7 +374,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = this->info(data, index);
+		SImage::Info info = this->info(data, index);
 
 		// Sanitize index if needed
 		index %= info.numimages;
@@ -390,7 +390,7 @@ protected:
 		}
 
 		// Create image
-		image.create(info.width, info.height, PALMASK, nullptr, index, info.numimages);
+		image.create(info.width, info.height, SImage::Type::PalMask, nullptr, index, info.numimages);
 		image.fillAlpha(255);
 
 		// Fill data with pixel data

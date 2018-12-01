@@ -18,15 +18,15 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Get image info
 		info.width     = mc.readL32(16) >> index;
 		info.height    = mc.readL32(20) >> index;
 		info.numimages = 4;
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -36,7 +36,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = this->info(data, index);
+		SImage::Info info = this->info(data, index);
 
 		// Sanitize index if needed
 		index %= info.numimages;
@@ -76,7 +76,7 @@ protected:
 		}
 
 		// Create image
-		image.create(info.width, info.height, PALMASK, &palette, index, info.numimages);
+		image.create(info.width, info.height, SImage::Type::PalMask, &palette, index, info.numimages);
 		image.fillAlpha(255);
 
 		// Fill data with pixel data
@@ -105,10 +105,10 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		int            size = mc.size();
-		SImage::info_t info;
+		int          size = mc.size();
+		SImage::Info info;
 
 		// Get image width
 		info.width = mc.readL16(2);
@@ -142,7 +142,7 @@ public:
 		}
 
 		// Set other properties
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -152,12 +152,12 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get width & height
-		SImage::info_t info = this->info(data, index);
+		SImage::Info info = this->info(data, index);
 		if (info.format != id_)
 			return false;
 
 		// Create image
-		image.create(info.width, info.height, PALMASK);
+		image.create(info.width, info.height, SImage::Type::PalMask);
 
 		// Format has no offsets, so just set them automatically
 		image.setXOffset(info.width / 2);
@@ -216,9 +216,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Read header
 		Graphics::PatchHeader header;
@@ -229,7 +229,7 @@ public:
 		info.height    = wxINT16_SWAP_ON_BE(header.height);
 		info.offset_x  = wxINT16_SWAP_ON_BE(header.left);
 		info.offset_y  = wxINT16_SWAP_ON_BE(header.top);
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -247,7 +247,7 @@ protected:
 		int offset_y = wxINT16_SWAP_ON_BE(header.top);
 
 		// Create image
-		image.create(width, height, PALMASK);
+		image.create(width, height, SImage::Type::PalMask);
 		uint8_t* img_data = imageData(image);
 		uint8_t* img_mask = imageMask(image);
 
@@ -290,14 +290,14 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Get image properties
 		info.height    = mc[0] * 4;
 		info.width     = 64;
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -313,7 +313,7 @@ protected:
 			return false;
 
 		// Create image
-		image.create(width, height, PALMASK);
+		image.create(width, height, SImage::Type::PalMask);
 
 		// Read pixel data
 		uint8_t* img_data = imageData(image);
@@ -361,14 +361,14 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Get image info
 		info.width     = mc.readL16(0);
 		info.height    = mc.readL16(2);
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		// Technically false, as there are multiple mipmap levels.
@@ -382,14 +382,14 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = this->info(data, index);
+		SImage::Info info = this->info(data, index);
 
 		// Check data
 		if (data.size() < unsigned(4 + (info.width * info.height)))
 			return false;
 
 		// Create image
-		image.create(info.width, info.height, PALMASK);
+		image.create(info.width, info.height, SImage::Type::PalMask);
 		image.fillAlpha(255);
 
 		// Read data
@@ -418,9 +418,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Get info
 		getTileInfo(info, mc, index);
@@ -432,15 +432,15 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get info and data start
-		SImage::info_t info;
-		unsigned       datastart = getTileInfo(info, data, index);
+		SImage::Info info;
+		unsigned     datastart = getTileInfo(info, data, index);
 
 		// Check
 		if (datastart < 16 || datastart >= data.size())
 			return false;
 
 		// Create image (swapped width/height because column-major)
-		image.create(info.height, info.width, PALMASK, nullptr, index, info.numimages);
+		image.create(info.height, info.width, SImage::Type::PalMask, nullptr, index, info.numimages);
 
 		// Read data
 		uint8_t* img_data = imageData(image);
@@ -468,7 +468,7 @@ protected:
 	}
 
 private:
-	unsigned getTileInfo(SImage::info_t& info, MemChunk& mc, int index)
+	unsigned getTileInfo(SImage::Info& info, MemChunk& mc, int index)
 	{
 		// Get tile info
 		uint32_t firsttile = wxUINT32_SWAP_ON_BE(((uint32_t*)mc.data())[2]);
@@ -508,7 +508,7 @@ private:
 		info.height = mc.readL16(y_offs);
 
 		// Setup remaining info
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		// Offsets are signed bytes, so they need a cast
@@ -543,9 +543,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		getLevelInfo(info, mc, index);
 
@@ -556,8 +556,8 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get miplevel info and offset
-		SImage::info_t info;
-		unsigned       datastart = getLevelInfo(info, data, index);
+		SImage::Info info;
+		unsigned     datastart = getLevelInfo(info, data, index);
 
 		// Check
 		if (datastart + info.width * info.height > data.size())
@@ -585,7 +585,7 @@ protected:
 	}
 
 private:
-	unsigned getLevelInfo(SImage::info_t& info, MemChunk& mc, int index)
+	unsigned getLevelInfo(SImage::Info& info, MemChunk& mc, int index)
 	{
 		// Check size
 		if (mc.size() < 1040)
@@ -600,7 +600,7 @@ private:
 		// Set other info
 		info.width       = mc.readL32(((index + 9) << 2));
 		info.height      = mc.readL32(((index + 25) << 2));
-		info.colformat   = PALMASK;
+		info.colformat   = SImage::Type::PalMask;
 		info.has_palette = true;
 		info.format      = id_;
 
@@ -628,9 +628,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		getLevelInfo(info, mc, index);
 
@@ -641,8 +641,8 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get miplevel info and offset
-		SImage::info_t info;
-		unsigned       datastart = getLevelInfo(info, data, index);
+		SImage::Info info;
+		unsigned     datastart = getLevelInfo(info, data, index);
 
 		// Check
 		if (datastart + info.width * info.height * 4 > data.size())
@@ -659,7 +659,7 @@ protected:
 	}
 
 private:
-	unsigned getLevelInfo(SImage::info_t& info, MemChunk& mc, int index)
+	unsigned getLevelInfo(SImage::Info& info, MemChunk& mc, int index)
 	{
 		// Check size
 		if (mc.size() < 968)
@@ -674,7 +674,7 @@ private:
 		// Set other info
 		info.width     = mc.readL32(((index + 129) << 2));
 		info.height    = mc.readL32(((index + 145) << 2));
-		info.colformat = RGBA;
+		info.colformat = SImage::Type::RGBA;
 		info.format    = id_;
 
 		// Return offset to mip level
@@ -701,16 +701,16 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Read dimensions
 		info.width  = mc.readL16(0);
 		info.height = mc.readL16(2);
 
 		// Setup other info
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -720,7 +720,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = this->info(data, index);
+		SImage::Info info = this->info(data, index);
 
 		// Check data
 		if (data.size() != 4 + info.width * info.height)
@@ -768,9 +768,9 @@ public:
 			return false;
 	}
 
-	SImage::info_t info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index)
 	{
-		SImage::info_t info;
+		SImage::Info info;
 
 		// Read dimensions
 		uint8_t leftpix, rightpix;
@@ -782,7 +782,7 @@ public:
 		// Setup other info
 		info.offset_x  = 32 - leftpix;
 		info.offset_y  = info.height;
-		info.colformat = PALMASK;
+		info.colformat = SImage::Type::PalMask;
 		info.format    = id_;
 
 		return info;
@@ -792,7 +792,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = this->info(data, index);
+		SImage::Info info = this->info(data, index);
 
 		// Create image
 		image.create(info);
