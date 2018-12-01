@@ -498,7 +498,7 @@ void ParseTreeNode::write(string& out, int indent) const
 
 			switch (value.getType())
 			{
-			case Property::Type::Bool:
+			case Property::Type::Boolean:
 			case Property::Type::Flag: out += value.getBoolValue() ? "true" : "false"; break;
 			case Property::Type::Int: out += S_FMT("%d", value.getIntValue()); break;
 			case Property::Type::Float: out += S_FMT("%1.3f", value.getFloatValue()); break;

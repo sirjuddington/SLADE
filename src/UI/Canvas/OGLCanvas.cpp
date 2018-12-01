@@ -88,10 +88,10 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 // -----------------------------------------------------------------------------
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
 	wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
-	timer(this)
+	timer_(this)
 {
-	init_done = false;
-	last_time = App::runTimer();
+	init_done_ = false;
+	last_time_ = App::runTimer();
 
 	// if (handle_timer)
 	//	timer.Start(timer_interval);
