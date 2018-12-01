@@ -60,7 +60,7 @@ public:
 		manager(manager)
 	{
 		// Listen to entry parent archive
-		archive = entry->getParent();
+		archive = entry->parent();
 		listenTo(archive);
 	}
 
@@ -74,8 +74,8 @@ public:
 	virtual bool exportEntry()
 	{
 		// Determine export filename/path
-		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
-		fn.SetExt(entry->getType()->extension());
+		wxFileName fn(App::path(entry->name(), App::Dir::Temp));
+		fn.SetExt(entry->type()->extension());
 
 		// Export entry and start monitoring
 		bool ok = entry->exportFile(fn.GetFullPath());
@@ -158,14 +158,14 @@ public:
 			}
 			else
 			{
-				LOG_MESSAGE(1, "Unable to convert external png to %s", format->getName());
+				LOG_MESSAGE(1, "Unable to convert external png to %s", format->name());
 			}
 		}
 	}
 
 	bool exportEntry()
 	{
-		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
+		wxFileName fn(App::path(entry->name(), App::Dir::Temp));
 
 		fn.SetExt("png");
 
@@ -178,7 +178,7 @@ public:
 		}
 
 		// Set export info
-		gfx_format = image.getFormat()->getId();
+		gfx_format = image.format()->id();
 		offsets    = image.offset();
 		palette.copyPalette(MainEditor::currentPalette(entry));
 
@@ -231,29 +231,29 @@ public:
 
 	bool exportEntry()
 	{
-		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
+		wxFileName fn(App::path(entry->name(), App::Dir::Temp));
 		fn.SetExt("mid");
 
 		// Convert to MIDI data
 		MemChunk convdata;
 
 		// MUS
-		if (entry->getType()->formatId() == "midi_mus")
-			Conversions::musToMidi(entry->getMCData(), convdata);
+		if (entry->type()->formatId() == "midi_mus")
+			Conversions::musToMidi(entry->data(), convdata);
 
 		// HMI/HMP/XMI
 		else if (
-			entry->getType()->formatId() == "midi_xmi" || entry->getType()->formatId() == "midi_hmi"
-			|| entry->getType()->formatId() == "midi_hmp")
-			Conversions::zmusToMidi(entry->getMCData(), convdata, 0);
+			entry->type()->formatId() == "midi_xmi" || entry->type()->formatId() == "midi_hmi"
+			|| entry->type()->formatId() == "midi_hmp")
+			Conversions::zmusToMidi(entry->data(), convdata, 0);
 
 		// GMID
-		else if (entry->getType()->formatId() == "midi_gmid")
-			Conversions::gmidToMidi(entry->getMCData(), convdata);
+		else if (entry->type()->formatId() == "midi_gmid")
+			Conversions::gmidToMidi(entry->data(), convdata);
 
 		else
 		{
-			Global::error = S_FMT("Type %s can not be converted to MIDI", CHR(entry->getType()->name()));
+			Global::error = S_FMT("Type %s can not be converted to MIDI", CHR(entry->type()->name()));
 			return false;
 		}
 
@@ -271,9 +271,9 @@ public:
 
 	static bool canHandleEntry(ArchiveEntry* entry)
 	{
-		if (entry->getType()->formatId() == "midi" || entry->getType()->formatId() == "midi_mus"
-			|| entry->getType()->formatId() == "midi_xmi" || entry->getType()->formatId() == "midi_hmi"
-			|| entry->getType()->formatId() == "midi_hmp" || entry->getType()->formatId() == "midi_gmid")
+		if (entry->type()->formatId() == "midi" || entry->type()->formatId() == "midi_mus"
+			|| entry->type()->formatId() == "midi_xmi" || entry->type()->formatId() == "midi_hmi"
+			|| entry->type()->formatId() == "midi_hmp" || entry->type()->formatId() == "midi_gmid")
 			return true;
 
 		return false;
@@ -318,43 +318,43 @@ public:
 
 	bool exportEntry()
 	{
-		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
+		wxFileName fn(App::path(entry->name(), App::Dir::Temp));
 		fn.SetExt("mid");
 
 		// Convert to WAV data
 		MemChunk convdata;
 
 		// Doom Sound
-		if (entry->getType()->formatId() == "snd_doom" || entry->getType()->formatId() == "snd_doom_mac")
-			Conversions::doomSndToWav(entry->getMCData(), convdata);
+		if (entry->type()->formatId() == "snd_doom" || entry->type()->formatId() == "snd_doom_mac")
+			Conversions::doomSndToWav(entry->data(), convdata);
 
 		// Doom PC Speaker Sound
-		else if (entry->getType()->formatId() == "snd_speaker")
-			Conversions::spkSndToWav(entry->getMCData(), convdata);
+		else if (entry->type()->formatId() == "snd_speaker")
+			Conversions::spkSndToWav(entry->data(), convdata);
 
 		// AudioT PC Speaker Sound
-		else if (entry->getType()->formatId() == "snd_audiot")
-			Conversions::spkSndToWav(entry->getMCData(), convdata, true);
+		else if (entry->type()->formatId() == "snd_audiot")
+			Conversions::spkSndToWav(entry->data(), convdata, true);
 
 		// Wolfenstein 3D Sound
-		else if (entry->getType()->formatId() == "snd_wolf")
-			Conversions::wolfSndToWav(entry->getMCData(), convdata);
+		else if (entry->type()->formatId() == "snd_wolf")
+			Conversions::wolfSndToWav(entry->data(), convdata);
 
 		// Creative Voice File
-		else if (entry->getType()->formatId() == "snd_voc")
-			Conversions::vocToWav(entry->getMCData(), convdata);
+		else if (entry->type()->formatId() == "snd_voc")
+			Conversions::vocToWav(entry->data(), convdata);
 
 		// Jaguar Doom Sound
-		else if (entry->getType()->formatId() == "snd_jaguar")
-			Conversions::jagSndToWav(entry->getMCData(), convdata);
+		else if (entry->type()->formatId() == "snd_jaguar")
+			Conversions::jagSndToWav(entry->data(), convdata);
 
 		// Blood Sound
-		else if (entry->getType()->formatId() == "snd_bloodsfx")
+		else if (entry->type()->formatId() == "snd_bloodsfx")
 			Conversions::bloodToWav(entry, convdata);
 
 		else
 		{
-			Global::error = S_FMT("Type %s can not be converted to WAV", CHR(entry->getType()->name()));
+			Global::error = S_FMT("Type %s can not be converted to WAV", CHR(entry->type()->name()));
 			return false;
 		}
 
@@ -372,10 +372,10 @@ public:
 
 	static bool canHandleEntry(ArchiveEntry* entry)
 	{
-		if (entry->getType()->formatId() == "snd_doom" || entry->getType()->formatId() == "snd_doom_mac"
-			|| entry->getType()->formatId() == "snd_speaker" || entry->getType()->formatId() == "snd_audiot"
-			|| entry->getType()->formatId() == "snd_wolf" || entry->getType()->formatId() == "snd_voc"
-			|| entry->getType()->formatId() == "snd_jaguar" || entry->getType()->formatId() == "snd_bloodsfx")
+		if (entry->type()->formatId() == "snd_doom" || entry->type()->formatId() == "snd_doom_mac"
+			|| entry->type()->formatId() == "snd_speaker" || entry->type()->formatId() == "snd_audiot"
+			|| entry->type()->formatId() == "snd_wolf" || entry->type()->formatId() == "snd_voc"
+			|| entry->type()->formatId() == "snd_jaguar" || entry->type()->formatId() == "snd_bloodsfx")
 			return true;
 
 		return false;
@@ -416,7 +416,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 	for (unsigned a = 0; a < file_monitors_.size(); a++)
 		if (file_monitors_[a]->getEntry() == entry)
 		{
-			LOG_MESSAGE(1, "Entry %s is already open in an external editor", entry->getName());
+			LOG_MESSAGE(1, "Entry %s is already open in an external editor", entry->name());
 			return true;
 		}
 
@@ -424,7 +424,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 	ExternalEditFileMonitor* monitor = nullptr;
 
 	// Gfx entry
-	if (entry->getType()->editor() == "gfx" && entry->getType()->id() != "png")
+	if (entry->type()->editor() == "gfx" && entry->type()->id() != "png")
 		monitor = new GfxExternalFileMonitor(entry, this);
 	// MIDI entry
 	else if (MIDIExternalFileMonitor::canHandleEntry(entry))
@@ -444,7 +444,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 	}
 
 	// Get external editor path
-	string exe_path = Executables::getExternalExe(editor, category).path;
+	string exe_path = Executables::externalExe(editor, category).path;
 #ifdef WIN32
 	if (exe_path.IsEmpty() || !wxFileExists(exe_path))
 #else
@@ -457,8 +457,8 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 	}
 
 	// Run external editor
-	string command = S_FMT("\"%s\" \"%s\"", exe_path, monitor->getFilename());
-	long   success = wxExecute(command, wxEXEC_ASYNC, monitor->getProcess());
+	string command = S_FMT("\"%s\" \"%s\"", exe_path, monitor->filename());
+	long   success = wxExecute(command, wxEXEC_ASYNC, monitor->process());
 	if (success == 0)
 	{
 		Global::error = S_FMT("Failed to launch %s", editor);

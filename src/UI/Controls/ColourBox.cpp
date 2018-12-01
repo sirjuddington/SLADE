@@ -109,7 +109,7 @@ void ColourBox::popPalette()
 		PaletteDialog pd(palette_);
 		if (pd.ShowModal() == wxID_OK)
 		{
-			rgba_t col = pd.getSelectedColour();
+			rgba_t col = pd.selectedColour();
 			if (col.a > 0)
 			{
 				colour_ = col;

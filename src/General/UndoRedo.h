@@ -45,9 +45,9 @@ public:
 	UndoManager(SLADEMap* map = nullptr);
 	~UndoManager();
 
-	SLADEMap*  getMap() { return map_; }
-	void       getAllLevels(vector<string>& list);
-	int        getCurrentIndex() { return current_level_index_; }
+	SLADEMap*  map() { return map_; }
+	void       putAllLevels(vector<string>& list);
+	int        currentIndex() { return current_level_index_; }
 	unsigned   nUndoLevels() { return undo_levels_.size(); }
 	UndoLevel* undoLevel(unsigned index) { return undo_levels_[index]; }
 

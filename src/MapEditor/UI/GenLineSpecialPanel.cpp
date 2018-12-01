@@ -448,7 +448,7 @@ bool GenLineSpecialPanel::loadSpecial(int special)
 // -----------------------------------------------------------------------------
 // Returns the currently selected special
 // -----------------------------------------------------------------------------
-int GenLineSpecialPanel::getSpecial()
+int GenLineSpecialPanel::special()
 {
 	int props[7];
 	for (unsigned a = 0; a < 7; a++)

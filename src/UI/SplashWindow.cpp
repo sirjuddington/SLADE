@@ -122,7 +122,7 @@ void SplashWindow::init()
 
 	// Load logo image
 	string        tempfile = App::path("temp.png", App::Dir::Temp);
-	ArchiveEntry* logo     = App::archiveManager().programResourceArchive()->getEntry("logo.png");
+	ArchiveEntry* logo     = App::archiveManager().programResourceArchive()->entry("logo.png");
 	if (logo)
 	{
 		logo->exportFile(tempfile);

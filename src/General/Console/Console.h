@@ -6,13 +6,13 @@ public:
 	ConsoleCommand(string name, void (*command_func)(vector<string>), int min_args, bool show_in_list = true);
 	~ConsoleCommand() {}
 
-	string getName() { return name_; }
+	string name() { return name_; }
 	bool   showInList() { return show_in_list_; }
 	void   execute(vector<string> args);
 	size_t minArgs() { return min_args_; }
 
-	inline bool operator<(ConsoleCommand c) const { return name_ < c.getName(); }
-	inline bool operator>(ConsoleCommand c) const { return name_ > c.getName(); }
+	inline bool operator<(ConsoleCommand c) const { return name_ < c.name(); }
+	inline bool operator>(ConsoleCommand c) const { return name_ > c.name(); }
 
 private:
 	string name_;

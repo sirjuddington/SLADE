@@ -21,11 +21,11 @@ public:
 	~GLTexture();
 
 	bool     isLoaded() { return loaded_; }
-	uint32_t getWidth() { return width_; }
-	uint32_t getHeight() { return height_; }
-	Filter   getFilter() { return filter_; }
-	double   getScaleX() { return scale_x_; }
-	double   getScaleY() { return scale_y_; }
+	uint32_t width() { return width_; }
+	uint32_t height() { return height_; }
+	Filter   filter() { return filter_; }
+	double   scaleX() { return scale_x_; }
+	double   scaleY() { return scale_y_; }
 	bool     isTiling() { return tiling_; }
 	unsigned glId()
 	{

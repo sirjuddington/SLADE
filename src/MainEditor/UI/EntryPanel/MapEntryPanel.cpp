@@ -105,7 +105,7 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	map_canvas_->clearMap();
 
 	// Find map definition for entry
-	vector<Archive::MapDesc> maps = entry->getParent()->detectMaps();
+	vector<Archive::MapDesc> maps = entry->parent()->detectMaps();
 	Archive::MapDesc         thismap;
 	bool                     found = false;
 	for (unsigned a = 0; a < maps.size(); a++)
@@ -140,8 +140,8 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 			map_canvas_->nLines(),
 			map_canvas_->nSectors(),
 			map_canvas_->nThings(),
-			map_canvas_->getWidth(),
-			map_canvas_->getHeight()));
+			map_canvas_->width(),
+			map_canvas_->height()));
 		return true;
 	}
 
@@ -176,7 +176,7 @@ bool MapEntryPanel::createImage()
 			min<int>(map_image_width, map_canvas_->GetSize().x),
 			min<int>(map_image_height, map_canvas_->GetSize().y));
 
-	string     name = S_FMT("%s_%s", entry_->getParent()->filename(false), entry_->getName());
+	string     name = S_FMT("%s_%s", entry_->parent()->filename(false), entry_->name());
 	wxFileName fn(name);
 
 	// Create save file dialog

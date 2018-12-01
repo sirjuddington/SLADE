@@ -154,7 +154,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 
 		// If the lump data goes past the end of the file,
 		// the resfile is invalid
-		if (offset + size > mc.getSize())
+		if (offset + size > mc.size())
 		{
 			LOG_MESSAGE(1, "ResArchive::readDirectory: Res archive is invalid or corrupt, offset overflow");
 			Global::error = "Archive is invalid and/or corrupt";
@@ -169,7 +169,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		nlump->setState(0);
 
 		// Read entry data if it isn't zero-sized
-		if (nlump->getSize() > 0)
+		if (nlump->size() > 0)
 		{
 			// Read the entry data
 			MemChunk edata;
@@ -179,7 +179,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 
 		// What if the entry is a directory?
 		size_t d_o, n_l;
-		if (isResArchive(nlump->getMCData(), d_o, n_l))
+		if (isResArchive(nlump->data(), d_o, n_l))
 		{
 			ArchiveTreeNode* ndir = createDir(name, parent);
 			if (ndir)
@@ -344,7 +344,7 @@ bool ResArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -362,7 +362,7 @@ bool ResArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to lump offset in file and read it in
 	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -390,7 +390,7 @@ ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 		entry = new ArchiveEntry(*entry);
 
 	// Process name (must be 14 characters max)
-	wxFileName fn(entry->getName());
+	wxFileName fn(entry->name());
 	string     name = fn.GetName().Truncate(14);
 
 	// Set new res-friendly name
@@ -442,7 +442,7 @@ bool ResArchive::isResArchive(MemChunk& mc)
 bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lumps)
 {
 	// Check size
-	if (mc.getSize() < 12)
+	if (mc.size() < 12)
 		return false;
 
 	// Check for "Res!" header
@@ -464,11 +464,11 @@ bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lump
 	// A&A contains nested resource files. The offsets are then always relative to
 	// the top-level file. This causes problem with the embedded archive system
 	// used by SLADE3. The solution is to compute the offset offset. :)
-	offset_offset = dir_offset - (mc.getSize() - dir_size);
+	offset_offset = dir_offset - (mc.size() - dir_size);
 	rel_offset    = dir_offset - offset_offset;
 
 	// Check directory offset and size are both decent
-	if (dir_size % RESDIRENTRYSIZE || (rel_offset + dir_size) > mc.getSize())
+	if (dir_size % RESDIRENTRYSIZE || (rel_offset + dir_size) > mc.size())
 		return false;
 
 	num_lumps = dir_size / RESDIRENTRYSIZE;

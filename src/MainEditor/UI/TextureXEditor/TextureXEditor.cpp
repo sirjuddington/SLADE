@@ -207,7 +207,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	Bind(wxEVT_SHOW, &TextureXEditor::onShow, this);
 
 	// Palette chooser
-	listenTo(theMainWindow->getPaletteChooser());
+	listenTo(theMainWindow->paletteChooser());
 	updateTexturePalette();
 
 	// Listen to patch table
@@ -295,14 +295,14 @@ bool TextureXEditor::openArchive(Archive* archive)
 		if (tx_panel->openTEXTUREX(tx_entries[a]))
 		{
 			// Set palette
-			tx_panel->setPalette(theMainWindow->getPaletteChooser()->getSelectedPalette());
+			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 			// Lock entry
 			tx_entries[a]->lock();
 
 			// Add it to the list of editors, and a tab
 			tx_panel->SetName("textures");
 			texture_editors_.push_back(tx_panel);
-			tabs_->AddPage(tx_panel, tx_entries[a]->getName());
+			tabs_->AddPage(tx_panel, tx_entries[a]->name());
 		}
 
 		tx_panel->Show(true);
@@ -332,14 +332,14 @@ bool TextureXEditor::openArchive(Archive* archive)
 		if (tx_panel->openTEXTUREX(ztx_entries[a]))
 		{
 			// Set palette
-			tx_panel->setPalette(theMainWindow->getPaletteChooser()->getSelectedPalette());
+			tx_panel->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 			// Lock entry
 			ztx_entries[a]->lock();
 
 			// Add it to the list of editors, and a tab
 			tx_panel->SetName("textures");
 			texture_editors_.push_back(tx_panel);
-			tabs_->AddPage(tx_panel, ztx_entries[a]->getName());
+			tabs_->AddPage(tx_panel, ztx_entries[a]->name());
 		}
 
 		tx_panel->Show(true);
@@ -358,7 +358,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 		pnames_->lock();
 
 	// Set global palette
-	theMainWindow->getPaletteChooser()->setGlobalFromArchive(archive);
+	theMainWindow->paletteChooser()->setGlobalFromArchive(archive);
 
 	// Setup patch browser
 	if (patch_table_.nPatches() > 0)
@@ -375,7 +375,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 void TextureXEditor::updateTexturePalette()
 {
 	// Get palette
-	Palette* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette* pal = theMainWindow->paletteChooser()->selectedPalette();
 
 	// Send to whatever needs it
 	for (size_t a = 0; a < texture_editors_.size(); a++)
@@ -476,7 +476,7 @@ bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
 
 	// Delete patch entry if it's part of this archive (and delete_entry is true)
 	ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "patches", archive_);
-	if (delete_entry && entry && entry->getParent() == archive_)
+	if (delete_entry && entry && entry->parent() == archive_)
 		archive_->removeEntry(entry);
 
 	// Remove patch from patch table
@@ -496,7 +496,7 @@ int TextureXEditor::browsePatchTable(string first)
 		patch_browser_->selectPatch(first);
 
 	if (patch_browser_->ShowModal() == wxID_OK)
-		return patch_browser_->getSelectedPatch();
+		return patch_browser_->selectedPatch();
 	else
 		return -1;
 }
@@ -524,8 +524,8 @@ string TextureXEditor::browsePatchEntry(string first)
 	if (!first.IsEmpty())
 		patch_browser_->selectPatch(first);
 
-	if (patch_browser_->ShowModal() == wxID_OK && patch_browser_->getSelectedItem())
-		return patch_browser_->getSelectedItem()->name();
+	if (patch_browser_->ShowModal() == wxID_OK && patch_browser_->selectedItem())
+		return patch_browser_->selectedItem()->name();
 	else
 		return "";
 }
@@ -545,7 +545,7 @@ bool TextureXEditor::checkTextures()
 		for (unsigned t = 0; t < texture_editors_[a]->txList().nTextures(); t++)
 		{
 			// Get texture
-			CTexture* tex = texture_editors_[a]->txList().getTexture(t);
+			CTexture* tex = texture_editors_[a]->txList().texture(t);
 
 			// Check its patches are all valid
 			if (tex->isExtended())
@@ -553,14 +553,14 @@ bool TextureXEditor::checkTextures()
 				// Extended texture, check if each patch exists in any open archive (or as a composite texture)
 				for (unsigned p = 0; p < tex->nPatches(); p++)
 				{
-					ArchiveEntry* pentry = theResourceManager->getPatchEntry(tex->getPatch(p)->getName());
-					ArchiveEntry* fentry = theResourceManager->getFlatEntry(tex->getPatch(p)->getName());
-					CTexture*     ptex   = theResourceManager->getTexture(tex->getPatch(p)->getName());
+					ArchiveEntry* pentry = theResourceManager->getPatchEntry(tex->patch(p)->name());
+					ArchiveEntry* fentry = theResourceManager->getFlatEntry(tex->patch(p)->name());
+					CTexture*     ptex   = theResourceManager->getTexture(tex->patch(p)->name());
 					if (!pentry && !fentry && !ptex)
 						problems += S_FMT(
 							"Texture %s contains invalid/unknown patch %s\n",
-							tex->getName(),
-							tex->getPatch(p)->getName());
+							tex->name(),
+							tex->patch(p)->name());
 				}
 			}
 			else
@@ -568,11 +568,11 @@ bool TextureXEditor::checkTextures()
 				// Regular texture, check the patch table
 				for (unsigned p = 0; p < tex->nPatches(); p++)
 				{
-					if (patch_table_.patchIndex(tex->getPatch(p)->getName()) == -1)
+					if (patch_table_.patchIndex(tex->patch(p)->name()) == -1)
 						problems += S_FMT(
 							"Texture %s contains invalid/unknown patch %s\n",
-							tex->getName(),
-							tex->getPatch(p)->getName());
+							tex->name(),
+							tex->patch(p)->name());
 				}
 			}
 		}
@@ -592,9 +592,9 @@ bool TextureXEditor::checkTextures()
 		else
 		{
 			// Check patch entry type
-			if (entry->getType() == EntryType::unknownType())
+			if (entry->type() == EntryType::unknownType())
 				EntryType::detectEntryType(entry);
-			EntryType* type = entry->getType();
+			EntryType* type = entry->type();
 
 			if (!type->extraProps().propertyExists("patch"))
 				problems += S_FMT(
@@ -705,7 +705,7 @@ void TextureXEditor::redo()
 // -----------------------------------------------------------------------------
 void TextureXEditor::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
-	if (announcer == theMainWindow->getPaletteChooser() && event_name == "main_palette_changed")
+	if (announcer == theMainWindow->paletteChooser() && event_name == "main_palette_changed")
 	{
 		updateTexturePalette();
 	}
@@ -750,7 +750,7 @@ void TextureXEditor::onShow(wxShowEvent& e)
 		return;
 	}
 	else
-		theMainWindow->getUndoHistoryPanel()->setManager(undo_manager_);
+		theMainWindow->undoHistoryPanel()->setManager(undo_manager_);
 	updateMenuStatus();
 }
 

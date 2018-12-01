@@ -55,8 +55,8 @@ public:
 	fpoint2_t getPoint(Point point) override;
 	fpoint2_t point();
 
-	short getType() const { return type_; }
-	short getAngle() const { return angle_; }
+	short type() const { return type_; }
+	short angle() const { return angle_; }
 
 	int    intProperty(const string& key) override;
 	double floatProperty(const string& key) override;

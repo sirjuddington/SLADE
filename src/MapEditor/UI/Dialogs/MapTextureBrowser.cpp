@@ -86,9 +86,9 @@ bool MapTexBrowserItem::loadImage()
 
 	// Get texture or flat depending on type
 	if (type_ == "texture")
-		tex = MapEditor::textureManager().getTexture(name_, false);
+		tex = MapEditor::textureManager().texture(name_, false);
 	else if (type_ == "flat")
-		tex = MapEditor::textureManager().getFlat(name_, false);
+		tex = MapEditor::textureManager().flat(name_, false);
 
 	if (tex)
 	{
@@ -112,7 +112,7 @@ string MapTexBrowserItem::itemInfo()
 
 	// Add dimensions if known
 	if (image_ || loadImage())
-		info += S_FMT("%dx%d", image_->getWidth(), image_->getHeight());
+		info += S_FMT("%dx%d", image_->width(), image_->height());
 	else
 		info += "Unknown size";
 
@@ -123,7 +123,7 @@ string MapTexBrowserItem::itemInfo()
 		info += ", Flat";
 
 	// Add scaling info
-	if (image_->getScaleX() != 1.0 || image_->getScaleY() != 1.0)
+	if (image_->scaleX() != 1.0 || image_->scaleY() != 1.0)
 		info += ", Scaled";
 
 	// Add usage count
@@ -164,7 +164,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	{
 		addGlobalItem(new MapTexBrowserItem("-", 0, 0));
 
-		auto& textures = MapEditor::textureManager().getAllTexturesInfo();
+		auto& textures = MapEditor::textureManager().allTexturesInfo();
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
 			if ((mapFormat != MAP_UDMF || !Game::configuration().featureSupported(Game::Feature::LongNames))
@@ -197,7 +197,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	// Flats
 	if (type == 1 || Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 	{
-		auto& flats = MapEditor::textureManager().getAllFlatsInfo();
+		auto& flats = MapEditor::textureManager().allFlatsInfo();
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
 			if ((mapFormat != MAP_UDMF || !Game::configuration().featureSupported(Game::Feature::LongNames))
@@ -236,7 +236,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	if (mapFormat == MAP_UDMF && Game::configuration().featureSupported(Game::Feature::LongNames))
 	{
 		// Textures
-		auto& fpTextures = MapEditor::textureManager().getAllTexturesInfo();
+		auto& fpTextures = MapEditor::textureManager().allTexturesInfo();
 		for (unsigned a = 0; a < fpTextures.size(); a++)
 		{
 			if (fpTextures[a].category != MapTextureManager::Category::ZDTextures
@@ -252,7 +252,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		}
 
 		// Flats
-		auto& fpFlats = MapEditor::textureManager().getAllFlatsInfo();
+		auto& fpFlats = MapEditor::textureManager().allFlatsInfo();
 		for (unsigned a = 0; a < fpFlats.size(); a++)
 		{
 			if (!fpFlats[a].path.IsEmpty() && fpFlats[a].path.Cmp("/") != 0)

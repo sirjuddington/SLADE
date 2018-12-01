@@ -116,7 +116,7 @@ ModifyOffsetsDialog::~ModifyOffsetsDialog() {}
 // -----------------------------------------------------------------------------
 // Returns the offsets that have been entered
 // -----------------------------------------------------------------------------
-point2_t ModifyOffsetsDialog::getOffset()
+point2_t ModifyOffsetsDialog::offset()
 {
 	long x = 0;
 	long y = 0;
@@ -129,7 +129,7 @@ point2_t ModifyOffsetsDialog::getOffset()
 // -----------------------------------------------------------------------------
 // Returns the selected alignment type
 // -----------------------------------------------------------------------------
-int ModifyOffsetsDialog::getAlignType()
+int ModifyOffsetsDialog::alignType()
 {
 	if (opt_auto_->GetValue())
 		return combo_aligntype_->GetSelection();
@@ -185,10 +185,10 @@ bool ModifyOffsetsDialog::yOffChange()
 // -----------------------------------------------------------------------------
 point2_t ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, int height)
 {
-	int      type   = getAlignType();
-	point2_t offset = getOffset();
-	int      x      = xoff;
-	int      y      = yoff;
+	int      type = alignType();
+	point2_t ofs  = offset();
+	int      x    = xoff;
+	int      y    = yoff;
 
 	if (type >= 0)
 	{
@@ -247,18 +247,18 @@ point2_t ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, in
 		if (relativeOffset())
 		{
 			if (xOffChange())
-				x = xoff + offset.x;
+				x = xoff + ofs.x;
 			if (yOffChange())
-				y = yoff + offset.y;
+				y = yoff + ofs.y;
 		}
 
 		// Set offset
 		else
 		{
 			if (xOffChange())
-				x = offset.x;
+				x = ofs.x;
 			if (yOffChange())
-				y = offset.y;
+				y = ofs.y;
 		}
 	}
 

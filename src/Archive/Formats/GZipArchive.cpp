@@ -77,7 +77,7 @@ bool GZipArchive::open(MemChunk& mc)
 {
 	// Minimal metadata size is 18: 10 for header, 8 for footer
 	size_t mds  = 18;
-	size_t size = mc.getSize();
+	size_t size = mc.size();
 	if (mds > size)
 		return false;
 
@@ -161,7 +161,7 @@ bool GZipArchive::open(MemChunk& mc)
 	if (fhcrc)
 	{
 		uint8_t* crcbuffer = new uint8_t[mc.currentPos()];
-		memcpy(crcbuffer, mc.getData(), mc.currentPos());
+		memcpy(crcbuffer, mc.data(), mc.currentPos());
 		uint32_t fullcrc = Misc::crc(crcbuffer, mc.currentPos());
 		delete[] crcbuffer;
 		uint16_t hcrc;
@@ -182,7 +182,7 @@ bool GZipArchive::open(MemChunk& mc)
 	setMuted(true);
 	ArchiveEntry* entry = new ArchiveEntry(name, size - mds);
 	MemChunk      xdata;
-	if (Compression::GZipInflate(mc, xdata))
+	if (Compression::gzipInflate(mc, xdata))
 	{
 		entry->importMemChunk(xdata);
 	}
@@ -216,11 +216,11 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 	if (numEntries() == 1)
 	{
 		MemChunk stream;
-		if (Compression::GZipDeflate(getEntry(0)->getMCData(), stream, 9))
+		if (Compression::gzipDeflate(entryAt(0)->data(), stream, 9))
 		{
-			const uint8_t* data    = stream.getData();
+			const uint8_t* data    = stream.data();
 			uint32_t       working = 0;
-			size_t         size    = stream.getSize();
+			size_t         size    = stream.size();
 			if (size < 18)
 				return false;
 
@@ -233,7 +233,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			mc.write(header, 4);
 
 			// Update mtime if the file was modified
-			if (getEntry(0)->getState())
+			if (entryAt(0)->state())
 			{
 				mtime_ = ::wxGetLocalTime();
 			}
@@ -249,15 +249,15 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			// Any extra content that may have been there
 			if (flags_ & GZIP_FLG_FXTRA)
 			{
-				uint16_t xlen = wxUINT16_SWAP_ON_BE(xtra_.getSize());
+				uint16_t xlen = wxUINT16_SWAP_ON_BE(xtra_.size());
 				mc.write(&xlen, 2);
-				mc.write(xtra_.getData(), xtra_.getSize());
+				mc.write(xtra_.data(), xtra_.size());
 			}
 
 			// File name, if not extrapolated from archive name
 			if (flags_ & GZIP_FLG_FNAME)
 			{
-				mc.write(CHR(getEntry(0)->getName()), getEntry(0)->getName().length());
+				mc.write(CHR(entryAt(0)->name()), entryAt(0)->name().length());
 				uint8_t zero = 0;
 				mc.write(&zero, 1); // Terminate string
 			}
@@ -273,7 +273,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			// And finally, the half CRC, which we recalculate
 			if (flags_ & GZIP_FLG_FHCRC)
 			{
-				uint32_t fullcrc = Misc::crc(mc.getData(), mc.getSize());
+				uint32_t fullcrc = Misc::crc(mc.data(), mc.size());
 				uint16_t hcrc    = (fullcrc & 0x0000FFFF);
 				hcrc             = wxUINT16_SWAP_ON_BE(hcrc);
 				mc.write(&hcrc, 2);
@@ -317,7 +317,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -334,7 +334,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Seek to lump offset in file and read it in
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -351,21 +351,21 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
 	options.match_name  = options.match_name.Lower();
-	ArchiveEntry* entry = getEntry(0);
+	ArchiveEntry* entry = entryAt(0);
 	if (entry == nullptr)
 		return entry;
 
 	// Check type
 	if (options.match_type)
 	{
-		if (entry->getType() == EntryType::unknownType())
+		if (entry->type() == EntryType::unknownType())
 		{
 			if (!options.match_type->isThisType(entry))
 			{
 				return nullptr;
 			}
 		}
-		else if (options.match_type != entry->getType())
+		else if (options.match_type != entry->type())
 		{
 			return nullptr;
 		}
@@ -374,7 +374,7 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 	// Check name
 	if (!options.match_name.IsEmpty())
 	{
-		if (!options.match_name.Matches(entry->getName().Lower()))
+		if (!options.match_name.Matches(entry->name().Lower()))
 		{
 			return nullptr;
 		}
@@ -402,7 +402,7 @@ vector<ArchiveEntry*> GZipArchive::findAll(SearchOptions& options)
 	options.match_name = options.match_name.Lower();
 	vector<ArchiveEntry*> ret;
 	if (findFirst(options))
-		ret.push_back(getEntry(0));
+		ret.push_back(entryAt(0));
 	return ret;
 }
 
@@ -421,7 +421,7 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 {
 	// Minimal metadata size is 18: 10 for header, 8 for footer
 	size_t mds  = 18;
-	size_t size = mc.getSize();
+	size_t size = mc.size();
 	if (size < mds)
 		return false;
 

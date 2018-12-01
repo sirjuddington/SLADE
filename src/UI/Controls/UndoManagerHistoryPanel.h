@@ -16,8 +16,8 @@ public:
 
 protected:
 	// Virtual wxListCtrl overrides
-	string getItemText(long item, long column, long index) const override;
-	int    getItemIcon(long item, long column, long index) const override;
+	string itemText(long item, long column, long index) const override;
+	int    itemIcon(long item, long column, long index) const override;
 	void   updateItemAttr(long item, long column, long index) const override;
 
 private:

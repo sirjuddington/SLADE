@@ -72,7 +72,7 @@ void FlatTexCanvas::setTexture(string tex)
 	if (tex == "-" || tex == "")
 		texture_ = nullptr;
 	else
-		texture_ = MapEditor::textureManager().getFlat(
+		texture_ = MapEditor::textureManager().flat(
 			tex, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 
 	Refresh();
@@ -114,7 +114,7 @@ void FlatTexCanvas::draw()
 	else if (texture_ == &(GLTexture::missingTex()))
 	{
 		// Draw unknown icon
-		GLTexture* tex = MapEditor::textureManager().getEditorImage("thing/unknown");
+		GLTexture* tex = MapEditor::textureManager().editorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0);
 		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
@@ -167,7 +167,7 @@ void FlatComboBox::onDropDown(wxCommandEvent& e)
 	string text = GetValue().Upper();
 
 	// Populate dropdown with matching flat names
-	auto&         textures = MapEditor::textureManager().getAllFlatsInfo();
+	auto&         textures = MapEditor::textureManager().allFlatsInfo();
 	wxArrayString list;
 	list.Add("-");
 	for (unsigned a = 0; a < textures.size(); a++)
@@ -440,7 +440,7 @@ void SectorPropsPanel::applyChanges()
 
 		// Special
 		if (cb_override_special_->GetValue())
-			sector->setIntProperty("special", panel_special_->getSelectedSpecial());
+			sector->setIntProperty("special", panel_special_->selectedSpecial());
 
 		// Floor texture
 		if (!fcb_floor_->GetValue().IsEmpty())
@@ -452,19 +452,19 @@ void SectorPropsPanel::applyChanges()
 
 		// Floor height
 		if (!text_height_floor_->GetValue().IsEmpty())
-			sector->setIntProperty("heightfloor", text_height_floor_->getNumber(sector->floor().height));
+			sector->setIntProperty("heightfloor", text_height_floor_->number(sector->floor().height));
 
 		// Ceiling height
 		if (!text_height_ceiling_->GetValue().IsEmpty())
-			sector->setIntProperty("heightceiling", text_height_ceiling_->getNumber(sector->ceiling().height));
+			sector->setIntProperty("heightceiling", text_height_ceiling_->number(sector->ceiling().height));
 
 		// Light level
 		if (!text_light_->GetValue().IsEmpty())
-			sector->setIntProperty("lightlevel", text_light_->getNumber(sector->getLightLevel()));
+			sector->setIntProperty("lightlevel", text_light_->number(sector->lightLevel()));
 
 		// Tag
 		if (!text_tag_->GetValue().IsEmpty())
-			sector->setIntProperty("id", text_tag_->getNumber(sector->getTag()));
+			sector->setIntProperty("id", text_tag_->number(sector->tag()));
 	}
 
 	if (mopp_all_props_)
@@ -522,8 +522,8 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 
 	// Browse
 	MapTextureBrowser browser(this, 1, tc->texName(), &(MapEditor::editContext().map()));
-	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
-		cb->SetValue(browser.getSelectedItem()->name());
+	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
+		cb->SetValue(browser.selectedItem()->name());
 }
 
 // -----------------------------------------------------------------------------

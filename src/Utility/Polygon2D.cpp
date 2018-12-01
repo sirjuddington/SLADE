@@ -96,7 +96,7 @@ void Polygon2D::addSubPoly()
 	vbo_update_ = 2;
 }
 
-Polygon2D::SubPoly* Polygon2D::getSubPoly(unsigned index)
+Polygon2D::SubPoly* Polygon2D::subPoly(unsigned index)
 {
 	if (index >= subpolys_.size())
 		return nullptr;
@@ -149,7 +149,7 @@ bool Polygon2D::openSector(MapSector* sector)
 	MapLine* line;
 	for (unsigned a = 0; a < sides.size(); a++)
 	{
-		line = sides[a]->getParentLine();
+		line = sides[a]->parentLine();
 
 		// Ignore this side if its parent line has the same sector on both sides
 		if (!line || line->doubleSector())
@@ -173,8 +173,8 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 		return;
 
 	// Check dimensions and scale
-	double width  = texture_->getWidth();
-	double height = texture_->getHeight();
+	double width  = texture_->width();
+	double height = texture_->height();
 	if (scale_x == 0)
 		scale_x = 1;
 	if (scale_y == 0)
@@ -1048,7 +1048,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 			continue;
 
 		poly->addSubPoly();
-		if (!buildSubPoly(a, poly->getSubPoly(poly->nSubPolys() - 1)))
+		if (!buildSubPoly(a, poly->subPoly(poly->nSubPolys() - 1)))
 			poly->removeSubPoly(poly->nSubPolys() - 1);
 	}
 
@@ -1071,7 +1071,7 @@ void PolygonSplitter::openSector(MapSector* sector)
 	MapLine* line;
 	for (unsigned a = 0; a < sides.size(); a++)
 	{
-		line = sides[a]->getParentLine();
+		line = sides[a]->parentLine();
 
 		// Ignore this side if its parent line has the same sector on both sides
 		if (!line || line->doubleSector())

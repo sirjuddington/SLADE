@@ -123,7 +123,7 @@ bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
 // -----------------------------------------------------------------------------
 // Returns the duration of the currently loaded mod
 // -----------------------------------------------------------------------------
-sf::Time ModMusic::getDuration() const
+sf::Time ModMusic::duration() const
 {
 	return sf::seconds(static_cast<float>(duh_get_length(dumb_module_) / 65536));
 }

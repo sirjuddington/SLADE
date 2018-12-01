@@ -84,7 +84,7 @@ string ParseTreeNode::stringValue(unsigned index)
 	if (index >= values_.size())
 		return wxEmptyString;
 
-	return values_[index].getStringValue();
+	return values_[index].stringValue();
 }
 
 // -----------------------------------------------------------------------------
@@ -95,7 +95,7 @@ vector<string> ParseTreeNode::stringValues()
 	vector<string> string_values;
 	for (unsigned idx = 0; idx < values_.size(); ++idx)
 	{
-		string_values.push_back(values_[idx].getStringValue());
+		string_values.push_back(values_[idx].stringValue());
 	}
 	return string_values;
 }
@@ -207,7 +207,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 			// Get entry to include
 			auto inc_path  = tz.next().text;
 			auto archive   = archive_dir_->archive();
-			auto inc_entry = archive->entryAtPath(archive_dir_->getPath() + inc_path);
+			auto inc_entry = archive->entryAtPath(archive_dir_->path() + inc_path);
 			if (!inc_entry) // Try absolute path
 				inc_entry = archive->entryAtPath(inc_path);
 
@@ -217,11 +217,11 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 			{
 				// Save the current dir and set it to the included entry's dir
 				auto orig_dir = archive_dir_;
-				archive_dir_  = inc_entry->getParentDir();
+				archive_dir_  = inc_entry->parentDir();
 
 				// Parse text in the entry
 				Tokenizer inc_tz;
-				inc_tz.openMem(inc_entry->getMCData(), inc_entry->getName());
+				inc_tz.openMem(inc_entry->data(), inc_entry->name());
 				bool ok = parse(inc_tz);
 
 				// Reset dir and abort if parsing failed
@@ -496,14 +496,14 @@ void ParseTreeNode::write(string& out, int indent) const
 				out += ", ";
 			first = false;
 
-			switch (value.getType())
+			switch (value.type())
 			{
 			case Property::Type::Boolean:
-			case Property::Type::Flag: out += value.getBoolValue() ? "true" : "false"; break;
-			case Property::Type::Int: out += S_FMT("%d", value.getIntValue()); break;
-			case Property::Type::Float: out += S_FMT("%1.3f", value.getFloatValue()); break;
-			case Property::Type::UInt: out += S_FMT("%u", value.getUnsignedValue()); break;
-			default: out += S_FMT("\"%s\"", value.getStringValue()); break;
+			case Property::Type::Flag: out += value.boolValue() ? "true" : "false"; break;
+			case Property::Type::Int: out += S_FMT("%d", value.intValue()); break;
+			case Property::Type::Float: out += S_FMT("%1.3f", value.floatValue()); break;
+			case Property::Type::UInt: out += S_FMT("%u", value.unsignedValue()); break;
+			default: out += S_FMT("\"%s\"", value.stringValue()); break;
 			}
 		}
 

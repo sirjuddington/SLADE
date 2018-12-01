@@ -125,9 +125,9 @@ string PropertyList::toString(bool condensed)
 
 		// Add "key = value;\n" to the return string
 		string key = i->first;
-		string val = i->second.getStringValue();
+		string val = i->second.stringValue();
 
-		if (i->second.getType() == Property::Type::String)
+		if (i->second.type() == Property::Type::String)
 			val = "\"" + val + "\"";
 
 		// if (!val.empty()) {

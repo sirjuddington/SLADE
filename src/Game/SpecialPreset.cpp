@@ -59,36 +59,36 @@ vector<SpecialPreset> custom_presets;
 // -----------------------------------------------------------------------------
 void SpecialPreset::parse(ParseTreeNode* node)
 {
-	name = node->getName();
+	name = node->name();
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto   child = node->getChildPTN(a);
-		string name  = child->getName();
+		auto   child = node->childPTN(a);
+		string name  = child->name();
 
 		// Group
-		if (S_CMPNOCASE(child->getName(), "group"))
+		if (S_CMPNOCASE(child->name(), "group"))
 			group = child->stringValue();
 
 		// Special
-		else if (S_CMPNOCASE(child->getName(), "special"))
+		else if (S_CMPNOCASE(child->name(), "special"))
 			special = child->intValue();
 
 		// Flags
-		else if (S_CMPNOCASE(child->getName(), "flags"))
+		else if (S_CMPNOCASE(child->name(), "flags"))
 			for (auto& flag : child->values())
-				flags.push_back(flag.getStringValue());
+				flags.push_back(flag.stringValue());
 
 		// Args
-		else if (S_CMPNOCASE(child->getName(), "arg1"))
+		else if (S_CMPNOCASE(child->name(), "arg1"))
 			args[0] = child->intValue();
-		else if (S_CMPNOCASE(child->getName(), "arg2"))
+		else if (S_CMPNOCASE(child->name(), "arg2"))
 			args[1] = child->intValue();
-		else if (S_CMPNOCASE(child->getName(), "arg3"))
+		else if (S_CMPNOCASE(child->name(), "arg3"))
 			args[2] = child->intValue();
-		else if (S_CMPNOCASE(child->getName(), "arg4"))
+		else if (S_CMPNOCASE(child->name(), "arg4"))
 			args[3] = child->intValue();
-		else if (S_CMPNOCASE(child->getName(), "arg5"))
+		else if (S_CMPNOCASE(child->name(), "arg5"))
 			args[4] = child->intValue();
 	}
 }
@@ -163,12 +163,12 @@ bool Game::loadCustomSpecialPresets()
 	if (!parser.parseText(mc, "special_presets.cfg"))
 		return false;
 
-	auto node = parser.parseTreeRoot()->getChildPTN("special_presets");
+	auto node = parser.parseTreeRoot()->childPTN("special_presets");
 	if (node)
 	{
 		for (unsigned a = 0; a < node->nChildren(); a++)
 		{
-			auto child = node->getChildPTN(a);
+			auto child = node->childPTN(a);
 			if (S_CMPNOCASE(child->type(), "preset"))
 			{
 				custom_presets.push_back({});

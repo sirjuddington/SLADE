@@ -28,14 +28,14 @@ public:
 		int    reserve_ids = 1);
 	~SAction();
 
-	string getId() const { return id_; }
-	int    getWxId() const { return wx_id_; }
-	string getText() const { return text_; }
-	string getIconName() const { return icon_; }
-	string getHelpText() const { return helptext_; }
-	string getShortcut() const { return shortcut_; }
-	string getShortcutText() const;
-	Type   getType() const { return type_; }
+	string id() const { return id_; }
+	int    wxId() const { return wx_id_; }
+	string text() const { return text_; }
+	string iconName() const { return icon_; }
+	string helpText() const { return helptext_; }
+	string shortcut() const { return shortcut_; }
+	string shortcutText() const;
+	Type   type() const { return type_; }
 	bool   isChecked() const { return checked_; }
 	bool   isRadio() const { return type_ == Type::Radio; }
 	bool   isWxId(int id) const { return id >= wx_id_ && id < wx_id_ + reserved_ids_; }

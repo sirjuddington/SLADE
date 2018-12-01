@@ -148,7 +148,7 @@ Property::~Property() {}
 // If [warn_wrong_type] is true, a warning message is written to the log if the
 // property is not of boolean type
 // -----------------------------------------------------------------------------
-bool Property::getBoolValue(bool warn_wrong_type) const
+bool Property::boolValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type_ == Type::Flag)
@@ -189,7 +189,7 @@ bool Property::getBoolValue(bool warn_wrong_type) const
 // If [warn_wrong_type] is true, a warning message is written to the log if the
 // property is not of integer type
 // -----------------------------------------------------------------------------
-int Property::getIntValue(bool warn_wrong_type) const
+int Property::intValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type_ == Type::Flag)
@@ -224,7 +224,7 @@ int Property::getIntValue(bool warn_wrong_type) const
 // If [warn_wrong_type] is true, a warning message is written to the log if the
 // property is not of floating point type
 // -----------------------------------------------------------------------------
-double Property::getFloatValue(bool warn_wrong_type) const
+double Property::floatValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type_ == Type::Flag)
@@ -259,7 +259,7 @@ double Property::getFloatValue(bool warn_wrong_type) const
 // If [warn_wrong_type] is true, a warning message is written to the log if the
 // property is not of string type
 // -----------------------------------------------------------------------------
-string Property::getStringValue(bool warn_wrong_type) const
+string Property::stringValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type_ == Type::Flag)
@@ -299,7 +299,7 @@ string Property::getStringValue(bool warn_wrong_type) const
 // If [warn_wrong_type] is true, a warning message is written to the log if the
 // property is not of integer type
 // -----------------------------------------------------------------------------
-unsigned Property::getUnsignedValue(bool warn_wrong_type) const
+unsigned Property::unsignedValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type_ == Type::Flag)

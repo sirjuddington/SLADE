@@ -43,7 +43,7 @@ public:
 	bool openPatchTable(PatchTable* table);
 	bool openArchive(Archive* archive);
 	bool openTextureXList(TextureXList* texturex, Archive* parent);
-	int  getSelectedPatch();
+	int  selectedPatch();
 	void selectPatch(int pt_index);
 	void selectPatch(string name);
 	void setFullPath(bool enabled) { full_path_ = enabled; }

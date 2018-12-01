@@ -96,7 +96,7 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archi
 		bool ignored = false;
 		for (unsigned b = 0; b < 10; b++)
 		{
-			if (S_CMPNOCASE(mb_ignore_entries[b], map_data[a]->getName()))
+			if (S_CMPNOCASE(mb_ignore_entries[b], map_data[a]->name()))
 			{
 				ignored = true;
 				break;
@@ -108,10 +108,10 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archi
 	}
 
 	// Compare with last backup (if any)
-	ArchiveTreeNode* map_dir = backup.getDir(map_name);
+	ArchiveTreeNode* map_dir = backup.dir(map_name);
 	if (map_dir && map_dir->nChildren() > 0)
 	{
-		ArchiveTreeNode* last_backup = (ArchiveTreeNode*)map_dir->getChild(map_dir->nChildren() - 1);
+		ArchiveTreeNode* last_backup = (ArchiveTreeNode*)map_dir->child(map_dir->nChildren() - 1);
 		bool             same        = true;
 		if (last_backup->numEntries() != backup_entries.size())
 			same = false;
@@ -121,14 +121,14 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archi
 			{
 				ArchiveEntry* e1 = backup_entries[a];
 				ArchiveEntry* e2 = last_backup->entryAt(a);
-				if (e1->getSize() != e2->getSize())
+				if (e1->size() != e2->size())
 				{
 					same = false;
 					break;
 				}
 
-				uint32_t crc1 = Misc::crc(e1->getData(), e1->getSize());
-				uint32_t crc2 = Misc::crc(e2->getData(), e2->getSize());
+				uint32_t crc1 = Misc::crc(e1->rawData(), e1->size());
+				uint32_t crc2 = Misc::crc(e2->rawData(), e2->size());
 				if (crc1 != crc2)
 				{
 					same = false;
@@ -152,9 +152,9 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archi
 		backup.addEntry(backup_entries[a], dir, true);
 
 	// Check for max backups & remove old ones if over
-	map_dir = backup.getDir(map_name);
+	map_dir = backup.dir(map_name);
 	while ((int)map_dir->nChildren() > max_map_backups)
-		backup.removeDir(map_dir->getChild(0)->getName(), map_dir);
+		backup.removeDir(map_dir->child(0)->name(), map_dir);
 
 	// Save backup file
 	Archive::save_backup = false;
@@ -182,7 +182,7 @@ Archive* MapBackupManager::openBackup(string archive_name, string map_name)
 	if (panel_backup->loadBackups(archive_name, map_name))
 	{
 		if (dlg.ShowModal() == wxID_OK)
-			return panel_backup->getSelectedMapData();
+			return panel_backup->selectedMapData();
 	}
 	else
 		wxMessageBox(

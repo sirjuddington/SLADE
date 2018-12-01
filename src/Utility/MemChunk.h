@@ -10,8 +10,8 @@ public:
 	uint8_t& operator[](int a) { return data_[a]; }
 
 	// Accessors
-	const uint8_t* getData() const { return data_; }
-	uint32_t       getSize() const { return size_; }
+	const uint8_t* data() const { return data_; }
+	uint32_t       size() const { return size_; }
 
 	bool hasData();
 

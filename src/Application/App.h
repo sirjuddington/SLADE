@@ -38,10 +38,10 @@ enum Platform
 	MacOS,
 	Unknown
 };
-Platform     platform();
-bool         useWebView();
-bool         useSFMLRenderWindow();
-const string getIcon();
+Platform      platform();
+bool          useWebView();
+bool          useSFMLRenderWindow();
+const string& iconFile();
 
 std::thread::id mainThreadId();
 } // namespace App

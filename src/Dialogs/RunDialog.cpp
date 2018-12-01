@@ -259,7 +259,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb) 
 	int last_index = -1;
 	for (unsigned a = 0; a < Executables::nGameExes(); a++)
 	{
-		Executables::GameExe* exe = Executables::getGameExe(a);
+		Executables::GameExe* exe = Executables::gameExe(a);
 		choice_game_exes_->AppendString(exe->name);
 
 		if (exe->id == run_last_exe)
@@ -309,7 +309,7 @@ void RunDialog::openGameExe(unsigned index)
 	text_exe_path_->SetValue("");
 
 	// Populate configs
-	Executables::GameExe* exe = Executables::getGameExe(index);
+	Executables::GameExe* exe = Executables::gameExe(index);
 	if (exe)
 	{
 		for (unsigned a = 0; a < exe->configs.size(); a++)
@@ -332,9 +332,9 @@ void RunDialog::openGameExe(unsigned index)
 // Returns a command line based on the currently selected run configuration and
 // resources
 // -----------------------------------------------------------------------------
-string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, string map_file)
+string RunDialog::selectedCommandLine(Archive* archive, string map_name, string map_file)
 {
-	Executables::GameExe* exe = Executables::getGameExe(choice_game_exes_->GetSelection());
+	Executables::GameExe* exe = Executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
 	{
 		// Get exe path
@@ -357,7 +357,7 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 		path.Replace("%i", S_FMT("\"%s\"", bra ? bra->filename() : ""));
 
 		// Resources
-		path.Replace("%r", getSelectedResourceList());
+		path.Replace("%r", selectedResourceList());
 
 		// Archive (+ temp map if specified)
 		if (map_file.IsEmpty() && archive)
@@ -416,17 +416,17 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 // -----------------------------------------------------------------------------
 // Returns a space-separated list of selected resource archive filenames
 // -----------------------------------------------------------------------------
-string RunDialog::getSelectedResourceList()
+string RunDialog::selectedResourceList()
 {
-	return rac_resources_->getSelectedResourceList();
+	return rac_resources_->selectedResourceList();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the directory of the currently selected executable
 // -----------------------------------------------------------------------------
-string RunDialog::getSelectedExeDir()
+string RunDialog::selectedExeDir()
 {
-	Executables::GameExe* exe = Executables::getGameExe(choice_game_exes_->GetSelection());
+	Executables::GameExe* exe = Executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
 	{
 		wxFileName fn(exe->path);
@@ -439,9 +439,9 @@ string RunDialog::getSelectedExeDir()
 // -----------------------------------------------------------------------------
 // Returns the id of the currently selected game executable
 // -----------------------------------------------------------------------------
-string RunDialog::getSelectedExeId()
+string RunDialog::selectedExeId()
 {
-	Executables::GameExe* exe = Executables::getGameExe(choice_game_exes_->GetSelection());
+	Executables::GameExe* exe = Executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
 		return exe->id;
 	else
@@ -481,7 +481,7 @@ void RunDialog::onBtnAddGame(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void RunDialog::onBtnBrowseExe(wxCommandEvent& e)
 {
-	Executables::GameExe* exe = Executables::getGameExe(choice_game_exes_->GetSelection());
+	Executables::GameExe* exe = Executables::gameExe(choice_game_exes_->GetSelection());
 
 	if (exe)
 	{
@@ -508,7 +508,7 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 	if (choice_game_exes_->GetSelection() < 0)
 		return;
 
-	Executables::GameExe* exe         = Executables::getGameExe(choice_game_exes_->GetSelection());
+	Executables::GameExe* exe         = Executables::gameExe(choice_game_exes_->GetSelection());
 	string                   init_params = "";
 	if (choice_config_->GetSelection() >= 0)
 		init_params = exe->configs[choice_config_->GetSelection()].value;
@@ -535,7 +535,7 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 	if (choice_game_exes_->GetSelection() < 0 || choice_config_->GetSelection() < 0)
 		return;
 
-	Executables::GameExe* exe    = Executables::getGameExe(choice_game_exes_->GetSelection());
+	Executables::GameExe* exe    = Executables::gameExe(choice_game_exes_->GetSelection());
 	int                      index  = choice_config_->GetSelection();
 	string                   name   = exe->configs[index].key;
 	string                   params = exe->configs[index].value;
@@ -570,7 +570,7 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 	// Update cvars
 	run_last_extra  = text_extra_params_->GetValue();
 	run_last_config = choice_config_->GetSelection();
-	run_last_exe    = getSelectedExeId();
+	run_last_exe    = selectedExeId();
 
 	EndModal(wxID_OK);
 }
@@ -583,7 +583,7 @@ void RunDialog::onBtnCancel(wxCommandEvent& e)
 	// Update cvars
 	run_last_extra  = text_extra_params_->GetValue();
 	run_last_config = choice_config_->GetSelection();
-	run_last_exe    = getSelectedExeId();
+	run_last_exe    = selectedExeId();
 
 	EndModal(wxID_CANCEL);
 }
@@ -594,7 +594,7 @@ void RunDialog::onBtnCancel(wxCommandEvent& e)
 void RunDialog::onChoiceGameExe(wxCommandEvent& e)
 {
 	openGameExe(e.GetSelection());
-	run_last_exe = getSelectedExeId();
+	run_last_exe = selectedExeId();
 }
 
 // -----------------------------------------------------------------------------
@@ -604,7 +604,7 @@ void RunDialog::onChoiceConfig(wxCommandEvent& e)
 {
 	run_last_config = choice_config_->GetSelection();
 	btn_edit_config_->Enable(true);
-	Executables::GameExe* exe = Executables::getGameExe(choice_game_exes_->GetSelection());
+	Executables::GameExe* exe = Executables::gameExe(choice_game_exes_->GetSelection());
 	btn_remove_config_->Enable(exe->configs_custom[choice_config_->GetSelection()]);
 }
 
@@ -617,7 +617,7 @@ void RunDialog::onBtnRemoveGame(wxCommandEvent& e)
 	{
 		choice_game_exes_->Clear();
 		for (unsigned a = 0; a < Executables::nGameExes(); a++)
-			choice_game_exes_->AppendString(Executables::getGameExe(a)->name);
+			choice_game_exes_->AppendString(Executables::gameExe(a)->name);
 
 		if (choice_game_exes_->GetCount() > 0)
 		{

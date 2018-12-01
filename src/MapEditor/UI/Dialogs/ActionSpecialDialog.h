@@ -58,7 +58,7 @@ public:
 
 	void setup(const Game::ArgSpec& args, bool udmf);
 	void setValues(int args[5]);
-	int  getArgValue(int index);
+	int  argValue(int index);
 	void onSize(wxSizeEvent& event);
 
 private:
@@ -120,7 +120,7 @@ public:
 	void setSpecial(int special);
 	void setArgs(int args[5]);
 	int  selectedSpecial();
-	int  getArg(int index);
+	int  argValue(int index);
 	void applyTo(vector<MapObject*>& lines, bool apply_special);
 	void openLines(vector<MapObject*>& lines);
 

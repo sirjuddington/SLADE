@@ -49,13 +49,13 @@ public:
 	void    filterObjects(bool filter);
 	void    resetPositions();
 	bool    empty() const { return vertices_.empty() && things_.empty(); }
-	bool    getNearestLine(fpoint2_t pos, double min, fpoint2_t& v1, fpoint2_t& v2);
-	void    getMapVertices(vector<MapVertex*>& list);
+	bool    nearestLineEndpoints(fpoint2_t pos, double min, fpoint2_t& v1, fpoint2_t& v2);
+	void    putMapVertices(vector<MapVertex*>& list);
 
 	// Drawing
-	void getVerticesToDraw(vector<fpoint2_t>& list);
-	void getLinesToDraw(vector<Line>& list);
-	void getThingsToDraw(vector<Thing>& list);
+	void putVerticesToDraw(vector<fpoint2_t>& list);
+	void putLinesToDraw(vector<Line>& list);
+	void putThingsToDraw(vector<Thing>& list);
 
 	// Modification
 	void doMove(double xoff, double yoff);

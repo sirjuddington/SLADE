@@ -14,15 +14,15 @@ public:
 	void allowDup(bool dup) { allow_dup_child_ = dup; }
 	bool allowDup() { return allow_dup_child_; }
 
-	STreeNode*     getParent() { return parent_; }
-	virtual string getName()            = 0;
+	STreeNode*     parent() { return parent_; }
+	virtual string name()            = 0;
 	virtual void   setName(string name) = 0;
-	virtual string getPath();
+	virtual string path();
 
 	unsigned                   nChildren() { return children_.size(); }
-	STreeNode*                 getChild(unsigned index);
-	virtual STreeNode*         getChild(string name);
-	virtual vector<STreeNode*> getChildren(string name);
+	STreeNode*                 child(unsigned index);
+	virtual STreeNode*         child(string name);
+	virtual vector<STreeNode*> children(string name);
 	virtual void               addChild(STreeNode* child);
 	virtual STreeNode*         addChild(string name);
 	virtual bool               removeChild(STreeNode* child);

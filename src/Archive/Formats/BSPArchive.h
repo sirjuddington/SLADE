@@ -14,7 +14,7 @@ public:
 
 	// Misc
 	bool     loadEntryData(ArchiveEntry* entry) override;
-	uint32_t getEntryOffset(ArchiveEntry* entry);
+	uint32_t entryOffset(ArchiveEntry* entry);
 
 	// Static functions
 	static bool isBSPArchive(MemChunk& mc);

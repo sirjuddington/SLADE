@@ -68,7 +68,7 @@ DiskArchive::~DiskArchive() {}
 // -----------------------------------------------------------------------------
 bool DiskArchive::open(MemChunk& mc)
 {
-	size_t mcsize = mc.getSize();
+	size_t mcsize = mc.size();
 
 	// Check given data is valid
 	if (mcsize < 80)
@@ -137,7 +137,7 @@ bool DiskArchive::open(MemChunk& mc)
 	// Detect all entry types
 	MemChunk              edata;
 	vector<ArchiveEntry*> all_entries;
-	getEntryTreeAsList(all_entries);
+	putEntryTreeAsList(all_entries);
 	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
@@ -148,10 +148,10 @@ bool DiskArchive::open(MemChunk& mc)
 		ArchiveEntry* entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->getSize());
+			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -187,7 +187,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 
 	// Get archive tree as a list
 	vector<ArchiveEntry*> entries;
-	getEntryTreeAsList(entries);
+	putEntryTreeAsList(entries);
 
 	// Process entry list
 	uint32_t num_entries  = 0;
@@ -195,11 +195,11 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Ignore folder entries
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			continue;
 
 		// Increment directory offset and size
-		size_entries += entries[a]->getSize();
+		size_entries += entries[a]->size();
 		++num_entries;
 	}
 
@@ -217,7 +217,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Skip folders
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			continue;
 
 		// Update entry
@@ -228,7 +228,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		string name = entries[a]->getPath(true);
+		string name = entries[a]->path(true);
 		name.Replace("/", "\\");
 		// The leading "GAME:\" part of the name means there is only 58 usable characters for path
 		if (name.Len() > 58)
@@ -257,7 +257,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		dent.offset = wxUINT32_SWAP_ON_LE(offset - start_offset);
 
 		// Write entry size
-		dent.length = wxUINT32_SWAP_ON_LE(entries[a]->getSize());
+		dent.length = wxUINT32_SWAP_ON_LE(entries[a]->size());
 
 		// Actually write stuff
 		mc.write(&dent, 72);
@@ -274,11 +274,11 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Skip folders
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			continue;
 
 		// Write data
-		mc.write(entries[a]->getData(), entries[a]->getSize());
+		mc.write(entries[a]->rawData(), entries[a]->size());
 	}
 
 	return true;
@@ -296,7 +296,7 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -314,7 +314,7 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to entry offset in file and read it in
 	file.Seek((int)entry->exProp("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -336,7 +336,7 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 bool DiskArchive::isDiskArchive(MemChunk& mc)
 {
 	// Check given data is valid
-	size_t mcsize = mc.getSize();
+	size_t mcsize = mc.size();
 	if (mcsize < 80)
 		return false;
 

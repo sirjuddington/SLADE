@@ -11,18 +11,18 @@ size_t checkForTags(MemChunk& mc)
 	// quite popular in MP3s to start with a useless blank frame.
 	size_t s = 0;
 	// Completely arbitrary limit to how long to seek for data.
-	size_t limit = MIN(1200, mc.getSize() / 16);
+	size_t limit = MIN(1200, mc.size() / 16);
 	if (mc[0] == 0)
 	{
 		while ((s < limit) && (mc[s] == 0))
 			++s;
 	}
 
-	if (mc.getSize() > s + 14)
+	if (mc.size() > s + 14)
 	{
 		// Check for ID3 header (ID3v2). Version and revision numbers cannot be FF.
 		// Only the four upper flags are valid.
-		while (mc.getSize() > s + 14 && mc[s + 0] == 'I' && mc[s + 1] == 'D' && mc[s + 2] == '3' && mc[s + 3] != 0xFF
+		while (mc.size() > s + 14 && mc[s + 0] == 'I' && mc[s + 1] == 'D' && mc[s + 2] == '3' && mc[s + 3] != 0xFF
 			   && mc[s + 4] != 0xFF && ((mc[s + 5] & 0x0F) == 0) && mc[s + 6] < 0x80 && mc[s + 7] < 0x80
 			   && mc[s + 8] < 0x80 && mc[s + 9] < 0x80)
 		{
@@ -33,7 +33,7 @@ size_t checkForTags(MemChunk& mc)
 			if (mc[s + 5] & 0x10)
 				size += 10;
 			// Needs to be at least that big
-			if (mc.getSize() >= size + 4)
+			if (mc.size() >= size + 4)
 				s += size;
 			return size;
 		}
@@ -46,7 +46,7 @@ size_t checkForTags(MemChunk& mc)
 	}
 	// It's also possible to get an ID3v1 (or v1.1) tag.
 	// Though normally they're at the end of the file.
-	if (mc.getSize() > s + 132)
+	if (mc.size() > s + 132)
 	{
 		// Check for ID3 header (ID3v1).
 		if (mc[s + 0] == 'T' && mc[s + 1] == 'A' && mc[s + 2] == 'G')
@@ -66,7 +66,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 16)
+		if (mc.size() > 16)
 		{
 			// Check for MUS header
 			if (mc[0] == 'M' && mc[1] == 'U' && mc[2] == 'S' && mc[3] == 0x1A)
@@ -86,7 +86,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 16)
+		if (mc.size() > 16)
 		{
 			// Check for MIDI header
 			if (mc[0] == 'M' && mc[1] == 'T' && mc[2] == 'h' && mc[3] == 'd')
@@ -106,7 +106,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 50)
+		if (mc.size() > 50)
 		{
 			// Check for XMI header: FORM, XDIRINFO, CAT, XMIDFORM, XMID
 			if (mc[0] == 'F' && mc[1] == 'O' && mc[2] == 'R' && mc[3] == 'M' && mc[4] == 0 && mc[5] == 0 && mc[6] == 0
@@ -131,7 +131,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 50)
+		if (mc.size() > 50)
 		{
 			// Check for HMI header: HMI-MIDI
 			if (mc[0] == 'H' && mc[1] == 'M' && mc[2] == 'I' && mc[3] == '-' && mc[4] == 'M' && mc[5] == 'I'
@@ -152,7 +152,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 50)
+		if (mc.size() > 50)
 		{
 			// Check for HMI header: HMIMIDIP
 			if (mc[0] == 'H' && mc[1] == 'M' && mc[2] == 'I' && mc[3] == 'M' && mc[4] == 'I' && mc[5] == 'D'
@@ -173,14 +173,14 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 8)
+		if (mc.size() > 8)
 		{
 			// Check for GMID header: "MIDI", "GMD ", "ADL " or "ROL " followed by BE data size
 			if (((mc[0] == 'M' && mc[1] == 'I' && mc[2] == 'D' && mc[3] == 'I')
 				 || (mc[0] == 'G' && mc[1] == 'M' && mc[2] == 'D' && mc[3] == ' ')
 				 || (mc[0] == 'A' && mc[1] == 'D' && mc[2] == 'L' && mc[3] == ' ')
 				 || (mc[0] == 'R' && mc[1] == 'O' && mc[2] == 'L' && mc[3] == ' '))
-				&& ((READ_B32(mc, 4) + 8) == mc.getSize()))
+				&& ((READ_B32(mc, 4) + 8) == mc.size()))
 				return EDF_TRUE;
 		}
 
@@ -197,13 +197,13 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 36)
+		if (mc.size() > 36)
 		{
 			// Check for RIFF RMID header
 			if (mc[0] == 'R' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == 'F' && mc[8] == 'R' && mc[9] == 'M'
 				&& mc[10] == 'I' && mc[11] == 'D' && mc[12] == 'd' && mc[13] == 'a' && mc[14] == 't' && mc[15] == 'a'
 				&& mc[20] == 'M' && mc[21] == 'T' && mc[22] == 'h' && mc[23] == 'd'
-				&& (READ_L32(mc, 4) + 8 == mc.getSize()) && (READ_L32(mc, 16) < READ_L32(mc, 4)))
+				&& (READ_L32(mc, 4) + 8 == mc.size()) && (READ_L32(mc, 16) < READ_L32(mc, 4)))
 				return EDF_TRUE;
 		}
 
@@ -220,7 +220,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 32)
+		if (mc.size() > 32)
 		{
 			// Check for IT header
 			if (mc[0] == 'I' && mc[1] == 'M' && mc[2] == 'P' && mc[3] == 'M')
@@ -240,11 +240,11 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 80)
+		if (mc.size() > 80)
 		{
 			// Check for mod header
 			char temp[18] = "";
-			memcpy(temp, mc.getData(), 18);
+			memcpy(temp, mc.data(), 18);
 			temp[17] = 0;
 			if (temp[9] == 'M')
 				temp[9] = 'm';
@@ -270,7 +270,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 60)
+		if (mc.size() > 60)
 		{
 			// Check for s3m header
 			if (mc[44] == 'S' && mc[45] == 'C' && mc[46] == 'R' && mc[47] == 'M')
@@ -290,7 +290,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 1084)
+		if (mc.size() > 1084)
 		{
 			// Check format; note: byte 951 is used by NoiseTracker to indicate restart byte so it can be any value
 			if (mc[950] >= 0 && mc[950] <= 129 /*&& (mc[951] & 127) == 127*/)
@@ -319,7 +319,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 1360)
+		if (mc.size() > 1360)
 		{
 			// Check for mod header
 			if (mc[0] == 'O' && mc[1] == 'K' && mc[2] == 'T' && mc[3] == 'A' && mc[4] == 'S' && mc[5] == 'O'
@@ -343,7 +343,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 13)
+		if (mc.size() > 13)
 		{
 			// Check format
 			if (mc[0] == 'A' && mc[1] == 'D' && mc[2] == 'L' && mc[3] == 'I' && mc[4] == 'B' && mc[5] == 1 && mc[6] == 0
@@ -364,7 +364,7 @@ public:
 
 	int isThisFormat(MemChunk& mc)
 	{
-		size_t size = mc.getSize();
+		size_t size = mc.size();
 		// Check size
 		if (size > 94 && size < 65535)
 		{
@@ -428,7 +428,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 20)
+		if (mc.size() > 20)
 		{
 			// Check format
 			if (mc[0] == 'D' && mc[1] == 'B' && mc[2] == 'R' && mc[3] == 'A' && mc[4] == 'W' && mc[5] == 'O'
@@ -453,7 +453,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 10)
+		if (mc.size() > 10)
 		{
 			// Check format
 			if (mc[0] == 'R' && mc[1] == 'A' && mc[2] == 'W' && mc[3] == 'A' && mc[4] == 'D' && mc[5] == 'A'
@@ -475,7 +475,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 8)
+		if (mc.size() > 8)
 		{
 			// Check header
 			uint16_t head, samplerate;
@@ -485,7 +485,7 @@ public:
 			mc.read(&samplerate, 2);
 			mc.read(&samples, 4);
 
-			if (head == 3 && samples <= (mc.getSize() - 8) && samples > 4 && samplerate >= 8000)
+			if (head == 3 && samples <= (mc.size() - 8) && samples > 4 && samplerate >= 8000)
 				return EDF_TRUE;
 		}
 
@@ -502,7 +502,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 8)
+		if (mc.size() > 8)
 		{
 			// Check header
 			uint16_t head, samplerate;
@@ -515,7 +515,7 @@ public:
 			head    = wxUINT16_SWAP_ON_BE(head);
 			samples = wxUINT32_SWAP_ON_BE(samples);
 
-			if (head == 0x300 && samples <= (mc.getSize() - 8) && samples > 4 && samplerate >= 8000)
+			if (head == 0x300 && samples <= (mc.size() - 8) && samples > 4 && samplerate >= 8000)
 				return EDF_TRUE;
 		}
 
@@ -532,14 +532,14 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 28)
+		if (mc.size() > 28)
 		{
 			// Check header
 			uint32_t samples = READ_B32(mc, 0);
 			uint32_t loopstr = READ_B32(mc, 4);
 			uint32_t loopend = READ_B32(mc, 8);
 
-			if ((samples == (mc.getSize() - 28) && samples > 4) &&
+			if ((samples == (mc.size() - 28) && samples > 4) &&
 				// Normal sounds typically have loopstart = 0, loopend = samples
 				((loopstr < samples && loopend <= samples && loopstr <= loopend)
 				 // Percussion instruments have deliberately invalid loop start/loop end values
@@ -562,7 +562,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check header: the first two bytes must always be null
 			if (mc[0] | mc[1])
@@ -570,7 +570,7 @@ public:
 			// Next is the number of samples (LE uint16_t), and
 			// each sample is a single byte, so the size can be
 			// checked easily.
-			if (mc.getSize() == 4 + READ_L16(mc, 2))
+			if (mc.size() == 4 + READ_L16(mc, 2))
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -594,7 +594,7 @@ public:
 int RiffWavFormat(MemChunk& mc)
 {
 	// Check size
-	size_t size   = mc.getSize();
+	size_t size   = mc.size();
 	int    format = WAVE_FMT_UNK;
 	if (size > 44)
 	{
@@ -660,7 +660,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 40)
+		if (mc.size() > 40)
 		{
 			// Check for Ogg Vorbis header.
 			if (mc[0] == 'O' && mc[1] == 'g' && mc[2] == 'g' && mc[3] == 'S')
@@ -685,7 +685,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check for FLAC header.
 			if (mc[0] == 'f' && mc[1] == 'L' && mc[2] == 'a' && mc[3] == 'C')
@@ -700,7 +700,7 @@ public:
 int validMPEG(MemChunk& mc, uint8_t layer, size_t start)
 {
 	// Check size
-	if (mc.getSize() > 4 + start)
+	if (mc.size() > 4 + start)
 	{
 		// Check for MP3 frame header. Warning, it is a very weak signature.
 		uint16_t framesync = ((mc[0 + start] << 4) + (mc[1 + start] >> 4)) & 0xFFE;
@@ -768,7 +768,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 26)
+		if (mc.size() > 26)
 		{
 			// Check for header, see specs at http://wiki.multimedia.cx/index.php?title=Creative_Voice
 			if (mc[19] == 26 && mc[20] == 26 && mc[21] == 0)
@@ -778,7 +778,7 @@ public:
 				if ((mc[24] + (mc[25] << 8)) == validity)
 				{
 					// Lastly, check for header text
-					string header(wxString::FromAscii(mc.getData(), 19));
+					string header(wxString::FromAscii(mc.data(), 19));
 					if (header == "Creative Voice File")
 						return EDF_TRUE;
 				}
@@ -794,7 +794,7 @@ public:
 	WolfSoundDataFormat() : EntryDataFormat("snd_wolf"){};
 	~WolfSoundDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) { return (mc.getSize() > 0 ? EDF_MAYBE : EDF_FALSE); }
+	int isThisFormat(MemChunk& mc) { return (mc.size() > 0 ? EDF_MAYBE : EDF_FALSE); }
 };
 
 class AudioTPCSoundDataFormat : public EntryDataFormat
@@ -805,7 +805,7 @@ public:
 
 	int isThisFormat(MemChunk& mc)
 	{
-		size_t size = mc.getSize();
+		size_t size = mc.size();
 		if (size > 8)
 		{
 			size_t nsamples = READ_L32(mc, 0);
@@ -832,7 +832,7 @@ public:
 
 	int isThisFormat(MemChunk& mc)
 	{
-		size_t size = mc.getSize();
+		size_t size = mc.size();
 		if (size > 24 && size < 1024)
 		{
 			// Octave block value must be less than 8, sustain shouldn't be null
@@ -864,12 +864,12 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size, must be between 22 and 29 included
-		if (mc.getSize() > 21 && mc.getSize() < 30)
+		if (mc.size() > 21 && mc.size() < 30)
 		{
 			if (mc[12] == 1 || mc[12] == 5)
 			{
 				size_t i = 20;
-				for (; i < mc.getSize() - 1; ++i)
+				for (; i < mc.size() - 1; ++i)
 				{
 					// Check that the entry does give a purely alphanumeric ASCII name
 					if ((mc[i] < '0' || (mc[i] > '9' && mc[i] < 'A') || (mc[i] > 'Z' && mc[i] < 'a') || mc[i] > 'z')
@@ -894,14 +894,14 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 32)
+		if (mc.size() > 32)
 		{
 			// Check for signature
 			if (mc[0] != '.' || mc[1] != 's' || mc[2] != 'n' || mc[3] != 'd')
 				return EDF_FALSE;
 			size_t offset   = READ_B32(mc, 4);
 			size_t datasize = READ_B32(mc, 8);
-			if (offset < 24 || offset + datasize > mc.getSize())
+			if (offset < 24 || offset + datasize > mc.size())
 				return EDF_FALSE;
 			size_t format = READ_B32(mc, 12);
 			if (format < 2 || format > 7)
@@ -928,7 +928,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 50)
+		if (mc.size() > 50)
 		{
 			// An AIFF file should start with a FORM-AIFF groupID, then contain a COMM and an SSND chunks.
 			// GroupID size 12. COMM size 26. SSND size 12 + samples. So minimum size is greater than 50.
@@ -939,10 +939,10 @@ public:
 				size_t size = READ_B32(mc, 4) + 8;
 				if (debugaiff)
 					LOG_MESSAGE(1, "size %d", size);
-				if (size > mc.getSize())
+				if (size > mc.size())
 				{
 					if (debugaiff)
-						LOG_MESSAGE(1, "%d <= %d fails", size, mc.getSize());
+						LOG_MESSAGE(1, "%d <= %d fails", size, mc.size());
 					return EDF_FALSE;
 				}
 				size_t s          = 12;
@@ -982,10 +982,10 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 20)
+		if (mc.size() > 20)
 		{
 			// Check for header text using official signature string
-			if (memcmp(mc.getData(), "ZXAYEMUL", 8) == 0)
+			if (memcmp(mc.data(), "ZXAYEMUL", 8) == 0)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -1001,10 +1001,10 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 112)
+		if (mc.size() > 112)
 		{
 			// Talk about a weak signature...
-			if (memcmp(mc.getData(), "GBS\x01", 4) == 0)
+			if (memcmp(mc.data(), "GBS\x01", 4) == 0)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -1020,10 +1020,10 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 428)
+		if (mc.size() > 428)
 		{
 			// Talk about a weak signature... And some GYM files don't even have that...
-			if (memcmp(mc.getData(), "GYMX", 4) == 0)
+			if (memcmp(mc.data(), "GYMX", 4) == 0)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -1039,10 +1039,10 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 32)
+		if (mc.size() > 32)
 		{
 			// Another weak signature
-			if (memcmp(mc.getData(), "HESM", 4) == 0)
+			if (memcmp(mc.data(), "HESM", 4) == 0)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -1058,11 +1058,11 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 16)
+		if (mc.size() > 16)
 		{
 			// Weak signatures for the weak signature god!
 			// Unreliable identifications for his throne!
-			if (memcmp(mc.getData(), "KSCC", 4) == 0 || memcmp(mc.getData(), "KSSX", 4) == 0)
+			if (memcmp(mc.data(), "KSCC", 4) == 0 || memcmp(mc.data(), "KSSX", 4) == 0)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -1078,10 +1078,10 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 128)
+		if (mc.size() > 128)
 		{
 			// Check for header text using official signature string
-			if (memcmp(mc.getData(), "NESM\x1A", 5) == 0)
+			if (memcmp(mc.data(), "NESM\x1A", 5) == 0)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -1097,10 +1097,10 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 5)
+		if (mc.size() > 5)
 		{
 			// Check for header text using official signature string
-			if (memcmp(mc.getData(), "NESM\x1A", 5) == 0)
+			if (memcmp(mc.data(), "NESM\x1A", 5) == 0)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -1116,10 +1116,10 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 16)
+		if (mc.size() > 16)
 		{
 			// Check for header text using official signature string
-			if (memcmp(mc.getData(), "SAP\x0D\x0A", 5) == 0)
+			if (memcmp(mc.data(), "SAP\x0D\x0A", 5) == 0)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -1136,10 +1136,10 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 256)
+		if (mc.size() > 256)
 		{
 			// Check for header text using official signature string
-			if (memcmp(mc.getData(), "SNES-SPC700 Sound File Data", 27) == 0)
+			if (memcmp(mc.data(), "SNES-SPC700 Sound File Data", 27) == 0)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -1155,10 +1155,10 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 64)
+		if (mc.size() > 64)
 		{
 			// Check for header text (kind of a weak test)
-			if (memcmp(mc.getData(), "Vgm ", 4) == 0)
+			if (memcmp(mc.data(), "Vgm ", 4) == 0)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -1176,14 +1176,14 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 64)
+		if (mc.size() > 64)
 		{
 			// Check for GZip header first
 			if (READ_B32(mc, 0) == GZIP_SIGNATURE)
 			{
 				// Extract, then check for vgm signature
 				MemChunk tmp;
-				if (Compression::GZipInflate(mc, tmp) && tmp.getSize() > 64 && memcmp(tmp.getData(), "Vgm ", 4) == 0)
+				if (Compression::gzipInflate(mc, tmp) && tmp.size() > 64 && memcmp(tmp.data(), "Vgm ", 4) == 0)
 					return EDF_TRUE;
 			}
 		}

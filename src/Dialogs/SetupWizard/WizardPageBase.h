@@ -8,6 +8,6 @@ public:
 
 	virtual bool   canGoNext() { return true; }
 	virtual void   applyChanges() {}
-	virtual string getTitle() { return "Page Title"; }
-	virtual string getDescription() { return ""; }
+	virtual string title() { return "Page Title"; }
+	virtual string description() { return ""; }
 };

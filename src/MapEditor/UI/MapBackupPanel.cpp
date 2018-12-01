@@ -80,7 +80,7 @@ bool MapBackupPanel::loadBackups(string archive_name, string map_name)
 		return false;
 
 	// Get backup dir for map
-	dir_current_ = archive_backups_->getDir(map_name);
+	dir_current_ = archive_backups_->dir(map_name);
 	if (dir_current_ == archive_backups_->rootDir() || !dir_current_)
 		return false;
 
@@ -92,7 +92,7 @@ bool MapBackupPanel::loadBackups(string archive_name, string map_name)
 	int index = 0;
 	for (int a = dir_current_->nChildren() - 1; a >= 0; a--)
 	{
-		string        timestamp = dir_current_->getChild(a)->getName();
+		string        timestamp = dir_current_->child(a)->name();
 		wxArrayString cols;
 
 		// Date
@@ -129,7 +129,7 @@ void MapBackupPanel::updateMapPreview()
 	if (archive_mapdata_)
 		delete archive_mapdata_;
 	archive_mapdata_     = new WadArchive();
-	ArchiveTreeNode* dir = (ArchiveTreeNode*)dir_current_->getChild(selection);
+	ArchiveTreeNode* dir = (ArchiveTreeNode*)dir_current_->child(selection);
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 		archive_mapdata_->addEntry(dir->entryAt(a), "", true);
 

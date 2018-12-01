@@ -34,7 +34,7 @@ public:
 	SImage* getImage() { return image_; }
 
 	void    setViewType(View type) { view_type_ = type; }
-	View    getViewType() { return view_type_; }
+	View    viewType() { return view_type_; }
 	void    setScale(double scale) { this->scale_ = scale; }
 	bool    allowDrag() { return allow_drag_; }
 	void    allowDrag(bool allow) { allow_drag_ = allow; }
@@ -44,8 +44,8 @@ public:
 	void    setEditingMode(EditMode mode) { editing_mode_ = mode; }
 	void    setTranslation(Translation* tr) { translation_ = tr; }
 	void    setBrush(SBrush* br) { brush_ = br; }
-	SBrush* getBrush() { return brush_; }
-	rgba_t  getPaintColour() { return paint_colour_; }
+	SBrush* brush() { return brush_; }
+	rgba_t  paintColour() { return paint_colour_; }
 
 	void draw();
 	void drawImage();

@@ -30,7 +30,7 @@ public:
 	~PatchTable();
 
 	size_t   nPatches() { return patches_.size(); }
-	Archive* getParent() { return parent_; }
+	Archive* parent() { return parent_; }
 	void     setParent(Archive* parent) { this->parent_ = parent; }
 
 	Patch&        patch(size_t index);

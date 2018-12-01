@@ -104,10 +104,10 @@ void Edit3D::changeSectorLight(int amount) const
 			|| items[a].type == ItemType::WallTop)
 		{
 			// Get side
-			auto side = context_.map().getSide(items[a].index);
+			auto side = context_.map().side(items[a].index);
 			if (!side)
 				continue;
-			auto sector = side->getSector();
+			auto sector = side->sector();
 			if (!sector)
 				continue;
 
@@ -127,7 +127,7 @@ void Edit3D::changeSectorLight(int amount) const
 			}
 
 			// Check for decrease when light = 255
-			int current_light = side->getLight();
+			int current_light = side->light();
 			if (current_light == 255 && amount < -1)
 				amount++;
 
@@ -142,7 +142,7 @@ void Edit3D::changeSectorLight(int amount) const
 		if (items[a].type == ItemType::Floor || items[a].type == ItemType::Ceiling)
 		{
 			// Get sector
-			auto s     = context_.map().getSector(items[a].index);
+			auto s     = context_.map().sector(items[a].index);
 			int  where = 0;
 			if (items[a].type == ItemType::Floor && !link_light_)
 				where = 1;
@@ -150,7 +150,7 @@ void Edit3D::changeSectorLight(int amount) const
 				where = 2;
 
 			// Check for decrease when light = 255
-			if (s->getLight(where) == 255 && amount < -1)
+			if (s->lightAt(where) == 255 && amount < -1)
 				amount++;
 
 			// Ignore if sector already processed
@@ -216,7 +216,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		// Wall
 		if (items[a].type >= ItemType::WallTop && items[a].type <= ItemType::WallBottom)
 		{
-			MapSide* side = context_.map().getSide(items[a].index);
+			MapSide* side = context_.map().side(items[a].index);
 
 			// If offsets are linked, just change the whole side offset
 			if (link_offset_)
@@ -266,7 +266,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		// Flat (UDMF only)
 		else
 		{
-			MapSector* sector = context_.map().getSector(items[a].index);
+			MapSector* sector = context_.map().sector(items[a].index);
 
 			if (Game::configuration().featureSupported(Game::UDMFFeature::FlatPanning))
 			{
@@ -356,10 +356,10 @@ void Edit3D::changeSectorHeight(int amount) const
 			|| items[a].type == ItemType::WallTop)
 		{
 			// Get sector
-			auto sector = context_.map().getSide(items[a].index)->getSector();
+			auto sector = context_.map().side(items[a].index)->sector();
 
 			// Check this sector's ceiling hasn't already been changed
-			int index = sector->getIndex();
+			int index = sector->index();
 			if (VECTOR_EXISTS(ceilings, index))
 				continue;
 
@@ -375,7 +375,7 @@ void Edit3D::changeSectorHeight(int amount) const
 		else if (items[a].type == ItemType::Floor)
 		{
 			// Get sector
-			auto sector = context_.map().getSector(items[a].index);
+			auto sector = context_.map().sector(items[a].index);
 
 			// Change height
 			sector->setFloorHeight(sector->floor().height + amount);
@@ -385,11 +385,11 @@ void Edit3D::changeSectorHeight(int amount) const
 		else if (items[a].type == ItemType::Ceiling)
 		{
 			// Get sector
-			auto sector = context_.map().getSector(items[a].index);
+			auto sector = context_.map().sector(items[a].index);
 
 			// Check this sector's ceiling hasn't already been changed
 			bool done  = false;
-			int  index = sector->getIndex();
+			int  index = sector->index();
 			for (unsigned b = 0; b < ceilings.size(); b++)
 			{
 				if (ceilings[b] == index)
@@ -405,7 +405,7 @@ void Edit3D::changeSectorHeight(int amount) const
 			sector->setCeilingHeight(sector->ceiling().height + amount);
 
 			// Set to changed
-			ceilings.push_back(sector->getIndex());
+			ceilings.push_back(sector->index());
 		}
 	}
 
@@ -432,7 +432,7 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 		return;
 
 	// Get starting side
-	auto side = context_.map().getSide(start.index);
+	auto side = context_.map().side(start.index);
 	if (!side)
 		return;
 
@@ -452,10 +452,10 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 
 	// Get texture width
 	auto gl_tex =
-		MapEditor::textureManager().getTexture(tex, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+		MapEditor::textureManager().texture(tex, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 	int tex_width = -1;
 	if (gl_tex)
-		tex_width = gl_tex->getWidth();
+		tex_width = gl_tex->width();
 
 	// Init aligned wall list
 	vector<MapEditor::Item> walls_done;
@@ -518,7 +518,7 @@ void Edit3D::resetOffsets() const
 	// Go through walls
 	for (unsigned a = 0; a < walls.size(); a++)
 	{
-		auto side = context_.map().getSide(walls[a].index);
+		auto side = context_.map().side(walls[a].index);
 		if (!side)
 			continue;
 
@@ -576,7 +576,7 @@ void Edit3D::resetOffsets() const
 	{
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
-			auto sector = context_.map().getSector(flats[a].index);
+			auto sector = context_.map().sector(flats[a].index);
 			if (!sector)
 				continue;
 
@@ -607,7 +607,7 @@ void Edit3D::resetOffsets() const
 	{
 		for (unsigned a = 0; a < things.size(); ++a)
 		{
-			auto thing = context_.map().getThing(things[a].index);
+			auto thing = context_.map().thing(things[a].index);
 			if (!thing)
 				continue;
 
@@ -686,7 +686,7 @@ void Edit3D::toggleUnpegged(bool lower) const
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Get line
-		auto line = context_.map().getSide(items[a].index)->getParentLine();
+		auto line = context_.map().side(items[a].index)->parentLine();
 		if (!line)
 			continue;
 
@@ -737,7 +737,7 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.getSide(hl.index)->stringProperty("texturetop");
+			copy_texture_ = map.side(hl.index)->stringProperty("texturetop");
 	}
 
 	// Middle wall
@@ -745,7 +745,7 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.getSide(hl.index)->stringProperty("texturemiddle");
+			copy_texture_ = map.side(hl.index)->stringProperty("texturemiddle");
 	}
 
 	// Lower wall
@@ -753,7 +753,7 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.getSide(hl.index)->stringProperty("texturebottom");
+			copy_texture_ = map.side(hl.index)->stringProperty("texturebottom");
 	}
 
 	// Floor
@@ -761,7 +761,7 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.getSector(hl.index)->floor().texture;
+			copy_texture_ = map.sector(hl.index)->floor().texture;
 	}
 
 	// Ceiling
@@ -769,13 +769,13 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.getSector(hl.index)->ceiling().texture;
+			copy_texture_ = map.sector(hl.index)->ceiling().texture;
 	}
 
 	// Thing
 	else if (hl.type == ItemType::Thing)
 	{
-		copy_thing_.copy(map.getThing(hl.index));
+		copy_thing_.copy(map.thing(hl.index));
 	}
 
 	// Flash
@@ -809,7 +809,7 @@ void Edit3D::paste(CopyType type)
 		// Wall
 		if (MapEditor::baseItemType(item.type) == ItemType::Side)
 		{
-			MapSide* side = context_.map().getSide(item.index);
+			MapSide* side = context_.map().side(item.index);
 			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(side));
 
 			// Upper wall
@@ -840,7 +840,7 @@ void Edit3D::paste(CopyType type)
 		// Flat
 		else if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
 		{
-			MapSector* sector = context_.map().getSector(item.index);
+			MapSector* sector = context_.map().sector(item.index);
 			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(sector));
 
 			// Floor
@@ -863,12 +863,12 @@ void Edit3D::paste(CopyType type)
 		// Thing
 		else if (item.type == ItemType::Thing)
 		{
-			MapThing* thing = context_.map().getThing(item.index);
+			MapThing* thing = context_.map().thing(item.index);
 			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(thing));
 
 			// Type
 			if (type == CopyType::TexType)
-				thing->setIntProperty("type", copy_thing_.getType());
+				thing->setIntProperty("type", copy_thing_.type());
 		}
 	}
 
@@ -923,7 +923,7 @@ void Edit3D::floodFill(CopyType type)
 		if (items[a].type == ItemType::WallTop || items[a].type == ItemType::WallMiddle
 			|| items[a].type == ItemType::WallBottom)
 		{
-			auto side = context_.map().getSide(items[a].index);
+			auto side = context_.map().side(items[a].index);
 			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(side));
 
 			// Upper wall
@@ -954,7 +954,7 @@ void Edit3D::floodFill(CopyType type)
 		// Flat
 		else if (items[a].type == ItemType::Floor || items[a].type == ItemType::Ceiling)
 		{
-			MapSector* sector = context_.map().getSector(items[a].index);
+			MapSector* sector = context_.map().sector(items[a].index);
 			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(sector));
 
 			// Floor
@@ -1000,7 +1000,7 @@ void Edit3D::changeThingZ(int amount) const
 		// Check if thing
 		if (selection_3d[a].type == ItemType::Thing)
 		{
-			MapThing* thing = context_.map().getThing(selection_3d[a].index);
+			MapThing* thing = context_.map().thing(selection_3d[a].index);
 			if (thing)
 			{
 				// Change z height
@@ -1072,7 +1072,7 @@ void Edit3D::changeScale(double amount, bool x) const
 			&& (Game::configuration().featureSupported(UDMFFeature::SideScaling)
 				|| Game::configuration().featureSupported(UDMFFeature::TextureScaling)))
 		{
-			auto side = context_.map().getSide(items[a].index);
+			auto side = context_.map().side(items[a].index);
 
 			// Build property string (offset[x/y]_[top/mid/bottom])
 			string ofs = "scalex";
@@ -1097,7 +1097,7 @@ void Edit3D::changeScale(double amount, bool x) const
 		// Flat (UDMF only)
 		else if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
 		{
-			auto sector = context_.map().getSector(items[a].index);
+			auto sector = context_.map().sector(items[a].index);
 
 			// Build property string
 			string prop = x ? "xscale" : "yscale";
@@ -1154,7 +1154,7 @@ void Edit3D::changeHeight(int amount) const
 		// Thing
 		if (type == ItemType::Thing)
 		{
-			MapThing* thing = map.getThing(items[a].index);
+			MapThing* thing = map.thing(items[a].index);
 			if (thing)
 			{
 				double z = thing->intProperty("height");
@@ -1166,7 +1166,7 @@ void Edit3D::changeHeight(int amount) const
 		// Wall
 		if (type == ItemType::WallBottom || type == ItemType::WallMiddle || type == ItemType::WallTop)
 		{
-			auto side = map.getSide(items[a].index);
+			auto side = map.side(items[a].index);
 
 			if (side)
 			{
@@ -1197,7 +1197,7 @@ void Edit3D::changeHeight(int amount) const
 		else if (type == ItemType::Floor)
 		{
 			// Get sector
-			auto sector = map.getSector(items[a].index);
+			auto sector = map.sector(items[a].index);
 
 			// Change height
 			if (sector)
@@ -1208,7 +1208,7 @@ void Edit3D::changeHeight(int amount) const
 		else if (type == ItemType::Ceiling)
 		{
 			// Get sector
-			auto sector = map.getSector(items[a].index);
+			auto sector = map.sector(items[a].index);
 
 			// Change height
 			if (sector)
@@ -1247,20 +1247,20 @@ void Edit3D::changeTexture() const
 	auto&  map   = context_.map();
 	if (first.type == MapEditor::ItemType::Floor)
 	{
-		tex  = map.getSector(first.index)->floor().texture;
+		tex  = map.sector(first.index)->floor().texture;
 		type = 1;
 	}
 	else if (first.type == MapEditor::ItemType::Ceiling)
 	{
-		tex  = map.getSector(first.index)->ceiling().texture;
+		tex  = map.sector(first.index)->ceiling().texture;
 		type = 1;
 	}
 	else if (first.type == MapEditor::ItemType::WallBottom)
-		tex = map.getSide(first.index)->stringProperty("texturebottom");
+		tex = map.side(first.index)->stringProperty("texturebottom");
 	else if (first.type == MapEditor::ItemType::WallMiddle)
-		tex = map.getSide(first.index)->stringProperty("texturemiddle");
+		tex = map.side(first.index)->stringProperty("texturemiddle");
 	else if (first.type == MapEditor::ItemType::WallTop)
-		tex = map.getSide(first.index)->stringProperty("texturetop");
+		tex = map.side(first.index)->stringProperty("texturetop");
 
 	// Open texture browser
 	tex = MapEditor::browseTexture(tex, type, map);
@@ -1281,18 +1281,18 @@ void Edit3D::changeTexture() const
 				for (unsigned a = 0; a < selection.size(); a++)
 				{
 					if (selection[a].type == MapEditor::ItemType::Floor)
-						map.getSector(selection[a].index)->setStringProperty("texturefloor", tex);
+						map.sector(selection[a].index)->setStringProperty("texturefloor", tex);
 					else if (selection[a].type == MapEditor::ItemType::Ceiling)
-						map.getSector(selection[a].index)->setStringProperty("textureceiling", tex);
+						map.sector(selection[a].index)->setStringProperty("textureceiling", tex);
 				}
 			}
 			else if (hl.index >= 0)
 			{
 				// Hilight if no selection
 				if (hl.type == MapEditor::ItemType::Floor)
-					map.getSector(hl.index)->setStringProperty("texturefloor", tex);
+					map.sector(hl.index)->setStringProperty("texturefloor", tex);
 				else if (hl.type == MapEditor::ItemType::Ceiling)
-					map.getSector(hl.index)->setStringProperty("textureceiling", tex);
+					map.sector(hl.index)->setStringProperty("textureceiling", tex);
 			}
 		}
 
@@ -1305,22 +1305,22 @@ void Edit3D::changeTexture() const
 				for (unsigned a = 0; a < selection.size(); a++)
 				{
 					if (selection[a].type == MapEditor::ItemType::WallBottom)
-						map.getSide(selection[a].index)->setStringProperty("texturebottom", tex);
+						map.side(selection[a].index)->setStringProperty("texturebottom", tex);
 					else if (selection[a].type == MapEditor::ItemType::WallMiddle)
-						map.getSide(selection[a].index)->setStringProperty("texturemiddle", tex);
+						map.side(selection[a].index)->setStringProperty("texturemiddle", tex);
 					else if (selection[a].type == MapEditor::ItemType::WallTop)
-						map.getSide(selection[a].index)->setStringProperty("texturetop", tex);
+						map.side(selection[a].index)->setStringProperty("texturetop", tex);
 				}
 			}
 			else if (hl.index >= 0)
 			{
 				// Hilight if no selection
 				if (hl.type == MapEditor::ItemType::WallBottom)
-					map.getSide(hl.index)->setStringProperty("texturebottom", tex);
+					map.side(hl.index)->setStringProperty("texturebottom", tex);
 				else if (hl.type == MapEditor::ItemType::WallMiddle)
-					map.getSide(hl.index)->setStringProperty("texturemiddle", tex);
+					map.side(hl.index)->setStringProperty("texturemiddle", tex);
 				else if (hl.type == MapEditor::ItemType::WallTop)
-					map.getSide(hl.index)->setStringProperty("texturetop", tex);
+					map.side(hl.index)->setStringProperty("texturetop", tex);
 			}
 		}
 
@@ -1360,7 +1360,7 @@ bool Edit3D::wallMatches(MapSide* side, ItemType part, string tex)
 	// Check for blank texture where it isn't needed
 	if (tex == "-")
 	{
-		auto line   = side->getParentLine();
+		auto line   = side->parentLine();
 		int  needed = line->needsTexture();
 		if (side == line->s1())
 		{
@@ -1408,12 +1408,12 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 	list.push_back(item);
 
 	// Get initial side
-	auto side = context_.map().getSide(item.index);
+	auto side = context_.map().side(item.index);
 	if (!side)
 		return;
 
 	// Get initial line
-	auto line = side->getParentLine();
+	auto line = side->parentLine();
 	if (!line)
 		return;
 
@@ -1442,15 +1442,15 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 		{
 			// Upper texture
 			if (wallMatches(side1, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallTop }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallTop }, list);
 
 			// Middle texture
 			if (wallMatches(side1, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallMiddle }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallMiddle }, list);
 
 			// Lower texture
 			if (wallMatches(side1, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallBottom }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallBottom }, list);
 		}
 
 		// Back side
@@ -1458,15 +1458,15 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 		{
 			// Upper texture
 			if (wallMatches(side2, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallTop }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallTop }, list);
 
 			// Middle texture
 			if (wallMatches(side2, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallMiddle }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallMiddle }, list);
 
 			// Lower texture
 			if (wallMatches(side2, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallBottom }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallBottom }, list);
 		}
 	}
 
@@ -1486,15 +1486,15 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 		{
 			// Upper texture
 			if (wallMatches(side1, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallTop }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallTop }, list);
 
 			// Middle texture
 			if (wallMatches(side1, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallMiddle }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallMiddle }, list);
 
 			// Lower texture
 			if (wallMatches(side1, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side1->getIndex(), ItemType::WallBottom }, list);
+				getAdjacentWalls({ (int)side1->index(), ItemType::WallBottom }, list);
 		}
 
 		// Back side
@@ -1502,15 +1502,15 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 		{
 			// Upper texture
 			if (wallMatches(side2, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallTop }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallTop }, list);
 
 			// Middle texture
 			if (wallMatches(side2, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallMiddle }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallMiddle }, list);
 
 			// Lower texture
 			if (wallMatches(side2, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side2->getIndex(), ItemType::WallBottom }, list);
+				getAdjacentWalls({ (int)side2->index(), ItemType::WallBottom }, list);
 		}
 	}
 }
@@ -1529,13 +1529,13 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 	list.push_back(item);
 
 	// Get initial sector
-	auto sector = context_.map().getSector(item.index);
+	auto sector = context_.map().sector(item.index);
 	if (!sector)
 		return;
 
 	// Go through sector lines
 	vector<MapLine*> lines;
-	sector->getLines(lines);
+	sector->putLines(lines);
 	for (auto& line : lines)
 	{
 		// Get sector on opposite side
@@ -1584,7 +1584,7 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 		bool listed = false;
 		for (auto& i : list)
 		{
-			if (i.type == item.type && i.index == osector->getIndex())
+			if (i.type == item.type && i.index == osector->index())
 			{
 				listed = true;
 				break;
@@ -1595,7 +1595,7 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 		if (!listed)
 		{
 			list.push_back(item);
-			getAdjacentFlats({ (int)osector->getIndex(), item.type }, list);
+			getAdjacentFlats({ (int)osector->index(), item.type }, list);
 		}
 	}
 }
@@ -1608,12 +1608,12 @@ void Edit3D::doAlignX(MapSide* side, int offset, string tex, vector<MapEditor::I
 	// Check if this wall has already been processed
 	for (unsigned a = 0; a < walls_done.size(); a++)
 	{
-		if (walls_done[a].index == side->getIndex())
+		if (walls_done[a].index == side->index())
 			return;
 	}
 
 	// Add to 'done' list
-	walls_done.push_back({ (int)side->getIndex(), ItemType::WallMiddle });
+	walls_done.push_back({ (int)side->index(), ItemType::WallMiddle });
 
 	// Wrap offset
 	if (tex_width > 0)
@@ -1626,13 +1626,13 @@ void Edit3D::doAlignX(MapSide* side, int offset, string tex, vector<MapEditor::I
 	side->setIntProperty("offsetx", offset);
 
 	// Get 'next' vertex
-	auto line   = side->getParentLine();
+	auto line   = side->parentLine();
 	auto vertex = line->v2();
 	if (side == line->s2())
 		vertex = line->v1();
 
 	// Get integral length of line
-	int intlen = MathStuff::round(line->getLength());
+	int intlen = MathStuff::round(line->length());
 
 	// Go through connected lines
 	for (unsigned a = 0; a < vertex->nConnectedLines(); a++)

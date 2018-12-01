@@ -13,10 +13,10 @@ public:
 	int      numPalettes() const { return (int)palettes_.size(); }
 	Palette* defaultPalette() { return &pal_default_; }
 	Palette* globalPalette();
-	Palette* getPalette(int index);
-	Palette* getPalette(string name);
-	string   getPalName(int index);
-	string   getPalName(Palette* pal);
+	Palette* palette(int index);
+	Palette* palette(string name);
+	string   palName(int index);
+	string   palName(Palette* pal);
 
 	bool loadResourcePalettes();
 	bool loadCustomPalettes();

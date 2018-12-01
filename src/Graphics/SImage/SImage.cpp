@@ -87,7 +87,7 @@ SImage::~SImage()
 // Loads the image as RGBA data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::getRGBAData(MemChunk& mc, Palette* pal)
+bool SImage::putRGBAData(MemChunk& mc, Palette* pal)
 {
 	// Check the image is valid
 	if (!isValid())
@@ -151,7 +151,7 @@ bool SImage::getRGBAData(MemChunk& mc, Palette* pal)
 // Loads the image as RGB data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::getRGBData(MemChunk& mc, Palette* pal)
+bool SImage::putRGBData(MemChunk& mc, Palette* pal)
 {
 	// Check the image is valid
 	if (!isValid())
@@ -209,7 +209,7 @@ bool SImage::getRGBData(MemChunk& mc, Palette* pal)
 // Loads the image as index data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::getIndexedData(MemChunk& mc)
+bool SImage::putIndexedData(MemChunk& mc)
 {
 	// Check the image is valid
 	if (!isValid())
@@ -240,7 +240,7 @@ bool SImage::getIndexedData(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Returns the number of bytes per image row
 // -----------------------------------------------------------------------------
-unsigned SImage::getStride()
+unsigned SImage::stride()
 {
 	if (type_ == RGBA)
 		return width_ * 4;
@@ -251,7 +251,7 @@ unsigned SImage::getStride()
 // -----------------------------------------------------------------------------
 // Returns the number of bytes per image pixel
 // -----------------------------------------------------------------------------
-uint8_t SImage::getBpp()
+uint8_t SImage::bpp()
 {
 	if (type_ == RGBA)
 		return 4;
@@ -262,36 +262,37 @@ uint8_t SImage::getBpp()
 // -----------------------------------------------------------------------------
 // Returns an info struct with image information
 // -----------------------------------------------------------------------------
-SImage::info_t SImage::getInfo()
+SImage::info_t SImage::info()
 {
-	info_t info;
+	info_t inf;
 
 	// Set values
-	info.width     = width_;
-	info.height    = height_;
-	info.colformat = type_;
+	inf.width     = width_;
+	inf.height    = height_;
+	inf.colformat = type_;
 	if (format_)
-		info.format = format_->getId();
-	info.numimages   = numimages_;
-	info.imgindex    = imgindex_;
-	info.offset_x    = offset_x_;
-	info.offset_y    = offset_y_;
-	info.has_palette = has_palette_;
+		inf.format = format_->id();
+	inf.numimages   = numimages_;
+	inf.imgindex    = imgindex_;
+	inf.offset_x    = offset_x_;
+	inf.offset_y    = offset_y_;
+	inf.has_palette = has_palette_;
 
-	return info;
+	return inf
+	;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the colour of the pixel at [x,y] in the image, or black+invisible if
 // out of range
 // -----------------------------------------------------------------------------
-rgba_t SImage::getPixel(unsigned x, unsigned y, Palette* pal)
+rgba_t SImage::pixelAt(unsigned x, unsigned y, Palette* pal)
 {
 	// Get pixel index
-	unsigned index = y * getStride() + x * getBpp();
+	unsigned index = y * stride() + x * bpp();
 
 	// Check it
-	if (index >= unsigned(width_ * height_ * getBpp()))
+	if (index >= unsigned(width_ * height_ * bpp()))
 		return rgba_t(0, 0, 0, 0);
 
 	// Get colour at pixel
@@ -328,13 +329,13 @@ rgba_t SImage::getPixel(unsigned x, unsigned y, Palette* pal)
 // Returns the palette index of the pixel at [x,y] in the image, or 0 if the
 // position is out of bounds or the image is not paletted
 // -----------------------------------------------------------------------------
-uint8_t SImage::getPixelIndex(unsigned x, unsigned y)
+uint8_t SImage::pixelIndexAt(unsigned x, unsigned y)
 {
 	// Get pixel index
-	unsigned index = y * getStride() + x * getBpp();
+	unsigned index = y * stride() + x * bpp();
 
 	// Check it
-	if (index >= unsigned(width_ * height_ * getBpp()) || type_ == RGBA)
+	if (index >= unsigned(width_ * height_ * bpp()) || type_ == RGBA)
 		return 0;
 
 	return data_[index];
@@ -624,8 +625,8 @@ bool SImage::copyImage(SImage* image)
 	// Copy image data
 	if (image->data_)
 	{
-		data_ = new uint8_t[width_ * height_ * getBpp()];
-		memcpy(data_, image->data_, width_ * height_ * getBpp());
+		data_ = new uint8_t[width_ * height_ * bpp()];
+		memcpy(data_, image->data_, width_ * height_ * bpp());
 	}
 	if (image->mask_)
 	{
@@ -669,14 +670,14 @@ bool SImage::convertRGBA(Palette* pal)
 
 	// Get 32bit data
 	MemChunk rgba_data;
-	getRGBAData(rgba_data, pal);
+	putRGBAData(rgba_data, pal);
 
 	// Clear current data
 	clearData(true);
 
 	// Copy it
 	data_ = new uint8_t[width_ * height_ * 4];
-	memcpy(data_, rgba_data.getData(), width_ * height_ * 4);
+	memcpy(data_, rgba_data.data(), width_ * height_ * 4);
 
 	// Set new type & update variables
 	type_        = RGBA;
@@ -704,7 +705,7 @@ bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 
 	// Get image data as RGBA
 	MemChunk rgba_data;
-	getRGBAData(rgba_data, pal_current);
+	putRGBAData(rgba_data, pal_current);
 
 	// Create mask from alpha info (if converting from RGBA)
 	if (type_ == RGBA || type_ == ALPHAMAP)
@@ -760,7 +761,7 @@ bool SImage::convertAlphaMap(int alpha_source, Palette* pal)
 {
 	// Get RGBA data
 	MemChunk rgba;
-	getRGBAData(rgba, pal);
+	putRGBAData(rgba, pal);
 
 	// Recreate image
 	create(width_, height_, ALPHAMAP);
@@ -1363,7 +1364,7 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 	// Handle truecolor images
 	if (type_ == RGBA)
 		truecolor = true;
-	size_t bpp = getBpp();
+	size_t bpp = this->bpp();
 
 	// Get palette to use
 	if (has_palette_ || !pal)
@@ -1461,7 +1462,7 @@ bool SImage::drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, 
 		return true;
 
 	// Get pixel index
-	unsigned p = y * getStride() + x * getBpp();
+	unsigned p = y * stride() + x * bpp();
 
 	// Check for simple case (normal blending, no transparency involved)
 	if (colour.a == 255 && properties.blend == NORMAL)
@@ -1574,8 +1575,8 @@ bool SImage::drawImage(
 		pal_dest = &palette_;
 
 	// Go through pixels
-	unsigned s_stride = img.getStride();
-	uint8_t  s_bpp    = img.getBpp();
+	unsigned s_stride = img.stride();
+	uint8_t  s_bpp    = img.bpp();
 	unsigned sp       = 0;
 	for (int y = y_pos; y < y_pos + img.height_; y++) // Rows
 	{
@@ -1645,7 +1646,7 @@ bool SImage::colourise(rgba_t colour, Palette* pal, int start, int stop)
 		pal = &palette_;
 
 	// Go through all pixels
-	uint8_t bpp = getBpp();
+	uint8_t bpp = this->bpp();
 	rgba_t  col;
 	for (int a = 0; a < width_ * height_ * bpp; a += bpp)
 	{
@@ -1696,7 +1697,7 @@ bool SImage::tint(rgba_t colour, float amount, Palette* pal, int start, int stop
 		pal = &palette_;
 
 	// Go through all pixels
-	uint8_t bpp = getBpp();
+	uint8_t bpp = this->bpp();
 	rgba_t  col;
 	for (int a = 0; a < width_ * height_ * bpp; a += bpp)
 	{

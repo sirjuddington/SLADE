@@ -63,7 +63,7 @@ ColourHashMap cc_colours;
 // -----------------------------------------------------------------------------
 // Returns the colour [name]
 // -----------------------------------------------------------------------------
-rgba_t ColourConfiguration::getColour(string name)
+rgba_t ColourConfiguration::colour(string name)
 {
 	Colour& col = cc_colours[name];
 	if (col.exists)
@@ -75,7 +75,7 @@ rgba_t ColourConfiguration::getColour(string name)
 // -----------------------------------------------------------------------------
 // Returns the colour definition [name]
 // -----------------------------------------------------------------------------
-ColourConfiguration::Colour ColourConfiguration::getColDef(string name)
+ColourConfiguration::Colour ColourConfiguration::colDef(string name)
 {
 	return cc_colours[name];
 }
@@ -102,7 +102,7 @@ void ColourConfiguration::setColour(string name, int red, int green, int blue, i
 // -----------------------------------------------------------------------------
 // Returns the line hilight width multiplier
 // -----------------------------------------------------------------------------
-double ColourConfiguration::getLineHilightWidth()
+double ColourConfiguration::lineHilightWidth()
 {
 	return line_hilight_width;
 }
@@ -110,7 +110,7 @@ double ColourConfiguration::getLineHilightWidth()
 // -----------------------------------------------------------------------------
 // Returns the line selection width multiplier
 // -----------------------------------------------------------------------------
-double ColourConfiguration::getLineSelectionWidth()
+double ColourConfiguration::lineSelectionWidth()
 {
 	return line_selection_width;
 }
@@ -118,7 +118,7 @@ double ColourConfiguration::getLineSelectionWidth()
 // -----------------------------------------------------------------------------
 // Returns the flat alpha multiplier
 // -----------------------------------------------------------------------------
-double ColourConfiguration::getFlatAlpha()
+double ColourConfiguration::flatAlpha()
 {
 	return flat_alpha;
 }
@@ -157,39 +157,39 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 	parser.parseText(mc);
 
 	// Get 'colours' block
-	auto colours = parser.parseTreeRoot()->getChildPTN("colours");
+	auto colours = parser.parseTreeRoot()->childPTN("colours");
 	if (colours)
 	{
 		// Read all colour definitions
 		for (unsigned a = 0; a < colours->nChildren(); a++)
 		{
-			auto def = colours->getChildPTN(a);
+			auto def = colours->childPTN(a);
 
 			// Read properties
 			for (unsigned b = 0; b < def->nChildren(); b++)
 			{
-				auto    prop = def->getChildPTN(b);
-				Colour& col  = cc_colours[def->getName()];
+				auto    prop = def->childPTN(b);
+				Colour& col  = cc_colours[def->name()];
 				col.exists   = true;
 
 				// Colour name
-				if (prop->getName() == "name")
+				if (prop->name() == "name")
 					col.name = prop->stringValue();
 
 				// Colour group (for config ui)
-				else if (prop->getName() == "group")
+				else if (prop->name() == "group")
 					col.group = prop->stringValue();
 
 				// Colour
-				else if (prop->getName() == "rgb")
+				else if (prop->name() == "rgb")
 					col.colour.set(prop->intValue(0), prop->intValue(1), prop->intValue(2));
 
 				// Alpha
-				else if (prop->getName() == "alpha")
+				else if (prop->name() == "alpha")
 					col.colour.a = prop->intValue();
 
 				// Additive
-				else if (prop->getName() == "additive")
+				else if (prop->name() == "additive")
 				{
 					if (prop->boolValue())
 						col.colour.blend = 1;
@@ -198,31 +198,31 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 				}
 
 				else
-					LOG_MESSAGE(1, "Warning: unknown colour definition property \"%s\"", prop->getName());
+					LOG_MESSAGE(1, "Warning: unknown colour definition property \"%s\"", prop->name());
 			}
 		}
 	}
 
 	// Get 'theme' block
-	auto theme = parser.parseTreeRoot()->getChildPTN("theme");
+	auto theme = parser.parseTreeRoot()->childPTN("theme");
 	if (theme)
 	{
 		// Read all theme definitions
 		for (unsigned a = 0; a < theme->nChildren(); a++)
 		{
-			auto prop = theme->getChildPTN(a);
+			auto prop = theme->childPTN(a);
 
-			if (prop->getName() == "line_hilight_width")
+			if (prop->name() == "line_hilight_width")
 				line_hilight_width = prop->floatValue();
 
-			else if (prop->getName() == "line_selection_width")
+			else if (prop->name() == "line_selection_width")
 				line_selection_width = prop->floatValue();
 
-			else if (prop->getName() == "flat_alpha")
+			else if (prop->name() == "flat_alpha")
 				flat_alpha = prop->floatValue();
 
 			else
-				LOG_MESSAGE(1, "Warning: unknown theme property \"%s\"", prop->getName());
+				LOG_MESSAGE(1, "Warning: unknown theme property \"%s\"", prop->name());
 		}
 	}
 
@@ -315,7 +315,7 @@ void ColourConfiguration::loadDefaults()
 	Archive*      pres             = App::archiveManager().programResourceArchive();
 	ArchiveEntry* entry_default_cc = pres->entryAtPath("config/colours/default.txt");
 	if (entry_default_cc)
-		readConfiguration(entry_default_cc->getMCData());
+		readConfiguration(entry_default_cc->data());
 }
 
 // -----------------------------------------------------------------------------
@@ -327,11 +327,11 @@ bool ColourConfiguration::readConfiguration(string name)
 
 	// Search resource pk3
 	Archive*         res = App::archiveManager().programResourceArchive();
-	ArchiveTreeNode* dir = res->getDir("config/colours");
+	ArchiveTreeNode* dir = res->dir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		if (S_CMPNOCASE(dir->entryAt(a)->getName(true), name))
-			return readConfiguration(dir->entryAt(a)->getMCData());
+		if (S_CMPNOCASE(dir->entryAt(a)->name(true), name))
+			return readConfiguration(dir->entryAt(a)->data());
 	}
 
 	return false;
@@ -340,21 +340,21 @@ bool ColourConfiguration::readConfiguration(string name)
 // -----------------------------------------------------------------------------
 // Adds all available colour configuration names to [names]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::getConfigurationNames(vector<string>& names)
+void ColourConfiguration::putConfigurationNames(vector<string>& names)
 {
 	// TODO: search custom folder
 
 	// Search resource pk3
 	Archive*         res = App::archiveManager().programResourceArchive();
-	ArchiveTreeNode* dir = res->getDir("config/colours");
+	ArchiveTreeNode* dir = res->dir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
-		names.push_back(dir->entryAt(a)->getName(true));
+		names.push_back(dir->entryAt(a)->name(true));
 }
 
 // -----------------------------------------------------------------------------
 // Adds all colour names to [list]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::getColourNames(vector<string>& list)
+void ColourConfiguration::putColourNames(vector<string>& list)
 {
 	ColourHashMap::iterator i = cc_colours.begin();
 	while (i != cc_colours.end())
@@ -378,7 +378,7 @@ CONSOLE_COMMAND(ccfg, 1, false)
 	{
 		// Get (sorted) list of colour names
 		vector<string> list;
-		ColourConfiguration::getColourNames(list);
+		ColourConfiguration::putColourNames(list);
 		sort(list.begin(), list.end());
 
 		// Dump list to console
@@ -412,7 +412,7 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		}
 
 		// Print colour
-		rgba_t col = ColourConfiguration::getColour(args[0]);
+		rgba_t col = ColourConfiguration::colour(args[0]);
 		Log::console(S_FMT("Colour \"%s\" = %d %d %d %d %d", args[0], col.r, col.g, col.b, col.a, col.blend));
 	}
 }

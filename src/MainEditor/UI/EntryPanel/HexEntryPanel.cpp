@@ -67,7 +67,7 @@ bool HexEntryPanel::loadEntry(ArchiveEntry* entry)
 		return false;
 
 	// Load entry data to hex editor
-	return hex_editor_->loadData(entry->getMCData());
+	return hex_editor_->loadData(entry->data());
 }
 
 // -----------------------------------------------------------------------------

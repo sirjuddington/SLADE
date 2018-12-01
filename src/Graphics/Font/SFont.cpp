@@ -122,7 +122,7 @@ bool SFont::loadFont2(MemChunk& mc)
 bool SFont::loadFontM(MemChunk& mc)
 {
 	// Check data
-	if (mc.getSize() == 0 || mc.getSize() % 256)
+	if (mc.size() == 0 || mc.size() % 256)
 		return false;
 
 	// Init variables
@@ -132,7 +132,7 @@ bool SFont::loadFontM(MemChunk& mc)
 
 	// Determine character size
 	unsigned charwidth  = 8;
-	unsigned charheight = mc.getSize() >> 8;
+	unsigned charheight = mc.size() >> 8;
 
 	// Setup font properties
 	line_height_ = charheight + 1;
@@ -212,11 +212,11 @@ void SFont::drawCharacter(char c, rgba_t colour)
 	// Draw it
 	frect_t tex_rect;
 	tex_rect.tl.set(
-		(double)ch->tex_bounds_.x1() / (double)texture_.getWidth(),
-		(double)ch->tex_bounds_.y1() / (double)texture_.getHeight());
+		(double)ch->tex_bounds_.x1() / (double)texture_.width(),
+		(double)ch->tex_bounds_.y1() / (double)texture_.height());
 	tex_rect.br.set(
-		(double)ch->tex_bounds_.x2() / (double)texture_.getWidth(),
-		(double)ch->tex_bounds_.y2() / (double)texture_.getHeight());
+		(double)ch->tex_bounds_.x2() / (double)texture_.width(),
+		(double)ch->tex_bounds_.y2() / (double)texture_.height());
 	glBegin(GL_QUADS);
 	glTexCoord2d(tex_rect.x1(), tex_rect.y1());
 	glVertex2d(0, 0);
@@ -277,11 +277,11 @@ void SFont::drawString(string str, rgba_t colour, SFont::Align align)
 		// Draw it
 		frect_t tex_rect;
 		tex_rect.tl.set(
-			(double)ch->tex_bounds_.x1() / (double)texture_.getWidth(),
-			(double)ch->tex_bounds_.y1() / (double)texture_.getHeight());
+			(double)ch->tex_bounds_.x1() / (double)texture_.width(),
+			(double)ch->tex_bounds_.y1() / (double)texture_.height());
 		tex_rect.br.set(
-			(double)ch->tex_bounds_.x2() / (double)texture_.getWidth(),
-			(double)ch->tex_bounds_.y2() / (double)texture_.getHeight());
+			(double)ch->tex_bounds_.x2() / (double)texture_.width(),
+			(double)ch->tex_bounds_.y2() / (double)texture_.height());
 		glBegin(GL_QUADS);
 		glTexCoord2d(tex_rect.x1(), tex_rect.y1());
 		glVertex2d(xoff, 0);
@@ -333,7 +333,7 @@ SFont& SFont::vgaFont()
 
 		// Load font
 		if (entry_vgafont)
-			font_vga_.loadFontM(entry_vgafont->getMCData());
+			font_vga_.loadFontM(entry_vgafont->data());
 	}
 
 	return font_vga_;

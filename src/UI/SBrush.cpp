@@ -64,20 +64,20 @@ SBrush::SBrush(string name)
 	if (res == nullptr)
 		return;
 	ArchiveEntry* file = res->entryAtPath(S_FMT("icons/general/%s.png", icon_));
-	if (file == nullptr || file->getSize() == 0)
+	if (file == nullptr || file->size() == 0)
 	{
 		LOG_MESSAGE(2, "error, no file at icons/general/%s.png", icon_);
 		return;
 	}
 	image_ = new SImage();
-	if (!image_->open(file->getMCData(), 0, "png"))
+	if (!image_->open(file->data(), 0, "png"))
 	{
 		LOG_MESSAGE(2, "couldn't load image data for icons/general/%s.png", icon_);
 		return;
 	}
 	image_->convertAlphaMap(SImage::ALPHA);
-	center_.x = image_->getWidth() >> 1;
-	center_.y = image_->getHeight() >> 1;
+	center_.x = image_->width() >> 1;
+	center_.y = image_->height() >> 1;
 
 	theBrushManager->add(this);
 }
@@ -95,12 +95,12 @@ SBrush::~SBrush()
 // Returns intensity of how much this pixel is affected by the brush;
 // [0, 0] is the brush's center
 // -----------------------------------------------------------------------------
-uint8_t SBrush::getPixel(int x, int y)
+uint8_t SBrush::pixel(int x, int y)
 {
 	x += center_.x;
 	y += center_.y;
-	if (image_ && x >= 0 && x < image_->getWidth() && y >= 0 && y < image_->getHeight())
-		return image_->getPixelIndex((unsigned)x, (unsigned)y);
+	if (image_ && x >= 0 && x < image_->width() && y >= 0 && y < image_->height())
+		return image_->pixelIndexAt((unsigned)x, (unsigned)y);
 	return 0;
 }
 
@@ -139,7 +139,7 @@ SBrushManager::~SBrushManager()
 SBrush* SBrushManager::get(string name)
 {
 	for (size_t i = 0; i < brushes_.size(); ++i)
-		if (S_CMPNOCASE(name, brushes_[i]->getName()))
+		if (S_CMPNOCASE(name, brushes_[i]->name()))
 			return brushes_[i];
 
 	return nullptr;

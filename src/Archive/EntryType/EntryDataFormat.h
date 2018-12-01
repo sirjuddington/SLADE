@@ -12,14 +12,14 @@ public:
 	EntryDataFormat(string id);
 	virtual ~EntryDataFormat();
 
-	const string& getId() const { return id_; }
+	const string& id() const { return id_; }
 
 	virtual int isThisFormat(MemChunk& mc);
 	void        copyToFormat(EntryDataFormat& target);
 
 	static void             initBuiltinFormats();
 	static bool             readDataFormatDefinition(MemChunk& mc);
-	static EntryDataFormat* getFormat(string id);
+	static EntryDataFormat* format(string id);
 	static EntryDataFormat* anyFormat();
 	static EntryDataFormat* textFormat();
 

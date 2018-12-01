@@ -166,11 +166,11 @@ class EntryDataUS : public UndoStep
 {
 public:
 	EntryDataUS(ArchiveEntry* entry) :
-		path_{ entry->getPath() },
-		index_{ (unsigned)entry->getParentDir()->entryIndex(entry) },
-		archive_{ entry->getParent() }
+		path_{ entry->path() },
+		index_{ (unsigned)entry->parentDir()->entryIndex(entry) },
+		archive_{ entry->parent() }
 	{
-		data_.importMem(entry->getData(), entry->getSize());
+		data_.importMem(entry->rawData(), entry->size());
 	}
 
 	bool swapData();

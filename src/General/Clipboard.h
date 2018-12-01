@@ -20,7 +20,7 @@ public:
 	ClipboardItem(int type = CLIPBOARD_UNKNOWN);
 	~ClipboardItem();
 
-	int getType() { return type_; }
+	int type() { return type_; }
 
 private:
 	int type_;
@@ -32,7 +32,7 @@ public:
 	EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, vector<ArchiveTreeNode*>& dirs);
 	~EntryTreeClipboardItem();
 
-	ArchiveTreeNode* getTree() { return tree_; }
+	ArchiveTreeNode* tree() { return tree_; }
 
 private:
 	ArchiveTreeNode* tree_;
@@ -45,8 +45,8 @@ public:
 	TextureClipboardItem(CTexture* texture, Archive* parent);
 	~TextureClipboardItem();
 
-	CTexture*     getTexture() { return texture_; }
-	ArchiveEntry* getPatchEntry(string patch);
+	CTexture*     texture() { return texture_; }
+	ArchiveEntry* patchEntry(string patch);
 
 private:
 	CTexture*             texture_;
@@ -65,10 +65,10 @@ public:
 	~MapArchClipboardItem();
 
 	void               addLines(vector<MapLine*> lines);
-	string             getInfo();
+	string             info();
 	vector<MapVertex*> pasteToMap(SLADEMap* map, fpoint2_t position);
-	void               getLines(vector<MapLine*>& list);
-	fpoint2_t          getMidpoint() { return midpoint_; }
+	void               putLines(vector<MapLine*>& list);
+	fpoint2_t          midpoint() { return midpoint_; }
 
 private:
 	vector<MapVertex*> vertices_;
@@ -86,10 +86,10 @@ public:
 	~MapThingsClipboardItem();
 
 	void      addThings(vector<MapThing*>& things);
-	string    getInfo();
+	string    info();
 	void      pasteToMap(SLADEMap* map, fpoint2_t position);
-	void      getThings(vector<MapThing*>& list);
-	fpoint2_t getMidpoint() { return midpoint_; }
+	void      putThings(vector<MapThing*>& list);
+	fpoint2_t midpoint() { return midpoint_; }
 
 private:
 	vector<MapThing*> things_;
@@ -105,14 +105,14 @@ public:
 	// Singleton implementation
 	static Clipboard* getInstance()
 	{
-		if (!instance)
-			instance = new Clipboard();
+		if (!instance_)
+			instance_ = new Clipboard();
 
-		return instance;
+		return instance_;
 	}
 
 	uint32_t       nItems() { return items_.size(); }
-	ClipboardItem* getItem(uint32_t index);
+	ClipboardItem* item(uint32_t index);
 	bool           addItem(ClipboardItem* item);
 	bool           addItems(vector<ClipboardItem*>& items);
 
@@ -120,7 +120,7 @@ public:
 
 private:
 	vector<ClipboardItem*> items_;
-	static Clipboard*      instance;
+	static Clipboard*      instance_;
 };
 
 // Define for less cumbersome ClipBoard::getInstance()

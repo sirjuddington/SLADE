@@ -223,7 +223,7 @@ bool RffArchive::open(MemChunk& mc)
 
 		// If the lump data goes past the end of the file,
 		// the rfffile is invalid
-		if (offset + size > mc.getSize())
+		if (offset + size > mc.size())
 		{
 			LOG_MESSAGE(1, "RffArchive::open: rff archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
@@ -255,22 +255,22 @@ bool RffArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = getEntry(a);
+		ArchiveEntry* entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 
 			// If the entry is encrypted, decrypt it
 			if (entry->isEncrypted())
 			{
-				uint8_t* cdata = new uint8_t[entry->getSize()];
-				memcpy(cdata, edata.getData(), entry->getSize());
-				int cryptlen = entry->getSize() < 256 ? entry->getSize() : 256;
+				uint8_t* cdata = new uint8_t[entry->size()];
+				memcpy(cdata, edata.data(), entry->size());
+				int cryptlen = entry->size() < 256 ? entry->size() : 256;
 				BloodCrypt(cdata, 0, cryptlen);
-				edata.importMem(cdata, entry->getSize());
+				edata.importMem(cdata, entry->size());
 				delete[] cdata;
 			}
 
@@ -321,7 +321,7 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -339,7 +339,7 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to lump offset in file and read it in
 	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -367,7 +367,7 @@ ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 		entry = new ArchiveEntry(*entry);
 
 	// Process name (must be 12 characters max)
-	string name = entry->getName().Truncate(12);
+	string name = entry->name().Truncate(12);
 	if (wad_force_uppercase)
 		name.MakeUpper();
 
@@ -413,7 +413,7 @@ bool RffArchive::renameEntry(ArchiveEntry* entry, string name)
 bool RffArchive::isRffArchive(MemChunk& mc)
 {
 	// Check size
-	if (mc.getSize() < 12)
+	if (mc.size() < 12)
 		return false;
 
 	// Read grp header
@@ -450,7 +450,7 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 	}
 
 	// Check if total size is correct
-	if (totalsize > mc.getSize())
+	if (totalsize > mc.size())
 		return false;
 
 	// If it's passed to here it's probably a grp file

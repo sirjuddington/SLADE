@@ -91,7 +91,7 @@ bool LibArchive::open(MemChunk& mc)
 	uint32_t num_lumps = 0;
 	mc.read(&num_lumps, 2); // Size
 	num_lumps           = wxINT16_SWAP_ON_BE(num_lumps);
-	uint32_t dir_offset = mc.getSize() - (2 + (num_lumps * 21));
+	uint32_t dir_offset = mc.size() - (2 + (num_lumps * 21));
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
@@ -148,13 +148,13 @@ bool LibArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = getEntry(a);
+		ArchiveEntry* entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -195,9 +195,9 @@ bool LibArchive::write(MemChunk& mc, bool update)
 	ArchiveEntry* entry      = nullptr;
 	for (uint16_t l = 0; l < num_files; l++)
 	{
-		entry = getEntry(l);
+		entry = entryAt(l);
 		setEntryOffset(entry, dir_offset);
-		dir_offset += entry->getSize();
+		dir_offset += entry->size();
 	}
 
 	// Clear/init MemChunk
@@ -208,20 +208,20 @@ bool LibArchive::write(MemChunk& mc, bool update)
 	// Write the files
 	for (uint16_t l = 0; l < num_files; l++)
 	{
-		entry = getEntry(l);
-		mc.write(entry->getData(), entry->getSize());
+		entry = entryAt(l);
+		mc.write(entry->rawData(), entry->size());
 	}
 
 	// Write the directory
 	for (uint16_t l = 0; l < num_files; l++)
 	{
-		entry         = getEntry(l);
+		entry         = entryAt(l);
 		char name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		long offset   = wxINT32_SWAP_ON_BE(getEntryOffset(entry));
-		long size     = wxINT32_SWAP_ON_BE(entry->getSize());
+		long size     = wxINT32_SWAP_ON_BE(entry->size());
 
-		for (size_t c = 0; c < entry->getName().length() && c < 12; c++)
-			name[c] = entry->getName()[c];
+		for (size_t c = 0; c < entry->name().length() && c < 12; c++)
+			name[c] = entry->name()[c];
 
 		mc.write(&size, 4);   // Size
 		mc.write(&offset, 4); // Offset
@@ -254,7 +254,7 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -272,7 +272,7 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to lump offset in file and read it in
 	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -299,7 +299,7 @@ ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 		entry = new ArchiveEntry(*entry);
 
 	// Process name (must be 12 characters max)
-	string name = entry->getName().Truncate(12);
+	string name = entry->name().Truncate(12);
 
 	// Set new wad-friendly name
 	entry->setName(name);
@@ -340,7 +340,7 @@ bool LibArchive::renameEntry(ArchiveEntry* entry, string name)
 // -----------------------------------------------------------------------------
 bool LibArchive::isLibArchive(MemChunk& mc)
 {
-	if (mc.getSize() < 64)
+	if (mc.size() < 64)
 		return false;
 
 	// Read lib footer
@@ -348,7 +348,7 @@ bool LibArchive::isLibArchive(MemChunk& mc)
 	uint32_t num_lumps = 0;
 	mc.read(&num_lumps, 2); // Size
 	num_lumps          = wxINT16_SWAP_ON_BE(num_lumps);
-	int32_t dir_offset = mc.getSize() - (2 + (num_lumps * 21));
+	int32_t dir_offset = mc.size() - (2 + (num_lumps * 21));
 
 	// Check directory offset is valid
 	if (dir_offset < 0)
@@ -370,7 +370,7 @@ bool LibArchive::isLibArchive(MemChunk& mc)
 
 	// If the lump data goes past the directory,
 	// the library is invalid
-	if (dummy != 0 || offset != 0 || offset + size > mc.getSize())
+	if (dummy != 0 || offset != 0 || offset + size > mc.size())
 	{
 		return false;
 	}

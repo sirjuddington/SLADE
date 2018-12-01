@@ -20,6 +20,7 @@ class Archive;
 class ArchiveEntry;
 class Palette;
 class Tokenizer;
+
 namespace Misc
 {
 bool     loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index = 0);

@@ -804,7 +804,7 @@ void ArgsPanel::setValues(int args[5])
 // -----------------------------------------------------------------------------
 // Returns the current value for arg [index]
 // -----------------------------------------------------------------------------
-int ArgsPanel::getArgValue(int index)
+int ArgsPanel::argValue(int index)
 {
 	// Check index
 	if (index < 0 || index > 4 || !control_args_[index])
@@ -900,7 +900,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 	text_special_ = new NumberTextCtrl(panel_action_special_);
 	sizer->Add(text_special_, 0, wxEXPAND | wxBOTTOM, UI::pad());
 	text_special_->Bind(
-		wxEVT_TEXT, [&](wxCommandEvent& e) { tree_specials_->showSpecial(text_special_->getNumber(), false); });
+		wxEVT_TEXT, [&](wxCommandEvent& e) { tree_specials_->showSpecial(text_special_->number(), false); });
 
 	// Action specials tree
 	tree_specials_ = new ActionSpecialTreeView(panel_action_special_);
@@ -1087,7 +1087,7 @@ int ActionSpecialPanel::selectedSpecial()
 		if (rb_special_->GetValue())
 			return tree_specials_->selectedSpecial();
 		else
-			return panel_gen_specials_->getSpecial();
+			return panel_gen_specials_->special();
 	}
 	else
 		return tree_specials_->selectedSpecial();
@@ -1139,11 +1139,11 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 	{
 		// Get values
 		int args[5];
-		args[0] = panel_args_->getArgValue(0);
-		args[1] = panel_args_->getArgValue(1);
-		args[2] = panel_args_->getArgValue(2);
-		args[3] = panel_args_->getArgValue(3);
-		args[4] = panel_args_->getArgValue(4);
+		args[0] = panel_args_->argValue(0);
+		args[1] = panel_args_->argValue(1);
+		args[2] = panel_args_->argValue(2);
+		args[3] = panel_args_->argValue(3);
+		args[4] = panel_args_->argValue(4);
 
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
@@ -1435,10 +1435,10 @@ int ActionSpecialDialog::selectedSpecial()
 // -----------------------------------------------------------------------------
 // Returns the value of arg [index]
 // -----------------------------------------------------------------------------
-int ActionSpecialDialog::getArg(int index)
+int ActionSpecialDialog::argValue(int index)
 {
 	if (panel_args_)
-		return panel_args_->getArgValue(index);
+		return panel_args_->argValue(index);
 	else
 		return 0;
 }

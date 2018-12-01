@@ -80,9 +80,9 @@ void SectorInfoOverlay::update(MapSector* sector)
 	int    t    = sector->intProperty("special");
 	string type = S_FMT("%s (Type %d)", Game::configuration().sectorTypeName(t), t);
 	if (Global::debug)
-		info_text += S_FMT("Sector #%d (%d): %s\n", sector->getIndex(), sector->getId(), type);
+		info_text += S_FMT("Sector #%d (%d): %s\n", sector->index(), sector->objId(), type);
 	else
-		info_text += S_FMT("Sector #%d: %s\n", sector->getIndex(), type);
+		info_text += S_FMT("Sector #%d: %s\n", sector->index(), type);
 
 	// Height
 	int fh = sector->intProperty("heightfloor");
@@ -124,15 +124,15 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 		last_size_ = right;
 		text_box_->setSize(right - 88 - 92);
 	}
-	int height = text_box_->getHeight() + 4;
+	int height = text_box_->height() + 4;
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;
 	bottom += height * alpha_inv * alpha_inv;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::colour("map_overlay_background");
+	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 	col_bg.a      = col_bg.a * alpha;
 	rgba_t col_border(0, 0, 0, 140);
@@ -167,12 +167,12 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	int    line_height  = 16 * scale;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::colour("map_overlay_background");
+	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 
 	// Get texture
-	GLTexture* tex = MapEditor::textureManager().getFlat(
+	GLTexture* tex = MapEditor::textureManager().flat(
 		texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 
 	// Valid texture
@@ -202,7 +202,7 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	else if (tex == &(GLTexture::missingTex()))
 	{
 		// Draw unknown icon
-		GLTexture* icon = MapEditor::textureManager().getEditorImage("thing/unknown");
+		GLTexture* icon = MapEditor::textureManager().editorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);

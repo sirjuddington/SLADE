@@ -15,20 +15,20 @@ public:
 	void   SetValue(int row, int col, const string& value) override;
 
 	bool     loadData(MemChunk& mc);
-	uint32_t getOffset(int row, int col);
+	uint32_t offset(int row, int col);
 	void     setViewType(int type) { view_type_ = type; }
 
 	// Get values
-	uint8_t  getUByteValue(uint32_t offset);
-	uint16_t getUShortValue(uint32_t offset);
-	uint32_t getUInt32Value(uint32_t offset);
-	uint64_t getUInt64Value(uint32_t offset);
-	int8_t   getByteValue(uint32_t offset);
-	int16_t  getShortValue(uint32_t offset);
-	int32_t  getInt32Value(uint32_t offset);
-	int64_t  getInt64Value(uint32_t offset);
-	float    getFloatValue(uint32_t offset);
-	double   getDoubleValue(uint32_t offset);
+	uint8_t  uByteValue(uint32_t offset);
+	uint16_t uShortValue(uint32_t offset);
+	uint32_t uInt32Value(uint32_t offset);
+	uint64_t uInt64Value(uint32_t offset);
+	int8_t   byteValue(uint32_t offset);
+	int16_t  shortValue(uint32_t offset);
+	int32_t  int32Value(uint32_t offset);
+	int64_t  int64Value(uint32_t offset);
+	float    floatValue(uint32_t offset);
+	double   doubleValue(uint32_t offset);
 
 private:
 	MemChunk data_;

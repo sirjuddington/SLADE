@@ -30,7 +30,7 @@ public:
 	~ThingTypeBrowser() {}
 
 	void setupViewOptions();
-	int  getSelectedType();
+	int  selectedType();
 
 private:
 	wxCheckBox* cb_view_tiles_;

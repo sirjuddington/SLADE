@@ -99,7 +99,7 @@ MapSector::~MapSector() {}
 void MapSector::copy(MapObject* s)
 {
 	// Don't copy a non-sector
-	if (s->getObjType() != Type::Sector)
+	if (s->objType() != Type::Sector)
 		return;
 
 	setModified();
@@ -335,7 +335,7 @@ void MapSector::updateBBox()
 
 	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
-		MapLine* line = connected_sides_[a]->getParentLine();
+		MapLine* line = connected_sides_[a]->parentLine();
 		if (!line)
 			continue;
 		bbox_.extend(line->v1()->xPos(), line->v1()->yPos());
@@ -361,7 +361,7 @@ bbox_t MapSector::boundingBox()
 // -----------------------------------------------------------------------------
 // Returns the sector polygon, updating it if necessary
 // -----------------------------------------------------------------------------
-Polygon2D* MapSector::getPolygon()
+Polygon2D* MapSector::polygon()
 {
 	if (poly_needsupdate_)
 	{
@@ -395,12 +395,12 @@ bool MapSector::isWithin(fpoint2_t point)
 		//	LOG_MESSAGE(3, "Warning: connected side #%i has a NULL pointer parent line!",
 		// connected_sides[a]->getIndex()); 	continue;
 		//}
-		dist = connected_sides_[a]->getParentLine()->distanceTo(point);
+		dist = connected_sides_[a]->parentLine()->distanceTo(point);
 
 		// Check distance
 		if (dist < min_dist)
 		{
-			nline    = connected_sides_[a]->getParentLine();
+			nline    = connected_sides_[a]->parentLine();
 			min_dist = dist;
 		}
 	}
@@ -452,7 +452,7 @@ double MapSector::distanceTo(fpoint2_t point, double maxdist)
 	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
 		// Get side parent line
-		MapLine* line = connected_sides_[a]->getParentLine();
+		MapLine* line = connected_sides_[a]->parentLine();
 		if (!line)
 			continue;
 
@@ -468,14 +468,14 @@ double MapSector::distanceTo(fpoint2_t point, double maxdist)
 // -----------------------------------------------------------------------------
 // Adds all lines that are part of the sector to [list]
 // -----------------------------------------------------------------------------
-bool MapSector::getLines(vector<MapLine*>& list)
+bool MapSector::putLines(vector<MapLine*>& list)
 {
 	// Go through connected sides
 	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
 		// Add the side's parent line to the list if it doesn't already exist
-		if (std::find(list.begin(), list.end(), connected_sides_[a]->getParentLine()) == list.end())
-			list.push_back(connected_sides_[a]->getParentLine());
+		if (std::find(list.begin(), list.end(), connected_sides_[a]->parentLine()) == list.end())
+			list.push_back(connected_sides_[a]->parentLine());
 	}
 
 	return true;
@@ -484,13 +484,13 @@ bool MapSector::getLines(vector<MapLine*>& list)
 // -----------------------------------------------------------------------------
 // Adds all vertices that are part of the sector to [list]
 // -----------------------------------------------------------------------------
-bool MapSector::getVertices(vector<MapVertex*>& list)
+bool MapSector::putVertices(vector<MapVertex*>& list)
 {
 	// Go through connected sides
 	MapLine* line;
 	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
-		line = connected_sides_[a]->getParentLine();
+		line = connected_sides_[a]->parentLine();
 
 		// Add the side's parent line's vertices to the list if they doesn't already exist
 		if (line->v1() && std::find(list.begin(), list.end(), line->v1()) == list.end())
@@ -505,13 +505,13 @@ bool MapSector::getVertices(vector<MapVertex*>& list)
 // -----------------------------------------------------------------------------
 // Adds all vertices that are part of the sector to [list]
 // -----------------------------------------------------------------------------
-bool MapSector::getVertices(vector<MapObject*>& list)
+bool MapSector::putVertices(vector<MapObject*>& list)
 {
 	// Go through connected sides
 	MapLine* line;
 	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
-		line = connected_sides_[a]->getParentLine();
+		line = connected_sides_[a]->parentLine();
 
 		// Add the side's parent line's vertices to the list if they doesn't already exist
 		if (line->v1() && std::find(list.begin(), list.end(), line->v1()) == list.end())
@@ -526,7 +526,7 @@ bool MapSector::getVertices(vector<MapObject*>& list)
 // -----------------------------------------------------------------------------
 // Returns the light level of the sector at [where] - 1 = floor, 2 = ceiling
 // -----------------------------------------------------------------------------
-uint8_t MapSector::getLight(int where)
+uint8_t MapSector::lightAt(int where)
 {
 	// Check for UDMF + flat lighting
 	if (parent_map_->currentFormat() == MAP_UDMF
@@ -582,7 +582,7 @@ uint8_t MapSector::getLight(int where)
 void MapSector::changeLight(int amount, int where)
 {
 	// Get current light level
-	int ll = getLight(where);
+	int ll = lightAt(where);
 
 	// Clamp amount
 	if (ll + amount > 255)
@@ -616,7 +616,7 @@ void MapSector::changeLight(int amount, int where)
 // Returns the colour of the sector at [where] - 1 = floor, 2 = ceiling.
 // If [fullbright] is true, light level is ignored
 // -----------------------------------------------------------------------------
-rgba_t MapSector::getColour(int where, bool fullbright)
+rgba_t MapSector::colourAt(int where, bool fullbright)
 {
 	using Game::UDMFFeature;
 
@@ -625,7 +625,7 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 	if (parent_map_->mapSpecials()->tagColoursSet())
 	{
 		rgba_t col;
-		if (parent_map_->mapSpecials()->getTagColour(id_, &col))
+		if (parent_map_->mapSpecials()->tagColour(id_, &col))
 		{
 			if (fullbright)
 				return col;
@@ -722,14 +722,14 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 // -----------------------------------------------------------------------------
 // Returns the fog colour of the sector
 // -----------------------------------------------------------------------------
-rgba_t MapSector::getFogColour()
+rgba_t MapSector::fogColour()
 {
 	rgba_t color(0, 0, 0, 0);
 
 	// map specials/scripts
 	if (parent_map_->mapSpecials()->tagFadeColoursSet())
 	{
-		if (parent_map_->mapSpecials()->getTagFadeColour(id_, &color))
+		if (parent_map_->mapSpecials()->tagFadeColour(id_, &color))
 			return color;
 	}
 
@@ -801,15 +801,15 @@ void MapSector::readBackup(Backup* backup)
 	parent_map_->updateFlatUsage(floor_.texture, -1);
 	parent_map_->updateFlatUsage(ceiling_.texture, -1);
 
-	floor_.texture   = backup->props_internal["texturefloor"].getStringValue();
-	ceiling_.texture = backup->props_internal["textureceiling"].getStringValue();
-	floor_.height    = backup->props_internal["heightfloor"].getIntValue();
-	ceiling_.height  = backup->props_internal["heightceiling"].getIntValue();
+	floor_.texture   = backup->props_internal["texturefloor"].stringValue();
+	ceiling_.texture = backup->props_internal["textureceiling"].stringValue();
+	floor_.height    = backup->props_internal["heightfloor"].intValue();
+	ceiling_.height  = backup->props_internal["heightceiling"].intValue();
 	floor_.plane.set(0, 0, 1, floor_.height);
 	ceiling_.plane.set(0, 0, 1, ceiling_.height);
-	light_   = backup->props_internal["lightlevel"].getIntValue();
-	special_ = backup->props_internal["special"].getIntValue();
-	id_      = backup->props_internal["id"].getIntValue();
+	light_   = backup->props_internal["lightlevel"].intValue();
+	special_ = backup->props_internal["special"].intValue();
+	id_      = backup->props_internal["id"].intValue();
 
 	// Update texture counts (increment new)
 	parent_map_->updateFlatUsage(floor_.texture, 1);

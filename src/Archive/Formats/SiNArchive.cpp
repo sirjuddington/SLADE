@@ -67,7 +67,7 @@ SiNArchive::~SiNArchive() {}
 bool SiNArchive::open(MemChunk& mc)
 {
 	// Check given data is valid
-	if (mc.getSize() < 12)
+	if (mc.size() < 12)
 		return false;
 
 	// Read pak header
@@ -112,7 +112,7 @@ bool SiNArchive::open(MemChunk& mc)
 		size   = wxINT32_SWAP_ON_BE(size);
 
 		// Check offset+size
-		if ((unsigned)(offset + size) > mc.getSize())
+		if ((unsigned)(offset + size) > mc.size())
 		{
 			LOG_MESSAGE(1, "SiNArchive::open: SiN archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
@@ -139,7 +139,7 @@ bool SiNArchive::open(MemChunk& mc)
 	// Detect all entry types
 	MemChunk              edata;
 	vector<ArchiveEntry*> all_entries;
-	getEntryTreeAsList(all_entries);
+	putEntryTreeAsList(all_entries);
 	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
@@ -150,10 +150,10 @@ bool SiNArchive::open(MemChunk& mc)
 		ArchiveEntry* entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->getSize());
+			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -189,7 +189,7 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 
 	// Get archive tree as a list
 	vector<ArchiveEntry*> entries;
-	getEntryTreeAsList(entries);
+	putEntryTreeAsList(entries);
 
 	// Process entry list
 	int32_t dir_offset = 12;
@@ -197,11 +197,11 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Ignore folder entries
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			continue;
 
 		// Increment directory offset and size
-		dir_offset += entries[a]->getSize();
+		dir_offset += entries[a]->size();
 		dir_size += 128;
 	}
 
@@ -221,7 +221,7 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Skip folders
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			continue;
 
 		// Update entry
@@ -232,7 +232,7 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		string name = entries[a]->getPath(true);
+		string name = entries[a]->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 120)
 		{
@@ -254,7 +254,7 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 		mc.write(&offset, 4);
 
 		// Write entry size
-		int32_t size = entries[a]->getSize();
+		int32_t size = entries[a]->size();
 		mc.write(&size, 4);
 
 		// Increment/update offset
@@ -266,11 +266,11 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Skip folders
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			continue;
 
 		// Write data
-		mc.write(entries[a]->getData(), entries[a]->getSize());
+		mc.write(entries[a]->rawData(), entries[a]->size());
 	}
 
 	return true;
@@ -288,7 +288,7 @@ bool SiNArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -306,7 +306,7 @@ bool SiNArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to entry offset in file and read it in
 	file.Seek((int)entry->exProp("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -328,7 +328,7 @@ bool SiNArchive::loadEntryData(ArchiveEntry* entry)
 bool SiNArchive::isSiNArchive(MemChunk& mc)
 {
 	// Check given data is valid
-	if (mc.getSize() < 12)
+	if (mc.size() < 12)
 		return false;
 
 	// Read pak header
@@ -349,7 +349,7 @@ bool SiNArchive::isSiNArchive(MemChunk& mc)
 		return false;
 
 	// Check directory is sane
-	if (dir_offset < 12 || (unsigned)(dir_offset + dir_size) > mc.getSize())
+	if (dir_offset < 12 || (unsigned)(dir_offset + dir_size) > mc.size())
 		return false;
 
 	// That'll do

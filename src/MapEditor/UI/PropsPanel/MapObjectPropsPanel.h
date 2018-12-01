@@ -16,7 +16,7 @@ public:
 	MapObjectPropsPanel(wxWindow* parent, bool no_apply = false);
 	~MapObjectPropsPanel() {}
 
-	vector<MapObject*>& getObjects() { return objects_; }
+	vector<MapObject*>& objects() { return objects_; }
 	bool                showAll();
 
 	void openObject(MapObject* object);

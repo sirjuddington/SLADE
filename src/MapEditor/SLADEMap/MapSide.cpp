@@ -81,7 +81,7 @@ MapSide::~MapSide() {}
 // -----------------------------------------------------------------------------
 void MapSide::copy(MapObject* c)
 {
-	if (c->getObjType() != Type::Side)
+	if (c->objType() != Type::Side)
 		return;
 
 	// Update texture counts (decrement previous)
@@ -114,7 +114,7 @@ void MapSide::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 // Returns the light level of the given side
 // -----------------------------------------------------------------------------
-uint8_t MapSide::getLight()
+uint8_t MapSide::light()
 {
 	int  light          = 0;
 	bool include_sector = true;
@@ -128,7 +128,7 @@ uint8_t MapSide::getLight()
 	}
 
 	if (include_sector && sector_)
-		light += sector_->getLight(0);
+		light += sector_->lightAt(0);
 
 	// Clamp range
 	if (light > 255)
@@ -176,7 +176,7 @@ int MapSide::intProperty(const string& key)
 	if (key == "sector")
 	{
 		if (sector_)
-			return sector_->getIndex();
+			return sector_->index();
 		else
 			return -1;
 	}
@@ -197,7 +197,7 @@ void MapSide::setIntProperty(const string& key, int value)
 	setModified();
 
 	if (key == "sector" && parent_map_)
-		setSector(parent_map_->getSector(value));
+		setSector(parent_map_->sector(value));
 	else if (key == "offsetx")
 		offset_x_ = value;
 	else if (key == "offsety")
@@ -275,7 +275,7 @@ void MapSide::writeBackup(Backup* backup)
 {
 	// Sector
 	if (sector_)
-		backup->props_internal["sector"] = sector_->getId();
+		backup->props_internal["sector"] = sector_->objId();
 	else
 		backup->props_internal["sector"] = 0;
 
@@ -318,9 +318,9 @@ void MapSide::readBackup(Backup* backup)
 	parent_map_->updateTexUsage(tex_lower_, -1);
 
 	// Textures
-	tex_upper_  = backup->props_internal["texturetop"].getStringValue();
-	tex_middle_ = backup->props_internal["texturemiddle"].getStringValue();
-	tex_lower_  = backup->props_internal["texturebottom"].getStringValue();
+	tex_upper_  = backup->props_internal["texturetop"].stringValue();
+	tex_middle_ = backup->props_internal["texturemiddle"].stringValue();
+	tex_lower_  = backup->props_internal["texturebottom"].stringValue();
 
 	// Update texture counts (increment new)
 	parent_map_->updateTexUsage(tex_upper_, 1);
@@ -328,6 +328,6 @@ void MapSide::readBackup(Backup* backup)
 	parent_map_->updateTexUsage(tex_lower_, 1);
 
 	// Offsets
-	offset_x_ = backup->props_internal["offsetx"].getIntValue();
-	offset_y_ = backup->props_internal["offsety"].getIntValue();
+	offset_x_ = backup->props_internal["offsetx"].intValue();
+	offset_y_ = backup->props_internal["offsety"].intValue();
 }

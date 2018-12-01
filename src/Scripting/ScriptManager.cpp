@@ -70,14 +70,14 @@ Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, con
 {
 	auto s  = std::make_unique<Script>();
 	s->type = type;
-	s->name = entry->getName(true);
-	s->path = entry->getPath();
+	s->name = entry->name(true);
+	s->path = entry->path();
 	s->path.Replace(cut_path, "");
 	s->source = entry;
 
 	auto& list = scripts_editor[type];
 	list.push_back(std::move(s));
-	list.back()->text = wxString::FromAscii((const char*)entry->getData(), entry->getSize());
+	list.back()->text = wxString::FromAscii((const char*)entry->rawData(), entry->size());
 
 	return list.back().get();
 }
@@ -110,7 +110,7 @@ Script* addEditorScriptFromFile(const string& filename, ScriptType type)
 void loadGeneralScripts()
 {
 	// Get 'scripts/general' dir of slade.pk3
-	auto scripts_dir = App::archiveManager().programResourceArchive()->getDir("scripts/general");
+	auto scripts_dir = App::archiveManager().programResourceArchive()->dir("scripts/general");
 	if (scripts_dir)
 		for (auto& entry : scripts_dir->allEntries())
 		{
@@ -152,12 +152,12 @@ void loadCustomScripts()
 void loadEditorScripts(ScriptType type, const string& dir)
 {
 	// Get 'scripts/(dir)' dir of slade.pk3
-	auto scripts_dir = App::archiveManager().programResourceArchive()->getDir(S_FMT("scripts/%s", CHR(dir)));
+	auto scripts_dir = App::archiveManager().programResourceArchive()->dir(S_FMT("scripts/%s", CHR(dir)));
 	if (scripts_dir)
 	{
 		for (auto& entry : scripts_dir->allEntries())
 		{
-			if (!entry->getName().StartsWith("_"))
+			if (!entry->name().StartsWith("_"))
 			{
 				auto script       = addEditorScriptFromEntry(entry, type, S_FMT("/scripts/%s/", CHR(dir)));
 				script->read_only = true;
@@ -233,7 +233,7 @@ void readResourceEntryText(string& target, const string& res_path)
 {
 	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path);
 	if (entry)
-		target = wxString::FromAscii(entry->getData(), entry->getSize());
+		target = wxString::FromAscii(entry->rawData(), entry->size());
 }
 
 // -----------------------------------------------------------------------------
@@ -376,7 +376,7 @@ void ScriptManager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, cons
 {
 	int index = 0;
 	for (auto& script : scripts_editor[type])
-		menu->Append(SAction::fromId(action_id)->getWxId() + index++, script->name);
+		menu->Append(SAction::fromId(action_id)->wxId() + index++, script->name);
 }
 
 // -----------------------------------------------------------------------------

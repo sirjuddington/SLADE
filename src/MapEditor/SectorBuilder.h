@@ -29,9 +29,9 @@ public:
 	SectorBuilder();
 	~SectorBuilder();
 
-	string   getError() { return error_; }
+	string   error() { return error_; }
 	unsigned nEdges() { return sector_edges_.size(); }
-	MapLine* getEdgeLine(unsigned index);
+	MapLine* edgeLine(unsigned index);
 	bool     edgeIsFront(unsigned index);
 	bool     edgeSideCreated(unsigned index);
 

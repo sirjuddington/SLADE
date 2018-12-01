@@ -13,13 +13,13 @@ public:
 	bool isThisFormat(MemChunk& mc)
 	{
 		// Can only go by image size
-		if (mc.getSize() == 153648)
+		if (mc.size() == 153648)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -39,10 +39,10 @@ public:
 		if (!gfx_extraconv)
 			return NOTWRITABLE;
 		// Can write paletted images of size 640x480
-		if (image.getWidth() == 640 && image.getHeight() == 480 && image.getType() == PALMASK)
+		if (image.width() == 640 && image.height() == 480 && image.type() == PALMASK)
 			return WRITABLE;
 		// Otherwise it's possible to convert the image as long as it's at least 640x480
-		else if (image.getWidth() >= 640 && image.getHeight() >= 480)
+		else if (image.width() >= 640 && image.height() >= 480)
 			return CONVERTIBLE;
 		// If it wouldn't work, it wouldn't work
 		return NOTWRITABLE;
@@ -63,7 +63,7 @@ public:
 		image.convertPaletted(opt.pal_target, opt.pal_current);
 
 		// Now crop the image if it's too large
-		if (image.getWidth() > 640 || image.getHeight() > 480)
+		if (image.width() > 640 || image.height() > 480)
 			image.crop(0, 0, 640, 480);
 
 		return true;
@@ -114,7 +114,7 @@ protected:
 		const uint8_t *src1, *src2, *src3, *src4;
 		size_t         plane_size = width / 8 * height;
 
-		src1 = data.getData() + 48; // 80: 10000000	08: 00001000
+		src1 = data.data() + 48; // 80: 10000000	08: 00001000
 		src2 = src1 + plane_size;   // 40: 01000000 04: 00000100
 		src3 = src2 + plane_size;   // 20: 00100000 02: 00000010
 		src4 = src3 + plane_size;   // 10: 00010000 01: 00000001
@@ -151,7 +151,7 @@ protected:
 			return false;
 
 		// Check if data is paletted
-		if (image.getType() != PALMASK)
+		if (image.type() != PALMASK)
 		{
 			LOG_MESSAGE(1, "Cannot convert truecolour image to planar format - convert to 16-colour first.");
 			return false;
@@ -164,7 +164,7 @@ protected:
 		}
 
 		// Check image size
-		if (!(image.getWidth() == 640 && image.getHeight() == 480))
+		if (!(image.width() == 640 && image.height() == 480))
 		{
 			LOG_MESSAGE(1, "Cannot convert to planar format, invalid size (must be 640x480)");
 			return false;
@@ -173,7 +173,7 @@ protected:
 		// Get palette to use
 		Palette usepal;
 		if (image.hasPalette())
-			usepal.copyPalette(image.getPalette());
+			usepal.copyPalette(image.palette());
 		else if (pal)
 			usepal.copyPalette(pal);
 
@@ -184,7 +184,7 @@ protected:
 		// Make sure all used colors are in the first 16 entries of the palette
 		image.shrinkPalette(&usepal);
 		// Re-read shrunk palette from image
-		usepal.copyPalette(image.getPalette());
+		usepal.copyPalette(image.palette());
 
 		// Create planar palette
 		uint8_t* mycolors = new uint8_t[3];
@@ -237,7 +237,7 @@ protected:
 		out.write(planes, 153600);
 		delete[] planes;
 		backup.seek(0, SEEK_SET);
-		backup.read(imageData(image), image.getWidth() * image.getHeight());
+		backup.read(imageData(image), image.width() * image.height());
 
 		return true;
 	}
@@ -257,23 +257,23 @@ public:
 	bool isThisFormat(MemChunk& mc)
 	{
 		// Can only detect by size
-		if (mc.getSize() == 32 || mc.getSize() == 184)
+		if (mc.size() == 32 || mc.size() == 184)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
 		// Check size
-		if (mc.getSize() == 32)
+		if (mc.size() == 32)
 		{
 			info.width  = 4;
 			info.height = 16;
 		}
-		else if (mc.getSize() == 184)
+		else if (mc.size() == 184)
 		{
 			info.width  = 16;
 			info.height = 23;
@@ -291,9 +291,9 @@ public:
 		if (!gfx_extraconv)
 			return NOTWRITABLE;
 		// Can write paletted images of size 4x16 or 16x23
-		if (image.getType() == PALMASK
-			&& ((image.getWidth() == 4 && image.getHeight() == 16)
-				|| (image.getWidth() == 16 && image.getHeight() == 23)))
+		if (image.type() == PALMASK
+			&& ((image.width() == 4 && image.height() == 16)
+				|| (image.width() == 16 && image.height() == 23)))
 			return WRITABLE;
 		// If it wouldn't work, it wouldn't work
 		return NOTWRITABLE;
@@ -314,12 +314,12 @@ protected:
 		int width, height;
 
 		// Check size
-		if (data.getSize() == 32)
+		if (data.size() == 32)
 		{
 			width  = 4;
 			height = 16;
 		}
-		else if (data.getSize() == 184)
+		else if (data.size() == 184)
 		{
 			width  = 16;
 			height = 23;
@@ -332,7 +332,7 @@ protected:
 		uint8_t* img_mask = imageMask(image);
 		memset(img_mask, 0xFF, width * height);
 
-		for (unsigned i = 0; i < data.getSize(); ++i)
+		for (unsigned i = 0; i < data.size(); ++i)
 		{
 			img_data[i * 2]     = ((data[i] & 0xF0) >> 4);
 			img_data[i * 2 + 1] = (data[i] & 0x0F);
@@ -348,7 +348,7 @@ protected:
 			return false;
 
 		// Check if data is paletted
-		if (image.getType() != PALMASK)
+		if (image.type() != PALMASK)
 		{
 			LOG_MESSAGE(1, "Cannot convert truecolour image to 4-bit format - convert to 16-colour first.");
 			return false;
@@ -361,8 +361,8 @@ protected:
 		}
 
 		// Check image size
-		if (!((image.getWidth() == 4 && image.getHeight() == 16)
-			  || (image.getWidth() == 16 && image.getHeight() == 23)))
+		if (!((image.width() == 4 && image.height() == 16)
+			  || (image.width() == 16 && image.height() == 23)))
 		{
 			LOG_MESSAGE(1, "No point in converting to 4-bit format, image isn't a valid Hexen size (4x16 or 16x23)");
 			return false;
@@ -371,21 +371,21 @@ protected:
 		// Get palette to use
 		Palette usepal;
 		if (image.hasPalette())
-			usepal.copyPalette(image.getPalette());
+			usepal.copyPalette(image.palette());
 		else if (pal)
 			usepal.copyPalette(pal);
 
 		// Backup current image data (since shrinkPalette remaps the image colours)
-		MemChunk backup(image.getWidth() * image.getHeight());
-		backup.write(imageData(image), image.getWidth() * image.getHeight());
+		MemChunk backup(image.width() * image.height());
+		backup.write(imageData(image), image.width() * image.height());
 
 		// Make sure all used colors are in the first 16 entries of the palette
 		image.shrinkPalette();
 
-		size_t   filesize = image.getWidth() * image.getHeight() / 2;
+		size_t   filesize = image.width() * image.height() / 2;
 		uint8_t* temp     = new uint8_t[filesize];
 
-		for (int i = 0; i < image.getWidth() * image.getHeight(); i += 2)
+		for (int i = 0; i < image.width() * image.height(); i += 2)
 		{
 			temp[i / 2] = imageData(image)[i] << 4 | imageData(image)[i + 1];
 		}
@@ -394,7 +394,7 @@ protected:
 		out.write(temp, filesize);
 		delete[] temp;
 		backup.seek(0, SEEK_SET);
-		backup.read(imageData(image), image.getWidth() * image.getHeight());
+		backup.read(imageData(image), image.width() * image.height());
 
 		return true;
 	}

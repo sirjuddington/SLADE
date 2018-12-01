@@ -212,7 +212,7 @@ void STopWindow::onMenu(wxCommandEvent& e)
 {
 	if (action_toolbar_menu_->isWxId(e.GetId()))
 	{
-		int  offset = e.GetId() - action_toolbar_menu_->getWxId() - 1;
+		int  offset = e.GetId() - action_toolbar_menu_->wxId() - 1;
 		auto group  = toolbar_->groups()[offset];
 
 		group->hide(!group->hidden());

@@ -84,6 +84,7 @@ public:
 	const vector<string>& lineCommentL() const { return line_comment_l_; }
 	const vector<string>& commentBeginL() const { return comment_begin_l_; }
 	const vector<string>& commentEndL() const { return comment_end_l_; }
+	unsigned              preferedComments() const { return prefered_comments_; }
 	const string&         preprocessor() const { return preprocessor_; }
 	const string&         docComment() const { return doc_comment_; }
 	bool                  caseSensitive() const { return case_sensitive_; }
@@ -101,7 +102,6 @@ public:
 
 	void     setName(string name) { this->name_ = name; }
 	void     setPreferedComments(unsigned index) { prefered_comments_ = index; }
-	unsigned getPreferedComments() { return prefered_comments_; }
 	void     setLineCommentList(vector<string> token) { line_comment_l_ = token; };
 	void     setCommentBeginList(vector<string> token) { comment_begin_l_ = token; };
 	void     setCommentEndList(vector<string> token) { comment_end_l_ = token; };

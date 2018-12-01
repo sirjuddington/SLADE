@@ -172,8 +172,8 @@ void ThingType::parse(ParseTreeNode* node)
 	// Go through all child nodes/values
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto   child = node->getChildPTN(a);
-		string name  = child->getName();
+		auto   child = node->childPTN(a);
+		string name  = child->name();
 		int    arg   = -1;
 
 		// Name
@@ -323,17 +323,17 @@ void ThingType::parse(ParseTreeNode* node)
 				// Extended arg definition
 
 				// Name
-				auto val = child->getChildPTN("name");
+				auto val = child->childPTN("name");
 				if (val)
 					args_[arg].name = val->stringValue();
 
 				// Description
-				val = child->getChildPTN("desc");
+				val = child->childPTN("desc");
 				if (val)
 					args_[arg].desc = val->stringValue();
 
 				// Type
-				val = child->getChildPTN("type");
+				val = child->childPTN("type");
 				string atype;
 				if (val)
 					atype = val->stringValue();
@@ -389,20 +389,20 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	// Sprite
 	if (props["sprite"].hasValue())
 	{
-		if (S_CMPNOCASE(props["sprite"].getStringValue(), "tnt1a?"))
+		if (S_CMPNOCASE(props["sprite"].stringValue(), "tnt1a?"))
 		{
 			if ((!(props["icon"].hasValue())) && icon_.IsEmpty())
 				icon_ = "tnt1a0";
 		}
 		else
-			sprite_ = props["sprite"].getStringValue();
+			sprite_ = props["sprite"].stringValue();
 	}
 
 	// Colour
 	if (props["colour"].hasValue())
 	{
 		// SLADE Colour
-		wxColour wxc(props["colour"].getStringValue());
+		wxColour wxc(props["colour"].stringValue());
 		if (wxc.IsOk())
 			colour_.set(COLWX(wxc));
 	}
@@ -432,34 +432,34 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 			{ 0xDA, 0xA5, 0x20, 0xFF }, // Goldenrod		ARGB value of #FFDAA520
 		};
 
-		int color = props["color"].getIntValue();
+		int color = props["color"].intValue();
 		if (color < (int)db2_colours.size())
 			colour_ = db2_colours[color];
 	}
 
 	// Other props
 	if (props["radius"].hasValue())
-		radius_ = props["radius"].getIntValue();
+		radius_ = props["radius"].intValue();
 	if (props["height"].hasValue())
-		height_ = props["height"].getIntValue();
+		height_ = props["height"].intValue();
 	if (props["scalex"].hasValue())
-		scale_.x = props["scalex"].getFloatValue();
+		scale_.x = props["scalex"].floatValue();
 	if (props["scaley"].hasValue())
-		scale_.y = props["scaley"].getFloatValue();
+		scale_.y = props["scaley"].floatValue();
 	if (props["hanging"].hasValue())
-		hanging_ = props["hanging"].getBoolValue();
+		hanging_ = props["hanging"].boolValue();
 	if (props["angled"].hasValue())
-		angled_ = props["angled"].getBoolValue();
+		angled_ = props["angled"].boolValue();
 	if (props["bright"].hasValue())
-		fullbright_ = props["bright"].getBoolValue();
+		fullbright_ = props["bright"].boolValue();
 	if (props["decoration"].hasValue())
-		decoration_ = props["decoration"].getBoolValue();
+		decoration_ = props["decoration"].boolValue();
 	if (props["icon"].hasValue())
-		icon_ = props["icon"].getStringValue();
+		icon_ = props["icon"].stringValue();
 	if (props["translation"].hasValue())
-		translation_ = props["translation"].getStringValue();
+		translation_ = props["translation"].stringValue();
 	if (props["solid"].hasValue())
-		solid_ = props["solid"].getBoolValue();
+		solid_ = props["solid"].boolValue();
 	if (props["obsolete"].hasValue())
 		flags_ |= FLAG_OBSOLETE;
 
@@ -467,13 +467,13 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	if (zscript)
 	{
 		if (props["scale"].hasValue())
-			scale_.x = scale_.y = props["scale"].getFloatValue();
+			scale_.x = scale_.y = props["scale"].floatValue();
 		if (props["scale.x"].hasValue())
-			scale_.x = props["scale.x"].getFloatValue();
+			scale_.x = props["scale.x"].floatValue();
 		if (props["scale.y"].hasValue())
-			scale_.y = props["scale.y"].getFloatValue();
+			scale_.y = props["scale.y"].floatValue();
 		if (props["spawnceiling"].hasValue())
-			hanging_ = props["spawnceiling"].getBoolValue();
+			hanging_ = props["spawnceiling"].boolValue();
 	}
 }
 

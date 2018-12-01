@@ -35,10 +35,10 @@ public:
 
 	uint32_t nTextures() { return textures_.size(); }
 
-	CTexture* getTexture(size_t index);
-	CTexture* getTexture(string name);
-	Format    getFormat() { return txformat_; }
-	string    getTextureXFormatString();
+	CTexture* texture(size_t index);
+	CTexture* texture(string name);
+	Format    format() { return txformat_; }
+	string    textureXFormatString();
 	int       textureIndex(string name);
 
 	void setFormat(Format format) { txformat_ = format; }

@@ -85,10 +85,10 @@ void LineInfoOverlay::update(MapLine* line)
 
 	// General line info
 	if (Global::debug)
-		info_text += (S_FMT("Line #%d (%d)\n", line->getIndex(), line->getId()));
+		info_text += (S_FMT("Line #%d (%d)\n", line->index(), line->objId()));
 	else
-		info_text += (S_FMT("Line #%d\n", line->getIndex()));
-	info_text += (S_FMT("Length: %d\n", MathStuff::round(line->getLength())));
+		info_text += (S_FMT("Line #%d\n", line->index()));
+	info_text += (S_FMT("Length: %d\n", MathStuff::round(line->length())));
 
 	// Line special
 	int as_id = line->intProperty("special");
@@ -144,13 +144,13 @@ void LineInfoOverlay::update(MapLine* line)
 		side_front_.exists = true;
 		if (Global::debug)
 			side_front_.info =
-				S_FMT("Front Side #%d (%d) (Sector %d)", s->getIndex(), s->getId(), s->getSector()->getIndex());
+				S_FMT("Front Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
 		else
-			side_front_.info = S_FMT("Front Side #%d (Sector %d)", s->getIndex(), s->getSector()->getIndex());
+			side_front_.info = S_FMT("Front Side #%d (Sector %d)", s->index(), s->sector()->index());
 		side_front_.offsets      = S_FMT("Offsets: (%d, %d)", xoff, yoff);
-		side_front_.tex_upper    = s->getTexUpper();
-		side_front_.tex_middle   = s->getTexMiddle();
-		side_front_.tex_lower    = s->getTexLower();
+		side_front_.tex_upper    = s->texUpper();
+		side_front_.tex_middle   = s->texMiddle();
+		side_front_.tex_lower    = s->texLower();
 		side_front_.needs_lower  = ((needed_tex & MapLine::Part::FrontLower) > 0);
 		side_front_.needs_middle = ((needed_tex & MapLine::Part::FrontMiddle) > 0);
 		side_front_.needs_upper  = ((needed_tex & MapLine::Part::FrontUpper) > 0);
@@ -167,13 +167,13 @@ void LineInfoOverlay::update(MapLine* line)
 		side_back_.exists = true;
 		if (Global::debug)
 			side_back_.info =
-				S_FMT("Back Side #%d (%d) (Sector %d)", s->getIndex(), s->getId(), s->getSector()->getIndex());
+				S_FMT("Back Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
 		else
-			side_back_.info = S_FMT("Back Side #%d (Sector %d)", s->getIndex(), s->getSector()->getIndex());
+			side_back_.info = S_FMT("Back Side #%d (Sector %d)", s->index(), s->sector()->index());
 		side_back_.offsets      = S_FMT("Offsets: (%d, %d)", xoff, yoff);
-		side_back_.tex_upper    = s->getTexUpper();
-		side_back_.tex_middle   = s->getTexMiddle();
-		side_back_.tex_lower    = s->getTexLower();
+		side_back_.tex_upper    = s->texUpper();
+		side_back_.tex_middle   = s->texMiddle();
+		side_back_.tex_lower    = s->texLower();
 		side_back_.needs_lower  = ((needed_tex & MapLine::Part::BackLower) > 0);
 		side_back_.needs_middle = ((needed_tex & MapLine::Part::BackMiddle) > 0);
 		side_back_.needs_upper  = ((needed_tex & MapLine::Part::BackUpper) > 0);
@@ -206,11 +206,11 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 		last_size_ = right - sides_width;
 		text_box_->setSize(right - sides_width);
 	}
-	int height = text_box_->getHeight() + 4;
+	int height = text_box_->height() + 4;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::colour("map_overlay_background");
+	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 	col_bg.a      = col_bg.a * alpha;
 	rgba_t col_border(0, 0, 0, 140);
@@ -269,7 +269,7 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 void LineInfoOverlay::drawSide(int bottom, int right, float alpha, Side& side, int xstart)
 {
 	// Get colours
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 
 	// Index and sector index
@@ -301,11 +301,11 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	int  line_height  = 16 * scale_;
 
 	// Get colours
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 
 	// Get texture
-	GLTexture* tex = MapEditor::textureManager().getTexture(
+	GLTexture* tex = MapEditor::textureManager().texture(
 		texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 
 	// Valid texture
@@ -335,7 +335,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	else if (tex == &(GLTexture::missingTex()) && texture != "-")
 	{
 		// Draw unknown icon
-		GLTexture* icon = MapEditor::textureManager().getEditorImage("thing/unknown");
+		GLTexture* icon = MapEditor::textureManager().editorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
@@ -348,7 +348,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	else if (required)
 	{
 		// Draw missing icon
-		GLTexture* icon = MapEditor::textureManager().getEditorImage("thing/minus");
+		GLTexture* icon = MapEditor::textureManager().editorImage("thing/minus");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);

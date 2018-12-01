@@ -144,7 +144,7 @@ bool DirArchive::open(string filename)
 
 	// Set all entries/directories to unmodified
 	vector<ArchiveEntry*> entry_list;
-	getEntryTreeAsList(entry_list);
+	putEntryTreeAsList(entry_list);
 	for (size_t a = 0; a < entry_list.size(); a++)
 		entry_list[a]->setState(0);
 
@@ -203,13 +203,13 @@ bool DirArchive::save(string filename)
 {
 	// Get flat entry list
 	vector<ArchiveEntry*> entries;
-	getEntryTreeAsList(entries);
+	putEntryTreeAsList(entries);
 
 	// Get entry path list
 	vector<string> entry_paths;
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
-		entry_paths.push_back(this->filename_ + entries[a]->getPath(true));
+		entry_paths.push_back(this->filename_ + entries[a]->path(true));
 		if (separator_ != "/")
 			entry_paths.back().Replace("/", separator_);
 	}
@@ -261,7 +261,7 @@ bool DirArchive::save(string filename)
 	{
 		// Check for folder
 		string path = entry_paths[a];
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 		{
 			// Create if needed
 			if (!wxDirExists(path))
@@ -275,13 +275,13 @@ bool DirArchive::save(string filename)
 		}
 
 		// Check if entry needs to be (re)written
-		if (entries[a]->getState() == 0 && path == entries[a]->exProp("filePath").getStringValue())
+		if (entries[a]->state() == 0 && path == entries[a]->exProp("filePath").stringValue())
 			continue;
 
 		// Write entry to file
 		if (!entries[a]->exportFile(path))
 		{
-			LOG_MESSAGE(1, "Unable to save entry %s: %s", entries[a]->getName(), Global::error);
+			LOG_MESSAGE(1, "Unable to save entry %s: %s", entries[a]->name(), Global::error);
 		}
 		else
 			files_written.push_back(path);
@@ -303,9 +303,9 @@ bool DirArchive::save(string filename)
 // -----------------------------------------------------------------------------
 bool DirArchive::loadEntryData(ArchiveEntry* entry)
 {
-	if (entry->importFile(entry->exProp("filePath").getStringValue()))
+	if (entry->importFile(entry->exProp("filePath").stringValue()))
 	{
-		file_modification_times_[entry] = wxFileModificationTime(entry->exProp("filePath").getStringValue());
+		file_modification_times_[entry] = wxFileModificationTime(entry->exProp("filePath").stringValue());
 		return true;
 	}
 
@@ -327,7 +327,7 @@ bool DirArchive::removeDir(string path, ArchiveTreeNode* base)
 		return false;
 
 	// Get the dir to remove
-	ArchiveTreeNode* dir = getDir(path, base);
+	ArchiveTreeNode* dir = this->dir(path, base);
 
 	// Check it exists (and that it isn't the root dir)
 	if (!dir || dir == rootDir())
@@ -335,13 +335,13 @@ bool DirArchive::removeDir(string path, ArchiveTreeNode* base)
 
 	// Get all entries in the directory (and subdirectories)
 	vector<ArchiveEntry*> entries;
-	getEntryTreeAsList(entries, dir);
+	putEntryTreeAsList(entries, dir);
 
 	// Add to removed files list
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
-		LOG_MESSAGE(2, entries[a]->exProp("filePath").getStringValue());
-		removed_files_.push_back(entries[a]->exProp("filePath").getStringValue());
+		LOG_MESSAGE(2, entries[a]->exProp("filePath").stringValue());
+		removed_files_.push_back(entries[a]->exProp("filePath").stringValue());
 	}
 
 	// Do normal dir remove
@@ -354,10 +354,10 @@ bool DirArchive::removeDir(string path, ArchiveTreeNode* base)
 // -----------------------------------------------------------------------------
 bool DirArchive::renameDir(ArchiveTreeNode* dir, string new_name)
 {
-	string path = dir->getParent()->getPath();
+	string path = dir->parent()->path();
 	if (separator_ != "/")
 		path.Replace("/", separator_);
-	key_value_t rename(path + dir->getName(), path + new_name);
+	key_value_t rename(path + dir->name(), path + new_name);
 	renamed_dirs_.push_back(rename);
 	LOG_MESSAGE(2, "RENAME %s to %s", rename.key, rename.value);
 
@@ -391,7 +391,7 @@ ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 // -----------------------------------------------------------------------------
 bool DirArchive::removeEntry(ArchiveEntry* entry)
 {
-	string old_name = entry->exProp("filePath").getStringValue();
+	string old_name = entry->exProp("filePath").stringValue();
 	bool   success  = Archive::removeEntry(entry);
 	if (success)
 		removed_files_.push_back(old_name);
@@ -404,13 +404,13 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
 bool DirArchive::renameEntry(ArchiveEntry* entry, string name)
 {
 	// Check rename won't result in duplicated name
-	if (entry->getParentDir()->entry(name))
+	if (entry->parentDir()->entry(name))
 	{
 		Global::error = S_FMT("An entry named %s already exists", CHR(name));
 		return false;
 	}
 
-	string old_name = entry->exProp("filePath").getStringValue();
+	string old_name = entry->exProp("filePath").stringValue();
 	bool   success  = Archive::renameEntry(entry, name);
 	if (success)
 		removed_files_.push_back(old_name);
@@ -421,7 +421,7 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string name)
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-Archive::MapDesc DirArchive::getMapInfo(ArchiveEntry* entry)
+Archive::MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
 {
 	MapDesc map;
 
@@ -430,18 +430,18 @@ Archive::MapDesc DirArchive::getMapInfo(ArchiveEntry* entry)
 		return map;
 
 	// Check entry type
-	if (entry->getType()->formatId() != "archive_wad")
+	if (entry->type()->formatId() != "archive_wad")
 		return map;
 
 	// Check entry directory
-	if (entry->getParentDir()->getParent() != rootDir() || entry->getParentDir()->getName() != "maps")
+	if (entry->parentDir()->parent() != rootDir() || entry->parentDir()->name() != "maps")
 		return map;
 
 	// Setup map info
 	map.archive = true;
 	map.head    = entry;
 	map.end     = entry;
-	map.name    = entry->getName(true).Upper();
+	map.name    = entry->name(true).Upper();
 
 	return map;
 }
@@ -455,7 +455,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 	vector<MapDesc> ret;
 
 	// Get the maps directory
-	ArchiveTreeNode* mapdir = getDir("maps");
+	ArchiveTreeNode* mapdir = dir("maps");
 	if (!mapdir)
 		return ret;
 
@@ -465,7 +465,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 		ArchiveEntry* entry = mapdir->entryAt(a);
 
 		// Maps can only be wad archives
-		if (entry->getType()->formatId() != "archive_wad")
+		if (entry->type()->formatId() != "archive_wad")
 			continue;
 
 		// Detect map format (probably kinda slow but whatever, no better way to do it really)
@@ -482,7 +482,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 		md.head    = entry;
 		md.end     = entry;
 		md.archive = true;
-		md.name    = entry->getName(true).Upper();
+		md.name    = entry->name(true).Upper();
 		md.format  = format;
 		ret.push_back(md);
 	}
@@ -508,7 +508,7 @@ ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.IsEmpty())
 	{
-		dir = getDir(options.match_namespace);
+		dir = this->dir(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
@@ -542,7 +542,7 @@ ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.IsEmpty())
 	{
-		dir = getDir(options.match_namespace);
+		dir = this->dir(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
@@ -576,7 +576,7 @@ vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.IsEmpty())
 	{
-		dir = getDir(options.match_namespace);
+		dir = this->dir(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)

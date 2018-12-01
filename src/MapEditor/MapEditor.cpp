@@ -296,7 +296,7 @@ string MapEditor::browseTexture(const string& init_texture, int tex_type, SLADEM
 	// Get selected texture
 	string tex;
 	if (browser.ShowModal() == wxID_OK)
-		tex = browser.getSelectedItem()->name();
+		tex = browser.selectedItem()->name();
 
 	// Re-lock cursor if needed
 	if (cursor_locked)
@@ -322,7 +322,7 @@ int MapEditor::browseThingType(int init_type, SLADEMap& map)
 	// Get selected type
 	int type = -1;
 	if (browser.ShowModal() == wxID_OK)
-		type = browser.getSelectedType();
+		type = browser.selectedType();
 
 	// Re-lock cursor if needed
 	if (cursor_locked)
@@ -340,7 +340,7 @@ bool MapEditor::editObjectProperties(vector<MapObject*>& list)
 	string selsize = "";
 	string type    = edit_context->modeString(false);
 	if (list.size() == 1)
-		type += S_FMT(" #%d", list[0]->getIndex());
+		type += S_FMT(" #%d", list[0]->index());
 	else if (list.size() > 1)
 		selsize = S_FMT("(%lu selected)", list.size());
 
@@ -419,7 +419,7 @@ MapEditor::ItemType MapEditor::baseItemType(const ItemType& type)
 // -----------------------------------------------------------------------------
 MapEditor::ItemType MapEditor::itemTypeFromObject(const MapObject* object)
 {
-	switch (object->getObjType())
+	switch (object->objType())
 	{
 	case MapObject::Type::Vertex: return ItemType::Vertex;
 	case MapObject::Type::Line: return ItemType::Line;

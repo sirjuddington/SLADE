@@ -10,7 +10,7 @@ class TextureXEditor;
 class PatchTableListView : public VirtualListView, Listener
 {
 protected:
-	string getItemText(long item, long column, long index) const override;
+	string itemText(long item, long column, long index) const override;
 	void   updateItemAttr(long item, long column, long index) const override;
 
 public:

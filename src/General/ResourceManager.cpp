@@ -59,7 +59,7 @@ string           ResourceManager::doom64_hash_table_[65536];
 // -----------------------------------------------------------------------------
 void EntryResource::add(ArchiveEntry::SPtr& entry)
 {
-	if (entry->getParent())
+	if (entry->parent())
 		entries_.push_back(entry);
 }
 
@@ -114,7 +114,7 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const string& nspace, b
 				continue;
 
 		// Check if in priority archive (or its parent)
-		if (priority && (entry->getParent() == priority || entry->getParent()->parentArchive() == priority))
+		if (priority && (entry->parent() == priority || entry->parent()->parentArchive() == priority))
 		{
 			best = entry;
 			break;
@@ -128,8 +128,8 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const string& nspace, b
 		}
 
 		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-		if (App::archiveManager().archiveIndex(best->getParent())
-			<= App::archiveManager().archiveIndex(entry->getParent()))
+		if (App::archiveManager().archiveIndex(best->parent())
+			<= App::archiveManager().archiveIndex(entry->parent()))
 			best = entry;
 	}
 
@@ -191,7 +191,7 @@ void ResourceManager::addArchive(Archive* archive)
 
 	// Go through entries
 	vector<ArchiveEntry::SPtr> entries;
-	archive->getEntryTreeAsList(entries);
+	archive->putEntryTreeAsList(entries);
 	for (auto& entry : entries)
 		addEntry(entry);
 
@@ -213,7 +213,7 @@ void ResourceManager::removeArchive(Archive* archive)
 
 	// Go through entries
 	vector<ArchiveEntry::SPtr> entries;
-	archive->getEntryTreeAsList(entries);
+	archive->putEntryTreeAsList(entries);
 	for (auto& entry : entries)
 		removeEntry(entry, false, true);
 
@@ -247,17 +247,17 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 		return;
 
 	// Detect type if unknown
-	if (entry->getType() == EntryType::unknownType())
+	if (entry->type() == EntryType::unknownType())
 		EntryType::detectEntryType(entry.get());
 
 	// Get entry type
-	EntryType* type = entry->getType();
+	EntryType* type = entry->type();
 
 	// Get resource name (extension cut, uppercase)
-	string lname = entry->getUpperNameNoExt();
-	string name  = entry->getUpperNameNoExt().Truncate(8);
+	string lname = entry->upperNameNoExt();
+	string name  = entry->upperNameNoExt().Truncate(8);
 	// Talon1024 - Get resource path (uppercase, without leading slash)
-	string path = entry->getPath(true).Upper().Mid(1);
+	string path = entry->path(true).Upper().Mid(1);
 
 	if (log)
 		Log::debug(S_FMT("Adding entry %s to resource manager", path));
@@ -291,7 +291,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 				addToFpOnly = false;
 			}
 			patches_[name].add(entry);
-			if (!entry->getParent()->isTreeless())
+			if (!entry->parent()->isTreeless())
 			{
 				patches_fp_[path].add(entry);
 				if ((lname.Len() > 8 || patches_[name].length() > 0) && addToFpOnly)
@@ -311,7 +311,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 				addToFpOnly = false;
 			}
 			flats_[name].add(entry);
-			if (!entry->getParent()->isTreeless())
+			if (!entry->parent()->isTreeless())
 			{
 				flats_fp_[path].add(entry);
 				if ((lname.Len() > 8 || flats_[name].length() > 0) && addToFpOnly)
@@ -325,7 +325,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 		if (entry->isInNamespace("textures") || entry->isInNamespace("hires"))
 		{
 			satextures_[name].add(entry);
-			if (!entry->getParent()->isTreeless())
+			if (!entry->parent()->isTreeless())
 			{
 				satextures_fp_[path].add(entry);
 			}
@@ -349,8 +349,8 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 		{
 			Archive::SearchOptions opt;
 			opt.match_type       = EntryType::fromId("pnames");
-			ArchiveEntry* pnames = entry->getParent()->findLast(opt);
-			ptable.loadPNAMES(pnames, entry->getParent());
+			ArchiveEntry* pnames = entry->parent()->findLast(opt);
+			ptable.loadPNAMES(pnames, entry->parent());
 		}
 
 		// Read texture list
@@ -364,8 +364,8 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 		CTexture* tex;
 		for (unsigned a = 0; a < tx.nTextures(); a++)
 		{
-			tex = tx.getTexture(a);
-			textures_[tex->getName()].add(tex, entry->getParent());
+			tex = tx.texture(a);
+			textures_[tex->name()].add(tex, entry->parent());
 		}
 	}
 }
@@ -388,8 +388,8 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full
 		return;
 
 	// Get resource name (extension cut, uppercase)
-	string name = entry->getUpperNameNoExt().Truncate(8);
-	string path = entry->getPath(true).Upper().Mid(1);
+	string name = entry->upperNameNoExt().Truncate(8);
+	string path = entry->path(true).Upper().Mid(1);
 
 	if (log)
 		Log::debug(S_FMT("Removing entry %s from resource manager", path));
@@ -413,9 +413,9 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full
 
 	// Check for TEXTUREx entry
 	int txentry = 0;
-	if (entry->getType()->id() == "texturex")
+	if (entry->type()->id() == "texturex")
 		txentry = 1;
-	else if (entry->getType()->id() == "zdtextures")
+	else if (entry->type()->id() == "zdtextures")
 		txentry = 2;
 	if (txentry > 0)
 	{
@@ -429,7 +429,7 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full
 
 		// Remove all texture resources
 		for (unsigned a = 0; a < tx.nTextures(); a++)
-			textures_[tx.getTexture(a)->getName()].remove(entry->getParent());
+			textures_[tx.texture(a)->name()].remove(entry->parent());
 	}
 }
 
@@ -449,7 +449,7 @@ void ResourceManager::listAllPatches()
 // -----------------------------------------------------------------------------
 // Adds all current patch entries to [list]
 // -----------------------------------------------------------------------------
-void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
+void ResourceManager::putAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
 {
 	for (auto& i : patches_)
 	{
@@ -472,7 +472,7 @@ void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* p
 // -----------------------------------------------------------------------------
 // Adds all current textures to [list]
 // -----------------------------------------------------------------------------
-void ResourceManager::getAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore)
+void ResourceManager::putAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore)
 {
 	// Add all primary textures to the list
 	for (auto& i : textures_)
@@ -510,7 +510,7 @@ void ResourceManager::getAllTextures(vector<TextureResource::Texture*>& list, Ar
 // -----------------------------------------------------------------------------
 // Adds all current texture names to [list]
 // -----------------------------------------------------------------------------
-void ResourceManager::getAllTextureNames(vector<string>& list)
+void ResourceManager::putAllTextureNames(vector<string>& list)
 {
 	// Add all primary textures to the list
 	for (auto& i : textures_)
@@ -521,7 +521,7 @@ void ResourceManager::getAllTextureNames(vector<string>& list)
 // -----------------------------------------------------------------------------
 // Adds all current flat entries to [list]
 // -----------------------------------------------------------------------------
-void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
+void ResourceManager::putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
 {
 	for (auto& i : flats_)
 	{
@@ -544,7 +544,7 @@ void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* pr
 // -----------------------------------------------------------------------------
 // Adds all current flat names to [list]
 // -----------------------------------------------------------------------------
-void ResourceManager::getAllFlatNames(vector<string>& list)
+void ResourceManager::putAllFlatNames(vector<string>& list)
 {
 	// Add all primary flats to the list
 	for (auto& i : flats_)
@@ -676,7 +676,7 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 		wxUIntPtr ptr;
 		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
 		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto          esp   = entry->getParent()->entryAtPathShared(entry->getPath(true));
+		auto          esp   = entry->parent()->entryAtPathShared(entry->path(true));
 		removeEntry(esp, true);
 		addEntry(esp, true);
 		announce("resources_updated");
@@ -688,7 +688,7 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 		wxUIntPtr ptr;
 		event_data.read(&ptr, sizeof(wxUIntPtr), sizeof(int));
 		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto          esp   = entry->getParent()->entryAtPathShared(entry->getPath(true));
+		auto          esp   = entry->parent()->entryAtPathShared(entry->path(true));
 		removeEntry(esp, true);
 		announce("resources_updated");
 	}
@@ -699,7 +699,7 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 		wxUIntPtr ptr;
 		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
 		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto          esp   = entry->getParent()->entryAtPathShared(entry->getPath(true));
+		auto          esp   = entry->parent()->entryAtPathShared(entry->path(true));
 		addEntry(esp, true);
 		announce("resources_updated");
 	}
@@ -732,12 +732,12 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 		auto start = App::runTimer();
 		for (unsigned a = 0; a < 100; a++)
 		{
-			theResourceManager->getAllPatchEntries(list, nullptr);
+			theResourceManager->putAllPatchEntries(list, nullptr);
 			list.clear();
 		}
 		for (unsigned a = 0; a < 100; a++)
 		{
-			theResourceManager->getAllFlatEntries(list, nullptr);
+			theResourceManager->putAllFlatEntries(list, nullptr);
 			list.clear();
 		}
 		auto end = App::runTimer();

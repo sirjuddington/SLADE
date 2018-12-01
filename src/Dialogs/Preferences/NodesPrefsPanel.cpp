@@ -66,8 +66,8 @@ NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBa
 	unsigned      sel = 0;
 	for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++)
 	{
-		builders.Add(NodeBuilders::getBuilder(a).name);
-		if (nodebuilder_id == NodeBuilders::getBuilder(a).id)
+		builders.Add(NodeBuilders::builder(a).name);
+		if (nodebuilder_id == NodeBuilders::builder(a).id)
 			sel = a;
 	}
 	choice_nodebuilder_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, builders);
@@ -112,7 +112,7 @@ void NodesPrefsPanel::init()
 	unsigned sel = 0;
 	for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++)
 	{
-		if (nodebuilder_id == NodeBuilders::getBuilder(a).id)
+		if (nodebuilder_id == NodeBuilders::builder(a).id)
 		{
 			sel = a;
 			break;
@@ -129,7 +129,7 @@ void NodesPrefsPanel::init()
 void NodesPrefsPanel::populateOptions(string options)
 {
 	// Get current builder
-	NodeBuilders::Builder& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
+	NodeBuilders::Builder& builder = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
 	btn_browse_path_->Enable(builder.id != "none");
 
 	// Set builder path
@@ -153,7 +153,7 @@ void NodesPrefsPanel::populateOptions(string options)
 void NodesPrefsPanel::applyPreferences()
 {
 	// Set nodebuilder
-	NodeBuilders::Builder& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
+	NodeBuilders::Builder& builder = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
 	nodebuilder_id                 = builder.id;
 
 	// Set options string
@@ -190,7 +190,7 @@ void NodesPrefsPanel::onChoiceBuilderChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 {
-	NodeBuilders::Builder& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
+	NodeBuilders::Builder& builder = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
 
 	// Setup extension
 #ifdef __WXMSW__

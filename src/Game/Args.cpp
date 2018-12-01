@@ -210,17 +210,17 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		// Extended arg definition
 
 		// Name
-		auto val = node->getChildPTN("name");
+		auto val = node->childPTN("name");
 		if (val)
 			name = val->stringValue();
 
 		// Description
-		val = node->getChildPTN("desc");
+		val = node->childPTN("desc");
 		if (val)
 			desc = val->stringValue();
 
 		// Type
-		val = node->getChildPTN("type");
+		val = node->childPTN("type");
 		string atype;
 		if (val)
 			atype = val->stringValue();
@@ -240,18 +240,18 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 			type = Number;
 
 		// Customs
-		val = node->getChildPTN("custom_values");
+		val = node->childPTN("custom_values");
 		if (val)
 		{
 			for (auto cv : val->allChildren())
-				custom_values.push_back({ Parser::node(cv)->stringValue(), atoi(CHR(cv->getName())) });
+				custom_values.push_back({ Parser::node(cv)->stringValue(), atoi(CHR(cv->name())) });
 		}
 
-		val = node->getChildPTN("custom_flags");
+		val = node->childPTN("custom_flags");
 		if (val)
 		{
 			for (auto cf : val->allChildren())
-				custom_flags.push_back({ Parser::node(cf)->stringValue(), atoi(CHR(cf->getName())) });
+				custom_flags.push_back({ Parser::node(cf)->stringValue(), atoi(CHR(cf->name())) });
 		}
 	}
 }

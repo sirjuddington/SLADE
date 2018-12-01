@@ -80,7 +80,7 @@ bool MoveObjects::begin(fpoint2_t mouse_pos)
 		if (context_.editMode() == Mode::Vertices)
 		{
 			for (auto& item : items_)
-				move_verts.push_back(context_.map().getVertex(item.index));
+				move_verts.push_back(context_.map().vertex(item.index));
 		}
 
 		// Lines mode
@@ -89,8 +89,8 @@ bool MoveObjects::begin(fpoint2_t mouse_pos)
 			for (auto& item : items_)
 			{
 				// Duplicate vertices shouldn't matter here
-				move_verts.push_back(context_.map().getLine(item.index)->v1());
-				move_verts.push_back(context_.map().getLine(item.index)->v2());
+				move_verts.push_back(context_.map().line(item.index)->v1());
+				move_verts.push_back(context_.map().line(item.index)->v2());
 			}
 		}
 
@@ -98,7 +98,7 @@ bool MoveObjects::begin(fpoint2_t mouse_pos)
 		else if (context_.editMode() == Mode::Sectors)
 		{
 			for (auto& item : items_)
-				context_.map().getSector(item.index)->getVertices(move_verts);
+				context_.map().sector(item.index)->putVertices(move_verts);
 		}
 	}
 
@@ -107,7 +107,7 @@ bool MoveObjects::begin(fpoint2_t mouse_pos)
 	{
 		// Filter moving things
 		for (auto& item : items_)
-			context_.map().getThing(item.index)->filter(true);
+			context_.map().thing(item.index)->filter(true);
 	}
 	else
 	{
@@ -139,12 +139,12 @@ void MoveObjects::update(fpoint2_t mouse_pos)
 		// Update move vector
 		if (context_.editMode() == Mode::Vertices)
 			offset_.set(
-				nx - context_.map().getVertex(items_[0].index)->xPos(),
-				ny - context_.map().getVertex(items_[0].index)->yPos());
+				nx - context_.map().vertex(items_[0].index)->xPos(),
+				ny - context_.map().vertex(items_[0].index)->yPos());
 		else if (context_.editMode() == Mode::Things)
 			offset_.set(
-				nx - context_.map().getThing(items_[0].index)->xPos(),
-				ny - context_.map().getThing(items_[0].index)->yPos());
+				nx - context_.map().thing(items_[0].index)->xPos(),
+				ny - context_.map().thing(items_[0].index)->yPos());
 
 		return;
 	}
@@ -163,9 +163,9 @@ void MoveObjects::end(bool accept)
 
 	// Un-filter objects
 	for (unsigned a = 0; a < context_.map().nLines(); a++)
-		context_.map().getLine(a)->filter(false);
+		context_.map().line(a)->filter(false);
 	for (unsigned a = 0; a < context_.map().nThings(); a++)
-		context_.map().getThing(a)->filter(false);
+		context_.map().thing(a)->filter(false);
 
 	// Move depending on edit mode
 	if (context_.editMode() == Mode::Things && accept)
@@ -174,7 +174,7 @@ void MoveObjects::end(bool accept)
 		context_.beginUndoRecord("Move Things", true, false, false);
 		for (auto& item : items_)
 		{
-			auto thing = context_.map().getThing(item.index);
+			auto thing = context_.map().thing(item.index);
 			context_.undoManager()->recordUndoStep(new MapEditor::PropertyChangeUS(thing));
 			context_.map().moveThing(item.index, thing->xPos() + offset_.x, thing->yPos() + offset_.y);
 		}
@@ -198,21 +198,21 @@ void MoveObjects::end(bool accept)
 		{
 			for (auto& item : items_)
 			{
-				auto line = context_.map().getLine(item.index);
+				auto line = context_.map().line(item.index);
 				if (line->v1())
-					move_verts[line->v1()->getIndex()] = 1;
+					move_verts[line->v1()->index()] = 1;
 				if (line->v2())
-					move_verts[line->v2()->getIndex()] = 1;
+					move_verts[line->v2()->index()] = 1;
 			}
 		}
 		else if (context_.editMode() == Mode::Sectors)
 		{
 			vector<MapVertex*> sv;
 			for (auto& item : items_)
-				context_.map().getSector(item.index)->getVertices(sv);
+				context_.map().sector(item.index)->putVertices(sv);
 
 			for (auto vertex : sv)
-				move_verts[vertex->getIndex()] = 1;
+				move_verts[vertex->index()] = 1;
 		}
 
 		// Move vertices
@@ -223,9 +223,9 @@ void MoveObjects::end(bool accept)
 				continue;
 
 			context_.map().moveVertex(
-				a, context_.map().getVertex(a)->xPos() + offset_.x, context_.map().getVertex(a)->yPos() + offset_.y);
+				a, context_.map().vertex(a)->xPos() + offset_.x, context_.map().vertex(a)->yPos() + offset_.y);
 
-			moved_verts.push_back(context_.map().getVertex(a));
+			moved_verts.push_back(context_.map().vertex(a));
 		}
 
 		// Begin extra 'Merge' undo step if wanted

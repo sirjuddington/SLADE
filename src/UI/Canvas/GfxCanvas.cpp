@@ -207,7 +207,7 @@ void GfxCanvas::drawImage()
 
 	// Pan
 	if (view_type_ == View::Centered)
-		glTranslated(-(image_->getWidth() * 0.5), -(image_->getHeight() * 0.5), 0); // Pan to center image
+		glTranslated(-(image_->width() * 0.5), -(image_->height() * 0.5), 0); // Pan to center image
 	else if (view_type_ == View::Sprite)
 		glTranslated(-image_->offset().x, -image_->offset().y, 0); // Pan by offsets
 	else if (view_type_ == View::HUD)
@@ -227,16 +227,16 @@ void GfxCanvas::drawImage()
 		{
 			if (drawing_mask_)
 				delete[] drawing_mask_;
-			drawing_mask_ = new bool[image_->getWidth() * image_->getHeight()];
-			memset(drawing_mask_, false, image_->getWidth() * image_->getHeight());
+			drawing_mask_ = new bool[image_->width() * image_->height()];
+			memset(drawing_mask_, false, image_->width() * image_->height());
 		}
 		tex_image_->loadImage(image_, &palette_);
 		update_texture_ = false;
 	}
 
 	// Determine (texture)coordinates
-	double x = (double)image_->getWidth();
-	double y = (double)image_->getHeight();
+	double x = (double)image_->width();
+	double y = (double)image_->height();
 
 	// If tiled view
 	if (view_type_ == View::Tiled)
@@ -323,8 +323,8 @@ void GfxCanvas::zoomToFit(bool mag, float padding)
 	double pad = (double)MIN(GetSize().x, GetSize().y) * padding;
 
 	// Get image dimensions
-	double x_dim = (double)image_->getWidth();
-	double y_dim = (double)image_->getHeight();
+	double x_dim = (double)image_->width();
+	double y_dim = (double)image_->height();
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)GetSize().x - pad) / x_dim;
@@ -370,8 +370,8 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 	}
 	else if (view_type_ == View::Centered)
 	{
-		left -= (double)image_->getWidth() * 0.5 * scale_;
-		top -= (double)image_->getHeight() * 0.5 * yscale;
+		left -= (double)image_->width() * 0.5 * scale_;
+		top -= (double)image_->height() * 0.5 * yscale;
 	}
 	else if (view_type_ == View::Sprite)
 	{
@@ -387,8 +387,8 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 	}
 
 	// Determine bottom-right coordinates of image in screen coords
-	double right  = left + image_->getWidth() * scale_;
-	double bottom = top + image_->getHeight() * yscale;
+	double right  = left + image_->width() * scale_;
+	double bottom = top + image_->height() * yscale;
 
 	// Check if the pointer is within the image
 	if (x >= left && x <= right && y >= top && y <= bottom)
@@ -399,7 +399,7 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 		double xpos = double(x - left) / w;
 		double ypos = double(y - top) / h;
 
-		return point2_t(xpos * image_->getWidth(), ypos * image_->getHeight());
+		return point2_t(xpos * image_->width(), ypos * image_->height());
 	}
 	else
 		return point2_t::outside();
@@ -438,7 +438,7 @@ void GfxCanvas::paintPixel(int x, int y)
 {
 	// With large brushes, it's very possible that some of the pixels
 	// are out of the image area; so don't process them.
-	if (x < 0 || y < 0 || x >= image_->getWidth() || y >= image_->getHeight())
+	if (x < 0 || y < 0 || x >= image_->width() || y >= image_->height())
 		return;
 
 	// Do not process pixels that were already modified in the
@@ -447,7 +447,7 @@ void GfxCanvas::paintPixel(int x, int y)
 	// of mouse events can happen while the mouse moves, leading
 	// to the same pixel being processed over and over, and that
 	// does not play well when applying translations.
-	size_t pos = x + image_->getWidth() * y;
+	size_t pos = x + image_->width() * y;
 	if (drawing_mask_[pos])
 		return;
 
@@ -458,9 +458,9 @@ void GfxCanvas::paintPixel(int x, int y)
 	{
 		if (translation_ != nullptr)
 		{
-			rgba_t  ocol  = image_->getPixel(x, y, getPalette());
+			rgba_t  ocol  = image_->pixelAt(x, y, palette());
 			uint8_t alpha = ocol.a;
-			rgba_t  ncol  = (translation_->translate(ocol, getPalette()));
+			rgba_t  ncol  = (translation_->translate(ocol, palette()));
 			ncol.a        = alpha;
 			if (!ocol.equals(ncol, false, true))
 				painted = image_->setPixel(x, y, ncol);
@@ -490,7 +490,7 @@ void GfxCanvas::brushCanvas(int x, int y)
 	point2_t coord = imageCoords(x, y);
 	for (int i = -4; i < 5; ++i)
 		for (int j = -4; j < 5; ++j)
-			if (brush_->getPixel(i, j))
+			if (brush_->pixel(i, j))
 				paintPixel(coord.x + i, coord.y + j);
 }
 
@@ -503,7 +503,7 @@ void GfxCanvas::pickColour(int x, int y)
 	point2_t coord = imageCoords(x, y);
 
 	// Pick its colour
-	paint_colour_ = image_->getPixel(coord.x, coord.y, getPalette());
+	paint_colour_ = image_->pixelAt(coord.x, coord.y, palette());
 
 	// Announce it triumphantly to the world
 	wxNotifyEvent e(wxEVT_GFXCANVAS_COLOUR_PICKED, GetId());
@@ -521,15 +521,15 @@ void GfxCanvas::generateBrushShadow()
 
 	// Generate image
 	SImage img;
-	img.create(image_->getWidth(), image_->getHeight(), SIType::RGBA);
+	img.create(image_->width(), image_->height(), SIType::RGBA);
 	for (int i = -4; i < 5; ++i)
 		for (int j = -4; j < 5; ++j)
-			if (brush_->getPixel(i, j))
+			if (brush_->pixel(i, j))
 			{
 				rgba_t col = paint_colour_;
 				if (editing_mode_ == EditMode::Translate && translation_)
 					col = translation_->translate(
-						image_->getPixel(cursor_pos_.x + i, cursor_pos_.y + j, getPalette()), getPalette());
+						image_->pixelAt(cursor_pos_.x + i, cursor_pos_.y + j, palette()), palette());
 				// Not sure what's the best way to preview cutting out
 				// Mimicking the checkerboard pattern perhaps?
 				// Cyan will do for now
@@ -615,7 +615,7 @@ void GfxCanvas::onMouseLeftUp(wxMouseEvent& e)
 	if (drawing_)
 	{
 		drawing_ = false;
-		memset(drawing_mask_, false, image_->getWidth() * image_->getHeight());
+		memset(drawing_mask_, false, image_->width() * image_->height());
 	}
 	// Stop dragging
 	if (drag_origin_.x >= 0)

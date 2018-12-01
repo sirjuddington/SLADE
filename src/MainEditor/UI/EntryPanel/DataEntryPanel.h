@@ -64,8 +64,8 @@ public:
 	bool            InsertRows(size_t pos, size_t num) override;
 	wxGridCellAttr* GetAttr(int row, int col, wxGridCellAttr::wxAttrKind kind) override;
 
-	MemChunk& getData() { return data_; }
-	Column    getColumnInfo(int col) { return columns_[col]; }
+	MemChunk& data() { return data_; }
+	Column    columnInfo(int col) { return columns_[col]; }
 	bool      setupDataStructure(ArchiveEntry* entry);
 	void      copyRows(int row, int num, bool add = false);
 	void      pasteRows(int row);
@@ -102,7 +102,7 @@ public:
 	bool handleAction(string id) override;
 	int  getColWithSelection();
 
-	vector<point2_t> getSelection();
+	vector<point2_t> selection();
 
 private:
 	wxGrid*         grid_data_        = nullptr;

@@ -143,7 +143,7 @@ bool EntryPanel::openEntry(ArchiveEntry* entry)
 
 	// Copy current entry content
 	entry_data_.clear();
-	entry_data_.importMem(entry->getData(true), entry->getSize());
+	entry_data_.importMem(entry->rawData(true), entry->size());
 
 	// Load the entry
 	if (loadEntry(entry))
@@ -203,7 +203,7 @@ bool EntryPanel::revertEntry(bool confirm)
 
 		if (ok)
 		{
-			uint8_t state = entry_->getState();
+			uint8_t state = entry_->state();
 			entry_->importMemChunk(entry_data_);
 			entry_->setState(state);
 			EntryType::detectEntryType(entry_);
@@ -244,10 +244,10 @@ void EntryPanel::updateStatus()
 	{
 		string text = S_FMT(
 			"%d: %s, %d bytes, %s",
-			entry_->getParentDir()->entryIndex(entry_),
-			entry_->getName(),
-			entry_->getSize(),
-			entry_->getType()->name());
+			entry_->parentDir()->entryIndex(entry_),
+			entry_->name(),
+			entry_->size(),
+			entry_->type()->name());
 
 		theMainWindow->CallAfter(&MainWindow::SetStatusText, text, 1);
 	}

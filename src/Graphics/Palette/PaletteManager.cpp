@@ -107,7 +107,7 @@ Palette* PaletteManager::globalPalette()
 // Returns the palette at [index], or the default palette (greyscale) if index
 // is out of bounds
 // -----------------------------------------------------------------------------
-Palette* PaletteManager::getPalette(int index)
+Palette* PaletteManager::palette(int index)
 {
 	if (index < 0 || index >= numPalettes())
 		return &pal_default_;
@@ -119,7 +119,7 @@ Palette* PaletteManager::getPalette(int index)
 // Returns the palette matching the given name, or the default palette
 // (greyscale) if no matching palette found
 // -----------------------------------------------------------------------------
-Palette* PaletteManager::getPalette(string name)
+Palette* PaletteManager::palette(string name)
 {
 	for (uint32_t a = 0; a < pal_names_.size(); a++)
 	{
@@ -134,7 +134,7 @@ Palette* PaletteManager::getPalette(string name)
 // Returns the name of the palette at [index], or an empty string if index is
 // out of bounds
 // -----------------------------------------------------------------------------
-string PaletteManager::getPalName(int index)
+string PaletteManager::palName(int index)
 {
 	if (index < 0 || index >= numPalettes())
 		return "";
@@ -146,7 +146,7 @@ string PaletteManager::getPalName(int index)
 // Returns the name of the given palette, or an empty string if the palette
 // isn't managed by the PaletteManager
 // -----------------------------------------------------------------------------
-string PaletteManager::getPalName(Palette* pal)
+string PaletteManager::palName(Palette* pal)
 {
 	for (uint32_t a = 0; a < palettes_.size(); a++)
 	{
@@ -165,7 +165,7 @@ bool PaletteManager::loadResourcePalettes()
 {
 	// Get the 'palettes' directory of SLADE.pk3
 	auto res_archive  = App::archiveManager().programResourceArchive();
-	auto dir_palettes = res_archive->getDir("palettes/");
+	auto dir_palettes = res_archive->dir("palettes/");
 
 	// Check it exists
 	if (!dir_palettes)
@@ -176,11 +176,11 @@ bool PaletteManager::loadResourcePalettes()
 	{
 		// Load palette data
 		auto     pal = std::make_unique<Palette>();
-		MemChunk mc(dir_palettes->entryAt(a)->getData(true), dir_palettes->entryAt(a)->getSize());
+		MemChunk mc(dir_palettes->entryAt(a)->rawData(true), dir_palettes->entryAt(a)->size());
 		pal->loadMem(mc);
 
 		// Add the palette
-		addPalette(std::move(pal), dir_palettes->entryAt(a)->getName(true));
+		addPalette(std::move(pal), dir_palettes->entryAt(a)->name(true));
 	}
 
 	return true;

@@ -13,7 +13,7 @@ public:
 	void setupForType(int type);
 	void setProp(int prop, int value);
 	bool loadSpecial(int special);
-	int  getSpecial();
+	int  special();
 
 private:
 	wxChoice*       choice_type_;

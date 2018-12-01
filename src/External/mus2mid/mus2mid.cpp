@@ -343,8 +343,8 @@ static int GetMIDIChannel(int mus_channel)
 
 static bool ReadMusHeader(MemChunk& file, musheader *header)
 {
- 	if (file.getSize() >= sizeof(musheader)) {
-		const uint8_t * data = file.getData();
+ 	if (file.size() >= sizeof(musheader)) {
+		const uint8_t * data = file.data();
 		memcpy(header, data, sizeof(musheader));
 		return true;
 	}

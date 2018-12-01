@@ -33,11 +33,11 @@ public:
 		Id,
 	};
 
-	string       getPropName() { return propname_; }
+	string       propName() { return propname_; }
 	void         setParent(MapObjectPropsPanel* parent) { this->parent_ = parent; }
 	virtual void setUDMFProp(UDMFProperty* prop) { this->udmf_prop_ = prop; }
 
-	virtual Type getType()                                = 0;
+	virtual Type type()                                   = 0;
 	virtual void openObjects(vector<MapObject*>& objects) = 0;
 	virtual void updateVisibility()                       = 0;
 	virtual void applyValue() {}
@@ -56,7 +56,7 @@ class MOPGBoolProperty : public MOPGProperty, public wxBoolProperty
 public:
 	MOPGBoolProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type getType() { return Type::Boolean; }
+	Type type() { return Type::Boolean; }
 	void openObjects(vector<MapObject*>& objects);
 	void updateVisibility();
 	void applyValue();
@@ -67,7 +67,7 @@ class MOPGIntProperty : public MOPGProperty, public wxIntProperty
 public:
 	MOPGIntProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type getType() { return Type::Integer; }
+	Type type() { return Type::Integer; }
 	void openObjects(vector<MapObject*>& objects);
 	void updateVisibility();
 	void applyValue();
@@ -78,7 +78,7 @@ class MOPGFloatProperty : public MOPGProperty, public wxFloatProperty
 public:
 	MOPGFloatProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type getType() { return Type::Float; }
+	Type type() { return Type::Float; }
 	void openObjects(vector<MapObject*>& objects);
 	void updateVisibility();
 	void applyValue();
@@ -91,7 +91,7 @@ public:
 
 	void setUDMFProp(UDMFProperty* prop);
 
-	Type getType() { return Type::String; }
+	Type type() { return Type::String; }
 	void openObjects(vector<MapObject*>& objects);
 	void updateVisibility();
 	void applyValue();
@@ -100,7 +100,7 @@ public:
 class MOPGIntWithArgsProperty : public MOPGIntProperty
 {
 protected:
-	virtual const Game::ArgSpec& getArgspec() = 0;
+	virtual const Game::ArgSpec& argSpec() = 0;
 
 public:
 	MOPGIntWithArgsProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
@@ -116,7 +116,7 @@ public:
 class MOPGActionSpecialProperty : public MOPGIntWithArgsProperty
 {
 protected:
-	const Game::ArgSpec& getArgspec();
+	const Game::ArgSpec& argSpec();
 
 public:
 	MOPGActionSpecialProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL) :
@@ -124,7 +124,7 @@ public:
 	{
 	}
 
-	Type getType() { return Type::ActionSpecial; }
+	Type type() { return Type::ActionSpecial; }
 
 	// wxPGProperty overrides
 	wxString ValueToString(wxVariant& value, int argFlags = 0) const;
@@ -134,7 +134,7 @@ public:
 class MOPGThingTypeProperty : public MOPGIntWithArgsProperty
 {
 protected:
-	const Game::ArgSpec& getArgspec();
+	const Game::ArgSpec& argSpec();
 
 public:
 	MOPGThingTypeProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL) :
@@ -142,7 +142,7 @@ public:
 	{
 	}
 
-	Type getType() { return Type::ThingType; }
+	Type type() { return Type::ThingType; }
 
 	// wxPGProperty overrides
 	wxString ValueToString(wxVariant& value, int argFlags = 0) const;
@@ -154,7 +154,7 @@ class MOPGLineFlagProperty : public MOPGBoolProperty
 public:
 	MOPGLineFlagProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL, int index = -1);
 
-	Type getType() { return Type::LineFlag; }
+	Type type() { return Type::LineFlag; }
 	void openObjects(vector<MapObject*>& objects);
 	void applyValue();
 
@@ -167,7 +167,7 @@ class MOPGThingFlagProperty : public MOPGBoolProperty
 public:
 	MOPGThingFlagProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL, int index = -1);
 
-	Type getType() { return Type::ThingFlag; }
+	Type type() { return Type::ThingFlag; }
 	void openObjects(vector<MapObject*>& objects);
 	void applyValue();
 
@@ -180,7 +180,7 @@ class MOPGAngleProperty : public MOPGProperty, public wxEditEnumProperty
 public:
 	MOPGAngleProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type getType() { return Type::Angle; }
+	Type type() { return Type::Angle; }
 	void openObjects(vector<MapObject*>& objects);
 	void updateVisibility();
 	void applyValue();
@@ -194,7 +194,7 @@ class MOPGColourProperty : public MOPGProperty, public wxColourProperty
 public:
 	MOPGColourProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type getType() { return Type::Colour; }
+	Type type() { return Type::Colour; }
 	void openObjects(vector<MapObject*>& objects);
 	void updateVisibility();
 	void applyValue();
@@ -205,7 +205,7 @@ class MOPGTextureProperty : public MOPGStringProperty
 public:
 	MOPGTextureProperty(int textype = 0, const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type getType() { return Type::Texture; }
+	Type type() { return Type::Texture; }
 	void openObjects(vector<MapObject*>& objects);
 
 	// wxPGProperty overrides
@@ -220,7 +220,7 @@ class MOPGSPACTriggerProperty : public MOPGProperty, public wxEnumProperty
 public:
 	MOPGSPACTriggerProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type getType() { return Type::SPACTrigger; }
+	Type type() { return Type::SPACTrigger; }
 	void openObjects(vector<MapObject*>& objects);
 	void updateVisibility();
 	void applyValue();
@@ -238,7 +238,7 @@ public:
 
 	MOPGTagProperty(IdType id_type, const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type getType() { return Type::Id; }
+	Type type() { return Type::Id; }
 	void openObjects(vector<MapObject*>& objects);
 
 	// wxPGProperty overrides
@@ -253,7 +253,7 @@ class MOPGSectorSpecialProperty : public MOPGIntProperty
 public:
 	MOPGSectorSpecialProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type getType() { return Type::SectorSpecial; }
+	Type type() { return Type::SectorSpecial; }
 	void openObjects(vector<MapObject*>& objects);
 
 	// wxPGProperty overrides

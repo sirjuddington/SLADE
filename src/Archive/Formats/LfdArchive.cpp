@@ -96,7 +96,7 @@ bool LfdArchive::open(MemChunk& mc)
 		return false;
 
 	// Check size
-	if (mc.getSize() < 16)
+	if (mc.size() < 16)
 		return false;
 
 	// Check magic header
@@ -110,7 +110,7 @@ bool LfdArchive::open(MemChunk& mc)
 	dir_len = wxINT32_SWAP_ON_BE(dir_len);
 
 	// Check size
-	if ((unsigned)mc.getSize() < (dir_len) || dir_len % 16)
+	if ((unsigned)mc.size() < (dir_len) || dir_len % 16)
 		return false;
 
 	// Guess number of lumps
@@ -122,7 +122,7 @@ bool LfdArchive::open(MemChunk& mc)
 	// Read each entry
 	UI::setSplashProgressMessage("Reading lfd archive data");
 	size_t offset = dir_len + 16;
-	size_t size   = mc.getSize();
+	size_t size   = mc.size();
 	for (uint32_t d = 0; offset < size; d++)
 	{
 		// Update splash window progress
@@ -183,13 +183,13 @@ bool LfdArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = getEntry(a);
+		ArchiveEntry* entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -226,7 +226,7 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 	ArchiveEntry* entry      = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
-		entry = getEntry(l);
+		entry = entryAt(l);
 		total_size += 16;
 		setEntryOffset(entry, total_size);
 		if (update)
@@ -234,7 +234,7 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 			entry->setState(0);
 			entry->exProp("Offset") = (int)total_size;
 		}
-		total_size += entry->getSize();
+		total_size += entry->size();
 	}
 
 	// Clear/init MemChunk
@@ -254,13 +254,13 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 	mc.write(&size, 4);
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
-		entry = getEntry(l);
+		entry = entryAt(l);
 		for (int t = 0; t < 5; ++t)
 			type[t] = 0;
 		for (int n = 0; n < 9; ++n)
 			name[n] = 0;
-		size = wxINT32_SWAP_ON_BE(entry->getSize());
-		wxFileName fn(entry->getName());
+		size = wxINT32_SWAP_ON_BE(entry->size());
+		wxFileName fn(entry->name());
 
 		for (size_t c = 0; c < fn.GetName().length() && c < 9; c++)
 			name[c] = fn.GetName()[c];
@@ -275,13 +275,13 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 	// Write the lumps
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
-		entry = getEntry(l);
+		entry = entryAt(l);
 		for (int t = 0; t < 5; ++t)
 			type[t] = 0;
 		for (int n = 0; n < 9; ++n)
 			name[n] = 0;
-		size = wxINT32_SWAP_ON_BE(entry->getSize());
-		wxFileName fn(entry->getName());
+		size = wxINT32_SWAP_ON_BE(entry->size());
+		wxFileName fn(entry->name());
 
 		for (size_t c = 0; c < fn.GetName().length() && c < 9; c++)
 			name[c] = fn.GetName()[c];
@@ -291,7 +291,7 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 		mc.write(type, 4);
 		mc.write(name, 8);
 		mc.write(&size, 4);
-		mc.write(entry->getData(), entry->getSize());
+		mc.write(entry->rawData(), entry->size());
 	}
 
 	return true;
@@ -309,7 +309,7 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -327,7 +327,7 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to lump offset in file and read it in
 	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -355,7 +355,7 @@ ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 		entry = new ArchiveEntry(*entry);
 
 	// Process name (must be 13 characters max)
-	string name = entry->getName().Truncate(13);
+	string name = entry->name().Truncate(13);
 	if (wad_force_uppercase)
 		name.MakeUpper();
 
@@ -401,7 +401,7 @@ bool LfdArchive::renameEntry(ArchiveEntry* entry, string name)
 bool LfdArchive::isLfdArchive(MemChunk& mc)
 {
 	// Check size
-	if (mc.getSize() < 12)
+	if (mc.size() < 12)
 		return false;
 
 	// Check magic header
@@ -429,7 +429,7 @@ bool LfdArchive::isLfdArchive(MemChunk& mc)
 	len1 = wxINT32_SWAP_ON_BE(len1);
 
 	// Check size
-	if ((unsigned)mc.getSize() < (dir_offset + 16 + len1))
+	if ((unsigned)mc.size() < (dir_offset + 16 + len1))
 		return false;
 
 	// Compare

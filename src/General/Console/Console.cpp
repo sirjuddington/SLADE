@@ -96,7 +96,7 @@ void Console::execute(string command)
 	for (size_t a = 0; a < commands_.size(); a++)
 	{
 		// Found it, execute and return
-		if (commands_[a].getName() == cmd_name)
+		if (commands_[a].name() == cmd_name)
 		{
 			commands_[a].execute(args);
 			return;
@@ -264,7 +264,7 @@ CONSOLE_COMMAND(cmdlist, 0, true)
 	{
 		ConsoleCommand& cmd = App::console()->command(a);
 		if (cmd.showInList() || Global::debug)
-			Log::console(S_FMT("\"%s\" (%lu args)", cmd.getName(), cmd.minArgs()));
+			Log::console(S_FMT("\"%s\" (%lu args)", cmd.name(), cmd.minArgs()));
 	}
 }
 
@@ -293,7 +293,7 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 	// Check command exists
 	for (int a = 0; a < App::console()->numCommands(); a++)
 	{
-		if (App::console()->command(a).getName().Lower() == args[0].Lower())
+		if (App::console()->command(a).name().Lower() == args[0].Lower())
 		{
 #ifdef USE_WEBVIEW_STARTPAGE
 			MainEditor::openDocs(S_FMT("%s-Console-Command", args[0]));

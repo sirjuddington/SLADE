@@ -69,9 +69,9 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, boo
 	wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton"),
 	action_{ SAction::fromId(action) },
 	show_name_{ show_name },
-	action_id_{ action_->getId() },
-	action_name_{ action_->getText() },
-	help_text_{ action_->getHelpText() },
+	action_id_{ action_->id() },
+	action_name_{ action_->text() },
+	help_text_{ action_->helpText() },
 	pad_outer_{ UI::scalePx(1) },
 	pad_inner_{ UI::scalePx(2) },
 	icon_size_{ UI::scalePx(toolbar_size) }
@@ -79,7 +79,7 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, boo
 	// Determine width of name text if shown
 	if (show_name)
 	{
-		string name = action_->getText();
+		string name = action_->text();
 		name.Replace("&", "");
 		text_width_ = GetTextExtent(name).GetWidth() + pad_inner_ * 2;
 	}
@@ -93,19 +93,19 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, boo
 
 	// Load icon
 	if (icon.IsEmpty())
-		icon_ = Icons::getIcon(Icons::General, action_->getIconName(), icon_size_ > 16);
+		icon_ = Icons::getIcon(Icons::General, action_->iconName(), icon_size_ > 16);
 	else
 		icon_ = Icons::getIcon(Icons::General, icon, icon_size_ > 16);
 
 	// Add shortcut to help text if it exists
-	string sc = action_->getShortcutText();
+	string sc = action_->shortcutText();
 	if (!sc.IsEmpty())
 		help_text_ += S_FMT(" (Shortcut: %s)", sc);
 
 	// Set tooltip
 	if (!show_name)
 	{
-		string tip = action_->getText();
+		string tip = action_->text();
 		tip.Replace("&", "");
 		if (!sc.IsEmpty())
 			tip += S_FMT(" (Shortcut: %s)", sc);
@@ -371,7 +371,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 		{
 			if (action_->isRadio())
 				GetParent()->Refresh();
-			SActionHandler::doAction(action_->getId());
+			SActionHandler::doAction(action_->id());
 		}
 		else
 			sendClickedEvent();

@@ -95,7 +95,7 @@ void ConsolePanel::initLayout()
 	Layout();
 
 	// Set console font to default+monospace
-	auto font = WxUtils::getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+	auto font = WxUtils::monospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 	text_command_->SetFont(font);
 
 	setupTextArea();
@@ -115,7 +115,7 @@ void ConsolePanel::setupTextArea() const
 	text_log_->SetMarginWidth(1, 8);
 
 	// Message type colours
-	auto hsl = Misc::rgbToHsl(StyleSet::currentSet()->getStyleForeground("default"));
+	auto hsl = Misc::rgbToHsl(StyleSet::currentSet()->styleForeground("default"));
 	if (hsl.l > 0.8)
 		hsl.l = 0.8;
 	if (hsl.l < 0.2)

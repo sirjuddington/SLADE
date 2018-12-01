@@ -14,7 +14,7 @@ public:
 	ArchiveEntryList(wxWindow* parent);
 	~ArchiveEntryList();
 
-	ArchiveTreeNode* getCurrentDir() const { return current_dir_; }
+	ArchiveTreeNode* currentDir() const { return current_dir_; }
 
 	bool showDirBack() const { return show_dir_back_; }
 	void showDirBack(bool db) { show_dir_back_ = db; }
@@ -37,12 +37,12 @@ public:
 	// Sorting
 	void sortItems() override;
 
-	ArchiveEntry*            getEntry(int index, bool filtered = true) const;
-	int                      getEntryIndex(int index, bool filtered = true);
-	ArchiveEntry*            getFocusedEntry();
-	vector<ArchiveEntry*>    getSelectedEntries();
-	ArchiveEntry*            getLastSelectedEntry();
-	vector<ArchiveTreeNode*> getSelectedDirectories();
+	ArchiveEntry*            entryAt(int index, bool filtered = true) const;
+	int                      entryIndexAt(int index, bool filtered = true);
+	ArchiveEntry*            focusedEntry();
+	vector<ArchiveEntry*>    selectedEntries();
+	ArchiveEntry*            lastSelectedEntry();
+	vector<ArchiveTreeNode*> selectedDirectories();
 
 	// Label editing
 	void labelEdited(int col, int index, string new_label) override;
@@ -59,8 +59,8 @@ public:
 
 protected:
 	// Virtual wxListCtrl overrides
-	string getItemText(long item, long column, long index) const override;
-	int    getItemIcon(long item, long column, long index) const override;
+	string itemText(long item, long column, long index) const override;
+	int    itemIcon(long item, long column, long index) const override;
 	void   updateItemAttr(long item, long column, long index) const override;
 
 private:

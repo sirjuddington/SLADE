@@ -13,13 +13,13 @@ public:
 
 	virtual bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_doom")->isThisFormat(mc))
+		if (EntryDataFormat::format("img_doom")->isThisFormat(mc))
 			return true;
 		else
 			return false;
 	}
 
-	virtual SImage::info_t getInfo(MemChunk& mc, int index)
+	virtual SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -42,7 +42,7 @@ public:
 	virtual int canWrite(SImage& image)
 	{
 		// Must be converted to paletted to be written
-		if (image.getType() == PALMASK)
+		if (image.type() == PALMASK)
 			return WRITABLE;
 		else
 			return CONVERTIBLE;
@@ -85,7 +85,7 @@ protected:
 	bool readDoomFormat(SImage& image, MemChunk& data, int version)
 	{
 		// Init variables
-		const uint8_t* gfx_data = data.getData();
+		const uint8_t* gfx_data = data.data();
 		int            width    = 0;
 		int            height   = 0;
 		int            offset_x = 0;
@@ -153,7 +153,7 @@ protected:
 					break;
 				}
 			}
-			if (data.getSize() - col_offsets[width - 1] != 261)
+			if (data.size() - col_offsets[width - 1] != 261)
 				pleiadeshack = false;
 		}
 
@@ -164,7 +164,7 @@ protected:
 			uint32_t col_offset = col_offsets[c]; // wxUINT32_SWAP_ON_BE(col_offsets[c]);
 
 			// Check column offset is valid
-			if (col_offset >= data.getSize())
+			if (col_offset >= data.size())
 				return false;
 
 			// Go to start of column
@@ -208,7 +208,7 @@ protected:
 						break;
 
 					// Stop if for some reason we're outside the gfx data
-					if (bits >= gfx_data + data.getSize())
+					if (bits >= gfx_data + data.size())
 						break;
 
 					// Fail if bogus data gives a negative pos (this corrupts the heap!)
@@ -243,7 +243,7 @@ protected:
 
 		// Go through columns
 		uint32_t offset = 0;
-		for (int c = 0; c < image.getWidth(); c++)
+		for (int c = 0; c < image.width(); c++)
 		{
 			Column col;
 			Post   post;
@@ -253,10 +253,10 @@ protected:
 
 			offset          = c;
 			uint8_t row_off = 0;
-			for (int r = 0; r < image.getHeight(); r++)
+			for (int r = 0; r < image.height(); r++)
 			{
 				// For vanilla-compatible dimensions, use a split at 128 to prevent tiling.
-				if (image.getHeight() < 256)
+				if (image.height() < 256)
 				{
 					if (row_off == 128)
 					{
@@ -324,7 +324,7 @@ protected:
 				}
 
 				// Go to next row
-				offset += image.getWidth();
+				offset += image.width();
 				row_off++;
 			}
 
@@ -347,8 +347,8 @@ protected:
 		patch_header_t header;
 		header.top    = image.offset().y;
 		header.left   = image.offset().x;
-		header.width  = image.getWidth();
-		header.height = image.getHeight();
+		header.width  = image.width();
+		header.height = image.height();
 
 		// Byteswap header values if needed
 		header.top    = wxINT16_SWAP_ON_BE(header.top);
@@ -378,7 +378,7 @@ protected:
 				col_size += columns[c].posts[p].pixels.size() + 4;
 
 			// Allocate memory to write the column data
-			out.reSize(out.getSize() + col_size, true);
+			out.reSize(out.size() + col_size, true);
 
 			// Write column posts
 			for (size_t p = 0; p < columns[c].posts.size(); p++)
@@ -444,15 +444,15 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_doom_beta")->isThisFormat(mc))
+		if (EntryDataFormat::format("img_doom_beta")->isThisFormat(mc))
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
-		SImage::info_t info = SIFDoomGfx::getInfo(mc, index);
+		SImage::info_t info = SIFDoomGfx::info(mc, index);
 		info.format         = id_;
 		return info;
 	}
@@ -478,13 +478,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_doom_alpha")->isThisFormat(mc))
+		if (EntryDataFormat::format("img_doom_alpha")->isThisFormat(mc))
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -521,13 +521,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_doom_arah")->isThisFormat(mc))
+		if (EntryDataFormat::format("img_doom_arah")->isThisFormat(mc))
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -593,13 +593,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_doom_snea")->isThisFormat(mc))
+		if (EntryDataFormat::format("img_doom_snea")->isThisFormat(mc))
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -623,7 +623,7 @@ protected:
 
 		// The TITLEPIC in the Doom Press-Release Beta has
 		// two extraneous null bytes at the end for padding.
-		int size = data.getSize();
+		int size = data.size();
 		if (size == width * height + 4)
 			size -= 2;
 
@@ -636,8 +636,8 @@ protected:
 		// Read raw pixel data
 		uint8_t* img_data = imageData(image);
 
-		const uint8_t* entryend = data.getData() + size;
-		const uint8_t* pixel    = data.getData() + 2;
+		const uint8_t* entryend = data.data() + size;
+		const uint8_t* pixel    = data.data() + 2;
 		uint8_t*       dataend  = img_data + size - 2;
 		uint8_t*       brush    = img_data;
 
@@ -673,13 +673,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_doom_psx")->isThisFormat(mc))
+		if (EntryDataFormat::format("img_doom_psx")->isThisFormat(mc))
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -746,13 +746,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_doom_jaguar")->isThisFormat(mc))
+		if (EntryDataFormat::format("img_doom_jaguar")->isThisFormat(mc))
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 

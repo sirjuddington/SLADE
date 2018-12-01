@@ -77,42 +77,42 @@ void NodeBuilders::init()
 
 	// Parse it
 	Parser parser;
-	parser.parseText(config->getMCData(), "nodebuilders.cfg");
+	parser.parseText(config->data(), "nodebuilders.cfg");
 
 	// Get 'nodebuilders' block
-	auto root = parser.parseTreeRoot()->getChildPTN("nodebuilders");
+	auto root = parser.parseTreeRoot()->childPTN("nodebuilders");
 	if (!root)
 		return;
 
 	// Go through child block
 	for (unsigned a = 0; a < root->nChildren(); a++)
 	{
-		auto n_builder = root->getChildPTN(a);
+		auto n_builder = root->childPTN(a);
 
 		// Parse builder block
 		Builder builder;
-		builder.id = n_builder->getName();
+		builder.id = n_builder->name();
 		for (unsigned b = 0; b < n_builder->nChildren(); b++)
 		{
-			auto node = n_builder->getChildPTN(b);
+			auto node = n_builder->childPTN(b);
 
 			// Option
 			if (S_CMPNOCASE(node->type(), "option"))
 			{
-				builder.options.push_back(node->getName());
+				builder.options.push_back(node->name());
 				builder.option_desc.push_back(node->stringValue());
 			}
 
 			// Builder name
-			else if (S_CMPNOCASE(node->getName(), "name"))
+			else if (S_CMPNOCASE(node->name(), "name"))
 				builder.name = node->stringValue();
 
 			// Builder command
-			else if (S_CMPNOCASE(node->getName(), "command"))
+			else if (S_CMPNOCASE(node->name(), "command"))
 				builder.command = node->stringValue();
 
 			// Builder executable
-			else if (S_CMPNOCASE(node->getName(), "executable"))
+			else if (S_CMPNOCASE(node->name(), "executable"))
 				builder.exe = node->stringValue();
 		}
 		builders.push_back(builder);
@@ -120,7 +120,7 @@ void NodeBuilders::init()
 
 	// Set builder paths
 	for (unsigned a = 0; a < builder_paths.size(); a += 2)
-		getBuilder(builder_paths[a]).path = builder_paths[a + 1];
+		builder(builder_paths[a]).path = builder_paths[a + 1];
 }
 
 // -----------------------------------------------------------------------------
@@ -158,7 +158,7 @@ unsigned NodeBuilders::nNodeBuilders()
 // -----------------------------------------------------------------------------
 // Returns the node builder definition matching [id]
 // -----------------------------------------------------------------------------
-NodeBuilders::Builder& NodeBuilders::getBuilder(string id)
+NodeBuilders::Builder& NodeBuilders::builder(string id)
 {
 	for (unsigned a = 0; a < builders.size(); a++)
 	{
@@ -172,7 +172,7 @@ NodeBuilders::Builder& NodeBuilders::getBuilder(string id)
 // -----------------------------------------------------------------------------
 // Returns the node builder definition at [index]
 // -----------------------------------------------------------------------------
-NodeBuilders::Builder& NodeBuilders::getBuilder(unsigned index)
+NodeBuilders::Builder& NodeBuilders::builder(unsigned index)
 {
 	// Check index
 	if (index >= builders.size())

@@ -15,7 +15,7 @@ wxMenuItem* createMenuItem(
 	const string& label,
 	const string& help = wxEmptyString,
 	const string& icon = wxEmptyString);
-wxFont       getMonospaceFont(wxFont base);
+wxFont       monospaceFont(wxFont base);
 wxImageList* createSmallImageList();
 wxPanel*     createPadPanel(wxWindow* parent, wxWindow* control, int pad = -1);
 

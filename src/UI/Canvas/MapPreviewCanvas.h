@@ -28,8 +28,8 @@ public:
 	unsigned nLines();
 	unsigned nSectors();
 	unsigned nThings();
-	unsigned getWidth();
-	unsigned getHeight();
+	unsigned width();
+	unsigned height();
 
 private:
 	// Structs for basic map features

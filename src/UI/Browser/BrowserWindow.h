@@ -20,14 +20,14 @@ public:
 	BrowserTreeNode(BrowserTreeNode* parent = nullptr);
 	~BrowserTreeNode();
 
-	string         getName() override { return name_; }
+	string         name() override { return name_; }
 	wxTreeListItem treeId() { return tree_id_; }
 	void           setName(string name) override { this->name_ = name; }
 	void           setTreeId(wxTreeListItem id) { this->tree_id_ = id; }
 
 	void         clearItems();
 	unsigned     nItems() { return items_.size(); }
-	BrowserItem* getItem(unsigned index);
+	BrowserItem* item(unsigned index);
 	void         addItem(BrowserItem* item, unsigned index = 0xFFFFFFFF);
 
 private:
@@ -51,14 +51,14 @@ public:
 
 	bool truncateNames() { return truncate_names_; }
 
-	Palette* getPalette() { return &palette_; }
+	Palette* palette() { return &palette_; }
 	void     setPalette(Palette* pal) { palette_.copyPalette(pal); }
 
 	bool         addItem(BrowserItem* item, string where = "");
 	void         addGlobalItem(BrowserItem* item);
 	void         clearItems(BrowserTreeNode* node = nullptr);
 	void         reloadItems(BrowserTreeNode* node = nullptr);
-	BrowserItem* getSelectedItem();
+	BrowserItem* selectedItem();
 	bool         selectItem(string name, BrowserTreeNode* root = nullptr);
 
 	unsigned     addSortType(string name);

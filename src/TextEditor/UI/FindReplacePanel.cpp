@@ -210,7 +210,7 @@ string FindReplacePanel::replaceText() const
 void FindReplacePanel::onKeyDown(wxKeyEvent& e)
 {
 	// Check if keypress matches any keybinds
-	wxArrayString binds = KeyBind::getBinds(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
+	wxArrayString binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
 
 	// Go through matching binds
 	bool handled = false;

@@ -10,8 +10,8 @@ public:
 	ResourceArchiveChooser(wxWindow* parent, Archive* archive);
 	~ResourceArchiveChooser() {}
 
-	vector<Archive*> getSelectedResourceArchives();
-	string           getSelectedResourceList();
+	vector<Archive*> selectedResourceArchives();
+	string           selectedResourceList();
 
 private:
 	wxCheckListBox*  list_resources_;

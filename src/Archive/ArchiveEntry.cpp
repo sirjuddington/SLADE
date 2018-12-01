@@ -90,7 +90,7 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	index_guess_  = 0;
 
 	// Copy data
-	data_.importMem(copy.getData(true), copy.getSize());
+	data_.importMem(copy.rawData(true), copy.size());
 
 	// Copy extra properties
 	copy.exProps().copyTo(ex_props_);
@@ -113,7 +113,7 @@ ArchiveEntry::~ArchiveEntry() {}
 // Returns the entry name. If [cut_ext] is true and the name has an extension,
 // it will be cut from the returned name
 // -----------------------------------------------------------------------------
-string ArchiveEntry::getName(bool cut_ext) const
+string ArchiveEntry::name(bool cut_ext) const
 {
 	if (!cut_ext)
 		return name_;
@@ -130,7 +130,7 @@ string ArchiveEntry::getName(bool cut_ext) const
 // -----------------------------------------------------------------------------
 // Returns the entry name in uppercase
 // -----------------------------------------------------------------------------
-string ArchiveEntry::getUpperName()
+string ArchiveEntry::upperName()
 {
 	return upper_name_;
 }
@@ -138,7 +138,7 @@ string ArchiveEntry::getUpperName()
 // -----------------------------------------------------------------------------
 // Returns the entry name in uppercase with no file extension
 // -----------------------------------------------------------------------------
-string ArchiveEntry::getUpperNameNoExt()
+string ArchiveEntry::upperNameNoExt()
 {
 	if (upper_name_.Contains(StringUtils::FULLSTOP))
 		return Misc::lumpNameToFileName(upper_name_).BeforeLast('.');
@@ -149,7 +149,7 @@ string ArchiveEntry::getUpperNameNoExt()
 // -----------------------------------------------------------------------------
 // Returns the entry's parent archive
 // -----------------------------------------------------------------------------
-Archive* ArchiveEntry::getParent()
+Archive* ArchiveEntry::parent()
 {
 	if (parent_)
 		return parent_->archive();
@@ -160,14 +160,14 @@ Archive* ArchiveEntry::getParent()
 // -----------------------------------------------------------------------------
 // Returns the entry's top-level parent archive
 // -----------------------------------------------------------------------------
-Archive* ArchiveEntry::getTopParent()
+Archive* ArchiveEntry::topParent()
 {
 	if (parent_)
 	{
 		if (!parent_->archive()->parentEntry())
 			return parent_->archive();
 		else
-			return parent_->archive()->parentEntry()->getTopParent();
+			return parent_->archive()->parentEntry()->topParent();
 	}
 	else
 		return nullptr;
@@ -176,13 +176,13 @@ Archive* ArchiveEntry::getTopParent()
 // -----------------------------------------------------------------------------
 // Returns the entry path in its parent archive
 // -----------------------------------------------------------------------------
-string ArchiveEntry::getPath(bool name) const
+string ArchiveEntry::path(bool include_name) const
 {
 	// Get the entry path
-	string path = parent_->getPath();
+	string path = parent_->path();
 
-	if (name)
-		return path + getName();
+	if (include_name)
+		return path + name();
 	else
 		return path;
 }
@@ -191,20 +191,20 @@ string ArchiveEntry::getPath(bool name) const
 // Returns a pointer to the entry data. If no entry data exists and [allow_load]
 // is true, entry data will be loaded from its parent archive (if it exists)
 // -----------------------------------------------------------------------------
-const uint8_t* ArchiveEntry::getData(bool allow_load)
+const uint8_t* ArchiveEntry::rawData(bool allow_load)
 {
 	// Return entry data
-	return getMCData(allow_load).getData();
+	return data(allow_load).data();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the entry data MemChunk. If no entry data exists and [allow_load]
 // is true, entry data will be loaded from its parent archive (if it exists)
 // -----------------------------------------------------------------------------
-MemChunk& ArchiveEntry::getMCData(bool allow_load)
+MemChunk& ArchiveEntry::data(bool allow_load)
 {
 	// Get parent archive
-	Archive* parent_archive = getParent();
+	Archive* parent_archive = parent();
 
 	// Load the data if needed (and possible)
 	if (allow_load && !isLoaded() && parent_archive && size_ > 0)
@@ -260,7 +260,7 @@ void ArchiveEntry::unloadData()
 		return;
 
 	// Only unload if the data wasn't modified
-	if (getState() > 0)
+	if (state() > 0)
 		return;
 
 	// Delete any data
@@ -397,7 +397,7 @@ bool ArchiveEntry::importMemChunk(MemChunk& mc)
 	if (mc.hasData())
 	{
 		// Copy the data from the MemChunk into the entry
-		return importMem(mc.getData(), mc.getSize());
+		return importMem(mc.data(), mc.size());
 	}
 	else
 		return false;
@@ -467,7 +467,7 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 	if (data_.importFileStream(file, len))
 	{
 		// Update attributes
-		this->size_ = data_.getSize();
+		this->size_ = data_.size();
 		setLoaded();
 		setType(EntryType::unknownType());
 		setState(1);
@@ -497,7 +497,7 @@ bool ArchiveEntry::importEntry(ArchiveEntry* entry)
 		return false;
 
 	// Copy entry data
-	importMem(entry->getData(), entry->getSize());
+	importMem(entry->rawData(), entry->size());
 
 	return true;
 }
@@ -519,9 +519,9 @@ bool ArchiveEntry::exportFile(string filename)
 	}
 
 	// Write entry data to the file, if any
-	const uint8_t* data = getData();
+	const uint8_t* data = rawData();
 	if (data)
-		file.Write(data, this->getSize());
+		file.Write(data, this->size());
 
 	return true;
 }
@@ -540,13 +540,13 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 
 	// Load data if it isn't already
 	if (isLoaded())
-		getData(true);
+		rawData(true);
 
 	// Perform the write
 	if (this->data_.write(data, size))
 	{
 		// Update attributes
-		this->size_ = this->data_.getSize();
+		this->size_ = this->data_.size();
 		setState(1);
 
 		return true;
@@ -562,7 +562,7 @@ bool ArchiveEntry::read(void* buf, uint32_t size)
 {
 	// Load data if it isn't already
 	if (isLoaded())
-		getData(true);
+		rawData(true);
 
 	return data_.read(buf, size);
 }
@@ -570,9 +570,9 @@ bool ArchiveEntry::read(void* buf, uint32_t size)
 // -----------------------------------------------------------------------------
 // Returns the entry's size as a string
 // -----------------------------------------------------------------------------
-string ArchiveEntry::getSizeString()
+string ArchiveEntry::sizeString()
 {
-	return Misc::sizeAsString(getSize());
+	return Misc::sizeAsString(size());
 }
 
 // -----------------------------------------------------------------------------
@@ -582,7 +582,7 @@ string ArchiveEntry::getSizeString()
 // -----------------------------------------------------------------------------
 void ArchiveEntry::stateChanged()
 {
-	Archive* parent_archive = getParent();
+	Archive* parent_archive = parent();
 	if (parent_archive)
 		parent_archive->entryStateChanged(this);
 }
@@ -593,7 +593,7 @@ void ArchiveEntry::stateChanged()
 void ArchiveEntry::setExtensionByType()
 {
 	// Ignore if the parent archive doesn't support entry name extensions
-	if (getParent() && !getParent()->formatDesc().names_extensions)
+	if (parent() && !parent()->formatDesc().names_extensions)
 		return;
 
 	// Convert name to wxFileName for processing
@@ -603,7 +603,7 @@ void ArchiveEntry::setExtensionByType()
 	fn.SetExt(type_->extension());
 
 	// Rename
-	Archive* parent_archive = getParent();
+	Archive* parent_archive = parent();
 	if (parent_archive)
 		parent_archive->renameEntry(this, fn.GetFullName());
 	else
@@ -617,31 +617,31 @@ void ArchiveEntry::setExtensionByType()
 bool ArchiveEntry::isInNamespace(string ns)
 {
 	// Can't do this without parent archive
-	if (!getParent())
+	if (!parent())
 		return false;
 
 	// Some special cases first
-	if (ns == "graphics" && getParent()->formatId() == "wad")
+	if (ns == "graphics" && parent()->formatId() == "wad")
 		ns = "global"; // Graphics namespace doesn't exist in wad files, use global instead
 
-	return getParent()->detectNamespace(this) == ns;
+	return parent()->detectNamespace(this) == ns;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the entry at [path] relative to [base], or failing that, the entry
 // at absolute [path] in the archive (if [allow_absolute_path] is true)
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntry::relativeEntry(const string& path, bool allow_absolute_path) const
+ArchiveEntry* ArchiveEntry::relativeEntry(const string& at_path, bool allow_absolute_path) const
 {
 	if (!parent_)
 		return nullptr;
 
 	// Try relative to this entry
-	auto include = parent_->archive()->entryAtPath(getPath() + path);
+	auto include = parent_->archive()->entryAtPath(path() + at_path);
 
 	// Try absolute path
 	if (!include && allow_absolute_path)
-		include = parent_->archive()->entryAtPath(path);
+		include = parent_->archive()->entryAtPath(at_path);
 
 	return include;
 }

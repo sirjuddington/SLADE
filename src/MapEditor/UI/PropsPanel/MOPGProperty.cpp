@@ -63,7 +63,7 @@ void MOPGProperty::resetValue()
 		return;
 
 	// Read value from selection
-	openObjects(parent_->getObjects());
+	openObjects(parent_->objects());
 }
 
 
@@ -122,7 +122,7 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
 void MOPGBoolProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().getBoolValue() == GetValue().GetBool())
+		&& udmf_prop_->defaultValue().boolValue() == GetValue().GetBool())
 		Hide(true);
 	else
 		Hide(false);
@@ -143,7 +143,7 @@ void MOPGBoolProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->getObjects();
+	vector<MapObject*>& objects = parent_->objects();
 	for (unsigned a = 0; a < objects.size(); a++)
 		objects[a]->setBoolProperty(GetName(), m_value.GetBool());
 }
@@ -205,7 +205,7 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
 void MOPGIntProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().getIntValue() == GetValue().GetInteger())
+		&& udmf_prop_->defaultValue().intValue() == GetValue().GetInteger())
 		Hide(true);
 	else
 		Hide(false);
@@ -226,7 +226,7 @@ void MOPGIntProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->getObjects();
+	vector<MapObject*>& objects = parent_->objects();
 	for (unsigned a = 0; a < objects.size(); a++)
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
@@ -287,7 +287,7 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
 void MOPGFloatProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().getFloatValue() == GetValue().GetDouble())
+		&& udmf_prop_->defaultValue().floatValue() == GetValue().GetDouble())
 		Hide(true);
 	else
 		Hide(false);
@@ -308,7 +308,7 @@ void MOPGFloatProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->getObjects();
+	vector<MapObject*>& objects = parent_->objects();
 	for (unsigned a = 0; a < objects.size(); a++)
 		objects[a]->setFloatProperty(GetName(), m_value.GetDouble());
 }
@@ -344,7 +344,7 @@ void MOPGStringProperty::setUDMFProp(UDMFProperty* prop)
 		wxPGChoices choices = wxPGChoices();
 
 		for (auto& val : prop->possibleValues())
-			choices.Add(val.getStringValue());
+			choices.Add(val.stringValue());
 
 		SetChoices(choices);
 		SetEditor(wxPGEditor_ComboBox);
@@ -393,7 +393,7 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 void MOPGStringProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().getStringValue() == GetValue().GetString())
+		&& udmf_prop_->defaultValue().stringValue() == GetValue().GetString())
 		Hide(true);
 	else
 		Hide(false);
@@ -414,7 +414,7 @@ void MOPGStringProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->getObjects();
+	vector<MapObject*>& objects = parent_->objects();
 	for (unsigned a = 0; a < objects.size(); a++)
 		objects[a]->setStringProperty(GetName(), m_value.GetString());
 }
@@ -445,7 +445,7 @@ MOPGIntWithArgsProperty::MOPGIntWithArgsProperty(const wxString& label, const wx
 // -----------------------------------------------------------------------------
 bool MOPGIntWithArgsProperty::hasArgs()
 {
-	return getArgspec().count > 0;
+	return argSpec().count > 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -454,12 +454,12 @@ bool MOPGIntWithArgsProperty::hasArgs()
 // -----------------------------------------------------------------------------
 void MOPGIntWithArgsProperty::updateArgs(wxPGProperty* args[5])
 {
-	auto     argspec       = getArgspec();
+	auto     argspec       = argSpec();
 	int      default_value = 0;
 	unsigned argcount;
 
 	if (udmf_prop_)
-		default_value = udmf_prop_->defaultValue().getIntValue();
+		default_value = udmf_prop_->defaultValue().intValue();
 
 	if (parent_->showAll())
 		argcount = 5;
@@ -506,10 +506,10 @@ void MOPGIntWithArgsProperty::applyValue()
 		return;
 
 	// Initialize any unset and meaningful args to 0
-	const auto argspec = getArgspec();
+	const auto argspec = argSpec();
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->getObjects();
+	vector<MapObject*>& objects = parent_->objects();
 	for (unsigned a = 0; a < objects.size(); a++)
 	{
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
@@ -546,7 +546,7 @@ void MOPGIntWithArgsProperty::OnSetValue()
 // -----------------------------------------------------------------------------
 // Returns a little object describing the args for this thing type
 // -----------------------------------------------------------------------------
-const Game::ArgSpec& MOPGActionSpecialProperty::getArgspec()
+const Game::ArgSpec& MOPGActionSpecialProperty::argSpec()
 {
 	int special = m_value.GetInteger();
 	return Game::configuration().actionSpecial(special).argSpec();
@@ -598,7 +598,7 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 // -----------------------------------------------------------------------------
 // Returns a little object describing the args for this thing type
 // -----------------------------------------------------------------------------
-const Game::ArgSpec& MOPGThingTypeProperty::getArgspec()
+const Game::ArgSpec& MOPGThingTypeProperty::argSpec()
 {
 	return Game::configuration().thingType(m_value.GetInteger()).argSpec();
 }
@@ -635,7 +635,7 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 		if (browser.ShowModal() == wxID_OK)
 		{
 			// Set the value if a type was selected
-			int type = browser.getSelectedType();
+			int type = browser.selectedType();
 			if (type >= 0)
 				GetGrid()->ChangePropertyValue(this, type);
 		}
@@ -711,7 +711,7 @@ void MOPGLineFlagProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->getObjects();
+	vector<MapObject*>& objects = parent_->objects();
 	for (unsigned a = 0; a < objects.size(); a++)
 		Game::configuration().setLineFlag(index_, (MapLine*)objects[a], GetValue());
 }
@@ -783,7 +783,7 @@ void MOPGThingFlagProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->getObjects();
+	vector<MapObject*>& objects = parent_->objects();
 	for (unsigned a = 0; a < objects.size(); a++)
 		Game::configuration().setThingFlag(index_, (MapThing*)objects[a], GetValue());
 }
@@ -868,7 +868,7 @@ void MOPGAngleProperty::openObjects(vector<MapObject*>& objects)
 void MOPGAngleProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().getIntValue() == GetValue().GetInteger())
+		&& udmf_prop_->defaultValue().intValue() == GetValue().GetInteger())
 		Hide(true);
 	else
 		Hide(false);
@@ -889,7 +889,7 @@ void MOPGAngleProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->getObjects();
+	vector<MapObject*>& objects = parent_->objects();
 	for (unsigned a = 0; a < objects.size(); a++)
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
@@ -992,7 +992,7 @@ void MOPGColourProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->getObjects();
+	vector<MapObject*>& objects = parent_->objects();
 	wxColor             col;
 	col << m_value;
 	col.Set(col.Blue(), col.Green(), col.Red());
@@ -1070,8 +1070,8 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 
 		// Open map texture browser
 		MapTextureBrowser browser(MapEditor::windowWx(), textype_, tex_current, &(MapEditor::editContext().map()));
-		if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
-			GetGrid()->ChangePropertyValue(this, browser.getSelectedItem()->name());
+		if (browser.ShowModal() == wxID_OK && browser.selectedItem())
+			GetGrid()->ChangePropertyValue(this, browser.selectedItem()->name());
 
 		// Refresh text
 		RefreshEditor();
@@ -1145,7 +1145,7 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 void MOPGSPACTriggerProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().getIntValue() == GetValue().GetInteger())
+		&& udmf_prop_->defaultValue().intValue() == GetValue().GetInteger())
 		Hide(true);
 	else
 		Hide(false);
@@ -1166,7 +1166,7 @@ void MOPGSPACTriggerProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->getObjects();
+	vector<MapObject*>& objects = parent_->objects();
 	for (unsigned a = 0; a < objects.size(); a++)
 		Game::configuration().setLineSpacTrigger(GetChoiceSelection(), (MapLine*)objects[a]);
 	// objects[a]->setIntProperty(GetName(), m_value.GetInteger());
@@ -1234,20 +1234,20 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
 {
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
-		vector<MapObject*>& objects = parent_->getObjects();
+		vector<MapObject*>& objects = parent_->objects();
 		if (objects.size() == 0)
 			return false;
-		if (!objects[0]->getParentMap())
+		if (!objects[0]->parentMap())
 			return false;
 
 		// Get unused tag/id depending on object type
 		int tag = GetValue().GetInteger();
 		if (id_type_ == IdType::Sector)
-			tag = objects[0]->getParentMap()->findUnusedSectorTag();
+			tag = objects[0]->parentMap()->findUnusedSectorTag();
 		else if (id_type_ == IdType::Line)
-			tag = objects[0]->getParentMap()->findUnusedLineId();
+			tag = objects[0]->parentMap()->findUnusedLineId();
 		else if (id_type_ == IdType::Thing)
-			tag = objects[0]->getParentMap()->findUnusedThingId();
+			tag = objects[0]->parentMap()->findUnusedThingId();
 
 		GetGrid()->ChangePropertyValue(this, tag);
 		return true;

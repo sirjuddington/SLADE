@@ -139,7 +139,7 @@ class GfxColouriseDialog : public wxDialog
 public:
 	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
 
-	rgba_t getColour();
+	rgba_t colour();
 	void   setColour(string col);
 
 private:
@@ -165,8 +165,8 @@ class GfxTintDialog : public wxDialog
 public:
 	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
 
-	rgba_t getColour();
-	float  getAmount();
+	rgba_t colour();
+	float  amount();
 	void   setValues(string col, int val);
 
 private:

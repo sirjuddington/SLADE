@@ -274,7 +274,7 @@ TarArchive::~TarArchive() {}
 bool TarArchive::open(MemChunk& mc)
 {
 	// Check given data is valid
-	if (mc.getSize() < 1024)
+	if (mc.size() < 1024)
 		return false;
 
 	mc.seek(0, SEEK_SET);
@@ -287,11 +287,11 @@ bool TarArchive::open(MemChunk& mc)
 	int blankcount = 0;
 
 	// Read all entries in the order they appear
-	while ((mc.currentPos() + 512) < mc.getSize() && blankcount < 2)
+	while ((mc.currentPos() + 512) < mc.size() && blankcount < 2)
 	{
 		// Update splash window progress
 		// Since there is no directory in Unix tape archives, use the size
-		UI::setSplashProgress(((float)mc.currentPos() / (float)mc.getSize()));
+		UI::setSplashProgress(((float)mc.currentPos() / (float)mc.size()));
 
 		// Read tar header
 		TarHeader header;
@@ -368,7 +368,7 @@ bool TarArchive::open(MemChunk& mc)
 	// Detect all entry types
 	MemChunk              edata;
 	vector<ArchiveEntry*> all_entries;
-	getEntryTreeAsList(all_entries);
+	putEntryTreeAsList(all_entries);
 	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
@@ -379,10 +379,10 @@ bool TarArchive::open(MemChunk& mc)
 		ArchiveEntry* entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->getSize());
+			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -422,7 +422,7 @@ bool TarArchive::write(MemChunk& mc, bool update)
 
 	// Get archive tree as a list
 	vector<ArchiveEntry*> entries;
-	getEntryTreeAsList(entries);
+	putEntryTreeAsList(entries);
 	size_t listsize = entries.size();
 
 	for (size_t a = 0; a < listsize; ++a)
@@ -433,7 +433,7 @@ bool TarArchive::write(MemChunk& mc, bool update)
 		tarDefaultHeader(&header);
 
 		// Write entry name
-		string name = entries[a]->getPath(true);
+		string name = entries[a]->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 99)
 		{
@@ -447,7 +447,7 @@ bool TarArchive::write(MemChunk& mc, bool update)
 		memcpy(header.name, CHR(name), name.Length());
 
 		// Address folders
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 		{
 			header.typeflag = DIRTYPE;
 			tarWriteOctal(tarMakeChecksum(&header), header.chksum, 7);
@@ -458,13 +458,13 @@ bool TarArchive::write(MemChunk& mc, bool update)
 		else
 		{
 			header.typeflag = REGTYPE;
-			tarWriteOctal(entries[a]->getSize(), header.size, 12);
+			tarWriteOctal(entries[a]->size(), header.size, 12);
 			tarWriteOctal(tarMakeChecksum(&header), header.chksum, 7);
-			size_t padsize = entries[a]->getSize() % 512;
+			size_t padsize = entries[a]->size() % 512;
 			if (padsize)
 				padsize = 512 - padsize;
 			mc.write(&header, 512);
-			mc.write(entries[a]->getData(), entries[a]->getSize());
+			mc.write(entries[a]->rawData(), entries[a]->size());
 			if (padsize)
 				mc.write(padding, padsize);
 		}
@@ -488,7 +488,7 @@ bool TarArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -506,7 +506,7 @@ bool TarArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to entry offset in file and read it in
 	file.Seek((int)entry->exProp("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -529,7 +529,7 @@ bool TarArchive::isTarArchive(MemChunk& mc)
 {
 	mc.seek(0, SEEK_SET);
 	int blankcount = 0;
-	while ((mc.currentPos() + 512) <= mc.getSize() && blankcount < 3)
+	while ((mc.currentPos() + 512) <= mc.size() && blankcount < 3)
 	{
 		// Read tar header
 		TarHeader header;

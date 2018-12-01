@@ -31,19 +31,19 @@ public:
 	Property(unsigned value);
 	~Property();
 
-	Type getType() const { return type_; }
+	Type type() const { return type_; }
 	bool isType(Type type) const { return this->type_ == type; }
 	bool hasValue() const { return has_value_; }
 
 	void changeType(Type newtype);
 	void setHasValue(bool hv) { has_value_ = hv; }
 
-	inline operator bool() const { return getBoolValue(); }
-	inline operator int() const { return getIntValue(); }
-	inline operator float() const { return (float)getFloatValue(); }
-	inline operator double() const { return getFloatValue(); }
-	inline operator string() const { return getStringValue(); }
-	inline operator unsigned() const { return getUnsignedValue(); }
+	inline operator bool() const { return boolValue(); }
+	inline operator int() const { return intValue(); }
+	inline operator float() const { return (float)floatValue(); }
+	inline operator double() const { return floatValue(); }
+	inline operator string() const { return stringValue(); }
+	inline operator unsigned() const { return unsignedValue(); }
 
 	inline bool operator=(bool val)
 	{
@@ -76,11 +76,11 @@ public:
 		return val;
 	}
 
-	bool     getBoolValue(bool warn_wrong_type = false) const;
-	int      getIntValue(bool warn_wrong_type = false) const;
-	double   getFloatValue(bool warn_wrong_type = false) const;
-	string   getStringValue(bool warn_wrong_type = false) const;
-	unsigned getUnsignedValue(bool warn_wrong_type = false) const;
+	bool     boolValue(bool warn_wrong_type = false) const;
+	int      intValue(bool warn_wrong_type = false) const;
+	double   floatValue(bool warn_wrong_type = false) const;
+	string   stringValue(bool warn_wrong_type = false) const;
+	unsigned unsignedValue(bool warn_wrong_type = false) const;
 
 	void setValue(bool val);
 	void setValue(int val);

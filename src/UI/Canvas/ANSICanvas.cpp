@@ -66,16 +66,16 @@ ANSICanvas::ANSICanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 	if (!res_archive)
 		return;
 	ArchiveEntry* ansi_font = res_archive->entryAtPath("vga-rom-font.16");
-	if (!ansi_font || ansi_font->getSize() % 256)
+	if (!ansi_font || ansi_font->size() % 256)
 		return;
 
-	fontdata_ = ansi_font->getData();
+	fontdata_ = ansi_font->rawData();
 
 	// Init variables
 	ansidata_    = nullptr;
 	tex_image_   = new GLTexture();
 	char_width_  = 8;
-	char_height_ = ansi_font->getSize() / 256;
+	char_height_ = ansi_font->size() / 256;
 	width_       = NUMCOLS * char_width_;
 	height_      = NUMROWS * char_height_;
 	picdata_     = new uint8_t[width_ * height_];

@@ -10,8 +10,8 @@ public:
 
 	bool   canGoNext();
 	void   applyChanges();
-	string getTitle() { return "SLADE Temp Folder"; }
-	string getDescription();
+	string title() { return "SLADE Temp Folder"; }
+	string description();
 
 private:
 	wxRadioButton* rb_use_system_;

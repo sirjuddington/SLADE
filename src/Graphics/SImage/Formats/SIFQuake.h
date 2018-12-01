@@ -11,19 +11,19 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_quake")->isThisFormat(mc))
+		if (EntryDataFormat::format("img_quake")->isThisFormat(mc))
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
 		// Get image properties
-		info.width  = wxINT16_SWAP_ON_BE(*(const uint16_t*)(mc.getData()));
-		info.height = wxINT16_SWAP_ON_BE(*(const uint16_t*)(mc.getData() + 4));
+		info.width  = wxINT16_SWAP_ON_BE(*(const uint16_t*)(mc.data()));
+		info.height = wxINT16_SWAP_ON_BE(*(const uint16_t*)(mc.data() + 4));
 
 		// Determine colour type
 		info.colformat = RGBA;
@@ -42,8 +42,8 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image properties
-		int     width  = wxINT16_SWAP_ON_BE(*(const uint16_t*)(data.getData()));
-		int     height = wxINT16_SWAP_ON_BE(*(const uint16_t*)(data.getData() + 4));
+		int     width  = wxINT16_SWAP_ON_BE(*(const uint16_t*)(data.data()));
+		int     height = wxINT16_SWAP_ON_BE(*(const uint16_t*)(data.data() + 4));
 		uint8_t mode   = data[3];
 
 		// Determine image type
@@ -64,7 +64,7 @@ protected:
 		if (mode == Palette)
 		{
 			// Read raw pixel data
-			memcpy(img_data, data.getData() + 8, width * height);
+			memcpy(img_data, data.data() + 8, width * height);
 
 			// Create mask (all opaque, except index 255 is transparent)
 			for (int i = 0; i < width * height; ++i)
@@ -80,14 +80,14 @@ protected:
 		else if (mode == Intensity)
 		{
 			// Read raw pixel data
-			memcpy(img_data, data.getData() + 8, width * height);
+			memcpy(img_data, data.data() + 8, width * height);
 		}
 
 		// Paletted image + alpha channel (i think?)
 		else if (mode == Alpha)
 		{
 			// Read raw pixel data
-			for (unsigned i = 0; i < data.getSize() - 8; i += 2)
+			for (unsigned i = 0; i < data.size() - 8; i += 2)
 			{
 				img_data[i / 2] = data[i + 8];
 				img_mask[i / 2] = data[i + 9];
@@ -98,7 +98,7 @@ protected:
 		else if (mode == RGB24)
 		{
 			// Read raw pixel data
-			for (unsigned i = 0; i < data.getSize() - 8; i += 3)
+			for (unsigned i = 0; i < data.size() - 8; i += 3)
 			{
 				img_data[(i / 3) * 4]     = data[i + 8];
 				img_data[(i / 3) * 4 + 1] = data[i + 9];
@@ -111,7 +111,7 @@ protected:
 		else if (mode == RGB32)
 		{
 			// Read raw pixel data
-			memcpy(img_data, data.getData() + 8, width * height * 4);
+			memcpy(img_data, data.data() + 8, width * height * 4);
 		}
 
 		return true;
@@ -140,13 +140,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_qspr")->isThisFormat(mc))
+		if (EntryDataFormat::format("img_qspr")->isThisFormat(mc))
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		// Get image info
 		SImage::info_t info;
@@ -174,7 +174,7 @@ protected:
 		// Load image data
 		uint8_t* img_data = imageData(image);
 		uint8_t* img_mask = imageMask(image);
-		memcpy(img_data, data.getData() + imgofs + 16, info.width * info.height);
+		memcpy(img_data, data.data() + imgofs + 16, info.width * info.height);
 		memset(img_mask, 0xFF, info.width * info.height);
 		for (int a = 0; a < info.width * info.height; ++a)
 		{
@@ -189,9 +189,9 @@ private:
 	unsigned sprInfo(MemChunk& mc, int index, SImage::info_t& info)
 	{
 		// Setup variables
-		uint32_t maxheight = READ_L32(mc.getData(), 16);
-		uint32_t maxwidth  = READ_L32(mc.getData(), 20);
-		uint32_t nframes   = READ_L32(mc.getData(), 24);
+		uint32_t maxheight = READ_L32(mc.data(), 16);
+		uint32_t maxwidth  = READ_L32(mc.data(), 20);
+		uint32_t nframes   = READ_L32(mc.data(), 24);
 		int      numimages = nframes;
 
 		// Makes sum of frame pictures, not just frames
@@ -200,10 +200,10 @@ private:
 		uint32_t       imgofs = 36;
 		for (size_t a = 0; a < nframes; ++a)
 		{
-			if (READ_L32(mc.getData(), imgofs) != 0)
+			if (READ_L32(mc.data(), imgofs) != 0)
 			{
 				// We have a frame with a group of picture
-				uint32_t grpsz = READ_L32(mc.getData(), imgofs + 4);
+				uint32_t grpsz = READ_L32(mc.data(), imgofs + 4);
 				if (grpsz == 0)
 				{
 					Global::error = "Quake sprite data contains empty group";
@@ -213,13 +213,13 @@ private:
 				imgofs += (grpsz + 2) << 2;
 				for (size_t b = 0; b < grpsz; ++b)
 				{
-					uint32_t pw = READ_L32(mc.getData(), imgofs + 8);
-					uint32_t ph = READ_L32(mc.getData(), imgofs + 12);
+					uint32_t pw = READ_L32(mc.data(), imgofs + 8);
+					uint32_t ph = READ_L32(mc.data(), imgofs + 12);
 					// Store image offset
 					pics.push_back(imgofs);
 					// Move to end of picture data
 					imgofs += 16 + pw * ph;
-					if (imgofs > (unsigned)mc.getSize())
+					if (imgofs > (unsigned)mc.size())
 					{
 						Global::error = "Quake sprite data too short";
 						return 0;
@@ -233,14 +233,14 @@ private:
 			{
 				// We have a frame with a single picture
 				imgofs += 4;
-				uint32_t pw = READ_L32(mc.getData(), imgofs + 8);
-				uint32_t ph = READ_L32(mc.getData(), imgofs + 12);
+				uint32_t pw = READ_L32(mc.data(), imgofs + 8);
+				uint32_t ph = READ_L32(mc.data(), imgofs + 12);
 				// Store image offset
 				pics.push_back(imgofs);
 				// Move to end of picture data
 				imgofs += 16 + pw * ph;
 			}
-			if (imgofs > mc.getSize())
+			if (imgofs > mc.size())
 			{
 				Global::error = "Quake sprite data too short";
 				return 0;
@@ -254,10 +254,10 @@ private:
 
 		// Setup variables using appropriate image data
 		imgofs        = pics[index];
-		info.offset_x = READ_L32(mc.getData(), imgofs + 0);
-		info.offset_y = READ_L32(mc.getData(), imgofs + 4);
-		info.width    = READ_L32(mc.getData(), imgofs + 8);
-		info.height   = READ_L32(mc.getData(), imgofs + 12);
+		info.offset_x = READ_L32(mc.data(), imgofs + 0);
+		info.offset_y = READ_L32(mc.data(), imgofs + 4);
+		info.width    = READ_L32(mc.data(), imgofs + 8);
+		info.height   = READ_L32(mc.data(), imgofs + 12);
 		// Horizontal offsets seem computed differently from Doom, so translate them
 		info.offset_x += info.width;
 
@@ -283,21 +283,21 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_quaketex")->isThisFormat(mc))
+		if (EntryDataFormat::format("img_quaketex")->isThisFormat(mc))
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
 		// Setup variables
 		info.numimages = 4;
 		info.colformat = PALMASK;
-		info.width     = READ_L32(mc.getData(), 16);
-		info.height    = READ_L32(mc.getData(), 20);
+		info.width     = READ_L32(mc.data(), 16);
+		info.height    = READ_L32(mc.data(), 20);
 		info.format    = id_;
 
 		// Sanitize index if needed
@@ -319,17 +319,17 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = getInfo(data, index);
+		SImage::info_t info = this->info(data, index);
 
 		// Find offset
-		uint32_t imgofs = READ_L32(data.getData(), 24 + (index << 2));
+		uint32_t imgofs = READ_L32(data.data(), 24 + (index << 2));
 
 		// Create image
 		image.create(info.width, info.height, (SIType)info.colformat, nullptr, index, info.numimages);
 		image.fillAlpha(255);
 
 		// Load image data
-		memcpy(imageData(image), data.getData() + imgofs, info.width * info.height);
+		memcpy(imageData(image), data.data() + imgofs, info.width * info.height);
 
 		return true;
 	}
@@ -350,21 +350,21 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_quake2wal")->isThisFormat(mc))
+		if (EntryDataFormat::format("img_quake2wal")->isThisFormat(mc))
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
 		// Get image info
 		info.colformat = PALMASK;
 		info.numimages = 4;
-		info.width     = READ_L32(mc.getData(), 32) >> index;
-		info.height    = READ_L32(mc.getData(), 36) >> index;
+		info.width     = READ_L32(mc.data(), 32) >> index;
+		info.height    = READ_L32(mc.data(), 36) >> index;
 		info.format    = id_;
 
 		return info;
@@ -374,7 +374,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = getInfo(data, index);
+		SImage::info_t info = this->info(data, index);
 
 		// Sanitize index if needed
 		index %= info.numimages;
@@ -382,8 +382,8 @@ protected:
 			index = info.numimages + index;
 
 		// Get data offset for image
-		size_t data_offset = READ_L32(data.getData(), 40 + (index << 2));
-		if (!info.width || !info.height || !data_offset || data.getSize() < data_offset + (info.width * info.height))
+		size_t data_offset = READ_L32(data.data(), 40 + (index << 2));
+		if (!info.width || !info.height || !data_offset || data.size() < data_offset + (info.width * info.height))
 		{
 			Global::error = "WAL file: invalid data for mip level";
 			return false;
@@ -394,7 +394,7 @@ protected:
 		image.fillAlpha(255);
 
 		// Fill data with pixel data
-		memcpy(imageData(image), data.getData() + data_offset, info.width * info.height);
+		memcpy(imageData(image), data.data() + data_offset, info.width * info.height);
 
 		return true;
 	}

@@ -267,7 +267,7 @@ void TextEditorCtrl::setup()
 		SetWhitespaceSize(3);
 
 		// TODO: separate colour
-		SetWhitespaceForeground(true, WXCOL(StyleSet::currentSet()->getStyle("guides")->getForeground()));
+		SetWhitespaceForeground(true, WXCOL(StyleSet::currentSet()->style("guides")->foreground()));
 	}
 	else
 		SetViewWhiteSpace(wxSTC_WS_INVISIBLE);
@@ -285,7 +285,7 @@ void TextEditorCtrl::setup()
 	StyleSetChangeable(wxSTC_STYLE_CALLTIP, true);
 	wxFont font_ct(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 	StyleSetFont(wxSTC_STYLE_CALLTIP, font_ct);
-	CallTipSetForegroundHighlight(WXCOL(StyleSet::currentSet()->getStyle("calltip_hl")->getForeground()));
+	CallTipSetForegroundHighlight(WXCOL(StyleSet::currentSet()->style("calltip_hl")->foreground()));
 
 	// Set folding options
 	setupFolding();
@@ -321,13 +321,13 @@ void TextEditorCtrl::setupFoldMargin(TextStyle* margin_style)
 	wxColour col_fg, col_bg;
 	if (margin_style)
 	{
-		col_fg = WXCOL(margin_style->getForeground());
-		col_bg = WXCOL(margin_style->getBackground());
+		col_fg = WXCOL(margin_style->foreground());
+		col_bg = WXCOL(margin_style->background());
 	}
 	else
 	{
-		col_fg = WXCOL(StyleSet::currentSet()->getStyle("foldmargin")->getForeground());
-		col_bg = WXCOL(StyleSet::currentSet()->getStyle("foldmargin")->getBackground());
+		col_fg = WXCOL(StyleSet::currentSet()->style("foldmargin")->foreground());
+		col_bg = WXCOL(StyleSet::currentSet()->style("foldmargin")->background());
 	}
 
 	SetMarginType(1, wxSTC_MARGIN_SYMBOL);
@@ -430,14 +430,14 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 	}
 
 	// Check that the entry has any data, if not do nothing
-	if (entry->getSize() == 0 || !entry->getData())
+	if (entry->size() == 0 || !entry->rawData())
 		return true;
 
 	// Get character entry data
-	string text = wxString::FromUTF8((const char*)entry->getData(), entry->getSize());
+	string text = wxString::FromUTF8((const char*)entry->rawData(), entry->size());
 	// If opening as UTF8 failed for some reason, try again as 8-bit data
 	if (text.length() == 0)
-		text = wxString::From8BitData((const char*)entry->getData(), entry->getSize());
+		text = wxString::From8BitData((const char*)entry->rawData(), entry->size());
 
 	// Load text into editor
 	SetText(text);
@@ -805,17 +805,17 @@ void TextEditorCtrl::showCalltip(int position)
 {
 	// Setup calltip colours
 	StyleSet* ss_current = StyleSet::currentSet();
-	call_tip_->setBackgroundColour(ss_current->getStyle("calltip")->getBackground());
-	call_tip_->setTextColour(ss_current->getStyle("calltip")->getForeground());
-	call_tip_->setTextHighlightColour(ss_current->getStyle("calltip_hl")->getForeground());
+	call_tip_->setBackgroundColour(ss_current->style("calltip")->background());
+	call_tip_->setTextColour(ss_current->style("calltip")->foreground());
+	call_tip_->setTextHighlightColour(ss_current->style("calltip_hl")->foreground());
 	if (txed_calltips_colourise)
 	{
-		call_tip_->setFunctionColour(ss_current->getStyle("function")->getForeground());
-		call_tip_->setTypeColour(ss_current->getStyle("type")->getForeground());
-		call_tip_->setKeywordColour(ss_current->getStyle("keyword")->getForeground());
+		call_tip_->setFunctionColour(ss_current->style("function")->foreground());
+		call_tip_->setTypeColour(ss_current->style("type")->foreground());
+		call_tip_->setKeywordColour(ss_current->style("keyword")->foreground());
 	}
 	if (txed_calltips_use_font)
-		call_tip_->setFont(ss_current->getDefaultFontFace(), (int)round(ss_current->getDefaultFontSize() * 0.9));
+		call_tip_->setFont(ss_current->defaultFontFace(), (int)round(ss_current->defaultFontSize() * 0.9));
 	else
 		call_tip_->setFont("", 0);
 
@@ -1220,7 +1220,7 @@ void TextEditorCtrl::cycleComments()
 
 	// For now, we assume all comment types have the same number of styles.
 	size_t   total_styles = language_->lineCommentL().size();
-	unsigned next_style   = language_->getPreferedComments() + 1;
+	unsigned next_style   = language_->preferedComments() + 1;
 	next_style            = next_style >= total_styles ? 0 : next_style;
 	language_->setPreferedComments(next_style);
 }
@@ -1238,7 +1238,7 @@ void TextEditorCtrl::cycleComments()
 void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 {
 	// Check if keypress matches any keybinds
-	wxArrayString binds = KeyBind::getBinds(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
+	wxArrayString binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
 
 	// Go through matching binds
 	bool handled = false;

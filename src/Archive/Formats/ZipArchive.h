@@ -23,7 +23,7 @@ public:
 	ArchiveEntry* addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
 
 	// Detection
-	MapDesc         getMapInfo(ArchiveEntry* maphead) override;
+	MapDesc         mapDesc(ArchiveEntry* maphead) override;
 	vector<MapDesc> detectMaps() override;
 
 	// Search

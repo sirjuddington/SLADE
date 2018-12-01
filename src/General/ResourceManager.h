@@ -3,7 +3,6 @@
 #include "Archive/Archive.h"
 #include "General/ListenerAnnouncer.h"
 #include "Graphics/CTexture/CTexture.h"
-#include "common.h"
 
 class ResourceManager;
 
@@ -94,13 +93,13 @@ public:
 	void removeEntry(ArchiveEntry::SPtr& entry, bool log = false, bool full_check = false);
 
 	void listAllPatches();
-	void getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
+	void putAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
 
-	void getAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore = nullptr);
-	void getAllTextureNames(vector<string>& list);
+	void putAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore = nullptr);
+	void putAllTextureNames(vector<string>& list);
 
-	void getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
-	void getAllFlatNames(vector<string>& list);
+	void putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
+	void putAllFlatNames(vector<string>& list);
 
 	ArchiveEntry* getPaletteEntry(const string& palette, Archive* priority = nullptr);
 	ArchiveEntry* getPatchEntry(const string& patch, const string& nspace = "patches", Archive* priority = nullptr);
@@ -114,7 +113,7 @@ public:
 
 	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
 
-	static string getTextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
+	static string doom64TextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
 
 private:
 	EntryResourceMap palettes_;

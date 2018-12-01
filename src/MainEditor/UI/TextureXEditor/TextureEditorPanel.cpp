@@ -242,11 +242,11 @@ void TextureEditorPanel::updateTextureControls()
 		return;
 
 	bool modified = tex_modified_;
-	text_tex_name_->SetValue(tex_current_->getName());
-	spin_tex_width_->SetValue(tex_current_->getWidth());
-	spin_tex_height_->SetValue(tex_current_->getHeight());
-	spin_tex_scalex_->SetValue(tex_current_->getScaleX() * 8);
-	spin_tex_scaley_->SetValue(tex_current_->getScaleY() * 8);
+	text_tex_name_->SetValue(tex_current_->name());
+	spin_tex_width_->SetValue(tex_current_->width());
+	spin_tex_height_->SetValue(tex_current_->height());
+	spin_tex_scalex_->SetValue(tex_current_->scaleX() * 8);
+	spin_tex_scaley_->SetValue(tex_current_->scaleY() * 8);
 	cb_tex_world_panning_->SetValue(tex_current_->worldPanning());
 	updateTextureScaleLabel();
 	tex_modified_ = modified;
@@ -263,14 +263,14 @@ void TextureEditorPanel::updateTextureScaleLabel()
 		return;
 
 	// Determine scaled X value
-	uint32_t scaled_x = tex_current_->getWidth();
-	if (tex_current_->getScaleX() != 0)
-		scaled_x /= tex_current_->getScaleX();
+	uint32_t scaled_x = tex_current_->width();
+	if (tex_current_->scaleX() != 0)
+		scaled_x /= tex_current_->scaleX();
 
 	// Determine scaled Y value
-	uint32_t scaled_y = tex_current_->getHeight();
-	if (tex_current_->getScaleY() != 0)
-		scaled_y /= tex_current_->getScaleY();
+	uint32_t scaled_y = tex_current_->height();
+	if (tex_current_->scaleY() != 0)
+		scaled_y /= tex_current_->scaleY();
 
 	// Update the label
 	label_scaled_size_->SetLabel(S_FMT("Scaled Size: %dx%d", scaled_x, scaled_y));
@@ -370,7 +370,7 @@ void TextureEditorPanel::populatePatchList()
 
 	// Add each patch to the list
 	for (size_t a = 0; a < tex_current_->nPatches(); a++)
-		list_patches_->addItem(a, tex_current_->getPatch(a)->getName());
+		list_patches_->addItem(a, tex_current_->patch(a)->name());
 
 	// Update list width
 	list_patches_->Show(true);
@@ -401,7 +401,7 @@ void TextureEditorPanel::updatePatchControls()
 		// If only 1 patch is selected, just set the controls to this patch
 		if (selection.size() == 1)
 		{
-			CTPatch* patch = tex_current_->getPatch(selection[0]);
+			CTPatch* patch = tex_current_->patch(selection[0]);
 			if (!patch)
 			{
 				LOG_MESSAGE(1, "Error: Selected patch does not exist in texture");
@@ -439,7 +439,7 @@ bool TextureEditorPanel::openTexture(CTexture* tex, TextureXList* list)
 	tex_current_->setList(list);
 
 	// Open texture in canvas
-	tex_canvas_->openTexture(tex_current_, tx_editor_->getArchive());
+	tex_canvas_->openTexture(tex_current_, tx_editor_->archive());
 
 	// Set control values
 	updateTextureControls();
@@ -486,7 +486,7 @@ void TextureEditorPanel::setPalette(Palette* pal)
 // -----------------------------------------------------------------------------
 Palette* TextureEditorPanel::palette()
 {
-	return tex_canvas_->getPalette();
+	return tex_canvas_->palette();
 }
 
 // -----------------------------------------------------------------------------
@@ -494,7 +494,7 @@ Palette* TextureEditorPanel::palette()
 // -----------------------------------------------------------------------------
 bool TextureEditorPanel::blendRGBA()
 {
-	return tex_canvas_->getBlendRGBA();
+	return tex_canvas_->blendRGBA();
 }
 
 // -----------------------------------------------------------------------------
@@ -643,7 +643,7 @@ void TextureEditorPanel::replacePatch()
 		return;
 
 	// Get first selected patch name (for browser)
-	string pname = tex_canvas_->getTexture()->getPatch(selection[0])->getName();
+	string pname = tex_canvas_->texture()->patch(selection[0])->name();
 
 	// Browse for patch
 	tx_editor_->setFullPath(false);
@@ -864,14 +864,14 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				// Get drag amount according to texture
 				point2_t tex_cur  = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
 				point2_t tex_prev = tex_canvas_->screenToTexPosition(
-					tex_canvas_->getMousePrevPos().x, tex_canvas_->getMousePrevPos().y);
+					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
 				point2_t diff = tex_cur - tex_prev;
 
 				// Move any selected patches
 				wxArrayInt selected_patches = list_patches_->selectedItems();
 				for (size_t a = 0; a < selected_patches.size(); a++)
 				{
-					CTPatch* patch = tex_current_->getPatch(selected_patches[a]);
+					CTPatch* patch = tex_current_->patch(selected_patches[a]);
 					if (!patch)
 						continue;
 					int16_t cx = patch->xOffset();
@@ -887,17 +887,17 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 			}
 			else if (
 				tex_current_ && tex_current_->isExtended()
-				&& tex_canvas_->getViewType() != CTextureCanvas::View::Normal)
+				&& tex_canvas_->viewType() != CTextureCanvas::View::Normal)
 			{
 				// Get drag amount according to texture
 				point2_t tex_cur  = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
 				point2_t tex_prev = tex_canvas_->screenToTexPosition(
-					tex_canvas_->getMousePrevPos().x, tex_canvas_->getMousePrevPos().y);
+					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
 				point2_t diff = tex_cur - tex_prev;
 
 				// Modify offsets
-				tex_current_->setOffsetX(tex_current_->getOffsetX() - diff.x);
-				tex_current_->setOffsetY(tex_current_->getOffsetY() - diff.y);
+				tex_current_->setOffsetX(tex_current_->offsetX() - diff.x);
+				tex_current_->setOffsetY(tex_current_->offsetY() - diff.y);
 				tex_modified_ = true;
 
 				// Refresh texture canvas
@@ -928,7 +928,7 @@ void TextureEditorPanel::onTexCanvasDragEnd(wxCommandEvent& e)
 void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 {
 	// Check if keypress matches any keybinds
-	wxArrayString binds = KeyBind::getBinds(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
+	wxArrayString binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
 
 	// Check for alt key
 	if (e.GetKeyCode() == WXK_ALT)
@@ -1024,7 +1024,7 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		wxArrayInt selected_patches = list_patches_->selectedItems();
 		for (size_t a = 0; a < selected_patches.size(); a++)
 		{
-			CTPatch* patch = tex_current_->getPatch(selected_patches[a]);
+			CTPatch* patch = tex_current_->patch(selected_patches[a]);
 			if (!patch)
 				continue;
 			int16_t cx = patch->xOffset();
@@ -1215,7 +1215,7 @@ void TextureEditorPanel::onPatchPositionXChanged(wxCommandEvent& e)
 		return;
 
 	// Get selected patch
-	CTPatch* patch = tex_current_->getPatch(list_patches_->selectedItems()[0]);
+	CTPatch* patch = tex_current_->patch(list_patches_->selectedItems()[0]);
 	if (!patch)
 		return;
 
@@ -1238,7 +1238,7 @@ void TextureEditorPanel::onPatchPositionYChanged(wxCommandEvent& e)
 		return;
 
 	// Get selected patch
-	CTPatch* patch = tex_current_->getPatch(list_patches_->selectedItems()[0]);
+	CTPatch* patch = tex_current_->patch(list_patches_->selectedItems()[0]);
 	if (!patch)
 		return;
 

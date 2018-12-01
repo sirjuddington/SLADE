@@ -11,13 +11,13 @@ struct Colour
 	rgba_t colour;
 };
 
-rgba_t getColour(string name);
-Colour getColDef(string name);
+rgba_t colour(string name);
+Colour colDef(string name);
 void   setColour(string name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);
 
-double getLineHilightWidth();
-double getLineSelectionWidth();
-double getFlatAlpha();
+double lineHilightWidth();
+double lineSelectionWidth();
+double flatAlpha();
 void   setLineHilightWidth(double mult);
 void   setLineSelectionWidth(double mult);
 void   setFlatAlpha(double alpha);
@@ -28,7 +28,7 @@ bool init();
 void loadDefaults();
 
 bool readConfiguration(string name);
-void getConfigurationNames(vector<string>& names);
+void putConfigurationNames(vector<string>& names);
 
-void getColourNames(vector<string>& list);
+void putColourNames(vector<string>& list);
 } // namespace ColourConfiguration

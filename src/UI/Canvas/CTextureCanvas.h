@@ -22,17 +22,17 @@ public:
 	CTextureCanvas(wxWindow* parent, int id);
 	~CTextureCanvas();
 
-	CTexture* getTexture() { return texture_; }
-	View      getViewType() { return view_type_; }
+	CTexture* texture() { return texture_; }
+	View      viewType() { return view_type_; }
 	void      setScale(double scale) { this->scale_ = scale; }
 	void      setViewType(View type) { this->view_type_ = type; }
 	void      drawOutside(bool draw = true) { draw_outside_ = draw; }
-	point2_t  getMousePrevPos() { return mouse_prev_; }
+	point2_t  mousePrevPos() { return mouse_prev_; }
 	bool      isDragging() { return dragging_; }
 	bool      showGrid() { return show_grid_; }
 	void      showGrid(bool show = true) { show_grid_ = show; }
-	void      blendRGBA(bool rgba) { blend_rgba_ = rgba; }
-	bool      getBlendRGBA() { return blend_rgba_; }
+	void      setBlendRGBA(bool rgba) { blend_rgba_ = rgba; }
+	bool      blendRGBA() { return blend_rgba_; }
 	bool      applyTexScale() { return tex_scale_; }
 	void      applyTexScale(bool apply) { tex_scale_ = apply; }
 

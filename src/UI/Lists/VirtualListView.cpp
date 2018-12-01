@@ -90,7 +90,7 @@ VirtualListView::VirtualListView(wxWindow* parent)
 
 	// Set monospace font if configured
 	font_normal_    = new wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
-	font_monospace_ = new wxFont(WxUtils::getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+	font_monospace_ = new wxFont(WxUtils::monospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
 	if (list_font_monospace)
 		item_attr_->SetFont(*font_monospace_);
 
@@ -220,7 +220,7 @@ void VirtualListView::clearSelection()
 // If [item_indices] is true, the returned indices will have sorting and
 // filtering applied
 // -----------------------------------------------------------------------------
-vector<long> VirtualListView::getSelection(bool item_indices)
+vector<long> VirtualListView::selection(bool item_indices)
 {
 	// Init return array
 	vector<long> ret;
@@ -237,7 +237,7 @@ vector<long> VirtualListView::getSelection(bool item_indices)
 			break;
 
 		// Otherwise add the selected index to the vector
-		ret.push_back(item_indices ? getItemIndex(item) : item);
+		ret.push_back(item_indices ? itemIndex(item) : item);
 	}
 
 	return ret;
@@ -246,7 +246,7 @@ vector<long> VirtualListView::getSelection(bool item_indices)
 // -----------------------------------------------------------------------------
 // Returns the first selected item index
 // -----------------------------------------------------------------------------
-long VirtualListView::getFirstSelected()
+long VirtualListView::firstSelected()
 {
 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 }
@@ -254,7 +254,7 @@ long VirtualListView::getFirstSelected()
 // -----------------------------------------------------------------------------
 // Returns the last selected item index
 // -----------------------------------------------------------------------------
-long VirtualListView::getLastSelected()
+long VirtualListView::lastSelected()
 {
 	// Go through all items
 	long item = -1;
@@ -296,7 +296,7 @@ void VirtualListView::focusItem(long item, bool focus)
 // -----------------------------------------------------------------------------
 // Returns the index of the currently focused item
 // -----------------------------------------------------------------------------
-long VirtualListView::getFocus()
+long VirtualListView::focusedIndex()
 {
 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
 }
@@ -314,9 +314,9 @@ bool VirtualListView::defaultSort(long left, long right)
 	// Sort by column text > index
 	else
 	{
-		int result = lv_current->getItemText(left, lv_current->sort_column_, left)
+		int result = lv_current->itemText(left, lv_current->sort_column_, left)
 						 .Lower()
-						 .compare(lv_current->getItemText(right, lv_current->sort_column_, right).Lower());
+						 .compare(lv_current->itemText(right, lv_current->sort_column_, right).Lower());
 		if (result == 0)
 			return left < right;
 		else
@@ -327,7 +327,7 @@ bool VirtualListView::defaultSort(long left, long right)
 // -----------------------------------------------------------------------------
 // Returns the filtered index of the list item at [item]
 // -----------------------------------------------------------------------------
-long VirtualListView::getItemIndex(long item) const
+long VirtualListView::itemIndex(long item) const
 {
 	if (item < 0 || item >= (long)items_.size())
 		return item;
@@ -411,7 +411,7 @@ bool VirtualListView::lookForSearchEntryFrom(long focus)
 	bool gotmatch = false;
 	while ((!looped && index < GetItemCount()) || (looped && index < focus))
 	{
-		string name = getItemText(index, col_search_, items_[index]);
+		string name = itemText(index, col_search_, items_[index]);
 		if (name.Upper().StartsWith(search_))
 		{
 			// Matches, update selection+focus
@@ -513,7 +513,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 	{
 		if (e.GetModifiers() == wxMOD_SHIFT)
 		{
-			long focus = getFocus();
+			long focus = focusedIndex();
 			if (focus < 0)
 				focus = last_focus_; // If no current focus, go with last focused item
 			if (focus > 0)
@@ -527,7 +527,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 		}
 		else if (e.GetModifiers() == wxMOD_NONE)
 		{
-			long focus = getFocus();
+			long focus = focusedIndex();
 			if (focus < 0)
 				focus = last_focus_; // If no current focus, go with last focused item
 			if (focus > 0)
@@ -546,7 +546,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 	{
 		if (e.GetModifiers() == wxMOD_SHIFT)
 		{
-			long focus = getFocus();
+			long focus = focusedIndex();
 			if (focus < 0)
 				focus = last_focus_; // If no current focus, go with last focused item
 			if (focus < GetItemCount() - 1)
@@ -560,7 +560,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 		}
 		else if (e.GetModifiers() == wxMOD_NONE)
 		{
-			long focus = getFocus();
+			long focus = focusedIndex();
 			if (focus < 0)
 				focus = last_focus_; // If no current focus, go with last focused item
 			if (focus < GetItemCount() - 1)
@@ -607,7 +607,7 @@ void VirtualListView::onKeyChar(wxKeyEvent& e)
 	if (isRealChar && e.GetModifiers() == 0)
 	{
 		// Get currently focused item (or first if nothing is focused)
-		long focus = getFocus();
+		long focus = focusedIndex();
 		if (focus < 0)
 			focus = 0;
 

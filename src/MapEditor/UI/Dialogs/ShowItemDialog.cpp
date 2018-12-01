@@ -91,7 +91,7 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 // -----------------------------------------------------------------------------
 // Returns the selected object type
 // -----------------------------------------------------------------------------
-MapObject::Type ShowItemDialog::getType() const
+MapObject::Type ShowItemDialog::type() const
 {
 	return obj_types[choice_type_->GetSelection()];
 }
@@ -99,7 +99,7 @@ MapObject::Type ShowItemDialog::getType() const
 // -----------------------------------------------------------------------------
 // Returns the entered index, or -1 if invalid
 // -----------------------------------------------------------------------------
-int ShowItemDialog::getIndex() const
+int ShowItemDialog::index() const
 {
 	long value;
 	if (text_index_->GetValue().ToLong(&value))

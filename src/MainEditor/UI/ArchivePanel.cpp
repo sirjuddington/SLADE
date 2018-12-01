@@ -149,7 +149,7 @@ public:
 				// Find entry to replace if needed
 				if (auto_entry_replace)
 				{
-					entry = parent_->archive()->entryAtPath(list_->getCurrentDir()->getPath() + fn.GetFullName());
+					entry = parent_->archive()->entryAtPath(list_->currentDir()->path() + fn.GetFullName());
 					// An entry with that name is already present, so ask about replacing it
 					if (entry && !yes_to_all)
 					{
@@ -157,7 +157,7 @@ public:
 						// we will instead hack the Cancel button into being a "Yes to all" button. This is
 						// despite the existence of a wxID_YESTOALL return value...
 						string message =
-							S_FMT("Overwrite existing entry %s%s", list_->getCurrentDir()->getPath(), fn.GetFullName());
+							S_FMT("Overwrite existing entry %s%s", list_->currentDir()->path(), fn.GetFullName());
 						wxMessageDialog dlg(parent_, message, caption, wxCANCEL | wxYES_NO | wxCENTRE);
 						dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
 						int result = dlg.ShowModal();
@@ -173,7 +173,7 @@ public:
 
 				// Create new entry if needed
 				if (entry == nullptr)
-					entry = parent_->archive()->addNewEntry(fn.GetFullName(), index, list_->getCurrentDir());
+					entry = parent_->archive()->addNewEntry(fn.GetFullName(), index, list_->currentDir());
 
 				// Import the file to it
 				entry->importFile(filenames[a]);
@@ -276,8 +276,8 @@ int isInMap(size_t index, vector<Archive::MapDesc>& maps)
 {
 	for (size_t m = 0; m < maps.size(); ++m)
 	{
-		size_t head_index = maps[m].head->getParentDir()->entryIndex(maps[m].head);
-		size_t end_index  = maps[m].head->getParentDir()->entryIndex(maps[m].end, head_index);
+		size_t head_index = maps[m].head->parentDir()->entryIndex(maps[m].head);
+		size_t end_index  = maps[m].head->parentDir()->entryIndex(maps[m].end, head_index);
 		if (index >= head_index && index <= end_index)
 			return m;
 	}
@@ -291,16 +291,16 @@ int isInMap(size_t index, vector<Archive::MapDesc>& maps)
 // -----------------------------------------------------------------------------
 size_t getNamespaceNumber(ArchiveEntry* entry, size_t index, vector<string>& ns, vector<Archive::MapDesc>& maps)
 {
-	string ens = entry->getParent()->detectNamespace(index);
+	string ens = entry->parent()->detectNamespace(index);
 	if (S_CMPNOCASE(ens, "global"))
 	{
 		if (!maps.empty() && isInMap(index, maps) >= 0)
 			ens = "maps";
-		else if (S_CMPNOCASE(entry->getType()->category(), "Graphics"))
+		else if (S_CMPNOCASE(entry->type()->category(), "Graphics"))
 			ens = "graphics";
-		else if (S_CMPNOCASE(entry->getType()->category(), "Audio"))
+		else if (S_CMPNOCASE(entry->type()->category(), "Audio"))
 		{
-			if (S_CMPNOCASE(entry->getType()->icon(), "music"))
+			if (S_CMPNOCASE(entry->type()->icon(), "music"))
 				ens = "music";
 			else
 				ens = "sounds";
@@ -457,7 +457,7 @@ bool ArchivePanel::saveEntryChanges()
 	if (autosave_entry_changes > 1)
 	{
 		int result = wxMessageBox(
-			S_FMT("Save changes to entry \"%s\"?", cur_area_->entry()->getName()),
+			S_FMT("Save changes to entry \"%s\"?", cur_area_->entry()->name()),
 			"Unsaved Changes",
 			wxYES_NO | wxICON_QUESTION);
 
@@ -683,7 +683,7 @@ bool ArchivePanel::newEntry(int type)
 	}
 
 	// Get the entry index of the last selected list item
-	int index = archive_->entryIndex(entry_list_->getLastSelectedEntry(), entry_list_->getCurrentDir());
+	int index = archive_->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -693,7 +693,7 @@ bool ArchivePanel::newEntry(int type)
 
 	// Add the entry to the archive
 	undo_manager_->beginRecord("Add Entry");
-	ArchiveEntry* new_entry = archive_->addNewEntry(name, index, entry_list_->getCurrentDir());
+	ArchiveEntry* new_entry = archive_->addNewEntry(name, index, entry_list_->currentDir());
 	undo_manager_->endRecord(true);
 
 	// Deal with specific entry type that we may want created
@@ -711,7 +711,7 @@ bool ArchivePanel::newEntry(int type)
 				Palette* pal;
 				int      choice = cp.getChoice();
 				if (choice)
-					pal = App::paletteManager()->getPalette(choice - 1);
+					pal = App::paletteManager()->palette(choice - 1);
 				else
 					pal = App::paletteManager()->globalPalette();
 				pal->saveMem(mc);
@@ -769,7 +769,7 @@ bool ArchivePanel::newDirectory()
 
 	// Add the directory to the archive
 	undo_manager_->beginRecord("Create Directory");
-	ArchiveTreeNode* dir = archive_->createDir(name, entry_list_->getCurrentDir());
+	ArchiveTreeNode* dir = archive_->createDir(name, entry_list_->currentDir());
 	undo_manager_->endRecord(!!dir);
 
 	// Return whether the directory was created ok
@@ -787,7 +787,7 @@ bool ArchivePanel::importFiles()
 	if (SFileDialog::openFiles(info, "Choose files to import", "Any File (*.*)|*.*", this))
 	{
 		// Get the entry index of the last selected list item
-		int index = archive_->entryIndex(entry_list_->getLastSelectedEntry(), entry_list_->getCurrentDir());
+		int index = archive_->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
 
 		// If something was selected, add 1 to the index so we add the new entry after the last selected
 		if (index >= 0)
@@ -816,7 +816,7 @@ bool ArchivePanel::importFiles()
 			UI::setSplashProgressMessage(name);
 
 			// Add the entry to the archive
-			ArchiveEntry* new_entry = archive_->addNewEntry(name, index, entry_list_->getCurrentDir());
+			ArchiveEntry* new_entry = archive_->addNewEntry(name, index, entry_list_->currentDir());
 
 			// If the entry was created ok, load the file into it
 			if (new_entry)
@@ -966,7 +966,7 @@ bool ArchivePanel::renameEntry(bool each)
 	Global::error = "Rename failed";
 
 	// Get a list of selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Rename Entry");
@@ -985,14 +985,14 @@ bool ArchivePanel::renameEntry(bool each)
 				entry_list_->setEntriesAutoUpdate(true);
 
 			// Prompt for a new name
-			string new_name = wxGetTextFromUser("Enter new entry name:", "Rename", selection[a]->getName());
+			string new_name = wxGetTextFromUser("Enter new entry name:", "Rename", selection[a]->name());
 
 			// Rename entry (if needed)
-			if (!new_name.IsEmpty() && selection[a]->getName() != new_name)
+			if (!new_name.IsEmpty() && selection[a]->name() != new_name)
 			{
 				if (!archive_->renameEntry(selection[a], new_name))
 					wxMessageBox(
-						S_FMT("Unable to rename entry %s: %s", CHR(selection[a]->getName()), CHR(Global::error)),
+						S_FMT("Unable to rename entry %s: %s", CHR(selection[a]->name()), CHR(Global::error)),
 						"Rename Entry",
 						wxICON_EXCLAMATION | wxOK);
 			}
@@ -1003,7 +1003,7 @@ bool ArchivePanel::renameEntry(bool each)
 		// Get a list of entry names
 		wxArrayString names;
 		for (auto& entry : selection)
-			names.push_back(entry->getName(true));
+			names.push_back(entry->name(true));
 
 		// Get filter string
 		string filter = Misc::massRenameFilter(names);
@@ -1030,11 +1030,11 @@ bool ArchivePanel::renameEntry(bool each)
 				ArchiveEntry* entry = selection[a];
 
 				// If the entry is a folder then skip it
-				if (entry->getType() == EntryType::folderType())
+				if (entry->type() == EntryType::folderType())
 					continue;
 
 				// Get current name as wxFileName for processing
-				wxFileName fn(entry->getName());
+				wxFileName fn(entry->name());
 
 				// Rename the entry (if needed)
 				if (fn.GetName() != names[a])
@@ -1054,7 +1054,7 @@ bool ArchivePanel::renameEntry(bool each)
 					// Rename in archive
 					if (!archive_->renameEntry(entry, fn.GetFullName()))
 						wxMessageBox(
-							S_FMT("Unable to rename entry %s: %s", CHR(selection[a]->getName()), CHR(Global::error)),
+							S_FMT("Unable to rename entry %s: %s", CHR(selection[a]->name()), CHR(Global::error)),
 							"Rename Entry",
 							wxICON_EXCLAMATION | wxOK);
 				}
@@ -1064,7 +1064,7 @@ bool ArchivePanel::renameEntry(bool each)
 
 
 	// Get a list of selected directories
-	vector<ArchiveTreeNode*> selected_dirs = entry_list_->getSelectedDirectories();
+	vector<ArchiveTreeNode*> selected_dirs = entry_list_->selectedDirectories();
 
 	// Go through the list
 	entry_list_->setEntriesAutoUpdate(false);
@@ -1074,7 +1074,7 @@ bool ArchivePanel::renameEntry(bool each)
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Get the current directory's name
-		string old_name = selected_dirs[a]->getName();
+		string old_name = selected_dirs[a]->name();
 
 		// Prompt for a new name
 		string new_name =
@@ -1106,10 +1106,10 @@ bool ArchivePanel::renameEntry(bool each)
 bool ArchivePanel::deleteEntry(bool confirm)
 {
 	// Get a list of selected entries
-	vector<ArchiveEntry*> selected_entries = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selected_entries = entry_list_->selectedEntries();
 
 	// Get a list of selected directories
-	vector<ArchiveTreeNode*> selected_dirs = entry_list_->getSelectedDirectories();
+	vector<ArchiveTreeNode*> selected_dirs = entry_list_->selectedDirectories();
 
 	// Confirmation dialog
 	if (confirm_entry_delete && confirm)
@@ -1119,9 +1119,9 @@ bool ArchivePanel::deleteEntry(bool confirm)
 		if (num == 1)
 		{
 			if (selected_entries.size() == 1)
-				item = selected_entries[0]->getName();
+				item = selected_entries[0]->name();
 			else
-				item = selected_dirs[0]->getName();
+				item = selected_dirs[0]->name();
 		}
 		else if (num > 0)
 			item = S_FMT("these %d items", num);
@@ -1149,10 +1149,10 @@ bool ArchivePanel::deleteEntry(bool confirm)
 		App::archiveManager().deleteBookmark(selected_entries[a]);
 
 		// Close entry tab if open
-		MainEditor::window()->getArchiveManagerPanel()->closeEntryTab(selected_entries[a]);
+		MainEditor::window()->archiveManagerPanel()->closeEntryTab(selected_entries[a]);
 
 		// Remove the current selected entry if it isn't a directory
-		if (selected_entries[a]->getType() != EntryType::folderType())
+		if (selected_entries[a]->type() != EntryType::folderType())
 			archive_->removeEntry(selected_entries[a]);
 	}
 
@@ -1168,10 +1168,10 @@ bool ArchivePanel::deleteEntry(bool confirm)
 
 		// Close entry tabs
 		for (const auto& entry : selected_dirs[a]->entries())
-			MainEditor::window()->getArchiveManagerPanel()->closeEntryTab(entry.get());
+			MainEditor::window()->archiveManagerPanel()->closeEntryTab(entry.get());
 
 		// Remove the selected directory from the archive
-		archive_->removeDir(selected_dirs[a]->getName(), entry_list_->getCurrentDir());
+		archive_->removeDir(selected_dirs[a]->name(), entry_list_->currentDir());
 	}
 	entry_list_->setEntriesAutoUpdate(true);
 
@@ -1205,7 +1205,7 @@ bool ArchivePanel::revertEntry()
 			return false;
 
 	// Get selected entries
-	vector<ArchiveEntry*> selected_entries = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selected_entries = entry_list_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Revert Entry");
@@ -1238,8 +1238,8 @@ bool ArchivePanel::revertEntry()
 bool ArchivePanel::moveUp()
 {
 	// Get selection
-	vector<long> selection = entry_list_->getSelection();
-	long         focus     = entry_list_->getFocus();
+	vector<long> selection = entry_list_->selection();
+	long         focus     = entry_list_->focusedIndex();
 
 	// If nothing is selected, do nothing
 	if (selection.empty())
@@ -1254,7 +1254,7 @@ bool ArchivePanel::moveUp()
 	undo_manager_->beginRecord("Move Up");
 	for (long index : selection)
 		archive_->swapEntries(
-			entry_list_->getEntryIndex(index), entry_list_->getEntryIndex(index - 1), entry_list_->getCurrentDir());
+			entry_list_->entryIndexAt(index), entry_list_->entryIndexAt(index - 1), entry_list_->currentDir());
 	undo_manager_->endRecord(true);
 
 	// Update selection
@@ -1265,7 +1265,7 @@ bool ArchivePanel::moveUp()
 	entry_list_->focusItem(focus - 1);
 
 	// Ensure top-most entry is visible
-	entry_list_->EnsureVisible(entry_list_->getEntryIndex(selection[0]));
+	entry_list_->EnsureVisible(entry_list_->entryIndexAt(selection[0]));
 
 	// Return success
 	return true;
@@ -1277,8 +1277,8 @@ bool ArchivePanel::moveUp()
 bool ArchivePanel::moveDown()
 {
 	// Get selection
-	vector<long> selection = entry_list_->getSelection();
-	long         focus     = entry_list_->getFocus();
+	vector<long> selection = entry_list_->selection();
+	long         focus     = entry_list_->focusedIndex();
 
 	// If nothing is selected, do nothing
 	if (selection.empty())
@@ -1293,9 +1293,9 @@ bool ArchivePanel::moveDown()
 	undo_manager_->beginRecord("Move Down");
 	for (int a = selection.size() - 1; a >= 0; a--)
 		archive_->swapEntries(
-			entry_list_->getEntryIndex(selection[a]),
-			entry_list_->getEntryIndex(selection[a] + 1),
-			entry_list_->getCurrentDir());
+			entry_list_->entryIndexAt(selection[a]),
+			entry_list_->entryIndexAt(selection[a] + 1),
+			entry_list_->currentDir());
 	undo_manager_->endRecord(true);
 
 	// Update selection
@@ -1306,7 +1306,7 @@ bool ArchivePanel::moveDown()
 	entry_list_->focusItem(focus + 1);
 
 	// Ensure bottom-most entry is visible
-	entry_list_->EnsureVisible(entry_list_->getEntryIndex(selection[selection.size() - 1]));
+	entry_list_->EnsureVisible(entry_list_->entryIndexAt(selection[selection.size() - 1]));
 
 	// Return success
 	return true;
@@ -1328,8 +1328,8 @@ bool ArchivePanel::moveDown()
 bool ArchivePanel::sort()
 {
 	// Get selected entries
-	vector<long>     selection = entry_list_->getSelection();
-	ArchiveTreeNode* dir       = entry_list_->getCurrentDir();
+	vector<long>     selection = entry_list_->selection();
+	ArchiveTreeNode* dir       = entry_list_->currentDir();
 
 	size_t start, stop;
 
@@ -1360,7 +1360,7 @@ bool ArchivePanel::sort()
 	initNamespaceVector(nspaces, dir->archive()->hasFlatHack());
 	vector<Archive::MapDesc> maps = dir->archive()->detectMaps();
 
-	string ns  = dir->archive()->detectNamespace(entry_list_->getEntry(selection[0]));
+	string ns  = dir->archive()->detectNamespace(entry_list_->entryAt(selection[0]));
 	size_t nsn = 0, lnsn = 0;
 
 	// Fill a map with <entry name, entry index> pairs
@@ -1371,12 +1371,12 @@ bool ArchivePanel::sort()
 		bool          ns_changed = false;
 		int           mapindex   = isInMap(selection[i], maps);
 		string        mapname;
-		ArchiveEntry* entry = entry_list_->getEntry(selection[i]);
+		ArchiveEntry* entry = entry_list_->entryAt(selection[i]);
 		if (!entry)
 			continue;
 
 		// Ignore subdirectories
-		if (entry->getType() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// If this is a map entry, deal with it
@@ -1386,8 +1386,8 @@ bool ArchivePanel::sort()
 			mapname = maps[mapindex].name;
 
 			// If part of a map is selected, make sure the rest is selected as well
-			size_t head_index = maps[mapindex].head->getParentDir()->entryIndex(maps[mapindex].head);
-			size_t end_index  = maps[mapindex].head->getParentDir()->entryIndex(maps[mapindex].end, head_index);
+			size_t head_index = maps[mapindex].head->parentDir()->entryIndex(maps[mapindex].head);
+			size_t end_index  = maps[mapindex].head->parentDir()->entryIndex(maps[mapindex].end, head_index);
 			// Good thing we can rely on selection being contiguous
 			for (size_t a = head_index; a <= end_index; ++a)
 			{
@@ -1406,7 +1406,7 @@ bool ArchivePanel::sort()
 			nsn        = getNamespaceNumber(entry, selection[i], nspaces, maps) * 1000;
 			ns_changed = true;
 		}
-		else if (mapindex < 0 && (entry->getSize() == 0))
+		else if (mapindex < 0 && (entry->size() == 0))
 		{
 			nsn++;
 			ns_changed = true;
@@ -1416,10 +1416,10 @@ bool ArchivePanel::sort()
 		// This is because the global namespace in wads is bloated and we want more
 		// categories than it actually has to offer.
 		lnsn = (nsn == 0 ? getNamespaceNumber(entry, selection[i], nspaces, maps) * 1000 : nsn);
-		string name, ename = entry->getName().Upper();
+		string name, ename = entry->name().Upper();
 		// Want to get another hack in this stuff? Yeah, of course you do!
 		// This here hack will sort Doom II songs by their associated map.
-		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->getType()->icon(), "music"))
+		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->type()->icon(), "music"))
 		{
 			if (ename == "D_RUNNIN")
 				ename = "D_MAP01";
@@ -1518,10 +1518,10 @@ bool ArchivePanel::sort()
 	std::map<string, size_t>::iterator itr = emap.begin();
 	for (size_t i = start; i < stop; ++i, ++itr)
 	{
-		ArchiveEntry* entry = entry_list_->getEntry(i);
+		ArchiveEntry* entry = entry_list_->entryAt(i);
 
 		// Ignore subdirectories
-		if (entry->getType() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// If the entry isn't in its sorted place already
@@ -1549,11 +1549,11 @@ bool ArchivePanel::sort()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::bookmark()
 {
-	ArchiveEntry* entry = entry_list_->getFocusedEntry();
+	ArchiveEntry* entry = entry_list_->focusedEntry();
 
 	if (entry)
 	{
-		App::archiveManager().addBookmark(entry_list_->getFocusedEntry());
+		App::archiveManager().addBookmark(entry_list_->focusedEntry());
 		return true;
 	}
 	else
@@ -1566,7 +1566,7 @@ bool ArchivePanel::bookmark()
 bool ArchivePanel::openTab()
 {
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Open each in its own tab
 	for (auto& entry : selection)
@@ -1581,14 +1581,14 @@ bool ArchivePanel::openTab()
 bool ArchivePanel::crc32()
 {
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Compute CRC-32 checksums for each
 	string checksums = "\nCRC-32:\n";
 	for (auto& entry : selection)
 	{
-		uint32_t crc = entry->getMCData().crc();
-		checksums += S_FMT("%s:\t%x\n", entry->getName(), crc);
+		uint32_t crc = entry->data().crc();
+		checksums += S_FMT("%s:\t%x\n", entry->name(), crc);
 	}
 	LOG_MESSAGE(1, checksums);
 	wxMessageBox(checksums);
@@ -1612,7 +1612,7 @@ bool ArchivePanel::convertEntryTo()
 bool ArchivePanel::importEntry()
 {
 	// Get a list of selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Import Entry");
@@ -1623,15 +1623,15 @@ bool ArchivePanel::importEntry()
 	{
 		// Run open file dialog
 		SFileDialog::FDInfo info;
-		if (SFileDialog::openFile(info, "Import Entry \"" + entry->getName() + "\"", "Any File (*.*)|*.*", this))
+		if (SFileDialog::openFile(info, "Import Entry \"" + entry->name() + "\"", "Any File (*.*)|*.*", this))
 		{
 			// Preserve gfx offset if needed
 			point2_t offset;
-			if (!entry->getType()->editor().Cmp("gfx"))
+			if (!entry->type()->editor().Cmp("gfx"))
 			{
 				// We have an image
 				SImage si;
-				si.open(entry->getMCData());
+				si.open(entry->data());
 				offset = si.offset();
 			}
 
@@ -1645,10 +1645,10 @@ bool ArchivePanel::importEntry()
 			EntryType::detectEntryType(entry);
 
 			// Restore offsets if needed
-			if (!entry->getType()->editor().Cmp("gfx"))
+			if (!entry->type()->editor().Cmp("gfx"))
 			{
 				SImage si;
-				si.open(entry->getMCData());
+				si.open(entry->data());
 
 				point2_t noffset = si.offset();
 				bool     ok      = true;
@@ -1663,7 +1663,7 @@ bool ArchivePanel::importEntry()
 						S_FMT(
 							"Image %s had offset [%d, %d], imported file has offset [%d, %d]. "
 							"Do you want to keep the old offset and override the new?",
-							entry->getName(),
+							entry->name(),
 							offset.x,
 							offset.y,
 							noffset.x,
@@ -1675,14 +1675,14 @@ bool ArchivePanel::importEntry()
 						ok = false;
 				}
 				// Warn if the offsets couldn't be written
-				if (ok && si.getFormat() && !si.getFormat()->writeOffset(si, entry, offset))
+				if (ok && si.format() && !si.format()->writeOffset(si, entry, offset))
 					LOG_MESSAGE(
 						1,
 						"Old offset information [%d, %d] couldn't be "
 						"preserved in the new image format for image %s.",
 						offset.x,
 						offset.y,
-						entry->getName());
+						entry->name());
 			}
 
 			// Set extension by type
@@ -1709,23 +1709,23 @@ bool ArchivePanel::importEntry()
 bool ArchivePanel::exportEntry()
 {
 	// Get a list of selected entries & dirs
-	vector<ArchiveEntry*>    selection     = entry_list_->getSelectedEntries();
-	vector<ArchiveTreeNode*> selected_dirs = entry_list_->getSelectedDirectories();
+	vector<ArchiveEntry*>    selection     = entry_list_->selectedEntries();
+	vector<ArchiveTreeNode*> selected_dirs = entry_list_->selectedDirectories();
 
 	// If we're just exporting 1 entry
 	if (selection.size() == 1 && selected_dirs.empty())
 	{
-		string     name = Misc::lumpNameToFileName(selection[0]->getName());
+		string     name = Misc::lumpNameToFileName(selection[0]->name());
 		wxFileName fn(name);
 
 		// Add appropriate extension if needed
 		if (fn.GetExt().Len() == 0)
-			fn.SetExt(selection[0]->getType()->extension());
+			fn.SetExt(selection[0]->type()->extension());
 
 		// Run save file dialog
 		SFileDialog::FDInfo info;
 		if (SFileDialog::saveFile(
-				info, "Export Entry \"" + selection[0]->getName() + "\"", "Any File (*.*)|*.*", this, fn.GetFullName()))
+				info, "Export Entry \"" + selection[0]->name() + "\"", "Any File (*.*)|*.*", this, fn.GetFullName()))
 			selection[0]->exportFile(info.filenames[0]); // Export entry if ok was clicked
 	}
 	else
@@ -1738,12 +1738,12 @@ bool ArchivePanel::exportEntry()
 			for (auto& entry : selection)
 			{
 				// Setup entry filename
-				wxFileName fn(entry->getName());
+				wxFileName fn(entry->name());
 				fn.SetPath(info.path);
 
 				// Add file extension if it doesn't exist
 				if (!fn.HasExt())
-					fn.SetExt(entry->getType()->extension());
+					fn.SetExt(entry->type()->extension());
 
 				// Do export
 				entry->exportFile(fn.GetFullPath());
@@ -1751,7 +1751,7 @@ bool ArchivePanel::exportEntry()
 
 			// Go through selected dirs
 			for (auto& dir : selected_dirs)
-				dir->exportTo(info.path + "/" + dir->getName());
+				dir->exportTo(info.path + "/" + dir->name());
 		}
 	}
 
@@ -1773,10 +1773,10 @@ bool ArchivePanel::exportEntryAs()
 bool ArchivePanel::copyEntry()
 {
 	// Get a list of selected entries
-	vector<ArchiveEntry*> entries = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> entries = entry_list_->selectedEntries();
 
 	// Get a list of selected directories
-	vector<ArchiveTreeNode*> dirs = entry_list_->getSelectedDirectories();
+	vector<ArchiveTreeNode*> dirs = entry_list_->selectedDirectories();
 
 	// Do nothing if nothing selected
 	if (entries.empty() && dirs.empty())
@@ -1813,7 +1813,7 @@ bool ArchivePanel::pasteEntry()
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = archive_->entryIndex(entry_list_->getLastSelectedEntry(), entry_list_->getCurrentDir());
+	int index = archive_->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -1822,7 +1822,7 @@ bool ArchivePanel::pasteEntry()
 		index = -1; // If not add to the end of the list
 
 	// Go through all clipboard items
-	ArchiveManagerPanel* panel = theMainWindow->getArchiveManagerPanel();
+	ArchiveManagerPanel* panel = theMainWindow->archiveManagerPanel();
 	panel->disableArchiveListUpdate();
 	bool pasted = false;
 	undo_manager_->beginRecord("Paste Entry");
@@ -1830,14 +1830,14 @@ bool ArchivePanel::pasteEntry()
 	for (unsigned a = 0; a < theClipboard->nItems(); a++)
 	{
 		// Check item type
-		if (theClipboard->getItem(a)->getType() != CLIPBOARD_ENTRY_TREE)
+		if (theClipboard->item(a)->type() != CLIPBOARD_ENTRY_TREE)
 			continue;
 
 		// Get clipboard item
-		EntryTreeClipboardItem* clip = (EntryTreeClipboardItem*)theClipboard->getItem(a);
+		EntryTreeClipboardItem* clip = (EntryTreeClipboardItem*)theClipboard->item(a);
 
 		// Merge it in
-		if (archive_->paste(clip->getTree(), index, entry_list_->getCurrentDir()))
+		if (archive_->paste(clip->tree(), index, entry_list_->currentDir()))
 			pasted = true;
 	}
 	undo_manager_->endRecord(true);
@@ -1859,7 +1859,7 @@ bool ArchivePanel::pasteEntry()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::openEntryExternal()
 {
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 	for (auto& entry : selection)
 	{
 		// Open entry in selected external editor
@@ -1869,7 +1869,7 @@ bool ArchivePanel::openEntryExternal()
 		// Show error message if failed
 		if (!ok)
 			wxMessageBox(
-				S_FMT("Failed opening %s in external editor: %s", entry->getName(), Global::error),
+				S_FMT("Failed opening %s in external editor: %s", entry->name(), Global::error),
 				"External Edit Failed",
 				wxOK | wxICON_ERROR);
 	}
@@ -1886,7 +1886,7 @@ bool ArchivePanel::gfxConvert()
 	GfxConvDialog gcd(theMainWindow);
 
 	// Send selection to the gcd
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 	gcd.openEntries(selection);
 
 	// Run the gcd
@@ -1906,7 +1906,7 @@ bool ArchivePanel::gfxConvert()
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Update splash window
-		UI::setSplashProgressMessage(selection[a]->getName());
+		UI::setSplashProgressMessage(selection[a]->name());
 		UI::setSplashProgress((float)a / (float)selection.size());
 
 		// Skip if the image wasn't converted
@@ -1914,12 +1914,12 @@ bool ArchivePanel::gfxConvert()
 			continue;
 
 		// Get image and conversion info
-		SImage*   image  = gcd.getItemImage(a);
-		SIFormat* format = gcd.getItemFormat(a);
+		SImage*   image  = gcd.itemImage(a);
+		SIFormat* format = gcd.itemFormat(a);
 
 		// Write converted image back to entry
 		MemChunk mc;
-		format->saveImage(*image, mc, gcd.getItemPalette(a));
+		format->saveImage(*image, mc, gcd.itemPalette(a));
 		selection[a]->importMemChunk(mc);
 		EntryType::detectEntryType(selection[a]);
 		selection[a]->setExtensionByType();
@@ -1942,14 +1942,14 @@ bool ArchivePanel::gfxConvert()
 bool ArchivePanel::gfxRemap()
 {
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Create preview image (just use first selected entry)
 	SImage image(PALMASK);
 	Misc::loadImageFromEntry(&image, selection[0]);
 
 	// Create translation editor dialog
-	Palette*                pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette*                pal = theMainWindow->paletteChooser()->selectedPalette();
 	TranslationEditorDialog ted(this, pal, "Colour Remap", &image);
 	ted.openTranslation(((GfxEntryPanel*)gfx_area_)->prevTranslation());
 
@@ -1979,8 +1979,8 @@ bool ArchivePanel::gfxRemap()
 				undo_manager_->recordUndoStep(new EntryDataUS(entry));
 
 				// Write modified image data
-				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					Log::error(1, S_FMT(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->getName()));
+				if (!temp.format()->saveImage(temp, mc, pal))
+					Log::error(1, S_FMT(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2004,10 +2004,10 @@ bool ArchivePanel::gfxRemap()
 bool ArchivePanel::gfxColourise()
 {
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Create colourise dialog
-	Palette*           pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette*           pal = theMainWindow->paletteChooser()->selectedPalette();
 	GfxColouriseDialog gcd(this, selection[0], pal);
 	gcd.setColour(last_colour);
 
@@ -2030,14 +2030,14 @@ bool ArchivePanel::gfxColourise()
 			if (Misc::loadImageFromEntry(&temp, entry))
 			{
 				// Apply translation
-				temp.colourise(gcd.getColour(), pal);
+				temp.colourise(gcd.colour(), pal);
 
 				// Create undo step
 				undo_manager_->recordUndoStep(new EntryDataUS(entry));
 
 				// Write modified image data
-				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					LOG_MESSAGE(1, ERROR_UNWRITABLE_IMAGE_FORMAT, entry->getName());
+				if (!temp.format()->saveImage(temp, mc, pal))
+					LOG_MESSAGE(1, ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2046,7 +2046,7 @@ bool ArchivePanel::gfxColourise()
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
-	rgba_t gcdcol = gcd.getColour();
+	rgba_t gcdcol = gcd.colour();
 	last_colour   = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
 	MainEditor::currentEntryPanel()->callRefresh();
 
@@ -2059,10 +2059,10 @@ bool ArchivePanel::gfxColourise()
 bool ArchivePanel::gfxTint()
 {
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Create colourise dialog
-	Palette*      pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette*      pal = theMainWindow->paletteChooser()->selectedPalette();
 	GfxTintDialog gtd(this, selection[0], pal);
 	gtd.setValues(last_tint_colour, last_tint_amount);
 
@@ -2085,14 +2085,14 @@ bool ArchivePanel::gfxTint()
 			if (Misc::loadImageFromEntry(&temp, entry))
 			{
 				// Apply translation
-				temp.tint(gtd.getColour(), gtd.getAmount(), pal);
+				temp.tint(gtd.colour(), gtd.amount(), pal);
 
 				// Create undo step
 				undo_manager_->recordUndoStep(new EntryDataUS(entry));
 
 				// Write modified image data
-				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					LOG_MESSAGE(1, ERROR_UNWRITABLE_IMAGE_FORMAT, entry->getName());
+				if (!temp.format()->saveImage(temp, mc, pal))
+					LOG_MESSAGE(1, ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2102,9 +2102,9 @@ bool ArchivePanel::gfxTint()
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
-	rgba_t gtdcol    = gtd.getColour();
+	rgba_t gtdcol    = gtd.colour();
 	last_tint_colour = S_FMT("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
-	last_tint_amount = (int)(gtd.getAmount() * 100.0f);
+	last_tint_amount = (int)(gtd.amount() * 100.0f);
 	MainEditor::currentEntryPanel()->callRefresh();
 
 	return true;
@@ -2128,7 +2128,7 @@ bool ArchivePanel::gfxModifyOffsets()
 
 	// Go through selected entries
 	entry_list_->setEntriesAutoUpdate(false);
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 	for (auto& entry : selection)
 	{
 		undo_manager_->recordUndoStep(new EntryDataUS(entry));
@@ -2149,12 +2149,12 @@ bool ArchivePanel::gfxModifyOffsets()
 bool ArchivePanel::gfxExportPNG()
 {
 	// Get a list of selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// If we're just exporting 1 entry
 	if (selection.size() == 1)
 	{
-		string     name = Misc::lumpNameToFileName(selection[0]->getName());
+		string     name = Misc::lumpNameToFileName(selection[0]->name());
 		wxFileName fn(name);
 
 		// Set extension
@@ -2164,7 +2164,7 @@ bool ArchivePanel::gfxExportPNG()
 		SFileDialog::FDInfo info;
 		if (SFileDialog::saveFile(
 				info,
-				"Export Entry \"" + selection[0]->getName() + "\" as PNG",
+				"Export Entry \"" + selection[0]->name() + "\" as PNG",
 				"PNG Files (*.png)|*.png",
 				this,
 				fn.GetFullName()))
@@ -2190,7 +2190,7 @@ bool ArchivePanel::gfxExportPNG()
 			for (auto& entry : selection)
 			{
 				// Setup entry filename
-				wxFileName fn(entry->getName());
+				wxFileName fn(entry->name());
 				fn.SetPath(info.path);
 				fn.SetExt("png");
 
@@ -2221,7 +2221,7 @@ vector<ArchiveEntry*> ArchivePanel::currentEntries()
 {
 	vector<ArchiveEntry*> selection;
 	if (entry_list_)
-		selection = entry_list_->getSelectedEntries();
+		selection = entry_list_->selectedEntries();
 	return selection;
 }
 
@@ -2231,7 +2231,7 @@ vector<ArchiveEntry*> ArchivePanel::currentEntries()
 ArchiveTreeNode* ArchivePanel::currentDir()
 {
 	if (entry_list_)
-		return entry_list_->getCurrentDir();
+		return entry_list_->currentDir();
 	return nullptr;
 }
 
@@ -2241,7 +2241,7 @@ ArchiveTreeNode* ArchivePanel::currentDir()
 bool ArchivePanel::swanConvert()
 {
 	// Get the entry index of the last selected list item
-	int index = archive_->entryIndex(currentEntry(), entry_list_->getCurrentDir());
+	int index = archive_->entryIndex(currentEntry(), entry_list_->currentDir());
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -2251,14 +2251,14 @@ bool ArchivePanel::swanConvert()
 	MemChunk mca, mcs;
 
 	// Get a list of selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	bool error = false;
 
 	// Check each selected entry for possible conversion
 	for (auto& entry : selection)
 	{
-		if (entry->getType()->id() == "swantbls")
+		if (entry->type()->id() == "swantbls")
 		{
 			error |= !EntryOperations::convertSwanTbls(entry, &mca, false);
 			error |= !EntryOperations::convertSwanTbls(entry, &mcs, true);
@@ -2266,18 +2266,18 @@ bool ArchivePanel::swanConvert()
 	}
 
 	// Close off ANIMATED lump if needed
-	if (mca.getSize())
+	if (mca.size())
 	{
 		uint8_t buffer = 255;
-		error |= !mca.reSize(mca.getSize() + 1, true);
+		error |= !mca.reSize(mca.size() + 1, true);
 		error |= !mca.write(&buffer, 1);
 	}
 	// Close off SWITCHES lump if needed
-	if (mcs.getSize())
+	if (mcs.size())
 	{
 		uint8_t buffer[20];
 		memset(buffer, 0, 20);
-		error |= !mcs.reSize(mcs.getSize() + 20, true);
+		error |= !mcs.reSize(mcs.size() + 20, true);
 		error |= !mcs.write(buffer, 20);
 	}
 
@@ -2288,18 +2288,18 @@ bool ArchivePanel::swanConvert()
 	string    etypeids[2] = { "animated", "switches" };
 	for (int e = 0; e < 2; ++e)
 	{
-		if (mc[e]->getSize())
+		if (mc[e]->size())
 		{
 			// Begin recording undo level
 			undo_manager_->beginRecord(S_FMT("Creating %s", wadnames[e]));
 
 			ArchiveEntry* output = archive_->addNewEntry(
-				(archive_->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, entry_list_->getCurrentDir());
+				(archive_->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, entry_list_->currentDir());
 			if (output)
 			{
 				error |= !output->importMemChunk(*mc[e]);
 				EntryType::detectEntryType(output);
-				if (output->getType() == EntryType::unknownType())
+				if (output->type() == EntryType::unknownType())
 					output->setType(EntryType::fromId(etypeids[e]));
 				if (index >= 0)
 					index++;
@@ -2320,14 +2320,14 @@ bool ArchivePanel::swanConvert()
 bool ArchivePanel::basConvert(bool animdefs)
 {
 	// Get the entry index of the last selected list item
-	int index = archive_->entryIndex(currentEntry(), entry_list_->getCurrentDir());
+	int index = archive_->entryIndex(currentEntry(), entry_list_->currentDir());
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
 		index++;
 
 	// Get a list of selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Convert to ANIMDEFS");
@@ -2337,7 +2337,7 @@ bool ArchivePanel::basConvert(bool animdefs)
 		(animdefs ? (archive_->formatId() == "wad" ? "ANIMDEFS" : "animdefs.txt") :
 					(archive_->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")),
 		index,
-		entry_list_->getCurrentDir());
+		entry_list_->currentDir());
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -2367,9 +2367,9 @@ bool ArchivePanel::basConvert(bool animdefs)
 		// Check each selected entry for possible conversion
 		for (auto& entry : selection)
 		{
-			if (entry->getType()->formatId() == "animated")
+			if (entry->type()->formatId() == "animated")
 				EntryOperations::convertAnimated(entry, &animdata, animdefs);
-			else if (entry->getType()->formatId() == "switches")
+			else if (entry->type()->formatId() == "switches")
 				EntryOperations::convertSwitches(entry, &animdata, animdefs);
 		}
 		output->importMemChunk(animdata);
@@ -2377,7 +2377,7 @@ bool ArchivePanel::basConvert(bool animdefs)
 		// Identify the new lump as what it is
 		EntryType::detectEntryType(output);
 		// Failsafe is detectEntryType doesn't accept to work, grumble
-		if (output->getType() == EntryType::unknownType())
+		if (output->type() == EntryType::unknownType())
 			output->setType(EntryType::fromId("animdefs"));
 	}
 
@@ -2394,14 +2394,14 @@ bool ArchivePanel::palConvert()
 {
 	// Get the entry index of the last selected list item
 	ArchiveEntry*  pal6bit = currentEntry();
-	const uint8_t* source  = pal6bit->getData(true);
-	uint8_t*       dest    = new uint8_t[pal6bit->getSize()];
-	memcpy(dest, source, pal6bit->getSize());
-	for (size_t i = 0; i < pal6bit->getSize(); ++i)
+	const uint8_t* source  = pal6bit->rawData(true);
+	uint8_t*       dest    = new uint8_t[pal6bit->size()];
+	memcpy(dest, source, pal6bit->size());
+	for (size_t i = 0; i < pal6bit->size(); ++i)
 	{
 		dest[i] = ((dest[i] << 2) | (dest[i] >> 4));
 	}
-	pal6bit->importMem(dest, pal6bit->getSize());
+	pal6bit->importMem(dest, pal6bit->size());
 	MainEditor::currentEntryPanel()->callRefresh();
 	delete[] dest;
 	return true;
@@ -2413,7 +2413,7 @@ bool ArchivePanel::palConvert()
 bool ArchivePanel::wavDSndConvert()
 {
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Convert Wav -> Doom Sound");
@@ -2427,13 +2427,13 @@ bool ArchivePanel::wavDSndConvert()
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Convert WAV -> Doom Sound if the entry is WAV format
-		if (selection[a]->getType()->formatId() == "snd_wav")
+		if (selection[a]->type()->formatId() == "snd_wav")
 		{
 			MemChunk dsnd;
 			// Attempt conversion
-			if (!Conversions::wavToDoomSnd(selection[a]->getMCData(), dsnd))
+			if (!Conversions::wavToDoomSnd(selection[a]->data(), dsnd))
 			{
-				LOG_MESSAGE(1, "Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
+				LOG_MESSAGE(1, "Error: Unable to convert entry %s: %s", selection[a]->name(), Global::error);
 				errors = true;
 				continue;
 			}
@@ -2461,7 +2461,7 @@ bool ArchivePanel::wavDSndConvert()
 bool ArchivePanel::dSndWavConvert()
 {
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Convert Doom Sound -> Wav");
@@ -2477,22 +2477,22 @@ bool ArchivePanel::dSndWavConvert()
 		bool     worked = false;
 		MemChunk wav;
 		// Convert Doom Sound -> WAV if the entry is Doom Sound format
-		if (selection[a]->getType()->formatId() == "snd_doom" || selection[a]->getType()->formatId() == "snd_doom_mac")
-			worked = Conversions::doomSndToWav(selection[a]->getMCData(), wav);
+		if (selection[a]->type()->formatId() == "snd_doom" || selection[a]->type()->formatId() == "snd_doom_mac")
+			worked = Conversions::doomSndToWav(selection[a]->data(), wav);
 		// Or Doom Speaker sound format
-		else if (selection[a]->getType()->formatId() == "snd_speaker")
-			worked = Conversions::spkSndToWav(selection[a]->getMCData(), wav);
+		else if (selection[a]->type()->formatId() == "snd_speaker")
+			worked = Conversions::spkSndToWav(selection[a]->data(), wav);
 		// Or Jaguar Doom sound format
-		else if (selection[a]->getType()->formatId() == "snd_jaguar")
-			worked = Conversions::jagSndToWav(selection[a]->getMCData(), wav);
+		else if (selection[a]->type()->formatId() == "snd_jaguar")
+			worked = Conversions::jagSndToWav(selection[a]->data(), wav);
 		// Or Wolfenstein 3D sound format
-		else if (selection[a]->getType()->formatId() == "snd_wolf")
-			worked = Conversions::wolfSndToWav(selection[a]->getMCData(), wav);
+		else if (selection[a]->type()->formatId() == "snd_wolf")
+			worked = Conversions::wolfSndToWav(selection[a]->data(), wav);
 		// Or Creative Voice File format
-		else if (selection[a]->getType()->formatId() == "snd_voc")
-			worked = Conversions::vocToWav(selection[a]->getMCData(), wav);
+		else if (selection[a]->type()->formatId() == "snd_voc")
+			worked = Conversions::vocToWav(selection[a]->data(), wav);
 		// Or Blood SFX format (this one needs to be given the entry, not just the mem chunk)
-		else if (selection[a]->getType()->formatId() == "snd_bloodsfx")
+		else if (selection[a]->type()->formatId() == "snd_bloodsfx")
 			worked = Conversions::bloodToWav(selection[a], wav);
 		// If successfully converted, update the entry
 		if (worked)
@@ -2504,7 +2504,7 @@ bool ArchivePanel::dSndWavConvert()
 		}
 		else
 		{
-			LOG_MESSAGE(1, "Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
+			LOG_MESSAGE(1, "Error: Unable to convert entry %s: %s", selection[a]->name(), Global::error);
 			errors = true;
 			continue;
 		}
@@ -2527,7 +2527,7 @@ bool ArchivePanel::dSndWavConvert()
 bool ArchivePanel::musMidiConvert()
 {
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Convert Mus -> Midi");
@@ -2540,17 +2540,17 @@ bool ArchivePanel::musMidiConvert()
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Convert MUS -> MIDI if the entry is a MIDI-like format
-		if (selection[a]->getType()->formatId().StartsWith("midi_")
-			&& selection[a]->getType()->formatId() != "midi_smf")
+		if (selection[a]->type()->formatId().StartsWith("midi_")
+			&& selection[a]->type()->formatId() != "midi_smf")
 		{
 			MemChunk midi;
 			undo_manager_->recordUndoStep(new EntryDataUS(selection[a])); // Create undo step
-			if (selection[a]->getType()->formatId() == "midi_mus")
-				Conversions::musToMidi(selection[a]->getMCData(), midi); // Convert
-			else if (selection[a]->getType()->formatId() == "midi_gmid")
-				Conversions::gmidToMidi(selection[a]->getMCData(), midi); // Convert
+			if (selection[a]->type()->formatId() == "midi_mus")
+				Conversions::musToMidi(selection[a]->data(), midi); // Convert
+			else if (selection[a]->type()->formatId() == "midi_gmid")
+				Conversions::gmidToMidi(selection[a]->data(), midi); // Convert
 			else
-				Conversions::zmusToMidi(selection[a]->getMCData(), midi); // Convert
+				Conversions::zmusToMidi(selection[a]->data(), midi); // Convert
 			selection[a]->importMemChunk(midi);                           // Load midi data
 			EntryType::detectEntryType(selection[a]);                     // Update entry type
 			selection[a]->setExtensionByType();                           // Update extension if necessary
@@ -2570,7 +2570,7 @@ bool ArchivePanel::musMidiConvert()
 bool ArchivePanel::compileACS(bool hexen)
 {
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Go through selection
 	entry_list_->setEntriesAutoUpdate(false);
@@ -2606,7 +2606,7 @@ bool ArchivePanel::optimizePNG()
 	}
 
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	UI::showSplash("Running external programs, please wait...", true);
 
@@ -2620,9 +2620,9 @@ bool ArchivePanel::optimizePNG()
 		if (a == selection.size() - 1)
 			entry_list_->setEntriesAutoUpdate(true);
 
-		UI::setSplashProgressMessage(selection[a]->getName(true));
+		UI::setSplashProgressMessage(selection[a]->name(true));
 		UI::setSplashProgress(float(a) / float(selection.size()));
-		if (selection[a]->getType()->formatId() == "img_png")
+		if (selection[a]->type()->formatId() == "img_png")
 		{
 			undo_manager_->recordUndoStep(new EntryDataUS(selection[a]));
 			EntryOperations::optimizePNG(selection[a]);
@@ -2643,8 +2643,8 @@ bool ArchivePanel::optimizePNG()
 bool ArchivePanel::convertTextures()
 {
 	// Get selected entries
-	long                  index     = entry_list_->getSelection()[0];
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	long                  index     = entry_list_->selection()[0];
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Convert TEXTUREx -> TEXTURES");
@@ -2673,7 +2673,7 @@ bool ArchivePanel::convertTextures()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::findTextureErrors()
 {
-	return EntryOperations::findTextureErrors(entry_list_->getSelectedEntries());
+	return EntryOperations::findTextureErrors(entry_list_->selectedEntries());
 }
 
 // -----------------------------------------------------------------------------
@@ -2683,7 +2683,7 @@ bool ArchivePanel::findTextureErrors()
 bool ArchivePanel::mapOpenDb2()
 {
 	// Get first selected entry
-	ArchiveEntry* entry = entry_list_->getEntry(entry_list_->getFirstSelected());
+	ArchiveEntry* entry = entry_list_->entryAt(entry_list_->firstSelected());
 
 	// Do open in db2
 	return EntryOperations::openMapDB2(entry);
@@ -2720,26 +2720,26 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 	}
 
 	// First check if the entry is already open in its own tab
-	ArchiveManagerPanel* am_panel = theMainWindow->getArchiveManagerPanel();
+	ArchiveManagerPanel* am_panel = theMainWindow->archiveManagerPanel();
 
 	// Do nothing if the entry is already open
 	if (cur_area_->entry() == entry && !force)
 		return false;
 
 	// Detect entry type if it hasn't been already
-	if (entry->getType() == EntryType::unknownType())
+	if (entry->type() == EntryType::unknownType())
 		EntryType::detectEntryType(entry);
 
 	// Are we trying to open a directory? This can happen from bookmarks.
-	if (entry->getType() == EntryType::folderType())
+	if (entry->type() == EntryType::folderType())
 	{
 		// Removes starting / from path
-		string name = entry->getPath(true);
+		string name = entry->path(true);
 		if (name.StartsWith("/"))
 			name.Remove(0, 1);
 
 		// Get directory to open
-		auto dir = archive_->getDir(name, nullptr);
+		auto dir = archive_->dir(name, nullptr);
 
 		// Check it exists (really should)
 		if (!dir)
@@ -2761,24 +2761,24 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		EntryPanel* new_area = default_area_;
 		if (am_panel->entryIsOpenInTab(entry))
 			new_area = default_area_;
-		else if (entry->getType() == EntryType::mapMarkerType())
+		else if (entry->type() == EntryType::mapMarkerType())
 			new_area = map_area_;
-		else if (!entry->getType()->editor().Cmp("gfx"))
+		else if (!entry->type()->editor().Cmp("gfx"))
 			new_area = gfx_area_;
-		else if (!entry->getType()->editor().Cmp("palette"))
+		else if (!entry->type()->editor().Cmp("palette"))
 			new_area = pal_area_;
-		else if (!entry->getType()->editor().Cmp("ansi"))
+		else if (!entry->type()->editor().Cmp("ansi"))
 			new_area = ansi_area_;
-		else if (!entry->getType()->editor().Cmp("text"))
+		else if (!entry->type()->editor().Cmp("text"))
 			new_area = text_area_;
-		else if (!entry->getType()->editor().Cmp("audio"))
+		else if (!entry->type()->editor().Cmp("audio"))
 			new_area = audio_area_;
-		else if (!entry->getType()->editor().Cmp("data"))
+		else if (!entry->type()->editor().Cmp("data"))
 			new_area = data_area_;
-		else if (!entry->getType()->editor().Cmp("default"))
+		else if (!entry->type()->editor().Cmp("default"))
 			new_area = default_area_;
 		else
-			LOG_MESSAGE(1, "Entry editor %s does not exist, using default editor", entry->getType()->editor());
+			LOG_MESSAGE(1, "Entry editor %s does not exist, using default editor", entry->type()->editor());
 
 		// Load the entry into the panel
 		if (!new_area->openEntry(entry))
@@ -2804,7 +2804,7 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 		return false;
 
 	// First check if the entry is already open in its own tab
-	ArchiveManagerPanel* panel = theMainWindow->getArchiveManagerPanel();
+	ArchiveManagerPanel* panel = theMainWindow->archiveManagerPanel();
 	if (panel->redirectToTab(entry))
 	{
 		// closeCurrentEntry();
@@ -2831,7 +2831,7 @@ bool ArchivePanel::openEntryAsHex(ArchiveEntry* entry)
 		return false;
 
 	// First check if the entry is already open in its own tab
-	ArchiveManagerPanel* panel = theMainWindow->getArchiveManagerPanel();
+	ArchiveManagerPanel* panel = theMainWindow->archiveManagerPanel();
 	if (panel->redirectToTab(entry))
 	{
 		// closeCurrentEntry();
@@ -2868,13 +2868,13 @@ void ArchivePanel::focusOnEntry(ArchiveEntry* entry)
 	if (entry)
 	{
 		// Do we need to change directory?
-		if (entry->getParentDir() != entry_list_->getCurrentDir())
-			entry_list_->setDir(entry->getParentDir());
+		if (entry->parentDir() != entry_list_->currentDir())
+			entry_list_->setDir(entry->parentDir());
 
 		// Now focus on the entry if it is listed
 		for (long index = 0; index < entry_list_->GetItemCount(); ++index)
 		{
-			if (entry == entry_list_->getEntry(index))
+			if (entry == entry_list_->entryAt(index))
 			{
 				entry_list_->focusOnIndex(index);
 				return;
@@ -2959,7 +2959,7 @@ wxMenu* ArchivePanel::createEntryOpenMenu(string category)
 	menu_open->AppendSeparator();
 
 	// External editors
-	vector<Executables::ExternalExe> external   = Executables::getExternalExes(category);
+	vector<Executables::ExternalExe> external   = Executables::externalExes(category);
 	SAction*                         a_open_ext = SAction::fromId("arch_entry_openext");
 	unsigned                         num        = MIN(external.size(), 20);
 	for (unsigned a = 0; a < num; a++)
@@ -3145,7 +3145,7 @@ bool ArchivePanel::handleAction(string id)
 
 	// Entry->Run Script
 	else if (id == "arch_entry_script")
-		ScriptManager::runEntryScript(entry_list_->getSelectedEntries(), wx_id_offset_, MainEditor::windowWx());
+		ScriptManager::runEntryScript(entry_list_->selectedEntries(), wx_id_offset_, MainEditor::windowWx());
 
 
 	// Context menu actions
@@ -3166,17 +3166,17 @@ bool ArchivePanel::handleAction(string id)
 	else if (id == "arch_gfx_offsets")
 		gfxModifyOffsets();
 	else if (id == "arch_gfx_addptable")
-		EntryOperations::addToPatchTable(entry_list_->getSelectedEntries());
+		EntryOperations::addToPatchTable(entry_list_->selectedEntries());
 	else if (id == "arch_gfx_addtexturex")
-		EntryOperations::createTexture(entry_list_->getSelectedEntries());
+		EntryOperations::createTexture(entry_list_->selectedEntries());
 	else if (id == "arch_gfx_exportpng")
 		gfxExportPNG();
 	else if (id == "arch_gfx_pngopt")
 		optimizePNG();
 	else if (id == "arch_view_text")
-		openEntryAsText(entry_list_->getFocusedEntry());
+		openEntryAsText(entry_list_->focusedEntry());
 	else if (id == "arch_view_hex")
-		openEntryAsHex(entry_list_->getFocusedEntry());
+		openEntryAsHex(entry_list_->focusedEntry());
 	else if (id == "arch_audio_convertdw")
 		dSndWavConvert();
 	else if (id == "arch_audio_convertwd")
@@ -3214,12 +3214,12 @@ bool ArchivePanel::handleAction(string id)
 		RunDialog dlg(this, archive_);
 		if (dlg.ShowModal() == wxID_OK)
 		{
-			string command = dlg.getSelectedCommandLine(archive_, "");
+			string command = dlg.selectedCommandLine(archive_, "");
 			if (!command.IsEmpty())
 			{
 				// Set working directory
 				string wd = wxGetCwd();
-				wxSetWorkingDirectory(dlg.getSelectedExeDir());
+				wxSetWorkingDirectory(dlg.selectedExeDir());
 
 				// Run
 				wxExecute(command, wxEXEC_ASYNC);
@@ -3304,17 +3304,17 @@ EntryPanel* ArchivePanel::createPanelForEntry(ArchiveEntry* entry, wxWindow* par
 {
 	EntryPanel* entry_panel;
 
-	if (entry->getType() == EntryType::mapMarkerType())
+	if (entry->type() == EntryType::mapMarkerType())
 		entry_panel = new MapEntryPanel(parent);
-	else if (!entry->getType()->editor().Cmp("gfx"))
+	else if (!entry->type()->editor().Cmp("gfx"))
 		entry_panel = new GfxEntryPanel(parent);
-	else if (!entry->getType()->editor().Cmp("palette"))
+	else if (!entry->type()->editor().Cmp("palette"))
 		entry_panel = new PaletteEntryPanel(parent);
-	else if (!entry->getType()->editor().Cmp("ansi"))
+	else if (!entry->type()->editor().Cmp("ansi"))
 		entry_panel = new ANSIEntryPanel(parent);
-	else if (!entry->getType()->editor().Cmp("text"))
+	else if (!entry->type()->editor().Cmp("text"))
 		entry_panel = new TextEntryPanel(parent);
-	else if (!entry->getType()->editor().Cmp("audio"))
+	else if (!entry->type()->editor().Cmp("audio"))
 		entry_panel = new AudioEntryPanel(parent);
 	else
 		entry_panel = new DefaultEntryPanel(parent);
@@ -3340,7 +3340,7 @@ void ArchivePanel::onEntryListSelectionChange(wxCommandEvent& e)
 		return;
 
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	if (selection.empty())
 		return; // If no entries are selected do nothing
@@ -3374,7 +3374,7 @@ void ArchivePanel::onEntryListFocusChange(wxListEvent& e)
 	}
 
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	if (selection.empty())
 		return; // If no entries are selected do nothing
@@ -3398,7 +3398,7 @@ void ArchivePanel::onEntryListFocusChange(wxListEvent& e)
 void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 {
 	// Get selected entries
-	vector<ArchiveEntry*> selection = entry_list_->getSelectedEntries();
+	vector<ArchiveEntry*> selection = entry_list_->selectedEntries();
 
 	// Check what types exist in the selection
 	// TODO: This stuff is absolutely terrible, nicer system needed
@@ -3421,67 +3421,67 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		// Check for gfx entry
 		if (!gfx_selected)
 		{
-			if (entry->getType()->extraProps().propertyExists("image"))
+			if (entry->type()->extraProps().propertyExists("image"))
 				gfx_selected = true;
 		}
 		if (!png_selected)
 		{
-			if (entry->getType()->formatId() == "img_png")
+			if (entry->type()->formatId() == "img_png")
 				png_selected = true;
 		}
 		if (!bas_selected)
 		{
-			if (entry->getType()->formatId() == "animated" || entry->getType()->formatId() == "switches")
+			if (entry->type()->formatId() == "animated" || entry->type()->formatId() == "switches")
 				bas_selected = true;
 		}
 		if (!swan_selected)
 		{
-			if (entry->getType()->id() == "swantbls")
+			if (entry->type()->id() == "swantbls")
 				swan_selected = true;
 		}
 		if (!wav_selected)
 		{
-			if (entry->getType()->formatId() == "snd_wav")
+			if (entry->type()->formatId() == "snd_wav")
 				wav_selected = true;
 		}
 		if (!dsnd_selected)
 		{
-			if (entry->getType()->formatId() == "snd_doom" || entry->getType()->formatId() == "snd_speaker"
-				|| entry->getType()->formatId() == "snd_wolf" || entry->getType()->formatId() == "snd_doom_mac"
-				|| entry->getType()->formatId() == "snd_jaguar" || entry->getType()->formatId() == "snd_bloodsfx"
-				|| entry->getType()->formatId() == "snd_voc")
+			if (entry->type()->formatId() == "snd_doom" || entry->type()->formatId() == "snd_speaker"
+				|| entry->type()->formatId() == "snd_wolf" || entry->type()->formatId() == "snd_doom_mac"
+				|| entry->type()->formatId() == "snd_jaguar" || entry->type()->formatId() == "snd_bloodsfx"
+				|| entry->type()->formatId() == "snd_voc")
 				dsnd_selected = true;
 		}
 		if (!mus_selected)
 		{
-			if (entry->getType()->formatId().StartsWith("midi_") && entry->getType()->formatId() != "midi_smf")
+			if (entry->type()->formatId().StartsWith("midi_") && entry->type()->formatId() != "midi_smf")
 				mus_selected = true;
 		}
 		if (!text_selected)
 		{
-			if (entry->getType()->formatId() == "text")
+			if (entry->type()->formatId() == "text")
 				text_selected = true;
 		}
 		if (!unknown_selected)
 		{
-			if (entry->getType() == EntryType::unknownType())
+			if (entry->type() == EntryType::unknownType())
 				unknown_selected = true;
 		}
 		if (!texturex_selected)
 		{
-			if (entry->getType()->formatId() == "texturex")
+			if (entry->type()->formatId() == "texturex")
 				texturex_selected = true;
 		}
 		if (!modified_selected)
 		{
-			if (entry->getState() == 1)
+			if (entry->state() == 1)
 				modified_selected = true;
 		}
 		if (!map_selected)
 		{
-			if (entry->getType() == EntryType::mapMarkerType())
+			if (entry->type() == EntryType::mapMarkerType())
 				map_selected = true;
-			else if (entry->getParentDir()->getName() == "maps")
+			else if (entry->parentDir()->name() == "maps")
 				map_selected = true;
 		}
 #if 0
@@ -3494,10 +3494,10 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		if (category != "diff")
 		{
 			if (category.empty())
-				category = entry->getType()->category();
+				category = entry->type()->category();
 			else
 			{
-				string ed = entry->getType()->category();
+				string ed = entry->type()->category();
 				if (category != ed)
 					category = "diff";
 			}
@@ -3543,7 +3543,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	if (context_submenus)
 	{
 		if (ok)
-			context.AppendSubMenu(custom, cur_area_->getCustomMenuName());
+			context.AppendSubMenu(custom, cur_area_->customMenuName());
 		else
 			delete custom;
 	}
@@ -3675,7 +3675,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 {
 	// Check if keypress matches any keybinds
-	wxArrayString binds = KeyBind::getBinds(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
+	wxArrayString binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
 
 	// Go through matching binds
 	for (auto bind : binds)
@@ -3787,30 +3787,30 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 // -----------------------------------------------------------------------------
 void ArchivePanel::onEntryListActivated(wxListEvent& e)
 {
-	ArchiveEntry* entry = entry_list_->getFocusedEntry();
+	ArchiveEntry* entry = entry_list_->focusedEntry();
 
 	if (!entry)
 		return;
 
 	// Archive
-	if (entry->getType()->formatId().substr(0, 8) == "archive_")
+	if (entry->type()->formatId().substr(0, 8) == "archive_")
 		App::archiveManager().openArchive(entry);
 
 	// Texture list
 	else if (
-		entry->getType()->formatId() == "texturex" || entry->getType() == EntryType::fromId("pnames")
-		|| entry->getType() == EntryType::fromId("zdtextures"))
+		entry->type()->formatId() == "texturex" || entry->type() == EntryType::fromId("pnames")
+		|| entry->type() == EntryType::fromId("zdtextures"))
 		MainEditor::openTextureEditor(archive_, entry);
 
 	// Map
 	// TODO: Needs to filter the game/port lists in the dialog by the map format
-	else if (entry->getType() == EntryType::mapMarkerType())
+	else if (entry->type() == EntryType::mapMarkerType())
 	{
 		// Open map editor config dialog
 		MapEditorConfigDialog dlg(this, archive_, false);
 		if (dlg.ShowModal() == wxID_OK)
 		{
-			Archive::MapDesc info = archive_->getMapInfo(entry);
+			Archive::MapDesc info = archive_->mapDesc(entry);
 
 			// Check selected game configuration is ok
 			if (!dlg.configMatchesMap(info))
@@ -3827,7 +3827,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 				{
 					MapEditor::window()->Hide();
 					wxMessageBox(
-						S_FMT("Unable to open map %s: %s", entry->getName(), Global::error),
+						S_FMT("Unable to open map %s: %s", entry->name(), Global::error),
 						"Invalid map error",
 						wxICON_ERROR);
 				}
@@ -3836,7 +3836,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 	}
 
 	// Other entry
-	else if (entry->getType() != EntryType::folderType())
+	else if (entry->type() != EntryType::folderType())
 		MainEditor::openEntry(entry);
 
 	e.Skip();
@@ -3919,9 +3919,9 @@ void ArchivePanel::onChoiceCategoryChanged(wxCommandEvent& e)
 void ArchivePanel::onDirChanged(wxCommandEvent& e)
 {
 	// Get directory
-	ArchiveTreeNode* dir = entry_list_->getCurrentDir();
+	ArchiveTreeNode* dir = entry_list_->currentDir();
 
-	if (!dir->getParent())
+	if (!dir->parent())
 	{
 		// Root dir
 		label_path_->SetLabel("Path:");
@@ -3930,7 +3930,7 @@ void ArchivePanel::onDirChanged(wxCommandEvent& e)
 	else
 	{
 		// Setup path string
-		string path = dir->getPath();
+		string path = dir->path();
 		path.Remove(0, 1);
 		path.Prepend("Path: ");
 
@@ -3972,7 +3972,7 @@ bool EntryDataUS::swapData()
 	// LOG_MESSAGE(1, "Entry data swap...");
 
 	// Get parent dir
-	ArchiveTreeNode* dir = archive_->getDir(path_);
+	ArchiveTreeNode* dir = archive_->dir(path_);
 	if (dir)
 	{
 		// Get entry
@@ -3982,11 +3982,11 @@ bool EntryDataUS::swapData()
 
 		// Backup data
 		MemChunk temp_data;
-		temp_data.importMem(entry->getData(), entry->getSize());
+		temp_data.importMem(entry->rawData(), entry->size());
 		// LOG_MESSAGE(1, "Backup current data, size %d", entry->getSize());
 
 		// Restore entry data
-		if (data_.getSize() == 0)
+		if (data_.size() == 0)
 		{
 			entry->clearData();
 			// LOG_MESSAGE(1, "Clear entry data");
@@ -3998,8 +3998,8 @@ bool EntryDataUS::swapData()
 		}
 
 		// Store previous entry data
-		if (temp_data.getSize() > 0)
-			data_.importMem(temp_data.getData(), temp_data.getSize());
+		if (temp_data.size() > 0)
+			data_.importMem(temp_data.data(), temp_data.size());
 		else
 			data_.clear();
 
@@ -4025,9 +4025,9 @@ Archive* CH::getCurrentArchive()
 {
 	if (MainEditor::window())
 	{
-		if (MainEditor::window()->getArchiveManagerPanel())
+		if (MainEditor::window()->archiveManagerPanel())
 		{
-			return MainEditor::window()->getArchiveManagerPanel()->currentArchive();
+			return MainEditor::window()->archiveManagerPanel()->currentArchive();
 		}
 	}
 	return nullptr;
@@ -4035,7 +4035,7 @@ Archive* CH::getCurrentArchive()
 
 ArchivePanel* CH::getCurrentArchivePanel()
 {
-	ArchiveManagerPanel* archie = MainEditor::window()->getArchiveManagerPanel();
+	ArchiveManagerPanel* archie = MainEditor::window()->archiveManagerPanel();
 	if (archie)
 	{
 		if (archie->isArchivePanel(archie->currentTabIndex()))
@@ -4061,9 +4061,9 @@ CONSOLE_COMMAND(palconv64, 0, false)
 	{
 		// Get the entry index of the last selected list item
 		ArchiveEntry*  pal    = meep->currentEntry();
-		const uint8_t* source = pal->getData(true);
-		uint8_t*       dest   = new uint8_t[(pal->getSize() / 2) * 3];
-		for (size_t i = 0; i < pal->getSize() / 2; ++i)
+		const uint8_t* source = pal->rawData(true);
+		uint8_t*       dest   = new uint8_t[(pal->size() / 2) * 3];
+		for (size_t i = 0; i < pal->size() / 2; ++i)
 		{
 			uint8_t  r, g, b;
 			uint16_t col      = READ_B16(source, 2 * i);
@@ -4074,7 +4074,7 @@ CONSOLE_COMMAND(palconv64, 0, false)
 			dest[(3 * i) + 1] = g;
 			dest[(3 * i) + 2] = b;
 		}
-		pal->importMem(dest, (pal->getSize() / 2) * 3);
+		pal->importMem(dest, (pal->size() / 2) * 3);
 		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
@@ -4087,9 +4087,9 @@ CONSOLE_COMMAND(palconvpsx, 0, false)
 	{
 		// Get the entry index of the last selected list item
 		ArchiveEntry*  pal    = meep->currentEntry();
-		const uint8_t* source = pal->getData(true);
-		uint8_t*       dest   = new uint8_t[(pal->getSize() / 2) * 3];
-		for (size_t i = 0; i < pal->getSize() / 2; ++i)
+		const uint8_t* source = pal->rawData(true);
+		uint8_t*       dest   = new uint8_t[(pal->size() / 2) * 3];
+		for (size_t i = 0; i < pal->size() / 2; ++i)
 		{
 			// A1 B5 G5 R5, LE
 			uint8_t  a, r, g, b;
@@ -4105,7 +4105,7 @@ CONSOLE_COMMAND(palconvpsx, 0, false)
 			dest[(3 * i) + 1] = g;
 			dest[(3 * i) + 2] = b;
 		}
-		pal->importMem(dest, (pal->getSize() / 2) * 3);
+		pal->importMem(dest, (pal->size() / 2) * 3);
 		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
@@ -4118,14 +4118,14 @@ CONSOLE_COMMAND(vertex32x, 0, false)
 	{
 		// Get the entry index of the last selected list item
 		ArchiveEntry*  v32x   = meep->currentEntry();
-		const uint8_t* source = v32x->getData(true);
-		uint8_t*       dest   = new uint8_t[v32x->getSize() / 2];
-		for (size_t i = 0; i < v32x->getSize() / 4; ++i)
+		const uint8_t* source = v32x->rawData(true);
+		uint8_t*       dest   = new uint8_t[v32x->size() / 2];
+		for (size_t i = 0; i < v32x->size() / 4; ++i)
 		{
 			dest[2 * i + 0] = source[4 * i + 1];
 			dest[2 * i + 1] = source[4 * i + 0];
 		}
-		v32x->importMem(dest, v32x->getSize() / 2);
+		v32x->importMem(dest, v32x->size() / 2);
 		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
@@ -4138,14 +4138,14 @@ CONSOLE_COMMAND(vertexpsx, 0, false)
 	{
 		// Get the entry index of the last selected list item
 		ArchiveEntry*  vpsx   = meep->currentEntry();
-		const uint8_t* source = vpsx->getData(true);
-		uint8_t*       dest   = new uint8_t[vpsx->getSize() / 2];
-		for (size_t i = 0; i < vpsx->getSize() / 4; ++i)
+		const uint8_t* source = vpsx->rawData(true);
+		uint8_t*       dest   = new uint8_t[vpsx->size() / 2];
+		for (size_t i = 0; i < vpsx->size() / 4; ++i)
 		{
 			dest[2 * i + 0] = source[4 * i + 2];
 			dest[2 * i + 1] = source[4 * i + 3];
 		}
-		vpsx->importMem(dest, vpsx->getSize() / 2);
+		vpsx->importMem(dest, vpsx->size() / 2);
 		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
@@ -4158,8 +4158,8 @@ CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 	{
 		// Get the entry index of the last selected list item
 		ArchiveEntry*  lights  = meep->currentEntry();
-		const uint8_t* source  = lights->getData(true);
-		size_t         entries = lights->getSize() / 4;
+		const uint8_t* source  = lights->rawData(true);
+		size_t         entries = lights->size() / 4;
 		uint8_t*       dest    = new uint8_t[entries * 3];
 		for (size_t i = 0; i < entries; ++i)
 		{
@@ -4204,7 +4204,7 @@ CONSOLE_COMMAND(find, 1, true)
 	{
 		for (size_t i = 0; i < count; ++i)
 		{
-			message += entries[i]->getPath(true) + "\n";
+			message += entries[i]->path(true) + "\n";
 		}
 	}
 	Log::info(S_FMT("Found %i entr%s", count, count == 1 ? "y" : "ies\n") + message);
@@ -4220,7 +4220,7 @@ CONSOLE_COMMAND(ren, 2, true)
 		for (size_t i = 0; i < entries.size(); ++i)
 		{
 			// Rename filter logic
-			string newname = entries[i]->getName();
+			string newname = entries[i]->name();
 			for (unsigned c = 0; c < args[1].size(); c++)
 			{
 				// Check character
@@ -4256,11 +4256,11 @@ CONSOLE_COMMAND(cd, 1, true)
 	if (current && panel)
 	{
 		ArchiveTreeNode* dir    = panel->currentDir();
-		ArchiveTreeNode* newdir = current->getDir(args[0], dir);
+		ArchiveTreeNode* newdir = current->dir(args[0], dir);
 		if (newdir == nullptr)
 		{
 			if (args[0].Matches(".."))
-				newdir = (ArchiveTreeNode*)dir->getParent();
+				newdir = (ArchiveTreeNode*)dir->parent();
 			else if (args[0].Matches("/") || args[0].Matches("\\"))
 				newdir = current->rootDir();
 		}

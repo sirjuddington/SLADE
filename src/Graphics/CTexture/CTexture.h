@@ -16,7 +16,7 @@ public:
 	CTPatch(CTPatch* copy);
 	virtual ~CTPatch();
 
-	string  getName() { return name_; }
+	string  name() { return name_; }
 	int16_t xOffset() { return offset_x_; }
 	int16_t yOffset() { return offset_y_; }
 
@@ -24,7 +24,7 @@ public:
 	void setOffsetX(int16_t offset) { offset_x_ = offset; }
 	void setOffsetY(int16_t offset) { offset_y_ = offset; }
 
-	virtual ArchiveEntry* getPatchEntry(Archive* parent = nullptr);
+	virtual ArchiveEntry* patchEntry(Archive* parent = nullptr);
 
 protected:
 	string  name_;
@@ -51,12 +51,12 @@ public:
 	bool         flipX() { return flip_x_; }
 	bool         flipY() { return flip_y_; }
 	bool         useOffsets() { return use_offsets_; }
-	int16_t      getRotation() { return rotation_; }
-	rgba_t       getColour() { return colour_; }
-	float        getAlpha() { return alpha_; }
-	string       getStyle() { return style_; }
-	uint8_t      getBlendType() { return blendtype_; }
-	Translation& getTranslation() { return translation_; }
+	int16_t      rotation() { return rotation_; }
+	rgba_t       colour() { return colour_; }
+	float        alpha() { return alpha_; }
+	string       style() { return style_; }
+	uint8_t      blendType() { return blendtype_; }
+	Translation& translation() { return translation_; }
 
 	void flipX(bool flip) { flip_x_ = flip; }
 	void flipY(bool flip) { flip_y_ = flip; }
@@ -67,7 +67,7 @@ public:
 	void setStyle(string s) { style_ = s; }
 	void setBlendType(uint8_t type) { blendtype_ = type; }
 
-	ArchiveEntry* getPatchEntry(Archive* parent = nullptr) override;
+	ArchiveEntry* patchEntry(Archive* parent = nullptr) override;
 
 	bool   parse(Tokenizer& tz, Type type = Type::Patch);
 	string asText();
@@ -109,23 +109,23 @@ public:
 
 	void copyTexture(CTexture* copy, bool keep_type = false);
 
-	string   getName() { return name_; }
-	uint16_t getWidth() { return width_; }
-	uint16_t getHeight() { return height_; }
-	double   getScaleX() { return scale_x_; }
-	double   getScaleY() { return scale_y_; }
-	int16_t  getOffsetX() { return offset_x_; }
-	int16_t  getOffsetY() { return offset_y_; }
+	string   name() { return name_; }
+	uint16_t width() { return width_; }
+	uint16_t height() { return height_; }
+	double   scaleX() { return scale_x_; }
+	double   scaleY() { return scale_y_; }
+	int16_t  offsetX() { return offset_x_; }
+	int16_t  offsetY() { return offset_y_; }
 	bool     worldPanning() { return world_panning_; }
-	string   getType() { return type_; }
+	string   type() { return type_; }
 	bool     isExtended() { return extended_; }
 	bool     isOptional() { return optional_; }
 	bool     noDecals() { return no_decals_; }
 	bool     nullTexture() { return null_texture_; }
 	size_t   nPatches() { return patches_.size(); }
-	CTPatch* getPatch(size_t index);
-	uint8_t  getState() { return state_; }
-	int      getIndex();
+	CTPatch* patch(size_t index);
+	uint8_t  state() { return state_; }
+	int      index();
 
 	void setName(string name) { this->name_ = name; }
 	void setWidth(uint16_t width) { this->width_ = width; }

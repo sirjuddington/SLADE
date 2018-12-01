@@ -11,8 +11,8 @@ public:
 
 	bool	canGoNext();
 	void	applyChanges();
-	string	getTitle() { return "Base Resource Archives"; }
-	string	getDescription();
+	string	title() { return "Base Resource Archives"; }
+	string	description();
 
 private:
 	BaseResourceArchivesPanel* bra_panel_;

@@ -96,7 +96,7 @@ bool GobArchive::open(MemChunk& mc)
 		return false;
 
 	// Check size
-	if (mc.getSize() < 12)
+	if (mc.size() < 12)
 		return false;
 
 	// Check magic header
@@ -110,7 +110,7 @@ bool GobArchive::open(MemChunk& mc)
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check size
-	if ((unsigned)mc.getSize() < (dir_offset + 4))
+	if ((unsigned)mc.size() < (dir_offset + 4))
 		return false;
 
 	// Get number of lumps
@@ -121,7 +121,7 @@ bool GobArchive::open(MemChunk& mc)
 
 	// Compute directory size
 	uint32_t dir_size = (num_lumps * 21) + 4;
-	if ((unsigned)mc.getSize() < (dir_offset + dir_size))
+	if ((unsigned)mc.size() < (dir_offset + dir_size))
 		return false;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
@@ -149,7 +149,7 @@ bool GobArchive::open(MemChunk& mc)
 
 		// If the lump data goes past the end of the file,
 		// the gobfile is invalid
-		if (offset + size > mc.getSize())
+		if (offset + size > mc.size())
 		{
 			LOG_MESSAGE(1, "GobArchive::open: gob archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
@@ -176,13 +176,13 @@ bool GobArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = getEntry(a);
+		ArchiveEntry* entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -218,9 +218,9 @@ bool GobArchive::write(MemChunk& mc, bool update)
 	ArchiveEntry* entry      = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
-		entry = getEntry(l);
+		entry = entryAt(l);
 		setEntryOffset(entry, dir_offset);
-		dir_offset += entry->getSize();
+		dir_offset += entry->size();
 	}
 
 	// Clear/init MemChunk
@@ -238,21 +238,21 @@ bool GobArchive::write(MemChunk& mc, bool update)
 	// Write the lumps
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
-		entry = getEntry(l);
-		mc.write(entry->getData(), entry->getSize());
+		entry = entryAt(l);
+		mc.write(entry->rawData(), entry->size());
 	}
 
 	// Write the directory
 	mc.write(&num_lumps, 4);
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
-		entry         = getEntry(l);
+		entry         = entryAt(l);
 		char name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		long offset   = wxINT32_SWAP_ON_BE(getEntryOffset(entry));
-		long size     = wxINT32_SWAP_ON_BE(entry->getSize());
+		long size     = wxINT32_SWAP_ON_BE(entry->size());
 
-		for (size_t c = 0; c < entry->getName().length() && c < 13; c++)
-			name[c] = entry->getName()[c];
+		for (size_t c = 0; c < entry->name().length() && c < 13; c++)
+			name[c] = entry->name()[c];
 
 		mc.write(&offset, 4);
 		mc.write(&size, 4);
@@ -280,7 +280,7 @@ bool GobArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -298,7 +298,7 @@ bool GobArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to lump offset in file and read it in
 	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -326,7 +326,7 @@ ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 		entry = new ArchiveEntry(*entry);
 
 	// Process name (must be 12 characters max)
-	string name = entry->getName().Truncate(12);
+	string name = entry->name().Truncate(12);
 	if (wad_force_uppercase)
 		name.MakeUpper();
 
@@ -372,7 +372,7 @@ bool GobArchive::renameEntry(ArchiveEntry* entry, string name)
 bool GobArchive::isGobArchive(MemChunk& mc)
 {
 	// Check size
-	if (mc.getSize() < 12)
+	if (mc.size() < 12)
 		return false;
 
 	// Check magic header
@@ -386,7 +386,7 @@ bool GobArchive::isGobArchive(MemChunk& mc)
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check size
-	if ((unsigned)mc.getSize() < (dir_offset + 4))
+	if ((unsigned)mc.size() < (dir_offset + 4))
 		return false;
 
 	// Get number of lumps
@@ -397,7 +397,7 @@ bool GobArchive::isGobArchive(MemChunk& mc)
 
 	// Compute directory size
 	uint32_t dir_size = (num_lumps * 21) + 4;
-	if ((unsigned)mc.getSize() < (dir_offset + dir_size))
+	if ((unsigned)mc.size() < (dir_offset + dir_size))
 		return false;
 
 	// If it's passed to here it's probably a gob file

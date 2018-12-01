@@ -143,7 +143,7 @@ void SStartPage::init()
 		if (entry_tips)
 		{
 			Tokenizer tz;
-			tz.openMem((const char*)entry_tips->getData(), entry_tips->getSize(), entry_tips->getName());
+			tz.openMem((const char*)entry_tips->rawData(), entry_tips->size(), entry_tips->name());
 			while (!tz.atEnd() && tz.peekToken() != "")
 				tips_.push_back(tz.getToken());
 		}
@@ -175,12 +175,12 @@ void SStartPage::load(bool new_tip)
 	}
 
 	// Get html as string
-	string html = wxString::FromAscii((const char*)(entry_base_html_->getData()), entry_base_html_->getSize());
+	string html = wxString::FromAscii((const char*)(entry_base_html_->rawData()), entry_base_html_->size());
 
 	// Read css
 	string css;
 	if (entry_css_)
-		css = wxString::FromAscii((const char*)(entry_css_->getData()), entry_css_->getSize());
+		css = wxString::FromAscii((const char*)(entry_css_->rawData()), entry_css_->size());
 
 	// Generate tip of the day string
 	string tip;
@@ -248,7 +248,7 @@ void SStartPage::load(bool new_tip)
 
 	// Write html and images to temp folder
 	for (unsigned a = 0; a < entry_export_.size(); a++)
-		entry_export_[a]->exportFile(App::path(entry_export_[a]->getName(), App::Dir::Temp));
+		entry_export_[a]->exportFile(App::path(entry_export_[a]->name(), App::Dir::Temp));
 	string html_file = App::path("startpage.htm", App::Dir::Temp);
 	wxFile outfile(html_file, wxFile::write);
 	outfile.Write(html);

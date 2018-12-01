@@ -160,7 +160,7 @@ void MapThing::setFloatProperty(const string& key, double value)
 void MapThing::copy(MapObject* c)
 {
 	// Don't copy a non-thing
-	if (c->getObjType() != Type::Thing)
+	if (c->objType() != Type::Thing)
 		return;
 
 	// Basic variables
@@ -230,12 +230,12 @@ void MapThing::writeBackup(Backup* backup)
 void MapThing::readBackup(Backup* backup)
 {
 	// Type
-	type_ = backup->props_internal["type"].getIntValue();
+	type_ = backup->props_internal["type"].intValue();
 
 	// Position
-	x_ = backup->props_internal["x"].getFloatValue();
-	y_ = backup->props_internal["y"].getFloatValue();
+	x_ = backup->props_internal["x"].floatValue();
+	y_ = backup->props_internal["y"].floatValue();
 
 	// Angle
-	angle_ = backup->props_internal["angle"].getIntValue();
+	angle_ = backup->props_internal["angle"].intValue();
 }

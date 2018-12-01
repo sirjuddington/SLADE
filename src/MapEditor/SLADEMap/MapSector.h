@@ -57,9 +57,9 @@ public:
 
 	const Surface& floor() const { return floor_; }
 	const Surface& ceiling() const { return ceiling_; }
-	short          getLightLevel() const { return light_; }
-	short          getSpecial() const { return special_; }
-	short          getTag() const { return id_; }
+	short          lightLevel() const { return light_; }
+	short          special() const { return special_; }
+	short          tag() const { return id_; }
 
 	string stringProperty(const string& key) override;
 	int    intProperty(const string& key) override;
@@ -75,8 +75,8 @@ public:
 	void setFloorPlane(const plane_t& p);
 	void setCeilingPlane(const plane_t& p);
 
-	template<SurfaceType p> short   getPlaneHeight();
-	template<SurfaceType p> plane_t getPlane();
+	template<SurfaceType p> short   planeHeight();
+	template<SurfaceType p> plane_t plane();
 	template<SurfaceType p> void    setPlane(const plane_t& plane);
 
 	fpoint2_t         getPoint(Point point) override;
@@ -84,16 +84,16 @@ public:
 	bbox_t            boundingBox();
 	vector<MapSide*>& connectedSides() { return connected_sides_; }
 	void              resetPolygon() { poly_needsupdate_ = true; }
-	Polygon2D*        getPolygon();
+	Polygon2D*        polygon();
 	bool              isWithin(fpoint2_t point);
 	double            distanceTo(fpoint2_t point, double maxdist = -1);
-	bool              getLines(vector<MapLine*>& list);
-	bool              getVertices(vector<MapVertex*>& list);
-	bool              getVertices(vector<MapObject*>& list);
-	uint8_t           getLight(int where = 0);
+	bool              putLines(vector<MapLine*>& list);
+	bool              putVertices(vector<MapVertex*>& list);
+	bool              putVertices(vector<MapObject*>& list);
+	uint8_t           lightAt(int where = 0);
 	void              changeLight(int amount, int where = 0);
-	rgba_t            getColour(int where = 0, bool fullbright = false);
-	rgba_t            getFogColour();
+	rgba_t            colourAt(int where = 0, bool fullbright = false);
+	rgba_t            fogColour();
 	long              geometryUpdatedTime() const { return geometry_updated_; }
 
 	void connectSide(MapSide* side);
@@ -132,19 +132,19 @@ private:
 };
 
 // Note: these MUST be inline, or the linker will complain
-template<> inline short MapSector::getPlaneHeight<MapSector::Floor>()
+template<> inline short MapSector::planeHeight<MapSector::Floor>()
 {
 	return floor_.height;
 }
-template<> inline short MapSector::getPlaneHeight<MapSector::Ceiling>()
+template<> inline short MapSector::planeHeight<MapSector::Ceiling>()
 {
 	return ceiling_.height;
 }
-template<> inline plane_t MapSector::getPlane<MapSector::Floor>()
+template<> inline plane_t MapSector::plane<MapSector::Floor>()
 {
 	return floor_.plane;
 }
-template<> inline plane_t MapSector::getPlane<MapSector::Ceiling>()
+template<> inline plane_t MapSector::plane<MapSector::Ceiling>()
 {
 	return ceiling_.plane;
 }

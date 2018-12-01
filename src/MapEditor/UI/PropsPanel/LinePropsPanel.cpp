@@ -410,11 +410,11 @@ void LinePropsPanel::applyChanges()
 
 		// Sector tag
 		if (map_format == MAP_DOOM && !text_tag_->IsEmpty())
-			objects_[l]->setIntProperty("arg0", text_tag_->getNumber(objects_[l]->intProperty("arg0")));
+			objects_[l]->setIntProperty("arg0", text_tag_->number(objects_[l]->intProperty("arg0")));
 
 		// Line ID
 		if (map_format == MAP_UDMF && !text_id_->IsEmpty())
-			objects_[l]->setIntProperty("id", text_id_->getNumber(objects_[l]->intProperty("id")));
+			objects_[l]->setIntProperty("id", text_id_->number(objects_[l]->intProperty("id")));
 	}
 
 	// Apply special

@@ -94,9 +94,9 @@ void setRenderTarget(sf::RenderWindow* target);
 
 
 // From CodeLite
-wxColour getPanelBGColour();
-wxColour getMenuTextColour();
-wxColour getMenuBarBGColour();
+wxColour systemPanelBGColour();
+wxColour systemMenuTextColour();
+wxColour systemMenuBarBGColour();
 wxColour lightColour(const wxColour& colour, float percent);
 wxColour darkColour(const wxColour& colour, float percent);
 } // namespace Drawing
@@ -108,8 +108,8 @@ public:
 	TextBox(string text, Drawing::Font font, int width, int line_height = -1);
 	~TextBox() {}
 
-	int  getHeight() { return height_; }
-	int  getWidth() { return width_; }
+	int  height() { return height_; }
+	int  width() { return width_; }
 	void setText(string text);
 	void setSize(int width);
 	void setLineHeight(int height) { line_height_ = height; }

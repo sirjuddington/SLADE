@@ -15,7 +15,7 @@ public:
 	OGLCanvas(wxWindow* parent, int id, bool handle_timer = true, int timer_interval = 100);
 	~OGLCanvas();
 
-	Palette*     getPalette() { return &palette_; }
+	Palette*     palette() { return &palette_; }
 	void         setPalette(Palette* pal) { palette_.copyPalette(pal); }
 	bool         setContext();
 	void         createSFML();

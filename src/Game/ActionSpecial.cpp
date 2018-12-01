@@ -102,8 +102,8 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 	// Go through all child nodes/values
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto   child = node->getChildPTN(a);
-		string name  = child->getName();
+		auto   child = node->childPTN(a);
+		string name  = child->name();
 		int    argn  = -1;
 
 		// Name

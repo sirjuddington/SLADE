@@ -89,7 +89,7 @@ CTPatch::~CTPatch() {}
 // manager. Entries in [parent] will be prioritised over entries in any other
 // open archive
 // -----------------------------------------------------------------------------
-ArchiveEntry* CTPatch::getPatchEntry(Archive* parent)
+ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 {
 	// Default patches should be in patches namespace
 	ArchiveEntry* entry = theResourceManager->getPatchEntry(name_, "patches", parent);
@@ -159,7 +159,7 @@ CTPatchEx::CTPatchEx(CTPatch* copy)
 		blendtype_   = 0;
 		offset_x_    = copy->xOffset();
 		offset_y_    = copy->yOffset();
-		name_        = copy->getName();
+		name_        = copy->name();
 		type_        = Type::Patch;
 	}
 }
@@ -197,7 +197,7 @@ CTPatchEx::~CTPatchEx() {}
 // manager. Entries in [parent] will be prioritised over entries in any other
 // open archive
 // -----------------------------------------------------------------------------
-ArchiveEntry* CTPatchEx::getPatchEntry(Archive* parent)
+ArchiveEntry* CTPatchEx::patchEntry(Archive* parent)
 {
 	// 'Patch' type: patches > graphics
 	if (type_ == Type::Patch)
@@ -498,7 +498,7 @@ void CTexture::copyTexture(CTexture* tex, bool keep_type)
 	// Copy patches
 	for (unsigned a = 0; a < tex->nPatches(); a++)
 	{
-		CTPatch* patch = tex->getPatch(a);
+		CTPatch* patch = tex->patch(a);
 
 		if (extended_)
 		{
@@ -508,14 +508,14 @@ void CTexture::copyTexture(CTexture* tex, bool keep_type)
 				patches_.push_back(new CTPatchEx(patch));
 		}
 		else
-			addPatch(patch->getName(), patch->xOffset(), patch->yOffset());
+			addPatch(patch->name(), patch->xOffset(), patch->yOffset());
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Returns the patch at [index], or NULL if [index] is out of bounds
 // -----------------------------------------------------------------------------
-CTPatch* CTexture::getPatch(size_t index)
+CTPatch* CTexture::patch(size_t index)
 {
 	// Check index
 	if (index >= patches_.size())
@@ -528,14 +528,14 @@ CTPatch* CTexture::getPatch(size_t index)
 // -----------------------------------------------------------------------------
 // Returns the index of this texture within its parent list
 // -----------------------------------------------------------------------------
-int CTexture::getIndex()
+int CTexture::index()
 {
 	// Check if a parent TextureXList exists
 	if (!in_list_)
 		return index_;
 
 	// Find this texture in the parent list
-	return in_list_->textureIndex(this->getName());
+	return in_list_->textureIndex(this->name());
 }
 
 // -----------------------------------------------------------------------------
@@ -625,7 +625,7 @@ bool CTexture::removePatch(string patch)
 	bool removed = false;
 	for (unsigned a = 0; a < patches_.size(); a++)
 	{
-		if (S_CMP(patches_[a]->getName(), patch))
+		if (S_CMP(patches_[a]->name(), patch))
 		{
 			delete patches_[a];
 			patches_.erase(patches_.begin() + a);
@@ -818,10 +818,10 @@ bool CTexture::parseDefine(Tokenizer& tz)
 	if (entry)
 	{
 		SImage image;
-		if (image.open(entry->getMCData()))
+		if (image.open(entry->data()))
 		{
-			width_   = image.getWidth();
-			height_  = image.getHeight();
+			width_   = image.width();
+			height_  = image.height();
 			scale_x_ = (double)width_ / (double)def_width_;
 			scale_y_ = (double)height_ / (double)def_height_;
 		}
@@ -930,7 +930,7 @@ bool CTexture::convertRegular()
 	// Convert all patches over to normal format
 	for (unsigned a = 0; a < patches_.size(); a++)
 	{
-		CTPatch* npatch = new CTPatch(patches_[a]->getName(), patches_[a]->xOffset(), patches_[a]->yOffset());
+		CTPatch* npatch = new CTPatch(patches_[a]->name(), patches_[a]->xOffset(), patches_[a]->yOffset());
 		delete patches_[a];
 		patches_[a] = npatch;
 	}
@@ -961,8 +961,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 		CTPatchEx* patch = (CTPatchEx*)patches_[0];
 		if (!loadPatchImage(0, p_img, parent, pal))
 			return false;
-		width_  = p_img.getWidth();
-		height_ = p_img.getHeight();
+		width_  = p_img.width();
+		height_ = p_img.height();
 		image.resize(width_, height_);
 		scale_x_ = (double)width_ / (double)def_width_;
 		scale_y_ = (double)height_ / (double)def_height_;
@@ -991,8 +991,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 			}
 
 			// Apply translation before anything in case we're forcing rgba (can't translate rgba images)
-			if (patch->getBlendType() == 1)
-				p_img.applyTranslation(&(patch->getTranslation()), pal, force_rgba);
+			if (patch->blendType() == 1)
+				p_img.applyTranslation(&(patch->translation()), pal, force_rgba);
 
 			// Convert to RGBA if forced
 			if (force_rgba)
@@ -1003,43 +1003,43 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 				p_img.mirror(false);
 			if (patch->flipY())
 				p_img.mirror(true);
-			if (patch->getRotation() != 0)
-				p_img.rotate(patch->getRotation());
+			if (patch->rotation() != 0)
+				p_img.rotate(patch->rotation());
 
 			// Setup transparency blending
 			dp.blend     = NORMAL;
 			dp.alpha     = 1.0f;
 			dp.src_alpha = false;
-			if (patch->getStyle() == "CopyAlpha" || patch->getStyle() == "Overlay")
+			if (patch->style() == "CopyAlpha" || patch->style() == "Overlay")
 				dp.src_alpha = true;
-			else if (patch->getStyle() == "Translucent" || patch->getStyle() == "CopyNewAlpha")
-				dp.alpha = patch->getAlpha();
-			else if (patch->getStyle() == "Add")
+			else if (patch->style() == "Translucent" || patch->style() == "CopyNewAlpha")
+				dp.alpha = patch->alpha();
+			else if (patch->style() == "Add")
 			{
 				dp.blend = ADD;
-				dp.alpha = patch->getAlpha();
+				dp.alpha = patch->alpha();
 			}
-			else if (patch->getStyle() == "Subtract")
+			else if (patch->style() == "Subtract")
 			{
 				dp.blend = SUBTRACT;
-				dp.alpha = patch->getAlpha();
+				dp.alpha = patch->alpha();
 			}
-			else if (patch->getStyle() == "ReverseSubtract")
+			else if (patch->style() == "ReverseSubtract")
 			{
 				dp.blend = REVERSE_SUBTRACT;
-				dp.alpha = patch->getAlpha();
+				dp.alpha = patch->alpha();
 			}
-			else if (patch->getStyle() == "Modulate")
+			else if (patch->style() == "Modulate")
 			{
 				dp.blend = MODULATE;
-				dp.alpha = patch->getAlpha();
+				dp.alpha = patch->alpha();
 			}
 
 			// Setup patch colour
-			if (patch->getBlendType() == 2)
-				p_img.colourise(patch->getColour(), pal);
-			else if (patch->getBlendType() == 3)
-				p_img.tint(patch->getColour(), patch->getColour().fa(), pal);
+			if (patch->blendType() == 2)
+				p_img.colourise(patch->colour(), pal);
+			else if (patch->blendType() == 3)
+				p_img.tint(patch->colour(), patch->colour().fa(), pal);
 
 
 			// Add patch to texture image
@@ -1054,7 +1054,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 		for (unsigned a = 0; a < patches_.size(); a++)
 		{
 			CTPatch* patch = patches_[a];
-			if (Misc::loadImageFromEntry(&p_img, patch->getPatchEntry(parent)))
+			if (Misc::loadImageFromEntry(&p_img, patch->patchEntry(parent)))
 				image.drawImage(p_img, patch->xOffset(), patch->yOffset(), dp, pal, pal);
 		}
 	}
@@ -1076,21 +1076,21 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 	// If the texture is extended, search for textures-as-patches first
 	// (as long as the patch name is different from this texture's name)
-	if (extended_ && !(S_CMPNOCASE(patch->getName(), name_)))
+	if (extended_ && !(S_CMPNOCASE(patch->name(), name_)))
 	{
 		// Search the texture list we're in first
 		if (in_list_)
 		{
 			for (unsigned a = 0; a < in_list_->nTextures(); a++)
 			{
-				CTexture* tex = in_list_->getTexture(a);
+				CTexture* tex = in_list_->texture(a);
 
 				// Don't look past this texture in the list
-				if (tex->getName() == name_)
+				if (tex->name() == name_)
 					break;
 
 				// Check for name match
-				if (S_CMPNOCASE(tex->getName(), patch->getName()))
+				if (S_CMPNOCASE(tex->name(), patch->name()))
 				{
 					// Load texture to image
 					return tex->toImage(image, parent, pal);
@@ -1100,20 +1100,20 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 		// Otherwise, try the resource manager
 		// TODO: Something has to be ignored here. The entire archive or just the current list?
-		CTexture* tex = theResourceManager->getTexture(patch->getName(), parent);
+		CTexture* tex = theResourceManager->getTexture(patch->name(), parent);
 		if (tex)
 			return tex->toImage(image, parent, pal);
 	}
 
 	// Get patch entry
-	ArchiveEntry* entry = patch->getPatchEntry(parent);
+	ArchiveEntry* entry = patch->patchEntry(parent);
 
 	// Load entry to image if valid
 	if (entry)
 		return Misc::loadImageFromEntry(&image, entry);
 
 	// Maybe it's a texture?
-	entry = theResourceManager->getTextureEntry(patch->getName(), "", parent);
+	entry = theResourceManager->getTextureEntry(patch->name(), "", parent);
 
 	if (entry)
 		return Misc::loadImageFromEntry(&image, entry);

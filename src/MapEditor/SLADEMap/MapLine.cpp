@@ -152,7 +152,7 @@ double MapLine::y2()
 int MapLine::v1Index()
 {
 	if (vertex1_)
-		return vertex1_->getIndex();
+		return vertex1_->index();
 	else
 		return -1;
 }
@@ -163,7 +163,7 @@ int MapLine::v1Index()
 int MapLine::v2Index()
 {
 	if (vertex2_)
-		return vertex2_->getIndex();
+		return vertex2_->index();
 	else
 		return -1;
 }
@@ -174,7 +174,7 @@ int MapLine::v2Index()
 int MapLine::s1Index()
 {
 	if (side1_)
-		return side1_->getIndex();
+		return side1_->index();
 	else
 		return -1;
 }
@@ -185,7 +185,7 @@ int MapLine::s1Index()
 int MapLine::s2Index()
 {
 	if (side2_)
-		return side2_->getIndex();
+		return side2_->index();
 	else
 		return -1;
 }
@@ -318,7 +318,7 @@ void MapLine::setIntProperty(const string& key, int value)
 	if (key == "v1")
 	{
 		MapVertex* vertex;
-		if ((vertex = parent_map_->getVertex(value)))
+		if ((vertex = parent_map_->vertex(value)))
 		{
 			vertex1_->disconnectLine(this);
 			vertex1_ = vertex;
@@ -329,7 +329,7 @@ void MapLine::setIntProperty(const string& key, int value)
 	else if (key == "v2")
 	{
 		MapVertex* vertex;
-		if ((vertex = parent_map_->getVertex(value)))
+		if ((vertex = parent_map_->vertex(value)))
 		{
 			vertex2_->disconnectLine(this);
 			vertex2_ = vertex;
@@ -341,13 +341,13 @@ void MapLine::setIntProperty(const string& key, int value)
 	// Sides
 	else if (key == "sidefront")
 	{
-		MapSide* side = parent_map_->getSide(value);
+		MapSide* side = parent_map_->side(value);
 		if (side)
 			parent_map_->setLineSide(this, side, true);
 	}
 	else if (key == "sideback")
 	{
-		MapSide* side = parent_map_->getSide(value);
+		MapSide* side = parent_map_->side(value);
 		if (side)
 			parent_map_->setLineSide(this, side, false);
 	}
@@ -483,7 +483,7 @@ fseg2_t MapLine::seg()
 // -----------------------------------------------------------------------------
 // Returns the length of the line
 // -----------------------------------------------------------------------------
-double MapLine::getLength()
+double MapLine::length()
 {
 	if (!vertex1_ || !vertex2_)
 		return -1;
@@ -507,7 +507,7 @@ bool MapLine::doubleSector()
 	if (!side1_ || !side2_)
 		return false;
 
-	return (side1_->getSector() == side2_->getSector());
+	return (side1_->sector() == side2_->sector());
 }
 
 // -----------------------------------------------------------------------------
@@ -537,7 +537,7 @@ fpoint2_t MapLine::dirTabPoint(double tablen)
 	// Calculate tab length
 	if (tablen == 0)
 	{
-		tablen = getLength() * 0.1;
+		tablen = length() * 0.1;
 		if (tablen > 16)
 			tablen = 16;
 		if (tablen < 2)
@@ -730,16 +730,16 @@ void MapLine::flip(bool sides)
 void MapLine::writeBackup(Backup* backup)
 {
 	// Vertices
-	backup->props_internal["v1"] = vertex1_->getId();
-	backup->props_internal["v2"] = vertex2_->getId();
+	backup->props_internal["v1"] = vertex1_->objId();
+	backup->props_internal["v2"] = vertex2_->objId();
 
 	// Sides
 	if (side1_)
-		backup->props_internal["s1"] = side1_->getId();
+		backup->props_internal["s1"] = side1_->objId();
 	else
 		backup->props_internal["s1"] = 0;
 	if (side2_)
-		backup->props_internal["s2"] = side2_->getId();
+		backup->props_internal["s2"] = side2_->objId();
 	else
 		backup->props_internal["s2"] = 0;
 
@@ -791,7 +791,7 @@ void MapLine::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapLine::copy(MapObject* c)
 {
-	if (getObjType() != c->getObjType())
+	if (objType() != c->objType())
 		return;
 
 	MapObject::copy(c);

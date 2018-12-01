@@ -12,19 +12,19 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_hlt")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_hlt")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
 		// Get image info
-		info.width     = READ_L32(mc.getData(), 16) >> index;
-		info.height    = READ_L32(mc.getData(), 20) >> index;
+		info.width     = READ_L32(mc.data(), 16) >> index;
+		info.height    = READ_L32(mc.data(), 20) >> index;
 		info.numimages = 4;
 		info.colformat = PALMASK;
 		info.format    = id_;
@@ -36,7 +36,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = getInfo(data, index);
+		SImage::info_t info = this->info(data, index);
 
 		// Sanitize index if needed
 		index %= info.numimages;
@@ -44,8 +44,8 @@ protected:
 			index = info.numimages + index;
 
 		// Determine data offset
-		size_t data_offset = READ_L32(data.getData(), 24 + (index << 2));
-		if (!info.width || !info.height || !data_offset || data.getSize() < data_offset + (info.width * info.height))
+		size_t data_offset = READ_L32(data.data(), 24 + (index << 2));
+		if (!info.width || !info.height || !data_offset || data.size() < data_offset + (info.width * info.height))
 		{
 			Global::error = "HLT file: invalid data for mip level";
 			return false;
@@ -54,16 +54,16 @@ protected:
 		// Let's build the palette now
 		Palette palette;
 		size_t  pal_offset =
-			READ_L32(data.getData(), 36) + ((READ_L32(data.getData(), 16) >> 3) * (READ_L32(data.getData(), 20) >> 3));
-		if (data.getSize() < pal_offset + 5)
+			READ_L32(data.data(), 36) + ((READ_L32(data.data(), 16) >> 3) * (READ_L32(data.data(), 20) >> 3));
+		if (data.size() < pal_offset + 5)
 		{
 			Global::error = "HLT file: invalid palette offset";
 			return false;
 		}
-		size_t palsize = READ_L16(data.getData(), pal_offset);
-		if (palsize == 0 || palsize > 256 || data.getSize() < (pal_offset + 2 + (palsize * 3)))
+		size_t palsize = READ_L16(data.data(), pal_offset);
+		if (palsize == 0 || palsize > 256 || data.size() < (pal_offset + 2 + (palsize * 3)))
 		{
-			LOG_MESSAGE(1, "palsize %d, paloffset %d, entry size %d", palsize, pal_offset, data.getSize());
+			LOG_MESSAGE(1, "palsize %d, paloffset %d, entry size %d", palsize, pal_offset, data.size());
 			Global::error = "HLT file: invalid palette size";
 			return false;
 		}
@@ -81,7 +81,7 @@ protected:
 		image.fillAlpha(255);
 
 		// Fill data with pixel data
-		memcpy(imageData(image), data.getData() + data_offset, info.width * info.height);
+		memcpy(imageData(image), data.data() + data_offset, info.width * info.height);
 
 		return true;
 	}
@@ -100,15 +100,15 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_scsprite")->isThisFormat(mc) >= EDF_UNLIKELY)
+		if (EntryDataFormat::format("img_scsprite")->isThisFormat(mc) >= EDF_UNLIKELY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
-		int            size = mc.getSize();
+		int            size = mc.size();
 		SImage::info_t info;
 
 		// Get image width
@@ -153,7 +153,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get width & height
-		SImage::info_t info = getInfo(data, index);
+		SImage::info_t info = this->info(data, index);
 		if (info.format != id_)
 			return false;
 
@@ -180,7 +180,7 @@ protected:
 				for (int z = 0; z < colheight; ++z)
 				{
 					int mypixel = ((z + startheight) * info.width) + h;
-					if (mypixel >= info.width * info.height || unsigned(colstart + 2 + z) >= data.getSize())
+					if (mypixel >= info.width * info.height || unsigned(colstart + 2 + z) >= data.size())
 						return false;
 					if (mypixel < 0)
 						return false;
@@ -211,13 +211,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_scgfx")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_scgfx")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -285,13 +285,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_scwall")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_scwall")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -310,7 +310,7 @@ protected:
 		// Determine width and height
 		int height = data[0] * 4;
 		int width  = 64;
-		if (data.getSize() != width * height + SCWALLOFFSET)
+		if (data.size() != width * height + SCWALLOFFSET)
 			return false;
 
 		// Create image
@@ -356,19 +356,19 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_mipimage")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_mipimage")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
 		// Get image info
-		info.width     = READ_L16(mc.getData(), 0);
-		info.height    = READ_L16(mc.getData(), 2);
+		info.width     = READ_L16(mc.data(), 0);
+		info.height    = READ_L16(mc.data(), 2);
 		info.colformat = PALMASK;
 		info.format    = id_;
 
@@ -383,10 +383,10 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = getInfo(data, index);
+		SImage::info_t info = this->info(data, index);
 
 		// Check data
-		if (data.getSize() < unsigned(4 + (info.width * info.height)))
+		if (data.size() < unsigned(4 + (info.width * info.height)))
 			return false;
 
 		// Create image
@@ -413,13 +413,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_arttile")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_arttile")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -437,7 +437,7 @@ protected:
 		unsigned       datastart = getTileInfo(info, data, index);
 
 		// Check
-		if (datastart < 16 || datastart >= data.getSize())
+		if (datastart < 16 || datastart >= data.size())
 			return false;
 
 		// Create image (swapped width/height because column-major)
@@ -472,8 +472,8 @@ private:
 	unsigned getTileInfo(SImage::info_t& info, MemChunk& mc, int index)
 	{
 		// Get tile info
-		uint32_t firsttile = wxUINT32_SWAP_ON_BE(((uint32_t*)mc.getData())[2]);
-		uint32_t lasttile  = wxUINT32_SWAP_ON_BE(((uint32_t*)mc.getData())[3]);
+		uint32_t firsttile = wxUINT32_SWAP_ON_BE(((uint32_t*)mc.data())[2]);
+		uint32_t lasttile  = wxUINT32_SWAP_ON_BE(((uint32_t*)mc.data())[3]);
 
 		// Set number of images
 		info.numimages = 1 + lasttile - firsttile;
@@ -491,8 +491,8 @@ private:
 			// We can skip these steps if looking at the first tile in the ART file.
 			for (int i = 0; i < index; ++i)
 			{
-				int width  = READ_L16(mc.getData(), (x_offs + (i << 1)));
-				int height = READ_L16(mc.getData(), (y_offs + (i << 1)));
+				int width  = READ_L16(mc.data(), (x_offs + (i << 1)));
+				int height = READ_L16(mc.data(), (y_offs + (i << 1)));
 				datastart += (width * height);
 			}
 
@@ -501,12 +501,12 @@ private:
 			y_offs += (index << 1);
 			o_offs += (index << 2);
 		}
-		if ((unsigned)mc.getSize() < datastart)
+		if ((unsigned)mc.size() < datastart)
 			return 0;
 
 		// Get width and height of tile
-		info.width  = READ_L16(mc.getData(), x_offs);
-		info.height = READ_L16(mc.getData(), y_offs);
+		info.width  = READ_L16(mc.data(), x_offs);
+		info.height = READ_L16(mc.data(), y_offs);
 
 		// Setup remaining info
 		info.colformat = PALMASK;
@@ -538,13 +538,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_m8")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_m8")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -561,7 +561,7 @@ protected:
 		unsigned       datastart = getLevelInfo(info, data, index);
 
 		// Check
-		if (datastart + info.width * info.height > data.getSize())
+		if (datastart + info.width * info.height > data.size())
 			return false;
 
 		// Build palette
@@ -589,7 +589,7 @@ private:
 	unsigned getLevelInfo(SImage::info_t& info, MemChunk& mc, int index)
 	{
 		// Check size
-		if (mc.getSize() < 1040)
+		if (mc.size() < 1040)
 			return 0;
 
 		// Determine total number of images
@@ -623,13 +623,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_m32")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_m32")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -646,7 +646,7 @@ protected:
 		unsigned       datastart = getLevelInfo(info, data, index);
 
 		// Check
-		if (datastart + info.width * info.height * 4 > data.getSize())
+		if (datastart + info.width * info.height * 4 > data.size())
 			return false;
 
 		// Create image
@@ -663,7 +663,7 @@ private:
 	unsigned getLevelInfo(SImage::info_t& info, MemChunk& mc, int index)
 	{
 		// Check size
-		if (mc.getSize() < 968)
+		if (mc.size() < 968)
 			return 0;
 
 		// Determine total number of images
@@ -696,19 +696,19 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_wolfpic")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_wolfpic")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
 		// Read dimensions
-		info.width  = READ_L16(mc.getData(), 0);
-		info.height = READ_L16(mc.getData(), 2);
+		info.width  = READ_L16(mc.data(), 0);
+		info.height = READ_L16(mc.data(), 2);
 
 		// Setup other info
 		info.colformat = PALMASK;
@@ -721,10 +721,10 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = getInfo(data, index);
+		SImage::info_t info = this->info(data, index);
 
 		// Check data
-		if (data.getSize() != 4 + info.width * info.height)
+		if (data.size() != 4 + info.width * info.height)
 			return false;
 
 		// Create image
@@ -733,17 +733,17 @@ protected:
 		uint8_t* img_data = imageData(image);
 
 		// Read image data
-		const uint8_t* pixel    = data.getData() + 4;
-		const uint8_t* entryend = data.getData() + data.getSize();
+		const uint8_t* pixel    = data.data() + 4;
+		const uint8_t* entryend = data.data() + data.size();
 		uint8_t*       brush    = img_data;
-		uint8_t*       dataend  = img_data + data.getSize() - 4;
+		uint8_t*       dataend  = img_data + data.size() - 4;
 
 		while (pixel < entryend)
 		{
 			*brush = *pixel++;
 			brush += 4;
 			if (brush >= dataend)
-				brush -= data.getSize() - 5;
+				brush -= data.size() - 5;
 		}
 
 		return true;
@@ -763,13 +763,13 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::getFormat("img_wolfsprite")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_wolfsprite")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -793,7 +793,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get image info
-		SImage::info_t info = getInfo(data, index);
+		SImage::info_t info = this->info(data, index);
 
 		// Create image
 		image.create(info);
@@ -801,11 +801,11 @@ protected:
 		uint8_t* img_mask = imageMask(image);
 
 		// Read data
-		const uint16_t* cmdptr = (const uint16_t*)(data.getData() + 4);
+		const uint16_t* cmdptr = (const uint16_t*)(data.data() + 4);
 		uint32_t        i, x, y;
 		for (x = 0; x < (unsigned)info.width; ++x)
 		{
-			const int16_t* linecmds = (const int16_t*)(data.getData() + wxINT16_SWAP_ON_BE(*cmdptr));
+			const int16_t* linecmds = (const int16_t*)(data.data() + wxINT16_SWAP_ON_BE(*cmdptr));
 			cmdptr++;
 			for (; wxINT16_SWAP_ON_BE(*linecmds); linecmds += 3)
 			{

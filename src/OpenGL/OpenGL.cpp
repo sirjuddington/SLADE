@@ -314,7 +314,7 @@ void OpenGL::resetBlend()
 // -----------------------------------------------------------------------------
 // Returns OpenGL system info
 // -----------------------------------------------------------------------------
-OpenGL::Info OpenGL::getInfo()
+OpenGL::Info OpenGL::sysInfo()
 {
 	return info;
 }

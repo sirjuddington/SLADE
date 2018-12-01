@@ -187,27 +187,27 @@ int FontManager::initFonts()
 	// Normal
 	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
-		++ret, font_normal.loadFromMemory((const char*)entry->getData(), entry->getSize());
+		++ret, font_normal.loadFromMemory((const char*)entry->rawData(), entry->size());
 
 	// Condensed
 	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
 	if (entry)
-		++ret, font_condensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
+		++ret, font_condensed.loadFromMemory((const char*)entry->rawData(), entry->size());
 
 	// Bold
 	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
 	if (entry)
-		++ret, font_bold.loadFromMemory((const char*)entry->getData(), entry->getSize());
+		++ret, font_bold.loadFromMemory((const char*)entry->rawData(), entry->size());
 
 	// Condensed Bold
 	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
 	if (entry)
-		++ret, font_boldcondensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
+		++ret, font_boldcondensed.loadFromMemory((const char*)entry->rawData(), entry->size());
 
 	// Monospace
 	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
 	if (entry)
-		++ret, font_small.loadFromMemory((const char*)entry->getData(), entry->getSize());
+		++ret, font_small.loadFromMemory((const char*)entry->rawData(), entry->size());
 
 	return ret;
 }
@@ -665,8 +665,8 @@ frect_t Drawing::fitTextureWithin(
 	double height = y2 - y1;
 
 	// Get image dimensions
-	double x_dim = (double)tex->getWidth();
-	double y_dim = (double)tex->getHeight();
+	double x_dim = (double)tex->width();
+	double y_dim = (double)tex->height();
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)width - padding) / x_dim;
@@ -681,10 +681,10 @@ frect_t Drawing::fitTextureWithin(
 
 	// Return the fitted rectangle
 	return frect_t(
-		x1 + width * 0.5 - (scale * tex->getWidth() * 0.5),
-		y1 + height * 0.5 - (scale * tex->getHeight() * 0.5),
-		x1 + width * 0.5 + (scale * tex->getWidth() * 0.5),
-		y1 + height * 0.5 + (scale * tex->getHeight() * 0.5));
+		x1 + width * 0.5 - (scale * tex->width() * 0.5),
+		y1 + height * 0.5 - (scale * tex->height() * 0.5),
+		x1 + width * 0.5 + (scale * tex->width() * 0.5),
+		y1 + height * 0.5 + (scale * tex->height() * 0.5));
 }
 
 // -----------------------------------------------------------------------------
@@ -709,8 +709,8 @@ void Drawing::drawTextureWithin(
 	double height = y2 - y1;
 
 	// Get image dimensions
-	double x_dim = (double)tex->getWidth();
-	double y_dim = (double)tex->getHeight();
+	double x_dim = (double)tex->width();
+	double y_dim = (double)tex->height();
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)width - padding) / x_dim;
@@ -727,7 +727,7 @@ void Drawing::drawTextureWithin(
 	glPushMatrix();
 	glTranslated(x1 + width * 0.5, y1 + height * 0.5, 0); // Translate to middle of area
 	glScaled(scale, scale, scale);                        // Scale to fit within area
-	tex->draw2d(tex->getWidth() * -0.5, tex->getHeight() * -0.5);
+	tex->draw2d(tex->width() * -0.5, tex->height() * -0.5);
 	glPopMatrix();
 }
 
@@ -1033,7 +1033,7 @@ void Drawing::setRenderTarget(sf::RenderWindow* target)
 
 // The following functions are taken from CodeLite (http://codelite.org)
 
-wxColour Drawing::getPanelBGColour()
+wxColour Drawing::systemPanelBGColour()
 {
 #ifdef __WXGTK__
 	static bool     intitialized(false);
@@ -1061,12 +1061,12 @@ wxColour Drawing::getPanelBGColour()
 #endif
 }
 
-wxColour Drawing::getMenuTextColour()
+wxColour Drawing::systemMenuTextColour()
 {
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT);
 }
 
-wxColour Drawing::getMenuBarBGColour()
+wxColour Drawing::systemMenuBarBGColour()
 {
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENU);
 }

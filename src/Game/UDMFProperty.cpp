@@ -66,7 +66,7 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 {
 	// Set group and property name
 	this->group_    = group;
-	this->property_ = node->getName();
+	this->property_ = node->name();
 
 	// Check for basic definition
 	if (node->nChildren() == 0)
@@ -78,10 +78,10 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 	// Otherwise, read node data
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto prop = node->getChildPTN(a);
+		auto prop = node->childPTN(a);
 
 		// Property type
-		if (S_CMPNOCASE(prop->getName(), "type"))
+		if (S_CMPNOCASE(prop->name(), "type"))
 		{
 			if (S_CMPNOCASE(prop->stringValue(), "bool"))
 				type_ = Type::Boolean;
@@ -110,11 +110,11 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 		}
 
 		// Property name
-		else if (S_CMPNOCASE(prop->getName(), "name"))
+		else if (S_CMPNOCASE(prop->name(), "name"))
 			name_ = prop->stringValue();
 
 		// Default value
-		else if (S_CMPNOCASE(prop->getName(), "default"))
+		else if (S_CMPNOCASE(prop->name(), "default"))
 		{
 			switch (type_)
 			{
@@ -145,15 +145,15 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 		}
 
 		// Property is a flag
-		else if (S_CMPNOCASE(prop->getName(), "flag"))
+		else if (S_CMPNOCASE(prop->name(), "flag"))
 			flag_ = true;
 
 		// Property is a SPAC trigger
-		else if (S_CMPNOCASE(prop->getName(), "trigger"))
+		else if (S_CMPNOCASE(prop->name(), "trigger"))
 			trigger_ = true;
 
 		// Possible values
-		else if (S_CMPNOCASE(prop->getName(), "values"))
+		else if (S_CMPNOCASE(prop->name(), "values"))
 		{
 			switch (type_)
 			{
@@ -180,7 +180,7 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 		}
 
 		// Show always
-		else if (S_CMPNOCASE(prop->getName(), "show_always"))
+		else if (S_CMPNOCASE(prop->name(), "show_always"))
 			show_always_ = prop->boolValue();
 	}
 }
@@ -221,11 +221,11 @@ string UDMFProperty::getStringRep()
 		else if (
 			type_ == Type::Int || type_ == Type::ActionSpecial || type_ == Type::SectorSpecial
 			|| type_ == Type::ThingType || type_ == Type::Colour)
-			ret += S_FMT(", default = %d", default_value_.getIntValue());
+			ret += S_FMT(", default = %d", default_value_.intValue());
 		else if (type_ == Type::Float)
 			ret += S_FMT(", default = %1.2f", (double)default_value_);
 		else
-			ret += S_FMT(", default = \"%s\"", default_value_.getStringValue());
+			ret += S_FMT(", default = \"%s\"", default_value_.stringValue());
 	}
 	else
 		ret += ", no valid default";
@@ -240,7 +240,7 @@ string UDMFProperty::getStringRep()
 		ret += "\nPossible values: ";
 		for (unsigned a = 0; a < values_.size(); a++)
 		{
-			ret += values_[a].getStringValue();
+			ret += values_[a].stringValue();
 			if (a < values_.size() - 1)
 				ret += ", ";
 		}

@@ -6,8 +6,8 @@ public:
 	NumberTextCtrl(wxWindow* parent, bool allow_decimal = false);
 	~NumberTextCtrl() {}
 
-	int    getNumber(int base = 0);
-	double getDecNumber(double base = 0);
+	int    number(int base = 0);
+	double decNumber(double base = 0);
 	bool   isIncrement();
 	bool   isDecrement();
 	bool   isFactor();

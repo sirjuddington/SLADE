@@ -66,9 +66,9 @@ bool ANSIEntryPanel::loadEntry(ArchiveEntry* entry)
 	if (!entry)
 		return false;
 
-	if (entry->getSize() == DATASIZE)
+	if (entry->size() == DATASIZE)
 	{
-		ansi_chardata_.assign(entry->getData(), entry->getData() + DATASIZE);
+		ansi_chardata_.assign(entry->rawData(), entry->rawData() + DATASIZE);
 		ansi_canvas_->loadData(ansi_chardata_.data());
 		for (size_t i = 0; i < DATASIZE / 2; i++)
 			ansi_canvas_->drawCharacter(i);

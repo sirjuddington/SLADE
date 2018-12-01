@@ -39,14 +39,14 @@ public:
 
 	bool isOk() const { return !!sector_; }
 
-	MapSector* getSector() const { return sector_; }
-	MapLine*   getParentLine() const { return parent_; }
-	string     getTexUpper() const { return tex_upper_; }
-	string     getTexMiddle() const { return tex_middle_; }
-	string     getTexLower() const { return tex_lower_; }
-	short      getOffsetX() const { return offset_x_; }
-	short      getOffsetY() const { return offset_y_; }
-	uint8_t    getLight();
+	MapSector* sector() const { return sector_; }
+	MapLine*   parentLine() const { return parent_; }
+	string     texUpper() const { return tex_upper_; }
+	string     texMiddle() const { return tex_middle_; }
+	string     texLower() const { return tex_lower_; }
+	short      offsetX() const { return offset_x_; }
+	short      offsetY() const { return offset_y_; }
+	uint8_t    light();
 
 	void setSector(MapSector* sector);
 	void changeLight(int amount);

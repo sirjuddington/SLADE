@@ -31,9 +31,9 @@ public:
 	bool startPageTabOpen() const;
 	void openStartPageTab();
 
-	ArchiveManagerPanel*     getArchiveManagerPanel() { return panel_archivemanager_; }
-	PaletteChooser*          getPaletteChooser() { return palette_chooser_; }
-	UndoManagerHistoryPanel* getUndoHistoryPanel() { return panel_undo_history_; }
+	ArchiveManagerPanel*     archiveManagerPanel() { return panel_archivemanager_; }
+	PaletteChooser*          paletteChooser() { return palette_chooser_; }
+	UndoManagerHistoryPanel* undoHistoryPanel() { return panel_undo_history_; }
 	SStartPage*              startPage() const { return start_page_; }
 
 #ifdef USE_WEBVIEW_STARTPAGE

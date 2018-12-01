@@ -211,6 +211,6 @@ void MapVertex::writeBackup(Backup* backup)
 void MapVertex::readBackup(Backup* backup)
 {
 	// Position
-	x_ = backup->props_internal["x"].getFloatValue();
-	y_ = backup->props_internal["y"].getFloatValue();
+	x_ = backup->props_internal["x"].floatValue();
+	y_ = backup->props_internal["y"].floatValue();
 }

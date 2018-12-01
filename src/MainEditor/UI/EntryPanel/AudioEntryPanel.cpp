@@ -304,60 +304,60 @@ bool AudioEntryPanel::open()
 	num_tracks_ = 1;
 
 	// Get entry data
-	MemChunk& mcdata = entry_->getMCData();
+	MemChunk& mcdata = entry_->data();
 
 	// Setup temp filename
-	wxFileName path(App::path(entry_->getName(), App::Dir::Temp));
+	wxFileName path(App::path(entry_->name(), App::Dir::Temp));
 	// Add extension if missing
 	if (path.GetExt().IsEmpty())
-		path.SetExt(entry_->getType()->extension());
+		path.SetExt(entry_->type()->extension());
 
 	// Convert if necessary, then write to file
 	MemChunk convdata;
-	if (entry_->getType()->formatId() == "snd_doom" || // Doom Sound -> WAV
-		entry_->getType()->formatId() == "snd_doom_mac")
+	if (entry_->type()->formatId() == "snd_doom" || // Doom Sound -> WAV
+		entry_->type()->formatId() == "snd_doom_mac")
 		Conversions::doomSndToWav(mcdata, convdata);
-	else if (entry_->getType()->formatId() == "snd_speaker") // Doom PC Speaker Sound -> WAV
+	else if (entry_->type()->formatId() == "snd_speaker") // Doom PC Speaker Sound -> WAV
 		Conversions::spkSndToWav(mcdata, convdata);
-	else if (entry_->getType()->formatId() == "snd_audiot") // AudioT PC Speaker Sound -> WAV
+	else if (entry_->type()->formatId() == "snd_audiot") // AudioT PC Speaker Sound -> WAV
 		Conversions::spkSndToWav(mcdata, convdata, true);
-	else if (entry_->getType()->formatId() == "snd_wolf") // Wolfenstein 3D Sound -> WAV
+	else if (entry_->type()->formatId() == "snd_wolf") // Wolfenstein 3D Sound -> WAV
 		Conversions::wolfSndToWav(mcdata, convdata);
-	else if (entry_->getType()->formatId() == "snd_voc") // Creative Voice File -> WAV
+	else if (entry_->type()->formatId() == "snd_voc") // Creative Voice File -> WAV
 		Conversions::vocToWav(mcdata, convdata);
-	else if (entry_->getType()->formatId() == "snd_jaguar") // Jaguar Doom Sound -> WAV
+	else if (entry_->type()->formatId() == "snd_jaguar") // Jaguar Doom Sound -> WAV
 		Conversions::jagSndToWav(mcdata, convdata);
-	else if (entry_->getType()->formatId() == "snd_bloodsfx") // Blood Sound -> WAV
+	else if (entry_->type()->formatId() == "snd_bloodsfx") // Blood Sound -> WAV
 		Conversions::bloodToWav(entry_, convdata);
-	else if (entry_->getType()->formatId() == "midi_mus") // MUS -> MIDI
+	else if (entry_->type()->formatId() == "midi_mus") // MUS -> MIDI
 	{
 		Conversions::musToMidi(mcdata, convdata);
 		path.SetExt("mid");
 	}
 	else if (
-		entry_->getType()->formatId() == "midi_xmi" || // HMI/HMP/XMI -> MIDI
-		entry_->getType()->formatId() == "midi_hmi" || entry_->getType()->formatId() == "midi_hmp")
+		entry_->type()->formatId() == "midi_xmi" || // HMI/HMP/XMI -> MIDI
+		entry_->type()->formatId() == "midi_hmi" || entry_->type()->formatId() == "midi_hmp")
 	{
 		Conversions::zmusToMidi(mcdata, convdata, 0, &num_tracks_);
 		path.SetExt("mid");
 	}
-	else if (entry_->getType()->formatId() == "midi_gmid") // GMID -> MIDI
+	else if (entry_->type()->formatId() == "midi_gmid") // GMID -> MIDI
 	{
 		Conversions::gmidToMidi(mcdata, convdata);
 		path.SetExt("mid");
 	}
 	else
-		convdata.importMem(mcdata.getData(), mcdata.getSize());
+		convdata.importMem(mcdata.data(), mcdata.size());
 
 	// MIDI format
-	if (entry_->getType()->formatId().StartsWith("midi_"))
+	if (entry_->type()->formatId().StartsWith("midi_"))
 	{
 		audio_type_ = MIDI;
 		openMidi(convdata, path.GetFullPath());
 	}
 
 	// MOD format
-	else if (entry_->getType()->formatId().StartsWith("mod_"))
+	else if (entry_->type()->formatId().StartsWith("mod_"))
 		openMod(convdata);
 
 	// Other format
@@ -367,7 +367,7 @@ bool AudioEntryPanel::open()
 	// Keep filename so we can delete it later
 	prevfile_ = path.GetFullPath();
 
-	txt_title_->SetLabel(entry_->getPath(true));
+	txt_title_->SetLabel(entry_->path(true));
 	txt_track_->SetLabel(S_FMT("%d/%d", subsong_ + 1, num_tracks_));
 	updateInfo();
 
@@ -395,7 +395,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 	audio_type_   = Invalid;
 
 	// Load into buffer
-	if (sound_buffer_->loadFromMemory((const char*)audio.getData(), audio.getSize()))
+	if (sound_buffer_->loadFromMemory((const char*)audio.data(), audio.size()))
 	{
 		LOG_MESSAGE(3, "opened as sound");
 		// Bind to sound
@@ -417,7 +417,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 
 		return true;
 	}
-	else if (music_->openFromMemory((const char*)audio.getData(), audio.getSize()))
+	else if (music_->openFromMemory((const char*)audio.data(), audio.size()))
 	{
 		LOG_MESSAGE(3, "opened as music");
 		// Couldn't open the audio as a sf::SoundBuffer, try sf::Music instead
@@ -470,7 +470,7 @@ bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
 			btn_stop_->Enable();
 
 			// Setup seekbar
-			setAudioDuration(theMIDIPlayer->getLength());
+			setAudioDuration(theMIDIPlayer->length());
 
 			return true;
 		}
@@ -485,7 +485,7 @@ bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
 bool AudioEntryPanel::openMod(MemChunk& data)
 {
 	// Attempt to load the mod
-	if (mod_->loadFromMemory(data.getData(), data.getSize()))
+	if (mod_->loadFromMemory(data.data(), data.size()))
 	{
 		audio_type_ = Mod;
 
@@ -494,7 +494,7 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 		btn_play_->Enable();
 		btn_pause_->Enable();
 		btn_stop_->Enable();
-		setAudioDuration(mod_->getDuration().asMilliseconds());
+		setAudioDuration(mod_->duration().asMilliseconds());
 
 		return true;
 	}
@@ -601,57 +601,57 @@ void AudioEntryPanel::resetStream()
 bool AudioEntryPanel::updateInfo()
 {
 	txt_info_->Clear();
-	string    info = entry_->getTypeString() + "\n";
-	MemChunk& mc   = entry_->getMCData();
+	string    info = entry_->typeString() + "\n";
+	MemChunk& mc   = entry_->data();
 	switch (audio_type_)
 	{
 	case Sound:
 	case Music:
 	case Media:
-		if (entry_->getType() == EntryType::fromId("snd_doom"))
+		if (entry_->type() == EntryType::fromId("snd_doom"))
 		{
 			size_t samplerate = READ_L16(mc, 2);
 			size_t samples    = READ_L16(mc, 4);
 			info += S_FMT("%lu samples at %lu Hz", (unsigned long)samples, (unsigned long)samplerate);
 		}
-		else if (entry_->getType() == EntryType::fromId("snd_speaker"))
+		else if (entry_->type() == EntryType::fromId("snd_speaker"))
 		{
 			size_t samples = READ_L16(mc, 2);
 			info += S_FMT("%lu samples", (unsigned long)samples);
 		}
-		else if (entry_->getType() == EntryType::fromId("snd_audiot"))
+		else if (entry_->type() == EntryType::fromId("snd_audiot"))
 		{
 			size_t samples = READ_L16(mc, 0);
 			info += S_FMT("%lu samples", (unsigned long)samples);
 		}
-		else if (entry_->getType() == EntryType::fromId("snd_sun"))
+		else if (entry_->type() == EntryType::fromId("snd_sun"))
 			info += Audio::getSunInfo(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_voc"))
+		else if (entry_->type() == EntryType::fromId("snd_voc"))
 			info += Audio::getVocInfo(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_wav"))
+		else if (entry_->type() == EntryType::fromId("snd_wav"))
 			info += Audio::getWavInfo(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_mp3"))
+		else if (entry_->type() == EntryType::fromId("snd_mp3"))
 			info += Audio::getID3Tag(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_ogg"))
+		else if (entry_->type() == EntryType::fromId("snd_ogg"))
 			info += Audio::getOggComments(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_flac"))
+		else if (entry_->type() == EntryType::fromId("snd_flac"))
 			info += Audio::getFlacComments(mc);
-		else if (entry_->getType() == EntryType::fromId("snd_aiff"))
+		else if (entry_->type() == EntryType::fromId("snd_aiff"))
 			info += Audio::getAiffInfo(mc);
 		break;
 	case Mod:
-		if (entry_->getType() == EntryType::fromId("mod_it"))
+		if (entry_->type() == EntryType::fromId("mod_it"))
 			info += Audio::getITComments(mc);
-		else if (entry_->getType() == EntryType::fromId("mod_mod"))
+		else if (entry_->type() == EntryType::fromId("mod_mod"))
 			info += Audio::getModComments(mc);
-		else if (entry_->getType() == EntryType::fromId("mod_s3m"))
+		else if (entry_->type() == EntryType::fromId("mod_s3m"))
 			info += Audio::getS3MComments(mc);
-		else if (entry_->getType() == EntryType::fromId("mod_xm"))
+		else if (entry_->type() == EntryType::fromId("mod_xm"))
 			info += Audio::getXMComments(mc);
 		break;
 	case MIDI:
-		info += theMIDIPlayer->getInfo();
-		if (entry_->getType() == EntryType::fromId("midi_rmid"))
+		info += theMIDIPlayer->info();
+		if (entry_->type() == EntryType::fromId("midi_rmid"))
 			info += Audio::getRmidInfo(mc);
 		break;
 	/*case AUTYPE_EMU:
@@ -724,9 +724,9 @@ void AudioEntryPanel::onBtnPrev(wxCommandEvent& e)
 	else
 		subsong_ = num_tracks_ - 1;
 
-	if (entry_->getType()->formatId() == "xmi")
+	if (entry_->type()->formatId() == "xmi")
 	{
-		MemChunk& mcdata = entry_->getMCData();
+		MemChunk& mcdata = entry_->data();
 		MemChunk  convdata;
 		if (Conversions::zmusToMidi(mcdata, convdata, subsong_))
 			openMidi(convdata, prevfile_);
@@ -743,9 +743,9 @@ void AudioEntryPanel::onBtnPrev(wxCommandEvent& e)
 void AudioEntryPanel::onBtnNext(wxCommandEvent& e)
 {
 	int newsong = (subsong_ + 1) % num_tracks_;
-	if (entry_->getType()->formatId() == "xmi")
+	if (entry_->type()->formatId() == "xmi")
 	{
-		MemChunk& mcdata = entry_->getMCData();
+		MemChunk& mcdata = entry_->data();
 		MemChunk  convdata;
 		if (Conversions::zmusToMidi(mcdata, convdata, newsong) && openMidi(convdata, prevfile_))
 			subsong_ = newsong;
@@ -772,7 +772,7 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	case Sound: pos = sound_->getPlayingOffset().asMilliseconds(); break;
 	case Music: pos = music_->getPlayingOffset().asMilliseconds(); break;
 	case Mod: pos = mod_->getPlayingOffset().asMilliseconds(); break;
-	case MIDI: pos = theMIDIPlayer->getPosition(); break;
+	case MIDI: pos = theMIDIPlayer->position(); break;
 	case Media:
 		if (media_ctrl_)
 			pos = media_ctrl_->Tell();

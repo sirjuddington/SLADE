@@ -64,7 +64,7 @@ public:
 	MapVertex* v2() const { return vertex2_; }
 	MapSide*   s1() const { return side1_; }
 	MapSide*   s2() const { return side2_; }
-	int        getSpecial() const { return special_; }
+	int        special() const { return special_; }
 
 	MapSector* frontSector();
 	MapSector* backSector();
@@ -96,7 +96,7 @@ public:
 	fpoint2_t point1();
 	fpoint2_t point2();
 	fseg2_t   seg();
-	double    getLength();
+	double    length();
 	bool      doubleSector();
 	fpoint2_t frontVector();
 	fpoint2_t dirTabPoint(double length = 0);

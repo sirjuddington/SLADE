@@ -194,7 +194,7 @@ void Renderer::viewFitToMap(bool snap)
 	cursor_zoom_disabled_ = true;
 
 	// Fit the view to the map bbox
-	view_.fitTo(context_.map().getMapBBox());
+	view_.fitTo(context_.map().bounds());
 
 	// Don't animate if specified
 	if (snap)
@@ -220,14 +220,14 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 	for (auto object : objects)
 	{
 		// Vertex
-		if (object->getObjType() == MapObject::Type::Vertex)
+		if (object->objType() == MapObject::Type::Vertex)
 		{
 			auto vertex = (MapVertex*)object;
 			bbox.extend(vertex->xPos(), vertex->yPos());
 		}
 
 		// Line
-		else if (object->getObjType() == MapObject::Type::Line)
+		else if (object->objType() == MapObject::Type::Line)
 		{
 			auto line = (MapLine*)object;
 			bbox.extend(line->v1()->xPos(), line->v1()->yPos());
@@ -235,7 +235,7 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 		}
 
 		// Sector
-		else if (object->getObjType() == MapObject::Type::Sector)
+		else if (object->objType() == MapObject::Type::Sector)
 		{
 			auto sbb = ((MapSector*)object)->boundingBox();
 			if (sbb.min.x < bbox.min.x)
@@ -249,7 +249,7 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 		}
 
 		// Thing
-		else if (object->getObjType() == MapObject::Type::Thing)
+		else if (object->objType() == MapObject::Type::Thing)
 		{
 			auto thing = (MapThing*)object;
 			bbox.extend(thing->xPos(), thing->yPos());
@@ -313,10 +313,10 @@ void Renderer::setCameraThing(MapThing* thing)
 	fpoint3_t pos(thing->point(), 40);
 	int       sector = context_.map().sectorAt(thing->point());
 	if (sector >= 0)
-		pos.z += context_.map().getSector(sector)->floor().plane.height_at(pos.x, pos.y);
+		pos.z += context_.map().sector(sector)->floor().plane.height_at(pos.x, pos.y);
 
 	// Set camera position & direction
-	renderer_3d_.cameraSet(pos, MathStuff::vectorAngle(MathStuff::degToRad(thing->getAngle())));
+	renderer_3d_.cameraSet(pos, MathStuff::vectorAngle(MathStuff::degToRad(thing->angle())));
 }
 
 // -----------------------------------------------------------------------------
@@ -354,7 +354,7 @@ void Renderer::drawGrid() const
 		glEnable(GL_LINE_STIPPLE);
 	}
 
-	OpenGL::setColour(ColourConfiguration::getColour("map_grid"), false);
+	OpenGL::setColour(ColourConfiguration::colour("map_grid"), false);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Determine smallest grid size to bother drawing
@@ -418,7 +418,7 @@ void Renderer::drawGrid() const
 		if (gridsize < cross_size)
 			cross_size = gridsize;
 
-		OpenGL::setColour(ColourConfiguration::getColour("map_64grid"));
+		OpenGL::setColour(ColourConfiguration::colour("map_64grid"));
 
 		// Vertical
 		int ofs = start_x % 64;
@@ -483,7 +483,7 @@ void Renderer::drawGrid() const
 		auto   mouse_pos = context_.input().mousePos();
 		double x         = context_.snapToGrid(view_.mapX(mouse_pos.x), false);
 		double y         = context_.snapToGrid(view_.mapY(mouse_pos.y), false);
-		auto   col       = ColourConfiguration::getColour("map_64grid");
+		auto   col       = ColourConfiguration::colour("map_64grid");
 
 		// Small
 		glLineWidth(2.0f);
@@ -540,8 +540,8 @@ void Renderer::drawEditorMessages() const
 	int yoff = 0;
 	if (map_showfps)
 		yoff = 16;
-	auto col_fg = ColourConfiguration::getColour("map_editor_message");
-	auto col_bg = ColourConfiguration::getColour("map_editor_message_outline");
+	auto col_fg = ColourConfiguration::colour("map_editor_message");
+	auto col_bg = ColourConfiguration::colour("map_editor_message_outline");
 	Drawing::setTextState(true);
 	Drawing::enableTextStateReset(false);
 
@@ -594,8 +594,8 @@ void Renderer::drawFeatureHelpText() const
 
 	// Draw title
 	frect_t bounds;
-	auto    col    = ColourConfiguration::getColour("map_editor_message");
-	auto    col_bg = ColourConfiguration::getColour("map_editor_message_outline");
+	auto    col    = ColourConfiguration::colour("map_editor_message");
+	auto    col_bg = ColourConfiguration::colour("map_editor_message_outline");
 	col.a          = col.a * anim_help_fade_;
 	col_bg.a       = col_bg.a * anim_help_fade_;
 	Drawing::setTextOutline(1.0f, col_bg);
@@ -638,7 +638,7 @@ void Renderer::drawSelectionNumbers() const
 		return;
 
 	// Get editor message text colour
-	auto col = ColourConfiguration::getColour("map_editor_message");
+	auto col = ColourConfiguration::colour("map_editor_message");
 
 	// Go through selection
 	string text;
@@ -693,7 +693,7 @@ void Renderer::drawThingQuickAngleLines() const
 		return;
 
 	// Get moving colour
-	auto col = ColourConfiguration::getColour("map_moving");
+	auto col = ColourConfiguration::colour("map_moving");
 	OpenGL::setColour(col);
 
 	// Draw lines
@@ -740,7 +740,7 @@ void Renderer::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col) const
 void Renderer::drawLineDrawLines(bool snap_nearest_vertex) const
 {
 	// Get line draw colour
-	auto col = ColourConfiguration::getColour("map_linedraw");
+	auto col = ColourConfiguration::colour("map_linedraw");
 	OpenGL::setColour(col);
 
 	// Determine end point
@@ -751,8 +751,8 @@ void Renderer::drawLineDrawLines(bool snap_nearest_vertex) const
 		int vertex = context_.map().nearestVertex(end);
 		if (vertex >= 0)
 		{
-			end.x = context_.map().getVertex(vertex)->xPos();
-			end.y = context_.map().getVertex(vertex)->yPos();
+			end.x = context_.map().vertex(vertex)->xPos();
+			end.y = context_.map().vertex(vertex)->yPos();
 		}
 		else if (context_.gridSnap())
 		{
@@ -813,9 +813,9 @@ void Renderer::drawPasteLines() const
 	MapArchClipboardItem* c = nullptr;
 	for (unsigned a = 0; a < theClipboard->nItems(); a++)
 	{
-		if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_ARCH)
+		if (theClipboard->item(a)->type() == CLIPBOARD_MAP_ARCH)
 		{
-			c = (MapArchClipboardItem*)theClipboard->getItem(a);
+			c = (MapArchClipboardItem*)theClipboard->item(a);
 			break;
 		}
 	}
@@ -825,14 +825,14 @@ void Renderer::drawPasteLines() const
 
 	// Get lines
 	vector<MapLine*> lines;
-	c->getLines(lines);
+	c->putLines(lines);
 
 	// Get line draw colour
-	auto col = ColourConfiguration::getColour("map_linedraw");
+	auto col = ColourConfiguration::colour("map_linedraw");
 	OpenGL::setColour(col);
 
 	// Draw
-	auto pos = context_.relativeSnapToGrid(c->getMidpoint(), view_.mapPos(context_.input().mousePos(), true));
+	auto pos = context_.relativeSnapToGrid(c->midpoint(), view_.mapPos(context_.input().mousePos(), true));
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < lines.size(); a++)
@@ -849,7 +849,7 @@ void Renderer::drawPasteLines() const
 void Renderer::drawObjectEdit()
 {
 	auto& group      = context_.objectEdit().group();
-	auto  col        = ColourConfiguration::getColour("map_object_edit");
+	auto  col        = ColourConfiguration::colour("map_object_edit");
 	auto  edit_state = context_.objectEdit().state();
 
 	// Map objects
@@ -945,7 +945,7 @@ void Renderer::drawObjectEdit()
 
 	// Line length
 	fpoint2_t nl_v1, nl_v2;
-	if (group.getNearestLine(view_.mapPos(context_.input().mousePos()), 128 / view_.scale(), nl_v1, nl_v2))
+	if (group.nearestLineEndpoints(view_.mapPos(context_.input().mousePos()), 128 / view_.scale(), nl_v1, nl_v2))
 	{
 		fpoint2_t mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
 		int       length = MathStuff::distance(nl_v1, nl_v2);
@@ -1137,7 +1137,7 @@ void Renderer::drawMap2d()
 	if (mouse_state == Input::MouseState::Selection)
 	{
 		// Outline
-		OpenGL::setColour(ColourConfiguration::getColour("map_selbox_outline"));
+		OpenGL::setColour(ColourConfiguration::colour("map_selbox_outline"));
 		glLineWidth(2.0f);
 		glBegin(GL_LINE_LOOP);
 		glVertex2d(mdx, mdy);
@@ -1147,7 +1147,7 @@ void Renderer::drawMap2d()
 		glEnd();
 
 		// Fill
-		OpenGL::setColour(ColourConfiguration::getColour("map_selbox_fill"));
+		OpenGL::setColour(ColourConfiguration::colour("map_selbox_fill"));
 		glBegin(GL_QUADS);
 		glVertex2d(mdx, mdy);
 		glVertex2d(mdx, my);
@@ -1167,13 +1167,13 @@ void Renderer::drawMap2d()
 			// Get clipboard item
 			for (unsigned a = 0; a < theClipboard->nItems(); a++)
 			{
-				auto item = theClipboard->getItem(a);
-				if (item->getType() == CLIPBOARD_MAP_THINGS)
+				auto item = theClipboard->item(a);
+				if (item->type() == CLIPBOARD_MAP_THINGS)
 				{
 					vector<MapThing*> things;
 					auto              p = (MapThingsClipboardItem*)item;
-					p->getThings(things);
-					auto pos(context_.relativeSnapToGrid(p->getMidpoint(), { mx, my }));
+					p->putThings(things);
+					auto pos(context_.relativeSnapToGrid(p->midpoint(), { mx, my }));
 					renderer_2d_.renderPasteThings(things, pos);
 				}
 			}
@@ -1232,7 +1232,7 @@ void Renderer::draw()
 	glViewport(0, 0, view_.size().x, view_.size().y);
 
 	// Setup GL state
-	rgba_t col_bg = ColourConfiguration::getColour("map_background");
+	rgba_t col_bg = ColourConfiguration::colour("map_background");
 	glClearColor(col_bg.fr(), col_bg.fg(), col_bg.fb(), 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -1272,7 +1272,7 @@ void Renderer::draw()
 	if (context_.editMode() == Mode::Visual)
 	{
 		// Get crosshair colour
-		rgba_t col = ColourConfiguration::getColour("map_3d_crosshair");
+		rgba_t col = ColourConfiguration::colour("map_3d_crosshair");
 		OpenGL::setColour(col);
 
 		glDisable(GL_TEXTURE_2D);
@@ -1649,12 +1649,12 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 	else if (item.type == ItemType::Thing)
 	{
 		// Get thing
-		auto t = context_.map().getThing(item.index);
+		auto t = context_.map().thing(item.index);
 		if (!t)
 			return;
 
 		// Get thing type
-		auto& tt = Game::configuration().thingType(t->getType());
+		auto& tt = Game::configuration().thingType(t->type());
 
 		// Start animation
 		double radius = tt.radius();
@@ -1669,7 +1669,7 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 	{
 		// Get line
 		vector<MapLine*> vec;
-		vec.push_back(context_.map().getLine(item.index));
+		vec.push_back(context_.map().line(item.index));
 
 		// Start animation
 		animations_.push_back(std::make_unique<MCALineSelection>(App::runTimer(), vec, selected));
@@ -1680,7 +1680,7 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 	{
 		// Get vertex
 		vector<MapVertex*> verts;
-		verts.push_back(context_.map().getVertex(item.index));
+		verts.push_back(context_.map().vertex(item.index));
 
 		// Determine current vertex size
 		float vs = vertex_size;
@@ -1698,7 +1698,7 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 	{
 		// Get sector polygon
 		vector<Polygon2D*> polys;
-		polys.push_back(context_.map().getSector(item.index)->getPolygon());
+		polys.push_back(context_.map().sector(item.index)->polygon());
 
 		// Start animation
 		animations_.push_back(std::make_unique<MCASectorSelection>(App::runTimer(), polys, selected));

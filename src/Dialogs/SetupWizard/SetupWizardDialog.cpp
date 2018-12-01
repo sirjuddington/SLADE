@@ -108,7 +108,7 @@ void SetupWizardDialog::setupLayout()
 
 	// Page title
 	label_page_title_ =
-		new wxStaticText(this, -1, pages_[0]->getTitle(), wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
+		new wxStaticText(this, -1, pages_[0]->title(), wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
 	label_page_title_->SetFont(label_page_title_->GetFont().MakeLarger().MakeBold());
 	sizer->Add(label_page_title_, 0, wxEXPAND | wxALL, pad_xl);
 
@@ -163,10 +163,10 @@ void SetupWizardDialog::showPage(unsigned index)
 		btn_prev_->Enable(true);
 
 	// Update title
-	label_page_title_->SetLabel(pages_[index]->getTitle());
+	label_page_title_->SetLabel(pages_[index]->title());
 
 	// Update description
-	label_page_description_->SetLabel(pages_[index]->getDescription());
+	label_page_description_->SetLabel(pages_[index]->description());
 	label_page_description_->Wrap(label_page_title_->GetSize().x);
 
 	Layout();

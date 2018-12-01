@@ -12,7 +12,7 @@ public:
 	MapBackupPanel(wxWindow* parent);
 	~MapBackupPanel() {}
 
-	Archive* getSelectedMapData() { return archive_mapdata_; }
+	Archive* selectedMapData() { return archive_mapdata_; }
 
 	bool loadBackups(string archive_name, string map_name);
 	void updateMapPreview();

@@ -56,7 +56,7 @@ PaletteDialog::PaletteDialog(Palette* palette) :
 	SetSizer(m_vbox);
 
 	pal_canvas_ = new PaletteCanvas(this, -1);
-	pal_canvas_->getPalette().copyPalette(palette);
+	pal_canvas_->palette().copyPalette(palette);
 	pal_canvas_->SetInitialSize(wxSize(size, size));
 	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
 	m_vbox->Add(pal_canvas_, 1, wxEXPAND | wxALL, UI::padLarge());
@@ -84,9 +84,9 @@ PaletteDialog::~PaletteDialog()
 // -----------------------------------------------------------------------------
 // Returns the currently selected coloir on the palette canvas
 // -----------------------------------------------------------------------------
-rgba_t PaletteDialog::getSelectedColour()
+rgba_t PaletteDialog::selectedColour()
 {
-	return pal_canvas_->getSelectedColour();
+	return pal_canvas_->selectedColour();
 }
 
 

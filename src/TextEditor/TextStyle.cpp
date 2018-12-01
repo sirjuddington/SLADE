@@ -52,7 +52,7 @@ CVAR(String, txed_override_font, "", CVAR_SAVE)
 CVAR(Int, txed_override_font_size, 0, CVAR_SAVE)
 vector<StyleSet*>       style_sets;
 StyleSet*               ss_current = nullptr;
-vector<TextEditorCtrl*> StyleSet::editors;
+vector<TextEditorCtrl*> StyleSet::editors_;
 
 
 // -----------------------------------------------------------------------------
@@ -109,8 +109,8 @@ bool TextStyle::parse(ParseTreeNode* node)
 	// Go through info nodes
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto   child = node->getChildPTN(a);
-		string name  = child->getName();
+		auto   child = node->childPTN(a);
+		string name  = child->name();
 
 		// Font name
 		if (S_CMPNOCASE(name, "font"))
@@ -222,7 +222,7 @@ bool TextStyle::copyStyle(TextStyle* copy)
 // -----------------------------------------------------------------------------
 // Returns a formatted string defining this style
 // -----------------------------------------------------------------------------
-string TextStyle::getDefinition(unsigned tabs)
+string TextStyle::textDefinition(unsigned tabs)
 {
 	string ret = "";
 
@@ -360,42 +360,42 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 		return false;
 
 	// Get name
-	auto node = root->getChildPTN("name");
+	auto node = root->childPTN("name");
 	if (node)
 		name_ = node->stringValue();
 
 	// Parse styles
-	ts_default_.parse(root->getChildPTN("default"));     // Default style
-	ts_selection_.parse(root->getChildPTN("selection")); // Selection style
+	ts_default_.parse(root->childPTN("default"));     // Default style
+	ts_selection_.parse(root->childPTN("selection")); // Selection style
 	for (unsigned a = 0; a < styles_.size(); a++)        // Other styles
 	{
-		if (ParseTreeNode* node = root->getChildPTN(styles_[a]->name_))
+		if (ParseTreeNode* node = root->childPTN(styles_[a]->name_))
 			styles_[a]->parse(node);
 		else
 		{
 			if (styles_[a]->name_ == "foldmargin")
 			{
 				// No 'foldmargin' style defined, copy it from line numbers style
-				styles_[a]->foreground_ = getStyleForeground("linenum");
-				styles_[a]->background_ = getStyleBackground("linenum");
+				styles_[a]->foreground_ = styleForeground("linenum");
+				styles_[a]->background_ = styleBackground("linenum");
 				styles_[a]->fg_defined_ = true;
 				styles_[a]->bg_defined_ = true;
 			}
 			else if (styles_[a]->name_ == "guides")
 			{
 				// No 'guides' style defined, use the default foreground colour
-				styles_[a]->foreground_ = ts_default_.getForeground();
+				styles_[a]->foreground_ = ts_default_.foreground();
 				styles_[a]->fg_defined_ = true;
 			}
 			else if (styles_[a]->name_ == "type" || styles_[a]->name_ == "property")
 			{
 				// No 'type' or 'property' style defined, copy it from keyword style
-				styles_[a]->copyStyle(getStyle("keyword"));
+				styles_[a]->copyStyle(style("keyword"));
 			}
 			else if (styles_[a]->name_ == "comment_doc")
 			{
 				// No 'comment_doc' style defined, copy it from comment style
-				styles_[a]->copyStyle(getStyle("comment"));
+				styles_[a]->copyStyle(style("comment"));
 			}
 			else if (styles_[a]->name_ == "current_line")
 			{
@@ -407,9 +407,9 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 					fgm = 30;
 					bgm = 15;
 				}
-				styles_[a]->foreground_ = ts_default_.getBackground().amp(fgm, fgm, fgm, 0);
+				styles_[a]->foreground_ = ts_default_.background().amp(fgm, fgm, fgm, 0);
 				styles_[a]->fg_defined_ = true;
-				styles_[a]->background_ = ts_default_.getBackground().amp(bgm, bgm, bgm, 0);
+				styles_[a]->background_ = ts_default_.background().amp(bgm, bgm, bgm, 0);
 				styles_[a]->bg_defined_ = true;
 			}
 		}
@@ -427,7 +427,7 @@ void StyleSet::applyTo(TextEditorCtrl* stc)
 	applyToWx(stc);
 
 	// Update code folding margin
-	stc->setupFoldMargin(getStyle("foldmargin"));
+	stc->setupFoldMargin(style("foldmargin"));
 }
 
 void StyleSet::applyToWx(wxStyledTextCtrl* stc)
@@ -458,20 +458,20 @@ void StyleSet::applyToWx(wxStyledTextCtrl* stc)
 	stc->SetCaretForeground(WXCOL(ts_default_.foreground_));
 
 	// Set indent and right margin line colour
-	stc->SetEdgeColour(WXCOL(getStyle("guides")->getForeground()));
-	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyleBackground("guides")));
-	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyleForeground("guides")));
+	stc->SetEdgeColour(WXCOL(style("guides")->foreground()));
+	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, WXCOL(styleBackground("guides")));
+	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, WXCOL(styleForeground("guides")));
 
 	// Set word match indicator colour
 	stc->SetIndicatorCurrent(8);
-	stc->IndicatorSetForeground(8, WXCOL(getStyleForeground("wordmatch")));
+	stc->IndicatorSetForeground(8, WXCOL(styleForeground("wordmatch")));
 
 	// Set current line colour
-	stc->SetCaretLineBackground(WXCOL(getStyleBackground("current_line")));
+	stc->SetCaretLineBackground(WXCOL(styleBackground("current_line")));
 	stc->MarkerDefine(
-		1, wxSTC_MARK_BACKGROUND, WXCOL(getStyleBackground("current_line")), WXCOL(getStyleBackground("current_line")));
+		1, wxSTC_MARK_BACKGROUND, WXCOL(styleBackground("current_line")), WXCOL(styleBackground("current_line")));
 	stc->MarkerDefine(
-		2, wxSTC_MARK_UNDERLINE, WXCOL(getStyleForeground("current_line")), WXCOL(getStyleForeground("current_line")));
+		2, wxSTC_MARK_UNDERLINE, WXCOL(styleForeground("current_line")), WXCOL(styleForeground("current_line")));
 }
 
 // -----------------------------------------------------------------------------
@@ -495,7 +495,7 @@ bool StyleSet::copySet(StyleSet* copy)
 // Returns the text style associated with [name] (these are hard coded), or
 // nullptr if [name] was invalid
 // -----------------------------------------------------------------------------
-TextStyle* StyleSet::getStyle(string name)
+TextStyle* StyleSet::style(string name)
 {
 	// Return style matching name given
 	if (S_CMPNOCASE(name, "default"))
@@ -518,7 +518,7 @@ TextStyle* StyleSet::getStyle(string name)
 // -----------------------------------------------------------------------------
 // Returns the extra text style at [index]
 // -----------------------------------------------------------------------------
-TextStyle* StyleSet::getStyle(unsigned index)
+TextStyle* StyleSet::style(unsigned index)
 {
 	if (index < styles_.size())
 		return styles_[index];
@@ -545,19 +545,19 @@ bool StyleSet::writeFile(string filename)
 
 	// Default style
 	file.Write("\tdefault {\n");
-	file.Write(ts_default_.getDefinition(2));
+	file.Write(ts_default_.textDefinition(2));
 	file.Write("\t}\n\n");
 
 	// Selection style
 	file.Write("\tselection {\n");
-	file.Write(ts_selection_.getDefinition(2));
+	file.Write(ts_selection_.textDefinition(2));
 	file.Write("\t}\n\n");
 
 	// Other styles
 	for (unsigned a = 0; a < styles_.size(); a++)
 	{
 		file.Write(S_FMT("\t%s {\n", styles_[a]->name_));
-		file.Write(styles_[a]->getDefinition(2));
+		file.Write(styles_[a]->textDefinition(2));
 		file.Write("\t}\n\n");
 	}
 
@@ -574,48 +574,48 @@ bool StyleSet::writeFile(string filename)
 // Returns the foreground colour of [style], or the default style's foreground
 // colour if it is not set
 // -----------------------------------------------------------------------------
-rgba_t StyleSet::getStyleForeground(string style)
+rgba_t StyleSet::styleForeground(string style)
 {
-	TextStyle* s = getStyle(style);
+	TextStyle* s = this->style(style);
 	if (s && s->hasForeground())
-		return s->getForeground();
+		return s->foreground();
 	else
-		return ts_default_.getForeground();
+		return ts_default_.foreground();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the background colour of [style], or the default style's background
 // colour if it is not set
 // -----------------------------------------------------------------------------
-rgba_t StyleSet::getStyleBackground(string style)
+rgba_t StyleSet::styleBackground(string style)
 {
-	TextStyle* s = getStyle(style);
+	TextStyle* s = this->style(style);
 	if (s && s->hasBackground())
-		return s->getBackground();
+		return s->background();
 	else
-		return ts_default_.getBackground();
+		return ts_default_.background();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the default style font face
 // -----------------------------------------------------------------------------
-string StyleSet::getDefaultFontFace()
+string StyleSet::defaultFontFace()
 {
 	if (txed_override_font != "")
 		return txed_override_font;
 	else
-		return getStyle("default")->getFontFace();
+		return style("default")->fontFace();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the default style font size
 // -----------------------------------------------------------------------------
-int StyleSet::getDefaultFontSize()
+int StyleSet::defaultFontSize()
 {
 	if (txed_override_font != "" && txed_override_font_size > 0)
 		return txed_override_font_size;
 	else
-		return getStyle("default")->getFontSize();
+		return style("default")->fontSize();
 }
 
 
@@ -650,7 +650,7 @@ void StyleSet::initCurrent()
 		root.parse(tz);
 
 		// Find definition
-		auto node = root.getChildPTN("styleset");
+		auto node = root.childPTN("styleset");
 		if (node)
 		{
 			// If found, load it into the current set
@@ -732,7 +732,7 @@ void StyleSet::applyCurrent(TextEditorCtrl* stc)
 // Returns the name of the style set at [index], or an empty string if [index]
 // is out of bounds
 // -----------------------------------------------------------------------------
-string StyleSet::getName(unsigned index)
+string StyleSet::styleName(unsigned index)
 {
 	// Check index
 	if (index >= style_sets.size())
@@ -752,7 +752,7 @@ unsigned StyleSet::numSets()
 // -----------------------------------------------------------------------------
 // Returns the style set at [index], or nullptr if [index] is out of bounds
 // -----------------------------------------------------------------------------
-StyleSet* StyleSet::getSet(unsigned index)
+StyleSet* StyleSet::set(unsigned index)
 {
 	// Check index
 	if (index >= style_sets.size())
@@ -766,7 +766,7 @@ StyleSet* StyleSet::getSet(unsigned index)
 // -----------------------------------------------------------------------------
 void StyleSet::addEditor(TextEditorCtrl* stc)
 {
-	editors.push_back(stc);
+	editors_.push_back(stc);
 }
 
 // -----------------------------------------------------------------------------
@@ -774,7 +774,7 @@ void StyleSet::addEditor(TextEditorCtrl* stc)
 // -----------------------------------------------------------------------------
 void StyleSet::removeEditor(TextEditorCtrl* stc)
 {
-	VECTOR_REMOVE(editors, stc);
+	VECTOR_REMOVE(editors_, stc);
 }
 
 // -----------------------------------------------------------------------------
@@ -782,8 +782,8 @@ void StyleSet::removeEditor(TextEditorCtrl* stc)
 // -----------------------------------------------------------------------------
 void StyleSet::applyCurrentToAll()
 {
-	for (unsigned a = 0; a < editors.size(); a++)
-		applyCurrent(editors[a]);
+	for (unsigned a = 0; a < editors_.size(); a++)
+		applyCurrent(editors_[a]);
 }
 
 // -----------------------------------------------------------------------------
@@ -820,7 +820,7 @@ void StyleSet::addSet(StyleSet* set)
 bool StyleSet::loadResourceStyles()
 {
 	// Get 'config/text_styles' directory in slade.pk3
-	ArchiveTreeNode* dir = App::archiveManager().programResourceArchive()->getDir("config/text_styles");
+	ArchiveTreeNode* dir = App::archiveManager().programResourceArchive()->dir("config/text_styles");
 
 	// Check it exists
 	if (!dir)
@@ -835,7 +835,7 @@ bool StyleSet::loadResourceStyles()
 	{
 		// Read entry data into tokenizer
 		Tokenizer tz;
-		tz.openMem(default_style->getMCData(), default_style->getName());
+		tz.openMem(default_style->data(), default_style->name());
 
 		// Parse it
 		ParseTreeNode root;
@@ -843,7 +843,7 @@ bool StyleSet::loadResourceStyles()
 		root.parse(tz);
 
 		// Read any styleset definitions
-		vector<STreeNode*> nodes = root.getChildren("styleset");
+		vector<STreeNode*> nodes = root.children("styleset");
 		for (unsigned b = 0; b < nodes.size(); b++)
 		{
 			StyleSet* newset  = new StyleSet();
@@ -861,12 +861,12 @@ bool StyleSet::loadResourceStyles()
 		ArchiveEntry* entry = dir->entryAt(a);
 
 		// Skip default
-		if (entry->getName(true) == "default")
+		if (entry->name(true) == "default")
 			continue;
 
 		// Read entry data into tokenizer
 		Tokenizer tz;
-		tz.openMem(entry->getMCData(), entry->getName());
+		tz.openMem(entry->data(), entry->name());
 
 		// Parse it
 		ParseTreeNode root;
@@ -874,7 +874,7 @@ bool StyleSet::loadResourceStyles()
 		root.parse(tz);
 
 		// Read any styleset definitions
-		vector<STreeNode*> nodes = root.getChildren("styleset");
+		vector<STreeNode*> nodes = root.children("styleset");
 		for (unsigned b = 0; b < nodes.size(); b++)
 		{
 			StyleSet* newset  = new StyleSet();
@@ -917,7 +917,7 @@ bool StyleSet::loadCustomStyles()
 		root.parse(tz);
 
 		// Read any styleset definitions
-		vector<STreeNode*> nodes = root.getChildren("styleset");
+		vector<STreeNode*> nodes = root.children("styleset");
 		for (unsigned b = 0; b < nodes.size(); b++)
 		{
 			StyleSet* newset = new StyleSet();

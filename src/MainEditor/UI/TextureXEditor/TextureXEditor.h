@@ -16,7 +16,7 @@ public:
 	TextureXEditor(wxWindow* parent);
 	~TextureXEditor();
 
-	Archive*     getArchive() { return archive_; }
+	Archive*     archive() { return archive_; }
 	PatchTable&  patchTable() { return patch_table_; }
 	void         pnamesModified(bool mod = true) { pnames_modified_ = mod; }
 	UndoManager* getUndoManager() { return undo_manager_; }

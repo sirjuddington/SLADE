@@ -66,15 +66,15 @@ public:
 	void refreshResources();
 	void buildTexInfoList();
 
-	Palette*   getResourcePalette();
-	GLTexture* getTexture(string name, bool mixed);
-	GLTexture* getFlat(string name, bool mixed);
-	GLTexture* getSprite(string name, string translation = "", string palette = "");
-	GLTexture* getEditorImage(string name);
-	int        getVerticalOffset(string name);
+	Palette*   resourcePalette();
+	GLTexture* texture(string name, bool mixed);
+	GLTexture* flat(string name, bool mixed);
+	GLTexture* sprite(string name, string translation = "", string palette = "");
+	GLTexture* editorImage(string name);
+	int        verticalOffset(string name);
 
-	vector<TexInfo>& getAllTexturesInfo() { return tex_info_; }
-	vector<TexInfo>& getAllFlatsInfo() { return flat_info_; }
+	vector<TexInfo>& allTexturesInfo() { return tex_info_; }
+	vector<TexInfo>& allFlatsInfo() { return flat_info_; }
 
 	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 

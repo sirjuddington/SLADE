@@ -106,20 +106,20 @@ int MapInfo::doomEdNumForClass(const string& actor_class)
 bool MapInfo::readMapInfo(Archive* archive)
 {
 	vector<ArchiveEntry*> entries;
-	archive->getEntryTreeAsList(entries);
+	archive->putEntryTreeAsList(entries);
 
 	for (auto entry : entries)
 	{
 		// ZMapInfo
-		if (entry->getType()->id() == "zmapinfo")
+		if (entry->type()->id() == "zmapinfo")
 			parseZMapInfo(entry);
 
 		// TODO: EMapInfo
-		else if (entry->getType()->id() == "emapinfo")
+		else if (entry->type()->id() == "emapinfo")
 			Log::info("EMAPINFO not implemented");
 
 		// MapInfo
-		else if (entry->getType()->id() == "mapinfo")
+		else if (entry->type()->id() == "mapinfo")
 		{
 			// Detect format
 			auto format = detectMapInfoType(entry);
@@ -193,7 +193,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 {
 	Tokenizer tz;
 	tz.setReadLowerCase(true);
-	tz.openMem(entry->getMCData(), entry->getName());
+	tz.openMem(entry->data(), entry->name());
 
 	while (!tz.atEnd())
 	{
@@ -201,13 +201,13 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		if (tz.check("include"))
 		{
 			// Get entry at include path
-			ArchiveEntry* include_entry = entry->getParent()->entryAtPath(tz.next().text);
+			ArchiveEntry* include_entry = entry->parent()->entryAtPath(tz.next().text);
 
 			if (!include_entry)
 			{
 				Log::warning(S_FMT(
 					"Warning - Parsing ZMapInfo \"%s\": Unable to include \"%s\" at line %d",
-					CHR(entry->getName()),
+					CHR(entry->name()),
 					CHR(tz.current().text),
 					tz.lineNo()));
 			}
@@ -232,7 +232,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		// Unknown block (skip it)
 		else if (tz.check("{"))
 		{
-			Log::warning(2, S_FMT("Warning - Parsing ZMapInfo \"%s\": Skipping {} block", entry->getName()));
+			Log::warning(2, S_FMT("Warning - Parsing ZMapInfo \"%s\": Skipping {} block", entry->name()));
 
 			tz.adv();
 			tz.skipSection("{", "}");
@@ -246,14 +246,14 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 				2,
 				S_FMT(
 					"Warning - Parsing ZMapInfo \"%s\": Unknown token \"%s\"",
-					CHR(entry->getName()),
+					CHR(entry->name()),
 					CHR(tz.current().text)));
 		}
 
 		tz.adv();
 	}
 
-	LOG_MESSAGE(2, "Parsed ZMapInfo entry %s successfully", entry->getName());
+	LOG_MESSAGE(2, "Parsed ZMapInfo entry %s successfully", entry->name());
 
 	return true;
 }
@@ -531,7 +531,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 MapInfo::Format MapInfo::detectMapInfoType(ArchiveEntry* entry)
 {
 	Tokenizer tz;
-	tz.openMem(entry->getMCData(), entry->getName());
+	tz.openMem(entry->data(), entry->name());
 	tz.setSpecialCharacters("={}[]+,|");
 
 	string prev;

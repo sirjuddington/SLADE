@@ -17,6 +17,6 @@ void     init();
 void     addBuilderPath(string builder, string path);
 void     saveBuilderPaths(wxFile& file);
 unsigned nNodeBuilders();
-Builder& getBuilder(string id);
-Builder& getBuilder(unsigned index);
+Builder& builder(string id);
+Builder& builder(unsigned index);
 } // namespace NodeBuilders

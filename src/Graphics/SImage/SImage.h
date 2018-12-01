@@ -75,23 +75,23 @@ public:
 
 	bool isValid() { return (width_ > 0 && height_ > 0 && data_); }
 
-	SIType    getType() { return type_; }
-	bool      getRGBAData(MemChunk& mc, Palette* pal = nullptr);
-	bool      getRGBData(MemChunk& mc, Palette* pal = nullptr);
-	bool      getIndexedData(MemChunk& mc);
-	int       getWidth() { return width_; }
-	int       getHeight() { return height_; }
-	int       getIndex() { return imgindex_; }
-	int       getSize() { return numimages_; }
+	SIType    type() { return type_; }
+	bool      putRGBAData(MemChunk& mc, Palette* pal = nullptr);
+	bool      putRGBData(MemChunk& mc, Palette* pal = nullptr);
+	bool      putIndexedData(MemChunk& mc);
+	int       width() { return width_; }
+	int       height() { return height_; }
+	int       index() { return imgindex_; }
+	int       size() { return numimages_; }
 	bool      hasPalette() { return has_palette_; }
-	Palette*  getPalette() { return &palette_; }
+	Palette*  palette() { return &palette_; }
 	point2_t  offset() { return point2_t(offset_x_, offset_y_); }
-	unsigned  getStride();
-	uint8_t   getBpp();
-	rgba_t    getPixel(unsigned x, unsigned y, Palette* pal = nullptr);
-	uint8_t   getPixelIndex(unsigned x, unsigned y);
-	SIFormat* getFormat() { return format_; }
-	info_t    getInfo();
+	unsigned  stride();
+	uint8_t   bpp();
+	rgba_t    pixelAt(unsigned x, unsigned y, Palette* pal = nullptr);
+	uint8_t   pixelIndexAt(unsigned x, unsigned y);
+	SIFormat* format() { return format_; }
+	info_t    info();
 
 	void setXOffset(int offset);
 	void setYOffset(int offset);

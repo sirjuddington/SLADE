@@ -94,8 +94,8 @@ void SectorTextureOverlay::update(long frametime)
 void SectorTextureOverlay::draw(int width, int height, float fade)
 {
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::colour("map_overlay_background");
+	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_bg.a *= fade;
 	col_fg.a *= fade;
 
@@ -199,9 +199,9 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover)
 {
 	// Get colours
-	rgba_t col_bg  = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg  = ColourConfiguration::getColour("map_overlay_foreground");
-	rgba_t col_sel = ColourConfiguration::getColour("map_hilight");
+	rgba_t col_bg  = ColourConfiguration::colour("map_overlay_background");
+	rgba_t col_fg  = ColourConfiguration::colour("map_overlay_foreground");
+	rgba_t col_sel = ColourConfiguration::colour("map_hilight");
 	col_fg.a       = col_fg.a * alpha;
 
 	// Draw background
@@ -216,13 +216,13 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 	bool mixed = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
 	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
 	Drawing::drawTextureWithin(
-		MapEditor::textureManager().getFlat(textures[0], mixed), x, y, x + size, y + size, 0, 100);
+		MapEditor::textureManager().flat(textures[0], mixed), x, y, x + size, y + size, 0, 100);
 
 	// Draw up to 4 subsequent textures (overlaid)
 	OpenGL::setColour(255, 255, 255, 127 * alpha, 0);
 	for (unsigned a = 1; a < textures.size() && a < 5; a++)
 		Drawing::drawTextureWithin(
-			MapEditor::textureManager().getFlat(textures[a], mixed), x, y, x + size, y + size, 0, 100);
+			MapEditor::textureManager().flat(textures[a], mixed), x, y, x + size, y + size, 0, 100);
 
 	glDisable(GL_TEXTURE_2D);
 
@@ -387,7 +387,7 @@ void SectorTextureOverlay::browseFloorTexture()
 	{
 		// Set texture
 		tex_floor_.clear();
-		tex_floor_.push_back(browser.getSelectedItem()->name());
+		tex_floor_.push_back(browser.selectedItem()->name());
 		close(false);
 	}
 }
@@ -411,7 +411,7 @@ void SectorTextureOverlay::browseCeilingTexture()
 	{
 		// Set texture
 		tex_ceil_.clear();
-		tex_ceil_.push_back(browser.getSelectedItem()->name());
+		tex_ceil_.push_back(browser.selectedItem()->name());
 		close(false);
 	}
 }

@@ -9,7 +9,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() < 4)
+		if (mc.size() < 4)
 			return EDF_FALSE;
 
 		// Not the best test in the world. But a text-based texture lump ought
@@ -17,7 +17,7 @@ public:
 		uint32_t ntex = READ_L32(mc, 0);
 		if ((int32_t)ntex < 0)
 			return EDF_FALSE;
-		if (mc.getSize() < (ntex * 24))
+		if (mc.size() < (ntex * 24))
 			return EDF_FALSE;
 		return EDF_TRUE;
 	}
@@ -35,7 +35,7 @@ public:
 		uint32_t number = READ_L32(mc, 0);
 		if ((int32_t)number < 0)
 			return EDF_FALSE;
-		if (mc.getSize() != (4 + number * 8))
+		if (mc.size() != (4 + number * 8))
 			return EDF_FALSE;
 		return EDF_TRUE;
 	}
@@ -49,13 +49,13 @@ public:
 
 	int isThisFormat(MemChunk& mc)
 	{
-		if (mc.getSize() > sizeof(AnimatedEntry))
+		if (mc.size() > sizeof(AnimatedEntry))
 		{
-			size_t numentries = mc.getSize() / sizeof(AnimatedEntry);
+			size_t numentries = mc.size() / sizeof(AnimatedEntry);
 			// The last entry can be incomplete, as it may stop right
 			// after the declaration of its type. So if the size is not
 			// a perfect multiple, then the last entry is incomplete.
-			size_t lastentry = ((mc.getSize() % numentries) ? numentries : numentries - 1);
+			size_t lastentry = ((mc.size() % numentries) ? numentries : numentries - 1);
 
 			// Check that the last entry ends on an ANIM_STOP type
 			if (mc[lastentry * sizeof(AnimatedEntry)] == ANIM_STOP)
@@ -73,9 +73,9 @@ public:
 
 	int isThisFormat(MemChunk& mc)
 	{
-		if (mc.getSize() > sizeof(SwitchesEntry))
+		if (mc.size() > sizeof(SwitchesEntry))
 		{
-			size_t numentries = mc.getSize() / sizeof(SwitchesEntry);
+			size_t numentries = mc.size() / sizeof(SwitchesEntry);
 
 			// Check that the last entry ends on a SWCH_STOP type
 			if (READ_L16(mc, (numentries * sizeof(SwitchesEntry) - 2)) == SWCH_STOP)
@@ -94,7 +94,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check for ZNOD header
 			if (mc[0] == 'Z' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
@@ -113,7 +113,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check for ZGLN header
 			if (mc[0] == 'Z' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
@@ -132,7 +132,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check for ZGL2 header
 			if (mc[0] == 'Z' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == '2')
@@ -151,7 +151,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check for XNOD header
 			if (mc[0] == 'X' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
@@ -170,7 +170,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check for XGLN header
 			if (mc[0] == 'X' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
@@ -189,7 +189,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check for XGL2 header
 			if (mc[0] == 'X' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == '2')
@@ -208,13 +208,13 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 15)
+		if (mc.size() > 15)
 		{
 			// Check for ACS header
 			if (mc[0] == 'A' && mc[1] == 'C' && mc[2] == 'S' && mc[3] == 0)
 			{
 				uint32_t diroffs = READ_L32(mc, 4);
-				if (diroffs > mc.getSize())
+				if (diroffs > mc.size())
 					return EDF_FALSE;
 				else if (
 					mc[diroffs - 4] == 'A' && mc[diroffs - 3] == 'C' && mc[diroffs - 2] == 'S' && mc[diroffs - 1] != 0)
@@ -237,7 +237,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 32)
+		if (mc.size() > 32)
 		{
 			// Check for ACS header
 			if (mc[0] == 'A' && mc[1] == 'C' && mc[2] == 'S')
@@ -249,7 +249,7 @@ public:
 				else if (mc[3] == 0)
 				{
 					uint32_t diroffs = READ_L32(mc, 4);
-					if (diroffs > mc.getSize())
+					if (diroffs > mc.size())
 						return EDF_FALSE;
 					else if (
 						mc[diroffs - 4] == 'A' && mc[diroffs - 3] == 'C' && mc[diroffs - 2] == 'S'
@@ -274,7 +274,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 32)
+		if (mc.size() > 32)
 		{
 			// Check for ACS header
 			if (mc[0] == 'A' && mc[1] == 'C' && mc[2] == 'S')
@@ -286,7 +286,7 @@ public:
 				else if (mc[3] == 0)
 				{
 					uint32_t diroffs = READ_L32(mc, 4);
-					if (diroffs > mc.getSize())
+					if (diroffs > mc.size())
 						return EDF_FALSE;
 					else if (
 						mc[diroffs - 4] == 'A' && mc[diroffs - 3] == 'C' && mc[diroffs - 2] == 'S'

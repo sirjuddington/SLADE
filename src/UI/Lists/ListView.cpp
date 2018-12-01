@@ -151,7 +151,7 @@ bool ListView::deleteItems(wxArrayInt items)
 // -----------------------------------------------------------------------------
 // Calculates the 'disabled' item colour based on the list text and bg colours
 // -----------------------------------------------------------------------------
-rgba_t ListView::getDisabledColour()
+rgba_t ListView::disabledColour()
 {
 	wxColour fg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
 	wxColour bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
@@ -191,11 +191,11 @@ bool ListView::setItemStatus(int item, ItemStatus status)
 	switch (status)
 	{
 	case ItemStatus::Normal: SetItemTextColour(item, wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
-	case ItemStatus::Modified: SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("modified"))); break;
-	case ItemStatus::New: SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("new"))); break;
-	case ItemStatus::Locked: SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("locked"))); break;
-	case ItemStatus::Error: SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("error")));
-	case ItemStatus::Disabled: SetItemTextColour(item, WXCOL(getDisabledColour()));
+	case ItemStatus::Modified: SetItemTextColour(item, WXCOL(ColourConfiguration::colour("modified"))); break;
+	case ItemStatus::New: SetItemTextColour(item, WXCOL(ColourConfiguration::colour("new"))); break;
+	case ItemStatus::Locked: SetItemTextColour(item, WXCOL(ColourConfiguration::colour("locked"))); break;
+	case ItemStatus::Error: SetItemTextColour(item, WXCOL(ColourConfiguration::colour("error")));
+	case ItemStatus::Disabled: SetItemTextColour(item, WXCOL(disabledColour()));
 	}
 
 	return true;

@@ -46,7 +46,7 @@
 // Inflates the content of [in] to [out]
 // -----------------------------------------------------------------------------
 #define CHUNK 4096
-bool Compression::GenericInflate(MemChunk& in, MemChunk& out, int windowbits, const char* function)
+bool Compression::genericInflate(MemChunk& in, MemChunk& out, int windowbits, const char* function)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();
@@ -67,7 +67,7 @@ bool Compression::GenericInflate(MemChunk& in, MemChunk& out, int windowbits, co
 // Basically a copy of zpipe.
 // Deflates the content of [in] to [out]
 // -----------------------------------------------------------------------------
-bool Compression::GenericDeflate(MemChunk& in, MemChunk& out, int level, int windowbits, const char* function)
+bool Compression::genericDeflate(MemChunk& in, MemChunk& out, int level, int windowbits, const char* function)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();
@@ -96,7 +96,7 @@ bool Compression::GenericDeflate(MemChunk& in, MemChunk& out, int level, int win
 	do
 	{
 		// Find out how much stream remains
-		have = in.getSize() - in.currentPos();
+		have = in.size() - in.currentPos();
 		// keep it in bite-sized chunks
 		if (have > CHUNK)
 		{
@@ -135,12 +135,12 @@ bool Compression::GenericDeflate(MemChunk& in, MemChunk& out, int level, int win
 // ZIP streams use a windowbits size of MAX_WBITS (15).
 // The value is inverted to signify wrapping should be used.
 // -----------------------------------------------------------------------------
-bool Compression::ZipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
+bool Compression::zipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 {
-	bool ret = Compression::GenericInflate(in, out, -MAX_WBITS, "ZipInflate");
+	bool ret = Compression::genericInflate(in, out, -MAX_WBITS, "ZipInflate");
 
-	if (maxsize && out.getSize() != maxsize)
-		LOG_MESSAGE(1, "Zip stream inflated to %d, expected %d", out.getSize(), maxsize);
+	if (maxsize && out.size() != maxsize)
+		LOG_MESSAGE(1, "Zip stream inflated to %d, expected %d", out.size(), maxsize);
 
 	return ret;
 }
@@ -150,9 +150,9 @@ bool Compression::ZipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 // GZip streams use a windowbits size of MAX_WBITS (15).
 // The value is inverted to tell it shouldn't use headers or footers
 // -----------------------------------------------------------------------------
-bool Compression::ZipDeflate(MemChunk& in, MemChunk& out, int level)
+bool Compression::zipDeflate(MemChunk& in, MemChunk& out, int level)
 {
-	return Compression::GenericDeflate(in, out, level, -MAX_WBITS, "ZipDeflate");
+	return Compression::genericDeflate(in, out, level, -MAX_WBITS, "ZipDeflate");
 }
 
 // -----------------------------------------------------------------------------
@@ -160,12 +160,12 @@ bool Compression::ZipDeflate(MemChunk& in, MemChunk& out, int level)
 // GZip streams use a windowbits size of MAX_WBITS (15).
 // The +16 tells zlib to look out for a gzip header
 // -----------------------------------------------------------------------------
-bool Compression::GZipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
+bool Compression::gzipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 {
-	bool ret = Compression::GenericInflate(in, out, 16 + MAX_WBITS, "GZipInflate");
+	bool ret = Compression::genericInflate(in, out, 16 + MAX_WBITS, "GZipInflate");
 
-	if (maxsize && out.getSize() != maxsize)
-		LOG_MESSAGE(1, "Zip stream inflated to %d, expected %d", out.getSize(), maxsize);
+	if (maxsize && out.size() != maxsize)
+		LOG_MESSAGE(1, "Zip stream inflated to %d, expected %d", out.size(), maxsize);
 
 	return ret;
 }
@@ -175,9 +175,9 @@ bool Compression::GZipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 // GZip streams use a windowbits size of MAX_WBITS (15).
 // The +16 tells zlib to use a gzip header
 // -----------------------------------------------------------------------------
-bool Compression::GZipDeflate(MemChunk& in, MemChunk& out, int level)
+bool Compression::gzipDeflate(MemChunk& in, MemChunk& out, int level)
 {
-	return Compression::GenericDeflate(in, out, level, 16 + MAX_WBITS, "GZipDeflate");
+	return Compression::genericDeflate(in, out, level, 16 + MAX_WBITS, "GZipDeflate");
 }
 
 // -----------------------------------------------------------------------------
@@ -186,12 +186,12 @@ bool Compression::GZipDeflate(MemChunk& in, MemChunk& out, int level)
 // as well, but the function used for initialization is different so we use 0
 // here instead.
 // -----------------------------------------------------------------------------
-bool Compression::ZlibInflate(MemChunk& in, MemChunk& out, size_t maxsize)
+bool Compression::zlibInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 {
-	bool ret = Compression::GenericInflate(in, out, 0, "ZlibInflate");
+	bool ret = Compression::genericInflate(in, out, 0, "ZlibInflate");
 
-	if (maxsize && out.getSize() != maxsize)
-		LOG_MESSAGE(1, "Zlib stream inflated to %d, expected %d", out.getSize(), maxsize);
+	if (maxsize && out.size() != maxsize)
+		LOG_MESSAGE(1, "Zlib stream inflated to %d, expected %d", out.size(), maxsize);
 
 	return ret;
 }
@@ -199,15 +199,15 @@ bool Compression::ZlibInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 // -----------------------------------------------------------------------------
 // Deflates the content of [in] as a zlib stream to [out]
 // -----------------------------------------------------------------------------
-bool Compression::ZlibDeflate(MemChunk& in, MemChunk& out, int level)
+bool Compression::zlibDeflate(MemChunk& in, MemChunk& out, int level)
 {
-	return Compression::GenericDeflate(in, out, level, 0, "ZlibDeflate");
+	return Compression::genericDeflate(in, out, level, 0, "ZlibDeflate");
 }
 
 // -----------------------------------------------------------------------------
 // Decompress the content of [in] as a bzip2 stream to [out]
 // -----------------------------------------------------------------------------
-bool Compression::BZip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
+bool Compression::bzip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();
@@ -223,8 +223,8 @@ bool Compression::BZip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
 			out.write(buffer, gotten);
 	} while (gotten == 4096 && stream.Status == BZ_OK);
 
-	if (maxsize && out.getSize() != maxsize)
-		LOG_MESSAGE(1, "bzip2 stream inflated to %d, expected %d", out.getSize(), maxsize);
+	if (maxsize && out.size() != maxsize)
+		LOG_MESSAGE(1, "bzip2 stream inflated to %d, expected %d", out.size(), maxsize);
 
 	return (stream.Status == BZ_OK || stream.Status == BZ_STREAM_END);
 }
@@ -232,13 +232,13 @@ bool Compression::BZip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
 // -----------------------------------------------------------------------------
 // Compress the content of [in] as a bzip2 stream to [out]
 // -----------------------------------------------------------------------------
-bool Compression::BZip2Compress(MemChunk& in, MemChunk& out)
+bool Compression::bzip2Compress(MemChunk& in, MemChunk& out)
 {
 	// Clear out
 	out.clear();
 
 	// Allocate a work buffer big enough to guarantee success
-	unsigned bufferlen = in.getSize() + (in.getSize() >> 6) + 1024;
+	unsigned bufferlen = in.size() + (in.size() >> 6) + 1024;
 	char*    buffer    = new char[bufferlen];
 	int      ok        = -1;
 	if (buffer)
@@ -247,8 +247,8 @@ bool Compression::BZip2Compress(MemChunk& in, MemChunk& out)
 			buffer,
 			&bufferlen,
 			// How ridiculous is it that casting is needed here?
-			(const char*)in.getData(),
-			in.getSize(),
+			(const char*)in.data(),
+			in.size(),
 			9,
 			0,
 			0);
@@ -261,7 +261,7 @@ bool Compression::BZip2Compress(MemChunk& in, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Decompress the content of [in] as an LZMA stream to [out]
 // -----------------------------------------------------------------------------
-bool Compression::LZMADecompress(MemChunk& in, MemChunk& out, size_t size)
+bool Compression::lzmaDecompress(MemChunk& in, MemChunk& out, size_t size)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();

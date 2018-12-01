@@ -123,7 +123,7 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 		return;
 
 	// Write entry to temp file
-	string filename = App::path(entry->getName(), App::Dir::Temp);
+	string filename = App::path(entry->name(), App::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file
@@ -142,14 +142,14 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 		{
 			// Get name of entry to include
 			tz.openString(line);
-			string name = entry->getPath() + tz.next().text;
+			string name = entry->path() + tz.next().text;
 
 			// Get the entry
 			bool          done      = false;
-			ArchiveEntry* entry_inc = entry->getParent()->entryAtPath(name);
+			ArchiveEntry* entry_inc = entry->parent()->entryAtPath(name);
 			// DECORATE paths start from the root, not from the #including entry's directory
 			if (!entry_inc)
-				entry_inc = entry->getParent()->entryAtPath(tz.current().text);
+				entry_inc = entry->parent()->entryAtPath(tz.current().text);
 			if (entry_inc)
 			{
 				processIncludes(entry_inc, out);
@@ -177,7 +177,7 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 					S_FMT(
 						"Error: Attempting to #include nonexistant entry \"%s\" from entry %s",
 						name,
-						entry->getName()));
+						entry->name()));
 		}
 		else
 			out.Append(line + "\n");

@@ -41,12 +41,12 @@ public:
 	void   setThingsUpdated();
 
 	// MapObject access
-	MapVertex* getVertex(unsigned index) const;
-	MapSide*   getSide(unsigned index) const;
-	MapLine*   getLine(unsigned index) const;
-	MapSector* getSector(unsigned index) const;
-	MapThing*  getThing(unsigned index) const;
-	MapObject* getObject(MapObject::Type type, unsigned index) const;
+	MapVertex* vertex(unsigned index) const;
+	MapSide*   side(unsigned index) const;
+	MapLine*   line(unsigned index) const;
+	MapSector* sector(unsigned index) const;
+	MapThing*  thing(unsigned index) const;
+	MapObject* object(MapObject::Type type, unsigned index) const;
 	size_t     nVertices() const { return vertices_.size(); }
 	size_t     nLines() const { return lines_.size(); }
 	size_t     nSides() const { return sides_.size(); }
@@ -65,7 +65,7 @@ public:
 	void       addMapObject(MapObject* object);
 	void       removeMapObject(MapObject* object);
 	MapObject* getObjectById(unsigned id) { return all_objects_[id].mobj; }
-	void       getObjectIdList(MapObject::Type type, vector<unsigned>& list);
+	void       putObjectIdList(MapObject::Type type, vector<unsigned>& list);
 	void       restoreObjectIdList(MapObject::Type type, vector<unsigned>& list);
 
 	void refreshIndices();
@@ -105,7 +105,7 @@ public:
 	int               nearestThing(fpoint2_t point, double min = 64);
 	vector<int>       nearestThingMulti(fpoint2_t point);
 	int               sectorAt(fpoint2_t point);
-	bbox_t            getMapBBox();
+	bbox_t            bounds();
 	MapVertex*        vertexAt(double x, double y);
 	vector<fpoint2_t> cutLines(double x1, double y1, double x2, double y2);
 	MapVertex*        lineCrossVertex(double x1, double y1, double x2, double y2);
@@ -116,25 +116,25 @@ public:
 	MapLine*          lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y);
 
 	// Tags/Ids
-	MapThing* getFirstThingWithId(int id);
-	void      getSectorsByTag(int tag, vector<MapSector*>& list);
-	void      getThingsById(int id, vector<MapThing*>& list, unsigned start = 0, int type = 0);
-	void      getLinesById(int id, vector<MapLine*>& list);
-	void      getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list);
-	void      getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype);
-	void      getPathedThings(vector<MapThing*>& list);
-	void      getDragonTargets(MapThing* first, vector<MapThing*>& list);
-	void      getTaggingLinesById(int id, int type, vector<MapLine*>& list);
+	MapThing* findFirstThingWithId(int id);
+	void      putSectorsWithTag(int tag, vector<MapSector*>& list);
+	void      putThingsWithId(int id, vector<MapThing*>& list, unsigned start = 0, int type = 0);
+	void      putLinesWithId(int id, vector<MapLine*>& list);
+	void      putThingsWithIdInSectorTag(int id, int tag, vector<MapThing*>& list);
+	void      putTaggingThingsWithId(int id, int type, vector<MapThing*>& list, int ttype);
+	void      putPathedThings(vector<MapThing*>& list);
+	void      putDragonTargets(MapThing* first, vector<MapThing*>& list);
+	void      putTaggingLinesWithId(int id, int type, vector<MapLine*>& list);
 	int       findUnusedSectorTag();
 	int       findUnusedThingId();
 	int       findUnusedLineId();
 
 	// Info
-	string             getAdjacentLineTexture(MapVertex* vertex, int tex_part = 255);
-	MapSector*         getLineSideSector(MapLine* line, bool front = true);
-	vector<MapObject*> getModifiedObjects(long since, MapObject::Type type = MapObject::Type::Object);
-	vector<MapObject*> getAllModifiedObjects(long since);
-	long               getLastModifiedTime();
+	string             adjacentLineTexture(MapVertex* vertex, int tex_part = 255);
+	MapSector*         lineSideSector(MapLine* line, bool front = true);
+	vector<MapObject*> modifiedObjects(long since, MapObject::Type type = MapObject::Type::Object);
+	vector<MapObject*> allModifiedObjects(long since);
+	long               lastModifiedTime();
 	bool               isModified();
 	void               setOpenedTime();
 	bool               modifiedSince(long since, MapObject::Type type = MapObject::Type::Object);

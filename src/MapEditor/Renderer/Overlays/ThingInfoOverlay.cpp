@@ -90,12 +90,12 @@ void ThingInfoOverlay::update(MapThing* thing)
 	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Index + type
-	auto&  tt   = Game::configuration().thingType(thing->getType());
-	string type = S_FMT("%s (Type %d)", tt.name(), thing->getType());
+	auto&  tt   = Game::configuration().thingType(thing->type());
+	string type = S_FMT("%s (Type %d)", tt.name(), thing->type());
 	if (Global::debug)
-		info_text += S_FMT("Thing #%d (%d): %s\n", thing->getIndex(), thing->getId(), type);
+		info_text += S_FMT("Thing #%d (%d): %s\n", thing->index(), thing->objId(), type);
 	else
-		info_text += S_FMT("Thing #%d: %s\n", thing->getIndex(), type);
+		info_text += S_FMT("Thing #%d: %s\n", thing->index(), type);
 
 	// Position
 	if (map_format != MAP_DOOM)
@@ -193,15 +193,15 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 		last_size_ = right;
 		text_box_->setSize(right - 68);
 	}
-	int height = text_box_->getHeight() + 4;
+	int height = text_box_->height() + 4;
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;
 	bottom += height * alpha_inv * alpha_inv;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::colour("map_overlay_background");
+	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 	col_bg.a      = col_bg.a * alpha;
 	rgba_t col_border(0, 0, 0, 140);
@@ -216,21 +216,21 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 
 	// Draw sprite
 	bool       isicon = false;
-	GLTexture* tex    = MapEditor::textureManager().getSprite(sprite_, translation_, palette_);
+	GLTexture* tex    = MapEditor::textureManager().sprite(sprite_, translation_, palette_);
 	if (!tex)
 	{
 		if (use_zeth_icons && zeth_ >= 0)
-			tex = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", zeth_));
+			tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", zeth_));
 		if (!tex)
-			tex = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", icon_));
+			tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", icon_));
 		isicon = true;
 	}
 	glEnable(GL_TEXTURE_2D);
 	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
 	if (tex)
 	{
-		double width  = tex->getWidth();
-		double height = tex->getHeight();
+		double width  = tex->width();
+		double height = tex->height();
 		if (width > 128.0 || height > 128.0)
 		{
 			double factor = max(width, height) / 128.0;

@@ -70,18 +70,18 @@ STreeNode::~STreeNode()
 // Returns the 'path' to this node, ie, the names of all its parent nodes each
 // separated by a / (including the name of this node)
 // -----------------------------------------------------------------------------
-string STreeNode::getPath()
+string STreeNode::path()
 {
 	if (!parent_)
-		return getName() + "/";
+		return name() + "/";
 	else
-		return parent_->getPath() + getName() + "/";
+		return parent_->path() + name() + "/";
 }
 
 // -----------------------------------------------------------------------------
 // Returns the child node at [index], or NULL if index is invalid
 // -----------------------------------------------------------------------------
-STreeNode* STreeNode::getChild(unsigned index)
+STreeNode* STreeNode::child(unsigned index)
 {
 	// Check index
 	if (index >= children_.size())
@@ -95,7 +95,7 @@ STreeNode* STreeNode::getChild(unsigned index)
 // Can also find deeper child nodes if a path is given in [name].
 // Returns null if no match is found
 // -----------------------------------------------------------------------------
-STreeNode* STreeNode::getChild(string name)
+STreeNode* STreeNode::child(string name)
 {
 	// Check name was given
 	if (name.IsEmpty())
@@ -114,7 +114,7 @@ STreeNode* STreeNode::getChild(string name)
 		// Find child of this node
 		for (unsigned a = 0; a < children_.size(); a++)
 		{
-			if (S_CMPNOCASE(name, children_[a]->getName()))
+			if (S_CMPNOCASE(name, children_[a]->name()))
 				return children_[a];
 		}
 
@@ -127,12 +127,12 @@ STreeNode* STreeNode::getChild(string name)
 		string dir = fn.GetDirs()[0];
 
 		// See if it is a child of this node
-		STreeNode* child = getChild(dir);
-		if (child)
+		STreeNode* c = child(dir);
+		if (c)
 		{
 			// It is, remove the first directory and continue searching that child
 			fn.RemoveDir(0);
-			return child->getChild(fn.GetFullPath(wxPATH_UNIX));
+			return c->child(fn.GetFullPath(wxPATH_UNIX));
 		}
 		else
 			return nullptr; // Child doesn't exist
@@ -143,7 +143,7 @@ STreeNode* STreeNode::getChild(string name)
 // Returns a list of all the node's children matching [name].
 // Also handles paths as per getChild
 // -----------------------------------------------------------------------------
-vector<STreeNode*> STreeNode::getChildren(string name)
+vector<STreeNode*> STreeNode::children(string name)
 {
 	// Init return vector
 	vector<STreeNode*> ret;
@@ -165,7 +165,7 @@ vector<STreeNode*> STreeNode::getChildren(string name)
 		// Find child of this node
 		for (unsigned a = 0; a < children_.size(); a++)
 		{
-			if (S_CMPNOCASE(name, children_[a]->getName()))
+			if (S_CMPNOCASE(name, children_[a]->name()))
 				ret.push_back(children_[a]);
 		}
 	}
@@ -175,12 +175,12 @@ vector<STreeNode*> STreeNode::getChildren(string name)
 		string dir = fn.GetDirs()[0];
 
 		// See if it is a child of this node
-		STreeNode* child = getChild(dir);
-		if (child)
+		STreeNode* c = child(dir);
+		if (c)
 		{
 			// It is, remove the first directory and continue searching that child
 			fn.RemoveDir(0);
-			return child->getChildren(fn.GetFullPath(wxPATH_UNIX));
+			return c->children(fn.GetFullPath(wxPATH_UNIX));
 		}
 	}
 
@@ -218,19 +218,19 @@ STreeNode* STreeNode::addChild(string name)
 	{
 		// If child name duplication is disallowed,
 		// check if a child with this name exists
-		STreeNode* child = nullptr;
+		STreeNode* c = nullptr;
 		if (!allow_dup_child_)
-			child = getChild(name);
+			c = child(name);
 
 		// If it doesn't exist, create it
-		if (!child)
+		if (!c)
 		{
-			child = createChild(name);
-			addChild(child);
+			c = createChild(name);
+			addChild(c);
 		}
 
 		// Return the created child
-		return child;
+		return c;
 	}
 	else
 	{
@@ -239,20 +239,20 @@ STreeNode* STreeNode::addChild(string name)
 
 		// If child name duplication is disallowed,
 		// check if a child with this name exists
-		STreeNode* child = nullptr;
+		STreeNode* c = nullptr;
 		if (!allow_dup_child_)
-			child = getChild(dir);
+			c = child(dir);
 
 		// If it doesn't exist, create it
-		if (!child)
+		if (!c)
 		{
-			child = createChild(dir);
-			addChild(child);
+			c = createChild(dir);
+			addChild(c);
 		}
 
 		// Continue adding child nodes
 		fn.RemoveDir(0);
-		return child->addChild(fn.GetFullPath(wxPATH_UNIX));
+		return c->addChild(fn.GetFullPath(wxPATH_UNIX));
 	}
 }
 

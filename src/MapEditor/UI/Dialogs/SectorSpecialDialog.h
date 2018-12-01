@@ -12,7 +12,7 @@ public:
 	ListView* getSpecialsList() const { return lv_specials_; }
 
 	void setup(int special);
-	int  getSelectedSpecial();
+	int  selectedSpecial();
 
 private:
 	ListView*   lv_specials_   = nullptr;
@@ -29,7 +29,7 @@ public:
 	~SectorSpecialDialog() {}
 
 	void setup(int special) const { panel_special_->setup(special); }
-	int  getSelectedSpecial() const { return panel_special_->getSelectedSpecial(); }
+	int  getSelectedSpecial() const { return panel_special_->selectedSpecial(); }
 
 private:
 	SectorSpecialPanel* panel_special_;

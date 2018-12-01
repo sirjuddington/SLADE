@@ -95,11 +95,11 @@ SAction::~SAction() {}
 // Returns the shortcut key for this action as a string, taking into account if
 // the shortcut is a keybind
 // -----------------------------------------------------------------------------
-string SAction::getShortcutText() const
+string SAction::shortcutText() const
 {
 	if (shortcut_.StartsWith("kb:"))
 	{
-		auto kp = KeyBind::getBind(shortcut_.Mid(3)).getKey(0);
+		auto kp = KeyBind::bind(shortcut_.Mid(3)).key(0);
 		if (kp.key != "")
 			return kp.asString();
 
@@ -160,7 +160,7 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override, 
 	bool   sc_control = shortcut_.Contains("Ctrl") || shortcut_.Contains("Alt");
 	if (shortcut_.StartsWith("kb:"))
 	{
-		auto kp = KeyBind::getBind(shortcut_.Mid(3)).getKey(0);
+		auto kp = KeyBind::bind(shortcut_.Mid(3)).key(0);
 		if (kp.key != "")
 			sc = kp.asString();
 		else
@@ -258,8 +258,8 @@ bool SAction::parse(ParseTreeNode* node)
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto   prop      = node->getChildPTN(a);
-		string prop_name = prop->getName();
+		auto   prop      = node->childPTN(a);
+		string prop_name = prop->name();
 
 		// Text
 		if (S_CMPNOCASE(prop_name, "text"))
@@ -346,18 +346,18 @@ bool SAction::initActions()
 	if (!cfg_entry)
 		return false;
 
-	Parser parser(cfg_entry->getParentDir());
-	if (parser.parseText(cfg_entry->getMCData(), "actions.cfg"))
+	Parser parser(cfg_entry->parentDir());
+	if (parser.parseText(cfg_entry->data(), "actions.cfg"))
 	{
 		auto root = parser.parseTreeRoot();
 		for (unsigned a = 0; a < root->nChildren(); a++)
 		{
-			auto node = root->getChildPTN(a);
+			auto node = root->childPTN(a);
 
 			// Single action
 			if (S_CMPNOCASE(node->type(), "action"))
 			{
-				auto action = new SAction(node->getName(), node->getName());
+				auto action = new SAction(node->name(), node->name());
 				if (action->parse(node))
 					actions_.push_back(action);
 				else
@@ -365,16 +365,16 @@ bool SAction::initActions()
 			}
 
 			// Group of actions
-			else if (S_CMPNOCASE(node->getName(), "group"))
+			else if (S_CMPNOCASE(node->name(), "group"))
 			{
 				int group = newGroup();
 
 				for (unsigned b = 0; b < node->nChildren(); b++)
 				{
-					auto group_node = node->getChildPTN(b);
+					auto group_node = node->childPTN(b);
 					if (S_CMPNOCASE(group_node->type(), "action"))
 					{
-						auto action = new SAction(group_node->getName(), group_node->getName());
+						auto action = new SAction(group_node->name(), group_node->name());
 						if (action->parse(group_node))
 						{
 							action->group_ = group;

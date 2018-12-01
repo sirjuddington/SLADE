@@ -386,7 +386,7 @@ void PreferencesDialog::openPreferences(wxWindow* parent, string initial_page, s
 	// Show dialog
 	if (dlg.ShowModal() == wxID_OK)
 		dlg.applyPreferences();
-	theMainWindow->getArchiveManagerPanel()->refreshAllTabs();
+	theMainWindow->archiveManagerPanel()->refreshAllTabs();
 
 	// Save state
 	last_page_ = dlg.currentPage();

@@ -105,7 +105,7 @@ void EntryDataFormat::copyToFormat(EntryDataFormat& target)
 // Returns the entry data format matching [id], or the 'any' type if no match
 // found
 // -----------------------------------------------------------------------------
-EntryDataFormat* EntryDataFormat::getFormat(string id)
+EntryDataFormat* EntryDataFormat::format(string id)
 {
 	EDFMap::iterator i = data_formats.find(id);
 	if (i == data_formats.end())
@@ -140,7 +140,7 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 	p.parseText(mc);
 
 	// Get data_formats tree
-	auto pt_formats = p.parseTreeRoot()->getChildPTN("data_formats");
+	auto pt_formats = p.parseTreeRoot()->childPTN("data_formats");
 
 	// Check it exists
 	if (!pt_formats)
@@ -150,10 +150,10 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 	for (unsigned a = 0; a < pt_formats->nChildren(); a++)
 	{
 		// Get child as ParseTreeNode
-		auto formatnode = pt_formats->getChildPTN(a);
+		auto formatnode = pt_formats->childPTN(a);
 
 		// Create+add new data format
-		EntryDataFormat* edf = new EntryDataFormat(formatnode->getName().Lower());
+		EntryDataFormat* edf = new EntryDataFormat(formatnode->name().Lower());
 
 		/*
 		// Copy from existing type if inherited

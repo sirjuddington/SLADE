@@ -106,7 +106,7 @@ void EntryType::addToList()
 // -----------------------------------------------------------------------------
 void EntryType::dump()
 {
-	LOG_MESSAGE(1, "Type %s \"%s\", format %s, extension %s", id_, name_, format_->getId(), extension_);
+	LOG_MESSAGE(1, "Type %s \"%s\", format %s, extension %s", id_, name_, format_->id(), extension_);
 	LOG_MESSAGE(1, "Size limit: %d-%d", size_limit_[0], size_limit_[1]);
 
 	for (size_t a = 0; a < match_archive_.size(); a++)
@@ -184,11 +184,11 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		return EDF_FALSE;
 
 	// Check min size
-	if (size_limit_[0] >= 0 && entry->getSize() < (unsigned)size_limit_[0])
+	if (size_limit_[0] >= 0 && entry->size() < (unsigned)size_limit_[0])
 		return EDF_FALSE;
 
 	// Check max size
-	if (size_limit_[1] >= 0 && entry->getSize() > (unsigned)size_limit_[1])
+	if (size_limit_[1] >= 0 && entry->size() > (unsigned)size_limit_[1])
 		return EDF_FALSE;
 
 	// Check for archive match if needed
@@ -197,7 +197,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		bool match = false;
 		for (size_t a = 0; a < match_archive_.size(); a++)
 		{
-			if (entry->getParent() && entry->getParent()->formatId() == match_archive_[a])
+			if (entry->parent() && entry->parent()->formatId() == match_archive_[a])
 			{
 				match = true;
 				break;
@@ -213,7 +213,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		bool match = false;
 		for (size_t a = 0; a < match_size_.size(); a++)
 		{
-			if (entry->getSize() == match_size_[a])
+			if (entry->size() == match_size_[a])
 			{
 				match = true;
 				break;
@@ -230,17 +230,17 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	{
 		// Hack for identifying ACS script sources despite DB2 apparently appending
 		// two null bytes to them, which make the memchr test fail.
-		size_t end = entry->getSize() - 1;
+		size_t end = entry->size() - 1;
 		if (end > 3)
 			end -= 2;
 		// Text is a special case, as other data formats can sometimes be detected as 'text',
 		// we'll only check for it if text data is specified in the entry type
-		if (entry->getSize() > 0 && memchr(entry->getData(), 0, end) != nullptr)
+		if (entry->size() > 0 && memchr(entry->rawData(), 0, end) != nullptr)
 			return EDF_FALSE;
 	}
-	else if (format_ != EntryDataFormat::anyFormat() && entry->getSize() > 0)
+	else if (format_ != EntryDataFormat::anyFormat() && entry->size() > 0)
 	{
-		r = format_->isThisFormat(entry->getMCData());
+		r = format_->isThisFormat(entry->data());
 		if (r == EDF_FALSE)
 			return EDF_FALSE;
 	}
@@ -252,7 +252,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		size_t size_multiple_size = size_multiple_.size();
 		for (size_t a = 0; a < size_multiple_size; a++)
 		{
-			if (entry->getSize() % size_multiple_[a] == 0)
+			if (entry->size() % size_multiple_[a] == 0)
 			{
 				match = true;
 				break;
@@ -274,7 +274,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	if (!match_name_.empty() || !match_extension_.empty())
 	{
 		// Get entry name (lowercase), find extension separator
-		string fn      = entry->getUpperName();
+		string fn      = entry->upperName();
 		size_t ext_sep = fn.find_first_of('.', 0);
 
 		// Check for name match if needed
@@ -328,10 +328,10 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	if (!section_.empty())
 	{
 		// Check entry is part of an archive (if not it can't be in a section)
-		if (!entry->getParent())
+		if (!entry->parent())
 			return EDF_FALSE;
 
-		string e_section = entry->getParent()->detectNamespace(entry);
+		string e_section = entry->parent()->detectNamespace(entry);
 
 		r = EDF_FALSE;
 		for (auto ns : section_)
@@ -354,7 +354,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 	p.parseText(mc, source);
 
 	// Get entry_types tree
-	auto pt_etypes = p.parseTreeRoot()->getChildPTN("entry_types");
+	auto pt_etypes = p.parseTreeRoot()->childPTN("entry_types");
 
 	// Check it exists
 	if (!pt_etypes)
@@ -364,10 +364,10 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 	for (unsigned a = 0; a < pt_etypes->nChildren(); a++)
 	{
 		// Get child as ParseTreeNode
-		auto typenode = pt_etypes->getChildPTN(a);
+		auto typenode = pt_etypes->childPTN(a);
 
 		// Create new entry type
-		EntryType* ntype = new EntryType(typenode->getName().Lower());
+		EntryType* ntype = new EntryType(typenode->name().Lower());
 
 		// Copy from existing type if inherited
 		if (!typenode->inherit().IsEmpty())
@@ -385,92 +385,92 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 		for (unsigned b = 0; b < typenode->nChildren(); b++)
 		{
 			// Get child as ParseTreeNode
-			auto fieldnode = typenode->getChildPTN(b);
+			auto fieldnode = typenode->childPTN(b);
 
 			// Process it
-			if (S_CMPNOCASE(fieldnode->getName(), "name")) // Name field
+			if (S_CMPNOCASE(fieldnode->name(), "name")) // Name field
 			{
 				ntype->name_ = fieldnode->stringValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "detectable")) // Detectable field
+			else if (S_CMPNOCASE(fieldnode->name(), "detectable")) // Detectable field
 			{
 				ntype->detectable_ = fieldnode->boolValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "export_ext")) // Export Extension field
+			else if (S_CMPNOCASE(fieldnode->name(), "export_ext")) // Export Extension field
 			{
 				ntype->extension_ = fieldnode->stringValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "format")) // Format field
+			else if (S_CMPNOCASE(fieldnode->name(), "format")) // Format field
 			{
 				string format_string = fieldnode->stringValue();
-				ntype->format_       = EntryDataFormat::getFormat(format_string);
+				ntype->format_       = EntryDataFormat::format(format_string);
 
 				// Warn if undefined format
 				if (ntype->format_ == EntryDataFormat::anyFormat())
 					LOG_MESSAGE(1, "Warning: Entry type %s requires undefined format %s", ntype->id(), format_string);
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "icon")) // Icon field
+			else if (S_CMPNOCASE(fieldnode->name(), "icon")) // Icon field
 			{
 				ntype->icon_ = fieldnode->stringValue();
 				if (ntype->icon_.StartsWith("e_"))
 					ntype->icon_ = ntype->icon_.Mid(2);
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "editor")) // Editor field (to be removed)
+			else if (S_CMPNOCASE(fieldnode->name(), "editor")) // Editor field (to be removed)
 			{
 				ntype->editor_ = fieldnode->stringValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "section")) // Section field
+			else if (S_CMPNOCASE(fieldnode->name(), "section")) // Section field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->section_.push_back(fieldnode->stringValue(v).Lower());
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "match_ext")) // Match Extension field
+			else if (S_CMPNOCASE(fieldnode->name(), "match_ext")) // Match Extension field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->match_extension_.push_back(fieldnode->stringValue(v).Upper());
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "match_name")) // Match Name field
+			else if (S_CMPNOCASE(fieldnode->name(), "match_name")) // Match Name field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->match_name_.push_back(fieldnode->stringValue(v).Upper());
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "match_extorname")) // Match name or extension
+			else if (S_CMPNOCASE(fieldnode->name(), "match_extorname")) // Match name or extension
 			{
 				ntype->match_ext_or_name_ = fieldnode->boolValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "size")) // Size field
+			else if (S_CMPNOCASE(fieldnode->name(), "size")) // Size field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->match_size_.push_back(fieldnode->intValue(v));
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "min_size")) // Min Size field
+			else if (S_CMPNOCASE(fieldnode->name(), "min_size")) // Min Size field
 			{
 				ntype->size_limit_[0] = fieldnode->intValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "max_size")) // Max Size field
+			else if (S_CMPNOCASE(fieldnode->name(), "max_size")) // Max Size field
 			{
 				ntype->size_limit_[1] = fieldnode->intValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "size_multiple")) // Size Multiple field
+			else if (S_CMPNOCASE(fieldnode->name(), "size_multiple")) // Size Multiple field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->size_multiple_.push_back(fieldnode->intValue(v));
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "reliability")) // Reliability field
+			else if (S_CMPNOCASE(fieldnode->name(), "reliability")) // Reliability field
 			{
 				ntype->reliability_ = fieldnode->intValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "match_archive")) // Archive field
+			else if (S_CMPNOCASE(fieldnode->name(), "match_archive")) // Archive field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->match_archive_.push_back(fieldnode->stringValue(v).Lower());
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "extra")) // Extra properties
+			else if (S_CMPNOCASE(fieldnode->name(), "extra")) // Extra properties
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->extra_.addFlag(fieldnode->stringValue(v));
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "category")) // Type category
+			else if (S_CMPNOCASE(fieldnode->name(), "category")) // Type category
 			{
 				ntype->category_ = fieldnode->stringValue();
 
@@ -487,9 +487,9 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 				if (!exists)
 					entry_categories.push_back(ntype->category_);
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "image_format")) // Image format hint
+			else if (S_CMPNOCASE(fieldnode->name(), "image_format")) // Image format hint
 				ntype->extra_["image_format"] = fieldnode->stringValue(0);
-			else if (S_CMPNOCASE(fieldnode->getName(), "colour")) // Colour
+			else if (S_CMPNOCASE(fieldnode->name(), "colour")) // Colour
 			{
 				if (fieldnode->nValues() >= 3)
 					ntype->colour_ = rgba_t(fieldnode->intValue(0), fieldnode->intValue(1), fieldnode->intValue(2));
@@ -499,7 +499,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 			else
 			{
 				// Unhandled properties can go into 'extra', only their first value is kept
-				ntype->extra_[fieldnode->getName()] = fieldnode->stringValue();
+				ntype->extra_[fieldnode->name()] = fieldnode->stringValue();
 			}
 		}
 
@@ -561,7 +561,7 @@ bool EntryType::loadEntryTypes()
 	}
 
 	// Get entry types directory
-	ArchiveTreeNode* et_dir = res_archive->getDir("config/entry_types/");
+	ArchiveTreeNode* et_dir = res_archive->dir("config/entry_types/");
 
 	// Check it exists
 	if (!et_dir)
@@ -575,7 +575,7 @@ bool EntryType::loadEntryTypes()
 	unsigned int et_dir_numEntries = et_dir->numEntries();
 	for (unsigned a = 0; a < et_dir_numEntries; a++)
 	{
-		if (readEntryTypeDefinition(et_dir->entryAt(a)->getMCData(), et_dir->entryAt(a)->getName()))
+		if (readEntryTypeDefinition(et_dir->entryAt(a)->data(), et_dir->entryAt(a)->name()))
 			etypes_read = true;
 	}
 
@@ -618,11 +618,11 @@ bool EntryType::loadEntryTypes()
 bool EntryType::detectEntryType(ArchiveEntry* entry)
 {
 	// Do nothing if the entry is a folder or a map marker
-	if (!entry || entry->getType() == &etype_folder || entry->getType() == &etype_map)
+	if (!entry || entry->type() == &etype_folder || entry->type() == &etype_map)
 		return false;
 
 	// If the entry's size is zero, set it to marker type
-	if (entry->getSize() == 0)
+	if (entry->size() == 0)
 	{
 		entry->setType(&etype_marker);
 		return true;
@@ -636,7 +636,7 @@ bool EntryType::detectEntryType(ArchiveEntry* entry)
 	for (size_t a = 0; a < entry_types_size; a++)
 	{
 		// If the current type is more 'reliable' than this one, skip it
-		if (entry->getTypeReliability() >= entry_types[a]->reliability())
+		if (entry->typeReliability() >= entry_types[a]->reliability())
 			continue;
 
 		// Check for possible type match
@@ -647,13 +647,13 @@ bool EntryType::detectEntryType(ArchiveEntry* entry)
 			entry->setType(entry_types[a], r);
 
 			// No need to continue if the identification is 100% reliable
-			if (entry->getTypeReliability() >= 255)
+			if (entry->typeReliability() >= 255)
 				return true;
 		}
 	}
 
 	// Return t/f depending on if a matching type was found
-	if (entry->getType() == &etype_unknown)
+	if (entry->type() == &etype_unknown)
 		return false;
 	else
 		return true;
@@ -811,7 +811,7 @@ CONSOLE_COMMAND(type, 0, true)
 		if (desttype != EntryType::unknownType())
 		{
 			// Check if format corresponds to entry
-			foo = EntryDataFormat::getFormat(desttype->formatId());
+			foo = EntryDataFormat::format(desttype->formatId());
 			if (foo)
 				LOG_MESSAGE(1, "Identifying as %s", desttype->name().mb_str());
 			else
@@ -825,18 +825,18 @@ CONSOLE_COMMAND(type, 0, true)
 			okay = false;
 			if (foo)
 			{
-				okay = foo->isThisFormat(meep[b]->getMCData());
+				okay = foo->isThisFormat(meep[b]->data());
 				if (okay)
-					LOG_MESSAGE(1, "%s: Identification successful (%i/255)", meep[b]->getName().mb_str(), okay);
+					LOG_MESSAGE(1, "%s: Identification successful (%i/255)", meep[b]->name().mb_str(), okay);
 				else
-					LOG_MESSAGE(1, "%s: Identification failed", meep[b]->getName().mb_str());
+					LOG_MESSAGE(1, "%s: Identification failed", meep[b]->name().mb_str());
 			}
 
 			// Change type
 			if (force || okay)
 			{
 				meep[b]->setType(desttype, okay);
-				LOG_MESSAGE(1, "%s: Type changed.", meep[b]->getName().mb_str());
+				LOG_MESSAGE(1, "%s: Type changed.", meep[b]->name().mb_str());
 			}
 		}
 	}
@@ -850,5 +850,5 @@ CONSOLE_COMMAND(size, 0, true)
 		LOG_MESSAGE(1, "No entry selected");
 		return;
 	}
-	LOG_MESSAGE(1, "%s: %i bytes", meep->getName().mb_str(), meep->getSize());
+	LOG_MESSAGE(1, "%s: %i bytes", meep->name().mb_str(), meep->size());
 }

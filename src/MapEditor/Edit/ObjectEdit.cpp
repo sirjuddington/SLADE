@@ -124,7 +124,7 @@ void ObjectEditGroup::addThing(MapThing* thing)
 	t.position.x   = thing->xPos();
 	t.position.y   = thing->yPos();
 	t.old_position = t.position;
-	t.angle        = thing->getAngle();
+	t.angle        = thing->angle();
 	things_.push_back(t);
 
 	// Update bbox
@@ -224,7 +224,7 @@ void ObjectEditGroup::resetPositions()
 // and sets [v1]/[v2] to the line vertices.
 // Returns true if a line was found within the distance specified
 // -----------------------------------------------------------------------------
-bool ObjectEditGroup::getNearestLine(fpoint2_t pos, double min, fpoint2_t& v1, fpoint2_t& v2)
+bool ObjectEditGroup::nearestLineEndpoints(fpoint2_t pos, double min, fpoint2_t& v1, fpoint2_t& v2)
 {
 	double min_dist = min;
 	for (auto& line : lines_)
@@ -245,7 +245,7 @@ bool ObjectEditGroup::getNearestLine(fpoint2_t pos, double min, fpoint2_t& v1, f
 // -----------------------------------------------------------------------------
 // Fills [list] with the positions of all group vertices
 // -----------------------------------------------------------------------------
-void ObjectEditGroup::getVerticesToDraw(vector<fpoint2_t>& list)
+void ObjectEditGroup::putVerticesToDraw(vector<fpoint2_t>& list)
 {
 	for (auto& vertex : vertices_)
 		if (!vertex->ignored)
@@ -255,7 +255,7 @@ void ObjectEditGroup::getVerticesToDraw(vector<fpoint2_t>& list)
 // -----------------------------------------------------------------------------
 // Fills [list] with all lines in the group
 // -----------------------------------------------------------------------------
-void ObjectEditGroup::getLinesToDraw(vector<Line>& list)
+void ObjectEditGroup::putLinesToDraw(vector<Line>& list)
 {
 	for (auto line : lines_)
 		list.push_back(line);
@@ -264,7 +264,7 @@ void ObjectEditGroup::getLinesToDraw(vector<Line>& list)
 // -----------------------------------------------------------------------------
 // Fills [list] with all things in the group
 // -----------------------------------------------------------------------------
-void ObjectEditGroup::getThingsToDraw(vector<Thing>& list)
+void ObjectEditGroup::putThingsToDraw(vector<Thing>& list)
 {
 	for (const auto& thing : things_)
 		list.push_back(thing);
@@ -498,7 +498,7 @@ void ObjectEditGroup::doAll(
 		// Reset first
 		thing.position.x = thing.map_thing->xPos();
 		thing.position.y = thing.map_thing->yPos();
-		thing.angle      = thing.map_thing->getAngle();
+		thing.angle      = thing.map_thing->angle();
 
 		// Mirror
 		if (mirror_x)
@@ -560,20 +560,20 @@ void ObjectEditGroup::applyEdit()
 	// Get map
 	SLADEMap* map;
 	if (!vertices_.empty())
-		map = vertices_[0]->map_vertex->getParentMap();
+		map = vertices_[0]->map_vertex->parentMap();
 	else if (!things_.empty())
-		map = things_[0].map_thing->getParentMap();
+		map = things_[0].map_thing->parentMap();
 	else
 		return;
 
 	// Move vertices
 	for (auto& vertex : vertices_)
-		map->moveVertex(vertex->map_vertex->getIndex(), vertex->position.x, vertex->position.y);
+		map->moveVertex(vertex->map_vertex->index(), vertex->position.x, vertex->position.y);
 
 	// Move things
 	for (auto& thing : things_)
 	{
-		map->moveThing(thing.map_thing->getIndex(), thing.position.x, thing.position.y);
+		map->moveThing(thing.map_thing->index(), thing.position.x, thing.position.y);
 		thing.map_thing->setIntProperty("angle", thing.angle);
 	}
 
@@ -591,7 +591,7 @@ void ObjectEditGroup::applyEdit()
 // -----------------------------------------------------------------------------
 // Adds all group vertices to [list]
 // -----------------------------------------------------------------------------
-void ObjectEditGroup::getMapVertices(vector<MapVertex*>& list)
+void ObjectEditGroup::putMapVertices(vector<MapVertex*>& list)
 {
 	for (auto& vertex : vertices_)
 	{
@@ -656,7 +656,7 @@ bool ObjectEdit::begin()
 			// Get vertices of selected sectors
 			auto sectors = context_.selection().selectedSectors();
 			for (auto& sector : sectors)
-				sector->getVertices(edit_objects);
+				sector->putVertices(edit_objects);
 		}
 
 		// Setup object group
@@ -678,9 +678,9 @@ bool ObjectEdit::begin()
 	context_.renderer().renderer2D().forceUpdate();
 
 	// Setup help text
-	string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
-	string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
-	string key_toggle = KeyBind::getBind("me2d_begin_object_edit").keysAsString();
+	string key_accept = KeyBind::bind("map_edit_accept").keysAsString();
+	string key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
+	string key_toggle = KeyBind::bind("me2d_begin_object_edit").keysAsString();
 	context_.setFeatureHelp({ "Object Edit",
 							  S_FMT("%s = Accept", key_accept),
 							  S_FMT("%s or %s = Cancel", key_cancel, key_toggle),
@@ -719,7 +719,7 @@ void ObjectEdit::end(bool accept)
 			}
 
 			vector<MapVertex*> vertices;
-			group_.getMapVertices(vertices);
+			group_.putMapVertices(vertices);
 			merge = context_.map().mergeArch(vertices);
 		}
 

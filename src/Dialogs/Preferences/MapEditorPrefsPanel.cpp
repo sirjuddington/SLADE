@@ -122,5 +122,5 @@ void MapEditorPrefsPanel::applyPreferences()
 	map_remove_invalid_lines         = cb_remove_invalid_lines_->GetValue();
 	map_merge_lines_on_delete_vertex = cb_merge_lines_vertex_delete_->GetValue();
 	map_split_auto_offset            = cb_split_auto_offset_->GetValue();
-	max_map_backups                  = text_max_backups_->getNumber();
+	max_map_backups                  = text_max_backups_->number();
 }

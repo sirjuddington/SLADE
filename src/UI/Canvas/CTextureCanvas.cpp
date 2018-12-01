@@ -281,10 +281,10 @@ void CTextureCanvas::drawTexture()
 	double tscaley = 1;
 	if (tex_scale_)
 	{
-		tscalex = texture_->getScaleX();
+		tscalex = texture_->scaleX();
 		if (tscalex == 0)
 			tscalex = 1;
-		tscaley = texture_->getScaleY();
+		tscaley = texture_->scaleY();
 		if (tscaley == 0)
 			tscaley = 1;
 		glScaled(1.0 / tscalex, 1.0 / tscaley, 1);
@@ -297,9 +297,9 @@ void CTextureCanvas::drawTexture()
 
 	// Translate by offsets if needed
 	if (view_type_ == View::Normal) // No offsets
-		glTranslated(texture_->getWidth() * -0.5, texture_->getHeight() * -0.5, 0);
+		glTranslated(texture_->width() * -0.5, texture_->height() * -0.5, 0);
 	if (view_type_ == View::Sprite || view_type_ == View::HUD) // Sprite offsets
-		glTranslated(-texture_->getOffsetX(), -texture_->getOffsetY(), 0);
+		glTranslated(-texture_->offsetX(), -texture_->offsetY(), 0);
 	if (view_type_ == View::HUD) // HUD offsets
 		glTranslated(-160 * tscalex, -100 * tscaley, 0);
 
@@ -327,8 +327,8 @@ void CTextureCanvas::drawTexture()
 		glScissor(
 			left,
 			top,
-			texture_->getWidth() * scale_ * (1.0 / tscalex),
-			texture_->getHeight() * yscale * (1.0 / tscaley));
+			texture_->width() * scale_ * (1.0 / tscalex),
+			texture_->height() * yscale * (1.0 / tscaley));
 		for (uint32_t a = 0; a < texture_->nPatches(); a++)
 			drawPatch(a);
 		glDisable(GL_SCISSOR_TEST);
@@ -369,20 +369,20 @@ void CTextureCanvas::drawTexture()
 			continue;
 
 		// Get patch
-		CTPatch*   patch  = texture_->getPatch(a);
+		CTPatch*   patch  = texture_->patch(a);
 		CTPatchEx* epatch = (CTPatchEx*)patch;
 
 		// Check for rotation
-		if (texture_->isExtended() && (epatch->getRotation() == 90 || epatch->getRotation() == -90))
+		if (texture_->isExtended() && (epatch->rotation() == 90 || epatch->rotation() == -90))
 		{
 			// Draw outline, width/height swapped
 			glBegin(GL_LINE_LOOP);
 			glVertex2i(patch->xOffset(), patch->yOffset());
-			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_textures_[a]->getWidth());
+			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_textures_[a]->width());
 			glVertex2i(
-				patch->xOffset() + (int)patch_textures_[a]->getHeight(),
-				patch->yOffset() + (int)patch_textures_[a]->getWidth());
-			glVertex2i(patch->xOffset() + (int)patch_textures_[a]->getHeight(), patch->yOffset());
+				patch->xOffset() + (int)patch_textures_[a]->height(),
+				patch->yOffset() + (int)patch_textures_[a]->width());
+			glVertex2i(patch->xOffset() + (int)patch_textures_[a]->height(), patch->yOffset());
 			glEnd();
 		}
 		else
@@ -390,11 +390,11 @@ void CTextureCanvas::drawTexture()
 			// Draw outline
 			glBegin(GL_LINE_LOOP);
 			glVertex2i(patch->xOffset(), patch->yOffset());
-			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_textures_[a]->getHeight());
+			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_textures_[a]->height());
 			glVertex2i(
-				patch->xOffset() + (int)patch_textures_[a]->getWidth(),
-				patch->yOffset() + (int)patch_textures_[a]->getHeight());
-			glVertex2i(patch->xOffset() + (int)patch_textures_[a]->getWidth(), patch->yOffset());
+				patch->xOffset() + (int)patch_textures_[a]->width(),
+				patch->yOffset() + (int)patch_textures_[a]->height());
+			glVertex2i(patch->xOffset() + (int)patch_textures_[a]->width(), patch->yOffset());
 			glEnd();
 		}
 	}
@@ -406,20 +406,20 @@ void CTextureCanvas::drawTexture()
 		OpenGL::setColour(255, 255, 255, 150, BLEND_ADDITIVE);
 
 		// Get patch
-		CTPatch*   patch         = texture_->getPatch(hilight_patch_);
+		CTPatch*   patch         = texture_->patch(hilight_patch_);
 		CTPatchEx* epatch        = (CTPatchEx*)patch;
 		GLTexture* patch_texture = patch_textures_[hilight_patch_];
 
 		// Check for rotation
-		if (texture_->isExtended() && (epatch->getRotation() == 90 || epatch->getRotation() == -90))
+		if (texture_->isExtended() && (epatch->rotation() == 90 || epatch->rotation() == -90))
 		{
 			// Draw outline, width/height swapped
 			glBegin(GL_LINE_LOOP);
 			glVertex2i(patch->xOffset(), patch->yOffset());
-			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_texture->getWidth());
+			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_texture->width());
 			glVertex2i(
-				patch->xOffset() + (int)patch_texture->getHeight(), patch->yOffset() + (int)patch_texture->getWidth());
-			glVertex2i(patch->xOffset() + (int)patch_texture->getHeight(), patch->yOffset());
+				patch->xOffset() + (int)patch_texture->height(), patch->yOffset() + (int)patch_texture->width());
+			glVertex2i(patch->xOffset() + (int)patch_texture->height(), patch->yOffset());
 			glEnd();
 		}
 		else
@@ -427,10 +427,10 @@ void CTextureCanvas::drawTexture()
 			// Draw outline
 			glBegin(GL_LINE_LOOP);
 			glVertex2i(patch->xOffset(), patch->yOffset());
-			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_texture->getHeight());
+			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_texture->height());
 			glVertex2i(
-				patch->xOffset() + (int)patch_texture->getWidth(), patch->yOffset() + (int)patch_texture->getHeight());
-			glVertex2i(patch->xOffset() + (int)patch_texture->getWidth(), patch->yOffset());
+				patch->xOffset() + (int)patch_texture->width(), patch->yOffset() + (int)patch_texture->height());
+			glVertex2i(patch->xOffset() + (int)patch_texture->width(), patch->yOffset());
 			glEnd();
 		}
 	}
@@ -447,7 +447,7 @@ void CTextureCanvas::drawTexture()
 void CTextureCanvas::drawPatch(int num, bool outside)
 {
 	// Get patch to draw
-	CTPatch* patch = texture_->getPatch(num);
+	CTPatch* patch = texture_->patch(num);
 
 	// Check it exists
 	if (!patch)
@@ -491,19 +491,19 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 			flipy = true;
 
 		// Rotation
-		if (epatch->getRotation() == 90)
+		if (epatch->rotation() == 90)
 		{
-			glTranslated(patch_textures_[num]->getHeight(), 0, 0);
+			glTranslated(patch_textures_[num]->height(), 0, 0);
 			glRotated(90, 0, 0, 1);
 		}
-		else if (epatch->getRotation() == 180)
+		else if (epatch->rotation() == 180)
 		{
-			glTranslated(patch_textures_[num]->getWidth(), patch_textures_[num]->getHeight(), 0);
+			glTranslated(patch_textures_[num]->width(), patch_textures_[num]->height(), 0);
 			glRotated(180, 0, 0, 1);
 		}
-		else if (epatch->getRotation() == -90)
+		else if (epatch->rotation() == -90)
 		{
-			glTranslated(0, patch_textures_[num]->getWidth(), 0);
+			glTranslated(0, patch_textures_[num]->width(), 0);
 			glRotated(-90, 0, 0, 1);
 		}
 	}
@@ -531,22 +531,22 @@ void CTextureCanvas::drawTextureBorder()
 	OpenGL::setColour(COL_BLACK);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(-ext, -ext);
-	glVertex2d(-ext, texture_->getHeight() + ext);
-	glVertex2d(texture_->getWidth() + ext, texture_->getHeight() + ext);
-	glVertex2d(texture_->getWidth() + ext, -ext);
+	glVertex2d(-ext, texture_->height() + ext);
+	glVertex2d(texture_->width() + ext, texture_->height() + ext);
+	glVertex2d(texture_->width() + ext, -ext);
 	glEnd();
 	glLineWidth(1.0f);
 
 	// Draw vertical ticks
 	int y = 0;
 	glColor4f(0.0f, 0.0f, 0.0f, 0.6f);
-	while (y <= texture_->getHeight())
+	while (y <= texture_->height())
 	{
 		glBegin(GL_LINES);
 		glVertex2i(-4, y);
 		glVertex2i(0, y);
-		glVertex2i(texture_->getWidth(), y);
-		glVertex2i(texture_->getWidth() + 4, y);
+		glVertex2i(texture_->width(), y);
+		glVertex2i(texture_->width() + 4, y);
 		glEnd();
 
 		y += 8;
@@ -554,13 +554,13 @@ void CTextureCanvas::drawTextureBorder()
 
 	// Draw horizontal ticks
 	int x = 0;
-	while (x <= texture_->getWidth())
+	while (x <= texture_->width())
 	{
 		glBegin(GL_LINES);
 		glVertex2i(x, -4);
 		glVertex2i(x, 0);
-		glVertex2i(x, texture_->getHeight());
-		glVertex2i(x, texture_->getHeight() + 4);
+		glVertex2i(x, texture_->height());
+		glVertex2i(x, texture_->height() + 4);
 		glEnd();
 
 		x += 8;
@@ -575,11 +575,11 @@ void CTextureCanvas::drawTextureBorder()
 
 		// Vertical
 		y = 8;
-		while (y <= texture_->getHeight() - 8)
+		while (y <= texture_->height() - 8)
 		{
 			glBegin(GL_LINES);
 			glVertex2i(0, y);
-			glVertex2i(texture_->getWidth(), y);
+			glVertex2i(texture_->width(), y);
 			glEnd();
 
 			y += 8;
@@ -587,11 +587,11 @@ void CTextureCanvas::drawTextureBorder()
 
 		// Horizontal
 		x = 8;
-		while (x <= texture_->getWidth() - 8)
+		while (x <= texture_->width() - 8)
 		{
 			glBegin(GL_LINES);
 			glVertex2i(x, 0);
-			glVertex2i(x, texture_->getHeight());
+			glVertex2i(x, texture_->height());
 			glEnd();
 
 			x += 8;
@@ -604,11 +604,11 @@ void CTextureCanvas::drawTextureBorder()
 
 		// Vertical
 		y = 8;
-		while (y <= texture_->getHeight() - 8)
+		while (y <= texture_->height() - 8)
 		{
 			glBegin(GL_LINES);
 			glVertex2i(0, y);
-			glVertex2i(texture_->getWidth(), y);
+			glVertex2i(texture_->width(), y);
 			glEnd();
 
 			y += 8;
@@ -616,11 +616,11 @@ void CTextureCanvas::drawTextureBorder()
 
 		// Horizontal
 		x = 8;
-		while (x <= texture_->getWidth() - 8)
+		while (x <= texture_->width() - 8)
 		{
 			glBegin(GL_LINES);
 			glVertex2i(x, 0);
-			glVertex2i(x, texture_->getHeight());
+			glVertex2i(x, texture_->height());
 			glEnd();
 
 			x += 8;
@@ -680,10 +680,10 @@ point2_t CTextureCanvas::screenToTexPosition(int x, int y)
 	double scaley = 1;
 	if (tex_scale_)
 	{
-		scalex = texture_->getScaleX();
+		scalex = texture_->scaleX();
 		if (scalex == 0)
 			scalex = 1;
-		scaley = texture_->getScaleY();
+		scaley = texture_->scaleY();
 		if (scaley == 0)
 			scaley = 1;
 	}
@@ -697,14 +697,14 @@ point2_t CTextureCanvas::screenToTexPosition(int x, int y)
 	if (view_type_ == View::Normal)
 	{
 		// None (centered)
-		left -= ((double)texture_->getWidth() / scalex) * 0.5 * scale_;
-		top -= ((double)texture_->getHeight() / scaley) * 0.5 * yscale;
+		left -= ((double)texture_->width() / scalex) * 0.5 * scale_;
+		top -= ((double)texture_->height() / scaley) * 0.5 * yscale;
 	}
 	if (view_type_ == View::Sprite || view_type_ == View::HUD)
 	{
 		// Sprite
-		left -= ((double)texture_->getOffsetX() / scalex) * scale_;
-		top -= ((double)texture_->getOffsetY() / scaley) * yscale;
+		left -= ((double)texture_->offsetX() / scalex) * scale_;
+		top -= ((double)texture_->offsetY() / scaley) * yscale;
 	}
 	if (view_type_ == View::HUD)
 	{
@@ -727,10 +727,10 @@ point2_t CTextureCanvas::texToScreenPosition(int x, int y)
 	double tscaley = 1;
 	if (tex_scale_)
 	{
-		tscalex = texture_->getScaleX();
+		tscalex = texture_->scaleX();
 		if (tscalex == 0)
 			tscalex = 1;
-		tscaley = texture_->getScaleY();
+		tscaley = texture_->scaleY();
 		if (tscaley == 0)
 			tscaley = 1;
 	}
@@ -739,8 +739,8 @@ point2_t CTextureCanvas::texToScreenPosition(int x, int y)
 
 	// Get top/left
 	double yscale = (tx_arc ? scale_ * 1.2 : scale_);
-	double halfx  = (texture_->getWidth() * 0.5 * scale_ * tscalex);
-	double halfy  = (texture_->getHeight() * 0.5 * yscale * tscaley);
+	double halfx  = (texture_->width() * 0.5 * scale_ * tscalex);
+	double halfy  = (texture_->height() * 0.5 * yscale * tscaley);
 	double left   = offset_.x + (GetSize().x * 0.5) - halfx;
 	double top    = -offset_.y + (GetSize().y * 0.5) - halfy;
 
@@ -748,8 +748,8 @@ point2_t CTextureCanvas::texToScreenPosition(int x, int y)
 	if (view_type_ == View::Sprite || view_type_ == View::HUD)
 	{
 		// Sprite
-		left -= (texture_->getOffsetX() * scale_ * tscalex) - halfx;
-		top += (texture_->getOffsetY() * yscale * tscaley) - halfy;
+		left -= (texture_->offsetX() * scale_ * tscalex) - halfx;
+		top += (texture_->offsetY() * yscale * tscaley) - halfy;
 	}
 	if (view_type_ == View::HUD)
 	{
@@ -775,9 +775,9 @@ int CTextureCanvas::patchAt(int x, int y)
 	for (int a = texture_->nPatches() - 1; a >= 0; a--)
 	{
 		// Check if x,y is within patch bounds
-		CTPatch* patch = texture_->getPatch(a);
-		if (x >= patch->xOffset() && x < patch->xOffset() + (int)patch_textures_[a]->getWidth() && y >= patch->yOffset()
-			&& y < patch->yOffset() + (int)patch_textures_[a]->getHeight())
+		CTPatch* patch = texture_->patch(a);
+		if (x >= patch->xOffset() && x < patch->xOffset() + (int)patch_textures_[a]->width() && y >= patch->yOffset()
+			&& y < patch->yOffset() + (int)patch_textures_[a]->height())
 		{
 			return a;
 		}

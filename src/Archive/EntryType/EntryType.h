@@ -14,7 +14,7 @@ public:
 	const string& id() const { return id_; }
 	const string& name() const { return name_; }
 	const string& extension() const { return extension_; }
-	const string& formatId() const { return format_->getId(); }
+	const string& formatId() const { return format_->id(); }
 	const string& editor() const { return editor_; }
 	const string& category() const { return category_; }
 	const string& icon() const { return icon_; }

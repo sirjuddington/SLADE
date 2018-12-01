@@ -54,7 +54,7 @@ CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette* palette) : OGLC
 	{
 		texture_ = std::make_unique<GLTexture>();
 		texture_->loadImage(image, palette);
-		crop_rect_.set(0, 0, image->getWidth(), image->getHeight());
+		crop_rect_.set(0, 0, image->width(), image->height());
 	}
 
 	int size = UI::scalePx(220);
@@ -77,8 +77,8 @@ void CropCanvas::draw()
 	double height = GetSize().y;
 
 	// Get image dimensions
-	double x_dim = (double)texture_->getWidth();
-	double y_dim = (double)texture_->getHeight();
+	double x_dim = (double)texture_->width();
+	double y_dim = (double)texture_->height();
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)width - UI::scalePx(24)) / x_dim;
@@ -97,8 +97,8 @@ void CropCanvas::draw()
 	if (texture_)
 	{
 		glEnable(GL_TEXTURE_2D);
-		hw = texture_->getWidth() * -0.5;
-		hh = texture_->getHeight() * -0.5;
+		hw = texture_->width() * -0.5;
+		hh = texture_->height() * -0.5;
 		texture_->draw2d(hw, hh);
 	}
 
@@ -140,8 +140,8 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	// Set max crop size
 	if (image)
 	{
-		max_width_  = image->getWidth();
-		max_height_ = image->getHeight();
+		max_width_  = image->width();
+		max_height_ = image->height();
 	}
 	else
 		max_width_ = max_height_ = 0;
@@ -199,14 +199,14 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	gb_sizer->Add(new wxStaticText(frame, -1, "Right:"), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	text_right_ = new NumberTextCtrl(frame);
 	text_right_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
-	text_right_->setNumber(image->getWidth());
+	text_right_->setNumber(image->width());
 	gb_sizer->Add(text_right_, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND);
 
 	// Bottom
 	gb_sizer->Add(new wxStaticText(frame, -1, "Bottom:"), wxGBPosition(3, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	text_bottom_ = new NumberTextCtrl(frame);
 	text_bottom_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
-	text_bottom_->setNumber(image->getHeight());
+	text_bottom_->setNumber(image->height());
 	gb_sizer->Add(text_bottom_, wxGBPosition(3, 1), wxDefaultSpan, wxEXPAND);
 
 	gb_sizer->AddGrowableCol(1);
@@ -273,7 +273,7 @@ void GfxCropDialog::updateValues()
 // -----------------------------------------------------------------------------
 void GfxCropDialog::setLeft()
 {
-	int left = text_left_->getNumber();
+	int left = text_left_->number();
 
 	if (left < 0)
 		left = 0;
@@ -291,7 +291,7 @@ void GfxCropDialog::setLeft()
 // -----------------------------------------------------------------------------
 void GfxCropDialog::setTop()
 {
-	int top = text_top_->getNumber();
+	int top = text_top_->number();
 
 	if (top < 0)
 		top = 0;
@@ -309,7 +309,7 @@ void GfxCropDialog::setTop()
 // -----------------------------------------------------------------------------
 void GfxCropDialog::setRight()
 {
-	int right = text_right_->getNumber();
+	int right = text_right_->number();
 	if (rb_relative_->GetValue())
 		right += max_width_;
 
@@ -331,7 +331,7 @@ void GfxCropDialog::setRight()
 // -----------------------------------------------------------------------------
 void GfxCropDialog::setBottom()
 {
-	int bottom = text_bottom_->getNumber();
+	int bottom = text_bottom_->number();
 	if (rb_relative_->GetValue())
 		bottom += max_height_;
 

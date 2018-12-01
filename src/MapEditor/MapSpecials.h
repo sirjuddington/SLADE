@@ -17,8 +17,8 @@ public:
 	void processMapSpecials(SLADEMap* map);
 	void processLineSpecial(MapLine* line);
 
-	bool getTagColour(int tag, rgba_t* colour);
-	bool getTagFadeColour(int tag, rgba_t* colour);
+	bool tagColour(int tag, rgba_t* colour);
+	bool tagFadeColour(int tag, rgba_t* colour);
 	bool tagColoursSet();
 	bool tagFadeColoursSet();
 	void updateTaggedSectors(SLADEMap* map);

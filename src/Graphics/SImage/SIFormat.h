@@ -37,14 +37,14 @@ public:
 	SIFormat(string id);
 	~SIFormat();
 
-	string getId() { return id_; }
-	string getName() { return name_; }
-	string getExtension() { return extension_; }
+	string id() { return id_; }
+	string name() { return name_; }
+	string extension() { return extension_; }
 
 	virtual bool isThisFormat(MemChunk& mc) = 0;
 
 	// Reading
-	virtual SImage::info_t getInfo(MemChunk& mc, int index = 0) = 0;
+	virtual SImage::info_t info(MemChunk& mc, int index = 0) = 0;
 
 	bool loadImage(SImage& image, MemChunk& data, int index = 0)
 	{
@@ -101,7 +101,7 @@ public:
 	static SIFormat* rawFormat();
 	static SIFormat* flatFormat();
 	static SIFormat* generalFormat();
-	static void      getAllFormats(vector<SIFormat*>& list);
+	static void      putAllFormats(vector<SIFormat*>& list);
 
 protected:
 	string  id_;

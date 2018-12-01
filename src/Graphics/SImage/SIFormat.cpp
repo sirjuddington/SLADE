@@ -88,7 +88,7 @@ public:
 	~SIFUnknown() {}
 
 	bool           isThisFormat(MemChunk& mc) { return false; }
-	SImage::info_t getInfo(MemChunk& mc, int index) { return SImage::info_t(); }
+	SImage::info_t info(MemChunk& mc, int index) { return SImage::info_t(); }
 };
 
 
@@ -110,7 +110,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		FIMEMORY*         mem = FreeImage_OpenMemory((BYTE*)mc.getData(), mc.getSize());
+		FIMEMORY*         mem = FreeImage_OpenMemory((BYTE*)mc.data(), mc.size());
 		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(mem, 0);
 		FreeImage_CloseMemory(mem);
 		if (fif == FIF_UNKNOWN)
@@ -119,7 +119,7 @@ public:
 			return true;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
 
@@ -196,7 +196,7 @@ private:
 	FIBITMAP* getFIInfo(MemChunk& data, SImage::info_t& info)
 	{
 		// Get FreeImage bitmap info from entry data
-		FIMEMORY*         mem = FreeImage_OpenMemory((BYTE*)data.getData(), data.getSize());
+		FIMEMORY*         mem = FreeImage_OpenMemory((BYTE*)data.data(), data.size());
 		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(mem, 0);
 		FIBITMAP*         bm  = FreeImage_LoadFromMemory(fif, mem, 0);
 		FreeImage_CloseMemory(mem);
@@ -299,11 +299,11 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Get info
-		SImage::info_t info = getInfo(data, index);
+		SImage::info_t inf = info(data, index);
 
 		// Create image from data
-		image.create(info.width, info.height, PALMASK);
-		data.read(imageData(image), info.width * info.height, 0);
+		image.create(inf.width, inf.height, PALMASK);
+		data.read(imageData(image), inf.width * inf.height, 0);
 		image.fillAlpha(255);
 
 		return true;
@@ -320,13 +320,13 @@ public:
 	bool isThisFormat(MemChunk& mc)
 	{
 		// Just check the size
-		return validSize(mc.getSize());
+		return validSize(mc.size());
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t info;
-		unsigned       size = mc.getSize();
+		unsigned       size = mc.size();
 
 		// Determine dimensions
 		bool valid_size = false;
@@ -390,16 +390,16 @@ protected:
 	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index)
 	{
 		// Can't write if RGBA
-		if (image.getType() == RGBA)
+		if (image.type() == RGBA)
 			return false;
 
 		// Check size
-		if (!validSize(image.getWidth(), image.getHeight()))
+		if (!validSize(image.width(), image.height()))
 			return false;
 
 		// Just dump image data to memchunk
 		data.clear();
-		data.write(imageData(image), image.getWidth() * image.getHeight());
+		data.write(imageData(image), image.width() * image.height());
 
 		return true;
 	}
@@ -415,14 +415,14 @@ public:
 	int canWrite(SImage& image)
 	{
 		// If it's the correct size and colour format, it's writable
-		int width  = image.getWidth();
-		int height = image.getHeight();
+		int width  = image.width();
+		int height = image.height();
 
 		// Shouldn't happen but...
 		if (width < 0 || height < 0)
 			return NOTWRITABLE;
 
-		if (image.getType() == PALMASK && validSize(image.getWidth(), image.getHeight()))
+		if (image.type() == PALMASK && validSize(image.width(), image.height()))
 			return WRITABLE;
 
 		// Otherwise, check if it can be cropped to a valid size
@@ -445,11 +445,11 @@ public:
 
 		// Quick hack for COLORMAP size
 		// TODO: Remove me when a proper COLORMAP editor is implemented
-		if (image.getWidth() == 256 && image.getHeight() >= 32 && image.getHeight() <= 34)
+		if (image.width() == 256 && image.height() >= 32 && image.height() <= 34)
 			return true;
 
 		// Check for fullscreen/autopage size
-		if (image.getWidth() == 320)
+		if (image.width() == 320)
 			return true;
 
 		// And finally, find a suitable flat size and crop to that size
@@ -461,12 +461,12 @@ public:
 			bool writable = (valid_flat_size[a][2] == 1 || gfx_extraconv);
 
 			// Check for exact match (no need to crop)
-			if (image.getWidth() == valid_flat_size[a][0] && image.getHeight() == valid_flat_size[a][1] && writable)
+			if (image.width() == valid_flat_size[a][0] && image.height() == valid_flat_size[a][1] && writable)
 				return true;
 
 			// If the flat will fit within this size, crop to the previous size
 			// (this works because flat sizes list is in size-order)
-			if (image.getWidth() <= (int)valid_flat_size[a][0] && image.getHeight() <= (int)valid_flat_size[a][1]
+			if (image.width() <= (int)valid_flat_size[a][0] && image.height() <= (int)valid_flat_size[a][1]
 				&& width > 0 && height > 0)
 			{
 				image.crop(0, 0, width, height);
@@ -671,7 +671,7 @@ SIFormat* SIFormat::generalFormat()
 // -----------------------------------------------------------------------------
 // Adds all image formats to [list]
 // -----------------------------------------------------------------------------
-void SIFormat::getAllFormats(vector<SIFormat*>& list)
+void SIFormat::putAllFormats(vector<SIFormat*>& list)
 {
 	// Clear list
 	list.clear();

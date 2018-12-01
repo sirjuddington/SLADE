@@ -59,7 +59,7 @@ BZip2Archive::~BZip2Archive() {}
 // -----------------------------------------------------------------------------
 bool BZip2Archive::open(MemChunk& mc)
 {
-	size_t size = mc.getSize();
+	size_t size = mc.size();
 	if (size < 14)
 		return false;
 
@@ -84,7 +84,7 @@ bool BZip2Archive::open(MemChunk& mc)
 	setMuted(true);
 	ArchiveEntry* entry = new ArchiveEntry(name, size);
 	MemChunk      xdata;
-	if (Compression::BZip2Decompress(mc, xdata))
+	if (Compression::bzip2Decompress(mc, xdata))
 	{
 		entry->importMemChunk(xdata);
 	}
@@ -114,7 +114,7 @@ bool BZip2Archive::write(MemChunk& mc, bool update)
 {
 	if (numEntries() == 1)
 	{
-		return Compression::BZip2Compress(getEntry(0)->getMCData(), mc);
+		return Compression::bzip2Compress(entryAt(0)->data(), mc);
 	}
 	return false;
 }
@@ -132,7 +132,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -149,7 +149,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Seek to lump offset in file and read it in
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -166,21 +166,21 @@ ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 {
 	// Init search variables
 	options.match_name  = options.match_name.Lower();
-	ArchiveEntry* entry = getEntry(0);
+	ArchiveEntry* entry = entryAt(0);
 	if (entry == nullptr)
 		return entry;
 
 	// Check type
 	if (options.match_type)
 	{
-		if (entry->getType() == EntryType::unknownType())
+		if (entry->type() == EntryType::unknownType())
 		{
 			if (!options.match_type->isThisType(entry))
 			{
 				return nullptr;
 			}
 		}
-		else if (options.match_type != entry->getType())
+		else if (options.match_type != entry->type())
 		{
 			return nullptr;
 		}
@@ -189,7 +189,7 @@ ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 	// Check name
 	if (!options.match_name.IsEmpty())
 	{
-		if (!options.match_name.Matches(entry->getName().Lower()))
+		if (!options.match_name.Matches(entry->name().Lower()))
 		{
 			return nullptr;
 		}
@@ -216,7 +216,7 @@ vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options)
 	options.match_name = options.match_name.Lower();
 	vector<ArchiveEntry*> ret;
 	if (findFirst(options))
-		ret.push_back(getEntry(0));
+		ret.push_back(entryAt(0));
 	return ret;
 }
 
@@ -233,7 +233,7 @@ vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options)
 // -----------------------------------------------------------------------------
 bool BZip2Archive::isBZip2Archive(MemChunk& mc)
 {
-	size_t size = mc.getSize();
+	size_t size = mc.size();
 	if (size < 14)
 		return false;
 

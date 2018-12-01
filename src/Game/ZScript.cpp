@@ -78,7 +78,7 @@ void logParserMessage(ParsedStatement& statement, Log::MessageType type, const s
 {
 	string location = "<unknown location>";
 	if (statement.entry)
-		location = statement.entry->getPath(true);
+		location = statement.entry->path(true);
 
 	Log::message(type, S_FMT("%s:%u: %s", CHR(location), statement.line, CHR(message)));
 }
@@ -191,7 +191,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 	tz.setSpecialCharacters(CHR(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?."));
 	tz.enableDecorate(true);
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
-	tz.openMem(entry->getMCData(), "ZScript");
+	tz.openMem(entry->data(), "ZScript");
 
 	// Log::info(2, S_FMT("Parsing ZScript entry \"%s\"", entry->getPath(true)));
 
@@ -210,7 +210,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 					Log::warning(S_FMT(
 						"Warning parsing ZScript entry %s: "
 						"Unable to find #included entry \"%s\" at line %u, skipping",
-						CHR(entry->getName()),
+						CHR(entry->name()),
 						CHR(tz.current().text),
 						tz.current().line_no));
 				}
@@ -237,7 +237,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 	}
 
 	// Set entry type
-	if (etype_zscript && entry->getType() != etype_zscript)
+	if (etype_zscript && entry->type() != etype_zscript)
 		entry->setType(etype_zscript);
 }
 

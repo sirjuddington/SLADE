@@ -6,7 +6,7 @@ public:
 	SplashWindow();
 	~SplashWindow() {}
 
-	float getProgress() const { return progress_; }
+	float progress() const { return progress_; }
 	void  setMessage(string message);
 	void  setProgressMessage(string message);
 	void  setProgress(float progress);

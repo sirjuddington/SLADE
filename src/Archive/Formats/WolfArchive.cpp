@@ -155,7 +155,7 @@ string searchIMFName(MemChunk& mc)
 
 	string ret      = "";
 	string fullname = "";
-	if (mc.getSize() >= 88u)
+	if (mc.size() >= 88u)
 	{
 		uint16_t nameOffset = READ_L16(mc, 0) + 4u;
 		// Shareware stubs
@@ -167,7 +167,7 @@ string searchIMFName(MemChunk& mc)
 			memcpy(tmp2, &mc[18], 64);
 			fullname = tmp2;
 		}
-		else if (mc.getSize() > nameOffset + 80u)
+		else if (mc.size() > nameOffset + 80u)
 		{
 			memcpy(tmp, &mc[nameOffset], 16);
 			ret = tmp;
@@ -191,11 +191,11 @@ void addWolfPicHeader(ArchiveEntry* entry, uint16_t width, uint16_t height)
 	if (!entry)
 		return;
 
-	MemChunk& mc = entry->getMCData();
-	if (mc.getSize() == 0)
+	MemChunk& mc = entry->data();
+	if (mc.size() == 0)
 		return;
 
-	uint32_t newsize = mc.getSize() + 4;
+	uint32_t newsize = mc.size() + 4;
 	uint8_t* newdata = new uint8_t[newsize];
 
 	newdata[0] = (uint8_t)(width & 0xFF);
@@ -220,11 +220,11 @@ void addIMFHeader(ArchiveEntry* entry)
 	if (!entry)
 		return;
 
-	MemChunk& mc = entry->getMCData();
-	if (mc.getSize() == 0)
+	MemChunk& mc = entry->data();
+	if (mc.size() == 0)
 		return;
 
-	uint32_t newsize = mc.getSize() + 9;
+	uint32_t newsize = mc.size() + 9;
 	uint8_t  start   = 0;
 	if (mc[0] | mc[1])
 	{
@@ -259,7 +259,7 @@ void addIMFHeader(ArchiveEntry* entry)
 		newdata[11] = 0;
 		newdata[12] = 0;
 	}
-	for (size_t i = 0; ((i + start < mc.getSize()) && (13 + i < newsize)); ++i)
+	for (size_t i = 0; ((i + start < mc.size()) && (13 + i < newsize)); ++i)
 	{
 		newdata[13 + i] = mc[i + start];
 	}
@@ -278,11 +278,11 @@ struct huffnode
 };
 void ExpandWolfGraphLump(ArchiveEntry* entry, size_t lumpnum, size_t numlumps, huffnode* hufftable)
 {
-	if (!entry || entry->getSize() == 0)
+	if (!entry || entry->size() == 0)
 		return;
 
 	size_t         expanded; // expanded size
-	const uint8_t* source = entry->getData();
+	const uint8_t* source = entry->rawData();
 
 
 	if (lumpnum == WolfConstant(STARTTILE8, numlumps))
@@ -563,7 +563,7 @@ bool WolfArchive::open(MemChunk& mc)
 
 			// If the lump data goes past the end of file,
 			// the data file is invalid
-			if (getEntryOffset(nlump) + size > mc.getSize())
+			if (getEntryOffset(nlump) + size > mc.size())
 			{
 				delete[] pages;
 				LOG_MESSAGE(1, "WolfArchive::open: Wolf archive is invalid or corrupt");
@@ -585,13 +585,13 @@ bool WolfArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = getEntry(a);
+		ArchiveEntry* entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -623,7 +623,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		return false;
 
 	// Read Wolf header file
-	uint32_t num_lumps = (head.getSize() >> 2) - 1;
+	uint32_t num_lumps = (head.size() >> 2) - 1;
 	spritestart_ = soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
@@ -631,7 +631,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 
 	// Read the offsets
 	UI::setSplashProgressMessage("Reading Wolf archive data");
-	const uint32_t* offsets = (const uint32_t*)head.getData();
+	const uint32_t* offsets = (const uint32_t*)head.data();
 	MemChunk        edata;
 
 	// First try to determine where data type changes
@@ -701,7 +701,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 
 		// If the lump data goes before the end of the directory,
 		// the data file is invalid
-		if (offset + size > data.getSize())
+		if (offset + size > data.size())
 		{
 			LOG_MESSAGE(1, "WolfArchive::openAudio: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
@@ -771,7 +771,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		return false;
 
 	// Read Wolf header file
-	uint32_t num_lumps = (head.getSize() - 2) >> 2;
+	uint32_t num_lumps = (head.size() - 2) >> 2;
 	spritestart_ = soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
@@ -779,7 +779,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 
 	// Read the offsets
 	UI::setSplashProgressMessage("Reading Wolf archive data");
-	const uint32_t* offsets = (const uint32_t*)(2 + head.getData());
+	const uint32_t* offsets = (const uint32_t*)(2 + head.data());
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
@@ -791,7 +791,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 
 		// If the lump data goes before the end of the directory,
 		// the data file is invalid
-		if (offset + size > data.getSize())
+		if (offset + size > data.size())
 		{
 			LOG_MESSAGE(1, "WolfArchive::openMaps: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
@@ -847,13 +847,13 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = getEntry(a);
+		ArchiveEntry* entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			data.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			data.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -885,17 +885,17 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 	if (!head.hasData() || !data.hasData() || !dict.hasData())
 		return false;
 
-	if (dict.getSize() != 1024)
+	if (dict.size() != 1024)
 	{
 		Global::error =
-			S_FMT("WolfArchive::openGraph: VGADICT is improperly sized (%d bytes instead of 1024)", dict.getSize());
+			S_FMT("WolfArchive::openGraph: VGADICT is improperly sized (%d bytes instead of 1024)", dict.size());
 		return false;
 	}
 	huffnode nodes[256];
-	memcpy(nodes, dict.getData(), 1024);
+	memcpy(nodes, dict.data(), 1024);
 
 	// Read Wolf header file
-	uint32_t num_lumps = (head.getSize() / 3) - 1;
+	uint32_t num_lumps = (head.size() / 3) - 1;
 	spritestart_ = soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
@@ -916,7 +916,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 
 		// If the lump data goes before the end of the directory,
 		// the data file is invalid
-		if (offset + size > data.getSize())
+		if (offset + size > data.size())
 		{
 			LOG_MESSAGE(1, "WolfArchive::openGraph: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
@@ -973,20 +973,20 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = getEntry(a);
+		ArchiveEntry* entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			data.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			data.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			entry->importMemChunk(edata);
 		}
 		ExpandWolfGraphLump(entry, a, num_lumps, nodes);
 
 		// Store pictable information
 		if (a == 0)
-			pictable = (uint16_t*)entry->getData();
+			pictable = (uint16_t*)entry->rawData();
 		else if (a >= WC(STARTPICS) && a < WC(STARTPICM))
 		{
 			size_t i = (a - WC(STARTPICS)) << 1;
@@ -1072,7 +1072,7 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -1090,7 +1090,7 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to lump offset in file and read it in
 	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -1123,7 +1123,7 @@ bool WolfArchive::isWolfArchive(MemChunk& mc)
 	uint16_t size      = 0;
 	size_t   totalsize = 6 * (num_lumps + 1);
 	size_t   pagesize  = (totalsize / 512) + ((totalsize % 512) ? 1 : 0);
-	size_t   filesize  = mc.getSize();
+	size_t   filesize  = mc.size();
 	if (filesize < totalsize)
 		return false;
 

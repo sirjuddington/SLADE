@@ -105,8 +105,8 @@ MapEditorWindow::MapEditorWindow() : STopWindow{ "SLADE", "map" }
 	custom_menus_begin_ = 2;
 
 	// Set icon
-	string icon_filename = App::path(App::getIcon(), App::Dir::Temp);
-	App::archiveManager().programResourceArchive()->getEntry(App::getIcon())->exportFile(icon_filename);
+	string icon_filename = App::path(App::iconFile(), App::Dir::Temp);
+	App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
 
@@ -581,15 +581,15 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 	Archive* archive = nullptr;
 	if (map.head)
 	{
-		archive = map.head->getParent();
+		archive = map.head->parent();
 
 		// Load map data
 		if (map.archive)
 		{
 			WadArchive temp;
-			temp.open(map.head->getMCData());
+			temp.open(map.head->data());
 			for (unsigned a = 0; a < temp.numEntries(); a++)
-				map_data_.push_back(new ArchiveEntry(*(temp.getEntry(a))));
+				map_data_.push_back(new ArchiveEntry(*(temp.entryAt(a))));
 		}
 		else
 		{
@@ -645,7 +645,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 		// Create backup
 		if (map.head
 			&& !MapEditor::backupManager().writeBackup(
-				   map_data_, map.head->getTopParent()->filename(false), map.head->getName(true)))
+				   map_data_, map.head->topParent()->filename(false), map.head->name(true)))
 			LOG_MESSAGE(1, "Warning: Failed to backup map data");
 	}
 
@@ -679,7 +679,7 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 	if (map.archive)
 	{
 		WadArchive* wad = new WadArchive();
-		wad->open(map.head->getMCData());
+		wad->open(map.head->data());
 		vector<Archive::MapDesc> maps = wad->detectMaps();
 		if (!maps.empty())
 		{
@@ -701,9 +701,9 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 		if (Game::configuration().scriptLanguage() == "acs_hexen"
 			|| Game::configuration().scriptLanguage() == "acs_zdoom")
 		{
-			if (S_CMPNOCASE(entry->getName(), "SCRIPTS"))
+			if (S_CMPNOCASE(entry->name(), "SCRIPTS"))
 				scripts = entry;
-			if (S_CMPNOCASE(entry->getName(), "BEHAVIOR"))
+			if (S_CMPNOCASE(entry->name(), "BEHAVIOR"))
 				compiled = entry;
 		}
 
@@ -729,7 +729,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	wad->save(filename);
 
 	// Get current nodebuilder
-	builder = NodeBuilders::getBuilder(nodebuilder_id);
+	builder = NodeBuilders::builder(nodebuilder_id);
 	command = builder.command;
 	options = nodebuilder_options;
 
@@ -741,7 +741,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	if (MapEditor::editContext().mapDesc().format == MAP_UDMF && nodebuilder_id != "zdbsp")
 	{
 		wxMessageBox("Nodebuilder switched to ZDBSP for UDMF format", "Save Map", wxICON_INFORMATION);
-		builder = NodeBuilders::getBuilder("zdbsp");
+		builder = NodeBuilders::builder("zdbsp");
 		command = builder.command;
 	}
 
@@ -752,7 +752,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		PreferencesDialog::openPreferences(this, "Node Builders");
 
 		// Get new builder if one was selected
-		builder = NodeBuilders::getBuilder(nodebuilder_id);
+		builder = NodeBuilders::builder(nodebuilder_id);
 		command = builder.command;
 
 		// Check again
@@ -831,15 +831,15 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 	WadArchive* wad = new WadArchive();
 	wad->addNewEntry(name);
 	// Handle fragglescript and similar content in the map header
-	if (mdesc_current.head && mdesc_current.head->getSize() && !mdesc_current.archive)
+	if (mdesc_current.head && mdesc_current.head->size() && !mdesc_current.archive)
 	{
-		wad->getEntry(name)->importMemChunk(mdesc_current.head->getMCData());
+		wad->entry(name)->importMemChunk(mdesc_current.head->data());
 	}
 	for (unsigned a = 0; a < new_map_data.size(); a++)
 		wad->addEntry(new_map_data[a]);
 	if (acs) // BEHAVIOR
 		wad->addEntry(panel_script_editor_->compiledEntry(), "", true);
-	if (acs && panel_script_editor_->scriptEntry()->getSize() > 0) // SCRIPTS (if any)
+	if (acs && panel_script_editor_->scriptEntry()->size() > 0) // SCRIPTS (if any)
 		wad->addEntry(panel_script_editor_->scriptEntry(), "", true);
 	if (mdesc_current.format == MAP_UDMF)
 	{
@@ -861,7 +861,7 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 
 	// Update map data
 	for (unsigned a = 0; a < wad->numEntries(); a++)
-		map_data_.push_back(new ArchiveEntry(*(wad->getEntry(a))));
+		map_data_.push_back(new ArchiveEntry(*(wad->entryAt(a))));
 
 	return wad;
 }
@@ -905,7 +905,7 @@ bool MapEditorWindow::saveMap()
 
 	// Delete current map entries
 	ArchiveEntry* entry   = map.end;
-	Archive*      archive = map.head->getParent();
+	Archive*      archive = map.head->parent();
 	while (entry && entry != map.head)
 	{
 		ArchiveEntry* prev = entry->prevEntry();
@@ -915,12 +915,12 @@ bool MapEditorWindow::saveMap()
 
 	// Create backup
 	if (!MapEditor::backupManager().writeBackup(
-			map_data_, map.head->getTopParent()->filename(false), map.head->getName(true)))
+			map_data_, map.head->topParent()->filename(false), map.head->name(true)))
 		Log::warning(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
 	for (unsigned a = 1; a < wad->numEntries(); a++)
-		entry = archive->addEntry(wad->getEntry(a), archive->entryIndex(map.head) + a, nullptr, true);
+		entry = archive->addEntry(wad->entryAt(a), archive->entryIndex(map.head) + a, nullptr, true);
 
 	// Clean up
 	delete wad;
@@ -1065,7 +1065,7 @@ bool MapEditorWindow::hasMapOpen(Archive* archive)
 	auto& mdesc = MapEditor::editContext().mapDesc();
 	if (!mdesc.head)
 		return false;
-	return (mdesc.head->getParent() == archive);
+	return (mdesc.head->parent() == archive);
 }
 
 // -----------------------------------------------------------------------------
@@ -1158,7 +1158,7 @@ bool MapEditorWindow::handleAction(string id)
 		if (saveMap())
 		{
 			// Save archive
-			Archive* a = mdesc_current.head->getParent();
+			Archive* a = mdesc_current.head->parent();
 			if (a && save_archive_with_map)
 				a->save();
 		}
@@ -1180,7 +1180,7 @@ bool MapEditorWindow::handleAction(string id)
 		if (mdesc_current.head)
 		{
 			Archive* data = MapEditor::backupManager().openBackup(
-				mdesc_current.head->getTopParent()->filename(false), mdesc_current.name);
+				mdesc_current.head->topParent()->filename(false), mdesc_current.name);
 
 			if (data)
 			{
@@ -1330,7 +1330,7 @@ bool MapEditorWindow::handleAction(string id)
 	{
 		Archive* archive = nullptr;
 		if (mdesc_current.head)
-			archive = mdesc_current.head->getParent();
+			archive = mdesc_current.head->parent();
 		RunDialog dlg(this, archive, id == "mapw_run_map");
 		if (dlg.ShowModal() == wxID_OK)
 		{
@@ -1350,12 +1350,12 @@ bool MapEditorWindow::handleAction(string id)
 			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")
 				MapEditor::editContext().resetPlayerStart();
 
-			string command = dlg.getSelectedCommandLine(archive, mdesc_current.name, wad->filename());
+			string command = dlg.selectedCommandLine(archive, mdesc_current.name, wad->filename());
 			if (!command.IsEmpty())
 			{
 				// Set working directory
 				string wd = wxGetCwd();
-				wxSetWorkingDirectory(dlg.getSelectedExeDir());
+				wxSetWorkingDirectory(dlg.selectedExeDir());
 
 				// Run
 				wxExecute(command, wxEXEC_ASYNC);

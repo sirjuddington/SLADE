@@ -158,7 +158,7 @@ SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs)
 	m_fixedTabWidth = UI::scalePx(100);
 	m_tabCtrlHeight = 0;
 
-	wxColor baseColour = Drawing::getPanelBGColour();
+	wxColor baseColour = Drawing::systemPanelBGColour();
 
 	m_activeColour       = baseColour;
 	m_baseColour         = baseColour;
@@ -528,7 +528,7 @@ void SAuiTabArt::SetSelectedFont(const wxFont& font)
 
 SAuiDockArt::SAuiDockArt()
 {
-	caption_back_colour_ = Drawing::darkColour(Drawing::getPanelBGColour(), 0.0f);
+	caption_back_colour_ = Drawing::darkColour(Drawing::systemPanelBGColour(), 0.0f);
 
 	wxColour textColour    = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 	float    r             = ((float)textColour.Red() * 0.2f) + ((float)caption_back_colour_.Red() * 0.8f);
@@ -674,8 +674,8 @@ void SAuiDockArt::DrawPaneButton(
 
 	if (button_state == wxAUI_BUTTON_STATE_HOVER || button_state == wxAUI_BUTTON_STATE_PRESSED)
 	{
-		dc.SetPen(wxPen(Drawing::darkColour(Drawing::getPanelBGColour(), 2.0f)));
-		dc.SetBrush(wxBrush(Drawing::lightColour(Drawing::getPanelBGColour(), 1.0f)));
+		dc.SetPen(wxPen(Drawing::darkColour(Drawing::systemPanelBGColour(), 2.0f)));
+		dc.SetBrush(wxBrush(Drawing::lightColour(Drawing::systemPanelBGColour(), 1.0f)));
 		dc.DrawRectangle(rect.x, rect.y, rect.width + 1, rect.width + 1);
 
 		bmp = m_activeCloseBitmap;

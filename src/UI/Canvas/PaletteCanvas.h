@@ -15,10 +15,10 @@ public:
 	PaletteCanvas(wxWindow* parent, int id);
 	~PaletteCanvas();
 
-	Palette&      getPalette() { return palette_; }
+	Palette&      palette() { return palette_; }
 	bool          doubleWidth() { return double_width_; }
-	int           getSelectionStart() { return sel_begin_; }
-	int           getSelectionEnd() { return sel_end_; }
+	int           selectionStart() { return sel_begin_; }
+	int           selectionEnd() { return sel_end_; }
 	SelectionType selectionType() { return allow_selection_; }
 
 	void doubleWidth(bool dw) { double_width_ = dw; }
@@ -26,7 +26,7 @@ public:
 	void setSelectionType(SelectionType sel) { allow_selection_ = sel; }
 
 	void   draw();
-	rgba_t getSelectedColour();
+	rgba_t selectedColour();
 
 	// Events
 	void onMouseLeftDown(wxMouseEvent& e);

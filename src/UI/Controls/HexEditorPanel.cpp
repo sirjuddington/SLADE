@@ -57,7 +57,7 @@ CVAR(Int, hex_grid_width, 16, CVAR_SAVE)
 // -----------------------------------------------------------------------------
 int HexTable::GetNumberRows()
 {
-	return (data_.getSize() / hex_grid_width) + 1;
+	return (data_.size() / hex_grid_width) + 1;
 }
 
 // -----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ int HexTable::GetNumberCols()
 // -----------------------------------------------------------------------------
 string HexTable::GetValue(int row, int col)
 {
-	if (unsigned(row * hex_grid_width + col) >= data_.getSize())
+	if (unsigned(row * hex_grid_width + col) >= data_.size())
 		return "";
 	else
 	{
@@ -109,14 +109,14 @@ void HexTable::SetValue(int row, int col, const string& value)
 // -----------------------------------------------------------------------------
 bool HexTable::loadData(MemChunk& mc)
 {
-	data_.importMem(mc.getData(), mc.getSize());
+	data_.importMem(mc.data(), mc.size());
 	return true;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the offset of the byte at [row],[col]
 // -----------------------------------------------------------------------------
-uint32_t HexTable::getOffset(int row, int col)
+uint32_t HexTable::offset(int row, int col)
 {
 	return row * hex_grid_width + col;
 }
@@ -124,9 +124,9 @@ uint32_t HexTable::getOffset(int row, int col)
 // -----------------------------------------------------------------------------
 // Returns the value at [offset] as an unsigned byte
 // -----------------------------------------------------------------------------
-uint8_t HexTable::getUByteValue(uint32_t offset)
+uint8_t HexTable::uByteValue(uint32_t offset)
 {
-	if (offset < data_.getSize())
+	if (offset < data_.size())
 		return data_[offset];
 	else
 		return 0;
@@ -135,99 +135,99 @@ uint8_t HexTable::getUByteValue(uint32_t offset)
 // -----------------------------------------------------------------------------
 // Returns the value at [offset] as an unsigned short
 // -----------------------------------------------------------------------------
-uint16_t HexTable::getUShortValue(uint32_t offset)
+uint16_t HexTable::uShortValue(uint32_t offset)
 {
 	uint16_t val = 0;
-	if (offset < data_.getSize() - 1)
-		memcpy(&val, data_.getData() + offset, 2);
+	if (offset < data_.size() - 1)
+		memcpy(&val, data_.data() + offset, 2);
 	return val;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the value at [offset] as an unsigned 32-bit integer
 // -----------------------------------------------------------------------------
-uint32_t HexTable::getUInt32Value(uint32_t offset)
+uint32_t HexTable::uInt32Value(uint32_t offset)
 {
 	uint32_t val = 0;
-	if (offset < data_.getSize() - 3)
-		memcpy(&val, data_.getData() + offset, 4);
+	if (offset < data_.size() - 3)
+		memcpy(&val, data_.data() + offset, 4);
 	return val;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the value at [offset] as an unsigned 64-bit integer
 // -----------------------------------------------------------------------------
-uint64_t HexTable::getUInt64Value(uint32_t offset)
+uint64_t HexTable::uInt64Value(uint32_t offset)
 {
 	uint64_t val = 0;
-	if (offset < data_.getSize() - 7)
-		memcpy(&val, data_.getData() + offset, 8);
+	if (offset < data_.size() - 7)
+		memcpy(&val, data_.data() + offset, 8);
 	return val;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the value at [offset] as a signed byte
 // -----------------------------------------------------------------------------
-int8_t HexTable::getByteValue(uint32_t offset)
+int8_t HexTable::byteValue(uint32_t offset)
 {
 	int8_t val = 0;
-	if (offset < data_.getSize())
-		val = *(data_.getData() + offset);
+	if (offset < data_.size())
+		val = *(data_.data() + offset);
 	return val;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the value at [offset] as a signed short
 // -----------------------------------------------------------------------------
-int16_t HexTable::getShortValue(uint32_t offset)
+int16_t HexTable::shortValue(uint32_t offset)
 {
 	int16_t val = 0;
-	if (offset < data_.getSize() - 1)
-		memcpy(&val, data_.getData() + offset, 2);
+	if (offset < data_.size() - 1)
+		memcpy(&val, data_.data() + offset, 2);
 	return val;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the value at [offset] as a signed 32-bit integer
 // -----------------------------------------------------------------------------
-int32_t HexTable::getInt32Value(uint32_t offset)
+int32_t HexTable::int32Value(uint32_t offset)
 {
 	int32_t val = 0;
-	if (offset < data_.getSize() - 3)
-		memcpy(&val, data_.getData() + offset, 4);
+	if (offset < data_.size() - 3)
+		memcpy(&val, data_.data() + offset, 4);
 	return val;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the value at [offset] as a signed 64-bit integer
 // -----------------------------------------------------------------------------
-int64_t HexTable::getInt64Value(uint32_t offset)
+int64_t HexTable::int64Value(uint32_t offset)
 {
 	int64_t val = 0;
-	if (offset < data_.getSize() - 7)
-		memcpy(&val, data_.getData() + offset, 8);
+	if (offset < data_.size() - 7)
+		memcpy(&val, data_.data() + offset, 8);
 	return val;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the value at [offset] as a float
 // -----------------------------------------------------------------------------
-float HexTable::getFloatValue(uint32_t offset)
+float HexTable::floatValue(uint32_t offset)
 {
 	float val = 0;
-	if (offset < data_.getSize() - 3)
-		val = *(data_.getData() + offset);
+	if (offset < data_.size() - 3)
+		val = *(data_.data() + offset);
 	return val;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the value at [offset] as a double
 // -----------------------------------------------------------------------------
-double HexTable::getDoubleValue(uint32_t offset)
+double HexTable::doubleValue(uint32_t offset)
 {
 	double val = 0;
-	if (offset < data_.getSize() - 7)
-		val = *(data_.getData() + offset);
+	if (offset < data_.size() - 7)
+		val = *(data_.data() + offset);
 	return val;
 }
 
@@ -378,10 +378,10 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 		return;
 
 	// Get offset of focused cell
-	uint32_t offset = table_hex_->getOffset(e.GetRow(), e.GetCol());
+	uint32_t offset = table_hex_->offset(e.GetRow(), e.GetCol());
 
 	// Check offset
-	if (offset > table_hex_->getData().getSize())
+	if (offset > table_hex_->getData().size())
 		return;
 
 	// Reset labels
@@ -407,7 +407,7 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 	// label_double_be->SetLabel("Double:");
 
 	// Get values
-	uint32_t size    = table_hex_->getData().getSize() - offset;
+	uint32_t size    = table_hex_->getData().size() - offset;
 	int8_t   vbyte   = 0;
 	uint8_t  vubyte  = 0;
 	int16_t  vshort  = 0;
@@ -421,8 +421,8 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 	if (size > 0)
 	{
 		// Byte values
-		vubyte = table_hex_->getUByteValue(offset);
-		vbyte  = table_hex_->getByteValue(offset);
+		vubyte = table_hex_->uByteValue(offset);
+		vbyte  = table_hex_->byteValue(offset);
 
 		label_byte_->SetLabel(S_FMT("Signed Byte: %d", vbyte));
 		label_ubyte_->SetLabel(S_FMT("Unsigned Byte: %u", vubyte));
@@ -432,8 +432,8 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 		if (size > 1)
 		{
 			// Short values
-			vshort  = table_hex_->getShortValue(offset);
-			vushort = table_hex_->getUShortValue(offset);
+			vshort  = table_hex_->shortValue(offset);
+			vushort = table_hex_->uShortValue(offset);
 
 			label_short_le_->SetLabel(S_FMT("Signed Short: %d", wxINT16_SWAP_ON_BE(vshort)));
 			label_ushort_le_->SetLabel(S_FMT("Unsigned Short: %u", wxUINT16_SWAP_ON_BE(vushort)));
@@ -443,9 +443,9 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 			if (size > 3)
 			{
 				// 4-byte values
-				vint32  = table_hex_->getInt32Value(offset);
-				vuint32 = table_hex_->getUInt32Value(offset);
-				vfloat  = table_hex_->getFloatValue(offset);
+				vint32  = table_hex_->int32Value(offset);
+				vuint32 = table_hex_->uInt32Value(offset);
+				vfloat  = table_hex_->floatValue(offset);
 
 				label_int32_le_->SetLabel(S_FMT("Signed Int (32bit): %d", wxINT32_SWAP_ON_BE(vint32)));
 				label_uint32_le_->SetLabel(S_FMT("Unsigned Int (32bit): %u", wxUINT32_SWAP_ON_BE(vuint32)));
@@ -455,9 +455,9 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 				if (size > 7)
 				{
 					// 8-byte values
-					vint64  = table_hex_->getInt64Value(offset);
-					vuint64 = table_hex_->getUInt64Value(offset);
-					vdouble = table_hex_->getDoubleValue(offset);
+					vint64  = table_hex_->int64Value(offset);
+					vuint64 = table_hex_->uInt64Value(offset);
+					vdouble = table_hex_->doubleValue(offset);
 
 					// label_int64_le->SetLabel(s_fmt("Signed Int (64bit): %d", wxINT64_SWAP_ON_BE(vint64)));
 					// label_uint64_le->SetLabel(s_fmt("Unsigned Int (64bit): %u", wxUINT64_SWAP_ON_BE(vuint64)));
@@ -478,11 +478,11 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 void HexEditorPanel::onBtnGoToOffset(wxCommandEvent& e)
 {
 	// Do nothing if no data
-	if (table_hex_->getData().getSize() == 0)
+	if (table_hex_->getData().size() == 0)
 		return;
 
 	// Pop up dialog to prompt user for an offset
-	int ofs = wxGetNumberFromUser("Enter Offset", "Offset", "Go to Offset", 0, 0, table_hex_->getData().getSize() - 1);
+	int ofs = wxGetNumberFromUser("Enter Offset", "Offset", "Go to Offset", 0, 0, table_hex_->getData().size() - 1);
 	if (ofs >= 0)
 	{
 		// Determine row/col of offset

@@ -17,7 +17,7 @@ public:
 	ArchiveEntry*                     dirEntry() const { return dir_entry_.get(); }
 
 	// STreeNode
-	string getName() override;
+	string name() override;
 	void   addChild(STreeNode* child) override;
 	void   setName(string name) override { dir_entry_->name_ = name; }
 

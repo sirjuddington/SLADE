@@ -55,7 +55,7 @@ ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Configurations list
 	vector<string> cnames;
-	ColourConfiguration::getConfigurationNames(cnames);
+	ColourConfiguration::putConfigurationNames(cnames);
 	choice_configs_ = new wxChoice(this, -1);
 	for (unsigned a = 0; a < cnames.size(); a++)
 		choice_configs_->Append(cnames[a]);
@@ -108,14 +108,14 @@ void ColourPrefsPanel::refreshPropGrid()
 
 	// Get (sorted) list of colours
 	vector<string> colours;
-	ColourConfiguration::getColourNames(colours);
+	ColourConfiguration::putColourNames(colours);
 	std::sort(colours.begin(), colours.end());
 
 	// Add colours to property grid
 	for (unsigned a = 0; a < colours.size(); a++)
 	{
 		// Get colour definition
-		auto cdef = ColourConfiguration::getColDef(colours[a]);
+		auto cdef = ColourConfiguration::colDef(colours[a]);
 
 		// Get/create group
 		auto group = pg_colours_->GetProperty(cdef.group);
@@ -140,12 +140,12 @@ void ColourPrefsPanel::refreshPropGrid()
 	pg_colours_->AppendIn(
 		g_theme,
 		new wxFloatProperty(
-			"Line Hilight Width Multiplier", "line_hilight_width", ColourConfiguration::getLineHilightWidth()));
+			"Line Hilight Width Multiplier", "line_hilight_width", ColourConfiguration::lineHilightWidth()));
 	pg_colours_->AppendIn(
 		g_theme,
 		new wxFloatProperty(
-			"Line Selection Width Multiplier", "line_selection_width", ColourConfiguration::getLineSelectionWidth()));
-	pg_colours_->AppendIn(g_theme, new wxFloatProperty("Flat Fade", "flat_alpha", ColourConfiguration::getFlatAlpha()));
+			"Line Selection Width Multiplier", "line_selection_width", ColourConfiguration::lineSelectionWidth()));
+	pg_colours_->AppendIn(g_theme, new wxFloatProperty("Flat Fade", "flat_alpha", ColourConfiguration::flatAlpha()));
 
 	// Set all bool properties to use checkboxes
 	pg_colours_->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
@@ -158,12 +158,12 @@ void ColourPrefsPanel::applyPreferences()
 {
 	// Get list of all colours
 	vector<string> colours;
-	ColourConfiguration::getColourNames(colours);
+	ColourConfiguration::putColourNames(colours);
 
 	for (unsigned a = 0; a < colours.size(); a++)
 	{
 		// Get colour definition
-		auto cdef = ColourConfiguration::getColDef(colours[a]);
+		auto cdef = ColourConfiguration::colDef(colours[a]);
 
 		string cdef_path = cdef.group;
 		cdef_path += ".";

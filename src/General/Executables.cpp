@@ -61,7 +61,7 @@ vector<ExternalExe> external_exes;
 // -----------------------------------------------------------------------------
 // Returns the game executable definition for [id]
 // -----------------------------------------------------------------------------
-Executables::GameExe* Executables::getGameExe(string id)
+Executables::GameExe* Executables::gameExe(string id)
 {
 	for (auto& exe : game_exes)
 		if (exe.id == id)
@@ -73,7 +73,7 @@ Executables::GameExe* Executables::getGameExe(string id)
 // -----------------------------------------------------------------------------
 // Returns the game executable definition at [index]
 // -----------------------------------------------------------------------------
-Executables::GameExe* Executables::getGameExe(unsigned index)
+Executables::GameExe* Executables::gameExe(unsigned index)
 {
 	if (index < game_exes.size())
 		return &(game_exes[index]);
@@ -171,7 +171,7 @@ void Executables::init()
 
 	// Parse base executables config
 	Parser p;
-	p.parseText(entry->getMCData(), "slade.pk3 - executables.cfg");
+	p.parseText(entry->data(), "slade.pk3 - executables.cfg");
 	parse(&p, false);
 
 	// Parse user executables config
@@ -189,13 +189,13 @@ void Executables::init()
 // -----------------------------------------------------------------------------
 void Executables::parse(Parser* p, bool custom)
 {
-	auto n = p->parseTreeRoot()->getChildPTN("executables");
+	auto n = p->parseTreeRoot()->childPTN("executables");
 	if (!n)
 		return;
 
 	for (unsigned a = 0; a < n->nChildren(); a++)
 	{
-		auto   exe_node = n->getChildPTN(a);
+		auto   exe_node = n->childPTN(a);
 		string type     = exe_node->type();
 
 		// Game Executable (if type is blank it's a game executable in old config format)
@@ -214,7 +214,7 @@ void Executables::parse(Parser* p, bool custom)
 void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 {
 	// Get GameExe being parsed
-	GameExe* exe = getGameExe(node->getName().Lower());
+	GameExe* exe = gameExe(node->name().Lower());
 	if (!exe)
 	{
 		// Create if new
@@ -224,11 +224,11 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 		exe = &(game_exes.back());
 	}
 
-	exe->id = node->getName();
+	exe->id = node->name();
 	for (unsigned b = 0; b < node->nChildren(); b++)
 	{
-		auto   prop      = node->getChildPTN(b);
-		string prop_name = prop->getName().Lower();
+		auto   prop      = node->childPTN(b);
+		string prop_name = prop->name().Lower();
 
 		// Config
 		if (prop->type().Lower() == "config")
@@ -237,7 +237,7 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 			bool found = false;
 			for (unsigned c = 0; c < exe->configs.size(); c++)
 			{
-				if (exe->configs[c].key == prop->getName())
+				if (exe->configs[c].key == prop->name())
 				{
 					exe->configs[c].value = prop->stringValue();
 					found                 = true;
@@ -247,7 +247,7 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 			// Create if new
 			if (!found)
 			{
-				exe->configs.push_back(key_value_t(prop->getName(), prop->stringValue()));
+				exe->configs.push_back(key_value_t(prop->name(), prop->stringValue()));
 				exe->configs_custom.push_back(custom);
 			}
 		}
@@ -354,7 +354,7 @@ int Executables::nExternalExes(string category)
 // Returns the external executable matching [name] and [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-Executables::ExternalExe Executables::getExternalExe(string name, string category)
+Executables::ExternalExe Executables::externalExe(string name, string category)
 {
 	for (auto& exe : external_exes)
 		if (category.IsEmpty() || exe.category == category)
@@ -368,7 +368,7 @@ Executables::ExternalExe Executables::getExternalExe(string name, string categor
 // Returns a list of all external executables matching [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-vector<Executables::ExternalExe> Executables::getExternalExes(string category)
+vector<Executables::ExternalExe> Executables::externalExes(string category)
 {
 	vector<ExternalExe> ret;
 	for (auto& exe : external_exes)
@@ -384,12 +384,12 @@ vector<Executables::ExternalExe> Executables::getExternalExes(string category)
 void Executables::parseExternalExe(ParseTreeNode* node)
 {
 	ExternalExe exe;
-	exe.name = node->getName();
+	exe.name = node->name();
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto   prop      = node->getChildPTN(a);
-		string prop_name = prop->getName().Lower();
+		auto   prop      = node->childPTN(a);
+		string prop_name = prop->name().Lower();
 
 		// Entry category
 		if (prop_name == "category")

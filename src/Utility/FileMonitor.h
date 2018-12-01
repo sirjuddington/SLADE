@@ -8,8 +8,8 @@ public:
 	FileMonitor(string filename, bool start = true);
 	virtual ~FileMonitor();
 
-	wxProcess* getProcess() { return process_; }
-	string     getFilename() { return filename_; }
+	wxProcess* process() { return process_; }
+	string     filename() { return filename_; }
 
 	virtual void fileModified() {}
 	virtual void processTerminated() {}

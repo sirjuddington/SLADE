@@ -164,7 +164,7 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 
 	// Process ACS open scripts
 	string lang = Game::configuration().scriptLanguage();
-	if (entry_script_->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
+	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		auto& map = MapEditor::editContext().map();
 		map.mapSpecials()->processACSScripts(entry_script_);
@@ -228,7 +228,7 @@ void ScriptEditorPanel::saveScripts()
 
 	// Process ACS open scripts
 	string lang = Game::configuration().scriptLanguage();
-	if (entry_script_->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
+	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		SLADEMap* map = &(MapEditor::editContext().map());
 		map->mapSpecials()->processACSScripts(entry_script_);

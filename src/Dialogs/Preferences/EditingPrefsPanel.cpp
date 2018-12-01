@@ -73,11 +73,11 @@ public:
 
 	void setCategory(string category)
 	{
-		exes_ = Executables::getExternalExes(category);
+		exes_ = Executables::externalExes(category);
 		SetItemCount(exes_.size());
 	}
 
-	string getItemText(long item, long column, long index) const override
+	string itemText(long item, long column, long index) const override
 	{
 		if (item < 0 || item >= (long)exes_.size())
 			return "";
@@ -388,7 +388,7 @@ void EditingPrefsPanel::onBtnAddClicked(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void EditingPrefsPanel::onBtnRemoveClicked(wxCommandEvent& e)
 {
-	vector<long> selection = lv_ext_editors_->getSelection();
+	vector<long> selection = lv_ext_editors_->selection();
 	string       category  = choice_category_->GetStringSelection();
 
 	// Remove selected editors
@@ -409,7 +409,7 @@ void EditingPrefsPanel::onExternalExeActivated(wxListEvent& e)
 {
 	string                      name     = lv_ext_editors_->GetItemText(e.GetIndex());
 	string                      category = choice_category_->GetStringSelection();
-	Executables::ExternalExe exe      = Executables::getExternalExe(name, category);
+	Executables::ExternalExe exe      = Executables::externalExe(name, category);
 
 	ExternalEditorDialog dlg(this, false, name, exe.path);
 	while (dlg.ShowModal() == wxID_OK)

@@ -28,44 +28,10 @@ class Archive;
 class ArchiveEntry;
 class CTexture;
 class Palette;
-
-struct gcd_item_t
-{
-	ArchiveEntry* entry;
-	CTexture*     texture;
-	SImage        image;
-	bool          modified;
-	SIFormat*     new_format;
-	Palette*      palette;
-	Archive*      archive;
-	bool          force_rgba;
-
-	gcd_item_t(ArchiveEntry* entry = nullptr)
-	{
-		this->entry      = entry;
-		this->texture    = nullptr;
-		this->modified   = false;
-		this->new_format = nullptr;
-		this->palette    = nullptr;
-		this->archive    = nullptr;
-		this->force_rgba = false;
-	}
-
-	gcd_item_t(CTexture* texture, Palette* palette = nullptr, Archive* archive = nullptr, bool force_rgba = false)
-	{
-		this->entry      = nullptr;
-		this->texture    = texture;
-		this->modified   = false;
-		this->new_format = nullptr;
-		this->palette    = palette;
-		this->archive    = archive;
-		this->force_rgba = force_rgba;
-	}
-};
-
 class GfxCanvas;
 class PaletteChooser;
 class ColourBox;
+
 class GfxConvDialog : public SDialog
 {
 public:
@@ -83,12 +49,12 @@ public:
 		bool              force_rgba = false);
 	void updatePreviewGfx();
 	void updateControls();
-	void getConvertOptions(SIFormat::ConvertOptions& opt);
+	void convertOptions(SIFormat::ConvertOptions& opt);
 
 	bool      itemModified(int index);
-	SImage*   getItemImage(int index);
-	SIFormat* getItemFormat(int index);
-	Palette*  getItemPalette(int index);
+	SImage*   itemImage(int index);
+	SIFormat* itemFormat(int index);
+	Palette*  itemPalette(int index);
 
 	void applyConversion();
 
@@ -105,42 +71,76 @@ private:
 		}
 	};
 
-	vector<gcd_item_t> items;
-	size_t             current_item;
-	vector<ConvFormat> conv_formats;
-	ConvFormat         current_format;
+	struct ConvItem
+	{
+		ArchiveEntry* entry;
+		CTexture*     texture;
+		SImage        image;
+		bool          modified;
+		SIFormat*     new_format;
+		Palette*      palette;
+		Archive*      archive;
+		bool          force_rgba;
 
-	wxStaticText*   label_current_format;
-	GfxCanvas*      gfx_current;
-	GfxCanvas*      gfx_target;
-	wxButton*       btn_convert;
-	wxButton*       btn_convert_all;
-	wxButton*       btn_skip;
-	wxButton*       btn_skip_all;
-	wxChoice*       combo_target_format;
-	PaletteChooser* pal_chooser_current;
-	PaletteChooser* pal_chooser_target;
-	wxButton*       btn_colorimetry_settings;
+		ConvItem(ArchiveEntry* entry = nullptr)
+		{
+			this->entry      = entry;
+			this->texture    = nullptr;
+			this->modified   = false;
+			this->new_format = nullptr;
+			this->palette    = nullptr;
+			this->archive    = nullptr;
+			this->force_rgba = false;
+		}
 
-	wxCheckBox*    cb_enable_transparency;
-	wxRadioButton* rb_transparency_existing;
-	wxRadioButton* rb_transparency_colour;
-	wxRadioButton* rb_transparency_brightness;
-	wxSlider*      slider_alpha_threshold;
-	ColourBox*     colbox_transparent;
+		ConvItem(CTexture* texture, Palette* palette = nullptr, Archive* archive = nullptr, bool force_rgba = false)
+		{
+			this->entry      = nullptr;
+			this->texture    = texture;
+			this->modified   = false;
+			this->new_format = nullptr;
+			this->palette    = palette;
+			this->archive    = archive;
+			this->force_rgba = force_rgba;
+		}
+	};
+
+	vector<ConvItem>   items_;
+	size_t             current_item_;
+	vector<ConvFormat> conv_formats_;
+	ConvFormat         current_format_;
+
+	wxStaticText*   label_current_format_;
+	GfxCanvas*      gfx_current_;
+	GfxCanvas*      gfx_target_;
+	wxButton*       btn_convert_;
+	wxButton*       btn_convert_all_;
+	wxButton*       btn_skip_;
+	wxButton*       btn_skip_all_;
+	wxChoice*       combo_target_format_;
+	PaletteChooser* pal_chooser_current_;
+	PaletteChooser* pal_chooser_target_;
+	wxButton*       btn_colorimetry_settings_;
+
+	wxCheckBox*    cb_enable_transparency_;
+	wxRadioButton* rb_transparency_existing_;
+	wxRadioButton* rb_transparency_colour_;
+	wxRadioButton* rb_transparency_brightness_;
+	wxSlider*      slider_alpha_threshold_;
+	ColourBox*     colbox_transparent_;
 
 	// Conversion options
-	Palette target_pal;
-	uint8_t pal_convert_type; // 0=nearest colour, 1=keep indices
-	uint8_t alpha_threshold;
-	bool    keep_trans;
-	rgba_t  colour_trans;
+	Palette target_pal_;
+	uint8_t pal_convert_type_; // 0=nearest colour, 1=keep indices
+	uint8_t alpha_threshold_;
+	bool    keep_trans_;
+	rgba_t  colour_trans_;
 
 	bool nextItem();
 
 	// Static
-	static string current_palette_name;
-	static string target_palette_name;
+	static string current_palette_name_;
+	static string target_palette_name_;
 
 	// Events
 	void onResize(wxSizeEvent& e);

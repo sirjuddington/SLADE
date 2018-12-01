@@ -84,13 +84,13 @@ Archive* ArchiveTreeNode::archive()
 // -----------------------------------------------------------------------------
 // Returns the node (directory) name
 // -----------------------------------------------------------------------------
-string ArchiveTreeNode::getName()
+string ArchiveTreeNode::name()
 {
 	// Check dir entry exists
 	if (!dir_entry_)
 		return "ERROR";
 
-	return dir_entry_->getName();
+	return dir_entry_->name();
 }
 
 // -----------------------------------------------------------------------------
@@ -153,7 +153,7 @@ vector<ArchiveEntry::SPtr> ArchiveTreeNode::allEntries()
 		[&](vector<ArchiveEntry::SPtr>& list, ArchiveTreeNode* dir) {
 			const auto n_subdirs = dir->nChildren();
 			for (unsigned a = 0; a < n_subdirs; a++)
-				build_list(list, (ArchiveTreeNode*)dir->getChild(a));
+				build_list(list, (ArchiveTreeNode*)dir->child(a));
 
 			for (auto& entry : dir->entries_)
 				list.push_back(entry);
@@ -204,7 +204,7 @@ ArchiveEntry* ArchiveTreeNode::entry(const string& name, bool cut_ext)
 	for (auto& entry : entries_)
 	{
 		// Check for (non-case-sensitive) name match
-		if (S_CMPNOCASE(entry->getName(cut_ext), name))
+		if (S_CMPNOCASE(entry->name(cut_ext), name))
 			return entry.get();
 	}
 
@@ -226,7 +226,7 @@ ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(const string& name, bool cut_ext
 	for (auto& entry : entries_)
 	{
 		// Check for (non-case-sensitive) name match
-		if (S_CMPNOCASE(entry->getName(cut_ext), name))
+		if (S_CMPNOCASE(entry->name(cut_ext), name))
 			return entry;
 	}
 
@@ -453,7 +453,7 @@ ArchiveTreeNode* ArchiveTreeNode::clone()
 {
 	// Create copy
 	ArchiveTreeNode* copy = new ArchiveTreeNode();
-	copy->setName(dir_entry_->getName());
+	copy->setName(dir_entry_->name());
 
 	// Copy entries
 	for (auto& entry : entries_)
@@ -480,7 +480,7 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
 	for (unsigned a = 0; a < node->numEntries(); a++)
 	{
 		if (node->entryAt(a))
-			node->entryAt(a)->setName(Misc::lumpNameToFileName(node->entryAt(a)->getName()));
+			node->entryAt(a)->setName(Misc::lumpNameToFileName(node->entryAt(a)->name()));
 
 		ArchiveEntry* nentry = new ArchiveEntry(*(node->entryAt(a)));
 		addEntry(nentry, position);
@@ -493,8 +493,8 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
 	// Merge subdirectories
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		ArchiveTreeNode* child = (ArchiveTreeNode*)STreeNode::addChild(node->getChild(a)->getName());
-		child->merge((ArchiveTreeNode*)node->getChild(a));
+		ArchiveTreeNode* child = (ArchiveTreeNode*)STreeNode::addChild(node->child(a)->name());
+		child->merge((ArchiveTreeNode*)node->child(a));
 		child->dirEntry()->setState(state, true);
 	}
 
@@ -514,12 +514,12 @@ bool ArchiveTreeNode::exportTo(string path)
 	for (auto& entry : entries_)
 	{
 		// Setup entry filename
-		wxFileName fn(entry->getName());
+		wxFileName fn(entry->name());
 		fn.SetPath(path);
 
 		// Add file extension if it doesn't exist
 		if (!fn.HasExt())
-			fn.SetExt(entry->getType()->extension());
+			fn.SetExt(entry->type()->extension());
 
 		// Do export
 		entry->exportFile(fn.GetFullPath());
@@ -527,7 +527,7 @@ bool ArchiveTreeNode::exportTo(string path)
 
 	// Export subdirectories
 	for (auto& subdir : children_)
-		((ArchiveTreeNode*)subdir)->exportTo(path + "/" + subdir->getName());
+		((ArchiveTreeNode*)subdir)->exportTo(path + "/" + subdir->name());
 
 	return true;
 }
@@ -540,7 +540,7 @@ void ArchiveTreeNode::ensureUniqueName(ArchiveEntry* entry)
 	unsigned   index     = 0;
 	unsigned   number    = 0;
 	const auto n_entries = entries_.size();
-	wxFileName fn(entry->getName());
+	wxFileName fn(entry->name());
 	string     name = fn.GetFullName();
 	while (index < n_entries)
 	{
@@ -550,9 +550,9 @@ void ArchiveTreeNode::ensureUniqueName(ArchiveEntry* entry)
 			continue;
 		}
 
-		if (S_CMPNOCASE(entries_[index]->getName(false), name))
+		if (S_CMPNOCASE(entries_[index]->name(false), name))
 		{
-			fn.SetName(S_FMT("%s%d", CHR(entry->getName(true)), ++number));
+			fn.SetName(S_FMT("%s%d", CHR(entry->name(true)), ++number));
 			name  = fn.GetFullName();
 			index = 0;
 			continue;

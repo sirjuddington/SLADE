@@ -58,5 +58,5 @@ void setColour(rgba_t col, bool set_blend = true);
 void setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, int8_t blend = BLEND_IGNORE);
 void setBlend(int blend);
 void resetBlend();
-Info getInfo();
+Info sysInfo();
 } // namespace OpenGL

@@ -91,7 +91,7 @@ bool PatchBrowserItem::loadImage()
 
 		// Load texture to image, if it exists
 		if (tex)
-			tex->toImage(img, archive_, parent_->getPalette());
+			tex->toImage(img, archive_, parent_->palette());
 		else
 			return false;
 	}
@@ -100,7 +100,7 @@ bool PatchBrowserItem::loadImage()
 	if (image_)
 		delete image_;
 	image_ = new GLTexture();
-	return image_->loadImage(&img, parent_->getPalette());
+	return image_->loadImage(&img, parent_->palette());
 }
 
 // -----------------------------------------------------------------------------
@@ -112,7 +112,7 @@ string PatchBrowserItem::itemInfo()
 
 	// Add dimensions if known
 	if (image_)
-		info += S_FMT("%dx%d", image_->getWidth(), image_->getHeight());
+		info += S_FMT("%dx%d", image_->width(), image_->height());
 	else
 		info += "Unknown size";
 
@@ -155,7 +155,7 @@ PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent), full_path_
 	items_root_->addChild("Unknown");
 
 	// Init palette chooser
-	listenTo(theMainWindow->getPaletteChooser());
+	listenTo(theMainWindow->paletteChooser());
 
 	// Set dialog title
 	SetTitle("Browse Patches");
@@ -174,7 +174,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 	clearItems();
 
 	// Setup palette chooser
-	theMainWindow->getPaletteChooser()->setGlobalFromArchive(table->getParent());
+	theMainWindow->paletteChooser()->setGlobalFromArchive(table->parent());
 
 	// Go through patch table
 	for (unsigned a = 0; a < table->nPatches(); a++)
@@ -192,7 +192,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 		Archive* parent_archive = nullptr;
 		if (entry)
 		{
-			parent_archive = entry->getParent();
+			parent_archive = entry->parent();
 
 			if (parent_archive)
 				whereis = parent_archive->filename(false);
@@ -241,19 +241,19 @@ bool PatchBrowser::openArchive(Archive* archive)
 	items_root_->addChild("Sprites");
 
 	// Setup palette chooser
-	theMainWindow->getPaletteChooser()->setGlobalFromArchive(archive);
+	theMainWindow->paletteChooser()->setGlobalFromArchive(archive);
 
 	// Get a list of all available patch entries
 	vector<ArchiveEntry*> patches;
-	theResourceManager->getAllPatchEntries(patches, archive, full_path_);
+	theResourceManager->putAllPatchEntries(patches, archive, full_path_);
 
 	// Add flats, too
 	{
 		vector<ArchiveEntry*> flats;
-		theResourceManager->getAllFlatEntries(flats, archive, full_path_);
+		theResourceManager->putAllFlatEntries(flats, archive, full_path_);
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
-			if (flats[a]->isInNamespace("flats") && flats[a]->getParent()->isTreeless())
+			if (flats[a]->isInNamespace("flats") && flats[a]->parent()->isTreeless())
 			{
 				patches.push_back(flats[a]);
 			}
@@ -267,10 +267,10 @@ bool PatchBrowser::openArchive(Archive* archive)
 		bool bPatches = false, bGraphics = false, bTextures = false, bFlats = false, bSprites = false;
 		for (unsigned a = 0; a < patches.size(); a++)
 		{
-			if (patches[a]->getParent()->isTreeless())
+			if (patches[a]->parent()->isTreeless())
 				continue;
 
-			string ns = patches[a]->getParent()->detectNamespace(patches[a]);
+			string ns = patches[a]->parent()->detectNamespace(patches[a]);
 			if (ns == "patches")
 			{
 				if (bPatches)
@@ -320,11 +320,11 @@ bool PatchBrowser::openArchive(Archive* archive)
 		ArchiveEntry* entry = patches[a];
 
 		// Skip any without parent archives (shouldn't happen)
-		if (!entry->getParent())
+		if (!entry->parent())
 			continue;
 
 		// Check entry namespace
-		string ns = entry->getParent()->detectNamespace(entry);
+		string ns = entry->parent()->detectNamespace(entry);
 		string nspace;
 		if (ns == "patches")
 			nspace = "Patches";
@@ -339,20 +339,20 @@ bool PatchBrowser::openArchive(Archive* archive)
 
 		// Check entry parent archive
 		string arch = "Unknown";
-		if (entry->getParent())
-			arch = entry->getParent()->filename(false);
+		if (entry->parent())
+			arch = entry->parent()->filename(false);
 
 		PatchBrowserItem* item;
 
 		// Add it
-		if (full_path_ && !entry->getParent()->isTreeless())
+		if (full_path_ && !entry->parent()->isTreeless())
 		{
-			item           = new PatchBrowserItem(entry->getPath(true).Mid(1), archive, 0, ns);
+			item           = new PatchBrowserItem(entry->path(true).Mid(1), archive, 0, ns);
 			string fnspace = nspace + " (Full Path)";
 			addItem(item, fnspace + "/" + arch);
 		}
 
-		string name = entry->getName(true).Truncate(8).Upper();
+		string name = entry->name(true).Truncate(8).Upper();
 
 		bool duplicate = false;
 		for (auto ustr = usednames.begin(); ustr != usednames.end(); ustr++)
@@ -374,17 +374,17 @@ bool PatchBrowser::openArchive(Archive* archive)
 
 	// Get list of all available textures (that aren't in the given archive)
 	vector<TextureResource::Texture*> textures;
-	theResourceManager->getAllTextures(textures, nullptr, archive);
+	theResourceManager->putAllTextures(textures, nullptr, archive);
 
 	// Go through the list
 	for (unsigned a = 0; a < textures.size(); a++)
 	{
 		TextureResource::Texture* res = textures[a];
 
-		if (full_path_ || res->tex.getName().Len() <= 8)
+		if (full_path_ || res->tex.name().Len() <= 8)
 		{
 			// Create browser item
-			PatchBrowserItem* item = new PatchBrowserItem(res->tex.getName(), res->parent, 1);
+			PatchBrowserItem* item = new PatchBrowserItem(res->tex.name(), res->parent, 1);
 
 			// Add to textures node (under parent archive name)
 			addItem(item, "Textures/" + res->parent->filename(false));
@@ -392,7 +392,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 	}
 
 	// Open 'patches' node
-	openTree((BrowserTreeNode*)items_root_->getChild("Patches"));
+	openTree((BrowserTreeNode*)items_root_->child("Patches"));
 
 	// Update tree control
 	populateItemTree();
@@ -414,7 +414,7 @@ bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 	for (unsigned a = 0; a < texturex->nTextures(); a++)
 	{
 		// Create browser item
-		PatchBrowserItem* item = new PatchBrowserItem(texturex->getTexture(a)->getName(), parent, 1);
+		PatchBrowserItem* item = new PatchBrowserItem(texturex->texture(a)->name(), parent, 1);
 
 		// Set archive name
 		string arch = "Unknown";
@@ -431,10 +431,10 @@ bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 // -----------------------------------------------------------------------------
 // Returns the index of the currently selected patch, or -1 if none are selected
 // -----------------------------------------------------------------------------
-int PatchBrowser::getSelectedPatch()
+int PatchBrowser::selectedPatch()
 {
 	// Get selected item
-	PatchBrowserItem* item = (PatchBrowserItem*)getSelectedItem();
+	PatchBrowserItem* item = (PatchBrowserItem*)selectedItem();
 
 	if (item)
 		return item->index();
@@ -472,13 +472,13 @@ void PatchBrowser::selectPatch(string name)
 // -----------------------------------------------------------------------------
 void PatchBrowser::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
-	if (announcer != theMainWindow->getPaletteChooser())
+	if (announcer != theMainWindow->paletteChooser())
 		return;
 
 	if (event_name == "main_palette_changed")
 	{
 		// Update palette
-		palette_.copyPalette(theMainWindow->getPaletteChooser()->getSelectedPalette());
+		palette_.copyPalette(theMainWindow->paletteChooser()->selectedPalette());
 
 		// Reload all items
 		reloadItems();

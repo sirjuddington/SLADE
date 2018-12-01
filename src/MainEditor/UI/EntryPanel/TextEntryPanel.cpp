@@ -139,7 +139,7 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	TextLanguage* tl = nullptr;
 
 	// Level markers use FraggleScript
-	if (entry->getType() == EntryType::mapMarkerType())
+	if (entry->type() == EntryType::mapMarkerType())
 		tl = TextLanguage::fromId("fragglescript");
 
 	// From entry language hint
@@ -150,9 +150,9 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	}
 
 	// Or, from entry type
-	if (!tl && entry->getType()->extraProps().propertyExists("text_language"))
+	if (!tl && entry->type()->extraProps().propertyExists("text_language"))
 	{
-		string lang_id = entry->getType()->extraProps()["text_language"];
+		string lang_id = entry->type()->extraProps()["text_language"];
 		tl             = TextLanguage::fromId(lang_id);
 	}
 
@@ -197,14 +197,14 @@ bool TextEntryPanel::saveEntry()
 	MemChunk mc;
 	text_area_->getRawText(mc);
 	entry_->importMemChunk(mc);
-	if (entry_->getState() == 0)
+	if (entry_->state() == 0)
 		entry_->setState(1);
 
 	// Re-detect entry type
 	EntryType::detectEntryType(entry_);
 
 	// Set text if unknown
-	if (entry_->getType() == EntryType::unknownType())
+	if (entry_->type() == EntryType::unknownType())
 		entry_->setType(EntryType::fromId("text"));
 
 	// Update custom definitions if decorate or zscript

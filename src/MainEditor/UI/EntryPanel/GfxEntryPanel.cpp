@@ -145,7 +145,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 	text_curimg_->Show(false);
 
 	// Palette chooser
-	listenTo(theMainWindow->getPaletteChooser());
+	listenTo(theMainWindow->paletteChooser());
 
 	// Custom menu
 	menu_custom_ = new wxMenu();
@@ -200,11 +200,11 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 	setModified(false);
 
 	// Attempt to load the image
-	if (!Misc::loadImageFromEntry(getImage(), this->entry_, index))
+	if (!Misc::loadImageFromEntry(image(), this->entry_, index))
 		return false;
 
 	// Only show next/prev image buttons if the entry contains multiple images
-	if (getImage()->getSize() > 1)
+	if (image()->size() > 1)
 	{
 		btn_nextimg_->Show();
 		btn_previmg_->Show();
@@ -224,9 +224,9 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 	}
 
 	// Hack for colormaps to be 256-wide
-	if (S_CMPNOCASE(entry->getType()->name(), "colormap"))
+	if (S_CMPNOCASE(entry->type()->name(), "colormap"))
 	{
-		getImage()->setWidth(256);
+		image()->setWidth(256);
 	}
 
 	// Refresh everything
@@ -241,15 +241,15 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 bool GfxEntryPanel::saveEntry()
 {
 	// Set offsets
-	getImage()->setXOffset(spin_xoffset_->GetValue());
-	getImage()->setYOffset(spin_yoffset_->GetValue());
+	auto image = this->image();
+	image->setXOffset(spin_xoffset_->GetValue());
+	image->setYOffset(spin_yoffset_->GetValue());
 
 	// Write new image data if modified
 	bool ok = true;
 	if (image_data_modified_)
 	{
-		SImage*   image  = getImage();
-		SIFormat* format = image->getFormat();
+		SIFormat* format = image->format();
 
 		string error = "";
 		ok           = false;
@@ -257,7 +257,7 @@ bool GfxEntryPanel::saveEntry()
 		if (format == SIFormat::unknownFormat())
 			error = "Image is of unknown format";
 		else if (writable == SIFormat::NOTWRITABLE)
-			error = S_FMT("Writing unsupported for format \"%s\"", format->getName());
+			error = S_FMT("Writing unsupported for format \"%s\"", format->name());
 		else
 		{
 			// Convert image if necessary (using default options)
@@ -267,7 +267,7 @@ bool GfxEntryPanel::saveEntry()
 				LOG_MESSAGE(1, "Image converted for writing");
 			}
 
-			if (format->saveImage(*image, entry_->getMCData(), gfx_canvas_->getPalette()))
+			if (format->saveImage(*image, entry_->data(), gfx_canvas_->palette()))
 				ok = true;
 			else
 				error = "Error writing image";
@@ -279,11 +279,11 @@ bool GfxEntryPanel::saveEntry()
 			entry_->setState(1);
 
 			// Re-detect type
-			EntryType* oldtype = entry_->getType();
+			EntryType* oldtype = entry_->type();
 			EntryType::detectEntryType(entry_);
 
 			// Update extension if type changed
-			if (oldtype != entry_->getType())
+			if (oldtype != entry_->type())
 				entry_->setExtensionByType();
 		}
 		else
@@ -294,14 +294,14 @@ bool GfxEntryPanel::saveEntry()
 		EntryOperations::setGfxOffsets(entry_, spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
 
 	// Apply alPh/tRNS options
-	if (entry_->getType()->formatId() == "img_png")
+	if (entry_->type()->formatId() == "img_png")
 	{
 		bool alph = EntryOperations::getalPhChunk(entry_);
 		bool trns = EntryOperations::gettRNSChunk(entry_);
 
-		if (alph != menu_custom_->IsChecked(SAction::fromId("pgfx_alph")->getWxId()))
+		if (alph != menu_custom_->IsChecked(SAction::fromId("pgfx_alph")->wxId()))
 			EntryOperations::modifyalPhChunk(entry_, !alph);
-		if (trns != menu_custom_->IsChecked(SAction::fromId("pgfx_trns")->getWxId()))
+		if (trns != menu_custom_->IsChecked(SAction::fromId("pgfx_trns")->wxId()))
 			EntryOperations::modifytRNSChunk(entry_, !trns);
 	}
 
@@ -326,7 +326,7 @@ void GfxEntryPanel::setupToolbar()
 	SToolBarGroup* g_edit = new SToolBarGroup(toolbar_, "Editing");
 	g_edit->addActionButton("pgfx_settrans", "");
 	cb_colour_ = new ColourBox(g_edit, -1, COL_BLACK, false, true);
-	cb_colour_->setPalette(gfx_canvas_->getPalette());
+	cb_colour_->setPalette(gfx_canvas_->palette());
 	button_brush_ = g_edit->addActionButton("pgfx_setbrush", "");
 	g_edit->addCustomControl(cb_colour_);
 	g_edit->addActionButton("pgfx_drag", "");
@@ -400,40 +400,40 @@ void GfxEntryPanel::fillBrushMenu(wxMenu* bm)
 // -----------------------------------------------------------------------------
 bool GfxEntryPanel::extractAll()
 {
-	if (getImage()->getSize() < 2)
+	if (image()->size() < 2)
 		return false;
 
 	// Remember where we are
-	int imgindex = getImage()->getIndex();
+	int imgindex = image()->index();
 
-	Archive* parent = entry_->getParent();
+	Archive* parent = entry_->parent();
 	if (parent == nullptr)
 		return false;
 
-	int    index = parent->entryIndex(entry_, entry_->getParentDir());
-	string name  = wxFileName(entry_->getName()).GetName();
+	int    index = parent->entryIndex(entry_, entry_->parentDir());
+	string name  = wxFileName(entry_->name()).GetName();
 
 	// Loop through subimages and get things done
 	int pos = 0;
-	for (int i = 0; i < getImage()->getSize(); ++i)
+	for (int i = 0; i < image()->size(); ++i)
 	{
 		string newname = S_FMT("%s_%i.png", name, i);
-		Misc::loadImageFromEntry(getImage(), entry_, i);
+		Misc::loadImageFromEntry(image(), entry_, i);
 
 		// Only process images that actually contain some pixels
-		if (getImage()->getWidth() && getImage()->getHeight())
+		if (image()->width() && image()->height())
 		{
-			ArchiveEntry* newimg = parent->addNewEntry(newname, index + pos + 1, entry_->getParentDir());
+			ArchiveEntry* newimg = parent->addNewEntry(newname, index + pos + 1, entry_->parentDir());
 			if (newimg == nullptr)
 				return false;
-			SIFormat::getFormat("png")->saveImage(*getImage(), newimg->getMCData(), gfx_canvas_->getPalette());
+			SIFormat::getFormat("png")->saveImage(*image(), newimg->data(), gfx_canvas_->palette());
 			EntryType::detectEntryType(newimg);
 			pos++;
 		}
 	}
 
 	// Reload image of where we were
-	Misc::loadImageFromEntry(getImage(), entry_, imgindex);
+	Misc::loadImageFromEntry(image(), entry_, imgindex);
 
 	return true;
 }
@@ -444,23 +444,23 @@ bool GfxEntryPanel::extractAll()
 void GfxEntryPanel::refresh()
 {
 	// Setup palette
-	theMainWindow->getPaletteChooser()->setGlobalFromArchive(entry_->getParent(), Misc::detectPaletteHack(entry_));
+	theMainWindow->paletteChooser()->setGlobalFromArchive(entry_->parent(), Misc::detectPaletteHack(entry_));
 	updateImagePalette();
 
 	// Set offset text boxes
-	spin_xoffset_->SetValue(getImage()->offset().x);
-	spin_yoffset_->SetValue(getImage()->offset().y);
+	spin_xoffset_->SetValue(image()->offset().x);
+	spin_yoffset_->SetValue(image()->offset().y);
 
 	// Get some needed menu ids
-	int MENU_GFXEP_PNGOPT      = SAction::fromId("pgfx_pngopt")->getWxId();
-	int MENU_GFXEP_ALPH        = SAction::fromId("pgfx_alph")->getWxId();
-	int MENU_GFXEP_TRNS        = SAction::fromId("pgfx_trns")->getWxId();
-	int MENU_GFXEP_EXTRACT     = SAction::fromId("pgfx_extract")->getWxId();
-	int MENU_GFXEP_TRANSLATE   = SAction::fromId("pgfx_remap")->getWxId();
-	int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->getWxId();
+	int MENU_GFXEP_PNGOPT      = SAction::fromId("pgfx_pngopt")->wxId();
+	int MENU_GFXEP_ALPH        = SAction::fromId("pgfx_alph")->wxId();
+	int MENU_GFXEP_TRNS        = SAction::fromId("pgfx_trns")->wxId();
+	int MENU_GFXEP_EXTRACT     = SAction::fromId("pgfx_extract")->wxId();
+	int MENU_GFXEP_TRANSLATE   = SAction::fromId("pgfx_remap")->wxId();
+	int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->wxId();
 
 	// Set PNG check menus
-	if (this->entry_->getType() != nullptr && this->entry_->getType()->formatId() == "img_png")
+	if (this->entry_->type() != nullptr && this->entry_->type()->formatId() == "img_png")
 	{
 		// Check for alph
 		alph_ = EntryOperations::getalPhChunk(this->entry_);
@@ -491,12 +491,12 @@ void GfxEntryPanel::refresh()
 	}
 
 	// Set multi-image format stuff thingies
-	cur_index_ = getImage()->getIndex();
-	if (getImage()->getSize() > 1)
+	cur_index_ = image()->index();
+	if (image()->size() > 1)
 		menu_custom_->Enable(MENU_GFXEP_EXTRACT, true);
 	else
 		menu_custom_->Enable(MENU_GFXEP_EXTRACT, false);
-	text_curimg_->SetLabel(S_FMT("Image %d/%d", cur_index_ + 1, getImage()->getSize()));
+	text_curimg_->SetLabel(S_FMT("Image %d/%d", cur_index_ + 1, image()->size()));
 
 	// Update status bar in case image dimensions changed
 	updateStatus();
@@ -505,11 +505,11 @@ void GfxEntryPanel::refresh()
 	applyViewType();
 
 	// Reset display offsets in graphics mode
-	if (gfx_canvas_->getViewType() != GfxCanvas::View::Sprite)
+	if (gfx_canvas_->viewType() != GfxCanvas::View::Sprite)
 		gfx_canvas_->resetOffsets();
 
 	// Setup custom menu
-	if (getImage()->getType() == RGBA)
+	if (image()->type() == RGBA)
 		menu_custom_->Enable(MENU_GFXEP_TRANSLATE, false);
 	else
 		menu_custom_->Enable(MENU_GFXEP_TRANSLATE, true);
@@ -524,17 +524,17 @@ void GfxEntryPanel::refresh()
 string GfxEntryPanel::statusString()
 {
 	// Setup status string
-	SImage* image  = getImage();
-	string  status = S_FMT("%dx%d", image->getWidth(), image->getHeight());
+	SImage* image  = this->image();
+	string  status = S_FMT("%dx%d", image->width(), image->height());
 
 	// Colour format
-	if (image->getType() == RGBA)
+	if (image->type() == RGBA)
 		status += ", 32bpp";
 	else
 		status += ", 8bpp";
 
 	// PNG stuff
-	if (entry_->getType()->formatId() == "img_png")
+	if (entry_->type()->formatId() == "img_png")
 	{
 		// alPh
 		if (EntryOperations::getalPhChunk(entry_))
@@ -575,22 +575,22 @@ GfxCanvas::View GfxEntryPanel::detectOffsetType()
 	if (!entry_)
 		return GfxCanvas::View::Default;
 
-	if (!entry_->getParent())
+	if (!entry_->parent())
 		return GfxCanvas::View::Default;
 
 	// Check what section of the archive the entry is in -- only PNGs or images
 	// in the sprites section can be HUD or sprite
-	bool is_sprite = ("sprites" == entry_->getParent()->detectNamespace(entry_));
-	bool is_png    = ("img_png" == entry_->getType()->formatId());
+	bool is_sprite = ("sprites" == entry_->parent()->detectNamespace(entry_));
+	bool is_png    = ("img_png" == entry_->type()->formatId());
 	if (!is_sprite && !is_png)
 		return GfxCanvas::View::Default;
 
-	SImage* img = getImage();
+	SImage* img = image();
 	if (is_png && img->offset().x == 0 && img->offset().y == 0)
 		return GfxCanvas::View::Default;
 
-	int width        = img->getWidth();
-	int height       = img->getHeight();
+	int width        = img->width();
+	int height       = img->height();
 	int left         = -img->offset().x;
 	int right        = left + width;
 	int top          = -img->offset().y;
@@ -715,8 +715,8 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_settrans")
 	{
 		// Create translation editor dialog
-		Palette*                pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
-		TranslationEditorDialog ted(theMainWindow, pal, " Colour Remap", getImage());
+		Palette*                pal = theMainWindow->paletteChooser()->selectedPalette();
+		TranslationEditorDialog ted(theMainWindow, pal, " Colour Remap", image());
 
 		// Create translation to edit
 		ted.openTranslation(edit_translation_);
@@ -742,7 +742,7 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_mirror")
 	{
 		// Mirror X
-		getImage()->mirror(false);
+		image()->mirror(false);
 
 		// Update UI
 		gfx_canvas_->updateImageTexture();
@@ -757,7 +757,7 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_flip")
 	{
 		// Mirror Y
-		getImage()->mirror(true);
+		image()->mirror(true);
 
 		// Update UI
 		gfx_canvas_->updateImageTexture();
@@ -778,9 +778,9 @@ bool GfxEntryPanel::handleAction(string id)
 		// Rotate image
 		switch (choice)
 		{
-		case 0: getImage()->rotate(90); break;
-		case 1: getImage()->rotate(180); break;
-		case 2: getImage()->rotate(270); break;
+		case 0: image()->rotate(90); break;
+		case 1: image()->rotate(180); break;
+		case 2: image()->rotate(270); break;
 		default: break;
 		}
 
@@ -807,7 +807,7 @@ bool GfxEntryPanel::handleAction(string id)
 		if (ted.ShowModal() == wxID_OK)
 		{
 			// Apply translation to image
-			getImage()->applyTranslation(&ted.getTranslation(), pal);
+			image()->applyTranslation(&ted.getTranslation(), pal);
 
 			// Update UI
 			gfx_canvas_->updateImageTexture();
@@ -832,7 +832,7 @@ bool GfxEntryPanel::handleAction(string id)
 		if (gcd.ShowModal() == wxID_OK)
 		{
 			// Colourise image
-			getImage()->colourise(gcd.getColour(), pal);
+			image()->colourise(gcd.colour(), pal);
 
 			// Update UI
 			gfx_canvas_->updateImageTexture();
@@ -843,7 +843,7 @@ bool GfxEntryPanel::handleAction(string id)
 			Refresh();
 			setModified();
 		}
-		rgba_t gcdcol = gcd.getColour();
+		rgba_t gcdcol = gcd.colour();
 		last_colour   = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
 	}
 
@@ -858,7 +858,7 @@ bool GfxEntryPanel::handleAction(string id)
 		if (gtd.ShowModal() == wxID_OK)
 		{
 			// Tint image
-			getImage()->tint(gtd.getColour(), gtd.getAmount(), pal);
+			image()->tint(gtd.colour(), gtd.amount(), pal);
 
 			// Update UI
 			gfx_canvas_->updateImageTexture();
@@ -869,15 +869,15 @@ bool GfxEntryPanel::handleAction(string id)
 			Refresh();
 			setModified();
 		}
-		rgba_t gtdcol    = gtd.getColour();
+		rgba_t gtdcol    = gtd.colour();
 		last_tint_colour = S_FMT("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
-		last_tint_amount = (int)(gtd.getAmount() * 100.0);
+		last_tint_amount = (int)(gtd.amount() * 100.0);
 	}
 
 	// Crop
 	else if (id == "pgfx_crop")
 	{
-		auto          image = getImage();
+		auto          image = this->image();
 		auto          pal   = MainEditor::currentPalette();
 		GfxCropDialog gcd(theMainWindow, image, pal);
 
@@ -885,7 +885,7 @@ bool GfxEntryPanel::handleAction(string id)
 		if (gcd.ShowModal() == wxID_OK)
 		{
 			// Prompt to adjust offsets
-			auto crop = gcd.getCropRect();
+			auto crop = gcd.cropRect();
 			if (crop.tl.x > 0 || crop.tl.y > 0)
 			{
 				if (wxMessageBox(
@@ -954,11 +954,11 @@ bool GfxEntryPanel::handleAction(string id)
 		if (gcd.itemModified(0))
 		{
 			// Get image and conversion info
-			SImage*   image  = gcd.getItemImage(0);
-			SIFormat* format = gcd.getItemFormat(0);
+			SImage*   image  = gcd.itemImage(0);
+			SIFormat* format = gcd.itemFormat(0);
 
 			// Write converted image back to entry
-			format->saveImage(*image, entry_data_, gcd.getItemPalette(0));
+			format->saveImage(*image, entry_data_, gcd.itemPalette(0));
 			// This makes the "save" button (and the setModified stuff) redundant and confusing!
 			// The alternative is to save to entry effectively (uncomment the importMemChunk line)
 			// but remove the setModified and image_data_modified lines, and add a call to refresh
@@ -968,11 +968,11 @@ bool GfxEntryPanel::handleAction(string id)
 			setModified();
 
 			// Fix tRNS status if we converted to paletted PNG
-			int MENU_GFXEP_PNGOPT      = SAction::fromId("pgfx_pngopt")->getWxId();
-			int MENU_GFXEP_ALPH        = SAction::fromId("pgfx_alph")->getWxId();
-			int MENU_GFXEP_TRNS        = SAction::fromId("pgfx_trns")->getWxId();
-			int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->getWxId();
-			if (format->getName() == "PNG")
+			int MENU_GFXEP_PNGOPT      = SAction::fromId("pgfx_pngopt")->wxId();
+			int MENU_GFXEP_ALPH        = SAction::fromId("pgfx_alph")->wxId();
+			int MENU_GFXEP_TRNS        = SAction::fromId("pgfx_trns")->wxId();
+			int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->wxId();
+			if (format->name() == "PNG")
 			{
 				ArchiveEntry temp;
 				temp.importMemChunk(entry_data_);
@@ -994,7 +994,7 @@ bool GfxEntryPanel::handleAction(string id)
 			}
 
 			// Refresh
-			getImage()->open(entry_data_, 0, format->getId());
+			this->image()->open(entry_data_, 0, format->id());
 			gfx_canvas_->Refresh();
 		}
 	}
@@ -1062,11 +1062,11 @@ void GfxEntryPanel::onXOffsetChanged(wxCommandEvent& e)
 {
 	// Ignore if the value wasn't changed
 	int offset = spin_xoffset_->GetValue();
-	if (offset == getImage()->offset().x)
+	if (offset == image()->offset().x)
 		return;
 
 	// Update offset & refresh
-	getImage()->setXOffset(offset);
+	image()->setXOffset(offset);
 	setModified();
 	gfx_canvas_->Refresh();
 }
@@ -1078,11 +1078,11 @@ void GfxEntryPanel::onYOffsetChanged(wxCommandEvent& e)
 {
 	// Ignore if the value wasn't changed
 	int offset = spin_yoffset_->GetValue();
-	if (offset == getImage()->offset().y)
+	if (offset == image()->offset().y)
 		return;
 
 	// Update offset & refresh
-	getImage()->setYOffset(offset);
+	image()->setYOffset(offset);
 	setModified();
 	gfx_canvas_->Refresh();
 }
@@ -1119,8 +1119,8 @@ void GfxEntryPanel::onARCChanged(wxCommandEvent& e)
 void GfxEntryPanel::onGfxOffsetChanged(wxEvent& e)
 {
 	// Update spin controls
-	spin_xoffset_->SetValue(getImage()->offset().x);
-	spin_yoffset_->SetValue(getImage()->offset().y);
+	spin_xoffset_->SetValue(image()->offset().x);
+	spin_yoffset_->SetValue(image()->offset().y);
 
 	// Set changed
 	setModified();
@@ -1141,7 +1141,7 @@ void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
-	if (announcer != theMainWindow->getPaletteChooser())
+	if (announcer != theMainWindow->paletteChooser())
 		return;
 
 	if (event_name == "main_palette_changed")
@@ -1156,7 +1156,7 @@ void GfxEntryPanel::onAnnouncement(Announcer* announcer, string event_name, MemC
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e)
 {
-	int num = gfx_canvas_->getImage()->getSize();
+	int num = gfx_canvas_->getImage()->size();
 	if (num > 1)
 	{
 		if (cur_index_ < num - 1)
@@ -1171,7 +1171,7 @@ void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
 {
-	int num = gfx_canvas_->getImage()->getSize();
+	int num = gfx_canvas_->getImage()->size();
 	if (num > 1)
 	{
 		if (cur_index_ > 0)
@@ -1195,14 +1195,14 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 		point2_t offsets = dlg.calculateOffsets(
 			spin_xoffset_->GetValue(),
 			spin_yoffset_->GetValue(),
-			gfx_canvas_->getImage()->getWidth(),
-			gfx_canvas_->getImage()->getHeight());
+			gfx_canvas_->getImage()->width(),
+			gfx_canvas_->getImage()->height());
 
 		// Change offsets
 		spin_xoffset_->SetValue(offsets.x);
 		spin_yoffset_->SetValue(offsets.y);
-		getImage()->setXOffset(offsets.x);
-		getImage()->setYOffset(offsets.y);
+		image()->setXOffset(offsets.x);
+		image()->setYOffset(offsets.y);
 		refreshPanel();
 
 		// Set changed
@@ -1215,7 +1215,7 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onColourPicked(wxEvent& e)
 {
-	cb_colour_->setColour(gfx_canvas_->getPaintColour());
+	cb_colour_->setColour(gfx_canvas_->paintColour());
 }
 
 
@@ -1291,12 +1291,12 @@ CONSOLE_COMMAND(rotate, 1, true)
 	// Get current entry
 	ArchiveEntry* entry = MainEditor::currentEntry();
 
-	if (meep->getImage())
+	if (meep->image())
 	{
-		meep->getImage()->rotate(angle);
+		meep->image()->rotate(angle);
 		meep->refresh();
 		MemChunk mc;
-		if (meep->getImage()->getFormat()->saveImage(*meep->getImage(), mc))
+		if (meep->image()->format()->saveImage(*meep->image(), mc))
 			bar->importMemChunk(mc);
 	}
 }
@@ -1332,12 +1332,12 @@ CONSOLE_COMMAND(mirror, 1, true)
 		LOG_MESSAGE(1, "No image selected.");
 		return;
 	}
-	if (meep->getImage())
+	if (meep->image())
 	{
-		meep->getImage()->mirror(vertical);
+		meep->image()->mirror(vertical);
 		meep->refresh();
 		MemChunk mc;
-		if (meep->getImage()->getFormat()->saveImage(*meep->getImage(), mc))
+		if (meep->image()->format()->saveImage(*meep->image(), mc))
 			bar->importMemChunk(mc);
 	}
 }
@@ -1365,12 +1365,12 @@ CONSOLE_COMMAND(crop, 4, true)
 			LOG_MESSAGE(1, "No active entry.");
 			return;
 		}
-		if (meep->getImage())
+		if (meep->image())
 		{
-			meep->getImage()->crop(x1, y1, x2, y2);
+			meep->image()->crop(x1, y1, x2, y2);
 			meep->refresh();
 			MemChunk mc;
-			if (meep->getImage()->getFormat()->saveImage(*meep->getImage(), mc))
+			if (meep->image()->format()->saveImage(*meep->image(), mc))
 				bar->importMemChunk(mc);
 		}
 	}
@@ -1396,12 +1396,12 @@ CONSOLE_COMMAND(adjust, 0, true)
 		LOG_MESSAGE(1, "No active entry.");
 		return;
 	}
-	if (meep->getImage())
+	if (meep->image())
 	{
-		meep->getImage()->adjust();
+		meep->image()->adjust();
 		meep->refresh();
 		MemChunk mc;
-		if (meep->getImage()->getFormat()->saveImage(*meep->getImage(), mc))
+		if (meep->image()->format()->saveImage(*meep->image(), mc))
 			bar->importMemChunk(mc);
 	}
 }
@@ -1426,12 +1426,12 @@ CONSOLE_COMMAND(mirrorpad, 0, true)
 		LOG_MESSAGE(1, "No active entry.");
 		return;
 	}
-	if (meep->getImage())
+	if (meep->image())
 	{
-		meep->getImage()->mirrorpad();
+		meep->image()->mirrorpad();
 		meep->refresh();
 		MemChunk mc;
-		if (meep->getImage()->getFormat()->saveImage(*meep->getImage(), mc))
+		if (meep->image()->format()->saveImage(*meep->image(), mc))
 			bar->importMemChunk(mc);
 	}
 }
@@ -1456,12 +1456,12 @@ CONSOLE_COMMAND(imgconv, 0, true)
 		LOG_MESSAGE(1, "No image selected.");
 		return;
 	}
-	if (meep->getImage())
+	if (meep->image())
 	{
-		meep->getImage()->imgconv();
+		meep->image()->imgconv();
 		meep->refresh();
 		MemChunk mc;
-		if (meep->getImage()->getFormat()->saveImage(*meep->getImage(), mc))
+		if (meep->image()->format()->saveImage(*meep->image(), mc))
 			bar->importMemChunk(mc);
 	}
 }

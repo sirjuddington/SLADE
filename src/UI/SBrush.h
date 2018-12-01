@@ -11,9 +11,9 @@ public:
 
 	// SAction getAction(); // Returns an action ready to be inserted in a menu or toolbar (NYI)
 
-	string  getName() { return name_; } // Returns the brush's name ("pgfx_brush_xyz")
-	string  getIcon() { return icon_; } // Returns the brush's icon name ("brush_xyz")
-	uint8_t getPixel(int x, int y);
+	string  name() { return name_; } // Returns the brush's name ("pgfx_brush_xyz")
+	string  icon() { return icon_; } // Returns the brush's icon name ("brush_xyz")
+	uint8_t pixel(int x, int y);
 
 private:
 	SImage*  image_; // The cursor graphic

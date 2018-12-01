@@ -70,7 +70,7 @@ BSPArchive::~BSPArchive() {}
 // -----------------------------------------------------------------------------
 // Returns the file byte offset for [entry]
 // -----------------------------------------------------------------------------
-uint32_t BSPArchive::getEntryOffset(ArchiveEntry* entry)
+uint32_t BSPArchive::entryOffset(ArchiveEntry* entry)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -86,7 +86,7 @@ uint32_t BSPArchive::getEntryOffset(ArchiveEntry* entry)
 bool BSPArchive::open(MemChunk& mc)
 {
 	// If size is less than 64, there's not even enough room for a full header
-	size_t size = mc.getSize();
+	size_t size = mc.size();
 	if (size < 64)
 	{
 		LOG_MESSAGE(1, "BSPArchive::open: Opening failed, invalid header");
@@ -251,13 +251,13 @@ bool BSPArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)numtex)));
 
 		// Get entry
-		ArchiveEntry* entry = getEntry(a);
+		ArchiveEntry* entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			mc.exportMemChunk(edata, entryOffset(entry), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -304,7 +304,7 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -322,7 +322,7 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to entry offset in file and read it in
 	file.Seek((int)entry->exProp("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -344,7 +344,7 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 bool BSPArchive::isBSPArchive(MemChunk& mc)
 {
 	// If size is less than 64, there's not even enough room for a full header
-	size_t size = mc.getSize();
+	size_t size = mc.size();
 	if (size < 64)
 		return false;
 

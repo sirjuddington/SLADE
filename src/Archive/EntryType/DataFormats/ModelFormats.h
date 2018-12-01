@@ -9,7 +9,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check for DMDM header
 			if (mc[0] == 'D' && mc[1] == 'M' && mc[2] == 'D' && mc[3] == 'M')
@@ -28,7 +28,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check for IDPO header
 			if (mc[0] == 'I' && mc[1] == 'D' && mc[2] == 'P' && mc[3] == 'O')
@@ -47,7 +47,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check for IDP2 header
 			if (mc[0] == 'I' && mc[1] == 'D' && mc[2] == 'P' && mc[3] == '2')
@@ -66,7 +66,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 4)
+		if (mc.size() > 4)
 		{
 			// Check for IDP3 header
 			if (mc[0] == 'I' && mc[1] == 'D' && mc[2] == 'P' && mc[3] == '3')
@@ -86,7 +86,7 @@ public:
 	{
 		// Check size: 12 bytes for dimensions and 768 for palette,
 		// so 780 bytes for an empty voxel object.
-		if (mc.getSize() > 780)
+		if (mc.size() > 780)
 		{
 			uint32_t x, y, z;
 			mc.seek(0, SEEK_SET);
@@ -96,7 +96,7 @@ public:
 			y = wxINT32_SWAP_ON_BE(y);
 			mc.read(&z, 4);
 			z = wxINT32_SWAP_ON_BE(z);
-			if (mc.getSize() == 780 + (x * y * z))
+			if (mc.size() == 780 + (x * y * z))
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
@@ -114,7 +114,7 @@ public:
 		// Check size: 28 bytes for dimensions and pivot,
 		// 4 minimum for offset info, and 768 for palette,
 		// so 800 bytes for an empty voxel object.
-		if (mc.getSize() > 800)
+		if (mc.size() > 800)
 		{
 			// We'll need a certain number of variables
 			uint32_t szd, szx, szy, szz;
@@ -122,7 +122,7 @@ public:
 			uint32_t dummy;
 			size_t   endofvox, parsed;
 			// Take palette info into account
-			endofvox = mc.getSize() - 768;
+			endofvox = mc.size() - 768;
 			parsed   = 0;
 			mc.seek(0, SEEK_SET);
 

@@ -64,7 +64,7 @@ public:
 	bool          renameEntry(ArchiveEntry* entry, string name) override;
 
 	// Detection
-	MapDesc         getMapInfo(ArchiveEntry* maphead) override;
+	MapDesc         mapDesc(ArchiveEntry* maphead) override;
 	vector<MapDesc> detectMaps() override;
 
 	// Search

@@ -91,13 +91,13 @@ void Edit2D::mirror(bool x_axis) const
 			// Position
 			if (x_axis)
 				context_.map().moveThing(
-					things[a]->getIndex(), bbox.mid_x() - (things[a]->xPos() - bbox.mid_x()), things[a]->yPos());
+					things[a]->index(), bbox.mid_x() - (things[a]->xPos() - bbox.mid_x()), things[a]->yPos());
 			else
 				context_.map().moveThing(
-					things[a]->getIndex(), things[a]->xPos(), bbox.mid_y() - (things[a]->yPos() - bbox.mid_y()));
+					things[a]->index(), things[a]->xPos(), bbox.mid_y() - (things[a]->yPos() - bbox.mid_y()));
 
 			// Direction
-			int angle = things[a]->getAngle();
+			int angle = things[a]->angle();
 			if (x_axis)
 			{
 				angle += 90;
@@ -139,8 +139,8 @@ void Edit2D::mirror(bool x_axis) const
 			auto sectors = context_.selection().selectedSectors();
 			for (auto sector : sectors)
 			{
-				sector->getVertices(vertices);
-				sector->getLines(lines);
+				sector->putVertices(vertices);
+				sector->putLines(lines);
 			}
 		}
 
@@ -156,12 +156,12 @@ void Edit2D::mirror(bool x_axis) const
 			if (x_axis)
 			{
 				context_.map().moveVertex(
-					vertices[a]->getIndex(), bbox.mid_x() - (vertices[a]->xPos() - bbox.mid_x()), vertices[a]->yPos());
+					vertices[a]->index(), bbox.mid_x() - (vertices[a]->xPos() - bbox.mid_x()), vertices[a]->yPos());
 			}
 			else
 			{
 				context_.map().moveVertex(
-					vertices[a]->getIndex(), vertices[a]->xPos(), bbox.mid_y() - (vertices[a]->yPos() - bbox.mid_y()));
+					vertices[a]->index(), vertices[a]->xPos(), bbox.mid_y() - (vertices[a]->yPos() - bbox.mid_y()));
 			}
 		}
 
@@ -211,7 +211,7 @@ void Edit2D::splitLine(double x, double y, double min_dist) const
 
 	// Get the closest line
 	int  lindex = context_.map().nearestLine(point, min_dist);
-	auto line   = context_.map().getLine(lindex);
+	auto line   = context_.map().line(lindex);
 
 	// Do nothing if no line is close enough
 	if (!line)
@@ -499,14 +499,14 @@ void Edit2D::joinSectors(bool remove_lines) const
 			bool exists = false;
 			for (unsigned l = 0; l < lines.size(); l++)
 			{
-				if (side->getParentLine() == lines[l])
+				if (side->parentLine() == lines[l])
 				{
 					exists = true;
 					break;
 				}
 			}
 			if (!exists)
-				lines.push_back(side->getParentLine());
+				lines.push_back(side->parentLine());
 		}
 
 		// Delete sector
@@ -560,7 +560,7 @@ void Edit2D::changeThingType() const
 		return;
 
 	// Browse thing type
-	int newtype = MapEditor::browseThingType(selection[0]->getType(), context_.map());
+	int newtype = MapEditor::browseThingType(selection[0]->type(), context_.map());
 	if (newtype >= 0)
 	{
 		// Go through selection
@@ -622,7 +622,7 @@ void Edit2D::copy() const
 		else if (mode == Mode::Sectors)
 		{
 			for (auto sector : context_.selection().selectedSectors())
-				sector->getLines(lines);
+				sector->putLines(lines);
 		}
 
 		// Add to clipboard
@@ -631,7 +631,7 @@ void Edit2D::copy() const
 		theClipboard->addItem(c);
 
 		// Editor message
-		context_.addEditorMessage(S_FMT("Copied %s", c->getInfo()));
+		context_.addEditorMessage(S_FMT("Copied %s", c->info()));
 	}
 
 	// Copy things
@@ -646,7 +646,7 @@ void Edit2D::copy() const
 		theClipboard->addItem(c);
 
 		// Editor message
-		context_.addEditorMessage(S_FMT("Copied %s", c->getInfo()));
+		context_.addEditorMessage(S_FMT("Copied %s", c->info()));
 	}
 }
 
@@ -659,29 +659,29 @@ void Edit2D::paste(fpoint2_t mouse_pos) const
 	for (unsigned a = 0; a < theClipboard->nItems(); a++)
 	{
 		// Map architecture
-		if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_ARCH)
+		if (theClipboard->item(a)->type() == CLIPBOARD_MAP_ARCH)
 		{
 			context_.beginUndoRecord("Paste Map Architecture");
-			auto clip = (MapArchClipboardItem*)theClipboard->getItem(a);
+			auto clip = (MapArchClipboardItem*)theClipboard->item(a);
 			// Snap the geometry in such a way that it stays in the same
 			// position relative to the grid
-			auto pos       = context_.relativeSnapToGrid(clip->getMidpoint(), mouse_pos);
+			auto pos       = context_.relativeSnapToGrid(clip->midpoint(), mouse_pos);
 			auto new_verts = clip->pasteToMap(&context_.map(), pos);
 			context_.map().mergeArch(new_verts);
-			context_.addEditorMessage(S_FMT("Pasted %s", clip->getInfo()));
+			context_.addEditorMessage(S_FMT("Pasted %s", clip->info()));
 			context_.endUndoRecord(true);
 		}
 
 		// Things
-		else if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_THINGS)
+		else if (theClipboard->item(a)->type() == CLIPBOARD_MAP_THINGS)
 		{
 			context_.beginUndoRecord("Paste Things", false, true, false);
-			auto clip = (MapThingsClipboardItem*)theClipboard->getItem(a);
+			auto clip = (MapThingsClipboardItem*)theClipboard->item(a);
 			// Snap the geometry in such a way that it stays in the same
 			// position relative to the grid
-			auto pos = context_.relativeSnapToGrid(clip->getMidpoint(), mouse_pos);
+			auto pos = context_.relativeSnapToGrid(clip->midpoint(), mouse_pos);
 			clip->pasteToMap(&context_.map(), pos);
-			context_.addEditorMessage(S_FMT("Pasted %s", clip->getInfo()));
+			context_.addEditorMessage(S_FMT("Pasted %s", clip->info()));
 			context_.endUndoRecord(true);
 		}
 	}
@@ -703,7 +703,7 @@ void Edit2D::copyProperties(MapObject* object)
 	{
 		// Copy selection/hilight properties
 		if (selection.size() > 0)
-			copy_sector_.copy(context_.map().getSector(selection[0].index));
+			copy_sector_.copy(context_.map().sector(selection[0].index));
 		else if (selection.hasHilight())
 			copy_sector_.copy(selection.hilightedSector());
 
@@ -718,13 +718,13 @@ void Edit2D::copyProperties(MapObject* object)
 	else if (context_.editMode() == MapEditor::Mode::Things)
 	{
 		// Copy given object properties (if any)
-		if (object && object->getObjType() == MapObject::Type::Thing)
+		if (object && object->objType() == MapObject::Type::Thing)
 			copy_thing_.copy(object);
 		else
 		{
 			// Otherwise copy selection/hilight properties
 			if (selection.size() > 0)
-				copy_thing_.copy(context_.map().getThing(selection[0].index));
+				copy_thing_.copy(context_.map().thing(selection[0].index));
 			else if (selection.hasHilight())
 				copy_thing_.copy(selection.hilightedThing());
 			else
@@ -742,7 +742,7 @@ void Edit2D::copyProperties(MapObject* object)
 	else if (context_.editMode() == MapEditor::Mode::Lines)
 	{
 		if (selection.size() > 0)
-			copy_line_.copy(context_.map().getLine(selection[0].index));
+			copy_line_.copy(context_.map().line(selection[0].index));
 		else if (selection.hasHilight())
 			copy_line_.copy(selection.hilightedLine());
 
@@ -914,8 +914,8 @@ void Edit2D::createThing(double x, double y) const
 	if (thing_copied_ && thing)
 	{
 		// Copy type and angle from the last copied thing
-		thing->setIntProperty("type", copy_thing_.getType());
-		thing->setIntProperty("angle", copy_thing_.getAngle());
+		thing->setIntProperty("type", copy_thing_.type());
+		thing->setIntProperty("angle", copy_thing_.angle());
 	}
 
 	// End undo step
@@ -936,7 +936,7 @@ void Edit2D::createSector(double x, double y) const
 
 	// Find nearest line
 	int  nearest = map.nearestLine(point, 99999999);
-	auto line    = map.getLine(nearest);
+	auto line    = map.line(nearest);
 	if (!line)
 		return;
 
@@ -946,7 +946,7 @@ void Edit2D::createSector(double x, double y) const
 	// Get sector to copy if we're in sectors mode
 	MapSector* sector_copy = nullptr;
 	if (context_.editMode() == MapEditor::Mode::Sectors && context_.selection().size() > 0)
-		sector_copy = map.getSector(context_.selection().begin()->index);
+		sector_copy = map.sector(context_.selection().begin()->index);
 
 	// Run sector builder
 	SectorBuilder builder;
@@ -973,7 +973,7 @@ void Edit2D::createSector(double x, double y) const
 	// Set some sector defaults from game configuration if needed
 	if (!sector_copy && ok)
 	{
-		auto new_sector = map.getSector(map.nSectors() - 1);
+		auto new_sector = map.sector(map.nSectors() - 1);
 		if (new_sector->ceiling().texture.IsEmpty())
 			Game::configuration().applyDefaults(new_sector, map.currentFormat() == MAP_UDMF);
 	}
@@ -985,7 +985,7 @@ void Edit2D::createSector(double x, double y) const
 		context_.endUndoRecord(true);
 	}
 	else
-		context_.addEditorMessage("Sector creation failed: " + builder.getError());
+		context_.addEditorMessage("Sector creation failed: " + builder.error());
 }
 
 // -----------------------------------------------------------------------------
@@ -1017,7 +1017,7 @@ void Edit2D::deleteVertex() const
 	auto verts = context_.selection().selectedVertices();
 	int  index = -1;
 	if (verts.size() == 1)
-		index = verts[0]->getIndex();
+		index = verts[0]->index();
 
 	// Clear hilight and selection
 	context_.selection().clear();
@@ -1049,7 +1049,7 @@ void Edit2D::deleteLine() const
 	auto lines = context_.selection().selectedLines();
 	int  index = -1;
 	if (lines.size() == 1)
-		index = lines[0]->getIndex();
+		index = lines[0]->index();
 
 	// Clear hilight and selection
 	context_.selection().clear();
@@ -1081,7 +1081,7 @@ void Edit2D::deleteThing() const
 	auto things = context_.selection().selectedThings();
 	int  index  = -1;
 	if (things.size() == 1)
-		index = things[0]->getIndex();
+		index = things[0]->index();
 
 	// Clear hilight and selection
 	context_.selection().clear();
@@ -1110,7 +1110,7 @@ void Edit2D::deleteSector() const
 	auto sectors = context_.selection().selectedSectors();
 	int  index   = -1;
 	if (sectors.size() == 1)
-		index = sectors[0]->getIndex();
+		index = sectors[0]->index();
 
 	// Clear hilight and selection
 	context_.selection().clear();
@@ -1126,14 +1126,14 @@ void Edit2D::deleteSector() const
 	{
 		for (unsigned s = 0; s < sector->connectedSides().size(); s++)
 			connected_sides.push_back(sector->connectedSides()[s]);
-		sector->getLines(connected_lines);
+		sector->putLines(connected_lines);
 	}
 
 	// Remove all connected sides
 	for (auto side : connected_sides)
 	{
 		// Before removing the side, check if we should flip the line
-		auto line = side->getParentLine();
+		auto line = side->parentLine();
 		if (side == line->s1() && line->s2())
 			line->flip();
 
@@ -1161,14 +1161,14 @@ void Edit2D::deleteSector() const
 		else
 			continue;
 
-		if (side->getTexMiddle() != "-")
+		if (side->texMiddle() != "-")
 			continue;
 
 		// Inherit textures from upper or lower
-		if (side->getTexUpper() != "-")
-			side->setStringProperty("texturemiddle", side->getTexUpper());
-		else if (side->getTexLower() != "-")
-			side->setStringProperty("texturemiddle", side->getTexLower());
+		if (side->texUpper() != "-")
+			side->setStringProperty("texturemiddle", side->texUpper());
+		else if (side->texLower() != "-")
+			side->setStringProperty("texturemiddle", side->texLower());
 
 		// Clear any existing textures, which are no longer visible
 		side->setStringProperty("texturetop", "-");

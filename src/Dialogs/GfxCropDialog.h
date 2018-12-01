@@ -28,7 +28,7 @@ public:
 	GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette);
 	~GfxCropDialog() {}
 
-	rect_t getCropRect() { return crop_rect_; }
+	rect_t cropRect() { return crop_rect_; }
 	void   updatePreview();
 
 private:

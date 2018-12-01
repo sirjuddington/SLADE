@@ -64,7 +64,7 @@ SectorBuilder::~SectorBuilder() {}
 // -----------------------------------------------------------------------------
 // Returns the line for the edge at [index]
 // -----------------------------------------------------------------------------
-MapLine* SectorBuilder::getEdgeLine(unsigned index)
+MapLine* SectorBuilder::edgeLine(unsigned index)
 {
 	// Check index
 	if (index >= sector_edges_.size())
@@ -201,7 +201,7 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
 		LOG_MESSAGE(
 			4,
 			"Got next edge line %d, %s",
-			edge_next.line ? edge_next.line->getIndex() : -1,
+			edge_next.line ? edge_next.line->index() : -1,
 			edge_next.front ? "front" : "back");
 
 		// Check if no valid next edge was found
@@ -324,7 +324,7 @@ void SectorBuilder::discardOutsideVertices()
 			continue;
 
 		// Discard if outside the current outline
-		if (!pointWithinOutline(map_->getVertex(a)->xPos(), map_->getVertex(a)->yPos()))
+		if (!pointWithinOutline(map_->vertex(a)->xPos(), map_->vertex(a)->yPos()))
 			vertex_valid_[a] = false;
 	}
 }
@@ -351,7 +351,7 @@ SectorBuilder::Edge SectorBuilder::findOuterEdge()
 	MapLine* line = NULL;
 	for (unsigned a = 0; a < map_->nLines(); a++)
 	{
-		line = map_->getLine(a);
+		line = map_->line(a);
 
 		// Ignore if the line is completely left of the vertex
 		if (line->x1() <= vr_x && line->x2() <= vr_x)
@@ -423,13 +423,13 @@ SectorBuilder::Edge SectorBuilder::findInnerEdge()
 		// Set rightmost if no current rightmost vertex
 		if (!vertex_right_)
 		{
-			vertex_right_ = map_->getVertex(a);
+			vertex_right_ = map_->vertex(a);
 			continue;
 		}
 
 		// Check if the vertex is rightmost
-		if (map_->getVertex(a)->xPos() > vertex_right_->xPos())
-			vertex_right_ = map_->getVertex(a);
+		if (map_->vertex(a)->xPos() > vertex_right_->xPos())
+			vertex_right_ = map_->vertex(a);
 	}
 
 	// If no vertex was found, we're done
@@ -475,7 +475,7 @@ SectorBuilder::Edge SectorBuilder::findInnerEdge()
 	if (!eline)
 	{
 		// Discard vertex and try again
-		vertex_valid_[vertex_right_->getIndex()] = false;
+		vertex_valid_[vertex_right_->index()] = false;
 		return findInnerEdge();
 	}
 
@@ -700,7 +700,7 @@ void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
 	// Set sides to new sector
 	for (unsigned a = 0; a < sector_edges_.size(); a++)
 		sector_edges_[a].side_created =
-			map_->setLineSector(sector_edges_[a].line->getIndex(), sector->getIndex(), sector_edges_[a].front);
+			map_->setLineSector(sector_edges_[a].line->index(), sector->index(), sector_edges_[a].front);
 }
 
 // -----------------------------------------------------------------------------

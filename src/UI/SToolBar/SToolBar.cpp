@@ -175,7 +175,7 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, string name, bool force_name) : w
 			showname.Remove(0, 1);
 
 		wxStaticText* label = new wxStaticText(this, -1, S_FMT("%s:", showname));
-		label->SetForegroundColour(Drawing::getMenuTextColour());
+		label->SetForegroundColour(Drawing::systemMenuTextColour());
 		sizer->AddSpacer(UI::pad());
 		sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL);
 		sizer->AddSpacer(UI::px(UI::Size::PadMinimum));
@@ -343,7 +343,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar) : wxPanel(parent, -1)
 
 	// Set background colour
 	wxPanel::SetBackgroundColour(
-		(main_toolbar && Global::win_version_major >= 10) ? wxColor(250, 250, 250) : Drawing::getPanelBGColour());
+		(main_toolbar && Global::win_version_major >= 10) ? wxColor(250, 250, 250) : Drawing::systemPanelBGColour());
 
 	// Create sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);

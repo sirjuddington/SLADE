@@ -11,8 +11,8 @@ public:
 	ShowItemDialog(wxWindow* parent);
 	~ShowItemDialog() {}
 
-	MapObject::Type getType() const;
-	int             getIndex() const;
+	MapObject::Type type() const;
+	int             index() const;
 	void            setType(MapObject::Type type) const;
 
 private:

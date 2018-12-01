@@ -3,6 +3,7 @@
 class Parser;
 class ParseTreeNode;
 class wxMenu;
+
 namespace Executables
 {
 struct GameExe
@@ -29,8 +30,8 @@ void   init();
 void   parse(Parser* p, bool custom);
 
 // Game executables
-GameExe* getGameExe(string id);
-GameExe* getGameExe(unsigned index);
+GameExe* gameExe(string id);
+GameExe* gameExe(unsigned index);
 unsigned nGameExes();
 void     setGameExePath(string id, string path);
 void     parseGameExe(ParseTreeNode* node, bool custom);
@@ -41,8 +42,8 @@ bool     removeGameExeConfig(unsigned exe_index, unsigned config_index);
 
 // External executables
 int                 nExternalExes(string category = "");
-ExternalExe         getExternalExe(string name, string category = "");
-vector<ExternalExe> getExternalExes(string category = "");
+ExternalExe         externalExe(string name, string category = "");
+vector<ExternalExe> externalExes(string category = "");
 void                parseExternalExe(ParseTreeNode* node);
 void                addExternalExe(string name, string path, string category);
 void                setExternalExeName(string name_old, string name_new, string category);

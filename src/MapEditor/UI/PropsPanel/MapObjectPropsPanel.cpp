@@ -947,9 +947,9 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 
 	// Setup property grid for the object type
 	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
-		setupTypeUDMF(objects[0]->getObjType());
+		setupTypeUDMF(objects[0]->objType());
 	else
-		setupType(objects[0]->getObjType());
+		setupType(objects[0]->objType());
 
 	// Find any custom properties (UDMF only)
 	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
@@ -976,7 +976,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 				bool exists = false;
 				for (unsigned c = 0; c < properties_.size(); c++)
 				{
-					if (properties_[c]->getPropName() == objprops[b].name)
+					if (properties_[c]->propName() == objprops[b].name)
 					{
 						exists = true;
 						break;
@@ -992,7 +992,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 					// LOG_MESSAGE(2, "Add custom property \"%s\"", objprops[b].name);
 
 					// Add property
-					switch (objprops[b].value.getType())
+					switch (objprops[b].value.type())
 					{
 					case Property::Type::Boolean:
 						addBoolProperty(group_custom_, objprops[b].name, objprops[b].name);
@@ -1013,7 +1013,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		properties_[a]->openObjects(objects);
 
 	// Handle line sides
-	if (objects[0]->getObjType() == MapObject::Type::Line)
+	if (objects[0]->objType() == MapObject::Type::Line)
 	{
 		// Enable/disable side properties
 		wxPGProperty* prop = pg_properties_->GetProperty("sidefront");
@@ -1066,7 +1066,7 @@ void MapObjectPropsPanel::updateArgs(MOPGIntWithArgsProperty* source)
 	{
 		prop = properties_[a];
 
-		if (prop->getType() == MOPGProperty::Type::ThingType || prop->getType() == MOPGProperty::Type::ActionSpecial)
+		if (prop->type() == MOPGProperty::Type::ThingType || prop->type() == MOPGProperty::Type::ActionSpecial)
 		{
 			prop_with_args = (MOPGIntWithArgsProperty*)prop;
 
@@ -1075,7 +1075,7 @@ void MapObjectPropsPanel::updateArgs(MOPGIntWithArgsProperty* source)
 			{
 				owner_prop = prop_with_args;
 
-				if (prop->getType() == MOPGProperty::Type::ThingType)
+				if (prop->type() == MOPGProperty::Type::ThingType)
 					break;
 			}
 		}
@@ -1231,7 +1231,7 @@ void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 		// Check if existing
 		for (unsigned a = 0; a < properties_.size(); a++)
 		{
-			if (properties_[a]->getPropName() == propname)
+			if (properties_[a]->propName() == propname)
 			{
 				wxMessageBox(S_FMT("Property \"%s\" already exists", propname), "Error");
 				return;
@@ -1284,7 +1284,7 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 	string name = e.GetPropertyName();
 	for (unsigned a = 0; a < properties_.size(); a++)
 	{
-		if (properties_[a]->getPropName() == name)
+		if (properties_[a]->propName() == name)
 		{
 			// Found, apply value
 			string type;

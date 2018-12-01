@@ -26,7 +26,7 @@ public:
 
 	virtual ~TransRange() {}
 
-	uint8_t getType() { return type_; }
+	uint8_t type() { return type_; }
 	uint8_t oStart() { return o_start_; }
 	uint8_t oEnd() { return o_end_; }
 
@@ -173,7 +173,7 @@ public:
 		col_      = copy->col_;
 	}
 
-	rgba_t getColour() { return col_; }
+	rgba_t colour() { return col_; }
 	void   setColour(rgba_t c) { col_ = c; }
 
 	string asText() { return S_FMT("%d:%d=#[%d,%d,%d]", o_start_, o_end_, col_.r, col_.g, col_.b); }
@@ -199,8 +199,8 @@ public:
 		amount_   = copy->amount_;
 	}
 
-	rgba_t  getColour() { return col_; }
-	uint8_t getAmount() { return amount_; }
+	rgba_t  colour() { return col_; }
+	uint8_t amount() { return amount_; }
 	void    setColour(rgba_t c) { col_ = c; }
 	void    setAmount(uint8_t a) { amount_ = a; }
 
@@ -223,7 +223,7 @@ public:
 		special_  = copy->special_;
 	}
 
-	string getSpecial() { return special_; }
+	string special() { return special_; }
 	void   setSpecial(string sp) { special_ = sp; }
 
 	string asText() { return S_FMT("%d:%d=$%s", o_start_, o_end_, special_); }
@@ -248,7 +248,7 @@ public:
 	bool   isEmpty() { return built_in_name_.IsEmpty() && translations_.size() == 0; }
 
 	unsigned    nRanges() { return translations_.size(); }
-	TransRange* getRange(unsigned index);
+	TransRange* range(unsigned index);
 	string      builtInName() { return built_in_name_; }
 	void        setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
 

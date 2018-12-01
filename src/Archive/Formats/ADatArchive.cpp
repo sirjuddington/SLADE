@@ -76,7 +76,7 @@ ADatArchive::~ADatArchive() {}
 bool ADatArchive::open(MemChunk& mc)
 {
 	// Check given data is valid
-	if (mc.getSize() < 16)
+	if (mc.size() < 16)
 		return false;
 
 	// Read dat header
@@ -126,7 +126,7 @@ bool ADatArchive::open(MemChunk& mc)
 		compsize = wxINT32_SWAP_ON_BE(compsize);
 
 		// Check offset+size
-		if ((unsigned)(offset + compsize) > mc.getSize())
+		if ((unsigned)(offset + compsize) > mc.size())
 		{
 			LOG_MESSAGE(1, "ADatArchive::open: dat archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
@@ -154,7 +154,7 @@ bool ADatArchive::open(MemChunk& mc)
 	// Detect all entry types
 	MemChunk              edata;
 	vector<ArchiveEntry*> all_entries;
-	getEntryTreeAsList(all_entries);
+	putEntryTreeAsList(all_entries);
 	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
@@ -165,16 +165,16 @@ bool ADatArchive::open(MemChunk& mc)
 		ArchiveEntry* entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->getSize());
+			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->size());
 			MemChunk xdata;
-			if (Compression::ZlibInflate(edata, xdata, (int)entry->exProp("FullSize")))
+			if (Compression::zlibInflate(edata, xdata, (int)entry->exProp("FullSize")))
 				entry->importMemChunk(xdata);
 			else
 			{
-				LOG_MESSAGE(1, "Entry %s couldn't be inflated", entry->getName());
+				LOG_MESSAGE(1, "Entry %s couldn't be inflated", entry->name());
 				entry->importMemChunk(edata);
 			}
 		}
@@ -213,7 +213,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 
 	// Get archive tree as a list
 	vector<ArchiveEntry*> entries;
-	getEntryTreeAsList(entries);
+	putEntryTreeAsList(entries);
 
 	// Write header
 	long     dir_offset = wxINT32_SWAP_ON_BE(16);
@@ -230,19 +230,19 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Skip folders
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			continue;
 
 		// Create compressed version of the lump
 		MemChunk* entry = nullptr;
-		if (Compression::ZlibDeflate(entries[a]->getMCData(), compressed, 9))
+		if (Compression::zlibDeflate(entries[a]->data(), compressed, 9))
 		{
 			entry = &compressed;
 		}
 		else
 		{
-			entry = &(entries[a]->getMCData());
-			LOG_MESSAGE(1, "Entry %s couldn't be deflated", entries[a]->getName());
+			entry = &(entries[a]->data());
+			LOG_MESSAGE(1, "Entry %s couldn't be deflated", entries[a]->name());
 		}
 
 		// Update entry
@@ -258,7 +258,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		///////////////////////////////////
 
 		// Check entry name
-		string name = entries[a]->getPath(true);
+		string name = entries[a]->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 128)
 		{
@@ -281,11 +281,11 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		directory.write(&myoffset, 4);
 
 		// Write full entry size
-		long decsize = wxINT32_SWAP_ON_BE(entries[a]->getSize());
+		long decsize = wxINT32_SWAP_ON_BE(entries[a]->size());
 		directory.write(&decsize, 4);
 
 		// Write compressed entry size
-		long compsize = wxINT32_SWAP_ON_BE(entry->getSize());
+		long compsize = wxINT32_SWAP_ON_BE(entry->size());
 		directory.write(&compsize, 4);
 
 		// Write whatever it is that should be there
@@ -298,13 +298,13 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		// Step 2: Write entry data //
 		//////////////////////////////
 
-		mc.write(entry->getData(), entry->getSize());
+		mc.write(entry->data(), entry->size());
 	}
 
 	// Write directory
 	dir_offset = wxINT32_SWAP_ON_BE(mc.currentPos());
-	dir_size   = wxINT32_SWAP_ON_BE(directory.getSize());
-	mc.write(directory.getData(), directory.getSize());
+	dir_size   = wxINT32_SWAP_ON_BE(directory.size());
+	mc.write(directory.data(), directory.size());
 
 	// Update directory offset and size in header
 	mc.seek(4, SEEK_SET);
@@ -341,7 +341,7 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -359,7 +359,7 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to entry offset in file and read it in
 	file.Seek((int)entry->exProp("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -380,7 +380,7 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 bool ADatArchive::isADatArchive(MemChunk& mc)
 {
 	// Check it opened ok
-	if (mc.getSize() < 16)
+	if (mc.size() < 16)
 		return false;
 
 	// Read dat header
@@ -407,7 +407,7 @@ bool ADatArchive::isADatArchive(MemChunk& mc)
 		return false;
 
 	// Check directory is sane
-	if (dir_offset < 16 || (unsigned)(dir_offset + dir_size) > mc.getSize())
+	if (dir_offset < 16 || (unsigned)(dir_offset + dir_size) > mc.size())
 		return false;
 
 	// That'll do

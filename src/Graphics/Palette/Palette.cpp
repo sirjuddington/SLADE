@@ -89,13 +89,13 @@ Palette::~Palette() {}
 bool Palette::loadMem(MemChunk& mc)
 {
 	// Check that the given data has at least 1 colour (3 bytes)
-	if (mc.getSize() < 3)
+	if (mc.size() < 3)
 		return false;
 
 	// Read in colours
 	mc.seek(0, SEEK_SET);
 	int c = 0;
-	for (size_t a = 0; a < mc.getSize(); a += 3)
+	for (size_t a = 0; a < mc.size(); a += 3)
 	{
 		uint8_t rgb[3] = { 0, 0, 0 };
 
@@ -167,8 +167,8 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			LOG_MESSAGE(0, Global::error);
 			return false;
 		}
-		int side = image.getHeight();
-		if (side != image.getWidth() || side % 16)
+		int side = image.height();
+		if (side != image.width() || side % 16)
 		{
 			Global::error = "Palette information cannot be loaded from a non-square image";
 			LOG_MESSAGE(0, Global::error);
@@ -190,13 +190,13 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 				++x, ++y;
 
 			// Get color from image
-			rgba_t col = image.getPixel(x, y);
+			rgba_t col = image.pixelAt(x, y);
 			col.index  = a;
 
 			// Validate color cell
 			for (int b = x; b < (x + (cell > 3 ? cell - 1 : cell)); ++b)
 				for (int c = y; c < (y + (cell > 3 ? cell - 1 : cell)); ++c)
-					if (!col.equals(image.getPixel(b, c)))
+					if (!col.equals(image.pixelAt(b, c)))
 						LOG_MESSAGE(
 							0,
 							"Image does not seem to be a valid palette, color discrepancy in cell %u at [%u, %u]",
@@ -215,7 +215,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 	// Text formats
 	else if (format == Format::CSV || format == Format::JASC || format == Format::GIMP)
 	{
-		if (memchr(mc.getData(), 0, mc.getSize() - 1))
+		if (memchr(mc.data(), 0, mc.size() - 1))
 			return false; // Not text
 
 		Tokenizer tz;

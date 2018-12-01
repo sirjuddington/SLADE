@@ -116,7 +116,7 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map)
 	init();
 
 	// Listen to stuff
-	listenTo(theMainWindow->getPaletteChooser());
+	listenTo(theMainWindow->paletteChooser());
 	listenTo(theResourceManager);
 }
 
@@ -143,7 +143,7 @@ MapRenderer3D::~MapRenderer3D()
 bool MapRenderer3D::init()
 {
 	// Init camera
-	bbox_t bbox = map_->getMapBBox();
+	bbox_t bbox = map_->bounds();
 	cam_position_.set(
 		bbox.min.x + ((bbox.max.x - bbox.min.x) * 0.5), bbox.min.y + ((bbox.max.y - bbox.min.y) * 0.5), 64);
 	cam_direction_.set(0, 1);
@@ -231,20 +231,20 @@ MapRenderer3D::Quad* MapRenderer3D::getQuad(MapEditor::Item item)
 		return nullptr;
 
 	// Get side
-	MapSide* side = map_->getSide(item.index);
+	MapSide* side = map_->side(item.index);
 	if (!side)
 		return nullptr;
 
 	// Find matching quad
-	int lindex = side->getParentLine()->getIndex();
+	int lindex = side->parentLine()->index();
 	for (unsigned a = 0; a < lines_[lindex].quads.size(); a++)
 	{
 		Quad* quad = &lines_[lindex].quads[a];
 
 		// Check side
-		if (side == side->getParentLine()->s1() && quad->flags & BACK)
+		if (side == side->parentLine()->s1() && quad->flags & BACK)
 			continue;
-		if (side == side->getParentLine()->s2() && (quad->flags & BACK) == 0)
+		if (side == side->parentLine()->s2() && (quad->flags & BACK) == 0)
 			continue;
 
 		// Check part
@@ -416,8 +416,8 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 
 	// Get target height
 	int view_height = (map_->currentFormat() == MAP_DOOM64) ? 56 : 41;
-	int fheight     = map_->getSector(sector)->floor().plane.height_at(cam_position_.get2d()) + view_height;
-	int cheight     = map_->getSector(sector)->ceiling().plane.height_at(cam_position_.get2d());
+	int fheight     = map_->sector(sector)->floor().plane.height_at(cam_position_.get2d()) + view_height;
+	int cheight     = map_->sector(sector)->ceiling().plane.height_at(cam_position_.get2d());
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
@@ -567,7 +567,7 @@ void MapRenderer3D::renderMap()
 		bool vbo_updated = false;
 		for (unsigned a = 0; a < map_->nSectors(); a++)
 		{
-			Polygon2D* poly = map_->getSector(a)->getPolygon();
+			Polygon2D* poly = map_->sector(a)->polygon();
 			if (poly && poly->vboUpdate() > 1)
 			{
 				updateFlatsVBO();
@@ -757,9 +757,9 @@ void MapRenderer3D::renderSky()
 
 	// Get sky texture
 	if (!skytex2_.IsEmpty())
-		sky = MapEditor::textureManager().getTexture(skytex2_, false);
+		sky = MapEditor::textureManager().texture(skytex2_, false);
 	else
-		sky = MapEditor::textureManager().getTexture(skytex1_, false);
+		sky = MapEditor::textureManager().texture(skytex1_, false);
 	if (sky)
 	{
 		// Bind texture
@@ -768,10 +768,10 @@ void MapRenderer3D::renderSky()
 		// Get average colour if needed
 		if (skycol_top_.a == 0)
 		{
-			int theight = sky->getHeight() * 0.4;
-			skycol_top_ = sky->averageColour(rect_t(0, 0, sky->getWidth(), theight));
+			int theight = sky->height() * 0.4;
+			skycol_top_ = sky->averageColour(rect_t(0, 0, sky->width(), theight));
 			skycol_bottom_ =
-				sky->averageColour(rect_t(0, sky->getHeight() - theight, sky->getWidth(), sky->getHeight()));
+				sky->averageColour(rect_t(0, sky->height() - theight, sky->width(), sky->height()));
 		}
 
 		// Render top cap
@@ -801,9 +801,9 @@ void MapRenderer3D::renderSky()
 		// Check for odd sky sizes
 		float tx = 0.125f;
 		float ty = 2.0f;
-		if (sky->getWidth() > 256)
-			tx = 0.125f / ((float)sky->getWidth() / 256.0f);
-		if (sky->getHeight() > 128)
+		if (sky->width() > 256)
+			tx = 0.125f / ((float)sky->width() / 256.0f);
+		if (sky->height() > 128)
 			ty = 1.0f;
 
 		renderSkySlice(1.0f, 0.5f, 0.0f, 1.0f, size, tx, ty);   // Top
@@ -861,13 +861,13 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 		return;
 
 	// Get sector
-	MapSector* sector = map_->getSector(index);
+	MapSector* sector = map_->sector(index);
 
 	// Get scaling/offset info
 	double ox  = 0;
 	double oy  = 0;
-	double sx  = floor ? floors_[index].texture->getScaleX() : ceilings_[index].texture->getScaleX();
-	double sy  = floor ? floors_[index].texture->getScaleY() : ceilings_[index].texture->getScaleY();
+	double sx  = floor ? floors_[index].texture->scaleX() : ceilings_[index].texture->scaleX();
+	double sy  = floor ? floors_[index].texture->scaleY() : ceilings_[index].texture->scaleY();
 	double rot = 0;
 
 	// Check for UDMF + panning/scaling/rotation
@@ -912,10 +912,10 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 
 	// Update polygon texture coordinates
 	if (floor)
-		sector->getPolygon()->setTexture(floors_[index].texture);
+		sector->polygon()->setTexture(floors_[index].texture);
 	else
-		sector->getPolygon()->setTexture(ceilings_[index].texture);
-	sector->getPolygon()->updateTextureCoords(sx, sy, ox, oy, rot);
+		sector->polygon()->setTexture(ceilings_[index].texture);
+	sector->polygon()->updateTextureCoords(sx, sy, ox, oy, rot);
 }
 
 // -----------------------------------------------------------------------------
@@ -928,13 +928,13 @@ void MapRenderer3D::updateSector(unsigned index)
 		return;
 
 	// Update floor
-	MapSector* sector      = map_->getSector(index);
+	MapSector* sector      = map_->sector(index);
 	floors_[index].sector  = sector;
-	floors_[index].texture = MapEditor::textureManager().getFlat(
+	floors_[index].texture = MapEditor::textureManager().flat(
 		sector->floor().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
-	floors_[index].colour    = sector->getColour(1, true);
-	floors_[index].fogcolour = sector->getFogColour();
-	floors_[index].light     = sector->getLight(1);
+	floors_[index].colour    = sector->colourAt(1, true);
+	floors_[index].fogcolour = sector->fogColour();
+	floors_[index].light     = sector->lightAt(1);
 	floors_[index].flags     = 0;
 	floors_[index].plane     = sector->floor().plane;
 	if (S_CMPNOCASE(sector->floor().texture, Game::configuration().skyFlat()))
@@ -946,17 +946,17 @@ void MapRenderer3D::updateSector(unsigned index)
 		updateFlatTexCoords(index, true);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_floors_);
 		Polygon2D::setupVBOPointers();
-		sector->getPolygon()->setZ(floors_[index].plane);
-		sector->getPolygon()->updateVBOData();
+		sector->polygon()->setZ(floors_[index].plane);
+		sector->polygon()->updateVBOData();
 	}
 
 	// Update ceiling
 	ceilings_[index].sector  = sector;
-	ceilings_[index].texture = MapEditor::textureManager().getFlat(
+	ceilings_[index].texture = MapEditor::textureManager().flat(
 		sector->ceiling().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
-	ceilings_[index].colour    = sector->getColour(2, true);
-	ceilings_[index].fogcolour = sector->getFogColour();
-	ceilings_[index].light     = sector->getLight(2);
+	ceilings_[index].colour    = sector->colourAt(2, true);
+	ceilings_[index].fogcolour = sector->fogColour();
+	ceilings_[index].light     = sector->lightAt(2);
 	ceilings_[index].flags     = CEIL;
 	ceilings_[index].plane     = sector->ceiling().plane;
 	if (S_CMPNOCASE(sector->ceiling().texture, Game::configuration().skyFlat()))
@@ -968,8 +968,8 @@ void MapRenderer3D::updateSector(unsigned index)
 		updateFlatTexCoords(index, false);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings_);
 		Polygon2D::setupVBOPointers();
-		sector->getPolygon()->setZ(ceilings_[index].plane);
-		sector->getPolygon()->updateVBOData();
+		sector->polygon()->setZ(ceilings_[index].plane);
+		sector->polygon()->updateVBOData();
 	}
 
 	// Finish up
@@ -978,7 +978,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	if (OpenGL::vboSupport())
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		sector->getPolygon()->setZ(0);
+		sector->polygon()->setZ(0);
 	}
 }
 
@@ -1031,7 +1031,7 @@ void MapRenderer3D::renderFlat(Flat* flat)
 		}
 
 		// Render
-		flat->sector->getPolygon()->renderVBO(false);
+		flat->sector->polygon()->renderVBO(false);
 	}
 	else
 	{
@@ -1050,7 +1050,7 @@ void MapRenderer3D::renderFlat(Flat* flat)
 		}
 
 		// Render
-		flat->sector->getPolygon()->render();
+		flat->sector->polygon()->render();
 
 		glPopMatrix();
 	}
@@ -1127,7 +1127,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 	glEnable(GL_CULL_FACE);
 
 	// Setup colour
-	rgba_t col1 = ColourConfiguration::getColour("map_3d_selection");
+	rgba_t col1 = ColourConfiguration::colour("map_3d_selection");
 	col1.a *= alpha;
 	OpenGL::setColour(col1);
 	rgba_t col2 = col1;
@@ -1141,7 +1141,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 			continue;
 
 		// Get sector
-		MapSector* sector = map_->getSector(selection[a].index);
+		MapSector* sector = map_->sector(selection[a].index);
 		if (!sector)
 			return;
 
@@ -1154,7 +1154,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 
 		// Draw sector outline
 		vector<MapLine*> lines;
-		sector->getLines(lines);
+		sector->putLines(lines);
 		OpenGL::setColour(col1, false);
 		glBegin(GL_LINES);
 		for (unsigned l = 0; l < lines.size(); l++)
@@ -1167,9 +1167,9 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 		// Render fill
 		OpenGL::setColour(col2, false);
 		glDisable(GL_CULL_FACE);
-		sector->getPolygon()->setZ(plane);
-		sector->getPolygon()->render();
-		sector->getPolygon()->setZ(0);
+		sector->polygon()->setZ(plane);
+		sector->polygon()->render();
+		sector->polygon()->setZ(0);
 		glEnable(GL_CULL_FACE);
 	}
 
@@ -1254,12 +1254,12 @@ void MapRenderer3D::setupQuadTexCoords(
 	double y2 = o_top + height;
 	if (pegbottom)
 	{
-		y2 = o_top + quad->texture->getHeight() * sy;
+		y2 = o_top + quad->texture->height() * sy;
 		y1 = y2 - height;
 	}
 
-	double x_mult = 1.0 / (quad->texture->getWidth() * sx);
-	double y_mult = 1.0 / (quad->texture->getHeight() * sy);
+	double x_mult = 1.0 / (quad->texture->width() * sx);
+	double y_mult = 1.0 / (quad->texture->height() * sy);
 
 	// Set texture coordinates
 	quad->points[0].tx = o_left * x_mult;
@@ -1288,7 +1288,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	lines_[index].quads.clear();
 
 	// Skip invalid line
-	MapLine* line = map_->getLine(index);
+	MapLine* line = map_->line(index);
 	if (!line->s1())
 		return;
 
@@ -1311,11 +1311,11 @@ void MapRenderer3D::updateLine(unsigned index)
 	int     ceiling1   = line->frontSector()->ceiling().height;
 	plane_t fp1        = line->frontSector()->floor().plane;
 	plane_t cp1        = line->frontSector()->ceiling().plane;
-	rgba_t  colour1    = line->frontSector()->getColour(0, true);
-	rgba_t  fogcolour1 = line->frontSector()->getFogColour();
-	int     light1     = line->s1()->getLight();
-	int     xoff1      = line->s1()->getOffsetX();
-	int     yoff1      = line->s1()->getOffsetY();
+	rgba_t  colour1    = line->frontSector()->colourAt(0, true);
+	rgba_t  fogcolour1 = line->frontSector()->fogColour();
+	int     light1     = line->s1()->light();
+	int     xoff1      = line->s1()->offsetX();
+	int     yoff1      = line->s1()->offsetY();
 
 	if (render_shade_orthogonal_lines)
 	{
@@ -1341,7 +1341,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	// --- One-sided line ---
 	lsx        = 1;
 	lsy        = 1;
-	int length = MathStuff::round(line->getLength());
+	int length = MathStuff::round(line->length());
 	if (line->s1() && !line->s2())
 	{
 		Quad quad;
@@ -1358,9 +1358,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexMiddle(), mixed);
-		sx           = quad.texture->getScaleX();
-		sy           = quad.texture->getScaleY();
+		quad.texture = MapEditor::textureManager().texture(line->s1()->texMiddle(), mixed);
+		sx           = quad.texture->scaleX();
+		sy           = quad.texture->scaleY();
 		if (Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_mid"))
@@ -1398,11 +1398,11 @@ void MapRenderer3D::updateLine(unsigned index)
 	int     ceiling2    = line->backSector()->ceiling().height;
 	plane_t fp2         = line->backSector()->floor().plane;
 	plane_t cp2         = line->backSector()->ceiling().plane;
-	rgba_t  colour2     = line->backSector()->getColour(0, true);
-	rgba_t  fogcolour2  = line->backSector()->getFogColour();
-	int     light2      = line->s2()->getLight();
-	int     xoff2       = line->s2()->getOffsetX();
-	int     yoff2       = line->s2()->getOffsetY();
+	rgba_t  colour2     = line->backSector()->colourAt(0, true);
+	rgba_t  fogcolour2  = line->backSector()->fogColour();
+	int     light2      = line->s2()->light();
+	int     xoff2       = line->s2()->offsetX();
+	int     yoff2       = line->s2()->offsetY();
 	int     lowceil     = min(ceiling1, ceiling2);
 	int     highfloor   = max(floor1, floor2);
 	string  sky_flat    = Game::configuration().skyFlat();
@@ -1459,9 +1459,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexLower(), mixed);
-		sx           = quad.texture->getScaleX();
-		sy           = quad.texture->getScaleY();
+		quad.texture = MapEditor::textureManager().texture(line->s1()->texLower(), mixed);
+		sx           = quad.texture->scaleX();
+		sy           = quad.texture->scaleY();
 		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_bottom"))
@@ -1505,7 +1505,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		Quad quad;
 
 		// Get texture
-		quad.texture = MapEditor::textureManager().getTexture(midtex1, mixed);
+		quad.texture = MapEditor::textureManager().texture(midtex1, mixed);
 
 		// Determine offsets
 		xoff        = xoff1;
@@ -1520,8 +1520,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		sx = quad.texture->getScaleX();
-		sy = quad.texture->getScaleY();
+		sx = quad.texture->scaleX();
+		sy = quad.texture->scaleY();
 		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_mid"))
@@ -1555,12 +1555,12 @@ void MapRenderer3D::updateLine(unsigned index)
 		else if (lpeg)
 		{
 			bottom = highfloor + yoff;
-			top    = bottom + (quad.texture->getHeight() * sy);
+			top    = bottom + (quad.texture->height() * sy);
 		}
 		else
 		{
 			top    = lowceil + yoff;
-			bottom = top - (quad.texture->getHeight() * sy);
+			bottom = top - (quad.texture->height() * sy);
 		}
 		// The "correct" thing here is to allow textures to run into the floor
 		// unless clipmidtex is on, but OpenGL is designed not to allow that to
@@ -1607,9 +1607,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		quad.texture = MapEditor::textureManager().getTexture(line->s1()->getTexUpper(), mixed);
-		sx           = quad.texture->getScaleX();
-		sy           = quad.texture->getScaleY();
+		quad.texture = MapEditor::textureManager().texture(line->s1()->texUpper(), mixed);
+		sx           = quad.texture->scaleX();
+		sy           = quad.texture->scaleY();
 		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_top"))
@@ -1663,9 +1663,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		quad.texture = MapEditor::textureManager().getTexture(line->s2()->getTexLower(), mixed);
-		sx           = quad.texture->getScaleX();
-		sy           = quad.texture->getScaleY();
+		quad.texture = MapEditor::textureManager().texture(line->s2()->texLower(), mixed);
+		sx           = quad.texture->scaleX();
+		sy           = quad.texture->scaleY();
 		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_bottom"))
@@ -1710,7 +1710,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		Quad quad;
 
 		// Get texture
-		quad.texture = MapEditor::textureManager().getTexture(midtex2, mixed);
+		quad.texture = MapEditor::textureManager().texture(midtex2, mixed);
 
 		// Determine offsets
 		xoff        = xoff2;
@@ -1725,8 +1725,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		sx = quad.texture->getScaleX();
-		sy = quad.texture->getScaleY();
+		sx = quad.texture->scaleX();
+		sy = quad.texture->scaleY();
 		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_mid"))
@@ -1760,12 +1760,12 @@ void MapRenderer3D::updateLine(unsigned index)
 		else if (lpeg)
 		{
 			bottom = highfloor + yoff;
-			top    = bottom + (quad.texture->getHeight() * sy);
+			top    = bottom + (quad.texture->height() * sy);
 		}
 		else
 		{
 			top    = lowceil + yoff;
-			bottom = top - (quad.texture->getHeight() * sy);
+			bottom = top - (quad.texture->height() * sy);
 		}
 		// The "correct" thing here is to allow textures to run into the floor
 		// unless clipmidtex is on, but OpenGL is designed not to allow that to
@@ -1813,9 +1813,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		quad.texture = MapEditor::textureManager().getTexture(line->s2()->getTexUpper(), mixed);
-		sx           = quad.texture->getScaleX();
-		sy           = quad.texture->getScaleY();
+		quad.texture = MapEditor::textureManager().texture(line->s2()->texUpper(), mixed);
+		sx           = quad.texture->scaleX();
+		sy           = quad.texture->scaleY();
 		if (map_->currentFormat() == MAP_UDMF && Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s2()->hasProp("scalex_top"))
@@ -2001,7 +2001,7 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 	glCullFace(GL_BACK);
 
 	// Setup colour
-	rgba_t col1 = ColourConfiguration::getColour("map_3d_selection");
+	rgba_t col1 = ColourConfiguration::colour("map_3d_selection");
 	col1.a *= alpha;
 	OpenGL::setColour(col1);
 	rgba_t col2 = col1;
@@ -2016,21 +2016,21 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 			continue;
 
 		// Get side
-		MapSide* side = map_->getSide(selection[a].index);
+		MapSide* side = map_->side(selection[a].index);
 		if (!side)
 			continue;
 
 		// Get parent line index
-		int line = map_->getSide(selection[a].index)->getParentLine()->getIndex();
+		int line = map_->side(selection[a].index)->parentLine()->index();
 
 		// Get appropriate quad
 		Quad* quad = nullptr;
 		for (unsigned q = 0; q < lines_[line].quads.size(); q++)
 		{
 			// Check quad is correct side
-			if (map_->getLine(line)->s1() == side && lines_[line].quads[q].flags & BACK)
+			if (map_->line(line)->s1() == side && lines_[line].quads[q].flags & BACK)
 				continue;
-			if (map_->getLine(line)->s2() == side && (lines_[line].quads[q].flags & BACK) == 0)
+			if (map_->line(line)->s2() == side && (lines_[line].quads[q].flags & BACK) == 0)
 				continue;
 
 			// Check quad is correct part
@@ -2086,33 +2086,33 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		return;
 
 	// Setup thing info
-	things_[index].type   = &(Game::configuration().thingType(thing->getType()));
-	things_[index].sector = map_->getSector(map_->sectorAt(thing->point()));
+	things_[index].type   = &(Game::configuration().thingType(thing->type()));
+	things_[index].sector = map_->sector(map_->sectorAt(thing->point()));
 
 	// Get sprite texture
 	uint32_t theight      = render_thing_icon_size;
-	things_[index].sprite = MapEditor::textureManager().getSprite(
+	things_[index].sprite = MapEditor::textureManager().sprite(
 		things_[index].type->sprite(), things_[index].type->translation(), things_[index].type->palette());
 	if (!things_[index].sprite)
 	{
 		// Sprite not found, try an icon
 		if (use_zeth_icons && things_[index].type->zethIcon() >= 0)
 		{
-			things_[index].sprite = MapEditor::textureManager().getEditorImage(
+			things_[index].sprite = MapEditor::textureManager().editorImage(
 				S_FMT("zethicons/zeth%02d", things_[index].type->zethIcon()));
 			things_[index].flags |= ZETH;
 		}
 		if (!things_[index].sprite)
 			things_[index].sprite =
-				MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", things_[index].type->icon()));
+				MapEditor::textureManager().editorImage(S_FMT("thing/%s", things_[index].type->icon()));
 		things_[index].flags |= ICON;
 	}
 	else
-		theight = things_[index].type->scaleY() * things_[index].sprite->getHeight();
+		theight = things_[index].type->scaleY() * things_[index].sprite->height();
 	if (!things_[index].sprite)
 	{
 		// Icon not found either, use unknown icon
-		things_[index].sprite = MapEditor::textureManager().getEditorImage("thing/unknown");
+		things_[index].sprite = MapEditor::textureManager().editorImage("thing/unknown");
 	}
 
 	// Determine z position
@@ -2142,7 +2142,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	}
 
 	// Adjust height by sprite Y offset if needed
-	things_[index].z += MapEditor::textureManager().getVerticalOffset(things_[index].type->sprite());
+	things_[index].z += MapEditor::textureManager().verticalOffset(things_[index].type->sprite());
 
 	things_[index].updated_time = App::runTimer();
 }
@@ -2169,7 +2169,7 @@ void MapRenderer3D::renderThings()
 	fseg2_t  strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 	for (unsigned a = 0; a < map_->nThings(); a++)
 	{
-		MapThing* thing  = map_->getThing(a);
+		MapThing* thing  = map_->thing(a);
 		things_[a].flags = things_[a].flags & ~DRAWN;
 
 		// Check side of camera
@@ -2211,8 +2211,8 @@ void MapRenderer3D::renderThings()
 		}
 
 		// Determine coordinates
-		halfwidth = things_[a].type->scaleX() * tex->getWidth() * 0.5;
-		theight   = things_[a].type->scaleY() * tex->getHeight();
+		halfwidth = things_[a].type->scaleX() * tex->width() * 0.5;
+		theight   = things_[a].type->scaleY() * tex->height();
 		if (things_[a].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size * 0.5;
@@ -2234,7 +2234,7 @@ void MapRenderer3D::renderThings()
 		{
 			// Get light level from sector
 			if (things_[a].sector)
-				light = things_[a].sector->getLight();
+				light = things_[a].sector->lightAt();
 
 			// Icon, use thing icon colour (not for Zeth icons, though)
 			if (things_[a].flags & ICON)
@@ -2247,12 +2247,12 @@ void MapRenderer3D::renderThings()
 
 			// Otherwise use sector colour
 			else if (things_[a].sector)
-				col.set(things_[a].sector->getColour(0, true));
+				col.set(things_[a].sector->colourAt(0, true));
 		}
 		setLight(col, light, calcDistFade(dist, mdist));
 		rgba_t fogcol = rgba_t(0, 0, 0, 0);
 		if (things_[a].sector)
-			fogcol = things_[a].sector->getFogColour();
+			fogcol = things_[a].sector->fogColour();
 
 		setFog(fogcol, light);
 
@@ -2286,7 +2286,7 @@ void MapRenderer3D::renderThings()
 			if (!(things_[a].flags & DRAWN))
 				continue;
 
-			MapThing* thing = map_->getThing(a);
+			MapThing* thing = map_->thing(a);
 			col.set(things_[a].type->colour());
 			float radius = things_[a].type->radius();
 			float bottom = things_[a].z + 0.5f;
@@ -2302,8 +2302,8 @@ void MapRenderer3D::renderThings()
 			rgba_t  fogcol2 = rgba_t(0, 0, 0, 0);
 			if (things_[a].sector)
 			{
-				light2  = things_[a].sector->getLight();
-				fogcol2 = things_[a].sector->getFogColour();
+				light2  = things_[a].sector->lightAt();
+				fogcol2 = things_[a].sector->fogColour();
 			}
 			setFog(fogcol2, light2);
 			glBegin(GL_QUADS);
@@ -2376,7 +2376,7 @@ void MapRenderer3D::renderThings()
 			// Direction
 			glPushMatrix();
 			glTranslatef(thing->xPos(), thing->yPos(), bottom);
-			glRotated(thing->getAngle(), 0, 0, 1);
+			glRotated(thing->angle(), 0, 0, 1);
 			glBegin(GL_LINES);
 			glVertex3f(0.0f, 0.0f, 0.0f);
 			glVertex3f(radius, 0.0f, 0.0f);
@@ -2410,7 +2410,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 	glEnable(GL_LINE_SMOOTH);
 
 	// Setup colour
-	rgba_t col1 = ColourConfiguration::getColour("map_3d_selection");
+	rgba_t col1 = ColourConfiguration::colour("map_3d_selection");
 	col1.a *= alpha;
 	OpenGL::setColour(col1);
 	rgba_t col2 = col1;
@@ -2426,7 +2426,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 
 		// Get thing
 		fpoint2_t strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
-		MapThing* thing = map_->getThing(selection[a].index);
+		MapThing* thing = map_->thing(selection[a].index);
 		if (!thing)
 			return;
 
@@ -2439,8 +2439,8 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 			continue;
 
 		// Determine coordinates
-		halfwidth = things_[selection[a].index].sprite->getWidth() * 0.5;
-		theight   = things_[selection[a].index].sprite->getHeight();
+		halfwidth = things_[selection[a].index].sprite->width() * 0.5;
+		theight   = things_[selection[a].index].sprite->height();
 		if (things_[selection[a].index].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size * 0.5;
@@ -2491,7 +2491,7 @@ void MapRenderer3D::updateFlatsVBO()
 	unsigned totalsize = 0;
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
-		Polygon2D* poly = map_->getSector(a)->getPolygon();
+		Polygon2D* poly = map_->sector(a)->polygon();
 		totalsize += poly->vboDataSize();
 	}
 
@@ -2509,8 +2509,8 @@ void MapRenderer3D::updateFlatsVBO()
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Set polygon z height
-		Polygon2D* poly = map_->getSector(a)->getPolygon();
-		height          = map_->getSector(a)->intProperty("heightfloor");
+		Polygon2D* poly = map_->sector(a)->polygon();
+		height          = map_->sector(a)->intProperty("heightfloor");
 		poly->setZ(height);
 
 		// Write to VBO
@@ -2531,8 +2531,8 @@ void MapRenderer3D::updateFlatsVBO()
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Set polygon z height
-		Polygon2D* poly = map_->getSector(a)->getPolygon();
-		height          = map_->getSector(a)->intProperty("heightceiling");
+		Polygon2D* poly = map_->sector(a)->polygon();
+		height          = map_->sector(a)->intProperty("heightceiling");
 		poly->setZ(height);
 
 		// Write to VBO
@@ -2570,7 +2570,7 @@ void MapRenderer3D::quickVisDiscard()
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Get sector bbox
-		bbox_t bbox = map_->getSector(a)->boundingBox();
+		bbox_t bbox = map_->sector(a)->boundingBox();
 
 		// Init to visible
 		dist_sectors_[a] = 0.0f;
@@ -2617,11 +2617,11 @@ void MapRenderer3D::quickVisDiscard()
 	// Set all lines that are part of invisible sectors to invisible
 	for (unsigned a = 0; a < map_->nSides(); a++)
 	{
-		dist = dist_sectors_[map_->getSide(a)->getSector()->getIndex()];
+		dist = dist_sectors_[map_->side(a)->sector()->index()];
 		if (dist < 0 || (render_max_dist > 0 && dist > render_max_dist))
-			lines_[map_->getSide(a)->getParentLine()->getIndex()].visible = false;
+			lines_[map_->side(a)->parentLine()->index()].visible = false;
 		else
-			lines_[map_->getSide(a)->getParentLine()->getIndex()].visible = true;
+			lines_[map_->side(a)->parentLine()->index()].visible = true;
 	}
 }
 
@@ -2658,7 +2658,7 @@ void MapRenderer3D::checkVisibleQuads()
 	fseg2_t  strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
-		line = map_->getLine(a);
+		line = map_->line(a);
 
 		// Skip if not visible
 		if (!lines_[a].visible)
@@ -2742,7 +2742,7 @@ void MapRenderer3D::checkVisibleFlats()
 	fpoint2_t cam = cam_position_.get2d();
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
-		sector = map_->getSector(a);
+		sector = map_->sector(a);
 
 		// Skip if invisible
 		if (dist_sectors_[a] < 0)
@@ -2812,7 +2812,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 		if (!lines_[a].visible)
 			continue;
 
-		MapLine* line = map_->getLine(a);
+		MapLine* line = map_->line(a);
 
 		// Find (2d) distance to line
 		dist = MathStuff::distanceRayLine(
@@ -2882,7 +2882,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			if (cam_position_.z > floors_[a].plane.height_at(cam_position_.x, cam_position_.y))
 			{
 				// Check if intersection is within sector
-				if (map_->getSector(a)->isWithin((cam_position_ + cam_dir3d_ * dist).get2d()))
+				if (map_->sector(a)->isWithin((cam_position_ + cam_dir3d_ * dist).get2d()))
 				{
 					current.index = a;
 					current.type  = MapEditor::ItemType::Floor;
@@ -2899,7 +2899,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			if (cam_position_.z < ceilings_[a].plane.height_at(cam_position_.x, cam_position_.y))
 			{
 				// Check if intersection is within sector
-				if (map_->getSector(a)->isWithin((cam_position_ + cam_dir3d_ * dist).get2d()))
+				if (map_->sector(a)->isWithin((cam_position_ + cam_dir3d_ * dist).get2d()))
 				{
 					current.index = a;
 					current.type  = MapEditor::ItemType::Ceiling;
@@ -2926,7 +2926,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			continue;
 
 		// Ignore if not visible
-		MapThing* thing = map_->getThing(a);
+		MapThing* thing = map_->thing(a);
 		if (MathStuff::lineSide(thing->point(), strafe) > 0)
 			continue;
 
@@ -2935,7 +2935,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			continue;
 
 		// Find distance to thing sprite
-		halfwidth = things_[a].sprite->getWidth() * 0.5;
+		halfwidth = things_[a].sprite->width() * 0.5;
 		if (things_[a].flags & ICON)
 			halfwidth = render_thing_icon_size * 0.5;
 		dist = MathStuff::distanceRayLine(
@@ -2949,7 +2949,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			continue;
 
 		// Check intersection height
-		theight = things_[a].sprite->getHeight();
+		theight = things_[a].sprite->height();
 		height  = cam_position_.z + cam_dir3d_.z * dist;
 		if (things_[a].flags & ICON)
 			theight = render_thing_icon_size;
@@ -2985,7 +2985,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	glDisable(GL_FOG);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_LINE_SMOOTH);
-	rgba_t col_hilight = ColourConfiguration::getColour("map_3d_hilight");
+	rgba_t col_hilight = ColourConfiguration::colour("map_3d_hilight");
 	col_hilight.a *= alpha;
 	OpenGL::setColour(col_hilight);
 
@@ -2994,19 +2994,19 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		|| hilight.type == MapEditor::ItemType::WallTop)
 	{
 		// Get side
-		MapSide* side = map_->getSide(hilight.index);
+		MapSide* side = map_->side(hilight.index);
 		if (!side)
 			return;
 
 		// Get parent line index
-		int line = map_->getSide(hilight.index)->getParentLine()->getIndex();
+		int line = map_->side(hilight.index)->parentLine()->index();
 
 		// Get appropriate quad
 		Quad* quad = nullptr;
 		for (unsigned a = 0; a < lines_[line].quads.size(); a++)
 		{
 			// Check quad is correct side
-			if (map_->getLine(line)->s1() == side && lines_[line].quads[a].flags & BACK)
+			if (map_->line(line)->s1() == side && lines_[line].quads[a].flags & BACK)
 				continue;
 
 			// Check quad is correct part
@@ -3059,7 +3059,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	if (hilight.type == MapEditor::ItemType::Floor || hilight.type == MapEditor::ItemType::Ceiling)
 	{
 		// Get sector
-		MapSector* sector = map_->getSector(hilight.index);
+		MapSector* sector = map_->sector(hilight.index);
 		if (!sector)
 			return;
 
@@ -3072,7 +3072,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 
 		// Render sector outline
 		vector<MapLine*> lines;
-		sector->getLines(lines);
+		sector->putLines(lines);
 		glBegin(GL_LINES);
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
@@ -3087,9 +3087,9 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 			col_hilight.a *= 0.3;
 			OpenGL::setColour(col_hilight, false);
 			glDisable(GL_CULL_FACE);
-			sector->getPolygon()->setZ(plane);
-			sector->getPolygon()->render();
-			sector->getPolygon()->setZ(0);
+			sector->polygon()->setZ(plane);
+			sector->polygon()->render();
+			sector->polygon()->setZ(0);
 			glEnable(GL_CULL_FACE);
 		}
 	}
@@ -3100,13 +3100,13 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	{
 		// Get thing
 		fpoint2_t strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
-		MapThing* thing = map_->getThing(hilight.index);
+		MapThing* thing = map_->thing(hilight.index);
 		if (!thing)
 			return;
 
 		// Determine coordinates
-		double halfwidth = things_[hilight.index].type->scaleX() * things_[hilight.index].sprite->getWidth() * 0.5;
-		double theight   = things_[hilight.index].type->scaleY() * things_[hilight.index].sprite->getHeight();
+		double halfwidth = things_[hilight.index].type->scaleX() * things_[hilight.index].sprite->width() * 0.5;
+		double theight   = things_[hilight.index].type->scaleY() * things_[hilight.index].sprite->height();
 		if (things_[hilight.index].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size * 0.5;
@@ -3150,7 +3150,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 // -----------------------------------------------------------------------------
 void MapRenderer3D::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
-	if (announcer != theMainWindow->getPaletteChooser() && announcer != theResourceManager)
+	if (announcer != theMainWindow->paletteChooser() && announcer != theResourceManager)
 		return;
 
 	if (event_name == "resources_updated" || event_name == "main_palette_changed")

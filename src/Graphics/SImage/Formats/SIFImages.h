@@ -46,7 +46,7 @@ public:
 		// Write chunk data
 		mc.write(&size_swapped, 4);
 		mc.write(name_, 4);
-		mc.write(data_.getData(), size_);
+		mc.write(data_.data(), size_);
 		mc.write(&crc_swapped, 4);
 	}
 
@@ -71,7 +71,7 @@ public:
 		fulldata.clear();
 	}
 
-	void setData(MemChunk& mc) { setData(mc.getData(), mc.getSize()); }
+	void setData(MemChunk& mc) { setData(mc.data(), mc.size()); }
 
 private:
 	uint32_t size_;
@@ -96,7 +96,7 @@ public:
 		mc.seek(0, SEEK_SET);
 
 		// Check size
-		if (mc.getSize() > 8)
+		if (mc.size() > 8)
 		{
 			// Check for PNG header
 			if (mc[0] == 137 && mc[1] == 80 && mc[2] == 78 && mc[3] == 71 && mc[4] == 13 && mc[5] == 10 && mc[6] == 26
@@ -107,7 +107,7 @@ public:
 		return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
+	SImage::info_t info(MemChunk& mc, int index)
 	{
 		SImage::info_t inf;
 		inf.format = "png";
@@ -244,7 +244,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index)
 	{
 		// Create FreeImage bitmap from entry data
-		FIMEMORY*         mem = FreeImage_OpenMemory((BYTE*)data.getData(), data.getSize());
+		FIMEMORY*         mem = FreeImage_OpenMemory((BYTE*)data.data(), data.size());
 		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(mem, 0);
 		FIBITMAP*         bm  = FreeImage_LoadFromMemory(fif, mem, 0);
 		FreeImage_CloseMemory(mem);
@@ -394,9 +394,9 @@ protected:
 		FIBITMAP* bm       = nullptr;
 		uint8_t*  img_data = imageData(image);
 		uint8_t*  img_mask = imageMask(image);
-		int       type     = image.getType();
-		int       width    = image.getWidth();
-		int       height   = image.getHeight();
+		int       type     = image.type();
+		int       width    = image.width();
+		int       height   = image.height();
 
 		if (type == RGBA)
 		{
@@ -509,14 +509,14 @@ protected:
 		png.importFile(App::path("temp.png", App::Dir::Temp));
 
 		// Check it loaded ok
-		if (png.getSize() == 0)
+		if (png.size() == 0)
 		{
 			LOG_MESSAGE(1, "Error reading temporary file");
 			return false;
 		}
 
 		// Write PNG header and IHDR
-		const uint8_t* png_data = png.getData();
+		const uint8_t* png_data = png.data();
 		data.clear();
 		data.write(png_data, 33);
 
@@ -538,7 +538,7 @@ protected:
 		}
 
 		// Write remaining PNG data
-		data.write(png_data + 33, png.getSize() - 33);
+		data.write(png_data + 33, png.size() - 33);
 
 		// Clean up
 		wxRemoveFile(App::path("temp.png", App::Dir::Temp));

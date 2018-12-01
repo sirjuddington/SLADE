@@ -172,10 +172,10 @@ public:
 	int    boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull);
 
 	// Defaults
-	string getDefaultString(MapObject::Type type, string property);
-	int    getDefaultInt(MapObject::Type type, string property);
-	double getDefaultFloat(MapObject::Type type, string property);
-	bool   getDefaultBool(MapObject::Type type, string property);
+	string defaultString(MapObject::Type type, string property);
+	int    defaultInt(MapObject::Type type, string property);
+	double defaultFloat(MapObject::Type type, string property);
+	bool   defaultBool(MapObject::Type type, string property);
 	void   applyDefaults(MapObject* object, bool udmf = false);
 
 	// Special Presets

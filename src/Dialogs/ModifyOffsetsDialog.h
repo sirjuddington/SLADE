@@ -6,8 +6,8 @@ public:
 	ModifyOffsetsDialog();
 	~ModifyOffsetsDialog();
 
-	point2_t getOffset();
-	int      getAlignType();
+	point2_t offset();
+	int      alignType();
 	bool     autoOffset();
 	bool     relativeOffset();
 	bool     xOffChange();

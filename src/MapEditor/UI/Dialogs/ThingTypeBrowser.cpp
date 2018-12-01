@@ -61,21 +61,21 @@ CVAR(Bool, use_zeth_icons, false, CVAR_SAVE)
 bool ThingBrowserItem::loadImage()
 {
 	// Get sprite
-	GLTexture* tex = MapEditor::textureManager().getSprite(type_.sprite(), type_.translation(), type_.palette());
+	GLTexture* tex = MapEditor::textureManager().sprite(type_.sprite(), type_.translation(), type_.palette());
 	if (!tex && use_zeth_icons && type_.zethIcon() >= 0)
 	{
 		// Sprite not found, try the Zeth icon
-		tex = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", type_.zethIcon()));
+		tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", type_.zethIcon()));
 	}
 	if (!tex)
 	{
 		// Sprite not found, try an icon
-		tex = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type_.icon()));
+		tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", type_.icon()));
 	}
 	if (!tex)
 	{
 		// Icon not found either, use unknown icon
-		tex = MapEditor::textureManager().getEditorImage("thing/unknown");
+		tex = MapEditor::textureManager().editorImage("thing/unknown");
 	}
 
 	if (tex)
@@ -156,9 +156,9 @@ void ThingTypeBrowser::setupViewOptions()
 // -----------------------------------------------------------------------------
 // Returns the currently selected thing type
 // -----------------------------------------------------------------------------
-int ThingTypeBrowser::getSelectedType()
+int ThingTypeBrowser::selectedType()
 {
-	BrowserItem* selected = getSelectedItem();
+	BrowserItem* selected = selectedItem();
 	if (selected)
 	{
 		LOG_MESSAGE(1, "Selected item %d", selected->index());

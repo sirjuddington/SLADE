@@ -151,7 +151,7 @@ bool GrpArchive::open(MemChunk& mc)
 
 		// If the lump data goes past the end of the file,
 		// the grpfile is invalid
-		if (offset + size > mc.getSize())
+		if (offset + size > mc.size())
 		{
 			LOG_MESSAGE(1, "GrpArchive::open: grp archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
@@ -178,13 +178,13 @@ bool GrpArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = getEntry(a);
+		ArchiveEntry* entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -229,12 +229,12 @@ bool GrpArchive::write(MemChunk& mc, bool update)
 	// Write the directory
 	for (uint32_t l = 0; l < num_lumps; l++)
 	{
-		entry         = getEntry(l);
+		entry         = entryAt(l);
 		char name[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		long size     = entry->getSize();
+		long size     = entry->size();
 
-		for (size_t c = 0; c < entry->getName().length() && c < 12; c++)
-			name[c] = entry->getName()[c];
+		for (size_t c = 0; c < entry->name().length() && c < 12; c++)
+			name[c] = entry->name()[c];
 
 		mc.write(name, 12);
 		mc.write(&size, 4);
@@ -250,8 +250,8 @@ bool GrpArchive::write(MemChunk& mc, bool update)
 	// Write the lumps
 	for (uint32_t l = 0; l < num_lumps; l++)
 	{
-		entry = getEntry(l);
-		mc.write(entry->getData(), entry->getSize());
+		entry = entryAt(l);
+		mc.write(entry->rawData(), entry->size());
 	}
 
 	return true;
@@ -269,7 +269,7 @@ bool GrpArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -287,7 +287,7 @@ bool GrpArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to lump offset in file and read it in
 	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -315,7 +315,7 @@ ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 		entry = new ArchiveEntry(*entry);
 
 	// Process name (must be 12 characters max)
-	string name = entry->getName().Truncate(12);
+	string name = entry->name().Truncate(12);
 	if (wad_force_uppercase)
 		name.MakeUpper();
 
@@ -361,7 +361,7 @@ bool GrpArchive::renameEntry(ArchiveEntry* entry, string name)
 bool GrpArchive::isGrpArchive(MemChunk& mc)
 {
 	// Check size
-	if (mc.getSize() < 16)
+	if (mc.size() < 16)
 		return false;
 
 	// Get number of lumps
@@ -392,7 +392,7 @@ bool GrpArchive::isGrpArchive(MemChunk& mc)
 	}
 
 	// Check if total size is correct
-	if (totalsize > mc.getSize())
+	if (totalsize > mc.size())
 		return false;
 
 	// If it's passed to here it's probably a grp file
@@ -466,23 +466,23 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 	if (!entry)
 		return;
 
-	MemChunk& mc = entry->getMCData();
-	if (mc.getSize() == 0)
+	MemChunk& mc = entry->data();
+	if (mc.size() == 0)
 		return;
 
 	ArchiveEntry* nentry = nullptr;
 	uint32_t*     data   = nullptr;
-	int           index  = entry->getParent()->entryIndex(entry, entry->getParentDir());
+	int           index  = entry->parent()->entryIndex(entry, entry->parentDir());
 	mc.seek(0, SEEK_SET);
 
 	// Create lookup table
 	uint8_t numlookup = 0;
 	uint8_t dummy     = 0;
 	mc.read(&numlookup, 1);
-	if (mc.getSize() < (uint32_t)((numlookup * 256) + (5 * 768) + 1))
+	if (mc.size() < (uint32_t)((numlookup * 256) + (5 * 768) + 1))
 		return;
 
-	nentry = entry->getParent()->addNewEntry("COLORMAP.DAT", index + 1, entry->getParentDir());
+	nentry = entry->parent()->addNewEntry("COLORMAP.DAT", index + 1, entry->parentDir());
 	if (!nentry)
 		return;
 
@@ -497,7 +497,7 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 
 	// Create extra palettes
 	data   = new uint32_t[768];
-	nentry = entry->getParent()->addNewEntry("WATERPAL.PAL", index + 2, entry->getParentDir());
+	nentry = entry->parent()->addNewEntry("WATERPAL.PAL", index + 2, entry->parentDir());
 	if (!nentry)
 	{
 		delete[] data;
@@ -505,7 +505,7 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 	}
 	mc.read(data, 768);
 	nentry->importMem(data, 768);
-	nentry = entry->getParent()->addNewEntry("SLIMEPAL.PAL", index + 3, entry->getParentDir());
+	nentry = entry->parent()->addNewEntry("SLIMEPAL.PAL", index + 3, entry->parentDir());
 	if (!nentry)
 	{
 		delete[] data;
@@ -513,7 +513,7 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 	}
 	mc.read(data, 768);
 	nentry->importMem(data, 768);
-	nentry = entry->getParent()->addNewEntry("TITLEPAL.PAL", index + 4, entry->getParentDir());
+	nentry = entry->parent()->addNewEntry("TITLEPAL.PAL", index + 4, entry->parentDir());
 	if (!nentry)
 	{
 		delete[] data;
@@ -521,7 +521,7 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 	}
 	mc.read(data, 768);
 	nentry->importMem(data, 768);
-	nentry = entry->getParent()->addNewEntry("3DREALMS.PAL", index + 5, entry->getParentDir());
+	nentry = entry->parent()->addNewEntry("3DREALMS.PAL", index + 5, entry->parentDir());
 	if (!nentry)
 	{
 		delete[] data;
@@ -529,7 +529,7 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 	}
 	mc.read(data, 768);
 	nentry->importMem(data, 768);
-	nentry = entry->getParent()->addNewEntry("ENDINPAL.PAL", index + 6, entry->getParentDir());
+	nentry = entry->parent()->addNewEntry("ENDINPAL.PAL", index + 6, entry->parentDir());
 	if (!nentry)
 	{
 		delete[] data;
@@ -550,20 +550,20 @@ CONSOLE_COMMAND(palettedat, 0, false)
 	if (!entry)
 		return;
 
-	MemChunk& mc = entry->getMCData();
+	MemChunk& mc = entry->data();
 	// Minimum size: 768 bytes for the palette, 2 for the number of lookup tables,
 	// 0 for these tables if there are none, and 65536 for the transparency map.
-	if (mc.getSize() < 66306)
+	if (mc.size() < 66306)
 		return;
 
 	ArchiveEntry* nentry = nullptr;
 	uint32_t*     data   = nullptr;
-	int           index  = entry->getParent()->entryIndex(entry, entry->getParentDir());
+	int           index  = entry->parent()->entryIndex(entry, entry->parentDir());
 	mc.seek(0, SEEK_SET);
 
 	// Create palette
 	data   = new uint32_t[768];
-	nentry = entry->getParent()->addNewEntry("MAINPAL.PAL", index + 1, entry->getParentDir());
+	nentry = entry->parent()->addNewEntry("MAINPAL.PAL", index + 1, entry->parentDir());
 	if (!nentry)
 		return;
 	mc.read(data, 768);
@@ -574,7 +574,7 @@ CONSOLE_COMMAND(palettedat, 0, false)
 	mc.read(&numlookup, 2);
 	numlookup = wxINT16_SWAP_ON_BE(numlookup);
 	delete[] data;
-	nentry = entry->getParent()->addNewEntry("COLORMAP.DAT", index + 2, entry->getParentDir());
+	nentry = entry->parent()->addNewEntry("COLORMAP.DAT", index + 2, entry->parentDir());
 	if (!nentry)
 		return;
 	data = new uint32_t[numlookup * 256];
@@ -583,7 +583,7 @@ CONSOLE_COMMAND(palettedat, 0, false)
 
 	// Create transparency tables
 	delete[] data;
-	nentry = entry->getParent()->addNewEntry("TRANMAP.DAT", index + 3, entry->getParentDir());
+	nentry = entry->parent()->addNewEntry("TRANMAP.DAT", index + 3, entry->parentDir());
 	if (!nentry)
 		return;
 	data = new uint32_t[65536];
@@ -602,25 +602,25 @@ CONSOLE_COMMAND(tablesdat, 0, false)
 	if (!entry)
 		return;
 
-	MemChunk& mc = entry->getMCData();
+	MemChunk& mc = entry->data();
 	// Sin/cos table: 4096; atn table 1280; gamma table 1024
 	// Fonts: 1024 byte each.
-	if (mc.getSize() != 8448)
+	if (mc.size() != 8448)
 		return;
 
 	ArchiveEntry* nentry = nullptr;
 	uint32_t*     data   = nullptr;
-	int           index  = entry->getParent()->entryIndex(entry, entry->getParentDir());
+	int           index  = entry->parent()->entryIndex(entry, entry->parentDir());
 	mc.seek(5376, SEEK_SET);
 
 	// Create fonts
 	data   = new uint32_t[1024];
-	nentry = entry->getParent()->addNewEntry("VGAFONT1.FNT", index + 1, entry->getParentDir());
+	nentry = entry->parent()->addNewEntry("VGAFONT1.FNT", index + 1, entry->parentDir());
 	if (!nentry)
 		return;
 	mc.read(data, 1024);
 	nentry->importMem(data, 1024);
-	nentry = entry->getParent()->addNewEntry("VGAFONT2.FNT", index + 2, entry->getParentDir());
+	nentry = entry->parent()->addNewEntry("VGAFONT2.FNT", index + 2, entry->parentDir());
 	if (!nentry)
 		return;
 	mc.read(data, 1024);

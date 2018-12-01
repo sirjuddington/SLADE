@@ -11,10 +11,10 @@ public:
 	~RunDialog();
 
 	void   openGameExe(unsigned index);
-	string getSelectedCommandLine(Archive* archive, string map_name, string map_file = "");
-	string getSelectedResourceList();
-	string getSelectedExeDir();
-	string getSelectedExeId();
+	string selectedCommandLine(Archive* archive, string map_name, string map_file = "");
+	string selectedResourceList();
+	string selectedExeDir();
+	string selectedExeId();
 	bool   start3dModeChecked();
 
 private:

@@ -94,7 +94,7 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 // -----------------------------------------------------------------------------
 // Returns a list of archives that have been selected as resources
 // -----------------------------------------------------------------------------
-vector<Archive*> ResourceArchiveChooser::getSelectedResourceArchives()
+vector<Archive*> ResourceArchiveChooser::selectedResourceArchives()
 {
 	wxArrayInt       checked;
 	vector<Archive*> list;
@@ -107,9 +107,9 @@ vector<Archive*> ResourceArchiveChooser::getSelectedResourceArchives()
 // -----------------------------------------------------------------------------
 // Returns a string of all selected resource archive filenames
 // -----------------------------------------------------------------------------
-string ResourceArchiveChooser::getSelectedResourceList()
+string ResourceArchiveChooser::selectedResourceList()
 {
-	vector<Archive*> selected = getSelectedResourceArchives();
+	vector<Archive*> selected = selectedResourceArchives();
 	string           ret;
 	for (unsigned a = 0; a < selected.size(); a++)
 		ret += S_FMT("\"%s\" ", selected[a]->filename());

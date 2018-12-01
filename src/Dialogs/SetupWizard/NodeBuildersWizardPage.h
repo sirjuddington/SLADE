@@ -11,8 +11,8 @@ public:
 
 	bool   canGoNext();
 	void   applyChanges();
-	string getTitle() { return "Node Builders"; }
-	string getDescription();
+	string title() { return "Node Builders"; }
+	string description();
 
 private:
 	NodesPrefsPanel* panel_nodes_;

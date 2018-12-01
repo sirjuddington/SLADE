@@ -53,7 +53,7 @@ int DataEntryTable::GetNumberRows()
 	if (row_stride_ == 0)
 		return 0;
 	else
-		return ((data_stop_ ? data_stop_ : data_.getSize()) - data_start_) / row_stride_;
+		return ((data_stop_ ? data_stop_ : data_.size()) - data_start_) / row_stride_;
 }
 
 // -----------------------------------------------------------------------------
@@ -147,7 +147,7 @@ string DataEntryTable::GetValue(int row, int col)
 	// String column
 	else if (columns_[col].type == String)
 	{
-		return wxString::FromAscii(data_.getData() + data_.currentPos(), columns_[col].size);
+		return wxString::FromAscii(data_.data() + data_.currentPos(), columns_[col].size);
 	}
 
 	// Custom value column
@@ -304,14 +304,14 @@ bool DataEntryTable::DeleteRows(size_t pos, size_t num)
 {
 	// Copy existing data
 	MemChunk copy;
-	copy.write(data_.getData(), data_.getSize());
+	copy.write(data_.data(), data_.size());
 
 	// Write new data (excluding deleted rows)
 	unsigned start = data_start_ + (row_stride_ * pos);
 	unsigned end   = data_start_ + (row_stride_ * (pos + num));
 	data_.clear();
-	data_.write(copy.getData(), start);
-	data_.write(copy.getData() + end, copy.getSize() - end);
+	data_.write(copy.data(), start);
+	data_.write(copy.data() + end, copy.size() - end);
 
 	// Update new rows
 	vector<int> new_rows_new;
@@ -349,12 +349,12 @@ bool DataEntryTable::InsertRows(size_t pos, size_t num)
 {
 	// Copy existing data
 	MemChunk copy;
-	copy.write(data_.getData(), data_.getSize());
+	copy.write(data_.data(), data_.size());
 
 	// Write leading rows
 	unsigned start = data_start_ + (row_stride_ * pos);
 	data_.clear();
-	data_.write(copy.getData(), start);
+	data_.write(copy.data(), start);
 
 	// Write new (blank) rows
 	uint8_t* temp = new uint8_t[row_stride_ * num];
@@ -363,7 +363,7 @@ bool DataEntryTable::InsertRows(size_t pos, size_t num)
 	delete[] temp;
 
 	// Write ending rows
-	data_.write(copy.getData() + start, copy.getSize() - start);
+	data_.write(copy.data() + start, copy.size() - start);
 
 	// Update new rows
 	for (unsigned a = 0; a < rows_new_.size(); a++)
@@ -397,7 +397,7 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 	{
 		if (rows_new_[a] == row)
 		{
-			attr->SetTextColour(WXCOL(ColourConfiguration::getColour("new")));
+			attr->SetTextColour(WXCOL(ColourConfiguration::colour("new")));
 			new_row = true;
 			break;
 		}
@@ -410,7 +410,7 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 		{
 			if (cells_modified_[a].x == row && cells_modified_[a].y == col)
 			{
-				attr->SetTextColour(WXCOL(ColourConfiguration::getColour("modified")));
+				attr->SetTextColour(WXCOL(ColourConfiguration::colour("modified")));
 				break;
 			}
 		}
@@ -440,10 +440,10 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		return true;
 
 	// Load entry data
-	data_.write(entry->getData(), entry->getSize());
+	data_.write(entry->rawData(), entry->size());
 
 	// Setup columns
-	string type = entry->getType()->id();
+	string type = entry->type()->id();
 
 	// VERTEXES
 	if (type == "map_vertexes")
@@ -812,7 +812,7 @@ void DataEntryTable::copyRows(int row, int num, bool add)
 	if (!add)
 		data_clipboard_.clear();
 
-	data_clipboard_.write(data_.getData() + data_start_ + (row * row_stride_), num * row_stride_);
+	data_clipboard_.write(data_.data() + data_start_ + (row * row_stride_), num * row_stride_);
 }
 
 // -----------------------------------------------------------------------------
@@ -821,26 +821,26 @@ void DataEntryTable::copyRows(int row, int num, bool add)
 void DataEntryTable::pasteRows(int row)
 {
 	// Ignore if no copied data
-	if (data_clipboard_.getSize() == 0)
+	if (data_clipboard_.size() == 0)
 		return;
 
 	// Copy existing data
 	MemChunk copy;
-	copy.write(data_.getData(), data_.getSize());
+	copy.write(data_.data(), data_.size());
 
 	// Write leading rows
 	unsigned start = data_start_ + (row_stride_ * row);
 	data_.clear();
-	data_.write(copy.getData(), start);
+	data_.write(copy.data(), start);
 
 	// Write new rows
-	data_.write(data_clipboard_.getData(), data_clipboard_.getSize());
+	data_.write(data_clipboard_.data(), data_clipboard_.size());
 
 	// Write ending rows
-	data_.write(copy.getData() + start, copy.getSize() - start);
+	data_.write(copy.data() + start, copy.size() - start);
 
 	// Update new rows
-	int num = data_clipboard_.getSize() / row_stride_;
+	int num = data_clipboard_.size() / row_stride_;
 	for (unsigned a = 0; a < rows_new_.size(); a++)
 	{
 		if (rows_new_[a] >= row)
@@ -923,7 +923,7 @@ bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool DataEntryPanel::saveEntry()
 {
-	entry_->importMemChunk(table_data_->getData());
+	entry_->importMemChunk(table_data_->data());
 	setModified(false);
 	return true;
 }
@@ -1046,7 +1046,7 @@ void DataEntryPanel::pasteRow()
 void DataEntryPanel::changeValue()
 {
 	// Get selection
-	vector<point2_t> selection = getSelection();
+	vector<point2_t> selection = this->selection();
 
 	// Determine common value (if any)
 	string initial_val;
@@ -1065,7 +1065,7 @@ void DataEntryPanel::changeValue()
 	// Create dialog
 	wxDialog dlg(MainEditor::windowWx(), -1, "Change Value");
 
-	auto          ci = table_data_->getColumnInfo(selection[0].y);
+	auto          ci = table_data_->columnInfo(selection[0].y);
 	wxArrayString choices;
 	for (unsigned a = 0; a < ci.custom_values.size(); a++)
 		choices.Add(S_FMT("%d: %s", ci.custom_values[a].first, ci.custom_values[a].second));
@@ -1128,17 +1128,12 @@ bool DataEntryPanel::handleAction(string action_id)
 // -----------------------------------------------------------------------------
 int DataEntryPanel::getColWithSelection()
 {
-	vector<point2_t> selection = getSelection();
-
-	if (selection.empty())
-		return -1;
-
 	int col = -1;
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto& cell : selection())
 	{
 		if (col < 0)
-			col = selection[a].y;
-		else if (col != selection[a].y)
+			col = cell.y;
+		else if (col != cell.y)
 			return -1;
 	}
 
@@ -1148,7 +1143,7 @@ int DataEntryPanel::getColWithSelection()
 // -----------------------------------------------------------------------------
 // Gets the positions of the currently selected cells
 // -----------------------------------------------------------------------------
-vector<point2_t> DataEntryPanel::getSelection()
+vector<point2_t> DataEntryPanel::selection()
 {
 	vector<point2_t> selection;
 
@@ -1230,7 +1225,7 @@ void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 void DataEntryPanel::onGridCursorChanged(wxGridEvent& e)
 {
 	combo_cell_value_->Clear();
-	auto col = table_data_->getColumnInfo(e.GetCol());
+	auto col = table_data_->columnInfo(e.GetCol());
 	for (unsigned a = 0; a < col.custom_values.size(); a++)
 		combo_cell_value_->AppendString(S_FMT("%d: %s", col.custom_values[a].first, col.custom_values[a].second));
 

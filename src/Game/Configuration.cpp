@@ -154,7 +154,7 @@ gc_mapinfo_t Configuration::mapInfo(string name)
 void Configuration::readActionSpecials(ParseTreeNode* node, Arg::SpecialMap& shared_args, ActionSpecial* group_defaults)
 {
 	// Check if we're clearing all existing specials
-	if (node->getChild("clearexisting"))
+	if (node->child("clearexisting"))
 		action_specials_.clear();
 
 	// Determine current 'group'
@@ -162,13 +162,13 @@ void Configuration::readActionSpecials(ParseTreeNode* node, Arg::SpecialMap& sha
 	string         groupname = "";
 	while (true)
 	{
-		if (!group || group->getName() == "action_specials")
+		if (!group || group->name() == "action_specials")
 			break;
 		else
 		{
 			// Add current node name to group path
-			groupname.Prepend(group->getName() + "/");
-			group = (ParseTreeNode*)group->getParent();
+			groupname.Prepend(group->name() + "/");
+			group = (ParseTreeNode*)group->parent();
 		}
 	}
 	if (groupname.EndsWith("/"))
@@ -183,7 +183,7 @@ void Configuration::readActionSpecials(ParseTreeNode* node, Arg::SpecialMap& sha
 	// --- Go through all child nodes ---
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto child = node->getChildPTN(a);
+		auto child = node->childPTN(a);
 
 		// Check for 'group'
 		if (S_CMPNOCASE(child->type(), "group"))
@@ -191,14 +191,14 @@ void Configuration::readActionSpecials(ParseTreeNode* node, Arg::SpecialMap& sha
 
 		// Predeclared argument, for action specials that share the same complex argument
 		else if (S_CMPNOCASE(child->type(), "arg"))
-			shared_args[child->getName()].parse(child, &shared_args);
+			shared_args[child->name()].parse(child, &shared_args);
 
 		// Action special
 		else if (S_CMPNOCASE(child->type(), "special"))
 		{
 			// Get special id as integer
 			long special;
-			child->getName().ToLong(&special);
+			child->name().ToLong(&special);
 
 			// Reset the action special (in case it's being redefined for whatever reason)
 			// action_specials_[special].reset();
@@ -221,7 +221,7 @@ void Configuration::readActionSpecials(ParseTreeNode* node, Arg::SpecialMap& sha
 void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_defaults)
 {
 	// Check if we're clearing all existing specials
-	if (node->getChild("clearexisting"))
+	if (node->child("clearexisting"))
 		thing_types_.clear();
 
 	// --- Determine current 'group' ---
@@ -229,13 +229,13 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 	string         groupname = "";
 	while (true)
 	{
-		if (!group || group->getName() == "thing_types")
+		if (!group || group->name() == "thing_types")
 			break;
 		else
 		{
 			// Add current node name to group path
-			groupname.Prepend(group->getName() + "/");
-			group = (ParseTreeNode*)group->getParent();
+			groupname.Prepend(group->name() + "/");
+			group = (ParseTreeNode*)group->parent();
 		}
 	}
 	if (groupname.EndsWith("/"))
@@ -253,7 +253,7 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 	ParseTreeNode* child = nullptr;
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		child = node->getChildPTN(a);
+		child = node->childPTN(a);
 
 		// Check for 'group'
 		if (S_CMPNOCASE(child->type(), "group"))
@@ -264,7 +264,7 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 		{
 			// Get thing type as integer
 			long type;
-			child->getName().ToLong(&type);
+			child->name().ToLong(&type);
 
 			// Reset the thing type (in case it's being redefined for whatever reason)
 			thing_types_[type].reset();
@@ -293,25 +293,25 @@ void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 	// Read block properties
 	for (unsigned a = 0; a < block->nChildren(); a++)
 	{
-		auto group = block->getChildPTN(a);
+		auto group = block->childPTN(a);
 
 		// Group definition
 		if (S_CMPNOCASE(group->type(), "group"))
 		{
-			string groupname = group->getName();
+			string groupname = group->name();
 
 			// Go through the group
 			for (unsigned b = 0; b < group->nChildren(); b++)
 			{
-				auto def = group->getChildPTN(b);
+				auto def = group->childPTN(b);
 
 				if (S_CMPNOCASE(def->type(), "property"))
 				{
 					// Parse group defaults
-					plist[def->getName()].parse(group, groupname);
+					plist[def->name()].parse(group, groupname);
 
 					// Parse definition
-					plist[def->getName()].parse(def, groupname);
+					plist[def->name()].parse(def, groupname);
 				}
 			}
 		}
@@ -322,19 +322,19 @@ void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 // Reads a game or port definition from a parsed tree [node]. If [port_section]
 // is true it is a port definition
 // -----------------------------------------------------------------------------
-#define READ_BOOL(obj, field) else if (S_CMPNOCASE(node->getName(), #field)) obj = node->boolValue()
+#define READ_BOOL(obj, field) else if (S_CMPNOCASE(node->name(), #field)) obj = node->boolValue()
 void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 {
 	for (unsigned a = 0; a < node_game->nChildren(); a++)
 	{
-		auto node = node_game->getChildPTN(a);
+		auto node = node_game->childPTN(a);
 
 		// Allow any map name
-		if (S_CMPNOCASE(node->getName(), "map_name_any"))
+		if (S_CMPNOCASE(node->name(), "map_name_any"))
 			supported_features_[Feature::AnyMapName] = node->boolValue();
 
 		// Map formats
-		else if (S_CMPNOCASE(node->getName(), "map_formats"))
+		else if (S_CMPNOCASE(node->name(), "map_formats"))
 		{
 			// Reset supported formats
 			for (unsigned f = 0; f < 4; f++)
@@ -365,37 +365,37 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 		}
 
 		// Boom extensions
-		else if (S_CMPNOCASE(node->getName(), "boom"))
+		else if (S_CMPNOCASE(node->name(), "boom"))
 			supported_features_[Feature::Boom] = node->boolValue();
-		else if (S_CMPNOCASE(node->getName(), "boom_sector_flag_start"))
+		else if (S_CMPNOCASE(node->name(), "boom_sector_flag_start"))
 			boom_sector_flag_start_ = node->intValue();
 
 		// UDMF namespace
-		else if (S_CMPNOCASE(node->getName(), "udmf_namespace"))
+		else if (S_CMPNOCASE(node->name(), "udmf_namespace"))
 			udmf_namespace_ = node->stringValue();
 
 		// Mixed Textures and Flats
-		else if (S_CMPNOCASE(node->getName(), "mix_tex_flats"))
+		else if (S_CMPNOCASE(node->name(), "mix_tex_flats"))
 			supported_features_[Feature::MixTexFlats] = node->boolValue();
 
 		// TX_/'textures' namespace enabled
-		else if (S_CMPNOCASE(node->getName(), "tx_textures"))
+		else if (S_CMPNOCASE(node->name(), "tx_textures"))
 			supported_features_[Feature::TxTextures] = node->boolValue();
 
 		// Sky flat
-		else if (S_CMPNOCASE(node->getName(), "sky_flat"))
+		else if (S_CMPNOCASE(node->name(), "sky_flat"))
 			sky_flat_ = node->stringValue();
 
 		// Scripting language
-		else if (S_CMPNOCASE(node->getName(), "script_language"))
+		else if (S_CMPNOCASE(node->name(), "script_language"))
 			script_language_ = node->stringValue().Lower();
 
 		// Light levels interval
-		else if (S_CMPNOCASE(node->getName(), "light_level_interval"))
+		else if (S_CMPNOCASE(node->name(), "light_level_interval"))
 			setLightLevelInterval(node->intValue());
 
 		// Long names
-		else if (S_CMPNOCASE(node->getName(), "long_names"))
+		else if (S_CMPNOCASE(node->name(), "long_names"))
 			supported_features_[Feature::LongNames] = node->boolValue();
 
 		READ_BOOL(udmf_features_[UDMFFeature::Slopes], udmf_slopes);                      // UDMF slopes
@@ -418,91 +418,91 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 			udmf_features_[UDMFFeature::ThingRotation], udmf_thing_rotation); // UDMF per-thing pitch and yaw rotation
 
 		// Defaults section
-		else if (S_CMPNOCASE(node->getName(), "defaults"))
+		else if (S_CMPNOCASE(node->name(), "defaults"))
 		{
 			// Go through defaults blocks
 			for (unsigned b = 0; b < node->nChildren(); b++)
 			{
-				auto block = node->getChildPTN(b);
+				auto block = node->childPTN(b);
 
 				// Linedef defaults
-				if (S_CMPNOCASE(block->getName(), "linedef"))
+				if (S_CMPNOCASE(block->name(), "linedef"))
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
-						auto def = block->getChildPTN(c);
+						auto def = block->childPTN(c);
 						if (S_CMPNOCASE(def->type(), "udmf"))
-							defaults_line_udmf_[def->getName()] = def->value();
+							defaults_line_udmf_[def->name()] = def->value();
 						else
-							defaults_line_[def->getName()] = def->value();
+							defaults_line_[def->name()] = def->value();
 					}
 				}
 
 				// Sidedef defaults
-				else if (S_CMPNOCASE(block->getName(), "sidedef"))
+				else if (S_CMPNOCASE(block->name(), "sidedef"))
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
-						auto def = block->getChildPTN(c);
+						auto def = block->childPTN(c);
 						if (S_CMPNOCASE(def->type(), "udmf"))
-							defaults_side_udmf_[def->getName()] = def->value();
+							defaults_side_udmf_[def->name()] = def->value();
 						else
-							defaults_side_[def->getName()] = def->value();
+							defaults_side_[def->name()] = def->value();
 					}
 				}
 
 				// Sector defaults
-				else if (S_CMPNOCASE(block->getName(), "sector"))
+				else if (S_CMPNOCASE(block->name(), "sector"))
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
-						auto def = block->getChildPTN(c);
+						auto def = block->childPTN(c);
 						if (S_CMPNOCASE(def->type(), "udmf"))
-							defaults_sector_udmf_[def->getName()] = def->value();
+							defaults_sector_udmf_[def->name()] = def->value();
 						else
-							defaults_sector_[def->getName()] = def->value();
+							defaults_sector_[def->name()] = def->value();
 					}
 				}
 
 				// Thing defaults
-				else if (S_CMPNOCASE(block->getName(), "thing"))
+				else if (S_CMPNOCASE(block->name(), "thing"))
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
-						auto def = block->getChildPTN(c);
+						auto def = block->childPTN(c);
 						if (S_CMPNOCASE(def->type(), "udmf"))
-							defaults_thing_udmf_[def->getName()] = def->value();
+							defaults_thing_udmf_[def->name()] = def->value();
 						else
-							defaults_thing_[def->getName()] = def->value();
+							defaults_thing_[def->name()] = def->value();
 					}
 				}
 
 				else
-					LOG_MESSAGE(1, "Unknown defaults block \"%s\"", block->getName());
+					LOG_MESSAGE(1, "Unknown defaults block \"%s\"", block->name());
 			}
 		}
 
 		// Maps section (game section only)
-		else if (S_CMPNOCASE(node->getName(), "maps") && !port_section)
+		else if (S_CMPNOCASE(node->name(), "maps") && !port_section)
 		{
 			// Go through map blocks
 			for (unsigned b = 0; b < node->nChildren(); b++)
 			{
-				auto block = node->getChildPTN(b);
+				auto block = node->childPTN(b);
 
 				// Map definition
 				if (S_CMPNOCASE(block->type(), "map"))
 				{
 					gc_mapinfo_t map;
-					map.mapname = block->getName();
+					map.mapname = block->name();
 
 					// Go through map properties
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
-						auto prop = block->getChildPTN(c);
+						auto prop = block->childPTN(c);
 
 						// Sky texture
-						if (S_CMPNOCASE(prop->getName(), "sky"))
+						if (S_CMPNOCASE(prop->name(), "sky"))
 						{
 							// Primary sky texture
 							map.sky1 = prop->stringValue();
@@ -565,7 +565,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		// 'Game' section (this is required for it to be a valid game configuration, shouldn't be missing)
 		for (unsigned a = 0; a < base->nChildren(); a++)
 		{
-			auto child = base->getChildPTN(a);
+			auto child = base->childPTN(a);
 			if (child->type() == "game")
 			{
 				node_game = child;
@@ -582,7 +582,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		// 'Port' section
 		for (unsigned a = 0; a < base->nChildren(); a++)
 		{
-			auto child = base->getChildPTN(a);
+			auto child = base->childPTN(a);
 			if (child->type() == "port")
 			{
 				node_port = child;
@@ -597,33 +597,33 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 	ParseTreeNode* node = nullptr;
 	for (unsigned a = 0; a < base->nChildren(); a++)
 	{
-		node = base->getChildPTN(a);
+		node = base->childPTN(a);
 
 		// Skip read game/port section
 		if (node == node_game || node == node_port)
 			continue;
 
 		// A TC configuration may override the base game
-		if (S_CMPNOCASE(node->getName(), "game"))
+		if (S_CMPNOCASE(node->name(), "game"))
 			readGameSection(node, false);
 
 		// Action specials section
-		else if (S_CMPNOCASE(node->getName(), "action_specials"))
+		else if (S_CMPNOCASE(node->name(), "action_specials"))
 		{
 			Arg::SpecialMap sm;
 			readActionSpecials(node, sm);
 		}
 
 		// Thing types section
-		else if (S_CMPNOCASE(node->getName(), "thing_types"))
+		else if (S_CMPNOCASE(node->name(), "thing_types"))
 			readThingTypes(node);
 
 		// Line flags section
-		else if (S_CMPNOCASE(node->getName(), "line_flags"))
+		else if (S_CMPNOCASE(node->name(), "line_flags"))
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
-				auto value = node->getChildPTN(c);
+				auto value = node->childPTN(c);
 
 				// Check for 'flag' type
 				if (!(S_CMPNOCASE(value->type(), "flag")))
@@ -636,28 +636,28 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 				if (value->nValues() == 0)
 				{
 					// Full definition
-					flag_name = value->getName();
+					flag_name = value->name();
 
 					for (unsigned v = 0; v < value->nChildren(); v++)
 					{
-						auto prop = value->getChildPTN(v);
+						auto prop = value->childPTN(v);
 
-						if (S_CMPNOCASE(prop->getName(), "value"))
+						if (S_CMPNOCASE(prop->name(), "value"))
 							flag_val = prop->intValue();
-						else if (S_CMPNOCASE(prop->getName(), "udmf"))
+						else if (S_CMPNOCASE(prop->name(), "udmf"))
 						{
 							for (unsigned u = 0; u < prop->nValues(); u++)
 								flag_udmf += prop->stringValue(u) + " ";
 							flag_udmf.RemoveLast(1);
 						}
-						else if (S_CMPNOCASE(prop->getName(), "activation"))
+						else if (S_CMPNOCASE(prop->name(), "activation"))
 							activation = prop->boolValue();
 					}
 				}
 				else
 				{
 					// Short definition
-					value->getName().ToULong(&flag_val);
+					value->name().ToULong(&flag_val);
 					flag_name = value->stringValue();
 				}
 
@@ -680,11 +680,11 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		}
 
 		// Line triggers section
-		else if (S_CMPNOCASE(node->getName(), "line_triggers"))
+		else if (S_CMPNOCASE(node->name(), "line_triggers"))
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
-				auto value = node->getChildPTN(c);
+				auto value = node->childPTN(c);
 
 				// Check for 'trigger' type
 				if (!(S_CMPNOCASE(value->type(), "trigger")))
@@ -696,15 +696,15 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 				if (value->nValues() == 0)
 				{
 					// Full definition
-					flag_name = value->getName();
+					flag_name = value->name();
 
 					for (unsigned v = 0; v < value->nChildren(); v++)
 					{
-						auto prop = value->getChildPTN(v);
+						auto prop = value->childPTN(v);
 
-						if (S_CMPNOCASE(prop->getName(), "value"))
+						if (S_CMPNOCASE(prop->name(), "value"))
 							flag_val = prop->intValue();
-						else if (S_CMPNOCASE(prop->getName(), "udmf"))
+						else if (S_CMPNOCASE(prop->name(), "udmf"))
 						{
 							for (unsigned u = 0; u < prop->nValues(); u++)
 								flag_udmf += prop->stringValue(u) + " ";
@@ -715,7 +715,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 				else
 				{
 					// Short definition
-					value->getName().ToLong(&flag_val);
+					value->name().ToLong(&flag_val);
 					flag_name = value->stringValue();
 				}
 
@@ -738,11 +738,11 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		}
 
 		// Thing flags section
-		else if (S_CMPNOCASE(node->getName(), "thing_flags"))
+		else if (S_CMPNOCASE(node->name(), "thing_flags"))
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
-				auto value = node->getChildPTN(c);
+				auto value = node->childPTN(c);
 
 				// Check for 'flag' type
 				if (!(S_CMPNOCASE(value->type(), "flag")))
@@ -754,15 +754,15 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 				if (value->nValues() == 0)
 				{
 					// Full definition
-					flag_name = value->getName();
+					flag_name = value->name();
 
 					for (unsigned v = 0; v < value->nChildren(); v++)
 					{
-						auto prop = value->getChildPTN(v);
+						auto prop = value->childPTN(v);
 
-						if (S_CMPNOCASE(prop->getName(), "value"))
+						if (S_CMPNOCASE(prop->name(), "value"))
 							flag_val = prop->intValue();
-						else if (S_CMPNOCASE(prop->getName(), "udmf"))
+						else if (S_CMPNOCASE(prop->name(), "udmf"))
 						{
 							for (unsigned u = 0; u < prop->nValues(); u++)
 								flag_udmf += prop->stringValue(u) + " ";
@@ -773,7 +773,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 				else
 				{
 					// Short definition
-					value->getName().ToLong(&flag_val);
+					value->name().ToLong(&flag_val);
 					flag_name = value->stringValue();
 				}
 
@@ -796,11 +796,11 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		}
 
 		// Sector types section
-		else if (S_CMPNOCASE(node->getName(), "sector_types"))
+		else if (S_CMPNOCASE(node->name(), "sector_types"))
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
-				auto value = node->getChildPTN(c);
+				auto value = node->childPTN(c);
 
 				// Check for 'type'
 				if (!(S_CMPNOCASE(value->type(), "type")))
@@ -808,7 +808,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 
 				// Parse type value
 				long type_val;
-				value->getName().ToLong(&type_val);
+				value->name().ToLong(&type_val);
 
 				// Set type name
 				sector_types_[type_val] = value->stringValue();
@@ -816,40 +816,40 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 		}
 
 		// UDMF properties section
-		else if (S_CMPNOCASE(node->getName(), "udmf_properties"))
+		else if (S_CMPNOCASE(node->name(), "udmf_properties"))
 		{
 			// Parse vertex block properties (if any)
-			auto block = node->getChildPTN("vertex");
+			auto block = node->childPTN("vertex");
 			if (block)
 				readUDMFProperties(block, udmf_vertex_props_);
 
 			// Parse linedef block properties (if any)
-			block = node->getChildPTN("linedef");
+			block = node->childPTN("linedef");
 			if (block)
 				readUDMFProperties(block, udmf_linedef_props_);
 
 			// Parse sidedef block properties (if any)
-			block = node->getChildPTN("sidedef");
+			block = node->childPTN("sidedef");
 			if (block)
 				readUDMFProperties(block, udmf_sidedef_props_);
 
 			// Parse sector block properties (if any)
-			block = node->getChildPTN("sector");
+			block = node->childPTN("sector");
 			if (block)
 				readUDMFProperties(block, udmf_sector_props_);
 
 			// Parse thing block properties (if any)
-			block = node->getChildPTN("thing");
+			block = node->childPTN("thing");
 			if (block)
 				readUDMFProperties(block, udmf_thing_props_);
 		}
 
 		// Special Presets section
-		else if (S_CMPNOCASE(node->getName(), "special_presets"))
+		else if (S_CMPNOCASE(node->name(), "special_presets"))
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
-				auto preset = node->getChildPTN(c);
+				auto preset = node->childPTN(c);
 				if (S_CMPNOCASE(preset->type(), "preset"))
 				{
 					special_presets_.push_back({});
@@ -860,7 +860,7 @@ bool Configuration::readConfiguration(string& cfg, string source, uint8_t format
 
 		// Unknown/unexpected section
 		else
-			LOG_MESSAGE(1, "Warning: Unexpected game configuration section \"%s\", skipping", node->getName());
+			LOG_MESSAGE(1, "Warning: Unexpected game configuration section \"%s\", skipping", node->name());
 	}
 
 	return true;
@@ -964,13 +964,13 @@ bool Configuration::openConfig(string game, string port, uint8_t format)
 	for (unsigned a = 0; a < cfg_entries.size(); a++)
 	{
 		// Log message
-		Archive* parent = cfg_entries[a]->getParent();
+		Archive* parent = cfg_entries[a]->parent();
 		if (parent)
 			LOG_MESSAGE(1, "Reading SLADECFG in %s", parent->filename());
 
 		// Read embedded config
-		string config = wxString::FromAscii(cfg_entries[a]->getData(), cfg_entries[a]->getSize());
-		if (!readConfiguration(config, cfg_entries[a]->getName(), format, true, false))
+		string config = wxString::FromAscii(cfg_entries[a]->rawData(), cfg_entries[a]->size());
+		if (!readConfiguration(config, cfg_entries[a]->name(), format, true, false))
 			LOG_MESSAGE(1, "Error reading embedded game configuration, not loaded");
 	}
 
@@ -1826,7 +1826,7 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 {
 	// Get UDMF properties list for type
 	UDMFPropMap* map  = nullptr;
-	auto         type = object->getObjType();
+	auto         type = object->objType();
 	if (type == MapObject::Type::Vertex)
 		map = &udmf_vertex_props_;
 	else if (type == MapObject::Type::Line)
@@ -1848,24 +1848,24 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 			continue;
 
 		// Remove the property from the object if it is the default value
-		if (i.second.defaultValue().getType() == Property::Type::Boolean)
+		if (i.second.defaultValue().type() == Property::Type::Boolean)
 		{
-			if (i.second.defaultValue().getBoolValue() == object->boolProperty(i.first))
+			if (i.second.defaultValue().boolValue() == object->boolProperty(i.first))
 				object->props().removeProperty(i.first);
 		}
-		else if (i.second.defaultValue().getType() == Property::Type::Int)
+		else if (i.second.defaultValue().type() == Property::Type::Int)
 		{
-			if (i.second.defaultValue().getIntValue() == object->intProperty(i.first))
+			if (i.second.defaultValue().intValue() == object->intProperty(i.first))
 				object->props().removeProperty(i.first);
 		}
-		else if (i.second.defaultValue().getType() == Property::Type::Float)
+		else if (i.second.defaultValue().type() == Property::Type::Float)
 		{
-			if (i.second.defaultValue().getFloatValue() == object->floatProperty(i.first))
+			if (i.second.defaultValue().floatValue() == object->floatProperty(i.first))
 				object->props().removeProperty(i.first);
 		}
-		else if (i.second.defaultValue().getType() == Property::Type::String)
+		else if (i.second.defaultValue().type() == Property::Type::String)
 		{
-			if (i.second.defaultValue().getStringValue() == object->stringProperty(i.first))
+			if (i.second.defaultValue().stringValue() == object->stringProperty(i.first))
 				object->props().removeProperty(i.first);
 		}
 	}
@@ -2074,14 +2074,14 @@ int Configuration::boomSectorType(int base, int damage, bool secret, bool fricti
 // -----------------------------------------------------------------------------
 // Returns the default string value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-string Configuration::getDefaultString(MapObject::Type type, string property)
+string Configuration::defaultString(MapObject::Type type, string property)
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].getStringValue(); break;
-	case MapObject::Type::Side: return defaults_side_[property].getStringValue(); break;
-	case MapObject::Type::Sector: return defaults_sector_[property].getStringValue(); break;
-	case MapObject::Type::Thing: return defaults_thing_[property].getStringValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].stringValue(); break;
+	case MapObject::Type::Side: return defaults_side_[property].stringValue(); break;
+	case MapObject::Type::Sector: return defaults_sector_[property].stringValue(); break;
+	case MapObject::Type::Thing: return defaults_thing_[property].stringValue(); break;
 	default: return "";
 	}
 }
@@ -2089,14 +2089,14 @@ string Configuration::getDefaultString(MapObject::Type type, string property)
 // -----------------------------------------------------------------------------
 // Returns the default int value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-int Configuration::getDefaultInt(MapObject::Type type, string property)
+int Configuration::defaultInt(MapObject::Type type, string property)
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].getIntValue(); break;
-	case MapObject::Type::Side: return defaults_side_[property].getIntValue(); break;
-	case MapObject::Type::Sector: return defaults_sector_[property].getIntValue(); break;
-	case MapObject::Type::Thing: return defaults_thing_[property].getIntValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].intValue(); break;
+	case MapObject::Type::Side: return defaults_side_[property].intValue(); break;
+	case MapObject::Type::Sector: return defaults_sector_[property].intValue(); break;
+	case MapObject::Type::Thing: return defaults_thing_[property].intValue(); break;
 	default: return 0;
 	}
 }
@@ -2104,14 +2104,14 @@ int Configuration::getDefaultInt(MapObject::Type type, string property)
 // -----------------------------------------------------------------------------
 // Returns the default float value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-double Configuration::getDefaultFloat(MapObject::Type type, string property)
+double Configuration::defaultFloat(MapObject::Type type, string property)
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].getFloatValue(); break;
-	case MapObject::Type::Side: return defaults_side_[property].getFloatValue(); break;
-	case MapObject::Type::Sector: return defaults_sector_[property].getFloatValue(); break;
-	case MapObject::Type::Thing: return defaults_thing_[property].getFloatValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].floatValue(); break;
+	case MapObject::Type::Side: return defaults_side_[property].floatValue(); break;
+	case MapObject::Type::Sector: return defaults_sector_[property].floatValue(); break;
+	case MapObject::Type::Thing: return defaults_thing_[property].floatValue(); break;
 	default: return 0;
 	}
 }
@@ -2119,14 +2119,14 @@ double Configuration::getDefaultFloat(MapObject::Type type, string property)
 // -----------------------------------------------------------------------------
 // Returns the default boolean value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-bool Configuration::getDefaultBool(MapObject::Type type, string property)
+bool Configuration::defaultBool(MapObject::Type type, string property)
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].getBoolValue(); break;
-	case MapObject::Type::Side: return defaults_side_[property].getBoolValue(); break;
-	case MapObject::Type::Sector: return defaults_sector_[property].getBoolValue(); break;
-	case MapObject::Type::Thing: return defaults_thing_[property].getBoolValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].boolValue(); break;
+	case MapObject::Type::Side: return defaults_side_[property].boolValue(); break;
+	case MapObject::Type::Sector: return defaults_sector_[property].boolValue(); break;
+	case MapObject::Type::Thing: return defaults_thing_[property].boolValue(); break;
 	default: return false;
 	}
 }
@@ -2141,7 +2141,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	vector<Property> prop_vals;
 
 	// Line defaults
-	if (object->getObjType() == MapObject::Type::Line)
+	if (object->objType() == MapObject::Type::Line)
 	{
 		defaults_line_.allProperties(prop_vals);
 		defaults_line_.allPropertyNames(prop_names);
@@ -2153,7 +2153,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	}
 
 	// Side defaults
-	else if (object->getObjType() == MapObject::Type::Side)
+	else if (object->objType() == MapObject::Type::Side)
 	{
 		defaults_side_.allProperties(prop_vals);
 		defaults_side_.allPropertyNames(prop_names);
@@ -2165,7 +2165,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	}
 
 	// Sector defaults
-	else if (object->getObjType() == MapObject::Type::Sector)
+	else if (object->objType() == MapObject::Type::Sector)
 	{
 		defaults_sector_.allProperties(prop_vals);
 		defaults_sector_.allPropertyNames(prop_names);
@@ -2177,7 +2177,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	}
 
 	// Thing defaults
-	else if (object->getObjType() == MapObject::Type::Thing)
+	else if (object->objType() == MapObject::Type::Thing)
 	{
 		defaults_thing_.allProperties(prop_vals);
 		defaults_thing_.allPropertyNames(prop_names);
@@ -2191,15 +2191,15 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	// Apply defaults to object
 	for (unsigned a = 0; a < prop_names.size(); a++)
 	{
-		if (prop_vals[a].getType() == Property::Type::Boolean)
-			object->setBoolProperty(prop_names[a], prop_vals[a].getBoolValue());
-		else if (prop_vals[a].getType() == Property::Type::Int)
-			object->setIntProperty(prop_names[a], prop_vals[a].getIntValue());
-		else if (prop_vals[a].getType() == Property::Type::Float)
-			object->setFloatProperty(prop_names[a], prop_vals[a].getFloatValue());
-		else if (prop_vals[a].getType() == Property::Type::String)
-			object->setStringProperty(prop_names[a], prop_vals[a].getStringValue());
-		LOG_MESSAGE(3, "Applied default property %s = %s", prop_names[a], prop_vals[a].getStringValue());
+		if (prop_vals[a].type() == Property::Type::Boolean)
+			object->setBoolProperty(prop_names[a], prop_vals[a].boolValue());
+		else if (prop_vals[a].type() == Property::Type::Int)
+			object->setIntProperty(prop_names[a], prop_vals[a].intValue());
+		else if (prop_vals[a].type() == Property::Type::Float)
+			object->setFloatProperty(prop_names[a], prop_vals[a].floatValue());
+		else if (prop_vals[a].type() == Property::Type::String)
+			object->setStringProperty(prop_names[a], prop_vals[a].stringValue());
+		LOG_MESSAGE(3, "Applied default property %s = %s", prop_names[a], prop_vals[a].stringValue());
 	}
 }
 

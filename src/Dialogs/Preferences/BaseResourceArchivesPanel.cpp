@@ -139,7 +139,7 @@ void BaseResourceArchivesPanel::autodetect()
 	if (!iwadlist)
 		return;
 	Parser p;
-	p.parseText(iwadlist->getMCData(), "slade.pk3:config/iwads.cfg");
+	p.parseText(iwadlist->data(), "slade.pk3:config/iwads.cfg");
 
 
 	// Find IWADs from DOOMWADDIR and DOOMWADPATH
@@ -163,9 +163,9 @@ void BaseResourceArchivesPanel::autodetect()
 		wxArrayString paths = wxSplit(doomwadpath, separator);
 		paths.Add(doomwaddir);
 		wxArrayString iwadnames;
-		auto          list = p.parseTreeRoot()->getChildPTN("iwads");
+		auto          list = p.parseTreeRoot()->childPTN("iwads");
 		for (size_t i = 0; i < list->nChildren(); ++i)
-			iwadnames.Add(list->getChild(i)->getName());
+			iwadnames.Add(list->child(i)->name());
 
 		// Look for every known IWAD in every known IWAD directory
 		for (size_t i = 0; i < paths.size(); ++i)
@@ -214,13 +214,13 @@ void BaseResourceArchivesPanel::autodetect()
 #endif
 	if (QueryPathKey(wxRegKey::HKLM, gogregistrypath, "DefaultPackPath", path))
 	{
-		auto list = p.parseTreeRoot()->getChildPTN("gog");
+		auto list = p.parseTreeRoot()->childPTN("gog");
 		for (size_t i = 0; i < list->nChildren(); ++i)
 		{
-			auto child = list->getChildPTN(i);
-			gamepath   = gogregistrypath + (child->getChildPTN("id"))->stringValue();
+			auto child = list->childPTN(i);
+			gamepath   = gogregistrypath + (child->childPTN("id"))->stringValue();
 			if (QueryPathKey(wxRegKey::HKLM, gamepath, "Path", path))
-				paths.Add(path + (child->getChildPTN("path"))->stringValue());
+				paths.Add(path + (child->childPTN("path"))->stringValue());
 		}
 	}
 #endif
@@ -232,9 +232,9 @@ void BaseResourceArchivesPanel::autodetect()
 		|| QueryPathKey(wxRegKey::HKLM, "Software\\Valve\\Steam", "InstallPath", gamepath))
 	{
 		gamepath += "/SteamApps/common/";
-		auto list = p.parseTreeRoot()->getChildPTN("steam");
+		auto list = p.parseTreeRoot()->childPTN("steam");
 		for (size_t i = 0; i < list->nChildren(); ++i)
-			paths.Add(gamepath + (list->getChildPTN(i))->stringValue());
+			paths.Add(gamepath + (list->childPTN(i))->stringValue());
 	}
 #else
 	// TODO: Querying Steam registry on Linux and OSX. This involves parsing Steam's config.vdf file, which is found in

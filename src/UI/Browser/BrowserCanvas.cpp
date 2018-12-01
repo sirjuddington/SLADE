@@ -169,7 +169,7 @@ void BrowserCanvas::draw()
 	if (browser_bg_type == 1)
 	{
 		// Get system panel background colour
-		wxColour bgcolwx = Drawing::getPanelBGColour();
+		wxColour bgcolwx = Drawing::systemPanelBGColour();
 		col_bg.set(COLWX(bgcolwx));
 
 		// Get system text colour

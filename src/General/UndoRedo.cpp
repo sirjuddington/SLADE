@@ -318,7 +318,7 @@ string UndoManager::redo()
 // -----------------------------------------------------------------------------
 // Adds all undo level names to [list]
 // -----------------------------------------------------------------------------
-void UndoManager::getAllLevels(vector<string>& list)
+void UndoManager::putAllLevels(vector<string>& list)
 {
 	for (unsigned a = 0; a < undo_levels_.size(); a++)
 		list.push_back(undo_levels_[a]->getName());
@@ -410,7 +410,7 @@ UndoManager* UndoRedo::currentManager()
 SLADEMap* UndoRedo::currentMap()
 {
 	if (current_undo_manager)
-		return current_undo_manager->getMap();
+		return current_undo_manager->map();
 	else
 		return nullptr;
 }

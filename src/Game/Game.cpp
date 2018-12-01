@@ -114,7 +114,7 @@ bool GameDef::parse(MemChunk& mc)
 	ParseTreeNode* node_game = nullptr;
 	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
 	{
-		auto child = parser.parseTreeRoot()->getChildPTN(a);
+		auto child = parser.parseTreeRoot()->childPTN(a);
 		if (child->type() == "game")
 		{
 			node_game = child;
@@ -124,15 +124,15 @@ bool GameDef::parse(MemChunk& mc)
 	if (node_game)
 	{
 		// Game id
-		name = node_game->getName();
+		name = node_game->name();
 
 		// Game name
-		auto node_name = node_game->getChildPTN("name");
+		auto node_name = node_game->childPTN("name");
 		if (node_name)
 			title = node_name->stringValue();
 
 		// Supported map formats
-		auto node_maps = node_game->getChildPTN("map_formats");
+		auto node_maps = node_game->childPTN("map_formats");
 		if (node_maps)
 		{
 			for (unsigned a = 0; a < node_maps->nValues(); a++)
@@ -148,7 +148,7 @@ bool GameDef::parse(MemChunk& mc)
 			}
 		}
 		// Filters
-		auto node_filters = node_game->getChildPTN("filters");
+		auto node_filters = node_game->childPTN("filters");
 		if (node_filters)
 		{
 			for (unsigned a = 0; a < node_filters->nValues(); a++)
@@ -192,7 +192,7 @@ bool PortDef::parse(MemChunk& mc)
 	ParseTreeNode* node_port = nullptr;
 	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
 	{
-		auto child = parser.parseTreeRoot()->getChildPTN(a);
+		auto child = parser.parseTreeRoot()->childPTN(a);
 		if (child->type() == "port")
 		{
 			node_port = child;
@@ -202,15 +202,15 @@ bool PortDef::parse(MemChunk& mc)
 	if (node_port)
 	{
 		// Port id
-		name = node_port->getName();
+		name = node_port->name();
 
 		// Port name
-		auto node_name = node_port->getChildPTN("name");
+		auto node_name = node_port->childPTN("name");
 		if (node_name)
 			title = node_name->stringValue();
 
 		// Supported games
-		auto node_games = node_port->getChildPTN("games");
+		auto node_games = node_port->childPTN("games");
 		if (node_games)
 		{
 			for (unsigned a = 0; a < node_games->nValues(); a++)
@@ -218,7 +218,7 @@ bool PortDef::parse(MemChunk& mc)
 		}
 
 		// Supported map formats
-		auto node_maps = node_port->getChildPTN("map_formats");
+		auto node_maps = node_port->childPTN("map_formats");
 		if (node_maps)
 		{
 			for (unsigned a = 0; a < node_maps->nValues(); a++)
@@ -393,20 +393,20 @@ void Game::init()
 	}
 
 	// Add game configurations from program resource
-	auto dir = App::archiveManager().programResourceArchive()->getDir("config/games");
+	auto dir = App::archiveManager().programResourceArchive()->dir("config/games");
 	if (dir)
 	{
 		for (auto& entry : dir->entries())
 		{
 			// Read config info
 			GameDef conf;
-			if (!conf.parse(entry.get()->getMCData()))
+			if (!conf.parse(entry.get()->data()))
 				continue; // Ignore if invalid
 
 			// Add to list if it doesn't already exist
 			if (game_defs.find(conf.name) == game_defs.end())
 			{
-				conf.filename        = entry.get()->getName(true);
+				conf.filename        = entry.get()->name(true);
 				conf.user            = false;
 				game_defs[conf.name] = conf;
 			}
@@ -414,20 +414,20 @@ void Game::init()
 	}
 
 	// Add port configurations from program resource
-	dir = App::archiveManager().programResourceArchive()->getDir("config/ports");
+	dir = App::archiveManager().programResourceArchive()->dir("config/ports");
 	if (dir)
 	{
 		for (auto& entry : dir->entries())
 		{
 			// Read config info
 			PortDef conf;
-			if (!conf.parse(entry.get()->getMCData()))
+			if (!conf.parse(entry.get()->data()))
 				continue; // Ignore if invalid
 
 			// Add to list if it doesn't already exist
 			if (port_defs.find(conf.name) == port_defs.end())
 			{
-				conf.filename        = entry.get()->getName(true);
+				conf.filename        = entry.get()->name(true);
 				conf.user            = false;
 				port_defs[conf.name] = conf;
 			}

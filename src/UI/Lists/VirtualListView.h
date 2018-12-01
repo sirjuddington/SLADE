@@ -21,14 +21,14 @@ public:
 	void         selectItems(long start, long end, bool select = true);
 	void         selectAll();
 	void         clearSelection();
-	vector<long> getSelection(bool item_indices = false);
-	long         getFirstSelected();
-	long         getLastSelected();
+	vector<long> selection(bool item_indices = false);
+	long         firstSelected();
+	long         lastSelected();
 
 	// Focus
 	void focusItem(long item, bool focus = true);
 	void focusOnIndex(long index);
-	long getFocus();
+	long focusedIndex();
 	bool lookForSearchEntryFrom(long focus);
 
 	// Layout
@@ -39,7 +39,7 @@ public:
 	virtual void labelEdited(int col, int index, string new_label) {}
 
 	// Filtering
-	long         getItemIndex(long item) const;
+	long         itemIndex(long item) const;
 	virtual void applyFilter() {}
 
 	// Sorting
@@ -64,25 +64,25 @@ protected:
 
 	static VirtualListView* lv_current;
 
-	virtual string getItemText(long item, long column, long index) const { return "UNDEFINED"; }
-	virtual int    getItemIcon(long item, long column, long index) const { return -1; }
+	virtual string itemText(long item, long column, long index) const { return "UNDEFINED"; }
+	virtual int    itemIcon(long item, long column, long index) const { return -1; }
 	virtual void   updateItemAttr(long item, long column, long index) const {}
 
 	// Virtual wxListCtrl overrides
-	virtual string OnGetItemText(long item, long column) const { return getItemText(item, column, getItemIndex(item)); }
-	virtual int    OnGetItemImage(long item) const { return getItemIcon(item, 0, getItemIndex(item)); }
+	virtual string OnGetItemText(long item, long column) const { return itemText(item, column, itemIndex(item)); }
+	virtual int    OnGetItemImage(long item) const { return itemIcon(item, 0, itemIndex(item)); }
 	virtual int    OnGetItemColumnImage(long item, long column) const
 	{
-		return getItemIcon(item, column, getItemIndex(item));
+		return itemIcon(item, column, itemIndex(item));
 	}
 	virtual wxListItemAttr* OnGetItemAttr(long item) const
 	{
-		updateItemAttr(item, 0, getItemIndex(item));
+		updateItemAttr(item, 0, itemIndex(item));
 		return item_attr_;
 	}
 	virtual wxListItemAttr* OnGetItemColumnAttr(long item, long column) const
 	{
-		updateItemAttr(item, column, getItemIndex(item));
+		updateItemAttr(item, column, itemIndex(item));
 		return item_attr_;
 	}
 

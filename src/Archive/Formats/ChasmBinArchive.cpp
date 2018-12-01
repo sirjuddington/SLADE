@@ -63,11 +63,11 @@ void fixBrokenWave(ArchiveEntry* const entry)
 {
 	static const uint32_t MIN_WAVE_SIZE = 44;
 
-	if ("snd_wav" != entry->getType()->formatId() || entry->getSize() < MIN_WAVE_SIZE)
+	if ("snd_wav" != entry->type()->formatId() || entry->size() < MIN_WAVE_SIZE)
 		return;
 
 	// Some wave files have an incorrect size of the format chunk
-	uint32_t* const format_size = reinterpret_cast<uint32_t*>(&entry->getMCData()[0x10]);
+	uint32_t* const format_size = reinterpret_cast<uint32_t*>(&entry->data()[0x10]);
 	if (0x12 == *format_size)
 		*format_size = 0x10;
 }
@@ -93,7 +93,7 @@ ChasmBinArchive::ChasmBinArchive() : Archive("chasm_bin") {}
 bool ChasmBinArchive::open(MemChunk& mc)
 {
 	// Check given data is valid
-	if (mc.getSize() < HEADER_SIZE)
+	if (mc.size() < HEADER_SIZE)
 	{
 		return false;
 	}
@@ -137,7 +137,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		offset = wxUINT32_SWAP_ON_BE(offset);
 
 		// Check offset+size
-		if (offset + size > mc.getSize())
+		if (offset + size > mc.size())
 		{
 			LOG_MESSAGE(1, "ChasmBinArchive::open: Bin archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
@@ -162,7 +162,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	UI::setSplashProgressMessage("Detecting entry types");
 
 	vector<ArchiveEntry*> all_entries;
-	getEntryTreeAsList(all_entries);
+	putEntryTreeAsList(all_entries);
 
 	MemChunk edata;
 
@@ -175,10 +175,10 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		ArchiveEntry* const entry = all_entries[i];
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, static_cast<int>(entry->exProp("Offset")), entry->getSize());
+			mc.exportMemChunk(edata, static_cast<int>(entry->exProp("Offset")), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -217,7 +217,7 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 
 	// Get archive tree as a list
 	vector<ArchiveEntry*> entries;
-	getEntryTreeAsList(entries);
+	putEntryTreeAsList(entries);
 
 	// Check limit of entries count
 	const uint16_t num_entries = static_cast<uint16_t>(entries.size());
@@ -255,7 +255,7 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		string  name        = entry->getName();
+		string  name        = entry->name();
 		uint8_t name_length = static_cast<uint8_t>(name.Length());
 
 		if (name_length > NAME_SIZE - 1)
@@ -272,7 +272,7 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 		mc.write(name_data, NAME_SIZE);
 
 		// Write entry size
-		const uint32_t size = entry->getSize();
+		const uint32_t size = entry->size();
 		mc.write(&size, sizeof size);
 
 		// Write entry offset
@@ -289,7 +289,7 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 	for (uint16_t i = 0; i < num_entries; ++i)
 	{
 		ArchiveEntry* const entry = entries[i];
-		mc.write(entry->getData(), entry->getSize());
+		mc.write(entry->rawData(), entry->size());
 	}
 
 	return true;
@@ -309,7 +309,7 @@ bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -327,7 +327,7 @@ bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to entry offset in file and read it in
 	file.Seek(static_cast<int>(entry->exProp("Offset")), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -348,7 +348,7 @@ bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
 {
 	// Check given data is valid
-	if (mc.getSize() < HEADER_SIZE)
+	if (mc.size() < HEADER_SIZE)
 	{
 		return false;
 	}
@@ -366,7 +366,7 @@ bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
 	mc.read(&num_entries, sizeof num_entries);
 	num_entries = wxUINT16_SWAP_ON_BE(num_entries);
 
-	return num_entries > MAX_ENTRY_COUNT || (HEADER_SIZE + ENTRY_SIZE * MAX_ENTRY_COUNT) <= mc.getSize();
+	return num_entries > MAX_ENTRY_COUNT || (HEADER_SIZE + ENTRY_SIZE * MAX_ENTRY_COUNT) <= mc.size();
 }
 
 // -----------------------------------------------------------------------------

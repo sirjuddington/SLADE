@@ -18,7 +18,7 @@ public:
 	bool          isModified() const { return modified_; }
 	bool          isActivePanel();
 	void          setUndoManager(UndoManager* manager) { undo_manager_ = manager; }
-	MemChunk*     getEntryData() { return &entry_data_; }
+	MemChunk*     entryData() { return &entry_data_; }
 
 	bool           openEntry(ArchiveEntry* entry);
 	virtual bool   loadEntry(ArchiveEntry* entry);
@@ -31,7 +31,7 @@ public:
 	virtual void   addCustomMenu();
 	void           removeCustomMenu();
 	virtual bool   fillCustomMenu(wxMenu* custom) { return false; }
-	string         getCustomMenuName() const { return custom_menu_name_; }
+	string         customMenuName() const { return custom_menu_name_; }
 	void           callRefresh() { refreshPanel(); }
 	void           nullEntry() { entry_ = nullptr; }
 	virtual bool   undo() { return false; }

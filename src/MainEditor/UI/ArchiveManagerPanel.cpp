@@ -87,15 +87,15 @@ DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive)
 
 	// Get flat entry list
 	vector<ArchiveEntry*> entries;
-	archive->getEntryTreeAsList(entries);
+	archive->putEntryTreeAsList(entries);
 
 	// Build entry info list
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		EntryInfo inf;
-		inf.file_path     = entries[a]->exProp("filePath").getStringValue();
-		inf.entry_path    = entries[a]->getPath(true);
-		inf.is_dir        = (entries[a]->getType() == EntryType::folderType());
+		inf.file_path     = entries[a]->exProp("filePath").stringValue();
+		inf.entry_path    = entries[a]->path(true);
+		inf.is_dir        = (entries[a]->type() == EntryType::folderType());
 		inf.file_modified = archive->fileModificationTime(entries[a]);
 		entry_info_.push_back(inf);
 	}
@@ -425,7 +425,7 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 
 	// Get first recent file menu id
 	SAction* a_recent        = SAction::fromId("aman_recent");
-	int      id_recent_start = a_recent->getWxId();
+	int      id_recent_start = a_recent->wxId();
 
 	// Clear menu; needs to do with a count down rather than up
 	// otherwise the following elements are not properly removed
@@ -642,7 +642,7 @@ bool ArchiveManagerPanel::isEntryPanel(int tab_index) const
 // Returns the archive associated with the archive tab at [tab_index] or null
 // if the index is invalid or the tab isn't an archive panel
 // -----------------------------------------------------------------------------
-Archive* ArchiveManagerPanel::getArchive(int tab_index) const
+Archive* ArchiveManagerPanel::archiveForTab(int tab_index) const
 {
 	// Check the index is valid
 	if (tab_index < 0 || (unsigned)tab_index >= stc_archives_->GetPageCount())
@@ -690,14 +690,14 @@ Archive* ArchiveManagerPanel::currentArchive() const
 	else if (page->GetName() == "entry")
 	{
 		EntryPanel* ep = (EntryPanel*)page;
-		return ep->entry()->getParent();
+		return ep->entry()->parent();
 	}
 
 	// TextureXEditor
 	else if (page->GetName() == "texture")
 	{
 		TextureXEditor* tx = (TextureXEditor*)page;
-		return tx->getArchive();
+		return tx->archive();
 	}
 
 	// Not an archive-related tab
@@ -785,7 +785,7 @@ void ArchiveManagerPanel::openTab(int archive_index) const
 // -----------------------------------------------------------------------------
 // Returns the ArchivePanel for [archive], or null if none is open
 // -----------------------------------------------------------------------------
-ArchivePanel* ArchiveManagerPanel::getArchiveTab(Archive* archive) const
+ArchivePanel* ArchiveManagerPanel::tabForArchive(Archive* archive) const
 {
 	// Check archive was given
 	if (!archive)
@@ -816,7 +816,7 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 	if (archive)
 	{
 		// Check if the archive is already open in a tab
-		ArchivePanel* wp = getArchiveTab(archive);
+		ArchivePanel* wp = tabForArchive(archive);
 		if (wp)
 		{
 			// Switch to tab
@@ -856,7 +856,7 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 void ArchiveManagerPanel::closeTab(int archive_index) const
 {
 	Archive*      archive = App::archiveManager().getArchive(archive_index);
-	ArchivePanel* ap      = getArchiveTab(archive);
+	ArchivePanel* ap      = tabForArchive(archive);
 
 	if (ap)
 		stc_archives_->DeletePage(stc_archives_->GetPageIndex(ap));
@@ -881,7 +881,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 
 			// Check for archive match
 			TextureXEditor* txed = (TextureXEditor*)stc_archives_->GetPage(a);
-			if (txed->getArchive() == archive)
+			if (txed->archive() == archive)
 			{
 				// Selected archive already has its texture editor open, so show that tab
 				stc_archives_->SetSelection(a);
@@ -920,7 +920,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 // Returns the TextureXEditor for the archive at [archive_index], or null if
 // none is open for that archive
 // -----------------------------------------------------------------------------
-TextureXEditor* ArchiveManagerPanel::getTextureTab(int archive_index) const
+TextureXEditor* ArchiveManagerPanel::textureTabForArchive(int archive_index) const
 {
 	Archive* archive = App::archiveManager().getArchive(archive_index);
 
@@ -935,7 +935,7 @@ TextureXEditor* ArchiveManagerPanel::getTextureTab(int archive_index) const
 
 			// Check for archive match
 			TextureXEditor* txed = (TextureXEditor*)stc_archives_->GetPage(a);
-			if (txed->getArchive() == archive)
+			if (txed->archive() == archive)
 				return txed;
 		}
 	}
@@ -950,7 +950,7 @@ TextureXEditor* ArchiveManagerPanel::getTextureTab(int archive_index) const
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::closeTextureTab(int archive_index) const
 {
-	TextureXEditor* txed = getTextureTab(archive_index);
+	TextureXEditor* txed = textureTabForArchive(archive_index);
 	if (txed)
 		stc_archives_->DeletePage(stc_archives_->GetPageIndex(txed));
 }
@@ -1004,7 +1004,7 @@ bool ArchiveManagerPanel::entryIsOpenInTab(ArchiveEntry* entry) const
 void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 {
 	// Close the same entry in archive tab
-	ArchivePanel* panel = getArchiveTab(entry->getParent());
+	ArchivePanel* panel = tabForArchive(entry->parent());
 	panel->closeCurrentEntry();
 
 	// First check if the entry is already open in a tab
@@ -1024,9 +1024,9 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 	}
 
 	// Create new tab for the EntryPanel
-	stc_archives_->AddPage(ep, S_FMT("%s/%s", entry->getParent()->filename(false), entry->getName()), true);
+	stc_archives_->AddPage(ep, S_FMT("%s/%s", entry->parent()->filename(false), entry->name()), true);
 	stc_archives_->SetPageBitmap(
-		stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::Entry, entry->getType()->icon()));
+		stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::Entry, entry->type()->icon()));
 	ep->SetName("entry");
 	ep->Show(true);
 	ep->addCustomMenu();
@@ -1085,7 +1085,7 @@ void ArchiveManagerPanel::closeEntryTabs(Archive* parent) const
 
 		// Check for entry parent archive match
 		EntryPanel* ep = (EntryPanel*)stc_archives_->GetPage(a);
-		if (ep->entry()->getParent() == parent)
+		if (ep->entry()->parent() == parent)
 		{
 			// Close tab
 			ep->removeCustomMenu();
@@ -1464,7 +1464,7 @@ bool ArchiveManagerPanel::beforeCloseArchive(Archive* archive)
 
 	// Check for unsaved texture editor changes
 	int             archive_index = App::archiveManager().archiveIndex(archive);
-	TextureXEditor* txed          = getTextureTab(archive_index);
+	TextureXEditor* txed          = textureTabForArchive(archive_index);
 	if (txed)
 	{
 		openTextureTab(archive_index);
@@ -1514,7 +1514,7 @@ bool ArchiveManagerPanel::closeArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 // Gets a list of indices of all selected archive list items
 // -----------------------------------------------------------------------------
-vector<int> ArchiveManagerPanel::getSelectedArchives() const
+vector<int> ArchiveManagerPanel::selectedArchives() const
 {
 	vector<int> ret;
 
@@ -1539,7 +1539,7 @@ vector<int> ArchiveManagerPanel::getSelectedArchives() const
 // -----------------------------------------------------------------------------
 // Gets a list of indices of all selected recent file list items
 // -----------------------------------------------------------------------------
-vector<int> ArchiveManagerPanel::getSelectedFiles() const
+vector<int> ArchiveManagerPanel::selectedFiles() const
 {
 	vector<int> ret;
 
@@ -1564,7 +1564,7 @@ vector<int> ArchiveManagerPanel::getSelectedFiles() const
 // -----------------------------------------------------------------------------
 // Gets a list of indices of all selected bookmark list items
 // -----------------------------------------------------------------------------
-vector<int> ArchiveManagerPanel::getSelectedBookmarks() const
+vector<int> ArchiveManagerPanel::selectedBookmarks() const
 {
 	vector<int> ret;
 
@@ -1675,7 +1675,7 @@ void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, string event_name
 void ArchiveManagerPanel::saveSelection() const
 {
 	// Get the list of selected archives
-	vector<int> selection = getSelectedArchives();
+	vector<int> selection = selectedArchives();
 
 	// Don't continue if there are no selected items
 	if (selection.size() == 0)
@@ -1697,7 +1697,7 @@ void ArchiveManagerPanel::saveSelection() const
 void ArchiveManagerPanel::saveSelectionAs() const
 {
 	// Get the list of selected archives
-	vector<int> selection = getSelectedArchives();
+	vector<int> selection = selectedArchives();
 
 	// Don't continue if there are no selected items
 	if (selection.size() == 0)
@@ -1720,7 +1720,7 @@ void ArchiveManagerPanel::saveSelectionAs() const
 bool ArchiveManagerPanel::closeSelection()
 {
 	// Get the list of selected list items
-	vector<int> selection = getSelectedArchives();
+	vector<int> selection = selectedArchives();
 
 	// Don't continue if there are no selected items
 	if (selection.size() == 0)
@@ -1748,7 +1748,7 @@ bool ArchiveManagerPanel::closeSelection()
 void ArchiveManagerPanel::openSelection() const
 {
 	// Get the list of selected list items
-	vector<int> selection = getSelectedFiles();
+	vector<int> selection = selectedFiles();
 
 	// Don't continue if there are no selected items
 	if (selection.size() == 0)
@@ -1770,7 +1770,7 @@ void ArchiveManagerPanel::openSelection() const
 void ArchiveManagerPanel::removeSelection() const
 {
 	// Get the list of selected list items
-	vector<int> selection = getSelectedFiles();
+	vector<int> selection = selectedFiles();
 
 	// Don't continue if there are no selected items
 	if (selection.size() == 0)
@@ -1938,15 +1938,15 @@ void ArchiveManagerPanel::updateBookmarkListItem(int index) const
 		return;
 
 	// Set item name
-	list_bookmarks_->setItemText(index, 0, entry->getName());
-	list_bookmarks_->setItemText(index, 1, entry->getParent()->filename());
+	list_bookmarks_->setItemText(index, 0, entry->name());
+	list_bookmarks_->setItemText(index, 1, entry->parent()->filename());
 
 	// Set item status colour
 	using ItemStatus = ListView::ItemStatus;
 	if (entry->isLocked())
 		list_bookmarks_->setItemStatus(index, ItemStatus::Locked);
 	else
-		switch (entry->getState())
+		switch (entry->state())
 		{
 		case 0: list_bookmarks_->setItemStatus(index, ItemStatus::Normal); break;
 		case 1: list_bookmarks_->setItemStatus(index, ItemStatus::Modified); break;
@@ -1985,7 +1985,7 @@ void ArchiveManagerPanel::refreshBookmarkList() const
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::deleteSelectedBookmarks() const
 {
-	vector<int> selection = getSelectedBookmarks();
+	vector<int> selection = selectedBookmarks();
 
 	// Don't continue if there are no selected items
 	if (selection.size() == 0)
@@ -2024,7 +2024,7 @@ void ArchiveManagerPanel::goToBookmark(long index) const
 		return;
 
 	// Open its parent archive in a tab
-	openTab(bookmark->getParent());
+	openTab(bookmark->parent());
 
 	// Get the opened tab (should be an ArchivePanel unless something went wrong)
 	wxWindow* tab = stc_archives_->GetPage(stc_archives_->GetSelection());
@@ -2035,7 +2035,7 @@ void ArchiveManagerPanel::goToBookmark(long index) const
 
 	// Finally, open the entry
 	((ArchivePanel*)tab)->openEntry(bookmark, true);
-	if (bookmark->getType() != EntryType::folderType())
+	if (bookmark->type() != EntryType::folderType())
 		((ArchivePanel*)tab)->focusOnEntry(bookmark);
 }
 

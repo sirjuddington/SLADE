@@ -241,17 +241,17 @@ void InputPrefsPanel::initBindsList()
 	for (unsigned a = 0; a < binds.size(); a++)
 	{
 		// Skip if not in a group
-		if (binds[a]->getGroup().IsEmpty())
+		if (binds[a]->group().IsEmpty())
 			continue;
 
 		// Add to list
-		wxTreeListItem group = getListGroupItem(binds[a]->getGroup());
+		wxTreeListItem group = getListGroupItem(binds[a]->group());
 		wxTreeListItem item  = list_binds_->AppendItem(
-            group, binds[a]->getDescription(), -1, -1, new BindListItemData(binds[a]->getKey(0), binds[a]));
+            group, binds[a]->description(), -1, -1, new BindListItemData(binds[a]->key(0), binds[a]));
 
 		// Add any extra key binds
 		for (int b = 1; b < binds[a]->nKeys(); b++)
-			list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(binds[a]->getKey(b)));
+			list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(binds[a]->key(b)));
 	}
 
 	// Update list column sizes
@@ -559,11 +559,11 @@ void InputPrefsPanel::onBtnDefaults(wxCommandEvent& e)
 	// Reset primary key to default
 	bind->key.key = "";
 	if (bind->bind->nDefaults() > 0)
-		bind->key = bind->bind->getDefault(0);
+		bind->key = bind->bind->defaultKey(0);
 
 	// Go through default keys for the bind
 	for (int a = 1; a < bind->bind->nDefaults(); a++)
-		wxTreeListItem n = list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(bind->bind->getDefault(a)));
+		wxTreeListItem n = list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(bind->bind->defaultKey(a)));
 
 	// Refresh list
 	updateBindsList();

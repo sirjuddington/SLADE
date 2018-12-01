@@ -27,11 +27,11 @@ public:
 	bool   pause();
 	bool   stop();
 	bool   isPlaying();
-	int    getPosition();
+	int    position();
 	bool   setPosition(int pos);
-	int    getLength();
+	int    length();
 	bool   setVolume(int volume);
-	string getInfo();
+	string info();
 
 private:
 	static MIDIPlayer* instance_;

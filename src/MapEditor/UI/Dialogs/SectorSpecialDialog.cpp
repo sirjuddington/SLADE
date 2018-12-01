@@ -144,7 +144,7 @@ void SectorSpecialPanel::setup(int special)
 // -----------------------------------------------------------------------------
 // Returns the currently selected sector special
 // -----------------------------------------------------------------------------
-int SectorSpecialPanel::getSelectedSpecial()
+int SectorSpecialPanel::selectedSpecial()
 {
 	auto&      types     = Game::configuration().allSectorTypes();
 	int        selection = 0;

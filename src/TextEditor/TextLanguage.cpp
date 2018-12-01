@@ -616,10 +616,10 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 	// Get parsed data
 	for (unsigned a = 0; a < root.nChildren(); a++)
 	{
-		auto node = root.getChildPTN(a);
+		auto node = root.childPTN(a);
 
 		// Create language
-		TextLanguage* lang = new TextLanguage(node->getName());
+		TextLanguage* lang = new TextLanguage(node->name());
 
 		// Check for inheritance
 		if (!node->inherit().IsEmpty())
@@ -631,110 +631,110 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 				Log::warning(
 					1,
 					S_FMT(
-						"Warning: Language %s inherits from undefined language %s", node->getName(), node->inherit()));
+						"Warning: Language %s inherits from undefined language %s", node->name(), node->inherit()));
 		}
 
 		// Parse language info
 		for (unsigned c = 0; c < node->nChildren(); c++)
 		{
-			auto child = node->getChildPTN(c);
+			auto child = node->childPTN(c);
 
 			// Language name
-			if (S_CMPNOCASE(child->getName(), "name"))
+			if (S_CMPNOCASE(child->name(), "name"))
 				lang->setName(child->stringValue());
 
 			// Comment begin
-			else if (S_CMPNOCASE(child->getName(), "comment_begin"))
+			else if (S_CMPNOCASE(child->name(), "comment_begin"))
 			{
 				lang->setCommentBeginList(child->stringValues());
 			}
 
 			// Comment end
-			else if (S_CMPNOCASE(child->getName(), "comment_end"))
+			else if (S_CMPNOCASE(child->name(), "comment_end"))
 			{
 				lang->setCommentEndList(child->stringValues());
 			}
 
 			// Line comment
-			else if (S_CMPNOCASE(child->getName(), "comment_line"))
+			else if (S_CMPNOCASE(child->name(), "comment_line"))
 			{
 				lang->setLineCommentList(child->stringValues());
 			}
 
 			// Preprocessor
-			else if (S_CMPNOCASE(child->getName(), "preprocessor"))
+			else if (S_CMPNOCASE(child->name(), "preprocessor"))
 				lang->setPreprocessor(child->stringValue());
 
 			// Case sensitive
-			else if (S_CMPNOCASE(child->getName(), "case_sensitive"))
+			else if (S_CMPNOCASE(child->name(), "case_sensitive"))
 				lang->setCaseSensitive(child->boolValue());
 
 			// Doc comment
-			else if (S_CMPNOCASE(child->getName(), "comment_doc"))
+			else if (S_CMPNOCASE(child->name(), "comment_doc"))
 				lang->setDocComment(child->stringValue());
 
 			// Keyword lookup link
-			else if (S_CMPNOCASE(child->getName(), "keyword_link"))
+			else if (S_CMPNOCASE(child->name(), "keyword_link"))
 				lang->word_lists_[WordType::Keyword].lookup_url = child->stringValue();
 
 			// Constant lookup link
-			else if (S_CMPNOCASE(child->getName(), "constant_link"))
+			else if (S_CMPNOCASE(child->name(), "constant_link"))
 				lang->word_lists_[WordType::Constant].lookup_url = child->stringValue();
 
 			// Function lookup link
-			else if (S_CMPNOCASE(child->getName(), "function_link"))
+			else if (S_CMPNOCASE(child->name(), "function_link"))
 				lang->f_lookup_url_ = child->stringValue();
 
 			// Jump blocks
-			else if (S_CMPNOCASE(child->getName(), "blocks"))
+			else if (S_CMPNOCASE(child->name(), "blocks"))
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->jump_blocks_.push_back(child->stringValue(v));
 			}
-			else if (S_CMPNOCASE(child->getName(), "blocks_ignore"))
+			else if (S_CMPNOCASE(child->name(), "blocks_ignore"))
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->jb_ignore_.push_back(child->stringValue(v));
 			}
 
 			// Block begin
-			else if (S_CMPNOCASE(child->getName(), "block_begin"))
+			else if (S_CMPNOCASE(child->name(), "block_begin"))
 				lang->block_begin_ = child->stringValue();
 
 			// Block end
-			else if (S_CMPNOCASE(child->getName(), "block_end"))
+			else if (S_CMPNOCASE(child->name(), "block_end"))
 				lang->block_end_ = child->stringValue();
 
 			// Preprocessor block begin
-			else if (S_CMPNOCASE(child->getName(), "pp_block_begin"))
+			else if (S_CMPNOCASE(child->name(), "pp_block_begin"))
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->pp_block_begin_.push_back(child->stringValue(v));
 			}
 
 			// Preprocessor block end
-			else if (S_CMPNOCASE(child->getName(), "pp_block_end"))
+			else if (S_CMPNOCASE(child->name(), "pp_block_end"))
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->pp_block_end_.push_back(child->stringValue(v));
 			}
 
 			// Word block begin
-			else if (S_CMPNOCASE(child->getName(), "word_block_begin"))
+			else if (S_CMPNOCASE(child->name(), "word_block_begin"))
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->word_block_begin_.push_back(child->stringValue(v));
 			}
 
 			// Word block end
-			else if (S_CMPNOCASE(child->getName(), "word_block_end"))
+			else if (S_CMPNOCASE(child->name(), "word_block_end"))
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->word_block_end_.push_back(child->stringValue(v));
 			}
 
 			// Keywords
-			else if (S_CMPNOCASE(child->getName(), "keywords"))
+			else if (S_CMPNOCASE(child->name(), "keywords"))
 			{
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
@@ -755,7 +755,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			}
 
 			// Constants
-			else if (S_CMPNOCASE(child->getName(), "constants"))
+			else if (S_CMPNOCASE(child->name(), "constants"))
 			{
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
@@ -776,7 +776,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			}
 
 			// Types
-			else if (S_CMPNOCASE(child->getName(), "types"))
+			else if (S_CMPNOCASE(child->name(), "types"))
 			{
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
@@ -797,7 +797,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			}
 
 			// Properties
-			else if (S_CMPNOCASE(child->getName(), "properties"))
+			else if (S_CMPNOCASE(child->name(), "properties"))
 			{
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
@@ -818,7 +818,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			}
 
 			// Functions
-			else if (S_CMPNOCASE(child->getName(), "functions"))
+			else if (S_CMPNOCASE(child->name(), "functions"))
 			{
 				bool lang_has_void = lang->isWord(Keyword, "void") || lang->isWord(Type, "void");
 				if (lang->id_ != "zscript")
@@ -826,7 +826,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 					// Go through children (functions)
 					for (unsigned f = 0; f < child->nChildren(); f++)
 					{
-						auto   child_func = child->getChildPTN(f);
+						auto   child_func = child->childPTN(f);
 						string params;
 
 						// Simple definition
@@ -846,36 +846,36 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 
 							// Add function
 							lang->addFunction(
-								child_func->getName(),
+								child_func->name(),
 								params,
 								"",
 								"",
-								!child_func->getName().Contains("."),
+								!child_func->name().Contains("."),
 								child_func->type());
 
 							// Add args
 							for (unsigned v = 1; v < child_func->nValues(); v++)
-								lang->addFunction(child_func->getName(), child_func->stringValue(v));
+								lang->addFunction(child_func->name(), child_func->stringValue(v));
 						}
 
 						// Full definition
 						else
 						{
-							string         name = child_func->getName();
+							string         name = child_func->name();
 							vector<string> args;
 							string         desc       = "";
 							string         deprecated = "";
 							for (unsigned p = 0; p < child_func->nChildren(); p++)
 							{
-								auto child_prop = child_func->getChildPTN(p);
-								if (child_prop->getName() == "args")
+								auto child_prop = child_func->childPTN(p);
+								if (child_prop->name() == "args")
 								{
 									for (unsigned v = 0; v < child_prop->nValues(); v++)
 										args.push_back(child_prop->stringValue(v));
 								}
-								else if (child_prop->getName() == "description")
+								else if (child_prop->name() == "description")
 									desc = child_prop->stringValue();
-								else if (child_prop->getName() == "deprecated")
+								else if (child_prop->name() == "deprecated")
 									deprecated = child_prop->stringValue();
 							}
 
@@ -893,16 +893,16 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 					ZFuncExProp ex_prop;
 					for (unsigned f = 0; f < child->nChildren(); f++)
 					{
-						auto child_func = child->getChildPTN(f);
+						auto child_func = child->childPTN(f);
 						for (unsigned p = 0; p < child_func->nChildren(); ++p)
 						{
-							auto child_prop = child_func->getChildPTN(p);
-							if (child_prop->getName() == "description")
+							auto child_prop = child_func->childPTN(p);
+							if (child_prop->name() == "description")
 								ex_prop.description = child_prop->stringValue();
-							else if (child_prop->getName() == "deprecated_f")
+							else if (child_prop->name() == "deprecated_f")
 								ex_prop.deprecated_f = child_prop->stringValue();
 						}
-						lang->zfuncs_ex_props_.emplace(child_func->getName(), ex_prop);
+						lang->zfuncs_ex_props_.emplace(child_func->name(), ex_prop);
 					}
 				}
 			}
@@ -924,13 +924,13 @@ bool TextLanguage::loadLanguages()
 	if (res_archive)
 	{
 		// Get 'config/languages' directly
-		ArchiveTreeNode* dir = res_archive->getDir("config/languages");
+		ArchiveTreeNode* dir = res_archive->dir("config/languages");
 
 		if (dir)
 		{
 			// Read all entries in this dir
 			for (unsigned a = 0; a < dir->numEntries(); a++)
-				readLanguageDefinition(dir->entryAt(a)->getMCData(), dir->entryAt(a)->getName());
+				readLanguageDefinition(dir->entryAt(a)->data(), dir->entryAt(a)->name());
 		}
 		else
 			Log::warning(

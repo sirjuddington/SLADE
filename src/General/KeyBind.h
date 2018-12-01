@@ -64,40 +64,40 @@ public:
 	// Operators
 	inline bool operator>(const KeyBind r) const
 	{
-		if (priority == r.priority)
-			return name < r.name;
+		if (priority_ == r.priority_)
+			return name_ < r.name_;
 		else
-			return priority < r.priority;
+			return priority_ < r.priority_;
 	}
 	inline bool operator<(const KeyBind r) const
 	{
-		if (priority == r.priority)
-			return name > r.name;
+		if (priority_ == r.priority_)
+			return name_ > r.name_;
 		else
-			return priority > r.priority;
+			return priority_ > r.priority_;
 	}
 
-	void   clear() { keys.clear(); }
+	void   clear() { keys_.clear(); }
 	void   addKey(string key, bool alt = false, bool ctrl = false, bool shift = false);
-	string getName() { return name; }
-	string getGroup() { return group; }
-	string getDescription() { return description; }
+	string name() { return name_; }
+	string group() { return group_; }
+	string description() { return description_; }
 	string keysAsString();
 
-	int      nKeys() { return keys.size(); }
-	Keypress getKey(unsigned index)
+	int      nKeys() { return keys_.size(); }
+	Keypress key(unsigned index)
 	{
-		if (index >= keys.size())
+		if (index >= keys_.size())
 			return Keypress();
 		else
-			return keys[index];
+			return keys_[index];
 	}
-	int      nDefaults() { return defaults.size(); }
-	Keypress getDefault(unsigned index) { return defaults[index]; }
+	int      nDefaults() { return defaults_.size(); }
+	Keypress defaultKey(unsigned index) { return defaults_[index]; }
 
 	// Static functions
-	static KeyBind&      getBind(string name);
-	static wxArrayString getBinds(Keypress key);
+	static KeyBind&      bind(string name);
+	static wxArrayString bindsForKey(Keypress key);
 	static bool          isPressed(string name);
 	static bool          addBind(
 				 string   name,
@@ -121,14 +121,14 @@ public:
 	static void   updateSortedBindsList();
 
 private:
-	string           name;
-	vector<Keypress> keys;
-	vector<Keypress> defaults;
-	bool             pressed;
-	string           description;
-	string           group;
-	bool             ignore_shift;
-	int              priority;
+	string           name_;
+	vector<Keypress> keys_;
+	vector<Keypress> defaults_;
+	bool             pressed_;
+	string           description_;
+	string           group_;
+	bool             ignore_shift_;
+	int              priority_;
 };
 
 

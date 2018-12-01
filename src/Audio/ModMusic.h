@@ -13,7 +13,7 @@ public:
 
 	bool     openFromFile(const std::string& filename);
 	bool     loadFromMemory(const uint8_t* data, const uint32_t size);
-	sf::Time getDuration() const;
+	sf::Time duration() const;
 
 	static void initDumb();
 

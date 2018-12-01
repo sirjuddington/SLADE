@@ -58,17 +58,17 @@ class EntryRenameUS : public UndoStep
 public:
 	EntryRenameUS(ArchiveEntry* entry, string new_name) : UndoStep()
 	{
-		archive_     = entry->getParent();
-		entry_path_  = entry->getPath();
-		entry_index_ = entry->getParentDir()->entryIndex(entry);
-		old_name_    = entry->getName();
+		archive_     = entry->parent();
+		entry_path_  = entry->path();
+		entry_index_ = entry->parentDir()->entryIndex(entry);
+		old_name_    = entry->name();
 		new_name_    = new_name;
 	}
 
 	bool doUndo() override
 	{
 		// Get entry parent dir
-		ArchiveTreeNode* dir = archive_->getDir(entry_path_);
+		ArchiveTreeNode* dir = archive_->dir(entry_path_);
 		if (dir)
 		{
 			// Rename entry
@@ -82,7 +82,7 @@ public:
 	bool doRedo() override
 	{
 		// Get entry parent dir
-		ArchiveTreeNode* dir = archive_->getDir(entry_path_);
+		ArchiveTreeNode* dir = archive_->dir(entry_path_);
 		if (dir)
 		{
 			// Rename entry
@@ -108,24 +108,24 @@ public:
 	{
 		archive_    = dir->archive();
 		new_name_   = new_name;
-		old_name_   = dir->getName();
-		path_       = dir->getParent()->getPath() + new_name;
-		prev_state_ = dir->dirEntry()->getState();
+		old_name_   = dir->name();
+		path_       = dir->parent()->path() + new_name;
+		prev_state_ = dir->dirEntry()->state();
 	}
 
 	void swapNames()
 	{
-		ArchiveTreeNode* dir = archive_->getDir(path_);
+		ArchiveTreeNode* dir = archive_->dir(path_);
 		archive_->renameDir(dir, old_name_);
 		old_name_ = new_name_;
-		new_name_ = dir->getName();
-		path_     = dir->getPath();
+		new_name_ = dir->name();
+		path_     = dir->path();
 	}
 
 	bool doUndo() override
 	{
 		swapNames();
-		archive_->getDir(path_)->dirEntry()->setState(prev_state_);
+		archive_->dir(path_)->dirEntry()->setState(prev_state_);
 		return true;
 	}
 
@@ -149,7 +149,7 @@ public:
 	EntrySwapUS(ArchiveTreeNode* dir, unsigned index1, unsigned index2)
 	{
 		archive_ = dir->archive();
-		path_    = dir->getPath();
+		path_    = dir->path();
 		index1_  = index1;
 		index2_  = index2;
 	}
@@ -157,7 +157,7 @@ public:
 	bool doSwap() const
 	{
 		// Get parent dir
-		ArchiveTreeNode* dir = archive_->getDir(path_);
+		ArchiveTreeNode* dir = archive_->dir(path_);
 		if (dir)
 			return dir->swapEntries(index1_, index2_);
 		return false;
@@ -179,10 +179,10 @@ public:
 	EntryCreateDeleteUS(bool created, ArchiveEntry* entry)
 	{
 		created_    = created;
-		archive_    = entry->getParent();
+		archive_    = entry->parent();
 		entry_copy_ = new ArchiveEntry(*entry);
-		path_       = entry->getPath();
-		index_      = entry->getParentDir()->entryIndex(entry);
+		path_       = entry->path();
+		index_      = entry->parentDir()->entryIndex(entry);
 	}
 
 	~EntryCreateDeleteUS()
@@ -194,7 +194,7 @@ public:
 	bool deleteEntry() const
 	{
 		// Get parent dir
-		ArchiveTreeNode* dir = archive_->getDir(path_);
+		ArchiveTreeNode* dir = archive_->dir(path_);
 		if (dir)
 			return archive_->removeEntry(dir->entryAt(index_));
 		else
@@ -204,7 +204,7 @@ public:
 	bool createEntry() const
 	{
 		// Get parent dir
-		ArchiveTreeNode* dir = archive_->getDir(path_);
+		ArchiveTreeNode* dir = archive_->dir(path_);
 		if (dir)
 		{
 			archive_->addEntry(entry_copy_, index_, dir, true);
@@ -246,7 +246,7 @@ public:
 	{
 		created_ = created;
 		archive_ = dir->archive();
-		path_    = dir->getPath();
+		path_    = dir->path();
 		cb_tree_ = nullptr;
 
 		if (path_.StartsWith("/"))
@@ -263,7 +263,7 @@ public:
 			// Get subdirectories
 			vector<ArchiveTreeNode*> subdirs;
 			for (unsigned a = 0; a < dir->nChildren(); a++)
-				subdirs.push_back((ArchiveTreeNode*)dir->getChild(a));
+				subdirs.push_back((ArchiveTreeNode*)dir->child(a));
 
 			// Backup to clipboard item
 			if (!entries.empty() || !subdirs.empty())
@@ -288,7 +288,7 @@ public:
 
 			// Restore entries/subdirs if needed
 			if (dir && cb_tree_)
-				dir->merge(cb_tree_->getTree(), 0, 0);
+				dir->merge(cb_tree_->tree(), 0, 0);
 
 			if (dir)
 				dir->dirEntry()->setState(0);
@@ -410,7 +410,7 @@ string Archive::filename(bool full)
 		if (parentArchive())
 			parent_archive = parentArchive()->filename(false) + "/";
 
-		wxFileName fn(parent_->getName());
+		wxFileName fn(parent_->name());
 		return parent_archive + fn.GetName();
 	}
 
@@ -464,7 +464,7 @@ bool Archive::open(string filename)
 bool Archive::open(ArchiveEntry* entry)
 {
 	// Load from entry's data
-	if (entry && open(entry->getMCData()))
+	if (entry && open(entry->data()))
 	{
 		// Update variables and return success
 		parent_ = entry;
@@ -497,7 +497,7 @@ bool Archive::checkEntry(ArchiveEntry* entry)
 		return false;
 
 	// Check entry is part of this archive
-	if (entry->getParent() != this)
+	if (entry->parent() != this)
 		return false;
 
 	// Entry is ok
@@ -508,7 +508,7 @@ bool Archive::checkEntry(ArchiveEntry* entry)
 // Returns the entry matching [name] within [dir].
 // If no dir is given the root dir is used
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::getEntry(string name, bool cut_ext, ArchiveTreeNode* dir)
+ArchiveEntry* Archive::entry(string name, bool cut_ext, ArchiveTreeNode* dir)
 {
 	// Check if dir was given
 	if (!dir)
@@ -522,7 +522,7 @@ ArchiveEntry* Archive::getEntry(string name, bool cut_ext, ArchiveTreeNode* dir)
 // If no dir is given the  root dir is used.
 // Returns null if [index] is out of bounds
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::getEntry(unsigned index, ArchiveTreeNode* dir)
+ArchiveEntry* Archive::entryAt(unsigned index, ArchiveTreeNode* dir)
 {
 	// Check if dir was given
 	if (!dir)
@@ -563,7 +563,7 @@ ArchiveEntry* Archive::entryAtPath(string path)
 	if (fn.GetPath(false, wxPATH_UNIX).IsEmpty())
 		dir = &dir_root_;
 	else
-		dir = getDir(fn.GetPath(true, wxPATH_UNIX));
+		dir = this->dir(fn.GetPath(true, wxPATH_UNIX));
 
 	// If dir doesn't exist, return nullptr
 	if (!dir)
@@ -591,7 +591,7 @@ ArchiveEntry::SPtr Archive::entryAtPathShared(string path)
 	if (fn.GetPath(false, wxPATH_UNIX).IsEmpty())
 		dir = &dir_root_;
 	else
-		dir = getDir(fn.GetPath(true, wxPATH_UNIX));
+		dir = this->dir(fn.GetPath(true, wxPATH_UNIX));
 
 	// If dir doesn't exist, return nullptr
 	if (!dir)
@@ -637,7 +637,7 @@ bool Archive::save(string filename)
 	// If the archive has a parent ArchiveEntry, just write it to that
 	if (parent_)
 	{
-		success = write(parent_->getMCData());
+		success = write(parent_->data());
 		parent_->setState(1);
 	}
 	else
@@ -731,7 +731,7 @@ void Archive::entryStateChanged(ArchiveEntry* entry)
 
 
 	// If entry was set to unmodified, don't set the archive to modified
-	if (entry->getState() == 0)
+	if (entry->state() == 0)
 		return;
 
 	// Set the archive state to modified
@@ -741,7 +741,7 @@ void Archive::entryStateChanged(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Adds the directory structure starting from [start] to [list]
 // -----------------------------------------------------------------------------
-void Archive::getEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveTreeNode* start)
+void Archive::putEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveTreeNode* start)
 {
 	// If no start dir is specified, use the root dir
 	if (!start)
@@ -757,13 +757,13 @@ void Archive::getEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveTreeNode* s
 
 	// Go through subdirectories and add them to the list
 	for (unsigned a = 0; a < start->nChildren(); a++)
-		getEntryTreeAsList(list, (ArchiveTreeNode*)start->getChild(a));
+		putEntryTreeAsList(list, (ArchiveTreeNode*)start->child(a));
 }
 
 // -----------------------------------------------------------------------------
 // Adds the directory structure starting from [start] to [list]
 // -----------------------------------------------------------------------------
-void Archive::getEntryTreeAsList(vector<ArchiveEntry::SPtr>& list, ArchiveTreeNode* start)
+void Archive::putEntryTreeAsList(vector<ArchiveEntry::SPtr>& list, ArchiveTreeNode* start)
 {
 	// If no start dir is specified, use the root dir
 	if (!start)
@@ -779,7 +779,7 @@ void Archive::getEntryTreeAsList(vector<ArchiveEntry::SPtr>& list, ArchiveTreeNo
 
 	// Go through subdirectories and add them to the list
 	for (unsigned a = 0; a < start->nChildren(); a++)
-		getEntryTreeAsList(list, (ArchiveTreeNode*)start->getChild(a));
+		putEntryTreeAsList(list, (ArchiveTreeNode*)start->child(a));
 }
 
 // -----------------------------------------------------------------------------
@@ -809,7 +809,7 @@ bool Archive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTreeNode* b
 // If [base] is null, the root directory is used.
 // Returns null if the requested directory does not exist
 // -----------------------------------------------------------------------------
-ArchiveTreeNode* Archive::getDir(string path, ArchiveTreeNode* base)
+ArchiveTreeNode* Archive::dir(string path, ArchiveTreeNode* base)
 {
 	// Check if base dir was given
 	if (!base)
@@ -826,7 +826,7 @@ ArchiveTreeNode* Archive::getDir(string path, ArchiveTreeNode* base)
 			path.Remove(0, 1);
 	}
 
-	return (ArchiveTreeNode*)base->getChild(path);
+	return (ArchiveTreeNode*)base->child(path);
 }
 
 // -----------------------------------------------------------------------------
@@ -879,7 +879,7 @@ bool Archive::removeDir(string path, ArchiveTreeNode* base)
 		return false;
 
 	// Get the dir to remove
-	ArchiveTreeNode* dir = getDir(path, base);
+	ArchiveTreeNode* dir = this->dir(path, base);
 
 	// Check it exists (and that it isn't the root dir)
 	if (!dir || dir == &dir_root_)
@@ -890,8 +890,8 @@ bool Archive::removeDir(string path, ArchiveTreeNode* base)
 		UndoRedo::currentManager()->recordUndoStep(new DirCreateDeleteUS(false, dir));
 
 	// Remove the directory from its parent
-	if (dir->getParent())
-		dir->getParent()->removeChild(dir);
+	if (dir->parent())
+		dir->parent()->removeChild(dir);
 
 	// Delete the directory
 	delete dir;
@@ -917,7 +917,7 @@ bool Archive::renameDir(ArchiveTreeNode* dir, string new_name)
 		return false;
 
 	// Rename the directory if needed
-	if (!(S_CMPNOCASE(dir->getName(), new_name)))
+	if (!(S_CMPNOCASE(dir->name(), new_name)))
 	{
 		if (UndoRedo::currentlyRecording())
 			UndoRedo::currentManager()->recordUndoStep(new DirRenameUS(dir, new_name));
@@ -1048,7 +1048,7 @@ bool Archive::removeEntry(ArchiveEntry* entry)
 		return false;
 
 	// Get its directory
-	ArchiveTreeNode* dir = entry->getParentDir();
+	ArchiveTreeNode* dir = entry->parentDir();
 
 	// Error if entry has no parent directory
 	if (!dir)
@@ -1142,14 +1142,14 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 		return false;
 
 	// Get their directory
-	ArchiveTreeNode* dir = entry1->getParentDir();
+	ArchiveTreeNode* dir = entry1->parentDir();
 
 	// Error if no dir
 	if (!dir)
 		return false;
 
 	// Check they are both in the same directory
-	if (entry2->getParentDir() != dir)
+	if (entry2->parentDir() != dir)
 	{
 		LOG_MESSAGE(1, "Error: Can't swap two entries in different directories");
 		return false;
@@ -1200,7 +1200,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode*
 		return false;
 
 	// Get the entry's current directory
-	ArchiveTreeNode* cdir = entry->getParentDir();
+	ArchiveTreeNode* cdir = entry->parentDir();
 
 	// Error if no dir
 	if (!cdir)
@@ -1243,8 +1243,8 @@ bool Archive::renameEntry(ArchiveEntry* entry, string name)
 		return false;
 
 	// Check for directory
-	if (entry->getType() == EntryType::folderType())
-		return renameDir(getDir(entry->getPath(true)), name);
+	if (entry->type() == EntryType::folderType())
+		return renameDir(dir(entry->path(true)), name);
 
 	// Announce (before actually renaming in case old name is still needed)
 	MemChunk  mc;
@@ -1320,7 +1320,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 		return false;
 
 	// No point if entry is unmodified or newly created
-	if (entry->getState() != 1)
+	if (entry->state() != 1)
 		return true;
 
 	// Reload entry data from the archive on disk
@@ -1357,17 +1357,17 @@ string Archive::detectNamespace(ArchiveEntry* entry)
 		return "global";
 
 	// If the entry is in the root dir, it's in the global namespace
-	if (entry->getParentDir() == &dir_root_)
+	if (entry->parentDir() == &dir_root_)
 		return "global";
 
 	// Get the entry's *first* parent directory after root (ie <root>/namespace/)
-	ArchiveTreeNode* dir = entry->getParentDir();
-	while (dir && dir->getParent() != &dir_root_)
-		dir = (ArchiveTreeNode*)dir->getParent();
+	ArchiveTreeNode* dir = entry->parentDir();
+	while (dir && dir->parent() != &dir_root_)
+		dir = (ArchiveTreeNode*)dir->parent();
 
 	// Namespace is the directory's name (in lowercase)
 	if (dir)
-		return dir->getName().Lower();
+		return dir->name().Lower();
 	else
 		return "global"; // Error, just return global
 }
@@ -1394,12 +1394,12 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 		// Check type
 		if (options.match_type)
 		{
-			if (entry->getType() == EntryType::unknownType())
+			if (entry->type() == EntryType::unknownType())
 			{
 				if (!options.match_type->isThisType(entry))
 					continue;
 			}
-			else if (options.match_type != entry->getType())
+			else if (options.match_type != entry->type())
 				continue;
 		}
 
@@ -1407,7 +1407,7 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 		if (!options.match_name.IsEmpty())
 		{
 			// Cut extension if ignoring
-			wxFileName fn(entry->getName());
+			wxFileName fn(entry->name());
 			if (options.ignore_ext)
 			{
 				if (!options.match_name.Matches(fn.GetName().MakeLower()))
@@ -1434,7 +1434,7 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 		for (unsigned a = 0; a < dir->nChildren(); a++)
 		{
 			SearchOptions opt   = options;
-			opt.dir             = (ArchiveTreeNode*)dir->getChild(a);
+			opt.dir             = (ArchiveTreeNode*)dir->child(a);
 			ArchiveEntry* match = findFirst(opt);
 
 			// If a match was found in this subdir, return it
@@ -1467,7 +1467,7 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 		for (int a = dir->nChildren() - 1; a >= 0; a--)
 		{
 			SearchOptions opt   = options;
-			opt.dir             = (ArchiveTreeNode*)dir->getChild(a);
+			opt.dir             = (ArchiveTreeNode*)dir->child(a);
 			ArchiveEntry* match = findLast(opt);
 
 			// If a match was found in this subdir, return it
@@ -1484,12 +1484,12 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 		// Check type
 		if (options.match_type)
 		{
-			if (entry->getType() == EntryType::unknownType())
+			if (entry->type() == EntryType::unknownType())
 			{
 				if (!options.match_type->isThisType(entry))
 					continue;
 			}
-			else if (options.match_type != entry->getType())
+			else if (options.match_type != entry->type())
 				continue;
 		}
 
@@ -1497,7 +1497,7 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 		if (!options.match_name.IsEmpty())
 		{
 			// Cut extension if ignoring
-			wxFileName fn(entry->getName());
+			wxFileName fn(entry->name());
 			if (options.ignore_ext)
 			{
 				if (!options.match_name.Matches(fn.GetName().MakeLower()))
@@ -1544,12 +1544,12 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 		// Check type
 		if (options.match_type)
 		{
-			if (entry->getType() == EntryType::unknownType())
+			if (entry->type() == EntryType::unknownType())
 			{
 				if (!options.match_type->isThisType(entry))
 					continue;
 			}
-			else if (options.match_type != entry->getType())
+			else if (options.match_type != entry->type())
 				continue;
 		}
 
@@ -1557,7 +1557,7 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 		if (!options.match_name.IsEmpty())
 		{
 			// Cut extension if ignoring
-			wxFileName fn(entry->getName());
+			wxFileName fn(entry->name());
 			if (options.ignore_ext)
 			{
 				if (!fn.GetName().MakeLower().Matches(options.match_name))
@@ -1584,7 +1584,7 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 		for (unsigned a = 0; a < dir->nChildren(); a++)
 		{
 			SearchOptions opt = options;
-			opt.dir           = (ArchiveTreeNode*)dir->getChild(a);
+			opt.dir           = (ArchiveTreeNode*)dir->child(a);
 
 			// Add any matches to the list
 			vector<ArchiveEntry*> vec = findAll(opt);
@@ -1613,14 +1613,14 @@ vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveTreeNode* dir)
 		ArchiveEntry* entry = dir->entryAt(a);
 
 		// Add new and modified entries
-		if (entry->getState() != 0)
+		if (entry->state() != 0)
 			ret.push_back(entry);
 	}
 
 	// Search subdirectories
 	for (unsigned a = 0; a < dir->nChildren(); a++)
 	{
-		vector<ArchiveEntry*> vec = findModifiedEntries((ArchiveTreeNode*)dir->getChild(a));
+		vector<ArchiveEntry*> vec = findModifiedEntries((ArchiveTreeNode*)dir->child(a));
 		ret.insert(ret.end(), vec.begin(), vec.end());
 	}
 
@@ -1650,43 +1650,43 @@ bool Archive::loadFormats(MemChunk& mc)
 		return false;
 
 	auto root         = parser.parseTreeRoot();
-	auto formats_node = root->getChild("archive_formats");
+	auto formats_node = root->child("archive_formats");
 	for (unsigned a = 0; a < formats_node->nChildren(); a++)
 	{
-		auto          fmt_desc = (ParseTreeNode*)formats_node->getChild(a);
-		ArchiveFormat fmt{ fmt_desc->getName() };
+		auto          fmt_desc = (ParseTreeNode*)formats_node->child(a);
+		ArchiveFormat fmt{ fmt_desc->name() };
 
 		for (unsigned p = 0; p < fmt_desc->nChildren(); p++)
 		{
-			auto prop = (ParseTreeNode*)fmt_desc->getChild(p);
+			auto prop = (ParseTreeNode*)fmt_desc->child(p);
 
 			// Format name
-			if (S_CMPNOCASE(prop->getName(), "name"))
+			if (S_CMPNOCASE(prop->name(), "name"))
 				fmt.name = prop->stringValue();
 
 			// Supports dirs
-			else if (S_CMPNOCASE(prop->getName(), "supports_dirs"))
+			else if (S_CMPNOCASE(prop->name(), "supports_dirs"))
 				fmt.supports_dirs = prop->boolValue();
 
 			// Entry names have extensions
-			else if (S_CMPNOCASE(prop->getName(), "names_extensions"))
+			else if (S_CMPNOCASE(prop->name(), "names_extensions"))
 				fmt.names_extensions = prop->boolValue();
 
 			// Max entry name length
-			else if (S_CMPNOCASE(prop->getName(), "max_name_length"))
+			else if (S_CMPNOCASE(prop->name(), "max_name_length"))
 				fmt.max_name_length = prop->intValue();
 
 			// Entry format (id)
-			else if (S_CMPNOCASE(prop->getName(), "entry_format"))
+			else if (S_CMPNOCASE(prop->name(), "entry_format"))
 				fmt.entry_format = prop->stringValue();
 
 			// Extensions
-			else if (S_CMPNOCASE(prop->getName(), "extensions"))
+			else if (S_CMPNOCASE(prop->name(), "extensions"))
 			{
 				for (unsigned e = 0; e < prop->nChildren(); e++)
 				{
-					auto ext = (ParseTreeNode*)prop->getChild(e);
-					fmt.extensions.push_back({ ext->getName(), ext->stringValue() });
+					auto ext = (ParseTreeNode*)prop->child(e);
+					fmt.extensions.push_back({ ext->name(), ext->stringValue() });
 				}
 			}
 		}
@@ -1753,7 +1753,7 @@ bool TreelessArchive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTre
 	// Go through paste tree subdirs and paste their entries recursively
 	for (unsigned a = 0; a < tree->nChildren(); a++)
 	{
-		ArchiveTreeNode* dir = (ArchiveTreeNode*)tree->getChild(a);
+		ArchiveTreeNode* dir = (ArchiveTreeNode*)tree->child(a);
 		paste(dir, position);
 	}
 

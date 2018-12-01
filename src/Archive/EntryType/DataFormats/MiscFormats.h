@@ -9,7 +9,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 6)
+		if (mc.size() > 6)
 		{
 			// Check for RLE0 header
 			if (mc[0] == 'R' && mc[1] == 'L' && mc[2] == 'E' && mc[3] == '0')

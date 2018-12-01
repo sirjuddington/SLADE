@@ -68,7 +68,7 @@ wxMenuItem* WxUtils::createMenuItem(wxMenu* menu, int id, const string& label, c
 // -----------------------------------------------------------------------------
 // Returns a copy of the font [base] with a monospace face/family
 // -----------------------------------------------------------------------------
-wxFont WxUtils::getMonospaceFont(wxFont base)
+wxFont WxUtils::monospaceFont(wxFont base)
 {
 	wxFont font(base.GetPointSize(), wxFONTFAMILY_MODERN, base.GetStyle(), base.GetWeight());
 

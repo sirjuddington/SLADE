@@ -195,7 +195,7 @@ bool ZipArchive::open(string filename)
 
 	// Set all entries/directories to unmodified
 	vector<ArchiveEntry*> entry_list;
-	getEntryTreeAsList(entry_list);
+	putEntryTreeAsList(entry_list);
 	for (size_t a = 0; a < entry_list.size(); a++)
 		entry_list[a]->setState(0);
 
@@ -289,15 +289,15 @@ bool ZipArchive::write(string filename, bool update)
 
 	// Get a linear list of all entries in the archive
 	vector<ArchiveEntry*> entries;
-	getEntryTreeAsList(entries);
+	putEntryTreeAsList(entries);
 
 	// Go through all entries
 	for (size_t a = 0; a < entries.size(); a++)
 	{
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 		{
 			// If the current entry is a folder, just write a directory entry and continue
-			zip.PutNextDirEntry(entries[a]->getPath(true));
+			zip.PutNextDirEntry(entries[a]->path(true));
 			if (update)
 				entries[a]->setState(0);
 			continue;
@@ -308,18 +308,18 @@ bool ZipArchive::write(string filename, bool update)
 		if (entries[a]->exProps().propertyExists("ZipIndex"))
 			index = entries[a]->exProp("ZipIndex");
 
-		if (!inzip.IsOk() || entries[a]->getState() > 0 || index < 0 || index >= inzip.GetTotalEntries())
+		if (!inzip.IsOk() || entries[a]->state() > 0 || index < 0 || index >= inzip.GetTotalEntries())
 		{
 			// If the current entry has been changed, or doesn't exist in the old zip,
 			// (re)compress its data and write it to the zip
-			wxZipEntry* zipentry = new wxZipEntry(entries[a]->getPath() + entries[a]->getName());
+			wxZipEntry* zipentry = new wxZipEntry(entries[a]->path() + entries[a]->name());
 			zip.PutNextEntry(zipentry);
-			zip.Write(entries[a]->getData(), entries[a]->getSize());
+			zip.Write(entries[a]->rawData(), entries[a]->size());
 		}
 		else
 		{
 			// If the entry is unmodified and exists in the old zip, just copy it over
-			c_entries[index]->SetName(entries[a]->getPath() + entries[a]->getName());
+			c_entries[index]->SetName(entries[a]->path() + entries[a]->name());
 			zip.CopyEntry(c_entries[index], inzip);
 			inzip.Reset();
 		}
@@ -353,16 +353,16 @@ bool ZipArchive::write(string filename, bool update)
 bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 {
 	// Check that the entry belongs to this archive
-	if (entry->getParent() != this)
+	if (entry->parent() != this)
 	{
 		LOG_MESSAGE(
-			1, "ZipArchive::loadEntryData: Entry %s attempting to load data from wrong parent!", entry->getName());
+			1, "ZipArchive::loadEntryData: Entry %s attempting to load data from wrong parent!", entry->name());
 		return false;
 	}
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -374,7 +374,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 		zip_index = entry->exProp("ZipIndex");
 	else
 	{
-		LOG_MESSAGE(1, "ZipArchive::loadEntryData: Entry %s has no zip entry index!", entry->getName());
+		LOG_MESSAGE(1, "ZipArchive::loadEntryData: Entry %s has no zip entry index!", entry->name());
 		return false;
 	}
 
@@ -408,7 +408,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Abort if entry doesn't exist in zip (some kind of error)
 	if (!zentry)
 	{
-		LOG_MESSAGE(1, "Error: ZipEntry for entry \"%s\" does not exist in zip", entry->getName());
+		LOG_MESSAGE(1, "Error: ZipEntry for entry \"%s\" does not exist in zip", entry->name());
 		return false;
 	}
 
@@ -453,7 +453,7 @@ ArchiveEntry* ZipArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-Archive::MapDesc ZipArchive::getMapInfo(ArchiveEntry* entry)
+Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* entry)
 {
 	MapDesc map;
 
@@ -462,18 +462,18 @@ Archive::MapDesc ZipArchive::getMapInfo(ArchiveEntry* entry)
 		return map;
 
 	// Check entry type
-	if (entry->getType()->formatId() != "archive_wad")
+	if (entry->type()->formatId() != "archive_wad")
 		return map;
 
 	// Check entry directory
-	if (entry->getParentDir()->getParent() != rootDir() || entry->getParentDir()->getName() != "maps")
+	if (entry->parentDir()->parent() != rootDir() || entry->parentDir()->name() != "maps")
 		return map;
 
 	// Setup map info
 	map.archive = true;
 	map.head    = entry;
 	map.end     = entry;
-	map.name    = entry->getName(true).Upper();
+	map.name    = entry->name(true).Upper();
 
 	return map;
 }
@@ -487,7 +487,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 	vector<MapDesc> ret;
 
 	// Get the maps directory
-	ArchiveTreeNode* mapdir = getDir("maps");
+	ArchiveTreeNode* mapdir = dir("maps");
 	if (!mapdir)
 		return ret;
 
@@ -497,7 +497,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 		ArchiveEntry* entry = mapdir->entryAt(a);
 
 		// Maps can only be wad archives
-		if (entry->getType()->formatId() != "archive_wad")
+		if (entry->type()->formatId() != "archive_wad")
 			continue;
 
 		// Detect map format (probably kinda slow but whatever, no better way to do it really)
@@ -514,7 +514,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 		md.head    = entry;
 		md.end     = entry;
 		md.archive = true;
-		md.name    = entry->getName(true).Upper();
+		md.name    = entry->name(true).Upper();
 		md.format  = format;
 		ret.push_back(md);
 	}
@@ -540,7 +540,7 @@ ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.IsEmpty())
 	{
-		dir = getDir(options.match_namespace);
+		dir = this->dir(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
@@ -574,7 +574,7 @@ ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.IsEmpty())
 	{
-		dir = getDir(options.match_namespace);
+		dir = this->dir(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
@@ -608,7 +608,7 @@ vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.IsEmpty())
 	{
-		dir = getDir(options.match_namespace);
+		dir = this->dir(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
@@ -662,7 +662,7 @@ void ZipArchive::generateTempFileName(string filename)
 bool ZipArchive::isZipArchive(MemChunk& mc)
 {
 	// Check size
-	if (mc.getSize() < sizeof(ZipFileHeader))
+	if (mc.size() < sizeof(ZipFileHeader))
 		return false;
 
 	// Read first file header

@@ -66,7 +66,7 @@ MapObject::MapObject(Type type, SLADEMap* parent)
 	this->index_         = 0;
 	this->filtered_      = false;
 	this->modified_time_ = App::runTimer();
-	this->id_            = 0;
+	this->obj_id_            = 0;
 	this->obj_backup_    = nullptr;
 
 	if (parent)
@@ -86,7 +86,7 @@ MapObject::~MapObject()
 // -----------------------------------------------------------------------------
 // Returns the map index of the object
 // -----------------------------------------------------------------------------
-unsigned MapObject::getIndex()
+unsigned MapObject::index()
 {
 	return index_;
 }
@@ -94,7 +94,7 @@ unsigned MapObject::getIndex()
 // -----------------------------------------------------------------------------
 // Returns a string representation of the object type
 // -----------------------------------------------------------------------------
-string MapObject::getTypeName()
+string MapObject::typeName()
 {
 	switch (type_)
 	{
@@ -120,7 +120,7 @@ void MapObject::setModified()
 		if (obj_backup_)
 			delete obj_backup_;
 		obj_backup_ = new Backup();
-		backup(obj_backup_);
+		backupTo(obj_backup_);
 	}
 
 	modified_time_ = App::runTimer();
@@ -157,14 +157,14 @@ bool MapObject::boolProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
-		return properties_[key].getBoolValue();
+		return properties_[key].boolValue();
 
 	// Otherwise check the game configuration for a default value
 	else
 	{
 		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
 		if (prop)
-			return prop->defaultValue().getBoolValue();
+			return prop->defaultValue().boolValue();
 		else
 			return false;
 	}
@@ -177,14 +177,14 @@ int MapObject::intProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
-		return properties_[key].getIntValue();
+		return properties_[key].intValue();
 
 	// Otherwise check the game configuration for a default value
 	else
 	{
 		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
 		if (prop)
-			return prop->defaultValue().getIntValue();
+			return prop->defaultValue().intValue();
 		else
 			return 0;
 	}
@@ -197,14 +197,14 @@ double MapObject::floatProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
-		return properties_[key].getFloatValue();
+		return properties_[key].floatValue();
 
 	// Otherwise check the game configuration for a default value
 	else
 	{
 		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
 		if (prop)
-			return prop->defaultValue().getFloatValue();
+			return prop->defaultValue().floatValue();
 		else
 			return 0;
 	}
@@ -217,14 +217,14 @@ string MapObject::stringProperty(const string& key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
-		return properties_[key].getStringValue();
+		return properties_[key].stringValue();
 
 	// Otherwise check the game configuration for a default value
 	else
 	{
 		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
 		if (prop)
-			return prop->defaultValue().getStringValue();
+			return prop->defaultValue().stringValue();
 		else
 			return "";
 	}
@@ -281,10 +281,10 @@ void MapObject::setStringProperty(const string& key, const string& value)
 // -----------------------------------------------------------------------------
 // Writes all object properties to [backup]
 // -----------------------------------------------------------------------------
-void MapObject::backup(Backup* backup)
+void MapObject::backupTo(Backup* backup)
 {
 	// Save basic info
-	backup->id   = id_;
+	backup->id   = obj_id_;
 	backup->type = type_;
 
 	// Save general properties to list
@@ -306,9 +306,9 @@ void MapObject::loadFromBackup(Backup* backup)
 		return;
 	}
 	// Check id match
-	if (backup->id != id_)
+	if (backup->id != obj_id_)
 	{
-		LOG_MESSAGE(1, "loadFromBackup: Mobj id mismatch, %d != %d", id_, backup->id);
+		LOG_MESSAGE(1, "loadFromBackup: Mobj id mismatch, %d != %d", obj_id_, backup->id);
 		return;
 	}
 
@@ -326,7 +326,7 @@ void MapObject::loadFromBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Returns the backup struct for this object
 // -----------------------------------------------------------------------------
-MapObject::Backup* MapObject::getBackup(bool remove)
+MapObject::Backup* MapObject::backup(bool remove)
 {
 	Backup* bak = obj_backup_;
 	if (remove)

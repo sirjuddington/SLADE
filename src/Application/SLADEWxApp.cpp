@@ -134,12 +134,10 @@ class SLADEStackTrace : public wxStackWalker
 {
 public:
 	SLADEStackTrace() { stack_trace_ = "Stack Trace:\n"; }
-
 	~SLADEStackTrace() {}
 
-	string getTraceString() const { return stack_trace_; }
-
-	string getTopLevel() const { return top_level_; }
+	string traceString() const { return stack_trace_; }
+	string topLevel() const { return top_level_; }
 
 	void OnStackFrame(const wxStackFrame& frame) override
 	{
@@ -176,7 +174,7 @@ class SLADECrashDialog : public wxDialog, public wxThreadHelper
 public:
 	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE Application Crash")
 	{
-		top_level_ = st.getTopLevel();
+		top_level_ = st.topLevel();
 
 		// Setup sizer
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -232,7 +230,7 @@ public:
 		trace_ += "\n";
 
 		// System info
-		OpenGL::Info gl_info = OpenGL::getInfo();
+		OpenGL::Info gl_info = OpenGL::sysInfo();
 		trace_ += "Operating System: " + wxGetOsDescription() + "\n";
 		trace_ += "Graphics Vendor: " + gl_info.vendor + "\n";
 		trace_ += "Graphics Hardware: " + gl_info.renderer + "\n";
@@ -240,7 +238,7 @@ public:
 
 		// Stack trace
 		trace_ += "\n";
-		trace_ += st.getTraceString();
+		trace_ += st.traceString();
 
 		// Last 10 log lines
 		trace_ += "\nLast Log Messages:\n";
@@ -543,12 +541,12 @@ bool SLADEWxApp::OnInit()
 #ifdef __APPLE__
 	// Should be constant, wxWidgets Cocoa backend scales everything under the hood
 	const double ui_scale = 1.0;
-#else // !__APPLE__
-	// Calculate scaling factor (from system ppi)
-	wxMemoryDC dc;
-	double ui_scale = (double)(dc.GetPPI().x) / 96.0;
-	if (ui_scale < 1.)
-		ui_scale = 1.;
+#else  // !__APPLE__
+    // Calculate scaling factor (from system ppi)
+    wxMemoryDC dc;
+    double     ui_scale = (double)(dc.GetPPI().x) / 96.0;
+    if (ui_scale < 1.)
+        ui_scale = 1.;
 #endif // __APPLE__
 
 	// Get Windows version
@@ -615,7 +613,7 @@ void SLADEWxApp::OnFatalException()
 #ifdef __APPLE__
 void SLADEWxApp::MacOpenFile(const wxString& fileName)
 {
-	theMainWindow->getArchiveManagerPanel()->openFile(fileName);
+	theMainWindow->archiveManagerPanel()->openFile(fileName);
 }
 #endif // __APPLE__
 
@@ -649,17 +647,17 @@ void SLADEWxApp::onMenu(wxCommandEvent& e)
 
 	// Find applicable action
 	auto s_action = SAction::fromWxId(e.GetId());
-	auto action   = s_action->getId();
+	auto action   = s_action->id();
 
 	// Handle action if valid
 	if (action != "invalid")
 	{
 		current_action = action;
-		SActionHandler::setWxIdOffset(e.GetId() - s_action->getWxId());
+		SActionHandler::setWxIdOffset(e.GetId() - s_action->wxId());
 		handled = SActionHandler::doAction(action);
 
 		// Check if triggering object is a menu item
-		if (s_action && s_action->getType() == SAction::Type::Check)
+		if (s_action && s_action->type() == SAction::Type::Check)
 		{
 			if (e.GetEventObject() && e.GetEventObject()->IsKindOf(wxCLASSINFO(wxMenuItem)))
 			{
@@ -796,8 +794,8 @@ void SLADEWxApp::onActivate(wxActivateEvent& e)
 	}
 
 	// Check open directory archives for changes on the file system
-	if (theMainWindow && theMainWindow->getArchiveManagerPanel())
-		theMainWindow->getArchiveManagerPanel()->checkDirArchives();
+	if (theMainWindow && theMainWindow->archiveManagerPanel())
+		theMainWindow->archiveManagerPanel()->checkDirArchives();
 
 	e.Skip();
 }

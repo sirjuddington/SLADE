@@ -64,7 +64,7 @@ NumberTextCtrl::NumberTextCtrl(wxWindow* parent, bool allow_decimal) : wxTextCtr
 // If it's an incrememt or decrement, returns [base] incremented/decremented by
 // the number
 // -----------------------------------------------------------------------------
-int NumberTextCtrl::getNumber(int base)
+int NumberTextCtrl::number(int base)
 {
 	string val = GetValue();
 
@@ -96,11 +96,11 @@ int NumberTextCtrl::getNumber(int base)
 // If it's an incrememt or decrement, returns [base] incremented/decremented by
 // the number
 // -----------------------------------------------------------------------------
-double NumberTextCtrl::getDecNumber(double base)
+double NumberTextCtrl::decNumber(double base)
 {
 	// If decimals aren't allowed just return truncated integral value
 	if (!allow_decimal_)
-		return getNumber(base);
+		return number(base);
 
 	string val = GetValue();
 

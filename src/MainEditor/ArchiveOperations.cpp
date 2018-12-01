@@ -96,7 +96,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 		TextureXList* texturex = new TextureXList();
 		texturex->readTEXTUREXData(tx_entries[a], ptable);
 		for (unsigned t = 0; t < texturex->nTextures(); t++)
-			ptable.updatePatchUsage(texturex->getTexture(t));
+			ptable.updatePatchUsage(texturex->texture(t));
 		tx_lists.push_back(texturex);
 	}
 
@@ -114,7 +114,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 
 			// If its entry is in the archive, flag it to be removed
 			ArchiveEntry* entry = theResourceManager->getPatchEntry(p.name, "patches", archive);
-			if (entry && entry->getParent() == archive)
+			if (entry && entry->parent() == archive)
 				to_remove.push_back(entry);
 
 			// Update texturex list patch indices
@@ -131,7 +131,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 	// Remove unused patch entries
 	for (unsigned a = 0; a < to_remove.size(); a++)
 	{
-		LOG_MESSAGE(1, "Removed entry %s", to_remove[a]->getName());
+		LOG_MESSAGE(1, "Removed entry %s", to_remove[a]->name());
 		archive->removeEntry(to_remove[a]);
 	}
 
@@ -166,20 +166,20 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
 
 	// Get list of all entries in archive
 	vector<ArchiveEntry*> entries;
-	archive->getEntryTreeAsList(entries);
+	archive->putEntryTreeAsList(entries);
 
 	// Go through list
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Skip directory entries
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			continue;
 
 		// Increment count for entry name
-		map_namecounts[entries[a]->getPath(true)] += 1;
+		map_namecounts[entries[a]->path(true)] += 1;
 
 		// Enqueue entries
-		map_entries[entries[a]->getName(true)].push_back(entries[a]);
+		map_entries[entries[a]->name(true)].push_back(entries[a]);
 	}
 
 	// Generate string of duplicate entry names
@@ -214,7 +214,7 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
 				vector<ArchiveEntry*>::iterator j = i->second.begin();
 				while (j != i->second.end())
 				{
-					name = (*j)->getPath(true);
+					name = (*j)->path(true);
 					name.Remove(0, 1);
 					dups += S_FMT("\t%s", name);
 					++j;
@@ -254,7 +254,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 
 	// Get list of all entries in archive
 	vector<ArchiveEntry*> entries;
-	archive->getEntryTreeAsList(entries);
+	archive->putEntryTreeAsList(entries);
 
 	// Init search options
 	Archive::SearchOptions search;
@@ -266,20 +266,20 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Skip directory entries
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			continue;
 
 		// Skip markers
-		if (entries[a]->getType() == EntryType::mapMarkerType() || entries[a]->getSize() == 0)
+		if (entries[a]->type() == EntryType::mapMarkerType() || entries[a]->size() == 0)
 			continue;
 
 		// Now, let's look for a counterpart in the IWAD
 		search.match_namespace = archive->detectNamespace(entries[a]);
-		search.match_name      = entries[a]->getName();
+		search.match_name      = entries[a]->name();
 		other                  = bra->findLast(search);
 
 		// If there is one, and it is identical, remove it
-		if (other != nullptr && (other->getMCData().crc() == entries[a]->getMCData().crc()))
+		if (other != nullptr && (other->data().crc() == entries[a]->data().crc()))
 		{
 			++count;
 			dups += S_FMT("%s\n", search.match_name);
@@ -318,22 +318,22 @@ bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive)
 
 	// Get list of all entries in archive
 	vector<ArchiveEntry*> entries;
-	archive->getEntryTreeAsList(entries);
+	archive->putEntryTreeAsList(entries);
 	string dups = "";
 
 	// Go through list
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Skip directory entries
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			continue;
 
 		// Skip markers
-		if (entries[a]->getType() == EntryType::mapMarkerType() || entries[a]->getSize() == 0)
+		if (entries[a]->type() == EntryType::mapMarkerType() || entries[a]->size() == 0)
 			continue;
 
 		// Enqueue entries
-		map_entries[entries[a]->getMCData().crc()].push_back(entries[a]);
+		map_entries[entries[a]->data().crc()].push_back(entries[a]);
 	}
 
 	// Now iterate through the dupes to list the name of the duplicated entries
@@ -342,13 +342,13 @@ bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive)
 	{
 		if (i->second.size() > 1)
 		{
-			string name = i->second[0]->getPath(true);
+			string name = i->second[0]->path(true);
 			name.Remove(0, 1);
 			dups += S_FMT("\n%s\t(%8x) duplicated by", name, i->first);
 			vector<ArchiveEntry*>::iterator j = i->second.begin() + 1;
 			while (j != i->second.end())
 			{
-				name = (*j)->getPath(true);
+				name = (*j)->path(true);
 				name.Remove(0, 1);
 				dups += S_FMT("\t%s", name);
 				++j;
@@ -421,7 +421,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	string            tex_lower, tex_middle, tex_upper;
 	for (unsigned a = 0; a < sidedefs.size(); a++)
 	{
-		int nsides = sidedefs[a]->getSize() / 30;
+		int nsides = sidedefs[a]->size() / 30;
 		sidedefs[a]->seek(0, SEEK_SET);
 		for (int s = 0; s < nsides; s++)
 		{
@@ -452,7 +452,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	for (unsigned a = 0; a < udmfmaps.size(); a++)
 	{
 		// Open in tokenizer
-		tz.openMem(udmfmaps[a]->getMCData(), "UDMF TEXTMAP");
+		tz.openMem(udmfmaps[a]->data(), "UDMF TEXTMAP");
 
 		// Go through text tokens
 		string token = tz.getToken();
@@ -503,7 +503,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 		bool anim = false;
 		for (unsigned t = 1; t < txlist.nTextures(); t++)
 		{
-			string texname = txlist.getTexture(t)->getName();
+			string texname = txlist.texture(t)->name();
 
 			// Check for animation start
 			for (int b = 0; b < n_tex_anim; b++)
@@ -529,7 +529,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 
 			// Mark if unused and not part of an animation
 			if (!used_textures[texname].used && !anim && !thisend)
-				unused_tex.Add(txlist.getTexture(t)->getName());
+				unused_tex.Add(txlist.texture(t)->name());
 		}
 	}
 
@@ -551,7 +551,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 		tx.readTEXTUREXData(base_tx_entries[a], pt_temp, true);
 	vector<string> base_resource_textures;
 	for (unsigned a = 0; a < tx.nTextures(); a++)
-		base_resource_textures.push_back(tx.getTexture(a)->getName());
+		base_resource_textures.push_back(tx.texture(a)->name());
 
 	// Determine which textures to check initially
 	wxArrayInt selection;
@@ -653,7 +653,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 	string              tex_floor, tex_ceil;
 	for (unsigned a = 0; a < sectors.size(); a++)
 	{
-		int nsec = sectors[a]->getSize() / 26;
+		int nsec = sectors[a]->size() / 26;
 		sectors[a]->seek(0, SEEK_SET);
 		for (int s = 0; s < nsec; s++)
 		{
@@ -682,7 +682,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 	for (unsigned a = 0; a < udmfmaps.size(); a++)
 	{
 		// Open in tokenizer
-		tz.openMem(udmfmaps[a]->getMCData(), "UDMF TEXTMAP");
+		tz.openMem(udmfmaps[a]->data(), "UDMF TEXTMAP");
 
 		// Go through text tokens
 		string token = tz.getToken();
@@ -728,11 +728,11 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 	for (unsigned a = 0; a < flats.size(); a++)
 	{
 		// Skip markers
-		if (flats[a]->getSize() == 0)
+		if (flats[a]->size() == 0)
 			continue;
 
 		// Check for animation start
-		string flatname = flats[a]->getName(true);
+		string flatname = flats[a]->name(true);
 		for (int b = 0; b < n_flat_anim; b++)
 		{
 			if (flatname == flat_anim_start[b])
@@ -812,12 +812,12 @@ size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype)
 	if (entry == nullptr)
 		return 0;
 
-	size_t size      = entry->getSize();
+	size_t size      = entry->size();
 	size_t numthings = size / sizeof(MapThing::DoomData);
 	size_t changed   = 0;
 
 	MapThing::DoomData* things = new MapThing::DoomData[numthings];
-	memcpy(things, entry->getData(), size);
+	memcpy(things, entry->rawData(), size);
 
 	// Perform replacement
 	for (size_t t = 0; t < numthings; ++t)
@@ -840,12 +840,12 @@ size_t replaceThingsDoom64(ArchiveEntry* entry, int oldtype, int newtype)
 	if (entry == nullptr)
 		return 0;
 
-	size_t size      = entry->getSize();
+	size_t size      = entry->size();
 	size_t numthings = size / sizeof(MapThing::Doom64Data);
 	size_t changed   = 0;
 
 	MapThing::Doom64Data* things = new MapThing::Doom64Data[numthings];
-	memcpy(things, entry->getData(), size);
+	memcpy(things, entry->rawData(), size);
 
 	// Perform replacement
 	for (size_t t = 0; t < numthings; ++t)
@@ -868,12 +868,12 @@ size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype)
 	if (entry == nullptr)
 		return 0;
 
-	size_t size      = entry->getSize();
+	size_t size      = entry->size();
 	size_t numthings = size / sizeof(MapThing::HexenData);
 	size_t changed   = 0;
 
 	MapThing::HexenData* things = new MapThing::HexenData[numthings];
-	memcpy(things, entry->getData(), size);
+	memcpy(things, entry->rawData(), size);
 
 	// Perform replacement
 	for (size_t t = 0; t < numthings; ++t)
@@ -954,7 +954,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if (mapentry->getType() == EntryType::fromId("map_things"))
+					if (mapentry->type() == EntryType::fromId("map_things"))
 					{
 						things = mapentry;
 						break;
@@ -966,7 +966,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if (mapentry->getType() == EntryType::fromId("udmf_textmap"))
+					if (mapentry->type() == EntryType::fromId("udmf_textmap"))
 					{
 						things = mapentry;
 						break;
@@ -984,11 +984,11 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 				case MAP_HEXEN: achanged = replaceThingsHexen(things, oldtype, newtype); break;
 				case MAP_DOOM64: achanged = replaceThingsDoom64(things, oldtype, newtype); break;
 				case MAP_UDMF: achanged = replaceThingsUDMF(things, oldtype, newtype); break;
-				default: LOG_MESSAGE(1, "Unknown map format for " + maps[a].head->getName()); break;
+				default: LOG_MESSAGE(1, "Unknown map format for " + maps[a].head->name()); break;
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i things changed\n", maps[a].head->getName(), achanged);
+		report += S_FMT("%s:\t%i things changed\n", maps[a].head->name(), achanged);
 		changed += achanged;
 	}
 	LOG_MESSAGE(1, report);
@@ -1080,12 +1080,12 @@ size_t replaceSpecialsDoom(ArchiveEntry* entry, int oldtype, int newtype, bool t
 	if (entry == nullptr)
 		return 0;
 
-	size_t size     = entry->getSize();
+	size_t size     = entry->size();
 	size_t numlines = size / sizeof(MapLine::DoomData);
 	size_t changed  = 0;
 
 	MapLine::DoomData* lines = new MapLine::DoomData[numlines];
-	memcpy(lines, entry->getData(), size);
+	memcpy(lines, entry->rawData(), size);
 
 	// Perform replacement
 	for (size_t l = 0; l < numlines; ++l)
@@ -1141,11 +1141,11 @@ size_t replaceSpecialsHexen(
 
 	if (l_entry)
 	{
-		size            = l_entry->getSize();
+		size            = l_entry->size();
 		size_t numlines = size / sizeof(MapLine::HexenData);
 
 		MapLine::HexenData* lines = new MapLine::HexenData[numlines];
-		memcpy(lines, l_entry->getData(), size);
+		memcpy(lines, l_entry->rawData(), size);
 		size_t lchanged = 0;
 
 		// Perform replacement
@@ -1183,11 +1183,11 @@ size_t replaceSpecialsHexen(
 
 	if (t_entry)
 	{
-		size             = t_entry->getSize();
+		size             = t_entry->size();
 		size_t numthings = size / sizeof(MapThing::HexenData);
 
 		MapThing::HexenData* things = new MapThing::HexenData[numthings];
-		memcpy(things, t_entry->getData(), size);
+		memcpy(things, t_entry->rawData(), size);
 		size_t tchanged = 0;
 
 		// Perform replacement
@@ -1347,13 +1347,13 @@ size_t ArchiveOperations::replaceSpecials(
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if (things && mapentry->getType() == EntryType::fromId("map_things"))
+					if (things && mapentry->type() == EntryType::fromId("map_things"))
 					{
 						t_entry = mapentry;
 						if (l_entry || !lines)
 							break;
 					}
-					if (lines && mapentry->getType() == EntryType::fromId("map_linedefs"))
+					if (lines && mapentry->type() == EntryType::fromId("map_linedefs"))
 					{
 						l_entry = mapentry;
 						if (t_entry || !things)
@@ -1366,7 +1366,7 @@ size_t ArchiveOperations::replaceSpecials(
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if (mapentry->getType() == EntryType::fromId("udmf_textmap"))
+					if (mapentry->type() == EntryType::fromId("udmf_textmap"))
 					{
 						l_entry = t_entry = mapentry;
 						break;
@@ -1435,11 +1435,11 @@ size_t ArchiveOperations::replaceSpecials(
 						newarg3,
 						newarg4);
 					break;
-				default: LOG_MESSAGE(1, "Unknown map format for " + maps[a].head->getName()); break;
+				default: LOG_MESSAGE(1, "Unknown map format for " + maps[a].head->name()); break;
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i specials changed\n", maps[a].head->getName(), achanged);
+		report += S_FMT("%s:\t%i specials changed\n", maps[a].head->name(), achanged);
 		changed += achanged;
 	}
 	LOG_MESSAGE(1, report);
@@ -1534,13 +1534,13 @@ size_t replaceFlatsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 	if (entry == nullptr)
 		return 0;
 
-	size_t size       = entry->getSize();
+	size_t size       = entry->size();
 	size_t numsectors = size / sizeof(MapSector::DoomData);
 	bool   fchanged, cchanged;
 	size_t changed = 0;
 
 	MapSector::DoomData* sectors = new MapSector::DoomData[numsectors];
-	memcpy(sectors, entry->getData(), size);
+	memcpy(sectors, entry->rawData(), size);
 
 	// Perform replacement
 	for (size_t s = 0; s < numsectors; ++s)
@@ -1565,13 +1565,13 @@ size_t replaceWallsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 	if (entry == nullptr)
 		return 0;
 
-	size_t size     = entry->getSize();
+	size_t size     = entry->size();
 	size_t numsides = size / sizeof(MapSide::DoomData);
 	bool   lchanged, mchanged, uchanged;
 	size_t changed = 0;
 
 	MapSide::DoomData* sides = new MapSide::DoomData[numsides];
-	memcpy(sides, entry->getData(), size);
+	memcpy(sides, entry->rawData(), size);
 	char compare[9];
 	compare[8] = 0;
 
@@ -1600,7 +1600,7 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 	if (entry == nullptr)
 		return 0;
 
-	size_t size       = entry->getSize();
+	size_t size       = entry->size();
 	size_t numsectors = size / sizeof(MapSector::Doom64Data);
 	bool   fchanged, cchanged;
 	size_t changed = 0;
@@ -1609,7 +1609,7 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 	uint16_t newhash = theResourceManager->getTextureHash(newtex);
 
 	MapSector::Doom64Data* sectors = new MapSector::Doom64Data[numsectors];
-	memcpy(sectors, entry->getData(), size);
+	memcpy(sectors, entry->rawData(), size);
 
 	// Perform replacement
 	for (size_t s = 0; s < numsectors; ++s)
@@ -1640,7 +1640,7 @@ size_t replaceWallsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 	if (entry == nullptr)
 		return 0;
 
-	size_t size     = entry->getSize();
+	size_t size     = entry->size();
 	size_t numsides = size / sizeof(MapSide::Doom64Data);
 	bool   lchanged, mchanged, uchanged;
 	size_t changed = 0;
@@ -1649,7 +1649,7 @@ size_t replaceWallsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 	uint16_t newhash = theResourceManager->getTextureHash(newtex);
 
 	MapSide::Doom64Data* sides = new MapSide::Doom64Data[numsides];
-	memcpy(sides, entry->getData(), size);
+	memcpy(sides, entry->rawData(), size);
 
 	// Perform replacement
 	for (size_t s = 0; s < numsides; ++s)
@@ -1761,13 +1761,13 @@ size_t ArchiveOperations::replaceTextures(
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if ((floor || ceiling) && (mapentry->getType() == EntryType::fromId("map_sectors")))
+					if ((floor || ceiling) && (mapentry->type() == EntryType::fromId("map_sectors")))
 					{
 						sectors = mapentry;
 						if (sides || !(lower || middle || upper))
 							break;
 					}
-					if ((lower || middle || upper) && (mapentry->getType() == EntryType::fromId("map_sidedefs")))
+					if ((lower || middle || upper) && (mapentry->type() == EntryType::fromId("map_sidedefs")))
 					{
 						sides = mapentry;
 						if (sectors || !(floor || ceiling))
@@ -1780,7 +1780,7 @@ size_t ArchiveOperations::replaceTextures(
 			{
 				while (mapentry && mapentry != maps[a].end)
 				{
-					if (mapentry->getType() == EntryType::fromId("udmf_textmap"))
+					if (mapentry->type() == EntryType::fromId("udmf_textmap"))
 					{
 						sectors = sides = mapentry;
 						break;
@@ -1812,11 +1812,11 @@ size_t ArchiveOperations::replaceTextures(
 				case MAP_UDMF:
 					achanged = replaceTexturesUDMF(sectors, oldtex, newtex, floor, ceiling, lower, middle, upper);
 					break;
-				default: LOG_MESSAGE(1, "Unknown map format for " + maps[a].head->getName()); break;
+				default: LOG_MESSAGE(1, "Unknown map format for " + maps[a].head->name()); break;
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i elements changed\n", maps[a].head->getName(), achanged);
+		report += S_FMT("%s:\t%i elements changed\n", maps[a].head->name(), achanged);
 		changed += achanged;
 	}
 	LOG_MESSAGE(1, report);

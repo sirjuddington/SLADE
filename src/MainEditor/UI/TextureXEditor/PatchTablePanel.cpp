@@ -87,7 +87,7 @@ PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table
 // -----------------------------------------------------------------------------
 // Returns the string for [item] at [column]
 // -----------------------------------------------------------------------------
-string PatchTableListView::getItemText(long item, long column, long index) const
+string PatchTableListView::itemText(long item, long column, long index) const
 {
 	// Check patch table exists
 	if (!patch_table_)
@@ -113,7 +113,7 @@ string PatchTableListView::getItemText(long item, long column, long index) const
 
 		// If patch entry can't be found return invalid
 		if (entry)
-			return entry->getParent()->filename(false);
+			return entry->parent()->filename(false);
 		else
 			return "(!) NOT FOUND";
 	}
@@ -238,7 +238,7 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	list_patches_->Bind(wxEVT_LIST_ITEM_SELECTED, &PatchTablePanel::onDisplayChanged, this);
 
 	// Palette chooser
-	listenTo(theMainWindow->getPaletteChooser());
+	listenTo(theMainWindow->paletteChooser());
 }
 
 // -----------------------------------------------------------------------------
@@ -348,7 +348,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			EntryType::detectEntryType(entry);
 
 			// If it's not a valid image type, ignore this file
-			if (!entry->getType()->extraProps().propertyExists("image"))
+			if (!entry->type()->extraProps().propertyExists("image"))
 			{
 				LOG_MESSAGE(1, "%s is not a valid image file", files[a]);
 				continue;
@@ -363,7 +363,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			// Add patch to archive
 			entry->setName(name);
 			entry->setExtensionByType();
-			parent_->getArchive()->addEntry(entry, "patches");
+			parent_->archive()->addEntry(entry, "patches");
 
 			// Add patch to patch table
 			patch_table_->addPatch(name);
@@ -381,7 +381,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 {
 	// Check anything is selected
-	vector<long> selection = list_patches_->getSelection(true);
+	vector<long> selection = list_patches_->selection(true);
 	if (selection.size() == 0)
 		return;
 
@@ -433,7 +433,7 @@ void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 {
 	// Check anything is selected
-	vector<long> selection = list_patches_->getSelection(true);
+	vector<long> selection = list_patches_->selection(true);
 	if (selection.size() == 0)
 		return;
 
@@ -464,17 +464,17 @@ void PatchTablePanel::updateDisplay()
 	// palette display; optimize label_textures display
 
 	// Get selected patch
-	int   index = list_patches_->getItemIndex(list_patches_->getLastSelected());
+	int   index = list_patches_->itemIndex(list_patches_->lastSelected());
 	auto& patch = patch_table_->patch(index);
 
 	// Load the image
 	ArchiveEntry* entry = patch_table_->patchEntry(index);
 	if (Misc::loadImageFromEntry(patch_canvas_->getImage(), entry))
 	{
-		theMainWindow->getPaletteChooser()->setGlobalFromArchive(entry->getParent());
-		patch_canvas_->setPalette(theMainWindow->getPaletteChooser()->getSelectedPalette());
+		theMainWindow->paletteChooser()->setGlobalFromArchive(entry->parent());
+		patch_canvas_->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 		label_dimensions_->SetLabel(
-			S_FMT("Size: %d x %d", patch_canvas_->getImage()->getWidth(), patch_canvas_->getImage()->getHeight()));
+			S_FMT("Size: %d x %d", patch_canvas_->getImage()->width(), patch_canvas_->getImage()->height()));
 	}
 	else
 	{
@@ -551,7 +551,7 @@ void PatchTablePanel::onDisplayChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void PatchTablePanel::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
-	if (announcer != theMainWindow->getPaletteChooser())
+	if (announcer != theMainWindow->paletteChooser())
 		return;
 
 	if (event_name == "main_palette_changed")

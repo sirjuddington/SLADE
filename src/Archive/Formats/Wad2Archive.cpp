@@ -121,7 +121,7 @@ bool Wad2Archive::open(MemChunk& mc)
 
 		// If the lump data goes past the end of the file,
 		// the wadfile is invalid
-		if ((unsigned)(info.offset + info.dsize) > mc.getSize())
+		if ((unsigned)(info.offset + info.dsize) > mc.size())
 		{
 			LOG_MESSAGE(1, "Wad2Archive::open: Wad2 archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
@@ -151,13 +151,13 @@ bool Wad2Archive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = getEntry(a);
+		ArchiveEntry* entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->getSize());
+			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -197,9 +197,9 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 	ArchiveEntry* entry      = nullptr;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
-		entry                   = getEntry(l);
+		entry                   = entryAt(l);
 		entry->exProp("Offset") = (int)dir_offset;
-		dir_offset += entry->getSize();
+		dir_offset += entry->size();
 	}
 
 	// Clear/init MemChunk
@@ -221,22 +221,22 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 	// Write the lumps
 	for (uint32_t l = 0; l < num_lumps; l++)
 	{
-		entry = getEntry(l);
-		mc.write(entry->getData(), entry->getSize());
+		entry = entryAt(l);
+		mc.write(entry->rawData(), entry->size());
 	}
 
 	// Write the directory
 	for (uint32_t l = 0; l < num_lumps; l++)
 	{
-		entry = getEntry(l);
+		entry = entryAt(l);
 
 		// Setup directory entry
 		Wad2Entry info;
 		memset(info.name, 0, 16);
-		memcpy(info.name, CHR(entry->getName()), entry->getName().Len());
+		memcpy(info.name, CHR(entry->name()), entry->name().Len());
 		info.cmprs  = (bool)entry->exProp("W2Comp");
-		info.dsize  = entry->getSize();
-		info.size   = entry->getSize();
+		info.dsize  = entry->size();
+		info.size   = entry->size();
 		info.offset = (int)entry->exProp("Offset");
 		info.type   = (int)entry->exProp("W2Type");
 
@@ -262,7 +262,7 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -280,7 +280,7 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to lump offset in file and read it in
 	file.Seek((int)entry->exProp("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -308,7 +308,7 @@ ArchiveEntry* Wad2Archive::addEntry(ArchiveEntry* entry, unsigned position, Arch
 		entry = new ArchiveEntry(*entry);
 
 	// Process name (must be 16 characters max, also cut any extension as wad entries don't usually want them)
-	wxFileName fn(entry->getName());
+	wxFileName fn(entry->name());
 	string     name = fn.GetName().Truncate(16);
 	if (wad_force_uppercase)
 		name.MakeUpper();
@@ -356,7 +356,7 @@ bool Wad2Archive::renameEntry(ArchiveEntry* entry, string name)
 bool Wad2Archive::isWad2Archive(MemChunk& mc)
 {
 	// Check size
-	if (mc.getSize() < 12)
+	if (mc.size() < 12)
 		return false;
 
 	// Check for IWAD/PWAD header
@@ -378,7 +378,7 @@ bool Wad2Archive::isWad2Archive(MemChunk& mc)
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check directory offset is decent
-	if ((unsigned)(dir_offset + (num_lumps * 32)) > mc.getSize() || dir_offset < 12)
+	if ((unsigned)(dir_offset + (num_lumps * 32)) > mc.size() || dir_offset < 12)
 		return false;
 
 	// If it's passed to here it's probably a wad2 file

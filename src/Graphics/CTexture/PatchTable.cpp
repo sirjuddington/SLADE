@@ -252,7 +252,7 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 
 	// Setup parent archive
 	if (!parent)
-		parent = pnames->getParent();
+		parent = pnames->parent();
 
 	// Read number of pnames
 	uint32_t n_pnames = 0;
@@ -347,11 +347,11 @@ void PatchTable::updatePatchUsage(CTexture* tex)
 {
 	// Remove texture from all patch usage tables
 	for (unsigned a = 0; a < patches_.size(); a++)
-		patches_[a].removeTextureUsage(tex->getName());
+		patches_[a].removeTextureUsage(tex->name());
 
 	// Update patch usage counts for texture
 	for (unsigned a = 0; a < tex->nPatches(); a++)
-		patch(tex->getPatch(a)->getName()).used_in.push_back(tex->getName());
+		patch(tex->patch(a)->name()).used_in.push_back(tex->name());
 
 	// Announce
 	announce("modified");

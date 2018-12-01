@@ -17,7 +17,7 @@ public:
 		string           type        = "");
 	~ParseTreeNode();
 
-	string getName() override { return name_; }
+	string name() override { return name_; }
 	void   setName(string name) override { this->name_ = name; }
 
 	const string&           inherit() const { return inherit_; }
@@ -33,8 +33,8 @@ public:
 	double         floatValue(unsigned index = 0);
 
 	// To avoid need for casts everywhere
-	ParseTreeNode* getChildPTN(const string& name) { return static_cast<ParseTreeNode*>(getChild(name)); }
-	ParseTreeNode* getChildPTN(unsigned index) { return static_cast<ParseTreeNode*>(getChild(index)); }
+	ParseTreeNode* childPTN(const string& name) { return static_cast<ParseTreeNode*>(child(name)); }
+	ParseTreeNode* childPTN(unsigned index) { return static_cast<ParseTreeNode*>(child(index)); }
 
 	ParseTreeNode* addChildPTN(const string& name, const string& type = "");
 	void           addStringValue(const string& value) { values_.push_back({ value }); }

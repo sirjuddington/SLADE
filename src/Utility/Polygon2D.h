@@ -43,7 +43,7 @@ public:
 	Polygon2D();
 	~Polygon2D();
 
-	GLTexture* getTexture() { return texture_; }
+	GLTexture* texture() { return texture_; }
 	float      colRed() { return colour_[0]; }
 	float      colGreen() { return colour_[1]; }
 	float      colBlue() { return colour_[2]; }
@@ -58,7 +58,7 @@ public:
 
 	unsigned nSubPolys() { return subpolys_.size(); }
 	void     addSubPoly();
-	SubPoly* getSubPoly(unsigned index);
+	SubPoly* subPoly(unsigned index);
 	void     removeSubPoly(unsigned index);
 	void     clear();
 	unsigned totalVertices();

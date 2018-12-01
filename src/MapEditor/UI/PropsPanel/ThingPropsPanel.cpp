@@ -72,12 +72,12 @@ void SpriteTexCanvas::setSprite(const Game::ThingType& type)
 	colour_  = COL_WHITE;
 
 	// Sprite
-	texture_ = MapEditor::textureManager().getSprite(texname_, type.translation(), type.palette());
+	texture_ = MapEditor::textureManager().sprite(texname_, type.translation(), type.palette());
 
 	// Icon
 	if (!texture_)
 	{
-		texture_ = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type.icon()));
+		texture_ = MapEditor::textureManager().editorImage(S_FMT("thing/%s", type.icon()));
 		colour_  = type.colour();
 		icon_    = true;
 	}
@@ -85,7 +85,7 @@ void SpriteTexCanvas::setSprite(const Game::ThingType& type)
 	// Unknown
 	if (!texture_)
 	{
-		texture_ = MapEditor::textureManager().getEditorImage("thing/unknown");
+		texture_ = MapEditor::textureManager().editorImage("thing/unknown");
 		icon_    = true;
 	}
 
@@ -160,7 +160,7 @@ ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, tru
 	parent_     = parent;
 
 	// Get system panel background colour
-	wxColour bgcolwx = Drawing::getPanelBGColour();
+	wxColour bgcolwx = Drawing::systemPanelBGColour();
 	col_bg_.set(COLWX(bgcolwx));
 
 	// Get system text colour
@@ -395,7 +395,7 @@ AngleControl::AngleControl(wxWindow* parent) : wxControl(parent, -1, wxDefaultPo
 // -----------------------------------------------------------------------------
 int AngleControl::angle(int base)
 {
-	return text_angle_->getNumber(base);
+	return text_angle_->number(base);
 }
 
 // -----------------------------------------------------------------------------
@@ -440,7 +440,7 @@ bool AngleControl::angleSet()
 // -----------------------------------------------------------------------------
 void AngleControl::onAngleTextChanged(wxCommandEvent& e)
 {
-	angle_ = text_angle_->getNumber();
+	angle_ = text_angle_->number();
 	updateAngle();
 }
 
@@ -853,16 +853,16 @@ void ThingPropsPanel::applyChanges()
 		{
 			// ID
 			if (!text_id_->GetValue().IsEmpty())
-				objects_[a]->setIntProperty("id", text_id_->getNumber(objects_[a]->intProperty("id")));
+				objects_[a]->setIntProperty("id", text_id_->number(objects_[a]->intProperty("id")));
 
 			// Z Height
 			if (!text_height_->GetValue().IsEmpty())
 			{
 				if (map_format == MAP_UDMF)
 					objects_[a]->setFloatProperty(
-						"height", text_height_->getDecNumber(objects_[a]->floatProperty("height")));
+						"height", text_height_->decNumber(objects_[a]->floatProperty("height")));
 				else
-					objects_[a]->setIntProperty("height", text_height_->getNumber(objects_[a]->intProperty("height")));
+					objects_[a]->setIntProperty("height", text_height_->number(objects_[a]->intProperty("height")));
 			}
 		}
 	}
@@ -891,7 +891,7 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 	if (browser.ShowModal() == wxID_OK)
 	{
 		// Get selected type
-		type_current_ = browser.getSelectedType();
+		type_current_ = browser.selectedType();
 		auto& tt      = Game::configuration().thingType(type_current_);
 
 		// Update sprite

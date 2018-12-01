@@ -43,7 +43,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-Clipboard* Clipboard::instance = NULL;
+Clipboard* Clipboard::instance_ = NULL;
 
 
 // -----------------------------------------------------------------------------
@@ -98,7 +98,7 @@ EntryTreeClipboardItem::EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, v
 		for (unsigned a = 0; a < entries.size(); a++)
 		{
 			// Export to file
-			string filename = tmp_directory + entries[a]->getName(true) + file_dot + entries[a]->getType()->extension();
+			string filename = tmp_directory + entries[a]->name(true) + file_dot + entries[a]->type()->extension();
 			// string filename = entries[a]->getName(true) + "." + entries[a]->getType()->getExtension();
 			// filename = App::path(filename, App::Dir::Temp);
 			entries[a]->exportFile(filename);
@@ -145,7 +145,7 @@ TextureClipboardItem::TextureClipboardItem(CTexture* texture, Archive* parent) :
 	// Copy patch entries if possible
 	for (unsigned a = 0; a < texture->nPatches(); a++)
 	{
-		ArchiveEntry* entry = texture->getPatch(a)->getPatchEntry(parent);
+		ArchiveEntry* entry = texture->patch(a)->patchEntry(parent);
 
 		// FIXME/TODO: Do something to handle patches that are defined
 		// in TEXTURES rather than a discrete entry!
@@ -156,7 +156,7 @@ TextureClipboardItem::TextureClipboardItem(CTexture* texture, Archive* parent) :
 		bool there = false;
 		for (unsigned b = 0; b < patch_entries_.size(); b++)
 		{
-			if (patch_entries_[b]->getName() == entry->getName())
+			if (patch_entries_[b]->name() == entry->name())
 			{
 				there = true;
 				break;
@@ -188,12 +188,12 @@ TextureClipboardItem::~TextureClipboardItem()
 // -----------------------------------------------------------------------------
 // Returns the entry copy for the patch at [index] in the texture
 // -----------------------------------------------------------------------------
-ArchiveEntry* TextureClipboardItem::getPatchEntry(string patch)
+ArchiveEntry* TextureClipboardItem::patchEntry(string patch)
 {
 	// Find copied patch entry with matching name
 	for (unsigned a = 0; a < patch_entries_.size(); a++)
 	{
-		if (S_CMPNOCASE(patch_entries_[a]->getName(true).Truncate(8), patch))
+		if (S_CMPNOCASE(patch_entries_[a]->name(true).Truncate(8), patch))
 			return patch_entries_[a];
 	}
 
@@ -244,16 +244,16 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 		if (s1)
 		{
 			copy_sides.push_back(s1);
-			if (std::find(copy_sectors.begin(), copy_sectors.end(), s1->getSector()) == copy_sectors.end())
-				copy_sectors.push_back(s1->getSector());
+			if (std::find(copy_sectors.begin(), copy_sectors.end(), s1->sector()) == copy_sectors.end())
+				copy_sectors.push_back(s1->sector());
 		}
 
 		// Back side
 		if (s2)
 		{
 			copy_sides.push_back(s2);
-			if (std::find(copy_sectors.begin(), copy_sectors.end(), s2->getSector()) == copy_sectors.end())
-				copy_sectors.push_back(s2->getSector());
+			if (std::find(copy_sectors.begin(), copy_sectors.end(), s2->sector()) == copy_sectors.end())
+				copy_sectors.push_back(s2->sector());
 		}
 	}
 
@@ -274,7 +274,7 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 		// Set relative sector
 		for (unsigned b = 0; b < copy_sectors.size(); b++)
 		{
-			if (copy_sides[a]->getSector() == copy_sectors[b])
+			if (copy_sides[a]->sector() == copy_sectors[b])
 			{
 				copy->setSector(sectors_[b]);
 				break;
@@ -382,7 +382,7 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 // -----------------------------------------------------------------------------
 // Returns a string with info on what items are copied
 // -----------------------------------------------------------------------------
-string MapArchClipboardItem::getInfo()
+string MapArchClipboardItem::info()
 {
 	return S_FMT(
 		"%lu Vertices, %lu Lines, %lu Sides and %lu Sectors",
@@ -425,7 +425,7 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 	for (unsigned a = 0; a < sides_.size(); a++)
 	{
 		// Get relative sector
-		MapSector* sector = findInMap(sectMap, sides_[a]->getSector());
+		MapSector* sector = findInMap(sectMap, sides_[a]->sector());
 
 		MapSide* new_side = map->createSide(sector);
 		new_side->copy(sides_[a]);
@@ -492,7 +492,7 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 // -----------------------------------------------------------------------------
 // Adds all copied lines to [list]
 // -----------------------------------------------------------------------------
-void MapArchClipboardItem::getLines(vector<MapLine*>& list)
+void MapArchClipboardItem::putLines(vector<MapLine*>& list)
 {
 	for (unsigned a = 0; a < lines_.size(); a++)
 		list.push_back(lines_[a]);
@@ -562,7 +562,7 @@ void MapThingsClipboardItem::addThings(vector<MapThing*>& things)
 // -----------------------------------------------------------------------------
 // Returns a string with info on what items are copied
 // -----------------------------------------------------------------------------
-string MapThingsClipboardItem::getInfo()
+string MapThingsClipboardItem::info()
 {
 	return S_FMT("%lu Things", things_.size());
 }
@@ -583,7 +583,7 @@ void MapThingsClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position)
 // -----------------------------------------------------------------------------
 // Adds all copied things to [list]
 // -----------------------------------------------------------------------------
-void MapThingsClipboardItem::getThings(vector<MapThing*>& list)
+void MapThingsClipboardItem::putThings(vector<MapThing*>& list)
 {
 	for (unsigned a = 0; a < things_.size(); a++)
 	{
@@ -616,7 +616,7 @@ Clipboard::~Clipboard()
 // -----------------------------------------------------------------------------
 // Returns the item at index or null if index is out of bounds
 // -----------------------------------------------------------------------------
-ClipboardItem* Clipboard::getItem(uint32_t index)
+ClipboardItem* Clipboard::item(uint32_t index)
 {
 	if (index >= items_.size())
 		return NULL;

@@ -71,12 +71,12 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 
 	// Update info string
 	if (pos_frac_)
-		info_ = S_FMT("Vertex %d: (%1.4f, %1.4f)", vertex->getIndex(), vertex->xPos(), vertex->yPos());
+		info_ = S_FMT("Vertex %d: (%1.4f, %1.4f)", vertex->index(), vertex->xPos(), vertex->yPos());
 	else
-		info_ = S_FMT("Vertex %d: (%d, %d)", vertex->getIndex(), (int)vertex->xPos(), (int)vertex->yPos());
+		info_ = S_FMT("Vertex %d: (%d, %d)", vertex->index(), (int)vertex->xPos(), (int)vertex->yPos());
 
 	if (Global::debug)
-		info_ += S_FMT(" (%d)", vertex->getId());
+		info_ += S_FMT(" (%d)", vertex->objId());
 }
 
 // -----------------------------------------------------------------------------
@@ -93,8 +93,8 @@ void VertexInfoOverlay::draw(int bottom, int right, float alpha)
 	glDisable(GL_LINE_SMOOTH);
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::colour("map_overlay_background");
+	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 	col_bg.a      = col_bg.a * alpha;
 	rgba_t col_border(0, 0, 0, 140);

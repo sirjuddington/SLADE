@@ -278,7 +278,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 			LOG_MESSAGE(1, "Generating polygons...");
 			for (unsigned a = 0; a < context_->map().nSectors(); a++)
 			{
-				if (!poly.openSector(context_->map().getSector(a)))
+				if (!poly.openSector(context_->map().sector(a)))
 					LOG_MESSAGE(1, "Splitting failed for sector %d", a);
 			}
 			// int ms = clock.GetElapsedTime() * 1000;
@@ -288,7 +288,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		{
 			// Get nearest line
 			int      nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
-			MapLine* line    = context_->map().getLine(nearest);
+			MapLine* line    = context_->map().line(nearest);
 			if (line)
 			{
 				SectorBuilder sbuilder;
@@ -305,17 +305,17 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		{
 			// Get nearest line
 			int      nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
-			MapLine* line    = context_->map().getLine(nearest);
+			MapLine* line    = context_->map().line(nearest);
 
 			// Get sectors
-			MapSector* sec1 = context_->map().getLineSideSector(line, true);
-			MapSector* sec2 = context_->map().getLineSideSector(line, false);
+			MapSector* sec1 = context_->map().lineSideSector(line, true);
+			MapSector* sec2 = context_->map().lineSideSector(line, false);
 			int        i1   = -1;
 			int        i2   = -1;
 			if (sec1)
-				i1 = sec1->getIndex();
+				i1 = sec1->index();
 			if (sec2)
-				i2 = sec2->getIndex();
+				i2 = sec2->index();
 
 			context_->addEditorMessage(S_FMT("Front %d Back %d", i1, i2));
 		}

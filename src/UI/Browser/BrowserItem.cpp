@@ -114,7 +114,7 @@ void BrowserItem::draw(
 			text_box_ = new TextBox(S_FMT("%d\n%s", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
 
 		int top = y;
-		top += ((size - text_box_->getHeight()) * 0.5);
+		top += ((size - text_box_->height()) * 0.5);
 
 		if (text_shadow)
 			text_box_->draw(x + size + 9, top + 1, COL_BLACK);
@@ -159,8 +159,8 @@ void BrowserItem::draw(
 	}
 
 	// Determine texture dimensions
-	double width  = image_->getWidth();
-	double height = image_->getHeight();
+	double width  = image_->width();
+	double height = image_->height();
 
 	// Scale up if size > 128
 	if (size > 128)

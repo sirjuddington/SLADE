@@ -101,20 +101,20 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		|| item_type == MapEditor::ItemType::WallTop)
 	{
 		// Get line and side
-		MapSide* side = map->getSide(item_index);
+		MapSide* side = map->side(item_index);
 		if (!side)
 			return;
-		MapLine* line = side->getParentLine();
+		MapLine* line = side->parentLine();
 		if (!line)
 			return;
 		object_ = side;
 
 		// --- Line/side info ---
-		info_.push_back(S_FMT("Line #%d", line->getIndex()));
+		info_.push_back(S_FMT("Line #%d", line->index()));
 		if (side == line->s1())
-			info_.push_back(S_FMT("Front Side #%d", side->getIndex()));
+			info_.push_back(S_FMT("Front Side #%d", side->index()));
 		else
-			info_.push_back(S_FMT("Back Side #%d", side->getIndex()));
+			info_.push_back(S_FMT("Back Side #%d", side->index()));
 
 		// Relevant flags
 		string flags = "";
@@ -128,7 +128,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			flags.RemoveLast(2);
 		info_.push_back(flags);
 
-		info_.push_back(S_FMT("Length: %d", (int)line->getLength()));
+		info_.push_back(S_FMT("Length: %d", (int)line->length()));
 
 		// Other potential info: special, sector#
 
@@ -237,10 +237,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			other_side  = line->s1();
 		}
 
-		MapSector* this_sector  = side->getSector();
+		MapSector* this_sector  = side->sector();
 		MapSector* other_sector = nullptr;
 		if (other_side)
-			other_sector = other_side->getSector();
+			other_sector = other_side->sector();
 
 		double left_height, right_height;
 		if (item_type == MapEditor::ItemType::WallMiddle && other_sector)
@@ -291,12 +291,12 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// Texture
 		if (item_type == MapEditor::ItemType::WallBottom)
-			texname_ = side->getTexLower();
+			texname_ = side->texLower();
 		else if (item_type == MapEditor::ItemType::WallMiddle)
-			texname_ = side->getTexMiddle();
+			texname_ = side->texMiddle();
 		else
-			texname_ = side->getTexUpper();
-		texture_ = MapEditor::textureManager().getTexture(
+			texname_ = side->texUpper();
+		texture_ = MapEditor::textureManager().texture(
 			texname_, Game::configuration().featureSupported(Feature::MixTexFlats));
 	}
 
@@ -305,7 +305,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 	else if (item_type == MapEditor::ItemType::Floor || item_type == MapEditor::ItemType::Ceiling)
 	{
 		// Get sector
-		MapSector* sector = map->getSector(item_index);
+		MapSector* sector = map->sector(item_index);
 		if (!sector)
 			return;
 		object_ = sector;
@@ -422,7 +422,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		else
 			texname_ = sector->ceiling().texture;
 		texture_ =
-			MapEditor::textureManager().getFlat(texname_, Game::configuration().featureSupported(Feature::MixTexFlats));
+			MapEditor::textureManager().flat(texname_, Game::configuration().featureSupported(Feature::MixTexFlats));
 	}
 
 	// Thing
@@ -431,7 +431,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// index, type, position, sector, zpos, height?, radius?
 
 		// Get thing
-		MapThing* thing = map->getThing(item_index);
+		MapThing* thing = map->thing(item_index);
 		if (!thing)
 			return;
 		object_ = thing;
@@ -449,9 +449,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 
 		// Type
-		auto& tt = Game::configuration().thingType(thing->getType());
+		auto& tt = Game::configuration().thingType(thing->type());
 		if (!tt.defined())
-			info2_.push_back(S_FMT("Type: %d", thing->getType()));
+			info2_.push_back(S_FMT("Type: %d", thing->type()));
 		else
 			info2_.push_back(S_FMT("Type: %s", tt.name()));
 
@@ -487,13 +487,13 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 
 		// Texture
-		texture_ = MapEditor::textureManager().getSprite(tt.sprite(), tt.translation(), tt.palette());
+		texture_ = MapEditor::textureManager().sprite(tt.sprite(), tt.translation(), tt.palette());
 		if (!texture_)
 		{
 			if (use_zeth_icons && tt.zethIcon() >= 0)
-				texture_ = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", tt.zethIcon()));
+				texture_ = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", tt.zethIcon()));
 			if (!texture_)
-				texture_ = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", tt.icon()));
+				texture_ = MapEditor::textureManager().editorImage(S_FMT("thing/%s", tt.icon()));
 			thing_icon_ = true;
 		}
 		texname_ = "";
@@ -518,10 +518,10 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	// Update if needed
 	if (object_
 		&& (object_->modifiedTime() > last_update_ || // object updated
-			(object_->getObjType() == MapObject::Type::Side
-			 && (((MapSide*)object_)->getParentLine()->modifiedTime() > last_update_ || // parent line updated
-				 ((MapSide*)object_)->getSector()->modifiedTime() > last_update_))))    // parent sector updated
-		update(object_->getIndex(), current_type_, object_->getParentMap());
+			(object_->objType() == MapObject::Type::Side
+			 && (((MapSide*)object_)->parentLine()->modifiedTime() > last_update_ || // parent line updated
+				 ((MapSide*)object_)->sector()->modifiedTime() > last_update_))))    // parent sector updated
+		update(object_->index(), current_type_, object_->parentMap());
 
 	// Init GL stuff
 	glLineWidth(1.0f);
@@ -536,8 +536,8 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	int    height      = nlines * line_height + 4;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_3d_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_3d_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::colour("map_3d_overlay_background");
+	rgba_t col_fg = ColourConfiguration::colour("map_3d_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 	col_bg.a      = col_bg.a * alpha;
 	rgba_t col_border(0, 0, 0, 140);
@@ -585,8 +585,8 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 	int    line_height  = 16 * scale;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_3d_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_3d_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::colour("map_3d_overlay_background");
+	rgba_t col_fg = ColourConfiguration::colour("map_3d_overlay_foreground");
 	col_fg.a      = col_fg.a * alpha;
 
 	// Check texture exists
@@ -610,7 +610,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		else if (texname_ == "-")
 		{
 			// Draw missing icon
-			GLTexture* icon = MapEditor::textureManager().getEditorImage("thing/minus");
+			GLTexture* icon = MapEditor::textureManager().editorImage("thing/minus");
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 			Drawing::drawTextureWithin(
@@ -619,7 +619,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		else if (texname_ != "-" && texture_ == &(GLTexture::missingTex()))
 		{
 			// Draw unknown icon
-			GLTexture* icon = MapEditor::textureManager().getEditorImage("thing/unknown");
+			GLTexture* icon = MapEditor::textureManager().editorImage("thing/unknown");
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 			Drawing::drawTextureWithin(

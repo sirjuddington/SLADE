@@ -59,7 +59,7 @@ PaletteChooser::PaletteChooser(wxWindow* parent, int id) : wxChoice(parent, id)
 
 	// Add palette names from palette manager
 	for (int a = 0; a < App::paletteManager()->numPalettes(); a++)
-		Append(App::paletteManager()->getPalName(a));
+		Append(App::paletteManager()->palName(a));
 
 	// Add greyscale palette
 	Append("Greyscale");
@@ -103,12 +103,12 @@ void PaletteChooser::setGlobalFromArchive(Archive* archive, int lump)
 // -----------------------------------------------------------------------------
 // Returns the selected palette (from the PaletteManager)
 // -----------------------------------------------------------------------------
-Palette* PaletteChooser::getSelectedPalette(ArchiveEntry* entry)
+Palette* PaletteChooser::selectedPalette(ArchiveEntry* entry)
 {
 	if (GetSelection() > 0)
-		return App::paletteManager()->getPalette(GetSelection() - 1);
+		return App::paletteManager()->palette(GetSelection() - 1);
 	else if (entry)
-		Misc::loadPaletteFromArchive(pal_global_, entry->getParent(), Misc::detectPaletteHack(entry));
+		Misc::loadPaletteFromArchive(pal_global_, entry->parent(), Misc::detectPaletteHack(entry));
 	return pal_global_;
 }
 

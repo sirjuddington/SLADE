@@ -35,7 +35,7 @@ public:
 
 	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
 
-	SImage* getImage() const
+	SImage* image() const
 	{
 		if (gfx_canvas_)
 			return gfx_canvas_->getImage();

@@ -43,7 +43,7 @@ public:
 	bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = nullptr) override;
 
 	// Detection
-	MapDesc         getMapInfo(ArchiveEntry* maphead) override;
+	MapDesc         mapDesc(ArchiveEntry* maphead) override;
 	vector<MapDesc> detectMaps() override;
 	string          detectNamespace(ArchiveEntry* entry) override;
 	string          detectNamespace(size_t index, ArchiveTreeNode* dir = nullptr) override;

@@ -13,14 +13,14 @@ public:
 
 	void addWxStyleId(int style);
 
-	string getDescription() { return description_; }
-	string getFontFace() { return font_; }
-	int    getFontSize() { return size_; }
+	string description() { return description_; }
+	string fontFace() { return font_; }
+	int    fontSize() { return size_; }
 	bool   hasForeground() { return fg_defined_; }
 	bool   hasBackground() { return bg_defined_; }
-	int    getBold() { return bold_; }
-	int    getItalic() { return italic_; }
-	int    getUnderlined() { return underlined_; }
+	int    bold() { return bold_; }
+	int    italic() { return italic_; }
+	int    underlined() { return underlined_; }
 
 	void setFontFace(string font) { this->font_ = font; }
 	void setFontSize(int size) { this->size_ = size; }
@@ -40,14 +40,14 @@ public:
 	}
 	void clearBackground() { bg_defined_ = false; }
 
-	wxFont getFont();
-	rgba_t getForeground() { return foreground_; }
-	rgba_t getBackground() { return background_; }
+	wxFont font();
+	rgba_t foreground() { return foreground_; }
+	rgba_t background() { return background_; }
 
 	bool   parse(ParseTreeNode* node);
 	void   applyTo(wxStyledTextCtrl* stc);
 	bool   copyStyle(TextStyle* copy);
-	string getDefinition(unsigned tabs = 0);
+	string textDefinition(unsigned tabs = 0);
 
 private:
 	string      name_;
@@ -78,14 +78,14 @@ public:
 	void       applyTo(TextEditorCtrl* stc);
 	void       applyToWx(wxStyledTextCtrl* stc);
 	bool       copySet(StyleSet* copy);
-	TextStyle* getStyle(string name);
-	TextStyle* getStyle(unsigned index);
+	TextStyle* style(string name);
+	TextStyle* style(unsigned index);
 	bool       writeFile(string filename);
 
-	rgba_t getStyleForeground(string style);
-	rgba_t getStyleBackground(string style);
-	string getDefaultFontFace();
-	int    getDefaultFontSize();
+	rgba_t styleForeground(string style);
+	rgba_t styleBackground(string style);
+	string defaultFontFace();
+	int    defaultFontSize();
 
 	// Static functions for styleset management
 	static void      initCurrent();
@@ -94,9 +94,9 @@ public:
 	static bool      loadSet(string name);
 	static bool      loadSet(unsigned index);
 	static void      applyCurrent(TextEditorCtrl* stc);
-	static string    getName(unsigned index);
+	static string    styleName(unsigned index);
 	static unsigned  numSets();
-	static StyleSet* getSet(unsigned index);
+	static StyleSet* set(unsigned index);
 	static void      addEditor(TextEditorCtrl* stc);
 	static void      removeEditor(TextEditorCtrl* stc);
 	static void      applyCurrentToAll();
@@ -112,5 +112,5 @@ private:
 	bool               built_in_ = false;
 	vector<TextStyle*> styles_;
 
-	static vector<TextEditorCtrl*> editors;
+	static vector<TextEditorCtrl*> editors_;
 };

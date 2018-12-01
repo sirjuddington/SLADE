@@ -182,7 +182,7 @@ bool ArchiveManager::init()
 // -----------------------------------------------------------------------------
 bool ArchiveManager::initArchiveFormats() const
 {
-	return Archive::loadFormats(program_resource_archive_->entryAtPath("config/archive_formats.cfg")->getMCData());
+	return Archive::loadFormats(program_resource_archive_->entryAtPath("config/archive_formats.cfg")->data());
 }
 
 // -----------------------------------------------------------------------------
@@ -226,10 +226,10 @@ bool ArchiveManager::addArchive(Archive* archive)
 			{
 				entry = root->entryAt(a);
 
-				if (entry->getType() == EntryType::unknownType())
+				if (entry->type() == EntryType::unknownType())
 					EntryType::detectEntryType(entry);
 
-				type = entry->getType();
+				type = entry->type();
 
 				if (type->id() == "wad")
 					// First true: yes, manage this
@@ -420,51 +420,51 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 	}
 
 	// Check entry type
-	if (WadArchive::isWadArchive(entry->getMCData()))
+	if (WadArchive::isWadArchive(entry->data()))
 		new_archive = new WadArchive();
-	else if (ZipArchive::isZipArchive(entry->getMCData()))
+	else if (ZipArchive::isZipArchive(entry->data()))
 		new_archive = new ZipArchive();
-	else if (ResArchive::isResArchive(entry->getMCData()))
+	else if (ResArchive::isResArchive(entry->data()))
 		new_archive = new ResArchive();
-	else if (LibArchive::isLibArchive(entry->getMCData()))
+	else if (LibArchive::isLibArchive(entry->data()))
 		new_archive = new LibArchive();
-	else if (DatArchive::isDatArchive(entry->getMCData()))
+	else if (DatArchive::isDatArchive(entry->data()))
 		new_archive = new DatArchive();
-	else if (PakArchive::isPakArchive(entry->getMCData()))
+	else if (PakArchive::isPakArchive(entry->data()))
 		new_archive = new PakArchive();
-	else if (BSPArchive::isBSPArchive(entry->getMCData()))
+	else if (BSPArchive::isBSPArchive(entry->data()))
 		new_archive = new BSPArchive();
-	else if (GrpArchive::isGrpArchive(entry->getMCData()))
+	else if (GrpArchive::isGrpArchive(entry->data()))
 		new_archive = new GrpArchive();
-	else if (RffArchive::isRffArchive(entry->getMCData()))
+	else if (RffArchive::isRffArchive(entry->data()))
 		new_archive = new RffArchive();
-	else if (GobArchive::isGobArchive(entry->getMCData()))
+	else if (GobArchive::isGobArchive(entry->data()))
 		new_archive = new GobArchive();
-	else if (LfdArchive::isLfdArchive(entry->getMCData()))
+	else if (LfdArchive::isLfdArchive(entry->data()))
 		new_archive = new LfdArchive();
-	else if (HogArchive::isHogArchive(entry->getMCData()))
+	else if (HogArchive::isHogArchive(entry->data()))
 		new_archive = new HogArchive();
-	else if (ADatArchive::isADatArchive(entry->getMCData()))
+	else if (ADatArchive::isADatArchive(entry->data()))
 		new_archive = new ADatArchive();
-	else if (Wad2Archive::isWad2Archive(entry->getMCData()))
+	else if (Wad2Archive::isWad2Archive(entry->data()))
 		new_archive = new Wad2Archive();
-	else if (WadJArchive::isWadJArchive(entry->getMCData()))
+	else if (WadJArchive::isWadJArchive(entry->data()))
 		new_archive = new WadJArchive();
-	else if (WolfArchive::isWolfArchive(entry->getMCData()))
+	else if (WolfArchive::isWolfArchive(entry->data()))
 		new_archive = new WolfArchive();
-	else if (GZipArchive::isGZipArchive(entry->getMCData()))
+	else if (GZipArchive::isGZipArchive(entry->data()))
 		new_archive = new GZipArchive();
-	else if (BZip2Archive::isBZip2Archive(entry->getMCData()))
+	else if (BZip2Archive::isBZip2Archive(entry->data()))
 		new_archive = new BZip2Archive();
-	else if (TarArchive::isTarArchive(entry->getMCData()))
+	else if (TarArchive::isTarArchive(entry->data()))
 		new_archive = new TarArchive();
-	else if (DiskArchive::isDiskArchive(entry->getMCData()))
+	else if (DiskArchive::isDiskArchive(entry->data()))
 		new_archive = new DiskArchive();
-	else if (entry->getName().Lower().EndsWith(".pod") && PodArchive::isPodArchive(entry->getMCData()))
+	else if (entry->name().Lower().EndsWith(".pod") && PodArchive::isPodArchive(entry->data()))
 		new_archive = new PodArchive();
-	else if (ChasmBinArchive::isChasmBinArchive(entry->getMCData()))
+	else if (ChasmBinArchive::isChasmBinArchive(entry->data()))
 		new_archive = new ChasmBinArchive();
-	else if (SiNArchive::isSiNArchive(entry->getMCData()))
+	else if (SiNArchive::isSiNArchive(entry->data()))
 		new_archive = new SiNArchive();
 	else
 	{
@@ -481,8 +481,8 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 		{
 			// Add to parent's child list if parent is open in the manager (it should be)
 			int index_parent = -1;
-			if (entry->getParent())
-				index_parent = archiveIndex(entry->getParent());
+			if (entry->parent())
+				index_parent = archiveIndex(entry->parent());
 			if (index_parent >= 0)
 				open_archives_[index_parent].open_children.push_back(new_archive);
 
@@ -643,7 +643,7 @@ bool ArchiveManager::closeArchive(int index)
 	ArchiveEntry* parent = open_archives_[index].archive->parentEntry();
 	if (parent)
 	{
-		Archive* gp = parent->getParent();
+		Archive* gp = parent->parent();
 		if (gp)
 		{
 			int pi = archiveIndex(gp);
@@ -956,14 +956,14 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string name, Archive* ignore)
 			continue;
 
 		// Try to find the entry in the archive
-		ArchiveEntry* entry = open_archives_[a].archive->getEntry(name);
+		ArchiveEntry* entry = open_archives_[a].archive->entry(name);
 		if (entry)
 			return entry;
 	}
 
 	// If entry isn't found yet, search the base resource archive
 	if (base_resource_archive_)
-		return base_resource_archive_->getEntry(name);
+		return base_resource_archive_->entry(name);
 
 	return nullptr;
 }
@@ -1190,7 +1190,7 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 	for (unsigned a = 0; a < bookmarks_.size(); a++)
 	{
 		// Check bookmarked entry's parent archive
-		if (bookmarks_[a]->getParent() == archive)
+		if (bookmarks_[a]->parent() == archive)
 		{
 			bookmarks_.erase(bookmarks_.begin() + a);
 			a--;
@@ -1219,18 +1219,18 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveTreeNode* node)
 	for (unsigned a = 0; a < bookmarks_.size(); ++a)
 	{
 		// Check bookmarked entry's parent archive
-		if (bookmarks_[a]->getParent() == archive)
+		if (bookmarks_[a]->parent() == archive)
 		{
 			// Now check if the bookmarked entry is within
 			// the removed dir or one of its descendants
-			ArchiveTreeNode* anode  = bookmarks_[a]->getParentDir();
+			ArchiveTreeNode* anode  = bookmarks_[a]->parentDir();
 			bool             remove = false;
 			while (anode != archive->rootDir() && !remove)
 			{
 				if (anode == node)
 					remove = true;
 				else
-					anode = (ArchiveTreeNode*)anode->getParent();
+					anode = (ArchiveTreeNode*)anode->parent();
 			}
 			if (remove)
 			{

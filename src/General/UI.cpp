@@ -141,7 +141,7 @@ void UI::updateSplash()
 // -----------------------------------------------------------------------------
 float UI::getSplashProgress()
 {
-	return splash_window ? splash_window->getProgress() : 0.0f;
+	return splash_window ? splash_window->progress() : 0.0f;
 }
 
 // -----------------------------------------------------------------------------

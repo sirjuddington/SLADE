@@ -251,25 +251,25 @@ bool GLTexture::loadImage(SImage* image, Palette* pal)
 	clear();
 
 	// Check image dimensions
-	if (OpenGL::validTexDimension(image->getWidth()) && OpenGL::validTexDimension(image->getHeight()))
+	if (OpenGL::validTexDimension(image->width()) && OpenGL::validTexDimension(image->height()))
 	{
 		// If the image dimensions are valid for OpenGL on this system, just load it as a single texture
 
 		// Get RGBA image data
 		MemChunk rgba;
-		image->getRGBAData(rgba, pal);
+		image->putRGBAData(rgba, pal);
 
 		// Generate GL texture from rgba data
-		return loadData(rgba.getData(), image->getWidth(), image->getHeight());
+		return loadData(rgba.data(), image->width(), image->height());
 	}
 	else
 	{
 		// Otherwise split the image into 128x128 chunks
 		int top = 0;
-		while (top < image->getHeight())
+		while (top < image->height())
 		{
 			int left = 0;
-			while (left < image->getWidth())
+			while (left < image->width())
 			{
 				// Load 128x128 portion of image
 				loadImagePortion(image, rect_t(left, top, left + 128, top + 128), pal, true);
@@ -283,8 +283,8 @@ bool GLTexture::loadImage(SImage* image, Palette* pal)
 		}
 
 		// Update variables
-		width_   = image->getWidth();
-		height_  = image->getHeight();
+		width_   = image->width();
+		height_  = image->height();
 		scale_x_ = scale_y_ = 1.0;
 
 		return true;
@@ -310,7 +310,7 @@ bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette* pal, bool 
 
 	// Get RGBA image data
 	MemChunk rgba;
-	image->getRGBAData(rgba, pal);
+	image->putRGBAData(rgba, pal);
 
 	// Init texture data
 	MemChunk portion;
@@ -318,7 +318,7 @@ bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette* pal, bool 
 	portion.fillData(0);
 
 	// Read portion of image if rect isn't completely outside the image
-	if (!(rect.left() >= image->getWidth() || rect.right() < 0 || rect.top() >= image->getHeight()
+	if (!(rect.left() >= image->width() || rect.right() < 0 || rect.top() >= image->height()
 		  || rect.bottom() < 0))
 	{
 		// Determine start of each row to read
@@ -328,8 +328,8 @@ bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette* pal, bool 
 
 		// Determine width of each row to read
 		uint32_t row_width = rect.right() - row_start;
-		if (rect.right() >= image->getWidth())
-			row_width = image->getWidth() - row_start;
+		if (rect.right() >= image->width())
+			row_width = image->width() - row_start;
 
 		// Determine difference between the left of the portion and the left of the image
 		uint32_t skip = 0;
@@ -346,10 +346,10 @@ bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette* pal, bool 
 			memset(buf, 0, rect.width() * 4);
 
 			// Check that the current row is within the image
-			if (row >= 0 && row < image->getHeight())
+			if (row >= 0 && row < image->height())
 			{
 				// Seek to current row in image data
-				rgba.seek((row * image->getWidth() + row_start) * 4, SEEK_SET);
+				rgba.seek((row * image->width() + row_start) * 4, SEEK_SET);
 
 				// Copy the row data
 				rgba.read(buf + skip, row_width * 4);
@@ -365,7 +365,7 @@ bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette* pal, bool 
 	scale_x_ = scale_y_ = 1.0;
 
 	// Generate texture from rgba data
-	return loadData(portion.getData(), rect.width(), rect.height(), add);
+	return loadData(portion.data(), rect.width(), rect.height(), add);
 }
 
 // -----------------------------------------------------------------------------

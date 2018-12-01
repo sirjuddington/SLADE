@@ -80,7 +80,7 @@ bool LineDraw::addPoint(fpoint2_t point, bool nearest)
 	{
 		int vertex = context_.map().nearestVertex(point);
 		if (vertex >= 0)
-			point = context_.map().getVertex(vertex)->point();
+			point = context_.map().vertex(vertex)->point();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -141,7 +141,7 @@ void LineDraw::setShapeOrigin(fpoint2_t point, bool nearest)
 	{
 		int vertex = context_.map().nearestVertex(point);
 		if (vertex >= 0)
-			point = context_.map().getVertex(vertex)->point();
+			point = context_.map().vertex(vertex)->point();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -259,8 +259,8 @@ void LineDraw::begin(bool shape)
 	context_.input().setMouseState(Input::MouseState::LineDraw);
 
 	// Setup help text
-	string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
-	string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+	string key_accept = KeyBind::bind("map_edit_accept").keysAsString();
+	string key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 	if (shape)
 	{
 		context_.setFeatureHelp({ "Shape Drawing",
@@ -349,7 +349,7 @@ void LineDraw::end(bool apply)
 	// Build new sectors
 	vector<MapLine*> new_lines;
 	for (unsigned a = nl_start; a < map.nLines(); a++)
-		new_lines.push_back(map.getLine(a));
+		new_lines.push_back(map.line(a));
 	map.correctSectors(new_lines);
 
 	// Check for and attempt to correct invalid lines

@@ -88,7 +88,7 @@ wxWindow* MainEditor::windowWx()
 // -----------------------------------------------------------------------------
 Archive* MainEditor::currentArchive()
 {
-	return main_window->getArchiveManagerPanel()->currentArchive();
+	return main_window->archiveManagerPanel()->currentArchive();
 }
 
 // -----------------------------------------------------------------------------
@@ -96,7 +96,7 @@ Archive* MainEditor::currentArchive()
 // -----------------------------------------------------------------------------
 ArchiveEntry* MainEditor::currentEntry()
 {
-	return main_window->getArchiveManagerPanel()->currentEntry();
+	return main_window->archiveManagerPanel()->currentEntry();
 }
 
 // -----------------------------------------------------------------------------
@@ -104,7 +104,7 @@ ArchiveEntry* MainEditor::currentEntry()
 // -----------------------------------------------------------------------------
 vector<ArchiveEntry*> MainEditor::currentEntrySelection()
 {
-	return main_window->getArchiveManagerPanel()->currentEntrySelection();
+	return main_window->archiveManagerPanel()->currentEntrySelection();
 }
 
 // -----------------------------------------------------------------------------
@@ -112,7 +112,7 @@ vector<ArchiveEntry*> MainEditor::currentEntrySelection()
 // -----------------------------------------------------------------------------
 void MainEditor::openTextureEditor(Archive* archive, ArchiveEntry* entry)
 {
-	main_window->getArchiveManagerPanel()->openTextureTab(App::archiveManager().archiveIndex(archive), entry);
+	main_window->archiveManagerPanel()->openTextureTab(App::archiveManager().archiveIndex(archive), entry);
 }
 
 // -----------------------------------------------------------------------------
@@ -128,7 +128,7 @@ void MainEditor::openMapEditor(Archive* archive)
 // -----------------------------------------------------------------------------
 void ::MainEditor::openArchiveTab(Archive* archive)
 {
-	main_window->getArchiveManagerPanel()->openTab(archive);
+	main_window->archiveManagerPanel()->openTab(archive);
 }
 
 // -----------------------------------------------------------------------------
@@ -136,7 +136,7 @@ void ::MainEditor::openArchiveTab(Archive* archive)
 // -----------------------------------------------------------------------------
 void MainEditor::openEntry(ArchiveEntry* entry)
 {
-	main_window->getArchiveManagerPanel()->openEntryTab(entry);
+	main_window->archiveManagerPanel()->openEntryTab(entry);
 }
 
 // -----------------------------------------------------------------------------
@@ -144,7 +144,7 @@ void MainEditor::openEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 void MainEditor::setGlobalPaletteFromArchive(Archive* archive)
 {
-	main_window->getPaletteChooser()->setGlobalFromArchive(archive);
+	main_window->paletteChooser()->setGlobalFromArchive(archive);
 }
 
 // -----------------------------------------------------------------------------
@@ -152,7 +152,7 @@ void MainEditor::setGlobalPaletteFromArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 Palette* MainEditor::currentPalette(ArchiveEntry* entry)
 {
-	return main_window->getPaletteChooser()->getSelectedPalette(entry);
+	return main_window->paletteChooser()->selectedPalette(entry);
 }
 
 // -----------------------------------------------------------------------------
@@ -160,7 +160,7 @@ Palette* MainEditor::currentPalette(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 EntryPanel* MainEditor::currentEntryPanel()
 {
-	return main_window->getArchiveManagerPanel()->currentArea();
+	return main_window->archiveManagerPanel()->currentArea();
 }
 
 // -----------------------------------------------------------------------------

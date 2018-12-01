@@ -94,12 +94,12 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 	// Check for icon set dirs
 	for (unsigned a = 0; a < dir->nChildren(); a++)
 	{
-		if (dir->getChild(a)->getName() != "large")
+		if (dir->child(a)->name() != "large")
 		{
 			if (type == General)
-				iconsets_general.push_back(dir->getChild(a)->getName());
+				iconsets_general.push_back(dir->child(a)->name());
 			else if (type == Entry)
-				iconsets_entry.push_back(dir->getChild(a)->getName());
+				iconsets_entry.push_back(dir->child(a)->name());
 		}
 	}
 
@@ -109,8 +109,8 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 		icon_set_dir = iconset_entry_list;
 	if (type == General)
 		icon_set_dir = iconset_general;
-	if (icon_set_dir != "Default" && dir->getChild(icon_set_dir))
-		dir = (ArchiveTreeNode*)dir->getChild(icon_set_dir);
+	if (icon_set_dir != "Default" && dir->child(icon_set_dir))
+		dir = (ArchiveTreeNode*)dir->child(icon_set_dir);
 
 	vector<Icon>& icons    = iconList(type);
 	string        tempfile = App::path("sladetemp", App::Dir::Temp);
@@ -121,7 +121,7 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 		ArchiveEntry* entry = dir->entryAt(a);
 
 		// Ignore anything not png format
-		if (!entry->getName().EndsWith("png"))
+		if (!entry->name().EndsWith("png"))
 			continue;
 
 		// Export entry data to a temporary file
@@ -130,7 +130,7 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 		// Create / setup icon
 		Icon n_icon;
 		n_icon.image.LoadFile(tempfile);              // Load image from temp file
-		n_icon.name           = entry->getName(true); // Set icon name
+		n_icon.name           = entry->name(true); // Set icon name
 		n_icon.resource_entry = entry;
 
 		// Add the icon
@@ -141,7 +141,7 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 	}
 
 	// Go through large icons
-	ArchiveTreeNode* dir_large = (ArchiveTreeNode*)dir->getChild("large");
+	ArchiveTreeNode* dir_large = (ArchiveTreeNode*)dir->child("large");
 	if (dir_large)
 	{
 		for (size_t a = 0; a < dir_large->numEntries(false); a++)
@@ -149,7 +149,7 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 			ArchiveEntry* entry = dir_large->entryAt(a);
 
 			// Ignore anything not png format
-			if (!entry->getName().EndsWith("png"))
+			if (!entry->name().EndsWith("png"))
 				continue;
 
 			// Export entry data to a temporary file
@@ -157,7 +157,7 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 
 			// Create / setup icon
 			bool   found = false;
-			string name  = entry->getName(true);
+			string name  = entry->name(true);
 			for (unsigned i = 0; i < icons.size(); i++)
 			{
 				if (icons[i].name == name)
@@ -172,7 +172,7 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 			{
 				Icon n_icon;
 				n_icon.image_large.LoadFile(tempfile);        // Load image from temp file
-				n_icon.name           = entry->getName(true); // Set icon name
+				n_icon.name           = entry->name(true); // Set icon name
 				n_icon.resource_entry = entry;
 
 				// Add the icon
@@ -213,18 +213,18 @@ bool Icons::loadIcons()
 		return false;
 
 	// Get the icons directory of the archive
-	ArchiveTreeNode* dir_icons = res_archive->getDir("icons/");
+	ArchiveTreeNode* dir_icons = res_archive->dir("icons/");
 
 	// Load general icons
 	iconsets_general.push_back("Default");
-	loadIconsDir(General, (ArchiveTreeNode*)dir_icons->getChild("general"));
+	loadIconsDir(General, (ArchiveTreeNode*)dir_icons->child("general"));
 
 	// Load entry list icons
 	iconsets_entry.push_back("Default");
-	loadIconsDir(Entry, (ArchiveTreeNode*)dir_icons->getChild("entry_list"));
+	loadIconsDir(Entry, (ArchiveTreeNode*)dir_icons->child("entry_list"));
 
 	// Load text editor icons
-	loadIconsDir(TextEditor, (ArchiveTreeNode*)dir_icons->getChild("text_editor"));
+	loadIconsDir(TextEditor, (ArchiveTreeNode*)dir_icons->child("text_editor"));
 
 	return true;
 }
@@ -304,7 +304,7 @@ bool Icons::exportIconPNG(int type, string name, string path)
 // -----------------------------------------------------------------------------
 // Returns a list of currently available icon sets for [type]
 // -----------------------------------------------------------------------------
-vector<string> Icons::getIconSets(int type)
+vector<string> Icons::iconSets(int type)
 {
 	if (type == General)
 		return iconsets_general;

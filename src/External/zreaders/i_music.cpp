@@ -135,10 +135,10 @@ static EMIDIType IdentifyMIDIType(uint32_t *id, int size)
 
 bool zmus2mid(MemChunk& musinput, MemChunk& midioutput, int subsong, int * num_tracks)
 {
-	EMIDIType type = IdentifyMIDIType((uint32_t*)musinput.getData(), musinput.getSize());
+	EMIDIType type = IdentifyMIDIType((uint32_t*)musinput.data(), musinput.size());
 	if (type != MIDI_NOTMIDI)
 	{
-		MIDIStreamer* streamer = CreateMIDIStreamer(NULL, musinput.getData(), musinput.getSize(), type);
+		MIDIStreamer* streamer = CreateMIDIStreamer(NULL, musinput.data(), musinput.size(), type);
 		if (streamer)
 		{
 			if (num_tracks)

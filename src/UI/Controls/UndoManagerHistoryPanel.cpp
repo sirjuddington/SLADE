@@ -59,7 +59,7 @@ UndoListView::UndoListView(wxWindow* parent, UndoManager* manager) : VirtualList
 // -----------------------------------------------------------------------------
 // Returns the list text for [item] at [column]
 // -----------------------------------------------------------------------------
-string UndoListView::getItemText(long item, long column, long index) const
+string UndoListView::itemText(long item, long column, long index) const
 {
 	if (!manager_)
 		return "";
@@ -84,7 +84,7 @@ string UndoListView::getItemText(long item, long column, long index) const
 // -----------------------------------------------------------------------------
 // Returns the icon index for [item]
 // -----------------------------------------------------------------------------
-int UndoListView::getItemIcon(long item, long column, long index) const
+int UndoListView::itemIcon(long item, long column, long index) const
 {
 	return -1;
 }
@@ -99,9 +99,9 @@ void UndoListView::updateItemAttr(long item, long column, long index) const
 
 	item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
 
-	if (item == manager_->getCurrentIndex())
+	if (item == manager_->currentIndex())
 		item_attr_->SetTextColour(WXCOL(rgba_t(0, 170, 0)));
-	else if (item > manager_->getCurrentIndex())
+	else if (item > manager_->currentIndex())
 		item_attr_->SetTextColour(WXCOL(rgba_t(150, 150, 150)));
 }
 
@@ -138,7 +138,7 @@ void UndoListView::updateFromManager()
 	SetItemCount(manager_->nUndoLevels());
 	Refresh();
 
-	int current_index = manager_->getCurrentIndex();
+	int current_index = manager_->currentIndex();
 	if (current_index >= 0)
 		EnsureVisible(current_index);
 }
@@ -194,15 +194,15 @@ void UndoManagerHistoryPanel::setManager(UndoManager* manager)
 // -----------------------------------------------------------------------------
 void UndoManagerHistoryPanel::onItemRightClick(wxCommandEvent& e)
 {
-	long index = list_levels_->getFocus();
+	long index = list_levels_->focusedIndex();
 	// wxMessageBox(S_FMT("Item %d", index));
 
 	wxMenu context;
-	if (index == manager_->getCurrentIndex())
+	if (index == manager_->currentIndex())
 		context.Append(0, "Undo");
-	else if (index < manager_->getCurrentIndex())
+	else if (index < manager_->currentIndex())
 		context.Append(1, "Undo To Here");
-	else if (index == manager_->getCurrentIndex() + 1)
+	else if (index == manager_->currentIndex() + 1)
 		context.Append(2, "Redo");
 	else
 		context.Append(3, "Redo To Here");
@@ -214,16 +214,16 @@ void UndoManagerHistoryPanel::onItemRightClick(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void UndoManagerHistoryPanel::onMenu(wxCommandEvent& e)
 {
-	long index = list_levels_->getFocus();
+	long index = list_levels_->focusedIndex();
 
-	if (index <= manager_->getCurrentIndex())
+	if (index <= manager_->currentIndex())
 	{
-		while (index <= manager_->getCurrentIndex())
+		while (index <= manager_->currentIndex())
 			manager_->undo();
 	}
 	else
 	{
-		while (manager_->getCurrentIndex() < index)
+		while (manager_->currentIndex() < index)
 			manager_->redo();
 	}
 }

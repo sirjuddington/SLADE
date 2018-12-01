@@ -31,26 +31,26 @@ public:
 	~ArchiveEntry();
 
 	// Accessors
-	string   getName(bool cut_ext = false) const;
-	string   getUpperName();
-	string   getUpperNameNoExt();
-	uint32_t getSize()
+	string   name(bool cut_ext = false) const;
+	string   upperName();
+	string   upperNameNoExt();
+	uint32_t size()
 	{
 		if (data_loaded_)
-			return data_.getSize();
+			return data_.size();
 		else
 			return size_;
 	}
-	MemChunk&        getMCData(bool allow_load = true);
-	const uint8_t*   getData(bool allow_load = true);
-	ArchiveTreeNode* getParentDir() { return parent_; }
-	Archive*         getParent();
-	Archive*         getTopParent();
-	string           getPath(bool name = false) const;
-	EntryType*       getType() { return type_; }
+	MemChunk&        data(bool allow_load = true);
+	const uint8_t*   rawData(bool allow_load = true);
+	ArchiveTreeNode* parentDir() { return parent_; }
+	Archive*         parent();
+	Archive*         topParent();
+	string           path(bool name = false) const;
+	EntryType*       type() { return type_; }
 	PropertyList&    exProps() { return ex_props_; }
 	Property&        exProp(string key) { return ex_props_[key]; }
-	uint8_t          getState() { return state_; }
+	uint8_t          state() { return state_; }
 	bool             isLocked() { return locked_; }
 	bool             isLoaded() { return data_loaded_; }
 	int              isEncrypted() { return encrypted_; }
@@ -102,8 +102,8 @@ public:
 	uint32_t currentPos() { return data_.currentPos(); }
 
 	// Misc
-	string getSizeString();
-	string getTypeString()
+	string sizeString();
+	string typeString()
 	{
 		if (type_)
 			return type_->name();
@@ -112,7 +112,7 @@ public:
 	}
 	void          stateChanged();
 	void          setExtensionByType();
-	int           getTypeReliability() { return (type_ ? (getType()->reliability() * reliability_ / 255) : 0); }
+	int           typeReliability() { return (type_ ? (type()->reliability() * reliability_ / 255) : 0); }
 	bool          isInNamespace(string ns);
 	ArchiveEntry* relativeEntry(const string& path, bool allow_absolute_path = true) const;
 

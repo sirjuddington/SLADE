@@ -61,7 +61,7 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 {
 	// Init variables
 	ss_current_.copySet(StyleSet::currentSet());
-	ts_current_ = ss_current_.getStyle("default");
+	ts_current_ = ss_current_.style("default");
 
 	auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 	SetSizer(sizer);
@@ -75,7 +75,7 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	// Styleset selector
 	choice_styleset_ = new wxChoice(this, -1);
 	for (unsigned a = 0; a < StyleSet::numSets(); a++)
-		choice_styleset_->Append(StyleSet::getName(a));
+		choice_styleset_->Append(StyleSet::styleName(a));
 	btn_savestyleset_ = new wxButton(this, -1, "Save Set");
 	auto hbox         = new wxBoxSizer(wxHORIZONTAL);
 	hbox->Add(new wxStaticText(this, -1, "Style Set:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
@@ -88,7 +88,7 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	list_styles_->Append("Default");
 	list_styles_->Append("Selection");
 	for (unsigned a = 0; a < ss_current_.nStyles(); a++)
-		list_styles_->Append(ss_current_.getStyle(a)->getDescription());
+		list_styles_->Append(ss_current_.style(a)->description());
 	sizer->Add(list_styles_, { 2, 0 }, { 2, 1 }, wxEXPAND);
 
 	// Style properties
@@ -256,7 +256,7 @@ void TextStylePrefsPanel::updateStyleControls()
 		return;
 
 	// Get default style
-	TextStyle* style_default = ss_current_.getStyle("default");
+	TextStyle* style_default = ss_current_.style("default");
 
 	// Reset UI stuff
 	cb_override_font_face_->SetValue(true);
@@ -281,30 +281,30 @@ void TextStylePrefsPanel::updateStyleControls()
 	wxFont font = fp_font_->GetSelectedFont();
 
 	// Font face
-	string font_face = ts_current_->getFontFace();
+	string font_face = ts_current_->fontFace();
 	if (font_face.IsEmpty())
 	{
-		font_face = style_default->getFontFace();
+		font_face = style_default->fontFace();
 		cb_override_font_face_->SetValue(false);
 	}
 	font.SetFaceName(font_face);
 
 	// Font size
-	int font_size = ts_current_->getFontSize();
+	int font_size = ts_current_->fontSize();
 	if (font_size <= 0)
 	{
-		font_size = style_default->getFontSize();
+		font_size = style_default->fontSize();
 		cb_override_font_size_->SetValue(false);
 	}
 	font.SetPointSize(font_size);
 
 	// Bold
 	bool bold = false;
-	if (ts_current_->getBold() > 0)
+	if (ts_current_->bold() > 0)
 		bold = true;
-	else if (ts_current_->getBold() < 0)
+	else if (ts_current_->bold() < 0)
 	{
-		bold = !!style_default->getBold();
+		bold = !!style_default->bold();
 		cb_override_font_bold_->SetValue(false);
 	}
 	if (bold)
@@ -314,11 +314,11 @@ void TextStylePrefsPanel::updateStyleControls()
 
 	// Italic
 	bool italic = false;
-	if (ts_current_->getItalic() > 0)
+	if (ts_current_->italic() > 0)
 		italic = true;
-	else if (ts_current_->getItalic() < 0)
+	else if (ts_current_->italic() < 0)
 	{
-		italic = !!style_default->getItalic();
+		italic = !!style_default->italic();
 		cb_override_font_italic_->SetValue(false);
 	}
 	if (italic)
@@ -328,11 +328,11 @@ void TextStylePrefsPanel::updateStyleControls()
 
 	// Underlined
 	bool underlined = false;
-	if (ts_current_->getUnderlined() > 0)
+	if (ts_current_->underlined() > 0)
 		underlined = true;
-	else if (ts_current_->getUnderlined() < 0)
+	else if (ts_current_->underlined() < 0)
 	{
-		underlined = !!style_default->getUnderlined();
+		underlined = !!style_default->underlined();
 		cb_override_font_underlined_->SetValue(false);
 	}
 	font.SetUnderlined(underlined);
@@ -340,10 +340,10 @@ void TextStylePrefsPanel::updateStyleControls()
 	// Foreground
 	rgba_t col_foreground;
 	if (ts_current_->hasForeground())
-		col_foreground.set(ts_current_->getForeground());
+		col_foreground.set(ts_current_->foreground());
 	else
 	{
-		col_foreground.set(style_default->getForeground());
+		col_foreground.set(style_default->foreground());
 		cb_override_foreground_->SetValue(false);
 	}
 	cp_foreground_->SetColour(WXCOL(col_foreground));
@@ -351,10 +351,10 @@ void TextStylePrefsPanel::updateStyleControls()
 	// Background
 	rgba_t col_background;
 	if (ts_current_->hasBackground())
-		col_background.set(ts_current_->getBackground());
+		col_background.set(ts_current_->background());
 	else
 	{
-		col_background.set(style_default->getBackground());
+		col_background.set(style_default->background());
 		cb_override_background_->SetValue(false);
 	}
 	cp_background_->SetColour(WXCOL(col_background));
@@ -534,11 +534,11 @@ void TextStylePrefsPanel::onStyleSelected(wxCommandEvent& e)
 {
 	int sel = list_styles_->GetSelection();
 	if (sel == 0)
-		ts_current_ = ss_current_.getStyle("default");
+		ts_current_ = ss_current_.style("default");
 	else if (sel == 1)
-		ts_current_ = ss_current_.getStyle("selection");
+		ts_current_ = ss_current_.style("selection");
 	else
-		ts_current_ = ss_current_.getStyle(sel - 2);
+		ts_current_ = ss_current_.style(sel - 2);
 
 	updateStyleControls();
 }
@@ -665,7 +665,7 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 	// Refresh styles list
 	wxArrayString style_sets;
 	for (unsigned a = 0; a < StyleSet::numSets(); a++)
-		style_sets.Add(StyleSet::getName(a));
+		style_sets.Add(StyleSet::styleName(a));
 	choice_styleset_->Set(style_sets);
 }
 
@@ -677,7 +677,7 @@ void TextStylePrefsPanel::onStyleSetSelected(wxCommandEvent& e)
 	if (init_done_)
 	{
 		// Get selected styleset
-		StyleSet* set = StyleSet::getSet(choice_styleset_->GetSelection());
+		StyleSet* set = StyleSet::set(choice_styleset_->GetSelection());
 		if (set)
 		{
 			ss_current_.copySet(set);

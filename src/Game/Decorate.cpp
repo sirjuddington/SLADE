@@ -128,7 +128,7 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 	if (!state_sprites[state_first].empty())
 		props["sprite"] = state_sprites[state_first] + "?";
 
-	Log::debug(2, S_FMT("Parsed states, got sprite %s", CHR(props["sprite"].getStringValue())));
+	Log::debug(2, S_FMT("Parsed states, got sprite %s", CHR(props["sprite"].stringValue())));
 
 
 
@@ -572,7 +572,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 	Tokenizer tz;
 	tz.setSpecialCharacters(":,{}");
 	tz.enableDecorate(true);
-	tz.openMem(entry->getMCData(), entry->getName());
+	tz.openMem(entry->data(), entry->name());
 
 	// --- Parse ---
 	while (!tz.atEnd())
@@ -588,7 +588,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 				Log::warning(S_FMT(
 					"Warning parsing DECORATE entry %s: "
 					"Unable to find #included entry \"%s\" at line %d, skipping",
-					CHR(entry->getName()),
+					CHR(entry->name()),
 					CHR(tz.current().text),
 					tz.current().line_no));
 			}
@@ -608,7 +608,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 	}
 
 	// Set entry type
-	if (etype_decorate && entry->getType() != etype_decorate)
+	if (etype_decorate && entry->type() != etype_decorate)
 		entry->setType(etype_decorate);
 }
 

@@ -64,7 +64,7 @@ namespace
 {
 bool TxListIsTextures(TextureXList& tx)
 {
-	return tx.getFormat() == TextureXList::Format::Textures;
+	return tx.format() == TextureXList::Format::Textures;
 }
 } // namespace
 
@@ -94,7 +94,7 @@ TextureXListView::TextureXListView(wxWindow* parent, TextureXList* texturex) :
 // -----------------------------------------------------------------------------
 // Returns the string for [item] at [column]
 // -----------------------------------------------------------------------------
-string TextureXListView::getItemText(long item, long column, long index) const
+string TextureXListView::itemText(long item, long column, long index) const
 {
 	// Check texture list exists
 	if (!texturex_)
@@ -105,14 +105,14 @@ string TextureXListView::getItemText(long item, long column, long index) const
 		return "INVALID INDEX";
 
 	// Get associated texture
-	CTexture* tex = texturex_->getTexture(index);
+	CTexture* tex = texturex_->texture(index);
 
 	if (column == 0) // Name column
-		return tex->getName();
+		return tex->name();
 	else if (column == 1) // Size column
-		return S_FMT("%dx%d", tex->getWidth(), tex->getHeight());
+		return S_FMT("%dx%d", tex->width(), tex->height());
 	else if (column == 2) // Type column
-		return tex->getType();
+		return tex->type();
 	else
 		return "INVALID COLUMN";
 }
@@ -132,20 +132,20 @@ void TextureXListView::updateItemAttr(long item, long column, long index) const
 		return;
 
 	// Get associated texture
-	CTexture* tex = texturex_->getTexture(index);
+	CTexture* tex = texturex_->texture(index);
 
 	// Init attributes
-	item_attr_->SetTextColour(WXCOL(ColourConfiguration::getColour("error")));
+	item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("error")));
 
 	// If texture doesn't exist, return error colour
 	if (!tex)
 		return;
 
 	// Set colour depending on entry state
-	switch (tex->getState())
+	switch (tex->state())
 	{
-	case 1: item_attr_->SetTextColour(WXCOL(ColourConfiguration::getColour("modified"))); break;
-	case 2: item_attr_->SetTextColour(WXCOL(ColourConfiguration::getColour("new"))); break;
+	case 1: item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("modified"))); break;
+	case 2: item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("new"))); break;
 	default: item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
 	};
 }
@@ -181,10 +181,10 @@ void TextureXListView::updateList(bool clear)
 // -----------------------------------------------------------------------------
 bool TextureXListView::sizeSort(long left, long right)
 {
-	CTexture* tl = ((TextureXListView*)lv_current)->txList()->getTexture(left);
-	CTexture* tr = ((TextureXListView*)lv_current)->txList()->getTexture(right);
-	int       s1 = tl->getWidth() * tl->getHeight();
-	int       s2 = tr->getWidth() * tr->getHeight();
+	CTexture* tl = ((TextureXListView*)lv_current)->txList()->texture(left);
+	CTexture* tr = ((TextureXListView*)lv_current)->txList()->texture(right);
+	int       s1 = tl->width() * tl->height();
+	int       s2 = tr->width() * tr->height();
 
 	if (s1 == s2)
 		return left < right;
@@ -230,13 +230,13 @@ void TextureXListView::applyFilter()
 	// Go through filtered list
 	for (unsigned a = 0; a < items_.size(); a++)
 	{
-		auto tex = texturex_->getTexture(items_[a]);
+		auto tex = texturex_->texture(items_[a]);
 
 		// Check for name match with filter
 		bool match = false;
 		for (auto& term : terms)
 		{
-			if (tex->getName().Lower().Matches(term))
+			if (tex->name().Lower().Matches(term))
 			{
 				match = true;
 				break;
@@ -293,7 +293,7 @@ public:
 		created_(created)
 	{
 		tex_removed_ = created ? nullptr : texture;
-		index_       = tx_panel->txList().textureIndex(texture->getName());
+		index_       = tx_panel->txList().textureIndex(texture->name());
 	}
 
 	~TextureCreateDeleteUS()
@@ -347,8 +347,8 @@ public:
 	{
 		tex_copy_ = new CTexture();
 		tex_copy_->copyTexture(texture);
-		tex_copy_->setState(texture->getState());
-		index_ = tx_panel->txList().textureIndex(tex_copy_->getName());
+		tex_copy_->setState(texture->state());
+		index_ = tx_panel->txList().textureIndex(tex_copy_->name());
 	}
 
 	~TextureModificationUS() { delete tex_copy_; }
@@ -468,7 +468,7 @@ TextureXPanel::~TextureXPanel()
 bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 {
 	// Open texture list (check format)
-	if (entry->getType()->formatId() == "texturex")
+	if (entry->type()->formatId() == "texturex")
 	{
 		// TEXTURE1/2 format
 		if (!texturex_.readTEXTUREXData(entry, tx_editor_->patchTable()))
@@ -480,11 +480,11 @@ bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 		// Update patch table usage info
 		for (size_t a = 0; a < texturex_.nTextures(); a++)
 		{
-			CTexture* tex = texturex_.getTexture(a);
+			CTexture* tex = texturex_.texture(a);
 
 			// Go through texture's patches
 			for (size_t p = 0; p < tex->nPatches(); p++)
-				tx_editor_->patchTable().patch(tex->getPatch(p)->getName()).used_in.push_back(tex->getName());
+				tx_editor_->patchTable().patch(tex->patch(p)->name()).used_in.push_back(tex->name());
 		}
 	}
 	else
@@ -507,7 +507,7 @@ bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 	texture_editor_->setupLayout();
 
 	// Update format label
-	label_tx_format_->SetLabel("Format: " + texturex_.getTextureXFormatString());
+	label_tx_format_->SetLabel("Format: " + texturex_.textureXFormatString());
 
 	// Update texture list
 	list_textures_->updateList();
@@ -537,7 +537,7 @@ bool TextureXPanel::saveTEXTUREX()
 
 	// Set all textures to unmodified
 	for (unsigned a = 0; a < texturex_.nTextures(); a++)
-		texturex_.getTexture(a)->setState(0);
+		texturex_.texture(a)->setState(0);
 	list_textures_->updateList();
 
 	// Update variables
@@ -608,8 +608,8 @@ CTexture* TextureXPanel::newTextureFromPatch(string name, string patch)
 	tex->loadPatchImage(0, image);
 
 	// Set dimensions
-	tex->setWidth(image.getWidth());
-	tex->setHeight(image.getHeight());
+	tex->setWidth(image.width());
+	tex->setHeight(image.height());
 
 	// Update variables
 	modified_ = true;
@@ -655,7 +655,7 @@ void TextureXPanel::newTexture()
 		tex->setScale(0, 0);
 
 	// Add it after the last selected item
-	int selected = list_textures_->getItemIndex(list_textures_->getLastSelected());
+	int selected = list_textures_->itemIndex(list_textures_->lastSelected());
 	if (selected == -1)
 		selected = texturex_.nTextures() - 1; // Add to end of the list if nothing selected
 	texturex_.addTexture(tex, selected + 1);
@@ -705,7 +705,7 @@ void TextureXPanel::newTextureFromPatch()
 		CTexture* tex = newTextureFromPatch(name, patch);
 
 		// Add texture after the last selected item
-		int selected = list_textures_->getItemIndex(list_textures_->getLastSelected());
+		int selected = list_textures_->itemIndex(list_textures_->lastSelected());
 		if (selected == -1)
 			selected = texturex_.nTextures() - 1; // Add to end of the list if nothing selected
 		texturex_.addTexture(tex, selected + 1);
@@ -780,7 +780,7 @@ void TextureXPanel::newTextureFromFile()
 			EntryType::detectEntryType(entry);
 
 			// If it's not a valid image type, ignore this file
-			if (!entry->getType()->extraProps().propertyExists("image"))
+			if (!entry->type()->extraProps().propertyExists("image"))
 			{
 				LOG_MESSAGE(1, "%s is not a valid image file", files[a]);
 				continue;
@@ -795,7 +795,7 @@ void TextureXPanel::newTextureFromFile()
 			// Add patch to archive
 			entry->setName(name);
 			entry->setExtensionByType();
-			tx_entry_->getParent()->addEntry(entry, "patches");
+			tx_entry_->parent()->addEntry(entry, "patches");
 
 			// Add patch to patch table if needed
 			if (!TxListIsTextures(texturex_))
@@ -806,7 +806,7 @@ void TextureXPanel::newTextureFromFile()
 			CTexture* tex = newTextureFromPatch(name, name);
 
 			// Add texture after the last selected item
-			int selected = list_textures_->getItemIndex(list_textures_->getLastSelected());
+			int selected = list_textures_->itemIndex(list_textures_->lastSelected());
 			if (selected == -1)
 				selected = texturex_.nTextures() - 1; // Add to end of the list if nothing selected
 			texturex_.addTexture(tex, selected + 1);
@@ -836,7 +836,7 @@ void TextureXPanel::newTextureFromFile()
 void TextureXPanel::removeTexture()
 {
 	// Get selected textures
-	vector<long> selection = list_textures_->getSelection(true);
+	vector<long> selection = list_textures_->selection(true);
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Remove Texture(s)");
@@ -845,9 +845,9 @@ void TextureXPanel::removeTexture()
 	for (int a = selection.size() - 1; a >= 0; a--)
 	{
 		// Remove texture from patch table entries
-		CTexture* tex = texturex_.getTexture(selection[a]);
+		CTexture* tex = texturex_.texture(selection[a]);
 		for (unsigned p = 0; p < tex->nPatches(); p++)
-			tx_editor_->patchTable().patch(tex->getPatch(p)->getName()).removeTextureUsage(tex->getName());
+			tx_editor_->patchTable().patch(tex->patch(p)->name()).removeTextureUsage(tex->name());
 
 		// Record undo step
 		undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, tex, false));
@@ -874,7 +874,7 @@ void TextureXPanel::removeTexture()
 void TextureXPanel::moveUp()
 {
 	// Get selected textures
-	vector<long> selection = list_textures_->getSelection(true);
+	vector<long> selection = list_textures_->selection(true);
 
 	// Do nothing if the first selected item is at the top of the list
 	if (selection.size() > 0 && selection[0] == 0)
@@ -914,7 +914,7 @@ void TextureXPanel::moveUp()
 void TextureXPanel::moveDown()
 {
 	// Get selected textures
-	vector<long> selection = list_textures_->getSelection(true);
+	vector<long> selection = list_textures_->selection(true);
 
 	// Do nothing if the last selected item is at the end of the list
 	if (selection.size() > 0 && selection.back() == list_textures_->GetItemCount() - 1)
@@ -954,7 +954,7 @@ void TextureXPanel::moveDown()
 void TextureXPanel::sort()
 {
 	// Get selected textures
-	vector<long> selection = list_textures_->getSelection(true);
+	vector<long> selection = list_textures_->selection(true);
 	// Without selection of multiple texture, sort everything instead
 	if (selection.size() < 2)
 	{
@@ -975,7 +975,7 @@ void TextureXPanel::sort()
 	for (size_t i = 0; i < selection.size(); ++i)
 	{
 		// We want to be sure that each key is unique, so we add the position to the name string
-		string name = S_FMT("%-8s%8d", texturex_.getTexture(selection[i])->getName(), selection[i]);
+		string name = S_FMT("%-8s%8d", texturex_.texture(selection[i])->name(), selection[i]);
 		// x keeps the current position, while y keeps the original position
 		tmap[name]              = selection[i];
 		origindex[selection[i]] = selection[i];
@@ -998,7 +998,7 @@ void TextureXPanel::sort()
 			texturex_.swapTextures(selection[i], itr->second);
 			undo_manager_->recordUndoStep(new TextureSwapUS(texturex_, selection[i], itr->second));
 			// Update the position of the displaced texture in the tmap
-			string name = S_FMT("%-8s%8d", texturex_.getTexture(itr->second)->getName(), tmp);
+			string name = S_FMT("%-8s%8d", texturex_.texture(itr->second)->name(), tmp);
 			tmap[name]  = itr->second;
 		}
 		itr++;
@@ -1023,7 +1023,7 @@ void TextureXPanel::sort()
 void TextureXPanel::copy()
 {
 	// Get selected textures
-	vector<long> selection = list_textures_->getSelection(true);
+	vector<long> selection = list_textures_->selection(true);
 
 	// Do nothing if nothing selected
 	if (selection.size() == 0)
@@ -1032,7 +1032,7 @@ void TextureXPanel::copy()
 	// Create list of textures to copy
 	vector<ClipboardItem*> copy_items;
 	for (unsigned a = 0; a < selection.size(); a++)
-		copy_items.push_back(new TextureClipboardItem(texturex_.getTexture(selection[a]), tx_editor_->getArchive()));
+		copy_items.push_back(new TextureClipboardItem(texturex_.texture(selection[a]), tx_editor_->archive()));
 
 	// Add list to clipboard
 	theClipboard->addItems(copy_items);
@@ -1048,7 +1048,7 @@ void TextureXPanel::paste()
 		return;
 
 	// Get last selected index
-	int selected = list_textures_->getItemIndex(list_textures_->getLastSelected());
+	int selected = list_textures_->itemIndex(list_textures_->lastSelected());
 	if (selected == -1)
 		selected = texturex_.nTextures() - 1; // Add to end of the list if nothing selected
 
@@ -1059,15 +1059,15 @@ void TextureXPanel::paste()
 	for (unsigned a = 0; a < theClipboard->nItems(); a++)
 	{
 		// Skip if not a texture clipboard item
-		if (theClipboard->getItem(a)->getType() != CLIPBOARD_COMPOSITE_TEXTURE)
+		if (theClipboard->item(a)->type() != CLIPBOARD_COMPOSITE_TEXTURE)
 			continue;
 
 		// Get texture item
-		TextureClipboardItem* item = (TextureClipboardItem*)(theClipboard->getItem(a));
+		TextureClipboardItem* item = (TextureClipboardItem*)(theClipboard->item(a));
 
 		// Add new texture after last selected item
 		CTexture* ntex = new CTexture(TxListIsTextures(texturex_));
-		ntex->copyTexture(item->getTexture(), true);
+		ntex->copyTexture(item->texture(), true);
 		ntex->setState(2);
 		texturex_.addTexture(ntex, ++selected);
 
@@ -1077,35 +1077,35 @@ void TextureXPanel::paste()
 		// Deal with patches
 		for (unsigned p = 0; p < ntex->nPatches(); p++)
 		{
-			CTPatch* patch = ntex->getPatch(p);
+			CTPatch* patch = ntex->patch(p);
 
 			// Update patch table if necessary
 			if (!TxListIsTextures(texturex_))
-				tx_editor_->patchTable().addPatch(patch->getName());
+				tx_editor_->patchTable().addPatch(patch->name());
 
 			// Get the entry for this patch
-			ArchiveEntry* entry = patch->getPatchEntry(tx_editor_->getArchive());
+			ArchiveEntry* entry = patch->patchEntry(tx_editor_->archive());
 
 			// If the entry wasn't found in any open archive, try copying it from the clipboard
 			// (the user may have closed the archive the original patch was in)
 			if (!entry)
 			{
-				entry = item->getPatchEntry(patch->getName());
+				entry = item->patchEntry(patch->name());
 
 				// Copy the copied patch entry over to this archive
 				if (entry)
-					tx_editor_->getArchive()->addEntry(entry, "patches", true);
+					tx_editor_->archive()->addEntry(entry, "patches", true);
 			}
 
 			// If the entry exists in the base resource archive or this archive, do nothing
 			else if (
-				entry->getParent() == App::archiveManager().baseResourceArchive()
-				|| entry->getParent() == tx_editor_->getArchive())
+				entry->parent() == App::archiveManager().baseResourceArchive()
+				|| entry->parent() == tx_editor_->archive())
 				continue;
 
 			// Otherwise, copy the entry over to this archive
 			else
-				tx_editor_->getArchive()->addEntry(entry, "patches", true);
+				tx_editor_->archive()->addEntry(entry, "patches", true);
 		}
 	}
 
@@ -1125,7 +1125,7 @@ void TextureXPanel::paste()
 void TextureXPanel::renameTexture(bool each)
 {
 	// Get selected textures
-	vector<long>      selec_num = list_textures_->getSelection(true);
+	vector<long>      selec_num = list_textures_->selection(true);
 	vector<CTexture*> selection;
 
 	if (!tx_entry_)
@@ -1133,7 +1133,7 @@ void TextureXPanel::renameTexture(bool each)
 
 	// Go through selection
 	for (unsigned a = 0; a < selec_num.size(); ++a)
-		selection.push_back(texturex_.getTexture(selec_num[a]));
+		selection.push_back(texturex_.texture(selec_num[a]));
 
 	// Check any are selected
 	if (each || selection.size() == 1)
@@ -1143,12 +1143,12 @@ void TextureXPanel::renameTexture(bool each)
 		{
 			// Prompt for a new name
 			string new_name =
-				wxGetTextFromUser("Enter new texture name: (* = unchanged)", "Rename", selection[a]->getName());
+				wxGetTextFromUser("Enter new texture name: (* = unchanged)", "Rename", selection[a]->name());
 			if (wad_force_uppercase)
 				new_name.MakeUpper();
 
 			// Rename entry (if needed)
-			if (!new_name.IsEmpty() && selection[a]->getName() != new_name)
+			if (!new_name.IsEmpty() && selection[a]->name() != new_name)
 			{
 				selection[a]->setName(new_name);
 				selection[a]->setState(1);
@@ -1161,7 +1161,7 @@ void TextureXPanel::renameTexture(bool each)
 		// Get a list of entry names
 		wxArrayString names;
 		for (unsigned a = 0; a < selection.size(); a++)
-			names.push_back(selection[a]->getName());
+			names.push_back(selection[a]->name());
 
 		// Get filter string
 		string filter = Misc::massRenameFilter(names);
@@ -1180,7 +1180,7 @@ void TextureXPanel::renameTexture(bool each)
 			for (size_t a = 0; a < selection.size(); a++)
 			{
 				// Rename the entry (if needed)
-				if (selection[a]->getName() != names[a])
+				if (selection[a]->name() != names[a])
 				{
 					selection[a]->setName(names[a]);
 					selection[a]->setState(1);
@@ -1198,7 +1198,7 @@ void TextureXPanel::renameTexture(bool each)
 void TextureXPanel::exportTexture()
 {
 	// Get selected textures
-	vector<long>      selec_num = list_textures_->getSelection(true);
+	vector<long>      selec_num = list_textures_->selection(true);
 	vector<CTexture*> selection;
 
 	if (!tx_entry_)
@@ -1206,13 +1206,13 @@ void TextureXPanel::exportTexture()
 
 	// saveTEXTUREX();
 
-	Archive* archive    = tx_entry_->getParent();
+	Archive* archive    = tx_entry_->parent();
 	bool     force_rgba = texture_editor_->blendRGBA();
 
 	// Go through selection
 	for (unsigned a = 0; a < selec_num.size(); ++a)
 	{
-		selection.push_back(texturex_.getTexture(selec_num[a]));
+		selection.push_back(texturex_.texture(selec_num[a]));
 	}
 
 	// Create gfx conversion dialog
@@ -1231,7 +1231,7 @@ void TextureXPanel::exportTexture()
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Update splash window
-		UI::setSplashProgressMessage(selection[a]->getName());
+		UI::setSplashProgressMessage(selection[a]->name());
 		UI::setSplashProgress((float)a / (float)selection.size());
 
 		// Skip if the image wasn't converted
@@ -1239,15 +1239,15 @@ void TextureXPanel::exportTexture()
 			continue;
 
 		// Get image and conversion info
-		SImage*   image  = gcd.getItemImage(a);
-		SIFormat* format = gcd.getItemFormat(a);
+		SImage*   image  = gcd.itemImage(a);
+		SIFormat* format = gcd.itemFormat(a);
 
 		// Write converted image back to entry
 		MemChunk mc;
-		format->saveImage(*image, mc, force_rgba ? NULL : gcd.getItemPalette(a));
+		format->saveImage(*image, mc, force_rgba ? NULL : gcd.itemPalette(a));
 		ArchiveEntry* lump = new ArchiveEntry;
 		lump->importMemChunk(mc);
-		lump->rename(selection[a]->getName());
+		lump->rename(selection[a]->name());
 		archive->addEntry(lump, "textures");
 		EntryType::detectEntryType(lump);
 		lump->setExtensionByType();
@@ -1271,7 +1271,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 	SImage image;
 	if (!texture->toImage(image, nullptr, texture_editor_->palette(), force_rgba))
 	{
-		LOG_MESSAGE(1, "Error converting %s: %s", texture->getName(), Global::error);
+		LOG_MESSAGE(1, "Error converting %s: %s", texture->name(), Global::error);
 		return false;
 	}
 
@@ -1280,7 +1280,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 	SIFormat* fmt_png = SIFormat::getFormat("png");
 	if (!fmt_png->saveImage(image, png, texture_editor_->palette()))
 	{
-		LOG_MESSAGE(1, "Error converting %s", texture->getName());
+		LOG_MESSAGE(1, "Error converting %s", texture->name());
 		return false;
 	}
 
@@ -1294,7 +1294,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 void TextureXPanel::extractTexture()
 {
 	// Get selected textures
-	vector<long>      selec_num = list_textures_->getSelection(true);
+	vector<long>      selec_num = list_textures_->selection(true);
 	vector<CTexture*> selection;
 
 	if (!tx_entry_)
@@ -1302,20 +1302,20 @@ void TextureXPanel::extractTexture()
 
 	// saveTEXTUREX();
 
-	Archive* archive    = tx_entry_->getParent();
+	Archive* archive    = tx_entry_->parent();
 	bool     force_rgba = texture_editor_->blendRGBA();
 
 	// Go through selection
 	for (unsigned a = 0; a < selec_num.size(); ++a)
 	{
-		selection.push_back(texturex_.getTexture(selec_num[a]));
+		selection.push_back(texturex_.texture(selec_num[a]));
 	}
 
 
 	// If we're just exporting one texture
 	if (selection.size() == 1)
 	{
-		string     name = Misc::lumpNameToFileName(selection[0]->getName());
+		string     name = Misc::lumpNameToFileName(selection[0]->name());
 		wxFileName fn(name);
 
 		// Set extension
@@ -1325,7 +1325,7 @@ void TextureXPanel::extractTexture()
 		SFileDialog::FDInfo info;
 		if (SFileDialog::saveFile(
 				info,
-				"Export Texture \"" + selection[0]->getName() + "\" as PNG",
+				"Export Texture \"" + selection[0]->name() + "\" as PNG",
 				"PNG Files (*.png)|*.png",
 				this,
 				fn.GetFullName()))
@@ -1354,11 +1354,11 @@ void TextureXPanel::extractTexture()
 			for (size_t a = 0; a < selection.size(); a++)
 			{
 				// Update splash window
-				UI::setSplashProgressMessage(selection[a]->getName());
+				UI::setSplashProgressMessage(selection[a]->name());
 				UI::setSplashProgress((float)a / (float)selection.size());
 
 				// Setup entry filename
-				wxFileName fn(selection[a]->getName());
+				wxFileName fn(selection[a]->name());
 				fn.SetPath(info.path);
 				fn.SetExt("png");
 
@@ -1391,12 +1391,12 @@ bool TextureXPanel::modifyOffsets()
 		return false;
 
 	// Go through selection
-	vector<long> selec_num = list_textures_->getSelection(true);
+	vector<long> selec_num = list_textures_->selection(true);
 	for (unsigned a = 0; a < selec_num.size(); ++a)
 	{
 		// Get texture
 		bool      current = false;
-		CTexture* ctex    = texturex_.getTexture(selec_num[a]);
+		CTexture* ctex    = texturex_.texture(selec_num[a]);
 		if (ctex == tex_current_)
 		{
 			// Texture is currently open in the editor
@@ -1406,7 +1406,7 @@ bool TextureXPanel::modifyOffsets()
 
 		// Calculate and apply new offsets
 		point2_t offsets =
-			mod.calculateOffsets(ctex->getOffsetX(), ctex->getOffsetY(), ctex->getWidth(), ctex->getHeight());
+			mod.calculateOffsets(ctex->offsetX(), ctex->offsetY(), ctex->width(), ctex->height());
 		ctex->setOffsetX(offsets.x);
 		ctex->setOffsetY(offsets.y);
 
@@ -1515,7 +1515,7 @@ void TextureXPanel::onTextureListSelect(wxListEvent& e)
 	}
 
 	// Get selected texture
-	CTexture* tex = texturex_.getTexture(list_textures_->getItemIndex(e.GetIndex()));
+	CTexture* tex = texturex_.texture(list_textures_->itemIndex(e.GetIndex()));
 
 	// Save any changes to previous texture
 	applyChanges();
@@ -1565,7 +1565,7 @@ void TextureXPanel::onTextureListRightClick(wxListEvent& e)
 void TextureXPanel::onTextureListKeyDown(wxKeyEvent& e)
 {
 	// Check if keypress matches any keybinds
-	wxArrayString binds = KeyBind::getBinds(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
+	wxArrayString binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
 
 	// Go through matching binds
 	for (unsigned a = 0; a < binds.size(); a++)

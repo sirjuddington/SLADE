@@ -113,9 +113,9 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Update labels
-	label_index_->SetLabel(S_FMT("Entry Index: %d", entry->getParentDir()->entryIndex(entry)));
-	label_type_->SetLabel(S_FMT("Entry Type: %s", entry->getTypeString()));
-	label_size_->SetLabel(S_FMT("Entry Size: %d bytes", entry->getSize()));
+	label_index_->SetLabel(S_FMT("Entry Index: %d", entry->parentDir()->entryIndex(entry)));
+	label_type_->SetLabel(S_FMT("Entry Type: %s", entry->typeString()));
+	label_size_->SetLabel(S_FMT("Entry Size: %d bytes", entry->size()));
 
 	// Setup actions frame
 	btn_gfx_convert_->Show(false);
@@ -124,7 +124,7 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 	frame_actions_->Show(false);
 
 	// Check for gfx entry
-	if (entry->getType()->extraProps().propertyExists("image"))
+	if (entry->type()->extraProps().propertyExists("image"))
 	{
 		frame_actions_->Show(true);
 		btn_gfx_convert_->Show(true);
@@ -132,7 +132,7 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 	}
 
 	// Check for TEXTUREx related entry
-	if (entry->getType()->id() == "texturex" || entry->getType()->id() == "pnames")
+	if (entry->type()->id() == "texturex" || entry->type()->id() == "pnames")
 	{
 		frame_actions_->Show(true);
 		btn_texture_edit_->Show(true);
@@ -153,7 +153,7 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 	label_type_->SetLabel(S_FMT("%lu selected entries", entries.size()));
 	unsigned size = 0;
 	for (unsigned a = 0; a < entries.size(); a++)
-		size += entries[a]->getSize();
+		size += entries[a]->size();
 	label_size_->SetLabel(S_FMT("Total Size: %s", Misc::sizeAsString(size)));
 
 	// Setup actions frame
@@ -165,22 +165,22 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 	bool gfx     = false;
 	bool texture = false;
 	this->entries_.clear();
-	size_t max = 0, min = entries[0]->getParentDir()->entryIndex(entries[0]);
+	size_t max = 0, min = entries[0]->parentDir()->entryIndex(entries[0]);
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Get index
-		size_t index = entries[a]->getParentDir()->entryIndex(entries[a]);
+		size_t index = entries[a]->parentDir()->entryIndex(entries[a]);
 		if (index < min)
 			min = index;
 		if (index > max)
 			max = index;
 
 		// Check for gfx entry
-		if (entries[a]->getType()->extraProps().propertyExists("image"))
+		if (entries[a]->type()->extraProps().propertyExists("image"))
 			gfx = true;
 
 		// Check for TEXTUREx related entry
-		if (entries[a]->getType()->id() == "texturex" || entries[a]->getType()->id() == "pnames")
+		if (entries[a]->type()->id() == "texturex" || entries[a]->type()->id() == "pnames")
 			texture = true;
 
 		this->entries_.push_back(entries[a]);
@@ -249,5 +249,5 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void DefaultEntryPanel::onBtnTextureEdit(wxCommandEvent& e)
 {
-	MainEditor::openTextureEditor(entry_->getParent(), entry_);
+	MainEditor::openTextureEditor(entry_->parent(), entry_);
 }

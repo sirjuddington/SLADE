@@ -150,7 +150,7 @@ void TempFolderWizardPage::applyChanges()
 // -----------------------------------------------------------------------------
 // Returns the description for the wizard page
 // -----------------------------------------------------------------------------
-string TempFolderWizardPage::getDescription()
+string TempFolderWizardPage::description()
 {
 	return "Select the temp folder for SLADE to use during various operations. "
 		   "Usually the system temp folder will be fine to use, however sometimes "

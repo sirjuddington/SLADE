@@ -43,13 +43,13 @@ public:
 	bool operator<(const MapObject& right) const { return (index_ < right.index_); }
 	bool operator>(const MapObject& right) const { return (index_ > right.index_); }
 
-	Type      getObjType() const { return type_; }
-	unsigned  getIndex();
-	SLADEMap* getParentMap() const { return parent_map_; }
+	Type      objType() const { return type_; }
+	unsigned  index();
+	SLADEMap* parentMap() const { return parent_map_; }
 	bool      isFiltered() const { return filtered_; }
 	long      modifiedTime() const { return modified_time_; }
-	unsigned  getId() const { return id_; }
-	string    getTypeName();
+	unsigned  objId() const { return obj_id_; }
+	string    typeName();
 	void      setModified();
 
 	MobjPropertyList& props() { return properties_; }
@@ -72,9 +72,9 @@ public:
 
 	virtual void copy(MapObject* c);
 
-	void    backup(Backup* backup);
+	void    backupTo(Backup* backup);
 	void    loadFromBackup(Backup* backup);
-	Backup* getBackup(bool remove = false);
+	Backup* backup(bool remove = false);
 
 	virtual void writeBackup(Backup* backup) = 0;
 	virtual void readBackup(Backup* backup)  = 0;
@@ -95,7 +95,7 @@ protected:
 	MobjPropertyList properties_;
 	bool             filtered_;
 	long             modified_time_;
-	unsigned         id_;
+	unsigned         obj_id_;
 	Backup*          obj_backup_;
 
 private:

@@ -119,9 +119,9 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 		if (side1)
 		{
 			// Add textures
-			addTexture(textures_[FrontUpper], side1->getTexUpper());
-			addTexture(textures_[FrontMiddle], side1->getTexMiddle());
-			addTexture(textures_[FrontLower], side1->getTexLower());
+			addTexture(textures_[FrontUpper], side1->texUpper());
+			addTexture(textures_[FrontMiddle], side1->texMiddle());
+			addTexture(textures_[FrontLower], side1->texLower());
 
 			this->side1_ = true;
 		}
@@ -131,9 +131,9 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 		if (side2)
 		{
 			// Add textures
-			addTexture(textures_[BackUpper], side2->getTexUpper());
-			addTexture(textures_[BackMiddle], side2->getTexMiddle());
-			addTexture(textures_[BackLower], side2->getTexLower());
+			addTexture(textures_[BackUpper], side2->texUpper());
+			addTexture(textures_[BackMiddle], side2->texMiddle());
+			addTexture(textures_[BackLower], side2->texLower());
 
 			this->side2_ = true;
 		}
@@ -264,8 +264,8 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 		updateLayout(width, height);
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::colour("map_overlay_background");
+	rgba_t col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_bg.a *= fade;
 	col_fg.a *= fade;
 
@@ -299,9 +299,9 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string position)
 {
 	// Get colours
-	rgba_t col_bg  = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg  = ColourConfiguration::getColour("map_overlay_foreground");
-	rgba_t col_sel = ColourConfiguration::getColour("map_hilight");
+	rgba_t col_bg  = ColourConfiguration::colour("map_overlay_background");
+	rgba_t col_fg  = ColourConfiguration::colour("map_overlay_foreground");
+	rgba_t col_sel = ColourConfiguration::colour("map_hilight");
 	col_fg.a       = col_fg.a * alpha;
 
 	// Draw background
@@ -318,7 +318,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 	{
 		// Draw first texture
 		OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
-		tex_first = MapEditor::textureManager().getTexture(
+		tex_first = MapEditor::textureManager().texture(
 			tex.textures[0], Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 		Drawing::drawTextureWithin(
 			tex_first,
@@ -333,7 +333,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 		OpenGL::setColour(255, 255, 255, 127 * alpha, 0);
 		for (unsigned a = 1; a < tex.textures.size() && a < 5; a++)
 		{
-			auto gl_tex = MapEditor::textureManager().getTexture(
+			auto gl_tex = MapEditor::textureManager().texture(
 				tex.textures[a], Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 
 			Drawing::drawTextureWithin(
@@ -375,7 +375,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 	// Determine texture name text
 	string str_texture;
 	if (tex.textures.size() == 1)
-		str_texture = S_FMT("%s (%dx%d)", tex.textures[0], tex_first->getWidth(), tex_first->getHeight());
+		str_texture = S_FMT("%s (%dx%d)", tex.textures[0], tex_first->width(), tex_first->height());
 	else if (tex.textures.size() > 1)
 		str_texture = S_FMT("Multiple (%lu)", tex.textures.size());
 	else
@@ -493,11 +493,11 @@ void LineTextureOverlay::browseTexture(TexInfo& tex, string position)
 	// Open texture browser
 	MapTextureBrowser browser(MapEditor::windowWx(), 0, texture, &(MapEditor::editContext().map()));
 	browser.SetTitle(S_FMT("Browse %s Texture", position));
-	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
+	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 	{
 		// Set texture
 		tex.textures.clear();
-		tex.textures.push_back(browser.getSelectedItem()->name());
+		tex.textures.push_back(browser.selectedItem()->name());
 		tex.changed = true;
 		close(false);
 	}

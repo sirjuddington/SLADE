@@ -6,7 +6,7 @@ void objectSetBoolProperty(MapObject& self, const string& key, bool value)
 		self.setBoolProperty(key, value);
 	else
 		Log::warning(
-			1, S_FMT("%s boolean property \"%s\" can not be modified via script", CHR(self.getTypeName()), key));
+			1, S_FMT("%s boolean property \"%s\" can not be modified via script", CHR(self.typeName()), key));
 }
 
 void objectSetIntProperty(MapObject& self, const string& key, int value)
@@ -15,7 +15,7 @@ void objectSetIntProperty(MapObject& self, const string& key, int value)
 		self.setIntProperty(key, value);
 	else
 		Log::warning(
-			1, S_FMT("%s integer property \"%s\" can not be modified via script", CHR(self.getTypeName()), key));
+			1, S_FMT("%s integer property \"%s\" can not be modified via script", CHR(self.typeName()), key));
 }
 
 void objectSetFloatProperty(MapObject& self, const string& key, double value)
@@ -23,7 +23,7 @@ void objectSetFloatProperty(MapObject& self, const string& key, double value)
 	if (self.scriptCanModifyProp(key))
 		self.setFloatProperty(key, value);
 	else
-		Log::warning(1, S_FMT("%s float property \"%s\" can not be modified via script", CHR(self.getTypeName()), key));
+		Log::warning(1, S_FMT("%s float property \"%s\" can not be modified via script", CHR(self.typeName()), key));
 }
 
 void objectSetStringProperty(MapObject& self, const string& key, const string& value)
@@ -32,7 +32,7 @@ void objectSetStringProperty(MapObject& self, const string& key, const string& v
 		self.setStringProperty(key, value);
 	else
 		Log::warning(
-			1, S_FMT("%s string property \"%s\" can not be modified via script", CHR(self.getTypeName()), key));
+			1, S_FMT("%s string property \"%s\" can not be modified via script", CHR(self.typeName()), key));
 }
 
 void registerSLADEMap(sol::state& lua)
@@ -64,7 +64,7 @@ void registerSLADEMap(sol::state& lua)
 void selectMapObject(MapEditContext& self, MapObject* object, bool select)
 {
 	if (object)
-		self.selection().select({ (int)object->getIndex(), MapEditor::itemTypeFromObject(object) }, select);
+		self.selection().select({ (int)object->index(), MapEditor::itemTypeFromObject(object) }, select);
 }
 
 void setEditMode(
@@ -195,10 +195,10 @@ sol::table lineVisibleTextures(MapLine& self)
 
 bool lineFlag(MapLine& self, const string& flag)
 {
-	if (Game::configuration().lineBasicFlagSet(flag, &self, self.getParentMap()->currentFormat()))
+	if (Game::configuration().lineBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;
 
-	return Game::configuration().lineFlagSet(flag, &self, self.getParentMap()->currentFormat());
+	return Game::configuration().lineFlagSet(flag, &self, self.parentMap()->currentFormat());
 }
 
 void registerMapLine(sol::state& lua)
@@ -230,9 +230,9 @@ void registerMapLine(sol::state& lua)
 		"side2",
 		sol::property(&MapLine::s2),
 		"special",
-		sol::property(&MapLine::getSpecial),
+		sol::property(&MapLine::special),
 		"length",
-		sol::property(&MapLine::getLength),
+		sol::property(&MapLine::length),
 		"visibleTextures",
 		sol::property(&lineVisibleTextures),
 
@@ -256,19 +256,19 @@ void registerMapSide(sol::state& lua)
 
 		// Properties
 		"sector",
-		sol::property(&MapSide::getSector),
+		sol::property(&MapSide::sector),
 		"line",
-		sol::property(&MapSide::getParentLine),
+		sol::property(&MapSide::parentLine),
 		"textureBottom",
-		sol::property(&MapSide::getTexLower),
+		sol::property(&MapSide::texLower),
 		"textureMiddle",
-		sol::property(&MapSide::getTexMiddle),
+		sol::property(&MapSide::texMiddle),
 		"textureTop",
-		sol::property(&MapSide::getTexUpper),
+		sol::property(&MapSide::texUpper),
 		"offsetX",
-		sol::property(&MapSide::getOffsetX),
+		sol::property(&MapSide::offsetX),
 		"offsetY",
-		sol::property(&MapSide::getOffsetY));
+		sol::property(&MapSide::offsetY));
 }
 
 void registerMapSector(sol::state& lua)
@@ -292,17 +292,17 @@ void registerMapSector(sol::state& lua)
 		"heightCeiling",
 		sol::property([](MapSector& self) { return self.ceiling().height; }),
 		"lightLevel",
-		sol::property(&MapSector::getLightLevel),
+		sol::property(&MapSector::lightLevel),
 		"special",
-		sol::property(&MapSector::getSpecial),
+		sol::property(&MapSector::special),
 		"id",
-		sol::property(&MapSector::getTag),
+		sol::property(&MapSector::tag),
 		"connectedSides",
 		sol::property(&MapSector::connectedSides),
 		"colour",
-		sol::property(&MapSector::getColour),
+		sol::property(&MapSector::colourAt),
 		"fogColour",
-		sol::property(&MapSector::getFogColour),
+		sol::property(&MapSector::fogColour),
 		"planeFloor",
 		sol::property([](MapSector& self) { return self.floor().plane; }),
 		"planeCeiling",
@@ -316,10 +316,10 @@ void registerMapSector(sol::state& lua)
 
 bool thingFlag(MapThing& self, const string& flag)
 {
-	if (Game::configuration().thingBasicFlagSet(flag, &self, self.getParentMap()->currentFormat()))
+	if (Game::configuration().thingBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;
 
-	return Game::configuration().thingFlagSet(flag, &self, self.getParentMap()->currentFormat());
+	return Game::configuration().thingFlagSet(flag, &self, self.parentMap()->currentFormat());
 }
 
 void registerMapThing(sol::state& lua)
@@ -339,9 +339,9 @@ void registerMapThing(sol::state& lua)
 		"y",
 		sol::property(&MapThing::yPos),
 		"type",
-		sol::property(&MapThing::getType),
+		sol::property(&MapThing::type),
 		"angle",
-		sol::property(&MapThing::getAngle),
+		sol::property(&MapThing::angle),
 
 		// Functions
 		"flag",
@@ -361,9 +361,9 @@ void registerMapObject(sol::state& lua)
 
 		// Properties
 		"index",
-		sol::property(&MapObject::getIndex),
+		sol::property(&MapObject::index),
 		"typeName",
-		sol::property(&MapObject::getTypeName),
+		sol::property(&MapObject::typeName),
 		//"properties", sol::property(&MapObject::props), // Need to export MobjPropertyList first
 
 		// Functions

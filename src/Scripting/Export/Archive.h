@@ -18,24 +18,24 @@ string formattedEntryName(ArchiveEntry& self, bool include_path, bool include_ex
 {
 	string name;
 	if (include_path)
-		name = self.getPath();
+		name = self.path();
 	if (name_uppercase)
-		name += include_extension ? self.getUpperName() : self.getUpperNameNoExt();
+		name += include_extension ? self.upperName() : self.upperNameNoExt();
 	else
-		name += self.getName(!include_extension);
+		name += self.name(!include_extension);
 	return name;
 }
 
 vector<ArchiveEntry*> archiveAllEntries(Archive& self)
 {
 	vector<ArchiveEntry*> list;
-	self.getEntryTreeAsList(list);
+	self.putEntryTreeAsList(list);
 	return list;
 }
 
 ArchiveEntry* archiveCreateEntry(Archive& self, const string& full_path, int position)
 {
-	auto dir = self.getDir(full_path.BeforeLast('/'));
+	auto dir = self.dir(full_path.BeforeLast('/'));
 	return self.addNewEntry(full_path.AfterLast('/'), position, dir);
 }
 
@@ -110,7 +110,7 @@ void registerArchive(sol::state& lua)
 		"entryAtPath",
 		&Archive::entryAtPath,
 		"dirAtPath",
-		[](Archive& self, const string& path) { return self.getDir(path); },
+		[](Archive& self, const string& path) { return self.dir(path); },
 		"createEntry",
 		&archiveCreateEntry,
 		"createEntryInNamespace",
@@ -156,7 +156,7 @@ void registerArchive(sol::state& lua)
 
 std::string entryData(ArchiveEntry& self)
 {
-	return std::string((const char*)self.getData(), self.getSize());
+	return std::string((const char*)self.rawData(), self.size());
 }
 
 bool entryImportString(ArchiveEntry& self, const std::string& string)
@@ -175,17 +175,17 @@ void registerArchiveEntry(sol::state& lua)
 
 		// Properties
 		"name",
-		sol::property([](ArchiveEntry& self) { return self.getName(); }),
+		sol::property([](ArchiveEntry& self) { return self.name(); }),
 		"path",
-		sol::property([](ArchiveEntry& self) { return self.getPath(); }),
+		sol::property([](ArchiveEntry& self) { return self.path(); }),
 		"type",
-		sol::property(&ArchiveEntry::getType),
+		sol::property(&ArchiveEntry::type),
 		"size",
-		sol::property(&ArchiveEntry::getSize),
+		sol::property(&ArchiveEntry::size),
 		"index",
-		sol::property([](ArchiveEntry& self) { return self.getParentDir()->entryIndex(&self); }),
+		sol::property([](ArchiveEntry& self) { return self.parentDir()->entryIndex(&self); }),
 		"crc32",
-		sol::property([](ArchiveEntry& self) { return Misc::crc(self.getData(), self.getSize()); }),
+		sol::property([](ArchiveEntry& self) { return Misc::crc(self.rawData(), self.size()); }),
 		"data",
 		sol::property(&entryData),
 
@@ -199,7 +199,7 @@ void registerArchiveEntry(sol::state& lua)
 			},
 			&formattedEntryName),
 		"formattedSize",
-		&ArchiveEntry::getSizeString,
+		&ArchiveEntry::sizeString,
 		"importFile",
 		[](ArchiveEntry& self, const string& filename) { return self.importFile(filename); },
 		"importEntry",
@@ -221,15 +221,15 @@ void registerArchiveTreeNode(sol::state& lua)
 
 		// Properties
 		"name",
-		sol::property(&ArchiveTreeNode::getName),
+		sol::property(&ArchiveTreeNode::name),
 		"archive",
 		sol::property(&ArchiveTreeNode::archive),
 		"entries",
 		sol::property(&archiveDirEntries),
 		"parent",
-		sol::property([](ArchiveTreeNode& self) { return (ArchiveTreeNode*)self.getParent(); }),
+		sol::property([](ArchiveTreeNode& self) { return (ArchiveTreeNode*)self.parent(); }),
 		"path",
-		sol::property(&ArchiveTreeNode::getPath),
+		sol::property(&ArchiveTreeNode::path),
 		"subDirectories",
 		sol::property(&archiveDirSubDirs));
 }

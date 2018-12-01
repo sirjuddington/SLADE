@@ -102,7 +102,7 @@ void OpenGLPrefsPanel::applyPreferences()
 	gl_tex_enable_np2 = cb_gl_np2_->GetValue();
 	gl_point_sprite   = cb_gl_point_sprite_->GetValue();
 	gl_vbo            = cb_gl_use_vbo_->GetValue();
-	gl_font_size      = ntc_font_size_->getNumber();
+	gl_font_size      = ntc_font_size_->number();
 
 	if (gl_font_size != last_font_size_)
 		Drawing::initFonts();

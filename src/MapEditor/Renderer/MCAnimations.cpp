@@ -103,7 +103,7 @@ void MCASelboxFader::draw()
 	rgba_t col;
 
 	// Outline
-	col.set(ColourConfiguration::getColour("map_selbox_outline"));
+	col.set(ColourConfiguration::colour("map_selbox_outline"));
 	col.a *= fade_;
 	OpenGL::setColour(col);
 	glLineWidth(2.0f);
@@ -115,7 +115,7 @@ void MCASelboxFader::draw()
 	glEnd();
 
 	// Fill
-	col.set(ColourConfiguration::getColour("map_selbox_fill"));
+	col.set(ColourConfiguration::colour("map_selbox_fill"));
 	col.a *= fade_;
 	OpenGL::setColour(col);
 	glBegin(GL_QUADS);
@@ -184,7 +184,7 @@ void MCAThingSelection::draw()
 		col.set(255, 255, 255, 255 * fade_, 1);
 	else
 	{
-		col = ColourConfiguration::getColour("map_selection");
+		col = ColourConfiguration::colour("map_selection");
 		col.a *= fade_;
 	}
 	OpenGL::setColour(col);
@@ -196,9 +196,9 @@ void MCAThingSelection::draw()
 		GLTexture* tex = nullptr;
 		if (thing_drawtype == MapRenderer2D::ThingDrawType::Round
 			|| thing_drawtype == MapRenderer2D::ThingDrawType::Sprite)
-			tex = MapEditor::textureManager().getEditorImage("thing/hilight");
+			tex = MapEditor::textureManager().editorImage("thing/hilight");
 		else
-			tex = MapEditor::textureManager().getEditorImage("thing/square/hilight");
+			tex = MapEditor::textureManager().editorImage("thing/square/hilight");
 
 		if (!tex)
 			return;
@@ -291,13 +291,13 @@ void MCALineSelection::draw()
 		col.set(255, 255, 255, 255 * fade_, 1);
 	else
 	{
-		col = ColourConfiguration::getColour("map_selection");
+		col = ColourConfiguration::colour("map_selection");
 		col.a *= fade_;
 	}
 	OpenGL::setColour(col);
 
 	// Draw lines
-	glLineWidth(line_width * ColourConfiguration::getLineSelectionWidth());
+	glLineWidth(line_width * ColourConfiguration::lineSelectionWidth());
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
@@ -371,7 +371,7 @@ void MCAVertexSelection::draw()
 		col.set(255, 255, 255, 255 * fade_, 1);
 	else
 	{
-		col = ColourConfiguration::getColour("map_selection");
+		col = ColourConfiguration::colour("map_selection");
 		col.a *= fade_;
 	}
 	OpenGL::setColour(col);
@@ -388,16 +388,16 @@ void MCAVertexSelection::draw()
 		if (select_)
 		{
 			if (vertex_round)
-				tex = MapEditor::textureManager().getEditorImage("vertex/round");
+				tex = MapEditor::textureManager().editorImage("vertex/round");
 			else
-				tex = MapEditor::textureManager().getEditorImage("vertex/square");
+				tex = MapEditor::textureManager().editorImage("vertex/square");
 		}
 		else
 		{
 			if (vertex_round)
-				tex = MapEditor::textureManager().getEditorImage("vertex/hilight_r");
+				tex = MapEditor::textureManager().editorImage("vertex/hilight_r");
 			else
-				tex = MapEditor::textureManager().getEditorImage("vertex/hilight_s");
+				tex = MapEditor::textureManager().editorImage("vertex/hilight_s");
 		}
 
 		// If it was found, enable point sprites
@@ -494,7 +494,7 @@ void MCASectorSelection::draw()
 		col.set(255, 255, 255, 180 * fade_, 1);
 	else
 	{
-		col = ColourConfiguration::getColour("map_selection");
+		col = ColourConfiguration::colour("map_selection");
 		col.a *= fade_ * 0.75;
 	}
 	OpenGL::setColour(col);
@@ -557,7 +557,7 @@ void MCA3dWallSelection::draw()
 		col.set(255, 255, 255, 90 * fade_, 1);
 	else
 	{
-		col = ColourConfiguration::getColour("map_3d_selection");
+		col = ColourConfiguration::colour("map_3d_selection");
 		col.a *= fade_ * 0.75;
 	}
 	OpenGL::setColour(col);
@@ -634,20 +634,20 @@ void MCA3dFlatSelection::draw()
 		col.set(255, 255, 255, 60 * fade_, 1);
 	else
 	{
-		col = ColourConfiguration::getColour("map_3d_selection");
+		col = ColourConfiguration::colour("map_3d_selection");
 		col.a *= fade_ * 0.75 * 0.5;
 	}
 	OpenGL::setColour(col);
 	glDisable(GL_CULL_FACE);
 
 	// Set polygon to plane height
-	sector_->getPolygon()->setZ(plane_);
+	sector_->polygon()->setZ(plane_);
 
 	// Render flat
-	sector_->getPolygon()->render();
+	sector_->polygon()->render();
 
 	// Reset polygon height
-	sector_->getPolygon()->setZ(0);
+	sector_->polygon()->setZ(0);
 
 	glEnable(GL_CULL_FACE);
 }
@@ -697,12 +697,12 @@ bool MCAHilightFade::update(long time)
 // -----------------------------------------------------------------------------
 void MCAHilightFade::draw()
 {
-	switch (object_->getObjType())
+	switch (object_->objType())
 	{
-	case MapObject::Type::Line: renderer_->renderLineHilight(object_->getIndex(), fade_); break;
-	case MapObject::Type::Sector: renderer_->renderFlatHilight(object_->getIndex(), fade_); break;
-	case MapObject::Type::Thing: renderer_->renderThingHilight(object_->getIndex(), fade_); break;
-	case MapObject::Type::Vertex: renderer_->renderVertexHilight(object_->getIndex(), fade_); break;
+	case MapObject::Type::Line: renderer_->renderLineHilight(object_->index(), fade_); break;
+	case MapObject::Type::Sector: renderer_->renderFlatHilight(object_->index(), fade_); break;
+	case MapObject::Type::Thing: renderer_->renderThingHilight(object_->index(), fade_); break;
+	case MapObject::Type::Vertex: renderer_->renderVertexHilight(object_->index(), fade_); break;
 	default: break;
 	}
 }

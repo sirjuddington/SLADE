@@ -125,12 +125,12 @@ bool PodArchive::open(MemChunk& mc)
 
 	// Detect entry types
 	vector<ArchiveEntry*> all_entries;
-	getEntryTreeAsList(all_entries);
+	putEntryTreeAsList(all_entries);
 	UI::setSplashProgressMessage("Detecting entry types");
 	for (unsigned a = 0; a < all_entries.size(); a++)
 	{
 		// Skip dir/marker
-		if (all_entries[a]->getSize() == 0 || all_entries[a]->getType() == EntryType::folderType())
+		if (all_entries[a]->size() == 0 || all_entries[a]->type() == EntryType::folderType())
 		{
 			all_entries[a]->setState(0);
 			continue;
@@ -141,7 +141,7 @@ bool PodArchive::open(MemChunk& mc)
 
 		// Read data
 		MemChunk edata;
-		mc.exportMemChunk(edata, all_entries[a]->exProp("Offset").getIntValue(), all_entries[a]->getSize());
+		mc.exportMemChunk(edata, all_entries[a]->exProp("Offset").intValue(), all_entries[a]->size());
 		all_entries[a]->importMemChunk(edata);
 
 		// Detect entry type
@@ -153,7 +153,7 @@ bool PodArchive::open(MemChunk& mc)
 
 		// Set entry to unchanged
 		all_entries[a]->setState(0);
-		LOG_MESSAGE(5, "entry %s size %d", CHR(all_entries[a]->getName()), all_entries[a]->getSize());
+		LOG_MESSAGE(5, "entry %s size %d", CHR(all_entries[a]->name()), all_entries[a]->size());
 	}
 
 	// Clean up
@@ -177,23 +177,23 @@ bool PodArchive::write(MemChunk& mc, bool update)
 {
 	// Get all entries
 	vector<ArchiveEntry*> entries;
-	getEntryTreeAsList(entries);
+	putEntryTreeAsList(entries);
 
 	// Process entries
 	int      ndirs     = 0;
 	uint32_t data_size = 0;
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			ndirs++;
 		else
-			data_size += entries[a]->getSize();
+			data_size += entries[a]->size();
 	}
 
 	// Init MemChunk
 	mc.clear();
 	mc.reSize(4 + 80 + (entries.size() * 40) + data_size, false);
-	LOG_MESSAGE(5, "MC size %d", mc.getSize());
+	LOG_MESSAGE(5, "MC size %d", mc.size());
 
 	// Write no. entries
 	uint32_t n_entries = entries.size() - ndirs;
@@ -209,19 +209,19 @@ bool PodArchive::write(MemChunk& mc, bool update)
 	fe.offset = 4 + 80 + (n_entries * 40);
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
-		if (entries[a]->getType() == EntryType::folderType())
+		if (entries[a]->type() == EntryType::folderType())
 			continue;
 
 		// Name
 		memset(fe.name, 0, 32);
-		string path = entries[a]->getPath(true);
+		string path = entries[a]->path(true);
 		path.Replace("/", "\\");
 		path = path.AfterFirst('\\');
 		// LOG_MESSAGE(2, path);
 		memcpy(fe.name, CHR(path), path.Len());
 
 		// Size
-		fe.size = entries[a]->getSize();
+		fe.size = entries[a]->size();
 
 		// Write directory entry
 		mc.write(fe.name, 32);
@@ -231,9 +231,9 @@ bool PodArchive::write(MemChunk& mc, bool update)
 			5,
 			"entry %s: old=%d new=%d size=%d",
 			fe.name,
-			entries[a]->exProp("Offset").getIntValue(),
+			entries[a]->exProp("Offset").intValue(),
 			fe.offset,
-			entries[a]->getSize());
+			entries[a]->size());
 
 		// Next offset
 		fe.offset += fe.size;
@@ -241,8 +241,8 @@ bool PodArchive::write(MemChunk& mc, bool update)
 
 	// Write entry data
 	for (unsigned a = 0; a < entries.size(); a++)
-		if (entries[a]->getType() != EntryType::folderType())
-			mc.write(entries[a]->getData(), entries[a]->getSize());
+		if (entries[a]->type() != EntryType::folderType())
+			mc.write(entries[a]->rawData(), entries[a]->size());
 
 	return true;
 }
@@ -259,7 +259,7 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -277,7 +277,7 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to lump offset in file and read it in
 	file.Seek((int)entry->exProp("Offset"), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -299,7 +299,7 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 bool PodArchive::isPodArchive(MemChunk& mc)
 {
 	// Check size for header
-	if (mc.getSize() < 84)
+	if (mc.size() < 84)
 		return false;
 
 	// Read no. of files
@@ -312,7 +312,7 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 	mc.read(id, 80);
 
 	// Check size for directory
-	if (mc.getSize() < 84 + (num_files * 40))
+	if (mc.size() < 84 + (num_files * 40))
 		return false;
 
 	// Read directory and check offsets
@@ -320,7 +320,7 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 	for (unsigned a = 0; a < num_files; a++)
 	{
 		mc.read(&entry, 40);
-		if (entry.offset + entry.size > mc.getSize())
+		if (entry.offset + entry.size > mc.size())
 			return false;
 	}
 	return true;

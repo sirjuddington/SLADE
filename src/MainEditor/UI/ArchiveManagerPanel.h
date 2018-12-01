@@ -83,7 +83,7 @@ public:
 	void        updateArchiveTabTitle(int index) const;
 	bool        isArchivePanel(int tab_index) const;
 	bool        isEntryPanel(int tab_index) const;
-	Archive*    getArchive(int tab_index) const;
+	Archive*    archiveForTab(int tab_index) const;
 	int         currentTabIndex() const;
 	Archive*    currentArchive() const;
 	wxWindow*   currentPanel() const;
@@ -94,11 +94,11 @@ public:
 	vector<ArchiveEntry*> currentEntrySelection() const;
 
 	void            openTab(int archive_index) const;
-	ArchivePanel*   getArchiveTab(Archive* archive) const;
+	ArchivePanel*   tabForArchive(Archive* archive) const;
 	void            openTab(Archive* archive) const;
 	void            closeTab(int archive_index) const;
 	void            openTextureTab(int archive_index, ArchiveEntry* entry = nullptr) const;
-	TextureXEditor* getTextureTab(int archive_index) const;
+	TextureXEditor* textureTabForArchive(int archive_index) const;
 	void            closeTextureTab(int archive_index) const;
 	void            openEntryTab(ArchiveEntry* entry) const;
 	void            closeEntryTab(ArchiveEntry* entry) const;
@@ -139,9 +139,9 @@ public:
 	// SAction handler
 	bool handleAction(string id) override;
 
-	vector<int> getSelectedArchives() const;
-	vector<int> getSelectedBookmarks() const;
-	vector<int> getSelectedFiles() const;
+	vector<int> selectedArchives() const;
+	vector<int> selectedBookmarks() const;
+	vector<int> selectedFiles() const;
 
 	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
 

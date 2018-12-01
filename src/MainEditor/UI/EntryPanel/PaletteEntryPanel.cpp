@@ -129,7 +129,7 @@ public:
 		CenterOnParent();
 	}
 
-	Palette* getFinalPalette() { return &(pal_preview_->getPalette()); }
+	Palette* getFinalPalette() { return &(pal_preview_->palette()); }
 
 	rgba_t getColour()
 	{
@@ -141,8 +141,8 @@ public:
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().colourise(
-			getColour(), pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
+		pal_preview_->palette().colourise(
+			getColour(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
 		pal_preview_->draw();
 	}
 
@@ -227,7 +227,7 @@ public:
 		label_amount_->SetLabel("50% ");
 	}
 
-	Palette* getFinalPalette() { return &(pal_preview_->getPalette()); }
+	Palette* getFinalPalette() { return &(pal_preview_->palette()); }
 
 	rgba_t getColour()
 	{
@@ -241,8 +241,8 @@ public:
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().tint(
-			getColour(), getAmount(), pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
+		pal_preview_->palette().tint(
+			getColour(), getAmount(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
 		pal_preview_->draw();
 	}
 
@@ -361,7 +361,7 @@ public:
 		label_lum_->SetLabel("100% ");
 	}
 
-	Palette* getFinalPalette() { return &(pal_preview_->getPalette()); }
+	Palette* getFinalPalette() { return &(pal_preview_->palette()); }
 
 	float getHue() { return (float)slider_hue_->GetValue() * 0.002f; }
 
@@ -373,11 +373,11 @@ public:
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().shift(getHue(), pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
-		pal_preview_->getPalette().saturate(
-			getSat(), pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
-		pal_preview_->getPalette().illuminate(
-			getLum(), pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
+		pal_preview_->palette().shift(getHue(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->palette().saturate(
+			getSat(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->palette().illuminate(
+			getLum(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
 		pal_preview_->draw();
 	}
 
@@ -441,13 +441,13 @@ public:
 		CenterOnParent();
 	}
 
-	Palette* getFinalPalette() { return &(pal_preview_->getPalette()); }
+	Palette* getFinalPalette() { return &(pal_preview_->palette()); }
 
 	// Re-apply the changes in selection on a fresh palette
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().invert(pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd());
+		pal_preview_->palette().invert(pal_preview_->selectionStart(), pal_preview_->selectionEnd());
 		pal_preview_->draw();
 	}
 
@@ -582,7 +582,7 @@ public:
 		CenterOnParent();
 	}
 
-	Palette* getFinalPalette() { return &(pal_preview_->getPalette()); }
+	Palette* getFinalPalette() { return &(pal_preview_->palette()); }
 
 	rgba_t getStartColour()
 	{
@@ -600,8 +600,8 @@ public:
 	void redraw()
 	{
 		pal_preview_->setPalette(palette_);
-		pal_preview_->getPalette().setGradient(
-			pal_preview_->getSelectionStart(), pal_preview_->getSelectionEnd(), getStartColour(), getEndColour());
+		pal_preview_->palette().setGradient(
+			pal_preview_->selectionStart(), pal_preview_->selectionEnd(), getStartColour(), getEndColour());
 		pal_preview_->draw();
 	}
 
@@ -684,7 +684,7 @@ bool PaletteEntryPanel::loadEntry(ArchiveEntry* entry)
 	palettes_.clear();
 
 	// Determine how many palettes are in the entry
-	int n_palettes = entry->getSize() / 768;
+	int n_palettes = entry->size() / 768;
 
 	// Load each palette
 	entry->seek(0, SEEK_SET);
@@ -723,7 +723,7 @@ bool PaletteEntryPanel::saveEntry()
 	for (size_t a = 0; a < palettes_.size(); a++)
 	{
 		palettes_[a]->saveMem(mc);
-		full.write(mc.getData(), 768);
+		full.write(mc.data(), 768);
 	}
 	entry_->importMemChunk(full);
 	setModified(false);
@@ -737,12 +737,12 @@ bool PaletteEntryPanel::saveEntry()
 string PaletteEntryPanel::statusString()
 {
 	// Get current colour
-	rgba_t col  = pal_canvas_->getSelectedColour();
+	rgba_t col  = pal_canvas_->selectedColour();
 	hsl_t  col2 = Misc::rgbToHsl(col);
 
 	return S_FMT(
 		"Index %i\tR %d, G %d, B %d\tH %1.3f, S %1.3f, L %1.3f",
-		pal_canvas_->getSelectionStart(),
+		pal_canvas_->selectionStart(),
 		col.r,
 		col.g,
 		col.b,
@@ -762,7 +762,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 		return false;
 
 	// Copy palette at index into canvas
-	pal_canvas_->getPalette().copyPalette(palettes_[index]);
+	pal_canvas_->palette().copyPalette(palettes_[index]);
 
 	// Set current palette text
 	text_curpal_->SetLabel(S_FMT("%u/%lu", index + 1, palettes_.size()));
@@ -835,7 +835,7 @@ bool PaletteEntryPanel::addCustomPalette()
 	auto pal = std::make_unique<Palette>();
 	pal->copyPalette(palettes_[cur_palette_]);
 	App::paletteManager()->addPalette(std::move(pal), name);
-	theMainWindow->getPaletteChooser()->addPalette(name);
+	theMainWindow->paletteChooser()->addPalette(name);
 
 	return true;
 }
@@ -853,8 +853,8 @@ bool PaletteEntryPanel::testPalette()
 	auto pal = std::make_unique<Palette>();
 	pal->copyPalette(palettes_[cur_palette_]);
 	App::paletteManager()->addPalette(std::move(pal), name);
-	theMainWindow->getPaletteChooser()->addPalette(name);
-	theMainWindow->getPaletteChooser()->selectPalette(name);
+	theMainWindow->paletteChooser()->addPalette(name);
+	theMainWindow->paletteChooser()->selectPalette(name);
 
 	return true;
 }
@@ -1115,7 +1115,7 @@ bool PaletteEntryPanel::gradient()
 #define DIMINISH(color, level) color = (uint8_t)((((float)color) * (32.0 - level) + 16.0) / 32.0)
 bool PaletteEntryPanel::generateColormaps()
 {
-	if (!entry_ || !entry_->getParent() || !palettes_[0])
+	if (!entry_ || !entry_->parent() || !palettes_[0])
 		return false;
 
 	MemChunk mc;
@@ -1195,7 +1195,7 @@ bool PaletteEntryPanel::generateColormaps()
 #endif
 	// Now override or create new entry
 	ArchiveEntry* colormap;
-	colormap         = entry_->getParent()->getEntry("COLORMAP", true);
+	colormap         = entry_->parent()->entry("COLORMAP", true);
 	bool preexisting = colormap != nullptr;
 	if (!colormap)
 	{
@@ -1207,7 +1207,7 @@ bool PaletteEntryPanel::generateColormaps()
 	colormap->importMemChunk(mc);
 	if (!preexisting)
 	{
-		entry_->getParent()->addEntry(colormap);
+		entry_->parent()->addEntry(colormap);
 	}
 	return true;
 }
@@ -1502,12 +1502,12 @@ void PaletteEntryPanel::onPalCanvasMouseEvent(wxMouseEvent& e)
 		// to make the canvas do the work.
 		// Pretend there was a left click to get the selected colour.
 		pal_canvas_->onMouseLeftDown(e);
-		int sel = pal_canvas_->getSelectionStart();
+		int sel = pal_canvas_->selectionStart();
 
 		// There actually was a colour selected
 		if (sel > -1)
 		{
-			rgba_t col = pal_canvas_->getSelectedColour();
+			rgba_t col = pal_canvas_->selectedColour();
 			// Open a colour dialog
 			wxColour cd = wxGetColourFromUser(GetParent(), WXCOL(col));
 
@@ -1653,7 +1653,7 @@ void PaletteEntryPanel::analysePalettes()
 #endif
 		}
 #ifdef GPALCOMPANALYSIS
-		report += S_FMT("Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, entry_->getName(true));
+		report += S_FMT("Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, entry_->name(true));
 		report += S_FMT(
 			"Min R %+003i Min G %+003i Min B %+003i Max R %+003i Max G %+003i Max B %+003i \nError count: %i\n",
 			minR,

@@ -157,9 +157,9 @@ void Translation::parse(string def)
 		temp.RemoveLast(1); // remove the closing '\"'
 		ArchiveEntry* trantbl = App::archiveManager().getResourceEntry(temp);
 
-		if (trantbl && trantbl->getSize() == 256)
+		if (trantbl && trantbl->size() == 256)
 		{
-			read(trantbl->getData());
+			read(trantbl->rawData());
 			return;
 		}
 	}
@@ -517,7 +517,7 @@ void Translation::copy(Translation& copy)
 // -----------------------------------------------------------------------------
 // Returns the translation range at [index]
 // -----------------------------------------------------------------------------
-TransRange* Translation::getRange(unsigned index)
+TransRange* Translation::range(unsigned index)
 {
 	if (index >= translations_.size())
 		return nullptr;
@@ -576,7 +576,7 @@ rgba_t Translation::translate(rgba_t col, Palette* pal)
 			continue;
 
 		// Palette range translation
-		if (r->getType() == TransRange::Palette)
+		if (r->type() == TransRange::Palette)
 		{
 			TransRangePalette* tp = (TransRangePalette*)translations_[a];
 
@@ -598,7 +598,7 @@ rgba_t Translation::translate(rgba_t col, Palette* pal)
 		}
 
 		// Colour range
-		else if (r->getType() == TransRange::Colour)
+		else if (r->type() == TransRange::Colour)
 		{
 			TransRangeColour* tc = (TransRangeColour*)r;
 
@@ -615,7 +615,7 @@ rgba_t Translation::translate(rgba_t col, Palette* pal)
 		}
 
 		// Desaturated colour range
-		else if (r->getType() == TransRange::Desat)
+		else if (r->type() == TransRange::Desat)
 		{
 			TransRangeDesat* td = (TransRangeDesat*)r;
 
@@ -631,12 +631,12 @@ rgba_t Translation::translate(rgba_t col, Palette* pal)
 		}
 
 		// Blended range
-		else if (r->getType() == TransRange::Blend)
+		else if (r->type() == TransRange::Blend)
 		{
 			TransRangeBlend* tc = (TransRangeBlend*)r;
 
 			// Get colours
-			rgba_t blend = tc->getColour();
+			rgba_t blend = tc->colour();
 
 			// Colourise
 			float grey = (col.r * col_greyscale_r + col.g * col_greyscale_g + col.b * col_greyscale_b) / 255.0f;
@@ -651,15 +651,15 @@ rgba_t Translation::translate(rgba_t col, Palette* pal)
 		}
 
 		// Tinted range
-		else if (r->getType() == TransRange::Tint)
+		else if (r->type() == TransRange::Tint)
 		{
 			TransRangeTint* tt = (TransRangeTint*)r;
 
 			// Get colours
-			rgba_t tint = tt->getColour();
+			rgba_t tint = tt->colour();
 
 			// Colourise
-			float amount  = tt->getAmount() * 0.01f;
+			float amount  = tt->amount() * 0.01f;
 			float inv_amt = 1.0f - amount;
 
 			// Apply new colour
@@ -671,10 +671,10 @@ rgba_t Translation::translate(rgba_t col, Palette* pal)
 		}
 
 		// Special range
-		else if (r->getType() == TransRange::Special)
+		else if (r->type() == TransRange::Special)
 		{
 			TransRangeSpecial* ts   = (TransRangeSpecial*)translations_[a];
-			string             spec = ts->getSpecial();
+			string             spec = ts->special();
 			uint8_t            type = BLEND_INVALID;
 			if (S_CMPNOCASE(spec, "ice"))
 				type = SpecialBlend::BLEND_ICE;

@@ -589,7 +589,7 @@ bool Tokenizer::openMem(const char* mem, size_t length, const string& source)
 bool Tokenizer::openMem(const MemChunk& mc, const string& source)
 {
 	source_ = source;
-	data_.assign(mc.getData(), mc.getData() + mc.getSize());
+	data_.assign(mc.data(), mc.data() + mc.size());
 
 	reset();
 
@@ -923,7 +923,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 	vector<TestToken> t_new;
 	tz.setReadLowerCase(lower);
 	long time = App::runTimer();
-	tz.openMem(entry->getMCData(), entry->getName());
+	tz.openMem(entry->data(), entry->name());
 	for (long a = 0; a < num; a++)
 	{
 		while (!tz.atEnd())

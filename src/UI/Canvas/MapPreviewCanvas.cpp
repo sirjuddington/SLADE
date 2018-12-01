@@ -154,7 +154,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		for (ArchiveEntry* mapentry = map.head; mapentry != map.end; mapentry = mapentry->nextEntry())
 		{
 			// Check entry type
-			if (mapentry->getType() == EntryType::fromId("udmf_textmap"))
+			if (mapentry->type() == EntryType::fromId("udmf_textmap"))
 			{
 				udmfdata = mapentry;
 				break;
@@ -165,7 +165,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 
 		// Start parsing
 		Tokenizer tz;
-		tz.openMem(udmfdata->getMCData(), map.head->getName());
+		tz.openMem(udmfdata->data(), map.head->name());
 
 		// Get first token
 		string token       = tz.getToken();
@@ -355,9 +355,9 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		while (map.head)
 		{
 			// Check entry type
-			if (map.head->getType() == EntryType::fromId("map_sidedefs"))
+			if (map.head->type() == EntryType::fromId("map_sidedefs"))
 				sidedefs = map.head;
-			if (map.head->getType() == EntryType::fromId("map_sectors"))
+			if (map.head->type() == EntryType::fromId("map_sectors"))
 				sectors = map.head;
 
 			// Exit loop if we've reached the end of the map entries
@@ -371,15 +371,15 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 			// Doom64 map
 			if (map.format != MAP_DOOM64)
 			{
-				n_sides_   = sidedefs->getSize() / 30;
-				n_sectors_ = sectors->getSize() / 26;
+				n_sides_   = sidedefs->size() / 30;
+				n_sectors_ = sectors->size() / 26;
 			}
 
 			// Doom/Hexen map
 			else
 			{
-				n_sides_   = sidedefs->getSize() / 12;
-				n_sectors_ = sectors->getSize() / 16;
+				n_sides_   = sidedefs->size() / 12;
+				n_sectors_ = sectors->size() / 16;
 			}
 		}
 	}
@@ -408,7 +408,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 	while (map_head)
 	{
 		// Check entry type
-		if (map_head->getType() == EntryType::fromId("map_vertexes"))
+		if (map_head->type() == EntryType::fromId("map_vertexes"))
 		{
 			vertexes = map_head;
 			break;
@@ -426,7 +426,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 		return false;
 
 	// Read vertex data
-	MemChunk& mc = vertexes->getMCData();
+	MemChunk& mc = vertexes->data();
 	mc.seek(0, SEEK_SET);
 
 	if (map_format == MAP_DOOM64)
@@ -469,7 +469,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 	while (map_head)
 	{
 		// Check entry type
-		if (map_head->getType() == EntryType::fromId("map_linedefs"))
+		if (map_head->type() == EntryType::fromId("map_linedefs"))
 		{
 			linedefs = map_head;
 			break;
@@ -487,7 +487,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 		return false;
 
 	// Read line data
-	MemChunk& mc = linedefs->getMCData();
+	MemChunk& mc = linedefs->data();
 	mc.seek(0, SEEK_SET);
 	if (map_format == MAP_DOOM)
 	{
@@ -572,7 +572,7 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 	while (map_head)
 	{
 		// Check entry type
-		if (map_head->getType() == EntryType::fromId("map_things"))
+		if (map_head->type() == EntryType::fromId("map_things"))
 		{
 			things = map_head;
 			break;
@@ -592,22 +592,22 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 	// Read things data
 	if (map_format == MAP_DOOM)
 	{
-		MapThing::DoomData* thng_data = (MapThing::DoomData*)things->getData(true);
-		unsigned            nt        = things->getSize() / sizeof(MapThing::DoomData);
+		MapThing::DoomData* thng_data = (MapThing::DoomData*)things->rawData(true);
+		unsigned            nt        = things->size() / sizeof(MapThing::DoomData);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MAP_DOOM64)
 	{
-		MapThing::Doom64Data* thng_data = (MapThing::Doom64Data*)things->getData(true);
-		unsigned              nt        = things->getSize() / sizeof(MapThing::Doom64Data);
+		MapThing::Doom64Data* thng_data = (MapThing::Doom64Data*)things->rawData(true);
+		unsigned              nt        = things->size() / sizeof(MapThing::Doom64Data);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MAP_HEXEN)
 	{
-		MapThing::HexenData* thng_data = (MapThing::HexenData*)things->getData(true);
-		unsigned             nt        = things->getSize() / sizeof(MapThing::HexenData);
+		MapThing::HexenData* thng_data = (MapThing::HexenData*)things->rawData(true);
+		unsigned             nt        = things->size() / sizeof(MapThing::HexenData);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
@@ -666,12 +666,12 @@ void MapPreviewCanvas::showMap()
 void MapPreviewCanvas::draw()
 {
 	// Setup colours
-	rgba_t col_view_background   = ColourConfiguration::getColour("map_view_background");
-	rgba_t col_view_line_1s      = ColourConfiguration::getColour("map_view_line_1s");
-	rgba_t col_view_line_2s      = ColourConfiguration::getColour("map_view_line_2s");
-	rgba_t col_view_line_special = ColourConfiguration::getColour("map_view_line_special");
-	rgba_t col_view_line_macro   = ColourConfiguration::getColour("map_view_line_macro");
-	rgba_t col_view_thing        = ColourConfiguration::getColour("map_view_thing");
+	rgba_t col_view_background   = ColourConfiguration::colour("map_view_background");
+	rgba_t col_view_line_1s      = ColourConfiguration::colour("map_view_line_1s");
+	rgba_t col_view_line_2s      = ColourConfiguration::colour("map_view_line_2s");
+	rgba_t col_view_line_special = ColourConfiguration::colour("map_view_line_special");
+	rgba_t col_view_line_macro   = ColourConfiguration::colour("map_view_line_macro");
+	rgba_t col_view_thing        = ColourConfiguration::colour("map_view_thing");
 
 	// Setup the viewport
 	glViewport(0, 0, GetSize().x, GetSize().y);
@@ -752,7 +752,7 @@ void MapPreviewCanvas::draw()
 		ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("images/thing/normal_n.png");
 		if (entry)
 		{
-			image.open(entry->getMCData());
+			image.open(entry->data());
 			tex_thing_ = new GLTexture(false);
 			tex_thing_->setFilter(GLTexture::Filter::Mipmap);
 			tex_thing_->loadImage(&image);
@@ -842,11 +842,11 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 		height = mapheight / abs(height);
 
 	// Setup colours
-	rgba_t col_save_background   = ColourConfiguration::getColour("map_image_background");
-	rgba_t col_save_line_1s      = ColourConfiguration::getColour("map_image_line_1s");
-	rgba_t col_save_line_2s      = ColourConfiguration::getColour("map_image_line_2s");
-	rgba_t col_save_line_special = ColourConfiguration::getColour("map_image_line_special");
-	rgba_t col_save_line_macro   = ColourConfiguration::getColour("map_image_line_macro");
+	rgba_t col_save_background   = ColourConfiguration::colour("map_image_background");
+	rgba_t col_save_line_1s      = ColourConfiguration::colour("map_image_line_1s");
+	rgba_t col_save_line_2s      = ColourConfiguration::colour("map_image_line_2s");
+	rgba_t col_save_line_special = ColourConfiguration::colour("map_image_line_special");
+	rgba_t col_save_line_macro   = ColourConfiguration::colour("map_image_line_macro");
 
 	// Setup OpenGL rigmarole
 	GLuint texID, fboID;
@@ -1058,7 +1058,7 @@ unsigned MapPreviewCanvas::nThings()
 // -----------------------------------------------------------------------------
 // Returns the width (in map units) of the map
 // -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::getWidth()
+unsigned MapPreviewCanvas::width()
 {
 	int min_x = wxINT32_MAX;
 	int max_x = wxINT32_MIN;
@@ -1077,7 +1077,7 @@ unsigned MapPreviewCanvas::getWidth()
 // -----------------------------------------------------------------------------
 // Returns the height (in map units) of the map
 // -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::getHeight()
+unsigned MapPreviewCanvas::height()
 {
 	int min_y = wxINT32_MAX;
 	int max_y = wxINT32_MIN;

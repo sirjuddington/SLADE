@@ -267,7 +267,7 @@ bool MIDIPlayer::openData(MemChunk& mc)
 {
 	// Open midi
 	mc.seek(0, SEEK_SET);
-	data_.importMem(mc.getData(), mc.getSize());
+	data_.importMem(mc.data(), mc.size());
 
 	if (usetimidity)
 	{
@@ -290,7 +290,7 @@ bool MIDIPlayer::openData(MemChunk& mc)
 		if (fs_player_)
 		{
 			// fluid_player_set_loop(fs_player, -1);
-			fluid_player_add_mem(fs_player_, mc.getData(), mc.getSize());
+			fluid_player_add_mem(fs_player_, mc.data(), mc.size());
 			return true;
 		}
 		else
@@ -399,7 +399,7 @@ bool MIDIPlayer::isPlaying()
 // -----------------------------------------------------------------------------
 // Returns the current position of the playing MIDI stream
 // -----------------------------------------------------------------------------
-int MIDIPlayer::getPosition()
+int MIDIPlayer::position()
 {
 	// We cannot query this information from fluidsynth or timidity,
 	// se we cheat by querying our own timer
@@ -433,11 +433,11 @@ bool MIDIPlayer::setPosition(int pos)
 // will generally be more accurate.
 // 60000000 / tempo = BPM
 // -----------------------------------------------------------------------------
-int MIDIPlayer::getLength()
+int MIDIPlayer::length()
 {
 	size_t   microseconds  = 0;
 	size_t   pos           = 0;
-	size_t   end           = data_.getSize();
+	size_t   end           = data_.size();
 	size_t   track_counter = 0;
 	uint16_t num_tracks    = 0;
 	uint16_t format        = 0;
@@ -581,11 +581,11 @@ bool MIDIPlayer::setVolume(int volume)
 // Marker (FF 06)
 // Cue point (FF 07)
 // -----------------------------------------------------------------------------
-string MIDIPlayer::getInfo()
+string MIDIPlayer::info()
 {
 	string   ret           = wxEmptyString;
 	size_t   pos           = 0;
-	size_t   end           = data_.getSize();
+	size_t   end           = data_.size();
 	size_t   track_counter = 0;
 	uint16_t num_tracks    = 0;
 	uint16_t format        = 0;

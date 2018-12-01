@@ -879,10 +879,10 @@ void Input::handleKeyBind2d(const string& name)
 			ClipboardItem* item = nullptr;
 			for (unsigned a = 0; a < theClipboard->nItems(); a++)
 			{
-				if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_ARCH
-					|| theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_THINGS)
+				if (theClipboard->item(a)->type() == CLIPBOARD_MAP_ARCH
+					|| theClipboard->item(a)->type() == CLIPBOARD_MAP_THINGS)
 				{
-					item = theClipboard->getItem(a);
+					item = theClipboard->item(a);
 					break;
 				}
 			}
@@ -937,8 +937,8 @@ void Input::handleKeyBind2d(const string& name)
 					mouse_state_ = MouseState::TagSectors;
 
 					// Setup help text
-					string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
-					string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+					string key_accept = KeyBind::bind("map_edit_accept").keysAsString();
+					string key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 					context_.setFeatureHelp({ "Tag Edit",
 											  S_FMT("%s = Accept", key_accept),
 											  S_FMT("%s = Cancel", key_cancel),

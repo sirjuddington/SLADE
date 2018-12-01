@@ -59,9 +59,9 @@ namespace
 // -----------------------------------------------------------------------------
 void DecodeTXB(MemChunk& mc)
 {
-	const uint8_t*       data    = mc.getData();
-	const uint8_t* const dataend = data + mc.getSize();
-	uint8_t*             odata   = new uint8_t[mc.getSize()];
+	const uint8_t*       data    = mc.data();
+	const uint8_t* const dataend = data + mc.size();
+	uint8_t*             odata   = new uint8_t[mc.size()];
 	uint8_t* const       ostart  = odata;
 	while (data != dataend)
 	{
@@ -73,7 +73,7 @@ void DecodeTXB(MemChunk& mc)
 		else
 			*odata++ = *data++;
 	}
-	mc.importMem(ostart, mc.getSize());
+	mc.importMem(ostart, mc.size());
 	delete[] ostart;
 }
 
@@ -82,9 +82,9 @@ void DecodeTXB(MemChunk& mc)
 // -----------------------------------------------------------------------------
 uint8_t* EncodeTXB(MemChunk& mc)
 {
-	const uint8_t*       data    = mc.getData();
-	const uint8_t* const dataend = data + mc.getSize();
-	uint8_t*             odata   = new uint8_t[mc.getSize()];
+	const uint8_t*       data    = mc.data();
+	const uint8_t* const dataend = data + mc.size();
+	uint8_t*             odata   = new uint8_t[mc.size()];
 	uint8_t* const       ostart  = odata;
 	while (data != dataend)
 	{
@@ -161,7 +161,7 @@ bool HogArchive::open(MemChunk& mc)
 		return false;
 
 	// Check size
-	size_t archive_size = mc.getSize();
+	size_t archive_size = mc.size();
 	if (archive_size < 3)
 		return false;
 
@@ -209,7 +209,7 @@ bool HogArchive::open(MemChunk& mc)
 		// Handle txb/ctb as archive level encryption. This is not strictly
 		// correct, but since we're not making a proper Descent editor this
 		// prevents needless complication on loading text data.
-		if (ShouldEncodeTXB(nlump->getName()))
+		if (ShouldEncodeTXB(nlump->name()))
 			nlump->setEncryption(ENC_TXB);
 
 		// Add to entry list
@@ -228,13 +228,13 @@ bool HogArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = getEntry(a);
+		ArchiveEntry* entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0)
+		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			if (entry->isEncrypted() == ENC_TXB)
 				DecodeTXB(edata);
 			entry->importMemChunk(edata);
@@ -273,14 +273,14 @@ bool HogArchive::write(MemChunk& mc, bool update)
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		offset += 17;
-		entry = getEntry(l);
+		entry = entryAt(l);
 		setEntryOffset(entry, offset);
 		if (update)
 		{
 			entry->setState(0);
 			entry->exProp("Offset") = (int)offset;
 		}
-		offset += entry->getSize();
+		offset += entry->size();
 	}
 
 	// Clear/init MemChunk
@@ -295,23 +295,23 @@ bool HogArchive::write(MemChunk& mc, bool update)
 	// Write the directory
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
-		entry         = getEntry(l);
+		entry         = entryAt(l);
 		char name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		long size     = wxINT32_SWAP_ON_BE(entry->getSize());
+		long size     = wxINT32_SWAP_ON_BE(entry->size());
 
-		for (size_t c = 0; c < entry->getName().length() && c < 13; c++)
-			name[c] = entry->getName()[c];
+		for (size_t c = 0; c < entry->name().length() && c < 13; c++)
+			name[c] = entry->name()[c];
 
 		mc.write(name, 13);
 		mc.write(&size, 4);
 		if (entry->isEncrypted() == ENC_TXB)
 		{
-			uint8_t* data = EncodeTXB(entry->getMCData());
-			mc.write(data, entry->getSize());
+			uint8_t* data = EncodeTXB(entry->data());
+			mc.write(data, entry->size());
 			delete[] data;
 		}
 		else
-			mc.write(entry->getData(), entry->getSize());
+			mc.write(entry->rawData(), entry->size());
 	}
 
 	return true;
@@ -329,7 +329,7 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
+	if (entry->size() == 0 || entry->isLoaded())
 	{
 		entry->setLoaded();
 		return true;
@@ -347,7 +347,7 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Seek to lump offset in file and read it in
 	file.Seek(getEntryOffset(entry), wxFromStart);
-	entry->importFileStream(file, entry->getSize());
+	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
 	entry->setLoaded();
@@ -375,7 +375,7 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 		entry = new ArchiveEntry(*entry);
 
 	// Process name (must be 12 characters max)
-	string name = entry->getName().Truncate(12);
+	string name = entry->name().Truncate(12);
 
 	// Set new hog-friendly name
 	entry->setName(name);
@@ -391,7 +391,7 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // -----------------------------------------------------------------------------
 ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
-	if (ShouldEncodeTXB(entry->getName()))
+	if (ShouldEncodeTXB(entry->name()))
 		entry->setEncryption(ENC_TXB);
 
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
@@ -426,7 +426,7 @@ bool HogArchive::renameEntry(ArchiveEntry* entry, string name)
 bool HogArchive::isHogArchive(MemChunk& mc)
 {
 	// Check size
-	size_t size = mc.getSize();
+	size_t size = mc.size();
 	if (size < 3)
 		return false;
 
