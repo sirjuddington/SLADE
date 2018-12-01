@@ -46,10 +46,10 @@ EXTERN_CVAR(Bool, dmx_padding)
 EXTERN_CVAR(Int, snd_volume)
 EXTERN_CVAR(String, fs_soundfont_path)
 EXTERN_CVAR(String, dir_last)
-CVAR(String, dir_last_soundfont, "", CVAR_SAVE)
-CVAR(Bool, snd_midi_usetimidity, false, CVAR_SAVE)
-CVAR(String, snd_timidity_path, "", CVAR_SAVE)
-CVAR(String, snd_timidity_options, "", CVAR_SAVE)
+CVAR(String, dir_last_soundfont, "", CVar::Flag::Save)
+CVAR(Bool, snd_midi_usetimidity, false, CVar::Flag::Save)
+CVAR(String, snd_timidity_path, "", CVar::Flag::Save)
+CVAR(String, snd_timidity_options, "", CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

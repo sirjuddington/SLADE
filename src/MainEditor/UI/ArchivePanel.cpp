@@ -87,14 +87,14 @@ wxMenu* menu_entry   = nullptr;
 const auto ERROR_UNWRITABLE_IMAGE_FORMAT =
 	"Error: Could not write image data to entry %s, unsupported format for writing";
 } // namespace
-CVAR(Int, autosave_entry_changes, 2, CVAR_SAVE) // 0=no, 1=yes, 2=ask
-CVAR(Bool, confirm_entry_delete, true, CVAR_SAVE)
-CVAR(Bool, context_submenus, true, CVAR_SAVE)
-CVAR(String, last_colour, "RGB(255, 0, 0)", CVAR_SAVE)
-CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVAR_SAVE)
-CVAR(Int, last_tint_amount, 50, CVAR_SAVE)
-CVAR(Bool, auto_entry_replace, false, CVAR_SAVE)
-CVAR(Bool, archive_build_skip_hidden, true, CVAR_SAVE)
+CVAR(Int, autosave_entry_changes, 2, CVar::Flag::Save) // 0=no, 1=yes, 2=ask
+CVAR(Bool, confirm_entry_delete, true, CVar::Flag::Save)
+CVAR(Bool, context_submenus, true, CVar::Flag::Save)
+CVAR(String, last_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
+CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
+CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
+CVAR(Bool, auto_entry_replace, false, CVar::Flag::Save)
+CVAR(Bool, archive_build_skip_hidden, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

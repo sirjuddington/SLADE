@@ -80,9 +80,9 @@ int win_version_minor = 0;
 
 string current_action           = "";
 bool   update_check_message_box = false;
-CVAR(String, dir_last, "", CVAR_SAVE)
-CVAR(Bool, update_check, true, CVAR_SAVE)
-CVAR(Bool, update_check_beta, false, CVAR_SAVE)
+CVAR(String, dir_last, "", CVar::Flag::Save)
+CVAR(Bool, update_check, true, CVar::Flag::Save)
+CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

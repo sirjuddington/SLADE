@@ -44,10 +44,10 @@ using namespace MapEditor;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, shapedraw_shape, 0, CVAR_SAVE)
-CVAR(Bool, shapedraw_centered, false, CVAR_SAVE)
-CVAR(Bool, shapedraw_lockratio, false, CVAR_SAVE)
-CVAR(Int, shapedraw_sides, 16, CVAR_SAVE)
+CVAR(Int, shapedraw_shape, 0, CVar::Flag::Save)
+CVAR(Bool, shapedraw_centered, false, CVar::Flag::Save)
+CVAR(Bool, shapedraw_lockratio, false, CVar::Flag::Save)
+CVAR(Int, shapedraw_sides, 16, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

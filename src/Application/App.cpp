@@ -88,9 +88,9 @@ PaletteManager palette_manager;
 ArchiveManager archive_manager;
 } // namespace App
 
-CVAR(Int, temp_location, 0, CVAR_SAVE)
-CVAR(String, temp_location_custom, "", CVAR_SAVE)
-CVAR(Bool, setup_wizard_run, false, CVAR_SAVE)
+CVAR(Int, temp_location, 0, CVar::Flag::Save)
+CVAR(String, temp_location_custom, "", CVar::Flag::Save)
+CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -172,7 +172,7 @@ void readConfigFile()
 			// Keep reading name/value pairs until we hit the ending '}'
 			while (!tz.checkOrEnd("}"))
 			{
-				readCVar(tz.current().text, tz.peek().text);
+				CVar::set(tz.current().text, tz.peek().text);
 				tz.adv(2);
 			}
 
@@ -483,7 +483,7 @@ void App::saveConfigFile()
 	file.Write(" *****************************************************/\n\n");
 
 	// Write cvars
-	saveCVars(file);
+	CVar::saveToFile(file);
 
 	// Write base resource archive paths
 	file.Write("\nbase_resource_paths\n{\n");

@@ -46,8 +46,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, mobj_props_show_all, false, CVAR_SAVE)
-CVAR(Bool, mobj_props_auto_apply, false, CVAR_SAVE)
+CVAR(Bool, mobj_props_show_all, false, CVar::Flag::Save)
+CVAR(Bool, mobj_props_auto_apply, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

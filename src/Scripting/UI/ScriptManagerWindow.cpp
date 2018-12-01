@@ -59,7 +59,7 @@ string docs_url       = "http://slade.mancubus.net/docs/scripting";
 int    layout_version = 1;
 } // namespace
 
-CVAR(Bool, sm_maximized, false, CVAR_SAVE)
+CVAR(Bool, sm_maximized, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

@@ -42,8 +42,8 @@
 // -----------------------------------------------------------------------------
 GLTexture GLTexture::tex_background_;
 GLTexture GLTexture::tex_missing_;
-CVAR(String, bgtx_colour1, "#404050", CVAR_SAVE)
-CVAR(String, bgtx_colour2, "#505060", CVAR_SAVE)
+CVAR(String, bgtx_colour1, "#404050", CVar::Flag::Save)
+CVAR(String, bgtx_colour2, "#505060", CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

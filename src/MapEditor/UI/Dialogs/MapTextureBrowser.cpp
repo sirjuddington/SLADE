@@ -44,8 +44,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, map_tex_sort, 2, CVAR_SAVE)
-CVAR(String, map_tex_treespec, "type,archive,category", CVAR_SAVE)
+CVAR(Int, map_tex_sort, 2, CVar::Flag::Save)
+CVAR(String, map_tex_treespec, "type,archive,category", CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

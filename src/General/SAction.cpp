@@ -316,8 +316,8 @@ bool SAction::parse(ParseTreeNode* node)
 	// Setup linked cvar
 	if (type_ == Type::Check && !linked_cvar.IsEmpty())
 	{
-		auto cvar = getCVar(linked_cvar);
-		if (cvar && cvar->type == CVAR_BOOLEAN)
+		auto cvar = CVar::get(linked_cvar);
+		if (cvar && cvar->type == CVar::Type::Boolean)
 		{
 			this->linked_cvar_ = (CBoolCVar*)cvar;
 			checked_           = cvar->GetValue().Bool;

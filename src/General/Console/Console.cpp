@@ -104,39 +104,39 @@ void Console::execute(string command)
 	}
 
 	// Check if it is a cvar
-	CVar* cvar = getCVar(cmd_name);
+	CVar* cvar = CVar::get(cmd_name);
 	if (cvar)
 	{
 		// Arg(s) given, set cvar value
 		if (args.size() > 0)
 		{
-			if (cvar->type == CVAR_BOOLEAN)
+			if (cvar->type == CVar::Type::Boolean)
 			{
 				if (args[0] == "0" || args[0] == "false")
 					*((CBoolCVar*)cvar) = false;
 				else
 					*((CBoolCVar*)cvar) = true;
 			}
-			else if (cvar->type == CVAR_INTEGER)
+			else if (cvar->type == CVar::Type::Integer)
 				*((CIntCVar*)cvar) = atoi(CHR(args[0]));
-			else if (cvar->type == CVAR_FLOAT)
+			else if (cvar->type == CVar::Type::Float)
 				*((CFloatCVar*)cvar) = (float)atof(CHR(args[0]));
-			else if (cvar->type == CVAR_STRING)
+			else if (cvar->type == CVar::Type::String)
 				*((CStringCVar*)cvar) = args[0];
 		}
 
 		// Print cvar value
 		string value = "";
-		if (cvar->type == CVAR_BOOLEAN)
+		if (cvar->type == CVar::Type::Boolean)
 		{
 			if (cvar->GetValue().Bool)
 				value = "true";
 			else
 				value = "false";
 		}
-		else if (cvar->type == CVAR_INTEGER)
+		else if (cvar->type == CVar::Type::Integer)
 			value = S_FMT("%d", cvar->GetValue().Int);
-		else if (cvar->type == CVAR_FLOAT)
+		else if (cvar->type == CVar::Type::Float)
 			value = S_FMT("%1.4f", cvar->GetValue().Float);
 		else
 			value = ((CStringCVar*)cvar)->value;
@@ -275,7 +275,7 @@ CONSOLE_COMMAND(cvarlist, 0, true)
 {
 	// Get sorted list of cvars
 	vector<string> list;
-	getCVarList(list);
+	CVar::putList(list);
 	sort(list.begin(), list.end());
 
 	Log::console(S_FMT("%lu CVars:", list.size()));

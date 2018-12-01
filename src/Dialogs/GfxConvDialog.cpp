@@ -53,7 +53,7 @@
 // -----------------------------------------------------------------------------
 string GfxConvDialog::current_palette_name_ = "";
 string GfxConvDialog::target_palette_name_  = "";
-CVAR(Bool, gfx_extraconv, false, CVAR_SAVE)
+CVAR(Bool, gfx_extraconv, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

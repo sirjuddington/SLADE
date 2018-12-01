@@ -41,8 +41,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(String, iconset_general, "Default", CVAR_SAVE)
-CVAR(String, iconset_entry_list, "Default", CVAR_SAVE)
+CVAR(String, iconset_general, "Default", CVar::Flag::Save)
+CVAR(String, iconset_entry_list, "Default", CVar::Flag::Save)
 
 namespace Icons
 {

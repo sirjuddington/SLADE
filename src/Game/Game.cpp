@@ -60,9 +60,9 @@ ZScript::Definitions      zscript_base;
 ZScript::Definitions      zscript_custom;
 std::unique_ptr<Listener> listener;
 } // namespace Game
-CVAR(String, game_configuration, "", CVAR_SAVE)
-CVAR(String, port_configuration, "", CVAR_SAVE)
-CVAR(String, zdoom_pk3_path, "", CVAR_SAVE)
+CVAR(String, game_configuration, "", CVar::Flag::Save)
+CVAR(String, port_configuration, "", CVar::Flag::Save)
+CVAR(String, zdoom_pk3_path, "", CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

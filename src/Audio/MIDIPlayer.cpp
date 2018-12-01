@@ -41,8 +41,8 @@
 //
 // -----------------------------------------------------------------------------
 MIDIPlayer* MIDIPlayer::instance_ = nullptr;
-CVAR(String, fs_soundfont_path, "", CVAR_SAVE);
-CVAR(String, fs_driver, "", CVAR_SAVE);
+CVAR(String, fs_soundfont_path, "", CVar::Flag::Save);
+CVAR(String, fs_driver, "", CVar::Flag::Save);
 
 
 // -----------------------------------------------------------------------------

@@ -44,7 +44,7 @@ namespace Log
 vector<Message> log;
 std::ofstream   log_file;
 } // namespace Log
-CVAR(Int, log_verbosity, 1, CVAR_SAVE)
+CVAR(Int, log_verbosity, 1, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

@@ -43,7 +43,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, toolbar_button_flat, true, CVAR_SAVE)
+CVAR(Bool, toolbar_button_flat, true, CVar::Flag::Save)
 wxDEFINE_EVENT(wxEVT_STOOLBAR_BUTTON_CLICKED, wxCommandEvent);
 
 

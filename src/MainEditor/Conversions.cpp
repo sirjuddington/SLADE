@@ -53,8 +53,8 @@ const uint8_t WAV_PCM    = 1;
 const uint8_t WAV_ALAW   = 6;
 const uint8_t WAV_ULAW   = 7;
 } // namespace Conversions
-CVAR(Bool, dmx_padding, true, CVAR_SAVE)
-CVAR(Int, wolfsnd_rate, 7042, CVAR_SAVE)
+CVAR(Bool, dmx_padding, true, CVar::Flag::Save)
+CVAR(Int, wolfsnd_rate, 7042, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

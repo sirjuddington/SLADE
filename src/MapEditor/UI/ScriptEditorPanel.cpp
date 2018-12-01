@@ -47,8 +47,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, script_show_language_list, true, CVAR_SAVE)
-CVAR(Bool, script_word_wrap, false, CVAR_SAVE)
+CVAR(Bool, script_show_language_list, true, CVar::Flag::Save)
+CVAR(Bool, script_word_wrap, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

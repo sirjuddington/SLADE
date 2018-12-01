@@ -41,8 +41,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE)
-CVAR(Bool, selection_clear_move, true, CVAR_SAVE)
+CVAR(Bool, map_merge_undo_step, true, CVar::Flag::Save)
+CVAR(Bool, selection_clear_move, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

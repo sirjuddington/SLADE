@@ -51,10 +51,10 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(String, run_last_exe, "", CVAR_SAVE)
-CVAR(Int, run_last_config, 0, CVAR_SAVE)
-CVAR(String, run_last_extra, "", CVAR_SAVE)
-CVAR(Bool, run_start_3d, false, CVAR_SAVE)
+CVAR(String, run_last_exe, "", CVar::Flag::Save)
+CVAR(Int, run_last_config, 0, CVar::Flag::Save)
+CVAR(String, run_last_extra, "", CVar::Flag::Save)
+CVAR(Bool, run_start_3d, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

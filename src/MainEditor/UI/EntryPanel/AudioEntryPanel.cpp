@@ -47,8 +47,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, snd_volume, 100, CVAR_SAVE)
-CVAR(Bool, snd_autoplay, false, CVAR_SAVE)
+CVAR(Int, snd_volume, 100, CVar::Flag::Save)
+CVAR(Bool, snd_autoplay, false, CVar::Flag::Save)
 #ifndef NO_FLUIDSYNTH
 EXTERN_CVAR(Bool, snd_midi_usetimidity)
 #define usetimidity snd_midi_usetimidity

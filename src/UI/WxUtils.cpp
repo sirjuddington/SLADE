@@ -40,8 +40,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(String, font_monospace, "Consolas,Lucida Console", CVAR_SAVE)
-CVAR(Int, tab_style, 1, CVAR_SAVE)
+CVAR(String, font_monospace, "Consolas,Lucida Console", CVar::Flag::Save)
+CVAR(Int, tab_style, 1, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

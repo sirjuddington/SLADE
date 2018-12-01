@@ -43,7 +43,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, browser_maximised, false, CVAR_SAVE)
+CVAR(Bool, browser_maximised, false, CVar::Flag::Save)
 namespace
 {
 int bw_chars[] = {

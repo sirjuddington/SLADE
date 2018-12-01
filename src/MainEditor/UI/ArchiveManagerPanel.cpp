@@ -54,10 +54,10 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, close_archive_with_tab, true, CVAR_SAVE)
-CVAR(Int, am_current_tab, 0, CVAR_SAVE)
-CVAR(Bool, am_file_browser_tab, true, CVAR_SAVE)
-CVAR(Int, dir_archive_change_action, 2, CVAR_SAVE) // 0=always ignore, 1=always apply, 2+=ask
+CVAR(Bool, close_archive_with_tab, true, CVar::Flag::Save)
+CVAR(Int, am_current_tab, 0, CVar::Flag::Save)
+CVAR(Bool, am_file_browser_tab, true, CVar::Flag::Save)
+CVAR(Int, dir_archive_change_action, 2, CVar::Flag::Save) // 0=always ignore, 1=always apply, 2+=ask
 
 
 // -----------------------------------------------------------------------------

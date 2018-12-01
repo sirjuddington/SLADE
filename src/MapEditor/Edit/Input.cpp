@@ -48,8 +48,8 @@ using namespace MapEditor;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, property_edit_dclick, true, CVAR_SAVE)
-CVAR(Bool, selection_clear_click, false, CVAR_SAVE)
+CVAR(Bool, property_edit_dclick, true, CVar::Flag::Save)
+CVAR(Bool, selection_clear_click, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

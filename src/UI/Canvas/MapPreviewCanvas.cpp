@@ -49,8 +49,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Float, map_image_thickness, 1.5, CVAR_SAVE)
-CVAR(Bool, map_view_things, true, CVAR_SAVE)
+CVAR(Float, map_image_thickness, 1.5, CVar::Flag::Save)
+CVAR(Bool, map_view_things, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

@@ -45,9 +45,9 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, base_resource, -1, CVAR_SAVE)
-CVAR(Int, max_recent_files, 25, CVAR_SAVE)
-CVAR(Bool, auto_open_wads_root, false, CVAR_SAVE)
+CVAR(Int, base_resource, -1, CVar::Flag::Save)
+CVAR(Int, max_recent_files, 25, CVar::Flag::Save)
+CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

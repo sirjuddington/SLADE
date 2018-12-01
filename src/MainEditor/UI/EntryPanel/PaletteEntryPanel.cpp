@@ -51,9 +51,9 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Float, col_greyscale_r, 0.299, CVAR_SAVE)
-CVAR(Float, col_greyscale_g, 0.587, CVAR_SAVE)
-CVAR(Float, col_greyscale_b, 0.114, CVAR_SAVE)
+CVAR(Float, col_greyscale_r, 0.299, CVar::Flag::Save)
+CVAR(Float, col_greyscale_g, 0.587, CVar::Flag::Save)
+CVAR(Float, col_greyscale_b, 0.114, CVar::Flag::Save)
 
 namespace
 {

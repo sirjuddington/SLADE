@@ -43,20 +43,20 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, elist_colname_width, 80, CVAR_SAVE)
-CVAR(Int, elist_colsize_width, 64, CVAR_SAVE)
-CVAR(Int, elist_coltype_width, 160, CVAR_SAVE)
-CVAR(Int, elist_colindex_width, 64, CVAR_SAVE)
-CVAR(Bool, elist_colsize_show, true, CVAR_SAVE)
-CVAR(Bool, elist_coltype_show, true, CVAR_SAVE)
-CVAR(Bool, elist_colindex_show, false, CVAR_SAVE)
-CVAR(Bool, elist_hrules, false, CVAR_SAVE)
-CVAR(Bool, elist_vrules, false, CVAR_SAVE)
-CVAR(Bool, elist_filter_dirs, false, CVAR_SAVE)
-CVAR(Bool, elist_type_bgcol, false, CVAR_SAVE)
-CVAR(Float, elist_type_bgcol_intensity, 0.18, CVAR_SAVE)
-CVAR(Bool, elist_name_monospace, false, CVAR_SAVE)
-CVAR(Bool, elist_alt_row_colour, false, CVAR_SAVE)
+CVAR(Int, elist_colname_width, 80, CVar::Flag::Save)
+CVAR(Int, elist_colsize_width, 64, CVar::Flag::Save)
+CVAR(Int, elist_coltype_width, 160, CVar::Flag::Save)
+CVAR(Int, elist_colindex_width, 64, CVar::Flag::Save)
+CVAR(Bool, elist_colsize_show, true, CVar::Flag::Save)
+CVAR(Bool, elist_coltype_show, true, CVar::Flag::Save)
+CVAR(Bool, elist_colindex_show, false, CVar::Flag::Save)
+CVAR(Bool, elist_hrules, false, CVar::Flag::Save)
+CVAR(Bool, elist_vrules, false, CVar::Flag::Save)
+CVAR(Bool, elist_filter_dirs, false, CVar::Flag::Save)
+CVAR(Bool, elist_type_bgcol, false, CVar::Flag::Save)
+CVAR(Float, elist_type_bgcol_intensity, 0.18, CVar::Flag::Save)
+CVAR(Bool, elist_name_monospace, false, CVar::Flag::Save)
+CVAR(Bool, elist_alt_row_colour, false, CVar::Flag::Save)
 wxDEFINE_EVENT(EVT_AEL_DIR_CHANGED, wxCommandEvent);
 
 

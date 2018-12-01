@@ -59,11 +59,11 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, hud_statusbar, 1, CVAR_SAVE)
-CVAR(Bool, hud_center, 1, CVAR_SAVE)
-CVAR(Bool, hud_wide, 0, CVAR_SAVE)
-CVAR(Bool, hud_bob, 0, CVAR_SAVE)
-CVAR(Int, gl_font_size, 12, CVAR_SAVE)
+CVAR(Bool, hud_statusbar, 1, CVar::Flag::Save)
+CVAR(Bool, hud_center, 1, CVar::Flag::Save)
+CVAR(Bool, hud_wide, 0, CVar::Flag::Save)
+CVAR(Bool, hud_bob, 0, CVar::Flag::Save)
+CVAR(Int, gl_font_size, 12, CVar::Flag::Save)
 
 namespace Drawing
 {

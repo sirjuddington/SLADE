@@ -68,10 +68,10 @@ namespace
 {
 string main_window_layout = "";
 }
-CVAR(Bool, show_start_page, true, CVAR_SAVE);
-CVAR(String, global_palette, "", CVAR_SAVE);
-CVAR(Bool, mw_maximized, true, CVAR_SAVE);
-CVAR(Bool, confirm_exit, true, CVAR_SAVE);
+CVAR(Bool, show_start_page, true, CVar::Flag::Save);
+CVAR(String, global_palette, "", CVar::Flag::Save);
+CVAR(Bool, mw_maximized, true, CVar::Flag::Save);
+CVAR(Bool, confirm_exit, true, CVar::Flag::Save);
 
 
 // -----------------------------------------------------------------------------

@@ -44,7 +44,7 @@
 //
 // -----------------------------------------------------------------------------
 wxDEFINE_EVENT(EVT_DRAG_END, wxCommandEvent);
-CVAR(Bool, tx_arc, false, CVAR_SAVE)
+CVAR(Bool, tx_arc, false, CVar::Flag::Save)
 EXTERN_CVAR(Bool, gfx_show_border)
 
 

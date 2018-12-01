@@ -43,8 +43,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, browser_bg_type, false, CVAR_SAVE)
-CVAR(Int, browser_item_size, 96, CVAR_SAVE)
+CVAR(Int, browser_bg_type, false, CVar::Flag::Save)
+CVAR(Int, browser_item_size, 96, CVar::Flag::Save)
 DEFINE_EVENT_TYPE(wxEVT_BROWSERCANVAS_SELECTION_CHANGED)
 
 

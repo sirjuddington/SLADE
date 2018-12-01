@@ -44,7 +44,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, max_map_backups, 25, CVAR_SAVE)
+CVAR(Int, max_map_backups, 25, CVar::Flag::Save)
 namespace
 {
 // List of entry names to be ignored for backups

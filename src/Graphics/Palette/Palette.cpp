@@ -44,13 +44,13 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, col_match, (int)Palette::ColourMatch::Old, CVAR_SAVE)
-CVAR(Float, col_match_r, 1.0, CVAR_SAVE)
-CVAR(Float, col_match_g, 1.0, CVAR_SAVE)
-CVAR(Float, col_match_b, 1.0, CVAR_SAVE)
-CVAR(Float, col_match_h, 1.0, CVAR_SAVE)
-CVAR(Float, col_match_s, 1.0, CVAR_SAVE)
-CVAR(Float, col_match_l, 1.0, CVAR_SAVE)
+CVAR(Int, col_match, (int)Palette::ColourMatch::Old, CVar::Flag::Save)
+CVAR(Float, col_match_r, 1.0, CVar::Flag::Save)
+CVAR(Float, col_match_g, 1.0, CVar::Flag::Save)
+CVAR(Float, col_match_b, 1.0, CVar::Flag::Save)
+CVAR(Float, col_match_h, 1.0, CVar::Flag::Save)
+CVAR(Float, col_match_s, 1.0, CVar::Flag::Save)
+CVAR(Float, col_match_l, 1.0, CVar::Flag::Save)
 EXTERN_CVAR(Float, col_greyscale_r);
 EXTERN_CVAR(Float, col_greyscale_g);
 EXTERN_CVAR(Float, col_greyscale_b);

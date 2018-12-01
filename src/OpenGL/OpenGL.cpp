@@ -38,11 +38,11 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, gl_tex_enable_np2, true, CVAR_SAVE)
-CVAR(Bool, gl_point_sprite, true, CVAR_SAVE)
-CVAR(Bool, gl_tweak_accuracy, true, CVAR_SAVE)
-CVAR(Bool, gl_vbo, true, CVAR_SAVE)
-CVAR(Int, gl_depth_buffer_size, 16, CVAR_SAVE)
+CVAR(Bool, gl_tex_enable_np2, true, CVar::Flag::Save)
+CVAR(Bool, gl_point_sprite, true, CVar::Flag::Save)
+CVAR(Bool, gl_tweak_accuracy, true, CVar::Flag::Save)
+CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
+CVAR(Int, gl_depth_buffer_size, 16, CVar::Flag::Save)
 
 namespace OpenGL
 {

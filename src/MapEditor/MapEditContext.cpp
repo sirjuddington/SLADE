@@ -65,8 +65,8 @@ namespace
 double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5,  1,    2,    4,    8,     16,    32,   64,
 						128,  256, 512,  1024, 2048, 4096, 8192, 16384, 32768, 65536 };
 }
-CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
-CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
+CVAR(Bool, info_overlay_3d, true, CVar::Flag::Save)
+CVAR(Bool, hilight_smooth, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

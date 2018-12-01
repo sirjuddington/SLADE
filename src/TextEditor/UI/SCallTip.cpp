@@ -45,7 +45,7 @@ wxColour wxcol_fg;
 wxColour wxcol_fg_hl;
 wxColour wxcol_type;
 } // namespace
-CVAR(Bool, txed_calltips_dim_optional, true, CVAR_SAVE)
+CVAR(Bool, txed_calltips_dim_optional, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

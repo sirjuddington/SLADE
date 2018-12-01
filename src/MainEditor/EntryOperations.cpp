@@ -55,13 +55,13 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(String, path_acc, "", CVAR_SAVE);
-CVAR(String, path_acc_libs, "", CVAR_SAVE);
-CVAR(String, path_pngout, "", CVAR_SAVE);
-CVAR(String, path_pngcrush, "", CVAR_SAVE);
-CVAR(String, path_deflopt, "", CVAR_SAVE);
-CVAR(String, path_db2, "", CVAR_SAVE)
-CVAR(Bool, acc_always_show_output, false, CVAR_SAVE);
+CVAR(String, path_acc, "", CVar::Flag::Save);
+CVAR(String, path_acc_libs, "", CVar::Flag::Save);
+CVAR(String, path_pngout, "", CVar::Flag::Save);
+CVAR(String, path_pngcrush, "", CVar::Flag::Save);
+CVAR(String, path_deflopt, "", CVar::Flag::Save);
+CVAR(String, path_db2, "", CVar::Flag::Save)
+CVAR(Bool, acc_always_show_output, false, CVar::Flag::Save);
 
 
 // -----------------------------------------------------------------------------

@@ -49,7 +49,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, map_split_auto_offset, true, CVAR_SAVE)
+CVAR(Bool, map_split_auto_offset, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

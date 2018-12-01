@@ -61,13 +61,13 @@ const double P257 = 6103515625.0; // 25 to the power of 7
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Float, col_cie_kl, 1.000, CVAR_SAVE)         // KL: 1.000 for graphics, 2.000 for textile
-CVAR(Float, col_cie_k1, 0.045, CVAR_SAVE)         // K1: 0.045 for graphics, 0.048 for textile
-CVAR(Float, col_cie_k2, 0.015, CVAR_SAVE)         // K2: 0.015 for graphics, 0.014 for textile
-CVAR(Float, col_cie_kc, 1.000, CVAR_SAVE)         // KC: didn't find a standard value anywhere
-CVAR(Float, col_cie_kh, 1.000, CVAR_SAVE)         // KH: didn't find a standard value anywhere
-CVAR(Float, col_cie_tristim_x, 95.02, CVAR_SAVE)  // These default tristimulus values correspond
-CVAR(Float, col_cie_tristim_z, 108.82, CVAR_SAVE) // to illuminant D65 and 2� observer.
+CVAR(Float, col_cie_kl, 1.000, CVar::Flag::Save)         // KL: 1.000 for graphics, 2.000 for textile
+CVAR(Float, col_cie_k1, 0.045, CVar::Flag::Save)         // K1: 0.045 for graphics, 0.048 for textile
+CVAR(Float, col_cie_k2, 0.015, CVar::Flag::Save)         // K2: 0.015 for graphics, 0.014 for textile
+CVAR(Float, col_cie_kc, 1.000, CVar::Flag::Save)         // KC: didn't find a standard value anywhere
+CVAR(Float, col_cie_kh, 1.000, CVar::Flag::Save)         // KH: didn't find a standard value anywhere
+CVAR(Float, col_cie_tristim_x, 95.02, CVar::Flag::Save)  // These default tristimulus values correspond
+CVAR(Float, col_cie_tristim_z, 108.82, CVar::Flag::Save) // to illuminant D65 and 2� observer.
 
 
 // -----------------------------------------------------------------------------

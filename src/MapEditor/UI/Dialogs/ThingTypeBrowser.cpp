@@ -44,8 +44,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, browser_thing_tiles, true, CVAR_SAVE)
-CVAR(Bool, use_zeth_icons, false, CVAR_SAVE)
+CVAR(Bool, browser_thing_tiles, true, CVar::Flag::Save)
+CVAR(Bool, use_zeth_icons, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

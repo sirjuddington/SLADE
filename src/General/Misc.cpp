@@ -45,8 +45,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, size_as_string, true, CVAR_SAVE)
-CVAR(Bool, percent_encoding, false, CVAR_SAVE)
+CVAR(Bool, size_as_string, true, CVar::Flag::Save)
+CVAR(Bool, percent_encoding, false, CVar::Flag::Save)
 EXTERN_CVAR(Float, col_cie_tristim_x)
 EXTERN_CVAR(Float, col_cie_tristim_z)
 namespace Misc

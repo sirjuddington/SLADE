@@ -42,8 +42,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, wad_force_uppercase, true, CVAR_SAVE)
-CVAR(Bool, iwad_lock, true, CVAR_SAVE)
+CVAR(Bool, wad_force_uppercase, true, CVar::Flag::Save)
+CVAR(Bool, iwad_lock, true, CVar::Flag::Save)
 
 namespace
 {

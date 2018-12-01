@@ -41,8 +41,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, archive_load_data, false, CVAR_SAVE)
-CVAR(Bool, backup_archives, true, CVAR_SAVE)
+CVAR(Bool, archive_load_data, false, CVar::Flag::Save)
+CVAR(Bool, backup_archives, true, CVar::Flag::Save)
 bool                  Archive::save_backup = true;
 vector<ArchiveFormat> Archive::formats;
 

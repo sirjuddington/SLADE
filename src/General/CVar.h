@@ -3,46 +3,51 @@
 
 // CVar classes, a lot of ideas taken from the ZDoom source
 
-enum CVarType
-{
-	CVAR_BOOLEAN,
-	CVAR_INTEGER,
-	CVAR_FLOAT,
-	CVAR_STRING,
-};
-
-union CVarValue {
-	int         Int;
-	bool        Bool;
-	double      Float;
-	const char* String;
-};
-
-enum CVarProperty
-{
-	CVAR_SAVE   = 1, // set if cvar is saved to config file
-	CVAR_SECRET = 2, // set if cvar is not listed when cvarlist command called
-	CVAR_LOCKED = 4, // set if cvar cannot be changed by the user during runtime
-};
-
-
 class CVar
 {
 public:
+	enum class Type
+	{
+		Boolean,
+		Integer,
+		Float,
+		String,
+	};
+
+	union Value {
+		int         Int;
+		bool        Bool;
+		double      Float;
+		const char* String;
+	};
+
+	enum Flag
+	{
+		Save   = 1, // set if cvar is saved to config file
+		Secret = 2, // set if cvar is not listed when cvarlist command called
+		Locked = 4, // set if cvar cannot be changed by the user during runtime
+	};
+
 	uint16_t flags;
-	CVarType type;
+	Type     type;
 	string   name;
 	CVar*    next;
 
 	CVar() { next = nullptr; }
 	virtual ~CVar() {}
 
-	virtual CVarValue GetValue()
+	virtual Value GetValue()
 	{
-		CVarValue val;
+		Value val;
 		val.Int = 0;
 		return val;
 	}
+
+	// Static functions
+	static void  saveToFile(wxFile& file);
+	static void  set(string cvar_name, string value);
+	static CVar* get(string cvar_name);
+	static void  putList(vector<string>& list);
 };
 
 class CIntCVar : public CVar
@@ -62,9 +67,9 @@ public:
 		return val;
 	}
 
-	CVarValue GetValue()
+	Value GetValue()
 	{
-		CVarValue val;
+		Value val;
 		val.Int = value;
 		return val;
 	}
@@ -86,9 +91,9 @@ public:
 		return val;
 	}
 
-	CVarValue GetValue()
+	Value GetValue()
 	{
-		CVarValue val;
+		Value val;
 		val.Bool = value;
 		return val;
 	}
@@ -110,19 +115,13 @@ public:
 		return val;
 	}
 
-	CVarValue GetValue()
+	Value GetValue()
 	{
-		CVarValue val;
+		Value val;
 		val.Float = value;
 		return val;
 	}
 };
-
-void  dumpCVars();
-void  saveCVars(wxFile& file);
-void  readCVar(string name, string value);
-CVar* getCVar(string name);
-void  getCVarList(vector<string>& list);
 
 class CStringCVar : public CVar
 {

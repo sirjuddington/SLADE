@@ -65,7 +65,7 @@ void addCVarList(CVar* cvar)
 // -----------------------------------------------------------------------------
 // Finds a CVar by name
 // -----------------------------------------------------------------------------
-CVar* getCVar(string name)
+CVar* CVar::get(string name)
 {
 	for (uint16_t c = 0; c < n_cvars; c++)
 	{
@@ -77,37 +77,13 @@ CVar* getCVar(string name)
 }
 
 // -----------------------------------------------------------------------------
-// Dumps all CVar info to a string
-// -----------------------------------------------------------------------------
-void dumpCVars()
-{
-	for (uint16_t c = 0; c < n_cvars; c++)
-	{
-		if (!(cvars[c]->flags & CVAR_SECRET))
-		{
-			if (cvars[c]->type == CVAR_INTEGER)
-				printf("%s %d\n", CHR(cvars[c]->name), cvars[c]->GetValue().Int);
-
-			if (cvars[c]->type == CVAR_BOOLEAN)
-				printf("%s %d\n", CHR(cvars[c]->name), cvars[c]->GetValue().Bool);
-
-			if (cvars[c]->type == CVAR_FLOAT)
-				printf("%s %1.5f\n", CHR(cvars[c]->name), cvars[c]->GetValue().Float);
-
-			if (cvars[c]->type == CVAR_STRING)
-				printf("%s \"%s\"\n", CHR(cvars[c]->name), CHR(((CStringCVar*)cvars[c])->value));
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------
 // Adds all cvar names to a vector of strings
 // -----------------------------------------------------------------------------
-void getCVarList(vector<string>& list)
+void CVar::putList(vector<string>& list)
 {
 	for (uint16_t c = 0; c < n_cvars; c++)
 	{
-		if (!(cvars[c]->flags & CVAR_SECRET))
+		if (!(cvars[c]->flags & Flag::Secret))
 			list.push_back(cvars[c]->name);
 	}
 }
@@ -115,7 +91,7 @@ void getCVarList(vector<string>& list)
 // -----------------------------------------------------------------------------
 // Saves cvars to a config file
 // -----------------------------------------------------------------------------
-void saveCVars(wxFile& file)
+void CVar::saveToFile(wxFile& file)
 {
 	uint32_t max_size = 0;
 	for (uint32_t c = 0; c < n_cvars; c++)
@@ -128,7 +104,7 @@ void saveCVars(wxFile& file)
 
 	for (uint32_t c = 0; c < n_cvars; c++)
 	{
-		if (cvars[c]->flags & CVAR_SAVE)
+		if (cvars[c]->flags & Flag::Save)
 		{
 			file.Write(S_FMT("\t%s ", cvars[c]->name));
 
@@ -136,16 +112,16 @@ void saveCVars(wxFile& file)
 			for (int a = 0; a < spaces; a++)
 				file.Write(" ");
 
-			if (cvars[c]->type == CVAR_INTEGER)
+			if (cvars[c]->type == Type::Integer)
 				file.Write(S_FMT("%d\n", cvars[c]->GetValue().Int));
 
-			if (cvars[c]->type == CVAR_BOOLEAN)
+			if (cvars[c]->type == Type::Boolean)
 				file.Write(S_FMT("%d\n", cvars[c]->GetValue().Bool));
 
-			if (cvars[c]->type == CVAR_FLOAT)
+			if (cvars[c]->type == Type::Float)
 				file.Write(S_FMT("%1.5f\n", cvars[c]->GetValue().Float));
 
-			if (cvars[c]->type == CVAR_STRING)
+			if (cvars[c]->type == Type::String)
 			{
 				string value = ((CStringCVar*)cvars[c])->value;
 				value.Replace("\\", "/");
@@ -162,22 +138,22 @@ void saveCVars(wxFile& file)
 // Reads [value] into the CVar with matching [name],
 // or does nothing if no CVar [name] exists
 // -----------------------------------------------------------------------------
-void readCVar(string name, string value)
+void CVar::set(string name, string value)
 {
 	for (uint16_t c = 0; c < n_cvars; c++)
 	{
 		if (name == cvars[c]->name)
 		{
-			if (cvars[c]->type == CVAR_INTEGER)
+			if (cvars[c]->type == Type::Integer)
 				*((CIntCVar*)cvars[c]) = atoi(CHR(value));
 
-			if (cvars[c]->type == CVAR_BOOLEAN)
+			if (cvars[c]->type == Type::Boolean)
 				*((CBoolCVar*)cvars[c]) = !!(atoi(CHR(value)));
 
-			if (cvars[c]->type == CVAR_FLOAT)
+			if (cvars[c]->type == Type::Float)
 				*((CFloatCVar*)cvars[c]) = atof(CHR(value));
 
-			if (cvars[c]->type == CVAR_STRING)
+			if (cvars[c]->type == Type::String)
 				*((CStringCVar*)cvars[c]) = wxString::FromUTF8(CHR(value));
 		}
 	}
@@ -190,6 +166,7 @@ void readCVar(string name, string value)
 //
 // -----------------------------------------------------------------------------
 
+
 // -----------------------------------------------------------------------------
 // CIntCVar class constructor
 // -----------------------------------------------------------------------------
@@ -198,7 +175,7 @@ CIntCVar::CIntCVar(string NAME, int defval, uint16_t FLAGS)
 	name  = NAME;
 	flags = FLAGS;
 	value = defval;
-	type  = CVAR_INTEGER;
+	type  = Type::Integer;
 	addCVarList(this);
 }
 
@@ -210,7 +187,7 @@ CBoolCVar::CBoolCVar(string NAME, bool defval, uint16_t FLAGS)
 	name  = NAME;
 	flags = FLAGS;
 	value = defval;
-	type  = CVAR_BOOLEAN;
+	type  = Type::Boolean;
 	addCVarList(this);
 }
 
@@ -222,7 +199,7 @@ CFloatCVar::CFloatCVar(string NAME, double defval, uint16_t FLAGS)
 	name  = NAME;
 	flags = FLAGS;
 	value = defval;
-	type  = CVAR_FLOAT;
+	type  = Type::Float;
 	addCVarList(this);
 }
 
@@ -234,6 +211,6 @@ CStringCVar::CStringCVar(string NAME, string defval, uint16_t FLAGS)
 	name  = NAME;
 	flags = FLAGS;
 	value = defval;
-	type  = CVAR_STRING;
+	type  = Type::String;
 	addCVarList(this);
 }

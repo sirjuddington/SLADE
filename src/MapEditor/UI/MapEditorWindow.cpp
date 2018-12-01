@@ -72,10 +72,10 @@ namespace
 {
 bool nb_warned = false;
 }
-CVAR(Bool, mew_maximized, true, CVAR_SAVE);
-CVAR(String, nodebuilder_id, "zdbsp", CVAR_SAVE);
-CVAR(String, nodebuilder_options, "", CVAR_SAVE);
-CVAR(Bool, save_archive_with_map, true, CVAR_SAVE);
+CVAR(Bool, mew_maximized, true, CVar::Flag::Save);
+CVAR(String, nodebuilder_id, "zdbsp", CVar::Flag::Save);
+CVAR(String, nodebuilder_options, "", CVar::Flag::Save);
+CVAR(Bool, save_archive_with_map, true, CVar::Flag::Save);
 
 
 // -----------------------------------------------------------------------------

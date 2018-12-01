@@ -48,8 +48,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(String, txed_override_font, "", CVAR_SAVE)
-CVAR(Int, txed_override_font_size, 0, CVAR_SAVE)
+CVAR(String, txed_override_font, "", CVar::Flag::Save)
+CVAR(Int, txed_override_font_size, 0, CVar::Flag::Save)
 vector<StyleSet*>       style_sets;
 StyleSet*               ss_current = nullptr;
 vector<TextEditorCtrl*> StyleSet::editors_;

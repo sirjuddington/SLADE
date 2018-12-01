@@ -42,8 +42,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, map_image_width, -5, CVAR_SAVE)
-CVAR(Int, map_image_height, -5, CVAR_SAVE)
+CVAR(Int, map_image_width, -5, CVar::Flag::Save)
+CVAR(Int, map_image_height, -5, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

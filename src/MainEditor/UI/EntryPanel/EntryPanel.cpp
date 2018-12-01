@@ -45,7 +45,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, confirm_entry_revert, true, CVAR_SAVE)
+CVAR(Bool, confirm_entry_revert, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

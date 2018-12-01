@@ -54,7 +54,7 @@ using namespace Game;
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(String, game_configuration)
 EXTERN_CVAR(String, port_configuration)
-CVAR(Bool, debug_configuration, false, CVAR_SAVE)
+CVAR(Bool, debug_configuration, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
