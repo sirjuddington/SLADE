@@ -116,8 +116,8 @@ protected:
 	}
 
 public:
-	SLADELog() {}
-	~SLADELog() {}
+	SLADELog()  = default;
+	~SLADELog() = default;
 };
 
 
@@ -134,7 +134,7 @@ class SLADEStackTrace : public wxStackWalker
 {
 public:
 	SLADEStackTrace() { stack_trace_ = "Stack Trace:\n"; }
-	~SLADEStackTrace() {}
+	~SLADEStackTrace() = default;
 
 	string traceString() const { return stack_trace_; }
 	string topLevel() const { return top_level_; }
@@ -172,7 +172,7 @@ private:
 class SLADECrashDialog : public wxDialog, public wxThreadHelper
 {
 public:
-	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE Application Crash")
+	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxGetApp().GetTopWindow(), -1, "SLADE Application Crash")
 	{
 		top_level_ = st.topLevel();
 
@@ -297,14 +297,14 @@ public:
 		Bind(wxEVT_CLOSE_WINDOW, &SLADECrashDialog::onClose, this);
 
 		// Setup layout
-		Layout();
+		wxDialog::Layout();
 		SetInitialSize(wxSize(500, 600));
 		CenterOnParent();
 	}
 
-	~SLADECrashDialog() {}
+	~SLADECrashDialog() = default;
 
-	wxThread::ExitCode Entry()
+	wxThread::ExitCode Entry() override
 	{
 		wxMailer mailer("slade.errors@gmail.com", "hxixjnwdovyoktwq", "smtp://smtp.gmail.com:587");
 
@@ -410,8 +410,8 @@ private:
 class MainAppFLConnection : public wxConnection
 {
 public:
-	MainAppFLConnection() {}
-	~MainAppFLConnection() {}
+	MainAppFLConnection()  = default;
+	~MainAppFLConnection() = default;
 
 	bool OnAdvise(const wxString& topic, const wxString& item, const void* data, size_t size, wxIPCFormat format)
 		override
@@ -429,8 +429,8 @@ public:
 class MainAppFileListener : public wxServer
 {
 public:
-	MainAppFileListener() {}
-	~MainAppFileListener() {}
+	MainAppFileListener()  = default;
+	~MainAppFileListener() = default;
 
 	wxConnectionBase* OnAcceptConnection(const wxString& topic) override { return new MainAppFLConnection(); }
 };
@@ -438,8 +438,8 @@ public:
 class MainAppFLClient : public wxClient
 {
 public:
-	MainAppFLClient() {}
-	~MainAppFLClient() {}
+	MainAppFLClient()  = default;
+	~MainAppFLClient() = default;
 
 	wxConnectionBase* OnMakeConnection() override { return new MainAppFLConnection(); }
 };
@@ -452,15 +452,6 @@ public:
 // -----------------------------------------------------------------------------
 IMPLEMENT_APP(SLADEWxApp)
 
-// -----------------------------------------------------------------------------
-// SLADEWxApp class constructor
-// -----------------------------------------------------------------------------
-SLADEWxApp::SLADEWxApp() : single_instance_checker_{ nullptr }, file_listener_{ nullptr } {}
-
-// -----------------------------------------------------------------------------
-// SLADEWxApp class destructor
-// -----------------------------------------------------------------------------
-SLADEWxApp::~SLADEWxApp() {}
 
 // -----------------------------------------------------------------------------
 // Checks if another instance of SLADE is already running, and if so, sends the
@@ -823,9 +814,9 @@ CONSOLE_COMMAND(crash, 0, false)
 CONSOLE_COMMAND(quit, 0, true)
 {
 	bool save_config = true;
-	for (unsigned a = 0; a < args.size(); a++)
+	for (auto& arg : args)
 	{
-		if (args[a].Lower() == "nosave")
+		if (arg.Lower() == "nosave")
 			save_config = false;
 	}
 

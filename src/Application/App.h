@@ -28,7 +28,7 @@ enum class Dir
 	Resources,
 	Temp
 };
-string path(string filename, Dir dir);
+string path(const string& filename, Dir dir);
 
 // Platform and build options
 enum Platform

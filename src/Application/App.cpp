@@ -438,7 +438,7 @@ bool App::init(vector<string>& args, double ui_scale)
 
 	// Show the main window
 	MainEditor::windowWx()->Show(true);
-	wxTheApp->SetTopWindow(MainEditor::windowWx());
+	wxGetApp().SetTopWindow(MainEditor::windowWx());
 	UI::showSplash("Starting up...", false, MainEditor::windowWx());
 
 	// Open any archives from the command line
@@ -587,7 +587,7 @@ void App::exit(bool save_config)
 	dumb_exit();
 
 	// Exit wx Application
-	wxTheApp->Exit();
+	wxGetApp().Exit();
 }
 
 // -----------------------------------------------------------------------------
@@ -598,7 +598,7 @@ void App::exit(bool save_config)
 // App::Dir::Executable: Directory of the SLADE executable
 // App::Dir::Temp: Temporary files directory
 // -----------------------------------------------------------------------------
-string App::path(string filename, Dir dir)
+string App::path(const string& filename, Dir dir)
 {
 	if (dir == Dir::Data)
 		return dir_data + dir_separator + filename;

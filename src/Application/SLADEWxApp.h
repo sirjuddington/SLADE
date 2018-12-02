@@ -6,8 +6,8 @@ class MainAppFileListener;
 class SLADEWxApp : public wxApp
 {
 public:
-	SLADEWxApp();
-	~SLADEWxApp();
+	SLADEWxApp()  = default;
+	~SLADEWxApp() = default;
 
 	bool OnInit() override;
 	int  OnExit() override;
@@ -25,8 +25,8 @@ public:
 	void onActivate(wxActivateEvent& event);
 
 private:
-	wxSingleInstanceChecker* single_instance_checker_;
-	MainAppFileListener*     file_listener_;
+	wxSingleInstanceChecker* single_instance_checker_ = nullptr;
+	MainAppFileListener*     file_listener_           = nullptr;
 };
 
 DECLARE_APP(SLADEWxApp)
