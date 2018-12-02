@@ -6,9 +6,9 @@ class PNGDataFormat : public EntryDataFormat
 {
 public:
 	PNGDataFormat() : EntryDataFormat("img_png") {}
-	~PNGDataFormat() {}
+	~PNGDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 8)
@@ -16,10 +16,10 @@ public:
 			// Check for PNG header
 			if (mc[0] == 137 && mc[1] == 80 && mc[2] == 78 && mc[3] == 71 && mc[4] == 13 && mc[5] == 10 && mc[6] == 26
 				&& mc[7] == 10)
-				return EDF_TRUE;
+				return MATCH_TRUE;
 		}
 
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -27,9 +27,9 @@ class BMPDataFormat : public EntryDataFormat
 {
 public:
 	BMPDataFormat() : EntryDataFormat("img_bmp"){};
-	~BMPDataFormat() {}
+	~BMPDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 30)
@@ -41,17 +41,17 @@ public:
 				size_t dibhdrsz = mc.readL32(14);
 				if (dibhdrsz != 12 && dibhdrsz != 40 && dibhdrsz != 52 && dibhdrsz != 56 && dibhdrsz != 64
 					&& dibhdrsz != 108 && dibhdrsz != 124)
-					return EDF_FALSE;
+					return MATCH_FALSE;
 				// Normally, file size is a DWORD at offset 2, and offsets 6 to 9 should be zero.
 				if (mc.readL32(2) == mc.size() && mc.readL32(6) == 0)
-					return EDF_TRUE;
+					return MATCH_TRUE;
 				// But I have found exceptions so I must allow some leeway here.
 				else if (mc.size() > 12 + dibhdrsz)
-					return EDF_MAYBE;
+					return MATCH_MAYBE;
 			}
 		}
 
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -59,9 +59,9 @@ class GIFDataFormat : public EntryDataFormat
 {
 public:
 	GIFDataFormat() : EntryDataFormat("img_gif"){};
-	~GIFDataFormat() {}
+	~GIFDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 6)
@@ -69,10 +69,10 @@ public:
 			// Check for GIF header
 			if (mc[0] == 'G' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == '8' && (mc[4] == '7' || mc[4] == '9')
 				&& mc[5] == 'a')
-				return EDF_TRUE;
+				return MATCH_TRUE;
 		}
 
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -80,40 +80,40 @@ class PCXDataFormat : public EntryDataFormat
 {
 public:
 	PCXDataFormat() : EntryDataFormat("img_pcx"){};
-	~PCXDataFormat() {}
+	~PCXDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() < 129)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// Manufacturer and encoding fields: must always be 10 and 1 respectively
 		if (mc[0] != 0x0A || mc[2] != 0x01)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// Version field: only 0, 2, 3, 4 and 5 exist
 		if (mc[1] > 5 || mc[1] == 1)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// Bit depth and color plane fields are used in combination
 		switch (mc[3])
 		{
 		case 1: // Monochrome, EGA or VGA
 			if (mc[65] != 1 && mc[65] != 3 && mc[65] != 4)
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			break;
 		case 2: // CGA
 			if (mc[65] != 1)
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			break;
 		case 4: // EGA or VGA
 			if (mc[65] != 1 && mc[65] != 2)
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			break;
 		case 8: // VGA, SVGA or SVGA with alpha
 			if (mc[65] != 1 && mc[65] != 3 && mc[65] != 4)
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			break;
 		default: // Not a valid bit depth
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		}
 		// In 256-color mode, the palette, if any, is contained at the end
 		// of the file and preceded by a 0x0C. Only version 5 is concerned.
@@ -121,27 +121,22 @@ public:
 		{
 			size_t filesize = mc.size();
 			if (filesize < 900 || mc[filesize - 769] != 12)
-				return EDF_FALSE;
+				return MATCH_FALSE;
 		}
 		// Reserved value; theoretically values other than 0 can be valid
 		// if the image was created by some old version of Paintbrush, but
 		// it's unlikely such pictures would be manipulated by SLADE3, so
 		// instead we use it to cull false positives.
 		if (mc[64] != 0)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// Padding filler bits; theoretically they might be set to garbage
 		// values but again it's better to use them to cull false positives.
 		for (size_t i = 74; i < 128; ++i)
 			if (mc[i] != 0)
-				return EDF_FALSE;
-		// Min/Max fields
-		int16_t offsx, offsy, limx, limy, width, height;
-		offsx  = (int16_t)mc.readL16(4);
-		offsy  = (int16_t)mc.readL16(6);
-		limx   = (int16_t)mc.readL16(8);
-		limy   = (int16_t)mc.readL16(10);
-		width  = 1 + limx - offsx;
-		height = 1 + limy - offsy;
+				return MATCH_FALSE;
+		int16_t offsx = (int16_t)mc.readL16(4);
+		int16_t limx  = (int16_t)mc.readL16(8);
+		int16_t width = 1 + limx - offsx;
 		// Compute number of bytes needed per scanline, and account for possible padding
 		int16_t bnpsl = (width * mc[3]) / 8;
 		if (bnpsl % 2)
@@ -149,9 +144,9 @@ public:
 		// Bytes per scanline field is always an even number and should correspond to guessed value
 		int16_t bpsl = (int16_t)mc.readL16(66);
 		if (bpsl % 2 || bpsl != bnpsl)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// Passed all tests, so this seems to be a valid PCX
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -159,47 +154,47 @@ class TGADataFormat : public EntryDataFormat
 {
 public:
 	TGADataFormat() : EntryDataFormat("img_tga"){};
-	~TGADataFormat() {}
+	~TGADataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Size check for the header
 		if (mc.size() < 18)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Check dimensions, both ZDoom and Vavoom refuse to load TGA
 		// with image sizes greater than 2048 so let's use that as well
 		uint16_t width  = mc.readL16(12);
 		uint16_t height = mc.readL16(14);
 		if (width > 2048 || height > 2048)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Let's have halfway "reasonable" limits on the compression ratio
 		// that can be expected from a TGA picture...
 		if ((unsigned)(5000u * mc.size()) < (unsigned)(height * width))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Check image type, must be a value between 1 and 3 or 9 and 11
 		if (mc[2] == 0 || mc[2] > 11 || (mc[2] > 3 && mc[2] < 9))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// The colormap bool must be 0 or 1
 		if (mc[1] != 0 && mc[1] != 1)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// If there is no colormap, then colormap info must be null
 		if (mc[1] == 0 && (mc.readL32(3) != 0 || mc[7] != 0))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Bits per pixel can be 8, 15, 16, 24 or 32
 		if (mc[16] != 8 && mc[16] != 15 && mc[16] != 16 && mc[16] != 24 && mc[16] != 32)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// ZDoom and Vavoom both refuse exotic directions in the descriptor, so same
 		if ((mc[17] & 16) != 0)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -207,9 +202,9 @@ class TIFFDataFormat : public EntryDataFormat
 {
 public:
 	TIFFDataFormat() : EntryDataFormat("img_tiff"){};
-	~TIFFDataFormat() {}
+	~TIFFDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size, minimum size is 26 if I'm not mistaken:
 		// 8 for the image header, +2 for at least one image
@@ -217,32 +212,32 @@ public:
 		// +4 for a NULL offset for the next IFD
 		size_t size = mc.size();
 		if (size < 26)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// First two bytes must be identical, and either II or MM
 		if (mc[0] != mc[1] || (mc[0] != 0x49 && mc[0] != 0x4D))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		bool littleendian = (mc[0] == 'I');
 		// The value of 42 (0x2A) is present in the next two bytes,
 		// in the given endianness
 		if (42
 			!= (littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[2])) :
 							   wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// First offset must be on a word boundary (therefore, %2 == 0) and
 		// somewhere within the file, but not in the header of course.
 		size_t offset =
 			(littleendian ? wxUINT32_SWAP_ON_BE((const uint32_t)(mc[4])) :
 							wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
 		if (offset < 8 || offset >= size || offset % 2)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// Check the first IFD for validity
 		uint16_t numentries =
 			(littleendian ? wxUINT16_SWAP_ON_BE((const uint16_t)(mc[offset])) :
 							wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
 		if (offset + 6 + (numentries * 12) > size)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// Okay, it seems valid so far
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -250,9 +245,9 @@ class JPEGDataFormat : public EntryDataFormat
 {
 public:
 	JPEGDataFormat() : EntryDataFormat("img_jpeg"){};
-	~JPEGDataFormat() {}
+	~JPEGDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 128)
@@ -263,12 +258,12 @@ public:
 			{
 				if (mc[0] == 255 && mc[1] == 216 && mc[2] == 255)
 				{
-					return EDF_TRUE;
+					return MATCH_TRUE;
 				}
 			}
 		}
 
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -276,9 +271,9 @@ class ILBMDataFormat : public EntryDataFormat
 {
 public:
 	ILBMDataFormat() : EntryDataFormat("img_ilbm"){};
-	~ILBMDataFormat() {}
+	~ILBMDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 48)
@@ -293,12 +288,12 @@ public:
 			{
 				size_t chunksize = 8 + mc.readB32(4);
 				if (chunksize != mc.size())
-					return EDF_FALSE;
-				return EDF_TRUE;
+					return MATCH_FALSE;
+				return MATCH_TRUE;
 			}
 		}
 
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -306,9 +301,9 @@ class DoomGfxDataFormat : public EntryDataFormat
 {
 public:
 	DoomGfxDataFormat() : EntryDataFormat("img_doom"){};
-	~DoomGfxDataFormat() {}
+	~DoomGfxDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		const uint8_t* data = mc.data();
 
@@ -325,13 +320,13 @@ public:
 
 				// Check there is room for needed column pointers
 				if (mc.size() < sizeof(Graphics::PatchHeader) + (header->width * sizeof(uint32_t)))
-					return EDF_FALSE;
+					return MATCH_FALSE;
 
 				// Check column pointers are within range
 				for (int a = 0; a < header->width; a++)
 				{
 					if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(Graphics::PatchHeader))
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				}
 
 				// Check if total size is reasonable; this computation corresponds to the most inefficient
@@ -340,15 +335,15 @@ public:
 				int maxcolsize = sizeof(uint32_t) + (numpixels * 5) + 1;
 				if (mc.size() > (sizeof(Graphics::PatchHeader) + (header->width * maxcolsize)))
 				{
-					return EDF_UNLIKELY; // This may still be good anyway
+					return MATCH_UNLIKELY; // This may still be good anyway
 				}
 
 				// Passed all checks, so probably is doom gfx
-				return EDF_TRUE;
+				return MATCH_TRUE;
 			}
 		}
 
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -356,16 +351,16 @@ class DoomGfxAlphaDataFormat : public EntryDataFormat
 {
 public:
 	DoomGfxAlphaDataFormat() : EntryDataFormat("img_doom_alpha"){};
-	~DoomGfxAlphaDataFormat() {}
+	~DoomGfxAlphaDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > sizeof(Graphics::OldPatchHeader))
 		{
 			// Check that it ends on a FF byte
 			if (mc[mc.size() - 1] != 0xFF)
-				return EDF_FALSE;
+				return MATCH_FALSE;
 
 			const Graphics::OldPatchHeader* header = (const Graphics::OldPatchHeader*)mc.data();
 
@@ -374,7 +369,7 @@ public:
 			{
 				// Check there is room for needed column pointers
 				if (mc.size() < sizeof(Graphics::OldPatchHeader) + (header->width * sizeof(uint16_t)))
-					return EDF_FALSE;
+					return MATCH_FALSE;
 
 				uint16_t col_offsets[255]; // Old format headers do not allow dimensions greater than 255.
 				for (uint16_t a = 0; a < header->width; a++)
@@ -387,7 +382,7 @@ public:
 				for (int a = 0; a < header->width; a++)
 				{
 					if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(Graphics::OldPatchHeader))
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				}
 
 				// Check if total size is reasonable; this computation corresponds to the most inefficient
@@ -396,15 +391,15 @@ public:
 				int maxcolsize = sizeof(uint16_t) + (numpixels * 3) + 1;
 				if (mc.size() > (sizeof(Graphics::OldPatchHeader) + (header->width * maxcolsize)))
 				{
-					return EDF_FALSE;
+					return MATCH_FALSE;
 				}
 
 				// Passed all checks, so probably is doom gfx
-				return EDF_TRUE;
+				return MATCH_TRUE;
 			}
 		}
 
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -412,13 +407,13 @@ class DoomGfxBetaDataFormat : public EntryDataFormat
 {
 public:
 	DoomGfxBetaDataFormat() : EntryDataFormat("img_doom_beta"){};
-	~DoomGfxBetaDataFormat() {}
+	~DoomGfxBetaDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() <= sizeof(Graphics::PatchHeader))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		const uint8_t* data = mc.data();
 
@@ -433,7 +428,7 @@ public:
 					break;
 				else if (mc[mc.size() - i] != 0x00)
 					// It's not 00 and it's not FF, so it's a wrong byte.
-					return EDF_FALSE;
+					return MATCH_FALSE;
 			}
 		}
 
@@ -447,13 +442,13 @@ public:
 
 			// Check there is room for needed column pointers
 			if (mc.size() < sizeof(Graphics::PatchHeader) + (header->width * sizeof(uint16_t)))
-				return EDF_FALSE;
+				return MATCH_FALSE;
 
 			// Check column pointers are within range
 			for (int a = 0; a < header->width; a++)
 			{
 				if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(Graphics::PatchHeader))
-					return EDF_FALSE;
+					return MATCH_FALSE;
 			}
 
 			// Check if total size is reasonable; this computation corresponds to the most inefficient
@@ -462,14 +457,14 @@ public:
 			int maxcolsize = sizeof(uint16_t) + (numpixels * 3) + 1;
 			if (mc.size() > (sizeof(Graphics::PatchHeader) + (header->width * maxcolsize)))
 			{
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			}
 
 			// Passed all checks, so probably is doom gfx
-			return EDF_TRUE;
+			return MATCH_TRUE;
 		}
 
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -477,7 +472,7 @@ class DoomSneaDataFormat : public EntryDataFormat
 {
 public:
 	DoomSneaDataFormat() : EntryDataFormat("img_doom_snea"){};
-	~DoomSneaDataFormat() {}
+	~DoomSneaDataFormat() = default;
 
 	/* The following is the documentation about sneas from
 	 * the DeuTex source:
@@ -490,11 +485,11 @@ public:
 	 *	next WxH bytes contain the bitmap for columns 1, 5, 9,
 	 *	etc., and so on. No transparency.
 	 */
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() < 6)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		const uint8_t* data   = mc.data();
 		uint8_t        qwidth = data[0]; // quarter of width
@@ -504,8 +499,8 @@ public:
 				// The TITLEPIC in the Doom Press-Release Beta has
 				// two extraneous null bytes at the end, for padding.
 				(qwidth != 80 || height != 200 || mc.size() != 64004)))
-			return EDF_FALSE;
-		return EDF_TRUE;
+			return MATCH_FALSE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -513,7 +508,7 @@ class DoomArahDataFormat : public EntryDataFormat
 {
 public:
 	DoomArahDataFormat() : EntryDataFormat("img_doom_arah"){};
-	~DoomArahDataFormat() {}
+	~DoomArahDataFormat() = default;
 
 	/* This format is used in Doom alpha 0.2. DeuTex doesn't know it,
 	 * but it seems a really simple format, basically a eight-byte
@@ -523,10 +518,10 @@ public:
 	 * To be honest, I'm not actually sure there are offset fields
 	 * since those values always seem to be set to 0, but hey.
 	 */
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		if (mc.size() < sizeof(Graphics::PatchHeader))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		const uint8_t*               data   = mc.data();
 		const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
@@ -534,13 +529,13 @@ public:
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
 			  && header->top > -2000 && header->top < 2000 && header->left > -2000 && header->left < 2000))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Check the size matches
 		if (mc.size() != (sizeof(Graphics::PatchHeader) + (header->width * header->height)))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -548,14 +543,14 @@ class DoomJaguarDataFormat : public EntryDataFormat
 {
 public:
 	DoomJaguarDataFormat() : EntryDataFormat("img_doom_jaguar"){};
-	~DoomJaguarDataFormat() {}
+	~DoomJaguarDataFormat() = default;
 
 	/* This format is used in the Jaguar Doom IWAD.
 	 */
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		if (mc.size() < sizeof(Graphics::JagPicHeader))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		const uint8_t*                data   = mc.data();
 		const Graphics::JagPicHeader* header = (const Graphics::JagPicHeader*)data;
@@ -566,16 +561,16 @@ public:
 
 		// Check header values are 'sane'
 		if (!(height > 0 && height < 4096 && width > 0 && width < 4096 && (depth == 2 || depth == 3)))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Check the size matches
 		size = width * height;
 		if (depth == 2)
 			size >>= 1;
 		if (mc.size() < (sizeof(Graphics::JagPicHeader) + size))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -583,17 +578,17 @@ class DoomJagTexDataFormat : public EntryDataFormat
 {
 public:
 	DoomJagTexDataFormat() : EntryDataFormat("img_jaguar_texture"){};
-	~DoomJagTexDataFormat() {}
+	~DoomJagTexDataFormat() = default;
 
 	/* This format is used in the Jaguar Doom IWAD. It can be recognized by the fact the last 320 bytes are a copy of
 	 * the first.
 	 */
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		// Smallest pic size 832 (32x16), largest pic size 33088 (256x128)
 		if (size < 640 || size % 32 || size > 33088)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Verify duplication of content
 		const uint8_t* data = mc.data();
@@ -601,9 +596,9 @@ public:
 		for (size_t p = 0; p < 320; ++p)
 		{
 			if (data[p] != data[dupe + p])
-				return EDF_FALSE;
+				return MATCH_FALSE;
 		}
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -611,15 +606,15 @@ class DoomJagSpriteDataFormat : public EntryDataFormat
 {
 public:
 	DoomJagSpriteDataFormat() : EntryDataFormat("img_jaguar_sprite"){};
-	~DoomJagSpriteDataFormat() {}
+	~DoomJagSpriteDataFormat() = default;
 
 	/* This format is used in the Jaguar Doom IWAD. It is an annoying format.
 	 */
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 16)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Validate content
 		size_t width    = mc.readB16(0);
@@ -629,18 +624,18 @@ public:
 
 		// width and height should not be 0
 		if ((width == 0) || (height == 0))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Read column offsets
 		if (size < (8 + (width * 6)))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		uint16_t* col_offsets = new uint16_t[width];
 		for (size_t w = 0; w < width; ++w)
 			col_offsets[w] = mc.readB16(8 + 2 * w);
 
 		const int result = size < unsigned(4 + col_offsets[width - 1]) ?
-							   EDF_FALSE :
-							   EDF_TRUE; // We can't test validity of pixel data here
+							   MATCH_FALSE :
+							   MATCH_TRUE; // We can't test validity of pixel data here
 
 		delete[] col_offsets;
 
@@ -652,12 +647,12 @@ class DoomPSXDataFormat : public EntryDataFormat
 {
 public:
 	DoomPSXDataFormat() : EntryDataFormat("img_doom_psx"){};
-	~DoomPSXDataFormat() {}
+	~DoomPSXDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		if (mc.size() < sizeof(Graphics::PSXPicHeader))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		const uint8_t*                data   = mc.data();
 		const Graphics::PSXPicHeader* header = (const Graphics::PSXPicHeader*)data;
@@ -665,14 +660,14 @@ public:
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
 			  && header->top > -2000 && header->top < 2000 && header->left > -2000 && header->left < 2000))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Check the size matches
 		size_t rawsize = (sizeof(Graphics::PSXPicHeader) + (header->width * header->height));
 		if (mc.size() < rawsize || mc.size() >= rawsize + 4)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -680,34 +675,34 @@ class IMGZDataFormat : public EntryDataFormat
 {
 public:
 	IMGZDataFormat() : EntryDataFormat("img_imgz"){};
-	~IMGZDataFormat() {}
+	~IMGZDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// A format created by Randy Heit and used by some crosshairs in ZDoom.
 		uint32_t size = mc.size();
 
 		if (size < sizeof(Graphics::IMGZHeader))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		const uint8_t*              data   = mc.data();
 		const Graphics::IMGZHeader* header = (const Graphics::IMGZHeader*)data;
 
 		// Check signature
 		if (header->magic[0] != 'I' || header->magic[1] != 'M' || header->magic[2] != 'G' || header->magic[3] != 'Z')
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Check that values are sane
 		if (header->width == 0xFFFF || !header->width || !header->height)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// The reserved values should all be null
 		for (uint8_t i = 0; i < 11; ++i)
 			if (header->reserved[i])
-				return EDF_FALSE;
+				return MATCH_FALSE;
 
 		// This is probably a genuine IMGZ
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -715,26 +710,26 @@ class QuakeGfxDataFormat : public EntryDataFormat
 {
 public:
 	QuakeGfxDataFormat() : EntryDataFormat("img_quake"){};
-	~QuakeGfxDataFormat() {}
+	~QuakeGfxDataFormat() = default;
 
 	// A data format found while rifling through some Legacy mods,
 	// specifically High Tech Hell 2. It seems to be how it works.
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		uint32_t size = mc.size();
 		if (size < 9)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// These three values must all be zeroes
 		if (mc[2] | mc[6] | mc[7])
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		if (mc[3] > 4)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		uint8_t  bpp    = (mc[3] ? mc[3] : 1);
 		uint16_t width  = mc.readL16(0);
 		uint16_t height = mc.readL16(4);
 		if (size != (8 + width * height * bpp))
-			return EDF_FALSE;
-		return EDF_TRUE;
+			return MATCH_FALSE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -742,31 +737,31 @@ class QuakeSpriteDataFormat : public EntryDataFormat
 {
 public:
 	QuakeSpriteDataFormat() : EntryDataFormat("img_qspr"){};
-	~QuakeSpriteDataFormat() {}
+	~QuakeSpriteDataFormat() = default;
 
 	// A Quake sprite can contain several frames and each frame may contain several pictures.
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		uint32_t size = mc.size();
 		// Minimum size for a sprite with a single frame containing a single 2x2 picture
 		if (size < 64)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// Check magic word
 		if (mc[0] != 'I' || mc[1] != 'D' || mc[2] != 'S' || mc[3] != 'P')
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// Check special values, version must be 1 and type must be between 0 and 4
 		if (mc.readL32(4) != 1 || mc.readL32(8) > 4)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// Check maximum image size
 		uint32_t width  = mc.readL32(16);
 		uint32_t height = mc.readL32(20);
 		if (width == 0 || height == 0)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Check amount of frames
 		uint32_t nframes = mc.readL32(24);
 		if (nframes == 0)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Validate frames
 		uint32_t offset = 36; // Offset to start of first frame
@@ -783,12 +778,12 @@ public:
 					uint32_t pw = mc.readL32(offset + 8);
 					uint32_t ph = mc.readL32(offset + 12);
 					if (pw > width || ph > height)
-						return EDF_FALSE;
+						return MATCH_FALSE;
 					// Move to end of picture data
 					offset += 16 + pw * ph;
 					if (offset > (unsigned)size)
 					{
-						return EDF_FALSE;
+						return MATCH_FALSE;
 					}
 				}
 			}
@@ -799,17 +794,17 @@ public:
 				uint32_t pw = mc.readL32(offset + 8);
 				uint32_t ph = mc.readL32(offset + 12);
 				if (pw > width || ph > height)
-					return EDF_FALSE;
+					return MATCH_FALSE;
 				// Move to end of picture data
 				offset += 16 + pw * ph;
 			}
 			if (offset > (unsigned)size)
 			{
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			}
 		}
 
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -817,25 +812,25 @@ class QuakeTexDataFormat : public EntryDataFormat
 {
 public:
 	QuakeTexDataFormat() : EntryDataFormat("img_quaketex"){};
-	~QuakeTexDataFormat() {}
+	~QuakeTexDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 125)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		size_t width  = mc.readL32(16);
 		size_t height = mc.readL32(20);
 		if (!width || !height || width % 8 || height % 8)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		for (int m = 0; m < 4; ++m)
 		{
 			size_t offset = mc.readL32((24 + (m << 2)));
 			if (!offset || size < offset + ((width >> m) * (height >> m)))
-				return EDF_FALSE;
+				return MATCH_FALSE;
 		}
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -843,13 +838,13 @@ class QuakeIIWalDataFormat : public EntryDataFormat
 {
 public:
 	QuakeIIWalDataFormat() : EntryDataFormat("img_quake2wal"){};
-	~QuakeIIWalDataFormat() {}
+	~QuakeIIWalDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 101)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		// Avoid some false positives by looking for "garbage" characters
 		// after the end of the "name"
 		bool nameend = false;
@@ -869,16 +864,16 @@ public:
 		size_t width  = mc.readL32(32);
 		size_t height = mc.readL32(36);
 		if (!width || !height || width % 8 || height % 8)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		for (int m = 0; m < 4; ++m)
 		{
 			size_t offset = mc.readL32((40 + (m << 2)));
 			if (width >> m == 0 && height >> m == 0 && offset == 0)
 				break;
 			else if (!offset || size < offset + ((width >> m) * (height >> m)))
-				return EDF_FALSE;
+				return MATCH_FALSE;
 		}
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -887,15 +882,15 @@ class ShadowCasterGfxFormat : public EntryDataFormat
 {
 public:
 	ShadowCasterGfxFormat() : EntryDataFormat("img_scgfx"){};
-	~ShadowCasterGfxFormat() {}
+	~ShadowCasterGfxFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// If those were static functions, then I could
 		// just do this instead of such copypasta:
 		//	return DoomArahDataFormat::isThisFormat(mc);
 		if (mc.size() < sizeof(Graphics::PatchHeader))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		const uint8_t*               data   = mc.data();
 		const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
@@ -903,13 +898,13 @@ public:
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
 			  && header->top > -2000 && header->top < 2000 && header->left > -2000 && header->left < 2000))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Check the size matches
 		if (mc.size() != (sizeof(Graphics::PatchHeader) + (header->width * header->height)))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -917,16 +912,16 @@ class ShadowCasterSpriteFormat : public EntryDataFormat
 {
 public:
 	ShadowCasterSpriteFormat() : EntryDataFormat("img_scsprite"){};
-	~ShadowCasterSpriteFormat() {}
+	~ShadowCasterSpriteFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		int size = mc.size();
 		if (size < 4)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		int width = mc.readL16(2);
 		if (width <= 0 || width > (signed)(size / 4))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		int height = 0;
 		// Error checking with average column height and proportion of empty columns
 		int avgcolheight = 0, pnumemptycol = 0;
@@ -934,17 +929,17 @@ public:
 		{
 			int pos = (j << 1) + 4;
 			if (pos + 2 >= size)
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			int offstart = mc.readL16(pos);
 			if (offstart == 0)
 				continue;
 			if (offstart < 0 || size < offstart + 2 || offstart < (width * 2 + 4))
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			int start     = mc[offstart];
 			int stop      = mc[offstart + 1];
 			int colheight = start - stop;
 			if (colheight < 0 || size < offstart + colheight + 1)
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			if (start > height)
 				height = start;
 			avgcolheight += colheight;
@@ -952,7 +947,7 @@ public:
 				pnumemptycol++;
 		}
 		if (height == 0)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		avgcolheight *= 16;
 		avgcolheight /= width;
@@ -961,10 +956,10 @@ public:
 
 		// Arbitrary value: sprite must be at least about 12% filled
 		if ((avgcolheight < height / 2) || (pnumemptycol > 14))
-			return EDF_UNLIKELY;
+			return MATCH_UNLIKELY;
 
 		// Least efficient sprites: single rows (amounts to 6 bytes per pixel + 4 header bytes)
-		return (size < (5 + ((5 + height) * width))) ? EDF_TRUE : EDF_UNLIKELY;
+		return (size < (5 + ((5 + height) * width))) ? MATCH_TRUE : MATCH_UNLIKELY;
 	}
 };
 
@@ -972,16 +967,16 @@ class ShadowCasterWallFormat : public EntryDataFormat
 {
 public:
 	ShadowCasterWallFormat() : EntryDataFormat("img_scwall"){};
-	~ShadowCasterWallFormat() {}
+	~ShadowCasterWallFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		int size = mc.size();
 		// Minimum valid size for such a picture to be
 		// successfully loaded: 130 header, +1 line of 64.
 		if (size < 194)
-			return EDF_FALSE;
-		return (size == (mc[0] * 256) + 130) ? EDF_TRUE : EDF_FALSE;
+			return MATCH_FALSE;
+		return (size == (mc[0] * 256) + 130) ? MATCH_TRUE : MATCH_FALSE;
 	}
 };
 
@@ -989,19 +984,19 @@ class AnaMipImageFormat : public EntryDataFormat
 {
 public:
 	AnaMipImageFormat() : EntryDataFormat("img_mipimage"){};
-	~AnaMipImageFormat() {}
+	~AnaMipImageFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 4)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		size_t width  = mc.readL16(0);
 		size_t height = mc.readL16(2);
 		if ((width | height) == 0)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		size_t pixels = width * height;
-		return (size >= (pixels + 4) && (size < (2 * pixels + 4))) ? EDF_TRUE : EDF_FALSE;
+		return (size >= (pixels + 4) && (size < (2 * pixels + 4))) ? MATCH_TRUE : MATCH_FALSE;
 	}
 };
 
@@ -1009,34 +1004,34 @@ class BuildTileFormat : public EntryDataFormat
 {
 public:
 	BuildTileFormat() : EntryDataFormat("img_arttile"){};
-	~BuildTileFormat() {}
+	~BuildTileFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 16)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		uint32_t version = mc.readL32(0);
 		if (version != 1)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		uint32_t firsttile = mc.readL32(8);
 		uint32_t lasttile  = mc.readL16(12);
 		uint32_t tilecount = 1 + lasttile - firsttile;
 		size_t   datastart = (16 + (tilecount * 8));
 		if (size < datastart)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		size_t gfxdatasize = 0;
 		size_t xofs        = 16;
 		size_t yofs        = xofs + (tilecount << 1);
 		for (size_t a = 0; a < tilecount; ++a)
 		{
 			if (size <= xofs + (a << 1) || size <= yofs + (a << 1))
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			gfxdatasize += (mc[xofs + (a << 1)] * mc[yofs + (a << 1)]);
 		}
 		if (size < (datastart + gfxdatasize))
-			return EDF_FALSE;
-		return EDF_TRUE;
+			return MATCH_FALSE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -1044,16 +1039,16 @@ class Heretic2M8Format : public EntryDataFormat
 {
 public:
 	Heretic2M8Format() : EntryDataFormat("img_m8"){};
-	~Heretic2M8Format() {}
+	~Heretic2M8Format() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 1040)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		uint32_t version = mc.readL32(0);
 		if (version != 2)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		for (int m = 0; m < 16; ++m)
 		{
 			size_t width  = mc.readL32((36 + (m << 2)));
@@ -1064,11 +1059,11 @@ public:
 			else if (
 				(width == 0 && (height | offset) != 0) || (height == 0 && (width | offset) != 0)
 				|| (offset == 0 && (width | height) != 0))
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			else if (offset + (width * height) > size)
-				return EDF_FALSE;
+				return MATCH_FALSE;
 		}
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -1076,16 +1071,16 @@ class Heretic2M32Format : public EntryDataFormat
 {
 public:
 	Heretic2M32Format() : EntryDataFormat("img_m32"){};
-	~Heretic2M32Format() {}
+	~Heretic2M32Format() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 1040)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		uint32_t version = mc.readL32(0);
 		if (version != 4)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		for (int m = 0; m < 16; ++m)
 		{
 			size_t width  = mc.readL32((516 + (m << 2)));
@@ -1096,11 +1091,11 @@ public:
 			else if (
 				(width == 0 && (height | offset) != 0) || (height == 0 && (width | offset) != 0)
 				|| (offset == 0 && (width | height) != 0))
-				return EDF_FALSE;
+				return MATCH_FALSE;
 			else if (offset + (4 * width * height) > size)
-				return EDF_FALSE;
+				return MATCH_FALSE;
 		}
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -1108,34 +1103,34 @@ class HalfLifeTextureFormat : public EntryDataFormat
 {
 public:
 	HalfLifeTextureFormat() : EntryDataFormat("img_hlt"){};
-	~HalfLifeTextureFormat() {}
+	~HalfLifeTextureFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 812)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		size_t width  = mc.readL32(16);
 		size_t height = mc.readL32(20);
 		if (!width || !height || width % 8 || height % 8)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		for (int m = 0; m < 4; ++m)
 		{
 			size_t offset = mc.readL32((24 + (m << 2)));
 			if (width >> m == 0 && height >> m == 0 && offset == 0)
 				break;
 			else if (!offset || size < offset + ((width >> m) * (height >> m)))
-				return EDF_FALSE;
+				return MATCH_FALSE;
 		}
 		width >>= 3;
 		height >>= 3;
 		size_t offset = mc.readL32(36) + (width * height);
 		if (size < offset + 5)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		size_t palsize = mc.readL16(offset);
 		if (size < offset + 2 + (3 * palsize))
-			return EDF_FALSE;
-		return EDF_TRUE;
+			return MATCH_FALSE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -1143,9 +1138,9 @@ class RottGfxDataFormat : public EntryDataFormat
 {
 public:
 	RottGfxDataFormat() : EntryDataFormat("img_rott"){};
-	~RottGfxDataFormat() {}
+	~RottGfxDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		const uint8_t* data = mc.data();
 
@@ -1162,14 +1157,14 @@ public:
 
 				// Check there is room for needed column pointers
 				if (mc.size() < sizeof(Graphics::ROTTPatchHeader) + (header->width * sizeof(uint16_t)))
-					return EDF_FALSE;
+					return MATCH_FALSE;
 
 				// Check column pointers are within range
 				for (int a = 0; a < header->width; a++)
 				{
 					if (col_offsets[a] > mc.size()
 						|| col_offsets[a] < (header->width << 1) + sizeof(Graphics::ROTTPatchHeader))
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				}
 
 				// Check if total size is reasonable; this computation corresponds to the most inefficient
@@ -1178,14 +1173,14 @@ public:
 				int maxcolsize = sizeof(uint32_t) + (numpixels * 3) + 1;
 				if (mc.size() > (2 + sizeof(Graphics::ROTTPatchHeader) + (header->width * maxcolsize)))
 				{
-					return EDF_UNLIKELY; // This may still be good anyway
+					return MATCH_UNLIKELY; // This may still be good anyway
 				}
 
 				// Passed all checks, so probably is ROTT gfx
-				return EDF_TRUE;
+				return MATCH_TRUE;
 			}
 		}
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1193,9 +1188,9 @@ class RottTransGfxDataFormat : public EntryDataFormat
 {
 public:
 	RottTransGfxDataFormat() : EntryDataFormat("img_rottmask"){};
-	~RottTransGfxDataFormat() {}
+	~RottTransGfxDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		const uint8_t* data = mc.data();
 
@@ -1212,14 +1207,14 @@ public:
 
 				// Check there is room for needed column pointers
 				if (mc.size() < 2 + sizeof(Graphics::ROTTPatchHeader) + (header->width * sizeof(uint16_t)))
-					return EDF_FALSE;
+					return MATCH_FALSE;
 
 				// Check column pointers are within range
 				for (int a = 0; a < header->width; a++)
 				{
 					if (col_offsets[a] > mc.size()
 						|| col_offsets[a] < (header->width << 1) + sizeof(Graphics::ROTTPatchHeader))
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				}
 
 				// Check if total size is reasonable; this computation corresponds to the most inefficient
@@ -1228,15 +1223,15 @@ public:
 				int maxcolsize = sizeof(uint32_t) + (numpixels * 3) + 1;
 				if (mc.size() > (2 + sizeof(Graphics::ROTTPatchHeader) + (header->width * maxcolsize)))
 				{
-					return EDF_UNLIKELY; // This may still be good anyway
+					return MATCH_UNLIKELY; // This may still be good anyway
 				}
 
 				// Passed all checks, so probably is ROTT masked gfx
-				return EDF_TRUE;
+				return MATCH_TRUE;
 			}
 		}
 
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1244,9 +1239,9 @@ class RottLBMDataFormat : public EntryDataFormat
 {
 public:
 	RottLBMDataFormat() : EntryDataFormat("img_rottlbm"){};
-	~RottLBMDataFormat() {}
+	~RottLBMDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		const uint8_t* data = mc.data();
 
@@ -1256,10 +1251,10 @@ public:
 			if (data[0] == 0x40 && data[1] == 0x01 && data[2] == 0xC8 && data[3] == 0x00)
 			{
 				// May be ROTT LBM
-				return EDF_TRUE;
+				return MATCH_TRUE;
 			}
 		}
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1267,15 +1262,15 @@ class RottRawDataFormat : public EntryDataFormat
 {
 public:
 	RottRawDataFormat() : EntryDataFormat("img_rottraw"){};
-	~RottRawDataFormat() {}
+	~RottRawDataFormat() = default;
 
 	/* How many format does ROTT need? This is just like the raw data plus header
 	 * format from the Doom alpha, except that it's column-major instead of row-major.
 	 */
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		if (mc.size() < sizeof(Graphics::PatchHeader))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		const uint8_t*               data   = mc.data();
 		const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
@@ -1283,13 +1278,13 @@ public:
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
 			  && header->top > -2000 && header->top < 2000 && header->left > -2000 && header->left < 2000))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// Check the size matches
 		if (mc.size() != (sizeof(Graphics::PatchHeader) + (header->width * header->height)))
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -1297,19 +1292,19 @@ class RottPicDataFormat : public EntryDataFormat
 {
 public:
 	RottPicDataFormat() : EntryDataFormat("img_rottpic"){};
-	~RottPicDataFormat() {}
+	~RottPicDataFormat() = default;
 
 	// Yet another ROTT image format. Cheesus.
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 8)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		const uint8_t* data = mc.data();
 		if (data[0] && data[1] && (size - 4 == (data[0] * data[1] * 4)) && data[size - 2] == 0 && data[size - 1] == 0)
-			return EDF_TRUE;
-		return EDF_FALSE;
+			return MATCH_TRUE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1317,18 +1312,18 @@ class WolfPicDataFormat : public EntryDataFormat
 {
 public:
 	WolfPicDataFormat() : EntryDataFormat("img_wolfpic"){};
-	~WolfPicDataFormat() {}
+	~WolfPicDataFormat() = default;
 
 	// Wolf picture format
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 4)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		if ((4 + (mc.readL16(0) * mc.readL16(2))) != mc.size())
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -1336,18 +1331,18 @@ class WolfSpriteDataFormat : public EntryDataFormat
 {
 public:
 	WolfSpriteDataFormat() : EntryDataFormat("img_wolfsprite"){};
-	~WolfSpriteDataFormat() {}
+	~WolfSpriteDataFormat() = default;
 
 	// Wolf picture format
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size < 8 || size > 4228)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 		if (mc[0] > 63 || mc[1] || mc[2] > 64 || mc[1] >= mc[2] || mc[3])
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
-		return EDF_TRUE;
+		return MATCH_TRUE;
 	}
 };
 
@@ -1356,10 +1351,10 @@ class JediBMFormat : public EntryDataFormat
 {
 public:
 	JediBMFormat() : EntryDataFormat("img_jedi_bm"){};
-	~JediBMFormat() {}
+	~JediBMFormat() = default;
 
 	// Jedi engine bitmap format
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 32)
@@ -1370,12 +1365,12 @@ public:
 				// Check that padding is left alone
 				for (int i = 20; i < 32; ++i)
 					if (mc[i])
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				// Probably okay
-				return EDF_TRUE;
+				return MATCH_TRUE;
 			}
 		}
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1383,10 +1378,10 @@ class JediFMEFormat : public EntryDataFormat
 {
 public:
 	JediFMEFormat() : EntryDataFormat("img_jedi_fme"){};
-	~JediFMEFormat() {}
+	~JediFMEFormat() = default;
 
 	// Jedi engine frame format
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 64)
@@ -1400,35 +1395,35 @@ public:
 				// Check that padding is left alone
 				for (int i = 16; i < 32; ++i)
 					if (mc[i])
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				for (int i = 16; i < 32; ++i)
 					if (mc[i])
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				// Check size if compressed:
 				if (mc[40] == 1)
 				{
 					if (mc.readL32(44) != size - 32)
-						return EDF_FALSE;
+						return MATCH_FALSE;
 					// Check some padding
 					for (int i = 41; i < 44; ++i)
 						if (mc[i])
-							return EDF_FALSE;
+							return MATCH_FALSE;
 					for (int i = 48; i < 56; ++i)
 						if (mc[i])
-							return EDF_FALSE;
+							return MATCH_FALSE;
 				}
 				else
 				{
 					// All that should be zero if uncompressed
 					for (int i = 41; i < 56; ++i)
 						if (mc[i])
-							return EDF_FALSE;
+							return MATCH_FALSE;
 				}
 				// Probably okay
-				return EDF_TRUE;
+				return MATCH_TRUE;
 			}
 		}
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1436,10 +1431,10 @@ class JediWAXFormat : public EntryDataFormat
 {
 public:
 	JediWAXFormat() : EntryDataFormat("img_jedi_wax"){};
-	~JediWAXFormat() {}
+	~JediWAXFormat() = default;
 
 	// Jedi engine wax format
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 460)
@@ -1451,18 +1446,18 @@ public:
 				// Also check that padding is left alone.
 				for (int i = 5; i < 8; ++i)
 					if (mc[i])
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				for (int i = 9; i < 12; ++i)
 					if (mc[i])
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				for (int i = 13; i < 32; ++i)
 					if (mc[i])
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				// Probably okay
-				return EDF_TRUE;
+				return MATCH_TRUE;
 			}
 		}
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1471,12 +1466,12 @@ class Font0DataFormat : public EntryDataFormat
 {
 public:
 	Font0DataFormat() : EntryDataFormat("font_doom_alpha"){};
-	~Font0DataFormat() {}
+	~Font0DataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		if (mc.size() <= 0x302)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		const uint16_t* gfx_data = (const uint16_t*)mc.data();
 
@@ -1484,7 +1479,7 @@ public:
 
 		size_t datasize = mc.size() - 0x302;
 		if (height == 0 || datasize % height)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// It seems okay so far. Check that one
 		// character does start at offset 0x302.
@@ -1492,10 +1487,10 @@ public:
 		// offsets 0x102 and 0x302. Halved for int16_t.
 		for (size_t i = 0x81; i < 0x181; ++i)
 			if (gfx_data[i] == wxINT16_SWAP_ON_BE(0x302))
-				return EDF_TRUE;
+				return MATCH_TRUE;
 
 		// Doesn't seem to be such a file after all.
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1503,18 +1498,18 @@ class Font1DataFormat : public EntryDataFormat
 {
 public:
 	Font1DataFormat() : EntryDataFormat("font_zd_console"){};
-	~Font1DataFormat() {}
+	~Font1DataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
 		{
 			// Check for FON1 header
 			if (mc[0] == 'F' && mc[1] == 'O' && mc[2] == 'N' && mc[3] == '1')
-				return EDF_TRUE;
+				return MATCH_TRUE;
 		}
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1522,18 +1517,18 @@ class Font2DataFormat : public EntryDataFormat
 {
 public:
 	Font2DataFormat() : EntryDataFormat("font_zd_big"){};
-	~Font2DataFormat() {}
+	~Font2DataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
 		{
 			// Check for FON2 header
 			if (mc[0] == 'F' && mc[1] == 'O' && mc[2] == 'N' && mc[3] == '2')
-				return EDF_TRUE;
+				return MATCH_TRUE;
 		}
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1541,18 +1536,18 @@ class BMFontDataFormat : public EntryDataFormat
 {
 public:
 	BMFontDataFormat() : EntryDataFormat("font_bmf"){};
-	~BMFontDataFormat() {}
+	~BMFontDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
 		{
 			// Check for BMF header
 			if (mc[0] == 0xE1 && mc[1] == 0xE6 && mc[2] == 0xD5 && mc[3] == 0x1A)
-				return EDF_TRUE;
+				return MATCH_TRUE;
 		}
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1560,12 +1555,12 @@ class FontWolfDataFormat : public EntryDataFormat
 {
 public:
 	FontWolfDataFormat() : EntryDataFormat("font_wolf"){};
-	~FontWolfDataFormat() {}
+	~FontWolfDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		if (mc.size() <= 0x302)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		const uint16_t* gfx_data = (const uint16_t*)mc.data();
 
@@ -1573,7 +1568,7 @@ public:
 
 		size_t datasize = mc.size() - 0x302;
 		if (height == 0 || datasize % height)
-			return EDF_FALSE;
+			return MATCH_FALSE;
 
 		// It seems okay so far. Check that one
 		// character does start at offset 0x302.
@@ -1581,10 +1576,10 @@ public:
 		// offsets 0x002 and 0x202. Halved for int16_t.
 		for (size_t i = 0x01; i < 0x101; ++i)
 			if (gfx_data[i] == wxINT16_SWAP_ON_BE(0x302))
-				return EDF_TRUE;
+				return MATCH_TRUE;
 
 		// Doesn't seem to be such a file after all.
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1592,10 +1587,10 @@ class JediFNTFormat : public EntryDataFormat
 {
 public:
 	JediFNTFormat() : EntryDataFormat("font_jedi_fnt"){};
-	~JediFNTFormat() {}
+	~JediFNTFormat() = default;
 
 	// Jedi engine fnt format
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 35)
@@ -1607,12 +1602,12 @@ public:
 				// Check that padding is left alone.
 				for (int i = 10; i < 32; ++i)
 					if (mc[i])
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				// Probably okay
-				return EDF_TRUE;
+				return MATCH_TRUE;
 			}
 		}
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };
 
@@ -1620,10 +1615,10 @@ class JediFONTFormat : public EntryDataFormat
 {
 public:
 	JediFONTFormat() : EntryDataFormat("font_jedi_font"){};
-	~JediFONTFormat() {}
+	~JediFONTFormat() = default;
 
 	// Jedi engine font format
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		size_t size = mc.size();
 		if (size > 16)
@@ -1634,19 +1629,19 @@ public:
 			{
 				size_t numchr = mc.readL16(2);
 				if (size < 16 + numchr)
-					return EDF_FALSE;
+					return MATCH_FALSE;
 				// Also check that character width never exceeds max width.
 				for (size_t i = 12; i < 12 + numchr; ++i)
 					if (mc[i] > mc.readL16(4))
-						return EDF_FALSE;
+						return MATCH_FALSE;
 				// Check that there are enough data to cover all characters and the header
 				size_t neededbytes = 12 + numchr + ((numchr * mc.readL16(6)) * (mc.readL16(4) >> 3));
 				if (size != neededbytes)
-					return EDF_FALSE;
+					return MATCH_FALSE;
 				// Probably okay
-				return EDF_TRUE;
+				return MATCH_TRUE;
 			}
 		}
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };

@@ -4,18 +4,18 @@ class RLE0DataFormat : public EntryDataFormat
 {
 public:
 	RLE0DataFormat() : EntryDataFormat("misc_rle0") {}
-	~RLE0DataFormat() {}
+	~RLE0DataFormat() = default;
 
-	int isThisFormat(MemChunk& mc)
+	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 6)
 		{
 			// Check for RLE0 header
 			if (mc[0] == 'R' && mc[1] == 'L' && mc[2] == 'E' && mc[3] == '0')
-				return EDF_TRUE;
+				return MATCH_TRUE;
 		}
 
-		return EDF_FALSE;
+		return MATCH_FALSE;
 	}
 };

@@ -1646,3 +1646,60 @@ string Audio::getAiffInfo(MemChunk& mc)
 	ret += S_FMT("%s%s\n", parseIFFChunks(mc, 12, samplerate, cue, true), chunksfound);
 	return ret;
 }
+
+// -----------------------------------------------------------------------------
+// Looks whether the memory chunk starts with an ID3 tag, and if there is one,
+// returns the index at which the true audio data begins.
+// Returns 0 if there is no tag before audio data.
+// -----------------------------------------------------------------------------
+size_t Audio::checkForTags(MemChunk& mc)
+{
+	// Check for empty wasted space at the beginning, since it's apparently
+	// quite popular in MP3s to start with a useless blank frame.
+	size_t s = 0;
+	// Completely arbitrary limit to how long to seek for data.
+	size_t limit = std::min<size_t>(1200, mc.size() / 16);
+	if (mc[0] == 0)
+	{
+		while ((s < limit) && (mc[s] == 0))
+			++s;
+	}
+
+	if (mc.size() > s + 14)
+	{
+		// Check for ID3 header (ID3v2). Version and revision numbers cannot be FF.
+		// Only the four upper flags are valid.
+		while (mc.size() > s + 14 && mc[s + 0] == 'I' && mc[s + 1] == 'D' && mc[s + 2] == '3' && mc[s + 3] != 0xFF
+			   && mc[s + 4] != 0xFF && ((mc[s + 5] & 0x0F) == 0) && mc[s + 6] < 0x80 && mc[s + 7] < 0x80
+			   && mc[s + 8] < 0x80 && mc[s + 9] < 0x80)
+		{
+			// Compute size. It is stored as a "synchsafe integer", that is to say,
+			// a big-endian value where the highest bit of each byte is not used.
+			size_t size = (mc[s + 6] << 21) + (mc[s + 7] << 14) + (mc[s + 8] << 7) + mc[s + 9] + 10;
+			// If there is a footer, then add 10 more to the size
+			if (mc[s + 5] & 0x10)
+				size += 10;
+			// Needs to be at least that big
+			if (mc.size() >= size + 4)
+				s += size;
+			return size;
+		}
+		// Blank frame after ID3 tag, because MP3 is awful.
+		while (mc[s] == 0 && s < limit)
+			++s;
+		// Sometimes, the frame start is off by one for some reason.
+		if ((s + 4 < limit) && (mc[s] != 0xFF) && (mc[s + 1] == 0xFF))
+			++s;
+	}
+	// It's also possible to get an ID3v1 (or v1.1) tag.
+	// Though normally they're at the end of the file.
+	if (mc.size() > s + 132)
+	{
+		// Check for ID3 header (ID3v1).
+		if (mc[s + 0] == 'T' && mc[s + 1] == 'A' && mc[s + 2] == 'G')
+		{
+			return s + 128;
+		}
+	}
+	return s;
+}

@@ -14,4 +14,5 @@ string getVocInfo(MemChunk& mc);
 string getSunInfo(MemChunk& mc);
 string getRmidInfo(MemChunk& mc);
 string getAiffInfo(MemChunk& mc);
+size_t checkForTags(MemChunk& mc);
 } // namespace Audio

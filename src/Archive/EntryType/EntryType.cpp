@@ -35,7 +35,6 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "General/Console/Console.h"
-#include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainEditor.h"
 #include "Utility/Parser.h"
 
@@ -68,29 +67,7 @@ EntryType etype_map;     // Map marker type
 // -----------------------------------------------------------------------------
 // EntryType class constructor
 // -----------------------------------------------------------------------------
-EntryType::EntryType(string id)
-{
-	// Init info variables
-	id_          = id;
-	name_        = "Unknown";
-	extension_   = "dat";
-	icon_        = "default";
-	editor_      = "default";
-	reliability_ = 255;
-	category_    = "Data";
-	colour_      = COL_WHITE;
-
-	// Init match criteria
-	format_        = EntryDataFormat::anyFormat();
-	size_limit_[0] = -1;
-	size_limit_[1] = -1;
-	detectable_    = true;
-}
-
-// -----------------------------------------------------------------------------
-// EntryType class destructor
-// -----------------------------------------------------------------------------
-EntryType::~EntryType() {}
+EntryType::EntryType(const string& id) : id_{ id }, format_{ EntryDataFormat::anyFormat() } {}
 
 // -----------------------------------------------------------------------------
 // Adds the type to the list of entry types
@@ -109,20 +86,20 @@ void EntryType::dump()
 	LOG_MESSAGE(1, "Type %s \"%s\", format %s, extension %s", id_, name_, format_->id(), extension_);
 	LOG_MESSAGE(1, "Size limit: %d-%d", size_limit_[0], size_limit_[1]);
 
-	for (size_t a = 0; a < match_archive_.size(); a++)
-		LOG_MESSAGE(1, "Match Archive: \"%s\"", match_archive_[a]);
+	for (const auto& a : match_archive_)
+		LOG_MESSAGE(1, "Match Archive: \"%s\"", a);
 
-	for (size_t a = 0; a < match_extension_.size(); a++)
-		LOG_MESSAGE(1, "Match Extension: \"%s\"", match_extension_[a]);
+	for (const auto& a : match_extension_)
+		LOG_MESSAGE(1, "Match Extension: \"%s\"", a);
 
-	for (size_t a = 0; a < match_name_.size(); a++)
-		LOG_MESSAGE(1, "Match Name: \"%s\"", match_name_[a]);
+	for (const auto& a : match_name_)
+		LOG_MESSAGE(1, "Match Name: \"%s\"", a);
 
-	for (size_t a = 0; a < match_size_.size(); a++)
-		LOG_MESSAGE(1, "Match Size: %d", match_size_[a]);
+	for (int a : match_size_)
+		LOG_MESSAGE(1, "Match Size: %d", a);
 
-	for (size_t a = 0; a < size_multiple_.size(); a++)
-		LOG_MESSAGE(1, "Size Multiple: %d", size_multiple_[a]);
+	for (int a : size_multiple_)
+		LOG_MESSAGE(1, "Size Multiple: %d", a);
 
 	LOG_MESSAGE(1, "---");
 }
@@ -160,7 +137,7 @@ void EntryType::copyToType(EntryType* target)
 // Returns a file filter string for this type:
 // "<type name> files (*.<type extension)|*.<type extension>"
 // -----------------------------------------------------------------------------
-string EntryType::fileFilterString()
+string EntryType::fileFilterString() const
 {
 	string ret = name_ + " files (*.";
 	ret += extension_;
@@ -177,43 +154,43 @@ int EntryType::isThisType(ArchiveEntry* entry)
 {
 	// Check entry was given
 	if (!entry)
-		return EDF_FALSE;
+		return EntryDataFormat::MATCH_FALSE;
 
 	// Check type is detectable
 	if (!detectable_)
-		return EDF_FALSE;
+		return EntryDataFormat::MATCH_FALSE;
 
 	// Check min size
 	if (size_limit_[0] >= 0 && entry->size() < (unsigned)size_limit_[0])
-		return EDF_FALSE;
+		return EntryDataFormat::MATCH_FALSE;
 
 	// Check max size
 	if (size_limit_[1] >= 0 && entry->size() > (unsigned)size_limit_[1])
-		return EDF_FALSE;
+		return EntryDataFormat::MATCH_FALSE;
 
 	// Check for archive match if needed
 	if (!match_archive_.empty())
 	{
 		bool match = false;
-		for (size_t a = 0; a < match_archive_.size(); a++)
+		for (const auto& a : match_archive_)
 		{
-			if (entry->parent() && entry->parent()->formatId() == match_archive_[a])
+			if (entry->parent() && entry->parent()->formatId() == a)
 			{
 				match = true;
 				break;
 			}
 		}
 		if (!match)
-			return EDF_FALSE;
+			return EntryDataFormat::MATCH_FALSE;
 	}
 
 	// Check for size match if needed
 	if (!match_size_.empty())
 	{
 		bool match = false;
-		for (size_t a = 0; a < match_size_.size(); a++)
+		for (unsigned a : match_size_)
 		{
-			if (entry->size() == match_size_[a])
+			if (entry->size() == a)
 			{
 				match = true;
 				break;
@@ -221,11 +198,11 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		}
 
 		if (!match)
-			return EDF_FALSE;
+			return EntryDataFormat::MATCH_FALSE;
 	}
 
 	// Check for data format match if needed
-	int r = EDF_TRUE;
+	int r = EntryDataFormat::MATCH_TRUE;
 	if (format_ == EntryDataFormat::textFormat())
 	{
 		// Hack for identifying ACS script sources despite DB2 apparently appending
@@ -236,13 +213,13 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		// Text is a special case, as other data formats can sometimes be detected as 'text',
 		// we'll only check for it if text data is specified in the entry type
 		if (entry->size() > 0 && memchr(entry->rawData(), 0, end) != nullptr)
-			return EDF_FALSE;
+			return EntryDataFormat::MATCH_FALSE;
 	}
 	else if (format_ != EntryDataFormat::anyFormat() && entry->size() > 0)
 	{
 		r = format_->isThisFormat(entry->data());
-		if (r == EDF_FALSE)
-			return EDF_FALSE;
+		if (r == EntryDataFormat::MATCH_FALSE)
+			return EntryDataFormat::MATCH_FALSE;
 	}
 
 	// Check for size multiple match if needed
@@ -260,7 +237,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		}
 
 		if (!match)
-			return EDF_FALSE;
+			return EntryDataFormat::MATCH_FALSE;
 	}
 
 	// If both names and extensions are defined, and the type only needs one
@@ -296,7 +273,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 			}
 
 			if (!match && !extorname)
-				return EDF_FALSE;
+				return EntryDataFormat::MATCH_FALSE;
 			else
 				matchedname = match;
 		}
@@ -320,7 +297,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 			}
 
 			if (!match && !(extorname && matchedname))
-				return EDF_FALSE;
+				return EntryDataFormat::MATCH_FALSE;
 		}
 	}
 
@@ -329,14 +306,14 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	{
 		// Check entry is part of an archive (if not it can't be in a section)
 		if (!entry->parent())
-			return EDF_FALSE;
+			return EntryDataFormat::MATCH_FALSE;
 
 		string e_section = entry->parent()->detectNamespace(entry);
 
-		r = EDF_FALSE;
-		for (auto ns : section_)
+		r = EntryDataFormat::MATCH_FALSE;
+		for (const auto& ns : section_)
 			if (S_CMPNOCASE(ns, e_section))
-				r = EDF_TRUE;
+				r = EntryDataFormat::MATCH_TRUE;
 	}
 
 	// Passed all checks, so we have a match
@@ -367,14 +344,14 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 		auto typenode = pt_etypes->childPTN(a);
 
 		// Create new entry type
-		EntryType* ntype = new EntryType(typenode->name().Lower());
+		auto ntype = new EntryType{ typenode->name().Lower() };
 
 		// Copy from existing type if inherited
 		if (!typenode->inherit().IsEmpty())
 		{
-			EntryType* parent_type = EntryType::fromId(typenode->inherit().Lower());
+			auto parent_type = fromId(typenode->inherit().Lower());
 
-			if (parent_type != EntryType::unknownType())
+			if (parent_type != unknownType())
 				parent_type->copyToType(ntype);
 			else
 				LOG_MESSAGE(
@@ -476,9 +453,9 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 
 				// Add to category list if needed
 				bool exists = false;
-				for (unsigned c = 0; c < entry_categories.size(); c++)
+				for (auto& category : entry_categories)
 				{
-					if (S_CMPNOCASE(entry_categories[c], ntype->category_))
+					if (S_CMPNOCASE(category, ntype->category_))
 					{
 						exists = true;
 						break;
@@ -515,7 +492,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 // -----------------------------------------------------------------------------
 bool EntryType::loadEntryTypes()
 {
-	EntryDataFormat* fmt_any = EntryDataFormat::anyFormat();
+	auto fmt_any = EntryDataFormat::anyFormat();
 
 	// Setup unknown type
 	etype_unknown.format_      = fmt_any;
@@ -551,7 +528,7 @@ bool EntryType::loadEntryTypes()
 	// -------- READ BUILT-IN TYPES ---------
 
 	// Get builtin entry types from resource archive
-	Archive* res_archive = App::archiveManager().programResourceArchive();
+	auto res_archive = App::archiveManager().programResourceArchive();
 
 	// Check resource archive exists
 	if (!res_archive)
@@ -561,7 +538,7 @@ bool EntryType::loadEntryTypes()
 	}
 
 	// Get entry types directory
-	ArchiveTreeNode* et_dir = res_archive->dir("config/entry_types/");
+	auto et_dir = res_archive->dir("config/entry_types/");
 
 	// Check it exists
 	if (!et_dir)
@@ -703,8 +680,8 @@ wxArrayString EntryType::iconList()
 {
 	wxArrayString list;
 
-	for (size_t a = 0; a < entry_types.size(); a++)
-		list.Add(entry_types[a]->icon());
+	for (auto& entry_type : entry_types)
+		list.Add(entry_type->icon());
 
 	return list;
 }
@@ -716,7 +693,7 @@ void EntryType::cleanupEntryTypes()
 {
 	for (size_t a = 4; a < entry_types.size(); a++)
 	{
-		EntryType* e = entry_types[a];
+		auto e = entry_types[a];
 		if (e != &etype_unknown && e != &etype_folder && e != &etype_marker && e != &etype_map)
 			delete entry_types[a];
 	}
@@ -752,8 +729,8 @@ vector<string> EntryType::allCategories()
 // -----------------------------------------------------------------------------
 CONSOLE_COMMAND(type, 0, true)
 {
-	vector<EntryType*> all_types = EntryType::allTypes();
-	if (args.size() == 0)
+	auto all_types = EntryType::allTypes();
+	if (args.empty())
 	{
 		// List existing types and their IDs
 		string listing   = "List of entry types:\n\t";
@@ -774,8 +751,8 @@ CONSOLE_COMMAND(type, 0, true)
 	else
 	{
 		// Find type by id or first matching format
-		EntryType* desttype = EntryType::unknownType();
-		bool       match    = false;
+		auto desttype = EntryType::unknownType();
+		bool match    = false;
 
 		// Use true unknown type rather than map marker...
 		if (!args[0].CmpNoCase("unknown") || !args[0].CmpNoCase("none") || !args[0].CmpNoCase("any"))
@@ -799,9 +776,9 @@ CONSOLE_COMMAND(type, 0, true)
 		}
 
 		// Allow to force type change even if format checks fails (use at own risk!)
-		int                   okay = 0, force = !(args.size() < 2 || args[1].CmpNoCase("force"));
-		vector<ArchiveEntry*> meep = MainEditor::currentEntrySelection();
-		if (meep.size() == 0)
+		int  force = !(args.size() < 2 || args[1].CmpNoCase("force"));
+		auto meep  = MainEditor::currentEntrySelection();
+		if (meep.empty())
 		{
 			LOG_MESSAGE(1, "No entry selected");
 			return;
@@ -820,23 +797,23 @@ CONSOLE_COMMAND(type, 0, true)
 		else
 			force = true; // Always force the unknown type
 
-		for (size_t b = 0; b < meep.size(); ++b)
+		for (auto& b : meep)
 		{
-			okay = false;
+			int okay = false;
 			if (foo)
 			{
-				okay = foo->isThisFormat(meep[b]->data());
+				okay = foo->isThisFormat(b->data());
 				if (okay)
-					LOG_MESSAGE(1, "%s: Identification successful (%i/255)", meep[b]->name().mb_str(), okay);
+					LOG_MESSAGE(1, "%s: Identification successful (%i/255)", b->name().mb_str(), okay);
 				else
-					LOG_MESSAGE(1, "%s: Identification failed", meep[b]->name().mb_str());
+					LOG_MESSAGE(1, "%s: Identification failed", b->name().mb_str());
 			}
 
 			// Change type
 			if (force || okay)
 			{
-				meep[b]->setType(desttype, okay);
-				LOG_MESSAGE(1, "%s: Type changed.", meep[b]->name().mb_str());
+				b->setType(desttype, okay);
+				LOG_MESSAGE(1, "%s: Type changed.", b->name().mb_str());
 			}
 		}
 	}
@@ -844,7 +821,7 @@ CONSOLE_COMMAND(type, 0, true)
 
 CONSOLE_COMMAND(size, 0, true)
 {
-	ArchiveEntry* meep = MainEditor::currentEntry();
+	auto meep = MainEditor::currentEntry();
 	if (!meep)
 	{
 		LOG_MESSAGE(1, "No entry selected");

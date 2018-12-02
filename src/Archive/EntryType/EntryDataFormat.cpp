@@ -41,11 +41,12 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-// Declare hash map class to hold EntryDataFormats
-WX_DECLARE_STRING_HASH_MAP(EntryDataFormat*, EDFMap);
-EDFMap           data_formats;
-EntryDataFormat* edf_any  = nullptr;
-EntryDataFormat* edf_text = nullptr;
+namespace
+{
+std::map<string, EntryDataFormat*> data_formats;
+EntryDataFormat*                   edf_any  = nullptr;
+EntryDataFormat*                   edf_text = nullptr;
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -58,20 +59,11 @@ EntryDataFormat* edf_text = nullptr;
 // -----------------------------------------------------------------------------
 // EntryDataFormat class constructor
 // -----------------------------------------------------------------------------
-EntryDataFormat::EntryDataFormat(string id)
+EntryDataFormat::EntryDataFormat(const string& id) : id_{ id }
 {
-	// Init variables
-	size_min_ = 0;
-	this->id_ = id;
-
 	// Add to hash map
 	data_formats[id] = this;
 }
-
-// -----------------------------------------------------------------------------
-// EntryDataFormat class destructor
-// -----------------------------------------------------------------------------
-EntryDataFormat::~EntryDataFormat() {}
 
 // -----------------------------------------------------------------------------
 // To be overridden by specific data types, returns true if the data in [mc]
@@ -79,13 +71,13 @@ EntryDataFormat::~EntryDataFormat() {}
 // -----------------------------------------------------------------------------
 int EntryDataFormat::isThisFormat(MemChunk& mc)
 {
-	return EDF_TRUE;
+	return MATCH_TRUE;
 }
 
 // -----------------------------------------------------------------------------
 // Copies data format properties to [target]
 // -----------------------------------------------------------------------------
-void EntryDataFormat::copyToFormat(EntryDataFormat& target)
+void EntryDataFormat::copyToFormat(EntryDataFormat& target) const
 {
 	target.patterns_ = patterns_;
 	target.size_min_ = size_min_;
@@ -103,13 +95,10 @@ void EntryDataFormat::copyToFormat(EntryDataFormat& target)
 // Returns the entry data format matching [id], or the 'any' type if no match
 // found
 // -----------------------------------------------------------------------------
-EntryDataFormat* EntryDataFormat::format(string id)
+EntryDataFormat* EntryDataFormat::format(const string& id)
 {
-	EDFMap::iterator i = data_formats.find(id);
-	if (i == data_formats.end())
-		return edf_any;
-	else
-		return i->second;
+	auto i = data_formats.find(id);
+	return i == data_formats.end() ? edf_any : i->second;
 }
 
 // -----------------------------------------------------------------------------
@@ -151,22 +140,9 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 		auto formatnode = pt_formats->childPTN(a);
 
 		// Create+add new data format
-		EntryDataFormat* edf = new EntryDataFormat(formatnode->name().Lower());
-
-		/*
-		// Copy from existing type if inherited
-		if (!formatnode->getInherit().IsEmpty())
-		{
-			EntryType* parent_type = EntryType::getType(formatnode->getInherit());
-
-			if (parent_type != EntryType::unknownType())
-				parent_type->copyToType(ntype);
-			else
-				LOG_MESSAGE(1, "Warning: Entry type %s inherits from unknown type %s", ntype->getId(),
-		typenode->getInherit());
-		}
-		*/
+		new EntryDataFormat(formatnode->name().Lower());
 	}
+
 	return true;
 }
 
@@ -176,9 +152,9 @@ class AnyDataFormat : public EntryDataFormat
 {
 public:
 	AnyDataFormat() : EntryDataFormat("any") {}
-	~AnyDataFormat() {}
+	~AnyDataFormat() = default;
 
-	int isThisFormat(MemChunk& mc) { return EDF_FALSE; }
+	int isThisFormat(MemChunk& mc) override { return MATCH_FALSE; }
 };
 
 // Format enumeration moved to separate files
@@ -199,8 +175,7 @@ void EntryDataFormat::initBuiltinFormats()
 	edf_any = new AnyDataFormat();
 
 	// Just need to create an instance of each builtin format class
-	// TODO: Ugly ugly ugly, need a better way of doing this, defining
-	// each data format in a single place etc
+	// TODO: Ugly ugly ugly, need a better way of doing this, defining each data format in a single place etc
 	new PNGDataFormat();
 	new BMPDataFormat();
 	new GIFDataFormat();

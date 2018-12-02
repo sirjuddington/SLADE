@@ -12,7 +12,7 @@ public:
 
 	virtual bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_rott")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_rott")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;
@@ -162,7 +162,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_rottlbm")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_rottlbm")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;
@@ -259,7 +259,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_rottraw")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_rottraw")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;
@@ -317,7 +317,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_rottpic")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_rottpic")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;

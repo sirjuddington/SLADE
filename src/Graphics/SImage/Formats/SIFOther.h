@@ -12,7 +12,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_hlt")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_hlt")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;
@@ -99,7 +99,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_scsprite")->isThisFormat(mc) >= EDF_UNLIKELY)
+		if (EntryDataFormat::format("img_scsprite")->isThisFormat(mc) >= EntryDataFormat::MATCH_UNLIKELY)
 			return true;
 		else
 			return false;
@@ -210,7 +210,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_scgfx")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_scgfx")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;
@@ -284,7 +284,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_scwall")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_scwall")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;
@@ -355,7 +355,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_mipimage")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_mipimage")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;
@@ -412,7 +412,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_arttile")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_arttile")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;
@@ -537,7 +537,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_m8")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_m8")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;
@@ -622,7 +622,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_m32")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_m32")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;
@@ -695,7 +695,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_wolfpic")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_wolfpic")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;
@@ -762,7 +762,7 @@ public:
 
 	bool isThisFormat(MemChunk& mc)
 	{
-		if (EntryDataFormat::format("img_wolfsprite")->isThisFormat(mc) >= EDF_PROBABLY)
+		if (EntryDataFormat::format("img_wolfsprite")->isThisFormat(mc) >= EntryDataFormat::MATCH_PROBABLY)
 			return true;
 		else
 			return false;

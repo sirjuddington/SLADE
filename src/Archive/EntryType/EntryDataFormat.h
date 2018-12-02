@@ -1,25 +1,26 @@
 #pragma once
 
-#define EDF_FALSE 0
-#define EDF_UNLIKELY 64
-#define EDF_MAYBE 128
-#define EDF_PROBABLY 192
-#define EDF_TRUE 255
-
 class EntryDataFormat
 {
 public:
-	EntryDataFormat(string id);
-	virtual ~EntryDataFormat();
+	// Standard values for isThisFormat return value
+	static const int MATCH_FALSE    = 0;
+	static const int MATCH_UNLIKELY = 64;
+	static const int MATCH_MAYBE    = 128;
+	static const int MATCH_PROBABLY = 192;
+	static const int MATCH_TRUE     = 255;
+
+	EntryDataFormat(const string& id);
+	virtual ~EntryDataFormat() = default;
 
 	const string& id() const { return id_; }
 
 	virtual int isThisFormat(MemChunk& mc);
-	void        copyToFormat(EntryDataFormat& target);
+	void        copyToFormat(EntryDataFormat& target) const;
 
 	static void             initBuiltinFormats();
 	static bool             readDataFormatDefinition(MemChunk& mc);
-	static EntryDataFormat* format(string id);
+	static EntryDataFormat* format(const string& id);
 	static EntryDataFormat* anyFormat();
 	static EntryDataFormat* textFormat();
 
@@ -59,7 +60,7 @@ private:
 	};
 
 	// Detection
-	unsigned            size_min_;
+	unsigned            size_min_ = 0;
 	vector<BytePattern> patterns_;
 	// Also needed:
 	// Some way to check more complex values (eg. multiply byte 0 and 1, result must be in a certain range)
