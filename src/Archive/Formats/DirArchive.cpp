@@ -69,15 +69,10 @@ DirArchive::DirArchive() : Archive("folder")
 }
 
 // -----------------------------------------------------------------------------
-// DirArchive class destructor
-// -----------------------------------------------------------------------------
-DirArchive::~DirArchive() {}
-
-// -----------------------------------------------------------------------------
 // Reads files from the directory [filename] into the archive
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DirArchive::open(string filename)
+bool DirArchive::open(const string& filename)
 {
 	UI::setSplashProgressMessage("Reading directory structure");
 	UI::setSplashProgress(0);
@@ -103,15 +98,15 @@ bool DirArchive::open(string filename)
 		// LOG_MESSAGE(3, fn.GetPath(true, wxPATH_UNIX));
 
 		// Create entry
-		wxFileName    fn(name);
-		ArchiveEntry* new_entry = new ArchiveEntry(fn.GetFullName());
+		wxFileName fn(name);
+		auto       new_entry = std::make_shared<ArchiveEntry>(fn.GetFullName());
 
 		// Setup entry info
 		new_entry->setLoaded(false);
 		new_entry->exProp("filePath") = files[a];
 
 		// Add entry and directory to directory tree
-		ArchiveTreeNode* ndir = createDir(fn.GetPath(true, wxPATH_UNIX));
+		auto ndir = createDir(fn.GetPath(true, wxPATH_UNIX));
 		ndir->addEntry(new_entry);
 		ndir->dirEntry()->exProp("filePath") = filename + fn.GetPath(true, wxPATH_UNIX);
 
@@ -119,11 +114,10 @@ bool DirArchive::open(string filename)
 		new_entry->importFile(files[a]);
 		new_entry->setLoaded(true);
 
-		time_t modtime                      = wxFileModificationTime(files[a]);
-		file_modification_times_[new_entry] = modtime;
+		file_modification_times_[new_entry.get()] = wxFileModificationTime(files[a]);
 
 		// Detect entry type
-		EntryType::detectEntryType(new_entry);
+		EntryType::detectEntryType(new_entry.get());
 
 		// Unload data if needed
 		if (!archive_load_data)
@@ -131,22 +125,23 @@ bool DirArchive::open(string filename)
 	}
 
 	// Add empty directories
-	for (unsigned a = 0; a < dirs.size(); a++)
+	for (const auto& subdir : dirs)
 	{
-		string name = dirs[a];
+		string name = subdir;
 		name.Remove(0, filename.Length());
 		if (name.StartsWith(separator_))
 			name.Remove(0, 1);
 		name.Replace("\\", "/");
-		ArchiveTreeNode* ndir                = createDir(name);
-		ndir->dirEntry()->exProp("filePath") = dirs[a];
+
+		auto ndir                            = createDir(name);
+		ndir->dirEntry()->exProp("filePath") = subdir;
 	}
 
 	// Set all entries/directories to unmodified
 	vector<ArchiveEntry*> entry_list;
 	putEntryTreeAsList(entry_list);
-	for (size_t a = 0; a < entry_list.size(); a++)
-		entry_list[a]->setState(0);
+	for (auto& entry : entry_list)
+		entry->setState(0);
 
 	// Enable announcements
 	setMuted(false);
@@ -191,7 +186,7 @@ bool DirArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 // Writes the archive to a file (not implemented)
 // -----------------------------------------------------------------------------
-bool DirArchive::write(string filename, bool update)
+bool DirArchive::write(const string& filename, bool update)
 {
 	return true;
 }
@@ -199,7 +194,7 @@ bool DirArchive::write(string filename, bool update)
 // -----------------------------------------------------------------------------
 // Saves any changes to the directory to the file system
 // -----------------------------------------------------------------------------
-bool DirArchive::save(string filename)
+bool DirArchive::save(const string& filename)
 {
 	// Get flat entry list
 	vector<ArchiveEntry*> entries;
@@ -207,9 +202,9 @@ bool DirArchive::save(string filename)
 
 	// Get entry path list
 	vector<string> entry_paths;
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
-		entry_paths.push_back(this->filename_ + entries[a]->path(true));
+		entry_paths.push_back(this->filename_ + entry->path(true));
 		if (separator_ != "/")
 			entry_paths.back().Replace("/", separator_);
 	}
@@ -224,12 +219,12 @@ bool DirArchive::save(string filename)
 
 	// Check for any files to remove
 	time = App::runTimer();
-	for (unsigned a = 0; a < removed_files_.size(); a++)
+	for (const auto& removed_file : removed_files_)
 	{
-		if (wxFileExists(removed_files_[a]))
+		if (wxFileExists(removed_file))
 		{
-			LOG_MESSAGE(2, "Removing file %s", removed_files_[a]);
-			wxRemoveFile(removed_files_[a]);
+			LOG_MESSAGE(2, "Removing file %s", removed_file);
+			wxRemoveFile(removed_file);
 		}
 	}
 
@@ -238,9 +233,9 @@ bool DirArchive::save(string filename)
 	{
 		// Check if dir path matches an existing dir
 		bool found = false;
-		for (unsigned e = 0; e < entry_paths.size(); e++)
+		for (const auto& entry_path : entry_paths)
 		{
-			if (dirs[a] == entry_paths[e])
+			if (dirs[a] == entry_path)
 			{
 				found = true;
 				break;
@@ -320,14 +315,14 @@ bool DirArchive::loadEntryData(ArchiveEntry* entry)
 // For DirArchive also adds all subdirs and entries to the removed files list,
 // so they are ignored when checking for changes on disk
 // -----------------------------------------------------------------------------
-bool DirArchive::removeDir(string path, ArchiveTreeNode* base)
+bool DirArchive::removeDir(const string& path, ArchiveTreeNode* base)
 {
 	// Abort if read only
 	if (read_only_)
 		return false;
 
 	// Get the dir to remove
-	ArchiveTreeNode* dir = this->dir(path, base);
+	auto dir = this->dir(path, base);
 
 	// Check it exists (and that it isn't the root dir)
 	if (!dir || dir == rootDir())
@@ -338,10 +333,10 @@ bool DirArchive::removeDir(string path, ArchiveTreeNode* base)
 	putEntryTreeAsList(entries, dir);
 
 	// Add to removed files list
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
-		LOG_MESSAGE(2, entries[a]->exProp("filePath").stringValue());
-		removed_files_.push_back(entries[a]->exProp("filePath").stringValue());
+		LOG_MESSAGE(2, entry->exProp("filePath").stringValue());
+		removed_files_.push_back(entry->exProp("filePath").stringValue());
 	}
 
 	// Do normal dir remove
@@ -352,7 +347,7 @@ bool DirArchive::removeDir(string path, ArchiveTreeNode* base)
 // Renames [dir] to [new_name].
 // Returns false if [dir] isn't part of the archive, true otherwise
 // -----------------------------------------------------------------------------
-bool DirArchive::renameDir(ArchiveTreeNode* dir, string new_name)
+bool DirArchive::renameDir(ArchiveTreeNode* dir, const string& new_name)
 {
 	string path = dir->parent()->path();
 	if (separator_ != "/")
@@ -371,14 +366,14 @@ bool DirArchive::renameDir(ArchiveTreeNode* dir, string new_name)
 //
 // Namespaces in a folder are treated the same way as a zip archive
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
 {
 	// Check namespace
 	if (add_namespace.IsEmpty() || add_namespace == "global")
 		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 
 	// Get/Create namespace dir
-	ArchiveTreeNode* dir = createDir(add_namespace.Lower());
+	auto dir = createDir(add_namespace.Lower());
 
 	// Add the entry to the dir
 	return Archive::addEntry(entry, 0xFFFFFFFF, dir, copy);
@@ -401,7 +396,7 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Renames [entry].  Returns true if the rename succeeded
 // -----------------------------------------------------------------------------
-bool DirArchive::renameEntry(ArchiveEntry* entry, string name)
+bool DirArchive::renameEntry(ArchiveEntry* entry, const string& name)
 {
 	// Check rename won't result in duplicated name
 	if (entry->parentDir()->entry(name))
@@ -455,27 +450,26 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 	vector<MapDesc> ret;
 
 	// Get the maps directory
-	ArchiveTreeNode* mapdir = dir("maps");
+	auto mapdir = dir("maps");
 	if (!mapdir)
 		return ret;
 
 	// Go through entries in map dir
 	for (unsigned a = 0; a < mapdir->numEntries(); a++)
 	{
-		ArchiveEntry* entry = mapdir->entryAt(a);
+		auto entry = mapdir->entryAt(a);
 
 		// Maps can only be wad archives
 		if (entry->type()->formatId() != "archive_wad")
 			continue;
 
 		// Detect map format (probably kinda slow but whatever, no better way to do it really)
-		MapFormat format  = MapFormat::Unknown;
-		Archive*  tempwad = new WadArchive();
-		tempwad->open(entry);
-		vector<MapDesc> emaps = tempwad->detectMaps();
-		if (emaps.size() > 0)
+		auto       format = MapFormat::Unknown;
+		WadArchive tempwad;
+		tempwad.open(entry->data());
+		auto emaps = tempwad.detectMaps();
+		if (!emaps.empty())
 			format = emaps[0].format;
-		delete tempwad;
 
 		// Add map description
 		MapDesc md;
@@ -497,8 +491,8 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	ArchiveTreeNode* dir = rootDir();
-	options.match_name   = options.match_name.Lower();
+	auto dir           = rootDir();
+	options.match_name = options.match_name.Lower();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -518,7 +512,7 @@ ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 	}
 
 	// Do default search
-	SearchOptions opt   = options;
+	auto opt            = options;
 	opt.dir             = dir;
 	opt.match_namespace = "";
 	return Archive::findFirst(opt);
@@ -531,8 +525,8 @@ ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 {
 	// Init search variables
-	ArchiveTreeNode* dir = rootDir();
-	options.match_name   = options.match_name.Lower();
+	auto dir           = rootDir();
+	options.match_name = options.match_name.Lower();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -552,7 +546,7 @@ ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 	}
 
 	// Do default search
-	SearchOptions opt   = options;
+	auto opt            = options;
 	opt.dir             = dir;
 	opt.match_namespace = "";
 	return Archive::findLast(opt);
@@ -564,8 +558,8 @@ ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
-	ArchiveTreeNode* dir = rootDir();
-	options.match_name   = options.match_name.Lower();
+	auto dir           = rootDir();
+	options.match_name = options.match_name.Lower();
 	vector<ArchiveEntry*> ret;
 
 	// Check for search directory (overrides namespace)
@@ -586,7 +580,7 @@ vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 	}
 
 	// Do default search
-	SearchOptions opt   = options;
+	auto opt            = options;
 	opt.dir             = dir;
 	opt.match_namespace = "";
 	return Archive::findAll(opt);
@@ -597,8 +591,8 @@ vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 // -----------------------------------------------------------------------------
 void DirArchive::ignoreChangedEntries(vector<DirEntryChange>& changes)
 {
-	for (unsigned a = 0; a < changes.size(); a++)
-		ignored_file_changes_[changes[a].file_path] = changes[a];
+	for (auto& change : changes)
+		ignored_file_changes_[change.file_path] = change;
 }
 
 // -----------------------------------------------------------------------------
@@ -608,72 +602,72 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 {
 	bool was_modified = isModified();
 
-	for (unsigned a = 0; a < changes.size(); a++)
+	for (auto& change : changes)
 	{
-		ignored_file_changes_.erase(changes[a].file_path);
+		ignored_file_changes_.erase(change.file_path);
 
 		// Modified Entries
-		if (changes[a].action == DirEntryChange::UPDATED)
+		if (change.action == DirEntryChange::Action::Updated)
 		{
-			ArchiveEntry* entry = entryAtPath(changes[a].entry_path);
-			entry->importFile(changes[a].file_path);
+			auto entry = entryAtPath(change.entry_path);
+			entry->importFile(change.file_path);
 			EntryType::detectEntryType(entry);
-			file_modification_times_[entry] = wxFileModificationTime(changes[a].file_path);
+			file_modification_times_[entry] = wxFileModificationTime(change.file_path);
 		}
 
 		// Deleted Entries
-		else if (changes[a].action == DirEntryChange::DELETED_FILE)
+		else if (change.action == DirEntryChange::Action::DeletedFile)
 		{
-			ArchiveEntry* entry = entryAtPath(changes[a].entry_path);
+			auto entry = entryAtPath(change.entry_path);
 			// If the parent directory was already removed, this entry no longer exists
 			if (entry)
 				removeEntry(entry);
 		}
 
 		// Deleted Directories
-		else if (changes[a].action == DirEntryChange::DELETED_DIR)
-			removeDir(changes[a].entry_path);
+		else if (change.action == DirEntryChange::Action::DeletedDir)
+			removeDir(change.entry_path);
 
 		// New Directory
-		else if (changes[a].action == DirEntryChange::ADDED_DIR)
+		else if (change.action == DirEntryChange::Action::AddedDir)
 		{
-			string name = changes[a].file_path;
+			string name = change.file_path;
 			name.Remove(0, filename_.Length());
 			if (name.StartsWith(separator_))
 				name.Remove(0, 1);
 			name.Replace("\\", "/");
 
-			ArchiveTreeNode* ndir = createDir(name);
+			auto ndir = createDir(name);
 			ndir->dirEntry()->setState(0);
-			ndir->dirEntry()->exProp("filePath") = changes[a].file_path;
+			ndir->dirEntry()->exProp("filePath") = change.file_path;
 		}
 
 		// New Entry
-		else if (changes[a].action == DirEntryChange::ADDED_FILE)
+		else if (change.action == DirEntryChange::Action::AddedFile)
 		{
-			string name = changes[a].file_path;
+			string name = change.file_path;
 			name.Remove(0, filename_.Length());
 			if (name.StartsWith(separator_))
 				name.Remove(0, 1);
 			name.Replace("\\", "/");
 
 			// Create entry
-			wxFileName    fn(name);
-			ArchiveEntry* new_entry = new ArchiveEntry(fn.GetFullName());
+			wxFileName fn(name);
+			auto       new_entry = new ArchiveEntry(fn.GetFullName());
 
 			// Setup entry info
 			new_entry->setLoaded(false);
-			new_entry->exProp("filePath") = changes[a].file_path;
+			new_entry->exProp("filePath") = change.file_path;
 
 			// Add entry and directory to directory tree
-			ArchiveTreeNode* ndir = createDir(fn.GetPath(true, wxPATH_UNIX));
+			auto ndir = createDir(fn.GetPath(true, wxPATH_UNIX));
 			ndir->addEntry(new_entry);
 
 			// Read entry data
-			new_entry->importFile(changes[a].file_path);
+			new_entry->importFile(change.file_path);
 			new_entry->setLoaded(true);
 
-			time_t modtime                      = wxFileModificationTime(changes[a].file_path);
+			time_t modtime                      = wxFileModificationTime(change.file_path);
 			file_modification_times_[new_entry] = modtime;
 
 			// Detect entry type
@@ -697,15 +691,17 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 // -----------------------------------------------------------------------------
 bool DirArchive::shouldIgnoreEntryChange(DirEntryChange& change)
 {
-	IgnoredFileChanges::iterator it = ignored_file_changes_.find(change.file_path);
+	auto it = ignored_file_changes_.find(change.file_path);
 	// If we've never seen this file before, definitely don't ignore the change
 	if (it == ignored_file_changes_.end())
 		return false;
 
-	DirEntryChange old_change = it->second;
-	bool           was_deleted =
-		(old_change.action == DirEntryChange::DELETED_FILE || old_change.action == DirEntryChange::DELETED_DIR);
-	bool is_deleted = (change.action == DirEntryChange::DELETED_FILE || change.action == DirEntryChange::DELETED_DIR);
+	auto old_change = it->second;
+	bool was_deleted =
+		(old_change.action == DirEntryChange::Action::DeletedFile
+		 || old_change.action == DirEntryChange::Action::DeletedDir);
+	bool is_deleted =
+		(change.action == DirEntryChange::Action::DeletedFile || change.action == DirEntryChange::Action::DeletedDir);
 
 	// Was deleted, is still deleted, nothing's changed
 	if (was_deleted && is_deleted)

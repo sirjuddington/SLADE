@@ -5,8 +5,8 @@
 class PakArchive : public Archive
 {
 public:
-	PakArchive();
-	~PakArchive();
+	PakArchive() : Archive("pak") {}
+	~PakArchive() = default;
 
 	// Opening/writing
 	bool open(MemChunk& mc) override;                      // Open from MemChunk
@@ -17,5 +17,5 @@ public:
 
 	// Static functions
 	static bool isPakArchive(MemChunk& mc);
-	static bool isPakArchive(string filename);
+	static bool isPakArchive(const string& filename);
 };

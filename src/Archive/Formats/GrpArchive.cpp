@@ -52,21 +52,6 @@ EXTERN_CVAR(Bool, archive_load_data)
 
 
 // -----------------------------------------------------------------------------
-// GrpArchive class constructor
-// -----------------------------------------------------------------------------
-GrpArchive::GrpArchive() : TreelessArchive("grp")
-{
-	// desc.max_name_length = 12;
-	// desc.names_extensions = false;
-	// desc.supports_dirs = false;
-}
-
-// -----------------------------------------------------------------------------
-// GrpArchive class destructor
-// -----------------------------------------------------------------------------
-GrpArchive::~GrpArchive() {}
-
-// -----------------------------------------------------------------------------
 // Returns the file byte offset for [entry]
 // -----------------------------------------------------------------------------
 uint32_t GrpArchive::getEntryOffset(ArchiveEntry* entry)
@@ -160,7 +145,7 @@ bool GrpArchive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		ArchiveEntry* nlump = new ArchiveEntry(wxString::FromAscii(name), size);
+		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(0);
@@ -178,7 +163,7 @@ bool GrpArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = entryAt(a);
+		auto entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -219,7 +204,7 @@ bool GrpArchive::write(MemChunk& mc, bool update)
 	mc.clear();
 	mc.seek(0, SEEK_SET);
 	mc.reSize((1 + numEntries()) * 16);
-	ArchiveEntry* entry = nullptr;
+	ArchiveEntry* entry;
 
 	// Write the header
 	uint32_t num_lumps = numEntries();
@@ -331,7 +316,7 @@ ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // -----------------------------------------------------------------------------
 // Since GRP files have no namespaces, just call the other function.
 // -----------------------------------------------------------------------------
-ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
@@ -340,19 +325,20 @@ ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 // Override of Archive::renameEntry to update namespaces if needed and rename
 // the entry if necessary to be grp-friendly (twelve characters max)
 // -----------------------------------------------------------------------------
-bool GrpArchive::renameEntry(ArchiveEntry* entry, string name)
+bool GrpArchive::renameEntry(ArchiveEntry* entry, const string& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
 
 	// Process name (must be 12 characters max)
-	name.Truncate(12);
+	auto new_name = name;
+	new_name.Truncate(12);
 	if (wad_force_uppercase)
-		name.MakeUpper();
+		new_name.MakeUpper();
 
 	// Do default rename
-	return Archive::renameEntry(entry, name);
+	return Archive::renameEntry(entry, new_name);
 }
 
 // -----------------------------------------------------------------------------
@@ -402,7 +388,7 @@ bool GrpArchive::isGrpArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid DN3D grp archive
 // -----------------------------------------------------------------------------
-bool GrpArchive::isGrpArchive(string filename)
+bool GrpArchive::isGrpArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -461,18 +447,16 @@ bool GrpArchive::isGrpArchive(string filename)
 
 CONSOLE_COMMAND(lookupdat, 0, false)
 {
-	ArchiveEntry* entry = MainEditor::currentEntry();
+	auto entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;
 
-	MemChunk& mc = entry->data();
+	auto& mc = entry->data();
 	if (mc.size() == 0)
 		return;
 
-	ArchiveEntry* nentry = nullptr;
-	uint32_t*     data   = nullptr;
-	int           index  = entry->parent()->entryIndex(entry, entry->parentDir());
+	int index = entry->parent()->entryIndex(entry, entry->parentDir());
 	mc.seek(0, SEEK_SET);
 
 	// Create lookup table
@@ -482,11 +466,11 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 	if (mc.size() < (uint32_t)((numlookup * 256) + (5 * 768) + 1))
 		return;
 
-	nentry = entry->parent()->addNewEntry("COLORMAP.DAT", index + 1, entry->parentDir());
+	auto nentry = entry->parent()->addNewEntry("COLORMAP.DAT", index + 1, entry->parentDir());
 	if (!nentry)
 		return;
 
-	data = new uint32_t[numlookup * 256];
+	auto data = new uint32_t[numlookup * 256];
 	for (int i = 0; i < numlookup; ++i)
 	{
 		mc.read(&dummy, 1);
@@ -545,25 +529,23 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 
 CONSOLE_COMMAND(palettedat, 0, false)
 {
-	ArchiveEntry* entry = MainEditor::currentEntry();
+	auto entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;
 
-	MemChunk& mc = entry->data();
+	auto& mc = entry->data();
 	// Minimum size: 768 bytes for the palette, 2 for the number of lookup tables,
 	// 0 for these tables if there are none, and 65536 for the transparency map.
 	if (mc.size() < 66306)
 		return;
 
-	ArchiveEntry* nentry = nullptr;
-	uint32_t*     data   = nullptr;
-	int           index  = entry->parent()->entryIndex(entry, entry->parentDir());
+	int index = entry->parent()->entryIndex(entry, entry->parentDir());
 	mc.seek(0, SEEK_SET);
 
 	// Create palette
-	data   = new uint32_t[768];
-	nentry = entry->parent()->addNewEntry("MAINPAL.PAL", index + 1, entry->parentDir());
+	auto data   = new uint32_t[768];
+	auto nentry = entry->parent()->addNewEntry("MAINPAL.PAL", index + 1, entry->parentDir());
 	if (!nentry)
 		return;
 	mc.read(data, 768);
@@ -597,25 +579,23 @@ CONSOLE_COMMAND(palettedat, 0, false)
 
 CONSOLE_COMMAND(tablesdat, 0, false)
 {
-	ArchiveEntry* entry = MainEditor::currentEntry();
+	auto entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;
 
-	MemChunk& mc = entry->data();
+	auto& mc = entry->data();
 	// Sin/cos table: 4096; atn table 1280; gamma table 1024
 	// Fonts: 1024 byte each.
 	if (mc.size() != 8448)
 		return;
 
-	ArchiveEntry* nentry = nullptr;
-	uint32_t*     data   = nullptr;
-	int           index  = entry->parent()->entryIndex(entry, entry->parentDir());
+	int index = entry->parent()->entryIndex(entry, entry->parentDir());
 	mc.seek(5376, SEEK_SET);
 
 	// Create fonts
-	data   = new uint32_t[1024];
-	nentry = entry->parent()->addNewEntry("VGAFONT1.FNT", index + 1, entry->parentDir());
+	auto data   = new uint32_t[1024];
+	auto nentry = entry->parent()->addNewEntry("VGAFONT1.FNT", index + 1, entry->parentDir());
 	if (!nentry)
 		return;
 	mc.read(data, 1024);

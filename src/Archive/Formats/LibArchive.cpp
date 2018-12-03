@@ -42,16 +42,6 @@
 
 
 // -----------------------------------------------------------------------------
-// LibArchive class constructor
-// -----------------------------------------------------------------------------
-LibArchive::LibArchive() : TreelessArchive("lib") {}
-
-// -----------------------------------------------------------------------------
-// LibArchive class destructor
-// -----------------------------------------------------------------------------
-LibArchive::~LibArchive() {}
-
-// -----------------------------------------------------------------------------
 // Gets a lump entry's offset
 // Returns the lump entry's offset, or zero if it doesn't exist
 // -----------------------------------------------------------------------------
@@ -129,7 +119,7 @@ bool LibArchive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		ArchiveEntry* nlump = new ArchiveEntry(wxString::FromAscii(myname), size);
+		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(myname), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(0);
@@ -148,7 +138,7 @@ bool LibArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = entryAt(a);
+		auto entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -192,7 +182,7 @@ bool LibArchive::write(MemChunk& mc, bool update)
 
 	uint16_t      num_files  = numEntries();
 	uint32_t      dir_offset = 0;
-	ArchiveEntry* entry      = nullptr;
+	ArchiveEntry* entry;
 	for (uint16_t l = 0; l < num_files; l++)
 	{
 		entry = entryAt(l);
@@ -313,7 +303,7 @@ ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // -----------------------------------------------------------------------------
 // There is no namespaces in lib archives, so just put it at the end
 // -----------------------------------------------------------------------------
-ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
@@ -322,17 +312,18 @@ ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 // Override of Archive::renameEntry to rename the entry if necessary to be
 // lib-friendly (12 characters max)
 // -----------------------------------------------------------------------------
-bool LibArchive::renameEntry(ArchiveEntry* entry, string name)
+bool LibArchive::renameEntry(ArchiveEntry* entry, const string& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
 
 	// Process name (must be 12 characters max)
-	name = name.Truncate(12);
+	auto new_name = name;
+	new_name.Truncate(12);
 
 	// Do default rename
-	return Archive::renameEntry(entry, name);
+	return Archive::renameEntry(entry, new_name);
 }
 
 // -----------------------------------------------------------------------------
@@ -397,7 +388,7 @@ bool LibArchive::isLibArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Shadowcaster lib archive
 // -----------------------------------------------------------------------------
-bool LibArchive::isLibArchive(string filename)
+bool LibArchive::isLibArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

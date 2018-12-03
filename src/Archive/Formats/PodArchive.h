@@ -6,10 +6,10 @@ class PodArchive : public Archive
 {
 public:
 	PodArchive();
-	~PodArchive();
+	~PodArchive() = default;
 
 	string getId() const { return wxString(id_); }
-	void   setId(string id);
+	void   setId(const string& id);
 
 	// Opening
 	bool open(MemChunk& mc) override;
@@ -22,7 +22,7 @@ public:
 
 	// Static functions
 	static bool isPodArchive(MemChunk& mc);
-	static bool isPodArchive(string filename);
+	static bool isPodArchive(const string& filename);
 
 private:
 	char id_[80];

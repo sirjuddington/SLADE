@@ -15,7 +15,7 @@ struct ArchiveFormat
 	string             entry_format;
 	vector<StringPair> extensions;
 
-	ArchiveFormat(string id) :
+	ArchiveFormat(const string& id) :
 		id{ id },
 		name{ id },
 		supports_dirs{ false },
@@ -48,11 +48,13 @@ public:
 
 	static bool save_backup;
 
-	Archive(string format = "");
+	typedef std::unique_ptr<Archive> UPtr;
+
+	Archive(const string& format = "");
 	virtual ~Archive();
 
 	string           formatId() const { return format_; }
-	string           filename(bool full = true);
+	string           filename(bool full = true) const;
 	ArchiveEntry*    parentEntry() const { return parent_; }
 	Archive*         parentArchive() const { return (parent_ ? parent_->parent() : nullptr); }
 	ArchiveTreeNode* rootDir() { return &dir_root_; }
@@ -62,15 +64,15 @@ public:
 	virtual bool     isWritable() { return true; }
 
 	void setModified(bool modified);
-	void setFilename(string filename) { this->filename_ = filename; }
+	void setFilename(const string& filename) { this->filename_ = filename; }
 
 	// Entry retrieval/info
 	bool                       checkEntry(ArchiveEntry* entry);
-	virtual ArchiveEntry*      entry(string name, bool cut_ext = false, ArchiveTreeNode* dir = nullptr);
+	virtual ArchiveEntry*      entry(const string& name, bool cut_ext = false, ArchiveTreeNode* dir = nullptr);
 	virtual ArchiveEntry*      entryAt(unsigned index, ArchiveTreeNode* dir = nullptr);
 	virtual int                entryIndex(ArchiveEntry* entry, ArchiveTreeNode* dir = nullptr);
-	virtual ArchiveEntry*      entryAtPath(string path);
-	virtual ArchiveEntry::SPtr entryAtPathShared(string path);
+	virtual ArchiveEntry*      entryAtPath(const string& path);
+	virtual ArchiveEntry::SPtr entryAtPathShared(const string& path);
 
 	// Archive type info
 	ArchiveFormat formatDesc() const;
@@ -78,14 +80,14 @@ public:
 	virtual bool  isTreeless() { return false; }
 
 	// Opening
-	virtual bool open(string filename);     // Open from File
-	virtual bool open(ArchiveEntry* entry); // Open from ArchiveEntry
-	virtual bool open(MemChunk& mc) = 0;    // Open from MemChunk
+	virtual bool open(const string& filename); // Open from File
+	virtual bool open(ArchiveEntry* entry);    // Open from ArchiveEntry
+	virtual bool open(MemChunk& mc) = 0;       // Open from MemChunk
 
 	// Writing/Saving
-	virtual bool write(MemChunk& mc, bool update = true) = 0; // Write to MemChunk
-	virtual bool write(string filename, bool update = true);  // Write to File
-	virtual bool save(string filename = "");                  // Save archive
+	virtual bool write(MemChunk& mc, bool update = true) = 0;       // Write to MemChunk
+	virtual bool write(const string& filename, bool update = true); // Write to File
+	virtual bool save(const string& filename = "");                 // Save archive
 
 	// Misc
 	virtual bool     loadEntryData(ArchiveEntry* entry) = 0;
@@ -96,14 +98,14 @@ public:
 	void             putEntryTreeAsList(vector<ArchiveEntry::SPtr>& list, ArchiveTreeNode* start = nullptr);
 	bool             canSave() const { return parent_ || on_disk_; }
 	virtual bool     paste(ArchiveTreeNode* tree, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* base = nullptr);
-	virtual bool     importDir(string directory);
+	virtual bool     importDir(const string& directory);
 	virtual bool     hasFlatHack() { return false; }
 
 	// Directory stuff
-	virtual ArchiveTreeNode* dir(string path, ArchiveTreeNode* base = nullptr);
-	virtual ArchiveTreeNode* createDir(string path, ArchiveTreeNode* base = nullptr);
-	virtual bool             removeDir(string path, ArchiveTreeNode* base = nullptr);
-	virtual bool             renameDir(ArchiveTreeNode* dir, string new_name);
+	virtual ArchiveTreeNode* dir(const string& path, ArchiveTreeNode* base = nullptr);
+	virtual ArchiveTreeNode* createDir(const string& path, ArchiveTreeNode* base = nullptr);
+	virtual bool             removeDir(const string& path, ArchiveTreeNode* base = nullptr);
+	virtual bool             renameDir(ArchiveTreeNode* dir, const string& new_name);
 
 	// Entry addition/removal
 	virtual ArchiveEntry* addEntry(
@@ -111,12 +113,15 @@ public:
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr,
 		bool             copy     = false);
-	virtual ArchiveEntry* addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false)
+	virtual ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false)
 	{
 		return addEntry(entry, 0xFFFFFFFF, nullptr, false);
 	} // By default, add to the 'global' namespace (ie root dir)
-	virtual ArchiveEntry* addNewEntry(string name = "", unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = nullptr);
-	virtual ArchiveEntry* addNewEntry(string name, string add_namespace);
+	virtual ArchiveEntry* addNewEntry(
+		const string&    name     = "",
+		unsigned         position = 0xFFFFFFFF,
+		ArchiveTreeNode* dir      = nullptr);
+	virtual ArchiveEntry* addNewEntry(const string& name, const string& add_namespace);
 	virtual bool          removeEntry(ArchiveEntry* entry);
 
 	// Entry moving
@@ -125,7 +130,7 @@ public:
 	virtual bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = nullptr);
 
 	// Entry modification
-	virtual bool renameEntry(ArchiveEntry* entry, string name);
+	virtual bool renameEntry(ArchiveEntry* entry, const string& name);
 	virtual bool revertEntry(ArchiveEntry* entry);
 
 	// Detection
@@ -181,11 +186,11 @@ private:
 class TreelessArchive : public Archive
 {
 public:
-	TreelessArchive(string format = "") : Archive(format) {}
-	virtual ~TreelessArchive() {}
+	TreelessArchive(const string& format = "") : Archive(format) {}
+	virtual ~TreelessArchive() = default;
 
 	// Entry retrieval/info
-	ArchiveEntry* entry(string name, bool cut_ext = false, ArchiveTreeNode* dir = nullptr) override
+	ArchiveEntry* entry(const string& name, bool cut_ext = false, ArchiveTreeNode* dir = nullptr) override
 	{
 		return Archive::entry(name);
 	}
@@ -208,10 +213,10 @@ public:
 	bool isTreeless() override { return true; }
 
 	// Directory stuff
-	ArchiveTreeNode* dir(string path, ArchiveTreeNode* base = nullptr) override { return rootDir(); }
-	ArchiveTreeNode* createDir(string path, ArchiveTreeNode* base = nullptr) override { return rootDir(); }
-	bool             removeDir(string path, ArchiveTreeNode* base = nullptr) override { return false; }
-	bool             renameDir(ArchiveTreeNode* dir, string new_name) override { return false; }
+	ArchiveTreeNode* dir(const string& path, ArchiveTreeNode* base = nullptr) override { return rootDir(); }
+	ArchiveTreeNode* createDir(const string& path, ArchiveTreeNode* base = nullptr) override { return rootDir(); }
+	bool             removeDir(const string& path, ArchiveTreeNode* base = nullptr) override { return false; }
+	bool             renameDir(ArchiveTreeNode* dir, const string& new_name) override { return false; }
 
 	// Entry addition/removal
 	ArchiveEntry* addEntry(
@@ -222,7 +227,8 @@ public:
 	{
 		return Archive::addEntry(entry, position, nullptr, copy);
 	}
-	ArchiveEntry* addNewEntry(string name = "", unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = nullptr) override
+	ArchiveEntry* addNewEntry(const string& name = "", unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = nullptr)
+		override
 	{
 		return Archive::addNewEntry(name, position, nullptr);
 	}

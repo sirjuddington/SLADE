@@ -36,14 +36,6 @@
 
 // -----------------------------------------------------------------------------
 //
-// Constants
-//
-// -----------------------------------------------------------------------------
-#define RESDIRENTRYSIZE 39 // The size of a res entry in the res directory
-
-
-// -----------------------------------------------------------------------------
-//
 // External Variables
 //
 // -----------------------------------------------------------------------------
@@ -56,16 +48,6 @@ EXTERN_CVAR(Bool, archive_load_data)
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// ResArchive class constructor
-// -----------------------------------------------------------------------------
-ResArchive::ResArchive() : Archive("res") {}
-
-// -----------------------------------------------------------------------------
-// ResArchive class destructor
-// -----------------------------------------------------------------------------
-ResArchive::~ResArchive() {}
 
 // -----------------------------------------------------------------------------
 // Returns the file byte offset for [entry]
@@ -163,7 +145,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		}
 
 		// Create & setup lump
-		ArchiveEntry* nlump = new ArchiveEntry(wxString::FromAscii(name), size);
+		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(0);
@@ -181,7 +163,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		size_t d_o, n_l;
 		if (isResArchive(nlump->data(), d_o, n_l))
 		{
-			ArchiveTreeNode* ndir = createDir(name, parent);
+			auto ndir = createDir(name, parent);
 			if (ndir)
 			{
 				UI::setSplashProgressMessage(S_FMT("Reading res archive data: %s directory", name));
@@ -191,20 +173,16 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 				ndir->dirEntry()->setState(0);
 				// Restore offset and clean out the entry
 				mc.seek(myoffset, SEEK_SET);
-				delete nlump;
 			}
 			else
-			{
-				delete nlump;
 				return false;
-			}
 			// Not a directory, then add to entry list
 		}
 		else
 		{
 			parent->addEntry(nlump);
 			// Detect entry type
-			EntryType::detectEntryType(nlump);
+			EntryType::detectEntryType(nlump.get());
 			// Unload entry data if needed
 			if (!archive_load_data)
 				nlump->unloadData();
@@ -407,7 +385,7 @@ ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // If [copy] is true a copy of the entry is added.
 // Returns the added entry or NULL if the entry is invalid
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
 {
 	// Namespace not found, add to global namespace (ie end of archive)
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
@@ -417,7 +395,7 @@ ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 // Override of Archive::renameEntry to update namespaces if needed and rename
 // the entry if necessary to be res-friendly (14 chars max)
 // -----------------------------------------------------------------------------
-bool ResArchive::renameEntry(ArchiveEntry* entry, string name)
+bool ResArchive::renameEntry(ArchiveEntry* entry, const string& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -425,10 +403,10 @@ bool ResArchive::renameEntry(ArchiveEntry* entry, string name)
 
 	// Process name (must be 14 characters max)
 	wxFileName fn(name);
-	name = fn.GetName().Truncate(14);
+	auto       new_name = fn.GetName().Truncate(14);
 
 	// Do default rename
-	return Archive::renameEntry(entry, name);
+	return Archive::renameEntry(entry, new_name);
 }
 
 // -----------------------------------------------------------------------------
@@ -449,10 +427,7 @@ bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lump
 	if (!(mc[0] == 'R' && mc[1] == 'e' && mc[2] == 's' && mc[3] == '!'))
 		return false;
 
-	// Get number of lumps and directory offset
-	uint32_t offset_offset = 0;
-	uint32_t rel_offset    = 0;
-	uint32_t dir_size      = 0;
+	uint32_t dir_size = 0;
 	mc.seek(4, SEEK_SET);
 	mc.read(&dir_offset, 4);
 	mc.read(&dir_size, 4);
@@ -464,8 +439,8 @@ bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lump
 	// A&A contains nested resource files. The offsets are then always relative to
 	// the top-level file. This causes problem with the embedded archive system
 	// used by SLADE3. The solution is to compute the offset offset. :)
-	offset_offset = dir_offset - (mc.size() - dir_size);
-	rel_offset    = dir_offset - offset_offset;
+	uint32_t offset_offset = dir_offset - (mc.size() - dir_size);
+	uint32_t rel_offset    = dir_offset - offset_offset;
 
 	// Check directory offset and size are both decent
 	if (dir_size % RESDIRENTRYSIZE || (rel_offset + dir_size) > mc.size())
@@ -483,7 +458,7 @@ bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lump
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid A&A res archive
 // -----------------------------------------------------------------------------
-bool ResArchive::isResArchive(string filename)
+bool ResArchive::isResArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

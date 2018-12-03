@@ -51,16 +51,6 @@ EXTERN_CVAR(Bool, archive_load_data)
 
 
 // -----------------------------------------------------------------------------
-// SiNArchive class constructor
-// -----------------------------------------------------------------------------
-SiNArchive::SiNArchive() : Archive("sin") {}
-
-// -----------------------------------------------------------------------------
-// SiNArchive class destructor
-// -----------------------------------------------------------------------------
-SiNArchive::~SiNArchive() {}
-
-// -----------------------------------------------------------------------------
 // Reads SiN format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
@@ -124,10 +114,10 @@ bool SiNArchive::open(MemChunk& mc)
 		wxFileName fn(wxString::FromAscii(name, 120));
 
 		// Create directory if needed
-		ArchiveTreeNode* dir = createDir(fn.GetPath(true, wxPATH_UNIX));
+		auto dir = createDir(fn.GetPath(true, wxPATH_UNIX));
 
 		// Create entry
-		ArchiveEntry* entry     = new ArchiveEntry(fn.GetFullName(), size);
+		auto entry              = std::make_shared<ArchiveEntry>(fn.GetFullName(), size);
 		entry->exProp("Offset") = (int)offset;
 		entry->setLoaded(false);
 		entry->setState(0);
@@ -147,7 +137,7 @@ bool SiNArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_entries)));
 
 		// Get entry
-		ArchiveEntry* entry = all_entries[a];
+		auto entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -194,14 +184,14 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 	// Process entry list
 	int32_t dir_offset = 12;
 	int32_t dir_size   = 0;
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Ignore folder entries
-		if (entries[a]->type() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// Increment directory offset and size
-		dir_offset += entries[a]->size();
+		dir_offset += entry->size();
 		dir_size += 128;
 	}
 
@@ -218,21 +208,21 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 	// Write directory
 	mc.seek(dir_offset, SEEK_SET);
 	int32_t offset = 12;
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entries[a]->type() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// Update entry
 		if (update)
 		{
-			entries[a]->setState(0);
-			entries[a]->exProp("Offset") = (int)offset;
+			entry->setState(0);
+			entry->exProp("Offset") = (int)offset;
 		}
 
 		// Check entry name
-		string name = entries[a]->path(true);
+		string name = entry->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 120)
 		{
@@ -254,7 +244,7 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 		mc.write(&offset, 4);
 
 		// Write entry size
-		int32_t size = entries[a]->size();
+		int32_t size = entry->size();
 		mc.write(&size, 4);
 
 		// Increment/update offset
@@ -263,14 +253,14 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 
 	// Write entry data
 	mc.seek(12, SEEK_SET);
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entries[a]->type() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// Write data
-		mc.write(entries[a]->rawData(), entries[a]->size());
+		mc.write(entry->rawData(), entry->size());
 	}
 
 	return true;
@@ -359,7 +349,7 @@ bool SiNArchive::isSiNArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Ritual SiN archive
 // -----------------------------------------------------------------------------
-bool SiNArchive::isSiNArchive(string filename)
+bool SiNArchive::isSiNArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

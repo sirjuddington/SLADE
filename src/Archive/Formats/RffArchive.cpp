@@ -105,14 +105,12 @@ struct RFFLump
 // -----------------------------------------------------------------------------
 // From ZDoom: decrypts RFF data
 // -----------------------------------------------------------------------------
-void BloodCrypt(void* data, int key, int len)
+void bloodCrypt(void* data, int key, int len)
 {
 	int p = (uint8_t)key, i;
 
 	for (i = 0; i < len; ++i)
-	{
 		((uint8_t*)data)[i] ^= (unsigned char)(p + (i >> 1));
-	}
 }
 } // namespace
 
@@ -123,16 +121,6 @@ void BloodCrypt(void* data, int key, int len)
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// RffArchive class constructor
-// -----------------------------------------------------------------------------
-RffArchive::RffArchive() : TreelessArchive("rff") {}
-
-// -----------------------------------------------------------------------------
-// RffArchive class destructor
-// -----------------------------------------------------------------------------
-RffArchive::~RffArchive() {}
 
 // -----------------------------------------------------------------------------
 // Returns the file byte offset for [entry]
@@ -195,11 +183,11 @@ bool RffArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Read the directory
-	RFFLump* lumps = new RFFLump[num_lumps];
+	auto lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
 	UI::setSplashProgressMessage("Reading rff archive data");
 	mc.read(lumps, num_lumps * sizeof(RFFLump));
-	BloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
+	bloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
@@ -232,7 +220,7 @@ bool RffArchive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		ArchiveEntry* nlump = new ArchiveEntry(wxString::FromAscii(name), size);
+		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(0);
@@ -255,7 +243,7 @@ bool RffArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = entryAt(a);
+		auto entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -269,7 +257,7 @@ bool RffArchive::open(MemChunk& mc)
 				uint8_t* cdata = new uint8_t[entry->size()];
 				memcpy(cdata, edata.data(), entry->size());
 				int cryptlen = entry->size() < 256 ? entry->size() : 256;
-				BloodCrypt(cdata, 0, cryptlen);
+				bloodCrypt(cdata, 0, cryptlen);
 				edata.importMem(cdata, entry->size());
 				delete[] cdata;
 			}
@@ -383,7 +371,7 @@ ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // -----------------------------------------------------------------------------
 // Since RFF files have no namespaces, just call the other function.
 // -----------------------------------------------------------------------------
-ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
@@ -392,19 +380,20 @@ ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 // Override of Archive::renameEntry to update namespaces if needed and rename
 // the entry if necessary to be grp-friendly (twelve characters max)
 // -----------------------------------------------------------------------------
-bool RffArchive::renameEntry(ArchiveEntry* entry, string name)
+bool RffArchive::renameEntry(ArchiveEntry* entry, const string& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
 
 	// Process name (must be 12 characters max)
-	name.Truncate(12);
+	auto new_name = name;
+	new_name.Truncate(12);
 	if (wad_force_uppercase)
-		name.MakeUpper();
+		new_name.MakeUpper();
 
 	// Do default rename
-	return Archive::renameEntry(entry, name);
+	return Archive::renameEntry(entry, new_name);
 }
 
 // -----------------------------------------------------------------------------
@@ -437,11 +426,11 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 
 
 	// Compute total size
-	RFFLump* lumps = new RFFLump[num_lumps];
+	auto lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
 	UI::setSplashProgressMessage("Reading rff archive data");
 	mc.read(lumps, num_lumps * sizeof(RFFLump));
-	BloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
+	bloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);
 	uint32_t size      = 0;
 	for (uint32_t a = 0; a < num_lumps; ++a)
@@ -460,7 +449,7 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid DN3D grp archive
 // -----------------------------------------------------------------------------
-bool RffArchive::isRffArchive(string filename)
+bool RffArchive::isRffArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -494,17 +483,14 @@ bool RffArchive::isRffArchive(string filename)
 
 
 	// Compute total size
-	RFFLump* lumps = new RFFLump[num_lumps];
+	auto lumps = new RFFLump[num_lumps];
 	file.Seek(dir_offset, wxFromStart);
 	UI::setSplashProgressMessage("Reading rff archive data");
 	file.Read(lumps, num_lumps * sizeof(RFFLump));
-	BloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
+	bloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);
-	uint32_t size      = 0;
 	for (uint32_t a = 0; a < num_lumps; ++a)
-	{
 		totalsize += lumps[a].Size;
-	}
 
 	// Check if total size is correct
 	if (totalsize > file.Length())

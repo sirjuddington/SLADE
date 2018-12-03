@@ -5,8 +5,8 @@
 class BZip2Archive : public TreelessArchive
 {
 public:
-	BZip2Archive();
-	~BZip2Archive();
+	BZip2Archive() : TreelessArchive("bz2") {}
+	~BZip2Archive() = default;
 
 	// Opening
 	bool open(MemChunk& mc) override;
@@ -26,11 +26,14 @@ public:
 	{
 		return nullptr;
 	}
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override { return nullptr; }
-	bool          removeEntry(ArchiveEntry* entry) override { return false; }
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override
+	{
+		return nullptr;
+	}
+	bool removeEntry(ArchiveEntry* entry) override { return false; }
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, string name) override { return false; }
+	bool renameEntry(ArchiveEntry* entry, const string& name) override { return false; }
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override { return false; }
@@ -46,5 +49,5 @@ public:
 
 	// Static functions
 	static bool isBZip2Archive(MemChunk& mc);
-	static bool isBZip2Archive(string filename);
+	static bool isBZip2Archive(const string& filename);
 };

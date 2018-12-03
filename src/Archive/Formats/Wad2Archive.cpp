@@ -53,20 +53,6 @@ EXTERN_CVAR(Bool, wad_force_uppercase)
 
 
 // -----------------------------------------------------------------------------
-// Wad2Archive class constructor
-// -----------------------------------------------------------------------------
-Wad2Archive::Wad2Archive() : TreelessArchive("wad2")
-{
-	// Init variables
-	wad3_ = false;
-}
-
-// -----------------------------------------------------------------------------
-// Wad2Archive class destructor
-// -----------------------------------------------------------------------------
-Wad2Archive::~Wad2Archive() {}
-
-// -----------------------------------------------------------------------------
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
@@ -130,7 +116,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		ArchiveEntry* nlump = new ArchiveEntry(wxString::FromAscii(info.name, 16), info.dsize);
+		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(info.name, 16), info.dsize);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)info.offset;
 		nlump->exProp("W2Type") = info.type;
@@ -151,7 +137,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = entryAt(a);
+		auto entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -326,7 +312,7 @@ ArchiveEntry* Wad2Archive::addEntry(ArchiveEntry* entry, unsigned position, Arch
 // Override of Archive::renameEntry enforce wad2-friendly entry names
 // (16 characters max and uppercase if forced)
 // -----------------------------------------------------------------------------
-bool Wad2Archive::renameEntry(ArchiveEntry* entry, string name)
+bool Wad2Archive::renameEntry(ArchiveEntry* entry, const string& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -334,12 +320,12 @@ bool Wad2Archive::renameEntry(ArchiveEntry* entry, string name)
 
 	// Process name (must be 16 characters max, also cut any extension as wad entries don't usually want them)
 	wxFileName fn(name);
-	name = fn.GetName().Truncate(16);
+	auto       new_name = fn.GetName().Truncate(16);
 	if (wad_force_uppercase)
-		name.MakeUpper();
+		new_name.MakeUpper();
 
 	// Do default rename
-	return Archive::renameEntry(entry, name);
+	return Archive::renameEntry(entry, new_name);
 }
 
 
@@ -388,7 +374,7 @@ bool Wad2Archive::isWad2Archive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake wad2 archive
 // -----------------------------------------------------------------------------
-bool Wad2Archive::isWad2Archive(string filename)
+bool Wad2Archive::isWad2Archive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

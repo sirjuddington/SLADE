@@ -5,12 +5,12 @@
 class DatArchive : public TreelessArchive
 {
 public:
-	DatArchive();
-	~DatArchive();
+	DatArchive() : TreelessArchive("dat") {}
+	~DatArchive() = default;
 
 	// Dat specific
-	uint32_t getEntryOffset(ArchiveEntry* entry);
-	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset);
+	uint32_t getEntryOffset(ArchiveEntry* entry) const { return uint32_t((int)entry->exProp("Offset")); }
+	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset) const { entry->exProp("Offset") = (int)offset; }
 	void     updateNamespaces();
 
 	// Opening/writing
@@ -27,7 +27,7 @@ public:
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr,
 		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override;
 	bool          removeEntry(ArchiveEntry* entry) override;
 
 	// Entry moving
@@ -35,14 +35,14 @@ public:
 	bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = nullptr) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, string name) override;
+	bool renameEntry(ArchiveEntry* entry, const string& name) override;
 
 	// Detection
 	string detectNamespace(size_t index, ArchiveTreeNode* dir = nullptr) override;
 	string detectNamespace(ArchiveEntry* entry) override;
 
 	static bool isDatArchive(MemChunk& mc);
-	static bool isDatArchive(string filename);
+	static bool isDatArchive(const string& filename);
 
 private:
 	int sprites_[2];

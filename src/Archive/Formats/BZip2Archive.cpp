@@ -31,8 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "BZip2Archive.h"
-#include "General/Misc.h"
-#include "UI/SplashWindow.h"
 #include "Utility/Compression.h"
 
 
@@ -42,16 +40,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// BZip2Archive class constructor
-// -----------------------------------------------------------------------------
-BZip2Archive::BZip2Archive() : TreelessArchive("bz2") {}
-
-// -----------------------------------------------------------------------------
-// BZip2Archive class destructor
-// -----------------------------------------------------------------------------
-BZip2Archive::~BZip2Archive() {}
 
 // -----------------------------------------------------------------------------
 // Reads bzip2 format data from a MemChunk
@@ -82,20 +70,19 @@ bool BZip2Archive::open(MemChunk& mc)
 
 	// Let's create the entry
 	setMuted(true);
-	ArchiveEntry* entry = new ArchiveEntry(name, size);
-	MemChunk      xdata;
+	auto     entry = std::make_shared<ArchiveEntry>(name, size);
+	MemChunk xdata;
 	if (Compression::bzip2Decompress(mc, xdata))
 	{
 		entry->importMemChunk(xdata);
 	}
 	else
 	{
-		delete entry;
 		setMuted(false);
 		return false;
 	}
 	rootDir()->addEntry(entry);
-	EntryType::detectEntryType(entry);
+	EntryType::detectEntryType(entry.get());
 	entry->setState(0);
 
 	setMuted(false);
@@ -113,9 +100,8 @@ bool BZip2Archive::open(MemChunk& mc)
 bool BZip2Archive::write(MemChunk& mc, bool update)
 {
 	if (numEntries() == 1)
-	{
 		return Compression::bzip2Compress(entryAt(0)->data(), mc);
-	}
+
 	return false;
 }
 
@@ -165,8 +151,8 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	options.match_name  = options.match_name.Lower();
-	ArchiveEntry* entry = entryAt(0);
+	options.match_name = options.match_name.Lower();
+	auto entry         = entryAt(0);
 	if (entry == nullptr)
 		return entry;
 
@@ -251,7 +237,7 @@ bool BZip2Archive::isBZip2Archive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid BZip2 archive
 // -----------------------------------------------------------------------------
-bool BZip2Archive::isBZip2Archive(string filename)
+bool BZip2Archive::isBZip2Archive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

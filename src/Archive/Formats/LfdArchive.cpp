@@ -52,16 +52,6 @@ EXTERN_CVAR(Bool, archive_load_data)
 
 
 // -----------------------------------------------------------------------------
-// LfdArchive class constructor
-// -----------------------------------------------------------------------------
-LfdArchive::LfdArchive() : TreelessArchive("lfd") {}
-
-// -----------------------------------------------------------------------------
-// LfdArchive class destructor
-// -----------------------------------------------------------------------------
-LfdArchive::~LfdArchive() {}
-
-// -----------------------------------------------------------------------------
 // Returns the file byte offset for [entry]
 // -----------------------------------------------------------------------------
 uint32_t LfdArchive::getEntryOffset(ArchiveEntry* entry)
@@ -158,7 +148,7 @@ bool LfdArchive::open(MemChunk& mc)
 		// Create & setup lump
 		wxFileName fn(name);
 		fn.SetExt(type);
-		ArchiveEntry* nlump = new ArchiveEntry(fn.GetFullName(), length);
+		auto nlump = std::make_shared<ArchiveEntry>(fn.GetFullName(), length);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(0);
@@ -183,7 +173,7 @@ bool LfdArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = entryAt(a);
+		auto entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -223,7 +213,7 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 	// Determine total size
 	uint32_t      dir_size   = (numEntries() + 1) << 4;
 	uint32_t      total_size = dir_size;
-	ArchiveEntry* entry      = nullptr;
+	ArchiveEntry* entry;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = entryAt(l);
@@ -255,10 +245,10 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = entryAt(l);
-		for (int t = 0; t < 5; ++t)
-			type[t] = 0;
-		for (int n = 0; n < 9; ++n)
-			name[n] = 0;
+		for (char& t : type)
+			t = 0;
+		for (char& n : name)
+			n = 0;
 		size = wxINT32_SWAP_ON_BE(entry->size());
 		wxFileName fn(entry->name());
 
@@ -276,10 +266,10 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = entryAt(l);
-		for (int t = 0; t < 5; ++t)
-			type[t] = 0;
-		for (int n = 0; n < 9; ++n)
-			name[n] = 0;
+		for (char& t : type)
+			t = 0;
+		for (char& n : name)
+			n = 0;
 		size = wxINT32_SWAP_ON_BE(entry->size());
 		wxFileName fn(entry->name());
 
@@ -371,7 +361,7 @@ ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // -----------------------------------------------------------------------------
 // Since lfd files have no namespaces, just call the other function.
 // -----------------------------------------------------------------------------
-ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
@@ -380,19 +370,20 @@ ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 // Override of Archive::renameEntry to update namespaces if needed and rename
 // the entry if necessary to be lfd-friendly (twelve characters max)
 // -----------------------------------------------------------------------------
-bool LfdArchive::renameEntry(ArchiveEntry* entry, string name)
+bool LfdArchive::renameEntry(ArchiveEntry* entry, const string& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
 
 	// Process name (must be 13 characters max)
-	name.Truncate(13);
+	auto new_name = name;
+	new_name.Truncate(13);
 	if (wad_force_uppercase)
-		name.MakeUpper();
+		new_name.MakeUpper();
 
 	// Do default rename
-	return Archive::renameEntry(entry, name);
+	return Archive::renameEntry(entry, new_name);
 }
 
 // -----------------------------------------------------------------------------
@@ -441,7 +432,7 @@ bool LfdArchive::isLfdArchive(MemChunk& mc)
 	mc.read(&len2, 4);
 	len2 = wxINT32_SWAP_ON_BE(len2);
 
-	if (strcmp(type1, type2) || strcmp(name1, name2) || len1 != len2)
+	if (strcmp(type1, type2) != 0 || strcmp(name1, name2) != 0 || len1 != len2)
 		return false;
 
 	// If it's passed to here it's probably a lfd file
@@ -451,7 +442,7 @@ bool LfdArchive::isLfdArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Dark Forces lfd archive
 // -----------------------------------------------------------------------------
-bool LfdArchive::isLfdArchive(string filename)
+bool LfdArchive::isLfdArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -505,7 +496,7 @@ bool LfdArchive::isLfdArchive(string filename)
 	file.Read(&len2, 4);
 	len2 = wxINT32_SWAP_ON_BE(len2);
 
-	if (strcmp(type1, type2) || strcmp(name1, name2) || len1 != len2)
+	if (strcmp(type1, type2) != 0 || strcmp(name1, name2) != 0 || len1 != len2)
 		return false;
 
 	// If it's passed to here it's probably a lfd file

@@ -32,24 +32,7 @@
 #include "Main.h"
 #include "GZipArchive.h"
 #include "General/Misc.h"
-#include "UI/SplashWindow.h"
 #include "Utility/Compression.h"
-
-
-// -----------------------------------------------------------------------------
-//
-// Constants
-//
-// -----------------------------------------------------------------------------
-#define GZIP_ID1 0x1F
-#define GZIP_ID2 0x8B
-#define GZIP_DEFLATE 0x08
-#define GZIP_FLG_FTEXT 0x01
-#define GZIP_FLG_FHCRC 0x02
-#define GZIP_FLG_FXTRA 0x04
-#define GZIP_FLG_FNAME 0x08
-#define GZIP_FLG_FCMNT 0x10
-#define GZIP_FLG_FUNKN 0xE0
 
 
 // -----------------------------------------------------------------------------
@@ -58,16 +41,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// GZipArchive class constructor
-// -----------------------------------------------------------------------------
-GZipArchive::GZipArchive() : TreelessArchive("gzip") {}
-
-// -----------------------------------------------------------------------------
-// GZipArchive class destructor
-// -----------------------------------------------------------------------------
-GZipArchive::~GZipArchive() {}
 
 // -----------------------------------------------------------------------------
 // Reads gzip format data from a MemChunk
@@ -87,17 +60,15 @@ bool GZipArchive::open(MemChunk& mc)
 
 	// Check for GZip header; we'll only accept deflated gzip files
 	// and reject any field using unknown flags
-	if ((!(header[0] == GZIP_ID1 && header[1] == GZIP_ID2 && header[2] == GZIP_DEFLATE))
-		|| (header[3] & GZIP_FLG_FUNKN))
+	if ((!(header[0] == ID1 && header[1] == ID2 && header[2] == DEFLATE)) || (header[3] & FLG_FUNKN))
 		return false;
 
-	bool ftext, fhcrc, fxtra, fname, fcmnt;
-	ftext  = (header[3] & GZIP_FLG_FTEXT) ? true : false;
-	fhcrc  = (header[3] & GZIP_FLG_FHCRC) ? true : false;
-	fxtra  = (header[3] & GZIP_FLG_FXTRA) ? true : false;
-	fname  = (header[3] & GZIP_FLG_FNAME) ? true : false;
-	fcmnt  = (header[3] & GZIP_FLG_FCMNT) ? true : false;
-	flags_ = header[3];
+	bool ftext = (header[3] & FLG_FTEXT) != 0;
+	bool fhcrc = (header[3] & FLG_FHCRC) != 0;
+	bool fxtra = (header[3] & FLG_FXTRA) != 0;
+	bool fname = (header[3] & FLG_FNAME) != 0;
+	bool fcmnt = (header[3] & FLG_FCMNT) != 0;
+	flags_     = header[3];
 
 	mc.read(&mtime_, 4);
 	mtime_ = wxUINT32_SWAP_ON_BE(mtime_);
@@ -180,20 +151,19 @@ bool GZipArchive::open(MemChunk& mc)
 
 	// Let's create the entry
 	setMuted(true);
-	ArchiveEntry* entry = new ArchiveEntry(name, size - mds);
-	MemChunk      xdata;
+	auto     entry = std::make_shared<ArchiveEntry>(name, size - mds);
+	MemChunk xdata;
 	if (Compression::gzipInflate(mc, xdata))
 	{
 		entry->importMemChunk(xdata);
 	}
 	else
 	{
-		delete entry;
 		setMuted(false);
 		return false;
 	}
 	rootDir()->addEntry(entry);
-	EntryType::detectEntryType(entry);
+	EntryType::detectEntryType(entry.get());
 	entry->setState(0);
 
 	setMuted(false);
@@ -218,17 +188,17 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 		MemChunk stream;
 		if (Compression::gzipDeflate(entryAt(0)->data(), stream, 9))
 		{
-			const uint8_t* data    = stream.data();
-			uint32_t       working = 0;
-			size_t         size    = stream.size();
+			auto     data = stream.data();
+			uint32_t working;
+			size_t   size = stream.size();
 			if (size < 18)
 				return false;
 
 			// zlib will have given us a minimal header, so we make our own
 			uint8_t header[4];
-			header[0] = GZIP_ID1;
-			header[1] = GZIP_ID2;
-			header[2] = GZIP_DEFLATE;
+			header[0] = ID1;
+			header[1] = ID2;
+			header[2] = DEFLATE;
 			header[3] = flags_;
 			mc.write(header, 4);
 
@@ -247,7 +217,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			mc.write(&os_, 1);
 
 			// Any extra content that may have been there
-			if (flags_ & GZIP_FLG_FXTRA)
+			if (flags_ & FLG_FXTRA)
 			{
 				uint16_t xlen = wxUINT16_SWAP_ON_BE(xtra_.size());
 				mc.write(&xlen, 2);
@@ -255,7 +225,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			}
 
 			// File name, if not extrapolated from archive name
-			if (flags_ & GZIP_FLG_FNAME)
+			if (flags_ & FLG_FNAME)
 			{
 				mc.write(CHR(entryAt(0)->name()), entryAt(0)->name().length());
 				uint8_t zero = 0;
@@ -263,7 +233,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			}
 
 			// Comment, if there were actually one
-			if (flags_ & GZIP_FLG_FCMNT)
+			if (flags_ & FLG_FCMNT)
 			{
 				mc.write(CHR(comment_), comment_.length());
 				uint8_t zero = 0;
@@ -271,7 +241,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			}
 
 			// And finally, the half CRC, which we recalculate
-			if (flags_ & GZIP_FLG_FHCRC)
+			if (flags_ & FLG_FHCRC)
 			{
 				uint32_t fullcrc = Misc::crc(mc.data(), mc.size());
 				uint16_t hcrc    = (fullcrc & 0x0000FFFF);
@@ -291,7 +261,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 // Renames the entry and set the fname flag
 // -----------------------------------------------------------------------------
-bool GZipArchive::renameEntry(ArchiveEntry* entry, string name)
+bool GZipArchive::renameEntry(ArchiveEntry* entry, const string& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -300,7 +270,7 @@ bool GZipArchive::renameEntry(ArchiveEntry* entry, string name)
 	// Do default rename
 	bool ok = Archive::renameEntry(entry, name);
 	if (ok)
-		flags_ |= GZIP_FLG_FNAME;
+		flags_ |= FLG_FNAME;
 	return ok;
 }
 
@@ -350,8 +320,8 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	options.match_name  = options.match_name.Lower();
-	ArchiveEntry* entry = entryAt(0);
+	options.match_name = options.match_name.Lower();
+	auto entry         = entryAt(0);
 	if (entry == nullptr)
 		return entry;
 
@@ -431,15 +401,14 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 
 	// Check for GZip header; we'll only accept deflated gzip files
 	// and reject any field using unknown flags
-	if (!(header[0] == GZIP_ID1 && header[1] == GZIP_ID2 && header[2] == GZIP_DEFLATE) || (header[3] & GZIP_FLG_FUNKN))
+	if (!(header[0] == ID1 && header[1] == ID2 && header[2] == DEFLATE) || (header[3] & FLG_FUNKN))
 		return false;
 
-	bool ftext, fhcrc, fxtra, fname, fcmnt;
-	ftext = (header[3] & GZIP_FLG_FTEXT) ? true : false;
-	fhcrc = (header[3] & GZIP_FLG_FHCRC) ? true : false;
-	fxtra = (header[3] & GZIP_FLG_FXTRA) ? true : false;
-	fname = (header[3] & GZIP_FLG_FNAME) ? true : false;
-	fcmnt = (header[3] & GZIP_FLG_FCMNT) ? true : false;
+	bool ftext = (header[3] & FLG_FTEXT) != 0;
+	bool fhcrc = (header[3] & FLG_FHCRC) != 0;
+	bool fxtra = (header[3] & FLG_FXTRA) != 0;
+	bool fname = (header[3] & FLG_FNAME) != 0;
+	bool fcmnt = (header[3] & FLG_FCMNT) != 0;
 
 	uint32_t mtime;
 	mc.read(&mtime, 4);
@@ -508,7 +477,7 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid GZip archive
 // -----------------------------------------------------------------------------
-bool GZipArchive::isGZipArchive(string filename)
+bool GZipArchive::isGZipArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -526,17 +495,15 @@ bool GZipArchive::isGZipArchive(string filename)
 	// Read header
 	uint8_t header[4];
 	file.Read(header, 4);
-	bool ftext, fhcrc, fxtra, fname, fcmnt;
-	ftext = (header[3] & GZIP_FLG_FTEXT) ? true : false;
-	fhcrc = (header[3] & GZIP_FLG_FHCRC) ? true : false;
-	fxtra = (header[3] & GZIP_FLG_FXTRA) ? true : false;
-	fname = (header[3] & GZIP_FLG_FNAME) ? true : false;
-	fcmnt = (header[3] & GZIP_FLG_FCMNT) ? true : false;
+	bool ftext = (header[3] & FLG_FTEXT) != 0;
+	bool fhcrc = (header[3] & FLG_FHCRC) != 0;
+	bool fxtra = (header[3] & FLG_FXTRA) != 0;
+	bool fname = (header[3] & FLG_FNAME) != 0;
+	bool fcmnt = (header[3] & FLG_FCMNT) != 0;
 
 	// Check for GZip header; we'll only accept deflated gzip files
 	// and reject any field using unknown flags
-	if ((!(header[0] == GZIP_ID1 && header[1] == GZIP_ID2 && header[2] == GZIP_DEFLATE))
-		|| (header[3] & GZIP_FLG_FUNKN))
+	if ((!(header[0] == ID1 && header[1] == ID2 && header[2] == DEFLATE)) || (header[3] & FLG_FUNKN))
 	{
 		return false;
 	}

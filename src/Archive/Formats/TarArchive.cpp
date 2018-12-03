@@ -258,16 +258,6 @@ void tarDefaultHeader(TarHeader* header)
 
 
 // -----------------------------------------------------------------------------
-// TarArchive class constructor
-// -----------------------------------------------------------------------------
-TarArchive::TarArchive() : Archive("tar") {}
-
-// -----------------------------------------------------------------------------
-// TarArchive class destructor
-// -----------------------------------------------------------------------------
-TarArchive::~TarArchive() {}
-
-// -----------------------------------------------------------------------------
 // Reads tar format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
@@ -336,10 +326,10 @@ bool TarArchive::open(MemChunk& mc)
 			wxFileName fn(name);
 
 			// Create directory if needed
-			ArchiveTreeNode* dir = createDir(fn.GetPath(true, wxPATH_UNIX));
+			auto dir = createDir(fn.GetPath(true, wxPATH_UNIX));
 
 			// Create entry
-			ArchiveEntry* entry     = new ArchiveEntry(fn.GetFullName(), size);
+			auto entry              = std::make_shared<ArchiveEntry>(fn.GetFullName(), size);
 			entry->exProp("Offset") = (int)mc.currentPos();
 			entry->setLoaded(false);
 			entry->setState(0);
@@ -350,7 +340,7 @@ bool TarArchive::open(MemChunk& mc)
 		else if ((int)header.typeflag == DIRTYPE)
 		{
 			// Directory
-			ArchiveTreeNode* dir = createDir(name);
+			createDir(name);
 		}
 		else
 		{
@@ -376,7 +366,7 @@ bool TarArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)all_entries.size())));
 
 		// Get entry
-		ArchiveEntry* entry = all_entries[a];
+		auto entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -573,7 +563,7 @@ bool TarArchive::isTarArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Unix tar archive
 // -----------------------------------------------------------------------------
-bool TarArchive::isTarArchive(string filename)
+bool TarArchive::isTarArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

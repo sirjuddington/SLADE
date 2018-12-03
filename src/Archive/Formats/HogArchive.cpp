@@ -57,7 +57,7 @@ namespace
 // in order to produce a lossless conversion. This allows us to semi-effectively
 // handle this at the archive level instead of as a filter at the text editor.
 // -----------------------------------------------------------------------------
-void DecodeTXB(MemChunk& mc)
+void decodeTxb(MemChunk& mc)
 {
 	const uint8_t*       data    = mc.data();
 	const uint8_t* const dataend = data + mc.size();
@@ -80,7 +80,7 @@ void DecodeTXB(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Opposite of DecodeTXB. Caller should delete[] returned pointer.
 // -----------------------------------------------------------------------------
-uint8_t* EncodeTXB(MemChunk& mc)
+uint8_t* encodeTxb(MemChunk& mc)
 {
 	const uint8_t*       data    = mc.data();
 	const uint8_t* const dataend = data + mc.size();
@@ -102,7 +102,7 @@ uint8_t* EncodeTXB(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Determines by filename being *.txb or *.ctb if we should encode.
 // -----------------------------------------------------------------------------
-bool ShouldEncodeTXB(string name)
+bool shouldEncodeTxb(const string& name)
 {
 	return name.Right(4).CmpNoCase(".txb") == 0 || name.Right(4).CmpNoCase(".ctb") == 0;
 }
@@ -115,16 +115,6 @@ bool ShouldEncodeTXB(string name)
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// HogArchive class constructor
-// -----------------------------------------------------------------------------
-HogArchive::HogArchive() : TreelessArchive("hog") {}
-
-// -----------------------------------------------------------------------------
-// HogArchive class destructor
-// -----------------------------------------------------------------------------
-HogArchive::~HogArchive() {}
 
 // -----------------------------------------------------------------------------
 // Returns the file byte offset for [entry]
@@ -201,7 +191,7 @@ bool HogArchive::open(MemChunk& mc)
 		name[13] = 0;
 
 		// Create & setup lump
-		ArchiveEntry* nlump = new ArchiveEntry(wxString::FromAscii(name), size);
+		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(0);
@@ -209,7 +199,7 @@ bool HogArchive::open(MemChunk& mc)
 		// Handle txb/ctb as archive level encryption. This is not strictly
 		// correct, but since we're not making a proper Descent editor this
 		// prevents needless complication on loading text data.
-		if (ShouldEncodeTXB(nlump->name()))
+		if (shouldEncodeTxb(nlump->name()))
 			nlump->setEncryption(ENC_TXB);
 
 		// Add to entry list
@@ -228,7 +218,7 @@ bool HogArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = entryAt(a);
+		auto entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -236,7 +226,7 @@ bool HogArchive::open(MemChunk& mc)
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			if (entry->isEncrypted() == ENC_TXB)
-				DecodeTXB(edata);
+				decodeTxb(edata);
 			entry->importMemChunk(edata);
 		}
 
@@ -269,7 +259,7 @@ bool HogArchive::write(MemChunk& mc, bool update)
 {
 	// Determine individual lump offsets
 	uint32_t      offset = 3;
-	ArchiveEntry* entry  = nullptr;
+	ArchiveEntry* entry;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		offset += 17;
@@ -306,7 +296,7 @@ bool HogArchive::write(MemChunk& mc, bool update)
 		mc.write(&size, 4);
 		if (entry->isEncrypted() == ENC_TXB)
 		{
-			uint8_t* data = EncodeTXB(entry->data());
+			uint8_t* data = encodeTxb(entry->data());
 			mc.write(data, entry->size());
 			delete[] data;
 		}
@@ -389,9 +379,9 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // -----------------------------------------------------------------------------
 // Since hog files have no namespaces, just call the other function.
 // -----------------------------------------------------------------------------
-ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
 {
-	if (ShouldEncodeTXB(entry->name()))
+	if (shouldEncodeTxb(entry->name()))
 		entry->setEncryption(ENC_TXB);
 
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
@@ -401,23 +391,24 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 // Override of Archive::renameEntry to update namespaces if needed and rename
 // the entry if necessary to be hog-friendly (twelve characters max)
 // -----------------------------------------------------------------------------
-bool HogArchive::renameEntry(ArchiveEntry* entry, string name)
+bool HogArchive::renameEntry(ArchiveEntry* entry, const string& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
 
 	// Process name (must be 12 characters max)
-	name.Truncate(12);
+	auto new_name = name;
+	new_name.Truncate(12);
 
 	// Update encode status
-	if (ShouldEncodeTXB(name))
+	if (shouldEncodeTxb(new_name))
 		entry->setEncryption(ENC_TXB);
 	else
 		entry->setEncryption(ENC_NONE);
 
 	// Do default rename
-	return Archive::renameEntry(entry, name);
+	return Archive::renameEntry(entry, new_name);
 }
 
 // -----------------------------------------------------------------------------
@@ -452,7 +443,7 @@ bool HogArchive::isHogArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Descent hog archive
 // -----------------------------------------------------------------------------
-bool HogArchive::isHogArchive(string filename)
+bool HogArchive::isHogArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

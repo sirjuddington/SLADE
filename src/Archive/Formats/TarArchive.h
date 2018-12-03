@@ -5,8 +5,8 @@
 class TarArchive : public Archive
 {
 public:
-	TarArchive();
-	~TarArchive();
+	TarArchive() : Archive("tar") {}
+	~TarArchive() = default;
 
 	// Opening/writing
 	bool open(MemChunk& mc) override;                      // Open from MemChunk
@@ -17,5 +17,5 @@ public:
 
 	// Static functions
 	static bool isTarArchive(MemChunk& mc);
-	static bool isTarArchive(string filename);
+	static bool isTarArchive(const string& filename);
 };

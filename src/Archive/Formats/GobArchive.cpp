@@ -52,16 +52,6 @@ EXTERN_CVAR(Bool, archive_load_data)
 
 
 // -----------------------------------------------------------------------------
-// GobArchive class constructor
-// -----------------------------------------------------------------------------
-GobArchive::GobArchive() : TreelessArchive("gob") {}
-
-// -----------------------------------------------------------------------------
-// GobArchive class destructor
-// -----------------------------------------------------------------------------
-GobArchive::~GobArchive() {}
-
-// -----------------------------------------------------------------------------
 // Returns the file byte offset for [entry]
 // -----------------------------------------------------------------------------
 uint32_t GobArchive::getEntryOffset(ArchiveEntry* entry)
@@ -158,7 +148,7 @@ bool GobArchive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		ArchiveEntry* nlump = new ArchiveEntry(wxString::FromAscii(name), size);
+		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(0);
@@ -176,7 +166,7 @@ bool GobArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = entryAt(a);
+		auto entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -215,7 +205,7 @@ bool GobArchive::write(MemChunk& mc, bool update)
 {
 	// Determine directory offset & individual lump offsets
 	uint32_t      dir_offset = 8;
-	ArchiveEntry* entry      = nullptr;
+	ArchiveEntry* entry;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = entryAt(l);
@@ -342,7 +332,7 @@ ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // -----------------------------------------------------------------------------
 // Since gob files have no namespaces, just call the other function.
 // -----------------------------------------------------------------------------
-ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
@@ -351,19 +341,20 @@ ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 // Override of Archive::renameEntry to update namespaces if needed and rename
 // the entry if necessary to be gob-friendly (twelve characters max)
 // -----------------------------------------------------------------------------
-bool GobArchive::renameEntry(ArchiveEntry* entry, string name)
+bool GobArchive::renameEntry(ArchiveEntry* entry, const string& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
 
 	// Process name (must be 12 characters max)
-	name.Truncate(12);
+	auto new_name = name;
+	new_name.Truncate(12);
 	if (wad_force_uppercase)
-		name.MakeUpper();
+		new_name.MakeUpper();
 
 	// Do default rename
-	return Archive::renameEntry(entry, name);
+	return Archive::renameEntry(entry, new_name);
 }
 
 // -----------------------------------------------------------------------------
@@ -407,7 +398,7 @@ bool GobArchive::isGobArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Dark Forces gob archive
 // -----------------------------------------------------------------------------
-bool GobArchive::isGobArchive(string filename)
+bool GobArchive::isGobArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

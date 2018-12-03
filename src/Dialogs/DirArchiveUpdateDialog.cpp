@@ -100,11 +100,11 @@ void DirArchiveUpdateDialog::populateChangeList()
 		row.push_back(wxVariant(true));
 		switch (changes_[a].action)
 		{
-		case DirEntryChange::ADDED_FILE: row.push_back(wxVariant("Added")); break;
-		case DirEntryChange::ADDED_DIR: row.push_back(wxVariant("Added")); break;
-		case DirEntryChange::DELETED_FILE: row.push_back(wxVariant("Deleted")); break;
-		case DirEntryChange::DELETED_DIR: row.push_back(wxVariant("Deleted")); break;
-		case DirEntryChange::UPDATED: row.push_back(wxVariant("Modified")); break;
+		case DirEntryChange::Action::AddedFile: row.push_back(wxVariant("Added")); break;
+		case DirEntryChange::Action::AddedDir: row.push_back(wxVariant("Added")); break;
+		case DirEntryChange::Action::DeletedFile: row.push_back(wxVariant("Deleted")); break;
+		case DirEntryChange::Action::DeletedDir: row.push_back(wxVariant("Deleted")); break;
+		case DirEntryChange::Action::Updated: row.push_back(wxVariant("Modified")); break;
 		default: break;
 		}
 		row.push_back(wxVariant(changes_[a].file_path));

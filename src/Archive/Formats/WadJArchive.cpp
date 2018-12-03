@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "WadJArchive.h"
 #include "General/UI.h"
-#include "MainEditor/UI/MainWindow.h"
 
 
 // -----------------------------------------------------------------------------
@@ -43,7 +42,6 @@
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, archive_load_data)
 EXTERN_CVAR(Bool, iwad_lock)
-extern string map_lumps[];
 
 
 // -----------------------------------------------------------------------------
@@ -56,15 +54,10 @@ extern string map_lumps[];
 // -----------------------------------------------------------------------------
 // WadJArchive class constructor
 // -----------------------------------------------------------------------------
-WadJArchive::WadJArchive() : WadArchive()
+WadJArchive::WadJArchive()
 {
 	format_ = "wadj";
 }
-
-// -----------------------------------------------------------------------------
-// WadJArchive class destructor
-// -----------------------------------------------------------------------------
-WadJArchive::~WadJArchive() {}
 
 // -----------------------------------------------------------------------------
 // Reads wad format data from a MemChunk
@@ -167,7 +160,7 @@ bool WadJArchive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		ArchiveEntry* nlump = new ArchiveEntry(wxString::FromAscii(name), actualsize);
+		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), actualsize);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(0);
@@ -195,7 +188,7 @@ bool WadJArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = entryAt(a);
+		auto entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -241,7 +234,6 @@ bool WadJArchive::open(MemChunk& mc)
 	// Setup variables
 	setMuted(false);
 	setModified(false);
-	// if (iwad && iwad_lock) read_only = true;
 	announce("opened");
 
 	UI::setSplashProgressMessage("");
@@ -257,7 +249,7 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 {
 	// Determine directory offset & individual lump offsets
 	uint32_t      dir_offset = 12;
-	ArchiveEntry* entry      = nullptr;
+	ArchiveEntry* entry;
 	for (uint32_t l = 0; l < numEntries(); l++)
 	{
 		entry = entryAt(l);
@@ -319,15 +311,15 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 string WadJArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
 {
-	ArchiveEntry* nextentry = entryAt(index + 1);
+	auto nextentry = entryAt(index + 1);
 	if (nextentry && S_CMPNOCASE(nextentry->name(), "."))
 		return "sprites";
 	return WadArchive::detectNamespace(index);
 }
 string WadJArchive::detectNamespace(ArchiveEntry* entry)
 {
-	size_t        index     = entryIndex(entry);
-	ArchiveEntry* nextentry = entryAt(index + 1);
+	size_t index     = entryIndex(entry);
+	auto   nextentry = entryAt(index + 1);
 	if (nextentry && S_CMPNOCASE(nextentry->name(), "."))
 		return "sprites";
 	return WadArchive::detectNamespace(index);
@@ -371,7 +363,7 @@ bool WadJArchive::isWadJArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Jaguar Doom wad archive
 // -----------------------------------------------------------------------------
-bool WadJArchive::isWadJArchive(string filename)
+bool WadJArchive::isWadJArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -410,9 +402,10 @@ bool WadJArchive::isWadJArchive(string filename)
 // Decodes encoded data in [mc]
 // Taken and adapted from Jaguar Doom source code
 // -----------------------------------------------------------------------------
-#define LENSHIFT 4 /* this must be log2(LOOKAHEAD_SIZE) */
 bool WadJArchive::jaguarDecode(MemChunk& mc)
 {
+	static const int LENSHIFT = 4; /* this must be log2(LOOKAHEAD_SIZE) */
+
 	bool     okay      = false;
 	uint8_t  getidbyte = 0;
 	int      len;

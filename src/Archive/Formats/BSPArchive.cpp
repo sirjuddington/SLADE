@@ -58,16 +58,6 @@ EXTERN_CVAR(Bool, archive_load_data)
 
 
 // -----------------------------------------------------------------------------
-// BSPArchive class constructor
-// -----------------------------------------------------------------------------
-BSPArchive::BSPArchive() : Archive("bsp") {}
-
-// -----------------------------------------------------------------------------
-// BSPArchive class destructor
-// -----------------------------------------------------------------------------
-BSPArchive::~BSPArchive() {}
-
-// -----------------------------------------------------------------------------
 // Returns the file byte offset for [entry]
 // -----------------------------------------------------------------------------
 uint32_t BSPArchive::entryOffset(ArchiveEntry* entry)
@@ -96,7 +86,7 @@ bool BSPArchive::open(MemChunk& mc)
 
 	// Read BSP version; valid values are 0x17 (Qtest) or 0x1D (Quake, Hexen II)
 	uint32_t version;
-	uint32_t texoffset;
+	uint32_t texoffset = 0;
 	uint32_t texsize;
 	mc.seek(0, SEEK_SET);
 	mc.read(&version, 4);
@@ -215,21 +205,21 @@ bool BSPArchive::open(MemChunk& mc)
 				return false;
 
 			// Check that texture data is within bounds
-			uint32_t texsize = width * height;
-			if (texoffset + offset + offset1 + texsize > size)
+			uint32_t tsize = width * height;
+			if (texoffset + offset + offset1 + tsize > size)
 				return false;
-			if (texoffset + offset + offset2 + (texsize >> 2) > size)
+			if (texoffset + offset + offset2 + (tsize >> 2) > size)
 				return false;
-			if (texoffset + offset + offset4 + (texsize >> 4) > size)
+			if (texoffset + offset + offset4 + (tsize >> 4) > size)
 				return false;
-			if (texoffset + offset + offset8 + (texsize >> 6) > size)
+			if (texoffset + offset + offset8 + (tsize >> 6) > size)
 				return false;
 
-			uint32_t lumpsize = 40 + texsize + (texsize >> 2) + (texsize >> 4) + (texsize >> 6);
+			uint32_t lumpsize = 40 + tsize + (tsize >> 2) + (tsize >> 4) + (tsize >> 6);
 
 
 			// Create & setup lump
-			ArchiveEntry* nlump = new ArchiveEntry(wxString::FromAscii(name), lumpsize);
+			auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), lumpsize);
 			nlump->setLoaded(false);
 			nlump->exProp("Offset") = (int)(offset + texoffset);
 			nlump->setState(0);
@@ -251,7 +241,7 @@ bool BSPArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)numtex)));
 
 		// Get entry
-		ArchiveEntry* entry = entryAt(a);
+		auto entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -333,7 +323,7 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 
 // -----------------------------------------------------------------------------
 //
-// BSPArchive Class Functions
+// BSPArchive Class Static Functions
 //
 // -----------------------------------------------------------------------------
 
@@ -350,7 +340,7 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 
 	// Read BSP version; valid values are 0x17 (Qtest) or 0x1D (Quake, Hexen II)
 	uint32_t version;
-	uint32_t texoffset;
+	uint32_t texoffset = 0;
 	uint32_t texsize;
 	mc.seek(0, SEEK_SET);
 	mc.read(&version, 4);
@@ -434,14 +424,14 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 				return false;
 
 			// Check that texture data is within bounds
-			uint32_t texsize = width * height;
-			if (texoffset + offset + offset1 + texsize > size)
+			uint32_t tsize = width * height;
+			if (texoffset + offset + offset1 + tsize > size)
 				return false;
-			if (texoffset + offset + offset2 + (texsize >> 2) > size)
+			if (texoffset + offset + offset2 + (tsize >> 2) > size)
 				return false;
-			if (texoffset + offset + offset4 + (texsize >> 4) > size)
+			if (texoffset + offset + offset4 + (tsize >> 4) > size)
 				return false;
-			if (texoffset + offset + offset8 + (texsize >> 6) > size)
+			if (texoffset + offset + offset8 + (tsize >> 6) > size)
 				return false;
 
 			// Okay, that texture works, go back to where we were and check the next
@@ -456,7 +446,7 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake BSP archive
 // -----------------------------------------------------------------------------
-bool BSPArchive::isBSPArchive(string filename)
+bool BSPArchive::isBSPArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -472,8 +462,7 @@ bool BSPArchive::isBSPArchive(string filename)
 
 	// Read BSP version; valid values are 0x17 (Qtest) or 0x1D (Quake, Hexen II)
 	uint32_t version;
-	uint32_t texoffset;
-	uint32_t texsize;
+	uint32_t texoffset = 0;
 	file.Seek(0, wxFromStart);
 	file.Read(&version, 4);
 	version = wxINT32_SWAP_ON_BE(version);
@@ -494,10 +483,7 @@ bool BSPArchive::isBSPArchive(string filename)
 			return false;
 		// Grab the miptex entry data
 		if (a == 2)
-		{
 			texoffset = wxINT32_SWAP_ON_BE(ofs);
-			texsize   = wxINT32_SWAP_ON_BE(sz);
-		}
 	}
 
 	// Now validate miptex entry
@@ -549,14 +535,14 @@ bool BSPArchive::isBSPArchive(string filename)
 			return false;
 
 		// Check that texture data is within bounds
-		uint32_t texsize = width * height;
-		if (texoffset + offset + offset1 + texsize > size)
+		uint32_t tsize = width * height;
+		if (texoffset + offset + offset1 + tsize > size)
 			return false;
-		if (texoffset + offset + offset2 + (texsize >> 2) > size)
+		if (texoffset + offset + offset2 + (tsize >> 2) > size)
 			return false;
-		if (texoffset + offset + offset4 + (texsize >> 4) > size)
+		if (texoffset + offset + offset4 + (tsize >> 4) > size)
 			return false;
-		if (texoffset + offset + offset8 + (texsize >> 6) > size)
+		if (texoffset + offset + offset8 + (tsize >> 6) > size)
 			return false;
 
 		// Okay, that texture works, go back to where we were and check the next

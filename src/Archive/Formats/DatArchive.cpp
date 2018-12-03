@@ -42,33 +42,6 @@
 
 
 // -----------------------------------------------------------------------------
-// DatArchive class constructor
-// -----------------------------------------------------------------------------
-DatArchive::DatArchive() : TreelessArchive("dat") {}
-
-// -----------------------------------------------------------------------------
-// DatArchive class destructor
-// -----------------------------------------------------------------------------
-DatArchive::~DatArchive() {}
-
-// -----------------------------------------------------------------------------
-// Gets a lump entry's offset
-// Returns the lump entry's offset, or zero if it doesn't exist
-// -----------------------------------------------------------------------------
-uint32_t DatArchive::getEntryOffset(ArchiveEntry* entry)
-{
-	return uint32_t((int)entry->exProp("Offset"));
-}
-
-// -----------------------------------------------------------------------------
-// Sets a lump entry's offset
-// -----------------------------------------------------------------------------
-void DatArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
-{
-	entry->exProp("Offset") = (int)offset;
-}
-
-// -----------------------------------------------------------------------------
 // Reads wad format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
@@ -149,7 +122,7 @@ bool DatArchive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		ArchiveEntry* nlump = new ArchiveEntry(myname, size);
+		auto nlump = std::make_shared<ArchiveEntry>(myname, size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(0);
@@ -184,7 +157,7 @@ bool DatArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
-		ArchiveEntry* entry = entryAt(a);
+		auto entry = entryAt(a);
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -254,7 +227,7 @@ void DatArchive::updateNamespaces()
 	// Go through all entries
 	for (unsigned a = 0; a < numEntries(); a++)
 	{
-		ArchiveEntry* entry = rootDir()->entryAt(a);
+		auto entry = rootDir()->entryAt(a);
 
 		// Check for markers
 		if (!entry->name().Cmp("startflats"))
@@ -305,7 +278,7 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // is true a copy of the entry is added.
 // Returns the added entry or NULL if the entry is invalid
 // -----------------------------------------------------------------------------
-ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
 {
 	// Find requested namespace, only three non-global namespaces are valid in this format
 	if (S_CMPNOCASE(add_namespace, "textures"))
@@ -375,7 +348,7 @@ bool DatArchive::removeEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Override of Archive::renameEntry to update namespaces if needed
 // -----------------------------------------------------------------------------
-bool DatArchive::renameEntry(ArchiveEntry* entry, string name)
+bool DatArchive::renameEntry(ArchiveEntry* entry, const string& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -462,7 +435,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 	uint32_t      name_size    = 0;
 	string        previousname = "";
 	uint16_t*     nameoffsets  = new uint16_t[numEntries()];
-	ArchiveEntry* entry        = nullptr;
+	ArchiveEntry* entry;
 	for (uint16_t l = 0; l < numEntries(); l++)
 	{
 		entry = entryAt(l);
@@ -660,7 +633,7 @@ bool DatArchive::isDatArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Shadowcaster dat archive
 // -----------------------------------------------------------------------------
-bool DatArchive::isDatArchive(string filename)
+bool DatArchive::isDatArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

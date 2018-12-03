@@ -5,8 +5,8 @@
 class WadArchive : public TreelessArchive
 {
 public:
-	WadArchive();
-	~WadArchive();
+	WadArchive() : TreelessArchive("wad") {}
+	~WadArchive() = default;
 
 	// Wad specific
 	bool     isIWAD() const { return iwad_; }
@@ -19,8 +19,8 @@ public:
 	bool open(MemChunk& mc) override;
 
 	// Writing/Saving
-	bool write(MemChunk& mc, bool update = true) override;    // Write to MemChunk
-	bool write(string filename, bool update = true) override; // Write to File
+	bool write(MemChunk& mc, bool update = true) override;           // Write to MemChunk
+	bool write(const string& filename, bool update = true) override; // Write to File
 
 	// Misc
 	bool loadEntryData(ArchiveEntry* entry) override;
@@ -31,12 +31,12 @@ public:
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr,
 		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override;
 	bool          removeEntry(ArchiveEntry* entry) override;
 
 	// Entry modification
-	string processEntryName(string name);
-	bool   renameEntry(ArchiveEntry* entry, string name) override;
+	string processEntryName(const string& name);
+	bool   renameEntry(ArchiveEntry* entry, const string& name) override;
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override;
@@ -57,9 +57,9 @@ public:
 
 	// Static functions
 	static bool isWadArchive(MemChunk& mc);
-	static bool isWadArchive(string filename);
+	static bool isWadArchive(const string& filename);
 
-	static bool exportEntriesAsWad(string filename, vector<ArchiveEntry*> entries)
+	static bool exportEntriesAsWad(const string& filename, vector<ArchiveEntry*> entries)
 	{
 		WadArchive wad;
 
@@ -85,13 +85,9 @@ private:
 		size_t        end_index;
 		string        name; // eg. "P" (since P or PP is a special case will be set to "patches")
 
-		NSPair(ArchiveEntry* start, ArchiveEntry* end)
-		{
-			this->start = start;
-			this->end   = end;
-		}
+		NSPair(ArchiveEntry* start, ArchiveEntry* end) : start{ start }, start_index{ 0 }, end{ end }, end_index{ 0 } {}
 	};
 
-	bool           iwad_;
+	bool           iwad_ = false;
 	vector<NSPair> namespaces_;
 };

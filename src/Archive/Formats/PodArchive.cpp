@@ -63,14 +63,9 @@ PodArchive::PodArchive() : Archive("pod")
 }
 
 // -----------------------------------------------------------------------------
-// PodArchive class destructor
-// -----------------------------------------------------------------------------
-PodArchive::~PodArchive() {}
-
-// -----------------------------------------------------------------------------
 // Sets the description/id of the pod archive
 // -----------------------------------------------------------------------------
-void PodArchive::setId(string id)
+void PodArchive::setId(const string& id)
 {
 	memset(id_, 0, 80);
 	memcpy(id_, CHR(id), id.Length());
@@ -95,8 +90,8 @@ bool PodArchive::open(MemChunk& mc)
 	mc.read(id_, 80);
 
 	// Read directory
-	FileEntry* files = new FileEntry[num_files];
-	mc.read(files, num_files * sizeof(FileEntry));
+	vector<FileEntry> files(num_files);
+	mc.read(files.data(), num_files * sizeof(FileEntry));
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
@@ -109,13 +104,13 @@ bool PodArchive::open(MemChunk& mc)
 		wxFileName fn(files[a].name);
 
 		// Create entry
-		ArchiveEntry* new_entry     = new ArchiveEntry(fn.GetFullName(), files[a].size);
+		auto new_entry              = std::make_shared<ArchiveEntry>(fn.GetFullName(), files[a].size);
 		new_entry->exProp("Offset") = files[a].offset;
 		new_entry->setLoaded(false);
 
 		// Add entry and directory to directory tree
-		string           path = fn.GetPath(false);
-		ArchiveTreeNode* ndir = createDir(path);
+		string path = fn.GetPath(false);
+		auto   ndir = createDir(path);
 		ndir->addEntry(new_entry);
 
 		new_entry->setState(0);
@@ -137,7 +132,7 @@ bool PodArchive::open(MemChunk& mc)
 		}
 
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)all_entries.size())));
+		UI::setSplashProgress((float)a / (float)all_entries.size());
 
 		// Read data
 		MemChunk edata;
@@ -155,9 +150,6 @@ bool PodArchive::open(MemChunk& mc)
 		all_entries[a]->setState(0);
 		LOG_MESSAGE(5, "entry %s size %d", CHR(all_entries[a]->name()), all_entries[a]->size());
 	}
-
-	// Clean up
-	delete[] files;
 
 	// Setup variables
 	setMuted(false);
@@ -182,12 +174,12 @@ bool PodArchive::write(MemChunk& mc, bool update)
 	// Process entries
 	int      ndirs     = 0;
 	uint32_t data_size = 0;
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
-		if (entries[a]->type() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			ndirs++;
 		else
-			data_size += entries[a]->size();
+			data_size += entry->size();
 	}
 
 	// Init MemChunk
@@ -207,21 +199,21 @@ bool PodArchive::write(MemChunk& mc, bool update)
 	// Write directory
 	FileEntry fe;
 	fe.offset = 4 + 80 + (n_entries * 40);
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
-		if (entries[a]->type() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// Name
 		memset(fe.name, 0, 32);
-		string path = entries[a]->path(true);
+		string path = entry->path(true);
 		path.Replace("/", "\\");
 		path = path.AfterFirst('\\');
 		// LOG_MESSAGE(2, path);
 		memcpy(fe.name, CHR(path), path.Len());
 
 		// Size
-		fe.size = entries[a]->size();
+		fe.size = entry->size();
 
 		// Write directory entry
 		mc.write(fe.name, 32);
@@ -231,18 +223,18 @@ bool PodArchive::write(MemChunk& mc, bool update)
 			5,
 			"entry %s: old=%d new=%d size=%d",
 			fe.name,
-			entries[a]->exProp("Offset").intValue(),
+			entry->exProp("Offset").intValue(),
 			fe.offset,
-			entries[a]->size());
+			entry->size());
 
 		// Next offset
 		fe.offset += fe.size;
 	}
 
 	// Write entry data
-	for (unsigned a = 0; a < entries.size(); a++)
-		if (entries[a]->type() != EntryType::folderType())
-			mc.write(entries[a]->rawData(), entries[a]->size());
+	for (auto& entry : entries)
+		if (entry->type() != EntryType::folderType())
+			mc.write(entry->rawData(), entry->size());
 
 	return true;
 }
@@ -329,7 +321,7 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid pod archive
 // -----------------------------------------------------------------------------
-bool PodArchive::isPodArchive(string filename)
+bool PodArchive::isPodArchive(const string& filename)
 {
 	wxFile file;
 	if (!file.Open(filename))
@@ -381,7 +373,7 @@ bool PodArchive::isPodArchive(string filename)
 
 CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
-	Archive* archive = MainEditor::currentArchive();
+	auto archive = MainEditor::currentArchive();
 	if (archive && archive->formatId() == "pod")
 		Log::console(((PodArchive*)archive)->getId());
 	else
@@ -390,7 +382,7 @@ CONSOLE_COMMAND(pod_get_id, 0, 1)
 
 CONSOLE_COMMAND(pod_set_id, 1, true)
 {
-	Archive* archive = MainEditor::currentArchive();
+	auto archive = MainEditor::currentArchive();
 	if (archive && archive->formatId() == "pod")
 		((PodArchive*)archive)->setId(args[0].Truncate(80));
 	else

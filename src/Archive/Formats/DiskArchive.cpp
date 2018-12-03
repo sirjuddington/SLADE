@@ -53,16 +53,6 @@ EXTERN_CVAR(Bool, archive_load_data)
 
 
 // -----------------------------------------------------------------------------
-// DiskArchive class constructor
-// -----------------------------------------------------------------------------
-DiskArchive::DiskArchive() : Archive("disk") {}
-
-// -----------------------------------------------------------------------------
-// DiskArchive class destructor
-// -----------------------------------------------------------------------------
-DiskArchive::~DiskArchive() {}
-
-// -----------------------------------------------------------------------------
 // Reads disk format data from a MemChunk.
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
@@ -122,10 +112,10 @@ bool DiskArchive::open(MemChunk& mc)
 		wxFileName fn(name);
 
 		// Create directory if needed
-		ArchiveTreeNode* dir = createDir(fn.GetPath(true, wxPATH_UNIX));
+		auto dir = createDir(fn.GetPath(true, wxPATH_UNIX));
 
 		// Create entry
-		ArchiveEntry* entry     = new ArchiveEntry(fn.GetFullName(), dent.length);
+		auto entry              = std::make_shared<ArchiveEntry>(fn.GetFullName(), dent.length);
 		entry->exProp("Offset") = (int)dent.offset;
 		entry->setLoaded(false);
 		entry->setState(0);
@@ -145,7 +135,7 @@ bool DiskArchive::open(MemChunk& mc)
 		UI::setSplashProgress((((float)a / (float)num_entries)));
 
 		// Get entry
-		ArchiveEntry* entry = all_entries[a];
+		auto entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -192,14 +182,14 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 	// Process entry list
 	uint32_t num_entries  = 0;
 	uint32_t size_entries = 0;
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Ignore folder entries
-		if (entries[a]->type() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// Increment directory offset and size
-		size_entries += entries[a]->size();
+		size_entries += entry->size();
 		++num_entries;
 	}
 
@@ -214,21 +204,21 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 	mc.write(&num_entries, 4);
 
 	// Write directory
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entries[a]->type() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// Update entry
 		if (update)
 		{
-			entries[a]->setState(0);
-			entries[a]->exProp("Offset") = (int)offset;
+			entry->setState(0);
+			entry->exProp("Offset") = (int)offset;
 		}
 
 		// Check entry name
-		string name = entries[a]->path(true);
+		string name = entry->path(true);
 		name.Replace("/", "\\");
 		// The leading "GAME:\" part of the name means there is only 58 usable characters for path
 		if (name.Len() > 58)
@@ -257,7 +247,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		dent.offset = wxUINT32_SWAP_ON_LE(offset - start_offset);
 
 		// Write entry size
-		dent.length = wxUINT32_SWAP_ON_LE(entries[a]->size());
+		dent.length = wxUINT32_SWAP_ON_LE(entry->size());
 
 		// Actually write stuff
 		mc.write(&dent, 72);
@@ -271,14 +261,14 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 	mc.write(&size_entries, 4);
 
 	// Write entry data
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entries[a]->type() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// Write data
-		mc.write(entries[a]->rawData(), entries[a]->size());
+		mc.write(entry->rawData(), entry->size());
 	}
 
 	return true;
@@ -382,7 +372,7 @@ bool DiskArchive::isDiskArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake disk archive
 // -----------------------------------------------------------------------------
-bool DiskArchive::isDiskArchive(string filename)
+bool DiskArchive::isDiskArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

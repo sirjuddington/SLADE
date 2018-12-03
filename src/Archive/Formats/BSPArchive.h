@@ -5,8 +5,8 @@
 class BSPArchive : public Archive
 {
 public:
-	BSPArchive();
-	~BSPArchive();
+	BSPArchive() : Archive("bsp") {}
+	~BSPArchive() = default;
 
 	// Opening/writing
 	bool open(MemChunk& mc) override;                      // Open from MemChunk
@@ -18,5 +18,5 @@ public:
 
 	// Static functions
 	static bool isBSPArchive(MemChunk& mc);
-	static bool isBSPArchive(string filename);
+	static bool isBSPArchive(const string& filename);
 };

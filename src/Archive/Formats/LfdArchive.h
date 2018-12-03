@@ -5,8 +5,8 @@
 class LfdArchive : public TreelessArchive
 {
 public:
-	LfdArchive();
-	~LfdArchive();
+	LfdArchive() : TreelessArchive("lfd") {}
+	~LfdArchive() = default;
 
 	// LFD specific
 	uint32_t getEntryOffset(ArchiveEntry* entry);
@@ -25,12 +25,12 @@ public:
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr,
 		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, string name) override;
+	bool renameEntry(ArchiveEntry* entry, const string& name) override;
 
 	// Static functions
 	static bool isLfdArchive(MemChunk& mc);
-	static bool isLfdArchive(string filename);
+	static bool isLfdArchive(const string& filename);
 };

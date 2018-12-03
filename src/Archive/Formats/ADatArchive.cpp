@@ -31,17 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ADatArchive.h"
-#include "General/Misc.h"
 #include "General/UI.h"
 #include "Utility/Compression.h"
-
-
-// -----------------------------------------------------------------------------
-//
-// Constants
-//
-// -----------------------------------------------------------------------------
-#define DIRENTRY 144
 
 
 // -----------------------------------------------------------------------------
@@ -58,16 +49,6 @@ EXTERN_CVAR(Bool, archive_load_data)
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// ADatArchive class constructor
-// -----------------------------------------------------------------------------
-ADatArchive::ADatArchive() : Archive("adat") {}
-
-// -----------------------------------------------------------------------------
-// ADatArchive class destructor
-// -----------------------------------------------------------------------------
-ADatArchive::~ADatArchive() {}
 
 // -----------------------------------------------------------------------------
 // Reads dat format data from a MemChunk
@@ -138,10 +119,10 @@ bool ADatArchive::open(MemChunk& mc)
 		wxFileName fn(wxString::FromAscii(name, 128));
 
 		// Create directory if needed
-		ArchiveTreeNode* dir = createDir(fn.GetPath(true, wxPATH_UNIX));
+		auto dir = createDir(fn.GetPath(true, wxPATH_UNIX));
 
 		// Create entry
-		ArchiveEntry* entry       = new ArchiveEntry(fn.GetFullName(), compsize);
+		auto entry                = std::make_shared<ArchiveEntry>(fn.GetFullName(), compsize);
 		entry->exProp("Offset")   = (int)offset;
 		entry->exProp("FullSize") = (int)decsize;
 		entry->setLoaded(false);
@@ -159,10 +140,10 @@ bool ADatArchive::open(MemChunk& mc)
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_entries)));
+		UI::setSplashProgress((float)a / (float)num_entries);
 
 		// Get entry
-		ArchiveEntry* entry = all_entries[a];
+		auto entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -227,30 +208,30 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 	mc.write(&version, 4);
 
 	// Write entry data
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Skip folders
-		if (entries[a]->type() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			continue;
 
 		// Create compressed version of the lump
-		MemChunk* entry = nullptr;
-		if (Compression::zlibDeflate(entries[a]->data(), compressed, 9))
+		MemChunk* data;
+		if (Compression::zlibDeflate(entry->data(), compressed, 9))
 		{
-			entry = &compressed;
+			data = &compressed;
 		}
 		else
 		{
-			entry = &(entries[a]->data());
-			LOG_MESSAGE(1, "Entry %s couldn't be deflated", entries[a]->name());
+			data = &(entry->data());
+			LOG_MESSAGE(1, "Entry %s couldn't be deflated", entry->name());
 		}
 
 		// Update entry
 		int offset = mc.currentPos();
 		if (update)
 		{
-			entries[a]->setState(0);
-			entries[a]->exProp("Offset") = (int)offset;
+			entry->setState(0);
+			entry->exProp("Offset") = (int)offset;
 		}
 
 		///////////////////////////////////
@@ -258,7 +239,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		///////////////////////////////////
 
 		// Check entry name
-		string name = entries[a]->path(true);
+		string name = entry->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 128)
 		{
@@ -281,11 +262,11 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		directory.write(&myoffset, 4);
 
 		// Write full entry size
-		long decsize = wxINT32_SWAP_ON_BE(entries[a]->size());
+		long decsize = wxINT32_SWAP_ON_BE(entry->size());
 		directory.write(&decsize, 4);
 
 		// Write compressed entry size
-		long compsize = wxINT32_SWAP_ON_BE(entry->size());
+		long compsize = wxINT32_SWAP_ON_BE(data->size());
 		directory.write(&compsize, 4);
 
 		// Write whatever it is that should be there
@@ -298,7 +279,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		// Step 2: Write entry data //
 		//////////////////////////////
 
-		mc.write(entry->data(), entry->size());
+		mc.write(data->data(), data->size());
 	}
 
 	// Write directory
@@ -319,7 +300,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 // Writes the dat archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ADatArchive::write(string filename, bool update)
+bool ADatArchive::write(const string& filename, bool update)
 {
 	// Write to a MemChunk, then export it to a file
 	MemChunk mc;
@@ -417,7 +398,7 @@ bool ADatArchive::isADatArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Anachronox dat archive
 // -----------------------------------------------------------------------------
-bool ADatArchive::isADatArchive(string filename)
+bool ADatArchive::isADatArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

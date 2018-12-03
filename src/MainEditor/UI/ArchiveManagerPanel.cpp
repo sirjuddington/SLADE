@@ -138,12 +138,12 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 		if (entry_info_[a].is_dir)
 		{
 			if (!wxDirExists(path))
-				addChange(DirEntryChange(DirEntryChange::DELETED_DIR, path, entry_info_[a].entry_path));
+				addChange(DirEntryChange(DirEntryChange::Action::DeletedDir, path, entry_info_[a].entry_path));
 		}
 		else
 		{
 			if (!wxFileExists(path))
-				addChange(DirEntryChange(DirEntryChange::DELETED_FILE, path, entry_info_[a].entry_path));
+				addChange(DirEntryChange(DirEntryChange::Action::DeletedFile, path, entry_info_[a].entry_path));
 		}
 	}
 
@@ -170,10 +170,10 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 		time_t mod = wxFileModificationTime(files[a]);
 		// No match, added to archive
 		if (!found)
-			addChange(DirEntryChange(DirEntryChange::ADDED_FILE, files[a], "", mod));
+			addChange(DirEntryChange(DirEntryChange::Action::AddedFile, files[a], "", mod));
 		// Matched, check modification time
 		else if (mod > inf.file_modified)
-			addChange(DirEntryChange(DirEntryChange::UPDATED, files[a], inf.entry_path, mod));
+			addChange(DirEntryChange(DirEntryChange::Action::Updated, files[a], inf.entry_path, mod));
 	}
 
 	// Check for new dirs
@@ -199,7 +199,7 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 		time_t mod = wxDateTime::Now().GetTicks();
 		// No match, added to archive
 		if (!found)
-			addChange(DirEntryChange(DirEntryChange::ADDED_DIR, dirs[a], "", mod));
+			addChange(DirEntryChange(DirEntryChange::Action::AddedDir, dirs[a], "", mod));
 	}
 
 	// Send changes via event

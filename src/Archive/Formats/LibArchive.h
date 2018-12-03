@@ -5,8 +5,8 @@
 class LibArchive : public TreelessArchive
 {
 public:
-	LibArchive();
-	~LibArchive();
+	LibArchive() : TreelessArchive("lib") {}
+	~LibArchive() = default;
 
 	// Lib specific
 	uint32_t getEntryOffset(ArchiveEntry* entry);
@@ -26,9 +26,9 @@ public:
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr,
 		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
-	bool          renameEntry(ArchiveEntry* entry, string name) override;
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override;
+	bool          renameEntry(ArchiveEntry* entry, const string& name) override;
 
 	static bool isLibArchive(MemChunk& mc);
-	static bool isLibArchive(string filename);
+	static bool isLibArchive(const string& filename);
 };

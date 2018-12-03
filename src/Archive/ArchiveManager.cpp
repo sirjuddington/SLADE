@@ -58,25 +58,11 @@ CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
-// ArchiveManager class constructor
-// -----------------------------------------------------------------------------
-ArchiveManager::ArchiveManager() :
-	program_resource_archive_{ nullptr },
-	base_resource_archive_{ nullptr },
-	res_archive_open_{ false }
-{
-}
-
-// -----------------------------------------------------------------------------
 // ArchiveManager class destructor
 // -----------------------------------------------------------------------------
 ArchiveManager::~ArchiveManager()
 {
 	clearAnnouncers();
-	if (program_resource_archive_)
-		delete program_resource_archive_;
-	if (base_resource_archive_)
-		delete base_resource_archive_;
 }
 
 // -----------------------------------------------------------------------------
@@ -85,7 +71,7 @@ ArchiveManager::~ArchiveManager()
 // (possibly because the user installed SLADE in the same folder as an
 // installation of SLumpEd).
 // -----------------------------------------------------------------------------
-bool ArchiveManager::validResDir(string dir) const
+bool ArchiveManager::validResDir(const string& dir) const
 {
 	// Assortment of resources that the program expects to find.
 	// If at least one is missing, then probably more are missing
@@ -109,9 +95,9 @@ bool ArchiveManager::validResDir(string dir) const
 		"vga-rom-font.16",
 	};
 
-	for (size_t a = 0; a < 16; ++a)
+	for (const auto& path : paths)
 	{
-		wxFileName fn(dir + "/" + paths[a]);
+		wxFileName fn(dir + "/" + path);
 		if (!wxFileExists(fn.GetFullPath()))
 		{
 			LOG_MESSAGE(
@@ -119,7 +105,7 @@ bool ArchiveManager::validResDir(string dir) const
 				"Resource %s was not found in dir %s!\n"
 				"This resource folder cannot be used. "
 				"(Did you install SLADE 3 in a SLumpEd folder?)",
-				paths[a],
+				path,
 				dir);
 			return false;
 		}
@@ -132,7 +118,7 @@ bool ArchiveManager::validResDir(string dir) const
 // -----------------------------------------------------------------------------
 bool ArchiveManager::init()
 {
-	program_resource_archive_ = new ZipArchive();
+	program_resource_archive_ = std::make_unique<ZipArchive>();
 
 #ifdef __WXOSX__
 	string resdir = App::path("../Resources", App::Dir::Executable); // Use Resources dir within bundle on mac
@@ -219,22 +205,15 @@ bool ArchiveManager::addArchive(Archive* archive)
 		// ZDoom also loads any WADs found in the root of a PK3 or directory
 		if ((archive->formatId() == "zip" || archive->formatId() == "folder") && auto_open_wads_root)
 		{
-			ArchiveTreeNode* root = archive->rootDir();
-			ArchiveEntry*    entry;
-			EntryType*       type;
-			for (unsigned a = 0; a < root->numEntries(); a++)
+			for (const auto& entry : archive->rootDir()->allEntries())
 			{
-				entry = root->entryAt(a);
-
 				if (entry->type() == EntryType::unknownType())
-					EntryType::detectEntryType(entry);
+					EntryType::detectEntryType(entry.get());
 
-				type = entry->type();
-
-				if (type->id() == "wad")
+				if (entry->type()->id() == "wad")
 					// First true: yes, manage this
 					// Second true: open silently, don't open a tab for it
-					openArchive(entry, true, true);
+					openArchive(entry.get(), true, true);
 			}
 		}
 
@@ -260,14 +239,14 @@ Archive* ArchiveManager::getArchive(int index)
 // Returns the archive with the specified filename
 // (nullptr if it doesn't exist)
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::getArchive(string filename)
+Archive* ArchiveManager::getArchive(const string& filename)
 {
 	// Go through all open archives
-	for (int a = 0; a < (int)open_archives_.size(); a++)
+	for (auto& open_archive : open_archives_)
 	{
 		// If the filename matches, return it
-		if (open_archives_[a].archive->filename().compare(filename) == 0)
-			return open_archives_[a].archive;
+		if (open_archive.archive->filename().compare(filename) == 0)
+			return open_archive.archive;
 	}
 
 	// If no archive is found with a matching filename, return nullptr
@@ -278,13 +257,13 @@ Archive* ArchiveManager::getArchive(string filename)
 // Opens and adds a archive to the list, returns a pointer to the newly opened
 // and added archive, or nullptr if an error occurred
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
+Archive* ArchiveManager::openArchive(const string& filename, bool manage, bool silent)
 {
 	// Check for directory
 	if (!wxFile::Exists(filename) && wxDirExists(filename))
 		return openDirArchive(filename, manage, silent);
 
-	Archive* new_archive = getArchive(filename);
+	auto new_archive = getArchive(filename);
 
 	LOG_MESSAGE(1, "Opening archive %s", filename);
 
@@ -395,31 +374,30 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 // -----------------------------------------------------------------------------
 Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool silent)
 {
-	Archive* new_archive = nullptr;
-
 	// Check entry was given
 	if (!entry)
 		return nullptr;
 
 	// Check if the entry is already opened
-	for (size_t a = 0; a < open_archives_.size(); a++)
+	for (auto& open_archive : open_archives_)
 	{
-		if (open_archives_[a].archive->parentEntry() == entry)
+		if (open_archive.archive->parentEntry() == entry)
 		{
 			// Announce open
 			if (!silent)
 			{
 				MemChunk mc;
-				uint32_t index = archiveIndex(open_archives_[a].archive);
+				uint32_t index = archiveIndex(open_archive.archive);
 				mc.write(&index, 4);
 				announce("archive_opened", mc);
 			}
 
-			return open_archives_[a].archive;
+			return open_archive.archive;
 		}
 	}
 
 	// Check entry type
+	Archive* new_archive;
 	if (WadArchive::isWadArchive(entry->data()))
 		new_archive = new WadArchive();
 	else if (ZipArchive::isZipArchive(entry->data()))
@@ -513,9 +491,9 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 // Opens [dir] as a DirArchive and adds it to the list.
 // Returns a pointer to the archive or nullptr if an error occurred.
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
+Archive* ArchiveManager::openDirArchive(const string& dir, bool manage, bool silent)
 {
-	Archive* new_archive = getArchive(dir);
+	auto new_archive = getArchive(dir);
 
 	LOG_MESSAGE(1, "Opening directory %s as archive", dir);
 
@@ -574,12 +552,10 @@ Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
 // archives. Returns the created archive, or nullptr if an invalid archive type
 // was given
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::newArchive(string format)
+Archive* ArchiveManager::newArchive(const string& format)
 {
-	// Init variables
-	Archive* new_archive = nullptr;
-
 	// Create a new archive depending on the type specified
+	Archive* new_archive;
 	if (format == "wad")
 		new_archive = new WadArchive();
 	else if (format == "zip")
@@ -624,33 +600,29 @@ bool ArchiveManager::closeArchive(int index)
 	// Remove from resource manager
 	theResourceManager->removeArchive(open_archives_[index].archive);
 
-	// Delete any embedded configuration
-	// Game::configuration().removeEmbeddedConfig(open_archives[index].archive->getFilename());
-
 	// Close any open child archives
-	// Clear out the open_children vector first, lest the children try to
-	// remove themselves from it
-	vector<Archive*> open_children = open_archives_[index].open_children;
+	// Clear out the open_children vector first, lest the children try to remove themselves from it
+	auto open_children = open_archives_[index].open_children;
 	open_archives_[index].open_children.clear();
-	for (size_t a = 0; a < open_children.size(); a++)
+	for (auto& archive : open_children)
 	{
-		int ci = archiveIndex(open_children[a]);
+		int ci = archiveIndex(archive);
 		if (ci >= 0)
 			closeArchive(ci);
 	}
 
 	// Remove ourselves from our parent's open-child list
-	ArchiveEntry* parent = open_archives_[index].archive->parentEntry();
+	auto parent = open_archives_[index].archive->parentEntry();
 	if (parent)
 	{
-		Archive* gp = parent->parent();
+		auto gp = parent->parent();
 		if (gp)
 		{
 			int pi = archiveIndex(gp);
 			if (pi >= 0)
 			{
-				vector<Archive*>& children = open_archives_[pi].open_children;
-				for (vector<Archive*>::iterator it = children.begin(); it < children.end(); ++it)
+				auto& children = open_archives_[pi].open_children;
+				for (auto it = children.begin(); it < children.end(); ++it)
 				{
 					if (*it == open_archives_[index].archive)
 					{
@@ -682,7 +654,7 @@ bool ArchiveManager::closeArchive(int index)
 // the list.
 // Returns false if it doesn't exist or can't be removed, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveManager::closeArchive(string filename)
+bool ArchiveManager::closeArchive(const string& filename)
 {
 	// Go through all open archives
 	for (int a = 0; a < (int)open_archives_.size(); a++)
@@ -720,7 +692,7 @@ bool ArchiveManager::closeArchive(Archive* archive)
 void ArchiveManager::closeAll()
 {
 	// Close the first archive in the list until no archives are open
-	while (open_archives_.size() > 0)
+	while (!open_archives_.empty())
 		closeArchive(0);
 }
 
@@ -748,12 +720,10 @@ int ArchiveManager::archiveIndex(Archive* archive)
 // This is the recursive bit, separate from the public entry point
 void ArchiveManager::getDependentArchivesInternal(Archive* archive, vector<Archive*>& vec)
 {
-	Archive* child;
-	int      ai = archiveIndex(archive);
+	int ai = archiveIndex(archive);
 
-	for (size_t a = 0; a < open_archives_[ai].open_children.size(); a++)
+	for (auto& child : open_archives_[ai].open_children)
 	{
-		child = open_archives_[ai].open_children[a];
 		vec.push_back(child);
 
 		getDependentArchivesInternal(child, vec);
@@ -789,7 +759,7 @@ string ArchiveManager::getArchiveExtensionsString() const
 	}
 
 	ext_all.RemoveLast(1);
-	for (auto ext : ext_strings)
+	for (const auto& ext : ext_strings)
 		ext_all += S_FMT("|%s", ext);
 
 	return ext_all;
@@ -829,16 +799,16 @@ void ArchiveManager::setArchiveResource(Archive* archive, bool resource)
 // -----------------------------------------------------------------------------
 // Adds [path] to the list of base resource paths
 // -----------------------------------------------------------------------------
-bool ArchiveManager::addBaseResourcePath(string path)
+bool ArchiveManager::addBaseResourcePath(const string& path)
 {
 	// Firstly, check the file exists
 	if (!wxFileExists(path))
 		return false;
 
 	// Second, check the path doesn't already exist
-	for (unsigned a = 0; a < base_resource_paths_.size(); a++)
+	for (auto& base_resource_path : base_resource_paths_)
 	{
-		if (S_CMP(base_resource_paths_[a], path))
+		if (S_CMP(base_resource_path, path))
 			return false;
 	}
 
@@ -861,7 +831,7 @@ void ArchiveManager::removeBaseResourcePath(unsigned index)
 		return;
 
 	// Unload base resource if removed is open
-	if (index == base_resource)
+	if (index == (unsigned)base_resource)
 		openBaseResource(-1);
 
 	// Modify base_resource cvar if needed
@@ -899,8 +869,7 @@ bool ArchiveManager::openBaseResource(int index)
 	// Close/delete current base resource archive
 	if (base_resource_archive_)
 	{
-		theResourceManager->removeArchive(base_resource_archive_);
-		delete base_resource_archive_;
+		theResourceManager->removeArchive(base_resource_archive_.get());
 		base_resource_archive_ = nullptr;
 	}
 
@@ -915,9 +884,9 @@ bool ArchiveManager::openBaseResource(int index)
 	// Create archive based on file type
 	string filename = base_resource_paths_[index];
 	if (WadArchive::isWadArchive(filename))
-		base_resource_archive_ = new WadArchive();
+		base_resource_archive_ = std::make_unique<WadArchive>();
 	else if (ZipArchive::isZipArchive(filename))
-		base_resource_archive_ = new ZipArchive();
+		base_resource_archive_ = std::make_unique<ZipArchive>();
 	else
 		return false;
 
@@ -927,11 +896,10 @@ bool ArchiveManager::openBaseResource(int index)
 	{
 		base_resource = index;
 		UI::hideSplash();
-		theResourceManager->addArchive(base_resource_archive_);
+		theResourceManager->addArchive(base_resource_archive_.get());
 		announce("base_resource_changed");
 		return true;
 	}
-	delete base_resource_archive_;
 	base_resource_archive_ = nullptr;
 	UI::hideSplash();
 	announce("base_resource_changed");
@@ -942,21 +910,21 @@ bool ArchiveManager::openBaseResource(int index)
 // Returns the first entry matching [name] in the resource archives.
 // Resource archives = open archives -> base resource archives.
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::getResourceEntry(string name, Archive* ignore)
+ArchiveEntry* ArchiveManager::getResourceEntry(const string& name, Archive* ignore)
 {
 	// Go through all open archives
-	for (size_t a = 0; a < open_archives_.size(); a++)
+	for (auto& open_archive : open_archives_)
 	{
 		// If it isn't a resource archive, skip it
-		if (!open_archives_[a].resource)
+		if (!open_archive.resource)
 			continue;
 
 		// If it's being ignored, skip it
-		if (open_archives_[a].archive == ignore)
+		if (open_archive.archive == ignore)
 			continue;
 
 		// Try to find the entry in the archive
-		ArchiveEntry* entry = open_archives_[a].archive->entry(name);
+		auto entry = open_archive.archive->entry(name);
 		if (entry)
 			return entry;
 	}
@@ -974,18 +942,18 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string name, Archive* ignore)
 ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options, Archive* ignore)
 {
 	// Go through all open archives
-	for (size_t a = 0; a < open_archives_.size(); a++)
+	for (auto& open_archive : open_archives_)
 	{
 		// If it isn't a resource archive, skip it
-		if (!open_archives_[a].resource)
+		if (!open_archive.resource)
 			continue;
 
 		// If it's being ignored, skip it
-		if (open_archives_[a].archive == ignore)
+		if (open_archive.archive == ignore)
 			continue;
 
 		// Try to find the entry in the archive
-		ArchiveEntry* entry = open_archives_[a].archive->findLast(options);
+		auto entry = open_archive.archive->findLast(options);
 		if (entry)
 			return entry;
 	}
@@ -1007,23 +975,23 @@ vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOpti
 	// Search the base resource archive first
 	if (base_resource_archive_)
 	{
-		vector<ArchiveEntry*> vec = base_resource_archive_->findAll(options);
+		auto vec = base_resource_archive_->findAll(options);
 		ret.insert(ret.end(), vec.begin(), vec.end());
 	}
 
 	// Go through all open archives
-	for (size_t a = 0; a < open_archives_.size(); a++)
+	for (auto& open_archive : open_archives_)
 	{
 		// If it isn't a resource archive, skip it
-		if (!open_archives_[a].resource)
+		if (!open_archive.resource)
 			continue;
 
 		// If it's being ignored, skip it
-		if (open_archives_[a].archive == ignore)
+		if (open_archive.archive == ignore)
 			continue;
 
 		// Add matching entries from this archive
-		vector<ArchiveEntry*> vec = open_archives_[a].archive->findAll(options);
+		auto vec = open_archive.archive->findAll(options);
 		ret.insert(ret.end(), vec.begin(), vec.end());
 	}
 
@@ -1093,10 +1061,8 @@ void ArchiveManager::addRecentFiles(vector<string> paths)
 	recent_files_.clear();
 
 	// Add the files
-	for (size_t a = 0; a < paths.size(); ++a)
-	{
-		addRecentFile(paths[a]);
-	}
+	for (const auto& path : paths)
+		addRecentFile(path);
 
 	// Announce
 	setMuted(false);
@@ -1106,7 +1072,7 @@ void ArchiveManager::addRecentFiles(vector<string> paths)
 // -----------------------------------------------------------------------------
 // Removes the recent file matching [path]
 // -----------------------------------------------------------------------------
-void ArchiveManager::removeRecentFile(string path)
+void ArchiveManager::removeRecentFile(const string& path)
 {
 	for (unsigned a = 0; a < recent_files_.size(); a++)
 	{
@@ -1125,9 +1091,9 @@ void ArchiveManager::removeRecentFile(string path)
 void ArchiveManager::addBookmark(ArchiveEntry* entry)
 {
 	// Check the bookmark isn't already in the list
-	for (unsigned a = 0; a < bookmarks_.size(); a++)
+	for (auto& bookmark : bookmarks_)
 	{
-		if (bookmarks_[a] == entry)
+		if (bookmark == entry)
 			return;
 	}
 
@@ -1214,8 +1180,8 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 bool ArchiveManager::deleteBookmarksInDir(ArchiveTreeNode* node)
 {
 	// Go through bookmarks
-	Archive* archive = node->archive();
-	bool     removed = deleteBookmark(node->dirEntry());
+	auto archive = node->archive();
+	bool removed = deleteBookmark(node->dirEntry());
 	for (unsigned a = 0; a < bookmarks_.size(); ++a)
 	{
 		// Check bookmarked entry's parent archive
@@ -1223,8 +1189,8 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveTreeNode* node)
 		{
 			// Now check if the bookmarked entry is within
 			// the removed dir or one of its descendants
-			ArchiveTreeNode* anode  = bookmarks_[a]->parentDir();
-			bool             remove = false;
+			auto anode  = bookmarks_[a]->parentDir();
+			bool remove = false;
 			while (anode != archive->rootDir() && !remove)
 			{
 				if (anode == node)
@@ -1320,7 +1286,7 @@ CONSOLE_COMMAND(list_archives, 0, true)
 // -----------------------------------------------------------------------------
 void c_open(vector<string> args)
 {
-	for (size_t a = 0; a < args.size(); a++)
-		App::archiveManager().openArchive(args[a]);
+	for (const auto& arg : args)
+		App::archiveManager().openArchive(arg);
 }
 ConsoleCommand am_open("open", &c_open, 1, true); // Can't use the macro with this name

@@ -5,8 +5,8 @@
 class SiNArchive : public Archive
 {
 public:
-	SiNArchive();
-	~SiNArchive();
+	SiNArchive() : Archive("sin") {}
+	~SiNArchive() = default;
 
 	// Opening/writing
 	bool open(MemChunk& mc) override;                      // Open from MemChunk
@@ -17,5 +17,5 @@ public:
 
 	// Static functions
 	static bool isSiNArchive(MemChunk& mc);
-	static bool isSiNArchive(string filename);
+	static bool isSiNArchive(const string& filename);
 };

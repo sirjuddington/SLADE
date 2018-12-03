@@ -7,28 +7,28 @@
 class ArchiveManager : public Announcer, Listener
 {
 public:
-	ArchiveManager();
+	ArchiveManager() = default;
 	~ArchiveManager();
 
 	bool             init();
 	bool             initBaseResource();
 	bool             resArchiveOK() const { return res_archive_open_; }
 	bool             addArchive(Archive* archive);
-	bool             validResDir(string dir) const;
+	bool             validResDir(const string& dir) const;
 	Archive*         getArchive(int index);
-	Archive*         getArchive(string filename);
-	Archive*         openArchive(string filename, bool manage = true, bool silent = false);
+	Archive*         getArchive(const string& filename);
+	Archive*         openArchive(const string& filename, bool manage = true, bool silent = false);
 	Archive*         openArchive(ArchiveEntry* entry, bool manage = true, bool silent = false);
-	Archive*         openDirArchive(string dir, bool manage = true, bool silent = false);
-	Archive*         newArchive(string format);
+	Archive*         openDirArchive(const string& dir, bool manage = true, bool silent = false);
+	Archive*         newArchive(const string& format);
 	bool             closeArchive(int index);
-	bool             closeArchive(string filename);
+	bool             closeArchive(const string& filename);
 	bool             closeArchive(Archive* archive);
 	void             closeAll();
 	int              numArchives() const { return (int)open_archives_.size(); }
 	int              archiveIndex(Archive* archive);
 	vector<Archive*> getDependentArchives(Archive* archive);
-	Archive*         programResourceArchive() const { return program_resource_archive_; }
+	Archive*         programResourceArchive() const { return program_resource_archive_.get(); }
 	string           getArchiveExtensionsString() const;
 	bool             archiveIsResource(Archive* archive);
 	void             setArchiveResource(Archive* archive, bool resource = true);
@@ -39,15 +39,15 @@ public:
 	const vector<ArchiveEntry*>& bookmarks() const { return bookmarks_; }
 
 	// Base resource archive stuff
-	Archive* baseResourceArchive() const { return base_resource_archive_; }
-	bool     addBaseResourcePath(string path);
+	Archive* baseResourceArchive() const { return base_resource_archive_.get(); }
+	bool     addBaseResourcePath(const string& path);
 	void     removeBaseResourcePath(unsigned index);
 	unsigned numBaseResourcePaths() const { return base_resource_paths_.size(); }
 	string   getBaseResourcePath(unsigned index);
 	bool     openBaseResource(int index);
 
 	// Resource entry get/search
-	ArchiveEntry*         getResourceEntry(string name, Archive* ignore = nullptr);
+	ArchiveEntry*         getResourceEntry(const string& name, Archive* ignore = nullptr);
 	ArchiveEntry*         findResourceEntry(Archive::SearchOptions& options, Archive* ignore = nullptr);
 	vector<ArchiveEntry*> findAllResourceEntries(Archive::SearchOptions& options, Archive* ignore = nullptr);
 
@@ -56,7 +56,7 @@ public:
 	unsigned numRecentFiles() const { return recent_files_.size(); }
 	void     addRecentFile(string path);
 	void     addRecentFiles(vector<string> paths);
-	void     removeRecentFile(string path);
+	void     removeRecentFile(const string& path);
 
 	// Bookmarks
 	void          addBookmark(ArchiveEntry* entry);
@@ -78,9 +78,9 @@ private:
 	};
 
 	vector<OpenArchive>   open_archives_;
-	Archive*              program_resource_archive_;
-	Archive*              base_resource_archive_;
-	bool                  res_archive_open_;
+	Archive::UPtr         program_resource_archive_;
+	Archive::UPtr         base_resource_archive_;
+	bool                  res_archive_open_ = false;
 	vector<string>        base_resource_paths_;
 	vector<string>        recent_files_;
 	vector<ArchiveEntry*> bookmarks_;

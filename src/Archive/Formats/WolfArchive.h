@@ -2,25 +2,19 @@
 
 #include "Archive/Archive.h"
 
-struct WolfHandle
-{
-	uint32_t offset;
-	uint16_t size;
-};
-
 class WolfArchive : public TreelessArchive
 {
 public:
-	WolfArchive();
-	~WolfArchive();
+	WolfArchive() : TreelessArchive("wolf") {}
+	~WolfArchive() = default;
 
 	// Wolf3D specific
-	uint32_t getEntryOffset(ArchiveEntry* entry);
-	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset);
+	uint32_t getEntryOffset(ArchiveEntry* entry) const;
+	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset) const;
 
 	// Opening
-	bool open(string filename) override; // Open from File
-	bool open(MemChunk& mc) override;    // Open from MemChunk
+	bool open(const string& filename) override; // Open from File
+	bool open(MemChunk& mc) override;           // Open from MemChunk
 
 	bool openAudio(MemChunk& head, MemChunk& data);
 	bool openGraph(MemChunk& head, MemChunk& data, MemChunk& dict);
@@ -39,15 +33,21 @@ public:
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr,
 		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, string name) override;
+	bool renameEntry(ArchiveEntry* entry, const string& name) override;
 
 	static bool isWolfArchive(MemChunk& mc);
-	static bool isWolfArchive(string filename);
+	static bool isWolfArchive(const string& filename);
 
 private:
+	struct WolfHandle
+	{
+		uint32_t offset;
+		uint16_t size;
+	};
+
 	uint16_t spritestart_;
 	uint16_t soundstart_;
 };

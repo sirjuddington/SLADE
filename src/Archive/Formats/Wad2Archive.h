@@ -17,8 +17,8 @@ struct Wad2Entry
 class Wad2Archive : public TreelessArchive
 {
 public:
-	Wad2Archive();
-	~Wad2Archive();
+	Wad2Archive() : TreelessArchive("wad2") {}
+	~Wad2Archive() = default;
 
 	// Opening/writing
 	bool open(MemChunk& mc) override;                      // Open from MemChunk
@@ -35,12 +35,12 @@ public:
 		bool             copy     = false) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, string name) override;
+	bool renameEntry(ArchiveEntry* entry, const string& name) override;
 
 	// Static functions
 	static bool isWad2Archive(MemChunk& mc);
-	static bool isWad2Archive(string filename);
+	static bool isWad2Archive(const string& filename);
 
 private:
-	bool wad3_;
+	bool wad3_ = false;
 };

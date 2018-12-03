@@ -5,8 +5,8 @@
 class GobArchive : public TreelessArchive
 {
 public:
-	GobArchive();
-	~GobArchive();
+	GobArchive() : TreelessArchive("gob") {}
+	~GobArchive() = default;
 
 	// GOB specific
 	uint32_t getEntryOffset(ArchiveEntry* entry);
@@ -25,12 +25,12 @@ public:
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr,
 		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, string name) override;
+	bool renameEntry(ArchiveEntry* entry, const string& name) override;
 
 	// Static functions
 	static bool isGobArchive(MemChunk& mc);
-	static bool isGobArchive(string filename);
+	static bool isGobArchive(const string& filename);
 };

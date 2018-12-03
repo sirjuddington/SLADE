@@ -37,17 +37,6 @@
 
 // -----------------------------------------------------------------------------
 //
-// Constants
-//
-// -----------------------------------------------------------------------------
-static const uint32_t HEADER_SIZE     = 4 + 2;             // magic + number of entries
-static const uint32_t NAME_SIZE       = 1 + 12;            // length + characters
-static const uint32_t ENTRY_SIZE      = NAME_SIZE + 4 + 4; // name + size + offset
-static const uint16_t MAX_ENTRY_COUNT = 2048;              // the same for Demo and Full versions
-
-
-// -----------------------------------------------------------------------------
-//
 // External Variables
 //
 // -----------------------------------------------------------------------------
@@ -82,11 +71,6 @@ void fixBrokenWave(ArchiveEntry* const entry)
 
 
 // -----------------------------------------------------------------------------
-// ChasmBinArchive class constructor
-// -----------------------------------------------------------------------------
-ChasmBinArchive::ChasmBinArchive() : Archive("chasm_bin") {}
-
-// -----------------------------------------------------------------------------
 // Reads Chasm bin format data from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
@@ -94,9 +78,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 {
 	// Check given data is valid
 	if (mc.size() < HEADER_SIZE)
-	{
 		return false;
-	}
 
 	// Read .bin header and check it
 	char magic[4] = {};
@@ -150,8 +132,8 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		name[sizeof name - 1] = '\0';
 
 		// Create entry
-		ArchiveEntry* const entry = new ArchiveEntry(name, size);
-		entry->exProp("Offset")   = static_cast<int>(offset);
+		auto entry              = std::make_shared<ArchiveEntry>(name, size);
+		entry->exProp("Offset") = static_cast<int>(offset);
 		entry->setLoaded(false);
 		entry->setState(0);
 
@@ -172,7 +154,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		UI::setSplashProgress(static_cast<float>(i) / num_entries);
 
 		// Get entry
-		ArchiveEntry* const entry = all_entries[i];
+		const auto entry = all_entries[i];
 
 		// Read entry data if it isn't zero-sized
 		if (entry->size() > 0)
@@ -188,9 +170,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 
 		// Unload entry data if needed
 		if (!archive_load_data)
-		{
 			entry->unloadData();
-		}
 
 		// Set entry to unchanged
 		entry->setState(0);
@@ -245,7 +225,7 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 
 	for (uint16_t i = 0; i < num_entries; ++i)
 	{
-		ArchiveEntry* const entry = entries[i];
+		const auto entry = entries[i];
 
 		// Update entry
 		if (update)
@@ -288,7 +268,7 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 
 	for (uint16_t i = 0; i < num_entries; ++i)
 	{
-		ArchiveEntry* const entry = entries[i];
+		const auto entry = entries[i];
 		mc.write(entry->rawData(), entry->size());
 	}
 
@@ -303,9 +283,7 @@ bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 {
 	// Check entry is ok
 	if (!checkEntry(entry))
-	{
 		return false;
-	}
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
@@ -372,7 +350,7 @@ bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Chasm bin archive
 // -----------------------------------------------------------------------------
-bool ChasmBinArchive::isChasmBinArchive(string filename)
+bool ChasmBinArchive::isChasmBinArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -388,9 +366,7 @@ bool ChasmBinArchive::isChasmBinArchive(string filename)
 	file.Read(magic, sizeof magic);
 
 	if (magic[0] != 'C' || magic[1] != 'S' || magic[2] != 'i' || magic[3] != 'd')
-	{
 		return false;
-	}
 
 	uint16_t num_entries = 0;
 	file.Read(&num_entries, sizeof num_entries);

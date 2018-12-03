@@ -12,8 +12,8 @@ public:
 		size_t length;
 	};
 
-	DiskArchive();
-	~DiskArchive();
+	DiskArchive() : Archive("disk") {}
+	~DiskArchive() = default;
 
 	// Opening/writing
 	bool open(MemChunk& mc) override;                      // Open from MemChunk
@@ -24,5 +24,5 @@ public:
 
 	// Static functions
 	static bool isDiskArchive(MemChunk& mc);
-	static bool isDiskArchive(string filename);
+	static bool isDiskArchive(const string& filename);
 };
