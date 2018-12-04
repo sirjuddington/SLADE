@@ -931,8 +931,8 @@ bool ArchivePanel::buildArchive()
 			entry->importFile(files[a]);
 
 			// Set unmodified
-			entry->setState(0);
-			dir->dirEntry()->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
+			dir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
 		}
 
 		UI::setSplashProgress(1.0f);
@@ -3473,7 +3473,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		}
 		if (!modified_selected)
 		{
-			if (entry->state() == 1)
+			if (entry->state() == ArchiveEntry::State::Modified)
 				modified_selected = true;
 		}
 		if (!map_selected)

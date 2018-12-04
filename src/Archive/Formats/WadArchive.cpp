@@ -78,7 +78,6 @@ enum MapLumpNames
 string map_lumps[] = { "THINGS",   "VERTEXES", "LINEDEFS", "SIDEDEFS", "SECTORS", "SEGS",    "SSECTORS", "NODES",
 					   "BLOCKMAP", "REJECT",   "SCRIPTS",  "BEHAVIOR", "LEAFS",   "LIGHTS",  "MACROS",   "GL_MAP01",
 					   "GL_VERT",  "GL_SEGS",  "GL_SSECT", "GL_NODES", "GL_PVS",  "TEXTMAP", "ZNODES" };
-} // namespace
 
 // Special namespaces (at the moment these are just mapping to zdoom's "zip as wad" namespace folders)
 // http://zdoom.org/wiki/Using_ZIPs_as_WAD_replacement#How_to
@@ -93,6 +92,8 @@ vector<SpecialNS> special_namespaces = {
 	{ "hires", "hi" },    { "colormaps", "c" }, { "acs", "a" },
 	{ "voices", "v" },    { "voxels", "vx" },   { "sounds", "ds" }, // Jaguar Doom and Doom 64 use it
 };
+} // namespace
+
 
 // -----------------------------------------------------------------------------
 //
@@ -418,11 +419,11 @@ bool WadArchive::open(MemChunk& mc)
 		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		if (jaguarencrypt)
 		{
-			nlump->setEncryption(ENC_JAGUAR);
+			nlump->setEncryption(ArchiveEntry::Encryption::Jaguar);
 			nlump->exProp("FullSize") = (int)size;
 		}
 
@@ -450,7 +451,7 @@ bool WadArchive::open(MemChunk& mc)
 		{
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			if (entry->isEncrypted())
+			if (entry->encryption() != ArchiveEntry::Encryption::None)
 			{
 				if (entry->exProps().propertyExists("FullSize")
 					&& (unsigned)(int)(entry->exProp("FullSize")) > entry->size())
@@ -474,7 +475,7 @@ bool WadArchive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Identify #included lumps (DECORATE, GLDEFS, etc.)
@@ -561,7 +562,7 @@ bool WadArchive::write(MemChunk& mc, bool update)
 
 		if (update)
 		{
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 			entry->exProp("Offset") = (int)offset;
 		}
 	}
@@ -639,7 +640,7 @@ bool WadArchive::write(const string& filename, bool update)
 
 		if (update)
 		{
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 			entry->exProp("Offset") = (int)offset;
 		}
 	}
@@ -683,7 +684,7 @@ bool WadArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Set the lump to loaded
 	entry->setLoaded();
-	entry->setState(0);
+	entry->setState(ArchiveEntry::State::Unmodified);
 
 	return true;
 }

@@ -163,11 +163,11 @@ bool WadJArchive::open(MemChunk& mc)
 		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), actualsize);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		if (jaguarencrypt)
 		{
-			nlump->setEncryption(ENC_JAGUAR);
+			nlump->setEncryption(ArchiveEntry::Encryption::Jaguar);
 			nlump->exProp("FullSize") = (int)size;
 		}
 
@@ -196,7 +196,7 @@ bool WadJArchive::open(MemChunk& mc)
 			// Read the entry data
 			edata.clear();
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			if (entry->isEncrypted())
+			if (entry->encryption() != ArchiveEntry::Encryption::None)
 			{
 				if (entry->exProps().propertyExists("FullSize")
 					&& (unsigned)(int)(entry->exProp("FullSize")) > entry->size())
@@ -224,7 +224,7 @@ bool WadJArchive::open(MemChunk& mc)
 			entry->lock();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Detect maps (will detect map entry types)
@@ -298,7 +298,7 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 
 		if (update)
 		{
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 			entry->exProp("Offset") = (int)wxINT32_SWAP_ON_LE(offset);
 		}
 	}

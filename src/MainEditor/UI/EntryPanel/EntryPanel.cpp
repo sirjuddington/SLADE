@@ -203,7 +203,7 @@ bool EntryPanel::revertEntry(bool confirm)
 
 		if (ok)
 		{
-			uint8_t state = entry_->state();
+			auto state = entry_->state();
 			entry_->importMemChunk(entry_data_);
 			entry_->setState(state);
 			EntryType::detectEntryType(entry_);

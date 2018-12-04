@@ -148,7 +148,7 @@ bool GrpArchive::open(MemChunk& mc)
 		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -181,7 +181,7 @@ bool GrpArchive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables
@@ -227,7 +227,7 @@ bool GrpArchive::write(MemChunk& mc, bool update)
 		if (update)
 		{
 			long offset = getEntryOffset(entry);
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 			entry->exProp("Offset") = (int)offset;
 		}
 	}

@@ -73,7 +73,7 @@ void ArchiveTreeNode::addChild(STreeNode* child)
 // Returns the parent archive of this node (gets the parent archive of the
 // *root* parent of this node)
 // -----------------------------------------------------------------------------
-Archive* ArchiveTreeNode::archive()
+Archive* ArchiveTreeNode::archive() const
 {
 	if (parent_)
 		return ((ArchiveTreeNode*)parent_)->archive();
@@ -417,8 +417,8 @@ bool ArchiveTreeNode::swapEntries(unsigned index1, unsigned index2)
 		return false;
 
 	// Get entries to swap
-	ArchiveEntry* entry1 = entries_[index1].get();
-	ArchiveEntry* entry2 = entries_[index2].get();
+	auto entry1 = entries_[index1].get();
+	auto entry2 = entries_[index2].get();
 
 	// Swap entries
 	entries_[index1].swap(entries_[index2]);
@@ -452,7 +452,7 @@ void ArchiveTreeNode::clear()
 ArchiveTreeNode* ArchiveTreeNode::clone()
 {
 	// Create copy
-	ArchiveTreeNode* copy = new ArchiveTreeNode();
+	auto copy = new ArchiveTreeNode();
 	copy->setName(dir_entry_->name());
 
 	// Copy entries
@@ -470,7 +470,7 @@ ArchiveTreeNode* ArchiveTreeNode::clone()
 // Merges [node] with this node. Entries within [node] are added at [position]
 // within this node. Returns false if [node] is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
+bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, ArchiveEntry::State state)
 {
 	// Check node was given to merge
 	if (!node)
@@ -482,7 +482,7 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
 		if (node->entryAt(a))
 			node->entryAt(a)->setName(Misc::lumpNameToFileName(node->entryAt(a)->name()));
 
-		ArchiveEntry* nentry = new ArchiveEntry(*(node->entryAt(a)));
+		auto nentry = new ArchiveEntry(*(node->entryAt(a)));
 		addEntry(nentry, position);
 		nentry->setState(state, true);
 
@@ -493,7 +493,7 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
 	// Merge subdirectories
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		ArchiveTreeNode* child = (ArchiveTreeNode*)STreeNode::addChild(node->child(a)->name());
+		auto child = (ArchiveTreeNode*)STreeNode::addChild(node->child(a)->name());
 		child->merge((ArchiveTreeNode*)node->child(a));
 		child->dirEntry()->setState(state, true);
 	}
@@ -504,7 +504,7 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
 // -----------------------------------------------------------------------------
 // Exports all entries and subdirs to the filesystem at [path]
 // -----------------------------------------------------------------------------
-bool ArchiveTreeNode::exportTo(string path)
+bool ArchiveTreeNode::exportTo(const string& path)
 {
 	// Create directory if needed
 	if (!wxDirExists(path))

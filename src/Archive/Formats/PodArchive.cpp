@@ -113,7 +113,7 @@ bool PodArchive::open(MemChunk& mc)
 		auto   ndir = createDir(path);
 		ndir->addEntry(new_entry);
 
-		new_entry->setState(0);
+		new_entry->setState(ArchiveEntry::State::Unmodified);
 
 		LOG_MESSAGE(5, "File size: %d, offset: %d, name: %s", files[a].size, files[a].offset, files[a].name);
 	}
@@ -127,7 +127,7 @@ bool PodArchive::open(MemChunk& mc)
 		// Skip dir/marker
 		if (all_entries[a]->size() == 0 || all_entries[a]->type() == EntryType::folderType())
 		{
-			all_entries[a]->setState(0);
+			all_entries[a]->setState(ArchiveEntry::State::Unmodified);
 			continue;
 		}
 
@@ -147,7 +147,7 @@ bool PodArchive::open(MemChunk& mc)
 			all_entries[a]->unloadData();
 
 		// Set entry to unchanged
-		all_entries[a]->setState(0);
+		all_entries[a]->setState(ArchiveEntry::State::Unmodified);
 		LOG_MESSAGE(5, "entry %s size %d", CHR(all_entries[a]->name()), all_entries[a]->size());
 	}
 

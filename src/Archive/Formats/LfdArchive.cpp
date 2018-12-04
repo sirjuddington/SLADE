@@ -151,7 +151,7 @@ bool LfdArchive::open(MemChunk& mc)
 		auto nlump = std::make_shared<ArchiveEntry>(fn.GetFullName(), length);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -191,7 +191,7 @@ bool LfdArchive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables
@@ -221,7 +221,7 @@ bool LfdArchive::write(MemChunk& mc, bool update)
 		setEntryOffset(entry, total_size);
 		if (update)
 		{
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 			entry->exProp("Offset") = (int)total_size;
 		}
 		total_size += entry->size();

@@ -194,13 +194,13 @@ bool HogArchive::open(MemChunk& mc)
 		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Handle txb/ctb as archive level encryption. This is not strictly
 		// correct, but since we're not making a proper Descent editor this
 		// prevents needless complication on loading text data.
 		if (shouldEncodeTxb(nlump->name()))
-			nlump->setEncryption(ENC_TXB);
+			nlump->setEncryption(ArchiveEntry::Encryption::TXB);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -225,7 +225,7 @@ bool HogArchive::open(MemChunk& mc)
 		{
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
-			if (entry->isEncrypted() == ENC_TXB)
+			if (entry->encryption() == ArchiveEntry::Encryption::TXB)
 				decodeTxb(edata);
 			entry->importMemChunk(edata);
 		}
@@ -238,7 +238,7 @@ bool HogArchive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables
@@ -267,7 +267,7 @@ bool HogArchive::write(MemChunk& mc, bool update)
 		setEntryOffset(entry, offset);
 		if (update)
 		{
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 			entry->exProp("Offset") = (int)offset;
 		}
 		offset += entry->size();
@@ -294,7 +294,7 @@ bool HogArchive::write(MemChunk& mc, bool update)
 
 		mc.write(name, 13);
 		mc.write(&size, 4);
-		if (entry->isEncrypted() == ENC_TXB)
+		if (entry->encryption() == ArchiveEntry::Encryption::TXB)
 		{
 			uint8_t* data = encodeTxb(entry->data());
 			mc.write(data, entry->size());
@@ -382,7 +382,7 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
 {
 	if (shouldEncodeTxb(entry->name()))
-		entry->setEncryption(ENC_TXB);
+		entry->setEncryption(ArchiveEntry::Encryption::TXB);
 
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
@@ -403,9 +403,9 @@ bool HogArchive::renameEntry(ArchiveEntry* entry, const string& name)
 
 	// Update encode status
 	if (shouldEncodeTxb(new_name))
-		entry->setEncryption(ENC_TXB);
+		entry->setEncryption(ArchiveEntry::Encryption::TXB);
 	else
-		entry->setEncryption(ENC_NONE);
+		entry->setEncryption(ArchiveEntry::Encryption::None);
 
 	// Do default rename
 	return Archive::renameEntry(entry, new_name);

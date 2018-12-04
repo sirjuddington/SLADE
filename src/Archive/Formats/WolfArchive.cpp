@@ -543,7 +543,7 @@ bool WolfArchive::open(MemChunk& mc)
 			auto nlump = std::make_shared<ArchiveEntry>(name, size);
 			nlump->setLoaded(false);
 			nlump->exProp("Offset") = (int)pages[d].offset;
-			nlump->setState(0);
+			nlump->setState(ArchiveEntry::State::Unmodified);
 
 			d = e;
 
@@ -585,7 +585,7 @@ bool WolfArchive::open(MemChunk& mc)
 		EntryType::detectEntryType(entry);
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables
@@ -732,7 +732,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		EntryType::detectEntryType(nlump.get());
 
 		// Add to entry list
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 		rootDir()->addEntry(nlump);
 	}
 
@@ -799,7 +799,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -819,7 +819,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 			auto nlump2 = std::make_shared<ArchiveEntry>(name, planelen[i]);
 			nlump2->setLoaded(false);
 			nlump2->exProp("Offset") = (int)planeofs[i];
-			nlump2->setState(0);
+			nlump2->setState(ArchiveEntry::State::Unmodified);
 			rootDir()->addEntry(nlump2);
 		}
 	}
@@ -847,7 +847,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		EntryType::detectEntryType(entry);
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables
@@ -942,7 +942,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -983,7 +983,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		EntryType::detectEntryType(entry);
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables

@@ -222,7 +222,7 @@ bool BSPArchive::open(MemChunk& mc)
 			auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), lumpsize);
 			nlump->setLoaded(false);
 			nlump->exProp("Offset") = (int)(offset + texoffset);
-			nlump->setState(0);
+			nlump->setState(ArchiveEntry::State::Unmodified);
 
 			// Add to entry list
 			rootDir()->addEntry(nlump);
@@ -259,7 +259,7 @@ bool BSPArchive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables

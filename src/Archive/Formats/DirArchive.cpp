@@ -141,7 +141,7 @@ bool DirArchive::open(const string& filename)
 	vector<ArchiveEntry*> entry_list;
 	putEntryTreeAsList(entry_list);
 	for (auto& entry : entry_list)
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 
 	// Enable announcements
 	setMuted(false);
@@ -264,13 +264,14 @@ bool DirArchive::save(const string& filename)
 
 			// Set unmodified
 			entries[a]->exProp("filePath") = path;
-			entries[a]->setState(0);
+			entries[a]->setState(ArchiveEntry::State::Unmodified);
 
 			continue;
 		}
 
 		// Check if entry needs to be (re)written
-		if (entries[a]->state() == 0 && path == entries[a]->exProp("filePath").stringValue())
+		if (entries[a]->state() == ArchiveEntry::State::Unmodified
+			&& path == entries[a]->exProp("filePath").stringValue())
 			continue;
 
 		// Write entry to file
@@ -282,7 +283,7 @@ bool DirArchive::save(const string& filename)
 			files_written.push_back(path);
 
 		// Set unmodified
-		entries[a]->setState(0);
+		entries[a]->setState(ArchiveEntry::State::Unmodified);
 		entries[a]->exProp("filePath")       = path;
 		file_modification_times_[entries[a]] = wxFileModificationTime(path);
 	}
@@ -638,7 +639,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 			name.Replace("\\", "/");
 
 			auto ndir = createDir(name);
-			ndir->dirEntry()->setState(0);
+			ndir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
 			ndir->dirEntry()->exProp("filePath") = change.file_path;
 		}
 
@@ -678,7 +679,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 				new_entry->unloadData();
 
 			// Set entry not modified
-			new_entry->setState(0);
+			new_entry->setState(ArchiveEntry::State::Unmodified);
 		}
 	}
 

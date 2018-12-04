@@ -135,7 +135,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		auto entry              = std::make_shared<ArchiveEntry>(name, size);
 		entry->exProp("Offset") = static_cast<int>(offset);
 		entry->setLoaded(false);
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 
 		rootDir()->addEntry(entry);
 	}
@@ -173,7 +173,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables
@@ -230,7 +230,7 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 		// Update entry
 		if (update)
 		{
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 			entry->exProp("Offset") = static_cast<int>(offset);
 		}
 

@@ -276,7 +276,7 @@ bool GfxEntryPanel::saveEntry()
 		if (ok)
 		{
 			// Set modified
-			entry_->setState(1);
+			entry_->setState(ArchiveEntry::State::Modified);
 
 			// Re-detect type
 			EntryType* oldtype = entry_->type();

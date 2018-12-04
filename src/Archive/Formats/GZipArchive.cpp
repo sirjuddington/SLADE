@@ -164,7 +164,7 @@ bool GZipArchive::open(MemChunk& mc)
 	}
 	rootDir()->addEntry(entry);
 	EntryType::detectEntryType(entry.get());
-	entry->setState(0);
+	entry->setState(ArchiveEntry::State::Unmodified);
 
 	setMuted(false);
 	setModified(false);
@@ -203,7 +203,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			mc.write(header, 4);
 
 			// Update mtime if the file was modified
-			if (entryAt(0)->state())
+			if (entryAt(0)->state() != ArchiveEntry::State::Unmodified)
 			{
 				mtime_ = ::wxGetLocalTime();
 			}
@@ -308,7 +308,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Set the lump to loaded
 	entry->setLoaded();
-	entry->setState(0);
+	entry->setState(ArchiveEntry::State::Unmodified);
 
 	return true;
 }

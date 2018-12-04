@@ -122,7 +122,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		nlump->exProp("W2Type") = info.type;
 		nlump->exProp("W2Size") = (int)info.size;
 		nlump->exProp("W2Comp") = !!(info.cmprs);
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -155,7 +155,7 @@ bool Wad2Archive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Detect maps (will detect map entry types)
@@ -230,7 +230,7 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 		mc.write(&info, 32);
 
 		if (update)
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	return true;

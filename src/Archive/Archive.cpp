@@ -56,13 +56,13 @@ vector<ArchiveFormat> Archive::formats;
 class EntryRenameUS : public UndoStep
 {
 public:
-	EntryRenameUS(ArchiveEntry* entry, const string& new_name)
+	EntryRenameUS(ArchiveEntry* entry, const string& new_name) :
+		archive_{ entry->parent() },
+		entry_path_{ entry->path() },
+		entry_index_{ entry->parentDir()->entryIndex(entry) },
+		old_name_{ entry->name() },
+		new_name_{ new_name }
 	{
-		archive_     = entry->parent();
-		entry_path_  = entry->path();
-		entry_index_ = entry->parentDir()->entryIndex(entry);
-		old_name_    = entry->name();
-		new_name_    = new_name;
 	}
 
 	bool doUndo() override
@@ -104,13 +104,13 @@ private:
 class DirRenameUS : public UndoStep
 {
 public:
-	DirRenameUS(ArchiveTreeNode* dir, const string& new_name)
+	DirRenameUS(ArchiveTreeNode* dir, const string& new_name) :
+		archive_{ dir->archive() },
+		path_{ dir->parent()->path() + new_name },
+		old_name_{ dir->name() },
+		new_name_{ new_name },
+		prev_state_{ dir->dirEntry()->state() }
 	{
-		archive_    = dir->archive();
-		new_name_   = new_name;
-		old_name_   = dir->name();
-		path_       = dir->parent()->path() + new_name;
-		prev_state_ = dir->dirEntry()->state();
 	}
 
 	void swapNames()
@@ -136,22 +136,22 @@ public:
 	}
 
 private:
-	Archive* archive_;
-	string   path_;
-	string   old_name_;
-	string   new_name_;
-	int      prev_state_;
+	Archive*            archive_;
+	string              path_;
+	string              old_name_;
+	string              new_name_;
+	ArchiveEntry::State prev_state_;
 };
 
 class EntrySwapUS : public UndoStep
 {
 public:
-	EntrySwapUS(ArchiveTreeNode* dir, unsigned index1, unsigned index2)
+	EntrySwapUS(ArchiveTreeNode* dir, unsigned index1, unsigned index2) :
+		archive_{ dir->archive() },
+		path_{ dir->path() },
+		index1_{ index1 },
+		index2_{ index2 }
 	{
-		archive_ = dir->archive();
-		path_    = dir->path();
-		index1_  = index1;
-		index2_  = index2;
 	}
 
 	bool doSwap() const
@@ -176,16 +176,14 @@ private:
 class EntryCreateDeleteUS : public UndoStep
 {
 public:
-	EntryCreateDeleteUS(bool created, ArchiveEntry* entry)
+	EntryCreateDeleteUS(bool created, ArchiveEntry* entry) :
+		created_{ created },
+		archive_{ entry->parent() },
+		entry_copy_{ new ArchiveEntry(*entry) },
+		path_{ entry->path() },
+		index_{ (unsigned)entry->parentDir()->entryIndex(entry) }
 	{
-		created_    = created;
-		archive_    = entry->parent();
-		entry_copy_ = new ArchiveEntry(*entry);
-		path_       = entry->path();
-		index_      = entry->parentDir()->entryIndex(entry);
 	}
-
-	~EntryCreateDeleteUS() { delete entry_copy_; }
 
 	bool deleteEntry() const
 	{
@@ -200,7 +198,7 @@ public:
 		auto dir = archive_->dir(path_);
 		if (dir)
 		{
-			archive_->addEntry(entry_copy_, index_, dir, true);
+			archive_->addEntry(entry_copy_.get(), index_, dir, true);
 			return true;
 		}
 
@@ -212,24 +210,22 @@ public:
 	bool doRedo() override { return !created_ ? deleteEntry() : createEntry(); }
 
 private:
-	bool          created_;
-	Archive*      archive_;
-	ArchiveEntry* entry_copy_;
-	string        path_;
-	unsigned      index_;
+	bool               created_;
+	Archive*           archive_;
+	ArchiveEntry::UPtr entry_copy_;
+	string             path_;
+	unsigned           index_;
 };
 
 
 class DirCreateDeleteUS : public UndoStep
 {
 public:
-	DirCreateDeleteUS(bool created, ArchiveTreeNode* dir)
+	DirCreateDeleteUS(bool created, ArchiveTreeNode* dir) :
+		created_{ created },
+		archive_{ dir->archive() },
+		path_{ dir->path() }
 	{
-		created_ = created;
-		archive_ = dir->archive();
-		path_    = dir->path();
-		cb_tree_ = nullptr;
-
 		if (path_.StartsWith("/"))
 			path_.Remove(0, 1);
 
@@ -248,11 +244,9 @@ public:
 
 			// Backup to clipboard item
 			if (!entries.empty() || !subdirs.empty())
-				cb_tree_ = new EntryTreeClipboardItem(entries, subdirs);
+				cb_tree_ = std::make_unique<EntryTreeClipboardItem>(entries, subdirs);
 		}
 	}
-
-	~DirCreateDeleteUS() { delete cb_tree_; }
 
 	bool doUndo() override
 	{
@@ -265,10 +259,10 @@ public:
 
 			// Restore entries/subdirs if needed
 			if (dir && cb_tree_)
-				dir->merge(cb_tree_->tree(), 0, 0);
+				dir->merge(cb_tree_->tree(), 0, ArchiveEntry::State::Unmodified);
 
 			if (dir)
-				dir->dirEntry()->setState(0);
+				dir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
 
 			return !!dir;
 		}
@@ -283,10 +277,10 @@ public:
 	}
 
 private:
-	bool                    created_;
-	Archive*                archive_;
-	string                  path_;
-	EntryTreeClipboardItem* cb_tree_;
+	bool                                    created_;
+	Archive*                                archive_;
+	string                                  path_;
+	std::unique_ptr<EntryTreeClipboardItem> cb_tree_;
 };
 
 
@@ -607,7 +601,7 @@ bool Archive::save(const string& filename)
 	if (parent_)
 	{
 		success = write(parent_->data());
-		parent_->setState(1);
+		parent_->setState(ArchiveEntry::State::Modified);
 	}
 	else
 	{
@@ -700,7 +694,7 @@ void Archive::entryStateChanged(ArchiveEntry* entry)
 
 
 	// If entry was set to unmodified, don't set the archive to modified
-	if (entry->state() == 0)
+	if (entry->state() == ArchiveEntry::State::Unmodified)
 		return;
 
 	// Set the archive state to modified
@@ -888,7 +882,7 @@ bool Archive::renameDir(ArchiveTreeNode* dir, const string& new_name)
 			UndoRedo::currentManager()->recordUndoStep(new DirRenameUS(dir, new_name));
 
 		dir->setName(new_name);
-		dir->dirEntry()->setState(1);
+		dir->dirEntry()->setState(ArchiveEntry::State::Modified);
 	}
 	else
 		return true;
@@ -936,7 +930,7 @@ ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveT
 
 	// Update variables etc
 	setModified(true);
-	entry->state_ = 2;
+	entry->state_ = ArchiveEntry::State::New;
 
 	// Announce
 	MemChunk  mc;
@@ -1258,8 +1252,8 @@ bool Archive::importDir(const string& directory)
 		entry->importFile(file);
 
 		// Set unmodified
-		entry->setState(0);
-		dir->dirEntry()->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
+		dir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	return true;
@@ -1281,11 +1275,11 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 		return false;
 
 	// No point if entry is unmodified or newly created
-	if (entry->state() != 1)
+	if (entry->state() != ArchiveEntry::State::Modified)
 		return true;
 
 	// Reload entry data from the archive on disk
-	entry->setState(0);
+	entry->setState(ArchiveEntry::State::Unmodified);
 	entry->unloadData();
 	if (loadEntryData(entry))
 	{
@@ -1573,7 +1567,7 @@ vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveTreeNode* dir)
 		auto entry = dir->entryAt(a);
 
 		// Add new and modified entries
-		if (entry->state() != 0)
+		if (entry->state() != ArchiveEntry::State::Unmodified)
 			ret.push_back(entry);
 	}
 

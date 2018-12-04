@@ -120,7 +120,7 @@ bool SiNArchive::open(MemChunk& mc)
 		auto entry              = std::make_shared<ArchiveEntry>(fn.GetFullName(), size);
 		entry->exProp("Offset") = (int)offset;
 		entry->setLoaded(false);
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to directory
 		dir->addEntry(entry);
@@ -155,7 +155,7 @@ bool SiNArchive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables
@@ -217,7 +217,7 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 		// Update entry
 		if (update)
 		{
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 			entry->exProp("Offset") = (int)offset;
 		}
 

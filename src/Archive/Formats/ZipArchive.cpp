@@ -191,7 +191,7 @@ bool ZipArchive::open(const string& filename)
 	vector<ArchiveEntry*> entry_list;
 	putEntryTreeAsList(entry_list);
 	for (auto& entry : entry_list)
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 
 	// Enable announcements
 	setMuted(false);
@@ -294,7 +294,7 @@ bool ZipArchive::write(const string& filename, bool update)
 			// If the current entry is a folder, just write a directory entry and continue
 			zip.PutNextDirEntry(entries[a]->path(true));
 			if (update)
-				entries[a]->setState(0);
+				entries[a]->setState(ArchiveEntry::State::Unmodified);
 			continue;
 		}
 
@@ -303,7 +303,8 @@ bool ZipArchive::write(const string& filename, bool update)
 		if (entries[a]->exProps().propertyExists("ZipIndex"))
 			index = entries[a]->exProp("ZipIndex");
 
-		if (!inzip.IsOk() || entries[a]->state() > 0 || index < 0 || index >= inzip.GetTotalEntries())
+		if (!inzip.IsOk() || entries[a]->state() != ArchiveEntry::State::Unmodified || index < 0
+			|| index >= inzip.GetTotalEntries())
 		{
 			// If the current entry has been changed, or doesn't exist in the old zip,
 			// (re)compress its data and write it to the zip
@@ -322,7 +323,7 @@ bool ZipArchive::write(const string& filename, bool update)
 		// Update entry info
 		if (update)
 		{
-			entries[a]->setState(0);
+			entries[a]->setState(ArchiveEntry::State::Unmodified);
 			entries[a]->exProp("ZipIndex") = (int)a;
 		}
 	}

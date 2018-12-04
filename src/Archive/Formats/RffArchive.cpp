@@ -223,11 +223,11 @@ bool RffArchive::open(MemChunk& mc)
 		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Is the entry encrypted?
 		if (lumps[d].Flags & 0x10)
-			nlump->setEncryption(ENC_BLOOD);
+			nlump->setEncryption(ArchiveEntry::Encryption::Blood);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -252,7 +252,7 @@ bool RffArchive::open(MemChunk& mc)
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 
 			// If the entry is encrypted, decrypt it
-			if (entry->isEncrypted())
+			if (entry->encryption() != ArchiveEntry::Encryption::None)
 			{
 				uint8_t* cdata = new uint8_t[entry->size()];
 				memcpy(cdata, edata.data(), entry->size());
@@ -274,7 +274,7 @@ bool RffArchive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables

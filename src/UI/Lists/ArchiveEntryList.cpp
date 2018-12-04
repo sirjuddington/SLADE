@@ -91,7 +91,7 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 	// Create dummy 'up folder' entry
 	entry_dir_back_ = new ArchiveEntry();
 	entry_dir_back_->setType(EntryType::folderType());
-	entry_dir_back_->setState(0);
+	entry_dir_back_->setState(ArchiveEntry::State::Unmodified);
 	entry_dir_back_->setName("..");
 
 	// Setup columns
@@ -247,8 +247,10 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 	// Set colour depending on entry state
 	switch (entry->state())
 	{
-	case 1: item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("modified"))); break;
-	case 2: item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("new"))); break;
+	case ArchiveEntry::State::Modified:
+		item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("modified")));
+		break;
+	case ArchiveEntry::State::New: item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("new"))); break;
 	default: item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
 	};
 

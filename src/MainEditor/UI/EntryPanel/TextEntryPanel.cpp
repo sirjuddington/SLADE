@@ -197,8 +197,8 @@ bool TextEntryPanel::saveEntry()
 	MemChunk mc;
 	text_area_->getRawText(mc);
 	entry_->importMemChunk(mc);
-	if (entry_->state() == 0)
-		entry_->setState(1);
+	if (entry_->state() == ArchiveEntry::State::Unmodified)
+		entry_->setState(ArchiveEntry::State::Modified);
 
 	// Re-detect entry type
 	EntryType::detectEntryType(entry_);

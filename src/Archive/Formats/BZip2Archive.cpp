@@ -83,7 +83,7 @@ bool BZip2Archive::open(MemChunk& mc)
 	}
 	rootDir()->addEntry(entry);
 	EntryType::detectEntryType(entry.get());
-	entry->setState(0);
+	entry->setState(ArchiveEntry::State::Unmodified);
 
 	setMuted(false);
 	setModified(false);
@@ -139,7 +139,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 
 	// Set the lump to loaded
 	entry->setLoaded();
-	entry->setState(0);
+	entry->setState(ArchiveEntry::State::Unmodified);
 
 	return true;
 }

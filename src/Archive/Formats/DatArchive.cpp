@@ -125,10 +125,10 @@ bool DatArchive::open(MemChunk& mc)
 		auto nlump = std::make_shared<ArchiveEntry>(myname, size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		if (flags & 1)
-			nlump->setEncryption(ENC_SCRLE0);
+			nlump->setEncryption(ArchiveEntry::Encryption::SCRLE0);
 
 		// Check for markers
 		if (!nlump->name().Cmp("startflats"))
@@ -171,7 +171,7 @@ bool DatArchive::open(MemChunk& mc)
 		EntryType::detectEntryType(entry);
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Detect maps (will detect map entry types)
@@ -489,7 +489,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 		uint32_t offset  = wxINT32_SWAP_ON_BE(getEntryOffset(entry));
 		uint32_t size    = wxINT32_SWAP_ON_BE(entry->size());
 		uint16_t nameofs = wxINT16_SWAP_ON_BE(nameoffsets[l]);
-		uint16_t flags   = wxINT16_SWAP_ON_BE((entry->isEncrypted() == ENC_SCRLE0) ? 1 : 0);
+		uint16_t flags   = wxINT16_SWAP_ON_BE((entry->encryption() == ArchiveEntry::Encryption::SCRLE0) ? 1 : 0);
 
 		mc.write(&offset, 4);  // Offset
 		mc.write(&size, 4);    // Size
@@ -498,7 +498,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 
 		if (update)
 		{
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 			entry->exProp("Offset") = (int)wxINT32_SWAP_ON_BE(offset);
 		}
 	}

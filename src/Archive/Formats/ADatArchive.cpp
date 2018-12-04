@@ -126,7 +126,7 @@ bool ADatArchive::open(MemChunk& mc)
 		entry->exProp("Offset")   = (int)offset;
 		entry->exProp("FullSize") = (int)decsize;
 		entry->setLoaded(false);
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to directory
 		dir->addEntry(entry);
@@ -168,7 +168,7 @@ bool ADatArchive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables
@@ -230,7 +230,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		int offset = mc.currentPos();
 		if (update)
 		{
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 			entry->exProp("Offset") = (int)offset;
 		}
 

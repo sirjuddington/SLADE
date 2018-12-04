@@ -49,10 +49,10 @@ using std::vector;
 #undef Bool
 
 // Global internal includes
+#include "Utility/Structs.h"
 #include "General/CVar.h"
 #include "General/Log.h"
 #include "Utility/MemChunk.h"
-#include "Utility/Structs.h"
 
 // Namespace to hold 'global' variables
 namespace Global

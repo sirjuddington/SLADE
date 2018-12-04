@@ -12,7 +12,7 @@ public:
 	~ArchiveTreeNode() = default;
 
 	// Accessors
-	Archive*                          archive();
+	Archive*                          archive() const;
 	const vector<ArchiveEntry::SPtr>& entries() const { return entries_; }
 	ArchiveEntry*                     dirEntry() const { return dir_entry_.get(); }
 
@@ -33,7 +33,6 @@ public:
 	vector<ArchiveEntry::SPtr> allEntries();
 
 	// Entry Operations
-	void linkEntries(ArchiveEntry* first, ArchiveEntry* second);
 	bool addEntry(ArchiveEntry* entry, unsigned index = 0xFFFFFFFF);
 	bool addEntry(ArchiveEntry::SPtr& entry, unsigned index = 0xFFFFFFFF);
 	bool removeEntry(unsigned index);
@@ -42,16 +41,20 @@ public:
 	// Other
 	void             clear();
 	ArchiveTreeNode* clone();
-	bool             merge(ArchiveTreeNode* node, unsigned position = 0xFFFFFFFF, int state = 2);
-	bool             exportTo(string path);
-	void             allowDuplicateNames(bool allow) { allow_duplicate_names_ = allow; }
 
-	typedef std::unique_ptr<ArchiveTreeNode> Ptr;
+	bool merge(
+		ArchiveTreeNode*    node,
+		unsigned            position = 0xFFFFFFFF,
+		ArchiveEntry::State state    = ArchiveEntry::State::New);
+	bool exportTo(const string& path);
+	void allowDuplicateNames(bool allow) { allow_duplicate_names_ = allow; }
+
+	typedef std::unique_ptr<ArchiveTreeNode> UPtr;
 
 protected:
 	STreeNode* createChild(string name) override
 	{
-		ArchiveTreeNode* node        = new ArchiveTreeNode();
+		auto node                    = new ArchiveTreeNode();
 		node->dir_entry_->name_      = name;
 		node->archive_               = archive_;
 		node->allow_duplicate_names_ = allow_duplicate_names_;
@@ -64,5 +67,6 @@ private:
 	vector<ArchiveEntry::SPtr> entries_;
 	bool                       allow_duplicate_names_ = true;
 
-	void ensureUniqueName(ArchiveEntry* entry);
+	void        ensureUniqueName(ArchiveEntry* entry);
+	static void linkEntries(ArchiveEntry* first, ArchiveEntry* second);
 };

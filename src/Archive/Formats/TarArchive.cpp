@@ -332,7 +332,7 @@ bool TarArchive::open(MemChunk& mc)
 			auto entry              = std::make_shared<ArchiveEntry>(fn.GetFullName(), size);
 			entry->exProp("Offset") = (int)mc.currentPos();
 			entry->setLoaded(false);
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 
 			// Add to directory
 			dir->addEntry(entry);
@@ -384,7 +384,7 @@ bool TarArchive::open(MemChunk& mc)
 			entry->unloadData();
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Setup variables

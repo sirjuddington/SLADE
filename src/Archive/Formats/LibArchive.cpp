@@ -122,7 +122,7 @@ bool LibArchive::open(MemChunk& mc)
 		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(myname), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Add to entry list
 		rootDir()->addEntry(nlump);
@@ -152,7 +152,7 @@ bool LibArchive::open(MemChunk& mc)
 		EntryType::detectEntryType(entry);
 
 		// Set entry to unchanged
-		entry->setState(0);
+		entry->setState(ArchiveEntry::State::Unmodified);
 	}
 
 	// Detect maps (will detect map entry types)
@@ -219,7 +219,7 @@ bool LibArchive::write(MemChunk& mc, bool update)
 
 		if (update)
 		{
-			entry->setState(0);
+			entry->setState(ArchiveEntry::State::Unmodified);
 			entry->exProp("Offset") = (int)wxINT32_SWAP_ON_BE(offset);
 		}
 	}

@@ -148,7 +148,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
-		nlump->setState(0);
+		nlump->setState(ArchiveEntry::State::Unmodified);
 
 		// Read entry data if it isn't zero-sized
 		if (nlump->size() > 0)
@@ -170,7 +170,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 				// Save offset to restore it once the recursion is done
 				size_t myoffset = mc.currentPos();
 				readDirectory(mc, d_o, n_l, ndir);
-				ndir->dirEntry()->setState(0);
+				ndir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
 				// Restore offset and clean out the entry
 				mc.seek(myoffset, SEEK_SET);
 			}
@@ -187,7 +187,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 			if (!archive_load_data)
 				nlump->unloadData();
 			// Set entry to unchanged
-			nlump->setState(0);
+			nlump->setState(ArchiveEntry::State::Unmodified);
 		}
 	}
 	return true;
@@ -302,7 +302,7 @@ bool ResArchive::write(MemChunk& mc, bool update)
 			mc.write(name, 8);
 
 			if (update) {
-				entry->setState(0);
+				entry->setState(ArchiveEntry::State::Unmodified);
 				entry->exProp("Offset") = (int)offset;
 			}
 		}
