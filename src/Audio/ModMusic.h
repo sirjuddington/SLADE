@@ -8,7 +8,7 @@ struct DUH_SIGRENDERER;
 class ModMusic : public sf::SoundStream
 {
 public:
-	ModMusic();
+	ModMusic() = default;
 	~ModMusic();
 
 	bool     openFromFile(const std::string& filename);
@@ -19,12 +19,12 @@ public:
 
 private:
 	void close();
-	bool onGetData(Chunk& data);
-	void onSeek(sf::Time timeOffset);
+	bool onGetData(Chunk& data) override;
+	void onSeek(sf::Time timeOffset) override;
 
-	sf::Int16        samples_[44100];
-	DUH*             dumb_module_;
-	DUH_SIGRENDERER* dumb_player_;
+	sf::Int16        samples_[44100]{};
+	DUH*             dumb_module_ = nullptr;
+	DUH_SIGRENDERER* dumb_player_ = nullptr;
 
 	static bool init_done_;
 };

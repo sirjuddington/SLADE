@@ -158,7 +158,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	// Set volume
 	sound_->setVolume(snd_volume);
 	music_->setVolume(snd_volume);
-	theMIDIPlayer->setVolume(snd_volume);
+	MIDI::player().setVolume(snd_volume);
 	if (media_ctrl_)
 		media_ctrl_->SetVolume(snd_volume * 0.01);
 	mod_->setVolume(snd_volume);
@@ -460,9 +460,9 @@ bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
 	slider_volume_->Enable(true);
 
 	// Attempt to open midi
-	if (theMIDIPlayer->isReady())
+	if (MIDI::player().isReady())
 	{
-		if (theMIDIPlayer->openData(data))
+		if (MIDI::player().openData(data))
 		{
 			// Enable play controls
 			btn_play_->Enable();
@@ -470,7 +470,7 @@ bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
 			btn_stop_->Enable();
 
 			// Setup seekbar
-			setAudioDuration(theMIDIPlayer->length());
+			setAudioDuration(MIDI::player().length());
 
 			return true;
 		}
@@ -548,7 +548,7 @@ void AudioEntryPanel::startStream()
 	case Sound: sound_->play(); break;
 	case Music: music_->play(); break;
 	case Mod: mod_->play(); break;
-	case MIDI: theMIDIPlayer->play(); break;
+	case MIDI: MIDI::player().play(); break;
 	case Media:
 		if (media_ctrl_)
 			media_ctrl_->Play();
@@ -567,7 +567,7 @@ void AudioEntryPanel::stopStream()
 	case Sound: sound_->pause(); break;
 	case Music: music_->pause(); break;
 	case Mod: mod_->pause(); break;
-	case MIDI: theMIDIPlayer->pause(); break;
+	case MIDI: MIDI::player().pause(); break;
 	case Media:
 		if (media_ctrl_)
 			media_ctrl_->Pause();
@@ -586,7 +586,7 @@ void AudioEntryPanel::resetStream()
 	case Sound: sound_->stop(); break;
 	case Music: music_->stop(); break;
 	case Mod: mod_->stop(); break;
-	case MIDI: theMIDIPlayer->stop(); break;
+	case MIDI: MIDI::player().stop(); break;
 	case Media:
 		if (media_ctrl_)
 			media_ctrl_->Stop();
@@ -650,7 +650,7 @@ bool AudioEntryPanel::updateInfo()
 			info += Audio::getXMComments(mc);
 		break;
 	case MIDI:
-		info += theMIDIPlayer->info();
+		info += MIDI::player().info();
 		if (entry_->type() == EntryType::fromId("midi_rmid"))
 			info += Audio::getRmidInfo(mc);
 		break;
@@ -772,7 +772,7 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	case Sound: pos = sound_->getPlayingOffset().asMilliseconds(); break;
 	case Music: pos = music_->getPlayingOffset().asMilliseconds(); break;
 	case Mod: pos = mod_->getPlayingOffset().asMilliseconds(); break;
-	case MIDI: pos = theMIDIPlayer->position(); break;
+	case MIDI: pos = MIDI::player().position(); break;
 	case Media:
 		if (media_ctrl_)
 			pos = media_ctrl_->Tell();
@@ -788,7 +788,7 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 		|| (audio_type_ == Music && music_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Mod && mod_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Media && media_ctrl_ && media_ctrl_->GetState() == wxMEDIASTATE_STOPPED)
-		|| (audio_type_ == MIDI && theMIDIPlayer && !theMIDIPlayer->isPlaying()))
+		|| (audio_type_ == MIDI && !MIDI::player().isPlaying()))
 	{
 		timer_seek_->Stop();
 		slider_seek_->SetValue(0);
@@ -805,7 +805,7 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 	case Sound: sound_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
 	case Music: music_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
 	case Mod: mod_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
-	case MIDI: theMIDIPlayer->setPosition(slider_seek_->GetValue()); break;
+	case MIDI: MIDI::player().setPosition(slider_seek_->GetValue()); break;
 	case Media:
 		if (media_ctrl_)
 			media_ctrl_->Seek(slider_seek_->GetValue());
@@ -825,7 +825,7 @@ void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 	{
 	case Sound: sound_->setVolume(snd_volume); break;
 	case Music: music_->setVolume(snd_volume); break;
-	case MIDI: theMIDIPlayer->setVolume(snd_volume); break;
+	case MIDI: MIDI::player().setVolume(snd_volume); break;
 	case Media:
 		if (media_ctrl_)
 			media_ctrl_->SetVolume(snd_volume * 0.01);

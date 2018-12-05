@@ -46,10 +46,9 @@ EXTERN_CVAR(Bool, dmx_padding)
 EXTERN_CVAR(Int, snd_volume)
 EXTERN_CVAR(String, fs_soundfont_path)
 EXTERN_CVAR(String, dir_last)
-CVAR(String, dir_last_soundfont, "", CVar::Flag::Save)
-CVAR(Bool, snd_midi_usetimidity, false, CVar::Flag::Save)
-CVAR(String, snd_timidity_path, "", CVar::Flag::Save)
-CVAR(String, snd_timidity_options, "", CVar::Flag::Save)
+EXTERN_CVAR(String, snd_timidity_path)
+EXTERN_CVAR(String, snd_timidity_options)
+EXTERN_CVAR(String, snd_midi_player)
 
 
 // -----------------------------------------------------------------------------
@@ -101,9 +100,11 @@ AudioPrefsPanel::~AudioPrefsPanel() {}
 // -----------------------------------------------------------------------------
 void AudioPrefsPanel::init()
 {
+	bool midi_fsynth = S_CMPNOCASE(snd_midi_player.value, "fluidsynth");
+
 	cb_snd_autoplay_->SetValue(snd_autoplay);
 	cb_dmx_padding_->SetValue(dmx_padding);
-	rb_fluidsynth_->SetValue(!snd_midi_usetimidity);
+	rb_fluidsynth_->SetValue(midi_fsynth);
 	flp_soundfont_->setLocation(fs_soundfont_path);
 	flp_timidity_->setLocation(snd_timidity_path);
 	text_timidity_options_->SetValue(wxString(snd_timidity_options));
@@ -118,12 +119,13 @@ void AudioPrefsPanel::applyPreferences()
 {
 	snd_autoplay         = cb_snd_autoplay_->GetValue();
 	dmx_padding          = cb_dmx_padding_->GetValue();
-	snd_midi_usetimidity = rb_timidity_->GetValue();
+	snd_midi_player      = rb_timidity_->GetValue() ? "timidity" : "fluidsynth";
 	fs_soundfont_path    = flp_soundfont_->location();
-	if (!theMIDIPlayer->isSoundfontLoaded())
-		theMIDIPlayer->reloadSoundfont();
 	snd_timidity_path    = flp_timidity_->location();
 	snd_timidity_options = text_timidity_options_->GetValue();
+
+	MIDI::resetPlayer();
+	MIDI::player().setVolume(snd_volume);
 }
 
 // -----------------------------------------------------------------------------
@@ -190,6 +192,6 @@ void AudioPrefsPanel::updateControls() const
 // -----------------------------------------------------------------------------
 void AudioPrefsPanel::onBtnResetPlayer(wxCommandEvent& e)
 {
-	theMIDIPlayer->resetPlayer();
-	theMIDIPlayer->setVolume(snd_volume);
+	MIDI::resetPlayer();
+	MIDI::player().setVolume(snd_volume);
 }

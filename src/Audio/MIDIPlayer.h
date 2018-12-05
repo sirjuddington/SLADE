@@ -3,54 +3,55 @@
 class MIDIPlayer
 {
 public:
-	MIDIPlayer();
-	~MIDIPlayer();
+	virtual ~MIDIPlayer() = default;
 
-	// Singleton implementation
-	static MIDIPlayer* getInstance()
-	{
-		if (!instance_)
-			instance_ = new MIDIPlayer();
+	virtual bool isSoundfontLoaded() = 0;
+	virtual bool reloadSoundfont() { return true; }
 
-		return instance_;
-	}
+	virtual bool openFile(string filename) = 0;
+	virtual bool openData(MemChunk& mc)    = 0;
 
-	bool isSoundfontLoaded() { return fs_soundfont_ids_.size() > 0; }
-	bool isReady();
-	void resetPlayer();
+	virtual bool isReady() = 0;
 
-	bool   initFluidsynth();
-	bool   reloadSoundfont();
-	bool   openFile(string filename);
-	bool   openData(MemChunk& mc);
-	bool   play();
-	bool   pause();
-	bool   stop();
-	bool   isPlaying();
-	int    position();
-	bool   setPosition(int pos);
-	int    length();
-	bool   setVolume(int volume);
-	string info();
+	virtual bool play()  = 0;
+	virtual bool pause() = 0;
+	virtual bool stop()  = 0;
 
-private:
-	static MIDIPlayer* instance_;
+	virtual bool isPlaying() = 0;
+	virtual int  position()  = 0;
 
-#ifndef NO_FLUIDSYNTH
-	fluid_settings_t*     fs_settings_;
-	fluid_synth_t*        fs_synth_;
-	fluid_player_t*       fs_player_;
-	fluid_audio_driver_t* fs_adriver_;
-#endif
+	virtual bool setPosition(int pos)  = 0;
+	virtual bool setVolume(int volume) = 0;
 
-	bool        fs_initialised_;
-	vector<int> fs_soundfont_ids_;
+	virtual int    length();
+	virtual string info();
 
-	MemChunk   data_;
-	wxProcess* program_;
-	string     file_;
-	sf::Clock  timer_;
+protected:
+	string    file_;
+	MemChunk  data_;
+	sf::Clock timer_;
 };
 
-// Define for less cumbersome MIDIPlayer::getInstance()
-#define theMIDIPlayer MIDIPlayer::getInstance()
+class NullMIDIPlayer : public MIDIPlayer
+{
+public:
+	bool isSoundfontLoaded() override { return false; }
+	bool openFile(string filename) override { return false; }
+	bool openData(MemChunk& mc) override { return false; }
+	bool play() override { return false; }
+	bool pause() override { return false; }
+	bool stop() override { return false; }
+	bool isPlaying() override { return false; }
+	int  position() override { return 0; }
+	bool setPosition(int pos) override { return false; }
+	bool setVolume(int volume) override { return false; }
+
+protected:
+	bool isReady() override { return false; }
+};
+
+namespace MIDI
+{
+MIDIPlayer& player();
+void        resetPlayer();
+} // namespace MIDI

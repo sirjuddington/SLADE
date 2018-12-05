@@ -5,7 +5,7 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    AudioTags.cpp
+// Filename:    ModMusic.cpp
 // Description: ModMusic class, an SFML sound stream class to play mod music
 //              using DUMB
 //
@@ -49,15 +49,6 @@ bool ModMusic::init_done_ = false;
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// ModMusic class constructor
-// -----------------------------------------------------------------------------
-ModMusic::ModMusic()
-{
-	dumb_module_ = nullptr;
-	dumb_player_ = nullptr;
-}
 
 // -----------------------------------------------------------------------------
 // ModMusic class destructor
@@ -125,7 +116,7 @@ bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
 // -----------------------------------------------------------------------------
 sf::Time ModMusic::duration() const
 {
-	return sf::seconds(static_cast<float>(duh_get_length(dumb_module_) / 65536));
+	return sf::seconds(static_cast<float>(duh_get_length(dumb_module_) / 65536.f));
 }
 
 // -----------------------------------------------------------------------------

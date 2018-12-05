@@ -158,8 +158,8 @@ struct WavFmtChunk
 {
 	WavChunk header;
 	uint16_t tag;
-	uint16_t channels;
-	uint32_t samplerate;
+	uint16_t channels   = 0;
+	uint32_t samplerate = 0;
 	uint32_t datarate;
 	uint16_t blocksize;
 	uint16_t bps;
@@ -453,7 +453,7 @@ string parseID3v2Tag(MemChunk& mc, size_t start)
 			string content;
 
 			// First step: retrieve the text (UTF-16 massively sucks)
-			char* buffer = new char[fsize];
+			auto buffer = new char[fsize];
 			mc.read(buffer, tsize, s + step + 1);
 			size_t frame = v22 ? mc.readB24(s) : mc.readB32(s);
 
@@ -489,8 +489,8 @@ string parseID3v2Tag(MemChunk& mc, size_t start)
 			{
 				// You're right, wxWidgets. Code like this is so much
 				// better than having something like wxString::FromUTF16()
-				size_t   u16c   = (tsize - bom) / 2;
-				wchar_t* wchars = new wchar_t[u16c];
+				size_t u16c   = (tsize - bom) / 2;
+				auto   wchars = new wchar_t[u16c];
 				for (size_t i = 0; i < u16c; ++i)
 				{
 					if (bomle)
@@ -614,10 +614,10 @@ string parseID3v2Tag(MemChunk& mc, size_t start)
 
 string parseVorbisComment(MemChunk& mc, size_t start)
 {
-	sf::Clock   timer;
-	string      ret;
-	const char* data = (const char*)mc.data();
-	size_t      end  = mc.size();
+	sf::Clock timer;
+	string    ret;
+	auto      data = (const char*)mc.data();
+	size_t    end  = mc.size();
 
 	if (start + 10 > end)
 		return ret + "\nInvalid Vorbis comment segment (A)\n";
@@ -648,8 +648,8 @@ string parseVorbisComment(MemChunk& mc, size_t start)
 string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChunk* cue, bool bigendian = false)
 {
 	const WavChunk* temp  = nullptr;
-	const char*     data  = (const char*)mc.data();
-	const uint8_t*  udata = (const uint8_t*)data;
+	auto            data  = (const char*)mc.data();
+	auto            udata = (const uint8_t*)data;
 	string          ret   = "";
 
 	while (s + 8 < mc.size())
@@ -668,8 +668,8 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChunk*
 		// Broadcast extensions (bext chunk)
 		if (temp->id[0] == 'b' && temp->id[1] == 'e' && temp->id[2] == 'x' && temp->id[3] == 't' && tempsize >= 602)
 		{
-			string           bextstr = "Broadcast extensions:\n";
-			const BExtChunk* bext    = (const BExtChunk*)(data + offset);
+			string bextstr = "Broadcast extensions:\n";
+			auto   bext    = (const BExtChunk*)(data + offset);
 			if (bext->Description[0])
 				bextstr += S_FMT("Description: %s\n", string::From8BitData(bext->Description, 256));
 			if (bext->Originator[0])
@@ -729,9 +729,9 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChunk*
 				offset += 4;
 				while (offset + 8 < end)
 				{
-					const WavChunk* chunk   = (const WavChunk*)(data + offset);
-					size_t          chsz    = wxUINT32_SWAP_ON_BE(chunk->size);
-					string          tagname = S_FMT("%s: ", string::From8BitData(chunk->id, 4));
+					auto   chunk   = (const WavChunk*)(data + offset);
+					size_t chsz    = wxUINT32_SWAP_ON_BE(chunk->size);
+					string tagname = S_FMT("%s: ", string::From8BitData(chunk->id, 4));
 					offset += 8;
 					if (offset + chsz > end)
 						break;
@@ -796,17 +796,17 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChunk*
 					size_t cueofs        = 8 + (const char*)cue - data;
 					size_t cuesize       = wxUINT32_SWAP_ON_BE(cue->size);
 					size_t numcuepoints  = Memory::readL32(udata, cueofs);
-					bool*  alreadylisted = new bool[numcuepoints];
+					auto   alreadylisted = new bool[numcuepoints];
 					memset(alreadylisted, false, numcuepoints * sizeof(bool));
 					if (cuesize >= 4 + numcuepoints * sizeof(WavCue))
 					{
-						string        liststr   = S_FMT("Associated Data List:\n%d cue points\n", numcuepoints);
-						const WavCue* cuepoints = (const WavCue*)(data + cueofs + 4);
-						size_t        ioffset   = offset + 4;
+						string liststr   = S_FMT("Associated Data List:\n%d cue points\n", numcuepoints);
+						auto   cuepoints = (const WavCue*)(data + cueofs + 4);
+						size_t ioffset   = offset + 4;
 						while (ioffset < end)
 						{
-							const WavChunk* note  = (const WavChunk*)(data + ioffset);
-							size_t          isize = wxUINT32_SWAP_ON_BE(note->size);
+							auto   note  = (const WavChunk*)(data + ioffset);
+							size_t isize = wxUINT32_SWAP_ON_BE(note->size);
 							ioffset += 8;
 							size_t cuepoint = Memory::readL32(udata, ioffset);
 							int    cpindex  = -1;
@@ -872,7 +872,7 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChunk*
 				if (udata[offset + i] == 0)
 				{
 					// Two nulls in a row? Then break.
-					if (zerochar == true)
+					if (zerochar)
 					{
 						pure_ascii = false;
 						break;
@@ -893,7 +893,7 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChunk*
 			}
 			if (pure_ascii)
 			{
-				char* asciidata = new char[tempsize];
+				auto asciidata = new char[tempsize];
 				memcpy(asciidata, data + offset, tempsize);
 				for (size_t i = 0; i < tempsize - 1; ++i)
 					if (asciidata[i] == 0)
@@ -1055,9 +1055,9 @@ string Audio::getFlacComments(MemChunk& mc)
 
 string Audio::getITComments(MemChunk& mc)
 {
-	const char*     data = (const char*)mc.data();
-	const ITHeader* head = (const ITHeader*)data;
-	size_t          s    = sizeof(ITHeader);
+	auto   data = (const char*)mc.data();
+	auto   head = (const ITHeader*)data;
+	size_t s    = sizeof(ITHeader);
 
 	// Get song name
 	string ret = S_FMT("%s\n", string::From8BitData(head->songname, 26));
@@ -1132,8 +1132,8 @@ string Audio::getITComments(MemChunk& mc)
 
 string Audio::getModComments(MemChunk& mc)
 {
-	const char* data = (const char*)mc.data();
-	size_t      s    = 20;
+	auto   data = (const char*)mc.data();
+	size_t s    = 20;
 
 	// Get song name
 	string ret = S_FMT("%s\n", string::From8BitData(data, 20));
@@ -1158,9 +1158,9 @@ string Audio::getModComments(MemChunk& mc)
 
 string Audio::getS3MComments(MemChunk& mc)
 {
-	const char*      data = (const char*)mc.data();
-	const S3MHeader* head = (const S3MHeader*)data;
-	size_t           s    = 96;
+	auto   data = (const char*)mc.data();
+	auto   head = (const S3MHeader*)data;
+	size_t s    = 96;
 
 	// Get song name
 	string ret = S_FMT("%s\n", string::From8BitData(head->songname, 28));
@@ -1174,8 +1174,8 @@ string Audio::getS3MComments(MemChunk& mc)
 		size_t t = (mc.readL16((s + 2 * i))) << 4;
 		if (t + 80 > mc.size())
 			return ret;
-		const S3MSample* sample  = (const S3MSample*)(data + t);
-		string           dosname = string::From8BitData(sample->dosname, 12);
+		auto   sample  = (const S3MSample*)(data + t);
+		string dosname = string::From8BitData(sample->dosname, 12);
 		dosname.Trim();
 		dosname        = S_FMT("%s", dosname);
 		string comment = string::From8BitData(sample->comment, 28);
@@ -1193,9 +1193,9 @@ string Audio::getS3MComments(MemChunk& mc)
 
 string Audio::getXMComments(MemChunk& mc)
 {
-	const char*     data = (const char*)mc.data();
-	const XMHeader* head = (const XMHeader*)data;
-	size_t          s    = 60 + wxUINT32_SWAP_ON_BE(head->headersize);
+	auto   data = (const char*)mc.data();
+	auto   head = (const XMHeader*)data;
+	size_t s    = 60 + wxUINT32_SWAP_ON_BE(head->headersize);
 
 	// Get song name
 	string ret = S_FMT("%s\n", string::From8BitData(head->songname, 20));
@@ -1407,9 +1407,9 @@ string Audio::getVocInfo(MemChunk& mc)
 
 string Audio::getWavInfo(MemChunk& mc)
 {
-	const char*        data  = (const char*)mc.data();
-	const uint8_t*     udata = (const uint8_t*)data;
-	const WavChunk*    head  = (const WavChunk*)data;
+	auto               data  = (const char*)mc.data();
+	auto               udata = (const uint8_t*)data;
+	auto               head  = (const WavChunk*)data;
 	const WavChunk*    temp  = nullptr;
 	const WavChunk*    wdat  = nullptr;
 	const WavChunk*    fact  = nullptr;
@@ -1524,9 +1524,9 @@ string Audio::getWavInfo(MemChunk& mc)
 
 string Audio::getRmidInfo(MemChunk& mc)
 {
-	const char*     data  = (const char*)mc.data();
-	const uint8_t*  udata = (const uint8_t*)data;
-	const WavChunk* head  = (const WavChunk*)data;
+	auto            data  = (const char*)mc.data();
+	auto            udata = (const uint8_t*)data;
+	auto            head  = (const WavChunk*)data;
 	const WavChunk* temp  = nullptr;
 	const WavChunk* cue   = nullptr;
 	size_t          s     = 12;
@@ -1565,9 +1565,9 @@ string Audio::getRmidInfo(MemChunk& mc)
 
 string Audio::getAiffInfo(MemChunk& mc)
 {
-	const char*     data  = (const char*)mc.data();
-	const uint8_t*  udata = (const uint8_t*)data;
-	const WavChunk* head  = (const WavChunk*)data;
+	auto            data  = (const char*)mc.data();
+	auto            udata = (const uint8_t*)data;
+	auto            head  = (const WavChunk*)data;
 	const AIFFComm* comm  = nullptr;
 	const WavChunk* temp  = nullptr;
 	const WavChunk* cue   = nullptr;

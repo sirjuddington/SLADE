@@ -5,9 +5,9 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    AudioTags.cpp
-// Description: MIDIPlayer class, a singleton class that handles playback of
-//              MIDI files. Can only play one MIDI at a time
+// Filename:    MIDIPlayer.cpp
+// Description: MIDIPlayer class and subclasses, handles playback of MIDI files.
+//              Can only play one MIDI at a time
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -40,9 +40,15 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-MIDIPlayer* MIDIPlayer::instance_ = nullptr;
-CVAR(String, fs_soundfont_path, "", CVar::Flag::Save);
-CVAR(String, fs_driver, "", CVar::Flag::Save);
+CVAR(String, snd_midi_player, "none", CVar::Flag::Save)
+CVAR(String, fs_soundfont_path, "", CVar::Flag::Save)
+CVAR(String, fs_driver, "", CVar::Flag::Save)
+CVAR(String, snd_timidity_path, "", CVar::Flag::Save)
+CVAR(String, snd_timidity_options, "", CVar::Flag::Save)
+namespace MIDI
+{
+std::unique_ptr<MIDIPlayer> midi_player;
+}
 
 
 // -----------------------------------------------------------------------------
@@ -51,14 +57,6 @@ CVAR(String, fs_driver, "", CVar::Flag::Save);
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, snd_volume)
-EXTERN_CVAR(String, snd_timidity_path)
-EXTERN_CVAR(String, snd_timidity_options)
-#ifndef NO_FLUIDSYNTH
-EXTERN_CVAR(Bool, snd_midi_usetimidity)
-#define usetimidity snd_midi_usetimidity
-#else
-#define usetimidity true
-#endif
 
 
 // -----------------------------------------------------------------------------
@@ -67,353 +65,6 @@ EXTERN_CVAR(Bool, snd_midi_usetimidity)
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// MIDIPlayer class constructor
-// -----------------------------------------------------------------------------
-MIDIPlayer::MIDIPlayer()
-{
-	// Init variables
-	fs_initialised_ = false;
-	fs_soundfont_ids_.clear();
-	program_ = nullptr;
-	file_    = "";
-
-#ifndef NO_FLUIDSYNTH
-	// Set fluidsynth driver to alsa in linux (no idea why it defaults to jack)
-#if !defined __WXMSW__ && !defined __WXOSX__
-	if (fs_driver == "")
-		fs_driver = "alsa";
-#endif // !defined __WXMSW__ && !defined __WXOSX__
-
-	// Init soundfont path
-	if (fs_soundfont_path == "")
-	{
-#ifdef __WXGTK__
-		fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2:/usr/share/sounds/sf2/FluidR3_GS.sf2";
-#else  // __WXGTK__
-		LOG_MESSAGE(1, "Warning: No fluidsynth soundfont set, MIDI playback will not work");
-#endif // __WXGTK__
-	}
-
-	// Setup fluidsynth
-	initFluidsynth();
-	reloadSoundfont();
-
-	if (!fs_player_ || !fs_adriver_)
-		LOG_MESSAGE(1, "Warning: Failed to initialise FluidSynth, MIDI playback disabled");
-#endif // NO_FLUIDSYNTH
-}
-
-// -----------------------------------------------------------------------------
-// MIDIPlayer class destructor
-// -----------------------------------------------------------------------------
-MIDIPlayer::~MIDIPlayer()
-{
-	stop();
-
-	if (program_)
-		delete program_;
-#ifndef NO_FLUIDSYNTH
-	delete_fluid_audio_driver(fs_adriver_);
-	delete_fluid_player(fs_player_);
-	delete_fluid_synth(fs_synth_);
-	delete_fluid_settings(fs_settings_);
-#endif
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if the MIDIPlayer is ready to play some MIDI
-// -----------------------------------------------------------------------------
-bool MIDIPlayer::isReady()
-{
-	if (usetimidity)
-		return !snd_timidity_path.value.IsEmpty();
-#ifndef NO_FLUIDSYNTH
-	return fs_initialised_ && fs_soundfont_ids_.size() > 0;
-#endif
-	return false;
-}
-
-void MIDIPlayer::resetPlayer()
-{
-	stop();
-
-	if (instance_)
-		delete instance_;
-
-	instance_ = new MIDIPlayer();
-}
-
-
-// -----------------------------------------------------------------------------
-// Initialises fluidsynth
-// -----------------------------------------------------------------------------
-bool MIDIPlayer::initFluidsynth()
-{
-	// Don't re-init
-	if (fs_initialised_)
-		return true;
-
-#ifndef NO_FLUIDSYNTH
-	// Init fluidsynth settings
-	fs_settings_ = new_fluid_settings();
-	if (fs_driver != "")
-		fluid_settings_setstr(fs_settings_, "audio.driver", wxString(fs_driver).ToAscii());
-
-	// Create fluidsynth objects
-	fs_synth_   = new_fluid_synth(fs_settings_);
-	fs_player_  = new_fluid_player(fs_synth_);
-	fs_adriver_ = new_fluid_audio_driver(fs_settings_, fs_synth_);
-
-	// Check init succeeded
-	if (fs_synth_)
-	{
-		if (fs_adriver_)
-		{
-			setVolume(snd_volume);
-			fs_initialised_ = true;
-			return true;
-		}
-
-		// Driver creation unsuccessful
-		delete_fluid_synth(fs_synth_);
-		return false;
-	}
-#endif
-
-	// Init unsuccessful
-	return false;
-}
-
-// -----------------------------------------------------------------------------
-// Reloads the current soundfont
-// -----------------------------------------------------------------------------
-bool MIDIPlayer::reloadSoundfont()
-{
-#ifndef NO_FLUIDSYNTH
-	// Can't do anything if fluidsynth isn't initialised for whatever reason
-	if (!fs_initialised_)
-		return false;
-
-#ifdef WIN32
-	char separator = ';';
-#else
-	char separator = ':';
-#endif
-
-	// Unload any current soundfont
-	for (int a = fs_soundfont_ids_.size() - 1; a >= 0; --a)
-	{
-		if (fs_soundfont_ids_[a] != FLUID_FAILED)
-			fluid_synth_sfunload(fs_synth_, fs_soundfont_ids_[a], 1);
-		fs_soundfont_ids_.pop_back();
-	}
-
-	// Load soundfonts
-	wxArrayString paths  = wxSplit(fs_soundfont_path, separator);
-	bool          retval = false;
-	for (int a = paths.size() - 1; a >= 0; --a)
-	{
-		string path = paths[a];
-		if (path.size())
-		{
-			int fs_id = fluid_synth_sfload(fs_synth_, CHR(path), 1);
-			fs_soundfont_ids_.push_back(fs_id);
-			if (fs_id != FLUID_FAILED)
-				retval = true;
-		}
-	}
-
-	return retval;
-#else
-	return true;
-#endif
-}
-
-// -----------------------------------------------------------------------------
-// Opens the MIDI file at [filename] for playback.
-// Returns true if successful, false otherwise
-// -----------------------------------------------------------------------------
-bool MIDIPlayer::openFile(string filename)
-{
-	file_ = filename;
-#ifndef NO_FLUIDSYNTH
-	if (!fs_initialised_)
-		return false;
-
-	// Delete+Recreate player
-	delete_fluid_player(fs_player_);
-	fs_player_ = nullptr;
-	fs_player_ = new_fluid_player(fs_synth_);
-
-	// Open midi
-	if (fs_player_)
-	{
-		fluid_player_add(fs_player_, CHR(filename));
-		return true;
-	}
-	else
-		return usetimidity;
-#endif
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Opens the MIDI data contained in [mc] for playback.
-// Returns true if successful, false otherwise
-// -----------------------------------------------------------------------------
-bool MIDIPlayer::openData(MemChunk& mc)
-{
-	// Open midi
-	mc.seek(0, SEEK_SET);
-	data_.importMem(mc.data(), mc.size());
-
-	if (usetimidity)
-	{
-		wxFileName path(App::path("slade-timidity.mid", App::Dir::Temp));
-		file_ = path.GetFullPath();
-		mc.exportFile(file_);
-		return true;
-	}
-#ifndef NO_FLUIDSYNTH
-	else
-	{
-		if (!fs_initialised_)
-			return false;
-
-		// Delete+Recreate player
-		delete_fluid_player(fs_player_);
-		fs_player_ = nullptr;
-		fs_player_ = new_fluid_player(fs_synth_);
-
-		if (fs_player_)
-		{
-			// fluid_player_set_loop(fs_player, -1);
-			fluid_player_add_mem(fs_player_, mc.data(), mc.size());
-			return true;
-		}
-		else
-			return false;
-	}
-#endif // NO_FLUIDSYNTH
-	return false;
-}
-
-// -----------------------------------------------------------------------------
-// Begins playback of the currently loaded MIDI stream.
-// Returns true if successful, false otherwise
-// -----------------------------------------------------------------------------
-bool MIDIPlayer::play()
-{
-	stop();
-	timer_.restart();
-	if (usetimidity)
-	{
-		string commandline = snd_timidity_path + " " + file_ + " " + snd_timidity_options;
-		if (!(program_ = wxProcess::Open(commandline)))
-			return false;
-
-		int pid = program_->GetPid();
-		return program_->Exists(pid);
-	}
-#ifndef NO_FLUIDSYNTH
-	else
-	{
-		if (!fs_initialised_)
-			return false;
-
-		return (fluid_player_play(fs_player_) == FLUID_OK);
-	}
-#endif // NO_FLUIDSYNTH
-}
-
-// -----------------------------------------------------------------------------
-// Pauses playback of the currently loaded MIDI stream
-// -----------------------------------------------------------------------------
-bool MIDIPlayer::pause()
-{
-	if (!isReady())
-		return false;
-
-	return stop();
-}
-
-// -----------------------------------------------------------------------------
-// Stops playback of the currently loaded MIDI stream
-// -----------------------------------------------------------------------------
-bool MIDIPlayer::stop()
-{
-	bool stopped = false;
-	if (program_)
-	{
-		int pid = program_->GetPid();
-		if (isPlaying())
-#ifdef WIN32
-			program_->Kill(pid, wxSIGKILL, wxKILL_CHILDREN);
-#else
-			program_->Kill(pid);
-#endif
-		stopped = !(program_->Exists(pid));
-	}
-#ifndef NO_FLUIDSYNTH
-	if (fs_initialised_)
-	{
-		fluid_player_stop(fs_player_);
-		fluid_synth_system_reset(fs_synth_);
-		stopped = true;
-	}
-#endif // NO_FLUIDSYNTH
-	return stopped;
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if the MIDI stream is currently playing, false if not
-// -----------------------------------------------------------------------------
-bool MIDIPlayer::isPlaying()
-{
-	if (usetimidity)
-	{
-		if (!program_)
-			return false;
-
-		int pid = program_->GetPid();
-		// also ignore zero pid
-		if (!pid || !program_->Exists(pid))
-			return false;
-
-		return true;
-	}
-#ifndef NO_FLUIDSYNTH
-	else
-	{
-		if (!fs_initialised_)
-			return false;
-
-		return (fluid_player_get_status(fs_player_) == FLUID_PLAYER_PLAYING);
-	}
-#endif // NO_FLUISYNTH
-	return false;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the current position of the playing MIDI stream
-// -----------------------------------------------------------------------------
-int MIDIPlayer::position()
-{
-	// We cannot query this information from fluidsynth or timidity,
-	// se we cheat by querying our own timer
-	return timer_.getElapsedTime().asMilliseconds();
-}
-
-// -----------------------------------------------------------------------------
-// Seeks to [pos] in the currently loaded MIDI stream
-// -----------------------------------------------------------------------------
-bool MIDIPlayer::setPosition(int pos)
-{
-	// Cannot currently seek in fluidsynth or timidity
-	return false;
-}
 
 // -----------------------------------------------------------------------------
 // Returns the length (or maximum position) of the currently loaded MIDI stream,
@@ -550,27 +201,6 @@ int MIDIPlayer::length()
 }
 
 // -----------------------------------------------------------------------------
-// Sets the volume of the midi player
-// -----------------------------------------------------------------------------
-bool MIDIPlayer::setVolume(int volume)
-{
-	if (!isReady())
-		return false;
-
-	// Clamp volume
-	if (volume > 100)
-		volume = 100;
-	if (volume < 0)
-		volume = 0;
-
-#ifndef NO_FLUIDSYNTH
-	fluid_synth_set_gain(fs_synth_, volume * 0.01f);
-#endif // NO_FLUIDSYNTH
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // Parses the MIDI data to find text events, and return a string where they are
 // each on a separate line. MIDI text events include:
 // Text event (FF 01)
@@ -688,3 +318,485 @@ string MIDIPlayer::info()
 	}
 	return ret;
 }
+
+
+// -----------------------------------------------------------------------------
+// FluidSynthMIDIPlayer Class
+//
+// A MIDIPlayer that uses fluidsynth to play MIDI
+// Requires a soundfont file to be configured (fs_soundfont_path cvar)
+// -----------------------------------------------------------------------------
+#ifndef NO_FLUIDSYNTH
+class FluidSynthMIDIPlayer : public MIDIPlayer
+{
+public:
+	// -------------------------------------------------------------------------
+	// FluidSynthMIDIPlayer class constructor
+	// -------------------------------------------------------------------------
+	FluidSynthMIDIPlayer()
+	{
+		// Init variables
+		fs_initialised_ = false;
+		file_           = "";
+
+		// Set fluidsynth driver to alsa in linux (no idea why it defaults to jack)
+		if (App::platform() == App::Platform::Linux && fs_driver.value.empty())
+			fs_driver = "alsa";
+
+		// Init soundfont path
+		if (fs_soundfont_path.value.empty())
+		{
+			if (App::platform() == App::Platform::Linux)
+				fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2:/usr/share/sounds/sf2/FluidR3_GS.sf2";
+			else
+				Log::warning(1, "No FluidSynth soundfont set, MIDI playback will not work");
+		}
+
+		// Setup fluidsynth
+		initFluidsynth();
+		FluidSynthMIDIPlayer::reloadSoundfont();
+
+		if (!fs_player_ || !fs_adriver_)
+			Log::warning(1, "Failed to initialise FluidSynth, MIDI playback disabled");
+	}
+
+	// -------------------------------------------------------------------------
+	// FluidSynthMIDIPlayer class destructor
+	// -------------------------------------------------------------------------
+	virtual ~FluidSynthMIDIPlayer()
+	{
+		FluidSynthMIDIPlayer::stop();
+		delete_fluid_audio_driver(fs_adriver_);
+		delete_fluid_player(fs_player_);
+		delete_fluid_synth(fs_synth_);
+		delete_fluid_settings(fs_settings_);
+	}
+
+	// -------------------------------------------------------------------------
+	// Returns true if the MIDIPlayer has a soundfont loaded
+	// -------------------------------------------------------------------------
+	bool isSoundfontLoaded() override { return !fs_soundfont_ids_.empty(); }
+
+	// -------------------------------------------------------------------------
+	// Reloads the current soundfont
+	// -------------------------------------------------------------------------
+	bool reloadSoundfont() override
+	{
+		// Can't do anything if fluidsynth isn't initialised for whatever reason
+		if (!fs_initialised_)
+			return false;
+
+		char separator = App::platform() == App::Platform::Windows ? ';' : ':';
+
+		// Unload any current soundfont
+		for (int a = fs_soundfont_ids_.size() - 1; a >= 0; --a)
+		{
+			if (fs_soundfont_ids_[a] != FLUID_FAILED)
+				fluid_synth_sfunload(fs_synth_, fs_soundfont_ids_[a], 1);
+			fs_soundfont_ids_.pop_back();
+		}
+
+		// Load soundfonts
+		auto paths  = wxSplit(fs_soundfont_path, separator);
+		bool retval = false;
+		for (int a = paths.size() - 1; a >= 0; --a)
+		{
+			string path = paths[a];
+			if (!path.empty())
+			{
+				int fs_id = fluid_synth_sfload(fs_synth_, CHR(path), 1);
+				fs_soundfont_ids_.push_back(fs_id);
+				if (fs_id != FLUID_FAILED)
+					retval = true;
+			}
+		}
+
+		return retval;
+	}
+
+	// -------------------------------------------------------------------------
+	// Opens the MIDI file at [filename] for playback.
+	// Returns true if successful, false otherwise
+	// -------------------------------------------------------------------------
+	bool openFile(string filename) override
+	{
+		file_ = filename;
+		if (!fs_initialised_)
+			return false;
+
+		// Delete+Recreate player
+		delete_fluid_player(fs_player_);
+		fs_player_ = nullptr;
+		fs_player_ = new_fluid_player(fs_synth_);
+
+		// Open midi
+		if (fs_player_)
+		{
+			fluid_player_add(fs_player_, CHR(filename));
+			return true;
+		}
+
+		return false;
+	}
+
+	// -------------------------------------------------------------------------
+	// Opens the MIDI data contained in [mc] for playback.
+	// Returns true if successful, false otherwise
+	// -------------------------------------------------------------------------
+	bool openData(MemChunk& mc) override
+	{
+		// Open midi
+		mc.seek(0, SEEK_SET);
+		data_.importMem(mc.data(), mc.size());
+
+		if (!fs_initialised_)
+			return false;
+
+		// Delete+Recreate player
+		delete_fluid_player(fs_player_);
+		fs_player_ = nullptr;
+		fs_player_ = new_fluid_player(fs_synth_);
+
+		if (fs_player_)
+		{
+			// fluid_player_set_loop(fs_player, -1);
+			fluid_player_add_mem(fs_player_, mc.data(), mc.size());
+			return true;
+		}
+
+		return false;
+	}
+
+	// -------------------------------------------------------------------------
+	// Returns true if the MIDIPlayer is ready to play some MIDI
+	// -------------------------------------------------------------------------
+	bool isReady() override { return fs_initialised_ && !fs_soundfont_ids_.empty(); }
+
+	// -------------------------------------------------------------------------
+	// Begins playback of the currently loaded MIDI stream.
+	// Returns true if successful, false otherwise
+	// -------------------------------------------------------------------------
+	bool play() override
+	{
+		stop();
+		timer_.restart();
+
+		if (!fs_initialised_)
+			return false;
+
+		return (fluid_player_play(fs_player_) == FLUID_OK);
+	}
+
+	// -------------------------------------------------------------------------
+	// Pauses playback of the currently loaded MIDI stream
+	// -------------------------------------------------------------------------
+	bool pause() override
+	{
+		if (!isReady())
+			return false;
+
+		return stop();
+	}
+
+	// -------------------------------------------------------------------------
+	// Stops playback of the currently loaded MIDI stream
+	// -------------------------------------------------------------------------
+	bool stop() override
+	{
+		bool stopped = false;
+
+		if (fs_initialised_)
+		{
+			fluid_player_stop(fs_player_);
+			fluid_synth_system_reset(fs_synth_);
+			stopped = true;
+		}
+
+		return stopped;
+	}
+
+	// -------------------------------------------------------------------------
+	// Returns true if the MIDI stream is currently playing
+	// -------------------------------------------------------------------------
+	bool isPlaying() override
+	{
+		if (!fs_initialised_)
+			return false;
+
+		return (fluid_player_get_status(fs_player_) == FLUID_PLAYER_PLAYING);
+	}
+
+	// -------------------------------------------------------------------------
+	// Returns the current position of the playing MIDI stream
+	// -------------------------------------------------------------------------
+	int position() override
+	{
+		// We cannot query this information from fluidsynth, so we cheat by querying our own timer
+		return timer_.getElapsedTime().asMilliseconds();
+	}
+
+	// -------------------------------------------------------------------------
+	// Seeks to [pos] in the currently loaded MIDI stream
+	// -------------------------------------------------------------------------
+	bool setPosition(int pos) override
+	{
+		// Cannot currently seek in fluidsynth
+		return false;
+	}
+
+	// -------------------------------------------------------------------------
+	// Sets the volume of the midi player
+	// -------------------------------------------------------------------------
+	bool setVolume(int volume) override
+	{
+		if (!isReady())
+			return false;
+
+		// Clamp volume
+		if (volume > 100)
+			volume = 100;
+		if (volume < 0)
+			volume = 0;
+
+		fluid_synth_set_gain(fs_synth_, volume * 0.01f);
+
+		return true;
+	}
+
+private:
+	fluid_settings_t*     fs_settings_ = nullptr;
+	fluid_synth_t*        fs_synth_    = nullptr;
+	fluid_player_t*       fs_player_   = nullptr;
+	fluid_audio_driver_t* fs_adriver_  = nullptr;
+
+	bool        fs_initialised_ = false;
+	vector<int> fs_soundfont_ids_;
+
+	// -------------------------------------------------------------------------
+	// Initialises fluidsynth
+	// -------------------------------------------------------------------------
+	bool initFluidsynth()
+	{
+		// Don't re-init
+		if (fs_initialised_)
+			return true;
+
+		// Init fluidsynth settings
+		fs_settings_ = new_fluid_settings();
+		if (!fs_driver.value.empty())
+			fluid_settings_setstr(fs_settings_, "audio.driver", wxString(fs_driver).ToAscii());
+
+		// Create fluidsynth objects
+		fs_synth_   = new_fluid_synth(fs_settings_);
+		fs_player_  = new_fluid_player(fs_synth_);
+		fs_adriver_ = new_fluid_audio_driver(fs_settings_, fs_synth_);
+
+		// Check init succeeded
+		if (fs_synth_)
+		{
+			if (fs_adriver_)
+			{
+				setVolume(snd_volume);
+				fs_initialised_ = true;
+				return true;
+			}
+
+			// Driver creation unsuccessful
+			delete_fluid_synth(fs_synth_);
+			return false;
+		}
+
+		// Init unsuccessful
+		return false;
+	}
+};
+#endif // !NO_FLUIDSYNTH
+
+
+// -----------------------------------------------------------------------------
+// TimidityMIDIPlayer Class
+//
+// A MIDIPlayer that uses an external timidity executable to play MIDI
+// -----------------------------------------------------------------------------
+class TimidityMIDIPlayer : public MIDIPlayer
+{
+public:
+	// -------------------------------------------------------------------------
+	// TimidityMIDIPlayer class destructor
+	// -------------------------------------------------------------------------
+	virtual ~TimidityMIDIPlayer() { delete program_; }
+
+	// -------------------------------------------------------------------------
+	// Returns true if the MIDIPlayer has a soundfont loaded
+	// -------------------------------------------------------------------------
+	bool isSoundfontLoaded() override { return true; }
+
+	// -------------------------------------------------------------------------
+	// Opens the MIDI file at [filename] for playback.
+	// Returns true if successful, false otherwise
+	// -------------------------------------------------------------------------
+	bool openFile(string filename) override
+	{
+		file_ = filename;
+		return true;
+	}
+
+	// -------------------------------------------------------------------------
+	// Opens the MIDI data contained in [mc] for playback.
+	// Returns true if successful, false otherwise
+	// -------------------------------------------------------------------------
+	bool openData(MemChunk& mc) override
+	{
+		// Open midi
+		mc.seek(0, SEEK_SET);
+		data_.importMem(mc.data(), mc.size());
+
+		wxFileName path(App::path("slade-timidity.mid", App::Dir::Temp));
+		file_ = path.GetFullPath();
+		mc.exportFile(file_);
+
+		return true;
+	}
+
+	// -------------------------------------------------------------------------
+	// Returns true if the MIDIPlayer is ready to play some MIDI
+	// -------------------------------------------------------------------------
+	bool isReady() override { return !snd_timidity_path.value.IsEmpty(); }
+
+	// -------------------------------------------------------------------------
+	// Begins playback of the currently loaded MIDI stream.
+	// Returns true if successful, false otherwise
+	// -------------------------------------------------------------------------
+	bool play() override
+	{
+		stop();
+		timer_.restart();
+
+		string commandline = snd_timidity_path + " " + file_ + " " + snd_timidity_options;
+		if (!((program_ = wxProcess::Open(commandline))))
+			return false;
+
+		return wxProcess::Exists(program_->GetPid());
+	}
+
+	// -------------------------------------------------------------------------
+	// Pauses playback of the currently loaded MIDI stream
+	// -------------------------------------------------------------------------
+	bool pause() override
+	{
+		if (!isReady())
+			return false;
+
+		return stop();
+	}
+
+	// -------------------------------------------------------------------------
+	// Stops playback of the currently loaded MIDI stream
+	// -------------------------------------------------------------------------
+	bool stop() override
+	{
+		bool stopped = false;
+
+		if (program_)
+		{
+			int pid = program_->GetPid();
+			if (isPlaying())
+			{
+				if (App::platform() == App::Platform::Windows)
+					wxProcess::Kill(pid, wxSIGKILL, wxKILL_CHILDREN);
+				else
+					wxProcess::Kill(pid);
+			}
+
+			stopped = !(wxProcess::Exists(pid));
+		}
+
+		return stopped;
+	}
+
+	// -------------------------------------------------------------------------
+	// Returns true if the MIDI stream is currently playing
+	// -------------------------------------------------------------------------
+	bool isPlaying() override
+	{
+		if (!program_)
+			return false;
+
+		int pid = program_->GetPid();
+		return !(!pid || !wxProcess::Exists(pid)); // also ignore zero pid
+	}
+
+	// -------------------------------------------------------------------------
+	// Returns the current position of the playing MIDI stream
+	// -------------------------------------------------------------------------
+	int position() override
+	{
+		// We cannot query this information from timidity, so we cheat by querying our own timer
+		return timer_.getElapsedTime().asMilliseconds();
+	}
+
+	// -------------------------------------------------------------------------
+	// Seeks to [pos] in the currently loaded MIDI stream
+	// -------------------------------------------------------------------------
+	bool setPosition(int pos) override
+	{
+		// Cannot currently seek in timidity
+		return false;
+	}
+
+	// -------------------------------------------------------------------------
+	// Sets the volume of the midi player
+	// -------------------------------------------------------------------------
+	bool setVolume(int volume) override
+	{
+		// Can't change the volume for timidity playback
+		return isReady();
+	}
+
+private:
+	wxProcess* program_ = nullptr;
+};
+
+
+// -----------------------------------------------------------------------------
+//
+// MIDI Namespace Functions
+//
+// -----------------------------------------------------------------------------
+namespace MIDI
+{
+// -----------------------------------------------------------------------------
+// Returns the current MIDIPlayer instance.
+// Creates one if there is no current instance, depending on what is configured
+// (and available)
+// -----------------------------------------------------------------------------
+MIDIPlayer& player()
+{
+	if (!midi_player)
+	{
+#ifndef NO_FLUIDSYNTH
+		if (S_CMPNOCASE(snd_midi_player.value, "fluidsynth"))
+			midi_player = std::make_unique<FluidSynthMIDIPlayer>();
+		else if (S_CMPNOCASE(snd_midi_player.value, "timidity"))
+			midi_player = std::make_unique<TimidityMIDIPlayer>();
+#else
+		if (S_CMPNOCASE(snd_midi_player.value, "timidity"))
+			midi_player = std::make_unique<TimidityMIDIPlayer>();
+#endif
+
+		if (!midi_player)
+			midi_player = std::make_unique<NullMIDIPlayer>();
+	}
+
+	return *midi_player;
+}
+
+// -----------------------------------------------------------------------------
+// Resets the current MIDIPlayer
+// -----------------------------------------------------------------------------
+void resetPlayer()
+{
+	if (midi_player)
+		midi_player.reset(nullptr);
+}
+} // namespace MIDI
