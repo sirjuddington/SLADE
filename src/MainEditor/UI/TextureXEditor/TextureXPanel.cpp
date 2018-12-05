@@ -1443,8 +1443,7 @@ void TextureXPanel::onRedo(string action)
 bool TextureXPanel::handleAction(string id)
 {
 	// Don't handle if hidden
-	TabControl* parent = dynamic_cast<TabControl*>(GetParent());
-	if (parent->GetCurrentPage() != this)
+	if (!tx_editor_->IsShown() || !IsShown())
 		return false;
 
 	// Only interested in "txed_" events
