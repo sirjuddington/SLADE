@@ -312,12 +312,12 @@ public:
 
 	wxThread::ExitCode Entry()
 	{
-		wxMailer mailer("slade.errors@gmail.com", "hxixjnwdovyoktwq", "smtp://smtp.gmail.com:587");
+		wxMailer mailer("slade.crashes@gmail.com", "qakljwqpasnmprhl", "smtp://smtp.gmail.com:587");
 
 		// Create message
 		wxEmailMessage msg;
 		msg.SetFrom("SLADE");
-		msg.SetTo("slade.errors@gmail.com");
+		msg.SetTo("slade.crashes@gmail.com");
 		msg.SetSubject("[" + Global::version + "] @ " + top_level);
 		msg.SetMessage(S_FMT("Description:\n%s\n\n%s", text_description->GetValue(), trace));
 		msg.AddAttachment(App::path("slade3.log", App::Dir::User));
