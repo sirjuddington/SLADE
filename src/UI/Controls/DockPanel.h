@@ -17,7 +17,8 @@ protected:
 	{
 		Normal,
 		Horizontal,
-		Vertical
+		Vertical,
+		Uninitialised
 	};
 	Orient	current_layout_;
 };
