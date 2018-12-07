@@ -107,7 +107,7 @@ void Log::init()
 	// Write logfile header
 	string year = wxNow().Right(4);
 	info("SLADE - It's a Doom Editor");
-	info(S_FMT("Version %s", Global::version));
+	info(S_FMT("Version %s", App::version().toString()));
 	if (Global::sc_rev != "") info(S_FMT("Git Revision %s", Global::sc_rev));
 	info(S_FMT("Written by Simon Judd, 2008-%s", year));
 #ifdef SFML_VERSION_MAJOR

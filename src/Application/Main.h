@@ -90,7 +90,6 @@ typename M::mapped_type findInMap(M& m, const typename M::key_type& k, typename 
 namespace Global
 {
 	extern string error;
-	extern string version;
 	extern string sc_rev;
 	extern bool debug;
 	extern int win_version_major;

@@ -42,6 +42,8 @@
 #include "MainEditor/UI/StartPage.h"
 #include "OpenGL/OpenGL.h"
 #include <wx/statbmp.h>
+#include "Utility/Tokenizer.h"
+#include "Utility/Parser.h"
 
 #undef BOOL
 
@@ -59,9 +61,6 @@ namespace Global
 {
 	string error = "";
 
-	int beta_num = 0;
-	int version_num = 3120;
-	string version = "3.1.2";
 #ifdef GIT_DESCRIPTION
 	string sc_rev = GIT_DESCRIPTION;
 #else
@@ -228,9 +227,9 @@ public:
 
 		// SLADE info
 		if (Global::sc_rev.empty())
-			trace = S_FMT("Version: %s\n", Global::version);
+			trace = S_FMT("Version: %s\n", App::version().toString());
 		else
-			trace = S_FMT("Version: %s (%s)\n", Global::version, Global::sc_rev);
+			trace = S_FMT("Version: %s (%s)\n", App::version().toString(), Global::sc_rev);
 		if (current_action.IsEmpty())
 			trace += "No current action\n";
 		else
@@ -318,7 +317,7 @@ public:
 		wxEmailMessage msg;
 		msg.SetFrom("SLADE");
 		msg.SetTo("slade.crashes@gmail.com");
-		msg.SetSubject("[" + Global::version + "] @ " + top_level);
+		msg.SetSubject("[" + App::version().toString() + "] @ " + top_level);
 		msg.SetMessage(S_FMT("Description:\n%s\n\n%s", text_description->GetValue(), trace));
 		msg.AddAttachment(App::path("slade3.log", App::Dir::User));
 		msg.Finalize();
@@ -671,7 +670,7 @@ void SLADEWxApp::checkForUpdates(bool message_box)
 #ifdef __WXMSW__
 	update_check_message_box = message_box;
 	Log::info(1, "Checking for updates...");
-	Web::getHttpAsync("slade.mancubus.net", "/version.txt", this);
+	Web::getHttpAsync("slade.mancubus.net", "/version_win.txt", this);
 #endif
 }
 
@@ -742,47 +741,77 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 		return;
 	}
 
-	auto info = wxSplit(e.GetString(), '\n');
-	
-	// Check for correct info
-	if (info.size() != 5)
+	// Parse version info
+	App::Version stable, beta;
+	string       bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
+	Parser       parser;
+	if (parser.parseText(e.GetString()))
 	{
-		LOG_MESSAGE(1, "Version check failed, received invalid version info");
+		// Stable
+		auto node_stable = parser.parseTreeRoot()->getChildPTN("stable");
+		if (node_stable)
+		{
+			// Version
+			auto node_version = node_stable->getChildPTN("version");
+			if (node_version)
+			{
+				stable.major = node_version->intValue(0);
+				stable.minor = node_version->intValue(1);
+				stable.revision = node_version->intValue(2);
+			}
+
+			// Binaries link
+			auto node_bin = node_stable->getChildPTN("bin");
+			if (node_bin)
+				bin_stable = node_bin->stringValue();
+
+			// Installer link
+			auto node_install = node_stable->getChildPTN("install");
+			if (node_install)
+				installer_stable = node_install->stringValue();
+		}
+
+		// Beta
+		auto node_beta = parser.parseTreeRoot()->getChildPTN("beta");
+		if (node_beta)
+		{
+			// Version
+			auto node_version = node_beta->getChildPTN("version");
+			if (node_version)
+			{
+				beta.major    = node_version->intValue(0);
+				beta.minor    = node_version->intValue(1);
+				beta.revision = node_version->intValue(2);
+			}
+
+			// Beta number
+			auto node_beta_num = node_beta->getChildPTN("beta");
+			if (node_beta_num)
+				beta.beta = node_beta_num->intValue();
+
+			// Binaries link
+			auto node_bin = node_beta->getChildPTN("bin");
+			if (node_bin)
+				bin_beta = node_bin->stringValue();
+		}
+	}
+
+	// Check for correct info
+	if (stable.major == 0 || beta.major == 0)
+	{
+		Log::warning("Version check failed, received invalid version info");
+		Log::debug(S_FMT("Received version text:\n\n%s", e.GetString()));
 		if (update_check_message_box)
 			wxMessageBox("Update check failed: received invalid version info.", "Check for Updates");
 		return;
 	}
 
-	// Get version numbers
-	long version_stable, version_beta, beta_num;
-	info[0].ToLong(&version_stable);
-	info[2].ToLong(&version_beta);
-	info[3].ToLong(&beta_num);
-
-	LOG_MESSAGE(1, "Latest stable release: v%ld \"%s\"", version_stable, info[1].Trim());
-	LOG_MESSAGE(1, "Latest beta release: v%ld_b%ld \"%s\"", version_beta, beta_num, info[4].Trim());
+	Log::info(1, S_FMT("Latest stable release: v%s",stable.toString()));
+	Log::info(1, S_FMT("Latest beta release: v%s", beta.toString()));
 
 	// Check if new stable version
-	bool new_stable = false;
-	if (Global::version_num < version_stable ||								// New stable version
-		(Global::version_num == version_stable && Global::beta_num > 0))	// Stable version of current beta
-		new_stable = true;
-
-	// Check if new beta version
-	bool new_beta = false;
-	if (version_stable < version_beta)
-	{
-		// Stable -> Beta
-		if (Global::version_num < version_beta && Global::beta_num == 0)
-			new_beta = true;
-
-		// Beta -> Beta
-		else if (Global::version_num < version_beta ||		// New version beta
-				(Global::beta_num < beta_num &&				// Same version, newer beta
-					Global::version_num == version_beta &&
-					Global::beta_num > 0))
-			new_beta = true;
-	}
+	bool new_stable = App::version().cmp(stable) < 0;
+	bool new_beta = App::version().cmp(beta) < 0;
 
 	// Set up for new beta/stable version prompt (if any)
 	string message, caption, version;
@@ -790,23 +819,21 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	{
 		// New Beta
 		caption = "New Beta Version Available";
-		version = info[4].Trim();
+		version = beta.toString();
 		message = S_FMT(
 			"A new beta version of SLADE is available (%s), click OK to visit the SLADE homepage "
 			"and download the update.",
-			CHR(version)
-		);
+			CHR(version));
 	}
 	else if (new_stable)
 	{
 		// New Stable
 		caption = "New Version Available";
-		version = info[1].Trim();
+		version = stable.toString();
 		message = S_FMT(
 			"A new version of SLADE is available (%s), click OK to visit the SLADE homepage and "
 			"download the update.",
-			CHR(version)
-		);
+			CHR(version));
 	}
 	else
 	{

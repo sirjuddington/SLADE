@@ -245,7 +245,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	dc.SetFont(font);
 
 	// Draw version
-	string vers = "v" + Global::version;
+	string vers = "v" + App::version().toString();
 	wxSize text_size = dc.GetTextExtent(vers);
 	wxCoord x = img_width - text_size.GetWidth() - UI::scalePx(8);
 	wxCoord y = UI::scalePx(190) - text_size.GetHeight();
