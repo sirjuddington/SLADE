@@ -79,10 +79,10 @@ public:
 
 	void setCaseSensitive(bool cs) { case_sensitive_ = cs; }
 
-	bool parseText(MemChunk& mc, string source = "memory chunk");
-	bool parseText(string& text, string source = "string");
-	void define(const string& def) { defines_.push_back(def.Lower()); }
-	bool defined(const string& def) { return VECTOR_EXISTS(defines_, def.Lower()); }
+	bool	parseText(MemChunk& mc, string source = "memory chunk");
+	bool	parseText(const string& text, string source = "string");
+	void	define(const string& def) { defines_.push_back(def.Lower()); }
+	bool	defined(const string& def) { return VECTOR_EXISTS(defines_, def.Lower()); }
 
 	// To simplify casts from STreeNode to ParseTreeNode
 	static ParseTreeNode* node(STreeNode* node) { return static_cast<ParseTreeNode*>(node); }

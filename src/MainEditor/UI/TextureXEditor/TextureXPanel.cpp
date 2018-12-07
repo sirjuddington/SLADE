@@ -1442,7 +1442,11 @@ void TextureXPanel::onRedo(string action)
 // -----------------------------------------------------------------------------
 bool TextureXPanel::handleAction(string id)
 {
-	// Don't handle if hidden
+	// Skip event if this panel is not the current page
+	TabControl* parent = static_cast<TabControl*>(GetParent());
+	if (parent->GetCurrentPage() != this)
+		return false;
+	// Skip event if this panel is hidden
 	if (!tx_editor_->IsShown() || !IsShown())
 		return false;
 

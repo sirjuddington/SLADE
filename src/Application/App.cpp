@@ -71,6 +71,9 @@ bool            init_ok         = false;
 bool            exiting         = false;
 std::thread::id main_thread_id;
 
+// Version
+Version version_num{ 3, 1, 3, 0 };
+
 // Directory paths
 string dir_data = "";
 string dir_user = "";
@@ -94,6 +97,56 @@ CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
+//
+// App::Version Struct Functions
+//
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// Compares with another version [rhs].
+// Returns 0 if equal, 1 if this is newer or -1 if this is older
+// ----------------------------------------------------------------------------
+int App::Version::cmp(const Version& rhs) const
+{
+	if (major == rhs.major)
+	{
+		if (minor == rhs.minor)
+		{
+			if (revision == rhs.revision)
+			{
+				if (beta == rhs.beta)
+					return 0;
+				if (beta == 0 && rhs.beta > 0)
+					return 1;
+				if (beta > 0 && rhs.beta == 0)
+					return -1;
+
+				return beta > rhs.beta ? 1 : -1;
+			}
+
+			return revision > rhs.revision ? 1 : -1;
+		}
+
+		return minor > rhs.minor ? 1 : -1;
+	}
+
+	return major > rhs.major ? 1 : -1;
+}
+
+// ----------------------------------------------------------------------------
+// Returns a string representation of the version (eg. "3.2.1 beta 4")
+// ----------------------------------------------------------------------------
+string App::Version::toString() const
+{
+	string vers = S_FMT("%lu.%lu.%lu", major, minor, revision);
+	if (beta > 0)
+		vers += S_FMT(" beta %lu", beta);
+	return vers;
+}
+
+
+// ----------------------------------------------------------------------------
 //
 // App Namespace Functions
 //
@@ -588,6 +641,15 @@ void App::exit(bool save_config)
 
 	// Exit wx Application
 	wxGetApp().Exit();
+}
+
+
+// ----------------------------------------------------------------------------
+// Returns the current version of SLADE
+// ----------------------------------------------------------------------------
+const App::Version& App::version()
+{
+	return version_num;
 }
 
 // -----------------------------------------------------------------------------

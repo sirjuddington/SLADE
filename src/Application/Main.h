@@ -58,7 +58,6 @@ using std::vector;
 namespace Global
 {
 extern string error;
-extern string version;
 extern string sc_rev;
 extern bool   debug;
 extern int    win_version_major;

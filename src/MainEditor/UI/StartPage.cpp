@@ -240,7 +240,7 @@ void SStartPage::load(bool new_tip)
 	html.Replace("#recent#", recent);
 	html.Replace("#totd#", tip);
 	html.Replace("#news#", latest_news_);
-	html.Replace("#version#", Global::version);
+	html.Replace("#version#", App::version().toString());
 	if (update_version_.empty())
 		html.Replace("/*#hideupdate#*/", "#update { display: none; }");
 	else

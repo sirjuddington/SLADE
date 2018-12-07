@@ -595,7 +595,7 @@ bool Parser::parseText(MemChunk& mc, string source)
 	// Do parsing
 	return pt_root_->parse(tz);
 }
-bool Parser::parseText(string& text, string source)
+bool Parser::parseText(const string& text, string source)
 {
 	Tokenizer tz;
 

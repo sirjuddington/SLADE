@@ -19,6 +19,27 @@ bool init(vector<string>& args, double ui_scale = 1.);
 void saveConfigFile();
 void exit(bool save_config);
 
+// Version
+struct Version
+{
+	int major    = 0;
+	int minor    = 0;
+	int revision = 0;
+	int beta     = 0;
+
+	Version(int major = 0, int minor = 0, int revision = 0, int beta = 0) :
+		major{ major },
+		minor{ minor },
+		revision{ revision },
+		beta{ beta }
+	{
+	}
+
+	int cmp(const Version& rhs) const;
+	string toString() const;
+};
+const Version& version();
+
 // Path related stuff
 enum class Dir
 {

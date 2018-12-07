@@ -649,7 +649,7 @@ bool MainWindow::handleAction(string id)
 	{
 		wxAboutDialogInfo info;
 		info.SetName("SLADE");
-		string version = "v" + Global::version;
+		string version = "v" + App::version().toString();
 		if (Global::sc_rev != "")
 			version = version + " (Git Rev " + Global::sc_rev + ")";
 		info.SetVersion(version);
