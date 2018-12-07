@@ -62,7 +62,7 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id)
 	// Init variables
 	image = new SImage();
 	view_type = GFXVIEW_DEFAULT;
-	scale = 1;
+	scale = UI::scaleFactor();
 	tex_image = new GLTexture();
 	update_texture = false;
 	image_hilight = false;
@@ -99,6 +99,11 @@ GfxCanvas::~GfxCanvas()
 {
 	delete image;
 	delete tex_image;
+}
+
+void GfxCanvas::setScale(double scale)
+{
+	this->scale = scale * UI::scaleFactor();
 }
 
 /* GfxCanvas::draw
@@ -141,7 +146,7 @@ void GfxCanvas::draw()
 	}
 
 	// Scale by UI scale
-	glScaled(UI::scaleFactor(), UI::scaleFactor(), 1.);
+	//glScaled(UI::scaleFactor(), UI::scaleFactor(), 1.);
 
 	// Draw offset lines
 	if (view_type == GFXVIEW_SPRITE || view_type == GFXVIEW_HUD)
