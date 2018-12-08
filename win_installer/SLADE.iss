@@ -2,8 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SLADE"
-#define MyAppVersion "3.1.2"
-#define VersionNum "3120"
+#define MyAppVersion "3.1.3"
 #define MyAppURL "http://slade.mancubus.net"
 #define MyAppExeName "SLADE.exe"
 
@@ -25,7 +24,7 @@ DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 ;InfoBeforeFile=..\dist\SLADE.html
-OutputBaseFilename=Setup_{#MyAppName}_{#VersionNum}
+OutputBaseFilename=Setup_{#MyAppName}_{#MyAppVersion}
 SetupIconFile=..\build\msvc\slade.ico
 Compression=lzma
 SolidCompression=yes
