@@ -68,7 +68,7 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 	// Init variables
 	image_          = new SImage();
 	view_type_      = View::Default;
-	scale_          = 1;
+	scale_          = UI::scaleFactor();
 	tex_image_      = new GLTexture();
 	update_texture_ = false;
 	image_hilight_  = false;
@@ -105,6 +105,14 @@ GfxCanvas::~GfxCanvas()
 {
 	delete image_;
 	delete tex_image_;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the gfx canvas [scale]
+// -----------------------------------------------------------------------------
+void GfxCanvas::setScale(double scale)
+{
+	scale_ = scale * UI::scaleFactor();
 }
 
 // -----------------------------------------------------------------------------
@@ -147,7 +155,7 @@ void GfxCanvas::draw()
 	}
 
 	// Scale by UI scale
-	glScaled(UI::scaleFactor(), UI::scaleFactor(), 1.);
+	//glScaled(UI::scaleFactor(), UI::scaleFactor(), 1.);
 
 	// Draw offset lines
 	if (view_type_ == View::Sprite || view_type_ == View::HUD)

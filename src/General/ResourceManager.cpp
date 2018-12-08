@@ -49,6 +49,38 @@ string           ResourceManager::doom64_hash_table_[65536];
 
 // -----------------------------------------------------------------------------
 //
+// Functions
+//
+// ----------------------------------------------------------------------------
+namespace
+{
+// ----------------------------------------------------------------------------
+// Removes all entries in resource [map] that are within [archive]
+// ----------------------------------------------------------------------------
+void removeArchiveFromMap(EntryResourceMap& map, Archive* archive)
+{
+	for (auto& i : map)
+		i.second.removeArchive(archive);
+}
+
+// ----------------------------------------------------------------------------
+// Removes [entry] from resource [map].
+// If [full_check] is true, all resources in the map are checked for the entry,
+// otherwise only the resource [name] is checked
+// ----------------------------------------------------------------------------
+void removeEntryFromMap(EntryResourceMap& map, const string& name, ArchiveEntry::SPtr& entry, bool full_check)
+{
+	if (full_check)
+		for (auto& i : map)
+			i.second.remove(entry);
+	else
+		map[name].remove(entry);
+}
+} // namespace
+
+
+// ----------------------------------------------------------------------------
+//
 // EntryResource Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -78,7 +110,22 @@ void EntryResource::remove(ArchiveEntry::SPtr& entry)
 	}
 }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// Removes any entries in the resource that are in [archive]
+// ----------------------------------------------------------------------------
+void EntryResource::removeArchive(Archive* archive)
+{
+	unsigned a = 0;
+	while (a < entries_.size())
+	{
+		if (entries_[a].lock()->parent() == archive)
+			entries_.erase(entries_.begin() + a);
+		else
+			++a;
+	}
+}
+
+// ----------------------------------------------------------------------------
 // Gets the most relevant entry for this resource, depending on [priority] and
 // [nspace]. If [priority] is set, this will prioritize entries from the
 // priority archive. If [nspace] is not empty, this will prioritize entries
@@ -210,11 +257,26 @@ void ResourceManager::removeArchive(Archive* archive)
 	if (!archive)
 		return;
 
-	// Go through entries
-	vector<ArchiveEntry::SPtr> entries;
-	archive->putEntryTreeAsList(entries);
-	for (auto& entry : entries)
-		removeEntry(entry, false, true);
+	// Remove from palettes
+	removeArchiveFromMap(palettes_,archive);
+
+	// Remove from patches
+	removeArchiveFromMap(patches_, archive);
+	removeArchiveFromMap(patches_fp_, archive);
+	removeArchiveFromMap(patches_fp_only_, archive);
+
+	// Remove from flats
+	removeArchiveFromMap(flats_, archive);
+	removeArchiveFromMap(flats_fp_, archive);
+	removeArchiveFromMap(flats_fp_only_, archive);
+
+	// Remove from stand-alone textures
+	removeArchiveFromMap(satextures_, archive);
+	removeArchiveFromMap(satextures_fp_, archive);
+
+	// Remove any textures in the archive
+	for (auto& i : textures_)
+		i.second.remove(archive);
 
 	// Announce resource update
 	announce("resources_updated");
@@ -369,16 +431,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 	}
 }
 
-void removeEntryFromMap(EntryResourceMap& map, const string& name, ArchiveEntry::SPtr& entry, bool full_check)
-{
-	if (full_check)
-		for (auto& i : map)
-			i.second.remove(entry);
-	else
-		map[name].remove(entry);
-}
-
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Removes a managed entry
 // -----------------------------------------------------------------------------
 void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full_check)
@@ -437,11 +490,12 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full
 // -----------------------------------------------------------------------------
 void ResourceManager::listAllPatches()
 {
-	EntryResourceMap::iterator i = patches_.begin();
-	while (i != patches_.end())
+	for (auto& i : patches_)
 	{
-		LOG_MESSAGE(1, "%s (%d)", i->first, i->second.length());
-		++i;
+		if (i.second.length() == 0)
+			continue;
+
+		LOG_MESSAGE(1, "%s (%d)", i.first, i.second.length());
 	}
 }
 

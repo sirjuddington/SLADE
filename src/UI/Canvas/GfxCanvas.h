@@ -35,7 +35,7 @@ public:
 
 	void    setViewType(View type) { view_type_ = type; }
 	View    viewType() { return view_type_; }
-	void    setScale(double scale) { this->scale_ = scale; }
+	void    setScale(double scale);
 	bool    allowDrag() { return allow_drag_; }
 	void    allowDrag(bool allow) { allow_drag_ = allow; }
 	bool    allowScroll() { return allow_scroll_; }
