@@ -72,7 +72,7 @@ bool            exiting         = false;
 std::thread::id main_thread_id;
 
 // Version
-Version version_num{ 3, 1, 3, 0 };
+Version version_num{ 3, 2, 0, 1 };
 
 // Directory paths
 string dir_data = "";
