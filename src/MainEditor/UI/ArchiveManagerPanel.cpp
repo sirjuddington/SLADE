@@ -1948,9 +1948,9 @@ void ArchiveManagerPanel::updateBookmarkListItem(int index) const
 	else
 		switch (entry->state())
 		{
-		case 0: list_bookmarks_->setItemStatus(index, ItemStatus::Normal); break;
-		case 1: list_bookmarks_->setItemStatus(index, ItemStatus::Modified); break;
-		case 2: list_bookmarks_->setItemStatus(index, ItemStatus::New); break;
+		case ArchiveEntry::State::Unmodified: list_bookmarks_->setItemStatus(index, ItemStatus::Normal); break;
+		case ArchiveEntry::State::Modified: list_bookmarks_->setItemStatus(index, ItemStatus::Modified); break;
+		case ArchiveEntry::State::New: list_bookmarks_->setItemStatus(index, ItemStatus::New); break;
 		default: list_bookmarks_->setItemStatus(index, ItemStatus::Error); break;
 		}
 }
