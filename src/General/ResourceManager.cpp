@@ -122,7 +122,9 @@ void EntryResource::removeArchive(Archive* archive)
 	unsigned a = 0;
 	while (a < entries_.size())
 	{
-		if (entries_[a].lock()->getParent() == archive)
+		if (entries_[a].expired())
+			entries_.erase(entries_.begin() + a);
+		else if (entries_[a].lock()->getParent() == archive)
 			entries_.erase(entries_.begin() + a);
 		else
 			++a;
