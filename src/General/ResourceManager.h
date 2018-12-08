@@ -30,6 +30,7 @@ public:
 
 	void	add(ArchiveEntry::SPtr& entry);
 	void	remove(ArchiveEntry::SPtr& entry);
+	void    removeArchive(Archive* archive);
 
 	int		length() override { return entries_.size(); }
 
