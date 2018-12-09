@@ -1724,7 +1724,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			auto& tt = Game::configuration().thingType(thing->type());
 
 			// Dragon Path
-			if (tt.flags() & Game::ThingType::FLAG_DRAGON)
+			if (tt.flags() & Game::ThingType::Flags::Dragon)
 			{
 				MapThing* first = map_->findFirstThingWithId(thing->intProperty("id"));
 				if (first)
@@ -1757,7 +1757,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 							auto& tt2  = Game::configuration().thingType(dragon_things[e]->type());
 							bool l1to2 = ((a11 == id2) || (a12 == id2) || (a13 == id2) || (a14 == id2) || (a15 == id2));
 							bool l2to1 = ((a21 == id1) || (a22 == id1) || (a23 == id1) || (a24 == id1) || (a25 == id1));
-							if (!((tt1.flags() | tt2.flags()) & Game::ThingType::FLAG_DRAGON))
+							if (!((tt1.flags() | tt2.flags()) & Game::ThingType::Flags::Dragon))
 							{
 								ThingPath dpath;
 								if (l1to2)

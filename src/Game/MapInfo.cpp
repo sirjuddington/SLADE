@@ -51,7 +51,7 @@ void MapInfo::clear(bool maps, bool editor_nums)
 	if (maps)
 	{
 		this->maps_.clear();
-		default_map_ = Map();
+		default_map_ = {};
 	}
 
 	if (editor_nums)
@@ -156,7 +156,7 @@ bool MapInfo::checkEqualsToken(Tokenizer& tz, const string& parsing) const
 // Converts a text colour definition [str] to a colour struct [col].
 // Returns false if the given definition was invalid
 // -----------------------------------------------------------------------------
-bool MapInfo::strToCol(const string& str, ColRGBA& col)
+bool MapInfo::strToCol(const string& str, ColRGBA& col) const
 {
 	wxColor wxcol;
 	if (!wxcol.Set(str))
@@ -201,7 +201,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		if (tz.check("include"))
 		{
 			// Get entry at include path
-			ArchiveEntry* include_entry = entry->parent()->entryAtPath(tz.next().text);
+			auto include_entry = entry->parent()->entryAtPath(tz.next().text);
 
 			if (!include_entry)
 			{
@@ -262,10 +262,10 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 // Parses a ZMAPINFO map definition of [type] beginning at the current token in
 // tokenizer [tz]
 // -----------------------------------------------------------------------------
-bool MapInfo::parseZMap(Tokenizer& tz, string type)
+bool MapInfo::parseZMap(Tokenizer& tz, const string& type)
 {
 	// TODO: Handle adddefaultmap
-	Map map = default_map_;
+	auto map = default_map_;
 
 	// Normal map, get lump/name/etc
 	tz.adv();
@@ -473,8 +473,8 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 		// Reset editor number values
 		auto number                  = tz.current().asInt();
 		editor_nums_[number].special = "";
-		for (int a = 0; a < 5; a++)
-			editor_nums_[number].args[a] = 0;
+		for (int& arg : editor_nums_[number].args)
+			arg = 0;
 
 		// =
 		if (!tz.advIfNext("="))
@@ -528,7 +528,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 // Attempts to detect the port-specific MAPINFO format of [entry]
 // -----------------------------------------------------------------------------
-MapInfo::Format MapInfo::detectMapInfoType(ArchiveEntry* entry)
+MapInfo::Format MapInfo::detectMapInfoType(ArchiveEntry* entry) const
 {
 	Tokenizer tz;
 	tz.openMem(entry->data(), entry->name());
@@ -572,7 +572,7 @@ void MapInfo::dumpDoomEdNums()
 {
 	for (auto& num : editor_nums_)
 	{
-		if (num.second.actor_class == "")
+		if (num.second.actor_class.empty())
 			continue;
 
 		LOG_MESSAGE(
@@ -597,10 +597,10 @@ void MapInfo::dumpDoomEdNums()
 
 CONSOLE_COMMAND(test_parse_zmapinfo, 1, false)
 {
-	Archive* archive = MainEditor::currentArchive();
+	auto archive = MainEditor::currentArchive();
 	if (archive)
 	{
-		ArchiveEntry* entry = archive->entryAtPath(args[0]);
+		auto entry = archive->entryAtPath(args[0]);
 		if (!entry)
 			Log::console("Invalid entry path");
 		else

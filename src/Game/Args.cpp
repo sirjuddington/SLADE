@@ -78,7 +78,7 @@ string customFlags(int value, const vector<ArgValue>& custom_flags)
 		}
 	}
 
-	if (value || !flags.size())
+	if (value || flags.empty())
 		flags.push_back(S_FMT("%d", value));
 
 	// Join 'em, in reverse again, to restore the original order
@@ -244,14 +244,14 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		if (val)
 		{
 			for (auto cv : val->allChildren())
-				custom_values.push_back({ Parser::node(cv)->stringValue(), atoi(CHR(cv->name())) });
+				custom_values.push_back({ Parser::node(cv)->stringValue(), std::stoi(CHR(cv->name())) });
 		}
 
 		val = node->childPTN("custom_flags");
 		if (val)
 		{
 			for (auto cf : val->allChildren())
-				custom_flags.push_back({ Parser::node(cf)->stringValue(), atoi(CHR(cf->name())) });
+				custom_flags.push_back({ Parser::node(cf)->stringValue(), std::stoi(CHR(cf->name())) });
 		}
 	}
 }

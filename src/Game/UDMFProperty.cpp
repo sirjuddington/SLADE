@@ -42,31 +42,13 @@
 
 
 // -----------------------------------------------------------------------------
-// UDMFProperty class constructor
-// -----------------------------------------------------------------------------
-UDMFProperty::UDMFProperty() :
-	type_{ Type::Unknown },
-	flag_{ false },
-	trigger_{ false },
-	has_default_{ false },
-	show_always_{ false },
-	internal_only_{ false }
-{
-}
-
-// -----------------------------------------------------------------------------
-// UDMFProperty class destructor
-// -----------------------------------------------------------------------------
-UDMFProperty::~UDMFProperty() {}
-
-// -----------------------------------------------------------------------------
 // Reads a UDMF property definition from a parsed tree [node]
 // -----------------------------------------------------------------------------
-void UDMFProperty::parse(ParseTreeNode* node, string group)
+void UDMFProperty::parse(ParseTreeNode* node, const string& group)
 {
 	// Set group and property name
-	this->group_    = group;
-	this->property_ = node->name();
+	group_    = group;
+	property_ = node->name();
 
 	// Check for basic definition
 	if (node->nChildren() == 0)
@@ -159,22 +141,22 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 			{
 			case Type::Boolean:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values_.push_back(prop->boolValue(b));
+					values_.emplace_back(prop->boolValue(b));
 				break;
 			case Type::Int:
 			case Type::ActionSpecial:
 			case Type::SectorSpecial:
 			case Type::ThingType:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values_.push_back(prop->intValue(b));
+					values_.emplace_back(prop->intValue(b));
 				break;
 			case Type::Float:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values_.push_back(prop->floatValue(b));
+					values_.emplace_back(prop->floatValue(b));
 				break;
 			default:
 				for (unsigned b = 0; b < prop->nValues(); b++)
-					values_.push_back(prop->stringValue(b));
+					values_.emplace_back(prop->stringValue(b));
 				break;
 			}
 		}
@@ -190,7 +172,7 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 // -----------------------------------------------------------------------------
 string UDMFProperty::getStringRep()
 {
-	string ret = S_FMT("Property \"%s\": name = \"%s\", group = \"%s\"", property_, name_, group_);
+	string ret = S_FMT(R"(Property "%s": name = "%s", group = "%s")", property_, name_, group_);
 
 	switch (type_)
 	{
@@ -235,7 +217,7 @@ string UDMFProperty::getStringRep()
 	if (trigger_)
 		ret += ", is trigger";
 
-	if (values_.size() > 0)
+	if (!values_.empty())
 	{
 		ret += "\nPossible values: ";
 		for (unsigned a = 0; a < values_.size(); a++)

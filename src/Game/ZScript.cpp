@@ -310,32 +310,32 @@ bool Enumerator::parse(ParsedStatement& statement)
 // -----------------------------------------------------------------------------
 // Parses a function parameter from [tokens] beginning at [index]
 // -----------------------------------------------------------------------------
-unsigned Function::Parameter::parse(const vector<string>& tokens, unsigned index)
+unsigned Function::Parameter::parse(const vector<string>& tokens, unsigned start_index)
 {
 	// Type
-	type = parseType(tokens, index);
+	type = parseType(tokens, start_index);
 
 	// Special case - '...'
 	if (type == "...")
 	{
 		name = "...";
 		type.clear();
-		return index;
+		return start_index;
 	}
 
 	// Name
-	if (index >= tokens.size() || tokens[index] == ')')
-		return index;
-	name = tokens[index++];
+	if (start_index >= tokens.size() || tokens[start_index] == ')')
+		return start_index;
+	name = tokens[start_index++];
 
 	// Default value
-	if (index < tokens.size() && tokens[index] == '=')
+	if (start_index < tokens.size() && tokens[start_index] == '=')
 	{
-		++index;
-		default_value = parseValue(tokens, index);
+		++start_index;
+		default_value = parseValue(tokens, start_index);
 	}
 
-	return index;
+	return start_index;
 }
 
 // -----------------------------------------------------------------------------
@@ -990,9 +990,9 @@ bool Definitions::parseZScript(Archive* archive)
 {
 	// Get base ZScript file
 	Archive::SearchOptions opt;
-	opt.match_name                       = "zscript";
-	opt.ignore_ext                       = true;
-	vector<ArchiveEntry*> zscript_enries = archive->findAll(opt);
+	opt.match_name      = "zscript";
+	opt.ignore_ext      = true;
+	auto zscript_enries = archive->findAll(opt);
 	if (zscript_enries.empty())
 		return false;
 

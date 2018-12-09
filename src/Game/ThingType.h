@@ -14,17 +14,17 @@ class ThingType
 public:
 	enum Flags
 	{
-		FLAG_PATHED    = 1 << 0, // Things that work in paths (ZDoom's interpolation points and patrol points)
-		FLAG_DRAGON    = 1 << 1, // Dragon makes its own paths, without using special things
-		FLAG_SCRIPT    = 1 << 2, // Special is actually a script number (like Hexen's Heresiarch)
-		FLAG_COOPSTART = 1 << 3, // Thing is a numbered player start
-		FLAG_DMSTART   = 1 << 4, // Thing is a free-for-all player start
-		FLAG_TEAMSTART = 1 << 5, // Thing is a team-game player start
-		FLAG_OBSOLETE  = 1 << 6, // Thing is flagged as obsolete
+		Pathed    = 1 << 0, // Things that work in paths (ZDoom's interpolation points and patrol points)
+		Dragon    = 1 << 1, // Dragon makes its own paths, without using special things
+		Script    = 1 << 2, // Special is actually a script number (like Hexen's Heresiarch)
+		CoOpStart = 1 << 3, // Thing is a numbered player start
+		DMStart   = 1 << 4, // Thing is a free-for-all player start
+		TeamStart = 1 << 5, // Thing is a team-game player start
+		Obsolete  = 1 << 6, // Thing is flagged as obsolete
 	};
 
 	ThingType(const string& name = "Unknown", const string& group = "", const string& class_name = "");
-	~ThingType() {}
+	~ThingType() = default;
 
 	void copy(const ThingType& copy);
 
@@ -55,7 +55,7 @@ public:
 	bool           decorate() const { return decorate_; }
 	const string&  className() const { return class_name_; }
 
-	void setSprite(string sprite) { this->sprite_ = sprite; }
+	void setSprite(const string& sprite) { sprite_ = sprite; }
 
 	bool defined() const { return number_ >= 0; }
 	void define(int number, const string& name, const string& group);
@@ -71,28 +71,28 @@ public:
 private:
 	string  name_;
 	string  group_;
-	ColRGBA colour_;
-	int     radius_;
-	int     height_;
-	Vec2f   scale_;
-	bool    angled_;
-	bool    hanging_;
-	bool    shrink_;
-	bool    fullbright_;
-	bool    decoration_;
-	int     zeth_icon_;
+	ColRGBA colour_     = { 170, 170, 180, 255, 0 };
+	int     radius_     = 20;
+	int     height_     = -1;
+	Vec2f   scale_      = { 1., 1. };
+	bool    angled_     = true;
+	bool    hanging_    = false;
+	bool    shrink_     = false;
+	bool    fullbright_ = false;
+	bool    decoration_ = false;
+	int     zeth_icon_  = -1;
 	string  sprite_;
 	string  icon_;
 	string  translation_;
 	string  palette_;
 	ArgSpec args_;
-	bool    decorate_;
-	bool    solid_;
-	int     next_type_;
-	int     next_args_;
-	int     flags_;
+	bool    decorate_  = false;
+	bool    solid_     = false;
+	int     next_type_ = 0;
+	int     next_args_ = 0;
+	int     flags_     = 0;
 	TagType tagged_;
-	int     number_;
+	int     number_ = -1;
 	string  class_name_;
 
 	static ThingType unknown_;

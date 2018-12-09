@@ -23,8 +23,8 @@ public:
 		Unknown
 	};
 
-	UDMFProperty();
-	~UDMFProperty();
+	UDMFProperty()  = default;
+	~UDMFProperty() = default;
 
 	const string&           propName() const { return property_; }
 	const string&           name() const { return name_; }
@@ -39,7 +39,7 @@ public:
 	bool                    showAlways() const { return show_always_; }
 	bool                    internalOnly() const { return internal_only_; }
 
-	void parse(ParseTreeNode* node, string group);
+	void parse(ParseTreeNode* node, const string& group);
 
 	string getStringRep();
 
@@ -47,12 +47,12 @@ private:
 	string           property_;
 	string           name_;
 	string           group_;
-	Type             type_;
-	bool             flag_;
-	bool             trigger_;
-	bool             has_default_;
+	Type             type_        = Type::Unknown;
+	bool             flag_        = false;
+	bool             trigger_     = false;
+	bool             has_default_ = false;
 	Property         default_value_;
 	vector<Property> values_;
-	bool             show_always_;
-	bool             internal_only_;
+	bool             show_always_   = false;
+	bool             internal_only_ = false;
 };

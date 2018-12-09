@@ -11,7 +11,7 @@ enum class TagType;
 class ActionSpecial
 {
 public:
-	ActionSpecial(string name = "Unknown", string group = "");
+	ActionSpecial(const string& name = "Unknown", const string& group = "");
 
 	const string&  name() const { return name_; }
 	const string&  group() const { return group_; }

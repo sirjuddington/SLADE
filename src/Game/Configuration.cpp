@@ -73,11 +73,6 @@ Configuration::Configuration()
 }
 
 // -----------------------------------------------------------------------------
-// Configuration class destructor
-// -----------------------------------------------------------------------------
-Configuration::~Configuration() {}
-
-// -----------------------------------------------------------------------------
 // Resets all game configuration values to defaults
 // -----------------------------------------------------------------------------
 void Configuration::setDefaults()
@@ -101,7 +96,7 @@ void Configuration::setDefaults()
 // -----------------------------------------------------------------------------
 // Returns the UDMF namespace for the game configuration
 // -----------------------------------------------------------------------------
-string Configuration::udmfNamespace()
+string Configuration::udmfNamespace() const
 {
 	return udmf_namespace_.Lower();
 }
@@ -111,7 +106,7 @@ string Configuration::udmfNamespace()
 // -----------------------------------------------------------------------------
 int Configuration::lightLevelInterval()
 {
-	if (light_levels_.size() == 0)
+	if (light_levels_.empty())
 		return 1;
 	else
 		return light_levels_[1];
@@ -132,18 +127,18 @@ string Configuration::mapName(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns map info for the map matching [name]
 // -----------------------------------------------------------------------------
-gc_mapinfo_t Configuration::mapInfo(string name)
+Configuration::MapConf Configuration::mapInfo(const string& mapname)
 {
-	for (unsigned a = 0; a < maps_.size(); a++)
+	for (auto& map : maps_)
 	{
-		if (maps_[a].mapname == name)
-			return maps_[a];
+		if (map.mapname == mapname)
+			return map;
 	}
 
-	if (maps_.size() > 0)
+	if (maps_.empty())
 		return maps_[0];
 	else
-		return gc_mapinfo_t();
+		return {};
 }
 
 // -----------------------------------------------------------------------------
@@ -157,8 +152,8 @@ void Configuration::readActionSpecials(ParseTreeNode* node, Arg::SpecialMap& sha
 		action_specials_.clear();
 
 	// Determine current 'group'
-	ParseTreeNode* group     = node;
-	string         groupname = "";
+	auto   group     = node;
+	string groupname = "";
 	while (true)
 	{
 		if (!group || group->name() == "action_specials")
@@ -224,8 +219,8 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 		thing_types_.clear();
 
 	// --- Determine current 'group' ---
-	ParseTreeNode* group     = node;
-	string         groupname = "";
+	auto   group     = node;
+	string groupname = "";
 	while (true)
 	{
 		if (!group || group->name() == "thing_types")
@@ -249,7 +244,7 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 	cur_group_defaults.parse(node);
 
 	// --- Go through all child nodes ---
-	ParseTreeNode* child = nullptr;
+	ParseTreeNode* child;
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		child = node->childPTN(a);
@@ -287,7 +282,7 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 // -----------------------------------------------------------------------------
 // Reads UDMF property definitions from a parsed tree [node] into [plist]
 // -----------------------------------------------------------------------------
-void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
+void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist) const
 {
 	// Read block properties
 	for (unsigned a = 0; a < block->nChildren(); a++)
@@ -321,7 +316,7 @@ void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 // Reads a game or port definition from a parsed tree [node]. If [port_section]
 // is true it is a port definition
 // -----------------------------------------------------------------------------
-#define READ_BOOL(obj, field) else if (S_CMPNOCASE(node->name(), #field)) obj = node->boolValue()
+#define READ_BOOL(obj, field) else if (S_CMPNOCASE(node->name(), #field))(obj) = node->boolValue()
 void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 {
 	for (unsigned a = 0; a < node_game->nChildren(); a++)
@@ -491,7 +486,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				// Map definition
 				if (S_CMPNOCASE(block->type(), "map"))
 				{
-					gc_mapinfo_t map;
+					MapConf map;
 					map.mapname = block->name();
 
 					// Go through map properties
@@ -517,11 +512,12 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 		}
 	}
 }
+#undef READ_BOOL
 
 // -----------------------------------------------------------------------------
 // Reads a full game configuration from [cfg]
 // -----------------------------------------------------------------------------
-bool Configuration::readConfiguration(string& cfg, string source, MapFormat format, bool ignore_game, bool clear)
+bool Configuration::readConfiguration(string& cfg, const string& source, MapFormat format, bool ignore_game, bool clear)
 {
 	// Clear current configuration
 	if (clear)
@@ -553,7 +549,7 @@ bool Configuration::readConfiguration(string& cfg, string source, MapFormat form
 	parser.parseText(cfg, source);
 
 	// Process parsed data
-	ParseTreeNode* base = parser.parseTreeRoot();
+	auto base = parser.parseTreeRoot();
 
 	// Read game/port section(s) if needed
 	ParseTreeNode* node_game = nullptr;
@@ -661,12 +657,12 @@ bool Configuration::readConfiguration(string& cfg, string source, MapFormat form
 
 				// Check if the flag value already exists
 				bool exists = false;
-				for (unsigned f = 0; f < flags_line_.size(); f++)
+				for (auto& f : flags_line_)
 				{
-					if (flags_line_[f].flag == flag_val)
+					if ((unsigned)f.flag == flag_val)
 					{
-						exists              = true;
-						flags_line_[f].name = flag_name;
+						exists = true;
+						f.name = flag_name;
 						break;
 					}
 				}
@@ -719,19 +715,19 @@ bool Configuration::readConfiguration(string& cfg, string source, MapFormat form
 
 				// Check if the trigger value already exists
 				bool exists = false;
-				for (unsigned f = 0; f < triggers_line_.size(); f++)
+				for (auto& f : triggers_line_)
 				{
-					if (triggers_line_[f].flag == flag_val)
+					if (f.flag == flag_val)
 					{
-						exists                 = true;
-						triggers_line_[f].name = flag_name;
+						exists = true;
+						f.name = flag_name;
 						break;
 					}
 				}
 
 				// Add trigger otherwise
 				if (!exists)
-					triggers_line_.push_back({ (int)flag_val, flag_name, flag_udmf });
+					triggers_line_.push_back({ (int)flag_val, flag_name, flag_udmf, false });
 			}
 		}
 
@@ -777,19 +773,19 @@ bool Configuration::readConfiguration(string& cfg, string source, MapFormat form
 
 				// Check if the flag value already exists
 				bool exists = false;
-				for (unsigned f = 0; f < flags_thing_.size(); f++)
+				for (auto& f : flags_thing_)
 				{
-					if (flags_thing_[f].flag == flag_val)
+					if (f.flag == flag_val)
 					{
-						exists               = true;
-						flags_thing_[f].name = flag_name;
+						exists = true;
+						f.name = flag_name;
 						break;
 					}
 				}
 
 				// Add flag otherwise
 				if (!exists)
-					flags_thing_.push_back({ (int)flag_val, flag_name, flag_udmf });
+					flags_thing_.push_back({ (int)flag_val, flag_name, flag_udmf, false });
 			}
 		}
 
@@ -868,7 +864,7 @@ bool Configuration::readConfiguration(string& cfg, string source, MapFormat form
 // Opens the full game configuration [game]+[port], either from the user dir or
 // program resource
 // -----------------------------------------------------------------------------
-bool Configuration::openConfig(string game, string port, MapFormat format)
+bool Configuration::openConfig(const string& game, const string& port, MapFormat format)
 {
 	string full_config;
 
@@ -891,9 +887,9 @@ bool Configuration::openConfig(string game, string port, MapFormat format)
 		else
 		{
 			// Config is in program resource
-			string        epath   = S_FMT("config/games/%s.cfg", game_config.filename);
-			Archive*      archive = App::archiveManager().programResourceArchive();
-			ArchiveEntry* entry   = archive->entryAtPath(epath);
+			string epath   = S_FMT("config/games/%s.cfg", game_config.filename);
+			auto   archive = App::archiveManager().programResourceArchive();
+			auto   entry   = archive->entryAtPath(epath);
 			if (entry)
 				StringUtils::processIncludes(entry, full_config);
 		}
@@ -923,9 +919,9 @@ bool Configuration::openConfig(string game, string port, MapFormat format)
 			else
 			{
 				// Config is in program resource
-				string        epath   = S_FMT("config/ports/%s.cfg", conf.filename);
-				Archive*      archive = App::archiveManager().programResourceArchive();
-				ArchiveEntry* entry   = archive->entryAtPath(epath);
+				string epath   = S_FMT("config/ports/%s.cfg", conf.filename);
+				auto   archive = App::archiveManager().programResourceArchive();
+				auto   entry   = archive->entryAtPath(epath);
 				if (entry)
 					StringUtils::processIncludes(entry, full_config);
 			}
@@ -957,18 +953,18 @@ bool Configuration::openConfig(string game, string port, MapFormat format)
 
 	// Read any embedded configurations in resource archives
 	Archive::SearchOptions opt;
-	opt.match_name                    = "sladecfg";
-	vector<ArchiveEntry*> cfg_entries = App::archiveManager().findAllResourceEntries(opt);
-	for (unsigned a = 0; a < cfg_entries.size(); a++)
+	opt.match_name   = "sladecfg";
+	auto cfg_entries = App::archiveManager().findAllResourceEntries(opt);
+	for (auto& cfg_entry : cfg_entries)
 	{
 		// Log message
-		Archive* parent = cfg_entries[a]->parent();
+		auto parent = cfg_entry->parent();
 		if (parent)
 			LOG_MESSAGE(1, "Reading SLADECFG in %s", parent->filename());
 
 		// Read embedded config
-		string config = wxString::FromAscii(cfg_entries[a]->rawData(), cfg_entries[a]->size());
-		if (!readConfiguration(config, cfg_entries[a]->name(), format, true, false))
+		string config = wxString::FromAscii(cfg_entry->rawData(), cfg_entry->size());
+		if (!readConfiguration(config, cfg_entry->name(), format, true, false))
 			LOG_MESSAGE(1, "Error reading embedded game configuration, not loaded");
 	}
 
@@ -1041,27 +1037,27 @@ const ThingType& Configuration::thingTypeGroupDefaults(const string& group)
 // -----------------------------------------------------------------------------
 // Returns the name of the thing flag at [index]
 // -----------------------------------------------------------------------------
-string Configuration::thingFlag(unsigned index)
+string Configuration::thingFlag(unsigned flag_index)
 {
 	// Check index
-	if (index >= flags_thing_.size())
+	if (flag_index >= flags_thing_.size())
 		return "";
 
-	return flags_thing_[index].name;
+	return flags_thing_[flag_index].name;
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if the flag at [index] is set for [thing]
 // -----------------------------------------------------------------------------
-bool Configuration::thingFlagSet(unsigned index, MapThing* thing)
+bool Configuration::thingFlagSet(unsigned flag_index, MapThing* thing)
 {
 	// Check index
-	if (index >= flags_thing_.size())
+	if (flag_index >= flags_thing_.size())
 		return false;
 
 	// Check if flag is set
 	unsigned long flags = thing->intProperty("flags");
-	if (flags & flags_thing_[index].flag)
+	if (flags & flags_thing_[flag_index].flag)
 		return true;
 	else
 		return false;
@@ -1070,29 +1066,29 @@ bool Configuration::thingFlagSet(unsigned index, MapThing* thing)
 // -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] is set for [thing]
 // -----------------------------------------------------------------------------
-bool Configuration::thingFlagSet(string flag, MapThing* thing, MapFormat map_format)
+bool Configuration::thingFlagSet(const string& udmf_name, MapThing* thing, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
-		return thing->boolProperty(flag);
+		return thing->boolProperty(udmf_name);
 
 	// Get current flags
 	unsigned long flags = thing->intProperty("flags");
 
 	// Iterate through flags
-	for (size_t i = 0; i < flags_thing_.size(); ++i)
+	for (auto& i : flags_thing_)
 	{
-		if (flags_thing_[i].udmf == flag)
-			return !!(flags & flags_thing_[i].flag);
+		if (i.udmf == udmf_name)
+			return !!(flags & i.flag);
 	}
-	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", flag);
+	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", udmf_name);
 	return false;
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if the basic flag matching [flag] is set for [thing]
 // -----------------------------------------------------------------------------
-bool Configuration::thingBasicFlagSet(string flag, MapThing* thing, MapFormat map_format)
+bool Configuration::thingBasicFlagSet(const string& flag, MapThing* thing, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1174,12 +1170,12 @@ string Configuration::thingFlagsString(int flags)
 {
 	// Check against all flags
 	string ret = "";
-	for (unsigned a = 0; a < flags_thing_.size(); a++)
+	for (auto& a : flags_thing_)
 	{
-		if (flags & flags_thing_[a].flag)
+		if (flags & a.flag)
 		{
 			// Add flag name to string
-			ret += flags_thing_[a].name;
+			ret += a.name;
 			ret += ", ";
 		}
 	}
@@ -1196,18 +1192,18 @@ string Configuration::thingFlagsString(int flags)
 // -----------------------------------------------------------------------------
 // Sets thing flag at [index] for [thing]. If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setThingFlag(unsigned index, MapThing* thing, bool set)
+void Configuration::setThingFlag(unsigned flag_index, MapThing* thing, bool set)
 {
 	// Check index
-	if (index >= flags_thing_.size())
+	if (flag_index >= flags_thing_.size())
 		return;
 
 	// Determine new flags value
 	unsigned long flags = thing->intProperty("flags");
 	if (set)
-		flags |= flags_thing_[index].flag;
+		flags |= flags_thing_[flag_index].flag;
 	else
-		flags = (flags & ~flags_thing_[index].flag);
+		flags = (flags & ~flags_thing_[flag_index].flag);
 
 	// Update thing flags
 	thing->setIntProperty("flags", flags);
@@ -1217,29 +1213,29 @@ void Configuration::setThingFlag(unsigned index, MapThing* thing, bool set)
 // Sets thing flag matching [flag] (UDMF name) for [thing].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setThingFlag(string flag, MapThing* thing, MapFormat map_format, bool set)
+void Configuration::setThingFlag(const string& udmf_name, MapThing* thing, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
 	{
-		thing->setBoolProperty(flag, set);
+		thing->setBoolProperty(udmf_name, set);
 		return;
 	}
 
 	// Iterate through flags
 	unsigned long flag_val = 0;
-	for (size_t i = 0; i < flags_thing_.size(); ++i)
+	for (auto& i : flags_thing_)
 	{
-		if (flags_thing_[i].udmf == flag)
+		if (i.udmf == udmf_name)
 		{
-			flag_val = flags_thing_[i].flag;
+			flag_val = i.flag;
 			break;
 		}
 	}
 
 	if (flag_val == 0)
 	{
-		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", flag);
+		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", udmf_name);
 		return;
 	}
 
@@ -1258,7 +1254,7 @@ void Configuration::setThingFlag(string flag, MapThing* thing, MapFormat map_for
 // Sets thing basic flag matching [flag] for [thing].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setThingBasicFlag(string flag, MapThing* thing, MapFormat map_format, bool set)
+void Configuration::setThingBasicFlag(const string& flag, MapThing* thing, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1426,28 +1422,28 @@ void Configuration::linkDoomEdNums()
 // -----------------------------------------------------------------------------
 // Returns the name of the line flag at [index]
 // -----------------------------------------------------------------------------
-const Configuration::Flag& Configuration::lineFlag(unsigned index)
+const Configuration::Flag& Configuration::lineFlag(unsigned flag_index)
 {
 	// Check index
 	static Flag invalid{ 0, "", "", false };
-	if (index >= flags_line_.size())
+	if (flag_index >= flags_line_.size())
 		return invalid;
 
-	return flags_line_[index];
+	return flags_line_[flag_index];
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if the flag at [index] is set for [line]
 // -----------------------------------------------------------------------------
-bool Configuration::lineFlagSet(unsigned index, MapLine* line)
+bool Configuration::lineFlagSet(unsigned flag_index, MapLine* line)
 {
 	// Check index
-	if (index >= flags_line_.size())
+	if (flag_index >= flags_line_.size())
 		return false;
 
 	// Check if flag is set
 	unsigned long flags = line->intProperty("flags");
-	if (flags & flags_line_[index].flag)
+	if (flags & flags_line_[flag_index].flag)
 		return true;
 	else
 		return false;
@@ -1456,22 +1452,22 @@ bool Configuration::lineFlagSet(unsigned index, MapLine* line)
 // -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] (UDMF name) is set for [line]
 // -----------------------------------------------------------------------------
-bool Configuration::lineFlagSet(string flag, MapLine* line, MapFormat map_format)
+bool Configuration::lineFlagSet(const string& udmf_name, MapLine* line, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
-		return line->boolProperty(flag);
+		return line->boolProperty(udmf_name);
 
 	// Get current flags
 	unsigned long flags = line->intProperty("flags");
 
 	// Iterate through flags
-	for (size_t i = 0; i < flags_line_.size(); ++i)
+	for (auto& i : flags_line_)
 	{
-		if (flags_line_[i].udmf == flag)
-			return !!(flags & flags_line_[i].flag);
+		if (i.udmf == udmf_name)
+			return !!(flags & i.flag);
 	}
-	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", flag);
+	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", udmf_name);
 	return false;
 }
 
@@ -1480,7 +1476,7 @@ bool Configuration::lineFlagSet(string flag, MapLine* line, MapFormat map_format
 // 'Basic' flags are flags that are available in some way or another in all
 // game configurations
 // -----------------------------------------------------------------------------
-bool Configuration::lineBasicFlagSet(string flag, MapLine* line, MapFormat map_format)
+bool Configuration::lineBasicFlagSet(const string& flag, MapLine* line, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1545,18 +1541,18 @@ string Configuration::lineFlagsString(MapLine* line)
 // -----------------------------------------------------------------------------
 // Sets line flag at [index] for [line]. If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setLineFlag(unsigned index, MapLine* line, bool set)
+void Configuration::setLineFlag(unsigned flag_index, MapLine* line, bool set)
 {
 	// Check index
-	if (index >= flags_line_.size())
+	if (flag_index >= flags_line_.size())
 		return;
 
 	// Determine new flags value
 	unsigned long flags = line->intProperty("flags");
 	if (set)
-		flags |= flags_line_[index].flag;
+		flags |= flags_line_[flag_index].flag;
 	else
-		flags = (flags & ~flags_line_[index].flag);
+		flags = (flags & ~flags_line_[flag_index].flag);
 
 	// Update line flags
 	line->setIntProperty("flags", flags);
@@ -1566,29 +1562,29 @@ void Configuration::setLineFlag(unsigned index, MapLine* line, bool set)
 // Sets line flag matching [flag] (UDMF name) for [line].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setLineFlag(string flag, MapLine* line, MapFormat map_format, bool set)
+void Configuration::setLineFlag(const string& udmf_name, MapLine* line, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
 	{
-		line->setBoolProperty(flag, set);
+		line->setBoolProperty(udmf_name, set);
 		return;
 	}
 
 	// Iterate through flags
 	unsigned long flag_val = 0;
-	for (size_t i = 0; i < flags_line_.size(); ++i)
+	for (auto& i : flags_line_)
 	{
-		if (flags_line_[i].udmf == flag)
+		if (i.udmf == udmf_name)
 		{
-			flag_val = flags_line_[i].flag;
+			flag_val = i.flag;
 			break;
 		}
 	}
 
 	if (flag_val == 0)
 	{
-		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", flag);
+		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", udmf_name);
 		return;
 	}
 
@@ -1607,7 +1603,7 @@ void Configuration::setLineFlag(string flag, MapLine* line, MapFormat map_format
 // Sets line basic flag [flag] (UDMF name) for [line].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setLineBasicFlag(string flag, MapLine* line, MapFormat map_format, bool set)
+void Configuration::setLineBasicFlag(const string& flag, MapLine* line, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1667,10 +1663,10 @@ string Configuration::spacTriggerString(MapLine* line, MapFormat map_format)
 		int trigger = ((flags & 0x1c00) >> 10);
 
 		// Find matching trigger name
-		for (unsigned a = 0; a < triggers_line_.size(); a++)
+		for (auto& a : triggers_line_)
 		{
-			if (triggers_line_[a].flag == trigger)
-				return triggers_line_[a].name;
+			if (a.flag == trigger)
+				return a.name;
 		}
 	}
 
@@ -1735,8 +1731,8 @@ wxArrayString Configuration::allSpacTriggers()
 {
 	wxArrayString ret;
 
-	for (unsigned a = 0; a < triggers_line_.size(); a++)
-		ret.Add(triggers_line_[a].name);
+	for (auto& a : triggers_line_)
+		ret.Add(a.name);
 
 	return ret;
 }
@@ -1744,14 +1740,14 @@ wxArrayString Configuration::allSpacTriggers()
 // -----------------------------------------------------------------------------
 // Sets the SPAC trigger for [line] to the trigger at [index]
 // -----------------------------------------------------------------------------
-void Configuration::setLineSpacTrigger(unsigned index, MapLine* line)
+void Configuration::setLineSpacTrigger(unsigned trigger_index, MapLine* line)
 {
 	// Check index
-	if (index >= triggers_line_.size())
+	if (trigger_index >= triggers_line_.size())
 		return;
 
 	// Get trigger value
-	int trigger = triggers_line_[index].flag;
+	int trigger = triggers_line_[trigger_index].flag;
 
 	// Get raw line flags
 	int flags = line->intProperty("flags");
@@ -1780,7 +1776,7 @@ string Configuration::spacTriggerUDMFName(unsigned trigger_index)
 // -----------------------------------------------------------------------------
 // Returns the UDMF property definition matching [name] for MapObject [type]
 // -----------------------------------------------------------------------------
-UDMFProperty* Configuration::getUDMFProperty(string name, MapObject::Type type)
+UDMFProperty* Configuration::getUDMFProperty(const string& name, MapObject::Type type)
 {
 	using Type = MapObject::Type;
 
@@ -1809,9 +1805,9 @@ UDMFPropMap& Configuration::allUDMFProperties(MapObject::Type type)
 	{
 	case MapObject::Type::Vertex: return udmf_vertex_props_;
 	case MapObject::Type::Line: return udmf_linedef_props_;
-	case MapObject::Type::Side: udmf_sidedef_props_;
-	case MapObject::Type::Sector: udmf_sector_props_;
-	case MapObject::Type::Thing: udmf_thing_props_;
+	case MapObject::Type::Side: return udmf_sidedef_props_;
+	case MapObject::Type::Sector: return udmf_sector_props_;
+	case MapObject::Type::Thing: return udmf_thing_props_;
 	default: return map_invalid_type;
 	}
 }
@@ -1886,30 +1882,30 @@ string Configuration::sectorTypeName(int type)
 		// Damage flags
 		int damage = sectorBoomDamage(type);
 		if (damage == 1)
-			gen_flags.push_back("5% Damage");
+			gen_flags.emplace_back("5% Damage");
 		else if (damage == 2)
-			gen_flags.push_back("10% Damage");
+			gen_flags.emplace_back("10% Damage");
 		else if (damage == 3)
-			gen_flags.push_back("20% Damage");
+			gen_flags.emplace_back("20% Damage");
 
 		// Secret
 		if (sectorBoomSecret(type))
-			gen_flags.push_back("Secret");
+			gen_flags.emplace_back("Secret");
 
 		// Friction
 		if (sectorBoomFriction(type))
-			gen_flags.push_back("Friction Enabled");
+			gen_flags.emplace_back("Friction Enabled");
 
 		// Pushers/Pullers
 		if (sectorBoomPushPull(type))
-			gen_flags.push_back("Pushers/Pullers Enabled");
+			gen_flags.emplace_back("Pushers/Pullers Enabled");
 
 		// Remove flag bits from type value
 		type = type & (boom_sector_flag_start_ - 1);
 	}
 
 	// Check if the type only has generalised flags
-	if (type == 0 && gen_flags.size() > 0)
+	if (type == 0 && !gen_flags.empty())
 	{
 		// Just return flags in this case
 		string name = gen_flags[0];
@@ -1925,8 +1921,8 @@ string Configuration::sectorTypeName(int type)
 		name = "Unknown";
 
 	// Add generalised flags to type name
-	for (unsigned a = 0; a < gen_flags.size(); a++)
-		name += S_FMT(" + %s", gen_flags[a]);
+	for (const auto& gen_flag : gen_flags)
+		name += S_FMT(" + %s", gen_flag);
 
 	return name;
 }
@@ -1934,7 +1930,7 @@ string Configuration::sectorTypeName(int type)
 // -----------------------------------------------------------------------------
 // Returns the sector type value matching [name]
 // -----------------------------------------------------------------------------
-int Configuration::sectorTypeByName(string name)
+int Configuration::sectorTypeByName(const string& name)
 {
 	for (auto& i : sector_types_)
 		if (i.second == name)
@@ -1947,7 +1943,7 @@ int Configuration::sectorTypeByName(string name)
 // Returns the 'base' sector type for value [type]
 // (strips generalised flags/type)
 // -----------------------------------------------------------------------------
-int Configuration::baseSectorType(int type)
+int Configuration::baseSectorType(int type) const
 {
 	// No type
 	if (type == 0)
@@ -1964,7 +1960,7 @@ int Configuration::baseSectorType(int type)
 // -----------------------------------------------------------------------------
 // Returns the generalised 'damage' flag for [type]: 0=none, 1=5%, 2=10% 3=20%
 // -----------------------------------------------------------------------------
-int Configuration::sectorBoomDamage(int type)
+int Configuration::sectorBoomDamage(int type) const
 {
 	if (!supportsSectorFlags())
 		return 0;
@@ -1990,7 +1986,7 @@ int Configuration::sectorBoomDamage(int type)
 // -----------------------------------------------------------------------------
 // Returns true if the generalised 'secret' flag is set for [type]
 // -----------------------------------------------------------------------------
-bool Configuration::sectorBoomSecret(int type)
+bool Configuration::sectorBoomSecret(int type) const
 {
 	if (!supportsSectorFlags())
 		return false;
@@ -2009,7 +2005,7 @@ bool Configuration::sectorBoomSecret(int type)
 // -----------------------------------------------------------------------------
 // Returns true if the generalised 'friction' flag is set for [type]
 // -----------------------------------------------------------------------------
-bool Configuration::sectorBoomFriction(int type)
+bool Configuration::sectorBoomFriction(int type) const
 {
 	if (!supportsSectorFlags())
 		return false;
@@ -2028,7 +2024,7 @@ bool Configuration::sectorBoomFriction(int type)
 // -----------------------------------------------------------------------------
 // Returns true if the generalised 'pusher/puller' flag is set for [type]
 // -----------------------------------------------------------------------------
-bool Configuration::sectorBoomPushPull(int type)
+bool Configuration::sectorBoomPushPull(int type) const
 {
 	if (!supportsSectorFlags())
 		return false;
@@ -2047,7 +2043,7 @@ bool Configuration::sectorBoomPushPull(int type)
 // -----------------------------------------------------------------------------
 // Returns the generalised boom sector type built from parameters
 // -----------------------------------------------------------------------------
-int Configuration::boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull)
+int Configuration::boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull) const
 {
 	int fulltype = base;
 
@@ -2072,14 +2068,14 @@ int Configuration::boomSectorType(int base, int damage, bool secret, bool fricti
 // -----------------------------------------------------------------------------
 // Returns the default string value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-string Configuration::defaultString(MapObject::Type type, string property)
+string Configuration::defaultString(MapObject::Type type, const string& property)
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].stringValue(); break;
-	case MapObject::Type::Side: return defaults_side_[property].stringValue(); break;
-	case MapObject::Type::Sector: return defaults_sector_[property].stringValue(); break;
-	case MapObject::Type::Thing: return defaults_thing_[property].stringValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].stringValue();
+	case MapObject::Type::Side: return defaults_side_[property].stringValue();
+	case MapObject::Type::Sector: return defaults_sector_[property].stringValue();
+	case MapObject::Type::Thing: return defaults_thing_[property].stringValue();
 	default: return "";
 	}
 }
@@ -2087,14 +2083,14 @@ string Configuration::defaultString(MapObject::Type type, string property)
 // -----------------------------------------------------------------------------
 // Returns the default int value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-int Configuration::defaultInt(MapObject::Type type, string property)
+int Configuration::defaultInt(MapObject::Type type, const string& property)
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].intValue(); break;
-	case MapObject::Type::Side: return defaults_side_[property].intValue(); break;
-	case MapObject::Type::Sector: return defaults_sector_[property].intValue(); break;
-	case MapObject::Type::Thing: return defaults_thing_[property].intValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].intValue();
+	case MapObject::Type::Side: return defaults_side_[property].intValue();
+	case MapObject::Type::Sector: return defaults_sector_[property].intValue();
+	case MapObject::Type::Thing: return defaults_thing_[property].intValue();
 	default: return 0;
 	}
 }
@@ -2102,14 +2098,14 @@ int Configuration::defaultInt(MapObject::Type type, string property)
 // -----------------------------------------------------------------------------
 // Returns the default float value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-double Configuration::defaultFloat(MapObject::Type type, string property)
+double Configuration::defaultFloat(MapObject::Type type, const string& property)
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].floatValue(); break;
-	case MapObject::Type::Side: return defaults_side_[property].floatValue(); break;
-	case MapObject::Type::Sector: return defaults_sector_[property].floatValue(); break;
-	case MapObject::Type::Thing: return defaults_thing_[property].floatValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].floatValue();
+	case MapObject::Type::Side: return defaults_side_[property].floatValue();
+	case MapObject::Type::Sector: return defaults_sector_[property].floatValue();
+	case MapObject::Type::Thing: return defaults_thing_[property].floatValue();
 	default: return 0;
 	}
 }
@@ -2117,14 +2113,14 @@ double Configuration::defaultFloat(MapObject::Type type, string property)
 // -----------------------------------------------------------------------------
 // Returns the default boolean value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-bool Configuration::defaultBool(MapObject::Type type, string property)
+bool Configuration::defaultBool(MapObject::Type type, const string& property)
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].boolValue(); break;
-	case MapObject::Type::Side: return defaults_side_[property].boolValue(); break;
-	case MapObject::Type::Sector: return defaults_sector_[property].boolValue(); break;
-	case MapObject::Type::Thing: return defaults_thing_[property].boolValue(); break;
+	case MapObject::Type::Line: return defaults_line_[property].boolValue();
+	case MapObject::Type::Side: return defaults_side_[property].boolValue();
+	case MapObject::Type::Sector: return defaults_sector_[property].boolValue();
+	case MapObject::Type::Thing: return defaults_thing_[property].boolValue();
 	default: return false;
 	}
 }
@@ -2226,7 +2222,7 @@ void Configuration::setLightLevelInterval(int interval)
 int Configuration::upLightLevel(int light_level)
 {
 	// No defined levels
-	if (light_levels_.size() == 0)
+	if (light_levels_.empty())
 		return light_level;
 
 	for (int a = 0; a < (int)light_levels_.size() - 1; a++)
@@ -2245,7 +2241,7 @@ int Configuration::upLightLevel(int light_level)
 int Configuration::downLightLevel(int light_level)
 {
 	// No defined levels
-	if (light_levels_.size() == 0)
+	if (light_levels_.empty())
 		return light_level;
 
 	for (int a = 0; a < (int)light_levels_.size() - 1; a++)
@@ -2283,8 +2279,8 @@ void Configuration::dumpThingTypes()
 void Configuration::dumpValidMapNames()
 {
 	LOG_MESSAGE(1, "Valid Map Names:");
-	for (unsigned a = 0; a < maps_.size(); a++)
-		Log::info(maps_[a].mapname);
+	for (auto& map : maps_)
+		Log::info(map.mapname);
 }
 
 // -----------------------------------------------------------------------------
@@ -2329,7 +2325,7 @@ CONSOLE_COMMAND(testgc, 0, false)
 {
 	string game = "doomu";
 
-	if (args.size() > 0)
+	if (!args.empty())
 		game = args[0];
 
 	Game::configuration().openConfig(game);

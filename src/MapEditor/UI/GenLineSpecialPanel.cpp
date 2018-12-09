@@ -111,7 +111,7 @@ void GenLineSpecialPanel::setupForType(int type)
 		gb_sizer_->AddGrowableCol(1, 1);
 
 	// Floor
-	if (type == BoomGenLineSpecial::GS_FLOOR)
+	if (type == BoomGenLineSpecial::SpecialType::Floor)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -157,7 +157,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Ceiling
-	else if (type == BoomGenLineSpecial::GS_CEILING)
+	else if (type == BoomGenLineSpecial::SpecialType::Ceiling)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -203,7 +203,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Door
-	else if (type == BoomGenLineSpecial::GS_DOOR)
+	else if (type == BoomGenLineSpecial::SpecialType::Door)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -235,7 +235,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Locked Door
-	else if (type == BoomGenLineSpecial::GS_LOCKED_DOOR)
+	else if (type == BoomGenLineSpecial::SpecialType::LockedDoor)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -271,7 +271,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Lift
-	else if (type == BoomGenLineSpecial::GS_LIFT)
+	else if (type == BoomGenLineSpecial::SpecialType::Lift)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -303,7 +303,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Stairs
-	else if (type == BoomGenLineSpecial::GS_STAIRS)
+	else if (type == BoomGenLineSpecial::SpecialType::Stairs)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -338,7 +338,7 @@ void GenLineSpecialPanel::setupForType(int type)
 	}
 
 	// Crusher
-	else if (type == BoomGenLineSpecial::GS_CRUSHER)
+	else if (type == BoomGenLineSpecial::SpecialType::Crusher)
 	{
 		// Speed
 		label_props_[1]->SetLabel("Speed:");
@@ -385,7 +385,7 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 	choice_props_[prop]->Select(value);
 
 	// Floor
-	if (choice_type_->GetSelection() == BoomGenLineSpecial::GS_FLOOR)
+	if (choice_type_->GetSelection() == BoomGenLineSpecial::SpecialType::Floor)
 	{
 		// Change
 		if (prop == 5)
@@ -453,7 +453,7 @@ int GenLineSpecialPanel::special()
 	int props[7];
 	for (unsigned a = 0; a < 7; a++)
 		props[a] = choice_props_[a]->GetSelection();
-	return BoomGenLineSpecial::generateSpecial(choice_type_->GetSelection(), props);
+	return BoomGenLineSpecial::generateSpecial((BoomGenLineSpecial::SpecialType)choice_type_->GetSelection(), props);
 }
 
 
@@ -481,7 +481,7 @@ void GenLineSpecialPanel::onChoicePropertyChanged(wxCommandEvent& e)
 	wxChoice* choice_changed = (wxChoice*)e.GetEventObject();
 
 	// Floor
-	if (type == BoomGenLineSpecial::GS_FLOOR)
+	if (type == BoomGenLineSpecial::SpecialType::Floor)
 	{
 		// Change
 		if (choice_changed == choice_props_[5])

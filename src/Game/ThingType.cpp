@@ -58,32 +58,9 @@ ThingType ThingType::unknown_;
 ThingType::ThingType(const string& name, const string& group, const string& class_name) :
 	name_{ name },
 	group_{ group },
-	colour_{ 170, 170, 180, 255, 0 },
-	radius_{ 20 },
-	height_{ -1 },
-	scale_{ 1.0, 1.0 },
-	angled_{ true },
-	hanging_{ false },
-	shrink_{ false },
-	fullbright_{ false },
-	decoration_{ false },
-	zeth_icon_{ -1 },
-	decorate_{ false },
-	solid_{ false },
-	next_type_{ 0 },
-	next_args_{ 0 },
-	flags_{ 0 },
 	tagged_{ TagType::None },
-	number_{ -1 },
 	class_name_{ class_name }
 {
-	// Init args
-	args_.count   = 0;
-	args_[0].name = "Arg1";
-	args_[1].name = "Arg2";
-	args_[2].name = "Arg3";
-	args_[3].name = "Arg4";
-	args_[4].name = "Arg5";
 }
 
 // -----------------------------------------------------------------------------
@@ -275,27 +252,27 @@ void ThingType::parse(ParseTreeNode* node)
 		else if (S_CMPNOCASE(name, "nexttype"))
 		{
 			next_type_ = child->intValue();
-			flags_ |= FLAG_PATHED;
+			flags_ |= Pathed;
 		}
 		else if (S_CMPNOCASE(name, "nextargs"))
 		{
 			next_args_ = child->intValue();
-			flags_ |= FLAG_PATHED;
+			flags_ |= Pathed;
 		}
 
 		// Handle player starts
 		else if (S_CMPNOCASE(name, "player_coop"))
-			flags_ |= FLAG_COOPSTART;
+			flags_ |= CoOpStart;
 		else if (S_CMPNOCASE(name, "player_dm"))
-			flags_ |= FLAG_DMSTART;
+			flags_ |= DMStart;
 		else if (S_CMPNOCASE(name, "player_team"))
-			flags_ |= FLAG_TEAMSTART;
+			flags_ |= TeamStart;
 
 		// Hexen's critters are weird
 		else if (S_CMPNOCASE(name, "dragon"))
-			flags_ |= FLAG_DRAGON;
+			flags_ |= Dragon;
 		else if (S_CMPNOCASE(name, "script"))
-			flags_ |= FLAG_SCRIPT;
+			flags_ |= Script;
 
 		// Some things tag other things directly
 		else if (S_CMPNOCASE(name, "tagged"))
@@ -357,7 +334,7 @@ string ThingType::stringDesc() const
 {
 	// Init return string
 	string ret = S_FMT(
-		"\"%s\" in group \"%s\", colour %d,%d,%d, radius %d", name_, group_, colour_.r, colour_.g, colour_.b, radius_);
+		R"("%s" in group "%s", colour %d,%d,%d, radius %d)", name_, group_, colour_.r, colour_.g, colour_.b, radius_);
 
 	// Add any extra info
 	if (!sprite_.IsEmpty())
@@ -461,7 +438,7 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	if (props["solid"].hasValue())
 		solid_ = props["solid"].boolValue();
 	if (props["obsolete"].hasValue())
-		flags_ |= FLAG_OBSOLETE;
+		flags_ |= Obsolete;
 
 	// ZScript-only props
 	if (zscript)

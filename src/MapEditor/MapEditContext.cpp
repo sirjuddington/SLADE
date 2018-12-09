@@ -561,7 +561,7 @@ void MapEditContext::updateTagged()
 			else // edit_mode == Mode::Things
 			{
 				MapThing* thing = map_.thing(hilight_item);
-				if (Game::configuration().thingType(thing->type()).flags() & Game::ThingType::FLAG_SCRIPT)
+				if (Game::configuration().thingType(thing->type()).flags() & Game::ThingType::Flags::Script)
 					needs_tag = TagType::None;
 				else
 				{

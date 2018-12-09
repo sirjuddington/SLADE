@@ -24,13 +24,12 @@ struct ParsedStatement
 class Enumerator
 {
 public:
-	Enumerator(string name = "") : name_{ name } {}
+	Enumerator(const string& name = "") : name_{ name } {}
 
 	struct Value
 	{
 		string name;
 		int    value;
-		// Value() : name{name}, value{0} {}
 	};
 
 	bool parse(ParsedStatement& statement);
@@ -43,8 +42,8 @@ private:
 class Identifier // rename this
 {
 public:
-	Identifier(string name = "") : name_{ name }, native_{ false } {}
-	virtual ~Identifier() {}
+	Identifier(const string& name = "") : name_{ name } {}
+	virtual ~Identifier() = default;
 
 	string name() const { return name_; }
 	bool   native() const { return native_; }
@@ -61,8 +60,8 @@ protected:
 class Variable : public Identifier
 {
 public:
-	Variable(string name = "") : Identifier(name), type_{ "<unknown>" } {}
-	virtual ~Variable() {}
+	Variable(const string& name = "") : Identifier(name), type_{ "<unknown>" } {}
+	virtual ~Variable() = default;
 
 private:
 	string type_;
@@ -71,9 +70,9 @@ private:
 class Function : public Identifier
 {
 public:
-	Function(string name = "") : Identifier(name), return_type_{ "void" } {}
+	Function(const string& name = "") : Identifier(name), return_type_{ "void" } {}
 
-	virtual ~Function() {}
+	virtual ~Function() = default;
 
 	struct Parameter
 	{
@@ -95,7 +94,7 @@ public:
 	bool   parse(ParsedStatement& statement);
 	string asString();
 
-	static bool isFunction(ParsedStatement& block);
+	static bool isFunction(ParsedStatement& statement);
 
 private:
 	vector<Parameter> parameters_;
@@ -123,7 +122,7 @@ struct State
 class StateTable
 {
 public:
-	StateTable() {}
+	StateTable() = default;
 
 	const string& firstState() const { return state_first_; }
 
@@ -144,12 +143,12 @@ public:
 		Struct
 	};
 
-	Class(Type type, string name = "") : Identifier{ name }, type_{ type } {}
-	virtual ~Class() {}
+	Class(Type type, const string& name = "") : Identifier{ name }, type_{ type } {}
+	virtual ~Class() = default;
 
 	const vector<Function>& functions() const { return functions_; }
 
-	bool parse(ParsedStatement& block);
+	bool parse(ParsedStatement& class_statement);
 	bool extend(ParsedStatement& block);
 	void toThingType(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed);
 
@@ -171,8 +170,8 @@ private:
 class Definitions // rename this also
 {
 public:
-	Definitions() {}
-	~Definitions() {}
+	Definitions()  = default;
+	~Definitions() = default;
 
 	const vector<Class>& classes() const { return classes_; }
 

@@ -57,7 +57,7 @@ ActionSpecial ActionSpecial::gen_manual_;
 // -----------------------------------------------------------------------------
 // ActionSpecial class constructor
 // -----------------------------------------------------------------------------
-ActionSpecial::ActionSpecial(string name, string group) :
+ActionSpecial::ActionSpecial(const string& name, const string& group) :
 	name_{ name },
 	group_{ group },
 	tagged_{ TagType::None },
@@ -144,7 +144,7 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 string ActionSpecial::stringDesc() const
 {
 	// Init string
-	string ret = S_FMT("\"%s\" in group \"%s\"", name_, group_);
+	string ret = S_FMT(R"("%s" in group "%s")", name_, group_);
 
 	// Add tagged info
 	if (tagged_ != TagType::None)

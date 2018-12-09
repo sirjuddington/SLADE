@@ -357,17 +357,17 @@ void Game::init()
 	// Add game configurations from user dir
 	wxArrayString allfiles;
 	wxDir::GetAllFiles(App::path("games", App::Dir::User), &allfiles);
-	for (unsigned a = 0; a < allfiles.size(); a++)
+	for (const auto& filename : allfiles)
 	{
 		// Read config info
 		MemChunk mc;
-		mc.importFile(allfiles[a]);
+		mc.importFile(filename);
 
 		// Add to list if valid
 		GameDef gdef;
 		if (gdef.parse(mc))
 		{
-			gdef.filename        = wxFileName(allfiles[a]).GetName();
+			gdef.filename        = wxFileName(filename).GetName();
 			gdef.user            = true;
 			game_defs[gdef.name] = gdef;
 		}
@@ -376,17 +376,17 @@ void Game::init()
 	// Add port configurations from user dir
 	allfiles.clear();
 	wxDir::GetAllFiles(App::path("ports", App::Dir::User), &allfiles);
-	for (unsigned a = 0; a < allfiles.size(); a++)
+	for (const auto& filename : allfiles)
 	{
 		// Read config info
 		MemChunk mc;
-		mc.importFile(allfiles[a]);
+		mc.importFile(filename);
 
 		// Add to list if valid
 		PortDef pdef;
 		if (pdef.parse(mc))
 		{
-			pdef.filename        = wxFileName(allfiles[a]).GetName();
+			pdef.filename        = wxFileName(filename).GetName();
 			pdef.user            = true;
 			port_defs[pdef.name] = pdef;
 		}
@@ -400,13 +400,13 @@ void Game::init()
 		{
 			// Read config info
 			GameDef conf;
-			if (!conf.parse(entry.get()->data()))
+			if (!conf.parse(entry->data()))
 				continue; // Ignore if invalid
 
 			// Add to list if it doesn't already exist
 			if (game_defs.find(conf.name) == game_defs.end())
 			{
-				conf.filename        = entry.get()->name(true);
+				conf.filename        = entry->name(true);
 				conf.user            = false;
 				game_defs[conf.name] = conf;
 			}
@@ -421,13 +421,13 @@ void Game::init()
 		{
 			// Read config info
 			PortDef conf;
-			if (!conf.parse(entry.get()->data()))
+			if (!conf.parse(entry->data()))
 				continue; // Ignore if invalid
 
 			// Add to list if it doesn't already exist
 			if (port_defs.find(conf.name) == port_defs.end())
 			{
-				conf.filename        = entry.get()->name(true);
+				conf.filename        = entry->name(true);
 				conf.user            = false;
 				port_defs[conf.name] = conf;
 			}
@@ -435,7 +435,7 @@ void Game::init()
 	}
 
 	// Load last configuration if any
-	if (game_configuration != "")
+	if (!game_configuration.value.empty())
 		config_current.openConfig(game_configuration, port_configuration);
 
 	// Load custom special presets
@@ -467,7 +467,6 @@ void Game::init()
 					lang->loadZScript(zscript_base);
 
 				// MapInfo
-				auto mapinfo_entry = zdoom_pk3.entryAtPath("zmapinfo.txt");
 				config_current.parseMapInfo(&zdoom_pk3);
 			}
 		});

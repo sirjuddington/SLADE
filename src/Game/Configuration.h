@@ -50,13 +50,6 @@ enum class UDMFFeature
 	ThingRotation,      // Per-thing pitch and yaw rotation
 };
 
-struct gc_mapinfo_t
-{
-	string mapname;
-	string sky1;
-	string sky2;
-};
-
 typedef std::map<string, UDMFProperty> UDMFPropMap;
 
 class Configuration
@@ -70,21 +63,28 @@ public:
 		bool   activation;
 	};
 
+	struct MapConf
+	{
+		string mapname;
+		string sky1;
+		string sky2;
+	};
+
 	Configuration();
-	~Configuration();
+	~Configuration() = default;
 
 	void   setDefaults();
 	string currentGame() const { return current_game_; }
 	string currentPort() const { return current_port_; }
 	bool   supportsSectorFlags() const { return boom_sector_flag_start_ > 0; }
-	string udmfNamespace();
+	string udmfNamespace() const;
 	string skyFlat() const { return sky_flat_; }
 	string scriptLanguage() const { return script_language_; }
 	int    lightLevelInterval();
 
-	unsigned     nMapNames() const { return maps_.size(); }
-	string       mapName(unsigned index);
-	gc_mapinfo_t mapInfo(string mapname);
+	unsigned nMapNames() const { return maps_.size(); }
+	string   mapName(unsigned index);
+	MapConf  mapInfo(const string& mapname);
 
 	// General Accessors
 	const std::map<int, ActionSpecial>& allActionSpecials() const { return action_specials_; }
@@ -98,15 +98,15 @@ public:
 	// Configuration reading
 	void readActionSpecials(ParseTreeNode* node, Arg::SpecialMap& shared_args, ActionSpecial* group_defaults = nullptr);
 	void readThingTypes(ParseTreeNode* node, const ThingType& group_defaults = ThingType::unknown());
-	void readUDMFProperties(ParseTreeNode* node, UDMFPropMap& plist);
+	void readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist) const;
 	void readGameSection(ParseTreeNode* node_game, bool port_section = false);
 	bool readConfiguration(
-		string&   cfg,
-		string    source      = "",
-		MapFormat format      = MapFormat::Unknown,
-		bool      ignore_game = false,
-		bool      clear       = true);
-	bool openConfig(string game, string port = "", MapFormat format = MapFormat::Unknown);
+		string&       cfg,
+		const string& source      = "",
+		MapFormat     format      = MapFormat::Unknown,
+		bool          ignore_game = false,
+		bool          clear       = true);
+	bool openConfig(const string& game, const string& port = "", MapFormat format = MapFormat::Unknown);
 
 	// Action specials
 	const ActionSpecial& actionSpecial(unsigned id);
@@ -120,12 +120,12 @@ public:
 	int    nThingFlags() const { return flags_thing_.size(); }
 	string thingFlag(unsigned flag_index);
 	bool   thingFlagSet(unsigned flag_index, MapThing* thing);
-	bool   thingFlagSet(string udmf_name, MapThing* thing, MapFormat map_format);
-	bool   thingBasicFlagSet(string flag, MapThing* line, MapFormat map_format);
+	bool   thingFlagSet(const string& udmf_name, MapThing* thing, MapFormat map_format);
+	bool   thingBasicFlagSet(const string& flag, MapThing* thing, MapFormat map_format);
 	string thingFlagsString(int flags);
 	void   setThingFlag(unsigned flag_index, MapThing* thing, bool set = true);
-	void   setThingFlag(string udmf_name, MapThing* thing, MapFormat map_format, bool set = true);
-	void   setThingBasicFlag(string flag, MapThing* line, MapFormat map_format, bool set = true);
+	void   setThingFlag(const string& udmf_name, MapThing* thing, MapFormat map_format, bool set = true);
+	void   setThingBasicFlag(const string& flag, MapThing* thing, MapFormat map_format, bool set = true);
 
 	// DECORATE
 	bool parseDecorateDefs(Archive* archive);
@@ -143,12 +143,12 @@ public:
 	unsigned    nLineFlags() const { return flags_line_.size(); }
 	const Flag& lineFlag(unsigned flag_index);
 	bool        lineFlagSet(unsigned flag_index, MapLine* line);
-	bool        lineFlagSet(string udmf_name, MapLine* line, MapFormat map_format);
-	bool        lineBasicFlagSet(string flag, MapLine* line, MapFormat map_format);
+	bool        lineFlagSet(const string& udmf_name, MapLine* line, MapFormat map_format);
+	bool        lineBasicFlagSet(const string& flag, MapLine* line, MapFormat map_format);
 	string      lineFlagsString(MapLine* line);
 	void        setLineFlag(unsigned flag_index, MapLine* line, bool set = true);
-	void        setLineFlag(string udmf_name, MapLine* line, MapFormat map_format, bool set = true);
-	void        setLineBasicFlag(string flag, MapLine* line, MapFormat map_format, bool set = true);
+	void        setLineFlag(const string& udmf_name, MapLine* line, MapFormat map_format, bool set = true);
+	void        setLineBasicFlag(const string& flag, MapLine* line, MapFormat map_format, bool set = true);
 
 	// Line action (SPAC) triggers
 	string        spacTriggerString(MapLine* line, MapFormat map_format);
@@ -158,25 +158,25 @@ public:
 	string        spacTriggerUDMFName(unsigned trigger_index);
 
 	// UDMF properties
-	UDMFProperty* getUDMFProperty(string name, MapObject::Type type);
+	UDMFProperty* getUDMFProperty(const string& name, MapObject::Type type);
 	UDMFPropMap&  allUDMFProperties(MapObject::Type type);
 	void          cleanObjectUDMFProps(MapObject* object);
 
 	// Sector types
 	string sectorTypeName(int type);
-	int    sectorTypeByName(string name);
-	int    baseSectorType(int type);
-	int    sectorBoomDamage(int type);
-	bool   sectorBoomSecret(int type);
-	bool   sectorBoomFriction(int type);
-	bool   sectorBoomPushPull(int type);
-	int    boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull);
+	int    sectorTypeByName(const string& name);
+	int    baseSectorType(int type) const;
+	int    sectorBoomDamage(int type) const;
+	bool   sectorBoomSecret(int type) const;
+	bool   sectorBoomFriction(int type) const;
+	bool   sectorBoomPushPull(int type) const;
+	int    boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull) const;
 
 	// Defaults
-	string defaultString(MapObject::Type type, string property);
-	int    defaultInt(MapObject::Type type, string property);
-	double defaultFloat(MapObject::Type type, string property);
-	bool   defaultBool(MapObject::Type type, string property);
+	string defaultString(MapObject::Type type, const string& property);
+	int    defaultInt(MapObject::Type type, const string& property);
+	double defaultFloat(MapObject::Type type, const string& property);
+	bool   defaultBool(MapObject::Type type, const string& property);
 	void   applyDefaults(MapObject* object, bool udmf = false);
 
 	// Special Presets
@@ -222,8 +222,8 @@ private:
 	std::map<int, string> sector_types_;
 
 	// Map info
-	vector<gc_mapinfo_t> maps_;
-	MapInfo              map_info_;
+	vector<MapConf> maps_;
+	MapInfo         map_info_;
 
 	// UDMF properties
 	UDMFPropMap udmf_vertex_props_;

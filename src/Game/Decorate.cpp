@@ -440,7 +440,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 
 			if (!def)
 			{
-				parsed.push_back(ThingType(name, group_path, actor_name));
+				parsed.emplace_back(name, group_path, actor_name);
 				def = &parsed.back();
 			}
 		}
@@ -479,9 +479,9 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 {
 	string       name, sprite, group;
 	bool         spritefound = false;
-	char         frame;
-	bool         framefound = false;
-	int          type       = -1;
+	char         frame       = 'A';
+	bool         framefound  = false;
+	int          type        = -1;
 	PropertyList found_props;
 	if (tz.checkNext("{"))
 		name = tz.current().text;
@@ -632,9 +632,9 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, v
 
 	// Get base decorate file
 	Archive::SearchOptions opt;
-	opt.match_name                         = "decorate";
-	opt.ignore_ext                         = true;
-	vector<ArchiveEntry*> decorate_entries = archive->findAll(opt);
+	opt.match_name        = "decorate";
+	opt.ignore_ext        = true;
+	auto decorate_entries = archive->findAll(opt);
 	if (decorate_entries.empty())
 		return false;
 
@@ -671,7 +671,7 @@ CONSOLE_COMMAND(test_decorate, 0, false)
 	std::map<int, Game::ThingType> types;
 	vector<ThingType>              parsed;
 
-	if (args.size() == 0)
+	if (args.empty())
 		Game::readDecorateDefs(archive, types, parsed);
 	else
 	{

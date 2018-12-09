@@ -32,7 +32,7 @@ struct Arg
 	vector<ArgValue> custom_flags;
 
 	Arg() {}
-	Arg(string name) { this->name = name; }
+	Arg(const string& name) : name{ name } {}
 
 	string valueString(int value) const;
 	string speedLabel(int value) const;

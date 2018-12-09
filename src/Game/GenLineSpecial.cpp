@@ -431,10 +431,10 @@ string parseLineType(int type)
 // ------------------------------------------------------------------------
 // Puts line type properties from [type] into [props]
 // ------------------------------------------------------------------------
-int getLineTypeProperties(int type, int* props)
+SpecialType getLineTypeProperties(int type, int* props)
 {
 	if (!props)
-		return -1;
+		return SpecialType::None;
 
 	// Trigger always first
 	props[0] = type & TriggerType;
@@ -449,7 +449,7 @@ int getLineTypeProperties(int type, int* props)
 		props[5] = (type & FloorChange) >> FloorChangeShift;
 		props[6] = (type & FloorCrush) >> FloorCrushShift;
 
-		return GS_FLOOR;
+		return SpecialType::Floor;
 	}
 
 	// Ceiling
@@ -462,7 +462,7 @@ int getLineTypeProperties(int type, int* props)
 		props[5] = (type & CeilingChange) >> CeilingChangeShift;
 		props[6] = (type & CeilingCrush) >> CeilingCrushShift;
 
-		return GS_CEILING;
+		return SpecialType::Ceiling;
 	}
 
 	// Door
@@ -473,7 +473,7 @@ int getLineTypeProperties(int type, int* props)
 		props[3] = (type & DoorMonster) >> DoorMonsterShift;
 		props[4] = (type & DoorDelay) >> DoorDelayShift;
 
-		return GS_DOOR;
+		return SpecialType::Door;
 	}
 
 	// Locked Door
@@ -484,7 +484,7 @@ int getLineTypeProperties(int type, int* props)
 		props[3] = (type & LockedKey) >> LockedKeyShift;
 		props[4] = (type & LockedNKeys) >> LockedNKeysShift;
 
-		return GS_LOCKED_DOOR;
+		return SpecialType::LockedDoor;
 	}
 
 	// Lift
@@ -495,7 +495,7 @@ int getLineTypeProperties(int type, int* props)
 		props[3] = (type & LiftDelay) >> LiftDelayShift;
 		props[4] = (type & LiftTarget) >> LiftTargetShift;
 
-		return GS_LIFT;
+		return SpecialType::Lift;
 	}
 
 	// Stairs
@@ -507,7 +507,7 @@ int getLineTypeProperties(int type, int* props)
 		props[4] = (type & StairDirection) >> StairDirectionShift;
 		props[5] = (type & StairIgnore) >> StairIgnoreShift;
 
-		return GS_STAIRS;
+		return SpecialType::Stairs;
 	}
 
 	// Crusher
@@ -517,22 +517,22 @@ int getLineTypeProperties(int type, int* props)
 		props[2] = (type & CrusherMonster) >> CrusherMonsterShift;
 		props[3] = (type & CrusherSilent) >> CrusherSilentShift;
 
-		return GS_CRUSHER;
+		return SpecialType::Crusher;
 	}
 
-	return -1;
+	return SpecialType::None;
 }
 
 // ------------------------------------------------------------------------
 // Returns a generalised special value from base type [type] and
 // generalised properties [props]
 // ------------------------------------------------------------------------
-int generateSpecial(int type, int* props)
+int generateSpecial(SpecialType type, const int* props)
 {
 	int special = 0;
 
 	// Floor
-	if (type == GS_FLOOR)
+	if (type == SpecialType::Floor)
 	{
 		special = GenFloorBase;
 		special += (props[0] << TriggerTypeShift);
@@ -545,7 +545,7 @@ int generateSpecial(int type, int* props)
 	}
 
 	// Ceiling
-	else if (type == GS_CEILING)
+	else if (type == SpecialType::Ceiling)
 	{
 		special = GenCeilingBase;
 		special += (props[0] << TriggerTypeShift);
@@ -558,7 +558,7 @@ int generateSpecial(int type, int* props)
 	}
 
 	// Door
-	else if (type == GS_DOOR)
+	else if (type == SpecialType::Door)
 	{
 		special = GenDoorBase;
 		special += (props[0] << TriggerTypeShift);
@@ -569,7 +569,7 @@ int generateSpecial(int type, int* props)
 	}
 
 	// Locked Door
-	else if (type == GS_LOCKED_DOOR)
+	else if (type == SpecialType::LockedDoor)
 	{
 		special = GenLockedBase;
 		special += (props[0] << TriggerTypeShift);
@@ -580,7 +580,7 @@ int generateSpecial(int type, int* props)
 	}
 
 	// Lift
-	else if (type == GS_LIFT)
+	else if (type == SpecialType::Lift)
 	{
 		special = GenLiftBase;
 		special += (props[0] << TriggerTypeShift);
@@ -591,7 +591,7 @@ int generateSpecial(int type, int* props)
 	}
 
 	// Stairs
-	else if (type == GS_STAIRS)
+	else if (type == SpecialType::Stairs)
 	{
 		special = GenStairsBase;
 		special += (props[0] << TriggerTypeShift);
@@ -603,7 +603,7 @@ int generateSpecial(int type, int* props)
 	}
 
 	// Crusher
-	else if (type == GS_CRUSHER)
+	else if (type == SpecialType::Crusher)
 	{
 		special = GenCrusherBase;
 		special += (props[0] << TriggerTypeShift);

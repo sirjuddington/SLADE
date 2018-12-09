@@ -3395,7 +3395,7 @@ MapThing* SLADEMap::findFirstThingWithId(int id)
 	for (unsigned a = 0; a < things_.size(); a++)
 	{
 		auto& tt = Game::configuration().thingType(things_[a]->type());
-		if (things_[a]->intProperty("id") == id && !(tt.flags() & Game::ThingType::FLAG_DRAGON))
+		if (things_[a]->intProperty("id") == id && !(tt.flags() & Game::ThingType::Flags::Dragon))
 			return things_[a];
 	}
 	return nullptr;
@@ -3459,7 +3459,7 @@ void SLADEMap::putPathedThings(vector<MapThing*>& list)
 	for (unsigned a = 0; a < things_.size(); a++)
 	{
 		auto& tt = Game::configuration().thingType(things_[a]->type());
-		if (tt.flags() & (Game::ThingType::FLAG_PATHED | Game::ThingType::FLAG_DRAGON))
+		if (tt.flags() & (Game::ThingType::Flags::Pathed | Game::ThingType::Flags::Dragon))
 			list.push_back(things_[a]);
 	}
 }
@@ -3494,7 +3494,7 @@ void SLADEMap::putTaggingThingsWithId(int id, int type, vector<MapThing*>& list,
 		auto& tt        = Game::configuration().thingType(things_[a]->type());
 		auto  needs_tag = tt.needsTag();
 		if (needs_tag != TagType::None
-			|| (things_[a]->intProperty("special") && !(tt.flags() & Game::ThingType::FLAG_SCRIPT)))
+			|| (things_[a]->intProperty("special") && !(tt.flags() & Game::ThingType::Flags::Script)))
 		{
 			if (needs_tag == TagType::None)
 				needs_tag = Game::configuration().actionSpecial(things_[a]->intProperty("special")).needsTag();

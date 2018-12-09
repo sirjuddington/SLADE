@@ -286,7 +286,7 @@ public:
 			{
 				// Ignore the Heresiarch which does not have a real special
 				auto& tt = Game::configuration().thingType(map_->thing(a)->type());
-				if (tt.flags() & Game::ThingType::FLAG_SCRIPT)
+				if (tt.flags() & Game::ThingType::Flags::Script)
 					continue;
 
 				// Get special and tag
@@ -386,7 +386,7 @@ public:
 			if (thingmode)
 			{
 				auto& tt = Game::configuration().thingType(((MapThing*)mo)->type());
-				if (tt.flags() & Game::ThingType::FLAG_SCRIPT)
+				if (tt.flags() & Game::ThingType::Flags::Script)
 					continue;
 			}
 
@@ -817,7 +817,7 @@ public:
 				// Player starts
 				// P1 are automatically S and C; P2+ are automatically C;
 				// Deathmatch starts are automatically D, and team start are T.
-				if (tt1.flags() & Game::ThingType::FLAG_COOPSTART)
+				if (tt1.flags() & Game::ThingType::Flags::CoOpStart)
 				{
 					c1 = true;
 					d1 = t1 = false;
@@ -826,17 +826,17 @@ public:
 					else
 						s1 = false;
 				}
-				else if (tt1.flags() & Game::ThingType::FLAG_DMSTART)
+				else if (tt1.flags() & Game::ThingType::Flags::DMStart)
 				{
 					s1 = c1 = t1 = false;
 					d1           = true;
 				}
-				else if (tt1.flags() & Game::ThingType::FLAG_TEAMSTART)
+				else if (tt1.flags() & Game::ThingType::Flags::TeamStart)
 				{
 					s1 = c1 = d1 = false;
 					t1           = true;
 				}
-				if (tt2.flags() & Game::ThingType::FLAG_COOPSTART)
+				if (tt2.flags() & Game::ThingType::Flags::CoOpStart)
 				{
 					c2 = true;
 					d2 = t2 = false;
@@ -845,12 +845,12 @@ public:
 					else
 						s2 = false;
 				}
-				else if (tt2.flags() & Game::ThingType::FLAG_DMSTART)
+				else if (tt2.flags() & Game::ThingType::Flags::DMStart)
 				{
 					s2 = c2 = t2 = false;
 					d2           = true;
 				}
-				else if (tt2.flags() & Game::ThingType::FLAG_TEAMSTART)
+				else if (tt2.flags() & Game::ThingType::Flags::TeamStart)
 				{
 					s2 = c2 = d2 = false;
 					t2           = true;
@@ -881,7 +881,7 @@ public:
 
 				// Also check player start spots in Hexen-style hubs
 				shareflag = false;
-				if (tt1.flags() & Game::ThingType::FLAG_COOPSTART && tt2.flags() & Game::ThingType::FLAG_COOPSTART)
+				if (tt1.flags() & Game::ThingType::Flags::CoOpStart && tt2.flags() & Game::ThingType::Flags::CoOpStart)
 				{
 					if (thing1->intProperty("arg0") == thing2->intProperty("arg0"))
 						shareflag = true;
@@ -1835,7 +1835,7 @@ public:
 			{
 				// Ignore the Heresiarch which does not have a real special
 				auto& tt = Game::configuration().thingType(map_->thing(a)->type());
-				if (tt.flags() & Game::ThingType::FLAG_SCRIPT)
+				if (tt.flags() & Game::ThingType::Flags::Script)
 					continue;
 
 				// Otherwise, check special
@@ -1917,7 +1917,7 @@ public:
 		{
 			MapThing* thing = map_->thing(a);
 			auto&     tt    = Game::configuration().thingType(thing->type());
-			if (tt.flags() & Game::ThingType::FLAG_OBSOLETE)
+			if (tt.flags() & Game::ThingType::Flags::Obsolete)
 				things_.push_back(thing);
 		}
 	}

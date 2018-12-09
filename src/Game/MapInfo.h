@@ -13,45 +13,28 @@ public:
 	struct Map
 	{
 		string  name;
-		bool    lookup_name;
+		bool    lookup_name = false;
 		string  entry_name;
-		int     level_num;
-		string  sky1;
-		float   sky1_scroll_speed;
+		int     level_num         = 0;
+		string  sky1              = "SKY1";
+		float   sky1_scroll_speed = 0.f;
 		string  sky2;
-		float   sky2_scroll_speed;
-		bool    sky_double;
-		bool    sky_force_no_stretch;
-		bool    sky_stretch;
-		ColRGBA fade;
-		ColRGBA fade_outside; // OutsideFog
+		float   sky2_scroll_speed    = 0.f;
+		bool    sky_double           = false;
+		bool    sky_force_no_stretch = false;
+		bool    sky_stretch          = false;
+		ColRGBA fade                 = COL_BLACK;
+		ColRGBA fade_outside         = COL_BLACK; // OutsideFog
 		string  music;
-		bool    lighting_smooth;
-		int     lighting_wallshade_v;
-		int     lighting_wallshade_h;
-		bool    force_fake_contrast;
+		bool    lighting_smooth      = false;
+		int     lighting_wallshade_v = 0;
+		int     lighting_wallshade_h = 0;
+		bool    force_fake_contrast  = false;
 
 		// GZDoom
-		int fog_density;
-		int fog_density_outside;
-		int fog_density_sky;
-
-		Map() :
-			level_num{ 0 },
-			sky1{ "SKY1" },
-			sky1_scroll_speed{ 0 },
-			sky2_scroll_speed{ 0 },
-			sky_double{ false },
-			sky_force_no_stretch{ false },
-			sky_stretch{ false },
-			fade{ COL_BLACK },
-			fade_outside{ COL_BLACK },
-			lighting_smooth{ false },
-			lighting_wallshade_v{ 0 },
-			lighting_wallshade_h{ 0 },
-			force_fake_contrast{ false }
-		{
-		}
+		int fog_density         = 0;
+		int fog_density_outside = 0;
+		int fog_density_sky     = 0;
 	};
 
 	struct DoomEdNum
@@ -60,7 +43,7 @@ public:
 		string special;
 		int    args[5];
 	};
-	typedef std::map<int, MapInfo::DoomEdNum> DoomEdNumMap;
+	typedef std::map<int, DoomEdNum> DoomEdNumMap;
 
 	enum class Format
 	{
@@ -91,15 +74,15 @@ public:
 
 	// General parsing helpers
 	bool checkEqualsToken(Tokenizer& tz, const string& parsing) const;
-	bool strToCol(const string& str, ColRGBA& col);
+	bool strToCol(const string& str, ColRGBA& col) const;
 
 	// ZDoom MAPINFO parsing
 	bool parseZMapInfo(ArchiveEntry* entry);
-	bool parseZMap(Tokenizer& tz, string type);
+	bool parseZMap(Tokenizer& tz, const string& type);
 	bool parseDoomEdNums(Tokenizer& tz);
 
 	// General
-	Format detectMapInfoType(ArchiveEntry* entry);
+	Format detectMapInfoType(ArchiveEntry* entry) const;
 
 	// Debug info
 	void dumpDoomEdNums();
