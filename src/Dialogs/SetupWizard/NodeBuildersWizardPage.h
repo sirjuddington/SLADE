@@ -7,13 +7,13 @@ class NodeBuildersWizardPage : public WizardPageBase
 {
 public:
 	NodeBuildersWizardPage(wxWindow* parent);
-	~NodeBuildersWizardPage();
+	~NodeBuildersWizardPage() = default;
 
-	bool   canGoNext();
-	void   applyChanges();
-	string title() { return "Node Builders"; }
-	string description();
+	bool   canGoNext() override { return true; }
+	void   applyChanges() override {}
+	string title() override { return "Node Builders"; }
+	string description() override;
 
 private:
-	NodesPrefsPanel* panel_nodes_;
+	NodesPrefsPanel* panel_nodes_ = nullptr;
 };

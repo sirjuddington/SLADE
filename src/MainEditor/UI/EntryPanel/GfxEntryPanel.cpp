@@ -47,6 +47,8 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/SZoomSlider.h"
 #include "UI/SBrush.h"
+#include "Dialogs/GfxColouriseDialog.h"
+#include "Dialogs/GfxTintDialog.h"
 
 
 // -----------------------------------------------------------------------------

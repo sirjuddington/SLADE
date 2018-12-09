@@ -69,9 +69,9 @@ public:
 		AppendColumn("Path");
 	}
 
-	~ExternalEditorList() {}
+	~ExternalEditorList() = default;
 
-	void setCategory(string category)
+	void setCategory(const string& category)
 	{
 		exes_ = Executables::externalExes(category);
 		SetItemCount(exes_.size());
@@ -103,30 +103,30 @@ private:
 class ExternalEditorDialog : public wxDialog
 {
 public:
-	ExternalEditorDialog(wxWindow* parent, bool browse_on_open, string name = "", string path = "") :
+	ExternalEditorDialog(wxWindow* parent, bool browse_on_open, const string& name = "", const string& path = "") :
 		wxDialog(parent, -1, "External Editor"),
 		browse_on_open_(browse_on_open)
 	{
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+		auto sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
 		// Name
-		wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+		auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 		sizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::padLarge());
-		gb_sizer->Add(new wxStaticText(this, -1, "Name:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+		gb_sizer->Add(new wxStaticText(this, -1, "Name:"), { 0, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		text_name_ = new wxTextCtrl(this, -1, name);
-		gb_sizer->Add(text_name_, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
+		gb_sizer->Add(text_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 		// Path
-		gb_sizer->Add(new wxStaticText(this, -1, "Path:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+		gb_sizer->Add(new wxStaticText(this, -1, "Path:"), { 1, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, wxSize(UI::scalePx(300), -1));
-		gb_sizer->Add(text_path_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
+		gb_sizer->Add(text_path_, { 1, 1 }, wxDefaultSpan, wxEXPAND);
 		btn_browse_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "open"));
-		gb_sizer->Add(btn_browse_, wxGBPosition(1, 2), wxDefaultSpan);
+		gb_sizer->Add(btn_browse_, { 1, 2 }, wxDefaultSpan);
 
 		// Ok/Cancel
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		gb_sizer->Add(hbox, wxGBPosition(2, 0), wxGBSpan(1, 3), wxEXPAND);
+		auto hbox = new wxBoxSizer(wxHORIZONTAL);
+		gb_sizer->Add(hbox, { 2, 0 }, { 1, 3 }, wxEXPAND);
 		hbox->AddStretchSpacer();
 		btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
 		hbox->Add(btn_cancel_, 0, wxEXPAND | wxRIGHT, UI::pad());
@@ -135,14 +135,20 @@ public:
 
 		gb_sizer->AddGrowableCol(1);
 
-		btn_browse_->Bind(wxEVT_BUTTON, &ExternalEditorDialog::onBtnBrowseClicked, this);
-		Bind(wxEVT_SHOW, &ExternalEditorDialog::onShow, this);
+		// Browse button click
+		btn_browse_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { browse(); });
 
-		Fit();
+		// Show event
+		Bind(wxEVT_SHOW, [&](wxShowEvent& e) {
+			if (e.IsShown() && browse_on_open_ && text_path_->GetValue().IsEmpty())
+				browse();
+		});
+
+		wxWindowBase::Fit();
 		CenterOnParent();
 	}
 
-	~ExternalEditorDialog() {}
+	~ExternalEditorDialog() = default;
 
 	string getName() const { return text_name_->GetValue(); }
 	string getPath() const { return text_path_->GetValue(); }
@@ -173,14 +179,6 @@ private:
 			}
 		}
 	}
-
-	void onBtnBrowseClicked(wxCommandEvent& e) { browse(); }
-
-	void onShow(wxShowEvent& e)
-	{
-		if (e.IsShown() && browse_on_open_ && text_path_->GetValue().IsEmpty())
-			browse();
-	}
 };
 
 
@@ -197,7 +195,7 @@ private:
 EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Tabs
@@ -211,23 +209,20 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	stc_tabs_->AddPage(setupExternalTab(), "External Editors", false);
 
 	// Bind events
-	choice_category_->Bind(wxEVT_CHOICE, &EditingPrefsPanel::onChoiceCategoryChanged, this);
+	choice_category_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
+		((ExternalEditorList*)lv_ext_editors_)->setCategory(choice_category_->GetStringSelection());
+	});
 	btn_add_exe_->Bind(wxEVT_BUTTON, &EditingPrefsPanel::onBtnAddClicked, this);
 	btn_remove_exe_->Bind(wxEVT_BUTTON, &EditingPrefsPanel::onBtnRemoveClicked, this);
 	lv_ext_editors_->Bind(wxEVT_LIST_ITEM_ACTIVATED, &EditingPrefsPanel::onExternalExeActivated, this);
 }
 
 // -----------------------------------------------------------------------------
-// EditingPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-EditingPrefsPanel::~EditingPrefsPanel() {}
-
-// -----------------------------------------------------------------------------
 // Creates and returns the 'General' tab
 // -----------------------------------------------------------------------------
 wxPanel* EditingPrefsPanel::setupGeneralTab()
 {
-	wxPanel* panel = new wxPanel(stc_tabs_, -1);
+	auto panel = new wxPanel(stc_tabs_, -1);
 
 	// Create controls
 	cb_wad_force_uppercase_  = new wxCheckBox(panel, -1, "Force uppercase entry names in Wad Archives");
@@ -266,7 +261,7 @@ wxPanel* EditingPrefsPanel::setupGeneralTab()
 // -----------------------------------------------------------------------------
 wxPanel* EditingPrefsPanel::setupExternalTab()
 {
-	wxPanel* panel = new wxPanel(stc_tabs_, -1);
+	auto panel = new wxPanel(stc_tabs_, -1);
 
 	// Create controls
 	auto categories  = EntryType::allCategories();
@@ -330,7 +325,7 @@ void EditingPrefsPanel::applyPreferences()
 // -----------------------------------------------------------------------------
 // Shows [subsection] on the prefs page
 // -----------------------------------------------------------------------------
-void EditingPrefsPanel::showSubSection(string subsection)
+void EditingPrefsPanel::showSubSection(const string& subsection)
 {
 	// 'External' tab
 	if (subsection == "external")
@@ -350,14 +345,6 @@ void EditingPrefsPanel::showSubSection(string subsection)
 
 
 // -----------------------------------------------------------------------------
-// Called when the external executables 'Category' dropdown changes
-// -----------------------------------------------------------------------------
-void EditingPrefsPanel::onChoiceCategoryChanged(wxCommandEvent& e)
-{
-	((ExternalEditorList*)lv_ext_editors_)->setCategory(choice_category_->GetStringSelection());
-}
-
-// -----------------------------------------------------------------------------
 // Called when the 'Add' button is clicked
 // -----------------------------------------------------------------------------
 void EditingPrefsPanel::onBtnAddClicked(wxCommandEvent& e)
@@ -365,9 +352,9 @@ void EditingPrefsPanel::onBtnAddClicked(wxCommandEvent& e)
 	ExternalEditorDialog dlg(this, true);
 	while (dlg.ShowModal() == wxID_OK)
 	{
-		if (dlg.getName() == "")
+		if (dlg.getName().empty())
 			wxMessageBox("Please enter a name for the editor", "Name Required");
-		else if (dlg.getPath() == "")
+		else if (dlg.getPath().empty())
 			wxMessageBox("Please enter or select an executable", "Path Required");
 		else
 		{
@@ -388,13 +375,13 @@ void EditingPrefsPanel::onBtnAddClicked(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void EditingPrefsPanel::onBtnRemoveClicked(wxCommandEvent& e)
 {
-	vector<long> selection = lv_ext_editors_->selection();
-	string       category  = choice_category_->GetStringSelection();
+	auto   selection = lv_ext_editors_->selection();
+	string category  = choice_category_->GetStringSelection();
 
 	// Remove selected editors
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (long item : selection)
 	{
-		string name = lv_ext_editors_->GetItemText(selection[a]);
+		string name = lv_ext_editors_->GetItemText(item);
 		Executables::removeExternalExe(name, category);
 	}
 
@@ -414,9 +401,9 @@ void EditingPrefsPanel::onExternalExeActivated(wxListEvent& e)
 	ExternalEditorDialog dlg(this, false, name, exe.path);
 	while (dlg.ShowModal() == wxID_OK)
 	{
-		if (dlg.getName() == "")
+		if (dlg.getName().empty())
 			wxMessageBox("Please enter a name for the editor", "Name Required");
-		else if (dlg.getPath() == "")
+		else if (dlg.getPath().empty())
 			wxMessageBox("Please enter or select an executable", "Path Required");
 		else
 		{

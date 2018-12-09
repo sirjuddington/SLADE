@@ -86,7 +86,7 @@ EXTERN_CVAR(Bool, grid_show_origin)
 MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Create notebook
@@ -100,13 +100,8 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	setupThingsTab();
 	setupFlatsTab();
 
-	Layout();
+	wxWindowBase::Layout();
 }
-
-// -----------------------------------------------------------------------------
-// MapDisplayPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-MapDisplayPrefsPanel::~MapDisplayPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Sets up the general tab
@@ -114,11 +109,11 @@ MapDisplayPrefsPanel::~MapDisplayPrefsPanel() {}
 void MapDisplayPrefsPanel::setupGeneralTab()
 {
 	// Add tab
-	wxPanel* panel = new wxPanel(stc_pages_, -1);
+	auto panel = new wxPanel(stc_pages_, -1);
 	stc_pages_->AddPage(panel, "General", true);
-	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
+	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 	sz_border->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 	int row = 0;
 
@@ -183,11 +178,11 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 void MapDisplayPrefsPanel::setupVerticesTab()
 {
 	// Add tab
-	wxPanel* panel = new wxPanel(stc_pages_, -1);
+	auto panel = new wxPanel(stc_pages_, -1);
 	stc_pages_->AddPage(panel, "Vertices");
-	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
+	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	sz_border->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 	slider_vertex_size_ = new wxSlider(panel, -1, vertex_size, 2, 16, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
@@ -209,11 +204,11 @@ void MapDisplayPrefsPanel::setupVerticesTab()
 void MapDisplayPrefsPanel::setupLinesTab()
 {
 	// Add tab
-	wxPanel* panel = new wxPanel(stc_pages_, -1);
+	auto panel = new wxPanel(stc_pages_, -1);
 	stc_pages_->AddPage(panel, "Lines");
-	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
+	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	sz_border->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 	WxUtils::layoutVertically(
@@ -234,11 +229,11 @@ void MapDisplayPrefsPanel::setupLinesTab()
 void MapDisplayPrefsPanel::setupThingsTab()
 {
 	// Add tab
-	wxPanel* panel = new wxPanel(stc_pages_, -1);
+	auto panel = new wxPanel(stc_pages_, -1);
 	stc_pages_->AddPage(panel, "Things");
-	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
+	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 	sz_border->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 	int row = 0;
 
@@ -299,11 +294,11 @@ void MapDisplayPrefsPanel::setupThingsTab()
 void MapDisplayPrefsPanel::setupFlatsTab()
 {
 	// Add tab
-	wxPanel* panel = new wxPanel(stc_pages_, -1);
+	auto panel = new wxPanel(stc_pages_, -1);
 	stc_pages_->AddPage(panel, "Sectors");
-	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
+	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	sz_border->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 	WxUtils::layoutVertically(

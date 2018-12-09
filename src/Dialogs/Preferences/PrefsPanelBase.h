@@ -8,7 +8,7 @@ public:
 
 	virtual void   init() {}
 	virtual void   applyPreferences() {}
-	virtual void   showSubSection(string subsection) {}
+	virtual void   showSubSection(const string& subsection) {}
 	virtual string pageTitle() { return ""; }
 	virtual string pageDescription() { return ""; }
 };

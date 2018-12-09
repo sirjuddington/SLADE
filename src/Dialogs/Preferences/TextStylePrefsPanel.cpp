@@ -57,7 +57,7 @@ EXTERN_CVAR(Int, txed_override_font_size)
 // -----------------------------------------------------------------------------
 // TextStylePrefsPanel class constructor
 // -----------------------------------------------------------------------------
-TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase{ parent }, language_preview_{ "preview" }
 {
 	// Init variables
 	ss_current_.copySet(StyleSet::currentSet());
@@ -120,7 +120,7 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	fp_font_override_->Bind(wxEVT_FONTPICKER_CHANGED, &TextStylePrefsPanel::onFontOverrideChanged, this);
 
 	// Init controls
-	if (txed_override_font != "")
+	if (!txed_override_font.value.empty())
 	{
 		cb_font_override_->SetValue(true);
 		fp_font_override_->SetSelectedFont(wxFont(
@@ -144,14 +144,6 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	list_styles_->SetSelection(0);
 	updateStyleControls();
 	init_done_ = true;
-}
-
-// -----------------------------------------------------------------------------
-// TextStylePrefsPanel class destructor
-// -----------------------------------------------------------------------------
-TextStylePrefsPanel::~TextStylePrefsPanel()
-{
-	delete language_preview_;
 }
 
 // -----------------------------------------------------------------------------
@@ -227,20 +219,19 @@ void TextStylePrefsPanel::init()
 		"\t}\n"
 		"}\n");
 
-	language_preview_ = new TextLanguage("preview");
-	language_preview_->addWord(TextLanguage::WordType::Constant, "CONSTANT");
-	language_preview_->addWord(TextLanguage::WordType::Constant, "OTHER_CONSTANT");
-	language_preview_->addWord(TextLanguage::WordType::Type, "string");
-	language_preview_->addWord(TextLanguage::WordType::Type, "char");
-	language_preview_->addWord(TextLanguage::WordType::Keyword, "void");
-	language_preview_->addWord(TextLanguage::WordType::Keyword, "return");
-	language_preview_->addWord(TextLanguage::WordType::Type, "int");
-	language_preview_->addWord(TextLanguage::WordType::Keyword, "if");
-	language_preview_->addWord(TextLanguage::WordType::Type, "object");
-	language_preview_->addWord(TextLanguage::WordType::Property, "x_property");
-	language_preview_->addWord(TextLanguage::WordType::Property, "y_property");
-	language_preview_->addFunction("function", "int x, int y");
-	te_preview_->setLanguage(language_preview_);
+	language_preview_.addWord(TextLanguage::WordType::Constant, "CONSTANT");
+	language_preview_.addWord(TextLanguage::WordType::Constant, "OTHER_CONSTANT");
+	language_preview_.addWord(TextLanguage::WordType::Type, "string");
+	language_preview_.addWord(TextLanguage::WordType::Type, "char");
+	language_preview_.addWord(TextLanguage::WordType::Keyword, "void");
+	language_preview_.addWord(TextLanguage::WordType::Keyword, "return");
+	language_preview_.addWord(TextLanguage::WordType::Type, "int");
+	language_preview_.addWord(TextLanguage::WordType::Keyword, "if");
+	language_preview_.addWord(TextLanguage::WordType::Type, "object");
+	language_preview_.addWord(TextLanguage::WordType::Property, "x_property");
+	language_preview_.addWord(TextLanguage::WordType::Property, "y_property");
+	language_preview_.addFunction("function", "int x, int y");
+	te_preview_->setLanguage(&language_preview_);
 
 	te_preview_->SetReadOnly(true);
 	te_preview_->SetEdgeColumn(34);
@@ -256,7 +247,7 @@ void TextStylePrefsPanel::updateStyleControls()
 		return;
 
 	// Get default style
-	TextStyle* style_default = ss_current_.style("default");
+	auto style_default = ss_current_.style("default");
 
 	// Reset UI stuff
 	cb_override_font_face_->SetValue(true);
@@ -278,7 +269,7 @@ void TextStylePrefsPanel::updateStyleControls()
 	cb_override_background_->Enable(enable);
 
 	// Update style properties
-	wxFont font = fp_font_->GetSelectedFont();
+	auto font = fp_font_->GetSelectedFont();
 
 	// Font face
 	string font_face = ts_current_->fontFace();
@@ -366,7 +357,7 @@ void TextStylePrefsPanel::updateStyleControls()
 // -----------------------------------------------------------------------------
 // Updates the font face property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateFontFace()
+void TextStylePrefsPanel::updateFontFace() const
 {
 	// Update current style
 	if (cb_override_font_face_->GetValue())
@@ -378,7 +369,7 @@ void TextStylePrefsPanel::updateFontFace()
 // -----------------------------------------------------------------------------
 // Updates the font size property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateFontSize()
+void TextStylePrefsPanel::updateFontSize() const
 {
 	if (cb_override_font_size_->GetValue())
 		ts_current_->setFontSize(fp_font_->GetSelectedFont().GetPointSize());
@@ -389,11 +380,11 @@ void TextStylePrefsPanel::updateFontSize()
 // -----------------------------------------------------------------------------
 // Updates the font bold property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateFontBold()
+void TextStylePrefsPanel::updateFontBold() const
 {
 	if (cb_override_font_bold_->GetValue())
 	{
-		wxFont font = fp_font_->GetSelectedFont();
+		auto font = fp_font_->GetSelectedFont();
 		if (font.GetWeight() == wxFONTWEIGHT_BOLD)
 			ts_current_->setBold(1);
 		else
@@ -406,11 +397,11 @@ void TextStylePrefsPanel::updateFontBold()
 // -----------------------------------------------------------------------------
 // Updates the font italic property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateFontItalic()
+void TextStylePrefsPanel::updateFontItalic() const
 {
 	if (cb_override_font_italic_->GetValue())
 	{
-		wxFont font = fp_font_->GetSelectedFont();
+		auto font = fp_font_->GetSelectedFont();
 		if (font.GetStyle() == wxFONTSTYLE_ITALIC)
 			ts_current_->setItalic(1);
 		else
@@ -423,11 +414,11 @@ void TextStylePrefsPanel::updateFontItalic()
 // -----------------------------------------------------------------------------
 // Updates the font underline property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateFontUnderlined()
+void TextStylePrefsPanel::updateFontUnderlined() const
 {
 	if (cb_override_font_underlined_->GetValue())
 	{
-		wxFont font = fp_font_->GetSelectedFont();
+		auto font = fp_font_->GetSelectedFont();
 		if (font.GetUnderlined())
 			ts_current_->setUnderlined(1);
 		else
@@ -440,11 +431,11 @@ void TextStylePrefsPanel::updateFontUnderlined()
 // -----------------------------------------------------------------------------
 // Updates the foreground colour property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateForeground()
+void TextStylePrefsPanel::updateForeground() const
 {
 	if (cb_override_foreground_->GetValue())
 	{
-		wxColour wxc = cp_foreground_->GetColour();
+		auto wxc = cp_foreground_->GetColour();
 		ts_current_->setForeground(ColRGBA(COLWX(wxc), 255));
 	}
 	else
@@ -456,11 +447,11 @@ void TextStylePrefsPanel::updateForeground()
 // -----------------------------------------------------------------------------
 // Updates the background colour property of the currently selected style
 // -----------------------------------------------------------------------------
-void TextStylePrefsPanel::updateBackground()
+void TextStylePrefsPanel::updateBackground() const
 {
 	if (cb_override_background_->GetValue())
 	{
-		wxColour wxc = cp_background_->GetColour();
+		auto wxc = cp_background_->GetColour();
 		ts_current_->setBackground(ColRGBA(COLWX(wxc), 255));
 	}
 	else
@@ -677,7 +668,7 @@ void TextStylePrefsPanel::onStyleSetSelected(wxCommandEvent& e)
 	if (init_done_)
 	{
 		// Get selected styleset
-		StyleSet* set = StyleSet::set(choice_styleset_->GetSelection());
+		auto set = StyleSet::set(choice_styleset_->GetSelection());
 		if (set)
 		{
 			ss_current_.copySet(set);

@@ -243,11 +243,6 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 }
 
 // -----------------------------------------------------------------------------
-// TextEditorPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-TextEditorPrefsPanel::~TextEditorPrefsPanel() {}
-
-// -----------------------------------------------------------------------------
 // Initialises panel controls
 // -----------------------------------------------------------------------------
 void TextEditorPrefsPanel::init()

@@ -65,8 +65,8 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 	current_page_ = 0;
 
 	// Hide all pages
-	for (unsigned a = 0; a < pages_.size(); a++)
-		pages_[a]->Show(false);
+	for (auto& page : pages_)
+		page->Show(false);
 
 	// Init layout
 	setupLayout();
@@ -78,9 +78,9 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 
 	// Setup layout
 	SetInitialSize(wxSize(UI::scalePx(600), UI::scalePx(500)));
-	Layout();
-	Fit();
-	SetMinSize(GetBestSize());
+	wxWindowBase::Layout();
+	wxWindowBase::Fit();
+	wxTopLevelWindowBase::SetMinSize(GetBestSize());
 	CenterOnParent();
 
 	showPage(0);
@@ -91,11 +91,6 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 }
 
 // -----------------------------------------------------------------------------
-// SetupWizardDialog class destructor
-// -----------------------------------------------------------------------------
-SetupWizardDialog::~SetupWizardDialog() {}
-
-// -----------------------------------------------------------------------------
 // Sets up the dialog layout
 // -----------------------------------------------------------------------------
 void SetupWizardDialog::setupLayout()
@@ -103,7 +98,7 @@ void SetupWizardDialog::setupLayout()
 	auto pad_xl = UI::scalePx(16);
 
 	// Setup main sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Page title
@@ -120,7 +115,7 @@ void SetupWizardDialog::setupLayout()
 	sizer->Add(pages_[0], 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, pad_xl);
 
 	// Bottom buttons
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	hbox->AddStretchSpacer();
 	sizer->Add(hbox, 0, wxEXPAND | wxALL, pad_xl);
 

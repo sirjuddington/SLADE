@@ -48,7 +48,7 @@ public:
 	Keypress key;
 	KeyBind* bind;
 
-	BindListItemData(Keypress key, KeyBind* bind = nullptr) : key{ key }, bind{ bind } {}
+	BindListItemData(Keypress key, KeyBind* bind = nullptr) : key{ std::move(key) }, bind{ bind } {}
 };
 
 
@@ -151,7 +151,7 @@ void InputKeyCtrl::onEnter(wxCommandEvent& e)
 InputPrefsPanel::InputPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Keybinds list
@@ -177,19 +177,14 @@ InputPrefsPanel::InputPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	list_binds_->Bind(wxEVT_TREELIST_SELECTION_CHANGED, &InputPrefsPanel::onListSelectionChanged, this);
 	list_binds_->Bind(wxEVT_TREELIST_ITEM_ACTIVATED, &InputPrefsPanel::onListItemActivated, this);
 	btn_change_->Bind(wxEVT_BUTTON, &InputPrefsPanel::onBtnChangeKey, this);
-	btn_add_->Bind(wxEVT_BUTTON, &InputPrefsPanel::onBtnAddKey, this);
-	btn_remove_->Bind(wxEVT_BUTTON, &InputPrefsPanel::onBtnRemoveKey, this);
+	btn_add_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { addKey(); });
+	btn_remove_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { removeKey(list_binds_->GetSelection()); });
 	btn_defaults_->Bind(wxEVT_BUTTON, &InputPrefsPanel::onBtnDefaults, this);
 
-	Layout();
+	wxWindowBase::Layout();
 	initBindsList();
 	updateBindsList();
 }
-
-// -----------------------------------------------------------------------------
-// InputPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-InputPrefsPanel::~InputPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls
@@ -207,7 +202,7 @@ void InputPrefsPanel::init()
 // -----------------------------------------------------------------------------
 // Returns the wxTreeListItem for keybind group [group]
 // -----------------------------------------------------------------------------
-wxTreeListItem InputPrefsPanel::getListGroupItem(string group)
+wxTreeListItem InputPrefsPanel::getListGroupItem(const string& group) const
 {
 	// Go through items
 	wxTreeListItem item = list_binds_->GetFirstChild(list_binds_->GetRootItem());
@@ -226,7 +221,7 @@ wxTreeListItem InputPrefsPanel::getListGroupItem(string group)
 // -----------------------------------------------------------------------------
 // Populates the keybinds tree list
 // -----------------------------------------------------------------------------
-void InputPrefsPanel::initBindsList()
+void InputPrefsPanel::initBindsList() const
 {
 	// Get list of all keybinds
 	vector<KeyBind*> binds;
@@ -238,20 +233,20 @@ void InputPrefsPanel::initBindsList()
 	list_binds_->AppendColumn("Bound Keys", width);
 
 	// Add binds to list
-	for (unsigned a = 0; a < binds.size(); a++)
+	for (auto& bind : binds)
 	{
 		// Skip if not in a group
-		if (binds[a]->group().IsEmpty())
+		if (bind->group().IsEmpty())
 			continue;
 
 		// Add to list
-		wxTreeListItem group = getListGroupItem(binds[a]->group());
-		wxTreeListItem item  = list_binds_->AppendItem(
-            group, binds[a]->description(), -1, -1, new BindListItemData(binds[a]->key(0), binds[a]));
+		auto group = getListGroupItem(bind->group());
+		auto item =
+			list_binds_->AppendItem(group, bind->description(), -1, -1, new BindListItemData(bind->key(0), bind));
 
 		// Add any extra key binds
-		for (int b = 1; b < binds[a]->nKeys(); b++)
-			list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(binds[a]->key(b)));
+		for (int b = 1; b < bind->nKeys(); b++)
+			list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(bind->key(b)));
 	}
 
 	// Update list column sizes
@@ -262,16 +257,16 @@ void InputPrefsPanel::initBindsList()
 // -----------------------------------------------------------------------------
 // Updates all keybind list items
 // -----------------------------------------------------------------------------
-void InputPrefsPanel::updateBindsList()
+void InputPrefsPanel::updateBindsList() const
 {
 	// Get first list item
-	wxTreeListItem item = list_binds_->GetFirstItem();
+	auto item = list_binds_->GetFirstItem();
 
 	// Go through all list items
 	while (item.IsOk())
 	{
 		// Get item data
-		BindListItemData* bind = ((BindListItemData*)list_binds_->GetItemData(item));
+		auto bind = ((BindListItemData*)list_binds_->GetItemData(item));
 
 		// Set item text if key data exists
 		if (bind)
@@ -288,23 +283,23 @@ void InputPrefsPanel::updateBindsList()
 void InputPrefsPanel::changeKey(wxTreeListItem item)
 {
 	// Get item keybind info
-	BindListItemData* bind = (BindListItemData*)list_binds_->GetItemData(item);
+	auto bind = (BindListItemData*)list_binds_->GetItemData(item);
 
 	// Do nothing if item is a group
 	if (!bind)
 		return;
 
 	// Create a dialog
-	wxDialog    dlg(this, -1, "Set Key");
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	wxDialog dlg(this, -1, "Set Key");
+	auto     sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 
 	// Add key input box
-	InputKeyCtrl* key_ctrl = new InputKeyCtrl(&dlg, bind->key);
+	auto key_ctrl = new InputKeyCtrl(&dlg, bind->key);
 	sizer->Add(key_ctrl, 0, wxEXPAND | wxALL, UI::pad());
 
 	// Add buttons
-	wxSizer* btnsizer = dlg.CreateButtonSizer(wxOK | wxCANCEL);
+	auto btnsizer = dlg.CreateButtonSizer(wxOK | wxCANCEL);
 	sizer->Add(btnsizer, 0, wxEXPAND | wxALL, UI::pad());
 
 	// Init dialog
@@ -330,8 +325,8 @@ void InputPrefsPanel::changeKey(wxTreeListItem item)
 void InputPrefsPanel::addKey()
 {
 	// Get selected item
-	wxTreeListItem    item = list_binds_->GetSelection();
-	BindListItemData* bind = ((BindListItemData*)list_binds_->GetItemData(item));
+	auto item = list_binds_->GetSelection();
+	auto bind = ((BindListItemData*)list_binds_->GetItemData(item));
 
 	// Do nothing if item is a group
 	if (!bind)
@@ -342,7 +337,7 @@ void InputPrefsPanel::addKey()
 		item = list_binds_->GetItemParent(item);
 
 	// Add new keybind item
-	wxTreeListItem n = list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(Keypress()));
+	auto n = list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(Keypress()));
 	changeKey(n);
 
 	// Delete item if no key was chosen (or dialog cancelled)
@@ -359,10 +354,10 @@ void InputPrefsPanel::addKey()
 // -----------------------------------------------------------------------------
 // Removes the keybind key at [item]
 // -----------------------------------------------------------------------------
-void InputPrefsPanel::removeKey(wxTreeListItem item)
+void InputPrefsPanel::removeKey(wxTreeListItem item) const
 {
 	// Get item keybind info
-	BindListItemData* bind = ((BindListItemData*)list_binds_->GetItemData(item));
+	auto bind = ((BindListItemData*)list_binds_->GetItemData(item));
 
 	// Do nothing if item is a group
 	if (!bind)
@@ -377,7 +372,7 @@ void InputPrefsPanel::removeKey(wxTreeListItem item)
 
 	// Clear the primary bind and move all subsequent keys back 1
 	bind->key.key        = "";
-	wxTreeListItem child = list_binds_->GetFirstChild(item);
+	auto           child = list_binds_->GetFirstChild(item);
 	wxTreeListItem last_child;
 	while (child.IsOk())
 	{
@@ -400,12 +395,12 @@ void InputPrefsPanel::removeKey(wxTreeListItem item)
 void InputPrefsPanel::applyPreferences()
 {
 	// Go through all list items
-	wxTreeListItem item = list_binds_->GetFirstItem();
+	auto item = list_binds_->GetFirstItem();
 	while (item.IsOk())
 	{
 		// Get bind info
-		BindListItemData* bind  = ((BindListItemData*)list_binds_->GetItemData(item));
-		KeyBind*          kbind = nullptr;
+		auto     bind  = ((BindListItemData*)list_binds_->GetItemData(item));
+		KeyBind* kbind = nullptr;
 		if (bind)
 			kbind = bind->bind;
 
@@ -420,7 +415,7 @@ void InputPrefsPanel::applyPreferences()
 				kbind->addKey(bind->key.key, bind->key.alt, bind->key.ctrl, bind->key.shift);
 
 			// Add any secondary keys
-			wxTreeListItem child = list_binds_->GetFirstChild(item);
+			auto child = list_binds_->GetFirstChild(item);
 			while (child.IsOk())
 			{
 				// Add key
@@ -469,12 +464,12 @@ void InputPrefsPanel::onSize(wxSizeEvent& e)
 void InputPrefsPanel::onListSelectionChanged(wxTreeListEvent& e)
 {
 	// Get selected item
-	wxTreeListItem item = e.GetItem();
+	auto item = e.GetItem();
 
 	// Check it has a keybind attached
-	bool              kb   = false;
-	bool              kbp  = false;
-	BindListItemData* bind = ((BindListItemData*)list_binds_->GetItemData(item));
+	bool kb   = false;
+	bool kbp  = false;
+	auto bind = ((BindListItemData*)list_binds_->GetItemData(item));
 	if (bind)
 	{
 		kb = true;
@@ -499,7 +494,7 @@ void InputPrefsPanel::onListSelectionChanged(wxTreeListEvent& e)
 void InputPrefsPanel::onListItemActivated(wxTreeListEvent& e)
 {
 	// Get selected item
-	wxTreeListItem item = list_binds_->GetSelection();
+	auto item = list_binds_->GetSelection();
 
 	// Change keybind if the item isn't a group
 	if (list_binds_->GetItemData(item))
@@ -512,27 +507,11 @@ void InputPrefsPanel::onListItemActivated(wxTreeListEvent& e)
 void InputPrefsPanel::onBtnChangeKey(wxCommandEvent& e)
 {
 	// Get selected item
-	wxTreeListItem item = list_binds_->GetSelection();
+	auto item = list_binds_->GetSelection();
 
 	// Change keybind if the item isn't a group
 	if (list_binds_->GetItemData(item))
 		changeKey(item);
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'Add Key' button is clicked
-// -----------------------------------------------------------------------------
-void InputPrefsPanel::onBtnAddKey(wxCommandEvent& e)
-{
-	addKey();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'Remove Key' button is clicked
-// -----------------------------------------------------------------------------
-void InputPrefsPanel::onBtnRemoveKey(wxCommandEvent& e)
-{
-	removeKey(list_binds_->GetSelection());
 }
 
 // -----------------------------------------------------------------------------
@@ -541,15 +520,15 @@ void InputPrefsPanel::onBtnRemoveKey(wxCommandEvent& e)
 void InputPrefsPanel::onBtnDefaults(wxCommandEvent& e)
 {
 	// Get selected item
-	wxTreeListItem    item = list_binds_->GetSelection();
-	BindListItemData* bind = ((BindListItemData*)list_binds_->GetItemData(item));
+	auto item = list_binds_->GetSelection();
+	auto bind = ((BindListItemData*)list_binds_->GetItemData(item));
 
 	// Do nothing if it's not a primary keybind
 	if (!bind || !(bind->bind))
 		return;
 
 	// Remove all child items
-	wxTreeListItem child = list_binds_->GetFirstChild(item);
+	auto child = list_binds_->GetFirstChild(item);
 	while (child.IsOk())
 	{
 		list_binds_->DeleteItem(child);
@@ -563,7 +542,7 @@ void InputPrefsPanel::onBtnDefaults(wxCommandEvent& e)
 
 	// Go through default keys for the bind
 	for (int a = 1; a < bind->bind->nDefaults(); a++)
-		wxTreeListItem n = list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(bind->bind->defaultKey(a)));
+		auto n = list_binds_->AppendItem(item, "", -1, -1, new BindListItemData(bind->bind->defaultKey(a)));
 
 	// Refresh list
 	updateBindsList();

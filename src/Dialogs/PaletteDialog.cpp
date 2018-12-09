@@ -52,7 +52,7 @@ PaletteDialog::PaletteDialog(Palette* palette) :
 {
 	int size = UI::scalePx(400);
 
-	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
+	auto m_vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_vbox);
 
 	pal_canvas_ = new PaletteCanvas(this, -1);
@@ -65,42 +65,17 @@ PaletteDialog::PaletteDialog(Palette* palette) :
 	m_vbox->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
 
 	// Bind events
-	pal_canvas_->Bind(wxEVT_LEFT_DCLICK, &PaletteDialog::onLeftDoubleClick, this);
+	pal_canvas_->Bind(wxEVT_LEFT_DCLICK, [&](wxMouseEvent&) { EndModal(wxID_OK); });
 
 	// Autosize to fit contents (and set this as the minimum size)
 	SetInitialSize(wxSize(-1, -1));
-	SetMinSize(GetSize());
-}
-
-// -----------------------------------------------------------------------------
-// PaletteDialog class destructor
-// -----------------------------------------------------------------------------
-PaletteDialog::~PaletteDialog()
-{
-	if (pal_canvas_)
-		delete pal_canvas_;
+	wxTopLevelWindowBase::SetMinSize(GetSize());
 }
 
 // -----------------------------------------------------------------------------
 // Returns the currently selected coloir on the palette canvas
 // -----------------------------------------------------------------------------
-ColRGBA PaletteDialog::selectedColour()
+ColRGBA PaletteDialog::selectedColour() const
 {
 	return pal_canvas_->selectedColour();
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// PaletteDialog Class Events
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Called when the palette canvas is double clicked
-// -----------------------------------------------------------------------------
-void PaletteDialog::onLeftDoubleClick(wxMouseEvent& e)
-{
-	EndModal(wxID_OK);
 }

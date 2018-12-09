@@ -48,7 +48,7 @@ public:
 		Archive*          archive    = nullptr,
 		bool              force_rgba = false);
 	void updatePreviewGfx();
-	void updateControls();
+	void updateControls() const;
 	void convertOptions(SIFormat::ConvertOptions& opt);
 
 	bool      itemModified(int index);
@@ -64,76 +64,61 @@ private:
 		SIFormat*    format;
 		SImage::Type coltype;
 
-		ConvFormat(SIFormat* format = nullptr, SImage::Type coltype = SImage::Type::RGBA)
+		ConvFormat(SIFormat* format = nullptr, SImage::Type coltype = SImage::Type::RGBA) :
+			format{ format },
+			coltype{ coltype }
 		{
-			this->format  = format;
-			this->coltype = coltype;
 		}
 	};
 
 	struct ConvItem
 	{
-		ArchiveEntry* entry;
-		CTexture*     texture;
+		ArchiveEntry* entry   = nullptr;
+		CTexture*     texture = nullptr;
 		SImage        image;
-		bool          modified;
-		SIFormat*     new_format;
-		Palette*      palette;
-		Archive*      archive;
-		bool          force_rgba;
+		bool          modified   = false;
+		SIFormat*     new_format = nullptr;
+		Palette*      palette    = nullptr;
+		Archive*      archive    = nullptr;
+		bool          force_rgba = false;
 
-		ConvItem(ArchiveEntry* entry = nullptr)
-		{
-			this->entry      = entry;
-			this->texture    = nullptr;
-			this->modified   = false;
-			this->new_format = nullptr;
-			this->palette    = nullptr;
-			this->archive    = nullptr;
-			this->force_rgba = false;
-		}
+		ConvItem(ArchiveEntry* entry = nullptr) : entry{ entry } {}
 
-		ConvItem(CTexture* texture, Palette* palette = nullptr, Archive* archive = nullptr, bool force_rgba = false)
+		ConvItem(CTexture* texture, Palette* palette = nullptr, Archive* archive = nullptr, bool force_rgba = false) :
+			texture{ texture },
+			palette{ palette },
+			archive{ archive },
+			force_rgba{ force_rgba }
 		{
-			this->entry      = nullptr;
-			this->texture    = texture;
-			this->modified   = false;
-			this->new_format = nullptr;
-			this->palette    = palette;
-			this->archive    = archive;
-			this->force_rgba = force_rgba;
 		}
 	};
 
 	vector<ConvItem>   items_;
-	size_t             current_item_;
+	size_t             current_item_ = 0;
 	vector<ConvFormat> conv_formats_;
 	ConvFormat         current_format_;
 
-	wxStaticText*   label_current_format_;
-	GfxCanvas*      gfx_current_;
-	GfxCanvas*      gfx_target_;
-	wxButton*       btn_convert_;
-	wxButton*       btn_convert_all_;
-	wxButton*       btn_skip_;
-	wxButton*       btn_skip_all_;
-	wxChoice*       combo_target_format_;
-	PaletteChooser* pal_chooser_current_;
-	PaletteChooser* pal_chooser_target_;
-	wxButton*       btn_colorimetry_settings_;
+	wxStaticText*   label_current_format_     = nullptr;
+	GfxCanvas*      gfx_current_              = nullptr;
+	GfxCanvas*      gfx_target_               = nullptr;
+	wxButton*       btn_convert_              = nullptr;
+	wxButton*       btn_convert_all_          = nullptr;
+	wxButton*       btn_skip_                 = nullptr;
+	wxButton*       btn_skip_all_             = nullptr;
+	wxChoice*       combo_target_format_      = nullptr;
+	PaletteChooser* pal_chooser_current_      = nullptr;
+	PaletteChooser* pal_chooser_target_       = nullptr;
+	wxButton*       btn_colorimetry_settings_ = nullptr;
 
-	wxCheckBox*    cb_enable_transparency_;
-	wxRadioButton* rb_transparency_existing_;
-	wxRadioButton* rb_transparency_colour_;
-	wxRadioButton* rb_transparency_brightness_;
-	wxSlider*      slider_alpha_threshold_;
-	ColourBox*     colbox_transparent_;
+	wxCheckBox*    cb_enable_transparency_     = nullptr;
+	wxRadioButton* rb_transparency_existing_   = nullptr;
+	wxRadioButton* rb_transparency_colour_     = nullptr;
+	wxRadioButton* rb_transparency_brightness_ = nullptr;
+	wxSlider*      slider_alpha_threshold_     = nullptr;
+	ColourBox*     colbox_transparent_         = nullptr;
 
 	// Conversion options
 	Palette target_pal_;
-	uint8_t pal_convert_type_; // 0=nearest colour, 1=keep indices
-	uint8_t alpha_threshold_;
-	bool    keep_trans_;
 	ColRGBA colour_trans_;
 
 	bool nextItem();

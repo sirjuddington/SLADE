@@ -8,7 +8,7 @@ class InputKeyCtrl : public wxTextCtrl
 public:
 	InputKeyCtrl(wxWindow* parent, Keypress init);
 
-	Keypress key() const { return key_; }
+	const Keypress& key() const { return key_; }
 
 private:
 	Keypress key_;
@@ -23,14 +23,14 @@ class InputPrefsPanel : public PrefsPanelBase
 {
 public:
 	InputPrefsPanel(wxWindow* parent);
-	~InputPrefsPanel();
+	~InputPrefsPanel() = default;
 
-	wxTreeListItem getListGroupItem(string group);
-	void           initBindsList();
-	void           updateBindsList();
+	wxTreeListItem getListGroupItem(const string& group) const;
+	void           initBindsList() const;
+	void           updateBindsList() const;
 	void           changeKey(wxTreeListItem item);
 	void           addKey();
-	void           removeKey(wxTreeListItem item);
+	void           removeKey(wxTreeListItem item) const;
 
 	void init() override;
 	void applyPreferences() override;
@@ -38,19 +38,17 @@ public:
 	string pageTitle() override { return "Keyboard Shortcuts"; }
 
 private:
-	wxTreeListCtrl* list_binds_;
-	wxButton*       btn_add_;
-	wxButton*       btn_remove_;
-	wxButton*       btn_change_;
-	wxButton*       btn_defaults_;
+	wxTreeListCtrl* list_binds_   = nullptr;
+	wxButton*       btn_add_      = nullptr;
+	wxButton*       btn_remove_   = nullptr;
+	wxButton*       btn_change_   = nullptr;
+	wxButton*       btn_defaults_ = nullptr;
 
 	// Events
 	void onSize(wxSizeEvent& e);
 	void onListSelectionChanged(wxTreeListEvent& e);
 	void onListItemActivated(wxTreeListEvent& e);
 	void onBtnChangeKey(wxCommandEvent& e);
-	void onBtnAddKey(wxCommandEvent& e);
-	void onBtnRemoveKey(wxCommandEvent& e);
 	void onBtnDefaults(wxCommandEvent& e);
 	void onListKeyDown(wxKeyEvent& e);
 };

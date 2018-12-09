@@ -77,11 +77,6 @@ GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 }
 
 // -----------------------------------------------------------------------------
-// GeneralPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-GeneralPrefsPanel::~GeneralPrefsPanel() {}
-
-// -----------------------------------------------------------------------------
 // Initialises panel controls
 // -----------------------------------------------------------------------------
 void GeneralPrefsPanel::init()

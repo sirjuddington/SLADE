@@ -8,6 +8,7 @@ class MapPreviewCanvas;
 class BaseResourceChooser;
 class ResourceArchiveChooser;
 class wxImageList;
+
 class MapEditorConfigDialog : public SDialog
 {
 public:
@@ -18,27 +19,26 @@ public:
 	void             populatePortList();
 	void             populateMapList();
 	Archive::MapDesc selectedMap();
-	bool             configMatchesMap(Archive::MapDesc map);
+	bool             configMatchesMap(const Archive::MapDesc& map);
 	string           selectedGame();
 	string           selectedPort();
 
 private:
-	wxChoice*               choice_game_config_;
-	wxChoice*               choice_port_config_;
-	BaseResourceChooser*    choice_base_resource_;
-	ListView*               list_maps_;
-	ResourceArchiveChooser* rac_resources_;
-	wxButton*               btn_new_map_;
-	MapPreviewCanvas*       canvas_preview_;
-	wxImageList*            img_list_;
-	wxButton*               btn_ok_;
-	wxButton*               btn_cancel_;
+	wxChoice*               choice_game_config_   = nullptr;
+	wxChoice*               choice_port_config_   = nullptr;
+	BaseResourceChooser*    choice_base_resource_ = nullptr;
+	ListView*               list_maps_            = nullptr;
+	ResourceArchiveChooser* rac_resources_        = nullptr;
+	wxButton*               btn_new_map_          = nullptr;
+	MapPreviewCanvas*       canvas_preview_       = nullptr;
+	wxImageList*            img_list_             = nullptr;
+	wxButton*               btn_ok_               = nullptr;
+	wxButton*               btn_cancel_           = nullptr;
 	string                  game_current_;
 	string                  port_current_;
-	int                     map_format_;
-	bool                    creating_;
+	bool                    creating_ = false;
 
-	Archive*                 archive_;
+	Archive*                 archive_ = nullptr;
 	vector<Archive::MapDesc> maps_;
 	vector<string>           games_list_;
 	vector<string>           ports_list_;
@@ -49,6 +49,4 @@ private:
 	void onMapActivated(wxListEvent& e);
 	void onBtnNewMap(wxCommandEvent& e);
 	void onMapSelected(wxListEvent& e);
-	void onBtnOK(wxCommandEvent& e);
-	void onBtnCancel(wxCommandEvent& e);
 };

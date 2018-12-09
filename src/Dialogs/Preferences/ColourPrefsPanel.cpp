@@ -50,18 +50,18 @@
 ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Configurations list
 	vector<string> cnames;
 	ColourConfiguration::putConfigurationNames(cnames);
 	choice_configs_ = new wxChoice(this, -1);
-	for (unsigned a = 0; a < cnames.size(); a++)
-		choice_configs_->Append(cnames[a]);
+	for (const auto& cname : cnames)
+		choice_configs_->Append(cname);
 	sizer->Add(WxUtils::createLabelHBox(this, "Preset:", choice_configs_), 0, wxEXPAND | wxBOTTOM, UI::pad());
 
-	const wxColour& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
+	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
 
 	// Create property grid
 	pg_colours_ = new wxPropertyGrid(
@@ -74,15 +74,15 @@ ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	refreshPropGrid();
 
 	// Bind events
-	choice_configs_->Bind(wxEVT_CHOICE, &ColourPrefsPanel::onChoicePresetSelected, this);
+	choice_configs_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
+		string config = choice_configs_->GetStringSelection();
+		ColourConfiguration::readConfiguration(config);
+		refreshPropGrid();
+		MapEditor::forceRefresh(true);
+	});
 
-	Layout();
+	wxWindowBase::Layout();
 }
-
-// -----------------------------------------------------------------------------
-// ColourPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-ColourPrefsPanel::~ColourPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls
@@ -95,7 +95,7 @@ void ColourPrefsPanel::init()
 // -----------------------------------------------------------------------------
 // Refreshes the colour configuration wxPropertyGrid
 // -----------------------------------------------------------------------------
-void ColourPrefsPanel::refreshPropGrid()
+void ColourPrefsPanel::refreshPropGrid() const
 {
 	// Clear grid
 	pg_colours_->Clear();
@@ -106,10 +106,10 @@ void ColourPrefsPanel::refreshPropGrid()
 	std::sort(colours.begin(), colours.end());
 
 	// Add colours to property grid
-	for (unsigned a = 0; a < colours.size(); a++)
+	for (const auto& name : colours)
 	{
 		// Get colour definition
-		auto cdef = ColourConfiguration::colDef(colours[a]);
+		auto cdef = ColourConfiguration::colDef(name);
 
 		// Get/create group
 		auto group = pg_colours_->GetProperty(cdef.group);
@@ -117,7 +117,7 @@ void ColourPrefsPanel::refreshPropGrid()
 			group = pg_colours_->Append(new wxPropertyCategory(cdef.group));
 
 		// Add colour
-		auto colour = pg_colours_->AppendIn(group, new wxColourProperty(cdef.name, colours[a], WXCOL(cdef.colour)));
+		auto colour = pg_colours_->AppendIn(group, new wxColourProperty(cdef.name, name, WXCOL(cdef.colour)));
 
 		// Add extra colour properties
 		auto opacity = pg_colours_->AppendIn(colour, new wxIntProperty("Opacity (0-255)", "alpha", cdef.colour.a));
@@ -130,7 +130,7 @@ void ColourPrefsPanel::refreshPropGrid()
 	}
 
 	// Add theme options to property grid
-	wxPGProperty* g_theme = pg_colours_->Append(new wxPropertyCategory("Map Editor Theme"));
+	auto g_theme = pg_colours_->Append(new wxPropertyCategory("Map Editor Theme"));
 	pg_colours_->AppendIn(
 		g_theme,
 		new wxFloatProperty(
@@ -164,14 +164,14 @@ void ColourPrefsPanel::applyPreferences()
 		cdef_path += colours[a];
 
 		// Get properties from grid
-		wxIntProperty*  p_alpha = (wxIntProperty*)pg_colours_->GetProperty(cdef_path + ".alpha");
-		wxBoolProperty* p_add   = (wxBoolProperty*)pg_colours_->GetProperty(cdef_path + ".additive");
+		auto p_alpha = (wxIntProperty*)pg_colours_->GetProperty(cdef_path + ".alpha");
+		auto p_add   = (wxBoolProperty*)pg_colours_->GetProperty(cdef_path + ".additive");
 
 		if (p_alpha && p_add)
 		{
 			// Getting the colour out of a wxColourProperty is retarded
-			wxVariant v = pg_colours_->GetPropertyValue(cdef_path);
-			wxColour  col;
+			auto     v = pg_colours_->GetPropertyValue(cdef_path);
+			wxColour col;
 			col << v; // wut?
 
 			// Get alpha
@@ -206,24 +206,5 @@ void ColourPrefsPanel::applyPreferences()
 	pg_colours_->Refresh();
 	pg_colours_->RefreshEditor();
 	MainEditor::windowWx()->Refresh();
-	MapEditor::forceRefresh(true);
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// ColourPrefsPanel Class Events
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Called when the 'preset' dropdown choice is changed
-// -----------------------------------------------------------------------------
-void ColourPrefsPanel::onChoicePresetSelected(wxCommandEvent& e)
-{
-	string config = choice_configs_->GetStringSelection();
-	ColourConfiguration::readConfiguration(config);
-	refreshPropGrid();
 	MapEditor::forceRefresh(true);
 }

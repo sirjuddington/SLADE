@@ -2,17 +2,15 @@
 
 class PaletteCanvas;
 class Palette;
+
 class PaletteDialog : public wxDialog
 {
 public:
 	PaletteDialog(Palette* palette);
-	~PaletteDialog();
+	~PaletteDialog() = default;
 
-	ColRGBA selectedColour();
+	ColRGBA selectedColour() const;
 
 private:
-	PaletteCanvas* pal_canvas_;
-
-	// Events
-	void onLeftDoubleClick(wxMouseEvent& e);
+	PaletteCanvas* pal_canvas_ = nullptr;
 };

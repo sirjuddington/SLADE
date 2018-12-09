@@ -79,15 +79,10 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* arc
 
 	populateChangeList();
 
-	Layout();
-	Fit();
+	wxWindowBase::Layout();
+	wxWindowBase::Fit();
 	SetInitialSize(GetSize());
 }
-
-// -----------------------------------------------------------------------------
-// DirArchiveUpdateDialog class destructor
-// -----------------------------------------------------------------------------
-DirArchiveUpdateDialog::~DirArchiveUpdateDialog() {}
 
 // -----------------------------------------------------------------------------
 // Populates the changes list

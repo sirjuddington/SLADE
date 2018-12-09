@@ -4,25 +4,25 @@ class ModifyOffsetsDialog : public wxDialog
 {
 public:
 	ModifyOffsetsDialog();
-	~ModifyOffsetsDialog();
+	~ModifyOffsetsDialog() = default;
 
-	Vec2i offset();
-	int   alignType();
-	bool  autoOffset();
-	bool  relativeOffset();
-	bool  xOffChange();
-	bool  yOffChange();
-	Vec2i calculateOffsets(int xoff, int yoff, int width, int height);
+	Vec2i offset() const;
+	int   alignType() const;
+	bool  autoOffset() const;
+	bool  relativeOffset() const;
+	bool  xOffChange() const;
+	bool  yOffChange() const;
+	Vec2i calculateOffsets(int xoff, int yoff, int width, int height) const;
 
 private:
-	wxChoice* combo_aligntype_;
+	wxChoice* combo_aligntype_ = nullptr;
 
-	wxTextCtrl* entry_xoff_;
-	wxTextCtrl* entry_yoff_;
-	wxCheckBox* cbox_relative_;
+	wxTextCtrl* entry_xoff_    = nullptr;
+	wxTextCtrl* entry_yoff_    = nullptr;
+	wxCheckBox* cbox_relative_ = nullptr;
 
-	wxRadioButton* opt_set_;
-	wxRadioButton* opt_auto_;
+	wxRadioButton* opt_set_  = nullptr;
+	wxRadioButton* opt_auto_ = nullptr;
 
 	// Events
 	void onOptSet(wxCommandEvent& e);

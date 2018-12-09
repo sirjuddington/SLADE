@@ -9,7 +9,7 @@ class ACSPrefsPanel : public PrefsPanelBase
 {
 public:
 	ACSPrefsPanel(wxWindow* parent);
-	~ACSPrefsPanel();
+	~ACSPrefsPanel() = default;
 
 	void init() override;
 	void applyPreferences() override;
@@ -17,11 +17,11 @@ public:
 	string pageTitle() override { return "ACS Compiler Settings"; }
 
 private:
-	FileLocationPanel* flp_acc_path_;
-	wxButton*          btn_incpath_add_;
-	wxButton*          btn_incpath_remove_;
-	wxListBox*         list_inc_paths_;
-	wxCheckBox*        cb_always_show_output_;
+	FileLocationPanel* flp_acc_path_          = nullptr;
+	wxButton*          btn_incpath_add_       = nullptr;
+	wxButton*          btn_incpath_remove_    = nullptr;
+	wxListBox*         list_inc_paths_        = nullptr;
+	wxCheckBox*        cb_always_show_output_ = nullptr;
 
 	void setupLayout();
 

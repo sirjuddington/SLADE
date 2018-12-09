@@ -145,14 +145,9 @@ ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(
 
 	// Bind events
 	choice_presets_grey_->Bind(wxEVT_CHOICE, &ColorimetryPrefsPanel::onChoiceGreyscalePresetSelected, this);
-	choice_colmatch_->Bind(wxEVT_CHOICE, &ColorimetryPrefsPanel::onChoiceColormatchSelected, this);
+	choice_colmatch_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) { col_match = 1 + choice_colmatch_->GetSelection(); });
 	choice_presets_tristim_->Bind(wxEVT_CHOICE, &ColorimetryPrefsPanel::onChoiceTristimPresetSelected, this);
 }
-
-// -----------------------------------------------------------------------------
-// ColorimetryPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-ColorimetryPrefsPanel::~ColorimetryPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls
@@ -254,14 +249,6 @@ void ColorimetryPrefsPanel::setupLayout()
 }
 
 // -----------------------------------------------------------------------------
-// Called when the 'color matching' dropdown choice is changed
-// -----------------------------------------------------------------------------
-void ColorimetryPrefsPanel::onChoiceColormatchSelected(wxCommandEvent& e)
-{
-	col_match = 1 + choice_colmatch_->GetSelection();
-}
-
-// -----------------------------------------------------------------------------
 // Called when the greyscale 'preset' dropdown choice is changed
 // Standard NTSC weights: 0.299, 0.587, 0.114
 // Id Software's typoed weights: 0.299, 0.587, 0.144
@@ -290,6 +277,7 @@ void ColorimetryPrefsPanel::onChoiceGreyscalePresetSelected(wxCommandEvent& e)
 		spin_grey_g_->SetValue(0.6094);
 		spin_grey_b_->SetValue(0.0820);
 		break;
+	default: break;
 	};
 
 	applyPreferences();
@@ -390,6 +378,7 @@ void ColorimetryPrefsPanel::onChoiceTristimPresetSelected(wxCommandEvent& e)
 		spin_tristim_x_->SetValue(111.12);
 		spin_tristim_z_->SetValue(35.21);
 		break;
+	default: break;
 	};
 
 	applyPreferences();

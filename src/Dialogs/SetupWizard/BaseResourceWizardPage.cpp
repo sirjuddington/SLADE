@@ -47,7 +47,7 @@
 BaseResourceWizardPage::BaseResourceWizardPage(wxWindow* parent) : WizardPageBase(parent)
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Add Base Resource Archive panel
@@ -55,19 +55,6 @@ BaseResourceWizardPage::BaseResourceWizardPage(wxWindow* parent) : WizardPageBas
 	bra_panel_->init();
 	bra_panel_->autodetect();
 	sizer->Add(bra_panel_, 1, wxEXPAND);
-}
-
-// -----------------------------------------------------------------------------
-// BaseResourceWizardPage class destructor
-// -----------------------------------------------------------------------------
-BaseResourceWizardPage::~BaseResourceWizardPage() {}
-
-// -----------------------------------------------------------------------------
-// Returns true if the wizard page is valid
-// -----------------------------------------------------------------------------
-bool BaseResourceWizardPage::canGoNext()
-{
-	return true;
 }
 
 // -----------------------------------------------------------------------------

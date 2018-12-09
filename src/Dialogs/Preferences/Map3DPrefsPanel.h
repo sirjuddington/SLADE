@@ -6,31 +6,25 @@ class Map3DPrefsPanel : public PrefsPanelBase
 {
 public:
 	Map3DPrefsPanel(wxWindow* parent);
-	~Map3DPrefsPanel();
+	~Map3DPrefsPanel() = default;
 
 	void init() override;
-	void updateDistanceControls();
+	void updateDistanceControls() const;
 	void applyPreferences() override;
 
 	string pageTitle() override { return "Map Editor 3D Mode Settings"; }
 
 private:
-	wxSlider*     slider_max_render_dist_;
-	wxCheckBox*   cb_distance_unlimited_;
-	wxSlider*     slider_max_thing_dist_;
-	wxCheckBox*   cb_max_thing_dist_lock_;
-	wxCheckBox*   cb_render_dist_adaptive_;
-	wxSpinCtrl*   spin_adaptive_fps_;
-	wxCheckBox*   cb_render_sky_;
-	wxStaticText* label_render_dist_;
-	wxStaticText* label_thing_dist_;
-	wxCheckBox*   cb_show_distance_;
-	wxCheckBox*   cb_invert_y_;
-	wxCheckBox*   cb_shade_orthogonal_;
-
-	// Events
-	void onSliderMaxRenderDistChanged(wxCommandEvent& e);
-	void onSliderMaxThingDistChanged(wxCommandEvent& e);
-	void onCBLockThingDistChanged(wxCommandEvent& e);
-	void onCBDistUnlimitedChanged(wxCommandEvent& e);
+	wxSlider*     slider_max_render_dist_  = nullptr;
+	wxCheckBox*   cb_distance_unlimited_   = nullptr;
+	wxSlider*     slider_max_thing_dist_   = nullptr;
+	wxCheckBox*   cb_max_thing_dist_lock_  = nullptr;
+	wxCheckBox*   cb_render_dist_adaptive_ = nullptr;
+	wxSpinCtrl*   spin_adaptive_fps_       = nullptr;
+	wxCheckBox*   cb_render_sky_           = nullptr;
+	wxStaticText* label_render_dist_       = nullptr;
+	wxStaticText* label_thing_dist_        = nullptr;
+	wxCheckBox*   cb_show_distance_        = nullptr;
+	wxCheckBox*   cb_invert_y_             = nullptr;
+	wxCheckBox*   cb_shade_orthogonal_     = nullptr;
 };

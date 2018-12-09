@@ -34,7 +34,6 @@
 #include "GfxConvDialog.h"
 #include "Archive/ArchiveManager.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
-#include "General/Console/Console.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -68,8 +67,6 @@ CVAR(Bool, gfx_extraconv, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 GfxConvDialog::GfxConvDialog(wxWindow* parent) : SDialog(parent, "Graphic Format Conversion", "gfxconv")
 {
-	current_item_ = 0;
-
 	// Set dialog icon
 	wxIcon icon;
 	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "convert"));
@@ -134,46 +131,46 @@ bool GfxConvDialog::nextItem()
 	SIFormat::putAllFormats(all_formats);
 	int current_index = -1;
 	int default_index = -1;
-	for (unsigned a = 0; a < all_formats.size(); a++)
+	for (auto& format : all_formats)
 	{
 		// Check if the image can be written to this format
-		if (all_formats[a]->canWrite(items_[current_item_].image) != SIFormat::Writable::No)
+		if (format->canWrite(items_[current_item_].image) != SIFormat::Writable::No)
 		{
 			// Add conversion formats depending on what colour types this image format can handle
-			if (all_formats[a]->canWriteType(SImage::Type::PalMask))
+			if (format->canWriteType(SImage::Type::PalMask))
 			{
 				// Add format
-				conv_formats_.push_back(ConvFormat(all_formats[a], SImage::Type::PalMask));
-				combo_target_format_->Append(all_formats[a]->name() + " (Paletted)");
+				conv_formats_.emplace_back(format, SImage::Type::PalMask);
+				combo_target_format_->Append(format->name() + " (Paletted)");
 
 				// Check for match with current format
-				if (current_format_.format == all_formats[a] && current_format_.coltype == SImage::Type::PalMask)
+				if (current_format_.format == format && current_format_.coltype == SImage::Type::PalMask)
 					current_index = conv_formats_.size() - 1;
 
 				// Default format is 'doom gfx'
-				if (all_formats[a]->id() == "doom")
+				if (format->id() == "doom")
 					default_index = conv_formats_.size() - 1;
 			}
 
-			if (all_formats[a]->canWriteType(SImage::Type::RGBA))
+			if (format->canWriteType(SImage::Type::RGBA))
 			{
 				// Add format
-				conv_formats_.push_back(ConvFormat(all_formats[a], SImage::Type::RGBA));
-				combo_target_format_->Append(all_formats[a]->name() + " (Truecolour)");
+				conv_formats_.emplace_back(format, SImage::Type::RGBA);
+				combo_target_format_->Append(format->name() + " (Truecolour)");
 
 				// Check for match with current format
-				if (current_format_.format == all_formats[a] && current_format_.coltype == SImage::Type::RGBA)
+				if (current_format_.format == format && current_format_.coltype == SImage::Type::RGBA)
 					current_index = conv_formats_.size() - 1;
 			}
 
-			if (all_formats[a]->canWriteType(SImage::Type::AlphaMap))
+			if (format->canWriteType(SImage::Type::AlphaMap))
 			{
 				// Add format
-				conv_formats_.push_back(ConvFormat(all_formats[a], SImage::Type::AlphaMap));
-				combo_target_format_->Append(all_formats[a]->name() + " (Alpha Map)");
+				conv_formats_.emplace_back(format, SImage::Type::AlphaMap);
+				combo_target_format_->Append(format->name() + " (Alpha Map)");
 
 				// Check for match with current format
-				if (current_format_.format == all_formats[a] && current_format_.coltype == SImage::Type::AlphaMap)
+				if (current_format_.format == format && current_format_.coltype == SImage::Type::AlphaMap)
 					current_index = conv_formats_.size() - 1;
 			}
 		}
@@ -235,10 +232,10 @@ void GfxConvDialog::setupLayout()
 	int px_pad          = UI::px(UI::Size::PadMinimum);
 	int px_preview_size = UI::scalePx(192);
 
-	wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 
-	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
+	auto m_vbox = new wxBoxSizer(wxVERTICAL);
 	msizer->Add(m_vbox, 1, wxEXPAND | wxALL, px_outer);
 
 	// Add current format label
@@ -246,7 +243,7 @@ void GfxConvDialog::setupLayout()
 	m_vbox->Add(label_current_format_, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, px_inner);
 
 	// Add 'Convert To' combo box
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	m_vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, px_outer);
 	hbox->Add(new wxStaticText(this, -1, "Convert to:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, px_pad);
 	combo_target_format_ = new wxChoice(this, -1);
@@ -254,8 +251,8 @@ void GfxConvDialog::setupLayout()
 
 
 	// Add Gfx previews
-	wxStaticBox*      frame      = new wxStaticBox(this, -1, "Colour Options");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
+	auto frame      = new wxStaticBox(this, -1, "Colour Options");
+	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	m_vbox->Add(framesizer, 1, wxEXPAND | wxBOTTOM, px_outer);
 
 	auto gbsizer = new wxGridBagSizer(px_inner, px_inner);
@@ -368,7 +365,6 @@ void GfxConvDialog::setupLayout()
 
 
 	// Autosize to fit contents (and set this as the minimum size)
-	// SetInitialSize(wxSize(-1, -1));
 	SetMinClientSize(msizer->GetMinSize());
 }
 
@@ -378,7 +374,7 @@ void GfxConvDialog::setupLayout()
 void GfxConvDialog::openEntry(ArchiveEntry* entry)
 {
 	// Add item
-	items_.push_back(ConvItem(entry));
+	items_.emplace_back(entry);
 
 	// Open it
 	current_item_ = -1;
@@ -391,8 +387,8 @@ void GfxConvDialog::openEntry(ArchiveEntry* entry)
 void GfxConvDialog::openEntries(vector<ArchiveEntry*> entries)
 {
 	// Add entries to item list
-	for (unsigned a = 0; a < entries.size(); a++)
-		items_.push_back(ConvItem(entries[a]));
+	for (auto& entry : entries)
+		items_.emplace_back(entry);
 
 	// Open the first item
 	current_item_ = -1;
@@ -405,8 +401,8 @@ void GfxConvDialog::openEntries(vector<ArchiveEntry*> entries)
 void GfxConvDialog::openTextures(vector<CTexture*> textures, Palette* palette, Archive* archive, bool force_rgba)
 {
 	// Add entries to item list
-	for (unsigned a = 0; a < textures.size(); a++)
-		items_.push_back(ConvItem(textures[a], palette, archive, force_rgba));
+	for (auto& texture : textures)
+		items_.emplace_back(texture, palette, archive, force_rgba);
 
 	// Open the first item
 	current_item_ = -1;
@@ -423,7 +419,7 @@ void GfxConvDialog::updatePreviewGfx()
 		return;
 
 	// Get the current image entry
-	ConvItem& item = items_[current_item_];
+	auto& item = items_[current_item_];
 
 	// Set palettes
 	if (item.image.hasPalette() && pal_chooser_current_->globalSelected())
@@ -464,14 +460,14 @@ void GfxConvDialog::updatePreviewGfx()
 // -----------------------------------------------------------------------------
 // Disables/enables controls based on what is currently selected
 // -----------------------------------------------------------------------------
-void GfxConvDialog::updateControls()
+void GfxConvDialog::updateControls() const
 {
 	// Check current item is valid
 	if (items_.size() <= current_item_)
 		return;
 
 	// Set colourbox palette if source image has one
-	SImage::Type coltype = gfx_current_->getImage()->type();
+	auto coltype = gfx_current_->getImage()->type();
 	if (coltype == SImage::Type::PalMask)
 	{
 		colbox_transparent_->setPalette(gfx_current_->palette());
@@ -522,9 +518,6 @@ void GfxConvDialog::convertOptions(SIFormat::ConvertOptions& opt)
 		opt.mask_source = SIFormat::Mask::Brightness;
 
 	// Set conversion palettes
-	// opt.pal_current = gfx_current->getPalette();
-	// opt.pal_target = gfx_target->getPalette();
-	// Palettes were already set
 	opt.pal_current = pal_chooser_current_->selectedPalette(items_[current_item_].entry);
 	opt.pal_target  = pal_chooser_target_->selectedPalette(items_[current_item_].entry);
 
@@ -586,7 +579,7 @@ Palette* GfxConvDialog::itemPalette(int index)
 void GfxConvDialog::applyConversion()
 {
 	// Get current item
-	ConvItem& item = items_[current_item_];
+	auto& item = items_[current_item_];
 
 	// Write converted image data to it
 	item.image.copyImage(gfx_target_->getImage());
@@ -610,7 +603,7 @@ void GfxConvDialog::applyConversion()
 // -----------------------------------------------------------------------------
 void GfxConvDialog::onResize(wxSizeEvent& e)
 {
-	wxDialog::OnSize(e);
+	OnSize(e);
 
 	gfx_current_->zoomToFit(true, 0.05f);
 	gfx_target_->zoomToFit(true, 0.05f);
@@ -733,12 +726,12 @@ void GfxConvDialog::onTransColourChanged(wxEvent& e)
 void GfxConvDialog::onPreviewCurrentMouseDown(wxMouseEvent& e)
 {
 	// Get image coordinates of the point clicked
-	Vec2i imgcoord = gfx_current_->imageCoords(e.GetX(), e.GetY());
+	auto imgcoord = gfx_current_->imageCoords(e.GetX(), e.GetY());
 	if (imgcoord.x < 0)
 		return;
 
 	// Get the colour at that point
-	ColRGBA col = gfx_current_->getImage()->pixelAt(imgcoord.x, imgcoord.y, gfx_current_->palette());
+	auto col = gfx_current_->getImage()->pixelAt(imgcoord.x, imgcoord.y, gfx_current_->palette());
 
 	// Set the background colour
 	colbox_transparent_->setColour(col);

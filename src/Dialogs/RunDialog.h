@@ -10,28 +10,28 @@ public:
 	RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb = false);
 	~RunDialog();
 
-	void   openGameExe(unsigned index);
-	string selectedCommandLine(Archive* archive, string map_name, string map_file = "");
-	string selectedResourceList();
-	string selectedExeDir();
-	string selectedExeId();
-	bool   start3dModeChecked();
+	void   openGameExe(unsigned index) const;
+	string selectedCommandLine(Archive* archive, const string& map_name, const string& map_file = "") const;
+	string selectedResourceList() const;
+	string selectedExeDir() const;
+	string selectedExeId() const;
+	bool   start3dModeChecked() const;
 
 private:
-	wxChoice*               choice_game_exes_;
-	wxButton*               btn_add_game_;
-	wxButton*               btn_remove_game_;
-	wxTextCtrl*             text_exe_path_;
-	wxButton*               btn_browse_exe_;
-	wxChoice*               choice_config_;
-	wxButton*               btn_add_config_;
-	wxButton*               btn_edit_config_;
-	wxButton*               btn_remove_config_;
-	wxButton*               btn_run_;
-	wxButton*               btn_cancel_;
-	ResourceArchiveChooser* rac_resources_;
-	wxTextCtrl*             text_extra_params_;
-	wxCheckBox*             cb_start__3_d_;
+	wxChoice*               choice_game_exes_  = nullptr;
+	wxButton*               btn_add_game_      = nullptr;
+	wxButton*               btn_remove_game_   = nullptr;
+	wxTextCtrl*             text_exe_path_     = nullptr;
+	wxButton*               btn_browse_exe_    = nullptr;
+	wxChoice*               choice_config_     = nullptr;
+	wxButton*               btn_add_config_    = nullptr;
+	wxButton*               btn_edit_config_   = nullptr;
+	wxButton*               btn_remove_config_ = nullptr;
+	wxButton*               btn_run_           = nullptr;
+	wxButton*               btn_cancel_        = nullptr;
+	ResourceArchiveChooser* rac_resources_     = nullptr;
+	wxTextCtrl*             text_extra_params_ = nullptr;
+	wxCheckBox*             cb_start__3_d_     = nullptr;
 
 	// Events
 	void onBtnAddGame(wxCommandEvent& e);

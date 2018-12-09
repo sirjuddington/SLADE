@@ -70,20 +70,15 @@ EXTERN_CVAR(Bool, web_dark_theme)
 InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
+	auto psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Add tabs
-	TabControl* stc_tabs = STabCtrl::createControl(this);
+	auto stc_tabs = STabCtrl::createControl(this);
 	psizer->Add(stc_tabs, 1, wxEXPAND);
 	stc_tabs->AddPage(setupGeneralTab(stc_tabs), "General");
 	stc_tabs->AddPage(setupEntryListTab(stc_tabs), "Entry List");
 }
-
-// -----------------------------------------------------------------------------
-// InterfacePrefsPanel class destructor
-// -----------------------------------------------------------------------------
-InterfacePrefsPanel::~InterfacePrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls
@@ -166,7 +161,7 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	cb_condensed_tabs_      = new wxCheckBox(panel, -1, "Condensed tabs *");
 	string sizes[]          = { "Normal", "Large", "Extra Large" };
 	choice_toolbar_size_    = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
-	vector<string> sets     = Icons::iconSets(Icons::General);
+	auto sets               = Icons::iconSets(Icons::General);
 	choice_iconset_general_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets.size(), &sets[0]);
 
 	// Layout

@@ -119,7 +119,7 @@ wxSizer* createTitleSizer(wxWindow* parent, const string& title, const string& d
 PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE Settings", "prefs")
 {
 	// Setup main sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Set icon
@@ -171,20 +171,15 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 
 	// Setup layout
 	SetInitialSize(GetSize());
-	Layout();
-	Fit();
-	SetMinSize(wxSize(UI::scalePx(800), UI::scalePx(600)));
+	wxWindowBase::Layout();
+	wxWindowBase::Fit();
+	wxTopLevelWindowBase::SetMinSize(wxSize(UI::scalePx(800), UI::scalePx(600)));
 	CenterOnParent();
 
 	// Collapse all tree nodes
 	for (unsigned page = 0; page < tree_prefs_->GetPageCount(); page++)
 		tree_prefs_->CollapseNode(page);
 }
-
-// -----------------------------------------------------------------------------
-// PreferencesDialog class destructor
-// -----------------------------------------------------------------------------
-PreferencesDialog::~PreferencesDialog() {}
 
 // -----------------------------------------------------------------------------
 // Adds a settings [page] to the treebook with [title] in the tree. If
@@ -228,8 +223,8 @@ void PreferencesDialog::addPrefsPage(PrefsPanelBase* page, const string& title, 
 wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel()
 {
 	// Create panel
-	wxPanel*    panel  = new wxPanel(tree_prefs_, -1);
-	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
+	auto panel  = new wxPanel(tree_prefs_, -1);
+	auto psizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(psizer);
 
 	// Add page title section
@@ -238,13 +233,6 @@ wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel()
 	// Add BRA panel
 	panel_bra_ = new BaseResourceArchivesPanel(panel);
 	psizer->Add(panel_bra_, 1, wxEXPAND | wxLEFT, UI::pad());
-
-	/*// Add 'Open BRA' button
-	btn_bra_open = new wxButton(panel, -1, "Open Selected Archive");
-	sizer->Add(btn_bra_open, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-	// Bind events
-	btn_bra_open->Bind(wxEVT_BUTTON, &PreferencesDialog::onBtnBRAOpenClicked, this);*/
 
 	return panel;
 }
@@ -255,8 +243,8 @@ wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel()
 wxPanel* PreferencesDialog::setupAdvancedPanel()
 {
 	// Create panel
-	wxPanel*    panel  = new wxPanel(tree_prefs_, -1);
-	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
+	auto panel  = new wxPanel(tree_prefs_, -1);
+	auto psizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(psizer);
 
 	// Add page title section
@@ -280,7 +268,7 @@ wxPanel* PreferencesDialog::setupAdvancedPanel()
 // -----------------------------------------------------------------------------
 // Shows the preferences page matching [name]
 // -----------------------------------------------------------------------------
-void PreferencesDialog::showPage(string name, string subsection)
+void PreferencesDialog::showPage(const string& name, const string& subsection)
 {
 	// Go through all pages
 	for (unsigned a = 0; a < tree_prefs_->GetPageCount(); a++)
@@ -298,7 +286,7 @@ void PreferencesDialog::showPage(string name, string subsection)
 // -----------------------------------------------------------------------------
 // Returns the name of the currently selected page
 // -----------------------------------------------------------------------------
-string PreferencesDialog::currentPage()
+string PreferencesDialog::currentPage() const
 {
 	int sel = tree_prefs_->GetSelection();
 
@@ -342,14 +330,6 @@ void PreferencesDialog::applyPreferences()
 
 
 // -----------------------------------------------------------------------------
-// Called when the 'Open Selected BRA' button is clicked
-// -----------------------------------------------------------------------------
-void PreferencesDialog::onBtnBRAOpenClicked(wxCommandEvent& e)
-{
-	App::archiveManager().openBaseResource(panel_bra_->selectedPathIndex());
-}
-
-// -----------------------------------------------------------------------------
 // Called when a button is clicked
 // -----------------------------------------------------------------------------
 void PreferencesDialog::onButtonClicked(wxCommandEvent& e)
@@ -373,7 +353,7 @@ void PreferencesDialog::onButtonClicked(wxCommandEvent& e)
 // Opens a preferences dialog on top of [parent], showing either the last viewed
 // page or [initial_page] if it is specified
 // -----------------------------------------------------------------------------
-void PreferencesDialog::openPreferences(wxWindow* parent, string initial_page, string subsection)
+void PreferencesDialog::openPreferences(wxWindow* parent, string initial_page, const string& subsection)
 {
 	// Setup dialog
 	PreferencesDialog dlg(parent);

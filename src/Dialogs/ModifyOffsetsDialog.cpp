@@ -49,9 +49,9 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	wxDialog(nullptr, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
 {
 	// Create main sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
+	auto m_vbox = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(m_vbox, 1, wxEXPAND | wxALL, UI::padLarge());
 
 	// Set dialog icon
@@ -60,7 +60,7 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	SetIcon(icon);
 
 	// Setup layout
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	m_vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::padLarge());
 
 	// 'Auto Offsets'
@@ -104,32 +104,27 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 
 
 	// Apply layout and size
-	Layout();
+	wxWindowBase::Layout();
 	SetInitialSize(wxDefaultSize);
 }
 
 // -----------------------------------------------------------------------------
-// ModifyOffsetsDialog class destructor
-// -----------------------------------------------------------------------------
-ModifyOffsetsDialog::~ModifyOffsetsDialog() {}
-
-// -----------------------------------------------------------------------------
 // Returns the offsets that have been entered
 // -----------------------------------------------------------------------------
-Vec2i ModifyOffsetsDialog::offset()
+Vec2i ModifyOffsetsDialog::offset() const
 {
 	long x = 0;
 	long y = 0;
 	entry_xoff_->GetValue().ToLong(&x);
 	entry_yoff_->GetValue().ToLong(&y);
 
-	return Vec2i(x, y);
+	return { x, y };
 }
 
 // -----------------------------------------------------------------------------
 // Returns the selected alignment type
 // -----------------------------------------------------------------------------
-int ModifyOffsetsDialog::alignType()
+int ModifyOffsetsDialog::alignType() const
 {
 	if (opt_auto_->GetValue())
 		return combo_aligntype_->GetSelection();
@@ -140,7 +135,7 @@ int ModifyOffsetsDialog::alignType()
 // -----------------------------------------------------------------------------
 // Returns true if 'automatic offsets' is selected
 // -----------------------------------------------------------------------------
-bool ModifyOffsetsDialog::autoOffset()
+bool ModifyOffsetsDialog::autoOffset() const
 {
 	if (opt_auto_->GetValue())
 		return true;
@@ -151,7 +146,7 @@ bool ModifyOffsetsDialog::autoOffset()
 // -----------------------------------------------------------------------------
 // Returns true if the 'relative' offset checkbox is checked
 // -----------------------------------------------------------------------------
-bool ModifyOffsetsDialog::relativeOffset()
+bool ModifyOffsetsDialog::relativeOffset() const
 {
 	return cbox_relative_->GetValue();
 }
@@ -159,7 +154,7 @@ bool ModifyOffsetsDialog::relativeOffset()
 // -----------------------------------------------------------------------------
 // Returns true if the user has entered an x-offset
 // -----------------------------------------------------------------------------
-bool ModifyOffsetsDialog::xOffChange()
+bool ModifyOffsetsDialog::xOffChange() const
 {
 	if (entry_xoff_->GetValue().IsEmpty())
 		return false;
@@ -170,7 +165,7 @@ bool ModifyOffsetsDialog::xOffChange()
 // -----------------------------------------------------------------------------
 // Returns true if the user has entered a y-offset
 // -----------------------------------------------------------------------------
-bool ModifyOffsetsDialog::yOffChange()
+bool ModifyOffsetsDialog::yOffChange() const
 {
 	if (entry_yoff_->GetValue().IsEmpty())
 		return false;
@@ -183,12 +178,12 @@ bool ModifyOffsetsDialog::yOffChange()
 // [xoff,yoff] and size [width,height], based on the currently selected options
 // in the dialog
 // -----------------------------------------------------------------------------
-Vec2i ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, int height)
+Vec2i ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, int height) const
 {
-	int   type = alignType();
-	Vec2i ofs  = offset();
-	int   x    = xoff;
-	int   y    = yoff;
+	int  type = alignType();
+	auto ofs  = offset();
+	int  x    = xoff;
+	int  y    = yoff;
 
 	if (type >= 0)
 	{
@@ -262,7 +257,7 @@ Vec2i ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, int h
 		}
 	}
 
-	return Vec2i(x, y);
+	return { x, y };
 }
 
 

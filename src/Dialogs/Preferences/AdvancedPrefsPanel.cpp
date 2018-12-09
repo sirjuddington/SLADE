@@ -47,10 +47,10 @@
 AdvancedPrefsPanel::AdvancedPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	const wxColour& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
+	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
 
 	// Add property grid
 	pg_cvars_ = new wxPropertyGrid(
@@ -66,13 +66,8 @@ AdvancedPrefsPanel::AdvancedPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 	// Init property grid
 	refreshPropGrid();
 
-	Layout();
+	wxPanel::Layout();
 }
-
-// -----------------------------------------------------------------------------
-// AdvancedPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-AdvancedPrefsPanel::~AdvancedPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls
@@ -85,7 +80,7 @@ void AdvancedPrefsPanel::init()
 // -----------------------------------------------------------------------------
 // Refreshes the cvars wxPropertyGrid
 // -----------------------------------------------------------------------------
-void AdvancedPrefsPanel::refreshPropGrid()
+void AdvancedPrefsPanel::refreshPropGrid() const
 {
 	// Clear
 	pg_cvars_->Clear();
@@ -95,20 +90,20 @@ void AdvancedPrefsPanel::refreshPropGrid()
 	CVar::putList(cvars);
 	std::sort(cvars.begin(), cvars.end());
 
-	for (unsigned a = 0; a < cvars.size(); a++)
+	for (const auto& name : cvars)
 	{
 		// Get cvar
-		CVar* cvar = CVar::get(cvars[a]);
+		auto cvar = CVar::get(name);
 
 		// Add to grid depending on type
 		if (cvar->type == CVar::Type::Boolean)
-			pg_cvars_->Append(new wxBoolProperty(cvars[a], cvars[a], cvar->GetValue().Bool));
+			pg_cvars_->Append(new wxBoolProperty(name, name, cvar->GetValue().Bool));
 		else if (cvar->type == CVar::Type::Integer)
-			pg_cvars_->Append(new wxIntProperty(cvars[a], cvars[a], cvar->GetValue().Int));
+			pg_cvars_->Append(new wxIntProperty(name, name, cvar->GetValue().Int));
 		else if (cvar->type == CVar::Type::Float)
-			pg_cvars_->Append(new wxFloatProperty(cvars[a], cvars[a], cvar->GetValue().Float));
+			pg_cvars_->Append(new wxFloatProperty(name, name, cvar->GetValue().Float));
 		else if (cvar->type == CVar::Type::String)
-			pg_cvars_->Append(new wxStringProperty(cvars[a], cvars[a], S_FMT("%s", ((CStringCVar*)cvar)->value)));
+			pg_cvars_->Append(new wxStringProperty(name, name, S_FMT("%s", ((CStringCVar*)cvar)->value)));
 	}
 
 	// Set all bool properties to use checkboxes
@@ -124,29 +119,29 @@ void AdvancedPrefsPanel::applyPreferences()
 	vector<string> cvars;
 	CVar::putList(cvars);
 
-	for (unsigned a = 0; a < cvars.size(); a++)
+	for (const auto& name : cvars)
 	{
 		// Get cvar
-		CVar* cvar = CVar::get(cvars[a]);
+		auto cvar = CVar::get(name);
 
 		// Check if cvar value was even modified
-		if (!pg_cvars_->GetProperty(cvars[a])->HasFlag(wxPG_PROP_MODIFIED))
+		if (!pg_cvars_->GetProperty(name)->HasFlag(wxPG_PROP_MODIFIED))
 		{
 			// If unmodified, it might still have been changed in another panel, so refresh it
 			if (cvar->type == CVar::Type::Boolean)
-				pg_cvars_->SetPropertyValue(cvars[a], cvar->GetValue().Bool);
+				pg_cvars_->SetPropertyValue(name, cvar->GetValue().Bool);
 			else if (cvar->type == CVar::Type::Integer)
-				pg_cvars_->SetPropertyValue(cvars[a], cvar->GetValue().Int);
+				pg_cvars_->SetPropertyValue(name, cvar->GetValue().Int);
 			else if (cvar->type == CVar::Type::Float)
-				pg_cvars_->SetPropertyValue(cvars[a], cvar->GetValue().Float);
+				pg_cvars_->SetPropertyValue(name, cvar->GetValue().Float);
 			else if (cvar->type == CVar::Type::String)
-				pg_cvars_->SetPropertyValue(cvars[a], S_FMT("%s", ((CStringCVar*)cvar)->value));
+				pg_cvars_->SetPropertyValue(name, S_FMT("%s", ((CStringCVar*)cvar)->value));
 
 			continue;
 		}
 
 		// Read value from grid depending on type
-		wxVariant value = pg_cvars_->GetPropertyValue(cvars[a]);
+		auto value = pg_cvars_->GetPropertyValue(name);
 		if (cvar->type == CVar::Type::Integer)
 			*((CIntCVar*)cvar) = value.GetInteger();
 		else if (cvar->type == CVar::Type::Boolean)
@@ -156,7 +151,7 @@ void AdvancedPrefsPanel::applyPreferences()
 		else if (cvar->type == CVar::Type::String)
 			*((CStringCVar*)cvar) = value.GetString();
 
-		pg_cvars_->GetProperty(cvars[a])->SetModifiedStatus(false);
+		pg_cvars_->GetProperty(name)->SetModifiedStatus(false);
 		pg_cvars_->Refresh();
 		pg_cvars_->RefreshEditor();
 	}

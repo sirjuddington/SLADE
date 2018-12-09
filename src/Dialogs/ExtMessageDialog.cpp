@@ -46,11 +46,11 @@
 // -----------------------------------------------------------------------------
 // ExtMessageDialog class constructor
 // -----------------------------------------------------------------------------
-ExtMessageDialog::ExtMessageDialog(wxWindow* parent, string caption) :
+ExtMessageDialog::ExtMessageDialog(wxWindow* parent, const string& caption) :
 	wxDialog(parent, -1, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
 	// Create and set sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Add message label
@@ -77,14 +77,9 @@ ExtMessageDialog::ExtMessageDialog(wxWindow* parent, string caption) :
 }
 
 // -----------------------------------------------------------------------------
-// ExtMessageDialog class destructor
-// -----------------------------------------------------------------------------
-ExtMessageDialog::~ExtMessageDialog() {}
-
-// -----------------------------------------------------------------------------
 // Sets the dialog short message
 // -----------------------------------------------------------------------------
-void ExtMessageDialog::setMessage(string message)
+void ExtMessageDialog::setMessage(const string& message) const
 {
 	label_message_->SetLabel(message);
 }
@@ -92,7 +87,7 @@ void ExtMessageDialog::setMessage(string message)
 // -----------------------------------------------------------------------------
 // Sets the dialog extended text
 // -----------------------------------------------------------------------------
-void ExtMessageDialog::setExt(string text)
+void ExtMessageDialog::setExt(const string& text) const
 {
 	text_ext_->SetValue(text);
 }

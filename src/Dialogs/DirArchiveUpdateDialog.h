@@ -8,7 +8,7 @@ class DirArchiveUpdateDialog : public SDialog
 {
 public:
 	DirArchiveUpdateDialog(wxWindow* parent, DirArchive* archive, vector<DirEntryChange>& changes);
-	~DirArchiveUpdateDialog();
+	~DirArchiveUpdateDialog() = default;
 
 	void populateChangeList();
 
@@ -16,7 +16,7 @@ public:
 	void onBtnOKClicked(wxCommandEvent& e);
 
 private:
-	DirArchive*            archive_;
+	DirArchive*            archive_ = nullptr;
 	vector<DirEntryChange> changes_;
-	wxDataViewListCtrl*    list_changes_;
+	wxDataViewListCtrl*    list_changes_ = nullptr;
 };

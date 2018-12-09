@@ -8,12 +8,12 @@ class AdvancedPrefsPanel : public PrefsPanelBase
 {
 public:
 	AdvancedPrefsPanel(wxWindow* parent);
-	~AdvancedPrefsPanel();
+	~AdvancedPrefsPanel() = default;
 
-	void refreshPropGrid();
+	void refreshPropGrid() const;
 	void init() override;
 	void applyPreferences() override;
 
 private:
-	wxPropertyGrid* pg_cvars_;
+	wxPropertyGrid* pg_cvars_ = nullptr;
 };

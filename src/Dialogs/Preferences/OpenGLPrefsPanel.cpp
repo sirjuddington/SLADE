@@ -57,10 +57,10 @@ EXTERN_CVAR(Int, gl_font_size)
 // -----------------------------------------------------------------------------
 // OpenGLPrefsPanel class constructor
 // -----------------------------------------------------------------------------
-OpenGLPrefsPanel::OpenGLPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+OpenGLPrefsPanel::OpenGLPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent), last_font_size_{ gl_font_size }
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	WxUtils::layoutVertically(
@@ -74,14 +74,7 @@ OpenGLPrefsPanel::OpenGLPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_gl_point_sprite_->SetToolTip(
 		"Only disable this if you are experiencing graphical glitches like things disappearing");
 	ntc_font_size_->SetToolTip("The size of the font to use in OpenGL, eg. for info overlays in the map editor");
-
-	last_font_size_ = gl_font_size;
 }
-
-// -----------------------------------------------------------------------------
-// OpenGLPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-OpenGLPrefsPanel::~OpenGLPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls

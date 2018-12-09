@@ -51,6 +51,31 @@ EXTERN_CVAR(String, zdoom_pk3_path)
 
 // -----------------------------------------------------------------------------
 //
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+#ifdef __WXMSW__
+// -----------------------------------------------------------------------------
+// Inspired by ZDoom. Automatizes some repetitive steps. Puts the value of a
+// registry key into the reference, and returns true if the value actually
+// exists and isn't an empty string.
+// -----------------------------------------------------------------------------
+bool QueryPathKey(wxRegKey::StdKey hkey, const string& path, const string& variable, string& value)
+{
+	wxRegKey key(hkey, path);
+	key.QueryValue(variable, value);
+	key.Close();
+
+	return (value.length() > 0);
+}
+#endif
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
 // BaseResourceArchivesPanel Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -73,16 +98,11 @@ BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent) : PrefsPa
 	// Bind events
 	btn_add_->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnAdd, this);
 	btn_remove_->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnRemove, this);
-	btn_detect_->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnDetect, this);
+	btn_detect_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { autodetect(); });
 
 	// Init layout
-	Layout();
+	wxWindowBase::Layout();
 }
-
-// -----------------------------------------------------------------------------
-// BaseResourceArchivesPanel class destructor
-// -----------------------------------------------------------------------------
-BaseResourceArchivesPanel::~BaseResourceArchivesPanel() {}
 
 // -----------------------------------------------------------------------------
 // Lays out the controls on the panel
@@ -108,34 +128,18 @@ void BaseResourceArchivesPanel::setupLayout()
 // -----------------------------------------------------------------------------
 // Returns the currently selected base resource path
 // -----------------------------------------------------------------------------
-int BaseResourceArchivesPanel::selectedPathIndex()
+int BaseResourceArchivesPanel::selectedPathIndex() const
 {
 	return list_base_archive_paths_->GetSelection();
 }
 
-#ifdef __WXMSW__
-// -----------------------------------------------------------------------------
-// Inspired by ZDoom. Automatizes some repetitive steps. Puts the value of a
-// registry key into the reference, and returns true if the value actually
-// exists and isn't an empty string.
-// -----------------------------------------------------------------------------
-static bool QueryPathKey(wxRegKey::StdKey hkey, string path, string variable, string& value)
-{
-	wxRegKey key(hkey, path);
-	key.QueryValue(variable, value);
-	key.Close();
-
-	return (value.length() > 0);
-}
-#endif
-
 // -----------------------------------------------------------------------------
 // Automatically seek IWADs to populate the list
 // -----------------------------------------------------------------------------
-void BaseResourceArchivesPanel::autodetect()
+void BaseResourceArchivesPanel::autodetect() const
 {
 	// List of known IWADs and common aliases
-	ArchiveEntry* iwadlist = App::archiveManager().programResourceArchive()->entryAtPath("config/iwads.cfg");
+	auto iwadlist = App::archiveManager().programResourceArchive()->entryAtPath("config/iwads.cfg");
 	if (!iwadlist)
 		return;
 	Parser p;
@@ -160,7 +164,7 @@ void BaseResourceArchivesPanel::autodetect()
 		char separator = ':';
 #endif
 
-		wxArrayString paths = wxSplit(doomwadpath, separator);
+		auto paths = wxSplit(doomwadpath, separator);
 		paths.Add(doomwaddir);
 		wxArrayString iwadnames;
 		auto          list = p.parseTreeRoot()->childPTN("iwads");
@@ -168,14 +172,13 @@ void BaseResourceArchivesPanel::autodetect()
 			iwadnames.Add(list->child(i)->name());
 
 		// Look for every known IWAD in every known IWAD directory
-		for (size_t i = 0; i < paths.size(); ++i)
+		for (auto folder : paths)
 		{
-			string folder = paths[i];
 			if (folder.Last() != '/')
 				folder += '/';
-			for (size_t j = 0; j < iwadnames.size(); ++j)
+			for (const auto& iwadname : iwadnames)
 			{
-				string iwad = folder + iwadnames[j];
+				string iwad = folder + iwadname;
 #ifndef WIN32
 				// Try a couple variants before throwing the towel about a name
 				if (!wxFileExists(iwad))
@@ -245,9 +248,8 @@ void BaseResourceArchivesPanel::autodetect()
 
 
 	// Add GOG & Steam paths
-	for (size_t i = 0; i < paths.size(); ++i)
+	for (auto iwad : paths)
 	{
-		string iwad = paths[i];
 		iwad.Replace("\\", "/", true);
 		if (wxFileExists(iwad))
 		{
@@ -321,10 +323,10 @@ void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
 		dialog_open.GetPaths(files);
 
 		// Add each to the paths list
-		for (size_t a = 0; a < files.size(); a++)
+		for (const auto& file : files)
 		{
-			if (App::archiveManager().addBaseResourcePath(files[a]))
-				list_base_archive_paths_->Append(files[a]);
+			if (App::archiveManager().addBaseResourcePath(file))
+				list_base_archive_paths_->Append(file);
 		}
 
 		// Save 'dir_last'
@@ -343,27 +345,4 @@ void BaseResourceArchivesPanel::onBtnRemove(wxCommandEvent& e)
 
 	// Also remove it from the archive manager
 	App::archiveManager().removeBaseResourcePath(index);
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'Detect Archives' button is clicked
-// -----------------------------------------------------------------------------
-void BaseResourceArchivesPanel::onBtnDetect(wxCommandEvent& e)
-{
-	autodetect();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'Browse' for zdoom pk3 button is clicked
-// -----------------------------------------------------------------------------
-void BaseResourceArchivesPanel::onBtnBrowseZDoomPk3(wxCommandEvent& e)
-{
-	/*
-	SFileDialog::FDInfo info;
-	if (SFileDialog::openFile(info, "Browse ZDoom PK3", "Pk3 Files (*.pk3)|*.pk3"))
-	{
-		text_zdoom_pk3_path_->SetValue(info.filenames[0]);
-		zdoom_pk3_path = info.filenames[0];
-	}
-	*/
 }

@@ -78,22 +78,20 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	setupLayout();
 
 	// Bind events
-	btn_reset_player_->Bind(wxEVT_BUTTON, &AudioPrefsPanel::onBtnResetPlayer, this);
-	rb_fluidsynth_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent& e) { updateControls(); });
-	rb_timidity_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent& e) { updateControls(); });
+	btn_reset_player_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
+		MIDI::resetPlayer();
+		MIDI::player().setVolume(snd_volume);
+	});
+	rb_fluidsynth_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent&) { updateControls(); });
+	rb_timidity_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent&) { updateControls(); });
 
 #ifdef NO_FLUIDSYNTH
 	rb_fluidsynth_->Enable(false);
 	rb_timidity_->SetValue(true);
 #endif
 
-	Layout();
+	wxPanel::Layout();
 }
-
-// -----------------------------------------------------------------------------
-// AudioPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-AudioPrefsPanel::~AudioPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls
@@ -134,7 +132,7 @@ void AudioPrefsPanel::applyPreferences()
 void AudioPrefsPanel::setupLayout()
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Autoplay
@@ -177,21 +175,4 @@ void AudioPrefsPanel::updateControls() const
 	flp_soundfont_->Enable(rb_fluidsynth_->GetValue());
 	flp_timidity_->Enable(rb_timidity_->GetValue());
 	text_timidity_options_->Enable(rb_timidity_->GetValue());
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// AudioPrefsPanel Class Events
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Called for resetting the MIDI player
-// -----------------------------------------------------------------------------
-void AudioPrefsPanel::onBtnResetPlayer(wxCommandEvent& e)
-{
-	MIDI::resetPlayer();
-	MIDI::player().setVolume(snd_volume);
 }

@@ -92,11 +92,6 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 }
 
 // -----------------------------------------------------------------------------
-// GraphicsPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-GraphicsPrefsPanel::~GraphicsPrefsPanel() {}
-
-// -----------------------------------------------------------------------------
 // Initialises panel controls
 // -----------------------------------------------------------------------------
 void GraphicsPrefsPanel::init()

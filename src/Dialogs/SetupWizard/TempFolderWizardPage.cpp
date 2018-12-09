@@ -33,7 +33,6 @@
 #include "TempFolderWizardPage.h"
 #include "App.h"
 #include "General/UI.h"
-#include "Utility/SFileDialog.h"
 
 
 // -----------------------------------------------------------------------------
@@ -60,7 +59,7 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 	auto pad_xl = UI::scalePx(16);
 
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	sizer->AddStretchSpacer();
@@ -75,7 +74,7 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 	rb_use_custom_dir_ = new wxRadioButton(this, -1, "Use custom folder:");
 	sizer->Add(rb_use_custom_dir_, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND);
 	text_custom_dir_ = new wxTextCtrl(this, -1, "");
 	hbox->Add(text_custom_dir_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
@@ -91,11 +90,6 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 	rb_use_slade_dir_->Bind(wxEVT_RADIOBUTTON, &TempFolderWizardPage::onRadioButtonChanged, this);
 	btn_browse_dir_->Bind(wxEVT_BUTTON, &TempFolderWizardPage::onBtnBrowse, this);
 }
-
-// -----------------------------------------------------------------------------
-// TempFolderWizardPage class destructor
-// -----------------------------------------------------------------------------
-TempFolderWizardPage::~TempFolderWizardPage() {}
 
 // -----------------------------------------------------------------------------
 // Returns true if the wizard page is valid

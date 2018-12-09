@@ -91,18 +91,13 @@ NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBa
 	sizer->AddGrowableRow(2, 1);
 
 	// Bind events
-	choice_nodebuilder_->Bind(wxEVT_CHOICE, &NodesPrefsPanel::onChoiceBuilderChanged, this);
+	choice_nodebuilder_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) { populateOptions(""); });
 	btn_browse_path_->Bind(wxEVT_BUTTON, &NodesPrefsPanel::onBtnBrowse, this);
 
 	// Init
 	choice_nodebuilder_->Select(sel);
 	populateOptions(nodebuilder_options);
 }
-
-// -----------------------------------------------------------------------------
-// NodesPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-NodesPrefsPanel::~NodesPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls
@@ -126,10 +121,10 @@ void NodesPrefsPanel::init()
 // Populates the options CheckListBox with options for the currently selected
 // node builder
 // -----------------------------------------------------------------------------
-void NodesPrefsPanel::populateOptions(string options)
+void NodesPrefsPanel::populateOptions(const string& options) const
 {
 	// Get current builder
-	NodeBuilders::Builder& builder = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
+	auto& builder = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
 	btn_browse_path_->Enable(builder.id != "none");
 
 	// Set builder path
@@ -153,8 +148,8 @@ void NodesPrefsPanel::populateOptions(string options)
 void NodesPrefsPanel::applyPreferences()
 {
 	// Set nodebuilder
-	NodeBuilders::Builder& builder = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
-	nodebuilder_id                 = builder.id;
+	auto& builder  = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
+	nodebuilder_id = builder.id;
 
 	// Set options string
 	string opt = " ";
@@ -178,19 +173,11 @@ void NodesPrefsPanel::applyPreferences()
 
 
 // -----------------------------------------------------------------------------
-// Called when the node builder dropdown is changed
-// -----------------------------------------------------------------------------
-void NodesPrefsPanel::onChoiceBuilderChanged(wxCommandEvent& e)
-{
-	populateOptions("");
-}
-
-// -----------------------------------------------------------------------------
 // Called when the browse path button is clicked
 // -----------------------------------------------------------------------------
 void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 {
-	NodeBuilders::Builder& builder = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
+	auto& builder = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
 
 	// Setup extension
 #ifdef __WXMSW__

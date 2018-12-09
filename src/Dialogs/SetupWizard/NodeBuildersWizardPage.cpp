@@ -47,31 +47,13 @@
 NodeBuildersWizardPage::NodeBuildersWizardPage(wxWindow* parent) : WizardPageBase(parent)
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Add Base Resource Archive panel
 	panel_nodes_ = new NodesPrefsPanel(this, false);
 	sizer->Add(panel_nodes_, 1, wxEXPAND);
 }
-
-// -----------------------------------------------------------------------------
-// NodeBuildersWizardPage class destructor
-// -----------------------------------------------------------------------------
-NodeBuildersWizardPage::~NodeBuildersWizardPage() {}
-
-// -----------------------------------------------------------------------------
-// Returns true if the wizard page is valid
-// -----------------------------------------------------------------------------
-bool NodeBuildersWizardPage::canGoNext()
-{
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Applies any changes set on the wizard page
-// -----------------------------------------------------------------------------
-void NodeBuildersWizardPage::applyChanges() {}
 
 // -----------------------------------------------------------------------------
 // Returns the description for the wizard page

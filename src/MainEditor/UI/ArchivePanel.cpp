@@ -72,6 +72,8 @@
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
 #include "Utility/SFileDialog.h"
+#include "Dialogs/GfxColouriseDialog.h"
+#include "Dialogs/GfxTintDialog.h"
 
 
 // -----------------------------------------------------------------------------

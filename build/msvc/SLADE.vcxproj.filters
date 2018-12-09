@@ -1500,6 +1500,12 @@
     <ClCompile Include="..\..\src\UI\Controls\STabCtrl.cpp">
       <Filter>UI\Controls</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\GfxColouriseDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\GfxTintDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2629,6 +2635,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\General\Defs.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\GfxColouriseDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\GfxTintDialog.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

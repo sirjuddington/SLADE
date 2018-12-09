@@ -59,7 +59,7 @@ CVAR(String, dir_last_pngtool, "", CVar::Flag::Save)
 PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	WxUtils::layoutVertically(
@@ -96,11 +96,6 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 								   SFileDialog::executableFileName("deflopt"))) },
 		wxSizerFlags(0).Expand());
 }
-
-// -----------------------------------------------------------------------------
-// PNGPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-PNGPrefsPanel::~PNGPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls

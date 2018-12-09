@@ -59,7 +59,7 @@ EXTERN_CVAR(Bool, hud_wide)
 HudOffsetsPrefsPanel::HudOffsetsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	WxUtils::layoutVertically(
@@ -70,11 +70,6 @@ HudOffsetsPrefsPanel::HudOffsetsPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 		  cb_hud_wide_      = new wxCheckBox(this, -1, "Show widescreen borders") },
 		wxSizerFlags(0).Expand());
 }
-
-// -----------------------------------------------------------------------------
-// HudOffsetsPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-HudOffsetsPrefsPanel::~HudOffsetsPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls

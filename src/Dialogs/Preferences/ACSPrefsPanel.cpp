@@ -80,11 +80,6 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 }
 
 // -----------------------------------------------------------------------------
-// ACSPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-ACSPrefsPanel::~ACSPrefsPanel() {}
-
-// -----------------------------------------------------------------------------
 // Initialises panel controls
 // -----------------------------------------------------------------------------
 void ACSPrefsPanel::init()
@@ -104,10 +99,10 @@ void ACSPrefsPanel::applyPreferences()
 	path_acc = flp_acc_path_->location();
 
 	// Build include paths string
-	string        paths_string;
-	wxArrayString lib_paths = list_inc_paths_->GetStrings();
-	for (unsigned a = 0; a < lib_paths.size(); a++)
-		paths_string += lib_paths[a] + ";";
+	string paths_string;
+	auto   lib_paths = list_inc_paths_->GetStrings();
+	for (const auto& lib_path : lib_paths)
+		paths_string += lib_path + ";";
 	if (paths_string.EndsWith(";"))
 		paths_string.RemoveLast(1);
 
@@ -133,12 +128,12 @@ void ACSPrefsPanel::setupLayout()
 
 	// Include paths
 	sizer->Add(new wxStaticText(this, -1, "Include Paths:"), 0, wxEXPAND, UI::pad());
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 1, wxEXPAND | wxBOTTOM, UI::pad());
 	hbox->Add(list_inc_paths_, 1, wxEXPAND | wxRIGHT, UI::pad());
 
 	// Add include path
-	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	auto vbox = new wxBoxSizer(wxVERTICAL);
 	hbox->Add(vbox, 0, wxEXPAND);
 	vbox->Add(btn_incpath_add_, 0, wxEXPAND | wxBOTTOM, UI::pad());
 

@@ -153,9 +153,9 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	SetIcon(icon);
 
 	// Setup main sizer
-	wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 	// Add preview
@@ -163,12 +163,12 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	sizer->Add(canvas_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
 
 	// Add crop controls
-	wxStaticBox*      frame      = new wxStaticBox(this, -1, "Crop Borders");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	auto frame      = new wxStaticBox(this, -1, "Crop Borders");
+	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxBOTTOM, UI::padLarge());
 
 	// Absolute
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, 0, wxEXPAND | wxALL, UI::pad());
 	rb_absolute_ = new wxRadioButton(frame, -1, "Absolute");
 	rb_absolute_->SetValue(true);
@@ -178,7 +178,7 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	rb_relative_ = new wxRadioButton(frame, -1, "Relative");
 	hbox->Add(rb_relative_, 0, wxEXPAND);
 
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
 
 	// Left
@@ -214,26 +214,47 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	// Add buttons
 	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
-	// Bind events
-	text_left_->Bind(wxEVT_TEXT, &GfxCropDialog::onTextChanged, this);
-	text_left_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
-	text_left_->Bind(wxEVT_KILL_FOCUS, &GfxCropDialog::onLeftTextFocus, this);
-	text_top_->Bind(wxEVT_TEXT, &GfxCropDialog::onTextChanged, this);
-	text_top_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
-	text_top_->Bind(wxEVT_KILL_FOCUS, &GfxCropDialog::onTopTextFocus, this);
-	text_right_->Bind(wxEVT_TEXT, &GfxCropDialog::onTextChanged, this);
-	text_right_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
-	text_right_->Bind(wxEVT_KILL_FOCUS, &GfxCropDialog::onRightTextFocus, this);
-	text_bottom_->Bind(wxEVT_TEXT, &GfxCropDialog::onTextChanged, this);
-	text_bottom_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
-	text_bottom_->Bind(wxEVT_KILL_FOCUS, &GfxCropDialog::onBottomTextFocus, this);
-	rb_absolute_->Bind(wxEVT_RADIOBUTTON, &GfxCropDialog::onAbsoluteRelativeChanged, this);
-	rb_relative_->Bind(wxEVT_RADIOBUTTON, &GfxCropDialog::onAbsoluteRelativeChanged, this);
+	bindEvents();
 
 	// Setup dialog size
 	SetInitialSize(wxSize(-1, -1));
-	SetMinSize(GetSize());
+	wxTopLevelWindowBase::SetMinSize(GetSize());
 	CenterOnParent();
+}
+
+void GfxCropDialog::bindEvents()
+{
+	// Left text box
+	text_left_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
+	text_left_->Bind(wxEVT_KILL_FOCUS, [&](wxFocusEvent& e) {
+		setLeft();
+		e.Skip();
+	});
+
+	// Top text box
+	text_top_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
+	text_top_->Bind(wxEVT_KILL_FOCUS, [&](wxFocusEvent& e) {
+		setTop();
+		e.Skip();
+	});
+
+	// Right text box
+	text_right_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
+	text_right_->Bind(wxEVT_KILL_FOCUS, [&](wxFocusEvent& e) {
+		setRight();
+		e.Skip();
+	});
+
+	// Bottom text box
+	text_bottom_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
+	text_bottom_->Bind(wxEVT_KILL_FOCUS, [&](wxFocusEvent& e) {
+		setBottom();
+		e.Skip();
+	});
+
+	// Absolute/Relative radio buttons
+	rb_absolute_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent&) { updateValues(); });
+	rb_relative_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent&) { updateValues(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -249,7 +270,7 @@ void GfxCropDialog::updatePreview()
 // -----------------------------------------------------------------------------
 // Update the number text box values
 // -----------------------------------------------------------------------------
-void GfxCropDialog::updateValues()
+void GfxCropDialog::updateValues() const
 {
 	if (rb_absolute_->GetValue())
 	{
@@ -356,14 +377,6 @@ void GfxCropDialog::setBottom()
 
 
 // -----------------------------------------------------------------------------
-// Called when a textbox value is changed
-// -----------------------------------------------------------------------------
-void GfxCropDialog::onTextChanged(wxCommandEvent& e)
-{
-	// updatePreview();
-}
-
-// -----------------------------------------------------------------------------
 // Called when enter is pressed in a text box
 // -----------------------------------------------------------------------------
 void GfxCropDialog::onTextEnter(wxCommandEvent& e)
@@ -376,48 +389,4 @@ void GfxCropDialog::onTextEnter(wxCommandEvent& e)
 		setRight();
 	else if (e.GetEventObject() == text_bottom_)
 		setBottom();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the left text box is (un)focused
-// -----------------------------------------------------------------------------
-void GfxCropDialog::onLeftTextFocus(wxFocusEvent& e)
-{
-	setLeft();
-	e.Skip();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the top text box is (un)focused
-// -----------------------------------------------------------------------------
-void GfxCropDialog::onTopTextFocus(wxFocusEvent& e)
-{
-	setTop();
-	e.Skip();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the right text box is (un)focused
-// -----------------------------------------------------------------------------
-void GfxCropDialog::onRightTextFocus(wxFocusEvent& e)
-{
-	setRight();
-	e.Skip();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the bottom text box is (un)focused
-// -----------------------------------------------------------------------------
-void GfxCropDialog::onBottomTextFocus(wxFocusEvent& e)
-{
-	setBottom();
-	e.Skip();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'Absolute'/'Relative' radio buttons change
-// -----------------------------------------------------------------------------
-void GfxCropDialog::onAbsoluteRelativeChanged(wxCommandEvent& e)
-{
-	updateValues();
 }

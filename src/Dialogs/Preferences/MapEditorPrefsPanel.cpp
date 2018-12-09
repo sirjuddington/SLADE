@@ -65,7 +65,7 @@ EXTERN_CVAR(Bool, map_split_auto_offset)
 MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	WxUtils::layoutVertically(
@@ -83,13 +83,8 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 			WxUtils::createLabelHBox(this, "Max backups to keep:", text_max_backups_ = new NumberTextCtrl(this)) },
 		wxSizerFlags(0).Expand());
 
-	Layout();
+	wxWindowBase::Layout();
 }
-
-// -----------------------------------------------------------------------------
-// MapEditorPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-MapEditorPrefsPanel::~MapEditorPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls

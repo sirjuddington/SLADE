@@ -63,10 +63,10 @@ EXTERN_CVAR(Bool, render_shade_orthogonal_lines)
 Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
+	auto psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
-	wxGridBagSizer* gbsizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto gbsizer = new wxGridBagSizer(UI::pad(), UI::pad());
 	psizer->Add(gbsizer, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 	// Render distance
@@ -89,7 +89,7 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	gbsizer->Add(cb_max_thing_dist_lock_, { 1, 3 }, { 1, 1 }, wxEXPAND);
 	gbsizer->AddGrowableCol(1, 1);
 
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	psizer->Add(hbox, 0, wxEXPAND);
 
 	// Adaptive render distance
@@ -120,16 +120,15 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 		wxSizerFlags(0).Expand());
 
 	// Bind events
-	slider_max_render_dist_->Bind(wxEVT_SLIDER, &Map3DPrefsPanel::onSliderMaxRenderDistChanged, this);
-	slider_max_thing_dist_->Bind(wxEVT_SLIDER, &Map3DPrefsPanel::onSliderMaxThingDistChanged, this);
-	cb_max_thing_dist_lock_->Bind(wxEVT_CHECKBOX, &Map3DPrefsPanel::onCBLockThingDistChanged, this);
-	cb_distance_unlimited_->Bind(wxEVT_CHECKBOX, &Map3DPrefsPanel::onCBDistUnlimitedChanged, this);
+	slider_max_render_dist_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
+		if (cb_max_thing_dist_lock_->GetValue())
+			slider_max_thing_dist_->SetValue(slider_max_render_dist_->GetValue());
+		updateDistanceControls();
+	});
+	slider_max_thing_dist_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) { updateDistanceControls(); });
+	cb_max_thing_dist_lock_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDistanceControls(); });
+	cb_distance_unlimited_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDistanceControls(); });
 }
-
-// -----------------------------------------------------------------------------
-// Map3DPrefsPanel class destructor
-// -----------------------------------------------------------------------------
-Map3DPrefsPanel::~Map3DPrefsPanel() {}
 
 // -----------------------------------------------------------------------------
 // Initialises panel controls
@@ -169,7 +168,7 @@ void Map3DPrefsPanel::init()
 // -----------------------------------------------------------------------------
 // Updates render distance controls (value labels, locking, etc.)
 // -----------------------------------------------------------------------------
-void Map3DPrefsPanel::updateDistanceControls()
+void Map3DPrefsPanel::updateDistanceControls() const
 {
 	// Render distance
 	if (cb_distance_unlimited_->GetValue())
@@ -223,47 +222,4 @@ void Map3DPrefsPanel::applyPreferences()
 	camera_3d_show_distance       = cb_show_distance_->GetValue();
 	mlook_invert_y                = cb_invert_y_->GetValue();
 	render_shade_orthogonal_lines = cb_shade_orthogonal_->GetValue();
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// Map3DPrefsPanel Class Events
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Called when the render distance slider is changed
-// -----------------------------------------------------------------------------
-void Map3DPrefsPanel::onSliderMaxRenderDistChanged(wxCommandEvent& e)
-{
-	if (cb_max_thing_dist_lock_->GetValue())
-		slider_max_thing_dist_->SetValue(slider_max_render_dist_->GetValue());
-
-	updateDistanceControls();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the thing render distance slider is changed
-// -----------------------------------------------------------------------------
-void Map3DPrefsPanel::onSliderMaxThingDistChanged(wxCommandEvent& e)
-{
-	updateDistanceControls();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'Unlimited' render distance checkbox is clicked
-// -----------------------------------------------------------------------------
-void Map3DPrefsPanel::onCBDistUnlimitedChanged(wxCommandEvent& e)
-{
-	updateDistanceControls();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'Lock' thing render distance checkbox is clicked
-// -----------------------------------------------------------------------------
-void Map3DPrefsPanel::onCBLockThingDistChanged(wxCommandEvent& e)
-{
-	updateDistanceControls();
 }

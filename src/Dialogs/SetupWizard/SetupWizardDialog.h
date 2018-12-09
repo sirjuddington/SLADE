@@ -5,16 +5,16 @@ class SetupWizardDialog : public wxDialog
 {
 public:
 	SetupWizardDialog(wxWindow* parent);
-	~SetupWizardDialog();
+	~SetupWizardDialog() = default;
 
 	void setupLayout();
 	void showPage(unsigned index);
 
 private:
-	wxButton*     btn_next_;
-	wxButton*     btn_prev_;
-	wxStaticText* label_page_title_;
-	wxStaticText* label_page_description_;
+	wxButton*     btn_next_               = nullptr;
+	wxButton*     btn_prev_               = nullptr;
+	wxStaticText* label_page_title_       = nullptr;
+	wxStaticText* label_page_description_ = nullptr;
 
 	vector<WizardPageBase*> pages_;
 	unsigned                current_page_;

@@ -26,6 +26,7 @@ public:
 	};
 
 	Palette(unsigned size = 256);
+	Palette(Palette* pal) : Palette(pal->colours_.size()) { copyPalette(pal); }
 	~Palette();
 
 	ColRGBA colour(uint8_t index) { return colours_[index]; }
