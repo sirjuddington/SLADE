@@ -30,7 +30,7 @@ void   init();
 void   parse(Parser* p, bool custom);
 
 // Game executables
-GameExe* gameExe(string id);
+GameExe* gameExe(const string& id);
 GameExe* gameExe(unsigned index);
 unsigned nGameExes();
 void     setGameExePath(string id, string path);
@@ -41,12 +41,12 @@ void     addGameExeConfig(unsigned exe_index, string config_name, string config_
 bool     removeGameExeConfig(unsigned exe_index, unsigned config_index);
 
 // External executables
-int                 nExternalExes(string category = "");
-ExternalExe         externalExe(string name, string category = "");
-vector<ExternalExe> externalExes(string category = "");
+int                 nExternalExes(const string& category = "");
+ExternalExe         externalExe(const string& name, const string& category = "");
+vector<ExternalExe> externalExes(const string& category = "");
 void                parseExternalExe(ParseTreeNode* node);
-void                addExternalExe(string name, string path, string category);
-void                setExternalExeName(string name_old, string name_new, string category);
-void                setExternalExePath(string name, string path, string category);
-void                removeExternalExe(string name, string category);
+void                addExternalExe(const string& name, const string& path, const string& category);
+void                setExternalExeName(const string& name_old, const string& name_new, const string& category);
+void                setExternalExePath(const string& name, const string& path, const string& category);
+void                removeExternalExe(const string& name, const string& category);
 } // namespace Executables

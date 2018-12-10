@@ -1232,7 +1232,7 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from one of the archives in the list
 // -----------------------------------------------------------------------------
-void ArchiveManager::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+void ArchiveManager::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
 {
 	// Reset event data for reading
 	event_data.seek(0, SEEK_SET);
@@ -1284,7 +1284,7 @@ CONSOLE_COMMAND(list_archives, 0, true)
 // -----------------------------------------------------------------------------
 // Attempts to open each given argument (filenames)
 // -----------------------------------------------------------------------------
-void c_open(vector<string> args)
+void c_open(const vector<string>& args)
 {
 	for (const auto& arg : args)
 		App::archiveManager().openArchive(arg);

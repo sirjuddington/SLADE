@@ -73,8 +73,8 @@ public:
 	bool keyUp(const string& key) const;
 
 	// Keybind handling
-	void onKeyBindPress(string name) override;
-	void onKeyBindRelease(string name) override;
+	void onKeyBindPress(const string& name) override;
+	void onKeyBindRelease(const string& name) override;
 	void handleKeyBind2dView(const string& name);
 	void handleKeyBind2d(const string& name);
 	void handleKeyBind3d(const string& name) const;

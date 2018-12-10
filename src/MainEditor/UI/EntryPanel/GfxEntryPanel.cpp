@@ -1141,7 +1141,7 @@ void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 // Handles any announcements
 // -----------------------------------------------------------------------------
-void GfxEntryPanel::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+void GfxEntryPanel::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser())
 		return;

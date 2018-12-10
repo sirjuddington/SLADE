@@ -191,6 +191,7 @@ private:
 	ArchiveEntryList* list_;
 };
 
+
 // -----------------------------------------------------------------------------
 // ChoosePaletteDialog Class
 //
@@ -236,6 +237,58 @@ public:
 private:
 	PaletteChooser* pal_chooser_;
 };
+
+
+// -----------------------------------------------------------------------------
+// EntryTreeClipboardItem Class
+//
+// A clipboard item for copy+paste of archive entries and folders
+// -----------------------------------------------------------------------------
+class EntryTreeClipboardItem : public ClipboardItem
+{
+public:
+	EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, vector<ArchiveTreeNode*>& dirs) :
+		ClipboardItem(Type::EntryTree),
+		tree_{ new ArchiveTreeNode() }
+	{
+		// Copy entries
+		for (auto& entry : entries)
+			tree_->addEntry(new ArchiveEntry(*entry));
+
+		// Copy entries to system clipboard
+		// (exports them as temp files and adds the paths to the clipboard)
+		if (wxTheClipboard->Open())
+		{
+			wxTheClipboard->Clear();
+			auto   file          = new wxFileDataObject();
+			string tmp_directory = App::path("", App::Dir::Temp); // cache temp directory
+			string file_dot      = ".";
+			for (auto& entry : entries)
+			{
+				// Export to file
+				string filename = tmp_directory + entry->name(true) + file_dot + entry->type()->extension();
+				entry->exportFile(filename);
+
+				// Add to clipboard
+				file->AddFile(filename);
+			}
+			wxTheClipboard->AddData(file);
+			wxTheClipboard->Close();
+		}
+
+		// Copy dirs
+		for (auto& dir : dirs)
+			tree_->addChild(dir->clone());
+	}
+
+	~EntryTreeClipboardItem() = default;
+
+	ArchiveTreeNode* tree() const { return tree_.get(); }
+
+private:
+	ArchiveTreeNode::UPtr tree_;
+};
+
 
 
 // -----------------------------------------------------------------------------
@@ -1785,7 +1838,7 @@ bool ArchivePanel::copyEntry()
 		return false;
 
 	// Create clipboard item from selection
-	theClipboard->addItem(new EntryTreeClipboardItem(entries, dirs));
+	App::clipboard().add(std::make_unique<EntryTreeClipboardItem>(entries, dirs));
 
 	return true;
 }
@@ -1811,7 +1864,7 @@ bool ArchivePanel::cutEntry()
 bool ArchivePanel::pasteEntry()
 {
 	// Do nothing if there is nothing in the clipboard
-	if (theClipboard->nItems() == 0)
+	if (App::clipboard().empty())
 		return false;
 
 	// Get the entry index of the last selected list item
@@ -1829,14 +1882,14 @@ bool ArchivePanel::pasteEntry()
 	bool pasted = false;
 	undo_manager_->beginRecord("Paste Entry");
 	entry_list_->setEntriesAutoUpdate(false);
-	for (unsigned a = 0; a < theClipboard->nItems(); a++)
+	for (unsigned a = 0; a < App::clipboard().size(); a++)
 	{
 		// Check item type
-		if (theClipboard->item(a)->type() != CLIPBOARD_ENTRY_TREE)
+		if (App::clipboard().item(a)->type() != ClipboardItem::Type::EntryTree)
 			continue;
 
 		// Get clipboard item
-		EntryTreeClipboardItem* clip = (EntryTreeClipboardItem*)theClipboard->item(a);
+		EntryTreeClipboardItem* clip = (EntryTreeClipboardItem*)App::clipboard().item(a);
 
 		// Merge it in
 		if (archive_->paste(clip->tree(), index, entry_list_->currentDir()))
@@ -3245,7 +3298,7 @@ bool ArchivePanel::handleAction(string id)
 // Called when an announcement is recieved from the archive that this
 // ArchivePanel is managing
 // -----------------------------------------------------------------------------
-void ArchivePanel::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+void ArchivePanel::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
 {
 	// Reset event data for reading
 	event_data.seek(0, SEEK_SET);

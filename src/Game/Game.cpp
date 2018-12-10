@@ -82,7 +82,7 @@ public:
 		listenTo(&App::archiveManager());
 	}
 
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override
 	{
 		if (announcer == &App::archiveManager())
 		{

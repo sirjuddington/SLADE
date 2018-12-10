@@ -76,7 +76,7 @@ public:
 	vector<TexInfo>& allTexturesInfo() { return tex_info_; }
 	vector<TexInfo>& allFlatsInfo() { return flat_info_; }
 
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 private:
 	Archive*        archive_;

@@ -60,6 +60,11 @@ EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(Bool, wad_force_uppercase)
 
 
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace
 {
 bool TxListIsTextures(TextureXList& tx)
@@ -67,6 +72,75 @@ bool TxListIsTextures(TextureXList& tx)
 	return tx.format() == TextureXList::Format::Textures;
 }
 } // namespace
+
+
+// -----------------------------------------------------------------------------
+// TextureClipboardItem Class
+//
+// ClipboardItem for copy+paste of composite textures
+// -----------------------------------------------------------------------------
+class TextureClipboardItem : public ClipboardItem
+{
+public:
+	TextureClipboardItem(CTexture* texture, Archive* parent) :
+		ClipboardItem(Type::CompositeTexture),
+		texture_{ new CTexture() }
+	{
+		// Create/copy texture
+		texture_->copyTexture(texture);
+
+		// Copy patch entries if possible
+		for (unsigned a = 0; a < texture->nPatches(); a++)
+		{
+			auto entry = texture->patch(a)->patchEntry(parent);
+
+			// FIXME/TODO: Do something to handle patches that are defined
+			// in TEXTURES rather than a discrete entry!
+			if (!entry)
+				continue;
+
+			// Don't copy patch if it has been already
+			bool there = false;
+			for (auto& patch_entry : patch_entries_)
+			{
+				if (patch_entry->name() == entry->name())
+				{
+					there = true;
+					break;
+				}
+			}
+			if (there)
+				continue;
+
+			// Copy patch entry
+			if (entry)
+				patch_entries_.emplace_back(new ArchiveEntry(*entry));
+		}
+	}
+	~TextureClipboardItem() = default;
+
+	CTexture*     texture() const { return texture_.get(); }
+
+	// -------------------------------------------------------------------------
+	// Returns the entry copy for the patch at [index] in the texture
+	// -------------------------------------------------------------------------
+	ArchiveEntry* patchEntry(const string& patch)
+	{
+		// Find copied patch entry with matching name
+		for (auto& entry : patch_entries_)
+		{
+			if (S_CMPNOCASE(entry->name(true).Truncate(8), patch))
+				return entry.get();
+		}
+
+		// Not found
+		return nullptr;
+	}
+
+private:
+	std::unique_ptr<CTexture>  texture_;
+	vector<ArchiveEntry::UPtr> patch_entries_;
+};
 
 
 // -----------------------------------------------------------------------------
@@ -1030,12 +1104,12 @@ void TextureXPanel::copy()
 		return;
 
 	// Create list of textures to copy
-	vector<ClipboardItem*> copy_items;
+	vector<ClipboardItem::UPtr> copy_items;
 	for (unsigned a = 0; a < selection.size(); a++)
-		copy_items.push_back(new TextureClipboardItem(texturex_.texture(selection[a]), tx_editor_->archive()));
+		copy_items.emplace_back(new TextureClipboardItem(texturex_.texture(selection[a]), tx_editor_->archive()));
 
 	// Add list to clipboard
-	theClipboard->addItems(copy_items);
+	App::clipboard().add(copy_items);
 }
 
 // -----------------------------------------------------------------------------
@@ -1044,7 +1118,7 @@ void TextureXPanel::copy()
 void TextureXPanel::paste()
 {
 	// Check there is anything on the clipboard
-	if (theClipboard->nItems() == 0)
+	if (App::clipboard().empty())
 		return;
 
 	// Get last selected index
@@ -1056,14 +1130,14 @@ void TextureXPanel::paste()
 	undo_manager_->beginRecord("Paste Texture(s)");
 
 	// Go through clipboard items
-	for (unsigned a = 0; a < theClipboard->nItems(); a++)
+	for (unsigned a = 0; a < App::clipboard().size(); a++)
 	{
 		// Skip if not a texture clipboard item
-		if (theClipboard->item(a)->type() != CLIPBOARD_COMPOSITE_TEXTURE)
+		if (App::clipboard().item(a)->type() != ClipboardItem::Type::CompositeTexture)
 			continue;
 
 		// Get texture item
-		TextureClipboardItem* item = (TextureClipboardItem*)(theClipboard->item(a));
+		TextureClipboardItem* item = (TextureClipboardItem*)(App::clipboard().item(a));
 
 		// Add new texture after last selected item
 		CTexture* ntex = new CTexture(TxListIsTextures(texturex_));

@@ -20,7 +20,7 @@ public:
 	PatchTable* patchTable() const { return patch_table_; }
 
 	void        updateList(bool clear = false) override;
-	void        onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void        onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 	static bool usageSort(long left, long right);
 	void        sortItems() override;
 
@@ -58,5 +58,5 @@ private:
 	void onBtnChangePatch(wxCommandEvent& e);
 	void onDisplayChanged(wxCommandEvent& e);
 	void updateDisplay();
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 };

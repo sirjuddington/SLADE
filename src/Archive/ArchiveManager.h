@@ -67,7 +67,7 @@ public:
 	ArchiveEntry* getBookmark(unsigned index);
 	unsigned      numBookmarks() const { return bookmarks_.size(); }
 
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 private:
 	struct OpenArchive

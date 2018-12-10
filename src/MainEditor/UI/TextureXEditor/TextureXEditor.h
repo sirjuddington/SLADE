@@ -62,6 +62,6 @@ private:
 
 	// Events
 	void onSaveClicked(wxCommandEvent& e);
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 	void onShow(wxShowEvent& e);
 };

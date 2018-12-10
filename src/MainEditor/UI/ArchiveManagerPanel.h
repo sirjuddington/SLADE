@@ -143,7 +143,7 @@ public:
 	vector<int> selectedBookmarks() const;
 	vector<int> selectedFiles() const;
 
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 	// Event handlers
 	void onListArchivesChanged(wxListEvent& e);

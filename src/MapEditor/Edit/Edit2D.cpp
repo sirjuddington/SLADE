@@ -37,6 +37,7 @@
 #include "MapEditor/SectorBuilder.h"
 #include "MapEditor/UndoSteps.h"
 #include "Utility/MathStuff.h"
+#include "App.h"
 
 
 // -----------------------------------------------------------------------------
@@ -610,7 +611,7 @@ void Edit2D::copy() const
 	}
 
 	// Clear current clipboard contents
-	theClipboard->clear();
+	App::clipboard().clear();
 
 	// Copy lines
 	if (mode == Mode::Lines || mode == Mode::Sectors)
@@ -626,9 +627,9 @@ void Edit2D::copy() const
 		}
 
 		// Add to clipboard
-		auto c = new MapArchClipboardItem();
+		auto c = std::make_unique<MapArchClipboardItem>();
 		c->addLines(lines);
-		theClipboard->addItem(c);
+		App::clipboard().add(std::move(c));
 
 		// Editor message
 		context_.addEditorMessage(S_FMT("Copied %s", c->info()));
@@ -641,9 +642,9 @@ void Edit2D::copy() const
 		auto things = context_.selection().selectedThings();
 
 		// Add to clipboard
-		auto c = new MapThingsClipboardItem();
+		auto c = std::make_unique<MapThingsClipboardItem>();
 		c->addThings(things);
-		theClipboard->addItem(c);
+		App::clipboard().add(std::move(c));
 
 		// Editor message
 		context_.addEditorMessage(S_FMT("Copied %s", c->info()));
@@ -656,13 +657,13 @@ void Edit2D::copy() const
 void Edit2D::paste(Vec2f mouse_pos) const
 {
 	// Go through clipboard items
-	for (unsigned a = 0; a < theClipboard->nItems(); a++)
+	for (unsigned a = 0; a < App::clipboard().size(); a++)
 	{
 		// Map architecture
-		if (theClipboard->item(a)->type() == CLIPBOARD_MAP_ARCH)
+		if (App::clipboard().item(a)->type() == ClipboardItem::Type::MapArchitecture)
 		{
 			context_.beginUndoRecord("Paste Map Architecture");
-			auto clip = (MapArchClipboardItem*)theClipboard->item(a);
+			auto clip = (MapArchClipboardItem*)App::clipboard().item(a);
 			// Snap the geometry in such a way that it stays in the same
 			// position relative to the grid
 			auto pos       = context_.relativeSnapToGrid(clip->midpoint(), mouse_pos);
@@ -673,10 +674,10 @@ void Edit2D::paste(Vec2f mouse_pos) const
 		}
 
 		// Things
-		else if (theClipboard->item(a)->type() == CLIPBOARD_MAP_THINGS)
+		else if (App::clipboard().item(a)->type() == ClipboardItem::Type::MapThings)
 		{
 			context_.beginUndoRecord("Paste Things", false, true, false);
-			auto clip = (MapThingsClipboardItem*)theClipboard->item(a);
+			auto clip = (MapThingsClipboardItem*)App::clipboard().item(a);
 			// Snap the geometry in such a way that it stays in the same
 			// position relative to the grid
 			auto pos = context_.relativeSnapToGrid(clip->midpoint(), mouse_pos);

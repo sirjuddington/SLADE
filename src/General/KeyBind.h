@@ -13,15 +13,11 @@ struct Keypress
 	bool   ctrl;
 	bool   shift;
 
-	Keypress(string key, bool alt, bool ctrl, bool shift)
+	Keypress(const string& key, bool alt, bool ctrl, bool shift) : key{ key }, alt{ alt }, ctrl{ ctrl }, shift{ shift }
 	{
-		this->key   = key;
-		this->alt   = alt;
-		this->ctrl  = ctrl;
-		this->shift = shift;
 	}
 
-	Keypress(string key = "", int modifiers = 0)
+	Keypress(const string& key = "", int modifiers = 0)
 	{
 		this->key = key;
 		ctrl = alt = shift = false;
@@ -33,7 +29,7 @@ struct Keypress
 			shift = true;
 	}
 
-	string asString()
+	string asString() const
 	{
 		if (key.IsEmpty())
 			return "";
@@ -58,18 +54,19 @@ struct Keypress
 class KeyBind
 {
 public:
-	KeyBind(string name);
-	~KeyBind();
+	KeyBind(const string& name) : name_{ name } {}
+	~KeyBind() = default;
 
 	// Operators
-	inline bool operator>(const KeyBind r) const
+	bool operator>(const KeyBind r) const
 	{
 		if (priority_ == r.priority_)
 			return name_ < r.name_;
 		else
 			return priority_ < r.priority_;
 	}
-	inline bool operator<(const KeyBind r) const
+
+	bool operator<(const KeyBind r) const
 	{
 		if (priority_ == r.priority_)
 			return name_ > r.name_;
@@ -78,13 +75,13 @@ public:
 	}
 
 	void   clear() { keys_.clear(); }
-	void   addKey(string key, bool alt = false, bool ctrl = false, bool shift = false);
-	string name() { return name_; }
-	string group() { return group_; }
-	string description() { return description_; }
+	void   addKey(const string& key, bool alt = false, bool ctrl = false, bool shift = false);
+	string name() const { return name_; }
+	string group() const { return group_; }
+	string description() const { return description_; }
 	string keysAsString();
 
-	int      nKeys() { return keys_.size(); }
+	int      nKeys() const { return keys_.size(); }
 	Keypress key(unsigned index)
 	{
 		if (index >= keys_.size())
@@ -92,28 +89,28 @@ public:
 		else
 			return keys_[index];
 	}
-	int      nDefaults() { return defaults_.size(); }
+	int      nDefaults() const { return defaults_.size(); }
 	Keypress defaultKey(unsigned index) { return defaults_[index]; }
 
 	// Static functions
-	static KeyBind&      bind(string name);
+	static KeyBind&      bind(const string& name);
 	static wxArrayString bindsForKey(Keypress key);
-	static bool          isPressed(string name);
+	static bool          isPressed(const string& name);
 	static bool          addBind(
-				 string   name,
-				 Keypress key,
-				 string   desc         = "",
-				 string   group        = "",
-				 bool     ignore_shift = false,
-				 int      priority     = -1);
+				 const string&   name,
+				 const Keypress& key,
+				 const string&   desc         = "",
+				 const string&   group        = "",
+				 bool            ignore_shift = false,
+				 int             priority     = -1);
 	static string   keyName(int key);
 	static string   mbName(int button);
 	static bool     keyPressed(Keypress key);
-	static bool     keyReleased(string key);
+	static bool     keyReleased(const string& key);
 	static Keypress asKeyPress(int keycode, int modifiers);
 	static void     allKeyBinds(vector<KeyBind*>& list);
 	static void     releaseAll();
-	static void     pressBind(string name);
+	static void     pressBind(const string& name);
 
 	static void   initBinds();
 	static string writeBinds();
@@ -124,11 +121,11 @@ private:
 	string           name_;
 	vector<Keypress> keys_;
 	vector<Keypress> defaults_;
-	bool             pressed_;
+	bool             pressed_ = false;
 	string           description_;
 	string           group_;
-	bool             ignore_shift_;
-	int              priority_;
+	bool             ignore_shift_ = false;
+	int              priority_     = 0;
 };
 
 
@@ -138,6 +135,6 @@ public:
 	KeyBindHandler();
 	virtual ~KeyBindHandler();
 
-	virtual void onKeyBindPress(string name) {}
-	virtual void onKeyBindRelease(string name) {}
+	virtual void onKeyBindPress(const string& name) {}
+	virtual void onKeyBindRelease(const string& name) {}
 };

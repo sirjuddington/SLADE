@@ -33,7 +33,7 @@ public:
 	bool handleAction(string id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
 
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 	SImage* image() const
 	{

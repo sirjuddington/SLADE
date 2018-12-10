@@ -110,9 +110,9 @@ public:
 		const string& nspace   = "textures",
 		Archive*      priority = nullptr);
 	CTexture* getTexture(const string& texture, Archive* priority = nullptr, Archive* ignore = nullptr);
-	uint16_t  getTextureHash(const string& name);
+	uint16_t  getTextureHash(const string& name) const;
 
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 	static string doom64TextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
 

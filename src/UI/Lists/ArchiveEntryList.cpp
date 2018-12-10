@@ -795,7 +795,7 @@ void ArchiveEntryList::labelEdited(int col, int index, string new_label)
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from the archive being managed
 // -----------------------------------------------------------------------------
-void ArchiveEntryList::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+void ArchiveEntryList::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
 {
 	if (entries_update_ && announcer == archive_ && event_name != "closed")
 	{

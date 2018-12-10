@@ -69,12 +69,12 @@ string UndoListView::itemText(long item, long column, long index) const
 	{
 		if (column == 0)
 		{
-			string name = manager_->undoLevel((unsigned)item)->getName();
+			string name = manager_->undoLevel((unsigned)item)->name();
 			return S_FMT("%lu. %s", item + 1, name);
 		}
 		else
 		{
-			return manager_->undoLevel((unsigned)item)->getTimeStamp(false, true);
+			return manager_->undoLevel((unsigned)item)->timeStamp(false, true);
 		}
 	}
 	else
@@ -122,7 +122,7 @@ void UndoListView::setManager(UndoManager* manager)
 // -----------------------------------------------------------------------------
 // Called when an announcement is received from the undo manager
 // -----------------------------------------------------------------------------
-void UndoListView::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+void UndoListView::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
 {
 	if (announcer != manager_)
 		return;

@@ -5,6 +5,7 @@
 class Console;
 class PaletteManager;
 class ArchiveManager;
+class Clipboard;
 
 namespace App
 {
@@ -14,6 +15,7 @@ PaletteManager* paletteManager();
 long            runTimer();
 bool            isExiting();
 ArchiveManager& archiveManager();
+Clipboard&      clipboard();
 
 bool init(vector<string>& args, double ui_scale = 1.);
 void saveConfigFile();

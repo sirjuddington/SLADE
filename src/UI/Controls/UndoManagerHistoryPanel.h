@@ -12,7 +12,7 @@ public:
 	~UndoListView() {}
 
 	void setManager(UndoManager* manager);
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 protected:
 	// Virtual wxListCtrl overrides

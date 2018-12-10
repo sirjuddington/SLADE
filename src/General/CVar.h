@@ -28,15 +28,15 @@ public:
 		Locked = 4, // set if cvar cannot be changed by the user during runtime
 	};
 
-	uint16_t flags;
-	Type     type;
+	uint16_t flags = 0;
+	Type     type  = Type::Integer;
 	string   name;
-	CVar*    next;
+	CVar*    next = nullptr;
 
-	CVar() { next = nullptr; }
-	virtual ~CVar() {}
+	CVar()          = default;
+	virtual ~CVar() = default;
 
-	virtual Value GetValue()
+	virtual Value getValue()
 	{
 		Value val;
 		val.Int = 0;
@@ -45,8 +45,8 @@ public:
 
 	// Static functions
 	static void  saveToFile(wxFile& file);
-	static void  set(string cvar_name, string value);
-	static CVar* get(string cvar_name);
+	static void  set(const string& cvar_name, const string& value);
+	static CVar* get(const string& cvar_name);
 	static void  putList(vector<string>& list);
 };
 
@@ -55,19 +55,20 @@ class CIntCVar : public CVar
 public:
 	int value;
 
-	CIntCVar(string NAME, int defval, uint16_t FLAGS);
-	~CIntCVar() {}
+	CIntCVar(const string& NAME, int defval, uint16_t FLAGS);
+	~CIntCVar() = default;
 
 	// Operators so the cvar name can be used like a normal variable
-	inline     operator int() const { return value; }
-	inline int operator*() const { return value; }
-	inline int operator=(int val)
+	operator int() const { return value; }
+	int operator*() const { return value; }
+
+	int operator=(int val)
 	{
 		value = val;
 		return val;
 	}
 
-	Value GetValue()
+	Value getValue() override
 	{
 		Value val;
 		val.Int = value;
@@ -80,18 +81,19 @@ class CBoolCVar : public CVar
 public:
 	bool value;
 
-	CBoolCVar(string NAME, bool defval, uint16_t FLAGS);
+	CBoolCVar(const string& NAME, bool defval, uint16_t FLAGS);
 	~CBoolCVar() {}
 
-	inline      operator bool() const { return value; }
-	inline bool operator*() const { return value; }
-	inline bool operator=(bool val)
+	operator bool() const { return value; }
+	bool operator*() const { return value; }
+
+	bool operator=(bool val)
 	{
 		value = val;
 		return val;
 	}
 
-	Value GetValue()
+	Value getValue() override
 	{
 		Value val;
 		val.Bool = value;
@@ -104,18 +106,19 @@ class CFloatCVar : public CVar
 public:
 	double value;
 
-	CFloatCVar(string NAME, double defval, uint16_t FLAGS);
+	CFloatCVar(const string& NAME, double defval, uint16_t FLAGS);
 	~CFloatCVar() {}
 
-	inline        operator double() const { return value; }
-	inline double operator*() const { return value; }
-	inline double operator=(double val)
+	operator double() const { return value; }
+	double operator*() const { return value; }
+
+	double operator=(double val)
 	{
 		value = val;
 		return val;
 	}
 
-	Value GetValue()
+	Value getValue() override
 	{
 		Value val;
 		val.Float = value;
@@ -128,12 +131,13 @@ class CStringCVar : public CVar
 public:
 	string value;
 
-	CStringCVar(string NAME, string defval, uint16_t FLAGS);
+	CStringCVar(const string& NAME, const string& defval, uint16_t FLAGS);
 	~CStringCVar() {}
 
-	inline        operator string() const { return value; }
-	inline string operator*() const { return value; }
-	inline string operator=(string val)
+	operator string() const { return value; }
+	string operator*() const { return value; }
+
+	string operator=(string val)
 	{
 		value = val;
 		return val;

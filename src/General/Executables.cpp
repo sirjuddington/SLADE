@@ -61,7 +61,7 @@ vector<ExternalExe> external_exes;
 // -----------------------------------------------------------------------------
 // Returns the game executable definition for [id]
 // -----------------------------------------------------------------------------
-Executables::GameExe* Executables::gameExe(string id)
+Executables::GameExe* Executables::gameExe(const string& id)
 {
 	for (auto& exe : game_exes)
 		if (exe.id == id)
@@ -94,7 +94,7 @@ unsigned Executables::nGameExes()
 // -----------------------------------------------------------------------------
 void Executables::setGameExePath(string id, string path)
 {
-	exe_paths.push_back({ id, path });
+	exe_paths.emplace_back(id, path);
 }
 
 // -----------------------------------------------------------------------------
@@ -164,8 +164,8 @@ string Executables::writeExecutables()
 void Executables::init()
 {
 	// Load from pk3
-	Archive*      res_archive = App::archiveManager().programResourceArchive();
-	ArchiveEntry* entry       = res_archive->entryAtPath("config/executables.cfg");
+	auto res_archive = App::archiveManager().programResourceArchive();
+	auto entry       = res_archive->entryAtPath("config/executables.cfg");
 	if (!entry)
 		return;
 
@@ -214,7 +214,7 @@ void Executables::parse(Parser* p, bool custom)
 void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 {
 	// Get GameExe being parsed
-	GameExe* exe = gameExe(node->name().Lower());
+	auto exe = gameExe(node->name().Lower());
 	if (!exe)
 	{
 		// Create if new
@@ -235,19 +235,19 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 		{
 			// Update if exists
 			bool found = false;
-			for (unsigned c = 0; c < exe->configs.size(); c++)
+			for (auto& config : exe->configs)
 			{
-				if (exe->configs[c].first == prop->name())
+				if (config.first == prop->name())
 				{
-					exe->configs[c].second = prop->stringValue();
-					found                  = true;
+					config.second = prop->stringValue();
+					found         = true;
 				}
 			}
 
 			// Create if new
 			if (!found)
 			{
-				exe->configs.push_back(StringPair(prop->name(), prop->stringValue()));
+				exe->configs.emplace_back(prop->name(), prop->stringValue());
 				exe->configs_custom.push_back(custom);
 			}
 		}
@@ -308,7 +308,7 @@ void Executables::addGameExeConfig(unsigned exe_index, string config_name, strin
 	if (exe_index >= game_exes.size())
 		return;
 
-	game_exes[exe_index].configs.push_back(StringPair(config_name, config_params));
+	game_exes[exe_index].configs.emplace_back(config_name, config_params);
 	game_exes[exe_index].configs_custom.push_back(custom);
 }
 
@@ -340,7 +340,7 @@ bool Executables::removeGameExeConfig(unsigned exe_index, unsigned config_index)
 // Returns the number of external executables for [category], or all if
 // [category] is not specified
 // -----------------------------------------------------------------------------
-int Executables::nExternalExes(string category)
+int Executables::nExternalExes(const string& category)
 {
 	int num = 0;
 	for (auto& exe : external_exes)
@@ -354,7 +354,7 @@ int Executables::nExternalExes(string category)
 // Returns the external executable matching [name] and [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-Executables::ExternalExe Executables::externalExe(string name, string category)
+Executables::ExternalExe Executables::externalExe(const string& name, const string& category)
 {
 	for (auto& exe : external_exes)
 		if (category.IsEmpty() || exe.category == category)
@@ -368,7 +368,7 @@ Executables::ExternalExe Executables::externalExe(string name, string category)
 // Returns a list of all external executables matching [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-vector<Executables::ExternalExe> Executables::externalExes(string category)
+vector<Executables::ExternalExe> Executables::externalExes(const string& category)
 {
 	vector<ExternalExe> ret;
 	for (auto& exe : external_exes)
@@ -407,7 +407,7 @@ void Executables::parseExternalExe(ParseTreeNode* node)
 // Adds a new external executable, if one matching [name] and [category] doesn't
 // already exist
 // -----------------------------------------------------------------------------
-void Executables::addExternalExe(string name, string path, string category)
+void Executables::addExternalExe(const string& name, const string& path, const string& category)
 {
 	// Check it doesn't already exist
 	for (auto& exe : external_exes)
@@ -425,7 +425,7 @@ void Executables::addExternalExe(string name, string path, string category)
 // Sets the name of the external executable matching [name_old] and [category]
 // to [name_new]
 // -----------------------------------------------------------------------------
-void Executables::setExternalExeName(string name_old, string name_new, string category)
+void Executables::setExternalExeName(const string& name_old, const string& name_new, const string& category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name_old && exe.category == category)
@@ -439,7 +439,7 @@ void Executables::setExternalExeName(string name_old, string name_new, string ca
 // Sets the path of the external executable matching [name] and [category] to
 // [path]
 // -----------------------------------------------------------------------------
-void Executables::setExternalExePath(string name, string path, string category)
+void Executables::setExternalExePath(const string& name, const string& path, const string& category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name && exe.category == category)
@@ -452,7 +452,7 @@ void Executables::setExternalExePath(string name, string path, string category)
 // -----------------------------------------------------------------------------
 // Removes the external executable matching [name] and [category]
 // -----------------------------------------------------------------------------
-void Executables::removeExternalExe(string name, string category)
+void Executables::removeExternalExe(const string& name, const string& category)
 {
 	for (unsigned a = 0; a < external_exes.size(); a++)
 		if (external_exes[a].name == name && external_exes[a].category == category)

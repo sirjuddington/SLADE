@@ -514,7 +514,7 @@ bool Input::keyUp(const string& key) const
 // -----------------------------------------------------------------------------
 // Called when the key bind [name] is pressed
 // -----------------------------------------------------------------------------
-void Input::onKeyBindPress(string name)
+void Input::onKeyBindPress(const string& name)
 {
 	context_.forceRefreshRenderer();
 	// Check if an overlay is active
@@ -569,7 +569,7 @@ void Input::onKeyBindPress(string name)
 // -----------------------------------------------------------------------------
 // Called when the key bind [name] is released
 // -----------------------------------------------------------------------------
-void Input::onKeyBindRelease(string name)
+void Input::onKeyBindRelease(const string& name)
 {
 	context_.forceRefreshRenderer();
 	if (name == "me2d_pan_view" && panning_)
@@ -877,12 +877,12 @@ void Input::handleKeyBind2d(const string& name)
 		{
 			// Check if any data is copied
 			ClipboardItem* item = nullptr;
-			for (unsigned a = 0; a < theClipboard->nItems(); a++)
+			for (unsigned a = 0; a < App::clipboard().size(); a++)
 			{
-				if (theClipboard->item(a)->type() == CLIPBOARD_MAP_ARCH
-					|| theClipboard->item(a)->type() == CLIPBOARD_MAP_THINGS)
+				if (App::clipboard().item(a)->type() == ClipboardItem::Type::MapArchitecture
+					|| App::clipboard().item(a)->type() == ClipboardItem::Type::MapThings)
 				{
-					item = theClipboard->item(a);
+					item = App::clipboard().item(a);
 					break;
 				}
 			}

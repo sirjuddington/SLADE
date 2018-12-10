@@ -91,7 +91,7 @@ public:
 		return ok;
 	}
 
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override
 	{
 		if (announcer != archive)
 			return;

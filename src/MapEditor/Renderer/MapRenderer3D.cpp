@@ -3160,7 +3160,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 // -----------------------------------------------------------------------------
 // Handles any announcements from the palette or resource manager
 // -----------------------------------------------------------------------------
-void MapRenderer3D::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+void MapRenderer3D::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser() && announcer != theResourceManager)
 		return;

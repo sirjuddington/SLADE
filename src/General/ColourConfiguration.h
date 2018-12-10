@@ -11,9 +11,9 @@ struct Colour
 	ColRGBA colour;
 };
 
-ColRGBA colour(string name);
-Colour  colDef(string name);
-void    setColour(string name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);
+ColRGBA colour(const string& name);
+Colour  colDef(const string& name);
+void    setColour(const string& name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);
 
 double lineHilightWidth();
 double lineSelectionWidth();
@@ -27,7 +27,7 @@ bool writeConfiguration(MemChunk& mc);
 bool init();
 void loadDefaults();
 
-bool readConfiguration(string name);
+bool readConfiguration(const string& name);
 void putConfigurationNames(vector<string>& names);
 
 void putColourNames(vector<string>& list);

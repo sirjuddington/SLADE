@@ -811,11 +811,11 @@ void Renderer::drawPasteLines() const
 {
 	// Get clipboard item
 	MapArchClipboardItem* c = nullptr;
-	for (unsigned a = 0; a < theClipboard->nItems(); a++)
+	for (unsigned a = 0; a < App::clipboard().size(); a++)
 	{
-		if (theClipboard->item(a)->type() == CLIPBOARD_MAP_ARCH)
+		if (App::clipboard().item(a)->type() == ClipboardItem::Type::MapArchitecture)
 		{
-			c = (MapArchClipboardItem*)theClipboard->item(a);
+			c = (MapArchClipboardItem*)App::clipboard().item(a);
 			break;
 		}
 	}
@@ -1165,10 +1165,10 @@ void Renderer::drawMap2d()
 		if (context_.editMode() == Mode::Things)
 		{
 			// Get clipboard item
-			for (unsigned a = 0; a < theClipboard->nItems(); a++)
+			for (unsigned a = 0; a < App::clipboard().size(); a++)
 			{
-				auto item = theClipboard->item(a);
-				if (item->type() == CLIPBOARD_MAP_THINGS)
+				auto item = App::clipboard().item(a);
+				if (item->type() == ClipboardItem::Type::MapThings)
 				{
 					vector<MapThing*> things;
 					auto              p = (MapThingsClipboardItem*)item;

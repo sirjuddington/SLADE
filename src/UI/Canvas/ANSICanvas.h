@@ -1,11 +1,10 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "OGLCanvas.h"
 
 class GLTexture;
 
-class ANSICanvas : public OGLCanvas, Listener
+class ANSICanvas : public OGLCanvas
 {
 public:
 	ANSICanvas(wxWindow* parent, int id);

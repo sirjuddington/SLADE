@@ -18,15 +18,15 @@ public:
 	};
 
 	SAction(
-		string id,
-		string text,
-		string icon        = "",
-		string helptext    = "",
-		string shortcut    = "",
-		Type   type        = Type::Normal,
-		int    radio_group = -1,
-		int    reserve_ids = 1);
-	~SAction();
+		const string& id,
+		const string& text,
+		const string& icon        = "",
+		const string& helptext    = "",
+		const string& shortcut    = "",
+		Type          type        = Type::Normal,
+		int           radio_group = -1,
+		int           reserve_ids = 1);
+	~SAction() = default;
 
 	string id() const { return id_; }
 	int    wxId() const { return wx_id_; }
@@ -42,15 +42,19 @@ public:
 	void   setChecked(bool checked = true);
 	void   toggle() { setChecked(!checked_); }
 
-	bool addToMenu(wxMenu* menu, string text_override = "NO", string icon_override = "NO", int wx_id_offset = 0);
 	bool addToMenu(
-		wxMenu* menu,
-		bool    show_shortcut,
-		string  text_override = "NO",
-		string  icon_override = "NO",
-		int     wx_id_offset  = 0);
-	bool addToToolbar(wxAuiToolBar* toolbar, string icon_override = "NO", int wx_id_offset = 0);
-	bool addToToolbar(wxToolBar* toolbar, string icon_override = "NO", int wx_id_offset = 0);
+		wxMenu*       menu,
+		const string& text_override = "NO",
+		const string& icon_override = "NO",
+		int           wx_id_offset  = 0);
+	bool addToMenu(
+		wxMenu*       menu,
+		bool          show_shortcut,
+		const string& text_override = "NO",
+		const string& icon_override = "NO",
+		int           wx_id_offset  = 0);
+	bool addToToolbar(wxAuiToolBar* toolbar, const string& icon_override = "NO", int wx_id_offset = 0) const;
+	bool addToToolbar(wxToolBar* toolbar, const string& icon_override = "NO", int wx_id_offset = 0) const;
 
 	// Static functions
 	static void     initWxId(int id) { cur_id_ = id; }
@@ -98,7 +102,7 @@ public:
 	virtual ~SActionHandler();
 
 	static void setWxIdOffset(int offset) { wx_id_offset_ = offset; }
-	static bool doAction(string id);
+	static bool doAction(const string& id);
 
 protected:
 	static int wx_id_offset_;

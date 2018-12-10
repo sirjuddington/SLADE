@@ -64,14 +64,14 @@ int                     SActionHandler::wx_id_offset_ = 0;
 // SAction class constructor
 // -----------------------------------------------------------------------------
 SAction::SAction(
-	string id,
-	string text,
-	string icon,
-	string helptext,
-	string shortcut,
-	Type   type,
-	int    radio_group,
-	int    reserve_ids) :
+	const string& id,
+	const string& text,
+	const string& icon,
+	const string& helptext,
+	const string& shortcut,
+	Type          type,
+	int           radio_group,
+	int           reserve_ids) :
 	id_{ id },
 	wx_id_{ -1 },
 	reserved_ids_{ reserve_ids },
@@ -87,11 +87,6 @@ SAction::SAction(
 }
 
 // -----------------------------------------------------------------------------
-// SAction class destructor
-// -----------------------------------------------------------------------------
-SAction::~SAction() {}
-
-// -----------------------------------------------------------------------------
 // Returns the shortcut key for this action as a string, taking into account if
 // the shortcut is a keybind
 // -----------------------------------------------------------------------------
@@ -100,7 +95,7 @@ string SAction::shortcutText() const
 	if (shortcut_.StartsWith("kb:"))
 	{
 		auto kp = KeyBind::bind(shortcut_.Mid(3)).key(0);
-		if (kp.key != "")
+		if (!kp.key.empty())
 			return kp.asString();
 
 		return "INVALID KEYBIND";
@@ -125,10 +120,10 @@ void SAction::setChecked(bool toggle)
 	if (toggle && type_ == Type::Radio && group_ >= 0)
 	{
 		// Go through and toggle off all other actions in the same group
-		for (unsigned a = 0; a < actions_.size(); a++)
+		for (auto& action : actions_)
 		{
-			if (actions_[a]->group_ == group_)
-				actions_[a]->setChecked(false);
+			if (action->group_ == group_)
+				action->setChecked(false);
 		}
 
 		checked_ = true;
@@ -145,11 +140,16 @@ void SAction::setChecked(bool toggle)
 // Adds this action to [menu]. If [text_override] is not "NO", it will be used
 // instead of the action's text as the menu item label
 // -----------------------------------------------------------------------------
-bool SAction::addToMenu(wxMenu* menu, string text_override, string icon_override, int wx_id_offset)
+bool SAction::addToMenu(wxMenu* menu, const string& text_override, const string& icon_override, int wx_id_offset)
 {
 	return addToMenu(menu, false, text_override, icon_override, wx_id_offset);
 }
-bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override, string icon_override, int wx_id_offset)
+bool SAction::addToMenu(
+	wxMenu*       menu,
+	bool          show_shortcut,
+	const string& text_override,
+	const string& icon_override,
+	int           wx_id_offset)
 {
 	// Can't add to nonexistant menu
 	if (!menu)
@@ -161,7 +161,7 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override, 
 	if (shortcut_.StartsWith("kb:"))
 	{
 		auto kp = KeyBind::bind(shortcut_.Mid(3)).key(0);
-		if (kp.key != "")
+		if (!kp.key.empty())
 			sc = kp.asString();
 		else
 			sc = "None";
@@ -198,7 +198,7 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override, 
 // Adds this action to [toolbar]. If [icon_override] is not "NO", it will be
 // used instead of the action's icon as the tool icon
 // -----------------------------------------------------------------------------
-bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override, int wx_id_offset)
+bool SAction::addToToolbar(wxAuiToolBar* toolbar, const string& icon_override, int wx_id_offset) const
 {
 	// Can't add to nonexistant toolbar
 	if (!toolbar)
@@ -225,7 +225,7 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override, int wx_i
 // Adds this action to [toolbar]. If [icon_override] is not "NO", it will be
 // used instead of the action's icon as the tool icon
 // -----------------------------------------------------------------------------
-bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override, int wx_id_offset)
+bool SAction::addToToolbar(wxToolBar* toolbar, const string& icon_override, int wx_id_offset) const
 {
 	// Can't add to nonexistant toolbar
 	if (!toolbar)
@@ -320,7 +320,7 @@ bool SAction::parse(ParseTreeNode* node)
 		if (cvar && cvar->type == CVar::Type::Boolean)
 		{
 			this->linked_cvar_ = (CBoolCVar*)cvar;
-			checked_           = cvar->GetValue().Bool;
+			checked_           = cvar->getValue().Bool;
 		}
 	}
 
@@ -480,17 +480,16 @@ SActionHandler::~SActionHandler()
 // Handles the SAction [id], returns true if an SActionHandler handled the
 // action, false otherwise
 // -----------------------------------------------------------------------------
-bool SActionHandler::doAction(string id)
+bool SActionHandler::doAction(const string& id)
 {
 	// Toggle action if necessary
 	SAction::fromId(id)->toggle();
 
 	// Send action to all handlers
 	bool handled = false;
-	for (unsigned a = 0; a < action_handlers_.size(); a++)
+	for (auto& action_handler : action_handlers_)
 	{
-		action_handlers_[a]->wx_id_offset_ = wx_id_offset_;
-		if (action_handlers_[a]->handleAction(id))
+		if (action_handler->handleAction(id))
 		{
 			handled = true;
 			break;

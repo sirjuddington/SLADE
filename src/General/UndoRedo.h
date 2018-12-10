@@ -1,13 +1,12 @@
 #pragma once
 
 #include "General/ListenerAnnouncer.h"
-#include "common.h"
 
 class UndoStep
 {
 public:
-	UndoStep() {}
-	virtual ~UndoStep() {}
+	UndoStep()          = default;
+	virtual ~UndoStep() = default;
 
 	virtual bool doUndo() { return true; }
 	virtual bool doRedo() { return true; }
@@ -19,17 +18,17 @@ public:
 class UndoLevel
 {
 public:
-	UndoLevel(string name);
+	UndoLevel(const string& name);
 	~UndoLevel();
 
-	string getName() { return name_; }
+	string name() const { return name_; }
 	bool   doUndo();
 	bool   doRedo();
 	void   addStep(UndoStep* step) { undo_steps_.push_back(step); }
-	string getTimeStamp(bool date, bool time);
+	string timeStamp(bool date, bool time) const;
 
-	bool writeFile(string filename);
-	bool readFile(string filename);
+	bool writeFile(const string& filename) const;
+	bool readFile(const string& filename) const;
 	void createMerged(vector<UndoLevel*>& levels);
 
 private:
@@ -42,36 +41,36 @@ class SLADEMap;
 class UndoManager : public Announcer
 {
 public:
-	UndoManager(SLADEMap* map = nullptr);
+	UndoManager(SLADEMap* map = nullptr) : map_{ map } {}
 	~UndoManager();
 
-	SLADEMap*  map() { return map_; }
+	SLADEMap*  map() const { return map_; }
 	void       putAllLevels(vector<string>& list);
-	int        currentIndex() { return current_level_index_; }
-	unsigned   nUndoLevels() { return undo_levels_.size(); }
+	int        currentIndex() const { return current_level_index_; }
+	unsigned   nUndoLevels() const { return undo_levels_.size(); }
 	UndoLevel* undoLevel(unsigned index) { return undo_levels_[index]; }
 
-	void   beginRecord(string name);
+	void   beginRecord(const string& name);
 	void   endRecord(bool success);
-	bool   currentlyRecording();
-	bool   recordUndoStep(UndoStep* step);
+	bool   currentlyRecording() const;
+	bool   recordUndoStep(UndoStep* step) const;
 	string undo();
 	string redo();
 	void   setResetPoint() { reset_point_ = current_level_index_; }
 	void   clearToResetPoint();
 
 	void clear();
-	bool createMergedLevel(UndoManager* manager, string name);
+	bool createMergedLevel(UndoManager* manager, const string& name);
 
 	typedef std::unique_ptr<UndoManager> UPtr;
 
 private:
 	vector<UndoLevel*> undo_levels_;
-	UndoLevel*         current_level_;
-	int                current_level_index_;
-	int                reset_point_;
-	bool               undo_running_;
-	SLADEMap*          map_;
+	UndoLevel*         current_level_       = nullptr;
+	int                current_level_index_ = -1;
+	int                reset_point_         = -1;
+	bool               undo_running_        = false;
+	SLADEMap*          map_                 = nullptr;
 };
 
 namespace UndoRedo

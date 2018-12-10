@@ -47,7 +47,7 @@ public:
 	// Label editing
 	void labelEdited(int col, int index, string new_label) override;
 
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 	// SAction handler
 	bool handleAction(string id) override;

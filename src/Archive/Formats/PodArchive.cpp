@@ -384,7 +384,10 @@ CONSOLE_COMMAND(pod_set_id, 1, true)
 {
 	auto archive = MainEditor::currentArchive();
 	if (archive && archive->formatId() == "pod")
-		((PodArchive*)archive)->setId(args[0].Truncate(80));
+	{
+		auto id = args[0];
+		((PodArchive*)archive)->setId(id.Truncate(80));
+	}
 	else
 		Log::console("Current tab is not a POD archive");
 }

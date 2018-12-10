@@ -56,31 +56,11 @@ vector<KeyBindHandler*> kb_handlers;
 
 
 // -----------------------------------------------------------------------------
-// KeyBind class constructor
-// -----------------------------------------------------------------------------
-KeyBind::KeyBind(string name)
-{
-	// Init variables
-	this->name_     = name;
-	this->pressed_  = false;
-	this->priority_ = 0;
-}
-
-// -----------------------------------------------------------------------------
-// KeyBind class destructor
-// -----------------------------------------------------------------------------
-KeyBind::~KeyBind() {}
-
-// -----------------------------------------------------------------------------
 // Adds a key combination to the keybind
 // -----------------------------------------------------------------------------
-void KeyBind::addKey(string key, bool alt, bool ctrl, bool shift)
+void KeyBind::addKey(const string& key, bool alt, bool ctrl, bool shift)
 {
-	keys_.push_back(Keypress());
-	keys_.back().alt   = alt;
-	keys_.back().ctrl  = ctrl;
-	keys_.back().shift = shift;
-	keys_.back().key   = key;
+	keys_.emplace_back(key, alt, ctrl, shift);
 }
 
 // -----------------------------------------------------------------------------
@@ -125,12 +105,12 @@ string KeyBind::keysAsString()
 // -----------------------------------------------------------------------------
 // Returns the keybind [name]
 // -----------------------------------------------------------------------------
-KeyBind& KeyBind::bind(string name)
+KeyBind& KeyBind::bind(const string& name)
 {
-	for (unsigned a = 0; a < keybinds.size(); a++)
+	for (auto& keybind : keybinds)
 	{
-		if (keybinds[a].name_ == name)
-			return keybinds[a];
+		if (keybind.name_ == name)
+			return keybind;
 	}
 
 	return kb_none;
@@ -145,14 +125,12 @@ wxArrayString KeyBind::bindsForKey(Keypress key)
 
 	// Go through all keybinds
 	bool pressed = false;
-	for (unsigned k = 0; k < keybinds.size(); k++)
+	for (auto& kb : keybinds)
 	{
-		KeyBind& kb = keybinds[k];
-
 		// Go through all keys bound to this keybind
 		for (unsigned a = 0; a < kb.keys_.size(); a++)
 		{
-			Keypress& kp = kb.keys_[a];
+			auto& kp = kb.keys_[a];
 
 			// Check for match with keypress
 			if (kp.shift == key.shift && kp.alt == key.alt && kp.ctrl == key.ctrl && kp.key == key.key)
@@ -166,7 +144,7 @@ wxArrayString KeyBind::bindsForKey(Keypress key)
 // -----------------------------------------------------------------------------
 // Returns true if keybind [name] is currently pressed
 // -----------------------------------------------------------------------------
-bool KeyBind::isPressed(string name)
+bool KeyBind::isPressed(const string& name)
 {
 	return bind(name).pressed_;
 }
@@ -174,15 +152,21 @@ bool KeyBind::isPressed(string name)
 // -----------------------------------------------------------------------------
 // Adds a new keybind
 // -----------------------------------------------------------------------------
-bool KeyBind::addBind(string name, Keypress key, string desc, string group, bool ignore_shift, int priority)
+bool KeyBind::addBind(
+	const string& name,
+	const Keypress&      key,
+	const string& desc,
+	const string& group,
+	bool          ignore_shift,
+	int           priority)
 {
 	// Find keybind
 	KeyBind* bind = nullptr;
-	for (unsigned a = 0; a < keybinds.size(); a++)
+	for (auto& keybind : keybinds)
 	{
-		if (keybinds[a].name_ == name)
+		if (keybind.name_ == name)
 		{
-			bind = &keybinds[a];
+			bind = &keybind;
 			break;
 		}
 	}
@@ -190,7 +174,7 @@ bool KeyBind::addBind(string name, Keypress key, string desc, string group, bool
 	// Add keybind if it doesn't exist
 	if (!bind)
 	{
-		keybinds.push_back(KeyBind(name));
+		keybinds.emplace_back(name);
 		bind                = &keybinds.back();
 		bind->ignore_shift_ = ignore_shift;
 	}
@@ -362,14 +346,12 @@ bool KeyBind::keyPressed(Keypress key)
 	// Go through all keybinds
 	// (use sorted list for priority system)
 	bool pressed = false;
-	for (unsigned k = 0; k < keybinds_sorted.size(); k++)
+	for (auto& kb : keybinds_sorted)
 	{
-		KeyBind& kb = keybinds_sorted[k];
-
 		// Go through all keys bound to this keybind
 		for (unsigned a = 0; a < kb.keys_.size(); a++)
 		{
-			Keypress& kp = kb.keys_[a];
+			auto& kp = kb.keys_[a];
 
 			// Check for match with keypress
 			if ((kp.shift == key.shift || kb.ignore_shift_) && kp.alt == key.alt && kp.ctrl == key.ctrl
@@ -379,8 +361,8 @@ bool KeyBind::keyPressed(Keypress key)
 				bind(kb.name_).pressed_ = true;
 
 				// Send key pressed event to keybind handlers
-				for (unsigned b = 0; b < kb_handlers.size(); b++)
-					kb_handlers[b]->onKeyBindPress(kb.name_);
+				for (auto& kb_handler : kb_handlers)
+					kb_handler->onKeyBindPress(kb.name_);
 
 				pressed = true;
 				break;
@@ -394,7 +376,7 @@ bool KeyBind::keyPressed(Keypress key)
 // -----------------------------------------------------------------------------
 // 'Releases' all keybinds bound to [key]
 // -----------------------------------------------------------------------------
-bool KeyBind::keyReleased(string key)
+bool KeyBind::keyReleased(const string& key)
 {
 	// Ignore raw modifier keys
 	if (key == "control" || key == "shift" || key == "alt" || key == "command")
@@ -402,10 +384,8 @@ bool KeyBind::keyReleased(string key)
 
 	// Go through all keybinds
 	bool released = false;
-	for (unsigned k = 0; k < keybinds.size(); k++)
+	for (auto& kb : keybinds)
 	{
-		KeyBind& kb = keybinds[k];
-
 		// Go through all keys bound to this keybind
 		for (unsigned a = 0; a < kb.keys_.size(); a++)
 		{
@@ -416,8 +396,8 @@ bool KeyBind::keyReleased(string key)
 				kb.pressed_ = false;
 
 				// Send key released event to keybind handlers
-				for (unsigned b = 0; b < kb_handlers.size(); b++)
-					kb_handlers[b]->onKeyBindRelease(kb.name_);
+				for (auto& kb_handler : kb_handlers)
+					kb_handler->onKeyBindRelease(kb.name_);
 
 				released = true;
 				break;
@@ -431,15 +411,15 @@ bool KeyBind::keyReleased(string key)
 // -----------------------------------------------------------------------------
 // 'Presses' the keybind [name]
 // -----------------------------------------------------------------------------
-void KeyBind::pressBind(string name)
+void KeyBind::pressBind(const string& name)
 {
-	for (unsigned a = 0; a < keybinds.size(); a++)
+	for (auto& keybind : keybinds)
 	{
-		if (keybinds[a].name_ == name)
+		if (keybind.name_ == name)
 		{
 			// Send key pressed event to keybind handlers
-			for (unsigned b = 0; b < kb_handlers.size(); b++)
-				kb_handlers[b]->onKeyBindPress(name);
+			for (auto& kb_handler : kb_handlers)
+				kb_handler->onKeyBindPress(name);
 
 			return;
 		}
@@ -463,8 +443,8 @@ Keypress KeyBind::asKeyPress(int keycode, int modifiers)
 // -----------------------------------------------------------------------------
 void KeyBind::allKeyBinds(vector<KeyBind*>& list)
 {
-	for (unsigned a = 0; a < keybinds.size(); a++)
-		list.push_back(&keybinds[a]);
+	for (auto& keybind : keybinds)
+		list.push_back(&keybind);
 }
 
 // -----------------------------------------------------------------------------
@@ -472,8 +452,8 @@ void KeyBind::allKeyBinds(vector<KeyBind*>& list)
 // -----------------------------------------------------------------------------
 void KeyBind::releaseAll()
 {
-	for (unsigned a = 0; a < keybinds.size(); a++)
-		keybinds[a].pressed_ = false;
+	for (auto& keybind : keybinds)
+		keybind.pressed_ = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -723,10 +703,10 @@ void KeyBind::initBinds()
 	addBind("me3d_thing_down", Keypress("num_down"), "Z down 1", group);
 
 	// Set above keys as defaults
-	for (unsigned a = 0; a < keybinds.size(); a++)
+	for (auto& keybind : keybinds)
 	{
-		for (unsigned k = 0; k < keybinds[a].keys_.size(); k++)
-			keybinds[a].defaults_.push_back(keybinds[a].keys_[k]);
+		for (unsigned k = 0; k < keybind.keys_.size(); k++)
+			keybind.defaults_.push_back(keybind.keys_[k]);
 	}
 
 	// Create sorted list
@@ -743,22 +723,20 @@ string KeyBind::writeBinds()
 	string ret = "";
 
 	// Go through all keybinds
-	for (unsigned k = 0; k < keybinds.size(); k++)
+	for (auto& kb : keybinds)
 	{
-		KeyBind& kb = keybinds[k];
-
 		// Add keybind line
 		ret += "\t";
 		ret += kb.name_;
 
 		// 'unbound' indicates no binds
-		if (kb.keys_.size() == 0)
+		if (kb.keys_.empty())
 			ret += " unbound";
 
 		// Go through all bound keys
 		for (unsigned a = 0; a < kb.keys_.size(); a++)
 		{
-			Keypress& kp = kb.keys_[a];
+			auto& kp = kb.keys_[a];
 			ret += " \"";
 
 			// Add modifiers (if any)

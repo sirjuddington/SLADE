@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "ArchiveTreeNode.h"
 #include "General/Misc.h"
+#include "App.h"
 
 
 // -----------------------------------------------------------------------------

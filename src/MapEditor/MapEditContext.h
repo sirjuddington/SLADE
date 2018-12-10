@@ -224,3 +224,40 @@ private:
 	ThingInfoOverlay  info_thing_;
 	InfoOverlay3D     info_3d_;
 };
+
+class MapArchClipboardItem : public ClipboardItem
+{
+public:
+	MapArchClipboardItem() : ClipboardItem(Type::MapArchitecture) {}
+	~MapArchClipboardItem() = default;
+
+	void               addLines(const vector<MapLine*>& lines);
+	string             info() const;
+	vector<MapVertex*> pasteToMap(SLADEMap* map, Vec2f position);
+	void               putLines(vector<MapLine*>& list);
+	Vec2f              midpoint() const { return midpoint_; }
+
+private:
+	vector<std::unique_ptr<MapVertex>> vertices_;
+	vector<std::unique_ptr<MapSide>>   sides_;
+	vector<std::unique_ptr<MapLine>>   lines_;
+	vector<std::unique_ptr<MapSector>> sectors_;
+	Vec2f                              midpoint_;
+};
+
+class MapThingsClipboardItem : public ClipboardItem
+{
+public:
+	MapThingsClipboardItem() : ClipboardItem(Type::MapThings) {}
+	~MapThingsClipboardItem() = default;
+
+	void   addThings(vector<MapThing*>& things);
+	string info() const;
+	void   pasteToMap(SLADEMap* map, Vec2f position);
+	void   putThings(vector<MapThing*>& list);
+	Vec2f  midpoint() const { return midpoint_; }
+
+private:
+	vector<std::unique_ptr<MapThing>> things_;
+	Vec2f                             midpoint_;
+};

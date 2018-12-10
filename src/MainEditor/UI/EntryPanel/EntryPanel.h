@@ -56,7 +56,7 @@ protected:
 
 	void setModified(bool c = true);
 
-	virtual void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override {}
+	virtual void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override {}
 	void         onToolbarButton(wxCommandEvent& e);
 
 private:

@@ -43,20 +43,12 @@
 
 
 // -----------------------------------------------------------------------------
-// Listener class constructor
-// -----------------------------------------------------------------------------
-Listener::Listener()
-{
-	deaf_ = false;
-}
-
-// -----------------------------------------------------------------------------
 // Listener class destructor
 // -----------------------------------------------------------------------------
 Listener::~Listener()
 {
-	for (size_t a = 0; a < announcers_.size(); a++)
-		announcers_[a]->removeListener(this);
+	for (auto& announcer : announcers_)
+		announcer->removeListener(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -88,7 +80,7 @@ void Listener::stopListening(Announcer* a)
 // event. Does nothing by default, is to be overridden by whatever class
 // inherits from Listener
 // -----------------------------------------------------------------------------
-void Listener::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) {}
+void Listener::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) {}
 
 
 // -----------------------------------------------------------------------------
@@ -99,20 +91,12 @@ void Listener::onAnnouncement(Announcer* announcer, string event_name, MemChunk&
 
 
 // -----------------------------------------------------------------------------
-// Announcer class constructor
-// -----------------------------------------------------------------------------
-Announcer::Announcer()
-{
-	muted_ = false;
-}
-
-// -----------------------------------------------------------------------------
 // Announcer class destructor
 // -----------------------------------------------------------------------------
 Announcer::~Announcer()
 {
-	for (size_t a = 0; a < listeners_.size(); a++)
-		listeners_[a]->stopListening(this);
+	for (auto& listener : listeners_)
+		listener->stopListening(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -142,15 +126,15 @@ void Announcer::removeListener(Listener* l)
 // 'Announces' an event to all listeners currently in the listeners list,
 // ie all Listeners that are 'listening' to this announcer.
 // -----------------------------------------------------------------------------
-void Announcer::announce(string event_name, MemChunk& event_data)
+void Announcer::announce(const string& event_name, MemChunk& event_data)
 {
 	if (isMuted())
 		return;
 
-	for (size_t a = 0; a < listeners_.size(); a++)
+	for (auto& listener : listeners_)
 	{
-		if (!listeners_[a]->isDeaf())
-			listeners_[a]->onAnnouncement(this, event_name, event_data);
+		if (!listener->isDeaf())
+			listener->onAnnouncement(this, event_name, event_data);
 	}
 }
 
@@ -159,7 +143,7 @@ void Announcer::announce(string event_name, MemChunk& event_data)
 // ie all Listeners that are 'listening' to this announcer.
 // For announcements that don't require any extra data
 // -----------------------------------------------------------------------------
-void Announcer::announce(string event_name)
+void Announcer::announce(const string& event_name)
 {
 	MemChunk mc;
 	announce(event_name, mc);

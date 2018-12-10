@@ -97,11 +97,11 @@ void AdvancedPrefsPanel::refreshPropGrid() const
 
 		// Add to grid depending on type
 		if (cvar->type == CVar::Type::Boolean)
-			pg_cvars_->Append(new wxBoolProperty(name, name, cvar->GetValue().Bool));
+			pg_cvars_->Append(new wxBoolProperty(name, name, cvar->getValue().Bool));
 		else if (cvar->type == CVar::Type::Integer)
-			pg_cvars_->Append(new wxIntProperty(name, name, cvar->GetValue().Int));
+			pg_cvars_->Append(new wxIntProperty(name, name, cvar->getValue().Int));
 		else if (cvar->type == CVar::Type::Float)
-			pg_cvars_->Append(new wxFloatProperty(name, name, cvar->GetValue().Float));
+			pg_cvars_->Append(new wxFloatProperty(name, name, cvar->getValue().Float));
 		else if (cvar->type == CVar::Type::String)
 			pg_cvars_->Append(new wxStringProperty(name, name, S_FMT("%s", ((CStringCVar*)cvar)->value)));
 	}
@@ -129,11 +129,11 @@ void AdvancedPrefsPanel::applyPreferences()
 		{
 			// If unmodified, it might still have been changed in another panel, so refresh it
 			if (cvar->type == CVar::Type::Boolean)
-				pg_cvars_->SetPropertyValue(name, cvar->GetValue().Bool);
+				pg_cvars_->SetPropertyValue(name, cvar->getValue().Bool);
 			else if (cvar->type == CVar::Type::Integer)
-				pg_cvars_->SetPropertyValue(name, cvar->GetValue().Int);
+				pg_cvars_->SetPropertyValue(name, cvar->getValue().Int);
 			else if (cvar->type == CVar::Type::Float)
-				pg_cvars_->SetPropertyValue(name, cvar->GetValue().Float);
+				pg_cvars_->SetPropertyValue(name, cvar->getValue().Float);
 			else if (cvar->type == CVar::Type::String)
 				pg_cvars_->SetPropertyValue(name, S_FMT("%s", ((CStringCVar*)cvar)->value));
 

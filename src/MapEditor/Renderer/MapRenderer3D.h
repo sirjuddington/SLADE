@@ -213,7 +213,7 @@ public:
 	void            renderHilight(MapEditor::Item hilight, float alpha = 1.0f);
 
 	// Listener stuff
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 private:
 	SLADEMap*  map_;

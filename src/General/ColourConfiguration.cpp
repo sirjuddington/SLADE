@@ -63,9 +63,9 @@ ColourHashMap cc_colours;
 // -----------------------------------------------------------------------------
 // Returns the colour [name]
 // -----------------------------------------------------------------------------
-ColRGBA ColourConfiguration::colour(string name)
+ColRGBA ColourConfiguration::colour(const string& name)
 {
-	Colour& col = cc_colours[name];
+	auto& col = cc_colours[name];
 	if (col.exists)
 		return col.colour;
 	else
@@ -75,7 +75,7 @@ ColRGBA ColourConfiguration::colour(string name)
 // -----------------------------------------------------------------------------
 // Returns the colour definition [name]
 // -----------------------------------------------------------------------------
-ColourConfiguration::Colour ColourConfiguration::colDef(string name)
+ColourConfiguration::Colour ColourConfiguration::colDef(const string& name)
 {
 	return cc_colours[name];
 }
@@ -83,9 +83,9 @@ ColourConfiguration::Colour ColourConfiguration::colDef(string name)
 // -----------------------------------------------------------------------------
 // Sets the colour definition [name]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setColour(string name, int red, int green, int blue, int alpha, int blend)
+void ColourConfiguration::setColour(const string& name, int red, int green, int blue, int alpha, int blend)
 {
-	Colour& col = cc_colours[name];
+	auto& col = cc_colours[name];
 	if (red >= 0)
 		col.colour.r = red;
 	if (green >= 0)
@@ -169,7 +169,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 			for (unsigned b = 0; b < def->nChildren(); b++)
 			{
 				auto    prop = def->childPTN(b);
-				Colour& col  = cc_colours[def->name()];
+				auto& col  = cc_colours[def->name()];
 				col.exists   = true;
 
 				// Colour name
@@ -236,21 +236,16 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 {
 	string cfgstring = "colours\n{\n";
 
-	ColourHashMap::iterator i = cc_colours.begin();
-
 	// Go through all properties
-	while (i != cc_colours.end())
+	for (const auto& i : cc_colours)
 	{
 		// Skip if it doesn't 'exist'
-		Colour cc = i->second;
+		const auto& cc = i.second;
 		if (!cc.exists)
-		{
-			i++;
 			continue;
-		}
 
 		// Colour definition name
-		cfgstring += S_FMT("\t%s\n\t{\n", i->first);
+		cfgstring += S_FMT("\t%s\n\t{\n", i.first);
 
 		// Full name
 		cfgstring += S_FMT("\t\tname = \"%s\";\n", cc.name);
@@ -270,9 +265,6 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 			cfgstring += "\t\tadditive = true;\n";
 
 		cfgstring += "\t}\n\n";
-
-		// Next colour
-		i++;
 	}
 
 	cfgstring += "}\n\ntheme\n{\n";
@@ -312,8 +304,8 @@ bool ColourConfiguration::init()
 void ColourConfiguration::loadDefaults()
 {
 	// Read default colours
-	Archive*      pres             = App::archiveManager().programResourceArchive();
-	ArchiveEntry* entry_default_cc = pres->entryAtPath("config/colours/default.txt");
+	auto pres             = App::archiveManager().programResourceArchive();
+	auto entry_default_cc = pres->entryAtPath("config/colours/default.txt");
 	if (entry_default_cc)
 		readConfiguration(entry_default_cc->data());
 }
@@ -321,13 +313,13 @@ void ColourConfiguration::loadDefaults()
 // -----------------------------------------------------------------------------
 // Reads saved colour configuration [name]
 // -----------------------------------------------------------------------------
-bool ColourConfiguration::readConfiguration(string name)
+bool ColourConfiguration::readConfiguration(const string& name)
 {
 	// TODO: search custom folder
 
 	// Search resource pk3
-	Archive*         res = App::archiveManager().programResourceArchive();
-	ArchiveTreeNode* dir = res->dir("config/colours");
+	auto res = App::archiveManager().programResourceArchive();
+	auto dir = res->dir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
 		if (S_CMPNOCASE(dir->entryAt(a)->name(true), name))
@@ -345,8 +337,8 @@ void ColourConfiguration::putConfigurationNames(vector<string>& names)
 	// TODO: search custom folder
 
 	// Search resource pk3
-	Archive*         res = App::archiveManager().programResourceArchive();
-	ArchiveTreeNode* dir = res->dir("config/colours");
+	auto res = App::archiveManager().programResourceArchive();
+	auto dir = res->dir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 		names.push_back(dir->entryAt(a)->name(true));
 }
@@ -356,12 +348,8 @@ void ColourConfiguration::putConfigurationNames(vector<string>& names)
 // -----------------------------------------------------------------------------
 void ColourConfiguration::putColourNames(vector<string>& list)
 {
-	ColourHashMap::iterator i = cc_colours.begin();
-	while (i != cc_colours.end())
-	{
-		list.push_back(i->first);
-		i++;
-	}
+	for (auto& i : cc_colours)
+		list.push_back(i.first);
 }
 
 
@@ -383,8 +371,8 @@ CONSOLE_COMMAND(ccfg, 1, false)
 
 		// Dump list to console
 		Log::console(S_FMT("%lu Colours:", list.size()));
-		for (unsigned a = 0; a < list.size(); a++)
-			Log::console(list[a]);
+		for (const auto& a : list)
+			Log::console(a);
 	}
 	else
 	{

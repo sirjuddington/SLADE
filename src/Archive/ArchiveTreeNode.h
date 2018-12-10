@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ArchiveEntry.h"
+#include "General/Clipboard.h"
 #include "Utility/Tree.h"
 
 class ArchiveTreeNode : public STreeNode

@@ -53,5 +53,5 @@ private:
 	bool        full_path_; // Texture definition format supports full path texture and/or patch names
 
 	// Events
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 };

@@ -63,7 +63,7 @@ public:
 	bool  onImage(int x, int y);
 	Vec2i imageCoords(int x, int y);
 
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 private:
 	SImage*      image_;

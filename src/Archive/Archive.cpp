@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive.h"
-#include "General/Clipboard.h"
 #include "General/UndoRedo.h"
 #include "Utility/Parser.h"
 
@@ -242,9 +241,17 @@ public:
 			for (unsigned a = 0; a < dir->nChildren(); a++)
 				subdirs.push_back((ArchiveTreeNode*)dir->child(a));
 
-			// Backup to clipboard item
-			if (!entries.empty() || !subdirs.empty())
-				cb_tree_ = std::make_unique<EntryTreeClipboardItem>(entries, subdirs);
+			// Copy entries
+			for (auto& entry : entries)
+				tree_->addEntry(new ArchiveEntry(*entry));
+
+			// Copy dirs
+			for (auto& dir : subdirs)
+				tree_->addChild(dir->clone());
+
+			//// Backup to clipboard item
+			//if (!entries.empty() || !subdirs.empty())
+			//	cb_tree_ = std::make_unique<EntryTreeClipboardItem>(entries, subdirs);
 		}
 	}
 
@@ -258,8 +265,8 @@ public:
 			auto dir = archive_->createDir(path_);
 
 			// Restore entries/subdirs if needed
-			if (dir && cb_tree_)
-				dir->merge(cb_tree_->tree(), 0, ArchiveEntry::State::Unmodified);
+			if (dir && tree_)
+				dir->merge(tree_.get(), 0, ArchiveEntry::State::Unmodified);
 
 			if (dir)
 				dir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
@@ -280,7 +287,7 @@ private:
 	bool                                    created_;
 	Archive*                                archive_;
 	string                                  path_;
-	std::unique_ptr<EntryTreeClipboardItem> cb_tree_;
+	std::unique_ptr<ArchiveTreeNode> tree_;
 };
 
 

@@ -38,6 +38,7 @@
 #include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
 #include "General/Console/Console.h"
+#include "General/Clipboard.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
@@ -89,6 +90,7 @@ string dir_separator = "/";
 Console        console_main;
 PaletteManager palette_manager;
 ArchiveManager archive_manager;
+Clipboard      clip_board;
 } // namespace App
 
 CVAR(Int, temp_location, 0, CVar::Flag::Save)
@@ -357,6 +359,14 @@ PaletteManager* App::paletteManager()
 ArchiveManager& App::archiveManager()
 {
 	return archive_manager;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the Clipboard
+// -----------------------------------------------------------------------------
+Clipboard& App::clipboard()
+{
+	return clip_board;
 }
 
 // -----------------------------------------------------------------------------

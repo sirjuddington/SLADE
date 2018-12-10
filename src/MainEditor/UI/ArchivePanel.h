@@ -99,7 +99,7 @@ public:
 	bool handleAction(string id) override;
 
 	// Listener
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 	// Static functions
 	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent);

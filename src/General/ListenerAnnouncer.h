@@ -5,37 +5,37 @@ class Announcer;
 class Listener
 {
 public:
-	Listener();
+	Listener() = default;
 	virtual ~Listener();
 
 	void         listenTo(Announcer* a);
 	void         stopListening(Announcer* a);
 	void         clearAnnouncers() { announcers_.clear(); }
-	virtual void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	virtual void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data);
 
-	bool isDeaf() { return deaf_; }
+	bool isDeaf() const { return deaf_; }
 	void setDeaf(bool d) { deaf_ = d; }
 
 private:
 	vector<Announcer*> announcers_;
-	bool               deaf_;
+	bool               deaf_ = false;
 };
 
 class Announcer
 {
 public:
-	Announcer();
+	Announcer() = default;
 	virtual ~Announcer();
 
 	void addListener(Listener* l);
 	void removeListener(Listener* l);
-	void announce(string event_name, MemChunk& event_data);
-	void announce(string event_name);
+	void announce(const string& event_name, MemChunk& event_data);
+	void announce(const string& event_name);
 
-	bool isMuted() { return muted_; }
+	bool isMuted() const { return muted_; }
 	void setMuted(bool m) { muted_ = m; }
 
 private:
 	vector<Listener*> listeners_;
-	bool              muted_;
+	bool              muted_ = false;
 };

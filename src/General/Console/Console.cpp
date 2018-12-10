@@ -45,16 +45,6 @@
 
 
 // -----------------------------------------------------------------------------
-// Console class constructor
-// -----------------------------------------------------------------------------
-Console::Console() {}
-
-// -----------------------------------------------------------------------------
-// Console class destructor
-// -----------------------------------------------------------------------------
-Console::~Console() {}
-
-// -----------------------------------------------------------------------------
 // Adds a ConsoleCommand to the Console
 // -----------------------------------------------------------------------------
 void Console::addCommand(ConsoleCommand& c)
@@ -69,12 +59,12 @@ void Console::addCommand(ConsoleCommand& c)
 // -----------------------------------------------------------------------------
 // Attempts to execute the command line given
 // -----------------------------------------------------------------------------
-void Console::execute(string command)
+void Console::execute(const string& command)
 {
 	LOG_MESSAGE(1, "> %s", command);
 
 	// Don't bother doing anything else with an empty command
-	if (command.size() == 0)
+	if (command.empty())
 		return;
 
 	// Add the command to the log
@@ -93,22 +83,22 @@ void Console::execute(string command)
 		args.push_back(tz.next().text);
 
 	// Check that it is a valid command
-	for (size_t a = 0; a < commands_.size(); a++)
+	for (auto& cmd : commands_)
 	{
 		// Found it, execute and return
-		if (commands_[a].name() == cmd_name)
+		if (cmd.name() == cmd_name)
 		{
-			commands_[a].execute(args);
+			cmd.execute(args);
 			return;
 		}
 	}
 
 	// Check if it is a cvar
-	CVar* cvar = CVar::get(cmd_name);
+	auto cvar = CVar::get(cmd_name);
 	if (cvar)
 	{
 		// Arg(s) given, set cvar value
-		if (args.size() > 0)
+		if (!args.empty())
 		{
 			if (cvar->type == CVar::Type::Boolean)
 			{
@@ -118,9 +108,9 @@ void Console::execute(string command)
 					*((CBoolCVar*)cvar) = true;
 			}
 			else if (cvar->type == CVar::Type::Integer)
-				*((CIntCVar*)cvar) = atoi(CHR(args[0]));
+				*((CIntCVar*)cvar) = std::stoi(CHR(args[0]));
 			else if (cvar->type == CVar::Type::Float)
-				*((CFloatCVar*)cvar) = (float)atof(CHR(args[0]));
+				*((CFloatCVar*)cvar) = (float)std::stof(CHR(args[0]));
 			else if (cvar->type == CVar::Type::String)
 				*((CStringCVar*)cvar) = args[0];
 		}
@@ -129,19 +119,19 @@ void Console::execute(string command)
 		string value = "";
 		if (cvar->type == CVar::Type::Boolean)
 		{
-			if (cvar->GetValue().Bool)
+			if (cvar->getValue().Bool)
 				value = "true";
 			else
 				value = "false";
 		}
 		else if (cvar->type == CVar::Type::Integer)
-			value = S_FMT("%d", cvar->GetValue().Int);
+			value = S_FMT("%d", cvar->getValue().Int);
 		else if (cvar->type == CVar::Type::Float)
-			value = S_FMT("%1.4f", cvar->GetValue().Float);
+			value = S_FMT("%1.4f", cvar->getValue().Float);
 		else
 			value = ((CStringCVar*)cvar)->value;
 
-		Log::console(S_FMT("\"%s\" = \"%s\"", cmd_name, value));
+		Log::console(S_FMT(R"("%s" = "%s")", cmd_name, value));
 
 		return;
 	}
@@ -171,7 +161,7 @@ string Console::lastCommand()
 	string lastCmd = "";
 
 	// Get last command if any exist
-	if (cmd_log_.size() > 0)
+	if (!cmd_log_.empty())
 		lastCmd = cmd_log_.back();
 
 	return lastCmd;
@@ -212,7 +202,11 @@ ConsoleCommand& Console::command(size_t index)
 // -----------------------------------------------------------------------------
 // ConsoleCommand class constructor
 // -----------------------------------------------------------------------------
-ConsoleCommand::ConsoleCommand(string name, void (*command_func)(vector<string>), int min_args = 0, bool show_in_list)
+ConsoleCommand::ConsoleCommand(
+	const string& name,
+	void (*command_func)(const vector<string>&),
+	int  min_args = 0,
+	bool show_in_list)
 {
 	// Init variables
 	name_         = name;
@@ -227,7 +221,7 @@ ConsoleCommand::ConsoleCommand(string name, void (*command_func)(vector<string>)
 // -----------------------------------------------------------------------------
 // Executes the console command
 // -----------------------------------------------------------------------------
-void ConsoleCommand::execute(vector<string> args)
+void ConsoleCommand::execute(const vector<string>& args) const
 {
 	// Only execute if we have the minimum args specified
 	if (args.size() >= min_args_)
@@ -262,7 +256,7 @@ CONSOLE_COMMAND(cmdlist, 0, true)
 
 	for (int a = 0; a < App::console()->numCommands(); a++)
 	{
-		ConsoleCommand& cmd = App::console()->command(a);
+		auto& cmd = App::console()->command(a);
 		if (cmd.showInList() || Global::debug)
 			Log::console(S_FMT("\"%s\" (%lu args)", cmd.name(), cmd.minArgs()));
 	}
@@ -281,8 +275,8 @@ CONSOLE_COMMAND(cvarlist, 0, true)
 	Log::console(S_FMT("%lu CVars:", list.size()));
 
 	// Write list to console
-	for (unsigned a = 0; a < list.size(); a++)
-		Log::console(list[a]);
+	for (const auto& a : list)
+		Log::console(a);
 }
 
 // -----------------------------------------------------------------------------

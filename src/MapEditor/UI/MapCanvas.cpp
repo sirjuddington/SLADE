@@ -200,7 +200,7 @@ void MapCanvas::mouseLook3d()
 // -----------------------------------------------------------------------------
 // Called when the key bind [name] is pressed
 // -----------------------------------------------------------------------------
-void MapCanvas::onKeyBindPress(string name)
+void MapCanvas::onKeyBindPress(const string& name)
 {
 	// Screenshot
 #ifdef USE_SFML_RENDERWINDOW

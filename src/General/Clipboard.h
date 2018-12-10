@@ -1,127 +1,49 @@
 #pragma once
 
-#include "Archive/Archive.h"
-#include "Utility/Structs.h"
-
-enum ClipboardType
-{
-	CLIPBOARD_ENTRY_TREE,
-	CLIPBOARD_COMPOSITE_TEXTURE,
-	CLIPBOARD_PATCH,
-	CLIPBOARD_MAP_ARCH,
-	CLIPBOARD_MAP_THINGS,
-
-	CLIPBOARD_UNKNOWN,
-};
-
 class ClipboardItem
 {
 public:
-	ClipboardItem(int type = CLIPBOARD_UNKNOWN);
-	~ClipboardItem();
+	enum class Type
+	{
+		EntryTree,
+		CompositeTexture,
+		Patch,
+		MapArchitecture,
+		MapThings,
+		Unknown
+	};
 
-	int type() { return type_; }
+	ClipboardItem(Type type = Type::Unknown) : type_{ type } {}
+	virtual ~ClipboardItem() = default;
 
-private:
-	int type_;
-};
+	Type type() const { return type_; }
 
-class EntryTreeClipboardItem : public ClipboardItem
-{
-public:
-	EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, vector<ArchiveTreeNode*>& dirs);
-	~EntryTreeClipboardItem();
-
-	ArchiveTreeNode* tree() { return tree_; }
-
-private:
-	ArchiveTreeNode* tree_;
-};
-
-class CTexture;
-class TextureClipboardItem : public ClipboardItem
-{
-public:
-	TextureClipboardItem(CTexture* texture, Archive* parent);
-	~TextureClipboardItem();
-
-	CTexture*     texture() { return texture_; }
-	ArchiveEntry* patchEntry(string patch);
+	typedef std::unique_ptr<ClipboardItem> UPtr;
 
 private:
-	CTexture*             texture_;
-	vector<ArchiveEntry*> patch_entries_;
-};
-
-class MapVertex;
-class MapSide;
-class MapLine;
-class MapSector;
-class SLADEMap;
-class MapArchClipboardItem : public ClipboardItem
-{
-public:
-	MapArchClipboardItem();
-	~MapArchClipboardItem();
-
-	void               addLines(vector<MapLine*> lines);
-	string             info();
-	vector<MapVertex*> pasteToMap(SLADEMap* map, Vec2f position);
-	void               putLines(vector<MapLine*>& list);
-	Vec2f              midpoint() { return midpoint_; }
-
-private:
-	vector<MapVertex*> vertices_;
-	vector<MapSide*>   sides_;
-	vector<MapLine*>   lines_;
-	vector<MapSector*> sectors_;
-	Vec2f              midpoint_;
-};
-
-class MapThing;
-class MapThingsClipboardItem : public ClipboardItem
-{
-public:
-	MapThingsClipboardItem();
-	~MapThingsClipboardItem();
-
-	void   addThings(vector<MapThing*>& things);
-	string info();
-	void   pasteToMap(SLADEMap* map, Vec2f position);
-	void   putThings(vector<MapThing*>& list);
-	Vec2f  midpoint() { return midpoint_; }
-
-private:
-	vector<MapThing*> things_;
-	Vec2f             midpoint_;
+	Type type_;
 };
 
 class Clipboard
 {
 public:
-	Clipboard();
-	~Clipboard();
+	Clipboard()  = default;
+	~Clipboard() = default;;
 
-	// Singleton implementation
-	static Clipboard* getInstance()
+	unsigned size() const { return items_.size(); }
+	bool     empty() const { return items_.empty(); }
+
+	ClipboardItem* item(unsigned index) const { return index < items_.size() ? items_[index].get() : nullptr; }
+
+	void add(ClipboardItem::UPtr item) { items_.push_back(std::move(item)); }
+	void add(vector<ClipboardItem::UPtr>& items)
 	{
-		if (!instance_)
-			instance_ = new Clipboard();
-
-		return instance_;
+		for (auto& item : items)
+			items_.push_back(std::move(item));
 	}
 
-	uint32_t       nItems() { return items_.size(); }
-	ClipboardItem* item(uint32_t index);
-	bool           addItem(ClipboardItem* item);
-	bool           addItems(vector<ClipboardItem*>& items);
-
-	void clear();
+	void clear() { items_.clear(); }
 
 private:
-	vector<ClipboardItem*> items_;
-	static Clipboard*      instance_;
+	vector<ClipboardItem::UPtr> items_;
 };
-
-// Define for less cumbersome ClipBoard::getInstance()
-#define theClipboard Clipboard::getInstance()

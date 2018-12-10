@@ -154,38 +154,38 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 int Misc::detectPaletteHack(ArchiveEntry* entry)
 {
 	if (entry == nullptr || entry->type() == nullptr)
-		return PAL_NOHACK;
+		return PaletteHack::NONE;
 	else if (entry->type()->formatId() == "img_doom_arah" && entry->name() == "TITLEPIC")
-		return PAL_ALPHAHACK; // Doom Alpha 0.2
+		return PaletteHack::ALPHA; // Doom Alpha 0.2
 	else if (entry->type()->formatId() == "img_doom_snea" && entry->name() == "TITLEPIC")
-		return PAL_ALPHAHACK; // Doom Alpha 0.4 and 0.5
+		return PaletteHack::ALPHA; // Doom Alpha 0.4 and 0.5
 	else if (entry->type()->formatId() == "img_raw" && entry->name() == "E2END")
-		return PAL_HERETICHACK; // Heretic
+		return PaletteHack::HERETIC; // Heretic
 	else if (entry->type()->formatId() == "img_doom_arah" && entry->name() == "shadowpage")
-		return PAL_SHADOWHACK; // Shadowcaster
+		return PaletteHack::SHADOW; // Shadowcaster
 	else if (entry->type()->formatId() == "img_rott" && entry->name() == "NICOLAS")
-		return PAL_ROTTNHACK; // Rise of the Triad
+		return PaletteHack::ROTT_N; // Rise of the Triad
 	else if (entry->type()->formatId() == "img_rott" && entry->name() == "FINLDOOR")
-		return PAL_ROTTDHACK; // Rise of the Triad
+		return PaletteHack::ROTT_D; // Rise of the Triad
 	else if (entry->type()->formatId() == "img_rott" && entry->name() == "FINLFIRE")
-		return PAL_ROTTFHACK; // Rise of the Triad
+		return PaletteHack::ROTT_F; // Rise of the Triad
 	else if (
 		(entry->type()->formatId() == "img_rott" && entry->name() == "AP_TITL")
 		|| (entry->type()->formatId() == "img_rottraw" && entry->name() == "AP_WRLD"))
-		return PAL_ROTTAHACK; // Rise of the Triad
+		return PaletteHack::ROTT_A; // Rise of the Triad
 	else if (entry->type()->formatId() == "img_wolfpic" && entry->name().Matches("IDG*"))
-		return PAL_SODIDHACK; // Spear of Destiny team screens
+		return PaletteHack::SOD_ID; // Spear of Destiny team screens
 	else if (entry->type()->formatId() == "img_wolfpic" && entry->name().Matches("TIT*"))
-		return PAL_SODTITLEHACK; // Spear of Destiny title screens
+		return PaletteHack::SOD_TITLE; // Spear of Destiny title screens
 	else if (entry->type()->formatId() == "img_wolfpic" && entry->name().Matches("END*"))
 	{
 		long endscreen; // Spear of Destiny ending screens (extra-hacky!)
 		if (entry->name().Right(3).ToLong(&endscreen))
-			return PAL_SODENDHACK + endscreen - 81;
+			return PaletteHack::SOD_END + endscreen - 81;
 	}
 
 	// Default:
-	return PAL_NOHACK;
+	return PaletteHack::NONE;
 }
 
 // -----------------------------------------------------------------------------
@@ -201,27 +201,27 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 	// Find PLAYPAL entry
 	bool          sixbit  = false;
 	ArchiveEntry* playpal = nullptr;
-	if (lump == PAL_ALPHAHACK)
+	if (lump == PaletteHack::ALPHA)
 		playpal = archive->entry("TITLEPAL", true);
-	else if (lump == PAL_HERETICHACK)
+	else if (lump == PaletteHack::HERETIC)
 		playpal = archive->entry("E2PAL", true);
-	else if (lump == PAL_SHADOWHACK)
+	else if (lump == PaletteHack::SHADOW)
 		playpal = archive->entry("shadowpage+1", true), sixbit = true;
-	else if (lump == PAL_ROTTNHACK)
+	else if (lump == PaletteHack::ROTT_N)
 		playpal = archive->entry("NICPAL", true);
-	else if (lump == PAL_ROTTDHACK)
+	else if (lump == PaletteHack::ROTT_D)
 		playpal = archive->entry("FINDRPAL", true);
-	else if (lump == PAL_ROTTFHACK)
+	else if (lump == PaletteHack::ROTT_F)
 		playpal = archive->entry("FINFRPAL", true);
-	else if (lump == PAL_ROTTAHACK)
+	else if (lump == PaletteHack::ROTT_A)
 		playpal = archive->entry("AP_PAL", true);
-	else if (lump == PAL_SODIDHACK)
+	else if (lump == PaletteHack::SOD_ID)
 		playpal = archive->entry("PAL00163", true), sixbit = true;
-	else if (lump == PAL_SODTITLEHACK)
+	else if (lump == PaletteHack::SOD_TITLE)
 		playpal = archive->entry("PAL00153", true), sixbit = true;
-	else if (lump >= PAL_SODENDHACK)
+	else if (lump >= PaletteHack::SOD_END)
 	{
-		int endscreen = lump - PAL_SODENDHACK;
+		int endscreen = lump - PaletteHack::SOD_END;
 		endscreen += 154;
 		string palname = S_FMT("PAL%05d", endscreen);
 		playpal        = archive->entry(palname, true);
@@ -377,7 +377,7 @@ string Misc::fileNameToLumpName(string file)
 string Misc::massRenameFilter(wxArrayString& names)
 {
 	// Check any names were given
-	if (names.size() == 0)
+	if (names.empty())
 		return "";
 
 	// Init filter string
@@ -413,10 +413,8 @@ string Misc::massRenameFilter(wxArrayString& names)
 void Misc::doMassRename(wxArrayString& names, string name_filter)
 {
 	// Go through names
-	for (unsigned a = 0; a < names.size(); a++)
+	for (auto& name : names)
 	{
-		string& name = names[a];
-
 		// If this name is shorter than the filter string, extend it with spaces
 		// while (name.size() < name_filter.size())
 		//	name += " ";
@@ -507,10 +505,10 @@ ColRGBA Misc::hslToRgb(double h, double s, double l)
 	}
 
 	// Find the rough values at given H with mid L and max S.
-	double  hue    = (6. * h);
-	uint8_t sector = (uint8_t)hue;
-	double  factor = hue - sector;
-	double  dr, dg, db;
+	double hue    = (6. * h);
+	auto   sector = (uint8_t)hue;
+	double factor = hue - sector;
+	double dr, dg, db;
 	switch (sector)
 	{
 		// RGB 0xFF0000 to 0xFFFF00, increasingly green
@@ -708,7 +706,7 @@ uint32_t Misc::crc(const uint8_t* buf, uint32_t len)
 // the dimensions.
 // In case the texture is not found, the dimensions returned are null
 // -----------------------------------------------------------------------------
-Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
+Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, const string& name)
 {
 	Vec2i dimensions;
 	dimensions.x = 0;
@@ -752,12 +750,12 @@ Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
 // -----------------------------------------------------------------------------
 // Gets the saved window info for [id]
 // -----------------------------------------------------------------------------
-Misc::WindowInfo Misc::getWindowInfo(string id)
+Misc::WindowInfo Misc::getWindowInfo(const string& id)
 {
-	for (unsigned a = 0; a < window_info.size(); a++)
+	for (auto& a : window_info)
 	{
-		if (window_info[a].id == id)
-			return window_info[a];
+		if (a.id == id)
+			return a;
 	}
 
 	return WindowInfo("", -1, -1, -1, -1);
@@ -766,28 +764,28 @@ Misc::WindowInfo Misc::getWindowInfo(string id)
 // -----------------------------------------------------------------------------
 // Sets the saved window info for [id]
 // -----------------------------------------------------------------------------
-void Misc::setWindowInfo(string id, int width, int height, int left, int top)
+void Misc::setWindowInfo(const string& id, int width, int height, int left, int top)
 {
 	if (id.IsEmpty())
 		return;
 
-	for (unsigned a = 0; a < window_info.size(); a++)
+	for (auto& a : window_info)
 	{
-		if (window_info[a].id == id)
+		if (a.id == id)
 		{
 			if (width >= -1)
-				window_info[a].width = width;
+				a.width = width;
 			if (height >= -1)
-				window_info[a].height = height;
+				a.height = height;
 			if (left >= -1)
-				window_info[a].left = left;
+				a.left = left;
 			if (top >= -1)
-				window_info[a].top = top;
+				a.top = top;
 			return;
 		}
 	}
 
-	window_info.push_back(WindowInfo(id, width, height, left, top));
+	window_info.emplace_back(id, width, height, left, top);
 }
 
 // -----------------------------------------------------------------------------
@@ -814,12 +812,6 @@ void Misc::readWindowInfo(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 void Misc::writeWindowInfo(wxFile& file)
 {
-	for (unsigned a = 0; a < window_info.size(); a++)
-		file.Write(S_FMT(
-			"\t%s %d %d %d %d\n",
-			window_info[a].id,
-			window_info[a].width,
-			window_info[a].height,
-			window_info[a].left,
-			window_info[a].top));
+	for (auto& a : window_info)
+		file.Write(S_FMT("\t%s %d %d %d %d\n", a.id, a.width, a.height, a.left, a.top));
 }

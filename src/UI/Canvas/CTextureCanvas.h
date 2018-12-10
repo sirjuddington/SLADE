@@ -59,7 +59,7 @@ public:
 
 	bool swapPatches(size_t p1, size_t p2);
 
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 private:
 	CTexture*          texture_;

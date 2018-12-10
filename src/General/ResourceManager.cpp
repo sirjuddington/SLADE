@@ -258,7 +258,7 @@ void ResourceManager::removeArchive(Archive* archive)
 		return;
 
 	// Remove from palettes
-	removeArchiveFromMap(palettes_,archive);
+	removeArchiveFromMap(palettes_, archive);
 
 	// Remove from patches
 	removeArchiveFromMap(patches_, archive);
@@ -286,7 +286,7 @@ void ResourceManager::removeArchive(Archive* archive)
 // Returns the Doom64 hash of a given texture name, computed using the same
 // hash algorithm as Doom64 EX itself
 // -----------------------------------------------------------------------------
-uint16_t ResourceManager::getTextureHash(const string& name)
+uint16_t ResourceManager::getTextureHash(const string& name) const
 {
 	char str[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	for (size_t c = 0; c < name.length() && c < 8; c++)
@@ -312,7 +312,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 		EntryType::detectEntryType(entry.get());
 
 	// Get entry type
-	EntryType* type = entry->type();
+	auto type = entry->type();
 
 	// Get resource name (extension cut, uppercase)
 	string lname = entry->upperNameNoExt();
@@ -392,7 +392,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 			}
 
 			// Add name to hash table
-			ResourceManager::doom64_hash_table_[getTextureHash(name)] = name;
+			doom64_hash_table_[getTextureHash(name)] = name;
 		}
 	}
 
@@ -409,8 +409,8 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 		if (txentry == 1)
 		{
 			Archive::SearchOptions opt;
-			opt.match_type       = EntryType::fromId("pnames");
-			ArchiveEntry* pnames = entry->parent()->findLast(opt);
+			opt.match_type = EntryType::fromId("pnames");
+			auto pnames    = entry->parent()->findLast(opt);
 			ptable.loadPNAMES(pnames, entry->parent());
 		}
 
@@ -535,7 +535,7 @@ void ResourceManager::putAllTextures(vector<TextureResource::Texture*>& list, Ar
 			continue;
 
 		// Go through resource textures
-		TextureResource::Texture* res = i.second.textures_[0].get();
+		auto res = i.second.textures_[0].get();
 		for (int a = 0; a < i.second.length(); a++)
 		{
 			res = i.second.textures_[a].get();
@@ -628,7 +628,7 @@ ArchiveEntry* ResourceManager::getPatchEntry(const string& patch, const string& 
 	if (!nspace.CmpNoCase("textures"))
 		return getTextureEntry(patch, "textures", priority);
 
-	ArchiveEntry* entry = patches_[patch.Upper()].getEntry(priority, nspace, true);
+	auto entry = patches_[patch.Upper()].getEntry(priority, nspace, true);
 	if (entry)
 		return entry;
 
@@ -646,10 +646,10 @@ ArchiveEntry* ResourceManager::getPatchEntry(const string& patch, const string& 
 ArchiveEntry* ResourceManager::getFlatEntry(const string& flat, Archive* priority)
 {
 	// Check resource with matching name exists
-	EntryResource& res = flats_[flat.Upper()];
+	auto& res = flats_[flat.Upper()];
 
 	// Return most relevant entry
-	ArchiveEntry* entry = res.getEntry(priority);
+	auto entry = res.getEntry(priority);
 	if (entry)
 		return entry;
 
@@ -666,7 +666,7 @@ ArchiveEntry* ResourceManager::getFlatEntry(const string& flat, Archive* priorit
 // -----------------------------------------------------------------------------
 ArchiveEntry* ResourceManager::getTextureEntry(const string& texture, const string& nspace, Archive* priority)
 {
-	ArchiveEntry* entry = satextures_[texture.Upper()].getEntry(priority, nspace, true);
+	auto entry = satextures_[texture.Upper()].getEntry(priority, nspace, true);
 	if (entry)
 		return entry;
 
@@ -684,13 +684,13 @@ ArchiveEntry* ResourceManager::getTextureEntry(const string& texture, const stri
 CTexture* ResourceManager::getTexture(const string& texture, Archive* priority, Archive* ignore)
 {
 	// Check texture resource with matching name exists
-	TextureResource& res = textures_[texture.Upper()];
+	auto& res = textures_[texture.Upper()];
 	if (res.textures_.empty())
 		return nullptr;
 
 	// Go through resource textures
-	CTexture* tex    = &res.textures_[0].get()->tex;
-	Archive*  parent = res.textures_[0].get()->parent;
+	auto tex    = &res.textures_[0]->tex;
+	auto parent = res.textures_[0]->parent;
 	for (auto& res_tex : res.textures_)
 	{
 		// Skip if it's in the 'ignore' archive
@@ -719,7 +719,7 @@ CTexture* ResourceManager::getTexture(const string& texture, Archive* priority, 
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from any managed archive
 // -----------------------------------------------------------------------------
-void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+void ResourceManager::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
 {
 	event_data.seek(0, SEEK_SET);
 
@@ -728,8 +728,8 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 	{
 		wxUIntPtr ptr;
 		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
-		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto          esp   = entry->parent()->entryAtPathShared(entry->path(true));
+		auto entry = (ArchiveEntry*)wxUIntToPtr(ptr);
+		auto esp   = entry->parent()->entryAtPathShared(entry->path(true));
 		removeEntry(esp, true);
 		addEntry(esp, true);
 		announce("resources_updated");
@@ -740,8 +740,8 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 	{
 		wxUIntPtr ptr;
 		event_data.read(&ptr, sizeof(wxUIntPtr), sizeof(int));
-		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto          esp   = entry->parent()->entryAtPathShared(entry->path(true));
+		auto entry = (ArchiveEntry*)wxUIntToPtr(ptr);
+		auto esp   = entry->parent()->entryAtPathShared(entry->path(true));
 		removeEntry(esp, true);
 		announce("resources_updated");
 	}
@@ -751,8 +751,8 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 	{
 		wxUIntPtr ptr;
 		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
-		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto          esp   = entry->parent()->entryAtPathShared(entry->path(true));
+		auto entry = (ArchiveEntry*)wxUIntToPtr(ptr);
+		auto esp   = entry->parent()->entryAtPathShared(entry->path(true));
 		addEntry(esp, true);
 		announce("resources_updated");
 	}
@@ -780,7 +780,7 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 
 	long times[5];
 
-	for (unsigned t = 0; t < 5; t++)
+	for (long& time : times)
 	{
 		auto start = App::runTimer();
 		for (unsigned a = 0; a < 100; a++)
@@ -794,7 +794,7 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 			list.clear();
 		}
 		auto end = App::runTimer();
-		times[t] = end - start;
+		time = end - start;
 	}
 
 	float avg = float(times[0] + times[1] + times[2] + times[3] + times[4]) / 5.0f;

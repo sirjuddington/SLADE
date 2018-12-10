@@ -470,7 +470,7 @@ void PatchBrowser::selectPatch(string name)
 // -----------------------------------------------------------------------------
 // Handles any announcements
 // -----------------------------------------------------------------------------
-void PatchBrowser::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+void PatchBrowser::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser())
 		return;
