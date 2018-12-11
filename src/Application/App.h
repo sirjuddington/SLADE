@@ -22,12 +22,12 @@ void exit(bool save_config);
 // Version
 struct Version
 {
-	int major    = 0;
-	int minor    = 0;
-	int revision = 0;
-	int beta     = 0;
+	unsigned long major    = 0;
+	unsigned long minor    = 0;
+	unsigned long revision = 0;
+	unsigned long beta     = 0;
 
-	Version(int major = 0, int minor = 0, int revision = 0, int beta = 0) :
+	Version(unsigned long major = 0, unsigned long minor = 0, unsigned long revision = 0, unsigned long beta = 0) :
 		major{ major },
 		minor{ minor },
 		revision{ revision },
