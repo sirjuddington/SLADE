@@ -220,7 +220,7 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(new wxStaticText(panel, -1, "Scale:"), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_scalex_, { 1, 3 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_scaley_, { 1, 4 }, { 1, 1 });
-	gb_sizer->Add(label_scaled_size_, { 1, 5 }, { 1, 0 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(label_scaled_size_, { 1, 5 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(cb_tex_world_panning_, { 1, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
 
 
