@@ -4,16 +4,17 @@ class ArchiveTreeNode;
 
 namespace Icons
 {
-enum
+enum Type
 {
-	General,
+	Any     = -1,
+	General = 0,
 	Entry,
 	TextEditor,
 };
 
 bool           loadIcons();
-wxBitmap       getIcon(int type, string name, bool large, bool log_missing = true);
-wxBitmap       getIcon(int type, string name);
-bool           exportIconPNG(int type, string name, string path);
-vector<string> iconSets(int type);
+wxBitmap       getIcon(Type type, const string& name, bool large, bool log_missing = true);
+wxBitmap       getIcon(Type type, const string& name);
+bool           exportIconPNG(Type type, const string& name, const string& path);
+vector<string> iconSets(Type type);
 } // namespace Icons

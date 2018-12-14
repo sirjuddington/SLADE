@@ -95,7 +95,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 	{
 		TextureXList* texturex = new TextureXList();
 		texturex->readTEXTUREXData(tx_entries[a], ptable);
-		for (unsigned t = 0; t < texturex->nTextures(); t++)
+		for (unsigned t = 0; t < texturex->size(); t++)
 			ptable.updatePatchUsage(texturex->texture(t));
 		tx_lists.push_back(texturex);
 	}
@@ -501,7 +501,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 
 		// Go through textures
 		bool anim = false;
-		for (unsigned t = 1; t < txlist.nTextures(); t++)
+		for (unsigned t = 1; t < txlist.size(); t++)
 		{
 			string texname = txlist.texture(t)->name();
 
@@ -550,7 +550,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	for (unsigned a = 0; a < base_tx_entries.size(); a++)
 		tx.readTEXTUREXData(base_tx_entries[a], pt_temp, true);
 	vector<string> base_resource_textures;
-	for (unsigned a = 0; a < tx.nTextures(); a++)
+	for (unsigned a = 0; a < tx.size(); a++)
 		base_resource_textures.push_back(tx.texture(a)->name());
 
 	// Determine which textures to check initially

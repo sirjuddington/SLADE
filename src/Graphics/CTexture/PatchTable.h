@@ -13,7 +13,9 @@ public:
 		string         name;
 		vector<string> used_in;
 
-		void removeTextureUsage(string texture)
+		Patch(const string& name) : name{ name } {}
+
+		void removeTextureUsage(const string& texture)
 		{
 			for (unsigned a = 0; a < used_in.size(); a++)
 			{
@@ -26,23 +28,23 @@ public:
 		}
 	};
 
-	PatchTable(Archive* parent = nullptr);
-	~PatchTable();
+	PatchTable(Archive* parent = nullptr) : parent_{ parent } {}
+	~PatchTable() = default;
 
-	size_t   nPatches() { return patches_.size(); }
-	Archive* parent() { return parent_; }
+	size_t   nPatches() const { return patches_.size(); }
+	Archive* parent() const { return parent_; }
 	void     setParent(Archive* parent) { this->parent_ = parent; }
 
 	Patch&        patch(size_t index);
-	Patch&        patch(string name);
+	Patch&        patch(const string& name);
 	string        patchName(size_t index);
 	ArchiveEntry* patchEntry(size_t index);
-	ArchiveEntry* patchEntry(string name);
-	int32_t       patchIndex(string name);
+	ArchiveEntry* patchEntry(const string& name);
+	int32_t       patchIndex(const string& name);
 	int32_t       patchIndex(ArchiveEntry* entry);
 	bool          removePatch(unsigned index);
-	bool          replacePatch(unsigned index, string newname);
-	bool          addPatch(string name, bool allow_dup = false);
+	bool          replacePatch(unsigned index, const string& newname);
+	bool          addPatch(const string& name, bool allow_dup = false);
 
 	bool loadPNAMES(ArchiveEntry* pnames, Archive* parent = nullptr);
 	bool writePNAMES(ArchiveEntry* pnames);
@@ -51,7 +53,7 @@ public:
 	void updatePatchUsage(CTexture* tex);
 
 private:
-	Archive*      parent_;
+	Archive*      parent_ = nullptr;
 	vector<Patch> patches_;
-	Patch         patch_invalid_;
+	Patch         patch_invalid_{ "INVALID_PATCH" };
 };

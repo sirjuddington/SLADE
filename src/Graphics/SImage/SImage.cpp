@@ -58,32 +58,6 @@ EXTERN_CVAR(Float, col_greyscale_b)
 
 
 // -----------------------------------------------------------------------------
-// SImage class constructor
-// -----------------------------------------------------------------------------
-SImage::SImage(Type type)
-{
-	width_       = 0;
-	height_      = 0;
-	data_        = nullptr;
-	mask_        = nullptr;
-	offset_x_    = 0;
-	offset_y_    = 0;
-	format_      = nullptr;
-	this->type_  = type;
-	numimages_   = 1;
-	imgindex_    = 0;
-	has_palette_ = false;
-}
-
-// -----------------------------------------------------------------------------
-// SImage class destructor
-// -----------------------------------------------------------------------------
-SImage::~SImage()
-{
-	clearData();
-}
-
-// -----------------------------------------------------------------------------
 // Loads the image as RGBA data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
@@ -99,7 +73,7 @@ bool SImage::putRGBAData(MemChunk& mc, Palette* pal)
 	// If data is already in RGBA format just return a copy
 	if (type_ == Type::RGBA)
 	{
-		mc.importMem(data_, width_ * height_ * 4);
+		mc.importMem(data_);
 		return true;
 	}
 
@@ -117,7 +91,7 @@ bool SImage::putRGBAData(MemChunk& mc, Palette* pal)
 			ColRGBA col = pal->colour(data_[a]);
 
 			// Set alpha
-			if (mask_)
+			if (mask_.data())
 				col.a = mask_[a];
 			else
 				col.a = 255;
@@ -209,38 +183,25 @@ bool SImage::putRGBData(MemChunk& mc, Palette* pal)
 // Loads the image as index data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::putIndexedData(MemChunk& mc)
+bool SImage::putIndexedData(MemChunk& mc) const
 {
 	// Check the image is valid
 	if (!isValid())
 		return false;
 
-	// Init rgb data
-	mc.reSize(width_ * height_, false);
-
-	// Cannot do this for trucolor graphics.
-	if (type_ == Type::RGBA)
-		return false;
-
-	else if (type_ == Type::PalMask)
+	switch (type_)
 	{
-		mc.write(data_, width_ * height_);
-		return true;
+	case Type::RGBA: return false; // Cannot do this for trucolor graphics.
+	case Type::PalMask:
+	case Type::AlphaMap: return mc.importMem(data_);
+	default: return false;
 	}
-
-	else if (type_ == Type::AlphaMap)
-	{
-		mc.write(data_, width_ * height_);
-		return true;
-	}
-
-	return false; // Invalid image type
 }
 
 // -----------------------------------------------------------------------------
 // Returns the number of bytes per image row
 // -----------------------------------------------------------------------------
-unsigned SImage::stride()
+unsigned SImage::stride() const
 {
 	if (type_ == Type::RGBA)
 		return width_ * 4;
@@ -251,7 +212,7 @@ unsigned SImage::stride()
 // -----------------------------------------------------------------------------
 // Returns the number of bytes per image pixel
 // -----------------------------------------------------------------------------
-uint8_t SImage::bpp()
+uint8_t SImage::bpp() const
 {
 	if (type_ == Type::RGBA)
 		return 4;
@@ -262,7 +223,7 @@ uint8_t SImage::bpp()
 // -----------------------------------------------------------------------------
 // Returns an info struct with image information
 // -----------------------------------------------------------------------------
-SImage::Info SImage::info()
+SImage::Info SImage::info() const
 {
 	Info inf;
 
@@ -292,7 +253,7 @@ ColRGBA SImage::pixelAt(unsigned x, unsigned y, Palette* pal)
 
 	// Check it
 	if (index >= unsigned(width_ * height_ * bpp()))
-		return ColRGBA(0, 0, 0, 0);
+		return { 0, 0, 0, 0 };
 
 	// Get colour at pixel
 	ColRGBA col;
@@ -310,7 +271,7 @@ ColRGBA SImage::pixelAt(unsigned x, unsigned y, Palette* pal)
 			pal = &palette_;
 
 		col.set(pal->colour(data_[index]));
-		if (mask_)
+		if (mask_.hasData())
 			col.a = mask_[index];
 	}
 	else if (type_ == Type::AlphaMap)
@@ -328,7 +289,7 @@ ColRGBA SImage::pixelAt(unsigned x, unsigned y, Palette* pal)
 // Returns the palette index of the pixel at [x,y] in the image, or 0 if the
 // position is out of bounds or the image is not paletted
 // -----------------------------------------------------------------------------
-uint8_t SImage::pixelIndexAt(unsigned x, unsigned y)
+uint8_t SImage::pixelIndexAt(unsigned x, unsigned y) const
 {
 	// Get pixel index
 	unsigned index = y * stride() + x * bpp();
@@ -370,17 +331,11 @@ void SImage::setYOffset(int offset)
 void SImage::clearData(bool clear_mask)
 {
 	// Delete data if it exists
-	if (data_)
-	{
-		delete[] data_;
-		data_ = nullptr;
-	}
+	data_.clear();
+
 	// Delete mask if it exists
-	if (mask_ && clear_mask)
-	{
-		delete[] mask_;
-		mask_ = nullptr;
-	}
+	if (clear_mask)
+		mask_.clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -396,32 +351,22 @@ void SImage::create(int width, int height, Type type, Palette* pal, int index, i
 	clearData();
 
 	// Create blank image
+	data_.reSize(width * height * bpp(), false);
+	data_.fillData(0);
 	if (type == Type::PalMask)
 	{
-		data_ = new uint8_t[width * height];
-		memset(data_, 0, width * height);
-		mask_ = new uint8_t[width * height];
-		memset(mask_, 0, width * height);
-	}
-	else if (type == Type::RGBA)
-	{
-		data_ = new uint8_t[width * height * 4];
-		memset(data_, 0, width * height * 4);
-	}
-	else if (type == Type::AlphaMap)
-	{
-		data_ = new uint8_t[width * height];
-		memset(data_, 0, width * height);
+		mask_.reSize(width * height, false);
+		mask_.fillData(0);
 	}
 
 	// Set image properties
-	this->width_     = width;
-	this->height_    = height;
-	this->type_      = type;
-	this->offset_x_  = 0;
-	this->offset_y_  = 0;
-	this->numimages_ = numimages;
-	this->imgindex_  = index;
+	width_     = width;
+	height_    = height;
+	type_      = type;
+	offset_x_  = 0;
+	offset_y_  = 0;
+	numimages_ = numimages;
+	imgindex_  = index;
 	if (pal)
 	{
 		palette_.copyPalette(pal);
@@ -434,7 +379,7 @@ void SImage::create(int width, int height, Type type, Palette* pal, int index, i
 // -----------------------------------------------------------------------------
 // Creates an empty image, initialising with properties from [info]
 // -----------------------------------------------------------------------------
-void SImage::create(SImage::Info info, Palette* pal)
+void SImage::create(Info info, Palette* pal)
 {
 	// Normal creation
 	create(info.width, info.height, (Type)info.colformat, pal, info.imgindex, info.numimages);
@@ -481,13 +426,13 @@ void SImage::fillAlpha(uint8_t alpha)
 	else if (type_ == Type::PalMask)
 	{
 		// Paletted masked format, fill mask with alpha value
-		if (!mask_)
-			mask_ = new uint8_t[width_ * height_];
+		if (!mask_.hasData())
+			mask_.reSize(width_ * height_);
 
-		memset(mask_, alpha, width_ * height_);
+		mask_.fillData(alpha);
 	}
 	else if (type_ == Type::AlphaMap)
-		memset(data_, alpha, width_ * height_);
+		data_.fillData(alpha);
 
 	// Announce change
 	announce("image_changed");
@@ -497,7 +442,7 @@ void SImage::fillAlpha(uint8_t alpha)
 // Returns the first unused palette index, or -1 if the image is not paletted or
 // uses all 256 colours
 // -----------------------------------------------------------------------------
-short SImage::findUnusedColour()
+short SImage::findUnusedColour() const
 {
 	// Only for paletted images
 	if (type_ != Type::PalMask)
@@ -525,13 +470,13 @@ short SImage::findUnusedColour()
 // -----------------------------------------------------------------------------
 // Returns the number of unique colors in a paletted image
 // -----------------------------------------------------------------------------
-size_t SImage::countColours()
+size_t SImage::countColours() const
 {
 	// If the picture is not paletted, return 0.
 	if (type_ != Type::PalMask)
 		return 0;
 
-	bool* usedcolours = new bool[256];
+	auto usedcolours = new bool[256];
 	memset(usedcolours, 0, 256);
 	size_t used = 0;
 
@@ -563,17 +508,15 @@ void SImage::shrinkPalette(Palette* pal)
 		pal = &palette_;
 
 	// Init variables
-	Palette newpal;
-	bool*   usedcolours = new bool[256];
-	int*    remap       = new int[256];
-	memset(usedcolours, 0, 256);
+	Palette         newpal;
+	vector<uint8_t> usedcolours(256);
+	vector<int>     remap(256);
+	memset(usedcolours.data(), 0, 256);
 	size_t used = 0;
 
 	// Count all color indices actually used on the picture
 	for (int a = 0; a < width_ * height_; ++a)
-	{
 		usedcolours[data_[a]] = true;
-	}
 
 	// Create palette remapping information
 	for (size_t b = 0; b < 256; ++b)
@@ -588,14 +531,9 @@ void SImage::shrinkPalette(Palette* pal)
 
 	// Remap image to new palette indices
 	for (int c = 0; c < width_ * height_; ++c)
-	{
 		data_[c] = remap[data_[c]];
-	}
-	pal->copyPalette(&newpal);
 
-	// Cleanup
-	delete[] usedcolours;
-	delete[] remap;
+	pal->copyPalette(&newpal);
 }
 
 // -----------------------------------------------------------------------------
@@ -622,16 +560,10 @@ bool SImage::copyImage(SImage* image)
 	numimages_   = image->numimages_;
 
 	// Copy image data
-	if (image->data_)
-	{
-		data_ = new uint8_t[width_ * height_ * bpp()];
-		memcpy(data_, image->data_, width_ * height_ * bpp());
-	}
-	if (image->mask_)
-	{
-		mask_ = new uint8_t[width_ * height_];
-		memcpy(mask_, image->mask_, width_ * height_);
-	}
+	if (image->data_.hasData())
+		data_.importMem(image->data_);
+	if (image->mask_.hasData())
+		mask_.importMem(image->mask_);
 
 	// Announce change
 	announce("image_changed");
@@ -643,12 +575,12 @@ bool SImage::copyImage(SImage* image)
 // Detects the format of [data] and, if it's a valid image format, loads it into
 // this image
 // -----------------------------------------------------------------------------
-bool SImage::open(MemChunk& data, int index, string type_hint)
+bool SImage::open(MemChunk& data, int index, const string& type_hint)
 {
 	// Check with type hint format first
 	if (!type_hint.IsEmpty())
 	{
-		SIFormat* format = SIFormat::getFormat(type_hint);
+		auto format = SIFormat::getFormat(type_hint);
 		if (format != SIFormat::unknownFormat() && format->isThisFormat(data))
 			return format->loadImage(*this, data, index);
 	}
@@ -675,8 +607,7 @@ bool SImage::convertRGBA(Palette* pal)
 	clearData(true);
 
 	// Copy it
-	data_ = new uint8_t[width_ * height_ * 4];
-	memcpy(data_, rgba_data.data(), width_ * height_ * 4);
+	data_.importMem(rgba_data);
 
 	// Set new type & update variables
 	type_        = Type::RGBA;
@@ -710,11 +641,10 @@ bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 	if (type_ == Type::RGBA || type_ == Type::AlphaMap)
 	{
 		// Clear current mask
-		if (mask_)
-			delete[] mask_;
+		mask_.clear();
 
 		// Init mask
-		mask_ = new uint8_t[width_ * height_];
+		mask_.reSize(width_ * height_);
 
 		// Get values from alpha channel
 		int c = 0;
@@ -729,7 +659,7 @@ bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 	clearData(false);
 
 	// Do conversion
-	data_      = new uint8_t[width_ * height_];
+	data_.reSize(width_ * height_);
 	unsigned i = 0;
 	ColRGBA  col;
 	for (int a = 0; a < width_ * height_; a++)
@@ -938,7 +868,7 @@ bool SImage::setPixel(int x, int y, ColRGBA colour, Palette* pal)
 
 	// Set the pixel
 	if (type_ == Type::RGBA)
-		colour.write(data_ + (y * (width_ * 4) + (x * 4)));
+		colour.write(data_.data() + (y * (width_ * 4) + (x * 4)));
 	else if (type_ == Type::PalMask)
 	{
 		// Get palette to use
@@ -949,7 +879,7 @@ bool SImage::setPixel(int x, int y, ColRGBA colour, Palette* pal)
 		uint8_t index = (colour.index == -1) ? pal->nearestColour(colour) : colour.index;
 
 		data_[y * width_ + x] = index;
-		if (mask_)
+		if (mask_.hasData())
 			mask_[y * width_ + x] = colour.a;
 	}
 	else if (type_ == Type::AlphaMap)
@@ -979,9 +909,9 @@ bool SImage::setPixel(int x, int y, uint8_t pal_index, uint8_t alpha)
 	if (type_ == Type::RGBA)
 	{
 		// Set the pixel
-		ColRGBA col = palette_.colour(pal_index);
-		col.a       = alpha;
-		col.write(data_ + (y * (width_ * 4) + (x * 4)));
+		auto col = palette_.colour(pal_index);
+		col.a    = alpha;
+		col.write(data_.data() + (y * (width_ * 4) + (x * 4)));
 	}
 
 	// Paletted
@@ -989,7 +919,7 @@ bool SImage::setPixel(int x, int y, uint8_t pal_index, uint8_t alpha)
 	{
 		// Set the pixel
 		data_[y * width_ + x] = pal_index;
-		if (mask_)
+		if (mask_.hasData())
 			mask_[y * width_ + x] = alpha;
 	}
 
@@ -1046,7 +976,7 @@ void SImage::setHeight(int h)
 // -----------------------------------------------------------------------------
 bool SImage::rotate(int angle)
 {
-	if (!data_)
+	if (!data_.hasData())
 		return false;
 
 	if (angle == 0)
@@ -1058,19 +988,17 @@ bool SImage::rotate(int angle)
 	angle %= 360;
 	angle = 360 - angle;
 
-	uint8_t *nd, *nm;
-	int      nw, nh;
-
 	// Compute new dimensions and numbers of pixels and bytes
+	int new_width, new_height;
 	if (angle % 180)
 	{
-		nw = height_;
-		nh = width_;
+		new_width  = height_;
+		new_height = width_;
 	}
 	else
 	{
-		nw = width_;
-		nh = height_;
+		new_width  = width_;
+		new_height = height_;
 	}
 	int numpixels = width_ * height_;
 	int numbpp    = 0;
@@ -1082,11 +1010,10 @@ bool SImage::rotate(int angle)
 		return false;
 
 	// Create new data and mask
-	nd = new uint8_t[numpixels * numbpp];
-	if (mask_)
-		nm = new uint8_t[numpixels * numbpp];
-	else
-		nm = nullptr;
+	vector<uint8_t> new_data(numpixels * numbpp);
+	vector<uint8_t> new_mask;
+	if (mask_.hasData())
+		new_mask.resize(numpixels * numbpp, 0);
 
 	// Remapping loop
 	int i, j, k;
@@ -1095,37 +1022,31 @@ bool SImage::rotate(int angle)
 		switch (angle)
 		{
 			// Urgh maths...
-		case 90: j = (((nh - 1) - (i % width_)) * nw) + (i / width_); break;
+		case 90: j = (((new_height - 1) - (i % width_)) * new_width) + (i / width_); break;
 		case 180: j = (numpixels - 1) - i; break;
-		case 270: j = ((i % width_) * nw) + ((nw - 1) - (i / width_)); break;
-		default:
-			delete[] nd;
-			if (mask_)
-				delete[] nm;
-			return false;
+		case 270: j = ((i % width_) * new_width) + ((new_width - 1) - (i / width_)); break;
+		default: return false;
 		}
 		if (j >= numpixels)
 		{
 			LOG_MESSAGE(1, "Pixel %i remapped to %i, how did this even happen?", i, j);
-			delete[] nd;
-			if (mask_)
-				delete[] nm;
 			return false;
 		}
 		for (k = 0; k < numbpp; ++k)
 		{
-			nd[(j * numbpp) + k] = data_[(i * numbpp) + k];
-			if (mask_)
-				nm[(j * numbpp) + k] = mask_[(i * numbpp) + k];
+			new_data[(j * numbpp) + k] = data_[(i * numbpp) + k];
+			if (mask_.hasData())
+				new_mask[(j * numbpp) + k] = mask_[(i * numbpp) + k];
 		}
 	}
 
 	// It worked, yay
 	clearData();
-	data_   = nd;
-	mask_   = nm;
-	width_  = nw;
-	height_ = nh;
+	data_.importMem(new_data.data(), new_data.size());
+	if (!new_mask.empty())
+		mask_.importMem(new_mask.data(), new_mask.size());
+	width_  = new_width;
+	height_ = new_height;
 
 	// Announce change
 	announce("image_changed");
@@ -1137,8 +1058,6 @@ bool SImage::rotate(int angle)
 // -----------------------------------------------------------------------------
 bool SImage::mirror(bool vertical)
 {
-	uint8_t *nd, *nm;
-
 	// Compute numbers of pixels and bytes
 	int numpixels = width_ * height_;
 	int numbpp    = 0;
@@ -1150,11 +1069,10 @@ bool SImage::mirror(bool vertical)
 		return false;
 
 	// Create new data and mask
-	nd = new uint8_t[numpixels * numbpp];
-	if (mask_)
-		nm = new uint8_t[numpixels * numbpp];
-	else
-		nm = nullptr;
+	vector<uint8_t> new_data(numpixels * numbpp);
+	vector<uint8_t> new_mask;
+	if (mask_.hasData())
+		new_mask.resize(numpixels * numbpp);
 
 	// Remapping loop
 	int i, j, k;
@@ -1167,23 +1085,21 @@ bool SImage::mirror(bool vertical)
 		if (j >= numpixels)
 		{
 			LOG_MESSAGE(1, "Pixel %i remapped to %i, how did this even happen?", i, j);
-			delete[] nd;
-			if (mask_)
-				delete[] nm;
 			return false;
 		}
 		for (k = 0; k < numbpp; ++k)
 		{
-			nd[(j * numbpp) + k] = data_[(i * numbpp) + k];
-			if (mask_)
-				nm[(j * numbpp) + k] = mask_[(i * numbpp) + k];
+			new_data[(j * numbpp) + k] = data_[(i * numbpp) + k];
+			if (mask_.hasData())
+				new_mask[(j * numbpp) + k] = mask_[(i * numbpp) + k];
 		}
 	}
 
 	// It worked, yay
 	clearData();
-	data_ = nd;
-	mask_ = nm;
+	data_.importMem(new_data.data(), new_data.size());
+	if (!new_mask.empty())
+		mask_.importMem(new_mask.data(), new_mask.size());
 
 	// Announce change
 	announce("image_changed");
@@ -1217,13 +1133,11 @@ bool SImage::crop(long x1, long y1, long x2, long y2)
 	if (x2 <= x1 || y2 <= y1 || x1 > width_ || y1 > height_)
 		return false;
 
-	uint8_t *nd, *nm;
-	size_t   nw, nh;
-	nw = x2 - x1;
-	nh = y2 - y1;
+	size_t new_width  = x2 - x1;
+	size_t new_height = y2 - y1;
 
 	// Compute numbers of pixels and bytes
-	int numpixels = nw * nh;
+	int numpixels = new_width * new_height;
 	int numbpp    = 0;
 	if (type_ == Type::PalMask || type_ == Type::AlphaMap)
 		numbpp = 1;
@@ -1233,29 +1147,29 @@ bool SImage::crop(long x1, long y1, long x2, long y2)
 		return false;
 
 	// Create new data and mask
-	nd = new uint8_t[numpixels * numbpp];
-	if (mask_)
-		nm = new uint8_t[numpixels * numbpp];
-	else
-		nm = nullptr;
+	vector<uint8_t> new_data(numpixels * numbpp);
+	vector<uint8_t> new_mask;
+	if (mask_.hasData())
+		new_mask.resize(numpixels * numbpp);
 
 	// Remapping loop
 	size_t i, a, b;
-	for (i = 0; i < nh; ++i)
+	for (i = 0; i < new_height; ++i)
 	{
-		a = i * nw * numbpp;
+		a = i * new_width * numbpp;
 		b = (((i + y1) * width_) + x1) * numbpp;
-		memcpy(nd + a, data_ + b, nw * numbpp);
-		if (mask_)
-			memcpy(nm + a, mask_ + b, nw * numbpp);
+		memcpy(new_data.data() + a, data_.data() + b, new_width * numbpp);
+		if (mask_.hasData())
+			memcpy(new_mask.data() + a, mask_.data() + b, new_width * numbpp);
 	}
 
 	// It worked, yay
 	clearData();
-	data_   = nd;
-	mask_   = nm;
-	width_  = nw;
-	height_ = nh;
+	data_.importMem(new_data.data(), new_data.size());
+	if (!new_mask.empty())
+		mask_.importMem(new_mask.data(), new_mask.size());
+	width_  = new_width;
+	height_ = new_height;
 
 	// Announce change
 	announce("image_changed");
@@ -1280,21 +1194,17 @@ bool SImage::resize(int nwidth, int nheight)
 	}
 
 	// Init new image data
-	uint8_t *newdata, *newmask;
-	uint8_t  bpp = 1;
+	uint8_t bpp = 1;
 	if (type_ == Type::RGBA)
 		bpp = 4;
+
 	// Create new image data
-	newdata = new uint8_t[nwidth * nheight * bpp];
-	memset(newdata, 0, nwidth * nheight * bpp);
+	vector<uint8_t> new_data(nwidth * nheight * bpp, 0);
+
 	// Create new mask if needed
+	vector<uint8_t> new_mask;
 	if (type_ == Type::PalMask)
-	{
-		newmask = new uint8_t[nwidth * nheight];
-		memset(newmask, 0, nwidth * nheight);
-	}
-	else
-		newmask = nullptr;
+		new_mask.resize(nwidth * nheight, 0);
 
 	// Write new image data
 	unsigned offset = 0;
@@ -1303,11 +1213,11 @@ bool SImage::resize(int nwidth, int nheight)
 	for (unsigned y = 0; y < nrows; y++)
 	{
 		// Copy data row
-		memcpy(newdata + offset, data_ + (y * width_ * bpp), rowlen);
+		memcpy(new_data.data() + offset, data_.data() + (y * width_ * bpp), rowlen);
 
 		// Copy mask row
-		if (newmask)
-			memcpy(newmask + offset, mask_ + (y * width_), rowlen);
+		if (!new_mask.empty())
+			memcpy(new_mask.data() + offset, mask_.data() + (y * width_), rowlen);
 
 		// Go to next row
 		offset += nwidth * bpp;
@@ -1317,8 +1227,9 @@ bool SImage::resize(int nwidth, int nheight)
 	width_  = nwidth;
 	height_ = nheight;
 	clearData();
-	data_ = newdata;
-	mask_ = newmask;
+	data_.importMem(new_data.data(), new_data.size());
+	if (!new_mask.empty())
+		mask_.importMem(new_mask.data(), new_mask.size());
 
 	// Announce change
 	announce("image_changed");
@@ -1329,15 +1240,15 @@ bool SImage::resize(int nwidth, int nheight)
 // -----------------------------------------------------------------------------
 // Sets the image data, size, and type from raw data
 // -----------------------------------------------------------------------------
-bool SImage::setImageData(uint8_t* ndata, int nwidth, int nheight, Type ntype)
+bool SImage::setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight, Type ntype)
 {
-	if (ndata)
+	if (!ndata.empty())
 	{
 		clearData();
 		type_   = ntype;
 		width_  = nwidth;
 		height_ = nheight;
-		data_   = ndata;
+		data_.importMem(ndata.data(), ndata.size());
 
 		// Announce change
 		announce("image_changed");
@@ -1353,7 +1264,7 @@ bool SImage::setImageData(uint8_t* ndata, int nwidth, int nheight, Type ntype)
 bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 {
 	// Check image is ok
-	if (!data_)
+	if (!data_.hasData())
 		return false;
 
 	// Can't apply a translation to a non-coloured image
@@ -1376,13 +1287,13 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 		memset(newdata, 0, width_ * height_ * 4);
 	}
 	else
-		newdata = data_;
+		newdata = data_.data();
 
 	// Go through pixels
 	for (int p = 0; p < width_ * height_; p++)
 	{
 		// No need to process transparent pixels
-		if (mask_ && mask_[p] == 0)
+		if (mask_.hasData() && mask_[p] == 0)
 			continue;
 
 		ColRGBA col;
@@ -1407,7 +1318,7 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 			newdata[q + 0] = col.r;
 			newdata[q + 1] = col.g;
 			newdata[q + 2] = col.b;
-			newdata[q + 3] = mask_ ? mask_[p] : col.a;
+			newdata[q + 3] = mask_.hasData() ? mask_[p] : col.a;
 		}
 		else
 			data_[p] = col.index;
@@ -1416,7 +1327,7 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 	if (truecolor && type_ == Type::PalMask)
 	{
 		clearData(true);
-		data_ = newdata;
+		data_.importMem(newdata, width_ * height_ * 4);
 		type_ = Type::RGBA;
 	}
 
@@ -1426,7 +1337,7 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 // -----------------------------------------------------------------------------
 // Applies a palette translation to the image
 // -----------------------------------------------------------------------------
-bool SImage::applyTranslation(string tr, Palette* pal, bool truecolor)
+bool SImage::applyTranslation(const string& tr, Palette* pal, bool truecolor)
 {
 	Translation trans;
 	trans.clear();
@@ -1467,7 +1378,7 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 	if (colour.a == 255 && properties.blend == BlendType::Normal)
 	{
 		if (type_ == Type::RGBA)
-			colour.write(data_ + p);
+			colour.write(data_.data() + p);
 		else
 		{
 			data_[p] = pal->nearestColour(colour);
@@ -1519,9 +1430,9 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 	else if (properties.blend == BlendType::Modulate)
 	{
 		d_colour.set(
-			MathStuff::clamp(colour.r * d_colour.r / 255, 0, 255),
-			MathStuff::clamp(colour.g * d_colour.g / 255, 0, 255),
-			MathStuff::clamp(colour.b * d_colour.b / 255, 0, 255),
+			MathStuff::clamp(colour.r * (double)d_colour.r / 255., 0, 255),
+			MathStuff::clamp(colour.g * (double)d_colour.g / 255., 0, 255),
+			MathStuff::clamp(colour.b * (double)d_colour.b / 255., 0, 255),
 			MathStuff::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
@@ -1543,7 +1454,7 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 		mask_[p] = d_colour.a;
 	}
 	else if (type_ == Type::RGBA)
-		d_colour.write(data_ + p);
+		d_colour.write(data_.data() + p);
 	else if (type_ == Type::AlphaMap)
 		data_[p] = d_colour.a;
 
@@ -1558,7 +1469,7 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 bool SImage::drawImage(SImage& img, int x_pos, int y_pos, DrawProps& properties, Palette* pal_src, Palette* pal_dest)
 {
 	// Check images
-	if (!data_ || !img.data_)
+	if (!data_.hasData() || !img.data_.hasData())
 		return false;
 
 	// Setup palettes
@@ -1667,7 +1578,7 @@ bool SImage::colourise(ColRGBA colour, Palette* pal, int start, int stop)
 
 		// Set pixel colour
 		if (type_ == Type::RGBA)
-			col.write(data_ + a);
+			col.write(data_.data() + a);
 		else
 			data_[a] = pal->nearestColour(col);
 	}
@@ -1718,7 +1629,7 @@ bool SImage::tint(ColRGBA colour, float amount, Palette* pal, int start, int sto
 
 		// Set pixel colour
 		if (type_ == Type::RGBA)
-			col.write(data_ + a);
+			col.write(data_.data() + a);
 		else
 			data_[a] = pal->nearestColour(col);
 	}
@@ -1756,6 +1667,7 @@ bool SImage::adjust()
 				if (data_[p])
 					opaquefound = true;
 				break;
+			default: break;
 			}
 			if (opaquefound)
 				break;
@@ -1789,6 +1701,7 @@ bool SImage::adjust()
 				if (data_[p])
 					opaquefound = true;
 				break;
+			default: break;
 			}
 			if (opaquefound)
 				break;
@@ -1819,6 +1732,7 @@ bool SImage::adjust()
 				if (data_[p])
 					opaquefound = true;
 				break;
+			default: break;
 			}
 			if (opaquefound)
 				break;
@@ -1850,6 +1764,7 @@ bool SImage::adjust()
 				if (data_[p])
 					opaquefound = true;
 				break;
+			default: break;
 			}
 			if (opaquefound)
 				break;

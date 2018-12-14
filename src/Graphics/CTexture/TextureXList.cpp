@@ -102,26 +102,6 @@ struct StrifeTexDef
 
 
 // -----------------------------------------------------------------------------
-// TextureXList class constructor
-// -----------------------------------------------------------------------------
-TextureXList::TextureXList()
-{
-	// Setup 'invalid' texture
-	tex_invalid_.setName("INVALID_TEXTURE"); // Deliberately set the name to >8 characters
-}
-
-// -----------------------------------------------------------------------------
-// TextureXList class destructor
-// -----------------------------------------------------------------------------
-TextureXList::~TextureXList()
-{
-	for (vector<CTexture*>::const_iterator tex = textures_.begin(), tex_end = textures_.end(); tex != tex_end; ++tex)
-	{
-		delete *tex;
-	}
-}
-
-// -----------------------------------------------------------------------------
 // Returns the texture at [index], or the 'invalid' texture if [index] is
 // out of range
 // -----------------------------------------------------------------------------
@@ -132,20 +112,20 @@ CTexture* TextureXList::texture(size_t index)
 		return &tex_invalid_;
 
 	// Return texture at index
-	return textures_[index];
+	return textures_[index].get();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the texture matching [name], or the 'invalid' texture if no match is
 // found
 // -----------------------------------------------------------------------------
-CTexture* TextureXList::texture(string name)
+CTexture* TextureXList::texture(const string& name)
 {
 	// Search for texture by name
-	for (size_t a = 0; a < textures_.size(); a++)
+	for (auto& texture : textures_)
 	{
-		if (S_CMPNOCASE(textures_[a]->name(), name))
-			return textures_[a];
+		if (S_CMPNOCASE(texture->name(), name))
+			return texture.get();
 	}
 
 	// Not found
@@ -155,7 +135,7 @@ CTexture* TextureXList::texture(string name)
 // -----------------------------------------------------------------------------
 // Returns the index of the texture matching [name], or -1 if no match was found
 // -----------------------------------------------------------------------------
-int TextureXList::textureIndex(string name)
+int TextureXList::textureIndex(const string& name)
 {
 	// Search for texture by name
 	for (unsigned a = 0; a < textures_.size(); a++)
@@ -174,39 +154,36 @@ int TextureXList::textureIndex(string name)
 // -----------------------------------------------------------------------------
 // Adds [tex] to the texture list at [position]
 // -----------------------------------------------------------------------------
-void TextureXList::addTexture(CTexture* tex, int position)
+void TextureXList::addTexture(CTexture::UPtr tex, int position)
 {
 	// Add it to the list at position if valid
+	tex->in_list_ = this;
 	if (position >= 0 && (unsigned)position < textures_.size())
-		textures_.insert(textures_.begin() + position, tex);
+	{
+		tex->index_ = position;
+		textures_.insert(textures_.begin() + position, std::move(tex));
+	}
 	else
 	{
-		textures_.push_back(tex);
-		position = textures_.size() - 1;
+		tex->index_ = textures_.size();
+		textures_.push_back(std::move(tex));
 	}
-
-	tex->in_list_ = this;
-	tex->index_   = position;
 }
 
 // -----------------------------------------------------------------------------
-// Removes the texture at [index] from the list
+// Removes the texture at [index] from the list and returns it
 // -----------------------------------------------------------------------------
-CTexture* TextureXList::removeTexture(unsigned index, bool delete_texture)
+CTexture::UPtr TextureXList::removeTexture(unsigned index)
 {
 	// Check index
 	if (index >= textures_.size())
 		return nullptr;
 
-	// Delete the texture
-	if (delete_texture)
-		delete textures_[index];
-
 	// Remove the texture from the list
-	CTexture* removed = textures_[index];
+	auto removed = std::move(textures_[index]);
 	textures_.erase(textures_.begin() + index);
 
-	return delete_texture ? NULL : removed;
+	return removed;
 }
 
 // -----------------------------------------------------------------------------
@@ -219,9 +196,7 @@ void TextureXList::swapTextures(unsigned index1, unsigned index2)
 		return;
 
 	// Swap them
-	CTexture* temp    = textures_[index1];
-	textures_[index1] = textures_[index2];
-	textures_[index2] = temp;
+	textures_[index1].swap(textures_[index2]);
 
 	// Swap indices
 	int ti                    = textures_[index1]->index_;
@@ -233,17 +208,15 @@ void TextureXList::swapTextures(unsigned index1, unsigned index2)
 // Replaces the texture at [index] with [replacement].
 // Returns the original texture that was replaced (or null if index was invalid)
 // -----------------------------------------------------------------------------
-CTexture* TextureXList::replaceTexture(unsigned index, CTexture* replacement)
+CTexture::UPtr TextureXList::replaceTexture(unsigned index, CTexture::UPtr replacement)
 {
 	// Check index
 	if (index >= textures_.size())
 		return nullptr;
 
 	// Replace texture
-	CTexture* replaced    = textures_[index];
-	textures_[index]      = replacement;
-	replacement->in_list_ = this;
-	replacement->index_   = index;
+	auto replaced    = std::move(textures_[index]);
+	textures_[index] = std::move(replacement);
 
 	return replaced;
 }
@@ -253,20 +226,17 @@ CTexture* TextureXList::replaceTexture(unsigned index, CTexture* replacement)
 // -----------------------------------------------------------------------------
 void TextureXList::clear(bool clear_patches)
 {
-	// Clear textures list
-	for (unsigned a = 0; a < textures_.size(); a++)
-		delete textures_[a];
 	textures_.clear();
 }
 
 // -----------------------------------------------------------------------------
 // Updates all textures in the list to 'remove' [patch]
 // -----------------------------------------------------------------------------
-void TextureXList::removePatch(string patch)
+void TextureXList::removePatch(const string& patch)
 {
 	// Go through all textures
-	for (unsigned a = 0; a < textures_.size(); a++)
-		textures_[a]->removePatch(patch); // Remove patch from texture
+	for (auto& texture : textures_)
+		texture->removePatch(patch); // Remove patch from texture
 }
 
 // -----------------------------------------------------------------------------
@@ -290,10 +260,9 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 
 	// Read header
 	texturex->seek(0, SEEK_SET);
-	int32_t  n_tex   = 0;
-	int32_t* offsets = nullptr;
 
 	// Number of textures
+	int32_t n_tex = 0;
 	if (!texturex->read(&n_tex, 4))
 	{
 		LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't read texture count)");
@@ -306,8 +275,8 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		return true;
 
 	// Texture definition offsets
-	offsets = new int32_t[n_tex];
-	if (!texturex->read(offsets, n_tex * 4))
+	vector<int32_t> offsets(n_tex);
+	if (!texturex->read(offsets.data(), n_tex * 4))
 	{
 		LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't read first offset)");
 		return false;
@@ -424,12 +393,12 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		}
 
 		// Create texture
-		CTexture* tex = new CTexture();
+		auto tex      = std::make_unique<CTexture>();
 		tex->name_    = wxString::FromAscii(tdef.name, 8);
 		tex->width_   = wxINT16_SWAP_ON_BE(tdef.width);
 		tex->height_  = wxINT16_SWAP_ON_BE(tdef.height);
-		tex->scale_x_ = tdef.scale[0] / 8.0;
-		tex->scale_y_ = tdef.scale[1] / 8.0;
+		tex->scale_.x = tdef.scale[0] / 8.0;
+		tex->scale_.y = tdef.scale[1] / 8.0;
 
 		// Set flags
 		if (tdef.flags & Flags::WorldPanning)
@@ -440,7 +409,6 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		if (!texturex->read(&n_patches, 2))
 		{
 			LOG_MESSAGE(1, "Error: TEXTUREx entry is corrupt (can't read patchcount #%d)", a);
-			delete tex;
 			return false;
 		}
 
@@ -489,17 +457,14 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		}
 
 		// Add texture to list
-		addTexture(tex);
+		addTexture(std::move(tex));
 	}
-
-	// Clean up
-	delete[] offsets;
 
 	return true;
 }
 
 #define SAFEFUNC(x) \
-	if (!x)         \
+	if (!(x))       \
 		return false;
 
 // -----------------------------------------------------------------------------
@@ -564,7 +529,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_t
 	for (size_t i = 0; i < numtextures; ++i)
 	{
 		// Get texture to write
-		CTexture* tex = textures_[i];
+		auto tex = textures_[i].get();
 
 		// Set offset
 		offsets[i] = (signed)txdata.currentPos();
@@ -643,7 +608,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_t
 		for (size_t k = 0; k < tex->nPatches(); ++k)
 		{
 			// Get patch to write
-			CTPatch* patch = tex->patch(k);
+			auto patch = tex->patch(k);
 
 			// Create patch definition
 			Patch pdef;
@@ -694,15 +659,15 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_t
 // Reads in a ZDoom-format TEXTURES entry.
 // Returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
+bool TextureXList::readTEXTURESData(ArchiveEntry* textures)
 {
 	// Check for empty entry
-	if (!entry)
+	if (!textures)
 	{
 		Global::error = "Attempt to read texture data from NULL entry";
 		return false;
 	}
-	if (entry->size() == 0)
+	if (textures->size() == 0)
 	{
 		txformat_ = Format::Textures;
 		return true;
@@ -710,7 +675,7 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 
 	// Get text to parse
 	Tokenizer tz;
-	tz.openMem(entry->data(), entry->name());
+	tz.openMem(textures->data(), textures->name());
 
 	// Parsing gogo
 	while (!tz.atEnd())
@@ -718,49 +683,49 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 		// Texture definition
 		if (tz.checkNC("Texture"))
 		{
-			CTexture* tex = new CTexture();
+			auto tex = std::make_unique<CTexture>();
 			if (tex->parse(tz, "Texture"))
-				addTexture(tex);
+				addTexture(std::move(tex));
 		}
 
 		// Sprite definition
 		else if (tz.checkNC("Sprite"))
 		{
-			CTexture* tex = new CTexture();
+			auto tex = std::make_unique<CTexture>();
 			if (tex->parse(tz, "Sprite"))
-				addTexture(tex);
+				addTexture(std::move(tex));
 		}
 
 		// Graphic definition
 		else if (tz.checkNC("Graphic"))
 		{
-			CTexture* tex = new CTexture();
+			auto tex = std::make_unique<CTexture>();
 			if (tex->parse(tz, "Graphic"))
-				addTexture(tex);
+				addTexture(std::move(tex));
 		}
 
 		// WallTexture definition
 		else if (tz.checkNC("WallTexture"))
 		{
-			CTexture* tex = new CTexture();
+			auto tex = std::make_unique<CTexture>();
 			if (tex->parse(tz, "WallTexture"))
-				addTexture(tex);
+				addTexture(std::move(tex));
 		}
 
 		// Flat definition
 		else if (tz.checkNC("Flat"))
 		{
-			CTexture* tex = new CTexture();
+			auto tex = std::make_unique<CTexture>();
 			if (tex->parse(tz, "Flat"))
-				addTexture(tex);
+				addTexture(std::move(tex));
 		}
 
 		// Old HIRESTEX "Define"
 		else if (tz.checkNC("Define"))
 		{
-			CTexture* tex = new CTexture();
+			auto tex = std::make_unique<CTexture>();
 			if (tex->parseDefine(tz))
-				addTexture(tex);
+				addTexture(std::move(tex));
 		}
 
 		tz.adv();
@@ -775,7 +740,7 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 // Writes the texture list in TEXTURES format to [entry].
 // Returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXList::writeTEXTURESData(ArchiveEntry* entry)
+bool TextureXList::writeTEXTURESData(ArchiveEntry* textures)
 {
 	// Check format
 	if (txformat_ != Format::Textures)
@@ -785,8 +750,8 @@ bool TextureXList::writeTEXTURESData(ArchiveEntry* entry)
 
 	// Generate a big string :P
 	string textures_data = "// Texture definitions generated by SLADE3\n// on " + wxNow() + "\n\n";
-	for (unsigned a = 0; a < textures_.size(); a++)
-		textures_data += textures_[a]->asText();
+	for (auto& texture : textures_)
+		textures_data += texture->asText();
 	textures_data += "// End of texture definitions\n";
 
 	LOG_MESSAGE(
@@ -797,20 +762,20 @@ bool TextureXList::writeTEXTURESData(ArchiveEntry* entry)
 		textures_data.length());
 
 	// Write it to the entry
-	return entry->importMem(textures_data.ToAscii(), textures_data.length());
+	return textures->importMem(textures_data.ToAscii(), textures_data.length());
 }
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of the texture list format
 // -----------------------------------------------------------------------------
-string TextureXList::textureXFormatString()
+string TextureXList::textureXFormatString() const
 {
 	switch (txformat_)
 	{
-	case Format::Normal: return "Doom TEXTUREx"; break;
-	case Format::Strife11: return "Strife TEXTUREx"; break;
-	case Format::Nameless: return "Nameless (Doom Alpha)"; break;
-	case Format::Textures: return "ZDoom TEXTURES"; break;
+	case Format::Normal: return "Doom TEXTUREx";
+	case Format::Strife11: return "Strife TEXTUREx";
+	case Format::Nameless: return "Nameless (Doom Alpha)";
+	case Format::Textures: return "ZDoom TEXTURES";
 	default: return "Unknown";
 	}
 }
@@ -828,8 +793,8 @@ bool TextureXList::convertToTEXTURES()
 	}
 
 	// Convert all textures to extended format
-	for (unsigned a = 0; a < textures_.size(); a++)
-		textures_[a]->convertExtended();
+	for (auto& texture : textures_)
+		texture->convertExtended();
 
 	// First texture is null texture
 	textures_[0]->null_texture_ = true;
@@ -861,11 +826,11 @@ bool TextureXList::findErrors()
 		}
 		else
 		{
-			bool* columns = new bool[textures_[a]->width()];
-			memset(columns, false, textures_[a]->width());
+			vector<uint8_t> columns(textures_[a]->width());
+			memset(columns.data(), 0, textures_[a]->width());
 			for (size_t i = 0; i < textures_[a]->nPatches(); ++i)
 			{
-				ArchiveEntry* patch = textures_[a]->patches_[i]->patchEntry();
+				auto patch = textures_[a]->patches_[i]->patchEntry();
 				if (patch == nullptr)
 				{
 					ret = true;
@@ -876,7 +841,7 @@ bool TextureXList::findErrors()
 						textures_[a]->name(),
 						textures_[a]->patches_[i]->name());
 					// Don't list missing columns when we don't know the size of the patch
-					memset(columns, true, textures_[a]->width());
+					memset(columns.data(), 1, textures_[a]->width());
 				}
 				else
 				{
@@ -885,19 +850,18 @@ bool TextureXList::findErrors()
 					size_t start = std::max<size_t>(0, textures_[a]->patches_[i]->xOffset());
 					size_t end   = std::min<size_t>(textures_[a]->width(), img.width() + start);
 					for (size_t c = start; c < end; ++c)
-						columns[c] = true;
+						columns[c] = 1;
 				}
 			}
 			for (size_t c = 0; c < textures_[a]->width(); ++c)
 			{
-				if (columns[c] == false)
+				if (columns[c] == 0)
 				{
 					ret = true;
 					LOG_MESSAGE(1, "Texture %u: %s: column %d without a patch", a, textures_[a]->name(), c);
 					break;
 				}
 			}
-			delete[] columns;
 		}
 	}
 	return ret;

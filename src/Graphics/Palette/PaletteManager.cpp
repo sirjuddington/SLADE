@@ -46,16 +46,6 @@
 
 
 // -----------------------------------------------------------------------------
-// PaletteManager class constructor
-// -----------------------------------------------------------------------------
-PaletteManager::PaletteManager() {}
-
-// -----------------------------------------------------------------------------
-// PaletteManager class destructor
-// -----------------------------------------------------------------------------
-PaletteManager::~PaletteManager() {}
-
-// -----------------------------------------------------------------------------
 // Initialises the palette manager
 // -----------------------------------------------------------------------------
 bool PaletteManager::init()
@@ -74,7 +64,7 @@ bool PaletteManager::init()
 // Adds the palette [pal] to the list of managed palettes, identified by [name].
 // Returns false if the palette doesn't exist or the name is invalid
 // -----------------------------------------------------------------------------
-bool PaletteManager::addPalette(Palette::UPtr pal, string name)
+bool PaletteManager::addPalette(Palette::UPtr pal, const string& name)
 {
 	// Check palette and name were given
 	if (!pal || name.IsEmpty())
@@ -119,7 +109,7 @@ Palette* PaletteManager::palette(int index)
 // Returns the palette matching the given name, or the default palette
 // (greyscale) if no matching palette found
 // -----------------------------------------------------------------------------
-Palette* PaletteManager::palette(string name)
+Palette* PaletteManager::palette(const string& name)
 {
 	for (uint32_t a = 0; a < pal_names_.size(); a++)
 	{

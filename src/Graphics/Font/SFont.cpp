@@ -49,48 +49,10 @@ SFont SFont::font_slade_;
 
 // -----------------------------------------------------------------------------
 //
-// SFontChar Class Functions
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// SFontChar class constructor
-// -----------------------------------------------------------------------------
-SFontChar::SFontChar()
-{
-	// Init variables
-	width_  = 0;
-	height_ = 0;
-}
-
-// -----------------------------------------------------------------------------
-// SFontChar class destructor
-// -----------------------------------------------------------------------------
-SFontChar::~SFontChar() {}
-
-
-// -----------------------------------------------------------------------------
-//
 // SFont Class Functions
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// SFont class constructor
-// -----------------------------------------------------------------------------
-SFont::SFont()
-{
-	// Init character map
-	for (unsigned a = 0; a < 256; a++)
-		characters_[a] = nullptr;
-}
-
-// -----------------------------------------------------------------------------
-// SFont class destructor
-// -----------------------------------------------------------------------------
-SFont::~SFont() {}
 
 // -----------------------------------------------------------------------------
 // Loads a Doom alpha HUFONT font. Returns true on success, false otherwise
@@ -146,14 +108,12 @@ bool SFont::loadFontM(MemChunk& mc)
 	unsigned yoff = 0;
 	unsigned i    = 0;
 	bool     test = true;
-	for (unsigned a = 0; a < 256; a++)
+	for (auto& character : characters_)
 	{
 		// Setup character info
-		SFontChar* c = new SFontChar();
-		c->tex_bounds_.set(xoff, yoff, xoff + charwidth, yoff + charheight);
-		c->width_      = charwidth;
-		c->height_     = charheight;
-		characters_[a] = c;
+		character.tex_bounds_.set(xoff, yoff, xoff + charwidth, yoff + charheight);
+		character.width_  = charwidth;
+		character.height_ = charheight;
 
 		// Write rows to image
 		uint8_t val = 255;
@@ -205,34 +165,34 @@ void SFont::drawCharacter(char c, ColRGBA colour)
 	OpenGL::setColour(colour);
 
 	// Get character to draw
-	SFontChar* ch = characters_[(uint8_t)c];
-	if (!ch)
+	auto& ch = characters_[(uint8_t)c];
+	if (ch.width_ == 0 && ch.height_ == 0)
 		return;
 
 	// Draw it
 	Rectf tex_rect;
 	tex_rect.tl.set(
-		(double)ch->tex_bounds_.x1() / (double)texture_.width(),
-		(double)ch->tex_bounds_.y1() / (double)texture_.height());
+		(double)ch.tex_bounds_.x1() / (double)texture_.width(),
+		(double)ch.tex_bounds_.y1() / (double)texture_.height());
 	tex_rect.br.set(
-		(double)ch->tex_bounds_.x2() / (double)texture_.width(),
-		(double)ch->tex_bounds_.y2() / (double)texture_.height());
+		(double)ch.tex_bounds_.x2() / (double)texture_.width(),
+		(double)ch.tex_bounds_.y2() / (double)texture_.height());
 	glBegin(GL_QUADS);
 	glTexCoord2d(tex_rect.x1(), tex_rect.y1());
 	glVertex2d(0, 0);
 	glTexCoord2d(tex_rect.x1(), tex_rect.y2());
-	glVertex2d(0, ch->height_);
+	glVertex2d(0, ch.height_);
 	glTexCoord2d(tex_rect.x2(), tex_rect.y2());
-	glVertex2d(ch->width_, ch->height_);
+	glVertex2d(ch.width_, ch.height_);
 	glTexCoord2d(tex_rect.x2(), tex_rect.y1());
-	glVertex2d(ch->width_, 0);
+	glVertex2d(ch.width_, 0);
 	glEnd();
 }
 
 // -----------------------------------------------------------------------------
 // Draws the string [srt] with the font, in [colour] with [align]ment
 // -----------------------------------------------------------------------------
-void SFont::drawString(string str, ColRGBA colour, SFont::Align align)
+void SFont::drawString(const string& str, ColRGBA colour, SFont::Align align)
 {
 	// Bind texture
 	if (!texture_.bind())
@@ -246,11 +206,11 @@ void SFont::drawString(string str, ColRGBA colour, SFont::Align align)
 	for (unsigned a = 0; a < str.size(); a++)
 	{
 		// Get character
-		SFontChar* ch = characters_[(uint8_t)CHR(str)[a]];
+		auto& ch = characters_[(uint8_t)CHR(str)[a]];
 
 		// Increment total width
-		if (ch)
-			total_width += ch->width_ + spacing_;
+		if (ch.width_ > 0 || ch.height_ > 0)
+			total_width += ch.width_ + spacing_;
 		else
 			total_width += spacing_;
 	}
@@ -267,8 +227,8 @@ void SFont::drawString(string str, ColRGBA colour, SFont::Align align)
 	for (unsigned a = 0; a < str.size(); a++)
 	{
 		// Get character
-		SFontChar* ch = characters_[(uint8_t)CHR(str)[a]];
-		if (!ch)
+		auto& ch = characters_[(uint8_t)CHR(str)[a]];
+		if (ch.width_ == 0 && ch.height_ == 0)
 		{
 			xoff += spacing_;
 			continue;
@@ -277,24 +237,24 @@ void SFont::drawString(string str, ColRGBA colour, SFont::Align align)
 		// Draw it
 		Rectf tex_rect;
 		tex_rect.tl.set(
-			(double)ch->tex_bounds_.x1() / (double)texture_.width(),
-			(double)ch->tex_bounds_.y1() / (double)texture_.height());
+			(double)ch.tex_bounds_.x1() / (double)texture_.width(),
+			(double)ch.tex_bounds_.y1() / (double)texture_.height());
 		tex_rect.br.set(
-			(double)ch->tex_bounds_.x2() / (double)texture_.width(),
-			(double)ch->tex_bounds_.y2() / (double)texture_.height());
+			(double)ch.tex_bounds_.x2() / (double)texture_.width(),
+			(double)ch.tex_bounds_.y2() / (double)texture_.height());
 		glBegin(GL_QUADS);
 		glTexCoord2d(tex_rect.x1(), tex_rect.y1());
 		glVertex2d(xoff, 0);
 		glTexCoord2d(tex_rect.x1(), tex_rect.y2());
-		glVertex2d(xoff, ch->height_);
+		glVertex2d(xoff, ch.height_);
 		glTexCoord2d(tex_rect.x2(), tex_rect.y2());
-		glVertex2d(xoff + ch->width_, ch->height_);
+		glVertex2d(xoff + ch.width_, ch.height_);
 		glTexCoord2d(tex_rect.x2(), tex_rect.y1());
-		glVertex2d(xoff + ch->width_, 0);
+		glVertex2d(xoff + ch.width_, 0);
 		glEnd();
 
 		// Increment x to next character (1 pixel spacing)
-		xoff += ch->width_ + spacing_;
+		xoff += ch.width_ + spacing_;
 	}
 
 	glPopMatrix();

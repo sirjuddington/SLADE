@@ -2,20 +2,13 @@
 class PNGChunk
 {
 public:
-	PNGChunk(string name = "----")
-	{
-		// Init variables
-		memcpy(name_, CHR(name), 4);
-		size_ = 0;
-		crc_  = 0;
-	}
+	PNGChunk(const string& name = "----") { memcpy(name_, CHR(name), 4); }
+	~PNGChunk() = default;
 
-	~PNGChunk() {}
-
-	string    getName() { return wxString::FromAscii(name_, 4); }
-	uint32_t  getSize() { return size_; }
-	uint32_t  getCRC() { return crc_; }
-	MemChunk& getData() { return data_; }
+	string    name() const { return wxString::FromAscii(name_, 4); }
+	uint32_t  size() const { return size_; }
+	uint32_t  crc() const { return crc_; }
+	MemChunk& data() { return data_; }
 
 	void read(MemChunk& mc)
 	{
@@ -37,7 +30,7 @@ public:
 		crc_ = wxUINT32_SWAP_ON_LE(crc_);
 	}
 
-	void write(MemChunk& mc)
+	void write(MemChunk& mc) const
 	{
 		// Endianness correction
 		uint32_t size_swapped = wxUINT32_SWAP_ON_LE(size_);
@@ -74,23 +67,19 @@ public:
 	void setData(MemChunk& mc) { setData(mc.data(), mc.size()); }
 
 private:
-	uint32_t size_;
+	uint32_t size_ = 0;
 	char     name_[4];
 	MemChunk data_;
-	uint32_t crc_;
+	uint32_t crc_ = 0;
 };
 
 // TODO: Keep PNG chunks in SImage so they are preserved between load/save
 class SIFPng : public SIFormat
 {
 public:
-	SIFPng() : SIFormat("png")
-	{
-		name_      = "PNG";
-		extension_ = "png";
-	}
+	SIFPng() : SIFormat("png", "PNG", "png") {}
 
-	bool isThisFormat(MemChunk& mc)
+	bool isThisFormat(MemChunk& mc) override
 	{
 		// Reset MemChunk
 		mc.seek(0, SEEK_SET);
@@ -107,7 +96,7 @@ public:
 		return false;
 	}
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info inf;
 		inf.format = "png";
@@ -120,11 +109,11 @@ public:
 		chunk.read(mc);
 		// Should be IHDR
 		int bpp = 32;
-		if (chunk.getName() == "IHDR")
+		if (chunk.name() == "IHDR")
 		{
 			// Read IHDR data
 			IhdrChunk ihdr;
-			chunk.getData().read(&ihdr, 13, 0);
+			chunk.data().read(&ihdr, 13, 0);
 
 			// Set info from IHDR
 			inf.width  = ihdr.width;
@@ -141,46 +130,46 @@ public:
 		}
 
 		// Look for other info chunks (grAb or alPh)
-		while (1)
+		while (true)
 		{
 			chunk.read(mc);
 
 			// Set format to alpha map if alPh present (and 8bpp)
-			if (bpp == 8 && chunk.getName() == "alPh")
+			if (bpp == 8 && chunk.name() == "alPh")
 				inf.colformat = SImage::Type::AlphaMap;
 
 			// Set offsets if grAb present
-			else if (chunk.getName() == "grAb")
+			else if (chunk.name() == "grAb")
 			{
 				// Read offsets
 				int32_t xoff, yoff;
-				chunk.getData().read(&xoff, 4, 0);
-				chunk.getData().read(&yoff, 4);
+				chunk.data().read(&xoff, 4, 0);
+				chunk.data().read(&yoff, 4);
 				inf.offset_x = wxINT32_SWAP_ON_LE(xoff);
 				inf.offset_y = wxINT32_SWAP_ON_LE(yoff);
 			}
 
 			// Stop on IDAT chunk
-			else if (chunk.getName() == "IDAT")
+			else if (chunk.name() == "IDAT")
 				break;
 		}
 
 		return inf;
 	}
 
-	Writable canWrite(SImage& image)
+	Writable canWrite(SImage& image) override
 	{
 		// PNG format is always writable
 		return Writable::Yes;
 	}
 
-	bool canWriteType(SImage::Type type)
+	bool canWriteType(SImage::Type type) override
 	{
 		// PNG format is always writable
 		return true;
 	}
 
-	bool convertWritable(SImage& image, ConvertOptions opt)
+	bool convertWritable(SImage& image, ConvertOptions opt) override
 	{
 		// Just convert to requested colour type
 
@@ -232,7 +221,7 @@ public:
 		return true;
 	}
 
-	virtual bool writeOffset(SImage& image, ArchiveEntry* entry, Vec2i offset)
+	bool writeOffset(SImage& image, ArchiveEntry* entry, Vec2i offset) override
 	{
 		MemChunk mc;
 		image.setXOffset(offset.x);
@@ -241,12 +230,12 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Create FreeImage bitmap from entry data
-		FIMEMORY*         mem = FreeImage_OpenMemory((BYTE*)data.data(), data.size());
-		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(mem, 0);
-		FIBITMAP*         bm  = FreeImage_LoadFromMemory(fif, mem, 0);
+		auto mem = FreeImage_OpenMemory((BYTE*)data.data(), data.size());
+		auto fif = FreeImage_GetFileTypeFromMemory(mem, 0);
+		auto bm  = FreeImage_LoadFromMemory(fif, mem, 0);
 		FreeImage_CloseMemory(mem);
 
 		// Check it created/read ok
@@ -257,10 +246,10 @@ protected:
 		}
 
 		// Get image info
-		int          width  = FreeImage_GetWidth(bm);
-		int          height = FreeImage_GetHeight(bm);
-		int          bpp    = FreeImage_GetBPP(bm);
-		SImage::Type type   = SImage::Type::RGBA;
+		int  width  = FreeImage_GetWidth(bm);
+		int  height = FreeImage_GetHeight(bm);
+		int  bpp    = FreeImage_GetBPP(bm);
+		auto type   = SImage::Type::RGBA;
 
 		// Read extra info from various PNG chunks
 		int32_t xoff       = 0;
@@ -275,18 +264,18 @@ protected:
 			chunk.read(data);
 
 			// Check for 'grAb' chunk
-			if (!grAb_chunk && chunk.getName() == "grAb")
+			if (!grAb_chunk && chunk.name() == "grAb")
 			{
 				// Read offsets
-				chunk.getData().read(&xoff, 4, 0);
-				chunk.getData().read(&yoff, 4);
+				chunk.data().read(&xoff, 4, 0);
+				chunk.data().read(&yoff, 4);
 				xoff       = wxINT32_SWAP_ON_LE(xoff);
 				yoff       = wxINT32_SWAP_ON_LE(yoff);
 				grAb_chunk = true;
 			}
 
 			// Check for 'alPh' chunk
-			if (!alPh_chunk && chunk.getName() == "alPh")
+			if (!alPh_chunk && chunk.name() == "alPh")
 				alPh_chunk = true;
 
 			// If both chunks are found no need to search further
@@ -294,13 +283,13 @@ protected:
 				break;
 
 			// Stop searching when we get to IDAT chunk
-			if (chunk.getName() == "IDAT")
+			if (chunk.name() == "IDAT")
 				break;
 		}
 
 		// Get image palette if it exists
-		RGBQUAD* bm_pal = FreeImage_GetPalette(bm);
-		Palette  palette;
+		auto    bm_pal = FreeImage_GetPalette(bm);
+		Palette palette;
 		if (bpp == 8 && bm_pal)
 		{
 			type  = SImage::Type::PalMask;
@@ -323,7 +312,7 @@ protected:
 			image.create(width, height, type, nullptr);
 
 		// Load image data
-		uint8_t* img_data = imageData(image);
+		auto img_data = imageData(image);
 		if (type == SImage::Type::PalMask || type == SImage::Type::AlphaMap)
 		{
 			// Flip vertically
@@ -333,7 +322,7 @@ protected:
 			unsigned c = 0;
 			for (int row = 0; row < height; row++)
 			{
-				uint8_t* scanline = FreeImage_GetScanLine(bm, row);
+				auto scanline = FreeImage_GetScanLine(bm, row);
 				for (int x = 0; x < width; x++)
 					img_data[c++] = scanline[x];
 			}
@@ -341,8 +330,8 @@ protected:
 			// Set mask
 			if (type == SImage::Type::PalMask)
 			{
-				uint8_t* mask       = imageMask(image);
-				uint8_t* alphatable = FreeImage_GetTransparencyTable(bm);
+				auto mask       = imageMask(image);
+				auto alphatable = FreeImage_GetTransparencyTable(bm);
 				if (alphatable)
 				{
 					for (int a = 0; a < width * height; a++)
@@ -355,7 +344,7 @@ protected:
 		else if (type == SImage::Type::RGBA)
 		{
 			// Convert to 32bpp & flip vertically
-			FIBITMAP* rgb = FreeImage_ConvertTo32Bits(bm);
+			auto rgb = FreeImage_ConvertTo32Bits(bm);
 			if (!rgb)
 			{
 				LOG_MESSAGE(1, "FreeImage_ConvertTo32Bits failed for PNG data");
@@ -365,8 +354,8 @@ protected:
 			FreeImage_FlipVertical(rgb);
 
 			// Load raw RGBA data
-			uint8_t* bits_rgb = FreeImage_GetBits(rgb);
-			int      c        = 0;
+			auto bits_rgb = FreeImage_GetBits(rgb);
+			int  c        = 0;
 			for (int a = 0; a < width * height; a++)
 			{
 				img_data[c++] = bits_rgb[a * 4 + 2]; // Red
@@ -388,12 +377,12 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index)
+	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) override
 	{
 		// Variables
 		FIBITMAP* bm       = nullptr;
-		uint8_t*  img_data = imageData(image);
-		uint8_t*  img_mask = imageMask(image);
+		auto      img_data = imageData(image);
+		auto      img_mask = imageMask(image);
 		auto      type     = image.type();
 		int       width    = image.width();
 		int       height   = image.height();
@@ -427,7 +416,7 @@ protected:
 				usepal.copyPalette(pal);
 
 			// Set palette
-			RGBQUAD* bm_pal = FreeImage_GetPalette(bm);
+			auto bm_pal = FreeImage_GetPalette(bm);
 			for (int a = 0; a < 256; a++)
 			{
 				bm_pal[a].rgbRed   = usepal.colour(a).r;
@@ -480,7 +469,7 @@ protected:
 			bm = FreeImage_Allocate(width, height, 8);
 
 			// Set palette (greyscale)
-			RGBQUAD* bm_pal = FreeImage_GetPalette(bm);
+			auto bm_pal = FreeImage_GetPalette(bm);
 			for (int a = 0; a < 256; a++)
 			{
 				bm_pal[a].rgbRed   = a;
@@ -491,7 +480,7 @@ protected:
 			// Write image data
 			for (int row = 0; row < height; row++)
 			{
-				uint8_t* scanline = FreeImage_GetScanLine(bm, row);
+				auto scanline = FreeImage_GetScanLine(bm, row);
 				memcpy(scanline, img_data + (row * width), width);
 			}
 		}
@@ -516,7 +505,7 @@ protected:
 		}
 
 		// Write PNG header and IHDR
-		const uint8_t* png_data = png.data();
+		auto png_data = png.data();
 		data.clear();
 		data.write(png_data, 33);
 

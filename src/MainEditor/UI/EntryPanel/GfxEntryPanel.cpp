@@ -32,8 +32,10 @@
 #include "Main.h"
 #include "GfxEntryPanel.h"
 #include "Archive/Archive.h"
+#include "Dialogs/GfxColouriseDialog.h"
 #include "Dialogs/GfxConvDialog.h"
 #include "Dialogs/GfxCropDialog.h"
+#include "Dialogs/GfxTintDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "Dialogs/TranslationEditorDialog.h"
 #include "General/Console/ConsoleHelpers.h"
@@ -47,8 +49,7 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/SZoomSlider.h"
 #include "UI/SBrush.h"
-#include "Dialogs/GfxColouriseDialog.h"
-#include "Dialogs/GfxTintDialog.h"
+
 
 
 // -----------------------------------------------------------------------------
@@ -75,8 +76,8 @@ EXTERN_CVAR(Int, last_tint_amount)
 GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 {
 	// Init variables
-	prev_translation_.addRange(TransRange::Palette, 0);
-	edit_translation_.addRange(TransRange::Palette, 0);
+	prev_translation_.addRange(TransRange::Type::Palette, 0);
+	edit_translation_.addRange(TransRange::Type::Palette, 0);
 
 	// Add gfx canvas
 	gfx_canvas_ = new GfxCanvas(this, -1);

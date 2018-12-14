@@ -85,7 +85,7 @@ MemChunk::~MemChunk()
 // -----------------------------------------------------------------------------
 // Returns true if the chunk contains data
 // -----------------------------------------------------------------------------
-bool MemChunk::hasData()
+bool MemChunk::hasData() const
 {
 	if (size_ > 0 && data_)
 		return true;

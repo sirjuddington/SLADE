@@ -89,10 +89,10 @@ bool SImage::loadFont0(const uint8_t* gfx_data, int size)
 	imgindex_  = 0;
 
 	// Create new picture and mask
-	const uint8_t* r = gfx_data + 0x302;
-	data_            = new uint8_t[datasize];
-	mask_            = new uint8_t[datasize];
-	memset(mask_, 0xFF, datasize);
+	auto r = gfx_data + 0x302;
+	data_.reSize(datasize, false);
+	mask_.reSize(datasize, false);
+	mask_.fillData(0xFF);
 
 	// Data is in column-major format, convert to row-major
 	size_t p = 0;
@@ -153,19 +153,19 @@ bool SImage::loadFont1(const uint8_t* gfx_data, int size)
 	format_ = nullptr;
 
 	// Read raw pixel data
-	data_ = new uint8_t[width_ * height_];
-	mask_ = new uint8_t[width_ * height_];
-	memset(mask_, 0xFF, width_ * height_);
+	data_.reSize(width_ * height_, false);
+	mask_.reSize(width_ * height_, false);
+	mask_.fillData(0xFF);
 
 	// Since gfx_data is a const pointer, we can't work on it.
-	uint8_t* tempdata = new uint8_t[size];
+	auto tempdata = new uint8_t[size];
 	memcpy(tempdata, gfx_data, size);
 
 
 	// We'll use wandering pointers. The original pointer is kept for cleanup.
 	uint8_t* read    = tempdata + 8;
 	uint8_t* readend = tempdata + size - 1;
-	uint8_t* dest    = data_;
+	uint8_t* dest    = data_.data();
 	uint8_t* destend = dest + width_ * height_;
 
 	uint8_t code   = 0;
@@ -241,7 +241,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	numimages_ = 1;
 	imgindex_  = 0;
 
-	if (size < sizeof(Font2Header))
+	if (size < (int)sizeof(Font2Header))
 		return false;
 
 	const Font2Header* header = (Font2Header*)gfx_data;
@@ -259,8 +259,8 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 		p += 2;
 
 	// Start building the character table.
-	size_t     numchars = wxUINT16_SWAP_ON_BE(header->lastc) - wxUINT16_SWAP_ON_BE(header->firstc) + 1;
-	Font2Char* chars    = new Font2Char[numchars];
+	size_t numchars = wxUINT16_SWAP_ON_BE(header->lastc) - wxUINT16_SWAP_ON_BE(header->firstc) + 1;
+	auto*  chars    = new Font2Char[numchars];
 	for (size_t i = 0; i < numchars; ++i)
 	{
 		chars[i].width = wxUINT16_SWAP_ON_BE(*(uint16_t*)p);
@@ -345,12 +345,12 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	// Clear current data if it exists
 	clearData();
 
-	data_ = new uint8_t[width_ * height_];
-	memset(data_, 0, width_ * height_);
-	uint8_t* d = data_;
+	data_.reSize(width_ * height_);
+	data_.fillData(0);
+	uint8_t* d = data_.data();
 	for (size_t i = 0; i < (unsigned)height_; ++i)
 	{
-		d = data_ + i * width_;
+		d = data_.data() + i * width_;
 		for (size_t j = 0; j < numchars; ++j)
 		{
 			if (chars[j].width)
@@ -363,15 +363,12 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 
 	// Clean up the characters once the big picture is finished
 	for (size_t i = 0; i < numchars; ++i)
-	{
-		if (chars[i].data)
-			delete[] chars[i].data;
-	}
+		delete[] chars[i].data;
 	delete[] chars;
 
 	// Now transparency for the mask
-	mask_ = new uint8_t[width_ * height_];
-	memset(mask_, 0xFF, width_ * height_);
+	mask_.reSize(width_ * height_);
+	mask_.fillData(0xFF);
 	for (size_t i = 0; i < (unsigned)(width_ * height_); ++i)
 		if (data_[i] == 0)
 			mask_[i] = 0;
@@ -404,17 +401,17 @@ struct BMFChar
 };
 struct BMFFont
 {
-	uint8_t headr[4];       //  0
-	uint8_t version    = 0; //  4
-	uint8_t lineheight = 0; //  5
-	int8_t  size_over  = 0; //  6
-	int8_t  size_under = 0; //  7
-	int8_t  add_space  = 0; //  8
-	int8_t  size_inner = 0; //  9
-	uint8_t num_colors = 0; // 10
-	uint8_t top_color  = 0; // 11
-	uint8_t reserved[4];    // 12
-	uint8_t pal_size = 0;   // 16
+	uint8_t headr[4]    = { 0, 0, 0, 0 }; //  0
+	uint8_t version     = 0;              //  4
+	uint8_t lineheight  = 0;              //  5
+	int8_t  size_over   = 0;              //  6
+	int8_t  size_under  = 0;              //  7
+	int8_t  add_space   = 0;              //  8
+	int8_t  size_inner  = 0;              //  9
+	uint8_t num_colors  = 0;              // 10
+	uint8_t top_color   = 0;              // 11
+	uint8_t reserved[4] = { 0, 0, 0, 0 }; // 12
+	uint8_t pal_size    = 0;              // 16
 
 	// Rest is not part of the header proper
 	uint8_t     info_size = 0;
@@ -434,14 +431,8 @@ struct BMFFont
 		pal_size   = other->pal_size;
 		info_size  = other->info_size;
 		num_chars  = other->num_chars;
-		info       = nullptr;
-		chars      = nullptr;
 	}
-	~BMFFont()
-	{
-		if (chars)
-			delete[] chars;
-	}
+	~BMFFont() { delete[] chars; }
 };
 bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 {
@@ -545,10 +536,10 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 
 	// Create new fully transparent image
 	size_t pixela = 0, pixelb = 0, pixels = width_ * height_;
-	data_ = new uint8_t[pixels];
-	mask_ = new uint8_t[pixels];
-	memset(data_, 0x00, pixels);
-	memset(mask_, 0x00, pixels);
+	data_.reSize(pixels);
+	mask_.reSize(pixels);
+	data_.fillData(0x00);
+	mask_.fillData(0x00);
 
 	// Start processing each character, painting it on the empty canvas
 	int startx = (mf.chars[0].offsy < 0 ? 0 : mf.chars[0].offsy);
@@ -609,10 +600,10 @@ bool SImage::loadFontM(const uint8_t* gfx_data, int size)
 
 	// reset data
 	clearData();
-	data_ = new uint8_t[width_ * height_];
-	memset(data_, 0xFF, width_ * height_);
-	mask_ = new uint8_t[width_ * height_];
-	memset(mask_, 0x00, width_ * height_);
+	data_.reSize(width_ * height_);
+	data_.fillData(0xFF);
+	mask_.reSize(width_ * height_);
+	mask_.fillData(0x00);
 
 	// Technically each character is its own image, though.
 	numimages_ = 1;
@@ -670,10 +661,10 @@ bool SImage::loadWolfFont(const uint8_t* gfx_data, int size)
 
 	// Create new picture and mask
 	const uint8_t* r = gfx_data + 0x302;
-	data_            = new uint8_t[datasize];
-	mask_            = new uint8_t[datasize];
-	memset(mask_, 0xFF, datasize);
-	memcpy(data_, r, datasize);
+	data_.reSize(datasize);
+	mask_.reSize(datasize);
+	mask_.fillData(0xFF);
+	data_.fillData(*r);
 
 	size_t p = 0; // Previous width
 	size_t w = 0; // This character's width
@@ -750,9 +741,9 @@ bool SImage::loadJediFNT(const uint8_t* gfx_data, int size)
 	imgindex_  = 0;
 
 	// Create new picture and mask
-	data_ = new uint8_t[width_ * height_];
-	mask_ = new uint8_t[width_ * height_];
-	memset(mask_, 0xFF, width_ * height_);
+	data_.reSize(width_ * height_);
+	mask_.reSize(width_ * height_);
+	mask_.fillData(0xFF);
 
 	// Run through each character and add the pixel data
 	wo         = 32;
@@ -760,7 +751,7 @@ bool SImage::loadJediFNT(const uint8_t* gfx_data, int size)
 	for (uint8_t i = 0; i < numchr; ++i)
 	{
 		uint8_t numcols = gfx_data[wo++];
-		memcpy(data_ + (col * width_), gfx_data + wo, numcols * width_);
+		memcpy(data_.data() + (col * width_), gfx_data + wo, numcols * width_);
 		col += numcols;
 		wo += width_ * numcols;
 	}
@@ -804,10 +795,10 @@ bool SImage::loadJediFONT(const uint8_t* gfx_data, int size)
 
 	// reset data
 	clearData();
-	data_ = new uint8_t[width_ * height_];
-	memset(data_, 0xFF, width_ * height_);
-	mask_ = new uint8_t[width_ * height_];
-	memset(mask_, 0x00, width_ * height_);
+	data_.reSize(width_ * height_);
+	data_.fillData(0xFF);
+	mask_.reSize(width_ * height_);
+	mask_.fillData(0x00);
 
 	// Technically each character is its own image, though.
 	numimages_ = 1;
@@ -873,10 +864,10 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 
 	// reset data
 	clearData();
-	data_ = new uint8_t[width_ * height_];
-	memset(data_, 0x00, width_ * height_);
-	mask_ = new uint8_t[width_ * height_];
-	memset(mask_, 0x00, width_ * height_);
+	data_.reSize(width_ * height_);
+	data_.fillData(0x00);
+	mask_.reSize(width_ * height_);
+	mask_.fillData(0x00);
 
 	// Read column offsets
 	if (hdr_size < (8 + (width_ * 6)))
@@ -957,10 +948,10 @@ bool SImage::loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, i
 
 	// reset data
 	clearData();
-	data_ = new uint8_t[width_ * height_];
-	memcpy(data_, gfx_data, width_ * height_);
-	mask_ = new uint8_t[width_ * height_];
-	memset(mask_, 0xFF, width_ * height_);
+	data_.reSize(width_ * height_);
+	data_.fillData(*gfx_data);
+	mask_.reSize(width_ * height_);
+	mask_.fillData(0xFF);
 
 	// rotate and mirror image
 	rotate(90);

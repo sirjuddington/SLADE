@@ -1338,9 +1338,6 @@
     <ClCompile Include="..\..\src\Game\UDMFProperty.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\General\Clipboard.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\General\ColourConfiguration.cpp">
       <Filter>General</Filter>
     </ClCompile>

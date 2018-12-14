@@ -1,18 +1,19 @@
 #pragma once
 
 #include "OpenGL/GLTexture.h"
+#include <array>
 
 class SFontChar
 {
 	friend class SFont;
 
 public:
-	SFontChar();
-	~SFontChar();
+	SFontChar()  = default;
+	~SFontChar() = default;
 
 private:
-	uint16_t width_;
-	uint16_t height_;
+	uint16_t width_  = 0;
+	uint16_t height_ = 0;
 	Recti    tex_bounds_;
 };
 
@@ -26,10 +27,10 @@ public:
 		Center
 	};
 
-	SFont();
-	~SFont();
+	SFont()  = default;
+	~SFont() = default;
 
-	int lineHeight() { return line_height_; }
+	int lineHeight() const { return line_height_; }
 
 	// Font reading
 	bool loadFont0(MemChunk& mc);
@@ -40,17 +41,17 @@ public:
 
 	// Rendering
 	void drawCharacter(char c, ColRGBA colour = COL_WHITE);
-	void drawString(string str, ColRGBA colour = COL_WHITE, Align align = Align::Left);
+	void drawString(const string& str, ColRGBA colour = COL_WHITE, Align align = Align::Left);
 
 	// Static
 	static SFont& vgaFont();
 	static SFont& sladeFont();
 
 private:
-	SFontChar* characters_[256];
-	GLTexture  texture_;
-	int        line_height_;
-	int        spacing_;
+	std::array<SFontChar, 256> characters_;
+	GLTexture                  texture_;
+	int                        line_height_;
+	int                        spacing_;
 
 	// Global fonts
 	static SFont font_vga_;

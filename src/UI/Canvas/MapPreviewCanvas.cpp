@@ -980,8 +980,8 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	glLineWidth(1.0f);
 	glDisable(GL_LINE_SMOOTH);
 
-	uint8_t* ImageBuffer = new uint8_t[width * height * 4];
-	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, ImageBuffer);
+	vector<uint8_t> buffer(width * height * 4);
+	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
 
 	if (GLEW_ARB_framebuffer_object)
 	{
@@ -990,7 +990,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 		glDeleteFramebuffersEXT(1, &fboID);
 	}
 	SImage img;
-	img.setImageData(ImageBuffer, width, height, SImage::Type::RGBA);
+	img.setImageData(buffer, width, height, SImage::Type::RGBA);
 	img.mirror(true);
 	MemChunk mc;
 	SIFormat::getFormat("png")->saveImage(img, mc);

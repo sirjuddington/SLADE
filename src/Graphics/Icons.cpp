@@ -73,7 +73,7 @@ namespace Icons
 // -----------------------------------------------------------------------------
 // Returns a list of all icons of [type]
 // -----------------------------------------------------------------------------
-vector<Icon>& iconList(int type)
+vector<Icon>& iconList(Type type)
 {
 	if (type == Entry)
 		return icons_entry;
@@ -86,7 +86,7 @@ vector<Icon>& iconList(int type)
 // -----------------------------------------------------------------------------
 // Loads all icons in [dir] to the list for [type]
 // -----------------------------------------------------------------------------
-bool loadIconsDir(int type, ArchiveTreeNode* dir)
+bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 {
 	if (!dir)
 		return false;
@@ -112,13 +112,13 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 	if (icon_set_dir != "Default" && dir->child(icon_set_dir))
 		dir = (ArchiveTreeNode*)dir->child(icon_set_dir);
 
-	vector<Icon>& icons    = iconList(type);
-	string        tempfile = App::path("sladetemp", App::Dir::Temp);
+	auto&  icons    = iconList(type);
+	string tempfile = App::path("sladetemp", App::Dir::Temp);
 
 	// Go through each entry in the directory
 	for (size_t a = 0; a < dir->numEntries(false); a++)
 	{
-		ArchiveEntry* entry = dir->entryAt(a);
+		auto entry = dir->entryAt(a);
 
 		// Ignore anything not png format
 		if (!entry->name().EndsWith("png"))
@@ -141,12 +141,12 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 	}
 
 	// Go through large icons
-	ArchiveTreeNode* dir_large = (ArchiveTreeNode*)dir->child("large");
+	auto dir_large = (ArchiveTreeNode*)dir->child("large");
 	if (dir_large)
 	{
 		for (size_t a = 0; a < dir_large->numEntries(false); a++)
 		{
-			ArchiveEntry* entry = dir_large->entryAt(a);
+			auto entry = dir_large->entryAt(a);
 
 			// Ignore anything not png format
 			if (!entry->name().EndsWith("png"))
@@ -158,11 +158,11 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 			// Create / setup icon
 			bool   found = false;
 			string name  = entry->name(true);
-			for (unsigned i = 0; i < icons.size(); i++)
+			for (auto& icon : icons)
 			{
-				if (icons[i].name == name)
+				if (icon.name == name)
 				{
-					icons[i].image_large.LoadFile(tempfile);
+					icon.image_large.LoadFile(tempfile);
 					found = true;
 					break;
 				}
@@ -185,12 +185,12 @@ bool loadIconsDir(int type, ArchiveTreeNode* dir)
 	}
 
 	// Generate any missing large icons
-	for (unsigned a = 0; a < icons.size(); a++)
+	for (auto& icon : icons)
 	{
-		if (!icons[a].image_large.IsOk())
+		if (!icon.image_large.IsOk())
 		{
-			icons[a].image_large = icons[a].image.Copy();
-			icons[a].image_large.Rescale(32, 32, wxIMAGE_QUALITY_BICUBIC);
+			icon.image_large = icon.image.Copy();
+			icon.image_large.Rescale(32, 32, wxIMAGE_QUALITY_BICUBIC);
 		}
 	}
 
@@ -206,21 +206,21 @@ bool Icons::loadIcons()
 	string tempfile = App::path("sladetemp", App::Dir::Temp);
 
 	// Get slade.pk3
-	Archive* res_archive = App::archiveManager().programResourceArchive();
+	auto res_archive = App::archiveManager().programResourceArchive();
 
 	// Do nothing if it doesn't exist
 	if (!res_archive)
 		return false;
 
 	// Get the icons directory of the archive
-	ArchiveTreeNode* dir_icons = res_archive->dir("icons/");
+	auto dir_icons = res_archive->dir("icons/");
 
 	// Load general icons
-	iconsets_general.push_back("Default");
+	iconsets_general.emplace_back("Default");
 	loadIconsDir(General, (ArchiveTreeNode*)dir_icons->child("general"));
 
 	// Load entry list icons
-	iconsets_entry.push_back("Default");
+	iconsets_entry.emplace_back("Default");
 	loadIconsDir(Entry, (ArchiveTreeNode*)dir_icons->child("entry_list"));
 
 	// Load text editor icons
@@ -235,12 +235,12 @@ bool Icons::loadIcons()
 // If [type] is less than 0, try all icon types.
 // If [log_missing] is true, log an error message if the icon was not found
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(int type, string name, bool large, bool log_missing)
+wxBitmap Icons::getIcon(Type type, const string& name, bool large, bool log_missing)
 {
 	// Check all types if [type] is < 0
-	if (type < 0)
+	if (type == Any)
 	{
-		wxBitmap icon = getIcon(General, name, large, false);
+		auto icon = getIcon(General, name, large, false);
 		if (!icon.IsOk())
 			icon = getIcon(Entry, name, large, false);
 		if (!icon.IsOk())
@@ -252,7 +252,7 @@ wxBitmap Icons::getIcon(int type, string name, bool large, bool log_missing)
 		return icon;
 	}
 
-	vector<Icon>& icons = iconList(type);
+	auto& icons = iconList(type);
 
 	size_t icons_size = icons.size();
 	for (size_t a = 0; a < icons_size; a++)
@@ -280,7 +280,7 @@ wxBitmap Icons::getIcon(int type, string name, bool large, bool log_missing)
 // -----------------------------------------------------------------------------
 // Returns the icon [name] of [type]
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(int type, string name)
+wxBitmap Icons::getIcon(Type type, const string& name)
 {
 	return getIcon(type, name, UI::scaleFactor() > 1.25);
 }
@@ -288,14 +288,14 @@ wxBitmap Icons::getIcon(int type, string name)
 // -----------------------------------------------------------------------------
 // Exports icon [name] of [type] to a png image file at [path]
 // -----------------------------------------------------------------------------
-bool Icons::exportIconPNG(int type, string name, string path)
+bool Icons::exportIconPNG(Type type, const string& name, const string& path)
 {
-	vector<Icon>& icons = iconList(type);
+	auto& icons = iconList(type);
 
-	for (size_t a = 0; a < icons.size(); a++)
+	for (auto& icon : icons)
 	{
-		if (icons[a].name.Cmp(name) == 0)
-			return icons[a].resource_entry->exportFile(path);
+		if (icon.name.Cmp(name) == 0)
+			return icon.resource_entry->exportFile(path);
 	}
 
 	return false;
@@ -304,12 +304,12 @@ bool Icons::exportIconPNG(int type, string name, string path)
 // -----------------------------------------------------------------------------
 // Returns a list of currently available icon sets for [type]
 // -----------------------------------------------------------------------------
-vector<string> Icons::iconSets(int type)
+vector<string> Icons::iconSets(Type type)
 {
 	if (type == General)
 		return iconsets_general;
 	else if (type == Entry)
 		return iconsets_entry;
 
-	return vector<string>();
+	return {};
 }

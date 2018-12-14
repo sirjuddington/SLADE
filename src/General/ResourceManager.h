@@ -51,11 +51,7 @@ public:
 		CTexture tex;
 		Archive* parent;
 
-		Texture(CTexture* tex_copy, Archive* parent) : parent(parent)
-		{
-			if (tex_copy)
-				tex.copyTexture(tex_copy);
-		}
+		Texture(const CTexture& tex_copy, Archive* parent) : parent(parent) { tex.copyTexture(tex_copy); }
 	};
 
 	TextureResource() : Resource("texture") {}

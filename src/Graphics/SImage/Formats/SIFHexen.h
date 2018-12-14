@@ -2,15 +2,10 @@
 class SIFPlanar : public SIFormat
 {
 public:
-	SIFPlanar() : SIFormat("planar")
-	{
-		name_        = "Planar";
-		extension_   = "lmp";
-		reliability_ = 240;
-	}
-	~SIFPlanar();
+	SIFPlanar() : SIFormat("planar", "Planar", "lmp", 240) {}
+	~SIFPlanar() = default;
 
-	bool isThisFormat(MemChunk& mc)
+	bool isThisFormat(MemChunk& mc) override
 	{
 		// Can only go by image size
 		if (mc.size() == 153648)
@@ -19,7 +14,7 @@ public:
 			return false;
 	}
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -34,7 +29,7 @@ public:
 	}
 
 
-	Writable canWrite(SImage& image)
+	Writable canWrite(SImage& image) override
 	{
 		if (!gfx_extraconv)
 			return Writable::No;
@@ -48,7 +43,7 @@ public:
 		return Writable::No;
 	}
 
-	bool canWriteType(SImage::Type type)
+	bool canWriteType(SImage::Type type) override
 	{
 		// Only writable as paletted
 		if (type == SImage::Type::PalMask)
@@ -57,7 +52,7 @@ public:
 			return false;
 	}
 
-	bool convertWritable(SImage& image, ConvertOptions opt)
+	bool convertWritable(SImage& image, ConvertOptions opt) override
 	{
 		// First convert image to paletted
 		image.convertPaletted(opt.pal_target, opt.pal_current);
@@ -70,7 +65,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Variables
 		Palette palette;
@@ -105,11 +100,11 @@ protected:
 
 		// Prepare image data and mask (opaque)
 		image.create(640, 480, SImage::Type::PalMask, &palette);
-		uint8_t* img_data = imageData(image);
-		uint8_t* img_mask = imageMask(image);
+		auto img_data = imageData(image);
+		auto img_mask = imageMask(image);
 		memset(img_mask, 0xFF, width * height);
 
-		uint8_t*       dest = img_data;
+		auto           dest = img_data;
 		int            y, x;
 		const uint8_t *src1, *src2, *src3, *src4;
 		size_t         plane_size = width / 8 * height;
@@ -142,7 +137,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
+	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
 	{
 		// Is there really any point to being able to write this format?
 		// Answer: yeah, no other tool can do it. :p
@@ -187,7 +182,7 @@ protected:
 		usepal.copyPalette(image.palette());
 
 		// Create planar palette
-		uint8_t* mycolors = new uint8_t[3];
+		auto mycolors = new uint8_t[3];
 		for (size_t i = 0; i < 16; ++i)
 		{
 			mycolors[0] = usepal.colour(i).r >> 2;
@@ -198,7 +193,7 @@ protected:
 		delete[] mycolors;
 
 		// Create bitplanes
-		uint8_t* planes = new uint8_t[153600];
+		auto planes = new uint8_t[153600];
 
 		uint8_t *pln1, *pln2, *pln3, *pln4, *read;
 		size_t   plane_size = 153600 / 4;
@@ -246,24 +241,16 @@ protected:
 class SIF4BitChunk : public SIFormat
 {
 public:
-	SIF4BitChunk() : SIFormat("4bit")
-	{
-		name_        = "4-bit";
-		extension_   = "lmp";
-		reliability_ = 80;
-	}
-	~SIF4BitChunk() {}
+	SIF4BitChunk() : SIFormat("4bit", "4-bit", "lmp", 80) {}
+	~SIF4BitChunk() = default;
 
-	bool isThisFormat(MemChunk& mc)
+	bool isThisFormat(MemChunk& mc) override
 	{
 		// Can only detect by size
-		if (mc.size() == 32 || mc.size() == 184)
-			return true;
-		else
-			return false;
+		return (mc.size() == 32 || mc.size() == 184);
 	}
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -286,7 +273,7 @@ public:
 		return info;
 	}
 
-	Writable canWrite(SImage& image)
+	Writable canWrite(SImage& image) override
 	{
 		if (!gfx_extraconv)
 			return Writable::No;
@@ -298,7 +285,7 @@ public:
 		return Writable::No;
 	}
 
-	bool canWriteType(SImage::Type type)
+	bool canWriteType(SImage::Type type) override
 	{
 		// Only writable as paletted
 		if (type == SImage::Type::PalMask)
@@ -308,7 +295,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		int width, height;
 
@@ -327,8 +314,8 @@ protected:
 			return false;
 
 		image.create(width, height, SImage::Type::PalMask);
-		uint8_t* img_data = imageData(image);
-		uint8_t* img_mask = imageMask(image);
+		auto img_data = imageData(image);
+		auto img_mask = imageMask(image);
 		memset(img_mask, 0xFF, width * height);
 
 		for (unsigned i = 0; i < data.size(); ++i)
@@ -340,7 +327,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
+	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
 	{
 		// Again, don't see much point
 		if (!gfx_extraconv)
@@ -380,17 +367,14 @@ protected:
 		// Make sure all used colors are in the first 16 entries of the palette
 		image.shrinkPalette();
 
-		size_t   filesize = image.width() * image.height() / 2;
-		uint8_t* temp     = new uint8_t[filesize];
+		size_t          filesize = image.width() * image.height() / 2;
+		vector<uint8_t> temp(filesize);
 
 		for (int i = 0; i < image.width() * image.height(); i += 2)
-		{
 			temp[i / 2] = imageData(image)[i] << 4 | imageData(image)[i + 1];
-		}
 
 		// Write image and cleanup
-		out.write(temp, filesize);
-		delete[] temp;
+		out.write(temp.data(), filesize);
 		backup.seek(0, SEEK_SET);
 		backup.read(imageData(image), image.width() * image.height());
 

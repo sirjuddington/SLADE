@@ -44,20 +44,6 @@
 
 
 // -----------------------------------------------------------------------------
-// PatchTable class constructor
-// -----------------------------------------------------------------------------
-PatchTable::PatchTable(Archive* parent)
-{
-	this->parent_       = parent;
-	patch_invalid_.name = "INVALID_PATCH";
-}
-
-// -----------------------------------------------------------------------------
-// PatchTable class destructor
-// -----------------------------------------------------------------------------
-PatchTable::~PatchTable() {}
-
-// -----------------------------------------------------------------------------
 // Returns the patch at [index], or an 'invalid' patch if [index] is invalid
 // -----------------------------------------------------------------------------
 PatchTable::Patch& PatchTable::patch(size_t index)
@@ -73,13 +59,13 @@ PatchTable::Patch& PatchTable::patch(size_t index)
 // -----------------------------------------------------------------------------
 // Returns the patch matching [name], or an 'invalid' patch if no match is found
 // -----------------------------------------------------------------------------
-PatchTable::Patch& PatchTable::patch(string name)
+PatchTable::Patch& PatchTable::patch(const string& name)
 {
 	// Go through list
-	for (unsigned a = 0; a < patches_.size(); a++)
+	for (auto& patch : patches_)
 	{
-		if (S_CMP(patches_[a].name, name))
-			return patches_[a];
+		if (S_CMP(patch.name, name))
+			return patch;
 	}
 
 	return patch_invalid_;
@@ -110,7 +96,7 @@ ArchiveEntry* PatchTable::patchEntry(size_t index)
 		return nullptr;
 
 	// Patches namespace > graphics
-	ArchiveEntry* entry = theResourceManager->getPatchEntry(patches_[index].name, "patches", parent_);
+	auto entry = theResourceManager->getPatchEntry(patches_[index].name, "patches", parent_);
 	if (!entry)
 		entry = theResourceManager->getPatchEntry(patches_[index].name, "graphics", parent_);
 
@@ -121,7 +107,7 @@ ArchiveEntry* PatchTable::patchEntry(size_t index)
 // Returns the entry associated with the patch matching [name], or null if no
 // match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* PatchTable::patchEntry(string name)
+ArchiveEntry* PatchTable::patchEntry(const string& name)
 {
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
@@ -137,7 +123,7 @@ ArchiveEntry* PatchTable::patchEntry(string name)
 // -----------------------------------------------------------------------------
 // Returns the index of the patch matching [name], or -1 if no match found
 // -----------------------------------------------------------------------------
-int32_t PatchTable::patchIndex(string name)
+int32_t PatchTable::patchIndex(const string& name)
 {
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
@@ -192,7 +178,7 @@ bool PatchTable::removePatch(unsigned index)
 // resource archives.
 // Returns false if [index] is out of range or no matching entry was found
 // -----------------------------------------------------------------------------
-bool PatchTable::replacePatch(unsigned index, string newname)
+bool PatchTable::replacePatch(unsigned index, const string& newname)
 {
 	// Check index
 	if (index >= patches_.size())
@@ -210,24 +196,20 @@ bool PatchTable::replacePatch(unsigned index, string newname)
 // -----------------------------------------------------------------------------
 // Adds a new patch with [name] to the end of the list
 // -----------------------------------------------------------------------------
-bool PatchTable::addPatch(string name, bool allow_dup)
+bool PatchTable::addPatch(const string& name, bool allow_dup)
 {
 	// Check patch doesn't already exist
 	if (!allow_dup)
 	{
-		for (unsigned a = 0; a < patches_.size(); a++)
+		for (auto& patch : patches_)
 		{
-			if (S_CMP(name, patches_[a].name))
+			if (S_CMP(name, patch.name))
 				return false;
 		}
 	}
 
-	// Create/init new patch
-	Patch patch;
-	patch.name = name;
-
 	// Add the patch
-	patches_.push_back(patch);
+	patches_.emplace_back(name);
 
 	// Announce
 	announce("modified");
@@ -277,11 +259,11 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 		}
 
 		// Add new patch
-		bool success = addPatch(wxString(pname).Upper(), true);
+		addPatch(wxString(pname).Upper(), true);
 	}
 
 	// Update variables
-	this->parent_ = parent;
+	parent_ = parent;
 	setMuted(false);
 
 	// Announce
@@ -311,10 +293,10 @@ bool PatchTable::writePNAMES(ArchiveEntry* pnames)
 	pndata.write(&npnames, 4);
 
 	// Write patch names
-	for (unsigned a = 0; a < patches_.size(); a++)
+	for (auto& patch : patches_)
 	{
 		char name[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; // Init name to all zeros for XWE compatibility
-		strncpy(name, CHR(patches_[a].name), patches_[a].name.Len());
+		strncpy(name, CHR(patch.name), patch.name.Len());
 
 		pndata.write(name, 8);
 	}
@@ -333,8 +315,8 @@ bool PatchTable::writePNAMES(ArchiveEntry* pnames)
 // -----------------------------------------------------------------------------
 void PatchTable::clearPatchUsage()
 {
-	for (size_t a = 0; a < patches_.size(); a++)
-		patches_[a].used_in.clear();
+	for (auto& patch : patches_)
+		patch.used_in.clear();
 
 	// Announce
 	announce("modified");
@@ -346,8 +328,8 @@ void PatchTable::clearPatchUsage()
 void PatchTable::updatePatchUsage(CTexture* tex)
 {
 	// Remove texture from all patch usage tables
-	for (unsigned a = 0; a < patches_.size(); a++)
-		patches_[a].removeTextureUsage(tex->name());
+	for (auto& patch : patches_)
+		patch.removeTextureUsage(tex->name());
 
 	// Update patch usage counts for texture
 	for (unsigned a = 0; a < tex->nPatches(); a++)

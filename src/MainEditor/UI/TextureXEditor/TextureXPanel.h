@@ -53,21 +53,21 @@ public:
 	void updateTextureList() { list_textures_->updateList(); }
 
 	// Texture operations
-	CTexture* newTextureFromPatch(string name, string patch);
-	void      newTexture();
-	void      newTextureFromPatch();
-	void      newTextureFromFile();
-	void      removeTexture();
-	void      renameTexture(bool each = false);
-	void      exportTexture();
-	bool      exportAsPNG(CTexture* texture, string filename, bool force_rgba);
-	void      extractTexture();
-	bool      modifyOffsets();
-	void      moveUp();
-	void      moveDown();
-	void      sort();
-	void      copy();
-	void      paste();
+	CTexture::UPtr newTextureFromPatch(string name, string patch);
+	void           newTexture();
+	void           newTextureFromPatch();
+	void           newTextureFromFile();
+	void           removeTexture();
+	void           renameTexture(bool each = false);
+	void           exportTexture();
+	bool           exportAsPNG(CTexture* texture, string filename, bool force_rgba);
+	void           extractTexture();
+	bool           modifyOffsets();
+	void           moveUp();
+	void           moveDown();
+	void           sort();
+	void           copy();
+	void           paste();
 
 	// Undo/Redo
 	void onUndo(string undo_action);

@@ -82,7 +82,7 @@ bool TxListIsTextures(TextureXList& tx)
 class TextureClipboardItem : public ClipboardItem
 {
 public:
-	TextureClipboardItem(CTexture* texture, Archive* parent) :
+	TextureClipboardItem(const CTexture& texture, Archive* parent) :
 		ClipboardItem(Type::CompositeTexture),
 		texture_{ new CTexture() }
 	{
@@ -90,9 +90,9 @@ public:
 		texture_->copyTexture(texture);
 
 		// Copy patch entries if possible
-		for (unsigned a = 0; a < texture->nPatches(); a++)
+		for (unsigned a = 0; a < texture.nPatches(); a++)
 		{
-			auto entry = texture->patch(a)->patchEntry(parent);
+			auto entry = texture.patch(a)->patchEntry(parent);
 
 			// FIXME/TODO: Do something to handle patches that are defined
 			// in TEXTURES rather than a discrete entry!
@@ -119,7 +119,7 @@ public:
 	}
 	~TextureClipboardItem() = default;
 
-	CTexture*     texture() const { return texture_.get(); }
+	const CTexture& texture() const { return *texture_; }
 
 	// -------------------------------------------------------------------------
 	// Returns the entry copy for the patch at [index] in the texture
@@ -175,7 +175,7 @@ string TextureXListView::itemText(long item, long column, long index) const
 		return "INVALID INDEX";
 
 	// Check index is ok
-	if (index < 0 || (unsigned)index > texturex_->nTextures())
+	if (index < 0 || (unsigned)index > texturex_->size())
 		return "INVALID INDEX";
 
 	// Get associated texture
@@ -202,7 +202,7 @@ void TextureXListView::updateItemAttr(long item, long column, long index) const
 		return;
 
 	// Check index is ok
-	if (index < 0 || (unsigned)index > texturex_->nTextures())
+	if (index < 0 || (unsigned)index > texturex_->size())
 		return;
 
 	// Get associated texture
@@ -236,7 +236,7 @@ void TextureXListView::updateList(bool clear)
 	items_.clear();
 	if (texturex_)
 	{
-		unsigned count = texturex_->nTextures();
+		unsigned count = texturex_->size();
 		for (unsigned a = 0; a < count; a++)
 			items_.push_back(a);
 		applyFilter();
@@ -362,32 +362,36 @@ private:
 class TextureCreateDeleteUS : public UndoStep
 {
 public:
-	TextureCreateDeleteUS(TextureXPanel* tx_panel, CTexture* texture, bool created) :
-		tx_panel_(tx_panel),
-		created_(created)
+	// Texture Created
+	TextureCreateDeleteUS(TextureXPanel* tx_panel, int created_index) :
+		tx_panel_{ tx_panel },
+		index_{ created_index },
+		created_{ true }
 	{
-		tex_removed_ = created ? nullptr : texture;
-		index_       = tx_panel->txList().textureIndex(texture->name());
 	}
 
-	~TextureCreateDeleteUS()
+	// Texture Deleted
+	TextureCreateDeleteUS(TextureXPanel* tx_panel, CTexture::UPtr tex_removed, int removed_index) :
+		tx_panel_{ tx_panel },
+		tex_removed_{ std::move(tex_removed) },
+		index_{ removed_index },
+		created_{ false }
 	{
-		if (tex_removed_)
-			delete tex_removed_;
 	}
+
+	~TextureCreateDeleteUS() = default;
 
 	bool deleteTexture()
 	{
-		tex_removed_ = tx_panel_->txList().removeTexture(index_, false);
-		if (tx_panel_->currentTexture() == tex_removed_)
+		tex_removed_ = tx_panel_->txList().removeTexture(index_);
+		if (tx_panel_->currentTexture() == tex_removed_.get())
 			tx_panel_->textureEditor()->clearTexture();
 		return true;
 	}
 
 	bool createTexture()
 	{
-		tx_panel_->txList().addTexture(tex_removed_, index_);
-		tex_removed_ = nullptr;
+		tx_panel_->txList().addTexture(std::move(tex_removed_), index_);
 		return true;
 	}
 
@@ -409,7 +413,7 @@ public:
 
 private:
 	TextureXPanel* tx_panel_;
-	CTexture*      tex_removed_;
+	CTexture::UPtr tex_removed_;
 	int            index_;
 	bool           created_;
 };
@@ -417,24 +421,24 @@ private:
 class TextureModificationUS : public UndoStep
 {
 public:
-	TextureModificationUS(TextureXPanel* tx_panel, CTexture* texture) : tx_panel_(tx_panel)
+	TextureModificationUS(TextureXPanel* tx_panel, const CTexture& texture) : tx_panel_(tx_panel)
 	{
-		tex_copy_ = new CTexture();
+		tex_copy_ = std::make_unique<CTexture>();
 		tex_copy_->copyTexture(texture);
-		tex_copy_->setState(texture->state());
+		tex_copy_->setState(texture.state());
 		index_ = tx_panel->txList().textureIndex(tex_copy_->name());
 	}
 
-	~TextureModificationUS() { delete tex_copy_; }
+	~TextureModificationUS() = default;
 
 	bool swapData()
 	{
-		CTexture* replaced = tx_panel_->txList().replaceTexture(index_, tex_copy_);
+		auto replaced = tx_panel_->txList().replaceTexture(index_, std::move(tex_copy_));
 		if (replaced)
 		{
-			if (tx_panel_->currentTexture() == replaced || tx_panel_->currentTexture() == tex_copy_)
-				tx_panel_->textureEditor()->openTexture(tex_copy_, &(tx_panel_->txList()));
-			tex_copy_ = replaced;
+			if (tx_panel_->currentTexture() == replaced.get() || tx_panel_->currentTexture() == tex_copy_.get())
+				tx_panel_->textureEditor()->openTexture(tex_copy_.get(), &(tx_panel_->txList()));
+			tex_copy_ = std::move(replaced);
 		}
 		else
 			return false;
@@ -448,7 +452,7 @@ public:
 
 private:
 	TextureXPanel* tx_panel_;
-	CTexture*      tex_copy_;
+	CTexture::UPtr tex_copy_;
 	int            index_;
 };
 
@@ -552,7 +556,7 @@ bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 		texture_editor_ = new TextureEditorPanel(this, tx_editor_);
 
 		// Update patch table usage info
-		for (size_t a = 0; a < texturex_.nTextures(); a++)
+		for (size_t a = 0; a < texturex_.size(); a++)
 		{
 			CTexture* tex = texturex_.texture(a);
 
@@ -610,7 +614,7 @@ bool TextureXPanel::saveTEXTUREX()
 	tx_entry_->lock();
 
 	// Set all textures to unmodified
-	for (unsigned a = 0; a < texturex_.nTextures(); a++)
+	for (unsigned a = 0; a < texturex_.size(); a++)
 		texturex_.texture(a)->setState(0);
 	list_textures_->updateList();
 
@@ -640,12 +644,13 @@ void TextureXPanel::applyChanges()
 
 		// Create single 'modify texture' undo level
 		undo_manager_->beginRecord("Modify Texture");
-		undo_manager_->recordUndoStep(new TextureModificationUS(this, tex_current_));
+		undo_manager_->recordUndoStep(new TextureModificationUS(this, *tex_current_));
 		undo_manager_->endRecord(true);
 
 		undo_manager_->setResetPoint();
 
-		tex_current_->copyTexture(texture_editor_->texture());
+		if (texture_editor_->texture())
+			tex_current_->copyTexture(*texture_editor_->texture());
 		tex_current_->setState(1);
 		tx_editor_->patchTable().updatePatchUsage(tex_current_);
 		list_textures_->updateList();
@@ -658,21 +663,21 @@ void TextureXPanel::applyChanges()
 // Creates a new texture called [name] from [patch]. The new texture will be
 // set to the dimensions of the patch, with the patch added at 0,0
 // -----------------------------------------------------------------------------
-CTexture* TextureXPanel::newTextureFromPatch(string name, string patch)
+CTexture::UPtr TextureXPanel::newTextureFromPatch(string name, string patch)
 {
 	// Create new texture
-	CTexture* tex = new CTexture();
+	auto tex = std::make_unique<CTexture>();
 	tex->setName(name);
 	tex->setState(2);
 
 	// Setup texture scale
 	if (TxListIsTextures(texturex_))
 	{
-		tex->setScale(1, 1);
+		tex->setScale({ 1., 1. });
 		tex->setExtended(true);
 	}
 	else
-		tex->setScale(0, 0);
+		tex->setScale({ 0., 0. });
 
 	// Add patch
 	tex->addPatch(patch, 0, 0);
@@ -711,7 +716,7 @@ void TextureXPanel::newTexture()
 	}
 
 	// Create new texture
-	CTexture* tex = new CTexture();
+	auto tex = std::make_unique<CTexture>();
 	tex->setName(name);
 	tex->setState(2);
 
@@ -722,21 +727,21 @@ void TextureXPanel::newTexture()
 	// Setup texture scale
 	if (TxListIsTextures(texturex_))
 	{
-		tex->setScale(1, 1);
+		tex->setScale({ 1., 1. });
 		tex->setExtended(true);
 	}
 	else
-		tex->setScale(0, 0);
+		tex->setScale({ 0., 0. });
 
 	// Add it after the last selected item
 	int selected = list_textures_->itemIndex(list_textures_->lastSelected());
 	if (selected == -1)
-		selected = texturex_.nTextures() - 1; // Add to end of the list if nothing selected
-	texturex_.addTexture(tex, selected + 1);
+		selected = texturex_.size() - 1; // Add to end of the list if nothing selected
+	texturex_.addTexture(std::move(tex), selected + 1);
 
 	// Record undo level
 	undo_manager_->beginRecord("New Texture");
-	undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, tex, true));
+	undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, selected + 1));
 	undo_manager_->endRecord(true);
 
 	// Update texture list
@@ -776,17 +781,18 @@ void TextureXPanel::newTextureFromPatch()
 		name = name.Upper().Truncate(8);
 
 		// Create new texture from patch
-		CTexture* tex = newTextureFromPatch(name, patch);
+		auto tex     = newTextureFromPatch(name, patch);
+		auto tex_ptr = tex.get();
 
 		// Add texture after the last selected item
 		int selected = list_textures_->itemIndex(list_textures_->lastSelected());
 		if (selected == -1)
-			selected = texturex_.nTextures() - 1; // Add to end of the list if nothing selected
-		texturex_.addTexture(tex, selected + 1);
+			selected = texturex_.size() - 1; // Add to end of the list if nothing selected
+		texturex_.addTexture(std::move(tex), selected + 1);
 
 		// Record undo level
 		undo_manager_->beginRecord("New Texture from Patch");
-		undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, tex, true));
+		undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, selected + 1));
 		undo_manager_->endRecord(true);
 
 		// Update texture list
@@ -798,7 +804,7 @@ void TextureXPanel::newTextureFromPatch()
 		list_textures_->EnsureVisible(selected + 1);
 
 		// Update patch table counts
-		tx_editor_->patchTable().updatePatchUsage(tex);
+		tx_editor_->patchTable().updatePatchUsage(tex_ptr);
 	}
 }
 
@@ -877,17 +883,18 @@ void TextureXPanel::newTextureFromFile()
 
 
 			// Create new texture from patch
-			CTexture* tex = newTextureFromPatch(name, name);
+			auto tex     = newTextureFromPatch(name, name);
+			auto tex_ptr = tex.get();
 
 			// Add texture after the last selected item
 			int selected = list_textures_->itemIndex(list_textures_->lastSelected());
 			if (selected == -1)
-				selected = texturex_.nTextures() - 1; // Add to end of the list if nothing selected
-			texturex_.addTexture(tex, selected + 1);
+				selected = texturex_.size() - 1; // Add to end of the list if nothing selected
+			texturex_.addTexture(std::move(tex), selected + 1);
 
 			// Record undo level
 			undo_manager_->beginRecord("New Texture from File");
-			undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, tex, true));
+			undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, selected + 1));
 			undo_manager_->endRecord(true);
 
 			// Update texture list
@@ -899,7 +906,7 @@ void TextureXPanel::newTextureFromFile()
 			list_textures_->EnsureVisible(selected + 1);
 
 			// Update patch table counts
-			tx_editor_->patchTable().updatePatchUsage(tex);
+			tx_editor_->patchTable().updatePatchUsage(tex_ptr);
 		}
 	}
 }
@@ -923,11 +930,11 @@ void TextureXPanel::removeTexture()
 		for (unsigned p = 0; p < tex->nPatches(); p++)
 			tx_editor_->patchTable().patch(tex->patch(p)->name()).removeTextureUsage(tex->name());
 
-		// Record undo step
-		undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, tex, false));
-
 		// Remove texture from list
-		texturex_.removeTexture(selection[a], false);
+		auto removed = texturex_.removeTexture(selection[a]);
+
+		// Record undo step
+		undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, std::move(removed), selection[a]));
 	}
 
 	// End recording undo level
@@ -1033,8 +1040,8 @@ void TextureXPanel::sort()
 	if (selection.size() < 2)
 	{
 		selection.clear();
-		selection.resize(texturex_.nTextures());
-		for (size_t i = 0; i < texturex_.nTextures(); ++i)
+		selection.resize(texturex_.size());
+		for (size_t i = 0; i < texturex_.size(); ++i)
 			selection[i] = i;
 	}
 
@@ -1043,7 +1050,7 @@ void TextureXPanel::sort()
 		return;
 
 	// Fill a map with <texture name, texture index> pairs
-	size_t*                  origindex = new size_t[texturex_.nTextures()];
+	size_t*                  origindex = new size_t[texturex_.size()];
 	std::map<string, size_t> tmap;
 	tmap.clear();
 	for (size_t i = 0; i < selection.size(); ++i)
@@ -1106,7 +1113,7 @@ void TextureXPanel::copy()
 	// Create list of textures to copy
 	vector<ClipboardItem::UPtr> copy_items;
 	for (unsigned a = 0; a < selection.size(); a++)
-		copy_items.emplace_back(new TextureClipboardItem(texturex_.texture(selection[a]), tx_editor_->archive()));
+		copy_items.emplace_back(new TextureClipboardItem(*texturex_.texture(selection[a]), tx_editor_->archive()));
 
 	// Add list to clipboard
 	App::clipboard().add(copy_items);
@@ -1124,7 +1131,7 @@ void TextureXPanel::paste()
 	// Get last selected index
 	int selected = list_textures_->itemIndex(list_textures_->lastSelected());
 	if (selected == -1)
-		selected = texturex_.nTextures() - 1; // Add to end of the list if nothing selected
+		selected = texturex_.size() - 1; // Add to end of the list if nothing selected
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Paste Texture(s)");
@@ -1140,13 +1147,13 @@ void TextureXPanel::paste()
 		TextureClipboardItem* item = (TextureClipboardItem*)(App::clipboard().item(a));
 
 		// Add new texture after last selected item
-		CTexture* ntex = new CTexture(TxListIsTextures(texturex_));
+		auto ntex = std::make_unique<CTexture>(TxListIsTextures(texturex_));
 		ntex->copyTexture(item->texture(), true);
 		ntex->setState(2);
-		texturex_.addTexture(ntex, ++selected);
+		texturex_.addTexture(std::move(ntex), ++selected);
 
 		// Record undo step
-		undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, ntex, true));
+		undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, selected));
 
 		// Deal with patches
 		for (unsigned p = 0; p < ntex->nPatches(); p++)

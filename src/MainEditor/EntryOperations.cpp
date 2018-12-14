@@ -1074,7 +1074,7 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 		Misc::loadImageFromEntry(&image, entries[a]);
 
 		// Create texture
-		CTexture* ntex = new CTexture(zdtextures);
+		auto ntex = std::make_unique<CTexture>(zdtextures);
 		ntex->setName(name);
 		ntex->addPatch(name, 0, 0);
 		ntex->setWidth(image.width());
@@ -1082,12 +1082,12 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 
 		// Setup texture scale
 		if (tx.format() == TextureXList::Format::Textures)
-			ntex->setScale(1, 1);
+			ntex->setScale({ 1., 1. });
 		else
-			ntex->setScale(0, 0);
+			ntex->setScale({ 0., 0. });
 
 		// Add to texture list
-		tx.addTexture(ntex);
+		tx.addTexture(std::move(ntex));
 	}
 
 	if (zdtextures)

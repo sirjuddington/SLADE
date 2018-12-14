@@ -7,7 +7,7 @@ class TransRange
 	friend class Translation;
 
 public:
-	enum Type
+	enum class Type
 	{
 		Palette = 1,
 		Colour,
@@ -17,28 +17,35 @@ public:
 		Special
 	};
 
-	TransRange(Type type)
+	struct IndexRange
 	{
-		type_    = type;
-		o_start_ = 0;
-		o_end_   = 0;
-	}
+		uint8_t start = 0;
+		uint8_t end   = 0;
 
-	virtual ~TransRange() {}
+		IndexRange(int start, int end) : start{ (uint8_t)start }, end{ (uint8_t)end } {}
 
-	uint8_t type() { return type_; }
-	uint8_t oStart() { return o_start_; }
-	uint8_t oEnd() { return o_end_; }
+		string asText() const { return S_FMT("%d:%d", start, end); }
+	};
 
-	void setOStart(uint8_t val) { o_start_ = val; }
-	void setOEnd(uint8_t val) { o_end_ = val; }
+	typedef std::unique_ptr<TransRange> UPtr;
+
+	TransRange(Type type, IndexRange range) : type_{ type }, range_{ range } {}
+	virtual ~TransRange() = default;
+
+	Type              type() const { return type_; }
+	const IndexRange& range() const { return range_; }
+	uint8_t           start() const { return range_.start; }
+	uint8_t           end() const { return range_.end; }
+
+	void setRange(const IndexRange& range) { range_ = range; }
+	void setStart(uint8_t val) { range_.start = val; }
+	void setEnd(uint8_t val) { range_.end = val; }
 
 	virtual string asText() { return ""; }
 
 protected:
-	Type    type_;
-	uint8_t o_start_;
-	uint8_t o_end_;
+	Type       type_;
+	IndexRange range_;
 };
 
 class TransRangePalette : public TransRange
@@ -46,26 +53,30 @@ class TransRangePalette : public TransRange
 	friend class Translation;
 
 public:
-	TransRangePalette() : TransRange(Palette) { d_start_ = d_end_ = 0; }
-	TransRangePalette(TransRangePalette* copy) : TransRange(Palette)
+	TransRangePalette(IndexRange range, IndexRange dest_range) :
+		TransRange{ Type::Palette, range },
+		dest_range_{ dest_range }
 	{
-		o_start_ = copy->o_start_;
-		o_end_   = copy->o_end_;
-		d_start_ = copy->d_start_;
-		d_end_   = copy->d_end_;
+	}
+	TransRangePalette(const TransRangePalette& copy) :
+		TransRange{ Type::Palette, copy.range_ },
+		dest_range_{ copy.dest_range_ }
+	{
 	}
 
-	uint8_t dStart() { return d_start_; }
-	uint8_t dEnd() { return d_end_; }
+	uint8_t dStart() const { return dest_range_.start; }
+	uint8_t dEnd() const { return dest_range_.end; }
 
-	void setDStart(uint8_t val) { d_start_ = val; }
-	void setDEnd(uint8_t val) { d_end_ = val; }
+	void setDStart(uint8_t val) { dest_range_.start = val; }
+	void setDEnd(uint8_t val) { dest_range_.end = val; }
 
-	string asText() { return S_FMT("%d:%d=%d:%d", o_start_, o_end_, d_start_, d_end_); }
+	string asText() override
+	{
+		return S_FMT("%d:%d=%d:%d", range_.start, range_.end, dest_range_.start, dest_range_.end);
+	}
 
 private:
-	uint8_t d_start_;
-	uint8_t d_end_;
+	IndexRange dest_range_;
 };
 
 class TransRangeColour : public TransRange
@@ -73,41 +84,41 @@ class TransRangeColour : public TransRange
 	friend class Translation;
 
 public:
-	TransRangeColour() : TransRange(Colour)
+	TransRangeColour(IndexRange range, const ColRGBA& col_start = COL_BLACK, const ColRGBA& col_end = COL_WHITE) :
+		TransRange{ Type::Colour, range },
+		col_start_{ col_start },
+		col_end_{ col_end }
 	{
-		d_start_ = COL_BLACK;
-		d_end_   = COL_WHITE;
 	}
-	TransRangeColour(TransRangeColour* copy) : TransRange(Colour)
+	TransRangeColour(const TransRangeColour& copy) :
+		TransRange{ Type::Colour, copy.range_ },
+		col_start_{ copy.col_start_ },
+		col_end_{ copy.col_end_ }
 	{
-		o_start_ = copy->o_start_;
-		o_end_   = copy->o_end_;
-		d_start_.set(copy->d_start_);
-		d_end_.set(copy->d_end_);
 	}
 
-	ColRGBA dStart() { return d_start_; }
-	ColRGBA dEnd() { return d_end_; }
+	const ColRGBA& startColour() const { return col_start_; }
+	const ColRGBA& endColour() const { return col_end_; }
 
-	void setDStart(ColRGBA col) { d_start_.set(col); }
-	void setDEnd(ColRGBA col) { d_end_.set(col); }
+	void setStartColour(const ColRGBA& col) { col_start_.set(col); }
+	void setEndColour(const ColRGBA& col) { col_end_.set(col); }
 
-	string asText()
+	string asText() override
 	{
 		return S_FMT(
 			"%d:%d=[%d,%d,%d]:[%d,%d,%d]",
-			o_start_,
-			o_end_,
-			d_start_.r,
-			d_start_.g,
-			d_start_.b,
-			d_end_.r,
-			d_end_.g,
-			d_end_.b);
+			range_.start,
+			range_.end,
+			col_start_.r,
+			col_start_.g,
+			col_start_.b,
+			col_end_.r,
+			col_end_.g,
+			col_end_.b);
 	}
 
 private:
-	ColRGBA d_start_, d_end_;
+	ColRGBA col_start_, col_end_;
 };
 
 class TransRangeDesat : public TransRange
@@ -115,60 +126,47 @@ class TransRangeDesat : public TransRange
 	friend class Translation;
 
 public:
-	TransRangeDesat() : TransRange(Desat)
+	struct RGB
 	{
-		d_sr_ = d_sg_ = d_sb_ = 0;
-		d_er_ = d_eg_ = d_eb_ = 2;
+		float r, g, b;
+	};
+
+	TransRangeDesat(IndexRange range, const RGB& start = { 0, 0, 0 }, const RGB& end = { 2, 2, 2 }) :
+		TransRange{ Type::Desat, range },
+		rgb_start_{ start },
+		rgb_end_{ end }
+	{
 	}
-	TransRangeDesat(TransRangeDesat* copy) : TransRange(Desat)
+	TransRangeDesat(const TransRangeDesat& copy) :
+		TransRange{ Type::Desat, copy.range_ },
+		rgb_start_{ copy.rgb_start_ },
+		rgb_end_{ copy.rgb_end_ }
 	{
-		o_start_ = copy->o_start_;
-		o_end_   = copy->o_end_;
-		d_sr_    = copy->d_sr_;
-		d_sg_    = copy->d_sg_;
-		d_sb_    = copy->d_sb_;
-		d_er_    = copy->d_er_;
-		d_eg_    = copy->d_eg_;
-		d_eb_    = copy->d_eb_;
 	}
 
-	float dSr() { return d_sr_; }
-	float dSg() { return d_sg_; }
-	float dSb() { return d_sb_; }
-	float dEr() { return d_er_; }
-	float dEg() { return d_eg_; }
-	float dEb() { return d_eb_; }
+	const RGB& rgbStart() const { return rgb_start_; }
+	const RGB& rgbEnd() const { return rgb_end_; }
 
-	void setDStart(float r, float g, float b)
-	{
-		d_sr_ = r;
-		d_sg_ = g;
-		d_sb_ = b;
-	}
-	void setDEnd(float r, float g, float b)
-	{
-		d_er_ = r;
-		d_eg_ = g;
-		d_eb_ = b;
-	}
+	void setDStart(float r, float g, float b) { rgb_start_ = { r, g, b }; }
+	void setDEnd(float r, float g, float b) { rgb_end_ = { r, g, b }; }
 
-	string asText()
+	string asText() override
 	{
 		return S_FMT(
 			"%d:%d=%%[%1.2f,%1.2f,%1.2f]:[%1.2f,%1.2f,%1.2f]",
-			o_start_,
-			o_end_,
-			d_sr_,
-			d_sg_,
-			d_sb_,
-			d_er_,
-			d_eg_,
-			d_eb_);
+			range_.start,
+			range_.end,
+			rgb_start_.r,
+			rgb_start_.g,
+			rgb_start_.b,
+			rgb_end_.r,
+			rgb_end_.g,
+			rgb_end_.b);
 	}
 
 private:
-	float d_sr_, d_sg_, d_sb_;
-	float d_er_, d_eg_, d_eb_;
+	RGB rgb_start_;
+	RGB rgb_end_;
 };
 
 class TransRangeBlend : public TransRange
@@ -176,21 +174,23 @@ class TransRangeBlend : public TransRange
 	friend class Translation;
 
 public:
-	TransRangeBlend() : TransRange(Blend) { col_ = COL_RED; }
-	TransRangeBlend(TransRangeBlend* copy) : TransRange(Blend)
+	TransRangeBlend(IndexRange range, const ColRGBA& colour = COL_RED) :
+		TransRange{ Type::Blend, range },
+		colour_{ colour }
 	{
-		o_start_ = copy->o_start_;
-		o_end_   = copy->o_end_;
-		col_     = copy->col_;
+	}
+	TransRangeBlend(const TransRangeBlend& copy) : TransRange{ Type::Blend, copy.range_ }, colour_{ copy.colour_ } {}
+
+	const ColRGBA& colour() const { return colour_; }
+	void           setColour(const ColRGBA& c) { colour_ = c; }
+
+	string asText() override
+	{
+		return S_FMT("%d:%d=#[%d,%d,%d]", range_.start, range_.end, colour_.r, colour_.g, colour_.b);
 	}
 
-	ColRGBA colour() { return col_; }
-	void    setColour(ColRGBA c) { col_ = c; }
-
-	string asText() { return S_FMT("%d:%d=#[%d,%d,%d]", o_start_, o_end_, col_.r, col_.g, col_.b); }
-
 private:
-	ColRGBA col_;
+	ColRGBA colour_;
 };
 
 class TransRangeTint : public TransRange
@@ -198,28 +198,31 @@ class TransRangeTint : public TransRange
 	friend class Translation;
 
 public:
-	TransRangeTint() : TransRange(Tint)
+	TransRangeTint(IndexRange range, const ColRGBA& colour = COL_RED, uint8_t amount = 50) :
+		TransRange{ Type::Tint, range },
+		colour_{ colour },
+		amount_{ amount }
 	{
-		col_    = COL_RED;
-		amount_ = 50;
 	}
-	TransRangeTint(TransRangeTint* copy) : TransRange(Tint)
+	TransRangeTint(const TransRangeTint& copy) :
+		TransRange{ Type::Tint, copy.range_ },
+		colour_{ copy.colour_ },
+		amount_{ copy.amount_ }
 	{
-		o_start_ = copy->o_start_;
-		o_end_   = copy->o_end_;
-		col_     = copy->col_;
-		amount_  = copy->amount_;
 	}
 
-	ColRGBA colour() { return col_; }
-	uint8_t amount() { return amount_; }
-	void    setColour(ColRGBA c) { col_ = c; }
+	ColRGBA colour() const { return colour_; }
+	uint8_t amount() const { return amount_; }
+	void    setColour(const ColRGBA& c) { colour_ = c; }
 	void    setAmount(uint8_t a) { amount_ = a; }
 
-	string asText() { return S_FMT("%d:%d=@%d[%d,%d,%d]", o_start_, o_end_, amount_, col_.r, col_.g, col_.b); }
+	string asText() override
+	{
+		return S_FMT("%d:%d=@%d[%d,%d,%d]", range_.start, range_.end, amount_, colour_.r, colour_.g, colour_.b);
+	}
 
 private:
-	ColRGBA col_;
+	ColRGBA colour_;
 	uint8_t amount_;
 };
 
@@ -228,18 +231,21 @@ class TransRangeSpecial : public TransRange
 	friend class Translation;
 
 public:
-	TransRangeSpecial() : TransRange(Special) { special_ = ""; }
-	TransRangeSpecial(TransRangeSpecial* copy) : TransRange(Special)
+	TransRangeSpecial(IndexRange range, const string& special = "") :
+		TransRange{ Type::Special, range },
+		special_{ special }
 	{
-		o_start_ = copy->o_start_;
-		o_end_   = copy->o_end_;
-		special_ = copy->special_;
+	}
+	TransRangeSpecial(const TransRangeSpecial& copy) :
+		TransRange{ Type::Special, copy.range_ },
+		special_{ copy.special_ }
+	{
 	}
 
-	string special() { return special_; }
-	void   setSpecial(string sp) { special_ = sp; }
+	string special() const { return special_; }
+	void   setSpecial(const string& sp) { special_ = sp; }
 
-	string asText() { return S_FMT("%d:%d=$%s", o_start_, o_end_, special_); }
+	string asText() override { return S_FMT("%d:%d=$%s", range_.start, range_.end, special_); }
 
 private:
 	string special_;
@@ -249,33 +255,33 @@ class Palette;
 class Translation
 {
 public:
-	Translation();
-	~Translation();
+	Translation()  = default;
+	~Translation() = default;
 
 	void   parse(string def);
-	void   parseRange(string range);
+	void   parseRange(const string& range);
 	void   read(const uint8_t* data);
 	string asText();
 	void   clear();
-	void   copy(Translation& copy);
-	bool   isEmpty() { return built_in_name_.IsEmpty() && translations_.size() == 0; }
+	void   copy(const Translation& copy);
+	bool   isEmpty() const { return built_in_name_.IsEmpty() && translations_.empty(); }
 
-	unsigned    nRanges() { return translations_.size(); }
+	unsigned    nRanges() const { return translations_.size(); }
 	TransRange* range(unsigned index);
-	string      builtInName() { return built_in_name_; }
+	string      builtInName() const { return built_in_name_; }
 	void        setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
 
 	ColRGBA translate(ColRGBA col, Palette* pal = nullptr);
-	ColRGBA specialBlend(ColRGBA col, uint8_t type, Palette* pal = nullptr);
+	ColRGBA specialBlend(ColRGBA col, uint8_t type, Palette* pal = nullptr) const;
 
-	void addRange(int type, int pos);
+	void addRange(TransRange::Type type, int pos);
 	void removeRange(int pos);
 	void swapRanges(int pos1, int pos2);
 
 	static string getPredefined(string def);
 
 private:
-	vector<TransRange*> translations_;
-	string              built_in_name_;
-	uint8_t             desat_amount_;
+	vector<TransRange::UPtr> translations_;
+	string                   built_in_name_;
+	uint8_t                  desat_amount_ = 0;
 };

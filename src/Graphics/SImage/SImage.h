@@ -71,28 +71,28 @@ public:
 		}
 	};
 
-	SImage(Type type = Type::RGBA);
-	virtual ~SImage();
+	SImage(Type type = Type::RGBA) : type_{ type } {}
+	virtual ~SImage() = default;
 
-	bool isValid() { return (width_ > 0 && height_ > 0 && data_); }
+	bool isValid() const { return (width_ > 0 && height_ > 0 && data_.data()); }
 
-	Type      type() { return type_; }
+	Type      type() const { return type_; }
 	bool      putRGBAData(MemChunk& mc, Palette* pal = nullptr);
 	bool      putRGBData(MemChunk& mc, Palette* pal = nullptr);
-	bool      putIndexedData(MemChunk& mc);
-	int       width() { return width_; }
-	int       height() { return height_; }
-	int       index() { return imgindex_; }
-	int       size() { return numimages_; }
-	bool      hasPalette() { return has_palette_; }
+	bool      putIndexedData(MemChunk& mc) const;
+	int       width() const { return width_; }
+	int       height() const { return height_; }
+	int       index() const { return imgindex_; }
+	int       size() const { return numimages_; }
+	bool      hasPalette() const { return has_palette_; }
 	Palette*  palette() { return &palette_; }
-	Vec2i     offset() { return Vec2i(offset_x_, offset_y_); }
-	unsigned  stride();
-	uint8_t   bpp();
+	Vec2i     offset() const { return { offset_x_, offset_y_ }; }
+	unsigned  stride() const;
+	uint8_t   bpp() const;
 	ColRGBA   pixelAt(unsigned x, unsigned y, Palette* pal = nullptr);
-	uint8_t   pixelIndexAt(unsigned x, unsigned y);
-	SIFormat* format() { return format_; }
-	Info      info();
+	uint8_t   pixelIndexAt(unsigned x, unsigned y) const;
+	SIFormat* format() const { return format_; }
+	Info      info() const;
 
 	void setXOffset(int offset);
 	void setYOffset(int offset);
@@ -110,14 +110,14 @@ public:
 	void   create(int width, int height, Type type, Palette* pal = nullptr, int index = 0, int numimages = 1);
 	void   create(Info info, Palette* pal = nullptr);
 	void   fillAlpha(uint8_t alpha = 0);
-	short  findUnusedColour();
+	short  findUnusedColour() const;
 	bool   validFlatSize();
-	size_t countColours();
+	size_t countColours() const;
 	void   shrinkPalette(Palette* pal = nullptr);
 	bool   copyImage(SImage* image);
 
 	// Image format reading
-	bool open(MemChunk& data, int index = 0, string type_hint = "");
+	bool open(MemChunk& data, int index = 0, const string& type_hint = "");
 	bool loadFont0(const uint8_t* gfx_data, int size);
 	bool loadFont1(const uint8_t* gfx_data, int size);
 	bool loadFont2(const uint8_t* gfx_data, int size);
@@ -145,9 +145,9 @@ public:
 	bool mirror(bool vert);
 	bool crop(long x1, long y1, long x2, long y2);
 	bool resize(int nwidth, int nheight);
-	bool setImageData(uint8_t* ndata, int nwidth, int nheight, Type ntype);
+	bool setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight, Type ntype);
 	bool applyTranslation(Translation* tr, Palette* pal = nullptr, bool truecolor = false);
-	bool applyTranslation(string tr, Palette* pal = nullptr, bool truecolor = false);
+	bool applyTranslation(const string& tr, Palette* pal = nullptr, bool truecolor = false);
 	bool drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Palette* pal);
 	bool drawImage(
 		SImage&    img,
@@ -162,20 +162,20 @@ public:
 	bool mirrorpad();
 
 private:
-	int       width_;
-	int       height_;
-	uint8_t*  data_;
-	uint8_t*  mask_;
+	int       width_  = 0;
+	int       height_ = 0;
+	MemChunk  data_;
+	MemChunk  mask_;
 	Type      type_;
 	Palette   palette_;
-	bool      has_palette_;
-	int       offset_x_;
-	int       offset_y_;
-	SIFormat* format_;
+	bool      has_palette_ = false;
+	int       offset_x_    = 0;
+	int       offset_y_    = 0;
+	SIFormat* format_      = nullptr;
 
 	// For multi-image files
-	int imgindex_;
-	int numimages_;
+	int imgindex_  = 0;
+	int numimages_ = 1;
 
 	// Internal functions
 	void clearData(bool clear_mask = true);

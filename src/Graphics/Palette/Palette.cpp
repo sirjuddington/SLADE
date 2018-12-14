@@ -51,9 +51,9 @@ CVAR(Float, col_match_b, 1.0, CVar::Flag::Save)
 CVAR(Float, col_match_h, 1.0, CVar::Flag::Save)
 CVAR(Float, col_match_s, 1.0, CVar::Flag::Save)
 CVAR(Float, col_match_l, 1.0, CVar::Flag::Save)
-EXTERN_CVAR(Float, col_greyscale_r);
-EXTERN_CVAR(Float, col_greyscale_g);
-EXTERN_CVAR(Float, col_greyscale_b);
+EXTERN_CVAR(Float, col_greyscale_r)
+EXTERN_CVAR(Float, col_greyscale_g)
+EXTERN_CVAR(Float, col_greyscale_b)
 
 
 // -----------------------------------------------------------------------------
@@ -77,11 +77,6 @@ Palette::Palette(unsigned size) : colours_{ size }, colours_hsl_{ size }, colour
 		colours_hsl_[a].l = mult;
 	}
 }
-
-// -----------------------------------------------------------------------------
-// Palette class destructor
-// -----------------------------------------------------------------------------
-Palette::~Palette() {}
 
 // -----------------------------------------------------------------------------
 // Reads colour information from raw data (MemChunk)
@@ -285,9 +280,9 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 				tz.advToEndOfLine();
 
 			// If we haven't skipped this part from a continue, then we have a colour triplet.
-			col.r     = atoi(CHR(s1));
-			col.g     = atoi(CHR(s2));
-			col.b     = atoi(CHR(s3));
+			col.r     = std::stoi(CHR(s1));
+			col.g     = std::stoi(CHR(s2));
+			col.b     = std::stoi(CHR(s3));
 			col.index = c;
 			setColour(c++, col);
 		} while (c < 256 && !tz.peekToken().IsEmpty());
@@ -627,8 +622,8 @@ short Palette::nearestColour(ColRGBA colour, ColourMatch match)
 // -----------------------------------------------------------------------------
 size_t Palette::countColours()
 {
-	ColRGBA* usedcolours = new ColRGBA[256];
-	memset(usedcolours, 0, 256 * sizeof(ColRGBA));
+	vector<ColRGBA> usedcolours(256);
+	memset(usedcolours.data(), 0, 256 * sizeof(ColRGBA));
 	size_t used = 0;
 
 	for (int a = 0; a < 256; a++)
@@ -645,7 +640,6 @@ size_t Palette::countColours()
 		if (!found)
 			usedcolours[used++].set(colours_[a]);
 	}
-	delete[] usedcolours;
 	return used;
 }
 

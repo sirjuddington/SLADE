@@ -199,7 +199,7 @@ void TextureResource::add(CTexture* tex, Archive* parent)
 	if (!tex || !parent)
 		return;
 
-	textures_.push_back(std::make_unique<Texture>(tex, parent));
+	textures_.push_back(std::make_unique<Texture>(*tex, parent));
 }
 
 // -----------------------------------------------------------------------------
@@ -423,7 +423,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 
 		// Add all textures to resources
 		CTexture* tex;
-		for (unsigned a = 0; a < tx.nTextures(); a++)
+		for (unsigned a = 0; a < tx.size(); a++)
 		{
 			tex = tx.texture(a);
 			textures_[tex->name()].add(tex, entry->parent());
@@ -480,7 +480,7 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full
 			tx.readTEXTURESData(entry.get());
 
 		// Remove all texture resources
-		for (unsigned a = 0; a < tx.nTextures(); a++)
+		for (unsigned a = 0; a < tx.size(); a++)
 			textures_[tx.texture(a)->name()].remove(entry->parent());
 	}
 }
@@ -794,7 +794,7 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 			list.clear();
 		}
 		auto end = App::runTimer();
-		time = end - start;
+		time     = end - start;
 	}
 
 	float avg = float(times[0] + times[1] + times[2] + times[3] + times[4]) / 5.0f;

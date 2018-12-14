@@ -7,13 +7,14 @@ public:
 	MemChunk(const uint8_t* data, uint32_t size);
 	~MemChunk();
 
-	uint8_t& operator[](int a) { return data_[a]; }
+	uint8_t& operator[](int a) const { return data_[a]; }
 
 	// Accessors
 	const uint8_t* data() const { return data_; }
+	uint8_t*       data() { return data_; }
 	uint32_t       size() const { return size_; }
 
-	bool hasData();
+	bool hasData() const;
 
 	bool clear();
 	bool reSize(uint32_t new_size, bool preserve_data = true);
@@ -22,6 +23,7 @@ public:
 	bool importFile(string filename, uint32_t offset = 0, uint32_t len = 0);
 	bool importFileStream(wxFile& file, uint32_t len = 0);
 	bool importMem(const uint8_t* start, uint32_t len);
+	bool importMem(const MemChunk& other) { return importMem(other.data_, other.size_); }
 
 	// Data export
 	bool exportFile(string filename, uint32_t start = 0, uint32_t size = 0);

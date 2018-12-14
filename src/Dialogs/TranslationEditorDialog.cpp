@@ -419,11 +419,11 @@ void TranslationEditorDialog::openRange(int index)
 	auto tr = translation_.range(index);
 
 	// Set origin selection
-	pal_canvas_original_->setSelection(tr->oStart(), tr->oEnd());
+	pal_canvas_original_->setSelection(tr->start(), tr->end());
 	pal_canvas_original_->Refresh();
 
 	// Check translation range type
-	if (tr->type() == TransRange::Palette)
+	if (tr->type() == TransRange::Type::Palette)
 	{
 		// Palette range
 		auto tpr = (TransRangePalette*)tr;
@@ -445,7 +445,7 @@ void TranslationEditorDialog::openRange(int index)
 		}
 		pal_canvas_target_->Refresh();
 	}
-	else if (tr->type() == TransRange::Colour)
+	else if (tr->type() == TransRange::Type::Colour)
 	{
 		// Colour gradient
 		auto tcr = (TransRangeColour*)tr;
@@ -455,17 +455,17 @@ void TranslationEditorDialog::openRange(int index)
 		showGradientTarget();
 
 		// Set beginning colour
-		gb_gradient_->setStartCol(tcr->dStart());
-		cb_range_begin_->setColour(tcr->dStart());
+		gb_gradient_->setStartCol(tcr->startColour());
+		cb_range_begin_->setColour(tcr->startColour());
 
 		// Set ending colour
-		gb_gradient_->setEndCol(tcr->dEnd());
-		cb_range_end_->setColour(tcr->dEnd());
+		gb_gradient_->setEndCol(tcr->endColour());
+		cb_range_end_->setColour(tcr->endColour());
 
 		// Update UI
 		gb_gradient_->Refresh();
 	}
-	else if (tr->type() == TransRange::Desat)
+	else if (tr->type() == TransRange::Type::Desat)
 	{
 		// Desaturated colour gradient
 		auto tdr = (TransRangeDesat*)tr;
@@ -476,23 +476,23 @@ void TranslationEditorDialog::openRange(int index)
 
 		// Set beginning colour
 		ColRGBA col;
-		col.r = MathStuff::clamp(tdr->dSr() * 128, 0, 255);
-		col.g = MathStuff::clamp(tdr->dSg() * 128, 0, 255);
-		col.b = MathStuff::clamp(tdr->dSb() * 128, 0, 255);
+		col.r = MathStuff::clamp(tdr->rgbStart().r * 128, 0, 255);
+		col.g = MathStuff::clamp(tdr->rgbStart().g * 128, 0, 255);
+		col.b = MathStuff::clamp(tdr->rgbStart().b * 128, 0, 255);
 		cb_range_begin_->setColour(col);
 		gb_gradient_->setStartCol(col);
 
 		// Set ending colour
-		col.r = MathStuff::clamp(tdr->dEr() * 128, 0, 255);
-		col.g = MathStuff::clamp(tdr->dEg() * 128, 0, 255);
-		col.b = MathStuff::clamp(tdr->dEb() * 128, 0, 255);
+		col.r = MathStuff::clamp(tdr->rgbEnd().r * 128, 0, 255);
+		col.g = MathStuff::clamp(tdr->rgbEnd().g * 128, 0, 255);
+		col.b = MathStuff::clamp(tdr->rgbEnd().b * 128, 0, 255);
 		cb_range_end_->setColour(col);
 		gb_gradient_->setEndCol(col);
 
 		// Update UI
 		gb_gradient_->Refresh();
 	}
-	else if (tr->type() == TransRange::Blend)
+	else if (tr->type() == TransRange::Type::Blend)
 	{
 		// Colourise range
 		auto tcr = (TransRangeBlend*)tr;
@@ -504,7 +504,7 @@ void TranslationEditorDialog::openRange(int index)
 		// Set colour
 		cb_target_tint_->setColour(tcr->colour());
 	}
-	else if (tr->type() == TransRange::Tint)
+	else if (tr->type() == TransRange::Type::Tint)
 	{
 		// Tint range
 		auto ttr = (TransRangeTint*)tr;
@@ -552,15 +552,15 @@ void TranslationEditorDialog::setStartColour(ColRGBA col)
 	auto tr = translation_.range(list_translations_->GetSelection());
 
 	// Check its type
-	if (tr->type() == TransRange::Colour)
+	if (tr->type() == TransRange::Type::Colour)
 	{
 		// Colour range
 		auto tcr = (TransRangeColour*)tr;
 
 		// Set destination start colour
-		tcr->setDStart(col);
+		tcr->setStartColour(col);
 	}
-	else if (tr->type() == TransRange::Desat)
+	else if (tr->type() == TransRange::Type::Desat)
 	{
 		// Desaturated colour range
 		auto tdr = (TransRangeDesat*)tr;
@@ -592,15 +592,15 @@ void TranslationEditorDialog::setEndColour(ColRGBA col)
 	auto tr = translation_.range(list_translations_->GetSelection());
 
 	// Check its type
-	if (tr->type() == TransRange::Colour)
+	if (tr->type() == TransRange::Type::Colour)
 	{
 		// Colour range
 		auto tcr = (TransRangeColour*)tr;
 
 		// Set destination end colour
-		tcr->setDEnd(col);
+		tcr->setEndColour(col);
 	}
-	else if (tr->type() == TransRange::Desat)
+	else if (tr->type() == TransRange::Type::Desat)
 	{
 		// Desaturated colour range
 		auto tdr = (TransRangeDesat*)tr;
@@ -632,7 +632,7 @@ void TranslationEditorDialog::setTintColour(ColRGBA col)
 	auto tr = translation_.range(list_translations_->GetSelection());
 
 	// Check its type
-	if (tr->type() == TransRange::Blend)
+	if (tr->type() == TransRange::Type::Blend)
 	{
 		// Colour range
 		auto tcr = (TransRangeBlend*)tr;
@@ -640,7 +640,7 @@ void TranslationEditorDialog::setTintColour(ColRGBA col)
 		// Set destination end colour
 		tcr->setColour(col);
 	}
-	else if (tr->type() == TransRange::Tint)
+	else if (tr->type() == TransRange::Type::Tint)
 	{
 		// Desaturated colour range
 		auto ttr = (TransRangeTint*)tr;
@@ -663,7 +663,7 @@ void TranslationEditorDialog::setTintAmount(int amount)
 	auto tr = translation_.range(list_translations_->GetSelection());
 
 	// Check its type
-	if (tr->type() == TransRange::Tint)
+	if (tr->type() == TransRange::Type::Tint)
 
 	{
 		// Desaturated colour range
@@ -864,11 +864,11 @@ void TranslationEditorDialog::onRBPaletteSelected(wxCommandEvent& e)
 		translation_.removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TransRange::Palette, index);
+		translation_.addRange(TransRange::Type::Palette, index);
 		auto tr = (TransRangePalette*)translation_.range(index);
 		// Origin range
-		tr->setOStart(pal_canvas_original_->selectionStart());
-		tr->setOEnd(pal_canvas_original_->selectionEnd());
+		tr->setStart(pal_canvas_original_->selectionStart());
+		tr->setEnd(pal_canvas_original_->selectionEnd());
 		// Target range
 		if (cb_target_reverse_->GetValue())
 		{
@@ -904,14 +904,14 @@ void TranslationEditorDialog::onRBColourSelected(wxCommandEvent& e)
 		translation_.removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TransRange::Colour, index);
+		translation_.addRange(TransRange::Type::Colour, index);
 		auto tr = (TransRangeColour*)translation_.range(index);
 		// Origin range
-		tr->setOStart(pal_canvas_original_->selectionStart());
-		tr->setOEnd(pal_canvas_original_->selectionEnd());
+		tr->setStart(pal_canvas_original_->selectionStart());
+		tr->setEnd(pal_canvas_original_->selectionEnd());
 		// Target colour gradient
-		tr->setDStart(cb_range_begin_->colour());
-		tr->setDEnd(cb_range_end_->colour());
+		tr->setStartColour(cb_range_begin_->colour());
+		tr->setEndColour(cb_range_end_->colour());
 
 		// Update UI
 		updateListItem(index);
@@ -937,11 +937,11 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e)
 		translation_.removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TransRange::Desat, index);
+		translation_.addRange(TransRange::Type::Desat, index);
 		auto tr = (TransRangeDesat*)translation_.range(index);
 		// Origin range
-		tr->setOStart(pal_canvas_original_->selectionStart());
-		tr->setOEnd(pal_canvas_original_->selectionEnd());
+		tr->setStart(pal_canvas_original_->selectionStart());
+		tr->setEnd(pal_canvas_original_->selectionEnd());
 		// Target colour gradient
 		auto sc = cb_range_begin_->colour();
 		auto ec = cb_range_end_->colour();
@@ -976,11 +976,11 @@ void TranslationEditorDialog::onRBColouriseSelected(wxCommandEvent& e)
 		translation_.removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TransRange::Blend, index);
+		translation_.addRange(TransRange::Type::Blend, index);
 		auto tr = (TransRangeBlend*)translation_.range(index);
 		// Origin range
-		tr->setOStart(pal_canvas_original_->selectionStart());
-		tr->setOEnd(pal_canvas_original_->selectionEnd());
+		tr->setStart(pal_canvas_original_->selectionStart());
+		tr->setEnd(pal_canvas_original_->selectionEnd());
 		// Target colour
 		tr->setColour(cb_target_tint_->colour());
 
@@ -1007,11 +1007,11 @@ void TranslationEditorDialog::onRBTintSelected(wxCommandEvent& e)
 		translation_.removeRange(index);
 
 		// Recreate it
-		translation_.addRange(TransRange::Tint, index);
+		translation_.addRange(TransRange::Type::Tint, index);
 		auto tr = (TransRangeTint*)translation_.range(index);
 		// Origin range
-		tr->setOStart(pal_canvas_original_->selectionStart());
-		tr->setOEnd(pal_canvas_original_->selectionEnd());
+		tr->setStart(pal_canvas_original_->selectionStart());
+		tr->setEnd(pal_canvas_original_->selectionEnd());
 		// Target colour
 		tr->setColour(cb_target_tint_->colour());
 		tr->setAmount(slider_tint_->GetValue());
@@ -1070,8 +1070,8 @@ void TranslationEditorDialog::onPalOriginLeftUp(wxMouseEvent& e)
 	// Update its origin range
 	if (tr)
 	{
-		tr->setOStart(pal_canvas_original_->selectionStart());
-		tr->setOEnd(pal_canvas_original_->selectionEnd());
+		tr->setStart(pal_canvas_original_->selectionStart());
+		tr->setEnd(pal_canvas_original_->selectionEnd());
 	}
 
 	// Update UI
@@ -1089,7 +1089,7 @@ void TranslationEditorDialog::onPalTargetLeftUp(wxMouseEvent& e)
 	auto tr = translation_.range(list_translations_->GetSelection());
 
 	// Update its target range if it's a palette translation
-	if (tr && tr->type() == TransRange::Palette)
+	if (tr && tr->type() == TransRange::Type::Palette)
 	{
 		auto tpr = (TransRangePalette*)tr;
 		if (cb_target_reverse_->GetValue())
@@ -1119,15 +1119,15 @@ void TranslationEditorDialog::onBtnAdd(wxCommandEvent& e)
 
 	// Add new range to translation depending on current type selection
 	if (rb_type_palette_->GetValue())
-		translation_.addRange(TransRange::Palette, index);
+		translation_.addRange(TransRange::Type::Palette, index);
 	else if (rb_type_colour_->GetValue())
-		translation_.addRange(TransRange::Colour, index);
+		translation_.addRange(TransRange::Type::Colour, index);
 	else if (rb_type_desaturate_->GetValue())
-		translation_.addRange(TransRange::Desat, index);
+		translation_.addRange(TransRange::Type::Desat, index);
 	else if (rb_type_colourise_->GetValue())
-		translation_.addRange(TransRange::Blend, index);
+		translation_.addRange(TransRange::Type::Blend, index);
 	else if (rb_type_tint_->GetValue())
-		translation_.addRange(TransRange::Tint, index);
+		translation_.addRange(TransRange::Type::Tint, index);
 
 	// Add it to the list
 	list_translations_->Insert(translation_.range(index)->asText(), index);
@@ -1331,7 +1331,7 @@ void TranslationEditorDialog::onCBTargetReverse(wxCommandEvent& e)
 	auto tr = translation_.range(list_translations_->GetSelection());
 
 	// Update its target range if it's a palette translation
-	if (tr && tr->type() == TransRange::Palette)
+	if (tr && tr->type() == TransRange::Type::Palette)
 	{
 		auto tpr = (TransRangePalette*)tr;
 		if (cb_target_reverse_->GetValue())

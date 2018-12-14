@@ -16,30 +16,21 @@ public:
 	};
 	struct ConvertOptions
 	{
-		Palette*     pal_current;
-		Palette*     pal_target;
-		Mask         mask_source;
+		Palette*     pal_current = nullptr;
+		Palette*     pal_target  = nullptr;
+		Mask         mask_source = Mask::Alpha;
 		ColRGBA      mask_colour;
-		uint8_t      alpha_threshold;
-		bool         transparency;
-		SImage::Type col_format;
-
-		ConvertOptions()
-		{
-			pal_current = pal_target = nullptr;
-			mask_source              = Mask::Alpha;
-			transparency             = true;
-			col_format               = SImage::Type::Unknown;
-			alpha_threshold          = 0;
-		}
+		uint8_t      alpha_threshold = 0;
+		bool         transparency    = true;
+		SImage::Type col_format      = SImage::Type::Unknown;
 	};
 
-	SIFormat(string id);
-	~SIFormat();
+	SIFormat(const string& id, const string& name = "Unknown", const string& ext = "dat", uint8_t reliability = 255);
+	virtual ~SIFormat() = default;
 
-	string id() { return id_; }
-	string name() { return name_; }
-	string extension() { return extension_; }
+	string id() const { return id_; }
+	string name() const { return name_; }
+	string extension() const { return extension_; }
 
 	virtual bool isThisFormat(MemChunk& mc) = 0;
 
@@ -95,7 +86,7 @@ public:
 	}
 
 	static void      initFormats();
-	static SIFormat* getFormat(string name);
+	static SIFormat* getFormat(const string& name);
 	static SIFormat* determineFormat(MemChunk& mc);
 	static SIFormat* unknownFormat();
 	static SIFormat* rawFormat();
@@ -105,14 +96,14 @@ public:
 
 protected:
 	string  id_;
-	string  name_;
-	string  extension_;
-	uint8_t reliability_;
+	string  name_        = "Unknown";
+	string  extension_   = "dat";
+	uint8_t reliability_ = 255;
 
 	// Stuff to access protected image data
-	uint8_t* imageData(SImage& image) { return image.data_; }
-	uint8_t* imageMask(SImage& image) { return image.mask_; }
-	Palette& imagePalette(SImage& image) { return image.palette_; }
+	uint8_t* imageData(SImage& image) const { return image.data_.data(); }
+	uint8_t* imageMask(SImage& image) const { return image.mask_.data(); }
+	Palette& imagePalette(SImage& image) const { return image.palette_; }
 
 	virtual bool readImage(SImage& image, MemChunk& data, int index) = 0;
 	virtual bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) { return false; }

@@ -5,16 +5,16 @@
 class PaletteManager
 {
 public:
-	PaletteManager();
-	~PaletteManager();
+	PaletteManager()  = default;
+	~PaletteManager() = default;
 
 	bool     init();
-	bool     addPalette(Palette::UPtr pal, string name);
+	bool     addPalette(Palette::UPtr pal, const string& name);
 	int      numPalettes() const { return (int)palettes_.size(); }
 	Palette* defaultPalette() { return &pal_default_; }
 	Palette* globalPalette();
 	Palette* palette(int index);
-	Palette* palette(string name);
+	Palette* palette(const string& name);
 	string   palName(int index);
 	string   palName(Palette* pal);
 

@@ -4,16 +4,13 @@
 class SIFDoomGfx : public SIFormat
 {
 public:
-	SIFDoomGfx(string id = "doom") : SIFormat(id)
+	SIFDoomGfx(const string& id = "doom", const string& name = "Doom Gfx", int reliability = 230) :
+		SIFormat(id, name, "lmp", reliability)
 	{
-		name_        = "Doom Gfx";
-		extension_   = "lmp";
-		reliability_ = 230;
 	}
+	~SIFDoomGfx() = default;
 
-	~SIFDoomGfx() {}
-
-	virtual bool isThisFormat(MemChunk& mc)
+	bool isThisFormat(MemChunk& mc) override
 	{
 		if (EntryDataFormat::format("img_doom")->isThisFormat(mc))
 			return true;
@@ -21,7 +18,7 @@ public:
 			return false;
 	}
 
-	virtual SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -41,7 +38,7 @@ public:
 		return info;
 	}
 
-	virtual Writable canWrite(SImage& image)
+	Writable canWrite(SImage& image) override
 	{
 		// Must be converted to paletted to be written
 		if (image.type() == SImage::Type::PalMask)
@@ -50,7 +47,7 @@ public:
 			return Writable::Convert;
 	}
 
-	virtual bool canWriteType(SImage::Type type)
+	bool canWriteType(SImage::Type type) override
 	{
 		// Doom format gfx can only be written as paletted
 		if (type == SImage::Type::PalMask)
@@ -59,7 +56,7 @@ public:
 			return false;
 	}
 
-	virtual bool convertWritable(SImage& image, ConvertOptions opt)
+	bool convertWritable(SImage& image, ConvertOptions opt) override
 	{
 		// Do mask conversion
 		if (!opt.transparency)
@@ -75,7 +72,7 @@ public:
 		return true;
 	}
 
-	virtual bool writeOffset(SImage& image, ArchiveEntry* entry, Vec2i offset)
+	bool writeOffset(SImage& image, ArchiveEntry* entry, Vec2i offset) override
 	{
 		MemChunk mc;
 		image.setXOffset(offset.x);
@@ -84,14 +81,14 @@ public:
 	}
 
 protected:
-	bool readDoomFormat(SImage& image, MemChunk& data, int version)
+	bool readDoomFormat(SImage& image, MemChunk& data, int version) const
 	{
 		// Init variables
-		const uint8_t* gfx_data = data.data();
-		int            width    = 0;
-		int            height   = 0;
-		int            offset_x = 0;
-		int            offset_y = 0;
+		auto gfx_data = data.data();
+		int  width    = 0;
+		int  height   = 0;
+		int  offset_x = 0;
+		int  offset_y = 0;
 
 		// Read header
 		uint8_t hdr_size = 0;
@@ -105,12 +102,12 @@ protected:
 		}
 		else
 		{
-			Graphics::PatchHeader* header = (Graphics::PatchHeader*)gfx_data;
-			width                         = wxINT16_SWAP_ON_BE(header->width);
-			height                        = wxINT16_SWAP_ON_BE(header->height);
-			offset_x                      = wxINT16_SWAP_ON_BE(header->left);
-			offset_y                      = wxINT16_SWAP_ON_BE(header->top);
-			hdr_size                      = 8;
+			auto header = (Graphics::PatchHeader*)gfx_data;
+			width       = wxINT16_SWAP_ON_BE(header->width);
+			height      = wxINT16_SWAP_ON_BE(header->height);
+			offset_x    = wxINT16_SWAP_ON_BE(header->left);
+			offset_y    = wxINT16_SWAP_ON_BE(header->top);
+			hdr_size    = 8;
 		}
 
 		// Create image
@@ -120,13 +117,13 @@ protected:
 		vector<uint32_t> col_offsets(width);
 		if (version > 0)
 		{
-			uint16_t* c_ofs = (uint16_t*)((uint8_t*)gfx_data + hdr_size);
+			auto c_ofs = (uint16_t*)((uint8_t*)gfx_data + hdr_size);
 			for (int a = 0; a < width; a++)
 				col_offsets[a] = wxUINT16_SWAP_ON_BE(c_ofs[a]);
 		}
 		else
 		{
-			uint32_t* c_ofs = (uint32_t*)((uint8_t*)gfx_data + hdr_size);
+			auto c_ofs = (uint32_t*)((uint8_t*)gfx_data + hdr_size);
 			for (int a = 0; a < width; a++)
 				col_offsets[a] = wxUINT32_SWAP_ON_BE(c_ofs[a]);
 		}
@@ -163,7 +160,7 @@ protected:
 		for (int c = 0; c < width; c++)
 		{
 			// Get current column offset (byteswap if needed)
-			uint32_t col_offset = col_offsets[c]; // wxUINT32_SWAP_ON_BE(col_offsets[c]);
+			auto col_offset = col_offsets[c]; // wxUINT32_SWAP_ON_BE(col_offsets[c]);
 
 			// Check column offset is valid
 			if (col_offset >= data.size())
@@ -175,10 +172,10 @@ protected:
 
 			// Read posts
 			int top = -1;
-			while (1)
+			while (true)
 			{
 				// Get row offset
-				uint8_t row = *bits;
+				auto row = *bits;
 
 				if (row == 0xFF) // End of column?
 					break;
@@ -234,14 +231,14 @@ protected:
 		return true;
 	}
 
-	virtual bool readImage(SImage& image, MemChunk& data, int index) { return readDoomFormat(image, data, 0); }
+	bool readImage(SImage& image, MemChunk& data, int index) override { return readDoomFormat(image, data, 0); }
 
-	virtual bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
+	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
 	{
 		// Convert image to column/post structure
 		vector<Column> columns;
-		uint8_t*       data = imageData(image);
-		uint8_t*       mask = imageMask(image);
+		auto           data = imageData(image);
+		auto           mask = imageMask(image);
 
 		// Go through columns
 		uint32_t offset = 0;
@@ -365,8 +362,8 @@ protected:
 		out.write(&header.top, 2);
 
 		// Write dummy column offsets for now
-		uint32_t* col_offsets = new uint32_t[columns.size()];
-		out.write(col_offsets, columns.size() * 4);
+		vector<uint32_t> col_offsets(columns.size());
+		out.write(col_offsets.data(), columns.size() * 4);
 
 		// Write columns
 		for (size_t c = 0; c < columns.size(); c++)
@@ -376,32 +373,32 @@ protected:
 
 			// Determine column size (in bytes)
 			uint32_t col_size = 0;
-			for (size_t p = 0; p < columns[c].posts.size(); p++)
-				col_size += columns[c].posts[p].pixels.size() + 4;
+			for (auto& post : columns[c].posts)
+				col_size += post.pixels.size() + 4;
 
 			// Allocate memory to write the column data
 			out.reSize(out.size() + col_size, true);
 
 			// Write column posts
-			for (size_t p = 0; p < columns[c].posts.size(); p++)
+			for (auto& post : columns[c].posts)
 			{
 				// Write row offset
-				out.write(&columns[c].posts[p].row_off, 1);
+				out.write(&post.row_off, 1);
 
 				// Write no. of pixels
-				uint8_t npix = columns[c].posts[p].pixels.size();
+				uint8_t npix = post.pixels.size();
 				out.write(&npix, 1);
 
 				// Write unused byte
-				uint8_t temp = (npix > 0) ? columns[c].posts[p].pixels[0] : 0;
+				uint8_t temp = (npix > 0) ? post.pixels[0] : 0;
 				out.write(&temp, 1);
 
 				// Write pixels
-				for (size_t a = 0; a < columns[c].posts[p].pixels.size(); a++)
-					out.write(&columns[c].posts[p].pixels[a], 1);
+				for (auto& pixel : post.pixels)
+					out.write(&pixel, 1);
 
 				// Write unused byte
-				temp = (npix > 0) ? columns[c].posts[p].pixels.back() : 0;
+				temp = (npix > 0) ? post.pixels.back() : 0;
 				out.write(&temp, 1);
 			}
 
@@ -412,10 +409,7 @@ protected:
 
 		// Now we write column offsets
 		out.seek(8, SEEK_SET);
-		out.write(col_offsets, columns.size() * 4);
-
-		// Clean up
-		delete[] col_offsets;
+		out.write(col_offsets.data(), columns.size() * 4);
 
 		return true;
 	}
@@ -437,56 +431,36 @@ private:
 class SIFDoomBetaGfx : public SIFDoomGfx
 {
 public:
-	SIFDoomBetaGfx() : SIFDoomGfx("doom_beta")
-	{
-		this->name_        = "Doom Gfx (Beta)";
-		this->reliability_ = 160;
-	}
-	~SIFDoomBetaGfx();
+	SIFDoomBetaGfx() : SIFDoomGfx("doom_beta", "Doom Gfx (Beta)", 160) {}
+	~SIFDoomBetaGfx() = default;
 
-	bool isThisFormat(MemChunk& mc)
-	{
-		if (EntryDataFormat::format("img_doom_beta")->isThisFormat(mc))
-			return true;
-		else
-			return false;
-	}
+	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_beta")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
-		SImage::Info info = SIFDoomGfx::info(mc, index);
-		info.format       = id_;
+		auto info   = SIFDoomGfx::info(mc, index);
+		info.format = id_;
 		return info;
 	}
 
 	// Cannot write this format
-	Writable canWrite(SImage& image) { return Writable::No; }
-	bool     canWriteType(SImage::Type type) { return false; }
-	bool     convertWritable(SImage& image, ConvertOptions opt) { return false; }
+	Writable canWrite(SImage& image) override { return Writable::No; }
+	bool     canWriteType(SImage::Type type) override { return false; }
+	bool     convertWritable(SImage& image, ConvertOptions opt) override { return false; }
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) { return readDoomFormat(image, data, 1); }
+	bool readImage(SImage& image, MemChunk& data, int index) override { return readDoomFormat(image, data, 1); }
 };
 
 class SIFDoomAlphaGfx : public SIFDoomGfx
 {
 public:
-	SIFDoomAlphaGfx() : SIFDoomGfx("doom_alpha")
-	{
-		this->name_        = "Doom Gfx (Alpha)";
-		this->reliability_ = 100;
-	}
-	~SIFDoomAlphaGfx();
+	SIFDoomAlphaGfx() : SIFDoomGfx("doom_alpha", "Doom Gfx (Alpha)", 100) {}
+	~SIFDoomAlphaGfx() = default;
 
-	bool isThisFormat(MemChunk& mc)
-	{
-		if (EntryDataFormat::format("img_doom_alpha")->isThisFormat(mc))
-			return true;
-		else
-			return false;
-	}
+	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_alpha")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -502,34 +476,23 @@ public:
 	}
 
 	// Cannot write this format
-	Writable canWrite(SImage& image) { return Writable::No; }
-	bool     canWriteType(SImage::Type type) { return false; }
-	bool     convertWritable(SImage& image, ConvertOptions opt) { return false; }
+	Writable canWrite(SImage& image) override { return Writable::No; }
+	bool     canWriteType(SImage::Type type) override { return false; }
+	bool     convertWritable(SImage& image, ConvertOptions opt) override { return false; }
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) { return readDoomFormat(image, data, 2); }
+	bool readImage(SImage& image, MemChunk& data, int index) override { return readDoomFormat(image, data, 2); }
 };
 
 class SIFDoomArah : public SIFormat
 {
 public:
-	SIFDoomArah() : SIFormat("doom_arah")
-	{
-		name_        = "Doom Arah";
-		extension_   = "lmp";
-		reliability_ = 100;
-	}
-	~SIFDoomArah() {}
+	SIFDoomArah() : SIFormat("doom_arah", "Doom Arah", "lmp", 100) {}
+	~SIFDoomArah() = default;
 
-	bool isThisFormat(MemChunk& mc)
-	{
-		if (EntryDataFormat::format("img_doom_arah")->isThisFormat(mc))
-			return true;
-		else
-			return false;
-	}
+	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_arah")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -549,7 +512,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Setup variables
 		Graphics::PatchHeader header;
@@ -586,22 +549,12 @@ protected:
 class SIFDoomSnea : public SIFormat
 {
 public:
-	SIFDoomSnea() : SIFormat("doom_snea")
-	{
-		name_      = "Doom Snea";
-		extension_ = "lmp";
-	};
-	~SIFDoomSnea() {}
+	SIFDoomSnea() : SIFormat("doom_snea", "Doom Snea", "lmp") {}
+	~SIFDoomSnea() = default;
 
-	bool isThisFormat(MemChunk& mc)
-	{
-		if (EntryDataFormat::format("img_doom_snea")->isThisFormat(mc))
-			return true;
-		else
-			return false;
-	}
+	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_snea")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -616,7 +569,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Check/setup size
 		uint8_t qwidth = data[0];
@@ -636,12 +589,12 @@ protected:
 		image.create(width, height, SImage::Type::PalMask);
 
 		// Read raw pixel data
-		uint8_t* img_data = imageData(image);
+		auto img_data = imageData(image);
 
-		const uint8_t* entryend = data.data() + size;
-		const uint8_t* pixel    = data.data() + 2;
-		uint8_t*       dataend  = img_data + size - 2;
-		uint8_t*       brush    = img_data;
+		auto entryend = data.data() + size;
+		auto pixel    = data.data() + 2;
+		auto dataend  = img_data + size - 2;
+		auto brush    = img_data;
 
 		// Algorithm taken from DeuTex.
 		// I do not pretend to understand it,
@@ -665,23 +618,12 @@ protected:
 class SIFDoomPSX : public SIFormat
 {
 public:
-	SIFDoomPSX() : SIFormat("doom_psx")
-	{
-		name_        = "Doom PSX";
-		extension_   = "lmp";
-		reliability_ = 100;
-	}
-	~SIFDoomPSX() {}
+	SIFDoomPSX() : SIFormat("doom_psx", "Doom PSX", "lmp", 100) {}
+	~SIFDoomPSX() = default;
 
-	bool isThisFormat(MemChunk& mc)
-	{
-		if (EntryDataFormat::format("img_doom_psx")->isThisFormat(mc))
-			return true;
-		else
-			return false;
-	}
+	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_psx")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -701,7 +643,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Setup variables
 		Graphics::PSXPicHeader header;
@@ -713,8 +655,8 @@ protected:
 
 		// Create image
 		image.create(width, height, SImage::Type::PalMask);
-		uint8_t* img_data = imageData(image);
-		uint8_t* img_mask = imageMask(image);
+		auto img_data = imageData(image);
+		auto img_mask = imageMask(image);
 
 		// Read raw pixel data
 		data.read(img_data, width * height, 8);
@@ -738,23 +680,12 @@ protected:
 class SIFDoomJaguar : public SIFormat
 {
 public:
-	SIFDoomJaguar() : SIFormat("doom_jaguar")
-	{
-		name_        = "Doom Jaguar";
-		extension_   = "lmp";
-		reliability_ = 85;
-	}
-	~SIFDoomJaguar() {}
+	SIFDoomJaguar() : SIFormat("doom_jaguar", "Doom Jaguar", "lmp", 85) {}
+	~SIFDoomJaguar() = default;
 
-	bool isThisFormat(MemChunk& mc)
-	{
-		if (EntryDataFormat::format("img_doom_jaguar")->isThisFormat(mc))
-			return true;
-		else
-			return false;
-	}
+	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_doom_jaguar")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -774,7 +705,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Setup variables
 		Graphics::JagPicHeader header;
@@ -786,8 +717,8 @@ protected:
 
 		// Create image
 		image.create(width, height, SImage::Type::PalMask);
-		uint8_t* img_data = imageData(image);
-		uint8_t* img_mask = imageMask(image);
+		auto img_data = imageData(image);
+		auto img_mask = imageMask(image);
 
 		// Create mask (all opaque)
 		image.fillAlpha(255);

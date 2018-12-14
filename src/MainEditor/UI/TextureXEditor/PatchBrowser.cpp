@@ -411,7 +411,7 @@ bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 		return false;
 
 	// Go through all textures in the list
-	for (unsigned a = 0; a < texturex->nTextures(); a++)
+	for (unsigned a = 0; a < texturex->size(); a++)
 	{
 		// Create browser item
 		PatchBrowserItem* item = new PatchBrowserItem(texturex->texture(a)->name(), parent, 1);

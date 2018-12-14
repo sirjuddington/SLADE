@@ -2,22 +2,12 @@
 class SIFQuakeGfx : public SIFormat
 {
 public:
-	SIFQuakeGfx() : SIFormat("quake")
-	{
-		name_      = "Quake Gfx";
-		extension_ = "dat";
-	}
-	~SIFQuakeGfx() {}
+	SIFQuakeGfx() : SIFormat("quake", "Quake Gfx", "dat") {}
+	~SIFQuakeGfx() = default;
 
-	bool isThisFormat(MemChunk& mc)
-	{
-		if (EntryDataFormat::format("img_quake")->isThisFormat(mc))
-			return true;
-		else
-			return false;
-	}
+	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_quake")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -39,7 +29,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Get image properties
 		int     width  = wxINT16_SWAP_ON_BE(*(const uint16_t*)(data.data()));
@@ -47,7 +37,7 @@ protected:
 		uint8_t mode   = data[3];
 
 		// Determine image type
-		SImage::Type type = SImage::Type::RGBA;
+		auto type = SImage::Type::RGBA;
 		if (mode == Palette || mode == Alpha)
 			type = SImage::Type::PalMask;
 		else if (mode == Intensity)
@@ -57,8 +47,8 @@ protected:
 		image.create(width, height, type);
 
 		// --- Read image data ---
-		uint8_t* img_data = imageData(image);
-		uint8_t* img_mask = imageMask(image);
+		auto img_data = imageData(image);
+		auto img_mask = imageMask(image);
 
 		// Paletted image
 		if (mode == Palette)
@@ -131,22 +121,12 @@ private:
 class SIFQuakeSprite : public SIFormat
 {
 public:
-	SIFQuakeSprite() : SIFormat("qspr")
-	{
-		name_      = "Quake Sprite";
-		extension_ = "dat";
-	}
-	~SIFQuakeSprite() {}
+	SIFQuakeSprite() : SIFormat("qspr", "Quake Sprite", "dat") {}
+	~SIFQuakeSprite() = default;
 
-	bool isThisFormat(MemChunk& mc)
-	{
-		if (EntryDataFormat::format("img_qspr")->isThisFormat(mc))
-			return true;
-		else
-			return false;
-	}
+	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_qspr")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		// Get image info
 		SImage::Info info;
@@ -156,7 +136,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Get image info
 		SImage::Info info;
@@ -172,8 +152,8 @@ protected:
 		image.setYOffset(info.offset_y);
 
 		// Load image data
-		uint8_t* img_data = imageData(image);
-		uint8_t* img_mask = imageMask(image);
+		auto img_data = imageData(image);
+		auto img_mask = imageMask(image);
 		memcpy(img_data, data.data() + imgofs + 16, info.width * info.height);
 		memset(img_mask, 0xFF, info.width * info.height);
 		for (int a = 0; a < info.width * info.height; ++a)
@@ -186,7 +166,7 @@ protected:
 	}
 
 private:
-	unsigned sprInfo(MemChunk& mc, int index, SImage::Info& info)
+	unsigned sprInfo(MemChunk& mc, int index, SImage::Info& info) const
 	{
 		// Setup variables
 		uint32_t maxheight = mc.readL32(16);
@@ -273,23 +253,12 @@ private:
 class SIFQuakeTex : public SIFormat
 {
 public:
-	SIFQuakeTex() : SIFormat("quaketex")
-	{
-		name_        = "Quake Texture";
-		extension_   = "dat";
-		reliability_ = 11;
-	}
-	~SIFQuakeTex() {}
+	SIFQuakeTex() : SIFormat("quaketex", "Quake Texture", "dat", 11) {}
+	~SIFQuakeTex() = default;
 
-	bool isThisFormat(MemChunk& mc)
-	{
-		if (EntryDataFormat::format("img_quaketex")->isThisFormat(mc))
-			return true;
-		else
-			return false;
-	}
+	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_quaketex")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -316,10 +285,10 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Get image info
-		SImage::Info info = this->info(data, index);
+		auto info = this->info(data, index);
 
 		// Find offset
 		uint32_t imgofs = data.readL32(24 + (index << 2));
@@ -334,29 +303,18 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) { return false; }
+	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override { return false; }
 };
 
 class SIFQuake2Wal : public SIFormat
 {
 public:
-	SIFQuake2Wal() : SIFormat("quake2wal")
-	{
-		name_        = "Quake II Wall";
-		extension_   = "dat";
-		reliability_ = 21;
-	}
-	~SIFQuake2Wal() {}
+	SIFQuake2Wal() : SIFormat("quake2wal", "Quake II Wall", "dat", 21) {}
+	~SIFQuake2Wal() = default;
 
-	bool isThisFormat(MemChunk& mc)
-	{
-		if (EntryDataFormat::format("img_quake2wal")->isThisFormat(mc))
-			return true;
-		else
-			return false;
-	}
+	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_quake2wal")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index)
+	SImage::Info info(MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -371,10 +329,10 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Get image info
-		SImage::Info info = this->info(data, index);
+		auto info = this->info(data, index);
 
 		// Sanitize index if needed
 		index %= info.numimages;

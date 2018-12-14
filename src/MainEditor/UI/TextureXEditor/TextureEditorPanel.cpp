@@ -435,7 +435,7 @@ bool TextureEditorPanel::openTexture(CTexture* tex, TextureXList* list)
 	// Set as current texture
 	if (!tex_current_)
 		tex_current_ = new CTexture();
-	tex_current_->copyTexture(tex);
+	tex_current_->copyTexture(*tex);
 	tex_current_->setList(list);
 
 	// Open texture in canvas

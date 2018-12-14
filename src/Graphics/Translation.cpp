@@ -61,7 +61,8 @@ EXTERN_CVAR(Float, col_greyscale_b)
 // Constants
 //
 // -----------------------------------------------------------------------------
-
+namespace
+{
 // Colours used by the "Ice" translation, based on the Hexen palette
 ColRGBA IceRange[16] = {
 	ColRGBA(10, 8, 18),     ColRGBA(15, 15, 26),    ColRGBA(20, 16, 36),    ColRGBA(30, 26, 46),
@@ -72,16 +73,17 @@ ColRGBA IceRange[16] = {
 
 enum SpecialBlend
 {
-	BLEND_ICE         = 0,
-	BLEND_DESAT_FIRST = 1,
-	BLEND_DESAT_LAST  = 31,
-	BLEND_INVERSE,
-	BLEND_RED,
-	BLEND_GREEN,
-	BLEND_BLUE,
-	BLEND_GOLD,
-	BLEND_INVALID,
+	Ice        = 0,
+	DesatFirst = 1,
+	DesatLast  = 31,
+	Inverse,
+	Red,
+	Green,
+	Blue,
+	Gold,
+	Invalid,
 };
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -90,20 +92,6 @@ enum SpecialBlend
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// Translation class constructor
-// -----------------------------------------------------------------------------
-Translation::Translation() : built_in_name_(""), desat_amount_(0) {}
-
-// -----------------------------------------------------------------------------
-// Translation class destructor
-// -----------------------------------------------------------------------------
-Translation::~Translation()
-{
-	for (auto& translation : translations_)
-		delete translation;
-}
 
 // -----------------------------------------------------------------------------
 // Parses a text definition [def] (in zdoom format, detailed here:
@@ -147,7 +135,7 @@ void Translation::parse(string def)
 	else if (test.StartsWith("desaturate,", &temp))
 	{
 		built_in_name_ = "Desaturate";
-		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(atoi(CHR(temp)), 31), 1);
+		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(std::stoi(CHR(temp)), 31), 1);
 		return;
 	}
 
@@ -155,7 +143,7 @@ void Translation::parse(string def)
 	else if (test.StartsWith("\"$@", &temp))
 	{
 		temp.RemoveLast(1); // remove the closing '\"'
-		ArchiveEntry* trantbl = App::archiveManager().getResourceEntry(temp);
+		auto trantbl = App::archiveManager().getResourceEntry(temp);
 
 		if (trantbl && trantbl->size() == 256)
 		{
@@ -179,7 +167,7 @@ void Translation::parse(string def)
 // -----------------------------------------------------------------------------
 // Parses a single translation range
 // -----------------------------------------------------------------------------
-void Translation::parseRange(string range)
+void Translation::parseRange(const string& range)
 {
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
@@ -238,22 +226,12 @@ void Translation::parseRange(string range)
 			return;
 
 		// Add translation
-		TransRangeColour* tr = new TransRangeColour();
+		ColRGBA col_start{ (uint8_t)sr, (uint8_t)sg, (uint8_t)sb };
+		ColRGBA col_end{ (uint8_t)sr, (uint8_t)sg, (uint8_t)sb };
 		if (reverse)
-		{
-			tr->o_start_ = o_end;
-			tr->o_end_   = o_start;
-			tr->d_start_.set(er, eg, eb);
-			tr->d_end_.set(sr, sg, sb);
-		}
+			translations_.emplace_back(new TransRangeColour{ { o_end, o_start }, col_end, col_start });
 		else
-		{
-			tr->o_start_ = o_start;
-			tr->o_end_   = o_end;
-			tr->d_start_.set(sr, sg, sb);
-			tr->d_end_.set(er, eg, eb);
-		}
-		translations_.push_back(tr);
+			translations_.emplace_back(new TransRangeColour{ { o_start, o_end }, col_start, col_end });
 	}
 	else if (tz.advIfNext('%'))
 	{
@@ -293,30 +271,10 @@ void Translation::parseRange(string range)
 			return;
 
 		// Add translation
-		TransRangeDesat* tr = new TransRangeDesat();
 		if (reverse)
-		{
-			tr->o_start_ = o_end;
-			tr->o_end_   = o_start;
-			tr->d_sr_    = er;
-			tr->d_sg_    = eg;
-			tr->d_sb_    = eb;
-			tr->d_er_    = sr;
-			tr->d_eg_    = sg;
-			tr->d_eb_    = sb;
-		}
+			translations_.emplace_back(new TransRangeDesat{ { o_end, o_start }, { er, eg, eb }, { sr, sg, sb } });
 		else
-		{
-			tr->o_start_ = o_start;
-			tr->o_end_   = o_end;
-			tr->d_sr_    = sr;
-			tr->d_sg_    = sg;
-			tr->d_sb_    = sb;
-			tr->d_er_    = er;
-			tr->d_eg_    = eg;
-			tr->d_eb_    = eb;
-		}
-		translations_.push_back(tr);
+			translations_.emplace_back(new TransRangeDesat{ { o_start, o_end }, { sr, sg, sb }, { er, eg, eb } });
 	}
 	else if (tz.advIfNext('#'))
 	{
@@ -334,11 +292,7 @@ void Translation::parseRange(string range)
 		if (!tz.advIfNext(']'))
 			return;
 
-		TransRangeBlend* tr = new TransRangeBlend();
-		tr->o_start_        = o_start;
-		tr->o_end_          = o_end;
-		tr->setColour(ColRGBA(r, g, b));
-		translations_.push_back(tr);
+		translations_.emplace_back(new TransRangeBlend{ { o_start, o_end }, { (uint8_t)r, (uint8_t)g, (uint8_t)b } });
 	}
 	else if (tz.advIfNext('@'))
 	{
@@ -358,20 +312,12 @@ void Translation::parseRange(string range)
 		if (!tz.advIfNext(']'))
 			return;
 
-		TransRangeTint* tr = new TransRangeTint();
-		tr->o_start_       = o_start;
-		tr->o_end_         = o_end;
-		tr->setColour(ColRGBA(r, g, b));
-		tr->setAmount(amount);
-		translations_.push_back(tr);
+		translations_.emplace_back(
+			new TransRangeTint{ { o_start, o_end }, { (uint8_t)r, (uint8_t)g, (uint8_t)b }, (uint8_t)amount });
 	}
 	else if (tz.advIfNext('$'))
 	{
-		TransRangeSpecial* tr = new TransRangeSpecial();
-		tr->o_start_          = o_start;
-		tr->o_end_            = o_end;
-		tr->special_          = tz.next().text; // special;
-		translations_.push_back(tr);
+		translations_.emplace_back(new TransRangeSpecial{ { o_start, o_end }, tz.next().text });
 	}
 	else
 	{
@@ -386,22 +332,10 @@ void Translation::parseRange(string range)
 			tz.next().toInt(d_end);
 
 		// Add translation
-		TransRangePalette* tr = new TransRangePalette();
 		if (reverse)
-		{
-			tr->o_start_ = o_end;
-			tr->o_end_   = o_start;
-			tr->d_start_ = d_end;
-			tr->d_end_   = d_start;
-		}
+			translations_.emplace_back(new TransRangePalette{ { o_end, o_start }, { d_end, d_start } });
 		else
-		{
-			tr->o_start_ = o_start;
-			tr->o_end_   = o_end;
-			tr->d_start_ = d_start;
-			tr->d_end_   = d_end;
-		}
-		translations_.push_back(tr);
+			translations_.emplace_back(new TransRangePalette{ { o_start, o_end }, { d_start, d_end } });
 	}
 }
 
@@ -429,14 +363,7 @@ void Translation::read(const uint8_t* data)
 			d_end = val;
 			// Only keep actual translations
 			if (o_start != d_start && o_end != d_end)
-			{
-				TransRangePalette* tr = new TransRangePalette();
-				tr->o_start_          = o_start;
-				tr->o_end_            = o_end;
-				tr->d_start_          = d_start;
-				tr->d_end_            = d_end;
-				translations_.push_back(tr);
-			}
+				translations_.emplace_back(new TransRangePalette{ { o_start, o_end }, { d_start, d_end } });
 			o_start = i;
 			d_start = data[i];
 		}
@@ -478,8 +405,6 @@ string Translation::asText()
 // -----------------------------------------------------------------------------
 void Translation::clear()
 {
-	for (auto& translation : translations_)
-		delete translation;
 	translations_.clear();
 	built_in_name_ = "";
 	desat_amount_  = 0;
@@ -488,7 +413,7 @@ void Translation::clear()
 // -----------------------------------------------------------------------------
 // Copies translation information from [copy]
 // -----------------------------------------------------------------------------
-void Translation::copy(Translation& copy)
+void Translation::copy(const Translation& copy)
 {
 	// Clear current definitions
 	clear();
@@ -496,18 +421,18 @@ void Translation::copy(Translation& copy)
 	// Copy translations
 	for (auto& translation : copy.translations_)
 	{
-		if (translation->type_ == TransRange::Palette)
-			translations_.push_back(new TransRangePalette((TransRangePalette*)translation));
-		if (translation->type_ == TransRange::Colour)
-			translations_.push_back(new TransRangeColour((TransRangeColour*)translation));
-		if (translation->type_ == TransRange::Desat)
-			translations_.push_back(new TransRangeDesat((TransRangeDesat*)translation));
-		if (translation->type_ == TransRange::Blend)
-			translations_.push_back(new TransRangeBlend((TransRangeBlend*)translation));
-		if (translation->type_ == TransRange::Tint)
-			translations_.push_back(new TransRangeTint((TransRangeTint*)translation));
-		if (translation->type_ == TransRange::Special)
-			translations_.push_back(new TransRangeSpecial((TransRangeSpecial*)translation));
+		if (translation->type() == TransRange::Type::Palette)
+			translations_.emplace_back(new TransRangePalette{ dynamic_cast<TransRangePalette&>(*translation) });
+		if (translation->type_ == TransRange::Type::Colour)
+			translations_.emplace_back(new TransRangeColour{ dynamic_cast<TransRangeColour&>(*translation) });
+		if (translation->type_ == TransRange::Type::Desat)
+			translations_.emplace_back(new TransRangeDesat{ dynamic_cast<TransRangeDesat&>(*translation) });
+		if (translation->type_ == TransRange::Type::Blend)
+			translations_.emplace_back(new TransRangeBlend{ dynamic_cast<TransRangeBlend&>(*translation) });
+		if (translation->type_ == TransRange::Type::Tint)
+			translations_.emplace_back(new TransRangeTint{ dynamic_cast<TransRangeTint&>(*translation) });
+		if (translation->type_ == TransRange::Type::Special)
+			translations_.emplace_back(new TransRangeSpecial{ dynamic_cast<TransRangeSpecial&>(*translation) });
 	}
 
 	built_in_name_ = copy.built_in_name_;
@@ -522,7 +447,7 @@ TransRange* Translation::range(unsigned index)
 	if (index >= translations_.size())
 		return nullptr;
 	else
-		return translations_[index];
+		return translations_[index].get();
 }
 
 // -----------------------------------------------------------------------------
@@ -540,19 +465,19 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 	// blue, gold, green, red, ice, inverse, and desaturate
 	if (!built_in_name_.empty())
 	{
-		uint8_t type = BLEND_INVALID;
+		int type = SpecialBlend::Invalid;
 		if (S_CMPNOCASE(built_in_name_, "ice"))
-			type = SpecialBlend::BLEND_ICE;
+			type = SpecialBlend::Ice;
 		else if (S_CMPNOCASE(built_in_name_, "inverse"))
-			type = SpecialBlend::BLEND_INVERSE;
+			type = SpecialBlend::Inverse;
 		else if (S_CMPNOCASE(built_in_name_, "red"))
-			type = SpecialBlend::BLEND_RED;
+			type = SpecialBlend::Red;
 		else if (S_CMPNOCASE(built_in_name_, "green"))
-			type = SpecialBlend::BLEND_GREEN;
+			type = SpecialBlend::Green;
 		else if (S_CMPNOCASE(built_in_name_, "blue"))
-			type = SpecialBlend::BLEND_BLUE;
+			type = SpecialBlend::Blue;
 		else if (S_CMPNOCASE(built_in_name_, "gold"))
-			type = SpecialBlend::BLEND_GOLD;
+			type = SpecialBlend::Gold;
 		else if (S_CMPNOCASE(built_in_name_, "desaturate"))
 			type = desat_amount_; // min 1, max 31 required
 
@@ -563,33 +488,34 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 	bool match = col.equals(pal->colour(i));
 
 	// Go through each translation component
-	for (unsigned a = 0; a < nRanges(); a++)
+	// for (unsigned a = 0; a < nRanges(); a++)
+	for (auto& range : translations_)
 	{
-		TransRange* r = translations_[a];
+		// TransRange::UPtr& range = translations_[a];
 
 		// Check pixel is within translation range
-		if (i < r->oStart() || i > r->oEnd())
+		if (i < range->start() || i > range->end())
 			continue;
 
 		// Only allow exact matches unless the translation applies to all colours
-		if (!match && r->oStart() != 0 && r->oEnd() != 255)
+		if (!match && range->start() != 0 && range->end() != 255)
 			continue;
 
 		// Palette range translation
-		if (r->type() == TransRange::Palette)
+		if (range->type() == TransRange::Type::Palette)
 		{
-			TransRangePalette* tp = (TransRangePalette*)translations_[a];
+			auto tp = dynamic_cast<TransRangePalette*>(range.get());
 
 			// Figure out how far along the range this colour is
 			double range_frac = 0;
-			if (tp->oStart() != tp->oEnd())
-				range_frac = double(i - tp->oStart()) / double(tp->oEnd() - tp->oStart());
+			if (tp->start() != tp->end())
+				range_frac = double(i - tp->start()) / double(tp->end() - tp->start());
 
 			// Determine destination palette index
 			uint8_t di = tp->dStart() + range_frac * (tp->dEnd() - tp->dStart());
 
 			// Apply new colour
-			ColRGBA c    = pal->colour(di);
+			auto c       = pal->colour(di);
 			colour.r     = c.r;
 			colour.g     = c.g;
 			colour.b     = c.b;
@@ -598,45 +524,48 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 		}
 
 		// Colour range
-		else if (r->type() == TransRange::Colour)
+		else if (range->type() == TransRange::Type::Colour)
 		{
-			TransRangeColour* tc = (TransRangeColour*)r;
+			auto tc = dynamic_cast<TransRangeColour*>(range.get());
 
 			// Figure out how far along the range this colour is
 			double range_frac = 0;
-			if (tc->oStart() != tc->oEnd())
-				range_frac = double(i - tc->oStart()) / double(tc->oEnd() - tc->oStart());
+			if (tc->start() != tc->end())
+				range_frac = double(i - tc->start()) / double(tc->end() - tc->start());
 
 			// Apply new colour
-			colour.r     = tc->dStart().r + range_frac * (tc->dEnd().r - tc->dStart().r);
-			colour.g     = tc->dStart().g + range_frac * (tc->dEnd().g - tc->dStart().g);
-			colour.b     = tc->dStart().b + range_frac * (tc->dEnd().b - tc->dStart().b);
+			colour.r     = tc->startColour().r + range_frac * (tc->endColour().r - tc->startColour().r);
+			colour.g     = tc->startColour().g + range_frac * (tc->endColour().g - tc->startColour().g);
+			colour.b     = tc->startColour().b + range_frac * (tc->endColour().b - tc->startColour().b);
 			colour.index = pal->nearestColour(colour);
 		}
 
 		// Desaturated colour range
-		else if (r->type() == TransRange::Desat)
+		else if (range->type() == TransRange::Type::Desat)
 		{
-			TransRangeDesat* td = (TransRangeDesat*)r;
+			auto td = dynamic_cast<TransRangeDesat*>(range.get());
 
 			// Get greyscale colour
-			ColRGBA gcol = pal->colour(i);
-			float   grey = (gcol.r * 0.3f + gcol.g * 0.59f + gcol.b * 0.11f) / 255.0f;
+			auto  gcol = pal->colour(i);
+			float grey = (gcol.r * 0.3f + gcol.g * 0.59f + gcol.b * 0.11f) / 255.0f;
 
 			// Apply new colour
-			colour.r     = std::min<uint8_t>(255, int((td->dSr() + grey * (td->dEr() - td->dSr())) * 255.0f));
-			colour.g     = std::min<uint8_t>(255, int((td->dSg() + grey * (td->dEg() - td->dSg())) * 255.0f));
-			colour.b     = std::min<uint8_t>(255, int((td->dSb() + grey * (td->dEb() - td->dSb())) * 255.0f));
+			colour.r =
+				std::min<uint8_t>(255, int((td->rgbStart().r + grey * (td->rgbEnd().r - td->rgbStart().r)) * 255.0f));
+			colour.g =
+				std::min<uint8_t>(255, int((td->rgbStart().g + grey * (td->rgbEnd().g - td->rgbStart().g)) * 255.0f));
+			colour.b =
+				std::min<uint8_t>(255, int((td->rgbStart().b + grey * (td->rgbEnd().b - td->rgbStart().b)) * 255.0f));
 			colour.index = pal->nearestColour(colour);
 		}
 
 		// Blended range
-		else if (r->type() == TransRange::Blend)
+		else if (range->type() == TransRange::Type::Blend)
 		{
-			TransRangeBlend* tc = (TransRangeBlend*)r;
+			auto tc = dynamic_cast<TransRangeBlend*>(range.get());
 
 			// Get colours
-			ColRGBA blend = tc->colour();
+			auto blend = tc->colour();
 
 			// Colourise
 			float grey = (col.r * col_greyscale_r + col.g * col_greyscale_g + col.b * col_greyscale_b) / 255.0f;
@@ -651,43 +580,42 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 		}
 
 		// Tinted range
-		else if (r->type() == TransRange::Tint)
+		else if (range->type() == TransRange::Type::Tint)
 		{
-			TransRangeTint* tt = (TransRangeTint*)r;
+			auto tt = dynamic_cast<TransRangeTint*>(range.get());
 
 			// Get colours
-			ColRGBA tint = tt->colour();
+			auto tint = tt->colour();
 
 			// Colourise
 			float amount  = tt->amount() * 0.01f;
 			float inv_amt = 1.0f - amount;
 
 			// Apply new colour
-			colour.r = col.r * inv_amt + tint.r * amount;
-			;
+			colour.r     = col.r * inv_amt + tint.r * amount;
 			colour.g     = col.g * inv_amt + tint.g * amount;
 			colour.b     = col.b * inv_amt + tint.b * amount;
 			colour.index = pal->nearestColour(colour);
 		}
 
 		// Special range
-		else if (r->type() == TransRange::Special)
+		else if (range->type() == TransRange::Type::Special)
 		{
-			TransRangeSpecial* ts   = (TransRangeSpecial*)translations_[a];
-			string             spec = ts->special();
-			uint8_t            type = BLEND_INVALID;
+			auto    ts   = dynamic_cast<TransRangeSpecial*>(range.get());
+			string  spec = ts->special();
+			uint8_t type = Invalid;
 			if (S_CMPNOCASE(spec, "ice"))
-				type = SpecialBlend::BLEND_ICE;
+				type = SpecialBlend::Ice;
 			else if (S_CMPNOCASE(spec, "inverse"))
-				type = SpecialBlend::BLEND_INVERSE;
+				type = SpecialBlend::Inverse;
 			else if (S_CMPNOCASE(spec, "red"))
-				type = SpecialBlend::BLEND_RED;
+				type = SpecialBlend::Red;
 			else if (S_CMPNOCASE(spec, "green"))
-				type = SpecialBlend::BLEND_GREEN;
+				type = SpecialBlend::Green;
 			else if (S_CMPNOCASE(spec, "blue"))
-				type = SpecialBlend::BLEND_BLUE;
+				type = SpecialBlend::Blue;
 			else if (S_CMPNOCASE(spec, "gold"))
-				type = SpecialBlend::BLEND_GOLD;
+				type = SpecialBlend::Gold;
 			else if (spec.Lower().StartsWith("desat"))
 			{
 				// This relies on SpecialBlend::1 to ::31 being occupied with desat
@@ -705,24 +633,24 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 // Apply one of the special colour blending modes from ZDoom:
 // Desaturate, Ice, Inverse, Blue, Gold, Green, Red.
 // -----------------------------------------------------------------------------
-ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
+ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal) const
 {
 	// Abort just in case
-	if (type == SpecialBlend::BLEND_INVALID)
+	if (type == SpecialBlend::Invalid)
 		return col;
 
-	ColRGBA colour = col;
+	auto colour = col;
 
 	// Get greyscale using ZDoom formula
 	float grey = (col.r * 77 + col.g * 143 + col.b * 37) / 256.f;
 
 	// Ice is a special case as it uses a colour range derived
 	// from the Hexen palette instead of a linear gradient.
-	if (type == BLEND_ICE)
+	if (type == Ice)
 	{
 		// Determine destination palette index in IceRange
 		uint8_t di   = std::min<uint8_t>(((int)grey >> 4), 15);
-		ColRGBA c    = IceRange[di];
+		auto    c    = IceRange[di];
 		colour.r     = c.r;
 		colour.g     = c.g;
 		colour.b     = c.b;
@@ -730,7 +658,7 @@ ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 		colour.index = pal->nearestColour(colour);
 	}
 	// Desaturated blending goes from no effect to nearly fully desaturated
-	else if (type >= BLEND_DESAT_FIRST && type <= BLEND_DESAT_LAST)
+	else if (type >= DesatFirst && type <= DesatLast)
 	{
 		float amount = type - 1; // get value between 0 and 30
 
@@ -747,30 +675,30 @@ ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 
 		switch (type)
 		{
-		case BLEND_INVERSE:
+		case Inverse:
 			// inverted grayscale: Doom invulnerability, Strife sigil
 			// start white, ends black
 			sr = sg = sb = 1.0;
 			break;
-		case BLEND_GOLD:
+		case Gold:
 			// Heretic invulnerability
 			// starts black, ends reddish yellow
 			er = 1.5;
 			eg = 0.75;
 			break;
-		case BLEND_RED:
+		case Red:
 			// Skulltag doomsphere
 			// starts black, ends red
 			er = 1.5;
 			break;
-		case BLEND_GREEN:
+		case Green:
 			// Skulltag guardsphere
 			// starts black, ends greenish-white
 			er = 1.25;
 			eg = 1.5;
 			eb = 1.0;
 			break;
-		case BLEND_BLUE:
+		case Blue:
 			// Hacx invulnerability
 			// starts black, ends blue
 			eb = 1.5;
@@ -788,25 +716,26 @@ ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 // -----------------------------------------------------------------------------
 // Adds a new translation range of [type] at [pos] in the list
 // -----------------------------------------------------------------------------
-void Translation::addRange(int type, int pos)
+void Translation::addRange(TransRange::Type type, int pos)
 {
 	// Create range
-	TransRange* tr;
+	TransRange::UPtr       tr;
+	TransRange::IndexRange range{ 0, 0 };
 	switch (type)
 	{
-	case TransRange::Colour: tr = new TransRangeColour(); break;
-	case TransRange::Desat: tr = new TransRangeDesat(); break;
-	case TransRange::Blend: tr = new TransRangeBlend(); break;
-	case TransRange::Tint: tr = new TransRangeTint(); break;
-	case TransRange::Special: tr = new TransRangeSpecial(); break;
-	default: tr = new TransRangePalette(); break;
-	};
+	case TransRange::Type::Colour: tr = std::make_unique<TransRangeColour>(range); break;
+	case TransRange::Type::Desat: tr = std::make_unique<TransRangeDesat>(range); break;
+	case TransRange::Type::Blend: tr = std::make_unique<TransRangeBlend>(range); break;
+	case TransRange::Type::Tint: tr = std::make_unique<TransRangeTint>(range); break;
+	case TransRange::Type::Special: tr = std::make_unique<TransRangeSpecial>(range); break;
+	default: tr = std::make_unique<TransRangePalette>(range, range); break;
+	}
 
 	// Add to list
 	if (pos < 0 || pos >= (int)translations_.size())
-		translations_.push_back(tr);
+		translations_.push_back(std::move(tr));
 	else
-		translations_.insert(translations_.begin() + pos, tr);
+		translations_.insert(translations_.begin() + pos, std::move(tr));
 }
 
 // -----------------------------------------------------------------------------
@@ -821,7 +750,6 @@ void Translation::removeRange(int pos)
 		return;
 
 	// Remove it
-	delete translations_[pos];
 	translations_.erase(translations_.begin() + pos);
 }
 
@@ -835,9 +763,7 @@ void Translation::swapRanges(int pos1, int pos2)
 		return;
 
 	// Swap them
-	TransRange* temp    = translations_[pos1];
-	translations_[pos1] = translations_[pos2];
-	translations_[pos2] = temp;
+	translations_[pos1].swap(translations_[pos2]);
 }
 
 // -----------------------------------------------------------------------------

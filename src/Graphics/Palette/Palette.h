@@ -27,10 +27,10 @@ public:
 
 	Palette(unsigned size = 256);
 	Palette(Palette* pal) : Palette(pal->colours_.size()) { copyPalette(pal); }
-	~Palette();
+	~Palette() = default;
 
 	ColRGBA colour(uint8_t index) { return colours_[index]; }
-	short   transIndex() { return index_trans_; }
+	short   transIndex() const { return index_trans_; }
 
 	bool loadMem(MemChunk& mc);
 	bool loadMem(const uint8_t* data, uint32_t size);

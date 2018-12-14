@@ -1033,7 +1033,6 @@
     <ClCompile Include="..\..\src\Game\ThingType.cpp" />
     <ClCompile Include="..\..\src\Game\UDMFProperty.cpp" />
     <ClCompile Include="..\..\src\Game\ZScript.cpp" />
-    <ClCompile Include="..\..\src\General\Clipboard.cpp" />
     <ClCompile Include="..\..\src\General\ColourConfiguration.cpp" />
     <ClCompile Include="..\..\src\General\Console\Console.cpp" />
     <ClCompile Include="..\..\src\General\CVar.cpp" />

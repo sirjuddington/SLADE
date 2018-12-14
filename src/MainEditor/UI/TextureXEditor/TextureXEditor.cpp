@@ -542,7 +542,7 @@ bool TextureXEditor::checkTextures()
 	for (unsigned a = 0; a < texture_editors_.size(); a++)
 	{
 		// Go through all textures
-		for (unsigned t = 0; t < texture_editors_[a]->txList().nTextures(); t++)
+		for (unsigned t = 0; t < texture_editors_[a]->txList().size(); t++)
 		{
 			// Get texture
 			CTexture* tex = texture_editors_[a]->txList().texture(t);
@@ -837,17 +837,17 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 						ptt.addPatch("S3DUMMY");
 
 						// Create dummy texture
-						CTexture* dummytex = new CTexture();
+						auto dummytex = std::make_unique<CTexture>();
 						dummytex->setName("S3DUMMY");
 						dummytex->addPatch("S3DUMMY", 0, 0);
 						dummytex->setWidth(128);
 						dummytex->setHeight(128);
-						dummytex->setScale(0, 0);
+						dummytex->setScale({ 0., 0. });
 
 						// Add dummy texture to list
 						// (this serves two purposes - supplies the special 'invalid' texture by default,
 						//   and allows the texturex format to be detected)
-						txlist.addTexture(dummytex);
+						txlist.addTexture(std::move(dummytex));
 
 						// Add empty PNAMES entry to archive
 						entry_pnames = archive->addNewEntry("PNAMES");
