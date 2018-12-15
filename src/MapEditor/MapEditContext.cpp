@@ -526,7 +526,17 @@ void MapEditContext::setCursor(UI::MouseCursor cursor) const
 // ----------------------------------------------------------------------------
 void MapEditContext::forceRefreshRenderer()
 {
-	next_frame_length_ = 2;
+	// Update 3d mode info overlay if needed
+	if (edit_mode_ == Mode::Visual)
+	{
+		auto hl = renderer_.renderer3D().determineHilight();
+		info_3d_.update(hl.index, hl.type, &map_);
+	}
+
+	if (!canvas_->setActive())
+		return;
+
+	renderer_.forceUpdate();
 }
 
 // ----------------------------------------------------------------------------

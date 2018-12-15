@@ -77,7 +77,6 @@ Input::Input(MapEditContext& context) : context_{ context }
  *******************************************************************/
 bool Input::mouseMove(int new_x, int new_y)
 {
-	context_.forceRefreshRenderer();
 	// Check if a full screen overlay is active
 	if (context_.overlayActive())
 	{
@@ -193,7 +192,6 @@ bool Input::mouseMove(int new_x, int new_y)
  *******************************************************************/
 bool Input::mouseDown(MouseButton button, bool double_click)
 {
-	context_.forceRefreshRenderer();
 	// Update hilight
 	if (mouse_state_ == MouseState::Normal)
 		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
@@ -373,7 +371,6 @@ bool Input::mouseUp(MouseButton button)
 	if (context_.overlayActive())
 		return false;
 
-	context_.forceRefreshRenderer();
 	// Left button
 	if (button == Left)
 	{
@@ -442,7 +439,6 @@ bool Input::mouseUp(MouseButton button)
  *******************************************************************/
 void Input::mouseWheel(bool up, double amount)
 {
-	context_.forceRefreshRenderer();
 	mouse_wheel_speed_ = amount;
 
 	if (up)
@@ -498,7 +494,6 @@ void Input::updateKeyModifiersWx(int modifiers)
  *******************************************************************/
 bool Input::keyDown(const string& key) const
 {
-	context_.forceRefreshRenderer();
 	// Send to overlay if active
 	if (context_.overlayActive())
 		context_.currentOverlay()->keyDown(key);
@@ -512,7 +507,6 @@ bool Input::keyDown(const string& key) const
  *******************************************************************/
 bool Input::keyUp(const string& key) const
 {
-	context_.forceRefreshRenderer();
 	// Let keybind system handle it
 	return KeyBind::keyReleased(key);
 }
@@ -522,7 +516,6 @@ bool Input::keyUp(const string& key) const
  *******************************************************************/
 void Input::onKeyBindPress(string name)
 {
-	context_.forceRefreshRenderer();
 	// Check if an overlay is active
 	if (context_.overlayActive())
 	{
@@ -577,7 +570,6 @@ void Input::onKeyBindPress(string name)
  *******************************************************************/
 void Input::onKeyBindRelease(string name)
 {
-	context_.forceRefreshRenderer();
 	if (name == "me2d_pan_view" && panning_)
 	{
 		panning_ = false;
