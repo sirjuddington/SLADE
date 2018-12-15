@@ -151,6 +151,17 @@ void MapObject::copy(MapObject* c)
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if the object has a property matching [key]
+// -----------------------------------------------------------------------------
+bool MapObject::hasProp(const string& key)
+{
+	if (properties_.propertyExists(key))
+		return properties_[key].hasValue();
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the value of the boolean property matching [key]
 // -----------------------------------------------------------------------------
 bool MapObject::boolProperty(const string& key)

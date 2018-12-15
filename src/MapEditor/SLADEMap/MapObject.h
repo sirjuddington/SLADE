@@ -53,7 +53,7 @@ public:
 	void      setModified();
 
 	MobjPropertyList& props() { return properties_; }
-	bool              hasProp(const string& key) { return properties_[key].hasValue(); }
+	bool              hasProp(const string& key);
 
 	// Generic property modification
 	virtual bool   boolProperty(const string& key);
