@@ -12,8 +12,8 @@ public:
 		string		name;
 		Property	value;
 
-		prop_t(string name) { this->name = name; }
-		prop_t(string name, Property value)
+		prop_t(const string& name) { this->name = name; }
+		prop_t(const string& name, const Property& value)
 		{
 			this->name = name;
 			this->value = value;
@@ -24,22 +24,22 @@ public:
 	~MobjPropertyList();
 
 	// Operator for direct access to hash map
-	Property& operator[](string key)
+	Property& operator[](const string& key)
 	{
-		for (unsigned a = 0; a < properties.size(); ++a)
+		for (auto& prop : properties)
 		{
-			if (properties[a].name == key)
-				return properties[a].value;
+			if (prop.name == key)
+				return prop.value;
 		}
 
-		properties.push_back(prop_t(key));
+		properties.emplace_back(key);
 		return properties.back().value;
 	}
 
 	vector<prop_t>&	allProperties() { return properties; }
 
 	void	clear() { properties.clear(); }
-	bool	propertyExists(string key);
+	bool	propertyExists(const string& key);
 	bool	removeProperty(string key);
 	void	copyTo(MobjPropertyList& list);
 	void	addFlag(string key);

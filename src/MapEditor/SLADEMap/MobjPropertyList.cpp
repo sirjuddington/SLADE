@@ -54,7 +54,7 @@ MobjPropertyList::~MobjPropertyList()
  * Returns true if a property with the given name exists, false
  * otherwise
  *******************************************************************/
-bool MobjPropertyList::propertyExists(string key)
+bool MobjPropertyList::propertyExists(const string& key)
 {
 	for (unsigned a = 0; a < properties.size(); ++a)
 	{
