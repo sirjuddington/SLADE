@@ -35,6 +35,7 @@
 #include "Main.h"
 #include "ArchiveEntry.h"
 #include "Archive.h"
+#include "ArchiveManager.h"
 #include "General/Misc.h"
 #include "Utility/StringUtils.h"
 
@@ -129,19 +130,14 @@ string ArchiveEntry::getName(bool cut_ext) const
 		return name;
 
 	// Sanitize name if it contains the \ character (possible in WAD).
-	string saname = Misc::lumpNameToFileName(name);
+	string saname = name;
+	if (getParent() != App::archiveManager().programResourceArchive())
+		saname = Misc::lumpNameToFileName(name);
 
 	if (saname.Contains(StringUtils::FULLSTOP))
 		return saname.BeforeLast('.');
 	else
 		return saname;
-	/*
-	// cut extension through wx function
-	wxFileName fn(saname);
-
-	// Perform reverse operation and return
-	return Misc::fileNameToLumpName(fn.GetName());
-	*/
 }
 
 // ----------------------------------------------------------------------------
@@ -172,7 +168,7 @@ string ArchiveEntry::getUpperNameNoExt()
 //
 // Returns the entry's parent archive
 // ----------------------------------------------------------------------------
-Archive* ArchiveEntry::getParent()
+Archive* ArchiveEntry::getParent() const
 {
 	if (parent)
 		return parent->archive();

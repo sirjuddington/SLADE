@@ -61,7 +61,7 @@ public:
 	MemChunk&			getMCData(bool allow_load = true);
 	const uint8_t*		getData(bool allow_load = true);
 	ArchiveTreeNode*	getParentDir()		{ return parent; }
-	Archive*			getParent();
+	Archive*			getParent() const;
 	Archive*			getTopParent();
 	string				getPath(bool name = false) const;
 	EntryType*			getType()			{ return type; }
