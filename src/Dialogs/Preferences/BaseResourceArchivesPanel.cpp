@@ -182,9 +182,9 @@ void BaseResourceArchivesPanel::autodetect() const
 #ifndef WIN32
 				// Try a couple variants before throwing the towel about a name
 				if (!wxFileExists(iwad))
-					iwad = folder + iwadnames[j].Capitalize();
+					iwad = folder + iwadname.Capitalize();
 				if (!wxFileExists(iwad))
-					iwad = folder + iwadnames[j].Upper();
+					iwad = folder + iwadname.Upper();
 #endif
 				// If a valid combo is found, add it to the list unless already present
 				if (wxFileExists(iwad))
