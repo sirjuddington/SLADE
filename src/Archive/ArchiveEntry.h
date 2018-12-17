@@ -37,38 +37,38 @@ public:
 	~ArchiveEntry() = default;
 
 	// Accessors
-	string           name(bool cut_ext = false) const;
-	string           upperName() const { return upper_name_; }
-	string           upperNameNoExt() const;
-	uint32_t         size() const { return data_loaded_ ? data_.size() : size_; }
-	MemChunk&        data(bool allow_load = true);
-	const uint8_t*   rawData(bool allow_load = true);
-	ArchiveTreeNode* parentDir() const { return parent_; }
-	Archive*         parent() const;
-	Archive*         topParent() const;
-	string           path(bool name = false) const;
-	EntryType*       type() const { return type_; }
-	PropertyList&    exProps() { return ex_props_; }
+	string              name(bool cut_ext = false) const;
+	string              upperName() const { return upper_name_; }
+	string              upperNameNoExt() const;
+	uint32_t            size() const { return data_loaded_ ? data_.size() : size_; }
+	MemChunk&           data(bool allow_load = true);
+	const uint8_t*      rawData(bool allow_load = true);
+	ArchiveTreeNode*    parentDir() const { return parent_; }
+	Archive*            parent() const;
+	Archive*            topParent() const;
+	string              path(bool name = false) const;
+	EntryType*          type() const { return type_; }
+	PropertyList&       exProps() { return ex_props_; }
 	const PropertyList& exProps() const { return ex_props_; }
-	Property&        exProp(const string& key) { return ex_props_[key]; }
-	State          state() const { return state_; }
-	bool             isLocked() const { return locked_; }
-	bool             isLoaded() const { return data_loaded_; }
-	Encryption       encryption() const { return encrypted_; }
-	ArchiveEntry*    nextEntry() const { return next_; }
-	ArchiveEntry*    prevEntry() const { return prev_; }
-	SPtr             getShared();
+	Property&           exProp(const string& key) { return ex_props_[key]; }
+	State               state() const { return state_; }
+	bool                isLocked() const { return locked_; }
+	bool                isLoaded() const { return data_loaded_; }
+	Encryption          encryption() const { return encrypted_; }
+	ArchiveEntry*       nextEntry() const { return next_; }
+	ArchiveEntry*       prevEntry() const { return prev_; }
+	SPtr                getShared();
 
 	// Modifiers (won't change entry state, except setState of course :P)
 	void setName(const string& name)
 	{
-		name_ = name;
+		name_       = name;
 		upper_name_ = name.Upper();
 	}
 	void setLoaded(bool loaded = true) { data_loaded_ = loaded; }
 	void setType(EntryType* type, int r = 0)
 	{
-		type_  = type;
+		type_        = type;
 		reliability_ = r;
 	}
 	void setState(State state, bool silent = false);

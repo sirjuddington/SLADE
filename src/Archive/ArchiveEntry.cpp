@@ -97,16 +97,10 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 // -----------------------------------------------------------------------------
 string ArchiveEntry::name(bool cut_ext) const
 {
-	if (!cut_ext)
-		return name_;
+	if (cut_ext && name_.Contains(StringUtils::FULLSTOP))
+		return name_.BeforeLast('.');
 
-	// Sanitize name if it contains the \ character (possible in WAD).
-	string saname = Misc::lumpNameToFileName(name_);
-
-	if (saname.Contains(StringUtils::FULLSTOP))
-		return saname.BeforeLast('.');
-	else
-		return saname;
+	return name_;
 }
 
 // -----------------------------------------------------------------------------
@@ -115,9 +109,9 @@ string ArchiveEntry::name(bool cut_ext) const
 string ArchiveEntry::upperNameNoExt() const
 {
 	if (upper_name_.Contains(StringUtils::FULLSTOP))
-		return Misc::lumpNameToFileName(upper_name_).BeforeLast('.');
+		return upper_name_.BeforeLast('.');
 	else
-		return Misc::lumpNameToFileName(upper_name_);
+		return upper_name_;
 }
 
 // -----------------------------------------------------------------------------

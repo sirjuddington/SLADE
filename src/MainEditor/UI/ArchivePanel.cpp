@@ -729,14 +729,6 @@ bool ArchivePanel::newEntry(int type)
 	if (name.empty())
 		return false;
 
-	// Check for \ character (e.g., from Arch-Viles graphics). They have to be kept.
-	if (archive_->formatId() == "wad" && name.length() <= 8
-		&& (name.find('\\') != wxNOT_FOUND || name.find('/') != wxNOT_FOUND))
-	{ // Don't process as a file name // Remove any path from the name, if any (for now) else {
-		wxFileName fn(name);
-		name = fn.GetFullName();
-	}
-
 	// Get the entry index of the last selected list item
 	int index = archive_->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
 
