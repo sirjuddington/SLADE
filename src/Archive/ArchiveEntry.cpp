@@ -35,7 +35,6 @@
 #include "Main.h"
 #include "ArchiveEntry.h"
 #include "Archive.h"
-#include "ArchiveManager.h"
 #include "General/Misc.h"
 #include "Utility/StringUtils.h"
 
@@ -126,18 +125,10 @@ ArchiveEntry::~ArchiveEntry()
 // ----------------------------------------------------------------------------
 string ArchiveEntry::getName(bool cut_ext) const
 {
-	if (!cut_ext)
-		return name;
+	if (cut_ext && name.Contains(StringUtils::FULLSTOP))
+		return name.BeforeLast('.');
 
-	// Sanitize name if it contains the \ character (possible in WAD).
-	string saname = name;
-	if (getParent() != App::archiveManager().programResourceArchive())
-		saname = Misc::lumpNameToFileName(name);
-
-	if (saname.Contains(StringUtils::FULLSTOP))
-		return saname.BeforeLast('.');
-	else
-		return saname;
+	return name;
 }
 
 // ----------------------------------------------------------------------------
@@ -158,9 +149,9 @@ string ArchiveEntry::getUpperName()
 string ArchiveEntry::getUpperNameNoExt()
 {
 	if (upper_name.Contains(StringUtils::FULLSTOP))
-		return Misc::lumpNameToFileName(upper_name).BeforeLast('.');
+		return upper_name.BeforeLast('.');
 	else
-		return Misc::lumpNameToFileName(upper_name);
+		return upper_name;
 }
 
 // ----------------------------------------------------------------------------

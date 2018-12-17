@@ -34,6 +34,7 @@
 #include "WadArchive.h"
 #include "General/UI.h"
 #include <fstream>
+#include "General/Misc.h"
 
 
 /*******************************************************************
@@ -117,7 +118,7 @@ bool ZipArchive::open(string filename)
 			wxFileName fn(entry->GetName(wxPATH_UNIX), wxPATH_UNIX);
 
 			// Create entry
-			ArchiveEntry* new_entry = new ArchiveEntry(fn.GetFullName(), entry->GetSize());
+			ArchiveEntry* new_entry = new ArchiveEntry(Misc::fileNameToLumpName(fn.GetFullName()), entry->GetSize());
 
 			// Setup entry info
 			new_entry->setLoaded(false);
@@ -284,18 +285,19 @@ bool ZipArchive::write(string filename, bool update)
 		if (entries[a]->exProps().propertyExists("ZipIndex"))
 			index = entries[a]->exProp("ZipIndex");
 
+		auto saname = Misc::lumpNameToFileName(entries[a]->getName());
 		if (!inzip.IsOk() || entries[a]->getState() > 0 || index < 0 || index >= inzip.GetTotalEntries())
 		{
 			// If the current entry has been changed, or doesn't exist in the old zip,
 			// (re)compress its data and write it to the zip
-			wxZipEntry* zipentry = new wxZipEntry(entries[a]->getPath() + entries[a]->getName());
+			wxZipEntry* zipentry = new wxZipEntry(entries[a]->getPath() + saname);
 			zip.PutNextEntry(zipentry);
 			zip.Write(entries[a]->getData(), entries[a]->getSize());
 		}
 		else
 		{
 			// If the entry is unmodified and exists in the old zip, just copy it over
-			c_entries[index]->SetName(entries[a]->getPath() + entries[a]->getName());
+			c_entries[index]->SetName(entries[a]->getPath() + saname);
 			zip.CopyEntry(c_entries[index], inzip);
 			inzip.Reset();
 		}

@@ -519,7 +519,7 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
 	for (unsigned a = 0; a < node->numEntries(); a++)
 	{
 		if (node->entryAt(a))
-			node->entryAt(a)->setName(Misc::lumpNameToFileName(node->entryAt(a)->getName()));
+			node->entryAt(a)->setName(node->entryAt(a)->getName());
 
 		ArchiveEntry* nentry = new ArchiveEntry(*(node->entryAt(a)));
 		addEntry(nentry, position);
