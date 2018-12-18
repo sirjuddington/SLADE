@@ -61,14 +61,14 @@ private:
 	std::unique_ptr<ModMusic>        mod_;
 
 	bool open();
-	bool openAudio(MemChunk& audio, string filename);
-	bool openMidi(MemChunk& data, string filename);
+	bool openAudio(MemChunk& audio, const string& filename);
+	bool openMidi(MemChunk& data, const string& filename);
 	bool openMod(MemChunk& data);
-	bool openMedia(string filename);
-	bool updateInfo();
+	bool openMedia(const string& filename);
+	bool updateInfo() const;
 	void startStream();
-	void stopStream();
-	void resetStream();
+	void stopStream() const;
+	void resetStream() const;
 
 	// Events
 	void onBtnPlay(wxCommandEvent& e);

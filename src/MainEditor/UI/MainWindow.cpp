@@ -36,7 +36,6 @@
 #include "Archive/ArchiveManager.h"
 #include "ArchiveManagerPanel.h"
 #include "ArchivePanel.h"
-#include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
@@ -44,7 +43,6 @@
 #include "SLADEWxApp.h"
 #include "Scripting/ScriptManager.h"
 #include "StartPage.h"
-#include "TextureXEditor/TextureXEditor.h"
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Controls/ConsolePanel.h"
 #include "UI/Controls/PaletteChooser.h"
@@ -90,13 +88,13 @@ EXTERN_CVAR(Bool, tabs_condensed)
 class MainWindowDropTarget : public wxFileDropTarget
 {
 public:
-	MainWindowDropTarget() {}
-	~MainWindowDropTarget() {}
+	MainWindowDropTarget()  = default;
+	~MainWindowDropTarget() = default;
 
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
 	{
-		for (unsigned a = 0; a < filenames.size(); a++)
-			App::archiveManager().openArchive(filenames[a]);
+		for (const auto& filename : filenames)
+			App::archiveManager().openArchive(filename);
 
 		return true;
 	}
@@ -115,15 +113,14 @@ public:
 // -----------------------------------------------------------------------------
 MainWindow::MainWindow() : STopWindow("SLADE", "main")
 {
-	lasttipindex_       = 0;
 	custom_menus_begin_ = 2;
+
 	if (mw_maximized)
-		Maximize();
+		wxTopLevelWindow::Maximize();
+
 	setupLayout();
-	SetDropTarget(new MainWindowDropTarget());
-#ifdef USE_WEBVIEW_STARTPAGE
-	docs_page_ = nullptr;
-#endif
+
+	wxWindow::SetDropTarget(new MainWindowDropTarget());
 }
 
 // -----------------------------------------------------------------------------
@@ -137,7 +134,7 @@ MainWindow::~MainWindow()
 // -----------------------------------------------------------------------------
 // Loads the previously saved layout file for the window
 // -----------------------------------------------------------------------------
-void MainWindow::loadLayout()
+void MainWindow::loadLayout() const
 {
 	// Open layout file
 	Tokenizer tz;
@@ -164,7 +161,7 @@ void MainWindow::loadLayout()
 // -----------------------------------------------------------------------------
 // Saves the current window layout to a file
 // -----------------------------------------------------------------------------
-void MainWindow::saveLayout()
+void MainWindow::saveLayout() const
 {
 	// Open layout file
 	wxFile file(App::path("mainwindow.layout", App::Dir::User), wxFile::write);
@@ -229,7 +226,7 @@ void MainWindow::setupLayout()
 		start_page_->Show(false);
 
 	// -- Console Panel --
-	ConsolePanel* panel_console = new ConsolePanel(this, -1);
+	auto panel_console = new ConsolePanel(this, -1);
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
@@ -272,15 +269,15 @@ void MainWindow::setupLayout()
 
 
 	// -- Menu bar --
-	wxMenuBar* menu = new wxMenuBar();
+	auto menu = new wxMenuBar();
 	menu->SetThemeEnabled(false);
 
 	// File menu
-	wxMenu* file_new_menu = new wxMenu("");
+	auto file_new_menu = new wxMenu("");
 	SAction::fromId("aman_newwad")->addToMenu(file_new_menu, "&Wad Archive");
 	SAction::fromId("aman_newzip")->addToMenu(file_new_menu, "&Zip Archive");
 	SAction::fromId("aman_newmap")->addToMenu(file_new_menu, "&Map");
-	wxMenu* file_menu = new wxMenu("");
+	auto file_menu = new wxMenu("");
 	file_menu->AppendSubMenu(file_new_menu, "&New", "Create a new Archive");
 	SAction::fromId("aman_open")->addToMenu(file_menu);
 	SAction::fromId("aman_opendir")->addToMenu(file_menu);
@@ -297,7 +294,7 @@ void MainWindow::setupLayout()
 	menu->Append(file_menu, "&File");
 
 	// Edit menu
-	wxMenu* editor_menu = new wxMenu("");
+	auto editor_menu = new wxMenu("");
 	SAction::fromId("main_undo")->addToMenu(editor_menu);
 	SAction::fromId("main_redo")->addToMenu(editor_menu);
 	editor_menu->AppendSeparator();
@@ -306,7 +303,7 @@ void MainWindow::setupLayout()
 	menu->Append(editor_menu, "E&dit");
 
 	// View menu
-	wxMenu* view_menu = new wxMenu("");
+	auto view_menu = new wxMenu("");
 	SAction::fromId("main_showam")->addToMenu(view_menu);
 	SAction::fromId("main_showconsole")->addToMenu(view_menu);
 	SAction::fromId("main_showundohistory")->addToMenu(view_menu);
@@ -316,12 +313,12 @@ void MainWindow::setupLayout()
 	menu->Append(view_menu, "&View");
 
 	// Tools menu
-	wxMenu* tools_menu = new wxMenu("");
+	auto tools_menu = new wxMenu("");
 	SAction::fromId("main_runscript")->addToMenu(tools_menu);
 	menu->Append(tools_menu, "&Tools");
 
 	// Help menu
-	wxMenu* help_menu = new wxMenu("");
+	auto help_menu = new wxMenu("");
 	SAction::fromId("main_onlinedocs")->addToMenu(help_menu);
 	SAction::fromId("main_about")->addToMenu(help_menu);
 #ifdef __WXMSW__
@@ -338,7 +335,7 @@ void MainWindow::setupLayout()
 	toolbar_ = new SToolBar(this, true);
 
 	// Create File toolbar
-	SToolBarGroup* tbg_file = new SToolBarGroup(toolbar_, "_File");
+	auto tbg_file = new SToolBarGroup(toolbar_, "_File");
 	tbg_file->addActionButton("aman_newwad");
 	tbg_file->addActionButton("aman_newzip");
 	tbg_file->addActionButton("aman_open");
@@ -351,7 +348,7 @@ void MainWindow::setupLayout()
 	toolbar_->addGroup(tbg_file);
 
 	// Create Archive toolbar
-	SToolBarGroup* tbg_archive = new SToolBarGroup(toolbar_, "_Archive");
+	auto tbg_archive = new SToolBarGroup(toolbar_, "_Archive");
 	tbg_archive->addActionButton("arch_newentry");
 	tbg_archive->addActionButton("arch_newdir");
 	tbg_archive->addActionButton("arch_importfiles");
@@ -361,7 +358,7 @@ void MainWindow::setupLayout()
 	toolbar_->addGroup(tbg_archive);
 
 	// Create Entry toolbar
-	SToolBarGroup* tbg_entry = new SToolBarGroup(toolbar_, "_Entry");
+	auto tbg_entry = new SToolBarGroup(toolbar_, "_Entry");
 	tbg_entry->addActionButton("arch_entry_rename");
 	tbg_entry->addActionButton("arch_entry_delete");
 	tbg_entry->addActionButton("arch_entry_import");
@@ -371,15 +368,15 @@ void MainWindow::setupLayout()
 	toolbar_->addGroup(tbg_entry);
 
 	// Create Base Resource Archive toolbar
-	SToolBarGroup*       tbg_bra = new SToolBarGroup(toolbar_, "_Base Resource", true);
-	BaseResourceChooser* brc     = new BaseResourceChooser(tbg_bra);
+	auto tbg_bra = new SToolBarGroup(toolbar_, "_Base Resource", true);
+	auto brc     = new BaseResourceChooser(tbg_bra);
 	tbg_bra->addCustomControl(brc);
 	tbg_bra->addActionButton("main_setbra", "settings");
 	toolbar_->addGroup(tbg_bra);
 
 	// Create Palette Chooser toolbar
-	SToolBarGroup* tbg_palette = new SToolBarGroup(toolbar_, "_Palette", true);
-	palette_chooser_           = new PaletteChooser(tbg_palette, -1);
+	auto tbg_palette = new SToolBarGroup(toolbar_, "_Palette", true);
+	palette_chooser_ = new PaletteChooser(tbg_palette, -1);
 	palette_chooser_->selectPalette(global_palette);
 	tbg_palette->addCustomControl(palette_chooser_);
 	toolbar_->addGroup(tbg_palette);
@@ -519,7 +516,7 @@ void MainWindow::openStartPageTab()
 // Opens [entry] in its own tab
 // -----------------------------------------------------------------------------
 #ifdef USE_WEBVIEW_STARTPAGE
-void MainWindow::openDocs(string page_name)
+void MainWindow::openDocs(const string& page_name)
 {
 	// Check if docs tab is already open
 	bool found = false;
@@ -546,7 +543,7 @@ void MainWindow::openDocs(string page_name)
 	}
 
 	// Load specified page, if any
-	if (page_name != "")
+	if (!page_name.empty())
 		docs_page_->openPage(page_name);
 
 	// Refresh page
@@ -605,8 +602,8 @@ bool MainWindow::handleAction(string id)
 	// View->Archive Manager
 	if (id == "main_showam")
 	{
-		wxAuiManager*  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
-		wxAuiPaneInfo& p_inf = m_mgr->GetPane("archive_manager");
+		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
+		auto& p_inf = m_mgr->GetPane("archive_manager");
 		p_inf.Show(!p_inf.IsShown());
 		m_mgr->Update();
 		return true;
@@ -615,8 +612,8 @@ bool MainWindow::handleAction(string id)
 	// View->Console
 	if (id == "main_showconsole")
 	{
-		wxAuiManager*  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
-		wxAuiPaneInfo& p_inf = m_mgr->GetPane("console");
+		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
+		auto& p_inf = m_mgr->GetPane("console");
 		p_inf.Show(!p_inf.IsShown());
 		p_inf.MinSize(WxUtils::scaledSize(200, 128));
 		m_mgr->Update();
@@ -626,8 +623,8 @@ bool MainWindow::handleAction(string id)
 	// View->Undo History
 	if (id == "main_showundohistory")
 	{
-		wxAuiManager*  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
-		wxAuiPaneInfo& p_inf = m_mgr->GetPane("undo_history");
+		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
+		auto& p_inf = m_mgr->GetPane("undo_history");
 		p_inf.Show(!p_inf.IsShown());
 		m_mgr->Update();
 		return true;
@@ -650,7 +647,7 @@ bool MainWindow::handleAction(string id)
 		wxAboutDialogInfo info;
 		info.SetName("SLADE");
 		string version = "v" + App::version().toString();
-		if (Global::sc_rev != "")
+		if (!Global::sc_rev.empty())
 			version = version + " (Git Rev " + Global::sc_rev + ")";
 		info.SetVersion(version);
 		info.SetWebSite("http://slade.mancubus.net");
@@ -715,7 +712,7 @@ void MainWindow::onClose(wxCloseEvent& e)
 void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
 {
 	// Get current page
-	wxWindow* page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
+	auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
 
 	// If start page is selected, refresh it
 	if (page->GetName() == "startpage")
@@ -775,7 +772,7 @@ void MainWindow::onActivate(wxActivateEvent& e)
 	// Get current tab
 	if (stc_tabs_->GetPageCount())
 	{
-		wxWindow* page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
+		auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
 
 		// If start page is selected, refresh it
 		if (page && page->GetName() == "startpage")

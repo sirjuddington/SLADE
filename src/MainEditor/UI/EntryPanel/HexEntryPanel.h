@@ -8,7 +8,7 @@ class HexEntryPanel : public EntryPanel
 {
 public:
 	HexEntryPanel(wxWindow* parent);
-	~HexEntryPanel() {}
+	~HexEntryPanel() = default;
 
 	bool loadEntry(ArchiveEntry* entry) override;
 	bool saveEntry() override;

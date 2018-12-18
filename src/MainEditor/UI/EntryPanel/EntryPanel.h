@@ -10,7 +10,7 @@ class UndoManager;
 class EntryPanel : public wxPanel, public Listener
 {
 public:
-	EntryPanel(wxWindow* parent, string id);
+	EntryPanel(wxWindow* parent, const string& id);
 	~EntryPanel();
 
 	string        name() const { return id_; }
@@ -29,7 +29,7 @@ public:
 	void           updateStatus();
 	virtual string statusString() { return ""; }
 	virtual void   addCustomMenu();
-	void           removeCustomMenu();
+	void           removeCustomMenu() const;
 	virtual bool   fillCustomMenu(wxMenu* custom) { return false; }
 	string         customMenuName() const { return custom_menu_name_; }
 	void           callRefresh() { refreshPanel(); }
@@ -37,7 +37,7 @@ public:
 	virtual bool   undo() { return false; }
 	virtual bool   redo() { return false; }
 	void           updateToolbar();
-	virtual void   toolbarButtonClick(string action_id) {}
+	virtual void   toolbarButtonClick(const string& action_id) {}
 
 protected:
 	MemChunk      entry_data_;
@@ -56,8 +56,8 @@ protected:
 
 	void setModified(bool c = true);
 
-	virtual void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override {}
-	void         onToolbarButton(wxCommandEvent& e);
+	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override {}
+	void onToolbarButton(wxCommandEvent& e);
 
 private:
 	bool         modified_;

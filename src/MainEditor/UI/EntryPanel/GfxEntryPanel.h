@@ -12,7 +12,7 @@ class GfxEntryPanel : public EntryPanel, public SActionHandler
 {
 public:
 	GfxEntryPanel(wxWindow* parent);
-	~GfxEntryPanel() {}
+	~GfxEntryPanel() = default;
 
 	Translation& prevTranslation() { return prev_translation_; }
 
@@ -20,14 +20,14 @@ public:
 	bool            loadEntry(ArchiveEntry* entry, int index);
 	bool            saveEntry() override;
 	void            setupToolbar();
-	void            fillBrushMenu(wxMenu* bm);
-	void            updateImagePalette();
-	GfxCanvas::View detectOffsetType();
-	void            applyViewType();
+	void            fillBrushMenu(wxMenu* bm) const;
+	void            updateImagePalette() const;
+	GfxCanvas::View detectOffsetType() const;
+	void            applyViewType() const;
 	void            refresh();
 	void            refreshPanel() override;
 	string          statusString() override;
-	bool            extractAll();
+	bool            extractAll() const;
 
 	// SAction handler
 	bool handleAction(string id) override;
@@ -48,7 +48,6 @@ private:
 	bool        trns_                = false;
 	bool        image_data_modified_ = false;
 	int         cur_index_           = 0;
-	bool        offset_changing_     = false;
 	bool        editing_             = false;
 	Translation prev_translation_;
 	Translation edit_translation_;
@@ -57,7 +56,6 @@ private:
 	SZoomSlider*    slider_zoom_        = nullptr;
 	ColourBox*      cb_colour_          = nullptr;
 	wxChoice*       choice_offset_type_ = nullptr;
-	wxChoice*       choice_brush_       = nullptr;
 	wxSpinCtrl*     spin_xoffset_       = nullptr;
 	wxSpinCtrl*     spin_yoffset_       = nullptr;
 	wxCheckBox*     cb_tile_            = nullptr;

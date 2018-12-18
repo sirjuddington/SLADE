@@ -65,10 +65,10 @@ EXTERN_CVAR(String, dir_last)
 // -----------------------------------------------------------------------------
 // PatchTableListView class constructor
 // -----------------------------------------------------------------------------
-PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table) : VirtualListView(parent)
+PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table) :
+	VirtualListView(parent),
+	patch_table_{ patch_table }
 {
-	// Init Variables
-	patch_table_ = patch_table;
 	listenTo(patch_table);
 
 	// Add columns
@@ -78,7 +78,7 @@ PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table
 	InsertColumn(3, "In Archive");
 
 	// Update list
-	updateList();
+	PatchTableListView::updateList();
 
 	// Listen to archive manager
 	listenTo(&App::archiveManager());
@@ -109,7 +109,7 @@ string PatchTableListView::itemText(long item, long column, long index) const
 	else if (column == 3) // Archive column
 	{
 		// Get patch entry
-		ArchiveEntry* entry = patch_table_->patchEntry(index);
+		auto entry = patch_table_->patchEntry(index);
 
 		// If patch entry can't be found return invalid
 		if (entry)
@@ -174,8 +174,8 @@ void PatchTableListView::onAnnouncement(Announcer* announcer, const string& even
 // -----------------------------------------------------------------------------
 bool PatchTableListView::usageSort(long left, long right)
 {
-	auto& p1 = ((PatchTableListView*)lv_current)->patchTable()->patch(left);
-	auto& p2 = ((PatchTableListView*)lv_current)->patchTable()->patch(right);
+	auto& p1 = dynamic_cast<PatchTableListView*>(lv_current)->patchTable()->patch(left);
+	auto& p2 = dynamic_cast<PatchTableListView*>(lv_current)->patchTable()->patch(right);
 
 	if (p1.used_in.size() == p2.used_in.size())
 		return left < right;
@@ -303,16 +303,16 @@ void PatchTablePanel::onBtnAddPatch(wxCommandEvent& e)
 void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 {
 	// Get all entry types
-	vector<EntryType*> etypes = EntryType::allTypes();
+	auto etypes = EntryType::allTypes();
 
 	// Go through types
 	string ext_filter = "All files (*.*)|*.*|";
-	for (unsigned a = 0; a < etypes.size(); a++)
+	for (auto& etype : etypes)
 	{
 		// If the type is a valid image type, add its extension filter
-		if (etypes[a]->extraProps().propertyExists("image"))
+		if (etype->extraProps().propertyExists("image"))
 		{
-			ext_filter += etypes[a]->fileFilterString();
+			ext_filter += etype->fileFilterString();
 			ext_filter += "|";
 		}
 	}
@@ -338,11 +338,11 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 		dir_last = dialog_open.GetDirectory();
 
 		// Go through file selection
-		for (unsigned a = 0; a < files.size(); a++)
+		for (const auto& file : files)
 		{
 			// Load the file into a temporary ArchiveEntry
-			ArchiveEntry* entry = new ArchiveEntry();
-			entry->importFile(files[a]);
+			auto entry = new ArchiveEntry();
+			entry->importFile(file);
 
 			// Determine type
 			EntryType::detectEntryType(entry);
@@ -350,12 +350,12 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			// If it's not a valid image type, ignore this file
 			if (!entry->type()->extraProps().propertyExists("image"))
 			{
-				LOG_MESSAGE(1, "%s is not a valid image file", files[a]);
+				LOG_MESSAGE(1, "%s is not a valid image file", file);
 				continue;
 			}
 
 			// Ask for name for patch
-			wxFileName fn(files[a]);
+			wxFileName fn(file);
 			string     name = fn.GetName().Upper().Truncate(8);
 			name = wxGetTextFromUser(S_FMT("Enter a patch name for %s:", fn.GetFullName()), "New Patch", name);
 			name = name.Truncate(8);
@@ -381,8 +381,8 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 {
 	// Check anything is selected
-	vector<long> selection = list_patches_->selection(true);
-	if (selection.size() == 0)
+	auto selection = list_patches_->selection(true);
+	if (selection.empty())
 		return;
 
 	// TODO: Yes(to All) + No(to All) messagebox asking to delete entries along with patches
@@ -392,7 +392,7 @@ void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 	{
 		// Check if patch is currently in use
 		auto& patch = patch_table_->patch(selection[a]);
-		if (patch.used_in.size() > 0)
+		if (!patch.used_in.empty())
 		{
 			// In use, ask if it's ok to remove the patch
 			int answer = wxMessageBox(
@@ -433,21 +433,21 @@ void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 {
 	// Check anything is selected
-	vector<long> selection = list_patches_->selection(true);
-	if (selection.size() == 0)
+	auto selection = list_patches_->selection(true);
+	if (selection.empty())
 		return;
 
 	// Go through patch list selection
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto index : selection)
 	{
-		auto& patch = patch_table_->patch(selection[a]);
+		auto& patch = patch_table_->patch(index);
 
 		// Prompt for new patch name
 		string newname = wxGetTextFromUser("Enter new patch entry name:", "Change Patch", patch.name, this);
 
 		// Update the patch if it's not the Cancel button that was clicked
 		if (newname.Length() > 0)
-			patch_table_->replacePatch(selection[a], newname);
+			patch_table_->replacePatch(index, newname);
 
 		// Update the list
 		list_patches_->updateList();
@@ -468,7 +468,7 @@ void PatchTablePanel::updateDisplay()
 	auto& patch = patch_table_->patch(index);
 
 	// Load the image
-	ArchiveEntry* entry = patch_table_->patchEntry(index);
+	auto entry = patch_table_->patchEntry(index);
 	if (Misc::loadImageFromEntry(patch_canvas_->getImage(), entry))
 	{
 		theMainWindow->paletteChooser()->setGlobalFromArchive(entry->parent());
@@ -484,7 +484,7 @@ void PatchTablePanel::updateDisplay()
 	patch_canvas_->Refresh();
 
 	// List which textures use this patch
-	if (patch.used_in.size() > 0)
+	if (!patch.used_in.empty())
 	{
 		string alltextures = "";
 		int    count       = 0;

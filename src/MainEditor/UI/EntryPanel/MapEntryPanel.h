@@ -9,12 +9,12 @@ class MapEntryPanel : public EntryPanel
 {
 public:
 	MapEntryPanel(wxWindow* parent);
-	~MapEntryPanel() {}
+	~MapEntryPanel() = default;
 
 	bool loadEntry(ArchiveEntry* entry) override;
 	bool saveEntry() override;
 	bool createImage();
-	void toolbarButtonClick(string action_id) override;
+	void toolbarButtonClick(const string& action_id) override;
 
 private:
 	MapPreviewCanvas* map_canvas_     = nullptr;

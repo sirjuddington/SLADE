@@ -15,7 +15,7 @@ class ArchiveEntry;
 class GfxTintDialog : public wxDialog
 {
 public:
-	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
+	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palette& pal);
 
 	ColRGBA colour() const;
 	float   amount() const;

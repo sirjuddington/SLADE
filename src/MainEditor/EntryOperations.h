@@ -10,7 +10,7 @@ namespace EntryOperations
 bool openMapDB2(ArchiveEntry* entry);
 bool gfxConvert(
 	ArchiveEntry*            entry,
-	string                   target_format,
+	const string&            target_format,
 	SIFormat::ConvertOptions opt,
 	SImage::Type             target_colformat = SImage::Type::Unknown);
 bool modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog* dialog);
@@ -20,12 +20,12 @@ bool modifytRNSChunk(ArchiveEntry* entry, bool value);
 bool getalPhChunk(ArchiveEntry* entry);
 bool gettRNSChunk(ArchiveEntry* entry);
 bool readgrAbChunk(ArchiveEntry* entry, Vec2i& offsets);
-bool addToPatchTable(vector<ArchiveEntry*> entries);
-bool createTexture(vector<ArchiveEntry*> entries);
-bool convertTextures(vector<ArchiveEntry*> entries);
-bool findTextureErrors(vector<ArchiveEntry*> entries);
+bool addToPatchTable(vector<ArchiveEntry*>& entries);
+bool createTexture(vector<ArchiveEntry*>& entries);
+bool convertTextures(vector<ArchiveEntry*>& entries);
+bool findTextureErrors(vector<ArchiveEntry*>& entries);
 bool compileACS(ArchiveEntry* entry, bool hexen = false, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
-bool exportAsPNG(ArchiveEntry* entry, string filename);
+bool exportAsPNG(ArchiveEntry* entry, const string& filename);
 bool optimizePNG(ArchiveEntry* entry);
 
 // ANIMATED/SWITCHES

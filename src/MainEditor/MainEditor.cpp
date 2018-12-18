@@ -167,7 +167,7 @@ EntryPanel* MainEditor::currentEntryPanel()
 // Opens the documentation tab to [page_name] (if enabled)
 // -----------------------------------------------------------------------------
 #ifdef USE_WEBVIEW_STARTPAGE
-void MainEditor::openDocs(string page_name)
+void MainEditor::openDocs(const string& page_name)
 {
 	main_window->openDocs(page_name);
 }

@@ -8,10 +8,10 @@ class ExternalEditManager
 	friend class ExternalEditFileMonitor;
 
 public:
-	ExternalEditManager();
+	ExternalEditManager() = default;
 	~ExternalEditManager();
 
-	bool openEntryExternal(ArchiveEntry* entry, string editor, string category);
+	bool openEntryExternal(ArchiveEntry* entry, const string& editor, const string& category);
 
 	typedef std::unique_ptr<ExternalEditManager> UPtr;
 

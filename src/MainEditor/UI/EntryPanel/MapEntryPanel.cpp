@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "MapEntryPanel.h"
 #include "Archive/Archive.h"
-#include "MapEditor/SLADEMap/MapLine.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
 
 
@@ -72,7 +71,7 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 	sizer_main_->Add(map_canvas_->toPanel(this), 1, wxEXPAND, 0);
 
 	// Setup map toolbar buttons
-	SToolBarGroup* group = new SToolBarGroup(toolbar_, "Map");
+	auto group = new SToolBarGroup(toolbar_, "Map");
 	group->addActionButton("save_image", "Save Map Image", "export", "Save map overview to an image", true);
 	group->addActionButton("pmap_open_text", "", true);
 	toolbar_->addGroup(group);
@@ -92,7 +91,7 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 	cb_show_things_->Bind(wxEVT_CHECKBOX, &MapEntryPanel::onCBShowThings, this);
 
 	// Layout
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------
@@ -105,14 +104,14 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	map_canvas_->clearMap();
 
 	// Find map definition for entry
-	vector<Archive::MapDesc> maps = entry->parent()->detectMaps();
-	Archive::MapDesc         thismap;
-	bool                     found = false;
-	for (unsigned a = 0; a < maps.size(); a++)
+	auto             maps = entry->parent()->detectMaps();
+	Archive::MapDesc thismap;
+	bool             found = false;
+	for (auto& map : maps)
 	{
-		if (maps[a].head == entry)
+		if (map.head == entry)
 		{
-			thismap = maps[a];
+			thismap = map;
 			found   = true;
 			break;
 		}
@@ -209,7 +208,7 @@ bool MapEntryPanel::createImage()
 // -----------------------------------------------------------------------------
 // Called when a (EntryPanel) toolbar button is clicked
 // -----------------------------------------------------------------------------
-void MapEntryPanel::toolbarButtonClick(string action_id)
+void MapEntryPanel::toolbarButtonClick(const string& action_id)
 {
 	// Save Map Image
 	if (action_id == "save_image")

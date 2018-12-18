@@ -43,6 +43,7 @@
 #include "General/Misc.h"
 #include "Graphics/GameFormats.h"
 #include "MainEditor/MainEditor.h"
+#include "SLADEWxApp.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/TextureXEditor/TextureXEditor.h"
 #include "Utility/FileMonitor.h"
@@ -125,7 +126,7 @@ struct ChunkSize
 // -----------------------------------------------------------------------------
 bool EntryOperations::gfxConvert(
 	ArchiveEntry*            entry,
-	string                   target_format,
+	const string&            target_format,
 	SIFormat::ConvertOptions opt,
 	SImage::Type             target_colformat)
 {
@@ -133,12 +134,12 @@ bool EntryOperations::gfxConvert(
 	SImage image;
 
 	// Get target image format
-	SIFormat* fmt = SIFormat::getFormat(target_format);
+	auto fmt = SIFormat::getFormat(target_format);
 	if (fmt == SIFormat::unknownFormat())
 		return false;
 
 	// Check format and target colour type are compatible
-	if (target_colformat != SImage::Type::Unknown && !fmt->canWriteType((SImage::Type)target_colformat))
+	if (target_colformat != SImage::Type::Unknown && !fmt->canWriteType(target_colformat))
 	{
 		if (target_colformat == SImage::Type::RGBA)
 			LOG_MESSAGE(1, "Format \"%s\" cannot be written as RGBA data", fmt->name());
@@ -184,8 +185,8 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 		return false;
 
 	// Check entry type
-	EntryType* type        = entry->type();
-	string     entryformat = type->formatId();
+	auto   type        = entry->type();
+	string entryformat = type->formatId();
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
 		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
 	{
@@ -239,10 +240,10 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 	else if (entryformat == "img_png")
 	{
 		// Read width and height from IHDR chunk
-		const uint8_t* data = entry->rawData(true);
-		const Ihdr*    ihdr = (Ihdr*)(data + 12);
-		uint32_t       w    = wxINT32_SWAP_ON_LE(ihdr->width);
-		uint32_t       h    = wxINT32_SWAP_ON_LE(ihdr->height);
+		auto        data = entry->rawData(true);
+		const Ihdr* ihdr = (Ihdr*)(data + 12);
+		uint32_t    w    = wxINT32_SWAP_ON_LE(ihdr->width);
+		uint32_t    h    = wxINT32_SWAP_ON_LE(ihdr->height);
 
 		// Find existing grAb chunk
 		uint32_t grab_start = 0;
@@ -253,10 +254,10 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 			// Check for 'grAb' header
 			if (data[a] == 'g' && data[a + 1] == 'r' && data[a + 2] == 'A' && data[a + 3] == 'b')
 			{
-				grab_start      = a - 4;
-				GrabChunk* grab = (GrabChunk*)(data + a);
-				xoff            = wxINT32_SWAP_ON_LE(grab->xoff);
-				yoff            = wxINT32_SWAP_ON_LE(grab->yoff);
+				grab_start = a - 4;
+				auto grab  = (GrabChunk*)(data + a);
+				xoff       = wxINT32_SWAP_ON_LE(grab->xoff);
+				yoff       = wxINT32_SWAP_ON_LE(grab->yoff);
 				break;
 			}
 
@@ -334,8 +335,8 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 		return false;
 
 	// Check entry type
-	EntryType* type        = entry->type();
-	string     entryformat = type->formatId();
+	auto   type        = entry->type();
+	string entryformat = type->formatId();
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
 		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
 	{
@@ -383,8 +384,8 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 	else if (entryformat == "img_png")
 	{
 		// Find existing grAb chunk
-		const uint8_t* data       = entry->rawData(true);
-		uint32_t       grab_start = 0;
+		auto     data       = entry->rawData(true);
+		uint32_t grab_start = 0;
 		for (uint32_t a = 0; a < entry->size(); a++)
 		{
 			// Check for 'grAb' header
@@ -482,7 +483,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	}
 
 	// Get map info for entry
-	Archive::MapDesc map = entry->parent()->mapDesc(entry);
+	auto map = entry->parent()->mapDesc(entry);
 
 	// Check valid map
 	if (map.format == MapFormat::Unknown)
@@ -504,7 +505,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 			WadArchive archive;
 
 			// Add map entries to archive
-			ArchiveEntry* e = map.head;
+			auto e = map.head;
 			while (true)
 			{
 				archive.addEntry(e, "", true);
@@ -523,7 +524,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	string cmd = S_FMT("%s \"%s\" -map %s", path, filename, entry->name());
 
 	// Add base resource archive to command line
-	Archive* base = App::archiveManager().baseResourceArchive();
+	auto base = App::archiveManager().baseResourceArchive();
 	if (base)
 	{
 		if (base->formatId() == "wad")
@@ -535,7 +536,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	// Add resource archives to command line
 	for (int a = 0; a < App::archiveManager().numArchives(); ++a)
 	{
-		Archive* archive = App::archiveManager().getArchive(a);
+		auto archive = App::archiveManager().getArchive(a);
 
 		// Check archive type (only wad and zip supported by db2)
 		if (archive->formatId() == "wad")
@@ -574,8 +575,8 @@ bool EntryOperations::modifyalPhChunk(ArchiveEntry* entry, bool value)
 	}
 
 	// Read width and height from IHDR chunk
-	const uint8_t* data = entry->rawData(true);
-	const Ihdr*    ihdr = (Ihdr*)(data + 12);
+	auto        data = entry->rawData(true);
+	const Ihdr* ihdr = (Ihdr*)(data + 12);
 
 	// Find existing alPh chunk
 	uint32_t alph_start = 0;
@@ -681,8 +682,8 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value)
 	}
 
 	// Read width and height from IHDR chunk
-	const uint8_t* data = entry->rawData(true);
-	const Ihdr*    ihdr = (Ihdr*)(data + 12);
+	auto        data = entry->rawData(true);
+	const Ihdr* ihdr = (Ihdr*)(data + 12);
 
 	// tRNS chunks are only valid for paletted PNGs, and must be before the first IDAT.
 	// Specs say they must be after PLTE chunk as well, so to play it safe, we'll insert
@@ -695,9 +696,9 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value)
 		// Check for 'tRNS' header
 		if (data[a] == 't' && data[a + 1] == 'R' && data[a + 2] == 'N' && data[a + 3] == 'S')
 		{
-			trns_start       = a - 4;
-			TransChunk* trns = (TransChunk*)(data + a);
-			trns_size        = 12 + Memory::readB32(data, a - 4);
+			trns_start = a - 4;
+			auto trns  = (TransChunk*)(data + a);
+			trns_size  = 12 + Memory::readB32(data, a - 4);
 		}
 
 		// Stop when we get to the 'IDAT' chunk
@@ -795,7 +796,7 @@ bool EntryOperations::getalPhChunk(ArchiveEntry* entry)
 	}
 
 	// Find existing alPh chunk
-	const uint8_t* data = entry->rawData(true);
+	auto data = entry->rawData(true);
 	for (uint32_t a = 0; a < entry->size(); a++)
 	{
 		// Check for 'alPh' header
@@ -828,7 +829,7 @@ bool EntryOperations::gettRNSChunk(ArchiveEntry* entry)
 
 	// tRNS chunks are only valid for paletted PNGs, and the chunk must before the first IDAT.
 	// Specs say it should be after a PLTE chunk, but that's not always the case (e.g., sgrna7a3.png).
-	const uint8_t* data = entry->rawData(true);
+	auto data = entry->rawData(true);
 	for (uint32_t a = 0; a < entry->size(); a++)
 	{
 		// Check for 'tRNS' header
@@ -861,7 +862,7 @@ bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, Vec2i& offsets)
 	}
 
 	// Find existing grAb chunk
-	const uint8_t* data = entry->rawData(true);
+	auto data = entry->rawData(true);
 	for (uint32_t a = 0; a < entry->size(); a++)
 	{
 		// Check for 'grAb' header
@@ -883,21 +884,21 @@ bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, Vec2i& offsets)
 // Adds all [entries] to their parent archive's patch table, if it exists.
 // If not, the user is prompted to create or import texturex entries
 // -----------------------------------------------------------------------------
-bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries)
+bool EntryOperations::addToPatchTable(vector<ArchiveEntry*>& entries)
 {
 	// Check any entries were given
-	if (entries.size() == 0)
+	if (entries.empty())
 		return true;
 
 	// Get parent archive
-	Archive* parent = entries[0]->parent();
+	auto parent = entries[0]->parent();
 	if (parent == nullptr)
 		return true;
 
 	// Find patch table in parent archive
 	Archive::SearchOptions opt;
-	opt.match_type       = EntryType::fromId("pnames");
-	ArchiveEntry* pnames = parent->findLast(opt);
+	opt.match_type = EntryType::fromId("pnames");
+	auto pnames    = parent->findLast(opt);
 
 	// Check it exists
 	if (!pnames)
@@ -940,26 +941,26 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries)
 	ptable.loadPNAMES(pnames);
 
 	// Add entry names to patch table
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Check entry type
-		if (!(entries[a]->type()->extraProps().propertyExists("image")))
+		if (!(entry->type()->extraProps().propertyExists("image")))
 		{
-			LOG_MESSAGE(1, "Entry %s is not a valid image", entries[a]->name());
+			LOG_MESSAGE(1, "Entry %s is not a valid image", entry->name());
 			continue;
 		}
 
 		// Check entry name
-		if (entries[a]->name(true).Length() > 8)
+		if (entry->name(true).Length() > 8)
 		{
 			LOG_MESSAGE(
 				1,
 				"Entry %s has too long a name to add to the patch table (name must be 8 characters max)",
-				entries[a]->name());
+				entry->name());
 			continue;
 		}
 
-		ptable.addPatch(entries[a]->name(true));
+		ptable.addPatch(entry->name(true));
 	}
 
 	// Write patch table data back to pnames entry
@@ -970,14 +971,14 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries)
 // Same as addToPatchTable, but also creates a single-patch texture from each
 // added patch
 // -----------------------------------------------------------------------------
-bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
+bool EntryOperations::createTexture(vector<ArchiveEntry*>& entries)
 {
 	// Check any entries were given
-	if (entries.size() == 0)
+	if (entries.empty())
 		return true;
 
 	// Get parent archive
-	Archive* parent = entries[0]->parent();
+	auto parent = entries[0]->parent();
 
 	// Create texture entries if needed
 	if (!TextureXEditor::setupTextureEntries(parent))
@@ -985,8 +986,8 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 
 	// Find texturex entry to add to
 	Archive::SearchOptions opt;
-	opt.match_type         = EntryType::fromId("texturex");
-	ArchiveEntry* texturex = parent->findFirst(opt);
+	opt.match_type = EntryType::fromId("texturex");
+	auto texturex  = parent->findFirst(opt);
 
 	// Check it exists
 	bool zdtextures = false;
@@ -1046,23 +1047,23 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 
 	// Create textures from entries
 	SImage image;
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Check entry type
-		if (!(entries[a]->type()->extraProps().propertyExists("image")))
+		if (!(entry->type()->extraProps().propertyExists("image")))
 		{
-			LOG_MESSAGE(1, "Entry %s is not a valid image", entries[a]->name());
+			LOG_MESSAGE(1, "Entry %s is not a valid image", entry->name());
 			continue;
 		}
 
 		// Check entry name
-		string name = entries[a]->name(true);
+		string name = entry->name(true);
 		if (name.Length() > 8)
 		{
 			LOG_MESSAGE(
 				1,
 				"Entry %s has too long a name to add to the patch table (name must be 8 characters max)",
-				entries[a]->name());
+				entry->name());
 			continue;
 		}
 
@@ -1071,7 +1072,7 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 			ptable.addPatch(name);
 
 		// Load patch to temp image
-		Misc::loadImageFromEntry(&image, entries[a]);
+		Misc::loadImageFromEntry(&image, entry);
 
 		// Create texture
 		auto ntex = std::make_unique<CTexture>(zdtextures);
@@ -1111,14 +1112,14 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 // Converts multiple TEXTURE1/2 entries to a single ZDoom text-based TEXTURES
 // entry
 // -----------------------------------------------------------------------------
-bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries)
+bool EntryOperations::convertTextures(vector<ArchiveEntry*>& entries)
 {
 	// Check any entries were given
-	if (entries.size() == 0)
+	if (entries.empty())
 		return false;
 
 	// Get parent archive of entries
-	Archive* parent = entries[0]->parent();
+	auto parent = entries[0]->parent();
 
 	// Can't do anything if entry isn't in an archive
 	if (!parent)
@@ -1126,8 +1127,8 @@ bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries)
 
 	// Find patch table in parent archive
 	Archive::SearchOptions opt;
-	opt.match_type       = EntryType::fromId("pnames");
-	ArchiveEntry* pnames = parent->findLast(opt);
+	opt.match_type = EntryType::fromId("pnames");
+	auto pnames    = parent->findLast(opt);
 
 	// Check it exists
 	if (!pnames)
@@ -1139,14 +1140,14 @@ bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries)
 
 	// Read all texture entries to a single list
 	TextureXList tx;
-	for (unsigned a = 0; a < entries.size(); a++)
-		tx.readTEXTUREXData(entries[a], ptable, true);
+	for (auto& entry : entries)
+		tx.readTEXTUREXData(entry, ptable, true);
 
 	// Convert to extended (TEXTURES) format
 	tx.convertToTEXTURES();
 
 	// Create new TEXTURES entry and write to it
-	ArchiveEntry* textures = parent->addNewEntry("TEXTURES", parent->entryIndex(entries[0]));
+	auto textures = parent->addNewEntry("TEXTURES", parent->entryIndex(entries[0]));
 	if (textures)
 	{
 		bool ok = tx.writeTEXTURESData(textures);
@@ -1161,14 +1162,14 @@ bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries)
 // -----------------------------------------------------------------------------
 // Detect errors in a TEXTUREx entry
 // -----------------------------------------------------------------------------
-bool EntryOperations::findTextureErrors(vector<ArchiveEntry*> entries)
+bool EntryOperations::findTextureErrors(vector<ArchiveEntry*>& entries)
 {
 	// Check any entries were given
-	if (entries.size() == 0)
+	if (entries.empty())
 		return false;
 
 	// Get parent archive of entries
-	Archive* parent = entries[0]->parent();
+	auto parent = entries[0]->parent();
 
 	// Can't do anything if entry isn't in an archive
 	if (!parent)
@@ -1176,8 +1177,8 @@ bool EntryOperations::findTextureErrors(vector<ArchiveEntry*> entries)
 
 	// Find patch table in parent archive
 	Archive::SearchOptions opt;
-	opt.match_type       = EntryType::fromId("pnames");
-	ArchiveEntry* pnames = parent->findLast(opt);
+	opt.match_type = EntryType::fromId("pnames");
+	auto pnames    = parent->findLast(opt);
 
 	// Check it exists
 	if (!pnames)
@@ -1189,8 +1190,8 @@ bool EntryOperations::findTextureErrors(vector<ArchiveEntry*> entries)
 
 	// Read all texture entries to a single list
 	TextureXList tx;
-	for (unsigned a = 0; a < entries.size(); a++)
-		tx.readTEXTUREXData(entries[a], ptable, true);
+	for (auto& entry : entries)
+		tx.readTEXTUREXData(entry, ptable, true);
 
 	// Detect errors
 	tx.findErrors();
@@ -1234,9 +1235,9 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	}
 
 	// Setup some path strings
-	string        srcfile       = App::path(entry->name(true) + ".acs", App::Dir::Temp);
-	string        ofile         = App::path(entry->name(true) + ".o", App::Dir::Temp);
-	wxArrayString include_paths = wxSplit(path_acc_libs, ';');
+	string srcfile       = App::path(entry->name(true) + ".acs", App::Dir::Temp);
+	string ofile         = App::path(entry->name(true) + ".o", App::Dir::Temp);
+	auto   include_paths = wxSplit(path_acc_libs, ';');
 
 	// Setup command options
 	string opt;
@@ -1244,30 +1245,30 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		opt += " -h";
 	if (!include_paths.IsEmpty())
 	{
-		for (unsigned a = 0; a < include_paths.size(); a++)
-			opt += S_FMT(" -i \"%s\"", include_paths[a]);
+		for (const auto& include_path : include_paths)
+			opt += S_FMT(" -i \"%s\"", include_path);
 	}
 
 	// Find/export any resource libraries
 	Archive::SearchOptions sopt;
-	sopt.match_type               = EntryType::fromId("acs");
-	sopt.search_subdirs           = true;
-	vector<ArchiveEntry*> entries = App::archiveManager().findAllResourceEntries(sopt);
-	wxArrayString         lib_paths;
-	for (unsigned a = 0; a < entries.size(); a++)
+	sopt.match_type       = EntryType::fromId("acs");
+	sopt.search_subdirs   = true;
+	auto          entries = App::archiveManager().findAllResourceEntries(sopt);
+	wxArrayString lib_paths;
+	for (auto& res_entry : entries)
 	{
 		// Ignore SCRIPTS
-		if (S_CMPNOCASE(entries[a]->name(true), "SCRIPTS"))
+		if (S_CMPNOCASE(res_entry->name(true), "SCRIPTS"))
 			continue;
 
 		// Ignore entries from other archives
-		if (entry->parent() && (entry->parent()->filename(true) != entries[a]->parent()->filename(true)))
+		if (entry->parent() && (entry->parent()->filename(true) != res_entry->parent()->filename(true)))
 			continue;
 
-		string path = App::path(entries[a]->name(true) + ".acs", App::Dir::Temp);
-		entries[a]->exportFile(path);
+		string path = App::path(res_entry->name(true) + ".acs", App::Dir::Temp);
+		res_entry->exportFile(path);
 		lib_paths.Add(path);
-		LOG_MESSAGE(2, "Exporting ACS library %s", entries[a]->name());
+		LOG_MESSAGE(2, "Exporting ACS library %s", res_entry->name());
 	}
 
 	// Export script to file
@@ -1277,9 +1278,9 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	string        command = "\"" + path_acc + "\"" + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
 	wxArrayString output;
 	wxArrayString errout;
-	wxTheApp->SetTopWindow(parent);
+	wxGetApp().SetTopWindow(parent);
 	wxExecute(command, output, errout, wxEXEC_SYNC);
-	wxTheApp->SetTopWindow(MainEditor::windowWx());
+	wxGetApp().SetTopWindow(MainEditor::windowWx());
 
 	// Log output
 	Log::console("ACS compiler output:");
@@ -1289,10 +1290,10 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		const char* title1 = "=== Log: ===\n";
 		Log::console(title1);
 		output_log += title1;
-		for (unsigned a = 0; a < output.size(); a++)
+		for (const auto& line : output)
 		{
-			Log::console(output[a]);
-			output_log += output[a];
+			Log::console(line);
+			output_log += line;
 		}
 	}
 
@@ -1301,10 +1302,10 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		const char* title2 = "\n=== Error log: ===\n";
 		Log::console(title2);
 		output_log += title2;
-		for (unsigned a = 0; a < errout.size(); a++)
+		for (const auto& line : errout)
 		{
-			Log::console(errout[a]);
-			output_log += errout[a] + "\n";
+			Log::console(line);
+			output_log += line + "\n";
 		}
 	}
 
@@ -1312,8 +1313,8 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	wxRemoveFile(srcfile);
 
 	// Delete library files
-	for (unsigned a = 0; a < lib_paths.size(); a++)
-		wxRemoveFile(lib_paths[a]);
+	for (const auto& lib_path : lib_paths)
+		wxRemoveFile(lib_path);
 
 	// Check it compiled successfully
 	bool success = wxFileExists(ofile);
@@ -1326,7 +1327,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 			if (S_CMPNOCASE(entry->name(), "SCRIPTS"))
 			{
 				// Get entry before SCRIPTS
-				ArchiveEntry* prev = entry->prevEntry();
+				auto prev = entry->prevEntry();
 
 				// Create a new entry there if it isn't BEHAVIOR
 				if (!prev || !(S_CMPNOCASE(prev->name(), "BEHAVIOR")))
@@ -1348,7 +1349,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 					opt.match_name += ".o";
 					opt.ignore_ext = false;
 				}
-				ArchiveEntry* lib = entry->parent()->findLast(opt);
+				auto lib = entry->parent()->findLast(opt);
 
 				// If it doesn't exist, create it
 				if (!lib)
@@ -1371,16 +1372,15 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		if (wxFileExists(App::path("acs.err", App::Dir::Temp)))
 		{
 			// Read acs.err to string
-			wxFile file(App::path("acs.err", App::Dir::Temp));
-			char*  buf = new char[file.Length()];
-			file.Read(buf, file.Length());
-			errors = wxString::From8BitData(buf, file.Length());
-			delete[] buf;
+			wxFile       file(App::path("acs.err", App::Dir::Temp));
+			vector<char> buf(file.Length());
+			file.Read(buf.data(), file.Length());
+			errors = wxString::From8BitData(buf.data(), file.Length());
 		}
 		else
 			errors = output_log;
 
-		if (errors != "" || !success)
+		if (!errors.empty() || !success)
 		{
 			ExtMessageDialog dlg(nullptr, success ? "ACC Output" : "Error Compiling");
 			dlg.setMessage(
@@ -1400,7 +1400,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 // Converts [entry] to a PNG image (if possible) and saves the PNG data to a
 // file [filename]. Does not alter the entry data itself
 // -----------------------------------------------------------------------------
-bool EntryOperations::exportAsPNG(ArchiveEntry* entry, string filename)
+bool EntryOperations::exportAsPNG(ArchiveEntry* entry, const string& filename)
 {
 	// Check entry was given
 	if (!entry)
@@ -1415,8 +1415,8 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, string filename)
 	}
 
 	// Write png data
-	MemChunk  png;
-	SIFormat* fmt_png = SIFormat::getFormat("png");
+	MemChunk png;
+	auto     fmt_png = SIFormat::getFormat("png");
 	if (!fmt_png->saveImage(image, png, MainEditor::currentPalette(entry)))
 	{
 		LOG_MESSAGE(1, "Error converting %s", entry->name());
@@ -1501,7 +1501,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 		crushsize = entry->size();
 
 		// send app output to console if wanted
-		if (0)
+		if (false)
 		{
 			string crushlog = "";
 			if (errors.GetCount())
@@ -1554,7 +1554,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 		outsize = entry->size();
 
 		// send app output to console if wanted
-		if (0)
+		if (false)
 		{
 			string pngoutlog = "";
 			if (errors.GetCount())
@@ -1592,7 +1592,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 		deflsize = entry->size();
 
 		// send app output to console if wanted
-		if (0)
+		if (false)
 		{
 			string defloptlog = "";
 			if (errors.GetCount())
@@ -1649,13 +1649,13 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool EntryOperations::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, bool animdefs)
 {
-	const uint8_t*       cursor = entry->rawData(true);
-	const uint8_t*       eodata = cursor + entry->size();
+	auto                 cursor = entry->rawData(true);
+	auto                 eodata = cursor + entry->size();
 	const AnimatedEntry* animation;
 	string               conversion;
 	int                  lasttype = -1;
 
-	while (cursor < eodata && *cursor != ANIM_STOP)
+	while (cursor < eodata && *cursor != AnimTypes::STOP)
 	{
 		// reads an entry
 		if (cursor + sizeof(AnimatedEntry) > eodata)
@@ -1675,7 +1675,7 @@ bool EntryOperations::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, b
 				animation->first,
 				animation->last,
 				animation->speed,
-				(animation->type == ANIM_DECALS ? " AllowDecals\n" : "\n"));
+				(animation->type == AnimTypes::DECALS ? " AllowDecals\n" : "\n"));
 		}
 		else
 		{
@@ -1707,8 +1707,8 @@ bool EntryOperations::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, b
 // -----------------------------------------------------------------------------
 bool EntryOperations::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, bool animdefs)
 {
-	const uint8_t*       cursor = entry->rawData(true);
-	const uint8_t*       eodata = cursor + entry->size();
+	auto                 cursor = entry->rawData(true);
+	auto                 eodata = cursor + entry->size();
 	const SwitchesEntry* switches;
 	string               conversion;
 
@@ -1721,7 +1721,7 @@ bool EntryOperations::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, b
 		animdata->write(conversion.data(), conversion.length());
 	}
 
-	while (cursor < eodata && *cursor != SWCH_STOP)
+	while (cursor < eodata && *cursor != SwitchTypes::STOP)
 	{
 		// reads an entry
 		if (cursor + sizeof(SwitchesEntry) > eodata)
@@ -1875,13 +1875,13 @@ void fixpngsrc(ArchiveEntry* entry)
 {
 	if (!entry)
 		return;
-	const uint8_t* source = entry->rawData();
-	uint8_t*       data   = new uint8_t[entry->size()];
-	memcpy(data, source, entry->size());
+	auto            source = entry->rawData();
+	vector<uint8_t> data(entry->size());
+	memcpy(data.data(), source, entry->size());
 
 	// Last check that it's a PNG
-	uint32_t header1 = Memory::readB32(data, 0);
-	uint32_t header2 = Memory::readB32(data, 4);
+	uint32_t header1 = Memory::readB32(data.data(), 0);
+	uint32_t header2 = Memory::readB32(data.data(), 4);
 	if (header1 != 0x89504E47 || header2 != 0x0D0A1A0A)
 		return;
 
@@ -1893,18 +1893,16 @@ void fixpngsrc(ArchiveEntry* entry)
 		if (pointer + 12 > entry->size())
 		{
 			LOG_MESSAGE(1, "Entry %s cannot be repaired.", entry->name());
-			delete[] data;
 			return;
 		}
-		uint32_t chsz = Memory::readB32(data, pointer);
+		uint32_t chsz = Memory::readB32(data.data(), pointer);
 		if (pointer + 12 + chsz > entry->size())
 		{
 			LOG_MESSAGE(1, "Entry %s cannot be repaired.", entry->name());
-			delete[] data;
 			return;
 		}
-		uint32_t crc = Misc::crc(data + pointer + 4, 4 + chsz);
-		if (crc != Memory::readB32(data, pointer + 8 + chsz))
+		uint32_t crc = Misc::crc(data.data() + pointer + 4, 4 + chsz);
+		if (crc != Memory::readB32(data.data(), pointer + 8 + chsz))
 		{
 			LOG_MESSAGE(
 				1,
@@ -1924,11 +1922,10 @@ void fixpngsrc(ArchiveEntry* entry)
 	// Import new data with fixed CRC
 	if (neededchange)
 	{
-		entry->importMem(data, entry->size());
+		entry->importMem(data.data(), entry->size());
 	}
-	delete[] data;
-	return;
 }
+
 
 // -----------------------------------------------------------------------------
 //
@@ -1938,15 +1935,15 @@ void fixpngsrc(ArchiveEntry* entry)
 
 CONSOLE_COMMAND(fixpngcrc, 0, true)
 {
-	vector<ArchiveEntry*> selection = MainEditor::currentEntrySelection();
-	if (selection.size() == 0)
+	auto selection = MainEditor::currentEntrySelection();
+	if (selection.empty())
 	{
 		LOG_MESSAGE(1, "No entry selected");
 		return;
 	}
-	for (size_t a = 0; a < selection.size(); ++a)
+	for (auto& entry : selection)
 	{
-		if (selection[a]->type()->formatId() == "img_png")
-			fixpngsrc(selection[a]);
+		if (entry->type()->formatId() == "img_png")
+			fixpngsrc(entry);
 	}
 }

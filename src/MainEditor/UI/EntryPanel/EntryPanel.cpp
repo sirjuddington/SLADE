@@ -58,16 +58,16 @@ CVAR(Bool, confirm_entry_revert, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // EntryPanel class constructor
 // -----------------------------------------------------------------------------
-EntryPanel::EntryPanel(wxWindow* parent, string id) : wxPanel(parent, -1), id_{ id }
+EntryPanel::EntryPanel(wxWindow* parent, const string& id) : wxPanel(parent, -1), id_{ id }
 {
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Create & set sizer & border
-	frame_                       = new wxStaticBox(this, -1, "Entry Contents");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame_, wxVERTICAL);
+	frame_          = new wxStaticBox(this, -1, "Entry Contents");
+	auto framesizer = new wxStaticBoxSizer(frame_, wxVERTICAL);
 	sizer->Add(framesizer, 1, wxEXPAND | wxALL, UI::pad());
-	Show(false);
+	wxWindow::Show(false);
 
 	// Add toolbar
 	toolbar_ = new SToolBar(this);
@@ -76,8 +76,8 @@ EntryPanel::EntryPanel(wxWindow* parent, string id) : wxPanel(parent, -1), id_{ 
 	framesizer->AddSpacer(UI::px(UI::Size::PadMinimum));
 
 	// Default entry toolbar group
-	SToolBarGroup* tb_group = new SToolBarGroup(toolbar_, "Entry");
-	stb_save_   = tb_group->addActionButton("save", "Save", "save", "Save any changes made to the entry", true);
+	auto tb_group = new SToolBarGroup(toolbar_, "Entry");
+	stb_save_     = tb_group->addActionButton("save", "Save", "save", "Save any changes made to the entry", true);
 	stb_revert_ = tb_group->addActionButton("revert", "Revert", "revert", "Revert any changes made to the entry", true);
 	toolbar_->addGroup(tb_group);
 	toolbar_->enableGroup("Entry", false);
@@ -270,7 +270,7 @@ void EntryPanel::addCustomMenu()
 // -----------------------------------------------------------------------------
 // Removes this EntryPanel's custom menu from the main window menubar
 // -----------------------------------------------------------------------------
-void EntryPanel::removeCustomMenu()
+void EntryPanel::removeCustomMenu() const
 {
 	theMainWindow->removeCustomMenu(menu_custom_);
 }

@@ -59,8 +59,7 @@
 PatchBrowserItem::~PatchBrowserItem()
 {
 	// TODO: Why isn't this done in the BrowserItem destructor?
-	if (image_)
-		delete image_;
+	delete image_;
 }
 
 // -----------------------------------------------------------------------------
@@ -71,10 +70,10 @@ bool PatchBrowserItem::loadImage()
 	SImage img;
 
 	// Load patch image
-	if (type_ == 0)
+	if (type_ == Type::Patch)
 	{
 		// Find patch entry
-		ArchiveEntry* entry = theResourceManager->getPatchEntry(name_, nspace_, archive_);
+		auto entry = theResourceManager->getPatchEntry(name_, nspace_, archive_);
 
 		// Load entry to image, if it exists
 		if (entry)
@@ -84,10 +83,10 @@ bool PatchBrowserItem::loadImage()
 	}
 
 	// Or, load texture image
-	if (type_ == 1)
+	if (type_ == Type::CTexture)
 	{
 		// Find texture
-		CTexture* tex = theResourceManager->getTexture(name_, archive_);
+		auto tex = theResourceManager->getTexture(name_, archive_);
 
 		// Load texture to image, if it exists
 		if (tex)
@@ -97,8 +96,7 @@ bool PatchBrowserItem::loadImage()
 	}
 
 	// Create gl texture from image
-	if (image_)
-		delete image_;
+	delete image_;
 	image_ = new GLTexture();
 	return image_->loadImage(&img, parent_->palette());
 }
@@ -117,7 +115,7 @@ string PatchBrowserItem::itemInfo()
 		info += "Unknown size";
 
 	// Add patch type
-	if (type_ == 0)
+	if (type_ == Type::Patch)
 		info += ", Patch";
 	else
 		info += ", Texture";
@@ -144,11 +142,8 @@ string PatchBrowserItem::itemInfo()
 // -----------------------------------------------------------------------------
 // PatchBrowser class constructor
 // -----------------------------------------------------------------------------
-PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent), full_path_(false)
+PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent)
 {
-	// Init variables
-	this->patch_table_ = nullptr;
-
 	// Init browser tree
 	items_root_->addChild("IWAD");
 	items_root_->addChild("Custom");
@@ -158,7 +153,7 @@ PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent), full_path_
 	listenTo(theMainWindow->paletteChooser());
 
 	// Set dialog title
-	SetTitle("Browse Patches");
+	wxTopLevelWindow::SetTitle("Browse Patches");
 }
 
 // -----------------------------------------------------------------------------
@@ -186,7 +181,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 		string whereis = "Unknown";
 
 		// Get patch entry
-		ArchiveEntry* entry = theResourceManager->getPatchEntry(patch.name);
+		auto entry = theResourceManager->getPatchEntry(patch.name);
 
 		// Check its parent archive
 		Archive* parent_archive = nullptr;
@@ -199,7 +194,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 		}
 
 		// Add it
-		PatchBrowserItem* item = new PatchBrowserItem(patch.name, parent_archive, 0, "", a);
+		auto item = new PatchBrowserItem(patch.name, parent_archive, PatchBrowserItem::Type::Patch, "", a);
 		addItem(item, whereis);
 	}
 
@@ -225,7 +220,6 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 // -----------------------------------------------------------------------------
 bool PatchBrowser::openArchive(Archive* archive)
 {
-	this->truncate_names_ = full_path_;
 	// Check archive was given
 	if (!archive)
 		return false;
@@ -234,6 +228,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 	clearItems();
 
 	// Init browser tree
+	truncate_names_ = full_path_;
 	items_root_->addChild("Patches");
 	items_root_->addChild("Graphics");
 	items_root_->addChild("Textures");
@@ -251,13 +246,9 @@ bool PatchBrowser::openArchive(Archive* archive)
 	{
 		vector<ArchiveEntry*> flats;
 		theResourceManager->putAllFlatEntries(flats, archive, full_path_);
-		for (unsigned a = 0; a < flats.size(); a++)
-		{
-			if (flats[a]->isInNamespace("flats") && flats[a]->parent()->isTreeless())
-			{
-				patches.push_back(flats[a]);
-			}
-		}
+		for (auto& flat : flats)
+			if (flat->isInNamespace("flats") && flat->parent()->isTreeless())
+				patches.push_back(flat);
 		flats.clear();
 	}
 
@@ -265,12 +256,12 @@ bool PatchBrowser::openArchive(Archive* archive)
 	if (full_path_)
 	{
 		bool bPatches = false, bGraphics = false, bTextures = false, bFlats = false, bSprites = false;
-		for (unsigned a = 0; a < patches.size(); a++)
+		for (auto entry : patches)
 		{
-			if (patches[a]->parent()->isTreeless())
+			if (entry->parent()->isTreeless())
 				continue;
 
-			string ns = patches[a]->parent()->detectNamespace(patches[a]);
+			string ns = entry->parent()->detectNamespace(entry);
 			if (ns == "patches")
 			{
 				if (bPatches)
@@ -315,10 +306,8 @@ bool PatchBrowser::openArchive(Archive* archive)
 	vector<string> usednames;
 
 	// Go through the list
-	for (unsigned a = 0; a < patches.size(); a++)
+	for (auto entry : patches)
 	{
-		ArchiveEntry* entry = patches[a];
-
 		// Skip any without parent archives (shouldn't happen)
 		if (!entry->parent())
 			continue;
@@ -347,7 +336,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 		// Add it
 		if (full_path_ && !entry->parent()->isTreeless())
 		{
-			item           = new PatchBrowserItem(entry->path(true).Mid(1), archive, 0, ns);
+			item           = new PatchBrowserItem(entry->path(true).Mid(1), archive, PatchBrowserItem::Type::Patch, ns);
 			string fnspace = nspace + " (Full Path)";
 			addItem(item, fnspace + "/" + arch);
 		}
@@ -355,9 +344,9 @@ bool PatchBrowser::openArchive(Archive* archive)
 		string name = entry->name(true).Truncate(8).Upper();
 
 		bool duplicate = false;
-		for (auto ustr = usednames.begin(); ustr != usednames.end(); ustr++)
+		for (auto& usedname : usednames)
 		{
-			if (ustr->Cmp(name) == 0)
+			if (usedname.Cmp(name) == 0)
 			{
 				duplicate = true;
 				break;
@@ -367,7 +356,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 		if (duplicate)
 			continue;
 
-		item = new PatchBrowserItem(name, archive, 0, ns);
+		item = new PatchBrowserItem(name, archive, PatchBrowserItem::Type::Patch, ns);
 		addItem(item, nspace + "/" + arch);
 		usednames.push_back(name);
 	}
@@ -377,14 +366,12 @@ bool PatchBrowser::openArchive(Archive* archive)
 	theResourceManager->putAllTextures(textures, nullptr, archive);
 
 	// Go through the list
-	for (unsigned a = 0; a < textures.size(); a++)
+	for (auto res : textures)
 	{
-		TextureResource::Texture* res = textures[a];
-
 		if (full_path_ || res->tex.name().Len() <= 8)
 		{
 			// Create browser item
-			PatchBrowserItem* item = new PatchBrowserItem(res->tex.name(), res->parent, 1);
+			auto item = new PatchBrowserItem(res->tex.name(), res->parent, PatchBrowserItem::Type::CTexture);
 
 			// Add to textures node (under parent archive name)
 			addItem(item, "Textures/" + res->parent->filename(false));
@@ -392,7 +379,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 	}
 
 	// Open 'patches' node
-	openTree((BrowserTreeNode*)items_root_->child("Patches"));
+	openTree(dynamic_cast<BrowserTreeNode*>(items_root_->child("Patches")));
 
 	// Update tree control
 	populateItemTree();
@@ -414,7 +401,7 @@ bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 	for (unsigned a = 0; a < texturex->size(); a++)
 	{
 		// Create browser item
-		PatchBrowserItem* item = new PatchBrowserItem(texturex->texture(a)->name(), parent, 1);
+		auto item = new PatchBrowserItem(texturex->texture(a)->name(), parent, PatchBrowserItem::Type::CTexture);
 
 		// Set archive name
 		string arch = "Unknown";
@@ -434,7 +421,7 @@ bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 int PatchBrowser::selectedPatch()
 {
 	// Get selected item
-	PatchBrowserItem* item = (PatchBrowserItem*)selectedItem();
+	auto item = dynamic_cast<PatchBrowserItem*>(selectedItem());
 
 	if (item)
 		return item->index();
@@ -462,7 +449,7 @@ void PatchBrowser::selectPatch(int pt_index)
 // -----------------------------------------------------------------------------
 // Selects the patch matching [name]
 // -----------------------------------------------------------------------------
-void PatchBrowser::selectPatch(string name)
+void PatchBrowser::selectPatch(const string& name)
 {
 	selectItem(name);
 }

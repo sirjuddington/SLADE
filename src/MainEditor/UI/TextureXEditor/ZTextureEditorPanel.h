@@ -9,7 +9,7 @@ class ZTextureEditorPanel : public TextureEditorPanel
 {
 public:
 	ZTextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor) : TextureEditorPanel{ parent, tx_editor } {}
-	~ZTextureEditorPanel() {}
+	~ZTextureEditorPanel() = default;
 
 	// UI Stuff
 	wxPanel* createTextureControls(wxWindow* parent) override;
@@ -21,37 +21,37 @@ public:
 	void addPatch() override;
 	void replacePatch() override;
 
-	void enableTranslationControls(bool enable);
-	void enableBlendControls(bool enable, bool tint = false);
+	void enableTranslationControls(bool enable) const;
+	void enableBlendControls(bool enable, bool tint = false) const;
 
 private:
 	// Texture properties
-	wxSpinCtrlDouble* spin_tex_scalex_;
-	wxSpinCtrlDouble* spin_tex_scaley_;
-	wxSpinCtrl*       spin_tex_offsetx_;
-	wxSpinCtrl*       spin_tex_offsety_;
-	wxChoice*         choice_type_;
-	wxCheckBox*       cb_optional_;
-	wxCheckBox*       cb_worldpanning_;
-	wxCheckBox*       cb_nodecals_;
-	wxCheckBox*       cb_nulltexture_;
+	wxSpinCtrlDouble* spin_tex_scalex_  = nullptr;
+	wxSpinCtrlDouble* spin_tex_scaley_  = nullptr;
+	wxSpinCtrl*       spin_tex_offsetx_ = nullptr;
+	wxSpinCtrl*       spin_tex_offsety_ = nullptr;
+	wxChoice*         choice_type_      = nullptr;
+	wxCheckBox*       cb_optional_      = nullptr;
+	wxCheckBox*       cb_worldpanning_  = nullptr;
+	wxCheckBox*       cb_nodecals_      = nullptr;
+	wxCheckBox*       cb_nulltexture_   = nullptr;
 
 	// Patch properties
-	wxCheckBox*       cb_flipx_;
-	wxCheckBox*       cb_flipy_;
-	wxCheckBox*       cb_useofs_;
-	wxChoice*         choice_rotation_;
-	wxSpinCtrlDouble* spin_alpha_;
-	wxChoice*         choice_style_;
+	wxCheckBox*       cb_flipx_        = nullptr;
+	wxCheckBox*       cb_flipy_        = nullptr;
+	wxCheckBox*       cb_useofs_       = nullptr;
+	wxChoice*         choice_rotation_ = nullptr;
+	wxSpinCtrlDouble* spin_alpha_      = nullptr;
+	wxChoice*         choice_style_    = nullptr;
 
-	wxRadioButton*    rb_pc_normal_;
-	wxRadioButton*    rb_pc_translation_;
-	wxRadioButton*    rb_pc_blend_;
-	wxRadioButton*    rb_pc_tint_;
-	ColourBox*        cb_blend_col_;
-	wxSpinCtrlDouble* spin_tint_amount_;
-	wxTextCtrl*       text_translation_;
-	wxButton*         btn_edit_translation_;
+	wxRadioButton*    rb_pc_normal_         = nullptr;
+	wxRadioButton*    rb_pc_translation_    = nullptr;
+	wxRadioButton*    rb_pc_blend_          = nullptr;
+	wxRadioButton*    rb_pc_tint_           = nullptr;
+	ColourBox*        cb_blend_col_         = nullptr;
+	wxSpinCtrlDouble* spin_tint_amount_     = nullptr;
+	wxTextCtrl*       text_translation_     = nullptr;
+	wxButton*         btn_edit_translation_ = nullptr;
 
 	// Events
 	void onCBBlendRGBAChanged(wxCommandEvent& e);

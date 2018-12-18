@@ -26,10 +26,10 @@ public:
 	};
 
 	Palette(unsigned size = 256);
-	Palette(Palette* pal) : Palette(pal->colours_.size()) { copyPalette(pal); }
+	Palette(const Palette& pal) : Palette(pal.colours_.size()) { copyPalette(&pal); }
 	~Palette() = default;
 
-	ColRGBA colour(uint8_t index) { return colours_[index]; }
+	ColRGBA colour(uint8_t index) const { return colours_[index]; }
 	short   transIndex() const { return index_trans_; }
 
 	bool loadMem(MemChunk& mc);
@@ -46,7 +46,7 @@ public:
 	void setColourA(uint8_t index, uint8_t val) { colours_[index].a = val; }
 	void setTransIndex(short index) { index_trans_ = index; }
 
-	void   copyPalette(Palette* copy);
+	void   copyPalette(const Palette* copy);
 	short  findColour(ColRGBA colour);
 	short  nearestColour(ColRGBA colour, ColourMatch match = ColourMatch::Default);
 	size_t countColours();

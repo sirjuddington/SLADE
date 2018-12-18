@@ -25,7 +25,7 @@ class DirArchiveCheck : public wxThread
 {
 public:
 	DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive);
-	virtual ~DirArchiveCheck();
+	virtual ~DirArchiveCheck() = default;
 
 	ExitCode Entry() override;
 
@@ -36,6 +36,18 @@ private:
 		string file_path;
 		bool   is_dir;
 		time_t file_modified;
+
+		EntryInfo(
+			const string& entry_path    = "",
+			const string& file_path     = "",
+			bool          is_dir        = false,
+			time_t        file_modified = 0) :
+			entry_path{ entry_path },
+			file_path{ file_path },
+			is_dir{ is_dir },
+			file_modified{ file_modified }
+		{
+		}
 	};
 
 	wxEvtHandler*        handler_;
@@ -53,7 +65,7 @@ public:
 	ArchiveManagerPanel* parent;
 
 	WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id);
-	~WMFileBrowser();
+	~WMFileBrowser() = default;
 
 	void onItemActivated(wxTreeEvent& e);
 };
@@ -62,7 +74,7 @@ class ArchiveManagerPanel : public DockPanel, Listener, SActionHandler
 {
 public:
 	ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives);
-	~ArchiveManagerPanel();
+	~ArchiveManagerPanel() = default;
 
 	wxMenu* getRecentMenu() const { return menu_recent_; }
 
@@ -103,9 +115,9 @@ public:
 	void            openEntryTab(ArchiveEntry* entry) const;
 	void            closeEntryTab(ArchiveEntry* entry) const;
 	void            closeEntryTabs(Archive* parent) const;
-	void            openFile(string filename) const;
+	void            openFile(const string& filename) const;
 	void            openFiles(wxArrayString& files) const;
-	void            openDirAsArchive(string dir) const;
+	void            openDirAsArchive(const string& dir) const;
 	bool            redirectToTab(ArchiveEntry* entry) const;
 	bool            entryIsOpenInTab(ArchiveEntry* entry) const;
 
@@ -120,7 +132,7 @@ public:
 	bool beforeCloseArchive(Archive* archive);
 	bool closeArchive(Archive* archive);
 
-	void createNewArchive(string format) const;
+	void createNewArchive(const string& format) const;
 	bool closeAll();
 	void saveAll() const;
 	void checkDirArchives();
@@ -151,29 +163,26 @@ public:
 	void onListArchivesRightClick(wxListEvent& e);
 	void onListRecentActivated(wxListEvent& e);
 	void onListRecentRightClick(wxListEvent& e);
-	void onListBookmarksActivated(wxListEvent& e);
 	void onListBookmarksRightClick(wxListEvent& e);
-	void onArchiveTabChanging(wxAuiNotebookEvent& e);
 	void onArchiveTabChanged(wxAuiNotebookEvent& e);
 	void onArchiveTabClose(wxAuiNotebookEvent& e);
 	void onArchiveTabClosed(wxAuiNotebookEvent& e);
-	void onAMTabChanged(wxAuiNotebookEvent& e);
 	void onDirArchiveCheckCompleted(wxThreadEvent& e);
 
 private:
-	STabCtrl*        stc_tabs_;
-	STabCtrl*        stc_archives_;
-	wxPanel*         panel_am_;
-	wxPanel*         panel_archives_;
-	wxPanel*         panel_rf_;
-	ListView*        list_archives_;
-	ListView*        list_recent_;
-	ListView*        list_bookmarks_;
-	WMFileBrowser*   file_browser_;
-	wxMenu*          menu_recent_;
-	Archive*         current_maps_;
-	Archive*         pending_closed_archive_;
-	bool             asked_save_unchanged_;
-	bool             checked_dir_archive_changes_;
+	STabCtrl*        stc_tabs_                    = nullptr;
+	STabCtrl*        stc_archives_                = nullptr;
+	wxPanel*         panel_am_                    = nullptr;
+	wxPanel*         panel_archives_              = nullptr;
+	wxPanel*         panel_rf_                    = nullptr;
+	ListView*        list_archives_               = nullptr;
+	ListView*        list_recent_                 = nullptr;
+	ListView*        list_bookmarks_              = nullptr;
+	WMFileBrowser*   file_browser_                = nullptr;
+	wxMenu*          menu_recent_                 = nullptr;
+	Archive*         current_maps_                = nullptr;
+	Archive*         pending_closed_archive_      = nullptr;
+	bool             asked_save_unchanged_        = false;
+	bool             checked_dir_archive_changes_ = false;
 	vector<Archive*> checking_archives_;
 };

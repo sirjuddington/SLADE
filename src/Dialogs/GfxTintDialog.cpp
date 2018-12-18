@@ -50,7 +50,7 @@
 // -----------------------------------------------------------------------------
 // GfxTintDialog class constructor
 // -----------------------------------------------------------------------------
-GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal) :
+GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palette& pal) :
 	wxDialog(parent, -1, "Tint", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 	entry_{ entry },
 	palette_{ pal }
@@ -72,7 +72,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal
 
 	cb_colour_ = new ColourBox(this, -1, false, true);
 	cb_colour_->setColour(COL_RED);
-	cb_colour_->setPalette(pal);
+	cb_colour_->setPalette(&palette_);
 	hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
 	hbox->Add(cb_colour_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
@@ -95,10 +95,10 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal
 
 	// Setup preview
 	gfx_preview_->setViewType(GfxCanvas::View::Centered);
-	gfx_preview_->setPalette(pal);
+	gfx_preview_->setPalette(&palette_);
 	gfx_preview_->SetInitialSize(wxSize(256, 256));
 	Misc::loadImageFromEntry(gfx_preview_->getImage(), entry);
-	gfx_preview_->getImage()->tint(colour(), amount(), pal);
+	gfx_preview_->getImage()->tint(colour(), amount(), &palette_);
 	gfx_preview_->updateImageTexture();
 
 	// Init layout

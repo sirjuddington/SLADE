@@ -12,8 +12,8 @@ public:
 
 	void init();
 	void load(bool new_tip = true);
-	void refresh();
-	void updateAvailable(string version_name);
+	void refresh() const;
+	void updateAvailable(const string& version_name);
 
 #ifdef USE_WEBVIEW_STARTPAGE
 	typedef wxWebView WebView;

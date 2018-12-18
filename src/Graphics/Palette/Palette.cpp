@@ -509,7 +509,7 @@ void Palette::setGradient(uint8_t startIndex, uint8_t endIndex, ColRGBA startCol
 // -----------------------------------------------------------------------------
 // Copies the given palette into this one
 // -----------------------------------------------------------------------------
-void Palette::copyPalette(Palette* copy)
+void Palette::copyPalette(const Palette* copy)
 {
 	if (!copy)
 		return;

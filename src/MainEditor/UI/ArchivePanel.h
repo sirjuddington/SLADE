@@ -13,87 +13,95 @@ class EntryPanel;
 class ArchivePanel : public wxPanel, public Listener, SActionHandler
 {
 public:
+	enum class NewEntry
+	{
+		Empty = 0,
+		Palette,
+		Animated,
+		Switches,
+	};
+
 	ArchivePanel(wxWindow* parent, Archive* archive);
-	virtual ~ArchivePanel() {}
+	virtual ~ArchivePanel() = default;
 
 	Archive*     archive() const { return archive_; }
 	UndoManager* undoManager() const { return undo_manager_.get(); }
-	bool         saveEntryChanges();
-	void         addMenus();
-	void         removeMenus();
+	bool         saveEntryChanges() const;
+	void         addMenus() const;
+	void         removeMenus() const;
 
 	// Editing actions - return success
 
 	// General actions
-	void undo();
-	void redo();
+	void undo() const;
+	void redo() const;
 
 	// Archive manipulation actions
 	bool save();
 	bool saveAs();
-	bool newEntry(int type = ENTRY_EMPTY);
-	bool newDirectory();
+	bool newEntry(NewEntry type = NewEntry::Empty);
+	bool newDirectory() const;
 	bool importFiles();
-	bool convertArchiveTo();
-	bool cleanupArchive();
+	bool convertArchiveTo() const;
+	bool cleanupArchive() const;
 	bool buildArchive();
 
 	// Entry manipulation actions
-	bool renameEntry(bool each = false);
+	bool renameEntry(bool each = false) const;
 	bool deleteEntry(bool confirm = true);
-	bool revertEntry();
+	bool revertEntry() const;
 	bool moveUp();
 	bool moveDown();
-	bool sort();
-	bool bookmark();
-	bool openTab();
-	bool convertEntryTo();
+	bool sort() const;
+	bool bookmark() const;
+	bool openTab() const;
+	bool convertEntryTo() const;
 	bool importEntry();
 	bool exportEntry();
-	bool exportEntryAs();
-	bool copyEntry();
+	bool exportEntryAs() const;
+	bool copyEntry() const;
 	bool cutEntry();
-	bool pasteEntry();
+	bool pasteEntry() const;
 	bool openEntryExternal();
 
 	// Other entry actions
-	bool gfxConvert();
+	bool gfxConvert() const;
 	bool gfxRemap();
 	bool gfxColourise();
 	bool gfxTint();
-	bool gfxModifyOffsets();
+	bool gfxModifyOffsets() const;
 	bool gfxExportPNG();
-	bool swanConvert();
+	bool swanConvert() const;
 	bool basConvert(bool animdefs = false);
-	bool palConvert();
+	bool palConvert() const;
 	bool reloadCurrentPanel();
-	bool wavDSndConvert();
-	bool dSndWavConvert();
-	bool musMidiConvert();
-	bool optimizePNG();
-	bool compileACS(bool hexen = false);
-	bool convertTextures();
-	bool findTextureErrors();
-	bool mapOpenDb2();
-	bool crc32();
+	bool wavDSndConvert() const;
+	bool dSndWavConvert() const;
+	bool musMidiConvert() const;
+	bool optimizePNG() const;
+	bool compileACS(bool hexen = false) const;
+	bool convertTextures() const;
+	bool findTextureErrors() const;
+	bool mapOpenDb2() const;
+	bool crc32() const;
 
 	// Needed for some console commands
-	EntryPanel*           currentArea() { return cur_area_; }
-	ArchiveEntry*         currentEntry();
-	vector<ArchiveEntry*> currentEntries();
-	ArchiveTreeNode*      currentDir();
+	EntryPanel*           currentArea() const { return cur_area_; }
+	ArchiveEntry*         currentEntry() const;
+	vector<ArchiveEntry*> currentEntries() const;
+	ArchiveTreeNode*      currentDir() const;
 
 	// UI related
-	bool    openDir(ArchiveTreeNode* dir);
+	bool    openDir(ArchiveTreeNode* dir) const;
 	bool    openEntry(ArchiveEntry* entry, bool force = false);
 	bool    openEntryAsText(ArchiveEntry* entry);
 	bool    openEntryAsHex(ArchiveEntry* entry);
 	bool    showEntryPanel(EntryPanel* new_area, bool ask_save = true);
-	void    focusOnEntry(ArchiveEntry* entry);
-	void    focusEntryList() { entry_list_->SetFocus(); }
+	void    focusOnEntry(ArchiveEntry* entry) const;
+	void    focusEntryList() const { entry_list_->SetFocus(); }
 	void    refreshPanel();
 	void    closeCurrentEntry();
-	wxMenu* createEntryOpenMenu(string category);
+	wxMenu* createEntryOpenMenu(const string& category);
 
 	// SAction handler
 	bool handleAction(string id) override;
@@ -138,14 +146,6 @@ protected:
 	EntryPanel* audio_area_    = nullptr;
 	EntryPanel* data_area_     = nullptr;
 
-	enum NewEntries
-	{
-		ENTRY_EMPTY = 0,
-		ENTRY_PALETTE,
-		ENTRY_ANIMATED,
-		ENTRY_SWITCHES,
-	};
-
 	// Events
 	void         onEntryListSelectionChange(wxCommandEvent& e);
 	void         onEntryListFocusChange(wxListEvent& e);
@@ -180,6 +180,6 @@ public:
 private:
 	MemChunk data_;
 	string   path_;
-	unsigned index_;
-	Archive* archive_;
+	unsigned index_   = -1;
+	Archive* archive_ = nullptr;
 };

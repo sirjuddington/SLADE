@@ -69,8 +69,8 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 	sizer_main_->Add(label_size_, 0, wxALL | wxALIGN_CENTER, UI::pad());
 
 	// Add actions frame
-	frame_actions_               = new wxStaticBox(this, -1, "Actions");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame_actions_, wxVERTICAL);
+	frame_actions_  = new wxStaticBox(this, -1, "Actions");
+	auto framesizer = new wxStaticBoxSizer(frame_actions_, wxVERTICAL);
 	sizer_main_->Add(framesizer, 0, wxALL | wxALIGN_CENTER, UI::pad());
 
 	// Add 'Convert Gfx' button
@@ -89,9 +89,10 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 	sizer_main_->AddStretchSpacer(1);
 
 	// Bind events
-	btn_gfx_convert_->Bind(wxEVT_BUTTON, &DefaultEntryPanel::onBtnGfxConvert, this);
+	btn_gfx_convert_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { SActionHandler::doAction("arch_gfx_convert"); });
 	btn_gfx_modify_offsets_->Bind(wxEVT_BUTTON, &DefaultEntryPanel::onBtnGfxModifyOffsets, this);
-	btn_texture_edit_->Bind(wxEVT_BUTTON, &DefaultEntryPanel::onBtnTextureEdit, this);
+	btn_texture_edit_->Bind(
+		wxEVT_BUTTON, [&](wxCommandEvent&) { MainEditor::openTextureEditor(entry_->parent(), entry_); });
 
 	// Hide save/revert toolbar
 	toolbar_->deleteGroup("Entry");
@@ -99,12 +100,12 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 	stb_revert_ = nullptr;
 
 	// Setup toolbar
-	SToolBarGroup* group = new SToolBarGroup(toolbar_, "View As");
+	auto group = new SToolBarGroup(toolbar_, "View As");
 	group->addActionButton("arch_view_text", "", true);
 	group->addActionButton("arch_view_hex", "", true);
 	toolbar_->addGroup(group);
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------
@@ -152,8 +153,8 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 	// Update labels
 	label_type_->SetLabel(S_FMT("%lu selected entries", entries.size()));
 	unsigned size = 0;
-	for (unsigned a = 0; a < entries.size(); a++)
-		size += entries[a]->size();
+	for (auto& entry : entries)
+		size += entry->size();
 	label_size_->SetLabel(S_FMT("Total Size: %s", Misc::sizeAsString(size)));
 
 	// Setup actions frame
@@ -164,26 +165,26 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 
 	bool gfx     = false;
 	bool texture = false;
-	this->entries_.clear();
+	entries_.clear();
 	size_t max = 0, min = entries[0]->parentDir()->entryIndex(entries[0]);
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (auto& entry : entries)
 	{
 		// Get index
-		size_t index = entries[a]->parentDir()->entryIndex(entries[a]);
+		size_t index = entry->parentDir()->entryIndex(entry);
 		if (index < min)
 			min = index;
 		if (index > max)
 			max = index;
 
 		// Check for gfx entry
-		if (entries[a]->type()->extraProps().propertyExists("image"))
+		if (entry->type()->extraProps().propertyExists("image"))
 			gfx = true;
 
 		// Check for TEXTUREx related entry
-		if (entries[a]->type()->id() == "texturex" || entries[a]->type()->id() == "pnames")
+		if (entry->type()->id() == "texturex" || entry->type()->id() == "pnames")
 			texture = true;
 
-		this->entries_.push_back(entries[a]);
+		this->entries_.push_back(entry);
 	}
 	label_index_->SetLabel(S_FMT("Entry Indices: from %lu to %lu", (unsigned long)min, (unsigned long)max));
 	if (gfx)
@@ -221,14 +222,6 @@ bool DefaultEntryPanel::saveEntry()
 
 
 // -----------------------------------------------------------------------------
-// Called when the 'Convert Gfx To' button is clicked
-// -----------------------------------------------------------------------------
-void DefaultEntryPanel::onBtnGfxConvert(wxCommandEvent& e)
-{
-	SActionHandler::doAction("arch_gfx_convert");
-}
-
-// -----------------------------------------------------------------------------
 // Called when the 'Modify Offsets' button is clicked
 // -----------------------------------------------------------------------------
 void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
@@ -239,15 +232,7 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
 		return;
 
 	// Apply offsets to selected entries
-	for (uint32_t a = 0; a < entries_.size(); a++)
-		EntryOperations::modifyGfxOffsets(entries_[a], &mod);
+	for (auto& entry : entries_)
+		EntryOperations::modifyGfxOffsets(entry, &mod);
 	MainEditor::currentEntryPanel()->callRefresh();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'Edit Textures' button is clicked
-// -----------------------------------------------------------------------------
-void DefaultEntryPanel::onBtnTextureEdit(wxCommandEvent& e)
-{
-	MainEditor::openTextureEditor(entry_->parent(), entry_);
 }

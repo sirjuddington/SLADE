@@ -2,6 +2,7 @@
 
 #include "EntryPanel.h"
 #include "General/SAction.h"
+#include "Graphics/Palette/Palette.h"
 
 /* TODO:
  * - Improve and enrich palette edition functions
@@ -16,20 +17,19 @@
  *   beta version which used a green colormap for the light amp visors).
  */
 class PaletteCanvas;
-class Palette;
 class ArchiveEntry;
 
 class PaletteEntryPanel : public EntryPanel, public SActionHandler
 {
 public:
 	PaletteEntryPanel(wxWindow* parent);
-	~PaletteEntryPanel();
+	~PaletteEntryPanel() = default;
 
 	bool   loadEntry(ArchiveEntry* entry) override;
 	bool   saveEntry() override;
 	string statusString() override;
 	void   refreshPanel() override;
-	void   toolbarButtonClick(string action_id) override;
+	void   toolbarButtonClick(const string& action_id) override;
 
 	bool showPalette(uint32_t index);
 	bool addCustomPalette();
@@ -58,10 +58,10 @@ public:
 	bool fillCustomMenu(wxMenu* custom) override;
 
 private:
-	PaletteCanvas*   pal_canvas_ = nullptr;
-	vector<Palette*> palettes_;
-	uint32_t         cur_palette_ = 1;
-	wxStaticText*    text_curpal_ = nullptr;
+	PaletteCanvas*        pal_canvas_ = nullptr;
+	vector<Palette::UPtr> palettes_;
+	uint32_t              cur_palette_ = 1;
+	wxStaticText*         text_curpal_ = nullptr;
 
 	// A helper for generatePalettes() which has no reason to be called outside
 	void generatePalette(int r, int g, int b, int shift, int steps);

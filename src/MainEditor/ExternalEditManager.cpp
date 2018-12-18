@@ -56,29 +56,29 @@ class ExternalEditFileMonitor : public FileMonitor, Listener
 public:
 	ExternalEditFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) :
 		FileMonitor("", false),
-		entry(entry),
-		manager(manager)
+		entry_(entry),
+		manager_(manager)
 	{
 		// Listen to entry parent archive
-		archive = entry->parent();
-		listenTo(archive);
+		archive_ = entry->parent();
+		listenTo(archive_);
 	}
 
-	virtual ~ExternalEditFileMonitor() { manager->monitorStopped(this); }
+	virtual ~ExternalEditFileMonitor() { manager_->monitorStopped(this); }
 
-	ArchiveEntry* getEntry() { return entry; }
-	void          fileModified() { updateEntry(); }
+	ArchiveEntry* getEntry() const { return entry_; }
+	void          fileModified() override { updateEntry(); }
 
-	virtual void updateEntry() { entry->importFile(filename_); }
+	virtual void updateEntry() { entry_->importFile(filename_); }
 
 	virtual bool exportEntry()
 	{
 		// Determine export filename/path
-		wxFileName fn(App::path(entry->name(), App::Dir::Temp));
-		fn.SetExt(entry->type()->extension());
+		wxFileName fn(App::path(entry_->name(), App::Dir::Temp));
+		fn.SetExt(entry_->type()->extension());
 
 		// Export entry and start monitoring
-		bool ok = entry->exportFile(fn.GetFullPath());
+		bool ok = entry_->exportFile(fn.GetFullPath());
 		if (ok)
 		{
 			filename_      = fn.GetFullPath();
@@ -93,7 +93,7 @@ public:
 
 	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override
 	{
-		if (announcer != archive)
+		if (announcer != archive_)
 			return;
 
 		bool finished = false;
@@ -105,7 +105,7 @@ public:
 			wxUIntPtr ptr;
 			event_data.read(&index, sizeof(int));
 			event_data.read(&ptr, sizeof(wxUIntPtr));
-			if (wxUIntToPtr(ptr) == entry)
+			if (wxUIntToPtr(ptr) == entry_)
 				finished = true;
 		}
 
@@ -114,10 +114,10 @@ public:
 	}
 
 protected:
-	ArchiveEntry*        entry;
-	Archive*             archive;
-	ExternalEditManager* manager;
-	string               gfx_format;
+	ArchiveEntry*        entry_   = nullptr;
+	Archive*             archive_ = nullptr;
+	ExternalEditManager* manager_ = nullptr;
+	string               gfx_format_;
 };
 
 
@@ -132,9 +132,9 @@ public:
 	GfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) : ExternalEditFileMonitor(entry, manager)
 	{
 	}
-	virtual ~GfxExternalFileMonitor() {}
+	virtual ~GfxExternalFileMonitor() = default;
 
-	void updateEntry()
+	void updateEntry() override
 	{
 		// Read file
 		MemChunk data;
@@ -143,18 +143,18 @@ public:
 		// Read image
 		SImage image;
 		image.open(data, 0, "png");
-		image.convertPaletted(&palette);
+		image.convertPaletted(&palette_);
 
 		// Convert image to entry gfx format
-		SIFormat* format = SIFormat::getFormat(gfx_format);
+		auto format = SIFormat::getFormat(gfx_format_);
 		if (format)
 		{
 			MemChunk conv_data;
-			if (format->saveImage(image, conv_data, &palette))
+			if (format->saveImage(image, conv_data, &palette_))
 			{
 				// Update entry data
-				entry->importMemChunk(conv_data);
-				EntryOperations::setGfxOffsets(entry, offsets.x, offsets.y);
+				entry_->importMemChunk(conv_data);
+				EntryOperations::setGfxOffsets(entry_, offsets_.x, offsets_.y);
 			}
 			else
 			{
@@ -163,29 +163,29 @@ public:
 		}
 	}
 
-	bool exportEntry()
+	bool exportEntry() override
 	{
-		wxFileName fn(App::path(entry->name(), App::Dir::Temp));
+		wxFileName fn(App::path(entry_->name(), App::Dir::Temp));
 
 		fn.SetExt("png");
 
 		// Create image from entry
 		SImage image;
-		if (!Misc::loadImageFromEntry(&image, entry))
+		if (!Misc::loadImageFromEntry(&image, entry_))
 		{
 			Global::error = "Could not read graphic";
 			return false;
 		}
 
 		// Set export info
-		gfx_format = image.format()->id();
-		offsets    = image.offset();
-		palette.copyPalette(MainEditor::currentPalette(entry));
+		gfx_format_ = image.format()->id();
+		offsets_    = image.offset();
+		palette_.copyPalette(MainEditor::currentPalette(entry_));
 
 		// Write png data
-		MemChunk  png;
-		SIFormat* fmt_png = SIFormat::getFormat("png");
-		if (!fmt_png->saveImage(image, png, &palette))
+		MemChunk png;
+		auto     fmt_png = SIFormat::getFormat("png");
+		if (!fmt_png->saveImage(image, png, &palette_))
 		{
 			Global::error = "Error converting to png";
 			return false;
@@ -204,9 +204,9 @@ public:
 	}
 
 private:
-	string  gfx_format;
-	Vec2i   offsets;
-	Palette palette;
+	string  gfx_format_;
+	Vec2i   offsets_;
+	Palette palette_;
 };
 
 
@@ -221,39 +221,39 @@ public:
 	MIDIExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) : ExternalEditFileMonitor(entry, manager)
 	{
 	}
-	virtual ~MIDIExternalFileMonitor() {}
+	virtual ~MIDIExternalFileMonitor() = default;
 
-	void updateEntry()
+	void updateEntry() override
 	{
 		// Can't convert back, just import the MIDI
-		entry->importFile(filename_);
+		entry_->importFile(filename_);
 	}
 
-	bool exportEntry()
+	bool exportEntry() override
 	{
-		wxFileName fn(App::path(entry->name(), App::Dir::Temp));
+		wxFileName fn(App::path(entry_->name(), App::Dir::Temp));
 		fn.SetExt("mid");
 
 		// Convert to MIDI data
 		MemChunk convdata;
 
 		// MUS
-		if (entry->type()->formatId() == "midi_mus")
-			Conversions::musToMidi(entry->data(), convdata);
+		if (entry_->type()->formatId() == "midi_mus")
+			Conversions::musToMidi(entry_->data(), convdata);
 
 		// HMI/HMP/XMI
 		else if (
-			entry->type()->formatId() == "midi_xmi" || entry->type()->formatId() == "midi_hmi"
-			|| entry->type()->formatId() == "midi_hmp")
-			Conversions::zmusToMidi(entry->data(), convdata, 0);
+			entry_->type()->formatId() == "midi_xmi" || entry_->type()->formatId() == "midi_hmi"
+			|| entry_->type()->formatId() == "midi_hmp")
+			Conversions::zmusToMidi(entry_->data(), convdata, 0);
 
 		// GMID
-		else if (entry->type()->formatId() == "midi_gmid")
-			Conversions::gmidToMidi(entry->data(), convdata);
+		else if (entry_->type()->formatId() == "midi_gmid")
+			Conversions::gmidToMidi(entry_->data(), convdata);
 
 		else
 		{
-			Global::error = S_FMT("Type %s can not be converted to MIDI", CHR(entry->type()->name()));
+			Global::error = S_FMT("Type %s can not be converted to MIDI", CHR(entry_->type()->name()));
 			return false;
 		}
 
@@ -271,12 +271,9 @@ public:
 
 	static bool canHandleEntry(ArchiveEntry* entry)
 	{
-		if (entry->type()->formatId() == "midi" || entry->type()->formatId() == "midi_mus"
-			|| entry->type()->formatId() == "midi_xmi" || entry->type()->formatId() == "midi_hmi"
-			|| entry->type()->formatId() == "midi_hmp" || entry->type()->formatId() == "midi_gmid")
-			return true;
-
-		return false;
+		return entry->type()->formatId() == "midi" || entry->type()->formatId() == "midi_mus"
+			   || entry->type()->formatId() == "midi_xmi" || entry->type()->formatId() == "midi_hmi"
+			   || entry->type()->formatId() == "midi_hmp" || entry->type()->formatId() == "midi_gmid";
 	}
 };
 
@@ -291,70 +288,70 @@ class SfxExternalFileMonitor : public ExternalEditFileMonitor
 public:
 	SfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) :
 		ExternalEditFileMonitor(entry, manager),
-		doom_sound(true)
+		doom_sound_(true)
 	{
 	}
-	virtual ~SfxExternalFileMonitor() {}
+	virtual ~SfxExternalFileMonitor() = default;
 
-	void updateEntry()
+	void updateEntry() override
 	{
 		// Convert back to doom sound if it was originally
-		if (doom_sound)
+		if (doom_sound_)
 		{
 			MemChunk in, out;
 			in.importFile(filename_);
 			if (Conversions::wavToDoomSnd(in, out))
 			{
 				// Import converted data to entry if successful
-				entry->importMemChunk(out);
+				entry_->importMemChunk(out);
 				return;
 			}
 		}
 
 		// Just import wav to entry if conversion to doom sound
 		// failed or the entry was not a convertable type
-		entry->importFile(filename_);
+		entry_->importFile(filename_);
 	}
 
-	bool exportEntry()
+	bool exportEntry() override
 	{
-		wxFileName fn(App::path(entry->name(), App::Dir::Temp));
+		wxFileName fn(App::path(entry_->name(), App::Dir::Temp));
 		fn.SetExt("mid");
 
 		// Convert to WAV data
 		MemChunk convdata;
 
 		// Doom Sound
-		if (entry->type()->formatId() == "snd_doom" || entry->type()->formatId() == "snd_doom_mac")
-			Conversions::doomSndToWav(entry->data(), convdata);
+		if (entry_->type()->formatId() == "snd_doom" || entry_->type()->formatId() == "snd_doom_mac")
+			Conversions::doomSndToWav(entry_->data(), convdata);
 
 		// Doom PC Speaker Sound
-		else if (entry->type()->formatId() == "snd_speaker")
-			Conversions::spkSndToWav(entry->data(), convdata);
+		else if (entry_->type()->formatId() == "snd_speaker")
+			Conversions::spkSndToWav(entry_->data(), convdata);
 
 		// AudioT PC Speaker Sound
-		else if (entry->type()->formatId() == "snd_audiot")
-			Conversions::spkSndToWav(entry->data(), convdata, true);
+		else if (entry_->type()->formatId() == "snd_audiot")
+			Conversions::spkSndToWav(entry_->data(), convdata, true);
 
 		// Wolfenstein 3D Sound
-		else if (entry->type()->formatId() == "snd_wolf")
-			Conversions::wolfSndToWav(entry->data(), convdata);
+		else if (entry_->type()->formatId() == "snd_wolf")
+			Conversions::wolfSndToWav(entry_->data(), convdata);
 
 		// Creative Voice File
-		else if (entry->type()->formatId() == "snd_voc")
-			Conversions::vocToWav(entry->data(), convdata);
+		else if (entry_->type()->formatId() == "snd_voc")
+			Conversions::vocToWav(entry_->data(), convdata);
 
 		// Jaguar Doom Sound
-		else if (entry->type()->formatId() == "snd_jaguar")
-			Conversions::jagSndToWav(entry->data(), convdata);
+		else if (entry_->type()->formatId() == "snd_jaguar")
+			Conversions::jagSndToWav(entry_->data(), convdata);
 
 		// Blood Sound
-		else if (entry->type()->formatId() == "snd_bloodsfx")
-			Conversions::bloodToWav(entry, convdata);
+		else if (entry_->type()->formatId() == "snd_bloodsfx")
+			Conversions::bloodToWav(entry_, convdata);
 
 		else
 		{
-			Global::error = S_FMT("Type %s can not be converted to WAV", CHR(entry->type()->name()));
+			Global::error = S_FMT("Type %s can not be converted to WAV", CHR(entry_->type()->name()));
 			return false;
 		}
 
@@ -372,17 +369,14 @@ public:
 
 	static bool canHandleEntry(ArchiveEntry* entry)
 	{
-		if (entry->type()->formatId() == "snd_doom" || entry->type()->formatId() == "snd_doom_mac"
-			|| entry->type()->formatId() == "snd_speaker" || entry->type()->formatId() == "snd_audiot"
-			|| entry->type()->formatId() == "snd_wolf" || entry->type()->formatId() == "snd_voc"
-			|| entry->type()->formatId() == "snd_jaguar" || entry->type()->formatId() == "snd_bloodsfx")
-			return true;
-
-		return false;
+		return entry->type()->formatId() == "snd_doom" || entry->type()->formatId() == "snd_doom_mac"
+			   || entry->type()->formatId() == "snd_speaker" || entry->type()->formatId() == "snd_audiot"
+			   || entry->type()->formatId() == "snd_wolf" || entry->type()->formatId() == "snd_voc"
+			   || entry->type()->formatId() == "snd_jaguar" || entry->type()->formatId() == "snd_bloodsfx";
 	}
 
 private:
-	bool doom_sound;
+	bool doom_sound_;
 };
 
 
@@ -394,27 +388,22 @@ private:
 
 
 // -----------------------------------------------------------------------------
-// ExternalEditManager class constructor
-// -----------------------------------------------------------------------------
-ExternalEditManager::ExternalEditManager() {}
-
-// -----------------------------------------------------------------------------
 // ExternalEditManager class destructor
 // -----------------------------------------------------------------------------
 ExternalEditManager::~ExternalEditManager()
 {
-	for (unsigned a = 0; a < file_monitors_.size(); a++)
-		delete file_monitors_[a];
+	for (auto& file_monitor : file_monitors_)
+		delete file_monitor;
 }
 
 // -----------------------------------------------------------------------------
 // Opens [entry] for external editing with [editor] for [category]
 // -----------------------------------------------------------------------------
-bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, string category)
+bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, const string& editor, const string& category)
 {
 	// Check the entry isn't already opened externally
-	for (unsigned a = 0; a < file_monitors_.size(); a++)
-		if (file_monitors_[a]->getEntry() == entry)
+	for (auto& file_monitor : file_monitors_)
+		if (file_monitor->getEntry() == entry)
 		{
 			LOG_MESSAGE(1, "Entry %s is already open in an external editor", entry->name());
 			return true;

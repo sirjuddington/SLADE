@@ -54,7 +54,7 @@ ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi")
 	// Hide toolbar (no reason for it on this panel, yet)
 	toolbar_->Show(false);
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------

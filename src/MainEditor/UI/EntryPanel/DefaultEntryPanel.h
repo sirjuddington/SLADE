@@ -6,15 +6,11 @@ class DefaultEntryPanel : public EntryPanel
 {
 public:
 	DefaultEntryPanel(wxWindow* parent);
-	~DefaultEntryPanel() {}
+	~DefaultEntryPanel() = default;
 
 	bool loadEntry(ArchiveEntry* entry) override;
 	bool loadEntries(vector<ArchiveEntry*>& entries);
 	bool saveEntry() override;
-
-	void onBtnGfxConvert(wxCommandEvent& e);
-	void onBtnGfxModifyOffsets(wxCommandEvent& e);
-	void onBtnTextureEdit(wxCommandEvent& e);
 
 private:
 	vector<ArchiveEntry*> entries_;
@@ -28,4 +24,7 @@ private:
 	wxButton*    btn_gfx_convert_        = nullptr;
 	wxButton*    btn_gfx_modify_offsets_ = nullptr;
 	wxButton*    btn_texture_edit_       = nullptr;
+
+	// Events
+	void onBtnGfxModifyOffsets(wxCommandEvent& e);
 };

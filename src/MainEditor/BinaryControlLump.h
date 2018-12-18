@@ -9,14 +9,14 @@
  * BOOM'S ANIMATED LUMP
  *******************************************************************/
 
-enum AnimatedType
+namespace AnimTypes
 {
-	ANIM_FLAT    = 0,
-	ANIM_TEXTURE = 1,
-	ANIM_MASK    = 1,
-	ANIM_DECALS  = 2, // ZDoom uses bit 1 to flag whether decals are allowed.
-	ANIM_STOP    = 255,
-};
+static const int FLAT    = 0;
+static const int TEXTURE = 1;
+static const int MASK    = 1;
+static const int DECALS  = 2; // ZDoom uses bit 1 to flag whether decals are allowed.
+static const int STOP    = 255;
+}
 
 // The format of an entry in an ANIMATED lump
 struct AnimatedEntry
@@ -31,14 +31,14 @@ struct AnimatedEntry
  * BOOM'S SWITCHES LUMP
  *******************************************************************/
 
-enum SwitchesType
+namespace SwitchTypes
 {
-	SWCH_STOP = wxINT16_SWAP_ON_BE(0),
-	SWCH_DEMO = wxINT16_SWAP_ON_BE(1),
-	SWCH_FULL = wxINT16_SWAP_ON_BE(2),
-	SWCH_COMM = wxINT16_SWAP_ON_BE(3),
-	SWCH_OOPS = wxINT16_SWAP_ON_BE(4),
-};
+static const int STOP = wxINT16_SWAP_ON_BE(0);
+static const int DEMO = wxINT16_SWAP_ON_BE(1);
+static const int FULL = wxINT16_SWAP_ON_BE(2);
+static const int COMM = wxINT16_SWAP_ON_BE(3);
+static const int OOPS = wxINT16_SWAP_ON_BE(4);
+}
 
 struct SwitchesEntry
 {

@@ -77,7 +77,7 @@ string docsUrl()
 DocsPage::DocsPage(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Create toolbar
@@ -85,13 +85,13 @@ DocsPage::DocsPage(wxWindow* parent) : wxPanel(parent, -1)
 	sizer->Add(toolbar_, 0, wxEXPAND);
 
 	// Toolbar 'Navigation' group
-	SToolBarGroup* g_nav = new SToolBarGroup(toolbar_, "Navigation");
-	tb_back_             = g_nav->addActionButton("back", "Back", "left", "Go back");
-	tb_forward_          = g_nav->addActionButton("forward", "Forward", "right", "Go forward");
+	auto g_nav  = new SToolBarGroup(toolbar_, "Navigation");
+	tb_back_    = g_nav->addActionButton("back", "Back", "left", "Go back");
+	tb_forward_ = g_nav->addActionButton("forward", "Forward", "right", "Go forward");
 	toolbar_->addGroup(g_nav);
 
 	// Toolbar 'Links' group
-	SToolBarGroup* g_links = new SToolBarGroup(toolbar_, "Links");
+	auto g_links = new SToolBarGroup(toolbar_, "Links");
 	tb_home_ =
 		g_links->addActionButton("home", "Home", "wiki", "Return to the SLADE Documentation Wiki main page", true);
 	g_links->addActionButton("tutorials", "Tutorials", "wiki", "Go to the tutorials index", true);
@@ -116,14 +116,9 @@ DocsPage::DocsPage(wxWindow* parent) : wxPanel(parent, -1)
 }
 
 // -----------------------------------------------------------------------------
-// DocsPage class destructor
-// -----------------------------------------------------------------------------
-DocsPage::~DocsPage() {}
-
-// -----------------------------------------------------------------------------
 // Enables/disables the navigation buttons
 // -----------------------------------------------------------------------------
-void DocsPage::updateNavButtons()
+void DocsPage::updateNavButtons() const
 {
 	tb_back_->Enable(wv_browser_->CanGoBack());
 	tb_forward_->Enable(wv_browser_->CanGoForward());
@@ -139,7 +134,7 @@ void DocsPage::updateNavButtons()
 // -----------------------------------------------------------------------------
 // Loads the wiki page [page_name]
 // -----------------------------------------------------------------------------
-void DocsPage::openPage(string page_name)
+void DocsPage::openPage(const string& page_name) const
 {
 	wv_browser_->LoadURL(docsUrl() + "?page=" + page_name);
 }
@@ -191,8 +186,8 @@ void DocsPage::onToolbarButton(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void DocsPage::onHTMLLinkClicked(wxEvent& e)
 {
-	wxWebViewEvent& ev   = (wxWebViewEvent&)e;
-	string          href = ev.GetURL();
+	auto&  ev   = dynamic_cast<wxWebViewEvent&>(e);
+	string href = ev.GetURL();
 
 	// Open external links externally
 	if (!href.StartsWith(docsUrl()))

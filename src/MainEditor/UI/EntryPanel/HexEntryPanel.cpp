@@ -54,7 +54,7 @@ HexEntryPanel::HexEntryPanel(wxWindow* parent) : EntryPanel(parent, "hex")
 	// Hide toolbar
 	toolbar_->Show(false);
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------

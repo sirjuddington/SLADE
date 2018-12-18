@@ -8,41 +8,8 @@ class DataEntryPanel;
 class DataEntryTable : public wxGridTableBase
 {
 public:
-	struct Column
-	{
-		string   name;
-		uint8_t  type;
-		uint16_t size;
-		uint32_t row_offset;
-
-		vector<std::pair<int, string>> custom_values;
-
-		Column(string name, uint8_t type, uint16_t size, uint32_t row_offset)
-		{
-			this->name       = name;
-			this->type       = type;
-			this->size       = size;
-			this->row_offset = row_offset;
-		}
-
-		void addCustomValue(int key, string value) { custom_values.push_back({ key, value }); }
-
-		string getCustomValue(int key)
-		{
-			for (unsigned a = 0; a < custom_values.size(); a++)
-			{
-				if (key == custom_values[a].first)
-					return custom_values[a].second;
-			}
-			return "Unknown";
-		}
-	};
-
-	DataEntryTable(DataEntryPanel* parent) : parent_{ parent } {}
-	virtual ~DataEntryTable() {}
-
 	// Column types
-	enum ColType
+	enum class ColType
 	{
 		IntSigned,
 		IntUnsigned,
@@ -52,6 +19,39 @@ public:
 		Float,
 		CustomValue
 	};
+
+	struct Column
+	{
+		string   name;
+		ColType  type;
+		uint16_t size;
+		uint32_t row_offset;
+
+		vector<std::pair<int, string>> custom_values;
+
+		Column(const string& name, ColType type, uint16_t size, uint32_t row_offset) :
+			name{ name },
+			type{ type },
+			size{ size },
+			row_offset{ row_offset }
+		{
+		}
+
+		void addCustomValue(int key, string value) { custom_values.emplace_back(key, value); }
+
+		string customValue(int key)
+		{
+			for (auto& custom_value : custom_values)
+			{
+				if (key == custom_value.first)
+					return custom_value.second;
+			}
+			return "Unknown";
+		}
+	};
+
+	DataEntryTable(DataEntryPanel* parent) : parent_{ parent } {}
+	virtual ~DataEntryTable() = default;
 
 	// wxGridTableBase overrides
 	int             GetNumberRows() override;
@@ -88,7 +88,7 @@ class DataEntryPanel : public EntryPanel, SActionHandler
 {
 public:
 	DataEntryPanel(wxWindow* parent);
-	~DataEntryPanel() {}
+	~DataEntryPanel() = default;
 
 	bool loadEntry(ArchiveEntry* entry) override;
 	bool saveEntry() override;
@@ -98,11 +98,11 @@ public:
 	void addRow();
 	void copyRow(bool cut);
 	void pasteRow();
-	void changeValue();
-	bool handleAction(string id) override;
-	int  getColWithSelection();
+	void changeValue() const;
+	bool handleAction(string action_id) override;
+	int  getColWithSelection() const;
 
-	vector<Vec2i> selection();
+	vector<Vec2i> selection() const;
 
 private:
 	wxGrid*         grid_data_        = nullptr;

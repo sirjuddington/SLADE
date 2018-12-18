@@ -9,7 +9,7 @@ class ColourBox;
 class GfxColouriseDialog : public wxDialog
 {
 public:
-	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
+	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, const Palette& pal);
 
 	ColRGBA colour() const;
 	void    setColour(const string& col);

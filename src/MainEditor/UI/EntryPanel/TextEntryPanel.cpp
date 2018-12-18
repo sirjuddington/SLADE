@@ -70,8 +70,8 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	// sizer_main_->AddSpacer(UI::pad());
 
 	// Add 'Text Language' choice to toolbar
-	SToolBarGroup* group_language = new SToolBarGroup(toolbar_, "Text Language", true);
-	auto           languages      = TextLanguage::languageNames();
+	auto group_language = new SToolBarGroup(toolbar_, "Text Language", true);
+	auto languages      = TextLanguage::languageNames();
 	languages.Sort();
 	languages.Insert("None", 0, 1);
 	choice_text_language_ = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
@@ -80,8 +80,8 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	toolbar_->addGroup(group_language);
 
 	// Add 'Jump To' choice to toolbar
-	SToolBarGroup* group_jump_to = new SToolBarGroup(toolbar_, "Jump To", true);
-	choice_jump_to_              = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(UI::scalePx(200), -1));
+	auto group_jump_to = new SToolBarGroup(toolbar_, "Jump To", true);
+	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(UI::scalePx(200), -1));
 	group_jump_to->addCustomControl(choice_jump_to_);
 	toolbar_->addGroup(group_jump_to);
 	text_area_->setJumpToControl(choice_jump_to_);
@@ -102,13 +102,13 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	SAction::fromId("ptxt_jump_to_line")->addToMenu(menu_custom_);
 
 	// 'Code Folding' submenu
-	wxMenu* menu_fold = new wxMenu();
+	auto menu_fold = new wxMenu();
 	menu_custom_->AppendSubMenu(menu_fold, "Code Folding");
 	SAction::fromId("ptxt_fold_foldall")->addToMenu(menu_fold);
 	SAction::fromId("ptxt_fold_unfoldall")->addToMenu(menu_fold);
 
 	// 'Compile' submenu
-	wxMenu* menu_scripts = new wxMenu();
+	auto menu_scripts = new wxMenu();
 	menu_custom_->AppendSubMenu(menu_scripts, "Compile");
 	SAction::fromId("arch_scripts_compileacs")->addToMenu(menu_scripts);
 	SAction::fromId("arch_scripts_compilehacs")->addToMenu(menu_scripts);
@@ -119,7 +119,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	custom_menu_name_ = "Text";
 
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------
@@ -308,8 +308,8 @@ bool TextEntryPanel::handleAction(string id)
 	// Word Wrapping toggle
 	else if (id == "ptxt_wrap")
 	{
-		SAction* action = SAction::fromId("ptxt_wrap");
-		bool     m      = isModified();
+		auto action = SAction::fromId("ptxt_wrap");
+		bool m      = isModified();
 		if (action->isChecked())
 			text_area_->SetWrapMode(wxSTC_WRAP_WORD);
 		else
@@ -362,9 +362,8 @@ void TextEntryPanel::onTextModified(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 {
-	int index = choice_text_language_->GetSelection();
 	// Get selected language
-	TextLanguage* tl = TextLanguage::fromName(choice_text_language_->GetStringSelection());
+	auto tl = TextLanguage::fromName(choice_text_language_->GetStringSelection());
 
 	// Set text editor language
 	text_area_->setLanguage(tl);

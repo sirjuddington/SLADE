@@ -49,7 +49,7 @@
 // -----------------------------------------------------------------------------
 // GfxColouriseDialog class constructor
 // -----------------------------------------------------------------------------
-GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal) :
+GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, const Palette& pal) :
 	wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 	entry_{ entry },
 	palette_{ pal }
@@ -71,7 +71,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 
 	cb_colour_ = new ColourBox(this, -1, false, true);
 	cb_colour_->setColour(COL_RED);
-	cb_colour_->setPalette(pal);
+	cb_colour_->setPalette(&palette_);
 	hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
 	hbox->Add(cb_colour_, 0, wxEXPAND);
 
@@ -84,11 +84,11 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 
 	// Setup preview
 	gfx_preview_->setViewType(GfxCanvas::View::Centered);
-	gfx_preview_->setPalette(pal);
+	gfx_preview_->setPalette(&palette_);
 	gfx_preview_->SetInitialSize(wxSize(192, 192));
 	Misc::loadImageFromEntry(gfx_preview_->getImage(), entry);
 	auto col = cb_colour_->colour();
-	gfx_preview_->getImage()->colourise(col, pal);
+	gfx_preview_->getImage()->colourise(col, &palette_);
 	gfx_preview_->updateImageTexture();
 
 	// Init layout

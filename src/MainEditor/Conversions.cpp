@@ -167,10 +167,11 @@ uint8_t pcm24to8bits(int32_t val)
 // -----------------------------------------------------------------------------
 uint8_t pcm32to8bits(int32_t val)
 {
-	int32_t ret = (val >> 8);
-	if ((val & 0x800000FF) > 127)
+	static const int32_t mod = 0x800000FF;
+	int32_t              ret = (val >> 8);
+	if ((val & mod) > 127)
 		ret++;
-	else if ((val & 0x800000FF) < -128)
+	else if ((val & mod) < -128)
 		ret--;
 	return pcm24to8bits(ret);
 }
@@ -265,8 +266,8 @@ bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out)
 	}
 
 	// Read samples
-	uint8_t* samples = new uint8_t[header.samples];
-	in.read(samples, header.samples);
+	vector<uint8_t> samples(header.samples);
+	in.read(samples.data(), header.samples);
 
 	// Detect if DMX padding is present
 	// It was discovered ca. 2013 that the original DMX sound format used in Doom
@@ -325,13 +326,11 @@ bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out)
 	out.write("WAVE", 4);
 	out.write(&fmtchunk, sizeof(WavFmtChunk));
 	out.write(&wdhdr, 8);
-	out.write(samples + samples_offset, header.samples);
+	out.write(samples.data() + samples_offset, header.samples);
 
 	// Ensure data ends on even byte boundary
 	if (header.samples % 2 != 0)
 		out.write("\0", 1);
-
-	delete[] samples;
 
 	return true;
 }
@@ -434,12 +433,12 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	if (wavbps > 1)
 		chunk.size /= wavbps;
 
-	uint8_t* data = new uint8_t[chunk.size];
-	uint8_t  padding[16];
+	vector<uint8_t> data(chunk.size);
+	uint8_t         padding[16];
 
 	// Store sample data. A simple read for 8 bits per sample.
 	if (fmtchunk.bps == 8)
-		in.read(data, chunk.size);
+		in.read(data.data(), chunk.size);
 	// For 16, 24, or 32 bits per sample, downsample to 8.
 	else
 	{
@@ -494,14 +493,12 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 		memset(padding, data[0], 16);
 		out.write(padding, 16);
 	}
-	out.write(data, chunk.size);
+	out.write(data.data(), chunk.size);
 	if (dmx_padding)
 	{
 		memset(padding, data[chunk.size - 1], 16);
 		out.write(padding, 16);
 	}
-
-	delete[] data;
 
 	return true;
 }
@@ -705,7 +702,7 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 // -----------------------------------------------------------------------------
 bool Conversions::bloodToWav(ArchiveEntry* in, MemChunk& out)
 {
-	MemChunk& mc = in->data();
+	auto& mc = in->data();
 	if (mc.size() < 22 || mc.size() > 29 || ((mc[12] != 1 && mc[12] != 5) || mc[mc.size() - 1] != 0))
 	{
 		Global::error = "Invalid SFX";
@@ -727,7 +724,7 @@ bool Conversions::bloodToWav(ArchiveEntry* in, MemChunk& out)
 
 	// Find raw data
 	name += ".raw";
-	ArchiveEntry* raw = in->parent()->entry(name);
+	auto raw = in->parent()->entry(name);
 	if (!raw || raw->size() == 0)
 	{
 		Global::error = "No RAW data for SFX";
@@ -847,8 +844,8 @@ bool Conversions::jagSndToWav(MemChunk& in, MemChunk& out)
 	}
 
 	// Read samples
-	uint8_t* samples = new uint8_t[header.samples];
-	in.read(samples, header.samples);
+	vector<uint8_t> samples(header.samples);
+	in.read(samples.data(), header.samples);
 
 
 	// --- Write WAV ---
@@ -882,7 +879,7 @@ bool Conversions::jagSndToWav(MemChunk& in, MemChunk& out)
 	out.write("WAVE", 4);
 	out.write(&fmtchunk, sizeof(WavFmtChunk));
 	out.write(&wdhdr, 8);
-	out.write(samples, header.samples);
+	out.write(samples.data(), header.samples);
 
 	// Ensure data ends on even byte boundary
 	if (header.samples % 2 != 0)
@@ -1087,9 +1084,9 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 	}
 
 	// Read samples
-	auto* osamples = new uint8_t[numsamples];
-	auto* nsamples = new uint8_t[numsamples * FACTOR];
-	in.read(osamples, numsamples);
+	vector<uint8_t> osamples(numsamples);
+	vector<uint8_t> nsamples(numsamples * FACTOR);
+	in.read(osamples.data(), numsamples);
 
 	int      sign      = -1;
 	uint32_t phase_tic = 0;
@@ -1100,8 +1097,6 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 		if (osamples[s] > 127 && !audioT)
 		{
 			Global::error = S_FMT("Invalid PC Speaker counter value: %d > 127", osamples[s]);
-			delete[] osamples;
-			delete[] nsamples;
 			return false;
 		}
 		if (osamples[s] > 0)
@@ -1126,7 +1121,7 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 		}
 		else
 		{
-			memset(nsamples + size_t(s * FACTOR), 128, FACTOR);
+			memset(nsamples.data() + size_t(s * FACTOR), 128, FACTOR);
 			phase_tic = 0;
 		}
 	}
@@ -1162,14 +1157,11 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 	out.write("WAVE", 4);
 	out.write(&fmtchunk, sizeof(WavFmtChunk));
 	out.write(&wdhdr, 8);
-	out.write(nsamples, numsamples * FACTOR);
+	out.write(nsamples.data(), numsamples * FACTOR);
 
 	// Ensure data ends on even byte boundary
 	if (header.samples % 2 != 0)
 		out.write("\0", 1);
-
-	delete[] osamples;
-	delete[] nsamples;
 
 	return true;
 }
@@ -1212,8 +1204,8 @@ bool Conversions::auSndToWav(MemChunk& in, MemChunk& out)
 		--samplesize;
 
 	// Read samples
-	uint8_t* samples = new uint8_t[header.size];
-	in.read(samples, header.size);
+	vector<uint8_t> samples(header.size);
+	in.read(samples.data(), header.size);
 
 	// Swap endianness around if needed
 	if (samplesize > 1)
@@ -1276,13 +1268,11 @@ bool Conversions::auSndToWav(MemChunk& in, MemChunk& out)
 	out.write("WAVE", 4);
 	out.write(&fmtchunk, sizeof(WavFmtChunk));
 	out.write(&wdhdr, 8);
-	out.write(samples, header.size);
+	out.write(samples.data(), header.size);
 
 	// Ensure data ends on even byte boundary
 	if (header.size % 2 != 0)
 		out.write("\0", 1);
-
-	delete[] samples;
 
 	return true;
 }

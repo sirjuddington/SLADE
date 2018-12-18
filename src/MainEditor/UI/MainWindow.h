@@ -21,8 +21,8 @@ public:
 	~MainWindow();
 
 	// Layout save/load
-	void loadLayout();
-	void saveLayout();
+	void loadLayout() const;
+	void saveLayout() const;
 
 	void setupLayout();
 	void createStartPage(bool newtip = true) const;
@@ -31,27 +31,27 @@ public:
 	bool startPageTabOpen() const;
 	void openStartPageTab();
 
-	ArchiveManagerPanel*     archiveManagerPanel() { return panel_archivemanager_; }
-	PaletteChooser*          paletteChooser() { return palette_chooser_; }
-	UndoManagerHistoryPanel* undoHistoryPanel() { return panel_undo_history_; }
+	ArchiveManagerPanel*     archiveManagerPanel() const { return panel_archivemanager_; }
+	PaletteChooser*          paletteChooser() const { return palette_chooser_; }
+	UndoManagerHistoryPanel* undoHistoryPanel() const { return panel_undo_history_; }
 	SStartPage*              startPage() const { return start_page_; }
 
 #ifdef USE_WEBVIEW_STARTPAGE
-	void openDocs(string page_name = "");
+	void openDocs(const string& page_name = "");
 #endif
 
 private:
-	ArchiveManagerPanel*     panel_archivemanager_;
-	UndoManagerHistoryPanel* panel_undo_history_;
-	STabCtrl*                stc_tabs_;
-	wxAuiManager*            aui_mgr_;
-	int                      lasttipindex_;
-	PaletteChooser*          palette_chooser_;
+	ArchiveManagerPanel*     panel_archivemanager_ = nullptr;
+	UndoManagerHistoryPanel* panel_undo_history_ = nullptr;
+	STabCtrl*                stc_tabs_ = nullptr;
+	wxAuiManager*            aui_mgr_ = nullptr;
+	int                      lasttipindex_ = 0;
+	PaletteChooser*          palette_chooser_ = nullptr;
 
 	// Start page
-	SStartPage* start_page_;
+	SStartPage* start_page_ = nullptr;
 #ifdef USE_WEBVIEW_STARTPAGE
-	DocsPage* docs_page_;
+	DocsPage* docs_page_ = nullptr;
 #endif
 
 	// Action handling

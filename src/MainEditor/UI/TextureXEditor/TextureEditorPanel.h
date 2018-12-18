@@ -1,6 +1,5 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "General/SAction.h"
 #include "UI/Lists/ListView.h"
 
@@ -15,10 +14,10 @@ class TextureEditorPanel : public wxPanel, SActionHandler
 {
 public:
 	TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor);
-	virtual ~TextureEditorPanel() {}
+	virtual ~TextureEditorPanel() = default;
 
 	bool      texModified() const { return tex_modified_; }
-	CTexture* texture() const { return tex_current_; }
+	CTexture* texture() const { return tex_current_.get(); }
 
 	// UI Stuff
 	virtual void     setupLayout();
@@ -31,10 +30,10 @@ public:
 
 	bool openTexture(CTexture* tex, TextureXList* list);
 	void clearTexture();
-	void setPalette(Palette* pal);
+	void setPalette(Palette* pal) const;
 
-	Palette* palette();
-	bool     blendRGBA();
+	Palette* palette() const;
+	bool     blendRGBA() const;
 
 	// Editing
 	virtual void addPatch();
@@ -60,12 +59,6 @@ public:
 	void onTexWorldPanningChanged(wxCommandEvent& e);
 	void onPatchListSelect(wxListEvent& e);
 	void onPatchListDeSelect(wxListEvent& e);
-	void onBtnPatchAdd(wxCommandEvent& e);
-	void onBtnPatchRemove(wxCommandEvent& e);
-	void onBtnPatchBack(wxCommandEvent& e);
-	void onBtnPatchForward(wxCommandEvent& e);
-	void onBtnPatchReplace(wxCommandEvent& e);
-	void onBtnPatchDuplicate(wxCommandEvent& e);
 	void onPatchPositionXChanged(wxCommandEvent& e);
 	void onPatchPositionYChanged(wxCommandEvent& e);
 	void onContextMenu(wxCommandEvent& e);
@@ -73,9 +66,9 @@ public:
 	void onARCChanged(wxCommandEvent& e);
 
 protected:
-	TextureXEditor* tx_editor_    = nullptr;
-	CTexture*       tex_current_  = nullptr;
-	bool            tex_modified_ = false;
+	TextureXEditor*           tx_editor_ = nullptr;
+	std::unique_ptr<CTexture> tex_current_;
+	bool                      tex_modified_ = false;
 
 	// View controls
 	SZoomSlider*    slider_zoom_     = nullptr;

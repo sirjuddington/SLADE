@@ -10,17 +10,17 @@ class DocsPage : public wxPanel
 {
 public:
 	DocsPage(wxWindow* parent);
-	~DocsPage();
+	~DocsPage() = default;
 
-	void updateNavButtons();
-	void openPage(string page_name);
+	void updateNavButtons() const;
+	void openPage(const string& page_name) const;
 
 private:
-	wxWebView*      wv_browser_;
-	SToolBar*       toolbar_;
-	SToolBarButton* tb_home_;
-	SToolBarButton* tb_back_;
-	SToolBarButton* tb_forward_;
+	wxWebView*      wv_browser_ = nullptr;
+	SToolBar*       toolbar_    = nullptr;
+	SToolBarButton* tb_home_    = nullptr;
+	SToolBarButton* tb_back_    = nullptr;
+	SToolBarButton* tb_forward_ = nullptr;
 
 	// Events
 	void onToolbarButton(wxCommandEvent& e);

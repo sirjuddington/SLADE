@@ -8,7 +8,7 @@ class ANSIEntryPanel : public EntryPanel
 {
 public:
 	ANSIEntryPanel(wxWindow* parent);
-	~ANSIEntryPanel() {}
+	~ANSIEntryPanel() = default;
 
 	bool loadEntry(ArchiveEntry* entry) override;
 	bool saveEntry() override;

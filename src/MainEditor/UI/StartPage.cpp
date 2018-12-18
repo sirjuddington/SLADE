@@ -144,7 +144,7 @@ void SStartPage::init()
 		{
 			Tokenizer tz;
 			tz.openMem((const char*)entry_tips->rawData(), entry_tips->size(), entry_tips->name());
-			while (!tz.atEnd() && tz.peekToken() != "")
+			while (!tz.atEnd() && !tz.peekToken().empty())
 				tips_.push_back(tz.getToken());
 		}
 	}
@@ -160,7 +160,7 @@ void SStartPage::init()
 void SStartPage::load(bool new_tip)
 {
 	// Get latest news post
-	if (latest_news_ == "")
+	if (latest_news_.empty())
 		Web::getHttpAsync("slade.mancubus.net", "/news-latest.php", this);
 
 	// Can't do anything without html entry
@@ -247,8 +247,8 @@ void SStartPage::load(bool new_tip)
 		html.Replace("#updateversion#", update_version_);
 
 	// Write html and images to temp folder
-	for (unsigned a = 0; a < entry_export_.size(); a++)
-		entry_export_[a]->exportFile(App::path(entry_export_[a]->name(), App::Dir::Temp));
+	for (auto& a : entry_export_)
+		a->exportFile(App::path(a->name(), App::Dir::Temp));
 	string html_file = App::path("startpage.htm", App::Dir::Temp);
 	wxFile outfile(html_file, wxFile::write);
 	outfile.Write(html);
@@ -354,7 +354,7 @@ void SStartPage::load(bool new_tip)
 // -----------------------------------------------------------------------------
 // Refreshes the page (wxWebView only)
 // -----------------------------------------------------------------------------
-void SStartPage::refresh()
+void SStartPage::refresh() const
 {
 #ifdef USE_WEBVIEW_STARTPAGE
 	html_startpage_->Reload();
@@ -364,7 +364,7 @@ void SStartPage::refresh()
 // -----------------------------------------------------------------------------
 // Updates the start page to show that an update to [version_name] is available
 // -----------------------------------------------------------------------------
-void SStartPage::updateAvailable(string version_name)
+void SStartPage::updateAvailable(const string& version_name)
 {
 	update_version_ = version_name;
 	load(false);
@@ -379,8 +379,8 @@ void SStartPage::updateAvailable(string version_name)
 // -----------------------------------------------------------------------------
 void SStartPage::onHTMLLinkClicked(wxEvent& e)
 {
-	wxWebViewEvent& ev   = (wxWebViewEvent&)e;
-	string          href = ev.GetURL();
+	auto&  ev   = dynamic_cast<wxWebViewEvent&>(e);
+	string href = ev.GetURL();
 
 #ifdef __WXGTK__
 	if (!href.EndsWith("startpage.htm"))

@@ -49,12 +49,6 @@
 // -----------------------------------------------------------------------------
 CVAR(Int, snd_volume, 100, CVar::Flag::Save)
 CVAR(Bool, snd_autoplay, false, CVar::Flag::Save)
-#ifndef NO_FLUIDSYNTH
-EXTERN_CVAR(Bool, snd_midi_usetimidity)
-#define usetimidity snd_midi_usetimidity
-#else
-#define usetimidity true
-#endif
 
 
 // -----------------------------------------------------------------------------
@@ -96,7 +90,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 #endif
 
 	// Setup sizer
-	wxGridBagSizer* sizer_gb = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto sizer_gb = new wxGridBagSizer(UI::pad(), UI::pad());
 	sizer_main_->AddStretchSpacer();
 #ifndef __WXOSX__
 	if (media_ctrl_)
@@ -180,7 +174,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	slider_volume_->Bind(wxEVT_SLIDER, &AudioEntryPanel::onSliderVolumeChanged, this);
 	Bind(wxEVT_TIMER, &AudioEntryPanel::onTimer, this);
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------
@@ -304,7 +298,7 @@ bool AudioEntryPanel::open()
 	num_tracks_ = 1;
 
 	// Get entry data
-	MemChunk& mcdata = entry_->data();
+	auto& mcdata = entry_->data();
 
 	// Setup temp filename
 	wxFileName path(App::path(entry_->name(), App::Dir::Temp));
@@ -385,7 +379,7 @@ bool AudioEntryPanel::open()
 // -----------------------------------------------------------------------------
 // Opens an audio file for playback (SFML 2.x+)
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
+bool AudioEntryPanel::openAudio(MemChunk& audio, const string& filename)
 {
 	// Stop if sound currently playing
 	resetStream();
@@ -454,7 +448,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 // -----------------------------------------------------------------------------
 // Opens a MIDI file for playback
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
+bool AudioEntryPanel::openMidi(MemChunk& data, const string& filename)
 {
 	// Enable volume control
 	slider_volume_->Enable(true);
@@ -509,13 +503,12 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 
 		return false;
 	}
-	return false;
 }
 
 // -----------------------------------------------------------------------------
 // Opens audio file [filename] in the wxMediaCtrl
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::openMedia(string filename)
+bool AudioEntryPanel::openMedia(const string& filename)
 {
 	// Attempt to open with wxMediaCtrl
 	if (media_ctrl_ && media_ctrl_->Load(filename))
@@ -560,7 +553,7 @@ void AudioEntryPanel::startStream()
 // -----------------------------------------------------------------------------
 // Stops playback of the current audio or MIDI stream
 // -----------------------------------------------------------------------------
-void AudioEntryPanel::stopStream()
+void AudioEntryPanel::stopStream() const
 {
 	switch (audio_type_)
 	{
@@ -579,7 +572,7 @@ void AudioEntryPanel::stopStream()
 // -----------------------------------------------------------------------------
 // Resets the current audio or MIDI stream to the beginning
 // -----------------------------------------------------------------------------
-void AudioEntryPanel::resetStream()
+void AudioEntryPanel::resetStream() const
 {
 	switch (audio_type_)
 	{
@@ -598,11 +591,11 @@ void AudioEntryPanel::resetStream()
 // -----------------------------------------------------------------------------
 // Used to update the info area, returns true if info is non-empty
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::updateInfo()
+bool AudioEntryPanel::updateInfo() const
 {
 	txt_info_->Clear();
 	string    info = entry_->typeString() + "\n";
-	MemChunk& mc   = entry_->data();
+	auto& mc   = entry_->data();
 	switch (audio_type_)
 	{
 	case Sound:

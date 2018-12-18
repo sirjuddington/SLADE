@@ -12,14 +12,14 @@ class TextureXListView : public VirtualListView
 {
 public:
 	TextureXListView(wxWindow* parent, TextureXList* texturex);
-	~TextureXListView() {}
+	~TextureXListView() = default;
 
-	TextureXList* txList() { return texturex_; }
+	TextureXList* txList() const { return texturex_; }
 
 	void        updateList(bool clear = false) override;
 	static bool sizeSort(long left, long right);
 	void        sortItems() override;
-	void        setFilter(string filter)
+	void        setFilter(const string& filter)
 	{
 		filter_text_ = filter;
 		updateList();
@@ -41,26 +41,26 @@ public:
 	~TextureXPanel();
 
 	TextureXList&       txList() { return texturex_; }
-	ArchiveEntry*       txEntry() { return tx_entry_; }
-	bool                isModified() { return modified_; }
-	CTexture*           currentTexture() { return tex_current_; }
-	TextureEditorPanel* textureEditor() { return texture_editor_; }
+	ArchiveEntry*       txEntry() const { return tx_entry_; }
+	bool                isModified() const { return modified_; }
+	CTexture*           currentTexture() const { return tex_current_; }
+	TextureEditorPanel* textureEditor() const { return texture_editor_; }
 
-	bool openTEXTUREX(ArchiveEntry* texturex);
+	bool openTEXTUREX(ArchiveEntry* entry);
 	bool saveTEXTUREX();
-	void setPalette(Palette* pal);
+	void setPalette(Palette* pal) const;
 	void applyChanges();
-	void updateTextureList() { list_textures_->updateList(); }
+	void updateTextureList() const { list_textures_->updateList(); }
 
 	// Texture operations
-	CTexture::UPtr newTextureFromPatch(string name, string patch);
+	CTexture::UPtr newTextureFromPatch(const string& name, const string& patch);
 	void           newTexture();
 	void           newTextureFromPatch();
 	void           newTextureFromFile();
 	void           removeTexture();
 	void           renameTexture(bool each = false);
 	void           exportTexture();
-	bool           exportAsPNG(CTexture* texture, string filename, bool force_rgba);
+	bool           exportAsPNG(CTexture* texture, const string& filename, bool force_rgba) const;
 	void           extractTexture();
 	bool           modifyOffsets();
 	void           moveUp();
@@ -70,8 +70,8 @@ public:
 	void           paste();
 
 	// Undo/Redo
-	void onUndo(string undo_action);
-	void onRedo(string undo_action);
+	void onUndo(const string& undo_action) const;
+	void onRedo(const string& undo_action) const;
 
 	// SAction handler
 	bool handleAction(string id) override;
