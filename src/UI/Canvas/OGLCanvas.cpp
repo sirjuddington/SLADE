@@ -149,7 +149,7 @@ void OGLCanvas::createSFML()
 #endif
 	// Context settings
 	sf::ContextSettings settings;
-	settings.depthBits = 32;
+	settings.depthBits = 24;
 	settings.stencilBits = 8;
 	sf::RenderWindow::create(handle, settings);
 #endif
