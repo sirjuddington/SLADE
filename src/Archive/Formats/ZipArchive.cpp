@@ -70,6 +70,25 @@ struct ZipFileHeader
 };
 } // namespace
 
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Helper function to check a file exists
+// -----------------------------------------------------------------------------
+bool fileExists(const string& filename)
+{
+	std::ifstream file(CHR(filename));
+	return file.good();
+}
+} // namespace
+
+
 // -----------------------------------------------------------------------------
 //
 // ZipArchive Class Functions
@@ -82,12 +101,8 @@ struct ZipFileHeader
 // -----------------------------------------------------------------------------
 ZipArchive::~ZipArchive()
 {
-	std::ifstream test(CHR(temp_file_));
-	if (test.good())
-	{
-		test.close();
+	if (fileExists(temp_file_))
 		wxRemoveFile(temp_file_);
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -96,6 +111,13 @@ ZipArchive::~ZipArchive()
 // -----------------------------------------------------------------------------
 bool ZipArchive::open(const string& filename)
 {
+	// Check the file exists
+	if (!fileExists(filename))
+	{
+		Global::error = "File does not exist";
+		return false;
+	}
+
 	// Copy the zip to a temp file (for use when saving)
 	generateTempFileName(filename);
 	wxCopyFile(filename, temp_file_);
@@ -274,14 +296,27 @@ bool ZipArchive::write(const string& filename, bool update)
 	// This is used to copy any entries that have been previously saved/compressed
 	// and are unmodified, to greatly speed up zip file saving by not having to
 	// recompress unchanged entries
-	wxFFileInputStream in(temp_file_);
-	wxZipInputStream   inzip(in);
+	std::unique_ptr<wxFFileInputStream> in;
+	std::unique_ptr<wxZipInputStream>   inzip;
+	vector<wxZipEntry*>                 c_entries;
+	if (fileExists(temp_file_))
+	{
+		in = std::make_unique<wxFFileInputStream>(temp_file_);
+		inzip = std::make_unique<wxZipInputStream>(*in);
 
-	// Get a list of all entries in the old zip
-	vector<wxZipEntry*> c_entries;
-	c_entries.reserve(inzip.GetTotalEntries());
-	for (int a = 0; a < inzip.GetTotalEntries(); a++)
-		c_entries.push_back(inzip.GetNextEntry());
+		if (inzip->IsOk())
+		{
+			// Get a list of all entries in the old zip
+			c_entries.resize(inzip->GetTotalEntries());
+			for (int a = 0; a < c_entries.size(); a++)
+				c_entries[a] = inzip->GetNextEntry();
+		}
+		else
+		{
+			in = nullptr;
+			inzip = nullptr;
+		}
+	}
 
 	// Get a linear list of all entries in the archive
 	vector<ArchiveEntry*> entries;
@@ -305,8 +340,8 @@ bool ZipArchive::write(const string& filename, bool update)
 			index = entries[a]->exProp("ZipIndex");
 
 		auto saname = Misc::lumpNameToFileName(entries[a]->name());
-		if (!inzip.IsOk() || entries[a]->state() != ArchiveEntry::State::Unmodified || index < 0
-			|| index >= inzip.GetTotalEntries())
+		if (!inzip || entries[a]->state() != ArchiveEntry::State::Unmodified || index < 0
+			|| index >= inzip->GetTotalEntries())
 		{
 			// If the current entry has been changed, or doesn't exist in the old zip,
 			// (re)compress its data and write it to the zip
@@ -318,8 +353,8 @@ bool ZipArchive::write(const string& filename, bool update)
 		{
 			// If the entry is unmodified and exists in the old zip, just copy it over
 			c_entries[index]->SetName(entries[a]->path() + saname);
-			zip.CopyEntry(c_entries[index], inzip);
-			inzip.Reset();
+			zip.CopyEntry(c_entries[index], *inzip);
+			inzip->Reset();
 		}
 
 		// Update entry info
