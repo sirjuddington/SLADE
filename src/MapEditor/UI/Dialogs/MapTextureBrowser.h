@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "UI/Browser/BrowserWindow.h"
 
@@ -9,29 +10,40 @@ class Archive;
 class MapTexBrowserItem : public BrowserItem
 {
 public:
-	MapTexBrowserItem(string name, int type, unsigned index = 0);
-	~MapTexBrowserItem();
+	static const string TEXTURE;
+	static const string FLAT;
 
-	bool   loadImage();
-	string itemInfo();
-	int    usageCount() { return usage_count_; }
+	MapTexBrowserItem(const string& name, const string& type, unsigned index = 0);
+	~MapTexBrowserItem() = default;
+
+	bool   loadImage() override;
+	string itemInfo() override;
+	int    usageCount() const { return usage_count_; }
 	void   setUsage(int count) { usage_count_ = count; }
 
 private:
-	int usage_count_;
+	int usage_count_ = 0;
 };
 
 class MapTextureBrowser : public BrowserWindow
 {
 public:
-	MapTextureBrowser(wxWindow* parent, int type = 0, string texture = "", SLADEMap* map = nullptr);
-	~MapTextureBrowser();
+	MapTextureBrowser(
+		wxWindow*              parent,
+		MapEditor::TextureType type    = MapEditor::TextureType::Texture,
+		const string&          texture = "",
+		SLADEMap*              map     = nullptr);
+	~MapTextureBrowser() = default;
 
-	string determineTexturePath(Archive* archive, MapTextureManager::Category category, string type, string path);
-	void   doSort(unsigned sort_type);
-	void   updateUsage();
+	string determineTexturePath(
+		Archive*                    archive,
+		MapTextureManager::Category category,
+		const string&               type,
+		const string&               path) const;
+	void doSort(unsigned sort_type) override;
+	void updateUsage() const;
 
 private:
-	int       type_;
-	SLADEMap* map_;
+	MapEditor::TextureType type_ = MapEditor::TextureType::Texture;
+	SLADEMap*              map_  = nullptr;
 };

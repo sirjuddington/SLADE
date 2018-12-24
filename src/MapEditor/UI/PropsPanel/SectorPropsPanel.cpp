@@ -59,17 +59,17 @@
 FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 {
 	// Init variables
-	SetWindowStyleFlag(wxBORDER_SIMPLE);
+	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
 	SetInitialSize(WxUtils::scaledSize(136, 136));
 }
 
 // -----------------------------------------------------------------------------
 // Sets the texture to display
 // -----------------------------------------------------------------------------
-void FlatTexCanvas::setTexture(string tex)
+void FlatTexCanvas::setTexture(const string& tex)
 {
 	texname_ = tex;
-	if (tex == "-" || tex == "")
+	if (tex.empty() || tex == "-")
 		texture_ = nullptr;
 	else
 		texture_ =
@@ -114,7 +114,7 @@ void FlatTexCanvas::draw()
 	else if (texture_ == &(GLTexture::missingTex()))
 	{
 		// Draw unknown icon
-		GLTexture* tex = MapEditor::textureManager().editorImage("thing/unknown");
+		auto tex = MapEditor::textureManager().editorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0);
 		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
@@ -170,17 +170,17 @@ void FlatComboBox::onDropDown(wxCommandEvent& e)
 	auto&         textures = MapEditor::textureManager().allFlatsInfo();
 	wxArrayString list;
 	list.Add("-");
-	for (unsigned a = 0; a < textures.size(); a++)
+	for (auto& texture : textures)
 	{
-		if (textures[a].short_name.StartsWith(text))
+		if (texture.short_name.StartsWith(text))
 		{
-			list.Add(textures[a].short_name);
+			list.Add(texture.short_name);
 		}
 		if (Game::configuration().featureSupported(Game::Feature::LongNames))
 		{
-			if (textures[a].long_name.StartsWith(text))
+			if (texture.long_name.StartsWith(text))
 			{
-				list.Add(textures[a].long_name);
+				list.Add(texture.long_name);
 			}
 		}
 	}
@@ -226,7 +226,7 @@ void FlatComboBox::onKeyDown(wxKeyEvent& e)
 SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Tabs
@@ -270,21 +270,21 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 wxPanel* SectorPropsPanel::setupGeneralPanel()
 {
 	// Create panel
-	wxPanel* panel = new wxPanel(stc_tabs_);
+	auto panel = new wxPanel(stc_tabs_);
 
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
 	// --- Floor ---
-	wxBoxSizer* m_hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(m_hbox, 0, wxEXPAND | wxALL, UI::pad());
-	wxStaticBox*      frame      = new wxStaticBox(panel, -1, "Floor");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	auto frame      = new wxStaticBox(panel, -1, "Floor");
+	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	m_hbox->Add(framesizer, 1, wxALIGN_CENTER | wxRIGHT, UI::pad());
 
 	// Texture
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
 	gb_sizer->Add(gfx_floor_ = new FlatTexCanvas(panel), { 0, 0 }, { 1, 2 }, wxALIGN_CENTER);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Texture:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -343,10 +343,10 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 wxPanel* SectorPropsPanel::setupSpecialPanel()
 {
 	// Create panel
-	wxPanel* panel = new wxPanel(stc_tabs_);
+	auto panel = new wxPanel(stc_tabs_);
 
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
 	// Add special panel
@@ -421,8 +421,8 @@ void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 
 	// Update internal objects list
 	this->objects_.clear();
-	for (unsigned a = 0; a < objects.size(); a++)
-		this->objects_.push_back(objects[a]);
+	for (auto object : objects)
+		this->objects_.push_back(object);
 
 	// Update layout
 	Layout();
@@ -434,9 +434,9 @@ void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 void SectorPropsPanel::applyChanges()
 {
-	for (unsigned a = 0; a < objects_.size(); a++)
+	for (auto& object : objects_)
 	{
-		MapSector* sector = (MapSector*)objects_[a];
+		auto sector = dynamic_cast<MapSector*>(object);
 
 		// Special
 		if (cb_override_special_->GetValue())
@@ -521,7 +521,7 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 	}
 
 	// Browse
-	MapTextureBrowser browser(this, 1, tc->texName(), &(MapEditor::editContext().map()));
+	MapTextureBrowser browser(this, MapEditor::TextureType::Flat, tc->texName(), &MapEditor::editContext().map());
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 		cb->SetValue(browser.selectedItem()->name());
 }

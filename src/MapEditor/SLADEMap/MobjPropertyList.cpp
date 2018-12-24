@@ -43,16 +43,6 @@
 
 
 // -----------------------------------------------------------------------------
-// MobjPropertyList class constructor
-// -----------------------------------------------------------------------------
-MobjPropertyList::MobjPropertyList() {}
-
-// -----------------------------------------------------------------------------
-// MobjPropertyList class destructor
-// -----------------------------------------------------------------------------
-MobjPropertyList::~MobjPropertyList() {}
-
-// -----------------------------------------------------------------------------
 // Returns true if a property with the given name exists, false otherwise
 // -----------------------------------------------------------------------------
 bool MobjPropertyList::propertyExists(const string& key)

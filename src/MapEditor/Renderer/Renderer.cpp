@@ -93,19 +93,7 @@ EXTERN_CVAR(Int, vertex_size)
 Renderer::Renderer(MapEditContext& context) :
 	context_{ context },
 	renderer_2d_{ &context.map() },
-	renderer_3d_{ &context.map() },
-	animations_active_{ false },
-	anim_view_speed_{ 0.05 },
-	fade_vertices_{ 1 },
-	fade_things_{ 1 },
-	fade_flats_{ 1 },
-	fade_lines_{ 1 },
-	anim_flash_level_{ 0.5 },
-	anim_flash_inc_{ true },
-	anim_info_fade_{ 0 },
-	anim_overlay_fade_{ 0 },
-	anim_help_fade_{ 0 },
-	cursor_zoom_disabled_{ false }
+	renderer_3d_{ &context.map() }
 {
 }
 
@@ -222,14 +210,14 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 		// Vertex
 		if (object->objType() == MapObject::Type::Vertex)
 		{
-			auto vertex = (MapVertex*)object;
+			auto vertex = dynamic_cast<MapVertex*>(object);
 			bbox.extend(vertex->xPos(), vertex->yPos());
 		}
 
 		// Line
 		else if (object->objType() == MapObject::Type::Line)
 		{
-			auto line = (MapLine*)object;
+			auto line = dynamic_cast<MapLine*>(object);
 			bbox.extend(line->v1()->xPos(), line->v1()->yPos());
 			bbox.extend(line->v2()->xPos(), line->v2()->yPos());
 		}
@@ -237,7 +225,7 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 		// Sector
 		else if (object->objType() == MapObject::Type::Sector)
 		{
-			auto sbb = ((MapSector*)object)->boundingBox();
+			auto sbb = dynamic_cast<MapSector*>(object)->boundingBox();
 			if (sbb.min.x < bbox.min.x)
 				bbox.min.x = sbb.min.x;
 			if (sbb.min.y < bbox.min.y)
@@ -251,7 +239,7 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 		// Thing
 		else if (object->objType() == MapObject::Type::Thing)
 		{
-			auto thing = (MapThing*)object;
+			auto thing = dynamic_cast<MapThing*>(object);
 			bbox.extend(thing->xPos(), thing->yPos());
 		}
 	}
@@ -310,8 +298,8 @@ bool Renderer::viewIsInterpolated() const
 void Renderer::setCameraThing(MapThing* thing)
 {
 	// Determine position
-	Vec3f pos(thing->point(), 40);
-	int   sector = context_.map().sectorAt(thing->point());
+	Vec3f pos(thing->position(), 40);
+	int   sector = context_.map().sectorAt(thing->position());
 	if (sector >= 0)
 		pos.z += context_.map().sector(sector)->floor().plane.height_at(pos.x, pos.y);
 
@@ -322,7 +310,7 @@ void Renderer::setCameraThing(MapThing* thing)
 // -----------------------------------------------------------------------------
 // Returns the current 3d mode camera position in 2d
 // -----------------------------------------------------------------------------
-Vec2f Renderer::cameraPos2D()
+Vec2f Renderer::cameraPos2D() const
 {
 	return { renderer_3d_.camPosition().x, renderer_3d_.camPosition().y };
 }
@@ -330,7 +318,7 @@ Vec2f Renderer::cameraPos2D()
 // -----------------------------------------------------------------------------
 // Returns the current 3d mode camera direction in 2d (no pitch)
 // -----------------------------------------------------------------------------
-Vec2f Renderer::cameraDir2D()
+Vec2f Renderer::cameraDir2D() const
 {
 	return renderer_3d_.camDirection();
 }
@@ -634,7 +622,7 @@ void Renderer::drawSelectionNumbers() const
 {
 	// Check if any selection exists
 	auto selection = context_.selection().selectedObjects();
-	if (selection.size() == 0)
+	if (selection.empty())
 		return;
 
 	// Get editor message text colour
@@ -689,7 +677,7 @@ void Renderer::drawThingQuickAngleLines() const
 {
 	// Check if any selection exists
 	auto selection = context_.selection().selectedThings();
-	if (selection.size() == 0)
+	if (selection.empty())
 		return;
 
 	// Get moving colour
@@ -700,9 +688,9 @@ void Renderer::drawThingQuickAngleLines() const
 	auto mouse_pos_m = view_.mapPos(context_.input().mousePos(), true);
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto& thing : selection)
 	{
-		glVertex2d(selection[a]->xPos(), selection[a]->yPos());
+		glVertex2d(thing->xPos(), thing->yPos());
 		glVertex2d(mouse_pos_m.x, mouse_pos_m.y);
 	}
 	glEnd();
@@ -815,7 +803,7 @@ void Renderer::drawPasteLines() const
 	{
 		if (App::clipboard().item(a)->type() == ClipboardItem::Type::MapArchitecture)
 		{
-			c = (MapArchClipboardItem*)App::clipboard().item(a);
+			c = dynamic_cast<MapArchClipboardItem*>(App::clipboard().item(a));
 			break;
 		}
 	}
@@ -1097,20 +1085,20 @@ void Renderer::drawMap2d()
 		&& (mouse_state == Input::MouseState::Normal || mouse_state == Input::MouseState::TagSectors
 			|| mouse_state == Input::MouseState::TagThings))
 	{
-		if (context_.taggedSectors().size() > 0)
+		if (!context_.taggedSectors().empty())
 			renderer_2d_.renderTaggedFlats(context_.taggedSectors(), anim_flash_level_);
-		if (context_.taggedLines().size() > 0)
+		if (!context_.taggedLines().empty())
 			renderer_2d_.renderTaggedLines(context_.taggedLines(), anim_flash_level_);
-		if (context_.taggedThings().size() > 0)
+		if (!context_.taggedThings().empty())
 			renderer_2d_.renderTaggedThings(context_.taggedThings(), anim_flash_level_);
-		if (context_.taggingLines().size() > 0)
+		if (!context_.taggingLines().empty())
 			renderer_2d_.renderTaggingLines(context_.taggingLines(), anim_flash_level_);
-		if (context_.taggingThings().size() > 0)
+		if (!context_.taggingThings().empty())
 			renderer_2d_.renderTaggingThings(context_.taggingThings(), anim_flash_level_);
 	}
 
 	// Draw selection numbers if needed
-	if (context_.selection().size() > 0 && mouse_state == Input::MouseState::Normal && map_show_selection_numbers)
+	if (!context_.selection().empty() && mouse_state == Input::MouseState::Normal && map_show_selection_numbers)
 		drawSelectionNumbers();
 
 	// Draw thing quick angle lines if needed
@@ -1171,7 +1159,7 @@ void Renderer::drawMap2d()
 				if (item->type() == ClipboardItem::Type::MapThings)
 				{
 					vector<MapThing*> things;
-					auto              p = (MapThingsClipboardItem*)item;
+					auto              p = dynamic_cast<MapThingsClipboardItem*>(item);
 					p->putThings(things);
 					auto pos(context_.relativeSnapToGrid(p->midpoint(), { mx, my }));
 					renderer_2d_.renderPasteThings(things, pos);
@@ -1232,7 +1220,7 @@ void Renderer::draw()
 	glViewport(0, 0, view_.size().x, view_.size().y);
 
 	// Setup GL state
-	ColRGBA col_bg = ColourConfiguration::colour("map_background");
+	auto col_bg = ColourConfiguration::colour("map_background");
 	glClearColor(col_bg.fr(), col_bg.fg(), col_bg.fb(), 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -1272,7 +1260,7 @@ void Renderer::draw()
 	if (context_.editMode() == Mode::Visual)
 	{
 		// Get crosshair colour
-		ColRGBA col = ColourConfiguration::colour("map_3d_crosshair");
+		auto col = ColourConfiguration::colour("map_3d_crosshair");
 		OpenGL::setColour(col);
 
 		glDisable(GL_TEXTURE_2D);

@@ -178,10 +178,11 @@ private:
 // -----------------------------------------------------------------------------
 // BrowserWindow class constructor
 // -----------------------------------------------------------------------------
-BrowserWindow::BrowserWindow(wxWindow* parent) :
+BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	wxDialog{ parent,        -1,
 			  "Browser",     wxDefaultPosition,
-			  wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER | wxMAXIMIZE_BOX }
+			  wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER | wxMAXIMIZE_BOX },
+	truncate_names_{ truncate_names }
 {
 	// Init size/pos
 	Misc::WindowInfo info = Misc::getWindowInfo("browser");
@@ -196,7 +197,6 @@ BrowserWindow::BrowserWindow(wxWindow* parent) :
 	// Init variables
 	items_root_ = new BrowserTreeNode();
 	items_root_->setName("All");
-	truncate_names_ = false;
 
 	// Setup layout
 	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);

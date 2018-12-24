@@ -26,21 +26,21 @@ public:
 	void loadLayout();
 	void saveLayout();
 
-	void        setupMenu();
-	void        setupLayout();
-	bool        chooseMap(Archive* archive = nullptr);
-	bool        openMap(Archive::MapDesc map);
-	void        loadMapScripts(Archive::MapDesc map);
-	WadArchive* writeMap(string name = "MAP01", bool nodes = true);
-	bool        saveMap();
-	bool        saveMapAs();
-	void        closeMap();
-	void        forceRefresh(bool renderer = false);
-	void        refreshToolBar();
-	void        setUndoManager(UndoManager* manager);
-	bool        tryClose();
-	bool        hasMapOpen(Archive* archive);
-	void        reloadScriptsMenu();
+	void setupMenu();
+	void setupLayout();
+	bool chooseMap(Archive* archive = nullptr);
+	bool openMap(Archive::MapDesc map);
+	void loadMapScripts(Archive::MapDesc map);
+	bool writeMap(WadArchive& wad, const string& name = "MAP01", bool nodes = true);
+	bool saveMap();
+	bool saveMapAs();
+	void closeMap() const;
+	void forceRefresh(bool renderer = false) const;
+	void refreshToolBar() const;
+	void setUndoManager(UndoManager* manager) const;
+	bool tryClose();
+	bool hasMapOpen(Archive* archive) const;
+	void reloadScriptsMenu() const;
 
 	MapObjectPropsPanel* propsPanel() const { return panel_obj_props_; }
 	ObjectEditPanel*     objectEditPanel() const { return panel_obj_edit_; }
@@ -52,17 +52,17 @@ public:
 	bool handleAction(string id) override;
 
 private:
-	MapCanvas*               map_canvas_          = nullptr;
-	MapObjectPropsPanel*     panel_obj_props_     = nullptr;
-	ScriptEditorPanel*       panel_script_editor_ = nullptr;
-	vector<ArchiveEntry*>    map_data_;
-	ObjectEditPanel*         panel_obj_edit_     = nullptr;
-	MapChecksPanel*          panel_checks_       = nullptr;
-	UndoManagerHistoryPanel* panel_undo_history_ = nullptr;
-	wxMenu*                  menu_scripts_       = nullptr;
+	MapCanvas*                 map_canvas_          = nullptr;
+	MapObjectPropsPanel*       panel_obj_props_     = nullptr;
+	ScriptEditorPanel*         panel_script_editor_ = nullptr;
+	vector<ArchiveEntry::UPtr> map_data_;
+	ObjectEditPanel*           panel_obj_edit_     = nullptr;
+	MapChecksPanel*            panel_checks_       = nullptr;
+	UndoManagerHistoryPanel*   panel_undo_history_ = nullptr;
+	wxMenu*                    menu_scripts_       = nullptr;
 
 	void buildNodes(Archive* wad);
-	void lockMapEntries(bool lock = true);
+	void lockMapEntries(bool lock = true) const;
 
 	// Events
 	void onClose(wxCloseEvent& e);

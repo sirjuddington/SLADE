@@ -99,24 +99,6 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 
 
 // -----------------------------------------------------------------------------
-// MapRenderer2D class constructor
-// -----------------------------------------------------------------------------
-MapRenderer2D::MapRenderer2D(SLADEMap* map)
-{
-	// Init variables
-	this->map_           = map;
-	this->vbo_vertices_  = 0;
-	this->vbo_lines_     = 0;
-	this->vbo_flats_     = 0;
-	this->list_vertices_ = 0;
-	this->list_lines_    = 0;
-	this->lines_dirs_    = false;
-	this->n_vertices_    = 0;
-	this->n_lines_       = 0;
-	this->n_things_      = 0;
-}
-
-// -----------------------------------------------------------------------------
 // MapRenderer2D class destructor
 // -----------------------------------------------------------------------------
 MapRenderer2D::~MapRenderer2D()
@@ -137,7 +119,7 @@ MapRenderer2D::~MapRenderer2D()
 // Sets up the renderer for vertices (point sprites, etc.).
 // If [overlay] is true, use the point sprite for hilight/selection/etc
 // -----------------------------------------------------------------------------
-bool MapRenderer2D::setupVertexRendering(float size_scale, bool overlay)
+bool MapRenderer2D::setupVertexRendering(float size_scale, bool overlay) const
 {
 	// Setup rendering properties
 	float vs = vertex_size * size_scale;
@@ -208,7 +190,7 @@ void MapRenderer2D::renderVertices(float alpha)
 	bool point = setupVertexRendering(1.0f);
 
 	// Set to vertex colour
-	ColRGBA col = ColourConfiguration::colour("map_vertex");
+	auto col = ColourConfiguration::colour("map_vertex");
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(col.fr(), col.fg(), col.fb(), col.fa() * alpha);
 
@@ -287,7 +269,7 @@ void MapRenderer2D::renderVerticesVBO()
 // -----------------------------------------------------------------------------
 // Renders the vertex hilight overlay for vertex [index]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderVertexHilight(int index, float fade)
+void MapRenderer2D::renderVertexHilight(int index, float fade) const
 {
 	// Check hilight
 	if (!map_->vertex(index))
@@ -298,7 +280,7 @@ void MapRenderer2D::renderVertexHilight(int index, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	ColRGBA col = ColourConfiguration::colour("map_hilight");
+	auto col = ColourConfiguration::colour("map_hilight");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -318,12 +300,12 @@ void MapRenderer2D::renderVertexHilight(int index, float fade)
 }
 
 // -----------------------------------------------------------------------------
-/// Renders the vertex selection overlay for vertex indices in [selection]
+// Renders the vertex selection overlay for vertex indices in [selection]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float fade)
+void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float fade) const
 {
 	// Check anything is selected
-	if (selection.size() == 0)
+	if (selection.empty())
 		return;
 
 	// Reset fade if selection animation is disabled
@@ -331,8 +313,8 @@ void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float 
 		fade = 1.0f;
 
 	// Set selection colour
-	ColRGBA col = ColourConfiguration::colour("map_selection");
-	col.a       = 255; //*= fade;
+	auto col = ColourConfiguration::colour("map_selection");
+	col.a    = 255;
 	OpenGL::setColour(col);
 
 	// Setup rendering properties
@@ -340,9 +322,9 @@ void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float 
 
 	// Draw selected vertices
 	glBegin(GL_POINTS);
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto item : selection)
 	{
-		auto v = map_->vertex(selection[a].index);
+		auto v = map_->vertex(item.index);
 		if (!v)
 			continue;
 
@@ -360,7 +342,7 @@ void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float 
 // -----------------------------------------------------------------------------
 // Returns the colour for [line]
 // -----------------------------------------------------------------------------
-ColRGBA MapRenderer2D::lineColour(MapLine* line, bool ignore_filter)
+ColRGBA MapRenderer2D::lineColour(MapLine* line, bool ignore_filter) const
 {
 	ColRGBA col;
 
@@ -462,8 +444,8 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 		// Direction tab
 		if (show_direction)
 		{
-			Vec2f mid = line->getPoint(MapObject::Point::Mid);
-			Vec2f tab = line->dirTabPoint();
+			auto mid = line->getPoint(MapObject::Point::Mid);
+			auto tab = line->dirTabPoint();
 			glVertex2d(mid.x, mid.y);
 			glVertex2d(tab.x, tab.y);
 		}
@@ -520,7 +502,7 @@ void MapRenderer2D::renderLinesVBO(bool show_direction, float alpha)
 // -----------------------------------------------------------------------------
 // Renders the line hilight overlay for line [index]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderLineHilight(int index, float fade)
+void MapRenderer2D::renderLineHilight(int index, float fade) const
 {
 	// Check hilight
 	if (!map_->line(index))
@@ -531,7 +513,7 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	ColRGBA col = ColourConfiguration::colour("map_hilight");
+	auto col = ColourConfiguration::colour("map_hilight");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -539,19 +521,19 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 	glLineWidth(line_width * ColourConfiguration::lineHilightWidth());
 
 	// Render line
-	MapLine* line = map_->line(index);
-	double   x1   = line->v1()->xPos();
-	double   y1   = line->v1()->yPos();
-	double   x2   = line->v2()->xPos();
-	double   y2   = line->v2()->yPos();
+	auto   line = map_->line(index);
+	double x1   = line->v1()->xPos();
+	double y1   = line->v1()->yPos();
+	double x2   = line->v2()->xPos();
+	double y2   = line->v2()->yPos();
 	glBegin(GL_LINES);
 	glVertex2d(x1, y1);
 	glVertex2d(x2, y2);
 	glEnd();
 
 	// Direction tab
-	Vec2f mid = line->getPoint(MapObject::Point::Mid);
-	Vec2f tab = line->dirTabPoint();
+	auto mid = line->getPoint(MapObject::Point::Mid);
+	auto tab = line->dirTabPoint();
 	glBegin(GL_LINES);
 	glVertex2d(mid.x, mid.y);
 	glVertex2d(tab.x, tab.y);
@@ -561,10 +543,10 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 // -----------------------------------------------------------------------------
 // Renders the line selection overlay for line indices in [selection]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fade)
+void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fade) const
 {
 	// Check anything is selected
-	if (selection.size() == 0)
+	if (selection.empty())
 		return;
 
 	// Reset fade if selection animation is disabled
@@ -572,7 +554,7 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 		fade = 1.0f;
 
 	// Set selection colour
-	ColRGBA col = ColourConfiguration::colour("map_selection");
+	auto col = ColourConfiguration::colour("map_selection");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -583,9 +565,9 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 	MapLine* line;
 	double   x1, y1, x2, y2;
 	glBegin(GL_LINES);
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto item : selection)
 	{
-		line = map_->line(selection[a].index);
+		line = map_->line(item.index);
 		if (!line)
 			continue;
 
@@ -600,8 +582,8 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 		glVertex2d(x2, y2);
 
 		// Direction tab
-		Vec2f mid = line->getPoint(MapObject::Point::Mid);
-		Vec2f tab = line->dirTabPoint();
+		auto mid = line->getPoint(MapObject::Point::Mid);
+		auto tab = line->dirTabPoint();
 		glVertex2d(mid.x, mid.y);
 		glVertex2d(tab.x, tab.y);
 	}
@@ -611,14 +593,14 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 // -----------------------------------------------------------------------------
 // Renders the tagged line overlay for lines in [lines]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
+void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade) const
 {
 	// Reset fade if tagged animation is disabled
 	if (!map_animate_tagged)
 		fade = 1.0f;
 
 	// Set hilight colour
-	ColRGBA col = ColourConfiguration::colour("map_tagged");
+	auto col = ColourConfiguration::colour("map_tagged");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -626,24 +608,23 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 	glLineWidth(line_width * ColourConfiguration::lineHilightWidth());
 
 	// Go through tagged lines
-	double     x1, y1, x2, y2;
-	MapObject* object = MapEditor::editContext().selection().hilightedObject();
-	for (unsigned a = 0; a < lines.size(); a++)
+	double x1, y1, x2, y2;
+	auto   object = MapEditor::editContext().selection().hilightedObject();
+	for (auto line : lines)
 	{
 		// Render line
-		MapLine* line = lines[a];
-		x1            = line->v1()->xPos();
-		y1            = line->v1()->yPos();
-		x2            = line->v2()->xPos();
-		y2            = line->v2()->yPos();
+		x1 = line->v1()->xPos();
+		y1 = line->v1()->yPos();
+		x2 = line->v2()->xPos();
+		y2 = line->v2()->yPos();
 		glBegin(GL_LINES);
 		glVertex2d(x1, y1);
 		glVertex2d(x2, y2);
 		glEnd();
 
 		// Direction tab
-		Vec2f mid = line->getPoint(MapObject::Point::Mid);
-		Vec2f tab = line->dirTabPoint();
+		auto mid = line->getPoint(MapObject::Point::Mid);
+		auto tab = line->dirTabPoint();
 		glBegin(GL_LINES);
 		glVertex2d(mid.x, mid.y);
 		glVertex2d(tab.x, tab.y);
@@ -668,14 +649,14 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 // -----------------------------------------------------------------------------
 // Renders the tagging line overlay for lines in [lines]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
+void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade) const
 {
 	// Reset fade if tagging animation is disabled
 	if (!map_animate_tagged)
 		fade = 1.0f;
 
 	// Set hilight colour
-	ColRGBA col = ColourConfiguration::colour("map_tagging");
+	auto col = ColourConfiguration::colour("map_tagging");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -683,24 +664,23 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 	glLineWidth(line_width * ColourConfiguration::lineHilightWidth());
 
 	// Go through tagging lines
-	double     x1, y1, x2, y2;
-	MapObject* object = MapEditor::editContext().selection().hilightedObject();
-	for (unsigned a = 0; a < lines.size(); a++)
+	double x1, y1, x2, y2;
+	auto   object = MapEditor::editContext().selection().hilightedObject();
+	for (auto line : lines)
 	{
 		// Render line
-		MapLine* line = lines[a];
-		x1            = line->v1()->xPos();
-		y1            = line->v1()->yPos();
-		x2            = line->v2()->xPos();
-		y2            = line->v2()->yPos();
+		x1 = line->v1()->xPos();
+		y1 = line->v1()->yPos();
+		x2 = line->v2()->xPos();
+		y2 = line->v2()->yPos();
 		glBegin(GL_LINES);
 		glVertex2d(x1, y1);
 		glVertex2d(x2, y2);
 		glEnd();
 
 		// Direction tab
-		Vec2f mid = line->getPoint(MapObject::Point::Mid);
-		Vec2f tab = line->dirTabPoint();
+		auto mid = line->getPoint(MapObject::Point::Mid);
+		auto tab = line->dirTabPoint();
 		glBegin(GL_LINES);
 		glVertex2d(mid.x, mid.y);
 		glVertex2d(tab.x, tab.y);
@@ -725,10 +705,10 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 // -----------------------------------------------------------------------------
 // Sets up the renderer for thing overlays (point sprites, etc.)
 // -----------------------------------------------------------------------------
-bool MapRenderer2D::setupThingOverlay()
+bool MapRenderer2D::setupThingOverlay() const
 {
 	// Get hilight texture
-	GLTexture* tex = MapEditor::textureManager().editorImage("thing/hilight");
+	auto tex = MapEditor::textureManager().editorImage("thing/hilight");
 	if (thing_drawtype == ThingDrawType::Square || thing_drawtype == ThingDrawType::SquareSprite
 		|| thing_drawtype == ThingDrawType::FramedSprite)
 		tex = MapEditor::textureManager().editorImage("thing/square/hilight");
@@ -762,7 +742,7 @@ bool MapRenderer2D::setupThingOverlay()
 // -----------------------------------------------------------------------------
 // Renders a thing overlay at [x,y] of size [radius]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderThingOverlay(double x, double y, double radius, bool point)
+void MapRenderer2D::renderThingOverlay(double x, double y, double radius, bool point) const
 {
 	// Simplest case, thing_overlay_square is true and thing_drawtype is 1 or 2 (circles or sprites)
 	if (thing_overlay_square && (thing_drawtype == ThingDrawType::Round || thing_drawtype == ThingDrawType::Sprite))
@@ -817,7 +797,7 @@ void MapRenderer2D::renderRoundThing(
 	double                 x,
 	double                 y,
 	double                 angle,
-	const Game::ThingType& tt,
+	const Game::ThingType& type,
 	float                  alpha,
 	double                 radius_mult)
 {
@@ -826,15 +806,15 @@ void MapRenderer2D::renderRoundThing(
 	bool       rotate = false;
 
 	// Set colour
-	glColor4f(tt.colour().fr(), tt.colour().fg(), tt.colour().fb(), alpha);
+	glColor4f(type.colour().fr(), type.colour().fg(), type.colour().fb(), alpha);
 
 	// Check for custom thing icon
-	if (!tt.icon().IsEmpty() && !thing_force_dir && !things_angles_)
+	if (!type.icon().IsEmpty() && !thing_force_dir && !things_angles_)
 	{
-		if (use_zeth_icons && tt.zethIcon() >= 0)
-			tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", tt.zethIcon()));
+		if (use_zeth_icons && type.zethIcon() >= 0)
+			tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", type.zethIcon()));
 		if (!tex)
-			tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", tt.icon()));
+			tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", type.icon()));
 	}
 
 	if (!tex)
@@ -842,7 +822,7 @@ void MapRenderer2D::renderRoundThing(
 		// Otherwise, normal thing image
 
 		// Check if we want an angle indicator
-		if (tt.angled() || thing_force_dir || things_angles_)
+		if (type.angled() || thing_force_dir || things_angles_)
 		{
 			if (angle != 0)
 				rotate = true; // Also rotate to angle
@@ -855,7 +835,7 @@ void MapRenderer2D::renderRoundThing(
 	// If for whatever reason the thing texture doesn't exist, just draw a basic, square thing
 	if (!tex)
 	{
-		renderSimpleSquareThing(x, y, angle, tt, alpha);
+		renderSimpleSquareThing(x, y, angle, type, alpha);
 		return;
 	}
 
@@ -876,8 +856,8 @@ void MapRenderer2D::renderRoundThing(
 	}
 
 	// Draw thing
-	double radius = tt.radius() * radius_mult;
-	if (tt.shrinkOnZoom())
+	double radius = type.radius() * radius_mult;
+	if (type.shrinkOnZoom())
 		radius = scaledRadius(radius);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 1.0f);
@@ -903,7 +883,7 @@ bool MapRenderer2D::renderSpriteThing(
 	double                 x,
 	double                 y,
 	double                 angle,
-	const Game::ThingType& tt,
+	const Game::ThingType& type,
 	unsigned               index,
 	float                  alpha,
 	bool                   fitradius)
@@ -917,13 +897,13 @@ bool MapRenderer2D::renderSpriteThing(
 	}
 
 	// --- Determine texture to use ---
-	bool       show_angle = false;
-	GLTexture* tex        = index < thing_sprites_.size() ? thing_sprites_[index] : NULL;
+	bool show_angle = false;
+	auto tex        = index < thing_sprites_.size() ? thing_sprites_[index] : nullptr;
 
 	// Attempt to get sprite texture
 	if (!tex)
 	{
-		tex = MapEditor::textureManager().sprite(tt.sprite(), tt.translation(), tt.palette());
+		tex = MapEditor::textureManager().sprite(type.sprite(), type.translation(), type.palette());
 
 		if (index < thing_sprites_.size())
 		{
@@ -936,22 +916,15 @@ bool MapRenderer2D::renderSpriteThing(
 	if (!tex)
 	{
 		if (thing_drawtype == ThingDrawType::FramedSprite)
-			renderRoundThing(x, y, angle, tt, alpha, 0.7);
+			renderRoundThing(x, y, angle, type, alpha, 0.7);
 		else
-			renderRoundThing(x, y, angle, tt, alpha);
+			renderRoundThing(x, y, angle, type, alpha);
 		return false;
 	}
 
 	// Check if we have to draw the angle arrow later
-	if (tt.angled() || thing_force_dir || things_angles_)
+	if (type.angled() || thing_force_dir || things_angles_)
 		show_angle = true;
-
-	//// If for whatever reason the thing texture doesn't exist, just draw a basic, square thing
-	// if (!tex)
-	//{
-	//	renderSquareThing(x, y, angle, tt, alpha);
-	//	return false;
-	//}
 
 	// Bind texture
 	if (tex_last_ != tex)
@@ -967,7 +940,7 @@ bool MapRenderer2D::renderSpriteThing(
 	// Fit to radius if needed
 	if (fitradius)
 	{
-		double scale = ((double)tt.radius() * 0.8) / max(hw, hh);
+		double scale = ((double)type.radius() * 0.8) / max(hw, hh);
 		hw *= scale;
 		hh *= scale;
 	}
@@ -1024,7 +997,7 @@ bool MapRenderer2D::renderSquareThing(
 	double                 x,
 	double                 y,
 	double                 angle,
-	const Game::ThingType& tt,
+	const Game::ThingType& type,
 	float                  alpha,
 	bool                   showicon,
 	bool                   framed)
@@ -1033,15 +1006,15 @@ bool MapRenderer2D::renderSquareThing(
 	GLTexture* tex = nullptr;
 
 	// Set colour
-	glColor4f(tt.colour().fr(), tt.colour().fg(), tt.colour().fb(), alpha);
+	glColor4f(type.colour().fr(), type.colour().fg(), type.colour().fb(), alpha);
 
 	// Show icon anyway if no sprite set
-	if (tt.sprite().IsEmpty())
+	if (type.sprite().IsEmpty())
 		showicon = true;
 
 	// Check for custom thing icon
-	if (!tt.icon().IsEmpty() && showicon && !thing_force_dir && !things_angles_ && !framed)
-		tex = MapEditor::textureManager().editorImage(S_FMT("thing/square/%s", tt.icon()));
+	if (!type.icon().IsEmpty() && showicon && !thing_force_dir && !things_angles_ && !framed)
+		tex = MapEditor::textureManager().editorImage(S_FMT("thing/square/%s", type.icon()));
 
 	// Otherwise, no icon
 	int tc_start = 0;
@@ -1055,7 +1028,7 @@ bool MapRenderer2D::renderSquareThing(
 		{
 			tex = MapEditor::textureManager().editorImage("thing/square/normal_n");
 
-			if ((tt.angled() && showicon) || thing_force_dir || things_angles_)
+			if ((type.angled() && showicon) || thing_force_dir || things_angles_)
 			{
 				tex = MapEditor::textureManager().editorImage("thing/square/normal_d1");
 
@@ -1099,7 +1072,7 @@ bool MapRenderer2D::renderSquareThing(
 	// If for whatever reason the thing texture doesn't exist, just draw a basic, square thing
 	if (!tex)
 	{
-		renderSimpleSquareThing(x, y, angle, tt, alpha);
+		renderSimpleSquareThing(x, y, angle, type, alpha);
 		return false;
 	}
 
@@ -1111,8 +1084,8 @@ bool MapRenderer2D::renderSquareThing(
 	}
 
 	// Draw thing
-	double radius = tt.radius();
-	if (tt.shrinkOnZoom())
+	double radius = type.radius();
+	if (type.shrinkOnZoom())
 		radius = scaledRadius(radius);
 	glBegin(GL_QUADS);
 	int tc = tc_start;
@@ -1135,17 +1108,18 @@ bool MapRenderer2D::renderSquareThing(
 	glVertex2d(x + radius, y - radius);
 	glEnd();
 
-	return ((tt.angled() || thing_force_dir || things_angles_) && !showicon);
+	return ((type.angled() || thing_force_dir || things_angles_) && !showicon);
 }
 
 // -----------------------------------------------------------------------------
 // Renders a simple square thing icon at [x,y]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderSimpleSquareThing(double x, double y, double angle, const Game::ThingType& tt, float alpha)
+void MapRenderer2D::renderSimpleSquareThing(double x, double y, double angle, const Game::ThingType& type, float alpha)
+	const
 {
 	// Get thing info
-	double radius = tt.radius();
-	if (tt.shrinkOnZoom())
+	double radius = type.radius();
+	if (type.shrinkOnZoom())
 		radius = scaledRadius(radius);
 	double radius2 = radius * 0.1;
 
@@ -1164,7 +1138,7 @@ void MapRenderer2D::renderSimpleSquareThing(double x, double y, double angle, co
 
 	// Draw base
 	// tt.getColour().set_gl(false);
-	glColor4f(tt.colour().fr(), tt.colour().fg(), tt.colour().fb(), alpha);
+	glColor4f(type.colour().fr(), type.colour().fg(), type.colour().fb(), alpha);
 	glBegin(GL_QUADS);
 	glVertex2d(-radius + radius2, -radius + radius2);
 	glVertex2d(-radius + radius2, radius - radius2);
@@ -1173,7 +1147,7 @@ void MapRenderer2D::renderSimpleSquareThing(double x, double y, double angle, co
 	glEnd();
 
 	// Draw angle indicator (if needed)
-	if (tt.angled() || thing_force_dir)
+	if (type.angled() || thing_force_dir)
 	{
 		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 		glRotated(angle, 0, 0, 1);
@@ -1215,7 +1189,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 	tex_last_ = nullptr;
 
 	// Go through things
-	MapThing*   thing = nullptr;
+	MapThing*   thing;
 	double      x, y, angle;
 	vector<int> things_arrows;
 	long        last_update = thing_sprites_updated_;
@@ -1224,7 +1198,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 	if (thing_shadow > 0.01f && thing_drawtype != ThingDrawType::Sprite)
 	{
 		glEnable(GL_TEXTURE_2D);
-		GLTexture* tex_shadow = MapEditor::textureManager().editorImage("thing/shadow");
+		auto tex_shadow = MapEditor::textureManager().editorImage("thing/shadow");
 		if (thing_drawtype == ThingDrawType::Square || thing_drawtype == ThingDrawType::SquareSprite
 			|| thing_drawtype == ThingDrawType::FramedSprite)
 			tex_shadow = MapEditor::textureManager().editorImage("thing/square/shadow");
@@ -1374,21 +1348,21 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 	}
 
 	// Draw any thing direction arrows needed
-	if (things_arrows.size() > 0)
+	if (!things_arrows.empty())
 	{
-		ColRGBA acol = COL_WHITE;
-		acol.a       = 255 * alpha * arrow_alpha;
+		auto acol = COL_WHITE;
+		acol.a    = 255 * alpha * arrow_alpha;
 		OpenGL::setColour(acol);
 		// glColor4f(1.0f, 1.0f, 1.0f, alpha * arrow_alpha);
-		GLTexture* tex_arrow = MapEditor::textureManager().editorImage("arrow");
+		auto tex_arrow = MapEditor::textureManager().editorImage("arrow");
 		if (tex_arrow)
 		{
 			glEnable(GL_TEXTURE_2D);
 			tex_arrow->bind();
 
-			for (unsigned a = 0; a < things_arrows.size(); a++)
+			for (int things_arrow : things_arrows)
 			{
-				thing = map_->thing(things_arrows[a]);
+				thing = map_->thing(things_arrow);
 				if (arrow_colour)
 				{
 					auto& tt = Game::configuration().thingType(thing->type());
@@ -1431,7 +1405,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 // -----------------------------------------------------------------------------
 // Renders the thing hilight overlay for thing [index]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderThingHilight(int index, float fade)
+void MapRenderer2D::renderThingHilight(int index, float fade) const
 {
 	// Check hilight
 	if (!map_->thing(index))
@@ -1442,15 +1416,15 @@ void MapRenderer2D::renderThingHilight(int index, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	ColRGBA col = ColourConfiguration::colour("map_hilight");
+	auto col = ColourConfiguration::colour("map_hilight");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
 	// Get thing info
-	MapThing* thing = map_->thing(index);
-	auto&     tt    = Game::configuration().thingType(thing->type());
-	double    x     = thing->xPos();
-	double    y     = thing->yPos();
+	auto   thing = map_->thing(index);
+	auto&  tt    = Game::configuration().thingType(thing->type());
+	double x     = thing->xPos();
+	double y     = thing->yPos();
 
 	// Get thing radius
 	double radius = tt.radius();
@@ -1519,10 +1493,10 @@ void MapRenderer2D::renderThingHilight(int index, float fade)
 // -----------------------------------------------------------------------------
 // Renders the thing selection overlay for thing indices in [selection]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float fade)
+void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float fade) const
 {
 	// Check anything is selected
-	if (selection.size() == 0)
+	if (selection.empty())
 		return;
 
 	// Reset fade if selection animation is disabled
@@ -1530,7 +1504,7 @@ void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float f
 		fade = 1.0f;
 
 	// Set selection colour
-	ColRGBA col = ColourConfiguration::colour("map_selection");
+	auto col = ColourConfiguration::colour("map_selection");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -1538,9 +1512,9 @@ void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float f
 	bool point = setupThingOverlay();
 
 	// Draw all selection overlays
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto item : selection)
 	{
-		MapThing* thing = map_->thing(selection[a].index);
+		auto thing = map_->thing(item.index);
 		if (!thing)
 			continue;
 
@@ -1567,14 +1541,14 @@ void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float f
 // -----------------------------------------------------------------------------
 // Renders the tagged thing overlay for things in [things]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
+void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade) const
 {
 	// Reset fade if tagged animation is disabled
 	if (!map_animate_tagged)
 		fade = 1.0f;
 
 	// Set hilight colour
-	ColRGBA col = ColourConfiguration::colour("map_tagged");
+	auto col = ColourConfiguration::colour("map_tagged");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -1582,11 +1556,10 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 	bool point = setupThingOverlay();
 
 	// Draw all tagged overlays
-	for (unsigned a = 0; a < things.size(); a++)
+	for (auto thing : things)
 	{
-		MapThing* thing  = things[a];
-		auto&     tt     = Game::configuration().thingType(thing->type());
-		double    radius = tt.radius();
+		auto&  tt     = Game::configuration().thingType(thing->type());
+		double radius = tt.radius();
 		if (tt.shrinkOnZoom())
 			radius = scaledRadius(radius);
 
@@ -1606,14 +1579,13 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 
 	// Draw action lines
 	// Because gl state is in texture mode above, we cannot merge the loops
-	MapObject* object = MapEditor::editContext().selection().hilightedObject();
+	auto object = MapEditor::editContext().selection().hilightedObject();
 	if (object && action_lines)
 	{
-		Vec2f dst = object->getPoint(MapObject::Point::Within);
+		auto dst = object->getPoint(MapObject::Point::Within);
 		glLineWidth(line_width * 1.5f);
-		for (unsigned a = 0; a < things.size(); a++)
+		for (auto thing : things)
 		{
-			MapThing* thing = things[a];
 			Drawing::drawArrow(
 				thing->getPoint(MapObject::Point::Within), dst, col, false, arrowhead_angle, arrowhead_length);
 		}
@@ -1623,14 +1595,14 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 // -----------------------------------------------------------------------------
 // Renders the tagging thing overlay for things in [things]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
+void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade) const
 {
 	// Reset fade if tagging animation is disabled
 	if (!map_animate_tagged)
 		fade = 1.0f;
 
 	// Set hilight colour
-	ColRGBA col = ColourConfiguration::colour("map_tagging");
+	auto col = ColourConfiguration::colour("map_tagging");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -1638,11 +1610,10 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	bool point = setupThingOverlay();
 
 	// Draw all tagging overlays
-	for (unsigned a = 0; a < things.size(); a++)
+	for (auto thing : things)
 	{
-		MapThing* thing  = things[a];
-		auto&     tt     = Game::configuration().thingType(thing->type());
-		double    radius = tt.radius();
+		auto&  tt     = Game::configuration().thingType(thing->type());
+		double radius = tt.radius();
 		if (tt.shrinkOnZoom())
 			radius = scaledRadius(radius);
 
@@ -1662,14 +1633,14 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 
 	// Draw action lines
 	// Because gl state is in texture mode above, we cannot merge the loops
-	MapObject* object = MapEditor::editContext().selection().hilightedObject();
+	auto object = MapEditor::editContext().selection().hilightedObject();
 	if (object && action_lines)
 	{
-		Vec2f src = object->getPoint(MapObject::Point::Within);
+		auto src = object->getPoint(MapObject::Point::Within);
 		glLineWidth(line_width * 1.5f);
 		for (unsigned a = 0; a < things.size(); a++)
 		{
-			MapThing* thing = things[a];
+			auto thing = things[a];
 			Drawing::drawArrow(
 				src, thing->getPoint(MapObject::Point::Within), col, false, arrowhead_angle, arrowhead_length);
 		}
@@ -1682,18 +1653,18 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 {
 	// Skip if action lines are not desired, or if there's nothing to do
-	if (!action_lines || things.size() == 0)
+	if (!action_lines || things.empty())
 		return;
 
 	// Check if paths need updating
 	bool update = false;
-	if (thing_paths_.size() == 0)
+	if (thing_paths_.empty())
 		update = true;
 	else if (map_->thingsUpdated() > thing_paths_updated_)
 	{
-		for (unsigned a = 0; a < things.size(); a++)
+		for (auto& thing : things)
 		{
-			if (things[a]->modifiedTime() > thing_paths_updated_)
+			if (thing->modifiedTime() > thing_paths_updated_)
 			{
 				update = true;
 				break;
@@ -1716,7 +1687,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 		// Find things that need to be pathed
 		for (unsigned a = 0; a < things.size(); ++a)
 		{
-			MapThing* thing = things[a];
+			auto      thing = things[a];
 			ThingPath path;
 			path.from_index = 0;
 			path.to_index   = 0;
@@ -1726,7 +1697,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			// Dragon Path
 			if (tt.flags() & Game::ThingType::Flags::Dragon)
 			{
-				MapThing* first = map_->findFirstThingWithId(thing->intProperty("id"));
+				auto first = map_->findFirstThingWithId(thing->intProperty("id"));
 				if (first)
 				{
 					path.from_index = thing->index();
@@ -1800,7 +1771,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			}
 			for (unsigned b = a + 1; b < things.size(); ++b)
 			{
-				MapThing* thing2 = things[b];
+				auto thing2 = things[b];
 				if (thing2->type() == nexttype)
 				{
 					auto& tt2 = Game::configuration().thingType(thing2->type());
@@ -1841,25 +1812,25 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 	// Setup GL stuff
 	glLineWidth(line_width * 1.5f);
 
-	for (unsigned a = 0; a < thing_paths_.size(); a++)
+	for (auto& thing_path : thing_paths_)
 	{
-		if (thing_paths_[a].from_index == thing_paths_[a].to_index)
+		if (thing_path.from_index == thing_path.to_index)
 			continue;
 
-		MapThing* from = map_->thing(thing_paths_[a].from_index);
+		auto from = map_->thing(thing_path.from_index);
 
 		if (from && ((from->intProperty("arg3") | (from->intProperty("arg4") << 8)) > 0))
 		{
-			MapThing* to = map_->thing(thing_paths_[a].to_index);
+			auto to = map_->thing(thing_path.to_index);
 			if (!to)
 				continue;
 
 			Drawing::drawArrow(
 				to->getPoint(MapObject::Point::Mid),
 				from->getPoint(MapObject::Point::Mid),
-				(thing_paths_[a].type == PathType::DragonBoth || thing_paths_[a].type == PathType::Dragon) ? dragoncol :
-																											 pathedcol,
-				(thing_paths_[a].type == PathType::NormalBoth || thing_paths_[a].type == PathType::DragonBoth),
+				(thing_path.type == PathType::DragonBoth || thing_path.type == PathType::Dragon) ? dragoncol :
+																								   pathedcol,
+				(thing_path.type == PathType::NormalBoth || thing_path.type == PathType::DragonBoth),
 				arrowhead_angle,
 				arrowhead_length);
 		}
@@ -1925,7 +1896,7 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 	GLTexture* tex      = nullptr;
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
-		MapSector* sector = map_->sector(a);
+		auto sector = map_->sector(a);
 
 		// Skip if sector is out of view
 		if (vis_s_[a] > 0)
@@ -1967,7 +1938,7 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 		}
 
 		// Setup polygon texture info if needed
-		Polygon2D* poly = sector->polygon();
+		auto poly = sector->polygon();
 		if (texture && poly->texture() != tex)
 		{
 			poly->setTexture(tex);
@@ -2021,7 +1992,7 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 		// Render the polygon
 		if (!flat_ignore_light)
 		{
-			ColRGBA col = sector->colourAt(type);
+			auto col = sector->colourAt(type);
 			col.ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
 			glColor4f(col.fr(), col.fg(), col.fb(), alpha);
 		}
@@ -2065,7 +2036,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 	// First, check if any polygon vertex data has changed (in this case we need to refresh the entire vbo)
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
-		Polygon2D* poly = map_->sector(a)->polygon();
+		auto poly = map_->sector(a)->polygon();
 		if (poly && poly->vboUpdate() > 1)
 		{
 			// LOG_MESSAGE(1, "Updating sector %d polygon vbo data", a);
@@ -2099,7 +2070,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 	unsigned   update   = 0;
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
-		MapSector* sector = map_->sector(a);
+		auto sector = map_->sector(a);
 
 		// Skip if sector is out of view
 		if (vis_s_[a] > 0)
@@ -2125,7 +2096,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		}
 
 		// Setup polygon texture info if needed
-		Polygon2D* poly = sector->polygon();
+		auto poly = sector->polygon();
 		if (texture && poly->texture() != tex)
 		{
 			poly->setTexture(tex); // Set polygon texture
@@ -2204,7 +2175,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		// Render the polygon
 		if (!flat_ignore_light)
 		{
-			ColRGBA col = sector->colourAt(type);
+			auto col = sector->colourAt(type);
 			col.ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
 			glColor4f(col.fr(), col.fg(), col.fb(), alpha);
 		}
@@ -2222,7 +2193,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 // -----------------------------------------------------------------------------
 // Renders the flat hilight overlay for sector [index]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderFlatHilight(int index, float fade)
+void MapRenderer2D::renderFlatHilight(int index, float fade) const
 {
 	// Check hilight
 	if (!map_->sector(index))
@@ -2233,7 +2204,7 @@ void MapRenderer2D::renderFlatHilight(int index, float fade)
 		fade = 1.0f;
 
 	// Set hilight colour
-	ColRGBA col = ColourConfiguration::colour("map_hilight");
+	auto col = ColourConfiguration::colour("map_hilight");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
@@ -2252,10 +2223,8 @@ void MapRenderer2D::renderFlatHilight(int index, float fade)
 	map_->sector(index)->putLines(lines);
 
 	// Draw hilight
-	MapLine* line = nullptr;
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto line : lines)
 	{
-		line = lines[a];
 		if (!line)
 			continue;
 
@@ -2287,7 +2256,7 @@ void MapRenderer2D::renderFlatHilight(int index, float fade)
 void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fade)
 {
 	// Check anything is selected
-	if (selection.size() == 0)
+	if (selection.empty())
 		return;
 
 	// Reset fade if selection animation is disabled
@@ -2295,43 +2264,43 @@ void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fa
 		fade = 1.0f;
 
 	// Set selection colour
-	ColRGBA col = ColourConfiguration::colour("map_selection");
+	auto col = ColourConfiguration::colour("map_selection");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
 	// Draw selection
 	glColor4f(col.fr(), col.fg(), col.fb(), col.fa() * 0.75f);
 	vector<MapSide*> sides_selected;
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto item : selection)
 	{
 		// Don't draw if outside screen (but still draw if it's small)
-		if (vis_s_[selection[a].index] > 0 && vis_s_[selection[a].index] != VIS_SMALL)
+		if (vis_s_[item.index] > 0 && vis_s_[item.index] != VIS_SMALL)
 			continue;
 
-		auto sector = map_->sector(selection[a].index);
+		auto sector = map_->sector(item.index);
 		if (!sector)
 			continue;
 
 		// Get the sector's polygon
-		Polygon2D*        poly  = sector->polygon();
-		vector<MapSide*>& sides = sector->connectedSides();
+		auto  poly  = sector->polygon();
+		auto& sides = sector->connectedSides();
 
 		if (poly->hasPolygon())
 		{
 			if (sector_selected_fill)
 				sector->polygon()->render();
 
-			for (unsigned s = 0; s < sides.size(); s++)
-				sides_selected.push_back(sides[s]);
+			for (auto side : sides)
+				sides_selected.push_back(side);
 		}
 		else
 		{
 			// Something went wrong with the polygon, just draw sector outline instead
 			glColor4f(col.fr(), col.fg(), col.fb(), col.fa());
 			glBegin(GL_LINES);
-			for (unsigned s = 0; s < sides.size(); s++)
+			for (auto& side : sides)
 			{
-				MapLine* line = sides[s]->parentLine();
+				auto line = side->parentLine();
 				glVertex2d(line->v1()->xPos(), line->v1()->yPos());
 				glVertex2d(line->v2()->xPos(), line->v2()->yPos());
 			}
@@ -2344,53 +2313,49 @@ void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fa
 	// Draw selection outline
 	glColor4f(col.fr(), col.fg(), col.fb(), col.fa());
 	glLineWidth(line_width * 2);
-	bool* lines_drawn = new bool[map_->nLines()];
-	memset(lines_drawn, 0, map_->nLines());
+	vector<uint8_t> lines_drawn(map_->nLines(), 0);
 	glBegin(GL_LINES);
-	for (unsigned a = 0; a < sides_selected.size(); a++)
+	for (auto& a : sides_selected)
 	{
-		MapLine* line = sides_selected[a]->parentLine();
-		if (lines_drawn[line->index()])
+		auto line = a->parentLine();
+		if (lines_drawn[line->index()] > 0)
 			continue;
 
 		glVertex2d(line->v1()->xPos(), line->v1()->yPos());
 		glVertex2d(line->v2()->xPos(), line->v2()->yPos());
-		lines_drawn[line->index()] = true;
+		lines_drawn[line->index()] = 1;
 	}
 	glEnd();
-	delete[] lines_drawn;
 }
 
 // -----------------------------------------------------------------------------
 // Renders the tagged flat overlay for sectors in [sectors]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
+void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade) const
 {
 	// Reset fade if tagged animation is disabled
 	if (!map_animate_tagged)
 		fade = 1.0f;
 
 	// Set colour
-	ColRGBA col = ColourConfiguration::colour("map_tagged");
+	auto col = ColourConfiguration::colour("map_tagged");
 	col.a *= fade;
 	OpenGL::setColour(col);
 
 	// Render each sector polygon
 	glDisable(GL_TEXTURE_2D);
-	MapObject* object = MapEditor::editContext().selection().hilightedObject();
-	for (unsigned a = 0; a < sectors.size(); a++)
+	auto object = MapEditor::editContext().selection().hilightedObject();
+	for (auto& sector : sectors)
 	{
-		sectors[a]->polygon()->render();
+		sector->polygon()->render();
 
 		// Get all lines belonging to the tagged sector
 		vector<MapLine*> lines;
-		sectors[a]->putLines(lines);
+		sector->putLines(lines);
 
 		// Draw hilight
-		MapLine* line = nullptr;
-		for (unsigned b = 0; b < lines.size(); b++)
+		for (auto line : lines)
 		{
-			line = lines[b];
 			if (!line)
 				continue;
 
@@ -2407,14 +2372,14 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 			// Skip if the tagged sector is adjacent
 			if (object->objType() == MapObject::Type::Line)
 			{
-				MapLine* line = (MapLine*)object;
-				if (line->frontSector() == sectors[a] || line->backSector() == sectors[a])
+				auto line = dynamic_cast<MapLine*>(object);
+				if (line->frontSector() == sector || line->backSector() == sector)
 					continue;
 			}
 
 			glLineWidth(line_width * 1.5f);
 			Drawing::drawArrow(
-				sectors[a]->getPoint(MapObject::Point::Within),
+				sector->getPoint(MapObject::Point::Within),
 				object->getPoint(MapObject::Point::Within),
 				col,
 				false,
@@ -2428,18 +2393,20 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 // Renders the moving overlay for vertex indices in [vertices], to show movement
 // by [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices, Vec2f move_vec)
+void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices, Vec2f move_vec) const
 {
-	uint8_t* lines_drawn = new uint8_t[map_->nLines()];
-	memset(lines_drawn, 0, map_->nLines());
+	vector<uint8_t> lines_drawn(map_->nLines(), 0);
 
 	// Determine what lines need drawing (and which of their vertices are being moved)
-	for (unsigned a = 0; a < vertices.size(); a++)
+	for (auto item : vertices)
 	{
-		MapVertex* v = map_->vertex(vertices[a].index);
+		if (item.type != MapEditor::ItemType::Vertex)
+			continue;
+
+		auto v = map_->vertex(item.index);
 		for (unsigned l = 0; l < v->nConnectedLines(); l++)
 		{
-			MapLine* line = v->connectedLine(l);
+			auto line = v->connectedLine(l);
 
 			if (line->v1() == v)
 				lines_drawn[line->index()] |= 1;
@@ -2454,8 +2421,8 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < map_->nLines(); a++)
 	{
-		MapLine* line  = map_->line(a);
-		uint8_t  drawn = lines_drawn[line->index()];
+		auto line  = map_->line(a);
+		auto drawn = lines_drawn[line->index()];
 
 		// Skip if not attached to any moving vertices
 		if (drawn == 0)
@@ -2484,15 +2451,16 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
 	// Draw moving vertex overlays
 	bool point = setupVertexRendering(1.5f);
 	glBegin(GL_POINTS);
-	for (unsigned a = 0; a < vertices.size(); a++)
+	for (auto item : vertices)
 	{
-		glVertex2d(
-			map_->vertex(vertices[a].index)->xPos() + move_vec.x, map_->vertex(vertices[a].index)->yPos() + move_vec.y);
+		if (item.type != MapEditor::ItemType::Vertex)
+			continue;
+
+		glVertex2d(map_->vertex(item.index)->xPos() + move_vec.x, map_->vertex(item.index)->yPos() + move_vec.y);
 	}
 	glEnd();
 
 	// Clean up
-	delete[] lines_drawn;
 	if (point)
 	{
 		glDisable(GL_POINT_SPRITE);
@@ -2504,19 +2472,21 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
 // Renders the moving overlay for line indices in [lines], to show movement by
 // [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, Vec2f move_vec)
+void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, Vec2f move_vec) const
 {
-	uint8_t* lines_drawn = new uint8_t[map_->nLines()];
-	memset(lines_drawn, 0, map_->nLines());
+	vector<uint8_t> lines_drawn(map_->nLines(), 0);
 
 	// Determine what lines need drawing (and which of their vertices are being moved)
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto item : lines)
 	{
+		if (item.type != MapEditor::ItemType::Line)
+			continue;
+
 		// Check first vertex
-		MapVertex* v = map_->line(lines[a].index)->v1();
+		auto v = map_->line(item.index)->v1();
 		for (unsigned l = 0; l < v->nConnectedLines(); l++)
 		{
-			MapLine* line = v->connectedLine(l);
+			auto line = v->connectedLine(l);
 
 			if (line->v1() == v)
 				lines_drawn[line->index()] |= 1;
@@ -2525,10 +2495,10 @@ void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, Vec2
 		}
 
 		// Check second vertex
-		v = map_->line(lines[a].index)->v2();
+		v = map_->line(item.index)->v2();
 		for (unsigned l = 0; l < v->nConnectedLines(); l++)
 		{
-			MapLine* line = v->connectedLine(l);
+			auto line = v->connectedLine(l);
 
 			if (line->v1() == v)
 				lines_drawn[line->index()] |= 1;
@@ -2543,8 +2513,8 @@ void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, Vec2
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < map_->nLines(); a++)
 	{
-		MapLine* line  = map_->line(a);
-		uint8_t  drawn = lines_drawn[line->index()];
+		auto line  = map_->line(a);
+		auto drawn = lines_drawn[line->index()];
 
 		// Skip if not attached to any moving vertices
 		if (drawn == 0)
@@ -2573,33 +2543,29 @@ void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, Vec2
 	// Draw moving line overlays
 	glLineWidth(line_width * 3);
 	glBegin(GL_LINES);
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto item : lines)
 	{
-		MapLine* line = map_->line(lines[a].index);
+		auto line = map_->line(item.index);
 		glVertex2d(line->x1() + move_vec.x, line->y1() + move_vec.y);
 		glVertex2d(line->x2() + move_vec.x, line->y2() + move_vec.y);
 	}
 	glEnd();
-
-	// Clean up
-	delete[] lines_drawn;
 }
 
 // -----------------------------------------------------------------------------
 // Renders the moving overlay for sector indices in [sectors], to show movement
 // by [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, Vec2f move_vec)
+void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, Vec2f move_vec) const
 {
 	// Determine what lines are being moved
-	uint8_t* lines_moved = new uint8_t[map_->nLines()];
-	memset(lines_moved, 0, map_->nLines());
-	for (unsigned a = 0; a < sectors.size(); a++)
+	vector<uint8_t> lines_moved(map_->nLines(), 0);
+	for (auto sector : sectors)
 	{
 		// Go through connected sides
-		vector<MapSide*>& sides = map_->sector(sectors[a].index)->connectedSides();
-		for (unsigned s = 0; s < sides.size(); s++)
-			lines_moved[sides[s]->parentLine()->index()] = 1; // Mark parent line as moved
+		auto& sides = map_->sector(sector.index)->connectedSides();
+		for (auto& side : sides)
+			lines_moved[side->parentLine()->index()] = 1; // Mark parent line as moved
 	}
 
 	// Build list of moving lines
@@ -2607,14 +2573,11 @@ void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, 
 	for (unsigned a = 0; a < map_->nLines(); a++)
 	{
 		if (lines_moved[a] > 0)
-			lines.push_back({ (int)a, MapEditor::ItemType::Line });
+			lines.emplace_back((int)a, MapEditor::ItemType::Line);
 	}
 
 	// Draw moving lines
 	renderMovingLines(lines, move_vec);
-
-	// Clean up
-	delete[] lines_moved;
 }
 
 // -----------------------------------------------------------------------------
@@ -2630,7 +2593,7 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, Ve
 	tex_last_ = nullptr;
 
 	// Draw things
-	MapThing* thing = nullptr;
+	MapThing* thing;
 	double    x, y, angle;
 	for (unsigned a = 0; a < things.size(); a++)
 	{
@@ -2664,16 +2627,16 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, Ve
 	{
 		glEnable(GL_TEXTURE_2D);
 
-		for (unsigned a = 0; a < things.size(); a++)
+		for (auto item : things)
 		{
 			// Get thing info
-			thing    = map_->thing(things[a].index);
+			thing    = map_->thing(item.index);
 			auto& tt = Game::configuration().thingType(thing->type());
 			x        = thing->xPos() + move_vec.x;
 			y        = thing->yPos() + move_vec.y;
 			angle    = thing->angle();
 
-			renderSpriteThing(x, y, angle, tt, things[a].index, 1.0f, true);
+			renderSpriteThing(x, y, angle, tt, item.index, 1.0f, true);
 		}
 	}
 
@@ -2682,9 +2645,9 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, Ve
 
 	// Draw moving thing overlays
 	bool point = setupThingOverlay();
-	for (unsigned a = 0; a < things.size(); a++)
+	for (auto a : things)
 	{
-		thing         = map_->thing(things[a].index);
+		thing         = map_->thing(a.index);
 		auto&  tt     = Game::configuration().thingType(thing->type());
 		double radius = tt.radius();
 		if (tt.shrinkOnZoom())
@@ -2717,12 +2680,10 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, Vec2f pos)
 	tex_last_ = nullptr;
 
 	// Draw things
-	MapThing* thing = nullptr;
-	double    x, y, angle;
-	for (unsigned a = 0; a < things.size(); a++)
+	double x, y, angle;
+	for (auto thing : things)
 	{
 		// Get thing info
-		thing = things[a];
 		x     = thing->xPos() + pos.x;
 		y     = thing->yPos() + pos.y;
 		angle = thing->angle();
@@ -2751,10 +2712,9 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, Vec2f pos)
 	{
 		glEnable(GL_TEXTURE_2D);
 
-		for (unsigned a = 0; a < things.size(); a++)
+		for (auto thing : things)
 		{
 			// Get thing info
-			thing    = things[a];
 			auto& tt = Game::configuration().thingType(thing->type());
 			x        = thing->xPos() + pos.x;
 			y        = thing->yPos() + pos.y;
@@ -2769,9 +2729,8 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, Vec2f pos)
 
 	// Draw moving thing overlays
 	bool point = setupThingOverlay();
-	for (unsigned a = 0; a < things.size(); a++)
+	for (auto thing : things)
 	{
-		thing         = things[a];
 		auto&  tt     = Game::configuration().thingType(thing->type());
 		double radius = tt.radius();
 		if (tt.shrinkOnZoom())
@@ -2811,11 +2770,11 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 	// Lines
 	glBegin(GL_LINES);
 	glLineWidth(line_width);
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto& line : lines)
 	{
-		OpenGL::setColour(lineColour(lines[a].map_line, true), false);
-		glVertex2d(lines[a].v1->position.x, lines[a].v1->position.y);
-		glVertex2d(lines[a].v2->position.x, lines[a].v2->position.y);
+		OpenGL::setColour(lineColour(line.map_line, true), false);
+		glVertex2d(line.v1->position.x, line.v1->position.y);
+		glVertex2d(line.v2->position.x, line.v2->position.y);
 	}
 	glEnd();
 
@@ -2823,13 +2782,13 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 	OpenGL::setColour(ColourConfiguration::colour("map_object_edit"));
 	glLineWidth(line_width * 3);
 	glBegin(GL_LINES);
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto& line : lines)
 	{
-		if (lines[a].isExtra())
+		if (line.isExtra())
 			continue;
 
-		glVertex2d(lines[a].v1->position.x, lines[a].v1->position.y);
-		glVertex2d(lines[a].v2->position.x, lines[a].v2->position.y);
+		glVertex2d(line.v1->position.x, line.v1->position.y);
+		glVertex2d(line.v2->position.x, line.v2->position.y);
 	}
 	glEnd();
 
@@ -2842,8 +2801,8 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 
 	// Render vertices
 	glBegin(GL_POINTS);
-	for (unsigned a = 0; a < vertex_points.size(); a++)
-		glVertex2d(vertex_points[a].x, vertex_points[a].y);
+	for (auto& vertex_point : vertex_points)
+		glVertex2d(vertex_point.x, vertex_point.y);
 	glEnd();
 
 	// Clean up
@@ -2868,14 +2827,14 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 		tex_last_ = nullptr;
 
 		// Draw things
-		MapThing* thing = nullptr;
+		MapThing* thing;
 		double    x, y, angle;
-		for (unsigned a = 0; a < things.size(); a++)
+		for (auto& item : things)
 		{
 			// Get thing info
-			thing = things[a].map_thing;
-			x     = things[a].position.x;
-			y     = things[a].position.y;
+			thing = item.map_thing;
+			x     = item.position.x;
+			y     = item.position.y;
 			angle = thing->angle();
 
 			// Get thing type properties from game configuration
@@ -2902,13 +2861,13 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 		{
 			glEnable(GL_TEXTURE_2D);
 
-			for (unsigned a = 0; a < things.size(); a++)
+			for (auto& item : things)
 			{
 				// Get thing info
-				thing    = things[a].map_thing;
+				thing    = item.map_thing;
 				auto& tt = Game::configuration().thingType(thing->type());
-				x        = things[a].position.x;
-				y        = things[a].position.y;
+				x        = item.position.x;
+				y        = item.position.y;
 				angle    = thing->angle();
 
 				renderSpriteThing(x, y, angle, tt, thing->index(), 1.0f, true);
@@ -2919,10 +2878,10 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 		OpenGL::setColour(ColourConfiguration::colour("map_object_edit"));
 
 		// Draw moving thing overlays
-		bool point = setupThingOverlay();
-		for (unsigned a = 0; a < things.size(); a++)
+		bool point_spr = setupThingOverlay();
+		for (auto& item : things)
 		{
-			thing         = things[a].map_thing;
+			thing         = item.map_thing;
 			auto&  tt     = Game::configuration().thingType(thing->type());
 			double radius = tt.radius();
 			if (tt.shrinkOnZoom())
@@ -2932,11 +2891,11 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 			if (!thing_overlay_square)
 				radius += 8;
 
-			renderThingOverlay(things[a].position.x, things[a].position.y, radius, point);
+			renderThingOverlay(item.position.x, item.position.y, radius, point_spr);
 		}
 
 		// Clean up gl state
-		if (point)
+		if (point_spr)
 		{
 			glDisable(GL_POINT_SPRITE);
 			glDisable(GL_TEXTURE_2D);
@@ -2954,19 +2913,18 @@ void MapRenderer2D::updateVerticesVBO()
 		glGenBuffers(1, &vbo_vertices_);
 
 	// Fill vertices VBO
-	int      nfloats = map_->nVertices() * 2;
-	GLfloat* verts   = new GLfloat[nfloats];
-	unsigned i       = 0;
+	int             nfloats = map_->nVertices() * 2;
+	vector<GLfloat> verts(nfloats);
+	unsigned        i = 0;
 	for (unsigned a = 0; a < map_->nVertices(); a++)
 	{
 		verts[i++] = map_->vertex(a)->xPos();
 		verts[i++] = map_->vertex(a)->yPos();
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices_);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * nfloats, verts, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * nfloats, verts.data(), GL_STATIC_DRAW);
 
 	// Clean up
-	delete[] verts;
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	n_vertices_       = map_->nVertices();
@@ -2990,14 +2948,14 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 		vpl = 4;
 
 	// Fill lines VBO
-	int      nverts = map_->nLines() * vpl;
-	GLVert*  lines  = new GLVert[nverts];
-	unsigned v      = 0;
-	ColRGBA  col;
-	float    alpha;
+	int            nverts = map_->nLines() * vpl;
+	vector<GLVert> lines(nverts);
+	unsigned       v = 0;
+	ColRGBA        col;
+	float          alpha;
 	for (unsigned a = 0; a < map_->nLines(); a++)
 	{
-		MapLine* line = map_->line(a);
+		auto line = map_->line(a);
 
 		// Get line colour
 		col   = lineColour(line);
@@ -3018,8 +2976,8 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 		// Direction tab if needed
 		if (show_direction)
 		{
-			Vec2f mid      = line->getPoint(MapObject::Point::Mid);
-			Vec2f tab      = line->dirTabPoint();
+			auto mid       = line->getPoint(MapObject::Point::Mid);
+			auto tab       = line->dirTabPoint();
 			lines[v + 2].x = mid.x;
 			lines[v + 2].y = mid.y;
 			lines[v + 3].x = tab.x;
@@ -3036,10 +2994,9 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 		v += vpl;
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_lines_);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLVert) * nverts, lines, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLVert) * nverts, lines.data(), GL_STATIC_DRAW);
 
 	// Clean up
-	delete[] lines;
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	n_lines_       = map_->nLines();
@@ -3062,7 +3019,7 @@ void MapRenderer2D::updateFlatsVBO()
 	unsigned totalsize = 0;
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
-		Polygon2D* poly = map_->sector(a)->polygon();
+		auto poly = map_->sector(a)->polygon();
 		totalsize += poly->vboDataSize();
 	}
 
@@ -3075,8 +3032,8 @@ void MapRenderer2D::updateFlatsVBO()
 	unsigned index  = 0;
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
-		Polygon2D* poly = map_->sector(a)->polygon();
-		offset          = poly->writeToVBO(offset, index);
+		auto poly = map_->sector(a)->polygon();
+		offset    = poly->writeToVBO(offset, index);
 		index += poly->totalVertices();
 	}
 
@@ -3102,7 +3059,7 @@ void MapRenderer2D::updateVisibility(Vec2f view_tl, Vec2f view_br)
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Check against sector bounding box
-		BBox bbox = map_->sector(a)->boundingBox();
+		auto bbox = map_->sector(a)->boundingBox();
 		vis_s_[a] = 0;
 		if (bbox.max.x < view_tl.x)
 			vis_s_[a] = VIS_LEFT;
@@ -3154,7 +3111,7 @@ void MapRenderer2D::updateVisibility(Vec2f view_tl, Vec2f view_br)
 void MapRenderer2D::forceUpdate(float line_alpha)
 {
 	// Update variables
-	this->view_scale_inv_ = 1.0 / view_scale_;
+	view_scale_inv_ = 1.0 / view_scale_;
 	tex_flats_.clear();
 	thing_sprites_.clear();
 	thing_paths_.clear();
@@ -3185,7 +3142,7 @@ void MapRenderer2D::forceUpdate(float line_alpha)
 // Returns [radius] scaled such that it stays the same size on screen at all
 // zoom levels
 // -----------------------------------------------------------------------------
-double MapRenderer2D::scaledRadius(int radius)
+double MapRenderer2D::scaledRadius(int radius) const
 {
 	if (radius > 16)
 		radius = 16;
@@ -3199,7 +3156,7 @@ double MapRenderer2D::scaledRadius(int radius)
 // -----------------------------------------------------------------------------
 // Returns true if the current visibility info is valid
 // -----------------------------------------------------------------------------
-bool MapRenderer2D::visOK()
+bool MapRenderer2D::visOK() const
 {
 	if (map_->nSectors() != vis_s_.size() || map_->nThings() != vis_t_.size())
 		return false;

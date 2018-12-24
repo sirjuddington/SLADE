@@ -43,7 +43,7 @@ public:
 	SLADEMap&             map() { return map_; }
 	MapEditor::Mode       editMode() const { return edit_mode_; }
 	MapEditor::SectorMode sectorEditMode() const { return sector_mode_; }
-	double                gridSize();
+	double                gridSize() const;
 	ItemSelection&        selection() { return selection_; }
 	MapEditor::Item       hilightItem() const { return selection_.hilight(); }
 	vector<MapSector*>&   taggedSectors() { return tagged_sectors_; }
@@ -82,8 +82,8 @@ public:
 	// Grid
 	void   incrementGrid();
 	void   decrementGrid();
-	double snapToGrid(double position, bool force = true);
-	Vec2f  relativeSnapToGrid(Vec2f origin, Vec2f mouse_pos);
+	double snapToGrid(double position, bool force = true) const;
+	Vec2f  relativeSnapToGrid(Vec2f origin, Vec2f mouse_pos) const;
 
 	// Tag edit
 	int  beginTagEdit();
@@ -101,24 +101,24 @@ public:
 	unsigned numEditorMessages() const { return editor_messages_.size(); }
 	string   editorMessage(int index);
 	long     editorMessageTime(int index);
-	void     addEditorMessage(string message);
+	void     addEditorMessage(const string& message);
 
 	// Feature help text
 	const vector<string>& featureHelpLines() const { return feature_help_lines_; }
 	void                  setFeatureHelp(const vector<string>& lines);
 
 	// Undo/Redo
-	void beginUndoRecord(string name, bool mod = true, bool create = true, bool del = true);
-	void beginUndoRecordLocked(string name, bool mod = true, bool create = true, bool del = true);
+	void beginUndoRecord(const string& name, bool mod = true, bool create = true, bool del = true);
+	void beginUndoRecordLocked(const string& name, bool mod = true, bool create = true, bool del = true);
 	void endUndoRecord(bool success = true);
-	void recordPropertyChangeUndoStep(MapObject* object);
+	void recordPropertyChangeUndoStep(MapObject* object) const;
 	void doUndo();
 	void doRedo();
 	void resetLastUndoLevel() { last_undo_level_ = ""; }
 
 	// Overlays
 	MCOverlay* currentOverlay() const { return overlay_current_.get(); }
-	bool       overlayActive();
+	bool       overlayActive() const;
 	void       closeCurrentOverlay(bool cancel = false) const;
 	void       openSectorTextureOverlay(vector<MapSector*>& sectors);
 	void       openQuickTextureOverlay();
@@ -134,9 +134,9 @@ public:
 
 	// Misc
 	string modeString(bool plural = true) const;
-	bool   handleKeyBind(string key, Vec2f position);
+	bool   handleKeyBind(const string& key, Vec2f position);
 	void   updateDisplay();
-	void   updateStatusText();
+	void   updateStatusText() const;
 	void   updateThingLists();
 	void   setCursor(UI::MouseCursor cursor) const;
 	void   forceRefreshRenderer();
@@ -184,11 +184,11 @@ private:
 	vector<MapThing*> pathed_things_;
 
 	// Editing
-	MoveObjects move_objects_ = MoveObjects(*this);
-	LineDraw    line_draw_    = LineDraw(*this);
-	Edit2D      edit_2d_      = Edit2D(*this);
-	Edit3D      edit_3d_      = Edit3D(*this);
-	ObjectEdit  object_edit_  = ObjectEdit(*this);
+	MoveObjects move_objects_{ *this };
+	LineDraw    line_draw_{ *this };
+	Edit2D      edit_2d_{ *this };
+	Edit3D      edit_3d_{ *this };
+	ObjectEdit  object_edit_{ *this };
 
 	// Object properties and copy/paste
 	std::unique_ptr<MapThing>  copy_thing_      = nullptr;

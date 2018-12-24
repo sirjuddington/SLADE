@@ -103,7 +103,7 @@ public:
 	Game::SpecialPreset selectedPreset() const
 	{
 		// Get data from selected item
-		auto sel_data = (SpecialPresetData*)GetItemData(GetSelection());
+		auto sel_data = dynamic_cast<SpecialPresetData*>(GetItemData(GetSelection()));
 		if (sel_data)
 			return sel_data->preset();
 
@@ -114,23 +114,23 @@ public:
 
 private:
 	wxDataViewItem root_;
-	wxDialog*      parent_dialog_;
+	wxDialog*      parent_dialog_ = nullptr;
 
 	struct Group
 	{
 		string         name;
 		wxDataViewItem item;
-		Group(wxDataViewItem item, string name) : name{ name }, item{ item } {}
+		Group(wxDataViewItem item, const string& name) : name{ name }, item{ item } {}
 	};
 	vector<Group> groups_;
 
-	wxDataViewItem getGroup(string group)
+	wxDataViewItem getGroup(const string& group)
 	{
 		// Check if group was already made
-		for (unsigned a = 0; a < groups_.size(); a++)
+		for (auto& g : groups_)
 		{
-			if (group == groups_[a].name)
-				return groups_[a].item;
+			if (group == g.name)
+				return g.item;
 		}
 
 		// Split group into subgroups
@@ -146,11 +146,11 @@ private:
 			fullpath += path[p];
 
 			bool found = false;
-			for (unsigned a = 0; a < groups_.size(); a++)
+			for (auto& g : groups_)
 			{
-				if (groups_[a].name == fullpath)
+				if (g.name == fullpath)
 				{
-					current = groups_[a].item;
+					current = g.item;
 					found   = true;
 					break;
 				}
@@ -159,7 +159,7 @@ private:
 			if (!found)
 			{
 				current = AppendContainer(current, path[p], -1, 1);
-				groups_.push_back({ current, fullpath });
+				groups_.emplace_back(current, fullpath);
 			}
 		}
 
@@ -189,8 +189,7 @@ private:
 // SpecialPresetDialog class constructor
 // -----------------------------------------------------------------------------
 SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) :
-	SDialog{ parent, "Special Presets", "special_presets" },
-	tree_presets_{ nullptr }
+	SDialog{ parent, "Special Presets", "special_presets" }
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);

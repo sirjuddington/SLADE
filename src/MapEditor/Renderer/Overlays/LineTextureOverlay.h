@@ -8,26 +8,26 @@ class MapSide;
 class LineTextureOverlay : public MCOverlay
 {
 public:
-	LineTextureOverlay();
-	~LineTextureOverlay();
+	LineTextureOverlay() = default;
+	~LineTextureOverlay() = default;
 
 	void openLines(vector<MapLine*>& list);
-	void close(bool cancel);
-	void update(long frametime);
+	void close(bool cancel) override;
+	void update(long frametime) override;
 
 	// Drawing
 	void updateLayout(int width, int height);
-	void draw(int width, int height, float fade);
+	void draw(int width, int height, float fade) override;
 
 	// Input
-	void mouseMotion(int x, int y);
-	void mouseLeftClick();
-	void mouseRightClick();
-	void keyDown(string key);
+	void mouseMotion(int x, int y) override;
+	void mouseLeftClick() override;
+	void mouseRightClick() override;
+	void keyDown(const string& key) override;
 
 private:
-	vector<MapLine*> lines;
-	int              selected_side;
+	vector<MapLine*> lines_;
+	int              selected_side_ = 0;
 
 	struct TexInfo
 	{
@@ -63,16 +63,16 @@ private:
 		BackLower,
 	};
 	TexInfo textures_[6];
-	bool    side1_;
-	bool    side2_;
+	bool    side1_ = false;
+	bool    side2_ = false;
 
 	// Drawing info
-	int tex_size_;
-	int last_width_;
-	int last_height_;
+	int tex_size_    = 0;
+	int last_width_  = 0;
+	int last_height_ = 0;
 
 	// Helper functions
-	void addTexture(TexInfo& inf, string texture);
-	void drawTexture(float alpha, int size, TexInfo& tex, string position);
-	void browseTexture(TexInfo& tex, string position);
+	void addTexture(TexInfo& inf, string texture) const;
+	void drawTexture(float alpha, int size, TexInfo& tex, const string& position) const;
+	void browseTexture(TexInfo& tex, const string& position);
 };

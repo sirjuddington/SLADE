@@ -58,7 +58,7 @@
 // -----------------------------------------------------------------------------
 SpriteTexCanvas::SpriteTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 {
-	SetWindowStyleFlag(wxBORDER_SIMPLE);
+	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
 	SetInitialSize(WxUtils::scaledSize(128, 128));
 }
 
@@ -151,27 +151,21 @@ void SpriteTexCanvas::draw()
 // -----------------------------------------------------------------------------
 // ThingDirCanvas class constructor
 // -----------------------------------------------------------------------------
-ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, true, 15)
+ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, true, 15), parent_{ parent }
 {
-	// Init variables
-	point_hl_   = -1;
-	last_check_ = 0;
-	point_sel_  = -1;
-	parent_     = parent;
-
 	// Get system panel background colour
-	wxColour bgcolwx = Drawing::systemPanelBGColour();
+	auto bgcolwx = Drawing::systemPanelBGColour();
 	col_bg_.set(COLWX(bgcolwx));
 
 	// Get system text colour
-	wxColour textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+	auto textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 	col_fg_.set(COLWX(textcol));
 
 	// Setup dir points
 	double rot = 0;
 	for (int a = 0; a < 8; a++)
 	{
-		dir_points_.push_back(Vec2f(sin(rot), 0 - cos(rot)));
+		dir_points_.emplace_back(sin(rot), 0 - cos(rot));
 		rot -= (3.1415926535897932384626433832795 * 2) / 8.0;
 	}
 
@@ -183,7 +177,7 @@ ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, tru
 	// Fixed size
 	auto size = UI::scalePx(128);
 	SetInitialSize(wxSize(size, size));
-	SetMaxSize(wxSize(size, size));
+	wxWindowBase::SetMaxSize(wxSize(size, size));
 }
 
 // -----------------------------------------------------------------------------
@@ -246,17 +240,17 @@ void ThingDirCanvas::draw()
 	Drawing::drawEllipse(Vec2f(0, 0), 1, 1, 48, col_faded);
 
 	// Draw dir points
-	for (unsigned a = 0; a < dir_points_.size(); a++)
+	for (auto dir_point : dir_points_)
 	{
-		Drawing::drawFilledEllipse(dir_points_[a], 0.12, 0.12, 8, col_bg_);
-		Drawing::drawEllipse(dir_points_[a], 0.12, 0.12, 16, col_fg_);
+		Drawing::drawFilledEllipse(dir_point, 0.12, 0.12, 8, col_bg_);
+		Drawing::drawEllipse(dir_point, 0.12, 0.12, 16, col_fg_);
 	}
 
 	// Draw angle arrow
 	glLineWidth(2.0f);
 	if (parent_->angleSet())
 	{
-		Vec2f tip = MathStuff::rotatePoint(Vec2f(0, 0), Vec2f(0.8, 0), -parent_->angle());
+		auto tip = MathStuff::rotatePoint(Vec2f(0, 0), Vec2f(0.8, 0), -parent_->angle());
 		Drawing::drawArrow(tip, Vec2f(0, 0), col_fg_, false, 1.2, 0.2);
 	}
 
@@ -376,7 +370,7 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 AngleControl::AngleControl(wxWindow* parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 {
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Angle visual control
@@ -393,7 +387,7 @@ AngleControl::AngleControl(wxWindow* parent) : wxControl(parent, -1, wxDefaultPo
 // -----------------------------------------------------------------------------
 // Returns the current angle
 // -----------------------------------------------------------------------------
-int AngleControl::angle(int base)
+int AngleControl::angle(int base) const
 {
 	return text_angle_->number(base);
 }
@@ -413,7 +407,7 @@ void AngleControl::setAngle(int angle, bool update_visual)
 // -----------------------------------------------------------------------------
 // Updates the visual angle control
 // -----------------------------------------------------------------------------
-void AngleControl::updateAngle()
+void AngleControl::updateAngle() const
 {
 	dc_angle_->setAngle(angle_);
 	dc_angle_->Refresh();
@@ -422,7 +416,7 @@ void AngleControl::updateAngle()
 // -----------------------------------------------------------------------------
 // Returns true if an angle is specified
 // -----------------------------------------------------------------------------
-bool AngleControl::angleSet()
+bool AngleControl::angleSet() const
 {
 	return !(text_angle_->GetValue().IsEmpty());
 }
@@ -458,7 +452,7 @@ void AngleControl::onAngleTextChanged(wxCommandEvent& e)
 ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Tabs
@@ -505,7 +499,7 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	// Bind events
 	gfx_sprite_->Bind(wxEVT_LEFT_DOWN, &ThingPropsPanel::onSpriteClicked, this);
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------
@@ -516,19 +510,19 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	auto map_format = MapEditor::editContext().mapDesc().format;
 
 	// Create panel
-	wxPanel* panel = new wxPanel(stc_tabs_, -1);
+	auto panel = new wxPanel(stc_tabs_, -1);
 
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
 	// --- Flags ---
-	wxStaticBox*      frame      = new wxStaticBox(panel, -1, "Flags");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	auto frame      = new wxStaticBox(panel, -1, "Flags");
+	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxALL, UI::pad());
 
 	// Init flags
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad() / 2, UI::pad());
+	auto gb_sizer = new wxGridBagSizer(UI::pad() / 2, UI::pad());
 	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
 	int row = 0;
 	int col = 0;
@@ -559,9 +553,9 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 		int flag_mid = flags.size() / 3;
 		if (flags.size() % 3 == 0)
 			flag_mid--;
-		for (unsigned a = 0; a < flags.size(); a++)
+		for (const auto& flag : flags)
 		{
-			wxCheckBox* cb_flag = new wxCheckBox(panel, -1, flags[a], wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+			auto cb_flag = new wxCheckBox(panel, -1, flag, wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
 			gb_sizer->Add(cb_flag, { row++, col }, { 1, 1 }, wxEXPAND);
 			cb_flags_.push_back(cb_flag);
 
@@ -582,7 +576,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 			flag_mid--;
 		for (int a = 0; a < Game::configuration().nThingFlags(); a++)
 		{
-			wxCheckBox* cb_flag = new wxCheckBox(
+			auto cb_flag = new wxCheckBox(
 				panel, -1, Game::configuration().thingFlag(a), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
 			gb_sizer->Add(cb_flag, { row++, col }, { 1, 1 }, wxEXPAND);
 			cb_flags_.push_back(cb_flag);
@@ -600,7 +594,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	gb_sizer->AddGrowableCol(2, 1);
 
 	// Type
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND | wxALL, UI::pad());
 	frame      = new wxStaticBox(panel, -1, "Type");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
@@ -645,23 +639,23 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 {
 	// Create panel
-	wxPanel* panel = new wxPanel(stc_tabs_, -1);
+	auto panel = new wxPanel(stc_tabs_, -1);
 
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
 	// Init flags
-	wxGridBagSizer* gb_sizer_flags = new wxGridBagSizer(UI::pad() / 2, UI::pad());
+	auto gb_sizer_flags = new wxGridBagSizer(UI::pad() / 2, UI::pad());
 	sizer->Add(gb_sizer_flags, 1, wxEXPAND | wxALL, UI::pad());
 	int row = 0;
 	int col = 0;
 
 	// Get all extra flag names
 	vector<string> flags;
-	for (unsigned a = 0; a < udmf_flags_extra_.size(); a++)
+	for (const auto& a : udmf_flags_extra_)
 	{
-		UDMFProperty* prop = Game::configuration().getUDMFProperty(udmf_flags_extra_[a], MapObject::Type::Thing);
+		auto prop = Game::configuration().getUDMFProperty(a, MapObject::Type::Thing);
 		flags.push_back(prop->name());
 	}
 
@@ -669,9 +663,9 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	int flag_mid = flags.size() / 3;
 	if (flags.size() % 3 == 0)
 		flag_mid--;
-	for (unsigned a = 0; a < flags.size(); a++)
+	for (const auto& flag : flags)
 	{
-		wxCheckBox* cb_flag = new wxCheckBox(panel, -1, flags[a], wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+		auto cb_flag = new wxCheckBox(panel, -1, flag, wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
 		gb_sizer_flags->Add(cb_flag, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
 		cb_flags_extra_.push_back(cb_flag);
 
@@ -792,9 +786,9 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	mopp_other_props_->openObjects(objects);
 
 	// Update internal objects list
-	this->objects_.clear();
-	for (unsigned a = 0; a < objects.size(); a++)
-		this->objects_.push_back(objects[a]);
+	objects_.clear();
+	for (auto object : objects)
+		this->objects_.push_back(object);
 
 	// Update layout
 	Layout();
@@ -809,7 +803,7 @@ void ThingPropsPanel::applyChanges()
 	auto map_format = MapEditor::editContext().mapDesc().format;
 
 	// Apply general properties
-	for (unsigned a = 0; a < objects_.size(); a++)
+	for (auto& object : objects_)
 	{
 		// Flags
 		if (udmf_flags_.empty())
@@ -817,7 +811,7 @@ void ThingPropsPanel::applyChanges()
 			for (int f = 0; f < Game::configuration().nThingFlags(); f++)
 			{
 				if (cb_flags_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					Game::configuration().setThingFlag(f, (MapThing*)objects_[a], cb_flags_[f]->GetValue());
+					Game::configuration().setThingFlag(f, (MapThing*)object, cb_flags_[f]->GetValue());
 			}
 		}
 
@@ -827,7 +821,7 @@ void ThingPropsPanel::applyChanges()
 			for (unsigned f = 0; f < udmf_flags_.size(); f++)
 			{
 				if (cb_flags_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					objects_[a]->setBoolProperty(udmf_flags_[f], cb_flags_[f]->GetValue());
+					object->setBoolProperty(udmf_flags_[f], cb_flags_[f]->GetValue());
 			}
 		}
 
@@ -837,32 +831,31 @@ void ThingPropsPanel::applyChanges()
 			for (unsigned f = 0; f < udmf_flags_extra_.size(); f++)
 			{
 				if (cb_flags_extra_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					objects_[a]->setBoolProperty(udmf_flags_extra_[f], cb_flags_extra_[f]->GetValue());
+					object->setBoolProperty(udmf_flags_extra_[f], cb_flags_extra_[f]->GetValue());
 			}
 		}
 
 		// Type
 		if (type_current_ > 0)
-			objects_[a]->setIntProperty("type", type_current_);
+			object->setIntProperty("type", type_current_);
 
 		// Direction
 		if (ac_direction_->angleSet())
-			objects_[a]->setIntProperty("angle", ac_direction_->angle(objects_[a]->intProperty("angle")));
+			object->setIntProperty("angle", ac_direction_->angle(object->intProperty("angle")));
 
 		if (map_format != MapFormat::Doom)
 		{
 			// ID
 			if (!text_id_->GetValue().IsEmpty())
-				objects_[a]->setIntProperty("id", text_id_->number(objects_[a]->intProperty("id")));
+				object->setIntProperty("id", text_id_->number(object->intProperty("id")));
 
 			// Z Height
 			if (!text_height_->GetValue().IsEmpty())
 			{
 				if (map_format == MapFormat::UDMF)
-					objects_[a]->setFloatProperty(
-						"height", text_height_->decNumber(objects_[a]->floatProperty("height")));
+					object->setFloatProperty("height", text_height_->decNumber(object->floatProperty("height")));
 				else
-					objects_[a]->setIntProperty("height", text_height_->number(objects_[a]->intProperty("height")));
+					object->setIntProperty("height", text_height_->number(object->intProperty("height")));
 			}
 		}
 	}

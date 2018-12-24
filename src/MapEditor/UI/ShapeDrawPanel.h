@@ -6,7 +6,7 @@ class ShapeDrawPanel : public wxPanel
 {
 public:
 	ShapeDrawPanel(wxWindow* parent);
-	~ShapeDrawPanel() {}
+	~ShapeDrawPanel() = default;
 
 	void showShapeOptions(int shape);
 

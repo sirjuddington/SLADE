@@ -64,12 +64,8 @@ CVAR(Bool, map_split_auto_offset, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 SLADEMap::SLADEMap()
 {
-	// Init variables
-	this->geometry_updated_ = 0;
-	this->position_frac_    = false;
-
 	// Object id 0 is always null
-	all_objects_.push_back(MobjHolder(nullptr, false));
+	all_objects_.emplace_back(nullptr, false);
 
 	// Init opened time so it's not random leftover garbage values
 	setOpenedTime();
@@ -206,9 +202,9 @@ void SLADEMap::refreshIndices()
 // -----------------------------------------------------------------------------
 void SLADEMap::addMapObject(MapObject* object)
 {
-	all_objects_.push_back(MobjHolder(object, true));
+	all_objects_.emplace_back(object, true);
 	object->obj_id_ = all_objects_.size() - 1;
-	created_deleted_objects_.push_back(MobjCD(object->obj_id_, true));
+	created_deleted_objects_.emplace_back(object->obj_id_, true);
 }
 
 // -----------------------------------------------------------------------------
@@ -218,7 +214,7 @@ void SLADEMap::addMapObject(MapObject* object)
 void SLADEMap::removeMapObject(MapObject* object)
 {
 	all_objects_[object->obj_id_].in_map = false;
-	created_deleted_objects_.push_back(MobjCD(object->obj_id_, false));
+	created_deleted_objects_.emplace_back(object->obj_id_, false);
 }
 
 // -----------------------------------------------------------------------------
@@ -228,28 +224,28 @@ void SLADEMap::putObjectIdList(MapObject::Type type, vector<unsigned>& list)
 {
 	if (type == MapObject::Type::Vertex)
 	{
-		for (unsigned a = 0; a < vertices_.size(); a++)
-			list.push_back(vertices_[a]->obj_id_);
+		for (auto& vertex : vertices_)
+			list.push_back(vertex->obj_id_);
 	}
 	else if (type == MapObject::Type::Line)
 	{
-		for (unsigned a = 0; a < lines_.size(); a++)
-			list.push_back(lines_[a]->obj_id_);
+		for (auto& line : lines_)
+			list.push_back(line->obj_id_);
 	}
 	else if (type == MapObject::Type::Side)
 	{
-		for (unsigned a = 0; a < sides_.size(); a++)
-			list.push_back(sides_[a]->obj_id_);
+		for (auto& side : sides_)
+			list.push_back(side->obj_id_);
 	}
 	else if (type == MapObject::Type::Sector)
 	{
-		for (unsigned a = 0; a < sectors_.size(); a++)
-			list.push_back(sectors_[a]->id_);
+		for (auto& sector : sectors_)
+			list.push_back(sector->id_);
 	}
 	else if (type == MapObject::Type::Thing)
 	{
-		for (unsigned a = 0; a < things_.size(); a++)
-			list.push_back(things_[a]->obj_id_);
+		for (auto& thing : things_)
+			list.push_back(thing->obj_id_);
 	}
 }
 
@@ -262,75 +258,75 @@ void SLADEMap::restoreObjectIdList(MapObject::Type type, vector<unsigned>& list)
 	if (type == MapObject::Type::Vertex)
 	{
 		// Clear
-		for (unsigned a = 0; a < vertices_.size(); a++)
-			all_objects_[vertices_[a]->obj_id_].in_map = false;
+		for (auto& vertex : vertices_)
+			all_objects_[vertex->obj_id_].in_map = false;
 		vertices_.clear();
 
 		// Restore
-		for (unsigned a = 0; a < list.size(); a++)
+		for (auto id : list)
 		{
-			all_objects_[list[a]].in_map = true;
-			vertices_.push_back((MapVertex*)all_objects_[list[a]].mobj);
+			all_objects_[id].in_map = true;
+			vertices_.push_back(dynamic_cast<MapVertex*>(all_objects_[id].mobj));
 			vertices_.back()->index_ = vertices_.size() - 1;
 		}
 	}
 	else if (type == MapObject::Type::Line)
 	{
 		// Clear
-		for (unsigned a = 0; a < lines_.size(); a++)
-			all_objects_[lines_[a]->obj_id_].in_map = false;
+		for (auto& line : lines_)
+			all_objects_[line->obj_id_].in_map = false;
 		lines_.clear();
 
 		// Restore
-		for (unsigned a = 0; a < list.size(); a++)
+		for (auto id : list)
 		{
-			all_objects_[list[a]].in_map = true;
-			lines_.push_back((MapLine*)all_objects_[list[a]].mobj);
+			all_objects_[id].in_map = true;
+			lines_.push_back(dynamic_cast<MapLine*>(all_objects_[id].mobj));
 			lines_.back()->index_ = lines_.size() - 1;
 		}
 	}
 	else if (type == MapObject::Type::Side)
 	{
 		// Clear
-		for (unsigned a = 0; a < sides_.size(); a++)
-			all_objects_[sides_[a]->obj_id_].in_map = false;
+		for (auto& side : sides_)
+			all_objects_[side->obj_id_].in_map = false;
 		sides_.clear();
 
 		// Restore
-		for (unsigned a = 0; a < list.size(); a++)
+		for (auto id : list)
 		{
-			all_objects_[list[a]].in_map = true;
-			sides_.push_back((MapSide*)all_objects_[list[a]].mobj);
+			all_objects_[id].in_map = true;
+			sides_.push_back(dynamic_cast<MapSide*>(all_objects_[id].mobj));
 			sides_.back()->index_ = sides_.size() - 1;
 		}
 	}
 	else if (type == MapObject::Type::Sector)
 	{
 		// Clear
-		for (unsigned a = 0; a < sectors_.size(); a++)
-			all_objects_[sectors_[a]->id_].in_map = false;
+		for (auto& sector : sectors_)
+			all_objects_[sector->id_].in_map = false;
 		sectors_.clear();
 
 		// Restore
-		for (unsigned a = 0; a < list.size(); a++)
+		for (auto id : list)
 		{
-			all_objects_[list[a]].in_map = true;
-			sectors_.push_back((MapSector*)all_objects_[list[a]].mobj);
+			all_objects_[id].in_map = true;
+			sectors_.push_back(dynamic_cast<MapSector*>(all_objects_[id].mobj));
 			sectors_.back()->index_ = sectors_.size() - 1;
 		}
 	}
 	else if (type == MapObject::Type::Thing)
 	{
 		// Clear
-		for (unsigned a = 0; a < things_.size(); a++)
-			all_objects_[things_[a]->obj_id_].in_map = false;
+		for (auto& thing : things_)
+			all_objects_[thing->obj_id_].in_map = false;
 		things_.clear();
 
 		// Restore
-		for (unsigned a = 0; a < list.size(); a++)
+		for (auto id : list)
 		{
-			all_objects_[list[a]].in_map = true;
-			things_.push_back((MapThing*)all_objects_[list[a]].mobj);
+			all_objects_[id].in_map = true;
+			things_.push_back(dynamic_cast<MapThing*>(all_objects_[id].mobj));
 			things_.back()->index_ = things_.size() - 1;
 		}
 	}
@@ -341,22 +337,18 @@ void SLADEMap::restoreObjectIdList(MapObject::Type type, vector<unsigned>& list)
 // -----------------------------------------------------------------------------
 bool SLADEMap::readMap(Archive::MapDesc map)
 {
-	Archive::MapDesc omap = map;
+	auto omap = map;
 
 	// Check for map archive
-	Archive* tempwad = nullptr;
 	if (map.archive && map.head)
 	{
-		tempwad = new WadArchive();
-		tempwad->open(map.head);
-		vector<Archive::MapDesc> amaps = tempwad->detectMaps();
-		if (amaps.size() > 0)
+		WadArchive tempwad;
+		tempwad.open(map.head->data());
+		auto amaps = tempwad.detectMaps();
+		if (!amaps.empty())
 			omap = amaps[0];
 		else
-		{
-			delete tempwad;
 			return false;
-		}
 	}
 
 	bool ok = false;
@@ -373,9 +365,6 @@ bool SLADEMap::readMap(Archive::MapDesc map)
 	}
 	else
 		ok = true;
-
-	if (tempwad)
-		delete tempwad;
 
 	// Set map name
 	name_ = map.name;
@@ -709,9 +698,9 @@ bool SLADEMap::readDoomVertexes(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapVertex::DoomData* vert_data = (MapVertex::DoomData*)entry->rawData(true);
-	unsigned             nv        = entry->size() / sizeof(MapVertex::DoomData);
-	float                p         = UI::getSplashProgress();
+	auto     vert_data = (MapVertex::DoomData*)entry->rawData(true);
+	unsigned nv        = entry->size() / sizeof(MapVertex::DoomData);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nv) * 0.2f);
@@ -742,9 +731,9 @@ bool SLADEMap::readDoomSidedefs(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapSide::DoomData* side_data = (MapSide::DoomData*)entry->rawData(true);
-	unsigned           ns        = entry->size() / sizeof(MapSide::DoomData);
-	float              p         = UI::getSplashProgress();
+	auto     side_data = (MapSide::DoomData*)entry->rawData(true);
+	unsigned ns        = entry->size() / sizeof(MapSide::DoomData);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / ns) * 0.2f);
@@ -775,9 +764,9 @@ bool SLADEMap::readDoomLinedefs(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapLine::DoomData* line_data = (MapLine::DoomData*)entry->rawData(true);
-	unsigned           nl        = entry->size() / sizeof(MapLine::DoomData);
-	float              p         = UI::getSplashProgress();
+	auto     line_data = (MapLine::DoomData*)entry->rawData(true);
+	unsigned nl        = entry->size() / sizeof(MapLine::DoomData);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nl) * 0.2f);
@@ -809,9 +798,9 @@ bool SLADEMap::readDoomSectors(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapSector::DoomData* sect_data = (MapSector::DoomData*)entry->rawData(true);
-	unsigned             ns        = entry->size() / sizeof(MapSector::DoomData);
-	float                p         = UI::getSplashProgress();
+	auto     sect_data = (MapSector::DoomData*)entry->rawData(true);
+	unsigned ns        = entry->size() / sizeof(MapSector::DoomData);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / ns) * 0.2f);
@@ -842,9 +831,9 @@ bool SLADEMap::readDoomThings(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapThing::DoomData* thng_data = (MapThing::DoomData*)entry->rawData(true);
-	unsigned            nt        = entry->size() / sizeof(MapThing::DoomData);
-	float               p         = UI::getSplashProgress();
+	auto     thng_data = (MapThing::DoomData*)entry->rawData(true);
+	unsigned nt        = entry->size() / sizeof(MapThing::DoomData);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < nt; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
@@ -927,8 +916,8 @@ bool SLADEMap::readDoomMap(Archive::MapDesc map)
 	refreshIndices();
 
 	// Update sector bounding boxes
-	for (unsigned a = 0; a < sectors_.size(); a++)
-		sectors_[a]->updateBBox();
+	for (auto& sector : sectors_)
+		sector->updateBBox();
 
 	// Update variables
 	geometry_updated_ = App::runTimer();
@@ -1058,9 +1047,9 @@ bool SLADEMap::readHexenLinedefs(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapLine::HexenData* line_data = (MapLine::HexenData*)entry->rawData(true);
-	unsigned            nl        = entry->size() / sizeof(MapLine::HexenData);
-	float               p         = UI::getSplashProgress();
+	auto     line_data = (MapLine::HexenData*)entry->rawData(true);
+	unsigned nl        = entry->size() / sizeof(MapLine::HexenData);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nl) * 0.2f);
@@ -1090,9 +1079,9 @@ bool SLADEMap::readHexenThings(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapThing::HexenData* thng_data = (MapThing::HexenData*)entry->rawData(true);
-	unsigned             nt        = entry->size() / sizeof(MapThing::HexenData);
-	float                p         = UI::getSplashProgress();
+	auto     thng_data = (MapThing::HexenData*)entry->rawData(true);
+	unsigned nt        = entry->size() / sizeof(MapThing::HexenData);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < nt; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
@@ -1175,8 +1164,8 @@ bool SLADEMap::readHexenMap(Archive::MapDesc map)
 	refreshIndices();
 
 	// Update sector bounding boxes
-	for (unsigned a = 0; a < sectors_.size(); a++)
-		sectors_[a]->updateBBox();
+	for (auto& sector : sectors_)
+		sector->updateBBox();
 
 	return true;
 }
@@ -1199,9 +1188,9 @@ bool SLADEMap::readDoom64Vertexes(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapVertex::Doom64Data* vert_data = (MapVertex::Doom64Data*)entry->rawData(true);
-	unsigned               n         = entry->size() / sizeof(MapVertex::Doom64Data);
-	float                  p         = UI::getSplashProgress();
+	auto     vert_data = (MapVertex::Doom64Data*)entry->rawData(true);
+	unsigned n         = entry->size() / sizeof(MapVertex::Doom64Data);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < n; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
@@ -1231,9 +1220,9 @@ bool SLADEMap::readDoom64Sidedefs(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapSide::Doom64Data* side_data = (MapSide::Doom64Data*)entry->rawData(true);
-	unsigned             n         = entry->size() / sizeof(MapSide::Doom64Data);
-	float                p         = UI::getSplashProgress();
+	auto     side_data = (MapSide::Doom64Data*)entry->rawData(true);
+	unsigned n         = entry->size() / sizeof(MapSide::Doom64Data);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < n; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
@@ -1263,9 +1252,9 @@ bool SLADEMap::readDoom64Linedefs(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapLine::Doom64Data* line_data = (MapLine::Doom64Data*)entry->rawData(true);
-	unsigned             n         = entry->size() / sizeof(MapLine::Doom64Data);
-	float                p         = UI::getSplashProgress();
+	auto     line_data = (MapLine::Doom64Data*)entry->rawData(true);
+	unsigned n         = entry->size() / sizeof(MapLine::Doom64Data);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < n; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
@@ -1295,9 +1284,9 @@ bool SLADEMap::readDoom64Sectors(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapSector::Doom64Data* sect_data = (MapSector::Doom64Data*)entry->rawData(true);
-	unsigned               n         = entry->size() / sizeof(MapSector::Doom64Data);
-	float                  p         = UI::getSplashProgress();
+	auto     sect_data = (MapSector::Doom64Data*)entry->rawData(true);
+	unsigned n         = entry->size() / sizeof(MapSector::Doom64Data);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < n; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
@@ -1327,9 +1316,9 @@ bool SLADEMap::readDoom64Things(ArchiveEntry* entry)
 		return true;
 	}
 
-	MapThing::Doom64Data* thng_data = (MapThing::Doom64Data*)entry->rawData(true);
-	unsigned              n         = entry->size() / sizeof(MapThing::Doom64Data);
-	float                 p         = UI::getSplashProgress();
+	auto     thng_data = (MapThing::Doom64Data*)entry->rawData(true);
+	unsigned n         = entry->size() / sizeof(MapThing::Doom64Data);
+	float    p         = UI::getSplashProgress();
 	for (size_t a = 0; a < n; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
@@ -1412,8 +1401,8 @@ bool SLADEMap::readDoom64Map(Archive::MapDesc map)
 	refreshIndices();
 
 	// Update sector bounding boxes
-	for (unsigned a = 0; a < sectors_.size(); a++)
-		sectors_[a]->updateBBox();
+	for (auto& sector : sectors_)
+		sector->updateBBox();
 
 	return true;
 }
@@ -1670,7 +1659,7 @@ bool SLADEMap::addThing(ParseTreeNode* def)
 bool SLADEMap::readUDMFMap(Archive::MapDesc map)
 {
 	// Get TEXTMAP entry (will always be after the 'head' entry)
-	ArchiveEntry* textmap = map.head->nextEntry();
+	auto textmap = map.head->nextEntry();
 
 	// --- Parse UDMF text ---
 	UI::setSplashProgressMessage("Parsing TEXTMAP");
@@ -1686,7 +1675,7 @@ bool SLADEMap::readUDMFMap(Archive::MapDesc map)
 	// even if they aren't defined in that order.
 	// Unknown definitions are also kept, just in case
 	UI::setSplashProgressMessage("Sorting definitions");
-	ParseTreeNode*         root = parser.parseTreeRoot();
+	auto                   root = parser.parseTreeRoot();
 	vector<ParseTreeNode*> defs_vertices;
 	vector<ParseTreeNode*> defs_lines;
 	vector<ParseTreeNode*> defs_sides;
@@ -1788,12 +1777,12 @@ bool SLADEMap::readUDMFMap(Archive::MapDesc map)
 	refreshIndices();
 
 	// Update sector bounding boxes
-	for (unsigned a = 0; a < sectors_.size(); a++)
-		sectors_[a]->updateBBox();
+	for (auto& sector : sectors_)
+		sector->updateBBox();
 
 	// Copy extra entries
-	for (unsigned a = 0; a < map.unk.size(); a++)
-		udmf_extra_entries_.push_back(new ArchiveEntry(*(map.unk[a])));
+	for (auto& a : map.unk)
+		udmf_extra_entries_.push_back(new ArchiveEntry(*a));
 
 	return true;
 }
@@ -1814,10 +1803,10 @@ bool SLADEMap::writeDoomVertexes(ArchiveEntry* entry)
 
 	// Write vertex data
 	short x, y;
-	for (unsigned a = 0; a < vertices_.size(); a++)
+	for (auto& vertex : vertices_)
 	{
-		x = vertices_[a]->xPos();
-		y = vertices_[a]->yPos();
+		x = vertex->xPos();
+		y = vertex->yPos();
 		entry->write(&x, 2);
 		entry->write(&y, 2);
 	}
@@ -1840,30 +1829,30 @@ bool SLADEMap::writeDoomSidedefs(ArchiveEntry* entry)
 	entry->seek(0, 0);
 
 	// Write side data
-	MapSide::DoomData side;
+	MapSide::DoomData d_side;
 	string            t_m, t_u, t_l;
-	for (unsigned a = 0; a < sides_.size(); a++)
+	for (auto& side : sides_)
 	{
-		memset(&side, 0, 30);
+		memset(&d_side, 0, 30);
 
 		// Offsets
-		side.x_offset = sides_[a]->offset_x_;
-		side.y_offset = sides_[a]->offset_y_;
+		d_side.x_offset = side->offset_x_;
+		d_side.y_offset = side->offset_y_;
 
 		// Sector
-		side.sector = -1;
-		if (sides_[a]->sector_)
-			side.sector = sides_[a]->sector_->index();
+		d_side.sector = -1;
+		if (side->sector_)
+			d_side.sector = side->sector_->index();
 
 		// Textures
-		t_m = sides_[a]->tex_middle_;
-		t_u = sides_[a]->tex_upper_;
-		t_l = sides_[a]->tex_lower_;
-		memcpy(side.tex_middle, CHR(t_m), t_m.Length());
-		memcpy(side.tex_upper, CHR(t_u), t_u.Length());
-		memcpy(side.tex_lower, CHR(t_l), t_l.Length());
+		t_m = side->tex_middle_;
+		t_u = side->tex_upper_;
+		t_l = side->tex_lower_;
+		memcpy(d_side.tex_middle, CHR(t_m), t_m.Length());
+		memcpy(d_side.tex_upper, CHR(t_u), t_u.Length());
+		memcpy(d_side.tex_lower, CHR(t_l), t_l.Length());
 
-		entry->write(&side, 30);
+		entry->write(&d_side, 30);
 	}
 
 	return true;
@@ -1884,27 +1873,27 @@ bool SLADEMap::writeDoomLinedefs(ArchiveEntry* entry)
 	entry->seek(0, 0);
 
 	// Write line data
-	MapLine::DoomData line;
-	for (unsigned a = 0; a < lines_.size(); a++)
+	MapLine::DoomData d_line;
+	for (auto& line : lines_)
 	{
 		// Vertices
-		line.vertex1 = lines_[a]->v1Index();
-		line.vertex2 = lines_[a]->v2Index();
+		d_line.vertex1 = line->v1Index();
+		d_line.vertex2 = line->v2Index();
 
 		// Properties
-		line.flags      = lines_[a]->intProperty("flags");
-		line.type       = lines_[a]->intProperty("special");
-		line.sector_tag = lines_[a]->intProperty("arg0");
+		d_line.flags      = line->intProperty("flags");
+		d_line.type       = line->intProperty("special");
+		d_line.sector_tag = line->intProperty("arg0");
 
 		// Sides
-		line.side1 = -1;
-		line.side2 = -1;
-		if (lines_[a]->side1_)
-			line.side1 = lines_[a]->side1_->index();
-		if (lines_[a]->side2_)
-			line.side2 = lines_[a]->side2_->index();
+		d_line.side1 = -1;
+		d_line.side2 = -1;
+		if (line->side1_)
+			d_line.side1 = line->side1_->index();
+		if (line->side2_)
+			d_line.side2 = line->side2_->index();
 
-		entry->write(&line, 14);
+		entry->write(&d_line, 14);
 	}
 
 	return true;
@@ -1925,25 +1914,25 @@ bool SLADEMap::writeDoomSectors(ArchiveEntry* entry)
 	entry->seek(0, 0);
 
 	// Write sector data
-	MapSector::DoomData sector;
-	for (unsigned a = 0; a < sectors_.size(); a++)
+	MapSector::DoomData d_sector;
+	for (auto& sector : sectors_)
 	{
-		memset(&sector, 0, 26);
+		memset(&d_sector, 0, 26);
 
 		// Height
-		sector.f_height = sectors_[a]->floor_.height;
-		sector.c_height = sectors_[a]->ceiling_.height;
+		d_sector.f_height = sector->floor_.height;
+		d_sector.c_height = sector->ceiling_.height;
 
 		// Textures
-		memcpy(sector.f_tex, CHR(sectors_[a]->floor_.texture), sectors_[a]->floor_.texture.Length());
-		memcpy(sector.c_tex, CHR(sectors_[a]->ceiling_.texture), sectors_[a]->ceiling_.texture.Length());
+		memcpy(d_sector.f_tex, CHR(sector->floor_.texture), sector->floor_.texture.Length());
+		memcpy(d_sector.c_tex, CHR(sector->ceiling_.texture), sector->ceiling_.texture.Length());
 
 		// Properties
-		sector.light   = sectors_[a]->light_;
-		sector.special = sectors_[a]->special_;
-		sector.tag     = sectors_[a]->id_;
+		d_sector.light   = sector->light_;
+		d_sector.special = sector->special_;
+		d_sector.tag     = sector->id_;
 
-		entry->write(&sector, 26);
+		entry->write(&d_sector, 26);
 	}
 
 	return true;
@@ -1964,19 +1953,19 @@ bool SLADEMap::writeDoomThings(ArchiveEntry* entry)
 	entry->seek(0, 0);
 
 	// Write thing data
-	MapThing::DoomData thing;
-	for (unsigned a = 0; a < things_.size(); a++)
+	MapThing::DoomData d_thing;
+	for (auto& thing : things_)
 	{
 		// Position
-		thing.x = things_[a]->xPos();
-		thing.y = things_[a]->yPos();
+		d_thing.x = thing->xPos();
+		d_thing.y = thing->yPos();
 
 		// Properties
-		thing.angle = things_[a]->angle();
-		thing.type  = things_[a]->type_;
-		thing.flags = things_[a]->intProperty("flags");
+		d_thing.angle = thing->angle();
+		d_thing.type  = thing->type_;
+		d_thing.flags = thing->intProperty("flags");
 
-		entry->write(&thing, 10);
+		entry->write(&d_thing, 10);
 	}
 
 	return true;
@@ -1991,7 +1980,7 @@ bool SLADEMap::writeDoomMap(vector<ArchiveEntry*>& map_entries)
 	map_entries.clear();
 
 	// Write THINGS
-	ArchiveEntry* entry = new ArchiveEntry("THINGS");
+	auto entry = new ArchiveEntry("THINGS");
 	writeDoomThings(entry);
 	map_entries.push_back(entry);
 
@@ -2033,30 +2022,30 @@ bool SLADEMap::writeHexenLinedefs(ArchiveEntry* entry)
 	entry->seek(0, 0);
 
 	// Write line data
-	MapLine::HexenData line;
-	for (unsigned a = 0; a < lines_.size(); a++)
+	MapLine::HexenData h_line;
+	for (auto& line : lines_)
 	{
 		// Vertices
-		line.vertex1 = lines_[a]->v1Index();
-		line.vertex2 = lines_[a]->v2Index();
+		h_line.vertex1 = line->v1Index();
+		h_line.vertex2 = line->v2Index();
 
 		// Properties
-		line.flags = lines_[a]->intProperty("flags");
-		line.type  = lines_[a]->intProperty("special");
+		h_line.flags = line->intProperty("flags");
+		h_line.type  = line->intProperty("special");
 
 		// Args
 		for (unsigned arg = 0; arg < 5; arg++)
-			line.args[arg] = lines_[a]->intProperty(S_FMT("arg%u", arg));
+			h_line.args[arg] = line->intProperty(S_FMT("arg%u", arg));
 
 		// Sides
-		line.side1 = -1;
-		line.side2 = -1;
-		if (lines_[a]->side1_)
-			line.side1 = lines_[a]->side1_->index();
-		if (lines_[a]->side2_)
-			line.side2 = lines_[a]->side2_->index();
+		h_line.side1 = -1;
+		h_line.side2 = -1;
+		if (line->side1_)
+			h_line.side1 = line->side1_->index();
+		if (line->side2_)
+			h_line.side2 = line->side2_->index();
 
-		entry->write(&line, 16);
+		entry->write(&h_line, 16);
 	}
 
 	return true;
@@ -2077,26 +2066,26 @@ bool SLADEMap::writeHexenThings(ArchiveEntry* entry)
 	entry->seek(0, 0);
 
 	// Write thing data
-	MapThing::HexenData thing;
-	for (unsigned a = 0; a < things_.size(); a++)
+	MapThing::HexenData h_thing;
+	for (auto& thing : things_)
 	{
 		// Position
-		thing.x = things_[a]->xPos();
-		thing.y = things_[a]->yPos();
-		thing.z = things_[a]->intProperty("height");
+		h_thing.x = thing->xPos();
+		h_thing.y = thing->yPos();
+		h_thing.z = thing->intProperty("height");
 
 		// Properties
-		thing.angle   = things_[a]->angle();
-		thing.type    = things_[a]->type_;
-		thing.flags   = things_[a]->intProperty("flags");
-		thing.tid     = things_[a]->intProperty("id");
-		thing.special = things_[a]->intProperty("special");
+		h_thing.angle   = thing->angle();
+		h_thing.type    = thing->type_;
+		h_thing.flags   = thing->intProperty("flags");
+		h_thing.tid     = thing->intProperty("id");
+		h_thing.special = thing->intProperty("special");
 
 		// Args
 		for (unsigned arg = 0; arg < 5; arg++)
-			thing.args[arg] = things_[a]->intProperty(S_FMT("arg%u", arg));
+			h_thing.args[arg] = thing->intProperty(S_FMT("arg%u", arg));
 
-		entry->write(&thing, 20);
+		entry->write(&h_thing, 20);
 	}
 
 	return true;
@@ -2111,7 +2100,7 @@ bool SLADEMap::writeHexenMap(vector<ArchiveEntry*>& map_entries)
 	map_entries.clear();
 
 	// Write THINGS
-	ArchiveEntry* entry = new ArchiveEntry("THINGS");
+	auto entry = new ArchiveEntry("THINGS");
 	writeHexenThings(entry);
 	map_entries.push_back(entry);
 
@@ -2154,10 +2143,10 @@ bool SLADEMap::writeDoom64Vertexes(ArchiveEntry* entry)
 
 	// Write vertex data
 	int32_t x, y; // Those are actually fixed_t, so shift by FRACBIT (16)
-	for (unsigned a = 0; a < vertices_.size(); a++)
+	for (auto& vertex : vertices_)
 	{
-		x = vertices_[a]->xPos() * 65536;
-		y = vertices_[a]->yPos() * 65536;
+		x = vertex->xPos() * 65536;
+		y = vertex->yPos() * 65536;
 		entry->write(&x, 4);
 		entry->write(&y, 4);
 	}
@@ -2180,26 +2169,26 @@ bool SLADEMap::writeDoom64Sidedefs(ArchiveEntry* entry)
 	entry->seek(0, 0);
 
 	// Write side data
-	MapSide::Doom64Data side;
-	for (unsigned a = 0; a < sides_.size(); a++)
+	MapSide::Doom64Data d64_side;
+	for (auto& side : sides_)
 	{
-		memset(&side, 0, sizeof(MapSide::Doom64Data));
+		memset(&d64_side, 0, sizeof(MapSide::Doom64Data));
 
 		// Offsets
-		side.x_offset = sides_[a]->offset_x_;
-		side.y_offset = sides_[a]->offset_y_;
+		d64_side.x_offset = side->offset_x_;
+		d64_side.y_offset = side->offset_y_;
 
 		// Sector
-		side.sector = -1;
-		if (sides_[a]->sector_)
-			side.sector = sides_[a]->sector_->index();
+		d64_side.sector = -1;
+		if (side->sector_)
+			d64_side.sector = side->sector_->index();
 
 		// Textures
-		side.tex_middle = theResourceManager->getTextureHash(sides_[a]->tex_middle_);
-		side.tex_upper  = theResourceManager->getTextureHash(sides_[a]->tex_upper_);
-		side.tex_lower  = theResourceManager->getTextureHash(sides_[a]->tex_lower_);
+		d64_side.tex_middle = theResourceManager->getTextureHash(side->tex_middle_);
+		d64_side.tex_upper  = theResourceManager->getTextureHash(side->tex_upper_);
+		d64_side.tex_lower  = theResourceManager->getTextureHash(side->tex_lower_);
 
-		entry->write(&side, sizeof(MapSide::Doom64Data));
+		entry->write(&d64_side, sizeof(MapSide::Doom64Data));
 	}
 
 	return true;
@@ -2220,27 +2209,27 @@ bool SLADEMap::writeDoom64Linedefs(ArchiveEntry* entry)
 	entry->seek(0, 0);
 
 	// Write line data
-	MapLine::Doom64Data line;
-	for (unsigned a = 0; a < lines_.size(); a++)
+	MapLine::Doom64Data d64_line;
+	for (auto& line : lines_)
 	{
 		// Vertices
-		line.vertex1 = lines_[a]->v1Index();
-		line.vertex2 = lines_[a]->v2Index();
+		d64_line.vertex1 = line->v1Index();
+		d64_line.vertex2 = line->v2Index();
 
 		// Properties
-		line.flags      = lines_[a]->intProperty("flags");
-		line.type       = lines_[a]->intProperty("special");
-		line.sector_tag = lines_[a]->intProperty("arg0");
+		d64_line.flags      = line->intProperty("flags");
+		d64_line.type       = line->intProperty("special");
+		d64_line.sector_tag = line->intProperty("arg0");
 
 		// Sides
-		line.side1 = -1;
-		line.side2 = -1;
-		if (lines_[a]->side1_)
-			line.side1 = lines_[a]->side1_->index();
-		if (lines_[a]->side2_)
-			line.side2 = lines_[a]->side2_->index();
+		d64_line.side1 = -1;
+		d64_line.side2 = -1;
+		if (line->side1_)
+			d64_line.side1 = line->side1_->index();
+		if (line->side2_)
+			d64_line.side2 = line->side2_->index();
 
-		entry->write(&line, sizeof(MapLine::Doom64Data));
+		entry->write(&d64_line, sizeof(MapLine::Doom64Data));
 	}
 
 	return true;
@@ -2261,32 +2250,32 @@ bool SLADEMap::writeDoom64Sectors(ArchiveEntry* entry)
 	entry->seek(0, 0);
 
 	// Write sector data
-	MapSector::Doom64Data sector;
-	for (unsigned a = 0; a < sectors_.size(); a++)
+	MapSector::Doom64Data d64_sector;
+	for (auto& sector : sectors_)
 	{
-		memset(&sector, 0, sizeof(MapSector::Doom64Data));
+		memset(&d64_sector, 0, sizeof(MapSector::Doom64Data));
 
 		// Height
-		sector.f_height = sectors_[a]->floor_.height;
-		sector.c_height = sectors_[a]->ceiling_.height;
+		d64_sector.f_height = sector->floor_.height;
+		d64_sector.c_height = sector->ceiling_.height;
 
 		// Textures
-		sector.f_tex = theResourceManager->getTextureHash(sectors_[a]->stringProperty("texturefloor"));
-		sector.c_tex = theResourceManager->getTextureHash(sectors_[a]->stringProperty("textureceiling"));
+		d64_sector.f_tex = theResourceManager->getTextureHash(sector->stringProperty("texturefloor"));
+		d64_sector.c_tex = theResourceManager->getTextureHash(sector->stringProperty("textureceiling"));
 
 		// Colors
-		sector.color[0] = sectors_[a]->intProperty("color_things");
-		sector.color[1] = sectors_[a]->intProperty("color_floor");
-		sector.color[2] = sectors_[a]->intProperty("color_ceiling");
-		sector.color[3] = sectors_[a]->intProperty("color_upper");
-		sector.color[4] = sectors_[a]->intProperty("color_lower");
+		d64_sector.color[0] = sector->intProperty("color_things");
+		d64_sector.color[1] = sector->intProperty("color_floor");
+		d64_sector.color[2] = sector->intProperty("color_ceiling");
+		d64_sector.color[3] = sector->intProperty("color_upper");
+		d64_sector.color[4] = sector->intProperty("color_lower");
 
 		// Properties
-		sector.special = sectors_[a]->special_;
-		sector.flags   = sectors_[a]->intProperty("flags");
-		sector.tag     = sectors_[a]->id_;
+		d64_sector.special = sector->special_;
+		d64_sector.flags   = sector->intProperty("flags");
+		d64_sector.tag     = sector->id_;
 
-		entry->write(&sector, sizeof(MapSector::Doom64Data));
+		entry->write(&d64_sector, sizeof(MapSector::Doom64Data));
 	}
 
 	return true;
@@ -2307,21 +2296,21 @@ bool SLADEMap::writeDoom64Things(ArchiveEntry* entry)
 	entry->seek(0, 0);
 
 	// Write thing data
-	MapThing::Doom64Data thing;
-	for (unsigned a = 0; a < things_.size(); a++)
+	MapThing::Doom64Data d64_thing;
+	for (auto& thing : things_)
 	{
 		// Position
-		thing.x = things_[a]->xPos();
-		thing.y = things_[a]->yPos();
-		thing.z = things_[a]->intProperty("height");
+		d64_thing.x = thing->xPos();
+		d64_thing.y = thing->yPos();
+		d64_thing.z = thing->intProperty("height");
 
 		// Properties
-		thing.angle = things_[a]->angle();
-		thing.type  = things_[a]->type_;
-		thing.flags = things_[a]->intProperty("flags");
-		thing.tid   = things_[a]->intProperty("id");
+		d64_thing.angle = thing->angle();
+		d64_thing.type  = thing->type_;
+		d64_thing.flags = thing->intProperty("flags");
+		d64_thing.tid   = thing->intProperty("id");
 
-		entry->write(&thing, sizeof(MapThing::Doom64Data));
+		entry->write(&d64_thing, sizeof(MapThing::Doom64Data));
 	}
 
 	return true;
@@ -2336,7 +2325,7 @@ bool SLADEMap::writeDoom64Map(vector<ArchiveEntry*>& map_entries)
 	map_entries.clear();
 
 	// Write THINGS
-	ArchiveEntry* entry = new ArchiveEntry("THINGS");
+	auto entry = new ArchiveEntry("THINGS");
 	writeDoom64Things(entry);
 	map_entries.push_back(entry);
 
@@ -2397,7 +2386,8 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def = S_FMT("thing//#%u\n{\n", a);
 
 		// Basic properties
-		object_def += S_FMT("x=%1.3f;\ny=%1.3f;\ntype=%d;\n", things_[a]->x_, things_[a]->y_, things_[a]->type_);
+		object_def += S_FMT(
+			"x=%1.3f;\ny=%1.3f;\ntype=%d;\n", things_[a]->position_.x, things_[a]->position_.y, things_[a]->type_);
 		if (things_[a]->angle_ != 0)
 			object_def += S_FMT("angle=%d;\n", things_[a]->angle_);
 
@@ -2485,7 +2475,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def = S_FMT("vertex//#%u\n{\n", a);
 
 		// Basic properties
-		object_def += S_FMT("x=%1.3f;\ny=%1.3f;\n", vertices_[a]->x_, vertices_[a]->y_);
+		object_def += S_FMT("x=%1.3f;\ny=%1.3f;\n", vertices_[a]->position_.x, vertices_[a]->position_.y);
 
 		// Other properties
 		if (!vertices_[a]->properties_.isEmpty())
@@ -2557,15 +2547,12 @@ void SLADEMap::clearMap()
 	things_.clear();
 
 	// Clear map objects
-	for (unsigned a = 0; a < all_objects_.size(); a++)
-	{
-		if (all_objects_[a].mobj)
-			delete all_objects_[a].mobj;
-	}
+	for (auto& obj : all_objects_)
+		delete obj.mobj;
 	all_objects_.clear();
 
 	// Object id 0 is always null
-	all_objects_.push_back(MobjHolder(nullptr, false));
+	all_objects_.emplace_back(nullptr, false);
 
 	// Clear usage counts
 	usage_flat_.clear();
@@ -2573,8 +2560,8 @@ void SLADEMap::clearMap()
 	usage_thing_type_.clear();
 
 	// Clear UDMF extra entries
-	for (unsigned a = 0; a < udmf_extra_entries_.size(); a++)
-		delete udmf_extra_entries_[a];
+	for (auto& entry : udmf_extra_entries_)
+		delete entry;
 	udmf_extra_entries_.clear();
 }
 
@@ -2604,9 +2591,9 @@ bool SLADEMap::removeVertex(unsigned index, bool merge_lines)
 	if (merge_lines && vertices_[index]->connected_lines_.size() == 2)
 	{
 		// Get other end vertex of second connected line
-		MapLine*   l_first  = vertices_[index]->connected_lines_[0];
-		MapLine*   l_second = vertices_[index]->connected_lines_[1];
-		MapVertex* v_end    = l_second->vertex2_;
+		auto l_first  = vertices_[index]->connected_lines_[0];
+		auto l_second = vertices_[index]->connected_lines_[1];
+		auto v_end    = l_second->vertex2_;
 		if (v_end == vertices_[index])
 			v_end = l_second->vertex1_;
 
@@ -2615,7 +2602,7 @@ bool SLADEMap::removeVertex(unsigned index, bool merge_lines)
 
 		// Connect first connected line to other end vertex
 		l_first->setModified();
-		MapVertex* v_start = l_first->vertex1_;
+		auto v_start = l_first->vertex1_;
 		if (l_first->vertex1_ == vertices_[index])
 		{
 			l_first->vertex1_ = v_end;
@@ -2648,9 +2635,9 @@ bool SLADEMap::removeVertex(unsigned index, bool merge_lines)
 	if (!merged)
 	{
 		// Remove all connected lines
-		vector<MapLine*> clines = vertices_[index]->connected_lines_;
-		for (unsigned a = 0; a < clines.size(); a++)
-			removeLine(clines[a]);
+		auto clines = vertices_[index]->connected_lines_;
+		for (auto& line : clines)
+			removeLine(line);
 	}
 
 	// Remove the vertex
@@ -2689,8 +2676,6 @@ bool SLADEMap::removeLine(unsigned index)
 
 	// Init
 	lines_[index]->resetInternals();
-	MapVertex* v1 = lines_[index]->vertex1_;
-	MapVertex* v2 = lines_[index]->vertex2_;
 
 	// Remove the line's sides
 	if (lines_[index]->side1_)
@@ -2738,7 +2723,7 @@ bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 	if (remove_from_line)
 	{
 		// Remove from parent line
-		MapLine* l = sides_[index]->parent_;
+		auto l = sides_[index]->parent_;
 		l->setModified();
 		if (l->side1_ == sides_[index])
 			l->side1_ = nullptr;
@@ -2871,7 +2856,7 @@ int SLADEMap::nearestVertex(Vec2f point, double min)
 		v = vertices_[a];
 
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicab_distance_to(v->point());
+		dist = point.taxicab_distance_to(v->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -2886,7 +2871,7 @@ int SLADEMap::nearestVertex(Vec2f point, double min)
 	if (index >= 0)
 	{
 		v            = vertices_[index];
-		double rdist = MathStuff::distance(v->point(), point);
+		double rdist = MathStuff::distance(v->position(), point);
 		if (rdist > min)
 			return -1;
 	}
@@ -2910,7 +2895,7 @@ int SLADEMap::nearestLine(Vec2f point, double mindist)
 		l = lines_[a];
 
 		// Check with line bounding box first (since we have a minimum distance)
-		Seg2f bbox = l->seg();
+		auto bbox = l->seg();
 		bbox.expand(mindist, mindist);
 		if (!bbox.contains(point))
 			continue;
@@ -2945,7 +2930,7 @@ int SLADEMap::nearestThing(Vec2f point, double min)
 		t = things_[a];
 
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicab_distance_to(t->point());
+		dist = point.taxicab_distance_to(t->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -2960,7 +2945,7 @@ int SLADEMap::nearestThing(Vec2f point, double min)
 	if (index >= 0)
 	{
 		t            = things_[index];
-		double rdist = MathStuff::distance(t->point(), point);
+		double rdist = MathStuff::distance(t->position(), point);
 		if (rdist > min)
 			return -1;
 	}
@@ -2984,7 +2969,7 @@ vector<int> SLADEMap::nearestThingMulti(Vec2f point)
 		t = things_[a];
 
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicab_distance_to(t->point());
+		dist = point.taxicab_distance_to(t->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -3026,7 +3011,7 @@ BBox SLADEMap::bounds()
 	BBox bbox;
 
 	// Return invalid bbox if no sectors
-	if (sectors_.size() == 0)
+	if (sectors_.empty())
 		return bbox;
 
 	// Go through sectors
@@ -3035,7 +3020,7 @@ BBox SLADEMap::bounds()
 	bbox = sectors_[0]->boundingBox();
 	for (unsigned a = 1; a < sectors_.size(); a++)
 	{
-		BBox sbb = sectors_[a]->boundingBox();
+		auto sbb = sectors_[a]->boundingBox();
 		if (sbb.min.x < bbox.min.x)
 			bbox.min.x = sbb.min.x;
 		if (sbb.min.y < bbox.min.y)
@@ -3055,10 +3040,10 @@ BBox SLADEMap::bounds()
 MapVertex* SLADEMap::vertexAt(double x, double y)
 {
 	// Go through all vertices
-	for (unsigned a = 0; a < vertices_.size(); a++)
+	for (auto& vertex : vertices_)
 	{
-		if (vertices_[a]->x_ == x && vertices_[a]->y_ == y)
-			return vertices_[a];
+		if (vertex->position_.x == x && vertex->position_.y == y)
+			return vertex;
 	}
 
 	// No vertex at [x,y]
@@ -3096,11 +3081,11 @@ vector<Vec2f> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 	Vec2f         intersection;
 
 	// Go through map lines
-	for (unsigned a = 0; a < lines_.size(); a++)
+	for (auto& line : lines_)
 	{
 		// Check for intersection
 		intersection = cutter.p1();
-		if (MathStuff::linesIntersect(cutter, lines_[a]->seg(), intersection))
+		if (MathStuff::linesIntersect(cutter, line->seg(), intersection))
 		{
 			// Add intersection point to vector
 			intersect_points.push_back(intersection);
@@ -3113,7 +3098,7 @@ vector<Vec2f> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 	}
 
 	// Return if no intersections
-	if (intersect_points.size() == 0)
+	if (intersect_points.empty())
 		return intersect_points;
 
 	// Check cutting line direction
@@ -3149,10 +3134,9 @@ MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 	// Go through vertices
 	MapVertex* cv       = nullptr;
 	double     min_dist = 999999;
-	for (unsigned a = 0; a < vertices_.size(); a++)
+	for (auto vertex : vertices_)
 	{
-		MapVertex* vertex = vertices_[a];
-		Vec2f      point  = vertex->point();
+		auto point = vertex->position();
 
 		// Skip if outside line bbox
 		if (!seg.contains(point))
@@ -3185,14 +3169,12 @@ MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 void SLADEMap::updateGeometryInfo(long modified_time)
 {
-	for (unsigned a = 0; a < vertices_.size(); a++)
+	for (auto& vertex : vertices_)
 	{
-		if (vertices_[a]->modifiedTime() > modified_time)
+		if (vertex->modifiedTime() > modified_time)
 		{
-			for (unsigned l = 0; l < vertices_[a]->connected_lines_.size(); l++)
+			for (auto line : vertex->connected_lines_)
 			{
-				MapLine* line = vertices_[a]->connected_lines_[l];
-
 				// Update line geometry
 				line->resetInternals();
 
@@ -3218,7 +3200,7 @@ void SLADEMap::updateGeometryInfo(long modified_time)
 // Returns true if [line1] and [line2] intersect.
 // If an intersection occurs, [x] and [y] are set to the intersection point
 // -----------------------------------------------------------------------------
-bool SLADEMap::linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y)
+bool SLADEMap::linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y) const
 {
 	Vec2f intersection;
 	bool  res = MathStuff::linesIntersect(line1->seg(), line2->seg(), intersection);
@@ -3232,7 +3214,7 @@ bool SLADEMap::linesIntersect(MapLine* line1, MapLine* line2, double& x, double&
 // This is a point within the sector that is reasonably close to the middle of
 // the sector bbox while still being within the sector itself
 // -----------------------------------------------------------------------------
-void SLADEMap::findSectorTextPoint(MapSector* sector)
+void SLADEMap::findSectorTextPoint(MapSector* sector) const
 {
 	// Check sector
 	if (!sector)
@@ -3243,16 +3225,16 @@ void SLADEMap::findSectorTextPoint(MapSector* sector)
 	if (sector->isWithin(sector->text_point_))
 		return;
 
-	if (sector->connected_sides_.size() == 0)
+	if (sector->connected_sides_.empty())
 		return;
 
 	// Find nearest line to sector midpoint (that is also part of the sector)
-	double   min_dist = 9999999999.0;
-	MapSide* mid_side = sector->connected_sides_[0];
+	double min_dist = 9999999999.0;
+	auto   mid_side = sector->connected_sides_[0];
 	for (unsigned a = 0; a < sector->connected_sides_.size(); a++)
 	{
-		MapLine* l    = sector->connected_sides_[a]->parent_;
-		double   dist = MathStuff::distanceToLineFast(sector->text_point_, l->seg());
+		auto   l    = sector->connected_sides_[a]->parent_;
+		double dist = MathStuff::distanceToLineFast(sector->text_point_, l->seg());
 
 		if (dist < min_dist)
 		{
@@ -3262,20 +3244,20 @@ void SLADEMap::findSectorTextPoint(MapSector* sector)
 	}
 
 	// Calculate ray
-	Vec2f r_o = mid_side->parent_->getPoint(MapObject::Point::Mid);
-	Vec2f r_d = mid_side->parent_->frontVector();
+	auto r_o = mid_side->parent_->getPoint(MapObject::Point::Mid);
+	auto r_d = mid_side->parent_->frontVector();
 	if (mid_side == mid_side->parent_->side1_)
 		r_d.set(-r_d.x, -r_d.y);
 
 	// Find nearest intersecting line
 	min_dist = 9999999999.0;
-	for (unsigned a = 0; a < sector->connected_sides_.size(); a++)
+	for (auto& connected_side : sector->connected_sides_)
 	{
-		if (sector->connected_sides_[a] == mid_side)
+		if (connected_side == mid_side)
 			continue;
 
-		MapLine* line = sector->connected_sides_[a]->parent_;
-		double   dist = MathStuff::distanceRayLine(r_o, r_o + r_d, line->point1(), line->point2());
+		auto   line = connected_side->parent_;
+		double dist = MathStuff::distanceRayLine(r_o, r_o + r_d, line->point1(), line->point2());
 
 		if (dist > 0 && dist < min_dist)
 			min_dist = dist;
@@ -3305,10 +3287,10 @@ void SLADEMap::initSectorPolygons()
 // [line] outwards from the [front] or back of the line perpendicular.
 // If an intersection is found the coordinates are set in [hit_x],[hit_y]
 // -----------------------------------------------------------------------------
-MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y)
+MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y) const
 {
 	// Get sector
-	MapSector* sector = front ? line->frontSector() : line->backSector();
+	auto sector = front ? line->frontSector() : line->backSector();
 	if (!sector)
 		return nullptr;
 
@@ -3318,25 +3300,25 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 
 	// Get nearest line intersecting with line vector
 	MapLine* nearest = nullptr;
-	Vec2f    mid     = line->getPoint(MapObject::Point::Mid);
-	Vec2f    vec     = line->frontVector();
+	auto     mid     = line->getPoint(MapObject::Point::Mid);
+	auto     vec     = line->frontVector();
 	if (front)
 	{
 		vec.x = -vec.x;
 		vec.y = -vec.y;
 	}
 	double min_dist = 99999999999;
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto& s_line : lines)
 	{
-		if (lines[a] == line)
+		if (s_line == line)
 			continue;
 
-		double dist = MathStuff::distanceRayLine(mid, mid + vec, lines[a]->point1(), lines[a]->point2());
+		double dist = MathStuff::distanceRayLine(mid, mid + vec, s_line->point1(), s_line->point2());
 
 		if (dist < min_dist && dist > 0)
 		{
 			min_dist = dist;
-			nearest  = lines[a];
+			nearest  = s_line;
 		}
 	}
 
@@ -3359,10 +3341,10 @@ void SLADEMap::putSectorsWithTag(int tag, vector<MapSector*>& list)
 		return;
 
 	// Find sectors with matching tag
-	for (unsigned a = 0; a < sectors_.size(); a++)
+	for (auto& sector : sectors_)
 	{
-		if (sectors_[a]->id_ == tag)
-			list.push_back(sectors_[a]);
+		if (sector->id_ == tag)
+			list.push_back(sector);
 	}
 }
 
@@ -3392,11 +3374,11 @@ MapThing* SLADEMap::findFirstThingWithId(int id)
 		return nullptr;
 
 	// Find things with matching id, but ignore dragons, we don't want them!
-	for (unsigned a = 0; a < things_.size(); a++)
+	for (auto& thing : things_)
 	{
-		auto& tt = Game::configuration().thingType(things_[a]->type());
-		if (things_[a]->intProperty("id") == id && !(tt.flags() & Game::ThingType::Flags::Dragon))
-			return things_[a];
+		auto& tt = Game::configuration().thingType(thing->type());
+		if (thing->intProperty("id") == id && !(tt.flags() & Game::ThingType::Flags::Dragon))
+			return thing;
 	}
 	return nullptr;
 }
@@ -3411,14 +3393,14 @@ void SLADEMap::putThingsWithIdInSectorTag(int id, int tag, vector<MapThing*>& li
 		return;
 
 	// Find things with matching id contained in sector with matching tag
-	for (unsigned a = 0; a < things_.size(); a++)
+	for (auto& thing : things_)
 	{
-		if (things_[a]->intProperty("id") == id)
+		if (thing->intProperty("id") == id)
 		{
-			int si = sectorAt(things_[a]->point());
+			int si = sectorAt(thing->position());
 			if (si > -1 && (unsigned)si < sectors_.size() && sectors_[si]->id_ == tag)
 			{
-				list.push_back(things_[a]);
+				list.push_back(thing);
 			}
 		}
 	}
@@ -3456,11 +3438,11 @@ void SLADEMap::putDragonTargets(MapThing* first, vector<MapThing*>& list)
 void SLADEMap::putPathedThings(vector<MapThing*>& list)
 {
 	// Find things that need to be pathed
-	for (unsigned a = 0; a < things_.size(); a++)
+	for (auto& thing : things_)
 	{
-		auto& tt = Game::configuration().thingType(things_[a]->type());
+		auto& tt = Game::configuration().thingType(thing->type());
 		if (tt.flags() & (Game::ThingType::Flags::Pathed | Game::ThingType::Flags::Dragon))
-			list.push_back(things_[a]);
+			list.push_back(thing);
 	}
 }
 
@@ -3473,10 +3455,10 @@ void SLADEMap::putLinesWithId(int id, vector<MapLine*>& list)
 		return;
 
 	// Find lines with matching id
-	for (unsigned a = 0; a < lines_.size(); a++)
+	for (auto& line : lines_)
 	{
-		if (lines_[a]->line_id_ == id)
-			list.push_back(lines_[a]);
+		if (line->line_id_ == id)
+			list.push_back(line);
 	}
 }
 
@@ -3489,16 +3471,16 @@ void SLADEMap::putTaggingThingsWithId(int id, int type, vector<MapThing*>& list,
 
 	// Find things with special affecting matching id
 	int tag, arg2, arg3, arg4, arg5, tid;
-	for (unsigned a = 0; a < things_.size(); a++)
+	for (auto& thing : things_)
 	{
-		auto& tt        = Game::configuration().thingType(things_[a]->type());
+		auto& tt        = Game::configuration().thingType(thing->type());
 		auto  needs_tag = tt.needsTag();
 		if (needs_tag != TagType::None
-			|| (things_[a]->intProperty("special") && !(tt.flags() & Game::ThingType::Flags::Script)))
+			|| (thing->intProperty("special") && !(tt.flags() & Game::ThingType::Flags::Script)))
 		{
 			if (needs_tag == TagType::None)
-				needs_tag = Game::configuration().actionSpecial(things_[a]->intProperty("special")).needsTag();
-			tag       = things_[a]->intProperty("arg0");
+				needs_tag = Game::configuration().actionSpecial(thing->intProperty("special")).needsTag();
+			tag       = thing->intProperty("arg0");
 			bool fits = false;
 			int  path_type;
 			switch (needs_tag)
@@ -3510,64 +3492,64 @@ void SLADEMap::putTaggingThingsWithId(int id, int type, vector<MapThing*>& list,
 			case TagType::Line: fits = (IDEQ(tag) && type == LINEDEFS); break;
 			case TagType::Thing: fits = (IDEQ(tag) && type == THINGS); break;
 			case TagType::Thing1Sector2:
-				arg2 = things_[a]->intProperty("arg1");
+				arg2 = thing->intProperty("arg1");
 				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg2) && type == SECTORS));
 				break;
 			case TagType::Thing1Sector3:
-				arg3 = things_[a]->intProperty("arg2");
+				arg3 = thing->intProperty("arg2");
 				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg3) && type == SECTORS));
 				break;
 			case TagType::Thing1Thing2:
-				arg2 = things_[a]->intProperty("arg1");
+				arg2 = thing->intProperty("arg1");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case TagType::Thing1Thing4:
-				arg4 = things_[a]->intProperty("arg3");
+				arg4 = thing->intProperty("arg3");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg4)));
 				break;
 			case TagType::Thing1Thing2Thing3:
-				arg2 = things_[a]->intProperty("arg1");
-				arg3 = things_[a]->intProperty("arg2");
+				arg2 = thing->intProperty("arg1");
+				arg3 = thing->intProperty("arg2");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3)));
 				break;
 			case TagType::Sector1Thing2Thing3Thing5:
-				arg2 = things_[a]->intProperty("arg1");
-				arg3 = things_[a]->intProperty("arg2");
-				arg5 = things_[a]->intProperty("arg4");
+				arg2 = thing->intProperty("arg1");
+				arg3 = thing->intProperty("arg2");
+				arg5 = thing->intProperty("arg4");
 				fits = (type == SECTORS ? (IDEQ(tag)) : (type == THINGS && (IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
 				break;
 			case TagType::LineId1Line2:
-				arg2 = things_[a]->intProperty("arg1");
+				arg2 = thing->intProperty("arg1");
 				fits = (type == LINEDEFS && IDEQ(arg2));
 				break;
 			case TagType::Thing4:
-				arg4 = things_[a]->intProperty("arg3");
+				arg4 = thing->intProperty("arg3");
 				fits = (type == THINGS && IDEQ(arg4));
 				break;
 			case TagType::Thing5:
-				arg5 = things_[a]->intProperty("arg4");
+				arg5 = thing->intProperty("arg4");
 				fits = (type == THINGS && IDEQ(arg5));
 				break;
 			case TagType::Line1Sector2:
-				arg2 = things_[a]->intProperty("arg1");
+				arg2 = thing->intProperty("arg1");
 				fits = (type == LINEDEFS ? (IDEQ(tag)) : (IDEQ(arg2) && type == SECTORS));
 				break;
 			case TagType::Sector1Sector2:
-				arg2 = things_[a]->intProperty("arg1");
+				arg2 = thing->intProperty("arg1");
 				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case TagType::Sector1Sector2Sector3Sector4:
-				arg2 = things_[a]->intProperty("arg1");
-				arg3 = things_[a]->intProperty("arg2");
-				arg4 = things_[a]->intProperty("arg3");
+				arg2 = thing->intProperty("arg1");
+				arg3 = thing->intProperty("arg2");
+				arg4 = thing->intProperty("arg3");
 				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg4)));
 				break;
 			case TagType::Sector2Is3Line:
-				arg2 = things_[a]->intProperty("arg1");
+				arg2 = thing->intProperty("arg1");
 				fits = (IDEQ(tag) && (arg2 == 3 ? type == LINEDEFS : type == SECTORS));
 				break;
 			case TagType::Sector1Thing2:
-				arg2 = things_[a]->intProperty("arg1");
+				arg2 = thing->intProperty("arg1");
 				fits = (type == SECTORS ? (IDEQ(tag)) : (IDEQ(arg2) && type == THINGS));
 				break;
 			case TagType::Patrol: path_type = 9047;
@@ -3575,15 +3557,15 @@ void SLADEMap::putTaggingThingsWithId(int id, int type, vector<MapThing*>& list,
 			{
 				path_type = 9075;
 
-				tid      = things_[a]->intProperty("id");
-				auto& tt = Game::configuration().thingType(things_[a]->type());
-				fits     = ((path_type == ttype) && (IDEQ(tid)) && (tt.needsTag() == needs_tag));
+				tid = thing->intProperty("id");
+				// auto& tt = Game::configuration().thingType(thing->type());
+				fits = ((path_type == ttype) && (IDEQ(tid)) && (tt.needsTag() == needs_tag));
 			}
 			break;
 			default: break;
 			}
 			if (fits)
-				list.push_back(things_[a]);
+				list.push_back(thing);
 		}
 	}
 }
@@ -3597,14 +3579,14 @@ void SLADEMap::putTaggingLinesWithId(int id, int type, vector<MapLine*>& list)
 
 	// Find lines with special affecting matching id
 	int tag, arg2, arg3, arg4, arg5;
-	for (unsigned a = 0; a < lines_.size(); a++)
+	for (auto& line : lines_)
 	{
-		int special = lines_[a]->special_;
+		int special = line->special_;
 		if (special)
 		{
-			tag       = lines_[a]->intProperty("arg0");
+			tag       = line->intProperty("arg0");
 			bool fits = false;
-			switch (Game::configuration().actionSpecial(lines_[a]->special_).needsTag())
+			switch (Game::configuration().actionSpecial(line->special_).needsTag())
 			{
 			case TagType::Sector:
 			case TagType::SectorOrBack:
@@ -3613,70 +3595,70 @@ void SLADEMap::putTaggingLinesWithId(int id, int type, vector<MapLine*>& list)
 			case TagType::Line: fits = (IDEQ(tag) && type == LINEDEFS); break;
 			case TagType::Thing: fits = (IDEQ(tag) && type == THINGS); break;
 			case TagType::Thing1Sector2:
-				arg2 = lines_[a]->intProperty("arg1");
+				arg2 = line->intProperty("arg1");
 				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg2) && type == SECTORS));
 				break;
 			case TagType::Thing1Sector3:
-				arg3 = lines_[a]->intProperty("arg2");
+				arg3 = line->intProperty("arg2");
 				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg3) && type == SECTORS));
 				break;
 			case TagType::Thing1Thing2:
-				arg2 = lines_[a]->intProperty("arg1");
+				arg2 = line->intProperty("arg1");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case TagType::Thing1Thing4:
-				arg4 = lines_[a]->intProperty("arg3");
+				arg4 = line->intProperty("arg3");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg4)));
 				break;
 			case TagType::Thing1Thing2Thing3:
-				arg2 = lines_[a]->intProperty("arg1");
-				arg3 = lines_[a]->intProperty("arg2");
+				arg2 = line->intProperty("arg1");
+				arg3 = line->intProperty("arg2");
 				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3)));
 				break;
 			case TagType::Sector1Thing2Thing3Thing5:
-				arg2 = lines_[a]->intProperty("arg1");
-				arg3 = lines_[a]->intProperty("arg2");
-				arg5 = lines_[a]->intProperty("arg4");
+				arg2 = line->intProperty("arg1");
+				arg3 = line->intProperty("arg2");
+				arg5 = line->intProperty("arg4");
 				fits = (type == SECTORS ? (IDEQ(tag)) : (type == THINGS && (IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
 				break;
 			case TagType::LineId1Line2:
-				arg2 = lines_[a]->intProperty("arg1");
+				arg2 = line->intProperty("arg1");
 				fits = (type == LINEDEFS && IDEQ(arg2));
 				break;
 			case TagType::Thing4:
-				arg4 = lines_[a]->intProperty("arg3");
+				arg4 = line->intProperty("arg3");
 				fits = (type == THINGS && IDEQ(arg4));
 				break;
 			case TagType::Thing5:
-				arg5 = lines_[a]->intProperty("arg4");
+				arg5 = line->intProperty("arg4");
 				fits = (type == THINGS && IDEQ(arg5));
 				break;
 			case TagType::Line1Sector2:
-				arg2 = lines_[a]->intProperty("arg1");
+				arg2 = line->intProperty("arg1");
 				fits = (type == LINEDEFS ? (IDEQ(tag)) : (IDEQ(arg2) && type == SECTORS));
 				break;
 			case TagType::Sector1Sector2:
-				arg2 = lines_[a]->intProperty("arg1");
+				arg2 = line->intProperty("arg1");
 				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case TagType::Sector1Sector2Sector3Sector4:
-				arg2 = lines_[a]->intProperty("arg1");
-				arg3 = lines_[a]->intProperty("arg2");
-				arg4 = lines_[a]->intProperty("arg3");
+				arg2 = line->intProperty("arg1");
+				arg3 = line->intProperty("arg2");
+				arg4 = line->intProperty("arg3");
 				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg4)));
 				break;
 			case TagType::Sector2Is3Line:
-				arg2 = lines_[a]->intProperty("arg1");
+				arg2 = line->intProperty("arg1");
 				fits = (IDEQ(tag) && (arg2 == 3 ? type == LINEDEFS : type == SECTORS));
 				break;
 			case TagType::Sector1Thing2:
-				arg2 = lines_[a]->intProperty("arg1");
+				arg2 = line->intProperty("arg1");
 				fits = (type == SECTORS ? (IDEQ(tag)) : (IDEQ(arg2) && type == THINGS));
 				break;
 			default: break;
 			}
 			if (fits)
-				list.push_back(lines_[a]);
+				list.push_back(line);
 		}
 	}
 }
@@ -3769,13 +3751,13 @@ int SLADEMap::findUnusedLineId()
 // -----------------------------------------------------------------------------
 // Returns the first texture at [tex_part] found on lines connected to [vertex]
 // -----------------------------------------------------------------------------
-string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part)
+string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part) const
 {
 	// Go through adjacent lines
 	string tex = "-";
 	for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
 	{
-		MapLine* l = vertex->connectedLine(a);
+		auto l = vertex->connectedLine(a);
 
 		if (l->side1_)
 		{
@@ -3842,8 +3824,8 @@ string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part)
 MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 {
 	// Get mid and direction points
-	Vec2f mid = line->getPoint(MapObject::Point::Mid);
-	Vec2f dir = line->frontVector();
+	auto mid = line->getPoint(MapObject::Point::Mid);
+	auto dir = line->frontVector();
 	if (front)
 		dir = mid - dir;
 	else
@@ -3875,7 +3857,7 @@ MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 	if (index >= 0)
 	{
 		// LOG_MESSAGE(3, "Closest line %d", index);
-		MapLine* l = lines_[index];
+		auto l = lines_[index];
 
 		// Check side of line
 		MapSector* sector = nullptr;
@@ -3917,50 +3899,50 @@ vector<MapObject*> SLADEMap::modifiedObjects(long since, MapObject::Type type)
 	// Vertices
 	if (type == MapObject::Type::Object || type == MapObject::Type::Vertex)
 	{
-		for (unsigned a = 0; a < vertices_.size(); a++)
+		for (auto& vertex : vertices_)
 		{
-			if (vertices_[a]->modifiedTime() >= since)
-				modified_objects.push_back(vertices_[a]);
+			if (vertex->modifiedTime() >= since)
+				modified_objects.push_back(vertex);
 		}
 	}
 
 	// Sides
 	if (type == MapObject::Type::Object || type == MapObject::Type::Side)
 	{
-		for (unsigned a = 0; a < sides_.size(); a++)
+		for (auto& side : sides_)
 		{
-			if (sides_[a]->modifiedTime() >= since)
-				modified_objects.push_back(sides_[a]);
+			if (side->modifiedTime() >= since)
+				modified_objects.push_back(side);
 		}
 	}
 
 	// Lines
 	if (type == MapObject::Type::Object || type == MapObject::Type::Line)
 	{
-		for (unsigned a = 0; a < lines_.size(); a++)
+		for (auto& line : lines_)
 		{
-			if (lines_[a]->modifiedTime() >= since)
-				modified_objects.push_back(lines_[a]);
+			if (line->modifiedTime() >= since)
+				modified_objects.push_back(line);
 		}
 	}
 
 	// Sectors
 	if (type == MapObject::Type::Object || type == MapObject::Type::Sector)
 	{
-		for (unsigned a = 0; a < sectors_.size(); a++)
+		for (auto& sector : sectors_)
 		{
-			if (sectors_[a]->modifiedTime() >= since)
-				modified_objects.push_back(sectors_[a]);
+			if (sector->modifiedTime() >= since)
+				modified_objects.push_back(sector);
 		}
 	}
 
 	// Things
 	if (type == MapObject::Type::Object || type == MapObject::Type::Thing)
 	{
-		for (unsigned a = 0; a < things_.size(); a++)
+		for (auto& thing : things_)
 		{
-			if (things_[a]->modifiedTime() >= since)
-				modified_objects.push_back(things_[a]);
+			if (thing->modifiedTime() >= since)
+				modified_objects.push_back(thing);
 		}
 	}
 
@@ -3974,10 +3956,10 @@ vector<MapObject*> SLADEMap::allModifiedObjects(long since)
 {
 	vector<MapObject*> modified_objects;
 
-	for (unsigned a = 0; a < all_objects_.size(); a++)
+	for (auto& object : all_objects_)
 	{
-		if (all_objects_[a].mobj && all_objects_[a].mobj->modifiedTime() >= since)
-			modified_objects.push_back(all_objects_[a].mobj);
+		if (object.mobj && object.mobj->modifiedTime() >= since)
+			modified_objects.push_back(object.mobj);
 	}
 
 	return modified_objects;
@@ -3990,10 +3972,10 @@ long SLADEMap::lastModifiedTime()
 {
 	long mod_time = 0;
 
-	for (unsigned a = 0; a < all_objects_.size(); a++)
+	for (auto& object : all_objects_)
 	{
-		if (all_objects_[a].mobj && all_objects_[a].mobj->modifiedTime() > mod_time)
-			mod_time = all_objects_[a].mobj->modifiedTime();
+		if (object.mobj && object.mobj->modifiedTime() > mod_time)
+			mod_time = object.mobj->modifiedTime();
 	}
 
 	return mod_time;
@@ -4005,10 +3987,7 @@ long SLADEMap::lastModifiedTime()
 // -----------------------------------------------------------------------------
 bool SLADEMap::isModified()
 {
-	if (lastModifiedTime() > opened_time_)
-		return true;
-	else
-		return false;
+	return lastModifiedTime() > opened_time_;
 }
 
 // -----------------------------------------------------------------------------
@@ -4031,9 +4010,9 @@ bool SLADEMap::modifiedSince(long since, MapObject::Type type)
 	// Vertices
 	else if (type == MapObject::Type::Vertex)
 	{
-		for (unsigned a = 0; a < vertices_.size(); a++)
+		for (auto& vertex : vertices_)
 		{
-			if (vertices_[a]->modified_time_ > since)
+			if (vertex->modified_time_ > since)
 				return true;
 		}
 	}
@@ -4041,9 +4020,9 @@ bool SLADEMap::modifiedSince(long since, MapObject::Type type)
 	// Lines
 	else if (type == MapObject::Type::Line)
 	{
-		for (unsigned a = 0; a < lines_.size(); a++)
+		for (auto& line : lines_)
 		{
-			if (lines_[a]->modified_time_ > since)
+			if (line->modified_time_ > since)
 				return true;
 		}
 	}
@@ -4051,9 +4030,9 @@ bool SLADEMap::modifiedSince(long since, MapObject::Type type)
 	// Sides
 	else if (type == MapObject::Type::Side)
 	{
-		for (unsigned a = 0; a < sides_.size(); a++)
+		for (auto& side : sides_)
 		{
-			if (sides_[a]->modified_time_ > since)
+			if (side->modified_time_ > since)
 				return true;
 		}
 	}
@@ -4061,9 +4040,9 @@ bool SLADEMap::modifiedSince(long since, MapObject::Type type)
 	// Sectors
 	else if (type == MapObject::Type::Sector)
 	{
-		for (unsigned a = 0; a < sectors_.size(); a++)
+		for (auto& sector : sectors_)
 		{
-			if (sectors_[a]->modified_time_ > since)
+			if (sector->modified_time_ > since)
 				return true;
 		}
 	}
@@ -4071,9 +4050,9 @@ bool SLADEMap::modifiedSince(long since, MapObject::Type type)
 	// Things
 	else if (type == MapObject::Type::Thing)
 	{
-		for (unsigned a = 0; a < things_.size(); a++)
+		for (auto& thing : things_)
 		{
-			if (things_[a]->modified_time_ > since)
+			if (thing->modified_time_ > since)
 				return true;
 		}
 	}
@@ -4108,15 +4087,15 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
 	Vec2f point(x, y);
 
 	// First check that it won't overlap any other vertex
-	for (unsigned a = 0; a < vertices_.size(); a++)
+	for (auto& vertex : vertices_)
 	{
-		if (vertices_[a]->x_ == x && vertices_[a]->y_ == y)
-			return vertices_[a];
+		if (vertex->position_.x == x && vertex->position_.y == y)
+			return vertex;
 	}
 
 	// Create the vertex
-	MapVertex* nv = new MapVertex(x, y, this);
-	nv->index_    = vertices_.size();
+	auto nv    = new MapVertex(x, y, this);
+	nv->index_ = vertices_.size();
 	vertices_.push_back(nv);
 
 	// Check if this vertex splits any lines (if needed)
@@ -4160,8 +4139,8 @@ MapLine* SLADEMap::createLine(double x1, double y1, double x2, double y2, double
 	// LOG_MESSAGE(1, "Create line (%1.2f,%1.2f) to (%1.2f,%1.2f)", x1, y1, x2, y2);
 
 	// Get vertices at points
-	MapVertex* vertex1 = vertexAt(x1, y1);
-	MapVertex* vertex2 = vertexAt(x2, y2);
+	auto vertex1 = vertexAt(x1, y1);
+	auto vertex2 = vertexAt(x2, y2);
 
 	// Create vertices if required
 	if (!vertex1)
@@ -4187,17 +4166,17 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 	// Check if there is already a line along the two given vertices
 	if (!force)
 	{
-		for (unsigned a = 0; a < lines_.size(); a++)
+		for (auto& line : lines_)
 		{
-			if ((lines_[a]->vertex1_ == vertex1 && lines_[a]->vertex2_ == vertex2)
-				|| (lines_[a]->vertex2_ == vertex1 && lines_[a]->vertex1_ == vertex2))
-				return lines_[a];
+			if ((line->vertex1_ == vertex1 && line->vertex2_ == vertex2)
+				|| (line->vertex2_ == vertex1 && line->vertex1_ == vertex2))
+				return line;
 		}
 	}
 
 	// Create new line between vertices
-	MapLine* nl = new MapLine(vertex1, vertex2, nullptr, nullptr, this);
-	nl->index_  = lines_.size();
+	auto nl    = new MapLine(vertex1, vertex2, nullptr, nullptr, this);
+	nl->index_ = lines_.size();
 	lines_.push_back(nl);
 
 	// Connect line to vertices
@@ -4216,13 +4195,13 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 MapThing* SLADEMap::createThing(double x, double y)
 {
 	// Create the thing
-	MapThing* nt = new MapThing(this);
+	auto nt = new MapThing(this);
 
 	// Setup initial values
-	nt->x_     = x;
-	nt->y_     = y;
-	nt->index_ = things_.size();
-	nt->type_  = 1;
+	nt->position_.x = x;
+	nt->position_.y = y;
+	nt->index_      = things_.size();
+	nt->type_       = 1;
 
 	// Add to things
 	things_.push_back(nt);
@@ -4237,7 +4216,7 @@ MapThing* SLADEMap::createThing(double x, double y)
 MapSector* SLADEMap::createSector()
 {
 	// Create the sector
-	MapSector* ns = new MapSector(this);
+	auto ns = new MapSector(this);
 
 	// Setup initial values
 	ns->index_ = sectors_.size();
@@ -4258,7 +4237,7 @@ MapSide* SLADEMap::createSide(MapSector* sector)
 		return nullptr;
 
 	// Create side
-	MapSide* side = new MapSide(sector, this);
+	auto side = new MapSide(sector, this);
 
 	// Setup initial values
 	side->index_      = sides_.size();
@@ -4283,14 +4262,14 @@ void SLADEMap::moveVertex(unsigned vertex, double nx, double ny)
 		return;
 
 	// Move the vertex
-	MapVertex* v = vertices_[vertex];
+	auto v = vertices_[vertex];
 	v->setModified();
-	v->x_ = nx;
-	v->y_ = ny;
+	v->position_.x = nx;
+	v->position_.y = ny;
 
 	// Reset all attached lines' geometry info
-	for (unsigned a = 0; a < v->connected_lines_.size(); a++)
-		v->connected_lines_[a]->resetInternals();
+	for (auto& connected_line : v->connected_lines_)
+		connected_line->resetInternals();
 
 	geometry_updated_ = App::runTimer();
 }
@@ -4305,12 +4284,12 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 		return;
 
 	// Go through lines of second vertex
-	MapVertex*       v1 = vertices_[vertex1];
-	MapVertex*       v2 = vertices_[vertex2];
+	auto             v1 = vertices_[vertex1];
+	auto             v2 = vertices_[vertex2];
 	vector<MapLine*> zlines;
 	for (unsigned a = 0; a < v2->connected_lines_.size(); a++)
 	{
-		MapLine* line = v2->connected_lines_[a];
+		auto line = v2->connected_lines_[a];
 
 		// Change first vertex if needed
 		if (line->vertex1_ == v2)
@@ -4342,10 +4321,10 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 	vertices_.pop_back();
 
 	// Delete any resulting zero-length lines
-	for (unsigned a = 0; a < zlines.size(); a++)
+	for (auto& zline : zlines)
 	{
-		LOG_MESSAGE(4, "Removing zero-length line %u", zlines[a]->index());
-		removeLine(zlines[a]);
+		LOG_MESSAGE(4, "Removing zero-length line %u", zline->index());
+		removeLine(zline);
 	}
 
 	geometry_updated_ = App::runTimer();
@@ -4361,7 +4340,7 @@ MapVertex* SLADEMap::mergeVerticesPoint(double x, double y)
 	for (unsigned a = 0; a < vertices_.size(); a++)
 	{
 		// Skip if vertex isn't on the point
-		if (vertices_[a]->x_ != x || vertices_[a]->y_ != y)
+		if (vertices_[a]->position_.x != x || vertices_[a]->position_.y != y)
 			continue;
 
 		// Set as the merge target vertex if we don't have one already
@@ -4385,28 +4364,28 @@ MapVertex* SLADEMap::mergeVerticesPoint(double x, double y)
 // -----------------------------------------------------------------------------
 // Splits [line] at [vertex]
 // -----------------------------------------------------------------------------
-MapLine* SLADEMap::splitLine(MapLine* l, MapVertex* v)
+MapLine* SLADEMap::splitLine(MapLine* line, MapVertex* vertex)
 {
-	if (!l || !v)
+	if (!line || !vertex)
 		return nullptr;
 
 	// Shorten line
-	MapVertex* v2 = l->vertex2_;
-	l->setModified();
-	v2->disconnectLine(l);
-	l->vertex2_ = v;
-	v->connectLine(l);
-	l->length_ = -1;
+	auto v2 = line->vertex2_;
+	line->setModified();
+	v2->disconnectLine(line);
+	line->vertex2_ = vertex;
+	vertex->connectLine(line);
+	line->length_ = -1;
 
 	// Create and add new sides
 	MapSide* s1 = nullptr;
 	MapSide* s2 = nullptr;
-	if (l->side1_)
+	if (line->side1_)
 	{
 		// Create side 1
 		s1 = new MapSide(this);
-		s1->copy(l->side1_);
-		s1->setSector(l->side1_->sector_);
+		s1->copy(line->side1_);
+		s1->setSector(line->side1_->sector_);
 		if (s1->sector_)
 		{
 			s1->sector_->resetBBox();
@@ -4422,12 +4401,12 @@ MapLine* SLADEMap::splitLine(MapLine* l, MapVertex* v)
 		usage_tex_[s1->tex_middle_.Upper()] += 1;
 		usage_tex_[s1->tex_lower_.Upper()] += 1;
 	}
-	if (l->side2_)
+	if (line->side2_)
 	{
 		// Create side 2
 		s2 = new MapSide(this);
-		s2->copy(l->side2_);
-		s2->setSector(l->side2_->sector_);
+		s2->copy(line->side2_);
+		s2->setSector(line->side2_->sector_);
 		if (s2->sector_)
 		{
 			s2->sector_->resetBBox();
@@ -4445,8 +4424,8 @@ MapLine* SLADEMap::splitLine(MapLine* l, MapVertex* v)
 	}
 
 	// Create and add new line
-	MapLine* nl = new MapLine(v, v2, s1, s2, this);
-	nl->copy(l);
+	auto nl = new MapLine(vertex, v2, s1, s2, this);
+	nl->copy(line);
 	nl->index_ = lines_.size();
 	nl->setModified();
 	lines_.push_back(nl);
@@ -4454,10 +4433,10 @@ MapLine* SLADEMap::splitLine(MapLine* l, MapVertex* v)
 	// Update x-offsets
 	if (map_split_auto_offset)
 	{
-		int xoff1 = l->intProperty("side1.offsetx");
-		int xoff2 = l->intProperty("side2.offsetx");
-		nl->setIntProperty("side1.offsetx", xoff1 + l->length());
-		l->setIntProperty("side2.offsetx", xoff2 + nl->length());
+		int xoff1 = line->intProperty("side1.offsetx");
+		int xoff2 = line->intProperty("side2.offsetx");
+		nl->setIntProperty("side1.offsetx", xoff1 + line->length());
+		line->setIntProperty("side2.offsetx", xoff2 + nl->length());
 	}
 
 	geometry_updated_ = App::runTimer();
@@ -4475,10 +4454,10 @@ void SLADEMap::moveThing(unsigned thing, double nx, double ny)
 		return;
 
 	// Move the thing
-	MapThing* t = things_[thing];
+	auto t = things_[thing];
 	t->setModified();
-	t->x_ = nx;
-	t->y_ = ny;
+	t->position_.x = nx;
+	t->position_.y = ny;
 }
 
 // -----------------------------------------------------------------------------
@@ -4494,9 +4473,9 @@ void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 		if (lines_[a]->v1() == vertex || lines_[a]->v2() == vertex)
 			continue;
 
-		if (lines_[a]->distanceTo(vertex->point()) < split_dist)
+		if (lines_[a]->distanceTo(vertex->position()) < split_dist)
 		{
-			LOG_MESSAGE(2, "Vertex at (%1.2f,%1.2f) splits line %u", vertex->x_, vertex->y_, a);
+			LOG_MESSAGE(2, "Vertex at (%1.2f,%1.2f) splits line %u", vertex->position_.x, vertex->position_.y, a);
 			splitLine(lines_[a], vertex);
 		}
 	}
@@ -4562,16 +4541,16 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 void SLADEMap::splitLinesByLine(MapLine* split_line)
 {
 	Vec2f intersection;
-	Seg2f split_segment = split_line->seg();
+	auto  split_segment = split_line->seg();
 
-	for (unsigned a = 0; a < lines_.size(); a++)
+	for (auto& line : lines_)
 	{
-		if (lines_[a] == split_line)
+		if (line == split_line)
 			continue;
 
-		if (MathStuff::linesIntersect(split_segment, lines_[a]->seg(), intersection))
+		if (MathStuff::linesIntersect(split_segment, line->seg(), intersection))
 		{
-			MapVertex* v = createVertex(intersection.x, intersection.y, 0.9);
+			auto v = createVertex(intersection.x, intersection.y, 0.9);
 			// splitLine(lines[a], v);
 		}
 	}
@@ -4587,15 +4566,15 @@ int SLADEMap::mergeLine(unsigned line)
 	if (line >= lines_.size())
 		return 0;
 
-	MapLine*   ml = lines_[line];
-	MapVertex* v1 = lines_[line]->vertex1_;
-	MapVertex* v2 = lines_[line]->vertex2_;
+	auto ml = lines_[line];
+	auto v1 = lines_[line]->vertex1_;
+	auto v2 = lines_[line]->vertex2_;
 
 	// Go through lines connected to first vertex
 	int merged = 0;
 	for (unsigned a = 0; a < v1->connected_lines_.size(); a++)
 	{
-		MapLine* l = v1->connected_lines_[a];
+		auto l = v1->connected_lines_[a];
 		if (l == ml)
 			continue;
 
@@ -4622,12 +4601,12 @@ int SLADEMap::mergeLine(unsigned line)
 // -----------------------------------------------------------------------------
 bool SLADEMap::correctLineSectors(MapLine* line)
 {
-	bool       changed    = false;
-	MapSector* s1_current = line->side1_ ? line->side1_->sector_ : NULL;
-	MapSector* s2_current = line->side2_ ? line->side2_->sector_ : NULL;
+	bool changed    = false;
+	auto s1_current = line->side1_ ? line->side1_->sector_ : nullptr;
+	auto s2_current = line->side2_ ? line->side2_->sector_ : nullptr;
 
 	// Front side
-	MapSector* s1 = lineSideSector(line, true);
+	auto s1 = lineSideSector(line, true);
 	if (s1 != s1_current)
 	{
 		if (s1)
@@ -4638,7 +4617,7 @@ bool SLADEMap::correctLineSectors(MapLine* line)
 	}
 
 	// Back side
-	MapSector* s2 = lineSideSector(line, false);
+	auto s2 = lineSideSector(line, false);
 	if (s2 != s2_current)
 	{
 		if (s2)
@@ -4662,7 +4641,7 @@ bool SLADEMap::correctLineSectors(MapLine* line)
 void SLADEMap::setLineSide(MapLine* line, MapSide* side, bool front)
 {
 	// Remove current side
-	MapSide* side_current = front ? line->side1_ : line->side2_;
+	auto side_current = front ? line->side1_ : line->side2_;
 	if (side_current == side)
 		return;
 	if (side_current)
@@ -4671,7 +4650,7 @@ void SLADEMap::setLineSide(MapLine* line, MapSide* side, bool front)
 	// If the new side is already part of another line, copy it
 	if (side->parent_)
 	{
-		MapSide* new_side = createSide(side->sector_);
+		auto new_side = createSide(side->sector_);
 		new_side->copy(side);
 		side = new_side;
 	}
@@ -4694,33 +4673,33 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	if (nVertices() == 0 || nLines() == 0)
 		return false;
 
-	unsigned   n_vertices  = nVertices();
-	unsigned   n_lines     = lines_.size();
-	MapVertex* last_vertex = this->vertices_.back();
-	MapLine*   last_line   = lines_.back();
+	unsigned n_vertices  = nVertices();
+	unsigned n_lines     = lines_.size();
+	auto     last_vertex = this->vertices_.back();
+	auto     last_line   = lines_.back();
 
 	// Merge vertices
 	vector<MapVertex*> merged_vertices;
-	for (unsigned a = 0; a < vertices.size(); a++)
+	for (auto& vertex : vertices)
 	{
-		auto v = mergeVerticesPoint(vertices[a]->x_, vertices[a]->y_);
+		auto v = mergeVerticesPoint(vertex->position_.x, vertex->position_.y);
 		if (v)
 			VECTOR_ADD_UNIQUE(merged_vertices, v);
 	}
 
 	// Get all connected lines
 	vector<MapLine*> connected_lines_;
-	for (unsigned a = 0; a < merged_vertices.size(); a++)
+	for (auto& vertex : merged_vertices)
 	{
-		for (unsigned l = 0; l < merged_vertices[a]->connected_lines_.size(); l++)
-			VECTOR_ADD_UNIQUE(connected_lines_, merged_vertices[a]->connected_lines_[l]);
+		for (auto connected_line : vertex->connected_lines_)
+			VECTOR_ADD_UNIQUE(connected_lines_, connected_line);
 	}
 
 	// Split lines (by vertices)
 	const double split_dist = 0.1;
 	// Split existing lines that vertices moved onto
-	for (unsigned a = 0; a < merged_vertices.size(); a++)
-		splitLinesAt(merged_vertices[a], split_dist);
+	for (auto& merged_vertice : merged_vertices)
+		splitLinesAt(merged_vertice, split_dist);
 
 	// Split lines that moved onto existing vertices
 	for (unsigned a = 0; a < connected_lines_.size(); a++)
@@ -4728,13 +4707,13 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		unsigned nvertices = this->vertices_.size();
 		for (unsigned b = 0; b < nvertices; b++)
 		{
-			MapVertex* vertex = this->vertices_[b];
+			auto vertex = this->vertices_[b];
 
 			// Skip line if it shares the vertex
 			if (connected_lines_[a]->v1() == vertex || connected_lines_[a]->v2() == vertex)
 				continue;
 
-			if (connected_lines_[a]->distanceTo(vertex->point()) < split_dist)
+			if (connected_lines_[a]->distanceTo(vertex->position()) < split_dist)
 			{
 				connected_lines_.push_back(splitLine(connected_lines_[a], vertex));
 				VECTOR_ADD_UNIQUE(merged_vertices, vertex);
@@ -4746,13 +4725,13 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	Seg2f seg1;
 	for (unsigned a = 0; a < connected_lines_.size(); a++)
 	{
-		MapLine* line1 = connected_lines_[a];
-		seg1           = line1->seg();
+		auto line1 = connected_lines_[a];
+		seg1       = line1->seg();
 
 		unsigned n_lines = lines_.size();
 		for (unsigned b = 0; b < n_lines; b++)
 		{
-			MapLine* line2 = lines_[b];
+			auto line2 = lines_[b];
 
 			// Can't intersect if they share a vertex
 			if (line1->vertex1_ == line2->vertex1_ || line1->vertex1_ == line2->vertex2_
@@ -4764,7 +4743,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			if (MathStuff::linesIntersect(seg1, line2->seg(), intersection))
 			{
 				// Create split vertex
-				MapVertex* nv = createVertex(intersection.x, intersection.y);
+				auto nv = createVertex(intersection.x, intersection.y);
 				merged_vertices.push_back(nv);
 
 				// Split lines
@@ -4783,17 +4762,17 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 
 	// Refresh connected lines
 	connected_lines_.clear();
-	for (unsigned a = 0; a < merged_vertices.size(); a++)
+	for (auto& vertex : merged_vertices)
 	{
-		for (unsigned l = 0; l < merged_vertices[a]->connected_lines_.size(); l++)
-			VECTOR_ADD_UNIQUE(connected_lines_, merged_vertices[a]->connected_lines_[l]);
+		for (auto connected_line : vertex->connected_lines_)
+			VECTOR_ADD_UNIQUE(connected_lines_, connected_line);
 	}
 
 	// Find overlapping lines
 	vector<MapLine*> remove_lines;
 	for (unsigned a = 0; a < connected_lines_.size(); a++)
 	{
-		MapLine* line1 = connected_lines_[a];
+		auto line1 = connected_lines_[a];
 
 		// Skip if removing already
 		if (VECTOR_EXISTS(remove_lines, line1))
@@ -4801,7 +4780,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 
 		for (unsigned l = a + 1; l < connected_lines_.size(); l++)
 		{
-			MapLine* line2 = connected_lines_[l];
+			auto line2 = connected_lines_[l];
 
 			// Skip if removing already
 			if (VECTOR_EXISTS(remove_lines, line2))
@@ -4810,7 +4789,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			if ((line1->vertex1_ == line2->vertex1_ && line1->vertex2_ == line2->vertex2_)
 				|| (line1->vertex1_ == line2->vertex2_ && line1->vertex2_ == line2->vertex1_))
 			{
-				MapLine* remove_line = mergeOverlappingLines(line2, line1);
+				auto remove_line = mergeOverlappingLines(line2, line1);
 				VECTOR_ADD_UNIQUE(remove_lines, remove_line);
 
 				// Don't check against any more lines if we just decided to remove this one
@@ -4821,10 +4800,10 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	}
 
 	// Remove overlapping lines
-	for (unsigned a = 0; a < remove_lines.size(); a++)
+	for (auto& remove_line : remove_lines)
 	{
-		LOG_MESSAGE(4, "Removing overlapping line %u (#%u)", remove_lines[a]->objId(), remove_lines[a]->index());
-		removeLine(remove_lines[a]);
+		LOG_MESSAGE(4, "Removing overlapping line %u (#%u)", remove_line->objId(), remove_line->index());
+		removeLine(remove_line);
 	}
 	for (unsigned a = 0; a < connected_lines_.size(); a++)
 	{
@@ -4855,7 +4834,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		{
 			MapSector* s1 = getLineSideSector(connected_lines_[a], true);
 			MapSector* s2 = getLineSideSector(connected_lines_[a], false);
-			
+			
 
 
 
@@ -4874,10 +4853,10 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	}*/
 
 	// Flip any one-sided lines that only have a side 2
-	for (unsigned a = 0; a < connected_lines_.size(); a++)
+	for (auto& connected_line : connected_lines_)
 	{
-		if (connected_lines_[a]->side2_ && !connected_lines_[a]->side1_)
-			connected_lines_[a]->flip();
+		if (connected_line->side2_ && !connected_line->side1_)
+			connected_line->flip();
 	}
 
 	if (merged)
@@ -4950,33 +4929,33 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 
 	// Create a list of line sides (edges) to perform sector creation with
 	vector<Edge> edges;
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto& line : lines)
 	{
 		if (existing_only)
 		{
 			// Add only existing sides as edges
 			// (or front side if line has none)
-			if (lines[a]->side1_ || (!lines[a]->side1_ && !lines[a]->side2_))
-				edges.push_back(Edge(lines[a], true));
-			if (lines[a]->side2_)
-				edges.push_back(Edge(lines[a], false));
+			if (line->side1_ || (!line->side1_ && !line->side2_))
+				edges.emplace_back(line, true);
+			if (line->side2_)
+				edges.emplace_back(line, false);
 		}
 		else
 		{
-			edges.push_back(Edge(lines[a], true));
-			Vec2f mid = lines[a]->getPoint(MapObject::Point::Mid);
+			edges.emplace_back(line, true);
+			auto mid = line->getPoint(MapObject::Point::Mid);
 			if (sectorAt(mid) >= 0)
-				edges.push_back(Edge(lines[a], false));
+				edges.emplace_back(line, false);
 		}
 	}
 
 	vector<MapSide*> sides_correct;
-	for (unsigned a = 0; a < edges.size(); a++)
+	for (auto& edge : edges)
 	{
-		if (edges[a].front && edges[a].line->side1_)
-			sides_correct.push_back(edges[a].line->side1_);
-		else if (!edges[a].front && edges[a].line->side2_)
-			sides_correct.push_back(edges[a].line->side2_);
+		if (edge.front && edge.line->side1_)
+			sides_correct.push_back(edge.line->side1_);
+		else if (!edge.front && edge.line->side2_)
+			sides_correct.push_back(edge.line->side2_);
 	}
 
 	// Build sectors
@@ -5006,8 +4985,8 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		vector<size_t> edges_in_sector;
 		for (unsigned b = 0; b < builder.nEdges(); b++)
 		{
-			MapLine* line     = builder.edgeLine(b);
-			bool     is_front = builder.edgeIsFront(b);
+			auto line     = builder.edgeLine(b);
+			bool is_front = builder.edgeIsFront(b);
 
 			bool line_is_ours = false;
 			for (unsigned e = 0; e < edges.size(); e++)
@@ -5047,22 +5026,22 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 			continue;
 
 		// Ignore traced edges when trying to create any further sectors
-		for (size_t a = 0; a < edges_in_sector.size(); a++)
-			edges[edges_in_sector[a]].ignore = true;
+		for (auto i : edges_in_sector)
+			edges[i].ignore = true;
 
 		// Check if sector traced is already valid
 		if (builder.isValidSector())
 			continue;
 
 		// Check if we traced over an existing sector (or part of one)
-		MapSector* sector = builder.findExistingSector(sides_correct);
+		auto sector = builder.findExistingSector(sides_correct);
 		if (sector)
 		{
 			// Check if it's already been (re)used
 			bool reused = false;
-			for (unsigned s = 0; s < sectors_reused.size(); s++)
+			for (auto& sec : sectors_reused)
 			{
-				if (sectors_reused[s] == sector)
+				if (sec == sector)
 				{
 					reused = true;
 					break;
@@ -5081,32 +5060,32 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 	}
 
 	// Remove any sides that weren't part of a sector
-	for (unsigned a = 0; a < edges.size(); a++)
+	for (auto& edge : edges)
 	{
-		if (edges[a].ignore || !edges[a].line)
+		if (edge.ignore || !edge.line)
 			continue;
 
-		if (edges[a].front)
-			removeSide(edges[a].line->side1_);
+		if (edge.front)
+			removeSide(edge.line->side1_);
 		else
-			removeSide(edges[a].line->side2_);
+			removeSide(edge.line->side2_);
 	}
 
 	// LOG_MESSAGE(1, "Ran sector builder %d times", runs);
 
 	// Check if any lines need to be flipped
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto& line : lines)
 	{
-		if (lines[a]->backSector() && !lines[a]->frontSector())
-			lines[a]->flip(true);
+		if (line->backSector() && !line->frontSector())
+			line->flip(true);
 	}
 
 	// Find an adjacent sector to copy properties from
 	MapSector* sector_copy = nullptr;
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto& line : lines)
 	{
 		// Check front sector
-		MapSector* sector = lines[a]->frontSector();
+		auto sector = line->frontSector();
 		if (sector && sector->index() < ns_start)
 		{
 			// Copy this sector if it isn't newly created
@@ -5115,7 +5094,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		}
 
 		// Check back sector
-		sector = lines[a]->backSector();
+		sector = line->backSector();
 		if (sector && sector->index() < ns_start)
 		{
 			// Copy this sector if it isn't newly created
@@ -5146,7 +5125,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 	for (unsigned a = nsd_start; a < sides_.size(); a++)
 	{
 		// Clear any unneeded textures
-		MapLine* line = sides_[a]->parentLine();
+		auto line = sides_[a]->parentLine();
 		line->clearUnneededTextures();
 
 		// Set middle texture if needed
@@ -5241,7 +5220,7 @@ int SLADEMap::removeDetachedSectors()
 	int count = 0;
 	for (int a = sectors_.size() - 1; a >= 0; a--)
 	{
-		if (sectors_[a]->connectedSides().size() == 0)
+		if (sectors_[a]->connectedSides().empty())
 		{
 			removeSector(a);
 			count++;
@@ -5295,12 +5274,10 @@ int SLADEMap::removeInvalidSides()
 // -----------------------------------------------------------------------------
 // Converts the map to hexen format (not implemented)
 // -----------------------------------------------------------------------------
-bool SLADEMap::convertToHexen()
+bool SLADEMap::convertToHexen() const
 {
 	// Already hexen format
-	if (current_format_ == MapFormat::Hexen)
-		return true;
-	return false;
+	return current_format_ == MapFormat::Hexen;
 }
 
 // -----------------------------------------------------------------------------
@@ -5315,97 +5292,98 @@ bool SLADEMap::convertToUDMF()
 	if (current_format_ == MapFormat::Hexen)
 	{
 		// Handle special cases for conversion from Hexen format
-		for (unsigned a = 0; a < lines_.size(); a++)
+		for (auto& line : lines_)
 		{
-			int special = lines_[a]->intProperty("special");
+			int special = line->intProperty("special");
 			int flags   = 0;
 			int id, hi;
 			switch (special)
 			{
 			case 1:
-				id = lines_[a]->intProperty("arg3");
-				lines_[a]->setIntProperty("id", id);
-				lines_[a]->setIntProperty("arg3", 0);
+				id = line->intProperty("arg3");
+				line->setIntProperty("id", id);
+				line->setIntProperty("arg3", 0);
 				break;
 
 			case 5:
-				id = lines_[a]->intProperty("arg4");
-				lines_[a]->setIntProperty("id", id);
-				lines_[a]->setIntProperty("arg4", 0);
+				id = line->intProperty("arg4");
+				line->setIntProperty("id", id);
+				line->setIntProperty("arg4", 0);
 				break;
 
 			case 121:
-				id    = lines_[a]->intProperty("arg0");
-				hi    = lines_[a]->intProperty("arg4");
+				id    = line->intProperty("arg0");
+				hi    = line->intProperty("arg4");
 				id    = (hi * 256) + id;
-				flags = lines_[a]->intProperty("arg1");
+				flags = line->intProperty("arg1");
 
-				lines_[a]->setIntProperty("special", 0);
-				lines_[a]->setIntProperty("id", id);
-				lines_[a]->setIntProperty("arg0", 0);
-				lines_[a]->setIntProperty("arg1", 0);
-				lines_[a]->setIntProperty("arg2", 0);
-				lines_[a]->setIntProperty("arg3", 0);
-				lines_[a]->setIntProperty("arg4", 0);
+				line->setIntProperty("special", 0);
+				line->setIntProperty("id", id);
+				line->setIntProperty("arg0", 0);
+				line->setIntProperty("arg1", 0);
+				line->setIntProperty("arg2", 0);
+				line->setIntProperty("arg3", 0);
+				line->setIntProperty("arg4", 0);
 				break;
 
 			case 160:
-				hi = id = lines_[a]->intProperty("arg4");
-				flags   = lines_[a]->intProperty("arg1");
+				hi = id = line->intProperty("arg4");
+				flags   = line->intProperty("arg1");
 				if (flags & 8)
 				{
-					lines_[a]->setIntProperty("id", id);
+					line->setIntProperty("id", id);
 				}
 				else
 				{
-					id = lines_[a]->intProperty("arg0");
-					lines_[a]->setIntProperty("id", (hi * 256) + id);
+					id = line->intProperty("arg0");
+					line->setIntProperty("id", (hi * 256) + id);
 				}
-				lines_[a]->setIntProperty("arg4", 0);
+				line->setIntProperty("arg4", 0);
 				flags = 0; // don't keep it set!
 				break;
 
 			case 181:
-				id = lines_[a]->intProperty("arg2");
-				lines_[a]->setIntProperty("id", id);
-				lines_[a]->setIntProperty("arg2", 0);
+				id = line->intProperty("arg2");
+				line->setIntProperty("id", id);
+				line->setIntProperty("arg2", 0);
 				break;
 
 			case 208:
-				id    = lines_[a]->intProperty("arg0");
-				flags = lines_[a]->intProperty("arg3");
+				id    = line->intProperty("arg0");
+				flags = line->intProperty("arg3");
 
-				lines_[a]->setIntProperty("id", id); // arg0 must be preserved
-				lines_[a]->setIntProperty("arg3", 0);
+				line->setIntProperty("id", id); // arg0 must be preserved
+				line->setIntProperty("arg3", 0);
 				break;
 
 			case 215:
-				id = lines_[a]->intProperty("arg0");
-				lines_[a]->setIntProperty("id", id);
-				lines_[a]->setIntProperty("arg0", 0);
+				id = line->intProperty("arg0");
+				line->setIntProperty("id", id);
+				line->setIntProperty("arg0", 0);
 				break;
 
 			case 222:
-				id = lines_[a]->intProperty("arg0");
-				lines_[a]->setIntProperty("id", id); // arg0 must be preserved
+				id = line->intProperty("arg0");
+				line->setIntProperty("id", id); // arg0 must be preserved
 				break;
+			default: break;
 			}
 
 			// flags (only set by 121 and 208)
 			if (flags & 1)
-				lines_[a]->setBoolProperty("zoneboundary", true);
+				line->setBoolProperty("zoneboundary", true);
 			if (flags & 2)
-				lines_[a]->setBoolProperty("jumpover", true);
+				line->setBoolProperty("jumpover", true);
 			if (flags & 4)
-				lines_[a]->setBoolProperty("blockfloaters", true);
+				line->setBoolProperty("blockfloaters", true);
 			if (flags & 8)
-				lines_[a]->setBoolProperty("clipmidtex", true);
+				line->setBoolProperty("clipmidtex", true);
 			if (flags & 16)
-				lines_[a]->setBoolProperty("wrapmidtex", true);
+				line->setBoolProperty("wrapmidtex", true);
 			if (flags & 32)
-				lines_[a]->setBoolProperty("midtex3d", true);
+				line->setBoolProperty("midtex3d", true);
 			if (flags & 64)
-				lines_[a]->setBoolProperty("checkswitchrange", true);
+				line->setBoolProperty("checkswitchrange", true);
 		}
 	}
 	else
@@ -5422,14 +5400,14 @@ bool SLADEMap::convertToUDMF()
 void SLADEMap::rebuildConnectedLines()
 {
 	// Clear vertex connected lines lists
-	for (unsigned a = 0; a < vertices_.size(); a++)
-		vertices_[a]->connected_lines_.clear();
+	for (auto& vertex : vertices_)
+		vertex->connected_lines_.clear();
 
 	// Connect lines to their vertices
-	for (unsigned a = 0; a < lines_.size(); a++)
+	for (auto& line : lines_)
 	{
-		lines_[a]->vertex1_->connected_lines_.push_back(lines_[a]);
-		lines_[a]->vertex2_->connected_lines_.push_back(lines_[a]);
+		line->vertex1_->connected_lines_.push_back(line);
+		line->vertex2_->connected_lines_.push_back(line);
 	}
 }
 
@@ -5439,21 +5417,21 @@ void SLADEMap::rebuildConnectedLines()
 void SLADEMap::rebuildConnectedSides()
 {
 	// Clear sector connected sides lists
-	for (unsigned a = 0; a < sectors_.size(); a++)
-		sectors_[a]->connected_sides_.clear();
+	for (auto& sector : sectors_)
+		sector->connected_sides_.clear();
 
 	// Connect sides to their sectors
-	for (unsigned a = 0; a < sides_.size(); a++)
+	for (auto& side : sides_)
 	{
-		if (sides_[a]->sector_)
-			sides_[a]->sector_->connected_sides_.push_back(sides_[a]);
+		if (side->sector_)
+			side->sector_->connected_sides_.push_back(side);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Adjusts the usage count for texture [tex] by [adjust]
 // -----------------------------------------------------------------------------
-void SLADEMap::updateTexUsage(string tex, int adjust)
+void SLADEMap::updateTexUsage(const string& tex, int adjust)
 {
 	usage_tex_[tex.Upper()] += adjust;
 }
@@ -5461,7 +5439,7 @@ void SLADEMap::updateTexUsage(string tex, int adjust)
 // -----------------------------------------------------------------------------
 // Adjusts the usage count for flat [flat] by [adjust]
 // -----------------------------------------------------------------------------
-void SLADEMap::updateFlatUsage(string flat, int adjust)
+void SLADEMap::updateFlatUsage(const string& flat, int adjust)
 {
 	usage_flat_[flat.Upper()] += adjust;
 }
@@ -5477,7 +5455,7 @@ void SLADEMap::updateThingTypeUsage(int type, int adjust)
 // -----------------------------------------------------------------------------
 // Returns the usage count for the texture [tex]
 // -----------------------------------------------------------------------------
-int SLADEMap::texUsageCount(string tex)
+int SLADEMap::texUsageCount(const string& tex)
 {
 	return usage_tex_[tex.Upper()];
 }
@@ -5485,7 +5463,7 @@ int SLADEMap::texUsageCount(string tex)
 // -----------------------------------------------------------------------------
 // Returns the usage count for the flat [tex]
 // -----------------------------------------------------------------------------
-int SLADEMap::flatUsageCount(string tex)
+int SLADEMap::flatUsageCount(const string& tex)
 {
 	return usage_flat_[tex.Upper()];
 }

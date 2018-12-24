@@ -64,7 +64,7 @@ Vec2f LineDraw::point(unsigned index)
 {
 	// Check index
 	if (index >= draw_points_.size())
-		return Vec2f(0, 0);
+		return { 0, 0 };
 
 	return draw_points_[index];
 }
@@ -80,7 +80,7 @@ bool LineDraw::addPoint(Vec2f point, bool nearest)
 	{
 		int vertex = context_.map().nearestVertex(point);
 		if (vertex >= 0)
-			point = context_.map().vertex(vertex)->point();
+			point = context_.map().vertex(vertex)->position();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -91,7 +91,7 @@ bool LineDraw::addPoint(Vec2f point, bool nearest)
 	}
 
 	// Check if this is the same as the last point
-	if (draw_points_.size() > 0 && point.x == draw_points_.back().x && point.y == draw_points_.back().y)
+	if (!draw_points_.empty() && point.x == draw_points_.back().x && point.y == draw_points_.back().y)
 	{
 		// End line drawing
 		end(true);
@@ -141,7 +141,7 @@ void LineDraw::setShapeOrigin(Vec2f point, bool nearest)
 	{
 		int vertex = context_.map().nearestVertex(point);
 		if (vertex >= 0)
-			point = context_.map().vertex(vertex)->point();
+			point = context_.map().vertex(vertex)->position();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -209,11 +209,11 @@ void LineDraw::updateShape(Vec2f point)
 	// Rectangle
 	if (shapedraw_shape == 0)
 	{
-		draw_points_.push_back(Vec2f(tl.x, tl.y));
-		draw_points_.push_back(Vec2f(tl.x, br.y));
-		draw_points_.push_back(Vec2f(br.x, br.y));
-		draw_points_.push_back(Vec2f(br.x, tl.y));
-		draw_points_.push_back(Vec2f(tl.x, tl.y));
+		draw_points_.emplace_back(tl.x, tl.y);
+		draw_points_.emplace_back(tl.x, br.y);
+		draw_points_.emplace_back(br.x, br.y);
+		draw_points_.emplace_back(br.x, tl.y);
+		draw_points_.emplace_back(tl.x, tl.y);
 	}
 
 	// Ellipse
@@ -315,8 +315,8 @@ void LineDraw::end(bool apply)
 	}
 
 	// Create vertices
-	for (unsigned a = 0; a < draw_points_.size(); a++)
-		map.createVertex(draw_points_[a].x, draw_points_[a].y, 1);
+	for (auto& draw_point : draw_points_)
+		map.createVertex(draw_point.x, draw_point.y, 1);
 
 	// Create lines
 	unsigned nl_start = map.nLines();
@@ -328,7 +328,7 @@ void LineDraw::end(bool apply)
 		LOG_MESSAGE(2, "%lu intersect points", intersect.size());
 
 		// Create line normally if no intersections
-		if (intersect.size() == 0)
+		if (intersect.empty())
 			map.createLine(draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y, 1);
 		else
 		{
@@ -354,13 +354,13 @@ void LineDraw::end(bool apply)
 
 	// Check for and attempt to correct invalid lines
 	vector<MapLine*> invalid_lines;
-	for (unsigned a = 0; a < new_lines.size(); a++)
+	for (auto& new_line : new_lines)
 	{
-		if (new_lines[a]->s1())
+		if (new_line->s1())
 			continue;
 
-		new_lines[a]->flip();
-		invalid_lines.push_back(new_lines[a]);
+		new_line->flip();
+		invalid_lines.push_back(new_line);
 	}
 	map.correctSectors(invalid_lines);
 

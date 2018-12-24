@@ -39,7 +39,7 @@ public:
 	void pasteProperties();
 
 	// Create / Delete
-	void createObject(double x, double y);
+	void createObject(double x, double y) const;
 	void createVertex(double x, double y) const;
 	void createThing(double x, double y) const;
 	void createSector(double x, double y) const;

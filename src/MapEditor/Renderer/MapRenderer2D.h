@@ -18,28 +18,28 @@ class ThingType;
 class MapRenderer2D
 {
 public:
-	MapRenderer2D(SLADEMap* map);
+	MapRenderer2D(SLADEMap* map) : map_{ map } {}
 	~MapRenderer2D();
 
-	double viewScaleInv() { return view_scale_inv_; }
+	double viewScaleInv() const { return view_scale_inv_; }
 
 	// Vertices
-	bool setupVertexRendering(float size_scale, bool overlay = false);
+	bool setupVertexRendering(float size_scale, bool overlay = false) const;
 	void renderVertices(float alpha = 1.0f);
 	void renderVerticesVBO();
 	void renderVerticesImmediate();
-	void renderVertexHilight(int index, float fade);
-	void renderVertexSelection(const ItemSelection& selection, float fade = 1.0f);
+	void renderVertexHilight(int index, float fade) const;
+	void renderVertexSelection(const ItemSelection& selection, float fade = 1.0f) const;
 
 	// Lines
-	ColRGBA lineColour(MapLine* line, bool ignore_filter = false);
+	ColRGBA lineColour(MapLine* line, bool ignore_filter = false) const;
 	void    renderLines(bool show_direction, float alpha = 1.0f);
 	void    renderLinesVBO(bool show_direction, float alpha);
 	void    renderLinesImmediate(bool show_direction, float alpha);
-	void    renderLineHilight(int index, float fade);
-	void    renderLineSelection(const ItemSelection& selection, float fade = 1.0f);
-	void    renderTaggedLines(vector<MapLine*>& lines, float fade);
-	void    renderTaggingLines(vector<MapLine*>& lines, float fade);
+	void    renderLineHilight(int index, float fade) const;
+	void    renderLineSelection(const ItemSelection& selection, float fade = 1.0f) const;
+	void    renderTaggedLines(vector<MapLine*>& lines, float fade) const;
+	void    renderTaggingLines(vector<MapLine*>& lines, float fade) const;
 
 	// Things
 	enum ThingDrawType
@@ -50,8 +50,8 @@ public:
 		SquareSprite,
 		FramedSprite,
 	};
-	bool setupThingOverlay();
-	void renderThingOverlay(double x, double y, double radius, bool point);
+	bool setupThingOverlay() const;
+	void renderThingOverlay(double x, double y, double radius, bool point) const;
 	void renderRoundThing(
 		double                 x,
 		double                 y,
@@ -67,7 +67,8 @@ public:
 		unsigned               index,
 		float                  alpha     = 1.0f,
 		bool                   fitradius = false);
-	void renderSimpleSquareThing(double x, double y, double angle, const Game::ThingType& type, float alpha = 1.0f);
+	void renderSimpleSquareThing(double x, double y, double angle, const Game::ThingType& type, float alpha = 1.0f)
+		const;
 	bool renderSquareThing(
 		double                 x,
 		double                 y,
@@ -78,24 +79,24 @@ public:
 		bool                   framed   = false);
 	void renderThings(float alpha = 1.0f, bool force_dir = false);
 	void renderThingsImmediate(float alpha);
-	void renderThingHilight(int index, float fade);
-	void renderThingSelection(const ItemSelection& selection, float fade = 1.0f);
-	void renderTaggedThings(vector<MapThing*>& things, float fade);
-	void renderTaggingThings(vector<MapThing*>& things, float fade);
+	void renderThingHilight(int index, float fade) const;
+	void renderThingSelection(const ItemSelection& selection, float fade = 1.0f) const;
+	void renderTaggedThings(vector<MapThing*>& things, float fade) const;
+	void renderTaggingThings(vector<MapThing*>& things, float fade) const;
 	void renderPathedThings(vector<MapThing*>& things);
 
 	// Flats (sectors)
 	void renderFlats(int type = 0, bool texture = true, float alpha = 1.0f);
 	void renderFlatsImmediate(int type, bool texture, float alpha);
 	void renderFlatsVBO(int type, bool texture, float alpha);
-	void renderFlatHilight(int index, float fade);
+	void renderFlatHilight(int index, float fade) const;
 	void renderFlatSelection(const ItemSelection& selection, float fade = 1.0f);
-	void renderTaggedFlats(vector<MapSector*>& sectors, float fade);
+	void renderTaggedFlats(vector<MapSector*>& sectors, float fade) const;
 
 	// Moving
-	void renderMovingVertices(const vector<MapEditor::Item>& vertices, Vec2f move_vec);
-	void renderMovingLines(const vector<MapEditor::Item>& lines, Vec2f move_vec);
-	void renderMovingSectors(const vector<MapEditor::Item>& sectors, Vec2f move_vec);
+	void renderMovingVertices(const vector<MapEditor::Item>& vertices, Vec2f move_vec) const;
+	void renderMovingLines(const vector<MapEditor::Item>& lines, Vec2f move_vec) const;
+	void renderMovingSectors(const vector<MapEditor::Item>& sectors, Vec2f move_vec) const;
 	void renderMovingThings(const vector<MapEditor::Item>& things, Vec2f move_vec);
 
 	// Paste
@@ -106,7 +107,7 @@ public:
 
 	// VBOs
 	void updateVerticesVBO();
-	void updateLinesVBO(bool show_direction, float alpha);
+	void updateLinesVBO(bool show_direction, float base_alpha);
 	void updateFlatsVBO();
 
 	// Misc
@@ -117,25 +118,25 @@ public:
 	}
 	void   updateVisibility(Vec2f view_tl, Vec2f view_br);
 	void   forceUpdate(float line_alpha = 1.0f);
-	double scaledRadius(int radius);
-	bool   visOK();
+	double scaledRadius(int radius) const;
+	bool   visOK() const;
 	void   clearTextureCache() { tex_flats_.clear(); }
 
 private:
-	SLADEMap*  map_;
-	GLTexture* tex_last_;
-	long       vertices_updated_;
-	long       lines_updated_;
-	long       flats_updated_;
+	SLADEMap*  map_              = nullptr;
+	GLTexture* tex_last_         = nullptr;
+	long       vertices_updated_ = 0;
+	long       lines_updated_    = 0;
+	long       flats_updated_    = 0;
 
 	// VBOs etc
-	unsigned vbo_vertices_;
-	unsigned vbo_lines_;
-	unsigned vbo_flats_;
+	unsigned vbo_vertices_ = 0;
+	unsigned vbo_lines_    = 0;
+	unsigned vbo_flats_    = 0;
 
 	// Display lists
-	unsigned list_vertices_;
-	unsigned list_lines_;
+	unsigned list_vertices_ = 0;
+	unsigned list_lines_    = 0;
 
 	// Visibility
 	enum
@@ -164,18 +165,18 @@ private:
 	};
 
 	// Other
-	bool   lines_dirs_;
-	int    n_vertices_;
-	int    n_lines_;
-	int    n_things_;
-	double view_scale_;
-	double view_scale_inv_;
-	bool   things_angles_;
+	bool     lines_dirs_     = false;
+	unsigned n_vertices_     = 0;
+	unsigned n_lines_        = 0;
+	unsigned n_things_       = 0;
+	double   view_scale_     = 0.;
+	double   view_scale_inv_ = 0.;
+	bool     things_angles_  = false;
 
 	vector<GLTexture*> tex_flats_;
-	int                last_flat_type_;
+	int                last_flat_type_ = -1;
 	vector<GLTexture*> thing_sprites_;
-	long               thing_sprites_updated_;
+	long               thing_sprites_updated_ = 0;
 
 	// Thing paths
 	enum class PathType
@@ -192,5 +193,5 @@ private:
 		PathType type;
 	};
 	vector<ThingPath> thing_paths_;
-	long              thing_paths_updated_;
+	long              thing_paths_updated_ = 0;
 };

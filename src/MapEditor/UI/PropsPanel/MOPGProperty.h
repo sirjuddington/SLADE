@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Game/Args.h"
+#include "MapEditor/MapEditor.h"
 
 class MapObject;
 class MapObjectPropsPanel;
@@ -8,12 +9,8 @@ class UDMFProperty;
 class MOPGProperty
 {
 public:
-	MOPGProperty()
-	{
-		noupdate_  = false;
-		udmf_prop_ = nullptr;
-	}
-	~MOPGProperty() {}
+	MOPGProperty(const string& prop_name) : propname_{ prop_name } {}
+	virtual ~MOPGProperty() = default;
 
 	enum class Type
 	{
@@ -33,9 +30,9 @@ public:
 		Id,
 	};
 
-	string       propName() { return propname_; }
-	void         setParent(MapObjectPropsPanel* parent) { this->parent_ = parent; }
-	virtual void setUDMFProp(UDMFProperty* prop) { this->udmf_prop_ = prop; }
+	string       propName() const { return propname_; }
+	void         setParent(MapObjectPropsPanel* parent) { parent_ = parent; }
+	virtual void setUDMFProp(UDMFProperty* prop) { udmf_prop_ = prop; }
 
 	virtual Type type()                                   = 0;
 	virtual void openObjects(vector<MapObject*>& objects) = 0;
@@ -44,10 +41,9 @@ public:
 	virtual void resetValue();
 
 protected:
-	int                  type_;
-	MapObjectPropsPanel* parent_;
-	bool                 noupdate_;
-	UDMFProperty*        udmf_prop_;
+	MapObjectPropsPanel* parent_    = nullptr;
+	bool                 noupdate_  = false;
+	UDMFProperty*        udmf_prop_ = nullptr;
 	string               propname_;
 };
 
@@ -56,10 +52,10 @@ class MOPGBoolProperty : public MOPGProperty, public wxBoolProperty
 public:
 	MOPGBoolProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type type() { return Type::Boolean; }
-	void openObjects(vector<MapObject*>& objects);
-	void updateVisibility();
-	void applyValue();
+	Type type() override { return Type::Boolean; }
+	void openObjects(vector<MapObject*>& objects) override;
+	void updateVisibility() override;
+	void applyValue() override;
 };
 
 class MOPGIntProperty : public MOPGProperty, public wxIntProperty
@@ -67,10 +63,10 @@ class MOPGIntProperty : public MOPGProperty, public wxIntProperty
 public:
 	MOPGIntProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type type() { return Type::Integer; }
-	void openObjects(vector<MapObject*>& objects);
-	void updateVisibility();
-	void applyValue();
+	Type type() override { return Type::Integer; }
+	void openObjects(vector<MapObject*>& objects) override;
+	void updateVisibility() override;
+	void applyValue() override;
 };
 
 class MOPGFloatProperty : public MOPGProperty, public wxFloatProperty
@@ -78,10 +74,10 @@ class MOPGFloatProperty : public MOPGProperty, public wxFloatProperty
 public:
 	MOPGFloatProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type type() { return Type::Float; }
-	void openObjects(vector<MapObject*>& objects);
-	void updateVisibility();
-	void applyValue();
+	Type type() override { return Type::Float; }
+	void openObjects(vector<MapObject*>& objects) override;
+	void updateVisibility() override;
+	void applyValue() override;
 };
 
 class MOPGStringProperty : public MOPGProperty, public wxStringProperty
@@ -89,12 +85,12 @@ class MOPGStringProperty : public MOPGProperty, public wxStringProperty
 public:
 	MOPGStringProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	void setUDMFProp(UDMFProperty* prop);
+	void setUDMFProp(UDMFProperty* prop) override;
 
-	Type type() { return Type::String; }
-	void openObjects(vector<MapObject*>& objects);
-	void updateVisibility();
-	void applyValue();
+	Type type() override { return Type::String; }
+	void openObjects(vector<MapObject*>& objects) override;
+	void updateVisibility() override;
+	void applyValue() override;
 };
 
 class MOPGIntWithArgsProperty : public MOPGIntProperty
@@ -105,18 +101,18 @@ protected:
 public:
 	MOPGIntWithArgsProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	void applyValue();
+	void applyValue() override;
 	bool hasArgs();
 	void updateArgs(wxPGProperty* args[5]);
 
 	// wxPGProperty overrides
-	void OnSetValue();
+	void OnSetValue() override;
 };
 
 class MOPGActionSpecialProperty : public MOPGIntWithArgsProperty
 {
 protected:
-	const Game::ArgSpec& argSpec();
+	const Game::ArgSpec& argSpec() override;
 
 public:
 	MOPGActionSpecialProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL) :
@@ -124,17 +120,17 @@ public:
 	{
 	}
 
-	Type type() { return Type::ActionSpecial; }
+	Type type() override { return Type::ActionSpecial; }
 
 	// wxPGProperty overrides
-	wxString ValueToString(wxVariant& value, int argFlags = 0) const;
-	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
+	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
+	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
 
 class MOPGThingTypeProperty : public MOPGIntWithArgsProperty
 {
 protected:
-	const Game::ArgSpec& argSpec();
+	const Game::ArgSpec& argSpec() override;
 
 public:
 	MOPGThingTypeProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL) :
@@ -142,11 +138,11 @@ public:
 	{
 	}
 
-	Type type() { return Type::ThingType; }
+	Type type() override { return Type::ThingType; }
 
 	// wxPGProperty overrides
-	wxString ValueToString(wxVariant& value, int argFlags = 0) const;
-	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
+	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
+	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
 
 class MOPGLineFlagProperty : public MOPGBoolProperty
@@ -154,9 +150,9 @@ class MOPGLineFlagProperty : public MOPGBoolProperty
 public:
 	MOPGLineFlagProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL, int index = -1);
 
-	Type type() { return Type::LineFlag; }
-	void openObjects(vector<MapObject*>& objects);
-	void applyValue();
+	Type type() override { return Type::LineFlag; }
+	void openObjects(vector<MapObject*>& objects) override;
+	void applyValue() override;
 
 private:
 	int index_;
@@ -167,9 +163,9 @@ class MOPGThingFlagProperty : public MOPGBoolProperty
 public:
 	MOPGThingFlagProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL, int index = -1);
 
-	Type type() { return Type::ThingFlag; }
-	void openObjects(vector<MapObject*>& objects);
-	void applyValue();
+	Type type() override { return Type::ThingFlag; }
+	void openObjects(vector<MapObject*>& objects) override;
+	void applyValue() override;
 
 private:
 	int index_;
@@ -180,13 +176,13 @@ class MOPGAngleProperty : public MOPGProperty, public wxEditEnumProperty
 public:
 	MOPGAngleProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type type() { return Type::Angle; }
-	void openObjects(vector<MapObject*>& objects);
-	void updateVisibility();
-	void applyValue();
+	Type type() override { return Type::Angle; }
+	void openObjects(vector<MapObject*>& objects) override;
+	void updateVisibility() override;
+	void applyValue() override;
 
 	// wxPGProperty overrides
-	wxString ValueToString(wxVariant& value, int argFlags = 0) const;
+	wxString ValueToString(wxVariant& value, int arg_flags = 0) const override;
 };
 
 class MOPGColourProperty : public MOPGProperty, public wxColourProperty
@@ -194,25 +190,28 @@ class MOPGColourProperty : public MOPGProperty, public wxColourProperty
 public:
 	MOPGColourProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type type() { return Type::Colour; }
-	void openObjects(vector<MapObject*>& objects);
-	void updateVisibility();
-	void applyValue();
+	Type type() override { return Type::Colour; }
+	void openObjects(vector<MapObject*>& objects) override;
+	void updateVisibility() override;
+	void applyValue() override;
 };
 
 class MOPGTextureProperty : public MOPGStringProperty
 {
 public:
-	MOPGTextureProperty(int textype = 0, const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
+	MOPGTextureProperty(
+		MapEditor::TextureType textype = MapEditor::TextureType::Texture,
+		const wxString&        label   = wxPG_LABEL,
+		const wxString&        name    = wxPG_LABEL);
 
-	Type type() { return Type::Texture; }
-	void openObjects(vector<MapObject*>& objects);
+	Type type() override { return Type::Texture; }
+	void openObjects(vector<MapObject*>& objects) override;
 
 	// wxPGProperty overrides
-	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
+	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 
 private:
-	int textype_;
+	MapEditor::TextureType textype_;
 };
 
 class MOPGSPACTriggerProperty : public MOPGProperty, public wxEnumProperty
@@ -220,10 +219,10 @@ class MOPGSPACTriggerProperty : public MOPGProperty, public wxEnumProperty
 public:
 	MOPGSPACTriggerProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type type() { return Type::SPACTrigger; }
-	void openObjects(vector<MapObject*>& objects);
-	void updateVisibility();
-	void applyValue();
+	Type type() override { return Type::SPACTrigger; }
+	void openObjects(vector<MapObject*>& objects) override;
+	void updateVisibility() override;
+	void applyValue() override;
 };
 
 class MOPGTagProperty : public MOPGIntProperty
@@ -238,11 +237,11 @@ public:
 
 	MOPGTagProperty(IdType id_type, const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type type() { return Type::Id; }
-	void openObjects(vector<MapObject*>& objects);
+	Type type() override { return Type::Id; }
+	void openObjects(vector<MapObject*>& objects) override;
 
 	// wxPGProperty overrides
-	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
+	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 
 private:
 	IdType id_type_;
@@ -253,10 +252,10 @@ class MOPGSectorSpecialProperty : public MOPGIntProperty
 public:
 	MOPGSectorSpecialProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	Type type() { return Type::SectorSpecial; }
-	void openObjects(vector<MapObject*>& objects);
+	Type type() override { return Type::SectorSpecial; }
+	void openObjects(vector<MapObject*>& objects) override;
 
 	// wxPGProperty overrides
-	wxString ValueToString(wxVariant& value, int argFlags = 0) const;
-	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
+	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
+	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };

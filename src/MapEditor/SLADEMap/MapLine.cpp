@@ -47,33 +47,13 @@
 // -----------------------------------------------------------------------------
 // MapLine class constructor
 // -----------------------------------------------------------------------------
-MapLine::MapLine(SLADEMap* parent) : MapObject(Type::Line, parent)
-{
-	// Init variables
-	vertex1_ = nullptr;
-	vertex2_ = nullptr;
-	side1_   = nullptr;
-	side2_   = nullptr;
-	length_  = -1;
-	special_ = 0;
-	line_id_ = 0;
-}
-
-// -----------------------------------------------------------------------------
-// MapLine class constructor
-// -----------------------------------------------------------------------------
 MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent) :
-	MapObject(Type::Line, parent)
+	MapObject(Type::Line, parent),
+	vertex1_{ v1 },
+	vertex2_{ v2 },
+	side1_{ s1 },
+	side2_{ s2 }
 {
-	// Init variables
-	vertex1_ = v1;
-	vertex2_ = v2;
-	side1_   = s1;
-	side2_   = s2;
-	length_  = -1;
-	special_ = 0;
-	line_id_ = 0;
-
 	// Connect to vertices
 	if (v1)
 		v1->connectLine(this);
@@ -88,36 +68,25 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMa
 }
 
 // -----------------------------------------------------------------------------
-// MapLine class destructor
-// -----------------------------------------------------------------------------
-MapLine::~MapLine() {}
-
-// -----------------------------------------------------------------------------
 // Returns the sector on the front side of the line (if any)
 // -----------------------------------------------------------------------------
-MapSector* MapLine::frontSector()
+MapSector* MapLine::frontSector() const
 {
-	if (side1_)
-		return side1_->sector_;
-	else
-		return nullptr;
+	return side1_ ? side1_->sector_ : nullptr;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the sector on the back side of the line (if any)
 // -----------------------------------------------------------------------------
-MapSector* MapLine::backSector()
+MapSector* MapLine::backSector() const
 {
-	if (side2_)
-		return side2_->sector_;
-	else
-		return nullptr;
+	return side2_ ? side2_->sector_ : nullptr;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the x coordinate of the first vertex
 // -----------------------------------------------------------------------------
-double MapLine::x1()
+double MapLine::x1() const
 {
 	return vertex1_->xPos();
 }
@@ -125,7 +94,7 @@ double MapLine::x1()
 // -----------------------------------------------------------------------------
 // Returns the y coordinate of the first vertex
 // -----------------------------------------------------------------------------
-double MapLine::y1()
+double MapLine::y1() const
 {
 	return vertex1_->yPos();
 }
@@ -133,7 +102,7 @@ double MapLine::y1()
 // -----------------------------------------------------------------------------
 // Returns the x coordinate of the second vertex
 // -----------------------------------------------------------------------------
-double MapLine::x2()
+double MapLine::x2() const
 {
 	return vertex2_->xPos();
 }
@@ -141,7 +110,7 @@ double MapLine::x2()
 // -----------------------------------------------------------------------------
 // Returns the y coordinate of the second vertex
 // -----------------------------------------------------------------------------
-double MapLine::y2()
+double MapLine::y2() const
 {
 	return vertex2_->yPos();
 }
@@ -149,45 +118,33 @@ double MapLine::y2()
 // -----------------------------------------------------------------------------
 // Returns the index of the first vertex, or -1 if none
 // -----------------------------------------------------------------------------
-int MapLine::v1Index()
+int MapLine::v1Index() const
 {
-	if (vertex1_)
-		return vertex1_->index();
-	else
-		return -1;
+	return vertex1_ ? vertex1_->index() : -1;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the index of the second vertex, or -1 if none
 // -----------------------------------------------------------------------------
-int MapLine::v2Index()
+int MapLine::v2Index() const
 {
-	if (vertex2_)
-		return vertex2_->index();
-	else
-		return -1;
+	return vertex2_ ? vertex2_->index() : -1;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the index of the front side, or -1 if none
 // -----------------------------------------------------------------------------
-int MapLine::s1Index()
+int MapLine::s1Index() const
 {
-	if (side1_)
-		return side1_->index();
-	else
-		return -1;
+	return side1_ ? side1_->index() : -1;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the index of the back side, or -1 if none
 // -----------------------------------------------------------------------------
-int MapLine::s2Index()
+int MapLine::s2Index() const
 {
-	if (side2_)
-		return side2_->index();
-	else
-		return -1;
+	return side2_ ? side2_->index() : -1;
 }
 
 // -----------------------------------------------------------------------------
@@ -341,13 +298,13 @@ void MapLine::setIntProperty(const string& key, int value)
 	// Sides
 	else if (key == "sidefront")
 	{
-		MapSide* side = parent_map_->side(value);
+		auto side = parent_map_->side(value);
 		if (side)
 			parent_map_->setLineSide(this, side, true);
 	}
 	else if (key == "sideback")
 	{
-		MapSide* side = parent_map_->side(value);
+		auto side = parent_map_->side(value);
 		if (side)
 			parent_map_->setLineSide(this, side, false);
 	}
@@ -422,10 +379,7 @@ void MapLine::setStringProperty(const string& key, const string& value)
 // -----------------------------------------------------------------------------
 bool MapLine::scriptCanModifyProp(const string& key)
 {
-	if (key == "v1" || key == "v2" || key == "sidefront" || key == "sideback")
-		return false;
-
-	return true;
+	return !(key == "v1" || key == "v2" || key == "sidefront" || key == "sideback");
 }
 
 // -----------------------------------------------------------------------------
@@ -459,25 +413,25 @@ Vec2f MapLine::getPoint(Point point)
 // -----------------------------------------------------------------------------
 // Returns the point at the first vertex.
 // -----------------------------------------------------------------------------
-Vec2f MapLine::point1()
+Vec2f MapLine::point1() const
 {
-	return vertex1_->point();
+	return vertex1_->position();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the point at the second vertex.
 // -----------------------------------------------------------------------------
-Vec2f MapLine::point2()
+Vec2f MapLine::point2() const
 {
-	return vertex2_->point();
+	return vertex2_->position();
 }
 
 // -----------------------------------------------------------------------------
 // Returns this line as a segment.
 // -----------------------------------------------------------------------------
-Seg2f MapLine::seg()
+Seg2f MapLine::seg() const
 {
-	return Seg2f(vertex1_->point(), vertex2_->point());
+	return {vertex1_->position(), vertex2_->position()};
 }
 
 // -----------------------------------------------------------------------------
@@ -501,7 +455,7 @@ double MapLine::length()
 // -----------------------------------------------------------------------------
 // Returns true if the line has the same sector on both sides
 // -----------------------------------------------------------------------------
-bool MapLine::doubleSector()
+bool MapLine::doubleSector() const
 {
 	// Check both sides exist
 	if (!side1_ || !side2_)
@@ -529,25 +483,25 @@ Vec2f MapLine::frontVector()
 // Calculates and returns the end point of the 'direction tab' for the line
 // (used as a front side indicator for 2d map display)
 // -----------------------------------------------------------------------------
-Vec2f MapLine::dirTabPoint(double tablen)
+Vec2f MapLine::dirTabPoint(double tab_length)
 {
 	// Calculate midpoint
 	Vec2f mid(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
 
 	// Calculate tab length
-	if (tablen == 0)
+	if (tab_length == 0)
 	{
-		tablen = length() * 0.1;
-		if (tablen > 16)
-			tablen = 16;
-		if (tablen < 2)
-			tablen = 2;
+		tab_length = length() * 0.1;
+		if (tab_length > 16)
+			tab_length = 16;
+		if (tab_length < 2)
+			tab_length = 2;
 	}
 
 	// Calculate tab endpoint
 	if (front_vec_.x == 0 && front_vec_.y == 0)
 		frontVector();
-	return Vec2f(mid.x - front_vec_.x * tablen, mid.y - front_vec_.y * tablen);
+	return {mid.x - front_vec_.x * tab_length, mid.y - front_vec_.y * tab_length};
 }
 
 // -----------------------------------------------------------------------------
@@ -586,7 +540,7 @@ static const float EPSILON = 0.001f;
 // -----------------------------------------------------------------------------
 // Returns a flag set of any parts of the line that require a texture
 // -----------------------------------------------------------------------------
-int MapLine::needsTexture()
+int MapLine::needsTexture() const
 {
 	// Check line is valid
 	if (!frontSector())
@@ -597,10 +551,10 @@ int MapLine::needsTexture()
 		return Part::FrontMiddle;
 
 	// Get sector planes
-	Plane floor_front   = frontSector()->floor().plane;
-	Plane ceiling_front = frontSector()->ceiling().plane;
-	Plane floor_back    = backSector()->floor().plane;
-	Plane ceiling_back  = backSector()->ceiling().plane;
+	auto floor_front   = frontSector()->floor().plane;
+	auto ceiling_front = frontSector()->ceiling().plane;
+	auto floor_back    = backSector()->floor().plane;
+	auto ceiling_back  = backSector()->ceiling().plane;
 
 	double front_height, back_height;
 
@@ -683,7 +637,7 @@ void MapLine::resetInternals()
 	front_vec_.set(0, 0);
 
 	// Reset front sector internals
-	MapSector* s1 = frontSector();
+	auto s1 = frontSector();
 	if (s1)
 	{
 		s1->resetPolygon();
@@ -691,7 +645,7 @@ void MapLine::resetInternals()
 	}
 
 	// Reset back sector internals
-	MapSector* s2 = backSector();
+	auto s2 = backSector();
 	if (s2)
 	{
 		s2->resetPolygon();
@@ -707,14 +661,14 @@ void MapLine::flip(bool sides)
 	setModified();
 
 	// Flip vertices
-	MapVertex* v = vertex1_;
+	auto v = vertex1_;
 	vertex1_     = vertex2_;
 	vertex2_     = v;
 
 	// Flip sides if needed
 	if (sides)
 	{
-		MapSide* s = side1_;
+		auto s = side1_;
 		side1_     = side2_;
 		side2_     = s;
 	}
@@ -754,28 +708,28 @@ void MapLine::writeBackup(Backup* backup)
 void MapLine::readBackup(Backup* backup)
 {
 	// Vertices
-	MapObject* v1 = parent_map_->getObjectById(backup->props_internal["v1"]);
-	MapObject* v2 = parent_map_->getObjectById(backup->props_internal["v2"]);
+	auto v1 = parent_map_->getObjectById(backup->props_internal["v1"]);
+	auto v2 = parent_map_->getObjectById(backup->props_internal["v2"]);
 	if (v1)
 	{
 		vertex1_->disconnectLine(this);
-		vertex1_ = (MapVertex*)v1;
+		vertex1_ = dynamic_cast<MapVertex*>(v1);
 		vertex1_->connectLine(this);
 		resetInternals();
 	}
 	if (v2)
 	{
 		vertex2_->disconnectLine(this);
-		vertex2_ = (MapVertex*)v2;
+		vertex2_ = dynamic_cast<MapVertex*>(v2);
 		vertex2_->connectLine(this);
 		resetInternals();
 	}
 
 	// Sides
-	MapObject* s1 = parent_map_->getObjectById(backup->props_internal["s1"]);
-	MapObject* s2 = parent_map_->getObjectById(backup->props_internal["s2"]);
-	side1_        = (MapSide*)s1;
-	side2_        = (MapSide*)s2;
+	auto s1 = parent_map_->getObjectById(backup->props_internal["s1"]);
+	auto s2 = parent_map_->getObjectById(backup->props_internal["s2"]);
+	side1_        = dynamic_cast<MapSide*>(s1);
+	side2_        = dynamic_cast<MapSide*>(s2);
 	if (side1_)
 		side1_->parent_ = this;
 	if (side2_)
@@ -796,7 +750,7 @@ void MapLine::copy(MapObject* c)
 
 	MapObject::copy(c);
 
-	MapLine* l = static_cast<MapLine*>(c);
+	auto l = dynamic_cast<MapLine*>(c);
 
 	if (side1_ && l->side1_)
 		side1_->copy(l->side1_);
@@ -804,7 +758,6 @@ void MapLine::copy(MapObject* c)
 	if (side2_ && l->side2_)
 		side2_->copy(l->side2_);
 
-	// setIntProperty("special", l->intProperty("special"));
 	special_ = l->special_;
 	line_id_ = l->line_id_;
 }

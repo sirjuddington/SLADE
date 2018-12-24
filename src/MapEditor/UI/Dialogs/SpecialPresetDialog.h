@@ -13,5 +13,5 @@ public:
 	Game::SpecialPreset selectedPreset() const;
 
 private:
-	SpecialPresetTreeView* tree_presets_;
+	SpecialPresetTreeView* tree_presets_ = nullptr;
 };

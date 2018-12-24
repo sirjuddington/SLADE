@@ -11,26 +11,24 @@ class ScriptEditorPanel : public wxPanel, SActionHandler
 {
 public:
 	ScriptEditorPanel(wxWindow* parent);
-	~ScriptEditorPanel();
+	~ScriptEditorPanel() = default;
 
-	ArchiveEntry* scriptEntry() { return entry_script_; }
-	ArchiveEntry* compiledEntry() { return entry_compiled_; }
+	ArchiveEntry* scriptEntry() const { return entry_script_.get(); }
+	ArchiveEntry* compiledEntry() const { return entry_compiled_.get(); }
 
-	bool openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = nullptr);
-	void populateWordList();
-	void saveScripts();
-	void updateUI();
+	bool openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = nullptr) const;
+	void populateWordList() const;
+	void saveScripts() const;
+	void updateUI() const;
 
-	bool handleAction(string name);
+	bool handleAction(string name) override;
 
 private:
 	string        script_text_;
-	ArchiveEntry* entry_script_;
-	ArchiveEntry* entry_compiled_;
+	std::unique_ptr<ArchiveEntry> entry_script_;
+	std::unique_ptr<ArchiveEntry> entry_compiled_;
 
 	TextEditorCtrl*   text_editor_;
-	wxButton*         btn_save_;
-	wxButton*         btn_compile_;
 	wxTreeListCtrl*   list_words_;
 	FindReplacePanel* panel_fr_;
 	wxChoice*         choice_jump_to_;

@@ -63,10 +63,10 @@ SideTexCanvas::SideTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 // -----------------------------------------------------------------------------
 // Sets the texture to display
 // -----------------------------------------------------------------------------
-void SideTexCanvas::setTexture(string tex)
+void SideTexCanvas::setTexture(const string& tex)
 {
 	texname_ = tex;
-	if (tex == "-" || tex == "")
+	if (tex.empty() || tex == "-")
 		texture_ = nullptr;
 	else
 		texture_ = MapEditor::textureManager().texture(
@@ -111,7 +111,7 @@ void SideTexCanvas::draw()
 	else if (texture_ == &(GLTexture::missingTex()))
 	{
 		// Draw unknown icon
-		GLTexture* tex = MapEditor::textureManager().editorImage("thing/unknown");
+		auto tex = MapEditor::textureManager().editorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0);
 		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
@@ -170,17 +170,17 @@ void TextureComboBox::onDropDown(wxCommandEvent& e)
 	auto&         textures = MapEditor::textureManager().allTexturesInfo();
 	wxArrayString list;
 	list.Add("-");
-	for (unsigned a = 0; a < textures.size(); a++)
+	for (auto& texture : textures)
 	{
-		if (textures[a].short_name.StartsWith(text))
+		if (texture.short_name.StartsWith(text))
 		{
-			list.Add(textures[a].short_name);
+			list.Add(texture.short_name);
 		}
 		if (Game::configuration().featureSupported(Game::Feature::LongNames))
 		{
-			if (textures[a].long_name.StartsWith(text))
+			if (texture.long_name.StartsWith(text))
 			{
-				list.Add(textures[a].long_name);
+				list.Add(texture.long_name);
 			}
 		}
 	}
@@ -228,14 +228,14 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	wxBoxSizer* vbox;
 
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// --- Textures ---
-	wxStaticBoxSizer* sizer_tex = new wxStaticBoxSizer(wxVERTICAL, this, "Textures");
+	auto sizer_tex = new wxStaticBoxSizer(wxVERTICAL, this, "Textures");
 	sizer->Add(sizer_tex, 0, wxEXPAND);
 
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 	sizer_tex->Add(gb_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
 	// Upper
@@ -286,7 +286,7 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 // -----------------------------------------------------------------------------
 // Loads textures and offsets from [sides]
 // -----------------------------------------------------------------------------
-void SidePropsPanel::openSides(vector<MapSide*>& sides)
+void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 {
 	if (sides.empty())
 		return;
@@ -367,34 +367,34 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides)
 // -----------------------------------------------------------------------------
 // Applies current values to [sides]
 // -----------------------------------------------------------------------------
-void SidePropsPanel::applyTo(vector<MapSide*>& sides)
+void SidePropsPanel::applyTo(vector<MapSide*>& sides) const
 {
 	// Get values
 	string tex_upper  = tcb_upper_->GetValue();
 	string tex_middle = tcb_middle_->GetValue();
 	string tex_lower  = tcb_lower_->GetValue();
 
-	for (unsigned a = 0; a < sides.size(); a++)
+	for (auto& side : sides)
 	{
 		// Upper Texture
 		if (!tex_upper.IsEmpty())
-			sides[a]->setStringProperty("texturetop", tex_upper);
+			side->setStringProperty("texturetop", tex_upper);
 
 		// Middle Texture
 		if (!tex_middle.IsEmpty())
-			sides[a]->setStringProperty("texturemiddle", tex_middle);
+			side->setStringProperty("texturemiddle", tex_middle);
 
 		// Lower Texture
 		if (!tex_lower.IsEmpty())
-			sides[a]->setStringProperty("texturebottom", tex_lower);
+			side->setStringProperty("texturebottom", tex_lower);
 
 		// X Offset
 		if (!text_offsetx_->GetValue().IsEmpty())
-			sides[a]->setIntProperty("offsetx", text_offsetx_->number(sides[a]->offsetX()));
+			side->setIntProperty("offsetx", text_offsetx_->number(side->offsetX()));
 
 		// Y Offset
 		if (!text_offsety_->GetValue().IsEmpty())
-			sides[a]->setIntProperty("offsety", text_offsety_->number(sides[a]->offsetY()));
+			side->setIntProperty("offsety", text_offsety_->number(side->offsetY()));
 	}
 }
 
@@ -457,7 +457,7 @@ void SidePropsPanel::onTextureClicked(wxMouseEvent& e)
 	}
 
 	// Browse
-	MapTextureBrowser browser(this, 0, stc->texName(), &(MapEditor::editContext().map()));
+	MapTextureBrowser browser(this, MapEditor::TextureType::Texture, stc->texName(), &(MapEditor::editContext().map()));
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 		tcb->SetValue(browser.selectedItem()->name());
 }

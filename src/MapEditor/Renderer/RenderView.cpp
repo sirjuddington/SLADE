@@ -46,11 +46,6 @@ using namespace MapEditor;
 
 
 // -----------------------------------------------------------------------------
-// RenderView class constructor
-// -----------------------------------------------------------------------------
-RenderView::RenderView() : scale_{ 0 }, scale_inter_{ 0 }, min_scale_{ 0.005 }, max_scale_{ 10.0 } {}
-
-// -----------------------------------------------------------------------------
 // Resets the interpolated view values to their non-interpolated counterparts
 // -----------------------------------------------------------------------------
 void RenderView::resetInter(bool x, bool y, bool scale)

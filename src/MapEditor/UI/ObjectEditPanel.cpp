@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "ObjectEditPanel.h"
 #include "General/KeyBind.h"
-#include "Graphics/Icons.h"
 #include "MapEditor/Edit/ObjectEdit.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -86,7 +85,7 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	cb_mirror_y_->Bind(wxEVT_CHECKBOX, &ObjectEditPanel::onBtnPreviewClicked, this);
 
 	// Init layout
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------
@@ -99,7 +98,7 @@ void ObjectEditPanel::init(ObjectEditGroup* group)
 		return;
 
 	// Set initial values from group
-	BBox bbox   = group->bbox();
+	auto bbox   = group->bbox();
 	old_x_      = bbox.midX();
 	old_y_      = bbox.midY();
 	old_width_  = bbox.width();
@@ -118,7 +117,7 @@ void ObjectEditPanel::init(ObjectEditGroup* group)
 // -----------------------------------------------------------------------------
 void ObjectEditPanel::update(ObjectEditGroup* group, bool lock_rotation) const
 {
-	BBox   bbox   = group->bbox();
+	auto   bbox   = group->bbox();
 	int    xoff   = bbox.midX() - old_x_;
 	int    yoff   = bbox.midY() - old_y_;
 	double xscale = bbox.width() / old_width_;

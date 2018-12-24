@@ -45,27 +45,7 @@
 // -----------------------------------------------------------------------------
 // MapVertex class constructor
 // -----------------------------------------------------------------------------
-MapVertex::MapVertex(SLADEMap* parent) : MapObject(Type::Vertex, parent)
-{
-	// Init variables
-	this->x_ = 0;
-	this->y_ = 0;
-}
-
-// -----------------------------------------------------------------------------
-// MapVertex class constructor
-// -----------------------------------------------------------------------------
-MapVertex::MapVertex(double x, double y, SLADEMap* parent) : MapObject(Type::Vertex, parent)
-{
-	// Init variables
-	this->x_ = x;
-	this->y_ = y;
-}
-
-// -----------------------------------------------------------------------------
-// MapVertex class constructor
-// -----------------------------------------------------------------------------
-MapVertex::~MapVertex() {}
+MapVertex::MapVertex(double x, double y, SLADEMap* parent) : MapObject(Type::Vertex, parent), position_{ x, y } {}
 
 // -----------------------------------------------------------------------------
 // Returns the object point [point].
@@ -73,15 +53,7 @@ MapVertex::~MapVertex() {}
 // -----------------------------------------------------------------------------
 Vec2f MapVertex::getPoint(Point point)
 {
-	return this->point();
-}
-
-// -----------------------------------------------------------------------------
-// Returns the vertex position, more explicitly than the overridden getPoint
-// -----------------------------------------------------------------------------
-Vec2f MapVertex::point()
-{
-	return Vec2f(x_, y_);
+	return position_;
 }
 
 // -----------------------------------------------------------------------------
@@ -90,9 +62,9 @@ Vec2f MapVertex::point()
 int MapVertex::intProperty(const string& key)
 {
 	if (key == "x")
-		return (int)x_;
+		return (int)position_.x;
 	else if (key == "y")
-		return (int)y_;
+		return (int)position_.y;
 	else
 		return MapObject::intProperty(key);
 }
@@ -103,9 +75,9 @@ int MapVertex::intProperty(const string& key)
 double MapVertex::floatProperty(const string& key)
 {
 	if (key == "x")
-		return x_;
+		return position_.x;
 	else if (key == "y")
-		return y_;
+		return position_.y;
 	else
 		return MapObject::floatProperty(key);
 }
@@ -120,15 +92,15 @@ void MapVertex::setIntProperty(const string& key, int value)
 
 	if (key == "x")
 	{
-		x_ = value;
-		for (unsigned a = 0; a < connected_lines_.size(); a++)
-			connected_lines_[a]->resetInternals();
+		position_.x = value;
+		for (auto& connected_line : connected_lines_)
+			connected_line->resetInternals();
 	}
 	else if (key == "y")
 	{
-		y_ = value;
-		for (unsigned a = 0; a < connected_lines_.size(); a++)
-			connected_lines_[a]->resetInternals();
+		position_.y = value;
+		for (auto& connected_line : connected_lines_)
+			connected_line->resetInternals();
 	}
 	else
 		return MapObject::setIntProperty(key, value);
@@ -143,9 +115,9 @@ void MapVertex::setFloatProperty(const string& key, double value)
 	setModified();
 
 	if (key == "x")
-		x_ = value;
+		position_.x = value;
 	else if (key == "y")
-		y_ = value;
+		position_.y = value;
 	else
 		return MapObject::setFloatProperty(key, value);
 }
@@ -201,8 +173,8 @@ MapLine* MapVertex::connectedLine(unsigned index)
 void MapVertex::writeBackup(Backup* backup)
 {
 	// Position
-	backup->props_internal["x"] = x_;
-	backup->props_internal["y"] = y_;
+	backup->props_internal["x"] = position_.x;
+	backup->props_internal["y"] = position_.y;
 }
 
 // -----------------------------------------------------------------------------
@@ -211,6 +183,6 @@ void MapVertex::writeBackup(Backup* backup)
 void MapVertex::readBackup(Backup* backup)
 {
 	// Position
-	x_ = backup->props_internal["x"].floatValue();
-	y_ = backup->props_internal["y"].floatValue();
+	position_.x = backup->props_internal["x"].floatValue();
+	position_.y = backup->props_internal["y"].floatValue();
 }

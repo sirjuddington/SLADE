@@ -5,7 +5,7 @@ namespace MapEditor
 class RenderView
 {
 public:
-	RenderView();
+	RenderView() = default;
 
 	const Vec2f& offset(bool inter = false) const { return inter ? offset_inter_ : offset_; }
 	double       scale(bool inter = false) const { return inter ? scale_inter_ : scale_; }
@@ -42,10 +42,10 @@ public:
 private:
 	Vec2f  offset_;
 	Vec2f  offset_inter_;
-	double scale_;
-	double scale_inter_;
-	double min_scale_;
-	double max_scale_;
+	double scale_       = 0.;
+	double scale_inter_ = 0.;
+	double min_scale_   = 0.005;
+	double max_scale_   = 10.;
 	Vec2i  size_;
 	Rectf  map_bounds_;
 

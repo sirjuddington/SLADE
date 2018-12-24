@@ -10,12 +10,12 @@ class ThingType;
 class ThingBrowserItem : public BrowserItem
 {
 public:
-	ThingBrowserItem(string name, const Game::ThingType& type, unsigned index) :
+	ThingBrowserItem(const string& name, const Game::ThingType& type, unsigned index) :
 		BrowserItem{ name, index },
 		type_{ type }
 	{
 	}
-	~ThingBrowserItem() {}
+	~ThingBrowserItem() = default;
 
 	bool loadImage() override;
 
@@ -27,13 +27,13 @@ class ThingTypeBrowser : public BrowserWindow
 {
 public:
 	ThingTypeBrowser(wxWindow* parent, int type = -1);
-	~ThingTypeBrowser() {}
+	~ThingTypeBrowser() = default;
 
 	void setupViewOptions();
 	int  selectedType();
 
 private:
-	wxCheckBox* cb_view_tiles_;
+	wxCheckBox* cb_view_tiles_ = nullptr;
 
 	// Events
 	void onViewTilesClicked(wxCommandEvent& e);

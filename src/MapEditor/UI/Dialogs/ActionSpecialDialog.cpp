@@ -39,6 +39,7 @@
 #include "SpecialPresetDialog.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
+#include <utility>
 
 
 // -----------------------------------------------------------------------------
@@ -75,19 +76,22 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	Expand(root_);
 
 	// Bind events
-	Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, &ActionSpecialTreeView::onItemEdit, this);
-	Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ActionSpecialTreeView::onItemActivated, this);
+	Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, [&](wxDataViewEvent& e) { e.Veto(); });
+	Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, [&](wxDataViewEvent&) {
+		if (parent_dialog_)
+			parent_dialog_->EndModal(wxID_OK);
+	});
 
 	// 64 is an arbitrary fudge factor -- should be at least the width of a
 	// scrollbar plus the expand icons plus any extra padding
 	int min_width = textsize.GetWidth() + GetIndent() + UI::scalePx(64);
-	SetMinSize({ min_width, UI::scalePx(200) });
+	wxWindowBase::SetMinSize({ min_width, UI::scalePx(200) });
 }
 
 // -----------------------------------------------------------------------------
 // Returns the action special value for [item]
 // -----------------------------------------------------------------------------
-int ActionSpecialTreeView::specialNumber(wxDataViewItem item)
+int ActionSpecialTreeView::specialNumber(wxDataViewItem item) const
 {
 	string num = GetItemText(item).BeforeFirst(':');
 	long   s;
@@ -112,12 +116,12 @@ void ActionSpecialTreeView::showSpecial(int special, bool focus)
 	}
 
 	// Go through item groups
-	for (unsigned a = 0; a < groups_.size(); a++)
+	for (auto& group : groups_)
 	{
 		// Go through group items
-		for (int b = 0; b < GetChildCount(groups_[a].item); b++)
+		for (int b = 0; b < GetChildCount(group.item); b++)
 		{
-			wxDataViewItem item = GetNthChild(groups_[a].item, b);
+			auto item = GetNthChild(group.item, b);
 
 			// Select+show if match
 			if (specialNumber(item) == special)
@@ -135,9 +139,9 @@ void ActionSpecialTreeView::showSpecial(int special, bool focus)
 // -----------------------------------------------------------------------------
 // Returns the currently selected action special value
 // -----------------------------------------------------------------------------
-int ActionSpecialTreeView::selectedSpecial()
+int ActionSpecialTreeView::selectedSpecial() const
 {
-	wxDataViewItem item = GetSelection();
+	auto item = GetSelection();
 	if (item.IsOk())
 		return specialNumber(item);
 	else
@@ -147,21 +151,21 @@ int ActionSpecialTreeView::selectedSpecial()
 // -----------------------------------------------------------------------------
 // Returns the parent wxDataViewItem representing action special group [group]
 // -----------------------------------------------------------------------------
-wxDataViewItem ActionSpecialTreeView::getGroup(string group)
+wxDataViewItem ActionSpecialTreeView::getGroup(const string& group_name)
 {
 	// Check if group was already made
-	for (unsigned a = 0; a < groups_.size(); a++)
+	for (auto& group : groups_)
 	{
-		if (group == groups_[a].name)
-			return groups_[a].item;
+		if (group_name == group.name)
+			return group.item;
 	}
 
 	// Split group into subgroups
-	wxArrayString path = wxSplit(group, '/');
+	auto path = wxSplit(group_name, '/');
 
 	// Create group needed
-	wxDataViewItem current  = root_;
-	string         fullpath = "";
+	auto   current  = root_;
+	string fullpath = "";
 	for (unsigned p = 0; p < path.size(); p++)
 	{
 		if (p > 0)
@@ -169,11 +173,11 @@ wxDataViewItem ActionSpecialTreeView::getGroup(string group)
 		fullpath += path[p];
 
 		bool found = false;
-		for (unsigned a = 0; a < groups_.size(); a++)
+		for (auto& group : groups_)
 		{
-			if (groups_[a].name == fullpath)
+			if (group.name == fullpath)
 			{
-				current = groups_[a].item;
+				current = group.item;
 				found   = true;
 				break;
 			}
@@ -182,36 +186,11 @@ wxDataViewItem ActionSpecialTreeView::getGroup(string group)
 		if (!found)
 		{
 			current = AppendContainer(current, path[p], -1, 1);
-			groups_.push_back(ASTVGroup(current, fullpath));
+			groups_.emplace_back(current, fullpath);
 		}
 	}
 
 	return current;
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// ActionSpecialTreeView Class Events
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Called when a tree item label is edited
-// -----------------------------------------------------------------------------
-void ActionSpecialTreeView::onItemEdit(wxDataViewEvent& e)
-{
-	e.Veto();
-}
-
-// -----------------------------------------------------------------------------
-// Called when a tree item is activated
-// -----------------------------------------------------------------------------
-void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e)
-{
-	if (parent_dialog_)
-		parent_dialog_->EndModal(wxID_OK);
 }
 
 
@@ -224,19 +203,18 @@ void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e)
 // -----------------------------------------------------------------------------
 class ArgsControl : public wxPanel
 {
-protected:
-	// Original arg configuration
-	Game::Arg arg;
-
 public:
-	ArgsControl(wxWindow* parent, const Game::Arg& arg) : wxPanel(parent, -1), arg(arg)
+	ArgsControl(wxWindow* parent, Game::Arg arg) : wxPanel(parent, -1), arg_(std::move(arg))
 	{
 		SetSizer(new wxBoxSizer(wxVERTICAL));
 	}
-	~ArgsControl() {}
+	~ArgsControl() = default;
 
 	virtual long getArgValue()         = 0;
 	virtual void setArgValue(long val) = 0;
+
+protected:
+	Game::Arg arg_; // Original arg configuration
 };
 
 // -----------------------------------------------------------------------------
@@ -247,25 +225,21 @@ public:
 // -----------------------------------------------------------------------------
 class ArgsTextControl : public ArgsControl
 {
-protected:
-	// This is the control holding the "real" value
-	wxTextCtrl* text_control;
-
 public:
 	ArgsTextControl(wxWindow* parent, const Game::Arg& arg, bool limit_byte) : ArgsControl(parent, arg)
 	{
-		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, WxUtils::scaledSize(40, -1));
+		text_control_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, WxUtils::scaledSize(40, -1));
 		if (limit_byte)
-			text_control->SetValidator(wxIntegerValidator<unsigned char>());
+			text_control_->SetValidator(wxIntegerValidator<unsigned char>());
 		else
-			text_control->SetValidator(wxIntegerValidator<int>());
-		GetSizer()->Add(text_control, wxSizerFlags().Expand());
+			text_control_->SetValidator(wxIntegerValidator<int>());
+		GetSizer()->Add(text_control_, wxSizerFlags().Expand());
 	}
 
 	// Get the value of the argument from the textbox
-	long getArgValue()
+	long getArgValue() override
 	{
-		wxString val = text_control->GetValue();
+		wxString val = text_control_->GetValue();
 
 		// Empty string means ignore it
 		if (val == "")
@@ -277,13 +251,16 @@ public:
 	}
 
 	// Set the value in the textbox
-	void setArgValue(long val)
+	void setArgValue(long val) override
 	{
 		if (val < 0)
-			text_control->ChangeValue("");
+			text_control_->ChangeValue("");
 		else
-			text_control->ChangeValue(S_FMT("%ld", val));
+			text_control_->ChangeValue(S_FMT("%ld", val));
 	}
+
+protected:
+	wxTextCtrl* text_control_; // This is the control holding the "real" value
 };
 
 // -----------------------------------------------------------------------------
@@ -299,14 +276,14 @@ public:
 	ComboBoxAwareIntegerValidator() : wxIntegerValidator<T>() {}
 	ComboBoxAwareIntegerValidator(const ComboBoxAwareIntegerValidator& validator) : wxIntegerValidator<T>(validator) {}
 
-	virtual wxObject* Clone() const { return new ComboBoxAwareIntegerValidator(*this); }
+	wxObject* Clone() const override { return new ComboBoxAwareIntegerValidator(*this); }
 
-	virtual wxString NormalizeString(const wxString& s) const
+	wxString NormalizeString(const wxString& s) const override
 	{
 		// If there's a valid selection in the combobox, don't "normalize".
 		// This is a highly inappropriate place for this check, but everything
 		// else is private and non-virtual.
-		wxComboBox* control = static_cast<wxComboBox*>(wxNumValidatorBase::GetTextEntry());
+		auto control = static_cast<wxComboBox*>(wxNumValidatorBase::GetTextEntry());
 		if (control->GetSelection() != wxNOT_FOUND)
 			return s;
 
@@ -321,34 +298,29 @@ public:
 // -----------------------------------------------------------------------------
 class ArgsChoiceControl : public ArgsControl
 {
-protected:
-	wxComboBox* choice_control;
-
 public:
 	ArgsChoiceControl(wxWindow* parent, const Game::Arg& arg) : ArgsControl(parent, arg)
 	{
-		choice_control = new wxComboBox(this, -1, "", wxDefaultPosition, WxUtils::scaledSize(100, -1));
-		choice_control->SetValidator(ComboBoxAwareIntegerValidator<unsigned char>());
+		choice_control_ = new wxComboBox(this, -1, "", wxDefaultPosition, WxUtils::scaledSize(100, -1));
+		choice_control_->SetValidator(ComboBoxAwareIntegerValidator<unsigned char>());
 
-		for (unsigned i = 0; i < arg.custom_values.size(); i++)
-		{
-			choice_control->Append(S_FMT("%d: %s", arg.custom_values[i].value, arg.custom_values[i].name));
-		}
+		for (const auto& custom_value : arg.custom_values)
+			choice_control_->Append(S_FMT("%d: %s", custom_value.value, custom_value.name));
 
-		GetSizer()->Add(choice_control, wxSizerFlags().Expand());
-		Fit();
+		GetSizer()->Add(choice_control_, wxSizerFlags().Expand());
+		wxWindowBase::Fit();
 	}
 
-	long getArgValue()
+	long getArgValue() override
 	{
-		int selected = choice_control->GetSelection();
+		int selected = choice_control_->GetSelection();
 		if (selected == wxNOT_FOUND)
 		{
 			// No match.  User must have entered a value themselves
-			string val = choice_control->GetValue();
+			string val = choice_control_->GetValue();
 
 			// Empty string means ignore it
-			if (val == "")
+			if (val.empty())
 				return -1;
 
 			long ret;
@@ -357,29 +329,32 @@ public:
 		}
 		else
 		{
-			return arg.custom_values[selected].value;
+			return arg_.custom_values[selected].value;
 		}
 	}
 
-	void setArgValue(long val)
+	void setArgValue(long val) override
 	{
 		if (val < 0)
 		{
-			choice_control->ChangeValue("");
+			choice_control_->ChangeValue("");
 			return;
 		}
 
 		// Look for a name for this value
-		for (unsigned i = 0; i < arg.custom_values.size(); i++)
+		for (unsigned i = 0; i < arg_.custom_values.size(); i++)
 		{
-			if (val == arg.custom_values[i].value)
+			if (val == arg_.custom_values[i].value)
 			{
-				choice_control->SetSelection(i);
+				choice_control_->SetSelection(i);
 				return;
 			}
 		}
-		choice_control->ChangeValue(S_FMT("%ld", val));
+		choice_control_->ChangeValue(S_FMT("%ld", val));
 	}
+
+protected:
+	wxComboBox* choice_control_;
 };
 
 // -----------------------------------------------------------------------------
@@ -389,14 +364,113 @@ public:
 // -----------------------------------------------------------------------------
 class ArgsFlagsControl : public ArgsTextControl
 {
-private:
-	// Vector of bitmasks for the groups each flag belongs to, or 0 for an
-	// independent flag, parallel to the arg's custom_flags
-	vector<int> flag_to_bit_group;
-	// Parallel vector of the checkboxes and radio buttons we create
-	vector<wxControl*> controls;
+public:
+	ArgsFlagsControl(wxWindow* parent, const Game::Arg& arg, bool limit_byte) :
+		ArgsTextControl(parent, arg, limit_byte),
+		flag_to_bit_group_(arg.custom_flags.size(), 0),
+		controls_(arg.custom_flags.size(), nullptr)
+	{
+		text_control_->Bind(wxEVT_KEY_UP, &ArgsFlagsControl::onKeypress, this);
 
-	bool isPowerOfTwo(long n) { return (n & (n - 1)) == 0; }
+		// Sometimes multiple bits are used for a set of more than two flags.
+		// For example, if 3 is a flag, then it must be one of /four/ flags
+		// along with values 0, 1, and 2.  In such cases, we need radio buttons
+		// instead of a checkbox.
+		// This is not as robust as it could be, but to my knowledge, the only
+		// place this gets used is the "type" argument to ZDoom's
+		// Sector_Set3DFloor, where the first two bits are an enum.
+		vector<int> bit_groups;
+		for (const auto& custom_flag : arg.custom_flags)
+		{
+			int value = custom_flag.value;
+			if (isPowerOfTwo(value))
+				continue;
+
+			bool found_match = false;
+			for (auto& bit_group : bit_groups)
+			{
+				if (bit_group & value)
+				{
+					bit_group |= value;
+					found_match = true;
+					break;
+				}
+			}
+			if (!found_match)
+				bit_groups.push_back(value);
+		}
+
+		vector<uint8_t> flag_done(arg.custom_flags.size(), 0);
+		for (unsigned i = 0; i < arg.custom_flags.size(); i++)
+		{
+			if (flag_done[i] > 0)
+				continue;
+
+			// Check if this flag is part of a group
+			int group         = 0;
+			int check_against = arg.custom_flags[i].value;
+			// Special case: if the value is 0, it has no bits, so assume it's
+			// part of the next flag's group
+			if (arg.custom_flags[i].value == 0 && i < arg.custom_flags.size() - 1)
+				check_against = arg.custom_flags[i + 1].value;
+			for (auto bit_group : bit_groups)
+				if (bit_group & check_against)
+				{
+					group = bit_group;
+					break;
+				}
+
+			if (group)
+			{
+				addControl(
+					new wxRadioButton(
+						this,
+						-1,
+						S_FMT("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name),
+						wxDefaultPosition,
+						wxDefaultSize,
+						wxRB_GROUP),
+					i,
+					group);
+				// Find all the other (later) flags that are part of this same bit group
+				for (unsigned ii = i + 1; ii < arg.custom_flags.size(); ii++)
+				{
+					if (flag_done[ii] > 0)
+						continue;
+					if (arg.custom_flags[ii].value & group)
+					{
+						addControl(
+							new wxRadioButton(
+								this, -1, S_FMT("%d: %s", arg.custom_flags[ii].value, arg.custom_flags[ii].name)),
+							ii,
+							group);
+						flag_done[ii] = 1;
+					}
+				}
+			}
+			else // not in a group
+			{
+				wxControl* control =
+					new wxCheckBox(this, -1, S_FMT("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name));
+				addControl(control, i, 0);
+			}
+		}
+
+		wxWindowBase::Fit();
+	}
+
+	void setArgValue(long val) override
+	{
+		ArgsTextControl::setArgValue(val);
+		updateCheckState(val);
+	}
+
+private:
+	vector<int> flag_to_bit_group_; // Vector of bitmasks for the groups each flag belongs to, or 0 for an
+									// independent flag, parallel to the arg's custom_flags
+	vector<wxControl*> controls_;   // Parallel vector of the checkboxes and radio buttons we create
+
+	static bool isPowerOfTwo(long n) { return (n & (n - 1)) == 0; }
 
 	// -------------------------------------------------------------------------
 	// Add a checkbox or radio button to the sizer, and perform some
@@ -405,8 +479,8 @@ private:
 	void addControl(wxControl* control, int index, int group)
 	{
 		GetSizer()->Add(control);
-		controls[index]          = control;
-		flag_to_bit_group[index] = group;
+		controls_[index]          = control;
+		flag_to_bit_group_[index] = group;
 		control->Bind(wxEVT_CHECKBOX, &ArgsFlagsControl::onCheck, this);
 		control->Bind(wxEVT_RADIOBUTTON, &ArgsFlagsControl::onCheck, this);
 	}
@@ -429,20 +503,20 @@ private:
 
 		// Doesn't matter what type of pointer this is; only need it to find
 		// the flag index
-		wxObject* control = event.GetEventObject();
-		for (unsigned i = 0; i < arg.custom_flags.size(); i++)
+		auto control = event.GetEventObject();
+		for (unsigned i = 0; i < arg_.custom_flags.size(); i++)
 		{
-			if (controls[i] == control)
+			if (controls_[i] == control)
 			{
 				// Remove the entire group
-				if (flag_to_bit_group[i])
-					val &= ~flag_to_bit_group[i];
+				if (flag_to_bit_group_[i])
+					val &= ~flag_to_bit_group_[i];
 				else
-					val &= ~arg.custom_flags[i].value;
+					val &= ~arg_.custom_flags[i].value;
 
 				// Then re-add if appropriate
 				if (event.IsChecked())
-					val |= arg.custom_flags[i].value;
+					val |= arg_.custom_flags[i].value;
 				ArgsTextControl::setArgValue(val);
 				return;
 			}
@@ -464,123 +538,19 @@ private:
 	// -------------------------------------------------------------------------
 	void updateCheckState(long val)
 	{
-		for (unsigned i = 0; i < arg.custom_flags.size(); i++)
+		for (unsigned i = 0; i < arg_.custom_flags.size(); i++)
 		{
-			if (flag_to_bit_group[i])
+			if (flag_to_bit_group_[i])
 			{
-				bool checked = (val >= 0 && (val & flag_to_bit_group[i]) == arg.custom_flags[i].value);
-				static_cast<wxRadioButton*>(controls[i])->SetValue(checked);
+				bool checked = (val >= 0 && (val & flag_to_bit_group_[i]) == arg_.custom_flags[i].value);
+				dynamic_cast<wxRadioButton*>(controls_[i])->SetValue(checked);
 			}
 			else
 			{
-				bool checked = (val >= 0 && (val & arg.custom_flags[i].value) == arg.custom_flags[i].value);
-				static_cast<wxCheckBox*>(controls[i])->SetValue(checked);
+				bool checked = (val >= 0 && (val & arg_.custom_flags[i].value) == arg_.custom_flags[i].value);
+				dynamic_cast<wxCheckBox*>(controls_[i])->SetValue(checked);
 			}
 		}
-	}
-
-public:
-	ArgsFlagsControl(wxWindow* parent, const Game::Arg& arg, bool limit_byte) :
-		ArgsTextControl(parent, arg, limit_byte),
-		flag_to_bit_group(arg.custom_flags.size(), 0),
-		controls(arg.custom_flags.size(), nullptr)
-	{
-		text_control->Bind(wxEVT_KEY_UP, &ArgsFlagsControl::onKeypress, this);
-
-		wxControl* control;
-		wxSizer*   sizer = GetSizer();
-
-		// Sometimes multiple bits are used for a set of more than two flags.
-		// For example, if 3 is a flag, then it must be one of /four/ flags
-		// along with values 0, 1, and 2.  In such cases, we need radio buttons
-		// instead of a checkbox.
-		// This is not as robust as it could be, but to my knowledge, the only
-		// place this gets used is the "type" argument to ZDoom's
-		// Sector_Set3DFloor, where the first two bits are an enum.
-		vector<int> bit_groups;
-		for (unsigned i = 0; i < arg.custom_flags.size(); i++)
-		{
-			int value = arg.custom_flags[i].value;
-			if (isPowerOfTwo(value))
-				continue;
-
-			bool found_match = false;
-			for (unsigned j = 0; j < bit_groups.size(); j++)
-			{
-				if (bit_groups[j] & value)
-				{
-					bit_groups[j] |= value;
-					found_match = true;
-					break;
-				}
-			}
-			if (!found_match)
-				bit_groups.push_back(value);
-		}
-
-		vector<bool> flag_done(arg.custom_flags.size(), false);
-		for (unsigned i = 0; i < arg.custom_flags.size(); i++)
-		{
-			if (flag_done[i])
-				continue;
-
-			// Check if this flag is part of a group
-			int group         = 0;
-			int check_against = arg.custom_flags[i].value;
-			// Special case: if the value is 0, it has no bits, so assume it's
-			// part of the next flag's group
-			if (arg.custom_flags[i].value == 0 && i < arg.custom_flags.size() - 1)
-				check_against = arg.custom_flags[i + 1].value;
-			for (unsigned j = 0; j < bit_groups.size(); j++)
-				if (bit_groups[j] & check_against)
-				{
-					group = bit_groups[j];
-					break;
-				}
-
-			if (group)
-			{
-				addControl(
-					new wxRadioButton(
-						this,
-						-1,
-						S_FMT("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name),
-						wxDefaultPosition,
-						wxDefaultSize,
-						wxRB_GROUP),
-					i,
-					group);
-				// Find all the other (later) flags that are part of this same bit group
-				for (unsigned ii = i + 1; ii < arg.custom_flags.size(); ii++)
-				{
-					if (flag_done[ii])
-						continue;
-					if (arg.custom_flags[ii].value & group)
-					{
-						addControl(
-							new wxRadioButton(
-								this, -1, S_FMT("%d: %s", arg.custom_flags[ii].value, arg.custom_flags[ii].name)),
-							ii,
-							group);
-						flag_done[ii] = true;
-					}
-				}
-			}
-			else // not in a group
-			{
-				control =
-					new wxCheckBox(this, -1, S_FMT("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name));
-				addControl(control, i, 0);
-			}
-		}
-
-		Fit();
-	}
-
-	void setArgValue(long val)
-	{
-		ArgsTextControl::setArgValue(val);
-		updateCheckState(val);
 	}
 };
 
@@ -591,11 +561,42 @@ public:
 // -----------------------------------------------------------------------------
 class ArgsSpeedControl : public ArgsChoiceControl
 {
-protected:
-	wxSlider*     slider_control;
-	wxStaticText* speed_label;
+public:
+	ArgsSpeedControl(wxWindow* parent, const Game::Arg& arg) : ArgsChoiceControl(parent, arg)
+	{
+		auto row = new wxBoxSizer(wxHORIZONTAL);
 
-	void onSlide(wxCommandEvent& event) { syncControls(slider_control->GetValue()); }
+		slider_control_ = new wxSlider(this, -1, 0, 0, 255);
+		slider_control_->SetLineSize(2);
+		slider_control_->SetPageSize(8);
+		// Add a tic for every predefined value
+		for (const auto& custom_flag : arg.custom_flags)
+			slider_control_->SetTick(custom_flag.value);
+		slider_control_->Bind(wxEVT_SLIDER, &ArgsSpeedControl::onSlide, this);
+		speed_label_ = new wxStaticText(this, -1, "");
+
+		GetSizer()->Detach(choice_control_);
+		row->Add(choice_control_, wxSizerFlags(0).Expand());
+		row->AddSpacer(UI::pad());
+		row->Add(slider_control_, wxSizerFlags(1).Align(wxALIGN_CENTER_VERTICAL));
+		GetSizer()->Add(row, wxSizerFlags(1).Expand());
+		GetSizer()->Add(speed_label_, wxSizerFlags(1).Expand());
+
+		// The label has its longest value at 0, which makes for an appropriate
+		// minimum size
+		syncControls(0);
+
+		wxWindowBase::Fit();
+	}
+
+	// Set the value in the textbox
+	void setArgValue(long val) override { syncControls(val); }
+
+protected:
+	wxSlider*     slider_control_;
+	wxStaticText* speed_label_;
+
+	void onSlide(wxCommandEvent& event) { syncControls(slider_control_->GetValue()); }
 
 	void syncControls(int value)
 	{
@@ -603,51 +604,20 @@ protected:
 
 		if (value < 0)
 		{
-			slider_control->SetValue(0);
-			speed_label->SetLabel("");
+			slider_control_->SetValue(0);
+			speed_label_->SetLabel("");
 		}
 		else
 		{
-			slider_control->SetValue(value);
-			speed_label->SetLabel(S_FMT(
+			slider_control_->SetValue(value);
+			speed_label_->SetLabel(S_FMT(
 				"%s (%.1f units per tic, %.1f units per sec)",
-				arg.speedLabel(value),
+				arg_.speedLabel(value),
 				value / 8.0,
 				// A tic is 28ms, slightly less than 1/35 of a second
 				value / 8.0 * 1000.0 / 28.0));
 		}
 	}
-
-public:
-	ArgsSpeedControl(wxWindow* parent, const Game::Arg& arg) : ArgsChoiceControl(parent, arg)
-	{
-		wxBoxSizer* row = new wxBoxSizer(wxHORIZONTAL);
-
-		slider_control = new wxSlider(this, -1, 0, 0, 255);
-		slider_control->SetLineSize(2);
-		slider_control->SetPageSize(8);
-		// Add a tic for every predefined value
-		for (unsigned a = 0; a < arg.custom_flags.size(); a++)
-			slider_control->SetTick(arg.custom_flags[a].value);
-		slider_control->Bind(wxEVT_SLIDER, &ArgsSpeedControl::onSlide, this);
-		speed_label = new wxStaticText(this, -1, "");
-
-		GetSizer()->Detach(choice_control);
-		row->Add(choice_control, wxSizerFlags(0).Expand());
-		row->AddSpacer(UI::pad());
-		row->Add(slider_control, wxSizerFlags(1).Align(wxALIGN_CENTER_VERTICAL));
-		GetSizer()->Add(row, wxSizerFlags(1).Expand());
-		GetSizer()->Add(speed_label, wxSizerFlags(1).Expand());
-
-		// The label has its longest value at 0, which makes for an appropriate
-		// minimum size
-		syncControls(0);
-
-		Fit();
-	}
-
-	// Set the value in the textbox
-	void setArgValue(long val) { syncControls(val); }
 };
 
 
@@ -664,7 +634,7 @@ public:
 ArgsPanel::ArgsPanel(wxWindow* parent) : wxScrolled<wxPanel>{ parent, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL }
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Add arg controls
@@ -758,14 +728,14 @@ void ArgsPanel::setup(const Game::ArgSpec& args, bool udmf)
 	wxWindow* toplevel = this;
 	while (!toplevel->IsTopLevel() && toplevel->GetParent())
 		toplevel = toplevel->GetParent();
-	wxSizer* toplevel_sizer = toplevel->GetSizer();
+	auto toplevel_sizer = toplevel->GetSizer();
 	if (toplevel_sizer)
 	{
 		// This is more or less what SetSizerAndFit does, but without resizing
 		// the window if not necessary
 		toplevel->SetMinClientSize(toplevel_sizer->ComputeFittingClientSize(toplevel));
-		wxSize toplevel_size = toplevel->GetSize();
-		wxSize toplevel_best = toplevel_size;
+		auto toplevel_size = toplevel->GetSize();
+		auto toplevel_best = toplevel_size;
 		toplevel_best.IncTo(toplevel->GetBestSize());
 		if (toplevel_best != toplevel_size)
 			toplevel->SetSize(toplevel_best);
@@ -824,13 +794,13 @@ void ArgsPanel::onSize(wxSizeEvent& event)
 	if (fg_sizer_->GetColWidths().size() > 1)
 	{
 		int available_width = fg_sizer_->GetColWidths()[1];
-		for (int a = 0; a < 5; a++)
+		for (auto& text : label_args_desc_)
 		{
 			// Wrap() puts hard newlines in the label, so we need to remove them
-			wxString label = label_args_desc_[a]->GetLabelText();
+			wxString label = text->GetLabelText();
 			label.Replace("\n", " ");
-			label_args_desc_[a]->SetLabelText(label);
-			label_args_desc_[a]->Wrap(available_width);
+			text->SetLabelText(label);
+			text->Wrap(available_width);
 		}
 	}
 }
@@ -853,12 +823,12 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	show_trigger_   = trigger;
 
 	// Setup layout
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 
 	if (Game::configuration().featureSupported(Game::Feature::Boom))
 	{
 		// Action Special radio button
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		auto hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
 		rb_special_ = new wxRadioButton(this, -1, "Action Special", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 		hbox->Add(rb_special_, 0, wxEXPAND | wxRIGHT, UI::pad());
@@ -894,7 +864,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 {
 	// Create panel
 	panel_action_special_ = new wxPanel(this, -1);
-	wxBoxSizer* sizer     = new wxBoxSizer(wxVERTICAL);
+	auto sizer            = new wxBoxSizer(wxVERTICAL);
 
 	// Special box
 	text_special_ = new NumberTextCtrl(panel_action_special_);
@@ -921,8 +891,8 @@ void ActionSpecialPanel::setupSpecialPanel()
 				if (!i.second.isTrigger())
 					continue;
 
-				string           group       = i.second.group();
-				wxFlexGridSizer* frame_sizer = named_flexgrids[group];
+				string group       = i.second.group();
+				auto   frame_sizer = named_flexgrids[group];
 				if (!frame_sizer)
 				{
 					auto frame_triggers = new wxStaticBox(panel_action_special_, -1, group);
@@ -1038,7 +1008,7 @@ void ActionSpecialPanel::setTrigger(int index)
 // -----------------------------------------------------------------------------
 // Sets the action special trigger from a udmf trigger name (hexen or udmf)
 // -----------------------------------------------------------------------------
-void ActionSpecialPanel::setTrigger(string trigger)
+void ActionSpecialPanel::setTrigger(const string& trigger)
 {
 	if (!show_trigger_)
 		return;
@@ -1080,7 +1050,7 @@ void ActionSpecialPanel::clearTrigger()
 // -----------------------------------------------------------------------------
 // Returns the currently selected action special
 // -----------------------------------------------------------------------------
-int ActionSpecialPanel::selectedSpecial()
+int ActionSpecialPanel::selectedSpecial() const
 {
 	if (Game::configuration().featureSupported(Game::Feature::Boom))
 	{
@@ -1104,7 +1074,7 @@ void ActionSpecialPanel::showGeneralised(bool show)
 
 	if (show)
 	{
-		wxSizer* sizer = GetSizer();
+		auto sizer = GetSizer();
 		sizer->Replace(panel_action_special_, panel_gen_specials_);
 		panel_action_special_->Show(false);
 		panel_gen_specials_->Show(true);
@@ -1112,7 +1082,7 @@ void ActionSpecialPanel::showGeneralised(bool show)
 	}
 	else
 	{
-		wxSizer* sizer = GetSizer();
+		auto sizer = GetSizer();
 		sizer->Replace(panel_gen_specials_, panel_action_special_);
 		panel_action_special_->Show(true);
 		panel_gen_specials_->Show(false);
@@ -1130,8 +1100,8 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 	int special = selectedSpecial();
 	if (apply_special && special >= 0)
 	{
-		for (unsigned a = 0; a < lines.size(); a++)
-			lines[a]->setIntProperty("special", special);
+		for (auto& line : lines)
+			line->setIntProperty("special", special);
 	}
 
 	// Args
@@ -1145,29 +1115,29 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 		args[3] = panel_args_->argValue(3);
 		args[4] = panel_args_->argValue(4);
 
-		for (unsigned a = 0; a < lines.size(); a++)
+		for (auto& line : lines)
 		{
 			if (args[0] >= 0)
-				lines[a]->setIntProperty("arg0", args[0]);
+				line->setIntProperty("arg0", args[0]);
 			if (args[1] >= 0)
-				lines[a]->setIntProperty("arg1", args[1]);
+				line->setIntProperty("arg1", args[1]);
 			if (args[2] >= 0)
-				lines[a]->setIntProperty("arg2", args[2]);
+				line->setIntProperty("arg2", args[2]);
 			if (args[3] >= 0)
-				lines[a]->setIntProperty("arg3", args[3]);
+				line->setIntProperty("arg3", args[3]);
 			if (args[4] >= 0)
-				lines[a]->setIntProperty("arg4", args[4]);
+				line->setIntProperty("arg4", args[4]);
 		}
 	}
 
 	// Trigger(s)
 	if (show_trigger_)
 	{
-		for (unsigned a = 0; a < lines.size(); a++)
+		for (auto& line : lines)
 		{
 			// Hexen
 			if (choice_trigger_)
-				Game::configuration().setLineSpacTrigger(choice_trigger_->GetSelection(), (MapLine*)lines[a]);
+				Game::configuration().setLineSpacTrigger(choice_trigger_->GetSelection(), (MapLine*)line);
 
 			// UDMF / Flags
 			for (auto& flag : flags_)
@@ -1176,9 +1146,9 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 					continue;
 
 				if (choice_trigger_)
-					Game::configuration().setLineFlag(flag.index, (MapLine*)lines[a], flag.check_box->GetValue());
+					Game::configuration().setLineFlag(flag.index, (MapLine*)line, flag.check_box->GetValue());
 				else
-					lines[a]->setBoolProperty(flag.udmf, flag.check_box->GetValue());
+					line->setBoolProperty(flag.udmf, flag.check_box->GetValue());
 			}
 		}
 	}
@@ -1366,8 +1336,8 @@ void ActionSpecialPanel::onSpecialPresetClicked(wxCommandEvent& e)
 ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 	SDialog{ parent, "Select Action Special", "actionspecial", 400, 500 }
 {
-	panel_args_       = nullptr;
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	panel_args_ = nullptr;
+	auto sizer  = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// No args
@@ -1405,7 +1375,7 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 // -----------------------------------------------------------------------------
 // Selects the item for special [special] in the specials tree
 // -----------------------------------------------------------------------------
-void ActionSpecialDialog::setSpecial(int special)
+void ActionSpecialDialog::setSpecial(int special) const
 {
 	panel_special_->setSpecial(special);
 	if (panel_args_)
@@ -1418,7 +1388,7 @@ void ActionSpecialDialog::setSpecial(int special)
 // -----------------------------------------------------------------------------
 // Sets the arg values
 // -----------------------------------------------------------------------------
-void ActionSpecialDialog::setArgs(int args[5])
+void ActionSpecialDialog::setArgs(int args[5]) const
 {
 	if (panel_args_)
 		panel_args_->setValues(args);
@@ -1427,7 +1397,7 @@ void ActionSpecialDialog::setArgs(int args[5])
 // -----------------------------------------------------------------------------
 // Returns the currently selected action special
 // -----------------------------------------------------------------------------
-int ActionSpecialDialog::selectedSpecial()
+int ActionSpecialDialog::selectedSpecial() const
 {
 	return panel_special_->selectedSpecial();
 }
@@ -1435,7 +1405,7 @@ int ActionSpecialDialog::selectedSpecial()
 // -----------------------------------------------------------------------------
 // Returns the value of arg [index]
 // -----------------------------------------------------------------------------
-int ActionSpecialDialog::argValue(int index)
+int ActionSpecialDialog::argValue(int index) const
 {
 	if (panel_args_)
 		return panel_args_->argValue(index);
@@ -1446,7 +1416,7 @@ int ActionSpecialDialog::argValue(int index)
 // -----------------------------------------------------------------------------
 // Applies selected trigger(s) (hexen or udmf) to [lines]
 // -----------------------------------------------------------------------------
-void ActionSpecialDialog::applyTo(vector<MapObject*>& lines, bool apply_special)
+void ActionSpecialDialog::applyTo(vector<MapObject*>& lines, bool apply_special) const
 {
 	panel_special_->applyTo(lines, apply_special);
 }
@@ -1454,7 +1424,7 @@ void ActionSpecialDialog::applyTo(vector<MapObject*>& lines, bool apply_special)
 // -----------------------------------------------------------------------------
 // Loads special/trigger/arg values from [lines]
 // -----------------------------------------------------------------------------
-void ActionSpecialDialog::openLines(vector<MapObject*>& lines)
+void ActionSpecialDialog::openLines(vector<MapObject*>& lines) const
 {
 	panel_special_->openLines(lines);
 }

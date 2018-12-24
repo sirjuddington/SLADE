@@ -51,27 +51,10 @@
 
 
 // -----------------------------------------------------------------------------
-// LineTextureOverlay class constructor
-// -----------------------------------------------------------------------------
-LineTextureOverlay::LineTextureOverlay()
-{
-	// Init variables
-	tex_size_     = 0;
-	last_width_   = 0;
-	last_height_  = 0;
-	selected_side = 0;
-}
-
-// -----------------------------------------------------------------------------
-// LineTextureOverlay class destructor
-// -----------------------------------------------------------------------------
-LineTextureOverlay::~LineTextureOverlay() {}
-
-// -----------------------------------------------------------------------------
 // Adds [texture] to the overlay if it doesn't already exist at the target part
 // (front upper, etc)
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::addTexture(TexInfo& inf, string texture)
+void LineTextureOverlay::addTexture(TexInfo& inf, string texture) const
 {
 	// Ignore if texture is blank ("-")
 	if (texture == "-")
@@ -97,10 +80,10 @@ void LineTextureOverlay::addTexture(TexInfo& inf, string texture)
 void LineTextureOverlay::openLines(vector<MapLine*>& list)
 {
 	// Clear current lines
-	lines.clear();
-	this->side1_  = false;
-	this->side2_  = false;
-	selected_side = 0;
+	lines_.clear();
+	this->side1_   = false;
+	this->side2_   = false;
+	selected_side_ = 0;
 	for (unsigned a = 0; a < 6; a++)
 	{
 		textures_[a].textures.clear();
@@ -112,10 +95,10 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 	for (unsigned a = 0; a < list.size(); a++)
 	{
 		// Add to lines list
-		lines.push_back(list[a]);
+		lines_.push_back(list[a]);
 
 		// Process first side
-		MapSide* side1 = list[a]->s1();
+		auto side1 = list[a]->s1();
 		if (side1)
 		{
 			// Add textures
@@ -127,7 +110,7 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 		}
 
 		// Process second side
-		MapSide* side2 = list[a]->s2();
+		auto side2 = list[a]->s2();
 		if (side2)
 		{
 			// Add textures
@@ -140,7 +123,7 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 	}
 
 	if (!side1_)
-		selected_side = 1;
+		selected_side_ = 1;
 }
 
 // -----------------------------------------------------------------------------
@@ -154,32 +137,32 @@ void LineTextureOverlay::close(bool cancel)
 		MapEditor::editContext().beginUndoRecord("Change Line Texture", true, false, false);
 
 		// Go through lines
-		for (unsigned a = 0; a < lines.size(); a++)
+		for (auto& line : lines_)
 		{
 			// Front Upper
 			if (textures_[FrontUpper].changed && !textures_[FrontUpper].textures.empty())
-				lines[a]->setStringProperty("side1.texturetop", textures_[FrontUpper].textures[0]);
+				line->setStringProperty("side1.texturetop", textures_[FrontUpper].textures[0]);
 
 			// Front Middle
 			if (textures_[FrontMiddle].changed && !textures_[FrontMiddle].textures.empty())
-				lines[a]->setStringProperty("side1.texturemiddle", textures_[FrontMiddle].textures[0]);
+				line->setStringProperty("side1.texturemiddle", textures_[FrontMiddle].textures[0]);
 
 			// Front Lower
 			if (textures_[FrontLower].changed && !textures_[FrontLower].textures.empty())
-				lines[a]->setStringProperty("side1.texturebottom", textures_[FrontLower].textures[0]);
+				line->setStringProperty("side1.texturebottom", textures_[FrontLower].textures[0]);
 
 
 			// Back Upper
 			if (textures_[BackUpper].changed && !textures_[BackUpper].textures.empty())
-				lines[a]->setStringProperty("side2.texturetop", textures_[BackUpper].textures[0]);
+				line->setStringProperty("side2.texturetop", textures_[BackUpper].textures[0]);
 
 			// Back Middle
 			if (textures_[BackMiddle].changed && !textures_[BackMiddle].textures.empty())
-				lines[a]->setStringProperty("side2.texturemiddle", textures_[BackMiddle].textures[0]);
+				line->setStringProperty("side2.texturemiddle", textures_[BackMiddle].textures[0]);
 
 			// Back Lower
 			if (textures_[BackLower].changed && !textures_[BackLower].textures.empty())
-				lines[a]->setStringProperty("side2.texturebottom", textures_[BackLower].textures[0]);
+				line->setStringProperty("side2.texturebottom", textures_[BackLower].textures[0]);
 		}
 
 		MapEditor::editContext().endUndoRecord();
@@ -296,7 +279,7 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 // -----------------------------------------------------------------------------
 // Draws the texture box from info in [tex]
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string position)
+void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const string& position) const
 {
 	// Get colours
 	ColRGBA col_bg  = ColourConfiguration::colour("map_overlay_background");
@@ -314,7 +297,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 	glPopMatrix();
 
 	GLTexture* tex_first = nullptr;
-	if (tex.textures.size() > 0)
+	if (!tex.textures.empty())
 	{
 		// Draw first texture
 		OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
@@ -440,20 +423,20 @@ void LineTextureOverlay::mouseRightClick() {}
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::keyDown(string key)
+void LineTextureOverlay::keyDown(const string& key)
 {
 	// 'Select' front side
 	if ((key == "F" || key == "f") && side1_)
-		selected_side = 0;
+		selected_side_ = 0;
 
 	// 'Select' back side
 	if ((key == "B" || key == "b") && side2_)
-		selected_side = 1;
+		selected_side_ = 1;
 
 	// Browse upper texture
 	if (key == "U" || key == "u")
 	{
-		if (selected_side == 0)
+		if (selected_side_ == 0)
 			browseTexture(textures_[FrontUpper], "Front Upper");
 		else
 			browseTexture(textures_[BackUpper], "Back Upper");
@@ -462,7 +445,7 @@ void LineTextureOverlay::keyDown(string key)
 	// Browse middle texture
 	if (key == "M" || key == "m")
 	{
-		if (selected_side == 0)
+		if (selected_side_ == 0)
 			browseTexture(textures_[FrontMiddle], "Front Middle");
 		else
 			browseTexture(textures_[BackMiddle], "Back Middle");
@@ -471,7 +454,7 @@ void LineTextureOverlay::keyDown(string key)
 	// Browse lower texture
 	if (key == "L" || key == "l")
 	{
-		if (selected_side == 0)
+		if (selected_side_ == 0)
 			browseTexture(textures_[FrontLower], "Front Lower");
 		else
 			browseTexture(textures_[BackLower], "Back Lower");
@@ -481,17 +464,18 @@ void LineTextureOverlay::keyDown(string key)
 // -----------------------------------------------------------------------------
 // Opens the texture browser for [tex]
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::browseTexture(TexInfo& tex, string position)
+void LineTextureOverlay::browseTexture(TexInfo& tex, const string& position)
 {
 	// Get initial texture
 	string texture;
-	if (tex.textures.size() > 0)
+	if (!tex.textures.empty())
 		texture = tex.textures[0];
 	else
 		texture = "-";
 
 	// Open texture browser
-	MapTextureBrowser browser(MapEditor::windowWx(), 0, texture, &(MapEditor::editContext().map()));
+	MapTextureBrowser browser(
+		MapEditor::windowWx(), MapEditor::TextureType::Texture, texture, &(MapEditor::editContext().map()));
 	browser.SetTitle(S_FMT("Browse %s Texture", position));
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 	{

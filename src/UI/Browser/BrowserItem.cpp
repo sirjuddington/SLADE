@@ -52,7 +52,12 @@ using ItemView = BrowserCanvas::ItemView;
 // -----------------------------------------------------------------------------
 // BrowserItem class constructor
 // -----------------------------------------------------------------------------
-BrowserItem::BrowserItem(string name, unsigned index, string type) : type_{ type }, name_{ name }, index_{ index } {}
+BrowserItem::BrowserItem(const string& name, unsigned index, const string& type) :
+	type_{ type },
+	name_{ name },
+	index_{ index }
+{
+}
 
 // -----------------------------------------------------------------------------
 // BrowserItem class destructor

@@ -14,10 +14,10 @@ class FlatTexCanvas : public OGLCanvas
 {
 public:
 	FlatTexCanvas(wxWindow* parent);
-	~FlatTexCanvas() {}
+	~FlatTexCanvas() = default;
 
 	string texName() const { return texname_; }
-	void   setTexture(string texture);
+	void   setTexture(const string& texture);
 	void   draw() override;
 
 private:
@@ -29,7 +29,7 @@ class FlatComboBox : public wxComboBox
 {
 public:
 	FlatComboBox(wxWindow* parent);
-	~FlatComboBox() {}
+	~FlatComboBox() = default;
 
 private:
 	bool list_down_ = false;
@@ -44,7 +44,7 @@ class SectorPropsPanel : public PropsPanelBase
 {
 public:
 	SectorPropsPanel(wxWindow* parent);
-	~SectorPropsPanel() {}
+	~SectorPropsPanel() = default;
 
 	void openObjects(vector<MapObject*>& objects) override;
 	void applyChanges() override;

@@ -101,11 +101,6 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 }
 
 // -----------------------------------------------------------------------------
-// MapCanvas class destructor
-// -----------------------------------------------------------------------------
-MapCanvas::~MapCanvas() {}
-
-// -----------------------------------------------------------------------------
 // Draw the current map (2d or 3d) and any overlays etc
 // -----------------------------------------------------------------------------
 void MapCanvas::draw()
@@ -125,7 +120,7 @@ void MapCanvas::draw()
 // -----------------------------------------------------------------------------
 void MapCanvas::mouseToCenter()
 {
-	wxRect rect = GetScreenRect();
+	auto rect   = GetScreenRect();
 	mouse_warp_ = true;
 	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width * 0.5), rect.y + int(rect.height * 0.5)));
 }
@@ -176,13 +171,13 @@ void MapCanvas::mouseLook3d()
 			const double scale     = App::platform() == App::MacOS ? GetContentScaleFactor() : 1.;
 			const double threshold = scale - 1.0;
 
-			wxRealPoint mousePos = wxGetMousePosition();
-			mousePos.x *= scale;
-			mousePos.y *= scale;
+			wxRealPoint mouse_pos = wxGetMousePosition();
+			mouse_pos.x *= scale;
+			mouse_pos.y *= scale;
 
-			const wxRealPoint screenPos = GetScreenPosition();
-			const double      xpos      = mousePos.x - screenPos.x;
-			const double      ypos      = mousePos.y - screenPos.y;
+			const wxRealPoint screen_pos = GetScreenPosition();
+			const double      xpos       = mouse_pos.x - screen_pos.x;
+			const double      ypos       = mouse_pos.y - screen_pos.y;
 
 			const wxSize size = GetSize();
 			const double xrel = xpos - floor(size.x * 0.5);
@@ -207,7 +202,11 @@ void MapCanvas::onKeyBindPress(const string& name)
 	if (name == "map_screenshot")
 	{
 		// Capture shot
-		sf::Image shot = capture();
+		// auto shot = capture();
+		sf::Texture tex;
+		tex.create(RenderWindow::getSize().x, RenderWindow::getSize().y);
+		tex.update(*this);
+		auto shot = tex.copyToImage();
 
 		// Remove alpha
 		// sf::Image kinda sucks, shouldn't have to do it like this
@@ -215,7 +214,7 @@ void MapCanvas::onKeyBindPress(const string& name)
 		{
 			for (unsigned y = 0; y < shot.getSize().y; y++)
 			{
-				sf::Color col = shot.getPixel(x, y);
+				auto col = shot.getPixel(x, y);
 				shot.setPixel(x, y, sf::Color(col.r, col.g, col.b, 255));
 			}
 		}
@@ -287,8 +286,8 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F7)
 		{
 			// Get nearest line
-			int      nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
-			MapLine* line    = context_->map().line(nearest);
+			int  nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
+			auto line    = context_->map().line(nearest);
 			if (line)
 			{
 				SectorBuilder sbuilder;
@@ -304,14 +303,14 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F5)
 		{
 			// Get nearest line
-			int      nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
-			MapLine* line    = context_->map().line(nearest);
+			int  nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
+			auto line    = context_->map().line(nearest);
 
 			// Get sectors
-			MapSector* sec1 = context_->map().lineSideSector(line, true);
-			MapSector* sec2 = context_->map().lineSideSector(line, false);
-			int        i1   = -1;
-			int        i2   = -1;
+			auto sec1 = context_->map().lineSideSector(line, true);
+			auto sec2 = context_->map().lineSideSector(line, false);
+			int  i1   = -1;
+			int  i2   = -1;
 			if (sec1)
 				i1 = sec1->index();
 			if (sec2)

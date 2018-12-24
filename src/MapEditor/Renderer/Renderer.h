@@ -34,8 +34,8 @@ public:
 
 	// 3d Mode
 	void  setCameraThing(MapThing* thing);
-	Vec2f cameraPos2D();
-	Vec2f cameraDir2D();
+	Vec2f cameraPos2D() const;
+	Vec2f cameraDir2D() const;
 
 	// Drawing
 	void draw();
@@ -58,18 +58,18 @@ private:
 	vector<std::unique_ptr<MCAnimation>> animations_;
 
 	// Animation
-	bool   animations_active_;
-	double anim_view_speed_;
-	float  fade_vertices_;
-	float  fade_things_;
-	float  fade_flats_;
-	float  fade_lines_;
-	float  anim_flash_level_;
-	bool   anim_flash_inc_;
-	float  anim_info_fade_;
-	float  anim_overlay_fade_;
-	float  anim_help_fade_;
-	bool   cursor_zoom_disabled_;
+	bool   animations_active_    = false;
+	double anim_view_speed_      = 0.05;
+	float  fade_vertices_        = 1.f;
+	float  fade_things_          = 1.f;
+	float  fade_flats_           = 1.f;
+	float  fade_lines_           = 1.f;
+	float  anim_flash_level_     = 0.5f;
+	bool   anim_flash_inc_       = true;
+	float  anim_info_fade_       = 0.f;
+	float  anim_overlay_fade_    = 0.f;
+	float  anim_help_fade_       = 0.f;
+	bool   cursor_zoom_disabled_ = false;
 
 
 	// Drawing

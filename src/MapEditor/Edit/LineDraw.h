@@ -32,5 +32,5 @@ private:
 	vector<Vec2f>   draw_points_;
 	Vec2f           draw_origin_;
 	MapEditContext& context_;
-	State           state_current_;
+	State           state_current_ = State::Line;
 };

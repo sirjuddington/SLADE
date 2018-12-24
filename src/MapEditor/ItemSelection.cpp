@@ -49,16 +49,6 @@ using MapEditor::Mode;
 using MapEditor::SectorMode;
 
 // -----------------------------------------------------------------------------
-// ItemSelection class constructor
-// -----------------------------------------------------------------------------
-ItemSelection::ItemSelection(MapEditContext* context) :
-	hilight_{ -1, ItemType::Any },
-	hilight_lock_{ false },
-	context_{ context }
-{
-}
-
-// -----------------------------------------------------------------------------
 // Returns either the highlighted item if anything is highlighted, or the
 // currently selected items if not
 // -----------------------------------------------------------------------------
@@ -66,7 +56,7 @@ vector<MapEditor::Item> ItemSelection::selectionOrHilight()
 {
 	vector<MapEditor::Item> list;
 
-	if (selection_.size() > 0)
+	if (!selection_.empty())
 		list.assign(selection_.begin(), selection_.end());
 	else if (hilight_.index >= 0)
 		list.push_back(hilight_);
@@ -139,17 +129,17 @@ bool ItemSelection::updateHilight(Vec2f mouse_pos, double dist_scale)
 		{
 			auto  t    = map.thing(nearest[0]);
 			auto& type = Game::configuration().thingType(t->type());
-			if (MathStuff::distance(mouse_pos, t->point()) <= type.radius() + (32 / dist_scale))
+			if (MathStuff::distance(mouse_pos, t->position()) <= type.radius() + (32 / dist_scale))
 				hilight_.index = nearest[0];
 		}
 		else
 		{
-			for (unsigned a = 0; a < nearest.size(); a++)
+			for (int index : nearest)
 			{
-				auto  t    = map.thing(nearest[a]);
+				auto  t    = map.thing(index);
 				auto& type = Game::configuration().thingType(t->type());
-				if (MathStuff::distance(mouse_pos, t->point()) <= type.radius() + (32 / dist_scale))
-					hilight_.index = nearest[a];
+				if (MathStuff::distance(mouse_pos, t->position()) <= type.radius() + (32 / dist_scale))
+					hilight_.index = index;
 			}
 		}
 	}
@@ -300,7 +290,7 @@ void ItemSelection::selectVerticesWithin(const SLADEMap& map, const Rectf& rect)
 
 	// Select vertices within bounds
 	for (unsigned a = 0; a < map.nVertices(); a++)
-		if (rect.contains(map.vertex(a)->point()))
+		if (rect.contains(map.vertex(a)->position()))
 			selectItem({ (int)a, ItemType::Vertex });
 }
 
@@ -314,7 +304,7 @@ void ItemSelection::selectLinesWithin(const SLADEMap& map, const Rectf& rect)
 
 	// Select lines within bounds
 	for (unsigned a = 0; a < map.nLines(); a++)
-		if (rect.contains(map.line(a)->v1()->point()) && rect.contains(map.line(a)->v2()->point()))
+		if (rect.contains(map.line(a)->v1()->position()) && rect.contains(map.line(a)->v2()->position()))
 			selectItem({ (int)a, ItemType::Line });
 }
 
@@ -342,7 +332,7 @@ void ItemSelection::selectThingsWithin(const SLADEMap& map, const Rectf& rect)
 
 	// Select vertices within bounds
 	for (unsigned a = 0; a < map.nThings(); a++)
-		if (rect.contains(map.thing(a)->point()))
+		if (rect.contains(map.thing(a)->position()))
 			selectItem({ (int)a, ItemType::Thing });
 }
 

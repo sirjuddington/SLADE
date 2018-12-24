@@ -5,9 +5,9 @@ class Archive;
 class MapBackupManager
 {
 public:
-	MapBackupManager();
-	~MapBackupManager();
+	MapBackupManager() = default;
+	~MapBackupManager() = default;
 
-	bool     writeBackup(vector<ArchiveEntry*>& map_data, string archive_name, string map_name);
-	Archive* openBackup(string archive_name, string map_name);
+	bool     writeBackup(vector<std::unique_ptr<ArchiveEntry>>& map_data, string archive_name, string map_name) const;
+	Archive* openBackup(string archive_name, string map_name) const;
 };

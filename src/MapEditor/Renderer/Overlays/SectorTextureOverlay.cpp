@@ -51,27 +51,6 @@
 
 
 // -----------------------------------------------------------------------------
-// SectorTextureOverlay class constructor
-// -----------------------------------------------------------------------------
-SectorTextureOverlay::SectorTextureOverlay()
-{
-	// Init variables
-	hover_ceil_  = false;
-	hover_floor_ = false;
-	middlex_     = 0;
-	middley_     = 0;
-	tex_size_    = 0;
-	border_      = 0;
-	anim_floor_  = 0;
-	anim_ceil_   = 0;
-}
-
-// -----------------------------------------------------------------------------
-// SectorTextureOverlay class destructor
-// -----------------------------------------------------------------------------
-SectorTextureOverlay::~SectorTextureOverlay() {}
-
-// -----------------------------------------------------------------------------
 // Updates the overlay (animations, etc.)
 // -----------------------------------------------------------------------------
 void SectorTextureOverlay::update(long frametime)
@@ -94,8 +73,8 @@ void SectorTextureOverlay::update(long frametime)
 void SectorTextureOverlay::draw(int width, int height, float fade)
 {
 	// Get colours
-	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
-	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	auto col_bg = ColourConfiguration::colour("map_overlay_background");
+	auto col_fg = ColourConfiguration::colour("map_overlay_foreground");
 	col_bg.a *= fade;
 	col_fg.a *= fade;
 
@@ -105,7 +84,7 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 	Drawing::drawFilledRect(0, 0, width, height);
 
 	// Check if any sectors are open
-	if (sectors_.size() == 0)
+	if (sectors_.empty())
 	{
 		Drawing::drawText(
 			"No sectors are open. Just press escape and pretend this never happened.",
@@ -196,13 +175,13 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 // -----------------------------------------------------------------------------
 // Draws the texture box for [textures]
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover)
+void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover) const
 {
 	// Get colours
-	ColRGBA col_bg  = ColourConfiguration::colour("map_overlay_background");
-	ColRGBA col_fg  = ColourConfiguration::colour("map_overlay_foreground");
-	ColRGBA col_sel = ColourConfiguration::colour("map_hilight");
-	col_fg.a        = col_fg.a * alpha;
+	auto col_bg  = ColourConfiguration::colour("map_overlay_background");
+	auto col_fg  = ColourConfiguration::colour("map_overlay_foreground");
+	auto col_sel = ColourConfiguration::colour("map_hilight");
+	col_fg.a     = col_fg.a * alpha;
 
 	// Draw background
 	glEnable(GL_TEXTURE_2D);
@@ -250,20 +229,20 @@ void SectorTextureOverlay::openSectors(vector<MapSector*>& list)
 	tex_floor_.clear();
 
 	// Add list to sectors
-	for (unsigned a = 0; a < list.size(); a++)
+	for (auto& sector : list)
 	{
 		// Add sector
-		sectors_.push_back(list[a]);
+		sectors_.push_back(sector);
 
 		// Get textures
-		string ftex = list[a]->stringProperty("texturefloor");
-		string ctex = list[a]->stringProperty("textureceiling");
+		string ftex = sector->stringProperty("texturefloor");
+		string ctex = sector->stringProperty("textureceiling");
 
 		// Add floor texture if different
 		bool exists = false;
-		for (unsigned t = 0; t < tex_floor_.size(); t++)
+		for (const auto& tex : tex_floor_)
 		{
-			if (tex_floor_[t] == ftex)
+			if (tex == ftex)
 			{
 				exists = true;
 				break;
@@ -274,9 +253,9 @@ void SectorTextureOverlay::openSectors(vector<MapSector*>& list)
 
 		// Add ceiling texture if different
 		exists = false;
-		for (unsigned t = 0; t < tex_ceil_.size(); t++)
+		for (const auto& tex : tex_ceil_)
 		{
-			if (tex_ceil_[t] == ctex)
+			if (tex == ctex)
 			{
 				exists = true;
 				break;
@@ -299,12 +278,12 @@ void SectorTextureOverlay::close(bool cancel)
 	if (!cancel)
 	{
 		MapEditor::editContext().beginUndoRecord("Change Sector Texture", true, false, false);
-		for (unsigned a = 0; a < sectors_.size(); a++)
+		for (auto& sector : sectors_)
 		{
 			if (tex_floor_.size() == 1)
-				sectors_[a]->setStringProperty("texturefloor", tex_floor_[0]);
+				sector->setStringProperty("texturefloor", tex_floor_[0]);
 			if (tex_ceil_.size() == 1)
-				sectors_[a]->setStringProperty("textureceiling", tex_ceil_[0]);
+				sector->setStringProperty("textureceiling", tex_ceil_[0]);
 		}
 		MapEditor::editContext().endUndoRecord();
 	}
@@ -336,7 +315,7 @@ void SectorTextureOverlay::mouseMotion(int x, int y)
 void SectorTextureOverlay::mouseLeftClick()
 {
 	// Do nothing if no sectors open
-	if (sectors_.size() == 0)
+	if (sectors_.empty())
 		return;
 
 	// Left clicked on floor texture
@@ -349,14 +328,9 @@ void SectorTextureOverlay::mouseLeftClick()
 }
 
 // -----------------------------------------------------------------------------
-// Called when the right mouse button is clicked
-// -----------------------------------------------------------------------------
-void SectorTextureOverlay::mouseRightClick() {}
-
-// -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::keyDown(string key)
+void SectorTextureOverlay::keyDown(const string& key)
 {
 	// Browse floor texture
 	if (key == "F" || key == "f")
@@ -374,13 +348,14 @@ void SectorTextureOverlay::browseFloorTexture()
 {
 	// Get initial texture
 	string texture;
-	if (tex_floor_.size() == 0)
+	if (tex_floor_.empty())
 		texture = sectors_[0]->stringProperty("texturefloor");
 	else
 		texture = tex_floor_[0];
 
 	// Open texture browser
-	MapTextureBrowser browser(MapEditor::windowWx(), 1, texture, &(MapEditor::editContext().map()));
+	MapTextureBrowser browser(
+		MapEditor::windowWx(), MapEditor::TextureType::Flat, texture, &(MapEditor::editContext().map()));
 	browser.SetTitle("Browse Floor Texture");
 	if (browser.ShowModal() == wxID_OK)
 	{
@@ -398,13 +373,14 @@ void SectorTextureOverlay::browseCeilingTexture()
 {
 	// Get initial texture
 	string texture;
-	if (tex_ceil_.size() == 0)
+	if (tex_ceil_.empty())
 		texture = sectors_[0]->stringProperty("textureceiling");
 	else
 		texture = tex_ceil_[0];
 
 	// Open texture browser
-	MapTextureBrowser browser(MapEditor::windowWx(), 1, texture, &(MapEditor::editContext().map()));
+	MapTextureBrowser browser(
+		MapEditor::windowWx(), MapEditor::TextureType::Flat, texture, &(MapEditor::editContext().map()));
 	browser.SetTitle("Browse Ceiling Texture");
 	if (browser.ShowModal() == wxID_OK)
 	{

@@ -59,9 +59,9 @@ vector<MapObject::Type> obj_types{ MapObject::Type::Vertex,
 ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show Item")
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 	sizer->Add(gb_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
 
 	// Object type
@@ -83,7 +83,7 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 	gb_sizer->AddGrowableCol(1, 1);
 	SetInitialSize(WxUtils::scaledSize(300, -1));
 	CenterOnParent();
-	Layout();
+	wxWindowBase::Layout();
 	text_index_->SetFocus();
 	text_index_->SetFocusFromKbd();
 }
@@ -116,5 +116,4 @@ void ShowItemDialog::setType(MapObject::Type type) const
 	for (unsigned a = 0; a < obj_types.size(); ++a)
 		if (obj_types[a] == type)
 			choice_type_->Select(a);
-	// choice_type_->Select(type - 1);
 }

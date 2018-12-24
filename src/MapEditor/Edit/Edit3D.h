@@ -47,8 +47,8 @@ public:
 	void resetOffsets() const;
 	void toggleUnpegged(bool lower) const;
 	void copy(CopyType type);
-	void paste(CopyType type);
-	void floodFill(CopyType type);
+	void paste(CopyType type) const;
+	void floodFill(CopyType type) const;
 	void changeThingZ(int amount) const;
 	void deleteThing() const;
 	void changeScale(double amount, bool x) const;
@@ -71,5 +71,10 @@ private:
 	void        getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& list) const;
 
 	// Helper for autoAlignX3d
-	static void doAlignX(MapSide* side, int offset, string tex, vector<MapEditor::Item>& walls_done, int tex_width);
+	static void doAlignX(
+		MapSide*                 side,
+		int                      offset,
+		const string&            tex,
+		vector<MapEditor::Item>& walls_done,
+		int                      tex_width);
 };

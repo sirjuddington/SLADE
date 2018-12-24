@@ -7,40 +7,32 @@ class MapSector;
 class MapSide;
 class SLADEMap;
 
-WX_DECLARE_HASH_MAP(MapLine*, int, wxPointerHash, wxPointerEqual, MapLineSet);
-
 class SectorBuilder
 {
 public:
 	struct Edge
 	{
-		MapLine* line;
-		bool     front;
-		bool     side_created;
+		MapLine* line         = nullptr;
+		bool     front        = true;
+		bool     side_created = false;
 
-		Edge(MapLine* line = nullptr, bool front = true)
-		{
-			this->line   = line;
-			this->front  = front;
-			side_created = false;
-		}
+		Edge(MapLine* line = nullptr, bool front = true) : line{ line }, front{ front } {}
 	};
 
-	SectorBuilder();
-	~SectorBuilder();
+	SectorBuilder()  = default;
+	~SectorBuilder() = default;
 
-	string   error() { return error_; }
-	unsigned nEdges() { return sector_edges_.size(); }
+	string   error() const { return error_; }
+	unsigned nEdges() const { return sector_edges_.size(); }
 	MapLine* edgeLine(unsigned index);
 	bool     edgeIsFront(unsigned index);
 	bool     edgeSideCreated(unsigned index);
 
-	Edge       nextEdge(Edge edge, MapLineSet& visited_lines);
 	bool       traceOutline(MapLine* line, bool front = true);
 	int        nearestEdge(double x, double y);
 	bool       pointWithinOutline(double x, double y);
 	void       discardOutsideVertices();
-	Edge       findOuterEdge();
+	Edge       findOuterEdge() const;
 	Edge       findInnerEdge();
 	MapSector* findCopySector();
 	MapSector* findExistingSector(vector<MapSide*>& sides_ignore);
@@ -54,13 +46,13 @@ public:
 
 private:
 	vector<bool> vertex_valid_;
-	SLADEMap*    map_;
+	SLADEMap*    map_ = nullptr;
 	vector<Edge> sector_edges_;
 	string       error_;
 
 	// Current outline
 	vector<Edge> o_edges_;
-	bool         o_clockwise_;
+	bool         o_clockwise_ = false;
 	BBox         o_bbox_;
-	MapVertex*   vertex_right_;
+	MapVertex*   vertex_right_ = nullptr;
 };

@@ -30,9 +30,9 @@ private:
 	wxSpinCtrl* spin_to_           = nullptr;
 	wxCheckBox* cb_line_specials_  = nullptr;
 	wxCheckBox* cb_thing_specials_ = nullptr;
-	wxSpinCtrl* spin_args_from_[5] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-	wxSpinCtrl* spin_args_to_[5]   = { nullptr, nullptr, nullptr, nullptr, nullptr };
-	wxCheckBox* cb_args_[5]        = { nullptr, nullptr, nullptr, nullptr, nullptr };
+	wxSpinCtrl* spin_args_from_[5] = {};
+	wxSpinCtrl* spin_args_to_[5]   = {};
+	wxCheckBox* cb_args_[5]        = {};
 };
 
 class TextureReplacePanel : public wxPanel

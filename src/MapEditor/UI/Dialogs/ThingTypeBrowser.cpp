@@ -61,7 +61,7 @@ CVAR(Bool, use_zeth_icons, false, CVar::Flag::Save)
 bool ThingBrowserItem::loadImage()
 {
 	// Get sprite
-	GLTexture* tex = MapEditor::textureManager().sprite(type_.sprite(), type_.translation(), type_.palette());
+	auto tex = MapEditor::textureManager().sprite(type_.sprite(), type_.translation(), type_.palette());
 	if (!tex && use_zeth_icons && type_.zethIcon() >= 0)
 	{
 		// Sprite not found, try the Zeth icon
@@ -101,7 +101,7 @@ bool ThingBrowserItem::loadImage()
 ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(parent)
 {
 	// Set window title
-	SetTitle("Browse Thing Types");
+	wxTopLevelWindow::SetTitle("Browse Thing Types");
 
 	// Add 'Details view' checkbox
 	cb_view_tiles_ = new wxCheckBox(this, -1, "Details view");
@@ -128,7 +128,7 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	// Bind events
 	cb_view_tiles_->Bind(wxEVT_CHECKBOX, &ThingTypeBrowser::onViewTilesClicked, this);
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------
@@ -158,7 +158,7 @@ void ThingTypeBrowser::setupViewOptions()
 // -----------------------------------------------------------------------------
 int ThingTypeBrowser::selectedType()
 {
-	BrowserItem* selected = selectedItem();
+	auto selected = selectedItem();
 	if (selected)
 	{
 		LOG_MESSAGE(1, "Selected item %d", selected->index());

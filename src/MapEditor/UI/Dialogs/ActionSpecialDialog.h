@@ -18,16 +18,13 @@ class ActionSpecialTreeView : public wxDataViewTreeCtrl
 {
 public:
 	ActionSpecialTreeView(wxWindow* parent);
-	~ActionSpecialTreeView() {}
+	~ActionSpecialTreeView() = default;
 
 	void setParentDialog(wxDialog* dlg) { parent_dialog_ = dlg; }
 
-	int  specialNumber(wxDataViewItem item);
+	int  specialNumber(wxDataViewItem item) const;
 	void showSpecial(int special, bool focus = true);
-	int  selectedSpecial();
-
-	void onItemEdit(wxDataViewEvent& e);
-	void onItemActivated(wxDataViewEvent& e);
+	int  selectedSpecial() const;
 
 private:
 	wxDataViewItem root_;
@@ -39,22 +36,18 @@ private:
 	{
 		string         name;
 		wxDataViewItem item;
-		ASTVGroup(wxDataViewItem i, string name)
-		{
-			this->item = i;
-			this->name = name;
-		}
+		ASTVGroup(wxDataViewItem i, const string& name) : name{ name }, item{ i } {}
 	};
 	vector<ASTVGroup> groups_;
 
-	wxDataViewItem getGroup(string group);
+	wxDataViewItem getGroup(const string& group_name);
 };
 
 class ArgsPanel : public wxScrolled<wxPanel>
 {
 public:
 	ArgsPanel(wxWindow* parent);
-	~ArgsPanel() {}
+	~ArgsPanel() = default;
 
 	void setup(const Game::ArgSpec& args, bool udmf);
 	void setValues(int args[5]);
@@ -63,24 +56,24 @@ public:
 
 private:
 	wxFlexGridSizer* fg_sizer_           = nullptr;
-	ArgsControl*     control_args_[5]    = { nullptr, nullptr, nullptr, nullptr, nullptr };
-	wxStaticText*    label_args_[5]      = { nullptr, nullptr, nullptr, nullptr, nullptr };
-	wxStaticText*    label_args_desc_[5] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+	ArgsControl*     control_args_[5]    = {};
+	wxStaticText*    label_args_[5]      = {};
+	wxStaticText*    label_args_desc_[5] = {};
 };
 
 class ActionSpecialPanel : public wxPanel
 {
 public:
 	ActionSpecialPanel(wxWindow* parent, bool trigger = true);
-	~ActionSpecialPanel() {}
+	~ActionSpecialPanel() = default;
 
 	void setupSpecialPanel();
 	void setArgsPanel(ArgsPanel* panel) { panel_args_ = panel; }
 	void setSpecial(int special);
 	void setTrigger(int index);
-	void setTrigger(string trigger);
+	void setTrigger(const string& trigger);
 	void clearTrigger();
-	int  selectedSpecial();
+	int  selectedSpecial() const;
 	void showGeneralised(bool show = true);
 	void applyTo(vector<MapObject*>& lines, bool apply_special);
 	void openLines(vector<MapObject*>& lines);
@@ -91,16 +84,16 @@ public:
 	void onSpecialPresetClicked(wxCommandEvent& e);
 
 private:
-	ActionSpecialTreeView* tree_specials_;
-	wxPanel*               panel_action_special_;
-	GenLineSpecialPanel*   panel_gen_specials_;
-	wxRadioButton*         rb_special_;
-	wxRadioButton*         rb_generalised_;
-	ArgsPanel*             panel_args_;
-	wxChoice*              choice_trigger_;
-	bool                   show_trigger_;
-	NumberTextCtrl*        text_special_;
-	wxButton*              btn_preset_;
+	ActionSpecialTreeView* tree_specials_        = nullptr;
+	wxPanel*               panel_action_special_ = nullptr;
+	GenLineSpecialPanel*   panel_gen_specials_   = nullptr;
+	wxRadioButton*         rb_special_           = nullptr;
+	wxRadioButton*         rb_generalised_       = nullptr;
+	ArgsPanel*             panel_args_           = nullptr;
+	wxChoice*              choice_trigger_       = nullptr;
+	bool                   show_trigger_         = false;
+	NumberTextCtrl*        text_special_         = nullptr;
+	wxButton*              btn_preset_           = nullptr;
 
 	struct FlagHolder
 	{
@@ -115,14 +108,14 @@ class ActionSpecialDialog : public SDialog
 {
 public:
 	ActionSpecialDialog(wxWindow* parent, bool show_args = false);
-	~ActionSpecialDialog() {}
+	~ActionSpecialDialog() = default;
 
-	void setSpecial(int special);
-	void setArgs(int args[5]);
-	int  selectedSpecial();
-	int  argValue(int index);
-	void applyTo(vector<MapObject*>& lines, bool apply_special);
-	void openLines(vector<MapObject*>& lines);
+	void setSpecial(int special) const;
+	void setArgs(int args[5]) const;
+	int  selectedSpecial() const;
+	int  argValue(int index) const;
+	void applyTo(vector<MapObject*>& lines, bool apply_special) const;
+	void openLines(vector<MapObject*>& lines) const;
 
 private:
 	ActionSpecialPanel* panel_special_ = nullptr;

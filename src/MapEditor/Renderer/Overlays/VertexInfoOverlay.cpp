@@ -48,20 +48,6 @@
 
 
 // -----------------------------------------------------------------------------
-// VertexInfoOverlay class constructor
-// -----------------------------------------------------------------------------
-VertexInfoOverlay::VertexInfoOverlay()
-{
-	// Init variables
-	pos_frac_ = false;
-}
-
-// -----------------------------------------------------------------------------
-// VertexInfoOverlay class destructor
-// -----------------------------------------------------------------------------
-VertexInfoOverlay::~VertexInfoOverlay() {}
-
-// -----------------------------------------------------------------------------
 // Updates the overlay with info from [vertex]
 // -----------------------------------------------------------------------------
 void VertexInfoOverlay::update(MapVertex* vertex)
@@ -70,6 +56,7 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 		return;
 
 	// Update info string
+	// TODO: pos_frac_ is never set, enable for UDMF?
 	if (pos_frac_)
 		info_ = S_FMT("Vertex %d: (%1.4f, %1.4f)", vertex->index(), vertex->xPos(), vertex->yPos());
 	else
@@ -82,7 +69,7 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 // -----------------------------------------------------------------------------
 // Draws the overlay at [bottom] from 0 to [right]
 // -----------------------------------------------------------------------------
-void VertexInfoOverlay::draw(int bottom, int right, float alpha)
+void VertexInfoOverlay::draw(int bottom, int right, float alpha) const
 {
 	// Don't bother if completely faded
 	if (alpha <= 0.0f)
@@ -93,10 +80,10 @@ void VertexInfoOverlay::draw(int bottom, int right, float alpha)
 	glDisable(GL_LINE_SMOOTH);
 
 	// Get colours
-	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
-	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
-	col_fg.a       = col_fg.a * alpha;
-	col_bg.a       = col_bg.a * alpha;
+	auto col_bg = ColourConfiguration::colour("map_overlay_background");
+	auto col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	col_fg.a    = col_fg.a * alpha;
+	col_bg.a    = col_bg.a * alpha;
 	ColRGBA col_border(0, 0, 0, 140);
 
 	// Slide in/out animation

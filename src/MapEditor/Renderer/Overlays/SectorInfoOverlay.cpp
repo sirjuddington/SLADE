@@ -54,16 +54,7 @@
 // -----------------------------------------------------------------------------
 SectorInfoOverlay::SectorInfoOverlay()
 {
-	text_box_  = new TextBox("", Drawing::Font::Condensed, 100, 16 * (Drawing::fontSize() / 12.0));
-	last_size_ = 100;
-}
-
-// -----------------------------------------------------------------------------
-// SectorInfoOverlay class destructor
-// -----------------------------------------------------------------------------
-SectorInfoOverlay::~SectorInfoOverlay()
-{
-	delete text_box_;
+	text_box_ = std::make_unique<TextBox>("", Drawing::Font::Condensed, 100, 16 * (Drawing::fontSize() / 12.0));
 }
 
 // -----------------------------------------------------------------------------
@@ -131,10 +122,10 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 	bottom += height * alpha_inv * alpha_inv;
 
 	// Get colours
-	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
-	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
-	col_fg.a       = col_fg.a * alpha;
-	col_bg.a       = col_bg.a * alpha;
+	auto col_bg = ColourConfiguration::colour("map_overlay_background");
+	auto col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	col_fg.a    = col_fg.a * alpha;
+	col_bg.a    = col_bg.a * alpha;
 	ColRGBA col_border(0, 0, 0, 140);
 
 	// Draw overlay background
@@ -160,19 +151,19 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 // -----------------------------------------------------------------------------
 // Draws a texture box with name underneath for [texture]
 // -----------------------------------------------------------------------------
-void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, string pos)
+void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, const string& pos) const
 {
 	double scale        = (Drawing::fontSize() / 12.0);
 	int    tex_box_size = 80 * scale;
 	int    line_height  = 16 * scale;
 
 	// Get colours
-	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
-	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
-	col_fg.a       = col_fg.a * alpha;
+	auto col_bg = ColourConfiguration::colour("map_overlay_background");
+	auto col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	col_fg.a    = col_fg.a * alpha;
 
 	// Get texture
-	GLTexture* tex =
+	auto tex =
 		MapEditor::textureManager().flat(texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 
 	// Valid texture
@@ -202,7 +193,7 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	else if (tex == &(GLTexture::missingTex()))
 	{
 		// Draw unknown icon
-		GLTexture* icon = MapEditor::textureManager().editorImage("thing/unknown");
+		auto icon = MapEditor::textureManager().editorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);

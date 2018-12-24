@@ -54,9 +54,9 @@ public:
 		uint16_t side2;
 	};
 
-	MapLine(SLADEMap* parent = nullptr);
+	MapLine(SLADEMap* parent = nullptr) : MapObject(Type::Line, parent) {}
 	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent = nullptr);
-	~MapLine();
+	~MapLine() = default;
 
 	bool isOk() const { return vertex1_ && vertex2_; }
 
@@ -66,18 +66,18 @@ public:
 	MapSide*   s2() const { return side2_; }
 	int        special() const { return special_; }
 
-	MapSector* frontSector();
-	MapSector* backSector();
+	MapSector* frontSector() const;
+	MapSector* backSector() const;
 
-	double x1();
-	double y1();
-	double x2();
-	double y2();
+	double x1() const;
+	double y1() const;
+	double x2() const;
+	double y2() const;
 
-	int v1Index();
-	int v2Index();
-	int s1Index();
-	int s2Index();
+	int v1Index() const;
+	int v2Index() const;
+	int s1Index() const;
+	int s2Index() const;
 
 	bool   boolProperty(const string& key) override;
 	int    intProperty(const string& key) override;
@@ -93,15 +93,15 @@ public:
 	void setS2(MapSide* side);
 
 	Vec2f  getPoint(Point point) override;
-	Vec2f  point1();
-	Vec2f  point2();
-	Seg2f  seg();
+	Vec2f  point1() const;
+	Vec2f  point2() const;
+	Seg2f  seg() const;
 	double length();
-	bool   doubleSector();
+	bool   doubleSector() const;
 	Vec2f  frontVector();
-	Vec2f  dirTabPoint(double length = 0);
+	Vec2f  dirTabPoint(double tab_length = 0.);
 	double distanceTo(Vec2f point);
-	int    needsTexture();
+	int    needsTexture() const;
 
 	void clearUnneededTextures();
 	void resetInternals();
@@ -116,21 +116,21 @@ public:
 		if (!this)
 			return "<line NULL>";
 
-		return Debuggable(S_FMT("<line %u>", index_));
+		return { S_FMT("<line %u>", index_) };
 	}
 
 private:
 	// Basic data
-	MapVertex* vertex1_;
-	MapVertex* vertex2_;
-	MapSide*   side1_;
-	MapSide*   side2_;
-	int        special_;
-	int        line_id_;
+	MapVertex* vertex1_ = nullptr;
+	MapVertex* vertex2_ = nullptr;
+	MapSide*   side1_   = nullptr;
+	MapSide*   side2_   = nullptr;
+	int        special_ = 0;
+	int        line_id_ = 0;
 
 	// Internally used info
-	double length_;
-	double ca_; // Used for intersection calculations
-	double sa_; // ^^
+	double length_ = -1.;
+	double ca_     = 0.; // Used for intersection calculations
+	double sa_     = 0.; // ^^
 	Vec2f  front_vec_;
 };

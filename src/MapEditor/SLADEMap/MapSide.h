@@ -31,9 +31,9 @@ public:
 		short    sector;
 	};
 
+	MapSide(SLADEMap* parent) : MapObject(Type::Side, parent) {}
 	MapSide(MapSector* sector = nullptr, SLADEMap* parent = nullptr);
-	MapSide(SLADEMap* parent);
-	~MapSide();
+	~MapSide() = default;
 
 	void copy(MapObject* c) override;
 
@@ -62,11 +62,11 @@ public:
 
 private:
 	// Basic data
-	MapSector* sector_;
-	MapLine*   parent_;
-	string     tex_upper_;
-	string     tex_middle_;
-	string     tex_lower_;
-	short      offset_x_;
-	short      offset_y_;
+	MapSector* sector_     = nullptr;
+	MapLine*   parent_     = nullptr;
+	string     tex_upper_  = "-";
+	string     tex_middle_ = "-";
+	string     tex_lower_  = "-";
+	short      offset_x_   = 0;
+	short      offset_y_   = 0;
 };

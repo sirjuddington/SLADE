@@ -60,18 +60,8 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 // -----------------------------------------------------------------------------
 // ThingInfoOverlay class constructor
 // -----------------------------------------------------------------------------
-ThingInfoOverlay::ThingInfoOverlay()
+ThingInfoOverlay::ThingInfoOverlay() : text_box_{ "", Drawing::Font::Condensed, 100, 16 * (Drawing::fontSize() / 12.0) }
 {
-	text_box_  = new TextBox("", Drawing::Font::Condensed, 100, 16 * (Drawing::fontSize() / 12.0));
-	last_size_ = 100;
-}
-
-// -----------------------------------------------------------------------------
-// ThingInfoOverlay class destructor
-// -----------------------------------------------------------------------------
-ThingInfoOverlay::~ThingInfoOverlay()
-{
-	delete text_box_;
 }
 
 // -----------------------------------------------------------------------------
@@ -168,10 +158,10 @@ void ThingInfoOverlay::update(MapThing* thing)
 	translation_ = tt.translation();
 	palette_     = tt.palette();
 	icon_        = tt.icon();
-	zeth_        = tt.zethIcon();
+	zeth_icon_   = tt.zethIcon();
 
 	// Setup text box
-	text_box_->setText(info_text);
+	text_box_.setText(info_text);
 }
 
 // -----------------------------------------------------------------------------
@@ -191,19 +181,19 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	if (last_size_ != right)
 	{
 		last_size_ = right;
-		text_box_->setSize(right - 68);
+		text_box_.setSize(right - 68);
 	}
-	int height = text_box_->height() + 4;
+	int height = text_box_.height() + 4;
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;
 	bottom += height * alpha_inv * alpha_inv;
 
 	// Get colours
-	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
-	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
-	col_fg.a       = col_fg.a * alpha;
-	col_bg.a       = col_bg.a * alpha;
+	auto col_bg = ColourConfiguration::colour("map_overlay_background");
+	auto col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	col_fg.a    = col_fg.a * alpha;
+	col_bg.a    = col_bg.a * alpha;
 	ColRGBA col_border(0, 0, 0, 140);
 
 	// Draw overlay background
@@ -211,16 +201,16 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	Drawing::drawBorderedRect(0, bottom - height - 4, right, bottom + 2, col_bg, col_border);
 
 	// Draw info text lines
-	text_box_->setLineHeight(16 * (Drawing::fontSize() / 12.0));
-	text_box_->draw(2, bottom - height, col_fg);
+	text_box_.setLineHeight(16 * (Drawing::fontSize() / 12.0));
+	text_box_.draw(2, bottom - height, col_fg);
 
 	// Draw sprite
-	bool       isicon = false;
-	GLTexture* tex    = MapEditor::textureManager().sprite(sprite_, translation_, palette_);
+	bool isicon = false;
+	auto tex    = MapEditor::textureManager().sprite(sprite_, translation_, palette_);
 	if (!tex)
 	{
-		if (use_zeth_icons && zeth_ >= 0)
-			tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", zeth_));
+		if (use_zeth_icons && zeth_icon_ >= 0)
+			tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", zeth_icon_));
 		if (!tex)
 			tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", icon_));
 		isicon = true;
@@ -229,29 +219,29 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
 	if (tex)
 	{
-		double width  = tex->width();
-		double height = tex->height();
-		if (width > 128.0 || height > 128.0)
+		double twidth  = tex->width();
+		double theight = tex->height();
+		if (twidth > 128.0 || theight > 128.0)
 		{
-			double factor = max(width, height) / 128.0;
-			width /= factor;
-			height /= factor;
+			double factor = max(twidth, theight) / 128.0;
+			twidth /= factor;
+			theight /= factor;
 		}
 		if (isicon)
 		{
-			width  = 64;
-			height = 64;
+			twidth  = 64;
+			theight = 64;
 		}
 		tex->bind();
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f);
-		glVertex2d(right - 8 - width, bottom - 8 - height);
+		glVertex2d(right - 8 - twidth, bottom - 8 - theight);
 		glTexCoord2f(0.0f, 1.0f);
-		glVertex2d(right - 8 - width, bottom - 8);
+		glVertex2d(right - 8 - twidth, bottom - 8);
 		glTexCoord2f(1.0f, 1.0f);
 		glVertex2d(right - 8, bottom - 8);
 		glTexCoord2f(1.0f, 0.0f);
-		glVertex2d(right - 8, bottom - 8 - height);
+		glVertex2d(right - 8, bottom - 8 - theight);
 		glEnd();
 	}
 	glDisable(GL_TEXTURE_2D);

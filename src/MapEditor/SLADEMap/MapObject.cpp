@@ -58,35 +58,19 @@ long prop_backup_time = -1;
 // -----------------------------------------------------------------------------
 // MapObject class constructor
 // -----------------------------------------------------------------------------
-MapObject::MapObject(Type type, SLADEMap* parent)
+MapObject::MapObject(Type type, SLADEMap* parent) :
+	parent_map_{ parent },
+	modified_time_{ App::runTimer() },
+	type_{ type }
 {
-	// Init variables
-	this->type_          = type;
-	this->parent_map_    = parent;
-	this->index_         = 0;
-	this->filtered_      = false;
-	this->modified_time_ = App::runTimer();
-	this->obj_id_        = 0;
-	this->obj_backup_    = nullptr;
-
 	if (parent)
 		parent->addMapObject(this);
 }
 
 // -----------------------------------------------------------------------------
-// MapObject class destructor
-// -----------------------------------------------------------------------------
-MapObject::~MapObject()
-{
-	properties_.clear();
-	if (obj_backup_)
-		delete obj_backup_;
-}
-
-// -----------------------------------------------------------------------------
 // Returns the map index of the object
 // -----------------------------------------------------------------------------
-unsigned MapObject::index()
+unsigned MapObject::index() const
 {
 	return index_;
 }
@@ -94,7 +78,7 @@ unsigned MapObject::index()
 // -----------------------------------------------------------------------------
 // Returns a string representation of the object type
 // -----------------------------------------------------------------------------
-string MapObject::typeName()
+string MapObject::typeName() const
 {
 	switch (type_)
 	{
@@ -117,10 +101,8 @@ void MapObject::setModified()
 	// Backup current properties if required
 	if (modified_time_ < prop_backup_time)
 	{
-		if (obj_backup_)
-			delete obj_backup_;
-		obj_backup_ = new Backup();
-		backupTo(obj_backup_);
+		obj_backup_ = std::make_unique<Backup>();
+		backupTo(obj_backup_.get());
 	}
 
 	modified_time_ = App::runTimer();
@@ -173,7 +155,7 @@ bool MapObject::boolProperty(const string& key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
+		auto prop = Game::configuration().getUDMFProperty(key, type_);
 		if (prop)
 			return prop->defaultValue().boolValue();
 		else
@@ -193,7 +175,7 @@ int MapObject::intProperty(const string& key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
+		auto prop = Game::configuration().getUDMFProperty(key, type_);
 		if (prop)
 			return prop->defaultValue().intValue();
 		else
@@ -213,7 +195,7 @@ double MapObject::floatProperty(const string& key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
+		auto prop = Game::configuration().getUDMFProperty(key, type_);
 		if (prop)
 			return prop->defaultValue().floatValue();
 		else
@@ -233,7 +215,7 @@ string MapObject::stringProperty(const string& key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		UDMFProperty* prop = Game::configuration().getUDMFProperty(key, type_);
+		auto prop = Game::configuration().getUDMFProperty(key, type_);
 		if (prop)
 			return prop->defaultValue().stringValue();
 		else
@@ -339,10 +321,10 @@ void MapObject::loadFromBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 MapObject::Backup* MapObject::backup(bool remove)
 {
-	Backup* bak = obj_backup_;
 	if (remove)
-		obj_backup_ = nullptr;
-	return bak;
+		return obj_backup_.release();
+
+	return obj_backup_.get();
 }
 
 

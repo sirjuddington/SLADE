@@ -282,12 +282,12 @@ void MapEditor::showObjectEditPanel(bool show, ObjectEditGroup* group)
 // Opens the texture browser for [tex_type] textures, with [init_texture]
 // initially selected. Returns the selected texture
 // -----------------------------------------------------------------------------
-string MapEditor::browseTexture(const string& init_texture, int tex_type, SLADEMap& map, const string& title)
+string MapEditor::browseTexture(const string& init_texture, TextureType tex_type, SLADEMap& map, const string& title)
 {
 	// Unlock cursor if locked
-	bool cursor_locked = edit_context.get()->mouseLocked();
+	bool cursor_locked = edit_context->mouseLocked();
 	if (cursor_locked)
-		edit_context.get()->lockMouse(false);
+		edit_context->lockMouse(false);
 
 	// Setup texture browser
 	MapTextureBrowser browser(map_window, tex_type, init_texture, &map);
@@ -300,7 +300,7 @@ string MapEditor::browseTexture(const string& init_texture, int tex_type, SLADEM
 
 	// Re-lock cursor if needed
 	if (cursor_locked)
-		edit_context.get()->lockMouse(true);
+		edit_context->lockMouse(true);
 
 	return tex;
 }
@@ -312,9 +312,9 @@ string MapEditor::browseTexture(const string& init_texture, int tex_type, SLADEM
 int MapEditor::browseThingType(int init_type, SLADEMap& map)
 {
 	// Unlock cursor if locked
-	bool cursor_locked = edit_context.get()->mouseLocked();
+	bool cursor_locked = edit_context->mouseLocked();
 	if (cursor_locked)
-		edit_context.get()->lockMouse(false);
+		edit_context->lockMouse(false);
 
 	// Setup thing browser
 	ThingTypeBrowser browser(map_window, init_type);
@@ -326,7 +326,7 @@ int MapEditor::browseThingType(int init_type, SLADEMap& map)
 
 	// Re-lock cursor if needed
 	if (cursor_locked)
-		edit_context.get()->lockMouse(true);
+		edit_context->lockMouse(true);
 
 	return type;
 }

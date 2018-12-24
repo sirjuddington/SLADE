@@ -13,7 +13,7 @@ class BrowserItem
 	friend class BrowserWindow;
 
 public:
-	BrowserItem(string name, unsigned index = 0, string type = "item");
+	BrowserItem(const string& name, unsigned index = 0, const string& type = "item");
 	virtual ~BrowserItem();
 
 	string   name() const { return name_; }

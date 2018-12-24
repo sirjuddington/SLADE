@@ -53,7 +53,7 @@
 // -----------------------------------------------------------------------------
 LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 {
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Tabs
@@ -118,19 +118,19 @@ LinePropsPanel::~LinePropsPanel()
 // -----------------------------------------------------------------------------
 wxPanel* LinePropsPanel::setupGeneralTab()
 {
-	wxPanel* panel_flags = new wxPanel(stc_tabs_, -1);
-	auto     map_format  = MapEditor::editContext().mapDesc().format;
+	auto panel_flags = new wxPanel(stc_tabs_, -1);
+	auto map_format  = MapEditor::editContext().mapDesc().format;
 
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel_flags->SetSizer(sizer);
 
 	// Flags
-	wxStaticBoxSizer* sizer_flags = new wxStaticBoxSizer(wxVERTICAL, panel_flags, "Flags");
+	auto sizer_flags = new wxStaticBoxSizer(wxVERTICAL, panel_flags, "Flags");
 	sizer->Add(sizer_flags, 0, wxEXPAND | wxALL, UI::pad());
 
 	// Init flags
-	wxGridBagSizer* gb_sizer_flags = new wxGridBagSizer(UI::pad() / 2, UI::pad());
+	auto gb_sizer_flags = new wxGridBagSizer(UI::pad() / 2, UI::pad());
 	sizer_flags->Add(gb_sizer_flags, 1, wxEXPAND | wxALL, UI::pad());
 	unsigned row = 0;
 	unsigned col = 0;
@@ -178,7 +178,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 			if (Game::configuration().lineFlag(a).activation)
 				continue;
 
-			wxCheckBox* cb_flag = new wxCheckBox(
+			auto cb_flag = new wxCheckBox(
 				panel_flags,
 				-1,
 				Game::configuration().lineFlag(a).name,
@@ -203,7 +203,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	// Sector tag
 	if (map_format == MapFormat::Doom)
 	{
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		auto hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
 		hbox->Add(new wxStaticText(panel_flags, -1, "Sector Tag:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
@@ -220,7 +220,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	// Id
 	if (map_format == MapFormat::UDMF)
 	{
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		auto hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
 		hbox->Add(new wxStaticText(panel_flags, -1, "Line ID:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
@@ -241,10 +241,10 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 // -----------------------------------------------------------------------------
 wxPanel* LinePropsPanel::setupSpecialTab()
 {
-	wxPanel* panel = new wxPanel(stc_tabs_, -1);
+	auto panel = new wxPanel(stc_tabs_, -1);
 
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
 	// Action special panel
@@ -274,12 +274,12 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 	if (map_format == MapFormat::UDMF)
 	{
 		bool val = false;
-		for (unsigned a = 0; a < flags_.size(); a++)
+		for (auto& flag : flags_)
 		{
-			if (MapObject::multiBoolProperty(lines, flags_[a].udmf, val))
-				flags_[a].check_box->SetValue(val);
+			if (MapObject::multiBoolProperty(lines, flag.udmf, val))
+				flag.check_box->SetValue(val);
 			else
-				flags_[a].check_box->Set3StateValue(wxCHK_UNDETERMINED);
+				flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
 		}
 	}
 	else
@@ -347,9 +347,9 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 
 	// First side
 	vector<MapSide*> sides;
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto& line : lines)
 	{
-		if (MapSide* s = ((MapLine*)lines[a])->s1())
+		if (auto s = dynamic_cast<MapLine*>(line)->s1())
 			sides.push_back(s);
 	}
 	if (sides.empty())
@@ -359,9 +359,9 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 
 	// Second side
 	sides.clear();
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto& line : lines)
 	{
-		if (MapSide* s = ((MapLine*)lines[a])->s2())
+		if (auto s = dynamic_cast<MapLine*>(line)->s2())
 			sides.push_back(s);
 	}
 	if (sides.empty())
@@ -373,9 +373,9 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 	mopp_all_props_->openObjects(lines);
 
 	// Update internal objects list
-	this->objects_.clear();
-	for (unsigned a = 0; a < lines.size(); a++)
-		this->objects_.push_back(lines[a]);
+	objects_.clear();
+	for (auto line : lines)
+		objects_.push_back(line);
 
 	// Update layout
 	Layout();
@@ -390,7 +390,7 @@ void LinePropsPanel::applyChanges()
 	auto map_format = MapEditor::editContext().mapDesc().format;
 
 	// Apply general properties
-	for (unsigned l = 0; l < objects_.size(); l++)
+	for (auto& object : objects_)
 	{
 		// Flags
 		if (map_format == MapFormat::UDMF)
@@ -398,23 +398,23 @@ void LinePropsPanel::applyChanges()
 			// UDMF
 			for (auto& flag : flags_)
 				if (flag.check_box->Get3StateValue() != wxCHK_UNDETERMINED)
-					objects_[l]->setBoolProperty(flag.udmf, flag.check_box->GetValue());
+					object->setBoolProperty(flag.udmf, flag.check_box->GetValue());
 		}
 		else
 		{
 			// Other
 			for (auto& flag : flags_)
 				if (flag.check_box->Get3StateValue() != wxCHK_UNDETERMINED)
-					Game::configuration().setLineFlag(flag.index, (MapLine*)objects_[l], flag.check_box->GetValue());
+					Game::configuration().setLineFlag(flag.index, (MapLine*)object, flag.check_box->GetValue());
 		}
 
 		// Sector tag
 		if (map_format == MapFormat::Doom && !text_tag_->IsEmpty())
-			objects_[l]->setIntProperty("arg0", text_tag_->number(objects_[l]->intProperty("arg0")));
+			object->setIntProperty("arg0", text_tag_->number(object->intProperty("arg0")));
 
 		// Line ID
 		if (map_format == MapFormat::UDMF && !text_id_->IsEmpty())
-			objects_[l]->setIntProperty("id", text_id_->number(objects_[l]->intProperty("id")));
+			object->setIntProperty("id", text_id_->number(object->intProperty("id")));
 	}
 
 	// Apply special
@@ -422,9 +422,9 @@ void LinePropsPanel::applyChanges()
 
 	// Apply first side
 	vector<MapSide*> sides;
-	for (unsigned a = 0; a < objects_.size(); a++)
+	for (auto& object : objects_)
 	{
-		if (MapSide* s = ((MapLine*)objects_[a])->s1())
+		if (auto s = dynamic_cast<MapLine*>(object)->s1())
 			sides.push_back(s);
 	}
 	if (!sides.empty())
@@ -432,9 +432,9 @@ void LinePropsPanel::applyChanges()
 
 	// Apply second side
 	sides.clear();
-	for (unsigned a = 0; a < objects_.size(); a++)
+	for (auto& object : objects_)
 	{
-		if (MapSide* s = ((MapLine*)objects_[a])->s2())
+		if (auto s = dynamic_cast<MapLine*>(object)->s2())
 			sides.push_back(s);
 	}
 	if (!sides.empty())

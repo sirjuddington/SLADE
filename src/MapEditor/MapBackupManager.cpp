@@ -61,20 +61,10 @@ string mb_ignore_entries[] = { "NODES",    "SSECTORS", "ZNODES",  "SEGS",     "R
 
 
 // -----------------------------------------------------------------------------
-// MapBackupManager class constructor
-// -----------------------------------------------------------------------------
-MapBackupManager::MapBackupManager() {}
-
-// -----------------------------------------------------------------------------
-// MapBackupManager class destructor
-// -----------------------------------------------------------------------------
-MapBackupManager::~MapBackupManager() {}
-
-// -----------------------------------------------------------------------------
 // Writes a backup for [map_name] in [archive_name], with the map data entries
 // in [map_data]
 // -----------------------------------------------------------------------------
-bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archive_name, string map_name)
+bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, string archive_name, string map_name) const
 {
 	// Create backup directory if needed
 	string backup_dir = App::path("backups", App::Dir::User);
@@ -104,23 +94,23 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archi
 		}
 
 		if (!ignored)
-			backup_entries.push_back(map_data[a]);
+			backup_entries.push_back(map_data[a].get());
 	}
 
 	// Compare with last backup (if any)
-	ArchiveTreeNode* map_dir = backup.dir(map_name);
+	auto map_dir = backup.dir(map_name);
 	if (map_dir && map_dir->nChildren() > 0)
 	{
-		ArchiveTreeNode* last_backup = (ArchiveTreeNode*)map_dir->child(map_dir->nChildren() - 1);
-		bool             same        = true;
+		auto last_backup = dynamic_cast<ArchiveTreeNode*>(map_dir->child(map_dir->nChildren() - 1));
+		bool same        = true;
 		if (last_backup->numEntries() != backup_entries.size())
 			same = false;
 		else
 		{
 			for (unsigned a = 0; a < last_backup->numEntries(); a++)
 			{
-				ArchiveEntry* e1 = backup_entries[a];
-				ArchiveEntry* e2 = last_backup->entryAt(a);
+				auto e1 = backup_entries[a];
+				auto e2 = last_backup->entryAt(a);
 				if (e1->size() != e2->size())
 				{
 					same = false;
@@ -168,7 +158,7 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archi
 // Shows the map backups for [map_name] in [archive_name], returns the selected
 // map backup data in a WadArchive
 // -----------------------------------------------------------------------------
-Archive* MapBackupManager::openBackup(string archive_name, string map_name)
+Archive* MapBackupManager::openBackup(string archive_name, string map_name) const
 {
 	SDialog dlg(MapEditor::windowWx(), S_FMT("Restore %s backup", CHR(map_name)), "map_backup", 500, 400);
 	auto    sizer = new wxBoxSizer(wxVERTICAL);

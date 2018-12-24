@@ -49,13 +49,13 @@
 SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Special list
-	wxStaticBox*      frame      = new wxStaticBox(this, -1, "Special");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	lv_specials_                 = new ListView(this, -1);
+	auto frame      = new wxStaticBox(this, -1, "Special");
+	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	lv_specials_    = new ListView(this, -1);
 	framesizer->Add(lv_specials_, 1, wxEXPAND | wxALL, UI::pad());
 	sizer->Add(framesizer, 1, wxEXPAND);
 
@@ -99,13 +99,13 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 		width = -1;
 	}
 
-	SetMinSize(WxUtils::scaledSize(width, 300));
+	wxWindowBase::SetMinSize(WxUtils::scaledSize(width, 300));
 }
 
 // -----------------------------------------------------------------------------
 // Sets up controls on the dialog to show [special]
 // -----------------------------------------------------------------------------
-void SectorSpecialPanel::setup(int special)
+void SectorSpecialPanel::setup(int special) const
 {
 	int base_type = Game::configuration().baseSectorType(special);
 
@@ -144,11 +144,11 @@ void SectorSpecialPanel::setup(int special)
 // -----------------------------------------------------------------------------
 // Returns the currently selected sector special
 // -----------------------------------------------------------------------------
-int SectorSpecialPanel::selectedSpecial()
+int SectorSpecialPanel::selectedSpecial() const
 {
-	auto&      types     = Game::configuration().allSectorTypes();
-	int        selection = 0;
-	wxArrayInt items     = lv_specials_->selectedItems();
+	auto& types     = Game::configuration().allSectorTypes();
+	int   selection = 0;
+	auto  items     = lv_specials_->selectedItems();
 	if (items.GetCount())
 		selection = items[0];
 
@@ -196,7 +196,7 @@ int SectorSpecialPanel::selectedSpecial()
 SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent) : SDialog(parent, "Select Sector Special", "sectorspecial")
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Special panel
@@ -210,6 +210,6 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent) : SDialog(parent, "Se
 	// Bind Events
 	panel_special_->getSpecialsList()->Bind(wxEVT_LIST_ITEM_ACTIVATED, [&](wxListEvent& e) { EndModal(wxID_OK); });
 
-	SetMinClientSize(sizer->GetMinSize());
+	wxWindowBase::SetMinClientSize(sizer->GetMinSize());
 	CenterOnParent();
 }

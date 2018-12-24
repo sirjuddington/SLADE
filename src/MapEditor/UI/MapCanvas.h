@@ -8,7 +8,7 @@ class MapCanvas : public OGLCanvas, public KeyBindHandler
 {
 public:
 	MapCanvas(wxWindow* parent, int id, MapEditContext* context);
-	~MapCanvas();
+	~MapCanvas() = default;
 
 	// Drawing
 	void draw() override;

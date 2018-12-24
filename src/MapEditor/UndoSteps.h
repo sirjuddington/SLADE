@@ -10,14 +10,14 @@ class PropertyChangeUS : public UndoStep
 {
 public:
 	PropertyChangeUS(MapObject* object);
-	~PropertyChangeUS();
+	~PropertyChangeUS() = default;
 
 	void doSwap(MapObject* obj);
-	bool doUndo();
-	bool doRedo();
+	bool doUndo() override;
+	bool doRedo() override;
 
 private:
-	MapObject::Backup* backup_;
+	std::unique_ptr<MapObject::Backup> backup_;
 };
 
 // UndoStep for when a MapObject is either created or deleted
@@ -25,14 +25,14 @@ class MapObjectCreateDeleteUS : public UndoStep
 {
 public:
 	MapObjectCreateDeleteUS();
-	~MapObjectCreateDeleteUS() {}
+	~MapObjectCreateDeleteUS() = default;
 
-	bool isValid(vector<unsigned>& list) { return !(list.size() == 1 && list[0] == 0); }
+	bool isValid(vector<unsigned>& list) const { return !(list.size() == 1 && list[0] == 0); }
 	void swapLists();
-	bool doUndo();
-	bool doRedo();
+	bool doUndo() override;
+	bool doRedo() override;
 	void checkChanges();
-	bool isOk();
+	bool isOk() override;
 
 private:
 	vector<unsigned> vertices_;
@@ -47,14 +47,14 @@ class MultiMapObjectPropertyChangeUS : public UndoStep
 {
 public:
 	MultiMapObjectPropertyChangeUS();
-	~MultiMapObjectPropertyChangeUS();
+	~MultiMapObjectPropertyChangeUS() = default;
 
 	void doSwap(MapObject* obj, unsigned index);
-	bool doUndo();
-	bool doRedo();
-	bool isOk() { return !backups_.empty(); }
+	bool doUndo() override;
+	bool doRedo() override;
+	bool isOk() override { return !backups_.empty(); }
 
 private:
-	vector<MapObject::Backup*> backups_;
+	vector<std::unique_ptr<MapObject::Backup>> backups_;
 };
 } // namespace MapEditor

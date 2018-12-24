@@ -61,45 +61,26 @@ const double TAU = M_PI * 2; // Number of radians in the unit circle
 // -----------------------------------------------------------------------------
 // MapSector class constructor
 // -----------------------------------------------------------------------------
-MapSector::MapSector(SLADEMap* parent) : MapObject(Type::Sector, parent)
-{
-	// Init variables
-	special_ = 0;
-	id_      = 0;
-	floor_.plane.set(0, 0, 1, 0);
-	ceiling_.plane.set(0, 0, 1, 0);
-	poly_needsupdate_ = true;
-	setGeometryUpdated();
-}
+MapSector::MapSector(SLADEMap* parent) : MapObject(Type::Sector, parent), geometry_updated_{ App::runTimer() } {}
 
 // -----------------------------------------------------------------------------
 // MapSector class constructor
 // -----------------------------------------------------------------------------
-MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(Type::Sector, parent)
+MapSector::MapSector(const string& f_tex, const string& c_tex, SLADEMap* parent) :
+	MapObject(Type::Sector, parent),
+	floor_{ f_tex },
+	ceiling_{ c_tex },
+	geometry_updated_{ App::runTimer() }
 {
-	// Init variables
-	floor_.texture   = f_tex;
-	ceiling_.texture = c_tex;
-	special_         = 0;
-	id_              = 0;
-	floor_.plane.set(0, 0, 1, 0);
-	ceiling_.plane.set(0, 0, 1, 0);
-	poly_needsupdate_ = true;
-	setGeometryUpdated();
 }
-
-// -----------------------------------------------------------------------------
-// MapSector class destructor
-// -----------------------------------------------------------------------------
-MapSector::~MapSector() {}
 
 // -----------------------------------------------------------------------------
 // Copies another map object [s]
 // -----------------------------------------------------------------------------
-void MapSector::copy(MapObject* s)
+void MapSector::copy(MapObject* obj)
 {
 	// Don't copy a non-sector
-	if (s->objType() != Type::Sector)
+	if (obj->objType() != Type::Sector)
 		return;
 
 	setModified();
@@ -112,14 +93,14 @@ void MapSector::copy(MapObject* s)
 	}
 
 	// Basic variables
-	MapSector* sector = (MapSector*)s;
-	floor_.texture    = sector->floor_.texture;
-	ceiling_.texture  = sector->ceiling_.texture;
-	floor_.height     = sector->floor_.height;
-	ceiling_.height   = sector->ceiling_.height;
-	light_            = sector->light_;
-	special_          = sector->special_;
-	id_               = sector->id_;
+	auto sector      = dynamic_cast<MapSector*>(obj);
+	floor_.texture   = sector->floor_.texture;
+	ceiling_.texture = sector->ceiling_.texture;
+	floor_.height    = sector->floor_.height;
+	ceiling_.height  = sector->ceiling_.height;
+	light_           = sector->light_;
+	special_         = sector->special_;
+	id_              = sector->id_;
 	floor_.plane.set(0, 0, 1, sector->floor_.height);
 	ceiling_.plane.set(0, 0, 1, sector->ceiling_.height);
 
@@ -131,7 +112,7 @@ void MapSector::copy(MapObject* s)
 	}
 
 	// Other properties
-	MapObject::copy(s);
+	MapObject::copy(obj);
 }
 
 // -----------------------------------------------------------------------------
@@ -313,8 +294,8 @@ Vec2f MapSector::getPoint(Point point)
 {
 	if (point == Point::Mid)
 	{
-		BBox bbox = boundingBox();
-		return Vec2f(bbox.min.x + ((bbox.max.x - bbox.min.x) * 0.5), bbox.min.y + ((bbox.max.y - bbox.min.y) * 0.5));
+		auto bbox = boundingBox();
+		return { bbox.min.x + ((bbox.max.x - bbox.min.x) * 0.5), bbox.min.y + ((bbox.max.y - bbox.min.y) * 0.5) };
 	}
 	else
 	{
@@ -332,9 +313,9 @@ void MapSector::updateBBox()
 	// Reset bounding box
 	bbox_.reset();
 
-	for (unsigned a = 0; a < connected_sides_.size(); a++)
+	for (auto& connected_side : connected_sides_)
 	{
-		MapLine* line = connected_sides_[a]->parentLine();
+		auto line = connected_side->parentLine();
 		if (!line)
 			continue;
 		bbox_.extend(line->v1()->xPos(), line->v1()->yPos());
@@ -384,7 +365,7 @@ bool MapSector::isWithin(Vec2f point)
 	double   dist;
 	double   min_dist = 999999;
 	MapLine* nline    = nullptr;
-	for (unsigned a = 0; a < connected_sides_.size(); a++)
+	for (auto& connected_side : connected_sides_)
 	{
 		// Calculate distance to line
 		// if (connected_sides[a] == NULL) {
@@ -394,12 +375,12 @@ bool MapSector::isWithin(Vec2f point)
 		//	LOG_MESSAGE(3, "Warning: connected side #%i has a NULL pointer parent line!",
 		// connected_sides[a]->getIndex()); 	continue;
 		//}
-		dist = connected_sides_[a]->parentLine()->distanceTo(point);
+		dist = connected_side->parentLine()->distanceTo(point);
 
 		// Check distance
 		if (dist < min_dist)
 		{
-			nline    = connected_sides_[a]->parentLine();
+			nline    = connected_side->parentLine();
 			min_dist = dist;
 		}
 	}
@@ -448,10 +429,10 @@ double MapSector::distanceTo(Vec2f point, double maxdist)
 		return -1;
 
 	// Go through connected sides
-	for (unsigned a = 0; a < connected_sides_.size(); a++)
+	for (auto& connected_side : connected_sides_)
 	{
 		// Get side parent line
-		MapLine* line = connected_sides_[a]->parentLine();
+		auto line = connected_side->parentLine();
 		if (!line)
 			continue;
 
@@ -470,11 +451,11 @@ double MapSector::distanceTo(Vec2f point, double maxdist)
 bool MapSector::putLines(vector<MapLine*>& list)
 {
 	// Go through connected sides
-	for (unsigned a = 0; a < connected_sides_.size(); a++)
+	for (auto& connected_side : connected_sides_)
 	{
 		// Add the side's parent line to the list if it doesn't already exist
-		if (std::find(list.begin(), list.end(), connected_sides_[a]->parentLine()) == list.end())
-			list.push_back(connected_sides_[a]->parentLine());
+		if (std::find(list.begin(), list.end(), connected_side->parentLine()) == list.end())
+			list.push_back(connected_side->parentLine());
 	}
 
 	return true;
@@ -485,11 +466,9 @@ bool MapSector::putLines(vector<MapLine*>& list)
 // -----------------------------------------------------------------------------
 bool MapSector::putVertices(vector<MapVertex*>& list)
 {
-	// Go through connected sides
-	MapLine* line;
-	for (unsigned a = 0; a < connected_sides_.size(); a++)
+	for (auto& connected_side : connected_sides_)
 	{
-		line = connected_sides_[a]->parentLine();
+		auto line = connected_side->parentLine();
 
 		// Add the side's parent line's vertices to the list if they doesn't already exist
 		if (line->v1() && std::find(list.begin(), list.end(), line->v1()) == list.end())
@@ -506,11 +485,9 @@ bool MapSector::putVertices(vector<MapVertex*>& list)
 // -----------------------------------------------------------------------------
 bool MapSector::putVertices(vector<MapObject*>& list)
 {
-	// Go through connected sides
-	MapLine* line;
-	for (unsigned a = 0; a < connected_sides_.size(); a++)
+	for (auto& connected_side : connected_sides_)
 	{
-		line = connected_sides_[a]->parentLine();
+		auto line = connected_side->parentLine();
 
 		// Add the side's parent line's vertices to the list if they doesn't already exist
 		if (line->v1() && std::find(list.begin(), list.end(), line->v1()) == list.end())

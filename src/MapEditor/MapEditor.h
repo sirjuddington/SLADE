@@ -47,6 +47,12 @@ enum class SectorMode
 	Ceiling
 };
 
+enum class TextureType
+{
+	Texture,
+	Flat
+};
+
 struct Item
 {
 	int      index;
@@ -99,8 +105,12 @@ void showShapeDrawPanel(bool show = true);
 void showObjectEditPanel(bool show = true, ObjectEditGroup* group = nullptr);
 
 // Browser
-string browseTexture(const string& init_texture, int tex_type, SLADEMap& map, const string& title = "Browse Texture");
-int    browseThingType(int init_type, SLADEMap& map);
+string browseTexture(
+	const string& init_texture,
+	TextureType   tex_type,
+	SLADEMap&     map,
+	const string& title = "Browse Texture");
+int browseThingType(int init_type, SLADEMap& map);
 
 // Misc
 ItemType baseItemType(const ItemType& type);

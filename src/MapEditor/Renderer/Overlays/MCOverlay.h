@@ -6,15 +6,11 @@
 class MCOverlay
 {
 public:
-	MCOverlay()
-	{
-		active_         = true;
-		allow_3d_mlook_ = false;
-	}
-	virtual ~MCOverlay() {}
+	MCOverlay(bool allow_3d_mlook = false) : allow_3d_mlook_{ allow_3d_mlook } {}
+	virtual ~MCOverlay() = default;
 
-	bool isActive() { return active_; }
-	bool allow3dMlook() { return allow_3d_mlook_; }
+	bool isActive() const { return active_; }
+	bool allow3dMlook() const { return allow_3d_mlook_; }
 
 	virtual void update(long frametime) {}
 	virtual void draw(int width, int height, float fade = 1.0f) {}
@@ -22,9 +18,9 @@ public:
 	virtual void mouseMotion(int x, int y) {}
 	virtual void mouseLeftClick() {}
 	virtual void mouseRightClick() {}
-	virtual void keyDown(string key) {}
+	virtual void keyDown(const string& key) {}
 
 protected:
-	bool active_;
-	bool allow_3d_mlook_;
+	bool active_         = true;
+	bool allow_3d_mlook_ = false;
 };

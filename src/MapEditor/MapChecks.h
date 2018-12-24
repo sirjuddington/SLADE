@@ -30,7 +30,7 @@ public:
 	};
 
 	MapCheck(SLADEMap* map) : map_{ map } {}
-	virtual ~MapCheck() {}
+	virtual ~MapCheck() = default;
 
 	virtual void       doCheck()                                                             = 0;
 	virtual unsigned   nProblems()                                                           = 0;
@@ -40,10 +40,12 @@ public:
 	virtual string     progressText() { return "Checking..."; }
 	virtual string     fixText(unsigned fix_type, unsigned index) { return ""; }
 
-	static MapCheck* standardCheck(StandardCheck type, SLADEMap* map, MapTextureManager* texman = nullptr);
-	static MapCheck* standardCheck(const string& type_id, SLADEMap* map, MapTextureManager* texman = nullptr);
-	static string    standardCheckDesc(StandardCheck type);
-	static string    standardCheckId(StandardCheck type);
+	typedef std::unique_ptr<MapCheck> UPtr;
+
+	static UPtr   standardCheck(StandardCheck type, SLADEMap* map, MapTextureManager* texman = nullptr);
+	static UPtr   standardCheck(const string& type_id, SLADEMap* map, MapTextureManager* texman = nullptr);
+	static string standardCheckDesc(StandardCheck type);
+	static string standardCheckId(StandardCheck type);
 
 protected:
 	SLADEMap* map_;

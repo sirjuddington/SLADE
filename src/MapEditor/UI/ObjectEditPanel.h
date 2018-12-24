@@ -6,7 +6,7 @@ class ObjectEditPanel : public wxPanel
 {
 public:
 	ObjectEditPanel(wxWindow* parent);
-	~ObjectEditPanel() {}
+	~ObjectEditPanel() = default;
 
 	void init(ObjectEditGroup* group);
 	void update(ObjectEditGroup* group, bool lock_rotation = false) const;

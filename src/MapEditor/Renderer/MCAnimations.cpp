@@ -65,18 +65,7 @@ EXTERN_CVAR(Bool, sector_selected_fill)
 // -----------------------------------------------------------------------------
 // MCASelboxFader class constructor
 // -----------------------------------------------------------------------------
-MCASelboxFader::MCASelboxFader(long start, Vec2f tl, Vec2f br) : MCAnimation(start)
-{
-	// Init variables
-	this->tl_ = tl;
-	this->br_ = br;
-	fade_     = 1.0f;
-}
-
-// -----------------------------------------------------------------------------
-// MCASelboxFader class destructor
-// -----------------------------------------------------------------------------
-MCASelboxFader::~MCASelboxFader() {}
+MCASelboxFader::MCASelboxFader(long start, Vec2f tl, Vec2f br) : MCAnimation(start), tl_{ tl }, br_{ br } {}
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -87,10 +76,7 @@ bool MCASelboxFader::update(long time)
 	fade_ = 1.0f - ((time - starttime_) * 0.006f);
 
 	// Check if animation is finished
-	if (fade_ < 0.0f)
-		return false;
-	else
-		return true;
+	return fade_ >= 0.0f;
 }
 
 // -----------------------------------------------------------------------------
@@ -138,25 +124,17 @@ void MCASelboxFader::draw()
 // MCAThingSelection class constructor
 // -----------------------------------------------------------------------------
 MCAThingSelection::MCAThingSelection(long start, double x, double y, double radius, double scale_inv, bool select) :
-	MCAnimation(start)
+	MCAnimation(start),
+	x_{ x },
+	y_{ y },
+	radius_{ radius },
+	select_{ select }
 {
-	// Init variables
-	this->x_      = x;
-	this->y_      = y;
-	this->radius_ = radius;
-	this->select_ = select;
-	this->fade_   = 1.0f;
-
 	// Adjust radius
 	if (!thing_overlay_square)
-		this->radius_ += 8;
-	this->radius_ += halo_width * scale_inv;
+		radius_ += 8;
+	radius_ += halo_width * scale_inv;
 }
-
-// -----------------------------------------------------------------------------
-// MCAThingSelection class destructor
-// -----------------------------------------------------------------------------
-MCAThingSelection::~MCAThingSelection() {}
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -167,10 +145,7 @@ bool MCAThingSelection::update(long time)
 	fade_ = 1.0f - ((time - starttime_) * 0.004f);
 
 	// Check if animation is finished
-	if (fade_ < 0.0f || fade_ > 1.0f)
-		return false;
-	else
-		return true;
+	return !(fade_ < 0.0f || fade_ > 1.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -193,7 +168,7 @@ void MCAThingSelection::draw()
 	if (!thing_overlay_square)
 	{
 		// Get thing selection texture
-		GLTexture* tex = nullptr;
+		GLTexture* tex;
 		if (thing_drawtype == MapRenderer2D::ThingDrawType::Round
 			|| thing_drawtype == MapRenderer2D::ThingDrawType::Sprite)
 			tex = MapEditor::textureManager().editorImage("thing/hilight");
@@ -237,33 +212,26 @@ void MCAThingSelection::draw()
 // -----------------------------------------------------------------------------
 // MCALineSelection class constructor
 // -----------------------------------------------------------------------------
-MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool select) : MCAnimation(start)
+MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool select) :
+	MCAnimation(start),
+	select_{ select }
 {
-	// Init variables
-	this->select_ = select;
-	this->fade_   = 1.0f;
-
 	// Go through list of lines
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto& line : lines)
 	{
-		if (!lines[a])
+		if (!line)
 			continue;
 
 		// Add line
-		this->lines_.push_back(Rectf(lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2()));
+		lines_.emplace_back(line->x1(), line->y1(), line->x2(), line->y2());
 
 		// Calculate line direction tab
-		Vec2f mid = lines[a]->getPoint(MapObject::Point::Mid);
-		Vec2f tab = lines[a]->dirTabPoint();
+		auto mid = line->getPoint(MapObject::Point::Mid);
+		auto tab = line->dirTabPoint();
 
-		this->tabs_.push_back(Rectf(mid.x, mid.y, tab.x, tab.y));
+		tabs_.emplace_back(mid.x, mid.y, tab.x, tab.y);
 	}
 }
-
-// -----------------------------------------------------------------------------
-// MCALineSelection class destructor
-// -----------------------------------------------------------------------------
-MCALineSelection::~MCALineSelection() {}
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -274,10 +242,7 @@ bool MCALineSelection::update(long time)
 	fade_ = 1.0f - ((time - starttime_) * 0.004f);
 
 	// Check if animation is finished
-	if (fade_ < 0.0f || fade_ > 1.0f)
-		return false;
-	else
-		return true;
+	return !(fade_ < 0.0f || fade_ > 1.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -321,29 +286,21 @@ void MCALineSelection::draw()
 // MCAVertexSelection class constructor
 // -----------------------------------------------------------------------------
 MCAVertexSelection::MCAVertexSelection(long start, vector<MapVertex*>& verts, double size, bool select) :
-	MCAnimation(start)
+	MCAnimation(start),
+	size_{ size },
+	select_{ select }
 {
-	// Init variables
-	this->size_   = size;
-	this->select_ = select;
-	this->fade_   = 1.0f;
-
 	// Setup vertices list
-	for (unsigned a = 0; a < verts.size(); a++)
+	for (auto& vertex : verts)
 	{
-		if (!verts[a])
+		if (!vertex)
 			continue;
-		vertices_.push_back(Vec2f(verts[a]->xPos(), verts[a]->yPos()));
+		vertices_.emplace_back(vertex->xPos(), vertex->yPos());
 	}
 
 	if (!select)
-		this->size_ = size * 1.8f;
+		size_ = size * 1.8f;
 }
-
-// -----------------------------------------------------------------------------
-// MCAVertexSelection class destructor
-// -----------------------------------------------------------------------------
-MCAVertexSelection::~MCAVertexSelection() {}
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -354,10 +311,7 @@ bool MCAVertexSelection::update(long time)
 	fade_ = 1.0f - ((time - starttime_) * 0.004f);
 
 	// Check if animation is finished
-	if (fade_ < 0.0f || fade_ > 1.0f)
-		return false;
-	else
-		return true;
+	return !(fade_ < 0.0f || fade_ > 1.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -426,8 +380,8 @@ void MCAVertexSelection::draw()
 	else
 		glPointSize(size_);
 	glBegin(GL_POINTS);
-	for (unsigned a = 0; a < vertices_.size(); a++)
-		glVertex2d(vertices_[a].x, vertices_[a].y);
+	for (auto& v : vertices_)
+		glVertex2d(v.x, v.y);
 	glEnd();
 
 	if (point)
@@ -448,21 +402,14 @@ void MCAVertexSelection::draw()
 // -----------------------------------------------------------------------------
 // MCASectorSelection class constructor
 // -----------------------------------------------------------------------------
-MCASectorSelection::MCASectorSelection(long start, vector<Polygon2D*>& polys, bool select) : MCAnimation(start)
+MCASectorSelection::MCASectorSelection(long start, vector<Polygon2D*>& polys, bool select) :
+	MCAnimation(start),
+	select_{ select }
 {
-	// Init variables
-	this->select_ = select;
-	this->fade_   = 1.0f;
-
 	// Copy polygon list
-	for (unsigned a = 0; a < polys.size(); a++)
-		this->polygons_.push_back(polys[a]);
+	for (auto poly : polys)
+		polygons_.push_back(poly);
 }
-
-// -----------------------------------------------------------------------------
-// MCASectorSelection class destructor
-// -----------------------------------------------------------------------------
-MCASectorSelection::~MCASectorSelection() {}
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -473,10 +420,7 @@ bool MCASectorSelection::update(long time)
 	fade_ = 1.0f - ((time - starttime_) * 0.004f);
 
 	// Check if animation is finished
-	if (fade_ < 0.0f || fade_ > 1.0f)
-		return false;
-	else
-		return true;
+	return !(fade_ < 0.0f || fade_ > 1.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -500,8 +444,8 @@ void MCASectorSelection::draw()
 	OpenGL::setColour(col);
 
 	// Draw polygons
-	for (unsigned a = 0; a < polygons_.size(); a++)
-		polygons_[a]->render();
+	for (auto& polygon : polygons_)
+		polygon->render();
 }
 
 
@@ -515,21 +459,12 @@ void MCASectorSelection::draw()
 // -----------------------------------------------------------------------------
 // MCA3dWallSelection class constructor
 // -----------------------------------------------------------------------------
-MCA3dWallSelection::MCA3dWallSelection(long start, Vec3f points[4], bool select) : MCAnimation(start, true)
+MCA3dWallSelection::MCA3dWallSelection(long start, Vec3f points[4], bool select) :
+	MCAnimation(start, true),
+	points_{ points[0], points[1], points[2], points[3] },
+	select_{ select }
 {
-	// Init variables
-	this->select_    = select;
-	this->fade_      = 1.0f;
-	this->points_[0] = points[0];
-	this->points_[1] = points[1];
-	this->points_[2] = points[2];
-	this->points_[3] = points[3];
 }
-
-// -----------------------------------------------------------------------------
-// MCA3dWallSelection class destructor
-// -----------------------------------------------------------------------------
-MCA3dWallSelection::~MCA3dWallSelection() {}
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -540,10 +475,7 @@ bool MCA3dWallSelection::update(long time)
 	fade_ = 1.0f - ((time - starttime_) * 0.004f);
 
 	// Check if animation is finished
-	if (fade_ < 0.0f || fade_ > 1.0f)
-		return false;
-	else
-		return true;
+	return !(fade_ < 0.0f || fade_ > 1.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -566,16 +498,16 @@ void MCA3dWallSelection::draw()
 	glLineWidth(2.0f);
 	glEnable(GL_LINE_SMOOTH);
 	glBegin(GL_LINE_LOOP);
-	for (unsigned a = 0; a < 4; a++)
-		glVertex3d(points_[a].x, points_[a].y, points_[a].z);
+	for (auto& point : points_)
+		glVertex3d(point.x, point.y, point.z);
 	glEnd();
 
 	// Draw quad fill
 	col.a *= 0.5;
 	OpenGL::setColour(col, false);
 	glBegin(GL_QUADS);
-	for (unsigned a = 0; a < 4; a++)
-		glVertex3d(points_[a].x, points_[a].y, points_[a].z);
+	for (auto& point : points_)
+		glVertex3d(point.x, point.y, point.z);
 	glEnd();
 }
 
@@ -591,19 +523,12 @@ void MCA3dWallSelection::draw()
 // MCA3dFlatSelection class constructor
 // -----------------------------------------------------------------------------
 MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, Plane plane, bool select) :
-	MCAnimation(start, true)
+	MCAnimation(start, true),
+	sector_{ sector },
+	plane_{ plane },
+	select_{ select }
 {
-	// Init variables
-	this->sector_ = sector;
-	this->plane_  = plane;
-	this->select_ = select;
-	this->fade_   = 1.0f;
 }
-
-// -----------------------------------------------------------------------------
-// MCA3dFlatSelection class destructor
-// -----------------------------------------------------------------------------
-MCA3dFlatSelection::~MCA3dFlatSelection() {}
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -614,10 +539,7 @@ bool MCA3dFlatSelection::update(long time)
 	fade_ = 1.0f - ((time - starttime_) * 0.004f);
 
 	// Check if animation is finished
-	if (fade_ < 0.0f || fade_ > 1.0f)
-		return false;
-	else
-		return true;
+	return !(fade_ < 0.0f || fade_ > 1.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -664,18 +586,13 @@ void MCA3dFlatSelection::draw()
 // MCAHilightFade class constructor
 // -----------------------------------------------------------------------------
 MCAHilightFade::MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init) :
-	MCAnimation(start)
+	MCAnimation(start),
+	object_{ object },
+	fade_{ fade_init },
+	init_fade_{ fade_init },
+	renderer_{ renderer }
 {
-	this->object_    = object;
-	this->renderer_  = renderer;
-	this->init_fade_ = fade_init;
-	this->fade_      = fade_init;
 }
-
-// -----------------------------------------------------------------------------
-// MCAHilightFade class destructor
-// -----------------------------------------------------------------------------
-MCAHilightFade::~MCAHilightFade() {}
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
@@ -686,10 +603,7 @@ bool MCAHilightFade::update(long time)
 	fade_ = init_fade_ - ((time - starttime_) * 0.006f);
 
 	// Check if animation is finished
-	if (fade_ < 0.0f || fade_ > 1.0f)
-		return false;
-	else
-		return true;
+	return !(fade_ < 0.0f || fade_ > 1.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -734,11 +648,6 @@ MCAHilightFade3D::MCAHilightFade3D(
 }
 
 // -----------------------------------------------------------------------------
-// MCAHilightFade3D class destructor
-// -----------------------------------------------------------------------------
-MCAHilightFade3D::~MCAHilightFade3D() {}
-
-// -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
 // -----------------------------------------------------------------------------
 bool MCAHilightFade3D::update(long time)
@@ -747,10 +656,7 @@ bool MCAHilightFade3D::update(long time)
 	fade_ = init_fade_ - ((time - starttime_) * 0.006f);
 
 	// Check if animation is finished
-	if (fade_ < 0.0f || fade_ > 1.0f)
-		return false;
-	else
-		return true;
+	return !(fade_ < 0.0f || fade_ > 1.0f);
 }
 
 // -----------------------------------------------------------------------------

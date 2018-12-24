@@ -44,31 +44,12 @@
 // -----------------------------------------------------------------------------
 // MapThing class constructor
 // -----------------------------------------------------------------------------
-MapThing::MapThing(SLADEMap* parent) : MapObject(Type::Thing, parent)
+MapThing::MapThing(double x, double y, short type, SLADEMap* parent) :
+	MapObject(Type::Thing, parent),
+	type_{ type },
+	position_{ x, y }
 {
-	// Init variables
-	this->x_     = 0;
-	this->y_     = 0;
-	this->type_  = 1;
-	this->angle_ = 0;
 }
-
-// -----------------------------------------------------------------------------
-// MapThing class constructor
-// -----------------------------------------------------------------------------
-MapThing::MapThing(double x, double y, short type, SLADEMap* parent) : MapObject(Type::Thing, parent)
-{
-	// Init variables
-	this->x_     = x;
-	this->y_     = y;
-	this->type_  = type;
-	this->angle_ = 0;
-}
-
-// -----------------------------------------------------------------------------
-// MapThing class destructor
-// -----------------------------------------------------------------------------
-MapThing::~MapThing() {}
 
 // -----------------------------------------------------------------------------
 // Returns the object point [point].
@@ -76,16 +57,7 @@ MapThing::~MapThing() {}
 // -----------------------------------------------------------------------------
 Vec2f MapThing::getPoint(Point point)
 {
-	return Vec2f(x_, y_);
-}
-
-// -----------------------------------------------------------------------------
-// Returns the position of the thing, more explicitly than the generic method
-// getPoint
-// -----------------------------------------------------------------------------
-Vec2f MapThing::point()
-{
-	return Vec2f(x_, y_);
+	return position_;
 }
 
 // -----------------------------------------------------------------------------
@@ -96,9 +68,9 @@ int MapThing::intProperty(const string& key)
 	if (key == "type")
 		return type_;
 	else if (key == "x")
-		return (int)x_;
+		return (int)position_.x;
 	else if (key == "y")
-		return (int)y_;
+		return (int)position_.y;
 	else if (key == "angle")
 		return angle_;
 	else
@@ -111,9 +83,9 @@ int MapThing::intProperty(const string& key)
 double MapThing::floatProperty(const string& key)
 {
 	if (key == "x")
-		return x_;
+		return position_.x;
 	else if (key == "y")
-		return y_;
+		return position_.y;
 	else
 		return MapObject::floatProperty(key);
 }
@@ -129,9 +101,9 @@ void MapThing::setIntProperty(const string& key, int value)
 	if (key == "type")
 		type_ = value;
 	else if (key == "x")
-		x_ = value;
+		position_.x = value;
 	else if (key == "y")
-		y_ = value;
+		position_.y = value;
 	else if (key == "angle")
 		angle_ = value;
 	else
@@ -147,9 +119,9 @@ void MapThing::setFloatProperty(const string& key, double value)
 	setModified();
 
 	if (key == "x")
-		x_ = value;
+		position_.x = value;
 	else if (key == "y")
-		y_ = value;
+		position_.y = value;
 	else
 		return MapObject::setFloatProperty(key, value);
 }
@@ -164,11 +136,11 @@ void MapThing::copy(MapObject* c)
 		return;
 
 	// Basic variables
-	MapThing* thing = (MapThing*)c;
-	this->x_        = thing->x_;
-	this->y_        = thing->y_;
-	this->type_     = thing->type_;
-	this->angle_    = thing->angle_;
+	auto thing        = dynamic_cast<MapThing*>(c);
+	this->position_.x = thing->position_.x;
+	this->position_.y = thing->position_.y;
+	this->type_       = thing->type_;
+	this->angle_      = thing->angle_;
 
 	// Other properties
 	MapObject::copy(c);
@@ -180,7 +152,7 @@ void MapThing::copy(MapObject* c)
 void MapThing::setAnglePoint(Vec2f point)
 {
 	// Calculate direction vector
-	Vec2f  vec(point.x - x_, point.y - y_);
+	Vec2f  vec(point.x - position_.x, point.y - position_.y);
 	double mag = sqrt((vec.x * vec.x) + (vec.y * vec.y));
 	double x   = vec.x / mag;
 	double y   = vec.y / mag;
@@ -217,8 +189,8 @@ void MapThing::writeBackup(Backup* backup)
 	backup->props_internal["type"] = type_;
 
 	// Position
-	backup->props_internal["x"] = x_;
-	backup->props_internal["y"] = y_;
+	backup->props_internal["x"] = position_.x;
+	backup->props_internal["y"] = position_.y;
 
 	// Angle
 	backup->props_internal["angle"] = angle_;
@@ -233,8 +205,8 @@ void MapThing::readBackup(Backup* backup)
 	type_ = backup->props_internal["type"].intValue();
 
 	// Position
-	x_ = backup->props_internal["x"].floatValue();
-	y_ = backup->props_internal["y"].floatValue();
+	position_.x = backup->props_internal["x"].floatValue();
+	position_.y = backup->props_internal["y"].floatValue();
 
 	// Angle
 	angle_ = backup->props_internal["angle"].intValue();

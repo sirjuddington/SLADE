@@ -61,23 +61,6 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 
 
 // -----------------------------------------------------------------------------
-// InfoOverlay3D class constructor
-// -----------------------------------------------------------------------------
-InfoOverlay3D::InfoOverlay3D() :
-	current_type_(MapEditor::ItemType::WallMiddle),
-	texture_(nullptr),
-	thing_icon_(false),
-	object_(nullptr),
-	last_update_(0)
-{
-}
-
-// -----------------------------------------------------------------------------
-// InfoOverlay3D class destructor
-// -----------------------------------------------------------------------------
-InfoOverlay3D::~InfoOverlay3D() {}
-
-// -----------------------------------------------------------------------------
 // Updates the info text for the object of [item_type] at [item_index] in [map]
 // -----------------------------------------------------------------------------
 void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEMap* map)
@@ -101,10 +84,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		|| item_type == MapEditor::ItemType::WallTop)
 	{
 		// Get line and side
-		MapSide* side = map->side(item_index);
+		auto side = map->side(item_index);
 		if (!side)
 			return;
-		MapLine* line = side->parentLine();
+		auto line = side->parentLine();
 		if (!line)
 			return;
 		object_ = side;
@@ -137,11 +120,11 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// Part
 		if (item_type == MapEditor::ItemType::WallBottom)
-			info2_.push_back("Lower Texture");
+			info2_.emplace_back("Lower Texture");
 		else if (item_type == MapEditor::ItemType::WallMiddle)
-			info2_.push_back("Middle Texture");
+			info2_.emplace_back("Middle Texture");
 		else
-			info2_.push_back("Upper Texture");
+			info2_.emplace_back("Upper Texture");
 
 		// Offsets
 		if (map->currentFormat() == MapFormat::UDMF
@@ -218,7 +201,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		}
 		else
 		{
-			info2_.push_back("");
+			info2_.emplace_back("");
 		}
 
 		// Height of this section of the wall
@@ -228,18 +211,18 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		MapSide* other_side;
 		if (side == line->s1())
 		{
-			left_point  = line->v1()->point();
-			right_point = line->v2()->point();
+			left_point  = line->v1()->position();
+			right_point = line->v2()->position();
 			other_side  = line->s2();
 		}
 		else
 		{
-			left_point  = line->v2()->point();
-			right_point = line->v1()->point();
+			left_point  = line->v2()->position();
+			right_point = line->v1()->position();
 			other_side  = line->s1();
 		}
 
-		MapSector* this_sector  = side->sector();
+		auto       this_sector  = side->sector();
 		MapSector* other_sector = nullptr;
 		if (other_side)
 			other_sector = other_side->sector();
@@ -250,11 +233,11 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			// A two-sided line's middle area is the smallest distance between
 			// both sides' floors and ceilings, which is more complicated with
 			// slopes.
-			Plane floor1   = this_sector->floor().plane;
-			Plane floor2   = other_sector->floor().plane;
-			Plane ceiling1 = this_sector->ceiling().plane;
-			Plane ceiling2 = other_sector->ceiling().plane;
-			left_height    = min(ceiling1.height_at(left_point), ceiling2.height_at(left_point))
+			auto floor1   = this_sector->floor().plane;
+			auto floor2   = other_sector->floor().plane;
+			auto ceiling1 = this_sector->ceiling().plane;
+			auto ceiling2 = other_sector->ceiling().plane;
+			left_height   = min(ceiling1.height_at(left_point), ceiling2.height_at(left_point))
 						  - max(floor1.height_at(left_point), floor2.height_at(left_point));
 			right_height = min(ceiling1.height_at(right_point), ceiling2.height_at(right_point))
 						   - max(floor1.height_at(right_point), floor2.height_at(right_point));
@@ -307,7 +290,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 	else if (item_type == MapEditor::ItemType::Floor || item_type == MapEditor::ItemType::Ceiling)
 	{
 		// Get sector
-		MapSector* sector = map->sector(item_index);
+		auto sector = map->sector(item_index);
 		if (!sector)
 			return;
 		object_ = sector;
@@ -433,7 +416,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// index, type, position, sector, zpos, height?, radius?
 
 		// Get thing
-		MapThing* thing = map->thing(item_index);
+		auto thing = map->thing(item_index);
 		if (!thing)
 			return;
 		object_ = thing;
@@ -475,17 +458,17 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			string argstr = tt.argSpec().stringDesc(args, argxstr);
 
 			if (argstr.IsEmpty())
-				info2_.push_back("No Args");
+				info2_.emplace_back("No Args");
 			else
-				info2_.push_back(argstr);
+				info2_.emplace_back(argstr);
 		}
 
 		// Sector
-		int sector = map->sectorAt(thing->point());
+		int sector = map->sectorAt(thing->position());
 		if (sector >= 0)
-			info2_.push_back(S_FMT("In Sector #%d", sector));
+			info2_.emplace_back(S_FMT("In Sector #%d", sector));
 		else
-			info2_.push_back("No Sector");
+			info2_.emplace_back("No Sector");
 
 
 		// Texture
@@ -514,15 +497,15 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 		return;
 
 	// Don't bother if no info
-	if (info_.size() == 0)
+	if (info_.empty())
 		return;
 
 	// Update if needed
 	if (object_
 		&& (object_->modifiedTime() > last_update_ || // object updated
 			(object_->objType() == MapObject::Type::Side
-			 && (((MapSide*)object_)->parentLine()->modifiedTime() > last_update_ || // parent line updated
-				 ((MapSide*)object_)->sector()->modifiedTime() > last_update_))))    // parent sector updated
+			 && (dynamic_cast<MapSide*>(object_)->parentLine()->modifiedTime() > last_update_ || // parent line updated
+				 dynamic_cast<MapSide*>(object_)->sector()->modifiedTime() > last_update_)))) // parent sector updated
 		update(object_->index(), current_type_, object_->parentMap());
 
 	// Init GL stuff
@@ -555,18 +538,18 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 
 	// Draw info text lines (left)
 	int y = height;
-	for (unsigned a = 0; a < info_.size(); a++)
+	for (const auto& text : info_)
 	{
 		Drawing::drawText(
-			info_[a], middle - (40 * scale) - 4, bottom - y, col_fg, Drawing::Font::Condensed, Drawing::Align::Right);
+			text, middle - (40 * scale) - 4, bottom - y, col_fg, Drawing::Font::Condensed, Drawing::Align::Right);
 		y -= line_height;
 	}
 
 	// Draw info text lines (right)
 	y = height;
-	for (unsigned a = 0; a < info2_.size(); a++)
+	for (const auto& text : info2_)
 	{
-		Drawing::drawText(info2_[a], middle + (40 * scale) + 4, bottom - y, col_fg, Drawing::Font::Condensed);
+		Drawing::drawText(text, middle + (40 * scale) + 4, bottom - y, col_fg, Drawing::Font::Condensed);
 		y -= line_height;
 	}
 
@@ -612,7 +595,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		else if (texname_ == "-")
 		{
 			// Draw missing icon
-			GLTexture* icon = MapEditor::textureManager().editorImage("thing/minus");
+			auto icon = MapEditor::textureManager().editorImage("thing/minus");
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 			Drawing::drawTextureWithin(
@@ -621,7 +604,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		else if (texname_ != "-" && texture_ == &(GLTexture::missingTex()))
 		{
 			// Draw unknown icon
-			GLTexture* icon = MapEditor::textureManager().editorImage("thing/unknown");
+			auto icon = MapEditor::textureManager().editorImage("thing/unknown");
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 			Drawing::drawTextureWithin(

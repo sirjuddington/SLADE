@@ -56,19 +56,10 @@
 // -----------------------------------------------------------------------------
 // LineInfoOverlay class constructor
 // -----------------------------------------------------------------------------
-LineInfoOverlay::LineInfoOverlay()
+LineInfoOverlay::LineInfoOverlay() :
+	scale_{ Drawing::fontSize() / 12.0 },
+	text_box_{ "", Drawing::Font::Condensed, 100, 16 * scale_ }
 {
-	scale_     = Drawing::fontSize() / 12.0;
-	text_box_  = new TextBox("", Drawing::Font::Condensed, 100, 16 * scale_);
-	last_size_ = 100;
-}
-
-// -----------------------------------------------------------------------------
-// LineInfoOverlay class destructor
-// -----------------------------------------------------------------------------
-LineInfoOverlay::~LineInfoOverlay()
-{
-	delete text_box_;
 }
 
 // -----------------------------------------------------------------------------
@@ -130,13 +121,13 @@ void LineInfoOverlay::update(MapLine* line)
 		info_text += (S_FMT("\nFlags: %s", Game::configuration().lineFlagsString(line)));
 
 	// Setup text box
-	text_box_->setText(info_text);
+	text_box_.setText(info_text);
 
 	// Check needed textures
 	int needed_tex = line->needsTexture();
 
 	// Front side
-	MapSide* s = line->s1();
+	auto s = line->s1();
 	if (s)
 	{
 		int xoff           = s->intProperty("offsetx");
@@ -202,9 +193,9 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	if (last_size_ != right - sides_width)
 	{
 		last_size_ = right - sides_width;
-		text_box_->setSize(right - sides_width);
+		text_box_.setSize(right - sides_width);
 	}
-	int height = text_box_->height() + 4;
+	int height = text_box_.height() + 4;
 
 	// Get colours
 	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
@@ -234,8 +225,8 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	Drawing::drawBorderedRect(0, bottom - height - 4, main_panel_end, bottom + 2, col_bg, col_border);
 
 	// Draw info text lines
-	text_box_->setLineHeight(16 * scale_);
-	text_box_->draw(2, bottom - height, col_fg);
+	text_box_.setLineHeight(16 * scale_);
+	text_box_.draw(2, bottom - height, col_fg);
 
 	// Side info
 	int x = right - sinf_size;
@@ -292,7 +283,7 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, Side& side, i
 // -----------------------------------------------------------------------------
 // Draws a texture box with name underneath for [texture]
 // -----------------------------------------------------------------------------
-void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, bool needed, string pos)
+void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, bool needed, const string& pos) const
 {
 	bool required     = (needed && texture == "-");
 	int  tex_box_size = 80 * scale_;
@@ -303,7 +294,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	col_fg.a       = col_fg.a * alpha;
 
 	// Get texture
-	GLTexture* tex = MapEditor::textureManager().texture(
+	auto tex = MapEditor::textureManager().texture(
 		texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 
 	// Valid texture
@@ -333,7 +324,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	else if (tex == &(GLTexture::missingTex()) && texture != "-")
 	{
 		// Draw unknown icon
-		GLTexture* icon = MapEditor::textureManager().editorImage("thing/unknown");
+		auto icon = MapEditor::textureManager().editorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
@@ -346,7 +337,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	else if (required)
 	{
 		// Draw missing icon
-		GLTexture* icon = MapEditor::textureManager().editorImage("thing/minus");
+		auto icon = MapEditor::textureManager().editorImage("thing/minus");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);

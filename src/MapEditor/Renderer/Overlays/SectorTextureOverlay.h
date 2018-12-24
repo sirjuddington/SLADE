@@ -6,38 +6,37 @@ class MapSector;
 class SectorTextureOverlay : public MCOverlay
 {
 public:
-	SectorTextureOverlay();
-	~SectorTextureOverlay();
+	SectorTextureOverlay()  = default;
+	~SectorTextureOverlay() = default;
 
 	void openSectors(vector<MapSector*>& list);
-	void close(bool cancel);
-	void update(long frametime);
+	void close(bool cancel) override;
+	void update(long frametime) override;
 
 	// Drawing
-	void draw(int width, int height, float fade);
-	void drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover);
+	void draw(int width, int height, float fade) override;
+	void drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover) const;
 
 	// Input
-	void mouseMotion(int x, int y);
-	void mouseLeftClick();
-	void mouseRightClick();
-	void keyDown(string key);
+	void mouseMotion(int x, int y) override;
+	void mouseLeftClick() override;
+	void keyDown(const string& key) override;
 
 	void browseFloorTexture();
 	void browseCeilingTexture();
 
 private:
 	vector<MapSector*> sectors_;
-	bool               hover_ceil_;
-	bool               hover_floor_;
+	bool               hover_ceil_  = false;
+	bool               hover_floor_ = false;
 	vector<string>     tex_floor_;
 	vector<string>     tex_ceil_;
-	float              anim_floor_;
-	float              anim_ceil_;
+	float              anim_floor_ = 0.f;
+	float              anim_ceil_  = 0.f;
 
 	// Drawing info
-	int middlex_;
-	int middley_;
-	int tex_size_;
-	int border_;
+	int middlex_  = 0;
+	int middley_  = 0;
+	int tex_size_ = 0;
+	int border_   = 0;
 };

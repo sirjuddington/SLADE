@@ -91,10 +91,10 @@ public:
 		for (unsigned a = 0; a < map_->nLines(); a++)
 		{
 			// Check what textures the line needs
-			MapLine* line  = map_->line(a);
-			MapSide* side1 = line->s1();
-			MapSide* side2 = line->s2();
-			int      needs = line->needsTexture();
+			auto line  = map_->line(a);
+			auto side1 = line->s1();
+			auto side2 = line->s2();
+			int  needs = line->needsTexture();
 
 			// Detect if sky hack might apply
 			bool sky_hack = false;
@@ -158,7 +158,7 @@ public:
 
 	unsigned nProblems() override { return lines_.size(); }
 
-	string texName(int part)
+	string texName(int part) const
 	{
 		switch (part)
 		{
@@ -189,7 +189,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(MapEditor::windowWx(), 0, "-", map_);
+			MapTextureBrowser browser(MapEditor::windowWx(), MapEditor::TextureType::Texture, "-", map_);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				editor->beginUndoRecord("Change Texture", true, false, false);
@@ -310,8 +310,8 @@ public:
 		if (index >= objects_.size())
 			return "No missing special tags found";
 
-		MapObject* mo      = objects_[index];
-		int        special = mo->intProperty("special");
+		auto mo      = objects_[index];
+		int  special = mo->intProperty("special");
 		return S_FMT(
 			"%s %d: Special %d (%s) requires a tag",
 			mo->objType() == MapObject::Type::Line ? "Line" : "Thing",
@@ -408,7 +408,7 @@ public:
 				{
 					std::vector<MapSector*> foundsectors;
 					map_->putSectorsWithTag(tag, foundsectors);
-					if (foundsectors.size() > 0)
+					if (!foundsectors.empty())
 						okay = true;
 				}
 				break;
@@ -416,7 +416,7 @@ public:
 				{
 					std::vector<MapLine*> foundlines;
 					map_->putLinesWithId(tag, foundlines);
-					if (foundlines.size() > 0)
+					if (!foundlines.empty())
 						okay = true;
 				}
 				break;
@@ -424,7 +424,7 @@ public:
 				{
 					std::vector<MapThing*> foundthings;
 					map_->putThingsWithId(tag, foundthings);
-					if (foundthings.size() > 0)
+					if (!foundthings.empty())
 						okay = true;
 				}
 				break;
@@ -518,7 +518,7 @@ public:
 
 				// Check intersection
 				if (map_->linesIntersect(line1, line2, x, y))
-					intersections_.push_back(Intersection(line1, line2, x, y));
+					intersections_.emplace_back(line1, line2, x, y);
 			}
 		}
 	}
@@ -556,22 +556,22 @@ public:
 
 		if (fix_type == 0)
 		{
-			MapLine* line1 = intersections_[index].line1;
-			MapLine* line2 = intersections_[index].line2;
+			auto line1 = intersections_[index].line1;
+			auto line2 = intersections_[index].line2;
 
 			editor->beginUndoRecord("Split Lines");
 
 			// Create split vertex
-			MapVertex* nv = map_->createVertex(
+			auto nv = map_->createVertex(
 				intersections_[index].intersect_point.x, intersections_[index].intersect_point.y, -1);
 
 			// Split first line
 			map_->splitLine(line1, nv);
-			MapLine* nl1 = map_->line(map_->nLines() - 1);
+			auto nl1 = map_->line(map_->nLines() - 1);
 
 			// Split second line
 			map_->splitLine(line2, nv);
-			MapLine* nl2 = map_->line(map_->nLines() - 1);
+			auto nl2 = map_->line(map_->nLines() - 1);
 
 			// Remove intersection
 			intersections_.erase(intersections_.begin() + index);
@@ -584,10 +584,10 @@ public:
 			lines.push_back(line2);
 			lines.push_back(nl1);
 			lines.push_back(nl2);
-			for (unsigned a = 0; a < intersections_.size(); a++)
+			for (auto& intersection : intersections_)
 			{
-				VECTOR_ADD_UNIQUE(lines, intersections_[a].line1);
-				VECTOR_ADD_UNIQUE(lines, intersections_[a].line2);
+				VECTOR_ADD_UNIQUE(lines, intersection.line1);
+				VECTOR_ADD_UNIQUE(lines, intersection.line2);
 			}
 
 			// Re-check intersections
@@ -624,11 +624,11 @@ private:
 		MapLine* line2;
 		Vec2f    intersect_point;
 
-		Intersection(MapLine* line1, MapLine* line2, double x, double y)
+		Intersection(MapLine* line1, MapLine* line2, double x, double y) :
+			line1{ line1 },
+			line2{ line2 },
+			intersect_point{ x, y }
 		{
-			this->line1 = line1;
-			this->line2 = line2;
-			intersect_point.set(x, y);
 		}
 	};
 	vector<Intersection> intersections_;
@@ -650,17 +650,17 @@ public:
 		// Go through lines
 		for (unsigned a = 0; a < map_->nLines(); a++)
 		{
-			MapLine* line1 = map_->line(a);
+			auto line1 = map_->line(a);
 
 			// Go through uncompared lines
 			for (unsigned b = a + 1; b < map_->nLines(); b++)
 			{
-				MapLine* line2 = map_->line(b);
+				auto line2 = map_->line(b);
 
 				// Check for overlap (both vertices shared)
 				if ((line1->v1() == line2->v1() && line1->v2() == line2->v2())
 					|| (line1->v2() == line2->v1() && line1->v1() == line2->v2()))
-					overlaps_.push_back(Overlap(line1, line2));
+					overlaps_.emplace_back(line1, line2);
 			}
 		}
 	}
@@ -683,8 +683,8 @@ public:
 
 		if (fix_type == 0)
 		{
-			MapLine* line1 = overlaps_[index].line1;
-			MapLine* line2 = overlaps_[index].line2;
+			auto line1 = overlaps_[index].line1;
+			auto line2 = overlaps_[index].line2;
 
 			editor->beginUndoRecord("Merge Lines");
 
@@ -734,11 +734,7 @@ private:
 		MapLine* line1;
 		MapLine* line2;
 
-		Overlap(MapLine* line1, MapLine* line2)
-		{
-			this->line1 = line1;
-			this->line2 = line2;
-		}
+		Overlap(MapLine* line1, MapLine* line2) : line1{ line1 }, line2{ line2 } {}
 	};
 	vector<Overlap> overlaps_;
 };
@@ -761,9 +757,9 @@ public:
 		// Go through things
 		for (unsigned a = 0; a < map_->nThings(); a++)
 		{
-			MapThing* thing1 = map_->thing(a);
-			auto&     tt1    = Game::configuration().thingType(thing1->type());
-			r1               = tt1.radius() - 1;
+			auto  thing1 = map_->thing(a);
+			auto& tt1    = Game::configuration().thingType(thing1->type());
+			r1           = tt1.radius() - 1;
 
 			// Ignore if no radius
 			if (r1 < 0 || !tt1.solid())
@@ -781,9 +777,9 @@ public:
 
 			for (unsigned b = a + 1; b < map_->nThings(); b++)
 			{
-				MapThing* thing2 = map_->thing(b);
-				auto&     tt2    = Game::configuration().thingType(thing2->type());
-				r2               = tt2.radius() - 1;
+				auto  thing2 = map_->thing(b);
+				auto& tt2    = Game::configuration().thingType(thing2->type());
+				r2           = tt2.radius() - 1;
 
 				// Ignore if no radius
 				if (r2 < 0 || !tt2.solid())
@@ -813,6 +809,7 @@ public:
 				c2 = Game::configuration().thingBasicFlagSet("coop", thing2, map_format);
 				d1 = Game::configuration().thingBasicFlagSet("dm", thing1, map_format);
 				d2 = Game::configuration().thingBasicFlagSet("dm", thing2, map_format);
+				t1 = t2 = false;
 
 				// Player starts
 				// P1 are automatically S and C; P2+ are automatically C;
@@ -898,7 +895,7 @@ public:
 					continue;
 
 				// Overlap detected
-				overlaps_.push_back(Overlap(thing1, thing2));
+				overlaps_.emplace_back(thing1, thing2);
 			}
 		}
 	}
@@ -977,11 +974,7 @@ private:
 	{
 		MapThing* thing1;
 		MapThing* thing2;
-		Overlap(MapThing* thing1, MapThing* thing2)
-		{
-			this->thing1 = thing1;
-			this->thing2 = thing2;
-		}
+		Overlap(MapThing* thing1, MapThing* thing2) : thing1{ thing1 }, thing2{ thing2 } {}
 	};
 	vector<Overlap> overlaps_;
 };
@@ -995,7 +988,7 @@ private:
 class UnknownTexturesCheck : public MapCheck
 {
 public:
-	UnknownTexturesCheck(SLADEMap* map, MapTextureManager* texman) : MapCheck(map) { this->texman_ = texman; }
+	UnknownTexturesCheck(SLADEMap* map, MapTextureManager* texman) : MapCheck(map), texman_{ texman } {}
 
 	void doCheck() override
 	{
@@ -1004,7 +997,7 @@ public:
 		// Go through lines
 		for (unsigned a = 0; a < map_->nLines(); a++)
 		{
-			MapLine* line = map_->line(a);
+			auto line = map_->line(a);
 
 			// Check front side textures
 			if (line->s1())
@@ -1110,7 +1103,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(MapEditor::windowWx(), 0, "-", map_);
+			MapTextureBrowser browser(MapEditor::windowWx(), MapEditor::TextureType::Texture, "-", map_);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
@@ -1162,7 +1155,7 @@ public:
 	}
 
 private:
-	MapTextureManager* texman_;
+	MapTextureManager* texman_ = nullptr;
 	vector<MapLine*>   lines_;
 	vector<int>        parts_;
 };
@@ -1176,7 +1169,7 @@ private:
 class UnknownFlatsCheck : public MapCheck
 {
 public:
-	UnknownFlatsCheck(SLADEMap* map, MapTextureManager* texman) : MapCheck(map) { this->texman_ = texman; }
+	UnknownFlatsCheck(SLADEMap* map, MapTextureManager* texman) : MapCheck(map), texman_{ texman } {}
 
 	void doCheck() override
 	{
@@ -1208,7 +1201,7 @@ public:
 		if (index >= sectors_.size())
 			return "No unknown flats found";
 
-		MapSector* sector = sectors_[index];
+		auto sector = sectors_[index];
 		if (floor_[index])
 			return S_FMT("Sector %d has unknown floor texture \"%s\"", sector->index(), sector->floor().texture);
 		else
@@ -1223,7 +1216,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(MapEditor::windowWx(), 1, "", map_);
+			MapTextureBrowser browser(MapEditor::windowWx(), MapEditor::TextureType::Flat, "", map_);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
@@ -1267,7 +1260,7 @@ public:
 	}
 
 private:
-	MapTextureManager* texman_;
+	MapTextureManager* texman_ = nullptr;
 	vector<MapSector*> sectors_;
 	vector<bool>       floor_;
 };
@@ -1379,8 +1372,8 @@ public:
 		// Go through things
 		for (unsigned a = 0; a < map_->nThings(); a++)
 		{
-			MapThing* thing = map_->thing(a);
-			auto&     tt    = Game::configuration().thingType(thing->type());
+			auto  thing = map_->thing(a);
+			auto& tt    = Game::configuration().thingType(thing->type());
 
 			// Skip if not a solid thing
 			if (!tt.solid())
@@ -1390,9 +1383,9 @@ public:
 			Rectf bbox(thing->xPos(), thing->yPos(), radius * 2, radius * 2, 1);
 
 			// Go through lines
-			for (unsigned b = 0; b < check_lines.size(); b++)
+			for (auto& check_line : check_lines)
 			{
-				line = check_lines[b];
+				line = check_line;
 
 				// Check intersection
 				if (MathStuff::boxLineIntersect(bbox, line->seg()))
@@ -1422,11 +1415,11 @@ public:
 
 		if (fix_type == 0)
 		{
-			MapThing* thing = things_[index];
-			MapLine*  line  = lines_[index];
+			auto thing = things_[index];
+			auto line  = lines_[index];
 
 			// Get nearest line point to thing
-			Vec2f np = MathStuff::closestPointOnLine(thing->point(), line->seg());
+			auto np = MathStuff::closestPointOnLine(thing->position(), line->seg());
 
 			// Get distance to move
 			double r    = Game::configuration().thingType(thing->type()).radius();
@@ -1483,16 +1476,16 @@ public:
 	void checkLine(MapLine* line)
 	{
 		// Get 'correct' sectors
-		MapSector* s1 = map_->lineSideSector(line, true);
-		MapSector* s2 = map_->lineSideSector(line, false);
+		auto s1 = map_->lineSideSector(line, true);
+		auto s2 = map_->lineSideSector(line, false);
 
 		// Check front sector
 		if (s1 != line->frontSector())
-			invalid_refs_.push_back(SectorRef(line, true, s1));
+			invalid_refs_.emplace_back(line, true, s1);
 
 		// Check back sector
 		if (s2 != line->backSector())
-			invalid_refs_.push_back(SectorRef(line, false, s2));
+			invalid_refs_.emplace_back(line, false, s2);
 	}
 
 	void doCheck() override
@@ -1509,9 +1502,9 @@ public:
 		if (index >= invalid_refs_.size())
 			return "No wrong sector references found";
 
-		string     side, sector;
-		MapSector* s1 = invalid_refs_[index].line->frontSector();
-		MapSector* s2 = invalid_refs_[index].line->backSector();
+		string side, sector;
+		auto   s1 = invalid_refs_[index].line->frontSector();
+		auto   s2 = invalid_refs_[index].line->backSector();
 		if (invalid_refs_[index].front)
 		{
 			side   = "front";
@@ -1536,7 +1529,7 @@ public:
 			editor->beginUndoRecord("Correct Line Sector");
 
 			// Set sector
-			SectorRef ref = invalid_refs_[index];
+			auto ref = invalid_refs_[index];
 			if (ref.sector)
 				map_->setLineSector(ref.line->index(), ref.sector->index(), ref.front);
 			else
@@ -1592,7 +1585,7 @@ public:
 			if (index >= invalid_refs_.size())
 				return "Fix Sector reference";
 
-			MapSector* sector = invalid_refs_[index].sector;
+			auto sector = invalid_refs_[index].sector;
 			if (sector)
 				return S_FMT("Set to Sector #%d", sector->index());
 			else
@@ -1608,12 +1601,7 @@ private:
 		MapLine*   line;
 		bool       front;
 		MapSector* sector;
-		SectorRef(MapLine* line, bool front, MapSector* sector)
-		{
-			this->line   = line;
-			this->front  = front;
-			this->sector = sector;
-		}
+		SectorRef(MapLine* line, bool front, MapSector* sector) : line{ line }, front{ front }, sector{ sector } {}
 	};
 	vector<SectorRef> invalid_refs_;
 };
@@ -1658,7 +1646,7 @@ public:
 		if (index >= lines_.size())
 			return false;
 
-		MapLine* line = map_->line(lines_[index]);
+		auto line = map_->line(lines_[index]);
 		if (line->s2())
 		{
 			// Flip
@@ -1671,7 +1659,7 @@ public:
 			// Create sector
 			else if (fix_type == 1)
 			{
-				Vec2f pos = line->dirTabPoint(0.1);
+				auto pos = line->dirTabPoint(0.1);
 				editor->edit2D().createSector(pos.x, pos.y);
 				doCheck();
 				return true;
@@ -1690,7 +1678,7 @@ public:
 			// Create sector
 			else if (fix_type == 1)
 			{
-				Vec2f pos = line->dirTabPoint(0.1);
+				auto pos = line->dirTabPoint(0.1);
 				editor->edit2D().createSector(pos.x, pos.y);
 				doCheck();
 				return true;
@@ -1773,7 +1761,7 @@ public:
 		if (index >= sectors_.size())
 			return false;
 
-		MapSector* sec = map_->sector(sectors_[index]);
+		auto sec = map_->sector(sectors_[index]);
 		if (fix_type == 0)
 		{
 			// Try to preserve flags if they exist
@@ -1915,8 +1903,8 @@ public:
 		things_.clear();
 		for (unsigned a = 0; a < map_->nThings(); ++a)
 		{
-			MapThing* thing = map_->thing(a);
-			auto&     tt    = Game::configuration().thingType(thing->type());
+			auto  thing = map_->thing(a);
+			auto& tt    = Game::configuration().thingType(thing->type());
 			if (tt.flags() & Game::ThingType::Flags::Obsolete)
 				things_.push_back(thing);
 		}
@@ -1984,33 +1972,33 @@ private:
 // Creates a standard MapCheck of [type], passing [map] and [texman] to the
 // constructor where necessary
 // -----------------------------------------------------------------------------
-MapCheck* MapCheck::standardCheck(StandardCheck type, SLADEMap* map, MapTextureManager* texman)
+MapCheck::UPtr MapCheck::standardCheck(StandardCheck type, SLADEMap* map, MapTextureManager* texman)
 {
 	switch (type)
 	{
-	case MissingTexture: return new MissingTextureCheck(map);
-	case SpecialTag: return new SpecialTagsCheck(map);
-	case IntersectingLine: return new LinesIntersectCheck(map);
-	case OverlappingLine: return new LinesOverlapCheck(map);
-	case OverlappingThing: return new ThingsOverlapCheck(map);
-	case UnknownTexture: return new UnknownTexturesCheck(map, texman);
-	case UnknownFlat: return new UnknownFlatsCheck(map, texman);
-	case UnknownThingType: return new UnknownThingTypesCheck(map);
-	case StuckThing: return new StuckThingsCheck(map);
-	case SectorReference: return new SectorReferenceCheck(map);
-	case InvalidLine: return new InvalidLineCheck(map);
-	case MissingTagged: return new MissingTaggedCheck(map);
-	case UnknownSector: return new UnknownSectorCheck(map);
-	case UnknownSpecial: return new UnknownSpecialCheck(map);
-	case ObsoleteThing: return new ObsoleteThingCheck(map);
-	default: return new MissingTextureCheck(map);
+	case MissingTexture: return std::make_unique<MissingTextureCheck>(map);
+	case SpecialTag: return std::make_unique<SpecialTagsCheck>(map);
+	case IntersectingLine: return std::make_unique<LinesIntersectCheck>(map);
+	case OverlappingLine: return std::make_unique<LinesOverlapCheck>(map);
+	case OverlappingThing: return std::make_unique<ThingsOverlapCheck>(map);
+	case UnknownTexture: return std::make_unique<UnknownTexturesCheck>(map, texman);
+	case UnknownFlat: return std::make_unique<UnknownFlatsCheck>(map, texman);
+	case UnknownThingType: return std::make_unique<UnknownThingTypesCheck>(map);
+	case StuckThing: return std::make_unique<StuckThingsCheck>(map);
+	case SectorReference: return std::make_unique<SectorReferenceCheck>(map);
+	case InvalidLine: return std::make_unique<InvalidLineCheck>(map);
+	case MissingTagged: return std::make_unique<MissingTaggedCheck>(map);
+	case UnknownSector: return std::make_unique<UnknownSectorCheck>(map);
+	case UnknownSpecial: return std::make_unique<UnknownSpecialCheck>(map);
+	case ObsoleteThing: return std::make_unique<ObsoleteThingCheck>(map);
+	default: return std::make_unique<MissingTextureCheck>(map);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Same as above, but taking a string MapCheck type id instead of an enum value
 // -----------------------------------------------------------------------------
-MapCheck* MapCheck::standardCheck(const string& type_id, SLADEMap* map, MapTextureManager* texman)
+MapCheck::UPtr MapCheck::standardCheck(const string& type_id, SLADEMap* map, MapTextureManager* texman)
 {
 	for (auto& check : std_checks)
 		if (check.second.id == type_id)

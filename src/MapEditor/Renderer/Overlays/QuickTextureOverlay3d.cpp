@@ -36,11 +36,9 @@
 #include "Main.h"
 #include "QuickTextureOverlay3d.h"
 #include "Game/Configuration.h"
-#include "General/ResourceManager.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/UI/MapEditorWindow.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
@@ -56,14 +54,8 @@
 // -----------------------------------------------------------------------------
 // QuickTextureOverlay3d class constructor
 // -----------------------------------------------------------------------------
-QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
+QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay(true), editor_{ editor }
 {
-	// Init variables
-	allow_3d_mlook_ = true;
-	current_index_  = 0;
-	anim_offset_    = 0;
-	this->editor_   = editor;
-
 	if (editor)
 	{
 		auto& sel = editor->selection();
@@ -75,18 +67,17 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 		}
 
 		// Determine texture type
-		sel_type_   = 2;
 		int initial = 0;
 		if (!Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 		{
-			sel_type_ = 0;
+			sel_walls_ = false;
 			for (unsigned a = 0; a < sel.size(); a++)
 			{
 				if (sel[a].type != MapEditor::ItemType::Thing && sel[a].type != MapEditor::ItemType::Ceiling
 					&& sel[a].type != MapEditor::ItemType::Floor)
 				{
-					sel_type_ = 1;
-					initial   = a;
+					sel_walls_ = true;
+					initial    = a;
 					break;
 				}
 			}
@@ -110,15 +101,14 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 		// Get all available texture names (sorted alphabetically)
 		vector<string> tex_names;
 
-		if (sel_type_ > 0)
+		if (sel_walls_)
 		{
-			auto& ti = MapEditor::textureManager().allTexturesInfo();
-			for (unsigned a = 0; a < ti.size(); a++)
+			for (auto& tex_info : MapEditor::textureManager().allTexturesInfo())
 			{
 				bool skip = false;
-				for (auto n = tex_names.begin(); n < tex_names.end(); n++)
+				for (auto& texname : tex_names)
 				{
-					if (n->Cmp(ti[a].short_name) == 0)
+					if (texname.Cmp(tex_info.short_name) == 0)
 					{
 						skip = true;
 						break;
@@ -126,29 +116,24 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 				}
 
 				if (map_format == MapFormat::UDMF && Game::configuration().featureSupported(Game::Feature::LongNames)
-					&& ti[a].short_name.CmpNoCase(ti[a].long_name) != 0)
-				{
-					tex_names.push_back(ti[a].long_name);
-				}
+					&& tex_info.short_name.CmpNoCase(tex_info.long_name) != 0)
+					tex_names.push_back(tex_info.long_name);
 
 				if (skip)
 					continue;
 
-				if (map_format == MapFormat::UDMF || ti[a].short_name.Len() <= 8)
-				{
-					tex_names.push_back(ti[a].short_name);
-				}
+				if (map_format == MapFormat::UDMF || tex_info.short_name.Len() <= 8)
+					tex_names.push_back(tex_info.short_name);
 			}
 		}
-		if (sel_type_ == 0 || sel_type_ == 2)
+		if (sel_flats_)
 		{
-			auto& ti = MapEditor::textureManager().allFlatsInfo();
-			for (unsigned a = 0; a < ti.size(); a++)
+			for (auto& tex_info : MapEditor::textureManager().allFlatsInfo())
 			{
 				bool skip = false;
-				for (auto n = tex_names.begin(); n < tex_names.end(); n++)
+				for (auto& texname : tex_names)
 				{
-					if (n->Cmp(ti[a].short_name) == 0)
+					if (texname.Cmp(tex_info.short_name) == 0)
 					{
 						skip = true;
 						break;
@@ -156,25 +141,21 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 				}
 
 				if (map_format == MapFormat::UDMF && Game::configuration().featureSupported(Game::Feature::LongNames)
-					&& ti[a].short_name.CmpNoCase(ti[a].long_name) != 0)
-				{
-					tex_names.push_back(ti[a].long_name);
-				}
+					&& tex_info.short_name.CmpNoCase(tex_info.long_name) != 0)
+					tex_names.push_back(tex_info.long_name);
 
 				if (skip)
 					continue;
 
-				if (map_format == MapFormat::UDMF || ti[a].short_name.Len() <= 8)
-				{
-					tex_names.push_back(ti[a].short_name);
-				}
+				if (map_format == MapFormat::UDMF || tex_info.short_name.Len() <= 8)
+					tex_names.push_back(tex_info.short_name);
 			}
 		}
 		std::sort(tex_names.begin(), tex_names.end());
 
 		// Init textures
-		for (unsigned a = 0; a < tex_names.size(); a++)
-			textures_.push_back(QTTex(tex_names[a]));
+		for (const auto& tex_name : tex_names)
+			textures_.emplace_back(tex_name);
 
 		// Set initial texture
 		setTexture(tex_init);
@@ -185,14 +166,9 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 }
 
 // -----------------------------------------------------------------------------
-// QuickTextureOverlay3d class destructor
-// -----------------------------------------------------------------------------
-QuickTextureOverlay3d::~QuickTextureOverlay3d() {}
-
-// -----------------------------------------------------------------------------
 // Sets the currentl texture to [name], if it exists
 // -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::setTexture(string name)
+void QuickTextureOverlay3d::setTexture(const string& name)
 {
 	for (unsigned a = 0; a < textures_.size(); a++)
 	{
@@ -220,42 +196,42 @@ void QuickTextureOverlay3d::applyTexture()
 	// Go through items
 	if (!selection.empty())
 	{
-		for (unsigned a = 0; a < selection.size(); a++)
+		for (auto& item : selection)
 		{
 			// Thing (skip)
-			if (selection[a].type == MapEditor::ItemType::Thing)
+			if (item.type == MapEditor::ItemType::Thing)
 				continue;
 
 			// Floor
-			else if (selection[a].type == MapEditor::ItemType::Floor && (sel_type_ == 0 || sel_type_ == 2))
+			else if (item.type == MapEditor::ItemType::Floor && sel_flats_)
 			{
-				MapSector* sector = editor_->map().sector(selection[a].index);
+				auto sector = editor_->map().sector(item.index);
 				if (sector)
 					sector->setStringProperty("texturefloor", textures_[current_index_].name);
 			}
 
 			// Ceiling
-			else if (selection[a].type == MapEditor::ItemType::Ceiling && (sel_type_ == 0 || sel_type_ == 2))
+			else if (item.type == MapEditor::ItemType::Ceiling && sel_flats_)
 			{
-				MapSector* sector = editor_->map().sector(selection[a].index);
+				auto sector = editor_->map().sector(item.index);
 				if (sector)
 					sector->setStringProperty("textureceiling", textures_[current_index_].name);
 			}
 
 			// Wall
-			else if (sel_type_ > 0)
+			else if (sel_walls_)
 			{
-				MapSide* side = editor_->map().side(selection[a].index);
+				auto side = editor_->map().side(item.index);
 				if (side)
 				{
 					// Upper
-					if (selection[a].type == MapEditor::ItemType::WallTop)
+					if (item.type == MapEditor::ItemType::WallTop)
 						side->setStringProperty("texturetop", textures_[current_index_].name);
 					// Middle
-					else if (selection[a].type == MapEditor::ItemType::WallMiddle)
+					else if (item.type == MapEditor::ItemType::WallMiddle)
 						side->setStringProperty("texturemiddle", textures_[current_index_].name);
 					// Lower
-					else if (selection[a].type == MapEditor::ItemType::WallBottom)
+					else if (item.type == MapEditor::ItemType::WallBottom)
 						side->setStringProperty("texturebottom", textures_[current_index_].name);
 				}
 			}
@@ -325,9 +301,9 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 	// Get texture if needed
 	if (!textures_[index].texture)
 	{
-		if (sel_type_ == 1)
+		if (sel_walls_ && !sel_flats_)
 			textures_[index].texture = MapEditor::textureManager().texture(textures_[index].name, false);
-		else if (sel_type_ == 0)
+		else if (!sel_walls_ && sel_flats_)
 			textures_[index].texture = MapEditor::textureManager().flat(textures_[index].name, false);
 		else
 			textures_[index].texture = MapEditor::textureManager().texture(textures_[index].name, true);
@@ -364,7 +340,7 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 // Calculates the size to draw a texture of [width] at position [x]
 // (towards the middle of the screen is larger)
 // -----------------------------------------------------------------------------
-double QuickTextureOverlay3d::determineSize(double x, int width)
+double QuickTextureOverlay3d::determineSize(double x, int width) const
 {
 	double mid = (double)width * 0.5;
 	if (x < mid - 384 || x > mid + 384)
@@ -392,21 +368,6 @@ void QuickTextureOverlay3d::close(bool cancel)
 }
 
 // -----------------------------------------------------------------------------
-// Called when the mouse cursor is moved
-// -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::mouseMotion(int x, int y) {}
-
-// -----------------------------------------------------------------------------
-// Called when the left mouse button is clicked
-// -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::mouseLeftClick() {}
-
-// -----------------------------------------------------------------------------
-// Called when the right mouse button is clicked
-// -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::mouseRightClick() {}
-
-// -----------------------------------------------------------------------------
 // Finds and selects the first texture matching the current search
 // -----------------------------------------------------------------------------
 void QuickTextureOverlay3d::doSearch()
@@ -428,7 +389,7 @@ void QuickTextureOverlay3d::doSearch()
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::keyDown(string key)
+void QuickTextureOverlay3d::keyDown(const string& key)
 {
 	// Up texture
 	if ((key == "right" || key == "mwheeldown") && current_index_ < textures_.size() - 1)
@@ -465,9 +426,9 @@ bool QuickTextureOverlay3d::ok(const ItemSelection& sel)
 
 	// Cancel if only things selected
 	bool ok = false;
-	for (unsigned a = 0; a < sel.size(); a++)
+	for (auto item : sel)
 	{
-		if (sel[a].type != MapEditor::ItemType::Thing)
+		if (item.type != MapEditor::ItemType::Thing)
 		{
 			ok = true;
 			break;

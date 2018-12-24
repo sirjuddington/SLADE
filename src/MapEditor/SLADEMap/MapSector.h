@@ -24,6 +24,13 @@ public:
 		string texture;
 		int    height = 0;
 		Plane  plane  = { 0., 0., 1., 0. };
+
+		Surface(const string& texture = "", int height = 0, const Plane& plane = { 0., 0., 1., 0. }) :
+			texture{ texture },
+			height{ height },
+			plane{ plane }
+		{
+		}
 	};
 
 	struct DoomData
@@ -50,10 +57,10 @@ public:
 	};
 
 	MapSector(SLADEMap* parent = nullptr);
-	MapSector(string f_tex, string c_tex, SLADEMap* parent = nullptr);
-	~MapSector();
+	MapSector(const string& f_tex, const string& c_tex, SLADEMap* parent = nullptr);
+	~MapSector() = default;
 
-	void copy(MapObject* copy) override;
+	void copy(MapObject* obj) override;
 
 	const Surface& floor() const { return floor_; }
 	const Surface& ceiling() const { return ceiling_; }
@@ -107,9 +114,9 @@ public:
 	operator Debuggable() const
 	{
 		if (!this)
-			return Debuggable("<sector NULL>");
+			return { "<sector NULL>" };
 
-		return Debuggable(S_FMT("<sector %u>", index_));
+		return { S_FMT("<sector %u>", index_) };
 	}
 
 private:
@@ -124,8 +131,8 @@ private:
 	vector<MapSide*> connected_sides_;
 	BBox             bbox_;
 	Polygon2D        polygon_;
-	bool             poly_needsupdate_;
-	long             geometry_updated_;
+	bool             poly_needsupdate_ = true;
+	long             geometry_updated_ = 0;
 	Vec2f            text_point_;
 
 	void setGeometryUpdated();

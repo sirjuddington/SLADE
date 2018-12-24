@@ -40,23 +40,19 @@ public:
 		short tid;
 	};
 
-	MapThing(SLADEMap* parent = nullptr);
+	MapThing(SLADEMap* parent = nullptr) : MapObject(Type::Thing, parent) {}
 	MapThing(double x, double y, short type, SLADEMap* parent = nullptr);
-	~MapThing();
+	~MapThing() = default;
 
-	double xPos() { return x_; }
-	double yPos() { return y_; }
-	void   setPos(double x, double y)
-	{
-		this->x_ = x;
-		this->y_ = y;
-	}
+	double xPos() const { return position_.x; }
+	double yPos() const { return position_.y; }
+	Vec2f  position() const { return position_; }
+	short  type() const { return type_; }
+	short  angle() const { return angle_; }
 
 	Vec2f getPoint(Point point) override;
-	Vec2f point();
 
-	short type() const { return type_; }
-	short angle() const { return angle_; }
+	void setPos(double x, double y) { position_.set(x, y); }
 
 	int    intProperty(const string& key) override;
 	double floatProperty(const string& key) override;
@@ -73,15 +69,14 @@ public:
 	operator Debuggable() const
 	{
 		if (!this)
-			return Debuggable("<thing NULL>");
+			return { "<thing NULL>" };
 
-		return Debuggable(S_FMT("<thing %u>", index_));
+		return { S_FMT("<thing %u>", index_) };
 	}
 
 private:
 	// Basic data
-	short  type_;
-	double x_;
-	double y_;
-	short  angle_;
+	short type_ = 1;
+	Vec2f position_;
+	short angle_ = 0;
 };

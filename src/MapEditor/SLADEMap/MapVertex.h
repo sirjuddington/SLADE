@@ -22,15 +22,15 @@ public:
 		int32_t y;
 	};
 
-	MapVertex(SLADEMap* parent = nullptr);
+	MapVertex(SLADEMap* parent = nullptr) : MapObject(Type::Vertex, parent) {}
 	MapVertex(double x, double y, SLADEMap* parent = nullptr);
-	~MapVertex();
+	~MapVertex() = default;
 
-	double xPos() const { return x_; }
-	double yPos() const { return y_; }
+	double xPos() const { return position_.x; }
+	double yPos() const { return position_.y; }
+	Vec2f  position() const { return position_; }
 
 	Vec2f getPoint(Point point) override;
-	Vec2f point();
 
 	int    intProperty(const string& key) override;
 	double floatProperty(const string& key) override;
@@ -51,15 +51,14 @@ public:
 	operator Debuggable() const
 	{
 		if (!this)
-			return Debuggable("<vertex NULL>");
+			return { "<vertex NULL>" };
 
-		return Debuggable(S_FMT("<vertex %u>", index_));
+		return { S_FMT("<vertex %u>", index_) };
 	}
 
 private:
 	// Basic data
-	double x_;
-	double y_;
+	Vec2f position_;
 
 	// Internal info
 	vector<MapLine*> connected_lines_;

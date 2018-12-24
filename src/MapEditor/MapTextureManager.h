@@ -59,19 +59,19 @@ public:
 	};
 
 	MapTextureManager(Archive* archive = nullptr);
-	~MapTextureManager();
+	~MapTextureManager() = default;
 
 	void init();
 	void setArchive(Archive* archive);
 	void refreshResources();
 	void buildTexInfoList();
 
-	Palette*   resourcePalette();
-	GLTexture* texture(string name, bool mixed);
-	GLTexture* flat(string name, bool mixed);
-	GLTexture* sprite(string name, string translation = "", string palette = "");
-	GLTexture* editorImage(string name);
-	int        verticalOffset(string name);
+	Palette*   resourcePalette() const;
+	GLTexture* texture(const string& name, bool mixed);
+	GLTexture* flat(const string& name, bool mixed);
+	GLTexture* sprite(string name, const string& translation = "", const string& palette = "");
+	GLTexture* editorImage(const string& name);
+	int        verticalOffset(const string& name) const;
 
 	vector<TexInfo>& allTexturesInfo() { return tex_info_; }
 	vector<TexInfo>& allFlatsInfo() { return flat_info_; }
@@ -79,15 +79,15 @@ public:
 	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 private:
-	Archive*        archive_;
-	MapTexHashMap   textures_;
-	MapTexHashMap   flats_;
-	MapTexHashMap   sprites_;
-	MapTexHashMap   editor_images_;
-	bool            editor_images_loaded_;
-	Palette*        palette_;
-	vector<TexInfo> tex_info_;
-	vector<TexInfo> flat_info_;
+	Archive*                 archive_ = nullptr;
+	MapTexHashMap            textures_;
+	MapTexHashMap            flats_;
+	MapTexHashMap            sprites_;
+	MapTexHashMap            editor_images_;
+	bool                     editor_images_loaded_ = false;
+	std::unique_ptr<Palette> palette_;
+	vector<TexInfo>          tex_info_;
+	vector<TexInfo>          flat_info_;
 
-	void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string path);
+	void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, const string& path) const;
 };

@@ -46,35 +46,12 @@
 // -----------------------------------------------------------------------------
 // MapSide class constructor
 // -----------------------------------------------------------------------------
-MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(Type::Side, parent)
+MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(Type::Side, parent), sector_{ sector }
 {
-	// Init variables
-	this->sector_   = sector;
-	this->parent_   = nullptr;
-	this->offset_x_ = 0;
-	this->offset_y_ = 0;
-
 	// Add to parent sector
 	if (sector)
 		sector->connectSide(this);
 }
-
-// -----------------------------------------------------------------------------
-// MapSide class constructor
-// -----------------------------------------------------------------------------
-MapSide::MapSide(SLADEMap* parent) : MapObject(Type::Side, parent)
-{
-	// Init variables
-	this->sector_   = nullptr;
-	this->parent_   = nullptr;
-	this->offset_x_ = 0;
-	this->offset_y_ = 0;
-}
-
-// -----------------------------------------------------------------------------
-// MapSide class destructor
-// -----------------------------------------------------------------------------
-MapSide::~MapSide() {}
 
 // -----------------------------------------------------------------------------
 // Copies another MapSide object [c]
@@ -93,12 +70,12 @@ void MapSide::copy(MapObject* c)
 	}
 
 	// Copy properties
-	MapSide* side     = (MapSide*)c;
-	this->tex_lower_  = side->tex_lower_;
-	this->tex_middle_ = side->tex_middle_;
-	this->tex_upper_  = side->tex_upper_;
-	this->offset_x_   = side->offset_x_;
-	this->offset_y_   = side->offset_y_;
+	auto side   = dynamic_cast<MapSide*>(c);
+	tex_lower_  = side->tex_lower_;
+	tex_middle_ = side->tex_middle_;
+	tex_upper_  = side->tex_upper_;
+	offset_x_   = side->offset_x_;
+	offset_y_   = side->offset_y_;
 
 	// Update texture counts (increment new)
 	if (parent_map_)
@@ -157,14 +134,14 @@ void MapSide::setSector(MapSector* sector)
 		return;
 
 	// Remove side from current sector, if any
-	if (this->sector_)
-		this->sector_->disconnectSide(this);
+	if (sector_)
+		sector_->disconnectSide(this);
 
 	// Update modified time
 	setModified();
 
 	// Add side to new sector
-	this->sector_ = sector;
+	sector_ = sector;
 	sector->connectSide(this);
 }
 
@@ -262,10 +239,7 @@ void MapSide::setStringProperty(const string& key, const string& value)
 // -----------------------------------------------------------------------------
 bool MapSide::scriptCanModifyProp(const string& key)
 {
-	if (key == "sector")
-		return false;
-
-	return true;
+	return key != "sector";
 }
 
 // -----------------------------------------------------------------------------
@@ -297,11 +271,11 @@ void MapSide::writeBackup(Backup* backup)
 void MapSide::readBackup(Backup* backup)
 {
 	// Sector
-	MapObject* s = parent_map_->getObjectById(backup->props_internal["sector"]);
+	auto s = parent_map_->getObjectById(backup->props_internal["sector"]);
 	if (s)
 	{
 		sector_->disconnectSide(this);
-		sector_ = (MapSector*)s;
+		sector_ = dynamic_cast<MapSector*>(s);
 		sector_->connectSide(this);
 		// LOG_MESSAGE(1, "Side %d load backup sector #%d", id, s->getIndex());
 	}

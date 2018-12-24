@@ -44,6 +44,8 @@
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
 
+using namespace MapEditor;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -77,9 +79,10 @@ void MOPGProperty::resetValue()
 // -----------------------------------------------------------------------------
 // MOPGBoolProperty class constructor
 // -----------------------------------------------------------------------------
-MOPGBoolProperty::MOPGBoolProperty(const wxString& label, const wxString& name) : wxBoolProperty(label, name, false)
+MOPGBoolProperty::MOPGBoolProperty(const wxString& label, const wxString& name) :
+	MOPGProperty{ name },
+	wxBoolProperty(label, name, false)
 {
-	propname_ = name;
 }
 
 // -----------------------------------------------------------------------------
@@ -89,7 +92,7 @@ MOPGBoolProperty::MOPGBoolProperty(const wxString& label, const wxString& name) 
 void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
+	if (objects.empty())
 	{
 		SetValueToUnspecified();
 		return;
@@ -143,9 +146,9 @@ void MOPGBoolProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->objects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		objects[a]->setBoolProperty(GetName(), m_value.GetBool());
+	auto& objects = parent_->objects();
+	for (auto& object : objects)
+		object->setBoolProperty(GetName(), m_value.GetBool());
 }
 
 
@@ -159,9 +162,10 @@ void MOPGBoolProperty::applyValue()
 // -----------------------------------------------------------------------------
 // MOPGIntProperty class constructor
 // -----------------------------------------------------------------------------
-MOPGIntProperty::MOPGIntProperty(const wxString& label, const wxString& name) : wxIntProperty(label, name, 0)
+MOPGIntProperty::MOPGIntProperty(const wxString& label, const wxString& name) :
+	MOPGProperty{ name },
+	wxIntProperty(label, name, 0)
 {
-	propname_ = name;
 }
 
 // -----------------------------------------------------------------------------
@@ -172,11 +176,10 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Assume unspecified until we see otherwise
 	SetValueToUnspecified();
+
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
-	{
+	if (objects.empty())
 		return;
-	}
 
 	// Get property of first object
 	int first = objects[0]->intProperty(GetName());
@@ -226,9 +229,9 @@ void MOPGIntProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->objects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
+	auto& objects = parent_->objects();
+	for (auto& object : objects)
+		object->setIntProperty(GetName(), m_value.GetInteger());
 }
 
 
@@ -242,9 +245,10 @@ void MOPGIntProperty::applyValue()
 // -----------------------------------------------------------------------------
 // MOPGFloatProperty class constructor
 // -----------------------------------------------------------------------------
-MOPGFloatProperty::MOPGFloatProperty(const wxString& label, const wxString& name) : wxFloatProperty(label, name, 0)
+MOPGFloatProperty::MOPGFloatProperty(const wxString& label, const wxString& name) :
+	MOPGProperty{ name },
+	wxFloatProperty(label, name, 0)
 {
-	propname_ = name;
 }
 
 // -----------------------------------------------------------------------------
@@ -254,7 +258,7 @@ MOPGFloatProperty::MOPGFloatProperty(const wxString& label, const wxString& name
 void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
+	if (objects.empty())
 	{
 		SetValueToUnspecified();
 		return;
@@ -308,9 +312,9 @@ void MOPGFloatProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->objects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		objects[a]->setFloatProperty(GetName(), m_value.GetDouble());
+	auto& objects = parent_->objects();
+	for (auto& object : objects)
+		object->setFloatProperty(GetName(), m_value.GetDouble());
 }
 
 
@@ -324,9 +328,10 @@ void MOPGFloatProperty::applyValue()
 // -----------------------------------------------------------------------------
 // MOPGStringProperty class constructor
 // -----------------------------------------------------------------------------
-MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& name) : wxStringProperty(label, name, "")
+MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& name) :
+	MOPGProperty{ name },
+	wxStringProperty(label, name, "")
 {
-	propname_ = name;
 }
 
 // -----------------------------------------------------------------------------
@@ -341,7 +346,7 @@ void MOPGStringProperty::setUDMFProp(UDMFProperty* prop)
 	// with the possible values
 	if (prop && prop->hasPossibleValues())
 	{
-		wxPGChoices choices = wxPGChoices();
+		auto choices = wxPGChoices();
 
 		for (auto& val : prop->possibleValues())
 			choices.Add(val.stringValue());
@@ -349,8 +354,6 @@ void MOPGStringProperty::setUDMFProp(UDMFProperty* prop)
 		SetChoices(choices);
 		SetEditor(wxPGEditor_ComboBox);
 	}
-	// else
-	//	SetEditor(wxPGEditor_TextCtrl);
 }
 
 // -----------------------------------------------------------------------------
@@ -360,7 +363,7 @@ void MOPGStringProperty::setUDMFProp(UDMFProperty* prop)
 void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
+	if (objects.empty())
 	{
 		SetValueToUnspecified();
 		return;
@@ -415,8 +418,8 @@ void MOPGStringProperty::applyValue()
 
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent_->objects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		objects[a]->setStringProperty(GetName(), m_value.GetString());
+	for (auto& object : objects)
+		object->setStringProperty(GetName(), m_value.GetString());
 }
 
 
@@ -509,16 +512,16 @@ void MOPGIntWithArgsProperty::applyValue()
 	const auto argspec = argSpec();
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->objects();
-	for (unsigned a = 0; a < objects.size(); a++)
+	auto& objects = parent_->objects();
+	for (auto& object : objects)
 	{
-		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
+		object->setIntProperty(GetName(), m_value.GetInteger());
 
 		for (int argn = 0; argn < argspec.count; argn++)
 		{
 			string key = S_FMT("arg%d", argn);
-			if (!objects[a]->hasProp(key))
-				objects[a]->setIntProperty(key, 0);
+			if (!object->hasProp(key))
+				object->setIntProperty(key, 0);
 		}
 	}
 }
@@ -656,10 +659,9 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 // MOPGLineFlagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGLineFlagProperty::MOPGLineFlagProperty(const wxString& label, const wxString& name, int index) :
-	MOPGBoolProperty(label, name)
+	MOPGBoolProperty(label, name),
+	index_{ index }
 {
-	// Init variables
-	this->index_ = index;
 }
 
 // -----------------------------------------------------------------------------
@@ -669,7 +671,7 @@ MOPGLineFlagProperty::MOPGLineFlagProperty(const wxString& label, const wxString
 void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
+	if (objects.empty())
 	{
 		SetValueToUnspecified();
 		return;
@@ -711,9 +713,9 @@ void MOPGLineFlagProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->objects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		Game::configuration().setLineFlag(index_, (MapLine*)objects[a], GetValue());
+	auto& objects = parent_->objects();
+	for (auto& object : objects)
+		Game::configuration().setLineFlag(index_, (MapLine*)object, GetValue());
 }
 
 
@@ -728,10 +730,9 @@ void MOPGLineFlagProperty::applyValue()
 // MOPGThingFlagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGThingFlagProperty::MOPGThingFlagProperty(const wxString& label, const wxString& name, int index) :
-	MOPGBoolProperty(label, name)
+	MOPGBoolProperty(label, name),
+	index_{ index }
 {
-	// Init variables
-	this->index_ = index;
 }
 
 // -----------------------------------------------------------------------------
@@ -741,7 +742,7 @@ MOPGThingFlagProperty::MOPGThingFlagProperty(const wxString& label, const wxStri
 void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
+	if (objects.empty())
 	{
 		SetValueToUnspecified();
 		return;
@@ -783,9 +784,9 @@ void MOPGThingFlagProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->objects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		Game::configuration().setThingFlag(index_, (MapThing*)objects[a], GetValue());
+	auto& objects = parent_->objects();
+	for (auto& object : objects)
+		Game::configuration().setThingFlag(index_, (MapThing*)object, GetValue());
 }
 
 
@@ -799,12 +800,10 @@ void MOPGThingFlagProperty::applyValue()
 // -----------------------------------------------------------------------------
 // MOPGAngleProperty class constructor
 // -----------------------------------------------------------------------------
-MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name) : wxEditEnumProperty(label, name)
+MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name) :
+	MOPGProperty{ name },
+	wxEditEnumProperty(label, name)
 {
-	propname_ = name;
-	// Set to combo box editor
-	// SetEditor(wxPGEditor_ComboBox);
-
 	// Setup combo box choices
 	wxArrayString labels;
 	wxArrayInt    values;
@@ -835,7 +834,7 @@ MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name
 void MOPGAngleProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
+	if (objects.empty())
 	{
 		SetValueToUnspecified();
 		return;
@@ -889,29 +888,29 @@ void MOPGAngleProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->objects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
+	auto& objects = parent_->objects();
+	for (auto& object : objects)
+		object->setIntProperty(GetName(), m_value.GetInteger());
 }
 
 // -----------------------------------------------------------------------------
 // Returns the angle value as a string
 // -----------------------------------------------------------------------------
-wxString MOPGAngleProperty::ValueToString(wxVariant& value, int argFlags) const
+wxString MOPGAngleProperty::ValueToString(wxVariant& value, int arg_flags) const
 {
 	int angle = value.GetInteger();
 
 	switch (angle)
 	{
-	case 0: return "0: East"; break;
-	case 45: return "45: Northeast"; break;
-	case 90: return "90: North"; break;
-	case 135: return "135: Northwest"; break;
-	case 180: return "180: West"; break;
-	case 225: return "225: Southwest"; break;
-	case 270: return "270: South"; break;
-	case 315: return "315: Southeast"; break;
-	default: return S_FMT("%d", angle); break;
+	case 0: return "0: East";
+	case 45: return "45: Northeast";
+	case 90: return "90: North";
+	case 135: return "135: Northwest";
+	case 180: return "180: West";
+	case 225: return "225: Southwest";
+	case 270: return "270: South";
+	case 315: return "315: Southeast";
+	default: return S_FMT("%d", angle);
 	}
 }
 
@@ -926,9 +925,10 @@ wxString MOPGAngleProperty::ValueToString(wxVariant& value, int argFlags) const
 // -----------------------------------------------------------------------------
 // MOPGColourProperty class constructor
 // -----------------------------------------------------------------------------
-MOPGColourProperty::MOPGColourProperty(const wxString& label, const wxString& name) : wxColourProperty(label, name)
+MOPGColourProperty::MOPGColourProperty(const wxString& label, const wxString& name) :
+	MOPGProperty{ name },
+	wxColourProperty(label, name)
 {
-	propname_ = name;
 }
 
 // -----------------------------------------------------------------------------
@@ -938,7 +938,7 @@ MOPGColourProperty::MOPGColourProperty(const wxString& label, const wxString& na
 void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
+	if (objects.empty())
 	{
 		SetValueToUnspecified();
 		return;
@@ -960,7 +960,7 @@ void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate_ = true;
-	wxColor col(first);
+	wxColour col(first);
 	col.Set(col.Blue(), col.Green(), col.Red());
 	wxVariant var_value;
 	var_value << col;
@@ -992,12 +992,12 @@ void MOPGColourProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->objects();
-	wxColor             col;
+	auto&    objects = parent_->objects();
+	wxColour col;
 	col << m_value;
 	col.Set(col.Blue(), col.Green(), col.Red());
-	for (unsigned a = 0; a < objects.size(); a++)
-		objects[a]->setIntProperty(GetName(), col.GetRGB());
+	for (auto& object : objects)
+		object->setIntProperty(GetName(), col.GetRGB());
 }
 
 
@@ -1011,12 +1011,10 @@ void MOPGColourProperty::applyValue()
 // -----------------------------------------------------------------------------
 // MOPGTextureProperty class constructor
 // -----------------------------------------------------------------------------
-MOPGTextureProperty::MOPGTextureProperty(int textype, const wxString& label, const wxString& name) :
-	MOPGStringProperty(label, name)
+MOPGTextureProperty::MOPGTextureProperty(TextureType textype, const wxString& label, const wxString& name) :
+	MOPGStringProperty(label, name),
+	textype_{ textype }
 {
-	// Init variables
-	this->textype_ = textype;
-
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
@@ -1028,7 +1026,7 @@ MOPGTextureProperty::MOPGTextureProperty(int textype, const wxString& label, con
 void MOPGTextureProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
+	if (objects.empty())
 	{
 		SetValueToUnspecified();
 		return;
@@ -1092,15 +1090,14 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 // MOPGSPACTriggerProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wxString& name) :
+	MOPGProperty{ name },
 	wxEnumProperty(label, name)
 {
-	propname_ = name;
-
 	// Set to combo box editor
 	SetEditor(wxPGEditor_ComboBox);
 
 	// Setup combo box choices
-	wxArrayString labels = Game::configuration().allSpacTriggers();
+	auto labels = Game::configuration().allSpacTriggers();
 	SetChoices(wxPGChoices(labels));
 }
 
@@ -1111,7 +1108,7 @@ MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wx
 void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
+	if (objects.empty())
 	{
 		SetValueToUnspecified();
 		return;
@@ -1119,12 +1116,12 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 
 	// Get property of first object
 	auto   map_format = MapEditor::editContext().mapDesc().format;
-	string first      = Game::configuration().spacTriggerString((MapLine*)objects[0], map_format);
+	string first      = Game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[0]), map_format);
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (Game::configuration().spacTriggerString((MapLine*)objects[a], map_format) != first)
+		if (Game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[a]), map_format) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -1166,10 +1163,9 @@ void MOPGSPACTriggerProperty::applyValue()
 		return;
 
 	// Go through objects and set this value
-	vector<MapObject*>& objects = parent_->objects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		Game::configuration().setLineSpacTrigger(GetChoiceSelection(), (MapLine*)objects[a]);
-	// objects[a]->setIntProperty(GetName(), m_value.GetInteger());
+	auto& objects = parent_->objects();
+	for (auto& object : objects)
+		Game::configuration().setLineSpacTrigger(GetChoiceSelection(), dynamic_cast<MapLine*>(object));
 }
 
 
@@ -1185,10 +1181,9 @@ void MOPGSPACTriggerProperty::applyValue()
 // MOPGTagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGTagProperty::MOPGTagProperty(IdType id_type, const wxString& label, const wxString& name) :
-	MOPGIntProperty(label, name)
+	MOPGIntProperty(label, name),
+	id_type_{ id_type }
 {
-	this->id_type_ = id_type;
-
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
@@ -1200,7 +1195,7 @@ MOPGTagProperty::MOPGTagProperty(IdType id_type, const wxString& label, const wx
 void MOPGTagProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
+	if (objects.empty())
 	{
 		SetValueToUnspecified();
 		return;
@@ -1234,8 +1229,8 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
 {
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
-		vector<MapObject*>& objects = parent_->objects();
-		if (objects.size() == 0)
+		auto& objects = parent_->objects();
+		if (objects.empty())
 			return false;
 		if (!objects[0]->parentMap())
 			return false;
@@ -1281,7 +1276,7 @@ MOPGSectorSpecialProperty::MOPGSectorSpecialProperty(const wxString& label, cons
 void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
-	if (objects.size() == 0)
+	if (objects.empty())
 	{
 		SetValueToUnspecified();
 		return;

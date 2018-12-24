@@ -110,10 +110,10 @@ public:
 	vector<Vec2f> cutLines(double x1, double y1, double x2, double y2);
 	MapVertex*    lineCrossVertex(double x1, double y1, double x2, double y2);
 	void          updateGeometryInfo(long modified_time);
-	bool          linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y);
-	void          findSectorTextPoint(MapSector* sector);
+	bool          linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y) const;
+	void          findSectorTextPoint(MapSector* sector) const;
 	void          initSectorPolygons();
-	MapLine*      lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y);
+	MapLine*      lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y) const;
 
 	// Tags/Ids
 	MapThing* findFirstThingWithId(int id);
@@ -130,7 +130,7 @@ public:
 	int       findUnusedLineId();
 
 	// Info
-	string             adjacentLineTexture(MapVertex* vertex, int tex_part = 255);
+	string             adjacentLineTexture(MapVertex* vertex, int tex_part = 255) const;
 	MapSector*         lineSideSector(MapLine* line, bool front = true);
 	vector<MapObject*> modifiedObjects(long since, MapObject::Type type = MapObject::Type::Object);
 	vector<MapObject*> allModifiedObjects(long since);
@@ -174,7 +174,7 @@ public:
 	int  removeInvalidSides();
 
 	// Convert
-	bool convertToHexen();
+	bool convertToHexen() const;
 	bool convertToUDMF();
 
 	// Cleanup/Extra
@@ -185,11 +185,11 @@ public:
 	void clearTexUsage() { usage_tex_.clear(); }
 	void clearFlatUsage() { usage_flat_.clear(); }
 	void clearThingTypeUsage() { usage_thing_type_.clear(); }
-	void updateTexUsage(string tex, int adjust);
-	void updateFlatUsage(string flat, int adjust);
+	void updateTexUsage(const string& tex, int adjust);
+	void updateFlatUsage(const string& flat, int adjust);
 	void updateThingTypeUsage(int type, int adjust);
-	int  texUsageCount(string tex);
-	int  flatUsageCount(string tex);
+	int  texUsageCount(const string& tex);
+	int  flatUsageCount(const string& tex);
 	int  thingTypeUsageCount(int type);
 
 private:
@@ -235,13 +235,11 @@ private:
 	vector<MapThing*>  things_;
 	string             udmf_namespace_;
 	PropertyList       udmf_props_;
-	bool               position_frac_;
+	bool               position_frac_ = false;
 	string             name_;
 	MapFormat          current_format_;
-	long               opened_time_;
+	long               opened_time_ = 0;
 	MapSpecials        map_specials_;
-	int                bulk_op_level_;
-	bool               specials_expired_;
 
 	vector<ArchiveEntry*> udmf_extra_entries_; // UDMF Extras
 
@@ -251,8 +249,8 @@ private:
 	vector<unsigned>   created_objects_;
 	vector<MobjCD>     created_deleted_objects_;
 
-	long geometry_updated_; // The last time the map geometry was updated
-	long things_updated_;   // The last time the thing list was modified
+	long geometry_updated_ = 0; // The last time the map geometry was updated
+	long things_updated_ = 0;   // The last time the thing list was modified
 
 	// Usage counts
 	std::map<string, int> usage_tex_;

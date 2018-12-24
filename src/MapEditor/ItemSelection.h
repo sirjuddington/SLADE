@@ -19,7 +19,7 @@ public:
 	typedef vector<MapEditor::Item>::iterator       iterator;
 	typedef vector<MapEditor::Item>::value_type     value_type;
 
-	ItemSelection(MapEditContext* context = nullptr);
+	ItemSelection(MapEditContext* context = nullptr) : context_{ context } {}
 
 	// Accessors
 	MapEditor::Item  hilight() const { return hilight_; }
@@ -86,11 +86,11 @@ public:
 	// void	selectItem3d(MapEditor::Item item, int sel);
 
 private:
-	MapEditor::Item         hilight_;
+	MapEditor::Item         hilight_ = { -1, MapEditor::ItemType::Any };
 	vector<MapEditor::Item> selection_;
-	bool                    hilight_lock_;
+	bool                    hilight_lock_ = false;
 	ChangeSet               last_change_;
-	MapEditContext*         context_;
+	MapEditContext*         context_ = nullptr;
 
 	void selectItem(const MapEditor::Item& item, bool select = true);
 };

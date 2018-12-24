@@ -115,10 +115,14 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : DockPanel{ par
 	btn_export_->Enable(false);
 }
 
+MapChecksPanel::~MapChecksPanel()
+{
+}
+
 // -----------------------------------------------------------------------------
 // Updates the check status label text
 // -----------------------------------------------------------------------------
-void MapChecksPanel::updateStatusText(string text)
+void MapChecksPanel::updateStatusText(const string& text)
 {
 	label_status_->SetLabel(text);
 	Update();
@@ -133,7 +137,7 @@ void MapChecksPanel::showCheckItem(unsigned index)
 	if (index < check_items_.size())
 	{
 		// Set edit mode to object type
-		MapObject* obj = check_items_[index].check->getObject(check_items_[index].index);
+		auto obj = check_items_[index].check->getObject(check_items_[index].index);
 		switch (obj->objType())
 		{
 		case MapObject::Type::Vertex: MapEditor::editContext().setEditMode(MapEditor::Mode::Vertices); break;
@@ -150,7 +154,7 @@ void MapChecksPanel::showCheckItem(unsigned index)
 		btn_edit_object_->Enable(true);
 
 		string fix1 = check_items_[index].check->fixText(0, check_items_[index].index);
-		if (fix1 != "")
+		if (!fix1.empty())
 		{
 			// Show first fix button
 			btn_fix1_->SetLabel(fix1);
@@ -160,7 +164,7 @@ void MapChecksPanel::showCheckItem(unsigned index)
 			btn_fix1_->Show(false);
 
 		string fix2 = check_items_[index].check->fixText(1, check_items_[index].index);
-		if (fix2 != "")
+		if (!fix2.empty())
 		{
 			// Show second fix button
 			btn_fix2_->SetLabel(fix2);
@@ -188,12 +192,12 @@ void MapChecksPanel::refreshList()
 	lb_errors_->Clear();
 	check_items_.clear();
 
-	for (unsigned a = 0; a < active_checks_.size(); a++)
+	for (auto& check : active_checks_)
 	{
-		for (unsigned b = 0; b < active_checks_[a]->nProblems(); b++)
+		for (unsigned b = 0; b < check->nProblems(); b++)
 		{
-			lb_errors_->Append(active_checks_[a]->problemDesc(b));
-			check_items_.push_back(CheckItem(active_checks_[a], b));
+			lb_errors_->Append(check->problemDesc(b));
+			check_items_.emplace_back(check.get(), b);
 		}
 	}
 
@@ -229,8 +233,6 @@ void MapChecksPanel::reset()
 	check_items_.clear();
 
 	// Clear previous checks
-	for (unsigned a = 0; a < active_checks_.size(); a++)
-		delete active_checks_[a];
 	active_checks_.clear();
 
 	refreshList();
@@ -318,8 +320,6 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 	check_items_.clear();
 
 	// Clear previous checks
-	for (unsigned a = 0; a < active_checks_.size(); a++)
-		delete active_checks_[a];
 	active_checks_.clear();
 
 	// Setup checks
@@ -327,23 +327,23 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 	{
 		if (clb_active_checks_->IsChecked(a))
 		{
-			active_checks_.push_back(
-				MapCheck::standardCheck((MapCheck::StandardCheck)a, map_, &MapEditor::textureManager()));
+			active_checks_.emplace_back(
+				MapCheck::standardCheck(static_cast<MapCheck::StandardCheck>(a), map_, &MapEditor::textureManager()));
 		}
 	}
 
 	// Run checks
-	for (unsigned a = 0; a < active_checks_.size(); a++)
+	for (auto& check : active_checks_)
 	{
 		// Check
-		updateStatusText(active_checks_[a]->progressText());
-		active_checks_[a]->doCheck();
+		updateStatusText(check->progressText());
+		check->doCheck();
 
 		// Add results to list
-		for (unsigned b = 0; b < active_checks_[a]->nProblems(); b++)
+		for (unsigned b = 0; b < check->nProblems(); b++)
 		{
-			lb_errors_->Append(active_checks_[a]->problemDesc(b));
-			check_items_.push_back(CheckItem(active_checks_[a], b));
+			lb_errors_->Append(check->problemDesc(b));
+			check_items_.emplace_back(check.get(), b);
 		}
 	}
 
@@ -439,8 +439,8 @@ void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 			map_name + "-Problems"))
 	{
 		string text = S_FMT("%lu problems found in map %s:\n\n", check_items_.size(), CHR(map_name));
-		for (unsigned a = 0; a < check_items_.size(); a++)
-			text += check_items_[a].check->problemDesc(check_items_[a].index) + "\n";
+		for (auto& item : check_items_)
+			text += item.check->problemDesc(item.index) + "\n";
 		wxFile file;
 		file.Open(info.filenames[0], wxFile::write);
 		if (file.IsOpened())

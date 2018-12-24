@@ -10,16 +10,12 @@ public:
 		string   name;
 		Property value;
 
-		Prop(const string& name) { this->name = name; }
-		Prop(const string& name, const Property& value)
-		{
-			this->name  = name;
-			this->value = value;
-		}
+		Prop(const string& name) : name{ name } {}
+		Prop(const string& name, const Property& value) : name{ name }, value{ value } {}
 	};
 
-	MobjPropertyList();
-	~MobjPropertyList();
+	MobjPropertyList() = default;
+	~MobjPropertyList() = default;
 
 	// Operator for direct access to hash map
 	Property& operator[](const string& key)
@@ -41,7 +37,7 @@ public:
 	bool removeProperty(string key);
 	void copyTo(MobjPropertyList& list);
 	void addFlag(string key);
-	bool isEmpty() { return properties_.empty(); }
+	bool isEmpty() const { return properties_.empty(); }
 
 	string toString(bool condensed = false);
 

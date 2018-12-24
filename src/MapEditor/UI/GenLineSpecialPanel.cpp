@@ -48,7 +48,7 @@
 GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// --- Setup layout ---
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Special Type
@@ -448,12 +448,13 @@ bool GenLineSpecialPanel::loadSpecial(int special)
 // -----------------------------------------------------------------------------
 // Returns the currently selected special
 // -----------------------------------------------------------------------------
-int GenLineSpecialPanel::special()
+int GenLineSpecialPanel::special() const
 {
 	int props[7];
 	for (unsigned a = 0; a < 7; a++)
 		props[a] = choice_props_[a]->GetSelection();
-	return BoomGenLineSpecial::generateSpecial((BoomGenLineSpecial::SpecialType)choice_type_->GetSelection(), props);
+	return BoomGenLineSpecial::generateSpecial(
+		static_cast<BoomGenLineSpecial::SpecialType>(choice_type_->GetSelection()), props);
 }
 
 
@@ -477,8 +478,8 @@ void GenLineSpecialPanel::onChoiceTypeChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void GenLineSpecialPanel::onChoicePropertyChanged(wxCommandEvent& e)
 {
-	int       type           = choice_type_->GetSelection();
-	wxChoice* choice_changed = (wxChoice*)e.GetEventObject();
+	int  type           = choice_type_->GetSelection();
+	auto choice_changed = dynamic_cast<wxChoice*>(e.GetEventObject());
 
 	// Floor
 	if (type == BoomGenLineSpecial::SpecialType::Floor)

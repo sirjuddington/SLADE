@@ -46,10 +46,10 @@ private:
 class BrowserWindow : public wxDialog
 {
 public:
-	BrowserWindow(wxWindow* parent);
+	BrowserWindow(wxWindow* parent, bool truncate_names = false);
 	~BrowserWindow();
 
-	bool truncateNames() { return truncate_names_; }
+	bool truncateNames() const { return truncate_names_; }
 
 	Palette* palette() { return &palette_; }
 	void     setPalette(Palette* pal) { palette_.copyPalette(pal); }

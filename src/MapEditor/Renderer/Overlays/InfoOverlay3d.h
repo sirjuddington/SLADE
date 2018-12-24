@@ -9,8 +9,8 @@ class MapObject;
 class InfoOverlay3D
 {
 public:
-	InfoOverlay3D();
-	~InfoOverlay3D();
+	InfoOverlay3D() = default;
+	~InfoOverlay3D() = default;
 
 	void update(int item_index, MapEditor::ItemType item_type, SLADEMap* map);
 	void draw(int bottom, int right, int middle, float alpha = 1.0f);
@@ -24,10 +24,10 @@ public:
 private:
 	vector<string>      info_;
 	vector<string>      info2_;
-	MapEditor::ItemType current_type_;
+	MapEditor::ItemType current_type_ = MapEditor::ItemType::WallMiddle;
 	string              texname_;
-	GLTexture*          texture_;
-	bool                thing_icon_;
-	MapObject*          object_;
-	long                last_update_;
+	GLTexture*          texture_     = nullptr;
+	bool                thing_icon_  = false;
+	MapObject*          object_      = nullptr;
+	long                last_update_ = 0;
 };

@@ -70,8 +70,8 @@ void NodeBuilders::init()
 	builders.push_back(none);
 
 	// Get nodebuilders configuration from slade.pk3
-	Archive*      archive = App::archiveManager().programResourceArchive();
-	ArchiveEntry* config  = archive->entryAtPath("config/nodebuilders.cfg");
+	auto archive = App::archiveManager().programResourceArchive();
+	auto config  = archive->entryAtPath("config/nodebuilders.cfg");
 	if (!config)
 		return;
 

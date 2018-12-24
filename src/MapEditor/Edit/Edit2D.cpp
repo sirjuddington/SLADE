@@ -31,13 +31,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Edit2D.h"
+#include "App.h"
 #include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/SectorBuilder.h"
 #include "MapEditor/UndoSteps.h"
 #include "Utility/MathStuff.h"
-#include "App.h"
 
 
 // -----------------------------------------------------------------------------
@@ -83,22 +83,20 @@ void Edit2D::mirror(bool x_axis) const
 
 		// Get midpoint
 		BBox bbox;
-		for (unsigned a = 0; a < things.size(); a++)
-			bbox.extend(things[a]->xPos(), things[a]->yPos());
+		for (auto& thing : things)
+			bbox.extend(thing->xPos(), thing->yPos());
 
 		// Mirror
-		for (unsigned a = 0; a < things.size(); a++)
+		for (auto& thing : things)
 		{
 			// Position
 			if (x_axis)
-				context_.map().moveThing(
-					things[a]->index(), bbox.midX() - (things[a]->xPos() - bbox.midX()), things[a]->yPos());
+				context_.map().moveThing(thing->index(), bbox.midX() - (thing->xPos() - bbox.midX()), thing->yPos());
 			else
-				context_.map().moveThing(
-					things[a]->index(), things[a]->xPos(), bbox.midY() - (things[a]->yPos() - bbox.midY()));
+				context_.map().moveThing(thing->index(), thing->xPos(), bbox.midY() - (thing->yPos() - bbox.midY()));
 
 			// Direction
-			int angle = things[a]->angle();
+			int angle = thing->angle();
 			if (x_axis)
 			{
 				angle += 90;
@@ -109,7 +107,7 @@ void Edit2D::mirror(bool x_axis) const
 				angle = 360 - angle;
 			while (angle < 0)
 				angle += 360;
-			things[a]->setIntProperty("angle", angle);
+			thing->setIntProperty("angle", angle);
 		}
 		context_.endUndoRecord(true);
 	}
@@ -147,28 +145,28 @@ void Edit2D::mirror(bool x_axis) const
 
 		// Get midpoint
 		BBox bbox;
-		for (unsigned a = 0; a < vertices.size(); a++)
-			bbox.extend(vertices[a]->xPos(), vertices[a]->yPos());
+		for (auto& vertex : vertices)
+			bbox.extend(vertex->xPos(), vertex->yPos());
 
 		// Mirror vertices
-		for (unsigned a = 0; a < vertices.size(); a++)
+		for (auto& vertex : vertices)
 		{
 			// Position
 			if (x_axis)
 			{
 				context_.map().moveVertex(
-					vertices[a]->index(), bbox.midX() - (vertices[a]->xPos() - bbox.midX()), vertices[a]->yPos());
+					vertex->index(), bbox.midX() - (vertex->xPos() - bbox.midX()), vertex->yPos());
 			}
 			else
 			{
 				context_.map().moveVertex(
-					vertices[a]->index(), vertices[a]->xPos(), bbox.midY() - (vertices[a]->yPos() - bbox.midY()));
+					vertex->index(), vertex->xPos(), bbox.midY() - (vertex->yPos() - bbox.midY()));
 			}
 		}
 
 		// Flip lines (just swap vertices)
-		for (unsigned a = 0; a < lines.size(); a++)
-			lines[a]->flip(false);
+		for (auto& line : lines)
+			line->flip(false);
 
 		context_.endUndoRecord(true);
 	}
@@ -246,10 +244,10 @@ void Edit2D::flipLines(bool sides) const
 
 	// Go through list
 	context_.undoManager()->beginRecord("Flip Line");
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto& line : lines)
 	{
-		context_.undoManager()->recordUndoStep(new MapEditor::PropertyChangeUS(lines[a]));
-		lines[a]->flip(sides);
+		context_.undoManager()->recordUndoStep(new MapEditor::PropertyChangeUS(line));
+		line->flip(sides);
 	}
 	context_.undoManager()->endRecord(true);
 
@@ -270,9 +268,9 @@ void Edit2D::correctLineSectors() const
 	context_.beginUndoRecord("Correct Line Sectors");
 
 	bool changed = false;
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (auto& line : lines)
 	{
-		if (context_.map().correctLineSectors(lines[a]))
+		if (context_.map().correctLineSectors(line))
 			changed = true;
 	}
 
@@ -313,20 +311,20 @@ void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 	context_.beginUndoRecordLocked("Change Sector Height", true, false, false);
 
 	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto& sector : selection)
 	{
 		// Change floor height
 		if (floor)
 		{
-			int height = selection[a]->intProperty("heightfloor");
-			selection[a]->setIntProperty("heightfloor", height + amount);
+			int height = sector->intProperty("heightfloor");
+			sector->setIntProperty("heightfloor", height + amount);
 		}
 
 		// Change ceiling height
 		if (ceiling)
 		{
-			int height = selection[a]->intProperty("heightceiling");
-			selection[a]->setIntProperty("heightceiling", height + amount);
+			int height = sector->intProperty("heightceiling");
+			sector->setIntProperty("heightceiling", height + amount);
 		}
 	}
 
@@ -372,10 +370,10 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 	context_.beginUndoRecordLocked("Change Sector Light", true, false, false);
 
 	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto& sector : selection)
 	{
 		// Get current light
-		int light = selection[a]->intProperty("lightlevel");
+		int light = sector->intProperty("lightlevel");
 
 		// Increment/decrement
 		if (up)
@@ -384,14 +382,13 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 			light = fine ? light - 1 : Game::configuration().downLightLevel(light);
 
 		// Change light level
-		selection[a]->setIntProperty("lightlevel", light);
+		sector->setIntProperty("lightlevel", light);
 	}
 
 	// End record undo level
 	context_.endUndoRecord();
 
 	// Add editor message
-	// auto dir = up ? "increased" : "decreased";
 	int amount = fine ? 1 : Game::configuration().lightLevelInterval();
 	context_.addEditorMessage(S_FMT("Light level %s by %d", up ? "increased" : "decreased", amount));
 
@@ -438,17 +435,18 @@ void Edit2D::changeSectorTexture() const
 	context_.selection().lockHilight();
 
 	// Open texture browser
-	string selected_tex = MapEditor::browseTexture(texture, 1, context_.map(), browser_title);
+	string selected_tex =
+		MapEditor::browseTexture(texture, MapEditor::TextureType::Flat, context_.map(), browser_title);
 	if (!selected_tex.empty())
 	{
 		// Set texture depending on edit mode
 		context_.beginUndoRecord(undo_name, true, false, false);
-		for (unsigned a = 0; a < selection.size(); a++)
+		for (auto& sector : selection)
 		{
 			if (context_.sectorEditMode() == SectorMode::Floor)
-				selection[a]->setStringProperty("texturefloor", selected_tex);
+				sector->setStringProperty("texturefloor", selected_tex);
 			else if (context_.sectorEditMode() == SectorMode::Ceiling)
-				selection[a]->setStringProperty("textureceiling", selected_tex);
+				sector->setStringProperty("textureceiling", selected_tex);
 		}
 		context_.endUndoRecord();
 	}
@@ -490,7 +488,7 @@ void Edit2D::joinSectors(bool remove_lines) const
 	{
 		// Go through sector sides
 		auto sector = sectors[a];
-		while (sector->connectedSides().size() > 0)
+		while (!sector->connectedSides().empty())
 		{
 			// Set sector
 			auto side = sector->connectedSides()[0];
@@ -498,9 +496,9 @@ void Edit2D::joinSectors(bool remove_lines) const
 
 			// Add line to list if not already there
 			bool exists = false;
-			for (unsigned l = 0; l < lines.size(); l++)
+			for (auto& line : lines)
 			{
-				if (side->parentLine() == lines[l])
+				if (side->parentLine() == line)
 				{
 					exists = true;
 					break;
@@ -519,23 +517,23 @@ void Edit2D::joinSectors(bool remove_lines) const
 	vector<MapVertex*> verts;
 	if (remove_lines)
 	{
-		for (unsigned a = 0; a < lines.size(); a++)
+		for (auto& line : lines)
 		{
-			if (lines[a]->frontSector() == target && lines[a]->backSector() == target)
+			if (line->frontSector() == target && line->backSector() == target)
 			{
-				VECTOR_ADD_UNIQUE(verts, lines[a]->v1());
-				VECTOR_ADD_UNIQUE(verts, lines[a]->v2());
-				context_.map().removeLine(lines[a]);
+				VECTOR_ADD_UNIQUE(verts, line->v1());
+				VECTOR_ADD_UNIQUE(verts, line->v2());
+				context_.map().removeLine(line);
 				nlines++;
 			}
 		}
 	}
 
 	// Remove any resulting detached vertices
-	for (unsigned a = 0; a < verts.size(); a++)
+	for (auto& vert : verts)
 	{
-		if (verts[a]->nConnectedLines() == 0)
-			context_.map().removeVertex(verts[a]);
+		if (vert->nConnectedLines() == 0)
+			context_.map().removeVertex(vert);
 	}
 
 	// Finish recording undo level
@@ -557,7 +555,7 @@ void Edit2D::changeThingType() const
 	auto selection = context_.selection().selectedThings();
 
 	// Do nothing if no selection or hilight
-	if (selection.size() == 0)
+	if (selection.empty())
 		return;
 
 	// Browse thing type
@@ -566,8 +564,8 @@ void Edit2D::changeThingType() const
 	{
 		// Go through selection
 		context_.beginUndoRecord("Thing Type Change", true, false, false);
-		for (unsigned a = 0; a < selection.size(); a++)
-			selection[a]->setIntProperty("type", newtype);
+		for (auto& thing : selection)
+			thing->setIntProperty("type", newtype);
 		context_.endUndoRecord(true);
 
 		// Add editor message
@@ -629,10 +627,11 @@ void Edit2D::copy() const
 		// Add to clipboard
 		auto c = std::make_unique<MapArchClipboardItem>();
 		c->addLines(lines);
+		auto info = c->info();
 		App::clipboard().add(std::move(c));
 
 		// Editor message
-		context_.addEditorMessage(S_FMT("Copied %s", c->info()));
+		context_.addEditorMessage(S_FMT("Copied %s", info));
 	}
 
 	// Copy things
@@ -644,10 +643,11 @@ void Edit2D::copy() const
 		// Add to clipboard
 		auto c = std::make_unique<MapThingsClipboardItem>();
 		c->addThings(things);
+		auto info = c->info();
 		App::clipboard().add(std::move(c));
 
 		// Editor message
-		context_.addEditorMessage(S_FMT("Copied %s", c->info()));
+		context_.addEditorMessage(S_FMT("Copied %s", info));
 	}
 }
 
@@ -663,9 +663,8 @@ void Edit2D::paste(Vec2f mouse_pos) const
 		if (App::clipboard().item(a)->type() == ClipboardItem::Type::MapArchitecture)
 		{
 			context_.beginUndoRecord("Paste Map Architecture");
-			auto clip = (MapArchClipboardItem*)App::clipboard().item(a);
-			// Snap the geometry in such a way that it stays in the same
-			// position relative to the grid
+			auto clip = dynamic_cast<MapArchClipboardItem*>(App::clipboard().item(a));
+			// Snap the geometry in such a way that it stays in the same position relative to the grid
 			auto pos       = context_.relativeSnapToGrid(clip->midpoint(), mouse_pos);
 			auto new_verts = clip->pasteToMap(&context_.map(), pos);
 			context_.map().mergeArch(new_verts);
@@ -677,9 +676,8 @@ void Edit2D::paste(Vec2f mouse_pos) const
 		else if (App::clipboard().item(a)->type() == ClipboardItem::Type::MapThings)
 		{
 			context_.beginUndoRecord("Paste Things", false, true, false);
-			auto clip = (MapThingsClipboardItem*)App::clipboard().item(a);
-			// Snap the geometry in such a way that it stays in the same
-			// position relative to the grid
+			auto clip = dynamic_cast<MapThingsClipboardItem*>(App::clipboard().item(a));
+			// Snap the geometry in such a way that it stays in the same position relative to the grid
 			auto pos = context_.relativeSnapToGrid(clip->midpoint(), mouse_pos);
 			clip->pasteToMap(&context_.map(), pos);
 			context_.addEditorMessage(S_FMT("Pasted %s", clip->info()));
@@ -703,7 +701,7 @@ void Edit2D::copyProperties(MapObject* object)
 	if (context_.editMode() == MapEditor::Mode::Sectors)
 	{
 		// Copy selection/hilight properties
-		if (selection.size() > 0)
+		if (!selection.empty())
 			copy_sector_.copy(context_.map().sector(selection[0].index));
 		else if (selection.hasHilight())
 			copy_sector_.copy(selection.hilightedSector());
@@ -724,7 +722,7 @@ void Edit2D::copyProperties(MapObject* object)
 		else
 		{
 			// Otherwise copy selection/hilight properties
-			if (selection.size() > 0)
+			if (!selection.empty())
 				copy_thing_.copy(context_.map().thing(selection[0].index));
 			else if (selection.hasHilight())
 				copy_thing_.copy(selection.hilightedThing());
@@ -742,7 +740,7 @@ void Edit2D::copyProperties(MapObject* object)
 	// Lines mode
 	else if (context_.editMode() == MapEditor::Mode::Lines)
 	{
-		if (selection.size() > 0)
+		if (!selection.empty())
 			copy_line_.copy(context_.map().line(selection[0].index));
 		else if (selection.hasHilight())
 			copy_line_.copy(selection.hilightedLine());
@@ -828,7 +826,7 @@ void Edit2D::pasteProperties()
 // -----------------------------------------------------------------------------
 // Creates an object (depending on edit mode) at [x,y]
 // -----------------------------------------------------------------------------
-void Edit2D::createObject(double x, double y)
+void Edit2D::createObject(double x, double y) const
 {
 	using MapEditor::Mode;
 
@@ -946,7 +944,7 @@ void Edit2D::createSector(double x, double y) const
 
 	// Get sector to copy if we're in sectors mode
 	MapSector* sector_copy = nullptr;
-	if (context_.editMode() == MapEditor::Mode::Sectors && context_.selection().size() > 0)
+	if (context_.editMode() == MapEditor::Mode::Sectors && !context_.selection().empty())
 		sector_copy = map.sector(context_.selection().begin()->index);
 
 	// Run sector builder
@@ -1028,8 +1026,8 @@ void Edit2D::deleteVertex() const
 	context_.beginUndoRecord("Delete Vertices", map_merge_lines_on_delete_vertex, false, true);
 
 	// Delete them (if any)
-	for (unsigned a = 0; a < verts.size(); a++)
-		context_.map().removeVertex(verts[a], map_merge_lines_on_delete_vertex);
+	for (auto& vertex : verts)
+		context_.map().removeVertex(vertex, map_merge_lines_on_delete_vertex);
 
 	// Remove detached vertices
 	context_.map().removeDetachedVertices();
@@ -1060,8 +1058,8 @@ void Edit2D::deleteLine() const
 	context_.beginUndoRecord("Delete Lines", false, false, true);
 
 	// Delete them (if any)
-	for (unsigned a = 0; a < lines.size(); a++)
-		context_.map().removeLine(lines[a]);
+	for (auto& line : lines)
+		context_.map().removeLine(line);
 
 	// Remove detached vertices
 	context_.map().removeDetachedVertices();
@@ -1092,8 +1090,8 @@ void Edit2D::deleteThing() const
 	context_.beginUndoRecord("Delete Things", false, false, true);
 
 	// Delete them (if any)
-	for (unsigned a = 0; a < things.size(); a++)
-		context_.map().removeThing(things[a]);
+	for (auto& thing : things)
+		context_.map().removeThing(thing);
 
 	// Editor message
 	if (things.size() == 1)
@@ -1125,8 +1123,8 @@ void Edit2D::deleteSector() const
 	vector<MapLine*> connected_lines;
 	for (auto sector : sectors)
 	{
-		for (unsigned s = 0; s < sector->connectedSides().size(); s++)
-			connected_sides.push_back(sector->connectedSides()[s]);
+		for (auto side : sector->connectedSides())
+			connected_sides.push_back(side);
 		sector->putLines(connected_lines);
 	}
 

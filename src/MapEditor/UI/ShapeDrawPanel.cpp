@@ -59,7 +59,7 @@ EXTERN_CVAR(Bool, shapedraw_lockratio)
 ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Shape
@@ -78,8 +78,8 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 	sizer_main_->Add(cb_lockratio_, 0, wxEXPAND | wxRIGHT, UI::padLarge());
 
 	// Sides
-	panel_sides_      = new wxPanel(this, -1);
-	wxBoxSizer* hbox2 = new wxBoxSizer(wxHORIZONTAL);
+	panel_sides_ = new wxPanel(this, -1);
+	auto hbox2   = new wxBoxSizer(wxHORIZONTAL);
 	panel_sides_->SetSizer(hbox2);
 	spin_sides_ = new wxSpinCtrl(
 		panel_sides_,
@@ -100,7 +100,7 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 
 	// Show shape controls with most options (to get minimum height)
 	showShapeOptions(1);
-	SetMinSize(GetBestSize());
+	wxWindowBase::SetMinSize(GetBestSize());
 
 	// Show controls for current shape
 	showShapeOptions(shapedraw_shape);

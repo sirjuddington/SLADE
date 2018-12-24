@@ -52,7 +52,7 @@
 MapBackupPanel::MapBackupPanel(wxWindow* parent) : wxPanel{ parent, -1 }, archive_backups_{ new ZipArchive() }
 {
 	// Setup Sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
 
 	// Backups list
@@ -64,14 +64,14 @@ MapBackupPanel::MapBackupPanel(wxWindow* parent) : wxPanel{ parent, -1 }, archiv
 	// Bind events
 	list_backups_->Bind(wxEVT_LIST_ITEM_SELECTED, [&](wxListEvent&) { updateMapPreview(); });
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------
 // Opens the map backup file for [map_name] in [archive_name] and populates the
 // list
 // -----------------------------------------------------------------------------
-bool MapBackupPanel::loadBackups(string archive_name, string map_name)
+bool MapBackupPanel::loadBackups(string archive_name, const string& map_name)
 {
 	// Open backup file
 	archive_name.Replace(".", "_");
@@ -126,15 +126,13 @@ void MapBackupPanel::updateMapPreview()
 	int selection = (list_backups_->GetItemCount() - 1) - list_backups_->selectedItems()[0];
 
 	// Load map data to temporary wad
-	if (archive_mapdata_)
-		delete archive_mapdata_;
-	archive_mapdata_     = new WadArchive();
-	ArchiveTreeNode* dir = (ArchiveTreeNode*)dir_current_->child(selection);
+	archive_mapdata_ = std::make_unique<WadArchive>();
+	auto dir         = dynamic_cast<ArchiveTreeNode*>(dir_current_->child(selection));
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 		archive_mapdata_->addEntry(dir->entryAt(a), "", true);
 
 	// Open map preview
-	vector<Archive::MapDesc> maps = archive_mapdata_->detectMaps();
+	auto maps = archive_mapdata_->detectMaps();
 	if (!maps.empty())
 		canvas_map_->openMap(maps[0]);
 }

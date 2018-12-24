@@ -10,7 +10,7 @@ public:
 	MoveObjects(MapEditContext& context);
 
 	const vector<MapEditor::Item>& items() const { return items_; }
-	Vec2f                          offset() { return offset_; }
+	Vec2f                          offset() const { return offset_; }
 
 	bool begin(Vec2f mouse_pos);
 	void update(Vec2f mouse_pos);

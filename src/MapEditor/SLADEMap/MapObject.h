@@ -39,17 +39,17 @@ public:
 	};
 
 	MapObject(Type type = Type::Object, SLADEMap* parent = nullptr);
-	virtual ~MapObject();
+	virtual ~MapObject() = default;
 	bool operator<(const MapObject& right) const { return (index_ < right.index_); }
 	bool operator>(const MapObject& right) const { return (index_ > right.index_); }
 
 	Type      objType() const { return type_; }
-	unsigned  index();
+	unsigned  index() const;
 	SLADEMap* parentMap() const { return parent_map_; }
 	bool      isFiltered() const { return filtered_; }
 	long      modifiedTime() const { return modified_time_; }
 	unsigned  objId() const { return obj_id_; }
-	string    typeName();
+	string    typeName() const;
 	void      setModified();
 
 	MobjPropertyList& props() { return properties_; }
@@ -66,7 +66,7 @@ public:
 	virtual void   setStringProperty(const string& key, const string& value);
 	virtual bool   scriptCanModifyProp(const string& key) { return true; }
 
-	virtual Vec2f getPoint(Point point) { return Vec2f(0, 0); }
+	virtual Vec2f getPoint(Point point) { return { 0, 0 }; }
 
 	void filter(bool f = true) { filtered_ = f; }
 
@@ -79,7 +79,6 @@ public:
 	virtual void writeBackup(Backup* backup) = 0;
 	virtual void readBackup(Backup* backup)  = 0;
 
-	static void resetIdCounter();
 	static long propBackupTime();
 	static void beginPropBackup(long current_time);
 	static void endPropBackup();
@@ -90,14 +89,14 @@ public:
 	static bool multiStringProperty(vector<MapObject*>& objects, string prop, string& value);
 
 protected:
-	unsigned         index_;
-	SLADEMap*        parent_map_;
-	MobjPropertyList properties_;
-	bool             filtered_;
-	long             modified_time_;
-	unsigned         obj_id_;
-	Backup*          obj_backup_;
+	unsigned                index_      = 0;
+	SLADEMap*               parent_map_ = nullptr;
+	MobjPropertyList        properties_;
+	bool                    filtered_      = false;
+	long                    modified_time_ = 0;
+	unsigned                obj_id_        = 0;
+	std::unique_ptr<Backup> obj_backup_;
 
 private:
-	Type type_;
+	Type type_ = Type::Object;
 };

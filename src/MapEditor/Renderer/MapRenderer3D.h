@@ -41,90 +41,59 @@ public:
 	};
 	struct GLVertex
 	{
-		float x, y, z;
-		float tx, ty;
+		float x = 0.f, y = 0.f, z = 0.f;
+		float tx = 0.f, ty = 0.f;
 	};
 	struct Quad
 	{
-		GLVertex   points[4];
+		GLVertex   points[4] = { {}, {}, {}, {} };
 		ColRGBA    colour;
 		ColRGBA    fogcolour;
-		uint8_t    light;
-		GLTexture* texture;
-		uint8_t    flags;
-		float      alpha;
+		uint8_t    light   = 0;
+		GLTexture* texture = nullptr;
+		uint8_t    flags   = 0;
+		float      alpha   = 1.f;
 
-		Quad()
-		{
-			colour.set(255, 255, 255, 255, 0);
-			texture = nullptr;
-			flags   = 0;
-		}
+		Quad() : colour{ 255, 255, 255, 255, 0 } {}
 	};
 	struct Line
 	{
 		vector<Quad> quads;
-		long         updated_time;
-		bool         visible;
-		MapLine*     line;
-
-		Line()
-		{
-			updated_time = 0;
-			visible      = true;
-		}
+		long         updated_time = 0;
+		bool         visible      = true;
+		MapLine*     line         = nullptr;
 	};
 	struct Thing
 	{
-		uint8_t                flags;
-		Game::ThingType const* type;
-		MapSector*             sector;
-		float                  z;
-		float                  height;
-		GLTexture*             sprite;
-		long                   updated_time;
-
-		Thing()
-		{
-			flags        = 0;
-			type         = nullptr;
-			sector       = nullptr;
-			sprite       = nullptr;
-			z            = 0;
-			updated_time = 0;
-		}
+		uint8_t                flags        = 0;
+		Game::ThingType const* type         = nullptr;
+		MapSector*             sector       = nullptr;
+		float                  z            = 0.f;
+		float                  height       = 0.f;
+		GLTexture*             sprite       = nullptr;
+		long                   updated_time = 0;
 	};
 	struct Flat
 	{
-		uint8_t    flags;
-		uint8_t    light;
+		uint8_t    flags = 0;
+		uint8_t    light = 255;
 		ColRGBA    colour;
 		ColRGBA    fogcolour;
-		GLTexture* texture;
+		GLTexture* texture = nullptr;
 		Plane      plane;
-		float      alpha;
-		MapSector* sector;
-		long       updated_time;
-
-		Flat()
-		{
-			light        = 255;
-			texture      = nullptr;
-			updated_time = 0;
-			flags        = 0;
-			alpha        = 1.0f;
-			sector       = nullptr;
-		}
+		float      alpha        = 1.f;
+		MapSector* sector       = nullptr;
+		long       updated_time = 0;
 	};
 
 	MapRenderer3D(SLADEMap* map = nullptr);
 	~MapRenderer3D();
 
-	bool fullbrightEnabled() { return fullbright_; }
-	bool fogEnabled() { return fog_; }
+	bool fullbrightEnabled() const { return fullbright_; }
+	bool fogEnabled() const { return fog_; }
 	void enableFullbright(bool enable = true) { fullbright_ = enable; }
 	void enableFog(bool enable = true) { fog_ = enable; }
-	int  itemDistance() { return item_dist_; }
+	int  itemDistance() const { return item_dist_; }
 	void enableHilight(bool render) { render_hilight_ = render; }
 	void enableSelection(bool render) { render_selection_ = render; }
 
@@ -148,13 +117,13 @@ public:
 	void cameraApplyGravity(double mult);
 	void cameraLook(double xrel, double yrel);
 
-	double camPitch() { return cam_pitch_; }
-	Vec3f  camPosition() { return cam_position_; }
-	Vec2f  camDirection() { return cam_direction_; }
+	double camPitch() const { return cam_pitch_; }
+	Vec3f  camPosition() const { return cam_position_; }
+	Vec2f  camDirection() const { return cam_direction_; }
 
 	// -- Rendering --
 	void setupView(int width, int height);
-	void setLight(ColRGBA& colour, uint8_t light, float alpha = 1.0f);
+	void setLight(ColRGBA& colour, uint8_t light, float alpha = 1.0f) const;
 	void setFog(ColRGBA& fogcol, uint8_t light);
 	void renderMap();
 	void renderSkySlice(
@@ -164,7 +133,7 @@ public:
 		float abottom,
 		float size,
 		float tx = 0.125f,
-		float ty = 2.0f);
+		float ty = 2.0f) const;
 	void renderSky();
 
 	// Flats
@@ -172,11 +141,11 @@ public:
 	void updateSector(unsigned index);
 	void renderFlat(Flat* flat);
 	void renderFlats();
-	void renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f);
+	void renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f) const;
 
 	// Walls
-	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, double top, double bottom);
-	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, Plane top, Plane bottom);
+	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, double top, double bottom) const;
+	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, Plane top, Plane bottom) const;
 	void setupQuadTexCoords(
 		Quad*  quad,
 		int    length,
@@ -186,7 +155,7 @@ public:
 		double h_bottom,
 		bool   pegbottom = false,
 		double sx        = 1,
-		double sy        = 1);
+		double sy        = 1) const;
 	void updateLine(unsigned index);
 	void renderQuad(Quad* quad, float alpha = 1.0f);
 	void renderWalls();
@@ -200,11 +169,11 @@ public:
 
 	// VBO stuff
 	void updateFlatsVBO();
-	void updateWallsVBO();
+	void updateWallsVBO() const;
 
 	// Visibility checking
 	void  quickVisDiscard();
-	float calcDistFade(double distance, double max = -1);
+	float calcDistFade(double distance, double max = -1) const;
 	void  checkVisibleQuads();
 	void  checkVisibleFlats();
 
@@ -217,16 +186,16 @@ public:
 
 private:
 	SLADEMap*  map_;
-	bool       fullbright_;
-	bool       fog_;
-	GLTexture* tex_last_;
-	unsigned   n_quads_;
-	unsigned   n_flats_;
-	int        flat_last_;
-	bool       render_hilight_;
-	bool       render_selection_;
+	bool       fullbright_       = false;
+	bool       fog_              = true;
+	GLTexture* tex_last_         = nullptr;
+	unsigned   n_quads_          = 0;
+	unsigned   n_flats_          = 0;
+	int        flat_last_        = 0;
+	bool       render_hilight_   = true;
+	bool       render_selection_ = true;
 	ColRGBA    fog_colour_last_;
-	float      fog_depth_last_;
+	float      fog_depth_last_ = 0.f;
 
 	// Visibility
 	vector<float> dist_sectors_;
@@ -234,35 +203,35 @@ private:
 	// Camera
 	Vec3f  cam_position_;
 	Vec2f  cam_direction_;
-	double cam_pitch_;
-	double cam_angle_;
+	double cam_pitch_ = 0.;
+	double cam_angle_ = 0.;
 	Vec3f  cam_dir3d_;
 	Vec3f  cam_strafe_;
-	double gravity_;
-	int    item_dist_;
+	double gravity_   = 0.5;
+	int    item_dist_ = 0;
 
 	// Map Structures
 	vector<Line>  lines_;
-	Quad**        quads_;
+	Quad**        quads_ = nullptr;
 	vector<Quad*> quads_transparent_;
 	vector<Thing> things_;
 	vector<Flat>  floors_;
 	vector<Flat>  ceilings_;
-	Flat**        flats_;
+	Flat**        flats_ = nullptr;
 
 	// VBOs
-	unsigned vbo_floors_;
-	unsigned vbo_ceilings_;
-	unsigned vbo_walls_;
+	unsigned vbo_floors_   = 0;
+	unsigned vbo_ceilings_ = 0;
+	unsigned vbo_walls_    = 0;
 
 	// Sky
 	struct GLVertexEx
 	{
-		float x, y, z;
-		float tx, ty;
-		float alpha;
+		float x = 0.f, y = 0.f, z = 0.f;
+		float tx = 0.f, ty = 0.f;
+		float alpha = 1.f;
 	};
-	string  skytex1_;
+	string  skytex1_ = "SKY1";
 	string  skytex2_;
 	ColRGBA skycol_top_;
 	ColRGBA skycol_bottom_;

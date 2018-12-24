@@ -16,6 +16,6 @@ public:
 	void            setType(MapObject::Type type) const;
 
 private:
-	wxChoice*   choice_type_;
-	wxTextCtrl* text_index_;
+	wxChoice*   choice_type_ = nullptr;
+	wxTextCtrl* text_index_  = nullptr;
 };

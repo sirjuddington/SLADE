@@ -10,9 +10,9 @@ class MapChecksPanel : public DockPanel
 {
 public:
 	MapChecksPanel(wxWindow* parent, SLADEMap* map);
-	~MapChecksPanel() {}
+	~MapChecksPanel();
 
-	void updateStatusText(string text);
+	void updateStatusText(const string& text);
 	void showCheckItem(unsigned index);
 	void refreshList();
 	void reset();
@@ -23,8 +23,8 @@ public:
 	void layoutHorizontal() override;
 
 private:
-	SLADEMap*         map_ = nullptr;
-	vector<MapCheck*> active_checks_;
+	SLADEMap*                         map_ = nullptr;
+	vector<std::unique_ptr<MapCheck>> active_checks_;
 
 	wxCheckListBox* clb_active_checks_ = nullptr;
 	wxListBox*      lb_errors_         = nullptr;
@@ -39,11 +39,7 @@ private:
 	{
 		MapCheck* check;
 		unsigned  index;
-		CheckItem(MapCheck* check, unsigned index)
-		{
-			this->check = check;
-			this->index = index;
-		}
+		CheckItem(MapCheck* check, unsigned index) : check{ check }, index{ index } {}
 	};
 	vector<CheckItem> check_items_;
 
