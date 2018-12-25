@@ -305,12 +305,12 @@ bool TextEntryPanel::redo()
 }
 
 // ----------------------------------------------------------------------------
-// TextEntryPanel::handleAction
+// TextEntryPanel::handleEntryPanelAction
 //
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // ----------------------------------------------------------------------------
-bool TextEntryPanel::handleAction(string id)
+bool TextEntryPanel::handleEntryPanelAction(const string& id)
 {
 	// Don't handle actions if hidden
 	if (!isActivePanel())

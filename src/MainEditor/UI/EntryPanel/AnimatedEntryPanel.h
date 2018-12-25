@@ -8,7 +8,7 @@
 #include "UI/Lists/ListView.h"
 
 class GfxCanvas;
-class AnimatedEntryPanel : public EntryPanel, public SActionHandler
+class AnimatedEntryPanel : public EntryPanel
 {
 private:
 	AnimatedList	animated;

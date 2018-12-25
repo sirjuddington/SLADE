@@ -1,12 +1,11 @@
 #pragma once
 
 #include "EntryPanel.h"
-#include "General/SAction.h"
 
 class TextEditorCtrl;
 class FindReplacePanel;
 
-class TextEntryPanel : public EntryPanel, SActionHandler
+class TextEntryPanel : public EntryPanel
 {
 public:
 	TextEntryPanel(wxWindow* parent);
@@ -21,7 +20,7 @@ public:
 	bool	redo() override;
 
 	// SAction Handler
-	bool	handleAction(string id) override;
+	bool	handleEntryPanelAction(const string& id) override;
 
 private:
 	TextEditorCtrl*		text_area_				= nullptr;

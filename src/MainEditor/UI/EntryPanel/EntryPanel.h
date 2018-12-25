@@ -2,12 +2,13 @@
 
 #include "Archive/ArchiveEntry.h"
 #include "General/ListenerAnnouncer.h"
+#include "General/SAction.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 
 class UndoManager;
 
-class EntryPanel : public wxPanel, public Listener
+class EntryPanel : public wxPanel, public Listener, protected SActionHandler
 {
 public:
 	EntryPanel(wxWindow* parent, string id);
@@ -57,10 +58,19 @@ protected:
 	void	setModified(bool c = true);
 
 	virtual void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override {}
+	virtual bool	handleEntryPanelAction(const string& id) { return false; }
 	void			onToolbarButton(wxCommandEvent& e);
 
 private:
 	bool			modified_;
 	wxStaticBox*	frame_;
 	string			id_;
+
+	bool handleAction(string id) override
+	{
+		if (isActivePanel())
+			return handleEntryPanelAction(id);
+
+		return false;
+	}
 };

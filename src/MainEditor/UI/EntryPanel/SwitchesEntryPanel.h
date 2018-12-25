@@ -8,7 +8,7 @@
 #include "MainEditor/SwitchesList.h"
 #include "UI/Lists/ListView.h"
 
-class SwitchesEntryPanel : public EntryPanel, public SActionHandler
+class SwitchesEntryPanel : public EntryPanel
 {
 private:
 	SwitchesList	switches;

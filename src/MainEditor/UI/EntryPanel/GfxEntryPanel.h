@@ -2,13 +2,12 @@
 
 #include "EntryPanel.h"
 #include "UI/Canvas/GfxCanvas.h"
-#include "General/SAction.h"
 #include "Graphics/Translation.h"
 
 class SZoomSlider;
 class ColourBox;
 
-class GfxEntryPanel : public EntryPanel, public SActionHandler
+class GfxEntryPanel : public EntryPanel
 {
 public:
 	GfxEntryPanel(wxWindow* parent);
@@ -30,7 +29,7 @@ public:
 	bool	extractAll();
 
 	// SAction handler
-	bool	handleAction(string id) override;
+	bool	handleEntryPanelAction(const string& id) override;
 	bool	fillCustomMenu(wxMenu* custom) override;
 
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
