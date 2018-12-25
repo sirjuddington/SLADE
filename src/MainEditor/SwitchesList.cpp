@@ -269,18 +269,18 @@ bool SwitchesList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 	Tokenizer tz(Tokenizer::Hash);
 	tz.openMem(entry->getMCData(), entry->getName());
 
-	string token;
 	char buffer[20];
-	while ((token = tz.getToken()).length())
+	while (!tz.atEnd())
 	{
 		// We should only treat animated flats and textures, and ignore switches
-		if (S_CMP(token, "[SWITCHES]"))
+		if (tz.current().text == "[SWITCHES]")
 		{
+			++tz;
 			do
 			{
-				int type = tz.getInteger();
-				string off = tz.getToken();
-				string on  = tz.getToken();
+				int type = tz.current().asInt();
+				string off = tz.next().text;
+				string on  = tz.next().text;
 				if (off.length() > 8)
 				{
 					LOG_MESSAGE(1, "Error: string %s is too long for a switch name!", off);
@@ -317,9 +317,11 @@ bool SwitchesList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 					return false;
 
 				// Look for possible end of loop
-				token = tz.peekToken();
-			} while (token.length() && token[0] != '[');
+				++tz;
+			} while (!tz.atEnd() && !tz.current().text.StartsWith("["));
 		}
+		else
+			++tz;
 	}
 	return true;
 	// Note that we do not terminate the list here!

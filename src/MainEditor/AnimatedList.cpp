@@ -280,17 +280,18 @@ bool AnimatedList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 
 	string token;
 	char buffer[23];
-	while ((token = tz.getToken()).length())
+	while (!tz.atEnd())
 	{
 		// We should only treat animated flats and textures, and ignore switches
-		if (S_CMP(token, "[FLATS]") || S_CMP(token, "[TEXTURES]"))
+		if (tz.current().text == "[FLATS]" || tz.current().text == "[TEXTURES]")
 		{
-			bool texture = S_CMP(token, "[TEXTURES]");
+			bool texture = tz.current().text == "[TEXTURES]";
+			++tz;
 			do
 			{
-				int speed = tz.getInteger();
-				string last = tz.getToken();
-				string first= tz.getToken();
+				int speed = tz.current().asInt();
+				string last = tz.next().text;
+				string first= tz.next().text;
 				if (last.length() > 8)
 				{
 					LOG_MESSAGE(1, "Error: string %s is too long for an animated %s name!",
@@ -333,10 +334,11 @@ bool AnimatedList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
 				if (!animdata->write(buffer, 23))
 					return false;
 
-				// Look for possible end of loop
-				token = tz.peekToken();
-			} while (token.length() && token[0] != '[');
+				++tz;
+			} while (!tz.atEnd() && !tz.current().text.StartsWith("["));
 		}
+		else
+			++tz;
 	}
 	return true;
 	// Note that we do not terminate the list here!
