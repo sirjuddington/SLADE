@@ -744,12 +744,15 @@ wxArrayString EntryType::iconList()
 // ----------------------------------------------------------------------------
 void EntryType::cleanupEntryTypes()
 {
-	for (size_t a = 4; a < entry_types.size(); a++)
+	// This is only called on exit so no real point to doing it yet,
+	// all it seems to do is cause crashes on exit
+
+	/*for (size_t a = 4; a < entry_types.size(); a++)
 	{
 		EntryType* e = entry_types[a];
 		if (e != &etype_unknown && e != &etype_folder && e != &etype_marker && e != &etype_map)
 			delete entry_types[a];
-	}
+	}*/
 }
 
 // ----------------------------------------------------------------------------
