@@ -350,15 +350,6 @@ void SImage::create(int width, int height, Type type, Palette* pal, int index, i
 	// Clear current image
 	clearData();
 
-	// Create blank image
-	data_.reSize(width * height * bpp(), false);
-	data_.fillData(0);
-	if (type == Type::PalMask)
-	{
-		mask_.reSize(width * height, false);
-		mask_.fillData(0);
-	}
-
 	// Set image properties
 	width_     = width;
 	height_    = height;
@@ -374,6 +365,15 @@ void SImage::create(int width, int height, Type type, Palette* pal, int index, i
 	}
 	else
 		has_palette_ = false;
+
+	// Create blank image
+	data_.reSize(width * height * bpp(), false);
+	data_.fillData(0);
+	if (type == Type::PalMask)
+	{
+		mask_.reSize(width * height, false);
+		mask_.fillData(0);
+	}
 }
 
 // -----------------------------------------------------------------------------

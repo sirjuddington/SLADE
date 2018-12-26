@@ -884,7 +884,7 @@ bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, Vec2i& offsets)
 // Adds all [entries] to their parent archive's patch table, if it exists.
 // If not, the user is prompted to create or import texturex entries
 // -----------------------------------------------------------------------------
-bool EntryOperations::addToPatchTable(vector<ArchiveEntry*>& entries)
+bool EntryOperations::addToPatchTable(const vector<ArchiveEntry*>& entries)
 {
 	// Check any entries were given
 	if (entries.empty())
@@ -971,7 +971,7 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*>& entries)
 // Same as addToPatchTable, but also creates a single-patch texture from each
 // added patch
 // -----------------------------------------------------------------------------
-bool EntryOperations::createTexture(vector<ArchiveEntry*>& entries)
+bool EntryOperations::createTexture(const vector<ArchiveEntry*>& entries)
 {
 	// Check any entries were given
 	if (entries.empty())
@@ -1112,7 +1112,7 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*>& entries)
 // Converts multiple TEXTURE1/2 entries to a single ZDoom text-based TEXTURES
 // entry
 // -----------------------------------------------------------------------------
-bool EntryOperations::convertTextures(vector<ArchiveEntry*>& entries)
+bool EntryOperations::convertTextures(const vector<ArchiveEntry*>& entries)
 {
 	// Check any entries were given
 	if (entries.empty())
@@ -1162,7 +1162,7 @@ bool EntryOperations::convertTextures(vector<ArchiveEntry*>& entries)
 // -----------------------------------------------------------------------------
 // Detect errors in a TEXTUREx entry
 // -----------------------------------------------------------------------------
-bool EntryOperations::findTextureErrors(vector<ArchiveEntry*>& entries)
+bool EntryOperations::findTextureErrors(const vector<ArchiveEntry*>& entries)
 {
 	// Check any entries were given
 	if (entries.empty())
