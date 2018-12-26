@@ -1,7 +1,6 @@
 #pragma once
 
 #include "EntryPanel.h"
-#include "General/SAction.h"
 
 class DataEntryPanel;
 
@@ -84,7 +83,7 @@ private:
 	vector<int>     rows_new_;
 };
 
-class DataEntryPanel : public EntryPanel, SActionHandler
+class DataEntryPanel : public EntryPanel
 {
 public:
 	DataEntryPanel(wxWindow* parent);
@@ -99,7 +98,7 @@ public:
 	void copyRow(bool cut);
 	void pasteRow();
 	void changeValue() const;
-	bool handleAction(string action_id) override;
+	bool handleEntryPanelAction(const string& id) override;
 	int  getColWithSelection() const;
 
 	vector<Vec2i> selection() const;

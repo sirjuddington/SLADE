@@ -1091,10 +1091,10 @@ void DataEntryPanel::changeValue() const
 	}
 }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Handles any SAction messages (from the panel toolbar)
-// -----------------------------------------------------------------------------
-bool DataEntryPanel::handleAction(string action_id)
+// ----------------------------------------------------------------------------
+bool DataEntryPanel::handleEntryPanelAction(const string& action_id)
 {
 	if (action_id == "data_add_row")
 		addRow();

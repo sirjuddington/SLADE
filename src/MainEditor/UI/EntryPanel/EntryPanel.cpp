@@ -242,12 +242,15 @@ void EntryPanel::updateStatus()
 	// Basic info
 	if (entry_)
 	{
+		string name = entry_->name();
+		string type = entry_->typeString();
 		string text = S_FMT(
 			"%d: %s, %d bytes, %s",
 			entry_->parentDir()->entryIndex(entry_),
-			entry_->name(),
+			name,
 			entry_->size(),
-			entry_->type()->name());
+			type
+		);
 
 		theMainWindow->CallAfter(&MainWindow::SetStatusText, text, 1);
 	}
