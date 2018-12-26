@@ -65,7 +65,8 @@ CVAR(Int, dir_archive_change_action, 2, CVAR_SAVE) // 0=always ignore, 1=always 
 // External Variables
 //
 // ----------------------------------------------------------------------------
-EXTERN_CVAR(String, dir_last);
+EXTERN_CVAR(String, dir_last)
+EXTERN_CVAR(Int, autosave_entry_changes)
 
 
 // ----------------------------------------------------------------------------
@@ -2354,8 +2355,40 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 		return;
 	}
 
+	if (isEntryPanel(tabindex))
+	{
+		auto ep = dynamic_cast<EntryPanel*>(page);
+		if (ep->isModified() && autosave_entry_changes > 0)
+		{
+			// Ask if needed
+			if (autosave_entry_changes > 1)
+			{
+				int result = wxMessageBox(S_FMT("Save changes to entry \"%s\"?", ep->entry()->getName()),
+										  "Unsaved Changes",
+										  wxYES_NO | wxCANCEL | wxICON_QUESTION);
+
+				// Stop if user clicked cancel
+				if (result == wxCANCEL)
+				{
+					e.Veto();
+					return;
+				}
+
+				// Don't save if user clicked no
+				if (result == wxNO)
+				{
+					e.Skip();
+					return;
+				}
+			}
+
+			// Save entry changes
+			ep->saveEntry();
+		}
+	}
+
 	// Check for texture editor
-	if (page->GetName() == "texture")
+	else if (page->GetName() == "texture")
 	{
 		TextureXEditor* txed = (TextureXEditor*)page;
 		if (!txed->close())
