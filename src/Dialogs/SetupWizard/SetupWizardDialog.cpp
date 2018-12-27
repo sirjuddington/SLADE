@@ -61,7 +61,7 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 		wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
 	// Create pages
-	pages.push_back(new TempFolderWizardPage(this));
+	//pages.push_back(new TempFolderWizardPage(this));
 	pages.push_back(new BaseResourceWizardPage(this));
 	pages.push_back(new NodeBuildersWizardPage(this));
 	current_page = 0;

@@ -474,8 +474,7 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 	else if (wxFileExists(href))
 	{
 		// Navigating to file, open it
-		string page = App::path("startpage.htm", App::Dir::Temp);
-		if (wxFileName(href).GetLongPath() != wxFileName(page).GetLongPath())
+		if (!href.EndsWith("startpage.htm"))
 		{
 			App::archiveManager().openArchive(href);
 			ev.Veto();

@@ -78,6 +78,7 @@ string dir_data = "";
 string dir_user = "";
 string dir_app  = "";
 string dir_res  = "";
+string dir_temp = "";
 #ifdef WIN32
 string dir_separator = "\\";
 #else
@@ -192,6 +193,17 @@ bool initDirectories()
 		if (!wxMkdir(dir_user))
 		{
 			wxMessageBox(S_FMT("Unable to create user directory \"%s\"", dir_user), "Error", wxICON_ERROR);
+			return false;
+		}
+	}
+
+	// Create temp dir if necessary
+	dir_temp = dir_user + dir_separator + "temp";
+	if (!wxDirExists(dir_temp))
+	{
+		if (!wxMkdir(dir_temp))
+		{
+			wxMessageBox(S_FMT("Unable to create temp directory \"%s\"", dir_temp), "Error", wxICON_ERROR);
 			return false;
 		}
 	}
@@ -689,29 +701,7 @@ string App::path(string filename, Dir dir)
 	if (dir == Dir::Resources)
 		return dir_res + dir_separator + filename;
 	if (dir == Dir::Temp)
-	{
-		// Get temp path
-		string dir_temp;
-		if (temp_location == 0)
-			dir_temp = wxStandardPaths::Get().GetTempDir().Append(dir_separator).Append("SLADE3");
-		else if (temp_location == 1)
-			dir_temp = dir_app + dir_separator + "temp";
-		else
-			dir_temp = temp_location_custom;
-
-		// Create folder if necessary
-		if (!wxDirExists(dir_temp) && temp_fail_count < 2)
-		{
-			if (!wxMkdir(dir_temp))
-			{
-				Log::warning(S_FMT("Unable to create temp directory \"%s\"", dir_temp));
-				temp_fail_count++;
-				return path(filename, dir);
-			}
-		}
-
 		return dir_temp + dir_separator + filename;
-	}
 
 	return filename;
 }
