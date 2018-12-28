@@ -56,16 +56,6 @@ vector<TextLanguage*> text_languages;
 
 
 // -----------------------------------------------------------------------------
-// TLFunction class constructor
-// -----------------------------------------------------------------------------
-TLFunction::TLFunction(string name) : name_{ name } {}
-
-// -----------------------------------------------------------------------------
-// TLFunction class destructor
-// -----------------------------------------------------------------------------
-TLFunction::~TLFunction() {}
-
-// -----------------------------------------------------------------------------
 // Returns the arg set [index], or an empty string if [index] is out of bounds
 // -----------------------------------------------------------------------------
 TLFunction::Context TLFunction::context(unsigned long index) const
@@ -112,10 +102,10 @@ void TLFunction::addContext(
 	const string& context,
 	const string& args,
 	const string& return_type,
-	string        description,
+	const string& description,
 	const string& deprecated_f)
 {
-	contexts_.push_back(Context{ context, {}, return_type, description, "", "", "" });
+	contexts_.push_back(Context{ context, {}, return_type, description, "", "", "", false });
 	auto& ctx = contexts_.back();
 
 	// Parse args
@@ -155,9 +145,9 @@ void TLFunction::addContext(
 				tz.adv();
 
 			bool is_replacement = true;
-			for (unsigned c = 0; c < tz.current().text.size(); c++)
+			for (auto&& c : tz.current().text)
 			{
-				char chr = tz.current().text[c];
+				char chr = c;
 				if (isdigit(chr) || chr == '.')
 				{
 					is_replacement = false;
@@ -184,17 +174,11 @@ void TLFunction::addContext(
 	const string&            context,
 	const ZScript::Function& func,
 	bool                     custom,
-	string                   desc,
-	string                   dep_f)
+	const string&            desc,
+	const string&            dep_f)
 {
-	contexts_.push_back(Context{ context, {} });
+	contexts_.push_back(Context{ context, {}, func.returnType(), desc, "", func.deprecated(), dep_f, custom });
 	auto& ctx = contexts_.back();
-
-	ctx.return_type  = func.returnType();
-	ctx.description  = desc;
-	ctx.deprecated_v = func.deprecated();
-	ctx.deprecated_f = dep_f;
-	ctx.custom       = custom;
 
 	if (func.isVirtual())
 		ctx.qualifiers += "virtual ";
@@ -243,18 +227,8 @@ bool TLFunction::hasContext(const string& name)
 // -----------------------------------------------------------------------------
 // TextLanguage class constructor
 // -----------------------------------------------------------------------------
-TextLanguage::TextLanguage(string id) :
-	prefered_comments_{ 0 },
-	line_comment_l_{ { "//" } },
-	comment_begin_l_{ { "/*" } },
-	comment_end_l_{ { "*/" } },
-	preprocessor_{ "#" },
-	block_begin_{ "{" },
-	block_end_{ "}" }
+TextLanguage::TextLanguage(const string& id) : id_{ id }
 {
-	// Init variables
-	this->id_ = id;
-
 	// Add to languages list
 	text_languages.push_back(this);
 }
@@ -279,16 +253,16 @@ TextLanguage::~TextLanguage()
 void TextLanguage::copyTo(TextLanguage* copy)
 {
 	// Copy general attributes
-	copy->prefered_comments_ = prefered_comments_;
-	copy->line_comment_l_    = line_comment_l_;
-	copy->comment_begin_l_   = comment_begin_l_;
-	copy->comment_end_l_     = comment_end_l_;
-	copy->preprocessor_      = preprocessor_;
-	copy->case_sensitive_    = case_sensitive_;
-	copy->f_lookup_url_      = f_lookup_url_;
-	copy->doc_comment_       = doc_comment_;
-	copy->block_begin_       = block_begin_;
-	copy->block_end_         = block_end_;
+	copy->preferred_comments_ = preferred_comments_;
+	copy->line_comment_l_     = line_comment_l_;
+	copy->comment_begin_l_    = comment_begin_l_;
+	copy->comment_end_l_      = comment_end_l_;
+	copy->preprocessor_       = preprocessor_;
+	copy->case_sensitive_     = case_sensitive_;
+	copy->f_lookup_url_       = f_lookup_url_;
+	copy->doc_comment_        = doc_comment_;
+	copy->block_begin_        = block_begin_;
+	copy->block_end_          = block_end_;
 
 	// Copy word lists
 	for (unsigned a = 0; a < 4; a++)
@@ -307,7 +281,7 @@ void TextLanguage::copyTo(TextLanguage* copy)
 // -----------------------------------------------------------------------------
 // Adds a new word of [type] to the language, if it doesn't exist already
 // -----------------------------------------------------------------------------
-void TextLanguage::addWord(WordType type, string keyword, bool custom)
+void TextLanguage::addWord(WordType type, const string& keyword, bool custom)
 {
 	// Add only if it doesn't already exist
 	vector<string>& list = custom ? word_lists_custom_[type].list : word_lists_[type].list;
@@ -321,12 +295,12 @@ void TextLanguage::addWord(WordType type, string keyword, bool custom)
 // be added
 // -----------------------------------------------------------------------------
 void TextLanguage::addFunction(
-	string name,
-	string args,
-	string desc,
-	string deprecated,
-	bool   replace,
-	string return_type)
+	string        name,
+	const string& args,
+	const string& desc,
+	const string& deprecated,
+	bool          replace,
+	const string& return_type)
 {
 	// Split out context from name
 	string context;
@@ -343,7 +317,7 @@ void TextLanguage::addFunction(
 	// If it doesn't, create it
 	if (!func)
 	{
-		functions_.push_back(TLFunction(name));
+		functions_.emplace_back(name);
 		func = &functions_.back();
 	}
 	// Clear the function if we're replacing it
@@ -387,7 +361,7 @@ void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
 			// If it doesn't, create it
 			if (!func)
 			{
-				functions_.push_back(TLFunction(f.name()));
+				functions_.emplace_back(f.name());
 				func = &functions_.back();
 			}
 
@@ -475,8 +449,8 @@ string TextLanguage::autocompletionList(string start, bool include_custom)
 
 	// Now build a string of the list items separated by spaces
 	string ret;
-	for (unsigned a = 0; a < list.size(); a++)
-		ret += list[a] + " ";
+	for (const auto& a : list)
+		ret += a + " ";
 
 	return ret;
 }
@@ -520,7 +494,7 @@ wxArrayString TextLanguage::functionsSorted()
 // -----------------------------------------------------------------------------
 // Returns true if [word] is a [type] word in this language, false otherwise
 // -----------------------------------------------------------------------------
-bool TextLanguage::isWord(WordType type, string word)
+bool TextLanguage::isWord(WordType type, const string& word)
 {
 	for (auto& w : word_lists_[type].list)
 		if (w == word)
@@ -532,7 +506,7 @@ bool TextLanguage::isWord(WordType type, string word)
 // -----------------------------------------------------------------------------
 // Returns true if [word] is a function in this language, false otherwise
 // -----------------------------------------------------------------------------
-bool TextLanguage::isFunction(string word)
+bool TextLanguage::isFunction(const string& word)
 {
 	for (auto& func : functions_)
 		if (func.name() == word)
@@ -545,7 +519,7 @@ bool TextLanguage::isFunction(string word)
 // Returns the function definition matching [name], or NULL if no matching
 // function exists
 // -----------------------------------------------------------------------------
-TLFunction* TextLanguage::function(string name)
+TLFunction* TextLanguage::function(const string& name)
 {
 	// Find function matching [name]
 	if (case_sensitive_)
@@ -581,8 +555,8 @@ void TextLanguage::clearCustomDefs()
 			++i;
 	}
 
-	for (auto a = 0; a < 4; a++)
-		word_lists_custom_[a].list.clear();
+	for (auto& a : word_lists_custom_)
+		a.list.clear();
 }
 
 
@@ -597,7 +571,7 @@ void TextLanguage::clearCustomDefs()
 // Reads in a text definition of a language. See slade.pk3 for
 // formatting examples
 // -----------------------------------------------------------------------------
-bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
+bool TextLanguage::readLanguageDefinition(MemChunk& mc, const string& source)
 {
 	Tokenizer tz;
 
@@ -619,12 +593,12 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 		auto node = root.childPTN(a);
 
 		// Create language
-		TextLanguage* lang = new TextLanguage(node->name());
+		auto lang = new TextLanguage(node->name());
 
 		// Check for inheritance
 		if (!node->inherit().IsEmpty())
 		{
-			TextLanguage* inherit = fromId(node->inherit());
+			auto inherit = fromId(node->inherit());
 			if (inherit)
 				inherit->copyTo(lang);
 			else
@@ -879,7 +853,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 							}
 
 							if (args.empty() && lang_has_void)
-								args.push_back("void");
+								args.emplace_back("void");
 
 							for (unsigned as = 0; as < args.size(); as++)
 								lang->addFunction(name, args[as], desc, deprecated, as == 0, child_func->type());
@@ -917,13 +891,13 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 bool TextLanguage::loadLanguages()
 {
 	// Get slade resource archive
-	Archive* res_archive = App::archiveManager().programResourceArchive();
+	auto res_archive = App::archiveManager().programResourceArchive();
 
 	// Read language definitions from resource archive
 	if (res_archive)
 	{
 		// Get 'config/languages' directly
-		ArchiveTreeNode* dir = res_archive->dir("config/languages");
+		auto dir = res_archive->dir("config/languages");
 
 		if (dir)
 		{
@@ -942,13 +916,13 @@ bool TextLanguage::loadLanguages()
 // -----------------------------------------------------------------------------
 // Returns the language definition matching [id], or NULL if no match found
 // -----------------------------------------------------------------------------
-TextLanguage* TextLanguage::fromId(string id)
+TextLanguage* TextLanguage::fromId(const string& id)
 {
 	// Find text language matching [id]
-	for (unsigned a = 0; a < text_languages.size(); a++)
+	for (auto& text_language : text_languages)
 	{
-		if (text_languages[a]->id_ == id)
-			return text_languages[a];
+		if (text_language->id_ == id)
+			return text_language;
 	}
 
 	// Not found
@@ -971,13 +945,13 @@ TextLanguage* TextLanguage::fromIndex(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns the language definition matching [name], or NULL if no match found
 // -----------------------------------------------------------------------------
-TextLanguage* TextLanguage::fromName(string name)
+TextLanguage* TextLanguage::fromName(const string& name)
 {
 	// Find text language matching [name]
-	for (unsigned a = 0; a < text_languages.size(); a++)
+	for (auto& text_language : text_languages)
 	{
-		if (S_CMPNOCASE(text_languages[a]->name_, name))
-			return text_languages[a];
+		if (S_CMPNOCASE(text_language->name_, name))
+			return text_language;
 	}
 
 	// Not found
@@ -991,8 +965,8 @@ wxArrayString TextLanguage::languageNames()
 {
 	wxArrayString ret;
 
-	for (unsigned a = 0; a < text_languages.size(); a++)
-		ret.push_back(text_languages[a]->name_);
+	for (auto& text_language : text_languages)
+		ret.push_back(text_language->name_);
 
 	return ret;
 }

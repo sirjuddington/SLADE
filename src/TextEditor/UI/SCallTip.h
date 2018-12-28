@@ -6,7 +6,7 @@ class SCallTip : public wxPopupWindow
 {
 public:
 	SCallTip(wxWindow* parent);
-	~SCallTip();
+	~SCallTip() = default;
 
 	void setBackgroundColour(ColRGBA col) { col_bg_ = col; }
 	void setTextColour(ColRGBA col) { col_fg_ = col_func_ = col_type_ = col_keyword_ = col; }
@@ -20,7 +20,7 @@ public:
 		updateSize();
 	}
 	void enableArgSwitch(bool enable) { switch_contexts_ = enable; }
-	void setFont(string face, int size);
+	void setFont(const string& face, int size);
 
 	void openFunction(TLFunction* function, int arg = -1);
 	void nextArgSet();
@@ -29,38 +29,39 @@ public:
 	static const int MAX_WIDTH = 800;
 
 private:
-	TLFunction*         function_;
+	TLFunction*         function_ = nullptr;
 	TLFunction::Context context_;
 
-	ColRGBA       col_bg_;
-	ColRGBA       col_fg_;
+	ColRGBA       col_bg_ = { 240, 240, 240 };
+	ColRGBA       col_fg_ = { 240, 240, 240 };
 	ColRGBA       col_fg_hl;
 	ColRGBA       col_func_;
 	ColRGBA       col_type_;
 	ColRGBA       col_keyword_;
-	int           arg_current_;
-	bool          switch_contexts_;
-	unsigned long context_current_;
+	int           arg_current_     = -1;
+	bool          switch_contexts_ = false;
+	unsigned long context_current_ = 0;
 	wxRect        rect_btn_up_;
 	wxRect        rect_btn_down_;
-	int           btn_mouse_over_;
+	int           btn_mouse_over_ = 0;
 	wxBitmap      buffer_;
 	wxFont        font_;
 
 	void loadContext(unsigned long index);
 	void updateSize();
 
-	int    drawText(wxDC& dc, string text, int left, int top, wxRect* bounds);
-	wxRect drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, int left, int top);
-	wxRect drawArgs(wxDC& dc, const TLFunction::Context& context, int left, int top, wxColour& col_faded, wxFont& bold);
+	int    drawText(wxDC& dc, const string& text, int left, int top, wxRect* bounds) const;
+	wxRect drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, int left, int top) const;
+	wxRect drawArgs(wxDC& dc, const TLFunction::Context& context, int left, int top, wxColour& col_faded, wxFont& bold)
+		const;
 	wxRect drawFunctionContext(
 		wxDC&                      dc,
 		const TLFunction::Context& context,
 		int                        left,
 		int                        top,
 		wxColour&                  col_faded,
-		wxFont&                    bold);
-	wxRect drawFunctionDescription(wxDC& dc, string desc, int left, int top);
+		wxFont&                    bold) const;
+	wxRect drawFunctionDescription(wxDC& dc, const string& desc, int left, int top) const;
 	wxSize drawCallTip(wxDC& dc, int xoff = 0, int yoff = 0);
 	void   updateBuffer();
 

@@ -6,27 +6,27 @@ class FindReplacePanel : public wxPanel
 {
 public:
 	FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor);
-	~FindReplacePanel() {}
+	~FindReplacePanel() = default;
 
-	void   setFindText(string find) const;
+	void   setFindText(const string& find) const;
 	string findText() const;
 	int    findFlags() const;
 	string replaceText() const;
 
 private:
 	TextEditorCtrl& text_editor_;
-	wxTextCtrl*     text_find_;
-	wxTextCtrl*     text_replace_;
-	wxButton*       btn_find_next_;
-	wxButton*       btn_find_prev_;
-	wxButton*       btn_replace_;
-	wxButton*       btn_replace_all_;
-	wxButton*       btn_close_;
-	wxCheckBox*     cb_match_case_;
-	wxCheckBox*     cb_match_word_whole_;
-	wxCheckBox*     cb_match_word_start_;
-	wxCheckBox*     cb_search_regex_;
-	wxCheckBox*     cb_allow_escape_;
+	wxTextCtrl*     text_find_           = nullptr;
+	wxTextCtrl*     text_replace_        = nullptr;
+	wxButton*       btn_find_next_       = nullptr;
+	wxButton*       btn_find_prev_       = nullptr;
+	wxButton*       btn_replace_         = nullptr;
+	wxButton*       btn_replace_all_     = nullptr;
+	wxButton*       btn_close_           = nullptr;
+	wxCheckBox*     cb_match_case_       = nullptr;
+	wxCheckBox*     cb_match_word_whole_ = nullptr;
+	wxCheckBox*     cb_match_word_start_ = nullptr;
+	wxCheckBox*     cb_search_regex_     = nullptr;
+	wxCheckBox*     cb_allow_escape_     = nullptr;
 
 	// Events
 	void onKeyDown(wxKeyEvent& e);

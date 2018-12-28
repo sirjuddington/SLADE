@@ -38,6 +38,7 @@
 #include "General/KeyBind.h"
 #include "Graphics/Icons.h"
 #include "SCallTip.h"
+#include "SLADEWxApp.h"
 #include "Utility/Tokenizer.h"
 
 
@@ -102,14 +103,13 @@ wxThread::ExitCode JumpToCalculator::Entry()
 				token = tz.getToken();
 		}
 
-		for (unsigned a = 0; a < block_names_.size(); a++)
+		for (auto block : block_names_)
 		{
 			// Get jump block keyword
-			string block = block_names_[a];
-			long   skip  = 0;
+			long skip = 0;
 			if (block.Contains(":"))
 			{
-				wxArrayString sp = wxSplit(block, ':');
+				auto sp = wxSplit(block, ':');
 				sp.back().ToLong(&skip);
 				block = sp[0];
 			}
@@ -120,8 +120,8 @@ wxThread::ExitCode JumpToCalculator::Entry()
 				for (int s = 0; s < skip; s++)
 					name = tz.getToken();
 
-				for (unsigned i = 0; i < ignore_.size(); ++i)
-					if (S_CMPNOCASE(name, ignore_[i]))
+				for (const auto& i : ignore_)
+					if (S_CMPNOCASE(name, i))
 						name = tz.getToken();
 
 				// Numbered block, add block name
@@ -144,7 +144,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 		jump_points.RemoveLast(1);
 
 	// Send event
-	wxThreadEvent* event = new wxThreadEvent(wxEVT_COMMAND_JTCALCULATOR_COMPLETED);
+	auto event = new wxThreadEvent(wxEVT_COMMAND_JTCALCULATOR_COMPLETED);
 	event->SetString(jump_points);
 	wxQueueEvent(handler_, event);
 
@@ -164,25 +164,11 @@ wxThread::ExitCode JumpToCalculator::Entry()
 // -----------------------------------------------------------------------------
 TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	wxStyledTextCtrl(parent, id),
+	call_tip_{ new SCallTip(this) },
 	lexer_{ std::make_unique<Lexer>() },
-	timer_update_(this)
+	last_modified_{ App::runTimer() },
+	timer_update_{ this }
 {
-	// Init variables
-	language_           = nullptr;
-	ct_argset_          = 0;
-	ct_function_        = nullptr;
-	ct_start_           = 0;
-	prev_cursor_pos_    = -1;
-	prev_text_length_   = -1;
-	prev_brace_match_   = -1;
-	panel_fr_           = nullptr;
-	call_tip_           = new SCallTip(this);
-	choice_jump_to_     = nullptr;
-	jump_to_calculator_ = nullptr;
-	update_jump_to_     = false;
-	update_word_match_  = false;
-	last_modified_      = App::runTimer();
-
 	// Line numbers by default
 	SetMarginType(0, wxSTC_MARGIN_NUMBER);
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, "9999"));
@@ -453,7 +439,7 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Writes the raw ASCII text to [mc]
 // -----------------------------------------------------------------------------
-void TextEditorCtrl::getRawText(MemChunk& mc)
+void TextEditorCtrl::getRawText(MemChunk& mc) const
 {
 	mc.clear();
 	string text = GetText();
@@ -532,7 +518,7 @@ void TextEditorCtrl::showFindReplacePanel(bool show)
 // Returns false if the [find] was invalid or no match was found, true
 // otherwise
 // -----------------------------------------------------------------------------
-bool TextEditorCtrl::findNext(string find, int flags)
+bool TextEditorCtrl::findNext(const string& find, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -575,7 +561,7 @@ bool TextEditorCtrl::findNext(string find, int flags)
 // Returns false if the [find] was invalid or no match was found, true
 // otherwise
 // -----------------------------------------------------------------------------
-bool TextEditorCtrl::findPrev(string find, int flags)
+bool TextEditorCtrl::findPrev(const string& find, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -618,7 +604,7 @@ bool TextEditorCtrl::findPrev(string find, int flags)
 // Returns false if [find] is invalid or the current selection does not match
 // it, true otherwise
 // -----------------------------------------------------------------------------
-bool TextEditorCtrl::replaceCurrent(string find, string replace, int flags)
+bool TextEditorCtrl::replaceCurrent(const string& find, const string& replace, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -649,7 +635,7 @@ bool TextEditorCtrl::replaceCurrent(string find, string replace, int flags)
 // Replaces all occurrences of [find] in the text with [replace].
 // Returns the number of occurrences replaced
 // -----------------------------------------------------------------------------
-int TextEditorCtrl::replaceAll(string find, string replace, int flags)
+int TextEditorCtrl::replaceAll(const string& find, const string& replace, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -804,7 +790,7 @@ void TextEditorCtrl::clearWordMatch()
 void TextEditorCtrl::showCalltip(int position)
 {
 	// Setup calltip colours
-	StyleSet* ss_current = StyleSet::currentSet();
+	auto ss_current = StyleSet::currentSet();
 	call_tip_->setBackgroundColour(ss_current->style("calltip")->background());
 	call_tip_->setTextColour(ss_current->style("calltip")->foreground());
 	call_tip_->setTextHighlightColour(ss_current->style("calltip_hl")->foreground());
@@ -820,7 +806,7 @@ void TextEditorCtrl::showCalltip(int position)
 		call_tip_->setFont("", 0);
 
 	// Determine position
-	wxPoint pos = GetScreenPosition() + PointFromPosition(position);
+	auto pos = GetScreenPosition() + PointFromPosition(position);
 	pos.y += TextHeight(GetCurrentLine()) + 2;
 	call_tip_->SetPosition(wxPoint(pos.x, pos.y));
 
@@ -859,10 +845,10 @@ bool TextEditorCtrl::openCalltip(int pos, int arg, bool dwell)
 	string word = GetTextRange(WordStartPosition(start, true), WordEndPosition(start, true));
 
 	// Get matching language function (if any)
-	TLFunction* func = language_->function(word);
+	auto func = language_->function(word);
 
 	// Show calltip if it's a function
-	if (func && func->contexts().size() > 0)
+	if (func && !func->contexts().empty())
 	{
 		call_tip_->enableArgSwitch(!dwell && func->contexts().size() > 1);
 		call_tip_->openFunction(func, arg);
@@ -1088,72 +1074,71 @@ void TextEditorCtrl::setupFolding()
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::lineComment()
 {
-	string space, empty, comment, commentSpace;
-	space = wxString::FromUTF8(" ");
-	empty = wxString::FromUTF8("");
+	string space = wxString::FromUTF8(" ");
+	string empty = wxString::FromUTF8("");
 
+	string comment;
 	if (language_)
 		comment = language_->lineComment();
 	else
 		comment = default_line_comment_;
 
-	commentSpace = comment + space;
+	string comment_space = comment + space;
 
-	int selectionStart, selectionEnd;
-	GetSelection(&selectionStart, &selectionEnd);
+	int selection_start, selection_end;
+	GetSelection(&selection_start, &selection_end);
 
 	bool singleLine = false;
-	if (selectionStart == selectionEnd)
+	if (selection_start == selection_end)
 		singleLine = true;
 
-	int firstLine, lastLine;
-	firstLine = LineFromPosition(selectionStart);
-	lastLine  = LineFromPosition(selectionEnd);
+	int first_line = LineFromPosition(selection_start);
+	int last_line  = LineFromPosition(selection_end);
 
-	size_t selectionStartOffs, selectionEndOffs;
-	selectionStartOffs = selectionEndOffs = 0;
+	size_t selection_end_offs   = 0;
+	size_t selection_start_offs = 0;
 
 	BeginUndoAction();
-	for (int line = firstLine; line <= lastLine; ++line)
+	for (int line = first_line; line <= last_line; ++line)
 	{
-		string lineText = GetTextRange(PositionFromLine(line), GetLineEndPosition(line));
+		string line_text = GetTextRange(PositionFromLine(line), GetLineEndPosition(line));
 
 		SetTargetStart(PositionFromLine(line));
 		SetTargetEnd(GetLineEndPosition(line));
 
-		if (lineText.StartsWith(commentSpace))
+		if (line_text.StartsWith(comment_space))
 		{
-			if (line == firstLine)
-				selectionStartOffs -= commentSpace.Len();
-			selectionEndOffs -= commentSpace.Len();
+			if (line == first_line)
+				selection_start_offs -= comment_space.Len();
+			selection_end_offs -= comment_space.Len();
 
-			lineText.Replace(commentSpace, empty, false);
-			ReplaceTarget(lineText);
+			line_text.Replace(comment_space, empty, false);
+			ReplaceTarget(line_text);
 		}
-		else if (lineText.StartsWith(comment))
+		else if (line_text.StartsWith(comment))
 		{
-			if (line == firstLine)
-				selectionStartOffs -= comment.Len();
-			selectionEndOffs -= comment.Len();
+			if (line == first_line)
+				selection_start_offs -= comment.Len();
+			selection_end_offs -= comment.Len();
 
-			lineText.Replace(comment, empty, false);
-			ReplaceTarget(lineText);
+			line_text.Replace(comment, empty, false);
+			ReplaceTarget(line_text);
 		}
-		else if (lineText.Trim().Len() != 0)
+		else if (line_text.Trim().Len() != 0)
 		{
-			if (line == firstLine)
-				selectionStartOffs += commentSpace.Len();
-			selectionEndOffs += commentSpace.Len();
+			if (line == first_line)
+				selection_start_offs += comment_space.Len();
+			selection_end_offs += comment_space.Len();
 
-			ReplaceTarget(lineText.Prepend(commentSpace));
+			ReplaceTarget(line_text.Prepend(comment_space));
 		}
 	}
 	EndUndoAction();
 
 	if (singleLine)
-		GotoPos(selectionStart + selectionEndOffs);
+		GotoPos(selection_start + selection_end_offs);
 	else
-		SetSelection(selectionStart + selectionStartOffs, selectionEnd + selectionEndOffs);
+		SetSelection(selection_start + selection_start_offs, selection_end + selection_end_offs);
 }
 
 // -----------------------------------------------------------------------------
@@ -1161,59 +1146,58 @@ void TextEditorCtrl::lineComment()
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::blockComment()
 {
-	string space, commentBegin, commentEnd;
-	space = wxString::FromUTF8(" ");
+	string comment_begin, comment_end;
+	string space = wxString::FromUTF8(" ");
 	if (language_)
 	{
-		commentBegin = language_->commentBegin();
-		commentEnd   = language_->commentEnd();
+		comment_begin = language_->commentBegin();
+		comment_end   = language_->commentEnd();
 	}
 	else
 	{
-		commentBegin = default_begin_comment_;
-		commentEnd   = default_end_comment_;
+		comment_begin = default_begin_comment_;
+		comment_end   = default_end_comment_;
 	}
 
-	size_t commentBeginLen, commentEndLen;
-	commentBeginLen = commentBegin.Len();
-	commentEndLen   = commentEnd.Len();
+	size_t comment_begin_len = comment_begin.Len();
+	size_t comment_end_len   = comment_end.Len();
 
-	int selectionStart, selectionEnd;
-	GetSelection(&selectionStart, &selectionEnd);
+	int selection_start, selection_end;
+	GetSelection(&selection_start, &selection_end);
 
-	SetTargetStart(selectionStart);
-	SetTargetEnd(selectionEnd);
+	SetTargetStart(selection_start);
+	SetTargetEnd(selection_end);
 
-	SetInsertionPoint(selectionStart);
+	SetInsertionPoint(selection_start);
 
-	string textString = GetRange(selectionStart, selectionEnd);
+	string text_string = GetRange(selection_start, selection_end);
 
-	if (!textString.StartsWith(commentBegin) && !textString.EndsWith(commentEnd))
+	if (!text_string.StartsWith(comment_begin) && !text_string.EndsWith(comment_end))
 	{
-		commentBegin = commentBegin.append(space);
-		commentEnd   = commentEnd.Prepend(space);
+		comment_begin = comment_begin.append(space);
+		comment_end   = comment_end.Prepend(space);
 
-		ReplaceTarget(textString.Prepend(commentBegin).append(commentEnd));
-		selectionEnd += (int)(commentBegin.Len() + commentEnd.Len());
+		ReplaceTarget(text_string.Prepend(comment_begin).append(comment_end));
+		selection_end += int(comment_begin.Len() + comment_end.Len());
 	}
-	else if (textString.StartsWith(commentBegin) && textString.EndsWith(commentEnd))
+	else if (text_string.StartsWith(comment_begin) && text_string.EndsWith(comment_end))
 	{
-		if (textString.StartsWith(commentBegin.append(space)))
-			commentBeginLen = commentBegin.Len();
-		if (textString.EndsWith(commentEnd.Prepend(space)))
-			commentEndLen = commentEnd.Len();
+		if (text_string.StartsWith(comment_begin.append(space)))
+			comment_begin_len = comment_begin.Len();
+		if (text_string.EndsWith(comment_end.Prepend(space)))
+			comment_end_len = comment_end.Len();
 
-		ReplaceTarget(textString.Remove(0, commentBeginLen).RemoveLast(commentEndLen));
-		selectionEnd -= (int)(commentBeginLen + commentEndLen);
+		ReplaceTarget(text_string.Remove(0, comment_begin_len).RemoveLast(comment_end_len));
+		selection_end -= int(comment_begin_len + comment_end_len);
 	}
 
-	SetSelection(selectionStart, selectionEnd);
+	SetSelection(selection_start, selection_end);
 }
 
 // -----------------------------------------------------------------------------
 // Switch the prefered comment style to next style available.
 // -----------------------------------------------------------------------------
-void TextEditorCtrl::cycleComments()
+void TextEditorCtrl::cycleComments() const
 {
 	if (!language_)
 		return;
@@ -1238,14 +1222,12 @@ void TextEditorCtrl::cycleComments()
 void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 {
 	// Check if keypress matches any keybinds
-	wxArrayString binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
+	auto binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
 
 	// Go through matching binds
 	bool handled = false;
-	for (unsigned a = 0; a < binds.size(); a++)
+	for (const auto& name : binds)
 	{
-		string name = binds[a];
-
 		// Open/update calltip
 		if (name == "ted_calltip")
 		{
@@ -1489,7 +1471,7 @@ void TextEditorCtrl::onCharAdded(wxStyledTextEvent& e)
 			SetLineIndentation(currentLine, lineInd);
 
 			// Skip to end of tabs
-			while (1)
+			while (true)
 			{
 				int chr = GetCharAt(GetCurrentPos());
 				if (chr == '\t' || chr == ' ')
@@ -1598,7 +1580,7 @@ void TextEditorCtrl::onCalltipClicked(wxStyledTextEvent& e)
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::onMouseDwellStart(wxStyledTextEvent& e)
 {
-	if (wxTheApp->IsActive() && HasFocus() && !call_tip_->IsShown() && txed_calltips_mouse && e.GetPosition() >= 0)
+	if (wxGetApp().IsActive() && HasFocus() && !call_tip_->IsShown() && txed_calltips_mouse && e.GetPosition() >= 0)
 	{
 		openCalltip(e.GetPosition(), -1, true);
 		ct_dwell_ = true;
@@ -1733,8 +1715,7 @@ void TextEditorCtrl::onJumpToCalculateComplete(wxThreadEvent& e)
 	choice_jump_to_->Clear();
 	jump_to_lines_.clear();
 
-	string        jump_points = e.GetString();
-	wxArrayString split       = wxSplit(jump_points, ',');
+	auto split = wxSplit(e.GetString(), ',');
 
 	wxArrayString items;
 	for (unsigned a = 0; a < split.size(); a += 2)

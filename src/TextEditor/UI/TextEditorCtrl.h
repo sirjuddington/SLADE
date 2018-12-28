@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include "Archive/ArchiveEntry.h"
 #include "TextEditor/Lexer.h"
 #include "TextEditor/TextLanguage.h"
@@ -18,16 +19,16 @@ wxDECLARE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
 class JumpToCalculator : public wxThread
 {
 public:
-	JumpToCalculator(wxEvtHandler* handler, string text, vector<string> block_names, vector<string> ignore) :
+	JumpToCalculator(wxEvtHandler* handler, const string& text, vector<string> block_names, vector<string> ignore) :
 		handler_(handler),
 		text_(text),
-		block_names_(block_names),
-		ignore_(ignore)
+		block_names_(std::move(block_names)),
+		ignore_(std::move(ignore))
 	{
 	}
-	virtual ~JumpToCalculator() {}
+	virtual ~JumpToCalculator() = default;
 
-	ExitCode Entry();
+	ExitCode Entry() override;
 
 private:
 	wxEvtHandler*  handler_;
@@ -51,7 +52,7 @@ public:
 	void setupFoldMargin(TextStyle* margin_style = nullptr);
 	bool applyStyleSet(StyleSet* style);
 	bool loadEntry(ArchiveEntry* entry);
-	void getRawText(MemChunk& mc);
+	void getRawText(MemChunk& mc) const;
 
 	// Misc
 	void trimWhitespace();
@@ -59,10 +60,10 @@ public:
 	// Find/Replace
 	void setFindReplacePanel(FindReplacePanel* panel) { panel_fr_ = panel; }
 	void showFindReplacePanel(bool show = true);
-	bool findNext(string find, int flags);
-	bool findPrev(string find, int flags);
-	bool replaceCurrent(string find, string replace, int flags);
-	int  replaceAll(string find, string replace, int flags);
+	bool findNext(const string& find, int flags);
+	bool findPrev(const string& find, int flags);
+	bool replaceCurrent(const string& find, const string& replace, int flags);
+	int  replaceAll(const string& find, const string& replace, int flags);
 
 	// Hilight/matching
 	void checkBraceMatch();
@@ -87,35 +88,35 @@ public:
 	// Comments
 	void lineComment();
 	void blockComment();
-	void cycleComments();
+	void cycleComments() const;
 
 private:
-	TextLanguage*          language_;
-	FindReplacePanel*      panel_fr_;
-	SCallTip*              call_tip_;
-	wxChoice*              choice_jump_to_;
-	JumpToCalculator*      jump_to_calculator_;
+	TextLanguage*          language_ = nullptr;
+	FindReplacePanel*      panel_fr_ = nullptr;
+	SCallTip*              call_tip_ = nullptr;
+	wxChoice*              choice_jump_to_ = nullptr;
+	JumpToCalculator*      jump_to_calculator_ = nullptr;
 	std::unique_ptr<Lexer> lexer_;
 	string                 prev_word_match_;
 	string                 autocomp_list_;
 	vector<int>            jump_to_lines_;
-	long                   last_modified_;
+	long                   last_modified_ = 0;
 
 	// State tracking for updates
-	int prev_cursor_pos_;
-	int prev_text_length_;
-	int prev_brace_match_;
+	int prev_cursor_pos_ = -1;
+	int prev_text_length_ = -1;
+	int prev_brace_match_ = -1;
 
 	// Timed update stuff
 	wxTimer timer_update_;
-	bool    update_jump_to_;
-	bool    update_word_match_;
+	bool    update_jump_to_ = false;
+	bool    update_word_match_ = false;
 
 	// Calltip stuff
-	TLFunction* ct_function_;
-	int         ct_argset_;
-	int         ct_start_;
-	bool        ct_dwell_;
+	TLFunction* ct_function_ = nullptr;
+	int         ct_argset_ = 0;
+	int         ct_start_ = 0;
+	bool        ct_dwell_ = false;
 
 	// Default comment strings
 	const string default_line_comment_  = "//";

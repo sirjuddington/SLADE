@@ -55,14 +55,10 @@ CVAR(Bool, debug_lexer, false, CVar::Flag::Secret)
 // -----------------------------------------------------------------------------
 Lexer::Lexer() :
 	whitespace_chars_{ { ' ', '\n', '\r', '\t' } },
-	language_{ nullptr },
 	re_int1_{ "^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT | wxRE_NOSUB },
 	re_int2_{ "^0[0-9]+$", wxRE_DEFAULT | wxRE_NOSUB },
 	re_int3_{ "^0x[0-9A-Fa-f]+$", wxRE_DEFAULT | wxRE_NOSUB },
-	re_float_{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT | wxRE_NOSUB },
-	fold_comments_{ false },
-	fold_preprocessor_{ false },
-	curr_comment_idx_{ -1 }
+	re_float_{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT | wxRE_NOSUB }
 {
 	// Default word characters
 	setWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
@@ -83,15 +79,15 @@ void Lexer::loadLanguage(TextLanguage* language)
 		return;
 
 	// Load language words
-	for (auto word : language->wordListSorted(TextLanguage::WordType::Constant))
+	for (const auto& word : language->wordListSorted(TextLanguage::WordType::Constant))
 		addWord(word, Lexer::Style::Constant);
-	for (auto word : language->wordListSorted(TextLanguage::WordType::Property))
+	for (const auto& word : language->wordListSorted(TextLanguage::WordType::Property))
 		addWord(word, Lexer::Style::Property);
-	for (auto word : language->functionsSorted())
+	for (const auto& word : language->functionsSorted())
 		addWord(word, Lexer::Style::Function);
-	for (auto word : language->wordListSorted(TextLanguage::WordType::Type))
+	for (const auto& word : language->wordListSorted(TextLanguage::WordType::Type))
 		addWord(word, Lexer::Style::Type);
-	for (auto word : language->wordListSorted(TextLanguage::WordType::Keyword))
+	for (const auto& word : language->wordListSorted(TextLanguage::WordType::Keyword))
 		addWord(word, Lexer::Style::Keyword);
 
 	// Load language info
@@ -117,7 +113,7 @@ bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 	else
 		curr_comment_idx_ = -1;
 
-	editor->StartStyling(start, 31);
+	editor->StartStyling(start);
 	if (debug_lexer)
 		Log::debug(S_FMT("START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1));
 
@@ -160,7 +156,7 @@ bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 // -----------------------------------------------------------------------------
 // Sets the [style] for [word]
 // -----------------------------------------------------------------------------
-void Lexer::addWord(string word, int style)
+void Lexer::addWord(const string& word, int style)
 {
 	word_list_[language_->caseSensitive() ? word : word.Lower()].style = (char)style;
 }
@@ -191,21 +187,21 @@ void Lexer::styleWord(LexerState& state, string word)
 // -----------------------------------------------------------------------------
 // Sets the valid word characters to [chars]
 // -----------------------------------------------------------------------------
-void Lexer::setWordChars(string chars)
+void Lexer::setWordChars(const string& chars)
 {
 	word_chars_.clear();
-	for (unsigned a = 0; a < chars.length(); a++)
-		word_chars_.push_back((unsigned char)chars[a]);
+	for (auto&& a : chars)
+		word_chars_.push_back((unsigned char)a);
 }
 
 // -----------------------------------------------------------------------------
 // Sets the valid operator characters to [chars]
 // -----------------------------------------------------------------------------
-void Lexer::setOperatorChars(string chars)
+void Lexer::setOperatorChars(const string& chars)
 {
 	operator_chars_.clear();
-	for (unsigned a = 0; a < chars.length(); a++)
-		operator_chars_.push_back((unsigned char)chars[a]);
+	for (auto&& a : chars)
+		operator_chars_.push_back((unsigned char)a);
 }
 
 // -----------------------------------------------------------------------------
@@ -643,7 +639,7 @@ bool Lexer::processWhitespace(LexerState& state)
 // -----------------------------------------------------------------------------
 // Checks if the text in [editor] starting from [pos] matches [token]
 // -----------------------------------------------------------------------------
-bool Lexer::checkToken(LexerState& state, int pos, string& token)
+bool Lexer::checkToken(LexerState& state, int pos, string& token) const
 {
 	if (!token.empty())
 	{
@@ -663,11 +659,11 @@ bool Lexer::checkToken(LexerState& state, int pos, string& token)
 // Writes the fitst index that matched to [found_index] if a valid pointer
 // is passed. Returns true if there's a match, false if not.
 // -----------------------------------------------------------------------------
-bool Lexer::checkToken(LexerState& state, int pos, vector<string>& tokens, int* found_idx)
+bool Lexer::checkToken(LexerState& state, int pos, vector<string>& tokens, int* found_idx) const
 {
-	if (!tokens.size() == 0)
+	if (!tokens.empty())
 	{
-		int    idx = 0;
+		unsigned    idx = 0;
 		string token;
 		while (idx < tokens.size())
 		{
@@ -741,7 +737,7 @@ bool Lexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
 // Sets the [style] for [word], or adds it to the functions list if [style]
 // is Function
 // -----------------------------------------------------------------------------
-void ZScriptLexer::addWord(string word, int style)
+void ZScriptLexer::addWord(const string& word, int style)
 {
 	if (style == Style::Function)
 		functions_.push_back(language_->caseSensitive() ? word : word.Lower());

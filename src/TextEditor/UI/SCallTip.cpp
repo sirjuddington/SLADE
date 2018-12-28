@@ -58,24 +58,14 @@ CVAR(Bool, txed_calltips_dim_optional, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // SCallTip class constructor
 // -----------------------------------------------------------------------------
-SCallTip::SCallTip(wxWindow* parent) :
-	wxPopupWindow(parent),
-	function_(nullptr),
-	col_bg_(240, 240, 240),
-	col_fg_(240, 240, 240),
-	arg_current_(-1),
-	switch_contexts_(false),
-	btn_mouse_over_(0),
-	buffer_(1000, 1000, 32)
+SCallTip::SCallTip(wxWindow* parent) : wxPopupWindow(parent), buffer_{ 1000, 1000, 32 }, font_{ GetFont() }
 {
-	font_ = GetFont();
-
-	Show(false);
+	wxPopupWindow::Show(false);
 
 #ifndef __WXOSX__
-	SetDoubleBuffered(true);
+	wxWindow::SetDoubleBuffered(true);
 #endif // !__WXOSX__
-	SetBackgroundStyle(wxBG_STYLE_PAINT);
+	wxWindowBase::SetBackgroundStyle(wxBG_STYLE_PAINT);
 
 	// Bind events
 	Bind(wxEVT_PAINT, &SCallTip::onPaint, this);
@@ -86,16 +76,11 @@ SCallTip::SCallTip(wxWindow* parent) :
 }
 
 // -----------------------------------------------------------------------------
-// SCallTip class destructor
-// -----------------------------------------------------------------------------
-SCallTip::~SCallTip() {}
-
-// -----------------------------------------------------------------------------
 // Sets the font [face] and [size]
 // -----------------------------------------------------------------------------
-void SCallTip::setFont(string face, int size)
+void SCallTip::setFont(const string& face, int size)
 {
-	if (face == "")
+	if (face.empty())
 	{
 		font_.SetFaceName(GetFont().GetFaceName());
 		font_.SetPointSize(GetFont().GetPointSize());
@@ -167,10 +152,10 @@ void SCallTip::updateSize()
 	SetSize(buffer_.GetWidth() + UI::scalePx(24), buffer_.GetHeight() + UI::scalePx(16));
 
 	// Get screen bounds and window bounds
-	unsigned  index = (unsigned)wxDisplay::GetFromWindow(this->GetParent());
+	auto      index = (unsigned)wxDisplay::GetFromWindow(this->GetParent());
 	wxDisplay display(index);
-	wxRect    screen_area = display.GetClientArea();
-	wxRect    ct_area     = GetScreenRect();
+	auto      screen_area = display.GetClientArea();
+	auto      ct_area     = GetScreenRect();
 
 	// Check if calltip extends off the right of the screen
 	if (ct_area.GetRight() > screen_area.GetRight())
@@ -188,7 +173,7 @@ void SCallTip::updateSize()
 // Using [dc], draw [text] at [left,top], writing the bounds of the drawn text
 // to [bounds]
 // -----------------------------------------------------------------------------
-int SCallTip::drawText(wxDC& dc, string text, int left, int top, wxRect* bounds)
+int SCallTip::drawText(wxDC& dc, const string& text, int left, int top, wxRect* bounds) const
 {
 	dc.DrawLabel(text, wxNullBitmap, wxRect(left, top, 900, 900), 0, -1, bounds);
 	return bounds->GetRight() + 1;
@@ -198,7 +183,7 @@ int SCallTip::drawText(wxDC& dc, string text, int left, int top, wxRect* bounds)
 // Draws function 'spec' text for [context] at [left,top].
 // Returns a rect of the bounds of the drawn text
 // -----------------------------------------------------------------------------
-wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, int left, int top)
+wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, int left, int top) const
 {
 	wxRect rect{ left, top, 0, 0 };
 	int    rect_left = left;
@@ -264,7 +249,7 @@ wxRect SCallTip::drawArgs(
 	int                        left,
 	int                        top,
 	wxColour&                  col_faded,
-	wxFont&                    bold)
+	wxFont&                    bold) const
 {
 	wxRect rect{ left, top, 0, 0 };
 
@@ -274,33 +259,33 @@ wxRect SCallTip::drawArgs(
 
 	size_t params_lenght = 0;
 
-	for (unsigned a = 0; a < context.params.size(); a++)
+	for (const auto& param : context.params)
 	{
 		// Count param name + space length
-		if (!context.params[a].type.empty())
-			params_lenght += context.params[a].name.size() + 1;
+		if (!param.type.empty())
+			params_lenght += param.name.size() + 1;
 
 		// Count param type + space length
-		if (!context.params[a].type.empty())
-			params_lenght += context.params[a].type.size() + 1;
+		if (!param.type.empty())
+			params_lenght += param.type.size() + 1;
 
 		// Count param default_value + " = " length
-		if (!context.params[a].default_value.empty())
-			params_lenght += context.params[a].default_value.size() + 3;
+		if (!param.default_value.empty())
+			params_lenght += param.default_value.size() + 3;
 
 		// Count brackets for optional params
-		if (context.params[a].optional)
+		if (param.optional)
 			params_lenght += 2;
 	}
 
-	if (context.params.size() == 0)
+	if (context.params.empty())
 		params_lenght = 4; // void
 
 	params_lenght *= UI::scalePx(font_.GetPixelSize().GetWidth());
 
 	bool long_params = (args_left + params_lenght) > MAX_WIDTH;
 
-	for (unsigned a = 0; a < context.params.size(); a++)
+	for (int a = 0; a < (int)context.params.size(); a++)
 	{
 		auto& arg = context.params[a];
 
@@ -347,7 +332,7 @@ wxRect SCallTip::drawArgs(
 		// Comma (if needed)
 		dc.SetFont(font_);
 		dc.SetTextForeground(wxcol_fg);
-		if (a < context.params.size() - 1)
+		if (a < (int)context.params.size() - 1)
 			left = drawText(dc, ", ", left, top, &rect);
 
 		// Update max width
@@ -371,7 +356,7 @@ wxRect SCallTip::drawFunctionContext(
 	int                        left,
 	int                        top,
 	wxColour&                  col_faded,
-	wxFont&                    bold)
+	wxFont&                    bold) const
 {
 	auto rect_func = drawFunctionSpec(dc, context, left, top);
 	auto rect_args = drawArgs(dc, context, rect_func.GetRight() + 1, rect_func.GetTop(), col_faded, bold);
@@ -385,9 +370,9 @@ wxRect SCallTip::drawFunctionContext(
 // Draws function description text [desc] at [left,top].
 // Returns a rect of the bounds of the drawn text
 // -----------------------------------------------------------------------------
-wxRect SCallTip::drawFunctionDescription(wxDC& dc, string desc, int left, int top)
+wxRect SCallTip::drawFunctionDescription(wxDC& dc, const string& desc, int left, int top) const
 {
-	wxFont italic = font_.Italic();
+	auto   italic = font_.Italic();
 	wxRect rect(left, top, 0, 0);
 	dc.SetFont(italic);
 	int max_right = 0;
@@ -427,9 +412,9 @@ wxRect SCallTip::drawFunctionDescription(wxDC& dc, string desc, int left, int to
 		}
 
 		int bottom = rect.GetBottom() + UI::scalePx(font_.GetPixelSize().GetHeight());
-		for (unsigned a = 0; a < desc_lines.size(); a++)
+		for (const auto& desc_line : desc_lines)
 		{
-			drawText(dc, desc_lines[a], 0, bottom, &rect);
+			drawText(dc, desc_line, 0, bottom, &rect);
 			bottom = rect.GetBottom();
 			if (rect.GetRight() > max_right)
 				max_right = rect.GetRight();
@@ -452,7 +437,7 @@ wxRect SCallTip::drawFunctionDescription(wxDC& dc, string desc, int left, int to
 wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 {
 	wxSize ct_size;
-	wxFont bold = font_.Bold();
+	auto   bold = font_.Bold();
 
 	// Setup faded text colour
 	ColRGBA faded;
@@ -630,17 +615,17 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	wxColour border, border2;
 	if (col_bg_.greyscale().r < 128)
 	{
-		ColRGBA c = col_bg_.amp(50, 50, 50, 0);
-		border    = WXCOL(c);
-		c         = col_bg_.amp(20, 20, 20, 0);
-		border2   = WXCOL(c);
+		auto c  = col_bg_.amp(50, 50, 50, 0);
+		border  = WXCOL(c);
+		c       = col_bg_.amp(20, 20, 20, 0);
+		border2 = WXCOL(c);
 	}
 	else
 	{
-		ColRGBA c = col_bg_.amp(-50, -50, -50, 0);
-		border    = WXCOL(c);
-		c         = col_bg_.amp(-20, -20, -20, 0);
-		border2   = WXCOL(c);
+		auto c  = col_bg_.amp(-50, -50, -50, 0);
+		border  = WXCOL(c);
+		c       = col_bg_.amp(-20, -20, -20, 0);
+		border2 = WXCOL(c);
 	}
 
 	// Draw background
@@ -741,8 +726,8 @@ void SCallTip::onShow(wxShowEvent& e)
 		// Get screen bounds and window bounds
 		int       index = wxDisplay::GetFromWindow(this->GetParent());
 		wxDisplay display((unsigned)index);
-		wxRect    screen_area = display.GetClientArea();
-		wxRect    ct_area     = GetScreenRect();
+		auto      screen_area = display.GetClientArea();
+		auto      ct_area     = GetScreenRect();
 
 		// Check if calltip extends off the right of the screen
 		if (ct_area.GetRight() > screen_area.GetRight())

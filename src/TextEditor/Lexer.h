@@ -7,7 +7,7 @@ class Lexer
 {
 public:
 	Lexer();
-	virtual ~Lexer() {}
+	virtual ~Lexer() = default;
 
 	enum Style
 	{
@@ -31,11 +31,11 @@ public:
 	virtual void loadLanguage(TextLanguage* language);
 
 	virtual bool doStyling(TextEditorCtrl* editor, int start, int end);
-	virtual void addWord(string word, int style);
+	virtual void addWord(const string& word, int style);
 	virtual void clearWords() { word_list_.clear(); }
 
-	void setWordChars(string chars);
-	void setOperatorChars(string chars);
+	void setWordChars(const string& chars);
+	void setOperatorChars(const string& chars);
 
 	void updateFolding(TextEditorCtrl* editor, int line_start);
 	void foldComments(bool fold) { fold_comments_ = fold; }
@@ -59,15 +59,15 @@ protected:
 	vector<unsigned char> word_chars_;
 	vector<unsigned char> operator_chars_;
 	vector<unsigned char> whitespace_chars_;
-	TextLanguage*         language_;
+	TextLanguage*         language_ = nullptr;
 	wxRegEx               re_int1_;
 	wxRegEx               re_int2_;
 	wxRegEx               re_int3_;
 	wxRegEx               re_float_;
-	bool                  fold_comments_;
-	bool                  fold_preprocessor_;
+	bool                  fold_comments_ = false;
+	bool                  fold_preprocessor_ = false;
 	char                  preprocessor_char_;
-	int                   curr_comment_idx_;
+	int                   curr_comment_idx_ = -1;
 
 	struct WLIndex
 	{
@@ -105,18 +105,18 @@ protected:
 	bool processWhitespace(LexerState& state);
 
 	virtual void styleWord(LexerState& state, string word);
-	bool         checkToken(LexerState& state, int pos, string& token);
-	bool         checkToken(LexerState& state, int pos, vector<string>& tokens, int* found_idx = nullptr);
+	bool         checkToken(LexerState& state, int pos, string& token) const;
+	bool         checkToken(LexerState& state, int pos, vector<string>& tokens, int* found_idx = nullptr) const;
 };
 
 class ZScriptLexer : public Lexer
 {
 public:
-	ZScriptLexer() {}
-	virtual ~ZScriptLexer() {}
+	ZScriptLexer()          = default;
+	virtual ~ZScriptLexer() = default;
 
 protected:
-	void addWord(string word, int style) override;
+	void addWord(const string& word, int style) override;
 	void styleWord(LexerState& state, string word) override;
 	void clearWords() override;
 	bool isFunction(TextEditorCtrl* editor, int start_pos, int end_pos) override;

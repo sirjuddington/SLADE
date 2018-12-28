@@ -96,7 +96,9 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 
 	gb_sizer->AddGrowableCol(1, 1);
 
+
 	// Bind events
+	// -------------------------------------------------------------------------
 
 	// Find Next button clicked
 	btn_find_next_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { text_editor_.findNext(findText(), findFlags()); });
@@ -130,6 +132,7 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 
 	Bind(wxEVT_CHAR_HOOK, &FindReplacePanel::onKeyDown, this);
 
+
 	// Set tab order
 	text_replace_->MoveAfterInTabOrder(text_find_);
 }
@@ -137,7 +140,7 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 // -----------------------------------------------------------------------------
 // Sets the 'Find' text to [find], selects all and focuses the text box
 // -----------------------------------------------------------------------------
-void FindReplacePanel::setFindText(string find) const
+void FindReplacePanel::setFindText(const string& find) const
 {
 	text_find_->SetFocus();
 	text_find_->SetValue(find);
@@ -210,14 +213,12 @@ string FindReplacePanel::replaceText() const
 void FindReplacePanel::onKeyDown(wxKeyEvent& e)
 {
 	// Check if keypress matches any keybinds
-	wxArrayString binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
+	auto binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
 
 	// Go through matching binds
 	bool handled = false;
-	for (unsigned a = 0; a < binds.size(); a++)
+	for (const auto& name : binds)
 	{
-		string name = binds[a];
-
 		// Find next
 		if (name == "ted_findnext")
 		{
