@@ -3089,7 +3089,7 @@ vector<Vec2f> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 		{
 			// Add intersection point to vector
 			intersect_points.push_back(intersection);
-			LOG_DEBUG("Intersection point", intersection, "valid with", lines_[a]);
+			LOG_DEBUG("Intersection point", intersection, "valid with", line);
 		}
 		else if (intersection != cutter.p1())
 		{
