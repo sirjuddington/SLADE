@@ -55,6 +55,18 @@ struct TexDef
 	uint8_t  scale[2];
 	int16_t  width;
 	int16_t  height;
+
+	void cleanupName()
+	{
+		bool end = false;
+		for (auto& c : name)
+		{
+			if (end)
+				c = 0;
+			else if (c == 0)
+				end = true;
+		}
+	}
 };
 
 struct NamelessTexDef
@@ -393,6 +405,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		}
 
 		// Create texture
+		tdef.cleanupName();
 		auto tex      = std::make_unique<CTexture>();
 		tex->name_    = wxString::FromAscii(tdef.name, 8);
 		tex->width_   = wxINT16_SWAP_ON_BE(tdef.width);
