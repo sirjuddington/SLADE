@@ -118,7 +118,7 @@ Vec2i ModifyOffsetsDialog::offset() const
 	entry_xoff_->GetValue().ToLong(&x);
 	entry_yoff_->GetValue().ToLong(&y);
 
-	return { x, y };
+	return { int(x), int(y) };
 }
 
 // -----------------------------------------------------------------------------

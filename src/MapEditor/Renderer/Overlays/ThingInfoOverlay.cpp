@@ -60,7 +60,7 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 // -----------------------------------------------------------------------------
 // ThingInfoOverlay class constructor
 // -----------------------------------------------------------------------------
-ThingInfoOverlay::ThingInfoOverlay() : text_box_{ "", Drawing::Font::Condensed, 100, 16 * (Drawing::fontSize() / 12.0) }
+ThingInfoOverlay::ThingInfoOverlay() : text_box_{ "", Drawing::Font::Condensed, 100, int(16 * (Drawing::fontSize() / 12.0)) }
 {
 }
 
