@@ -54,20 +54,6 @@ CVAR(String, bgtx_colour2, "#505060", CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
-// GLTexture class constructor
-// -----------------------------------------------------------------------------
-GLTexture::GLTexture(bool allow_split)
-{
-	this->loaded_        = false;
-	this->allow_split_   = allow_split;
-	this->filter_        = Filter::Nearest;
-	this->tiling_        = true;
-	this->scale_x_       = 1.0;
-	this->scale_y_       = 1.0;
-	this->world_panning_ = false;
-}
-
-// -----------------------------------------------------------------------------
 // GLTexture class destructor
 // -----------------------------------------------------------------------------
 GLTexture::~GLTexture()
@@ -160,11 +146,10 @@ bool GLTexture::loadData(const uint8_t* data, uint32_t width, uint32_t height, b
 	}
 
 	// Update variables
-	loaded_        = true;
-	this->width_   = width;
-	this->height_  = height;
-	this->scale_x_ = 1.0;
-	this->scale_y_ = 1.0;
+	loaded_ = true;
+	width_  = width;
+	height_ = height;
+	scale_  = { 1., 1. };
 	tex_.push_back(ntex);
 
 	return true;
@@ -223,9 +208,9 @@ bool GLTexture::loadRawData(const uint8_t* data, uint32_t w, uint32_t h)
 		delete[] buf;
 
 		// Update variables
-		width_   = w;
-		height_  = h;
-		scale_x_ = scale_y_ = 1.0;
+		width_  = w;
+		height_ = h;
+		scale_  = { 1., 1. };
 
 		return true;
 	}
@@ -283,9 +268,9 @@ bool GLTexture::loadImage(SImage* image, Palette* pal)
 		}
 
 		// Update variables
-		width_   = image->width();
-		height_  = image->height();
-		scale_x_ = scale_y_ = 1.0;
+		width_  = image->width();
+		height_ = image->height();
+		scale_  = { 1., 1. };
 
 		return true;
 	}
@@ -361,7 +346,7 @@ bool GLTexture::loadImagePortion(SImage* image, Recti rect, Palette* pal, bool a
 		// Free buffer
 		delete[] buf;
 	}
-	scale_x_ = scale_y_ = 1.0;
+	scale_ = { 1., 1. };
 
 	// Generate texture from rgba data
 	return loadData(portion.data(), rect.width(), rect.height(), add);
@@ -373,15 +358,15 @@ bool GLTexture::loadImagePortion(SImage* image, Recti rect, Palette* pal, bool a
 bool GLTexture::clear()
 {
 	// Delete texture(s)
-	for (size_t a = 0; a < tex_.size(); a++)
-		glDeleteTextures(1, &tex_[a].id);
+	for (auto& a : tex_)
+		glDeleteTextures(1, &a.id);
 	tex_.clear();
 
 	// Reset variables
-	width_   = 0;
-	height_  = 0;
-	loaded_  = false;
-	scale_x_ = scale_y_ = 1.0;
+	width_  = 0;
+	height_ = 0;
+	loaded_ = false;
+	scale_  = { 1., 1. };
 
 	return true;
 }
@@ -446,7 +431,7 @@ bool GLTexture::genChequeredTexture(uint8_t block_size, ColRGBA col1, ColRGBA co
 
 	// Clean up
 	delete[] data;
-	scale_x_ = scale_y_ = 1.0;
+	scale_ = { 1., 1. };
 
 	return true;
 }
@@ -587,8 +572,8 @@ bool GLTexture::draw2dTiled(uint32_t width, uint32_t height)
 		glBindTexture(GL_TEXTURE_2D, tex_[0].id);
 
 		// Calculate texture coordinates
-		double tex_x = (double)width / (double)this->width_;
-		double tex_y = (double)height / (double)this->height_;
+		double tex_x = (double)width / (double)width_;
+		double tex_y = (double)height / (double)height_;
 
 		// Draw
 		glBegin(GL_QUADS);
@@ -616,11 +601,11 @@ bool GLTexture::draw2dTiled(uint32_t width, uint32_t height)
 				draw2d(x, y);
 
 				// Move down
-				y += this->height_;
+				y += height_;
 			}
 
 			// Move right
-			x += this->width_;
+			x += width_;
 		}
 	}
 
@@ -679,7 +664,7 @@ ColRGBA GLTexture::averageColour(Recti area)
 	delete[] pixels;
 
 	// Return average colour
-	return ColRGBA(red / npix, green / npix, blue / npix, 255);
+	return { uint8_t(red / npix), uint8_t(green / npix), uint8_t(blue / npix), 255 };
 }
 
 

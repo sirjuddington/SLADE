@@ -17,33 +17,23 @@ public:
 		NearestMipmap,
 	};
 
-	GLTexture(bool allow_split = true);
+	GLTexture(bool allow_split = true) : allow_split_{ allow_split } {}
 	~GLTexture();
 
-	bool     isLoaded() { return loaded_; }
-	uint32_t width() { return width_; }
-	uint32_t height() { return height_; }
-	Filter   filter() { return filter_; }
-	double   scaleX() { return scale_x_; }
-	double   scaleY() { return scale_y_; }
-	bool     isTiling() { return tiling_; }
-	unsigned glId()
-	{
-		if (!tex_.empty())
-			return tex_[0].id;
-		else
-			return 0;
-	}
-	bool worldPanning() { return world_panning_; }
+	bool     isLoaded() const { return loaded_; }
+	uint32_t width() const { return width_; }
+	uint32_t height() const { return height_; }
+	Filter   filter() const { return filter_; }
+	double   scaleX() const { return scale_.x; }
+	double   scaleY() const { return scale_.y; }
+	bool     isTiling() const { return tiling_; }
+	unsigned glId() { return !tex_.empty() ? tex_[0].id : 0; }
+	bool     worldPanning() const { return world_panning_; }
 
 	void setWorldPanning(bool wp) { world_panning_ = wp; }
-	void setFilter(Filter filter) { this->filter_ = filter; }
-	void setTiling(bool tiling) { this->tiling_ = tiling; }
-	void setScale(double sx, double sy)
-	{
-		this->scale_x_ = sx;
-		this->scale_y_ = sy;
-	}
+	void setFilter(Filter filter) { filter_ = filter; }
+	void setTiling(bool tiling) { tiling_ = tiling; }
+	void setScale(double sx, double sy) { scale_.set(sx, sy); }
 
 	bool loadImage(SImage* image, Palette* pal = nullptr);
 	bool loadRawData(const uint8_t* data, uint32_t width, uint32_t height);
@@ -69,16 +59,15 @@ private:
 		uint32_t height;
 	};
 
-	uint32_t       width_;
-	uint32_t       height_;
+	uint32_t       width_  = 0;
+	uint32_t       height_ = 0;
 	vector<SubTex> tex_;
-	Filter         filter_;
-	bool           loaded_;
-	bool           allow_split_;
-	bool           tiling_;
-	double         scale_x_;
-	double         scale_y_;
-	bool           world_panning_;
+	Filter         filter_        = Filter::Nearest;
+	bool           loaded_        = false;
+	bool           allow_split_   = false;
+	bool           tiling_        = true;
+	Vec2f          scale_         = { 1., 1. };
+	bool           world_panning_ = false;
 
 	// Some generic/global textures
 	static GLTexture tex_background_; // Checkerboard background texture

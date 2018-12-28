@@ -356,7 +356,7 @@ void CTextureCanvas::drawTexture()
 	glDisable(GL_TEXTURE_2D);
 
 	// Now loop through selected patches and draw selection outlines
-	OpenGL::setColour(70, 210, 220, 255, BLEND_NORMAL);
+	OpenGL::setColour(70, 210, 220, 255, OpenGL::BLEND_NORMAL);
 	glEnable(GL_LINE_SMOOTH);
 	glLineWidth(1.5f);
 	for (size_t a = 0; a < selected_patches_.size(); a++)
@@ -400,7 +400,7 @@ void CTextureCanvas::drawTexture()
 	if (hilight_patch_ >= 0 && hilight_patch_ < (int)texture_->nPatches())
 	{
 		// Set colour
-		OpenGL::setColour(255, 255, 255, 150, BLEND_ADDITIVE);
+		OpenGL::setColour(255, 255, 255, 150, OpenGL::BLEND_ADDITIVE);
 
 		// Get patch
 		CTPatch*   patch         = texture_->patch(hilight_patch_);

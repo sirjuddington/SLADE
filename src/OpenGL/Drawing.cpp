@@ -33,17 +33,10 @@
 #include "Drawing.h"
 #include "Archive/ArchiveManager.h"
 #include "GLTexture.h"
-#include "General/Console/Console.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "OpenGL.h"
 #include "Utility/MathStuff.h"
-
-#ifdef USE_SFML_RENDERWINDOW
-#include <SFML/Graphics.hpp>
-#else
-#include <FTGL/ftgl.h>
-#endif
 
 #ifdef __WXGTK3__
 #include <gtk-3.0/gtk/gtk.h>
@@ -67,331 +60,9 @@ CVAR(Int, gl_font_size, 12, CVar::Flag::Save)
 
 namespace Drawing
 {
-#ifdef USE_SFML_RENDERWINDOW
-sf::RenderWindow* render_target    = nullptr;
-bool              text_state_reset = true;
-#endif
 double  text_outline_width  = 0;
 ColRGBA text_outline_colour = COL_BLACK;
 }; // namespace Drawing
-
-
-// -----------------------------------------------------------------------------
-//
-// FontManager Class
-//
-// -----------------------------------------------------------------------------
-class FontManager
-{
-private:
-#ifdef USE_SFML_RENDERWINDOW
-	sf::Font font_normal;
-	sf::Font font_condensed;
-	sf::Font font_bold;
-	sf::Font font_boldcondensed;
-	sf::Font font_mono;
-	sf::Font font_small;
-#else
-	FTFont* font_normal;
-	FTFont* font_condensed;
-	FTFont* font_bold;
-	FTFont* font_boldcondensed;
-	FTFont* font_mono;
-	FTFont* font_small;
-#endif
-	static FontManager* instance;
-
-public:
-	FontManager()
-	{
-#ifndef USE_SFML_RENDERWINDOW
-		font_normal        = NULL;
-		font_condensed     = NULL;
-		font_bold          = NULL;
-		font_boldcondensed = NULL;
-		font_mono          = NULL;
-		font_small         = NULL;
-#endif
-	}
-	~FontManager()
-	{
-#ifndef USE_SFML_RENDERWINDOW
-		if (font_normal)
-		{
-			delete font_normal;
-			font_normal = NULL;
-		}
-		if (font_condensed)
-		{
-			delete font_condensed;
-			font_condensed = NULL;
-		}
-		if (font_bold)
-		{
-			delete font_bold;
-			font_bold = NULL;
-		}
-		if (font_boldcondensed)
-		{
-			delete font_boldcondensed;
-			font_boldcondensed = NULL;
-		}
-		if (font_mono)
-		{
-			delete font_mono;
-			font_mono = NULL;
-		}
-		if (font_small)
-		{
-			delete font_small;
-			font_small = NULL;
-		}
-#endif
-	}
-
-	static FontManager* getInstance()
-	{
-		if (!instance)
-			instance = new FontManager();
-
-		return instance;
-	}
-	int initFonts();
-
-#ifdef USE_SFML_RENDERWINDOW
-	sf::Font* getFont(Drawing::Font font);
-#else
-	FTFont* getFont(Drawing::Font font);
-#endif
-};
-#define theFontManager FontManager::getInstance()
-FontManager* FontManager::instance = nullptr;
-
-
-// -----------------------------------------------------------------------------
-//
-// FontManager Class Functions
-//
-// -----------------------------------------------------------------------------
-
-#ifdef USE_SFML_RENDERWINDOW
-
-// -----------------------------------------------------------------------------
-// Loads all needed fonts for rendering. SFML 2.x implementation
-// -----------------------------------------------------------------------------
-int FontManager::initFonts()
-{
-	// --- Load general fonts ---
-	int ret = 0;
-
-	// Normal
-	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry)
-		++ret, font_normal.loadFromMemory((const char*)entry->rawData(), entry->size());
-
-	// Condensed
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-	if (entry)
-		++ret, font_condensed.loadFromMemory((const char*)entry->rawData(), entry->size());
-
-	// Bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-	if (entry)
-		++ret, font_bold.loadFromMemory((const char*)entry->rawData(), entry->size());
-
-	// Condensed Bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-	if (entry)
-		++ret, font_boldcondensed.loadFromMemory((const char*)entry->rawData(), entry->size());
-
-	// Monospace
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-	if (entry)
-		++ret, font_small.loadFromMemory((const char*)entry->rawData(), entry->size());
-
-	return ret;
-}
-
-#else
-// -----------------------------------------------------------------------------
-// Loads all needed fonts for rendering. Non-SFML implementation
-// -----------------------------------------------------------------------------
-int FontManager::initFonts()
-{
-	// --- Load general fonts ---
-	int ret = 0;
-
-	if (font_normal)
-	{
-		delete font_normal;
-		font_normal = NULL;
-	}
-	if (font_condensed)
-	{
-		delete font_condensed;
-		font_condensed = NULL;
-	}
-	if (font_bold)
-	{
-		delete font_bold;
-		font_bold = NULL;
-	}
-	if (font_boldcondensed)
-	{
-		delete font_boldcondensed;
-		font_boldcondensed = NULL;
-	}
-	if (font_mono)
-	{
-		delete font_mono;
-		font_mono = NULL;
-	}
-	if (font_small)
-	{
-		delete font_small;
-		font_small = NULL;
-	}
-
-	// Normal
-	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry)
-	{
-		font_normal = new FTTextureFont(entry->rawData(), entry->size());
-		font_normal->FaceSize(UI::scalePx(gl_font_size));
-
-		// Check it loaded ok
-		if (font_normal->Error())
-		{
-			delete font_normal;
-			font_normal = NULL;
-		}
-		else
-			++ret;
-	}
-
-	// Condensed
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-	if (entry)
-	{
-		font_condensed = new FTTextureFont(entry->rawData(), entry->size());
-		font_condensed->FaceSize(UI::scalePx(gl_font_size));
-
-		// Check it loaded ok
-		if (font_condensed->Error())
-		{
-			delete font_condensed;
-			font_condensed = NULL;
-		}
-		else
-			++ret;
-	}
-
-	// Bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-	if (entry)
-	{
-		font_bold = new FTTextureFont(entry->rawData(), entry->size());
-		font_bold->FaceSize(UI::scalePx(gl_font_size));
-
-		// Check it loaded ok
-		if (font_bold->Error())
-		{
-			delete font_bold;
-			font_bold = NULL;
-		}
-		else
-			++ret;
-	}
-
-	// Condensed bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-	if (entry)
-	{
-		font_boldcondensed = new FTTextureFont(entry->rawData(), entry->size());
-		font_boldcondensed->FaceSize(UI::scalePx(gl_font_size));
-
-		// Check it loaded ok
-		if (font_boldcondensed->Error())
-		{
-			delete font_boldcondensed;
-			font_boldcondensed = NULL;
-		}
-		else
-			++ret;
-	}
-
-	// Monospace
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-	if (entry)
-	{
-		font_mono = new FTTextureFont(entry->rawData(), entry->size());
-		font_mono->FaceSize(UI::scalePx(gl_font_size));
-
-		// Check it loaded ok
-		if (font_mono->Error())
-		{
-			delete font_mono;
-			font_mono = NULL;
-		}
-		else
-			++ret;
-	}
-
-	// Small
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry)
-	{
-		font_small = new FTTextureFont(entry->rawData(), entry->size());
-		font_small->FaceSize((UI::scalePx(gl_font_size) * 0.6) + 1);
-
-		// Check it loaded ok
-		if (font_small->Error())
-		{
-			delete font_small;
-			font_small = NULL;
-		}
-		else
-			++ret;
-	}
-
-	return ret;
-}
-#endif
-
-// -----------------------------------------------------------------------------
-// Returns a font
-// -----------------------------------------------------------------------------
-#ifdef USE_SFML_RENDERWINDOW
-sf::Font* FontManager::getFont(Drawing::Font font)
-{
-	switch (font)
-	{
-	case Drawing::Font::Normal: return &font_normal;
-	case Drawing::Font::Condensed: return &font_condensed;
-	case Drawing::Font::Bold: return &font_bold;
-	case Drawing::Font::BoldCondensed: return &font_boldcondensed;
-	case Drawing::Font::Monospace: return &font_mono;
-	case Drawing::Font::Small: return &font_small;
-	default: return &font_normal;
-	};
-	return nullptr;
-}
-#else  // USE_SFML_RENDERWINDOW
-FTFont* FontManager::getFont(Drawing::Font font)
-{
-	switch (font)
-	{
-	case Drawing::Font::Normal: return font_normal;
-	case Drawing::Font::Condensed: return font_condensed;
-	case Drawing::Font::Bold: return font_bold;
-	case Drawing::Font::BoldCondensed: return font_boldcondensed;
-	case Drawing::Font::Monospace: return font_mono;
-	case Drawing::Font::Small: return font_small;
-	default: return font_normal;
-	};
-	return NULL;
-}
-#endif // USE_SFML_RENDERWINDOW
 
 
 // -----------------------------------------------------------------------------
@@ -400,14 +71,6 @@ FTFont* FontManager::getFont(Drawing::Font font)
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// Creates a FontManager if needed and let it init its own fonts
-// -----------------------------------------------------------------------------
-void Drawing::initFonts()
-{
-	theFontManager->initFonts();
-}
 
 // -----------------------------------------------------------------------------
 // Returns the configured font size (scaled for DPI etc)
@@ -477,25 +140,25 @@ void Drawing::drawLineTabbed(Vec2f start, Vec2f end, double tab, double tab_max)
 // Draws a line from [p1] to [p2] with an arrowhead at the [p1] end.
 // If [twoway] is true, an arrowhead is also drawn at the [p2] end
 // -----------------------------------------------------------------------------
-void Drawing::drawArrow(Vec2f p1, Vec2f p2, ColRGBA color, bool twoway, double ah_angle, double ah_length)
+void Drawing::drawArrow(Vec2f p1, Vec2f p2, ColRGBA color, bool twoway, double arrowhead_angle, double arrowhead_length)
 {
 	Vec2f  a1l, a1r, a2l, a2r;
 	Vec2f  vector = p1 - p2;
 	double angle  = atan2(-vector.y, vector.x);
 	a1l = a1r = p1;
-	a1l.x += ah_length * sin(angle - ah_angle);
-	a1l.y += ah_length * cos(angle - ah_angle);
-	a1r.x -= ah_length * sin(angle + ah_angle);
-	a1r.y -= ah_length * cos(angle + ah_angle);
+	a1l.x += arrowhead_length * sin(angle - arrowhead_angle);
+	a1l.y += arrowhead_length * cos(angle - arrowhead_angle);
+	a1r.x -= arrowhead_length * sin(angle + arrowhead_angle);
+	a1r.y -= arrowhead_length * cos(angle + arrowhead_angle);
 	if (twoway)
 	{
 		vector = p2 - p1;
 		angle  = atan2(-vector.y, vector.x);
 		a2l = a2r = p2;
-		a2l.x += ah_length * sin(angle - ah_angle);
-		a2l.y += ah_length * cos(angle - ah_angle);
-		a2r.x -= ah_length * sin(angle + ah_angle);
-		a2r.y -= ah_length * cos(angle + ah_angle);
+		a2l.x += arrowhead_length * sin(angle - arrowhead_angle);
+		a2l.y += arrowhead_length * cos(angle - arrowhead_angle);
+		a2r.x -= arrowhead_length * sin(angle + arrowhead_angle);
+		a2r.y -= arrowhead_length * cos(angle + arrowhead_angle);
 	}
 	OpenGL::setColour(color);
 	glBegin(GL_LINES);
@@ -659,7 +322,7 @@ Rectf Drawing::fitTextureWithin(
 {
 	// Ignore null texture
 	if (!tex)
-		return Rectf();
+		return {};
 
 	double width  = x2 - x1;
 	double height = y2 - y1;
@@ -680,11 +343,10 @@ Rectf Drawing::fitTextureWithin(
 		scale = max_scale;
 
 	// Return the fitted rectangle
-	return Rectf(
-		x1 + width * 0.5 - (scale * tex->width() * 0.5),
-		y1 + height * 0.5 - (scale * tex->height() * 0.5),
-		x1 + width * 0.5 + (scale * tex->width() * 0.5),
-		y1 + height * 0.5 + (scale * tex->height() * 0.5));
+	return { x1 + width * 0.5 - (scale * tex->width() * 0.5),
+			 y1 + height * 0.5 - (scale * tex->height() * 0.5),
+			 x1 + width * 0.5 + (scale * tex->width() * 0.5),
+			 y1 + height * 0.5 + (scale * tex->height() * 0.5) };
 }
 
 // -----------------------------------------------------------------------------
@@ -729,238 +391,6 @@ void Drawing::drawTextureWithin(
 	glScaled(scale, scale, scale);                        // Scale to fit within area
 	tex->draw2d(tex->width() * -0.5, tex->height() * -0.5);
 	glPopMatrix();
-}
-
-#ifdef USE_SFML_RENDERWINDOW
-// -----------------------------------------------------------------------------
-//
-// SFML 2.x Text Function Implementations
-//
-// -----------------------------------------------------------------------------
-
-// -----------------------------------------------------------------------------
-// Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
-// the rendered text string are written to it.
-// -----------------------------------------------------------------------------
-void Drawing::drawText(string text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectf* bounds)
-{
-	// Setup SFML string
-	sf::Text sf_str;
-	sf_str.setString(UTF8(text));
-	sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
-
-	// Set font
-	sf::Font* f = theFontManager->getFont(font);
-	sf_str.setFont(*f);
-	if (font == Font::Small)
-		sf_str.setCharacterSize((UI::scalePx(gl_font_size) * 0.6) + 1);
-	else
-		sf_str.setCharacterSize(UI::scalePx(gl_font_size));
-
-	// Setup alignment
-	if (alignment != Align::Left)
-	{
-		float width = sf_str.getLocalBounds().width;
-
-		if (alignment == Align::Center)
-			x -= MathStuff::round(width * 0.5);
-		else
-			x -= width;
-	}
-	sf_str.setPosition(x, y);
-
-	// Set bounds rect
-	if (bounds)
-	{
-		sf::FloatRect rect = sf_str.getGlobalBounds();
-		bounds->set(rect.left, rect.top, rect.left + rect.width, rect.top + rect.height);
-	}
-
-	// Draw the string
-	if (render_target)
-	{
-		if (text_state_reset)
-			setTextState(true);
-
-		if (text_outline_width > 0)
-		{
-#if (SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2
-			// Set text outline if SFML version is 2.4 or later
-			sf_str.setOutlineThickness(text_outline_width);
-			sf_str.setOutlineColor(
-				sf::Color(text_outline_colour.r, text_outline_colour.g, text_outline_colour.b, text_outline_colour.a));
-#else
-			// On SFML < 2.4, use old hacky outline method
-			sf_str.setColor(
-				sf::Color(text_outline_colour.r, text_outline_colour.g, text_outline_colour.b, text_outline_colour.a));
-			sf_str.setPosition(x - 2, y - 1);
-			render_target->draw(sf_str);
-			sf_str.setPosition(x - 2, y + 1);
-			render_target->draw(sf_str);
-			sf_str.setPosition(x + 2, y + 1);
-			render_target->draw(sf_str);
-			sf_str.setPosition(x + 2, y - 1);
-			render_target->draw(sf_str);
-			sf_str.setPosition(x, y);
-			sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
-#endif
-		}
-
-		// Draw
-		render_target->draw(sf_str);
-
-		if (text_state_reset)
-			setTextState(false);
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Returns the width and height of [text] when drawn with [font]
-// -----------------------------------------------------------------------------
-Vec2f Drawing::textExtents(string text, Font font)
-{
-	// Setup SFML string
-	sf::Text sf_str;
-	sf_str.setString(CHR(text));
-
-	// Set font
-	sf::Font* f = theFontManager->getFont(font);
-	sf_str.setFont(*f);
-	if (font == Font::Small)
-		sf_str.setCharacterSize((UI::scalePx(gl_font_size) * 0.6) + 1);
-	else
-		sf_str.setCharacterSize(UI::scalePx(gl_font_size));
-
-	// Return width and height of text
-	sf::FloatRect rect = sf_str.getGlobalBounds();
-	return Vec2f(rect.width, rect.height);
-}
-
-#else
-// -----------------------------------------------------------------------------
-//
-// FTGL Text Function Implementations
-//
-// -----------------------------------------------------------------------------
-
-// -----------------------------------------------------------------------------
-// Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
-// the rendered text string are written to it.
-// -----------------------------------------------------------------------------
-void Drawing::drawText(string text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectf* bounds)
-{
-	// Get desired font
-	FTFont* ftgl_font = theFontManager->getFont(font);
-
-	// If FTGL font is invalid, do nothing
-	if (!ftgl_font)
-		return;
-
-	// Setup alignment
-	FTBBox bbox = ftgl_font->BBox(CHR(text), -1);
-	int xpos = x;
-	int ypos = y;
-	float width = bbox.Upper().X() - bbox.Lower().X();
-	float height = ftgl_font->LineHeight();
-	if (alignment != Align::Left)
-	{
-		if (alignment == Align::Center)
-			xpos -= MathStuff::round(width * 0.5);
-		else
-			xpos -= width;
-	}
-
-	// Set bounds rect
-	if (bounds)
-	{
-		bbox = ftgl_font->BBox(CHR(text), -1, FTPoint(xpos, ypos));
-		bounds->set(bbox.Lower().X(), bbox.Lower().Y(), bbox.Upper().X(), bbox.Lower().Y() + height);
-	}
-
-	// Draw the string
-	glPushMatrix();
-	glTranslatef(xpos, ypos + ftgl_font->FaceSize(), 0.0f);
-	glTranslatef(-0.375f, -0.375f, 0);
-	glScalef(1.0f, -1.0f, 1.0f);
-	if (text_outline_width > 0)
-	{
-		// Draw outline if set
-		OpenGL::setColour(text_outline_colour);
-		glTranslatef(-2.0f, -1.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
-		glTranslatef(0.0f, 2.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
-		glTranslatef(4.0f, 0.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
-		glTranslatef(0.0f, -2.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
-		glTranslatef(-2.0f, 1.0f, 0.0f);
-	}
-	OpenGL::setColour(colour);
-	ftgl_font->Render(CHR(text), -1);
-	glPopMatrix();
-}
-
-// -----------------------------------------------------------------------------
-// Returns the width and height of [text] when drawn with [font]
-// -----------------------------------------------------------------------------
-Vec2f Drawing::textExtents(string text, Font font)
-{
-	// Get desired font
-	FTFont* ftgl_font = theFontManager->getFont(font);
-
-	// If FTGL font is invalid, return empty
-	if (!ftgl_font)
-		return Vec2f(0, 0);
-
-	// Return width and height of text
-	FTBBox bbox = ftgl_font->BBox(CHR(text), -1);
-	return Vec2f(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
-}
-
-#endif
-
-// -----------------------------------------------------------------------------
-// When enabled, the OpenGL state is set for text rendering each time drawText
-// is called and restored after (SFML only)
-// -----------------------------------------------------------------------------
-void Drawing::enableTextStateReset(bool enable)
-{
-#ifdef USE_SFML_RENDERWINDOW
-	text_state_reset = enable;
-#endif
-}
-
-// -----------------------------------------------------------------------------
-// Sets or restores (depending on [set]) the OpenGL state for SFML text
-// rendering
-// -----------------------------------------------------------------------------
-void Drawing::setTextState(bool set)
-{
-#ifdef USE_SFML_RENDERWINDOW
-	if (set)
-	{
-		// Push related states
-		glPushMatrix();
-		glMatrixMode(GL_TEXTURE);
-		glPushMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glPushAttrib(GL_VIEWPORT_BIT);
-		render_target->resetGLStates();
-	}
-	else
-	{
-		// Pop related states
-		glPopAttrib();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glMatrixMode(GL_TEXTURE);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-	}
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -1019,16 +449,6 @@ void Drawing::drawHud()
 		drawRect(-hw - 16, -hh - 16, hw + 16, hh + 16);
 	}
 }
-
-#ifdef USE_SFML_RENDERWINDOW
-// -----------------------------------------------------------------------------
-// Sets the SFML render target to [target]
-// -----------------------------------------------------------------------------
-void Drawing::setRenderTarget(sf::RenderWindow* target)
-{
-	render_target = target;
-}
-#endif
 
 
 // The following functions are taken from CodeLite (http://codelite.org)
@@ -1120,12 +540,11 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 // -----------------------------------------------------------------------------
 // TextBox class constructor
 // -----------------------------------------------------------------------------
-TextBox::TextBox(string text, Drawing::Font font, int width, int line_height)
+TextBox::TextBox(const string& text, Drawing::Font font, int width, int line_height) :
+	font_{ font },
+	width_{ width },
+	line_height_{ line_height }
 {
-	this->font_        = font;
-	this->width_       = width;
-	this->height_      = 0;
-	this->line_height_ = line_height;
 	setText(text);
 }
 
@@ -1133,7 +552,7 @@ TextBox::TextBox(string text, Drawing::Font font, int width, int line_height)
 // Splits [text] into separate lines (split by newlines), also performs further
 // splitting to word wrap the text within the box
 // -----------------------------------------------------------------------------
-void TextBox::split(string text)
+void TextBox::split(const string& text)
 {
 	// Clear current text lines
 	lines_.clear();
@@ -1143,7 +562,7 @@ void TextBox::split(string text)
 		return;
 
 	// Split at newlines
-	wxArrayString split = wxSplit(text, '\n');
+	auto split = wxSplit(text, '\n');
 	for (unsigned a = 0; a < split.Count(); a++)
 		lines_.push_back(split[a]);
 
@@ -1166,7 +585,7 @@ void TextBox::split(string text)
 		double width = Drawing::textExtents(lines_[line], font_).x;
 
 		// Continue to next line if within box
-		if (width < this->width_)
+		if (width < width_)
 		{
 			line++;
 			continue;
@@ -1174,7 +593,7 @@ void TextBox::split(string text)
 
 		// Halve length until it fits in the box
 		unsigned c = lines_[line].length() - 1;
-		while (width >= this->width_)
+		while (width >= width_)
 		{
 			if (c <= 1)
 				break;
@@ -1184,7 +603,7 @@ void TextBox::split(string text)
 		}
 
 		// Increment length until it doesn't fit
-		while (width < this->width_)
+		while (width < width_)
 		{
 			c++;
 			width = Drawing::textExtents(lines_[line].Mid(0, c), font_).x;
@@ -1221,9 +640,9 @@ void TextBox::split(string text)
 // -----------------------------------------------------------------------------
 // Sets the text box text
 // -----------------------------------------------------------------------------
-void TextBox::setText(string text)
+void TextBox::setText(const string& text)
 {
-	this->text_ = text;
+	text_ = text;
 	split(text);
 }
 
@@ -1232,8 +651,8 @@ void TextBox::setText(string text)
 // -----------------------------------------------------------------------------
 void TextBox::setSize(int width)
 {
-	this->width_ = width;
-	split(this->text_);
+	width_ = width;
+	split(text_);
 }
 
 // -----------------------------------------------------------------------------
@@ -1244,9 +663,9 @@ void TextBox::draw(int x, int y, ColRGBA colour, Drawing::Align alignment)
 	Rectf b;
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
-	for (unsigned a = 0; a < lines_.size(); a++)
+	for (const auto& line : lines_)
 	{
-		Drawing::drawText(lines_[a], x, y, colour, font_, alignment, &b);
+		drawText(line, x, y, colour, font_, alignment, &b);
 
 		if (line_height_ < 0)
 			y += b.height();

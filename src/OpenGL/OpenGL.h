@@ -26,12 +26,12 @@
 #undef None // Why does <X11/X.h> #define this? Idiotic
 #endif
 
-#define BLEND_NORMAL 0
-#define BLEND_ADDITIVE 1
-#define BLEND_IGNORE -1
-
 namespace OpenGL
 {
+static const int8_t BLEND_NORMAL   = 0;
+static const int8_t BLEND_ADDITIVE = 1;
+static const int8_t BLEND_IGNORE   = -1;
+
 struct Info
 {
 	string vendor;
