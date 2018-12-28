@@ -665,16 +665,12 @@ void GfxEntryPanel::applyViewType() const
 	gfx_canvas_->Refresh();
 }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
-// -----------------------------------------------------------------------------
-bool GfxEntryPanel::handleAction(string id)
+// ----------------------------------------------------------------------------
+bool GfxEntryPanel::handleEntryPanelAction(const string& id)
 {
-	// Don't handle actions if hidden
-	if (!isActivePanel())
-		return false;
-
 	// We're only interested in "pgfx_" actions
 	if (!id.StartsWith("pgfx_"))
 		return false;

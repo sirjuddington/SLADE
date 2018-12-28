@@ -1,14 +1,13 @@
 #pragma once
 
 #include "EntryPanel.h"
-#include "General/SAction.h"
 #include "Graphics/Translation.h"
 #include "UI/Canvas/GfxCanvas.h"
 
 class SZoomSlider;
 class ColourBox;
 
-class GfxEntryPanel : public EntryPanel, public SActionHandler
+class GfxEntryPanel : public EntryPanel
 {
 public:
 	GfxEntryPanel(wxWindow* parent);
@@ -30,7 +29,7 @@ public:
 	bool            extractAll() const;
 
 	// SAction handler
-	bool handleAction(string id) override;
+	bool handleEntryPanelAction(const string& id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
 
 	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;

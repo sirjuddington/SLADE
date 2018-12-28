@@ -101,8 +101,24 @@ void BrowserItem::draw(
 	// Truncate name if needed
 	if (parent_->truncateNames() && draw_name.Length() > 8)
 	{
-		draw_name.Truncate(8);
-		draw_name += "...";
+		// textures/aquatex/AQCONC13.png -> t./a./AQCONC13.png
+		// textures/AQDIRT01.png -> t./AQDIRT01.png
+		if (draw_name.Find('/') != wxNOT_FOUND)
+		{
+			int lastPos = 0;
+			string new_draw_name = "";
+			while (draw_name.Mid(lastPos).Find('/') != wxNOT_FOUND)
+			{
+				new_draw_name += draw_name.Mid(lastPos, 1) + "./";
+				lastPos += draw_name.Mid(lastPos).Find('/') + 1;
+			}
+			draw_name = new_draw_name + draw_name.AfterLast('/');
+		}
+		else
+		{
+			draw_name.Truncate(8);
+			draw_name += "...";
+		}
 	}
 
 	// Item name

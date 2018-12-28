@@ -1234,13 +1234,9 @@ bool PaletteEntryPanel::generatePalettes()
 // -----------------------------------------------------------------------------
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
-// -----------------------------------------------------------------------------
-bool PaletteEntryPanel::handleAction(string id)
+// ----------------------------------------------------------------------------
+bool PaletteEntryPanel::handleEntryPanelAction(const string& id)
 {
-	// Ignore if hidden
-	if (!isActivePanel())
-		return false;
-
 	// Only interested in "ppal_" events
 	if (!id.StartsWith("ppal_"))
 		return false;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "EntryPanel.h"
-#include "General/SAction.h"
 #include "Graphics/Palette/Palette.h"
 
 /* TODO:
@@ -19,7 +18,7 @@
 class PaletteCanvas;
 class ArchiveEntry;
 
-class PaletteEntryPanel : public EntryPanel, public SActionHandler
+class PaletteEntryPanel : public EntryPanel
 {
 public:
 	PaletteEntryPanel(wxWindow* parent);
@@ -54,7 +53,7 @@ public:
 	void analysePalettes();
 
 	// SAction handler
-	bool handleAction(string id) override;
+	bool handleEntryPanelAction(const string& id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
 
 private:

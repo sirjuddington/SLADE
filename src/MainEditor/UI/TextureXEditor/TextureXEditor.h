@@ -1,14 +1,13 @@
 #pragma once
 
 #include "Archive/Archive.h"
+#include "General/UndoRedo.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "PatchBrowser.h"
 #include "PatchTablePanel.h"
 #include "TextureEditorPanel.h"
 #include "TextureXPanel.h"
 #include "UI/Controls/STabCtrl.h"
-
-class UndoManager;
 
 class TextureXEditor : public wxPanel, public Listener
 {

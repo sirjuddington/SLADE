@@ -3354,6 +3354,8 @@ EntryPanel* ArchivePanel::createPanelForEntry(ArchiveEntry* entry, wxWindow* par
 		entry_panel = new TextEntryPanel(parent);
 	else if (!entry->type()->editor().Cmp("audio"))
 		entry_panel = new AudioEntryPanel(parent);
+	else if (!entry->type()->editor().Cmp("data"))
+		entry_panel = new DataEntryPanel(parent);
 	else
 		entry_panel = new DefaultEntryPanel(parent);
 
