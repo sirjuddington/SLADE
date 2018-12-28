@@ -4834,11 +4834,6 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		{
 			MapSector* s1 = getLineSideSector(connected_lines_[a], true);
 			MapSector* s2 = getLineSideSector(connected_lines_[a], false);
-			
-
-
-
-
 
 			if (s1)
 				setLineSector(connected_lines_[a]->index, s1->index, true);
