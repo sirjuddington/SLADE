@@ -113,7 +113,12 @@ bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 	else
 		curr_comment_idx_ = -1;
 
+#if wxMAJOR_VERSION < 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION < 1)
+	editor->StartStyling(start, 0);
+#else
 	editor->StartStyling(start);
+#endif
+
 	if (debug_lexer)
 		Log::debug(S_FMT("START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1));
 
