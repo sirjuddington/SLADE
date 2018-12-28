@@ -93,8 +93,8 @@ DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive) :
 	for (auto& entry : entries)
 	{
 		entry_info_.emplace_back(
-			entry->exProp("filePath").stringValue(),
 			entry->path(true),
+			entry->exProp("filePath").stringValue(),
 			entry->type() == EntryType::folderType(),
 			archive->fileModificationTime(entry));
 	}
