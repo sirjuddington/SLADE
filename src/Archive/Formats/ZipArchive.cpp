@@ -32,10 +32,10 @@
 #include "Main.h"
 #include "ZipArchive.h"
 #include "App.h"
+#include "General/Misc.h"
 #include "General/UI.h"
 #include "WadArchive.h"
 #include <fstream>
-#include "General/Misc.h"
 
 
 // -----------------------------------------------------------------------------
@@ -161,7 +161,8 @@ bool ZipArchive::open(const string& filename)
 			wxFileName fn(zip_entry->GetName(wxPATH_UNIX), wxPATH_UNIX);
 
 			// Create entry
-			auto new_entry = std::make_shared<ArchiveEntry>(Misc::fileNameToLumpName(fn.GetFullName()), zip_entry->GetSize());
+			auto new_entry =
+				std::make_shared<ArchiveEntry>(Misc::fileNameToLumpName(fn.GetFullName()), zip_entry->GetSize());
 
 			// Setup entry info
 			new_entry->setLoaded(false);
@@ -172,13 +173,15 @@ bool ZipArchive::open(const string& filename)
 			ndir->addEntry(new_entry);
 
 			// Read the data, if possible
-			if (zip_entry->GetSize() < 250 * 1024 * 1024)
+			auto ze_size = zip_entry->GetSize();
+			if (ze_size < 250 * 1024 * 1024)
 			{
-				vector<uint8_t> data(zip_entry->GetSize());
-				zip.Read(
-					data.data(),
-					zip_entry->GetSize()); // Note: this is where exceedingly large files cause an exception.
-				new_entry->importMem(data.data(), zip_entry->GetSize());
+				if (ze_size > 0)
+				{
+					vector<uint8_t> data(ze_size);
+					zip.Read(data.data(), ze_size); // Note: this is where exceedingly large files cause an exception.
+					new_entry->importMem(data.data(), ze_size);
+				}
 				new_entry->setLoaded(true);
 
 				// Determine its type
@@ -190,8 +193,8 @@ bool ZipArchive::open(const string& filename)
 			}
 			else
 			{
-				Global::error = S_FMT(
-					"Entry too large: %s is %u mb", zip_entry->GetName(wxPATH_UNIX), zip_entry->GetSize() / (1 << 20));
+				Global::error =
+					S_FMT("Entry too large: %s is %u mb", zip_entry->GetName(wxPATH_UNIX), ze_size / (1 << 20));
 				setMuted(false);
 				return false;
 			}
@@ -301,7 +304,7 @@ bool ZipArchive::write(const string& filename, bool update)
 	vector<wxZipEntry*>                 c_entries;
 	if (fileExists(temp_file_))
 	{
-		in = std::make_unique<wxFFileInputStream>(temp_file_);
+		in    = std::make_unique<wxFFileInputStream>(temp_file_);
 		inzip = std::make_unique<wxZipInputStream>(*in);
 
 		if (inzip->IsOk())
@@ -313,7 +316,7 @@ bool ZipArchive::write(const string& filename, bool update)
 		}
 		else
 		{
-			in = nullptr;
+			in    = nullptr;
 			inzip = nullptr;
 		}
 	}

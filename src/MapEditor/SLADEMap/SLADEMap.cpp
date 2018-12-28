@@ -340,9 +340,9 @@ bool SLADEMap::readMap(Archive::MapDesc map)
 	auto omap = map;
 
 	// Check for map archive
+	WadArchive tempwad;
 	if (map.archive && map.head)
 	{
-		WadArchive tempwad;
 		tempwad.open(map.head->data());
 		auto amaps = tempwad.detectMaps();
 		if (!amaps.empty())
