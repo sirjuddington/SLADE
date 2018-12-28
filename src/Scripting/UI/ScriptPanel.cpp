@@ -151,7 +151,7 @@ bool ScriptPanel::handleAction(const string& id)
 	// Text->Word Wrapping toggle
 	else if (id == "scrm_wrap")
 	{
-		SAction* action = SAction::fromId("scrm_wrap");
+		auto action = SAction::fromId("scrm_wrap");
 		if (action->isChecked())
 			text_editor_->SetWrapMode(wxSTC_WRAP_WORD);
 		else

@@ -4,7 +4,7 @@ vector<Archive*> allArchives(bool resources_only)
 	vector<Archive*> list;
 	for (int a = 0; a < App::archiveManager().numArchives(); a++)
 	{
-		Archive* archive = App::archiveManager().getArchive(a);
+		auto archive = App::archiveManager().getArchive(a);
 
 		if (resources_only && !App::archiveManager().archiveIsResource(archive))
 			continue;
@@ -56,7 +56,7 @@ vector<ArchiveTreeNode*> archiveDirSubDirs(ArchiveTreeNode& self)
 {
 	vector<ArchiveTreeNode*> dirs;
 	for (auto child : self.allChildren())
-		dirs.push_back((ArchiveTreeNode*)child);
+		dirs.push_back(dynamic_cast<ArchiveTreeNode*>(child));
 	return dirs;
 }
 
@@ -70,16 +70,22 @@ void registerArchiveFormat(sol::state& lua)
 		sol::no_constructor,
 
 		// Properties
+		// ---------------------------------------------------------------------------
 		"id",
 		sol::readonly(&ArchiveFormat::id),
+
 		"name",
 		sol::readonly(&ArchiveFormat::name),
+
 		"supportsDirs",
 		sol::readonly(&ArchiveFormat::supports_dirs),
+
 		"hasExtensions",
 		sol::readonly(&ArchiveFormat::names_extensions),
+
 		"maxNameLength",
 		sol::readonly(&ArchiveFormat::max_name_length)
+
 		//"entryFormat",	sol::readonly(&ArchiveFormat::entry_format)
 		//"extensions" - need to export key_value_t or do something custom
 	);
@@ -94,31 +100,45 @@ void registerArchive(sol::state& lua)
 		"new",
 		sol::no_constructor,
 
+
 		// Properties
+		// ---------------------------------------------------------------------------
 		"filename",
 		sol::property([](Archive& self) { return self.filename(); }),
+
 		"entries",
 		sol::property(&archiveAllEntries),
+
 		"rootDir",
 		sol::property(&Archive::rootDir),
+
 		"format",
 		sol::property(&Archive::formatDesc),
 
+
 		// Functions
+		// ---------------------------------------------------------------------------
 		"filenameNoPath",
 		[](Archive& self) { return self.filename(false); },
+
 		"entryAtPath",
 		&Archive::entryAtPath,
+
 		"dirAtPath",
 		[](Archive& self, const string& path) { return self.dir(path); },
+
 		"createEntry",
 		&archiveCreateEntry,
+
 		"createEntryInNamespace",
 		&archiveCreateEntryInNamespace,
+
 		"removeEntry",
 		&Archive::removeEntry,
+
 		"renameEntry",
 		&Archive::renameEntry,
+
 		"save",
 		sol::overload(
 			[](Archive& self) { return self.save(); },
@@ -173,23 +193,33 @@ void registerArchiveEntry(sol::state& lua)
 		"new",
 		sol::no_constructor,
 
+
 		// Properties
+		// ---------------------------------------------------------------------------
 		"name",
 		sol::property([](ArchiveEntry& self) { return self.name(); }),
+
 		"path",
 		sol::property([](ArchiveEntry& self) { return self.path(); }),
+
 		"type",
 		sol::property(&ArchiveEntry::type),
+
 		"size",
 		sol::property(&ArchiveEntry::size),
+
 		"index",
 		sol::property([](ArchiveEntry& self) { return self.parentDir()->entryIndex(&self); }),
+
 		"crc32",
 		sol::property([](ArchiveEntry& self) { return Misc::crc(self.rawData(), self.size()); }),
+
 		"data",
 		sol::property(&entryData),
 
+
 		// Functions
+		// ---------------------------------------------------------------------------
 		"formattedName",
 		sol::overload(
 			[](ArchiveEntry& self) { return formattedEntryName(self, true, true, false); },
@@ -198,14 +228,19 @@ void registerArchiveEntry(sol::state& lua)
 				return formattedEntryName(self, include_path, include_extension, false);
 			},
 			&formattedEntryName),
+
 		"formattedSize",
 		&ArchiveEntry::sizeString,
+
 		"importFile",
 		[](ArchiveEntry& self, const string& filename) { return self.importFile(filename); },
+
 		"importEntry",
 		&ArchiveEntry::importEntry,
+
 		"importData",
 		&entryImportString,
+
 		"exportFile",
 		&ArchiveEntry::exportFile);
 }
@@ -219,17 +254,24 @@ void registerArchiveTreeNode(sol::state& lua)
 		"new",
 		sol::no_constructor,
 
+
 		// Properties
+		// ---------------------------------------------------------------------------
 		"name",
 		sol::property(&ArchiveTreeNode::name),
+
 		"archive",
 		sol::property(&ArchiveTreeNode::archive),
+
 		"entries",
 		sol::property(&archiveDirEntries),
+
 		"parent",
-		sol::property([](ArchiveTreeNode& self) { return (ArchiveTreeNode*)self.parent(); }),
+		sol::property([](ArchiveTreeNode& self) { return dynamic_cast<ArchiveTreeNode*>(self.parent()); }),
+
 		"path",
 		sol::property(&ArchiveTreeNode::path),
+
 		"subDirectories",
 		sol::property(&archiveDirSubDirs));
 }
@@ -243,24 +285,31 @@ void registerEntryType(sol::state& lua)
 		"new",
 		sol::no_constructor,
 
+
 		// Properties
+		// ---------------------------------------------------------------------------
 		"id",
 		sol::property(&EntryType::id),
+
 		"name",
 		sol::property(&EntryType::name),
+
 		"extension",
 		sol::property(&EntryType::extension),
+
 		"formatId",
 		sol::property(&EntryType::formatId),
+
 		"editor",
 		sol::property(&EntryType::editor),
+
 		"category",
 		sol::property(&EntryType::category));
 }
 
 void registerArchivesNamespace(sol::state& lua)
 {
-	sol::table archives = lua.create_table("Archives");
+	auto archives = lua.create_table("Archives");
 
 	archives.set_function("all", sol::overload(&allArchives, []() { return allArchives(false); }));
 

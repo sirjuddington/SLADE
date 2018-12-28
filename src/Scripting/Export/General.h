@@ -80,6 +80,7 @@ void registerMiscTypes(sol::state& lua)
 		"y",
 		&Vec2f::y);
 
+
 	lua.new_simple_usertype<ColRGBA>(
 		"Colour",
 
@@ -94,6 +95,7 @@ void registerMiscTypes(sol::state& lua)
 		&ColRGBA::b,
 		"a",
 		&ColRGBA::a);
+
 
 	lua.new_simple_usertype<Plane>(
 		"Plane",
@@ -117,7 +119,7 @@ void registerMiscTypes(sol::state& lua)
 
 void registerAppNamespace(sol::state& lua)
 {
-	sol::table app = lua.create_named_table("App");
+	auto app = lua.create_named_table("App");
 	app.set_function("logMessage", &logMessage);
 	app.set_function("globalError", []() { return Global::error; });
 	app.set_function("messageBox", &messageBox);
@@ -137,7 +139,7 @@ void registerAppNamespace(sol::state& lua)
 
 void registerSplashWindowNamespace(sol::state& lua)
 {
-	sol::table splash = lua.create_named_table("SplashWindow");
+	auto splash = lua.create_named_table("SplashWindow");
 
 	splash.set_function(
 		"show",

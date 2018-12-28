@@ -41,19 +41,27 @@ void registerSLADEMap(sol::state& lua)
 		"new",
 		sol::no_constructor,
 
+
 		// Properties
+		// ---------------------------------------------------------------------------
 		"name",
 		sol::property(&SLADEMap::mapName),
+
 		"udmfNamespace",
 		sol::property(&SLADEMap::udmfNamespace),
+
 		"vertices",
 		sol::property(&SLADEMap::vertices),
+
 		"linedefs",
 		sol::property(&SLADEMap::lines),
+
 		"sidedefs",
 		sol::property(&SLADEMap::sides),
+
 		"sectors",
 		sol::property(&SLADEMap::sectors),
+
 		"things",
 		sol::property(&SLADEMap::things));
 }
@@ -83,17 +91,24 @@ void registerMapEditor(sol::state& lua)
 		"new",
 		sol::no_constructor,
 
+
 		// Properties
+		// ---------------------------------------------------------------------------
 		"editMode",
 		sol::property(&MapEditContext::editMode),
+
 		"sectorEditMode",
 		sol::property(&MapEditContext::sectorEditMode),
+
 		"gridSize",
 		sol::property(&MapEditContext::gridSize),
+
 		"map",
 		sol::property(&MapEditContext::map),
 
+
 		// Functions
+		// ---------------------------------------------------------------------------
 		"selectedVertices",
 		sol::overload(
 			[](MapEditContext& self, bool try_hilight) { return self.selection().selectedVertices(try_hilight); },
@@ -209,33 +224,48 @@ void registerMapLine(sol::state& lua)
 		"new",
 		sol::no_constructor,
 
+
 		// Properties
+		// ---------------------------------------------------------------------------
 		"x1",
 		sol::property(&MapLine::x1),
+
 		"y1",
 		sol::property(&MapLine::y1),
+
 		"x2",
 		sol::property(&MapLine::x2),
+
 		"y2",
 		sol::property(&MapLine::y2),
+
 		"vertex1",
 		sol::property(&MapLine::v1),
+
 		"vertex2",
 		sol::property(&MapLine::v2),
+
 		"side1",
 		sol::property(&MapLine::s1),
+
 		"side2",
 		sol::property(&MapLine::s2),
+
 		"special",
 		sol::property(&MapLine::special),
+
 		"length",
 		sol::property(&MapLine::length),
+
 		"visibleTextures",
 		sol::property(&lineVisibleTextures),
 
+
 		// Functions
+		// ---------------------------------------------------------------------------
 		"flag",
 		&lineFlag,
+
 		"flip",
 		sol::overload(&MapLine::flip, [](MapLine& self) { self.flip(true); }));
 }
@@ -251,19 +281,27 @@ void registerMapSide(sol::state& lua)
 		"new",
 		sol::no_constructor,
 
+
 		// Properties
+		// ---------------------------------------------------------------------------
 		"sector",
 		sol::property(&MapSide::sector),
+
 		"line",
 		sol::property(&MapSide::parentLine),
+
 		"textureBottom",
 		sol::property(&MapSide::texLower),
+
 		"textureMiddle",
 		sol::property(&MapSide::texMiddle),
+
 		"textureTop",
 		sol::property(&MapSide::texUpper),
+
 		"offsetX",
 		sol::property(&MapSide::offsetX),
+
 		"offsetY",
 		sol::property(&MapSide::offsetY));
 }
@@ -279,34 +317,50 @@ void registerMapSector(sol::state& lua)
 		"new",
 		sol::no_constructor,
 
+
 		// Properties
+		// ---------------------------------------------------------------------------
 		"textureFloor",
 		sol::property([](MapSector& self) { return self.floor().texture; }),
+
 		"textureCeiling",
 		sol::property([](MapSector& self) { return self.ceiling().texture; }),
+
 		"heightFloor",
 		sol::property([](MapSector& self) { return self.floor().height; }),
+
 		"heightCeiling",
 		sol::property([](MapSector& self) { return self.ceiling().height; }),
+
 		"lightLevel",
 		sol::property(&MapSector::lightLevel),
+
 		"special",
 		sol::property(&MapSector::special),
+
 		"id",
 		sol::property(&MapSector::tag),
+
 		"connectedSides",
 		sol::property(&MapSector::connectedSides),
+
 		"colour",
 		sol::property(&MapSector::colourAt),
+
 		"fogColour",
 		sol::property(&MapSector::fogColour),
+
 		"planeFloor",
 		sol::property([](MapSector& self) { return self.floor().plane; }),
+
 		"planeCeiling",
 		sol::property([](MapSector& self) { return self.ceiling().plane; }),
-		// bbox (need to export bbox_t first)
+
+		// bbox (need to export BBox struct first)
+
 
 		// Functions
+		// ---------------------------------------------------------------------------
 		"containsPoint",
 		&MapSector::isWithin);
 }
@@ -330,19 +384,27 @@ void registerMapThing(sol::state& lua)
 		"new",
 		sol::no_constructor,
 
+
 		// Properties
+		// ---------------------------------------------------------------------------
 		"x",
 		sol::property(&MapThing::xPos),
+
 		"y",
 		sol::property(&MapThing::yPos),
+
 		"type",
 		sol::property(&MapThing::type),
+
 		"angle",
 		sol::property(&MapThing::angle),
 
+
 		// Functions
+		// ---------------------------------------------------------------------------
 		"flag",
 		&thingFlag,
+
 		"setAnglePoint",
 		&MapThing::setAnglePoint);
 }
@@ -356,30 +418,45 @@ void registerMapObject(sol::state& lua)
 		"new",
 		sol::no_constructor,
 
+
 		// Properties
+		// ---------------------------------------------------------------------------
 		"index",
 		sol::property(&MapObject::index),
+
 		"typeName",
 		sol::property(&MapObject::typeName),
-		//"properties", sol::property(&MapObject::props), // Need to export MobjPropertyList first
+
+		//"properties",
+		// sol::property(&MapObject::props), // Need to export MobjPropertyList first
+
 
 		// Functions
+		// ---------------------------------------------------------------------------
 		"hasProperty",
 		&MapObject::hasProp,
+
 		"boolProperty",
 		&MapObject::boolProperty,
+
 		"intProperty",
 		&MapObject::intProperty,
+
 		"floatProperty",
 		&MapObject::floatProperty,
+
 		"stringProperty",
 		&MapObject::stringProperty,
+
 		"setBoolProperty",
 		&objectSetBoolProperty,
+
 		"setIntProperty",
 		&objectSetIntProperty,
+
 		"setFloatProperty",
 		&objectSetFloatProperty,
+
 		"setStringProperty",
 		&objectSetStringProperty);
 }

@@ -102,11 +102,11 @@ public:
 		hbox->Add(new wxButton(this, wxID_OK, "OK"), 0, wxEXPAND | wxRIGHT, UI::padLarge());
 
 		SetEscapeId(wxID_CANCEL);
-		Layout();
+		wxWindowBase::Layout();
 		sizer->Fit(this);
 	}
 
-	ScriptManager::ScriptType selectedType()
+	ScriptManager::ScriptType selectedType() const
 	{
 		switch (choice_type_->GetCurrentSelection())
 		{
@@ -117,7 +117,7 @@ public:
 		}
 	}
 
-	string selectedName() { return text_name_->GetValue(); }
+	string selectedName() const { return text_name_->GetValue(); }
 
 private:
 	wxChoice*   choice_type_;
@@ -156,7 +156,7 @@ wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const s
 
 	// Find child node with name
 	wxTreeItemIdValue cookie;
-	wxTreeItemId      child = tree->GetFirstChild(parent_node, cookie);
+	auto              child = tree->GetFirstChild(parent_node, cookie);
 	while (child.IsOk())
 	{
 		if (S_CMPNOCASE(tree->GetItemText(child), name))
@@ -359,37 +359,37 @@ void ScriptManagerWindow::setupMenu()
 	menu->SetThemeEnabled(false);
 
 	// File menu
-	auto fileMenu = new wxMenu();
-	SAction::fromId("scrm_newscript_editor")->addToMenu(fileMenu);
-	menu->Append(fileMenu, "&File");
+	auto file_menu = new wxMenu();
+	SAction::fromId("scrm_newscript_editor")->addToMenu(file_menu);
+	menu->Append(file_menu, "&File");
 
 	// Script menu
-	auto scriptMenu = new wxMenu();
-	SAction::fromId("scrm_run")->addToMenu(scriptMenu);
-	SAction::fromId("scrm_save")->addToMenu(scriptMenu);
+	auto script_menu = new wxMenu();
+	SAction::fromId("scrm_run")->addToMenu(script_menu);
+	SAction::fromId("scrm_save")->addToMenu(script_menu);
 	// SAction::fromId("scrm_rename")->addToMenu(scriptMenu);
 	// SAction::fromId("scrm_delete")->addToMenu(scriptMenu);
-	menu->Append(scriptMenu, "&Script");
+	menu->Append(script_menu, "&Script");
 
 	// Text menu
-	auto textMenu = new wxMenu();
-	SAction::fromId("scrm_find_replace")->addToMenu(textMenu);
-	SAction::fromId("scrm_jump_to_line")->addToMenu(textMenu);
-	wxMenu* menu_fold = new wxMenu();
-	textMenu->AppendSubMenu(menu_fold, "Code Folding");
+	auto text_menu = new wxMenu();
+	SAction::fromId("scrm_find_replace")->addToMenu(text_menu);
+	SAction::fromId("scrm_jump_to_line")->addToMenu(text_menu);
+	auto menu_fold = new wxMenu();
+	text_menu->AppendSubMenu(menu_fold, "Code Folding");
 	SAction::fromId("scrm_fold_foldall")->addToMenu(menu_fold);
 	SAction::fromId("scrm_fold_unfoldall")->addToMenu(menu_fold);
-	textMenu->AppendSeparator();
-	SAction::fromId("scrm_wrap")->addToMenu(textMenu);
-	menu->Append(textMenu, "&Text");
+	text_menu->AppendSeparator();
+	SAction::fromId("scrm_wrap")->addToMenu(text_menu);
+	menu->Append(text_menu, "&Text");
 
 	// View menu
-	auto viewMenu = new wxMenu();
-	SAction::fromId("scrm_showscripts")->addToMenu(viewMenu);
-	SAction::fromId("scrm_showconsole")->addToMenu(viewMenu);
+	auto view_menu = new wxMenu();
+	SAction::fromId("scrm_showscripts")->addToMenu(view_menu);
+	SAction::fromId("scrm_showconsole")->addToMenu(view_menu);
 	if (App::useWebView())
-		SAction::fromId("scrm_showdocs")->addToMenu(viewMenu);
-	menu->Append(viewMenu, "&View");
+		SAction::fromId("scrm_showdocs")->addToMenu(view_menu);
+	menu->Append(view_menu, "&View");
 
 	// Set the menu
 	SetMenuBar(menu);
@@ -426,7 +426,7 @@ void ScriptManagerWindow::bindEvents()
 {
 	// Tree item activate
 	tree_scripts_->Bind(wxEVT_TREE_ITEM_ACTIVATED, [=](wxTreeEvent& e) {
-		auto data = (ScriptTreeItemData*)tree_scripts_->GetItemData(e.GetItem());
+		auto data = dynamic_cast<ScriptTreeItemData*>(tree_scripts_->GetItemData(e.GetItem()));
 		if (data && data->script)
 			openScriptTab(data->script);
 		else if (tree_scripts_->ItemHasChildren(e.GetItem()))
@@ -435,7 +435,7 @@ void ScriptManagerWindow::bindEvents()
 
 	// Tree item right click
 	tree_scripts_->Bind(wxEVT_TREE_ITEM_RIGHT_CLICK, [&](wxTreeEvent& e) {
-		auto data = (ScriptTreeItemData*)tree_scripts_->GetItemData(e.GetItem());
+		auto data = dynamic_cast<ScriptTreeItemData*>(tree_scripts_->GetItemData(e.GetItem()));
 		if (data && data->script && !data->script->read_only)
 		{
 			script_clicked_ = data->script;
@@ -559,7 +559,7 @@ ScriptPanel* ScriptManagerWindow::currentPage() const
 {
 	auto page = tabs_scripts_->GetCurrentPage();
 	if (page && page->GetName() == "script")
-		return (ScriptPanel*)page;
+		return dynamic_cast<ScriptPanel*>(page);
 
 	return nullptr;
 }
@@ -567,14 +567,14 @@ ScriptPanel* ScriptManagerWindow::currentPage() const
 // -----------------------------------------------------------------------------
 // Closes the tab for [script] if it is currently open
 // -----------------------------------------------------------------------------
-void ScriptManagerWindow::closeScriptTab(ScriptManager::Script* script)
+void ScriptManagerWindow::closeScriptTab(ScriptManager::Script* script) const
 {
 	// Find existing tab
 	for (unsigned a = 0; a < tabs_scripts_->GetPageCount(); a++)
 	{
 		auto page = tabs_scripts_->GetPage(a);
 		if (page->GetName() == "script")
-			if (((ScriptPanel*)page)->script() == script)
+			if (dynamic_cast<ScriptPanel*>(page)->script() == script)
 			{
 				tabs_scripts_->RemovePage(a);
 				return;
@@ -586,7 +586,7 @@ void ScriptManagerWindow::closeScriptTab(ScriptManager::Script* script)
 // Shows the scripting documentation tab or creates it if it isn't currently
 // open. If [url] is specified, navigates to <scripting docs url>/[url]
 // -----------------------------------------------------------------------------
-void ScriptManagerWindow::showDocs(string url)
+void ScriptManagerWindow::showDocs(const string& url)
 {
 #ifdef USE_WEBVIEW_STARTPAGE
 
@@ -611,8 +611,8 @@ void ScriptManagerWindow::showDocs(string url)
 
 		// Bind HTML link click event
 		webview_docs_->Bind(wxEVT_WEBVIEW_NAVIGATING, [&](wxEvent& e) {
-			wxWebViewEvent& ev   = (wxWebViewEvent&)e;
-			string          href = ev.GetURL();
+			auto&  ev   = dynamic_cast<wxWebViewEvent&>(e);
+			string href = ev.GetURL();
 
 			// Open external links externally
 			if (!href.StartsWith(docs_url))
@@ -642,7 +642,7 @@ void ScriptManagerWindow::openScriptTab(ScriptManager::Script* script) const
 	{
 		auto page = tabs_scripts_->GetPage(a);
 		if (page->GetName() == "script")
-			if (((ScriptPanel*)page)->script() == script)
+			if (dynamic_cast<ScriptPanel*>(page)->script() == script)
 			{
 				tabs_scripts_->ChangeSelection(a);
 				return;
@@ -664,7 +664,7 @@ ScriptManager::Script* ScriptManagerWindow::currentScript() const
 {
 	auto page = tabs_scripts_->GetCurrentPage();
 	if (page->GetName() == "script")
-		return ((ScriptPanel*)page)->script();
+		return dynamic_cast<ScriptPanel*>(page)->script();
 
 	return nullptr;
 }
@@ -676,7 +676,7 @@ string ScriptManagerWindow::currentScriptText() const
 {
 	auto page = tabs_scripts_->GetCurrentPage();
 	if (page->GetName() == "script")
-		return ((ScriptPanel*)page)->currentText();
+		return dynamic_cast<ScriptPanel*>(page)->currentText();
 
 	return wxEmptyString;
 }
